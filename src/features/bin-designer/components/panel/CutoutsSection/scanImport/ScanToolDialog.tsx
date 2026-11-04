@@ -7,9 +7,9 @@
  * scale goes through a scale-confirm step before it becomes a cutout.
  */
 
-import { Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
-import { Dialog, Button, Input, Spinner } from '@/design-system';
+import { Dialog, Button, Spinner } from '@/design-system';
 import { ArrowLeftIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
@@ -20,7 +20,14 @@ import { lazyWithRetry } from '@/shared/utils/lazyWithRetry';
 import { isOk } from '@/core/result';
 import type { ScanSource } from '@/features/bin-designer/types';
 import { MAX_SVG_FILE_SIZE, type ParsedCutoutSpec } from '../svgImport/types';
-import { parseScanSvg, rescaleToLongestMm, type ParsedScan } from './scanIngest';
+import {
+  isScaledScan,
+  parseScanSvg,
+  rescaleToLongestMm,
+  scaleTargetMm,
+  type ParsedScan,
+} from './scanIngest';
+import { ScanScaleField } from './ScanScaleField';
 import { useScanImport } from './useScanImport';
 import { useScanSession, type ScanSessionState } from './useScanSession';
 import { ScanQrCode } from './ScanQrCode';
@@ -58,8 +65,6 @@ type Stage =
       readonly targetText: string;
     };
 
-const round1 = (n: number): number => Math.round(n * 10) / 10;
-
 export function ScanToolDialog({
   open,
   onClose,
@@ -73,7 +78,6 @@ export function ScanToolDialog({
   const { addScanCutouts: addToCutouts } = useScanImport();
   const addScanCutouts = onImport ?? addToCutouts;
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const fieldId = useId();
   const [stage, setStage] = useState<Stage>({ kind: 'awaiting' });
   const [added, setAdded] = useState(0);
   const [tracing, setTracing] = useState(false);
@@ -109,19 +113,6 @@ export function ScanToolDialog({
   }, [stage]);
   const pendingScanRef = useRef<string | null>(null);
 
-  // Preview via a Blob URL rather than a data: URL — avoids encoding a
-  // potentially multi-MB SVG into a string on every render.
-  const reviewSvg = stage.kind === 'review' ? stage.svg : null;
-  const previewUrl = useMemo(
-    () =>
-      reviewSvg ? URL.createObjectURL(new Blob([reviewSvg], { type: 'image/svg+xml' })) : null,
-    [reviewSvg]
-  );
-  useEffect(() => {
-    if (!previewUrl) return;
-    return () => URL.revokeObjectURL(previewUrl);
-  }, [previewUrl]);
-
   const handleClose = useCallback(() => {
     setStage({ kind: 'awaiting' });
     setAdded(0);
@@ -142,7 +133,7 @@ export function ScanToolDialog({
       }
       // The phone already rectified to true mm (a card was in frame), so the
       // specs are to scale — add them directly and skip the scale-confirm step.
-      if (/data-scan-units\s*=\s*["']mm["']/.test(svg)) {
+      if (isScaledScan(svg)) {
         const count = addScanCutouts(result.value.specs);
         trackEvent('scan_import', {
           success: true,
@@ -223,8 +214,8 @@ export function ScanToolDialog({
 
   const handleConfirm = useCallback(() => {
     if (stage.kind !== 'review') return;
-    const targetMm = parseFloat(stage.targetText);
-    if (!Number.isFinite(targetMm) || targetMm <= 0) return;
+    const targetMm = scaleTargetMm(stage.targetText);
+    if (targetMm === null) return;
 
     const rescaled = rescaleToLongestMm(stage.parsed.specs, stage.parsed.sized.longest, targetMm);
     const count = addScanCutouts(rescaled);
@@ -239,9 +230,8 @@ export function ScanToolDialog({
   // its own UI, not the poll.
   const scan = useScanSession(open && phoneStarted, ingestSvg, sessionAttempt);
 
-  const targetMm = stage.kind === 'review' ? parseFloat(stage.targetText) : NaN;
-  const targetValid = Number.isFinite(targetMm) && targetMm > 0;
-  const factor = stage.kind === 'review' && targetValid ? targetMm / stage.parsed.sized.longest : 1;
+  const targetMm = stage.kind === 'review' ? scaleTargetMm(stage.targetText) : null;
+  const targetValid = targetMm !== null;
 
   return (
     <>
@@ -321,44 +311,12 @@ export function ScanToolDialog({
               />
             </div>
           ) : (
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-center rounded-md border border-stroke-subtle bg-surface-elevated p-3">
-                <img
-                  src={previewUrl ?? undefined}
-                  alt={t('binDesigner.cutouts.scanImport.previewAlt')}
-                  className="max-h-48 w-auto"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label htmlFor={fieldId} className="text-sm font-medium text-content-primary">
-                  {t(
-                    stage.parsed.sizedByLongest
-                      ? 'binDesigner.cutouts.scanImport.scaleLabelLongest'
-                      : 'binDesigner.cutouts.scanImport.scaleLabel'
-                  )}
-                </label>
-                <Input
-                  id={fieldId}
-                  type="number"
-                  min={0}
-                  step={0.5}
-                  value={stage.targetText}
-                  error={stage.targetText !== '' && !targetValid}
-                  onChange={(e) => setStage({ ...stage, targetText: e.target.value })}
-                />
-                <p className="text-xs text-content-tertiary">
-                  {t('binDesigner.cutouts.scanImport.scaleHelp')}
-                </p>
-                {targetValid && (
-                  <p className="text-xs text-content-secondary">
-                    {t('binDesigner.cutouts.scanImport.resultSize', {
-                      width: round1(stage.parsed.sized.width * factor),
-                      depth: round1(stage.parsed.sized.depth * factor),
-                    })}
-                  </p>
-                )}
-              </div>
-            </div>
+            <ScanScaleField
+              svg={stage.svg}
+              parsed={stage.parsed}
+              targetText={stage.targetText}
+              onChange={(text) => setStage({ ...stage, targetText: text })}
+            />
           )}
         </Dialog.Body>
         <Dialog.Footer>

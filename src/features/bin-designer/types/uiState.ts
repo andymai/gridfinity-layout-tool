@@ -124,6 +124,8 @@ export interface DesignerUIState {
    * stays open grows the bin to fit, in the same undo step as the add.
    */
   readonly growBinForScan: boolean;
+  /** Where the phone scan flow was opened from; null while it is closed. */
+  readonly phoneScanSource: ScanSource | null;
   /** Whether the full-workspace bento editor is open (desktop only) */
   readonly bentoWorkspaceOpen: boolean;
   /**

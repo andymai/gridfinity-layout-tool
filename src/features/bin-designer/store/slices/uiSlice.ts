@@ -123,6 +123,18 @@ export function createUISlice(set: Set) {
       });
     },
 
+    openPhoneScan: (source: ScanSource) => {
+      set((state) => {
+        state.ui.phoneScanSource = source;
+      });
+    },
+
+    closePhoneScan: () => {
+      set((state) => {
+        state.ui.phoneScanSource = null;
+      });
+    },
+
     setBentoWorkspaceOpen: (open: boolean) => {
       set((state) => {
         state.ui.bentoWorkspaceOpen = open;

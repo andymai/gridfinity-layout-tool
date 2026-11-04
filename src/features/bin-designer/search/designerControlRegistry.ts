@@ -526,7 +526,7 @@ export interface ControlAvailabilityContext {
   readonly slideTrayEnabled: boolean;
   /** The `slant` labs flag, or a design that already leans: when the Slant section mounts. */
   readonly slantVisible: boolean;
-  /** Desktop, with a bin that can take cutouts: when a "Scan a tool" entry renders. */
+  /** A bin that can take cutouts: when a "Scan a tool" entry renders. */
   readonly scanAvailable: boolean;
 }
 

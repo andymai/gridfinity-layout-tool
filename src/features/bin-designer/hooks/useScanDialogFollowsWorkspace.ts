@@ -11,8 +11,15 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 export function useScanDialogFollowsWorkspace(workspaceShown: boolean): void {
   const scanDialogOpen = useDesignerStore((s) => s.ui.scanDialogSource !== null);
   const closeScanDialog = useDesignerStore((s) => s.closeScanDialog);
+  const closePhoneScan = useDesignerStore((s) => s.closePhoneScan);
   useEffect(() => {
     if (scanDialogOpen && !workspaceShown) closeScanDialog();
   }, [scanDialogOpen, workspaceShown, closeScanDialog]);
-  useEffect(() => closeScanDialog, [closeScanDialog]);
+  useEffect(
+    () => () => {
+      closeScanDialog();
+      closePhoneScan();
+    },
+    [closeScanDialog, closePhoneScan]
+  );
 }

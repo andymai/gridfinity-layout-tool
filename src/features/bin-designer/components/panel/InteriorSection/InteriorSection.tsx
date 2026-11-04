@@ -44,7 +44,7 @@ export function InteriorSection() {
   // Custom Cutouts carries its own scan button; every other mode gets this
   // link, which switches the interior on the way in.
   const scanPossible = useDesignerStore(selectCanStartScan);
-  const offerScanLink = isDesktop && state.card !== 'solid' && scanPossible;
+  const offerScanLink = state.card !== 'solid' && scanPossible;
   const isCustomShape = useDesignerStore((s) => isPartialMask(s.params.cellMask));
   const hasAngledDividers = useDesignerStore(
     (s) => (s.params.compartments.dividerOverrides?.length ?? 0) > 0
@@ -111,7 +111,7 @@ export function InteriorSection() {
             size="sm"
             className="w-full justify-start text-accent"
             leftIcon={<ScanToolIcon size="xs" />}
-            onClick={() => startScan('interior_link')}
+            onClick={() => startScan('interior_link', { phone: !isDesktop })}
             data-help-target={SCAN_TOOL_TARGET}
           >
             {t('binDesigner.interior.scanLink')}

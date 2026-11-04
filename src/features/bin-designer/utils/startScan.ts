@@ -27,14 +27,17 @@ export function selectCanStartScan(state: { readonly params: BinParams }): boole
 }
 
 /**
- * Open the cut editor on the bin with the "Scan a tool" dialog up, switching
- * the interior to Custom Cutouts first the way its card does (one undo step).
- * `growBin` makes each scan added in this dialog grow the bin to fit.
+ * Open scanning on the bin, switching the interior to Custom Cutouts first the
+ * way its card does (one undo step). On desktop that is the cut editor with the
+ * "Scan a tool" dialog up, where `growBin` makes each scan grow the bin to fit.
+ * Below desktop, where the editor doesn't render, it is the phone scan flow.
  */
-export function startScan(source: ScanSource, { growBin = false } = {}): void {
-  const { params, setParams, setInteriorCard, openScanDialog } = useDesignerStore.getState();
+export function startScan(source: ScanSource, { growBin = false, phone = false } = {}): void {
+  const { params, setParams, setInteriorCard, openScanDialog, openPhoneScan } =
+    useDesignerStore.getState();
   const next = asCustomCutouts(params);
   if (next !== params) setParams(next);
   setInteriorCard('solid');
-  openScanDialog(source, growBin);
+  if (phone) openPhoneScan(source);
+  else openScanDialog(source, growBin);
 }

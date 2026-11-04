@@ -19,11 +19,13 @@ describe('useScanDialogFollowsWorkspace', () => {
     expect(useDesignerStore.getState().ui.scanDialogSource).toBeNull();
   });
 
-  it('closes the dialog when the designer is left', () => {
+  it('closes the dialog and the phone flow when the designer is left', () => {
     useDesignerStore.getState().openScanDialog('palette', true);
+    useDesignerStore.getState().openPhoneScan('card');
     const { unmount } = renderHook(() => useScanDialogFollowsWorkspace(true));
     unmount();
     expect(useDesignerStore.getState().ui.scanDialogSource).toBeNull();
     expect(useDesignerStore.getState().ui.growBinForScan).toBe(false);
+    expect(useDesignerStore.getState().ui.phoneScanSource).toBeNull();
   });
 });

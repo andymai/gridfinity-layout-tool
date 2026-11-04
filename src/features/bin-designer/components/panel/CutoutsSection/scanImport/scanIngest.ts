@@ -64,6 +64,20 @@ export function computeScanBounds(specs: readonly ParsedCutoutSpec[]): ScanBound
  * Rejects outlines that parse but have zero size — the scale-confirm step
  * divides by the longest side, and a degenerate outline can't be placed.
  */
+/** The millimetres typed for a pixel scan's longest side, or null while it isn't a size. */
+export function scaleTargetMm(targetText: string): number | null {
+  const mm = parseFloat(targetText);
+  return Number.isFinite(mm) && mm > 0 ? mm : null;
+}
+
+/**
+ * Whether the outline is already in true millimetres (a size reference was in
+ * the photo), so it can become cutouts without asking for a measurement.
+ */
+export function isScaledScan(svg: string): boolean {
+  return /data-scan-units\s*=\s*["']mm["']/.test(svg);
+}
+
 export function parseScanSvg(svgString: string): Result<ParsedScan, SvgImportError> {
   const parsed = parseSvgString(svgString);
   if (!isOk(parsed)) return parsed;

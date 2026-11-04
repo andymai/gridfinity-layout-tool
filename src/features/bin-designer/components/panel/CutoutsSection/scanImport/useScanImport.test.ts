@@ -21,6 +21,7 @@ let mockGrowBin = false;
 const mockSetParams = vi.fn((partial: Partial<BinParams>) => {
   mockParams = { ...mockParams, ...partial };
 });
+const mockUpdateBatch = vi.fn((_updates: ReadonlyMap<string, Partial<Cutout>>) => undefined);
 
 vi.mock('@/features/bin-designer/store', async () => {
   const { remainingCutoutCapacity } = await vi.importActual<{
@@ -30,6 +31,7 @@ vi.mock('@/features/bin-designer/store', async () => {
     selector({
       addCutout: mockAddCutout,
       setParams: mockSetParams,
+      updateCutoutsBatch: mockUpdateBatch,
       startTransaction: mockStartTransaction,
       commitTransaction: mockCommitTransaction,
       queueDepthPrompt: mockQueueDepthPrompt,
@@ -233,6 +235,31 @@ describe('useScanImport', () => {
 
     expect(() => result.current.addScanCutouts([spec()])).toThrow('boom');
     expect(mockCommitTransaction).toHaveBeenCalledOnce();
+  });
+
+  describe('packing for a phone', () => {
+    it('adds each tool on its own, then packs and grows inside the one transaction', () => {
+      const added: Cutout[] = [];
+      mockAddCutout.mockImplementation((c: Cutout) => {
+        added.push(c);
+        mockParams = { ...mockParams, cutouts: [...mockParams.cutouts, c] };
+        return true;
+      });
+      const { result } = renderHook(() => useScanImport());
+      result.current.addScanCutouts(
+        // Too long for the 5-unit bin even turned upright, so it has to grow.
+        [spec({ width: 250, depth: 30 }), spec({ width: 40, depth: 20 })],
+        undefined,
+        { pack: true }
+      );
+
+      expect(added.every((c) => c.parentGroups === undefined)).toBe(true);
+      expect(mockSetParams).toHaveBeenCalledOnce();
+      expect(mockUpdateBatch).toHaveBeenCalledOnce();
+      const commit = mockCommitTransaction.mock.invocationCallOrder[0];
+      expect(mockUpdateBatch.mock.invocationCallOrder[0]).toBeLessThan(commit);
+      mockAddCutout.mockImplementation((_c: Cutout) => true);
+    });
   });
 
   describe('a bin started for the scan', () => {

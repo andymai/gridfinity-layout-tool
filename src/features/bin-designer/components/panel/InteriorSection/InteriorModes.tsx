@@ -24,6 +24,7 @@ import { BentoMiniPreview } from './BentoMiniPreview';
 import { BentoIcon } from './icons';
 import type { InteriorCard } from '../../../types';
 import { startScan } from '../../../utils/startScan';
+import { ToolThicknessPrompt } from '../CutoutsSection/ToolThicknessPrompt';
 import { SCAN_TOOL_TARGET } from '../../../search/designerControlRegistry';
 
 function BentoModeContent() {
@@ -88,6 +89,7 @@ function SolidModeContent() {
     }))
   );
   const cutEditorOpens = useCutEditorOpens();
+  const { isDesktop } = useResponsive();
   const t = useTranslation();
 
   // Asking the engine rather than reading `base.lightweight` directly. Three
@@ -136,19 +138,20 @@ function SolidModeContent() {
           ) : undefined
         }
       />
-      {cutEditorOpens && (
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          fullWidth
-          leftIcon={<ScanToolIcon size="xs" />}
-          onClick={() => startScan('card')}
-          data-help-target={SCAN_TOOL_TARGET}
-        >
-          {t('binDesigner.cutouts.scanImport.title')}
-        </Button>
-      )}
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        fullWidth
+        leftIcon={<ScanToolIcon size="xs" />}
+        onClick={() => startScan('card', { phone: !isDesktop })}
+        data-help-target={SCAN_TOOL_TARGET}
+      >
+        {t('binDesigner.cutouts.scanImport.title')}
+      </Button>
+      {/* The editor asks how thick a scanned tool is; off desktop it isn't
+          there, so the panel asks instead. */}
+      {!isDesktop && <ToolThicknessPrompt placement="panel" />}
     </div>
   );
 }

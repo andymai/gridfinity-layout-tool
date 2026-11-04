@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { useDestinationLabel, useEntryActivation } from './whatsNewShared';
 import type { WhatsNewAction, WhatsNewEntry } from '@/features/whats-new';
@@ -7,11 +7,6 @@ import { useLabsStore } from '@/core/store/labs';
 import { useViewStore } from '@/core/store/view';
 import { resetAllStores } from '@/test/testUtils';
 import { useScanLaunchStore } from '@/core/store/scanLaunch';
-
-const viewport = vi.hoisted(() => ({ isDesktop: true }));
-vi.mock('@/shared/hooks/useResponsive', () => ({
-  useResponsive: () => ({ isDesktop: viewport.isDesktop }),
-}));
 
 function entry(overrides: Partial<WhatsNewEntry> = {}): WhatsNewEntry {
   return { id: 'e', date: '2026-08-24', title: { en: 'An entry' }, ...overrides };
@@ -33,7 +28,6 @@ describe('useEntryActivation', () => {
     resetAllStores();
     useLabsStore.setState({ isDrawerOpen: false });
     useScanLaunchStore.setState({ request: null });
-    viewport.isDesktop = true;
     window.history.pushState(null, '', '/');
   });
 
@@ -50,13 +44,6 @@ describe('useEntryActivation', () => {
     window.history.pushState(null, '', '/designer');
     activateWith(entry({ action: { kind: 'scanTool' } }));
     expect(useScanLaunchStore.getState().request).toMatchObject({ newBin: false });
-  });
-
-  it('only opens the designer off desktop, where the cut editor does not render', () => {
-    viewport.isDesktop = false;
-    activateWith(entry({ action: { kind: 'scanTool' } }));
-    expect(window.location.pathname).toBe('/designer');
-    expect(useScanLaunchStore.getState().request).toBeNull();
   });
 
   it.each([

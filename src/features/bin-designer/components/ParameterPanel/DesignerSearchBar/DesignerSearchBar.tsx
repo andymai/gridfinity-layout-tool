@@ -6,7 +6,6 @@ import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest';
 import { selectCanStartScan } from '@/features/bin-designer/utils/startScan';
-import { useResponsive } from '@/shared/hooks/useResponsive';
 import { binHasText } from '@/features/bin-designer/utils/binText';
 import {
   useDesignerSettingsSearch,
@@ -52,8 +51,7 @@ export function DesignerSearchBar({ viewMode, needsSplit }: DesignerSearchBarPro
   );
   const slideTrayEnabled = useFeatureFlag('sliding_tray');
   const slantVisible = useSlantVisible();
-  const { isDesktop } = useResponsive();
-  const scanAvailable = useDesignerStore(selectCanStartScan) && isDesktop;
+  const scanAvailable = useDesignerStore(selectCanStartScan);
   // Memoized so the search hook's `useMemo` isn't defeated by a fresh object
   // every render.
   const ctx = useMemo(

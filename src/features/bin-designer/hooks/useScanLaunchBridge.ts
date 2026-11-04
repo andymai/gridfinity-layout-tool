@@ -59,8 +59,8 @@ export function useScanLaunchBridge(): void {
       setParams({ base: DEFAULT_BIN_PARAMS.base });
       if (!canStartScan(useDesignerStore.getState().params)) setParams({ ...DEFAULT_BIN_PARAMS });
     }
-    startScan(pending.source, { growBin: true });
-  }, [currentDesignId]);
+    startScan(pending.source, { growBin: true, phone: !isDesktop });
+  }, [currentDesignId, isDesktop]);
 
   useEffect(() => {
     if (!request) return;
@@ -72,11 +72,11 @@ export function useScanLaunchBridge(): void {
     }
     if (currentDesignId === null || variant.isLoading) return;
     const taken = useScanLaunchStore.getState().takeRequest();
-    if (!taken || Date.now() - taken.requestedAt > SCAN_LAUNCH_STALE_MS || !isDesktop) return;
+    if (!taken || Date.now() - taken.requestedAt > SCAN_LAUNCH_STALE_MS) return;
 
     const { itemKind, params } = useDesignerStore.getState();
     if (!taken.newBin && itemKind === 'bin' && !variant.isVariant && canStartScan(params)) {
-      startScan(taken.source);
+      startScan(taken.source, { phone: !isDesktop });
       return;
     }
 

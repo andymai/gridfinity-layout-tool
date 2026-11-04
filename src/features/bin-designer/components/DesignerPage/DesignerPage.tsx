@@ -12,6 +12,7 @@
 import { ExportDialog } from '@/features/bin-designer/components/ExportDialog';
 import { VersionHistory } from '@/features/bin-designer/components/VersionHistory';
 import { DesignListDialog } from '@/features/bin-designer/components/DesignListDialog';
+import { PhoneScanDialog } from '@/features/bin-designer/components/PhoneScanDialog';
 import { useGeneration } from '@/features/bin-designer/hooks/useGeneration';
 import { useSyncPhysicalUnits } from '@/features/bin-designer/hooks/useSyncPhysicalUnits';
 import { useDesignerInit } from '@/features/bin-designer/hooks/useDesignerInit';
@@ -158,6 +159,7 @@ export function DesignerPage() {
       <ExportDialog />
       <DesignListDialog open={designListOpen} onClose={() => setDesignListOpen(false)} />
       <VersionHistory open={versionsOpen} onClose={() => setVersionsOpen(false)} />
+      {!isDesktop && <PhoneScanDialog />}
     </div>
   );
 }
