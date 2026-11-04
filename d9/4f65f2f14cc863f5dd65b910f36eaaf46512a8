@@ -1,0 +1,21 @@
+src/features/bin-designer/components/CutoutWorkspace/usePhotoDropAndPaste.test.ts
+  s_169ca198965180::t_5009c659847c46 46-59
+src/features/bin-designer/components/CutoutWorkspace/usePhotoDropAndPaste.ts
+  s_169ca198965180::t_41d454731ff4e5 28-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d94f65f2f14cc863f5dd65b910f36eaaf46512a8",
+  "prompts": {},
+  "sessions": {
+    "s_169ca198965180": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7cae772c-5519-4831-875c-a4d30af16b6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
