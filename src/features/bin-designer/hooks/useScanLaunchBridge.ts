@@ -26,10 +26,38 @@ export function useScanLaunchBridge(): void {
   const busy = useRef(false);
   // A new bin takes two steps: `newDesign()` clears the id, and the scan opens
   // once init assigns the fresh one, so auto-save tracks the bin it lands in.
-  const awaitingNewBin = useRef<ScanLaunchSource | null>(null);
+  const awaitingNewBin = useRef<{
+    readonly source: ScanLaunchSource;
+    readonly since: number;
+  } | null>(null);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  // Before the request effect, so a fresh id finishes the pending bin first. A
+  // bin init never gave an id to is abandoned rather than opened on whatever
+  // design turns up later.
+  useEffect(() => {
+    const pending = awaitingNewBin.current;
+    if (pending === null || currentDesignId === null) return;
+    awaitingNewBin.current = null;
+    if (Date.now() - pending.since > SCAN_LAUNCH_STALE_MS) return;
+    startScan(pending.source, { growBin: true });
+  }, [currentDesignId]);
 
   useEffect(() => {
-    if (!request || currentDesignId === null || busy.current || awaitingNewBin.current) return;
+    if (!request) return;
+    // One launch at a time: a request made while a new bin is on its way is
+    // dropped, not queued behind it.
+    if (busy.current || awaitingNewBin.current) {
+      useScanLaunchStore.getState().takeRequest();
+      return;
+    }
+    if (currentDesignId === null) return;
     const taken = useScanLaunchStore.getState().takeRequest();
     if (!taken || Date.now() - taken.requestedAt > SCAN_LAUNCH_STALE_MS || !isDesktop) return;
 
@@ -43,7 +71,7 @@ export function useScanLaunchBridge(): void {
     const fromId = currentDesignId;
     void settleDesignSaves().then((saved) => {
       busy.current = false;
-      if (useDesignerStore.getState().currentDesignId !== fromId) return;
+      if (!mounted.current || useDesignerStore.getState().currentDesignId !== fromId) return;
       if (!saved) {
         useToastStore.getState().addToast({
           message: getStaticTranslation('header.saveFailed'),
@@ -52,16 +80,9 @@ export function useScanLaunchBridge(): void {
         });
         return;
       }
-      awaitingNewBin.current = taken.source;
+      awaitingNewBin.current = { source: taken.source, since: Date.now() };
       useDesignerStore.getState().newDesign();
       syncUrlToDesign(null);
     });
   }, [request, currentDesignId, isDesktop, syncUrlToDesign]);
-
-  useEffect(() => {
-    const source = awaitingNewBin.current;
-    if (source === null || currentDesignId === null) return;
-    awaitingNewBin.current = null;
-    startScan(source, { growBin: true });
-  }, [currentDesignId]);
 }
