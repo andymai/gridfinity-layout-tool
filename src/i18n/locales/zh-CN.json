@@ -4898,6 +4898,7 @@
   "toast.svgExport.nothingToExport": "所选内容中没有可导出的轮廓",
   "toast.scanImport.parseFailed": "无法读取该轮廓。请尝试在纯色、高对比度的背景上拍照。",
   "toast.scanImport.success": "已从你的扫描添加 {count} 个挖槽",
+  "toast.scanImport.offFloor": "已添加 {count} 个挖槽，但并非全部都能放进这个收纳盒。请在电脑上移动它们。",
   "toast.selectedAll": "已选中 {count} 个收纳盒",
   "toast.selectedByCategory": "已选中 {count} 个 {name} 收纳盒",
   "toast.selectionInverted": "已反选（{count} 个收纳盒）",

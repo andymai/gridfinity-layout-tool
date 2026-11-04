@@ -99,7 +99,7 @@ export function DesignerPage() {
     (s) => s.ui.cutoutEditorOpen && (s.ui.cutoutTarget === 'lid' || s.params.style === 'solid')
   );
   const bentoWorkspaceOpen = useDesignerStore((s) => s.ui.bentoWorkspaceOpen);
-  useScanDialogFollowsWorkspace(isDesktop && cutoutEditorOpen);
+  useScanDialogFollowsWorkspace(isDesktop && cutoutEditorOpen, !isDesktop);
   const designListOpen = useDesignerStore((s) => s.ui.designListOpen);
   const versionsOpen = useDesignerStore((s) => s.ui.versionsOpen);
   const setVersionsOpen = useDesignerStore((s) => s.setVersionsOpen);

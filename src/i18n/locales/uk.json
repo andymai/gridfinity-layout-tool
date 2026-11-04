@@ -4898,6 +4898,7 @@
   "toast.svgExport.nothingToExport": "Ніщо у виділенні не має контуру для експорту",
   "toast.scanImport.parseFailed": "Не вдалося зчитати контур. Спробуйте фото на однотонному контрастному тлі.",
   "toast.scanImport.success": "Додано {count} виріз(и) зі сканування",
+  "toast.scanImport.offFloor": "Додано {count} виріз(и), але не всі вміщаються у цей бін. Перемістіть їх на комп’ютері.",
   "toast.selectedAll": "Виділено {count} бінів",
   "toast.selectedByCategory": "Виділено {count} бінів категорії {name}",
   "toast.selectionInverted": "Виділення інвертовано ({count} бінів)",

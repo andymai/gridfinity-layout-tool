@@ -23,6 +23,8 @@ import {
   type ParsedScan,
 } from '../panel/CutoutsSection/scanImport';
 import { ScanScaleField } from '../panel/CutoutsSection/scanImport/ScanScaleField';
+import { binBoard } from '../panel/CutoutsSection/packIntoBin';
+import { getOffBoardCutoutIds } from '../panel/CutoutsSection/offBoardCutouts';
 import type { ParsedCutoutSpec } from '../panel/CutoutsSection/svgImport/types';
 
 // The segmenter and its model load only once someone scans.
@@ -62,13 +64,18 @@ export function PhoneScanDialog() {
   const land = useCallback(
     (specs: readonly ParsedCutoutSpec[], targetMm?: number) => {
       const count = addScanCutouts(specs, undefined, { pack: true });
+      // Packing grows the bin, but not past the size limit or a custom
+      // footprint, and there's no editor here to show what didn't fit.
+      const { params } = useDesignerStore.getState();
+      const offFloor = getOffBoardCutoutIds(params.cutouts, binBoard(params)).size > 0;
       trackEvent('scan_import', {
         success: true,
         shape_count: count,
         source: 'phone_app',
         ...(targetMm === undefined ? {} : { target_mm: targetMm }),
       });
-      addToast(t('toast.scanImport.success', { count }), 'success');
+      if (offFloor) addToast(t('toast.scanImport.offFloor', { count }), 'info');
+      else addToast(t('toast.scanImport.success', { count }), 'success');
       close();
     },
     [addScanCutouts, addToast, t, close]
@@ -81,8 +88,12 @@ export function PhoneScanDialog() {
         trackEvent('scan_import', { success: false, error_code: parsed.error.code });
         return Promise.resolve({ kind: 'error', messageKey: 'toast.scanImport.parseFailed' });
       }
-      if (isScaledScan(svg)) land(parsed.value.specs);
-      else setPending({ svg, parsed: parsed.value });
+      if (isScaledScan(svg)) {
+        land(parsed.value.specs);
+      } else {
+        setTargetText('');
+        setPending({ svg, parsed: parsed.value });
+      }
       return Promise.resolve({ kind: 'taken' });
     },
     [land]

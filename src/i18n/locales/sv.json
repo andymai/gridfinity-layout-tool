@@ -4898,6 +4898,7 @@
   "toast.svgExport.nothingToExport": "Inget i markeringen har en kontur att exportera",
   "toast.scanImport.parseFailed": "Det gick inte att läsa konturen. Prova ett foto mot en enfärgad bakgrund med god kontrast.",
   "toast.scanImport.success": "La till {count} urskärning(ar) från din skanning",
+  "toast.scanImport.offFloor": "La till {count} urskärning(ar), men alla får inte plats i det här facket. Flytta dem på en dator.",
   "toast.selectedAll": "Markerade {count} fack",
   "toast.selectedByCategory": "Markerade {count} {name}-fack",
   "toast.selectionInverted": "Markeringen inverterad ({count} fack)",

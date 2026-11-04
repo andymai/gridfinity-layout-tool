@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, Cutout } from '@/features/bin-designer/types';
+import type { CellMask } from '@/shared/utils/cellMask';
 import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import { packIntoBin } from './packIntoBin';
-import { getCutoutBounds } from './maskFit';
+import { getCutoutBounds, rectFitsInMask } from './maskFit';
 import { translateCutoutPreview } from './cutoutHelpers';
 
 const rect = (id: string, width: number, depth: number): Cutout => ({
@@ -43,6 +44,34 @@ describe('packIntoBin', () => {
     const params = bin([rect('a', 20, 10), rect('b', 15, 15)]);
     expect(packIntoBin(params, false).size).toBeNull();
     expect(landsInside(params)).toBe(true);
+  });
+
+  it('grows by half units in half-grid mode', () => {
+    const params = bin([rect('a', 95, 20)]);
+    expect(packIntoBin(params, true).size).toEqual({ width: 2.5, depth: 2 });
+    expect(landsInside(params, true)).toBe(true);
+    expect(packIntoBin(params, false).size).toEqual({ width: 3, depth: 2 });
+  });
+
+  it('packs new tools around a locked pocket', () => {
+    const pinned = { ...rect('pinned', 30, 30), x: 2, y: 2, locked: true };
+    const params = bin([pinned, rect('a', 20, 20)]);
+    const { placements } = packIntoBin(params, false);
+    const a = getCutoutBounds(translateCutoutPreview(rect('a', 20, 20), placements.a));
+    const p = getCutoutBounds(pinned);
+    expect(placements.pinned).toBeUndefined();
+    expect(a.minX >= p.maxX || a.minY >= p.maxY).toBe(true);
+  });
+
+  it("keeps tools out of a custom footprint's notch", () => {
+    // Bottom-left cell missing: an L-shaped 2x2 bin.
+    const mask: CellMask = { cols: 2, rows: 2, cells: [0, 1, 1, 1] };
+    const params: BinParams = { ...bin([rect('a', 20, 20)]), cellMask: mask };
+    const { innerW, innerD } = cutoutInterior(params);
+    const { placements } = packIntoBin(params, false);
+    const b = getCutoutBounds(translateCutoutPreview(rect('a', 20, 20), placements.a));
+    const cell = { cellMmX: innerW / 2, cellMmY: innerD / 2 };
+    expect(rectFitsInMask(mask, b.minX, b.minY, 20, 20, cell)).toBe(true);
   });
 
   it('grows the bin until a long tool and its neighbours fit', () => {

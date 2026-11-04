@@ -4898,6 +4898,7 @@
   "toast.svgExport.nothingToExport": "選択範囲にエクスポートできる輪郭がありません",
   "toast.scanImport.parseFailed": "その輪郭を読み取れませんでした。無地でコントラストの高い背景で撮影してください。",
   "toast.scanImport.success": "スキャンから{count}個の切り抜きを追加しました",
+  "toast.scanImport.offFloor": "{count}個の切り抜きを追加しましたが、すべてはこのビンに収まりません。コンピューターで移動してください。",
   "toast.selectedAll": "{count}個のビンを選択しました",
   "toast.selectedByCategory": "{count}個の{name}ビンを選択しました",
   "toast.selectionInverted": "選択を反転しました({count}個のビン)",
