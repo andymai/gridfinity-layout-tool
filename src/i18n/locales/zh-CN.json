@@ -1008,6 +1008,8 @@
   "binDesigner.cutouts.scanImport.done": "完成",
   "binDesigner.cutouts.scanImport.emptyHelp": "拍摄任意工具，自动描摹其精确轮廓。",
   "binDesigner.cutouts.dropPhoto": "放下照片即可描摹",
+  "binDesigner.cutouts.phoneList.title": "此收纳盒中的凹槽",
+  "binDesigner.cutouts.phoneList.hint": "移动和调整形状请在电脑上进行。",
   "binDesigner.cutouts.traceView.title": "描摹照片",
   "binDesigner.cutouts.traceView.open": "用这台电脑上的照片",
   "binDesigner.cutouts.traceView.openHelp": "使用你已有的照片。照片不会离开这台电脑。",

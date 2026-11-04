@@ -1008,6 +1008,8 @@
   "binDesigner.cutouts.scanImport.done": "Ferdig",
   "binDesigner.cutouts.scanImport.emptyHelp": "Ta bilde av et hvilket som helst verktøy for å spore omrisset automatisk.",
   "binDesigner.cutouts.dropPhoto": "Slipp et bilde for å spore det",
+  "binDesigner.cutouts.phoneList.title": "Fordypninger i denne binen",
+  "binDesigner.cutouts.phoneList.hint": "Flytt og form dem om på en datamaskin.",
   "binDesigner.cutouts.traceView.title": "Spor et bilde",
   "binDesigner.cutouts.traceView.open": "Fra et bilde på denne datamaskinen",
   "binDesigner.cutouts.traceView.openHelp": "Bruk et bilde du allerede har. Det forlater aldri denne datamaskinen.",

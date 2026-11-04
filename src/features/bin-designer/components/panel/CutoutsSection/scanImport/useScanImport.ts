@@ -10,18 +10,19 @@ import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore, remainingCutoutCapacity } from '@/features/bin-designer/store';
 import { defaultEntryChamfer } from '@/features/bin-designer/types';
-import type { BinParams, Cutout } from '@/features/bin-designer/types';
-import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
+import type { Cutout } from '@/features/bin-designer/types';
 import { specToCutout, DEFAULT_CUT_DEPTH } from '../svgImport/specToCutout';
 import type { ParsedCutoutSpec } from '../svgImport/types';
 import { byDescendingArea } from '../importStackOrder';
-import { centerOffBoardCutouts, type CutoutBoard } from '../offBoardCutouts';
+import { centerOffBoardCutouts } from '../offBoardCutouts';
 import { generateLayoutId, generateUUID } from '@/shared/utils/uuid';
 import { SCAN_CLEARANCE_MM } from '@/shared/scanReview/traceExport';
 import { computeGrowToFit } from '../growBinToFit';
 import { getCutoutBounds } from '../maskFit';
 import { translateCutout } from '../cutoutHelpers';
-import { packIntoBin } from '../packIntoBin';
+// The scan entry point is hidden while the lid is the target, so a scan always
+// lands on the bin's floor.
+import { binBoard, packIntoBin } from '../packIntoBin';
 
 export interface UseScanImportReturn {
   /**
@@ -34,19 +35,6 @@ export interface UseScanImportReturn {
     cutDepth?: number,
     options?: { readonly pack?: boolean }
   ) => number;
-}
-
-// The bin's floor, as CutoutWorkspace builds it. The scan entry point is hidden
-// while the lid is the target, so a scan always lands on the bin.
-function binBoard(params: BinParams): CutoutBoard {
-  const { innerW, innerD } = cutoutInterior(params);
-  const mask = params.cellMask;
-  return {
-    width: innerW,
-    depth: innerD,
-    mask,
-    cellSize: mask ? { cellMmX: innerW / mask.cols, cellMmY: innerD / mask.rows } : undefined,
-  };
 }
 
 function withScanFit(cutout: Cutout, cutDepth: number): Cutout {

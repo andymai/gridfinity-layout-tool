@@ -25,6 +25,7 @@ import { BentoIcon } from './icons';
 import type { InteriorCard } from '../../../types';
 import { startScan } from '../../../utils/startScan';
 import { ToolThicknessPrompt } from '../CutoutsSection/ToolThicknessPrompt';
+import { PhoneToolList } from '../../PhoneToolList';
 import { SCAN_TOOL_TARGET } from '../../../search/designerControlRegistry';
 
 function BentoModeContent() {
@@ -152,6 +153,7 @@ function SolidModeContent() {
       {/* The editor asks how thick a scanned tool is; off desktop it isn't
           there, so the panel asks instead. */}
       {!isDesktop && <ToolThicknessPrompt placement="panel" />}
+      {!isDesktop && <PhoneToolList />}
     </div>
   );
 }

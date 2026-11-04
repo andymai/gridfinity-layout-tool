@@ -1008,6 +1008,8 @@
   "binDesigner.cutouts.scanImport.done": "Gotowe",
   "binDesigner.cutouts.scanImport.emptyHelp": "Sfotografuj dowolne narzędzie, aby automatycznie odrysować jego dokładny obrys.",
   "binDesigner.cutouts.dropPhoto": "Upuść zdjęcie, aby je obrysować",
+  "binDesigner.cutouts.phoneList.title": "Wgłębienia w tym binie",
+  "binDesigner.cutouts.phoneList.hint": "Przesuwać i zmieniać ich kształt możesz na komputerze.",
   "binDesigner.cutouts.traceView.title": "Obrysuj zdjęcie",
   "binDesigner.cutouts.traceView.open": "Ze zdjęcia na tym komputerze",
   "binDesigner.cutouts.traceView.openHelp": "Użyj zdjęcia, które już masz. Nigdy nie opuszcza tego komputera.",
