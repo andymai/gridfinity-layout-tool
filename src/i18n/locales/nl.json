@@ -1010,6 +1010,7 @@
   "binDesigner.cutouts.dropPhoto": "Laat een foto los om hem over te trekken",
   "binDesigner.cutouts.phoneList.title": "Uitsparingen in deze bin",
   "binDesigner.cutouts.phoneList.hint": "Verplaats en vervorm ze op een computer.",
+  "binDesigner.cutouts.phoneList.offFloor": "Niet alle uitsparingen passen in deze bin. Verplaats ze op een computer.",
   "binDesigner.cutouts.traceView.title": "Foto overtrekken",
   "binDesigner.cutouts.traceView.open": "Vanaf een foto op deze computer",
   "binDesigner.cutouts.traceView.openHelp": "Gebruik een foto die je al hebt. Hij verlaat deze computer nooit.",

@@ -23,8 +23,7 @@ import {
   type ParsedScan,
 } from '../panel/CutoutsSection/scanImport';
 import { ScanScaleField } from '../panel/CutoutsSection/scanImport/ScanScaleField';
-import { binBoard } from '../panel/CutoutsSection/packIntoBin';
-import { getOffBoardCutoutIds } from '../panel/CutoutsSection/offBoardCutouts';
+import { offFloorIds } from '../panel/CutoutsSection/packIntoBin';
 import type { ParsedCutoutSpec } from '../panel/CutoutsSection/svgImport/types';
 
 // The segmenter and its model load only once someone scans.
@@ -37,11 +36,6 @@ const ScanCaptureFlow = lazyWithRetry(() =>
 interface PendingScale {
   readonly svg: string;
   readonly parsed: ParsedScan;
-}
-
-function offFloorIds(): ReadonlySet<string> {
-  const { params } = useDesignerStore.getState();
-  return getOffBoardCutoutIds(params.cutouts, binBoard(params));
 }
 
 export function PhoneScanDialog() {
@@ -68,12 +62,13 @@ export function PhoneScanDialog() {
 
   const land = useCallback(
     (specs: readonly ParsedCutoutSpec[], targetMm?: number) => {
-      const before = offFloorIds();
+      const before = offFloorIds(useDesignerStore.getState().params);
       const count = addScanCutouts(specs, undefined, { pack: true });
       // Packing grows the bin, but not past the size limit or a custom
       // footprint, and there's no editor here to show what didn't fit. A locked
       // pocket already off the floor isn't this scan's doing.
-      const offFloor = [...offFloorIds()].some((id) => !before.has(id));
+      const after = offFloorIds(useDesignerStore.getState().params);
+      const offFloor = [...after].some((id) => !before.has(id));
       trackEvent('scan_import', {
         success: true,
         shape_count: count,

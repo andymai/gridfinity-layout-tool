@@ -167,6 +167,30 @@ describe('autoArrangeCutouts', () => {
       expect(result.a).toEqual({ x: 2, y: 34 });
     });
 
+    it('measures a path by its points when it keeps its angle', () => {
+      const corner = (x: number, y: number) => ({
+        x,
+        y,
+        handleIn: null,
+        handleOut: null,
+        symmetric: false,
+      });
+      const traced: Cutout = {
+        ...createCutout('traced', 20, 10),
+        shape: 'path',
+        path: [corner(0, 0), corner(40, 0), corner(40, 10), corner(0, 10)],
+      };
+
+      const result = autoArrangeCutouts([traced, createCutout('next', 10, 10)], {
+        binWidth: 100,
+        binDepth: 100,
+        gap: 2,
+      });
+
+      // Its points span 40mm though its width still reads 20.
+      expect(result.next.x).toBeCloseTo(44);
+    });
+
     it('keeps clear of keep-out floor', () => {
       const cutouts = [createCutout('a', 20, 20)];
 

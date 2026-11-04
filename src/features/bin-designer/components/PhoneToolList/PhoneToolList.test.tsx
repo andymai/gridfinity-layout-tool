@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { act, render, screen, fireEvent } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
+import { useToastStore } from '@/core/store/toast';
+import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import type { Cutout } from '@/features/bin-designer/types';
+import type { CellMask } from '@/shared/utils/cellMask';
 import { binBoard } from '../panel/CutoutsSection/packIntoBin';
 import { getOffBoardCutoutIds } from '../panel/CutoutsSection/offBoardCutouts';
 import { PhoneToolList } from './PhoneToolList';
@@ -35,6 +38,7 @@ const cutouts = () => useDesignerStore.getState().params.cutouts;
 describe('PhoneToolList', () => {
   beforeEach(() => {
     useDesignerStore.setState(useDesignerStore.getInitialState());
+    useToastStore.setState({ toasts: [] });
   });
 
   it('shows nothing for a bin without pockets', () => {
@@ -73,6 +77,52 @@ describe('PhoneToolList', () => {
     fireEvent.click(screen.getByTitle('Rotate 90°'));
     fireEvent.click(screen.getByText('Auto-arrange'));
     expect(cutouts()[0].rotation).toBe(90);
+  });
+
+  it('stays out of the way while the lid is the cut target', () => {
+    seed([rect('a', 2, 2, 30, 20)]);
+    act(() => useDesignerStore.setState((s) => ({ ui: { ...s.ui, cutoutTarget: 'lid' } })));
+    const { container } = render(<PhoneToolList />);
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('does not turn a locked pocket', () => {
+    seed([{ ...rect('a', 2, 2, 30, 10), locked: true }]);
+    render(<PhoneToolList />);
+    const turn = screen.getByTitle('Rotate 90°');
+    expect(turn).toBeDisabled();
+    fireEvent.click(turn);
+    expect(cutouts()[0].rotation).toBe(0);
+  });
+
+  it('offers no depth for text, which is cut to its style’s depth', () => {
+    seed([rect('a', 2, 2, 30, 20), { ...rect('t', 40, 2, 30, 10), shape: 'text', label: 'M3' }]);
+    render(<PhoneToolList />);
+    const [pocket, text] = screen.getAllByRole('listitem');
+    expect(pocket.querySelectorAll('input').length).toBeGreaterThan(0);
+    expect(text.querySelectorAll('input')).toHaveLength(0);
+  });
+
+  it('says so when a turn leaves a pocket past a custom footprint', () => {
+    seed([]);
+    // A 2x2 bin missing its bottom-left grid cell; masks are half-bin cells.
+    const cellMask: CellMask = {
+      cols: 4,
+      rows: 4,
+      cells: [0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    };
+    const { innerW, innerD } = cutoutInterior({ ...useDesignerStore.getState().params, cellMask });
+    // Fits standing in the right-hand column; laid flat, the packing's 2 mm
+    // margin pushes it past the far wall.
+    const tall = rect('a', innerW - 32, 0.5, 30, innerD - 1);
+    act(() =>
+      useDesignerStore.setState((s) => ({ params: { ...s.params, cellMask, cutouts: [tall] } }))
+    );
+    render(<PhoneToolList />);
+
+    fireEvent.click(screen.getByTitle('Rotate 90°'));
+    const [toast] = useToastStore.getState().toasts;
+    expect(toast.message).toBe('Not all pockets fit in this bin. Move them on a computer.');
   });
 
   it('packs the pockets again in one undo step', () => {

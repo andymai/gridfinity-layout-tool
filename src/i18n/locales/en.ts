@@ -3660,6 +3660,8 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.dropPhoto': 'Drop a photo to trace it',
   'binDesigner.cutouts.phoneList.title': 'Pockets in this bin',
   'binDesigner.cutouts.phoneList.hint': 'Move and reshape them on a computer.',
+  'binDesigner.cutouts.phoneList.offFloor':
+    'Not all pockets fit in this bin. Move them on a computer.',
   'binDesigner.cutouts.traceView.title': 'Trace a photo',
   'binDesigner.cutouts.traceView.open': 'From a photo on this computer',
   'binDesigner.cutouts.traceView.openHelp':

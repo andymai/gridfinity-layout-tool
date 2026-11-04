@@ -5,7 +5,7 @@ import { autoArrangeCutouts, type ArrangedPlacement } from './autoArrange';
 import { computeGrowToFit } from './growBinToFit';
 import { translateCutoutPreview } from './cutoutHelpers';
 import type { Bounds } from './geometryCore';
-import type { CutoutBoard } from './offBoardCutouts';
+import { getOffBoardCutoutIds, type CutoutBoard } from './offBoardCutouts';
 
 /** The editor's Arrange defaults, so a phone's packing matches what the editor would do. */
 const PACK_GAP_MM = 2;
@@ -17,7 +17,7 @@ export interface BinPacking {
   readonly placements: Readonly<Record<string, ArrangedPlacement>>;
 }
 
-/** The bin's floor, as `CutoutWorkspace` builds it. */
+/** The bin's floor as a cutout board: its interior, custom footprint and mesh outlines. */
 export function binBoard(params: BinParams): CutoutBoard {
   const { innerW, innerD } = cutoutInterior(params);
   const mask = params.cellMask;
@@ -28,6 +28,11 @@ export function binBoard(params: BinParams): CutoutBoard {
     cellSize: mask ? { cellMmX: innerW / mask.cols, cellMmY: innerD / mask.rows } : undefined,
     meshAssets: params.meshAssets,
   };
+}
+
+/** The pockets hanging past the bin's floor. */
+export function offFloorIds(params: BinParams): ReadonlySet<string> {
+  return getOffBoardCutoutIds(params.cutouts, binBoard(params));
 }
 
 /** A custom footprint's missing cells, in interior mm, scaled the way the editor's board is. */
@@ -47,7 +52,8 @@ function notches(mask: CellMask, innerW: number, innerD: number): Bounds[] {
 /**
  * Every cutout packed onto the floor, clear of locked pockets and a custom
  * footprint's notches, with the bin grown until the packing fits. `turn` turns
- * each tool to its tightest fit; without it every tool keeps the angle it has.
+ * each lone tool to its tightest fit (a group moves as one block and keeps its
+ * angle); without it every tool keeps the angle it has.
  * A packing growing can't fix (a custom footprint, the size limit) comes back
  * at the last size with pockets past the floor, which the caller checks for.
  */

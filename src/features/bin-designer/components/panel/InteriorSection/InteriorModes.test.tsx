@@ -35,6 +35,9 @@ vi.mock('../../../utils/startScan', () => ({ startScan: mocks.startScan }));
 vi.mock('../CutoutsSection/ToolThicknessPrompt', () => ({
   ToolThicknessPrompt: () => <div data-testid="thickness-prompt" />,
 }));
+vi.mock('../../PhoneToolList', () => ({
+  PhoneToolList: () => <div data-testid="tool-list" />,
+}));
 
 vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({
@@ -129,13 +132,14 @@ describe('InteriorModes', () => {
       expect(screen.queryByTestId('thickness-prompt')).toBeNull();
     });
 
-    it('offers the phone scan off desktop, and asks thickness in the panel', () => {
+    it('offers the phone scan off desktop, and asks thickness and lists pockets in the panel', () => {
       mocks.isDesktop = false;
       render(<InteriorModeContent card="solid" />);
 
       fireEvent.click(screen.getByText('binDesigner.cutouts.scanImport.title'));
       expect(mocks.startScan).toHaveBeenCalledWith('card', { phone: true });
       expect(screen.getByTestId('thickness-prompt')).toBeInTheDocument();
+      expect(screen.getByTestId('tool-list')).toBeInTheDocument();
     });
 
     it('offers a clip of the editor at work beside its launcher', () => {

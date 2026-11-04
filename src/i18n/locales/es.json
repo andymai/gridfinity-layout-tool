@@ -1010,6 +1010,7 @@
   "binDesigner.cutouts.dropPhoto": "Suelta una foto para calcarla",
   "binDesigner.cutouts.phoneList.title": "Huecos de este bin",
   "binDesigner.cutouts.phoneList.hint": "Muévelos y cambia su forma en un ordenador.",
+  "binDesigner.cutouts.phoneList.offFloor": "No todos los huecos caben en este bin. Muévelos en un ordenador.",
   "binDesigner.cutouts.traceView.title": "Trazar una foto",
   "binDesigner.cutouts.traceView.open": "Desde una foto en este ordenador",
   "binDesigner.cutouts.traceView.openHelp": "Usa una foto que ya tengas. Nunca sale de este ordenador.",

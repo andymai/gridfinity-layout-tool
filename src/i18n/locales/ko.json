@@ -1010,6 +1010,7 @@
   "binDesigner.cutouts.dropPhoto": "사진을 놓아 윤곽을 따세요",
   "binDesigner.cutouts.phoneList.title": "이 수납통의 포켓",
   "binDesigner.cutouts.phoneList.hint": "이동과 모양 변경은 컴퓨터에서 할 수 있습니다.",
+  "binDesigner.cutouts.phoneList.offFloor": "모든 포켓이 이 수납통에 들어가지는 않습니다. 컴퓨터에서 옮겨 주세요.",
   "binDesigner.cutouts.traceView.title": "사진 따라 그리기",
   "binDesigner.cutouts.traceView.open": "이 컴퓨터에 있는 사진으로",
   "binDesigner.cutouts.traceView.openHelp": "가지고 있는 사진을 사용하세요. 사진은 이 컴퓨터 밖으로 나가지 않습니다.",

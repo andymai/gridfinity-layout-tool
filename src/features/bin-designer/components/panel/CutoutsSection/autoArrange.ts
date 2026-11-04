@@ -14,6 +14,7 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
+import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { unitTag, unitTagShapeId } from '@/features/bin-designer/utils/cutoutHierarchy';
 import { toArrangeUnits, type ArrangeUnit } from './cutoutGroups';
 import type { Bounds } from './geometryCore';
@@ -58,7 +59,15 @@ function packed(
   const [only] = unit.members;
   // A group is one block at this level even when it holds a single shape.
   const tag = unit.members.length === 1 ? unitTag(only, context) : null;
-  if (!turn || tag === null || unitTagShapeId(tag) === null) return { unit, bounds: unit.bounds };
+  if (tag === null || unitTagShapeId(tag) === null) return { unit, bounds: unit.bounds };
+  // A path is measured by its points, as the board and grow-to-fit measure it;
+  // its width and depth can lag them. A repeat keeps the span of its instances.
+  if (!turn) {
+    return {
+      unit,
+      bounds: expandCutoutArray(only).length === 1 ? getCutoutBounds(only) : unit.bounds,
+    };
+  }
   const best = minAreaTurn(only);
   if (best === null) return { unit, bounds: unit.bounds };
   // Landscape fills rows best, but a shape too long for the bin's width lies

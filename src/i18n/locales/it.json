@@ -1010,6 +1010,7 @@
   "binDesigner.cutouts.dropPhoto": "Rilascia una foto per ricalcarla",
   "binDesigner.cutouts.phoneList.title": "Incavi di questo bin",
   "binDesigner.cutouts.phoneList.hint": "Spostali e modificane la forma da un computer.",
+  "binDesigner.cutouts.phoneList.offFloor": "Non tutte le tasche entrano in questo bin. Usa un computer per spostarle.",
   "binDesigner.cutouts.traceView.title": "Ricalca una foto",
   "binDesigner.cutouts.traceView.open": "Da una foto su questo computer",
   "binDesigner.cutouts.traceView.openHelp": "Usa una foto che hai già. Non lascia mai questo computer.",

@@ -1010,6 +1010,7 @@
   "binDesigner.cutouts.dropPhoto": "Foto hier ablegen, um es nachzuzeichnen",
   "binDesigner.cutouts.phoneList.title": "Aussparungen in diesem Bin",
   "binDesigner.cutouts.phoneList.hint": "Verschieben und umformen geht am Computer.",
+  "binDesigner.cutouts.phoneList.offFloor": "Nicht alle Taschen passen in diesen Bin. Verschiebe sie am Computer.",
   "binDesigner.cutouts.traceView.title": "Foto nachzeichnen",
   "binDesigner.cutouts.traceView.open": "Von einem Foto auf diesem Computer",
   "binDesigner.cutouts.traceView.openHelp": "Nutze ein Foto, das du schon hast. Es verlässt diesen Computer nie.",
