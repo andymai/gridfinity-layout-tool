@@ -142,6 +142,28 @@ export function assertSlidePathOpen(result: MeshData, params: BinParams, label: 
   }
 }
 
+/** An empty column would read as `undefined`, and every comparison with it would pass. */
+function highestCrossing(result: MeshData, x: number, y: number, label: string): number {
+  const hits = columnCrossings(result, x, y);
+  if (hits.length === 0) {
+    throw new Error(`${label}: nothing at (${x.toFixed(1)}, ${y.toFixed(1)})`);
+  }
+  return hits[hits.length - 1];
+}
+
+/** The rounded corner under a tab tops out at the tab's own shelf, read beside it. */
+export function assertCornerLevelWithTab(result: MeshData, params: BinParams, label: string): void {
+  const innerW = params.width * params.gridUnitMm - 0.5 - 2 * params.wallThickness;
+  const innerD = params.depth * params.gridUnitMm - 0.5 - 2 * params.wallThickness;
+  const shelf = highestCrossing(result, -innerW / 2 + 12, innerD / 2 - 7, label);
+  const corner = highestCrossing(result, -innerW / 2 + 1.5, innerD / 2 - 1.5, label);
+  if (Math.abs(corner - shelf) > 0.05) {
+    throw new Error(
+      `${label}: the corner tops out at ${corner.toFixed(2)}, the shelf at ${shelf.toFixed(2)}`
+    );
+  }
+}
+
 /**
  * A tab sunk below the interior ceiling stays level to its own edges: nothing
  * stands on it between its top and that ceiling. Above the ceiling is the lip,
@@ -165,14 +187,12 @@ export function assertShelfLevelAcrossTab(
   const slot = layout.plannedRows[0].slots[0];
   const { tabDepth } = layout.dims;
   const edgeY = slot.positionY - tabDepth + 0.25;
-  const edge = columnCrossings(result, slot.tabXStart + slot.tabWidth / 2, edgeY);
-  const shelfTop = edge[edge.length - 1];
+  const shelfTop = highestCrossing(result, slot.tabXStart + slot.tabWidth / 2, edgeY, exp.label);
 
   const proud: string[] = [];
   for (let x = slot.tabXStart + 0.1; x < slot.tabXStart + slot.tabWidth; x += 0.4) {
     for (let y = slot.positionY - 0.1; y > slot.positionY - tabDepth; y -= 0.4) {
-      const hits = columnCrossings(result, x, y);
-      const top = hits[hits.length - 1];
+      const top = highestCrossing(result, x, y, exp.label);
       if (top > shelfTop + 0.05 && top < shelfTop + exp.sunkMm + 0.05) {
         proud.push(`(${x.toFixed(1)}, ${y.toFixed(1)}) at ${top.toFixed(2)}`);
       }
@@ -197,8 +217,7 @@ export function assertShelfLevelAcrossTab(
   )) {
     for (const x of [box.x0 + 0.3, box.x1 - 0.3]) {
       for (const y of [box.y0 + 0.3, box.y1 - 0.3]) {
-        const hits = columnCrossings(result, x, y);
-        const top = hits[hits.length - 1];
+        const top = highestCrossing(result, x, y, exp.label);
         if (Math.abs(top - floorZ) > 0.05) {
           throw new Error(
             `${exp.label}: pocket corner (${x.toFixed(1)}, ${y.toFixed(1)}) reads ` +

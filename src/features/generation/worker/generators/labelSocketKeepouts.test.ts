@@ -4,6 +4,7 @@ import type { BinParams } from '@/shared/types/bin';
 import { LABEL_SOCKET_STACK_RELIEF_MM } from '@/shared/constants/labelPlates';
 import { planLabelShelfKeepouts, planLabelSocketKeepouts } from './labelSocketKeepouts';
 import { planLabelPlateSeats } from './labelTabBuilder';
+import { deriveDimensions } from './pipeline/context';
 
 const INNER_W = 79.5;
 const INNER_D = 36.7;
@@ -116,5 +117,58 @@ describe('planLabelShelfKeepouts', () => {
     expect(
       plan({ ...lipped(), cellMask: { cols: 4, rows: 2, cells: [1, 1, 1, 1, 1, 1, 0, 0] } })
     ).toEqual([]);
+  });
+});
+
+describe('shell key on a rim-rounded bin that bakes the fillet in', () => {
+  const rounded = (over: Partial<BinParams> = {}): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    width: 2,
+    depth: 2,
+    height: 6,
+    wallThickness: 2,
+    interiorFilletMm: 8,
+    base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false, rimFillet: true },
+    ...over,
+  });
+  const rimmed = (over: Partial<BinParams['label']> = {}): BinParams['label'] => ({
+    ...DEFAULT_BIN_PARAMS.label,
+    enabled: true,
+    depth: 12,
+    width: 50,
+    alignment: 'left',
+    lip: true,
+    lipHeight: 1,
+    ...over,
+  });
+  const key = (params: BinParams): string => deriveDimensions(params, false).shellKey;
+
+  it('moves when a tab the fillet is trimmed around appears', () => {
+    expect(key(rounded({ label: rimmed() }))).not.toBe(key(rounded()));
+  });
+
+  it('moves when that tab moves', () => {
+    expect(key(rounded({ label: rimmed() }))).not.toBe(
+      key(rounded({ label: rimmed({ alignment: 'right' }) }))
+    );
+  });
+
+  it('moves when a pocket the fillet is cleared around moves', () => {
+    const socket = { lip: false, mode: 'socket' as const, depth: 14 };
+    expect(key(rounded({ label: rimmed({ ...socket, alignment: 'left', width: 60 }) }))).not.toBe(
+      key(rounded({ label: rimmed({ ...socket, alignment: 'right', width: 60 }) }))
+    );
+  });
+
+  it('stays put for a tab with nothing to trim, so existing shells keep their keys', () => {
+    const plain = rimmed({ lip: false, mode: 'text' });
+    expect(key(rounded({ label: plain }))).toBe(key(rounded()));
+  });
+
+  it('ignores the tab without a rim fillet, whose fillet is not in the shell', () => {
+    const unrounded = {
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false, rimFillet: false },
+    };
+    expect(key(rounded({ ...unrounded, label: rimmed() }))).toBe(key(rounded(unrounded)));
   });
 });

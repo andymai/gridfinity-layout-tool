@@ -56,6 +56,7 @@ import { tile } from './tile';
 import { trayBottom } from './trayBottom';
 import { slideTray } from './slideTray';
 import { labelSockets } from './labelSockets';
+import { labelTabFillet } from './labelTabFillet';
 import { wallPatterns } from './wallPatterns';
 import { kumikoComposition } from './kumikoComposition';
 import { kumikoPatterns } from './kumikoPatterns';
@@ -122,6 +123,7 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...pathfinderOps,
   ...lightweight,
   ...labelSockets,
+  ...labelTabFillet,
   ...wallPatterns,
   ...kumikoPatterns,
   ...kumikoWrapping,

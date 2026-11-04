@@ -39,5 +39,3 @@ exports[`label sockets > 3×1 socket auto-quantizes to 3U 1`] = `1532`;
 exports[`label sockets > 3×1 socket on a 0.6mm nozzle widens the pocket 1`] = `1532`;
 
 exports[`label sockets > 3×2 four columns two rows → a 3U socket on each row 1`] = `2996`;
-
-exports[`label sockets > lipped left-aligned tab stays level across a 10mm fillet 1`] = `4804`;

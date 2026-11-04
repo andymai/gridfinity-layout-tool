@@ -9,6 +9,7 @@ import {
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { planLabelTabLayout } from '@/shared/utils/labelTabPlan';
 import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
+import { quantize, stableSerialize } from './cacheKeyUtils';
 import { planLabelPlateSeats } from './labelTabBuilder';
 
 /** An axis-aligned box in the bin-interior frame, open upward from `z0`. */
@@ -98,4 +99,31 @@ export function planLabelShelfKeepouts(
       z0: shelfTopZ,
     }));
   });
+}
+
+/** Everything the interior fillet has to leave empty around a bin's label tabs. */
+export function planLabelTabKeepouts(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  interiorHeight: number
+): LabelSocketKeepout[] {
+  const { wallThickness } = params;
+  return [
+    ...planLabelSocketKeepouts(params, innerW, innerD, interiorHeight, wallThickness),
+    ...planLabelShelfKeepouts(params, innerW, innerD, interiorHeight, wallThickness),
+  ];
+}
+
+/** Identifies the keepouts for a cache key: their placement is what the fillet's cut depends on. */
+export function labelTabKeepoutsKey(keepouts: readonly LabelSocketKeepout[]): string {
+  return stableSerialize(
+    keepouts.map((k) => [
+      quantize(k.x0),
+      quantize(k.x1),
+      quantize(k.y0),
+      quantize(k.y1),
+      quantize(k.z0),
+    ])
+  );
 }

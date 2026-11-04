@@ -1,0 +1,5 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`label tab fillet > lipped left-aligned tab stays level across a 10mm fillet 1`] = `4804`;
+
+exports[`label tab fillet > rim-rounded bin keeps a text tab level across a 10mm fillet 1`] = `3514`;
