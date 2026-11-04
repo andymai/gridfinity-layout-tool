@@ -16,11 +16,12 @@ export function canStartScan(params: BinParams): boolean {
 /**
  * Open the cut editor on the bin with the "Scan a tool" dialog up, switching
  * the interior to Custom Cutouts first the way its card does (one undo step).
+ * `growBin` makes each scan added in this dialog grow the bin to fit.
  */
-export function startScan(source: ScanSource): void {
+export function startScan(source: ScanSource, { growBin = false } = {}): void {
   const { params, setParams, setInteriorCard, openScanDialog } = useDesignerStore.getState();
   const next = asCustomCutouts(params);
   if (next !== params) setParams(next);
   setInteriorCard('solid');
-  openScanDialog(source);
+  openScanDialog(source, growBin);
 }

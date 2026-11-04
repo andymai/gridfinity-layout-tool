@@ -24,6 +24,7 @@ import { useThumbnailCapture } from '@/features/bin-designer/hooks/useThumbnailC
 import { useDesignerUrlSync } from '@/features/bin-designer/hooks/useDesignerUrlSync';
 import { useUnsavedWarning } from '@/features/bin-designer/hooks/useUnsavedWarning';
 import { useBinDefaultCommandBridge } from '@/features/bin-designer/hooks/useBinDefaultCommandBridge';
+import { useScanLaunchBridge } from '@/features/bin-designer/hooks/useScanLaunchBridge';
 import { useCommunityPublishLifecycle } from '@/features/bin-designer/hooks/useCommunityPublish';
 import { useDesignerFirstRun } from '@/features/bin-designer/hooks/useDesignerFirstRun';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
@@ -80,6 +81,7 @@ export function DesignerPage() {
 
   // Bridge command-palette "bin default" commands (window events) to actions
   useBinDefaultCommandBridge();
+  useScanLaunchBridge();
 
   // Community publish: recapture assets while the dialog waits, resume after OAuth
   useCommunityPublishLifecycle();

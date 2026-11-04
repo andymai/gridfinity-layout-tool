@@ -18,6 +18,7 @@ import { byDescendingArea } from '../importStackOrder';
 import { centerOffBoardCutouts, type CutoutBoard } from '../offBoardCutouts';
 import { generateLayoutId, generateUUID } from '@/shared/utils/uuid';
 import { SCAN_CLEARANCE_MM } from '@/shared/scanReview/traceExport';
+import { computeGrowToFit } from '../growBinToFit';
 
 export interface UseScanImportReturn {
   /** Hydrate and add scan specs as cutouts in one undo transaction. Returns the count added. */
@@ -51,14 +52,16 @@ function withScanFit(cutout: Cutout, cutDepth: number): Cutout {
 }
 
 export function useScanImport(): UseScanImportReturn {
-  const { addCutout, startTransaction, commitTransaction, queueDepthPrompt } = useDesignerStore(
-    useShallow((s) => ({
-      addCutout: s.addCutout,
-      startTransaction: s.startTransaction,
-      commitTransaction: s.commitTransaction,
-      queueDepthPrompt: s.queueDepthPrompt,
-    }))
-  );
+  const { addCutout, setParams, startTransaction, commitTransaction, queueDepthPrompt } =
+    useDesignerStore(
+      useShallow((s) => ({
+        addCutout: s.addCutout,
+        setParams: s.setParams,
+        startTransaction: s.startTransaction,
+        commitTransaction: s.commitTransaction,
+        queueDepthPrompt: s.queueDepthPrompt,
+      }))
+    );
 
   const addScanCutouts = useCallback(
     (specs: readonly ParsedCutoutSpec[], cutDepth: number = DEFAULT_CUT_DEPTH): number => {
@@ -82,19 +85,27 @@ export function useScanImport(): UseScanImportReturn {
       const cutouts = containerId
         ? hydrated.map((c) => ({ ...c, parentGroups: [containerId] }))
         : hydrated;
-      // Unlike an SVG, a scan has no layout to keep: its coordinates are the
-      // outline's own frame, corner at the origin, which sits flush in the bin's
-      // corner and a rounding hair past it. One scan moves to the middle as a
-      // block; a scan the bin cannot hold stays put and keeps its warning.
-      const moves = centerOffBoardCutouts(
-        cutouts,
-        binBoard(params),
-        new Set(cutouts.map((c) => c.id))
-      );
-
       const addedIds: string[] = [];
       startTransaction();
       try {
+        // Grown before placing, so the scan centers on the floor it will have.
+        let board = params;
+        if (ui.growBinForScan) {
+          const grown = computeGrowToFit(params, [...params.cutouts, ...cutouts], ui.halfGridMode);
+          if (grown) {
+            setParams({ width: grown.width, depth: grown.depth });
+            board = useDesignerStore.getState().params;
+          }
+        }
+        // Unlike an SVG, a scan has no layout to keep: its coordinates are the
+        // outline's own frame, corner at the origin, which sits flush in the bin's
+        // corner and a rounding hair past it. One scan moves to the middle as a
+        // block; a scan the bin cannot hold stays put and keeps its warning.
+        const moves = centerOffBoardCutouts(
+          cutouts,
+          binBoard(board),
+          new Set(cutouts.map((c) => c.id))
+        );
         for (const cutout of cutouts) {
           if (addCutout({ ...cutout, ...moves.get(cutout.id) })) addedIds.push(cutout.id);
         }
@@ -112,7 +123,7 @@ export function useScanImport(): UseScanImportReturn {
       // remember why it happened to be right.
       return added;
     },
-    [addCutout, startTransaction, commitTransaction, queueDepthPrompt]
+    [addCutout, setParams, startTransaction, commitTransaction, queueDepthPrompt]
   );
 
   return { addScanCutouts };

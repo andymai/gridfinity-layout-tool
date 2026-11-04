@@ -109,6 +109,12 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['examples', 'inspiration', 'templates', 'bin', 'designs'],
   },
   {
+    id: 'scan-tool',
+    labelKey: 'commandPalette.scanTool',
+    category: 'navigation',
+    keywords: ['scan', 'trace', 'photo', 'picture', 'camera', 'phone', 'outline', 'cutout'],
+  },
+  {
     id: 'open-help',
     labelKey: 'commandPalette.openHelp',
     category: 'navigation',

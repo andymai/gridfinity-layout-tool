@@ -36,6 +36,8 @@ import { useAlignBins } from '@/shared/hooks/useAlignBins';
 import { useSelectionActions } from '@/shared/hooks/useSelectionActions';
 import { useExpandToFit } from '@/shared/hooks/useExpandToFit';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
+import { useScanLaunch } from '@/shared/hooks/useScanLaunch';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 import { isOk, isErr } from '@/core/result';
 import type { BinId } from '@/core/types';
 import { binId } from '@/core/types';
@@ -61,6 +63,9 @@ export function useActionHandlers(): Record<string, ActionHandler> {
 
   // Gate designer-only commands (bin defaults) to the /designer route.
   const { isDesignerRoute } = useDesignerRouting();
+  const launchScan = useScanLaunch();
+  // The cut editor that scanning opens only renders on desktop.
+  const { isDesktop } = useResponsive();
 
   const layout = useLayoutStore((s) => s.layout);
   const { undo, redo, canUndo, canRedo } = useHistoryStore(
@@ -222,6 +227,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       'open-whats-new': () => {
         useViewStore.getState().setWhatsNewOpen(true);
       },
+      'scan-tool': isDesktop ? () => launchScan('palette') : null,
       'new-layout': () => {
         void createNewLayout();
       },
@@ -520,5 +526,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     addToast,
     t,
     isDesignerRoute,
+    isDesktop,
+    launchScan,
   ]);
 }

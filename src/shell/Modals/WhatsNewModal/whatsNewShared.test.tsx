@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { useDestinationLabel, useEntryActivation } from './whatsNewShared';
 import type { WhatsNewAction, WhatsNewEntry } from '@/features/whats-new';
@@ -6,6 +6,12 @@ import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useLabsStore } from '@/core/store/labs';
 import { useViewStore } from '@/core/store/view';
 import { resetAllStores } from '@/test/testUtils';
+import { useScanLaunchStore } from '@/core/store/scanLaunch';
+
+const viewport = vi.hoisted(() => ({ isDesktop: true }));
+vi.mock('@/shared/hooks/useResponsive', () => ({
+  useResponsive: () => ({ isDesktop: viewport.isDesktop }),
+}));
 
 function entry(overrides: Partial<WhatsNewEntry> = {}): WhatsNewEntry {
   return { id: 'e', date: '2026-08-24', title: { en: 'An entry' }, ...overrides };
@@ -26,7 +32,31 @@ describe('useEntryActivation', () => {
   beforeEach(() => {
     resetAllStores();
     useLabsStore.setState({ isDrawerOpen: false });
+    useScanLaunchStore.setState({ request: null });
+    viewport.isDesktop = true;
     window.history.pushState(null, '', '/');
+  });
+
+  it('starts a new bin from a scan when opened outside the designer', () => {
+    activateWith(entry({ action: { kind: 'scanTool' } }));
+    expect(window.location.pathname).toBe('/designer');
+    expect(useScanLaunchStore.getState().request).toMatchObject({
+      source: 'whats_new',
+      newBin: true,
+    });
+  });
+
+  it('scans into the open bin when opened inside the designer', () => {
+    window.history.pushState(null, '', '/designer');
+    activateWith(entry({ action: { kind: 'scanTool' } }));
+    expect(useScanLaunchStore.getState().request).toMatchObject({ newBin: false });
+  });
+
+  it('only opens the designer off desktop, where the cut editor does not render', () => {
+    viewport.isDesktop = false;
+    activateWith(entry({ action: { kind: 'scanTool' } }));
+    expect(window.location.pathname).toBe('/designer');
+    expect(useScanLaunchStore.getState().request).toBeNull();
   });
 
   it.each([
@@ -70,6 +100,13 @@ describe('useDestinationLabel', () => {
   it('has no label for an entry with no destination', () => {
     const { result } = renderHook(() => useDestinationLabel(entry()));
     expect(result.current).toBeNull();
+  });
+
+  it('labels a scan entry with the action it takes', () => {
+    const { result } = renderHook(() =>
+      useDestinationLabel(entry({ action: { kind: 'scanTool' } }))
+    );
+    expect(result.current).toBe('Scan a tool');
   });
 
   it('labels a Labs entry for the drawer, not for its action', () => {

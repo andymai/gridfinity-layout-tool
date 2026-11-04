@@ -32,7 +32,7 @@ export function isSyntheticPopstate(): boolean {
 /**
  * Check if the current URL is the designer route.
  */
-function isDesignerPath(): boolean {
+export function isDesignerPath(): boolean {
   return window.location.pathname === '/designer' || window.location.pathname === '/designer/';
 }
 

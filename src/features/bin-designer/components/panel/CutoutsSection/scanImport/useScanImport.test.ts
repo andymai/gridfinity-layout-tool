@@ -17,6 +17,10 @@ const mockStartTransaction = vi.fn();
 const mockCommitTransaction = vi.fn();
 const mockQueueDepthPrompt = vi.fn((_ids: readonly string[]) => undefined);
 let mockParams: BinParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 5 };
+let mockGrowBin = false;
+const mockSetParams = vi.fn((partial: Partial<BinParams>) => {
+  mockParams = { ...mockParams, ...partial };
+});
 
 vi.mock('@/features/bin-designer/store', async () => {
   const { remainingCutoutCapacity } = await vi.importActual<{
@@ -25,6 +29,7 @@ vi.mock('@/features/bin-designer/store', async () => {
   const useDesignerStore = (selector: (s: Record<string, unknown>) => unknown) =>
     selector({
       addCutout: mockAddCutout,
+      setParams: mockSetParams,
       startTransaction: mockStartTransaction,
       commitTransaction: mockCommitTransaction,
       queueDepthPrompt: mockQueueDepthPrompt,
@@ -32,7 +37,7 @@ vi.mock('@/features/bin-designer/store', async () => {
   // The capacity gate reads committed state imperatively; a bin-target board
   // has no cap, which is the fixture every case here describes.
   useDesignerStore.getState = () => ({
-    ui: { cutoutTarget: 'bin' },
+    ui: { cutoutTarget: 'bin', growBinForScan: mockGrowBin, halfGridMode: false },
     params: mockParams,
   });
   return { useDesignerStore, remainingCutoutCapacity };
@@ -57,6 +62,8 @@ function spec(partial: Partial<ParsedCutoutSpec> = {}): ParsedCutoutSpec {
 
 describe('useScanImport', () => {
   afterEach(() => {
+    mockGrowBin = false;
+    mockParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 5 };
     vi.clearAllMocks();
     mockAddCutout.mockReturnValue(true);
     mockParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 5 };
@@ -226,5 +233,31 @@ describe('useScanImport', () => {
 
     expect(() => result.current.addScanCutouts([spec()])).toThrow('boom');
     expect(mockCommitTransaction).toHaveBeenCalledOnce();
+  });
+
+  describe('a bin started for the scan', () => {
+    it('grows to hold a tool that does not fit, inside the same undo step, then centers it', () => {
+      mockGrowBin = true;
+      const { result } = renderHook(() => useScanImport());
+      result.current.addScanCutouts([spec({ width: 150, depth: 30 })]);
+
+      expect(mockSetParams).toHaveBeenCalledOnce();
+      const grown = mockSetParams.mock.calls[0][0];
+      expect(grown.width).toBeGreaterThan(2);
+      expect(mockStartTransaction.mock.invocationCallOrder[0]).toBeLessThan(
+        mockSetParams.mock.invocationCallOrder[0]
+      );
+      expect(mockSetParams.mock.invocationCallOrder[0]).toBeLessThan(
+        mockCommitTransaction.mock.invocationCallOrder[0]
+      );
+      const placed = mockAddCutout.mock.calls[0][0];
+      expect(placed.x).toBeGreaterThan(0);
+    });
+
+    it('leaves a bin it was not started for at its size', () => {
+      const { result } = renderHook(() => useScanImport());
+      result.current.addScanCutouts([spec({ width: 150, depth: 30 })]);
+      expect(mockSetParams).not.toHaveBeenCalled();
+    });
   });
 });

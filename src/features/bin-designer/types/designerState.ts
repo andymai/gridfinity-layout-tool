@@ -453,7 +453,7 @@ export interface DesignerState {
    */
   setCutoutEditorOpen: (open: boolean, target?: CutoutTarget) => void;
   /** Open the cut editor on the bin with the "Scan a tool" dialog up. */
-  openScanDialog: (source: ScanSource) => void;
+  openScanDialog: (source: ScanSource, growBin?: boolean) => void;
   closeScanDialog: () => void;
   setBentoWorkspaceOpen: (open: boolean) => void;
   setInteriorCard: (card: InteriorCard) => void;
