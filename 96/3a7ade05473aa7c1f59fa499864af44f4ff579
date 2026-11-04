@@ -1,0 +1,14 @@
+src/features/generation/worker/generators/scenarios/index.ts
+  h_b755e1950659f4 155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "963a7ade05473aa7c1f59fa499864af44f4ff579",
+  "prompts": {},
+  "humans": {
+    "h_b755e1950659f4": {
+      "author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
