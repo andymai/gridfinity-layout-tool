@@ -44,7 +44,7 @@ import {
 import { exportSlideFitSample } from '../generators/slideFitSample';
 import { exportFitTestSlice } from '../generators/fitTestSlice';
 import { exportFitTestOutline } from '../generators/fitTestOutline';
-import { ensureFontsLoaded } from '../wasmInstantiator';
+import { ensureDesignFonts, ensureFontsLoaded } from '../wasmInstantiator';
 import type { FaceGroupData } from '@/shared/types/generation';
 import { buildLid, buildStackPlate } from '../generators/lidBuilder';
 import { lidAnchorZ } from '../generators/lidConstants';
@@ -61,6 +61,7 @@ import { planSlantSupport } from '@/shared/utils/slantPlan';
 
 export async function handleExport(message: ExportMessage): Promise<void> {
   const payload = message.payload;
+  await ensureDesignFonts(payload.params);
   await runExport(
     payload.requestId,
     'EXPORT_RESULT',
@@ -289,6 +290,7 @@ export async function handleExportDividers(message: ExportDividersMessage): Prom
 export async function handleExportCombined(message: ExportCombinedMessage): Promise<void> {
   const { params, requestId, format, tolerance, angularTolerance, separatePieces } =
     message.payload;
+  await ensureDesignFonts(params);
 
   await runExport(
     requestId,
