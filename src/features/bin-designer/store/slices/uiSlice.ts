@@ -11,6 +11,7 @@ import type {
   BodyTypeMemory,
   ColorTool,
   CutoutTarget,
+  ScanSource,
   DesignerCategory,
   DesignerSelection,
   PickerOverlayState,
@@ -98,6 +99,43 @@ export function createUISlice(set: Set) {
         // part — the same class of leak `setBentoWorkspaceOpen` clears
         // `selectedBentoCompartmentId` for.
         state.ui.cutoutTarget = open ? target : 'bin';
+        if (!open) {
+          state.ui.scanDialogSource = null;
+          state.ui.growBinForScan = false;
+        }
+      });
+    },
+
+    openScanDialog: (source: ScanSource, growBin = false) => {
+      set((state) => {
+        state.ui.cutoutEditorOpen = true;
+        state.ui.bentoWorkspaceOpen = false;
+        state.ui.cutoutTarget = 'bin';
+        state.ui.scanDialogSource = source;
+        state.ui.growBinForScan = growBin;
+      });
+    },
+
+    closeScanDialog: () => {
+      set((state) => {
+        state.ui.scanDialogSource = null;
+        state.ui.growBinForScan = false;
+      });
+    },
+
+    openPhoneScan: (source: ScanSource) => {
+      set((state) => {
+        state.ui.cutoutTarget = 'bin';
+        // The flow is full screen; when it closes the panel is on Interior,
+        // where the tool-thickness question waits.
+        state.ui.activeCategory = 'interior';
+        state.ui.phoneScanSource = source;
+      });
+    },
+
+    closePhoneScan: () => {
+      set((state) => {
+        state.ui.phoneScanSource = null;
       });
     },
 
@@ -109,6 +147,8 @@ export function createUISlice(set: Set) {
         // winning, and the other's exit button pointing at nothing.
         if (open) {
           state.ui.cutoutEditorOpen = false;
+          state.ui.scanDialogSource = null;
+          state.ui.growBinForScan = false;
           // Closing the editor from here has to reset the target too, or
           // `cutoutTarget` stays on the lid with no editor open and the next
           // cutout action writes the wrong array.

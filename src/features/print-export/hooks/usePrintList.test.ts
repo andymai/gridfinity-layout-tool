@@ -678,13 +678,25 @@ describe('usePrintList', () => {
       };
     }
 
+    // Three deep, so the 189mm part cannot lie across the bed's diagonal
+    // instead: one deep, it would.
     it('charges the drawer margin against the bed for a parametric design', () => {
+      useLayoutStore.setState({
+        layout: withPaddedBed([{ ...linkedBin(), depth: gridUnits(3), extendToMargin: true }]),
+      });
+
+      const { result } = renderHook(() => usePrintList());
+      expect(result.current.rows[0].needsSplit).toBe(true);
+    });
+
+    it('prints a margin-extended bin whole when it fits the bed diagonally', () => {
       useLayoutStore.setState({
         layout: withPaddedBed([{ ...linkedBin(), extendToMargin: true }]),
       });
 
       const { result } = renderHook(() => usePrintList());
-      expect(result.current.rows[0].needsSplit).toBe(true);
+      expect(result.current.rows[0].needsSplit).toBe(false);
+      expect(result.current.rows[0].totalPieces).toBe(1);
     });
 
     it('does not charge the drawer margin for an imported mesh, which prints as stored', () => {

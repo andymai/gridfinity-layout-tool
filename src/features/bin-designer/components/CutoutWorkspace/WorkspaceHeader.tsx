@@ -12,6 +12,7 @@ import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/
 import { useCutoutSelection, useDesignerStore } from '@/features/bin-designer/store';
 import { GroupBreadcrumb } from './GroupBreadcrumb';
 import { Button, Checkbox, IconButton, Input } from '@/design-system';
+import { ScanToolIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
 import {
@@ -272,6 +273,8 @@ interface WorkspaceHeaderProps {
   readonly onClearAll: () => void;
   readonly disabled?: boolean;
   readonly onShowHelp?: () => void;
+  /** Opens the "Scan a tool" dialog; omitted on the lid, which takes no scans. */
+  readonly onScanTool?: () => void;
 }
 
 export function WorkspaceHeader({
@@ -298,6 +301,7 @@ export function WorkspaceHeader({
   onClearAll,
   disabled = false,
   onShowHelp,
+  onScanTool,
 }: WorkspaceHeaderProps) {
   const setCutoutEditorOpen = useDesignerStore((s) => s.setCutoutEditorOpen);
   const t = useTranslation();
@@ -531,7 +535,7 @@ export function WorkspaceHeader({
   };
 
   return (
-    <div className="flex flex-col border-b border-stroke-subtle bg-surface-secondary">
+    <div className="@container flex flex-col border-b border-stroke-subtle bg-surface-secondary">
       <div className="flex h-10 items-center justify-between px-3">
         <div className="flex min-w-0 items-center gap-3 flex-shrink-0">
           <span className="text-sm font-medium text-content">
@@ -610,6 +614,26 @@ export function WorkspaceHeader({
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
+          {onScanTool && (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              touchTarget={false}
+              className="whitespace-nowrap"
+              leftIcon={<ScanToolIcon size="xs" />}
+              onClick={onScanTool}
+              disabled={disabled}
+              aria-label={t('binDesigner.cutouts.scanImport.title')}
+              title={t('binDesigner.cutouts.scanImport.title')}
+            >
+              {/* The editor shares its row with the 3D preview and can be narrow;
+                  the label goes before Done would be clipped. */}
+              <span className="hidden @2xl:inline">
+                {t('binDesigner.cutouts.scanImport.title')}
+              </span>
+            </Button>
+          )}
           <div className="flex items-center gap-0.5 rounded border border-stroke-subtle bg-surface-elevated">
             <IconButton
               type="button"

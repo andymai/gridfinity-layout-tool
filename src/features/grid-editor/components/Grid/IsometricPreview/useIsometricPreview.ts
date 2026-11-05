@@ -6,6 +6,8 @@ import { effectiveGridUnitMmY } from '@/core/types';
 import { useSelectionStore } from '@/core/store/selection';
 import { useViewStore } from '@/core/store/view';
 import { calcBedCapacityForBin, type BedCapacity } from '@/core/constants';
+import type { Bin } from '@/core/types';
+import { useBinOverhangSpan } from '@/shared/hooks/useBinOverhangSpan';
 import { useResponsive } from '@/shared/hooks';
 import { use3DPreviewKeyboard } from '@/shared/hooks/use3DPreviewKeyboard';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
@@ -143,17 +145,19 @@ export function useIsometricPreview({ inline = false }: IsometricPreviewProps) {
   );
 
   // Bed capacity for one bin's split lines, fitted in either orientation.
+  const overhangSpanFor = useBinOverhangSpan();
   const bedCapacityFor = useCallback(
-    (bin: { width: number; depth: number }): BedCapacity =>
+    (bin: Bin): BedCapacity =>
       calcBedCapacityForBin(
         bin.width,
         bin.depth,
         printBedSize,
         gridUnitMm,
         printBedDepth,
-        gridUnitMmY
+        gridUnitMmY,
+        overhangSpanFor(bin)
       ),
-    [printBedSize, printBedDepth, gridUnitMm, gridUnitMmY]
+    [printBedSize, printBedDepth, gridUnitMm, gridUnitMmY, overhangSpanFor]
   );
 
   // Compartment dividers for bins linked to saved designs (loaded async

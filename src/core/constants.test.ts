@@ -134,6 +134,44 @@ describe('calcBedCapacityForBin', () => {
     // against the 210mm bed depth (5), and the depth axis in 21s against 256 (12).
     expect(calcBedCapacityForBin(5, 11, 256, 42, 210, 21)).toEqual({ width: 5, depth: 12 });
   });
+
+  it('reads a long bin that fits only lying diagonally as fitting', () => {
+    // 63 x 294mm overruns 256mm both ways round; across the diagonal it spans 252mm.
+    const cap = calcBedCapacityForBin(1.5, 7, 256, 42);
+    expect(cap).toEqual({ width: 1.5, depth: 7, diagonal: true });
+  });
+
+  it('measures the diagonal in the Y pitch of a non-square grid', () => {
+    // 2 x 42 by 12 x 21 is 84 x 252mm: square-on on 256. At 22mm in Y, 264mm
+    // overruns, yet still fits diagonally; at 42mm in Y, 504mm fits no way.
+    expect(calcBedCapacityForBin(2, 12, 256, 42, 256, 21).diagonal).toBeUndefined();
+    expect(calcBedCapacityForBin(2, 12, 256, 42, 256, 22).diagonal).toBe(true);
+    expect(calcBedCapacityForBin(2, 12, 256, 42, 256, 42).diagonal).toBeUndefined();
+  });
+
+  it('charges an overhang against the diagonal', () => {
+    // 63 + 294 = 357mm of sides fits 256 * sqrt(2) = 362mm; 6mm more does not.
+    expect(calcBedCapacityForBin(1.5, 7, 256, 42, 256, 42, { width: 0, depth: 5 }).diagonal).toBe(
+      true
+    );
+    expect(calcBedCapacityForBin(1.5, 7, 256, 42, 256, 42, { width: 0, depth: 6 })).toEqual({
+      width: 6,
+      depth: 6,
+    });
+  });
+
+  it('charges an overhang across the width the same way', () => {
+    expect(calcBedCapacityForBin(7, 1.5, 256, 42, 256, 42, { width: 5, depth: 0 }).diagonal).toBe(
+      true
+    );
+    expect(
+      calcBedCapacityForBin(7, 1.5, 256, 42, 256, 42, { width: 6, depth: 0 }).diagonal
+    ).toBeUndefined();
+  });
+
+  it('keeps the cut capacity for a bin too big even diagonally', () => {
+    expect(calcBedCapacityForBin(1.5, 8, 256, 42)).toEqual({ width: 6, depth: 6 });
+  });
 });
 
 describe('generateId', () => {

@@ -6,9 +6,9 @@
  * - `DESIGNER_OPTION_RECORDS` — finer sub-options inside those sections
  *   (Lightweight floor, Screw holes, Lid grip, …). Each reuses an existing
  *   translated label key and carries English-only synonyms, so richer coverage
- *   costs no new translation. An option's `section` is both its breadcrumb
- *   parent and its jump target: only section-level markers exist in the DOM, so
- *   selecting an option lands the user on the section that holds it.
+ *   costs no new translation. An option's `section` is its breadcrumb parent
+ *   and its jump target. Most options have no marker of their own, so they land
+ *   on the section; one that names a `target` lands on that marker inside it.
  *
  * A control's category is not duplicated here — it comes from `categoryForControl`
  * in the settings manifest, the single source of truth.
@@ -164,6 +164,9 @@ export const DESIGNER_CONTROL_SEARCH: readonly DesignerControlSearchEntry[] = [
   },
 ];
 
+/** Marks every visible "Scan a tool" entry in the panel. */
+export const SCAN_TOOL_TARGET = 'bd-scan-tool';
+
 export interface DesignerOptionRecord {
   /** Unique id (also the React key for the result row). */
   readonly id: string;
@@ -171,6 +174,12 @@ export interface DesignerOptionRecord {
   readonly labelKey: string;
   /** The owning section's controlId — the breadcrumb parent and the jump target. */
   readonly section: string;
+  /**
+   * A marker inside the section to land on once it is open, for an option that
+   * is one button rather than a whole section. Absent from the DOM, the jump
+   * stops at the section.
+   */
+  readonly target?: string;
   /** English-only, match-only synonyms; never displayed, so they need no locale. */
   readonly keywords: readonly string[];
 }
@@ -368,6 +377,13 @@ export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
     keywords: ['removable dividers', 'slotted', 'slots', 'adjustable dividers'],
   },
   {
+    id: 'opt-scan-tool',
+    labelKey: 'binDesigner.cutouts.scanImport.title',
+    section: 'bd-interior',
+    target: SCAN_TOOL_TARGET,
+    keywords: ['scan', 'trace', 'photo', 'picture', 'camera', 'phone', 'outline', 'tool shape'],
+  },
+  {
     id: 'opt-interior-solid',
     labelKey: 'binDesigner.interior.solid.title',
     section: 'bd-interior',
@@ -510,6 +526,8 @@ export interface ControlAvailabilityContext {
   readonly slideTrayEnabled: boolean;
   /** The `slant` labs flag, or a design that already leans: when the Slant section mounts. */
   readonly slantVisible: boolean;
+  /** A bin that can take cutouts: when a "Scan a tool" entry renders. */
+  readonly scanAvailable: boolean;
 }
 
 /**
@@ -534,6 +552,8 @@ export function isDesignerControlAvailable(
       return ctx.slantVisible;
     case 'bd-print-fit':
       return ctx.viewMode === 'rail' || ctx.needsSplit;
+    case SCAN_TOOL_TARGET:
+      return ctx.scanAvailable;
     default:
       return true;
   }

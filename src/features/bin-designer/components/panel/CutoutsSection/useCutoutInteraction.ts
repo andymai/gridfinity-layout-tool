@@ -56,6 +56,8 @@ export function useCutoutInteraction({
   onLock,
   onUnlock,
   onSplitLine,
+  onImportSvg,
+  onImportStl,
   binWidth,
   binDepth,
   gridSize = 0.5,
@@ -405,6 +407,8 @@ export function useCutoutInteraction({
     setMode,
     setSegmentHover,
     setSelection,
+    onImportSvg,
+    onImportStl,
   });
 
   useCutoutRecovery({

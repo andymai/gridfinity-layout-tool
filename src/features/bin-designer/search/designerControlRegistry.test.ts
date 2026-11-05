@@ -16,6 +16,7 @@ const baseCtx: ControlAvailabilityContext = {
   viewMode: 'rail',
   slideTrayEnabled: true,
   slantVisible: true,
+  scanAvailable: true,
 };
 
 // Controls the manifest knows about but the search deliberately does not index,
@@ -63,6 +64,7 @@ describe('designerControlRegistry', () => {
         viewMode: 'scroll',
         slideTrayEnabled: false,
         slantVisible: false,
+        scanAvailable: false,
       })
     ).toBe(true);
   });

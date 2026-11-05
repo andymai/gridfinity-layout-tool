@@ -58,6 +58,20 @@ export function computeScanBounds(specs: readonly ParsedCutoutSpec[]): ScanBound
   return { width, depth, longest: Math.max(width, depth) };
 }
 
+/** The millimetres typed for a pixel scan's longest side, or null while it isn't a size. */
+export function scaleTargetMm(targetText: string): number | null {
+  const mm = parseFloat(targetText);
+  return Number.isFinite(mm) && mm > 0 ? mm : null;
+}
+
+/**
+ * Whether the outline is already in true millimetres (a size reference was in
+ * the photo), so it can become cutouts without asking for a measurement.
+ */
+export function isScaledScan(svg: string): boolean {
+  return /data-scan-units\s*=\s*["']mm["']/.test(svg);
+}
+
 /**
  * Parse a scanned SVG outline into specs plus their measured bounds.
  *

@@ -14,6 +14,37 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'bin-half-turn',
+    date: '2026-11-04',
+    kind: 'improved',
+    title: { en: 'Turn a placed bin all the way round' },
+    body: {
+      en: 'Rotate (R) now takes a bin linked to a saved design through all four directions, so a bin with an overhang can reach over the edge of the drawer instead of into its neighbour, with no redesign. A square bin, or one with no room for a quarter turn, turns 180° where it stands. The 3D preview shows which way it faces. Half-unit bins and paired bins turn as they did before.',
+    },
+    action: { kind: 'openTool', tool: 'layout' },
+  },
+  {
+    id: 'long-bins-fit-diagonally',
+    date: '2026-11-04',
+    kind: 'fixed',
+    title: { en: 'Long bins that fit your bed diagonally print whole' },
+    body: {
+      en: 'A long, narrow bin that fits your print bed only laid corner to corner, like a 1.5 × 7 bin on a 256mm bed, was split into pieces and flagged as too big. It now prints whole. The export dialog reminds you to turn it in your slicer, and you can still tick Split into pieces if a clip or purge line takes up a corner of your bed.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
+    id: 'scan-a-tool-anywhere',
+    date: '2026-11-04',
+    kind: 'improved',
+    featured: true,
+    title: { en: 'Scan a tool from more places' },
+    body: {
+      en: 'Photograph a tool and the bin designer cuts a pocket that fits it. Start from Scan a tool on the Custom Cutouts card, the link under the other Interior modes, the Cut Editor’s header, or the command palette (Ctrl/Cmd+K, then type scan). It asks first whether the photo is on your phone or already on this computer. From the command palette outside the bin designer, it starts a new bin that grows to fit what you scan.',
+    },
+    action: { kind: 'scanTool' },
+  },
+  {
     id: 'measuring-strips',
     date: '2026-11-03',
     kind: 'new',

@@ -6,6 +6,7 @@ import {
   knifeDepthClamp,
   formatFitSummary,
   canArray,
+  showsEmptyBoardHint,
 } from './cutoutSectionVisibility';
 import type { Cutout } from '@/features/bin-designer/types';
 
@@ -132,5 +133,29 @@ describe('formatFitSummary', () => {
     expect(
       formatFitSummary(c({ shape: 'circle', clearance: 0, chamferWidth: 2, cutDepth: 0.5 }), labels)
     ).toBe('Chamfer 0.3mm');
+  });
+});
+
+describe('showsEmptyBoardHint', () => {
+  it('shows on an empty board while a drawing tool is only armed', () => {
+    expect(showsEmptyBoardHint(0, { type: 'idle' })).toBe(true);
+    expect(showsEmptyBoardHint(0, { type: 'placing', shape: 'rectangle' })).toBe(true);
+    expect(showsEmptyBoardHint(0, { type: 'placing', shape: 'circle' })).toBe(true);
+  });
+
+  it('hides once a draw starts or the board has a cutout', () => {
+    expect(
+      showsEmptyBoardHint(0, { type: 'drawing', shape: 'rectangle', startMmX: 0, startMmY: 0 })
+    ).toBe(false);
+    expect(
+      showsEmptyBoardHint(0, {
+        type: 'pending-place',
+        shape: 'rectangle',
+        startMmX: 0,
+        startMmY: 0,
+      })
+    ).toBe(false);
+    expect(showsEmptyBoardHint(1, { type: 'idle' })).toBe(false);
+    expect(showsEmptyBoardHint(1, { type: 'placing', shape: 'rectangle' })).toBe(false);
   });
 });

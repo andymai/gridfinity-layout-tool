@@ -26,8 +26,17 @@ vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 const mocks = vi.hoisted(() => ({
   setBentoWorkspaceOpen: vi.fn(),
   setCutoutEditorOpen: vi.fn(),
+  startScan: vi.fn(),
   params: {} as BinParams,
   isDesktop: true,
+}));
+
+vi.mock('../../../utils/startScan', () => ({ startScan: mocks.startScan }));
+vi.mock('../CutoutsSection/ToolThicknessPrompt', () => ({
+  ToolThicknessPrompt: () => <div data-testid="thickness-prompt" />,
+}));
+vi.mock('../../PhoneToolList', () => ({
+  PhoneToolList: () => <div data-testid="tool-list" />,
 }));
 
 vi.mock('@/shared/hooks/useResponsive', () => ({
@@ -113,6 +122,24 @@ describe('InteriorModes', () => {
 
       fireEvent.click(screen.getByText('binDesigner.editCutouts'));
       expect(mocks.setCutoutEditorOpen).toHaveBeenCalledWith(true);
+    });
+
+    it('offers Scan a tool beside the launcher', () => {
+      render(<InteriorModeContent card="solid" />);
+
+      fireEvent.click(screen.getByText('binDesigner.cutouts.scanImport.title'));
+      expect(mocks.startScan).toHaveBeenCalledWith('card', { phone: false });
+      expect(screen.queryByTestId('thickness-prompt')).toBeNull();
+    });
+
+    it('offers the phone scan off desktop, and asks thickness and lists pockets in the panel', () => {
+      mocks.isDesktop = false;
+      render(<InteriorModeContent card="solid" />);
+
+      fireEvent.click(screen.getByText('binDesigner.cutouts.scanImport.title'));
+      expect(mocks.startScan).toHaveBeenCalledWith('card', { phone: true });
+      expect(screen.getByTestId('thickness-prompt')).toBeInTheDocument();
+      expect(screen.getByTestId('tool-list')).toBeInTheDocument();
     });
 
     it('offers a clip of the editor at work beside its launcher', () => {

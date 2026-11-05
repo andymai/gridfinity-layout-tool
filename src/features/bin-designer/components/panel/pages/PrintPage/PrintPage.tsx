@@ -15,7 +15,7 @@ import { SlantTooLargeNotice } from '../../shared';
  */
 export function PrintPage() {
   const t = useTranslation();
-  const { needsSplit, slantTooLarge, printBedSize } = useSplitOptionsSection();
+  const { needsSplit, slantTooLarge, fitsDiagonally, printBedSize } = useSplitOptionsSection();
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
   const canExport = useDesignerStore(
     (s) =>
@@ -33,10 +33,13 @@ export function PrintPage() {
           <SplitOptionsSection />
         ) : (
           <p className="text-label text-content-tertiary">
-            {t('binDesigner.printFit.fits', {
-              width: printBedSize.width,
-              depth: printBedSize.depth,
-            })}
+            {t(
+              fitsDiagonally ? 'binDesigner.printFit.fitsDiagonally' : 'binDesigner.printFit.fits',
+              {
+                width: printBedSize.width,
+                depth: printBedSize.depth,
+              }
+            )}
           </p>
         )}
       </PanelSection>

@@ -135,6 +135,7 @@ export function canPlaceBin(
     clearanceHeight?: HeightUnits;
     linkedDesignId?: DesignId;
     slant?: SlantConfig;
+    halfTurned?: boolean;
     extendToMargin?: boolean;
     /** Inherited only while the footprint stays put: a move or resize drops it. */
     overhang?: Bin['overhang'];
@@ -152,7 +153,9 @@ export function canPlaceBin(
   // A caller moving or resizing an existing bin usually passes only the new
   // footprint and height; the bin's clearance, linked rise and slant travel with it.
   const existing = excludeBinId !== undefined ? bins.find((b) => b.id === excludeBinId) : undefined;
-  const inherit = <K extends 'clearanceHeight' | 'linkedDesignId' | 'slant' | 'extendToMargin'>(
+  const inherit = <
+    K extends 'clearanceHeight' | 'linkedDesignId' | 'slant' | 'halfTurned' | 'extendToMargin',
+  >(
     key: K
   ): Bin[K] => (key in rect ? rect[key] : existing?.[key]) as Bin[K];
   const testBin: Bin = {
@@ -166,6 +169,7 @@ export function canPlaceBin(
     clearanceHeight: inherit('clearanceHeight'),
     linkedDesignId: inherit('linkedDesignId'),
     slant: inherit('slant'),
+    halfTurned: inherit('halfTurned'),
     extendToMargin: inherit('extendToMargin'),
     overhang:
       'overhang' in rect

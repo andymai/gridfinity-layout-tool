@@ -41,6 +41,28 @@ describe('useScanSession', () => {
     );
   });
 
+  it('opens a fresh session when the attempt is bumped after one became unavailable', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(503, {}))
+      .mockResolvedValueOnce(jsonResponse(201, { token: 'u', url: '/scan/u' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { result, rerender } = renderHook(
+      ({ attempt }) => useScanSession(true, vi.fn(), attempt),
+      {
+        initialProps: { attempt: 0 },
+      }
+    );
+    await flush();
+    expect(result.current.phase).toBe('unavailable');
+
+    rerender({ attempt: 1 });
+    await flush();
+    expect(result.current.phase).toBe('waiting');
+    expect(result.current.url).toBe('/scan/u');
+  });
+
   it('hands the uploaded SVG to onSvg once polling sees it ready', async () => {
     const onSvg = vi.fn();
     const fetchMock = vi

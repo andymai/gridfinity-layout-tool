@@ -10,12 +10,13 @@ import { GroupBreadcrumb } from '../../CutoutWorkspace/GroupBreadcrumb';
 import { CutoutCanvas3D } from './renderer';
 import { CutoutShapeToolbar } from './CutoutShapeToolbar';
 import { StlImportDialog } from './stlImport';
-import { ScanWithPhoneDialog } from './scanImport';
+import { ScanToolDialog } from './scanImport';
 import { ToolThicknessPrompt } from './ToolThicknessPrompt';
 import { CutoutPropertyPanel } from './CutoutPropertyPanel';
 import { AlignmentToolbar } from './AlignmentToolbar';
 import { CutoutContextMenu } from './CutoutContextMenu';
 import { CutoutEmptyState } from './CutoutEmptyState';
+import { showsEmptyBoardHint } from './cutoutSectionVisibility';
 import { CutoutFillControls } from '@/features/bin-designer/components/controls';
 import { useCutoutEditor } from './useCutoutEditor';
 import { CANVAS_WIDTH } from './useCutoutEditor';
@@ -96,10 +97,14 @@ export function CutoutEditor() {
         onGridSizeChange={setGridSize}
         onImportSvg={triggerSvgImport}
         onImportStl={stlImport.triggerImport}
-        onScanWithPhone={() => setScanDialogOpen(true)}
+        onScanTool={() => setScanDialogOpen(true)}
       />
 
-      <ScanWithPhoneDialog open={scanDialogOpen} onClose={() => setScanDialogOpen(false)} />
+      <ScanToolDialog
+        open={scanDialogOpen}
+        source="toolbar"
+        onClose={() => setScanDialogOpen(false)}
+      />
 
       <StlImportDialog
         pending={stlImport.pending}
@@ -131,8 +136,8 @@ export function CutoutEditor() {
         className="relative rounded border border-stroke-subtle bg-surface-secondary overflow-hidden"
         onContextMenu={handleContextMenu}
       >
-        {cutouts.length === 0 && mode.type === 'idle' && (
-          <CutoutEmptyState variant="sidebar" onScanWithPhone={() => setScanDialogOpen(true)} />
+        {showsEmptyBoardHint(cutouts.length, mode) && (
+          <CutoutEmptyState variant="sidebar" onScanTool={() => setScanDialogOpen(true)} />
         )}
         <CutoutCanvas3D
           cutouts={cutouts}

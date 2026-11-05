@@ -55,7 +55,7 @@ import { bridgeManager, getActiveKernel } from '@/shared/generation/bridge';
 import { withSocketNozzle } from '@/shared/generation/socketNozzle';
 import { withLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
-import { isTurnedPlacement, sideInDesign } from '@/shared/utils/placementTurn';
+import { placedSideInDesign } from '@/shared/utils/placementTurn';
 import {
   placementCaption,
   takesPlacedTabCaption,
@@ -505,9 +505,7 @@ export function useLinkedDesignMeshes(bins: Bin[]): Map<BinId, LinkedDesignMesh>
       if (parametric && placedOverhang) {
         slant = ref.slant?.config ? null : undefined;
       } else if (parametric && bin.slant) {
-        slant = isTurnedPlacement(bin, ref)
-          ? { ...bin.slant, side: sideInDesign(bin.slant.side) }
-          : bin.slant;
+        slant = { ...bin.slant, side: placedSideInDesign(bin.slant.side, bin, ref) };
       }
       // Quantize the nozzle so float noise (e.g. 0.6000000000000001) can't
       // fragment the cache key into avoidable misses.

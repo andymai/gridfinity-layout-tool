@@ -24,6 +24,14 @@ describe('useSplitOptionsSection', () => {
     useLayoutStore.getState().setPrintBedSize(256);
   });
 
+  it('reports a long bin as fitting diagonally, not needing a split', () => {
+    useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, width: 1.5, depth: 7 } });
+    const { result } = renderHook(() => useSplitOptionsSection());
+    expect(result.current.fitsDiagonally).toBe(true);
+    expect(result.current.needsSplit).toBe(false);
+    expect(result.current.pieceCount).toBe(1);
+  });
+
   it('reports needsSplit=false for small bin', () => {
     const { result } = renderHook(() => useSplitOptionsSection());
     expect(result.current.needsSplit).toBe(false);

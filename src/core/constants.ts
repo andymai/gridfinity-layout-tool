@@ -1,5 +1,6 @@
 import type { Layout, Category, BinId, LayoutId, LayerId, CategoryId } from './types';
 import { binId, layerId, categoryId, mm, gridUnits, heightUnits } from './types';
+import { fitsBedAtAnyAngle } from './bedFit';
 export const CONSTRAINTS = {
   GRID_MIN: 0.5, // Minimum drawer dimension (supports half-unit increments)
   GRID_MAX: 50,
@@ -115,7 +116,20 @@ export function calcMaxGridUnits(
 export interface BedCapacity {
   readonly width: number;
   readonly depth: number;
+  /**
+   * Set when the bin overruns the bed square-on and at 90° but fits lying at
+   * an angle. The capacity is then the bin's own size, so it reads as fitting.
+   */
+  readonly diagonal?: boolean;
 }
+
+/** How far a bin's body reaches past its footprint across each axis, in mm. */
+export interface OverhangSpan {
+  readonly width: number;
+  readonly depth: number;
+}
+
+const NO_OVERHANG_SPAN: OverhangSpan = { width: 0, depth: 0 };
 
 /**
  * A printed part lies either way round on the plate, so a bin is fitted in
@@ -142,11 +156,16 @@ export function pickBedOrientation(
 /**
  * Bed capacity oriented for one bin: `calcMaxGridUnits` fitted both ways round
  * via `pickBedOrientation`. Compare the bin's own width and depth against the
- * result; a bin that only fits the bed turned 90° reads as fitting.
+ * result; a bin that only fits the bed turned 90°, or lying at an angle, reads
+ * as fitting.
  *
  * Both orientations are derived from the pitches, never by transposing one
  * capacity: on a non-square grid the turned width still counts in the X pitch
  * against the bed's depth, which a swap of `{width, depth}` gets wrong.
+ *
+ * `overhang` is charged against the diagonal only. Reading a bin as whole is a
+ * claim about the part that gets exported, so it has to count what the exporter
+ * counts, or the grid calls whole a bin the layout ZIP then cuts.
  */
 export function calcBedCapacityForBin(
   binWidth: number,
@@ -154,15 +173,25 @@ export function calcBedCapacityForBin(
   printBedWidthMm: number,
   gridUnitMm: number,
   printBedDepthMm?: number,
-  gridUnitMmY: number = gridUnitMm
+  gridUnitMmY: number = gridUnitMm,
+  overhang: OverhangSpan = NO_OVERHANG_SPAN
 ): BedCapacity {
   const depthMm = printBedDepthMm ?? printBedWidthMm;
-  return pickBedOrientation(
+  const capacity = pickBedOrientation(
     binWidth,
     binDepth,
     calcMaxGridUnits(printBedWidthMm, gridUnitMm, depthMm, gridUnitMmY),
     calcMaxGridUnits(depthMm, gridUnitMm, printBedWidthMm, gridUnitMmY)
   );
+  if (binWidth <= capacity.width && binDepth <= capacity.depth) return capacity;
+  return fitsBedAtAnyAngle(
+    binWidth * gridUnitMm + overhang.width,
+    binDepth * gridUnitMmY + overhang.depth,
+    printBedWidthMm,
+    depthMm
+  )
+    ? { width: binWidth, depth: binDepth, diagonal: true }
+    : capacity;
 }
 
 export const STAGING_ID = '__staging__' as LayerId;

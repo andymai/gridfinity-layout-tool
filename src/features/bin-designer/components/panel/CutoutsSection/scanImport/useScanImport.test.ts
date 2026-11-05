@@ -6,6 +6,8 @@ import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { ParsedCutoutSpec } from '../svgImport/types';
+import { getCutoutBounds } from '../maskFit';
+import { translateCutoutPreview } from '../cutoutHelpers';
 
 // Mirrors the store contract: `addCutout` reports whether the cutout landed,
 // and the hook's returned count is what it actually stored. The parameter is
@@ -17,6 +19,11 @@ const mockStartTransaction = vi.fn();
 const mockCommitTransaction = vi.fn();
 const mockQueueDepthPrompt = vi.fn((_ids: readonly string[]) => undefined);
 let mockParams: BinParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 5 };
+let mockGrowBin = false;
+const mockSetParams = vi.fn((partial: Partial<BinParams>) => {
+  mockParams = { ...mockParams, ...partial };
+});
+const mockUpdateBatch = vi.fn((_updates: ReadonlyMap<string, Partial<Cutout>>) => undefined);
 
 vi.mock('@/features/bin-designer/store', async () => {
   const { remainingCutoutCapacity } = await vi.importActual<{
@@ -25,6 +32,8 @@ vi.mock('@/features/bin-designer/store', async () => {
   const useDesignerStore = (selector: (s: Record<string, unknown>) => unknown) =>
     selector({
       addCutout: mockAddCutout,
+      setParams: mockSetParams,
+      updateCutoutsBatch: mockUpdateBatch,
       startTransaction: mockStartTransaction,
       commitTransaction: mockCommitTransaction,
       queueDepthPrompt: mockQueueDepthPrompt,
@@ -32,7 +41,7 @@ vi.mock('@/features/bin-designer/store', async () => {
   // The capacity gate reads committed state imperatively; a bin-target board
   // has no cap, which is the fixture every case here describes.
   useDesignerStore.getState = () => ({
-    ui: { cutoutTarget: 'bin' },
+    ui: { cutoutTarget: 'bin', growBinForScan: mockGrowBin, halfGridMode: false },
     params: mockParams,
   });
   return { useDesignerStore, remainingCutoutCapacity };
@@ -57,6 +66,8 @@ function spec(partial: Partial<ParsedCutoutSpec> = {}): ParsedCutoutSpec {
 
 describe('useScanImport', () => {
   afterEach(() => {
+    mockGrowBin = false;
+    mockParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 5 };
     vi.clearAllMocks();
     mockAddCutout.mockReturnValue(true);
     mockParams = { ...DEFAULT_BIN_PARAMS, width: 2, depth: 5 };
@@ -226,5 +237,106 @@ describe('useScanImport', () => {
 
     expect(() => result.current.addScanCutouts([spec()])).toThrow('boom');
     expect(mockCommitTransaction).toHaveBeenCalledOnce();
+  });
+
+  describe('packing for a phone', () => {
+    it('adds each tool on its own, then packs and grows inside the one transaction', () => {
+      const added: Cutout[] = [];
+      mockAddCutout.mockImplementation((c: Cutout) => {
+        added.push(c);
+        mockParams = { ...mockParams, cutouts: [...mockParams.cutouts, c] };
+        return true;
+      });
+      const { result } = renderHook(() => useScanImport());
+      result.current.addScanCutouts(
+        // Too long for the 5-unit bin even turned upright, so it has to grow.
+        [spec({ width: 250, depth: 30 }), spec({ width: 40, depth: 20 })],
+        undefined,
+        { pack: true }
+      );
+
+      expect(added.every((c) => c.parentGroups === undefined)).toBe(true);
+      expect(mockSetParams).toHaveBeenCalledOnce();
+      expect(mockUpdateBatch).toHaveBeenCalledOnce();
+
+      // Every tool placed, and every placement inside the grown bin.
+      const batch = mockUpdateBatch.mock.calls[0][0];
+      expect([...batch.keys()].sort()).toEqual(added.map((c) => c.id).sort());
+      const { innerW, innerD } = cutoutInterior(mockParams);
+      expect(mockParams.width).toBeGreaterThan(2);
+      const placed = added.map((c) =>
+        getCutoutBounds(translateCutoutPreview(c, batch.get(c.id) ?? {}))
+      );
+      for (const b of placed) {
+        expect(b.minX).toBeGreaterThanOrEqual(0);
+        expect(b.minY).toBeGreaterThanOrEqual(0);
+        expect(b.maxX).toBeLessThanOrEqual(innerW + 1e-6);
+        expect(b.maxY).toBeLessThanOrEqual(innerD + 1e-6);
+      }
+      const [a, b] = placed;
+      const apart = a.maxX <= b.minX || b.maxX <= a.minX || a.maxY <= b.minY || b.maxY <= a.minY;
+      expect(apart).toBe(true);
+
+      const open = mockStartTransaction.mock.invocationCallOrder[0];
+      const commit = mockCommitTransaction.mock.invocationCallOrder[0];
+      expect(open).toBeLessThan(mockAddCutout.mock.invocationCallOrder[0]);
+      expect(mockSetParams.mock.invocationCallOrder[0]).toBeLessThan(commit);
+      expect(mockUpdateBatch.mock.invocationCallOrder[0]).toBeLessThan(commit);
+      mockAddCutout.mockImplementation((_c: Cutout) => true);
+    });
+  });
+
+  describe('a bin started for the scan', () => {
+    it('grows to hold a tool that does not fit, inside the same undo step, then centers it', () => {
+      mockGrowBin = true;
+      const { result } = renderHook(() => useScanImport());
+      result.current.addScanCutouts([spec({ width: 150, depth: 30 })]);
+
+      expect(mockSetParams).toHaveBeenCalledOnce();
+      const grown = mockSetParams.mock.calls[0][0];
+      expect(grown.width).toBeGreaterThan(2);
+      expect(mockStartTransaction.mock.invocationCallOrder[0]).toBeLessThan(
+        mockSetParams.mock.invocationCallOrder[0]
+      );
+      expect(mockSetParams.mock.invocationCallOrder[0]).toBeLessThan(
+        mockCommitTransaction.mock.invocationCallOrder[0]
+      );
+      const placed = mockAddCutout.mock.calls[0][0];
+      expect(placed.x).toBeGreaterThan(0);
+    });
+
+    it('grows for a trace whose frame starts a hair before the origin', () => {
+      mockGrowBin = true;
+      const { result } = renderHook(() => useScanImport());
+      result.current.addScanCutouts([spec({ width: 150, depth: 30, y: -0.03 })]);
+      expect(mockSetParams).toHaveBeenCalledOnce();
+    });
+
+    it('grows for a traced path with a vertex before the origin', () => {
+      mockGrowBin = true;
+      const corner = (x: number, y: number) => ({
+        x,
+        y,
+        handleIn: null,
+        handleOut: null,
+        symmetric: false,
+      });
+      const { result } = renderHook(() => useScanImport());
+      result.current.addScanCutouts([
+        spec({
+          shape: 'path',
+          width: 150,
+          depth: 30,
+          path: [corner(0, -0.4), corner(150, 0), corner(150, 30), corner(0, 30)],
+        }),
+      ]);
+      expect(mockSetParams).toHaveBeenCalledOnce();
+    });
+
+    it('leaves a bin it was not started for at its size', () => {
+      const { result } = renderHook(() => useScanImport());
+      result.current.addScanCutouts([spec({ width: 150, depth: 30 })]);
+      expect(mockSetParams).not.toHaveBeenCalled();
+    });
   });
 });

@@ -257,6 +257,37 @@ describe('useBinInspector', () => {
       expect(result.current.constraints.needsSplit).toBe(false);
       expect(result.current.constraints.maxGridUnits).toEqual({ width: 5, depth: 6 });
     });
+
+    describe('a long bin on a 256mm bed', () => {
+      const seed = (overhang?: Bin['overhang']): void => {
+        const bin = {
+          ...createBin('bin1', 'layer1'),
+          width: gridUnits(1.5),
+          depth: gridUnits(7),
+          overhang,
+        };
+        const layout = useLayoutStore.getState().layout;
+        layout.bins = [bin];
+        layout.printBedSize = mm(256);
+        layout.printBedDepth = undefined;
+        layout.gridUnitMm = mm(42);
+        useLayoutStore.setState({ layout });
+        useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
+      };
+
+      it('reads as fitting diagonally', () => {
+        seed();
+        const { result } = renderHook(() => useBinInspector());
+        expect(result.current.constraints.needsSplit).toBe(false);
+        expect(result.current.constraints.maxGridUnits.diagonal).toBe(true);
+      });
+
+      it('needs a split once its overhang passes the diagonal, as the layout ZIP cuts it', () => {
+        seed({ left: 0, right: 0, front: 10, back: 10, enabled: true });
+        const { result } = renderHook(() => useBinInspector());
+        expect(result.current.constraints.needsSplit).toBe(true);
+      });
+    });
   });
 
   describe('updateField', () => {
@@ -864,6 +895,56 @@ describe('useBinInspector', () => {
       expect(bin.depth).toBe(2);
     });
 
+    it('turns a linked bin without resizing its design, as the R key does', () => {
+      vi.mocked(emitSyncEvent).mockClear();
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [
+        {
+          ...createBin('bin1', 'layer1'),
+          width: gridUnits(1),
+          depth: gridUnits(2),
+          linkedDesignId: toDesignId('d1'),
+        },
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.rotateBin();
+      });
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.width).toBe(2);
+      expect(bin.halfTurned).toBe(true);
+      expect(emitSyncEvent).not.toHaveBeenCalled();
+    });
+
+    it('half turns a square linked bin where it stands', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [
+        {
+          ...createBin('bin1', 'layer1'),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          linkedDesignId: toDesignId('d1'),
+        },
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.rotateBin();
+      });
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.halfTurned).toBe(true);
+      expect(bin.width).toBe(2);
+    });
+
     it('returns true on success', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [{ ...createBin('bin1', 'layer1'), width: gridUnits(2), depth: gridUnits(3) }];
@@ -889,34 +970,6 @@ describe('useBinInspector', () => {
       });
 
       expect(rotateResult).toBe(false);
-    });
-
-    it('emits bin-resized event when rotating a linked bin', () => {
-      const layout = useLayoutStore.getState().layout;
-      layout.bins = [
-        {
-          ...createBin('bin1', 'layer1'),
-          width: gridUnits(2),
-          depth: gridUnits(3),
-          linkedDesignId: toDesignId('design-1'),
-        },
-      ];
-      useLayoutStore.setState({ layout });
-      useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
-      vi.mocked(emitSyncEvent).mockClear();
-
-      const { result } = renderHook(() => useBinInspector());
-
-      act(() => {
-        result.current.rotateBin();
-      });
-
-      expect(emitSyncEvent).toHaveBeenCalledWith({
-        type: 'bin-resized',
-        binId: 'bin1',
-        linkedDesignId: 'design-1',
-        newDimensions: { width: 3, depth: 2, height: 3 },
-      });
     });
   });
 

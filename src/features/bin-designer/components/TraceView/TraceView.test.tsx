@@ -79,6 +79,16 @@ describe('TraceView', () => {
     expect(screen.getByText('binDesigner.cutouts.scanImport.add')).toBeDisabled();
   });
 
+  it('opens on a photo dropped or pasted on the editor, loading it once', async () => {
+    const photo = new File(['x'], 'tools.jpg', { type: 'image/jpeg' });
+    const { rerender } = render(
+      <TraceView open onClose={vi.fn()} onTraced={vi.fn()} initialPhoto={photo} />
+    );
+    await screen.findAllByText('scan.review.toolLabel');
+    rerender(<TraceView open onClose={vi.fn()} onTraced={vi.fn()} initialPhoto={photo} />);
+    expect(mockDecode).toHaveBeenCalledTimes(1);
+  });
+
   it('traces a photo, takes a ruler and adds the tools as a millimetre SVG', async () => {
     const onTraced = vi.fn();
     const onClose = vi.fn();

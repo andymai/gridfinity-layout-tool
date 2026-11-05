@@ -27,7 +27,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
-import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
+import { binBedFit } from '@/shared/utils/binSplitFit';
 import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
 import { getActiveBridge, getActiveKernel, bridgeManager } from '@/shared/generation/bridge';
 import { withSocketNozzle } from '@/shared/generation/socketNozzle';
@@ -96,6 +96,11 @@ interface UseExportReturn {
   readonly hasDividers: boolean;
   /** Whether the bin exceeds print bed and needs splitting */
   readonly needsSplit: boolean;
+  /**
+   * The bin overruns the bed square-on but fits lying at an angle, so it
+   * prints whole and a split is only offered.
+   */
+  readonly fitsDiagonally: boolean;
   /** Number of pieces the bin would be split into */
   readonly splitPieceCount: number;
   /**
@@ -163,20 +168,23 @@ export function useExport(): UseExportReturn {
 
   // Split detection — reads the bin's own grid unit rather than
   // defaultGridUnitMm from settings, which may be stale, and charges the bin's
-  // overhang against the bed.
-  const chunkLimit = useMemo(
-    () => binSplitChunkUnits(params, printBedSize, printBedDepth),
+  // overhang against the bed. A split cuts square-on even when the whole part
+  // would fit lying diagonally, since that split is the user's choice.
+  const bedFit = useMemo(
+    () => binBedFit(params, printBedSize, printBedDepth),
     [printBedSize, printBedDepth, params]
   );
-
-  const needsSplit = params.width > chunkLimit.width || params.depth > chunkLimit.depth;
+  const chunkLimit = bedFit.squareOn;
+  const exceedsSquareOn = params.width > chunkLimit.width || params.depth > chunkLimit.depth;
+  const fitsDiagonally = bedFit.diagonal;
+  const needsSplit = exceedsSquareOn && !fitsDiagonally;
 
   const splitPieceCount = useMemo(
     () =>
-      needsSplit
+      exceedsSquareOn
         ? getSplitPieceCount(params.width, params.depth, chunkLimit.width, chunkLimit.depth)
         : 1,
-    [params.width, params.depth, chunkLimit.width, chunkLimit.depth, needsSplit]
+    [params.width, params.depth, chunkLimit.width, chunkLimit.depth, exceedsSquareOn]
   );
 
   // Forward declarations so the queued-export effect can call the downloads.
@@ -664,6 +672,7 @@ export function useExport(): UseExportReturn {
     estimates,
     downloadBin,
     needsSplit,
+    fitsDiagonally,
     splitPieceCount,
     downloadSplit,
   };

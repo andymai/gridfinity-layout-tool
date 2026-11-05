@@ -12,6 +12,7 @@
 import { ExportDialog } from '@/features/bin-designer/components/ExportDialog';
 import { VersionHistory } from '@/features/bin-designer/components/VersionHistory';
 import { DesignListDialog } from '@/features/bin-designer/components/DesignListDialog';
+import { PhoneScanDialog } from '@/features/bin-designer/components/PhoneScanDialog';
 import { useGeneration } from '@/features/bin-designer/hooks/useGeneration';
 import { useSyncPhysicalUnits } from '@/features/bin-designer/hooks/useSyncPhysicalUnits';
 import { useDesignerInit } from '@/features/bin-designer/hooks/useDesignerInit';
@@ -24,6 +25,8 @@ import { useThumbnailCapture } from '@/features/bin-designer/hooks/useThumbnailC
 import { useDesignerUrlSync } from '@/features/bin-designer/hooks/useDesignerUrlSync';
 import { useUnsavedWarning } from '@/features/bin-designer/hooks/useUnsavedWarning';
 import { useBinDefaultCommandBridge } from '@/features/bin-designer/hooks/useBinDefaultCommandBridge';
+import { useScanLaunchBridge } from '@/features/bin-designer/hooks/useScanLaunchBridge';
+import { useScanDialogFollowsWorkspace } from '@/features/bin-designer/hooks/useScanDialogFollowsWorkspace';
 import { useCommunityPublishLifecycle } from '@/features/bin-designer/hooks/useCommunityPublish';
 import { useDesignerFirstRun } from '@/features/bin-designer/hooks/useDesignerFirstRun';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
@@ -80,6 +83,7 @@ export function DesignerPage() {
 
   // Bridge command-palette "bin default" commands (window events) to actions
   useBinDefaultCommandBridge();
+  useScanLaunchBridge();
 
   // Community publish: recapture assets while the dialog waits, resume after OAuth
   useCommunityPublishLifecycle();
@@ -95,6 +99,7 @@ export function DesignerPage() {
     (s) => s.ui.cutoutEditorOpen && (s.ui.cutoutTarget === 'lid' || s.params.style === 'solid')
   );
   const bentoWorkspaceOpen = useDesignerStore((s) => s.ui.bentoWorkspaceOpen);
+  useScanDialogFollowsWorkspace(isDesktop && cutoutEditorOpen, !isDesktop);
   const designListOpen = useDesignerStore((s) => s.ui.designListOpen);
   const versionsOpen = useDesignerStore((s) => s.ui.versionsOpen);
   const setVersionsOpen = useDesignerStore((s) => s.setVersionsOpen);
@@ -154,6 +159,7 @@ export function DesignerPage() {
       <ExportDialog />
       <DesignListDialog open={designListOpen} onClose={() => setDesignListOpen(false)} />
       <VersionHistory open={versionsOpen} onClose={() => setVersionsOpen(false)} />
+      {!isDesktop && <PhoneScanDialog />}
     </div>
   );
 }

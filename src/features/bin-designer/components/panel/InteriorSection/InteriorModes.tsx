@@ -6,6 +6,8 @@
  * two authoring surfaces over the same `standard` style.
  */
 
+import { Button } from '@/design-system';
+import { ScanToolIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { Hint } from '../shared';
 import { useResponsive } from '@/shared/hooks/useResponsive';
@@ -21,6 +23,10 @@ import { FeatureTip } from '../../FeatureTip';
 import { BentoMiniPreview } from './BentoMiniPreview';
 import { BentoIcon } from './icons';
 import type { InteriorCard } from '../../../types';
+import { startScan } from '../../../utils/startScan';
+import { ToolThicknessPrompt } from '../CutoutsSection/ToolThicknessPrompt';
+import { PhoneToolList } from '../../PhoneToolList';
+import { SCAN_TOOL_TARGET } from '../../../search/designerControlRegistry';
 
 function BentoModeContent() {
   const setBentoWorkspaceOpen = useDesignerStore((s) => s.setBentoWorkspaceOpen);
@@ -84,6 +90,7 @@ function SolidModeContent() {
     }))
   );
   const cutEditorOpens = useCutEditorOpens();
+  const { isDesktop } = useResponsive();
   const t = useTranslation();
 
   // Asking the engine rather than reading `base.lightweight` directly. Three
@@ -107,30 +114,47 @@ function SolidModeContent() {
   }
 
   return (
-    <WorkspaceLaunchButton
-      illustration={
-        /* Mini illustration: top-view of a bin with cutout shapes */
-        <svg
-          className="w-6 h-6 text-accent/70"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <rect x="3" y="3" width="18" height="18" rx="2" />
-          <path d="M8 10 h3 v4 h-3 z" fill="currentColor" opacity="0.4" stroke="none" />
-          <circle cx="16" cy="12" r="2.5" fill="currentColor" opacity="0.4" stroke="none" />
-        </svg>
-      }
-      title={t('binDesigner.editCutouts')}
-      subtitle={t('binDesigner.editCutoutsSubtitle')}
-      onClick={() => setCutoutEditorOpen(true)}
-      tip={
-        cutEditorOpens ? (
-          <FeatureTip tip="cutEditor" feature={t('binDesigner.editCutouts')} />
-        ) : undefined
-      }
-    />
+    <div className="space-y-2">
+      <WorkspaceLaunchButton
+        illustration={
+          /* Mini illustration: top-view of a bin with cutout shapes */
+          <svg
+            className="w-6 h-6 text-accent/70"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <path d="M8 10 h3 v4 h-3 z" fill="currentColor" opacity="0.4" stroke="none" />
+            <circle cx="16" cy="12" r="2.5" fill="currentColor" opacity="0.4" stroke="none" />
+          </svg>
+        }
+        title={t('binDesigner.editCutouts')}
+        subtitle={t('binDesigner.editCutoutsSubtitle')}
+        onClick={() => setCutoutEditorOpen(true)}
+        tip={
+          cutEditorOpens ? (
+            <FeatureTip tip="cutEditor" feature={t('binDesigner.editCutouts')} />
+          ) : undefined
+        }
+      />
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        fullWidth
+        leftIcon={<ScanToolIcon size="xs" />}
+        onClick={() => startScan('card', { phone: !isDesktop })}
+        data-help-target={SCAN_TOOL_TARGET}
+      >
+        {t('binDesigner.cutouts.scanImport.title')}
+      </Button>
+      {/* The editor asks how thick a scanned tool is; off desktop it isn't
+          there, so the panel asks instead. */}
+      {!isDesktop && <ToolThicknessPrompt placement="panel" />}
+      {!isDesktop && <PhoneToolList />}
+    </div>
   );
 }
 

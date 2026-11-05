@@ -50,6 +50,7 @@ import {
   hasMultipleCompartments,
 } from '../compartmentBuilder';
 import { planSpanningDividerClips, spanningDividerClipsKey } from '../labelTabBuilder';
+import { labelTabKeepoutsKey, planLabelTabKeepouts } from '../labelSocketKeepouts';
 // HEIGHT_UNIT is kept as a fallback default for backwards compatibility with
 // callers (or serialized designs) that predate heightUnitMm. The grid-unit
 // fallback now lives in `pitchFromParams` (gridPitch.ts).
@@ -345,6 +346,10 @@ export function deriveDimensions(
   const rimWalls = pullTabWallFields(
     (rimTab ? resolvePullTabWalls(rimTab) : []).filter((wall) => wall !== 'center')
   );
+  const rimShellTabKeepouts =
+    effectiveRimFilletRadius(params) > 0 && interiorFilletRadiusMm(params) > 0
+      ? planLabelTabKeepouts(params, innerW, innerD, interiorHeight)
+      : [];
   const shellKey = compactKey(
     buildCacheKey(
       'v7',
@@ -379,6 +384,10 @@ export function deriveDimensions(
                   stableSerialize(params.compartments),
                   stableSerialize(params.scoop),
                   stableSerialize(params.walls),
+                  // Baked in here, so the tabs it is cut around key the shell.
+                  ...(rimShellTabKeepouts.length > 0
+                    ? [labelTabKeepoutsKey(rimShellTabKeepouts)]
+                    : []),
                 ]
               : []),
           ]

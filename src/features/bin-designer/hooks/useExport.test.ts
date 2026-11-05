@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
-import { useSettingsStore } from '@/core/store';
+import { useLayoutStore, useSettingsStore } from '@/core/store';
+import { mm } from '@/core/types';
 import {
   DEFAULT_BIN_PARAMS,
   DEFAULT_GENERATION_STATE,
@@ -416,6 +417,20 @@ describe('useExport', () => {
 
     const { result } = renderHook(() => useExport());
     expect(result.current.needsSplit).toBe(true);
+  });
+
+  it('offers a split, without needing one, for a bin that fits the bed diagonally', () => {
+    useLayoutStore.setState((s) => ({
+      layout: { ...s.layout, printBedSize: mm(256), printBedDepth: undefined },
+    }));
+    act(() => {
+      useDesignerStore.getState().setParams({ width: 1.5, depth: 7 });
+    });
+
+    const { result } = renderHook(() => useExport());
+    expect(result.current.needsSplit).toBe(false);
+    expect(result.current.fitsDiagonally).toBe(true);
+    expect(result.current.splitPieceCount).toBe(2);
   });
 
   it('provides downloadSplit function', () => {

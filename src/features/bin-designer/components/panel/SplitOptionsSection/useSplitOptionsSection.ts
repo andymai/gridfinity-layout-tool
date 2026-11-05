@@ -5,8 +5,8 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import { getSplitPieceCount } from '@/shared/utils/splitPositions';
-import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
-import { slantedBinFitsBed } from '@/shared/utils/slantPlan';
+import { binBedFit } from '@/shared/utils/binSplitFit';
+import { slantedBinFitsBed, slantedBinFitsOnlyDiagonally } from '@/shared/utils/slantPlan';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { useLayoutPrintBed } from '@/features/bin-designer/hooks/useLayoutPrintBed';
 
@@ -34,9 +34,14 @@ export function useSplitOptionsSection() {
   // and charges the bin's overhang against the bed: an overhang grows the outer
   // body in mm past its grid footprint, so a bin whose units fit can still be
   // far too wide to print.
-  const maxGrid = useMemo(
-    () => binSplitChunkUnits(params, printBedSize, printBedDepth),
+  const bedFit = useMemo(
+    () => binBedFit(params, printBedSize, printBedDepth),
     [params, printBedSize, printBedDepth]
+  );
+  const maxGrid = bedFit.chunk;
+  const fitsDiagonally = useMemo(
+    () => bedFit.diagonal || slantedBinFitsOnlyDiagonally(params, printBedSize, printBedDepth),
+    [bedFit.diagonal, params, printBedSize, printBedDepth]
   );
   // A slanted bin never splits, so a lean too long for the bed has no remedy
   // here but a smaller angle or bin.
@@ -99,6 +104,7 @@ export function useSplitOptionsSection() {
   return {
     needsSplit,
     slantTooLarge,
+    fitsDiagonally,
     printBedSize: {
       width: printBedSize,
       depth: printBedDepth ?? printBedSize,

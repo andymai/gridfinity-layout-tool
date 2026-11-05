@@ -43,7 +43,7 @@ import { CutoutShapeToolbar } from '../panel/CutoutsSection/CutoutShapeToolbar';
 import { useSvgImport } from '../panel/CutoutsSection/svgImport';
 import { useSvgExport } from '../panel/CutoutsSection/svgExport';
 import { useStlImport, StlImportDialog } from '../panel/CutoutsSection/stlImport';
-import { ScanWithPhoneDialog } from '../panel/CutoutsSection/scanImport';
+import { ScanToolDialog } from '../panel/CutoutsSection/scanImport';
 import { ToolThicknessPrompt } from '../panel/CutoutsSection/ToolThicknessPrompt';
 import { useAddFingerAccess } from '../panel/CutoutsSection/useAddFingerAccess';
 import type { RulerMeasurement } from '../panel/CutoutsSection/handlers/rulerHandler';
@@ -52,6 +52,7 @@ import { usePocketChecks } from '../panel/CutoutsSection/usePocketChecks';
 import { InspectorDock } from './InspectorDock';
 import { ShapeList } from './ShapeList';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
+import { showsEmptyBoardHint } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { applyFlattenArray, applyFlattenGroupArray } from '../panel/CutoutsSection/cutoutHelpers';
 import { CutoutContextMenu } from '../panel/CutoutsSection/CutoutContextMenu';
 import { TopRuler, LeftRuler, RulerCorner } from './Rulers';
@@ -70,6 +71,8 @@ import { useTranslation } from '@/i18n';
 import { useLoadedMeshAssets } from '@/shared/hooks/useMeshOutlines';
 import { useCutoutWorkspaceCamera } from './useCutoutWorkspaceCamera';
 import { useCutoutWorkspacePointer } from './useCutoutWorkspacePointer';
+import { usePhotoDropAndPaste, type PhotoArrival } from './usePhotoDropAndPaste';
+import { ScanToolIcon } from '@/design-system/Icon';
 import { buildCutoutContextActions } from './cutoutWorkspaceContextActions';
 
 export function CutoutWorkspace() {
@@ -225,7 +228,21 @@ export function CutoutWorkspace() {
   const t = useTranslation();
   const { triggerImport: triggerSvgImport } = useSvgImport();
   const stlImport = useStlImport();
-  const [scanDialogOpen, setScanDialogOpen] = useState(false);
+  const scanDialogSource = useDesignerStore((s) => s.ui.scanDialogSource);
+  const openScanDialog = useDesignerStore((s) => s.openScanDialog);
+  const closeScanDialog = useDesignerStore((s) => s.closeScanDialog);
+  const [droppedPhoto, setDroppedPhoto] = useState<File | null>(null);
+  const takePhoto = useCallback(
+    (file: File, how: PhotoArrival) => {
+      setDroppedPhoto(file);
+      openScanDialog(how);
+    },
+    [openScanDialog]
+  );
+  const handleScanDialogClose = useCallback(() => {
+    closeScanDialog();
+    setDroppedPhoto(null);
+  }, [closeScanDialog]);
 
   // Mirrors the dock's own collapsed state (which it persists) so the canvas
   // knows whether the inspector is there to hold the repeat suggestion.
@@ -236,7 +253,9 @@ export function CutoutWorkspace() {
   // Quickstart overlay state
   const { quickstartSeen, markQuickstartSeen } = useCutoutQuickstart();
   const [overlayForcedVisible, setOverlayForcedVisible] = useState(false);
-  const showQuickstart = !quickstartSeen || overlayForcedVisible;
+  // Held back while the scan dialog is up, so opening straight into a scan
+  // shows one overlay at a time; the card follows once the dialog closes.
+  const showQuickstart = (!quickstartSeen || overlayForcedVisible) && scanDialogSource === null;
 
   const handleDismissQuickstart = useCallback(() => {
     markQuickstartSeen();
@@ -262,6 +281,12 @@ export function CutoutWorkspace() {
     fitToView,
     handleWheel,
   } = useCutoutWorkspaceCamera(binWidth, binDepth);
+  // Off while a scan dialog is up, so a paste inside it stays its own.
+  const photoDrop = usePhotoDropAndPaste(
+    !isLid && scanDialogSource === null,
+    takePhoto,
+    canvasContainerRef
+  );
 
   // Ruler sync: scale=1 for WebGL (world units = mm), zoom from camera
   const scale = 1;
@@ -498,6 +523,9 @@ export function CutoutWorkspace() {
     onLock: lockCutouts,
     onUnlock: unlockCutouts,
     onSplitLine: handleSplitLine,
+    onImportSvg: triggerSvgImport,
+    // Matches the toolbar: an STL lands in the bin's array, never the lid's.
+    onImportStl: isLid ? undefined : stlImport.triggerImport,
     binWidth,
     binDepth,
     gridSize,
@@ -717,6 +745,7 @@ export function CutoutWorkspace() {
         onClearAll={clearCutouts}
         disabled={isInteracting}
         onShowHelp={handleShowHelp}
+        onScanTool={!isLid ? () => openScanDialog('header') : undefined}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -737,12 +766,18 @@ export function CutoutWorkspace() {
               // board they would report success and add the shape to a part the
               // canvas is not showing.
               onImportStl={isLid ? undefined : stlImport.triggerImport}
-              onScanWithPhone={!isLid ? () => setScanDialogOpen(true) : undefined}
+              onScanTool={!isLid ? () => openScanDialog('toolbar') : undefined}
             />
           </div>
         </div>
 
-        <ScanWithPhoneDialog open={scanDialogOpen} onClose={() => setScanDialogOpen(false)} />
+        <ScanToolDialog
+          open={scanDialogSource !== null && !isLid}
+          source={scanDialogSource ?? 'toolbar'}
+          onClose={handleScanDialogClose}
+          photo={droppedPhoto}
+          onPhotoDone={() => setDroppedPhoto(null)}
+        />
 
         <StlImportDialog
           pending={stlImport.pending}
@@ -780,11 +815,20 @@ export function CutoutWorkspace() {
               className={`relative flex-1 overflow-hidden bg-surface ${spaceHeld ? 'cursor-grab' : ''}`}
               onWheel={handleWheel}
               onContextMenu={handleContextMenu}
+              {...photoDrop.dropHandlers}
             >
-              {cutouts.length === 0 && mode.type === 'idle' && (
+              {photoDrop.dragging && (
+                <div className="pointer-events-none absolute inset-2 z-20 flex items-center justify-center rounded-lg border-2 border-dashed border-accent bg-accent/10">
+                  <span className="flex items-center gap-2 rounded-md bg-surface px-3 py-2 text-sm font-medium text-content-primary shadow">
+                    <ScanToolIcon size="sm" className="text-accent" />
+                    {t('binDesigner.cutouts.dropPhoto')}
+                  </span>
+                </div>
+              )}
+              {showsEmptyBoardHint(cutouts.length, mode) && !photoDrop.dragging && (
                 <CutoutEmptyState
                   variant="workspace"
-                  onScanWithPhone={!isLid ? () => setScanDialogOpen(true) : undefined}
+                  onScanTool={!isLid ? () => openScanDialog('empty_board') : undefined}
                 />
               )}
               <ToolThicknessPrompt placement="chip" onFocusTools={(ids) => selectIds(ids, false)} />
@@ -894,7 +938,9 @@ export function CutoutWorkspace() {
         <RepeatSuggestion suggestion={repeatSuggestion} placement="chip" disabled={isInteracting} />
       )}
 
-      {showQuickstart && <CutoutQuickstartOverlay onDismiss={handleDismissQuickstart} />}
+      {showQuickstart && (
+        <CutoutQuickstartOverlay onDismiss={handleDismissQuickstart} showScan={!isLid} />
+      )}
 
       {contextMenu && (
         <CutoutContextMenu

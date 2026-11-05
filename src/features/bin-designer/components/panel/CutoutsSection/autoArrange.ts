@@ -14,6 +14,7 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
+import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { unitTag, unitTagShapeId } from '@/features/bin-designer/utils/cutoutHierarchy';
 import { toArrangeUnits, type ArrangeUnit } from './cutoutGroups';
 import type { Bounds } from './geometryCore';
@@ -27,6 +28,8 @@ export interface AutoArrangeOptions {
   readonly staggered?: boolean;
   /** Turn each lone shape to its smallest box before packing. */
   readonly turn?: boolean;
+  /** Floor the packing must leave clear, beyond the locked units it always does. */
+  readonly keepOut?: readonly Bounds[];
 }
 
 export interface ArrangedPlacement {
@@ -56,7 +59,15 @@ function packed(
   const [only] = unit.members;
   // A group is one block at this level even when it holds a single shape.
   const tag = unit.members.length === 1 ? unitTag(only, context) : null;
-  if (!turn || tag === null || unitTagShapeId(tag) === null) return { unit, bounds: unit.bounds };
+  if (tag === null || unitTagShapeId(tag) === null) return { unit, bounds: unit.bounds };
+  // A path is measured by its points, as the board and grow-to-fit measure it;
+  // its width and depth can lag them. A repeat keeps the span of its instances.
+  if (!turn) {
+    return {
+      unit,
+      bounds: expandCutoutArray(only).length === 1 ? getCutoutBounds(only) : unit.bounds,
+    };
+  }
   const best = minAreaTurn(only);
   if (best === null) return { unit, bounds: unit.bounds };
   // Landscape fills rows best, but a shape too long for the bin's width lies
@@ -84,20 +95,26 @@ function packed(
  * When `staggered` is true, alternate rows are offset by half the average item width.
  * Returns a map of cutout ID → new position, and new rotation for a turned shape.
  *
- * Locked units keep their position and are packed around rather than moved —
- * their footprint is not reserved, so a locked unit can end up overlapped.
+ * Locked units keep their position, and the packing steps around them (and
+ * any `keepOut`), a gap clear on every side.
  */
 export function autoArrangeCutouts(
   cutouts: readonly Cutout[],
   options: AutoArrangeOptions,
   context: readonly string[] = []
 ): Record<string, ArrangedPlacement> {
-  const { binWidth, binDepth, gap, staggered = false, turn = false } = options;
+  const { binWidth, binDepth, gap, staggered = false, turn = false, keepOut = [] } = options;
   // Quantized, so the sines a turned outline is measured through cannot tip
   // two equal shapes into a different order or row when arranged again.
   const width = (p: Packed) => tidy(p.bounds.maxX - p.bounds.minX);
   const depth = (p: Packed) => tidy(p.bounds.maxY - p.bounds.minY);
-  const movable = toArrangeUnits(cutouts, context)
+  const units = toArrangeUnits(cutouts, context);
+  const reserved = [...units.filter((unit) => unit.locked).map((unit) => unit.bounds), ...keepOut];
+  const clash = (x: number, y: number, w: number, d: number): Bounds | undefined =>
+    reserved.find(
+      (r) => x < r.maxX + gap && x + w + gap > r.minX && y < r.maxY + gap && y + d + gap > r.minY
+    );
+  const movable = units
     .filter((unit) => !unit.locked)
     .map((unit) => packed(unit, turn, context, { w: binWidth - 2 * gap, d: binDepth - 2 * gap }));
   const sorted = [...movable].sort((a, b) => depth(b) - depth(a));
@@ -115,17 +132,28 @@ export function autoArrangeCutouts(
   let currentY = gap;
   let rowHeight = 0;
 
+  const newRow = (below: number): void => {
+    rowIndex++;
+    const offset = staggered && rowIndex % 2 === 1 ? avgWidth / 2 : 0;
+    currentX = gap + offset;
+    currentY = below;
+    rowHeight = 0;
+  };
+
   for (const item of sorted) {
     const w = width(item);
     const d = depth(item);
 
     // Start new row if unit doesn't fit
-    if (currentX + w + gap > binWidth) {
-      rowIndex++;
-      const offset = staggered && rowIndex % 2 === 1 ? avgWidth / 2 : 0;
-      currentX = gap + offset;
-      currentY += rowHeight + gap;
-      rowHeight = 0;
+    if (currentX + w + gap > binWidth) newRow(currentY + rowHeight + gap);
+    // Every step moves right past what it hit, or down to a new row, so the
+    // walk ends once the row is below everything reserved.
+    for (let hit = clash(currentX, currentY, w, d); hit; hit = clash(currentX, currentY, w, d)) {
+      currentX = hit.maxX + gap;
+      if (currentX + w + gap > binWidth) {
+        // A row with nothing in it yet has no height to step down by.
+        newRow(rowHeight > 0 ? currentY + rowHeight + gap : hit.maxY + gap);
+      }
     }
 
     const dx = currentX - item.bounds.minX;

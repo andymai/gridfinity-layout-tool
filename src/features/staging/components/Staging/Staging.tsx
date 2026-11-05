@@ -20,6 +20,7 @@ import type { BinId } from '@/core/types';
 import { binId as toBinId } from '@/core/types';
 import { isOk } from '@/core/result';
 import { isBinLocked } from '@/shared/utils/binLocation';
+import { quarterTurnUpdates } from '@/shared/utils/rotation';
 import { packBins } from '@/features/staging/utils/packing';
 import {
   useStagingResize,
@@ -227,9 +228,7 @@ export function Staging() {
       // The result has to leave the batch callback: returning from inside it
       // only ends the callback, so the toast used to claim success for a
       // rotation the command had rejected.
-      const rotated = batch(() =>
-        isOk(updateBin(brandedBinId, { width: bin.depth, depth: bin.width }))
-      );
+      const rotated = batch(() => isOk(updateBin(brandedBinId, quarterTurnUpdates(bin))));
       if (!rotated) return;
 
       addToast(t('toast.binRotated'), 'success');

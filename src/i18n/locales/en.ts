@@ -359,7 +359,7 @@ const en: Record<string, string> = {
   'sidebar.heightUnitTooltip': 'Height of one vertical unit in mm (standard = 7mm)',
   'sidebar.printBed': 'Print bed',
   'sidebar.printBedTooltip':
-    'Bins wider than {maxWidth} or deeper than {maxDepth} will be split for printing',
+    'Bins wider than {maxWidth} or deeper than {maxDepth} are split for printing, unless they fit the bed diagonally',
   'sidebar.halfBinMode': 'Half-grid mode',
   'sidebar.bottom': 'Bottom',
   'sidebar.collapseLeftPanel': 'Collapse left panel',
@@ -564,6 +564,7 @@ const en: Record<string, string> = {
   'inspector.deselectAllBins': 'Deselect all bins',
   'inspector.deselectBin': 'Deselect bin',
   'inspector.fitsPrintBedDimensions': '{binWidth}×{binDepth} fits print bed ({max}mm)',
+  'inspector.fitsPrintBedDiagonally': '{binWidth}×{binDepth} fits print bed laid diagonally',
   'inspector.layer': 'Layer',
   'inspector.extendToMargin': 'Extend into drawer margin',
   'inspector.extendToMargin.hint':
@@ -1539,6 +1540,8 @@ const en: Record<string, string> = {
   'toast.svgImport.unsupportedFile': 'File is not a valid SVG',
   'toast.svgImport.fileTooLarge': 'SVG file is too large (max 5 MB)',
   'toast.scanImport.success': 'Added {count} cutout(s) from your scan',
+  'toast.scanImport.offFloor':
+    'Added {count} cutout(s), but not all of them fit in this bin. Move them on a computer.',
   'toast.scanImport.parseFailed':
     "Couldn't read that outline. Try a photo on a plain, high-contrast background.",
   'toast.scanImport.fileTooLarge': 'Outline file is too large (max 5 MB)',
@@ -1645,6 +1648,7 @@ const en: Record<string, string> = {
     "Couldn't save some recent changes. Your undo history may be incomplete.",
   'toast.binsDeleted': 'Deleted {count} bin(s)',
   'toast.binRotated': 'Bin rotated',
+  'toast.binHalfTurned': 'Bin turned 180°',
   'toast.clearComplete': 'Cleared {count} bin(s) from layer',
   'toast.fillComplete': 'Added {count} bin(s) to fill gaps',
   'toast.fillWithSize': 'Added {count} {width}×{depth} bins',
@@ -3039,6 +3043,8 @@ const en: Record<string, string> = {
   'binDesigner.panel.viewAsScroll': 'Single scroll',
   'binDesigner.panel.viewAsRail': 'Compact sections',
   'binDesigner.printFit.fits': 'Fits your {width} × {depth} mm print bed.',
+  'binDesigner.printFit.fitsDiagonally':
+    'Fits your {width} × {depth} mm print bed laid diagonally. Turn it in your slicer.',
   'binDesigner.printFit.slantTooLarge':
     'This slanted bin is too big for your {width} \u00d7 {depth} mm print bed.',
   'binDesigner.slant.title': 'Slant',
@@ -3299,6 +3305,10 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.repeat.presetLabel': 'Start with',
   'binDesigner.cutouts.repeat.presetRing': 'Ring of {count}',
   'binDesigner.cutouts.repeat.presetNoFit': 'Not enough room from this position',
+  'binDesigner.cutouts.repeat.noRoomRows': 'No room for another row from here',
+  'binDesigner.cutouts.repeat.noRoomCols': 'No room for another column from here',
+  'binDesigner.cutouts.repeat.noRoomDetail':
+    'Copies are added toward the far edge of the bin. To make room, move the selection away from that edge or lower the pitch.',
   'binDesigner.cutouts.repeat.blockedGrouped': 'Select the whole group to repeat it as one piece.',
   'binDesigner.cutouts.repeat.blockedDescendant': 'Something inside this group already repeats.',
   'binDesigner.cutouts.repeat.blockedDescendantDetail':
@@ -3610,8 +3620,11 @@ const en: Record<string, string> = {
   'binDesigner.importedMesh.exportStl': 'Export STL',
   'binDesigner.importedMesh.export3mf': '3MF',
   'binDesigner.importedMesh.exportFailed': 'Export failed. Try again',
-  'binDesigner.cutouts.scanImport.title': 'Scan with your phone',
+  'binDesigner.cutouts.scanImport.title': 'Scan a tool',
   'binDesigner.cutouts.scanImport.buttonLabel': 'Scan',
+  'binDesigner.cutouts.scanImport.routePhone': 'With your phone',
+  'binDesigner.cutouts.scanImport.routePhoneHelp':
+    'Scan a QR code, then photograph the tool with your phone.',
   'binDesigner.cutouts.scanImport.hint':
     'Photograph an object on a plain background to trace its outline, or upload a traced outline below.',
   'binDesigner.cutouts.scanImport.upload': 'Upload outline (SVG)',
@@ -3646,16 +3659,19 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.scanImport.previewAlt': 'Traced outline preview',
   'binDesigner.cutouts.scanImport.qrAlt': 'QR code to open the scanner on your phone',
   'binDesigner.cutouts.scanImport.waiting': 'Waiting for your photo…',
-  'binDesigner.cutouts.scanImport.or': 'or',
   'binDesigner.cutouts.scanImport.unavailable':
     'Phone scanning isn’t available right now. Upload a traced outline instead.',
   'binDesigner.cutouts.scanImport.expired':
     'This scan link expired. Close and reopen to try again.',
-  'binDesigner.cutouts.scanImport.emptyCta': 'Scan a real tool with your phone',
   'binDesigner.cutouts.scanImport.emptyHelp':
     'Photograph any tool to trace its exact outline automatically.',
+  'binDesigner.cutouts.dropPhoto': 'Drop a photo to trace it',
+  'binDesigner.cutouts.phoneList.title': 'Pockets in this bin',
+  'binDesigner.cutouts.phoneList.hint': 'Move and reshape them on a computer.',
+  'binDesigner.cutouts.phoneList.offFloor':
+    'Not all pockets fit in this bin. Move them on a computer.',
   'binDesigner.cutouts.traceView.title': 'Trace a photo',
-  'binDesigner.cutouts.traceView.open': 'Trace a photo on this computer',
+  'binDesigner.cutouts.traceView.open': 'From a photo on this computer',
   'binDesigner.cutouts.traceView.openHelp':
     'Use a photo you already have. It never leaves this computer.',
   'binDesigner.cutouts.traceView.drop.title': 'Drop a photo of your tools here',
@@ -3756,7 +3772,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.clearAllConfirmMessage':
     'This will remove all {count} cutouts. You can undo this action.',
   'binDesigner.editCutouts': 'Cut Editor',
-  'binDesigner.editCutoutsSubtitle': 'Draw rectangles, circles & pen paths',
+  'binDesigner.editCutoutsSubtitle': 'Draw shapes or scan a real tool',
   'binDesigner.cutoutEditor.done': 'Done',
   'binDesigner.cutoutEditor.title': 'Cutout Editor',
   'binDesigner.cutoutEditor.zoomIn': 'Zoom in',
@@ -3828,6 +3844,8 @@ const en: Record<string, string> = {
     'Select 3 or more matching cutouts to turn them into one repeat',
   'binDesigner.cutoutEditor.quickstart.navigate':
     'Navigate: scroll to zoom, Space-drag or middle-drag to pan, Ctrl+0 to fit',
+  'binDesigner.cutoutEditor.quickstart.scan':
+    'Scan a tool: trace a real tool from a photo on your phone or this computer',
   'binDesigner.cutoutEditor.quickstart.dismiss': 'Got it',
   'binDesigner.quickstart.title': 'Design a custom bin',
   'binDesigner.quickstart.livePreview':
@@ -4208,8 +4226,9 @@ const en: Record<string, string> = {
   'binDesigner.interior.slotted.title': 'Removable Dividers',
   'binDesigner.interior.slotted.description': 'Slots for insertable dividers',
   'binDesigner.interior.solid.title': 'Custom Cutouts',
+  'binDesigner.interior.scanLink': 'Have a tool to fit? Scan it',
   'binDesigner.interior.solid.description':
-    'Top-cut tool-shaped recesses: draw them or scan a real tool with your phone.',
+    'Top-cut tool-shaped recesses: draw them or scan a real tool.',
   'binDesigner.resetView': 'Reset view (R)',
   'binDesigner.toggleWireframe': 'Toggle wireframe (W)',
   'binDesigner.changePreviewColor': 'Change preview color',
@@ -4489,6 +4508,8 @@ const en: Record<string, string> = {
   'binDesigner.startANewDesign': 'Start a new design',
   'binDesigner.splitExport.exceedsPrintBed':
     'This bin exceeds your print bed ({size}mm). It will be split into {count} pieces.',
+  'binDesigner.splitExport.fitsDiagonally':
+    'This bin fits your print bed ({size}mm) only when laid diagonally. Turn it in your slicer, or split it into {count} pieces.',
   'binDesigner.splitExport.enableSplit': 'Split into pieces',
   'binDesigner.splitExport.downloadSplit': 'Download Split {format} (ZIP)',
   'binDesigner.splitExport.success': 'Split export completed ({count} pieces)',
@@ -5077,6 +5098,7 @@ const en: Record<string, string> = {
   // Tool commands
   'commandPalette.toggleHalfBin': 'Toggle Half-Bin Mode',
   'commandPalette.fillGaps': 'Fill Layer Gaps',
+  'commandPalette.scanTool': 'Scan a Tool',
 
   // Export commands
   'commandPalette.exportLayout3D': 'Export Layout as ZIP (3D)',
@@ -6083,6 +6105,7 @@ const en: Record<string, string> = {
   'whatsNew.action.openModal.baseplateLibrary': 'Open baseplate library',
   'whatsNew.action.openModal.print': 'Open print list',
   'whatsNew.action.openModal.designGallery': 'Open gallery',
+  'whatsNew.action.scanTool': 'Scan a tool',
   'whatsNew.action.openLabs': 'Open Labs',
   'settings.general.showUpdateSummaries': 'Show update summaries',
   'settings.search.keywords.updateSummaries':

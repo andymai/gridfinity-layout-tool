@@ -8,15 +8,72 @@
 import type { ReactNode } from 'react';
 import { useEffect, useRef } from 'react';
 import { Button } from '@/design-system';
+import { ScanToolIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 
 interface CutoutQuickstartOverlayProps {
   readonly onDismiss: () => void;
+  /** False on boards the scan flow cannot add to, which hide its button. */
+  readonly showScan?: boolean;
 }
 
-export function CutoutQuickstartOverlay({ onDismiss }: CutoutQuickstartOverlayProps) {
+export function CutoutQuickstartOverlay({
+  onDismiss,
+  showScan = true,
+}: CutoutQuickstartOverlayProps) {
   const t = useTranslation();
   const dismissRef = useRef<HTMLButtonElement>(null);
+
+  const rows: readonly { readonly key: string; readonly icon: ReactNode; readonly text: string }[] =
+    [
+      {
+        key: 'shapes',
+        icon: <ShapesIcon />,
+        text: t('binDesigner.cutoutEditor.quickstart.shapes'),
+      },
+      ...(showScan
+        ? [
+            {
+              key: 'scan',
+              icon: <ScanToolIcon size="md" />,
+              text: t('binDesigner.cutoutEditor.quickstart.scan'),
+            },
+          ]
+        : []),
+      {
+        key: 'select',
+        icon: <SelectIcon />,
+        text: t('binDesigner.cutoutEditor.quickstart.select'),
+      },
+      {
+        key: 'vertex',
+        icon: <VertexIcon />,
+        text: t('binDesigner.cutoutEditor.quickstart.vertex'),
+      },
+      {
+        key: 'rightClick',
+        icon: <MenuIcon />,
+        text: t('binDesigner.cutoutEditor.quickstart.rightClick'),
+      },
+      {
+        key: 'precision',
+        icon: <GridIcon />,
+        text: t('binDesigner.cutoutEditor.quickstart.precision'),
+      },
+      {
+        key: 'repeat',
+        icon: <RepeatIcon />,
+        text: t('binDesigner.cutoutEditor.quickstart.repeat'),
+      },
+      // Pan and fit already existed and nothing said so, which reads as their
+      // absence: the view controls are the one group a user cannot discover by
+      // clicking around the canvas.
+      {
+        key: 'navigate',
+        icon: <NavigateIcon />,
+        text: t('binDesigner.cutoutEditor.quickstart.navigate'),
+      },
+    ];
 
   useEffect(() => {
     dismissRef.current?.focus();
@@ -44,44 +101,9 @@ export function CutoutQuickstartOverlay({ onDismiss }: CutoutQuickstartOverlayPr
 
         {/* role="list" restores list semantics that Safari/iOS VoiceOver strips when list-style:none is applied. */}
         <ul className="space-y-2 list-none" role="list">
-          <FeatureRow
-            index={0}
-            icon={<ShapesIcon />}
-            text={t('binDesigner.cutoutEditor.quickstart.shapes')}
-          />
-          <FeatureRow
-            index={1}
-            icon={<SelectIcon />}
-            text={t('binDesigner.cutoutEditor.quickstart.select')}
-          />
-          <FeatureRow
-            index={2}
-            icon={<VertexIcon />}
-            text={t('binDesigner.cutoutEditor.quickstart.vertex')}
-          />
-          <FeatureRow
-            index={3}
-            icon={<MenuIcon />}
-            text={t('binDesigner.cutoutEditor.quickstart.rightClick')}
-          />
-          <FeatureRow
-            index={4}
-            icon={<GridIcon />}
-            text={t('binDesigner.cutoutEditor.quickstart.precision')}
-          />
-          <FeatureRow
-            index={5}
-            icon={<RepeatIcon />}
-            text={t('binDesigner.cutoutEditor.quickstart.repeat')}
-          />
-          {/* Pan and fit already existed and nothing said so, which reads as
-              their absence — the view controls are the one group a user cannot
-              discover by clicking around the canvas. */}
-          <FeatureRow
-            index={6}
-            icon={<NavigateIcon />}
-            text={t('binDesigner.cutoutEditor.quickstart.navigate')}
-          />
+          {rows.map((row, index) => (
+            <FeatureRow key={row.key} index={index} icon={row.icon} text={row.text} />
+          ))}
         </ul>
 
         <Button
