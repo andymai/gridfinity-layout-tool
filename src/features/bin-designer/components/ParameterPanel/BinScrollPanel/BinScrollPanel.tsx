@@ -132,6 +132,7 @@ export function BinScrollPanel({
   const groups = (
     <>
       <StickyGroupHeader
+        variant="band"
         title={t('binDesigner.group.shape')}
         expanded={open.shape}
         onExpandedChange={(next) => setGroup('shape', next)}
@@ -183,6 +184,7 @@ export function BinScrollPanel({
       </StickyGroupHeader>
 
       <StickyGroupHeader
+        variant="band"
         title={t('binDesigner.group.lid')}
         expanded={open.lid}
         onExpandedChange={(next) => setGroup('lid', next)}
@@ -202,6 +204,7 @@ export function BinScrollPanel({
       </StickyGroupHeader>
 
       <StickyGroupHeader
+        variant="band"
         title={t('binDesigner.group.interior')}
         expanded={open.interior}
         onExpandedChange={(next) => setGroup('interior', next)}
@@ -238,6 +241,7 @@ export function BinScrollPanel({
       </StickyGroupHeader>
 
       <StickyGroupHeader
+        variant="band"
         title={t('binDesigner.group.base')}
         expanded={open.base}
         onExpandedChange={(next) => setGroup('base', next)}
@@ -251,6 +255,7 @@ export function BinScrollPanel({
       </StickyGroupHeader>
 
       <StickyGroupHeader
+        variant="band"
         title={t('binDesigner.group.finishing')}
         expanded={open.finishing}
         onExpandedChange={(next) => setGroup('finishing', next)}

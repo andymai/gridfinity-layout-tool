@@ -95,4 +95,21 @@ describe('StickyGroupHeader', () => {
       expect(button).toHaveAttribute('aria-expanded', 'false');
     });
   });
+
+  it('marks which variant it renders', () => {
+    const { container } = render(
+      <>
+        <StickyGroupHeader title="Plain">
+          <div>content</div>
+        </StickyGroupHeader>
+        <StickyGroupHeader title="Group" variant="band">
+          <div>content</div>
+        </StickyGroupHeader>
+      </>
+    );
+    const variants = [...container.querySelectorAll('[data-variant]')].map((el) =>
+      el.getAttribute('data-variant')
+    );
+    expect(variants).toEqual(['default', 'band']);
+  });
 });
