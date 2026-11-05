@@ -1,5 +1,28 @@
 # Changelog
 
+## [4.533.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.532.0...gridfinity-layout-tool-v4.533.0) (2026-11-05)
+
+
+### Features
+
+* **bin-designer:** drop or paste a photo onto the cut editor to trace it ([#4836](https://github.com/andymai/gridfinity-layout-tool/issues/4836)) ([10e452f](https://github.com/andymai/gridfinity-layout-tool/commit/10e452f88d9c490f1aebaaadeacce2c81bc2c07d))
+* **bin-designer:** list a bin's pockets on phones and tablets ([#4839](https://github.com/andymai/gridfinity-layout-tool/issues/4839)) ([fd5815e](https://github.com/andymai/gridfinity-layout-tool/commit/fd5815ee03016b65face864d4bd3a7e7978c33ad))
+* **bin-designer:** offer Scan a tool from the panel, editor header and search ([#4834](https://github.com/andymai/gridfinity-layout-tool/issues/4834)) ([5675148](https://github.com/andymai/gridfinity-layout-tool/commit/5675148b2556c9f5e117dba287317d912a33621f))
+* **bin-designer:** open scanning on a choice of phone or this computer ([#4833](https://github.com/andymai/gridfinity-layout-tool/issues/4833)) ([8442aba](https://github.com/andymai/gridfinity-layout-tool/commit/8442aba2a7a0fc6e0150fec3e0cf775cee8e60a6))
+* **bin-designer:** scan a tool from the command palette and What's New ([#4835](https://github.com/andymai/gridfinity-layout-tool/issues/4835)) ([5c4d1dd](https://github.com/andymai/gridfinity-layout-tool/commit/5c4d1ddd310186ff7ea812b4ea7d020d73adf9eb))
+* **bin-designer:** scan a tool on phones and tablets ([#4838](https://github.com/andymai/gridfinity-layout-tool/issues/4838)) ([c051411](https://github.com/andymai/gridfinity-layout-tool/commit/c051411742257dcc945c0aee6b7a45275d4e2cfe))
+* **bin-designer:** set the panel's groups apart from their sub-headers ([#4822](https://github.com/andymai/gridfinity-layout-tool/issues/4822)) ([c4ec573](https://github.com/andymai/gridfinity-layout-tool/commit/c4ec573dd09359b3cebc513de66626167828c982))
+* **layout:** turn a placed bin through all four directions ([#4843](https://github.com/andymai/gridfinity-layout-tool/issues/4843)) ([2bf37ad](https://github.com/andymai/gridfinity-layout-tool/commit/2bf37adb3caa63a4e64e3cea452842eebb036550))
+
+
+### Bug Fixes
+
+* **bin-designer:** make I and J open the SVG and STL imports ([#4831](https://github.com/andymai/gridfinity-layout-tool/issues/4831)) ([d2f98e1](https://github.com/andymai/gridfinity-layout-tool/commit/d2f98e114cafb8d965a2dc1240960ce8c18d3784))
+* **bin-designer:** print a bin whole when it fits the bed diagonally ([#4840](https://github.com/andymai/gridfinity-layout-tool/issues/4840)) ([2b2e00a](https://github.com/andymai/gridfinity-layout-tool/commit/2b2e00a1cefd169b383658bbd4f027023b269c0b))
+* **bin-designer:** say why a repeat's rows or columns won't grow ([#4841](https://github.com/andymai/gridfinity-layout-tool/issues/4841)) ([a9d9640](https://github.com/andymai/gridfinity-layout-tool/commit/a9d9640dc7fa10d5d2d51a569682285e6ec35d2b))
+* **bin-designer:** show the scan entry when the cut editor opens ([#4830](https://github.com/andymai/gridfinity-layout-tool/issues/4830)) ([1232e6d](https://github.com/andymai/gridfinity-layout-tool/commit/1232e6d161da1cfc856e66254f8f60546d43fbb0))
+* **bin-designer:** stop an interior fillet standing proud of a label tab ([#4842](https://github.com/andymai/gridfinity-layout-tool/issues/4842)) ([fa2648c](https://github.com/andymai/gridfinity-layout-tool/commit/fa2648c5b796923b399c31e02ed0bbf827aedc64))
+
 ## [4.532.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.531.0...gridfinity-layout-tool-v4.532.0) (2026-11-04)
 
 
