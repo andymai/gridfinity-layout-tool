@@ -49,7 +49,7 @@ test.describe('Accessibility', () => {
     await clearAllStorage(page);
     await resetViewport(page);
 
-    // Close any lingering dialogs (excluding Labs drawer)
+    // Close any lingering dialogs
     const dialogs = getActiveDialog(page);
     if ((await dialogs.count()) > 0) {
       await page.keyboard.press('Escape');
@@ -106,7 +106,7 @@ test.describe('Accessibility', () => {
     // Open help modal with ? key
     await page.keyboard.press('Shift+?');
 
-    // Verify modal is visible (excluding Labs drawer)
+    // Verify modal is visible
     await waitForDialog(page);
     const modal = getActiveDialog(page);
     await expect(modal).toBeVisible({ timeout: 3000 });

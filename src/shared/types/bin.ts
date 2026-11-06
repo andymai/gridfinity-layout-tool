@@ -848,7 +848,7 @@ export interface ResolvedBaseplateParams {
    */
   readonly detachMarginConnector?: boolean;
   /**
-   * Vertical stack-print configuration (experimental). Replication is applied at
+   * Vertical stack-print configuration. Replication is applied at
    * the mesh/export level (not in the BREP solid), so the generator builds one
    * plate and the preview/export layers duplicate it. Connectors must be
    * stripped by the caller before reaching here. Omit for a single plate.

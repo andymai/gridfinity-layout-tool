@@ -38,7 +38,6 @@ import { useActiveColorZones } from '@/features/bin-designer/hooks/useActiveColo
 import { FlatTextClashWarning } from '../shared';
 import { FeatureToggle } from '../FeatureToggle';
 import { SubHeader } from '../shared';
-import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge';
 import { ColorZoneRow } from './ColorZoneRow';
 import { ColorGroup } from './ColorGroup';
 import { ColorsHintBanner } from './ColorsHintBanner';
@@ -316,7 +315,6 @@ export function ColorsSection() {
         label={t('binDesigner.group.colors')}
         checked={multiColorEnabled}
         onChange={handleToggleMultiColor}
-        badge={<ExperimentalBadge />}
         primaryControls={
           <>
             <div className="flex items-center justify-end gap-2">

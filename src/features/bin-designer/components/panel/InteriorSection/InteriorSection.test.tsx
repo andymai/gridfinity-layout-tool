@@ -89,16 +89,6 @@ describe('InteriorSection', () => {
     expect(mockSelectCard).toHaveBeenCalledWith('slotted');
   });
 
-  it('marks Bento as experimental before it is chosen', () => {
-    render(<InteriorSection />);
-
-    const bento = screen.getByRole('radio', { name: /^Bento/ });
-    expect(bento).toHaveTextContent('Experimental');
-    expect(screen.getByRole('radio', { name: 'Grid Dividers' })).not.toHaveTextContent(
-      'Experimental'
-    );
-  });
-
   it('selects bento without touching the style', () => {
     render(<InteriorSection />);
 

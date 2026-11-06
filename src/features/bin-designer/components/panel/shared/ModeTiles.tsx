@@ -8,8 +8,6 @@ export interface ModeTileOption<T extends string> {
   readonly icon: ReactNode;
   readonly label: string;
   readonly caption: string;
-  /** On the tile, under its label: an "Experimental" pill and the like. */
-  readonly badge?: ReactNode;
   readonly tip?: ReactNode;
   /** Why the mode cannot be chosen. Disables the tile and is its tooltip. */
   readonly disabledReason?: string;
@@ -106,7 +104,6 @@ export function ModeTiles<T extends string>({
             >
               {option.icon}
               <span className="text-label font-medium leading-tight">{option.label}</span>
-              {option.badge}
             </Button>
           );
         })}

@@ -51,15 +51,15 @@ test.describe('Feature', () => {
 
 ## Core Selectors
 
-| Element      | Selector                                                         | Helper                     |
-| ------------ | ---------------------------------------------------------------- | -------------------------- |
-| Grid         | `[role="application"]`                                           | `getGrid()`                |
-| Bins         | `[data-bin-id]`                                                  | `waitForBinCount()`        |
-| Staging bins | `[data-staging-bin-id]`                                          | `waitForStagingBinCount()` |
-| Inspector    | `[data-inspector]`                                               | `getInspector()`           |
-| Sidebar      | `[data-sidebar]`                                                 | `getSidebar()`             |
-| Dialogs      | `[role="dialog"]:not([aria-label="Labs experimental features"])` | `getActiveDialog()`        |
-| Mobile nav   | `[data-bottom-nav]`                                              | `getBottomNav()`           |
+| Element      | Selector                | Helper                     |
+| ------------ | ----------------------- | -------------------------- |
+| Grid         | `[role="application"]`  | `getGrid()`                |
+| Bins         | `[data-bin-id]`         | `waitForBinCount()`        |
+| Staging bins | `[data-staging-bin-id]` | `waitForStagingBinCount()` |
+| Inspector    | `[data-inspector]`      | `getInspector()`           |
+| Sidebar      | `[data-sidebar]`        | `getSidebar()`             |
+| Dialogs      | `[role="dialog"]`       | `getActiveDialog()`        |
+| Mobile nav   | `[data-bottom-nav]`     | `getBottomNav()`           |
 
 ## Grid Coordinates
 
@@ -76,12 +76,11 @@ const bin = await drawBinOnGrid(page, 50, 50, 100, 100);
 ## Gotchas
 
 1. **Viewport pollution** — mobile tests set 375×667; must call `resetViewport()` in `afterEach` or cascading failures occur
-2. **Labs drawer always in DOM** — has `[role="dialog"]`; use `getActiveDialog()` helper to exclude it
-3. **Bin DOM order non-deterministic** — use `getBinByIndex(page, i)` instead of `.first()` / `.last()` for parallel safety
-4. **Swap detection skipped** — Shift+drag requires precise bin centering; unreliable in E2E due to auto-zoom. Verified in unit tests
-5. **Paint mode must exit** — call `waitForPaintModeExited()` before next grid interaction
-6. **Auto-save polling** — use `waitForAutoSave()` not `page.waitForTimeout(2000)`; app debounces at 1000ms
-7. **Multi-select Alt+drag flaky** — race condition between selection state and drag start; marked `test.skip()`
-8. **3D canvas slow** — takes ~10s to load; use `waitForCanvas(page, 10000)` timeout
-9. **0 retries policy** — flakes are root-caused, not masked; `retries: 0` in config
-10. **Mouse steps matter** — use `{ steps: 5 }` for drag operations; too few = unreliable movement
+2. **Bin DOM order non-deterministic** — use `getBinByIndex(page, i)` instead of `.first()` / `.last()` for parallel safety
+3. **Swap detection skipped** — Shift+drag requires precise bin centering; unreliable in E2E due to auto-zoom. Verified in unit tests
+4. **Paint mode must exit** — call `waitForPaintModeExited()` before next grid interaction
+5. **Auto-save polling** — use `waitForAutoSave()` not `page.waitForTimeout(2000)`; app debounces at 1000ms
+6. **Multi-select Alt+drag flaky** — race condition between selection state and drag start; marked `test.skip()`
+7. **3D canvas slow** — takes ~10s to load; use `waitForCanvas(page, 10000)` timeout
+8. **0 retries policy** — flakes are root-caused, not masked; `retries: 0` in config
+9. **Mouse steps matter** — use `{ steps: 5 }` for drag operations; too few = unreliable movement

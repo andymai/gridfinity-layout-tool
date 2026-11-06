@@ -115,25 +115,20 @@ export async function waitForToast(page: Page, pattern: RegExp, timeout = DEFAUL
 
 /**
  * Wait for a dialog to be visible.
- * Excludes the Labs drawer which is always in DOM with role="dialog".
  */
 export async function waitForDialog(page: Page, timeout = DEFAULT_TIMEOUT) {
-  // Exclude Labs drawer using :not() selector
-  const dialog = page.locator('[role="dialog"]:not([aria-label="Labs experimental features"])');
-  await expect(dialog).toBeVisible({ timeout });
+  await expect(getActiveDialog(page)).toBeVisible({ timeout });
 }
 
 /**
- * Get the active dialog (excluding Labs drawer).
- * Uses :not() selector to exclude Labs drawer which has aria-label.
+ * Get the active dialog.
  */
 export function getActiveDialog(page: Page): Locator {
-  return page.locator('[role="dialog"]:not([aria-label="Labs experimental features"])');
+  return page.locator('[role="dialog"]');
 }
 
 /**
  * Helper to close any lingering dialogs in afterEach cleanup.
- * Excludes the Labs drawer which is always in DOM.
  */
 export async function closeDialogs(page: Page): Promise<void> {
   const dialogs = getActiveDialog(page);
@@ -145,12 +140,9 @@ export async function closeDialogs(page: Page): Promise<void> {
 
 /**
  * Wait for dialog to close.
- * Excludes the Labs drawer which is always in DOM with role="dialog".
  */
 export async function waitForDialogClosed(page: Page, timeout = DEFAULT_TIMEOUT) {
-  // Exclude Labs drawer using :not() selector
-  const dialog = page.locator('[role="dialog"]:not([aria-label="Labs experimental features"])');
-  await expect(dialog).not.toBeVisible({ timeout });
+  await expect(getActiveDialog(page)).not.toBeVisible({ timeout });
 }
 
 /**

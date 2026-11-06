@@ -4,7 +4,7 @@
  * Top-to-bottom information hierarchy:
  * 1. Dimensions: sync-with-layout toggle + grid steppers (the unit readout)
  *    + click-to-edit mm summary + spatial padding schematic. Single unified section.
- * 2. Stack for printing (experimental) — placed above Base because enabling it
+ * 2. Stack for printing: placed above Base because enabling it
  *    strips and hides the Base controls below.
  * 3. Base: magnet holes, dovetails (when split), corner radius
  * 4. Physical Units: grid unit, print bed size (rarely changed)
