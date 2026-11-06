@@ -1,70 +1,52 @@
 # Labs
 
-Experimental feature flags for opt-in preview features.
+Early features. A flag lives here while a feature is still changing; shipping the feature means deleting its flag.
 
 ```mermaid
 graph TB
-    LBtn[LabsButton] --> LD[LabsDrawer]
-    LD --> ES[EngineSelector] & FC[FeatureCard] & GS[GraduatedSection]
+    Tab[LabsTab in Settings] --> ES[EngineSelector] & FC[FeatureCard]
     FC -->|toggle| LS[(labs store)] --> LOCAL[(localStorage)]
     ES -->|enable/disable| LS
     LS --> UFF[useFeatureFlag]
     UFF --> Features[Features using flags]
 ```
 
-## Infrastructure Location
+## Where things live
 
-- **Definitions**: `@/core/labs/features.ts`
-- **Store**: `@/core/store/labs`
-- **Hook**: `@/hooks/useFeatureFlag`
+- **Definitions**: `src/core/labs/features.ts`
+- **Store**: `src/core/store/labs.ts`
+- **Hook**: `src/shared/hooks/useFeatureFlag.ts`
+- **Surface**: `src/shell/Modals/SettingsModal/tabs/LabsTab/LabsTab.tsx`. To deep-link it, dispatch `open-settings-modal` with `{ tab: 'labs' }`.
 
 ## Components
 
-- **LabsButton** - Opens labs drawer
-- **LabsDrawer** - Main drawer UI with feature list
-- **FeatureCard** - Individual feature toggle card
-- **FeatureStatusBadge** - Status indicator (early access/beta/shipped)
-- **GraduatedSection** - Collapsible "Now for everyone" section for shipped features
+- **FeatureCard** - One flag's card and toggle
+- **FeatureStatusBadge** - Status indicator (early access/beta)
 - **EngineSelector** - Segmented control over the 3D-engine kernel flag (`brepkit_kernel`); replaces `FeatureCard` UI for it
 
 ## Current Flags
 
-Internal status enum values → UI badge labels: `experimental` → "Early access", `preview` → "Beta", `graduated` → "Shipped".
+Internal status enum values → UI badge labels: `experimental` → "Early access", `preview` → "Beta".
 
-| Flag                    | Status (`enum`) | Purpose                                                                                       |
-| ----------------------- | --------------- | --------------------------------------------------------------------------------------------- |
-| `brepkit_kernel`        | `experimental`  | Alternative 3D geometry engine (BrepKit) — driven by `EngineSelector`                         |
-| `show_generation_perf`  | `experimental`  | Per-stage generation timing overlay in the bin designer                                       |
-| `community_fits_gap`    | `experimental`  | Select a layout gap and browse community designs that fit it                                  |
-| `sliding_tray`          | `experimental`  | Rail-and-tray sliding insert in the bin designer's Walls section                              |
-| `workshop`              | `experimental`  | Part-based Workshop builder: 3D editor, exact export, library sync                            |
-| `community_showcase`    | `preview`       | Publish and remix bin designs in the community showcase                                       |
-| `drawer_shapes`         | `graduated`     | Non-rectangular drawer shapes (L-shapes, notches, cut corners)                                |
-| `bin_designer`          | `graduated`     | Custom bin designer                                                                           |
-| `baseplate_generator`   | `graduated`     | Custom baseplate generator                                                                    |
-| `handle_holes`          | `graduated`     | Finger-grip cutouts on bin walls                                                              |
-| `multi_color_export`    | `graduated`     | Multi-color 3MF export (now gated per-design via `featureColors.enabled`)                     |
-| `cloud_sync`            | `graduated`     | Sign-in sync of layouts/designs across devices                                                |
-| `embedded_text`         | `graduated`     | Engraved text on label tabs and beside cutouts                                                |
-| `manifold_preview`      | `graduated`     | Draft 3D preview with a faster engine while editing                                           |
-| `scan_with_phone`       | `graduated`     | Phone-scan a tool outline into a cutout                                                       |
-| `collaborative_editing` | `graduated`     | Real-time Liveblocks collab                                                                   |
-| `stl_bin_import`        | `graduated`     | Import a Gridfinity bin STL as a view-only design                                             |
-| `bin_recommender`       | `graduated`     | Suggested bin size from the label, in the bin inspector                                       |
-| `layout_overhang`       | `graduated`     | Edge bins extend into the drawer-fit margin                                                   |
-| `baseplate_screw_holes` | `graduated`     | Mount-down screw holes through every printed baseplate piece                                  |
-| `merge_bins_to_design`  | `graduated`     | Bento Designer: draw compartments in the workspace or merge layout bins into one divided tray |
+| Flag                       | Status (`enum`) | Purpose                                                            |
+| -------------------------- | --------------- | ------------------------------------------------------------------ |
+| `brepkit_kernel`           | `experimental`  | Alternative 3D geometry engine (BrepKit), driven by EngineSelector |
+| `show_generation_perf`     | `experimental`  | Per-stage generation timing overlay in the bin designer            |
+| `community_fits_gap`       | `experimental`  | Select a layout gap and browse community designs that fit it       |
+| `sliding_tray`             | `experimental`  | Rail-and-tray sliding insert in the bin designer's Walls section   |
+| `workshop`                 | `experimental`  | Part-based Workshop builder: 3D editor, exact export, library sync |
+| `spacemouse`               | `experimental`  | 3Dconnexion SpaceMouse navigation in the 3D previews               |
+| `slant`                    | `experimental`  | Bins that lean, with slanted rows and an end support               |
+| `places`                   | `experimental`  | Bin contents, Find across layouts, and folders as places           |
+| `community_showcase`       | `preview`       | Publish and remix bin designs in the community showcase            |
+| `designer_settings_search` | `preview`       | Search every bin-designer control from the panel                   |
 
-Kernel selection priority in `BridgeManager`/`WorkerPoolManager` is `brepkit > default (occt-wasm)`; `EngineSelector` drives the flag in the UI.
+Kernel selection priority in `BridgeManager`/`WorkerPoolManager` is `brepkit > default (occt-wasm)`.
 
 ## Usage
 
 ```typescript
-const isEnabled = useFeatureFlag('collaborative_editing');
+const isEnabled = useFeatureFlag('show_generation_perf');
 ```
 
-## Gotchas
-
-1. **Flags persisted in localStorage** - survives refresh
-2. **Some flags require page reload** - noted in UI
-3. **Feature definitions in core/labs** - not in this feature module
+Recipes for adding, graduating and removing a flag are in the `analytics-and-labs` skill.

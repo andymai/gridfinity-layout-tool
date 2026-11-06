@@ -6,13 +6,11 @@
 
 import { Button } from '@/design-system';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
-import { useLabsStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 
 export function ExperimentalKernelBadge() {
   const t = useTranslation();
   const isBrepkitEnabled = useFeatureFlag('brepkit_kernel');
-  const openDrawer = useLabsStore((s) => s.openDrawer);
 
   if (!isBrepkitEnabled) return null;
 
@@ -40,7 +38,11 @@ export function ExperimentalKernelBadge() {
         <Button
           variant="ghost"
           type="button"
-          onClick={openDrawer}
+          onClick={() =>
+            window.dispatchEvent(
+              new CustomEvent('open-settings-modal', { detail: { tab: 'labs' } })
+            )
+          }
           className="pointer-events-auto mt-0.5 h-auto self-start rounded-none bg-transparent px-0 py-0 text-xs font-normal text-info underline underline-offset-2 hover:bg-transparent hover:text-info/80"
         >
           {t('labs.experimentalKernel.labsSettings')}

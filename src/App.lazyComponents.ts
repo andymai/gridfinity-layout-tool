@@ -24,9 +24,6 @@ export const SharedLayoutBanner = lazyWithRetry(() =>
     namedExport('SharedLayoutBanner')
   )
 );
-export const LabsDrawer = lazyWithRetry(() =>
-  import('@/features/labs/components/LabsDrawer').then(namedExport('LabsDrawer'))
-);
 export const DesignerPage = lazyWithRetry(() =>
   import('@/features/bin-designer/components/DesignerPage').then(namedExport('DesignerPage'))
 );

@@ -15,8 +15,6 @@ interface FeatureCardProps {
 
 export function FeatureCard({ feature, isEnabled, onToggle, children }: FeatureCardProps) {
   const t = useTranslation();
-  const isGraduated = feature.status === 'graduated';
-  const isToggleable = !isGraduated;
 
   return (
     <article className="rounded-lg border border-stroke-subtle bg-surface p-4">
@@ -38,35 +36,18 @@ export function FeatureCard({ feature, isEnabled, onToggle, children }: FeatureC
         </div>
       )}
 
-      <div className="flex items-center justify-between">
-        <span />
-
-        {isToggleable ? (
-          <Switch
-            checked={isEnabled}
-            onChange={onToggle}
-            aria-label={t('labs.featureToggle', {
-              name: feature.name,
-              status: isEnabled ? t('labs.enabled') : t('labs.disabled'),
-            })}
-          />
-        ) : (
-          <div className="flex items-center gap-2 text-xs text-success">
-            <CheckIcon className="w-4 h-4" />
-            <span>{t('labs.alwaysOn')}</span>
-          </div>
-        )}
+      <div className="flex items-center justify-end">
+        <Switch
+          checked={isEnabled}
+          onChange={onToggle}
+          aria-label={t('labs.featureToggle', {
+            name: feature.name,
+            status: isEnabled ? t('labs.enabled') : t('labs.disabled'),
+          })}
+        />
       </div>
 
       {children}
     </article>
-  );
-}
-
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-    </svg>
   );
 }

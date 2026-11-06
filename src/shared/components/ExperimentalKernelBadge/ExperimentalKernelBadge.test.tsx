@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useLabsStore } from '@/core/store';
@@ -41,7 +41,7 @@ describe('ExperimentalKernelBadge', () => {
     expect(screen.getByText(/geometry defects/i)).toBeInTheDocument();
   });
 
-  it('renders Labs settings link that opens the drawer', async () => {
+  it('renders a Labs settings link that opens the Labs tab', async () => {
     const user = userEvent.setup();
     enableBrepkit();
     render(<ExperimentalKernelBadge />);
@@ -49,7 +49,11 @@ describe('ExperimentalKernelBadge', () => {
     const link = screen.getByRole('button', { name: /labs settings/i });
     expect(link).toBeInTheDocument();
 
+    const opened = vi.fn();
+    window.addEventListener('open-settings-modal', opened);
     await user.click(link);
-    expect(useLabsStore.getState().isDrawerOpen).toBe(true);
+    window.removeEventListener('open-settings-modal', opened);
+
+    expect((opened.mock.calls[0][0] as CustomEvent).detail).toEqual({ tab: 'labs' });
   });
 });

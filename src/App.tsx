@@ -1,13 +1,7 @@
 import { useEffect, useLayoutEffect, useState, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { GlobalSettingsModal } from '@/shell/Modals/SettingsModal/GlobalSettingsModal';
-import {
-  useLayoutStore,
-  useLibraryStore,
-  useSelectionStore,
-  useViewStore,
-  useLabsStore,
-} from '@/core/store';
+import { useLayoutStore, useLibraryStore, useSelectionStore, useViewStore } from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useCommunityPublishStore } from '@/core/store/communityPublish';
@@ -35,7 +29,6 @@ import {
   DesignLinkingDialogs,
   SharedLayoutImporter,
   SharedLayoutBanner,
-  LabsDrawer,
   DesignerPage,
   BaseplatePage,
   BaseplateLibraryInitMount,
@@ -145,7 +138,6 @@ export default function App() {
   const hideContextMenu = useViewStore((state) => state.hideContextMenu);
 
   const { isCollaborative, shareId } = useCollabMode();
-  const isLabsDrawerOpen = useLabsStore((state) => state.isDrawerOpen);
   const hasSharedLayoutPreview = useSharedPreviewStore((state) => state.sharedPreview !== null);
 
   const [hasShareUrl] = useState(isShareURL);
@@ -545,11 +537,6 @@ export default function App() {
             initialQuery={commandPaletteInitialQuery}
             extraResults={placesFindResults}
           />
-        </Suspense>
-      )}
-      {isLabsDrawerOpen && (
-        <Suspense fallback={null}>
-          <LabsDrawer />
         </Suspense>
       )}
       {isHelpOpen && (

@@ -365,7 +365,7 @@ describe('DesignImportView', () => {
     expect(screen.getByText('Validation errors')).toBeInTheDocument();
   });
 
-  describe('STL routing (stl_bin_import)', () => {
+  describe('STL routing', () => {
     function stlFile(name = 'bin.stl'): File {
       return new File([new Uint8Array(100)], name, { type: 'model/stl' });
     }

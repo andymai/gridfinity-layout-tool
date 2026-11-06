@@ -2,12 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, render, screen, fireEvent } from '@testing-library/react';
 import { ShareButton } from './ShareButton';
 import { createTestLayout, resetAllStores } from '@/test/testUtils';
-import {
-  useLabsStore,
-  useLayoutStore,
-  useSharedPreviewStore,
-  useSharePopoverStore,
-} from '@/core/store';
+import { useLayoutStore, useSharedPreviewStore, useSharePopoverStore } from '@/core/store';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 
 vi.mock('@/features/cloud-share/hooks/useCloudShare', () => ({
@@ -61,13 +56,6 @@ describe('ShareButton', () => {
   });
 
   it('renders the share icon button', () => {
-    render(<ShareButton />);
-    expect(screen.getByRole('button', { name: 'share.button.shareLayout' })).toBeInTheDocument();
-  });
-
-  it('renders even when the labs preference is disabled (collaborative_editing is graduated)', () => {
-    useLabsStore.getState().disableFeature('collaborative_editing');
-
     render(<ShareButton />);
     expect(screen.getByRole('button', { name: 'share.button.shareLayout' })).toBeInTheDocument();
   });

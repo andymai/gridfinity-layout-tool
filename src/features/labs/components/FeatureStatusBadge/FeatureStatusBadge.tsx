@@ -13,10 +13,6 @@ const STATUS_CONFIG: Record<FeatureStatus, { label: string; className: string }>
     label: 'Beta',
     className: 'bg-accent/15 text-accent',
   },
-  graduated: {
-    label: 'Shipped',
-    className: 'bg-success-muted text-success',
-  },
 };
 
 export function FeatureStatusBadge({ status }: FeatureStatusBadgeProps) {

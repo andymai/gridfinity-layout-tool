@@ -93,20 +93,6 @@ describe('useFeatureFlag', () => {
       expect(result.current).toBe(false);
     });
 
-    it('returns true for graduated features regardless of preferences', () => {
-      mockGetFeature.mockReturnValue({
-        id: 'graduated_feature',
-        name: 'Graduated Feature',
-        status: 'graduated',
-      });
-
-      const { result } = renderHook(() =>
-        useFeatureFlag('graduated_feature' as features.FeatureId)
-      );
-
-      expect(result.current).toBe(true);
-    });
-
     it('returns false for non-existent features', () => {
       mockGetFeature.mockReturnValue(undefined);
 
@@ -185,16 +171,6 @@ describe('useFeatureFlag', () => {
       });
 
       expect(isFeatureEnabled('test_feature' as features.FeatureId)).toBe(true);
-    });
-
-    it('returns true for graduated features', () => {
-      mockGetFeature.mockReturnValue({
-        id: 'graduated_feature',
-        name: 'Graduated Feature',
-        status: 'graduated',
-      });
-
-      expect(isFeatureEnabled('graduated_feature' as features.FeatureId)).toBe(true);
     });
   });
 });

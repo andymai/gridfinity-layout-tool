@@ -244,7 +244,7 @@ describe('useGeneration', () => {
     expect(state.generation.mesh?.error).toBe('Generation failed');
   });
 
-  it('renders the draft first, then the exact result supersedes it (manifold_preview)', async () => {
+  it('renders the draft first, then the exact result supersedes it', async () => {
     const draftVerts = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
     const exactVerts = new Float32Array([0, 0, 0, 2, 0, 0, 0, 2, 0]);
     const meshOf = (vertices: Float32Array, timingMs = 1) => ({
@@ -440,7 +440,7 @@ describe('useGeneration', () => {
     expect(state.generation.mesh?.vertices).not.toBe(draftVerts);
   });
 
-  it('skips the draft when the last exact was fast — no flicker (manifold_preview)', async () => {
+  it('skips the draft when the last exact was fast — no flicker', async () => {
     const previewBridge = {
       isDestroyed: false,
       // Resolves defensively so a wrongly-dispatched draft fails the assertion

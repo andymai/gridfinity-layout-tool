@@ -56,7 +56,7 @@ never reverses one. The committed placeholder has `sampleCount: 0` and is **iner
 run the trainer against prod Redis to activate it. The prior is deliberately gentle —
 it nudges ranking but never outranks a literal text match.
 
-## Size suggestion (Labs)
+## Size suggestion
 
 `SingleBinInspector` renders the `bin-recommender` `BinSizeSuggestion` under the label field (lazy-loaded). It wires `onApply={applySuggestedSize}` and `canFit={canApplySuggestedSize}`.
 
