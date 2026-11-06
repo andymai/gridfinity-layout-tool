@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { useInteractionStore } from '@/core/store';
 import { SlantedRowControls } from './SlantedRowControls';
 
@@ -10,6 +10,12 @@ beforeEach(() => {
 });
 
 describe('SlantedRowControls', () => {
+  it('marks slanted rows as experimental', () => {
+    render(<SlantedRowControls />);
+    const row = screen.getByRole('checkbox', { name: /^Slanted row/ });
+    expect(within(row).getByText('Experimental')).toBeInTheDocument();
+  });
+
   it('turns slanted rows on at 45 degrees toward the back, and off again', () => {
     render(<SlantedRowControls />);
     fireEvent.click(screen.getByRole('checkbox', { name: /^Slanted row/ }));

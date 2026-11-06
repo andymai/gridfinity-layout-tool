@@ -24,6 +24,11 @@ const toggle = () => screen.getByRole('switch', { name: 'binDesigner.slant.title
 beforeEach(() => setParams());
 
 describe('SlantSection', () => {
+  it('marks slant as experimental', () => {
+    render(<SlantSection />);
+    expect(screen.getByText('settings.experimental')).toBeInTheDocument();
+  });
+
   it('turns the slant on at 45 degrees toward the back and drops the stacking lip', () => {
     expect(params().base.stackingLip).toBe(true);
     render(<SlantSection />);
