@@ -227,30 +227,35 @@ export function createTypeMeasurer(getFont: GetGlyphFont): TypeMeasurer {
     return narrowest * (font.unitsPerEm * scale);
   };
 
+  // A missing face is never memoized. A failed font fetch is retried on the next
+  // request, and a remembered null would keep that text blank after it lands.
   return {
     run(text, family) {
+      if (!getFont(family)) return null;
       const key = `${family}|${text}`;
       const hit = runs.get(key);
       if (hit !== undefined) return hit;
       return memoSet(runs, key, measureRun(text, family));
     },
     vertical(family) {
+      if (!getFont(family)) return null;
       const hit = verticals.get(family);
       if (hit !== undefined) return hit;
       return memoSet(verticals, family, measureVertical(family));
     },
     stem(text, family) {
+      if (!getFont(family)) return null;
       const key = `${family}|${text}`;
       const hit = stems.get(key);
       if (hit !== undefined) return hit;
       return memoSet(stems, key, measureStem(text, family));
     },
     outline(text, family) {
+      const font = getFont(family);
+      if (!font) return null;
       const key = `${family}|${text}`;
       const hit = outlines.get(key);
       if (hit !== undefined) return hit;
-      const font = getFont(family);
-      if (!font) return memoSet(outlines, key, null);
       const commands = font.getPath(text, 0, 0, 1).commands.map((cmd) => ({
         type: cmd.type,
         ...(cmd.x !== undefined ? { x: cmd.x } : {}),

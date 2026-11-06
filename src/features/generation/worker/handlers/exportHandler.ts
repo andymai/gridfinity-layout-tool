@@ -173,6 +173,7 @@ export async function handleExportConnectorSample(
 
 export async function handleExportLabelPlates(message: ExportLabelPlatesMessage): Promise<void> {
   const payload = message.payload;
+  await ensureFontsLoaded([payload.options.textDefaults.font]);
   await runExport(
     payload.requestId,
     'BASEPLATE_EXPORT_RESULT',
@@ -234,6 +235,7 @@ export async function handleExportSlideFitSample(
  */
 export async function handleExportFitTest(message: ExportFitTestMessage): Promise<void> {
   const payload = message.payload;
+  await ensureDesignFonts(payload.params);
   await runExport(
     payload.requestId,
     'FIT_TEST_EXPORT_RESULT',
