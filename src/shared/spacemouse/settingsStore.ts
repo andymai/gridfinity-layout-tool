@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
+import { LABS_STORAGE_KEY } from '@/core/store/labs';
 import { DEFAULT_SETTINGS, SPACEMOUSE_SETTINGS_STORAGE_KEY } from './constants';
 import type {
   SpaceMouseConnectionStatus,
@@ -8,8 +9,6 @@ import type {
   SpaceMouseSettings,
   SpaceMouseTransport,
 } from './types';
-
-const LABS_STORAGE_KEY = 'gridfinity-labs-v1';
 
 /** Whoever turned this on in Labs stays on until they turn it off here. */
 function hadLabsOptIn(): boolean {
@@ -85,10 +84,10 @@ export const useSpaceMouseStore = create<SpaceMouseState>()(
       partialize: (s) => ({ enabled: s.enabled, settings: s.settings }),
       merge: (persisted, current) => {
         const p = persisted as
-          { enabled?: boolean; settings?: Partial<SpaceMouseSettings> } | undefined;
+          { enabled?: unknown; settings?: Partial<SpaceMouseSettings> } | undefined;
         return {
           ...current,
-          enabled: p?.enabled ?? hadLabsOptIn(),
+          enabled: typeof p?.enabled === 'boolean' ? p.enabled : hadLabsOptIn(),
           settings: {
             ...current.settings,
             ...p?.settings,

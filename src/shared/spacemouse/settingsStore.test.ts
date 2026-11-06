@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { DEFAULT_SETTINGS } from './constants';
+import { DEFAULT_SETTINGS, SPACEMOUSE_SETTINGS_STORAGE_KEY } from './constants';
 import { useSpaceMouseStore } from './settingsStore';
 
 beforeEach(() => {
@@ -52,6 +52,15 @@ describe('the SpaceMouse opt-in', () => {
     useSpaceMouseStore.getState().setEnabled(true);
     useSpaceMouseStore.getState().resetSettings();
     expect(useSpaceMouseStore.getState().enabled).toBe(true);
+  });
+
+  it('ignores a stored value that is not a boolean', async () => {
+    localStorage.setItem(
+      SPACEMOUSE_SETTINGS_STORAGE_KEY,
+      JSON.stringify({ state: { enabled: 'yes' }, version: 0 })
+    );
+    await useSpaceMouseStore.persist.rehydrate();
+    expect(useSpaceMouseStore.getState().enabled).toBe(false);
   });
 
   it('ignores a corrupt Labs preference', async () => {
