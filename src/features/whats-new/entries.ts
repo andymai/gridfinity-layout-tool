@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'out-of-labs-workshop-slant-gaps',
+    date: '2026-11-06',
+    kind: 'improved',
+    featured: true,
+    title: { en: 'Workshop, slanted bins and Find bins that fit are out of Labs' },
+    body: {
+      en: "All three are now on for everyone. Workshop builds tool holders out of parts: start one with New Workshop build in your saved designs. Slanted bins lean so tall things fit a shallow drawer: find Slant on the Shape page of the designer. Find bins that fit shows community designs that fit an empty area of your layout: it's in the layout toolbar, or under Layers > Tools on a phone. Workshop and slanted bins are marked Experimental for now. SpaceMouse support moved too: it's now in Settings > General, and if you had it on, it's still on.",
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'bin-half-turn',
     date: '2026-11-04',
     kind: 'improved',
