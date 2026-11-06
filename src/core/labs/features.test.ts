@@ -29,7 +29,7 @@ describe('FEATURE_FLAGS', () => {
 
 describe('getFeature', () => {
   it('returns a registered flag by id', () => {
-    expect(getFeature('brepkit_kernel')).toBe(FEATURE_FLAGS.find((f) => f.id === 'brepkit_kernel'));
+    expect(getFeature('brepkit_kernel')?.id).toBe('brepkit_kernel');
   });
 
   it('returns undefined for an id the registry does not have', () => {

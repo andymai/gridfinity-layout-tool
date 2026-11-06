@@ -1,6 +1,6 @@
 # Labs
 
-Opt-in early features. A flag lives here while a feature is still changing; shipping the feature means deleting its flag.
+Early features. A flag lives here while a feature is still changing; shipping the feature means deleting its flag.
 
 ```mermaid
 graph TB

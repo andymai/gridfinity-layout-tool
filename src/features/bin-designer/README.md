@@ -482,7 +482,7 @@ item kind (`kind` + `envelope` + `structure`, no `params`). The structure
 `MeshAsset`, the claimed `heightUnits`, the measured `volumeMm3` (filament
 estimates), and the source file name.
 
-- **Import flow**: `DesignImportView` accepts `.stl` when the flag is on and
+- **Import flow**: `DesignImportView` accepts `.stl` and
   routes to `components/ImportBinDialog/` (`useImportBinDesign` →
   `bridge.importMesh` → orientation preview → `detectGridFromSize` →
   eager `saveDesign` + `customBinRegistry` upsert + `loadDesign`).

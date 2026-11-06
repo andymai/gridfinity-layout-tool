@@ -49,7 +49,8 @@ Naming: snake_case, past-tense or noun_action (`bin_created`,
 ### Add a labs flag and gate a feature
 
 Append to `FEATURE_FLAGS` in `src/core/labs/features.ts`; `LabsTab` renders
-every entry, so there is no wiring step. The traps:
+every entry except the kernel flag `EngineSelector` owns, so there is no wiring
+step. The traps:
 
 - `FeatureId` picks up the id automatically, but `getFeature(id)` accepts any
   string and silently returns undefined. Pass `FeatureId`-typed values.
