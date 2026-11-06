@@ -1,0 +1,38 @@
+src/shared/spacemouse/useSpaceMouseDevice.ts
+  s_d27fb70db3c524::t_4ac4ff9d874e41 2,13,19-28
+src/shared/spacemouse/settingsStore.test.ts
+  s_d27fb70db3c524::t_4ac4ff9d874e41 2,57-63
+  s_d27fb70db3c524::t_199e6b0e8eebb8 64-65
+src/shared/spacemouse/settingsStore.ts
+  s_d27fb70db3c524::t_92368ac134a1e9 4,90
+  s_d27fb70db3c524::t_4ac4ff9d874e41 87
+src/i18n/locales/nb.json
+  s_d27fb70db3c524::t_4ac4ff9d874e41 5178-5179
+src/shared/spacemouse/components/SpaceMouseSettings/SpaceMouseSettings.tsx
+  s_d27fb70db3c524::t_4ac4ff9d874e41 13
+src/i18n/locales/de.json
+  s_d27fb70db3c524::t_4ac4ff9d874e41 5178
+src/shared/spacemouse/useSpaceMouseDevice.test.ts
+  s_d27fb70db3c524::t_4ac4ff9d874e41 2-70
+  s_d27fb70db3c524::t_095ce4a0f8ed95 1
+src/i18n/locales/sv.json
+  s_d27fb70db3c524::t_4ac4ff9d874e41 5178-5179
+src/shared/spacemouse/deviceManager.ts
+  s_d27fb70db3c524::t_e51db1eec17836 179
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1caeb2258e52c658ea19899d6f1df099392ed7fd",
+  "prompts": {},
+  "sessions": {
+    "s_d27fb70db3c524": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "09c52225-5996-4c64-91f0-de979e9c3826",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
