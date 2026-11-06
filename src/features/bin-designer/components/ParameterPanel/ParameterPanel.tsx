@@ -318,8 +318,7 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
     </VariantLock>
   );
 
-  // Search field and view toggle on one row, sharing a single divider. The row
-  // is `justify-end`, so with search off the lone pill still sits on the right.
+  // Search field and view toggle on one row, sharing a single divider.
   const topBar = (
     <div className="flex flex-shrink-0 items-center justify-end gap-2 border-b border-stroke-subtle px-3 py-2">
       <DesignerSearchBar viewMode={viewMode} needsSplit={needsSplit} />

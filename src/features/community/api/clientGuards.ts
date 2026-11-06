@@ -140,7 +140,7 @@ export function isListPage(value: unknown): value is CommunityListPage {
 }
 
 /**
- * The deployment kill switches the client cannot infer: nothing local reflects
+ * Server-controlled settings the client cannot infer: nothing local reflects
  * them.
  */
 export interface CommunityCapabilities {

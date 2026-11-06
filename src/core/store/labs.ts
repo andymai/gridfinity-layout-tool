@@ -33,7 +33,7 @@ function savePreferences(prefs: LabsPreferences): Result<void, StorageError> {
   return saveToLocalStorage(LABS_STORAGE_KEY, toSave);
 }
 
-export function resolveFeatureEnabled(preferences: LabsPreferences, featureId: string): boolean {
+export function resolveFeatureEnabled(preferences: LabsPreferences, featureId: FeatureId): boolean {
   return preferences.enabledFeatures[featureId] ?? false;
 }
 
