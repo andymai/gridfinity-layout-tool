@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.534.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.533.0...gridfinity-layout-tool-v4.534.0) (2026-11-06)
+
+
+### Features
+
+* **bin-designer:** graduate slanted bins out of Labs, marked experimental ([#4853](https://github.com/andymai/gridfinity-layout-tool/issues/4853)) ([bb14ba8](https://github.com/andymai/gridfinity-layout-tool/commit/bb14ba85f9c860da8d7f60d24b522d0a7829d1c1))
+* **bin-designer:** graduate Workshop out of Labs ([#4851](https://github.com/andymai/gridfinity-layout-tool/issues/4851)) ([1bffa99](https://github.com/andymai/gridfinity-layout-tool/commit/1bffa9981f646de2596ecb006ef93f9a8ea20f67))
+* **community:** graduate the showcase and designer search out of Labs ([#4850](https://github.com/andymai/gridfinity-layout-tool/issues/4850)) ([4f6b9e3](https://github.com/andymai/gridfinity-layout-tool/commit/4f6b9e3e3bffa340f9341033b8f52d6c6ccfe0a1))
+* **layout:** graduate Find Bins That Fit and drop its right-drag shortcut ([#4852](https://github.com/andymai/gridfinity-layout-tool/issues/4852)) ([0a0dc32](https://github.com/andymai/gridfinity-layout-tool/commit/0a0dc32cc48b95b6eb167cf56b9b4a1f204ce67a))
+
 ## [4.533.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.532.0...gridfinity-layout-tool-v4.533.0) (2026-11-05)
 
 
