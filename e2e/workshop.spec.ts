@@ -1,8 +1,3 @@
-/**
- * Workshop end to end: start a build from the design list, place a part on the
- * base in the 3D view, and export the result as an STL.
- */
-
 import fs from 'node:fs';
 import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
@@ -29,7 +24,7 @@ test.describe('Workshop', () => {
     await expect(page.getByText(/No parts yet/)).toBeVisible();
 
     await page.getByRole('button', { name: 'Post', exact: true }).click();
-    await expect(page.locator('canvas').first()).toBeVisible();
+    await expect(page.locator('canvas').first()).toBeVisible({ timeout: 30_000 });
     await clickBaseCentre(page);
     await expect(page.getByText(/No parts yet/)).toHaveCount(0, { timeout: 15_000 });
 

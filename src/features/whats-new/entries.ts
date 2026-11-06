@@ -778,7 +778,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     kind: 'new',
     title: { en: 'Workshop: build tool holders out of parts' },
     body: {
-      en: 'Place posts, fins, tubes, cradles and racks on a Gridfinity base in 3D, stack and carve them, then export to STL, 3MF or STEP. Builds save to your library, sync when signed in, and drop into a drawer layout like any bin. Turn it on under Labs.',
+      en: 'Place posts, fins, tubes, cradles and racks on a Gridfinity base in 3D, stack and carve them, then export to STL, 3MF or STEP. Builds save to your library, sync when signed in, and drop into a drawer layout like any bin. Start one from New Workshop build in your saved designs.',
     },
     action: { kind: 'openTool', tool: 'designer' },
   },
