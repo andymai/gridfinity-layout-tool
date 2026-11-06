@@ -10,6 +10,7 @@ import {
   Vector3,
 } from 'three';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useSpaceMouseStore } from '../../settingsStore';
 import { spaceMouseBus } from '../../spaceMouseBus';
 import { SpaceMouseController } from './SpaceMouseController';
 
@@ -23,10 +24,6 @@ vi.mock('@react-three/fiber', () => ({
   useFrame: (cb: (state: unknown, dt: number) => void) => {
     h.frameCb = cb;
   },
-}));
-
-vi.mock('@/shared/hooks/useFeatureFlag', () => ({
-  useFeatureFlag: () => true,
 }));
 
 /** The camera's pose rolled a quarter turn about its view direction, as a column-major matrix. */
@@ -58,6 +55,7 @@ function makeState() {
 }
 
 beforeEach(() => {
+  useSpaceMouseStore.setState({ enabled: true });
   spaceMouseBus._resetForTests();
   h.state = makeState();
   h.frameCb = null;

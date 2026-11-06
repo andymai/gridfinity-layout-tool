@@ -31,7 +31,6 @@ graph TB
 | `brepkit_kernel`       | Alternative 3D geometry engine (BrepKit), driven by EngineSelector |
 | `show_generation_perf` | Per-stage generation timing overlay in the bin designer            |
 | `sliding_tray`         | Rail-and-tray sliding insert in the bin designer's Walls section   |
-| `spacemouse`           | 3Dconnexion SpaceMouse navigation in the 3D previews               |
 | `places`               | Bin contents, Find across layouts, and folders as places           |
 
 Kernel selection priority in `BridgeManager`/`WorkerPoolManager` is `brepkit > default (occt-wasm)`.

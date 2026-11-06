@@ -1,6 +1,7 @@
 {
   "maxShortValueLength": 3,
   "keys": [
+    "settings.spacemouse",
     "account.identity.heading",
     "assembledHeight.segmentLabel",
     "auth.providerGithub",

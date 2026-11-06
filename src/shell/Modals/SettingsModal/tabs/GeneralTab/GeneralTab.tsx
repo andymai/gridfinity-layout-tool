@@ -2,6 +2,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import { Switch } from '@/design-system';
 import { useTranslation, useLocale, SUPPORTED_LOCALES, detectBrowserLocale } from '@/i18n';
+import { SpaceMouseSettings } from '@/shared/spacemouse/components/SpaceMouseSettings';
+import { useSpaceMouseStore } from '@/shared/spacemouse/settingsStore';
 import { SettingSection } from '../../components/SettingSection/SettingSection';
 import { SelectableCard } from '../../components/SelectableCard/SelectableCard';
 
@@ -16,6 +18,9 @@ export function GeneralTab() {
       updateSetting: state.updateSetting,
     }))
   );
+
+  const spaceMouseEnabled = useSpaceMouseStore((s) => s.enabled);
+  const setSpaceMouseEnabled = useSpaceMouseStore((s) => s.setEnabled);
 
   const selectAuto = () => {
     updateSetting('locale', 'auto');
@@ -69,6 +74,22 @@ export function GeneralTab() {
             aria-label={t('settings.general.showUpdateSummaries')}
           />
         </div>
+      </SettingSection>
+
+      <SettingSection
+        id="spacemouse"
+        title={t('settings.spacemouse')}
+        hint={t('settings.spacemouseHint')}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm text-content-secondary">{t('settings.spacemouseEnable')}</span>
+          <Switch
+            checked={spaceMouseEnabled}
+            onChange={setSpaceMouseEnabled}
+            aria-label={t('settings.spacemouseEnable')}
+          />
+        </div>
+        {spaceMouseEnabled && <SpaceMouseSettings />}
       </SettingSection>
     </div>
   );

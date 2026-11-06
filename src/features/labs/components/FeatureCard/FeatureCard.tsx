@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import type { FeatureFlag } from '@/core/labs';
 import { EarlyAccessBadge } from '../EarlyAccessBadge';
 import { InfoIcon } from '../icons';
@@ -9,11 +8,9 @@ interface FeatureCardProps {
   feature: FeatureFlag;
   isEnabled: boolean;
   onToggle: () => void;
-  /** Optional per-feature settings rendered inside the card when enabled. */
-  children?: ReactNode;
 }
 
-export function FeatureCard({ feature, isEnabled, onToggle, children }: FeatureCardProps) {
+export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) {
   const t = useTranslation();
 
   return (
@@ -46,8 +43,6 @@ export function FeatureCard({ feature, isEnabled, onToggle, children }: FeatureC
           })}
         />
       </div>
-
-      {children}
     </article>
   );
 }

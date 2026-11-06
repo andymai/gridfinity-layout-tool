@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { GeneralTab } from './GeneralTab';
+import { useSpaceMouseStore } from '@/shared/spacemouse/settingsStore';
 
 const mockUpdateSetting = vi.hoisted(() => vi.fn());
 const mockSetLocale = vi.hoisted(() => vi.fn());
@@ -69,5 +70,24 @@ describe('GeneralTab', () => {
     const nbOption = screen.getByText('Norsk bokmål').closest('[role="radio"]');
     expect(autoOption).toHaveAttribute('aria-checked', 'true');
     expect(nbOption).toHaveAttribute('aria-checked', 'false');
+  });
+
+  describe('SpaceMouse', () => {
+    beforeEach(() => {
+      useSpaceMouseStore.setState({ enabled: false });
+    });
+
+    it('is off by default and shows no tuning', () => {
+      render(<GeneralTab />);
+      expect(screen.getByRole('switch', { name: 'settings.spacemouseEnable' })).not.toBeChecked();
+      expect(screen.queryByText('spacemouse.sensitivity')).not.toBeInTheDocument();
+    });
+
+    it('turning it on stores the choice and reveals the tuning', () => {
+      render(<GeneralTab />);
+      fireEvent.click(screen.getByRole('switch', { name: 'settings.spacemouseEnable' }));
+      expect(useSpaceMouseStore.getState().enabled).toBe(true);
+      expect(screen.getByText('spacemouse.status.idle')).toBeInTheDocument();
+    });
   });
 });

@@ -36,6 +36,12 @@ export const SETTINGS_REGISTRY: SettingsRegistryEntry[] = [
     labelKey: 'settings.general.showUpdateSummaries',
     keywordsKey: 'settings.search.keywords.updateSummaries',
   },
+  {
+    id: 'spacemouse',
+    tabId: 'general',
+    labelKey: 'settings.spacemouse',
+    keywordsKey: 'settings.search.keywords.spacemouse',
+  },
   // Appearance
   {
     id: 'theme',

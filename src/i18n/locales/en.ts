@@ -1031,6 +1031,7 @@ const en: Record<string, string> = {
   'settings.search.keywords.storageDanger': 'clear data, reset, delete, wipe',
   'settings.search.keywords.stl': 'printables, makerworld, thangs, model search',
   'settings.search.keywords.labs': 'experimental, beta, feature flags',
+  'settings.search.keywords.spacemouse': '3dconnexion, 3d mouse, puck, navigation',
   'settings.search.keywords.exportDestination':
     'folder, upload, URL, NAS, library, webhook, download, save',
 
@@ -6102,6 +6103,10 @@ const en: Record<string, string> = {
     "what's new, changelog, updates, release notes, recent changes",
   'settings.general.showUpdateSummariesDesc':
     'After an update, show a short summary of what changed. Unseen highlights are badged in the sidebar either way.',
+  'settings.spacemouse': 'SpaceMouse',
+  'settings.spacemouseEnable': 'Use a SpaceMouse',
+  'settings.spacemouseHint':
+    'Fly the 3D previews with a 3Dconnexion SpaceMouse: push, tilt and twist the puck to pan, zoom and orbit. Uses the 3Dconnexion driver when it is installed, in any browser. Without the driver, it connects directly in Chrome, Edge or Opera.',
 
   // Engagement Nudges
   'engagement.feedbackNudge': 'Have ideas for the tool? Your feedback shapes what gets built next.',

@@ -176,7 +176,7 @@ export function startSpaceMouse(): void {
   started = true;
   const gen = ++generation;
   // Load the undo/redo handler lazily so importing this module (e.g. for the
-  // Labs pairing button) doesn't drag in the command/history store graph. Needed
+  // Settings pairing button) doesn't drag in the command/history store graph. Needed
   // by both transports.
   void import('./commands').then((m) => {
     if (started) spaceMouseBus.setGlobalHandler(m.runGlobalCommand);
