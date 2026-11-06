@@ -1,0 +1,50 @@
+src/shell/Mobile/MobileLayersPanel/ToolsTab/ToolsTab.test.tsx
+  s_d27fb70db3c524::t_af60c2d0070db8 1-2,4-9,23-26
+  s_d27fb70db3c524::t_62b04722ac79dc 27-33
+src/shared/hooks/interactions/useDrawInteraction.test.ts
+  s_d27fb70db3c524::t_9ba4e6362b7360 379,435,482,500,537,556
+src/core/types/interaction.ts
+  s_d27fb70db3c524::t_9ba4e6362b7360 59
+src/features/community/README.md
+  s_d27fb70db3c524::t_9ba4e6362b7360 186
+src/features/grid-editor/components/Grid/GridCanvas/GridCanvas.tsx
+  s_d27fb70db3c524::t_9ba4e6362b7360 2,16,29,133,140-141,150,266
+src/shared/hooks/interactions/useDrawInteraction.ts
+  s_d27fb70db3c524::t_9ba4e6362b7360 24,74,95,145
+src/features/grid-editor/components/Grid/GridCanvas/GridCanvas.test.tsx
+  s_d27fb70db3c524::t_9ba4e6362b7360 440-441,460,472,482
+src/shell/Mobile/MobileGridToolbar/MobileGridToolbar.tsx
+  s_d27fb70db3c524::t_af60c2d0070db8 104-105,107-109,111
+src/features/grid-editor/hooks/useInteraction.ts
+  s_d27fb70db3c524::t_9ba4e6362b7360 3,182,336,338
+src/shell/Mobile/MobileGridToolbar/MobileGridToolbar.test.tsx
+  s_d27fb70db3c524::t_4182837c2d8253 2
+  s_d27fb70db3c524::t_af60c2d0070db8 26,30-31,34
+  s_d27fb70db3c524::t_9ba4e6362b7360 4
+src/shell/Mobile/MobileLayersPanel/ToolsTab/ToolsTab.tsx
+  s_d27fb70db3c524::t_af60c2d0070db8 7,20,24,171-183
+  s_d27fb70db3c524::t_f71fd05017faba 184-185
+src/features/grid-editor/components/Grid/GridToolbar/GridToolbar.test.tsx
+  s_d27fb70db3c524::t_9ba4e6362b7360 5,454
+src/features/grid-editor/components/Grid/GridToolbar/GridToolbar.tsx
+  s_d27fb70db3c524::t_9ba4e6362b7360 135
+  s_d27fb70db3c524::t_bdd65825513a33 136-138
+src/shared/hooks/interactions/types.ts
+  s_d27fb70db3c524::t_9ba4e6362b7360 119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "631e1d82e042d722e122b2245956d719a7ea7e76",
+  "prompts": {},
+  "sessions": {
+    "s_d27fb70db3c524": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "09c52225-5996-4c64-91f0-de979e9c3826",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
