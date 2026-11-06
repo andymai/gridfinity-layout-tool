@@ -378,7 +378,7 @@ describe('GridToolbar', () => {
       expect(overflowButton).toBeInTheDocument();
       fireEvent.click(overflowButton as Element);
 
-      const item = screen.getByRole('menuitemcheckbox');
+      const item = screen.getByRole('menuitemcheckbox', { name: 'Show layers below' });
       await waitFor(() => expect(item).toHaveFocus());
     });
 
@@ -401,7 +401,9 @@ describe('GridToolbar', () => {
       const overflowButton = container.querySelector('[aria-haspopup="menu"]');
       if (overflowButton) {
         fireEvent.click(overflowButton);
-        expect(screen.getByRole('menuitemcheckbox')).toBeInTheDocument();
+        expect(
+          screen.getByRole('menuitemcheckbox', { name: 'Show layers below' })
+        ).toBeInTheDocument();
       }
     });
   });
