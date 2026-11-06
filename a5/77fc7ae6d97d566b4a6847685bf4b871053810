@@ -1,0 +1,25 @@
+src/features/labs/README.md
+  s_d27fb70db3c524::t_fe6879c5c41ce3 3
+src/core/labs/features.test.ts
+  s_d27fb70db3c524::t_fe6879c5c41ce3 32
+.claude/skills/analytics-and-labs/SKILL.md
+  s_d27fb70db3c524::t_fe6879c5c41ce3 52-53
+src/features/bin-designer/README.md
+  s_d27fb70db3c524::t_01a696e9dbcdfa 485
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a577fc7ae6d97d566b4a6847685bf4b871053810",
+  "prompts": {},
+  "sessions": {
+    "s_d27fb70db3c524": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "09c52225-5996-4c64-91f0-de979e9c3826",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
