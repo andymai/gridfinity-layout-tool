@@ -36,15 +36,6 @@ export const FEATURE_FLAGS = [
       'Unfinished. The rail and tray geometry is still changing, the printed fit is unverified, and a design saved with a tray may not reopen the same way once this ships.',
   },
   {
-    id: 'workshop',
-    name: 'Workshop',
-    description:
-      'Build tool holders from parts. Place posts, fins, tubes, cradles and more on a Gridfinity base in 3D, stack and carve them, then export the result.',
-    risk: 'medium',
-    warning:
-      'Early feature. Workshop builds auto-save to your library, sync when signed in, export to STL, 3MF and STEP, and can be placed in drawer layouts like any bin.',
-  },
-  {
     id: 'spacemouse',
     name: 'SpaceMouse Navigation',
     description:

@@ -10,7 +10,6 @@ interface DesignListHeaderProps {
   onEnterSelect: () => void;
   onShowImport: () => void;
   onNewDesign: (kind?: ItemKind) => void;
-  showWorkshopButton: boolean;
   onOpenOptionsMenu: (e: ReactMouseEvent<HTMLButtonElement>) => void;
   onClose: () => void;
 }
@@ -23,7 +22,6 @@ export function DesignListHeader({
   onEnterSelect,
   onShowImport,
   onNewDesign,
-  showWorkshopButton,
   onOpenOptionsMenu,
   onClose,
 }: DesignListHeaderProps) {
@@ -49,15 +47,13 @@ export function DesignListHeader({
         >
           {t('common.import')}
         </Button>
-        {showWorkshopButton && (
-          <Button
-            variant="secondary"
-            onClick={() => onNewDesign('assembly')}
-            className="rounded-md px-3 py-1.5 text-sm font-medium"
-          >
-            {t('binDesigner.newWorkshop')}
-          </Button>
-        )}
+        <Button
+          variant="secondary"
+          onClick={() => onNewDesign('assembly')}
+          className="rounded-md px-3 py-1.5 text-sm font-medium"
+        >
+          {t('binDesigner.newWorkshop')}
+        </Button>
         <Button
           variant="primary"
           onClick={() => onNewDesign()}

@@ -37,7 +37,6 @@ import type { SortOption } from './designListSort';
 import { removeRegistryEntry, renameRegistryEntry } from '../../store/customBinRegistry';
 import { useDesignerStore } from '../../store';
 import { settleDesignSaves } from '../../hooks/designSaveGate';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import type { ItemKind } from '@/shared/types/item';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
@@ -111,7 +110,6 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const loadDesign = useDesignerStore((s) => s.loadDesign);
   const openRef = useLatestRef(open);
   const newDesign = useDesignerStore((s) => s.newDesign);
-  const workshopEnabled = useFeatureFlag('workshop');
   const currentDesignId = useDesignerStore((s) => s.currentDesignId);
   const { navigateToDesign, syncUrlToDesign, designIdFromUrl } = useDesignerRouting();
   const addToast = useToastStore((s) => s.addToast);
@@ -662,7 +660,6 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
           onEnterSelect={() => selection.enter()}
           onShowImport={() => setShowImport(true)}
           onNewDesign={handleNewDesign}
-          showWorkshopButton={workshopEnabled}
           onOpenOptionsMenu={handleOpenOptionsMenu}
           onClose={onClose}
         />
