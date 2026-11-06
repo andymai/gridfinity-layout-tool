@@ -3882,6 +3882,7 @@
   "inspector.unlockAllSizes": "Odblokuj wszystkie rozmiary",
   "inspector.unlockSize": "Odblokuj rozmiar",
   "labs.disabled": "Wył.",
+  "labs.earlyAccess": "Wczesny dostęp",
   "labs.enabled": "Wł.",
   "labs.engine.ariaLabel": "Wybierz silnik 3D",
   "labs.engine.descriptionDefault": "Produkcyjny silnik, który dziś obsługuje wszystkie eksporty binów i płyt bazowych.",

@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { useLabsStore } from '@/core/store';
 import { useGapFitStore } from '@/core/store/gapFit';
 import { gridUnits, heightUnits, layerId } from '@/core/types';
 import type { Mm } from '@/core/types';
@@ -19,15 +18,6 @@ vi.mock('@/features/community/components/CommunityGalleryTab', () => ({
   CommunityGalleryTab: () => <div data-testid="community-content" />,
 }));
 
-function setCommunityFlag(enabled: boolean): void {
-  useLabsStore.setState((s) => ({
-    preferences: {
-      ...s.preferences,
-      enabledFeatures: { ...s.preferences.enabledFeatures, community_showcase: enabled },
-    },
-  }));
-}
-
 function setGapConstraint(): void {
   useGapFitStore.getState().setConstraint({
     maxWidth: gridUnits(2),
@@ -43,35 +33,16 @@ function setGapConstraint(): void {
 describe('DesignGalleryModal', () => {
   beforeEach(() => {
     localStorage.clear();
-    setCommunityFlag(false);
     useGapFitStore.setState({ constraint: null });
   });
 
-  it('flag off: renders the dialog with examples content and no tab bar', async () => {
-    render(<DesignGalleryModal onClose={vi.fn()} />);
-
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(await screen.findByTestId('examples-content')).toBeInTheDocument();
-    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
-    expect(screen.queryByRole('tab', { name: 'Community' })).not.toBeInTheDocument();
-    expect(screen.queryByTestId('community-content')).not.toBeInTheDocument();
-  });
-
-  it('flag off: titles itself Examples rather than mislabelling a pure examples gallery', async () => {
-    render(<DesignGalleryModal onClose={vi.fn()} />);
-
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Examples');
-  });
-
-  it('flag on: titles itself Community Designs', async () => {
-    setCommunityFlag(true);
+  it('titles itself Community Designs', async () => {
     render(<DesignGalleryModal onClose={vi.fn()} />);
 
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Community Designs');
   });
 
   it('gives its title the same bordered spacing every other modal has', async () => {
-    setCommunityFlag(true);
     render(<DesignGalleryModal onClose={vi.fn()} />);
 
     // Without the border variant the header collapses to pb-2, half of what
@@ -81,16 +52,7 @@ describe('DesignGalleryModal', () => {
     ).toContain('border-b');
   });
 
-  it('flag off: ignores a stored community tab and shows examples', async () => {
-    localStorage.setItem('gridfinity-design-gallery-tab-v1', 'community');
-    render(<DesignGalleryModal onClose={vi.fn()} />);
-
-    expect(await screen.findByTestId('examples-content')).toBeInTheDocument();
-    expect(screen.queryByTestId('community-content')).not.toBeInTheDocument();
-  });
-
-  it('flag on: shows the tab bar defaulting to Examples with the new dot', async () => {
-    setCommunityFlag(true);
+  it('shows the tab bar defaulting to Examples with the new dot', async () => {
     render(<DesignGalleryModal onClose={vi.fn()} />);
 
     expect(screen.getByRole('tablist')).toBeInTheDocument();
@@ -103,8 +65,7 @@ describe('DesignGalleryModal', () => {
     expect(await screen.findByTestId('examples-content')).toBeInTheDocument();
   });
 
-  it('flag on: switching to Community renders its panel and clears the new dot', async () => {
-    setCommunityFlag(true);
+  it('switching to Community renders its panel and clears the new dot', async () => {
     render(<DesignGalleryModal onClose={vi.fn()} />);
 
     fireEvent.click(screen.getByRole('tab', { name: /^Community/ }));
@@ -118,8 +79,7 @@ describe('DesignGalleryModal', () => {
     expect(localStorage.getItem('gridfinity-design-gallery-tab-v1')).toBe('community');
   });
 
-  it('flag on: restores the last-used tab from localStorage', async () => {
-    setCommunityFlag(true);
+  it('restores the last-used tab from localStorage', async () => {
     localStorage.setItem('gridfinity-design-gallery-tab-v1', 'community');
     render(<DesignGalleryModal onClose={vi.fn()} />);
 
@@ -130,8 +90,7 @@ describe('DesignGalleryModal', () => {
     expect(await screen.findByTestId('community-content')).toBeInTheDocument();
   });
 
-  it('flag on: a fits-gap open lands on the Community tab despite a stored examples tab', async () => {
-    setCommunityFlag(true);
+  it('a fits-gap open lands on the Community tab despite a stored examples tab', async () => {
     localStorage.setItem('gridfinity-design-gallery-tab-v1', 'examples');
     setGapConstraint();
     render(<DesignGalleryModal onClose={vi.fn()} />);
@@ -144,7 +103,6 @@ describe('DesignGalleryModal', () => {
   });
 
   it('closing the gallery clears the fits-gap handoff', async () => {
-    setCommunityFlag(true);
     setGapConstraint();
     const onClose = vi.fn();
     render(<DesignGalleryModal onClose={onClose} />);

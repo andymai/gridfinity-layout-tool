@@ -3882,6 +3882,7 @@
   "inspector.unlockAllSizes": "Lås opp alle størrelser",
   "inspector.unlockSize": "Lås opp størrelse",
   "labs.disabled": "av",
+  "labs.earlyAccess": "Tidlig tilgang",
   "labs.enabled": "på",
   "labs.engine.ariaLabel": "Velg 3D-motor",
   "labs.engine.descriptionDefault": "Produksjonsmotor som driver alle bin- og grunnplate-eksporter i dag.",

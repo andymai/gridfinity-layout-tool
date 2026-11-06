@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { FeatureFlag } from '@/core/labs';
-import { FeatureStatusBadge } from '../FeatureStatusBadge';
+import { EarlyAccessBadge } from '../EarlyAccessBadge';
 import { InfoIcon } from '../icons';
 import { Switch } from '@/design-system';
 import { useTranslation } from '@/i18n';
@@ -20,7 +20,7 @@ export function FeatureCard({ feature, isEnabled, onToggle, children }: FeatureC
     <article className="rounded-lg border border-stroke-subtle bg-surface p-4">
       <div className="flex items-start justify-between gap-3 mb-2">
         <h3 className="text-title text-content leading-tight">{feature.name}</h3>
-        <FeatureStatusBadge status={feature.status} />
+        <EarlyAccessBadge />
       </div>
 
       <p className="text-body text-content-secondary leading-relaxed mb-3">{feature.description}</p>

@@ -5,7 +5,6 @@ import { useCommunityDetailStore } from '@/core/store/communityDetail';
 import { useCommunityDigestStore } from '@/core/store/communityDigest';
 import { useGapFitStore } from '@/core/store/gapFit';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import type { CommunityGallerySurface } from '@/shared/types/communityGalleryTab';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import {
@@ -17,7 +16,6 @@ import {
 } from './communityDesignerBridge';
 import { GalleryTabBar } from './GalleryTabBar';
 import { useGalleryTab } from './useGalleryTab';
-import type { GalleryTabId } from './useGalleryTab';
 
 // Per-tab lazy chunks: a static import here would pull both features'
 // component trees (three.js included) into the shell chunk on first paint.
@@ -41,9 +39,7 @@ interface DesignGalleryModalProps {
 
 export function DesignGalleryModal({ onClose }: DesignGalleryModalProps) {
   const t = useTranslation();
-  const communityEnabled = useFeatureFlag('community_showcase');
   const { activeTab, setActiveTab, showNewDot } = useGalleryTab();
-  const effectiveTab: GalleryTabId = communityEnabled ? activeTab : 'examples';
   const detailOpen = useCommunityDetailStore((s) => s.request !== null);
   // The one-shot "never opened" dot and the unseen-digest dot share the tab
   // bar's single indicator; either signal lights it.
@@ -58,8 +54,8 @@ export function DesignGalleryModal({ onClose }: DesignGalleryModalProps) {
   // A fits-gap open lands on the Community tab regardless of the stored
   // last-used tab; the user can still switch away afterwards.
   useEffect(() => {
-    if (openedForFitsGap && communityEnabled) setActiveTab('community');
-  }, [openedForFitsGap, communityEnabled, setActiveTab]);
+    if (openedForFitsGap) setActiveTab('community');
+  }, [openedForFitsGap, setActiveTab]);
 
   // Closing the gallery ends the fits-gap context: without this, the next
   // manual gallery open would silently re-enter it.
@@ -82,34 +78,30 @@ export function DesignGalleryModal({ onClose }: DesignGalleryModalProps) {
             chrome before the first card, and this dialog has a fixed height,
             so that came straight out of the gallery body. */}
         <Dialog.Header
-          title={t(
-            communityEnabled ? 'binExamples.gallery.title' : 'binExamples.gallery.tabs.examples'
-          )}
+          title={t('binExamples.gallery.title')}
           bordered
-          density={communityEnabled ? 'compact' : 'default'}
+          density="compact"
           closeAriaLabel={t('common.close')}
         >
-          {communityEnabled && (
-            <GalleryTabBar
-              activeTab={effectiveTab}
-              onTabChange={setActiveTab}
-              showNewDot={showNewDot || hasUnseenDigest}
-            />
-          )}
+          <GalleryTabBar
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            showNewDot={showNewDot || hasUnseenDigest}
+          />
         </Dialog.Header>
         <Dialog.Body padding="none" scroll={false}>
           <div
-            key={effectiveTab}
+            key={activeTab}
             className="flex min-h-0 flex-1 flex-col"
-            role={communityEnabled ? 'tabpanel' : undefined}
+            role="tabpanel"
             // Focusable per APG: during the loading skeleton the panel has no
             // focusable child, so Tab from the active tab needs a landing spot.
-            tabIndex={communityEnabled ? 0 : undefined}
-            id={communityEnabled ? `gallery-tabpanel-${effectiveTab}` : undefined}
-            aria-labelledby={communityEnabled ? `gallery-tab-${effectiveTab}` : undefined}
+            tabIndex={0}
+            id={`gallery-tabpanel-${activeTab}`}
+            aria-labelledby={`gallery-tab-${activeTab}`}
           >
             <Suspense fallback={<LoadingFallback variant="panel" label={t('loading.gallery')} />}>
-              {effectiveTab === 'community' ? (
+              {activeTab === 'community' ? (
                 <CommunityTabContent
                   onRequestClose={handleClose}
                   onRequestPublish={openPublishForActiveDesign}
@@ -125,7 +117,7 @@ export function DesignGalleryModal({ onClose }: DesignGalleryModalProps) {
         </Dialog.Body>
       </Dialog.Root>
 
-      {communityEnabled && detailOpen && (
+      {detailOpen && (
         <Suspense fallback={null}>
           <CommunityDetail
             onRequestCloseGallery={handleClose}

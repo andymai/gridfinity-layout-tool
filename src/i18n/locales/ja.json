@@ -3882,6 +3882,7 @@
   "inspector.unlockAllSizes": "すべてのサイズのロックを解除",
   "inspector.unlockSize": "サイズのロックを解除",
   "labs.disabled": "オフ",
+  "labs.earlyAccess": "アーリーアクセス",
   "labs.enabled": "オン",
   "labs.engine.ariaLabel": "3Dエンジンを選択",
   "labs.engine.descriptionDefault": "現在すべてのビンとベースプレートのエクスポートを支える本番エンジンです。",

@@ -140,9 +140,8 @@ export function isListPage(value: unknown): value is CommunityListPage {
 }
 
 /**
- * The server switches the client cannot infer. `community_showcase` is a
- * per-user Labs flag over the UI; these are deployment kill switches, and
- * nothing local reflects them.
+ * Server-controlled settings the client cannot infer: nothing local reflects
+ * them.
  */
 export interface CommunityCapabilities {
   publishEnabled: boolean;

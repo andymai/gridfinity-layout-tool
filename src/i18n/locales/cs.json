@@ -3882,6 +3882,7 @@
   "inspector.unlockAllSizes": "Odemknout všechny velikosti",
   "inspector.unlockSize": "Odemknout velikost",
   "labs.disabled": "Vypnuto",
+  "labs.earlyAccess": "Předběžný přístup",
   "labs.enabled": "Zapnuto",
   "labs.engine.ariaLabel": "Vybrat 3D engine",
   "labs.engine.descriptionDefault": "Produkční engine, který dnes pohání všechny exporty binů a základních desek.",

@@ -1,6 +1,6 @@
 /**
- * Community publish dialog, mounted at app level (App.tsx) behind the
- * community_showcase flag and driven by the core communityPublish store.
+ * Community publish dialog, mounted at app level (App.tsx) and driven by the
+ * core communityPublish store.
  * Composition contract: the opener (bin designer) supplies design context,
  * captures, and handlers; this dialog never imports another feature.
  *
@@ -12,7 +12,6 @@
 
 import {
   Alert,
-  Badge,
   Button,
   ConfirmDialog,
   CopyField,
@@ -308,16 +307,7 @@ export function PublishDialog() {
         fullScreen="mobile"
         dismissable={phase !== 'publishing' && !unpublishBusy}
       >
-        <Dialog.Header
-          title={
-            <span className="flex items-center gap-2">
-              {title}
-              <Badge tone="info">{t('common.experimental')}</Badge>
-            </span>
-          }
-          closeAriaLabel={t('common.closeDialog')}
-          bordered
-        >
+        <Dialog.Header title={title} closeAriaLabel={t('common.closeDialog')} bordered>
           {canUnpublish && phase === 'form' && (
             <IconButton
               ref={ownerMenuRef}

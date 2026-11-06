@@ -1,176 +1,48 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useFeatureFlag, isFeatureEnabled } from '@/shared/hooks/useFeatureFlag';
 import { useLabsStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
-import * as features from '@/core/labs/features';
 
-// Must mock the actual source module that the store imports from
-vi.mock('@/core/labs/features', async () => {
-  const actual = await vi.importActual<typeof features>('@/core/labs/features');
-  return {
-    ...actual,
-    getFeature: vi.fn(),
-  };
-});
-
-const mockGetFeature = features.getFeature as ReturnType<typeof vi.fn>;
+function storeFlag(enabled: boolean): void {
+  useLabsStore.setState({
+    preferences: {
+      enabledFeatures: { show_generation_perf: enabled },
+      lastModified: new Date().toISOString(),
+      version: 1,
+    },
+  });
+}
 
 describe('useFeatureFlag', () => {
   beforeEach(() => {
     resetAllStores();
-    vi.clearAllMocks();
   });
 
-  describe('useFeatureFlag hook', () => {
-    it('returns false when feature is not enabled', () => {
-      mockGetFeature.mockReturnValue({
-        id: 'test_feature',
-        name: 'Test Feature',
-        status: 'experimental',
-      });
-
-      const { result } = renderHook(() => useFeatureFlag('test_feature' as features.FeatureId));
-
-      expect(result.current).toBe(false);
-    });
-
-    it('returns true when feature is enabled', () => {
-      mockGetFeature.mockReturnValue({
-        id: 'test_feature',
-        name: 'Test Feature',
-        status: 'experimental',
-      });
-
-      useLabsStore.setState({
-        preferences: {
-          enabledFeatures: { test_feature: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        },
-      });
-
-      const { result } = renderHook(() => useFeatureFlag('test_feature' as features.FeatureId));
-
-      expect(result.current).toBe(true);
-    });
-
-    it('reactively updates when feature flag is toggled', () => {
-      mockGetFeature.mockReturnValue({
-        id: 'test_feature',
-        name: 'Test Feature',
-        status: 'experimental',
-      });
-
-      const { result } = renderHook(() => useFeatureFlag('test_feature' as features.FeatureId));
-
-      expect(result.current).toBe(false);
-
-      // Toggle the flag via store — hook should reactively update
-      act(() => {
-        useLabsStore.setState({
-          preferences: {
-            enabledFeatures: { test_feature: true },
-            lastModified: new Date().toISOString(),
-            version: 1,
-          },
-        });
-      });
-
-      expect(result.current).toBe(true);
-
-      // Toggle back
-      act(() => {
-        useLabsStore.setState({
-          preferences: {
-            enabledFeatures: { test_feature: false },
-            lastModified: new Date().toISOString(),
-            version: 1,
-          },
-        });
-      });
-
-      expect(result.current).toBe(false);
-    });
-
-    it('returns false for non-existent features', () => {
-      mockGetFeature.mockReturnValue(undefined);
-
-      const { result } = renderHook(() => useFeatureFlag('nonexistent' as features.FeatureId));
-
-      expect(result.current).toBe(false);
-    });
-
-    it('honours defaultEnabled when nothing is stored', () => {
-      // The hook is what every gated surface reads. A second copy of the
-      // rules here left a default-on flag reading true from the store and
-      // false in every component that gates on it.
-      mockGetFeature.mockReturnValue({
-        id: 'default_on_feature',
-        name: 'Default On',
-        status: 'preview',
-        defaultEnabled: true,
-      });
-
-      const { result } = renderHook(() =>
-        useFeatureFlag('default_on_feature' as features.FeatureId)
-      );
-
-      expect(result.current).toBe(true);
-      expect(isFeatureEnabled('default_on_feature' as features.FeatureId)).toBe(result.current);
-    });
-
-    it('lets a stored false beat defaultEnabled', () => {
-      mockGetFeature.mockReturnValue({
-        id: 'default_on_feature',
-        name: 'Default On',
-        status: 'preview',
-        defaultEnabled: true,
-      });
-
-      useLabsStore.setState({
-        preferences: {
-          enabledFeatures: { default_on_feature: false },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        },
-      });
-
-      const { result } = renderHook(() =>
-        useFeatureFlag('default_on_feature' as features.FeatureId)
-      );
-
-      expect(result.current).toBe(false);
-    });
+  it('is off until the flag is stored as on', () => {
+    const { result } = renderHook(() => useFeatureFlag('show_generation_perf'));
+    expect(result.current).toBe(false);
   });
 
-  describe('isFeatureEnabled function', () => {
-    it('returns false when feature is not enabled', () => {
-      mockGetFeature.mockReturnValue({
-        id: 'test_feature',
-        name: 'Test Feature',
-        status: 'experimental',
-      });
+  it('follows the store when the flag is toggled', () => {
+    const { result } = renderHook(() => useFeatureFlag('show_generation_perf'));
 
-      expect(isFeatureEnabled('test_feature' as features.FeatureId)).toBe(false);
-    });
+    act(() => storeFlag(true));
+    expect(result.current).toBe(true);
 
-    it('returns true when feature is enabled', () => {
-      mockGetFeature.mockReturnValue({
-        id: 'test_feature',
-        name: 'Test Feature',
-        status: 'experimental',
-      });
+    act(() => storeFlag(false));
+    expect(result.current).toBe(false);
+  });
+});
 
-      useLabsStore.setState({
-        preferences: {
-          enabledFeatures: { test_feature: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        },
-      });
+describe('isFeatureEnabled', () => {
+  beforeEach(() => {
+    resetAllStores();
+  });
 
-      expect(isFeatureEnabled('test_feature' as features.FeatureId)).toBe(true);
-    });
+  it('reads the stored flag at call time', () => {
+    expect(isFeatureEnabled('show_generation_perf')).toBe(false);
+    storeFlag(true);
+    expect(isFeatureEnabled('show_generation_perf')).toBe(true);
   });
 });

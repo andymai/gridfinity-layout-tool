@@ -5,7 +5,7 @@
  * Mobile/Tablet: Compact ToolSwitcher + name (tap=list, long-press=rename) | save status + action buttons
  */
 
-import { Badge, Button, IconButton, Input } from '@/design-system';
+import { Button, IconButton, Input } from '@/design-system';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
@@ -65,7 +65,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
   );
   const undo = useDesignerStore((s) => s.undo);
   const redo = useDesignerStore((s) => s.redo);
-  const { publishVisible, canPublish, openPublish } = useCommunityPublishEntry();
+  const { canPublish, openPublish } = useCommunityPublishEntry();
 
   const {
     isEditingName,
@@ -155,46 +155,33 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
             </Button>
 
             {/* Publish button (community showcase) */}
-            {publishVisible && !canPublish && (
+            {!canPublish && (
               <span id="community-publish-disabled-hint" className="sr-only">
                 {t('community.publish.form.preparingPreview')}
               </span>
             )}
-            {publishVisible && (
-              <Button
-                variant="ghost"
-                onClick={openPublish}
-                disabled={!canPublish}
-                className="relative px-2 py-1.5 text-sm font-normal rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
-                title={t('community.publishButtonAria')}
-                aria-label={`${t('community.publishButtonAria')} (${t('common.experimental')})`}
-                aria-describedby={canPublish ? undefined : 'community-publish-disabled-hint'}
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                  />
-                </svg>
-                {/* Label only on very wide screens: the desktop header's left
+            <Button
+              variant="ghost"
+              onClick={openPublish}
+              disabled={!canPublish}
+              className="relative px-2 py-1.5 text-sm font-normal rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
+              title={t('community.publishButtonAria')}
+              aria-label={t('community.publishButtonAria')}
+              aria-describedby={canPublish ? undefined : 'community-publish-disabled-hint'}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                />
+              </svg>
+              {/* Label only on very wide screens: the desktop header's left
                     cluster overflows into the save indicator at lg widths once
                     a fifth labeled button is present. */}
-                <span className="hidden 2xl:inline">{t('community.publishButton')}</span>
-                {/* The badge rides the label; below that breakpoint the button
-                    is an icon with no room for a word, so the same signal
-                    falls back to the dot the Community nav segment uses. */}
-                <Badge tone="info" size="sm" className="hidden 2xl:inline-flex">
-                  {t('common.experimental')}
-                </Badge>
-                <span
-                  aria-hidden="true"
-                  data-testid="publish-experimental-dot"
-                  className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-content-tertiary 2xl:hidden"
-                />
-              </Button>
-            )}
+              <span className="hidden 2xl:inline">{t('community.publishButton')}</span>
+            </Button>
           </div>
 
           <div className="flex items-center gap-1 flex-shrink-0">
@@ -344,40 +331,33 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
             </IconButton>
 
             {/* Publish button (community showcase) */}
-            {publishVisible && !canPublish && (
+            {!canPublish && (
               <span id="community-publish-disabled-hint" className="sr-only">
                 {t('community.publish.form.preparingPreview')}
               </span>
             )}
-            {publishVisible && (
-              <IconButton
-                variant="ghost"
-                className="relative"
-                onClick={openPublish}
-                disabled={!canPublish}
-                aria-label={`${t('community.publishButtonAria')} (${t('common.experimental')})`}
-                aria-describedby={canPublish ? undefined : 'community-publish-disabled-hint'}
+            <IconButton
+              variant="ghost"
+              className="relative"
+              onClick={openPublish}
+              disabled={!canPublish}
+              aria-label={t('community.publishButtonAria')}
+              aria-describedby={canPublish ? undefined : 'community-publish-disabled-hint'}
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
               >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                  />
-                </svg>
-                <span
-                  aria-hidden="true"
-                  data-testid="publish-experimental-dot"
-                  className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-content-tertiary"
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                 />
-              </IconButton>
-            )}
+              </svg>
+            </IconButton>
 
             {/* Undo/Redo */}
             <IconButton

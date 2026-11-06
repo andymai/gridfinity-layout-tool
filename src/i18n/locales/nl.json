@@ -3882,6 +3882,7 @@
   "inspector.unlockAllSizes": "Alle afmetingen ontgrendelen",
   "inspector.unlockSize": "Afmetingen ontgrendelen",
   "labs.disabled": "uit",
+  "labs.earlyAccess": "Vroege toegang",
   "labs.enabled": "aan",
   "labs.engine.ariaLabel": "3D-engine selecteren",
   "labs.engine.descriptionDefault": "Productie-engine die alle huidige bin- en grondplaat-exports aandrijft.",

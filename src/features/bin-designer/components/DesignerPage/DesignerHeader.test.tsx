@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { useLabsStore } from '@/core/store';
 import {
   DEFAULT_BIN_PARAMS,
   DEFAULT_GENERATION_STATE,
@@ -57,8 +56,7 @@ function createMockNameEditor(overrides: Partial<DesignNameEditor> = {}): Design
   };
 }
 
-/** The button names itself experimental; the badge only renders at 2xl. */
-const PUBLISH_LABEL = 'Publish to the community showcase (Experimental)';
+const PUBLISH_LABEL = 'Publish to the community showcase';
 
 describe('DesignerHeader', () => {
   beforeEach(() => {
@@ -128,29 +126,12 @@ describe('DesignerHeader', () => {
   });
 
   describe('community publish entry', () => {
-    function setCommunityFlag(enabled: boolean): void {
-      useLabsStore.setState((s) => ({
-        preferences: {
-          ...s.preferences,
-          enabledFeatures: { ...s.preferences.enabledFeatures, community_showcase: enabled },
-        },
-      }));
-    }
-
-    it('hides the Publish button while the flag is off', () => {
-      setCommunityFlag(false);
-      render(<DesignerHeader isDesktop nameEditor={createMockNameEditor()} />);
-      expect(screen.queryByLabelText(PUBLISH_LABEL)).not.toBeInTheDocument();
-    });
-
     it('shows a disabled Publish button next to Export until the mesh is ready', () => {
-      setCommunityFlag(true);
       render(<DesignerHeader isDesktop nameEditor={createMockNameEditor()} />);
       expect(screen.getByLabelText(PUBLISH_LABEL)).toBeDisabled();
     });
 
     it('enables Publish once the mesh is ready and a qualifying cutout exists, on desktop and mobile', () => {
-      setCommunityFlag(true);
       useDesignerStore.setState({
         params: { ...DEFAULT_BIN_PARAMS, cutouts: [qualifyingCutout] },
         generation: { ...DEFAULT_GENERATION_STATE, mesh: readyMesh },
@@ -165,7 +146,6 @@ describe('DesignerHeader', () => {
     it('stays enabled without a cutout so the dialog can explain the policy', () => {
       // A `title` tooltip does not exist on touch, so gating the button here
       // left phone users with a dead control and no stated reason.
-      setCommunityFlag(true);
       useDesignerStore.setState({
         params: { ...DEFAULT_BIN_PARAMS, cutouts: [] },
         generation: { ...DEFAULT_GENERATION_STATE, mesh: readyMesh },

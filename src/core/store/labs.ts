@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { LabsPreferences, FeatureId } from '@/core/labs';
-import { createDefaultLabsPreferences, getFeature } from '@/core/labs';
+import { createDefaultLabsPreferences } from '@/core/labs';
 // Deep-import the leaf module (not the barrel) to keep this store off the
 // `metrics.ts` import path. metrics.ts imports `useLabsStore` from this file;
 // going through the barrel would close the cycle, which under some chunking
@@ -33,20 +33,8 @@ function savePreferences(prefs: LabsPreferences): Result<void, StorageError> {
   return saveToLocalStorage(LABS_STORAGE_KEY, toSave);
 }
 
-/**
- * The single answer to whether a feature is on: `useFeatureFlag` selects through
- * this and the write paths resolve through it, so a hook, a getState() call and a
- * toggle can never disagree about one flag.
- *
- * It lives here rather than beside the definitions so it calls the IMPORTED
- * `getFeature`. Inside the registry module that call would be internal, and
- * every test that mocks `getFeature` would silently stop reaching it.
- */
-export function resolveFeatureEnabled(preferences: LabsPreferences, featureId: string): boolean {
-  if (Object.hasOwn(preferences.enabledFeatures, featureId)) {
-    return preferences.enabledFeatures[featureId];
-  }
-  return getFeature(featureId)?.defaultEnabled ?? false;
+export function resolveFeatureEnabled(preferences: LabsPreferences, featureId: FeatureId): boolean {
+  return preferences.enabledFeatures[featureId] ?? false;
 }
 
 interface LabsState {
@@ -80,7 +68,6 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     trackEvent('labs_feature_toggle', {
       feature_id: featureId,
       enabled: newEnabled,
-      feature_status: getFeature(featureId)?.status ?? 'unknown',
     });
 
     return result;
@@ -104,7 +91,6 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
 
     trackEvent('labs_feature_enabled', {
       feature_id: featureId,
-      feature_status: getFeature(featureId)?.status ?? 'unknown',
     });
 
     return result;
@@ -128,7 +114,6 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
 
     trackEvent('labs_feature_disabled', {
       feature_id: featureId,
-      feature_status: getFeature(featureId)?.status ?? 'unknown',
     });
 
     return result;

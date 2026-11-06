@@ -1,4 +1,4 @@
-export type { FeatureStatus, FeatureFlag, LabsPreferences } from './types';
+export type { FeatureFlag, LabsPreferences } from './types';
 export { createDefaultLabsPreferences } from './types';
 
 export type { FeatureId } from './features';

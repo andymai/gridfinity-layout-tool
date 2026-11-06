@@ -3,10 +3,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { FeatureCard } from './FeatureCard';
 import type { FeatureFlag } from '@/core/labs';
 
-vi.mock('../FeatureStatusBadge', () => ({
-  FeatureStatusBadge: ({ status }: { status: string }) => <div>Status: {status}</div>,
-}));
-
 vi.mock('../icons', () => ({
   SparklesIcon: ({ className }: { className?: string }) => (
     <div className={className}>Sparkles</div>
@@ -28,7 +24,6 @@ describe('FeatureCard', () => {
     id: 'test-feature',
     name: 'Test Feature',
     description: 'Test feature description',
-    status: 'experimental',
     risk: 'low',
   };
 
@@ -45,9 +40,9 @@ describe('FeatureCard', () => {
     expect(screen.getByText('Test feature description')).toBeInTheDocument();
   });
 
-  it('shows status badge', () => {
+  it('marks the feature as early access', () => {
     render(<FeatureCard feature={baseFeature} isEnabled={false} onToggle={mockToggle} />);
-    expect(screen.getByText('Status: experimental')).toBeInTheDocument();
+    expect(screen.getByText('labs.earlyAccess')).toBeInTheDocument();
   });
 
   it('renders toggle switch for experimental features', () => {

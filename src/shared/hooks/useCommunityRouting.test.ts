@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useLabsStore } from '@/core/store';
 import {
   getCommunityGalleryQuery,
   getCommunityDesignIdFromUrl,
@@ -12,27 +11,16 @@ import {
 const DESIGN_ID = 'Abc123456789';
 const AUTHOR_ID = 'a1b2c3d4e5f60718293a4b5c6d7e8f90';
 
-function setCommunityFlag(enabled: boolean): void {
-  useLabsStore.setState((s) => ({
-    preferences: {
-      ...s.preferences,
-      enabledFeatures: { ...s.preferences.enabledFeatures, community_showcase: enabled },
-    },
-  }));
-}
-
 describe('useCommunityRouting', () => {
   let originalPathname: string;
 
   beforeEach(() => {
     originalPathname = window.location.pathname;
     window.history.replaceState(null, '', '/');
-    setCommunityFlag(true);
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
-    setCommunityFlag(false);
     window.history.replaceState(null, '', originalPathname);
   });
 
@@ -82,31 +70,6 @@ describe('useCommunityRouting', () => {
       const { result } = renderHook(() => useCommunityRouting());
       expect(result.current.isCommunityRoute).toBe(false);
       expect(result.current.communityDesignIdFromUrl).toBeNull();
-    });
-  });
-
-  describe('community_showcase flag gate', () => {
-    it('flag off: /community falls through (isCommunityRoute stays false)', () => {
-      setCommunityFlag(false);
-      window.history.replaceState(null, '', '/community');
-      const { result } = renderHook(() => useCommunityRouting());
-      expect(result.current.isCommunityRoute).toBe(false);
-    });
-
-    it('flag off: the detail deep link falls through too', () => {
-      setCommunityFlag(false);
-      window.history.replaceState(null, '', `/community/d/${DESIGN_ID}`);
-      const { result } = renderHook(() => useCommunityRouting());
-      expect(result.current.isCommunityRoute).toBe(false);
-    });
-
-    it('flipping the flag on makes the current /community URL active', () => {
-      setCommunityFlag(false);
-      window.history.replaceState(null, '', '/community');
-      const { result } = renderHook(() => useCommunityRouting());
-      expect(result.current.isCommunityRoute).toBe(false);
-      act(() => setCommunityFlag(true));
-      expect(result.current.isCommunityRoute).toBe(true);
     });
   });
 
