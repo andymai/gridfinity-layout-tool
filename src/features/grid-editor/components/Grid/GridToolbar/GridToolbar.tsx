@@ -12,7 +12,6 @@ import {
   XIcon,
 } from '@/design-system';
 import { trackEvent } from '@/shared/analytics/posthog';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useTranslation } from '@/i18n';
 import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
 import type { Layer } from '@/core/types';
@@ -73,7 +72,6 @@ export const GridToolbar = memo(function GridToolbar({
       setGapSelectArmed: state.setGapSelectArmed,
     }))
   );
-  const fitsGapEnabled = useFeatureFlag('community_fits_gap');
   const { showIsometricPreview, toggleIsometricPreview } = useViewStore(
     useShallow((state) => ({
       showIsometricPreview: state.showIsometricPreview,
@@ -112,6 +110,19 @@ export const GridToolbar = memo(function GridToolbar({
     };
   }, [overflowMenuOpen]);
 
+  // Two layers and the buttons don't all fit on a narrow toolbar, so the picker
+  // moves into the overflow menu, which only exists in that same case.
+  const findBinsInOverflow = isNarrowToolbar && layers.length > 1;
+  const toggleFindBins = () => {
+    if (!gapSelectArmed) trackEvent('community_gap_select_armed', { surface: 'toolbar' });
+    setGapSelectArmed(!gapSelectArmed);
+  };
+  const chooseFindBinsFromMenu = () => {
+    toggleFindBins();
+    closeOverflowMenu();
+    overflowMenuRef.current?.querySelector('button')?.focus();
+  };
+
   return (
     <div
       data-grid-toolbar
@@ -120,7 +131,7 @@ export const GridToolbar = memo(function GridToolbar({
     >
       {/* Left: Layer indicator + Paint mode */}
       <div className="flex items-center gap-3">
-        {layers.length > 1 && activeLayer && (
+        {layers.length > 1 && activeLayer && !(findBinsInOverflow && gapSelectArmed) && (
           <Button
             variant="secondary"
             onClick={() => leftPanelCollapsed && toggleLeftPanel()}
@@ -134,18 +145,13 @@ export const GridToolbar = memo(function GridToolbar({
           </Button>
         )}
 
-        {/* Community "find bins that fit": arms a one-shot gap selection so
-            the flow is reachable without the right-drag shortcut (and at all
-            on touch). */}
-        {fitsGapEnabled && (
+        {/* Community "find bins that fit": arms a one-shot gap selection. */}
+        {(!findBinsInOverflow || gapSelectArmed) && (
           <Button
             variant={gapSelectArmed ? 'primary' : 'secondary'}
             aria-pressed={gapSelectArmed}
-            onClick={() => {
-              if (!gapSelectArmed) trackEvent('community_gap_select_armed', { surface: 'toolbar' });
-              setGapSelectArmed(!gapSelectArmed);
-            }}
-            className="px-3 py-1.5 text-sm"
+            onClick={toggleFindBins}
+            className="px-3 py-1.5 text-sm whitespace-nowrap"
             title={t(gapSelectArmed ? 'toolbar.findBinsArmedHint' : 'toolbar.findBinsHint')}
             data-testid="toolbar-find-bins-that-fit"
           >
@@ -385,6 +391,22 @@ export const GridToolbar = memo(function GridToolbar({
                     <Checkbox checked={showOtherLayers} size="md" />
                   </div>
                 )}
+                <div
+                  className="px-3 py-2 cursor-pointer select-none text-sm text-content-secondary hover:bg-surface-hover rounded-md"
+                  onClick={chooseFindBinsFromMenu}
+                  role="menuitemcheckbox"
+                  aria-checked={gapSelectArmed}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === ' ' || e.key === 'Enter') {
+                      e.preventDefault();
+                      chooseFindBinsFromMenu();
+                    }
+                  }}
+                  data-testid="toolbar-overflow-find-bins-that-fit"
+                >
+                  {t('toolbar.findBins')}
+                </div>
               </div>
             )}
           </div>

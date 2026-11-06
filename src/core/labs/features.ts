@@ -18,15 +18,6 @@ export const FEATURE_FLAGS = [
     risk: 'low',
   },
   {
-    id: 'community_fits_gap',
-    name: 'Find Bins That Fit',
-    description:
-      'Select a gap in your drawer layout and see which community designs fit it. Adds a toolbar button, plus a right-button drag on the grid as a desktop shortcut.',
-    risk: 'low',
-    warning:
-      'While this is on, a right-button drag on the grid selects a gap instead of opening the browser menu.',
-  },
-  {
     id: 'sliding_tray',
     name: 'Sliding Tray',
     description:
