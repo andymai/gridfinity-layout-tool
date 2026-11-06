@@ -1,0 +1,23 @@
+e2e/workshop.spec.ts
+  s_d27fb70db3c524::t_8a84d28226a480 1-42
+src/features/whats-new/entries.ts
+  s_d27fb70db3c524::t_1b0e3b0827eb85 744,783
+src/shell/Modals/WhatsNewModal/whatsNewShared.test.tsx
+  s_d27fb70db3c524::t_29ec80c2242e28 76,103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "af77d05f9152daea332a406cb238494308f38bc5",
+  "prompts": {},
+  "sessions": {
+    "s_d27fb70db3c524": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "09c52225-5996-4c64-91f0-de979e9c3826",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
