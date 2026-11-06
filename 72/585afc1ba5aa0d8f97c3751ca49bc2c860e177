@@ -1,0 +1,29 @@
+src/shared/utils/typeMeasurer.ts
+  s_df5dd180375ea0::t_90b0d307b89386 230-231,234,241,247,254-255
+src/features/generation/worker/handlers/exportHandler.ts
+  s_df5dd180375ea0::t_955c71d4cb20f7 176
+  s_df5dd180375ea0::t_cb4124315d236c 238
+src/shared/utils/typeMeasurer.test.ts
+  s_df5dd180375ea0::t_005ab507bec8d9 1-5,7-19,22-27,29-42
+  s_df5dd180375ea0::t_8b78f7ef8ac03b 6
+  s_df5dd180375ea0::t_73a2e4d7c60fb6 20-21,28
+src/features/generation/worker/handlers/exportFonts.test.ts
+  s_df5dd180375ea0::t_3a10095613a3cc 2-4,14-15,18-20,34-40,76-83,89-105
+  s_df5dd180375ea0::t_ea187c75f6a8e1 106-107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "72585afc1ba5aa0d8f97c3751ca49bc2c860e177",
+  "prompts": {},
+  "sessions": {
+    "s_df5dd180375ea0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "838ec268-ac85-445a-aa6b-74fdffc4f8b6",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
