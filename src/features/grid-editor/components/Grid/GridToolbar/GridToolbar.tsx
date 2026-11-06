@@ -117,6 +117,11 @@ export const GridToolbar = memo(function GridToolbar({
     if (!gapSelectArmed) trackEvent('community_gap_select_armed', { surface: 'toolbar' });
     setGapSelectArmed(!gapSelectArmed);
   };
+  const chooseFindBinsFromMenu = () => {
+    toggleFindBins();
+    closeOverflowMenu();
+    overflowMenuRef.current?.querySelector('button')?.focus();
+  };
 
   return (
     <div
@@ -388,17 +393,14 @@ export const GridToolbar = memo(function GridToolbar({
                 )}
                 <div
                   className="px-3 py-2 cursor-pointer select-none text-sm text-content-secondary hover:bg-surface-hover rounded-md"
-                  onClick={() => {
-                    toggleFindBins();
-                    closeOverflowMenu();
-                  }}
-                  role="menuitem"
+                  onClick={chooseFindBinsFromMenu}
+                  role="menuitemcheckbox"
+                  aria-checked={gapSelectArmed}
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === ' ' || e.key === 'Enter') {
                       e.preventDefault();
-                      toggleFindBins();
-                      closeOverflowMenu();
+                      chooseFindBinsFromMenu();
                     }
                   }}
                   data-testid="toolbar-overflow-find-bins-that-fit"

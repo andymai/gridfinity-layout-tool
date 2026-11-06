@@ -465,11 +465,15 @@ describe('GridToolbar', () => {
         'aria-pressed',
         'true'
       );
+      expect(container.querySelector('[aria-haspopup="menu"]')).toHaveFocus();
     });
 
     it('stays inline on a narrow toolbar with one layer, which has no overflow menu', () => {
-      render(<GridToolbar {...defaultProps} layers={[mockLayers[0]]} isNarrowToolbar />);
+      const { container } = render(
+        <GridToolbar {...defaultProps} layers={[mockLayers[0]]} isNarrowToolbar />
+      );
       expect(screen.getByTestId('toolbar-find-bins-that-fit')).toBeInTheDocument();
+      expect(container.querySelector('[aria-haspopup="menu"]')).not.toBeInTheDocument();
     });
 
     it('toggles the armed gap-select mode', () => {
