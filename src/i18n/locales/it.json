@@ -3882,6 +3882,7 @@
   "inspector.unlockAllSizes": "Sblocca tutte le dimensioni",
   "inspector.unlockSize": "Sblocca dimensioni",
   "labs.disabled": "Off",
+  "labs.earlyAccess": "Accesso anticipato",
   "labs.enabled": "On",
   "labs.engine.ariaLabel": "Seleziona il motore 3D",
   "labs.engine.descriptionDefault": "Motore di produzione che alimenta oggi tutte le esportazioni di bin e baseplate.",

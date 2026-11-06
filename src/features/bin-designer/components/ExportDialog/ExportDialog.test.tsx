@@ -41,7 +41,6 @@ vi.mock('@/core/store/toast', async (importOriginal) => {
 
 vi.mock('@/features/bin-designer/hooks/useCommunityPublish', () => ({
   useCommunityPublishEntry: () => ({
-    publishVisible: true,
     canPublish: true,
     openPublish: mockOpenPublish,
   }),

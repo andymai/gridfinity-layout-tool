@@ -45,7 +45,6 @@ import { usePrintSummary } from './usePrintSummary';
 import { useStyleSummary } from './useStyleSummary';
 import { modifiedCategories } from './categoryModified';
 import { useTranslation } from '@/i18n';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DesignerSearchBar } from './DesignerSearchBar/DesignerSearchBar';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
@@ -115,7 +114,6 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
   // runs per write; the render only happens when a flag flips.
   const modified = useDesignerStore(useShallow((s) => modifiedCategories(s.params)));
   const { needsSplit } = useSplitOptionsSection();
-  const searchEnabled = useFeatureFlag('designer_settings_search');
   const openExampleGallery = useBinExampleGalleryStore((s) => s.open);
   const hasUnseenDigest = useCommunityDigestStore((s) => s.hasUnseenDeltas);
   const currentDesignId = useDesignerStore((s) => s.currentDesignId);
@@ -324,7 +322,7 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
   // is `justify-end`, so with search off the lone pill still sits on the right.
   const topBar = (
     <div className="flex flex-shrink-0 items-center justify-end gap-2 border-b border-stroke-subtle px-3 py-2">
-      {searchEnabled && <DesignerSearchBar viewMode={viewMode} needsSplit={needsSplit} />}
+      <DesignerSearchBar viewMode={viewMode} needsSplit={needsSplit} />
       {viewSwitchPill}
     </div>
   );

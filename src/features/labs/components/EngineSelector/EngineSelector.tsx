@@ -3,7 +3,7 @@ import { useLabsStore, useToastStore } from '@/core/store';
 import { getFeature, type FeatureFlag } from '@/core/labs';
 import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
 import { useTranslation } from '@/i18n';
-import { FeatureStatusBadge } from '../FeatureStatusBadge';
+import { EarlyAccessBadge } from '../EarlyAccessBadge';
 import { InfoIcon } from '../icons';
 import { BREPKIT_ID } from './kernelIds';
 
@@ -63,7 +63,7 @@ export function EngineSelector() {
       <div className="flex items-start justify-between gap-3 mb-3">
         <h3 className="text-title text-content leading-tight">{t('labs.engine.title')}</h3>
         {selectedFeature ? (
-          <FeatureStatusBadge status={selectedFeature.status} />
+          <EarlyAccessBadge />
         ) : (
           <span className="inline-flex items-center px-2 py-0.5 text-micro font-semibold uppercase tracking-wide rounded bg-success-muted text-success">
             {t('labs.engine.statusStable')}

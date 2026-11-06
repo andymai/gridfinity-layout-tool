@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { useLabsStore } from '@/core/store';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import {
   loadPendingPublishAction,
@@ -9,15 +8,6 @@ import {
 import { useCommunityPublishReturn } from './useCommunityPublishReturn';
 
 const KEY = 'gridfinity-community-pending-publish-v1';
-
-function enableFlag(enabled: boolean): void {
-  useLabsStore.setState((s) => ({
-    preferences: {
-      ...s.preferences,
-      enabledFeatures: { ...s.preferences.enabledFeatures, community_showcase: enabled },
-    },
-  }));
-}
 
 function authenticate(): void {
   useSessionStore.setState({
@@ -31,7 +21,6 @@ describe('useCommunityPublishReturn', () => {
     sessionStorage.clear();
     window.history.replaceState(null, '', '/');
     useSessionStore.setState({ status: 'unknown', user: null });
-    enableFlag(true);
   });
 
   it('navigates to the pending design once the session resolves authenticated', () => {
@@ -66,14 +55,5 @@ describe('useCommunityPublishReturn', () => {
     authenticate();
     renderHook(() => useCommunityPublishReturn());
     expect(loadPendingPublishAction()?.designId).toBe('design-1');
-  });
-
-  it('does nothing while the flag is off', () => {
-    enableFlag(false);
-    savePendingPublishAction({ designId: 'design-1', returnSurface: 'designer' });
-    authenticate();
-    renderHook(() => useCommunityPublishReturn());
-    expect(window.location.pathname).toBe('/');
-    expect(sessionStorage.getItem(KEY)).not.toBeNull();
   });
 });

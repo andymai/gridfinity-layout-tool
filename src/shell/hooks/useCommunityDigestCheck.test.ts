@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useLabsStore } from '@/core/store';
 import {
   INITIAL_COMMUNITY_DIGEST_STATE,
   useCommunityDigestStore,
@@ -33,15 +32,6 @@ const runCheckMock = vi.mocked(runCommunityDigestCheck);
 const claimMock = vi.mocked(claimMilestone);
 const trackEventMock = vi.mocked(trackEvent);
 
-function enableFlag(enabled: boolean): void {
-  useLabsStore.setState((s) => ({
-    preferences: {
-      ...s.preferences,
-      enabledFeatures: { ...s.preferences.enabledFeatures, community_showcase: enabled },
-    },
-  }));
-}
-
 function authenticate(userId = 'u1'): void {
   useSessionStore.setState({
     status: 'authenticated',
@@ -58,7 +48,6 @@ beforeEach(() => {
   useToastStore.setState(INITIAL_TOAST_STATE);
   useCommunityDigestStore.setState(INITIAL_COMMUNITY_DIGEST_STATE);
   useSessionStore.setState({ status: 'unknown', user: null });
-  enableFlag(true);
 });
 
 describe('useCommunityDigestCheck', () => {
@@ -66,14 +55,6 @@ describe('useCommunityDigestCheck', () => {
     authenticate('user-7');
     renderHook(() => useCommunityDigestCheck());
     await waitFor(() => expect(runCheckMock).toHaveBeenCalledWith('user-7'));
-  });
-
-  it('does nothing while the flag is off', async () => {
-    enableFlag(false);
-    authenticate();
-    renderHook(() => useCommunityDigestCheck());
-    await Promise.resolve();
-    expect(runCheckMock).not.toHaveBeenCalled();
   });
 
   it('does nothing while the session is unknown, then runs on sign-in', async () => {
@@ -118,47 +99,6 @@ describe('useCommunityDigestCheck', () => {
     hook.rerender();
     await waitFor(() => expect(useMineStore.getState().forUserId).toBeNull());
     expect(useMineStore.getState().status).toBe('idle');
-    expect(useBrowseStore.getState().filters.mineOnly).toBe(false);
-  });
-
-  it('does not touch the community stores when a flag-off user signs out', async () => {
-    enableFlag(false);
-    const { useBrowseStore } = await import('@/features/community/store/browseStore');
-    useBrowseStore.getState().setMineOnly(true);
-    authenticate('user-7');
-    const hook = renderHook(() => useCommunityDigestCheck());
-    await Promise.resolve();
-
-    useSessionStore.setState({ status: 'anonymous', user: null });
-    hook.rerender();
-    await Promise.resolve();
-    await Promise.resolve();
-    // Flag-off users can never have populated the community stores, so the
-    // cleanup (and its lazy chunk load) must not run for them.
-    expect(useBrowseStore.getState().filters.mineOnly).toBe(true);
-    useBrowseStore.getState().setMineOnly(false);
-  });
-
-  it('still cleans up when the flag flips off between community use and sign-out', async () => {
-    const { useMineStore } = await import('@/features/community/store/mineStore');
-    const { useBrowseStore } = await import('@/features/community/store/browseStore');
-    authenticate('user-7');
-    const hook = renderHook(() => useCommunityDigestCheck());
-    await waitFor(() => expect(runCheckMock).toHaveBeenCalled());
-
-    useMineStore.setState({
-      status: 'ready',
-      items: [],
-      fetchedAt: Date.now(),
-      forUserId: 'user-7',
-    });
-    useBrowseStore.getState().setMineOnly(true);
-
-    enableFlag(false);
-    hook.rerender();
-    useSessionStore.setState({ status: 'anonymous', user: null });
-    hook.rerender();
-    await waitFor(() => expect(useMineStore.getState().forUserId).toBeNull());
     expect(useBrowseStore.getState().filters.mineOnly).toBe(false);
   });
 

@@ -63,23 +63,6 @@ describe('Labs Store', () => {
     });
   });
 
-  describe('default-on features', () => {
-    it('turns a default-on feature off, and back on', () => {
-      const store = useLabsStore.getState();
-
-      store.disableFeature('community_showcase');
-      expect(useLabsStore.getState().isFeatureEnabled('community_showcase')).toBe(false);
-
-      useLabsStore.getState().enableFeature('community_showcase');
-      expect(useLabsStore.getState().isFeatureEnabled('community_showcase')).toBe(true);
-    });
-
-    it('toggles a default-on feature off on the first press', () => {
-      useLabsStore.getState().toggleFeature('community_showcase');
-      expect(useLabsStore.getState().isFeatureEnabled('community_showcase')).toBe(false);
-    });
-  });
-
   describe('persistence', () => {
     it('saves preferences to localStorage', () => {
       const store = useLabsStore.getState();

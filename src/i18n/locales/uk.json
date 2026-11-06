@@ -3882,6 +3882,7 @@
   "inspector.unlockAllSizes": "Розблокувати всі розміри",
   "inspector.unlockSize": "Розблокувати розмір",
   "labs.disabled": "Вимкн.",
+  "labs.earlyAccess": "Ранній доступ",
   "labs.enabled": "Увімкн.",
   "labs.engine.ariaLabel": "Вибрати 3D-рушій",
   "labs.engine.descriptionDefault": "Виробничий рушій, який забезпечує всі поточні експорти контейнерів і базових плит.",

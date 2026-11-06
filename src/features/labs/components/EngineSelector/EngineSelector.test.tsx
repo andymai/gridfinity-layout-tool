@@ -11,12 +11,6 @@ vi.mock('@/shared/analytics/posthog/trackEvent', () => ({
   trackEvent: vi.fn(),
 }));
 
-vi.mock('../FeatureStatusBadge', () => ({
-  FeatureStatusBadge: ({ status }: { status: string }) => (
-    <div data-testid="status-badge">{status}</div>
-  ),
-}));
-
 function setBrepkitEnabled(brepkit: boolean) {
   useLabsStore.setState((prev) => ({
     preferences: {

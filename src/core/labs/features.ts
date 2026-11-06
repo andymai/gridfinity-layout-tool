@@ -6,7 +6,6 @@ export const FEATURE_FLAGS = [
     name: 'Alternative 3D Engine',
     description:
       'Try an alternative 3D engine for generating your bin models. Uses less memory and loads quicker than the default engine.',
-    status: 'experimental',
     risk: 'high',
     warning:
       'This engine is still in development. Exported models may have geometry defects or look different than expected. Reload the page after toggling.',
@@ -16,7 +15,6 @@ export const FEATURE_FLAGS = [
     name: 'Generation Performance Overlay',
     description:
       'Show a small overlay in the bin designer with per-stage timings, cache hit rates, hex-center counts, and recent generation history. Useful for diagnosing slow bins and validating optimizations.',
-    status: 'experimental',
     risk: 'low',
   },
   {
@@ -24,7 +22,6 @@ export const FEATURE_FLAGS = [
     name: 'Find Bins That Fit',
     description:
       'Select a gap in your drawer layout and see which community designs fit it. Adds a toolbar button, plus a right-button drag on the grid as a desktop shortcut.',
-    status: 'experimental',
     risk: 'low',
     warning:
       'While this is on, a right-button drag on the grid selects a gap instead of opening the browser menu.',
@@ -34,37 +31,15 @@ export const FEATURE_FLAGS = [
     name: 'Sliding Tray',
     description:
       'Add a rail to a bin and a companion tray that slides along it, so small parts ride above the bin floor and pull aside to reach what is underneath.',
-    status: 'experimental',
     risk: 'medium',
     warning:
       'Unfinished. The rail and tray geometry is still changing, the printed fit is unverified, and a design saved with a tray may not reopen the same way once this ships.',
-  },
-  {
-    id: 'community_showcase',
-    name: 'Community Showcase',
-    description:
-      'Publish your bin designs to a shared community showcase and remix designs from others. Publishing needs a free sign-in; anything you publish is public under CC BY 4.0.',
-    status: 'preview',
-    risk: 'medium',
-    warning:
-      'Publishing is public and permanent enough to matter: designs appear in search engines and anyone can remix them. Switch this off to hide the Community tool and the Publish action.',
-    defaultEnabled: true,
-  },
-  {
-    id: 'designer_settings_search',
-    name: 'Designer settings search',
-    description:
-      'Search every bin-designer control by name or synonym from a bar at the top of the panel, then jump straight to it. An empty field lists every control for browsing.',
-    status: 'preview',
-    risk: 'low',
-    defaultEnabled: true,
   },
   {
     id: 'workshop',
     name: 'Workshop',
     description:
       'Build tool holders from parts. Place posts, fins, tubes, cradles and more on a Gridfinity base in 3D, stack and carve them, then export the result.',
-    status: 'experimental',
     risk: 'medium',
     warning:
       'Early feature. Workshop builds auto-save to your library, sync when signed in, export to STL, 3MF and STEP, and can be placed in drawer layouts like any bin.',
@@ -74,7 +49,6 @@ export const FEATURE_FLAGS = [
     name: 'SpaceMouse Navigation',
     description:
       'Fly the 3D previews with a 3Dconnexion SpaceMouse. Push, tilt and twist the puck to pan, zoom and orbit, and map its buttons to fit, view presets and undo.',
-    status: 'experimental',
     risk: 'low',
     warning:
       'Uses the 3Dconnexion driver when installed (any browser; speed and axis direction live in its control panel). Without the driver it falls back to WebHID, which needs a Chromium browser (Chrome, Edge or Opera) and a one-time Connect.',
@@ -84,7 +58,6 @@ export const FEATURE_FLAGS = [
     name: 'Slanted Bins',
     description:
       'Lean a bin toward one side so pens, markers and tools too tall to stand fit a shallow drawer. The base stays flat on the grid, a row of slanted bins leans on itself, and the last bin can take an end support.',
-    status: 'experimental',
     risk: 'low',
   },
   {
@@ -92,7 +65,6 @@ export const FEATURE_FLAGS = [
     name: 'Find What Your Bins Hold',
     description:
       'Say what each bin holds, then find it in any layout from the command palette (Ctrl/Cmd+K) or the layouts sheet on a phone, and jump straight to it. Folders become places, areas and storage units.',
-    status: 'experimental',
     risk: 'low',
   },
 ] as const satisfies readonly FeatureFlag[];

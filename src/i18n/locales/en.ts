@@ -4981,6 +4981,7 @@ const en: Record<string, string> = {
 
   // Labs
   'labs.disabled': 'Off',
+  'labs.earlyAccess': 'Early access',
   'labs.enabled': 'On',
   'labs.featureToggle': 'Turn {name} {status}',
 

@@ -4143,6 +4143,7 @@
   "loading.sharedWithMe": "ჩატვირთვა...",
   "contextMenu.contextMenu": "კონტექსტური მენიუ",
   "labs.disabled": "გამორთული",
+  "labs.earlyAccess": "ადრეული წვდომა",
   "labs.enabled": "ჩართული",
   "labs.featureToggle": "{name}-ის {status}",
   "labs.experimentalKernel.title": "აქტიურია ალტერნატიული 3D ძრავა",

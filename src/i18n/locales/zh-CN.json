@@ -3882,6 +3882,7 @@
   "inspector.unlockAllSizes": "解锁全部尺寸",
   "inspector.unlockSize": "解锁尺寸",
   "labs.disabled": "关闭",
+  "labs.earlyAccess": "抢先体验",
   "labs.enabled": "开启",
   "labs.engine.ariaLabel": "选择 3D 引擎",
   "labs.engine.descriptionDefault": "为当今所有收纳盒和底板导出提供支持的生产引擎。",

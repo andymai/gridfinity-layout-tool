@@ -3882,6 +3882,7 @@
   "inspector.unlockAllSizes": "Lås upp alla storlekar",
   "inspector.unlockSize": "Lås upp storlek",
   "labs.disabled": "Av",
+  "labs.earlyAccess": "Tidig åtkomst",
   "labs.enabled": "På",
   "labs.engine.ariaLabel": "Välj 3D-motor",
   "labs.engine.descriptionDefault": "Produktionsmotor som driver alla bin- och bottenplatte-exporter idag.",

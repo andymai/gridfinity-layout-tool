@@ -3882,6 +3882,7 @@
   "inspector.unlockAllSizes": "모든 크기 잠금 해제",
   "inspector.unlockSize": "크기 잠금 해제",
   "labs.disabled": "끔",
+  "labs.earlyAccess": "얼리 액세스",
   "labs.enabled": "켬",
   "labs.engine.ariaLabel": "3D 엔진 선택",
   "labs.engine.descriptionDefault": "오늘날 모든 수납통 및 베이스플레이트 내보내기를 구동하는 프로덕션 엔진입니다.",

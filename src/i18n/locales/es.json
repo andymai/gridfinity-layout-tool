@@ -3882,6 +3882,7 @@
   "inspector.unlockAllSizes": "Desbloquear todos los tamaños",
   "inspector.unlockSize": "Desbloquear tamaño",
   "labs.disabled": "desactivado",
+  "labs.earlyAccess": "Acceso anticipado",
   "labs.enabled": "activado",
   "labs.engine.ariaLabel": "Seleccionar motor 3D",
   "labs.engine.descriptionDefault": "Motor de producción que potencia todas las exportaciones actuales de bins y placas base.",

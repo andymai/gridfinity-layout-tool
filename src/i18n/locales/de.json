@@ -3882,6 +3882,7 @@
   "inspector.unlockAllSizes": "Alle Größen entsperren",
   "inspector.unlockSize": "Größe entsperren",
   "labs.disabled": "aus",
+  "labs.earlyAccess": "Früher Zugang",
   "labs.enabled": "an",
   "labs.engine.ariaLabel": "3D-Engine auswählen",
   "labs.engine.descriptionDefault": "Produktions-Engine für alle aktuellen Bin- und Bodenplatten-Exporte.",

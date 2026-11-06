@@ -96,8 +96,6 @@ export default function App() {
   const { isDesignerRoute, navigateToDesigner } = useDesignerRouting();
   const { isBaseplateRoute } = useBaseplateRouting();
   const { isSupportersRoute, navigateToSupporters } = useSupportersRouting();
-  // False while the community_showcase flag is off (gated inside the hook),
-  // so the /community URL falls through to the layout planner.
   const { isCommunityRoute, communityDesignIdFromUrl } = useCommunityRouting();
   // Dev-only thumbnail capture route. Suppresses layout/designer routing so
   // those hooks don't rewrite the URL and strip the query params we depend on.
@@ -118,7 +116,6 @@ export default function App() {
   const binExampleGalleryOpen = useBinExampleGalleryStore((s) => s.isOpen);
   const closeBinExampleGallery = useBinExampleGalleryStore((s) => s.close);
   const communityPublishOpen = useCommunityPublishStore((s) => s.isOpen);
-  const communityShowcaseEnabled = useFeatureFlag('community_showcase');
   const placesFindResults = usePlacesFindResults(!isNonLayoutRoute);
   const [commandPaletteInitialQuery, setCommandPaletteInitialQuery] = useState('');
 
@@ -519,7 +516,7 @@ export default function App() {
           <WhatsNewModal />
         </Suspense>
       )}
-      {communityShowcaseEnabled && communityPublishOpen && (
+      {communityPublishOpen && (
         <Suspense fallback={null}>
           <CommunityPublishDialog />
         </Suspense>

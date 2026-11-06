@@ -73,7 +73,7 @@ export function ExportDialog() {
         exportFileNameConfig: state.exportFileNameConfig,
       }))
     );
-  const { publishVisible, canPublish, openPublish } = useCommunityPublishEntry();
+  const { canPublish, openPublish } = useCommunityPublishEntry();
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
   const setExportFileNameConfig = useDesignerStore((s) => s.setExportFileNameConfig);
 
@@ -225,7 +225,7 @@ export function ExportDialog() {
   // support prompt takes the success view — two asks on one action is one ask
   // too many — and never shown for a design that is already published.
   const offerPublish = useCallback(async () => {
-    if (!publishVisible || !canPublish || hasSeenPublishNudge()) return;
+    if (!canPublish || hasSeenPublishNudge()) return;
     const activeId = useDesignerStore.getState().currentDesignId;
     if (activeId === null) return;
     const saved = await loadDesign(designId(activeId));
@@ -238,7 +238,7 @@ export function ExportDialog() {
       duration: PUBLISH_NUDGE_DURATION_MS,
       action: { label: t('community.publishNudge.action'), onClick: openPublish },
     });
-  }, [publishVisible, canPublish, addToast, openPublish, t]);
+  }, [canPublish, addToast, openPublish, t]);
 
   // The support view is reserved for returning makers (2nd+ export), at most
   // once per cooldown; everyone else just gets the low-friction auto-close.

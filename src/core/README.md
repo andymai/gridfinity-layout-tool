@@ -20,7 +20,7 @@ graph TB
 | Directory  | Purpose                                                                                                 |
 | ---------- | ------------------------------------------------------------------------------------------------------- |
 | `api/`     | Cloud sharing + community API clients (`share.ts`, `communityClient.ts`, `mapApiError.ts`)              |
-| `labs/`    | Feature flag definitions and types (experimental/preview, plus `defaultEnabled`)                        |
+| `labs/`    | Feature flag definitions and types                                                                      |
 | `result/`  | `Result<T, E>` type system — constructors, error catalog, combinators                                   |
 | `storage/` | Layout persistence — LayoutManager, LayoutService, ShareService, backends                               |
 | `store/`   | Zustand + Immer stores — layout, library, selection, interaction, view, settings, toast, labs           |
@@ -85,4 +85,3 @@ import type { Result, StorageError, ValidationError, LayoutError, ApiError } fro
 5. **Atomic storage** — prefer `saveLayoutWithMetadata()` over separate save + library update
 6. **Dual-write** — async ops write to IndexedDB + localStorage backup; library index stays in localStorage for cross-tab sync
 7. **Result everywhere** — layout store mutations return `Result<T, E>`; never throw for expected failures
-8. **`defaultEnabled` resolves on every read AND write**: a labs flag with no stored preference falls back to it, so `toggleFeature` / `enableFeature` / `disableFeature` go through `resolveFeatureEnabled` too. Otherwise the one control that turns a default-on flag off would silently do nothing.
