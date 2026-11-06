@@ -4,6 +4,7 @@ import { useInteractionStore, useMobileStore } from '@/core/store';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { trackEvent } from '@/shared/analytics/posthog';
 import { SQUARE_SIZES, RECTANGLE_SIZES } from '@/features/layers/paintSizes';
 import { useLayerFillActions } from '@/features/layers/hooks/useLayerFillActions';
 import { SlantedRowControls } from '@/features/layers';
@@ -16,10 +17,11 @@ export function ToolsTab() {
   const t = useTranslation();
   const [rotated, setRotated] = useState(false);
 
-  const { paintSize, togglePaintSize } = useInteractionStore(
+  const { paintSize, togglePaintSize, setGapSelectArmed } = useInteractionStore(
     useShallow((state) => ({
       paintSize: state.paintSize,
       togglePaintSize: state.togglePaintSize,
+      setGapSelectArmed: state.setGapSelectArmed,
     }))
   );
   const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
@@ -164,6 +166,21 @@ export function ToolsTab() {
           {emptyCells > 0
             ? t('mobile.tools.fillGaps', { count: emptyCells })
             : t('mobile.tools.noGaps')}
+        </Button>
+
+        {/* Community "find bins that fit": arms a one-shot gap selection on the grid */}
+        <Button
+          variant="secondary"
+          fullWidth
+          onClick={() => {
+            trackEvent('community_gap_select_armed', { surface: 'mobile-tools' });
+            setGapSelectArmed(true);
+            closeMobilePanel();
+          }}
+          className="h-11 justify-center"
+          data-testid="mobile-tools-find-bins-that-fit"
+        >
+          {t('toolbar.findBins')}
         </Button>
 
         {/* Clear Layer */}

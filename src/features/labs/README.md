@@ -30,7 +30,6 @@ graph TB
 | ---------------------- | ------------------------------------------------------------------ |
 | `brepkit_kernel`       | Alternative 3D geometry engine (BrepKit), driven by EngineSelector |
 | `show_generation_perf` | Per-stage generation timing overlay in the bin designer            |
-| `community_fits_gap`   | Select a layout gap and browse community designs that fit it       |
 | `sliding_tray`         | Rail-and-tray sliding insert in the bin designer's Walls section   |
 | `spacemouse`           | 3Dconnexion SpaceMouse navigation in the 3D previews               |
 | `slant`                | Bins that lean, with slanted rows and an end support               |

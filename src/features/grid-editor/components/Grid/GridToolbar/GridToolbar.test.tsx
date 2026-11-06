@@ -2,7 +2,7 @@ import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { GridToolbar } from './GridToolbar';
-import { useViewStore, useInteractionStore, useLabsStore } from '@/core/store';
+import { useViewStore, useInteractionStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
 import { heightUnits, layerId } from '@/core/types';
 import type { Layer } from '@/core/types';
@@ -451,23 +451,8 @@ describe('GridToolbar', () => {
     });
   });
 
-  describe('find bins that fit (community_fits_gap flag)', () => {
-    const enableCommunityFlag = () => {
-      useLabsStore.setState((s) => ({
-        preferences: {
-          ...s.preferences,
-          enabledFeatures: { ...s.preferences.enabledFeatures, community_fits_gap: true },
-        },
-      }));
-    };
-
-    it('is hidden while the flag is off', () => {
-      render(<GridToolbar {...defaultProps} />);
-      expect(screen.queryByTestId('toolbar-find-bins-that-fit')).not.toBeInTheDocument();
-    });
-
+  describe('find bins that fit', () => {
     it('toggles the armed gap-select mode', () => {
-      enableCommunityFlag();
       render(<GridToolbar {...defaultProps} />);
 
       const button = screen.getByTestId('toolbar-find-bins-that-fit');

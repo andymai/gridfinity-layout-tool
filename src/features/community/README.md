@@ -183,7 +183,7 @@ Zoom is deliberately fit-to-screen only: `printPhoto.ts` caps uploads at 1200px,
 
 `utils/gapFit.ts` answers whether a design fits the gap the viewer picked in the layout editor. It is the **single** implementation: the browse filter and the detail view both call it, because filtering a card out of the grid and telling someone "this will not fit" are the same question and must never disagree.
 
-**The gap-picking gesture has its own flag, `community_fits_gap`, opt-in.** It claims the right button on the grid and suppresses the browser context menu there, which is a layout-editor interaction change rather than a consequence of the showcase being available.
+**The gap picker is a toolbar mode.** `Find bins that fit` arms a one-shot selection: the next drag or tap on empty cells picks the gap and opens the gallery, on desktop and on touch.
 
 It encodes three things that are easy to get wrong:
 

@@ -6,7 +6,6 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
-import { useLabsStore } from '@/core/store';
 import { createDefaultLayout } from '@/core/constants';
 import { resetAllStores } from '@/test/testUtils';
 import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
@@ -34,15 +33,6 @@ vi.mock('@/features/grid-editor/hooks/useGridCoords', () => ({
     halfGridMode: false,
   }),
 }));
-
-function setCommunityFlag(enabled: boolean): void {
-  useLabsStore.setState((s) => ({
-    preferences: {
-      ...s.preferences,
-      enabledFeatures: { ...s.preferences.enabledFeatures, community_fits_gap: enabled },
-    },
-  }));
-}
 
 describe('GridCanvas', () => {
   const mockStartDraw = vi.fn();
@@ -447,8 +437,8 @@ describe('GridCanvas', () => {
     });
   });
 
-  describe('Fits-gap gesture (community_fits_gap flag)', () => {
-    it('flag off: a right-button press leaves no trace', () => {
+  describe('Fits-gap selection', () => {
+    it('a right-button press leaves no trace, so the browser menu still opens', () => {
       mockGetGridCoords.mockReturnValue({ x: 3, y: 4 });
       const { container } = renderGridCanvas();
 
@@ -459,19 +449,7 @@ describe('GridCanvas', () => {
       expect(useInteractionStore.getState().interaction).toBeNull();
     });
 
-    it('flag on: a right-button press starts a right-drag fits-gap draw', () => {
-      setCommunityFlag(true);
-      mockGetGridCoords.mockReturnValue({ x: 3, y: 4 });
-      const { container } = renderGridCanvas();
-
-      const wrapper = container.firstChild as HTMLElement;
-      fireEvent.pointerDown(wrapper, { button: 2, clientX: 100, clientY: 100, isPrimary: true });
-
-      expect(mockStartDraw).toHaveBeenCalledWith({ x: 3, y: 4 }, expect.any(Number), 'right-drag');
-    });
-
     it('armed mode: a primary press starts an armed fits-gap draw (touch path)', () => {
-      setCommunityFlag(true);
       useInteractionStore.setState({ gapSelectArmed: true });
       mockGetGridCoords.mockReturnValue({ x: 2, y: 2 });
       const { container } = renderGridCanvas();
@@ -479,58 +457,10 @@ describe('GridCanvas', () => {
       const wrapper = container.firstChild as HTMLElement;
       fireEvent.pointerDown(wrapper, { button: 0, clientX: 80, clientY: 80, isPrimary: true });
 
-      expect(mockStartDraw).toHaveBeenCalledWith({ x: 2, y: 2 }, expect.any(Number), 'armed');
-    });
-
-    it('armed mode without the flag: a primary press draws normally', () => {
-      useInteractionStore.setState({ gapSelectArmed: true });
-      mockGetGridCoords.mockReturnValue({ x: 2, y: 2 });
-      const { container } = renderGridCanvas();
-
-      const wrapper = container.firstChild as HTMLElement;
-      fireEvent.pointerDown(wrapper, { button: 0, clientX: 80, clientY: 80, isPrimary: true });
-
-      expect(mockStartDraw).toHaveBeenCalledWith({ x: 2, y: 2 }, expect.any(Number));
-    });
-
-    it('suppresses the context menu for any right press on empty canvas', () => {
-      // contextmenu timing differs by platform (mousedown vs mouseup), so a
-      // movement heuristic cannot work; the press set the ref, the menu is
-      // suppressed regardless of movement.
-      setCommunityFlag(true);
-      const { container } = renderGridCanvas();
-      const wrapper = container.firstChild as HTMLElement;
-
-      mockGetGridCoords.mockReturnValue({ x: 3, y: 4 });
-      fireEvent.pointerDown(wrapper, { button: 2, clientX: 100, clientY: 100, isPrimary: true });
-      const stationaryMenu = fireEvent.contextMenu(wrapper, { clientX: 100, clientY: 100 });
-      expect(stationaryMenu).toBe(false);
-
-      // Without a preceding right press on the canvas the menu is untouched.
-      const detachedMenu = fireEvent.contextMenu(wrapper, { clientX: 100, clientY: 100 });
-      expect(detachedMenu).toBe(true);
-    });
-
-    it('clears a stale press after release so a later menu is untouched', () => {
-      vi.useFakeTimers();
-      try {
-        setCommunityFlag(true);
-        const { container } = renderGridCanvas();
-        const wrapper = container.firstChild as HTMLElement;
-
-        mockGetGridCoords.mockReturnValue({ x: 3, y: 4 });
-        fireEvent.pointerDown(wrapper, { button: 2, clientX: 100, clientY: 100, isPrimary: true });
-        fireEvent.pointerUp(wrapper, { button: 2, clientX: 100, clientY: 100, isPrimary: true });
-        vi.runAllTimers();
-        const laterMenu = fireEvent.contextMenu(wrapper, { clientX: 100, clientY: 100 });
-        expect(laterMenu).toBe(true);
-      } finally {
-        vi.useRealTimers();
-      }
+      expect(mockStartDraw).toHaveBeenCalledWith({ x: 2, y: 2 }, expect.any(Number), true);
     });
 
     it('suppresses the context menu while armed (touch long-press)', () => {
-      setCommunityFlag(true);
       useInteractionStore.setState({ gapSelectArmed: true });
       const { container } = renderGridCanvas();
       const wrapper = container.firstChild as HTMLElement;
@@ -539,8 +469,7 @@ describe('GridCanvas', () => {
       expect(menu).toBe(false);
     });
 
-    it('flag on: a left-button press still starts a normal draw', () => {
-      setCommunityFlag(true);
+    it('a left-button press outside armed mode starts a normal draw', () => {
       mockGetGridCoords.mockReturnValue({ x: 1, y: 1 });
       const { container } = renderGridCanvas();
 
@@ -550,8 +479,7 @@ describe('GridCanvas', () => {
       expect(mockStartDraw).toHaveBeenCalledWith({ x: 1, y: 1 }, expect.any(Number));
     });
 
-    it('flag on: does not start a fits-gap draw on a bin', () => {
-      setCommunityFlag(true);
+    it('does not start a fits-gap draw on a bin', () => {
       const testBin: Bin = {
         id: binId('gap-bin'),
         x: gridUnits(2),

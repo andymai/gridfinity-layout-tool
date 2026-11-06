@@ -376,7 +376,7 @@ describe('useDrawInteraction', () => {
           type: 'draw',
           start: coord(2, 3),
           current: coord(4, 4),
-          fitsGap: 'right-drag',
+          fitsGap: true,
         },
       });
 
@@ -432,7 +432,7 @@ describe('useDrawInteraction', () => {
           type: 'draw',
           start: coord(0, 0),
           current: coord(2, 0),
-          fitsGap: 'right-drag',
+          fitsGap: true,
         },
       });
 
@@ -479,7 +479,7 @@ describe('useDrawInteraction', () => {
         },
       });
       useInteractionStore.setState({
-        interaction: { type: 'draw', start: coord(0, 0), current: coord(0, 0), fitsGap: 'armed' },
+        interaction: { type: 'draw', start: coord(0, 0), current: coord(0, 0), fitsGap: true },
       });
 
       const { result } = renderHook(() => useDrawInteraction(createContext()));
@@ -497,7 +497,7 @@ describe('useDrawInteraction', () => {
           type: 'draw',
           start: coord(1.5, 2),
           current: coord(2.5, 3.5),
-          fitsGap: 'right-drag',
+          fitsGap: true,
         },
       });
 
@@ -534,7 +534,7 @@ describe('useDrawInteraction', () => {
         },
       });
       useInteractionStore.setState({
-        interaction: { type: 'draw', start: coord(2, 2), current: coord(2, 2), fitsGap: 'armed' },
+        interaction: { type: 'draw', start: coord(2, 2), current: coord(2, 2), fitsGap: true },
       });
 
       const { result } = renderHook(() => useDrawInteraction(createContext()));
@@ -550,32 +550,10 @@ describe('useDrawInteraction', () => {
       expect(useToastStore.getState().toasts[0].type).toBe('error');
     });
 
-    it('a stationary right-click is not a gap selection (context menu falls through)', () => {
-      useInteractionStore.setState({
-        interaction: {
-          type: 'draw',
-          start: coord(2, 2),
-          current: coord(2, 2),
-          fitsGap: 'right-drag',
-        },
-      });
-
-      const { result } = renderHook(() => useDrawInteraction(createContext()));
-
-      act(() => {
-        result.current.handleUp();
-      });
-
-      expect(mockAddBin).not.toHaveBeenCalled();
-      expect(useGapFitStore.getState().constraint).toBeNull();
-      expect(useBinExampleGalleryStore.getState().isOpen).toBe(false);
-      expect(useToastStore.getState().toasts).toHaveLength(0);
-    });
-
     it('an armed single tap selects a minimum-size gap and disarms the mode', () => {
       useInteractionStore.setState({
         gapSelectArmed: true,
-        interaction: { type: 'draw', start: coord(2, 2), current: coord(2, 2), fitsGap: 'armed' },
+        interaction: { type: 'draw', start: coord(2, 2), current: coord(2, 2), fitsGap: true },
       });
 
       const { result } = renderHook(() => useDrawInteraction(createContext()));

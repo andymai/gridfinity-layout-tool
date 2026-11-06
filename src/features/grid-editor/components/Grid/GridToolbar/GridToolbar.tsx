@@ -12,7 +12,6 @@ import {
   XIcon,
 } from '@/design-system';
 import { trackEvent } from '@/shared/analytics/posthog';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useTranslation } from '@/i18n';
 import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
 import type { Layer } from '@/core/types';
@@ -73,7 +72,6 @@ export const GridToolbar = memo(function GridToolbar({
       setGapSelectArmed: state.setGapSelectArmed,
     }))
   );
-  const fitsGapEnabled = useFeatureFlag('community_fits_gap');
   const { showIsometricPreview, toggleIsometricPreview } = useViewStore(
     useShallow((state) => ({
       showIsometricPreview: state.showIsometricPreview,
@@ -134,24 +132,20 @@ export const GridToolbar = memo(function GridToolbar({
           </Button>
         )}
 
-        {/* Community "find bins that fit": arms a one-shot gap selection so
-            the flow is reachable without the right-drag shortcut (and at all
-            on touch). */}
-        {fitsGapEnabled && (
-          <Button
-            variant={gapSelectArmed ? 'primary' : 'secondary'}
-            aria-pressed={gapSelectArmed}
-            onClick={() => {
-              if (!gapSelectArmed) trackEvent('community_gap_select_armed', { surface: 'toolbar' });
-              setGapSelectArmed(!gapSelectArmed);
-            }}
-            className="px-3 py-1.5 text-sm"
-            title={t(gapSelectArmed ? 'toolbar.findBinsArmedHint' : 'toolbar.findBinsHint')}
-            data-testid="toolbar-find-bins-that-fit"
-          >
-            {t('toolbar.findBins')}
-          </Button>
-        )}
+        {/* Community "find bins that fit": arms a one-shot gap selection. */}
+        <Button
+          variant={gapSelectArmed ? 'primary' : 'secondary'}
+          aria-pressed={gapSelectArmed}
+          onClick={() => {
+            if (!gapSelectArmed) trackEvent('community_gap_select_armed', { surface: 'toolbar' });
+            setGapSelectArmed(!gapSelectArmed);
+          }}
+          className="px-3 py-1.5 text-sm"
+          title={t(gapSelectArmed ? 'toolbar.findBinsArmedHint' : 'toolbar.findBinsHint')}
+          data-testid="toolbar-find-bins-that-fit"
+        >
+          {t('toolbar.findBins')}
+        </Button>
 
         {/* Keyboard drag mode indicator */}
         {keyboardDragMode && (
