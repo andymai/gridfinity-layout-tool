@@ -3,7 +3,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { mm } from '@gridfinity/branded-types';
 import { BaseSection } from './BaseSection';
 import { useLayoutStore } from '@/core/store/layout';
-import { useLabsStore } from '@/core/store';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import type { BaseplatePiece } from '../../types/tiling';
 import type { ScrewHeadStyle } from '@/core/types';
@@ -154,20 +153,6 @@ describe('BaseSection', () => {
     }
 
     it('offers the toggle', () => {
-      render(<BaseSection />);
-      expect(screen.getByText('baseplate.screwHoles.label')).toBeInTheDocument();
-    });
-
-    // The flag graduated, so a stored opt-out is dead state that
-    // `isFeatureEnabled` short-circuits past. Reverting the status to
-    // 'experimental' would hide the control again from anyone carrying this.
-    it('offers the toggle even to a user carrying a stored opt-out', () => {
-      useLabsStore.setState((s) => ({
-        preferences: {
-          ...s.preferences,
-          enabledFeatures: { ...s.preferences.enabledFeatures, baseplate_screw_holes: false },
-        },
-      }));
       render(<BaseSection />);
       expect(screen.getByText('baseplate.screwHoles.label')).toBeInTheDocument();
     });

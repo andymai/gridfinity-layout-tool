@@ -607,8 +607,8 @@ export function useBaseplateGeneration(): void {
           });
         poolPendingRef.current = pending;
 
-        // Best-effort Manifold draft-preview bridge (null when manifold_preview
-        // is off or the kernel fails to load — drafts fall back to direct-mesh).
+        // Best-effort Manifold draft-preview bridge: null when the kernel fails
+        // to load, and drafts then fall back to direct-mesh.
         const previewSettled = bridgeManager
           .acquirePreview()
           .then((previewBridge) => {

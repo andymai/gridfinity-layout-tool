@@ -184,7 +184,6 @@ const en: Record<string, string> = {
   'common.label': 'Label',
   'common.layers': 'Layers',
   'common.notes': 'Notes',
-  'common.overflowCount': '9+',
   'common.redo': 'Redo',
   'common.reset': 'Reset',
   'common.share': 'Share',
@@ -4981,19 +4980,9 @@ const en: Record<string, string> = {
   key: 'key',
 
   // Labs
-  'labs.alwaysOn': 'Always on',
-  'labs.checkBackLater': 'Check back soon',
-  'labs.noFeaturesAvailable': 'No experimental features available right now.',
-  'labs.closeLabs': 'Close labs',
-  'labs.description': 'Preview features still in development. Some may change or be removed.',
   'labs.disabled': 'Off',
   'labs.enabled': 'On',
   'labs.featureToggle': 'Turn {name} {status}',
-  'labs.labs': 'Labs',
-  'labs.labsExperimentalFeatures': 'Labs — Early Access Features',
-  'labs.nowAvailableToEveryone': 'Now available for everyone',
-  'labs.tryExperimentalFeatures': 'Try early access features',
-  'labs.whatsNew': 'Now for everyone ({count})',
 
   // Labs — Experimental Kernel Badge
   'labs.experimentalKernel.title': 'Alternative 3D engine active',

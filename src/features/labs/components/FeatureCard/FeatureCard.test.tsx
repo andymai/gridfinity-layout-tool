@@ -30,8 +30,6 @@ describe('FeatureCard', () => {
     description: 'Test feature description',
     status: 'experimental',
     risk: 'low',
-    addedAt: '2026-01-01',
-    requiresRefresh: false,
   };
 
   const mockToggle = vi.fn();
@@ -95,13 +93,5 @@ describe('FeatureCard', () => {
 
     render(<FeatureCard feature={highRiskFeature} isEnabled={false} onToggle={mockToggle} />);
     expect(screen.getByText('This is dangerous')).toBeInTheDocument();
-  });
-
-  it('shows always on indicator for graduated features', () => {
-    const graduatedFeature = { ...baseFeature, status: 'graduated' as const };
-    render(<FeatureCard feature={graduatedFeature} isEnabled={true} onToggle={mockToggle} />);
-
-    expect(screen.getByText('labs.alwaysOn')).toBeInTheDocument();
-    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
   });
 });

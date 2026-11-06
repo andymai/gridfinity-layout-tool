@@ -16,33 +16,12 @@ import { test, expect } from '../fixtures';
 import { unzipSync, strFromU8 } from 'fflate';
 import fs from 'node:fs';
 
-const LABS_KEY = 'gridfinity-labs-v1';
-const LAB_FLAG = 'multi_color_export';
 const BODY_HEX = '#00aaff';
 const BAND1_HEX = '#ff0066';
 const BAND2_HEX = '#22cc44';
 const BOTTOM_ACCENT_HEX = '#8811dd';
 
 test.describe('Bin Designer — multi-color 3MF export', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(
-      ({ key, flag }) => {
-        const prefs = {
-          enabledFeatures: { [flag]: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        };
-        try {
-          localStorage.setItem(key, JSON.stringify(prefs));
-        } catch {
-          // If storage is unavailable, the visibility assertion below fails
-          // with a clearer signal than rethrowing here would give.
-        }
-      },
-      { key: LABS_KEY, flag: LAB_FLAG }
-    );
-  });
-
   test('exports a 3MF with body, two lip-band, and accent-band materials', async ({ page }) => {
     // The export runs the OCCT kernel and writes a 3MF; with the kernel warmup
     // and download waits this can't fit Playwright's 30s default.

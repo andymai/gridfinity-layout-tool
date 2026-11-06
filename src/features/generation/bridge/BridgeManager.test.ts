@@ -486,8 +486,7 @@ describe('BridgeManager', () => {
       mockIsFeatureEnabled = () => false;
     });
 
-    it('creates a manifold bridge when manifold_preview is on', async () => {
-      mockIsFeatureEnabled = (flag) => flag === 'manifold_preview';
+    it('creates a manifold bridge', async () => {
       const preview = await manager.acquirePreview();
 
       const { GenerationBridge: MockCtor } = await import('./GenerationBridge');
@@ -497,7 +496,6 @@ describe('BridgeManager', () => {
     });
 
     it('reuses one preview bridge across repeated acquires', async () => {
-      mockIsFeatureEnabled = (flag) => flag === 'manifold_preview';
       const first = await manager.acquirePreview();
       const second = await manager.acquirePreview();
 
@@ -506,7 +504,6 @@ describe('BridgeManager', () => {
     });
 
     it('idle-destroys the preview bridge after the last release', async () => {
-      mockIsFeatureEnabled = (flag) => flag === 'manifold_preview';
       await manager.acquirePreview();
       manager.releasePreview();
 
@@ -517,7 +514,6 @@ describe('BridgeManager', () => {
     });
 
     it('preview lifecycle is independent of the exact bridge', async () => {
-      mockIsFeatureEnabled = (flag) => flag === 'manifold_preview';
       await manager.acquire(); // exact bridge — mockInstances[0]
       await manager.acquirePreview(); // preview bridge — mockInstances[1]
       expect(mockInstances).toHaveLength(2);

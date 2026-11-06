@@ -473,7 +473,7 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
 
 `shape: 'mesh'` cutouts carve a contoured pocket from an uploaded STL. `BinParams.meshAssets` holds a ref per mesh into the local mesh file store (files, refs, cleanup and worker delivery: the mesh-storage skill); the store GCs an entry when its last referencing cutout is deleted (see `cutoutSlice`). Import flow: `panel/CutoutsSection/stlImport/` (`useStlImport` → worker `IMPORT_MESH` → orientation dialog → `addMeshCutout`). The 2D editor renders the stored silhouette (`renderer/MeshFootprintMesh`) shape-locked: move/rotate/array yes; resize, point-edit, scoops, pathfinder groups no. Fit controls (clearance/chamfer) apply. Payload cap is 2MB only when `meshAssets` is non-empty (server mirror in `api/lib/designerValidation.ts`).
 
-### Imported bin designs (STL → design, `stl_bin_import` flag — graduated)
+### Imported bin designs (STL → design)
 
 Distinct from mesh imprints: here the uploaded STL **is** the design — a whole
 Gridfinity bin (e.g. downloaded from Printables) saved as an `importedMesh`
@@ -667,8 +667,7 @@ estimates), and the source file name.
     local). `normalizeTags` (client) and `sanitizeTags` (server) **must** stay
     identical — same 12×32 caps **and** the same control-char stripping — or a
     tag the client keeps but the server rewrites would flicker on the next pull.
-18. **Draft preview is best-effort and supersedable** — the `manifold_preview`
-    path (graduated, always on) has `useGeneration` render a fast Manifold draft (`setDraftResult`,
+18. **Draft preview is best-effort and supersedable**: `useGeneration` renders a fast Manifold draft (`setDraftResult`,
     `generation.isDraft = true`) on each edit, then the exact occt-wasm result
     supersedes it. A monotonic token drops a draft once a newer edit starts or the
     exact for its edit has landed (covers the exact-resolves-before-draft race).

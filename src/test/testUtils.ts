@@ -119,7 +119,6 @@ export function resetAllStores(): void {
 
   useLabsStore.setState({
     preferences: createDefaultLabsPreferences(),
-    isDrawerOpen: false,
   });
 
   useSnapshotStore.setState(INITIAL_SNAPSHOT_STATE);

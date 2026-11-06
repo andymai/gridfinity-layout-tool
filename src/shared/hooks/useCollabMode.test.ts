@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useCollabMode, getCollabMode, resolveCollabMode } from '@/shared/hooks/useCollabMode';
-import { useLabsStore, useLibraryStore } from '@/core/store';
+import { useLibraryStore } from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import type { CloudShareInfo, LayoutLibrary, LayoutEntry, Layout } from '@/core/types';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
@@ -49,13 +49,6 @@ describe('useCollabMode', () => {
     vi.clearAllMocks();
 
     // Reset stores to default state
-    useLabsStore.setState({
-      preferences: {
-        enabledFeatures: {},
-        lastModified: new Date().toISOString(),
-        version: 1,
-      },
-    });
 
     useLibraryStore.setState({
       library: createTestLibrary(),
@@ -71,7 +64,7 @@ describe('useCollabMode', () => {
     vi.restoreAllMocks();
   });
 
-  describe('graduated feature flag', () => {
+  describe('share modes', () => {
     it('returns non-collaborative mode for a local layout with no share', () => {
       const { result } = renderHook(() => useCollabMode());
 
@@ -82,15 +75,7 @@ describe('useCollabMode', () => {
       });
     });
 
-    it('is collaborative with an edit share even when the labs preference is disabled', () => {
-      useLabsStore.setState({
-        preferences: {
-          enabledFeatures: { collaborative_editing: false },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        },
-      });
-
+    it('is collaborative with an edit share', () => {
       useLibraryStore.setState({
         library: createTestLibrary(createCloudShare('edit')),
       });
@@ -213,15 +198,7 @@ describe('useCollabMode', () => {
   });
 
   describe('reactivity', () => {
-    beforeEach(() => {
-      useLabsStore.setState({
-        preferences: {
-          enabledFeatures: { collaborative_editing: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        },
-      });
-    });
+    beforeEach(() => {});
 
     it('updates when cloud share changes', () => {
       const { result, rerender } = renderHook(() => useCollabMode());
@@ -266,14 +243,6 @@ describe('useCollabMode', () => {
 
 describe('getCollabMode', () => {
   beforeEach(() => {
-    useLabsStore.setState({
-      preferences: {
-        enabledFeatures: {},
-        lastModified: new Date().toISOString(),
-        version: 1,
-      },
-    });
-
     useLibraryStore.setState({
       library: createTestLibrary(),
       isLoaded: true,
@@ -294,15 +263,7 @@ describe('getCollabMode', () => {
     });
   });
 
-  it('returns collaborative mode when feature enabled and has edit share', () => {
-    useLabsStore.setState({
-      preferences: {
-        enabledFeatures: { collaborative_editing: true },
-        lastModified: new Date().toISOString(),
-        version: 1,
-      },
-    });
-
+  it('returns collaborative mode with an edit share', () => {
     useLibraryStore.setState({
       library: createTestLibrary(createCloudShare('edit')),
     });
@@ -315,14 +276,6 @@ describe('getCollabMode', () => {
   });
 
   it('handles shared preview mode', () => {
-    useLabsStore.setState({
-      preferences: {
-        enabledFeatures: { collaborative_editing: true },
-        lastModified: new Date().toISOString(),
-        version: 1,
-      },
-    });
-
     useSharedPreviewStore.setState({
       sharedPreview: {
         layout: {} as Layout,
@@ -340,14 +293,6 @@ describe('getCollabMode', () => {
   });
 
   it('returns view-only mode for view permission', () => {
-    useLabsStore.setState({
-      preferences: {
-        enabledFeatures: { collaborative_editing: true },
-        lastModified: new Date().toISOString(),
-        version: 1,
-      },
-    });
-
     useLibraryStore.setState({
       library: createTestLibrary(createCloudShare('view')),
     });

@@ -27,7 +27,6 @@ vi.mock('@/core/store/settings', () => {
 
 vi.mock('@/core/store/labs', () => {
   const state = {
-    openDrawer: vi.fn(),
     preferences: { enabledFeatures: {} },
     isFeatureEnabled: () => false,
   };

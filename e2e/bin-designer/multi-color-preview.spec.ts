@@ -13,8 +13,6 @@
 
 import { test, expect } from '../fixtures';
 
-const LABS_KEY = 'gridfinity-labs-v1';
-const LAB_FLAG = 'multi_color_export';
 const BODY_HEX = '#00aaff';
 const LIP_HEX = '#ff0066';
 // Three.js lighting darkens the pure hex, so a hit needs a non-trivial
@@ -28,24 +26,6 @@ const PER_CHANNEL_TOLERANCE = 80;
 const MIN_PIXEL_RATIO = 0.0015;
 
 test.describe('Bin Designer — multi-color 3D preview', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(
-      ({ key, flag }) => {
-        const prefs = {
-          enabledFeatures: { [flag]: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        };
-        try {
-          localStorage.setItem(key, JSON.stringify(prefs));
-        } catch {
-          /* visibility assertion below will fail loudly if labs init breaks */
-        }
-      },
-      { key: LABS_KEY, flag: LAB_FLAG }
-    );
-  });
-
   test('rendered preview contains pixels matching both body and lip colors', async ({ page }) => {
     await page.goto('/designer');
     const canvas = page.locator('canvas').first();

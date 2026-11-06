@@ -29,8 +29,9 @@ vi.mock('@/core/store', () => ({
 }));
 
 vi.mock('@/core/labs', () => ({
-  getToggleableFeatures: () => mockFeatures.toggleable,
-  getGraduatedFeatures: () => [],
+  get FEATURE_FLAGS() {
+    return mockFeatures.toggleable;
+  },
 }));
 
 vi.mock('@/features/labs/components', () => ({
@@ -59,7 +60,6 @@ vi.mock('@/features/labs/components', () => ({
       {feature.titleKey}
     </div>
   ),
-  GraduatedSection: () => <div data-testid="graduated-section">Graduated</div>,
   SparklesIcon: ({ className }: { className?: string }) => (
     <svg className={className} data-testid="sparkles-icon" />
   ),
@@ -97,11 +97,6 @@ describe('LabsTab', () => {
         descriptionKey: 'labs.binDesigner.desc',
       },
     ];
-  });
-
-  it('renders GraduatedSection component', () => {
-    render(<LabsTab />);
-    expect(screen.getByTestId('graduated-section')).toBeInTheDocument();
   });
 
   it('renders the EngineSelector', () => {

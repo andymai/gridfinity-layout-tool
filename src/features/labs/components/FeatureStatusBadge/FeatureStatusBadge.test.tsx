@@ -13,9 +13,4 @@ describe('FeatureStatusBadge', () => {
     render(<FeatureStatusBadge status="preview" />);
     expect(screen.getByText('Beta')).toBeDefined();
   });
-
-  it('renders graduated status', () => {
-    render(<FeatureStatusBadge status="graduated" />);
-    expect(screen.getByText('Shipped')).toBeDefined();
-  });
 });

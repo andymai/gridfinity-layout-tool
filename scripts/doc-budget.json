@@ -1,8 +1,12 @@
 {
   "tolerance": "1.1",
-  "allowedMissingRefs": ["b17779575", "components/Foo.tsx", "diffProps"],
+  "allowedMissingRefs": [
+    "b17779575",
+    "components/Foo.tsx",
+    "diffProps"
+  ],
   "words": {
-    ".claude/skills/analytics-and-labs/SKILL.md": 1268,
+    ".claude/skills/analytics-and-labs/SKILL.md": 1244,
     ".claude/skills/auth-and-sync/SKILL.md": 1320,
     ".claude/skills/bin-designer/SKILL.md": 2406,
     ".claude/skills/content-and-seo/SKILL.md": 1263,
@@ -41,7 +45,7 @@
     "scripts/train-bin-recommender/README.md": 343,
     "scripts/train-label-suggester/README.md": 467,
     "src/core/.greptile/rules.md": 231,
-    "src/core/README.md": 663,
+    "src/core/README.md": 612,
     "src/core/cqrs/README.md": 1513,
     "src/design-system/docs/COMPONENTS.md": 2839,
     "src/design-system/docs/README.md": 623,
@@ -61,7 +65,7 @@
     "src/features/generation/README.md": 8107,
     "src/features/grid-editor/README.md": 279,
     "src/features/inspiration-gallery/README.md": 219,
-    "src/features/labs/README.md": 491,
+    "src/features/labs/README.md": 320,
     "src/features/layers/README.md": 208,
     "src/features/layout-library/README.md": 403,
     "src/features/onboarding/README.md": 267,

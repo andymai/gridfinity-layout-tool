@@ -1,8 +1,8 @@
 /**
- * Visual verification for the Manifold draft preview (manifold_preview Labs flag).
+ * Visual verification for the Manifold draft preview.
  *
  * Confirms the feature works end-to-end in the browser:
- *   1. With the flag on, the Manifold preview worker actually loads (its WASM is
+ *   1. The Manifold preview worker actually loads (its WASM is
  *      fetched) — i.e. the draft path runs rather than silently falling back to
  *      exact-only.
  *   2. The bin designer renders a non-blank bin and an edit drives the full
@@ -19,22 +19,6 @@ test.use({
     args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'],
   },
 });
-
-// Enable the manifold_preview Labs flag before the app boots (it's read from
-// this localStorage key at store init; requiresRefresh is satisfied because we
-// set it before first load).
-async function enableManifoldPreview(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    localStorage.setItem(
-      'gridfinity-labs-v1',
-      JSON.stringify({
-        enabledFeatures: { manifold_preview: true },
-        lastModified: '2026-06-05T00:00:00.000Z',
-        version: 1,
-      })
-    );
-  });
-}
 
 async function waitForGenerationComplete(page: Page): Promise<void> {
   await expect(page.getByRole('status', { name: /generating mesh/i })).toHaveCount(0, {
@@ -76,7 +60,6 @@ test.describe('Manifold draft preview — visual', () => {
     });
     page.on('pageerror', (err) => consoleErrors.push(err.message));
 
-    await enableManifoldPreview(page);
     await page.goto('/designer');
 
     const canvas = page.locator('canvas').first();

@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
-import { useLabsStore } from '@/core/store/labs';
 import { useViewStore } from '@/core/store/view';
 import { useTranslation } from '@/i18n';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
@@ -54,7 +53,6 @@ export function useEntryActivation(onNavigate: () => void): Activate {
   const setPrintModalOpen = useViewStore((state) => state.setPrintModalOpen);
   const setShowBaseplateLibrary = useViewStore((state) => state.setShowBaseplateLibrary);
   const openGallery = useBinExampleGalleryStore((state) => state.open);
-  const openLabsDrawer = useLabsStore((state) => state.openDrawer);
   const { navigateToDesigner, navigateToPlanner } = useDesignerRouting();
   const { navigateToBaseplate } = useBaseplateRouting();
   const launchScan = useScanLaunch();
@@ -118,12 +116,12 @@ export function useEntryActivation(onNavigate: () => void): Activate {
     (entry: WhatsNewEntry) => {
       onNavigate();
       if (entry.labs !== undefined) {
-        openLabsDrawer();
+        window.dispatchEvent(new CustomEvent('open-settings-modal', { detail: { tab: 'labs' } }));
         return;
       }
       if (entry.action) run(entry.action);
     },
-    [onNavigate, openLabsDrawer, run]
+    [onNavigate, run]
   );
 }
 

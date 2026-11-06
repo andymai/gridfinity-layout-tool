@@ -19,8 +19,8 @@ interface DesignImportViewProps {
   onImport: (design: { name: string; params: BinParams }) => void;
   onCancel: () => void;
   /**
-   * When provided (stl_bin_import labs flag), `.stl` files picked or dropped
-   * here are routed to the imported-bin flow instead of being rejected.
+   * When provided, `.stl` files picked or dropped here are routed to the
+   * imported-bin flow instead of being rejected.
    */
   onStlFile?: (file: File) => void;
 }

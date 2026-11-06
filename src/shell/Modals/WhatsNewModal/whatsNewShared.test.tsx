@@ -1,9 +1,8 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { useDestinationLabel, useEntryActivation } from './whatsNewShared';
 import type { WhatsNewAction, WhatsNewEntry } from '@/features/whats-new';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
-import { useLabsStore } from '@/core/store/labs';
 import { useViewStore } from '@/core/store/view';
 import { resetAllStores } from '@/test/testUtils';
 import { useScanLaunchStore } from '@/core/store/scanLaunch';
@@ -26,7 +25,6 @@ function activateWith(subject: WhatsNewEntry): { closed: boolean } {
 describe('useEntryActivation', () => {
   beforeEach(() => {
     resetAllStores();
-    useLabsStore.setState({ isDrawerOpen: false });
     useScanLaunchStore.setState({ request: null });
     window.history.pushState(null, '', '/');
   });
@@ -70,11 +68,15 @@ describe('useEntryActivation', () => {
     expect(useBinExampleGalleryStore.getState().isOpen).toBe(true);
   });
 
-  it('sends a Labs entry to the drawer, ignoring its own action', () => {
+  it('sends a Labs entry to the Labs settings tab, ignoring its own action', () => {
     // The feature the entry describes is unreachable until the flag is on, so
     // the switch outranks whatever destination the entry names.
+    const opened = vi.fn();
+    window.addEventListener('open-settings-modal', opened);
     activateWith(entry({ labs: 'workshop', action: { kind: 'openTool', tool: 'baseplate' } }));
-    expect(useLabsStore.getState().isDrawerOpen).toBe(true);
+    window.removeEventListener('open-settings-modal', opened);
+
+    expect((opened.mock.calls[0][0] as CustomEvent).detail).toEqual({ tab: 'labs' });
     expect(window.location.pathname).toBe('/');
   });
 
@@ -96,7 +98,7 @@ describe('useDestinationLabel', () => {
     expect(result.current).toBe('Scan a tool');
   });
 
-  it('labels a Labs entry for the drawer, not for its action', () => {
+  it('labels a Labs entry for Labs, not for its action', () => {
     const { result } = renderHook(() =>
       useDestinationLabel(entry({ labs: 'workshop', action: { kind: 'openTool', tool: 'layout' } }))
     );
