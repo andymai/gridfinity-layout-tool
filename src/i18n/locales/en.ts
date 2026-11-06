@@ -141,7 +141,6 @@ const en: Record<string, string> = {
   'common.close': 'Close',
   'common.physicalUnits': 'Physical Units',
   'common.loading': 'Loading...',
-  'common.experimental': 'Experimental',
 
   // Error boundary (used via getStaticTranslation, not hooks)
   'errorBoundary.heading': 'Something went wrong',
@@ -1205,7 +1204,7 @@ const en: Record<string, string> = {
     'grip|pry|chamfer|shadow line|scallop|open|remove lid|stuck|fingernail|relief|notch|height',
   'help.target.binDesigner.colors.title': 'Multi-color zones',
   'help.target.binDesigner.colors.description':
-    'Assign different filament colors to different regions of the bin. Experimental — supports multi-material printing.',
+    'Assign different filament colors to different regions of the bin. Supports multi-material printing.',
   'help.target.binDesigner.colors.keywords':
     'color|colors|multi-color|multi-material|filament|MMU|zones',
   'help.target.binDesigner.interior.title': 'Interior dividers',
@@ -4219,7 +4218,6 @@ const en: Record<string, string> = {
   'binDesigner.bento.hintIdle': 'Drag on the grid to draw a compartment',
   'binDesigner.bento.emptyStateHint': 'Drag anywhere to draw your first compartment',
   'binDesigner.bento.backgroundNote': 'Empty cells print as 1×1 pockets',
-  'binDesigner.bento.experimentalHint': 'Newly out of Labs: expect rough edges.',
   'binDesigner.bento.smallScreenNote': 'The drawing workspace needs a wider screen.',
   'binDesigner.bento.smallScreenNoteDetail':
     'Set a uniform grid here instead, then merge cells into larger compartments.',

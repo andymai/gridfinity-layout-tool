@@ -12,7 +12,7 @@ import { isPartialMask } from '@/shared/utils/cellMask';
 import { useTranslation } from '@/i18n';
 import { useCutEditorOpens } from './useCutEditorOpens';
 import { getFeatureStatus } from '@/shared/constraints';
-import { Badge, Button } from '@/design-system';
+import { Button } from '@/design-system';
 import { ScanToolIcon } from '@/design-system/Icon';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { InteriorModeContent } from './InteriorModes';
@@ -94,12 +94,6 @@ export function InteriorSection() {
         caption: t(INTERIOR_MODE_META[card].descriptionKey),
         disabledReason: disabledReason(card),
         tip: tip(card),
-        badge:
-          card === 'bento' ? (
-            <Badge tone="info" title={t('binDesigner.bento.experimentalHint')}>
-              {t('common.experimental')}
-            </Badge>
-          ) : undefined,
       }))}
       // A blocked mode greys out its own controls; scanning switches away from
       // it, so the link stays live.

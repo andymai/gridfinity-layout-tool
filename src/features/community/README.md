@@ -96,7 +96,7 @@ Swapping `og:image` also strips the shell's `og:image:width`/`height`: those des
 
 - `components/CommunityPage/`: full-page host for the `/community` route. URL-driven detail: `/community/d/<id>` is pushed on open and restored on back/forward and cold deep links. Routing lives in `@/shared/hooks/useCommunityRouting` so the SPA-route CI guard covers the rewrite. That module owns _where_ the query lives (`getCommunityGalleryQuery` / `syncCommunityGalleryQuery`); what the parameters _mean_ stays in this feature, since `shared/` cannot import from it.
 
-  **The page wears the app's chrome.** It renders `ToolSwitcher` + `HeaderSupportLinks` like every other surface, so a visitor who followed a shared link has the whole app in the header. Below it, a title row carries the page name, the `Experimental` badge and one CTA.
+  **The page wears the app's chrome.** It renders `ToolSwitcher` + `HeaderSupportLinks` like every other surface, so a visitor who followed a shared link has the whole app in the header. Below it, a title row carries the page name and one CTA.
 
   **Nothing in the app navigates into this route.** Browsing from inside happens in the gallery modal; the route exists for arriving from outside on a shared `/community/d/<id>` link. That is why the switcher shows no active segment here — you are not in an editor — and why every segment stays live, making the switcher the way out. The in-app entry point is the bin designer's Community panel card, which opens the modal on its Community tab (`open('community')` on the gallery store, honoured by `useGalleryTab`).
 

@@ -31,7 +31,7 @@ function useMenuContext() {
   return context;
 }
 // Above modal dialogs (z-50), so a menu opened inside one also catches the
-// click that dismisses it; below the command palette and Labs drawer.
+// click that dismisses it; below the command palette.
 const overlayVariants = cva(['fixed inset-0 z-[60]', 'bg-overlay-light']);
 
 const contentVariants = cva([

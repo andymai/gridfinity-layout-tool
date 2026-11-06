@@ -70,7 +70,7 @@ Toggling already emits `labs_feature_toggle` from the store; no extra analytics.
 - **Graduate:** delete the entry from `FEATURE_FLAGS` and every gate the compiler
   then flags, in one PR, and add a what's-new entry. Older what's-new entries that
   name the flag in `labs` lose that field. If it should still read as new, keep an
-  Experimental marker where it is chosen (Bento precedent).
+  Experimental marker where it is chosen (Slant precedent).
 - **Remove:** same, plus the feature code.
 - A stale key left in `gridfinity-labs-v1` is harmless: only ids in the registry
   are ever read.

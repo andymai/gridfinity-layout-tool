@@ -5,7 +5,7 @@ import type { FractionalEdge } from './drawerOutline';
 export type PaddingAnchor = 'tl' | 'tc' | 'tr' | 'ml' | 'c' | 'mr' | 'bl' | 'bc' | 'br' | 'custom';
 
 /**
- * Vertical stack-print configuration (experimental). When enabled, each group
+ * Vertical stack-print configuration. When enabled, each group
  * of identical baseplate pieces is duplicated along Z so a whole drawer's worth
  * of plates prints in one job. The bottom plate prints upright (bed adhesion,
  * no overhang); every plate above it is flipped upside down (community practice
@@ -314,7 +314,7 @@ export interface StoredBaseplateParams {
    */
   readonly detachMarginConnector?: boolean;
   /**
-   * Vertical stack-print configuration (experimental). When enabled, each
+   * Vertical stack-print configuration. When enabled, each
    * identical-piece group exports as flipped, separated vertical stacks sized
    * to the quantity the drawer needs (× `sets`). Auto-disables snap-clip
    * connectors (dovetail/puzzle survive flipping). Omitted/undefined = no

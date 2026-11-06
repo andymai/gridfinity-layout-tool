@@ -41,7 +41,7 @@ test.describe('Staging Area (Stash)', () => {
     await clearAllStorage(page);
     await resetViewport(page);
 
-    // Close any lingering dialogs (excluding Labs drawer)
+    // Close any lingering dialogs
     const dialogs = getActiveDialog(page);
     if ((await dialogs.count()) > 0) {
       await page.keyboard.press('Escape');
