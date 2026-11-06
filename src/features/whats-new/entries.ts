@@ -307,9 +307,9 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     featured: true,
     title: { en: 'Slanted bins for tall things in shallow drawers' },
     body: {
-      en: 'Pens, markers and tools too tall to stand up in a shallow drawer can now lie at an angle. Slant leans a bin toward one side while its base stays flat on the grid: set it on the Shape page of the designer, or for one bin in the inspector. In the size brush, Slanted row fills the area you drag with rows that lean against each other and end on a support, every bin linked to one design. Turn it on under Labs.',
+      en: 'Pens, markers and tools too tall to stand up in a shallow drawer can now lie at an angle. Slant leans a bin toward one side while its base stays flat on the grid: set it on the Shape page of the designer, or for one bin in the inspector. In the size brush, Slanted row fills the area you drag with rows that lean against each other and end on a support, every bin linked to one design.',
     },
-    labs: 'slant',
+    action: { kind: 'openTool', tool: 'designer' },
   },
   {
     id: 'places-labs',

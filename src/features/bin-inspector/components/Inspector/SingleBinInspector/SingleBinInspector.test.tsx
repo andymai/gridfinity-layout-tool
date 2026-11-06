@@ -158,21 +158,14 @@ describe('SingleBinInspector', () => {
   });
 
   describe('slant', () => {
-    it('offers a slant with the labs flag on, on desktop and mobile', () => {
-      useLabsStore.getState().enableFeature('slant');
+    it('offers a slant, marked experimental, on desktop and mobile', () => {
       for (const variant of ['desktop', 'mobile'] as const) {
         const { unmount } = render(
           <SingleBinInspector inspector={createMockInspector()} variant={variant} />
         );
-        expect(screen.getByRole('checkbox', { name: 'Slant' })).toBeInTheDocument();
+        expect(screen.getByRole('checkbox', { name: /^Slant/ })).toBeInTheDocument();
         unmount();
       }
-    });
-
-    it('leaves it out with the flag off and nothing slanted', () => {
-      useLabsStore.getState().disableFeature('slant');
-      render(<SingleBinInspector inspector={createMockInspector()} variant="desktop" />);
-      expect(screen.queryByRole('checkbox', { name: 'Slant' })).toBeNull();
     });
   });
 

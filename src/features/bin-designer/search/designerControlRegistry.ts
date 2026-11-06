@@ -524,8 +524,6 @@ export interface ControlAvailabilityContext {
   readonly viewMode: 'scroll' | 'rail';
   /** The `sliding_tray` labs flag — the slide-tray section only mounts when on. */
   readonly slideTrayEnabled: boolean;
-  /** The `slant` labs flag, or a design that already leans: when the Slant section mounts. */
-  readonly slantVisible: boolean;
   /** A bin that can take cutouts: when a "Scan a tool" entry renders. */
   readonly scanAvailable: boolean;
 }
@@ -548,8 +546,6 @@ export function isDesignerControlAvailable(
       return ctx.hasText;
     case 'bd-slide-tray':
       return ctx.slideTrayEnabled;
-    case 'bd-slant':
-      return ctx.slantVisible;
     case 'bd-print-fit':
       return ctx.viewMode === 'rail' || ctx.needsSplit;
     case SCAN_TOOL_TARGET:

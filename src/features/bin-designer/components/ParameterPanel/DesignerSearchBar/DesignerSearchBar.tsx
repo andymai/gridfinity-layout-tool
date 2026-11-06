@@ -12,7 +12,6 @@ import {
   type DesignerSearchResult,
 } from '@/features/bin-designer/search/useDesignerSettingsSearch';
 import type { HighlightRange } from '@/features/bin-designer/search/matcher';
-import { useSlantVisible } from '../../panel/SlantSection';
 
 interface DesignerSearchBarProps {
   readonly viewMode: 'scroll' | 'rail';
@@ -50,13 +49,12 @@ export function DesignerSearchBar({ viewMode, needsSplit }: DesignerSearchBarPro
     useShallow((s) => ({ style: s.params.style, hasText: binHasText(s.params) }))
   );
   const slideTrayEnabled = useFeatureFlag('sliding_tray');
-  const slantVisible = useSlantVisible();
   const scanAvailable = useDesignerStore(selectCanStartScan);
   // Memoized so the search hook's `useMemo` isn't defeated by a fresh object
   // every render.
   const ctx = useMemo(
-    () => ({ style, hasText, needsSplit, viewMode, slideTrayEnabled, slantVisible, scanAvailable }),
-    [style, hasText, needsSplit, viewMode, slideTrayEnabled, slantVisible, scanAvailable]
+    () => ({ style, hasText, needsSplit, viewMode, slideTrayEnabled, scanAvailable }),
+    [style, hasText, needsSplit, viewMode, slideTrayEnabled, scanAvailable]
   );
 
   const [query, setQuery] = useState('');

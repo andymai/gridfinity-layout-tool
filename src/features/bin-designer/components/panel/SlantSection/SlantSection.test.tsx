@@ -1,11 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, renderHook, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { DEFAULT_TRAY_BOTTOM } from '@/features/bin-designer/types/base';
-import { useLabsStore } from '@/core/store';
 import { SlantSection } from './SlantSection';
-import { useSlantVisible } from './useSlantSection';
 
 vi.mock('@/i18n', () => ({
   useTranslation:
@@ -164,29 +162,5 @@ describe('SlantSection', () => {
     );
     expect(screen.getByText('binDesigner.featureTip.slant')).toBeInTheDocument();
     expect(screen.getByText('binDesigner.slant.hint')).toBeInTheDocument();
-  });
-});
-
-describe('useSlantVisible', () => {
-  function setFlag(enabled: boolean): void {
-    useLabsStore.setState((s) => ({
-      preferences: {
-        ...s.preferences,
-        enabledFeatures: { ...s.preferences.enabledFeatures, slant: enabled },
-      },
-    }));
-  }
-
-  it('follows the labs flag', () => {
-    setFlag(false);
-    expect(renderHook(() => useSlantVisible()).result.current).toBe(false);
-    setFlag(true);
-    expect(renderHook(() => useSlantVisible()).result.current).toBe(true);
-  });
-
-  it('shows for a design that already leans, flag or not', () => {
-    setFlag(false);
-    setParams({ slant: { angleDeg: 20, side: 'front' } });
-    expect(renderHook(() => useSlantVisible()).result.current).toBe(true);
   });
 });

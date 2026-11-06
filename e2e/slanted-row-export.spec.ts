@@ -27,16 +27,6 @@ test.describe('Slanted row export', () => {
   );
 
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem(
-        'gridfinity-labs-v1',
-        JSON.stringify({
-          enabledFeatures: { slant: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        })
-      );
-    });
     await page.goto('/');
     await waitForAppReady(page);
   });

@@ -4,7 +4,6 @@ import { isOk } from '@/core/result';
 import { SLANT_MAX_DEG, SLANT_WARN_DEG } from '@/core/types';
 import type { Bin, Layout, SlantConfig, SlantSide } from '@/core/types';
 import { useMutations } from '@/shared/contexts/MutationsContext';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useLinkedRiseKey } from '@/shared/hooks/useLinkedRiseKey';
 import { linkedDesignSlant, slantHeldUprightBy } from '@/shared/utils/placedSlant';
 import { matchRowSlants, rowCanMatch, slantIssue } from '@/shared/utils/slantRow';
@@ -18,7 +17,6 @@ function withoutSupport({ endSupport: _, ...upright }: SlantConfig): SlantConfig
 
 export function useBinSlantSection(bin: Bin, layout: Layout) {
   const { updateBin } = useMutations();
-  const labsOn = useFeatureFlag('slant');
   // A design re-saved with a new slant changes nothing in the layout store.
   useLinkedRiseKey();
   const [refused, setRefused] = useState(false);
@@ -82,7 +80,6 @@ export function useBinSlantSection(bin: Bin, layout: Layout) {
 
   return {
     state: {
-      visible: labsOn || config !== undefined,
       config,
       designSlant,
       placed: bin.slant,

@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { useLabsStore } from '@/core/store';
 import { err, ok } from '@/core/result';
 import type { Result, LayoutError } from '@/core/result';
 import { layoutInvalidOperation } from '@/core/result';
@@ -26,15 +25,6 @@ vi.mock('@/i18n', () => ({
 
 const BACK: SlantConfig = { angleDeg: 45, side: 'back' };
 
-function setLabs(enabled: boolean): void {
-  useLabsStore.setState((s) => ({
-    preferences: {
-      ...s.preferences,
-      enabledFeatures: { ...s.preferences.enabledFeatures, slant: enabled },
-    },
-  }));
-}
-
 function bin(id: string, y: number, overrides: Partial<Bin> = {}): Bin {
   return createTestBin({
     id: binId(id),
@@ -50,12 +40,11 @@ function renderFor(target: Bin, others: Bin[] = []) {
   return render(<BinSlantSection bin={target} layout={layout} variant="desktop" />);
 }
 
-const toggle = () => screen.getByRole('checkbox', { name: 'binDesigner.slant.title' });
+const toggle = () => screen.getByRole('checkbox', { name: /^binDesigner\.slant\.title/ });
 
 beforeEach(() => {
   updateBin.mockClear();
   updateBin.mockImplementation(() => ok(undefined));
-  setLabs(true);
 });
 
 afterEach(() => {
@@ -63,14 +52,7 @@ afterEach(() => {
 });
 
 describe('BinSlantSection', () => {
-  it('stays out of the way with the labs flag off and nothing slanted', () => {
-    setLabs(false);
-    renderFor(bin('a', 0));
-    expect(screen.queryByTestId('bin-slant-section')).toBeNull();
-  });
-
-  it('still shows a placed slant with the flag off, so it can be removed', () => {
-    setLabs(false);
+  it('removes a placed slant', () => {
     renderFor(bin('a', 0, { slant: BACK }));
     fireEvent.click(toggle());
     expect(updateBin).toHaveBeenCalledWith('a', { slant: null });

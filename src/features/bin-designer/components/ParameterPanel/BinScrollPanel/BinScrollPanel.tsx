@@ -48,7 +48,7 @@ import { SetDefaultFooter } from '../../panel/SetDefaultFooter';
 import { modifiedGroups, type PanelGroup } from '../groupModified';
 import { GROUP_OF_CONTROL, HELP_SURFACES } from './groupControls';
 import { SlantTooLargeNotice } from '../../panel/shared';
-import { SlantSection, useSlantVisible } from '../../panel/SlantSection';
+import { SlantSection } from '../../panel/SlantSection';
 
 export interface BinScrollPanelProps {
   /** docked = desktop frame (resizable, collapsible); plain = fill the parent. */
@@ -83,7 +83,6 @@ export function BinScrollPanel({
     }))
   );
   const { needsSplit, slantTooLarge, fitsDiagonally, printBedSize } = useSplitOptionsSection();
-  const slantVisible = useSlantVisible();
 
   const [open, setOpen] = useState<Record<PanelGroup, boolean>>({
     shape: true,
@@ -148,11 +147,9 @@ export function BinScrollPanel({
           <PanelSection helpTarget="bd-shape">
             <ShapeSection />
           </PanelSection>
-          {slantVisible && (
-            <PanelSection helpTarget="bd-slant">
-              <SlantSection />
-            </PanelSection>
-          )}
+          <PanelSection helpTarget="bd-slant">
+            <SlantSection />
+          </PanelSection>
           <PanelSection helpTarget="bd-walls">
             <WallThicknessSection />
           </PanelSection>

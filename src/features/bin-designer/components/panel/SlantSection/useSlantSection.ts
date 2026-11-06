@@ -3,7 +3,6 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { SLANT_MAX_DEG, SLANT_WARN_DEG } from '@/core/types';
 import type { SlantConfig, SlantSide } from '@/core/types';
 import {
@@ -35,13 +34,6 @@ const BLOCKER_LABEL: Record<Exclude<SlantBlocker, 'openFloor'>, string> = {
   removableDividers: 'binDesigner.slottedInteriorSummary',
   pullTab: 'binDesigner.pullTab.title',
 };
-
-/** Shown with the labs flag on, and always for a design that already leans, so it can be undone. */
-export function useSlantVisible(): boolean {
-  const labsOn = useFeatureFlag('slant');
-  const hasSlant = useDesignerStore((s) => s.params.slant !== undefined);
-  return labsOn || hasSlant;
-}
 
 /**
  * The diagonal only holds while the cavity is an empty parallelogram: a
