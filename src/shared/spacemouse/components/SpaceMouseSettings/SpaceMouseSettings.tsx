@@ -12,7 +12,7 @@ import type { SpaceMouseInvert } from '../../types';
 /**
  * Labs sub-panel for SpaceMouse: connection status + pair button, sensitivity
  * and per-family speed sliders, and per-axis invert toggles. Rendered under the
- * feature's card when the flag is on.
+ * Settings option while it is on.
  */
 export function SpaceMouseSettings(): React.ReactElement {
   const t = useTranslation();

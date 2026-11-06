@@ -8,8 +8,6 @@ import {
   SparklesIcon,
 } from '@/features/labs/components';
 import { useTranslation } from '@/i18n';
-import { SPACEMOUSE_FEATURE_ID } from '@/shared/spacemouse/constants';
-import { SpaceMouseSettings } from '@/shared/spacemouse/components/SpaceMouseSettings';
 import { SettingSection } from '../../components/SettingSection/SettingSection';
 
 export function LabsTab() {
@@ -51,11 +49,7 @@ export function LabsTab() {
                   feature={feature}
                   isEnabled={isEnabled}
                   onToggle={() => toggleFeature(feature.id)}
-                >
-                  {feature.id === SPACEMOUSE_FEATURE_ID && isEnabled ? (
-                    <SpaceMouseSettings />
-                  ) : null}
-                </FeatureCard>
+                />
               );
             })}
           </div>

@@ -10,6 +10,57 @@ beforeEach(() => {
   });
 });
 
+describe('the SpaceMouse opt-in', () => {
+  const LABS_KEY = 'gridfinity-labs-v1';
+
+  function labsOptIn(on: boolean): void {
+    localStorage.setItem(LABS_KEY, JSON.stringify({ enabledFeatures: { spacemouse: on } }));
+  }
+
+  beforeEach(() => {
+    localStorage.clear();
+    useSpaceMouseStore.setState({ enabled: false });
+    localStorage.clear();
+  });
+
+  it('is off for someone who never turned it on', async () => {
+    await useSpaceMouseStore.persist.rehydrate();
+    expect(useSpaceMouseStore.getState().enabled).toBe(false);
+  });
+
+  it('stays on for someone who turned it on in Labs', async () => {
+    labsOptIn(true);
+    await useSpaceMouseStore.persist.rehydrate();
+    expect(useSpaceMouseStore.getState().enabled).toBe(true);
+  });
+
+  it('stays off for someone who turned it off in Labs', async () => {
+    labsOptIn(false);
+    await useSpaceMouseStore.persist.rehydrate();
+    expect(useSpaceMouseStore.getState().enabled).toBe(false);
+  });
+
+  it('lets turning it off here win over an old Labs opt-in', async () => {
+    labsOptIn(true);
+    await useSpaceMouseStore.persist.rehydrate();
+    useSpaceMouseStore.getState().setEnabled(false);
+    await useSpaceMouseStore.persist.rehydrate();
+    expect(useSpaceMouseStore.getState().enabled).toBe(false);
+  });
+
+  it('survives resetting the tuning', () => {
+    useSpaceMouseStore.getState().setEnabled(true);
+    useSpaceMouseStore.getState().resetSettings();
+    expect(useSpaceMouseStore.getState().enabled).toBe(true);
+  });
+
+  it('ignores a corrupt Labs preference', async () => {
+    localStorage.setItem(LABS_KEY, '{not json');
+    await useSpaceMouseStore.persist.rehydrate();
+    expect(useSpaceMouseStore.getState().enabled).toBe(false);
+  });
+});
+
 describe('useSpaceMouseStore', () => {
   it('updates sensitivity and speeds without touching other fields', () => {
     useSpaceMouseStore.getState().setSensitivity(2);

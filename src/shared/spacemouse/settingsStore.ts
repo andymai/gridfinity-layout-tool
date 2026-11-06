@@ -9,7 +9,23 @@ import type {
   SpaceMouseTransport,
 } from './types';
 
+const LABS_STORAGE_KEY = 'gridfinity-labs-v1';
+
+/** Whoever turned this on in Labs stays on until they turn it off here. */
+function hadLabsOptIn(): boolean {
+  try {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(LABS_STORAGE_KEY) : null;
+    if (raw === null) return false;
+    const prefs = JSON.parse(raw) as { enabledFeatures?: Record<string, unknown> };
+    return prefs.enabledFeatures?.spacemouse === true;
+  } catch {
+    return false;
+  }
+}
+
 interface SpaceMouseState {
+  /** Off by default: while off, nothing probes for a driver or a device. */
+  enabled: boolean;
   /** Persisted tuning. */
   settings: SpaceMouseSettings;
   /** Transient connection state (never persisted). */
@@ -18,6 +34,7 @@ interface SpaceMouseState {
   /** Which transport is active, or null when nothing is connected. */
   transport: SpaceMouseTransport | null;
 
+  setEnabled: (enabled: boolean) => void;
   setSensitivity: (value: number) => void;
   setTranslateSpeed: (value: number) => void;
   setRotateSpeed: (value: number) => void;
@@ -36,11 +53,13 @@ const noopStorage = {
 export const useSpaceMouseStore = create<SpaceMouseState>()(
   persist(
     (set) => ({
+      enabled: false,
       settings: DEFAULT_SETTINGS,
       status: 'idle',
       deviceName: null,
       transport: null,
 
+      setEnabled: (enabled) => set({ enabled }),
       setSensitivity: (value) => set((s) => ({ settings: { ...s.settings, sensitivity: value } })),
       setTranslateSpeed: (value) =>
         set((s) => ({ settings: { ...s.settings, translateSpeed: value } })),
@@ -62,12 +81,14 @@ export const useSpaceMouseStore = create<SpaceMouseState>()(
       storage: createJSONStorage(() =>
         typeof localStorage !== 'undefined' ? localStorage : noopStorage
       ),
-      // Only the tuning is durable; connection state is per-session.
-      partialize: (s) => ({ settings: s.settings }),
+      // Connection state is per-session; only the opt-in and tuning are durable.
+      partialize: (s) => ({ enabled: s.enabled, settings: s.settings }),
       merge: (persisted, current) => {
-        const p = persisted as { settings?: Partial<SpaceMouseSettings> } | undefined;
+        const p = persisted as
+          { enabled?: boolean; settings?: Partial<SpaceMouseSettings> } | undefined;
         return {
           ...current,
+          enabled: p?.enabled ?? hadLabsOptIn(),
           settings: {
             ...current.settings,
             ...p?.settings,

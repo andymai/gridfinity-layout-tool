@@ -27,15 +27,6 @@ export const FEATURE_FLAGS = [
       'Unfinished. The rail and tray geometry is still changing, the printed fit is unverified, and a design saved with a tray may not reopen the same way once this ships.',
   },
   {
-    id: 'spacemouse',
-    name: 'SpaceMouse Navigation',
-    description:
-      'Fly the 3D previews with a 3Dconnexion SpaceMouse. Push, tilt and twist the puck to pan, zoom and orbit, and map its buttons to fit, view presets and undo.',
-    risk: 'low',
-    warning:
-      'Uses the 3Dconnexion driver when installed (any browser; speed and axis direction live in its control panel). Without the driver it falls back to WebHID, which needs a Chromium browser (Chrome, Edge or Opera) and a one-time Connect.',
-  },
-  {
     id: 'places',
     name: 'Find What Your Bins Hold',
     description:

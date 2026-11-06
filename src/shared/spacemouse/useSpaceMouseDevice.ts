@@ -1,12 +1,14 @@
 import { useEffect } from 'react';
 import { startSpaceMouse, stopSpaceMouse } from './deviceManager';
+import { useSpaceMouseStore } from './settingsStore';
 
 /**
- * Starts SpaceMouse device management while `enabled`. Mount once, app-wide,
- * gated on the labs flag. Auto-reconnects to an already-paired device; pairing a
- * new one still needs a user gesture (see requestSpaceMousePairing).
+ * Starts SpaceMouse device management while the Settings option is on. Mount
+ * once, app-wide. Auto-reconnects to an already-paired device; pairing a new one
+ * still needs a user gesture (see requestSpaceMousePairing).
  */
-export function useSpaceMouseDevice(enabled: boolean): void {
+export function useSpaceMouseDevice(): void {
+  const enabled = useSpaceMouseStore((s) => s.enabled);
   useEffect(() => {
     if (!enabled) return;
     startSpaceMouse();

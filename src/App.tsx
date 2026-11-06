@@ -78,7 +78,6 @@ import {
 } from '@/shell/Modals/DesignGalleryModal/communityDesignerBridge';
 import { usePlaceBinFromURL } from '@/features/bin-designer/hooks/usePlaceBinInLayout';
 import { useBackgroundThumbnailRegen, useMeshFileMaintenance } from '@/features/bin-designer';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useSpaceMouseDevice } from '@/shared/spacemouse/useSpaceMouseDevice';
 import { useCommunityPublishReturn } from '@/shared/hooks/useCommunityPublishReturn';
 import { useCommunityLikeReturn } from '@/shell/hooks/useCommunityLikeReturn';
@@ -197,7 +196,7 @@ export default function App() {
   }, [activeLayerId, activeCategoryId, layers, categories, setActiveLayer, setActiveCategory]);
 
   useKeyboard({ disabled: isNonLayoutRoute });
-  useSpaceMouseDevice(useFeatureFlag('spacemouse'));
+  useSpaceMouseDevice();
   const saveStatus = useAutoSave();
   useCrossTabSync();
   useLayoutRouting({ skip: isNonLayoutRoute });
