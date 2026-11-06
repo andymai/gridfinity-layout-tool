@@ -1,0 +1,23 @@
+src/core/store/labs.ts
+  s_d27fb70db3c524::t_731412fb3558ed 36
+src/features/community/api/clientGuards.ts
+  s_d27fb70db3c524::t_731412fb3558ed 143
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_d27fb70db3c524::t_1822524ea97e3f 321
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2dbf5b8684b7acecc98e0880b32d8a7e8f477067",
+  "prompts": {},
+  "sessions": {
+    "s_d27fb70db3c524": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "09c52225-5996-4c64-91f0-de979e9c3826",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
