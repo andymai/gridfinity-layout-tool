@@ -73,7 +73,7 @@ describe('useEntryActivation', () => {
     // the switch outranks whatever destination the entry names.
     const opened = vi.fn();
     window.addEventListener('open-settings-modal', opened);
-    activateWith(entry({ labs: 'workshop', action: { kind: 'openTool', tool: 'baseplate' } }));
+    activateWith(entry({ labs: 'places', action: { kind: 'openTool', tool: 'baseplate' } }));
     window.removeEventListener('open-settings-modal', opened);
 
     expect((opened.mock.calls[0][0] as CustomEvent).detail).toEqual({ tab: 'labs' });
@@ -100,7 +100,7 @@ describe('useDestinationLabel', () => {
 
   it('labels a Labs entry for Labs, not for its action', () => {
     const { result } = renderHook(() =>
-      useDestinationLabel(entry({ labs: 'workshop', action: { kind: 'openTool', tool: 'layout' } }))
+      useDestinationLabel(entry({ labs: 'places', action: { kind: 'openTool', tool: 'layout' } }))
     );
     expect(result.current).toBe('Open Labs');
   });

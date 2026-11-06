@@ -741,7 +741,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     body: {
       en: 'Drag a box across the canvas to grab a group of parts, then move, rotate or resize them together. New camera buttons frame the whole build or just what you have selected.',
     },
-    labs: 'workshop',
+    action: { kind: 'openTool', tool: 'designer' },
   },
   {
     id: 'cutout-lean-angle',
@@ -780,7 +780,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     body: {
       en: 'Place posts, fins, tubes, cradles and racks on a Gridfinity base in 3D, stack and carve them, then export to STL, 3MF or STEP. Builds save to your library, sync when signed in, and drop into a drawer layout like any bin. Turn it on under Labs.',
     },
-    labs: 'workshop',
+    action: { kind: 'openTool', tool: 'designer' },
   },
   {
     id: 'bento-non-rectangular',
