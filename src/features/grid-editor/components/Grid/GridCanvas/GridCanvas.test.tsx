@@ -447,6 +447,7 @@ describe('GridCanvas', () => {
 
       expect(mockStartDraw).not.toHaveBeenCalled();
       expect(useInteractionStore.getState().interaction).toBeNull();
+      expect(fireEvent.contextMenu(wrapper, { clientX: 100, clientY: 100 })).toBe(true);
     });
 
     it('armed mode: a primary press starts an armed fits-gap draw (touch path)', () => {

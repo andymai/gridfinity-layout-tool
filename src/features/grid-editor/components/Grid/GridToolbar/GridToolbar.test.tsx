@@ -452,6 +452,26 @@ describe('GridToolbar', () => {
   });
 
   describe('find bins that fit', () => {
+    it('moves into the overflow menu on a narrow toolbar with several layers', () => {
+      const { container } = render(<GridToolbar {...defaultProps} isNarrowToolbar />);
+      expect(screen.queryByTestId('toolbar-find-bins-that-fit')).not.toBeInTheDocument();
+
+      fireEvent.click(container.querySelector('[aria-haspopup="menu"]') as HTMLElement);
+      fireEvent.click(screen.getByTestId('toolbar-overflow-find-bins-that-fit'));
+
+      expect(useInteractionStore.getState().gapSelectArmed).toBe(true);
+      expect(screen.queryByTestId('toolbar-overflow-find-bins-that-fit')).not.toBeInTheDocument();
+      expect(screen.getByTestId('toolbar-find-bins-that-fit')).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+    });
+
+    it('stays inline on a narrow toolbar with one layer, which has no overflow menu', () => {
+      render(<GridToolbar {...defaultProps} layers={[mockLayers[0]]} isNarrowToolbar />);
+      expect(screen.getByTestId('toolbar-find-bins-that-fit')).toBeInTheDocument();
+    });
+
     it('toggles the armed gap-select mode', () => {
       render(<GridToolbar {...defaultProps} />);
 

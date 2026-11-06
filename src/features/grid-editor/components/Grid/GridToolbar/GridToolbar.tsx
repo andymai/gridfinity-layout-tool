@@ -110,6 +110,14 @@ export const GridToolbar = memo(function GridToolbar({
     };
   }, [overflowMenuOpen]);
 
+  // Two layers and the buttons don't all fit on a narrow toolbar, so the picker
+  // moves into the overflow menu, which only exists in that same case.
+  const findBinsInOverflow = isNarrowToolbar && layers.length > 1;
+  const toggleFindBins = () => {
+    if (!gapSelectArmed) trackEvent('community_gap_select_armed', { surface: 'toolbar' });
+    setGapSelectArmed(!gapSelectArmed);
+  };
+
   return (
     <div
       data-grid-toolbar
@@ -118,7 +126,7 @@ export const GridToolbar = memo(function GridToolbar({
     >
       {/* Left: Layer indicator + Paint mode */}
       <div className="flex items-center gap-3">
-        {layers.length > 1 && activeLayer && (
+        {layers.length > 1 && activeLayer && !(findBinsInOverflow && gapSelectArmed) && (
           <Button
             variant="secondary"
             onClick={() => leftPanelCollapsed && toggleLeftPanel()}
@@ -133,19 +141,18 @@ export const GridToolbar = memo(function GridToolbar({
         )}
 
         {/* Community "find bins that fit": arms a one-shot gap selection. */}
-        <Button
-          variant={gapSelectArmed ? 'primary' : 'secondary'}
-          aria-pressed={gapSelectArmed}
-          onClick={() => {
-            if (!gapSelectArmed) trackEvent('community_gap_select_armed', { surface: 'toolbar' });
-            setGapSelectArmed(!gapSelectArmed);
-          }}
-          className="px-3 py-1.5 text-sm"
-          title={t(gapSelectArmed ? 'toolbar.findBinsArmedHint' : 'toolbar.findBinsHint')}
-          data-testid="toolbar-find-bins-that-fit"
-        >
-          {t('toolbar.findBins')}
-        </Button>
+        {(!findBinsInOverflow || gapSelectArmed) && (
+          <Button
+            variant={gapSelectArmed ? 'primary' : 'secondary'}
+            aria-pressed={gapSelectArmed}
+            onClick={toggleFindBins}
+            className="px-3 py-1.5 text-sm whitespace-nowrap"
+            title={t(gapSelectArmed ? 'toolbar.findBinsArmedHint' : 'toolbar.findBinsHint')}
+            data-testid="toolbar-find-bins-that-fit"
+          >
+            {t('toolbar.findBins')}
+          </Button>
+        )}
 
         {/* Keyboard drag mode indicator */}
         {keyboardDragMode && (
@@ -379,6 +386,25 @@ export const GridToolbar = memo(function GridToolbar({
                     <Checkbox checked={showOtherLayers} size="md" />
                   </div>
                 )}
+                <div
+                  className="px-3 py-2 cursor-pointer select-none text-sm text-content-secondary hover:bg-surface-hover rounded-md"
+                  onClick={() => {
+                    toggleFindBins();
+                    closeOverflowMenu();
+                  }}
+                  role="menuitem"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === ' ' || e.key === 'Enter') {
+                      e.preventDefault();
+                      toggleFindBins();
+                      closeOverflowMenu();
+                    }
+                  }}
+                  data-testid="toolbar-overflow-find-bins-that-fit"
+                >
+                  {t('toolbar.findBins')}
+                </div>
               </div>
             )}
           </div>

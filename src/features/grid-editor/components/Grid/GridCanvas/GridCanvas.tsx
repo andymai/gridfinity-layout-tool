@@ -261,8 +261,6 @@ export function GridCanvas({
       className="absolute inset-0"
       onPointerDownCapture={handlePointerDownCapture}
       onPointerDown={handlePointerDown}
-      // Right-button release must not pop the browser menu over a fresh gap
-      // selection; only wired while the labs gesture can fire at all.
       onContextMenu={handleContextMenu}
       style={{
         cursor: paintSize ? BRUSH_CURSOR : 'crosshair',
