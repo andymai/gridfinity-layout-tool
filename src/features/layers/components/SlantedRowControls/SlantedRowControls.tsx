@@ -1,8 +1,7 @@
 /**
  * Slanted row mode for the size brush: a paint drag fills its area with rows
  * that lean one way, each ending on an end support, every bin linked to one
- * design. Shown with the `slant` labs flag on, or while the mode is set, so
- * it can be turned off.
+ * design.
  */
 
 import { useShallow } from 'zustand/react/shallow';
@@ -11,8 +10,8 @@ import { SLANT_MAX_DEG } from '@/core/types';
 import type { SlantSide } from '@/core/types';
 import { CheckboxRow, SegmentedControl, Stepper } from '@/design-system';
 import type { SegmentedControlOption } from '@/design-system';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useTranslation } from '@/i18n';
+import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge';
 
 const SIDES: readonly SlantSide[] = ['back', 'front', 'left', 'right'];
 const DEFAULT_ANGLE_DEG = 45;
@@ -21,11 +20,9 @@ const ANGLE_STEP_DEG = 5;
 
 export function SlantedRowControls({ size = 'md' }: { size?: 'md' | 'lg' }) {
   const t = useTranslation();
-  const labsOn = useFeatureFlag('slant');
   const { paintSlant, setPaintSlant } = useInteractionStore(
     useShallow((s) => ({ paintSlant: s.paintSlant, setPaintSlant: s.setPaintSlant }))
   );
-  if (!labsOn && !paintSlant) return null;
 
   const setAngle = (deg: number): void => {
     if (!paintSlant || !Number.isFinite(deg)) return;
@@ -41,6 +38,7 @@ export function SlantedRowControls({ size = 'md' }: { size?: 'md' | 'lg' }) {
     <div data-testid="slanted-row-controls">
       <CheckboxRow
         label={t('layers.slantedRow.title')}
+        trailing={<ExperimentalBadge />}
         checked={paintSlant !== null}
         onChange={(on) => setPaintSlant(on ? { angleDeg: DEFAULT_ANGLE_DEG, side: 'back' } : null)}
       />

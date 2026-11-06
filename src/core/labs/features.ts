@@ -36,13 +36,6 @@ export const FEATURE_FLAGS = [
       'Uses the 3Dconnexion driver when installed (any browser; speed and axis direction live in its control panel). Without the driver it falls back to WebHID, which needs a Chromium browser (Chrome, Edge or Opera) and a one-time Connect.',
   },
   {
-    id: 'slant',
-    name: 'Slanted Bins',
-    description:
-      'Lean a bin toward one side so pens, markers and tools too tall to stand fit a shallow drawer. The base stays flat on the grid, a row of slanted bins leans on itself, and the last bin can take an end support.',
-    risk: 'low',
-  },
-  {
     id: 'places',
     name: 'Find What Your Bins Hold',
     description:

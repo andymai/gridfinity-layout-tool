@@ -12,7 +12,6 @@ const allAvailable: ControlAvailabilityContext = {
   needsSplit: true,
   viewMode: 'rail',
   slideTrayEnabled: true,
-  slantVisible: true,
   scanAvailable: true,
 };
 
@@ -22,7 +21,6 @@ const restricted: ControlAvailabilityContext = {
   needsSplit: false,
   viewMode: 'scroll',
   slideTrayEnabled: false,
-  slantVisible: false,
   scanAvailable: false,
 };
 

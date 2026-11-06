@@ -16,7 +16,6 @@ const ALL_AVAILABLE: ControlAvailabilityContext = {
   needsSplit: true,
   viewMode: 'rail',
   slideTrayEnabled: true,
-  slantVisible: true,
   scanAvailable: true,
 };
 
