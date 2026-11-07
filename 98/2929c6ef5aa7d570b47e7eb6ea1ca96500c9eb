@@ -1,0 +1,46 @@
+src/features/bin-designer/utils/lipSeamSplitter.test.ts
+  s_91f510e05c345c::t_dee92951ace40a 374-407
+src/features/bin-designer/utils/lipSeamSplitter.ts
+  s_91f510e05c345c::t_075bbea4606472 39
+  s_91f510e05c345c::t_3c2b68b0ce6005 224-225
+  s_91f510e05c345c::t_a529c9e27afe91 303-304
+src/features/bin-designer/types/featureColors.test.ts
+  s_91f510e05c345c::t_dee92951ace40a 525,534-535,548-549,557-558,562-597
+  s_91f510e05c345c::t_de05660a1d523a 598
+src/features/bin-designer/utils/multiColorGroups.test.ts
+  s_91f510e05c345c::t_dee92951ace40a 246-258
+src/features/bin-designer/utils/multiColorGroups.ts
+  s_91f510e05c345c::t_3349a32908786e 169
+  s_91f510e05c345c::t_4edfc4d1f57242 127
+src/features/generation/worker/generators/binGenerator.scenario.accentBandText.test.ts
+  s_91f510e05c345c::t_3c972cdac01ebb 6-7
+  s_91f510e05c345c::t_8a7f7f1d3c2519 1-5,8-158
+src/features/generation/worker/generators/binGenerator.scenario.coloredExportManifold.test.ts
+  s_91f510e05c345c::t_957a978111f1d9 117-118
+  s_91f510e05c345c::t_dee92951ace40a 73-88,96,99-116,119-121
+src/features/bin-designer/types/featureColors.ts
+  s_91f510e05c345c::t_24dfa24fd501ae 44-45,47
+  s_91f510e05c345c::t_fc53f9b8e4f6ec 411-413,419-421
+  s_91f510e05c345c::t_24aeb343434ddc 13
+  s_91f510e05c345c::t_7ee2aaf9532e20 325-341,344-349,351
+src/features/bin-designer/utils/materialMapping.ts
+  s_91f510e05c345c::t_b1a8803b386d4b 71
+src/features/bin-designer/README.md
+  s_91f510e05c345c::t_b5c848fcfacab3 139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "982929c6ef5aa7d570b47e7eb6ea1ca96500c9eb",
+  "prompts": {},
+  "sessions": {
+    "s_91f510e05c345c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1eaa1bd0-a1aa-46d7-926a-72186dee31b7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
