@@ -10,6 +10,7 @@
  */
 
 import { FeatureTag } from '@/shared/types/generation';
+import type { FaceGroupData } from '@/shared/types/generation';
 import { isSocketlessBase } from './base';
 import { floorTextHostBlock, type FloorTextHostParams } from '@/shared/utils/floorTextHost';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
@@ -40,10 +41,10 @@ export const ACCENT_BAND_DEFAULT_MM = 2;
 /** Smallest band height the UI/slider allows (0 renders nothing). */
 export const ACCENT_BAND_MIN_MM = 0;
 /**
- * One accent band — recolors the outermost `heightMm` of the bin body at one
- * end (measured in from the highest or lowest point of the body mesh) a single
+ * One accent band: recolors the outermost `heightMm` of the bin body at one end
+ * (measured in from the highest or lowest point of the body, text aside) a single
  * accent color, whether or not a stacking lip is present. Geometry past the cut
- * plane wins over every other zone, including lip cells and the socket. Height
+ * plane wins over every zone but text, including lip cells and the socket. Height
  * is absolute mm (slicer/layer-height agnostic).
  *
  * Bin body only. The lid and separately-printed feet are their own objects with
@@ -321,25 +322,33 @@ export function zoneIndex(zone: ColorZone): number {
   return ZONE_ORDER.indexOf(zone);
 }
 
-/** Highest Z across a flat xyz vertex buffer (stride 3). Works for both the
- *  preview's indexed vertices and the exporter's flat 9-floats/triangle array,
- *  since both interleave x,y,z. Returns -Infinity for an empty buffer. */
-export function maxZOfVertices(vertices: ArrayLike<number>): number {
-  let max = -Infinity;
-  for (let i = 2; i < vertices.length; i += 3) {
-    if (vertices[i] > max) max = vertices[i];
+/**
+ * The Z span a band measures from: every triangle but text. Embossed glyphs stand
+ * proud of the surface they sit on, so counting them would lift the band by the
+ * emboss height and take that much off the model it paints. `indices` is absent
+ * on the exporter's flat buffer, whose corners are already in triangle order.
+ */
+function modelZExtent(
+  vertices: ArrayLike<number>,
+  faceGroups: readonly FaceGroupData[],
+  indices?: ArrayLike<number>
+): { readonly min: number; readonly max: number } {
+  const cornerCount = indices?.length ?? vertices.length / 3;
+  const isText = new Uint8Array(cornerCount / 3);
+  for (const group of faceGroups) {
+    if (group.tag === FeatureTag.TEXT) {
+      isText.fill(1, group.start / 3, (group.start + group.count) / 3);
+    }
   }
-  return max;
-}
-
-/** Lowest Z across a flat xyz vertex buffer (stride 3) — the mirror of
- *  {@link maxZOfVertices}. Returns Infinity for an empty buffer. */
-export function minZOfVertices(vertices: ArrayLike<number>): number {
   let min = Infinity;
-  for (let i = 2; i < vertices.length; i += 3) {
-    if (vertices[i] < min) min = vertices[i];
+  let max = -Infinity;
+  for (let corner = 0; corner < cornerCount; corner++) {
+    if (isText[Math.floor(corner / 3)] === 1) continue;
+    const z = vertices[(indices ? indices[corner] : corner) * 3 + 2];
+    if (z < min) min = z;
+    if (z > max) max = z;
   }
-  return min;
+  return { min, max };
 }
 
 /**
@@ -399,14 +408,17 @@ export interface AccentCutPlanes {
  */
 export function accentCutPlanes(
   c: FeatureColorConfig,
-  vertices: ArrayLike<number>
+  vertices: ArrayLike<number>,
+  faceGroups: readonly FaceGroupData[],
+  indices?: ArrayLike<number>
 ): AccentCutPlanes {
   const topLive = accentBandActive(c.topAccent);
   const bottomLive = c.bottomAccent !== undefined && accentBandActive(c.bottomAccent);
   if (!topLive && !bottomLive) return { topZ: null, bottomZ: null };
 
-  const topZ = topLive ? topAccentCutZ(c.topAccent, maxZOfVertices(vertices)) : null;
-  const rawBottomZ = bottomLive ? bottomAccentCutZ(c.bottomAccent, minZOfVertices(vertices)) : null;
+  const extent = modelZExtent(vertices, faceGroups, indices);
+  const topZ = topLive ? topAccentCutZ(c.topAccent, extent.max) : null;
+  const rawBottomZ = bottomLive ? bottomAccentCutZ(c.bottomAccent, extent.min) : null;
   if (rawBottomZ === null || topZ === null) return { topZ, bottomZ: rawBottomZ };
   return { topZ, bottomZ: Math.min(rawBottomZ, topZ) };
 }

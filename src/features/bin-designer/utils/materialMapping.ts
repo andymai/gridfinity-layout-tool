@@ -68,7 +68,7 @@ export function buildTriangleMaterialIndices(
   // Derive the accent cuts from featureColors directly (see the matching note in
   // multiColorGroups.ts) so they're honored even if a caller's activeZones omits
   // them; union them in so isSingleColor accounts for the accent colors.
-  const cuts = accentCutPlanes(featureColors, vertices);
+  const cuts = accentCutPlanes(featureColors, vertices, faceGroups);
   const zones = withAccentZones(activeZones, cuts);
   if (isSingleColor(featureColors, zones) && coloredUnits.length === 0 && !compartmentPlan) {
     return null;

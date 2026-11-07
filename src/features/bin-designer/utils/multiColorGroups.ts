@@ -124,7 +124,7 @@ export function buildHitTestZones(
 ): ColorZone[] {
   const counts = { corners: featureColors.lip.corners, bands: featureColors.lip.bands };
   const { triangleCount, geom, getTriangle } = meshAccessors(faceGroups, vertices, indices);
-  const cuts = accentCutPlanes(featureColors, vertices);
+  const cuts = accentCutPlanes(featureColors, vertices, faceGroups, indices);
   // allowSplit:false keeps triZones 1:1 with the input triangles so a clicked
   // original-triangle index resolves to a zone. The accent cuts are applied
   // in place (centroid-quantized), which is precise enough for hit-testing.
@@ -166,7 +166,7 @@ export function buildMultiColorGroups(
   // set without them, which would otherwise make a band silently vanish there.
   // Union them in so isSingleColor sees the accent colors too. `accentCutPlanes`
   // skips its O(vertexCount) traversal when no band is live (the common case).
-  const cuts = accentCutPlanes(featureColors, vertices);
+  const cuts = accentCutPlanes(featureColors, vertices, faceGroups, indices);
   const zones = withAccentZones(activeZones, cuts);
   if (isSingleColor(featureColors, zones) && coloredOrdinals.length === 0 && !compartmentPlan) {
     return null;
