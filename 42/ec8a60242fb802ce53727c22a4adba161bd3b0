@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/binGenerator.scenario.coloredExportManifold.test.ts
+  s_91f510e05c345c::t_92f46b9826f568 117
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "42ec8a60242fb802ce53727c22a4adba161bd3b0",
+  "prompts": {},
+  "sessions": {
+    "s_91f510e05c345c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1eaa1bd0-a1aa-46d7-926a-72186dee31b7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
