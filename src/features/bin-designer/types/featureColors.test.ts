@@ -565,7 +565,6 @@ describe('accentCutPlanes', () => {
       topAccent: { enabled: true, heightMm: 2, color: '#ff0000' },
       bottomAccent: { enabled: true, heightMm: 5, color: '#0000ff' },
     });
-    // The 0..20mm body, then a glyph rising to 21 and one reaching down to -1.
     const withGlyphs = new Float32Array([
       ...mesh,
       ...[0, 0, 20, 1, 1, 21, 2, 2, 20],
