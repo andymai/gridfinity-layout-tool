@@ -21,7 +21,6 @@ const BODY = '#444444';
 const BAND = '#b00000';
 const TEXT = '#f5f5f5';
 const BAND_MM = 2;
-/** 4 height units, and the top of a bin with no stacking lip. */
 const MODEL_TOP_MM = 28;
 
 beforeAll(async () => {

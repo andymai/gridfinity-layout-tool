@@ -114,7 +114,7 @@ describe('colored 3MF export stays closed', () => {
       surfaceText: { walls: { front: 'ABC' } },
       featureColors: {
         ...params.featureColors,
-        // Drops the plane to z=14.4, through the middle of the front wall's glyphs.
+        // Tall enough to put the band plane through the front wall's glyphs.
         topAccent: { enabled: true, heightMm: 18, color: '#123456' },
       },
     });
