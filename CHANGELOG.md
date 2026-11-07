@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.535.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.534.0...gridfinity-layout-tool-v4.535.0) (2026-11-07)
+
+
+### Features
+
+* **bin-designer:** take multi-color bins and Bento out of experimental ([#4857](https://github.com/andymai/gridfinity-layout-tool/issues/4857)) ([f522134](https://github.com/andymai/gridfinity-layout-tool/commit/f5221342333c9e1f39ffb7b7f12fba0dc29e5d95))
+* **settings:** move SpaceMouse from Labs to Settings ([#4854](https://github.com/andymai/gridfinity-layout-tool/issues/4854)) ([599b850](https://github.com/andymai/gridfinity-layout-tool/commit/599b850a735b143141f4d5111cae05ced908a1e1))
+* **whats-new:** announce Workshop, slanted bins and Find bins that fit leaving Labs ([#4856](https://github.com/andymai/gridfinity-layout-tool/issues/4856)) ([286bec5](https://github.com/andymai/gridfinity-layout-tool/commit/286bec5c39136272f36c96441c1ab15debe72ab8))
+
+
+### Bug Fixes
+
+* **generation:** keep text on label plate and fit test exports ([#4858](https://github.com/andymai/gridfinity-layout-tool/issues/4858)) ([743a436](https://github.com/andymai/gridfinity-layout-tool/commit/743a436d28401b623fdcda77f08d4221fe7d2527))
+* **generation:** load a design's fonts before exporting it ([#4848](https://github.com/andymai/gridfinity-layout-tool/issues/4848)) ([c9ba501](https://github.com/andymai/gridfinity-layout-tool/commit/c9ba5017b06b8a88ce51b3fe6325ecab688ac459)), closes [#4847](https://github.com/andymai/gridfinity-layout-tool/issues/4847)
+
 ## [4.534.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.533.0...gridfinity-layout-tool-v4.534.0) (2026-11-06)
 
 
