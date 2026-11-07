@@ -18,8 +18,6 @@ import {
   makeUniformLipCells,
   accentCutPlanes,
   bottomAccentCutZ,
-  maxZOfVertices,
-  minZOfVertices,
   normalizePaletteLip,
   parseLipCell,
   resolveColorMapping,
@@ -492,18 +490,6 @@ describe('computeActiveZones', () => {
   });
 });
 
-describe('maxZOfVertices', () => {
-  it('returns the highest z across a flat xyz buffer', () => {
-    // x,y,z interleaved; z values 3, 9, 1.
-    const v = new Float32Array([0, 0, 3, 1, 1, 9, 2, 2, 1]);
-    expect(maxZOfVertices(v)).toBe(9);
-  });
-
-  it('returns -Infinity for an empty buffer', () => {
-    expect(maxZOfVertices(new Float32Array([]))).toBe(-Infinity);
-  });
-});
-
 describe('topAccentCutZ', () => {
   it('hangs the band down from the mesh top', () => {
     expect(topAccentCutZ({ enabled: true, heightMm: 2, color: '#000' }, 25)).toBe(23);
@@ -513,16 +499,6 @@ describe('topAccentCutZ', () => {
     expect(topAccentCutZ({ enabled: false, heightMm: 2, color: '#000' }, 25)).toBeNull();
     expect(topAccentCutZ({ enabled: true, heightMm: 0, color: '#000' }, 25)).toBeNull();
     expect(topAccentCutZ({ enabled: true, heightMm: 2, color: '#000' }, -Infinity)).toBeNull();
-  });
-});
-
-describe('minZOfVertices', () => {
-  it('reads the lowest z of an xyz buffer', () => {
-    expect(minZOfVertices(new Float32Array([0, 0, 4, 1, 1, -2, 2, 2, 9]))).toBe(-2);
-  });
-
-  it('returns Infinity for an empty buffer', () => {
-    expect(minZOfVertices(new Float32Array([]))).toBe(Infinity);
   });
 });
 
@@ -546,7 +522,7 @@ describe('accentCutPlanes', () => {
   const mesh = new Float32Array([0, 0, 0, 1, 1, 10, 2, 2, 20]);
 
   it('is null on both planes when neither band is live, without scanning', () => {
-    expect(accentCutPlanes(colors(), mesh)).toEqual({ topZ: null, bottomZ: null });
+    expect(accentCutPlanes(colors(), mesh, [])).toEqual({ topZ: null, bottomZ: null });
   });
 
   it('resolves each band against its own end of the mesh', () => {
@@ -555,7 +531,8 @@ describe('accentCutPlanes', () => {
         topAccent: { enabled: true, heightMm: 2, color: '#ff0000' },
         bottomAccent: { enabled: true, heightMm: 5, color: '#0000ff' },
       }),
-      mesh
+      mesh,
+      []
     );
     expect(cuts).toEqual({ topZ: 18, bottomZ: 5 });
   });
@@ -568,7 +545,8 @@ describe('accentCutPlanes', () => {
         topAccent: { enabled: true, heightMm: 2, color: '#ff0000' },
         bottomAccent: { enabled: true, heightMm: 19, color: '#0000ff' },
       }),
-      mesh
+      mesh,
+      []
     );
     expect(cuts).toEqual({ topZ: 18, bottomZ: 18 });
   });
@@ -576,9 +554,46 @@ describe('accentCutPlanes', () => {
   it('leaves an oversized lone bottom band unclamped — nothing to collide with', () => {
     const cuts = accentCutPlanes(
       colors({ bottomAccent: { enabled: true, heightMm: 19, color: '#0000ff' } }),
-      mesh
+      mesh,
+      []
     );
     expect(cuts).toEqual({ topZ: null, bottomZ: 19 });
+  });
+
+  describe('text does not move the planes', () => {
+    const bands = colors({
+      topAccent: { enabled: true, heightMm: 2, color: '#ff0000' },
+      bottomAccent: { enabled: true, heightMm: 5, color: '#0000ff' },
+    });
+    const withGlyphs = new Float32Array([
+      ...mesh,
+      ...[0, 0, 20, 1, 1, 21, 2, 2, 20],
+      ...[0, 0, 0, 1, 1, -1, 2, 2, 0],
+    ]);
+    const glyphs = [{ start: 3, count: 6, tag: FeatureTag.TEXT }];
+
+    it('counts glyphs that carry no text tag, so the tag is what excludes them', () => {
+      expect(accentCutPlanes(bands, withGlyphs, [])).toEqual({ topZ: 19, bottomZ: 4 });
+    });
+
+    it('measures both bands from the model on the flat buffer', () => {
+      expect(accentCutPlanes(bands, withGlyphs, glyphs)).toEqual({ topZ: 18, bottomZ: 5 });
+    });
+
+    it('measures both bands from the model on the indexed buffer', () => {
+      // Reversed, so reading the corners in vertex order would pick the glyphs.
+      const reversed = new Uint32Array([8, 7, 6, 5, 4, 3, 2, 1, 0]);
+      const lastTriIsBody = [{ start: 0, count: 6, tag: FeatureTag.TEXT }];
+      expect(accentCutPlanes(bands, withGlyphs, lastTriIsBody, reversed)).toEqual({
+        topZ: 18,
+        bottomZ: 5,
+      });
+    });
+
+    it('paints nothing when the mesh is all text', () => {
+      const allText = [{ start: 0, count: 9, tag: FeatureTag.TEXT }];
+      expect(accentCutPlanes(bands, withGlyphs, allText)).toEqual({ topZ: null, bottomZ: null });
+    });
   });
 });
 

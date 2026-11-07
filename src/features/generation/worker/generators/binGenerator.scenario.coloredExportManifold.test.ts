@@ -70,6 +70,22 @@ function coloredParams(corners: LipAxisCount, bands: LipAxisCount, accent: boole
   };
 }
 
+async function expectClosedWhenColored(params: BinParams): Promise<void> {
+  const mesh = getGenerateBin()(params, undefined, true);
+  const stl = buildSTLBufferFromIndexed(mesh.vertices, mesh.normals, mesh.indices);
+  const faceGroups = mesh.faceGroups ?? [];
+
+  const plain = await edgeStats(buildSinglePiece3MF(stl, faceGroups, params, 'x', {}, false));
+  expect(plain).toEqual({ open: 0, nonManifold: 0 });
+
+  const colored = buildSinglePiece3MF(stl, faceGroups, params, 'x', {}, true);
+  const model = strFromU8(
+    unzipSync(new Uint8Array(await colored.arrayBuffer()))['3D/3dmodel.model']
+  );
+  expect(model).toContain('paint_color=');
+  expect(await edgeStats(colored)).toEqual({ open: 0, nonManifold: 0 });
+}
+
 describe('colored 3MF export stays closed', () => {
   it.each([
     { corners: 2, bands: 2, accent: false },
@@ -77,20 +93,30 @@ describe('colored 3MF export stays closed', () => {
   ] as const)(
     'lip grid $corners x $bands (accent: $accent) has no open or non-manifold edges',
     async ({ corners, bands, accent }) => {
-      const params = coloredParams(corners, bands, accent);
-      const mesh = getGenerateBin()(params, undefined, true);
-      const stl = buildSTLBufferFromIndexed(mesh.vertices, mesh.normals, mesh.indices);
-      const faceGroups = mesh.faceGroups ?? [];
-
-      const plain = await edgeStats(buildSinglePiece3MF(stl, faceGroups, params, 'x', {}, false));
-      expect(plain).toEqual({ open: 0, nonManifold: 0 });
-
-      const colored = buildSinglePiece3MF(stl, faceGroups, params, 'x', {}, true);
-      const model = strFromU8(
-        unzipSync(new Uint8Array(await colored.arrayBuffer()))['3D/3dmodel.model']
-      );
-      expect(model).toContain('paint_color=');
-      expect(await edgeStats(colored)).toEqual({ open: 0, nonManifold: 0 });
+      await expectClosedWhenColored(coloredParams(corners, bands, accent));
     }
   );
+
+  it('an embossed tab under a band that hangs below it', async () => {
+    const params = coloredParams(1, 1, true);
+    await expectClosedWhenColored({
+      ...params,
+      base: { ...params.base, stackingLip: false },
+      textDefaults: { ...params.textDefaults, mode: 'emboss', depth: 1 },
+    });
+  });
+
+  it('embossed wall text the band plane cuts through', async () => {
+    const params = coloredParams(1, 1, false);
+    await expectClosedWhenColored({
+      ...params,
+      textDefaults: { ...params.textDefaults, mode: 'emboss', depth: 0.6 },
+      surfaceText: { walls: { front: 'ABC' } },
+      featureColors: {
+        ...params.featureColors,
+        // Tall enough to put the band plane through the front wall's glyphs.
+        topAccent: { enabled: true, heightMm: 18, color: '#123456' },
+      },
+    });
+  });
 });
