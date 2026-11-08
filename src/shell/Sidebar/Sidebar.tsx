@@ -18,6 +18,7 @@ import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
+import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import { HeightUnitSolver } from '@/shared/components/HeightUnitSolver';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { UserDock } from '@/shared/components/UserDock';
@@ -499,16 +500,14 @@ export function Sidebar() {
                   >
                     {t('settings.resetGridfinityStandard')}
                   </Button>
-                  <div className="mt-2 pl-3 border-l-2 border-stroke-subtle">
-                    <Collapsible title={t('stackSolver.title')} size="md" defaultExpanded={false}>
-                      <HeightUnitSolver
-                        heightUnitMm={heightUnitMm}
-                        ceilingMm={measuredMm?.height}
-                        plateRiseMm={plateRiseMm}
-                        lowProfileBase={lowProfileBase}
-                      />
-                    </Collapsible>
-                  </div>
+                  <MoreDisclosure className="mt-2" label={t('stackSolver.title')}>
+                    <HeightUnitSolver
+                      heightUnitMm={heightUnitMm}
+                      ceilingMm={measuredMm?.height}
+                      plateRiseMm={plateRiseMm}
+                      lowProfileBase={lowProfileBase}
+                    />
+                  </MoreDisclosure>
                 </div>
               </Collapsible>
             </div>

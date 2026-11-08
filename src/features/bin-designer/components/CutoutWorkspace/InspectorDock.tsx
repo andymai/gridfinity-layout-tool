@@ -116,9 +116,7 @@ export function InspectorDock({
       className="animate-fade-in"
     >
       <SidePanel.Header>
-        <span className="text-xs font-semibold uppercase tracking-wider text-content-secondary">
-          {t('binDesigner.cutoutEditor.inspectorTitle')}
-        </span>
+        <SidePanel.Title>{t('binDesigner.cutoutEditor.inspectorTitle')}</SidePanel.Title>
         {hasSelection && (
           <div className="ml-auto flex items-center gap-0.5">
             <IconButton

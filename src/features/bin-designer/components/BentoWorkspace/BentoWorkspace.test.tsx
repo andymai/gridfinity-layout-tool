@@ -49,7 +49,7 @@ describe('BentoWorkspace', () => {
     expect(screen.getByTestId('top-ruler')).toBeInTheDocument();
     expect(screen.getByTestId('left-ruler')).toBeInTheDocument();
     expect(screen.getByTestId('bento-stash-shelf')).toBeInTheDocument();
-    expect(screen.getByTestId('bento-dock')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.bento.dockTitle')).toBeInTheDocument();
     expect(screen.getByText(/binDesigner\.bento\.backgroundNote/)).toBeInTheDocument();
   });
 
