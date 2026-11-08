@@ -1,0 +1,119 @@
+src/shell/Mobile/MobileHelpModal/MobileHelpModal.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 53
+src/features/layout-library/components/LayoutManagerModal/LayoutManagerModal.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 302
+src/shared/components/ToolSwitcher/ToolSwitcher.test.tsx
+  s_66332f8bf1351d::t_5153cecf227854 179
+  s_66332f8bf1351d::t_0645583262309c 149,180
+src/shell/RightPanel/RightPanel.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 307
+  s_66332f8bf1351d::t_032f66d20b5671 413
+src/core/storage/LayoutManager.test.ts
+  s_66332f8bf1351d::t_0645583262309c 359,370,377
+scripts/i18n-values-allowlist.json
+  s_66332f8bf1351d::t_99c5a9b8c485ea 256
+src/features/design-linking/components/Dialogs/DesignerUpdatedDialog/DesignerUpdatedDialog.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 27,40,59,69
+src/features/inspiration-gallery/components/InspirationGallery/InspirationGallery.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 279
+src/features/bin-designer/hooks/useDesignerInit.test.ts
+  s_66332f8bf1351d::t_0645583262309c 83
+src/features/bin-designer/components/panel/CutoutsSection/PathfinderControls.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 91,102,145
+src/features/bin-designer/components/panel/InteriorSection/WorkspaceLaunchButton.test.tsx
+  s_66332f8bf1351d::t_032f66d20b5671 53
+  s_66332f8bf1351d::t_0645583262309c 45
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabTextStyleControls.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 75
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 481,526
+src/features/layout-library/components/LayoutManagerModal/SharedWithMeList/SharedWithMeList.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 158
+src/features/print-export/components/PrintModal/PrintModal.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 124,138,227,313
+src/shell/Sidebar/Sidebar.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 172,392
+src/shell/layouts/MobileLayout.tsx
+  s_66332f8bf1351d::t_9f91086632856b 150
+src/features/inspiration-gallery/components/LayoutPreviewOverlay/LayoutPreviewOverlay.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 277,337,426,437,446
+src/features/bin-designer/components/DesignListDialog/DesignListDialog.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 71-72,162,183,200
+src/features/baseplate/components/DeleteBaseplateWarningDialog/DeleteBaseplateWarningDialog.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 62
+src/shell/ErrorBoundary/ErrorBoundary.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 53-55,121,137-138,151,162,176,189,199,221,248,258
+src/shell/Modals/SettingsModal/hooks/useSettingsSearch.test.ts
+  s_66332f8bf1351d::t_0645583262309c 8,10,33
+src/features/bin-designer/components/DesignImportView/DesignImportView.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 51,122,134
+src/features/bin-designer/components/panel/LabelTabsSection/LabelColorControls.test.tsx
+  s_66332f8bf1351d::t_a67c82cd0e397f 31,39,50,63
+src/core/store/library.test.ts
+  s_66332f8bf1351d::t_0645583262309c 82,85,140
+src/features/bin-inspector/components/Inspector/MultiBinInspector/MultiBinInspector.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 316,324,331,340,361
+src/i18n/context.tsx
+  s_66332f8bf1351d::t_9f91086632856b 47-49
+src/shared/hooks/useLayoutSwitcher.test.ts
+  s_66332f8bf1351d::t_0645583262309c 494,874
+src/shell/Mobile/panelUtils.ts
+  s_66332f8bf1351d::t_9f91086632856b 9,11,15
+src/features/bin-designer/components/DesignListDialog/DesignListHeader.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 32,34,47
+src/features/bin-designer/components/panel/InteriorSection/InteriorSection.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 76,87,147,150,166,185
+  s_66332f8bf1351d::t_032f66d20b5671 53,101,103,107
+src/shell/Modals/ImportModal/ImportModal.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 27,32
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 91
+src/features/layout-library/components/LayoutManagerModal/LayoutActions/LayoutActions.test.tsx
+  s_66332f8bf1351d::t_032f66d20b5671 95,102
+  s_66332f8bf1351d::t_0645583262309c 186,224,264,273
+src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedModal.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 61,107
+src/i18n/locales/en.ts
+  s_66332f8bf1351d::t_dacb02962cff9c 142,150-152,316,321,351,353,393-396,398-403,411-412,511,514,560-561,607,610,613,648,670,673,692,694,708-709,711,725,787,815-816,864,867,869-870,885,904,909,933,939,941-942,946,949,952,970-971,974,985,993-994,1002-1005,1014,1047,1054,1069-1070,1074-1076,1078,1127,1132,1138,1146,1313-1314,1329,1424,1426,1428-1431,1457,1464,1478,1513,1818,1850,1860,1869,1883,1897-1899,1901,1985,1997,2257,2263,3073,3084,3345-3346,3404-3405,3409,3533,3569-3572,3579-3580,3772,3775,3778,3834,4126,4225,4227,4401,4424-4425,4435,4550,4914-4915,4938,4959-4960,5041-5046,5050-5061,5064-5067,5070-5073,5076-5077,5080-5084,5089-5091,5094-5096,5099-5102,5105-5106,5109,5112-5113,5116-5117,5125,5129,5368,5485,5768-5774,5777,5779,5785,5790,5793,5798,5812,5817,5822,5830,5836,5849,5870,5920,6112,6261
+src/features/bin-designer/components/panel/CutoutsSection/TransformControls.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 117,144
+src/features/bin-designer/components/panel/shared/TextColorControl.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 33
+src/features/layout-library/components/LayoutManagerModal/ImportView/ImportView.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 105,182,385,395
+src/features/baseplate/components/BaseplateLibraryModal/BaseplateLibraryModal.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 199
+src/features/bin-designer/components/ExportDialog/ExportDialog.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 872
+src/shared/components/ExportDialog/ExportDialog.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 143,148,250,253
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 533,537,566,571,576,587
+src/shell/Modals/DesignGalleryModal/DesignGalleryModal.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 42
+src/features/cloud-share/components/ShareModal/ShareModal.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 93,342
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 61,63,75,87,169,224-225
+  s_66332f8bf1351d::t_032f66d20b5671 58,78,203
+src/features/bin-designer/components/panel/CutoutsSection/ArrangeControls.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 19-22
+src/features/layers/components/ActiveLayerPanel/ActiveLayerPanel.test.tsx
+  s_66332f8bf1351d::t_0645583262309c 77,105,113,125,137,326,335,349
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6808200952d4c20c04d5335ced143fea790f0497",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
