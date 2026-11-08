@@ -16,10 +16,10 @@ function renderControls(selectedIds: readonly string[]) {
 
 describe('ArrangeControls', () => {
   const cases: ReadonlyArray<[string, 'front' | 'forward' | 'backward' | 'back']> = [
-    ['Bring to Front', 'front'],
-    ['Bring Forward', 'forward'],
-    ['Send Backward', 'backward'],
-    ['Send to Back', 'back'],
+    ['Bring to front', 'front'],
+    ['Bring forward', 'forward'],
+    ['Send backward', 'backward'],
+    ['Send to back', 'back'],
   ];
 
   for (const [label, direction] of cases) {

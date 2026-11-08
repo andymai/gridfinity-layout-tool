@@ -139,7 +139,7 @@ const en: Record<string, string> = {
   'common.cancel': 'Cancel',
   'common.delete': 'Delete',
   'common.close': 'Close',
-  'common.physicalUnits': 'Physical Units',
+  'common.physicalUnits': 'Physical units',
   'common.loading': 'Loading...',
 
   // Error boundary (used via getStaticTranslation, not hooks)
@@ -147,9 +147,9 @@ const en: Record<string, string> = {
   'errorBoundary.description': 'The app encountered an unexpected error. Your layout data is safe.',
   'errorBoundary.hint':
     'Try again or refresh the page. You can download a backup of your layouts to keep them safe.',
-  'errorBoundary.tryAgain': 'Try Again',
-  'errorBoundary.undoLastChange': 'Undo Last Change',
-  'errorBoundary.downloadBackup': 'Download Backup',
+  'errorBoundary.tryAgain': 'Try again',
+  'errorBoundary.undoLastChange': 'Undo last change',
+  'errorBoundary.downloadBackup': 'Download backup',
   'errorBoundary.backupDone': 'Backup downloaded.',
   'errorBoundary.backupError': "Couldn't create a backup. Try refreshing the page.",
 
@@ -313,12 +313,12 @@ const en: Record<string, string> = {
   'toolbar.findBins': 'Find bins that fit',
   'toolbar.findBinsHint': 'Select an empty area of the grid to browse community bins that fit it',
   'toolbar.findBinsArmedHint': 'Drag across empty cells to pick the gap (Esc to cancel)',
-  'toolbar.moveMode': 'Move Mode',
+  'toolbar.moveMode': 'Move mode',
   'toolbar.toMove': 'to move',
   'toolbar.toPlace': 'to place',
   'toolbar.exitMoveMode': 'Exit move mode',
   'toolbar.exitMoveModeEsc': 'Exit move mode (Esc)',
-  'toolbar.resizeMode': 'Resize Mode',
+  'toolbar.resizeMode': 'Resize mode',
   'toolbar.toResize': 'to resize',
   'toolbar.toApply': 'to apply',
   'toolbar.exitResizeMode': 'Exit resize mode',
@@ -348,9 +348,9 @@ const en: Record<string, string> = {
   'sidebar.halfBinTop': 'Place half-unit row at the top',
   'sidebar.tools': 'Tools',
   'sidebar.drawerHeight': 'Drawer height',
-  'sidebar.inspirationGallery': 'Inspiration Gallery',
+  'sidebar.inspirationGallery': 'Inspiration gallery',
   'sidebar.inspirationHint': 'Get ideas for your drawer',
-  'sidebar.gridSize': 'Grid Size',
+  'sidebar.gridSize': 'Grid size',
   'sidebar.gridUnit': 'Grid unit',
   'sidebar.gridUnitTooltip': 'Size of one grid unit in mm (standard Gridfinity = 42mm)',
   'sidebar.heightUnit': 'Height unit',
@@ -390,17 +390,17 @@ const en: Record<string, string> = {
   'sidebar.about.origin':
     'Zack Freedman published the standard in 2022, and makers have since shared thousands of free bins, baseplates, and holders. This tool plans the layout and generates the print files, or you can browse designs shared by the community.',
   'sidebar.learn.whatIs': 'What is Gridfinity?',
-  'sidebar.learn.guide': 'Planning Guide',
-  'sidebar.learn.generator': 'Gridfinity Generator',
-  'sidebar.learn.binGenerator': 'Bin Generator',
-  'sidebar.learn.baseplateGenerator': 'Baseplate Generator',
+  'sidebar.learn.guide': 'Planning guide',
+  'sidebar.learn.generator': 'Gridfinity generator',
+  'sidebar.learn.binGenerator': 'Bin generator',
+  'sidebar.learn.baseplateGenerator': 'Baseplate generator',
   'sidebar.learn.calculator': 'Calculator',
-  'sidebar.learn.community': 'Community Designs',
-  'sidebar.learn.cutoutGenerator': 'Cutout Generator',
-  'sidebar.learn.sizes': 'Sizes Reference',
-  'sidebar.learn.toolDrawer': 'Tool Drawer Organizer',
-  'sidebar.learn.kitchenDrawer': 'Kitchen Drawer Organizer',
-  'sidebar.learn.software': 'Software Comparison',
+  'sidebar.learn.community': 'Community designs',
+  'sidebar.learn.cutoutGenerator': 'Cutout generator',
+  'sidebar.learn.sizes': 'Sizes reference',
+  'sidebar.learn.toolDrawer': 'Tool drawer organizer',
+  'sidebar.learn.kitchenDrawer': 'Kitchen drawer organizer',
+  'sidebar.learn.software': 'Software comparison',
 
   // Right Panel (Bin List)
   'rightPanel.expandPanel': 'Expand panel',
@@ -408,8 +408,8 @@ const en: Record<string, string> = {
   'rightPanel.copyTSV': 'Copy as TSV for spreadsheets',
   'rightPanel.piecesAfterSplit': 'Pieces after split',
   'rightPanel.filamentMeters': 'Estimated filament (meters)',
-  'rightPanel.binList': 'Bin List',
-  'rightPanel.binProperties': 'Bin Properties',
+  'rightPanel.binList': 'Bin list',
+  'rightPanel.binProperties': 'Bin properties',
   'rightPanel.nozzleSizeTooltip':
     'Your printer nozzle diameter. Drives the print-time estimate and scales split connectors, wall locks, and baseplate connectors so they stay printable on wider nozzles.',
   'rightPanel.collapseRightPanel': 'Collapse right panel',
@@ -509,10 +509,10 @@ const en: Record<string, string> = {
   'inspector.sizeSuggestionNoFit': "Won't fit here",
   'inspector.sizeSuggestionDismiss': 'Dismiss suggestion',
   'inspector.notesPlaceholder': 'e.g., 2 dividers, STL link, contents',
-  'inspector.toStash': 'To Stash',
+  'inspector.toStash': 'To stash',
   'inspector.multi.title': '{count} Bins Selected',
   'inspector.multi.layer': 'Layer',
-  'inspector.multi.delete': 'Delete All',
+  'inspector.multi.delete': 'Delete all',
   'inspector.multi.clearanceTooltip': 'Extra blocked space above bins for tall contents',
   'inspector.split.title': 'Oversized for print bed',
   'inspector.split.message':
@@ -558,8 +558,8 @@ const en: Record<string, string> = {
   'inspector.heightReasonRemainingSpace': 'remaining space',
   'inspector.restsAt': 'Rests {height}u above the plate',
   'inspector.unevenSupport': 'Part of its base is unsupported',
-  'inspector.customProperties': 'Custom Properties',
-  'inspector.deleteAll': 'Delete All',
+  'inspector.customProperties': 'Custom properties',
+  'inspector.deleteAll': 'Delete all',
   'inspector.deselectAllBins': 'Deselect all bins',
   'inspector.deselectBin': 'Deselect bin',
   'inspector.fitsPrintBedDimensions': '{binWidth}×{binDepth} fits print bed ({max}mm)',
@@ -605,13 +605,13 @@ const en: Record<string, string> = {
   'inspector.swapWidthAndDepth': 'Swap width and depth',
 
   // Layers
-  'layers.addLayer': 'Add Layer',
+  'layers.addLayer': 'Add layer',
   'layers.heightTooltip': 'Height for new bins placed on this layer',
   'layers.deleteTooltip': 'Delete this layer',
-  'layers.confirmDelete.title': 'Delete Layer',
+  'layers.confirmDelete.title': 'Delete layer',
   'layers.confirmDelete.message':
     'Delete "{name}"? The {count} bin(s) on this layer will be moved to the Stash.',
-  'layers.clearLayer.title': 'Clear Layer',
+  'layers.clearLayer.title': 'Clear layer',
   'layers.clearLayer.message': 'Move all {count} bin(s) on this layer to the stash?',
   'layers.clearLayer.confirm': 'Clear',
   'layers.layerNamePlaceholder': 'Layer name',
@@ -648,7 +648,7 @@ const en: Record<string, string> = {
   'layers.paintSizeTitle': '{width}×{depth}',
   'layers.rectangles': 'Rectangles',
   'layers.select': 'Select',
-  'layers.sizeSelector': 'Size Brush',
+  'layers.sizeSelector': 'Size brush',
   'layers.selectLayer': 'Select {name}',
   'layers.showingTall': 'Showing: Tall',
   'layers.showingWide': 'Showing: Wide',
@@ -674,10 +674,10 @@ const en: Record<string, string> = {
   'categories.addCategory': 'Add category',
   'categories.deleteCategory': 'Delete category',
   'categories.editCategory': 'Edit category',
-  'categories.confirmDelete.title': 'Delete Category',
+  'categories.confirmDelete.title': 'Delete category',
   'categories.confirmDelete.message':
     'Delete "{name}"? Bins in this category will be moved to the default category.',
-  'categories.confirmDelete.confirm': 'Delete Category',
+  'categories.confirmDelete.confirm': 'Delete category',
   'categories.cannotDeleteLast': 'Cannot delete the last category',
   'categories.categoryNamePlaceholder': 'Category name',
   'categories.applyToCount': 'Apply to {count} selected bin(s)',
@@ -696,9 +696,9 @@ const en: Record<string, string> = {
 
   // Staging / Stash
   'staging.rotateBin': 'Rotate bin (R)',
-  'staging.clearStash.title': 'Clear Stash',
+  'staging.clearStash.title': 'Clear stash',
   'staging.clearStash.message': 'Delete all {count} stashed bin(s)? This cannot be undone.',
-  'staging.clearStash.confirm': 'Clear All',
+  'staging.clearStash.confirm': 'Clear all',
   'staging.binCount': '{count} bins',
   'staging.binCountOne': '1 bin',
   'staging.binTooltip': '{width}×{depth}×{height}u - {label}',
@@ -713,10 +713,10 @@ const en: Record<string, string> = {
   'staging.unlabeled': 'Unlabeled',
 
   // Print / Export
-  'print.title': 'Print Layout',
-  'print.printNow': 'Print Now',
+  'print.title': 'Print layout',
+  'print.printNow': 'Print now',
   'print.options': 'Options',
-  'print.binDisplay': 'Bin Display',
+  'print.binDisplay': 'Bin display',
   'print.showCategoryColor': 'Category color',
   'print.showSize': 'Size',
   'print.showCustomProperties': 'Custom properties',
@@ -730,7 +730,7 @@ const en: Record<string, string> = {
   'print.showLegend': 'Legend',
   'print.showBinList': 'Bin list',
   'print.sortOrder': 'Bin list sort',
-  'print.summary.title': 'Print List',
+  'print.summary.title': 'Print list',
   'print.summary.totalBins': '{count} bin(s) total',
   'print.summary.uniqueSizes': '{count} unique size(s)',
   'print.summary.pieces': '{count} piece(s)',
@@ -794,7 +794,7 @@ const en: Record<string, string> = {
   'print.fitToPage': 'Fit grid to page',
 
   // Cloud Share
-  'share.title': 'Share Layout',
+  'share.title': 'Share layout',
   'share.tabs.link': 'Link',
   'share.tabs.file': 'File',
   'share.tabs.json': 'JSON',
@@ -822,8 +822,8 @@ const en: Record<string, string> = {
     "Any changes you made will be lost. You'll return to your previous layout.",
   'share.banner.discardConfirm': 'Discard',
   'share.banner.viewingLayout': 'Viewing "{name}"',
-  'share.shareToCloud': 'Share to Cloud',
-  'share.copyLink': 'Copy Link',
+  'share.shareToCloud': 'Share to cloud',
+  'share.copyLink': 'Copy link',
   'share.failedToShare': 'Failed to share',
   'share.sharedSuccessfully': 'Shared successfully!',
   'share.loadingShared': 'Loading shared layout...',
@@ -871,13 +871,13 @@ const en: Record<string, string> = {
   'layouts.folders.expand': 'Expand',
   'layouts.folders.collapse': 'Collapse',
   'layouts.createNewLayoutHint': 'Start with a blank canvas',
-  'layouts.shareLayout': 'Share Layout',
+  'layouts.shareLayout': 'Share layout',
   'layouts.searchPlaceholder': 'Search layouts...',
   'layouts.layoutNamePlaceholder': 'Layout name',
-  'layouts.confirmDelete.title': 'Delete Layout',
+  'layouts.confirmDelete.title': 'Delete layout',
   'layouts.confirmDelete.message': 'Delete "{name}"? This cannot be undone.',
-  'layouts.confirmDelete.confirm': 'Delete Layout',
-  'layouts.import.title': 'Import Layout',
+  'layouts.confirmDelete.confirm': 'Delete layout',
+  'layouts.import.title': 'Import layout',
   'layouts.import.browseFiles': 'Browse files',
   'layouts.import.pasteLink': 'Or paste a share link:',
   'layouts.import.placeholder':
@@ -892,7 +892,7 @@ const en: Record<string, string> = {
   'layouts.active': 'Active',
   'layouts.availableLayouts': 'Available layouts',
   'layouts.binCount': '{count} bins',
-  'layouts.binDesigns': 'Bin Designs',
+  'layouts.binDesigns': 'Bin designs',
   'layouts.bins': 'bins',
   'layouts.binsWillBeDeleted': '{count} bins will be deleted',
   'layouts.browseFiles': 'Browse files',
@@ -911,12 +911,12 @@ const en: Record<string, string> = {
   'layouts.archiveDetected': 'Archive detected',
   'layouts.archiveImported': 'Imported {count} layouts ({skipped} skipped)',
   'layouts.archiveImportFailed': 'Failed to import archive',
-  'layouts.exportAll': 'Export All',
+  'layouts.exportAll': 'Export all',
   'layouts.exportedAll': 'Exported {count} layouts',
   'layouts.exportedAllWithSkipped': 'Exported {count} layouts ({skipped} skipped)',
   'layouts.exportFailed': 'Failed to export layouts',
   'layouts.importAll': 'Import All ({count} layouts)',
-  'layouts.importLayout': 'Import Layout',
+  'layouts.importLayout': 'Import layout',
   'layouts.jsonPlaceholder': 'Paste JSON here',
   'layouts.layers': 'layers',
   'layouts.layoutCount': '{count} layout(s)',
@@ -940,26 +940,26 @@ const en: Record<string, string> = {
   'layouts.searchLayouts': 'Search layouts',
   'layouts.sharedBy': 'Shared by {name}',
   'layouts.sharedLayoutCount': '{count} shared layout(s)',
-  'layouts.sharedLayouts': 'Shared Layouts',
+  'layouts.sharedLayouts': 'Shared layouts',
   'layouts.validationErrors': 'Validation errors',
   'layouts.viewMode': 'View mode',
   'layouts.listView': 'List view',
   'layouts.gridView': 'Grid view',
   'layouts.sortBy': 'Sort by',
-  'layouts.sortRecent': 'Recently Modified',
+  'layouts.sortRecent': 'Recently modified',
   'layouts.sortName': 'Name (A-Z)',
-  'layouts.sortSize': 'Drawer Size',
-  'layouts.sortBinCount': 'Bin Count',
+  'layouts.sortSize': 'Drawer size',
+  'layouts.sortBinCount': 'Bin count',
   'layouts.viewOnly': 'View only',
 
   'settings.title': 'Settings',
-  'settings.defaultPreferences': 'Default Preferences',
+  'settings.defaultPreferences': 'Default preferences',
   'settings.defaultPreferencesHint': 'New layouts will use these settings:',
   'settings.printBed': 'Print bed',
-  'settings.confirmSaveDefaults.title': 'Save as Defaults',
+  'settings.confirmSaveDefaults.title': 'Save as defaults',
   'settings.confirmSaveDefaults.message':
     'Save current settings as defaults for new layouts?\n\nDrawer: {width}×{depth}×{height}u\nLayer height: {layerHeight}u\nPrint bed: {printBed}mm\nGrid unit: {gridUnit}mm',
-  'settings.stlSearch': 'STL Search',
+  'settings.stlSearch': 'STL search',
   'settings.stlSearchHint': 'Choose which sites to search for Gridfinity STL files:',
   'settings.privacy': 'Privacy',
   'settings.helpImprove': 'Help improve suggestions',
@@ -977,11 +977,11 @@ const en: Record<string, string> = {
   'settings.privacyPolicy': 'Privacy Policy',
   'settings.termsOfService': 'Terms of Service',
   'settings.experimental': 'Experimental',
-  'settings.drawerDimensions': 'Drawer Dimensions',
-  'settings.gridSettings': 'Grid Settings',
+  'settings.drawerDimensions': 'Drawer dimensions',
+  'settings.gridSettings': 'Grid settings',
 
   // Print Estimates
-  'settings.printEstimates': 'Print Estimates',
+  'settings.printEstimates': 'Print estimates',
   'settings.printEstimatesHint':
     'Adjust these to match your printer profile for more accurate estimates:',
   'settings.filamentCostPerKg': 'Filament cost',
@@ -992,7 +992,7 @@ const en: Record<string, string> = {
     'Connectors, wall locks, and baseplate clips scale to this so they print on wider nozzles.',
 
   // Default Categories
-  'settings.defaultCategories': 'Default Categories',
+  'settings.defaultCategories': 'Default categories',
   'settings.defaultCategoriesHint': 'Categories used when creating new layouts:',
   'settings.binDefaults.title': 'New bin defaults',
   'settings.binDefaults.hint':
@@ -1000,8 +1000,8 @@ const en: Record<string, string> = {
   'settings.binDefaults.usingFactory': 'Using factory defaults',
   'settings.usingBuiltInCategories': 'Using built-in defaults ({count})',
   'settings.usingCustomCategories': 'Using custom defaults ({count})',
-  'settings.saveCategoriesAsDefaults': 'Save Current Categories as Defaults',
-  'settings.confirmSaveCategories.title': 'Save Categories as Defaults',
+  'settings.saveCategoriesAsDefaults': 'Save current categories as defaults',
+  'settings.confirmSaveCategories.title': 'Save categories as defaults',
   'settings.confirmSaveCategories.message':
     'Save these {count} categories as defaults for new layouts?',
 
@@ -1009,10 +1009,10 @@ const en: Record<string, string> = {
   'settings.tabs.general': 'General',
   'settings.tabs.appearance': 'Appearance',
   'settings.tabs.accessibility': 'Accessibility',
-  'settings.tabs.defaults': 'Layout Defaults',
-  'settings.tabs.print': 'Print & Material',
-  'settings.tabs.categories': 'Categories & Bins',
-  'settings.tabs.integrations': 'STL Search',
+  'settings.tabs.defaults': 'Layout defaults',
+  'settings.tabs.print': 'Print & material',
+  'settings.tabs.categories': 'Categories & bins',
+  'settings.tabs.integrations': 'STL search',
   'settings.tabs.privacy': 'Privacy',
   'settings.tabs.storage': 'Storage',
   'settings.tabs.exports': 'Exports',
@@ -1021,7 +1021,7 @@ const en: Record<string, string> = {
   // Settings sidebar groups
   'settings.groups.preferences': 'Preferences',
   'settings.groups.defaults': 'Defaults',
-  'settings.groups.data': 'Account & Data',
+  'settings.groups.data': 'Account & data',
   'settings.groups.advanced': 'Advanced',
 
   // Settings search
@@ -1054,14 +1054,14 @@ const en: Record<string, string> = {
   'settings.theme.dark': 'Dark',
   'settings.theme.light': 'Light',
   'settings.theme.system': 'System',
-  'settings.accentColor': 'Accent Color',
+  'settings.accentColor': 'Accent color',
   'settings.accentColor.amber': 'Amber',
   'settings.accentColor.rose': 'Rose',
   'settings.accentColor.fuchsia': 'Fuchsia',
   'settings.accentColor.emerald': 'Emerald',
   'settings.accentColor.sky': 'Sky',
   'settings.accentColor.violet': 'Violet',
-  'settings.uiDensity': 'UI Density',
+  'settings.uiDensity': 'UI density',
   'settings.uiDensity.compact': 'Compact',
   'settings.uiDensity.default': 'Default',
   'settings.uiDensity.comfortable': 'Comfortable',
@@ -1076,16 +1076,16 @@ const en: Record<string, string> = {
   'settings.search.keywords.categoryPatterns':
     'pattern, colorblind, color blind, texture, hatch, accessibility',
   'settings.resetTabDefaults': 'Reset all settings',
-  'settings.copyFromCurrentLayout': 'Copy from Current Layout',
-  'settings.confirmCopyFromLayout.title': 'Copy from Current Layout',
+  'settings.copyFromCurrentLayout': 'Copy from current layout',
+  'settings.confirmCopyFromLayout.title': 'Copy from current layout',
   'settings.confirmCopyFromLayout.message':
     'Replace all default values with your current layout settings?\n\nCurrent layout: {width}×{depth}×{height}u\nLayer height: {layerHeight}u\nPrint bed: {printBed}mm\nGrid unit: {gridUnit}mm',
   'settings.confirmCopyFromLayout.confirm': 'Copy',
-  'settings.defaultLayerHeight': 'Default Layer Height',
-  'settings.defaultPrintBedSize': 'Print Bed',
-  'settings.defaultGridUnit': 'Grid Unit',
+  'settings.defaultLayerHeight': 'Default layer height',
+  'settings.defaultPrintBedSize': 'Print bed',
+  'settings.defaultGridUnit': 'Grid unit',
   'settings.gridfinityStandardMm': 'Standard Gridfinity: {value}mm',
-  'settings.resetGridfinityStandard': 'Reset to Gridfinity Standard',
+  'settings.resetGridfinityStandard': 'Reset to Gridfinity standard',
   'stackSolver.title': 'Fit bins to your drawer',
   'stackSolver.description':
     'Stacked bins nest {junction}mm into each other, so each one adds {shortfall}mm less than its body height.',
@@ -1134,18 +1134,18 @@ const en: Record<string, string> = {
   'settings.storage.layouts': 'Layouts',
   'settings.storage.layoutCount': '{count} layouts',
   'settings.storage.layoutMax': 'max {max}',
-  'settings.storage.databaseSize': 'Database Size',
+  'settings.storage.databaseSize': 'Database size',
   'settings.storage.databaseSizeHint':
     'Total space used by layouts, snapshots, and version history.',
   'settings.storage.quotaOf': 'of {quota}',
   'settings.storage.percentUsed': '{percent}% used',
-  'settings.storage.settingsCache': 'Settings Cache',
+  'settings.storage.settingsCache': 'Settings cache',
   'settings.storage.settingsCacheLimit': '~5 MB limit',
   'settings.storage.settingsCacheNote':
     'Used for preferences, startup cache, and small metadata. Does not affect layout storage.',
 
   // Storage danger zone
-  'settings.storage.dangerZone': 'Danger Zone',
+  'settings.storage.dangerZone': 'Danger zone',
   'settings.storage.clearAllData': 'Clear all data',
   'settings.storage.clearAllDataHint':
     'Delete all layouts, snapshots, analytics, and cached data. Your settings will be preserved.',
@@ -1153,7 +1153,7 @@ const en: Record<string, string> = {
     'This will permanently delete all your layouts and data. Your settings will be preserved. This cannot be undone.',
 
   // Help
-  'help.title': 'Keyboard Shortcuts',
+  'help.title': 'Keyboard shortcuts',
   'help.searchPlaceholder': 'Search shortcuts and features...',
   'help.commandPaletteTip': 'Quick tip: Use the command palette for fast access to all actions',
   'help.goTo': 'Go to',
@@ -1320,8 +1320,8 @@ const en: Record<string, string> = {
   'help.mouse': 'Mouse',
   'help.shortcuts': 'Shortcuts',
   'help.tips': 'Tips',
-  'help.tipsInfo': 'Tips & Info',
-  'help.touchGestures': 'Touch Gestures',
+  'help.tipsInfo': 'Tips & info',
+  'help.touchGestures': 'Touch gestures',
   'help.whatAreBlockedZones': 'What are blocked zones?',
   'help.whatIsClearance': 'What is clearance?',
 
@@ -1336,7 +1336,7 @@ const en: Record<string, string> = {
   // Shortcut descriptions
   'help.shortcut.commandPalette': 'Open command palette',
   'help.shortcut.showHelp': 'Show this help',
-  'help.shortcut.cancelDeselect': 'Cancel / Deselect',
+  'help.shortcut.cancelDeselect': 'Cancel / deselect',
   'help.shortcut.duplicate': 'Duplicate selected bins',
   'help.shortcut.delete': 'Delete selected bins',
   'help.shortcut.quickLabel': 'Quick label edit',
@@ -1431,14 +1431,14 @@ const en: Record<string, string> = {
   'mobile.nav.list': 'List',
   'mobile.help': 'Help',
   'mobile.settings': 'Settings',
-  'mobile.binMenu.editProperties': 'Edit Properties',
+  'mobile.binMenu.editProperties': 'Edit properties',
   'mobile.binMenu.rotate': 'Rotate',
-  'mobile.binMenu.expandToFit': 'Expand to Fit',
+  'mobile.binMenu.expandToFit': 'Expand to fit',
   'mobile.binMenu.mergeIntoOne': 'Merge into a bento',
-  'mobile.binMenu.lockSize': 'Lock Size',
-  'mobile.binMenu.unlockSize': 'Unlock Size',
-  'mobile.binMenu.toStash': 'To Stash',
-  'mobile.binMenu.moveToGrid': 'Move to Grid',
+  'mobile.binMenu.lockSize': 'Lock size',
+  'mobile.binMenu.unlockSize': 'Unlock size',
+  'mobile.binMenu.toStash': 'To stash',
+  'mobile.binMenu.moveToGrid': 'Move to grid',
   'mobile.tools.instructions': 'Select a size, then tap or drag on grid to place bins.',
   'mobile.tools.switchToWide': 'Switch to wide rectangles',
   'mobile.tools.switchToTall': 'Switch to tall rectangles',
@@ -1464,14 +1464,14 @@ const en: Record<string, string> = {
   'mobile.header.nothingToRedo': 'Nothing to redo',
   'mobile.header.nothingToUndo': 'Nothing to undo',
   'mobile.header.openLayoutsPanel': 'Open layouts panel',
-  'mobile.help.drawingSelection': 'Drawing & Selection',
+  'mobile.help.drawingSelection': 'Drawing & selection',
   'mobile.help.editing': 'Editing',
   'mobile.help.longPressABinToDuplicateDeleteOrMov':
     'Long-press a bin to duplicate, delete, or move to stash',
   'mobile.help.navigation': 'Navigation',
   'mobile.help.oversizedBinsAreAutomaticallySplitF':
     'Oversized bins are automatically split for printing',
-  'mobile.help.paintMode': 'Paint Mode',
+  'mobile.help.paintMode': 'Paint mode',
   'mobile.help.tapThe3dCubeIconToSeeYourLayoutInIs':
     'Tap the 3D cube icon to see your layout in isometric view',
   'mobile.help.tips': 'Tips',
@@ -1485,7 +1485,7 @@ const en: Record<string, string> = {
   'mobile.layers.statsSingle': '{count} bins on this layer ({coverage}%)',
   'mobile.layouts.anyoneCanEdit': 'Anyone can edit',
   'mobile.layouts.anyoneCanView': 'Anyone can view',
-  'mobile.layouts.cloudShare': 'Cloud Share',
+  'mobile.layouts.cloudShare': 'Cloud share',
   'mobile.layouts.copyLinkAgain': 'Copy link again',
   'mobile.layouts.createExpiringShareLink': 'Create expiring share link',
   'mobile.layouts.deleteShare': 'Delete share',
@@ -1520,7 +1520,7 @@ const en: Record<string, string> = {
   'mobile.toolbar.defaultLayer': 'Default layer',
 
   // Error States
-  'error.tryAgain': 'Try Again',
+  'error.tryAgain': 'Try again',
 
   // Toast Messages
   'toast.baseplateReset': 'Baseplate settings reset to defaults',
@@ -1825,7 +1825,7 @@ const en: Record<string, string> = {
 
   // Shared Export Dialog
   'export.format': 'Format',
-  'export.fileName': 'File Name',
+  'export.fileName': 'File name',
   'export.filenamePlaceholder': 'Enter filename',
   'export.customFileName': 'Custom file name',
   'export.nameStyle.descriptive': 'Descriptive',
@@ -1857,7 +1857,7 @@ const en: Record<string, string> = {
   // Drawer Settings
 
   // Half-Bin Mode Blocked
-  'halfBinBlocked.title': 'Cannot Disable Half-Grid Mode',
+  'halfBinBlocked.title': 'Cannot disable half-grid mode',
   'halfBinBlocked.message':
     'Some bins use fractional dimensions. Resize or delete these bins before disabling half-grid mode.',
   'halfBinBlocked.cancelAriaLabel': 'Cancel and keep half-grid mode enabled',
@@ -1867,7 +1867,7 @@ const en: Record<string, string> = {
     'Move {count} fractional bins to stash and disable half-grid mode',
 
   // Inspiration Gallery
-  'gallery.title': 'Inspiration Gallery',
+  'gallery.title': 'Inspiration gallery',
   'gallery.empty': 'No layouts in the gallery yet',
   'gallery.all': 'All',
   'gallery.backToGallery': 'Back to gallery',
@@ -1876,7 +1876,7 @@ const en: Record<string, string> = {
   'gallery.card.metadata': '{bins} bins · {size}',
   'gallery.description': 'Description',
   'gallery.drawer': ' drawer',
-  'gallery.exampleItems': 'Example Items',
+  'gallery.exampleItems': 'Example items',
   'gallery.filterByTheme': 'Filter by theme',
   'gallery.gridColumns': 'Grid columns',
   'gallery.layoutCount': '{count} layout(s)',
@@ -1890,7 +1890,7 @@ const en: Record<string, string> = {
   'gallery.seeWhatSPossibleThenMakeItYours': "See what's possible, then make it yours",
   'gallery.useAsAStartingPointCustomizeToFitYo':
     'Use as a starting point — customize to fit your items',
-  'gallery.useAsStartingPoint': 'Use as Starting Point',
+  'gallery.useAsStartingPoint': 'Use as starting point',
   'gallery.adding': 'Adding...',
   'gallery.yourSize': '(yours: {size})',
 
@@ -1904,11 +1904,11 @@ const en: Record<string, string> = {
   'toolSwitcher.binDesigner': 'Bins',
   'toolSwitcher.activeTool': 'Active tool',
   'toolSwitcher.gridfinityLayoutTool': 'Gridfinity Layout Tool',
-  'toolSwitcher.toolSwitcher': 'Tool Switcher',
-  'toolSwitcher.switchToPlanner': 'Switch to Layout Editor (Shift+D)',
-  'toolSwitcher.switchToDesigner': 'Switch to Bin Designer (Shift+D)',
+  'toolSwitcher.toolSwitcher': 'Tool switcher',
+  'toolSwitcher.switchToPlanner': 'Switch to layout editor (Shift+D)',
+  'toolSwitcher.switchToDesigner': 'Switch to bin designer (Shift+D)',
   'toolSwitcher.baseplateGenerator': 'Baseplate',
-  'toolSwitcher.switchToBaseplate': 'Switch to Baseplate Generator',
+  'toolSwitcher.switchToBaseplate': 'Switch to baseplate generator',
 
   // Bin Designer
   'help.target.binDesigner.pullTab.keywords':
@@ -1992,7 +1992,7 @@ const en: Record<string, string> = {
   'binDesigner.interiorDimensionsHint':
     'Floor to wall top, before dividers, scoops and label tabs. The stacking lip rises above it.',
   'binDesigner.downloadJSON': 'Download JSON',
-  'binDesigner.downloadDesignJson': 'Download Design JSON',
+  'binDesigner.downloadDesignJson': 'Download design JSON',
   'binDesigner.export.jsonHint':
     'The editable design, for re-importing or sharing. Not a printable model.',
   'binDesigner.threeDModel': '3D Model',
@@ -2004,7 +2004,7 @@ const en: Record<string, string> = {
   'binDesigner.dragDropDesignFile': 'Drag & drop a design JSON or STL file here',
   'binDesigner.designJson': 'Design JSON',
   'binDesigner.readyToImportDesign': 'Ready to import design',
-  'binDesigner.importAndLoad': 'Import & Load',
+  'binDesigner.importAndLoad': 'Import & load',
   'binDesigner.interiorSummary.one': '1 compartment',
   'binDesigner.interiorSummary.other': '{count} compartments',
   'binDesigner.slottedInteriorSummary': 'Removable dividers',
@@ -2264,13 +2264,13 @@ const en: Record<string, string> = {
     "Same color as the surface it sits on, so the flat letters won't show.",
   'binDesigner.textColor.useContrasting': 'Use a contrasting color',
   'binDesigner.textColor.needsMultiColor': 'Flat letters only show in a second filament.',
-  'binDesigner.textColor.turnOnMultiColor': 'Turn on Multi-Color',
+  'binDesigner.textColor.turnOnMultiColor': 'Turn on multi-color',
   'binDesigner.textMode.throughCutStencilNote':
     'Through-cut uses Allerta Stencil so letter centers stay attached.',
   'binDesigner.textFont': 'Font',
   'binDesigner.tabText.sharedTypeNote':
     'Case, size and tracking come from the design-wide type style.',
-  'binDesigner.tabText.editTypography': 'Open Typography',
+  'binDesigner.tabText.editTypography': 'Open typography',
   'binDesigner.textDepth': 'Text depth',
   'binDesigner.textSize': 'Label size',
   'binDesigner.textSizeMax': 'Max label size',
@@ -3080,7 +3080,7 @@ const en: Record<string, string> = {
   'binDesigner.multiColor.enableHint':
     'Assign different filaments to bin parts and export a multi-color 3MF.',
   'binDesigner.colors.body': 'Body',
-  'binDesigner.colors.lip': 'Stacking Lip',
+  'binDesigner.colors.lip': 'Stacking lip',
   'binDesigner.colors.lip.front': 'Front',
   'binDesigner.colors.lip.frontRight': 'Front-right',
   'binDesigner.colors.lip.frontLeft': 'Front-left',
@@ -3091,7 +3091,7 @@ const en: Record<string, string> = {
   'binDesigner.colors.lip.bandsLabel': 'Bands',
   'binDesigner.colors.lip.bandN': 'Band {n}',
   'binDesigner.colors.lip.splitZones': 'Split into color zones',
-  'binDesigner.colors.labelTab': 'Label Tab',
+  'binDesigner.colors.labelTab': 'Label tab',
   'binDesigner.colors.text': 'Text',
   'binDesigner.colors.base': 'Base',
   'binDesigner.colors.scoop': 'Scoop',
@@ -3352,8 +3352,8 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.snapToGrid': 'Snap to grid',
   'binDesigner.cutouts.width': 'Width',
   'binDesigner.cutouts.depth': 'Depth',
-  'binDesigner.cutouts.positionX': 'X Position',
-  'binDesigner.cutouts.positionY': 'Y Position',
+  'binDesigner.cutouts.positionX': 'X position',
+  'binDesigner.cutouts.positionY': 'Y position',
   'binDesigner.cutouts.cutDepth': 'Cut depth',
   'binDesigner.cutouts.depthShortfall':
     'The bin has room for {achievable}mm of this {requested}mm cut.',
@@ -3411,12 +3411,12 @@ const en: Record<string, string> = {
     'The end the slot opens through the wall, so the handle lies past the block. Enclosed keeps the whole knife inside.',
   'binDesigner.cutouts.knifeDepthClamped':
     'Too deep for this bin: the slot stops at {depth}mm. A {needed}u bin fits the whole blade.',
-  'binDesigner.cutouts.topOffset': 'Top Offset',
-  'binDesigner.cutouts.fillLevel': 'Fill Level',
+  'binDesigner.cutouts.topOffset': 'Top offset',
+  'binDesigner.cutouts.fillLevel': 'Fill level',
   'binDesigner.cutouts.fillMeasuredFrom': 'Measured from',
   'binDesigner.cutouts.fillFromRim': 'Rim',
   'binDesigner.cutouts.fillFromFloor': 'Floor',
-  'binDesigner.cutouts.fillHeight': 'Fill Height',
+  'binDesigner.cutouts.fillHeight': 'Fill height',
   'binDesigner.cutouts.fillBelowRim': '{mm} below the rim',
   'binDesigner.cutouts.fillAboveFloor': '{mm} above the floor',
   'binDesigner.cutouts.fillHintRim':
@@ -3540,7 +3540,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.ungroup': 'Ungroup',
   'binDesigner.cutouts.pathfinder.title': 'Pathfinder',
   'binDesigner.cutouts.pathfinder.union': 'Union',
-  'binDesigner.cutouts.pathfinder.subtract': 'Minus Front',
+  'binDesigner.cutouts.pathfinder.subtract': 'Minus front',
   'binDesigner.cutouts.pathfinder.intersect': 'Intersect',
   'binDesigner.cutouts.pathfinder.exclude': 'Exclude',
   'binDesigner.cutouts.pathfinder.emptyResult': 'Pathfinder result is empty: nothing left to cut',
@@ -3576,18 +3576,18 @@ const en: Record<string, string> = {
   'binDesigner.shapeList.derived.text': 'Text “{label}”',
   'binDesigner.shapeList.derived.finger': 'Finger access {w}×{d}',
 
-  'binDesigner.cutouts.arrange.bringForward': 'Bring Forward',
-  'binDesigner.cutouts.arrange.sendBackward': 'Send Backward',
-  'binDesigner.cutouts.arrange.bringToFront': 'Bring to Front',
-  'binDesigner.cutouts.arrange.sendToBack': 'Send to Back',
+  'binDesigner.cutouts.arrange.bringForward': 'Bring forward',
+  'binDesigner.cutouts.arrange.sendBackward': 'Send backward',
+  'binDesigner.cutouts.arrange.bringToFront': 'Bring to front',
+  'binDesigner.cutouts.arrange.sendToBack': 'Send to back',
   'binDesigner.cutouts.nSelected': '{count} cutouts selected',
   'binDesigner.cutouts.summary.one': '1 cutout',
   'binDesigner.cutouts.summary.other': '{count} cutouts',
   'binDesigner.cutouts.paste': 'Paste',
   'binDesigner.cutouts.selectAll': 'Select all',
   'binDesigner.cutouts.rotate90': 'Rotate 90°',
-  'binDesigner.cutouts.flipHorizontal': 'Flip Horizontal',
-  'binDesigner.cutouts.flipVertical': 'Flip Vertical',
+  'binDesigner.cutouts.flipHorizontal': 'Flip horizontal',
+  'binDesigner.cutouts.flipVertical': 'Flip vertical',
   'binDesigner.cutouts.align.title': 'Align',
   'binDesigner.cutouts.align.left': 'Align left edges',
   'binDesigner.cutouts.align.centerX': 'Align horizontal centers',
@@ -3779,13 +3779,13 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.shortcutPolygon': 'Draw polygon',
   'binDesigner.cutouts.shortcutSlot': 'Draw slot',
   'binDesigner.cutouts.shortcutPen': 'Draw custom path',
-  'binDesigner.cutouts.clearAllConfirmTitle': 'Clear All Cutouts',
+  'binDesigner.cutouts.clearAllConfirmTitle': 'Clear all cutouts',
   'binDesigner.cutouts.clearAllConfirmMessage':
     'This will remove all {count} cutouts. You can undo this action.',
-  'binDesigner.editCutouts': 'Cut Editor',
+  'binDesigner.editCutouts': 'Cut editor',
   'binDesigner.editCutoutsSubtitle': 'Draw shapes or scan a real tool',
   'binDesigner.cutoutEditor.done': 'Done',
-  'binDesigner.cutoutEditor.title': 'Cutout Editor',
+  'binDesigner.cutoutEditor.title': 'Cutout editor',
   'binDesigner.cutoutEditor.zoomIn': 'Zoom in',
   'binDesigner.cutoutEditor.zoomOut': 'Zoom out',
   'binDesigner.cutoutEditor.fitToView': 'Fit to view',
@@ -3841,7 +3841,7 @@ const en: Record<string, string> = {
   'binDesigner.cutoutEditor.duplicate': 'Duplicate selection',
   'binDesigner.cutoutEditor.delete': 'Delete selection',
   'binDesigner.cutoutEditor.selectedCount': '{count} selected',
-  'binDesigner.cutoutEditor.quickstart.title': 'Cutout Editor',
+  'binDesigner.cutoutEditor.quickstart.title': 'Cutout editor',
   'binDesigner.cutoutEditor.quickstart.shapes':
     'Shapes (R · C · G · S · P): rectangles, circles, polygons, slots, or Bézier paths',
   'binDesigner.cutoutEditor.quickstart.select': 'Select (V): drag a marquee, Shift+click to extend',
@@ -4133,7 +4133,7 @@ const en: Record<string, string> = {
   'binDesigner.handles.linked': 'Linked',
   'binDesigner.handles.independent': 'Independent',
   'binDesigner.tabSupport.fillet': 'Curved',
-  'binDesigner.interior.standard.title': 'Grid Dividers',
+  'binDesigner.interior.standard.title': 'Grid dividers',
   'binDesigner.interior.standard.description': 'Compartments with walls',
   'binDesigner.interior.bento.title': 'Bento',
   'binDesigner.interior.bento.description': 'Compartments any size, walls where you want them',
@@ -4232,9 +4232,9 @@ const en: Record<string, string> = {
   'binDesigner.bento.smallScreenNote': 'The drawing workspace needs a wider screen.',
   'binDesigner.bento.smallScreenNoteDetail':
     'Set a uniform grid here instead, then merge cells into larger compartments.',
-  'binDesigner.interior.slotted.title': 'Removable Dividers',
+  'binDesigner.interior.slotted.title': 'Removable dividers',
   'binDesigner.interior.slotted.description': 'Slots for insertable dividers',
-  'binDesigner.interior.solid.title': 'Custom Cutouts',
+  'binDesigner.interior.solid.title': 'Custom cutouts',
   'binDesigner.interior.scanLink': 'Have a tool to fit? Scan it',
   'binDesigner.interior.solid.description':
     'Top-cut tool-shaped recesses: draw them or scan a real tool.',
@@ -4408,7 +4408,7 @@ const en: Record<string, string> = {
   'binDesigner.loadingMessage.9': 'Filleting corners...',
   'binDesigner.loadingMessage.10': 'Lofting profiles...',
   'binDesigner.loadingMessage.11': 'Projecting curves...',
-  'binDesigner.newDesign': 'New Design',
+  'binDesigner.newDesign': 'New design',
   'binDesigner.newDesignConfirm':
     'Start a new design? Your current design is saved and can be loaded later.',
   'binDesigner.newDesignCreated': 'New design created',
@@ -4431,8 +4431,8 @@ const en: Record<string, string> = {
   'binDesigner.estimate.time': 'Time',
   'binDesigner.estimate.cost': 'Cost',
   'binDesigner.estimate.triangles': 'Triangles',
-  'binDesigner.estimate.fileSize': 'File Size',
-  'binDesigner.printEstimatesPla': 'Print Estimates (PLA)',
+  'binDesigner.estimate.fileSize': 'File size',
+  'binDesigner.printEstimatesPla': 'Print estimates (PLA)',
   'binDesigner.printEstimatesDisclaimer':
     'Approximate values based on {nozzle}mm nozzle, {infill}% infill, {layerHeight}mm layers. Actual results depend on slicer settings.',
   'binDesigner.resetCameraViewKeyboardShortcutR': 'Reset camera view, keyboard shortcut R',
@@ -4442,7 +4442,7 @@ const en: Record<string, string> = {
   'binDesigner.revertToWorking': 'Revert',
   'binDesigner.revertedToWorking': 'Reverted to last working configuration',
   'binDesigner.rows': 'Rows',
-  'binDesigner.savedDesigns': 'Saved Designs',
+  'binDesigner.savedDesigns': 'Saved designs',
 
   // Version history: named, restorable checkpoints for one design
   'binDesigner.versions.title': 'Versions',
@@ -4557,7 +4557,7 @@ const en: Record<string, string> = {
   // Saved Designs Modal
   'binDesigner.gridView': 'Grid view',
   'binDesigner.listView': 'List view',
-  'binDesigner.sortRecent': 'Recently Modified',
+  'binDesigner.sortRecent': 'Recently modified',
   'binDesigner.sortName': 'Name (A-Z)',
   'binDesigner.sortSize': 'Size',
   'binDesigner.searchDesigns': 'Search designs...',
@@ -4921,8 +4921,8 @@ const en: Record<string, string> = {
     'Toggle perspective / orthographic projection, keyboard shortcut P',
 
   // Baseplate library
-  'baseplate.library.title': 'Baseplate Library',
-  'baseplate.library.newBaseplate': 'New Baseplate',
+  'baseplate.library.title': 'Baseplate library',
+  'baseplate.library.newBaseplate': 'New baseplate',
   'baseplate.library.baseplates': 'Baseplates',
   'baseplate.library.openList': 'Open baseplate list',
   'baseplate.library.clickToRename': 'Click to rename baseplate',
@@ -4945,7 +4945,7 @@ const en: Record<string, string> = {
   'baseplate.library.deleteWarning.description':
     'Deleting this baseplate removes it from your library. Layouts linked to it keep their current baseplate but lose the link.',
   'baseplate.library.deleteWarning.usedByCurrent': 'Used by the current layout',
-  'baseplate.library.deleteWarning.confirm': 'Delete Anyway',
+  'baseplate.library.deleteWarning.confirm': 'Delete anyway',
 
   // Collaboration
   'collab.connected': 'Connected',
@@ -4966,8 +4966,8 @@ const en: Record<string, string> = {
   'mobile.tabs.tools': 'Tools',
 
   // Tablet
-  'tablet.layersCategories': 'Layers & Categories',
-  'tablet.selectionActions': 'Selection & Actions',
+  'tablet.layersCategories': 'Layers & categories',
+  'tablet.selectionActions': 'Selection & actions',
   'tablet.openInspectorPanel': 'Open inspector panel',
   'tablet.openLayersPanel': 'Open layers panel',
 
@@ -5048,83 +5048,83 @@ const en: Record<string, string> = {
   'commandPalette.category.export': 'Export',
 
   // Navigation commands
-  'commandPalette.openLayoutManager': 'Open Layout Manager',
-  'commandPalette.openBaseplateLibrary': 'Open Baseplate Library',
-  'commandPalette.openSettings': 'Open Settings',
-  'commandPalette.openHelp': 'Open Help',
-  'commandPalette.openPrint': 'Open Print Preview',
-  'commandPalette.sendFeedback': 'Send Feedback',
+  'commandPalette.openLayoutManager': 'Open layout manager',
+  'commandPalette.openBaseplateLibrary': 'Open baseplate library',
+  'commandPalette.openSettings': 'Open settings',
+  'commandPalette.openHelp': 'Open help',
+  'commandPalette.openPrint': 'Open print preview',
+  'commandPalette.sendFeedback': 'Send feedback',
 
   // Edit commands
   'commandPalette.redo': 'Redo',
-  'commandPalette.deleteSelected': 'Delete Selected',
-  'commandPalette.duplicateSelected': 'Duplicate Selected',
-  'commandPalette.rotateBin': 'Rotate Bin',
-  'commandPalette.quickLabel': 'Quick Label',
-  'commandPalette.clearSelection': 'Clear Selection',
-  'commandPalette.alignLeft': 'Align Left',
-  'commandPalette.alignRight': 'Align Right',
-  'commandPalette.alignTop': 'Align Top',
-  'commandPalette.alignBottom': 'Align Bottom',
-  'commandPalette.rotateAll': 'Rotate All Selected',
-  'commandPalette.matchHeight': 'Match Height to Tallest',
-  'commandPalette.expandToFit': 'Expand to Fit',
+  'commandPalette.deleteSelected': 'Delete selected',
+  'commandPalette.duplicateSelected': 'Duplicate selected',
+  'commandPalette.rotateBin': 'Rotate bin',
+  'commandPalette.quickLabel': 'Quick label',
+  'commandPalette.clearSelection': 'Clear selection',
+  'commandPalette.alignLeft': 'Align left',
+  'commandPalette.alignRight': 'Align right',
+  'commandPalette.alignTop': 'Align top',
+  'commandPalette.alignBottom': 'Align bottom',
+  'commandPalette.rotateAll': 'Rotate all selected',
+  'commandPalette.matchHeight': 'Match height to tallest',
+  'commandPalette.expandToFit': 'Expand to fit',
 
   // Layer commands
-  'commandPalette.addLayer': 'Add Layer',
-  'commandPalette.layerUp': 'Go to Layer Above',
-  'commandPalette.layerDown': 'Go to Layer Below',
-  'commandPalette.clearLayer': 'Clear Active Layer',
+  'commandPalette.addLayer': 'Add layer',
+  'commandPalette.layerUp': 'Go to layer above',
+  'commandPalette.layerDown': 'Go to layer below',
+  'commandPalette.clearLayer': 'Clear active layer',
 
   // View commands
-  'commandPalette.zoomIn': 'Zoom In',
-  'commandPalette.zoomOut': 'Zoom Out',
-  'commandPalette.fitToScreen': 'Fit to Screen',
-  'commandPalette.toggleOtherLayers': 'Toggle Other Layers',
+  'commandPalette.zoomIn': 'Zoom in',
+  'commandPalette.zoomOut': 'Zoom out',
+  'commandPalette.fitToScreen': 'Fit to screen',
+  'commandPalette.toggleOtherLayers': 'Toggle other layers',
 
   // 3D Preview commands
-  'commandPalette.togglePreview': 'Toggle 3D Preview',
-  'commandPalette.expandPreview': 'Expand/Collapse Preview',
+  'commandPalette.togglePreview': 'Toggle 3D preview',
+  'commandPalette.expandPreview': 'Expand/collapse preview',
 
   // Bin commands
-  'commandPalette.prevBin': 'Select Previous Bin',
-  'commandPalette.nextBin': 'Select Next Bin',
-  'commandPalette.prevCategory': 'Previous Category',
-  'commandPalette.nextCategory': 'Next Category',
-  'commandPalette.moveToStash': 'Move to Stash',
+  'commandPalette.prevBin': 'Select previous bin',
+  'commandPalette.nextBin': 'Select next bin',
+  'commandPalette.prevCategory': 'Previous category',
+  'commandPalette.nextCategory': 'Next category',
+  'commandPalette.moveToStash': 'Move to stash',
   'commandPalette.setBinDefault': 'Set current settings as default for new bins',
   'commandPalette.resetBinDefault': 'Reset bin defaults to factory',
 
   // Tool commands
-  'commandPalette.toggleHalfBin': 'Toggle Half-Bin Mode',
-  'commandPalette.fillGaps': 'Fill Layer Gaps',
-  'commandPalette.scanTool': 'Scan a Tool',
+  'commandPalette.toggleHalfBin': 'Toggle half-bin mode',
+  'commandPalette.fillGaps': 'Fill layer gaps',
+  'commandPalette.scanTool': 'Scan a tool',
 
   // Export commands
-  'commandPalette.exportLayout3D': 'Export Layout as ZIP (3D)',
-  'commandPalette.downloadLayout': 'Download Layout',
-  'commandPalette.copyShareLink': 'Copy Share Link',
+  'commandPalette.exportLayout3D': 'Export layout as ZIP (3D)',
+  'commandPalette.downloadLayout': 'Download layout',
+  'commandPalette.copyShareLink': 'Copy share link',
 
   // Selection commands
-  'commandPalette.selectAll': 'Select All Bins on Layer',
-  'commandPalette.selectNone': 'Clear Selection',
-  'commandPalette.invertSelection': 'Invert Selection',
-  'commandPalette.selectByCategory': 'Select by Category',
+  'commandPalette.selectAll': 'Select all bins on layer',
+  'commandPalette.selectNone': 'Clear selection',
+  'commandPalette.invertSelection': 'Invert selection',
+  'commandPalette.selectByCategory': 'Select by category',
 
   // Layout management commands
-  'commandPalette.newLayout': 'New Layout',
-  'commandPalette.duplicateLayout': 'Duplicate Layout',
+  'commandPalette.newLayout': 'New layout',
+  'commandPalette.duplicateLayout': 'Duplicate layout',
   'commandPalette.switchToDesigner': 'Switch to Bins',
   'commandPalette.viewSupporters': 'View supporters',
-  'commandPalette.openBinExamples': 'Browse Bin Examples',
+  'commandPalette.openBinExamples': 'Browse bin examples',
 
   // Tools commands (extended)
-  'commandPalette.togglePaintMode': 'Toggle Paint Mode',
-  'commandPalette.fillLayer': 'Fill Layer Uniformly',
+  'commandPalette.togglePaintMode': 'Toggle paint mode',
+  'commandPalette.fillLayer': 'Fill layer uniformly',
 
   // Staging commands
-  'commandPalette.clearStaging': 'Clear Staging Area',
-  'commandPalette.restoreFromStaging': 'Restore All from Staging',
+  'commandPalette.clearStaging': 'Clear staging area',
+  'commandPalette.restoreFromStaging': 'Restore all from staging',
 
   // Footer
   'commandPalette.footer.run': 'Run',
@@ -5132,11 +5132,11 @@ const en: Record<string, string> = {
   'commandPalette.footer.commandCount': '{count} commands',
 
   // Bin example gallery entry points
-  'binExamples.sidebarEntry': 'Community Designs',
+  'binExamples.sidebarEntry': 'Community designs',
   'binExamples.sidebarHint': 'Bins other makers shared',
 
   // Bin example gallery UI
-  'binExamples.gallery.title': 'Community Designs',
+  'binExamples.gallery.title': 'Community designs',
   'binExamples.gallery.subtitle': 'A showcase of what the bin designer can create',
   'binExamples.gallery.count': '{count} examples',
   'binExamples.gallery.gridLabel': 'Bin example designs',
@@ -5375,7 +5375,7 @@ const en: Record<string, string> = {
   'community.category.office': 'Office',
   'community.category.crafts': 'Crafts',
   'community.category.electronics': 'Electronics',
-  'community.category.toysGames': 'Toys & Games',
+  'community.category.toysGames': 'Toys & games',
   'community.category.other': 'Other',
   'community.gallery.searchPlaceholder': 'Search designs',
   'community.gallery.searchLabel': 'Search community designs',
@@ -5492,7 +5492,7 @@ const en: Record<string, string> = {
   'community.mine.unpublishFailed': "Couldn't unpublish the design. Try again.",
 
   // Public /community route (full-page host)
-  'community.page.title': 'Community Designs',
+  'community.page.title': 'Community designs',
   'community.page.subtitle': 'Designs shared by other makers, free to remix and print.',
   'community.page.publishCta': 'Publish a design',
   'community.page.designCta': 'Design your own bin',
@@ -5775,37 +5775,37 @@ const en: Record<string, string> = {
   // Design Linking (Bin Designer ↔ Layout Planner integration)
 
   // Context menu actions
-  'designLinking.menu.sectionTitle': 'Bin Design',
-  'designLinking.menu.editDesign': 'Edit Design',
-  'designLinking.menu.createDesign': 'Create Design',
-  'designLinking.menu.linkExisting': 'Link Existing Design',
-  'designLinking.menu.unlinkDesign': 'Unlink Design',
-  'designLinking.menu.designDeleted': 'Design Deleted',
-  'designLinking.menu.unlinkStale': 'Remove Stale Link',
+  'designLinking.menu.sectionTitle': 'Bin design',
+  'designLinking.menu.editDesign': 'Edit design',
+  'designLinking.menu.createDesign': 'Create design',
+  'designLinking.menu.linkExisting': 'Link existing design',
+  'designLinking.menu.unlinkDesign': 'Unlink design',
+  'designLinking.menu.designDeleted': 'Design deleted',
+  'designLinking.menu.unlinkStale': 'Remove stale link',
 
   // Inspector section
-  'designLinking.inspector.linkedDesign': 'Linked Design',
+  'designLinking.inspector.linkedDesign': 'Linked design',
   'designLinking.inspector.designDeleted': 'Design deleted',
-  'designLinking.inspector.editDesign': 'Edit Design',
+  'designLinking.inspector.editDesign': 'Edit design',
   'designLinking.inspector.unlink': 'Unlink',
   'designLinking.inspector.createDesign': 'Create',
   'designLinking.inspector.linkExisting': 'Link',
   'designLinking.inspector.linkExistingTooltip': 'Link to an existing saved design',
   'designLinking.inspector.clickToEdit': 'Click to open in designer',
-  'designLinking.inspector.deleteDesign': 'Delete Bin Design',
+  'designLinking.inspector.deleteDesign': 'Delete bin design',
   'designLinking.inspector.edgeMismatch': "Half-unit foot doesn't match where this bin sits.",
   'designLinking.inspector.matchDrawer': 'Match layout',
 
   // Confirmation dialogs
-  'designLinking.confirm.unlinkTitle': 'Unlink Bin Design',
+  'designLinking.confirm.unlinkTitle': 'Unlink bin design',
   'designLinking.confirm.unlinkMessage':
     'This will remove the link between this bin and the 3D model. The bin design will not be deleted.',
-  'designLinking.confirm.deleteTitle': 'Delete Bin Design',
+  'designLinking.confirm.deleteTitle': 'Delete bin design',
   'designLinking.confirm.deleteMessage':
     'This will permanently delete the 3D model "{name}" and unlink it from this bin. This cannot be undone.',
 
   // Link existing design dialog
-  'designLinking.linkDialog.title': 'Link Existing Design',
+  'designLinking.linkDialog.title': 'Link existing design',
   'designLinking.linkDialog.footprint': 'Showing designs with {width}×{depth} footprint',
   'designLinking.linkDialog.footprintRotatable':
     'Showing designs with {width}×{depth} or {depth}×{width} footprint',
@@ -5819,17 +5819,17 @@ const en: Record<string, string> = {
   'designLinking.linkDialog.loading': 'Loading designs...',
 
   // Create design dialog
-  'designLinking.createDialog.title': 'Create Design from Bin',
+  'designLinking.createDialog.title': 'Create design from bin',
   'designLinking.createDialog.nameLabel': 'Design name',
   'designLinking.createDialog.namePlaceholder': 'Enter design name',
   'designLinking.createDialog.useLabel': 'Use bin label',
   'designLinking.createDialog.dimensions': 'Dimensions: {width}×{depth}×{height}',
-  'designLinking.createDialog.create': 'Create & Open Designer',
+  'designLinking.createDialog.create': 'Create & open designer',
   'designLinking.createDialog.useLabelTooltip': 'Use "{label}"',
   'designLinking.createDialog.gridUnits': '{dimensions} grid units',
 
   // Sync dialog
-  'designLinking.syncDialog.title': 'Sync Dimensions',
+  'designLinking.syncDialog.title': 'Sync dimensions',
   'designLinking.syncDialog.description':
     'The design "{name}" has different dimensions than the linked bins.',
   'designLinking.syncDialog.designDimensions': 'Design: {dimensions}',
@@ -5837,13 +5837,13 @@ const en: Record<string, string> = {
   'designLinking.syncDialog.binsVary': 'Note: Selected bins have different dimensions',
   'designLinking.syncDialog.binsToUpdate': '{count} bin(s) will be updated',
   'designLinking.syncDialog.binsToUnlink': "{count} bin(s) can't fit and will be unlinked",
-  'designLinking.syncDialog.sync': 'Update Bins',
+  'designLinking.syncDialog.sync': 'Update bins',
 
   // Delete warning dialog
   'designLinking.deleteWarning.title': 'Design has linked bins',
   'designLinking.deleteWarning.description':
     'This design is linked to {count} bin(s) in your layout. Deleting it will unlink those bins.',
-  'designLinking.deleteWarning.confirm': 'Delete Anyway',
+  'designLinking.deleteWarning.confirm': 'Delete anyway',
   'designLinking.deleteWarning.linkedBinsCount': '{count} linked bin(s)',
 
   // Custom bins palette (sidebar)
@@ -5856,7 +5856,7 @@ const en: Record<string, string> = {
   'designLinking.toast.syncedWithUnlink': "Updated {synced}, unlinked {unlinked} (didn't fit)",
   'designLinking.toast.unlinkedDidntFit': "Unlinked {count} bin(s) (didn't fit)",
   'designLinking.toast.failedToLoad': 'Failed to load design',
-  'designLinking.toast.unknownDesign': 'Unknown Design',
+  'designLinking.toast.unknownDesign': 'Unknown design',
   'designLinking.toast.exported': 'Exported "{name}"',
   'designLinking.toast.exportFailed': 'Failed to export bin design',
   'designLinking.toast.deleted': 'Deleted "{name}"',
@@ -5877,7 +5877,7 @@ const en: Record<string, string> = {
   'designLinking.toast.syncSkippedLocked': '{count} size-locked bin(s) kept their size',
 
   // Blocked resize dialog
-  'designLinking.blockedResize.title': 'Design Not Updated',
+  'designLinking.blockedResize.title': 'Design not updated',
   'designLinking.blockedResize.description':
     'The bin was resized, but the linked design "{name}" has custom geometry that could be affected. Edit the design manually to update its dimensions.',
   'designLinking.blockedResize.reasons.inserts': 'Has floor inserts',
@@ -5927,7 +5927,7 @@ const en: Record<string, string> = {
   'designLinking.bento.toast.saveFailed': 'Could not save the bento.',
 
   // Designer-updated dialog (shown when bin resize pushes to open designer)
-  'designLinking.designerUpdated.title': 'Designer Updated',
+  'designLinking.designerUpdated.title': 'Designer updated',
   'designLinking.designerUpdated.description':
     'The dimensions of "{name}" in the designer have been updated to match the bin resize. You can review the changes in the designer.',
 
@@ -6119,7 +6119,7 @@ const en: Record<string, string> = {
 
   // Engagement Nudges
   'engagement.feedbackNudge': 'Have ideas for the tool? Your feedback shapes what gets built next.',
-  'engagement.giveFeedback': 'Share Feedback',
+  'engagement.giveFeedback': 'Share feedback',
   'engagement.support': 'Support on Ko-fi',
   'engagement.feedbackThankYou':
     'Thanks for the feedback! If the tool saves you time, a tip on Ko-fi keeps it free and ad-free.',
@@ -6268,7 +6268,7 @@ const en: Record<string, string> = {
   'gridEditor.quickLabel.placeholder': 'Enter label...',
 
   // Grid stash confirm
-  'grid.moveToStashConfirm': 'Move to Stash',
+  'grid.moveToStashConfirm': 'Move to stash',
   'grid.resizeWillStashBins': '{count} bin(s) will be moved to stash. Continue?',
 
   // Import modal inline errors

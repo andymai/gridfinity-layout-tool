@@ -869,7 +869,7 @@ describe('ExportDialog — design JSON', () => {
   it('offers the design JSON alongside the 3D formats', async () => {
     const { downloadDesignAsFile } = await import('@/features/bin-designer/utils/designJson');
     render(<ExportDialog />);
-    const link = screen.getByRole('button', { name: 'Download Design JSON' });
+    const link = screen.getByRole('button', { name: 'Download design JSON' });
     fireEvent.click(link);
     expect(downloadDesignAsFile).toHaveBeenCalledTimes(1);
     // Still open: the source file is usually taken alongside a 3D export.

@@ -414,7 +414,7 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
 
   return (
     <div
-      className={`relative h-full w-full touch-manipulation ${
+      className={`@container relative h-full w-full touch-manipulation ${
         toolActive ? '[&_canvas]:cursor-crosshair' : ''
       }`}
       role="img"

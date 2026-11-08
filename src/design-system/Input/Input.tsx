@@ -187,7 +187,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           aria-invalid={error || undefined}
           className={cn(
             inputVariants({ size }),
-            leftIcon && 'pl-0',
+            leftIcon && 'pl-2',
             rightIcon && 'pr-0',
             // Chromium paints its own clear button inside type="search", which
             // lands beside ours and shows the user two ways to clear one field.

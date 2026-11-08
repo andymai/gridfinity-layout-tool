@@ -39,7 +39,7 @@ describe('DesignGalleryModal', () => {
   it('titles itself Community Designs', async () => {
     render(<DesignGalleryModal onClose={vi.fn()} />);
 
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Community Designs');
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Community designs');
   });
 
   it('gives its title the same bordered spacing every other modal has', async () => {

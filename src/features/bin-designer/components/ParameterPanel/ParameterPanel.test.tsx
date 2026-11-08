@@ -88,7 +88,7 @@ describe('ParameterPanel', () => {
     render(<ParameterPanel />);
 
     await waitFor(() => {
-      expect(screen.getByText('Grid Dividers')).toBeInTheDocument();
+      expect(screen.getByText('Grid dividers')).toBeInTheDocument();
     });
   });
 

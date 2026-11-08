@@ -59,7 +59,7 @@ describe('DeleteBaseplateWarningDialog', () => {
         onCancel={vi.fn()}
       />
     );
-    fireEvent.click(screen.getByText('Delete Anyway'));
+    fireEvent.click(screen.getByText('Delete anyway'));
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
 
