@@ -1,0 +1,19 @@
+src/features/categories/components/CategoriesPanel/CategoriesPanel.test.tsx
+  s_66332f8bf1351d::t_2724357515cb3a 395
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f5f4be51b71557e68e1c95dca67e23346644d108",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
