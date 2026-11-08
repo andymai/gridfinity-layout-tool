@@ -34,8 +34,10 @@ describe('StackPrintSection', () => {
     expect(onChange).toHaveBeenCalledWith(undefined);
   });
 
-  it('shows the multi-material hint when enabled', () => {
+  it('keeps the separation tips behind their info dot', () => {
     render(<StackPrintSection stackPrint={enabled} onChange={vi.fn()} />);
+    expect(screen.queryByText(/Multi-material/i)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /About Tips for separating/i }));
     expect(screen.getByText(/Multi-material/i)).toBeInTheDocument();
   });
 

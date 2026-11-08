@@ -12,12 +12,12 @@ import { isOk } from '@/core/result';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { CONSTRAINTS } from '@/core/constants';
 import { DEFAULT_BASEPLATE_PARAMS, MARGIN_MIN_DETACH_MM } from '@/core/baseplateDefaults';
-import { Checkbox } from '@/design-system/Checkbox/Checkbox';
 import { RulerIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
-import { CheckboxRow, SegmentedControl } from '@/design-system';
+import { LabelInfo } from '@/shared/components/InfoDot';
+import { SegmentedControl } from '@/design-system';
 import { EditableDimensions } from '@/shared/components/EditableDimensions';
 import { GridAlignmentControls } from '@/shared/components/GridAlignmentControls';
 import { MeasuredDrawerOverflow } from './MeasuredDrawerOverflow';
@@ -285,7 +285,7 @@ export function DimensionsSection() {
   const handleHalfGridToggle = useCallback(
     (checked: boolean) => {
       // Both directions route through the toggle rather than a bare setter, so
-      // this checkbox earns the feature-usage mark and the persistence-failure
+      // this switch earns the feature-usage mark and the persistence-failure
       // toast the store attaches to a user-driven flip.
       if (checked === useHalfGridModeStore.getState().halfGridMode) return;
       if (!isOk(toggleHalfGridMode())) {
@@ -322,10 +322,10 @@ export function DimensionsSection() {
   return (
     <StickyGroupHeader title={t('baseplate.sectionDimensions')}>
       <div className="space-y-3 px-4 py-3">
-        <Checkbox
-          checked={synced}
-          onChange={handleSyncToggle}
+        <FeatureToggle
           label={t('baseplate.syncWithLayout')}
+          checked={synced}
+          onChange={() => handleSyncToggle(!synced)}
         />
         <div className="grid grid-cols-2 gap-x-3 gap-y-2">
           <GridDimensionStepper
@@ -343,10 +343,10 @@ export function DimensionsSection() {
             disabled={synced}
           />
         </div>
-        <Checkbox
-          checked={halfGridMode}
-          onChange={handleHalfGridToggle}
+        <FeatureToggle
           label={t('sidebar.halfBinMode')}
+          checked={halfGridMode}
+          onChange={() => handleHalfGridToggle(!halfGridMode)}
         />
         {/* Fractional edge position — shown when the effective dimensions are half-unit */}
         {(hasFractionalWidth || hasFractionalDepth) && (
@@ -422,12 +422,14 @@ export function DimensionsSection() {
             unreachable. */}
         {outlineActive && (
           <div className="space-y-2 border-t border-stroke-subtle pt-3">
-            <div className="text-label font-medium uppercase tracking-wide text-content-tertiary">
-              {t('baseplate.gridPosition')}
+            <div className="flex items-center gap-1.5">
+              <div className="text-label font-medium uppercase tracking-wide text-content-tertiary">
+                {t('baseplate.gridPosition')}
+              </div>
+              <LabelInfo label={t('baseplate.gridPosition')}>
+                {t('baseplate.gridPositionDetail')}
+              </LabelInfo>
             </div>
-            <p className="text-label leading-relaxed text-content-tertiary">
-              {t('baseplate.gridPositionHint')}
-            </p>
             <GridAlignmentControls />
           </div>
         )}
@@ -459,16 +461,12 @@ export function DimensionsSection() {
             </p>
           )}
           {perimeterShaped && (
-            <div className="space-y-1">
-              <CheckboxRow
-                label={t('baseplate.wholeCellsOnly')}
-                checked={wholeCellsOn}
-                onChange={setWholeCells}
-              />
-              <p className="text-label leading-relaxed text-content-tertiary">
-                {t('baseplate.wholeCellsOnlyHint')}
-              </p>
-            </div>
+            <FeatureToggle
+              label={t('baseplate.wholeCellsOnly')}
+              info={t('baseplate.wholeCellsOnlyDetail')}
+              checked={wholeCellsOn}
+              onChange={() => setWholeCells(!wholeCellsOn)}
+            />
           )}
           <PaddingSchematic
             baseplateParams={baseplateParams}
@@ -490,11 +488,10 @@ export function DimensionsSection() {
                   <div className="space-y-1.5">
                     {overTileStatus.canOverTile ? (
                       <>
-                        <CheckboxRow
+                        <FeatureToggle
                           label={t('baseplate.preferHalfGrid')}
                           checked={halfGridOn}
-                          onChange={(checked) => setMarginFillMode(checked ? 'halfGrid' : 'tile')}
-                          indent
+                          onChange={() => setMarginFillMode(halfGridOn ? 'tile' : 'halfGrid')}
                         />
                         {halfGridOn && (
                           <div className="ml-4 flex items-center justify-between gap-2 border-l border-stroke-subtle pl-3">
@@ -572,20 +569,17 @@ export function DimensionsSection() {
                       {t('baseplate.detachMarginsTooSmall')}
                     </p>
                   ) : (
-                    <div className="space-y-1">
-                      <CheckboxRow
-                        label={t('baseplate.detachMarginConnector')}
-                        checked={marginConnectorStored && marginConnectorStyleOk}
-                        onChange={(checked) => updateParam('detachMarginConnector', checked)}
-                        disabled={!marginConnectorStyleOk}
-                        indent
-                      />
-                      <p className="text-label leading-relaxed text-content-tertiary pl-6">
-                        {marginConnectorStyleOk
-                          ? t('baseplate.detachMarginConnectorHint')
-                          : t('baseplate.detachMarginConnectorStyle')}
-                      </p>
-                    </div>
+                    <FeatureToggle
+                      label={t('baseplate.detachMarginConnector')}
+                      info={t('baseplate.detachMarginConnectorDetail')}
+                      checked={marginConnectorStored && marginConnectorStyleOk}
+                      disabledReason={
+                        marginConnectorStyleOk
+                          ? undefined
+                          : t('baseplate.detachMarginConnectorStyle')
+                      }
+                      onChange={() => updateParam('detachMarginConnector', !marginConnectorStored)}
+                    />
                   )
                 }
               />

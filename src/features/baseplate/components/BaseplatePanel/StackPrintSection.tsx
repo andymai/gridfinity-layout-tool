@@ -21,6 +21,7 @@ import type { PhysicalStack, StackPrintStatus } from '../../utils/stackPrint';
 import { useTranslation } from '@/i18n';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
+import { LabelInfo } from '@/shared/components/InfoDot';
 import { StackSampleButton } from './StackSampleButton';
 import { Stepper } from '@/design-system/Stepper';
 import { Alert } from '@/design-system/Alert';
@@ -114,6 +115,7 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
     <div className="border-b border-stroke-subtle px-4 py-3">
       <FeatureToggle
         label={t('baseplate.stackPrint.enable')}
+        info={t('baseplate.stackPrint.enableDetail')}
         checked={enabled}
         onChange={() => onChange(enabled ? undefined : DEFAULT_STACK_PRINT)}
         primaryControls={
@@ -123,10 +125,6 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
                 {warning}
               </Alert>
             )}
-
-            <p className="text-label leading-relaxed text-content-secondary">
-              {t('baseplate.stackPrint.hint')}
-            </p>
 
             <SettingsRow
               label={t('baseplate.stackPrint.copies.label')}
@@ -169,26 +167,32 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
               </Alert>
             )}
 
-            <div className="space-y-2 rounded border border-info/30 bg-info-muted px-2.5 py-2 text-label leading-relaxed text-content-secondary">
-              <p className="font-semibold text-info">{t('baseplate.stackPrint.tips.heading')}</p>
-              <div className="space-y-0.5">
-                <p className="font-medium text-content">
-                  {t('baseplate.stackPrint.tips.single.heading')}
-                </p>
-                <p>{t('baseplate.stackPrint.tips.single.body')}</p>
-              </div>
-              <div className="space-y-0.5">
-                <p className="font-medium text-content">
-                  {t('baseplate.stackPrint.tips.multi.heading')}
-                </p>
-                <p>{t('baseplate.stackPrint.tips.multi.body')}</p>
-                <p>
-                  <strong>PrusaSlicer</strong> {t('baseplate.stackPrint.tips.multi.prusa')}
-                </p>
-                <p>
-                  <strong>Bambu / Orca</strong> {t('baseplate.stackPrint.tips.multi.bambu')}
-                </p>
-              </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-label text-content-secondary">
+                {t('baseplate.stackPrint.tips.heading')}
+              </span>
+              <LabelInfo label={t('baseplate.stackPrint.tips.heading')}>
+                <div className="space-y-2">
+                  <div className="space-y-0.5">
+                    <p className="font-medium text-content-primary">
+                      {t('baseplate.stackPrint.tips.single.heading')}
+                    </p>
+                    <p>{t('baseplate.stackPrint.tips.single.body')}</p>
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="font-medium text-content-primary">
+                      {t('baseplate.stackPrint.tips.multi.heading')}
+                    </p>
+                    <p>{t('baseplate.stackPrint.tips.multi.body')}</p>
+                    <p>
+                      <strong>PrusaSlicer</strong> {t('baseplate.stackPrint.tips.multi.prusa')}
+                    </p>
+                    <p>
+                      <strong>Bambu / Orca</strong> {t('baseplate.stackPrint.tips.multi.bambu')}
+                    </p>
+                  </div>
+                </div>
+              </LabelInfo>
             </div>
 
             <StackSampleButton />

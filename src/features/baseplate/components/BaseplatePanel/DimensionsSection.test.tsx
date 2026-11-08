@@ -212,14 +212,14 @@ describe('DimensionsSection', () => {
     }
 
     const connectorRow = () =>
-      screen.getByRole('checkbox', { name: 'baseplate.detachMarginConnector' });
+      screen.getByRole('switch', { name: 'baseplate.detachMarginConnector' });
     const storedConnector = () =>
       useLayoutStore.getState().layout.baseplateParams?.detachMarginConnector;
 
     it('offers the connector for the puzzle key style (#2866)', () => {
       detachablePlate('dovetailKey');
       render(<DimensionsSection />);
-      expect(screen.getByText('baseplate.detachMarginConnectorHint')).toBeInTheDocument();
+      expect(connectorRow()).toBeEnabled();
       fireEvent.click(connectorRow());
       expect(storedConnector()).toBe(true);
     });
@@ -228,7 +228,7 @@ describe('DimensionsSection', () => {
       // The top-insert clip has no seated form at a body↔rail seam.
       detachablePlate('snapClip');
       render(<DimensionsSection />);
-      expect(connectorRow()).toHaveAttribute('aria-disabled', 'true');
+      expect(connectorRow()).toBeDisabled();
       expect(screen.getByText('baseplate.detachMarginConnectorStyle')).toBeInTheDocument();
       fireEvent.click(connectorRow());
       expect(storedConnector()).toBeUndefined();
@@ -270,7 +270,7 @@ describe('DimensionsSection', () => {
       }));
     }
 
-    const row = () => screen.queryByRole('checkbox', { name: 'baseplate.wholeCellsOnly' });
+    const row = () => screen.queryByRole('switch', { name: 'baseplate.wholeCellsOnly' });
 
     it('is hidden for a rectangular plate', () => {
       render(<DimensionsSection />);
