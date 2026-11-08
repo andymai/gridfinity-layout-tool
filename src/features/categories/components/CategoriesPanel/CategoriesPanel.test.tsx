@@ -392,7 +392,7 @@ describe('CategoriesPanel', () => {
       // Both categories have no bins, no badges should be rendered
       expect(screen.queryByTitle('No bins use this category')).not.toBeInTheDocument();
       // Also verify no bin count badges exist at all (they only render when binCount > 0)
-      expect(screen.queryByTitle(/bin\(s\) use this category/)).not.toBeInTheDocument();
+      expect(screen.queryByTitle(/bins? uses? this category/)).not.toBeInTheDocument();
     });
   });
 });
