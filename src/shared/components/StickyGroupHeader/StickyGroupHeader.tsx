@@ -20,14 +20,17 @@ import { ChevronDownIcon } from '@/design-system/Icon';
  */
 export type StickyGroupHeaderVariant = 'default' | 'band';
 
+// A band's top rule pulls up one pixel onto the edge above it, so a stack of
+// collapsed bands shows a single line between each, not the bar's bottom
+// border and the next rule side by side.
 const ROOT_CLASS: Record<StickyGroupHeaderVariant, string> = {
   default: 'border-b border-stroke-subtle',
-  band: 'border-t-8 border-surface',
+  band: '-mt-px border-t border-stroke',
 };
 
 const BAR_CLASS: Record<StickyGroupHeaderVariant, string> = {
   default: 'backdrop-blur-sm bg-surface-secondary/90 border-b border-stroke-subtle/50',
-  band: 'bg-surface-elevated border-y border-stroke',
+  band: 'bg-surface-elevated border-b border-stroke-subtle',
 };
 
 /** Padding follows the UI density setting; at the default 16px it is px-4 with py-3 / py-2.5. */
