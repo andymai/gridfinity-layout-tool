@@ -66,23 +66,22 @@ export interface KeyboardHandlerContext {
  */
 export function focusOwnsKeys(target: EventTarget | null): boolean {
   // A key sent to the window or the document has neither.
-  const element = target as Partial<Pick<HTMLElement, 'tagName' | 'getAttribute'>> | null;
+  const element = target as Partial<
+    Pick<HTMLElement, 'tagName' | 'getAttribute' | 'closest'>
+  > | null;
   return (
     element?.tagName === 'INPUT' ||
     element?.tagName === 'TEXTAREA' ||
     element?.getAttribute?.('role') === 'switch' ||
-    element?.getAttribute?.('role') === 'radio'
+    element?.getAttribute?.('role') === 'radio' ||
+    // An open popover (an info dot's panel) scrolls and tabs with these keys.
+    (typeof element?.closest === 'function' && element.closest('[data-popover]') !== null)
   );
 }
 
 function tabMovesFocus(target: EventTarget | null): boolean {
-  const element = target as Partial<Pick<HTMLElement, 'tagName' | 'closest'>> | null;
-  return (
-    element?.tagName === 'BUTTON' ||
-    element?.tagName === 'A' ||
-    element?.tagName === 'SELECT' ||
-    (typeof element?.closest === 'function' && element.closest('[data-popover]') !== null)
-  );
+  const element = target as Partial<Pick<HTMLElement, 'tagName'>> | null;
+  return element?.tagName === 'BUTTON' || element?.tagName === 'A' || element?.tagName === 'SELECT';
 }
 
 /**

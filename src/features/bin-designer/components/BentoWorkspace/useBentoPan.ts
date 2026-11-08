@@ -18,7 +18,9 @@ export interface BentoPanApi {
 /** Space belongs to a focused field or a switch/radio, as in the cutout editor. */
 const focusOwnsSpace = (target: EventTarget | null): boolean =>
   target instanceof HTMLElement &&
-  !!target.closest('input, textarea, [contenteditable="true"], [role="switch"], [role="radio"]');
+  !!target.closest(
+    'input, textarea, [contenteditable="true"], [role="switch"], [role="radio"], [data-popover]'
+  );
 
 export function useBentoPan(
   setCameraCenter: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>,

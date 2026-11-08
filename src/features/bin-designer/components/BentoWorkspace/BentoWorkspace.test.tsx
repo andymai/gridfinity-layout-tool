@@ -134,6 +134,20 @@ describe('BentoWorkspace', () => {
     expect(useDesignerStore.getState().ui.bentoWorkspaceOpen).toBe(true);
   });
 
+  it('leaves arrow keys inside an open info dot to the dot', () => {
+    const id = drawViaStore();
+    useDesignerStore.getState().setSelectedBentoCompartmentId(id);
+    render(<BentoWorkspace />);
+    const before = useDesignerStore.getState().params.compartments;
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'common.aboutLabel' })[0]);
+    const panel = screen.getByRole('dialog');
+    fireEvent.keyDown(panel, { key: 'ArrowRight' });
+
+    expect(useDesignerStore.getState().params.compartments).toBe(before);
+    expect(useDesignerStore.getState().ui.selectedBentoCompartmentId).toBe(id);
+  });
+
   it('Delete removes the selected compartment', () => {
     const id = drawViaStore();
     useDesignerStore.getState().setSelectedBentoCompartmentId(id);
