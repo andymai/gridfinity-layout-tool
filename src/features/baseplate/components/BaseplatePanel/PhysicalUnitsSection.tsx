@@ -159,19 +159,15 @@ export function PhysicalUnitsSection() {
               </p>
             </div>
           )}
-          <div className="space-y-1">
-            <FeatureToggle
-              label={t('baseplate.lowProfileBase')}
-              checked={lowProfileBase}
-              onChange={() => mutations.setLowProfileBase(!lowProfileBase)}
-              disabledReason={
-                lowProfileBlocked ? t('baseplate.lowProfileBaseSnapClipBlocked') : undefined
-              }
-            />
-            <p className="text-label leading-relaxed text-content-tertiary">
-              {t('baseplate.lowProfileBaseHint')}
-            </p>
-          </div>
+          <FeatureToggle
+            label={t('baseplate.lowProfileBase')}
+            info={t('baseplate.lowProfileBaseDetail')}
+            checked={lowProfileBase}
+            onChange={() => mutations.setLowProfileBase(!lowProfileBase)}
+            disabledReason={
+              lowProfileBlocked ? t('baseplate.lowProfileBaseSnapClipBlocked') : undefined
+            }
+          />
           <HelpTargetMarker id="bp-print-bed-size">
             <SettingsRow
               label={t('baseplate.printBedSize')}

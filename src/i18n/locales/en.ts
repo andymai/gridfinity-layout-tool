@@ -4628,7 +4628,7 @@ const en: Record<string, string> = {
   'baseplate.inclShape': 'incl. drawer shape',
   'baseplate.inclPaddingShape': 'incl. padding + drawer shape',
   'baseplate.drawerOverflow':
-    'Plate exceeds your measured {drawerWidth} × {drawerDepth} mm drawer by {width} × {depth} mm',
+    'Plate is {width} × {depth} mm over your {drawerWidth} × {drawerDepth} mm drawer',
   'baseplate.fitPaddingToDrawer': 'Fit padding to drawer',
   'baseplate.editDimensionsWidth': 'Baseplate width in mm',
   'baseplate.editDimensionsDepth': 'Baseplate depth in mm',
@@ -4644,17 +4644,17 @@ const en: Record<string, string> = {
   'baseplate.syncWithLayout': 'Sync with layout',
   'baseplate.padding': 'Padding',
   'baseplate.gridPosition': 'Grid position',
-  'baseplate.gridPositionHint':
+  'baseplate.gridPositionDetail':
     "Move the grid inside the drawer shape — for example to sit it against the front-left corner. The plate keeps the shape's outer size; only where the cells land changes.",
   'baseplate.cornerShapedPaddingNotice':
-    'Corner rounding comes from the drawer shape (Layout tab). Padding extends the plate outward around the shaped outline.',
+    'The drawer shape sets the corners (Layout tab). Padding grows the plate around it.',
   'baseplate.shapedPaddingNotice':
     "Padding extends the plate outward around the drawer's custom shape.",
   'baseplate.shapedPaddingTooLarge':
-    'Padding is too large for this shape, so it is ignored. Reduce it to fit around the outline.',
+    'Padding is too large for this shape and is ignored. Reduce it to fit the outline.',
   'baseplate.overTile': 'Fill padding with grid tiles',
   'baseplate.wholeCellsOnly': 'Fit whole cells only',
-  'baseplate.wholeCellsOnlyHint':
+  'baseplate.wholeCellsOnlyDetail':
     'Drop any socket the shape cuts through, so the plate ends in a solid edge instead of a sliced socket.',
   'baseplate.preferHalfGrid': 'Prefer half-grid cells',
   'baseplate.overTileHint':
@@ -4663,16 +4663,16 @@ const en: Record<string, string> = {
   'baseplate.overTileFills': 'Grid fills: {sides}',
   'baseplate.overTileKeptSolid': 'Too small, kept solid: {sides}',
   'baseplate.halfGridHint':
-    'Packs each margin with 21mm half-grid cells; the sub-21mm leftover fills as a clipped grid tile.',
+    'Fills each margin with 21mm half-grid cells and a clipped tile for the rest.',
   'baseplate.halfGridHintSolid':
-    'Packs each margin with 21mm half-grid cells; the sub-21mm leftover stays solid.',
+    'Fills each margin with 21mm half-grid cells and leaves the rest solid.',
   'baseplate.leftoverLabel': 'Leftover margin',
   'baseplate.leftoverGrid': 'Grid',
   'baseplate.leftoverSolid': 'Solid',
   'baseplate.detachMargins': 'Detach margins as separate pieces',
   'baseplate.detachMarginsTooSmall': 'Padding is too small on every edge to detach.',
   'baseplate.detachMarginConnector': 'Add connector',
-  'baseplate.detachMarginConnectorHint':
+  'baseplate.detachMarginConnectorDetail':
     'Joins the long rails to the plate with the same connector the seams use, instead of relying on friction. Short rails and corners stay friction-fit.',
   'baseplate.detachMarginConnectorStyle':
     'Connector needs the Dovetail, Puzzle, or Puzzle key seam style.',
@@ -4772,10 +4772,10 @@ const en: Record<string, string> = {
   'baseplate.magnetAnchorHintLegacy':
     'Magnets pinned 13mm from each cell center — matches parts printed before this was fixed.',
   'baseplate.lowProfileBase': 'Low-profile base',
-  'baseplate.lowProfileBaseHint':
+  'baseplate.lowProfileBaseDetail':
     'Bins get 1.1mm more room inside at the same height. Stock Gridfinity bins still fit this plate, with less grip, and these bins still fit standard plates.',
   'baseplate.lowProfileBaseSnapClipBlocked':
-    'Snap clips need a taller plate. Choose another connector, or turn on magnets or a solid floor first.',
+    'Snap clips need a taller plate. Pick another connector, or add magnets or a solid floor.',
   'baseplate.printBedTooltip': 'Baseplates larger than this are split automatically.',
   'baseplate.maxPrintHeight': 'Build height',
   'baseplate.maxPrintHeightTooltip':
@@ -4812,7 +4812,7 @@ const en: Record<string, string> = {
   'baseplate.stackPrint.separate': 'Separate',
   'baseplate.stackPrint.together': 'Together',
   'baseplate.stackPrint.separationSlider': 'Separate the print stack to inspect it',
-  'baseplate.stackPrint.hint':
+  'baseplate.stackPrint.enableDetail':
     'Prints all drawer plates as a vertical stack with gaps between them. Plates snap apart after printing.',
   'baseplate.stackPrint.sampleButton': 'Print fit test',
   'baseplate.stackPrint.sampleExportComplete': 'Stack fit sample exported',

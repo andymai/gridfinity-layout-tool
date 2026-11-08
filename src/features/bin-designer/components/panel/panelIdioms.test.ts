@@ -16,6 +16,7 @@ const ROOTS = [
   'src/features/bin-designer/components/ParameterPanel',
   'src/features/bin-designer/components/CompartmentEditor',
   'src/features/bin-designer/components/SlotConfigurator',
+  'src/features/baseplate/components/BaseplatePanel',
 ];
 
 const BOOLEAN_PRIMITIVES = new Set(['Checkbox', 'CheckboxRow', 'Switch', 'ToggleRow']);

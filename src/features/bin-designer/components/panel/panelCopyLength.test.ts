@@ -24,6 +24,7 @@ const ROOTS = [
   'src/features/bin-designer/components/CompartmentEditor',
   'src/features/bin-designer/components/SlotConfigurator',
   'src/shared/components/FeatureToggle',
+  'src/features/baseplate/components/BaseplatePanel',
 ];
 
 /** Modules outside the sidebar whose keys it renders inline as blocked reasons. */
