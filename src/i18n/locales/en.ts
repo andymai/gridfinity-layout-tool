@@ -515,7 +515,7 @@ const en: Record<string, string> = {
   'inspector.multi.clearanceTooltip': 'Extra blocked space above bins for tall contents',
   'inspector.split.title': 'Oversized for print bed',
   'inspector.split.message':
-    'This {width}×{depth} bin ({widthMm}×{depthMm}mm) exceeds your print bed ({bedSize}mm). It will be split into smaller pieces for printing.',
+    "{widthMm}×{depthMm}mm doesn't fit your {bedSize}mm print bed, so it prints in pieces.",
   'inspector.split.piecesNeeded': '{count} piece(s) needed',
   'inspector.customProps.deleteProperty': 'Delete property',
   'inspector.customProps.keyPlaceholder': 'Property name (e.g., SKU, Quantity)',
@@ -569,14 +569,14 @@ const en: Record<string, string> = {
     "Fills the baseplate's drawer-fit margin on every drawer edge it touches.",
   'inspector.extendToMargin.needsLink': 'Link a design to extend into the margin.',
   'inspector.extendToMargin.fixedShape':
-    "Imported bins and Workshop designs keep their saved shape, so they can't extend into the margin.",
+    "Imported bins and Workshop designs keep their saved shape, so they can't extend.",
   'inspector.taper': 'Taper walls',
   'inspector.taper.profile': 'Profile',
   'inspector.taper.chamfer': 'Chamfer',
   'inspector.taper.fillet': 'Fillet',
   'inspector.taper.height': 'Taper height',
   'inspector.taper.flare': 'Flare',
-  'inspector.taper.flare.hint':
+  'inspector.taper.flareDetail':
     "Extra width at the rim, beyond the drawer padding, so the bin reaches into the drawer's curved sides.",
   'inspector.slant.fromDesign': 'From its design: {angle}\u00b0 \u00b7 {side}',
   'inspector.slant.useDesign': "Use the design's slant",

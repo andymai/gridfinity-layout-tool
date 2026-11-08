@@ -196,8 +196,6 @@ export function SplitWarning({
         </div>
         <p className="text-xs opacity-80">
           {t('inspector.split.message', {
-            width: binWidth,
-            depth: binDepth,
             widthMm: binWidth * gridUnitMm,
             depthMm: binDepth * gridUnitMm,
             bedSize: `${printBedSize}×${printBedDepth}`,

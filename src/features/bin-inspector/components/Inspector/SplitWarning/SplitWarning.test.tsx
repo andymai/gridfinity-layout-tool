@@ -74,7 +74,7 @@ describe('SplitWarning', () => {
       render(<SplitWarning {...oversizedProps} />);
 
       // The message now contains the full explanation
-      expect(screen.getByText(/exceeds your print bed/)).toBeInTheDocument();
+      expect(screen.getByText(/doesn't fit your .*print bed/)).toBeInTheDocument();
     });
 
     it('renders print bed indicator with correct title', () => {
@@ -104,7 +104,7 @@ describe('SplitWarning', () => {
       render(<SplitWarning {...oversizedProps} />);
 
       expect(screen.queryByText('Oversized for print bed')).not.toBeInTheDocument();
-      expect(screen.queryByText(/exceeds your print bed/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/doesn't fit your .*print bed/)).not.toBeInTheDocument();
     });
 
     it('does not render print bed indicator in compact mode', () => {
