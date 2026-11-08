@@ -6,6 +6,7 @@ import {
   Button,
   Checkbox,
   IconButton,
+  Kbd,
   ChevronDownIcon,
   MinusIcon,
   PlusIcon,
@@ -183,9 +184,7 @@ export const GridToolbar = memo(function GridToolbar({
             <div className="flex items-center gap-1 ml-1">
               <span className="text-xs text-info/80">↑↓←→</span>
               <span className="text-xs text-info/60">{t('toolbar.toMove')}</span>
-              <kbd className="px-1.5 py-0.5 text-xs rounded bg-info/20 border border-info/30 text-info/70 leading-none">
-                Enter
-              </kbd>
+              <Kbd tone="info">Enter</Kbd>
               <span className="text-xs text-info/60">{t('toolbar.toPlace')}</span>
               <IconButton
                 size="sm"
@@ -225,9 +224,7 @@ export const GridToolbar = memo(function GridToolbar({
             <div className="flex items-center gap-1 ml-1">
               <span className="text-xs text-info/80">↑↓←→</span>
               <span className="text-xs text-info/60">{t('toolbar.toResize')}</span>
-              <kbd className="px-1.5 py-0.5 text-xs rounded bg-info/20 border border-info/30 text-info/70 leading-none">
-                Enter
-              </kbd>
+              <Kbd tone="info">Enter</Kbd>
               <span className="text-xs text-info/60">{t('toolbar.toApply')}</span>
               <IconButton
                 size="sm"

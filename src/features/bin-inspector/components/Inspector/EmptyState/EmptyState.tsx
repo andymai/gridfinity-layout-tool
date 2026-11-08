@@ -1,3 +1,4 @@
+import { Kbd, formatShortcut } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface EmptyStateProps {
@@ -74,21 +75,15 @@ export function EmptyState({ variant }: EmptyStateProps) {
       <p className="text-xs text-content-disabled mb-3">{t('inspector.empty.drawHint')}</p>
       <div className="text-left text-xs space-y-1.5 text-content-tertiary w-full">
         <div className="flex items-center gap-2">
-          <kbd className="px-1.5 py-0.5 rounded text-micro bg-surface-elevated border border-stroke-subtle text-content-disabled font-mono">
-            Drag
-          </kbd>
+          <Kbd>Drag</Kbd>
           <span>{t('inspector.empty.hintDraw')}</span>
         </div>
         <div className="flex items-center gap-2">
-          <kbd className="px-1.5 py-0.5 rounded text-micro bg-surface-elevated border border-stroke-subtle text-content-disabled font-mono">
-            Ctrl+D
-          </kbd>
+          <Kbd>{formatShortcut(['Mod', 'D'])}</Kbd>
           <span>{t('inspector.empty.hintDuplicate')}</span>
         </div>
         <div className="flex items-center gap-2">
-          <kbd className="px-1.5 py-0.5 rounded text-micro bg-surface-elevated border border-stroke-subtle text-content-disabled font-mono">
-            L
-          </kbd>
+          <Kbd>L</Kbd>
           <span>{t('inspector.empty.hintLabel')}</span>
         </div>
       </div>

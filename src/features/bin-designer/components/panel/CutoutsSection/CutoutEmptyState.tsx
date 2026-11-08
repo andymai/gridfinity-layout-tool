@@ -4,7 +4,7 @@
  * cutouts exist.
  */
 
-import { Button } from '@/design-system';
+import { Button, Kbd } from '@/design-system';
 import { ScanToolIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 
@@ -130,9 +130,7 @@ function ScanChoice({
 function ShortcutHint({ shortcut, label }: { readonly shortcut: string; readonly label: string }) {
   return (
     <div className="flex items-center gap-2">
-      <kbd className="px-1.5 py-0.5 rounded text-micro bg-surface-elevated border border-stroke-subtle text-content-disabled font-mono">
-        {shortcut}
-      </kbd>
+      <Kbd>{shortcut}</Kbd>
       <span>{label}</span>
     </div>
   );
