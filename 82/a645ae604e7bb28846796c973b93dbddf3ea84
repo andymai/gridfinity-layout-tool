@@ -1,0 +1,73 @@
+src/i18n/locales/en.ts
+  s_66332f8bf1351d::t_4aeaef9571abce 476,633,635,657,659,661,665,703,753,776
+src/i18n/locales/ka.json
+  s_66332f8bf1351d::t_4aeaef9571abce 442,587,589,611,613,615,619,652,700,722
+src/i18n/locales/fr.json
+  s_66332f8bf1351d::t_4aeaef9571abce 3910,3912,3931,3944,3952,3954,4200,4251,4647,4679
+src/i18n/locales/ja.json
+  s_66332f8bf1351d::t_4aeaef9571abce 3910,3912,3931,3944,3952,3954,4200,4251,4647,4679
+src/i18n/locales/nb.json
+  s_66332f8bf1351d::t_4aeaef9571abce 3910,3912,3931,3944,3952,3954,4200,4251,4647,4679
+src/i18n/locales/pl.json
+  s_66332f8bf1351d::t_4aeaef9571abce 3910,3912,3931,3944,3952,3954,4200,4251,4647,4679
+src/i18n/locales/sv.json
+  s_66332f8bf1351d::t_4aeaef9571abce 3910,3912,3931,3944,3952,3954,4200,4251,4647,4679
+src/i18n/locales/zh-CN.json
+  s_66332f8bf1351d::t_4aeaef9571abce 3910,3912,3931,3944,3952,3954,4200,4251,4647,4679
+src/features/layers/components/LayerPanel/LayerRows.tsx
+  s_66332f8bf1351d::t_e0fea7a233139e 184-192,285-287,395-397
+src/features/snapshots/components/RestoreDialog/RestoreDialog.tsx
+  s_66332f8bf1351d::t_e0fea7a233139e 30-32
+src/features/staging/components/Staging/Staging.tsx
+  s_66332f8bf1351d::t_e0fea7a233139e 528-530
+src/features/layers/components/LayerPanel/LayerPanel.tsx
+  s_66332f8bf1351d::t_e0fea7a233139e 139-144
+scripts/i18n-values-allowlist.json
+  s_66332f8bf1351d::t_bd8e87fee30fe6 364
+src/i18n/locales/de.json
+  s_66332f8bf1351d::t_4aeaef9571abce 3910,3912,3931,3944,3952,3954,4200,4251,4647,4679
+src/features/print-export/components/PrintListSummary/PrintListSummary.tsx
+  s_66332f8bf1351d::t_e0fea7a233139e 92-94,166-168
+src/i18n/locales/it.json
+  s_66332f8bf1351d::t_4aeaef9571abce 3910,3912,3931,3944,3952,3954,4200,4251,4647,4679
+src/i18n/locales/pt-BR.json
+  s_66332f8bf1351d::t_4aeaef9571abce 3910,3912,3931,3944,3952,3954,4200,4251,4647,4679
+src/features/layers/components/ActiveLayerPanel/ActiveLayerPanel.tsx
+  s_66332f8bf1351d::t_e0fea7a233139e 200-204,215-219
+src/i18n/locales/ko.json
+  s_66332f8bf1351d::t_4aeaef9571abce 3910,3912,3931,3944,3952,3954,4200,4251,4647,4679
+src/i18n/locales/nl.json
+  s_66332f8bf1351d::t_4aeaef9571abce 3910,3912,3931,3944,3952,3954,4200,4251,4647,4679
+src/features/print-export/components/PrintModal/PrintModal.tsx
+  s_66332f8bf1351d::t_e0fea7a233139e 284-286
+src/features/layers/components/ActiveLayerPanel/ActiveLayerPanel.test.tsx
+  s_66332f8bf1351d::t_1babba22cd8c08 295,314
+src/i18n/locales/es.json
+  s_66332f8bf1351d::t_4aeaef9571abce 3910,3912,3931,3944,3952,3954,4200,4251,4647,4679
+src/features/print-export/components/PrintModal/PrintModal.test.tsx
+  s_66332f8bf1351d::t_1babba22cd8c08 235
+src/features/staging/components/Staging/Staging.test.tsx
+  s_66332f8bf1351d::t_1babba22cd8c08 145
+src/features/snapshots/components/SnapshotEntry/SnapshotEntry.tsx
+  s_66332f8bf1351d::t_e0fea7a233139e 55-59
+src/i18n/locales/cs.json
+  s_66332f8bf1351d::t_4aeaef9571abce 3910,3912,3931,3944,3952,3954,4200,4251,4647,4679
+src/i18n/locales/uk.json
+  s_66332f8bf1351d::t_4aeaef9571abce 3910,3912,3931,3944,3952,3954,4200,4251,4647,4679
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "82a645ae604e7bb28846796c973b93dbddf3ea84",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
