@@ -7,6 +7,7 @@
 
 import type { CommandCategory } from './types';
 import { SHORTCUTS } from '@/core/constants';
+import { formatShortcutKeys } from '@/shared/utils/shortcutKeys';
 
 /** Category labels (i18n keys) */
 export const CATEGORY_LABELS: Record<CommandCategory, string> = {
@@ -33,17 +34,6 @@ export const CATEGORY_ORDER: CommandCategory[] = [
 ];
 
 /**
- * Format shortcut keys for display.
- * Converts array to joined string if needed.
- */
-export function formatShortcutKeys(keys: string | readonly string[]): string {
-  if (Array.isArray(keys)) {
-    return keys.join(' / ');
-  }
-  return keys as string;
-}
-
-/**
  * Command definition (without action, which is wired up at runtime).
  * This allows the registry to be type-safe while actions are provided by the component.
  */
@@ -68,7 +58,7 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     id: 'open-layout-manager',
     labelKey: 'commandPalette.openLayoutManager',
     category: 'navigation',
-    shortcut: { keys: SHORTCUTS.LAYOUT_MANAGER.toUpperCase(), modifier: true },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.LAYOUT_MANAGER), modifier: true },
     keywords: ['layouts', 'switch', 'browse'],
   },
   {
@@ -87,7 +77,7 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     id: 'switch-to-designer',
     labelKey: 'commandPalette.switchToDesigner',
     category: 'navigation',
-    shortcut: { keys: SHORTCUTS.TOOL_SWITCH, shift: true },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.TOOL_SWITCH), shift: true },
     keywords: ['designer', 'bin', 'cad', 'stl', '3d'],
   },
   {
@@ -138,13 +128,13 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     id: 'undo',
     labelKey: 'common.undo',
     category: 'edit',
-    shortcut: { keys: SHORTCUTS.UNDO.toUpperCase(), modifier: true },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.UNDO), modifier: true },
   },
   {
     id: 'redo',
     labelKey: 'commandPalette.redo',
     category: 'edit',
-    shortcut: { keys: SHORTCUTS.REDO.toUpperCase(), modifier: true },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.REDO), modifier: true },
   },
   {
     id: 'delete-selected',
@@ -157,21 +147,21 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     id: 'duplicate-selected',
     labelKey: 'commandPalette.duplicateSelected',
     category: 'edit',
-    shortcut: { keys: SHORTCUTS.DUPLICATE.toUpperCase(), modifier: true },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.DUPLICATE), modifier: true },
     keywords: ['copy', 'clone'],
   },
   {
     id: 'rotate-bin',
     labelKey: 'commandPalette.rotateBin',
     category: 'edit',
-    shortcut: { keys: SHORTCUTS.ROTATE.toUpperCase() },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.ROTATE) },
     keywords: ['flip', 'turn', 'swap'],
   },
   {
     id: 'quick-label',
     labelKey: 'commandPalette.quickLabel',
     category: 'edit',
-    shortcut: { keys: SHORTCUTS.QUICK_LABEL.toUpperCase() },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.QUICK_LABEL) },
     keywords: ['name', 'rename', 'text'],
   },
   {
@@ -234,14 +224,14 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     id: 'layer-up',
     labelKey: 'commandPalette.layerUp',
     category: 'layers',
-    shortcut: { keys: SHORTCUTS.LAYER_UP.toUpperCase() },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.LAYER_UP) },
     keywords: ['next', 'above'],
   },
   {
     id: 'layer-down',
     labelKey: 'commandPalette.layerDown',
     category: 'layers',
-    shortcut: { keys: SHORTCUTS.LAYER_DOWN.toUpperCase() },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.LAYER_DOWN) },
     keywords: ['previous', 'below'],
   },
   {
@@ -282,7 +272,7 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     id: 'toggle-preview',
     labelKey: 'commandPalette.togglePreview',
     category: 'preview',
-    shortcut: { keys: SHORTCUTS.PREVIEW_TOGGLE.toUpperCase() },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.PREVIEW_TOGGLE) },
     keywords: ['3d', 'isometric'],
   },
   {
@@ -297,27 +287,27 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     id: 'prev-bin',
     labelKey: 'commandPalette.prevBin',
     category: 'bins',
-    shortcut: { keys: SHORTCUTS.SELECT_PREV_BIN.toUpperCase() },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.SELECT_PREV_BIN) },
     keywords: ['previous', 'back'],
   },
   {
     id: 'next-bin',
     labelKey: 'commandPalette.nextBin',
     category: 'bins',
-    shortcut: { keys: SHORTCUTS.SELECT_NEXT_BIN.toUpperCase() },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.SELECT_NEXT_BIN) },
     keywords: ['forward'],
   },
   {
     id: 'prev-category',
     labelKey: 'commandPalette.prevCategory',
     category: 'bins',
-    shortcut: { keys: SHORTCUTS.CATEGORY_PREV },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.CATEGORY_PREV) },
   },
   {
     id: 'next-category',
     labelKey: 'commandPalette.nextCategory',
     category: 'bins',
-    shortcut: { keys: SHORTCUTS.CATEGORY_NEXT },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.CATEGORY_NEXT) },
   },
   {
     id: 'move-to-stash',
@@ -342,7 +332,7 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     id: 'toggle-half-bin',
     labelKey: 'commandPalette.toggleHalfBin',
     category: 'tools',
-    shortcut: { keys: SHORTCUTS.HALF_BIN_TOGGLE.toUpperCase() },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.HALF_BIN_TOGGLE) },
     keywords: ['0.5', 'fractional', 'precision'],
   },
   {

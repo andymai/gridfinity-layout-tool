@@ -11,7 +11,8 @@
 
 import { SHORTCUTS } from '@/core/constants';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
-import { formatKey, type ShortcutCategory } from './helpModalStyles';
+import { formatShortcutKeys } from '@/shared/utils/shortcutKeys';
+import type { ShortcutCategory } from './helpModalStyles';
 
 function HelpCategoryIcon({ paths }: { paths: readonly string[] }) {
   return (
@@ -31,11 +32,18 @@ export const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
     icon: <HelpCategoryIcon paths={ICON_PATHS.menu} />,
     shortcuts: [
       { keys: 'K', descriptionKey: 'help.shortcut.commandPalette', modifier: true },
-      { keys: formatKey(SHORTCUTS.UNDO), descriptionKey: 'common.undo', modifier: true },
-      { keys: formatKey(SHORTCUTS.REDO), descriptionKey: 'common.redo', modifier: true },
-      { keys: formatKey(SHORTCUTS.HELP), descriptionKey: 'help.shortcut.showHelp' },
-      { keys: formatKey(SHORTCUTS.ESCAPE), descriptionKey: 'help.shortcut.cancelDeselect' },
-      { keys: SHORTCUTS.TOOL_SWITCH, descriptionKey: 'help.shortcut.toolSwitch', shift: true },
+      { keys: formatShortcutKeys(SHORTCUTS.UNDO), descriptionKey: 'common.undo', modifier: true },
+      { keys: formatShortcutKeys(SHORTCUTS.REDO), descriptionKey: 'common.redo', modifier: true },
+      { keys: formatShortcutKeys(SHORTCUTS.HELP), descriptionKey: 'help.shortcut.showHelp' },
+      {
+        keys: formatShortcutKeys(SHORTCUTS.ESCAPE),
+        descriptionKey: 'help.shortcut.cancelDeselect',
+      },
+      {
+        keys: formatShortcutKeys(SHORTCUTS.TOOL_SWITCH),
+        descriptionKey: 'help.shortcut.toolSwitch',
+        shift: true,
+      },
     ],
   },
   {
@@ -44,10 +52,10 @@ export const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
     icon: <HelpCategoryIcon paths={ICON_PATHS.edit} />,
     shortcuts: [
       { keys: 'D', descriptionKey: 'help.shortcut.duplicate', modifier: true },
-      { keys: formatKey(SHORTCUTS.DELETE), descriptionKey: 'help.shortcut.delete' },
-      { keys: formatKey(SHORTCUTS.ROTATE).toUpperCase(), descriptionKey: 'help.shortcut.rotate' },
+      { keys: formatShortcutKeys(SHORTCUTS.DELETE), descriptionKey: 'help.shortcut.delete' },
+      { keys: formatShortcutKeys(SHORTCUTS.ROTATE), descriptionKey: 'help.shortcut.rotate' },
       {
-        keys: formatKey(SHORTCUTS.QUICK_LABEL).toUpperCase(),
+        keys: formatShortcutKeys(SHORTCUTS.QUICK_LABEL),
         descriptionKey: 'help.shortcut.quickLabel',
       },
       { keys: 'A', descriptionKey: 'help.shortcut.selectAll', modifier: true },
@@ -60,23 +68,23 @@ export const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
     icon: <HelpCategoryIcon paths={ICON_PATHS.navigation} />,
     shortcuts: [
       {
-        keys: formatKey(SHORTCUTS.LAYER_UP).toUpperCase(),
+        keys: formatShortcutKeys(SHORTCUTS.LAYER_UP),
         descriptionKey: 'help.shortcut.layerUp',
       },
       {
-        keys: formatKey(SHORTCUTS.LAYER_DOWN).toUpperCase(),
+        keys: formatShortcutKeys(SHORTCUTS.LAYER_DOWN),
         descriptionKey: 'help.shortcut.layerDown',
       },
       {
-        keys: formatKey(SHORTCUTS.SELECT_PREV_BIN).toUpperCase(),
+        keys: formatShortcutKeys(SHORTCUTS.SELECT_PREV_BIN),
         descriptionKey: 'help.shortcut.prevBin',
       },
       {
-        keys: formatKey(SHORTCUTS.SELECT_NEXT_BIN).toUpperCase(),
+        keys: formatShortcutKeys(SHORTCUTS.SELECT_NEXT_BIN),
         descriptionKey: 'help.shortcut.nextBin',
       },
       {
-        keys: `${formatKey(SHORTCUTS.CATEGORY_PREV)} / ${formatKey(SHORTCUTS.CATEGORY_NEXT)}`,
+        keys: formatShortcutKeys([SHORTCUTS.CATEGORY_PREV, SHORTCUTS.CATEGORY_NEXT]),
         descriptionKey: 'help.shortcut.cycleCategory',
       },
     ],
@@ -86,8 +94,8 @@ export const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
     nameKey: 'help.category.view',
     icon: <HelpCategoryIcon paths={ICON_PATHS.eye} />,
     shortcuts: [
-      { keys: formatKey(SHORTCUTS.ZOOM_IN), descriptionKey: 'help.shortcut.zoomIn' },
-      { keys: formatKey(SHORTCUTS.ZOOM_OUT), descriptionKey: 'help.shortcut.zoomOut' },
+      { keys: formatShortcutKeys(SHORTCUTS.ZOOM_IN), descriptionKey: 'help.shortcut.zoomIn' },
+      { keys: formatShortcutKeys(SHORTCUTS.ZOOM_OUT), descriptionKey: 'help.shortcut.zoomOut' },
       { keys: 'O', descriptionKey: 'help.shortcut.openLayoutManager', modifier: true },
     ],
   },
@@ -97,7 +105,7 @@ export const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
     icon: <HelpCategoryIcon paths={ICON_PATHS.cube} />,
     shortcuts: [
       {
-        keys: formatKey(SHORTCUTS.PREVIEW_TOGGLE).toUpperCase(),
+        keys: formatShortcutKeys(SHORTCUTS.PREVIEW_TOGGLE),
         descriptionKey: 'help.shortcut.togglePreview',
       },
       { keys: 'Space', descriptionKey: 'help.shortcut.expandPreview' },
@@ -109,7 +117,7 @@ export const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
     icon: <HelpCategoryIcon paths={ICON_PATHS.settings} />,
     shortcuts: [
       {
-        keys: formatKey(SHORTCUTS.HALF_BIN_TOGGLE).toUpperCase(),
+        keys: formatShortcutKeys(SHORTCUTS.HALF_BIN_TOGGLE),
         descriptionKey: 'help.shortcut.toggleHalfBin',
       },
       { keys: 'P', descriptionKey: 'help.shortcut.togglePaintMode' },
