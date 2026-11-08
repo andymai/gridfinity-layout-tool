@@ -1,0 +1,21 @@
+src/shared/components/ItemListShell/ItemSearch/ItemSearch.tsx
+  s_66332f8bf1351d::t_716e93814876ea 40-41
+src/design-system/Input/Input.tsx
+  s_66332f8bf1351d::t_716e93814876ea 190
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "27a04d5a33ff75c55fa0cef0f52376e3b4a52767",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
