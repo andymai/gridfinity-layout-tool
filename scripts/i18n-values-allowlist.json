@@ -218,6 +218,8 @@
     "designLinking.bento.designName",
     "designLinking.bento.nameLabel",
     "designLinking.toast.withExceptions",
+    "baseplate.export.threeDModel",
+    "binDesigner.threeDModel",
     "dock.syncStatusOffline",
     "export.format",
     "export.nameStyle.compact",

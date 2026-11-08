@@ -1892,7 +1892,7 @@ const en: Record<string, string> = {
   'baseplate.export.splitBanner':
     'Baseplate exceeds {size}mm print bed — will export as {count} pieces in a ZIP with print guide',
   'baseplate.export.enableSplit': 'Split into pieces',
-  'baseplate.export.threeDModel': '3D Model',
+  'baseplate.export.threeDModel': '3D model',
   'baseplate.export.threeDModelDescription': 'Export a printable baseplate model',
   'baseplate.export.dedupSuccess': 'Baseplate exported ({unique} unique pieces, {total} total)',
   'baseplate.generation.dedupProgress':
@@ -2041,7 +2041,7 @@ const en: Record<string, string> = {
   'binDesigner.downloadDesignJson': 'Download design JSON',
   'binDesigner.export.jsonHint':
     'The editable design, for re-importing or sharing. Not a printable model.',
-  'binDesigner.threeDModel': '3D Model',
+  'binDesigner.threeDModel': '3D model',
   'binDesigner.threeDModelDescription': 'Export a printable 3D model file',
   'binDesigner.importDesignSuccess': 'Imported and loaded "{name}"',
   'binDesigner.invalidDesignFile': 'Invalid design file',
