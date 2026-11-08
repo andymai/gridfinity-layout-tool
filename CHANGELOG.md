@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.535.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.535.0...gridfinity-layout-tool-v4.535.1) (2026-11-08)
+
+
+### Bug Fixes
+
+* **bin-designer:** keep text out of accent bands ([#4862](https://github.com/andymai/gridfinity-layout-tool/issues/4862)) ([fb1d34d](https://github.com/andymai/gridfinity-layout-tool/commit/fb1d34dc230421b15ff51aa2456f4121e344d008))
+
 ## [4.535.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.534.0...gridfinity-layout-tool-v4.535.0) (2026-11-07)
 
 
