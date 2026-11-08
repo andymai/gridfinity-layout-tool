@@ -2595,7 +2595,7 @@
   "collab.collaboratorCount_other": "{count} collaboratori",
   "collab.seeCollaborators_one": "Vedi {count} collaboratore",
   "collab.seeCollaborators_other": "Vedi tutti i {count} collaboratori",
-  "collab.moreCount": "+{count} altri",
+  "collab.moreCount": "+{count} in più",
   "collab.participants": "Partecipanti",
   "collab.reconnecting": "Riconnessione",
   "collab.you": "(tu)",

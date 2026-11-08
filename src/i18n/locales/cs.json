@@ -2634,7 +2634,7 @@
   "collab.seeCollaborators_one": "Zobrazit {count} spolupracovníka",
   "collab.seeCollaborators_few": "Zobrazit všechny {count} spolupracovníky",
   "collab.seeCollaborators_other": "Zobrazit všech {count} spolupracovníků",
-  "collab.moreCount": "+{count} dalších",
+  "collab.moreCount": "+{count} navíc",
   "collab.participants": "Účastníci",
   "collab.reconnecting": "Znovu se připojuji",
   "collab.you": "(ty)",
