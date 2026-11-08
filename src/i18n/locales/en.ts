@@ -4701,10 +4701,10 @@ const en: Record<string, string> = {
   'baseplate.magnetDiameterInfo': '6mm is standard for Gridfinity',
   'baseplate.magnetDepthInfo': '2mm for typical 6\u00d72mm magnets',
   'baseplate.magnetCrushRibs': 'Crush ribs',
-  'baseplate.magnetCrushRibsHint':
+  'baseplate.magnetCrushRibsDetail':
     'Eight ridges inside each hole crush as the magnet presses in, so it holds without glue or a tight tolerance.',
   'baseplate.magnetChamfer': 'Chamfered mouth',
-  'baseplate.magnetChamferHint':
+  'baseplate.magnetChamferDetail':
     'A 45\u00b0 lead-in at the opening of each hole guides the magnet in straight.',
   'baseplate.magnetChamferLightweight':
     'A lightweight plate leaves too little wall around each hole for a lead-in.',
@@ -4713,14 +4713,14 @@ const en: Record<string, string> = {
   'baseplate.ecoPlateDetail':
     'Saves up to a third of the filament. Bins are held by the corner posts only.',
   'baseplate.solidFloorThickness': 'Floor thickness',
-  'baseplate.solidFloorHeightNote':
+  'baseplate.solidFloorThicknessDetail':
     'Added below the standard grid. Total height of the plate increases by this amount to accommodate.',
   'baseplate.screwHoles.label': 'Screw down',
   'baseplate.screwHoles.summary': 'ø{diameter}mm, {count} per piece',
-  'baseplate.screwHoles.info':
+  'baseplate.screwHolesDetail':
     'Vertical holes to fasten the plate to a drawer bottom, bench or wall. They sit in the solid drawer-fit padding where it is wide enough, or where four pockets meet when the head fits there. Otherwise they go in the pocket floor, which makes the plate slightly taller.',
   'baseplate.screwHoles.diameter.label': 'Hole diameter',
-  'baseplate.screwHoles.diameter.info':
+  'baseplate.screwHoles.diameterDetail':
     'Clearance for the screw shaft, not a pilot hole: 3.4mm passes an M3. A hole that bites into the threads holds the plate off the surface instead of pulling it down.',
   'baseplate.screwHoles.headStyle.label': 'Head recess',
   'baseplate.screwHoles.headStyle.info':
@@ -4728,16 +4728,16 @@ const en: Record<string, string> = {
   'baseplate.screwHoles.headStyle.countersink': 'Countersink',
   'baseplate.screwHoles.headStyle.counterbore': 'Counterbore',
   'baseplate.screwHoles.headDiameter.label': 'Head diameter',
-  'baseplate.screwHoles.headDiameter.info':
+  'baseplate.screwHoles.headDiameterDetail':
     'Width of the recess at the surface: 6mm for an M3 flat head, 8mm for an M4 flat head, 5.5mm for an M3 socket head cap. A countersink up to 6mm fits where four pockets meet, so the plate keeps its standard height.',
   'baseplate.screwHoles.counterboreDepth.label': 'Counterbore depth',
-  'baseplate.screwHoles.counterboreDepth.info':
+  'baseplate.screwHoles.counterboreDepthDetail':
     'Depth of the flat pocket. Match it to the height of your screw head so the head ends up level with the surface.',
   'baseplate.screwHoles.perPiece.label': 'Screws per piece',
-  'baseplate.screwHoles.perPiece.info':
+  'baseplate.screwHoles.perPieceDetail':
     'Holes placed in every split piece, so no printed piece is left unfastened. Four fill the corners; higher counts add the edge midpoints.',
   'baseplate.screwHoles.edgeInset.label': 'Edge inset',
-  'baseplate.screwHoles.edgeInset.info':
+  'baseplate.screwHoles.edgeInsetDetail':
     'Grid units along each piece edge that get no screws. Set 1 to keep screws clear of a drawer lip. Above 0, no screw goes in the padding, so a screw can move to the pocket floor and make the plate slightly taller. A piece too small for the inset gets no screws.',
   'baseplate.screwHoles.cellCorner.label': 'Corner in cell',
   'baseplate.screwHoles.cellCorner.info':
@@ -4746,20 +4746,20 @@ const en: Record<string, string> = {
   'baseplate.screwHoles.cellCorner.inner': 'Inner',
   'baseplate.mountMagnets.label': 'Underside magnets',
   'baseplate.mountMagnets.summary': 'ø{diameter} × {depth}mm, {count} per piece',
-  'baseplate.mountMagnets.info':
+  'baseplate.mountMagnetsDetail':
     'Magnet holes in the underside, where four pockets meet, so the plate holds to a steel drawer or tool chest without getting any taller. Crossings on a split seam, on the plate edge or holding a screw are skipped.',
   'baseplate.mountMagnets.diameter.label': 'Magnet diameter',
-  'baseplate.mountMagnets.diameter.info':
+  'baseplate.mountMagnets.diameterDetail':
     "Hole diameter: the magnet's diameter plus clearance for your printer, usually 0.2 to 0.5mm.",
   'baseplate.mountMagnets.depth.label': 'Magnet depth',
   'baseplate.mountMagnets.depth.info':
     'Measured up from the underside, so a magnet of this height sits flush with the bottom.',
   'baseplate.mountMagnets.tooDeep':
-    'Too deep for this plate: at ø{diameter}mm, at most {max}mm fits between the pockets. Holes that do not fit are skipped.',
+    "Too deep: at ø{diameter}mm, at most {max}mm fits. Holes that don't fit are skipped.",
   'baseplate.mountMagnets.tooWide':
     'ø{diameter}mm does not fit between the pockets of this plate, so no holes are cut.',
   'baseplate.mountMagnets.perPiece.label': 'Magnets per piece',
-  'baseplate.mountMagnets.perPiece.info':
+  'baseplate.mountMagnets.perPieceDetail':
     'Spread evenly over each printed piece. A piece has one spot per inner grid crossing, so a high count fills them all.',
   'baseplate.gridUnitTooltip': 'Width of one grid square (standard: 42mm)',
   'baseplate.magnetAnchor': 'Magnet anchor',
@@ -4783,7 +4783,7 @@ const en: Record<string, string> = {
   'baseplate.nozzleSizeTooltip':
     'Your printer nozzle diameter. Connector keys and snap clips scale to it so they stay printable on wider nozzles. Geometry is unchanged at 0.4mm.',
   'baseplate.connectorNozzleNotice':
-    'Sized for a {nozzle}mm nozzle — connector keys and snap clips are enlarged to stay printable.',
+    'Connectors are enlarged so a {nozzle}mm nozzle can print them.',
   'baseplate.stackPrint.enable': 'Vertical stack',
   'baseplate.stackPrint.exportBanner':
     'Stack printing: {stacks} stacks ({plates} plates) export as a ZIP with a print guide.',
@@ -4852,7 +4852,7 @@ const en: Record<string, string> = {
   'baseplate.connectors.none': 'None',
   'baseplate.connectors.snapClipNoStack': "Can't be vertically stacked",
   'baseplate.connectors.snapClipTooThin':
-    'A low-profile plate is too thin. Turn on magnets or a solid floor, or choose another connector.',
+    'A low-profile plate is too thin for clips. Turn on magnets or a solid floor.',
   'baseplate.connectorStyle.dovetail': 'Dovetail',
   'baseplate.connectorStyle.puzzle': 'Puzzle',
   'baseplate.connectorStyle.dovetailKey': 'Puzzle key',
@@ -4867,7 +4867,7 @@ const en: Record<string, string> = {
     'Adjusts the connector gap (mm) to tune fit for your printer and filament. Higher = looser, lower = tighter.',
   'baseplate.dovetails.invert': 'Invert connectors',
   'baseplate.connectorSlotsAllEdges': 'Slots on all edges',
-  'baseplate.connectorSlotsAllEdgesHint':
+  'baseplate.connectorSlotsAllEdgesDetail':
     'Also cuts the slots into the outer edges, so every piece is a standard tile that keys onto plates you print later. Edges with a drawer-fit margin are skipped.',
   'baseplate.preferIdenticalPieces': 'Fewer unique parts',
   'baseplate.connectorSample.button': 'Print fit test',
@@ -4884,7 +4884,7 @@ const en: Record<string, string> = {
   'baseplate.connectorSample.exportComplete': 'Fit sample exported',
   'baseplate.connectorSample.exportFailed': 'Connector fit sample export failed',
   'baseplate.cornerRadius': 'Corner radius',
-  'baseplate.cornerRadiusInfo':
+  'baseplate.cornerRadiusDetail':
     'Outer corner radius for fitting in rounded enclosures. Large radii trim or remove the corner sockets they pass through.',
   'baseplate.cornerRadiusTL': 'Top-left',
   'baseplate.cornerRadiusTR': 'Top-right',

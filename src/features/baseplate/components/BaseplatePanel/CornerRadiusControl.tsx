@@ -1,6 +1,7 @@
-import { Checkbox } from '@/design-system/Checkbox/Checkbox';
 import { useTranslation } from '@/i18n';
 import { SliderInput } from '@/design-system';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
+import { LabelInfo } from '@/shared/components/InfoDot';
 
 interface CornerRadii {
   readonly tl: number;
@@ -39,10 +40,14 @@ export function CornerRadiusControl({
         max={maxRadius}
         step={0.5}
         unit="mm"
-        info={t('baseplate.cornerRadiusInfo')}
+        labelAddon={
+          <LabelInfo label={t('baseplate.cornerRadius')}>
+            {t('baseplate.cornerRadiusDetail')}
+          </LabelInfo>
+        }
         disabled={perCorner}
       />
-      <Checkbox
+      <FeatureToggle
         label={t('baseplate.cornerRadiusUnlink')}
         checked={perCorner}
         onChange={() => {

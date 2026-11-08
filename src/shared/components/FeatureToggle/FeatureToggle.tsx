@@ -8,7 +8,7 @@
 import { useId, type ReactNode } from 'react';
 import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
-import { InfoDot } from '@/shared/components/InfoDot';
+import { LabelInfo } from '@/shared/components/InfoDot';
 import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 
 interface FeatureToggleProps {
@@ -82,11 +82,7 @@ export function FeatureToggle({
           >
             {label}
           </label>
-          {info !== undefined && (
-            <InfoDot aria-label={t('common.aboutLabel', { label })}>
-              {typeof info === 'string' ? <p>{info}</p> : info}
-            </InfoDot>
-          )}
+          {info !== undefined && <LabelInfo label={label}>{info}</LabelInfo>}
           {!disabledReason && comingSoon && (
             <span className="rounded-full bg-surface-tertiary px-1.5 py-0.5 text-micro font-medium text-content-tertiary">
               {t('common.soon')}

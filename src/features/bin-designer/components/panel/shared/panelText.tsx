@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { RulerIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
-import { InfoDot } from '@/shared/components/InfoDot';
+import { InfoDot, LabelInfo } from '@/shared/components/InfoDot';
 
 /**
  * Small tertiary hint paragraph: one sentence. A message that needs more keeps
@@ -21,16 +21,6 @@ export function Hint({ children, info }: { children: string; info?: ReactNode })
         </span>
       )}
     </p>
-  );
-}
-
-/** An info dot named for the control it explains, for a label's slot. */
-export function LabelInfo({ label, children }: { label: string; children: ReactNode }) {
-  const t = useTranslation();
-  return (
-    <InfoDot aria-label={t('common.aboutLabel', { label })}>
-      {typeof children === 'string' ? <p>{children}</p> : children}
-    </InfoDot>
   );
 }
 
