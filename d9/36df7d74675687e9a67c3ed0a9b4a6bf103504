@@ -1,0 +1,81 @@
+src/features/bin-designer/store/slices/paramSlice/compartmentActions.ts
+  s_91f510e05c345c::t_9fd71fee52e7d1 30-42
+  s_91f510e05c345c::t_ab31faa3913da2 9
+  s_91f510e05c345c::t_46d991e651e2a6 281-284,290-299
+  s_91f510e05c345c::t_50917899c4d3dd 251
+src/features/bin-designer/components/panel/ColorsSection/ColorSurfacePicker.test.tsx
+  s_91f510e05c345c::t_4dadc7dd03400c 1-44
+src/features/bin-designer/types/designerState.ts
+  s_91f510e05c345c::t_923477d7cd8bbe 235-236
+  s_91f510e05c345c::t_d662f237ca36da 408-409
+src/i18n/locales/es.json
+  s_91f510e05c345c::t_f8226337ce1572 856
+src/i18n/locales/it.json
+  s_91f510e05c345c::t_f8226337ce1572 856
+src/i18n/locales/nb.json
+  s_91f510e05c345c::t_f8226337ce1572 856
+src/i18n/locales/pl.json
+  s_91f510e05c345c::t_8234366e6aabb4 856
+src/i18n/locales/sv.json
+  s_91f510e05c345c::t_f8226337ce1572 856
+src/features/bin-designer/components/BentoWorkspace/BentoCompartmentColorControls.test.tsx
+  s_91f510e05c345c::t_c46ae2167e6b54 11-13,20-29,32-37,40,43,46,49-59,63,68,72,74,82,90
+src/features/bin-designer/store/slices/cutoutSlice.test.ts
+  s_91f510e05c345c::t_dcbfe17e8f4493 10
+  s_91f510e05c345c::t_dbfdba869c5d12 1707-1729
+src/i18n/locales/pt-BR.json
+  s_91f510e05c345c::t_f8226337ce1572 856
+src/features/bin-designer/components/CutoutWorkspace/CutoutColorControls.tsx
+  s_91f510e05c345c::t_1e0630500f1330 2-6,11,14-17,23,28-37,53-56,58-59,63-75
+  s_91f510e05c345c::t_d909b81b81769d 76-78
+src/i18n/locales/fr.json
+  s_91f510e05c345c::t_f8226337ce1572 856
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_91f510e05c345c::t_e6e91170b5a38e 570-573
+src/i18n/locales/en.ts
+  s_91f510e05c345c::t_fcd034177011f6 3279
+src/i18n/locales/nl.json
+  s_91f510e05c345c::t_f8226337ce1572 856
+src/i18n/locales/zh-CN.json
+  s_91f510e05c345c::t_f8226337ce1572 856
+src/features/bin-designer/components/CutoutWorkspace/CutoutColorControls.test.tsx
+  s_91f510e05c345c::t_4ccc084392989f 25-29,36,40-44,47,51-55,70-80,82,85-93,103-114
+src/features/bin-designer/components/panel/ColorsSection/ColorSurfacePicker.tsx
+  s_91f510e05c345c::t_dbf8dad377da52 1-40,45-51
+  s_91f510e05c345c::t_fedebd67041942 41,43-44
+  s_91f510e05c345c::t_7eb572a9ac0a5e 42
+src/features/bin-designer/components/BentoWorkspace/BentoCompartmentColorControls.tsx
+  s_91f510e05c345c::t_d04c8ee6f30e29 2-5,14,17,48-53,55
+src/i18n/locales/de.json
+  s_91f510e05c345c::t_f8226337ce1572 856
+src/i18n/locales/ka.json
+  s_91f510e05c345c::t_f8226337ce1572 2754
+src/i18n/locales/uk.json
+  s_91f510e05c345c::t_f8226337ce1572 856
+src/i18n/locales/ja.json
+  s_91f510e05c345c::t_f8226337ce1572 856
+src/i18n/locales/cs.json
+  s_91f510e05c345c::t_f8226337ce1572 856
+src/i18n/locales/ko.json
+  s_91f510e05c345c::t_f8226337ce1572 856
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_91f510e05c345c::t_86e376654fa2bd 21
+  s_91f510e05c345c::t_14ed134bbe6a8b 297-298
+  s_91f510e05c345c::t_d23501d749b011 282-284
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d936df7d74675687e9a67c3ed0a9b4a6bf103504",
+  "prompts": {},
+  "sessions": {
+    "s_91f510e05c345c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1eaa1bd0-a1aa-46d7-926a-72186dee31b7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
