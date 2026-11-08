@@ -9,6 +9,7 @@ import { useCallback, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { Button } from '@/design-system';
 import { cn } from '@/design-system/cn';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import {
   IconConnectorNone,
   IconConnectorDovetail,
@@ -108,9 +109,7 @@ export function ConnectorPicker({
 
   return (
     <div className="space-y-1.5">
-      <div className="text-label font-medium uppercase tracking-wide text-content-tertiary">
-        {t('baseplate.connectors.label')}
-      </div>
+      <SubHeader>{t('baseplate.connectors.label')}</SubHeader>
       <div
         ref={groupRef}
         role="radiogroup"

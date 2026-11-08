@@ -13,7 +13,7 @@ import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { DrawerDimensionsSummary } from '@/shared/components/DrawerDimensionsSummary';
 import { GridUnitInput } from '@/shared/components/GridUnitInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
-import { SectionHeader } from '@/shared/components/SectionHeader';
+import { SubHeader } from '@/shared/components/PanelText';
 import { DrawerShapeSection } from '@/features/drawer-shape';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { HeightUnitSolver } from '@/shared/components/HeightUnitSolver';
@@ -103,7 +103,7 @@ export function MobileSettingsPanel() {
     <div className="pb-4 space-y-6">
       {/* Drawer Dimensions */}
       <section>
-        <SectionHeader title={t('settings.drawerDimensions')} />
+        <SubHeader className="mb-3">{t('settings.drawerDimensions')}</SubHeader>
 
         <div className="grid grid-cols-2 gap-3 mb-3">
           {/* Width */}
@@ -215,7 +215,7 @@ export function MobileSettingsPanel() {
 
       {/* Grid Settings */}
       <section>
-        <SectionHeader title={t('settings.gridSettings')} />
+        <SubHeader className="mb-3">{t('settings.gridSettings')}</SubHeader>
 
         <div className="space-y-3">
           <div>

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Button, SegmentedControl } from '@/design-system';
 import { cn } from '@/design-system/cn';
 import { useCurrentLocale, useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { WHATS_NEW_ENTRIES } from '@/features/whats-new/entries';
 import { countByKind, groupByMonth, resolveText } from '@/features/whats-new/digest';
 import type { WhatsNewEntry, WhatsNewKind } from '@/features/whats-new';
@@ -62,9 +63,12 @@ export function ArchiveList({ filter, activate }: { filter: KindFilter; activate
     <div className="flex flex-col py-2">
       {groups.map((group) => (
         <section key={group.month} className="flex flex-col">
-          <h3 className="sticky top-0 z-10 -mx-1 bg-surface-secondary px-1 pb-1.5 pt-3 text-label font-semibold uppercase tracking-wider text-content-tertiary">
+          <SubHeader
+            as="h3"
+            className="sticky top-0 z-10 -mx-1 bg-surface-secondary px-1 pb-1.5 pt-3"
+          >
             {formatMonth(group.month, locale)}
-          </h3>
+          </SubHeader>
           <div className="flex flex-col divide-y divide-stroke-subtle">
             {group.entries.map((entry) => (
               <ArchiveRow key={entry.id} entry={entry} activate={activate} />

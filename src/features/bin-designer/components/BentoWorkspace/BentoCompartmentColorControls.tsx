@@ -10,6 +10,7 @@
 
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_COMPARTMENT_COLOR_SCOPE } from '@/features/bin-designer/types';
 import { DEFAULT_CUTOUT_COLOR } from '@/features/bin-designer/constants/defaults';
@@ -42,9 +43,7 @@ export function BentoCompartmentColorControls({
 
   return (
     <div className="space-y-2">
-      <span className="block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
-        {t('common.color')}
-      </span>
+      <SubHeader>{t('common.color')}</SubHeader>
       <ColorSurfacePicker
         value={isColored ? scope : 'off'}
         onChange={(choice) =>

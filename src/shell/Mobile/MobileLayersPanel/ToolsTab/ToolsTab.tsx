@@ -4,6 +4,7 @@ import { useInteractionStore, useMobileStore } from '@/core/store';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { SQUARE_SIZES, RECTANGLE_SIZES } from '@/features/layers/paintSizes';
 import { useLayerFillActions } from '@/features/layers/hooks/useLayerFillActions';
@@ -88,9 +89,7 @@ export function ToolsTab() {
       <p className="text-xs text-content-tertiary mb-4">{t('mobile.tools.instructions')}</p>
 
       {/* Squares section */}
-      <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">
-        {t('layers.squares')}
-      </div>
+      <SubHeader className="mb-2">{t('layers.squares')}</SubHeader>
       <div className="grid grid-cols-6 gap-2">
         {SQUARE_SIZES.map((size) => (
           <SizeButton key={`${size}×${size}`} w={size} d={size} />
@@ -99,9 +98,7 @@ export function ToolsTab() {
 
       {/* Rectangles section */}
       <div className="flex items-center justify-between mt-4 mb-2">
-        <span className="text-xs text-content-tertiary uppercase tracking-wide">
-          {t('layers.rectangles')}
-        </span>
+        <SubHeader>{t('layers.rectangles')}</SubHeader>
         <Button
           variant="ghost"
           touchTarget={false}

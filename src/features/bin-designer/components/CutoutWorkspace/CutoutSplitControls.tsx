@@ -10,7 +10,7 @@ import { useTranslation } from '@/i18n';
 import { splitSideB } from '@/shared/utils/cutoutDepth';
 import { patchSplit, splitBlockedReason } from '@/shared/utils/cutoutSplit';
 import { CutoutDepthControl } from '../panel/CutoutsSection/CutoutDepthControl';
-import { FieldLabel } from '../panel/shared/panelText';
+import { FieldLabel } from '@/shared/components/PanelText';
 
 const SIDE_B_MODES: readonly CutoutDepthMode[] = ['fixed', 'floor'];
 

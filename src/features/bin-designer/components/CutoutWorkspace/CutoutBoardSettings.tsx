@@ -7,6 +7,7 @@
 import { Button } from '@/design-system';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { CutoutPlateSettings } from './CutoutPlateSettings';
 import { CutoutFillControls } from '@/features/bin-designer/components/controls';
 import { getSegmentClass } from '@/shared/components/segmentedControlClasses';
@@ -45,9 +46,7 @@ export function CutoutBoardSettings({
       </p>
 
       <div className="space-y-3 border-t border-stroke-subtle pt-3">
-        <span className="block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
-          {t('binDesigner.cutoutEditor.boardSettings')}
-        </span>
+        <SubHeader>{t('binDesigner.cutoutEditor.boardSettings')}</SubHeader>
 
         <FeatureToggle
           label={t('binDesigner.cutouts.snapToGrid')}
@@ -98,9 +97,7 @@ export function CutoutBoardSettings({
       {/* Fill level: a bin-level plane, but the cutouts are cut from it, so the
           workspace has to expose it or the only control is in the sidebar. */}
       <div className="space-y-3 border-t border-stroke-subtle pt-3">
-        <span className="block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
-          {t('binDesigner.cutouts.fillLevel')}
-        </span>
+        <SubHeader>{t('binDesigner.cutouts.fillLevel')}</SubHeader>
         <CutoutFillControls />
       </div>
 

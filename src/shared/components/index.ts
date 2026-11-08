@@ -17,7 +17,6 @@ export { ShortcutBadge } from './ShortcutBadge';
 export { LoadingFallback } from './LoadingFallback';
 
 // Layout primitives
-export { SectionHeader } from './SectionHeader';
 export { SettingsRow } from './SettingsRow';
 export { ToggleRow } from './ToggleRow';
 export { BulkIncrementControl } from './BulkIncrementControl';

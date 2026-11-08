@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert, Button, NumberField } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { PanelSection } from '../PanelSection';
 import { InfoDot } from '../shared';
 import type {
@@ -83,9 +84,9 @@ export function VariantSection({
 
   return (
     <PanelSection>
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-content">
+      <SubHeader as="h3" className="mb-2">
         {t('binDesigner.variants.label')}
-      </h3>
+      </SubHeader>
       <p className="mb-3 text-xs text-content-secondary">
         {t('binDesigner.variants.panelLocked', { name: parentName })}
         <span className="ml-1 inline-flex align-middle">
@@ -113,9 +114,9 @@ export function VariantSection({
         </p>
       )}
 
-      <h4 className="mb-1.5 text-label font-semibold uppercase tracking-wide text-content-tertiary">
+      <SubHeader as="h4" className="mb-1.5">
         {t('binDesigner.variants.dimensions')}
-      </h4>
+      </SubHeader>
       <div className="mb-4 flex flex-col gap-1.5">
         {DIMENSION_OVERRIDE_FIELDS.map((field) => {
           const claimed = overrides.dimensions?.[field];
@@ -180,9 +181,9 @@ export function VariantSection({
 
       {cutouts.length > 0 && (
         <>
-          <h4 className="mb-1.5 text-label font-semibold uppercase tracking-wide text-content-tertiary">
+          <SubHeader as="h4" className="mb-1.5">
             {t('binDesigner.variants.cutouts')}
-          </h4>
+          </SubHeader>
           <div className="flex flex-col gap-1">
             {cutouts.map((cutout) => {
               const claimedFields = Object.keys(overrides.cutouts?.[cutout.id] ?? {});

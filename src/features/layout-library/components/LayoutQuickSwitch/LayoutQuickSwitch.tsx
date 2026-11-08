@@ -7,6 +7,7 @@ import { LayoutThumbnail } from '@/shared/components/LayoutThumbnail';
 import type { LayoutEntry, LayoutPreview } from '@/core/types';
 import { layoutId } from '@/core/types';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
 import { Button } from '@/design-system';
 
@@ -174,9 +175,7 @@ export function LayoutQuickSwitch({ onManage }: LayoutQuickSwitchProps) {
           {groups.map((group) => (
             <div key={group.key} role="group" aria-label={group.label || undefined}>
               {group.label && (
-                <div className="truncate px-2.5 pb-0.5 pt-2 text-xs font-medium uppercase tracking-wider text-content-tertiary">
-                  {group.label}
-                </div>
+                <SubHeader className="truncate px-2.5 pb-0.5 pt-2">{group.label}</SubHeader>
               )}
               {group.entries.map((entry) => {
                 const isActive = entry.id === activeLayoutId;

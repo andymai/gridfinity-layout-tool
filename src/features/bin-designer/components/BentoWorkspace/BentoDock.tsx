@@ -14,6 +14,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { Button, IconButton, Stepper } from '@/design-system';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
+import { SubHeader, FieldLabel } from '@/shared/components/PanelText';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import type { CompartmentConfig } from '@/features/bin-designer/types';
 import { getCompartmentReadingOrder } from '@/features/bin-designer/utils/compartments';
@@ -340,9 +341,7 @@ export function BentoDock({
         {selectedRow && (
           <div className="mt-4 flex flex-col gap-4 border-t border-stroke-subtle pt-3">
             <div>
-              <label className="mb-1 block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
-                {t('binDesigner.bento.labelField')}
-              </label>
+              <FieldLabel>{t('binDesigner.bento.labelField')}</FieldLabel>
               {/* Full-width tabs print `label.rowTexts`, one caption per ROW,
                   so a per-compartment caption typed here would render nothing
                   (#2897). Disabled rather than hidden — the stored text is kept
@@ -404,9 +403,7 @@ export function BentoDock({
 
             {/* Wall shift/angle — the canvas shows the result, this edits it */}
             <div className="flex flex-col gap-3">
-              <span className="text-micro font-semibold uppercase tracking-wider text-content-tertiary">
-                {t('binDesigner.bento.wallsTitle')}
-              </span>
+              <SubHeader>{t('binDesigner.bento.wallsTitle')}</SubHeader>
               {selectedWalls.length === 0 ? (
                 <p className="text-micro leading-relaxed text-content-tertiary">
                   {t('binDesigner.bento.wallsEmptyHint')}
