@@ -281,9 +281,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                           {layer.name}
                         </span>
                         <span className="text-xs text-content-tertiary">
-                          {binCount === 1
-                            ? t('print.binCountOne')
-                            : t('print.binCount', { count: binCount })}
+                          {t('print.binCount', { count: binCount })}
                         </span>
                         <Checkbox checked={isChecked} size="md" />
                       </div>

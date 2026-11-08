@@ -16,6 +16,7 @@
 
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
+import { pluralBase } from '../src/i18n/plural.ts';
 
 const ROOT_DIR = join(import.meta.dirname, '..');
 const LOCALES_DIR = join(ROOT_DIR, 'src', 'i18n', 'locales');
@@ -147,6 +148,9 @@ export function classifyUnusedKeys(allKeys: string[], usage: KeyUsage): UnusedKe
 
   for (const key of allKeys) {
     if (usage.literalKeys.has(key)) continue;
+    // A plural form is used through its base: t('a.count', { count }).
+    const base = pluralBase(key);
+    if (base !== null && usage.literalKeys.has(base)) continue;
 
     const coveredByDynamic = prefixArray.some((prefix) => key.startsWith(prefix));
 

@@ -133,6 +133,16 @@ describe('classifyUnusedKeys', () => {
     expect(report.possiblyUnused).toEqual([]);
   });
 
+  it('counts a plural form as used when code calls its base key', () => {
+    const allKeys = ['layers.binCount_one', 'layers.binCount_other', 'orphan.count_other'];
+    const usage: KeyUsage = {
+      literalKeys: new Set(['layers.binCount']),
+      dynamicPrefixes: new Set(),
+    };
+    const report = classifyUnusedKeys(allKeys, usage);
+    expect(report.definitelyUnused).toEqual(['orphan.count_other']);
+  });
+
   it('marks unreferenced keys as definitely unused', () => {
     const allKeys = ['common.save', 'orphan.key'];
     const usage: KeyUsage = {

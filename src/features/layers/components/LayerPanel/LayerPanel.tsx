@@ -136,12 +136,8 @@ export function LayerPanel() {
           </div>
           <div className="text-micro text-content-disabled tabular-nums">
             {hasMultipleLayers
-              ? totalBinCount === 1
-                ? t('layers.statsTotalOne', { coverage: totalCoverage })
-                : t('layers.statsTotal', { coverage: totalCoverage, count: totalBinCount })
-              : effectiveBinCount === 1
-                ? t('layers.statsOne', { coverage: effectiveCoverage })
-                : t('layers.stats', { coverage: effectiveCoverage, count: effectiveBinCount })}
+              ? t('layers.statsTotal', { coverage: totalCoverage, count: totalBinCount })
+              : t('layers.stats', { coverage: effectiveCoverage, count: effectiveBinCount })}
           </div>
         </PanelSection>
       </StickyGroupHeader>

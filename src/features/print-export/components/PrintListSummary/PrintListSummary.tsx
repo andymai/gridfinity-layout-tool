@@ -89,9 +89,7 @@ export function PrintListSummary({
             </span>
           </div>
           <span className="text-xs text-content tabular-nums">
-            {totalBins === 1
-              ? t('print.summary.binsOne')
-              : t('print.summary.bins', { count: totalBins })}
+            {t('print.summary.bins', { count: totalBins })}
             {hasAnySplits && (
               <span className="text-content-tertiary">
                 {' → '}
@@ -163,9 +161,7 @@ export function PrintListSummary({
           </div>
         </div>
         <span className="text-sm text-content tabular-nums whitespace-nowrap">
-          {totalBins === 1
-            ? t('print.summary.binsOne')
-            : t('print.summary.bins', { count: totalBins })}
+          {t('print.summary.bins', { count: totalBins })}
           {hasAnySplits && (
             <span className="text-content-tertiary">
               {' → '}
