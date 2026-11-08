@@ -175,6 +175,24 @@ describe('BentoWorkspace', () => {
     expect(state.params.compartments.cells[0]).not.toBe(selected);
   });
 
+  it('an arrow on the dock resize handle resizes without moving the selection', () => {
+    const id = drawViaStore();
+    useDesignerStore.getState().setSelectedBentoCompartmentId(id);
+    render(<BentoWorkspace />);
+    const cellsBefore = [...useDesignerStore.getState().params.compartments.cells];
+    const handle = screen.getByRole('separator');
+    const widthBefore = handle.getAttribute('aria-valuenow');
+
+    fireEvent.keyDown(handle, { key: 'ArrowLeft' });
+    const afterLeft = handle.getAttribute('aria-valuenow');
+    fireEvent.keyDown(handle, { key: 'ArrowRight' });
+    const afterRight = handle.getAttribute('aria-valuenow');
+
+    expect(new Set([widthBefore, afterLeft, afterRight]).size).toBeGreaterThan(1);
+    expect(useDesignerStore.getState().params.compartments.cells).toEqual(cellsBefore);
+    expect(useDesignerStore.getState().ui.selectedBentoCompartmentId).toBe(id);
+  });
+
   it('deleting a stash entry goes through the store', () => {
     const id = drawViaStore();
     useDesignerStore.getState().stashBentoCompartment(id);

@@ -315,7 +315,6 @@ export interface SidePanelTitleProps {
   children: ReactNode;
 }
 
-/** The panel's name in its header, set the same in every docked panel. */
 function SidePanelTitle({ children }: SidePanelTitleProps) {
   return (
     <span className="text-xs font-semibold uppercase tracking-wider text-content-secondary">
