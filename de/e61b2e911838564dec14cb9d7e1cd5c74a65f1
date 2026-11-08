@@ -1,0 +1,99 @@
+src/i18n/locales/ka.json
+  s_66332f8bf1351d::t_4e8113959fa79d 2861,2875,3506,3510
+  s_66332f8bf1351d::t_32dc8f4fe948fa 2814-2815
+src/i18n/locales/pl.json
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+src/i18n/locales/sv.json
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+src/features/bin-designer/components/panel/panelIdioms.test.ts
+  s_66332f8bf1351d::t_700a7cc0783d1c 19-20
+src/i18n/locales/nb.json
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+src/i18n/locales/ko.json
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+src/features/bin-designer/components/BentoWorkspace/BentoCompartmentFloorControls.tsx
+  s_66332f8bf1351d::t_e674c91d343a43 10
+  s_66332f8bf1351d::t_4b468d584d517f 40-44
+src/features/bin-designer/components/CutoutWorkspace/CutoutBoardSettings.test.tsx
+  s_66332f8bf1351d::t_3d221be6371006 45
+src/features/bin-designer/components/BentoWorkspace/BentoBinWideSection.tsx
+  s_66332f8bf1351d::t_5108d3c4c9fb58 68-73
+  s_66332f8bf1351d::t_7c2f57fe1a2f89 14
+src/i18n/locales/uk.json
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+src/i18n/locales/ja.json
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+src/features/bin-designer/components/CutoutWorkspace/CutoutBoardSettings.tsx
+  s_66332f8bf1351d::t_5337fc3a074d39 7-8
+  s_66332f8bf1351d::t_08994d47cdbf6a 52-56
+src/features/bin-designer/components/Workshop/WorkshopPanel/PartInspector.tsx
+  s_66332f8bf1351d::t_c1911537966b7b 22
+  s_66332f8bf1351d::t_1f9d654e365e70 228-237,276-278,280,292-299
+  s_66332f8bf1351d::t_f35d5e2d6c53f6 300-302
+  s_66332f8bf1351d::t_528ab26d1ef3c4 303-309
+src/i18n/locales/fr.json
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+src/i18n/locales/zh-CN.json
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+src/features/bin-designer/components/TraceView/ToolsPanel.tsx
+  s_66332f8bf1351d::t_e62f59c02772a6 2-3
+  s_66332f8bf1351d::t_65178b9cd7ac7c 122-128
+src/i18n/locales/pt-BR.json
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+src/i18n/locales/cs.json
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+src/i18n/locales/it.json
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+src/features/bin-designer/components/panel/panelCopyLength.test.ts
+  s_66332f8bf1351d::t_142685d4e565c5 26-28
+src/features/bin-designer/components/CutoutWorkspace/CutoutKnifeControls.tsx
+  s_66332f8bf1351d::t_f473184eb90842 28
+  s_66332f8bf1351d::t_8ab1c2aeb74b6a 255-262
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_66332f8bf1351d::t_168e872e38ebe3 38
+  s_66332f8bf1351d::t_f7a2c4d0607846 271-287
+  s_66332f8bf1351d::t_9cdd038fddf83e 234-238
+src/i18n/locales/en.ts
+  s_66332f8bf1351d::t_36bd919f2edc67 3403
+  s_66332f8bf1351d::t_4e8113959fa79d 3400,3418,4182,4187
+  s_66332f8bf1351d::t_71ff51545424fd 4218
+  s_66332f8bf1351d::t_6dd9985478a240 3701
+  s_66332f8bf1351d::t_44537a070e3696 2301
+  s_66332f8bf1351d::t_32dc8f4fe948fa 3349-3351
+src/i18n/locales/es.json
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+src/i18n/locales/nl.json
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+src/i18n/locales/de.json
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dee61b2e911838564dec14cb9d7e1cd5c74a65f1",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
