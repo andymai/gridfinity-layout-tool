@@ -1,0 +1,27 @@
+src/shared/utils/shortcutKeys.ts
+  s_66332f8bf1351d::t_af3bcd0c6cdac0 1-9
+src/shared/utils/shortcutKeys.test.ts
+  s_66332f8bf1351d::t_2d7212d609a255 1-17
+src/shell/Modals/HelpModal/helpModalShortcutData.tsx
+  s_66332f8bf1351d::t_1737e5ba4a3739 38-46
+  s_66332f8bf1351d::t_e4d3aa8f421772 87
+  s_66332f8bf1351d::t_b68c6df87bf5c9 14-15,35-37,55-56,58,71,75,79,83,97-98,108,120
+src/features/command-palette/commands.ts
+  s_66332f8bf1351d::t_b68c6df87bf5c9 10,61,80,131,137,150,157,164,227,234,275,290,297,304,310,335
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6f277eb84082b2af477df25ddbcf647427211902",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
