@@ -113,7 +113,7 @@ function HelpContent({ onClose, isTablet, searchRef }: HelpContentProps) {
           onValueChange={setSearchQuery}
           clearLabel={t('layouts.clearSearch')}
           placeholder={t('help.searchPlaceholder')}
-          className="max-w-xs flex-1"
+          wrapperClassName="min-w-0 max-w-xs flex-1"
         />
       </Dialog.SubHeader>
       <Dialog.Body className="py-6 scrollbar-thin">
