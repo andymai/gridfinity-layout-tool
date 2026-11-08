@@ -49,6 +49,36 @@ describe('ContextMenuContainer', () => {
     expect(parseInt(style.top, 10)).toBeLessThanOrEqual(700);
   });
 
+  it('clamps again when the menu grows after opening', () => {
+    let resize = () => {};
+    const OriginalObserver = window.ResizeObserver;
+    window.ResizeObserver = class {
+      constructor(callback: ResizeObserverCallback) {
+        resize = () => callback([], this);
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+    let height = 100;
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(() => ({ width: 200, height }) as DOMRect);
+
+    try {
+      render(<ContextMenuContainer {...defaultProps} position={{ x: 100, y: 600 }} />);
+      const menu = screen.getByRole('menu');
+      expect(menu.style.top).toBe('600px');
+
+      height = 400;
+      resize();
+      expect(menu.style.top).toBe(`${window.innerHeight - 400 - 8}px`);
+    } finally {
+      rect.mockRestore();
+      window.ResizeObserver = OriginalObserver;
+    }
+  });
+
   it('calls onClose when backdrop is clicked', () => {
     const onClose = vi.fn();
     const { container } = render(<ContextMenuContainer {...defaultProps} onClose={onClose} />);
