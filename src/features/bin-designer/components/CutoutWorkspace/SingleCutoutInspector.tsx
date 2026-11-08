@@ -386,13 +386,7 @@ export function SingleCutoutInspector({
       {!throughOnly && cutout.shape !== 'text' && (
         <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
           <Collapsible title={t('binDesigner.cutouts.section.color')} size="sm">
-            <CutoutColorControls
-              key={cutout.id}
-              ids={[cutout.id]}
-              color={cutout.color}
-              colorScope={cutout.colorScope}
-              disabled={disabled}
-            />
+            <CutoutColorControls key={cutout.id} cutouts={[cutout]} disabled={disabled} />
           </Collapsible>
         </div>
       )}

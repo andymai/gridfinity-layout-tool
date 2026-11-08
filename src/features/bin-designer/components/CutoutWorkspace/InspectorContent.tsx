@@ -123,24 +123,6 @@ function getSharedValue(
 }
 
 /**
- * Shared value of a non-numeric field. Returns the common value, or `null` when
- * the selection is mixed. The field's own `undefined` (e.g. all uncolored) is a
- * legitimate shared value and is distinct from mixed.
- */
-function getSharedField<K extends keyof Cutout>(
-  cutouts: readonly Cutout[],
-  preview: ReadonlyMap<string, Partial<Cutout>>,
-  key: K
-): Cutout[K] | null {
-  if (cutouts.length === 0) return null;
-  const first = getEffective(cutouts[0], preview, key);
-  for (let i = 1; i < cutouts.length; i++) {
-    if (getEffective(cutouts[i], preview, key) !== first) return null;
-  }
-  return first;
-}
-
-/**
  * The group the selection IS, whole, at the current depth — a boolean group or
  * a container alike, since either repeats as one rigid assembly. Null for
  * anything else: a partial group, a mix of units, or a lone shape.
@@ -567,11 +549,12 @@ export function InspectorContent({
               swatch would only flip the whole design into multi-colour mode
               for a zone nothing paints. */}
           {!throughOnly && (
-            <div className="pt-1">
+            <div className="space-y-1.5 pt-1">
+              <div className="text-micro font-medium uppercase tracking-wide text-content-tertiary">
+                {t('binDesigner.cutouts.section.color')}
+              </div>
               <CutoutColorControls
-                ids={selectedCutouts.map((c) => c.id)}
-                color={getSharedField(selectedCutouts, preview, 'color')}
-                colorScope={getSharedField(selectedCutouts, preview, 'colorScope')}
+                cutouts={selectedCutouts.map((c) => ({ ...c, ...preview.get(c.id) }))}
                 disabled={disabled}
               />
             </div>
