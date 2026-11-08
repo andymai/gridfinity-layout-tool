@@ -18,7 +18,8 @@ import {
  * menu (GitHub, r/gridfinity), and the Ko-fi tip button.
  *
  * Used in the top-right of all three desktop headers (grid planner, bin designer, baseplate generator)
- * to provide a consistent set of support/engagement actions.
+ * to provide a consistent set of support/engagement actions, and in `compact`
+ * form below desktop wherever a header has no menu of its own to reach Settings.
  *
  * The two outbound links sit in the overflow rather than the bar: the header
  * has to hold the design name and the export controls at every width, and
@@ -35,6 +36,12 @@ export interface HeaderSupportLinksProps {
   compact?: boolean;
 
   /**
+   * Render the language selector beside the menu. A phone header too narrow
+   * for it can drop it, since Settings carries the same choice.
+   */
+  showLanguage?: boolean;
+
+  /**
    * Extra items pinned above the links, with a divider beneath them.
    *
    * Lets the header park a secondary LAYOUT action here rather than spend a
@@ -47,6 +54,7 @@ export interface HeaderSupportLinksProps {
 
 export function HeaderSupportLinks({
   compact = false,
+  showLanguage = true,
   leadingItems,
 }: HeaderSupportLinksProps = {}) {
   const t = useTranslation();
@@ -185,7 +193,7 @@ export function HeaderSupportLinks({
   if (compact) {
     return (
       <>
-        <LanguageSelector />
+        {showLanguage && <LanguageSelector />}
         {overflowTrigger}
         {overflowMenu}
       </>
@@ -194,7 +202,7 @@ export function HeaderSupportLinks({
 
   return (
     <>
-      <LanguageSelector />
+      {showLanguage && <LanguageSelector />}
 
       {/* Feedback — opens GitHub Issues + thank-you toast with Ko-fi mention */}
       <Button

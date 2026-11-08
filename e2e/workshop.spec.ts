@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import type { Page } from '@playwright/test';
-import { test, expect } from './fixtures';
+import { test, expect, openDesignList } from './fixtures';
 
 async function startBuild(page: Page): Promise<void> {
   await page.goto('/designer');
-  await page.getByRole('button', { name: 'Open design list' }).first().click();
+  await openDesignList(page);
   await page.getByRole('button', { name: /New Workshop build/ }).click();
   await expect(page.getByRole('button', { name: 'Post', exact: true })).toBeVisible({
     timeout: 60_000,

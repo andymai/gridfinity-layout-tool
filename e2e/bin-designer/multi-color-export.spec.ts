@@ -43,7 +43,7 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
     await setZoneColor(page, /^Body: /i, BODY_HEX);
 
     // Split the lip into two Z bands and color each distinctly.
-    await page.getByRole('checkbox', { name: 'Split into color zones' }).click();
+    await page.getByRole('switch', { name: 'Split into color zones', exact: true }).click();
     await page.getByRole('radiogroup', { name: 'Bands' }).getByRole('radio', { name: '2' }).click();
     await setZoneColor(page, /^Stacking Lip · Band 1: /i, BAND1_HEX);
     await setZoneColor(page, /^Stacking Lip · Band 2: /i, BAND2_HEX);
@@ -51,7 +51,7 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
     // The bottom accent is a plane cut, not a face tag, so it reaches the
     // exporter by a different route than every zone above — the band is absent
     // from params until this click, which is what makes it worth pinning here.
-    await page.getByRole('checkbox', { name: 'Bottom accent' }).click();
+    await page.getByRole('switch', { name: 'Bottom accent', exact: true }).click();
     // Entering the height in layers must still store mm; if it ever stored a
     // layer count the band would resolve ~5x too small and vanish from the cut.
     await page
@@ -64,13 +64,25 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
     // mesh is mid-regeneration — and the preview regenerates continuously — so
     // it flickers and a normal click never settles as "stable". dispatchEvent
     // fires the React handler without Playwright's stability wait; poll until
-    // the dialog's 3MF radio appears.
+    // the dialog's 3MF radio appears. Phones keep Export in the header's menu,
+    // where the item is disabled for the same reason.
+    const isPhone = (page.viewportSize()?.width ?? 1280) < 768;
     const exportTrigger = page.getByRole('button', { name: 'Export bin as STL' });
+    const menuTrigger = page.getByRole('button', { name: 'More links' });
+    const menuExport = page.getByRole('menuitem', { name: 'Export', exact: true });
     const threeMfRadio = page.getByRole('radio', { name: '3MF' });
     await expect
       .poll(
         async () => {
-          if (await exportTrigger.isEnabled().catch(() => false)) {
+          if (isPhone) {
+            if (!(await menuExport.isVisible().catch(() => false))) {
+              await menuTrigger.click().catch(() => {});
+            }
+            const disabled = await menuExport.getAttribute('aria-disabled').catch(() => 'true');
+            if (disabled !== 'true') {
+              await menuExport.dispatchEvent('click').catch(() => {});
+            }
+          } else if (await exportTrigger.isEnabled().catch(() => false)) {
             await exportTrigger.dispatchEvent('click').catch(() => {});
           }
           return threeMfRadio.isVisible().catch(() => false);
