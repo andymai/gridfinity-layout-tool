@@ -9,6 +9,7 @@
 import { useState, useRef } from 'react';
 import type { Participant, ConnectionStatus } from '@/shared/hooks/usePresence';
 import { Button } from '@/design-system';
+import { useTranslation } from '@/i18n';
 import { PresenceAvatar } from '../PresenceAvatar';
 import { ConnectionIndicator } from '../ConnectionIndicator';
 import { PresenceDropdown } from '../PresenceDropdown';
@@ -33,6 +34,7 @@ export function PresenceAvatarBar({
   status,
   className = '',
 }: PresenceAvatarBarProps) {
+  const t = useTranslation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -49,7 +51,7 @@ export function PresenceAvatarBar({
         ref={containerRef}
         className="flex items-center"
         role="list"
-        aria-label={`${participants.length} collaborators`}
+        aria-label={t('collab.collaboratorCount', { count: participants.length })}
       >
         {/* Visible avatars - overlapping stack */}
         <div className="flex items-center -space-x-2">
@@ -72,9 +74,9 @@ export function PresenceAvatarBar({
           className={`ml-1 ${isDropdownOpen ? 'bg-surface-hover text-content' : ''}`.trim()}
           aria-expanded={isDropdownOpen}
           aria-haspopup="dialog"
-          title={`${participants.length} collaborators - click to see all`}
+          title={t('collab.seeCollaborators', { count: participants.length })}
         >
-          {hasOverflow ? `+${overflowCount} more` : `${participants.length}`}
+          {hasOverflow ? t('collab.moreCount', { count: overflowCount }) : participants.length}
         </Button>
       </div>
 

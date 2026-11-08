@@ -44,8 +44,8 @@ describe('CustomGridEditor', () => {
     render(<CustomGridEditor />);
 
     // Select two adjacent cells (a valid 1x2 rectangle) then merge.
-    fireEvent.click(screen.getByLabelText('cell 0,0'));
-    fireEvent.click(screen.getByLabelText('cell 1,0'));
+    fireEvent.click(screen.getByLabelText('Cell 0, 0'));
+    fireEvent.click(screen.getByLabelText('Cell 1, 0'));
     fireEvent.click(screen.getByText(/merge/i));
 
     expect(setParam).toHaveBeenCalledWith(
@@ -62,8 +62,8 @@ describe('CustomGridEditor', () => {
     render(<CustomGridEditor />);
 
     // Select one cell from each merged compartment, then split.
-    fireEvent.click(screen.getByLabelText('cell 0,1')); // top bar
-    fireEvent.click(screen.getByLabelText('cell 0,0')); // bottom bar
+    fireEvent.click(screen.getByLabelText('Cell 0, 1')); // top bar
+    fireEvent.click(screen.getByLabelText('Cell 0, 0')); // bottom bar
     fireEvent.click(screen.getByText(/split/i));
 
     const call = setParam.mock.calls.find(([k]) => k === 'slotConfig');

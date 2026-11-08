@@ -32,6 +32,7 @@ function PrintBedIndicator({
   printBedWidth: number;
   printBedDepth: number;
 }) {
+  const t = useTranslation();
   const size = 64;
   const padding = 4;
   const innerSize = size - padding * 2;
@@ -59,7 +60,12 @@ function PrintBedIndicator({
     <div
       className="relative flex-shrink-0"
       style={{ width: size, height: size }}
-      title={`Print bed: ${printBedWidth}×${printBedDepth}mm, Max bin: ${maxUnits.width}×${maxUnits.depth} units`}
+      title={t('inspector.split.limitTitle', {
+        bedWidth: printBedWidth,
+        bedDepth: printBedDepth,
+        maxWidth: maxUnits.width,
+        maxDepth: maxUnits.depth,
+      })}
     >
       {/* Print bed outline */}
       <div

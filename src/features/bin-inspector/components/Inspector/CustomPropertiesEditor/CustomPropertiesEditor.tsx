@@ -169,7 +169,7 @@ export function CustomPropertiesEditor({
                   onClick={() => handleDelete(key)}
                   className="ml-auto text-content-tertiary"
                   title={t('inspector.customProps.deleteProperty')}
-                  aria-label={`Delete ${key}`}
+                  aria-label={t('inspector.customProps.deleteAria', { name: key })}
                 >
                   <XIcon className="w-3.5 h-3.5" />
                 </IconButton>
@@ -186,7 +186,7 @@ export function CustomPropertiesEditor({
                 fullWidth
                 wrapperClassName={inputHeight}
                 placeholder={t('inspector.customProps.multiValuePlaceholder')}
-                aria-label={`Value for ${key}`}
+                aria-label={t('inspector.customProps.valueAria', { name: key })}
               />
             </div>
           ))}

@@ -1,5 +1,6 @@
 import { memo } from 'react';
-import { Button } from '@/design-system';
+import { Button, isMacPlatform } from '@/design-system';
+import { useTranslation } from '@/i18n';
 import { useViewStore } from '@/core/store/view';
 import type { GridAxisLabelsState } from '@/features/grid-editor/hooks/useGridAxisLabels';
 
@@ -48,6 +49,8 @@ export const RowLabels = memo(function RowLabels({
   gap,
   onRowClick,
 }: RowLabelsProps) {
+  const t = useTranslation();
+  const modKey = isMacPlatform() ? '⌘' : 'Ctrl';
   const setHighlightedRowLabel = useViewStore((state) => state.setHighlightedRowLabel);
 
   const { rowLabels, labelWidth, labelFontSize, hasFractionalDepth, fractionalEdgeY } = labels;
@@ -103,8 +106,8 @@ export const RowLabels = memo(function RowLabels({
             onClick={(e) => typeof num === 'number' && onRowClick(Math.floor(num), e)}
             onMouseEnter={() => typeof num === 'number' && setHighlightedRowLabel(Math.floor(num))}
             onMouseLeave={() => setHighlightedRowLabel(null)}
-            title={`Click to select row ${label}. Shift-click for range. Ctrl-click to add/remove.`}
-            aria-label={`Select bins in row ${label}`}
+            title={t('grid.selectRowTitle', { row: label, mod: modKey })}
+            aria-label={t('grid.selectRowAria', { row: label })}
           >
             {labelFontSize > 0 && label}
           </Button>
@@ -125,6 +128,8 @@ export const ColumnLabels = memo(function ColumnLabels({
   gridTop,
   onColumnClick,
 }: ColumnLabelsProps) {
+  const t = useTranslation();
+  const modKey = isMacPlatform() ? '⌘' : 'Ctrl';
   const setHighlightedColLabel = useViewStore((state) => state.setHighlightedColLabel);
 
   const { columnLabels, columnLabelHeight, labelFontSize, hasFractionalWidth, fractionalEdgeX } =
@@ -180,8 +185,8 @@ export const ColumnLabels = memo(function ColumnLabels({
             onClick={(e) => typeof num === 'number' && onColumnClick(Math.floor(num), e)}
             onMouseEnter={() => typeof num === 'number' && setHighlightedColLabel(Math.floor(num))}
             onMouseLeave={() => setHighlightedColLabel(null)}
-            title={`Click to select column ${label}. Shift-click for range. Ctrl-click to add/remove.`}
-            aria-label={`Select bins in column ${label}`}
+            title={t('grid.selectColumnTitle', { column: label, mod: modKey })}
+            aria-label={t('grid.selectColumnAria', { column: label })}
           >
             {labelFontSize > 0 && label}
           </Button>

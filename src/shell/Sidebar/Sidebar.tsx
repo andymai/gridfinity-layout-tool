@@ -292,7 +292,7 @@ export function Sidebar() {
                     <div>
                       <label
                         className="block text-content-tertiary mb-1"
-                        title={`Width in grid units (step: ${widthStep})`}
+                        title={t('sidebar.widthStepTitle', { step: widthStep })}
                       >
                         {t('common.widthUnits')}
                       </label>
@@ -311,7 +311,7 @@ export function Sidebar() {
                     <div>
                       <label
                         className="block text-content-tertiary mb-1"
-                        title={`Depth in grid units (step: ${depthStep})`}
+                        title={t('sidebar.depthStepTitle', { step: depthStep })}
                       >
                         {t('common.depthUnits')}
                       </label>

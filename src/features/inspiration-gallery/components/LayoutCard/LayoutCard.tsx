@@ -50,7 +50,12 @@ export function LayoutCard({
         animate-fade-in-up cursor-pointer
       "
       style={{ animationDelay }}
-      aria-label={`${name}. ${themeConfig.label}. ${metrics.binCount} bins. ${shortDescription}`}
+      aria-label={t('gallery.layoutCardAria', {
+        name,
+        theme: t(themeConfig.labelKey),
+        count: metrics.binCount,
+        description: shortDescription,
+      })}
       data-layout-card
     >
       {/* Thumbnail - portrait aspect for taller cards */}
@@ -66,7 +71,7 @@ export function LayoutCard({
           className="absolute top-1.5 right-1.5 text-xs px-1.5 py-0.5 rounded-full bg-black/70 text-white backdrop-blur-sm"
           aria-hidden="true"
         >
-          {themeConfig.label}
+          {t(themeConfig.labelKey)}
         </span>
       </div>
 

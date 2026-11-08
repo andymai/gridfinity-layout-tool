@@ -213,8 +213,8 @@ export function DesignerHeader({ isDesktop, isMobile, nameEditor }: DesignerHead
                 touchTarget={false}
                 onClick={undo}
                 disabled={!canUndo}
-                title={`Undo (${MOD_KEY}+Z)`}
-                aria-label={`Undo (${MOD_KEY}+Z)`}
+                title={t('header.undo', { mod: MOD_KEY })}
+                aria-label={t('header.undo', { mod: MOD_KEY })}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -230,8 +230,8 @@ export function DesignerHeader({ isDesktop, isMobile, nameEditor }: DesignerHead
                 touchTarget={false}
                 onClick={redo}
                 disabled={!canRedo}
-                title={`Redo (${MOD_KEY}+Y)`}
-                aria-label={`Redo (${MOD_KEY}+Y)`}
+                title={t('header.redo', { mod: MOD_KEY })}
+                aria-label={t('header.redo', { mod: MOD_KEY })}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -388,7 +388,7 @@ export function DesignerHeader({ isDesktop, isMobile, nameEditor }: DesignerHead
               variant="ghost"
               onClick={undo}
               disabled={!canUndo}
-              aria-label={`Undo (${MOD_KEY}+Z)`}
+              aria-label={t('header.undo', { mod: MOD_KEY })}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -403,7 +403,7 @@ export function DesignerHeader({ isDesktop, isMobile, nameEditor }: DesignerHead
               variant="ghost"
               onClick={redo}
               disabled={!canRedo}
-              aria-label={`Redo (${MOD_KEY}+Y)`}
+              aria-label={t('header.redo', { mod: MOD_KEY })}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
