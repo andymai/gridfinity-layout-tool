@@ -94,9 +94,12 @@ if (typeof globalThis !== 'undefined') {
 // while keeping test assertions readable (matching real English text).
 vi.mock('@/i18n', async () => {
   const en = (await import('@/i18n/locales/en')).default;
+  const { lookupPlural, pluralCount } = await import('@/i18n/plural');
 
   const t = (key: string, vars?: Record<string, unknown>) => {
-    const template = en[key] ?? key;
+    const count = pluralCount(vars?.count);
+    const plural = count !== undefined ? lookupPlural(en, 'en', key, count) : undefined;
+    const template = plural ?? en[key] ?? en[`${key}_other`] ?? key;
     if (!vars) return template;
     let result = template;
     for (const [k, v] of Object.entries(vars)) {

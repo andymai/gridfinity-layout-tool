@@ -292,7 +292,7 @@ describe('ActiveLayerPanel', () => {
       });
 
       render(<ActiveLayerPanel />);
-      fireEvent.click(screen.getByText('Clear 1 bins'));
+      fireEvent.click(screen.getByText('Clear 1 bin'));
 
       expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument();
     });
@@ -311,7 +311,7 @@ describe('ActiveLayerPanel', () => {
       });
 
       render(<ActiveLayerPanel />);
-      fireEvent.click(screen.getByText('Clear 1 bins'));
+      fireEvent.click(screen.getByText('Clear 1 bin'));
       fireEvent.click(screen.getByText('Confirm'));
 
       expect(useLayoutStore.getState().layout.bins).toHaveLength(0);

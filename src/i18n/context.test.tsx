@@ -125,6 +125,49 @@ describe('LocaleProvider + useTranslation', () => {
   });
 });
 
+describe('plural forms', () => {
+  afterEach(() => {
+    _resetActiveTranslations();
+  });
+
+  const wrapperFor =
+    (locale: 'en' | 'pl') =>
+    ({ children }: { children: ReactNode }) => (
+      <LocaleProvider initialLocale={locale}>{children}</LocaleProvider>
+    );
+
+  it('picks the English singular and plural from the count', async () => {
+    const { result } = renderHook(() => useTranslation(), { wrapper: wrapperFor('en') });
+
+    await waitFor(() => expect(result.current('layers.binCount', { count: 1 })).toBe('1 bin'));
+    expect(result.current('layers.binCount', { count: 0 })).toBe('0 bins');
+    expect(result.current('layers.binCount', { count: 2 })).toBe('2 bins');
+  });
+
+  it('uses every form a language has, not just one and other', async () => {
+    const { result } = renderHook(() => useTranslation(), { wrapper: wrapperFor('pl') });
+
+    await waitFor(() => expect(result.current('layers.binCount', { count: 3 })).toBe('3 biny'));
+    expect(result.current('layers.binCount', { count: 1 })).toBe('1 bin');
+    expect(result.current('layers.binCount', { count: 5 })).toBe('5 binów');
+    expect(result.current('layers.binCount', { count: 22 })).toBe('22 biny');
+  });
+
+  it('reads a numeric string count and falls back to _other without one', async () => {
+    const { result } = renderHook(() => useTranslation(), { wrapper: wrapperFor('pl') });
+
+    await waitFor(() => expect(result.current('layers.binCount', { count: '3' })).toBe('3 biny'));
+    expect(result.current('layers.binCount')).toBe('{count} binów');
+  });
+
+  it('applies the same rules outside React', async () => {
+    const { result } = renderHook(() => useTranslation(), { wrapper: wrapperFor('pl') });
+
+    await waitFor(() => expect(result.current('layers.binCount', { count: 3 })).toBe('3 biny'));
+    expect(getStaticTranslation('layers.binCount', { count: 3 })).toBe('3 biny');
+  });
+});
+
 describe('LocaleProvider + useLocale', () => {
   it('provides locale, setLocale, and isLoading', async () => {
     const wrapper = ({ children }: { children: ReactNode }) => (

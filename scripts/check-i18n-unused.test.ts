@@ -6,6 +6,7 @@ import {
   classifyUnusedKeys,
   extractKeyReferences,
   extractKeysFromSource,
+  knownKeySet,
 } from './check-i18n-unused';
 
 describe('extractKeysFromSource', () => {
@@ -131,6 +132,23 @@ describe('classifyUnusedKeys', () => {
     const report = classifyUnusedKeys(allKeys, usage);
     expect(report.definitelyUnused).toEqual([]);
     expect(report.possiblyUnused).toEqual([]);
+  });
+
+  it('counts a plural family named in data, not only in a t() call', () => {
+    const allKeys = ['items.binCount_one', 'items.binCount_other'];
+    const content = "const entry = { labelKey: 'items.binCount' };\nt(entry.labelKey, { count });";
+    const usage = extractKeyReferences(content, knownKeySet(allKeys));
+    expect(classifyUnusedKeys(allKeys, usage).definitelyUnused).toEqual([]);
+  });
+
+  it('counts a plural form as used when code calls its base key', () => {
+    const allKeys = ['layers.binCount_one', 'layers.binCount_other', 'orphan.count_other'];
+    const usage: KeyUsage = {
+      literalKeys: new Set(['layers.binCount']),
+      dynamicPrefixes: new Set(),
+    };
+    const report = classifyUnusedKeys(allKeys, usage);
+    expect(report.definitelyUnused).toEqual(['orphan.count_other']);
   });
 
   it('marks unreferenced keys as definitely unused', () => {

@@ -7,7 +7,11 @@
  *   toast.binsDeleted      → Toast notification for deleted bins
  *
  * Interpolation uses {variableName} syntax:
- *   "Deleted {count} bin(s)" → t('toast.binsDeleted', { count: 5 })
+ *   "Clear {count} bins" → t('layers.clearBins', { count: 5 })
+ *
+ * Plurals are key families that a numeric `count` picks from (src/i18n/plural.ts):
+ *   'layers.binCount_one': '{count} bin', 'layers.binCount_other': '{count} bins'
+ *   → t('layers.binCount', { count })
  *
  * NOTE: Gridfinity-specific terms stay in English across all locales:
  *   bin, drawer, layer, staging/stash, grid unit, height unit, print bed, Gridfinity
@@ -472,7 +476,8 @@ const en: Record<string, string> = {
   'snapshots.restoreFailed': 'Failed to restore snapshot',
   'snapshots.editLabel': 'Edit label',
   'snapshots.labelPlaceholder': 'Add a label...',
-  'snapshots.bins': '{count} bins',
+  'snapshots.bins_one': '{count} bin',
+  'snapshots.bins_other': '{count} bins',
   'snapshots.layers': '{count} layers',
   'snapshots.autoSaved': 'Auto-saved',
   'snapshots.justNow': 'Just now',
@@ -628,8 +633,10 @@ const en: Record<string, string> = {
   'layers.decreaseHeight': 'Decrease {name} height',
   'layers.increaseHeight': 'Increase {name} height',
   'layers.addNewLayer': 'Add new layer',
-  'layers.clearBins': 'Clear {count} bins',
-  'layers.clearBinsTitle': 'Clear {count} bins from this layer',
+  'layers.clearBins_one': 'Clear {count} bin',
+  'layers.clearBins_other': 'Clear {count} bins',
+  'layers.clearBinsTitle_one': 'Clear {count} bin from this layer',
+  'layers.clearBinsTitle_other': 'Clear {count} bins from this layer',
   'layers.clickToRename': 'Click to rename',
   'layers.deselect': 'Deselect',
   'layers.fillGaps': 'Fill {count} gaps',
@@ -650,12 +657,16 @@ const en: Record<string, string> = {
   'layers.showingTall': 'Showing: Tall',
   'layers.showingWide': 'Showing: Wide',
   'layers.squares': 'Squares',
-  'layers.stats': '{coverage}% filled · {count} bins',
-  'layers.statsTotal': '{coverage}% filled · {count} bins total',
-  'layers.segmentTooltip': '{name} — {coverage}% filled, {count} bins',
+  'layers.stats_one': '{coverage}% filled · {count} bin',
+  'layers.stats_other': '{coverage}% filled · {count} bins',
+  'layers.statsTotal_one': '{coverage}% filled · {count} bin total',
+  'layers.statsTotal_other': '{coverage}% filled · {count} bins total',
+  'layers.segmentTooltip_one': '{name} — {coverage}% filled, {count} bin',
+  'layers.segmentTooltip_other': '{name} — {coverage}% filled, {count} bins',
   'layers.deleteLayerAria': 'Delete {name} layer',
   'layers.heightTotal': '{used}/{total}u',
-  'layers.binCount': '{count} bins',
+  'layers.binCount_one': '{count} bin',
+  'layers.binCount_other': '{count} bins',
   'layers.tallestStack': 'Tallest stack',
   'layers.stackOverDrawer': '{over}u taller than the drawer',
   'layers.switchToTall': 'Switch to tall',
@@ -692,7 +703,8 @@ const en: Record<string, string> = {
   'staging.clearStash.title': 'Clear stash',
   'staging.clearStash.message': 'Delete all {count} stashed bin(s)? This cannot be undone.',
   'staging.clearStash.confirm': 'Clear all',
-  'staging.binCount': '{count} bins',
+  'staging.binCount_one': '{count} bin',
+  'staging.binCount_other': '{count} bins',
   'staging.binTooltip': '{width}×{depth}×{height}u - {label}',
   'staging.clearAll': 'Clear all',
   'staging.collapseStash': 'Collapse stash',
@@ -741,7 +753,8 @@ const en: Record<string, string> = {
   'print.summary.spoolLabel': 'Spool',
   'print.summary.spoolCount': '{count} spools',
   'print.summary.spoolCountOne': '1 spool',
-  'print.summary.bins': '{count} bins',
+  'print.summary.bins_one': '{count} bin',
+  'print.summary.bins_other': '{count} bins',
   'print.summary.binsAndPieces': '{bins} bins & {pieces} pieces',
   'print.summary.labelPlates': 'Label plates: {count}',
   'print.summary.labelPlatesTooltip':
@@ -763,7 +776,8 @@ const en: Record<string, string> = {
   'print.sort.sortByHeight': 'Sort by height',
   'print.sort.sortByFilament': 'Sort by filament usage',
   'print.allLayers': 'All ({count})',
-  'print.binCount': '{count} bins',
+  'print.binCount_one': '{count} bin',
+  'print.binCount_other': '{count} bins',
   'print.binDetails': 'Bin details',
   'print.selectLayer': 'Select {layer}',
   'print.bins': 'bins',

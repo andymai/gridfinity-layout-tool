@@ -12,6 +12,7 @@
 
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, relative } from 'path';
+import { pluralBase } from '../src/i18n/plural.ts';
 
 const ROOT_DIR = join(import.meta.dirname, '..');
 const LOCALES_DIR = join(ROOT_DIR, 'src', 'i18n', 'locales');
@@ -126,6 +127,20 @@ function getTranslationStrings(): Map<string, TranslationString> {
     const value = match[2];
     const placeholders = extractPlaceholders(value);
     translations.set(key, { key, value, placeholders });
+  }
+
+  // Code calls a plural family by its base key, so the base stands for the
+  // placeholders its forms use between them.
+  const families = new Map<string, Set<string>>();
+  for (const entry of translations.values()) {
+    const base = pluralBase(entry.key);
+    if (base === null || translations.has(base)) continue;
+    const union = families.get(base) ?? new Set<string>();
+    entry.placeholders.forEach((p) => union.add(p));
+    families.set(base, union);
+  }
+  for (const [base, union] of families) {
+    translations.set(base, { key: base, value: '', placeholders: [...union].sort() });
   }
 
   return translations;

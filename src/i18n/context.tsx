@@ -13,7 +13,10 @@
  * }
  *
  * // With interpolation:
- * t('toast.binsDeleted', { count: 5 }); // "Deleted 5 bin(s)"
+ * t('layers.binCount', { count: 5 }); // "5 bins"
+ *
+ * // A numeric `count` picks the plural form (`key_one`, `key_few`, ...):
+ * t('layers.binCount', { count: 1 }); // "1 bin"
  * ```
  */
 
@@ -32,6 +35,7 @@ import {
 } from 'react';
 import type { ReactNode } from 'react';
 import type { Locale, Translations, TranslationVars } from './types';
+import { lookupPlural, pluralCount } from './plural';
 
 const fallback: Translations = {
   // A drawer link stores its layout name once the first locale load settles,
@@ -118,8 +122,21 @@ const LocaleContext = createContext<LocaleContextValue | null>(null);
  * ```
  */
 export function getStaticTranslation(key: string, vars?: TranslationVars): string {
+  const count = pluralCount(vars?.count);
+  const plural =
+    count !== undefined
+      ? ((_active && lookupPlural(_active, _activeLocale, key, count)) ??
+        (_loadedEn && lookupPlural(_loadedEn, 'en', key, count)))
+      : undefined;
   const template =
-    (_active && lookupKey(_active, key)) ?? _loadedEn?.[key] ?? lookupKey(fallback, key) ?? key;
+    plural ??
+    (_active && lookupKey(_active, key)) ??
+    _loadedEn?.[key] ??
+    lookupKey(fallback, key) ??
+    // A plural family called without a usable count still reads as a sentence.
+    (_active && lookupKey(_active, `${key}_other`)) ??
+    _loadedEn?.[`${key}_other`] ??
+    key;
   if (!vars) return template;
   let result = template;
   for (const [k, value] of Object.entries(vars)) {
@@ -141,10 +158,12 @@ export function _setLoadedEn(translations: Translations | null): void {
 
 /** The loaded locale's translations, for lookups outside React. */
 let _active: Translations | null = null;
+let _activeLocale: Locale = 'en';
 
 /** @internal Test-only: forget the loaded locale */
 export function _resetActiveTranslations(): void {
   _active = null;
+  _activeLocale = 'en';
 }
 
 /**
@@ -202,7 +221,12 @@ interface LocaleProviderProps {
 
 export function LocaleProvider({ children, initialLocale, onLocaleChange }: LocaleProviderProps) {
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
-  const [translations, setTranslations] = useState<Translations>(fallback);
+  // The strings and the locale they belong to change together, so plural rules
+  // always match the strings they pick from.
+  const [loaded, setLoaded] = useState<{ locale: Locale; strings: Translations }>({
+    locale: 'en',
+    strings: fallback,
+  });
   // Start with isLoading=false so the first render shows children immediately
   // (avoids a fullscreen spinner that causes CLS). The initial locale load
   // happens in the background; fallback translations cover the brief gap.
@@ -233,7 +257,8 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
       }
       if (latestLocaleRef.current === target) {
         _active = module.default;
-        setTranslations(module.default);
+        _activeLocale = target;
+        setLoaded({ locale: target, strings: module.default });
         setIsLoading(false);
         setHasLoadedInitial(true);
       }
@@ -241,7 +266,8 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
       // Fall back to English (or fallback) on load failure
       if (latestLocaleRef.current === target) {
         _active = null;
-        setTranslations(_loadedEn ?? fallback);
+        _activeLocale = 'en';
+        setLoaded({ locale: 'en', strings: _loadedEn ?? fallback });
         setIsLoading(false);
         setHasLoadedInitial(true);
       }
@@ -281,11 +307,24 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
 
   const t: TFunction = useCallback(
     (key: string, vars?: TranslationVars): string => {
-      // Try current locale, fall back to English, then show key
-      const template = translations[key] || _loadedEn?.[key] || key;
+      const count = pluralCount(vars?.count);
+      const plural =
+        count !== undefined
+          ? (lookupPlural(loaded.strings, loaded.locale, key, count) ??
+            (_loadedEn && lookupPlural(_loadedEn, 'en', key, count)))
+          : undefined;
+      // Try current locale, fall back to English, then a plural family's
+      // _other form (called without a usable count), then show the key.
+      const template =
+        plural ||
+        loaded.strings[key] ||
+        _loadedEn?.[key] ||
+        loaded.strings[`${key}_other`] ||
+        _loadedEn?.[`${key}_other`] ||
+        key;
       return interpolate(template, vars);
     },
-    [translations]
+    [loaded]
   );
 
   const value = useMemo<LocaleContextValue>(
