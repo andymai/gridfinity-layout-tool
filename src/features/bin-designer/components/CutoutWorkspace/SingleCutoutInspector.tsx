@@ -35,6 +35,7 @@ import { CutoutEngraveLabelControls } from './CutoutEngraveLabelControls';
 import { CutoutOutlineSection } from '../OutlineCleanup/CutoutOutlineSection';
 import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
 import { Collapsible, SliderInput, NumberField } from '@/design-system';
+import { LabelInfo } from '@/shared/components/InfoDot';
 
 /**
  * Compact at-a-glance array summary, e.g. `6×3 · 18` (grid) or `⟳ 8` (radial).
@@ -230,6 +231,11 @@ export function SingleCutoutInspector({
                   achievable: depthShortfall.achievable.toFixed(1),
                   requested: depthShortfall.requested.toFixed(1),
                 })}
+                <span className="ml-1 inline-flex align-middle">
+                  <LabelInfo label={t('binDesigner.cutouts.cutDepth')}>
+                    {t('binDesigner.cutouts.depthShortfallDetail')}
+                  </LabelInfo>
+                </span>
               </p>
             )}
           </div>
@@ -262,25 +268,23 @@ export function SingleCutoutInspector({
                 disabled={disabled}
               />
               {LEAN_SHAPES.includes(cutout.shape) && !throughOnly && (
-                <div className="space-y-0.5">
-                  <SliderInput
-                    label={t('binDesigner.cutouts.lean')}
-                    value={cutout.leanDeg ?? 0}
-                    onChange={(leanDeg) =>
-                      onUpdate(cutout.id, { leanDeg: leanDeg === 0 ? undefined : leanDeg })
-                    }
-                    min={-MAX_CUTOUT_LEAN_DEG}
-                    max={MAX_CUTOUT_LEAN_DEG}
-                    step={1}
-                    unit="°"
-                    disabled={disabled}
-                  />
-                  {(cutout.leanDeg ?? 0) !== 0 && (
-                    <p className="text-micro text-text-muted">
-                      {t('binDesigner.cutouts.leanHint')}
-                    </p>
-                  )}
-                </div>
+                <SliderInput
+                  label={t('binDesigner.cutouts.lean')}
+                  value={cutout.leanDeg ?? 0}
+                  onChange={(leanDeg) =>
+                    onUpdate(cutout.id, { leanDeg: leanDeg === 0 ? undefined : leanDeg })
+                  }
+                  min={-MAX_CUTOUT_LEAN_DEG}
+                  max={MAX_CUTOUT_LEAN_DEG}
+                  step={1}
+                  unit="°"
+                  disabled={disabled}
+                  labelAddon={
+                    <LabelInfo label={t('binDesigner.cutouts.lean')}>
+                      {t('binDesigner.cutouts.leanDetail')}
+                    </LabelInfo>
+                  }
+                />
               )}
               {cutout.shape !== 'mesh' &&
                 !throughOnly &&

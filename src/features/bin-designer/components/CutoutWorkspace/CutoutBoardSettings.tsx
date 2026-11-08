@@ -4,7 +4,8 @@
  * controls (snap, grid size) plus the read-only board footprint.
  */
 
-import { Button, Checkbox } from '@/design-system';
+import { Button } from '@/design-system';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { useTranslation } from '@/i18n';
 import { CutoutPlateSettings } from './CutoutPlateSettings';
 import { CutoutFillControls } from '@/features/bin-designer/components/controls';
@@ -48,14 +49,11 @@ export function CutoutBoardSettings({
           {t('binDesigner.cutoutEditor.boardSettings')}
         </span>
 
-        <label className="flex cursor-pointer items-center gap-2 text-xs text-content-secondary">
-          <Checkbox
-            checked={snapEnabled}
-            onChange={onSnapToggle}
-            aria-label={t('binDesigner.cutouts.snapToGrid')}
-          />
-          <span>{t('binDesigner.cutouts.snapToGrid')}</span>
-        </label>
+        <FeatureToggle
+          label={t('binDesigner.cutouts.snapToGrid')}
+          checked={snapEnabled}
+          onChange={() => onSnapToggle(!snapEnabled)}
+        />
 
         {snapEnabled && (
           <div className="space-y-1">

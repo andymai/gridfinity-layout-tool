@@ -95,6 +95,9 @@ export function TraceView({ open, onClose, onTraced, initialPhoto }: TraceViewPr
     if (!marking) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
+      // This capture listener runs before an open popover's own; let the popover
+      // (an info dot) take this Escape so the marks survive closing it.
+      if (document.querySelector('[data-popover]')) return;
       e.preventDefault();
       e.stopPropagation();
       setMode('tap');

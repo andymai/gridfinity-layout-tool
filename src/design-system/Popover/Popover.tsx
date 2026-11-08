@@ -159,6 +159,7 @@ export function Popover({
     <div
       ref={popoverRef}
       role="dialog"
+      data-popover=""
       aria-label={ariaLabel}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}

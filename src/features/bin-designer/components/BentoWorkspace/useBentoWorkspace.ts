@@ -20,8 +20,10 @@ import { useCutoutContextMenu } from '@/features/bin-designer/components/panel/C
 import { useBentoPan } from './useBentoPan';
 import { useBentoInteraction } from './useBentoInteraction';
 
+/** A field takes its own keys, and so does an open popover (an info dot's panel). */
 export const isEditableTarget = (target: EventTarget | null): boolean =>
-  target instanceof HTMLElement && !!target.closest('input, textarea, [contenteditable="true"]');
+  target instanceof HTMLElement &&
+  !!target.closest('input, textarea, [contenteditable="true"], [data-popover]');
 
 export function useBentoWorkspace() {
   const t = useTranslation();
@@ -343,6 +345,8 @@ export function useBentoWorkspace() {
         return;
       }
       if (e.key === 'Escape') {
+        // An open popover (an info dot) captures Escape and marks it handled.
+        if (e.defaultPrevented) return;
         if (interaction.cancel()) return;
         if (selectedId !== null) {
           setSelectedBentoCompartmentId(null);

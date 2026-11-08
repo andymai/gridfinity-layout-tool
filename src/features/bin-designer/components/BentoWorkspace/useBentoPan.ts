@@ -15,8 +15,12 @@ export interface BentoPanApi {
   readonly onPointerDown: (e: React.PointerEvent) => boolean;
 }
 
-const isEditableTarget = (target: EventTarget | null): boolean =>
-  target instanceof HTMLElement && !!target.closest('input, textarea, [contenteditable="true"]');
+/** Space belongs to a focused field or a switch/radio, as in the cutout editor. */
+const focusOwnsSpace = (target: EventTarget | null): boolean =>
+  target instanceof HTMLElement &&
+  !!target.closest(
+    'input, textarea, [contenteditable="true"], [role="switch"], [role="radio"], [data-popover]'
+  );
 
 export function useBentoPan(
   setCameraCenter: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>,
@@ -37,7 +41,7 @@ export function useBentoPan(
       setSpaceHeld(held);
     };
     const onKeyDown = (e: KeyboardEvent): void => {
-      if (e.code !== 'Space' || e.repeat || isEditableTarget(e.target)) return;
+      if (e.code !== 'Space' || e.repeat || focusOwnsSpace(e.target)) return;
       e.preventDefault();
       setSpace(true);
     };

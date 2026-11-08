@@ -87,17 +87,23 @@ interface KeyOptions {
   shiftKey?: boolean;
   tagName?: string;
   role?: string;
+  defaultPrevented?: boolean;
+  inPopover?: boolean;
 }
 
 function press(key: string, options: KeyOptions = {}): KeyboardEvent {
-  const { tagName = 'DIV', role, ...flags } = options;
+  const { tagName = 'DIV', role, inPopover = false, ...flags } = options;
   const event = {
     key,
     metaKey: false,
     ctrlKey: false,
     shiftKey: false,
     ...flags,
-    target: { tagName, getAttribute: (name: string) => (name === 'role' ? (role ?? null) : null) },
+    target: {
+      tagName,
+      getAttribute: (name: string) => (name === 'role' ? (role ?? null) : null),
+      closest: (selector: string) => (inPopover && selector === '[data-popover]' ? {} : null),
+    },
     preventDefault: vi.fn(),
     stopImmediatePropagation: vi.fn(),
   };
@@ -122,6 +128,29 @@ describe('handleCutoutKeyDown — typing guard', () => {
     const tab = press('Tab', { tagName: 'BUTTON', role: 'switch' });
     handleCutoutKeyDown(tab, ctx);
     handleCutoutKeyDown(press(' ', { tagName: 'BUTTON', role: 'switch' }), ctx);
+    expect(tab.preventDefault).not.toHaveBeenCalled();
+    expect(ctx.setSelection).not.toHaveBeenCalled();
+  });
+});
+
+describe('handleCutoutKeyDown — open popovers', () => {
+  it('leaves every key to an open info dot, which scrolls and tabs with them', () => {
+    const ctx = makeCtx({ selection: new Set(['c1']), cutouts: [makeCutout()] });
+    for (const key of ['ArrowDown', 'Tab', 'Delete', 'Escape']) {
+      handleCutoutKeyDown(press(key, { inPopover: true }), ctx);
+    }
+    expect(ctx.nudgeSelected).not.toHaveBeenCalled();
+    expect(ctx.setSelection).not.toHaveBeenCalled();
+    expect(ctx.deleteSelected).not.toHaveBeenCalled();
+    expect(ctx.setMode).not.toHaveBeenCalled();
+  });
+});
+
+describe('handleCutoutKeyDown — focused buttons', () => {
+  it('leaves Tab to a focused button, such as an info dot, so focus moves on', () => {
+    const ctx = makeCtx({ selection: new Set(['c1']), cutouts: [makeCutout()] });
+    const tab = press('Tab', { tagName: 'BUTTON' });
+    handleCutoutKeyDown(tab, ctx);
     expect(tab.preventDefault).not.toHaveBeenCalled();
     expect(ctx.setSelection).not.toHaveBeenCalled();
   });
@@ -165,6 +194,13 @@ describe('handleCutoutKeyDown — deletion and selection', () => {
 });
 
 describe('handleCutoutKeyDown — Escape', () => {
+  it('leaves the selection alone when a popover already took the Escape', () => {
+    const ctx = makeCtx({ selection: new Set(['c1']), cutouts: [makeCutout()] });
+    handleCutoutKeyDown(press('Escape', { defaultPrevented: true }), ctx);
+    expect(ctx.deselectAll).not.toHaveBeenCalled();
+    expect(ctx.setMode).not.toHaveBeenCalled();
+  });
+
   it('clears the in-progress preview and guides', () => {
     const ctx = makeCtx();
     handleCutoutKeyDown(press('Escape'), ctx);

@@ -66,13 +66,22 @@ export interface KeyboardHandlerContext {
  */
 export function focusOwnsKeys(target: EventTarget | null): boolean {
   // A key sent to the window or the document has neither.
-  const element = target as Partial<Pick<HTMLElement, 'tagName' | 'getAttribute'>> | null;
+  const element = target as Partial<
+    Pick<HTMLElement, 'tagName' | 'getAttribute' | 'closest'>
+  > | null;
   return (
     element?.tagName === 'INPUT' ||
     element?.tagName === 'TEXTAREA' ||
     element?.getAttribute?.('role') === 'switch' ||
-    element?.getAttribute?.('role') === 'radio'
+    element?.getAttribute?.('role') === 'radio' ||
+    // An open popover (an info dot's panel) scrolls and tabs with these keys.
+    (typeof element?.closest === 'function' && element.closest('[data-popover]') !== null)
   );
+}
+
+function tabMovesFocus(target: EventTarget | null): boolean {
+  const element = target as Partial<Pick<HTMLElement, 'tagName'>> | null;
+  return element?.tagName === 'BUTTON' || element?.tagName === 'A' || element?.tagName === 'SELECT';
 }
 
 /**
@@ -83,6 +92,8 @@ export function focusOwnsKeys(target: EventTarget | null): boolean {
  */
 export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContext): void {
   if (focusOwnsKeys(e.target)) return;
+  // An open popover (an info dot) captures Escape and marks it handled.
+  if (e.key === 'Escape' && e.defaultPrevented) return;
 
   // Path drawing mode: Escape to cancel, Ctrl+Z to undo last point
   if (ctx.mode.type === 'path-drawing') {
@@ -345,9 +356,10 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       }
       break;
 
-    // Tab / Shift+Tab to cycle selection
+    // Tab / Shift+Tab to cycle selection, unless focus sits on a control
+    // (a button, an info dot's panel) where Tab has to move focus on.
     case 'Tab':
-      if (ctx.cutouts.length > 0) {
+      if (ctx.cutouts.length > 0 && !tabMovesFocus(e.target)) {
         e.preventDefault();
         handleTabCycle(e, ctx);
       }

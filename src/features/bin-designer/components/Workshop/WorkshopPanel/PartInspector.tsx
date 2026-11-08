@@ -5,7 +5,6 @@ import {
   IconButton,
   Input,
   SegmentedControl,
-  Switch,
   TrashIcon,
   NumberField,
 } from '@/design-system';
@@ -20,6 +19,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import type { AssemblyPartNode } from '@/shared/types/assembly';
 import { clamp } from '@/shared/utils/math';
 import { PanelSection } from '../../panel/PanelSection';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { CutterProfileSection } from './CutterProfileSection';
 import { LABEL_FACES, PART_LABEL_KEYS, PART_NUMBER_FIELDS } from './partFieldConfig';
 
@@ -225,16 +225,16 @@ export function PartInspector({ node }: PartInspectorProps) {
         summary={node.array ? `${node.array.count}×` : undefined}
         defaultExpanded={node.array !== undefined}
       >
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-content-tertiary">{t('workshop.repeat.title')}</span>
-          <Switch
-            checked={node.array !== undefined}
-            onChange={(on) =>
-              setAssemblyPartArray(node.id, on ? { count: 3, dx: 16, dy: 0 } : null)
-            }
-            aria-label={t('workshop.repeat.title')}
-          />
-        </div>
+        <FeatureToggle
+          label={t('workshop.repeat.title')}
+          checked={node.array !== undefined}
+          onChange={() =>
+            setAssemblyPartArray(
+              node.id,
+              node.array === undefined ? { count: 3, dx: 16, dy: 0 } : null
+            )
+          }
+        />
         {node.array && (
           <div className="mt-2 grid grid-cols-3 gap-1">
             <Field
@@ -273,12 +273,11 @@ export function PartInspector({ node }: PartInspectorProps) {
             />
           </div>
         )}
-        <div className="mt-2 flex items-center justify-between">
-          <span className="text-xs text-content-tertiary">{t('workshop.mirror.part')}</span>
-          <Switch
+        <div className="mt-2">
+          <FeatureToggle
+            label={t('workshop.mirror.part')}
             checked={node.mirror === true}
-            onChange={(on) => setAssemblyPartMirror(node.id, on)}
-            aria-label={t('workshop.mirror.part')}
+            onChange={() => setAssemblyPartMirror(node.id, node.mirror !== true)}
           />
         </div>
       </Collapsible>
@@ -290,27 +289,24 @@ export function PartInspector({ node }: PartInspectorProps) {
           summary={node.label ? node.label.text : undefined}
           defaultExpanded={node.label !== undefined}
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-content-tertiary">{t('workshop.label.title')}</span>
-            <Switch
-              checked={node.label !== undefined}
-              onChange={(on) =>
-                setAssemblyPartLabel(
-                  node.id,
-                  on
-                    ? {
-                        text: t('workshop.label.placeholder'),
-                        sizeMm: 8,
-                        depthMm: 0.8,
-                        style: 'recessed',
-                        face: (LABEL_FACES[node.type] ?? ['front'])[0],
-                      }
-                    : null
-                )
-              }
-              aria-label={t('workshop.label.title')}
-            />
-          </div>
+          <FeatureToggle
+            label={t('workshop.label.title')}
+            checked={node.label !== undefined}
+            onChange={() =>
+              setAssemblyPartLabel(
+                node.id,
+                node.label === undefined
+                  ? {
+                      text: t('workshop.label.placeholder'),
+                      sizeMm: 8,
+                      depthMm: 0.8,
+                      style: 'recessed',
+                      face: (LABEL_FACES[node.type] ?? ['front'])[0],
+                    }
+                  : null
+              )
+            }
+          />
           {node.label && (
             <div className="mt-2 flex flex-col gap-2">
               <Input
