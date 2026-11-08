@@ -431,11 +431,11 @@ describe('ExportDialog', () => {
     expect(input.tagName).toBe('INPUT');
   });
 
-  it('shows 3D Model section', () => {
+  it('shows 3D model section', () => {
     render(<ExportDialog />);
 
     // Check for section heading
-    expect(screen.getByText('3D Model')).toBeInTheDocument();
+    expect(screen.getByText('3D model')).toBeInTheDocument();
 
     // Check for description
     expect(screen.getByText(/Export a printable 3D model file/i)).toBeInTheDocument();
