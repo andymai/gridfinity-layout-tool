@@ -1,0 +1,20 @@
+src/i18n/locales/en.ts
+  s_66332f8bf1351d::t_e716bb2960d182 6085
+  s_66332f8bf1351d::t_e239a6c4d24310 6067-6068
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4f380d6241040720f022decf5432534b55b65f20",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
