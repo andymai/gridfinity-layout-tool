@@ -121,7 +121,7 @@ describe('PrintModal', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
       expect(screen.getByTestId('print-modal-dialog')).toBeInTheDocument();
-      expect(screen.getByText('Print Layout')).toBeInTheDocument();
+      expect(screen.getByText('Print layout')).toBeInTheDocument();
     });
 
     it('has accessible modal attributes', () => {
@@ -135,7 +135,7 @@ describe('PrintModal', () => {
     it('renders Print and Cancel buttons', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-      expect(screen.getByText('Print Now')).toBeInTheDocument();
+      expect(screen.getByText('Print now')).toBeInTheDocument();
       expect(screen.getByText('Cancel')).toBeInTheDocument();
     });
   });
@@ -224,7 +224,7 @@ describe('PrintModal', () => {
       fireEvent.click(layer2!);
 
       // Print button should be disabled
-      const printButton = screen.getByText('Print Now').closest('button');
+      const printButton = screen.getByText('Print now').closest('button');
       expect(printButton).toBeDisabled();
     });
 
@@ -310,7 +310,7 @@ describe('PrintModal', () => {
     it('calls window.print when Print button clicked', () => {
       render(<PrintModal isOpen={true} onClose={vi.fn()} />);
 
-      fireEvent.click(screen.getByText('Print Now'));
+      fireEvent.click(screen.getByText('Print now'));
 
       expect(mockPrint).toHaveBeenCalled();
     });

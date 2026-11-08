@@ -50,9 +50,9 @@ vi.mock('@/i18n', async (importOriginal) => {
         'errorBoundary.heading': 'Something went wrong',
         'errorBoundary.description': 'An unexpected error occurred.',
         'errorBoundary.hint': 'Try again or download a backup.',
-        'errorBoundary.tryAgain': 'Try Again',
-        'errorBoundary.undoLastChange': 'Undo Last Change',
-        'errorBoundary.downloadBackup': 'Download Backup',
+        'errorBoundary.tryAgain': 'Try again',
+        'errorBoundary.undoLastChange': 'Undo last change',
+        'errorBoundary.downloadBackup': 'Download backup',
         'errorBoundary.backupDone': 'Backup downloaded.',
         'errorBoundary.backupError': "Couldn't create a backup.",
         'pwaUpdate.reload': 'Reload',
@@ -118,7 +118,7 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
 
     shouldThrow = false;
-    fireEvent.click(screen.getByText('Try Again'));
+    fireEvent.click(screen.getByText('Try again'));
 
     rerender(
       <ErrorBoundary>
@@ -134,8 +134,8 @@ describe('ErrorBoundary', () => {
         <ThrowingChild shouldThrow={true} />
       </ErrorBoundary>
     );
-    expect(screen.getByText('Try Again')).toBeInTheDocument();
-    expect(screen.getByText('Download Backup')).toBeInTheDocument();
+    expect(screen.getByText('Try again')).toBeInTheDocument();
+    expect(screen.getByText('Download backup')).toBeInTheDocument();
     // The destructive wipe must not be reachable from the crash screen.
     expect(screen.queryByText(/reset app data/i)).not.toBeInTheDocument();
   });
@@ -148,7 +148,7 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
 
-    fireEvent.click(screen.getByText('Download Backup'));
+    fireEvent.click(screen.getByText('Download backup'));
     expect(downloadArchive).toHaveBeenCalled();
   });
 
@@ -159,7 +159,7 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
 
-    fireEvent.click(screen.getByText('Download Backup'));
+    fireEvent.click(screen.getByText('Download backup'));
     await vi.waitFor(() => expect(screen.getByText('Backup downloaded.')).toBeInTheDocument());
   });
 
@@ -173,7 +173,7 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
 
-    fireEvent.click(screen.getByText('Download Backup'));
+    fireEvent.click(screen.getByText('Download backup'));
     await vi.waitFor(() =>
       expect(screen.getByText("Couldn't create a backup.")).toBeInTheDocument()
     );
@@ -186,7 +186,7 @@ describe('ErrorBoundary', () => {
         <ThrowingChild shouldThrow={true} />
       </ErrorBoundary>
     );
-    expect(screen.getByText('Undo Last Change')).toBeInTheDocument();
+    expect(screen.getByText('Undo last change')).toBeInTheDocument();
   });
 
   it('hides Undo Last Change when there is no undo history', () => {
@@ -196,7 +196,7 @@ describe('ErrorBoundary', () => {
         <ThrowingChild shouldThrow={true} />
       </ErrorBoundary>
     );
-    expect(screen.queryByText('Undo Last Change')).not.toBeInTheDocument();
+    expect(screen.queryByText('Undo last change')).not.toBeInTheDocument();
   });
 
   it('reverts the last change and recovers the app on Undo click', () => {
@@ -218,7 +218,7 @@ describe('ErrorBoundary', () => {
     undoMock.mockImplementation(() => {
       shouldThrow = false;
     });
-    fireEvent.click(screen.getByText('Undo Last Change'));
+    fireEvent.click(screen.getByText('Undo last change'));
     expect(undoMock).toHaveBeenCalledTimes(1);
 
     rerender(
@@ -245,7 +245,7 @@ describe('ErrorBoundary', () => {
         </ErrorBoundary>
       );
       expect(screen.getByText('Reload')).toBeInTheDocument();
-      expect(screen.queryByText('Try Again')).not.toBeInTheDocument();
+      expect(screen.queryByText('Try again')).not.toBeInTheDocument();
     });
 
     it('hides Undo, which cannot fix a missing chunk', () => {
@@ -255,7 +255,7 @@ describe('ErrorBoundary', () => {
           <ChunkChild />
         </ErrorBoundary>
       );
-      expect(screen.queryByText('Undo Last Change')).not.toBeInTheDocument();
+      expect(screen.queryByText('Undo last change')).not.toBeInTheDocument();
     });
 
     it('forces a cache-dropping reload on Reload click', () => {

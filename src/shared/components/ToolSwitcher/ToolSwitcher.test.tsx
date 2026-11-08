@@ -146,7 +146,7 @@ describe('ToolSwitcher', () => {
 
   it('has accessible labels', () => {
     render(<ToolSwitcher />);
-    expect(screen.getByRole('navigation')).toHaveAttribute('aria-label', 'Tool Switcher');
+    expect(screen.getByRole('navigation')).toHaveAttribute('aria-label', 'Tool switcher');
     expect(screen.getByRole('tablist')).toHaveAttribute('aria-label', 'Active tool');
   });
 
@@ -176,8 +176,8 @@ describe('ToolSwitcher', () => {
     render(<ToolSwitcher />);
     const tabs = screen.getAllByRole('tab');
     expect(tabs[0]).not.toHaveAttribute('title'); // active tab
-    expect(tabs[1].getAttribute('title')).toContain('Switch to Bin Designer');
-    expect(tabs[2].getAttribute('title')).toContain('Switch to Baseplate Generator');
+    expect(tabs[1].getAttribute('title')).toContain('Switch to bin designer');
+    expect(tabs[2].getAttribute('title')).toContain('Switch to baseplate generator');
   });
 
   describe('on the community route', () => {

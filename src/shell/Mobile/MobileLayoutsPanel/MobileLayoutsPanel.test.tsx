@@ -530,11 +530,11 @@ describe('MobileLayoutsPanel', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText('Share to Cloud')).toBeInTheDocument();
+        expect(screen.getByText('Share to cloud')).toBeInTheDocument();
       });
 
       act(() => {
-        fireEvent.click(screen.getByText('Share to Cloud'));
+        fireEvent.click(screen.getByText('Share to cloud'));
       });
 
       await waitFor(() => {
@@ -563,17 +563,17 @@ describe('MobileLayoutsPanel', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText('Share Layout')).toBeInTheDocument();
+        expect(screen.getByText('Share layout')).toBeInTheDocument();
       });
 
       // Click cloud share option
       act(() => {
-        fireEvent.click(screen.getByText('Share to Cloud'));
+        fireEvent.click(screen.getByText('Share to cloud'));
       });
 
       await waitFor(() => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
-        expect(screen.getByText('Cloud Share')).toBeInTheDocument();
+        expect(screen.getByText('Cloud share')).toBeInTheDocument();
       });
     });
 
@@ -584,7 +584,7 @@ describe('MobileLayoutsPanel', () => {
       const dialog = screen.getByRole('dialog');
       expect(dialog).toHaveAttribute('aria-modal', 'true');
       expect(dialog).toHaveAttribute('aria-labelledby', 'mobile-cloud-share-title');
-      expect(screen.getByText('Cloud Share')).toHaveAttribute('id', 'mobile-cloud-share-title');
+      expect(screen.getByText('Cloud share')).toHaveAttribute('id', 'mobile-cloud-share-title');
     });
 
     it('creates a share with default permission', async () => {

@@ -274,7 +274,7 @@ describe('LayoutPreviewOverlay', () => {
     it('displays example items section', () => {
       render(<LayoutPreviewOverlay {...defaultProps} />);
 
-      expect(screen.getByText('Example Items')).toBeInTheDocument();
+      expect(screen.getByText('Example items')).toBeInTheDocument();
     });
 
     it('shows labeled bin names', () => {
@@ -334,7 +334,7 @@ describe('LayoutPreviewOverlay', () => {
 
       render(<LayoutPreviewOverlay {...defaultProps} layout={layoutNoLabels} />);
 
-      expect(screen.queryByText('Example Items')).not.toBeInTheDocument();
+      expect(screen.queryByText('Example items')).not.toBeInTheDocument();
     });
   });
 
@@ -423,7 +423,7 @@ describe('LayoutPreviewOverlay', () => {
       const onUseLayout = vi.fn();
       render(<LayoutPreviewOverlay {...defaultProps} onUseLayout={onUseLayout} />);
 
-      fireEvent.click(screen.getByText((content) => content.includes('Use as Starting Point')));
+      fireEvent.click(screen.getByText((content) => content.includes('Use as starting point')));
 
       expect(onUseLayout).toHaveBeenCalledTimes(1);
     });
@@ -434,7 +434,7 @@ describe('LayoutPreviewOverlay', () => {
       render(<LayoutPreviewOverlay {...defaultProps} isImporting={false} />);
 
       expect(
-        screen.getByText((content) => content.includes('Use as Starting Point'))
+        screen.getByText((content) => content.includes('Use as starting point'))
       ).toBeInTheDocument();
       expect(screen.queryByText('Adding...')).not.toBeInTheDocument();
     });
@@ -443,7 +443,7 @@ describe('LayoutPreviewOverlay', () => {
       render(<LayoutPreviewOverlay {...defaultProps} isImporting={true} />);
 
       expect(screen.getByText('Adding...')).toBeInTheDocument();
-      expect(screen.queryByText('Use as Starting Point')).not.toBeInTheDocument();
+      expect(screen.queryByText('Use as starting point')).not.toBeInTheDocument();
     });
 
     it('disables button when importing', () => {

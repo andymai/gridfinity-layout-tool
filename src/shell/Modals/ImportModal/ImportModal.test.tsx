@@ -24,12 +24,12 @@ describe('ImportModal', () => {
   describe('Rendering', () => {
     it('renders when isOpen is true', () => {
       const { getByText } = renderModal(true);
-      expect(getByText('Import Layout')).not.toBeNull();
+      expect(getByText('Import layout')).not.toBeNull();
     });
 
     it('does not render when isOpen is false', () => {
       const { queryByText } = renderModal(false);
-      expect(queryByText('Import Layout')).toBeNull();
+      expect(queryByText('Import layout')).toBeNull();
     });
 
     it('renders file upload button', () => {

@@ -50,7 +50,7 @@ describe('InteriorSection', () => {
     expect(mockStartScan).toHaveBeenCalledWith('interior_link', { phone: false });
   });
 
-  it('leaves the link out on Custom Cutouts, which has its own scan button', () => {
+  it('leaves the link out on Custom cutouts, which has its own scan button', () => {
     view.card = 'solid';
     render(<InteriorSection />);
     expect(screen.queryByText(en['binDesigner.interior.scanLink'])).toBeNull();
@@ -73,7 +73,7 @@ describe('InteriorSection', () => {
   it("shows only the chosen mode's caption and editor", () => {
     render(<InteriorSection />);
 
-    expect(screen.getByRole('radio', { name: 'Grid Dividers' })).toHaveAttribute(
+    expect(screen.getByRole('radio', { name: 'Grid dividers' })).toHaveAttribute(
       'aria-checked',
       'true'
     );
@@ -84,7 +84,7 @@ describe('InteriorSection', () => {
   it('calls selectCard when a tile is chosen', () => {
     render(<InteriorSection />);
 
-    fireEvent.click(screen.getByRole('radio', { name: 'Removable Dividers' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Removable dividers' }));
 
     expect(mockSelectCard).toHaveBeenCalledWith('slotted');
   });
@@ -98,13 +98,13 @@ describe('InteriorSection', () => {
     expect(mockSetStyle).not.toHaveBeenCalled();
   });
 
-  it('plays a clip of the compartment editor beside the Grid Dividers caption', () => {
+  it('plays a clip of the compartment editor beside the Grid dividers caption', () => {
     render(<InteriorSection />);
-    fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Grid Dividers' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Grid dividers' }));
     expect(screen.getByText(en['binDesigner.featureTip.compartments'])).toBeInTheDocument();
   });
 
-  it('offers the scan clip on Custom Cutouts only where the Cut Editor opens', () => {
+  it('offers the scan clip on Custom cutouts only where the Cut editor opens', () => {
     view.card = 'solid';
     const { unmount } = render(<InteriorSection />);
     expect(screen.getByRole('button', { name: 'Watch a clip: Scan a tool' })).toBeInTheDocument();
@@ -144,10 +144,10 @@ describe('InteriorSection', () => {
       });
       render(<InteriorSection />);
 
-      expect(screen.getByRole('radio', { name: 'Grid Dividers' })).toBeDisabled();
+      expect(screen.getByRole('radio', { name: 'Grid dividers' })).toBeDisabled();
       expect(screen.getByText('Needs a rectangular footprint.')).toBeInTheDocument();
       expect(screen.getByTestId('content-standard').closest('[inert]')).not.toBeNull();
-      expect(screen.getByRole('radio', { name: 'Custom Cutouts' })).toHaveAttribute(
+      expect(screen.getByRole('radio', { name: 'Custom cutouts' })).toHaveAttribute(
         'tabindex',
         '0'
       );
@@ -163,7 +163,7 @@ describe('InteriorSection', () => {
       });
       render(<InteriorSection />);
 
-      const removable = screen.getByRole('radio', { name: 'Removable Dividers' });
+      const removable = screen.getByRole('radio', { name: 'Removable dividers' });
       expect(removable).toBeEnabled();
       fireEvent.click(removable);
       expect(mockSelectCard).toHaveBeenCalledWith('slotted');
@@ -182,7 +182,7 @@ describe('InteriorSection', () => {
       });
       render(<InteriorSection />);
 
-      const removable = screen.getByRole('radio', { name: 'Removable Dividers' });
+      const removable = screen.getByRole('radio', { name: 'Removable dividers' });
       expect(removable).toBeDisabled();
       expect(removable).toHaveAttribute('title', 'Not available with the lowered Nesting floor');
     });

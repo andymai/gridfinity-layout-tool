@@ -88,7 +88,7 @@ describe('resolveActiveOp', () => {
 describe('PathfinderControls', () => {
   it('disables every op button when fewer than 2 cutouts are selected', () => {
     renderControls({ selectedIds: ['a'], cutouts: [cutout({ id: 'a' })] });
-    for (const name of ['Union', 'Minus Front', 'Intersect', 'Exclude']) {
+    for (const name of ['Union', 'Minus front', 'Intersect', 'Exclude']) {
       expect(screen.getByRole('button', { name })).toBeDisabled();
     }
   });
@@ -99,7 +99,7 @@ describe('PathfinderControls', () => {
     const cs = [cutout({ id: 'a' }), cutout({ id: 'b', x: 30 })];
     renderControls({ selectedIds: ['a', 'b'], cutouts: cs, onGroup, onSetGroupOp });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Minus Front' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Minus front' }));
 
     expect(onGroup).toHaveBeenCalledWith(['a', 'b'], 'subtract');
     expect(onSetGroupOp).not.toHaveBeenCalled();
@@ -142,7 +142,7 @@ describe('PathfinderControls', () => {
     ];
     renderControls({ selectedIds: ['a', 'b'], cutouts: cs });
 
-    expect(screen.getByRole('button', { name: 'Minus Front' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Minus front' })).toHaveAttribute(
       'aria-pressed',
       'true'
     );

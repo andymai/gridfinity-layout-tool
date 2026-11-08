@@ -304,7 +304,7 @@ describe('RightPanel', () => {
       render(<RightPanel />);
 
       expect(screen.getByTestId('single-bin-inspector')).toBeInTheDocument();
-      expect(screen.getByRole('region', { name: 'Bin Properties' })).toBeInTheDocument();
+      expect(screen.getByRole('region', { name: 'Bin properties' })).toBeInTheDocument();
     });
 
     it('shows MultiBinInspector when multiple bins selected', () => {
@@ -410,7 +410,7 @@ describe('RightPanel', () => {
     it('displays bin count badge', () => {
       render(<RightPanel />);
 
-      const badge = within(screen.getByRole('button', { name: /^Bin List/ })).getByText('2');
+      const badge = within(screen.getByRole('button', { name: /^Bin list/ })).getByText('2');
       expect(badge).toBeInTheDocument();
     });
 

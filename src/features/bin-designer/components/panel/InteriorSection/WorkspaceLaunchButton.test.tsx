@@ -42,7 +42,7 @@ describe('WorkspaceLaunchButton', () => {
     render(
       <WorkspaceLaunchButton
         illustration={<div />}
-        title="Cut Editor"
+        title="Cut editor"
         subtitle="Draw shapes"
         onClick={onClick}
         tip={<button type="button">Watch</button>}
@@ -50,7 +50,7 @@ describe('WorkspaceLaunchButton', () => {
     );
 
     const tip = screen.getByRole('button', { name: 'Watch' });
-    expect(screen.getByRole('button', { name: /Cut Editor/ })).not.toContainElement(tip);
+    expect(screen.getByRole('button', { name: /Cut editor/ })).not.toContainElement(tip);
     fireEvent.click(tip);
     expect(onClick).not.toHaveBeenCalled();
   });

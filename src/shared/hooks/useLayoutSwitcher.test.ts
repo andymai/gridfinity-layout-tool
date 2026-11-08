@@ -491,7 +491,7 @@ describe('useLayoutSwitcher', () => {
       const { result } = renderHook(() => useLayoutSwitcher());
 
       await act(async () => {
-        await result.current.createNewLayout('New Layout');
+        await result.current.createNewLayout('New layout');
       });
 
       expect(useLibraryStore.getState().library.entries.length).toBe(entriesBefore + 1);
@@ -871,7 +871,7 @@ describe('useLayoutSwitcher', () => {
       });
 
       await act(async () => {
-        await result.current.createNewLayout('New Layout');
+        await result.current.createNewLayout('New layout');
       });
 
       // createLayoutEntry should be called with the FRESH library settings

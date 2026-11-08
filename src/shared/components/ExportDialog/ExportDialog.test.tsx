@@ -140,12 +140,12 @@ describe('ExportDialog', () => {
           { label: 'Weight', value: '12g' },
           { label: 'Time', value: '1h 20m' },
         ]}
-        estimatesTitle="Print Estimates"
+        estimatesTitle="Print estimates"
       />
     );
     expect(screen.getByText('Weight')).toBeInTheDocument();
     expect(screen.getByText('12g')).toBeInTheDocument();
-    expect(screen.getByText('Print Estimates')).toBeInTheDocument();
+    expect(screen.getByText('Print estimates')).toBeInTheDocument();
   });
 
   it('disables download when canExport is false', () => {
@@ -247,10 +247,10 @@ describe('ExportDialog — source download', () => {
       <ExportDialog
         {...defaultProps}
         canExport={false}
-        sourceDownload={{ label: 'Download Design JSON', hint: 'The editable design', onClick }}
+        sourceDownload={{ label: 'Download design JSON', hint: 'The editable design', onClick }}
       />
     );
-    const link = screen.getByRole('button', { name: 'Download Design JSON' });
+    const link = screen.getByRole('button', { name: 'Download design JSON' });
     expect(link).not.toBeDisabled();
     fireEvent.click(link);
     expect(onClick).toHaveBeenCalledTimes(1);

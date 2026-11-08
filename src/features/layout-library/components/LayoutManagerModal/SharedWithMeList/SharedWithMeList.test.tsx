@@ -155,7 +155,7 @@ describe('SharedWithMeList', () => {
       {
         id: 'shared-new',
         sourceShareId: 'share-new',
-        name: 'New Layout',
+        name: 'New layout',
         permission: 'view',
         lastAccessedAt: 3000000,
         addedAt: 3000000,

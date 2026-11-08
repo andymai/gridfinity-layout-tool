@@ -169,7 +169,7 @@ describe('Sidebar', () => {
     it('renders Grid Size section', () => {
       render(<Sidebar />);
 
-      expect(screen.getByText('Grid Size')).toBeInTheDocument();
+      expect(screen.getByText('Grid size')).toBeInTheDocument();
     });
 
     it('renders width controls', () => {
@@ -389,7 +389,7 @@ describe('Sidebar', () => {
     it('renders Physical Units section', () => {
       render(<Sidebar />);
 
-      expect(screen.getByText('Physical Units')).toBeInTheDocument();
+      expect(screen.getByText('Physical units')).toBeInTheDocument();
     });
 
     it('renders grid unit input', () => {

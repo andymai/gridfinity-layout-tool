@@ -276,7 +276,7 @@ describe('InspirationGallery', () => {
     it('renders the title', () => {
       render(<InspirationGallery {...defaultProps} />);
 
-      expect(screen.getByText('Inspiration Gallery')).toBeInTheDocument();
+      expect(screen.getByText('Inspiration gallery')).toBeInTheDocument();
     });
 
     it('renders the subtitle', () => {
