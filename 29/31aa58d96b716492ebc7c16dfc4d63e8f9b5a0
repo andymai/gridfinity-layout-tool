@@ -1,0 +1,21 @@
+src/features/bin-designer/components/preview/PreviewControls/PreviewControls.test.tsx
+  s_66332f8bf1351d::t_814e7336534ee4 92-123
+src/features/bin-designer/components/preview/PreviewControls/PreviewControls.tsx
+  s_66332f8bf1351d::t_814e7336534ee4 106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2931aa58d96b716492ebc7c16dfc4d63e8f9b5a0",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
