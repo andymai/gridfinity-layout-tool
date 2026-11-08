@@ -306,7 +306,7 @@
   "baseplate.sideView": "Sida",
   "baseplate.solidFloor": "Massiv botten",
   "baseplate.ecoPlate": "Ekoplatta",
-  "baseplate.ecoPlateHint": "Sänker de raka fogarna mellan hörnstolparna till en tunn list, så att en platta använder ungefär en tredjedel mindre filament (mindre med bred utfyllnad). Lådorna hålls bara av hörnstolparna.",
+  "baseplate.ecoPlateDetail": "Sparar upp till en tredjedel av filamentet. Lådorna hålls bara av hörnstolparna.",
   "baseplate.solidFloorHeightNote": "Läggs till under standardrutnätet. Plattans totala höjd ökar med detta värde för att ge plats.",
   "baseplate.solidFloorThickness": "Bottentjocklek",
   "baseplate.splitCustom": "Anpassad delning",

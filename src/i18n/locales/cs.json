@@ -306,7 +306,7 @@
   "baseplate.sideView": "Zboku",
   "baseplate.solidFloor": "Plné dno",
   "baseplate.ecoPlate": "Úsporná deska",
-  "baseplate.ecoPlateHint": "Rovné spoje mezi rohovými sloupky se sníží na tenký můstek, takže deska spotřebuje asi o třetinu méně filamentu (se širokým odsazením méně). Biny drží jen rohové sloupky.",
+  "baseplate.ecoPlateDetail": "Ušetří až třetinu filamentu. Biny drží jen rohové sloupky.",
   "baseplate.solidFloorHeightNote": "Přidáno pod standardní mřížku. Celková výška desky se o tuto hodnotu zvětší, aby se to vešlo.",
   "baseplate.solidFloorThickness": "Tloušťka dna",
   "baseplate.splitCustom": "Vlastní rozdělení",

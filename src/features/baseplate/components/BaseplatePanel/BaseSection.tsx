@@ -290,14 +290,14 @@ export function BaseSection() {
         {!stackEnabled && (
           <>
             <div className="border-t border-stroke-subtle pt-3">
-              <Checkbox
-                checked={baseplateParams.ecoPlate === true}
-                onChange={(checked) => updateParam('ecoPlate', checked || undefined)}
+              <FeatureToggle
                 label={t('baseplate.ecoPlate')}
+                info={t('baseplate.ecoPlateDetail')}
+                checked={baseplateParams.ecoPlate === true}
+                onChange={() =>
+                  updateParam('ecoPlate', baseplateParams.ecoPlate === true ? undefined : true)
+                }
               />
-              <p className="text-label leading-relaxed text-content-tertiary pl-6">
-                {t('baseplate.ecoPlateHint')}
-              </p>
             </div>
             <div className="border-t border-stroke-subtle pt-3">
               <FeatureToggle

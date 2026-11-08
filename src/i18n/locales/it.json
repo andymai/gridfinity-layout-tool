@@ -306,7 +306,7 @@
   "baseplate.sideView": "Lato",
   "baseplate.solidFloor": "Fondo pieno",
   "baseplate.ecoPlate": "Piastra eco",
-  "baseplate.ecoPlateHint": "Abbassa le giunzioni dritte tra i montanti agli angoli fino a una barra sottile, così una piastra usa circa un terzo di filamento in meno (meno con un margine ampio). I bin sono trattenuti solo dai montanti agli angoli.",
+  "baseplate.ecoPlateDetail": "Risparmia fino a un terzo del filamento. I bin sono trattenuti solo dai montanti agli angoli.",
   "baseplate.solidFloorHeightNote": "Aggiunto sotto la griglia standard. L'altezza totale della piastra aumenta di questa quantità per adattarsi.",
   "baseplate.solidFloorThickness": "Spessore fondo",
   "baseplate.splitCustom": "Divisione personalizzata",

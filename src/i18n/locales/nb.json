@@ -306,7 +306,7 @@
   "baseplate.sideView": "Side",
   "baseplate.solidFloor": "Massiv bunn",
   "baseplate.ecoPlate": "Økoplate",
-  "baseplate.ecoPlateHint": "Senker de rette skjøtene mellom hjørnestolpene til en tynn stang, så en plate bruker omtrent en tredjedel mindre filament (mindre med bred polstring). Bingene holdes bare av hjørnestolpene.",
+  "baseplate.ecoPlateDetail": "Sparer opptil en tredjedel av filamentet. Bingene holdes bare av hjørnestolpene.",
   "baseplate.solidFloorHeightNote": "Legges til under standardrutenettet. Platens totale høyde øker tilsvarende for å gi plass.",
   "baseplate.solidFloorThickness": "Bunntykkelse",
   "baseplate.splitCustom": "Egendefinert deling",

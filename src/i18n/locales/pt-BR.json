@@ -306,7 +306,7 @@
   "baseplate.sideView": "Lado",
   "baseplate.solidFloor": "Base sólida",
   "baseplate.ecoPlate": "Placa eco",
-  "baseplate.ecoPlateHint": "Rebaixa as juntas retas entre os postes dos cantos até uma barra fina, então a placa usa cerca de um terço a menos de filamento (menos com preenchimento largo). Os compartimentos ficam presos só pelos postes dos cantos.",
+  "baseplate.ecoPlateDetail": "Economiza até um terço do filamento. Os compartimentos ficam presos só pelos postes dos cantos.",
   "baseplate.solidFloorHeightNote": "Adicionada abaixo da grade padrão. A altura total da placa aumenta nessa medida para acomodá-la.",
   "baseplate.solidFloorThickness": "Espessura da base",
   "baseplate.splitCustom": "Divisão personalizada",
