@@ -1,0 +1,102 @@
+src/features/inspiration-gallery/components/LayoutPreviewOverlay/LayoutPreviewOverlay.tsx
+  s_66332f8bf1351d::t_be05979e4904b9 110,189
+src/features/bin-designer/components/CompartmentEditor/CompartmentGridView.tsx
+  s_66332f8bf1351d::t_99199a6405f354 80
+  s_66332f8bf1351d::t_be05979e4904b9 12,40
+src/features/inspiration-gallery/types.test.ts
+  s_66332f8bf1351d::t_38c243c25bf755 1,24-25,28-30
+src/i18n/locales/es.json
+  s_66332f8bf1351d::t_1296465ebee5ad 1395-1396,1443-1444,1970-1971,2594-2598,2727-2728,3487-3493,3543-3547,3848-3849,3926,4074,4673-4674
+src/features/inspiration-gallery/types.ts
+  s_66332f8bf1351d::t_99199a6405f354 42-47
+src/i18n/locales/de.json
+  s_66332f8bf1351d::t_1296465ebee5ad 1395-1396,1443-1444,1970-1971,2594-2598,2727-2728,3487-3493,3543-3547,3848-3849,3926,4074,4673-4674
+src/features/inspiration-gallery/components/InspirationGallery/InspirationGallery.tsx
+  s_66332f8bf1351d::t_99199a6405f354 150
+  s_66332f8bf1351d::t_3b42ec16673ded 151,413
+scripts/i18n-values-allowlist.json
+  s_66332f8bf1351d::t_f29f235d43a532 221-225
+src/features/inspiration-gallery/components/ThemeFilterPills/ThemeFilterPills.tsx
+  s_66332f8bf1351d::t_99199a6405f354 34
+src/features/bin-designer/components/preview/PreviewControls/PreviewControls.tsx
+  s_66332f8bf1351d::t_2d15dcf9ad52fd 188-189,395-396
+  s_66332f8bf1351d::t_99199a6405f354 63-67,205-206,411-412
+src/shared/components/BulkIncrementControl/BulkIncrementControl.tsx
+  s_66332f8bf1351d::t_be05979e4904b9 2,31
+  s_66332f8bf1351d::t_99199a6405f354 45,59
+src/features/layout-library/components/LayoutManagerModal/LayoutActions/LayoutActions.tsx
+  s_66332f8bf1351d::t_99199a6405f354 100
+src/shell/Collab/PresenceAvatarBar/PresenceAvatarBar.tsx
+  s_66332f8bf1351d::t_be05979e4904b9 12,37
+  s_66332f8bf1351d::t_99199a6405f354 54,77,79
+src/i18n/locales/ka.json
+  s_66332f8bf1351d::t_1296465ebee5ad 158-159,490,492-493,855,1603-1607,1696-1702,1746-1747,3516-3517,3780-3781,4215-4219,5176-5177
+src/features/bin-inspector/components/Inspector/SplitWarning/SplitWarning.tsx
+  s_66332f8bf1351d::t_be05979e4904b9 35
+  s_66332f8bf1351d::t_99199a6405f354 63-68
+src/features/bin-designer/components/panel/HandleSection/HandleSection.tsx
+  s_66332f8bf1351d::t_99199a6405f354 84-88,104-108
+src/features/bin-designer/components/SlotConfigurator/CustomGridEditor.tsx
+  s_66332f8bf1351d::t_99199a6405f354 212
+src/features/bin-inspector/components/Inspector/CustomPropertiesEditor/CustomPropertiesEditor.tsx
+  s_66332f8bf1351d::t_99199a6405f354 172,189
+src/i18n/locales/fr.json
+  s_66332f8bf1351d::t_1296465ebee5ad 1395-1396,1443-1444,1970-1971,2594-2598,2727-2728,3487-3493,3543-3547,3848-3849,3926,4074,4673-4674
+src/shell/Sidebar/Sidebar.tsx
+  s_66332f8bf1351d::t_99199a6405f354 295,314
+src/i18n/locales/pl.json
+  s_66332f8bf1351d::t_1296465ebee5ad 1445-1446,1495-1496,2030-2031,2668-2676,2805-2806,3617-3625,3675-3679,3984-3985,4064,4230,4855-4856
+src/i18n/locales/pt-BR.json
+  s_66332f8bf1351d::t_1296465ebee5ad 1395-1396,1443-1444,1970-1971,2594-2598,2727-2728,3487-3493,3543-3547,3848-3849,3926,4074,4673-4674
+src/features/bin-designer/components/CompartmentEditor/CompartmentGridView.test.tsx
+  s_66332f8bf1351d::t_f74c7d696be414 98
+src/features/grid-editor/components/Grid/GridAxisLabels/GridAxisLabels.tsx
+  s_66332f8bf1351d::t_be05979e4904b9 2-3,52-53,131-132
+  s_66332f8bf1351d::t_99199a6405f354 109-110,188-189
+src/i18n/locales/cs.json
+  s_66332f8bf1351d::t_1296465ebee5ad 1420-1421,1469-1470,2000-2001,2631-2637,2766-2767,3552-3559,3609-3613,3916-3917,3995,4152,4765-4766
+src/features/grid-editor/components/Grid/Grid.tsx
+  s_66332f8bf1351d::t_99199a6405f354 398
+src/features/bin-designer/components/SlotConfigurator/CustomGridEditor.test.tsx
+  s_66332f8bf1351d::t_f74c7d696be414 47-48,65-66
+src/i18n/locales/ko.json
+  s_66332f8bf1351d::t_1296465ebee5ad 1370-1371,1417-1418,1940-1941,2557-2559,2688-2689,3422-3427,3477-3481,3780-3781,3857,3996,4582-4583
+src/i18n/locales/sv.json
+  s_66332f8bf1351d::t_1296465ebee5ad 1395-1396,1443-1444,1970-1971,2594-2598,2727-2728,3487-3493,3543-3547,3848-3849,3926,4074,4673-4674
+src/i18n/locales/en.ts
+  s_66332f8bf1351d::t_0ecd47a0daf885 145-146,531-532,534-535,922,1832-1838,1948-1954,2077-2078,4195-4196,4519-4520,5054-5058,6271-6272
+src/features/bin-designer/components/DesignerPage/DesignerHeader.tsx
+  s_66332f8bf1351d::t_99199a6405f354 216-217,233-234,391,406
+src/i18n/locales/nl.json
+  s_66332f8bf1351d::t_1296465ebee5ad 1395-1396,1443-1444,1970-1971,2594-2598,2727-2728,3487-3493,3543-3547,3848-3849,3926,4074,4673-4674
+src/i18n/locales/zh-CN.json
+  s_66332f8bf1351d::t_1296465ebee5ad 1370-1371,1417-1418,1940-1941,2557-2559,2688-2689,3422-3427,3477-3481,3780-3781,3857,3996,4582-4583
+src/i18n/locales/nb.json
+  s_66332f8bf1351d::t_1296465ebee5ad 1395-1396,1443-1444,1970-1971,2594-2598,2727-2728,3487-3493,3543-3547,3848-3849,3926,4074,4673-4674
+src/i18n/locales/it.json
+  s_66332f8bf1351d::t_1296465ebee5ad 1395-1396,1443-1444,1970-1971,2594-2598,2727-2728,3487-3493,3543-3547,3848-3849,3926,4074,4673-4674
+src/i18n/locales/uk.json
+  s_66332f8bf1351d::t_1296465ebee5ad 1445-1446,1495-1496,2030-2031,2668-2676,2805-2806,3617-3625,3675-3679,3984-3985,4064,4230,4855-4856
+src/i18n/locales/ja.json
+  s_66332f8bf1351d::t_1296465ebee5ad 1370-1371,1417-1418,1940-1941,2557-2559,2688-2689,3422-3427,3477-3481,3780-3781,3857,3996,4582-4583
+src/features/inspiration-gallery/components/LayoutCard/LayoutCard.tsx
+  s_66332f8bf1351d::t_99199a6405f354 53-58,74
+src/features/grid-editor/components/Grid/Grid.test.tsx
+  s_66332f8bf1351d::t_34b744cf4e7f19 253
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "70530d57711c1aca537ae25c9901e51c619add02",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
