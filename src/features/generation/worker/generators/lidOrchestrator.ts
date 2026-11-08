@@ -20,6 +20,7 @@ import { checkCancelled } from './meshUtils';
 import { shouldGenerateLid } from '@/shared/types/bin';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
+import { dropCollapsedTriangles } from '../../export/collapsedTriangles';
 import { FeatureTag } from './featureTags';
 import type { FaceGroupData } from '@/shared/types/generation';
 
@@ -213,8 +214,11 @@ export async function exportLid(
       count: g.count,
       tag: g.origin !== 0 ? g.origin : FeatureTag.UNKNOWN,
     }));
-    const data = await exportSolidToStl(solid, name, tolerance, angularTolerance);
-    return { data, fileName: `${name}.stl`, faceGroups };
+    const raw = await exportSolidToStl(solid, name, tolerance, angularTolerance, {
+      keepCollapsedTriangles: true,
+    });
+    const cleaned = dropCollapsedTriangles(raw, faceGroups);
+    return { data: cleaned.data, fileName: `${name}.stl`, faceGroups: cleaned.faceGroups };
   } finally {
     solid.delete();
   }

@@ -212,6 +212,34 @@ describe('threemfExporter', () => {
       expect(triangleMatches).toHaveLength(2);
     });
 
+    it('leaves out a triangle welded onto a repeated vertex, keeping each colour on its face', () => {
+      const vertices = new Float32Array([
+        ...[0, 0, 0, 1, 0, 0, 0, 1, 0],
+        ...[1, 0, 0, 1, 0, 0, 0, 1, 0],
+        ...[1, 0, 0, 1, 1, 0, 0, 1, 0],
+      ]);
+      const normals = new Float32Array(27).fill(0);
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'test',
+        colorConfig: {
+          materials: [{ color: '#ffffff' }, { color: '#0000ff' }],
+          triangleMaterialIndices: [0, 0, 1],
+        },
+      });
+      const triangles = extractModelXML(buffer).match(/<triangle [^>]*\/>/g) ?? [];
+
+      expect(triangles).toEqual([
+        '<triangle v1="0" v2="1" v3="2" paint_color="4" />',
+        '<triangle v1="1" v2="3" v3="2" paint_color="8" />',
+      ]);
+    });
+
+    it('keeps an object made only of collapsed triangles rather than writing it empty', () => {
+      const vertices = new Float32Array([...[1, 0, 0, 1, 0, 0, 0, 1, 0]]);
+      const buffer = build3MFBuffer(vertices, new Float32Array(9), { name: 'test' });
+      expect(extractModelXML(buffer).match(/<triangle /g)).toHaveLength(1);
+    });
+
     it('includes print settings when provided', () => {
       const { vertices, normals } = createSingleTriangle();
       const buffer = build3MFBuffer(vertices, normals, {
