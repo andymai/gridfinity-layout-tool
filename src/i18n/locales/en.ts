@@ -4652,7 +4652,8 @@ const en: Record<string, string> = {
   // Bulk selection / actions
   'binDesigner.select': 'Select',
   'binDesigner.selectDesign': 'Select {name}',
-  'binDesigner.bulk.selected': '{count} selected',
+  'binDesigner.bulk.selected_one': '{count} selected',
+  'binDesigner.bulk.selected_other': '{count} selected',
   'binDesigner.bulk.selectAll': 'Select all',
   'binDesigner.bulk.cancelSelection': 'Cancel',
   'binDesigner.bulk.delete': 'Delete',

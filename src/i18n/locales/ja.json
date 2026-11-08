@@ -534,7 +534,7 @@
   "binDesigner.bulk.deleteTitle": "デザインを削除",
   "binDesigner.bulk.export": "エクスポート",
   "binDesigner.bulk.selectAll": "すべて選択",
-  "binDesigner.bulk.selected": "{count}件選択中",
+  "binDesigner.bulk.selected_other": "{count}件選択中",
   "binDesigner.bulk.tag": "タグ付け",
   "binDesigner.bulk.tagApply": "タグを追加",
   "binDesigner.bulk.tagTitle_other": "{count}件のデザインにタグを追加",

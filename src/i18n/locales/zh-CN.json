@@ -534,7 +534,7 @@
   "binDesigner.bulk.deleteTitle": "删除设计",
   "binDesigner.bulk.export": "导出",
   "binDesigner.bulk.selectAll": "全选",
-  "binDesigner.bulk.selected": "已选中 {count} 个",
+  "binDesigner.bulk.selected_other": "已选中 {count} 个",
   "binDesigner.bulk.tag": "标签",
   "binDesigner.bulk.tagApply": "添加标签",
   "binDesigner.bulk.tagTitle_other": "为 {count} 个设计添加标签",

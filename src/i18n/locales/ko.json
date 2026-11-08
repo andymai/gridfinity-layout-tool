@@ -534,7 +534,7 @@
   "binDesigner.bulk.deleteTitle": "디자인 삭제",
   "binDesigner.bulk.export": "내보내기",
   "binDesigner.bulk.selectAll": "모두 선택",
-  "binDesigner.bulk.selected": "{count}개 선택됨",
+  "binDesigner.bulk.selected_other": "{count}개 선택됨",
   "binDesigner.bulk.tag": "태그",
   "binDesigner.bulk.tagApply": "태그 추가",
   "binDesigner.bulk.tagTitle_other": "디자인 {count}개에 태그 추가",
