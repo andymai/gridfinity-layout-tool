@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.536.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.535.1...gridfinity-layout-tool-v4.536.0) (2026-11-08)
+
+
+### Features
+
+* **bin-designer:** choose a color's surface without ticking a box first ([#4864](https://github.com/andymai/gridfinity-layout-tool/issues/4864)) ([4e0a48d](https://github.com/andymai/gridfinity-layout-tool/commit/4e0a48d88bfe4c8cba93f9e6ed7a1f8657eda31e))
+
 ## [4.535.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.535.0...gridfinity-layout-tool-v4.535.1) (2026-11-08)
 
 
