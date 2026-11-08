@@ -90,9 +90,15 @@ export function FeatureToggle({
       <div className={cn('relative flex items-center justify-between', isMobile && 'min-h-11')}>
         {/* On a phone the label's ::before stretches over the row, so a tap
             anywhere along it toggles. It resolves against the row because the
-            label and this cluster stay unpositioned; every other child is
-            positioned so the info dot and trailing menu stay on top. */}
-        <div className={cn('flex items-center gap-2', isMobile && '[&>:not(label)]:relative')}>
+            label and this cluster stay unpositioned. Badges and key caps let
+            taps through to it; the info dot and trailing menu sit on top. */}
+        <div
+          className={cn(
+            'flex items-center gap-2',
+            isMobile &&
+              '[&>:not(label,button,a)]:pointer-events-none [&_a]:pointer-events-auto [&_a]:relative [&_button]:pointer-events-auto [&_button]:relative'
+          )}
+        >
           <label
             htmlFor={switchId}
             className={cn(
