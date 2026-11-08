@@ -1,6 +1,6 @@
 /**
  * Sub-components rendered inside the Help modal:
- *   - shortcut presentation (`KeyboardKey`, `ShortcutRow`, `ShortcutCategorySection`)
+ *   - shortcut presentation (`ShortcutRow`, `ShortcutCategorySection`)
  *   - the static read-only sections in the "Tips" tab (`TipsSection`,
  *     `BlockedZonesSection`, `BinClearanceSection`)
  *   - the always-visible-on-desktop input recap
@@ -9,68 +9,31 @@
 
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
-import { STYLES, KEY_SEPARATOR, type ShortcutCategory } from './helpModalStyles';
+import { ShortcutBadge } from '@/shared/components/ShortcutBadge';
+import { STYLES, type ShortcutCategory } from './helpModalStyles';
 import { HelpCategoryIcon } from './helpModalShortcutData';
-
-/** Enhanced keyboard key component */
-export function KeyboardKey({ children }: { children: React.ReactNode }) {
-  return (
-    <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content shadow-[0_1px_0_1px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)]">
-      {children}
-    </kbd>
-  );
-}
 
 export function ShortcutRow({
   keys,
   description,
   modifier,
   shift,
-  modifierKey,
 }: {
   keys: string | readonly string[];
   description: string;
   modifier?: boolean;
   shift?: boolean;
-  modifierKey: string;
 }) {
-  const keyArray = typeof keys === 'string' ? keys.split(' / ') : [...keys];
-
   return (
     <div className="flex justify-between items-center py-1.5 px-3 rounded-lg hover:bg-surface-hover/50 transition-colors">
       <span className="text-sm text-content-secondary">{description}</span>
-      <div className="flex items-center gap-1">
-        {modifier && (
-          <>
-            <KeyboardKey>{modifierKey}</KeyboardKey>
-            <span className="text-content-tertiary text-xs">{KEY_SEPARATOR}</span>
-          </>
-        )}
-        {shift && (
-          <>
-            <KeyboardKey>Shift</KeyboardKey>
-            <span className="text-content-tertiary text-xs">{KEY_SEPARATOR}</span>
-          </>
-        )}
-        {keyArray.map((key, index) => (
-          <span key={index} className="flex items-center gap-1">
-            {index > 0 && <span className="text-content-tertiary text-xs mx-0.5">/</span>}
-            <KeyboardKey>{key}</KeyboardKey>
-          </span>
-        ))}
-      </div>
+      <ShortcutBadge keys={keys} modifier={modifier} shift={shift} />
     </div>
   );
 }
 
 /** Shortcut category section component */
-export function ShortcutCategorySection({
-  category,
-  modifierKey,
-}: {
-  category: ShortcutCategory;
-  modifierKey: string;
-}) {
+export function ShortcutCategorySection({ category }: { category: ShortcutCategory }) {
   const t = useTranslation();
   return (
     <section>
@@ -86,7 +49,6 @@ export function ShortcutCategorySection({
             description={t(shortcut.descriptionKey)}
             modifier={shortcut.modifier}
             shift={shortcut.shift}
-            modifierKey={modifierKey}
           />
         ))}
       </div>

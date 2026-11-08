@@ -5,7 +5,6 @@ import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { getAllHelpEntries } from '@/shell/Modals/HelpModal/helpEntryAggregator';
 import { searchHelpEntries } from '@/shell/Modals/HelpModal/helpSearch';
 import { HelpSearchResultRow } from '@/shell/Modals/HelpModal/HelpSearchResultRow';
-import { getModifierKey } from '@/shell/Modals/HelpModal/helpModalStyles';
 import { useHelpRoute } from '@/shell/Modals/HelpModal/useHelpRoute';
 
 // Style constants to avoid recreating objects on each render
@@ -96,8 +95,6 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
   }, [isOpen, handleClose]);
 
   if (!isOpen) return null;
-
-  const modifierKey = getModifierKey();
 
   return (
     <div
@@ -190,7 +187,6 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
           {isSearching ? (
             <MobileSearchResultsList
               results={rankedResults}
-              modifierKey={modifierKey}
               query={trimmedQuery}
               onJump={handleClose}
             />
@@ -335,17 +331,11 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
 
 interface MobileSearchResultsListProps {
   results: ReturnType<typeof searchHelpEntries>;
-  modifierKey: string;
   query: string;
   onJump: () => void;
 }
 
-function MobileSearchResultsList({
-  results,
-  modifierKey,
-  query,
-  onJump,
-}: MobileSearchResultsListProps) {
+function MobileSearchResultsList({ results, query, onJump }: MobileSearchResultsListProps) {
   const t = useTranslation();
   if (results.length === 0) {
     return (
@@ -358,12 +348,7 @@ function MobileSearchResultsList({
     <ul aria-label={t('help.searchResultsAriaLabel')} className="space-y-1">
       {results.map(({ entry }) => (
         <li key={entry.id}>
-          <HelpSearchResultRow
-            entry={entry}
-            modifierKey={modifierKey}
-            onJump={onJump}
-            showJumpButton={false}
-          />
+          <HelpSearchResultRow entry={entry} onJump={onJump} showJumpButton={false} />
         </li>
       ))}
     </ul>

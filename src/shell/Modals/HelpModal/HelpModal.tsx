@@ -2,7 +2,7 @@
  * Help modal — keyboard shortcuts catalog + tips reference.
  *
  * Splits across:
- *   - `helpModalStyles`         — shared style objects + the modifier-key label
+ *   - `helpModalStyles`         — shared style objects + shortcut types
  *   - `helpModalShortcutData`   — SHORTCUT_CATEGORIES catalog (data only)
  *   - `HelpModalSections`       — presentational sub-components
  */
@@ -11,7 +11,7 @@ import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { useTranslation } from '@/i18n';
 import { Button, Dialog, SearchInput, SegmentedControl } from '@/design-system';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
-import { getModifierKey } from './helpModalStyles';
+import { ShortcutBadge } from '@/shared/components/ShortcutBadge';
 import { SHORTCUT_CATEGORIES } from './helpModalShortcutData';
 import {
   ShortcutCategorySection,
@@ -93,8 +93,6 @@ function HelpContent({ onClose, isTablet, searchRef }: HelpContentProps) {
     [t]
   );
 
-  const modifierKey = getModifierKey();
-
   return (
     <>
       <Dialog.Header title={t('help.title')} closeAriaLabel={t('common.close')} bordered />
@@ -120,7 +118,6 @@ function HelpContent({ onClose, isTablet, searchRef }: HelpContentProps) {
         {isSearching ? (
           <SearchResultsList
             results={rankedResults}
-            modifierKey={modifierKey}
             query={trimmedQuery}
             currentRoute={currentRoute}
             onJump={onClose}
@@ -149,23 +146,11 @@ function HelpContent({ onClose, isTablet, searchRef }: HelpContentProps) {
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-content">{t('help.commandPaletteTip')}</p>
               </div>
-              <div className="shrink-0 flex items-center gap-1">
-                <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content shadow-[0_1px_0_1px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)]">
-                  {modifierKey}
-                </kbd>
-                <span className="text-content-tertiary text-xs">+</span>
-                <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content shadow-[0_1px_0_1px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)]">
-                  K
-                </kbd>
-              </div>
+              <ShortcutBadge keys="K" modifier className="shrink-0" />
             </div>
 
             {SHORTCUT_CATEGORIES.map((category) => (
-              <ShortcutCategorySection
-                key={category.id}
-                category={category}
-                modifierKey={modifierKey}
-              />
+              <ShortcutCategorySection key={category.id} category={category} />
             ))}
 
             <MouseInteractionsSection />
@@ -185,19 +170,12 @@ function HelpContent({ onClose, isTablet, searchRef }: HelpContentProps) {
 
 interface SearchResultsListProps {
   results: ReturnType<typeof searchHelpEntries>;
-  modifierKey: string;
   query: string;
   currentRoute: string;
   onJump: () => void;
 }
 
-function SearchResultsList({
-  results,
-  modifierKey,
-  query,
-  currentRoute,
-  onJump,
-}: SearchResultsListProps) {
+function SearchResultsList({ results, query, currentRoute, onJump }: SearchResultsListProps) {
   const t = useTranslation();
   const openCommandPalette = () => {
     trackHelpCommandPaletteFallthrough(query, currentRoute);
@@ -221,7 +199,6 @@ function SearchResultsList({
         <li key={entry.id}>
           <HelpSearchResultRow
             entry={entry}
-            modifierKey={modifierKey}
             onJump={() => {
               trackHelpSearchJump(entry.id, query, index);
               onJump();

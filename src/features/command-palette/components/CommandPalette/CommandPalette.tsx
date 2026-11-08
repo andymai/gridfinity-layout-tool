@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Command } from 'cmdk';
+import { Kbd } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { SubHeader } from '@/shared/components/PanelText';
 import { COMMAND_DEFINITIONS, CATEGORY_LABELS, CATEGORY_ORDER } from '../../commands';
@@ -174,9 +175,9 @@ export function CommandPalette({
               // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
               autoFocus
             />
-            <kbd className="hidden sm:inline-flex items-center justify-center min-w-[28px] h-[22px] px-1.5 text-label font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content-secondary shadow-[0_1px_0_1px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.05)]">
-              esc
-            </kbd>
+            <Kbd variant="keycap" className="hidden sm:inline-flex">
+              Esc
+            </Kbd>
           </div>
 
           <Command.List className="max-h-[50vh] overflow-y-auto overflow-x-hidden py-2 scrollbar-thin">

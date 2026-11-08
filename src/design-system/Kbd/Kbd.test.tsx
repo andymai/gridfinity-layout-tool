@@ -30,6 +30,13 @@ describe('Kbd', () => {
     expect(kbd).toHaveClass('inline-block', 'rounded', 'border', 'align-middle');
   });
 
+  it('renders a raised keycap for shortcut lists', () => {
+    render(<Kbd variant="keycap">K</Kbd>);
+    const kbd = screen.getByText('K');
+    expect(kbd).toHaveClass('inline-flex', 'h-[22px]', 'border-stroke', 'font-mono');
+    expect(kbd).not.toHaveClass('inline-block', 'bg-surface');
+  });
+
   it('merges a custom className with tone classes', () => {
     render(<Kbd className="custom-class">Tab</Kbd>);
     const kbd = screen.getByText('Tab');
