@@ -343,6 +343,8 @@ export function useBentoWorkspace() {
         return;
       }
       if (e.key === 'Escape') {
+        // An open popover (an info dot) captures Escape and marks it handled.
+        if (e.defaultPrevented) return;
         if (interaction.cancel()) return;
         if (selectedId !== null) {
           setSelectedBentoCompartmentId(null);

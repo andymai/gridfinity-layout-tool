@@ -87,6 +87,7 @@ interface KeyOptions {
   shiftKey?: boolean;
   tagName?: string;
   role?: string;
+  defaultPrevented?: boolean;
 }
 
 function press(key: string, options: KeyOptions = {}): KeyboardEvent {
@@ -165,6 +166,13 @@ describe('handleCutoutKeyDown — deletion and selection', () => {
 });
 
 describe('handleCutoutKeyDown — Escape', () => {
+  it('leaves the selection alone when a popover already took the Escape', () => {
+    const ctx = makeCtx({ selection: new Set(['c1']), cutouts: [makeCutout()] });
+    handleCutoutKeyDown(press('Escape', { defaultPrevented: true }), ctx);
+    expect(ctx.deselectAll).not.toHaveBeenCalled();
+    expect(ctx.setMode).not.toHaveBeenCalled();
+  });
+
   it('clears the in-progress preview and guides', () => {
     const ctx = makeCtx();
     handleCutoutKeyDown(press('Escape'), ctx);

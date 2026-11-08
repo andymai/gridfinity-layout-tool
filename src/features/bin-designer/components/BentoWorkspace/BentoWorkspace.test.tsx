@@ -119,6 +119,21 @@ describe('BentoWorkspace', () => {
     expect(useDesignerStore.getState().ui.bentoWorkspaceOpen).toBe(false);
   });
 
+  it('an Escape that closes an info dot keeps the selection and the workspace', () => {
+    const id = drawViaStore();
+    useDesignerStore.getState().setSelectedBentoCompartmentId(id);
+    render(<BentoWorkspace />);
+
+    const dot = screen.getAllByRole('button', { name: 'common.aboutLabel' })[0];
+    fireEvent.click(dot);
+    expect(dot).toHaveAttribute('aria-expanded', 'true');
+    fireEvent.keyDown(dot, { key: 'Escape' });
+
+    expect(dot).toHaveAttribute('aria-expanded', 'false');
+    expect(useDesignerStore.getState().ui.selectedBentoCompartmentId).toBe(id);
+    expect(useDesignerStore.getState().ui.bentoWorkspaceOpen).toBe(true);
+  });
+
   it('Delete removes the selected compartment', () => {
     const id = drawViaStore();
     useDesignerStore.getState().setSelectedBentoCompartmentId(id);

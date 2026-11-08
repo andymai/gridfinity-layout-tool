@@ -83,6 +83,8 @@ export function focusOwnsKeys(target: EventTarget | null): boolean {
  */
 export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContext): void {
   if (focusOwnsKeys(e.target)) return;
+  // An open popover (an info dot) captures Escape and marks it handled.
+  if (e.key === 'Escape' && e.defaultPrevented) return;
 
   // Path drawing mode: Escape to cancel, Ctrl+Z to undo last point
   if (ctx.mode.type === 'path-drawing') {
