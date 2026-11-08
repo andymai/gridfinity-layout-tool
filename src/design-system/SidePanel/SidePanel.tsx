@@ -316,11 +316,7 @@ export interface SidePanelTitleProps {
 }
 
 function SidePanelTitle({ children }: SidePanelTitleProps) {
-  return (
-    <span className="text-xs font-semibold uppercase tracking-wider text-content-secondary">
-      {children}
-    </span>
-  );
+  return <span className="text-xs font-semibold text-content-secondary">{children}</span>;
 }
 
 export interface SidePanelBodyProps {
