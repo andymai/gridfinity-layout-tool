@@ -1,0 +1,20 @@
+src/shared/components/FeatureToggle/FeatureToggle.tsx
+  s_66332f8bf1351d::t_35cde122e462ab 99
+  s_66332f8bf1351d::t_7b019e0a2e2177 93-98,100-101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d6795d35db3dc4d476a820275726a97aa116c840",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
