@@ -3854,7 +3854,7 @@
   "inspector.sizeSuggestionDismiss": "忽略建议",
   "inspector.sizeSuggestionNoFit": "这里放不下",
   "inspector.someSizesLocked": "所选 {total} 个收纳盒中有 {count} 个已锁定尺寸",
-  "inspector.split.message": "{widthMm}×{depthMm}mm 放不下你的打印床（{bedSize}mm），因此会拆分成多块打印。",
+  "inspector.split.message": "{widthMm}×{depthMm}mm 在你的打印床（{bedSize}mm）上放不下，因此会拆分成多块打印。",
   "inspector.split.piecesNeeded": "需要 {count} 块",
   "inspector.split.title": "超出打印床尺寸",
   "inspector.swapDimensions": "交换宽 ↔ 深（R）",
