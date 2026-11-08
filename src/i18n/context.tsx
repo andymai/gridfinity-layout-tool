@@ -35,7 +35,7 @@ import {
 } from 'react';
 import type { ReactNode } from 'react';
 import type { Locale, Translations, TranslationVars } from './types';
-import { lookupPlural } from './plural';
+import { lookupPlural, pluralCount } from './plural';
 
 const fallback: Translations = {
   // A drawer link stores its layout name once the first locale load settles,
@@ -122,9 +122,9 @@ const LocaleContext = createContext<LocaleContextValue | null>(null);
  * ```
  */
 export function getStaticTranslation(key: string, vars?: TranslationVars): string {
-  const count = vars?.count;
+  const count = pluralCount(vars?.count);
   const plural =
-    typeof count === 'number'
+    count !== undefined
       ? ((_active && lookupPlural(_active, _activeLocale, key, count)) ??
         (_loadedEn && lookupPlural(_loadedEn, 'en', key, count)))
       : undefined;
@@ -133,6 +133,9 @@ export function getStaticTranslation(key: string, vars?: TranslationVars): strin
     (_active && lookupKey(_active, key)) ??
     _loadedEn?.[key] ??
     lookupKey(fallback, key) ??
+    // A plural family called without a usable count still reads as a sentence.
+    (_active && lookupKey(_active, `${key}_other`)) ??
+    _loadedEn?.[`${key}_other`] ??
     key;
   if (!vars) return template;
   let result = template;
@@ -304,14 +307,21 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
 
   const t: TFunction = useCallback(
     (key: string, vars?: TranslationVars): string => {
-      const count = vars?.count;
+      const count = pluralCount(vars?.count);
       const plural =
-        typeof count === 'number'
+        count !== undefined
           ? (lookupPlural(loaded.strings, loaded.locale, key, count) ??
             (_loadedEn && lookupPlural(_loadedEn, 'en', key, count)))
           : undefined;
-      // Try current locale, fall back to English, then show key
-      const template = plural || loaded.strings[key] || _loadedEn?.[key] || key;
+      // Try current locale, fall back to English, then a plural family's
+      // _other form (called without a usable count), then show the key.
+      const template =
+        plural ||
+        loaded.strings[key] ||
+        _loadedEn?.[key] ||
+        loaded.strings[`${key}_other`] ||
+        _loadedEn?.[`${key}_other`] ||
+        key;
       return interpolate(template, vars);
     },
     [loaded]

@@ -9,7 +9,6 @@ export type PluralCategory = (typeof PLURAL_CATEGORIES)[number];
 
 const SUFFIX = /_(zero|one|two|few|many|other)$/;
 
-/** The base of a plural form (`a.b_one` gives `a.b`), or null for an ordinary key. */
 export function pluralBase(key: string): string | null {
   const match = SUFFIX.exec(key);
   return match ? key.slice(0, match.index) : null;
@@ -26,11 +25,17 @@ function rulesFor(locale: string): Intl.PluralRules {
   return rules;
 }
 
+export function pluralCount(value: unknown): number | undefined {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
+  if (typeof value !== 'string' || value.trim() === '') return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
 export function pluralCategory(locale: string, count: number): PluralCategory {
   return rulesFor(locale).select(count);
 }
 
-/** The form for `count` in one locale's strings: its own category, then `_other`. */
 export function lookupPlural(
   strings: Readonly<Record<string, string>>,
   locale: string,

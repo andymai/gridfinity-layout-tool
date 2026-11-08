@@ -153,6 +153,13 @@ describe('plural forms', () => {
     expect(result.current('layers.binCount', { count: 22 })).toBe('22 biny');
   });
 
+  it('reads a numeric string count and falls back to _other without one', async () => {
+    const { result } = renderHook(() => useTranslation(), { wrapper: wrapperFor('pl') });
+
+    await waitFor(() => expect(result.current('layers.binCount', { count: '3' })).toBe('3 biny'));
+    expect(result.current('layers.binCount')).toBe('{count} binów');
+  });
+
   it('applies the same rules outside React', async () => {
     const { result } = renderHook(() => useTranslation(), { wrapper: wrapperFor('pl') });
 
