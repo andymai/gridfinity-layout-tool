@@ -1,0 +1,19 @@
+public/.well-known/security.txt
+  s_2210bb38a72219::t_51af892ba60e49 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1f9df91498b75812f306dd9cac5ca29cb1f097bb",
+  "prompts": {},
+  "sessions": {
+    "s_2210bb38a72219": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eefb387c-1258-4f2e-95a8-face6aaa5878",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
