@@ -1,0 +1,55 @@
+src/features/baseplate/components/BaseplatePage/BaseplatePage.test.tsx
+  s_66332f8bf1351d::t_0c80d42ca679a4 81-83,107,109,112-116,118
+src/shared/components/HeaderSupportLinks/HeaderSupportLinks.tsx
+  s_66332f8bf1351d::t_b6c24d518a8ae5 38
+  s_66332f8bf1351d::t_2015b18d58fe11 39-43
+  s_66332f8bf1351d::t_d1e6223403fffb 21-22
+  s_66332f8bf1351d::t_8ea463ef0046d2 57
+  s_66332f8bf1351d::t_4a4834a4572eb2 196,205
+src/shared/components/HeaderSupportLinks/HeaderSupportLinks.test.tsx
+  s_66332f8bf1351d::t_22ddf6a63d2eb6 178-195
+e2e/fixtures.ts
+  s_66332f8bf1351d::t_8d48cf279f8d7d 28
+  s_66332f8bf1351d::t_2381de364a5e65 29-40
+e2e/stl-bin-import.spec.ts
+  s_66332f8bf1351d::t_d3b5645bac6a08 13
+  s_66332f8bf1351d::t_2381de364a5e65 74
+src/features/bin-designer/components/DesignerPage/DesignerPage.tsx
+  s_66332f8bf1351d::t_4937cf5cc48d7c 129
+src/features/bin-designer/components/DesignerPage/DesignerHeader.tsx
+  s_66332f8bf1351d::t_6b8ca6e5d70bf7 47
+  s_66332f8bf1351d::t_1f39826aeaeb53 74-78,85-89
+  s_66332f8bf1351d::t_2d89585ca4aa08 79-84
+  s_66332f8bf1351d::t_c5d264528efb80 314-315
+  s_66332f8bf1351d::t_6c419b5daf6c72 316-331,333-353,355-382
+  s_66332f8bf1351d::t_84c47255ac290e 8
+  s_66332f8bf1351d::t_e8ff0aba34ba58 417-430
+  s_66332f8bf1351d::t_0e900665e43352 25
+  s_66332f8bf1351d::t_a2ccaa42720a4f 71-73
+  s_66332f8bf1351d::t_1031f0994590fa 383
+src/features/bin-designer/components/DesignerPage/DesignerHeader.test.tsx
+  s_66332f8bf1351d::t_9a95ae9e49d00f 2
+  s_66332f8bf1351d::t_bcc7bd7c0b1760 209-211,214-216,227-229,233-235
+  s_66332f8bf1351d::t_c1662435ebad3a 19-20
+  s_66332f8bf1351d::t_7b65d5f867b9f3 92-93,97,102,108,119,123-195,200
+e2e/workshop.spec.ts
+  s_66332f8bf1351d::t_2381de364a5e65 3,7
+src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
+  s_66332f8bf1351d::t_f8e352cbcee038 328-331
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "47c6ee319bdf3f0a91bfbb1cf88a886086685a6b",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
