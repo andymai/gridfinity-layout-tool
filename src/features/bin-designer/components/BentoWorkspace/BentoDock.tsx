@@ -4,14 +4,11 @@
  * selection, an inspector with the engraved label, footprint readout, wall
  * shift/angle steppers (the canvas no longer drags walls — this is their
  * home), and the duplicate/stash/delete actions.
- *
- * Shell (collapse rail, width drag, scroll shadow) mirrors the cutout
- * workspace's InspectorDock so the two editors feel like one product.
  */
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Button, IconButton, Stepper } from '@/design-system';
+import { Button, IconButton, SidePanel, Stepper } from '@/design-system';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { SubHeader, FieldLabel } from '@/shared/components/PanelText';
@@ -29,14 +26,9 @@ import { useDividerTiltSubsection } from '@/features/bin-designer/components/Com
 import { BentoBinWideSection } from './BentoBinWideSection';
 import { BentoCompartmentColorControls } from './BentoCompartmentColorControls';
 import { BentoCompartmentFloorControls } from './BentoCompartmentFloorControls';
-import {
-  BENTO_DOCK_MAX_WIDTH,
-  BENTO_DOCK_MIN_WIDTH,
-  loadBentoDockCollapsed,
-  loadBentoDockWidth,
-  saveBentoDockCollapsed,
-  saveBentoDockWidth,
-} from './bentoDockStorage';
+
+const BENTO_DOCK_MIN_WIDTH = 220;
+const BENTO_DOCK_MAX_WIDTH = 420;
 
 export interface BentoDockProps {
   readonly config: CompartmentConfig;
@@ -92,11 +84,6 @@ export function BentoDock({
       labelEnabled: s.params.label.enabled,
     }))
   );
-  const [width, setWidth] = useState(loadBentoDockWidth);
-  const [collapsed, setCollapsed] = useState(loadBentoDockCollapsed);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const dockRef = useRef<HTMLDivElement>(null);
-  const draggingRef = useRef(false);
 
   const tilt = useDividerTiltSubsection();
 
@@ -147,116 +134,22 @@ export function BentoDock({
     [tilt.rows, selectedId, drawnIds]
   );
 
-  const toggleCollapsed = useCallback(() => {
-    setCollapsed((prev) => {
-      const next = !prev;
-      saveBentoDockCollapsed(next);
-      return next;
-    });
-  }, []);
-
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    setIsScrolled(e.currentTarget.scrollTop > 0);
-  }, []);
-
-  const handleResizeStart = useCallback((e: React.PointerEvent) => {
-    e.preventDefault();
-    draggingRef.current = true;
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-
-    const handleMove = (moveEvent: PointerEvent) => {
-      if (!draggingRef.current || !dockRef.current) return;
-      const rightEdge = dockRef.current.getBoundingClientRect().right;
-      const next = Math.max(
-        BENTO_DOCK_MIN_WIDTH,
-        Math.min(BENTO_DOCK_MAX_WIDTH, rightEdge - moveEvent.clientX)
-      );
-      setWidth(next);
-    };
-
-    const handleUp = () => {
-      draggingRef.current = false;
-      document.removeEventListener('pointermove', handleMove);
-      document.removeEventListener('pointerup', handleUp);
-      document.removeEventListener('pointercancel', handleUp);
-      if (dockRef.current) {
-        saveBentoDockWidth(dockRef.current.getBoundingClientRect().width);
-      }
-    };
-
-    document.addEventListener('pointermove', handleMove);
-    document.addEventListener('pointerup', handleUp);
-    // A cancelled gesture must also end the drag or draggingRef sticks true.
-    document.addEventListener('pointercancel', handleUp);
-  }, []);
-
-  if (collapsed) {
-    return (
-      <aside className="flex w-12 flex-shrink-0 flex-col items-center border-l border-stroke-subtle bg-surface-secondary py-2">
-        <IconButton
-          type="button"
-          variant="ghost"
-          size="sm"
-          touchTarget={false}
-          onClick={toggleCollapsed}
-          className={ICON_BTN}
-          aria-expanded={false}
-          aria-label={t('binDesigner.bento.dockExpand')}
-          title={t('binDesigner.bento.dockExpand')}
-        >
-          <Icon paths={ICON_PATHS.chevronDoubleLeft} />
-        </IconButton>
-        <span
-          className="mt-3 text-micro font-semibold uppercase tracking-wider text-content-tertiary"
-          style={{ writingMode: 'vertical-rl' }}
-        >
-          {t('binDesigner.bento.dockTitle')}
-        </span>
-      </aside>
-    );
-  }
-
   return (
-    <aside
-      ref={dockRef}
-      className="animate-fade-in relative flex flex-shrink-0 flex-col overflow-hidden border-l border-stroke-subtle bg-surface-secondary"
-      style={{ width }}
-      data-testid="bento-dock"
+    <SidePanel.Root
+      side="right"
+      minWidth={BENTO_DOCK_MIN_WIDTH}
+      maxWidth={BENTO_DOCK_MAX_WIDTH}
+      persistKey="gridfinity-bento-dock"
+      labels={{
+        collapse: t('binDesigner.bento.dockCollapse'),
+        expand: t('binDesigner.bento.dockExpand'),
+        resize: t('binDesigner.bento.dockResize'),
+      }}
+      railTitle={t('binDesigner.bento.dockTitle')}
+      className="animate-fade-in"
     >
-      <div
-        className="group absolute inset-y-0 -left-1 z-10 w-2 cursor-col-resize select-none"
-        onPointerDown={handleResizeStart}
-        role="separator"
-        aria-orientation="vertical"
-        aria-label={t('binDesigner.bento.dockResize')}
-        aria-valuenow={Math.round(width)}
-        aria-valuemin={BENTO_DOCK_MIN_WIDTH}
-        aria-valuemax={BENTO_DOCK_MAX_WIDTH}
-      >
-        <div className="absolute inset-y-0 left-1 w-px bg-transparent transition-colors group-hover:bg-accent/60" />
-      </div>
-
-      <div
-        className={`flex flex-shrink-0 items-center gap-2 border-b border-stroke-subtle px-4 py-2 transition-shadow duration-200 ${
-          isScrolled ? 'shadow-elevated' : ''
-        }`}
-      >
-        <IconButton
-          type="button"
-          variant="ghost"
-          size="sm"
-          touchTarget={false}
-          onClick={toggleCollapsed}
-          className={ICON_BTN}
-          aria-expanded
-          aria-label={t('binDesigner.bento.dockCollapse')}
-          title={t('binDesigner.bento.dockCollapse')}
-        >
-          <Icon paths={ICON_PATHS.chevronDoubleRight} />
-        </IconButton>
-        <span className="text-xs font-semibold uppercase tracking-wider text-content-secondary">
-          {t('binDesigner.bento.dockTitle')}
-        </span>
+      <SidePanel.Header>
+        <SidePanel.Title>{t('binDesigner.bento.dockTitle')}</SidePanel.Title>
         {selectedRow && (
           <div className="ml-auto flex items-center gap-0.5">
             <IconButton
@@ -285,12 +178,9 @@ export function BentoDock({
             </IconButton>
           </div>
         )}
-      </div>
+      </SidePanel.Header>
 
-      <div
-        onScroll={handleScroll}
-        className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin px-4 pb-3"
-      >
+      <SidePanel.Body className="px-4 pb-3">
         {/* Compartment list */}
         {rows.length === 0 ? (
           <p className="pt-3 text-xs leading-relaxed text-content-tertiary">
@@ -508,7 +398,7 @@ export function BentoDock({
         )}
 
         <BentoBinWideSection />
-      </div>
-    </aside>
+      </SidePanel.Body>
+    </SidePanel.Root>
   );
 }
