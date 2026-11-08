@@ -1,0 +1,23 @@
+src/features/bin-designer/components/BentoWorkspace/BentoWorkspace.test.tsx
+  s_66332f8bf1351d::t_00f61040f8d7e4 224-226
+  s_66332f8bf1351d::t_dd6e3b560bc1ba 2,219,231-237
+  s_66332f8bf1351d::t_543abf17f8d6e2 238-239
+src/features/bin-designer/components/BentoWorkspace/useBentoWorkspace.ts
+  s_66332f8bf1351d::t_dd6e3b560bc1ba 102-104,359-361,390
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "be7b2e8cfb7590fb0aae7f43c343b557209d1656",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
