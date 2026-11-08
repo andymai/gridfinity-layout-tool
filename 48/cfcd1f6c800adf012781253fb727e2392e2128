@@ -1,0 +1,30 @@
+src/features/layers/components/SlantedRowControls/SlantedRowControls.tsx
+  s_66332f8bf1351d::t_6b0bcbcd655ce1 41
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_66332f8bf1351d::t_6b0bcbcd655ce1 443-448
+src/features/bin-inspector/components/Inspector/BinSlantSection/BinSlantSection.tsx
+  s_66332f8bf1351d::t_6b0bcbcd655ce1 57,100
+src/shared/hooks/use3DPreviewKeyboard.test.ts
+  s_66332f8bf1351d::t_aeeda8f1854c2a 226-259
+src/shared/hooks/use3DPreviewKeyboard.ts
+  s_66332f8bf1351d::t_aeeda8f1854c2a 3-6,51-54
+src/features/bin-inspector/components/Inspector/ExtendToMarginToggle/ExtendToMarginToggle.tsx
+  s_66332f8bf1351d::t_6b0bcbcd655ce1 45-50,92,109
+  s_66332f8bf1351d::t_1e749a0d9c31d3 35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "48cfcd1f6c800adf012781253fb727e2392e2128",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
