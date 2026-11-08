@@ -116,7 +116,7 @@ export function PhysicalUnitsSection() {
             label={t('baseplate.gridUnit')}
             htmlFor="bp-gridUnit"
             unit="mm"
-            tooltip={t('baseplate.gridUnitTooltip')}
+            info={t('baseplate.gridUnitTooltip')}
           >
             <GridUnitInput
               id="bp-gridUnit"
@@ -137,7 +137,7 @@ export function PhysicalUnitsSection() {
             <div className="space-y-1">
               <SettingsRow
                 label={t('baseplate.magnetAnchor')}
-                tooltip={t('baseplate.magnetAnchorTooltip')}
+                info={t('baseplate.magnetAnchorTooltip')}
               >
                 <SegmentedControl<'edge' | 'center'>
                   aria-label={t('baseplate.magnetAnchor')}
@@ -173,7 +173,7 @@ export function PhysicalUnitsSection() {
               label={t('baseplate.printBedSize')}
               htmlFor="bp-printBedSize"
               unit="mm"
-              tooltip={t('baseplate.printBedTooltip')}
+              info={t('baseplate.printBedTooltip')}
             >
               <PrintBedInput
                 id="bp-printBedSize"
@@ -187,7 +187,7 @@ export function PhysicalUnitsSection() {
           <SettingsRow
             label={t('settings.nozzleSize')}
             htmlFor="bp-nozzleSize"
-            tooltip={t('baseplate.nozzleSizeTooltip')}
+            info={t('baseplate.nozzleSizeTooltip')}
             unit="mm"
           >
             <DeferredNumberInput
@@ -205,7 +205,7 @@ export function PhysicalUnitsSection() {
             label={t('baseplate.maxPrintHeight')}
             htmlFor="bp-maxPrintHeight"
             unit="mm"
-            tooltip={t('baseplate.maxPrintHeightTooltip')}
+            info={t('baseplate.maxPrintHeightTooltip')}
           >
             <DeferredNumberInput
               id="bp-maxPrintHeight"

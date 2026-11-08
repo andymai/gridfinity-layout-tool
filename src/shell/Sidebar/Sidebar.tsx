@@ -433,7 +433,7 @@ export function Sidebar() {
                     <SettingsRow
                       label={t('sidebar.gridUnit')}
                       htmlFor="gridUnit"
-                      tooltip={t('sidebar.gridUnitTooltip')}
+                      info={t('sidebar.gridUnitTooltip')}
                       unit="mm"
                     >
                       <GridUnitInput
@@ -449,7 +449,7 @@ export function Sidebar() {
                     <SettingsRow
                       label={t('sidebar.heightUnit')}
                       htmlFor="heightUnit"
-                      tooltip={t('sidebar.heightUnitTooltip')}
+                      info={t('sidebar.heightUnitTooltip')}
                       unit="mm"
                     >
                       <DeferredNumberInput
@@ -468,7 +468,7 @@ export function Sidebar() {
                     <SettingsRow
                       label={t('sidebar.printBed')}
                       htmlFor="printBedSize"
-                      tooltip={t('sidebar.printBedTooltip', {
+                      info={t('sidebar.printBedTooltip', {
                         maxWidth: maxGridUnits.width,
                         maxDepth: maxGridUnits.depth,
                       })}

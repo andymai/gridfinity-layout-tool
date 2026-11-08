@@ -600,7 +600,7 @@ export function RightPanel() {
                       <SettingsRow
                         label={t('settings.nozzleSize')}
                         htmlFor="rightPanelNozzle"
-                        tooltip={t('rightPanel.nozzleSizeTooltip')}
+                        info={t('rightPanel.nozzleSizeTooltip')}
                         unit="mm"
                       >
                         <DeferredNumberInput
