@@ -72,10 +72,3 @@ export const getModifierKey = (): string => {
   const isMac = /mac/i.test(navigator.userAgent);
   return isMac ? '⌘' : 'Ctrl';
 };
-
-export const formatKey = (key: string | readonly string[]): string => {
-  if (Array.isArray(key)) {
-    return key.join(' / ');
-  }
-  return key as string;
-};
