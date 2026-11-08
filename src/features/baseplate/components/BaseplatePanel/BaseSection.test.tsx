@@ -69,10 +69,13 @@ describe('BaseSection', () => {
     expect(useLayoutStore.getState().layout.baseplateParams?.magnetHoles).toBe(!before);
   });
 
-  it('enables eco plate in the layout settings', () => {
+  it('stores eco plate as present-or-absent, never false', () => {
     render(<BaseSection />);
-    fireEvent.click(screen.getByRole('checkbox', { name: 'baseplate.ecoPlate' }));
+    const toggle = screen.getByRole('switch', { name: 'baseplate.ecoPlate' });
+    fireEvent.click(toggle);
     expect(useLayoutStore.getState().layout.baseplateParams?.ecoPlate).toBe(true);
+    fireEvent.click(toggle);
+    expect(useLayoutStore.getState().layout.baseplateParams?.ecoPlate).toBeUndefined();
   });
 
   describe('all-edge slots (issue #2866)', () => {

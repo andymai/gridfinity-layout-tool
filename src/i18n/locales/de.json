@@ -306,7 +306,7 @@
   "baseplate.sideView": "Seite",
   "baseplate.solidFloor": "Massiver Boden",
   "baseplate.ecoPlate": "Eco-Platte",
-  "baseplate.ecoPlateHint": "Senkt die geraden Verbindungen zwischen den Eckpfosten auf einen dünnen Steg ab, sodass eine Platte etwa ein Drittel weniger Filament braucht (mit breiter Polsterung weniger). Bins werden nur von den Eckpfosten gehalten.",
+  "baseplate.ecoPlateDetail": "Spart bis zu ein Drittel des Filaments. Bins werden nur von den Eckpfosten gehalten.",
   "baseplate.solidFloorHeightNote": "Wird unter dem Standardraster ergänzt. Die Gesamthöhe der Platte erhöht sich entsprechend, um Platz dafür zu schaffen.",
   "baseplate.solidFloorThickness": "Bodendicke",
   "baseplate.splitCustom": "Benutzerdefinierte Aufteilung",

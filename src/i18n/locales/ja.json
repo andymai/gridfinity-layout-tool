@@ -306,7 +306,7 @@
   "baseplate.sideView": "側面",
   "baseplate.solidFloor": "ソリッド底面",
   "baseplate.ecoPlate": "エコプレート",
-  "baseplate.ecoPlateHint": "角の支柱の間にある直線の接合部を薄いバーまで低くし、プレートのフィラメント使用量を約3分の1減らします（余白が広いと削減量は小さくなります）。ビンは角の支柱だけで保持されます。",
+  "baseplate.ecoPlateDetail": "フィラメントを最大3分の1節約します。ビンは角の支柱だけで保持されます。",
   "baseplate.solidFloorHeightNote": "標準グリッドの下に追加されます。その分だけプレートの全体の高さが増えて対応します。",
   "baseplate.solidFloorThickness": "底面の厚さ",
   "baseplate.splitCustom": "カスタム分割",

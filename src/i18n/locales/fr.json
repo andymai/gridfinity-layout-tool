@@ -306,7 +306,7 @@
   "baseplate.sideView": "Côté",
   "baseplate.solidFloor": "Fond plein",
   "baseplate.ecoPlate": "Plaque éco",
-  "baseplate.ecoPlateHint": "Abaisse les jonctions droites entre les poteaux d’angle à une fine barre, si bien qu’une plaque utilise environ un tiers de filament en moins (moins avec une marge large). Les bacs ne sont tenus que par les poteaux d’angle.",
+  "baseplate.ecoPlateDetail": "Économise jusqu’à un tiers du filament. Les bacs ne sont tenus que par les poteaux d’angle.",
   "baseplate.solidFloorHeightNote": "Ajouté sous la grille standard. La hauteur totale de la plaque augmente d'autant pour l'accueillir.",
   "baseplate.solidFloorThickness": "Épaisseur du fond",
   "baseplate.splitCustom": "Découpe personnalisée",

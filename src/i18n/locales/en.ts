@@ -4710,8 +4710,8 @@ const en: Record<string, string> = {
     'A lightweight plate leaves too little wall around each hole for a lead-in.',
   'baseplate.solidFloor': 'Solid floor',
   'baseplate.ecoPlate': 'Eco plate',
-  'baseplate.ecoPlateHint':
-    'Cuts the straight joints between corner posts down to a thin bar, so a plate uses about a third less filament (less with wide padding). Bins are held by the corner posts only.',
+  'baseplate.ecoPlateDetail':
+    'Saves up to a third of the filament. Bins are held by the corner posts only.',
   'baseplate.solidFloorThickness': 'Floor thickness',
   'baseplate.solidFloorHeightNote':
     'Added below the standard grid. Total height of the plate increases by this amount to accommodate.',

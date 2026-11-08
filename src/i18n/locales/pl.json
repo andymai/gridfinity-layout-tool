@@ -306,7 +306,7 @@
   "baseplate.sideView": "Bok",
   "baseplate.solidFloor": "Lita podłoga",
   "baseplate.ecoPlate": "Płyta eco",
-  "baseplate.ecoPlateHint": "Obniża proste połączenia między narożnymi słupkami do cienkiej belki, więc płyta zużywa około jednej trzeciej mniej filamentu (mniej przy szerokim marginesie). Biny trzymają się tylko na narożnych słupkach.",
+  "baseplate.ecoPlateDetail": "Oszczędza do jednej trzeciej filamentu. Biny trzymają się tylko na narożnych słupkach.",
   "baseplate.solidFloorHeightNote": "Dodana pod standardową siatką. Całkowita wysokość płyty zwiększa się o tę wartość, aby ją pomieścić.",
   "baseplate.solidFloorThickness": "Grubość podłogi",
   "baseplate.splitCustom": "Podział niestandardowy",

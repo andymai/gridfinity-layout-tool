@@ -306,7 +306,7 @@
   "baseplate.sideView": "Lado",
   "baseplate.solidFloor": "Base sólida",
   "baseplate.ecoPlate": "Placa eco",
-  "baseplate.ecoPlateHint": "Rebaja las uniones rectas entre los postes de las esquinas a una barra fina, así la placa usa cerca de un tercio menos de filamento (menos con un relleno ancho). Los contenedores solo quedan sujetos por los postes de las esquinas.",
+  "baseplate.ecoPlateDetail": "Ahorra hasta un tercio del filamento. Los contenedores solo quedan sujetos por los postes de las esquinas.",
   "baseplate.solidFloorHeightNote": "Se añade bajo la cuadrícula estándar. La altura total de la placa aumenta en esa cantidad para acomodarla.",
   "baseplate.solidFloorThickness": "Grosor de la base",
   "baseplate.splitCustom": "División personalizada",

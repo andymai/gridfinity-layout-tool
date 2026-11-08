@@ -306,7 +306,7 @@
   "baseplate.sideView": "侧",
   "baseplate.solidFloor": "实心底面",
   "baseplate.ecoPlate": "环保底板",
-  "baseplate.ecoPlateHint": "将角柱之间的直线连接段降为细条，底板耗材约减少三分之一（留边较宽时减少得少一些）。收纳盒仅由角柱固定。",
+  "baseplate.ecoPlateDetail": "最多节省三分之一的耗材。收纳盒仅由角柱固定。",
   "baseplate.solidFloorHeightNote": "添加在标准网格下方。底板的总高度会相应增加这么多。",
   "baseplate.solidFloorThickness": "底面厚度",
   "baseplate.splitCustom": "自定义拆分",

@@ -306,7 +306,7 @@
   "baseplate.sideView": "Zij",
   "baseplate.solidFloor": "Massieve bodem",
   "baseplate.ecoPlate": "Eco-plaat",
-  "baseplate.ecoPlateHint": "Verlaagt de rechte verbindingen tussen de hoekpalen tot een dunne staaf, zodat een plaat ongeveer een derde minder filament gebruikt (minder bij brede vulling). Bakjes worden alleen door de hoekpalen vastgehouden.",
+  "baseplate.ecoPlateDetail": "Bespaart tot een derde van het filament. Bakjes worden alleen door de hoekpalen vastgehouden.",
   "baseplate.solidFloorHeightNote": "Wordt onder het standaardraster toegevoegd. De totale hoogte van de plaat neemt hiermee toe om ruimte te bieden.",
   "baseplate.solidFloorThickness": "Bodemdikte",
   "baseplate.splitCustom": "Aangepaste splitsing",
