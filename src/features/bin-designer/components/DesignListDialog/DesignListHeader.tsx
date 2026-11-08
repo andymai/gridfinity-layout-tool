@@ -29,7 +29,7 @@ export function DesignListHeader({
 
   return (
     <div className="flex items-center justify-between border-b border-stroke-subtle px-5 py-4">
-      <h2 className="text-lg font-semibold text-content">{t('binDesigner.savedDesigns')}</h2>
+      <h2 className="text-page font-semibold text-content">{t('binDesigner.savedDesigns')}</h2>
       <div className="flex flex-wrap items-center gap-2">
         {showSelectButton && (
           <Button

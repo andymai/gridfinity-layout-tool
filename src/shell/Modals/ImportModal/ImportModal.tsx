@@ -150,7 +150,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
           className="bg-surface-secondary rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[80vh] flex flex-col"
         >
           <div className="flex justify-between items-center mb-6">
-            <h2 id="import-modal-title" className="text-2xl font-bold text-content">
+            <h2 id="import-modal-title" className="text-page font-semibold text-content">
               {t('layouts.import.title')}
             </h2>
             <IconButton

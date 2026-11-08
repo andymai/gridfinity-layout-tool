@@ -102,7 +102,7 @@ export function LayoutPreviewOverlay({
             >
               <ArrowLeftIcon className="w-5 h-5" />
             </IconButton>
-            <h2 id="preview-title" className="text-lg md:text-xl font-bold text-content">
+            <h2 id="preview-title" className="text-page font-semibold text-content">
               {name}
             </h2>
           </div>

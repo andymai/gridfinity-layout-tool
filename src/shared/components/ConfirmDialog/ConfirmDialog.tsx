@@ -109,7 +109,7 @@ export function ConfirmDialog({
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}
       >
-        <h2 id="dialog-title" className="mb-2 text-xl font-semibold text-content">
+        <h2 id="dialog-title" className="mb-2 text-page font-semibold text-content">
           {title}
         </h2>
         <p id="dialog-description" className="mb-6 text-sm text-content-secondary leading-[1.5]">
