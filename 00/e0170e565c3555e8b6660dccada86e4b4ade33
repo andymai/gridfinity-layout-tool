@@ -1,0 +1,29 @@
+src/features/bin-designer/components/TraceView/TraceView.tsx
+  s_66332f8bf1351d::t_5e53b3c1d5d2ba 98-100
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.test.ts
+  s_66332f8bf1351d::t_aa8dc6930f059f 131-140
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.ts
+  s_66332f8bf1351d::t_dff4ddcbbeb9b2 360-361,363
+  s_66332f8bf1351d::t_cacbcd30cf82b9 78-87
+src/design-system/Popover/Popover.tsx
+  s_66332f8bf1351d::t_8618f5d5f8babf 162
+src/features/bin-designer/components/TraceView/TraceView.test.tsx
+  s_66332f8bf1351d::t_c611e6fa046699 6
+  s_66332f8bf1351d::t_761d713eb04518 161-180
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "00e0170e565c3555e8b6660dccada86e4b4ade33",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
