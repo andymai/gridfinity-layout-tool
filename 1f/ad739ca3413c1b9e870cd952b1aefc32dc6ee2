@@ -1,0 +1,19 @@
+src/shell/Modals/HelpModal/HelpModal.tsx
+  s_66332f8bf1351d::t_31cb7564e8aafa 116
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1fad739ca3413c1b9e870cd952b1aefc32dc6ee2",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
