@@ -234,6 +234,12 @@ describe('threemfExporter', () => {
       ]);
     });
 
+    it('keeps an object made only of collapsed triangles rather than writing it empty', () => {
+      const vertices = new Float32Array([...[1, 0, 0, 1, 0, 0, 0, 1, 0]]);
+      const buffer = build3MFBuffer(vertices, new Float32Array(9), { name: 'test' });
+      expect(extractModelXML(buffer).match(/<triangle /g)).toHaveLength(1);
+    });
+
     it('includes print settings when provided', () => {
       const { vertices, normals } = createSingleTriangle();
       const buffer = build3MFBuffer(vertices, normals, {

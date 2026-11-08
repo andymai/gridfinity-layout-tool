@@ -24,13 +24,15 @@
 
 import { repairMeshWinding } from '@/shared/generation/repairMeshWinding';
 import { dropCollapsedTriangles } from '../../export/collapsedTriangles';
+import type { StlWriteOptions } from '../../export/stlExporter';
 
 export function buildBaseplateSTL(
   meshResult: {
     vertices: ArrayLike<number>;
     triangles: ArrayLike<number>;
   },
-  name: string
+  name: string,
+  options: StlWriteOptions = {}
 ): ArrayBuffer {
   const verts = meshResult.vertices;
   const tris = repairMeshWinding(meshResult.vertices, meshResult.triangles);
@@ -100,5 +102,5 @@ export function buildBaseplateSTL(
     offset += 2;
   }
 
-  return dropCollapsedTriangles(buffer).data;
+  return options.keepCollapsedTriangles ? buffer : dropCollapsedTriangles(buffer).data;
 }

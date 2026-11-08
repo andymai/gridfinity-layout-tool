@@ -180,10 +180,14 @@ function buildObjectXml(
     xml += `          <vertex x="${formatFloat(x)}" y="${formatFloat(y)}" z="${formatFloat(z)}" />\n`;
   }
   xml += '        </vertices>\n        <triangles>\n';
+  // An object of nothing but slivers keeps them: an empty <triangles> is worse.
+  const skip = mesh.triangles.some(([v1, v2, v3]) => !isCollapsed(v1, v2, v3))
+    ? isCollapsed
+    : () => false;
   if (triangleMaterialIndices) {
     for (let i = 0; i < mesh.triangles.length; i++) {
       const [v1, v2, v3] = mesh.triangles[i];
-      if (isCollapsed(v1, v2, v3)) continue;
+      if (skip(v1, v2, v3)) continue;
       // Map material slot N to filament N+1 in the slicer (1-based) so each
       // zone lands on its own AMS slot — slot 0 → "4" (filament 1, body),
       // slot 1 → "8" (filament 2, lip), slot 2 → "0C" (filament 3), etc.
@@ -199,7 +203,7 @@ function buildObjectXml(
     }
   } else {
     for (const [v1, v2, v3] of mesh.triangles) {
-      if (isCollapsed(v1, v2, v3)) continue;
+      if (skip(v1, v2, v3)) continue;
       xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" />\n`;
     }
   }

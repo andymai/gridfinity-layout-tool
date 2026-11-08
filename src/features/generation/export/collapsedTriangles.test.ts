@@ -57,6 +57,13 @@ describe('dropCollapsedTriangles', () => {
     ]);
   });
 
+  it('leaves a mesh of nothing but collapsed triangles as it was, rather than empty', () => {
+    const input = stl([collapsed, collapsed]);
+    const result = dropCollapsedTriangles(input);
+    expect(result.data).toBe(input);
+    expect(result.dropped).toBe(0);
+  });
+
   it('drops a face group left with no triangles', () => {
     const groups = [
       { start: 0, count: 3, tag: 1 },

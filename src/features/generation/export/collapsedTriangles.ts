@@ -22,8 +22,8 @@ export interface CollapsedTriangleResult {
  *
  * `faceGroups` index into this triangle order (in index units, three per
  * triangle), so they are shifted to match; otherwise every 3MF colour after the
- * first dropped triangle lands one face early. An STL with nothing to drop is
- * returned as-is, byte for byte.
+ * first dropped triangle lands one face early. An STL with nothing to drop, or
+ * with nothing else, is returned as-is, byte for byte.
  */
 export function dropCollapsedTriangles(
   stl: ArrayBuffer,
@@ -43,7 +43,9 @@ export function dropCollapsedTriangles(
     if (isCollapsed(view, HEADER_BYTES + COUNT_BYTES + t * TRIANGLE_BYTES)) dropped++;
   }
   droppedBefore[count] = dropped;
-  if (dropped === 0) return { data: stl, faceGroups, dropped: 0 };
+  // A mesh that is nothing but slivers is left as it was rather than written
+  // out empty, which would get past the empty-mesh check that ran before this.
+  if (dropped === 0 || dropped === count) return { data: stl, faceGroups, dropped: 0 };
 
   const kept = count - dropped;
   const out = new Uint8Array(HEADER_BYTES + COUNT_BYTES + kept * TRIANGLE_BYTES);
