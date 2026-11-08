@@ -1,0 +1,21 @@
+src/i18n/locales/en.ts
+  s_66332f8bf1351d::t_d46cda8db23e9f 3024,4083
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.test.tsx
+  s_66332f8bf1351d::t_48275e3fb99058 225
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4646a7a667b6c30b7884de51b449c0dfc7cd82aa",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
