@@ -42,11 +42,11 @@ import {
   defaultScrewHeadDiameter,
   resolveScrewHeadDiameter,
 } from '@/shared/generation/screwHolePlan';
-import { Checkbox } from '@/design-system/Checkbox/Checkbox';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
+import { LabelInfo } from '@/shared/components/InfoDot';
 import { SegmentedControl, SliderInput } from '@/design-system';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { CornerRadiusControl } from './CornerRadiusControl';
@@ -234,35 +234,42 @@ export function BaseSection() {
                   </SettingsRow>
                   {(style === 'dovetail' || style === 'puzzle') &&
                     baseplateParams.preferIdenticalPieces !== true && (
-                      <Checkbox
-                        checked={baseplateParams.invertDovetails === true}
-                        onChange={(checked) => updateParam('invertDovetails', checked || undefined)}
+                      <FeatureToggle
                         label={t('baseplate.dovetails.invert')}
+                        checked={baseplateParams.invertDovetails === true}
+                        onChange={() =>
+                          updateParam(
+                            'invertDovetails',
+                            baseplateParams.invertDovetails === true ? undefined : true
+                          )
+                        }
                       />
                     )}
                   {/* Both-female styles only: an integral tongue on an exterior
                       edge would protrude past the drawer-facing wall (#2866).
                       Same predicate the geometry uses, so the gate can't drift. */}
                   {isSeatedConnectorStyle(style) && (
-                    <div className="space-y-1">
-                      <Checkbox
-                        checked={baseplateParams.connectorSlotsAllEdges === true}
-                        onChange={(checked) =>
-                          updateParam('connectorSlotsAllEdges', checked || undefined)
-                        }
-                        label={t('baseplate.connectorSlotsAllEdges')}
-                      />
-                      <p className="text-label leading-relaxed text-content-tertiary pl-6">
-                        {t('baseplate.connectorSlotsAllEdgesHint')}
-                      </p>
-                    </div>
+                    <FeatureToggle
+                      label={t('baseplate.connectorSlotsAllEdges')}
+                      info={t('baseplate.connectorSlotsAllEdgesDetail')}
+                      checked={baseplateParams.connectorSlotsAllEdges === true}
+                      onChange={() =>
+                        updateParam(
+                          'connectorSlotsAllEdges',
+                          baseplateParams.connectorSlotsAllEdges === true ? undefined : true
+                        )
+                      }
+                    />
                   )}
-                  <Checkbox
-                    checked={baseplateParams.preferIdenticalPieces === true}
-                    onChange={(checked) =>
-                      updateParam('preferIdenticalPieces', checked || undefined)
-                    }
+                  <FeatureToggle
                     label={t('baseplate.preferIdenticalPieces')}
+                    checked={baseplateParams.preferIdenticalPieces === true}
+                    onChange={() =>
+                      updateParam(
+                        'preferIdenticalPieces',
+                        baseplateParams.preferIdenticalPieces === true ? undefined : true
+                      )
+                    }
                   />
                   <ConnectorSampleButton />
                   {nozzleSizeMm > NOZZLE_BASELINE && (
@@ -326,29 +333,33 @@ export function BaseSection() {
                   unit="mm"
                   info={t('baseplate.magnetDepthInfo')}
                 />
-                <div className="space-y-1">
-                  <Checkbox
-                    checked={baseplateParams.magnetCrushRibs === true}
-                    onChange={(checked) => updateParam('magnetCrushRibs', checked || undefined)}
-                    label={t('baseplate.magnetCrushRibs')}
-                  />
-                  <p className="text-label leading-relaxed text-content-tertiary pl-6">
-                    {t('baseplate.magnetCrushRibsHint')}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <Checkbox
-                    checked={baseplateParams.magnetChamfer === true}
-                    disabled={baseplateParams.lightweight === true}
-                    onChange={(checked) => updateParam('magnetChamfer', checked || undefined)}
-                    label={t('baseplate.magnetChamfer')}
-                  />
-                  <p className="text-label leading-relaxed text-content-tertiary pl-6">
-                    {baseplateParams.lightweight === true
+                <FeatureToggle
+                  label={t('baseplate.magnetCrushRibs')}
+                  info={t('baseplate.magnetCrushRibsDetail')}
+                  checked={baseplateParams.magnetCrushRibs === true}
+                  onChange={() =>
+                    updateParam(
+                      'magnetCrushRibs',
+                      baseplateParams.magnetCrushRibs === true ? undefined : true
+                    )
+                  }
+                />
+                <FeatureToggle
+                  label={t('baseplate.magnetChamfer')}
+                  info={t('baseplate.magnetChamferDetail')}
+                  checked={baseplateParams.magnetChamfer === true}
+                  disabledReason={
+                    baseplateParams.lightweight === true
                       ? t('baseplate.magnetChamferLightweight')
-                      : t('baseplate.magnetChamferHint')}
-                  </p>
-                </div>
+                      : undefined
+                  }
+                  onChange={() =>
+                    updateParam(
+                      'magnetChamfer',
+                      baseplateParams.magnetChamfer === true ? undefined : true
+                    )
+                  }
+                />
               </FeatureToggle>
             </div>
             <div className="border-t border-stroke-subtle pt-3">
@@ -368,7 +379,11 @@ export function BaseSection() {
                     max={SOLID_FLOOR_MAX_MM}
                     step={0.1}
                     unit="mm"
-                    info={t('baseplate.solidFloorHeightNote')}
+                    labelAddon={
+                      <LabelInfo label={t('baseplate.solidFloorThickness')}>
+                        {t('baseplate.solidFloorThicknessDetail')}
+                      </LabelInfo>
+                    }
                   />
                 }
               />
@@ -376,14 +391,10 @@ export function BaseSection() {
             <div className="border-t border-stroke-subtle pt-3">
               <FeatureToggle
                 label={t('baseplate.screwHoles.label')}
+                info={t('baseplate.screwHolesDetail')}
                 checked={screwHolesOn}
                 onChange={() => updateScrewHoles({ enabled: !screwHolesOn })}
                 valueSummary={screwSummary}
-                primaryControls={
-                  <p className="text-label leading-relaxed text-content-tertiary">
-                    {t('baseplate.screwHoles.info')}
-                  </p>
-                }
               >
                 <SliderInput
                   label={t('baseplate.screwHoles.diameter.label')}
@@ -393,7 +404,11 @@ export function BaseSection() {
                   max={SCREW_HOLE_MAX_DIAMETER_MM}
                   step={0.1}
                   unit="mm"
-                  info={t('baseplate.screwHoles.diameter.info')}
+                  labelAddon={
+                    <LabelInfo label={t('baseplate.screwHoles.diameter.label')}>
+                      {t('baseplate.screwHoles.diameterDetail')}
+                    </LabelInfo>
+                  }
                 />
                 <SettingsRow
                   label={t('baseplate.screwHoles.headStyle.label')}
@@ -431,7 +446,11 @@ export function BaseSection() {
                   max={SCREW_HEAD_MAX_DIAMETER_MM}
                   step={0.1}
                   unit="mm"
-                  info={t('baseplate.screwHoles.headDiameter.info')}
+                  labelAddon={
+                    <LabelInfo label={t('baseplate.screwHoles.headDiameter.label')}>
+                      {t('baseplate.screwHoles.headDiameterDetail')}
+                    </LabelInfo>
+                  }
                 />
                 {screwHeadStyle === 'counterbore' && (
                   <SliderInput
@@ -442,7 +461,11 @@ export function BaseSection() {
                     max={SCREW_COUNTERBORE_MAX_DEPTH_MM}
                     step={0.1}
                     unit="mm"
-                    info={t('baseplate.screwHoles.counterboreDepth.info')}
+                    labelAddon={
+                      <LabelInfo label={t('baseplate.screwHoles.counterboreDepth.label')}>
+                        {t('baseplate.screwHoles.counterboreDepthDetail')}
+                      </LabelInfo>
+                    }
                   />
                 )}
                 <SliderInput
@@ -452,7 +475,11 @@ export function BaseSection() {
                   min={SCREWS_PER_PIECE_MIN}
                   max={SCREWS_PER_PIECE_MAX}
                   step={1}
-                  info={t('baseplate.screwHoles.perPiece.info')}
+                  labelAddon={
+                    <LabelInfo label={t('baseplate.screwHoles.perPiece.label')}>
+                      {t('baseplate.screwHoles.perPieceDetail')}
+                    </LabelInfo>
+                  }
                 />
                 <SliderInput
                   label={t('baseplate.screwHoles.edgeInset.label')}
@@ -461,7 +488,11 @@ export function BaseSection() {
                   min={SCREW_EDGE_INSET_CELLS_MIN}
                   max={SCREW_EDGE_INSET_CELLS_MAX}
                   step={1}
-                  info={t('baseplate.screwHoles.edgeInset.info')}
+                  labelAddon={
+                    <LabelInfo label={t('baseplate.screwHoles.edgeInset.label')}>
+                      {t('baseplate.screwHoles.edgeInsetDetail')}
+                    </LabelInfo>
+                  }
                 />
                 <SettingsRow
                   label={t('baseplate.screwHoles.cellCorner.label')}
@@ -483,14 +514,10 @@ export function BaseSection() {
             <div className="border-t border-stroke-subtle pt-3">
               <FeatureToggle
                 label={t('baseplate.mountMagnets.label')}
+                info={t('baseplate.mountMagnetsDetail')}
                 checked={mountMagnetsOn}
                 onChange={() => updateMountMagnets({ enabled: !mountMagnetsOn })}
                 valueSummary={mountMagnetSummary}
-                primaryControls={
-                  <p className="text-label leading-relaxed text-content-tertiary">
-                    {t('baseplate.mountMagnets.info')}
-                  </p>
-                }
               >
                 <SliderInput
                   label={t('baseplate.mountMagnets.diameter.label')}
@@ -500,7 +527,11 @@ export function BaseSection() {
                   max={MOUNT_MAGNET_MAX_DIAMETER_MM}
                   step={0.1}
                   unit="mm"
-                  info={t('baseplate.mountMagnets.diameter.info')}
+                  labelAddon={
+                    <LabelInfo label={t('baseplate.mountMagnets.diameter.label')}>
+                      {t('baseplate.mountMagnets.diameterDetail')}
+                    </LabelInfo>
+                  }
                 />
                 <SliderInput
                   label={t('baseplate.mountMagnets.depth.label')}
@@ -522,16 +553,16 @@ export function BaseSection() {
                       : t('baseplate.mountMagnets.tooWide', { diameter: mountMagnetDiameter })}
                   </p>
                 )}
-                <div className="space-y-1">
-                  <Checkbox
-                    checked={mountMagnets?.chamfer === true}
-                    onChange={(checked) => updateMountMagnets({ chamfer: checked || undefined })}
-                    label={t('baseplate.magnetChamfer')}
-                  />
-                  <p className="text-label leading-relaxed text-content-tertiary pl-6">
-                    {t('baseplate.magnetChamferHint')}
-                  </p>
-                </div>
+                <FeatureToggle
+                  label={t('baseplate.magnetChamfer')}
+                  info={t('baseplate.magnetChamferDetail')}
+                  checked={mountMagnets?.chamfer === true}
+                  onChange={() =>
+                    updateMountMagnets({
+                      chamfer: mountMagnets?.chamfer === true ? undefined : true,
+                    })
+                  }
+                />
                 <SliderInput
                   label={t('baseplate.mountMagnets.perPiece.label')}
                   value={mountMagnetsPerPiece}
@@ -539,7 +570,11 @@ export function BaseSection() {
                   min={MOUNT_MAGNETS_PER_PIECE_MIN}
                   max={MOUNT_MAGNETS_PER_PIECE_MAX}
                   step={1}
-                  info={t('baseplate.mountMagnets.perPiece.info')}
+                  labelAddon={
+                    <LabelInfo label={t('baseplate.mountMagnets.perPiece.label')}>
+                      {t('baseplate.mountMagnets.perPieceDetail')}
+                    </LabelInfo>
+                  }
                 />
               </FeatureToggle>
             </div>
