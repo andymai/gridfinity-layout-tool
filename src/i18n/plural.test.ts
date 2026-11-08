@@ -4,8 +4,20 @@ import {
   lookupPlural,
   pluralBase,
   pluralCategory,
+  pluralCount,
   requiredPluralCategories,
 } from './plural';
+
+describe('pluralCount', () => {
+  it('takes numbers and numeric strings, and nothing else', () => {
+    expect(pluralCount(3)).toBe(3);
+    expect(pluralCount('3')).toBe(3);
+    expect(pluralCount('1,234')).toBeUndefined();
+    expect(pluralCount('')).toBeUndefined();
+    expect(pluralCount(Number.NaN)).toBeUndefined();
+    expect(pluralCount(undefined)).toBeUndefined();
+  });
+});
 
 describe('pluralBase', () => {
   it('strips a plural suffix and leaves ordinary keys alone', () => {

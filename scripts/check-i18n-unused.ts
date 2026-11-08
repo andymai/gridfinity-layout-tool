@@ -141,6 +141,14 @@ export interface UnusedKeyReport {
   possiblyUnused: string[];
 }
 
+/**
+ * Keys a string literal in source can name: every en.ts key, plus each plural
+ * family's base, which data such as `labelKey: 'a.count'` refers to.
+ */
+export function knownKeySet(allKeys: string[]): Set<string> {
+  return new Set(allKeys.flatMap((key) => [key, pluralBase(key) ?? key]));
+}
+
 export function classifyUnusedKeys(allKeys: string[], usage: KeyUsage): UnusedKeyReport {
   const definitelyUnused: string[] = [];
   const possiblyUnused: string[] = [];
@@ -172,7 +180,7 @@ function main(): void {
   console.log('\n🔍 Checking for unused i18n keys...\n');
 
   const allKeys = getEnglishKeys();
-  const knownKeys = new Set(allKeys);
+  const knownKeys = knownKeySet(allKeys);
   console.log(`📋 English (en.ts): ${allKeys.length} keys`);
 
   const sourceFiles = getSourceFiles(SRC_DIR);

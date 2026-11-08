@@ -94,10 +94,11 @@ console.log(`\n📋 English (en.ts): ${enKeys.length} keys, ${families.size} plu
 console.log(`📁 Locale files: ${localeFiles.join(', ')}\n`);
 
 const enCheck = compareKeys('en', enKeys, enKeys, families);
-if (enCheck.missing.length > 0) {
+if (enCheck.missing.length > 0 || enCheck.extra.length > 0) {
   hasErrors = true;
-  console.log(`❌ en.ts: plural families missing English forms:`);
+  console.log(`❌ en.ts: plural families must use exactly English's forms:`);
   enCheck.missing.forEach((k) => console.log(`     - ${k}`));
+  enCheck.extra.forEach((k) => console.log(`     + ${k}`));
 }
 
 for (const file of localeFiles) {
