@@ -1,0 +1,32 @@
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.ts
+  s_66332f8bf1351d::t_9d240e5bb0910b 86-87
+src/features/bin-designer/components/BentoWorkspace/BentoWorkspace.test.tsx
+  s_66332f8bf1351d::t_007bd08f85354d 122-136
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.test.ts
+  s_66332f8bf1351d::t_03c0e5ec2c612d 171
+  s_66332f8bf1351d::t_109150a9ddba51 90
+  s_66332f8bf1351d::t_b41f70b7b74a5e 169-170,172-175
+src/features/bin-designer/components/BentoWorkspace/useBentoPan.ts
+  s_66332f8bf1351d::t_5cb52d6430f795 42
+  s_66332f8bf1351d::t_6fb518e2fbc1f9 18-21
+src/features/bin-designer/components/BentoWorkspace/useBentoWorkspace.ts
+  s_66332f8bf1351d::t_cb8dd9c170054c 346-347
+src/features/bin-designer/components/BentoWorkspace/useBentoPan.test.ts
+  s_66332f8bf1351d::t_4c2f940b087dc8 102-116
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "70bfa66bb368ef07d6f5c6237c9067dab5ef6348",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
