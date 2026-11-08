@@ -3275,8 +3275,8 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.section.label': 'Label',
   'binDesigner.cutouts.section.repeat': 'Repeat',
   'binDesigner.cutouts.section.color': 'Color',
-  'binDesigner.cutouts.color.enable': 'Color this cutout',
   'binDesigner.cutouts.color.surface': 'Painted surface',
+  'binDesigner.cutouts.color.off': 'Off',
   'binDesigner.cutouts.color.floor': 'Floor',
   'binDesigner.cutouts.color.floorAndWalls': 'Floor + walls',
   'binDesigner.cutouts.color.mixed': 'Mixed',
@@ -4186,7 +4186,6 @@ const en: Record<string, string> = {
     'Empty cells print as one pocket per open area, so the space around your compartments can take an L, U or S shape instead of a field of small pockets.',
   'binDesigner.bento.toastMergeBlocked':
     'Those two don’t touch: a merged compartment has to be one piece.',
-  'binDesigner.bento.color.enable': 'Color this compartment',
   'binDesigner.bento.color.surface': 'Painted surface',
   'binDesigner.bento.color.note':
     'Prints in a second filament on a multi-material printer. Single-color printers ignore it.',

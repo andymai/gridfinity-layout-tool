@@ -7,6 +7,7 @@ import {
   MAX_MESH_TRIANGLES_PER_DESIGN,
 } from '@/shared/generation/meshAsset';
 import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
+import { DEFAULT_CUTOUT_COLOR } from '@/features/bin-designer/constants/defaults';
 
 describe('cutoutSlice - consolidated actions', () => {
   beforeEach(() => {
@@ -1701,6 +1702,29 @@ describe('cutoutSlice - consolidated actions', () => {
       setCutoutColor(['a'], { color: '#3b82f6', colorScope: 'floor' });
 
       expect(useDesignerStore.getState().params.cutouts[0].colorScope).toBe('floor');
+    });
+
+    it('a scope alone colors an uncolored cutout with the default and enables multi-color', () => {
+      const { addCutout, setCutoutColor } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+
+      setCutoutColor(['a'], { colorScope: 'floor' });
+
+      const { params } = useDesignerStore.getState();
+      expect(params.cutouts[0]).toMatchObject({ color: DEFAULT_CUTOUT_COLOR, colorScope: 'floor' });
+      expect(params.featureColors.enabled).toBe(true);
+    });
+
+    it('a scope across a mixed selection keeps the colors already set', () => {
+      const { addCutout, setCutoutColor } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a', color: '#3b82f6', colorScope: 'floorAndWalls' }));
+      addCutout(createTestCutout({ id: 'b' }));
+
+      setCutoutColor(['a', 'b'], { colorScope: 'floor' });
+
+      const { cutouts } = useDesignerStore.getState().params;
+      expect(cutouts[0]).toMatchObject({ color: '#3b82f6', colorScope: 'floor' });
+      expect(cutouts[1]).toMatchObject({ color: DEFAULT_CUTOUT_COLOR, colorScope: 'floor' });
     });
 
     it('auto-enables multi-color when a color is set', () => {

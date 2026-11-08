@@ -567,7 +567,10 @@ export function InspectorContent({
               swatch would only flip the whole design into multi-colour mode
               for a zone nothing paints. */}
           {!throughOnly && (
-            <div className="pt-1">
+            <div className="space-y-1.5 pt-1">
+              <div className="text-micro font-medium uppercase tracking-wide text-content-tertiary">
+                {t('binDesigner.cutouts.section.color')}
+              </div>
               <CutoutColorControls
                 ids={selectedCutouts.map((c) => c.id)}
                 color={getSharedField(selectedCutouts, preview, 'color')}

@@ -18,6 +18,7 @@ import type {
   GroupOp,
 } from '../../types';
 import { DEFAULT_GROUP_OP, DEFAULT_CUTOUT_COLOR_SCOPE } from '../../types';
+import { DEFAULT_CUTOUT_COLOR } from '../../constants/defaults';
 import { canArray } from '@/shared/utils/cutoutArray';
 import { withTextFootprint } from '@/shared/utils/cutoutLabel';
 import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
@@ -278,8 +279,9 @@ export function createCutoutSlice(rawSet: Set) {
           const { color: _color, colorScope: _scope, ...rest } = c;
           return rest;
         }
-        const nextColor = patch.color ?? c.color;
-        // Scope-only edit on an uncolored cutout paints nothing — ignore it.
+        // Picking a surface is how the inspector turns a cutout's color on.
+        const nextColor =
+          patch.color ?? c.color ?? (patch.colorScope ? DEFAULT_CUTOUT_COLOR : undefined);
         if (nextColor === undefined) return c;
         const nextScope = patch.colorScope ?? c.colorScope ?? DEFAULT_CUTOUT_COLOR_SCOPE;
         if (c.color === nextColor && c.colorScope === nextScope) return c;
@@ -292,7 +294,8 @@ export function createCutoutSlice(rawSet: Set) {
       // Applying a color implies the user wants multi-color output; auto-enable
       // so the swatch shows instead of silently no-op'ing until they find the
       // Multi-Color panel toggle. Worth committing even if values were unchanged.
-      const shouldEnable = typeof patch.color === 'string' && !state.params.featureColors.enabled;
+      const painting = typeof patch.color === 'string' || patch.colorScope !== undefined;
+      const shouldEnable = painting && !state.params.featureColors.enabled;
       if (!changed && !shouldEnable) return;
 
       pushHistoryEntry(state, { affectsGeometry: false });
