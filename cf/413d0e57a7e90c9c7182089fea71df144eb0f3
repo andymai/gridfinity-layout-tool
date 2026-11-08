@@ -1,0 +1,31 @@
+src/shell/RightPanel/RightPanel.tsx
+  s_66332f8bf1351d::t_1fc00ac6f9df7d 152,168
+src/shell/Sidebar/Sidebar.tsx
+  s_66332f8bf1351d::t_1fc00ac6f9df7d 8,185-186
+src/design-system/SidePanel/SidePanel.tsx
+  s_b050dc8a593981::t_4225ec6fd8291a 319
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cf413d0e57a7e90c9c7182089fea71df144eb0f3",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_b050dc8a593981": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "73bff100-cf23-4db2-a4ec-cac5b2ce385b",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
