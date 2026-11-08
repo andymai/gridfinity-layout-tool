@@ -19,6 +19,7 @@
  * Disabled reasons are computed by the constraint engine via useBaseSection.
  */
 
+import { PanelSection } from '@/shared/components/PanelSection';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { Button, SegmentedControl, SliderInput } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
@@ -147,9 +148,9 @@ export function BaseSection() {
   );
 
   return (
-    <div className="space-y-5">
+    <div data-help-target="bd-base" className="divide-y divide-stroke-subtle/50">
       {/* ── Body type ─────────────────────────────────────────────────── */}
-      <section className="space-y-2">
+      <PanelSection className="space-y-2">
         <SubHeader
           info={
             <OptionNotes
@@ -167,13 +168,13 @@ export function BaseSection() {
           onChange={handlers.setBodyType}
           options={{ tray: trayOptions }}
         />
-      </section>
+      </PanelSection>
 
       {/* ── Stacking ──────────────────────────────────────────────────
           The lip is the base's mating partner one bin up: it is what the NEXT
           bin's feet drop into, which is why it is filed here rather than with
           the walls it sits on. */}
-      <section className="space-y-2">
+      <PanelSection className="space-y-2">
         <SubHeader>{t('binDesigner.base.section.stacking')}</SubHeader>
         {/* Shares the assembled-height breakdown's noun (the same lip, named
             once) rather than duplicating the string across every locale. */}
@@ -251,17 +252,19 @@ export function BaseSection() {
             }
           />
         )}
-      </section>
+      </PanelSection>
 
       {/* ── Mounting ──────────────────────────────────────────────────── */}
       {!state.showMounting && state.mountingUnavailable && (
-        <UnavailableFamily
-          title={t('binDesigner.base.section.mounting')}
-          reason={state.mountingUnavailable}
-        />
+        <PanelSection>
+          <UnavailableFamily
+            title={t('binDesigner.base.section.mounting')}
+            reason={state.mountingUnavailable}
+          />
+        </PanelSection>
       )}
       {state.showMounting && (
-        <section className="space-y-3">
+        <PanelSection className="space-y-3">
           <SubHeader>{t('binDesigner.base.section.mounting')}</SubHeader>
 
           <FeatureToggle
@@ -353,18 +356,20 @@ export function BaseSection() {
               info={t('binDesigner.base.cornerHolesOnlyDetail')}
             />
           )}
-        </section>
+        </PanelSection>
       )}
 
       {/* ── Feet ──────────────────────────────────────────────────────── */}
       {!state.showFeet && state.feetUnavailable && (
-        <UnavailableFamily
-          title={t('binDesigner.base.section.feet')}
-          reason={state.feetUnavailable}
-        />
+        <PanelSection>
+          <UnavailableFamily
+            title={t('binDesigner.base.section.feet')}
+            reason={state.feetUnavailable}
+          />
+        </PanelSection>
       )}
       {state.showFeet && (
-        <section className="space-y-3">
+        <PanelSection className="space-y-3">
           <SubHeader>{t('binDesigner.base.section.feet')}</SubHeader>
           {state.lowProfile && (
             <Hint info={t('binDesigner.base.lowProfileNote')}>
@@ -483,19 +488,21 @@ export function BaseSection() {
               <Hint info={handlers.footLatticeLockDetail}>{handlers.footLatticeLockReason}</Hint>
             </MoreDisclosure>
           )}
-        </section>
+        </PanelSection>
       )}
 
       {/* ── Floor ── lightweight relief only; the drainage pattern lives on
           the Style page with the other surface patterns. */}
       {!state.showFloor && state.floorUnavailable && (
-        <UnavailableFamily
-          title={t('binDesigner.base.section.floor')}
-          reason={state.floorUnavailable}
-        />
+        <PanelSection>
+          <UnavailableFamily
+            title={t('binDesigner.base.section.floor')}
+            reason={state.floorUnavailable}
+          />
+        </PanelSection>
       )}
       {state.showFloor && (
-        <section className="space-y-3">
+        <PanelSection className="space-y-3">
           <SubHeader>{t('binDesigner.base.section.floor')}</SubHeader>
 
           <div>
@@ -552,7 +559,7 @@ export function BaseSection() {
               </Button>
             )}
           </div>
-        </section>
+        </PanelSection>
       )}
     </div>
   );
