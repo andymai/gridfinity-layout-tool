@@ -104,6 +104,10 @@ function keysFor(arg: ts.Expression, source: ts.SourceFile): string[] {
   if (ts.isElementAccessExpression(arg) && ts.isIdentifier(arg.expression)) {
     return tableValues(source, arg.expression.text);
   }
+  if (ts.isParenthesizedExpression(arg)) return keysFor(arg.expression, source);
+  if (ts.isConditionalExpression(arg)) {
+    return [...keysFor(arg.whenTrue, source), ...keysFor(arg.whenFalse, source)];
+  }
   return [];
 }
 
@@ -228,6 +232,15 @@ describe('panel copy length', () => {
     expect(measured(" {t('binDesigner.overhang.placement.changeInLayout')}")).toBeGreaterThan(
       MAX_INLINE_CHARS
     );
+  });
+
+  it('measures every key a ternary inside t() can pick', () => {
+    const notice = `
+      export const Notice = ({ t, on }) => (
+        <p>{t(on ? 'baseplate.ecoPlate' : 'sidebar.about')}</p>
+      );`;
+    const measured = inlineCopy('Notice.tsx', notice).find((copy) => copy.key === '<p>');
+    expect(measured?.length).toBe(en['sidebar.about']?.length);
   });
 
   it(`keeps inline prose to ${MAX_INLINE_CHARS} characters`, () => {
