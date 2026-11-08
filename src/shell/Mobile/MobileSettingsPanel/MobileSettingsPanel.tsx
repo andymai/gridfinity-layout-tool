@@ -103,7 +103,9 @@ export function MobileSettingsPanel() {
     <div className="pb-4 space-y-6">
       {/* Drawer Dimensions */}
       <section>
-        <SubHeader className="mb-3">{t('settings.drawerDimensions')}</SubHeader>
+        <SubHeader as="h3" className="mb-3">
+          {t('settings.drawerDimensions')}
+        </SubHeader>
 
         <div className="grid grid-cols-2 gap-3 mb-3">
           {/* Width */}
@@ -215,7 +217,9 @@ export function MobileSettingsPanel() {
 
       {/* Grid Settings */}
       <section>
-        <SubHeader className="mb-3">{t('settings.gridSettings')}</SubHeader>
+        <SubHeader as="h3" className="mb-3">
+          {t('settings.gridSettings')}
+        </SubHeader>
 
         <div className="space-y-3">
           <div>
