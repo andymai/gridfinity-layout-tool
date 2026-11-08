@@ -128,6 +128,16 @@ describe('handleCutoutKeyDown — typing guard', () => {
   });
 });
 
+describe('handleCutoutKeyDown — focused buttons', () => {
+  it('leaves Tab to a focused button, such as an info dot, so focus moves on', () => {
+    const ctx = makeCtx({ selection: new Set(['c1']), cutouts: [makeCutout()] });
+    const tab = press('Tab', { tagName: 'BUTTON' });
+    handleCutoutKeyDown(tab, ctx);
+    expect(tab.preventDefault).not.toHaveBeenCalled();
+    expect(ctx.setSelection).not.toHaveBeenCalled();
+  });
+});
+
 describe('handleCutoutKeyDown — segmented controls', () => {
   it('leaves a focused option its arrows and Tab, instead of nudging the selection', () => {
     const ctx = makeCtx({ selection: new Set(['c1']), cutouts: [makeCutout()] });

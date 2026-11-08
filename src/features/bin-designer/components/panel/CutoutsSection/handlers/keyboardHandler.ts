@@ -75,6 +75,16 @@ export function focusOwnsKeys(target: EventTarget | null): boolean {
   );
 }
 
+function tabMovesFocus(target: EventTarget | null): boolean {
+  const element = target as Partial<Pick<HTMLElement, 'tagName' | 'closest'>> | null;
+  return (
+    element?.tagName === 'BUTTON' ||
+    element?.tagName === 'A' ||
+    element?.tagName === 'SELECT' ||
+    (typeof element?.closest === 'function' && element.closest('[data-popover]') !== null)
+  );
+}
+
 /**
  * Handle a keydown event in the cutout editor.
  *
@@ -347,9 +357,10 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       }
       break;
 
-    // Tab / Shift+Tab to cycle selection
+    // Tab / Shift+Tab to cycle selection, unless focus sits on a control
+    // (a button, an info dot's panel) where Tab has to move focus on.
     case 'Tab':
-      if (ctx.cutouts.length > 0) {
+      if (ctx.cutouts.length > 0 && !tabMovesFocus(e.target)) {
         e.preventDefault();
         handleTabCycle(e, ctx);
       }
