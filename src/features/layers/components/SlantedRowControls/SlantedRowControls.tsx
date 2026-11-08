@@ -8,7 +8,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { useInteractionStore } from '@/core/store';
 import { SLANT_MAX_DEG } from '@/core/types';
 import type { SlantSide } from '@/core/types';
-import { CheckboxRow, SegmentedControl, Stepper } from '@/design-system';
+import { SegmentedControl, Stepper } from '@/design-system';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import type { SegmentedControlOption } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge';
@@ -36,11 +37,14 @@ export function SlantedRowControls({ size = 'md' }: { size?: 'md' | 'lg' }) {
 
   return (
     <div data-testid="slanted-row-controls">
-      <CheckboxRow
+      <FeatureToggle
+        variant={size === 'lg' ? 'mobile' : 'desktop'}
         label={t('layers.slantedRow.title')}
-        trailing={<ExperimentalBadge />}
+        badge={<ExperimentalBadge />}
         checked={paintSlant !== null}
-        onChange={(on) => setPaintSlant(on ? { angleDeg: DEFAULT_ANGLE_DEG, side: 'back' } : null)}
+        onChange={() =>
+          setPaintSlant(paintSlant === null ? { angleDeg: DEFAULT_ANGLE_DEG, side: 'back' } : null)
+        }
       />
       <p className="mt-1 px-2 text-micro leading-snug text-content-disabled">
         {t('layers.slantedRow.hint')}

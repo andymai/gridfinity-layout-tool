@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { jumpToHelpTarget, helpJumpEventName, HELP_TARGET_ATTR } from './helpJumpDispatcher';
+import {
+  jumpToHelpTarget,
+  helpJumpEventName,
+  HELP_FOCUS_ATTR,
+  HELP_TARGET_ATTR,
+} from './helpJumpDispatcher';
 
 function clearBody(): void {
   while (document.body.firstChild) {
@@ -55,6 +60,22 @@ describe('helpJumpDispatcher', () => {
 
     expect(document.activeElement).toBe(input);
     expect(wrapper.classList.contains('help-target-pulse')).toBe(true);
+  });
+
+  it('focuses the marked control over an earlier focusable one', async () => {
+    const row = document.createElement('div');
+    row.setAttribute(HELP_TARGET_ATTR, 'half-bin-mode');
+    row.scrollIntoView = vi.fn();
+    const infoDot = document.createElement('button');
+    const toggle = document.createElement('button');
+    toggle.setAttribute(HELP_FOCUS_ATTR, '');
+    row.append(infoDot, toggle);
+    document.body.appendChild(row);
+
+    await jumpToHelpTarget({ surface: 'sidebar:grid', controlId: 'half-bin-mode' });
+
+    expect(document.activeElement).toBe(toggle);
+    expect(row.classList.contains('help-target-pulse')).toBe(true);
   });
 
   it('focuses the target control and applies the pulse class', async () => {

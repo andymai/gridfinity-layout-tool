@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { SingleBinInspector } from '@/features/bin-inspector';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector';
 import { createTestBin, createTestLayout, resetAllStores } from '@/test/testUtils';
@@ -163,8 +163,8 @@ describe('SingleBinInspector', () => {
         const { unmount } = render(
           <SingleBinInspector inspector={createMockInspector()} variant={variant} />
         );
-        const row = screen.getByRole('checkbox', { name: /^Slant/ });
-        expect(within(row).getByText('Experimental')).toBeInTheDocument();
+        expect(screen.getByRole('switch', { name: /^Slant/ })).toBeInTheDocument();
+        expect(screen.getByText('Experimental')).toBeInTheDocument();
         unmount();
       }
     });

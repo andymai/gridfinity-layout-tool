@@ -18,7 +18,6 @@ export { LoadingFallback } from './LoadingFallback';
 
 // Layout primitives
 export { SettingsRow } from './SettingsRow';
-export { ToggleRow } from './ToggleRow';
 export { BulkIncrementControl } from './BulkIncrementControl';
 export { ToolSwitcher } from './ToolSwitcher';
 export { ViewModeToggle } from './ViewModeToggle';

@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { ConfirmDialog, ToggleRow } from '@/shared/components';
+import { ConfirmDialog } from '@/shared/components';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { useLayoutStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import { useMutations } from '@/shared/contexts/MutationsContext';
@@ -67,7 +68,7 @@ export function DrawerShapeSection({ variant = 'desktop' }: DrawerShapeSectionPr
 
   return (
     <>
-      <ToggleRow
+      <FeatureToggle
         label={t('drawerShape.toggle')}
         checked={hasOutline}
         onChange={handleToggle}

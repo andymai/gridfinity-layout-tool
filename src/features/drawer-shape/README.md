@@ -17,10 +17,8 @@ the stored outline is never mutated by the frame (#3149).
 ## Key Files
 
 - `components/DrawerShapeSection` — Sidebar entry: toggle on opens the editor;
-  toggle off resets to a rectangle after a confirm. Uses the shared
-  `ToggleRow` (a `Checkbox`), **not** `FeatureToggle` — the sidebar's boolean
-  rows are checkboxes, and this sits directly under Half-grid mode. Takes
-  `variant` so the mobile settings sheet gets `lg` hit areas.
+  toggle off resets to a rectangle after a confirm. A `FeatureToggle`, like
+  Half-grid mode above it; `variant` gives the mobile sheet its larger label.
 - `components/DrawerShapeActionsMenu` — the row's `trailing` control: one
   ghost `IconButton` opening a `Menu.Root` of the three authoring routes.
   Built on the `Menu` primitive rather than a bare `Popover` of buttons — the
@@ -28,9 +26,8 @@ the stored outline is never mutated by the frame (#3149).
   the list on open, and `Menu` is what implements that. Corner cuts and the
   pen stay reachable with no outline (they build one from the plain
   rectangle); the cell editor needs one first.
-  It is a `trailing` slot rather than a child of the row because `ToggleRow`
-  puts `role="checkbox"` on an inset overlay — Children Presentational would
-  drop a nested button from the accessibility tree.
+  It sits in the toggle's `trailing` slot, beside the label and outside the
+  switch button, so it stays its own control for assistive tech.
 - `@/shared/components/GridAlignmentControls` — grid↔perimeter alignment:
   X/Y mm steppers writing `drawer.gridShiftX/Y` through `drawer.update`
   (undoable, displaces newly-outside bins), a reset, and a hint reporting the

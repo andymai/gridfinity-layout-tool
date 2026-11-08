@@ -40,7 +40,7 @@ function renderFor(target: Bin, others: Bin[] = []) {
   return render(<BinSlantSection bin={target} layout={layout} variant="desktop" />);
 }
 
-const toggle = () => screen.getByRole('checkbox', { name: /^binDesigner\.slant\.title/ });
+const toggle = () => screen.getByRole('switch', { name: /^binDesigner\.slant\.title/ });
 
 beforeEach(() => {
   updateBin.mockClear();
@@ -68,7 +68,7 @@ describe('BinSlantSection', () => {
     renderFor(bin('a', 0, { slant: BACK }));
     fireEvent.click(screen.getByRole('radio', { name: 'binDesigner.overhang.side.left' }));
     expect(updateBin).toHaveBeenLastCalledWith('a', { slant: { ...BACK, side: 'left' } });
-    fireEvent.click(screen.getByRole('checkbox', { name: 'binDesigner.slant.endSupport' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'binDesigner.slant.endSupport' }));
     expect(updateBin).toHaveBeenLastCalledWith('a', { slant: { ...BACK, endSupport: true } });
   });
 
@@ -87,7 +87,7 @@ describe('BinSlantSection', () => {
   it('explains what keeps a bin upright and offers no controls', () => {
     registerLinkedSlantResolver(() => ({ blocked: true }));
     renderFor(bin('a', 0, { linkedDesignId: designId('d1') }));
-    expect(toggle()).toHaveAttribute('aria-disabled', 'true');
+    expect(toggle()).toBeDisabled();
     expect(screen.getByText('inspector.slant.heldBy.design')).toBeInTheDocument();
   });
 

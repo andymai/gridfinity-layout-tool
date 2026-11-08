@@ -6,7 +6,8 @@
 
 import { SLANT_MAX_DEG } from '@/core/types';
 import type { Bin, Layout, SlantSide } from '@/core/types';
-import { Button, CheckboxRow, SegmentedControl, Stepper } from '@/design-system';
+import { Button, SegmentedControl, Stepper } from '@/design-system';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import type { SegmentedControlOption } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge';
@@ -52,12 +53,13 @@ export function BinSlantSection({ bin, layout, variant }: BinSlantSectionProps) 
           </p>
         </>
       ) : (
-        <CheckboxRow
+        <FeatureToggle
+          variant={variant}
           label={t('binDesigner.slant.title')}
-          trailing={<ExperimentalBadge />}
+          badge={<ExperimentalBadge />}
           checked={state.placed !== undefined}
           disabled={state.heldBy !== null && state.placed === undefined}
-          onChange={handlers.toggle}
+          onChange={() => handlers.toggle(state.placed === undefined)}
         />
       )}
 
@@ -94,10 +96,11 @@ export function BinSlantSection({ bin, layout, variant }: BinSlantSectionProps) 
             size="sm"
             fullWidth
           />
-          <CheckboxRow
+          <FeatureToggle
+            variant={variant}
             label={t('binDesigner.slant.endSupport')}
             checked={config.endSupport === true}
-            onChange={handlers.setEndSupport}
+            onChange={() => handlers.setEndSupport(config.endSupport !== true)}
           />
           {state.steep && <p className="text-micro text-warning">{t('binDesigner.slant.steep')}</p>}
         </div>

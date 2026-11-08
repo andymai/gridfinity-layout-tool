@@ -17,7 +17,8 @@
  * from the base, which the flare only widens above.
  */
 
-import { CheckboxRow, SegmentedControl, SliderInput } from '@/design-system';
+import { SegmentedControl, SliderInput } from '@/design-system';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import type { SegmentedControlOption } from '@/design-system';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { useLinkedDesignKinds } from '@/shared/hooks/useLinkedDesignKinds';
@@ -31,6 +32,7 @@ interface ExtendToMarginToggleProps {
   bin: Bin;
   drawer: Drawer;
   baseplate: StoredBaseplateParams | undefined;
+  variant?: 'desktop' | 'mobile';
 }
 
 // Default mm per height unit; the generator clamps the band to the exact wall
@@ -40,7 +42,12 @@ const TAPER_BAND_STEP = 0.5;
 // One full grid unit, matching the designer's flare cap.
 const MAX_FLARE_MM = 42;
 
-export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginToggleProps) {
+export function ExtendToMarginToggle({
+  bin,
+  drawer,
+  baseplate,
+  variant = 'desktop',
+}: ExtendToMarginToggleProps) {
   const t = useTranslation();
   const { updateBin } = useMutations();
   const designKinds = useLinkedDesignKinds();
@@ -81,11 +88,12 @@ export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginT
 
   return (
     <div>
-      <CheckboxRow
+      <FeatureToggle
+        variant={variant}
         label={t('inspector.extendToMargin')}
         checked={extendable && bin.extendToMargin === true}
         disabled={!extendable}
-        onChange={(checked) => updateBin(bin.id, { extendToMargin: checked })}
+        onChange={() => updateBin(bin.id, { extendToMargin: bin.extendToMargin !== true })}
       />
       <p className="mt-1 px-2 text-micro leading-snug text-content-disabled">
         {!linked
@@ -97,10 +105,11 @@ export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginT
 
       {canTaper && (
         <div className="mt-2">
-          <CheckboxRow
+          <FeatureToggle
+            variant={variant}
             label={t('inspector.taper')}
             checked={taperOn}
-            onChange={(checked) => setTaper({ enabled: checked })}
+            onChange={() => setTaper({ enabled: !taperOn })}
           />
           {taperOn && (
             <div className="mt-1 flex flex-col gap-2 px-2">

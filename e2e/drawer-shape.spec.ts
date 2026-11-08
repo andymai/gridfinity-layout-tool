@@ -41,7 +41,7 @@ test.describe('Custom Drawer Shapes (#2528)', () => {
     test.setTimeout(120_000);
 
     // Open the shape editor from the sidebar (ToggleRow renders role="checkbox").
-    const toggle = page.getByRole('checkbox', { name: /custom drawer shape/i });
+    const toggle = page.getByRole('switch', { name: /custom drawer shape/i });
     await expect(toggle).toBeVisible({ timeout: 15_000 });
     await toggle.click();
 
@@ -92,7 +92,7 @@ test.describe('Custom Drawer Shapes (#2528)', () => {
     if (!box) throw new Error('no grid box');
     await drawBinOnGrid(page, 24, box.height - 24, 70, box.height - 70);
 
-    const toggle = page.getByRole('checkbox', { name: /custom drawer shape/i });
+    const toggle = page.getByRole('switch', { name: /custom drawer shape/i });
     await toggle.click();
 
     const dialog = getActiveDialog(page);

@@ -8,6 +8,7 @@
 import { useId, type ReactNode } from 'react';
 import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
+import { cn } from '@/design-system/cn';
 import { LabelInfo } from '@/shared/components/InfoDot';
 import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 
@@ -36,6 +37,12 @@ interface FeatureToggleProps {
   badge?: ReactNode;
   /** Evergreen explanation behind an info dot beside the label. */
   info?: ReactNode;
+  shortcut?: string;
+  trailing?: ReactNode;
+  /** The whole row pulses on a help jump; the switch takes focus. */
+  helpTarget?: string;
+  ariaLabel?: string;
+  variant?: 'desktop' | 'mobile';
 }
 
 export function FeatureToggle({
@@ -51,9 +58,15 @@ export function FeatureToggle({
   badge,
   info,
   disabled = false,
+  shortcut,
+  trailing,
+  helpTarget,
+  ariaLabel,
+  variant = 'desktop',
 }: FeatureToggleProps) {
   const t = useTranslation();
   const switchId = useId();
+  const isMobile = variant === 'mobile';
 
   const isDisabled = disabled || !!disabledReason || comingSoon;
   const isActive = checked && !isDisabled;
@@ -70,19 +83,40 @@ export function FeatureToggle({
       : 'bg-stroke-subtle hover:bg-stroke-subtle';
 
   return (
-    <div>
+    <div data-help-target={helpTarget}>
       {/* Toggle row — vertical rhythm is owned by the parent container
           (PanelSection leading / a stacking `space-y`), not this row, so a
           toggle never adds padding on top of an already-padded section. */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className={cn('relative flex items-center justify-between', isMobile && 'min-h-11')}>
+        {/* On a phone the label's ::before stretches over the row, so a tap
+            anywhere along it toggles. It resolves against the row because the
+            label and this cluster stay unpositioned. Badges and key caps let
+            taps through to it; the info dot and trailing menu sit on top. */}
+        <div
+          className={cn(
+            'flex items-center gap-2',
+            isMobile &&
+              '[&>:not(label,button,a)]:pointer-events-none [&_a]:pointer-events-auto [&_a]:relative [&_button]:pointer-events-auto [&_button]:relative'
+          )}
+        >
           <label
             htmlFor={switchId}
-            className={`text-xs text-content-secondary ${isDisabled ? '' : 'cursor-pointer'}`}
+            className={cn(
+              isMobile ? 'text-sm' : 'text-xs',
+              'text-content-secondary',
+              !isDisabled && 'cursor-pointer',
+              isMobile && !isDisabled && "before:absolute before:inset-0 before:content-['']"
+            )}
           >
             {label}
           </label>
           {info !== undefined && <LabelInfo label={label}>{info}</LabelInfo>}
+          {shortcut && (
+            <kbd className="rounded border border-stroke-subtle bg-surface-elevated px-1 py-0.5 text-micro leading-none text-content-disabled">
+              {shortcut}
+            </kbd>
+          )}
+          {trailing}
           {!disabledReason && comingSoon && (
             <span className="rounded-full bg-surface-tertiary px-1.5 py-0.5 text-micro font-medium text-content-tertiary">
               {t('common.soon')}
@@ -96,7 +130,8 @@ export function FeatureToggle({
           type="button"
           role="switch"
           aria-checked={checked}
-          aria-label={label}
+          aria-label={ariaLabel ?? label}
+          data-help-focus={helpTarget ? '' : undefined}
           onClick={onChange}
           disabled={isDisabled}
           className={`relative inline-flex h-7 w-12 items-center justify-start rounded-full px-0 py-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${switchTone}`}

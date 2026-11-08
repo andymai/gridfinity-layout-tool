@@ -21,7 +21,7 @@ const ROOTS = [
   'src/features/baseplate/components/BaseplatePanel',
 ];
 
-const BOOLEAN_PRIMITIVES = new Set(['Checkbox', 'CheckboxRow', 'Switch', 'ToggleRow']);
+const BOOLEAN_PRIMITIVES = new Set(['Checkbox', 'CheckboxRow', 'Switch']);
 const CHOICE_CONTROLS = new Set(['SegmentedControl', 'SegmentGrid']);
 /** Wall-name keys: a control labelled with these is picking a wall. */
 const WALL_KEY =

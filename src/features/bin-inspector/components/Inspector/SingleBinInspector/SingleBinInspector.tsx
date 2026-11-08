@@ -440,7 +440,12 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         </Suspense>
 
         {/* Extend into drawer margin (Labs) — only when the bin abuts a padded edge */}
-        <ExtendToMarginToggle bin={bin} drawer={layout.drawer} baseplate={layout.baseplateParams} />
+        <ExtendToMarginToggle
+          bin={bin}
+          drawer={layout.drawer}
+          baseplate={layout.baseplateParams}
+          variant={variant}
+        />
 
         {/* Explicit per-placement overhang, when the bin carries one */}
         <ExpandedFootprint bin={bin} layout={layout} />
