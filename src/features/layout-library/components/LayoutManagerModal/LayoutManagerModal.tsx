@@ -336,7 +336,7 @@ function LayoutManagerModalContent({
                 <ArrowLeftIcon className="w-5 h-5" />
               </IconButton>
             )}
-            <h2 id="layout-manager-title" className="text-2xl font-bold text-content">
+            <h2 id="layout-manager-title" className="text-page font-semibold text-content">
               {activeTab === 'layouts' ? t('layouts.layouts') : t('common.import')}
             </h2>
           </div>
