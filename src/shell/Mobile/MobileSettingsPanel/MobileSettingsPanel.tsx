@@ -20,7 +20,8 @@ import { HeightUnitSolver } from '@/shared/components/HeightUnitSolver';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
-import { Button, Checkbox, Stepper } from '@/design-system';
+import { Button, Stepper } from '@/design-system';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { UserDock } from '@/shared/components/UserDock';
 import { AppVersionButton } from '@/shared/components/AppVersionButton';
 import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
@@ -184,30 +185,14 @@ export function MobileSettingsPanel() {
 
       {/* Half-bin mode */}
       <section>
-        <div
-          className="flex items-center justify-between cursor-pointer"
-          onClick={handleHalfBinToggle}
-          role="checkbox"
-          aria-checked={halfGridMode}
-          aria-label={t('sidebar.toggleHalfBinMode')}
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === ' ' || e.key === 'Enter') {
-              e.preventDefault();
-              handleHalfBinToggle();
-            }
-          }}
-        >
-          <div>
-            <span className={`text-sm ${halfGridMode ? 'text-content' : 'text-content-secondary'}`}>
-              {t('mobile.settings.halfBinMode')}
-            </span>
-            <p className="text-xs text-content-tertiary">
-              {t('mobile.settings.allow05UnitPrecision')}
-            </p>
-          </div>
-          <Checkbox checked={halfGridMode} size="lg" />
-        </div>
+        <FeatureToggle
+          label={t('mobile.settings.halfBinMode')}
+          checked={halfGridMode}
+          onChange={handleHalfBinToggle}
+          ariaLabel={t('sidebar.toggleHalfBinMode')}
+          variant="mobile"
+        />
+        <p className="text-xs text-content-tertiary">{t('mobile.settings.allow05UnitPrecision')}</p>
 
         {/* Non-rectangular drawer shape (issue #2528) */}
         <DrawerShapeSection variant="mobile" />

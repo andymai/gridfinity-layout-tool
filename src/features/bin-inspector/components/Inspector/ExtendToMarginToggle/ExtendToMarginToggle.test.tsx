@@ -78,9 +78,9 @@ describe('ExtendToMarginToggle', () => {
         baseplate={baseplate({ paddingLeft: mm(3) })}
       />
     );
-    const box = screen.getByRole('checkbox', { name: /extend into drawer margin/i });
+    const box = screen.getByRole('switch', { name: /extend into drawer margin/i });
     expect(box).toBeDefined();
-    expect(box).not.toHaveAttribute('aria-disabled');
+    expect(box).toBeEnabled();
     expect(screen.getByText(/fills the baseplate/i)).toBeDefined();
   });
 
@@ -93,7 +93,7 @@ describe('ExtendToMarginToggle', () => {
         baseplate={baseplate({ paddingLeft: mm(3) })}
       />
     );
-    fireEvent.click(screen.getByRole('checkbox', { name: /extend into drawer margin/i }));
+    fireEvent.click(screen.getByRole('switch', { name: /extend into drawer margin/i }));
     expect(updateBin).toHaveBeenCalledWith(bin.id, { extendToMargin: true });
   });
 
@@ -105,10 +105,7 @@ describe('ExtendToMarginToggle', () => {
         baseplate={baseplate({ paddingLeft: mm(3) })}
       />
     );
-    expect(screen.getByRole('checkbox', { name: /extend into drawer margin/i })).toHaveAttribute(
-      'aria-disabled',
-      'true'
-    );
+    expect(screen.getByRole('switch', { name: /extend into drawer margin/i })).toBeDisabled();
     expect(screen.getByText(/link a design/i)).toBeDefined();
   });
 
@@ -123,8 +120,8 @@ describe('ExtendToMarginToggle', () => {
           baseplate={baseplate({ paddingLeft: mm(3) })}
         />
       );
-      const box = screen.getByRole('checkbox', { name: /extend into drawer margin/i });
-      expect(box).toHaveAttribute('aria-disabled', 'true');
+      const box = screen.getByRole('switch', { name: /extend into drawer margin/i });
+      expect(box).toBeDisabled();
       expect(screen.getByText(/keep their saved shape/i)).toBeDefined();
       expect(screen.queryByText(/fills the baseplate/i)).toBeNull();
     }
@@ -139,8 +136,8 @@ describe('ExtendToMarginToggle', () => {
         baseplate={baseplate({ paddingLeft: mm(3) })}
       />
     );
-    expect(screen.getByRole('checkbox', { name: /extend into drawer margin/i })).not.toBeChecked();
-    expect(screen.queryByRole('checkbox', { name: /taper walls/i })).toBeNull();
+    expect(screen.getByRole('switch', { name: /extend into drawer margin/i })).not.toBeChecked();
+    expect(screen.queryByRole('switch', { name: /taper walls/i })).toBeNull();
   });
 
   it('keeps the toggle enabled for a design registered as a parametric bin', () => {
@@ -152,8 +149,6 @@ describe('ExtendToMarginToggle', () => {
         baseplate={baseplate({ paddingLeft: mm(3) })}
       />
     );
-    expect(
-      screen.getByRole('checkbox', { name: /extend into drawer margin/i })
-    ).not.toHaveAttribute('aria-disabled');
+    expect(screen.getByRole('switch', { name: /extend into drawer margin/i })).toBeEnabled();
   });
 });

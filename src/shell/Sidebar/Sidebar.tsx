@@ -17,7 +17,7 @@ import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { SettingsRow } from '@/shared/components/SettingsRow';
-import { ToggleRow } from '@/shared/components/ToggleRow';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { HeightUnitSolver } from '@/shared/components/HeightUnitSolver';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { UserDock } from '@/shared/components/UserDock';
@@ -372,15 +372,17 @@ export function Sidebar() {
                   />
 
                   {/* Half-bin mode toggle */}
-                  <ToggleRow
-                    label={t('sidebar.halfBinMode')}
-                    checked={halfGridMode}
-                    onChange={handleHalfBinToggle}
-                    tooltip={t('sidebar.halfBinTooltip')}
-                    shortcut="H"
-                    ariaLabel={t('sidebar.toggleHalfBinMode')}
-                    helpTarget="half-bin-mode"
-                  />
+                  <div className="pt-2">
+                    <FeatureToggle
+                      label={t('sidebar.halfBinMode')}
+                      checked={halfGridMode}
+                      onChange={handleHalfBinToggle}
+                      info={t('sidebar.halfBinTooltip')}
+                      shortcut="H"
+                      ariaLabel={t('sidebar.toggleHalfBinMode')}
+                      helpTarget="half-bin-mode"
+                    />
+                  </div>
 
                   {/* Fractional edge position toggles - only shown when dimensions are fractional */}
                   {(hasFractionalWidth || hasFractionalDepth) && (

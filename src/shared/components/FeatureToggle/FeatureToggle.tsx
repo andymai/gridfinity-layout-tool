@@ -36,6 +36,16 @@ interface FeatureToggleProps {
   badge?: ReactNode;
   /** Evergreen explanation behind an info dot beside the label. */
   info?: ReactNode;
+  /** Keyboard shortcut shown as a key cap after the label (e.g. "H"). */
+  shortcut?: string;
+  /** Interactive control after the label, such as an overflow menu for a sub-editor. */
+  trailing?: ReactNode;
+  /** Help-modal deep-link target, set on the row so the pulse lands on it. */
+  helpTarget?: string;
+  /** Accessible name for the switch when it should differ from the visible label. */
+  ariaLabel?: string;
+  /** `mobile` sets the label at the mobile panels' larger text size. */
+  variant?: 'desktop' | 'mobile';
 }
 
 export function FeatureToggle({
@@ -51,6 +61,11 @@ export function FeatureToggle({
   badge,
   info,
   disabled = false,
+  shortcut,
+  trailing,
+  helpTarget,
+  ariaLabel,
+  variant = 'desktop',
 }: FeatureToggleProps) {
   const t = useTranslation();
   const switchId = useId();
@@ -70,7 +85,7 @@ export function FeatureToggle({
       : 'bg-stroke-subtle hover:bg-stroke-subtle';
 
   return (
-    <div>
+    <div data-help-target={helpTarget}>
       {/* Toggle row — vertical rhythm is owned by the parent container
           (PanelSection leading / a stacking `space-y`), not this row, so a
           toggle never adds padding on top of an already-padded section. */}
@@ -78,11 +93,17 @@ export function FeatureToggle({
         <div className="flex items-center gap-2">
           <label
             htmlFor={switchId}
-            className={`text-xs text-content-secondary ${isDisabled ? '' : 'cursor-pointer'}`}
+            className={`${variant === 'mobile' ? 'text-sm' : 'text-xs'} text-content-secondary ${isDisabled ? '' : 'cursor-pointer'}`}
           >
             {label}
           </label>
           {info !== undefined && <LabelInfo label={label}>{info}</LabelInfo>}
+          {shortcut && (
+            <kbd className="rounded border border-stroke-subtle bg-surface-elevated px-1 py-0.5 text-micro leading-none text-content-disabled">
+              {shortcut}
+            </kbd>
+          )}
+          {trailing}
           {!disabledReason && comingSoon && (
             <span className="rounded-full bg-surface-tertiary px-1.5 py-0.5 text-micro font-medium text-content-tertiary">
               {t('common.soon')}
@@ -96,7 +117,7 @@ export function FeatureToggle({
           type="button"
           role="switch"
           aria-checked={checked}
-          aria-label={label}
+          aria-label={ariaLabel ?? label}
           onClick={onChange}
           disabled={isDisabled}
           className={`relative inline-flex h-7 w-12 items-center justify-start rounded-full px-0 py-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${switchTone}`}

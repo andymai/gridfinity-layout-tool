@@ -28,7 +28,7 @@ test.describe('Settings Persistence', () => {
       const sidebar = getSidebar(page);
 
       // Find half-bin toggle
-      const halfBinToggle = sidebar.getByRole('checkbox', { name: /toggle half-bin mode/i });
+      const halfBinToggle = sidebar.getByRole('switch', { name: /toggle half-grid mode/i });
       await halfBinToggle.scrollIntoViewIfNeeded();
 
       // Should start unchecked
@@ -46,8 +46,8 @@ test.describe('Settings Persistence', () => {
       await waitForAppReady(page);
 
       // Verify persisted
-      const toggleAfterReload = getSidebar(page).getByRole('checkbox', {
-        name: /toggle half-bin mode/i,
+      const toggleAfterReload = getSidebar(page).getByRole('switch', {
+        name: /toggle half-grid mode/i,
       });
       await toggleAfterReload.scrollIntoViewIfNeeded();
       await expect(toggleAfterReload).toBeChecked();
@@ -57,7 +57,7 @@ test.describe('Settings Persistence', () => {
       const sidebar = getSidebar(page);
 
       // Find half-bin toggle
-      const halfBinToggle = sidebar.getByRole('checkbox', { name: /toggle half-bin mode/i });
+      const halfBinToggle = sidebar.getByRole('switch', { name: /toggle half-grid mode/i });
       await halfBinToggle.scrollIntoViewIfNeeded();
 
       // Should start unchecked on fresh load

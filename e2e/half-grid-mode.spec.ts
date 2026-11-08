@@ -35,7 +35,7 @@ test.describe('Half-Grid Mode', () => {
       const sidebar = getSidebar(page);
 
       // Find and click the half-grid mode toggle
-      const halfBinToggle = sidebar.getByRole('checkbox', { name: /toggle half-grid mode/i });
+      const halfBinToggle = sidebar.getByRole('switch', { name: /toggle half-grid mode/i });
       await halfBinToggle.scrollIntoViewIfNeeded();
       await expect(halfBinToggle).toBeVisible();
 
@@ -53,7 +53,7 @@ test.describe('Half-Grid Mode', () => {
       const sidebar = getSidebar(page);
 
       // Enable half-grid mode
-      const halfBinToggle = sidebar.getByRole('checkbox', { name: /toggle half-grid mode/i });
+      const halfBinToggle = sidebar.getByRole('switch', { name: /toggle half-grid mode/i });
       await halfBinToggle.scrollIntoViewIfNeeded();
       await halfBinToggle.click();
       await expect(halfBinToggle).toBeChecked();
@@ -63,7 +63,7 @@ test.describe('Half-Grid Mode', () => {
       await waitForAppReady(page);
 
       // Half-grid mode should still be enabled
-      const toggleAfterReload = getSidebar(page).getByRole('checkbox', {
+      const toggleAfterReload = getSidebar(page).getByRole('switch', {
         name: /toggle half-grid mode/i,
       });
       await toggleAfterReload.scrollIntoViewIfNeeded();
@@ -77,7 +77,7 @@ test.describe('Half-Grid Mode', () => {
       const inspector = getInspector(page);
 
       // Enable half-grid mode
-      const halfBinToggle = sidebar.getByRole('checkbox', { name: /toggle half-grid mode/i });
+      const halfBinToggle = sidebar.getByRole('switch', { name: /toggle half-grid mode/i });
       await halfBinToggle.scrollIntoViewIfNeeded();
       await halfBinToggle.click();
 
@@ -101,7 +101,7 @@ test.describe('Half-Grid Mode', () => {
       const inspector = getInspector(page);
 
       // Enable half-grid mode
-      const halfBinToggle = sidebar.getByRole('checkbox', { name: /toggle half-grid mode/i });
+      const halfBinToggle = sidebar.getByRole('switch', { name: /toggle half-grid mode/i });
       await halfBinToggle.scrollIntoViewIfNeeded();
       await halfBinToggle.click();
 
@@ -146,7 +146,7 @@ test.describe('Half-Grid Mode', () => {
     test('cannot disable half-grid mode with fractional bins present', async ({ page }) => {
       const sidebar = getSidebar(page);
       const inspector = getInspector(page);
-      const halfBinToggle = sidebar.getByRole('checkbox', { name: /toggle half-grid mode/i });
+      const halfBinToggle = sidebar.getByRole('switch', { name: /toggle half-grid mode/i });
       await halfBinToggle.scrollIntoViewIfNeeded();
 
       // Enable half-grid mode
@@ -182,7 +182,7 @@ test.describe('Half-Grid Mode', () => {
 
     test('toggle remains enabled without fractional bins (smoke test)', async ({ page }) => {
       const sidebar = getSidebar(page);
-      const halfBinToggle = sidebar.getByRole('checkbox', { name: /toggle half-grid mode/i });
+      const halfBinToggle = sidebar.getByRole('switch', { name: /toggle half-grid mode/i });
       await halfBinToggle.scrollIntoViewIfNeeded();
 
       // Enable and verify
@@ -200,7 +200,7 @@ test.describe('Half-Grid Mode', () => {
       const sidebar = getSidebar(page);
 
       // Enable half-grid mode
-      const halfBinToggle = sidebar.getByRole('checkbox', { name: /toggle half-grid mode/i });
+      const halfBinToggle = sidebar.getByRole('switch', { name: /toggle half-grid mode/i });
       await halfBinToggle.scrollIntoViewIfNeeded();
       await halfBinToggle.click();
 
@@ -221,7 +221,7 @@ test.describe('Half-Grid Mode', () => {
       page,
     }) => {
       const sidebar = getSidebar(page);
-      const halfBinToggle = sidebar.getByRole('checkbox', { name: /toggle half-grid mode/i });
+      const halfBinToggle = sidebar.getByRole('switch', { name: /toggle half-grid mode/i });
       await halfBinToggle.scrollIntoViewIfNeeded();
 
       // Enable half-grid mode first

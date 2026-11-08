@@ -17,7 +17,8 @@
  * from the base, which the flare only widens above.
  */
 
-import { CheckboxRow, SegmentedControl, SliderInput } from '@/design-system';
+import { SegmentedControl, SliderInput } from '@/design-system';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import type { SegmentedControlOption } from '@/design-system';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { useLinkedDesignKinds } from '@/shared/hooks/useLinkedDesignKinds';
@@ -81,11 +82,11 @@ export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginT
 
   return (
     <div>
-      <CheckboxRow
+      <FeatureToggle
         label={t('inspector.extendToMargin')}
         checked={extendable && bin.extendToMargin === true}
         disabled={!extendable}
-        onChange={(checked) => updateBin(bin.id, { extendToMargin: checked })}
+        onChange={() => updateBin(bin.id, { extendToMargin: bin.extendToMargin !== true })}
       />
       <p className="mt-1 px-2 text-micro leading-snug text-content-disabled">
         {!linked
@@ -97,10 +98,10 @@ export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginT
 
       {canTaper && (
         <div className="mt-2">
-          <CheckboxRow
+          <FeatureToggle
             label={t('inspector.taper')}
             checked={taperOn}
-            onChange={(checked) => setTaper({ enabled: checked })}
+            onChange={() => setTaper({ enabled: !taperOn })}
           />
           {taperOn && (
             <div className="mt-1 flex flex-col gap-2 px-2">

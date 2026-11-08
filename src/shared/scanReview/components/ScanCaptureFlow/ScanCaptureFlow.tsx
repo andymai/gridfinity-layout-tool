@@ -13,7 +13,8 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button, Spinner, Switch } from '@/design-system';
+import { Button, Spinner } from '@/design-system';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
 import {
@@ -393,14 +394,15 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
               {scene.card && <CardSizeEditor size={cardSize} onChange={handleCardSize} />}
 
               {holesFound && (
-                <div className="flex w-full flex-col gap-1">
-                  <Switch
-                    checked={keepHoles}
-                    onChange={setKeepHoles}
+                <div className="w-full">
+                  <FeatureToggle
                     label={t('scan.review.keepHoles')}
+                    info={t('scan.review.keepHolesHint')}
+                    checked={keepHoles}
+                    onChange={() => setKeepHoles(!keepHoles)}
                     disabled={busy(status)}
+                    variant="mobile"
                   />
-                  <p className="text-xs text-content-tertiary">{t('scan.review.keepHolesHint')}</p>
                 </div>
               )}
 
