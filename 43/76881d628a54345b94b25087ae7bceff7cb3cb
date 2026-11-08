@@ -1,0 +1,79 @@
+src/shared/components/PanelSection/PanelSection.test.tsx
+  s_66332f8bf1351d::t_8b0fb94075cfb7 23-24,31
+src/features/bin-designer/components/panel/ToolRackSection/ToolRackParameterPanel.tsx
+  s_66332f8bf1351d::t_8b0fb94075cfb7 13
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/BinScrollPanel.tsx
+  s_66332f8bf1351d::t_8b0fb94075cfb7 24
+src/features/bin-designer/components/Workshop/WorkshopPanel/PartInspector.tsx
+  s_66332f8bf1351d::t_8b0fb94075cfb7 21
+src/features/bin-designer/components/panel/SlideTraySection/SlideTraySection.tsx
+  s_66332f8bf1351d::t_8b0fb94075cfb7 24
+src/shell/Sidebar/Sidebar.tsx
+  s_66332f8bf1351d::t_4573c06c143a91 8,34-35,218,221,282-283,285,289,418-419,422-424,429,506-507,510,516-518,537-538
+  s_66332f8bf1351d::t_8a8a111ca6472c 226
+  s_66332f8bf1351d::t_c6ee29fa54e8a9 515
+src/features/bin-designer/components/panel/pages/FeaturesPage/FeaturesPage.tsx
+  s_66332f8bf1351d::t_8b0fb94075cfb7 2
+src/shell/styles/themes.css
+  s_66332f8bf1351d::t_4573c06c143a91 219-221,224
+src/features/baseplate/components/BaseplatePanel/StackPrintSection.tsx
+  s_66332f8bf1351d::t_4cf48e54e4c7cc 25,116,203
+src/features/bin-designer/components/Workshop/WorkshopPanel/WorkshopPanel.tsx
+  s_66332f8bf1351d::t_8b0fb94075cfb7 29
+src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.tsx
+  s_66332f8bf1351d::t_6d193fd5fe394a 14,101,112,224
+src/features/bin-designer/components/panel/pages/ShapePage/ShapePage.tsx
+  s_66332f8bf1351d::t_8b0fb94075cfb7 1
+src/shared/components/StickyGroupHeader/StickyGroupHeader.test.tsx
+  s_66332f8bf1351d::t_f6cd93fdbbfd7b 99-108
+  s_66332f8bf1351d::t_02b7702b6f56d0 109-130
+src/features/categories/components/CategoriesPanel/CategoriesPanel.tsx
+  s_66332f8bf1351d::t_4573c06c143a91 12-14,183-191,193-213,215-290,292-298,300,302-330,332-334,340-341,343-345,347-359,361-396
+src/shell/RightPanel/RightPanel.tsx
+  s_66332f8bf1351d::t_4573c06c143a91 9,29-30,203-213,229-230,232-234,238,332,629
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
+  s_66332f8bf1351d::t_6d193fd5fe394a 19,324-325,583
+src/features/layers/components/LayerPanel/LayerPanel.test.tsx
+  s_66332f8bf1351d::t_77893d7d0476cc 75
+src/shell/RightPanel/RightPanel.test.tsx
+  s_66332f8bf1351d::t_409892b9d1d83f 413
+  s_66332f8bf1351d::t_77893d7d0476cc 3,291,307,322
+src/shared/components/PanelSection/PanelSection.tsx
+  s_66332f8bf1351d::t_8b0fb94075cfb7 2,4-5,22-25
+src/features/baseplate/components/ActiveBaseplatePanel/ActiveBaseplatePanel.tsx
+  s_66332f8bf1351d::t_c6ee29fa54e8a9 6-8
+  s_66332f8bf1351d::t_4573c06c143a91 14,18-19,53-54,60-72
+src/features/bin-designer/components/panel/pages/PrintPage/PrintPage.tsx
+  s_66332f8bf1351d::t_8b0fb94075cfb7 4
+src/features/bin-designer/components/panel/VariantSection/VariantSection.tsx
+  s_66332f8bf1351d::t_8b0fb94075cfb7 5
+src/features/layers/components/LayerPanel/LayerPanel.tsx
+  s_66332f8bf1351d::t_4573c06c143a91 5,13-14,93-114,116-125,127-143
+src/features/bin-designer/components/panel/pages/StylePage/StylePage.tsx
+  s_66332f8bf1351d::t_8b0fb94075cfb7 3
+src/features/bin-designer/components/panel/pages/InteriorPage/InteriorPage.tsx
+  s_66332f8bf1351d::t_8b0fb94075cfb7 6
+src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
+  s_66332f8bf1351d::t_6d193fd5fe394a 47,175,179,617
+src/shared/components/StickyGroupHeader/StickyGroupHeader.tsx
+  s_66332f8bf1351d::t_e858a175d5f358 28-33,35-36,57-58,79,94,102,105,142,152-155,157
+  s_66332f8bf1351d::t_f6cd93fdbbfd7b 95-101,103-104,106-124,127-141,143-151
+src/features/bin-designer/components/panel/ImportedMeshSection/ImportedMeshPanel.tsx
+  s_66332f8bf1351d::t_8b0fb94075cfb7 22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4376881d628a54345b94b25087ae7bceff7cb3cb",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "unknown"
+      },
+      "human_author": null
+    }
+  }
+}
