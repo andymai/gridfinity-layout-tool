@@ -33,7 +33,6 @@ const BAR_CLASS: Record<StickyGroupHeaderVariant, string> = {
   band: 'bg-surface-elevated border-b border-stroke-subtle',
 };
 
-/** Padding follows the UI density setting; at the default 16px it is px-4 with py-3 / py-2.5. */
 const BUTTON_CLASS: Record<StickyGroupHeaderVariant, string> = {
   default: 'px-(--space-panel) py-[calc(var(--space-panel)*0.75)] hover:bg-surface-hover/50',
   band: 'px-(--space-panel) py-[calc(var(--space-panel)*0.625)] hover:bg-surface-hover',
