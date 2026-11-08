@@ -5106,7 +5106,7 @@
   "toast.rotateRepositioned_one": "Bin obrócony i przesunięty o {count} komórkę, aby się zmieścił",
   "toast.rotateRepositioned_few": "Bin obrócony i przesunięty o {count} komórki, aby się zmieścił",
   "toast.rotateRepositioned_many": "Bin obrócony i przesunięty o {count} komórek, aby się zmieścił",
-  "toast.rotateRepositioned_other": "Bin obrócony i przesunięty o {count} komórek, aby się zmieścił",
+  "toast.rotateRepositioned_other": "Bin obrócony i przesunięty o {count} komórki, aby się zmieścił",
   "toast.savedToLayouts": "Zapisano \"{name}\" w Twoich układach",
   "toast.scanImport.fileTooLarge": "Plik obrysu jest za duży (maks 5 MB)",
   "toast.svgExport.nothingToExport": "Nic w zaznaczeniu nie ma konturu do wyeksportowania",

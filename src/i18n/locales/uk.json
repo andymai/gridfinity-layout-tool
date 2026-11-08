@@ -5106,7 +5106,7 @@
   "toast.rotateRepositioned_one": "Бін обернуто та переміщено на {count} клітинку, щоб уміститися",
   "toast.rotateRepositioned_few": "Бін обернуто та переміщено на {count} клітинки, щоб уміститися",
   "toast.rotateRepositioned_many": "Бін обернуто та переміщено на {count} клітинок, щоб уміститися",
-  "toast.rotateRepositioned_other": "Бін обернуто та переміщено на {count} клітинок, щоб уміститися",
+  "toast.rotateRepositioned_other": "Бін обернуто та переміщено на {count} клітинки, щоб уміститися",
   "toast.savedToLayouts": "«{name}» збережено до ваших розкладок",
   "toast.scanImport.fileTooLarge": "Файл контуру завеликий (макс. 5 МБ)",
   "toast.svgExport.nothingToExport": "Ніщо у виділенні не має контуру для експорту",
