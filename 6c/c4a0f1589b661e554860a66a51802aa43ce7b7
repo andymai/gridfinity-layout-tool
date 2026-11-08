@@ -1,0 +1,19 @@
+src/shared/components/LinkedDimensionInput/LinkedDimensionInput.tsx
+  s_66332f8bf1351d::t_cc331c55d93aa2 118,135-137
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6cc4a0f1589b661e554860a66a51802aa43ce7b7",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
