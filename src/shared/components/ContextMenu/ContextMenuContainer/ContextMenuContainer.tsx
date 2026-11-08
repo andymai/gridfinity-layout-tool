@@ -48,31 +48,37 @@ export function ContextMenuContainer({
   // Measure menu after render and clamp position to viewport bounds.
   // Direct DOM mutation in useLayoutEffect avoids a double-render cycle
   // and runs before the browser paints, preventing a flash at the unclamped position.
+  // Sections can arrive after the menu opens (the bin menu's design actions
+  // load late), so the clamp runs again whenever the menu changes size.
   useLayoutEffect(() => {
     const menu = menuRef.current;
     if (!isOpen || !menu) return;
 
-    const rect = menu.getBoundingClientRect();
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
+    const clamp = () => {
+      const rect = menu.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
 
-    let x = position.x;
-    let y = position.y;
+      let x = position.x;
+      let y = position.y;
 
-    // Clamp right edge
-    if (x + rect.width > vw - VIEWPORT_MARGIN) {
-      x = Math.max(VIEWPORT_MARGIN, vw - rect.width - VIEWPORT_MARGIN);
-    }
-    // Clamp bottom edge
-    if (y + rect.height > vh - VIEWPORT_MARGIN) {
-      y = Math.max(VIEWPORT_MARGIN, vh - rect.height - VIEWPORT_MARGIN);
-    }
-    // Clamp left/top edges
-    x = Math.max(VIEWPORT_MARGIN, x);
-    y = Math.max(VIEWPORT_MARGIN, y);
+      if (x + rect.width > vw - VIEWPORT_MARGIN) {
+        x = Math.max(VIEWPORT_MARGIN, vw - rect.width - VIEWPORT_MARGIN);
+      }
+      if (y + rect.height > vh - VIEWPORT_MARGIN) {
+        y = Math.max(VIEWPORT_MARGIN, vh - rect.height - VIEWPORT_MARGIN);
+      }
+      x = Math.max(VIEWPORT_MARGIN, x);
+      y = Math.max(VIEWPORT_MARGIN, y);
 
-    menu.style.left = `${x}px`;
-    menu.style.top = `${y}px`;
+      menu.style.left = `${x}px`;
+      menu.style.top = `${y}px`;
+    };
+
+    clamp();
+    const observer = new ResizeObserver(clamp);
+    observer.observe(menu);
+    return () => observer.disconnect();
   }, [isOpen, position, menuRef]);
 
   const handleKeyDown = useMenuKeyboardNav({ isOpen, menuRef, onClose });
