@@ -1,0 +1,47 @@
+src/features/generation/worker/generators/binExporter.ts
+  s_66332f8bf1351d::t_8dfc70adeb6af3 40-42,67-68,119-132
+  s_66332f8bf1351d::t_a6e148c2bc45ab 18
+  s_66332f8bf1351d::t_01c523385ed50d 71-72,134-135
+src/features/generation/export/stlExporter.test.ts
+  s_66332f8bf1351d::t_2e08f8b8e40c45 351-385
+src/features/generation/worker/generators/baseplateSTL.ts
+  s_66332f8bf1351d::t_cf1dba5322431a 26,103
+src/features/generation/export/stlExporter.ts
+  s_66332f8bf1351d::t_b1517430e91a2f 9-17,35-36,75,96-97,173
+src/features/generation/worker/generators/lidOrchestrator.ts
+  s_66332f8bf1351d::t_8dfc70adeb6af3 23,217-221
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.solidCutouts.test.ts.snap
+  s_66332f8bf1351d::t_93acc848892d66 21-22
+src/features/generation/export/collapsedTriangles.ts
+  s_66332f8bf1351d::t_046733ab37043f 2-90
+  s_66332f8bf1351d::t_a6e148c2bc45ab 1
+src/features/generation/worker/generators/utils/stlMeshFallback.ts
+  s_66332f8bf1351d::t_eb39572cda6a63 19-20,34-35,41,58-59,66-67,70
+src/features/generation/export/threemfExporter.test.ts
+  s_66332f8bf1351d::t_acc23eaef384e9 215-236
+src/features/generation/export/collapsedTriangles.test.ts
+  s_66332f8bf1351d::t_dcce4280a983ec 1-68
+src/features/generation/worker/generators/__kernel-tests__/exportIntegrityRunner.ts
+  s_66332f8bf1351d::t_187d5375ec5e61 194-197,199
+src/features/generation/worker/generators/scenarios/solidCutouts.ts
+  s_66332f8bf1351d::t_807928a02ade55 30-46
+src/features/generation/export/threemfXml.ts
+  s_66332f8bf1351d::t_4313bfe637ea46 13-14,17-21,186,202
+  s_66332f8bf1351d::t_f9caa000e45377 15-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8a5ef2f18c1e482713810db86d8cfd2b5bed1d19",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
