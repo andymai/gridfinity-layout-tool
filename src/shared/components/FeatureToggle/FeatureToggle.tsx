@@ -7,7 +7,7 @@
 
 import { useId, type ReactNode } from 'react';
 import { useTranslation } from '@/i18n';
-import { Button } from '@/design-system';
+import { Button, Kbd } from '@/design-system';
 import { cn } from '@/design-system/cn';
 import { LabelInfo } from '@/shared/components/InfoDot';
 import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
@@ -111,11 +111,7 @@ export function FeatureToggle({
             {label}
           </label>
           {info !== undefined && <LabelInfo label={label}>{info}</LabelInfo>}
-          {shortcut && (
-            <kbd className="rounded border border-stroke-subtle bg-surface-elevated px-1 py-0.5 text-micro leading-none text-content-disabled">
-              {shortcut}
-            </kbd>
-          )}
+          {shortcut && <Kbd>{shortcut}</Kbd>}
           {trailing}
           {!disabledReason && comingSoon && (
             <span className="rounded-full bg-surface-tertiary px-1.5 py-0.5 text-micro font-medium text-content-tertiary">

@@ -183,7 +183,7 @@ export default defineConfig([
             include: ['title', 'aria-label', 'placeholder', 'alt'],
           },
           'jsx-components': {
-            exclude: ['code', 'kbd', 'pre'],
+            exclude: ['code', 'kbd', 'Kbd', 'pre'],
           },
           words: {
             exclude: [

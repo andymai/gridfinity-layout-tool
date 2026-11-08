@@ -7,7 +7,7 @@ import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import { batch } from '@/core/cqrs';
 import { trackEvent } from '@/shared/analytics/posthog';
-import { IconButton, Input, XIcon } from '@/design-system';
+import { IconButton, Input, Kbd, XIcon } from '@/design-system';
 
 /**
  * Small popover that appears near a bin for quick label editing.
@@ -170,21 +170,11 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
           {/* Keyboard hints */}
           <div className="flex items-center justify-center gap-3 mt-2 text-xs text-content-tertiary">
             <span>
-              <kbd
-                className="px-1.5 py-0.5 rounded font-mono bg-surface border border-stroke-subtle leading-none"
-                style={{ fontSize: '10px' }}
-              >
-                Enter
-              </kbd>
+              <Kbd>Enter</Kbd>
               <span className="ml-1">{t('common.save')}</span>
             </span>
             <span>
-              <kbd
-                className="px-1.5 py-0.5 rounded font-mono bg-surface border border-stroke-subtle leading-none"
-                style={{ fontSize: '10px' }}
-              >
-                Esc
-              </kbd>
+              <Kbd>Esc</Kbd>
               <span className="ml-1">{t('common.cancel')}</span>
             </span>
           </div>
