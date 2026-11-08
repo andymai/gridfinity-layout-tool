@@ -1,14 +1,12 @@
 /**
- * Shadow-board color controls for the cutout inspector: the Off / Floor /
- * Floor + walls picker, then the shared color picker once a surface is chosen.
- * Writes through `setCutoutColor`, which spreads across a boolean group,
- * auto-enables multi-color, and stays cosmetic (no geometry regen). Works for
- * one or many selected cutouts; `null` inputs mean the selection is mixed.
+ * Shadow-board color controls for the cutout inspector. Writes through
+ * `setCutoutColor`, which spreads across a boolean group, auto-enables
+ * multi-color, and stays cosmetic (no geometry regen).
  */
 
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { DEFAULT_CUTOUT_COLOR_SCOPE, type CutoutColorScope } from '@/features/bin-designer/types';
+import { DEFAULT_CUTOUT_COLOR_SCOPE, type Cutout } from '@/features/bin-designer/types';
 import { DEFAULT_CUTOUT_COLOR } from '@/features/bin-designer/constants/defaults';
 import { ColorZoneRow } from '../panel/ColorsSection/ColorZoneRow';
 import {
@@ -16,42 +14,36 @@ import {
   type ColorSurfaceChoice,
 } from '../panel/ColorsSection/ColorSurfacePicker';
 
+type ColoredFields = Pick<Cutout, 'id' | 'color' | 'colorScope'>;
+
 interface CutoutColorControlsProps {
-  readonly ids: readonly string[];
-  /** Shared color: hex when uniform, undefined when all uncolored, null when mixed. */
-  readonly color: string | null | undefined;
-  /** Shared scope: value when uniform, undefined when unset, null when mixed. */
-  readonly colorScope: CutoutColorScope | null | undefined;
+  readonly cutouts: readonly ColoredFields[];
   readonly disabled: boolean;
 }
 
-function surfaceChoice(
-  color: string | null | undefined,
-  colorScope: CutoutColorScope | null | undefined
-): ColorSurfaceChoice | null {
-  if (color === undefined) return 'off';
-  if (colorScope === null) return null;
-  // A color saved without a scope paints with the default, so show that.
-  return colorScope ?? DEFAULT_CUTOUT_COLOR_SCOPE;
+// A color saved without a scope paints with the default, so it reads as that.
+const surfaceOf = (c: ColoredFields): ColorSurfaceChoice =>
+  c.color === undefined ? 'off' : (c.colorScope ?? DEFAULT_CUTOUT_COLOR_SCOPE);
+
+/** The one value every cutout shares, or null when they differ. */
+function shared<T>(values: readonly T[]): T | null {
+  return values.length > 0 && values.every((v) => v === values[0]) ? values[0] : null;
 }
 
-export function CutoutColorControls({
-  ids,
-  color,
-  colorScope,
-  disabled,
-}: CutoutColorControlsProps) {
+export function CutoutColorControls({ cutouts, disabled }: CutoutColorControlsProps) {
   const t = useTranslation();
   const setCutoutColor = useDesignerStore((s) => s.setCutoutColor);
   const bodyColor = useDesignerStore((s) => s.params.featureColors.body);
 
-  const isColored = color !== undefined;
+  const ids = cutouts.map((c) => c.id);
+  const color = shared(cutouts.map((c) => c.color));
+  const isColored = cutouts.some((c) => c.color !== undefined);
   const swatchColor = typeof color === 'string' ? color : DEFAULT_CUTOUT_COLOR;
 
   return (
     <div className="space-y-2">
       <ColorSurfacePicker
-        value={surfaceChoice(color, colorScope)}
+        value={shared(cutouts.map(surfaceOf))}
         onChange={(choice) =>
           setCutoutColor(ids, choice === 'off' ? { color: null } : { colorScope: choice })
         }
@@ -66,7 +58,7 @@ export function CutoutColorControls({
         <div inert={disabled || undefined} className={disabled ? 'opacity-60' : undefined}>
           <ColorZoneRow
             zone="body"
-            label={color === null ? t('binDesigner.cutouts.color.mixed') : swatchColor}
+            label={typeof color === 'string' ? swatchColor : t('binDesigner.cutouts.color.mixed')}
             color={swatchColor}
             defaultColor={DEFAULT_CUTOUT_COLOR}
             otherColors={[]}

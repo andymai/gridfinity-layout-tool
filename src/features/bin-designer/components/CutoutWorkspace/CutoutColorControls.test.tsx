@@ -25,29 +25,35 @@ const cutout = (o: Partial<Cutout> = {}): Cutout => ({
 const segment = (choice: string) =>
   screen.getByRole('button', { name: `binDesigner.cutouts.color.${choice}` });
 
-const stored = () => useDesignerStore.getState().params.cutouts[0];
+const pressed = () =>
+  ['off', 'floor', 'floorAndWalls'].filter(
+    (choice) => segment(choice).getAttribute('aria-pressed') === 'true'
+  );
+
+const stored = (id = 'c1') =>
+  useDesignerStore.getState().params.cutouts.find((c) => c.id === id) as Cutout;
+
+/** Seeds the store with these cutouts and renders the controls over them. */
+function renderWith(cutouts: readonly Cutout[], disabled = false) {
+  useDesignerStore.setState(useDesignerStore.getInitialState());
+  for (const c of cutouts) useDesignerStore.getState().addCutout(c);
+  render(<CutoutColorControls cutouts={cutouts} disabled={disabled} />);
+}
 
 describe('CutoutColorControls', () => {
   beforeEach(() => {
     useDesignerStore.setState(useDesignerStore.getInitialState());
-    useDesignerStore.getState().addCutout(cutout());
   });
 
   it('offers every surface while uncolored, with Off pressed and no swatch', () => {
-    render(
-      <CutoutColorControls ids={['c1']} color={undefined} colorScope={undefined} disabled={false} />
-    );
+    renderWith([cutout()]);
 
-    expect(segment('off')).toHaveAttribute('aria-pressed', 'true');
-    expect(segment('floor')).toHaveAttribute('aria-pressed', 'false');
-    expect(segment('floorAndWalls')).toHaveAttribute('aria-pressed', 'false');
+    expect(pressed()).toEqual(['off']);
     expect(screen.queryByText(DEFAULT_CUTOUT_COLOR)).toBeNull();
   });
 
   it('colors an uncolored cutout floor-only in one click', () => {
-    render(
-      <CutoutColorControls ids={['c1']} color={undefined} colorScope={undefined} disabled={false} />
-    );
+    renderWith([cutout()]);
 
     fireEvent.click(segment('floor'));
 
@@ -56,50 +62,57 @@ describe('CutoutColorControls', () => {
   });
 
   it('shows the active scope and switches it on click', () => {
-    useDesignerStore
-      .getState()
-      .setCutoutColor(['c1'], { color: '#ef4444', colorScope: 'floorAndWalls' });
-    render(
-      <CutoutColorControls
-        ids={['c1']}
-        color="#ef4444"
-        colorScope="floorAndWalls"
-        disabled={false}
-      />
-    );
-    expect(segment('floorAndWalls')).toHaveAttribute('aria-pressed', 'true');
-    expect(segment('off')).toHaveAttribute('aria-pressed', 'false');
+    renderWith([cutout({ color: '#ef4444', colorScope: 'floorAndWalls' })]);
+    expect(pressed()).toEqual(['floorAndWalls']);
 
     fireEvent.click(segment('floor'));
+
     expect(stored()).toMatchObject({ color: '#ef4444', colorScope: 'floor' });
   });
 
   it('shows a color saved without a scope as the default it paints with', () => {
-    render(
-      <CutoutColorControls ids={['c1']} color="#ef4444" colorScope={undefined} disabled={false} />
-    );
+    renderWith([cutout({ color: '#ef4444' })]);
 
-    expect(segment('floorAndWalls')).toHaveAttribute('aria-pressed', 'true');
+    expect(pressed()).toEqual(['floorAndWalls']);
   });
 
-  it('presses nothing when the selection mixes scopes', () => {
-    render(<CutoutColorControls ids={['c1']} color={null} colorScope={null} disabled={false} />);
+  it('leaves a scopeless color alone when its pressed surface is clicked again', () => {
+    renderWith([cutout({ color: '#ef4444' })]);
+    const history = useDesignerStore.getState().history.past.length;
 
-    for (const choice of ['off', 'floor', 'floorAndWalls']) {
-      expect(segment(choice)).toHaveAttribute('aria-pressed', 'false');
-    }
+    fireEvent.click(segment('floorAndWalls'));
+
+    expect(stored().colorScope).toBeUndefined();
+    expect(useDesignerStore.getState().history.past.length).toBe(history);
+  });
+
+  it('presses nothing when only some selected cutouts are colored', () => {
+    renderWith([cutout({ id: 'a', color: '#ef4444' }), cutout({ id: 'b' })]);
+
+    expect(pressed()).toEqual([]);
+  });
+
+  it('presses the surface two cutouts share, saved or by default', () => {
+    renderWith([
+      cutout({ id: 'a', color: '#ef4444' }),
+      cutout({ id: 'b', color: '#3b82f6', colorScope: 'floorAndWalls' }),
+    ]);
+
+    expect(pressed()).toEqual(['floorAndWalls']);
+    expect(screen.getByText('binDesigner.cutouts.color.mixed')).toBeInTheDocument();
+  });
+
+  it('presses nothing when the selected cutouts paint different surfaces', () => {
+    renderWith([
+      cutout({ id: 'a', color: '#ef4444', colorScope: 'floor' }),
+      cutout({ id: 'b', color: '#ef4444', colorScope: 'floorAndWalls' }),
+    ]);
+
+    expect(pressed()).toEqual([]);
   });
 
   it('Off removes the color', () => {
-    useDesignerStore.getState().setCutoutColor(['c1'], { color: '#ef4444' });
-    render(
-      <CutoutColorControls
-        ids={['c1']}
-        color="#ef4444"
-        colorScope="floorAndWalls"
-        disabled={false}
-      />
-    );
+    renderWith([cutout({ color: '#ef4444', colorScope: 'floorAndWalls' })]);
 
     fireEvent.click(segment('off'));
 
@@ -107,7 +120,7 @@ describe('CutoutColorControls', () => {
   });
 
   it('leaves a locked cutout alone', () => {
-    render(<CutoutColorControls ids={['c1']} color={undefined} colorScope={undefined} disabled />);
+    renderWith([cutout()], true);
 
     fireEvent.click(segment('floor'));
 

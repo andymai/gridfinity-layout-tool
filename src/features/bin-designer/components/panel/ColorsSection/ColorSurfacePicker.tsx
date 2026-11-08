@@ -1,9 +1,3 @@
-/**
- * Off / Floor / Floor + walls for a cutout's or a Bento compartment's shadow
- * color. Choosing a surface is what turns the color on, so the surface choice
- * is always in view instead of appearing only after an enable toggle.
- */
-
 import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
@@ -36,7 +30,10 @@ export function ColorSurfacePicker({
           type="button"
           variant="ghost"
           disabled={disabled}
-          onClick={() => onChange(choice)}
+          // Re-picking the pressed surface would still write and push an undo entry.
+          onClick={() => {
+            if (choice !== value) onChange(choice);
+          }}
           aria-pressed={value === choice}
           // Sized to their labels: equal thirds wrap "Floor + walls" onto two lines.
           className={`flex-auto py-0.5 text-micro leading-none ${getSegmentClass(

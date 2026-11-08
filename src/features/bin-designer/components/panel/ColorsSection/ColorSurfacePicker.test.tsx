@@ -33,6 +33,15 @@ describe('ColorSurfacePicker', () => {
     expect(onChange).toHaveBeenCalledWith('floor');
   });
 
+  it('ignores a click on the pressed choice', () => {
+    const onChange = vi.fn();
+    render(<ColorSurfacePicker value="floor" onChange={onChange} ariaLabel="surface" />);
+
+    fireEvent.click(segment('floor'));
+
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('blocks every choice when disabled', () => {
     const onChange = vi.fn();
     render(<ColorSurfacePicker value="off" onChange={onChange} ariaLabel="surface" disabled />);
