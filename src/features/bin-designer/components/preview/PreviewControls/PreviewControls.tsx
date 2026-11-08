@@ -101,6 +101,10 @@ export function PreviewControls({
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const desktopPickerRef = useRef<HTMLDivElement>(null);
   const t = useTranslation();
+  // Labels show only when the preview, not the window, has room for them: the
+  // side panel and the bento workspace both narrow it. Below that the bar is
+  // icons with tooltips. The split toggle adds about 190px when it shows.
+  const labelClass = needsSplit ? 'hidden @min-[60rem]:inline' : 'hidden @min-[48rem]:inline';
   const { isDesktop } = useResponsive();
 
   // Close picker on outside click (desktop only — mobile uses backdrop)
@@ -141,7 +145,7 @@ export function PreviewControls({
     <>
       {/* Desktop: horizontal toolbar in top-right */}
       <div
-        className="absolute right-2 top-2 hidden md:flex items-center gap-2"
+        className="absolute right-2 top-2 hidden md:flex items-center gap-2 whitespace-nowrap"
         ref={desktopPickerRef}
       >
         {/* Assembled / Exploded toggle — separate pill (only when split) */}
@@ -150,6 +154,10 @@ export function PreviewControls({
             {SPLIT_VIEW_MODES.map((mode) => {
               const Icon = VIEW_MODE_ICONS[mode];
               const isActive = splitViewMode === mode;
+              const modeLabel =
+                mode === 'assembled'
+                  ? t('binDesigner.splitAssembled')
+                  : t('binDesigner.splitExploded');
               return (
                 <Button
                   key={mode}
@@ -164,13 +172,11 @@ export function PreviewControls({
                       : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                   }`}
                   aria-pressed={isActive}
+                  aria-label={modeLabel}
+                  title={modeLabel}
                 >
                   <Icon />
-                  <span>
-                    {mode === 'assembled'
-                      ? t('binDesigner.splitAssembled')
-                      : t('binDesigner.splitExploded')}
-                  </span>
+                  <span className={labelClass}>{modeLabel}</span>
                 </Button>
               );
             })}
@@ -200,9 +206,9 @@ export function PreviewControls({
                 aria-pressed={isActive}
               >
                 <Icon />
-                <span>{label}</span>
+                <span className={labelClass}>{label}</span>
                 <kbd
-                  className={`text-micro font-normal ${isActive ? 'text-on-accent/60' : 'text-content-tertiary'}`}
+                  className={`${labelClass} text-micro font-normal ${isActive ? 'text-on-accent/60' : 'text-content-tertiary'}`}
                 >
                   {shortcut}
                 </kbd>
@@ -224,7 +230,7 @@ export function PreviewControls({
             aria-label={t('binDesigner.resetCameraViewKeyboardShortcutR')}
           >
             <IconReset />
-            <span>{t('common.reset')}</span>
+            <span className={labelClass}>{t('common.reset')}</span>
           </Button>
 
           {/* Wireframe toggle */}
@@ -244,7 +250,7 @@ export function PreviewControls({
             aria-pressed={wireframe}
           >
             <IconWireframe />
-            <span>{t('binDesigner.wire')}</span>
+            <span className={labelClass}>{t('binDesigner.wire')}</span>
           </Button>
 
           {/* X-ray toggle */}
@@ -264,7 +270,7 @@ export function PreviewControls({
             aria-pressed={xray}
           >
             <IconXray />
-            <span>{t('binDesigner.xray')}</span>
+            <span className={labelClass}>{t('binDesigner.xray')}</span>
           </Button>
 
           {/* Measure toggle */}
@@ -285,7 +291,7 @@ export function PreviewControls({
               aria-pressed={measureActive === true}
             >
               <IconMeasure />
-              <span>{t('binDesigner.measure.short')}</span>
+              <span className={labelClass}>{t('binDesigner.measure.short')}</span>
             </Button>
           )}
 
@@ -302,7 +308,7 @@ export function PreviewControls({
             aria-pressed={projection === 'orthographic'}
           >
             {projection === 'perspective' ? <IconPerspective /> : <IconOrthographic />}
-            <span>
+            <span className={labelClass}>
               {projection === 'perspective'
                 ? t('binDesigner.projectionPerspective')
                 : t('binDesigner.projectionOrthographic')}
@@ -331,7 +337,7 @@ export function PreviewControls({
                   className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
                   style={{ backgroundColor: previewColor }}
                 />
-                <span>{t('common.color')}</span>
+                <span className={labelClass}>{t('common.color')}</span>
               </Button>
             </>
           )}
