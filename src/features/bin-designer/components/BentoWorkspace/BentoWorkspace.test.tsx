@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { act, render, screen, fireEvent } from '@testing-library/react';
 import { BentoWorkspace } from './BentoWorkspace';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 
@@ -211,6 +211,20 @@ describe('BentoWorkspace', () => {
 
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(useDesignerStore.getState().ui.bentoWorkspaceOpen).toBe(true);
+  });
+
+  it('holds the quickstart card until a grid is chosen, so one first-run card shows at a time', () => {
+    mocks.quickstartSeen = false;
+    useDesignerStore.getState().setCompartmentGrid(1, 1);
+    const { rerender } = render(<BentoWorkspace />);
+
+    expect(screen.getByTestId('bento-grid-setup')).toBeInTheDocument();
+    expect(screen.queryByText('binDesigner.bento.quickstart.draw')).not.toBeInTheDocument();
+
+    act(() => useDesignerStore.getState().setCompartmentGrid(4, 4));
+    rerender(<BentoWorkspace />);
+    expect(screen.queryByTestId('bento-grid-setup')).not.toBeInTheDocument();
+    expect(screen.getByText('binDesigner.bento.quickstart.draw')).toBeInTheDocument();
   });
 
   it('rounds a decimal typed into a grid stepper rather than sizing a cell array by it', () => {
