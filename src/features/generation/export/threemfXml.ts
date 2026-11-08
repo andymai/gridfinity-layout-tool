@@ -10,6 +10,15 @@ import { activeColorConfig, assertColorConfigShape, FILAMENT_PAINT_CODES } from 
 
 const CORE_NS = 'http://schemas.microsoft.com/3dmanufacturing/core/2015/02';
 
+/**
+ * A triangle welded onto a repeated vertex has no area and reads as a
+ * non-manifold edge in a slicer. Skipped here rather than removed from the
+ * mesh so per-triangle colours stay aligned.
+ */
+function isCollapsed(v1: number, v2: number, v3: number): boolean {
+  return v1 === v2 || v2 === v3 || v1 === v3;
+}
+
 function openModelElement(): string {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="${CORE_NS}">\n`;
 }
@@ -174,6 +183,7 @@ function buildObjectXml(
   if (triangleMaterialIndices) {
     for (let i = 0; i < mesh.triangles.length; i++) {
       const [v1, v2, v3] = mesh.triangles[i];
+      if (isCollapsed(v1, v2, v3)) continue;
       // Map material slot N to filament N+1 in the slicer (1-based) so each
       // zone lands on its own AMS slot — slot 0 → "4" (filament 1, body),
       // slot 1 → "8" (filament 2, lip), slot 2 → "0C" (filament 3), etc.
@@ -189,6 +199,7 @@ function buildObjectXml(
     }
   } else {
     for (const [v1, v2, v3] of mesh.triangles) {
+      if (isCollapsed(v1, v2, v3)) continue;
       xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" />\n`;
     }
   }

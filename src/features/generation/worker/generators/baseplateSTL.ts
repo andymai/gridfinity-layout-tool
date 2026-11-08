@@ -23,6 +23,7 @@
  */
 
 import { repairMeshWinding } from '@/shared/generation/repairMeshWinding';
+import { dropCollapsedTriangles } from '../../export/collapsedTriangles';
 
 export function buildBaseplateSTL(
   meshResult: {
@@ -99,5 +100,5 @@ export function buildBaseplateSTL(
     offset += 2;
   }
 
-  return buffer;
+  return dropCollapsedTriangles(buffer).data;
 }

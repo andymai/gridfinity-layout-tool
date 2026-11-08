@@ -18,6 +18,8 @@ exports[`solid cutouts > 2×2 solid with chamfered slot cutout 1`] = `2616`;
 
 exports[`solid cutouts > 2×2 solid with circle cutout 1`] = `2456`;
 
+exports[`solid cutouts > 2×2 solid with corner radius equal to scoop radius 1`] = `2706`;
+
 exports[`solid cutouts > 2×2 solid with curved path cutout (bezier handles) 1`] = `2372`;
 
 exports[`solid cutouts > 2×2 solid with ellipse cutout 1`] = `2484`;

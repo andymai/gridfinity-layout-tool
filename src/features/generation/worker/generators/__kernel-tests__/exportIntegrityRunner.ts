@@ -191,11 +191,12 @@ const MULTI_SHELL_SCENARIOS = new Map<string, { readonly shells: number; readonl
 );
 
 /**
- * Zero-area triangles tolerated per export. A fillet along a boolean seam can
- * leave a sliver face that tessellates to one or two collapsed triangles; a
- * regression that sprays them across a feature blows through this.
+ * Zero-area triangles tolerated per export. The kernel still tessellates
+ * collapsed slivers (fillets along a boolean seam, blends that close to a
+ * point), but `exportBin` drops every triangle with exactly coincident corners
+ * before a slicer sees it (#4865), so none should reach the file.
  */
-const MAX_DEGENERATE_TRIANGLES = 4;
+const MAX_DEGENERATE_TRIANGLES = 0;
 
 /**
  * How far the exported mesh's volume may sit from the BREP solid's. Chordal

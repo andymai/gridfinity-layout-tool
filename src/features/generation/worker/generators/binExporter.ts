@@ -15,6 +15,7 @@ import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidMeshToStl, exportSolidToStl } from './utils/stlMeshFallback';
 import { hasMeshImprints, prepareMeshImprints } from './meshImprint';
 import { buildSTLBufferFromIndexed } from '../../export/stlExporter';
+import { dropCollapsedTriangles } from '../../export/collapsedTriangles';
 import { isWasmTrap } from '@/shared/generation/wasmTrap';
 
 /** Export result with binary data and suggested file name. */
@@ -36,6 +37,9 @@ export interface ExportResult {
  * `exportSTL` with the same constants here so all three calls hit the same
  * cached tessellation.
  */
+/** The writers keep collapsed triangles so the drop below can shift `faceGroups` with them. */
+const KEEP_FOR_REMAP = { keepCollapsedTriangles: true } as const;
+
 async function runExportAttempt(
   params: BinParams,
   format: ExportFormat,
@@ -60,10 +64,12 @@ async function runExportAttempt(
       meshData.vertices,
       meshData.normals,
       meshData.indices,
-      name
+      name,
+      KEEP_FOR_REMAP
     );
     onProgress?.(1);
-    return { data, fileName: `${name}.stl`, faceGroups: meshData.faceGroups };
+    const cleaned = dropCollapsedTriangles(data, meshData.faceGroups);
+    return { data: cleaned.data, fileName: `${name}.stl`, faceGroups: cleaned.faceGroups };
   }
 
   let faceGroups: readonly FaceGroupData[] | undefined;
@@ -110,10 +116,23 @@ async function runExportAttempt(
   // mesh writer.
   const data =
     getSolids(solid).length > 1
-      ? exportSolidMeshToStl(solid, name, EXPORT_TOLERANCE, EXPORT_ANGULAR_TOLERANCE_RAD)
-      : await exportSolidToStl(solid, name, EXPORT_TOLERANCE, EXPORT_ANGULAR_TOLERANCE_RAD);
+      ? exportSolidMeshToStl(
+          solid,
+          name,
+          EXPORT_TOLERANCE,
+          EXPORT_ANGULAR_TOLERANCE_RAD,
+          KEEP_FOR_REMAP
+        )
+      : await exportSolidToStl(
+          solid,
+          name,
+          EXPORT_TOLERANCE,
+          EXPORT_ANGULAR_TOLERANCE_RAD,
+          KEEP_FOR_REMAP
+        );
   onProgress?.(1);
-  return { data, fileName: `${name}.stl`, faceGroups };
+  const cleaned = dropCollapsedTriangles(data, faceGroups);
+  return { data: cleaned.data, fileName: `${name}.stl`, faceGroups: cleaned.faceGroups };
 }
 
 /**
