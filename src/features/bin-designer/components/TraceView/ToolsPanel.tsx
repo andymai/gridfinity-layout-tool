@@ -1,5 +1,6 @@
 import { useId } from 'react';
-import { Button, Slider, Switch } from '@/design-system';
+import { Button, Slider } from '@/design-system';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { useTranslation } from '@/i18n';
 import { ScanToolList } from '@/shared/scanReview';
 import type { SceneShape } from '@/shared/scanTrace';
@@ -118,15 +119,13 @@ export function ToolsPanel({
       </div>
 
       {holesFound && (
-        <div className="flex flex-col gap-1">
-          <Switch
-            checked={keepHoles}
-            onChange={onKeepHoles}
-            label={t('scan.review.keepHoles')}
-            disabled={disabled}
-          />
-          <p className="text-xs text-content-tertiary">{t('scan.review.keepHolesHint')}</p>
-        </div>
+        <FeatureToggle
+          label={t('scan.review.keepHoles')}
+          info={t('scan.review.keepHolesHint')}
+          checked={keepHoles}
+          onChange={() => onKeepHoles(!keepHoles)}
+          disabled={disabled}
+        />
       )}
 
       {shapes.length > 0 ? (

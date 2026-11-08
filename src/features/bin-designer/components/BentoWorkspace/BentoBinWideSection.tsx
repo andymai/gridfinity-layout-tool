@@ -11,7 +11,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Checkbox } from '@/design-system';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
 import { useTranslation } from '@/i18n';
@@ -65,30 +65,12 @@ export function BentoBinWideSection() {
         unit="mm"
       />
       <DividerHeightControl />
-      <div className="flex flex-col gap-1">
-        <div
-          className="flex cursor-pointer items-center justify-between"
-          onClick={toggleMergeBackground}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              toggleMergeBackground();
-            }
-          }}
-          role="checkbox"
-          aria-checked={mergeBackground}
-          aria-label={t('binDesigner.bento.mergeBackground')}
-          tabIndex={0}
-        >
-          <span className="text-xs leading-none text-content-secondary">
-            {t('binDesigner.bento.mergeBackground')}
-          </span>
-          <Checkbox checked={mergeBackground} />
-        </div>
-        <p className="text-label leading-relaxed text-content-tertiary">
-          {t('binDesigner.bento.mergeBackgroundHint')}
-        </p>
-      </div>
+      <FeatureToggle
+        label={t('binDesigner.bento.mergeBackground')}
+        info={t('binDesigner.bento.mergeBackgroundDetail')}
+        checked={mergeBackground}
+        onChange={toggleMergeBackground}
+      />
     </section>
   );
 }

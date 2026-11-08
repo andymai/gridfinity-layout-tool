@@ -2298,7 +2298,7 @@ const en: Record<string, string> = {
   'binDesigner.cutoutSocket.horizontal': 'Horizontal',
   'binDesigner.cutoutSocket.vertical': 'Vertical',
   'binDesigner.cutoutSocket.blockedNoRoom':
-    'No room for a plate here. Move the cutout, pick another label position, or try the other orientation.',
+    'No room for a plate here. Move the cutout or try another position or orientation.',
   'binDesigner.cutoutSocket.blockedCenterAnchor':
     'A socket needs solid material. Pick a label position beside the cutout, not on it.',
   'binDesigner.cutoutSocket.blockedTooShallow':
@@ -3346,7 +3346,9 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.positionY': 'Y Position',
   'binDesigner.cutouts.cutDepth': 'Cut depth',
   'binDesigner.cutouts.depthShortfall':
-    'The bin has room for {achievable}mm of this {requested}mm cut. Lower the cut depth or lean, or move the cutout away from the edge.',
+    'The bin has room for {achievable}mm of this {requested}mm cut.',
+  'binDesigner.cutouts.depthShortfallDetail':
+    'Lower the cut depth or lean, or move the cutout away from the edge.',
   'binDesigner.cutouts.throughDepthHint': 'Cuts through all {depth}mm of the plate.',
   'binDesigner.cutouts.depthMode': 'Depth mode',
   'binDesigner.cutouts.depthMode.fixed': 'Fixed',
@@ -3395,10 +3397,10 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.knifeOpenEnd.start': 'Start',
   'binDesigner.cutouts.knifeOpenEnd.end': 'End',
   'binDesigner.cutouts.knifeOpenEnd.enclosed': 'Enclosed',
-  'binDesigner.cutouts.knifeOpenEndHint':
+  'binDesigner.cutouts.knifeOpenEndDetail':
     'The end the slot opens through the wall, so the handle lies past the block. Enclosed keeps the whole knife inside.',
   'binDesigner.cutouts.knifeDepthClamped':
-    'This blade is deeper than the bin can cut, so the slot stops at {depth}mm and the knife sits proud. A {needed}u bin takes the whole blade.',
+    'Too deep for this bin: the slot stops at {depth}mm. A {needed}u bin fits the whole blade.',
   'binDesigner.cutouts.topOffset': 'Top Offset',
   'binDesigner.cutouts.fillLevel': 'Fill Level',
   'binDesigner.cutouts.fillMeasuredFrom': 'Measured from',
@@ -3413,7 +3415,7 @@ const en: Record<string, string> = {
     'The fill keeps its height, so pocket depths survive a change to the bin height.',
   'binDesigner.cutouts.cornerRadius': 'Corner radius',
   'binDesigner.cutouts.lean': 'Lean',
-  'binDesigner.cutouts.leanHint':
+  'binDesigner.cutouts.leanDetail':
     'Tilts the pocket about its opening so items slide in at a slope. Rotation turns the tilt direction.',
   'binDesigner.cutouts.scoopRadius': 'Scoop radius',
   'binDesigner.cutouts.scoopW': 'Scoop W',
@@ -3696,7 +3698,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.traceView.scale.paperLetter': 'Measured to scale from the US Letter sheet.',
   'binDesigner.cutouts.traceView.scale.none': 'No size reference found',
   'binDesigner.cutouts.traceView.scale.noneHint':
-    'Draw a ruler across something you know the length of, or mark the corners of a sheet of paper the tools lie on.',
+    'Draw a ruler across something of known length, or mark the corners of a sheet of paper.',
   'binDesigner.cutouts.traceView.scale.drawRuler': 'Draw a ruler',
   'binDesigner.cutouts.traceView.scale.markPaper': 'Mark paper corners',
   'binDesigner.cutouts.traceView.scale.usePhoto': 'Use the photo’s reference',
@@ -4177,12 +4179,12 @@ const en: Record<string, string> = {
   'binDesigner.bento.cellsReadout': 'Cells',
   'binDesigner.bento.stashAction': 'Move to stash',
   'binDesigner.bento.floorRaise': 'Floor raise',
-  'binDesigner.bento.floorRaiseHint':
+  'binDesigner.bento.floorRaiseDetail':
     'Lifts this compartment’s floor so a short item sits nearer the rim and is easier to pick out. Solid underneath; the slicer’s infill keeps it light.',
   'binDesigner.bento.wallsTitle': 'Walls',
   'binDesigner.bento.binWideTitle': 'Bin-wide',
   'binDesigner.bento.mergeBackground': 'Merge leftover space',
-  'binDesigner.bento.mergeBackgroundHint':
+  'binDesigner.bento.mergeBackgroundDetail':
     'Empty cells print as one pocket per open area, so the space around your compartments can take an L, U or S shape instead of a field of small pockets.',
   'binDesigner.bento.toastMergeBlocked':
     'Those two don’t touch: a merged compartment has to be one piece.',
@@ -4213,7 +4215,7 @@ const en: Record<string, string> = {
   'binDesigner.bento.hintResizeTo': 'Release to resize to {w}×{h}',
   'binDesigner.bento.hintPlace': 'Drop on the grid to place this compartment',
   'binDesigner.bento.hintSelected':
-    'Drag to move · pull the handles to resize · Shift-click a neighbour to merge · Delete removes',
+    'Drag to move · drag handles to resize · Shift-click a neighbour to merge · Delete removes',
   'binDesigner.bento.hintIdle': 'Drag on the grid to draw a compartment',
   'binDesigner.bento.emptyStateHint': 'Drag anywhere to draw your first compartment',
   'binDesigner.bento.backgroundNote': 'Empty cells print as 1×1 pockets',

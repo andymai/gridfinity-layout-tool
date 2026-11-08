@@ -16,6 +16,8 @@ const ROOTS = [
   'src/features/bin-designer/components/ParameterPanel',
   'src/features/bin-designer/components/CompartmentEditor',
   'src/features/bin-designer/components/SlotConfigurator',
+  'src/features/bin-designer/components/BentoWorkspace',
+  'src/features/bin-designer/components/TraceView',
   'src/features/baseplate/components/BaseplatePanel',
 ];
 
