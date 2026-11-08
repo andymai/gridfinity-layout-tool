@@ -5,7 +5,7 @@ import { useDrawerCeiling } from '@/shared/hooks/useDrawerCeiling';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { DrawerShapeSection } from '@/features/drawer-shape';
 import { CONSTRAINTS } from '@/core/constants';
-import { Button, IconButton, Stepper } from '@/design-system';
+import { Button, IconButton, SidePanel, Stepper } from '@/design-system';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
 import { ActiveBaseplatePanel } from '@/features/baseplate/components/ActiveBaseplatePanel';
 import { LayerPanel } from '@/features/layers/components/LayerPanel';
@@ -182,8 +182,8 @@ export function Sidebar() {
               isScrolled ? 'shadow-elevated' : ''
             }`}
           >
-            <h2 className="flex-1 text-xs leading-none font-semibold text-content-tertiary tracking-wide">
-              {t('sidebar.tools')}
+            <h2 className="flex-1 leading-none">
+              <SidePanel.Title>{t('sidebar.tools')}</SidePanel.Title>
             </h2>
             <IconButton
               size="sm"

@@ -10,9 +10,7 @@ test.describe('SidePanel visual', () => {
         <div style={{ flex: 1 }} />
         <SidePanel.Root labels={labels} railTitle="Inspector" defaultWidth={260}>
           <SidePanel.Header>
-            <span className="text-xs font-semibold uppercase tracking-wider text-content-secondary">
-              Inspector
-            </span>
+            <SidePanel.Title>Inspector</SidePanel.Title>
           </SidePanel.Header>
           <SidePanel.Body className="px-4 py-3">
             <p className="text-body">Panel content</p>

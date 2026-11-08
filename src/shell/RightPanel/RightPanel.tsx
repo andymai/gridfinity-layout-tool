@@ -149,7 +149,7 @@ export function RightPanel() {
               role="tab"
               aria-selected={activeTab === 'inspector'}
               aria-controls="tabpanel-inspector"
-              className={`font-semibold uppercase tracking-wider rounded hover:bg-transparent ${
+              className={`text-xs font-semibold rounded hover:bg-transparent ${
                 activeTab === 'inspector'
                   ? 'text-accent bg-accent-muted'
                   : 'text-content-tertiary hover:text-content-secondary'
@@ -165,7 +165,7 @@ export function RightPanel() {
               role="tab"
               aria-selected={activeTab === 'history'}
               aria-controls="tabpanel-history"
-              className={`font-semibold uppercase tracking-wider rounded hover:bg-transparent ${
+              className={`text-xs font-semibold rounded hover:bg-transparent ${
                 activeTab === 'history'
                   ? 'text-accent bg-accent-muted'
                   : 'text-content-tertiary hover:text-content-secondary'
