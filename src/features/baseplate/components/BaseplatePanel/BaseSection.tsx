@@ -210,7 +210,7 @@ export function BaseSection() {
                 <div className="space-y-3">
                   <SettingsRow
                     label={t('baseplate.connectorFit.label')}
-                    tooltip={t('baseplate.connectorFit.info')}
+                    info={t('baseplate.connectorFit.info')}
                     unit="mm"
                   >
                     <Stepper
@@ -412,7 +412,7 @@ export function BaseSection() {
                 />
                 <SettingsRow
                   label={t('baseplate.screwHoles.headStyle.label')}
-                  tooltip={t('baseplate.screwHoles.headStyle.info')}
+                  info={t('baseplate.screwHoles.headStyle.info')}
                 >
                   <SegmentedControl<ScrewHeadStyle>
                     aria-label={t('baseplate.screwHoles.headStyle.label')}
@@ -496,7 +496,7 @@ export function BaseSection() {
                 />
                 <SettingsRow
                   label={t('baseplate.screwHoles.cellCorner.label')}
-                  tooltip={t('baseplate.screwHoles.cellCorner.info')}
+                  info={t('baseplate.screwHoles.cellCorner.info')}
                 >
                   <SegmentedControl<ScrewCellCorner>
                     aria-label={t('baseplate.screwHoles.cellCorner.label')}

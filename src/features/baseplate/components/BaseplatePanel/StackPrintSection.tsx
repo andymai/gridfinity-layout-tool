@@ -128,7 +128,7 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
 
             <SettingsRow
               label={t('baseplate.stackPrint.copies.label')}
-              tooltip={t('baseplate.stackPrint.copies.info')}
+              info={t('baseplate.stackPrint.copies.info')}
             >
               <Stepper
                 size="sm"
@@ -145,7 +145,7 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
 
             <SettingsRow
               label={t('baseplate.stackPrint.gap.label')}
-              tooltip={t('baseplate.stackPrint.gap.info')}
+              info={t('baseplate.stackPrint.gap.info')}
               unit="mm"
             >
               <Stepper
