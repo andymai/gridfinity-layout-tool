@@ -1,0 +1,257 @@
+src/i18n/locales/sv.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+  s_66332f8bf1351d::t_71abb36e97ac8f 205,327
+  s_66332f8bf1351d::t_c3d57f34dbefc0 132,135,162-163,228,305,363
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_ca52d6052aefbb 3857,3866
+src/features/baseplate/components/BaseplatePanel/BaseSection.test.tsx
+  s_66332f8bf1351d::t_6d9bd28e05c7f1 72,74-75,77-78
+  s_66332f8bf1351d::t_0ccd7450cc0817 293-295
+  s_66332f8bf1351d::t_a44387ec0f7cb0 145
+  s_66332f8bf1351d::t_b381079e050751 364
+  s_66332f8bf1351d::t_b48c7f4040f99c 349
+src/i18n/locales/fr.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+  s_66332f8bf1351d::t_c3d57f34dbefc0 132,135,162-163,228,305,363
+  s_66332f8bf1351d::t_71abb36e97ac8f 205,327
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_145f949ce2a66d 3857,3866
+src/i18n/locales/pl.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+  s_66332f8bf1351d::t_c3d57f34dbefc0 132,135,162-163,228,305,363
+  s_66332f8bf1351d::t_71abb36e97ac8f 205,327
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_64d6413017021e 3857,3866
+src/i18n/locales/ja.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+  s_66332f8bf1351d::t_71abb36e97ac8f 205,327
+  s_66332f8bf1351d::t_c3d57f34dbefc0 132,135,162-163,228,305,363
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_90561f4c7a2655 3857,3866
+src/i18n/locales/nl.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+  s_66332f8bf1351d::t_c3d57f34dbefc0 132,135,162-163,228,305,363
+  s_66332f8bf1351d::t_71abb36e97ac8f 205,327
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_67003b09552e38 3857,3866
+src/i18n/locales/ko.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+  s_66332f8bf1351d::t_c3d57f34dbefc0 132,135,162-163,228,305,363
+  s_66332f8bf1351d::t_71abb36e97ac8f 205,327
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_5745682199d5fa 3857,3866
+src/i18n/locales/en.ts
+  s_66332f8bf1351d::t_92cf23989be569 4715-4716
+  s_66332f8bf1351d::t_d43c7daf79bffa 4857
+  s_66332f8bf1351d::t_779eea461ab7f2 4760
+  s_66332f8bf1351d::t_05ad37d8f16037 4706,4709,4718,4722,4725,4733,4736,4739,4742,4751,4754,4764,4872,4889
+  s_66332f8bf1351d::t_fb6be05a60e638 4788
+  s_66332f8bf1351d::t_c3d57f34dbefc0 4649,4652,4656,4659,4668,4670,4677
+  s_66332f8bf1351d::t_71abb36e97ac8f 4777,4817
+  s_66332f8bf1351d::t_1e959c20ff84e4 4633
+  s_66332f8bf1351d::t_c2e1fcc6e6f89b 4780
+  s_66332f8bf1351d::t_36bd919f2edc67 3403
+  s_66332f8bf1351d::t_4e8113959fa79d 3400,3418,4182,4187
+  s_66332f8bf1351d::t_71ff51545424fd 4218
+  s_66332f8bf1351d::t_6dd9985478a240 3701
+  s_66332f8bf1351d::t_44537a070e3696 2301
+  s_66332f8bf1351d::t_32dc8f4fe948fa 3349-3351
+  s_66332f8bf1351d::t_85d0cd79612378 572
+  s_66332f8bf1351d::t_29ed211391aa7a 518,579
+src/i18n/locales/pt-BR.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+  s_66332f8bf1351d::t_71abb36e97ac8f 205,327
+  s_66332f8bf1351d::t_c3d57f34dbefc0 132,135,162-163,228,305,363
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_a2759fca7c494e 3857,3866
+src/i18n/locales/ka.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 3944
+  s_66332f8bf1351d::t_05ad37d8f16037 3938,3940,3946,3949,3951,3957,3959,3962,3969,3971,3974,3977-3978,3993,4043,4057,4070
+  s_66332f8bf1351d::t_c3d57f34dbefc0 3892-3893,3895,3898,3904-3905,3912
+  s_66332f8bf1351d::t_71abb36e97ac8f 3987,4013
+  s_66332f8bf1351d::t_4e8113959fa79d 2861,2875,3506,3510
+  s_66332f8bf1351d::t_32dc8f4fe948fa 2814-2815
+  s_66332f8bf1351d::t_89b970b6541294 481,540
+src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
+  s_66332f8bf1351d::t_f9b55cb86ae31b 300,302-306
+  s_66332f8bf1351d::t_30c9c7fd5f76de 49
+  s_66332f8bf1351d::t_89987947681989 478-482
+  s_66332f8bf1351d::t_24fe25fedc6a07 464-468
+  s_66332f8bf1351d::t_b047d67090611b 336-352,354-362
+  s_66332f8bf1351d::t_5c63100c958c24 491-495
+  s_66332f8bf1351d::t_4a5f5eab8e1e82 517,530-534
+  s_66332f8bf1351d::t_ac407cf4823bff 382-386
+  s_66332f8bf1351d::t_7420a76bb07df0 394,407-411
+  s_66332f8bf1351d::t_6ae5a25c130f09 237,239-245
+  s_66332f8bf1351d::t_892ec5ebefaeff 556-561,563-565,573-577
+  s_66332f8bf1351d::t_375fab6cb0b55a 449-453
+  s_66332f8bf1351d::t_13731908a8e348 252-262,264-265,267-271
+  s_66332f8bf1351d::t_89b7658c30e365 562
+src/i18n/locales/de.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+  s_66332f8bf1351d::t_c3d57f34dbefc0 132,135,162-163,228,305,363
+  s_66332f8bf1351d::t_71abb36e97ac8f 205,327
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_219a7d95774e89 3857,3866
+src/i18n/locales/zh-CN.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+  s_66332f8bf1351d::t_71abb36e97ac8f 205,327
+  s_66332f8bf1351d::t_c3d57f34dbefc0 132,135,162-163,228,305,363
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_6ddb11c085ffa5 3857,3866
+src/i18n/locales/uk.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+  s_66332f8bf1351d::t_71abb36e97ac8f 205,327
+  s_66332f8bf1351d::t_c3d57f34dbefc0 132,135,162-163,228,305,363
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_d1e4e0480e8ccf 3857,3866
+src/i18n/locales/cs.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+  s_66332f8bf1351d::t_c3d57f34dbefc0 132,135,162-163,228,305,363
+  s_66332f8bf1351d::t_71abb36e97ac8f 205,327
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_18a0b591900ad5 3857,3866
+src/i18n/locales/it.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+  s_66332f8bf1351d::t_c3d57f34dbefc0 132,135,162-163,228,363
+  s_66332f8bf1351d::t_71abb36e97ac8f 205,327
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_694b01f34971ce 3857,3866
+src/i18n/locales/es.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+  s_66332f8bf1351d::t_71abb36e97ac8f 205,327
+  s_66332f8bf1351d::t_c3d57f34dbefc0 132,135,162-163,228,305,363
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_de67c8f3021013 3857,3866
+src/i18n/locales/nb.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+  s_66332f8bf1351d::t_c3d57f34dbefc0 132,135,162-163,228,305,363
+  s_66332f8bf1351d::t_71abb36e97ac8f 205,327
+  s_66332f8bf1351d::t_32dc8f4fe948fa 1174-1175
+  s_66332f8bf1351d::t_4e8113959fa79d 500,514,926,936
+  s_66332f8bf1351d::t_15ae328b47d9aa 3857,3866
+src/features/bin-designer/components/panel/shared/panelText.tsx
+  s_66332f8bf1351d::t_c5f3db885ad5dd 4
+src/shared/components/InfoDot/index.ts
+  s_66332f8bf1351d::t_50b451eb94509a 2
+src/shared/components/InfoDot/LabelInfo.test.tsx
+  s_66332f8bf1351d::t_e76186e9c9f944 1-15
+src/features/baseplate/components/BaseplatePanel/CornerRadiusControl.test.tsx
+  s_66332f8bf1351d::t_4788179d18879c 20,34,51,53
+src/shared/components/FeatureToggle/FeatureToggle.tsx
+  s_66332f8bf1351d::t_6af394c1b836cb 85
+  s_66332f8bf1351d::t_cbe3274f0d666c 11
+src/features/bin-designer/components/panel/CutoutsSection/PocketIssueList.tsx
+  s_66332f8bf1351d::t_b3b276fb48ca3f 6
+src/features/bin-designer/components/panel/shared/index.ts
+  s_66332f8bf1351d::t_85b22d11a87ed5 5,7
+src/shared/components/InfoDot/LabelInfo.tsx
+  s_66332f8bf1351d::t_d1f191322018a0 1-13
+src/features/baseplate/components/BaseplatePanel/CornerRadiusControl.tsx
+  s_66332f8bf1351d::t_53a1bb57196b3b 3-4
+  s_66332f8bf1351d::t_11431fc77ebcd5 43-47,50
+src/features/bin-designer/components/panel/panelCopyLength.test.ts
+  s_66332f8bf1351d::t_15d35a6b42b166 30
+  s_66332f8bf1351d::t_142685d4e565c5 26-28
+src/features/bin-designer/components/panel/panelIdioms.test.ts
+  s_66332f8bf1351d::t_95714f39514eb8 21
+  s_66332f8bf1351d::t_700a7cc0783d1c 19-20
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.test.tsx
+  s_66332f8bf1351d::t_1694061364c1d7 552,580,592,611,915,927
+src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.tsx
+  s_66332f8bf1351d::t_5e3e86307a6a24 162-170
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.test.tsx
+  s_66332f8bf1351d::t_de73fa5a548b95 231
+  s_66332f8bf1351d::t_1694061364c1d7 215,222,273
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
+  s_66332f8bf1351d::t_8bc522815873b0 325,327-328
+  s_66332f8bf1351d::t_5948a9a75c2b41 288
+  s_66332f8bf1351d::t_1ff7d719a9d606 346,348-349
+  s_66332f8bf1351d::t_eff0e80b5cabe3 425-431
+  s_66332f8bf1351d::t_94774dda83c8ae 19-20
+  s_66332f8bf1351d::t_bfd1527fe37f2c 464-469
+  s_66332f8bf1351d::t_e6df75321e133b 491,494
+  s_66332f8bf1351d::t_d509697e0d9dfc 572-582
+src/features/baseplate/components/BaseplatePanel/StackPrintSection.tsx
+  s_66332f8bf1351d::t_44b092d247efeb 170-195
+  s_66332f8bf1351d::t_6eaa252a20c300 118
+  s_66332f8bf1351d::t_4d45969200ccce 24
+src/features/baseplate/components/BaseplatePanel/StackPrintSection.test.tsx
+  s_66332f8bf1351d::t_642f63089c9719 37,39-40
+e2e/baseplate-overtile.spec.ts
+  s_66332f8bf1351d::t_54f644eb1f9ac9 65
+src/features/bin-designer/components/BentoWorkspace/BentoCompartmentFloorControls.tsx
+  s_66332f8bf1351d::t_e674c91d343a43 10
+  s_66332f8bf1351d::t_4b468d584d517f 40-44
+src/features/bin-designer/components/CutoutWorkspace/CutoutBoardSettings.test.tsx
+  s_66332f8bf1351d::t_3d221be6371006 45
+src/features/bin-designer/components/BentoWorkspace/BentoBinWideSection.tsx
+  s_66332f8bf1351d::t_5108d3c4c9fb58 68-73
+  s_66332f8bf1351d::t_7c2f57fe1a2f89 14
+src/features/bin-designer/components/CutoutWorkspace/CutoutBoardSettings.tsx
+  s_66332f8bf1351d::t_5337fc3a074d39 7-8
+  s_66332f8bf1351d::t_08994d47cdbf6a 52-56
+src/features/bin-designer/components/Workshop/WorkshopPanel/PartInspector.tsx
+  s_66332f8bf1351d::t_c1911537966b7b 22
+  s_66332f8bf1351d::t_1f9d654e365e70 228-237,276-278,280,292-299
+  s_66332f8bf1351d::t_f35d5e2d6c53f6 300-302
+  s_66332f8bf1351d::t_528ab26d1ef3c4 303-309
+src/features/bin-designer/components/TraceView/ToolsPanel.tsx
+  s_66332f8bf1351d::t_e62f59c02772a6 2-3
+  s_66332f8bf1351d::t_65178b9cd7ac7c 122-128
+src/features/bin-designer/components/CutoutWorkspace/CutoutKnifeControls.tsx
+  s_66332f8bf1351d::t_f473184eb90842 28
+  s_66332f8bf1351d::t_8ab1c2aeb74b6a 255-262
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+  s_66332f8bf1351d::t_168e872e38ebe3 38
+  s_66332f8bf1351d::t_f7a2c4d0607846 271-287
+  s_66332f8bf1351d::t_9cdd038fddf83e 234-238
+src/features/bin-inspector/components/Inspector/SplitWarning/SplitWarning.test.tsx
+  s_66332f8bf1351d::t_f588b5e7ceec9b 77,107
+src/features/bin-inspector/components/Inspector/ExtendToMarginToggle/ExtendToMarginToggle.tsx
+  s_66332f8bf1351d::t_0103ec6c03d4b1 132-136
+  s_66332f8bf1351d::t_008e8a338fe252 26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ae434ea43be2869ca938cc31488d9ef79bee79ef",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
