@@ -99,6 +99,9 @@ export function useBentoWorkspace() {
 
   const { innerW: interiorW, innerD: interiorD } = getInteriorDims(params);
   const { cols, rows } = compartments;
+  // A 1×1 grid has nothing to draw on — the canvas shows the grid picker
+  // instead of a drag hint that cannot be followed.
+  const isPristineGrid = cols === 1 && rows === 1;
   const cellW = interiorW / cols;
   const cellH = interiorD / rows;
 
@@ -353,7 +356,9 @@ export function useBentoWorkspace() {
           setSelectedBentoCompartmentId(null);
           return;
         }
-        if (quickstartSeen) setBentoWorkspaceOpen(false);
+        // The quickstart card takes the first Escape, but it waits for a grid,
+        // so on a 1×1 grid there is no card to dismiss first.
+        if (quickstartSeen || isPristineGrid) setBentoWorkspaceOpen(false);
         return;
       }
       if (selectedId === null) return;
@@ -382,6 +387,7 @@ export function useBentoWorkspace() {
     interaction,
     selectedId,
     quickstartSeen,
+    isPristineGrid,
     setBentoWorkspaceOpen,
     setSelectedBentoCompartmentId,
     removeBentoCompartment,
@@ -420,9 +426,6 @@ export function useBentoWorkspace() {
 
   const stash = compartments.stash ?? [];
   const hasDrawn = drawnIds.size > 0;
-  // A 1×1 grid has nothing to draw on — the canvas shows the grid picker
-  // instead of a drag hint that cannot be followed.
-  const isPristineGrid = cols === 1 && rows === 1;
   const movingId =
     interaction.gesture?.type === 'move' &&
     interaction.gesture.moved &&
