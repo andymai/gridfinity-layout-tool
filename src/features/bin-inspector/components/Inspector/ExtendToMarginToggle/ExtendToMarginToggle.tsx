@@ -23,6 +23,7 @@ import { useMutations } from '@/shared/contexts/MutationsContext';
 import { useLinkedDesignKinds } from '@/shared/hooks/useLinkedDesignKinds';
 import { binCanExtendToMargin, designKindExtendsToMargin } from '@/shared/utils/drawerMargin';
 import { useTranslation } from '@/i18n';
+import { LabelInfo } from '@/shared/components/InfoDot';
 import type { Bin, Drawer, StoredBaseplateParams, WallTaperProfile } from '@/core/types';
 import type { Result, LayoutError } from '@/core/result';
 
@@ -128,10 +129,12 @@ export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginT
                 max={MAX_FLARE_MM}
                 step={TAPER_BAND_STEP}
                 unit="mm"
+                labelAddon={
+                  <LabelInfo label={t('inspector.taper.flare')}>
+                    {t('inspector.taper.flareDetail')}
+                  </LabelInfo>
+                }
               />
-              <p className="text-micro leading-snug text-content-disabled">
-                {t('inspector.taper.flare.hint')}
-              </p>
             </div>
           )}
         </div>
