@@ -525,7 +525,9 @@ export function Staging() {
           </svg>
           <span className="text-sm text-content-secondary font-medium">{t('staging.stash')}</span>
           <span className="px-1.5 py-0.5 rounded text-xs bg-surface-hover text-content-tertiary">
-            {t('staging.binCount', { count: stagingBins.length })}
+            {stagingBins.length === 1
+              ? t('staging.binCountOne')
+              : t('staging.binCount', { count: stagingBins.length })}
           </span>
         </Button>
 

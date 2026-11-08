@@ -27,7 +27,9 @@ export function RestoreDialog({ snapshot, onReplace, onCreateCopy, onClose }: Re
               {snapshot.label ?? t('snapshots.autoSaved')}
             </p>
             <p className="text-xs text-content-tertiary mt-1">
-              {t('snapshots.bins', { count: snapshot.preview.binCount })}
+              {snapshot.preview.binCount === 1
+                ? t('snapshots.binsOne')
+                : t('snapshots.bins', { count: snapshot.preview.binCount })}
               {' \u00b7 '}
               {t('snapshots.layers', { count: snapshot.preview.layerCount })}
             </p>

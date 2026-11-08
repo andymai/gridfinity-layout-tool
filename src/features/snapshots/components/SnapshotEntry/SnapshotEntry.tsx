@@ -52,7 +52,11 @@ export function SnapshotEntry({
         <div className="text-label text-content-tertiary mt-0.5">
           <span>{relativeTime}</span>
           <span className="mx-1">&middot;</span>
-          <span>{t('snapshots.bins', { count: snapshot.preview.binCount })}</span>
+          <span>
+            {snapshot.preview.binCount === 1
+              ? t('snapshots.binsOne')
+              : t('snapshots.bins', { count: snapshot.preview.binCount })}
+          </span>
           <span className="mx-1">&middot;</span>
           <span>{t('snapshots.layers', { count: snapshot.preview.layerCount })}</span>
         </div>

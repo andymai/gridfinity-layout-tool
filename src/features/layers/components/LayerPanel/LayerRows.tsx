@@ -181,13 +181,15 @@ export function LayerRows({
           const pendingDelta = pendingDeltas[layer.id] ?? 0;
           const previewHeight = Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, layer.height + pendingDelta);
           const stat = layerStats[layer.id];
-          const tooltipText = stat
-            ? t('layers.segmentTooltip', {
-                name: layer.name,
-                coverage: stat.coverage,
-                count: stat.binCount,
-              })
-            : layer.name;
+          const tooltipText = !stat
+            ? layer.name
+            : stat.binCount === 1
+              ? t('layers.segmentTooltipOne', { name: layer.name, coverage: stat.coverage })
+              : t('layers.segmentTooltip', {
+                  name: layer.name,
+                  coverage: stat.coverage,
+                  count: stat.binCount,
+                });
           const showGrip = hasMultipleLayers;
 
           return (
@@ -280,7 +282,9 @@ export function LayerRows({
                     >
                       {stat && (
                         <span className="mr-1 text-micro tabular-nums text-content-disabled">
-                          {t('layers.binCount', { count: stat.binCount })}
+                          {stat.binCount === 1
+                            ? t('layers.binCountOne')
+                            : t('layers.binCount', { count: stat.binCount })}
                         </span>
                       )}
                       <IconButton
@@ -388,7 +392,9 @@ export function LayerRows({
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {stat && (
                         <span className="text-micro tabular-nums text-content-disabled">
-                          {t('layers.binCount', { count: stat.binCount })}
+                          {stat.binCount === 1
+                            ? t('layers.binCountOne')
+                            : t('layers.binCount', { count: stat.binCount })}
                         </span>
                       )}
                       <span

@@ -142,7 +142,7 @@ describe('Staging', () => {
 
       render(<Staging />);
 
-      expect(screen.getByText('1 bins')).toBeInTheDocument();
+      expect(screen.getByText('1 bin')).toBeInTheDocument();
     });
 
     it('renders Clear All button', () => {
