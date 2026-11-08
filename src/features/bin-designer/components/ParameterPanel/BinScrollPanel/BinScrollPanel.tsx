@@ -141,20 +141,24 @@ export function BinScrollPanel({
           <PanelSection helpTarget="bd-dimensions">
             <DimensionsSection />
           </PanelSection>
-          <PanelSection helpTarget="bd-overhang">
-            <OverhangSection />
+          <PanelSection className="space-y-3">
+            <div data-help-target="bd-overhang">
+              <OverhangSection />
+            </div>
+            <div data-help-target="bd-shape">
+              <ShapeSection />
+            </div>
+            <div data-help-target="bd-slant">
+              <SlantSection />
+            </div>
           </PanelSection>
-          <PanelSection helpTarget="bd-shape">
-            <ShapeSection />
-          </PanelSection>
-          <PanelSection helpTarget="bd-slant">
-            <SlantSection />
-          </PanelSection>
-          <PanelSection helpTarget="bd-walls">
-            <WallThicknessSection />
-          </PanelSection>
-          <PanelSection helpTarget="bd-wall-cutouts">
-            <WallCutoutsSection />
+          <PanelSection className="space-y-3">
+            <div data-help-target="bd-walls">
+              <WallThicknessSection />
+            </div>
+            <div data-help-target="bd-wall-cutouts">
+              <WallCutoutsSection />
+            </div>
           </PanelSection>
           {/* Shown only when the bin overflows the bed; no all-clear row when it fits. */}
           {needsSplit && (
@@ -244,11 +248,7 @@ export function BinScrollPanel({
         onExpandedChange={(next) => setGroup('base', next)}
         modifiedLabel={markIf(modified.base)}
       >
-        <div className="divide-y divide-stroke-subtle/50">
-          <PanelSection helpTarget="bd-base">
-            <BaseSection />
-          </PanelSection>
-        </div>
+        <BaseSection />
       </StickyGroupHeader>
 
       <StickyGroupHeader

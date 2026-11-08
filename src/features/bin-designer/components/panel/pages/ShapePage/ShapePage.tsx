@@ -13,23 +13,23 @@ export function ShapePage() {
       <PanelSection helpTarget="bd-dimensions">
         <DimensionsSection />
       </PanelSection>
-      <PanelSection helpTarget="bd-overhang">
-        {/* Advanced drawer-fit control next to the dimensions; collapsed by
-            default and gated off internally for custom-shape (mask) bins. */}
-        <OverhangSection />
-      </PanelSection>
-      <PanelSection helpTarget="bd-shape">
-        <ShapeSection />
-      </PanelSection>
-      <PanelSection helpTarget="bd-slant">
-        <SlantSection />
+      <PanelSection className="space-y-3">
+        <div data-help-target="bd-overhang">
+          {/* Advanced drawer-fit control next to the dimensions; collapsed by
+              default and gated off internally for custom-shape (mask) bins. */}
+          <OverhangSection />
+        </div>
+        <div data-help-target="bd-shape">
+          <ShapeSection />
+        </div>
+        <div data-help-target="bd-slant">
+          <SlantSection />
+        </div>
       </PanelSection>
       <PanelSection helpTarget="bd-walls">
         <WallThicknessSection />
       </PanelSection>
-      <PanelSection helpTarget="bd-base">
-        <BaseSection />
-      </PanelSection>
+      <BaseSection />
     </div>
   );
 }
