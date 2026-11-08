@@ -1,0 +1,21 @@
+src/features/print-export/components/PrintModal/PrintModal.tsx
+  s_66332f8bf1351d::t_b78cb3a418b23b 33-34
+src/shared/components/ConfirmDialog/ConfirmDialog.tsx
+  s_66332f8bf1351d::t_a98dadbccfcdb6 112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4dffaebba9ec35ecb945308a12fd82133e50e873",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
