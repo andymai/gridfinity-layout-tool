@@ -1,0 +1,14 @@
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
+  h_b755e1950659f4 425-427
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "758ef4b5c8e6226ea2615dad1cac3867d5dfd0cd",
+  "prompts": {},
+  "humans": {
+    "h_b755e1950659f4": {
+      "author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
