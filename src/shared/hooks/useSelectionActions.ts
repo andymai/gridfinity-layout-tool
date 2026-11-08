@@ -122,7 +122,7 @@ export function useSelectionActions() {
       });
     } else {
       addToast({
-        message: t('toast.rotateAllComplete', { rotated: rotatable.length }),
+        message: t('toast.rotateAllComplete', { count: rotatable.length }),
         type: 'success',
         duration: 2000,
       });

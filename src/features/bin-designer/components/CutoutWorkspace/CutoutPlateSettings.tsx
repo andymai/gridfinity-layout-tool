@@ -60,7 +60,7 @@ export function CutoutPlateSettings() {
       {plan.skippedCount > 0 && (
         <p role="status" className="text-label text-warning">
           {t('binDesigner.cutoutSocket.skippedCount', {
-            n: plan.skippedCount,
+            count: plan.skippedCount,
             max: MAX_CUTOUT_LABEL_SOCKETS,
           })}
         </p>

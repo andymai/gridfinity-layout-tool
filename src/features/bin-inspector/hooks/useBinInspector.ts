@@ -436,7 +436,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     if (!batch(() => isOk(updateBin(bin.id, plan.updates)))) return false;
 
     if (plan.movedTo) {
-      addToast(t('toast.rotateRepositioned', { distance: plan.movedTo.distance }), 'info');
+      addToast(t('toast.rotateRepositioned', { count: plan.movedTo.distance }), 'info');
     } else if (plan.halfTurnedInPlace) {
       addToast(t('toast.binHalfTurned'), 'info');
     }
