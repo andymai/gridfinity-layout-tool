@@ -383,7 +383,7 @@ describe('CategoriesPanel', () => {
       render(<CategoriesPanel />);
 
       // Should show count of 2 for coral
-      expect(screen.getByTitle('2 bin(s) use this category')).toBeInTheDocument();
+      expect(screen.getByTitle('2 bins use this category')).toBeInTheDocument();
     });
 
     it('does not render badges for categories without bins', () => {
@@ -392,7 +392,7 @@ describe('CategoriesPanel', () => {
       // Both categories have no bins, no badges should be rendered
       expect(screen.queryByTitle('No bins use this category')).not.toBeInTheDocument();
       // Also verify no bin count badges exist at all (they only render when binCount > 0)
-      expect(screen.queryByTitle(/bin\(s\) use this category/)).not.toBeInTheDocument();
+      expect(screen.queryByTitle(/bins? uses? this category/)).not.toBeInTheDocument();
     });
   });
 });

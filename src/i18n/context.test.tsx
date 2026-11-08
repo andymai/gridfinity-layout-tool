@@ -39,7 +39,7 @@ describe('getStaticTranslation', () => {
 
   it('interpolates variables correctly', () => {
     const result = getStaticTranslation('toast.binsDeleted', { count: 5 });
-    expect(result).toBe('Deleted 5 bin(s)');
+    expect(result).toBe('Deleted 5 bins');
   });
 
   it('interpolates multiple variables', () => {
@@ -54,7 +54,7 @@ describe('getStaticTranslation', () => {
 
   it('converts non-string variable values to strings', () => {
     const result = getStaticTranslation('toast.binsDeleted', { count: 42 });
-    expect(result).toBe('Deleted 42 bin(s)');
+    expect(result).toBe('Deleted 42 bins');
   });
 });
 
@@ -108,7 +108,7 @@ describe('LocaleProvider + useTranslation', () => {
     const { result } = renderHook(() => useTranslation(), { wrapper });
 
     await waitFor(() => {
-      expect(result.current('toast.binsDeleted', { count: 7 })).toBe('Deleted 7 bin(s)');
+      expect(result.current('toast.binsDeleted', { count: 7 })).toBe('Deleted 7 bins');
     });
   });
 
