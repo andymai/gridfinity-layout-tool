@@ -197,6 +197,21 @@ describe('BaseplateLibraryModal', () => {
   });
 
   describe('New baseplate', () => {
+    it('offers the action in the empty state instead of sending people to another tool', async () => {
+      mocks.listDesigns.mockResolvedValueOnce(ok([]));
+      mocks.saveCurrentAsNew.mockResolvedValue(
+        ok({ id: baseplateDesignId('bp-new'), params: { magnetHoles: false } })
+      );
+      render(<BaseplateLibraryModal isOpen onClose={vi.fn()} />);
+
+      expect(await screen.findByText('baseplate.library.empty')).toBeInTheDocument();
+      const actions = screen.getAllByRole('button', { name: /baseplate\.library\.newBaseplate/ });
+      expect(actions).toHaveLength(2);
+      fireEvent.click(actions[1]);
+
+      await waitFor(() => expect(mocks.saveCurrentAsNew).toHaveBeenCalled());
+    });
+
     it('creates a design, activates it, and closes', async () => {
       mocks.saveCurrentAsNew.mockResolvedValue(
         ok({ id: baseplateDesignId('bp-new'), params: { magnetHoles: false } })

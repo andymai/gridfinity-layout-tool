@@ -186,7 +186,6 @@
   "baseplate.library.designName": "Grundplattenname",
   "baseplate.library.draftName": "Ungespeicherter Entwurf",
   "baseplate.library.empty": "Noch keine gespeicherten Grundplatten",
-  "baseplate.library.emptyHint": "Öffne das Grundplatten-Werkzeug, um eine zu erstellen",
   "baseplate.library.manage": "Grundplatten verwalten",
   "baseplate.library.moreActions": "Weitere Aktionen für {name}",
   "baseplate.library.namePrompt": "Diese Grundplatte benennen",

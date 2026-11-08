@@ -186,7 +186,6 @@
   "baseplate.library.designName": "Nazwa płyty bazowej",
   "baseplate.library.draftName": "Niezapisany szkic",
   "baseplate.library.empty": "Brak zapisanych płyt bazowych",
-  "baseplate.library.emptyHint": "Otwórz narzędzie Płyta bazowa, aby utworzyć jedną",
   "baseplate.library.manage": "Zarządzaj płytami bazowymi",
   "baseplate.library.moreActions": "Więcej akcji dla {name}",
   "baseplate.library.namePrompt": "Nazwij tę płytę bazową",

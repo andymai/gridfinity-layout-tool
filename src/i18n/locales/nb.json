@@ -186,7 +186,6 @@
   "baseplate.library.designName": "Bunnplatenavn",
   "baseplate.library.draftName": "Ulagret utkast",
   "baseplate.library.empty": "Ingen lagrede bunnplater ennå",
-  "baseplate.library.emptyHint": "Åpne bunnplateverktøyet for å lage en",
   "baseplate.library.manage": "Administrer bunnplater",
   "baseplate.library.moreActions": "Flere handlinger for {name}",
   "baseplate.library.namePrompt": "Gi denne bunnplaten et navn",

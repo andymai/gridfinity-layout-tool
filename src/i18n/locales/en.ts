@@ -4929,7 +4929,6 @@ const en: Record<string, string> = {
   'baseplate.library.unused': 'Not used by any layout',
   'baseplate.library.currentlyActive': 'Currently active baseplate',
   'baseplate.library.empty': 'No saved baseplates yet',
-  'baseplate.library.emptyHint': 'Open the Baseplate tool to create one',
   'baseplate.library.count': '{count} baseplate(s)',
   'baseplate.library.deleteWarning.title': 'Delete baseplate design?',
   'baseplate.library.deleteWarning.description':

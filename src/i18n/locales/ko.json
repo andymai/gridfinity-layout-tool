@@ -186,7 +186,6 @@
   "baseplate.library.designName": "베이스플레이트 이름",
   "baseplate.library.draftName": "저장되지 않은 초안",
   "baseplate.library.empty": "아직 저장된 베이스플레이트가 없습니다",
-  "baseplate.library.emptyHint": "베이스플레이트 도구를 열어 하나 만드세요",
   "baseplate.library.manage": "베이스플레이트 관리",
   "baseplate.library.moreActions": "{name}의 추가 작업",
   "baseplate.library.namePrompt": "이 베이스플레이트의 이름을 지으세요",

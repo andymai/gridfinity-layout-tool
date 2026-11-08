@@ -186,7 +186,6 @@
   "baseplate.library.designName": "Naam basisplaat",
   "baseplate.library.draftName": "Niet-opgeslagen concept",
   "baseplate.library.empty": "Nog geen opgeslagen basisplaten",
-  "baseplate.library.emptyHint": "Open het basisplaat-gereedschap om er een te maken",
   "baseplate.library.manage": "Basisplaten beheren",
   "baseplate.library.moreActions": "Meer acties voor {name}",
   "baseplate.library.namePrompt": "Deze basisplaat een naam geven",

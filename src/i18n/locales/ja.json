@@ -186,7 +186,6 @@
   "baseplate.library.designName": "ベースプレート名",
   "baseplate.library.draftName": "未保存の下書き",
   "baseplate.library.empty": "保存済みのベースプレートはまだありません",
-  "baseplate.library.emptyHint": "ベースプレートツールを開いて作成してください",
   "baseplate.library.manage": "ベースプレートを管理",
   "baseplate.library.moreActions": "{name} のその他の操作",
   "baseplate.library.namePrompt": "このベースプレートに名前を付ける",
