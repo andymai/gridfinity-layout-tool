@@ -1,95 +1,96 @@
-src/features/bin-inspector/components/Inspector/ExpandedFootprint/ExpandedFootprint.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 20,53
-src/features/bin-designer/components/panel/shared/index.ts
-  s_66332f8bf1351d::t_c3ff5a36da93af 7
-src/features/bin-designer/components/panel/ImportedMeshSection/ImportedMeshPanel.tsx
-  s_66332f8bf1351d::t_c3ff5a36da93af 23
-src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
-  s_66332f8bf1351d::t_d66e9b55bf0d9a 16,106,218
-src/features/bin-designer/components/ParameterPanel/DesignerSearchBar/DesignerSearchBar.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 5,218,220
-src/features/print-export/components/PrintModal/PrintModal.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 11,301,338,369,391
-src/features/bin-designer/components/CutoutWorkspace/AlignControls.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 21,84,104
 src/features/baseplate/components/BaseplatePanel/ConnectorPicker.tsx
   s_66332f8bf1351d::t_1ad6d568ab453a 12,112
-src/shared/components/ExportDialog/ExportDialog.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 15,357
-  s_66332f8bf1351d::t_76103946cfdec5 359
-src/features/bin-designer/components/CutoutWorkspace/BinSizeSection.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 13,64
-src/features/bin-designer/components/LayoutDesignSwitch/LayoutDesignSwitch.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 6,109
 src/features/bin-designer/components/CutoutWorkspace/CutoutSplitControls.tsx
   s_66332f8bf1351d::t_c3ff5a36da93af 13
-src/features/bin-designer/components/CutoutWorkspace/CutoutBoardSettings.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 10,49,100
-src/features/bin-designer/components/BentoWorkspace/BentoDock.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 17,344,406
-src/shell/Mobile/MobileLayersPanel/ToolsTab/ToolsTab.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 7,92,101
-src/features/bin-designer/components/panel/CutoutsSection/AlignmentToolbar.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 14,307,318,330
-src/features/bin-designer/components/ParameterPanel/BinScrollPanel/BinScrollPanel.tsx
-  s_66332f8bf1351d::t_c3ff5a36da93af 22
-src/features/drawer-shape/components/CornerCutsDialog/CornerCutsDialog.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 7,176
+src/features/bin-designer/components/Workshop/WorkshopPanel/WorkshopPanel.tsx
+  s_66332f8bf1351d::t_c3ff5a36da93af 28
+src/features/bin-designer/components/CutoutWorkspace/BinSizeSection.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 13,64
+src/features/bin-designer/components/CutoutWorkspace/AlignControls.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 21,84,104
+src/shell/Modals/WhatsNewModal/WhatsNewArchive.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 5,66
+  s_66332f8bf1351d::t_a4dd6339ba94ba 67-69
+  h_b755e1950659f4 71
 src/features/layout-library/components/LayoutQuickSwitch/LayoutQuickSwitch.tsx
   s_66332f8bf1351d::t_1ad6d568ab453a 10,178
+src/features/bin-designer/components/LayoutDesignSwitch/LayoutDesignSwitch.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 6,109
+src/features/bin-designer/components/CutoutWorkspace/CutoutBoardSettings.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 10,49,100
+src/features/bin-designer/components/panel/ImportedMeshSection/ImportedMeshPanel.tsx
+  s_66332f8bf1351d::t_c3ff5a36da93af 23
+src/shell/Mobile/MobileLayersPanel/ToolsTab/ToolsTab.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 7,92,101
 src/shared/components/SampleExportButton/SampleExportButton.tsx
   s_66332f8bf1351d::t_1ad6d568ab453a 9,91
-  s_66332f8bf1351d::t_8934bb98df6043 93
-src/features/bin-designer/components/panel/ColorsSection/ColorsActionsMenu.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 27,216
-  s_66332f8bf1351d::t_3ab442b4038193 218
+  h_b755e1950659f4 93
+src/shell/Modals/SettingsModal/TabNavigation/TabNavigation.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 5,119
+  h_b755e1950659f4 121
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 11,401
+  h_b755e1950659f4 403,554
+src/features/bin-designer/components/BentoWorkspace/BentoBinWideSection.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 18,58
 src/features/layers/components/ActiveLayerPanel/SizeSelectorPopover.tsx
   s_66332f8bf1351d::t_1ad6d568ab453a 5,112,129
+src/features/bin-designer/components/panel/ColorsSection/ColorPicker.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 14,136
+  h_b755e1950659f4 138,173,229,231
+src/features/command-palette/components/CommandPalette/CommandPalette.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 14,219,248
+src/features/bin-inspector/components/Inspector/ExpandedFootprint/ExpandedFootprint.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 20,53
+src/features/bin-designer/components/panel/ToolRackSection/ToolRackParameterPanel.tsx
+  s_66332f8bf1351d::t_c3ff5a36da93af 12
+src/features/places/components/PlacesFindGroup/PlacesFindGroup.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 3,48
+src/features/bin-designer/components/panel/CutoutsSection/AlignmentToolbar.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 14,307,318,330
+src/features/bin-designer/components/BentoWorkspace/BentoDock.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 17,344,406
+src/features/bin-designer/components/panel/VariantSection/VariantSection.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 4,87
+  h_b755e1950659f4 89,117,119,184,186
+src/features/bin-designer/components/panel/shared/index.ts
+  s_66332f8bf1351d::t_c3ff5a36da93af 7
+src/features/bin-designer/components/CutoutWorkspace/CutoutPlateSettings.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 13,50
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/BinScrollPanel.tsx
+  s_66332f8bf1351d::t_c3ff5a36da93af 22
+src/features/bin-designer/components/CutoutWorkspace/BinFeaturesSection.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 18,38
+src/features/bin-designer/components/ParameterPanel/DesignerSearchBar/DesignerSearchBar.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 5,218,220
+src/shared/components/PanelText/panelText.tsx
+  s_66332f8bf1351d::t_5f6db2d77c066c 14,16,23-92,96,101,106
+  s_66332f8bf1351d::t_c5f3db885ad5dd 5
+  s_66332f8bf1351d::t_60731904d9c5cc 3
+src/features/bin-designer/components/CutoutWorkspace/ShapeList/ShapeList.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 23,346
+  h_b755e1950659f4 348
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_66332f8bf1351d::t_d66e9b55bf0d9a 16,106,218
+src/features/drawer-shape/components/CornerCutsDialog/CornerCutsDialog.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 7,176
+src/features/bin-designer/components/panel/ColorsSection/ColorsActionsMenu.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 27,216
+  h_b755e1950659f4 218
+src/features/bin-designer/components/panel/ColorsSection/AccentBandsEditor.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 16,162
+src/shared/components/ExportDialog/ExportDialog.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 15,357
+  h_b755e1950659f4 359
+src/features/bin-designer/components/BentoWorkspace/BentoCompartmentColorControls.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 13,46
+src/shared/components/PanelText/index.ts
+  s_66332f8bf1351d::t_5ebd6a6597f814 1
 src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
   s_66332f8bf1351d::t_1ad6d568ab453a 17,435
   h_b755e1950659f4 425-427
-src/features/bin-designer/components/panel/VariantSection/VariantSection.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 4,87
-  s_66332f8bf1351d::t_a9f01c77634520 89,117,119,184,186
-src/shared/components/PanelText/panelText.tsx
-  s_66332f8bf1351d::t_c5f3db885ad5dd 5
-  s_66332f8bf1351d::t_5f6db2d77c066c 14,16,23-92,96,101,106
-  s_66332f8bf1351d::t_60731904d9c5cc 3
-src/shared/components/PanelText/index.ts
-  s_66332f8bf1351d::t_5ebd6a6597f814 1
-src/shell/Modals/SettingsModal/TabNavigation/TabNavigation.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 5,119
-  s_66332f8bf1351d::t_d214db84c85439 121
-src/features/bin-designer/components/BentoWorkspace/BentoBinWideSection.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 18,58
-src/features/places/components/PlacesFindGroup/PlacesFindGroup.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 3,48
-src/features/bin-designer/components/panel/ColorsSection/ColorPicker.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 14,136
-  s_66332f8bf1351d::t_7f3f0538a3a550 138,173,229,231
-src/features/command-palette/components/CommandPalette/CommandPalette.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 14,219,248
-src/features/bin-designer/components/CutoutWorkspace/ShapeList/ShapeList.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 23,346
-  s_66332f8bf1351d::t_f1b8bbcdf72da8 348
-src/features/bin-designer/components/panel/ToolRackSection/ToolRackParameterPanel.tsx
-  s_66332f8bf1351d::t_c3ff5a36da93af 12
-src/features/bin-designer/components/CutoutWorkspace/CutoutPlateSettings.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 13,50
-src/features/bin-designer/components/CutoutWorkspace/BinFeaturesSection.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 18,38
-src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 11,401
-  s_66332f8bf1351d::t_b8321e05f779cb 403,554
-src/features/bin-designer/components/panel/ColorsSection/AccentBandsEditor.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 16,162
-src/features/bin-designer/components/BentoWorkspace/BentoCompartmentColorControls.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 13,46
-src/features/bin-designer/components/Workshop/WorkshopPanel/WorkshopPanel.tsx
-  s_66332f8bf1351d::t_c3ff5a36da93af 28
-src/shell/Modals/WhatsNewModal/WhatsNewArchive.tsx
-  s_66332f8bf1351d::t_1ad6d568ab453a 5,66
-  s_66332f8bf1351d::t_eb9d7370a36312 67-69,71
+src/features/print-export/components/PrintModal/PrintModal.tsx
+  s_66332f8bf1351d::t_1ad6d568ab453a 11,301,338,369,391
 ---
 {
   "schema_version": "authorship/3.0.0",
