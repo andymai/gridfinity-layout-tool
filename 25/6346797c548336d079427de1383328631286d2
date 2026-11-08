@@ -1,0 +1,91 @@
+src/i18n/locales/pt-BR.json
+  s_66332f8bf1351d::t_122e12b5fd948b 3909-3912,3930-3931,3943-3944,3951-3954,4199-4200,4250-4251,4646-4647,4678-4679
+src/features/layers/components/LayerPanel/LayerRows.tsx
+  s_66332f8bf1351d::t_27b821d948e12a 184-190,283,391
+src/i18n/locales/it.json
+  s_66332f8bf1351d::t_122e12b5fd948b 3909-3912,3930-3931,3943-3944,3951-3954,4199-4200,4250-4251,4646-4647,4678-4679
+src/i18n/locales/nb.json
+  s_66332f8bf1351d::t_122e12b5fd948b 3909-3912,3930-3931,3943-3944,3951-3954,4199-4200,4250-4251,4646-4647,4678-4679
+src/i18n/locales/fr.json
+  s_66332f8bf1351d::t_122e12b5fd948b 3909-3912,3930-3931,3943-3944,3951-3954,4199-4200,4250-4251,4646-4647,4678-4679
+src/i18n/locales/ka.json
+  s_66332f8bf1351d::t_122e12b5fd948b 441-442,586-589,610-615,618-619,651-652,699-700,721-722
+src/features/print-export/components/PrintModal/PrintModal.tsx
+  s_66332f8bf1351d::t_27b821d948e12a 284
+src/features/snapshots/components/SnapshotEntry/SnapshotEntry.tsx
+  s_66332f8bf1351d::t_27b821d948e12a 55
+src/i18n/plural.test.ts
+  s_66332f8bf1351d::t_646533f03f59a4 1-71
+.claude/skills/i18n-changes/SKILL.md
+  s_66332f8bf1351d::t_b5f1193065edc1 3,20,29
+src/i18n/locales/en.ts
+  s_66332f8bf1351d::t_b5f1193065edc1 10-14
+  s_66332f8bf1351d::t_122e12b5fd948b 479-480,636-639,660-665,668-669,706-707,756-757,779-780
+scripts/i18n-values-allowlist.json
+  s_66332f8bf1351d::t_35d3845db6238c 365
+src/i18n/locales/es.json
+  s_66332f8bf1351d::t_122e12b5fd948b 3909-3912,3930-3931,3943-3944,3951-3954,4199-4200,4250-4251,4646-4647,4678-4679
+src/i18n/locales/ko.json
+  s_66332f8bf1351d::t_122e12b5fd948b 3909-3910,3928,3940,3947-3948,4193,4243,4638,4669
+src/i18n/locales/zh-CN.json
+  s_66332f8bf1351d::t_122e12b5fd948b 3909-3910,3928,3940,3947-3948,4193,4243,4638,4669
+src/i18n/locales/nl.json
+  s_66332f8bf1351d::t_ef90fbed9bd354 3909
+  s_66332f8bf1351d::t_122e12b5fd948b 3910-3912,3930-3931,3943-3944,3951-3954,4199-4200,4250-4251,4646-4647,4678-4679
+scripts/check-i18n-interpolation.ts
+  s_66332f8bf1351d::t_542bee0a5829cc 15,132-144
+  s_66332f8bf1351d::t_3699d6e82fcbf5 145
+src/i18n/locales/de.json
+  s_66332f8bf1351d::t_122e12b5fd948b 3909-3912,3930-3931,3943-3944,3951-3954,4199-4200,4250-4251,4646-4647,4678-4679
+src/features/layers/components/LayerPanel/LayerPanel.tsx
+  s_66332f8bf1351d::t_27b821d948e12a 139-140
+src/i18n/locales/cs.json
+  s_66332f8bf1351d::t_122e12b5fd948b 3909-3914,3932-3934,3946-3948,3955-3960,4205-4207,4257-4259,4654-4656,4687-4689
+src/i18n/context.tsx
+  s_66332f8bf1351d::t_77c839e68da21a 16-19,38,125-130,132-136,158,163,221-226,257-258,266-267,307-312,314,317
+src/i18n/locales/uk.json
+  s_66332f8bf1351d::t_122e12b5fd948b 3909-3916,3934-3937,3949-3952,3959-3966,4211-4214,4264-4267,4662-4665,4696-4699
+src/features/layers/components/ActiveLayerPanel/ActiveLayerPanel.tsx
+  s_66332f8bf1351d::t_27b821d948e12a 200-202,213-215
+src/i18n/locales/ja.json
+  s_66332f8bf1351d::t_122e12b5fd948b 3909-3910,3928,3940,3947-3948,4193,4243,4638,4669
+scripts/check-i18n-unused.ts
+  s_66332f8bf1351d::t_95897f4f256fde 19,151-153
+src/i18n/context.test.tsx
+  s_66332f8bf1351d::t_2d29a375a841de 128-149,152-163
+  s_66332f8bf1351d::t_a77210beee3500 150-151
+src/features/staging/components/Staging/Staging.tsx
+  s_66332f8bf1351d::t_27b821d948e12a 528
+src/i18n/locales/sv.json
+  s_66332f8bf1351d::t_122e12b5fd948b 3909-3912,3930-3931,3943-3944,3951-3954,4199-4200,4250-4251,4646-4647,4678-4679
+scripts/check-i18n-unused.test.ts
+  s_66332f8bf1351d::t_d7f0539c88497e 136-145
+src/i18n/locales/pl.json
+  s_66332f8bf1351d::t_122e12b5fd948b 3909-3916,3934-3937,3949-3952,3959-3966,4211-4214,4264-4267,4662-4665,4696-4699
+src/features/print-export/components/PrintListSummary/PrintListSummary.tsx
+  s_66332f8bf1351d::t_27b821d948e12a 92,164
+scripts/check-i18n-keys.ts
+  s_66332f8bf1351d::t_4d5dcb9030f800 4-7,14-18,50-86,89,93,96-102,105
+src/i18n/plural.ts
+  s_66332f8bf1351d::t_51e76477a1f892 1-60
+src/test/setup.ts
+  s_66332f8bf1351d::t_b118843a104e25 97,100-102
+src/features/snapshots/components/RestoreDialog/RestoreDialog.tsx
+  s_66332f8bf1351d::t_27b821d948e12a 30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "256346797c548336d079427de1383328631286d2",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
