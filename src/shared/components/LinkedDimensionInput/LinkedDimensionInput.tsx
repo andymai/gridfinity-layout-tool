@@ -115,6 +115,7 @@ export function LinkedDimensionInput({
   if (showSingleInput) {
     return (
       <div className="flex items-center gap-1">
+        {linkButton}
         <DeferredNumberInput
           id={id}
           value={width}
@@ -125,13 +126,15 @@ export function LinkedDimensionInput({
           className={inputClass}
           aria-label={widthAriaLabel}
         />
-        {linkButton}
       </div>
     );
   }
 
   return (
     <div className="flex items-center gap-1">
+      {/* Leading, so the inputs end flush with the plain number fields in the
+          same settings list and the units line up in one column. */}
+      {linkButton}
       <DeferredNumberInput
         id={id}
         value={width}
@@ -152,7 +155,6 @@ export function LinkedDimensionInput({
         className={inputClass}
         aria-label={depthAriaLabel}
       />
-      {linkButton}
     </div>
   );
 }
