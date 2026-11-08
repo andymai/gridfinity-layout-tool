@@ -16,6 +16,7 @@ import { RulerIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { SubHeader } from '@/shared/components/PanelText';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { SegmentedControl } from '@/design-system';
 import { EditableDimensions } from '@/shared/components/EditableDimensions';
@@ -320,8 +321,8 @@ export function DimensionsSection() {
   );
 
   return (
-    <StickyGroupHeader title={t('baseplate.sectionDimensions')}>
-      <div className="space-y-3 px-4 py-3">
+    <StickyGroupHeader variant="band" title={t('baseplate.sectionDimensions')}>
+      <PanelSection className="space-y-3">
         <FeatureToggle
           label={t('baseplate.syncWithLayout')}
           checked={synced}
@@ -579,7 +580,7 @@ export function DimensionsSection() {
             </div>
           )}
         </div>
-      </div>
+      </PanelSection>
     </StickyGroupHeader>
   );
 }

@@ -20,15 +20,15 @@ describe('PanelSection', () => {
   it('owns the section padding and never draws its own divider', () => {
     const { container } = render(<PanelSection>x</PanelSection>);
     const el = container.firstElementChild as HTMLElement;
-    expect(el.className).toContain('px-4');
-    expect(el.className).toContain('py-3');
+    expect(el.className).toContain('px-(--space-panel)');
+    expect(el.className).toContain('py-[calc(var(--space-panel)*0.75)]');
     expect(el.className).not.toMatch(/border/);
   });
 
   it('appends a caller className onto the base padding', () => {
     const { container } = render(<PanelSection className="border-t">x</PanelSection>);
     const el = container.firstElementChild as HTMLElement;
-    expect(el.className).toContain('px-4');
+    expect(el.className).toContain('px-(--space-panel)');
     expect(el.className).toContain('border-t');
   });
 });

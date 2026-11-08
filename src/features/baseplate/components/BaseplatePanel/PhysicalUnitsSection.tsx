@@ -11,6 +11,7 @@ import { useSettingsStore } from '@/core/store/settings';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { GridUnitInput } from '@/shared/components/GridUnitInput';
@@ -97,6 +98,7 @@ export function PhysicalUnitsSection() {
 
   return (
     <StickyGroupHeader
+      variant="band"
       title={t('common.physicalUnits')}
       summary={formatPrintSettingsSummary(
         gridUnitMm,
@@ -107,7 +109,7 @@ export function PhysicalUnitsSection() {
       expanded={printSettingsExpanded}
       onExpandedChange={setPrintSettingsExpanded}
     >
-      <div className="space-y-3 px-4 py-3">
+      <PanelSection className="space-y-3">
         <div className="text-xs text-content-secondary space-y-2">
           {/* Bounds are the store's own clamp, not the component default: the
               sidebar offers the narrower layout-authoring range, and a plate
@@ -219,7 +221,7 @@ export function PhysicalUnitsSection() {
             />
           </SettingsRow>
         </div>
-      </div>
+      </PanelSection>
     </StickyGroupHeader>
   );
 }

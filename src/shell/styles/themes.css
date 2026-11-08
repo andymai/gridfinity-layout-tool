@@ -216,16 +216,12 @@ html[data-density='comfortable'] {
   --text-base: 0.9375rem;
 }
 
-/* Apply density spacing to sidebar panel sections and their internals.
-   Panel wrappers get --space-panel padding.
+/* Apply density spacing to sidebar panel internals. Section headers
+   (StickyGroupHeader) and their bodies (PanelSection) read --space-panel
+   themselves; the active-layer strip has neither, so it is padded here.
    Inner lists and rows get tighter/looser gap via --space-item.
    Section headings get --space-section margin. */
-[data-active-layer-panel],
-[data-layers-panel],
-[data-categories-panel],
-[data-grid-size-panel],
-[data-active-baseplate-panel],
-[data-units-panel] {
+[data-active-layer-panel] {
   padding: var(--space-panel);
 }
 

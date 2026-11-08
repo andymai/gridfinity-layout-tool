@@ -44,6 +44,7 @@ import {
 } from '@/shared/generation/screwHolePlan';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { LabelInfo } from '@/shared/components/InfoDot';
@@ -171,10 +172,11 @@ export function BaseSection() {
 
   return (
     <StickyGroupHeader
+      variant="band"
       title={t('baseplate.sectionBase')}
       summary={summaryParts.length > 0 ? summaryParts.join(' · ') : undefined}
     >
-      <div className="space-y-3 px-4 py-3">
+      <PanelSection className="space-y-3">
         {tiling?.isSplit && (
           <ConnectorPicker
             value={
@@ -612,7 +614,7 @@ export function BaseSection() {
             />
           </div>
         )}
-      </div>
+      </PanelSection>
     </StickyGroupHeader>
   );
 }

@@ -21,7 +21,7 @@ import { binHasText } from '@/features/bin-designer/utils/binText';
 
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { PullTabSection } from '../../panel/PullTabSection';
-import { PanelSection } from '../../panel/PanelSection';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { FeatureGate } from '../../panel/FeatureGate';
 import { DependencyHint } from '../../panel/shared';
 import { DimensionsSection } from '../../panel/DimensionsSection';

@@ -19,7 +19,7 @@ import { clamp } from '@/shared/utils/math';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
 import { MAX_IMPORTED_MESH_HEIGHT_UNITS } from '@/shared/items/importedMesh/descriptor';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { PanelSection } from '../PanelSection';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { Hint } from '../shared';
 

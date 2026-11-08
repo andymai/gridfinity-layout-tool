@@ -5,7 +5,7 @@ import { useDrawerCeiling } from '@/shared/hooks/useDrawerCeiling';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { DrawerShapeSection } from '@/features/drawer-shape';
 import { CONSTRAINTS } from '@/core/constants';
-import { Button, Collapsible, IconButton, Stepper } from '@/design-system';
+import { Button, IconButton, Stepper } from '@/design-system';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
 import { ActiveBaseplatePanel } from '@/features/baseplate/components/ActiveBaseplatePanel';
 import { LayerPanel } from '@/features/layers/components/LayerPanel';
@@ -31,6 +31,8 @@ import { LEARN_LINKS, learnHref } from './learnLinks';
 import { useOnboarding } from '@/features/onboarding';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
+import { PanelSection } from '@/shared/components/PanelSection';
+import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 
 // Lazy load modals/galleries - only loaded when opened (using lazyWithRetry for PWA resilience)
 const InspirationGallery = lazyWithRetry(() =>
@@ -213,23 +215,15 @@ export function Sidebar() {
               <ActiveLayerPanel />
             </div>
 
-            <div
-              data-layers-panel
-              data-help-target="layers-panel"
-              className="border-b border-stroke-subtle"
-            >
+            <div data-layers-panel data-help-target="layers-panel">
               <LayerPanel />
             </div>
-            <div
-              data-categories-panel
-              data-help-target="categories-panel"
-              className="border-b border-stroke-subtle"
-            >
+            <div data-categories-panel data-help-target="categories-panel">
               <CategoriesPanel />
             </div>
 
             {/* Inspiration Gallery - Prominent placement */}
-            <div className="px-4 py-4 border-b border-stroke-subtle">
+            <div className="border-y border-stroke-subtle p-(--space-panel)">
               <Button
                 variant="ghost"
                 fullWidth
@@ -285,13 +279,14 @@ export function Sidebar() {
             </div>
 
             <div data-grid-size-panel>
-              <Collapsible
+              <StickyGroupHeader
+                variant="band"
                 title={t('sidebar.gridSize')}
-                size="md"
+                summary={`${drawer.width} × ${drawer.depth}u`}
                 expanded={gridSizeExpanded}
                 onExpandedChange={setGridSizeExpanded}
               >
-                <div className="text-xs text-content-secondary space-y-2">
+                <PanelSection className="text-xs text-content-secondary space-y-2">
                   {/* Width / Depth / Height in compact grid */}
                   <div data-help-target="drawer-size" className="grid grid-cols-3 gap-1.5">
                     <div>
@@ -420,18 +415,18 @@ export function Sidebar() {
 
                   {/* Non-rectangular drawer shape (issue #2528) */}
                   <DrawerShapeSection />
-                </div>
-              </Collapsible>
+                </PanelSection>
+              </StickyGroupHeader>
             </div>
 
-            <div data-units-panel className="border-t border-stroke-subtle">
-              <Collapsible
+            <div data-units-panel>
+              <StickyGroupHeader
+                variant="band"
                 title={t('common.physicalUnits')}
-                size="md"
                 expanded={physicalUnitsExpanded}
                 onExpandedChange={setPhysicalUnitsExpanded}
               >
-                <div className="text-xs text-content-secondary space-y-2">
+                <PanelSection className="text-xs text-content-secondary space-y-2">
                   <div data-help-target="grid-unit">
                     <SettingsRow
                       label={t('sidebar.gridUnit')}
@@ -508,19 +503,19 @@ export function Sidebar() {
                       lowProfileBase={lowProfileBase}
                     />
                   </MoreDisclosure>
-                </div>
-              </Collapsible>
+                </PanelSection>
+              </StickyGroupHeader>
             </div>
 
-            <div data-active-baseplate-panel className="border-t border-stroke-subtle">
+            <div data-active-baseplate-panel>
               <ActiveBaseplatePanel />
             </div>
 
             {/* Learn links are real <a href> so Google passes link equity from the SPA to
-                /what-is-gridfinity et al. Collapsible keeps them in the DOM (still crawlable). */}
-            <div className="border-t border-stroke-subtle">
-              <div className="px-4 pt-4 pb-4">
-                <Collapsible title={t('sidebar.learn')} size="md" defaultExpanded={false}>
+                /what-is-gridfinity et al. A collapsed group keeps them in the DOM (still crawlable). */}
+            <div>
+              <StickyGroupHeader variant="band" title={t('sidebar.learn')} defaultExpanded={false}>
+                <PanelSection>
                   <p className="text-xs text-content-tertiary leading-relaxed mb-3">
                     {t('sidebar.about')}
                   </p>
@@ -539,8 +534,8 @@ export function Sidebar() {
                       </li>
                     ))}
                   </ul>
-                </Collapsible>
-              </div>
+                </PanelSection>
+              </StickyGroupHeader>
             </div>
 
             {/* Anchor attribution to the bottom so it never floats mid-panel on tall viewports */}

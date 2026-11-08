@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useLayoutStore } from '@/core/store';
 import { getGridBins, getLayerBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { Collapsible, IconButton, PlusIcon } from '@/design-system';
+import { IconButton, PlusIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { CONSTRAINTS } from '@/core/constants';
 import type { LayerId } from '@/core/types';
@@ -10,6 +10,8 @@ import { useDrawerCeiling } from '@/shared/hooks/useDrawerCeiling';
 import { LayerRows } from './LayerRows';
 import { TallestStackMeter } from '../TallestStackMeter';
 import { useLayerListController } from '../../hooks/useLayerListController';
+import { PanelSection } from '@/shared/components/PanelSection';
+import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 
 export function LayerPanel() {
   const t = useTranslation();
@@ -88,55 +90,57 @@ export function LayerPanel() {
 
   return (
     <div>
-      <Collapsible title={t('common.layers')} size="md" actions={addLayerButton}>
-        <div className="mb-3">
-          <LayerRows
-            layers={displayLayers}
-            activeLayerId={activeLayerId}
-            hoveredLayerId={hoveredLayerId}
-            editingLayerId={editingLayerId}
-            onLayerClick={setActiveLayer}
-            onLayerHover={setHoveredLayerId}
-            onReorder={reorderByDisplayIndex}
-            onNameChange={renameLayer}
-            onHeightChange={changeLayerHeight}
-            onDeleteLayer={requestDelete}
-            onEditingStart={(id) => {
-              setActiveLayer(id);
-              setEditingLayerId(id);
-            }}
-            onEditingEnd={() => setEditingLayerId(null)}
-            layerStats={layerStats}
-          />
-        </div>
+      <StickyGroupHeader variant="band" title={t('common.layers')} actions={addLayerButton}>
+        <PanelSection>
+          <div className="mb-3">
+            <LayerRows
+              layers={displayLayers}
+              activeLayerId={activeLayerId}
+              hoveredLayerId={hoveredLayerId}
+              editingLayerId={editingLayerId}
+              onLayerClick={setActiveLayer}
+              onLayerHover={setHoveredLayerId}
+              onReorder={reorderByDisplayIndex}
+              onNameChange={renameLayer}
+              onHeightChange={changeLayerHeight}
+              onDeleteLayer={requestDelete}
+              onEditingStart={(id) => {
+                setActiveLayer(id);
+                setEditingLayerId(id);
+              }}
+              onEditingEnd={() => setEditingLayerId(null)}
+              layerStats={layerStats}
+            />
+          </div>
 
-        <div className="mb-3">
-          <TallestStackMeter tallest={tallestStack} drawerHeight={drawerHeight} />
-          {ceiling !== null && !ceiling.fits && (
-            <p className="mt-1 text-micro text-warning tabular-nums">
-              {t('drawerCeiling.layerOverflow', {
-                over: String(Math.round(-ceiling.slackMm * 10) / 10),
-              })}
-            </p>
-          )}
-        </div>
+          <div className="mb-3">
+            <TallestStackMeter tallest={tallestStack} drawerHeight={drawerHeight} />
+            {ceiling !== null && !ceiling.fits && (
+              <p className="mt-1 text-micro text-warning tabular-nums">
+                {t('drawerCeiling.layerOverflow', {
+                  over: String(Math.round(-ceiling.slackMm * 10) / 10),
+                })}
+              </p>
+            )}
+          </div>
 
-        <div className="h-1 rounded-full overflow-hidden bg-surface-elevated mb-1.5">
-          <div
-            className="h-full rounded-full transition-all"
-            style={{
-              width: `${effectiveCoverage}%`,
-              backgroundColor:
-                effectiveCoverage === 100 ? 'var(--color-success)' : 'var(--text-tertiary)',
-            }}
-          />
-        </div>
-        <div className="text-micro text-content-disabled tabular-nums">
-          {hasMultipleLayers
-            ? t('layers.statsTotal', { coverage: totalCoverage, count: totalBinCount })
-            : t('layers.stats', { coverage: effectiveCoverage, count: effectiveBinCount })}
-        </div>
-      </Collapsible>
+          <div className="h-1 rounded-full overflow-hidden bg-surface-elevated mb-1.5">
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${effectiveCoverage}%`,
+                backgroundColor:
+                  effectiveCoverage === 100 ? 'var(--color-success)' : 'var(--text-tertiary)',
+              }}
+            />
+          </div>
+          <div className="text-micro text-content-disabled tabular-nums">
+            {hasMultipleLayers
+              ? t('layers.statsTotal', { coverage: totalCoverage, count: totalBinCount })
+              : t('layers.stats', { coverage: effectiveCoverage, count: effectiveBinCount })}
+          </div>
+        </PanelSection>
+      </StickyGroupHeader>
 
       <ConfirmDialog
         isOpen={deleteLayerId !== null}
