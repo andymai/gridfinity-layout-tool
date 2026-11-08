@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { FieldLabel, Hint, OptionNotes, Readout } from './panelText';
+import { FieldLabel, Hint, OptionNotes, Readout, SubHeader } from './panelText';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
@@ -9,6 +9,28 @@ describe('panelText', () => {
   it('renders a hint', () => {
     render(<Hint>Limited by the tray wall.</Hint>);
     expect(screen.getByText('Limited by the tray wall.')).toBeInTheDocument();
+  });
+
+  it('renders a sub-header as a heading when asked, with placement classes on it', () => {
+    render(
+      <SubHeader as="h3" className="mb-3">
+        Grid settings
+      </SubHeader>
+    );
+    const heading = screen.getByRole('heading', { level: 3, name: 'Grid settings' });
+    expect(heading).toHaveClass('mb-3', 'uppercase');
+  });
+
+  it('puts placement classes on the row when a sub-header carries an info dot', () => {
+    render(
+      <SubHeader className="mb-3" info="Where the cells land.">
+        Grid position
+      </SubHeader>
+    );
+    const label = screen.getByText('Grid position');
+    expect(label).not.toHaveClass('mb-3');
+    expect(label.parentElement).toHaveClass('mb-3');
+    expect(screen.getByRole('button', { name: 'common.aboutLabel' })).toBeInTheDocument();
   });
 
   it('renders a readout with tabular figures so digits do not jitter as values change', () => {
