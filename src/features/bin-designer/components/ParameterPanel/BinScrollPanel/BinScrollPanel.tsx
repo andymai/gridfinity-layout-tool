@@ -141,8 +141,6 @@ export function BinScrollPanel({
           <PanelSection helpTarget="bd-dimensions">
             <DimensionsSection />
           </PanelSection>
-          {/* One block per subheader group: the footprint and wall controls each
-              sit under one heading, so no divider splits them. */}
           <PanelSection className="space-y-3">
             <div data-help-target="bd-overhang">
               <OverhangSection />

@@ -13,8 +13,6 @@ export function ShapePage() {
       <PanelSection helpTarget="bd-dimensions">
         <DimensionsSection />
       </PanelSection>
-      {/* One block per subheader group, so no divider splits the footprint
-          controls that share a heading. */}
       <PanelSection className="space-y-3">
         <div data-help-target="bd-overhang">
           {/* Advanced drawer-fit control next to the dimensions; collapsed by
