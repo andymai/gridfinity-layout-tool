@@ -1,0 +1,109 @@
+src/i18n/locales/sv.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+src/features/baseplate/components/BaseplatePanel/BaseSection.test.tsx
+  s_66332f8bf1351d::t_6d9bd28e05c7f1 72,74-75,77-78
+  s_66332f8bf1351d::t_0ccd7450cc0817 293-295
+  s_66332f8bf1351d::t_a44387ec0f7cb0 145
+  s_66332f8bf1351d::t_b381079e050751 364
+  s_66332f8bf1351d::t_b48c7f4040f99c 349
+src/i18n/locales/fr.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+src/i18n/locales/pl.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+src/i18n/locales/ja.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+src/i18n/locales/nl.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+src/i18n/locales/ko.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+src/i18n/locales/en.ts
+  s_66332f8bf1351d::t_92cf23989be569 4713-4714
+  s_66332f8bf1351d::t_d43c7daf79bffa 4855
+  s_66332f8bf1351d::t_779eea461ab7f2 4758
+  s_66332f8bf1351d::t_05ad37d8f16037 4704,4707,4716,4720,4723,4731,4734,4737,4740,4749,4752,4762,4870,4887
+  s_66332f8bf1351d::t_fb6be05a60e638 4786
+src/i18n/locales/pt-BR.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+src/i18n/locales/ka.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 3943
+  s_66332f8bf1351d::t_05ad37d8f16037 3937,3939,3945,3948,3950,3956,3958,3961,3968,3970,3973,3976-3977,3992,4042,4056,4069
+src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
+  s_66332f8bf1351d::t_f9b55cb86ae31b 300,302-306
+  s_66332f8bf1351d::t_30c9c7fd5f76de 49
+  s_66332f8bf1351d::t_89987947681989 478-482
+  s_66332f8bf1351d::t_24fe25fedc6a07 464-468
+  s_66332f8bf1351d::t_b047d67090611b 336-352,354-362
+  s_66332f8bf1351d::t_5c63100c958c24 491-495
+  s_66332f8bf1351d::t_4a5f5eab8e1e82 517,530-534
+  s_66332f8bf1351d::t_ac407cf4823bff 382-386
+  s_66332f8bf1351d::t_7420a76bb07df0 394,407-411
+  s_66332f8bf1351d::t_6ae5a25c130f09 237,239-245
+  s_66332f8bf1351d::t_892ec5ebefaeff 556-561,563-565,573-577
+  s_66332f8bf1351d::t_375fab6cb0b55a 449-453
+  s_66332f8bf1351d::t_13731908a8e348 252-262,264-265,267-271
+  s_66332f8bf1351d::t_89b7658c30e365 562
+src/i18n/locales/de.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+src/i18n/locales/zh-CN.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+src/i18n/locales/uk.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+src/i18n/locales/cs.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+src/i18n/locales/it.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+src/i18n/locales/es.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+src/i18n/locales/nb.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+  s_66332f8bf1351d::t_05ad37d8f16037 104,116,124,128,211,213,269,271,273,279,281,284,291,293,296,299,310
+src/features/bin-designer/components/panel/shared/panelText.tsx
+  s_66332f8bf1351d::t_c5f3db885ad5dd 4
+src/shared/components/InfoDot/index.ts
+  s_66332f8bf1351d::t_50b451eb94509a 2
+src/shared/components/InfoDot/LabelInfo.test.tsx
+  s_66332f8bf1351d::t_e76186e9c9f944 1-15
+src/features/baseplate/components/BaseplatePanel/CornerRadiusControl.test.tsx
+  s_66332f8bf1351d::t_4788179d18879c 20,34,51,53
+src/shared/components/FeatureToggle/FeatureToggle.tsx
+  s_66332f8bf1351d::t_6af394c1b836cb 85
+  s_66332f8bf1351d::t_cbe3274f0d666c 11
+src/features/bin-designer/components/panel/CutoutsSection/PocketIssueList.tsx
+  s_66332f8bf1351d::t_b3b276fb48ca3f 6
+src/features/bin-designer/components/panel/shared/index.ts
+  s_66332f8bf1351d::t_85b22d11a87ed5 5,7
+src/shared/components/InfoDot/LabelInfo.tsx
+  s_66332f8bf1351d::t_d1f191322018a0 1-13
+src/features/baseplate/components/BaseplatePanel/CornerRadiusControl.tsx
+  s_66332f8bf1351d::t_53a1bb57196b3b 3-4
+  s_66332f8bf1351d::t_11431fc77ebcd5 43-47,50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "037e0e329509c50fbc5f3446db027fe84b33ce28",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
