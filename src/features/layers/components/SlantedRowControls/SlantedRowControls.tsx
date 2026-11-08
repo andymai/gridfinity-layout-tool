@@ -38,6 +38,7 @@ export function SlantedRowControls({ size = 'md' }: { size?: 'md' | 'lg' }) {
   return (
     <div data-testid="slanted-row-controls">
       <FeatureToggle
+        variant={size === 'lg' ? 'mobile' : 'desktop'}
         label={t('layers.slantedRow.title')}
         badge={<ExperimentalBadge />}
         checked={paintSlant !== null}

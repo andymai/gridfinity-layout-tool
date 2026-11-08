@@ -1,5 +1,9 @@
 import { useEffect } from 'react';
 
+// Space activates a focused control, and claiming it here would cancel that.
+const ACTIVATES_ON_SPACE =
+  'button, a[href], select, summary, [role="button"], [role="switch"], [role="checkbox"], [role="radio"], [role="menuitem"], [role="tab"], [role="option"]';
+
 interface Use3DPreviewKeyboardProps {
   isPreviewVisible: boolean;
   isPreviewExpanded: boolean;
@@ -44,8 +48,10 @@ export function use3DPreviewKeyboard({
           break;
 
         case ' ':
-          // Toggle expand/collapse (only if preview is visible)
-          if (isPreviewVisible) {
+          if (
+            isPreviewVisible &&
+            !(target instanceof Element && target.closest(ACTIVATES_ON_SPACE))
+          ) {
             e.preventDefault();
             togglePreviewExpanded();
           }
