@@ -20,7 +20,7 @@ import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfini
 import { MAX_IMPORTED_MESH_HEIGHT_UNITS } from '@/shared/items/importedMesh/descriptor';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { PanelSection } from '../PanelSection';
-import { StickyGroupHeader } from '../StickyGroupHeader';
+import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { Hint } from '../shared';
 
 interface FieldProps {

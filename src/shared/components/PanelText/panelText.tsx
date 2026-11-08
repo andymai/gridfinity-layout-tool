@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { RulerIcon } from '@/design-system/Icon';
+import { cn } from '@/design-system/cn';
 import { useTranslation } from '@/i18n';
 import { InfoDot, LabelInfo } from '@/shared/components/InfoDot';
 
@@ -63,15 +64,32 @@ export function OptionNotes({
  * the section it heads, deliberately quieter than either, so a section reads as
  * grouped rather than as several sections.
  */
-export function SubHeader({ children, info }: { children: string; info?: ReactNode }) {
+export function SubHeader({
+  children,
+  info,
+  as: Tag = 'span',
+  className,
+}: {
+  children: string;
+  info?: ReactNode;
+  /** A heading level where the label titles a region a screen reader should list. */
+  as?: 'span' | 'p' | 'h2' | 'h3' | 'h4';
+  /** Placement only (spacing, sticky); the type styles are the point of the component. */
+  className?: string;
+}) {
   const label = (
-    <span className="block text-label font-semibold uppercase tracking-wider text-content-tertiary">
+    <Tag
+      className={cn(
+        'block text-label font-semibold uppercase tracking-wider text-content-tertiary',
+        info === undefined && className
+      )}
+    >
       {children}
-    </span>
+    </Tag>
   );
   if (info === undefined) return label;
   return (
-    <div className="flex items-center gap-1.5">
+    <div className={cn('flex items-center gap-1.5', className)}>
       {label}
       <LabelInfo label={children}>{info}</LabelInfo>
     </div>

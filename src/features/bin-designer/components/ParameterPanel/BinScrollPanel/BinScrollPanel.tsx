@@ -19,7 +19,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest';
 import { binHasText } from '@/features/bin-designer/utils/binText';
 
-import { StickyGroupHeader } from '../../panel/StickyGroupHeader';
+import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { PullTabSection } from '../../panel/PullTabSection';
 import { PanelSection } from '../../panel/PanelSection';
 import { FeatureGate } from '../../panel/FeatureGate';

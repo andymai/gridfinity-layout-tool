@@ -8,6 +8,7 @@
 import { useMemo } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
 import type { PocketChecksView } from '../panel/CutoutsSection/PocketIssueList';
@@ -397,9 +398,9 @@ export function InspectorContent({
 
       {!isSingle && selectedCutouts.length > 1 && (
         <>
-          <div className="text-micro font-medium uppercase tracking-wide text-content-tertiary">
+          <SubHeader>
             {t('binDesigner.cutoutEditor.selectedCount', { count: selectedCutouts.length })}
-          </div>
+          </SubHeader>
           {/* Above the align controls: if the selection is already a pattern,
               the offer to make it parametric beats aligning it by hand. */}
           {repeatSuggestion && (
@@ -550,9 +551,7 @@ export function InspectorContent({
               for a zone nothing paints. */}
           {!throughOnly && (
             <div className="space-y-1.5 pt-1">
-              <div className="text-micro font-medium uppercase tracking-wide text-content-tertiary">
-                {t('binDesigner.cutouts.section.color')}
-              </div>
+              <SubHeader>{t('binDesigner.cutouts.section.color')}</SubHeader>
               <CutoutColorControls
                 cutouts={selectedCutouts.map((c) => ({ ...c, ...preview.get(c.id) }))}
                 disabled={disabled}

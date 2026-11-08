@@ -2,6 +2,7 @@ import { useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } 
 import { useShallow } from 'zustand/react/shallow';
 import { Input, IconButton, SearchIcon, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest';
@@ -214,9 +215,9 @@ function ResultRow({
           role="presentation"
           // Hold input focus so a click on the header doesn't blur-close the list.
           onMouseDown={(e) => e.preventDefault()}
-          className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-content-tertiary"
+          className="px-3 pb-1 pt-2"
         >
-          {result.categoryLabel}
+          <SubHeader>{result.categoryLabel}</SubHeader>
         </div>
       )}
       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events -- listbox option; keyboard is handled on the combobox input (Arrow/Enter), options aren't individually focusable */}

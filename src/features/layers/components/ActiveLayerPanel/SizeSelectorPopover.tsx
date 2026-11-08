@@ -2,6 +2,7 @@ import { useState, type RefObject } from 'react';
 import { Button, Popover } from '@/design-system';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { SQUARE_SIZES, RECTANGLE_SIZES } from '../../paintSizes';
 import { SlantedRowControls } from '../SlantedRowControls';
 
@@ -108,9 +109,7 @@ export function SizeSelectorPopover({
 
       {/* Squares section */}
       <div className="px-3 pt-1">
-        <div className="text-label font-medium text-content-secondary uppercase tracking-wider mb-1.5">
-          {t('layers.squares')}
-        </div>
+        <SubHeader className="mb-1.5">{t('layers.squares')}</SubHeader>
         <div className="grid grid-cols-6 gap-1">
           {SQUARE_SIZES.map((size) => (
             <SizeButton
@@ -127,9 +126,7 @@ export function SizeSelectorPopover({
       {/* Rectangles section */}
       <div className="px-3 pb-3">
         <div className="flex items-center justify-between mt-3 mb-1.5">
-          <span className="text-label font-medium text-content-secondary uppercase tracking-wider">
-            {t('layers.rectangles')}
-          </span>
+          <SubHeader>{t('layers.rectangles')}</SubHeader>
           <Button
             variant="ghost"
             size="sm"

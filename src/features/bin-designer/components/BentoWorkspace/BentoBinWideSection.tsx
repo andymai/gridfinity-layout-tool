@@ -15,6 +15,7 @@ import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { SnappingSlider } from '../controls/SnappingSlider';
 import type { SnappingSliderOption } from '../controls/SnappingSlider';
 import { DividerHeightControl } from '../CompartmentEditor/DividerHeightControl';
@@ -54,9 +55,7 @@ export function BentoBinWideSection() {
 
   return (
     <section className="mt-4 flex flex-col gap-4 border-t border-stroke-subtle pt-3">
-      <span className="text-micro font-semibold uppercase tracking-wider text-content-tertiary">
-        {t('binDesigner.bento.binWideTitle')}
-      </span>
+      <SubHeader>{t('binDesigner.bento.binWideTitle')}</SubHeader>
       <SnappingSlider
         label={t('binDesigner.wallThickness')}
         value={thickness}

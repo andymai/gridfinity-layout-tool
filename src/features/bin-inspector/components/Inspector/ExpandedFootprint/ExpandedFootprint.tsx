@@ -17,6 +17,7 @@
 import { Button } from '@/design-system';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { effectiveGridUnitMmY } from '@/core/types';
 import type { Bin, Layout } from '@/core/types';
 import { formatMm } from '@/shared/utils/format';
@@ -49,9 +50,7 @@ export function ExpandedFootprint({ bin, layout }: ExpandedFootprintProps) {
     <div className="rounded-md border border-subtle p-2">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-micro uppercase tracking-wide text-content-tertiary">
-            {t('inspector.expandedFootprint')}
-          </p>
+          <SubHeader as="p">{t('inspector.expandedFootprint')}</SubHeader>
           <p className="text-sm text-content-primary">
             {formatMm(outerW)} × {formatMm(outerD)} mm
           </p>

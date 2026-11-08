@@ -14,9 +14,9 @@ import { CONSTRAINTS } from '@/core/constants';
 import { DEFAULT_BASEPLATE_PARAMS, MARGIN_MIN_DETACH_MM } from '@/core/baseplateDefaults';
 import { RulerIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
-import { LabelInfo } from '@/shared/components/InfoDot';
 import { SegmentedControl } from '@/design-system';
 import { EditableDimensions } from '@/shared/components/EditableDimensions';
 import { GridAlignmentControls } from '@/shared/components/GridAlignmentControls';
@@ -422,14 +422,9 @@ export function DimensionsSection() {
             unreachable. */}
         {outlineActive && (
           <div className="space-y-2 border-t border-stroke-subtle pt-3">
-            <div className="flex items-center gap-1.5">
-              <div className="text-label font-medium uppercase tracking-wide text-content-tertiary">
-                {t('baseplate.gridPosition')}
-              </div>
-              <LabelInfo label={t('baseplate.gridPosition')}>
-                {t('baseplate.gridPositionDetail')}
-              </LabelInfo>
-            </div>
+            <SubHeader info={t('baseplate.gridPositionDetail')}>
+              {t('baseplate.gridPosition')}
+            </SubHeader>
             <GridAlignmentControls />
           </div>
         )}
@@ -437,9 +432,7 @@ export function DimensionsSection() {
         {/* Padding — spatial schematic. Padding composes with every shape,
             so the controls stay live; a notice explains the shaped case. */}
         <div className="space-y-2 border-t border-stroke-subtle pt-3">
-          <div className="text-label font-medium uppercase tracking-wide text-content-tertiary">
-            {t('baseplate.padding')}
-          </div>
+          <SubHeader>{t('baseplate.padding')}</SubHeader>
           {cornerShaped && (
             <p className="text-label leading-relaxed text-content-tertiary">
               {t('baseplate.cornerShapedPaddingNotice')}

@@ -6,6 +6,7 @@ import type { ExportDialogProps } from '@/shared/components/ExportDialog/ExportD
 import { useToastStore } from '@/core/store/toast';
 import { FORMAT_EXTENSIONS } from '@/shared/generation/exportUtils';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
+import { SubHeader } from '@/shared/components/PanelText';
 
 interface SampleExportButtonProps {
   isExporting: boolean;
@@ -87,9 +88,9 @@ export function SampleExportButton({
           ? {
               extras: (
                 <div className="mb-4 rounded-lg border border-stroke-subtle bg-surface p-3">
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-content-tertiary">
+                  <SubHeader as="h3" className="mb-2">
                     {tips.title}
-                  </h3>
+                  </SubHeader>
                   <ul className="space-y-1 text-xs text-content-secondary">
                     {tips.items.map((tip) => (
                       <li key={tip} className="flex gap-2">

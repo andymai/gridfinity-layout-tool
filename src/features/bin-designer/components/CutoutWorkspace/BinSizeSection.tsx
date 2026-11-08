@@ -10,6 +10,7 @@ import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
 import { Alert, Button } from '@/design-system';
 import { AlertTriangleIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { DimensionsSection } from '../panel/DimensionsSection/DimensionsSection';
 import { PocketIssueList, type PocketChecksView } from '../panel/CutoutsSection/PocketIssueList';
 
@@ -60,9 +61,7 @@ export function BinSizeSection({
   const t = useTranslation();
   return (
     <div className="space-y-3 border-b border-stroke-subtle pb-3 pt-3">
-      <span className="block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
-        {t('binDesigner.cutoutEditor.binSize')}
-      </span>
+      <SubHeader>{t('binDesigner.cutoutEditor.binSize')}</SubHeader>
 
       <DimensionsSection />
 

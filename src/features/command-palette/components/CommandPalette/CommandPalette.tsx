@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Command } from 'cmdk';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { COMMAND_DEFINITIONS, CATEGORY_LABELS, CATEGORY_ORDER } from '../../commands';
 import { useRecentCommandsStore } from '../../store/recentStore';
 import { CommandPaletteFooter } from '../CommandPaletteFooter';
@@ -215,9 +216,7 @@ export function CommandPalette({
                         <path key={d} strokeLinecap="round" strokeLinejoin="round" d={d} />
                       ))}
                     </svg>
-                    <span className="text-micro font-semibold text-content-tertiary uppercase tracking-wider">
-                      {t('commandPalette.recent')}
-                    </span>
+                    <SubHeader>{t('commandPalette.recent')}</SubHeader>
                   </div>
                 }
                 className="mb-0.5"
@@ -246,9 +245,7 @@ export function CommandPalette({
                   heading={
                     <div className="flex items-center gap-1.5 px-3 pb-1.5 pt-2.5 first:pt-1">
                       <CategoryIcon category={category} />
-                      <span className="text-micro font-semibold text-content-tertiary uppercase tracking-wider">
-                        {t(CATEGORY_LABELS[category])}
-                      </span>
+                      <SubHeader>{t(CATEGORY_LABELS[category])}</SubHeader>
                     </div>
                   }
                   className="mb-0.5"

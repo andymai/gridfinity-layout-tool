@@ -4,7 +4,7 @@ export { StepperField } from './StepperField';
 export { SegmentGrid } from './SegmentGrid';
 export { InfoDot, LabelInfo } from '@/shared/components/InfoDot';
 export { LinkIcon, ChevronIcon } from './icons';
-export { FieldLabel, Hint, OptionNotes, Readout, SubHeader } from './panelText';
+export { FieldLabel, Hint, OptionNotes, Readout, SubHeader } from '@/shared/components/PanelText';
 export { ModeTiles, type ModeTileOption } from './ModeTiles';
 export { DependencyHint } from './DependencyHint';
 export { FlatTextClashWarning } from './FlatTextClashWarning';
