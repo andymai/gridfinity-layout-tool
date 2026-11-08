@@ -1,0 +1,30 @@
+src/features/bin-designer/components/BentoWorkspace/useBentoPan.ts
+  s_66332f8bf1351d::t_e1916de740d646 21-23
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.ts
+  s_66332f8bf1351d::t_19d6e118716289 83
+  s_66332f8bf1351d::t_e1916de740d646 69-71,76-78
+  s_66332f8bf1351d::t_18e692d0e3e821 84
+src/features/bin-designer/components/BentoWorkspace/useBentoWorkspace.ts
+  s_66332f8bf1351d::t_e1916de740d646 23,25-26
+src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.test.ts
+  s_66332f8bf1351d::t_19d6e118716289 91,95,102-106,136-145
+  s_66332f8bf1351d::t_306f4f0538579f 146-148
+src/features/bin-designer/components/BentoWorkspace/BentoWorkspace.test.tsx
+  s_66332f8bf1351d::t_19d6e118716289 137-150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e13f62cb62ab8be185b17c8fdfd512733d13bbbe",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
