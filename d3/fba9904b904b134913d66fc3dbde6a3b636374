@@ -1,0 +1,53 @@
+src/i18n/locales/sv.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+src/features/baseplate/components/BaseplatePanel/BaseSection.test.tsx
+  s_66332f8bf1351d::t_6d9bd28e05c7f1 72,74-75,77-78
+src/i18n/locales/fr.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+src/i18n/locales/pl.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+src/i18n/locales/ja.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+src/i18n/locales/nl.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+src/i18n/locales/ko.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+src/i18n/locales/en.ts
+  s_66332f8bf1351d::t_92cf23989be569 4713-4714
+src/i18n/locales/pt-BR.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+src/i18n/locales/ka.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 3943
+src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
+  s_66332f8bf1351d::t_f9b55cb86ae31b 293,295-299
+src/i18n/locales/de.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+src/i18n/locales/zh-CN.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+src/i18n/locales/uk.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+src/i18n/locales/cs.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+src/i18n/locales/it.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+src/i18n/locales/es.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+src/i18n/locales/nb.json
+  s_66332f8bf1351d::t_6ce2443d9198d7 309
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d3fba9904b904b134913d66fc3dbde6a3b636374",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
