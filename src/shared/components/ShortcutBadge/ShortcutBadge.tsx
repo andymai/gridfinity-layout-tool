@@ -1,9 +1,3 @@
-/**
- * A shortcut as a row of keycaps: the platform modifier (⌘ on a Mac, Ctrl
- * elsewhere), Shift, then the keys. A string of alternatives such as
- * "Delete / Backspace" renders one keycap per key.
- */
-
 import { Kbd, isMacPlatform } from '@/design-system';
 
 interface ShortcutBadgeProps {
