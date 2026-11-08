@@ -68,8 +68,8 @@ describe('DesignListDialog', () => {
     render(<DesignListDialog open={true} onClose={onClose} />);
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText('Saved Designs')).toBeInTheDocument();
-    expect(screen.getByText('New Design')).toBeInTheDocument();
+    expect(screen.getByText('Saved designs')).toBeInTheDocument();
+    expect(screen.getByText('New design')).toBeInTheDocument();
   });
 
   it('loads and displays saved designs', async () => {
@@ -159,7 +159,7 @@ describe('DesignListDialog', () => {
       expect(screen.getByText('Tool Holder')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText('New Design'));
+    fireEvent.click(screen.getByText('New design'));
 
     await waitFor(() => {
       expect(useDesignerStore.getState().currentDesignId).toBeNull();
@@ -180,7 +180,7 @@ describe('DesignListDialog', () => {
       expect(screen.getByText('Tool Holder')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText('New Design'));
+    fireEvent.click(screen.getByText('New design'));
     rerender(<DesignListDialog open={false} onClose={onClose} />);
     land();
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -197,7 +197,7 @@ describe('DesignListDialog', () => {
     await waitFor(() => {
       expect(screen.getByText('Tool Holder')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByText('New Design'));
+    fireEvent.click(screen.getByText('New design'));
 
     await waitFor(() => {
       expect(useToastStore.getState().toasts.some((toast) => toast.message === 'Save failed')).toBe(

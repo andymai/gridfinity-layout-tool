@@ -30,7 +30,7 @@ describe('TextColorControl', () => {
 
   it('turns multi-color on in one click for flat text', () => {
     render(<TextColorControl flat />);
-    fireEvent.click(screen.getByRole('button', { name: 'Turn on Multi-Color' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Turn on multi-color' }));
     expect(useDesignerStore.getState().params.featureColors.enabled).toBe(true);
     expect(screen.getByRole('button', { name: /^Text color:/ })).toBeInTheDocument();
   });

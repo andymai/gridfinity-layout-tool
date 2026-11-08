@@ -58,7 +58,7 @@ describe('HalfGridModeBlockedModal', () => {
     it('renders title', () => {
       render(<HalfGridModeBlockedModal {...defaultProps} />);
 
-      expect(screen.getByText('Cannot Disable Half-Grid Mode')).toBeInTheDocument();
+      expect(screen.getByText('Cannot disable half-grid mode')).toBeInTheDocument();
     });
 
     it('shows bin count (plural)', () => {
@@ -104,7 +104,7 @@ describe('HalfGridModeBlockedModal', () => {
       const dialog = screen.getByRole('dialog');
       expect(dialog).toHaveAttribute('aria-labelledby', 'half-bin-blocked-title');
 
-      const title = screen.getByText('Cannot Disable Half-Grid Mode');
+      const title = screen.getByText('Cannot disable half-grid mode');
       expect(title).toHaveAttribute('id', 'half-bin-blocked-title');
     });
 

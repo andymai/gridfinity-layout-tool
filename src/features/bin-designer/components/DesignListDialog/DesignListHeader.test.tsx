@@ -29,9 +29,9 @@ function setup(overrides?: {
 describe('DesignListHeader', () => {
   it('renders the title and primary actions', () => {
     setup();
-    expect(screen.getByText('Saved Designs')).toBeInTheDocument();
+    expect(screen.getByText('Saved designs')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Import' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'New Design' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'New design' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Select' })).toBeInTheDocument();
   });
 
@@ -44,7 +44,7 @@ describe('DesignListHeader', () => {
     const h = setup();
     fireEvent.click(screen.getByRole('button', { name: 'Select' }));
     fireEvent.click(screen.getByRole('button', { name: 'Import' }));
-    fireEvent.click(screen.getByRole('button', { name: 'New Design' }));
+    fireEvent.click(screen.getByRole('button', { name: 'New design' }));
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(h.onEnterSelect).toHaveBeenCalled();
     expect(h.onShowImport).toHaveBeenCalled();

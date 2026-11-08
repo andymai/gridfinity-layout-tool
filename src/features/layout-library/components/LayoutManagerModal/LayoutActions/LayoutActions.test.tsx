@@ -92,14 +92,14 @@ describe('LayoutActions', () => {
 
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
 
-      expect(screen.getByRole('menuitem', { name: /Copy Link/ })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /Copy link/ })).toBeInTheDocument();
     });
 
     it('calls onCopyLink when copy link clicked', () => {
       render(<LayoutActions {...defaultProps} />);
 
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
-      fireEvent.click(screen.getByRole('menuitem', { name: /Copy Link/ }));
+      fireEvent.click(screen.getByRole('menuitem', { name: /Copy link/ }));
 
       expect(mockOnCopyLink).toHaveBeenCalledOnce();
     });
@@ -183,7 +183,7 @@ describe('LayoutActions', () => {
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
       fireEvent.click(screen.getByRole('menuitem', { name: /Delete/ }));
 
-      expect(screen.getByText('Delete Layout')).toBeInTheDocument();
+      expect(screen.getByText('Delete layout')).toBeInTheDocument();
     });
 
     it('shows bin count in confirmation when bins exist', () => {
@@ -221,7 +221,7 @@ describe('LayoutActions', () => {
       // First click - enters confirmation
       fireEvent.click(screen.getByRole('menuitem', { name: /Delete/ }));
       // Second click - confirms
-      fireEvent.click(screen.getByText('Delete Layout'));
+      fireEvent.click(screen.getByText('Delete layout'));
 
       expect(mockOnDelete).toHaveBeenCalledOnce();
     });
@@ -261,7 +261,7 @@ describe('LayoutActions', () => {
 
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
       fireEvent.click(screen.getByRole('menuitem', { name: /Delete/ }));
-      expect(screen.getByText('Delete Layout')).toBeInTheDocument();
+      expect(screen.getByText('Delete layout')).toBeInTheDocument();
 
       // Click outside
       await act(async () => {
@@ -270,7 +270,7 @@ describe('LayoutActions', () => {
 
       // Reopen menu - should not be in confirmation state
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
-      expect(screen.queryByText('Delete Layout')).not.toBeInTheDocument();
+      expect(screen.queryByText('Delete layout')).not.toBeInTheDocument();
       expect(screen.getByText('Delete')).toBeInTheDocument();
     });
   });

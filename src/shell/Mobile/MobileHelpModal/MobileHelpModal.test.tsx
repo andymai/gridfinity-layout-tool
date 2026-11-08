@@ -50,7 +50,7 @@ describe('MobileHelpModal', () => {
     const input = screen.getByPlaceholderText('Search shortcuts and features...');
     fireEvent.change(input, { target: { value: 'bed size' } });
 
-    // The "Drawing & Selection" section is hidden when searching.
+    // The "Drawing & selection" section is hidden when searching.
     expect(screen.queryByText('mobile.help.drawingSelection')).toBeNull();
     // ...and the results list is rendered (matched by its aria-label).
     expect(screen.getByLabelText('Search results')).toBeInTheDocument();

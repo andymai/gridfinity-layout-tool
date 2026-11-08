@@ -114,7 +114,7 @@ describe('TransformControls', () => {
     const onUpdateBatch = vi.fn();
     const cs = [cutout({ id: 'a', x: 0 }), cutout({ id: 'b', x: 20 })];
     renderControls({ selectedIds: ['a', 'b'], cutouts: cs, onUpdateBatch });
-    await userEvent.click(screen.getByRole('button', { name: 'Flip Horizontal' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Flip horizontal' }));
     expect(onUpdateBatch).toHaveBeenCalledTimes(1);
     const updates = onUpdateBatch.mock.calls[0][0] as ReadonlyMap<string, Partial<Cutout>>;
     // Selection bounds = [0, 30], center = 15. Each cutout mirrors around 15.
@@ -141,7 +141,7 @@ describe('TransformControls', () => {
 
   it('disables all controls with no selection', () => {
     renderControls({ selectedIds: [], cutouts: [] });
-    expect(screen.getByRole('button', { name: 'Flip Horizontal' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Flip horizontal' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Rotate 90°' })).toBeDisabled();
   });
 });

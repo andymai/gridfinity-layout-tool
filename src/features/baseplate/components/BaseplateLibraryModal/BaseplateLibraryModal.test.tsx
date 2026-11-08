@@ -196,7 +196,7 @@ describe('BaseplateLibraryModal', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
-  describe('New Baseplate', () => {
+  describe('New baseplate', () => {
     it('creates a design, activates it, and closes', async () => {
       mocks.saveCurrentAsNew.mockResolvedValue(
         ok({ id: baseplateDesignId('bp-new'), params: { magnetHoles: false } })

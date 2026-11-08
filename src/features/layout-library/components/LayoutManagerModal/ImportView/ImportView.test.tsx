@@ -102,7 +102,7 @@ describe('ImportView', () => {
     it('renders Import button (disabled initially)', () => {
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
-      const importButton = screen.getByText('Import Layout');
+      const importButton = screen.getByText('Import layout');
       expect(importButton).toBeInTheDocument();
       expect(importButton).toBeDisabled();
     });
@@ -179,7 +179,7 @@ describe('ImportView', () => {
       const textarea = screen.getByLabelText('Layout JSON');
       fireEvent.change(textarea, { target: { value: JSON.stringify(validLayout) } });
 
-      const importButton = screen.getByText('Import Layout');
+      const importButton = screen.getByText('Import layout');
       expect(importButton).not.toBeDisabled();
     });
 
@@ -382,7 +382,7 @@ describe('ImportView', () => {
       const textarea = screen.getByLabelText('Layout JSON');
       fireEvent.change(textarea, { target: { value: JSON.stringify(validLayout) } });
 
-      fireEvent.click(screen.getByText('Import Layout'));
+      fireEvent.click(screen.getByText('Import layout'));
 
       await waitFor(() => {
         expect(mockOnImport).toHaveBeenCalledWith(validLayout);
@@ -392,7 +392,7 @@ describe('ImportView', () => {
     it('does not call onImport when no valid layout', () => {
       render(<ImportView onImport={mockOnImport} onCancel={mockOnCancel} />);
 
-      fireEvent.click(screen.getByText('Import Layout'));
+      fireEvent.click(screen.getByText('Import layout'));
 
       expect(mockOnImport).not.toHaveBeenCalled();
     });

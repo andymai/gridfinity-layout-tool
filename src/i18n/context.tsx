@@ -44,9 +44,9 @@ const fallback: Translations = {
   'errorBoundary.description': 'The app encountered an unexpected error. Your layout data is safe.',
   'errorBoundary.hint':
     'Try again or refresh the page. You can download a backup of your layouts to keep them safe.',
-  'errorBoundary.tryAgain': 'Try Again',
-  'errorBoundary.undoLastChange': 'Undo Last Change',
-  'errorBoundary.downloadBackup': 'Download Backup',
+  'errorBoundary.tryAgain': 'Try again',
+  'errorBoundary.undoLastChange': 'Undo last change',
+  'errorBoundary.downloadBackup': 'Download backup',
   'errorBoundary.backupDone': 'Backup downloaded.',
   'errorBoundary.backupError': "Couldn't create a backup. Try refreshing the page.",
   'common.loading': 'Loading...',

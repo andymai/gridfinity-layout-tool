@@ -478,7 +478,7 @@ describe('SingleBinInspector', () => {
       const inspector = createMockInspector();
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      fireEvent.click(screen.getByText('To Stash'));
+      fireEvent.click(screen.getByText('To stash'));
 
       expect(inspector.moveToStaging).toHaveBeenCalled();
     });
@@ -523,7 +523,7 @@ describe('SingleBinInspector', () => {
       });
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      expect(screen.queryByText('To Stash')).not.toBeInTheDocument();
+      expect(screen.queryByText('To stash')).not.toBeInTheDocument();
     });
 
     it('hides layer dropdown for staging bins', () => {

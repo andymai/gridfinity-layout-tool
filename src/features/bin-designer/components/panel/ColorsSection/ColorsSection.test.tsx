@@ -55,12 +55,12 @@ describe('ColorsSection', () => {
     useSettingsStore.setState({ settings: { ...DEFAULT_SETTINGS } });
   });
 
-  it('renders Body, Lip, Base, and Label Tab rows when active', () => {
+  it('renders Body, Lip, Base, and Label tab rows when active', () => {
     render(<ColorsSection />);
     expect(screen.getByText('Body')).toBeDefined();
-    expect(screen.getByText('Stacking Lip')).toBeDefined();
+    expect(screen.getByText('Stacking lip')).toBeDefined();
     expect(screen.getByText('Base')).toBeDefined();
-    expect(screen.getByText('Label Tab')).toBeDefined();
+    expect(screen.getByText('Label tab')).toBeDefined();
   });
 
   it('hides Lip row when stacking lip is off', () => {
@@ -72,10 +72,10 @@ describe('ColorsSection', () => {
       },
     });
     render(<ColorsSection />);
-    expect(screen.queryByText('Stacking Lip')).toBeNull();
+    expect(screen.queryByText('Stacking lip')).toBeNull();
   });
 
-  it('hides Label Tab row when labels are off', () => {
+  it('hides Label tab row when labels are off', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -84,7 +84,7 @@ describe('ColorsSection', () => {
       },
     });
     render(<ColorsSection />);
-    expect(screen.queryByText('Label Tab')).toBeNull();
+    expect(screen.queryByText('Label tab')).toBeNull();
   });
 
   it('offers the Text color for wall text on a bin with no label tabs', () => {
@@ -166,7 +166,7 @@ describe('ColorsSection', () => {
   });
 
   describe('lip color grid', () => {
-    it('shows a single "Stacking Lip" cell at 1×1 (no corner labels)', () => {
+    it('shows a single "Stacking lip" cell at 1×1 (no corner labels)', () => {
       render(<ColorsSection />);
       expect(screen.queryByText('Front-left')).toBeNull();
       expect(screen.queryByText('Front-right')).toBeNull();
@@ -200,7 +200,7 @@ describe('ColorsSection', () => {
       render(<ColorsSection />);
 
       // Drive a real commit through the rendered cell → ColorPicker pipeline.
-      fireEvent.click(screen.getByRole('button', { name: /Stacking Lip/ }));
+      fireEvent.click(screen.getByRole('button', { name: /Stacking lip/ }));
       fireEvent.click(screen.getByTitle('Red')); // #ef4444 preset
 
       const after = useDesignerStore.getState().params.featureColors;
@@ -221,8 +221,8 @@ describe('ColorsSection', () => {
       render(<ColorsSection />);
       // Toggle is off → zone rows and the actions menu must not appear.
       expect(screen.queryByText('Body')).toBeNull();
-      expect(screen.queryByText('Stacking Lip')).toBeNull();
-      expect(screen.queryByText('Label Tab')).toBeNull();
+      expect(screen.queryByText('Stacking lip')).toBeNull();
+      expect(screen.queryByText('Label tab')).toBeNull();
       // The hint copy should be visible to explain the off state.
       expect(screen.getByText(/multi-color 3MF/)).toBeDefined();
     });
