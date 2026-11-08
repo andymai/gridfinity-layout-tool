@@ -270,7 +270,7 @@ export function BinScrollPanel({
           <PanelSection helpTarget="bd-wall-style">
             <WallSurfaceSection />
           </PanelSection>
-          <PanelSection helpTarget="bd-floor-pattern">
+          <PanelSection helpTarget="bd-floor-pattern" className="space-y-4">
             <FloorPatternSection />
             <FloorTextSection />
           </PanelSection>

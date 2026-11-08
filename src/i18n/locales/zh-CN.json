@@ -186,7 +186,6 @@
   "baseplate.library.designName": "底板名称",
   "baseplate.library.draftName": "未保存的草稿",
   "baseplate.library.empty": "还没有保存的底板",
-  "baseplate.library.emptyHint": "打开「底板」工具以创建一个",
   "baseplate.library.manage": "管理底板",
   "baseplate.library.moreActions": "{name} 的更多操作",
   "baseplate.library.namePrompt": "为此底板命名",

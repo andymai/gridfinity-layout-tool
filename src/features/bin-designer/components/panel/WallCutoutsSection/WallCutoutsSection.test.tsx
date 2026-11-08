@@ -222,7 +222,7 @@ describe('WallCutoutsSection', () => {
     });
 
     render(<WallCutoutsSection />);
-    expect(screen.getByText('U-Shape')).toBeDefined();
+    expect(screen.getByText('U-shape')).toBeDefined();
     expect(screen.getByText('Scoop')).toBeDefined();
     expect(screen.getByText('Funnel')).toBeDefined();
   });

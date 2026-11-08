@@ -19,7 +19,16 @@ import { isOk } from '@/core/result';
 import { useLocale, useTranslation } from '@/i18n';
 import { useAnchoredMenu } from '@/shared/hooks/useAnchoredMenu';
 import { useResponsive } from '@/shared/hooks';
-import { Button, IconButton, Input, XIcon, useInlineEdit } from '@/design-system';
+import {
+  Button,
+  EmptyState,
+  IconButton,
+  Input,
+  LayoutGridIcon,
+  PlusIcon,
+  XIcon,
+  useInlineEdit,
+} from '@/design-system';
 import type { BaseplateDesignId } from '@/core/types';
 import type { SavedBaseplateDesign } from '@/features/baseplate/types/library';
 import { listDesigns } from '@/features/baseplate/storage/BaseplateStorage';
@@ -212,10 +221,23 @@ function BaseplateLibraryModalContent({ onClose }: { onClose: () => void }) {
         {/* Content */}
         <div className="min-h-0 overflow-hidden flex flex-col px-6 pb-6">
           {designs.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center py-12 text-center text-content-tertiary">
-              <p>{t('baseplate.library.empty')}</p>
-              <p className="text-sm mt-1">{t('baseplate.library.emptyHint')}</p>
-            </div>
+            <EmptyState
+              className="flex-1 py-12"
+              iconStyle="tile"
+              icon={<LayoutGridIcon />}
+              title={t('baseplate.library.empty')}
+              actions={
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => void handleNew()}
+                  disabled={creating}
+                  leftIcon={<PlusIcon />}
+                >
+                  {t('baseplate.library.newBaseplate')}
+                </Button>
+              }
+            />
           ) : (
             <div className="flex-1 min-h-0 overflow-auto pt-4">
               <div
