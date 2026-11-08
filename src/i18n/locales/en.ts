@@ -5968,9 +5968,9 @@ const en: Record<string, string> = {
   'designLinking.bento.dividerLabel': 'Divider walls (mm)',
   'designLinking.bento.replaceBins': 'Replace the {count} bins with this bento',
   'designLinking.bento.trapped_one':
-    '{count} bin outside your selection sits inside the bento. It would be printed through it.',
+    '{count} bin outside your selection sits inside the bento. The bento would be printed through that bin.',
   'designLinking.bento.trapped_other':
-    '{count} bins outside your selection sit inside the bento. It would be printed through them.',
+    '{count} bins outside your selection sit inside the bento. The bento would be printed through those bins.',
   'designLinking.bento.trappedInclude': 'Add them to the bento',
   'designLinking.bento.trappedStash': 'Move them to the stash',
   'designLinking.bento.trappedBlocks': 'Resolve the trapped bins first',

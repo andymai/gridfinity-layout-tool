@@ -5075,6 +5075,7 @@
   "toast.rotateAllPartial": "Otočeno {rotated}/{total} binů ({skipped} vynecháno kvůli kolizi)",
   "toast.rotateRepositioned_one": "Bin otočen a přesunut o {count} buňku, aby se vešel",
   "toast.rotateRepositioned_few": "Bin otočen a přesunut o {count} buňky, aby se vešel",
+  "toast.rotateRepositioned_many": "Bin otočen a přesunut o {count} buňky, aby se vešel",
   "toast.rotateRepositioned_other": "Bin otočen a přesunut o {count} buněk, aby se vešel",
   "toast.savedToLayouts": "„{name}“ uloženo do tvých rozvržení",
   "toast.scanImport.fileTooLarge": "Soubor s obrysem je příliš velký (max 5 MB)",
