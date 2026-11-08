@@ -7,13 +7,11 @@
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { HelpEntry } from '@/shared/help/helpEntry';
-import { KeyboardKey } from './HelpModalSections';
-import { KEY_SEPARATOR } from './helpModalStyles';
+import { ShortcutBadge } from '@/shared/components/ShortcutBadge';
 import { jumpToHelpTarget } from '@/shared/help/helpJumpDispatcher';
 
 interface HelpSearchResultRowProps {
   entry: HelpEntry;
-  modifierKey: string;
   onJump: () => void;
   /**
    * Whether to render the Go-to deep-link button on feature entries.
@@ -25,7 +23,6 @@ interface HelpSearchResultRowProps {
 
 export function HelpSearchResultRow({
   entry,
-  modifierKey,
   onJump,
   showJumpButton = true,
 }: HelpSearchResultRowProps) {
@@ -45,7 +42,12 @@ export function HelpSearchResultRow({
         )}
       </div>
       {entry.kind === 'shortcut' ? (
-        <ShortcutKeyCaps entry={entry} modifierKey={modifierKey} />
+        <ShortcutBadge
+          keys={entry.keys}
+          modifier={entry.modifier}
+          shift={entry.shift}
+          className="shrink-0"
+        />
       ) : entry.kind === 'feature' && showJumpButton ? (
         <Button
           type="button"
@@ -75,37 +77,5 @@ function KindBadge({ kind }: { kind: HelpEntry['kind'] }) {
     <span className="text-micro uppercase tracking-wider px-1.5 py-0.5 rounded bg-surface-elevated text-content-tertiary">
       {label}
     </span>
-  );
-}
-
-function ShortcutKeyCaps({
-  entry,
-  modifierKey,
-}: {
-  entry: Extract<HelpEntry, { kind: 'shortcut' }>;
-  modifierKey: string;
-}) {
-  const keys = typeof entry.keys === 'string' ? entry.keys.split(' / ') : [...entry.keys];
-  return (
-    <div className="flex items-center gap-1 shrink-0">
-      {entry.modifier && (
-        <>
-          <KeyboardKey>{modifierKey}</KeyboardKey>
-          <span className="text-content-tertiary text-xs">{KEY_SEPARATOR}</span>
-        </>
-      )}
-      {entry.shift && (
-        <>
-          <KeyboardKey>Shift</KeyboardKey>
-          <span className="text-content-tertiary text-xs">{KEY_SEPARATOR}</span>
-        </>
-      )}
-      {keys.map((key, idx) => (
-        <span key={`${key}-${idx}`} className="flex items-center gap-1">
-          {idx > 0 && <span className="text-content-tertiary text-xs mx-0.5">/</span>}
-          <KeyboardKey>{key}</KeyboardKey>
-        </span>
-      ))}
-    </div>
   );
 }

@@ -1,5 +1,5 @@
 /**
- * Shared style objects, the modifier-key label, and shortcut interfaces
+ * Shared style objects and shortcut interfaces
  * used by both `HelpModal` and `HelpModalSections`.
  *
  * Extracted so the React components can stay focused on layout and the
@@ -50,11 +50,3 @@ export interface ShortcutCategory {
   icon: React.ReactNode;
   shortcuts: ShortcutItem[];
 }
-
-export const KEY_SEPARATOR = '+';
-
-export const getModifierKey = (): string => {
-  if (typeof navigator === 'undefined') return 'Ctrl';
-  const isMac = /mac/i.test(navigator.userAgent);
-  return isMac ? '⌘' : 'Ctrl';
-};
