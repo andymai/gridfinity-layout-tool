@@ -339,14 +339,15 @@ export function useBentoWorkspace() {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (isEditableTarget(e.target)) return;
+      // A key something else already handled, such as an info dot's Escape or
+      // an arrow on the dock's resize handle, is not a canvas shortcut.
+      if (e.defaultPrevented) return;
       if ((e.ctrlKey || e.metaKey) && e.key === '0') {
         e.preventDefault();
         fitToView();
         return;
       }
       if (e.key === 'Escape') {
-        // An open popover (an info dot) captures Escape and marks it handled.
-        if (e.defaultPrevented) return;
         if (interaction.cancel()) return;
         if (selectedId !== null) {
           setSelectedBentoCompartmentId(null);

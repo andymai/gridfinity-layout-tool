@@ -4,9 +4,6 @@
  * selection, an inspector with the engraved label, footprint readout, wall
  * shift/angle steppers (the canvas no longer drags walls — this is their
  * home), and the duplicate/stash/delete actions.
- *
- * Its shell is the design system's SidePanel, the same one the cutout
- * workspace's InspectorDock uses, so the two editors behave alike.
  */
 
 import { useMemo } from 'react';

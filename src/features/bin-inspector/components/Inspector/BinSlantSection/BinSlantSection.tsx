@@ -54,6 +54,7 @@ export function BinSlantSection({ bin, layout, variant }: BinSlantSectionProps) 
         </>
       ) : (
         <FeatureToggle
+          variant={variant}
           label={t('binDesigner.slant.title')}
           badge={<ExperimentalBadge />}
           checked={state.placed !== undefined}
@@ -96,6 +97,7 @@ export function BinSlantSection({ bin, layout, variant }: BinSlantSectionProps) 
             fullWidth
           />
           <FeatureToggle
+            variant={variant}
             label={t('binDesigner.slant.endSupport')}
             checked={config.endSupport === true}
             onChange={() => handlers.setEndSupport(config.endSupport !== true)}

@@ -26,6 +26,19 @@ export async function getGrid(page: Page): Promise<Locator> {
 }
 
 /**
+ * Open the bin designer's design list. Phones have no list button in the
+ * header; tapping the design name opens the same list there.
+ */
+export async function openDesignList(page: Page) {
+  const isPhone = (page.viewportSize()?.width ?? 1280) < 768;
+  await (
+    isPhone
+      ? page.getByTitle('Click to rename design')
+      : page.getByRole('button', { name: 'Open design list' }).first()
+  ).click();
+}
+
+/**
  * Helper to wait for the app to be fully loaded.
  */
 export async function waitForAppReady(page: Page) {
