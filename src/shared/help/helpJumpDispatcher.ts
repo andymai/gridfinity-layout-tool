@@ -16,6 +16,9 @@ const DEFAULT_TIMEOUT_MS = 2000;
 
 export const HELP_JUMP_EVENT_PREFIX = 'help-jump:';
 export const HELP_TARGET_ATTR = 'data-help-target';
+// Inside a target, the element that takes focus when it is not the first
+// focusable one: a row whose info dot or menu precedes its switch.
+export const HELP_FOCUS_ATTR = 'data-help-focus';
 
 /**
  * Fired alongside every surface event so disclosure components can open
@@ -38,7 +41,9 @@ const FOCUSABLE_SELECTOR =
 function findFocusTarget(el: HTMLElement): HTMLElement {
   // The marker often wraps the control (e.g., a div around <PrintBedInput>),
   // so look inside before walking outward.
-  const descendant = el.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+  const descendant =
+    el.querySelector<HTMLElement>(`[${HELP_FOCUS_ATTR}]`) ??
+    el.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
   if (descendant) return descendant;
 
   // Fall back to el itself when the marker IS the control (e.g., a tabIndex=0

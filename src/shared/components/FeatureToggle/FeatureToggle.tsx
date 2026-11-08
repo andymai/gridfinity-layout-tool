@@ -8,6 +8,7 @@
 import { useId, type ReactNode } from 'react';
 import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
+import { cn } from '@/design-system/cn';
 import { LabelInfo } from '@/shared/components/InfoDot';
 import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 
@@ -36,15 +37,11 @@ interface FeatureToggleProps {
   badge?: ReactNode;
   /** Evergreen explanation behind an info dot beside the label. */
   info?: ReactNode;
-  /** Keyboard shortcut shown as a key cap after the label (e.g. "H"). */
   shortcut?: string;
-  /** Interactive control after the label, such as an overflow menu for a sub-editor. */
   trailing?: ReactNode;
-  /** Help-modal deep-link target, set on the row so the pulse lands on it. */
+  /** The whole row pulses on a help jump; the switch takes focus. */
   helpTarget?: string;
-  /** Accessible name for the switch when it should differ from the visible label. */
   ariaLabel?: string;
-  /** `mobile` sets the label at the mobile panels' larger text size. */
   variant?: 'desktop' | 'mobile';
 }
 
@@ -69,6 +66,7 @@ export function FeatureToggle({
 }: FeatureToggleProps) {
   const t = useTranslation();
   const switchId = useId();
+  const isMobile = variant === 'mobile';
 
   const isDisabled = disabled || !!disabledReason || comingSoon;
   const isActive = checked && !isDisabled;
@@ -89,11 +87,20 @@ export function FeatureToggle({
       {/* Toggle row — vertical rhythm is owned by the parent container
           (PanelSection leading / a stacking `space-y`), not this row, so a
           toggle never adds padding on top of an already-padded section. */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className={cn('relative flex items-center justify-between', isMobile && 'min-h-11')}>
+        {/* On a phone the label's ::before stretches over the row, so a tap
+            anywhere along it toggles. It resolves against the row because the
+            label and this cluster stay unpositioned; every other child is
+            positioned so the info dot and trailing menu stay on top. */}
+        <div className={cn('flex items-center gap-2', isMobile && '[&>:not(label)]:relative')}>
           <label
             htmlFor={switchId}
-            className={`${variant === 'mobile' ? 'text-sm' : 'text-xs'} text-content-secondary ${isDisabled ? '' : 'cursor-pointer'}`}
+            className={cn(
+              isMobile ? 'text-sm' : 'text-xs',
+              'text-content-secondary',
+              !isDisabled && 'cursor-pointer',
+              isMobile && !isDisabled && "before:absolute before:inset-0 before:content-['']"
+            )}
           >
             {label}
           </label>
@@ -118,6 +125,7 @@ export function FeatureToggle({
           role="switch"
           aria-checked={checked}
           aria-label={ariaLabel ?? label}
+          data-help-focus={helpTarget ? '' : undefined}
           onClick={onChange}
           disabled={isDisabled}
           className={`relative inline-flex h-7 w-12 items-center justify-start rounded-full px-0 py-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${switchTone}`}
