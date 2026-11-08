@@ -18,7 +18,7 @@ import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import type { AssemblyPartNode } from '@/shared/types/assembly';
 import { clamp } from '@/shared/utils/math';
-import { PanelSection } from '../../panel/PanelSection';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { CutterProfileSection } from './CutterProfileSection';
 import { LABEL_FACES, PART_LABEL_KEYS, PART_NUMBER_FIELDS } from './partFieldConfig';

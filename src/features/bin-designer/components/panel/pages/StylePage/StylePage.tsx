@@ -1,6 +1,6 @@
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { binHasText } from '@/features/bin-designer/utils/binText';
-import { PanelSection } from '../../PanelSection';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { TypeSection } from '../../TypeSection';
 import { ColorsSection } from '../../ColorsSection';
 import { WallSurfaceSection } from '../../WallsSection';

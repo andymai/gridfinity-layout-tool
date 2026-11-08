@@ -1,4 +1,4 @@
-import { PanelSection } from '../../PanelSection';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { DimensionsSection } from '../../DimensionsSection';
 import { OverhangSection } from '../../OverhangSection';
 import { ShapeSection } from '../../ShapeSection';

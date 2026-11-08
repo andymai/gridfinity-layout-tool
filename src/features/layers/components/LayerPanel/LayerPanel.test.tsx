@@ -1,4 +1,3 @@
-import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { LayerPanel } from '@/features/layers/components/LayerPanel';
@@ -7,28 +6,6 @@ import { useSelectionStore } from '@/core/store/selection';
 import { createTestBin, resetAllStores } from '@/test/testUtils';
 import { binId, gridUnits, heightUnits, layerId as toLayerId } from '@/core/types';
 import type { Layer } from '@/core/types';
-
-// Mock Collapsible to simplify testing
-vi.mock('@/design-system', async () => ({
-  ...(await vi.importActual<typeof DesignSystem>('@/design-system')),
-  Collapsible: ({
-    children,
-    title,
-    actions,
-  }: {
-    children: React.ReactNode;
-    title: string;
-    actions?: React.ReactNode;
-  }) => (
-    <div data-testid="collapsible-section">
-      <div data-testid="section-header">
-        <span>{title}</span>
-        {actions}
-      </div>
-      <div data-testid="section-content">{children}</div>
-    </div>
-  ),
-}));
 
 // Capture props passed to the rows for testing callback wiring
 let capturedProps: Record<string, unknown> = {};
@@ -95,8 +72,7 @@ describe('LayerPanel', () => {
     it('renders layer rows as the primary layer UI', () => {
       render(<LayerPanel />);
 
-      const sections = screen.getAllByTestId('collapsible-section');
-      expect(sections).toHaveLength(1);
+      expect(screen.getAllByRole('region')).toHaveLength(1);
       expect(screen.getByTestId('layer-rows')).toBeInTheDocument();
     });
 

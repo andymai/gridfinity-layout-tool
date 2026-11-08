@@ -96,6 +96,38 @@ describe('StickyGroupHeader', () => {
     });
   });
 
+  it('puts the toggle inside a heading, so each group is a stop in heading navigation', () => {
+    render(
+      <StickyGroupHeader title="Layers">
+        <div>Layer 1</div>
+      </StickyGroupHeader>
+    );
+    const heading = screen.getByRole('heading', { level: 2, name: 'Layers' });
+    expect(heading).toContainElement(screen.getByRole('button', { name: 'Layers' }));
+  });
+
+  it('keeps actions outside the toggle, so using one does not collapse the group', () => {
+    const onAdd = vi.fn();
+    render(
+      <StickyGroupHeader
+        title="Layers"
+        actions={
+          <button type="button" onClick={onAdd}>
+            Add layer
+          </button>
+        }
+      >
+        <div>Layer 1</div>
+      </StickyGroupHeader>
+    );
+    const toggle = screen.getByRole('button', { name: /Layers/ });
+    const add = screen.getByRole('button', { name: 'Add layer' });
+    expect(toggle).not.toContainElement(add);
+    fireEvent.click(add);
+    expect(onAdd).toHaveBeenCalledOnce();
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  });
+
   it('marks which variant it renders', () => {
     const { container } = render(
       <>

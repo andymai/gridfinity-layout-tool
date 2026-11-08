@@ -3,7 +3,7 @@ import { useTranslation } from '@/i18n';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest';
-import { PanelSection } from '../../PanelSection';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { FeatureGate } from '../../FeatureGate';
 import { DependencyHint } from '../../shared';
 import { InteriorSection } from '../../InteriorSection';

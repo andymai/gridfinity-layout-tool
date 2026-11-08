@@ -1,7 +1,6 @@
-import type * as DesignSystem from '@/design-system';
 import type * as Storage from '@/core/storage';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { RightPanel } from '@/shell/RightPanel';
 import { useLayoutStore, useViewStore, useSettingsStore } from '@/core/store';
 import type { EnhancedPrintRow } from '@/core/types';
@@ -51,50 +50,6 @@ vi.mock('@/features/print-export/components', () => ({
   ),
   PrintListEmpty: () => <div data-testid="print-list-empty">No bins to print</div>,
 }));
-
-// Mock Collapsible — mirrors the primitive's toggle contract (aria-expanded
-// trigger named by title, optional badge/actions, content hidden collapsed)
-vi.mock('@/design-system', async () => {
-  const actual = await vi.importActual<typeof DesignSystem>('@/design-system');
-  const { useState } = await import('react');
-
-  function MockCollapsible({
-    title,
-    children,
-    badge,
-    actions,
-    expanded,
-    onExpandedChange,
-    defaultExpanded = true,
-  }: {
-    title: string;
-    children: React.ReactNode;
-    badge?: React.ReactNode;
-    actions?: React.ReactNode;
-    expanded?: boolean;
-    onExpandedChange?: (expanded: boolean) => void;
-    defaultExpanded?: boolean;
-  }) {
-    const [internal, setInternal] = useState(defaultExpanded);
-    const isExpanded = expanded ?? internal;
-    const toggle = () => {
-      onExpandedChange?.(!isExpanded);
-      setInternal(!isExpanded);
-    };
-    return (
-      <div data-testid="collapsible-section">
-        <button type="button" aria-expanded={isExpanded} onClick={toggle}>
-          <span data-testid="collapsible-title">{title}</span>
-          {badge}
-        </button>
-        {actions}
-        {isExpanded && children}
-      </div>
-    );
-  }
-
-  return { ...actual, Collapsible: MockCollapsible };
-});
 
 vi.mock('@/shared/components/ConfirmDialog', () => ({
   ConfirmDialog: ({
@@ -333,7 +288,7 @@ describe('RightPanel', () => {
       render(<RightPanel />);
 
       expect(screen.getByTestId('empty-state')).toBeInTheDocument();
-      expect(screen.getAllByTestId('collapsible-title')[0]).toHaveTextContent('Selection');
+      expect(screen.getByRole('region', { name: 'Selection' })).toBeInTheDocument();
     });
 
     it('shows SingleBinInspector when one bin selected', () => {
@@ -349,7 +304,7 @@ describe('RightPanel', () => {
       render(<RightPanel />);
 
       expect(screen.getByTestId('single-bin-inspector')).toBeInTheDocument();
-      expect(screen.getAllByTestId('collapsible-title')[0]).toHaveTextContent('Bin Properties');
+      expect(screen.getByRole('region', { name: 'Bin Properties' })).toBeInTheDocument();
     });
 
     it('shows MultiBinInspector when multiple bins selected', () => {
@@ -364,7 +319,7 @@ describe('RightPanel', () => {
       render(<RightPanel />);
 
       expect(screen.getByTestId('multi-bin-inspector')).toBeInTheDocument();
-      expect(screen.getAllByTestId('collapsible-title')[0]).toHaveTextContent('Multi-selection');
+      expect(screen.getByRole('region', { name: 'Multi-selection' })).toBeInTheDocument();
     });
 
     it('calls clearSelection when single inspector close clicked', () => {
@@ -455,7 +410,7 @@ describe('RightPanel', () => {
     it('displays bin count badge', () => {
       render(<RightPanel />);
 
-      const badge = screen.getByText('2', { selector: '.badge' });
+      const badge = within(screen.getByRole('button', { name: /^Bin List/ })).getByText('2');
       expect(badge).toBeInTheDocument();
     });
 

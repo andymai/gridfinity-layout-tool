@@ -22,6 +22,7 @@ import { useTranslation } from '@/i18n';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { LabelInfo } from '@/shared/components/InfoDot';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { StackSampleButton } from './StackSampleButton';
 import { Stepper } from '@/design-system/Stepper';
 import { Alert } from '@/design-system/Alert';
@@ -112,7 +113,7 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
   };
 
   return (
-    <div className="border-b border-stroke-subtle px-4 py-3">
+    <PanelSection className="border-b border-stroke-subtle">
       <FeatureToggle
         label={t('baseplate.stackPrint.enable')}
         info={t('baseplate.stackPrint.enableDetail')}
@@ -199,6 +200,6 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
           </>
         }
       />
-    </div>
+    </PanelSection>
   );
 }

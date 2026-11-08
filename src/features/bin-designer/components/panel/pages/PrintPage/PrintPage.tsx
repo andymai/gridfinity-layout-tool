@@ -1,7 +1,7 @@
 import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { PanelSection } from '../../PanelSection';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { SplitOptionsSection } from '../../SplitOptionsSection';
 import { useSplitOptionsSection } from '../../SplitOptionsSection/useSplitOptionsSection';
 import { PhysicalUnitsSection } from '../../PhysicalUnitsSection';

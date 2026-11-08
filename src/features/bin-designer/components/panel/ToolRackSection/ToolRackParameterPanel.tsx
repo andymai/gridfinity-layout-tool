@@ -10,7 +10,7 @@ import { clamp } from '@/shared/utils/math';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
-import { PanelSection } from '../PanelSection';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { MAX_RACK_FIN_ANGLE } from '@/shared/items/toolRack/descriptor';
 import { bridgeManager } from '@/shared/generation/bridge';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';

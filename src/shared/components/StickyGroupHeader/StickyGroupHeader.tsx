@@ -25,10 +25,15 @@ const ROOT_CLASS: Record<StickyGroupHeaderVariant, string> = {
   band: 'border-t-8 border-surface',
 };
 
+const BAR_CLASS: Record<StickyGroupHeaderVariant, string> = {
+  default: 'backdrop-blur-sm bg-surface-secondary/90 border-b border-stroke-subtle/50',
+  band: 'bg-surface-elevated border-y border-stroke',
+};
+
+/** Padding follows the UI density setting; at the default 16px it is px-4 with py-3 / py-2.5. */
 const BUTTON_CLASS: Record<StickyGroupHeaderVariant, string> = {
-  default:
-    'backdrop-blur-sm bg-surface-secondary/90 border-b border-stroke-subtle/50 px-4 py-3 hover:bg-surface-hover/50',
-  band: 'bg-surface-elevated border-y border-stroke px-4 py-2.5 hover:bg-surface-hover',
+  default: 'px-(--space-panel) py-[calc(var(--space-panel)*0.75)] hover:bg-surface-hover/50',
+  band: 'px-(--space-panel) py-[calc(var(--space-panel)*0.625)] hover:bg-surface-hover',
 };
 
 const TITLE_CLASS: Record<StickyGroupHeaderVariant, string> = {
@@ -49,6 +54,8 @@ interface StickyGroupHeaderBaseProps {
    *  the dot itself is aria-hidden and would otherwise be visual-only. */
   modifiedLabel?: string;
   variant?: StickyGroupHeaderVariant;
+  /** Buttons for the group (add, sort, manage), beside the header rather than inside its toggle. */
+  actions?: ReactNode;
   children: ReactNode;
 }
 
@@ -69,6 +76,7 @@ export function StickyGroupHeader({
   badge,
   modifiedLabel,
   variant = 'default',
+  actions,
   children,
 }: StickyGroupHeaderProps) {
   const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
@@ -83,59 +91,70 @@ export function StickyGroupHeader({
 
   return (
     <div className={ROOT_CLASS[variant]} data-variant={variant}>
-      <Button
-        type="button"
-        variant="ghost"
-        touchTarget={false}
-        className={cn(
-          'sticky top-0 z-10 flex w-full items-center justify-start gap-2 rounded-none transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset',
-          BUTTON_CLASS[variant]
-        )}
-        onClick={() => {
-          setHasToggled(true);
-          setExpanded(!expanded);
-        }}
-        aria-expanded={expanded}
-        aria-controls={contentId}
-      >
-        <ChevronDownIcon
-          className={cn(
-            'transition-transform duration-200',
-            variant === 'band' ? 'text-content-secondary' : 'text-content-tertiary',
-            expanded ? 'rotate-0' : '-rotate-90'
-          )}
-          size={variant === 'band' ? 'sm' : 'xs'}
-        />
-        <span className={TITLE_CLASS[variant]}>{title}</span>
-        {modifiedLabel && (
-          <>
-            {/* `title` as well as the sr-only text: a bare dot is unexplained
+      <div className={cn('sticky top-0 z-10 flex items-center', BAR_CLASS[variant])}>
+        {/* The accordion pattern: the toggle sits inside a heading, so each group
+            is a stop in a screen reader's heading navigation. */}
+        <h2 className="flex min-w-0 flex-1">
+          <Button
+            type="button"
+            variant="ghost"
+            touchTarget={false}
+            className={cn(
+              'flex min-w-0 flex-1 items-center justify-start gap-2 rounded-none transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset',
+              BUTTON_CLASS[variant]
+            )}
+            onClick={() => {
+              setHasToggled(true);
+              setExpanded(!expanded);
+            }}
+            aria-expanded={expanded}
+            aria-controls={contentId}
+          >
+            <ChevronDownIcon
+              className={cn(
+                'transition-transform duration-200',
+                variant === 'band' ? 'text-content-secondary' : 'text-content-tertiary',
+                expanded ? 'rotate-0' : '-rotate-90'
+              )}
+              size={variant === 'band' ? 'sm' : 'xs'}
+            />
+            <span className={TITLE_CLASS[variant]}>{title}</span>
+            {modifiedLabel && (
+              <>
+                {/* `title` as well as the sr-only text: a bare dot is unexplained
                 for anyone who can see it, and "changed" reads as "unsaved"
                 without the wording to correct it. */}
-            <span
-              title={modifiedLabel}
-              aria-hidden="true"
-              data-testid="group-modified-dot"
-              className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
-            />
-            <span className="sr-only">{modifiedLabel}</span>
-          </>
+                <span
+                  title={modifiedLabel}
+                  aria-hidden="true"
+                  data-testid="group-modified-dot"
+                  className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
+                />
+                <span className="sr-only">{modifiedLabel}</span>
+              </>
+            )}
+            {badge && (
+              <span className="inline-flex items-center rounded bg-info-muted px-1.5 py-0.5 text-micro font-semibold uppercase tracking-wide text-info">
+                {badge}
+              </span>
+            )}
+            {summary && (
+              <span
+                className={`ml-auto min-w-0 truncate text-xs font-normal tabular-nums transition-colors ${
+                  expanded ? 'text-content-tertiary/70' : 'text-content-tertiary'
+                }`}
+              >
+                {summary}
+              </span>
+            )}
+          </Button>
+        </h2>
+        {actions && (
+          <div className="flex shrink-0 items-center gap-0.5 pr-[calc(var(--space-panel)-0.25rem)]">
+            {actions}
+          </div>
         )}
-        {badge && (
-          <span className="inline-flex items-center rounded bg-info-muted px-1.5 py-0.5 text-micro font-semibold uppercase tracking-wide text-info">
-            {badge}
-          </span>
-        )}
-        {summary && (
-          <span
-            className={`ml-auto min-w-0 truncate text-xs font-normal tabular-nums transition-colors ${
-              expanded ? 'text-content-tertiary/70' : 'text-content-tertiary'
-            }`}
-          >
-            {summary}
-          </span>
-        )}
-      </Button>
+      </div>
 
       <div
         id={contentId}

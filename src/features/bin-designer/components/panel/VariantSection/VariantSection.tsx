@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Alert, Button, NumberField } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { SubHeader } from '@/shared/components/PanelText';
-import { PanelSection } from '../PanelSection';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { InfoDot } from '../shared';
 import type {
   BinParams,
