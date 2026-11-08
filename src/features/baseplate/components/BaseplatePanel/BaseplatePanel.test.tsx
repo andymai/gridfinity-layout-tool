@@ -271,13 +271,13 @@ describe('BaseplatePanel', () => {
 
   it('does not render view strip when tiling is null', () => {
     render(<BaseplatePanel />);
-    expect(screen.queryByText('baseplate.splitInfo.other')).not.toBeInTheDocument();
+    expect(screen.queryByText('baseplate.splitInfo_other')).not.toBeInTheDocument();
   });
 
   it('renders view strip when tiling is split', () => {
     mockTiling = splitTiling;
     render(<BaseplatePanel />);
-    expect(screen.getByText('baseplate.splitInfo.other')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.splitInfo_other')).toBeInTheDocument();
     expect(screen.getByText('baseplate.splitReason')).toBeInTheDocument();
     // Mini-map buttons exist for each piece
     const pieceButtons = screen

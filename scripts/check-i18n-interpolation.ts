@@ -130,12 +130,13 @@ function getTranslationStrings(): Map<string, TranslationString> {
   }
 
   // Code calls a plural family by its base key, so the base stands for the
-  // placeholders its forms use between them.
+  // placeholders its forms use between them, plus `count`, which picks the
+  // form even when no form prints it ("person" / "people").
   const families = new Map<string, Set<string>>();
   for (const entry of translations.values()) {
     const base = pluralBase(entry.key);
     if (base === null || translations.has(base)) continue;
-    const union = families.get(base) ?? new Set<string>();
+    const union = families.get(base) ?? new Set<string>(['count']);
     entry.placeholders.forEach((p) => union.add(p));
     families.set(base, union);
   }

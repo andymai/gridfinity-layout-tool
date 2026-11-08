@@ -81,7 +81,7 @@ describe('SplitViewStrip', () => {
 
   it('renders split info and reason', () => {
     render(<SplitViewStrip {...defaultProps} />);
-    expect(screen.getByText('baseplate.splitInfo.other')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.splitInfo_other')).toBeInTheDocument();
     expect(screen.getByText('baseplate.splitReason')).toBeInTheDocument();
   });
 
@@ -94,18 +94,18 @@ describe('SplitViewStrip', () => {
         tiling={{ ...baseTiling, isCustomSplit: true, pieces: [baseTiling.pieces[0]] }}
       />
     );
-    expect(screen.getByText('baseplate.splitInfo.one')).toBeInTheDocument();
-    expect(screen.queryByText('baseplate.splitInfo.other')).not.toBeInTheDocument();
+    expect(screen.getByText('baseplate.splitInfo_one')).toBeInTheDocument();
+    expect(screen.queryByText('baseplate.splitInfo_other')).not.toBeInTheDocument();
   });
 
   it('renders the build-plate load count (singular at 1)', () => {
     render(<SplitViewStrip {...defaultProps} />);
-    expect(screen.getByText('baseplate.bedLoads.one')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.bedLoads_one')).toBeInTheDocument();
   });
 
   it('renders the build-plate load count (plural above 1)', () => {
     render(<SplitViewStrip {...defaultProps} tiling={{ ...baseTiling, bedLoads: 3 }} />);
-    expect(screen.getByText('baseplate.bedLoads.other')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.bedLoads_other')).toBeInTheDocument();
   });
 
   it('renders one button per piece', () => {
@@ -118,7 +118,7 @@ describe('SplitViewStrip', () => {
 
   it('omits the padding hint when no hint is present', () => {
     render(<SplitViewStrip {...defaultProps} />);
-    expect(screen.queryByText('baseplate.paddingHint')).not.toBeInTheDocument();
+    expect(screen.queryByText('baseplate.paddingHint_other')).not.toBeInTheDocument();
   });
 
   it('renders the padding reduction hint when present', () => {
@@ -127,7 +127,7 @@ describe('SplitViewStrip', () => {
       paddingReductionHint: { axis: 'x', reductionMm: 10, piecesSaved: 2 },
     };
     render(<SplitViewStrip {...defaultProps} tiling={tilingWithHint} />);
-    expect(screen.getByText('baseplate.paddingHint')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.paddingHint_other')).toBeInTheDocument();
   });
 
   it('calls onHoverPiece on pointer enter and leave', () => {

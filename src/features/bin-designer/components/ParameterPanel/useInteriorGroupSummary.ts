@@ -23,21 +23,11 @@ export function useInteriorGroupSummary(): string {
 
     const interiorPart = isSolid
       ? cutoutCount > 0
-        ? t(
-            cutoutCount === 1
-              ? 'binDesigner.cutouts.summary.one'
-              : 'binDesigner.cutouts.summary.other',
-            { count: cutoutCount }
-          )
+        ? t('binDesigner.cutouts.summary', { count: cutoutCount })
         : t('binDesigner.solidInteriorSummary')
       : isSlotted
         ? t('binDesigner.slottedInteriorSummary')
-        : t(
-            compartmentCount === 1
-              ? 'binDesigner.interiorSummary.one'
-              : 'binDesigner.interiorSummary.other',
-            { count: compartmentCount }
-          );
+        : t('binDesigner.interiorSummary', { count: compartmentCount });
 
     const parts = [interiorPart];
     if (label.enabled && !isSlotted && !isSolid) {

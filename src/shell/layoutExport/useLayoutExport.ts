@@ -309,12 +309,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
         if (failedItemPaths.size > 0) {
           useToastStore
             .getState()
-            .addToast(
-              failedItemPaths.size === 1
-                ? t('layoutExport.itemsFailed.one')
-                : t('layoutExport.itemsFailed.other', { count: failedItemPaths.size }),
-              'error'
-            );
+            .addToast(t('layoutExport.itemsFailed', { count: failedItemPaths.size }), 'error');
         }
 
         // Estimates for parts that failed above must not survive into the

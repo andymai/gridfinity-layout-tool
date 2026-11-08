@@ -17,9 +17,7 @@ export function DigestSubtitle({ digest }: { digest: Digest }) {
   const summary =
     digest.kind === 'recent'
       ? t('whatsNew.subtitleRecent')
-      : digest.total === 1
-        ? t('whatsNew.subtitleUnseenOne')
-        : t('whatsNew.subtitleUnseenMany', { count: String(digest.total) });
+      : t('whatsNew.subtitleUnseen', { count: digest.total });
 
   return (
     <p className="flex flex-wrap items-center gap-x-2 text-sm text-content-tertiary">
@@ -91,9 +89,7 @@ export function DigestList({ headline, rest, overflow, activate, onSeeAll }: Dig
           onClick={onSeeAll}
           className="h-auto w-full justify-between gap-2 rounded-md border border-dashed border-stroke-subtle px-3 py-2.5 text-sm font-normal text-content-secondary"
         >
-          {overflow === 1
-            ? t('whatsNew.overflowOne')
-            : t('whatsNew.overflowMany', { count: String(overflow) })}
+          {t('whatsNew.overflow', { count: overflow })}
           <ChevronIcon className="h-3.5 w-3.5 flex-shrink-0 text-content-disabled" />
         </Button>
       )}

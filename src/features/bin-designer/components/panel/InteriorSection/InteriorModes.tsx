@@ -67,16 +67,11 @@ function BentoModeContent() {
         onClick={() => setBentoWorkspaceOpen(true)}
       />
       <p className="px-1 text-micro text-content-tertiary">
-        {drawnCount === 1
-          ? t('binDesigner.bento.summary.one', {
-              cols: compartments.cols,
-              rows: compartments.rows,
-            })
-          : t('binDesigner.bento.summary.other', {
-              cols: compartments.cols,
-              rows: compartments.rows,
-              count: drawnCount,
-            })}
+        {t('binDesigner.bento.summary', {
+          cols: compartments.cols,
+          rows: compartments.rows,
+          count: drawnCount,
+        })}
       </p>
     </div>
   );

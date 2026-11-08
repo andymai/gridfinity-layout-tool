@@ -250,24 +250,14 @@ export function useBentoWorkspace() {
       }
       if (result.stashedCount > 0) {
         addToast({
-          message: t(
-            result.stashedCount === 1
-              ? 'binDesigner.bento.toastStashed.one'
-              : 'binDesigner.bento.toastStashed.other',
-            { count: result.stashedCount }
-          ),
+          message: t('binDesigner.bento.toastStashed', { count: result.stashedCount }),
           type: 'info',
           duration: 4000,
         });
       }
       if (result.droppedCount > 0) {
         addToast({
-          message: t(
-            result.droppedCount === 1
-              ? 'binDesigner.bento.toastDropped.one'
-              : 'binDesigner.bento.toastDropped.other',
-            { count: result.droppedCount }
-          ),
+          message: t('binDesigner.bento.toastDropped', { count: result.droppedCount }),
           type: 'error',
           duration: 5000,
         });

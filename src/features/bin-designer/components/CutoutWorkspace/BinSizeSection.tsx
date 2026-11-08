@@ -70,12 +70,7 @@ export function BinSizeSection({
         // is stranded; the hand-rolled box it replaces was silent.
         <Alert intent="error" icon={<AlertTriangleIcon size="xs" className="mt-0.5" />}>
           <p className="leading-snug text-error">
-            {t(
-              offBoardCount === 1
-                ? 'binDesigner.cutoutEditor.offBoardWarning.one'
-                : 'binDesigner.cutoutEditor.offBoardWarning.other',
-              { count: offBoardCount }
-            )}
+            {t('binDesigner.cutoutEditor.offBoardWarning', { count: offBoardCount })}
           </p>
           {/* Reads as the reason the grow action is absent, so it belongs with
               the warning rather than below the buttons. */}

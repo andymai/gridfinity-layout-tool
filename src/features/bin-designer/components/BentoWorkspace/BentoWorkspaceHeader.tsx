@@ -131,9 +131,7 @@ export function BentoWorkspaceHeader({
 
       {drawnCount > 0 && (
         <p className="text-xs tabular-nums text-content-secondary">
-          {drawnCount === 1
-            ? t('binDesigner.bento.countDrawn.one')
-            : t('binDesigner.bento.countDrawn.other', { count: drawnCount })}
+          {t('binDesigner.bento.countDrawn', { count: drawnCount })}
         </p>
       )}
 

@@ -139,7 +139,7 @@ describe('PhoneScanDialog', () => {
     });
 
     const [toast] = useToastStore.getState().toasts;
-    expect(toast.message).toBe('toast.scanImport.offFloor');
+    expect(toast.message).toBe('toast.scanImport.offFloor_one');
     expect(toast.type).toBe('info');
   });
 
@@ -167,7 +167,7 @@ describe('PhoneScanDialog', () => {
     });
 
     const [toast] = useToastStore.getState().toasts;
-    expect(toast.message).toBe('toast.scanImport.success');
+    expect(toast.message).toBe('toast.scanImport.success_one');
   });
 
   it('turns an unreadable outline back to the flow as an error', async () => {

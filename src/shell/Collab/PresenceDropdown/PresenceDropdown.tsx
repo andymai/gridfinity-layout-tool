@@ -161,9 +161,7 @@ export function PresenceDropdown({
       <div className="flex items-center justify-between px-3 py-2 border-b border-stroke-subtle">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-content">
-            {participants.length === 1
-              ? t('collab.participantCountOne')
-              : t('collab.participantCount', { count: participants.length })}
+            {t('collab.participantCount', { count: participants.length })}
           </span>
           <ConnectionIndicator status={status} size="sm" />
         </div>
