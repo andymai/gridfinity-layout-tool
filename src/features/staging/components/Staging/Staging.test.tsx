@@ -301,7 +301,7 @@ describe('Staging', () => {
       fireEvent.click(screen.getByText('Clear all'));
 
       expect(screen.getByTestId('confirm-message')).toHaveTextContent(
-        'Delete all 2 stashed bin(s)? This cannot be undone.'
+        'Delete all 2 stashed bins? This cannot be undone.'
       );
     });
 

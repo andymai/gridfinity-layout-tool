@@ -615,10 +615,13 @@ const en: Record<string, string> = {
   'layers.heightTooltip': 'Height for new bins placed on this layer',
   'layers.deleteTooltip': 'Delete this layer',
   'layers.confirmDelete.title': 'Delete layer',
-  'layers.confirmDelete.message':
-    'Delete "{name}"? The {count} bin(s) on this layer will be moved to the Stash.',
+  'layers.confirmDelete.message_one':
+    'Delete "{name}"? The {count} bin on this layer will be moved to the Stash.',
+  'layers.confirmDelete.message_other':
+    'Delete "{name}"? The {count} bins on this layer will be moved to the Stash.',
   'layers.clearLayer.title': 'Clear layer',
-  'layers.clearLayer.message': 'Move all {count} bin(s) on this layer to the stash?',
+  'layers.clearLayer.message_one': 'Move the {count} bin on this layer to the stash?',
+  'layers.clearLayer.message_other': 'Move all {count} bins on this layer to the stash?',
   'layers.clearLayer.confirm': 'Clear',
   'layers.layerNamePlaceholder': 'Layer name',
   'layers.binPaletteInstruction': 'Pick a size, then drag on the grid to paint bins.',
@@ -686,10 +689,14 @@ const en: Record<string, string> = {
   'categories.confirmDelete.confirm': 'Delete category',
   'categories.cannotDeleteLast': 'Cannot delete the last category',
   'categories.categoryNamePlaceholder': 'Category name',
-  'categories.applyToCount': 'Apply to {count} selected bin(s)',
-  'categories.applyToSelectedBins': 'Apply {name} to {count} selected bin(s)',
-  'categories.binsUseCategory': '{count} bin(s) use this category',
-  'categories.deleteInUse': 'Delete {name}? {count} bin(s) use this category',
+  'categories.applyToCount_one': 'Apply to {count} selected bin',
+  'categories.applyToCount_other': 'Apply to {count} selected bins',
+  'categories.applyToSelectedBins_one': 'Apply {name} to {count} selected bin',
+  'categories.applyToSelectedBins_other': 'Apply {name} to {count} selected bins',
+  'categories.binsUseCategory_one': '{count} bin uses this category',
+  'categories.binsUseCategory_other': '{count} bins use this category',
+  'categories.deleteInUse_one': 'Delete {name}? {count} bin uses this category',
+  'categories.deleteInUse_other': 'Delete {name}? {count} bins use this category',
   'categories.selectedForNewBins': '{name} (selected for new bins)',
   'categories.selectForNewBins': 'Select {name} for new bins',
   'categories.changeColor': 'Change color',
@@ -703,7 +710,8 @@ const en: Record<string, string> = {
   // Staging / Stash
   'staging.rotateBin': 'Rotate bin (R)',
   'staging.clearStash.title': 'Clear stash',
-  'staging.clearStash.message': 'Delete all {count} stashed bin(s)? This cannot be undone.',
+  'staging.clearStash.message_one': 'Delete the {count} stashed bin? This cannot be undone.',
+  'staging.clearStash.message_other': 'Delete all {count} stashed bins? This cannot be undone.',
   'staging.clearStash.confirm': 'Clear all',
   'staging.binCount_one': '{count} bin',
   'staging.binCount_other': '{count} bins',
@@ -737,7 +745,8 @@ const en: Record<string, string> = {
   'print.showBinList': 'Bin list',
   'print.sortOrder': 'Bin list sort',
   'print.summary.title': 'Print list',
-  'print.summary.totalBins': '{count} bin(s) total',
+  'print.summary.totalBins_one': '{count} bin total',
+  'print.summary.totalBins_other': '{count} bins total',
   'print.summary.uniqueSizes': '{count} unique size(s)',
   'print.summary.pieces': '{count} piece(s)',
   'print.summary.piecesShort': '{count} pcs',
@@ -1457,7 +1466,8 @@ const en: Record<string, string> = {
   'mobile.tools.noGaps': 'No gaps',
   'mobile.tools.clearBins': 'Clear {count} Bins',
   'mobile.tools.noBins': 'No bins',
-  'mobile.confirm.deleteMulti': 'Delete {count} selected bin(s)?',
+  'mobile.confirm.deleteMulti_one': 'Delete {count} selected bin?',
+  'mobile.confirm.deleteMulti_other': 'Delete {count} selected bins?',
   'mobile.confirm.deleteSingle': 'Delete this {width}×{depth} bin?',
   'mobile.bottomSheet.closePanel': 'Close panel',
   'mobile.bottomSheet.releaseToClose': 'Release to close',
@@ -1465,7 +1475,8 @@ const en: Record<string, string> = {
   'mobile.categories.applyToSelected': 'Apply {name} to {count} selected',
   'mobile.categories.selectDefault': 'Select default',
   'mobile.categories.selectForNew': 'Select {name} for new bins',
-  'mobile.categories.tapToApply': 'Tap to apply to {count} bin(s)',
+  'mobile.categories.tapToApply_one': 'Tap to apply to {count} bin',
+  'mobile.categories.tapToApply_other': 'Tap to apply to {count} bins',
   'mobile.contextMenu.minHeight': 'Min height: {height}u',
   'mobile.contextMenu.stashAndGrid': '{stash} in stash, {grid} on grid',
   'mobile.deleteLayer': 'Delete layer',
@@ -1663,18 +1674,24 @@ const en: Record<string, string> = {
     "Couldn't save your changes — your device is out of storage space. Free up space, then reload.",
   'toast.eventPersistFailed':
     "Couldn't save some recent changes. Your undo history may be incomplete.",
-  'toast.binsDeleted': 'Deleted {count} bin(s)',
+  'toast.binsDeleted_one': 'Deleted {count} bin',
+  'toast.binsDeleted_other': 'Deleted {count} bins',
   'toast.binRotated': 'Bin rotated',
   'toast.binHalfTurned': 'Bin turned 180°',
-  'toast.clearComplete': 'Cleared {count} bin(s) from layer',
-  'toast.fillComplete': 'Added {count} bin(s) to fill gaps',
+  'toast.clearComplete_one': 'Cleared {count} bin from layer',
+  'toast.clearComplete_other': 'Cleared {count} bins from layer',
+  'toast.fillComplete_one': 'Added {count} bin to fill gaps',
+  'toast.fillComplete_other': 'Added {count} bins to fill gaps',
   'toast.fillWithSize': 'Added {count} {width}×{depth} bins',
   'toast.binAddedToStash': 'Added {width}×{depth} to stash',
   'toast.linkCopied': 'Link copied to clipboard',
   'toast.jsonCopied': 'JSON copied to clipboard',
-  'toast.categoryAssigned': 'Category assigned to {count} bin(s)',
-  'toast.categoryChanged': 'Changed {count} bin(s) to "{name}"',
-  'toast.binsMovedToLayer': '{count} bin(s) moved to layer',
+  'toast.categoryAssigned_one': 'Category assigned to {count} bin',
+  'toast.categoryAssigned_other': 'Category assigned to {count} bins',
+  'toast.categoryChanged_one': 'Changed {count} bin to "{name}"',
+  'toast.categoryChanged_other': 'Changed {count} bins to "{name}"',
+  'toast.binsMovedToLayer_one': '{count} bin moved to layer',
+  'toast.binsMovedToLayer_other': '{count} bins moved to layer',
   'toast.movedToLayer': 'Moved to {name}',
   'toast.movedMultiToLayer': 'Moved {count} bins to {name}',
   'toast.movedPartialToLayer': 'Moved {moved} of {total} bins ({blocked} blocked)',
@@ -1701,15 +1718,21 @@ const en: Record<string, string> = {
   'toast.binsSwappedRotated': 'Bins swapped positions (rotated to fit)',
   'toast.dismissNotification': 'Dismiss notification',
   'toast.notifications': 'Notifications',
-  'toast.selectedAll': 'Selected {count} bin(s)',
+  'toast.selectedAll_one': 'Selected {count} bin',
+  'toast.selectedAll_other': 'Selected {count} bins',
   'toast.paintModeEnabled': 'Paint mode enabled. Click to place bins.',
   'toast.halfBinModeAutoEnabled': 'Half-grid mode enabled',
   'toast.layerFilled': 'Layer filled with bins',
-  'toast.movedToStash': 'Moved {count} bin(s) to stash',
-  'toast.stagingCleared': 'Cleared {count} bin(s) from stash',
-  'toast.restoredFromStaging': 'Restored {count} bin(s) from stash',
-  'toast.selectionInverted': 'Inverted selection ({count} bin(s))',
-  'toast.selectedByCategory': 'Selected {count} {name} bin(s)',
+  'toast.movedToStash_one': 'Moved {count} bin to stash',
+  'toast.movedToStash_other': 'Moved {count} bins to stash',
+  'toast.stagingCleared_one': 'Cleared {count} bin from stash',
+  'toast.stagingCleared_other': 'Cleared {count} bins from stash',
+  'toast.restoredFromStaging_one': 'Restored {count} bin from stash',
+  'toast.restoredFromStaging_other': 'Restored {count} bins from stash',
+  'toast.selectionInverted_one': 'Inverted selection ({count} bin)',
+  'toast.selectionInverted_other': 'Inverted selection ({count} bins)',
+  'toast.selectedByCategory_one': 'Selected {count} {name} bin',
+  'toast.selectedByCategory_other': 'Selected {count} {name} bins',
   'toast.categoriesSavedAsDefaults': 'Categories saved as defaults',
   'toast.undone': 'Undone',
   'toast.redone': 'Redone',
@@ -1720,7 +1743,8 @@ const en: Record<string, string> = {
   'toast.rotateAllComplete': 'Rotated {rotated} bin(s)',
   'toast.pairRotateBlocked': 'No room to rotate the knife block and its rest together',
   'toast.rotateAllPartial': 'Rotated {rotated}/{total} bins ({skipped} skipped due to collision)',
-  'toast.expandToFitComplete': 'Expanded {count} bin(s) to fit',
+  'toast.expandToFitComplete_one': 'Expanded {count} bin to fit',
+  'toast.expandToFitComplete_other': 'Expanded {count} bins to fit',
   'toast.expandToFitNoSlack': 'Nothing to fill — the selection already meets its neighbours',
   'toast.expandToFitRagged': 'Select bins forming a row, a column, or a full grid on one layer',
   'toast.expandToFitTooMuchSlack':
@@ -1732,8 +1756,10 @@ const en: Record<string, string> = {
   'toast.expandToFitRestsOnClearance':
     'Expanding would set a stacked bin down on clearance another bin reserves',
   'toast.binSizeLocked': "This bin's size is locked",
-  'toast.matchHeightComplete': 'Set {count} bin(s) to height {height}u',
-  'toast.moveToLayerComplete': 'Moved {count} bin(s) to {name}',
+  'toast.matchHeightComplete_one': 'Set {count} bin to height {height}u',
+  'toast.matchHeightComplete_other': 'Set {count} bins to height {height}u',
+  'toast.moveToLayerComplete_one': 'Moved {count} bin to {name}',
+  'toast.moveToLayerComplete_other': 'Moved {count} bins to {name}',
   'toast.moveToLayerPartial':
     'Moved {moved}/{total} to {name} ({skipped} skipped due to collision)',
 
@@ -5852,8 +5878,10 @@ const en: Record<string, string> = {
   'designLinking.syncDialog.designDimensions': 'Design: {dimensions}',
   'designLinking.syncDialog.binDimensions': 'Bins: {dimensions}',
   'designLinking.syncDialog.binsVary': 'Note: Selected bins have different dimensions',
-  'designLinking.syncDialog.binsToUpdate': '{count} bin(s) will be updated',
-  'designLinking.syncDialog.binsToUnlink': "{count} bin(s) can't fit and will be unlinked",
+  'designLinking.syncDialog.binsToUpdate_one': '{count} bin will be updated',
+  'designLinking.syncDialog.binsToUpdate_other': '{count} bins will be updated',
+  'designLinking.syncDialog.binsToUnlink_one': "{count} bin can't fit and will be unlinked",
+  'designLinking.syncDialog.binsToUnlink_other': "{count} bins can't fit and will be unlinked",
   'designLinking.syncDialog.sync': 'Update bins',
 
   // Delete warning dialog
@@ -5861,7 +5889,8 @@ const en: Record<string, string> = {
   'designLinking.deleteWarning.description':
     'This design is linked to {count} bin(s) in your layout. Deleting it will unlink those bins.',
   'designLinking.deleteWarning.confirm': 'Delete anyway',
-  'designLinking.deleteWarning.linkedBinsCount': '{count} linked bin(s)',
+  'designLinking.deleteWarning.linkedBinsCount_one': '{count} linked bin',
+  'designLinking.deleteWarning.linkedBinsCount_other': '{count} linked bins',
 
   // Custom bins palette (sidebar)
 
@@ -5869,20 +5898,24 @@ const en: Record<string, string> = {
   'designLinking.toast.linked': 'Linked to "{name}"',
   'designLinking.toast.unlinked': 'Design unlinked',
   'designLinking.toast.dimensionsMatch': 'Dimensions already match',
-  'designLinking.toast.synced': 'Updated {count} bin(s)',
+  'designLinking.toast.synced_one': 'Updated {count} bin',
+  'designLinking.toast.synced_other': 'Updated {count} bins',
   'designLinking.toast.syncedWithUnlink': "Updated {synced}, unlinked {unlinked} (didn't fit)",
-  'designLinking.toast.unlinkedDidntFit': "Unlinked {count} bin(s) (didn't fit)",
+  'designLinking.toast.unlinkedDidntFit_one': "Unlinked {count} bin (didn't fit)",
+  'designLinking.toast.unlinkedDidntFit_other': "Unlinked {count} bins (didn't fit)",
   'designLinking.toast.failedToLoad': 'Failed to load design',
   'designLinking.toast.unknownDesign': 'Unknown design',
   'designLinking.toast.exported': 'Exported "{name}"',
   'designLinking.toast.exportFailed': 'Failed to export bin design',
   'designLinking.toast.deleted': 'Deleted "{name}"',
   'designLinking.toast.deleteFailed': 'Failed to delete bin design',
-  'designLinking.toast.autoSynced': 'Auto-synced {count} bin(s) from design',
+  'designLinking.toast.autoSynced_one': 'Auto-synced {count} bin from design',
+  'designLinking.toast.autoSynced_other': 'Auto-synced {count} bins from design',
   'designLinking.toast.designUpdated': 'Updated design "{name}"',
   'designLinking.toast.designUpdateFailed': 'Failed to update linked design',
   'designLinking.toast.edgeMatched': 'Matched half-unit edge to the layout',
-  'designLinking.toast.cascadedResize': 'Updated design + {count} linked bin(s)',
+  'designLinking.toast.cascadedResize_one': 'Updated design and {count} linked bin',
+  'designLinking.toast.cascadedResize_other': 'Updated design and {count} linked bins',
   'designLinking.toast.cascadedResizeSomeLocked':
     'Updated design + {count} linked bin(s) — {locked} size-locked bin(s) kept their size',
   'designLinking.toast.cascadedResizeSomeRefused':
@@ -5891,7 +5924,8 @@ const en: Record<string, string> = {
     'Auto-synced {count} bin(s) — {locked} size-locked bin(s) kept their size',
   'designLinking.toast.autoSyncedSomeRefused':
     'Auto-synced {count} bin(s); {refused} kept their old size (no room)',
-  'designLinking.toast.syncSkippedLocked': '{count} size-locked bin(s) kept their size',
+  'designLinking.toast.syncSkippedLocked_one': '{count} size-locked bin kept its size',
+  'designLinking.toast.syncSkippedLocked_other': '{count} size-locked bins kept their size',
 
   // Blocked resize dialog
   'designLinking.blockedResize.title': 'Design not updated',
@@ -5924,10 +5958,14 @@ const en: Record<string, string> = {
   'designLinking.bento.designName': '{layout} bento',
   'designLinking.bento.warning.gaps':
     'That total includes {count} compartment(s) made from empty space between the bins.',
-  'designLinking.bento.warning.raisedHeight':
-    '{count} bin(s) are made taller to match the tallest one.',
-  'designLinking.bento.warning.linkedDesigns':
-    '{count} bin(s) lose the custom shape of their linked design.',
+  'designLinking.bento.warning.raisedHeight_one':
+    '{count} bin is made taller to match the tallest one.',
+  'designLinking.bento.warning.raisedHeight_other':
+    '{count} bins are made taller to match the tallest one.',
+  'designLinking.bento.warning.linkedDesigns_one':
+    '{count} bin loses the custom shape of its linked design.',
+  'designLinking.bento.warning.linkedDesigns_other':
+    '{count} bins lose the custom shape of their linked design.',
   'designLinking.bento.warning.split':
     'Too big for your print bed, so it will be split into pieces that key together.',
   'designLinking.bento.blocked.tooFewBins':
@@ -6036,7 +6074,8 @@ const en: Record<string, string> = {
   'drawerShape.editor.invalidDisconnected': 'The shape must be one connected piece.',
   'drawerShape.editor.replacesDrawnShape':
     'The current perimeter was drawn freehand or imported. Applying a cell shape replaces it — curves and off-grid edges are lost.',
-  'toast.binsDisplacedByShape': '{count} bin(s) moved to the stash (outside the new shape)',
+  'toast.binsDisplacedByShape_one': '{count} bin moved to the stash (outside the new shape)',
+  'toast.binsDisplacedByShape_other': '{count} bins moved to the stash (outside the new shape)',
   'toast.drawerSizeLimitedByShape':
     'The drawer cannot shrink below its custom shape. Edit or reset the shape first.',
   'toast.outlineImport.parseFailed': "That file couldn't be read as an SVG or DXF drawing.",
@@ -6286,7 +6325,8 @@ const en: Record<string, string> = {
 
   // Grid stash confirm
   'grid.moveToStashConfirm': 'Move to stash',
-  'grid.resizeWillStashBins': '{count} bin(s) will be moved to stash. Continue?',
+  'grid.resizeWillStashBins_one': '{count} bin will be moved to stash. Continue?',
+  'grid.resizeWillStashBins_other': '{count} bins will be moved to stash. Continue?',
 
   // Import modal inline errors
   'layouts.import.error.invalidJsonFormat': 'Invalid JSON format',
@@ -6307,7 +6347,8 @@ const en: Record<string, string> = {
   'layers.announce.renamedTo': 'Renamed to {name}',
 
   // Half-bin mode remediation
-  'halfBinMode.toast.movedToStaging': 'Moved {count} bin(s) to staging',
+  'halfBinMode.toast.movedToStaging_one': 'Moved {count} bin to staging',
+  'halfBinMode.toast.movedToStaging_other': 'Moved {count} bins to staging',
 
   // Inspiration gallery announcements
   'gallery.announce.showing': 'Showing {count} {label} layouts',
