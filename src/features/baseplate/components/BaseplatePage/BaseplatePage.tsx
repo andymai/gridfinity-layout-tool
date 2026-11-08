@@ -325,12 +325,10 @@ export function BaseplatePage() {
           </Button>
         </div>
 
-        {isDesktop && (
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <SaveStatusIndicator status={saveStatus} />
-            <HeaderSupportLinks />
-          </div>
-        )}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {isDesktop && <SaveStatusIndicator status={saveStatus} />}
+          <HeaderSupportLinks compact={!isDesktop} />
+        </div>
       </header>
 
       {/* Main content — 4 responsive states */}

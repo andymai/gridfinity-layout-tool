@@ -10,7 +10,7 @@
  */
 
 import type { Page } from '@playwright/test';
-import { test, expect, drawBinOnGrid, waitForAppReady } from './fixtures';
+import { test, expect, drawBinOnGrid, openDesignList, waitForAppReady } from './fixtures';
 
 const BOX_W = 41.5;
 const BOX_D = 41.5;
@@ -71,7 +71,7 @@ async function importFixtureStl(page: Page): Promise<void> {
   await page.goto('/designer');
   await expect(page.locator('canvas').first()).toBeVisible({ timeout: 60000 });
 
-  await page.getByRole('button', { name: 'Open design list' }).click();
+  await openDesignList(page);
   await page.getByRole('button', { name: 'Import', exact: true }).click();
 
   const fileInput = page.locator('input[type="file"][accept=".json,.stl"]');
