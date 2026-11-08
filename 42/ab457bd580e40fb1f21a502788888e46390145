@@ -1,0 +1,23 @@
+src/shared/components/PanelText/panelText.test.tsx
+  s_66332f8bf1351d::t_6eebee43002e19 4,14-34
+  s_66332f8bf1351d::t_e07be37e77aaf9 35
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_66332f8bf1351d::t_6eebee43002e19 106
+  s_66332f8bf1351d::t_3caec7cbc898e3 107-108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "42ab457bd580e40fb1f21a502788888e46390145",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
