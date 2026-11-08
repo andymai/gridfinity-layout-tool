@@ -1,0 +1,27 @@
+src/shared/components/FeatureToggle/FeatureToggle.test.tsx
+  s_66332f8bf1351d::t_dce646c4c24c2d 140-196
+src/shared/components/FeatureToggle/FeatureToggle.tsx
+  s_66332f8bf1351d::t_cbf3f483c9b0a4 91-95,98-103
+  s_66332f8bf1351d::t_971bfd43d941b3 11,42,69,90,128
+src/shared/help/helpJumpDispatcher.test.ts
+  s_66332f8bf1351d::t_fad8b2881396d6 2-7
+  s_66332f8bf1351d::t_dce646c4c24c2d 65-80
+src/shared/help/helpJumpDispatcher.ts
+  s_66332f8bf1351d::t_c4420d693beb8e 19-21,44-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e86ab0ea07af2116616c96ba6ac0f737e686607b",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
