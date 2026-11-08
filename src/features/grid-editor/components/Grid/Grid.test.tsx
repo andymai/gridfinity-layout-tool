@@ -250,10 +250,7 @@ describe('Grid', () => {
       const { container } = render(<Grid />);
 
       const gridElement = container.querySelector('[role="application"]');
-      expect(gridElement).toHaveAttribute(
-        'aria-label',
-        'Gridfinity drawer grid, 10 columns by 8 rows'
-      );
+      expect(gridElement).toHaveAttribute('aria-label', 'Gridfinity drawer grid, 10 by 8');
     });
 
     it('renders axis labels when visible', () => {

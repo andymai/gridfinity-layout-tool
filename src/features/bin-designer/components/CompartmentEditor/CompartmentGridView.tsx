@@ -9,6 +9,7 @@
  * top-view proportions via `aspectRatio`.
  */
 
+import { useTranslation } from '@/i18n';
 import { GridCell, GhostPreview } from './CompartmentEditorParts';
 import { DividerHitTargets } from './DividerHitTargets';
 import { CompartmentSizeOverlay } from './CompartmentSizeOverlay';
@@ -36,6 +37,7 @@ export function CompartmentGridView({
   describedById,
   measuredBox,
 }: CompartmentGridViewProps) {
+  const t = useTranslation();
   const {
     compartments,
     cols,
@@ -75,7 +77,7 @@ export function CompartmentGridView({
       className={`relative select-none overflow-hidden rounded-lg border-2 border-stroke-subtle bg-surface-elevated p-2 ${className}`}
       style={{ aspectRatio, ...style }}
       role="application"
-      aria-label={`Compartment grid, ${cols} columns by ${rows} rows`}
+      aria-label={t('binDesigner.compartmentGridAria', { cols, rows })}
       aria-describedby={describedById}
       onPointerUp={handlePointerUp}
       onPointerLeave={() => {

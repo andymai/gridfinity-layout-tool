@@ -395,7 +395,7 @@ export function Grid({
                     boxShadow: 'var(--shadow-lg)',
                   }}
                   role="application"
-                  aria-label={`Gridfinity drawer grid, ${drawer.width} columns by ${drawer.depth} rows`}
+                  aria-label={t('grid.gridAria', { width: drawer.width, depth: drawer.depth })}
                   onPointerMove={handlePointerMoveForCollab}
                   onPointerLeave={handlePointerLeaveForCollab}
                 >

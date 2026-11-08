@@ -147,7 +147,8 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
     (theme: InspirationTheme | 'all') => {
       setSelectedTheme(theme);
       const count = themeCounts[theme];
-      const label = theme === 'all' ? t('gallery.announce.allThemes') : THEME_CONFIG[theme].label;
+      const label =
+        theme === 'all' ? t('gallery.announce.allThemes') : t(THEME_CONFIG[theme].labelKey);
       announceToScreenReader(t('gallery.announce.showing', { count, label }));
       trackEvent('ui.featureUsed', { feature: `gallery_filter_${theme}` });
     },
@@ -409,7 +410,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
           {selectedTheme !== 'all'
             ? t('gallery.layoutsInTheme', {
                 count: filteredLayouts.length,
-                theme: THEME_CONFIG[selectedTheme].label,
+                theme: t(THEME_CONFIG[selectedTheme].labelKey),
               })
             : t('gallery.layoutCount', { count: filteredLayouts.length })}
         </div>

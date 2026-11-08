@@ -60,11 +60,11 @@ interface PreviewControlsProps {
   onMeasureToggle?: () => void;
 }
 
-const PRESETS: Array<{ key: CameraPreset; label: string; shortcut: string }> = [
-  { key: 'front', label: 'Front', shortcut: '1' },
-  { key: 'side', label: 'Side', shortcut: '2' },
-  { key: 'top', label: 'Top', shortcut: '3' },
-  { key: 'isometric', label: 'Iso', shortcut: '4' },
+const PRESETS: Array<{ key: CameraPreset; labelKey: string; shortcut: string }> = [
+  { key: 'front', labelKey: 'workshop.view.front', shortcut: '1' },
+  { key: 'side', labelKey: 'workshop.view.side', shortcut: '2' },
+  { key: 'top', labelKey: 'workshop.view.top', shortcut: '3' },
+  { key: 'isometric', labelKey: 'workshop.view.isometric', shortcut: '4' },
 ];
 
 const VIEW_MODE_ICONS: Record<SplitViewMode, () => ReactNode> = {
@@ -185,7 +185,8 @@ export function PreviewControls({
 
         <div className="flex items-center rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
           {/* Camera presets group */}
-          {PRESETS.map(({ key, label, shortcut }) => {
+          {PRESETS.map(({ key, labelKey, shortcut }) => {
+            const label = t(labelKey);
             const Icon = PRESET_ICONS[key];
             const isActive = activePreset === key;
             return (
@@ -201,8 +202,8 @@ export function PreviewControls({
                     ? 'bg-accent text-on-accent hover:bg-accent'
                     : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                 }`}
-                title={`${label} view (${shortcut})`}
-                aria-label={`${label} camera view, keyboard shortcut ${shortcut}`}
+                title={`${label} (${shortcut})`}
+                aria-label={t('binDesigner.cameraPresetAria', { view: label, key: shortcut })}
                 aria-pressed={isActive}
               >
                 <Icon />
@@ -215,8 +216,6 @@ export function PreviewControls({
               </Button>
             );
           })}
-
-          {/* Divider */}
           <div className="w-px h-5 bg-stroke-subtle/50" />
 
           <Button
@@ -318,7 +317,6 @@ export function PreviewControls({
           {/* Color picker (hidden in multi-color mode) */}
           {!hideColorPicker && (
             <>
-              {/* Divider */}
               <div className="w-px h-5 bg-stroke-subtle/50" />
 
               {/* Color picker button */}
@@ -394,7 +392,8 @@ export function PreviewControls({
         )}
         <div className="flex items-center rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
           {/* Camera presets */}
-          {PRESETS.map(({ key, label, shortcut }) => {
+          {PRESETS.map(({ key, labelKey, shortcut }) => {
+            const label = t(labelKey);
             const Icon = PRESET_ICONS[key];
             const isActive = activePreset === key;
             return (
@@ -409,15 +408,13 @@ export function PreviewControls({
                     ? 'bg-accent text-on-accent hover:bg-accent'
                     : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                 }`}
-                title={`${label} view (${shortcut})`}
-                aria-label={`${label} camera view`}
+                title={`${label} (${shortcut})`}
+                aria-label={t('binDesigner.cameraPresetShortAria', { view: label })}
               >
                 <Icon />
               </IconButton>
             );
           })}
-
-          {/* Divider */}
           <div className="w-px h-5 bg-stroke-subtle/50" />
 
           {/* Reset */}
