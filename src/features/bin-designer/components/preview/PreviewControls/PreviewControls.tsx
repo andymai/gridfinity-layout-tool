@@ -103,7 +103,7 @@ export function PreviewControls({
   const t = useTranslation();
   // Labels show only when the preview, not the window, has room for them: the
   // side panel and the bento workspace both narrow it. Below that the bar is
-  // icons with tooltips. The split toggle adds about 190px when it shows.
+  // icons with tooltips. The split toggle widens the bar, so it needs more room.
   const labelClass = needsSplit ? 'hidden @min-[60rem]:inline' : 'hidden @min-[48rem]:inline';
   const { isDesktop } = useResponsive();
 
