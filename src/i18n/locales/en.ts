@@ -274,7 +274,8 @@ const en: Record<string, string> = {
   'account.sync.heading': 'Cloud sync',
   'account.sync.lastSyncedNever': 'Not synced yet',
   'account.sync.lastSyncedAt': 'Last synced {time}',
-  'account.sync.pendingChanges': '{count} pending change(s)',
+  'account.sync.pendingChanges_one': '{count} pending change',
+  'account.sync.pendingChanges_other': '{count} pending changes',
   'account.sync.errorPrefix': 'Last error: {message}',
   'account.sync.relativeJustNow': 'just now',
   'account.sync.relativeSeconds': '{count}s ago',
@@ -523,7 +524,8 @@ const en: Record<string, string> = {
   'inspector.split.title': 'Oversized for print bed',
   'inspector.split.message':
     "{widthMm}×{depthMm}mm doesn't fit your {bedSize}mm print bed, so it prints in pieces.",
-  'inspector.split.piecesNeeded': '{count} piece(s) needed',
+  'inspector.split.piecesNeeded_one': '{count} piece needed',
+  'inspector.split.piecesNeeded_other': '{count} pieces needed',
   'inspector.customProps.deleteProperty': 'Delete property',
   'inspector.customProps.keyPlaceholder': 'Property name (e.g., SKU, Quantity)',
   'inspector.customProps.multiKeyPlaceholder': 'Property name',
@@ -747,8 +749,6 @@ const en: Record<string, string> = {
   'print.summary.title': 'Print list',
   'print.summary.totalBins_one': '{count} bin total',
   'print.summary.totalBins_other': '{count} bins total',
-  'print.summary.uniqueSizes': '{count} unique size(s)',
-  'print.summary.pieces': '{count} piece(s)',
   'print.summary.piecesShort': '{count} pcs',
   'print.summary.filament': '~{meters}m filament',
   'print.summary.filamentTooltip': 'Estimated 1.75mm PLA usage based on bin dimensions',
@@ -770,7 +770,8 @@ const en: Record<string, string> = {
   'print.summary.labelPlates': 'Label plates: {count}',
   'print.summary.labelPlatesTooltip':
     'Swappable label plates to print for bins with label sockets: {breakdown}',
-  'print.row.labelPlates': '{count} label plate(s)',
+  'print.row.labelPlates_one': '{count} label plate',
+  'print.row.labelPlates_other': '{count} label plates',
   'print.row.blankLabelTabs': 'Label tabs are blank',
   'print.uncategorized': 'Uncategorized',
   'print.empty.title': 'No bins to print',
@@ -798,7 +799,7 @@ const en: Record<string, string> = {
   'print.drawer': 'Drawer',
   'print.heightValue': '{height}u ({mm}mm)',
   'print.layer': 'Layer',
-  'print.noBinsToPrintInSelectedLayerS': 'No bins to print in selected layer(s)',
+  'print.noBinsToPrintInSelectedLayerS': 'No bins to print in the selected layers',
   'print.position': 'Position',
   'print.propEntry': '{key}: {value}',
   'print.selectAtLeastOneLayerToPrint': 'Select at least one layer to print',
@@ -1559,7 +1560,8 @@ const en: Record<string, string> = {
     'Triangle limit reached. Nothing imported. Remove a mesh imprint to free triangles.',
   'toast.meshFileMissing':
     "An imported STL used here is missing from this device, so it can't be shared or exported.",
-  'toast.svgImport.success': 'Imported {count} shape(s) from SVG',
+  'toast.svgImport.success_one': 'Imported {count} shape from SVG',
+  'toast.svgImport.success_other': 'Imported {count} shapes from SVG',
   'toast.cutoutsClipped': 'Added {added} of {requested} shapes. A lid holds at most {max}.',
   'toast.flattenNoRoom': 'Not enough room to flatten this repeat. A lid holds at most {max}.',
   'toast.svgImport.parseFailed': 'Could not read the SVG file',
@@ -1567,9 +1569,12 @@ const en: Record<string, string> = {
   'toast.svgImport.shapeLimitExceeded': 'SVG contains too many shapes (max 500)',
   'toast.svgImport.unsupportedFile': 'File is not a valid SVG',
   'toast.svgImport.fileTooLarge': 'SVG file is too large (max 5 MB)',
-  'toast.scanImport.success': 'Added {count} cutout(s) from your scan',
-  'toast.scanImport.offFloor':
-    'Added {count} cutout(s), but not all of them fit in this bin. Move them on a computer.',
+  'toast.scanImport.success_one': 'Added {count} cutout from your scan',
+  'toast.scanImport.success_other': 'Added {count} cutouts from your scan',
+  'toast.scanImport.offFloor_one':
+    'Added {count} cutout, but it does not fit in this bin. Move it on a computer.',
+  'toast.scanImport.offFloor_other':
+    'Added {count} cutouts, but not all of them fit in this bin. Move them on a computer.',
   'toast.scanImport.parseFailed':
     "Couldn't read that outline. Try a photo on a plain, high-contrast background.",
   'toast.scanImport.fileTooLarge': 'Outline file is too large (max 5 MB)',
@@ -1713,7 +1718,8 @@ const en: Record<string, string> = {
   'pwaUpdate.readyTooltip':
     'A new version is ready. It applies on its own when you pause, or reload now.',
   'toast.sessionRestored': 'Session restored',
-  'toast.rotateRepositioned': 'Bin rotated and moved {distance} cell(s) to fit',
+  'toast.rotateRepositioned_one': 'Bin rotated and moved {count} cell to fit',
+  'toast.rotateRepositioned_other': 'Bin rotated and moved {count} cells to fit',
   'toast.binsSwapped': 'Bins swapped positions',
   'toast.binsSwappedRotated': 'Bins swapped positions (rotated to fit)',
   'toast.dismissNotification': 'Dismiss notification',
@@ -1736,11 +1742,13 @@ const en: Record<string, string> = {
   'toast.categoriesSavedAsDefaults': 'Categories saved as defaults',
   'toast.undone': 'Undone',
   'toast.redone': 'Redone',
-  'toast.cutoutsCopied': 'Copied {count} cutout(s)',
+  'toast.cutoutsCopied_one': 'Copied {count} cutout',
+  'toast.cutoutsCopied_other': 'Copied {count} cutouts',
   'toast.repeatCreated': 'Merged {count} cutouts into one repeat',
   'toast.alignComplete': 'Aligned {aligned} of {total} bins',
   'toast.alignSkipped': 'Aligned {aligned}/{total} bins ({skipped} skipped due to overlap)',
-  'toast.rotateAllComplete': 'Rotated {rotated} bin(s)',
+  'toast.rotateAllComplete_one': 'Rotated {count} bin',
+  'toast.rotateAllComplete_other': 'Rotated {count} bins',
   'toast.pairRotateBlocked': 'No room to rotate the knife block and its rest together',
   'toast.rotateAllPartial': 'Rotated {rotated}/{total} bins ({skipped} skipped due to collision)',
   'toast.expandToFitComplete_one': 'Expanded {count} bin to fit',
@@ -2353,8 +2361,10 @@ const en: Record<string, string> = {
   'binDesigner.cutoutSocket.boardSection': 'Label plates',
   'binDesigner.cutoutSocket.socketCount.one': '1 socket on this board',
   'binDesigner.cutoutSocket.socketCount.other': '{n} sockets on this board',
-  'binDesigner.cutoutSocket.skippedCount':
-    '{n} cutout(s) asked for a socket and did not get one (limit {max} per board).',
+  'binDesigner.cutoutSocket.skippedCount_one':
+    '{count} cutout asked for a socket and did not get one (limit {max} per board).',
+  'binDesigner.cutoutSocket.skippedCount_other':
+    '{count} cutouts asked for a socket and did not get one (limit {max} per board).',
   'binDesigner.plateIconOwnerCompartment': 'compartment {n}',
   'binDesigner.lid.enable': 'Lid',
   'binDesigner.lid.summaryDisabled': 'Off',
@@ -3845,8 +3855,10 @@ const en: Record<string, string> = {
   'binDesigner.cutoutEditor.binFeatures': 'Bin features',
   'binDesigner.cutoutEditor.lipOffPausesLid':
     "The lid needs the stacking lip, so it won't be generated until you turn the lip back on.",
-  'binDesigner.cutoutEditor.depthShortfallWarning':
-    '{count} cutout(s) will be cut shallower than requested',
+  'binDesigner.cutoutEditor.depthShortfallWarning_one':
+    '{count} cutout will be cut shallower than requested',
+  'binDesigner.cutoutEditor.depthShortfallWarning_other':
+    '{count} cutouts will be cut shallower than requested',
   'binDesigner.cutoutEditor.checks.title': 'Pocket checks',
   'binDesigner.cutoutEditor.checks.titleDetail':
     'Clearance and entry edges make each pocket a little wider where it is cut. These checks show where that leaves plastic too thin to print well. Select one to find its shapes; none of them stops an export.',
@@ -4737,7 +4749,8 @@ const en: Record<string, string> = {
   'baseplate.splitReason': 'Split to fit {printBed}mm print bed',
   'baseplate.bedLoads.one': 'Prints in 1 build-plate load',
   'baseplate.bedLoads.other': 'Prints in {count} build-plate loads',
-  'baseplate.paddingHint': 'Reducing {axis} padding by {mm}mm would save {count} piece(s)',
+  'baseplate.paddingHint_one': 'Reducing {axis} padding by {mm}mm would save {count} piece',
+  'baseplate.paddingHint_other': 'Reducing {axis} padding by {mm}mm would save {count} pieces',
   'baseplate.paddingHintAxisX': 'left/right',
   'baseplate.paddingHintAxisY': 'front/back',
   'baseplate.paddingHintAxisBoth': 'all',
@@ -5885,8 +5898,10 @@ const en: Record<string, string> = {
 
   // Delete warning dialog
   'designLinking.deleteWarning.title': 'Design has linked bins',
-  'designLinking.deleteWarning.description':
-    'This design is linked to {count} bin(s) in your layout. Deleting it will unlink those bins.',
+  'designLinking.deleteWarning.description_one':
+    'This design is linked to {count} bin in your layout. Deleting it will unlink that bin.',
+  'designLinking.deleteWarning.description_other':
+    'This design is linked to {count} bins in your layout. Deleting it will unlink those bins.',
   'designLinking.deleteWarning.confirm': 'Delete anyway',
   'designLinking.deleteWarning.linkedBinsCount_one': '{count} linked bin',
   'designLinking.deleteWarning.linkedBinsCount_other': '{count} linked bins',
@@ -5915,16 +5930,13 @@ const en: Record<string, string> = {
   'designLinking.toast.edgeMatched': 'Matched half-unit edge to the layout',
   'designLinking.toast.cascadedResize_one': 'Updated design and {count} linked bin',
   'designLinking.toast.cascadedResize_other': 'Updated design and {count} linked bins',
-  'designLinking.toast.cascadedResizeSomeLocked':
-    'Updated design + {count} linked bin(s) — {locked} size-locked bin(s) kept their size',
-  'designLinking.toast.cascadedResizeSomeRefused':
-    'Updated design + {count} linked bin(s); {refused} kept their old size (no room)',
-  'designLinking.toast.autoSyncedSomeLocked':
-    'Auto-synced {count} bin(s) — {locked} size-locked bin(s) kept their size',
-  'designLinking.toast.autoSyncedSomeRefused':
-    'Auto-synced {count} bin(s); {refused} kept their old size (no room)',
   'designLinking.toast.syncSkippedLocked_one': '{count} size-locked bin kept its size',
   'designLinking.toast.syncSkippedLocked_other': '{count} size-locked bins kept their size',
+  'designLinking.toast.withExceptions': '{result}. {exceptions}',
+  'designLinking.toast.refusedNoRoom_one':
+    '{count} bin kept its old size because there was no room',
+  'designLinking.toast.refusedNoRoom_other':
+    '{count} bins kept their old size because there was no room',
 
   // Blocked resize dialog
   'designLinking.blockedResize.title': 'Design not updated',
@@ -5947,16 +5959,20 @@ const en: Record<string, string> = {
   'designLinking.bento.heightLabel': 'Height (units)',
   'designLinking.bento.dividerLabel': 'Divider walls (mm)',
   'designLinking.bento.replaceBins': 'Replace the {count} bins with this bento',
-  'designLinking.bento.trapped':
-    '{count} bin(s) outside your selection sit inside the bento. It would be printed through them.',
+  'designLinking.bento.trapped_one':
+    '{count} bin outside your selection sits inside the bento. The bento would be printed through that bin.',
+  'designLinking.bento.trapped_other':
+    '{count} bins outside your selection sit inside the bento. The bento would be printed through those bins.',
   'designLinking.bento.trappedInclude': 'Add them to the bento',
   'designLinking.bento.trappedStash': 'Move them to the stash',
   'designLinking.bento.trappedBlocks': 'Resolve the trapped bins first',
   'designLinking.bento.flatBase': 'Flat bottom (drawer insert, no Gridfinity feet)',
   'designLinking.bento.confirm': 'Create bento',
   'designLinking.bento.designName': '{layout} bento',
-  'designLinking.bento.warning.gaps':
-    'That total includes {count} compartment(s) made from empty space between the bins.',
+  'designLinking.bento.warning.gaps_one':
+    'That total includes {count} compartment made from empty space between the bins.',
+  'designLinking.bento.warning.gaps_other':
+    'That total includes {count} compartments made from empty space between the bins.',
   'designLinking.bento.warning.raisedHeight_one':
     '{count} bin is made taller to match the tallest one.',
   'designLinking.bento.warning.raisedHeight_other':
@@ -6046,7 +6062,8 @@ const en: Record<string, string> = {
   'drawerShape.penResetView': 'Reset view',
   'drawerShape.penCorner': 'Corner {n}',
   'drawerShape.penFillet': 'Round corners (mm)',
-  'drawerShape.penFilletSelected': 'Round {count} corner(s) (mm)',
+  'drawerShape.penFilletSelected_one': 'Round {count} corner (mm)',
+  'drawerShape.penFilletSelected_other': 'Round {count} corners (mm)',
   'drawerShape.penFilletMixed': 'Mixed',
   'drawerShape.penImport': 'Import SVG/DXF…',
   'drawerShape.penImportOversize':
@@ -6085,8 +6102,10 @@ const en: Record<string, string> = {
   'toast.outlineImport.fileTooLarge': 'That file is too large (max 5 MB).',
   'toast.outlineImport.binaryDxf': 'That is a binary DXF. Re-export it as ASCII DXF.',
   'toast.outlineImport.unsupported': 'That file type is not supported.',
-  'toast.outlineImport.droppedLoops': 'Kept the largest shape; {count} smaller one(s) ignored.',
-  'toast.outlineImport.simplified': 'Removed {count} point(s) to fit the shape limit.',
+  'toast.outlineImport.droppedLoops_one': 'Kept the largest shape; {count} smaller one ignored.',
+  'toast.outlineImport.droppedLoops_other': 'Kept the largest shape; {count} smaller ones ignored.',
+  'toast.outlineImport.simplified_one': 'Removed {count} point to fit the shape limit.',
+  'toast.outlineImport.simplified_other': 'Removed {count} points to fit the shape limit.',
 
   'drawerShape.corners.open': 'Corner cuts',
   'drawerShape.corners.title': 'Corner cuts',
@@ -6287,7 +6306,8 @@ const en: Record<string, string> = {
   'binDesigner.compartmentEditor.compartmentAriaLabeled': 'Compartment {n}, labeled {label}',
   'binDesigner.compartmentEditor.compartmentAriaNumber': 'Compartment {n}',
   'binDesigner.compartmentEditor.cellAria': 'Cell {col}, {row}',
-  'binDesigner.compartmentEditor.labelsCleared': 'Cleared {count} compartment label(s)',
+  'binDesigner.compartmentEditor.labelsCleared_one': 'Cleared {count} compartment label',
+  'binDesigner.compartmentEditor.labelsCleared_other': 'Cleared {count} compartment labels',
   'binDesigner.compartmentEditor.modeLabel': 'Compartment edit mode',
   'binDesigner.compartmentEditor.modeDividers': 'Edit dividers',
   'binDesigner.compartmentEditor.modeLabels': 'Add labels',

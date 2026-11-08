@@ -494,7 +494,8 @@ describe('useDesignSavedListener', () => {
       expect(addToast).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'info',
-          message: expect.stringContaining('1 kept their old size'),
+          message:
+            'Auto-synced 1 bin from design. 1 bin kept its old size because there was no room',
         })
       );
     });

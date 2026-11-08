@@ -59,7 +59,7 @@ describe('SplitWarning', () => {
 
       // 8 width / 6 max = 2 pieces wide, 4 depth / 6 max = 1 piece deep
       // Total: 2 * 1 = 2 pieces
-      expect(screen.getByText('2 piece(s) needed')).toBeInTheDocument();
+      expect(screen.getByText('2 pieces needed')).toBeInTheDocument();
     });
 
     it('calculates pieces correctly for both dimensions overflow', () => {
@@ -67,7 +67,7 @@ describe('SplitWarning', () => {
 
       // 12 width / 6 max = 2 pieces wide, 10 depth / 6 max = 2 pieces deep
       // Total: 2 * 2 = 4 pieces
-      expect(screen.getByText('4 piece(s) needed')).toBeInTheDocument();
+      expect(screen.getByText('4 pieces needed')).toBeInTheDocument();
     });
 
     it('shows max piece size info', () => {
@@ -97,7 +97,7 @@ describe('SplitWarning', () => {
     it('shows simplified warning in compact mode', () => {
       render(<SplitWarning {...oversizedProps} />);
 
-      expect(screen.getByText(/2 piece\(s\) needed/)).toBeInTheDocument();
+      expect(screen.getByText(/2 pieces needed/)).toBeInTheDocument();
     });
 
     it('does not show detailed explanation in compact mode', () => {
@@ -126,7 +126,7 @@ describe('SplitWarning', () => {
       render(<SplitWarning {...defaultProps} binWidth={7} binDepth={6} compact />);
 
       // 7 / 6 = 2 pieces wide, 6 / 6 = 1 piece deep = 2 pieces
-      expect(screen.getByText('2 piece(s) needed')).toBeInTheDocument();
+      expect(screen.getByText('2 pieces needed')).toBeInTheDocument();
     });
 
     it('handles fractional dimensions', () => {
@@ -149,7 +149,7 @@ describe('SplitWarning', () => {
       );
 
       // 6 > 5 max, so needs split
-      expect(screen.getByText('2 piece(s) needed')).toBeInTheDocument();
+      expect(screen.getByText('2 pieces needed')).toBeInTheDocument();
     });
   });
 });

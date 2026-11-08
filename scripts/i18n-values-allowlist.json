@@ -220,6 +220,7 @@
     "dashboard.filament",
     "designLinking.bento.designName",
     "designLinking.bento.nameLabel",
+    "designLinking.toast.withExceptions",
     "dock.syncStatusOffline",
     "export.format",
     "export.nameStyle.compact",

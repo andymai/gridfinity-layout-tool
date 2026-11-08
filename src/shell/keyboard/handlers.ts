@@ -260,7 +260,7 @@ export function handleRotate(e: KeyboardEvent, ctx: KeyboardContext): boolean {
   if (!ctx.batch(() => isOk(ctx.updateBin(bin.id, plan.updates)))) return true;
 
   if (plan.movedTo) {
-    ctx.addToast(ctx.t('toast.rotateRepositioned', { distance: plan.movedTo.distance }), 'info');
+    ctx.addToast(ctx.t('toast.rotateRepositioned', { count: plan.movedTo.distance }), 'info');
   } else if (plan.halfTurnedInPlace) {
     ctx.addToast(ctx.t('toast.binHalfTurned'), 'info');
   }
