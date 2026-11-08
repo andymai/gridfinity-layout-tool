@@ -363,6 +363,8 @@
     "^\\{\\w+\\}u \\(\\{\\w+\\}mm\\)$",
     "^\\{\\w+\\} bins$",
     "^\\{\\w+\\} bin$",
+    "^\\{\\w+\\} (design|designs|layout|layouts|baseplate|baseplates)$",
+    "^\\{\\w+\\} layout in \\{\\w+\\}$",
     "^bins$",
     "^\\{\\w+\\} bins[,] \\{\\w+\\}m filament$",
     "^\\{\\w+\\} bins · \\{\\w+\\}m$",
