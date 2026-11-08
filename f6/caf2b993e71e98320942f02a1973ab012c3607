@@ -1,0 +1,19 @@
+src/shared/components/AttributionFooter/AttributionFooter.test.tsx
+  s_66332f8bf1351d::t_6b6544ba60304b 23,37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f6caf2b993e71e98320942f02a1973ab012c3607",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
