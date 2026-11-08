@@ -294,8 +294,8 @@ export function WallSurfaceSection() {
                 max={MAX_WALL_LABEL_SLOT_PITCH_CELLS}
                 displayValue={
                   state.labelSlotEveryCells === 1
-                    ? t('binDesigner.walls.labelSlots.spacing.one')
-                    : t('binDesigner.walls.labelSlots.spacing.other', {
+                    ? t('binDesigner.walls.labelSlots.everyCell')
+                    : t('binDesigner.walls.labelSlots.everyNCells', {
                         count: state.labelSlotEveryCells,
                       })
                 }
@@ -305,9 +305,7 @@ export function WallSurfaceSection() {
             </div>
             {state.labelSlotCount > 0 && (
               <Readout>
-                {state.labelSlotCount === 1
-                  ? t('binDesigner.walls.labelSlots.count.one')
-                  : t('binDesigner.walls.labelSlots.count.other', { count: state.labelSlotCount })}
+                {t('binDesigner.walls.labelSlots.count', { count: state.labelSlotCount })}
               </Readout>
             )}
             {state.labelSlotNotes.map((note) => (

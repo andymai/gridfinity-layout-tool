@@ -102,8 +102,8 @@ export function ToolThicknessPrompt({
 
   const title =
     targets.length === 1
-      ? t('binDesigner.cutouts.depthPrompt.title.one')
-      : t('binDesigner.cutouts.depthPrompt.title.other', { count: targets.length });
+      ? t('binDesigner.cutouts.depthPrompt.titleSingle')
+      : t('binDesigner.cutouts.depthPrompt.titleMany', { count: targets.length });
 
   return (
     <section

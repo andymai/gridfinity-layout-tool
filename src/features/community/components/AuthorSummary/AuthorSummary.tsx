@@ -39,11 +39,7 @@ export function AuthorSummary({
 
   if (summary.designCount === 0) return null;
 
-  const facts: string[] = [
-    summary.designCount === 1
-      ? t('community.author.designsOne')
-      : t('community.author.designsOther', { count: summary.designCount }),
-  ];
+  const facts: string[] = [t('community.author.designs', { count: summary.designCount })];
 
   if (summary.firstPublishedAt !== null) {
     // Hoisted rather than inlined: the interpolation check parses t() args
@@ -64,18 +60,10 @@ export function AuthorSummary({
   // nothing while looking like a measurement.
   const proof: string[] = [];
   if (summary.printsOfTheirWork > 0) {
-    proof.push(
-      summary.printsOfTheirWork === 1
-        ? t('community.author.printedOne')
-        : t('community.author.printedOther', { count: summary.printsOfTheirWork })
-    );
+    proof.push(t('community.author.printed', { count: summary.printsOfTheirWork }));
   }
   if (summary.remixesOfTheirWork > 0) {
-    proof.push(
-      summary.remixesOfTheirWork === 1
-        ? t('community.author.remixedOne')
-        : t('community.author.remixedOther', { count: summary.remixesOfTheirWork })
-    );
+    proof.push(t('community.author.remixed', { count: summary.remixesOfTheirWork }));
   }
 
   return (

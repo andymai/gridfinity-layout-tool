@@ -386,10 +386,7 @@ export function BaseplatePage() {
                 message: `${t('baseplate.export.splitBanner', {
                   size: defaultPrintBedSize,
                   count: tiling.pieces.length,
-                })} ${t(
-                  tiling.bedLoads === 1 ? 'baseplate.bedLoads.one' : 'baseplate.bedLoads.other',
-                  { count: tiling.bedLoads }
-                )}`,
+                })} ${t('baseplate.bedLoads', { count: tiling.bedLoads })}`,
                 checkboxLabel: t('baseplate.export.enableSplit'),
                 checked: splitEnabled,
                 onCheckedChange: setSplitEnabled,

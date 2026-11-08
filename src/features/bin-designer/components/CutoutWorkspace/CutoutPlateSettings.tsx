@@ -50,12 +50,7 @@ export function CutoutPlateSettings() {
       <SubHeader>{t('binDesigner.cutoutSocket.boardSection')}</SubHeader>
 
       <p className="text-label text-content-secondary">
-        {t(
-          plan.socketCount === 1
-            ? 'binDesigner.cutoutSocket.socketCount.one'
-            : 'binDesigner.cutoutSocket.socketCount.other',
-          { n: plan.socketCount }
-        )}
+        {t('binDesigner.cutoutSocket.socketCount', { count: plan.socketCount })}
       </p>
       {plan.skippedCount > 0 && (
         <p role="status" className="text-label text-warning">

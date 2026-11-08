@@ -119,9 +119,7 @@ export function SplitViewStrip({
         <span className="text-xs text-content-secondary">
           {/* A custom plan can merge the plate back down to a single piece, a
               state the automatic path never rendered this strip in. */}
-          {t(tiling.pieces.length === 1 ? 'baseplate.splitInfo.one' : 'baseplate.splitInfo.other', {
-            count: tiling.pieces.length,
-          })}
+          {t('baseplate.splitInfo', { count: tiling.pieces.length })}
         </span>
         <span className="text-label text-content-tertiary whitespace-nowrap">
           {tiling.isCustomSplit
@@ -132,9 +130,7 @@ export function SplitViewStrip({
 
       <div className="px-4 pb-1">
         <span className="text-label text-content-secondary">
-          {t(tiling.bedLoads === 1 ? 'baseplate.bedLoads.one' : 'baseplate.bedLoads.other', {
-            count: tiling.bedLoads,
-          })}
+          {t('baseplate.bedLoads', { count: tiling.bedLoads })}
         </span>
       </div>
 

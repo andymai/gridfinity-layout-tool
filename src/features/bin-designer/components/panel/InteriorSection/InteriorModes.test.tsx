@@ -113,7 +113,7 @@ describe('InteriorModes', () => {
 
     // The mocked grid has exactly one merged (drawn) compartment — the
     // summary counts drawn compartments, not background pockets.
-    expect(screen.getByText('binDesigner.bento.summary.one')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.bento.summary_one')).toBeInTheDocument();
   });
 
   describe('solid cutout editor', () => {

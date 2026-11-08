@@ -363,9 +363,7 @@ export function MobileLayoutsPanel() {
     <div className="pb-4">
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="text-sm text-content-tertiary">
-          {entries.length === 1
-            ? t('mobile.layouts.layoutCountOne')
-            : t('mobile.layouts.layoutCount', { count: entries.length })}
+          {t('mobile.layouts.layoutCount', { count: entries.length })}
         </div>
         <div className="flex items-center gap-1">
           {placesEnabled && currentFolderId === null && (
@@ -424,9 +422,7 @@ export function MobileLayoutsPanel() {
                     {folder.name}
                   </span>
                   <span className="shrink-0 text-xs text-content-tertiary">
-                    {count === 1
-                      ? t('layouts.folders.itemCount.one')
-                      : t('layouts.folders.itemCount.other', { count })}
+                    {t('layouts.folders.itemCount', { count })}
                   </span>
                   <SvgIcon
                     path={ICON_PATHS.chevronRight}

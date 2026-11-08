@@ -15,13 +15,13 @@ describe('CreditsTitleCard', () => {
       selector: '.sr-only',
     });
     expect(summary).toHaveTextContent(LINE_1);
-    expect(summary).toHaveTextContent('248 supporters.credits.people.other');
+    expect(summary).toHaveTextContent('248 supporters.credits.people_other');
   });
 
   it('uses the singular for one supporter', () => {
     render(<CreditsTitleCard clock={new CreditsClock(60)} count={1} accent="#f59e0b" />);
     expect(screen.getByText(/madePossibleBy/, { selector: '.sr-only' })).toHaveTextContent(
-      'supporters.credits.people.one'
+      'supporters.credits.people_one'
     );
   });
 

@@ -1,17 +1,32 @@
 /**
  * Standard echo mock for `@/i18n` in component tests: `t(key)` returns the
  * key itself, with `{param}` interpolation applied, so assertions target
- * stable keys instead of English copy. Use as:
+ * stable keys instead of English copy. A plural family called with a count
+ * echoes the English form it picks (`baseplate.splitInfo_one`). Use as:
  *
  *   vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
  */
 
+import en from '@/i18n/locales/en';
+import { pluralCategory, pluralCount } from '@/i18n/plural';
+
+function pluralForm(key: string, params?: Record<string, unknown>): string {
+  const count = pluralCount(params?.count);
+  if (count === undefined || !(`${key}_other` in en)) return key;
+  const form = `${key}_${pluralCategory('en', count)}`;
+  return form in en ? form : `${key}_other`;
+}
+
 export function useTranslation() {
   return (key: string, params?: Record<string, unknown>): string => {
+    const resolved = pluralForm(key, params);
     if (params) {
-      return Object.entries(params).reduce((str, [k, v]) => str.replace(`{${k}}`, String(v)), key);
+      return Object.entries(params).reduce(
+        (str, [k, v]) => str.replace(`{${k}}`, String(v)),
+        resolved
+      );
     }
-    return key;
+    return resolved;
   };
 }
 

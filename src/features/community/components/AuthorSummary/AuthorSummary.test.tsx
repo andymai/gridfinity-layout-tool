@@ -50,7 +50,7 @@ describe('AuthorSummary', () => {
 
     expect(screen.getByText('Casey')).toBeInTheDocument();
     const facts = screen.getByTestId('author-summary-facts');
-    expect(facts).toHaveTextContent('community.author.designsOther');
+    expect(facts).toHaveTextContent('community.author.designs_other');
     expect(facts).toHaveTextContent('community.author.since');
     expect(facts).toHaveTextContent('community.author.makes');
   });
@@ -58,7 +58,7 @@ describe('AuthorSummary', () => {
   it('uses the singular for a single design', () => {
     setup([card()]);
     expect(screen.getByTestId('author-summary-facts')).toHaveTextContent(
-      'community.author.designsOne'
+      'community.author.designs_one'
     );
   });
 
@@ -72,8 +72,8 @@ describe('AuthorSummary', () => {
     setup([card({ counts: { likes: 0, remixes: 2, exports: 0, prints: 5 } })]);
 
     const proof = screen.getByTestId('author-summary-proof');
-    expect(proof).toHaveTextContent('community.author.printedOther');
-    expect(proof).toHaveTextContent('community.author.remixedOther');
+    expect(proof).toHaveTextContent('community.author.printed_other');
+    expect(proof).toHaveTextContent('community.author.remixed_other');
   });
 
   it('lists the techniques they reach for', () => {

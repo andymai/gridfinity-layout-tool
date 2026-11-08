@@ -39,25 +39,13 @@ export function MineDigestSummary() {
 
   const parts: string[] = [];
   if (summary.likesDelta > 0) {
-    parts.push(
-      summary.likesDelta === 1
-        ? t('community.mine.digest.likesOne')
-        : t('community.mine.digest.likes', { count: summary.likesDelta })
-    );
+    parts.push(t('community.mine.digest.likes', { count: summary.likesDelta }));
   }
   if (summary.remixesDelta > 0) {
-    parts.push(
-      summary.remixesDelta === 1
-        ? t('community.mine.digest.remixesOne')
-        : t('community.mine.digest.remixes', { count: summary.remixesDelta })
-    );
+    parts.push(t('community.mine.digest.remixes', { count: summary.remixesDelta }));
   }
   if (summary.exportsDelta > 0) {
-    parts.push(
-      summary.exportsDelta === 1
-        ? t('community.mine.digest.printsOne')
-        : t('community.mine.digest.prints', { count: summary.exportsDelta })
-    );
+    parts.push(t('community.mine.digest.prints', { count: summary.exportsDelta }));
   }
 
   return (

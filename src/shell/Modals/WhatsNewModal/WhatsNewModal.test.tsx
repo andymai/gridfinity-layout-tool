@@ -110,7 +110,7 @@ describe('WhatsNewModal', () => {
     render(<WhatsNewModal />);
 
     expect(screen.getByText('whatsNew.subtitleRecent')).toBeInTheDocument();
-    expect(screen.queryByText('whatsNew.subtitleUnseenMany')).not.toBeInTheDocument();
+    expect(screen.queryByText('whatsNew.subtitleUnseen')).not.toBeInTheDocument();
   });
 
   it('clears the unseen badge once opened', () => {
@@ -142,7 +142,7 @@ describe('WhatsNewModal', () => {
     const heldBack = WHATS_NEW_ENTRIES[DIGEST_MAX + 1];
     expect(screen.queryByText(heldBack.title.en)).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /whatsNew.overflowMany/ }));
+    await user.click(screen.getByRole('button', { name: /whatsNew.overflow/ }));
     expect(screen.getByText(heldBack.title.en)).toBeInTheDocument();
   });
 
