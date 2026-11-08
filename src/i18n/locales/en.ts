@@ -3021,7 +3021,7 @@ const en: Record<string, string> = {
   'binDesigner.lidBaseDisablesTile': 'A base-only bin needs feet to stand on',
   'binDesigner.solidDisablesCavity': 'Not available for solid bins',
   'binDesigner.stylesMutuallyExclusive': 'Only one bin style can be active',
-  'binDesigner.group.colors': 'Multi-Color',
+  'binDesigner.group.colors': 'Multi-color',
   'binDesigner.group.shape': 'Shape',
   'binDesigner.group.lid': 'Lid',
   'binDesigner.group.interior': 'Interior',
@@ -4080,7 +4080,7 @@ const en: Record<string, string> = {
   'binDesigner.wallCutouts.linked': 'Linked',
   'binDesigner.wallCutouts.independent': 'Independent',
   'binDesigner.wallCutouts.summary': '{sides}: {span} × {height}',
-  'binDesigner.wallCutouts.shape.uShape': 'U-Shape',
+  'binDesigner.wallCutouts.shape.uShape': 'U-shape',
   'binDesigner.wallCutouts.shape.scoop': 'Scoop',
   'binDesigner.wallCutouts.shape.funnel': 'Funnel',
   'binDesigner.wallCutouts.position': 'Position',
@@ -6064,8 +6064,8 @@ const en: Record<string, string> = {
   'printBedInput.depthAriaLabel': 'Print bed depth',
 
   // What's New
-  'whatsNew.title': "What's New",
-  'commandPalette.openWhatsNew': "What's New",
+  'whatsNew.title': "What's new",
+  'commandPalette.openWhatsNew': "What's new",
   'whatsNew.helpDescription':
     'A short summary of recent user-facing changes, shown after the app updates.',
   'whatsNew.helpKeywords': 'changelog|updates|release notes|new features|recent changes',
@@ -6082,7 +6082,7 @@ const en: Record<string, string> = {
   'whatsNew.fullChangelog': 'Full changelog',
   'whatsNew.dontShowAgain': "Don't show again",
   'whatsNew.dismiss': 'Got it',
-  'whatsNew.open': "Open What's New",
+  'whatsNew.open': "See what's new",
   'whatsNew.openTooltip': "See what's changed recently",
   'whatsNew.badge': 'New',
   'whatsNew.kind.new': 'New',
