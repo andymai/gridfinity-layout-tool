@@ -184,7 +184,7 @@ function BaseplateLibraryModalContent({ onClose }: { onClose: () => void }) {
       >
         {/* Header */}
         <div className="flex justify-between items-center border-b border-stroke-subtle px-6 py-4">
-          <h2 id="baseplate-library-title" className="text-2xl font-bold text-content">
+          <h2 id="baseplate-library-title" className="text-page font-semibold text-content">
             {t('baseplate.library.title')}
           </h2>
           <div className="flex items-center gap-2">

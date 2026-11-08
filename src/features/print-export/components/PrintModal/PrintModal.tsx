@@ -30,8 +30,8 @@ const STYLES = {
     boxShadow: 'var(--shadow-xl)',
   } as CSSProperties,
   title: {
-    fontSize: 'var(--text-2xl)',
-    fontWeight: 'var(--font-bold)',
+    fontSize: 'var(--text-page)',
+    fontWeight: 'var(--font-semibold)',
     color: 'var(--text-primary)',
   } as CSSProperties,
   sectionHeader: {
