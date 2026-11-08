@@ -1,0 +1,40 @@
+src/shell/Modals/HelpModal/HelpSearchResultRow.tsx
+  s_66332f8bf1351d::t_d2fc8a89cfd7cf 10,45-50
+src/shell/Modals/HelpModal/helpModalStyles.ts
+  s_66332f8bf1351d::t_9adb784b516a09 2
+src/shell/Modals/HelpModal/HelpSearchResultRow.test.tsx
+  s_66332f8bf1351d::t_4c47cf18b99b84 34,53,57-58,68,85
+src/shell/Modals/HelpModal/HelpModalSections.tsx
+  s_66332f8bf1351d::t_d2fc8a89cfd7cf 3,12-13,30,36
+src/features/command-palette/components/CommandPalette/CommandPalette.tsx
+  s_66332f8bf1351d::t_f41d3775854a99 13,178-180
+src/shared/components/ShortcutBadge/ShortcutBadge.tsx
+  s_66332f8bf1351d::t_55967746d5d1fa 2-4,7,10,16,19-20,26-27,32-33,36,39
+src/design-system/Kbd/Kbd.test.tsx
+  s_66332f8bf1351d::t_198279819bd0fe 33-39
+src/design-system/Kbd/Kbd.tsx
+  s_66332f8bf1351d::t_198279819bd0fe 7-15,17-25,27-31,33-38,52-58,80,82
+src/shell/Mobile/MobileHelpModal/MobileHelpModal.tsx
+  s_66332f8bf1351d::t_364fb6d8d4f9df 338,351
+src/shell/Modals/HelpModal/HelpModal.tsx
+  s_66332f8bf1351d::t_364fb6d8d4f9df 14,149,153,178
+  s_66332f8bf1351d::t_9adb784b516a09 5
+src/shared/components/ShortcutBadge/ShortcutBadge.test.tsx
+  s_66332f8bf1351d::t_f41d3775854a99 35-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "74d6f264b799517b099d5f9f5705e4a2a16cbc79",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
