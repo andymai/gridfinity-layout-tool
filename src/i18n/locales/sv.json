@@ -186,7 +186,6 @@
   "baseplate.library.designName": "Bottenplattans namn",
   "baseplate.library.draftName": "Osparat utkast",
   "baseplate.library.empty": "Inga sparade bottenplattor ännu",
-  "baseplate.library.emptyHint": "Öppna bottenplatteverktyget för att skapa en",
   "baseplate.library.manage": "Hantera bottenplattor",
   "baseplate.library.moreActions": "Fler åtgärder för {name}",
   "baseplate.library.namePrompt": "Namnge denna bottenplatta",

@@ -186,7 +186,6 @@
   "baseplate.library.designName": "Назва базової плити",
   "baseplate.library.draftName": "Незбережена чернетка",
   "baseplate.library.empty": "Ще немає збережених базових плит",
-  "baseplate.library.emptyHint": "Відкрийте інструмент основи, щоб створити її",
   "baseplate.library.manage": "Керувати базовими плитами",
   "baseplate.library.moreActions": "Більше дій для {name}",
   "baseplate.library.namePrompt": "Назвіть цю базову плиту",

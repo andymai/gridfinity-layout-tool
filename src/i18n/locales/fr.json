@@ -186,7 +186,6 @@
   "baseplate.library.designName": "Nom de la platine",
   "baseplate.library.draftName": "Brouillon non enregistré",
   "baseplate.library.empty": "Aucune platine enregistrée pour l'instant",
-  "baseplate.library.emptyHint": "Ouvrez l’outil Plaque de base pour en créer une",
   "baseplate.library.manage": "Gérer les platines",
   "baseplate.library.moreActions": "Plus d'actions pour {name}",
   "baseplate.library.namePrompt": "Nommer cette platine",

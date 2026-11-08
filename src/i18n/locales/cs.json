@@ -186,7 +186,6 @@
   "baseplate.library.designName": "Název základní desky",
   "baseplate.library.draftName": "Neuložený koncept",
   "baseplate.library.empty": "Zatím žádné uložené základní desky",
-  "baseplate.library.emptyHint": "Otevři nástroj Základní deska a vytvoř nějakou",
   "baseplate.library.manage": "Spravovat základní desky",
   "baseplate.library.moreActions": "Další akce pro {name}",
   "baseplate.library.namePrompt": "Pojmenuj tuto základní desku",
