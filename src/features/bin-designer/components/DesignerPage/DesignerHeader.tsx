@@ -5,7 +5,7 @@
  * Mobile/Tablet: Compact ToolSwitcher + name (tap=list, long-press=rename) | save status + action buttons
  */
 
-import { Button, IconButton, Input } from '@/design-system';
+import { Button, IconButton, Input, Menu } from '@/design-system';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
@@ -22,6 +22,7 @@ const MOD_KEY =
 
 interface DesignerHeaderProps {
   isDesktop: boolean;
+  isMobile: boolean;
   nameEditor: DesignNameEditor;
 }
 
@@ -43,7 +44,7 @@ function VersionsIcon() {
   );
 }
 
-export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
+export function DesignerHeader({ isDesktop, isMobile, nameEditor }: DesignerHeaderProps) {
   const t = useTranslation();
   const saveStatus = useDesignerStore((s) => s.saveStatus);
   const designName = useDesignerStore((s) => s.designName);
@@ -66,6 +67,25 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
   const undo = useDesignerStore((s) => s.undo);
   const redo = useDesignerStore((s) => s.redo);
   const { canPublish, openPublish } = useCommunityPublishEntry();
+
+  // A phone header has room for the name and four buttons. Export is also on
+  // the panel's Print page and the name opens the design list, so on a phone
+  // these fold into the menu.
+  const phoneMenuItems = (
+    <>
+      <Menu.Item onClick={() => setExportDialogOpen(true)} disabled={!canExport}>
+        {t('common.export')}
+      </Menu.Item>
+      <Menu.Item
+        onClick={openPublish}
+        disabled={!canPublish}
+        title={t('community.publishButtonAria')}
+      >
+        {t('community.publishButton')}
+      </Menu.Item>
+      <Menu.Item onClick={() => setVersionsOpen(true)}>{t('binDesigner.versions.open')}</Menu.Item>
+    </>
+  );
 
   const {
     isEditingName,
@@ -291,73 +311,77 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
           <div className="flex items-center gap-0.5 flex-shrink-0">
             <SaveStatusIndicator status={saveStatus} compact />
 
-            {/* Designs button */}
-            <IconButton
-              variant="ghost"
-              onClick={() => setDesignListOpen(true)}
-              title={t('binDesigner.savedDesigns')}
-              aria-label={t('binDesigner.openDesignList')}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                />
-              </svg>
-            </IconButton>
+            {!isMobile && (
+              <>
+                {/* Designs button */}
+                <IconButton
+                  variant="ghost"
+                  onClick={() => setDesignListOpen(true)}
+                  title={t('binDesigner.savedDesigns')}
+                  aria-label={t('binDesigner.openDesignList')}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                    />
+                  </svg>
+                </IconButton>
 
-            {/* Export button */}
-            <IconButton
-              variant="ghost"
-              onClick={() => setExportDialogOpen(true)}
-              disabled={!canExport}
-              aria-label={t('binDesigner.exportBinAsStl')}
-            >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"
-                />
-              </svg>
-            </IconButton>
+                {/* Export button */}
+                <IconButton
+                  variant="ghost"
+                  onClick={() => setExportDialogOpen(true)}
+                  disabled={!canExport}
+                  aria-label={t('binDesigner.exportBinAsStl')}
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"
+                    />
+                  </svg>
+                </IconButton>
 
-            {/* Publish button (community showcase) */}
-            {!canPublish && (
-              <span id="community-publish-disabled-hint" className="sr-only">
-                {t('community.publish.form.preparingPreview')}
-              </span>
+                {/* Publish button (community showcase) */}
+                {!canPublish && (
+                  <span id="community-publish-disabled-hint" className="sr-only">
+                    {t('community.publish.form.preparingPreview')}
+                  </span>
+                )}
+                <IconButton
+                  variant="ghost"
+                  className="relative"
+                  onClick={openPublish}
+                  disabled={!canPublish}
+                  aria-label={t('community.publishButtonAria')}
+                  aria-describedby={canPublish ? undefined : 'community-publish-disabled-hint'}
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                </IconButton>
+              </>
             )}
-            <IconButton
-              variant="ghost"
-              className="relative"
-              onClick={openPublish}
-              disabled={!canPublish}
-              aria-label={t('community.publishButtonAria')}
-              aria-describedby={canPublish ? undefined : 'community-publish-disabled-hint'}
-            >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                />
-              </svg>
-            </IconButton>
 
             {/* Undo/Redo */}
             <IconButton
@@ -390,13 +414,20 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                 />
               </svg>
             </IconButton>
-            <IconButton
-              variant="ghost"
-              onClick={() => setVersionsOpen(true)}
-              aria-label={t('binDesigner.versions.open')}
-            >
-              <VersionsIcon />
-            </IconButton>
+            {!isMobile && (
+              <IconButton
+                variant="ghost"
+                onClick={() => setVersionsOpen(true)}
+                aria-label={t('binDesigner.versions.open')}
+              >
+                <VersionsIcon />
+              </IconButton>
+            )}
+            <HeaderSupportLinks
+              compact
+              showLanguage={!isMobile}
+              leadingItems={isMobile ? phoneMenuItems : undefined}
+            />
           </div>
         </>
       )}

@@ -175,5 +175,23 @@ describe('HeaderSupportLinks', () => {
       expect(handler).toHaveBeenCalledOnce();
       window.removeEventListener('open-help-modal', handler);
     });
+
+    it('opens settings from the overflow', () => {
+      const handler = vi.fn();
+      window.addEventListener('open-settings-modal', handler);
+      render(<HeaderSupportLinks compact />);
+
+      fireEvent.click(screen.getByLabelText('header.moreLinks'));
+      fireEvent.click(screen.getByRole('menuitem', { name: 'sidebar.settings' }));
+
+      expect(handler).toHaveBeenCalledOnce();
+      window.removeEventListener('open-settings-modal', handler);
+    });
+
+    it('drops the language selector when asked, leaving it to Settings', () => {
+      render(<HeaderSupportLinks compact showLanguage={false} />);
+      expect(screen.queryByTestId('language-selector')).toBeNull();
+      expect(screen.getByLabelText('header.moreLinks')).toBeInTheDocument();
+    });
   });
 });

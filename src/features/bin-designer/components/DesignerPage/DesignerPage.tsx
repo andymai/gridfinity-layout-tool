@@ -126,7 +126,7 @@ export function DesignerPage() {
       {!isDesktop && <MobileTitleBar />}
 
       {/* Header / Action bar */}
-      <DesignerHeader isDesktop={isDesktop} nameEditor={nameEditor} />
+      <DesignerHeader isDesktop={isDesktop} isMobile={isMobile} nameEditor={nameEditor} />
 
       {shareLoading && <ShareLoadingBanner />}
 

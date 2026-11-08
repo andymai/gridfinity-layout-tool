@@ -32,6 +32,7 @@ interface ExtendToMarginToggleProps {
   bin: Bin;
   drawer: Drawer;
   baseplate: StoredBaseplateParams | undefined;
+  variant?: 'desktop' | 'mobile';
 }
 
 // Default mm per height unit; the generator clamps the band to the exact wall
@@ -41,7 +42,12 @@ const TAPER_BAND_STEP = 0.5;
 // One full grid unit, matching the designer's flare cap.
 const MAX_FLARE_MM = 42;
 
-export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginToggleProps) {
+export function ExtendToMarginToggle({
+  bin,
+  drawer,
+  baseplate,
+  variant = 'desktop',
+}: ExtendToMarginToggleProps) {
   const t = useTranslation();
   const { updateBin } = useMutations();
   const designKinds = useLinkedDesignKinds();
@@ -83,6 +89,7 @@ export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginT
   return (
     <div>
       <FeatureToggle
+        variant={variant}
         label={t('inspector.extendToMargin')}
         checked={extendable && bin.extendToMargin === true}
         disabled={!extendable}
@@ -99,6 +106,7 @@ export function ExtendToMarginToggle({ bin, drawer, baseplate }: ExtendToMarginT
       {canTaper && (
         <div className="mt-2">
           <FeatureToggle
+            variant={variant}
             label={t('inspector.taper')}
             checked={taperOn}
             onChange={() => setTaper({ enabled: !taperOn })}
