@@ -188,7 +188,6 @@
   "baseplate.library.designName": "Nome della baseplate",
   "baseplate.library.draftName": "Bozza non salvata",
   "baseplate.library.empty": "Ancora nessuna baseplate salvata",
-  "baseplate.library.emptyHint": "Apri lo strumento piastra base per crearne una",
   "baseplate.library.manage": "Gestisci baseplate",
   "baseplate.library.moreActions": "Altre azioni per {name}",
   "baseplate.library.namePrompt": "Dai un nome a questa baseplate",

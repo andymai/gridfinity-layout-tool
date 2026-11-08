@@ -188,7 +188,6 @@
   "baseplate.library.designName": "Nome da placa base",
   "baseplate.library.draftName": "Rascunho não salvo",
   "baseplate.library.empty": "Nenhuma placa base salva ainda",
-  "baseplate.library.emptyHint": "Abra a ferramenta de placa base para criar uma",
   "baseplate.library.manage": "Gerenciar placas base",
   "baseplate.library.moreActions": "Mais ações para {name}",
   "baseplate.library.namePrompt": "Nomear esta placa base",

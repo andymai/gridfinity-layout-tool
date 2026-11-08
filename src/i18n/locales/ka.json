@@ -4152,7 +4152,6 @@
   "baseplate.library.unused": "არცერთი განლაგება არ იყენებს",
   "baseplate.library.currentlyActive": "ამჟამად აქტიური საბაზისო ფირფიტა",
   "baseplate.library.empty": "შენახული საბაზისო ფირფიტები ჯერ არ არის",
-  "baseplate.library.emptyHint": "შესაქმნელად გახსენით საბაზისო ფირფიტის ხელსაწყო",
   "baseplate.library.count_one": "{count} საბაზისო ფირფიტა",
   "baseplate.library.count_other": "{count} საბაზისო ფირფიტა",
   "baseplate.library.deleteWarning.title": "წაიშალოს საბაზისო ფირფიტის დიზაინი?",
