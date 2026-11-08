@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.536.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.536.0...gridfinity-layout-tool-v4.536.1) (2026-11-08)
+
+
+### Bug Fixes
+
+* **baseplate:** finish moving the baseplate panel onto the sidebar idioms ([#4869](https://github.com/andymai/gridfinity-layout-tool/issues/4869)) ([391f62d](https://github.com/andymai/gridfinity-layout-tool/commit/391f62d48e780edde99ac08703f840bdb2e52d31))
+* **baseplate:** give the Base section the sidebar's switches and info dots ([#4868](https://github.com/andymai/gridfinity-layout-tool/issues/4868)) ([01de461](https://github.com/andymai/gridfinity-layout-tool/commit/01de4619f5c91fbd6aa44f875832cdb446174881))
+* **baseplate:** move the eco plate explanation behind an info dot ([#4867](https://github.com/andymai/gridfinity-layout-tool/issues/4867)) ([8301c92](https://github.com/andymai/gridfinity-layout-tool/commit/8301c9233cdcf6105303f663727ed48b9fd58a55))
+* **bin-designer:** bring the workspaces onto the sidebar's switches and info dots ([#4870](https://github.com/andymai/gridfinity-layout-tool/issues/4870)) ([ba1d9d5](https://github.com/andymai/gridfinity-layout-tool/commit/ba1d9d5a09dbf9333b9681952c2d5cfd969b7c49))
+* **bin-inspector:** shorten the inspector's notices ([#4873](https://github.com/andymai/gridfinity-layout-tool/issues/4873)) ([c8621c5](https://github.com/andymai/gridfinity-layout-tool/commit/c8621c56aa4faf21eddcb02d68b3ae910b5b61ae))
+* **export:** drop zero-area triangles that slicers read as non-manifold edges ([#4872](https://github.com/andymai/gridfinity-layout-tool/issues/4872)) ([49c8a21](https://github.com/andymai/gridfinity-layout-tool/commit/49c8a2188fc15493e55c475f65700e8add92ecc9))
+* **ui:** show a settings row's explanation behind an info dot ([#4871](https://github.com/andymai/gridfinity-layout-tool/issues/4871)) ([dbec1bb](https://github.com/andymai/gridfinity-layout-tool/commit/dbec1bb14f0de368fe7545521676894bb01e3068))
+
 ## [4.536.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.535.1...gridfinity-layout-tool-v4.536.0) (2026-11-08)
 
 
