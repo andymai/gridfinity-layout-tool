@@ -8,7 +8,7 @@
  * retain quick-glance context regardless of state.
  */
 
-import { useState, useId, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Button } from '@/design-system';
 import { cn } from '@/design-system/cn';
 import { ChevronDownIcon } from '@/design-system/Icon';
@@ -30,8 +30,45 @@ const ROOT_CLASS: Record<StickyGroupHeaderVariant, string> = {
 
 const BAR_CLASS: Record<StickyGroupHeaderVariant, string> = {
   default: 'backdrop-blur-sm bg-surface-secondary/90 border-b border-stroke-subtle/50',
-  band: 'bg-surface-elevated border-b border-stroke-subtle',
+  band: 'bg-surface-secondary',
 };
+
+// Extra space under a band's last row marks where a long group ends. It sits
+// inside the collapsing row's child, since padding on that child would stay
+// visible when the row folds to zero.
+const BODY_CLASS: Record<StickyGroupHeaderVariant, string | undefined> = {
+  default: undefined,
+  band: 'pb-[calc(var(--space-panel)*0.5)]',
+};
+
+function scrollParent(el: HTMLElement): HTMLElement | null {
+  for (let node = el.parentElement; node; node = node.parentElement) {
+    if (/(auto|scroll)/.test(getComputedStyle(node).overflowY)) return node;
+  }
+  return null;
+}
+
+// A band sits on the panel's own surface, so once it sticks over scrolled
+// content it needs an edge. A marker at the top of the group leaves the scroll
+// area exactly when the bar sticks.
+function useStuck(enabled: boolean) {
+  const markerRef = useRef<HTMLDivElement>(null);
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    const marker = markerRef.current;
+    if (!enabled || !marker || !('IntersectionObserver' in window)) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const rootTop = entry.rootBounds?.top ?? 0;
+        setStuck(!entry.isIntersecting && entry.boundingClientRect.top < rootTop);
+      },
+      { root: scrollParent(marker) }
+    );
+    observer.observe(marker);
+    return () => observer.disconnect();
+  }, [enabled]);
+  return { markerRef, stuck };
+}
 
 const BUTTON_CLASS: Record<StickyGroupHeaderVariant, string> = {
   default: 'px-(--space-panel) py-[calc(var(--space-panel)*0.75)] hover:bg-surface-hover/50',
@@ -90,10 +127,19 @@ export function StickyGroupHeader({
   };
   const [hasToggled, setHasToggled] = useState(false);
   const contentId = useId();
+  const { markerRef, stuck } = useStuck(variant === 'band');
 
   return (
     <div className={ROOT_CLASS[variant]} data-variant={variant}>
-      <div className={cn('sticky top-0 z-10 flex items-center', BAR_CLASS[variant])}>
+      {variant === 'band' && <div ref={markerRef} aria-hidden="true" />}
+      <div
+        data-stuck={stuck || undefined}
+        className={cn(
+          'sticky top-0 z-10 flex items-center',
+          BAR_CLASS[variant],
+          stuck && 'shadow-[0_1px_0_0_var(--color-stroke-subtle)]'
+        )}
+      >
         {/* The accordion pattern: the toggle sits inside a heading, so each group
             is a stop in a screen reader's heading navigation. */}
         <h2 className="flex min-w-0 flex-1">
@@ -168,7 +214,9 @@ export function StickyGroupHeader({
           expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
         }`}
       >
-        <div className="overflow-hidden">{children}</div>
+        <div className="overflow-hidden">
+          {BODY_CLASS[variant] ? <div className={BODY_CLASS[variant]}>{children}</div> : children}
+        </div>
       </div>
     </div>
   );

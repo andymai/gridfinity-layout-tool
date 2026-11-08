@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { afterEach, describe, it, expect, vi } from 'vitest';
+import { act, render, screen, fireEvent } from '@testing-library/react';
 import { StickyGroupHeader } from './StickyGroupHeader';
 
 describe('StickyGroupHeader', () => {
@@ -143,5 +143,63 @@ describe('StickyGroupHeader', () => {
       el.getAttribute('data-variant')
     );
     expect(variants).toEqual(['default', 'band']);
+  });
+
+  describe('band edge while stuck', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    function stubObserver() {
+      const observer: { report?: (isIntersecting: boolean, top: number) => void } = {};
+      vi.stubGlobal(
+        'IntersectionObserver',
+        class {
+          constructor(callback: IntersectionObserverCallback) {
+            observer.report = (isIntersecting, top) => {
+              const entry = {
+                isIntersecting,
+                boundingClientRect: { top },
+                rootBounds: { top: 0 },
+              } as unknown as IntersectionObserverEntry;
+              callback([entry], this as unknown as IntersectionObserver);
+            };
+          }
+          observe() {}
+          disconnect() {}
+        }
+      );
+      return observer;
+    }
+
+    it('shows its edge only once the group has scrolled past the top', () => {
+      const observer = stubObserver();
+      render(
+        <StickyGroupHeader title="Shape" variant="band">
+          <div>content</div>
+        </StickyGroupHeader>
+      );
+      const bar = screen.getByRole('heading', { name: 'Shape' }).parentElement;
+      expect(bar).not.toHaveAttribute('data-stuck');
+
+      act(() => observer.report?.(false, -40));
+      expect(bar).toHaveAttribute('data-stuck');
+
+      act(() => observer.report?.(true, 12));
+      expect(bar).not.toHaveAttribute('data-stuck');
+    });
+
+    it('stays unstuck while the group is still below the scroll area', () => {
+      const observer = stubObserver();
+      render(
+        <StickyGroupHeader title="Lid" variant="band">
+          <div>content</div>
+        </StickyGroupHeader>
+      );
+      act(() => observer.report?.(false, 900));
+      expect(screen.getByRole('heading', { name: 'Lid' }).parentElement).not.toHaveAttribute(
+        'data-stuck'
+      );
+    });
   });
 });
