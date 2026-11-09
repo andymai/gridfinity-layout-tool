@@ -351,7 +351,7 @@ const en: Record<string, string> = {
   'sidebar.settings': 'Settings',
   'sidebar.maxHeight': 'Maximum height in millimeters',
   'sidebar.halfBinTooltip':
-    'Lets bins use 0.5-unit sizes and positions (H). Bins keep full-size sockets; turn on Half sockets in the bin designer for a denser base.',
+    'Lets bins use 0.5-unit sizes and positions (H). It leaves the socket pattern unchanged; for a denser base, turn on Half sockets in the bin designer.',
   'sidebar.halfBinLeft': 'Place half-unit column on the left',
   'sidebar.halfBinRight': 'Place half-unit column on the right',
   'sidebar.halfBinBottom': 'Place half-unit row at the bottom',
@@ -4349,7 +4349,7 @@ const en: Record<string, string> = {
   'binDesigner.gridUnitTooltip': 'Size of one grid cell in mm (standard Gridfinity = 42mm)',
   'binDesigner.halfBinMode': 'Half-grid mode',
   'binDesigner.halfBinModeHint':
-    'Width and depth change in 0.5u steps. The base keeps one full-size socket per cell; for a denser base, turn on Half sockets under Base.',
+    'Width and depth change in 0.5u steps, and the socket pattern stays the same. For a denser base, turn on Half sockets under Feet.',
   'binDesigner.halfSockets': 'Half sockets',
   'binDesigner.footLattice': 'Foot lattice',
   'binDesigner.footLattice.axis.x': 'Width axis',
