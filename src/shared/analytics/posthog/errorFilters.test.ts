@@ -44,6 +44,8 @@ describe('shouldIgnoreError — message patterns', () => {
     'Non-Error promise rejection captured with value: Request timeout getDictionariesByLanguageId',
     // A Safari extension's plain-object rejection, posthog-js's object wording
     "'TimeoutError' captured as exception with message: 'operation timed out'",
+    // Microsoft's link scanner rejecting from its automation bridge
+    'Non-Error promise rejection captured with value: Object Not Found Matching Id:14, MethodName:simulateEvent, ParamCount:1',
   ])('ignores %j', (msg) => {
     expect(shouldIgnoreError(msg)).toBe(true);
   });
@@ -57,6 +59,7 @@ describe('shouldIgnoreError — message patterns', () => {
     "'TimeoutError' captured as exception with message: 'operation timed out after 30s'",
     "TypeError: undefined is not an object (evaluating 'config.ethereum.rpcUrl')",
     'Invalid call to browserStorage.set()',
+    'Object Not Found Matching Id:14 in the layout library',
   ])('does NOT ignore real app error %j', (msg) => {
     expect(shouldIgnoreError(msg)).toBe(false);
   });
