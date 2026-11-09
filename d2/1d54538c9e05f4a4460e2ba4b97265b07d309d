@@ -1,0 +1,71 @@
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_66332f8bf1351d::t_3d43f27ac6faa1 63-64,139
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_66332f8bf1351d::t_76bb8f245e3520 670-671,675-676,678-679
+  s_66332f8bf1351d::t_5ba7baed8d0fe0 54,64,69,75,77-79,345,353,362,424,626,677
+  s_66332f8bf1351d::t_f264bdca758eae 625
+  s_66332f8bf1351d::t_906f3214aa8327 352
+  s_66332f8bf1351d::t_6f13e6907b91e9 423,425-427
+  s_66332f8bf1351d::t_220ea4248b6575 691
+  s_66332f8bf1351d::t_0f6848c8b248f4 65-68,70-74,76,80-84
+  s_66332f8bf1351d::t_5eb8c3d44b8eee 48-53
+  s_66332f8bf1351d::t_efe2dac7f8d0fa 391-393,395-396,399,406
+src/features/generation/worker/generators/dividerSplit.ts
+  s_66332f8bf1351d::t_3ac2328257618e 2-4,7-8,12-15,17-18,23-24,26-27,29,31-33,41-61,63-66,68-97,99-101,103,105,109-111,114-118,124-126,128,131,134-184,188-190,192,194,197-205,207-211
+  s_66332f8bf1351d::t_5ace6af1fb3cfe 196
+src/features/bin-designer/hooks/useExport.ts
+  s_66332f8bf1351d::t_5ace6af1fb3cfe 508,566
+src/features/generation/worker/generators/dividerSplit.test.ts
+  s_66332f8bf1351d::t_9ff160aebd195c 5-6,11,14,16,18-22,29-31,38-44,46-62,64-66,68-85,87,89,94,96-97,101,104-105,107-108,113,117-122,124-128,130-131,135-151,156-158,160-191
+src/features/generation/bridge/bridgeExports.ts
+  s_66332f8bf1351d::t_c9f8b5ee6d93f8 148,165
+src/features/generation/bridge/GenerationBridge.ts
+  s_66332f8bf1351d::t_c9f8b5ee6d93f8 496
+src/features/generation/bridge/messages.ts
+  s_66332f8bf1351d::t_c9f8b5ee6d93f8 395-397,399-402
+src/features/generation/worker/generators/dividerSeamPlan.test.ts
+  s_66332f8bf1351d::t_d1fb42fb2e072f 1-14,17-77,79-97
+  s_66332f8bf1351d::t_f9b7dded41b567 15-16,78
+src/features/generation/worker/generators/dividerExport.ts
+  s_66332f8bf1351d::t_e84178e67c1ea0 85-86
+  s_66332f8bf1351d::t_f1b2118f4c4d87 142
+  s_66332f8bf1351d::t_889fe3a9f54b88 13-14,17,19
+  s_66332f8bf1351d::t_f99ddd6e0ede2f 25-26
+  s_66332f8bf1351d::t_f8f82ddc5aef4f 78-84,87-100,107,124-125,128,130
+  s_66332f8bf1351d::t_5ba7baed8d0fe0 18,106,114,121,129
+src/shell/layoutExport/layoutExportFiles.ts
+  s_66332f8bf1351d::t_c9f8b5ee6d93f8 99
+src/features/generation/worker/handlers/exportHandler.ts
+  s_66332f8bf1351d::t_c9f8b5ee6d93f8 434
+  s_2210bb38a72219::t_f4a584506d6a15 293-294
+src/features/generation/worker/generators/dividerSeamPlan.ts
+  s_66332f8bf1351d::t_6d93feca540a98 1-2,6-19,26-33,37,39-41,43-46,51-52,63-67,69-77,81,85,87-89,91,95-102,105-111,114-115,119,121-125,135
+  s_66332f8bf1351d::t_e5c2fa91c54533 3-5,34-36,38,42,47-50,58-60,62,68,78-80,82-84,86,90,92-94,103,112-113,116-118,120,126-134
+  s_66332f8bf1351d::t_6ca16c4acd8a53 104
+  s_66332f8bf1351d::t_1bd7040db80279 53-57,61
+  s_66332f8bf1351d::t_5ba7baed8d0fe0 20-25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d21d54538c9e05f4a4460e2ba4b97265b07d309d",
+  "prompts": {},
+  "sessions": {
+    "s_2210bb38a72219": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eefb387c-1258-4f2e-95a8-face6aaa5878",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
