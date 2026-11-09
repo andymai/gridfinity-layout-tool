@@ -1,0 +1,41 @@
+src/features/generation/worker/generators/dividerSplit.ts
+  s_66332f8bf1351d::t_1ec088b7faf02b 27,36-41,160
+  s_66332f8bf1351d::t_beda1e6d0b411e 1-26,28-35,42-159,161-214
+src/shell/layoutExport/layoutExportFiles.ts
+  s_66332f8bf1351d::t_a4f05e9d35162f 97-100
+src/features/generation/bridge/messages.ts
+  s_66332f8bf1351d::t_4f61243dafc8a1 394-398
+src/features/generation/worker/generators/dividerExport.ts
+  s_66332f8bf1351d::t_6add681160bbc2 10,15,76-78,84-85,95-107,110,120
+src/features/bin-designer/hooks/useExport.ts
+  s_66332f8bf1351d::t_47aefa1b58bb70 645-646
+  s_66332f8bf1351d::t_5c1519e30d45b6 563-566
+src/features/generation/worker/handlers/exportHandler.ts
+  s_66332f8bf1351d::t_4f61243dafc8a1 440-441
+  s_66332f8bf1351d::t_e1a10b8c569a0b 293-301
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_66332f8bf1351d::t_a4f05e9d35162f 63-64,139
+src/features/generation/worker/generators/dividerSplit.test.ts
+  s_66332f8bf1351d::t_d2e4a8bc204e5a 12
+  s_66332f8bf1351d::t_78acffcf994a60 1-11,13-143
+src/features/generation/bridge/bridgeExports.ts
+  s_66332f8bf1351d::t_4f61243dafc8a1 148,165
+src/features/generation/bridge/GenerationBridge.ts
+  s_66332f8bf1351d::t_4f61243dafc8a1 496
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4e471dddf110cc69bbe04fccc9347194371b00da",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
