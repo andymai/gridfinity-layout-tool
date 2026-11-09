@@ -63,11 +63,27 @@ describe('useSupporterFocus', () => {
     expect(result.current.focusedId).toBe('g');
   });
 
-  it('shows a clicked bin without stopping the roll', () => {
+  it('pauses on a bin clicked mid-roll, as on its credit', () => {
     const { result, clock } = setup();
     act(() => result.current.selectBin('a'));
     expect(result.current.focusedId).toBe('a');
-    expect(clock.isPaused).toBe(false);
+    expect(clock.isPaused).toBe(true);
+    expect(clock.time).toBeCloseTo(9.75, 5);
+  });
+
+  it('stays paused while the focused bin is poked again', () => {
+    const { result, clock } = setup();
+    act(() => result.current.selectBin('a'));
+    act(() => result.current.selectBin('a'));
+    expect(clock.isPaused).toBe(true);
+    expect(result.current.focusedId).toBe('a');
+  });
+
+  it('only shows the card for a bin clicked after the roll', () => {
+    const { result } = setup({ rolling: false });
+    act(() => result.current.selectBin('a'));
+    expect(result.current.focusedId).toBe('a');
+    expect(result.current.flyTo).toBeNull();
   });
 
   it('flies to the bin when the roll is not running', () => {
@@ -118,6 +134,14 @@ describe('useSupporterFocus', () => {
     it('lets go the same way on a click into empty space', () => {
       const { result, clock } = setup();
       act(() => result.current.onCredit('a'));
+      act(() => result.current.release());
+      expect(result.current.focusedId).toBeNull();
+      expect(clock.isPaused).toBe(false);
+    });
+
+    it('resumes the roll when a clicked bin is let go', () => {
+      const { result, clock } = setup();
+      act(() => result.current.selectBin('a'));
       act(() => result.current.release());
       expect(result.current.focusedId).toBeNull();
       expect(clock.isPaused).toBe(false);
