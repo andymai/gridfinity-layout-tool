@@ -346,7 +346,8 @@ export function buildBaseplateSolid(
         pitch,
         MIN_PRINTABLE_TILE_MM,
         overTileHalfGrid,
-        overTileHalfGridSolidLeftover
+        overTileHalfGridSolidLeftover,
+        cellOpts
       )
     : [];
 

@@ -21,7 +21,7 @@ import type {
   ConnectorBoundaryFilter,
   ResolvedBaseplateParams,
 } from '@/shared/types/bin';
-import { isExteriorEdge, isMarginSeamStyle } from '@/shared/types/bin';
+import { isExteriorEdge } from '@/shared/types/bin';
 import { interiorBoundaryOffsetsMm } from './connectorKeys';
 // The fit checker subtracts the tongue protrusion from the bed budget on male
 // join edges — otherwise pieces that compute to exactly the bed width on paper
@@ -37,6 +37,7 @@ import { isFractional, reorderForDisplay } from './splitReorder';
 import {
   colToLetter,
   detachedSides,
+  marginSeamSides,
   makeAxisConfig,
   axisCapacity,
   tilingBedLoads,
@@ -81,6 +82,10 @@ export function bodyParamsForDetach(params: ResolvedBaseplateParams): ResolvedBa
   if (!params.detachMargins) return params;
   const det = detachedSides(params);
   if (!det.left && !det.right && !det.front && !det.back) return params;
+  // An unsplit body is built from these params rather than from a tiling
+  // piece, so they have to carry the seam edges a piece would.
+  const seam = marginSeamSides(params);
+  const kind = (s: boolean): BaseplateEdgeKind => (s ? 'marginSeam' : 'exterior');
   return {
     ...params,
     paddingLeft: det.left ? 0 : params.paddingLeft,
@@ -88,6 +93,16 @@ export function bodyParamsForDetach(params: ResolvedBaseplateParams): ResolvedBa
     paddingFront: det.front ? 0 : params.paddingFront,
     paddingBack: det.back ? 0 : params.paddingBack,
     cornerRadii: squaredBodyCornerRadii(params, det),
+    ...(seam.left || seam.right || seam.front || seam.back
+      ? {
+          edges: {
+            left: kind(seam.left),
+            right: kind(seam.right),
+            front: kind(seam.front),
+            back: kind(seam.back),
+          },
+        }
+      : {}),
   };
 }
 
@@ -208,29 +223,16 @@ export function computeBaseplateTiling(
   // that margin. Sub-threshold sides stay integral.
   const det = detachedSides(params);
 
-  // The opt-in connector marks the body↔long-rail seam so the connector
-  // builder adds a tongue there — or, under `dovetailKey`, a female groove that
-  // the seated key spans. Scoped to the LONG rails only (short rails stay
-  // friction-fit); snapClip stays out, as its top-insert clip has no seated form
-  // at a body↔rail seam. `longAxisX` mirrors `emitMargins`: front/back are the
-  // long rails, else left/right.
+  // The opt-in connector marks each body↔rail seam so the connector builder
+  // adds a tongue there — or, under `dovetailKey`, a female groove that the
+  // seated key spans.
   //
   // NOTE: the seam tongue protrudes TONGUE_PROTRUSION (1.5mm) past the body's
   // detached edge, which `axisChunkMm` doesn't yet budget against the bed. Only
   // matters when a SPLIT body chunk sits within 1.5mm of the bed on a detached
   // seam side — a rare compound case. Precise per-side seam budgeting is a
   // follow-up; deferred to avoid destabilizing the split math for all plates.
-  const seamOn =
-    params.detachMargins === true &&
-    params.detachMarginConnector === true &&
-    isMarginSeamStyle(params.connectorStyle);
-  const longAxisX = det.front || det.back;
-  const seam = {
-    left: seamOn && det.left && !longAxisX,
-    right: seamOn && det.right && !longAxisX,
-    front: seamOn && det.front && longAxisX,
-    back: seamOn && det.back && longAxisX,
-  };
+  const seam = marginSeamSides(params);
   const edgeKind = (isEdge: boolean, isSeam: boolean): BaseplateEdgeKind =>
     !isEdge ? 'join' : isSeam ? 'marginSeam' : 'exterior';
 

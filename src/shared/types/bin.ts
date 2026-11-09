@@ -606,8 +606,8 @@ export interface MarginPiece {
   /** Rail-center position in the plate-centered world frame (mm). */
   readonly worldOffsetMm: { readonly x: number; readonly y: number };
   /**
-   * Layout of the opt-in tongue-and-groove seam connector for a `long` rail
-   * (absent on short/friction-fit rails). The body grows one tongue per mating
+   * Layout of the opt-in tongue-and-groove seam connector along this rail's
+   * body wall, long or short. The body grows one tongue per mating
    * grid cell and the rail carves matching grooves; both sides recompute the same
    * cell-center set from `cellUnits`/`fractionalEdge` so they can't drift, and
    * `centerOffsetMm` re-anchors them onto the body wall on a corner-owning end
@@ -840,11 +840,10 @@ export interface ResolvedBaseplateParams {
    */
   readonly detachMargins?: boolean;
   /**
-   * Opt-in body↔long-rail connector for detached margins. When true and
-   * `detachMargins` is set, the detached exterior seam becomes a `marginSeam`
+   * Opt-in body↔rail connector for detached margins. When true and
+   * `detachMargins` is set, every detached exterior seam becomes a `marginSeam`
    * edge carrying a tongue (body side) that mates a groove in the rail, using
-   * the body's `connectorStyle`. Scoped to long rails; short rails/corners stay
-   * friction-fit. Omit/false = friction-fit only.
+   * the body's `connectorStyle`. Omit/false = friction-fit only.
    */
   readonly detachMarginConnector?: boolean;
   /**

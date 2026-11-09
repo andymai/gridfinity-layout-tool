@@ -131,7 +131,7 @@
   "baseplate.cornerShapedPaddingNotice": "모서리는 서랍 모양(레이아웃 탭)이 정합니다. 여백은 그 둘레로 플레이트를 넓힙니다.",
   "baseplate.decreasePadding": "{label} 줄이기",
   "baseplate.detachMarginConnector": "커넥터 추가",
-  "baseplate.detachMarginConnectorDetail": "이음과 동일한 커넥터로 긴 레일을 플레이트에 결합하여 마찰에만 의존하지 않습니다. 짧은 레일과 모서리는 마찰 끼움으로 유지됩니다.",
+  "baseplate.detachMarginConnectorDetail": "이음과 동일한 커넥터로 레일을 플레이트에 결합하여 마찰에만 의존하지 않습니다.",
   "baseplate.detachMarginConnectorStyle": "커넥터에는 도브테일, 퍼즐 또는 퍼즐 키 이음 스타일이 필요합니다.",
   "baseplate.detachMargins": "여백을 별도 조각으로 분리",
   "baseplate.detachMarginsTooSmall": "모든 가장자리의 여백이 분리하기에 너무 작습니다.",

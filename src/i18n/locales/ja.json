@@ -131,7 +131,7 @@
   "baseplate.cornerShapedPaddingNotice": "角は引き出しの形状（レイアウトタブ）で決まります。パディングはその周りにプレートを広げます。",
   "baseplate.decreasePadding": "{label}を減らす",
   "baseplate.detachMarginConnector": "コネクタを追加",
-  "baseplate.detachMarginConnectorDetail": "継ぎ目と同じコネクタで長いレールをプレートに接合し、摩擦ばめに頼りません。短いレールと角は摩擦ばめのままです。",
+  "baseplate.detachMarginConnectorDetail": "継ぎ目と同じコネクタでレールをプレートに接合し、摩擦ばめに頼りません。",
   "baseplate.detachMarginConnectorStyle": "コネクタには継ぎ目スタイル「Dovetail」「パズル」または「Dovetail key」が必要です。",
   "baseplate.detachMargins": "余白を別パーツとして分離",
   "baseplate.detachMarginsTooSmall": "余白がすべての辺で小さすぎて分離できません。",

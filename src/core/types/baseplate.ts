@@ -306,11 +306,10 @@ export interface StoredBaseplateParams {
    */
   readonly detachMargins?: boolean;
   /**
-   * Opt-in connector between the body and each detached long-rail margin
-   *. Adds a tongue/groove at the body↔long-rail seam using the
-   * body's {@link connectorStyle} so the rail attaches securely instead of
-   * relying on friction. Short rails and corners stay friction-fit. Only
-   * meaningful when {@link detachMargins} is true. Default false.
+   * Opt-in connector between the body and each detached margin rail. Adds a
+   * tongue/groove at every body↔rail seam using the body's
+   * {@link connectorStyle} so the rail attaches securely instead of relying on
+   * friction. Only meaningful when {@link detachMargins} is true. Default false.
    */
   readonly detachMarginConnector?: boolean;
   /**

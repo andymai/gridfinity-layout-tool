@@ -900,7 +900,7 @@
         "detachMarginConnector": {
           "type": "boolean",
           "default": false,
-          "description": "Add a connector at each body-to-long-rail seam. Short rails and corners stay friction-fit. Only meaningful when detachMargins is true."
+          "description": "Add a connector at each body-to-rail seam. Only meaningful when detachMargins is true."
         },
         "stackPrint": {
           "$ref": "#/$defs/StackPrintParams"

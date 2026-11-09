@@ -140,7 +140,7 @@
   "baseplate.cornerShapedPaddingNotice": "Кути задає форма шухляди (вкладка «Макет»). Відступи розширюють пластину навколо неї.",
   "baseplate.decreasePadding": "Зменшити {label}",
   "baseplate.detachMarginConnector": "Додати з'єднувач",
-  "baseplate.detachMarginConnectorDetail": "З'єднує довгі рейки з пластиною тим самим з'єднувачем, що й шви, замість покладатися на тертя. Короткі рейки та кути тримаються тертям.",
+  "baseplate.detachMarginConnectorDetail": "З'єднує рейки з пластиною тим самим з'єднувачем, що й шви, замість покладатися на тертя.",
   "baseplate.detachMarginConnectorStyle": "З'єднувач потребує стилю шва «Dovetail», «Пазл» або «Dovetail key».",
   "baseplate.detachMargins": "Відокремити поля як окремі деталі",
   "baseplate.detachMarginsTooSmall": "Поле занадто мале на кожному краю, щоб відокремити.",

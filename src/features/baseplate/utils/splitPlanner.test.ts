@@ -1788,8 +1788,8 @@ describe('margin-seam connector edge assignment (#2414)', () => {
     expect(frontEdges(p)).toEqual(new Set(['exterior']));
   });
 
-  it('only seams long rails — a short side stays exterior', () => {
-    // front is the long axis; left detaches too but as a short rail → no seam.
+  it('seams a short side as well as the long one (#4921)', () => {
+    // front is the long axis; left detaches too, as a short rail.
     const p = makeParams({
       detachMargins: true,
       detachMarginConnector: true,
@@ -1803,7 +1803,7 @@ describe('margin-seam connector edge assignment (#2414)', () => {
         .map((pc) => pc.edges.left)
     );
     expect(frontEdges(p)).toEqual(new Set(['marginSeam']));
-    expect(leftEdges).toEqual(new Set(['exterior']));
+    expect(leftEdges).toEqual(new Set(['marginSeam']));
   });
 });
 

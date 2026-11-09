@@ -377,6 +377,30 @@ describe('frameCells half-grid solid leftover (#2397)', () => {
   });
 });
 
+describe('frameCells fractional edge (#4921)', () => {
+  const backStripXs = (edge: 'start' | 'end'): number[] =>
+    frameCells(2.5, 1, { left: 0, right: 0, front: 0, back: 12 }, 42, 8, false, false, {
+      fractionalEdgeX: edge,
+    }).map((c) => c.centerX);
+  const nominalXs = (edge: 'start' | 'end'): number[] => {
+    const xs: number[] = [];
+    forEachCell(2.5, 1, (c) => xs.push(c.centerX), { fractionalEdgeX: edge });
+    return xs;
+  };
+
+  it('cuts its strips on the cells forEachCell lays out', () => {
+    expect(backStripXs('start')).toEqual(nominalXs('start'));
+    expect(backStripXs('end')).toEqual(nominalXs('end'));
+    expect(backStripXs('start')).toEqual([-42, -10.5, 31.5]);
+  });
+
+  it("defaults to the 'end' edge", () => {
+    expect(
+      frameCells(2.5, 1, { left: 0, right: 0, front: 0, back: 12 }, 42, 8).map((c) => c.centerX)
+    ).toEqual(nominalXs('end'));
+  });
+});
+
 describe('marginPocketDepthMm', () => {
   it('over-tile: whole margin is pocketed once it clears the threshold, else solid', () => {
     expect(marginPocketDepthMm(12, 42, 8, false)).toBeCloseTo(12, 9);

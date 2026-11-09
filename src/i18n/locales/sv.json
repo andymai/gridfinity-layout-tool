@@ -134,7 +134,7 @@
   "baseplate.cornerShapedPaddingNotice": "Lådans form bestämmer hörnen (fliken Layout). Utfyllnaden utökar plattan runt den.",
   "baseplate.decreasePadding": "Minska {label}",
   "baseplate.detachMarginConnector": "Lägg till koppling",
-  "baseplate.detachMarginConnectorDetail": "Kopplar de långa skenorna till plattan med samma koppling som fogarna, i stället för att förlita sig på friktion. Korta skenor och hörn sitter kvar med friktion.",
+  "baseplate.detachMarginConnectorDetail": "Kopplar skenorna till plattan med samma koppling som fogarna, i stället för att förlita sig på friktion.",
   "baseplate.detachMarginConnectorStyle": "Kopplingen kräver fogstilen Dovetail, Pussel eller Dovetail key.",
   "baseplate.detachMargins": "Lossa marginaler som separata delar",
   "baseplate.detachMarginsTooSmall": "Marginalen är för liten på varje kant för att lossas.",

@@ -134,7 +134,7 @@
   "baseplate.cornerShapedPaddingNotice": "La forma del cajón define las esquinas (pestaña Diseño). El relleno amplía la placa a su alrededor.",
   "baseplate.decreasePadding": "Disminuir {label}",
   "baseplate.detachMarginConnector": "Añadir conector",
-  "baseplate.detachMarginConnectorDetail": "Une los rieles largos a la placa con el mismo conector que usan las uniones, en lugar de depender de la fricción. Los rieles cortos y las esquinas quedan a fricción.",
+  "baseplate.detachMarginConnectorDetail": "Une los rieles a la placa con el mismo conector que usan las uniones, en lugar de depender de la fricción.",
   "baseplate.detachMarginConnectorStyle": "El conector requiere el estilo de unión Dovetail, Puzle o Dovetail key.",
   "baseplate.detachMargins": "Separar los márgenes como piezas independientes",
   "baseplate.detachMarginsTooSmall": "El relleno es demasiado pequeño en todos los bordes para separarlo.",

@@ -3997,7 +3997,7 @@
   "baseplate.detachMargins": "ველების ცალკე ნაწილებად გამოყოფა",
   "baseplate.detachMarginsTooSmall": "გამოსაყოფად შევსება ყველა კიდეზე ზედმეტად მცირეა.",
   "baseplate.detachMarginConnector": "შემაერთებლის დამატება",
-  "baseplate.detachMarginConnectorDetail": "გრძელ რელსებს ფირფიტასთან აერთებს იმავე შემაერთებლით, რომელსაც ნაკერები იყენებს, ხახუნზე დაყრდნობის ნაცვლად. მოკლე რელსები და კუთხეები ხახუნით მორგებული რჩება.",
+  "baseplate.detachMarginConnectorDetail": "რელსებს ფირფიტასთან აერთებს იმავე შემაერთებლით, რომელსაც ნაკერები იყენებს, ხახუნზე დაყრდნობის ნაცვლად.",
   "baseplate.detachMarginConnectorStyle": "შემაერთებელს სჭირდება ნაკერის სტილი „მერცხლის კუდი“, „ფაზლი“ ან „შემაერთებელი სოლი“.",
   "baseplate.sectionBase": "ძირი",
   "baseplate.sectionView": "ხედი",

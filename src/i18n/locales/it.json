@@ -134,7 +134,7 @@
   "baseplate.cornerShapedPaddingNotice": "La forma del cassetto definisce gli angoli (scheda Layout). Il margine allarga la piastra attorno a essa.",
   "baseplate.decreasePadding": "Riduci {label}",
   "baseplate.detachMarginConnector": "Aggiungi connettore",
-  "baseplate.detachMarginConnectorDetail": "Unisce le guide lunghe alla piastra con lo stesso connettore delle giunzioni, invece di affidarsi alla frizione. Le guide corte e gli angoli restano a frizione.",
+  "baseplate.detachMarginConnectorDetail": "Unisce le guide alla piastra con lo stesso connettore delle giunzioni, invece di affidarsi alla frizione.",
   "baseplate.detachMarginConnectorStyle": "Il connettore richiede lo stile di giunzione Coda di rondine, Puzzle o Chiave a coda di rondine.",
   "baseplate.detachMargins": "Stacca i margini come pezzi separati",
   "baseplate.detachMarginsTooSmall": "Il margine è troppo piccolo su ogni bordo per essere staccato.",

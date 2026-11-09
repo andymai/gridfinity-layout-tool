@@ -433,10 +433,10 @@ export function buildConnectors(
     }
   }
 
-  // Opt-in body↔long-rail connector, in one of two forms:
+  // Opt-in body↔rail connector, in one of two forms:
   //   - integral (dovetail/puzzle): one male tongue per mating grid cell along the
-  //     detached exterior wall, protruding into the rail, so a long rail is
-  //     anchored evenly along its length rather than at a single point;
+  //     detached exterior wall, protruding into the rail, so a rail is anchored
+  //     evenly along its length rather than at a single point;
   // - keyed (dovetailKey,): a female groove per interior cell BOUNDARY,
   //     with the seated key spanning into the rail's matching groove.
   // Either way the rail carries the mating half at the same anchors

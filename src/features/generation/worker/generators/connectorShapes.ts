@@ -110,7 +110,7 @@ export function makeGroove(
 }
 
 /**
- * Groove carved into a detached long rail's seam face to receive one of the
+ * Groove carved into a detached rail's seam face to receive one of the
  * body's margin-seam tongues. Uses the same profile/clearance the tongue
  * does so they mate, positioned along the seam by `tongueOffsetMm` (the caller
  * cuts one per cell). Built in the rail's own origin-centered frame (see

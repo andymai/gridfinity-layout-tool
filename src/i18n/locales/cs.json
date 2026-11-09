@@ -137,7 +137,7 @@
   "baseplate.cornerShapedPaddingNotice": "Rohy určuje tvar zásuvky (karta Rozvržení). Odsazení rozšiřuje desku kolem něj.",
   "baseplate.decreasePadding": "Zmenšit {label}",
   "baseplate.detachMarginConnector": "Přidat spojku",
-  "baseplate.detachMarginConnectorDetail": "Spojí dlouhé lišty s deskou stejnou spojkou jako švy, místo spoléhání na tření. Krátké lišty a rohy zůstanou drženy třením.",
+  "baseplate.detachMarginConnectorDetail": "Spojí lišty s deskou stejnou spojkou jako švy, místo spoléhání na tření.",
   "baseplate.detachMarginConnectorStyle": "Spojka vyžaduje styl švu Rybina, Puzzle nebo Klíč puzzle.",
   "baseplate.detachMargins": "Oddělit okraje jako samostatné díly",
   "baseplate.detachMarginsTooSmall": "Odsazení je na každé hraně příliš malé na oddělení.",

@@ -137,7 +137,7 @@ export function computeSeamJunctions(
 /**
  * Seated key locations on the body↔rail seams of detached margins.
  *
- * A long rail is emitted per outer body piece and records the mating wall's grid
+ * A rail is emitted per outer body piece and records the mating wall's grid
  * span in `seamConnector`, so the key positions are that span's interior cell
  * boundaries — the same anchors both sides cut their grooves on — re-centered from
  * the piece's grid center onto the rail's own center (`centerOffsetMm`).
@@ -161,7 +161,7 @@ function marginSeamJunctions(
 
   for (const margin of tiling.margins) {
     const seam = margin.seamConnector;
-    if (margin.role !== 'long' || !seam) continue;
+    if (!seam) continue;
     // A front/back rail runs along X, so its `cellUnits` are width cells (X
     // pitch) and its key spans Y; a left/right rail is the mirror image. Both
     // must use their own axis's pitch, matching `buildMarginSolid`.

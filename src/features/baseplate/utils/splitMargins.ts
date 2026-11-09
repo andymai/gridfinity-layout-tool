@@ -92,8 +92,8 @@ export function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayou
       ...fill,
     });
   };
-  // Seam-connector layout for a long rail: the mating body wall's grid width and
-  // its center offset from the rail center (nonzero on corner-owning end segments
+  // Seam-connector layout for a rail: the mating body wall's grid width and its
+  // center offset from the rail center (nonzero on corner-owning end segments
   // that extend over the perpendicular padding). See MarginPiece.seamConnector.
   const seamFor = (
     cellUnits: number,
@@ -166,23 +166,40 @@ export function emitMargins(params: ResolvedBaseplateParams, layout: MarginLayou
       const extB = !det.back && r === rowLast ? pb : 0;
       const len = rowSizes[r] * gridUnitMmY + extF + extB;
       const cy = rowCenter(r) - extF / 2 + extB / 2;
+      const seam = seamFor(rowSizes[r], rowCenter(r) - cy, fractionalEdgeY);
       if (det.left) {
         const owned: MarginCorner[] = [];
         if (!det.front && r === 0) owned.push('bl');
         if (!det.back && r === rowLast) owned.push('tl');
-        push(`margin-left-${r + 1}`, 'left', 'short', 0, r, len, pl, owned, {
-          x: -halfW - pl / 2,
-          y: cy,
-        });
+        push(
+          `margin-left-${r + 1}`,
+          'left',
+          'short',
+          0,
+          r,
+          len,
+          pl,
+          owned,
+          { x: -halfW - pl / 2, y: cy },
+          seam
+        );
       }
       if (det.right) {
         const owned: MarginCorner[] = [];
         if (!det.front && r === 0) owned.push('br');
         if (!det.back && r === rowLast) owned.push('tr');
-        push(`margin-right-${r + 1}`, 'right', 'short', colLast, r, len, pr, owned, {
-          x: halfW + pr / 2,
-          y: cy,
-        });
+        push(
+          `margin-right-${r + 1}`,
+          'right',
+          'short',
+          colLast,
+          r,
+          len,
+          pr,
+          owned,
+          { x: halfW + pr / 2, y: cy },
+          seam
+        );
       }
     }
   } else {

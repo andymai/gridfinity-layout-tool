@@ -131,7 +131,7 @@
   "baseplate.cornerShapedPaddingNotice": "角部由抽屉形状决定（「布局」选项卡）。留边会在其周围扩展底板。",
   "baseplate.decreasePadding": "减少 {label}",
   "baseplate.detachMarginConnector": "添加连接件",
-  "baseplate.detachMarginConnectorDetail": "用与接缝相同的连接件把长挡条接到底板上，不再依赖摩擦。短挡条和边角保持摩擦贴合。",
+  "baseplate.detachMarginConnectorDetail": "用与接缝相同的连接件把挡条接到底板上，不再依赖摩擦。",
   "baseplate.detachMarginConnectorStyle": "连接件需要燕尾、拼图或拼图键接缝样式。",
   "baseplate.detachMargins": "将留边分离为单独的块",
   "baseplate.detachMarginsTooSmall": "每条边的留边都太小，无法分离。",

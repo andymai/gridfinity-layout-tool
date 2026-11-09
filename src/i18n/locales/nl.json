@@ -134,7 +134,7 @@
   "baseplate.cornerShapedPaddingNotice": "De ladevorm bepaalt de hoeken (tabblad Indeling). De opvulling vergroot de plaat eromheen.",
   "baseplate.decreasePadding": "{label} verkleinen",
   "baseplate.detachMarginConnector": "Verbinding toevoegen",
-  "baseplate.detachMarginConnectorDetail": "Verbindt de lange rails met dezelfde verbinding als de naden met de plaat, in plaats van op klemvastheid te vertrouwen. Korte rails en hoeken blijven klemvast.",
+  "baseplate.detachMarginConnectorDetail": "Verbindt de rails met dezelfde verbinding als de naden met de plaat, in plaats van op klemvastheid te vertrouwen.",
   "baseplate.detachMarginConnectorStyle": "De verbinding vereist de naadstijl Dovetail, Puzzel of Dovetail key.",
   "baseplate.detachMargins": "Marges als losse onderdelen afsplitsen",
   "baseplate.detachMarginsTooSmall": "De marge is aan elke rand te klein om af te splitsen.",
