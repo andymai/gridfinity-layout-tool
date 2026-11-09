@@ -106,7 +106,6 @@ function jointAt(piece: Shape3D, x: number, span: JointSpan, b: Bounds3D, cl: nu
   }
 }
 
-/** The part of `piece` between two X planes, padded past the plate in Y and Z. */
 function slab(piece: Shape3D, fromX: number, toX: number, b: Bounds3D): Shape3D {
   const region = box(toX - fromX, b.yMax - b.yMin + 4, b.zMax - b.zMin + 4, {
     at: [(fromX + toX) / 2, (b.yMin + b.yMax) / 2, (b.zMin + b.zMax) / 2],
