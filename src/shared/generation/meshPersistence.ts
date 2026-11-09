@@ -91,6 +91,8 @@ const MESH_CACHE_VERSION = 'v29';
  * assembly-item previews (their own `item` segment) stay warm. The mirror of
  * {@link itemMeshCacheKey}'s segment.
  *
+ * `bin19`: a half-socket bin's overhang feet split at the main feet's
+ * half-unit seams instead of running whole grid units.
  * `bin18`: an interior fillet stops level with a label tab held below the
  * ceiling, instead of standing proud of the tab's border.
  * `bin17`: a hinged lid keeps its snap catch whole under a grip whose bin lip
@@ -123,7 +125,7 @@ const MESH_CACHE_VERSION = 'v29';
  * `bin1`: a lipless bin's sliding-lid entry window no longer ramps through the
  * rim, so its entry corners keep their full wall height.
  */
-const BIN_MESH_REVISION = 'bin18';
+const BIN_MESH_REVISION = 'bin19';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for
