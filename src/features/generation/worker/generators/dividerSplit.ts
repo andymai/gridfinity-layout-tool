@@ -12,21 +12,18 @@ import { box, cut, fuse, getBounds, intersect, measureVolume, translate, unwrap 
 import type { Bounds3D, Shape3D } from 'brepjs';
 import { err, isOk, ok } from '@/core/result';
 import type { Result } from '@/core/result';
-import { PUZZLE_HEAD_HALF } from '@/shared/constants/connectors';
+import { isWasmTrap } from '@/shared/generation/wasmTrap';
 import { makePuzzleGroove, makePuzzleTongue } from './connectorShapes';
-import { dividerJointClearance, dividerJointSpan } from './dividerSeamPlan';
+import {
+  chooseTongueRows,
+  dividerJointClearance,
+  dividerJointSpan,
+  tongueBandHalf,
+} from './dividerSeamPlan';
 import type { JointSpan } from './dividerSeamPlan';
-
-/** Below this plate height a second tongue would crowd the first. */
-const TWO_TONGUE_MIN_HEIGHT_MM = 16;
-
-/** Plate kept between a groove's head and the plate's edge or a notch. */
-const JOINT_EDGE_MARGIN_MM = 1;
 
 /** A band counts as solid when it keeps this share of its box's volume. */
 const SOLID_BAND_RATIO = 0.999;
-
-const ROW_SEARCH_STEP_MM = 1;
 
 interface Joint {
   readonly x: number;
@@ -59,37 +56,6 @@ function isSolidBand(
   }
 }
 
-/**
- * Heights for a seam's tongues: two on a tall plate, one otherwise, each in a
- * band that is solid across the whole joint. The evenly spaced heights come
- * first; a cross-lap notch or a lid relief there moves the tongue to the
- * nearest solid band instead.
- */
-function tongueRows(section: Shape3D, xLo: number, xHi: number, b: Bounds3D, cl: number): number[] {
-  const half = PUZZLE_HEAD_HALF + cl + JOINT_EDGE_MARGIN_MM;
-  const lo = b.yMin + half;
-  const hi = b.yMax - half;
-  if (hi < lo) return [];
-  const height = b.yMax - b.yMin;
-  const preferred =
-    height >= TWO_TONGUE_MIN_HEIGHT_MM
-      ? [b.yMin + height / 4, b.yMin + (3 * height) / 4]
-      : [b.yMin + height / 2];
-  const nearestPreferred = (y: number): number =>
-    Math.min(...preferred.map((p) => Math.abs(p - y)));
-  const scan: number[] = [];
-  for (let y = lo; y <= hi; y += ROW_SEARCH_STEP_MM) scan.push(y);
-  scan.sort((a, c) => nearestPreferred(a) - nearestPreferred(c));
-
-  const rows: number[] = [];
-  for (const y of [...preferred, ...scan]) {
-    if (rows.length === preferred.length) break;
-    if (y < lo || y > hi || rows.some((r) => Math.abs(r - y) < 2 * half)) continue;
-    if (isSolidBand(section, xLo, xHi, y, half, b)) rows.push(y);
-  }
-  return rows.sort((a, c) => a - c);
-}
-
 function jointAt(piece: Shape3D, x: number, span: JointSpan, b: Bounds3D, cl: number): Joint {
   const xLo = x - span.behind;
   const xHi = x + span.ahead;
@@ -100,7 +66,11 @@ function jointAt(piece: Shape3D, x: number, span: JointSpan, b: Bounds3D, cl: nu
   window.delete();
   if (!isOk(section)) return { x, rows: [] };
   try {
-    return { x, rows: tongueRows(section.value, xLo, xHi, b, cl) };
+    const half = tongueBandHalf(cl);
+    const rows = chooseTongueRows(b.yMin, b.yMax, cl, (y) =>
+      isSolidBand(section.value, xLo, xHi, y, half, b)
+    );
+    return { x, rows };
   } finally {
     section.value.delete();
   }
@@ -207,6 +177,9 @@ export function splitDividerPieceAtSeams(
     piece.delete();
     return ok(parts);
   } catch (e) {
+    // A trapped kernel cannot export the whole piece either; the worker has
+    // to see the trap to replace itself.
+    if (isWasmTrap(e)) throw e;
     return err(e instanceof Error ? e : new Error(String(e)));
   }
 }

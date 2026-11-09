@@ -1,12 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import {
   DIVIDER_SEAM_SHIFT_ALLOWANCE_MM,
+  chooseTongueRows,
   dividerJointClearance,
   dividerJointReach,
   dividerJointSpan,
   partLengthBudget,
   planDividerSeams,
   seamKeepOut,
+  tongueBandHalf,
 } from './dividerSeamPlan';
 import type { PieceObstruction } from './dividerPiecePatterns';
 
@@ -93,5 +95,37 @@ describe('seamKeepOut', () => {
     const k = seamKeepOut(12, CL);
     expect(k.offset - k.width / 2).toBeCloseTo(12 - behind, 9);
     expect(k.offset + k.width / 2).toBeCloseTo(12 + ahead, 9);
+  });
+});
+
+describe('chooseTongueRows', () => {
+  const half = tongueBandHalf(CL);
+  /** Solid wherever the band stays out of [from, to]. */
+  const blocked =
+    (from: number, to: number) =>
+    (y: number): boolean =>
+      y + half <= from || y - half >= to;
+
+  it('keeps the evenly spaced heights on a solid plate', () => {
+    expect(chooseTongueRows(-15, 15, CL, () => true)).toEqual([-7.5, 7.5]);
+    expect(chooseTongueRows(-6, 6, CL, () => true)).toEqual([0]);
+  });
+
+  it('puts both tongues in the solid half when a notch blocks the other', () => {
+    const rows = chooseTongueRows(-15, 15, CL, blocked(0, 15));
+    expect(rows).toHaveLength(2);
+    for (const y of rows) expect(y + half).toBeLessThanOrEqual(0);
+    expect(rows[1] - rows[0]).toBeGreaterThanOrEqual(2 * half);
+  });
+
+  it('finds a narrow solid band against the far edge', () => {
+    const rows = chooseTongueRows(-6.5, 6.5, CL, blocked(-6.5, 0.2));
+    expect(rows).toHaveLength(1);
+    expect(rows[0] - half).toBeGreaterThanOrEqual(0.2);
+  });
+
+  it('gives no rows when nothing is solid or the plate is too short', () => {
+    expect(chooseTongueRows(-15, 15, CL, () => false)).toEqual([]);
+    expect(chooseTongueRows(-2, 2, CL, () => true)).toEqual([]);
   });
 });

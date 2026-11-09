@@ -6,7 +6,7 @@
  * seam whose plate is notched or patterned still gets its tongue.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { box, cut, getBounds, intersect, measureVolume } from 'brepjs';
+import { box, cut, getBounds, getSolids, intersect, measureVolume } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import { isErr, isOk } from '@/core/result';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
@@ -124,8 +124,13 @@ describe('splitDividerPieceAtSeams', () => {
       expectLockingParts(split.value, 200);
       const pastSeam = (yLo: number, yHi: number): Shape3D =>
         box(3, yHi - yLo, 4, { at: [1.5, (yLo + yHi) / 2, 1] });
-      expect(volumeIn(left, pastSeam(-15, 0))).toBeGreaterThan(1);
       expect(volumeIn(left, pastSeam(0, 15))).toBeLessThan(0.01);
+      const region = pastSeam(-15, 0);
+      const tongues = intersect(left, region);
+      region.delete();
+      if (!isOk(tongues)) throw new Error('tongue probe failed');
+      expect(getSolids(tongues.value)).toHaveLength(2);
+      tongues.value.delete();
     } finally {
       left.delete();
       right.delete();
