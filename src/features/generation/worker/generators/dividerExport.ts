@@ -7,10 +7,12 @@
  */
 
 import { unwrap, fuse, exportSTEP } from 'brepjs';
+import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { deriveDimensions } from './pipeline/context';
 import type { ExportFormat, CombinedExportPiece } from '../../bridge/types';
 import { buildUniqueDividerPieces } from './dividerBuilder';
+import { splitDividerPieceToFit } from './dividerSplit';
 import { dividerInterior } from '@/shared/utils/slotMath';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
@@ -71,13 +73,16 @@ export async function exportDividers(
  * Export each divider piece separately with axis labels.
  *
  * Unlike `exportDividers()` which fuses all pieces, this returns one
- * labeled piece per enabled axis for combined bin + divider exports.
+ * labeled piece per enabled axis for combined bin + divider exports. With
+ * `maxPartLengthMm` (a split bin's print bed), a piece longer than the bed
+ * comes back as jointed parts labeled `<label>-part-1`, `-part-2`, and so on.
  */
 export async function exportDividerPiecesSeparately(
   params: BinParams,
   format: ExportFormat,
   tolerance = 0.01,
-  angularTolerance = EXPORT_ANGULAR_TOLERANCE_RAD
+  angularTolerance = EXPORT_ANGULAR_TOLERANCE_RAD,
+  maxPartLengthMm?: number
 ): Promise<CombinedExportPiece[]> {
   const { wallHeight } = deriveDimensions(params, true);
 
@@ -87,9 +92,22 @@ export async function exportDividerPiecesSeparately(
   const pieces = buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip);
   if (pieces.length === 0) return [];
 
+  const labeled: { shape: Shape3D; label: string }[] = [];
+  for (const { shape, label } of pieces) {
+    const parts =
+      maxPartLengthMm === undefined
+        ? [shape]
+        : splitDividerPieceToFit(shape, maxPartLengthMm, params.nozzleSizeMm);
+    if (parts.length === 1) {
+      labeled.push({ shape: parts[0], label });
+    } else {
+      parts.forEach((part, i) => labeled.push({ shape: part, label: `${label}-part-${i + 1}` }));
+    }
+  }
+
   const results: CombinedExportPiece[] = [];
   try {
-    for (const { shape, label } of pieces) {
+    for (const { shape, label } of labeled) {
       if (format === 'step') {
         const blob = unwrapExportBlob(exportSTEP(shape), 'STEP');
         results.push({ data: await blob.arrayBuffer(), label });
@@ -99,7 +117,7 @@ export async function exportDividerPiecesSeparately(
       }
     }
   } finally {
-    for (const p of pieces) p.shape.delete();
+    for (const p of labeled) p.shape.delete();
   }
   return results;
 }

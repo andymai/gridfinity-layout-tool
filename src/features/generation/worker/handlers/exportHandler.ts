@@ -290,8 +290,15 @@ export async function handleExportDividers(message: ExportDividersMessage): Prom
  * - No dividers: single bin piece (same as regular export)
  */
 export async function handleExportCombined(message: ExportCombinedMessage): Promise<void> {
-  const { params, requestId, format, tolerance, angularTolerance, separatePieces } =
-    message.payload;
+  const {
+    params,
+    requestId,
+    format,
+    tolerance,
+    angularTolerance,
+    separatePieces,
+    maxPartLengthMm,
+  } = message.payload;
   await ensureDesignFonts(params);
 
   await runExport(
@@ -430,7 +437,8 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
           params,
           format,
           tolerance,
-          angularTolerance
+          angularTolerance,
+          maxPartLengthMm
         );
         pieces.push(...dividerPieces);
       }

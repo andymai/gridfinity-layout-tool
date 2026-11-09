@@ -145,6 +145,7 @@ export function exportCombined(
     tolerance?: number;
     angularTolerance?: number;
     separatePieces?: boolean;
+    maxPartLengthMm?: number;
     onProgress?: (progress: number) => void;
   }
 ): Promise<CombinedExportResult> {
@@ -161,6 +162,7 @@ export function exportCombined(
         tolerance: options?.tolerance,
         angularTolerance: options?.angularTolerance,
         separatePieces: options?.separatePieces,
+        maxPartLengthMm: options?.maxPartLengthMm,
       },
     }),
     options?.onProgress

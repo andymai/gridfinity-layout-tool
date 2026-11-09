@@ -391,6 +391,11 @@ export interface ExportCombinedPayload {
    * always per-piece.
    */
   readonly separatePieces?: boolean;
+  /**
+   * Longest part the print bed takes (mm). A split export sets it so a
+   * removable divider longer than the bed comes back as jointed parts.
+   */
+  readonly maxPartLengthMm?: number;
 }
 
 export interface GenerateSplitPreviewMessage {

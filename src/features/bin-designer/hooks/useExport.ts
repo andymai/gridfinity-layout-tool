@@ -560,9 +560,10 @@ export function useExport(): UseExportReturn {
             () => {
               const bridge = getActiveBridge();
               if (!bridge) throw new Error('Bridge not available');
-              return format === 'step'
-                ? bridge.exportCombined(splitParams, 'step', { separatePieces: true })
-                : bridge.exportCombined(splitParams, 'stl');
+              return bridge.exportCombined(splitParams, format === 'step' ? 'step' : 'stl', {
+                separatePieces: format === 'step',
+                maxPartLengthMm: Math.max(printBedSize, printBedDepth ?? printBedSize),
+              });
             },
             {
               onAttempt: (attempts) => {
@@ -641,6 +642,8 @@ export function useExport(): UseExportReturn {
     [
       params,
       chunkLimit,
+      printBedSize,
+      printBedDepth,
       hasDividers,
       hasLid,
       hasFeet,

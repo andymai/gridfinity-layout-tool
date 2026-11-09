@@ -493,6 +493,7 @@ export class GenerationBridge {
       tolerance?: number;
       angularTolerance?: number;
       separatePieces?: boolean;
+      maxPartLengthMm?: number;
       onProgress?: (progress: number) => void;
     }
   ): Promise<CombinedExportResult> {
