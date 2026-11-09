@@ -1,6 +1,6 @@
 /**
- * Always-visible bin-size block at the top of the cutout inspector, so the bin
- * can be resized without leaving the editor. Reuses the main DimensionsSection
+ * Always-visible bin-size block in the cutout inspector, so the bin can be
+ * resized without leaving the editor. Reuses the main DimensionsSection
  * (self-wired to the designer store) and, when cutouts sit past the footprint,
  * surfaces a warning offering the two ways out: grow the board to them, or
  * clamp them back in.
@@ -49,7 +49,11 @@ interface BinSizeSectionProps {
   readonly pocketChecks?: PocketChecksView;
 }
 
-export function BinSizeSection({
+/**
+ * The bin size block's warnings on their own, for an inspector that shows the
+ * block below a selection but must keep a stranded or too-thin cutout in view.
+ */
+export function BinSizeIssues({
   offBoardCount,
   onClampOffBoard,
   onCenterOffBoard,
@@ -60,11 +64,7 @@ export function BinSizeSection({
 }: BinSizeSectionProps) {
   const t = useTranslation();
   return (
-    <div className="space-y-3 border-b border-stroke-subtle pb-3 pt-3">
-      <SubHeader>{t('binDesigner.cutoutEditor.binSize')}</SubHeader>
-
-      <DimensionsSection />
-
+    <>
       {offBoardCount > 0 && (
         // Alert carries role="alert", so the warning now announces when a cutout
         // is stranded; the hand-rolled box it replaces was silent.
@@ -140,6 +140,20 @@ export function BinSizeSection({
       )}
 
       {pocketChecks && <PocketIssueList {...pocketChecks} />}
+    </>
+  );
+}
+
+export function BinSizeSection({
+  showIssues = true,
+  ...issues
+}: BinSizeSectionProps & { readonly showIssues?: boolean }) {
+  const t = useTranslation();
+  return (
+    <div className="space-y-3 border-b border-stroke-subtle pb-3 pt-3">
+      <SubHeader>{t('binDesigner.cutoutEditor.binSize')}</SubHeader>
+      <DimensionsSection />
+      {showIssues && <BinSizeIssues {...issues} />}
     </div>
   );
 }

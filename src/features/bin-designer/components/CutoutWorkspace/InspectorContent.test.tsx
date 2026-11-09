@@ -59,14 +59,24 @@ vi.mock('../panel/CutoutsSection/geometry', () => ({
 }));
 
 vi.mock('./BinSizeSection', () => ({
+  BinSizeIssues: ({ offBoardCount }: { offBoardCount: number }) =>
+    offBoardCount > 0 ? (
+      <div data-testid="bin-size-issues" data-off-board-count={offBoardCount} />
+    ) : null,
   BinSizeSection: ({
     offBoardCount,
     onClampOffBoard,
+    showIssues = true,
   }: {
     offBoardCount: number;
     onClampOffBoard?: () => void;
+    showIssues?: boolean;
   }) => (
-    <div data-testid="bin-size-section" data-off-board-count={offBoardCount}>
+    <div
+      data-testid="bin-size-section"
+      data-off-board-count={offBoardCount}
+      data-show-issues={String(showIssues)}
+    >
       {onClampOffBoard && (
         <button type="button" onClick={onClampOffBoard}>
           clamp
@@ -182,6 +192,40 @@ describe('InspectorContent', () => {
       />
     );
     expect(screen.getByTestId('bin-size-section')).toBeInTheDocument();
+  });
+
+  it('leads with the selected shape and keeps the bin block below it', () => {
+    render(
+      <InspectorContent
+        {...defaultProps}
+        cutouts={[createCutout()]}
+        selection={new Set(['cutout1'])}
+      />
+    );
+    const shapeField = screen.getByTestId('compact-input-X');
+    const binBlock = screen.getByTestId('bin-size-section');
+    expect(shapeField.compareDocumentPosition(binBlock)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
+  it('keeps the bin warnings above the selected shape', () => {
+    render(
+      <InspectorContent
+        {...defaultProps}
+        cutouts={[createCutout()]}
+        selection={new Set(['cutout1'])}
+        offBoardCount={2}
+      />
+    );
+    const warnings = screen.getByTestId('bin-size-issues');
+    const shapeField = screen.getByTestId('compact-input-X');
+    expect(warnings.compareDocumentPosition(shapeField)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(screen.getByTestId('bin-size-section')).toHaveAttribute('data-show-issues', 'false');
+  });
+
+  it('shows the bin warnings inside the bin block when nothing is selected', () => {
+    render(<InspectorContent {...defaultProps} offBoardCount={2} />);
+    expect(screen.getByTestId('bin-size-section')).toHaveAttribute('data-show-issues', 'true');
+    expect(screen.queryByTestId('bin-size-issues')).not.toBeInTheDocument();
   });
 
   // Bin-level controls are the ones you must not have to change selection to

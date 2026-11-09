@@ -24,6 +24,12 @@ describe('BinSizeSection', () => {
     expect(screen.getByTestId('dimensions-section')).toBeInTheDocument();
   });
 
+  it('leaves its warnings out when the inspector shows them elsewhere', () => {
+    render(<BinSizeSection offBoardCount={2} depthShortfallCount={1} showIssues={false} />);
+    expect(screen.getByTestId('dimensions-section')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('hides the off-board warning when nothing is stranded', () => {
     render(<BinSizeSection offBoardCount={0} onClampOffBoard={vi.fn()} />);
     expect(screen.queryByText(tk(`${K}.offBoardWarning`, { count: 0 }))).not.toBeInTheDocument();

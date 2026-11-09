@@ -39,7 +39,7 @@ import { fingerBottom } from '@/shared/utils/fingerAccess';
 import { BatchEntryEdgeFields } from './BatchEntryEdgeFields';
 import { CutoutColorControls } from './CutoutColorControls';
 import { CutoutBoardSettings } from './CutoutBoardSettings';
-import { BinSizeSection } from './BinSizeSection';
+import { BinSizeIssues, BinSizeSection } from './BinSizeSection';
 import { BinFeaturesSection } from './BinFeaturesSection';
 import { FitTestButton } from './FitTestButton';
 import { ShadowBoardButton } from './ShadowBoardButton';
@@ -231,19 +231,22 @@ export function InspectorContent({
       selectedCutouts.every((c) => isThroughCut(c, st.params) || fingerBottom(c) === 'curved')
   );
 
-  // Bin-level controls stay visible across every selection state so the user can
-  // resize the board and clear the stacking lip without leaving the editor.
-  const binControls = (
+  const binIssues = {
+    offBoardCount,
+    onClampOffBoard,
+    onCenterOffBoard,
+    depthShortfallCount,
+    pocketChecks,
+    growTarget,
+    onGrowToFit,
+  };
+  // Bin-level controls stay in every selection state so the user can resize the
+  // board and clear the stacking lip without leaving the editor. With a
+  // selection they follow its sections, so the shape being edited comes first,
+  // and their warnings move to the top, because those name the selected shapes.
+  const binControls = (showIssues: boolean) => (
     <>
-      <BinSizeSection
-        offBoardCount={offBoardCount}
-        onClampOffBoard={onClampOffBoard}
-        onCenterOffBoard={onCenterOffBoard}
-        depthShortfallCount={depthShortfallCount}
-        pocketChecks={pocketChecks}
-        growTarget={growTarget}
-        onGrowToFit={onGrowToFit}
-      />
+      <BinSizeSection {...binIssues} showIssues={showIssues} />
       <BinFeaturesSection />
       <FitTestButton />
       {!throughOnly && <ShadowBoardButton />}
@@ -253,7 +256,7 @@ export function InspectorContent({
   if (selectedCutouts.length === 0) {
     return (
       <div className="space-y-1.5">
-        {binControls}
+        {binControls(true)}
         {board ? (
           <CutoutBoardSettings
             gridSize={board.gridSize}
@@ -378,7 +381,9 @@ export function InspectorContent({
 
   return (
     <div className="space-y-1.5">
-      {binControls}
+      <div className="space-y-3 pt-3 empty:hidden">
+        <BinSizeIssues {...binIssues} />
+      </div>
       {singleCutout && (
         <SingleCutoutInspector
           cutout={singleCutout}
@@ -568,6 +573,8 @@ export function InspectorContent({
           </span>
         </div>
       )}
+
+      {binControls(false)}
     </div>
   );
 }
