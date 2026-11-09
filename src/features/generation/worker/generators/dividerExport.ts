@@ -10,13 +10,19 @@ import { unwrap, fuse, exportSTEP } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { deriveDimensions } from './pipeline/context';
+import { createLogger } from '@/core/logger';
+import { isOk } from '@/core/result';
 import type { ExportFormat, CombinedExportPiece } from '../../bridge/types';
 import { buildUniqueDividerPieces } from './dividerBuilder';
-import { splitDividerPieceToFit } from './dividerSplit';
+import type { LabeledDividerPiece } from './dividerBuilder';
+import type { DividerBedFit } from './dividerSeamPlan';
+import { splitDividerPieceAtSeams } from './dividerSplit';
 import { dividerInterior } from '@/shared/utils/slotMath';
 import { unwrapExportBlob } from './utils/exportUnwrap';
 import { exportSolidToStl } from './utils/stlMeshFallback';
 import { EXPORT_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
+
+const logger = createLogger('dividerExport');
 
 /**
  * Export unique divider piece(s) as a single STL file.
@@ -69,44 +75,59 @@ export async function exportDividers(
   }
 }
 
+interface LabeledShape {
+  readonly shape: Shape3D;
+  readonly label: string;
+}
+
+/**
+ * A piece's parts for the bed, labeled `<label>-part-1`, `-part-2` and so on.
+ * A piece whose joints cannot be cut ships whole rather than as parts that
+ * cannot lock together.
+ */
+function piecePartsForBed(piece: LabeledDividerPiece, nozzleSizeMm?: number): LabeledShape[] {
+  const split = splitDividerPieceAtSeams(piece.shape, piece.seams ?? [], nozzleSizeMm);
+  if (!isOk(split)) {
+    logger.warn('[exportDividerPiecesSeparately] divider left whole', {
+      label: piece.label,
+      error: split.error.message,
+    });
+    return [piece];
+  }
+  if (split.value.length === 1) return [piece];
+  return split.value.map((shape, i) => ({ shape, label: `${piece.label}-part-${i + 1}` }));
+}
+
 /**
  * Export each divider piece separately with axis labels.
  *
  * Unlike `exportDividers()` which fuses all pieces, this returns one
  * labeled piece per enabled axis for combined bin + divider exports. With
- * `maxPartLengthMm` (a split bin's print bed), a piece longer than the bed
- * comes back as jointed parts labeled `<label>-part-1`, `-part-2`, and so on.
+ * `fit` (a split bin's bed), a piece longer than the bed comes back as
+ * jointed parts.
  */
 export async function exportDividerPiecesSeparately(
   params: BinParams,
   format: ExportFormat,
   tolerance = 0.01,
   angularTolerance = EXPORT_ANGULAR_TOLERANCE_RAD,
-  maxPartLengthMm?: number
+  fit?: DividerBedFit
 ): Promise<CombinedExportPiece[]> {
   const { wallHeight } = deriveDimensions(params, true);
 
   const { innerW, innerD } = dividerInterior(params);
   const hasLip = params.base.stackingLip;
 
-  const pieces = buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip);
+  const pieces = buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip, fit);
   if (pieces.length === 0) return [];
 
-  const labeled: { shape: Shape3D; label: string }[] = [];
-  for (const { shape, label } of pieces) {
-    const parts =
-      maxPartLengthMm === undefined
-        ? [shape]
-        : splitDividerPieceToFit(shape, maxPartLengthMm, params.nozzleSizeMm);
-    if (parts.length === 1) {
-      labeled.push({ shape: parts[0], label });
-    } else {
-      parts.forEach((part, i) => labeled.push({ shape: part, label: `${label}-part-${i + 1}` }));
-    }
-  }
-
+  const labeled: LabeledShape[] = [];
+  let unsplit = 0;
   const results: CombinedExportPiece[] = [];
   try {
+    for (; unsplit < pieces.length; unsplit++) {
+      labeled.push(...piecePartsForBed(pieces[unsplit], fit?.nozzleSizeMm));
+    }
     for (const { shape, label } of labeled) {
       if (format === 'step') {
         const blob = unwrapExportBlob(exportSTEP(shape), 'STEP');
@@ -118,6 +139,7 @@ export async function exportDividerPiecesSeparately(
     }
   } finally {
     for (const p of labeled) p.shape.delete();
+    for (let i = unsplit; i < pieces.length; i++) pieces[i].shape.delete();
   }
   return results;
 }

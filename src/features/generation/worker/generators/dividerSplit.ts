@@ -1,77 +1,36 @@
 /**
- * Cuts a flat removable-divider plate that is longer than the print bed into
- * parts that fit, joined by the baseplate's puzzle tongue so the parts lock
- * back into one plate before it slides into the bin.
+ * Cuts a flat removable-divider plate at its planned seams into parts joined
+ * by the baseplate's puzzle tongue, so the parts lock back into one plate
+ * before it slides into the bin.
  *
  * A plate lies flat in its print frame: length along X, installed height along
- * Y, thickness along Z (see `buildDividerPiece`). Every cut is a plane of
- * constant X.
+ * Y, thickness along Z (see `buildDividerPiece`). Every seam is a plane of
+ * constant X, and the part left of it carries the tongue.
  */
 
 import { box, cut, fuse, getBounds, intersect, measureVolume, translate, unwrap } from 'brepjs';
-import type { Shape3D } from 'brepjs';
-import { isOk } from '@/core/result';
-import {
-  PUZZLE_HEAD_HALF,
-  PUZZLE_PROTRUSION,
-  TONGUE_CLEARANCE,
-  effectiveClearance,
-} from '@/shared/constants/connectors';
+import type { Bounds3D, Shape3D } from 'brepjs';
+import { err, isOk, ok } from '@/core/result';
+import type { Result } from '@/core/result';
+import { PUZZLE_HEAD_HALF } from '@/shared/constants/connectors';
 import { makePuzzleGroove, makePuzzleTongue } from './connectorShapes';
-
-/**
- * Room each cut keeps for moving off a notch or a pattern hole. Planning
- * against `maxLengthMm` minus this means a moved cut still leaves every part
- * inside the bed.
- */
-export const DIVIDER_CUT_SHIFT_ALLOWANCE_MM = 20;
+import { dividerJointClearance, dividerJointSpan } from './dividerSeamPlan';
+import type { JointSpan } from './dividerSeamPlan';
 
 /** Below this plate height a second tongue would crowd the first. */
 const TWO_TONGUE_MIN_HEIGHT_MM = 16;
 
-/** A section counts as solid when it keeps this share of the window's volume. */
-const SOLID_WINDOW_RATIO = 0.999;
+/** Plate kept between a groove's head and the plate's edge or a notch. */
+const JOINT_EDGE_MARGIN_MM = 1;
 
-/**
- * Solid plate kept on each side of a joint, so a seam beside a cross-lap
- * notch does not leave a thin strip between the two.
- */
-const JOINT_SOLID_MARGIN_MM = 3;
+/** A band counts as solid when it keeps this share of its box's volume. */
+const SOLID_BAND_RATIO = 0.999;
 
-/**
- * Cut positions (X) that split `[minX, maxX]` into equal parts short enough to
- * fit `maxLengthMm` with a tongue of `reachMm` on one end. Empty when the
- * plate already fits or the bed is too short for any jointed part.
- */
-export function planDividerCuts(
-  minX: number,
-  maxX: number,
-  maxLengthMm: number,
-  reachMm: number
-): number[] {
-  const length = maxX - minX;
-  if (length <= maxLengthMm) return [];
-  const usable = maxLengthMm - reachMm - DIVIDER_CUT_SHIFT_ALLOWANCE_MM;
-  if (usable <= 0) return [];
-  const parts = Math.ceil(length / usable);
-  return Array.from({ length: parts - 1 }, (_, i) => minX + (length * (i + 1)) / parts);
-}
+const ROW_SEARCH_STEP_MM = 1;
 
-/** Offsets tried around a planned cut, nearest first, inside the allowance. */
-export function cutSearchOffsets(stepMm = 1): number[] {
-  const max = DIVIDER_CUT_SHIFT_ALLOWANCE_MM / 2;
-  const offsets = [0];
-  for (let d = stepMm; d <= max; d += stepMm) offsets.push(d, -d);
-  return offsets;
-}
-
-/** Tongue centers along the plate height: two on a tall plate, one otherwise. */
-export function tongueCenters(minY: number, maxY: number, clearanceMm: number): number[] {
-  const height = maxY - minY;
-  const headSpan = 2 * (PUZZLE_HEAD_HALF + clearanceMm);
-  if (height < headSpan + 2) return [];
-  if (height >= TWO_TONGUE_MIN_HEIGHT_MM) return [minY + height / 4, minY + (3 * height) / 4];
-  return [minY + height / 2];
+interface Joint {
+  readonly x: number;
+  readonly rows: readonly number[];
 }
 
 function volumeOf(shape: Shape3D): number {
@@ -79,136 +38,176 @@ function volumeOf(shape: Shape3D): number {
   return isOk(v) ? v.value : 0;
 }
 
-/**
- * True when the plate is full-height and full-thickness across the joint's
- * footprint at `x`, so the tongue and groove land in solid material rather
- * than in a cross-lap notch or a wall-pattern hole.
- */
-function isSolidAt(piece: Shape3D, x: number, halfWidth: number): boolean {
-  const b = getBounds(piece);
-  const w = 2 * halfWidth;
-  const h = b.yMax - b.yMin;
+function isSolidBand(
+  section: Shape3D,
+  xLo: number,
+  xHi: number,
+  y: number,
+  half: number,
+  b: Bounds3D
+): boolean {
   const t = b.zMax - b.zMin;
-  const window = box(w, h, t, {
-    at: [x, (b.yMin + b.yMax) / 2, (b.zMin + b.zMax) / 2],
-  });
+  const band = box(xHi - xLo, 2 * half, t, { at: [(xLo + xHi) / 2, y, (b.zMin + b.zMax) / 2] });
   try {
-    const section = intersect(piece, window);
-    if (!isOk(section)) return false;
-    const solid = volumeOf(section.value) >= SOLID_WINDOW_RATIO * w * h * t;
-    section.value.delete();
+    const hit = intersect(section, band);
+    if (!isOk(hit)) return false;
+    const solid = volumeOf(hit.value) >= SOLID_BAND_RATIO * (xHi - xLo) * 2 * half * t;
+    hit.value.delete();
     return solid;
   } finally {
-    window.delete();
+    band.delete();
   }
 }
 
-/** Half-space slab from `fromX` to `toX`, padded past the plate in Y and Z. */
-function slab(piece: Shape3D, fromX: number, toX: number): Shape3D {
-  const b = getBounds(piece);
-  const pad = 2;
-  return box(toX - fromX, b.yMax - b.yMin + 2 * pad, b.zMax - b.zMin + 2 * pad, {
+/**
+ * Heights for a seam's tongues: two on a tall plate, one otherwise, each in a
+ * band that is solid across the whole joint. The evenly spaced heights come
+ * first; a cross-lap notch or a lid relief there moves the tongue to the
+ * nearest solid band instead.
+ */
+function tongueRows(section: Shape3D, xLo: number, xHi: number, b: Bounds3D, cl: number): number[] {
+  const half = PUZZLE_HEAD_HALF + cl + JOINT_EDGE_MARGIN_MM;
+  const lo = b.yMin + half;
+  const hi = b.yMax - half;
+  if (hi < lo) return [];
+  const height = b.yMax - b.yMin;
+  const preferred =
+    height >= TWO_TONGUE_MIN_HEIGHT_MM
+      ? [b.yMin + height / 4, b.yMin + (3 * height) / 4]
+      : [b.yMin + height / 2];
+  const nearestPreferred = (y: number): number =>
+    Math.min(...preferred.map((p) => Math.abs(p - y)));
+  const scan: number[] = [];
+  for (let y = lo; y <= hi; y += ROW_SEARCH_STEP_MM) scan.push(y);
+  scan.sort((a, c) => nearestPreferred(a) - nearestPreferred(c));
+
+  const rows: number[] = [];
+  for (const y of [...preferred, ...scan]) {
+    if (rows.length === preferred.length) break;
+    if (y < lo || y > hi || rows.some((r) => Math.abs(r - y) < 2 * half)) continue;
+    if (isSolidBand(section, xLo, xHi, y, half, b)) rows.push(y);
+  }
+  return rows.sort((a, c) => a - c);
+}
+
+function jointAt(piece: Shape3D, x: number, span: JointSpan, b: Bounds3D, cl: number): Joint {
+  const xLo = x - span.behind;
+  const xHi = x + span.ahead;
+  const window = box(xHi - xLo, b.yMax - b.yMin + 2, b.zMax - b.zMin + 2, {
+    at: [(xLo + xHi) / 2, (b.yMin + b.yMax) / 2, (b.zMin + b.zMax) / 2],
+  });
+  const section = intersect(piece, window);
+  window.delete();
+  if (!isOk(section)) return { x, rows: [] };
+  try {
+    return { x, rows: tongueRows(section.value, xLo, xHi, b, cl) };
+  } finally {
+    section.value.delete();
+  }
+}
+
+/** The part of `piece` between two X planes, padded past the plate in Y and Z. */
+function slab(piece: Shape3D, fromX: number, toX: number, b: Bounds3D): Shape3D {
+  const region = box(toX - fromX, b.yMax - b.yMin + 4, b.zMax - b.zMin + 4, {
     at: [(fromX + toX) / 2, (b.yMin + b.yMax) / 2, (b.zMin + b.zMax) / 2],
   });
+  try {
+    return unwrap(intersect(piece, region));
+  } finally {
+    region.delete();
+  }
 }
 
 /** A puzzle prism through the plate's thickness at seam `x`, protruding +X. */
 function jointPrism(
-  piece: Shape3D,
   x: number,
-  centers: readonly number[],
-  clearanceMm: number,
+  y: number,
+  b: Bounds3D,
+  cl: number,
   kind: 'tongue' | 'groove'
-): Shape3D | null {
-  if (centers.length === 0) return null;
-  const b = getBounds(piece);
+): Shape3D {
   const depth = b.zMax - b.zMin + 4;
   const at = (wall: number, along: number): [number, number] => [wall, along];
-  const prisms = centers.map((y) =>
+  const prism =
     kind === 'tongue'
       ? makePuzzleTongue(at, x, y, 1, depth)
-      : makePuzzleGroove(at, x, y, -1, clearanceMm, 1, depth)
-  );
-  const lifted = prisms.map((p) => {
-    const moved = translate(p, [0, 0, b.zMax + 2]);
-    p.delete();
-    return moved;
-  });
-  if (lifted.length === 1) return lifted[0];
-  const fused = unwrap(fuse(lifted[0], lifted[1]));
-  for (const p of lifted) p.delete();
-  return fused;
+      : makePuzzleGroove(at, x, y, -1, cl, 1, depth);
+  try {
+    return translate(prism, [0, 0, b.zMax + 2]);
+  } finally {
+    prism.delete();
+  }
+}
+
+function cutParts(piece: Shape3D, joints: readonly Joint[], b: Bounds3D, cl: number): Shape3D[] {
+  const parts: Shape3D[] = [];
+  let current: Shape3D | null = null;
+  try {
+    for (let i = 0; i <= joints.length; i++) {
+      const fromX = i === 0 ? b.xMin - 1 : joints[i - 1].x;
+      const toX = i === joints.length ? b.xMax + 1 : joints[i].x;
+      current = slab(piece, fromX, toX, b);
+      for (const y of i > 0 ? joints[i - 1].rows : []) {
+        const groove = jointPrism(fromX, y, b, cl, 'groove');
+        try {
+          const grooved: Shape3D = unwrap(cut(current, groove));
+          current.delete();
+          current = grooved;
+        } finally {
+          groove.delete();
+        }
+      }
+      for (const y of i < joints.length ? joints[i].rows : []) {
+        const prism = jointPrism(toX, y, b, cl, 'tongue');
+        let tongue: Shape3D;
+        try {
+          tongue = unwrap(intersect(piece, prism));
+        } finally {
+          prism.delete();
+        }
+        try {
+          const joined: Shape3D = unwrap(fuse(current, tongue));
+          current.delete();
+          current = joined;
+        } finally {
+          tongue.delete();
+        }
+      }
+      parts.push(current);
+      current = null;
+    }
+    return parts;
+  } catch (e) {
+    current?.delete();
+    for (const p of parts) p.delete();
+    throw e;
+  }
 }
 
 /**
- * Split `piece` into parts no longer than `maxLengthMm`, each joined to the
- * next by puzzle tongues. Returns the piece itself, unconsumed, when it fits.
- * Otherwise the piece is consumed and the parts are returned left to right.
+ * Split `piece` at `seams` into parts joined by puzzle tongues, left to right.
+ * With no seams the piece comes back alone. On success the piece is consumed;
+ * on failure it is left whole for the caller, and nothing else stays live.
  */
-export function splitDividerPieceToFit(
+export function splitDividerPieceAtSeams(
   piece: Shape3D,
-  maxLengthMm: number,
+  seams: readonly number[],
   nozzleSizeMm?: number
-): Shape3D[] {
-  const clearance = effectiveClearance(TONGUE_CLEARANCE, 0, nozzleSizeMm);
-  const reach = PUZZLE_PROTRUSION + clearance;
-  const b = getBounds(piece);
-  const planned = planDividerCuts(b.xMin, b.xMax, maxLengthMm, reach);
-  if (planned.length === 0) return [piece];
-
-  const centers = tongueCenters(b.yMin, b.yMax, clearance);
-  const jointHalfWidth = reach + JOINT_SOLID_MARGIN_MM;
-  const cuts = planned.map((ideal) => {
-    for (const offset of cutSearchOffsets()) {
-      const x = ideal + offset;
-      if (isSolidAt(piece, x, jointHalfWidth)) return { x, jointed: centers.length > 0 };
+): Result<Shape3D[]> {
+  if (seams.length === 0) return ok([piece]);
+  try {
+    const cl = dividerJointClearance(nozzleSizeMm);
+    const span = dividerJointSpan(cl);
+    const b = getBounds(piece);
+    const joints = seams.map((x) => jointAt(piece, x, span, b, cl));
+    const blocked = joints.find((j) => j.rows.length === 0);
+    if (blocked) {
+      return err(new Error(`No solid band for a divider joint at x=${blocked.x.toFixed(1)}`));
     }
-    return { x: ideal, jointed: false };
-  });
-
-  const parts: Shape3D[] = [];
-  let left = b.xMin - 1;
-  let pendingGroove: Shape3D | null = null;
-  for (const [i, c] of cuts.entries()) {
-    const right = i + 1 < cuts.length ? cuts[i + 1].x : b.xMax + 1;
-    const region = slab(piece, left, c.x);
-    let part = unwrap(intersect(piece, region));
-    region.delete();
-    if (pendingGroove) {
-      const grooved = unwrap(cut(part, pendingGroove));
-      part.delete();
-      pendingGroove.delete();
-      pendingGroove = null;
-      part = grooved;
-    }
-    if (c.jointed) {
-      const tongue = jointPrism(piece, c.x, centers, clearance, 'tongue');
-      if (tongue) {
-        const tongueMaterial = unwrap(intersect(piece, tongue));
-        tongue.delete();
-        const joined = unwrap(fuse(part, tongueMaterial));
-        part.delete();
-        tongueMaterial.delete();
-        part = joined;
-      }
-      pendingGroove = jointPrism(piece, c.x, centers, clearance, 'groove');
-    }
-    parts.push(part);
-    left = c.x;
-    if (i + 1 === cuts.length) {
-      const lastRegion = slab(piece, left, right);
-      let last = unwrap(intersect(piece, lastRegion));
-      lastRegion.delete();
-      if (pendingGroove) {
-        const grooved = unwrap(cut(last, pendingGroove));
-        last.delete();
-        pendingGroove.delete();
-        pendingGroove = null;
-        last = grooved;
-      }
-      parts.push(last);
-    }
+    const parts = cutParts(piece, joints, b, cl);
+    piece.delete();
+    return ok(parts);
+  } catch (e) {
+    return err(e instanceof Error ? e : new Error(String(e)));
   }
-  piece.delete();
-  return parts;
 }

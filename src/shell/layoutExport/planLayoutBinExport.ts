@@ -60,8 +60,8 @@ export interface LayoutSplitPlan {
   readonly cutPlanesX: number[];
   readonly cutPlanesY: number[];
   readonly totalPieceCount: number;
-  /** Longest part the bed takes, so a removable divider is cut to fit too. */
-  readonly maxPartLengthMm: number;
+  /** The bed the bin is split for, so a removable divider is cut to fit too. */
+  readonly printBed: PrintBedSize;
 }
 
 export interface LayoutExportable {
@@ -136,7 +136,7 @@ function binSplitPlan(params: BinParams, printBed: PrintBedSize): LayoutSplitPla
     cutPlanesX: getSplitPlanePositionsMm(params.width, maxGrid.width, params.gridUnitMm),
     cutPlanesY: getSplitPlanePositionsMm(params.depth, maxGrid.depth, gridUnitMmY),
     totalPieceCount: getSplitPieceCount(params.width, params.depth, maxGrid.width, maxGrid.depth),
-    maxPartLengthMm: Math.max(printBed.widthMm, printBed.depthMm),
+    printBed,
   };
 }
 

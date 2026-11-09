@@ -392,10 +392,14 @@ export interface ExportCombinedPayload {
    */
   readonly separatePieces?: boolean;
   /**
-   * Longest part the print bed takes (mm). A split export sets it so a
-   * removable divider longer than the bed comes back as jointed parts.
+   * The print bed (mm) and nozzle a split export cuts for, so a removable
+   * divider longer than the bed comes back as jointed parts whose joint
+   * clearance suits the nozzle.
    */
-  readonly maxPartLengthMm?: number;
+  readonly bedFit?: {
+    readonly printBed: { readonly widthMm: number; readonly depthMm: number };
+    readonly nozzleSizeMm: number;
+  };
 }
 
 export interface GenerateSplitPreviewMessage {
