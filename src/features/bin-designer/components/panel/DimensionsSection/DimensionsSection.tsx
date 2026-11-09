@@ -198,6 +198,7 @@ export function DimensionsSection() {
 
       <FeatureToggle
         label={t('binDesigner.halfBinMode')}
+        info={t('binDesigner.halfBinModeHint')}
         checked={state.halfGridMode}
         onChange={handlers.toggleHalfGridMode}
       />
