@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { BinSizeSection } from './BinSizeSection';
+import { BinSizeIssues, BinSizeSection } from './BinSizeSection';
 
 // Interpolating mock: a key-only mock cannot tell "Grow bin to 5 × 3" from a
 // button with no size in it, which is the behaviour this panel exists for.
@@ -19,43 +19,45 @@ vi.mock('../panel/DimensionsSection/DimensionsSection', () => ({
 }));
 
 describe('BinSizeSection', () => {
-  it('always renders the dimensions controls', () => {
-    render(<BinSizeSection offBoardCount={0} />);
+  it('renders the dimensions controls', () => {
+    render(<BinSizeSection />);
     expect(screen.getByTestId('dimensions-section')).toBeInTheDocument();
   });
+});
 
+describe('BinSizeIssues', () => {
   it('hides the off-board warning when nothing is stranded', () => {
-    render(<BinSizeSection offBoardCount={0} onClampOffBoard={vi.fn()} />);
+    render(<BinSizeIssues offBoardCount={0} onClampOffBoard={vi.fn()} />);
     expect(screen.queryByText(tk(`${K}.offBoardWarning`, { count: 0 }))).not.toBeInTheDocument();
   });
 
   it('shows the warning and recover button when cutouts are off-board', () => {
     const onClamp = vi.fn();
-    render(<BinSizeSection offBoardCount={2} onClampOffBoard={onClamp} />);
+    render(<BinSizeIssues offBoardCount={2} onClampOffBoard={onClamp} />);
     expect(screen.getByText(tk(`${K}.offBoardWarning`, { count: 2 }))).toBeInTheDocument();
     fireEvent.click(screen.getByText(`${K}.bringBackIn`));
     expect(onClamp).toHaveBeenCalledTimes(1);
   });
 
   it('omits the recover button when no handler is provided', () => {
-    render(<BinSizeSection offBoardCount={2} />);
+    render(<BinSizeIssues offBoardCount={2} />);
     expect(screen.getByText(tk(`${K}.offBoardWarning`, { count: 2 }))).toBeInTheDocument();
     expect(screen.queryByText(`${K}.bringBackIn`)).not.toBeInTheDocument();
   });
 
   it('shows the depth-shortfall warning only when a cut falls short', () => {
-    const { rerender } = render(<BinSizeSection offBoardCount={0} depthShortfallCount={0} />);
+    const { rerender } = render(<BinSizeIssues offBoardCount={0} depthShortfallCount={0} />);
     expect(
       screen.queryByText(tk(`${K}.depthShortfallWarning`, { count: 0 }))
     ).not.toBeInTheDocument();
-    rerender(<BinSizeSection offBoardCount={0} depthShortfallCount={3} />);
+    rerender(<BinSizeIssues offBoardCount={0} depthShortfallCount={3} />);
     expect(screen.getByText(tk(`${K}.depthShortfallWarning`, { count: 3 }))).toBeInTheDocument();
   });
 
   it('offers to grow the bin alongside clamping back in', () => {
     const onGrow = vi.fn();
     render(
-      <BinSizeSection
+      <BinSizeIssues
         offBoardCount={1}
         onClampOffBoard={vi.fn()}
         growTarget={{ width: 4, depth: 3 }}
@@ -70,7 +72,7 @@ describe('BinSizeSection', () => {
 
   it('leads with the grow action', () => {
     render(
-      <BinSizeSection
+      <BinSizeIssues
         offBoardCount={1}
         onClampOffBoard={vi.fn()}
         growTarget={{ width: 4, depth: 3 }}
@@ -87,7 +89,7 @@ describe('BinSizeSection', () => {
 
   it('explains why instead of offering a grow that cannot clear the warning', () => {
     render(
-      <BinSizeSection
+      <BinSizeIssues
         offBoardCount={1}
         onClampOffBoard={vi.fn()}
         growTarget={null}
@@ -102,7 +104,7 @@ describe('BinSizeSection', () => {
   });
 
   it('keeps the grow action out of the panel when nothing is stranded', () => {
-    render(<BinSizeSection offBoardCount={0} growTarget={{ width: 4, depth: 3 }} />);
+    render(<BinSizeIssues offBoardCount={0} growTarget={{ width: 4, depth: 3 }} />);
     expect(
       screen.queryByText(tk(`${K}.growBinToFit`, { width: 4, depth: 3 }))
     ).not.toBeInTheDocument();
@@ -116,7 +118,7 @@ describe('BinSizeSection', () => {
     { width: 3.5, depth: 2 },
   ])('names the exact size it will produce ($width × $depth)', (target) => {
     render(
-      <BinSizeSection
+      <BinSizeIssues
         offBoardCount={1}
         onClampOffBoard={vi.fn()}
         growTarget={target}
@@ -128,12 +130,12 @@ describe('BinSizeSection', () => {
 
   // Screen readers got nothing when a cutout went off-board before this.
   it('announces the warning assertively', () => {
-    render(<BinSizeSection offBoardCount={1} onClampOffBoard={vi.fn()} />);
+    render(<BinSizeIssues offBoardCount={1} onClampOffBoard={vi.fn()} />);
     expect(screen.getByRole('alert')).toHaveTextContent(tk(`${K}.offBoardWarning`, { count: 1 }));
   });
 
   it('puts the unavailable reason above the actions, not after them', () => {
-    render(<BinSizeSection offBoardCount={1} onClampOffBoard={vi.fn()} growTarget={null} />);
+    render(<BinSizeIssues offBoardCount={1} onClampOffBoard={vi.fn()} growTarget={null} />);
     const alert = screen.getByRole('alert');
     const order = [...alert.querySelectorAll('p, button')].map((n) => n.textContent);
     expect(order.indexOf(`${K}.growBinUnavailable`)).toBeLessThan(
@@ -147,7 +149,7 @@ describe('BinSizeSection', () => {
     it('offers centering alongside the clamp when it can clear the warning', () => {
       const onCenter = vi.fn();
       render(
-        <BinSizeSection offBoardCount={1} onClampOffBoard={vi.fn()} onCenterOffBoard={onCenter} />
+        <BinSizeIssues offBoardCount={1} onClampOffBoard={vi.fn()} onCenterOffBoard={onCenter} />
       );
       fireEvent.click(screen.getByText(CENTER));
       expect(onCenter).toHaveBeenCalledTimes(1);
@@ -156,13 +158,13 @@ describe('BinSizeSection', () => {
     // Absent handler is the whole guard against duplicating "Bring back in":
     // the workspace withholds it unless centering actually fixes every stray.
     it('stays out of the panel when centering cannot clear the warning', () => {
-      render(<BinSizeSection offBoardCount={1} onClampOffBoard={vi.fn()} />);
+      render(<BinSizeIssues offBoardCount={1} onClampOffBoard={vi.fn()} />);
       expect(screen.getByText(`${K}.bringBackIn`)).toBeInTheDocument();
       expect(screen.queryByText(CENTER)).not.toBeInTheDocument();
     });
 
     it('never appears without a warning to attach to', () => {
-      render(<BinSizeSection offBoardCount={0} onCenterOffBoard={vi.fn()} />);
+      render(<BinSizeIssues offBoardCount={0} onCenterOffBoard={vi.fn()} />);
       expect(screen.queryByText(CENTER)).not.toBeInTheDocument();
     });
 
@@ -170,7 +172,7 @@ describe('BinSizeSection', () => {
     // the gentler of the two.
     it('sits between growing the bin and clamping to the edge', () => {
       render(
-        <BinSizeSection
+        <BinSizeIssues
           offBoardCount={1}
           onClampOffBoard={vi.fn()}
           onCenterOffBoard={vi.fn()}
@@ -187,7 +189,7 @@ describe('BinSizeSection', () => {
     });
 
     it('lets its label wrap in the narrow dock like its siblings', () => {
-      render(<BinSizeSection offBoardCount={1} onCenterOffBoard={vi.fn()} />);
+      render(<BinSizeIssues offBoardCount={1} onCenterOffBoard={vi.fn()} />);
       expect(screen.getByText(CENTER)).toHaveClass('h-auto', 'whitespace-normal');
     });
   });
@@ -196,7 +198,7 @@ describe('BinSizeSection', () => {
   // fixed-height button would clip the second line.
   it('lets the action labels wrap instead of clipping', () => {
     render(
-      <BinSizeSection
+      <BinSizeIssues
         offBoardCount={1}
         onClampOffBoard={vi.fn()}
         growTarget={{ width: 4, depth: 3 }}

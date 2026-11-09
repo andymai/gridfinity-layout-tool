@@ -5,7 +5,7 @@
  * owns width, collapse, and persistence.
  */
 
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { SubHeader } from '@/shared/components/PanelText';
@@ -39,7 +39,7 @@ import { fingerBottom } from '@/shared/utils/fingerAccess';
 import { BatchEntryEdgeFields } from './BatchEntryEdgeFields';
 import { CutoutColorControls } from './CutoutColorControls';
 import { CutoutBoardSettings } from './CutoutBoardSettings';
-import { BinSizeSection } from './BinSizeSection';
+import { BinSizeIssues, BinSizeSection } from './BinSizeSection';
 import { BinFeaturesSection } from './BinFeaturesSection';
 import { FitTestButton } from './FitTestButton';
 import { ShadowBoardButton } from './ShadowBoardButton';
@@ -231,28 +231,40 @@ export function InspectorContent({
       selectedCutouts.every((c) => isThroughCut(c, st.params) || fingerBottom(c) === 'curved')
   );
 
-  // Bin-level controls stay visible across every selection state so the user can
-  // resize the board and clear the stacking lip without leaving the editor.
+  const binIssues = {
+    offBoardCount,
+    onClampOffBoard,
+    onCenterOffBoard,
+    depthShortfallCount,
+    pocketChecks,
+    growTarget,
+    onGrowToFit,
+  };
+  // Bin-level controls stay in every selection state so the user can resize the
+  // board and clear the stacking lip without leaving the editor. With a
+  // selection they follow its sections, so the shape being edited comes first.
+  // The key keeps them mounted as they move, so the shadow board and fit test
+  // settings survive a selection change.
   const binControls = (
-    <>
-      <BinSizeSection
-        offBoardCount={offBoardCount}
-        onClampOffBoard={onClampOffBoard}
-        onCenterOffBoard={onCenterOffBoard}
-        depthShortfallCount={depthShortfallCount}
-        pocketChecks={pocketChecks}
-        growTarget={growTarget}
-        onGrowToFit={onGrowToFit}
-      />
+    <Fragment key="bin-controls">
+      <BinSizeSection />
       <BinFeaturesSection />
       <FitTestButton />
       {!throughOnly && <ShadowBoardButton />}
-    </>
+    </Fragment>
+  );
+  // The warnings lead in every state, under one key: clicking a pocket warning
+  // selects its shapes, and a remount there would collapse the list it was in.
+  const binWarnings = (
+    <div key="bin-warnings" className="space-y-3 pt-3 empty:hidden">
+      <BinSizeIssues {...binIssues} />
+    </div>
   );
 
   if (selectedCutouts.length === 0) {
     return (
       <div className="space-y-1.5">
+        {binWarnings}
         {binControls}
         {board ? (
           <CutoutBoardSettings
@@ -378,7 +390,7 @@ export function InspectorContent({
 
   return (
     <div className="space-y-1.5">
-      {binControls}
+      {binWarnings}
       {singleCutout && (
         <SingleCutoutInspector
           cutout={singleCutout}
@@ -568,6 +580,8 @@ export function InspectorContent({
           </span>
         </div>
       )}
+
+      {binControls}
     </div>
   );
 }
