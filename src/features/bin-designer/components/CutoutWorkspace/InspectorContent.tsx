@@ -5,7 +5,7 @@
  * owns width, collapse, and persistence.
  */
 
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { SubHeader } from '@/shared/components/PanelText';
@@ -243,13 +243,15 @@ export function InspectorContent({
   // Bin-level controls stay in every selection state so the user can resize the
   // board and clear the stacking lip without leaving the editor. With a
   // selection they follow its sections, so the shape being edited comes first.
+  // The key keeps them mounted as they move, so the shadow board and fit test
+  // settings survive a selection change.
   const binControls = (
-    <>
+    <Fragment key="bin-controls">
       <BinSizeSection />
       <BinFeaturesSection />
       <FitTestButton />
       {!throughOnly && <ShadowBoardButton />}
-    </>
+    </Fragment>
   );
   // The warnings lead in every state, under one key: clicking a pocket warning
   // selects its shapes, and a remount there would collapse the list it was in.

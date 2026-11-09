@@ -82,9 +82,22 @@ vi.mock('./BinSizeSection', async () => {
 // Stubbed for the same reason as BinSizeSection: it is self-wired to the
 // designer store, and this suite is about what InspectorContent renders in each
 // selection state, not what the store holds.
-vi.mock('./BinFeaturesSection', () => ({
-  BinFeaturesSection: () => <div data-testid="bin-features-section" />,
-}));
+vi.mock('./BinFeaturesSection', async () => {
+  const { useState } = await import('react');
+  return {
+    BinFeaturesSection: () => {
+      const [touched, setTouched] = useState(false);
+      return (
+        <button
+          type="button"
+          data-testid="bin-features-section"
+          data-touched={String(touched)}
+          onClick={() => setTouched(true)}
+        />
+      );
+    },
+  };
+});
 
 const createCutout = (overrides: Partial<Cutout> = {}): Cutout => ({
   id: 'cutout1',
@@ -235,6 +248,20 @@ describe('InspectorContent', () => {
     expect(screen.getByTestId('bin-size-issues')).toHaveAttribute('data-expanded', 'true');
     rerender(<InspectorContent {...defaultProps} cutouts={cutouts} offBoardCount={2} />);
     expect(screen.getByTestId('bin-size-issues')).toHaveAttribute('data-expanded', 'true');
+  });
+
+  // The shadow board and fit test keep their settings in local state, so the
+  // bin block must not remount when it moves below a new selection.
+  it('keeps the bin block mounted when the selection changes', () => {
+    const cutouts = [createCutout()];
+    const { rerender } = render(<InspectorContent {...defaultProps} cutouts={cutouts} />);
+    fireEvent.click(screen.getByTestId('bin-features-section'));
+    rerender(
+      <InspectorContent {...defaultProps} cutouts={cutouts} selection={new Set(['cutout1'])} />
+    );
+    expect(screen.getByTestId('bin-features-section')).toHaveAttribute('data-touched', 'true');
+    rerender(<InspectorContent {...defaultProps} cutouts={cutouts} />);
+    expect(screen.getByTestId('bin-features-section')).toHaveAttribute('data-touched', 'true');
   });
 
   // Bin-level controls are the ones you must not have to change selection to
