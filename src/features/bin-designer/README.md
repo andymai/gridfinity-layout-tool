@@ -52,8 +52,8 @@ graph TB
   single-select sections, multi-select shared fields (mixed values show a "—" placeholder),
   and an empty board-settings state. A bin-level block (`BinSizeSection`, `BinFeaturesSection`)
   stays in every state so the bin can be resized and the lip cleared in the editor; a selection
-  leads it, below only its warnings (`BinSizeIssues`). Both are self-wired to the designer
-  store rather than prop-drilled. The design system's number-first `NumberField`
+  comes before it, and its warnings (`BinSizeIssues`) top the panel. Both are self-wired to the
+  designer store rather than prop-drilled. The design system's number-first `NumberField`
   (drag-scrub + type) replaces sliders, and hardware-size presets surface as quick-pick chips. The multi-select
   section leads with `AlignControls` (align/distribute, backed by the pure
   `panel/CutoutsSection/geometryAlign.ts`) and batch-edits position, size, rotation, cut depth,

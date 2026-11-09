@@ -58,33 +58,26 @@ vi.mock('../panel/CutoutsSection/geometry', () => ({
   }),
 }));
 
-vi.mock('./BinSizeSection', () => ({
-  BinSizeIssues: ({ offBoardCount }: { offBoardCount: number }) =>
-    offBoardCount > 0 ? (
-      <div data-testid="bin-size-issues" data-off-board-count={offBoardCount} />
-    ) : null,
-  BinSizeSection: ({
-    offBoardCount,
-    onClampOffBoard,
-    showIssues = true,
-  }: {
-    offBoardCount: number;
-    onClampOffBoard?: () => void;
-    showIssues?: boolean;
-  }) => (
-    <div
-      data-testid="bin-size-section"
-      data-off-board-count={offBoardCount}
-      data-show-issues={String(showIssues)}
-    >
-      {onClampOffBoard && (
-        <button type="button" onClick={onClampOffBoard}>
-          clamp
-        </button>
-      )}
-    </div>
-  ),
-}));
+// The warnings stub keeps local state, as `PocketIssueList`'s expanded list
+// does, so a test can tell a kept instance from a remounted one.
+vi.mock('./BinSizeSection', async () => {
+  const { useState } = await import('react');
+  return {
+    BinSizeIssues: ({ offBoardCount }: { offBoardCount: number }) => {
+      const [expanded, setExpanded] = useState(false);
+      return (
+        <button
+          type="button"
+          data-testid="bin-size-issues"
+          data-off-board-count={offBoardCount}
+          data-expanded={String(expanded)}
+          onClick={() => setExpanded(true)}
+        />
+      );
+    },
+    BinSizeSection: () => <div data-testid="bin-size-section" />,
+  };
+});
 
 // Stubbed for the same reason as BinSizeSection: it is self-wired to the
 // designer store, and this suite is about what InspectorContent renders in each
@@ -181,7 +174,8 @@ describe('InspectorContent', () => {
 
   it('always renders the bin-size section and forwards the off-board count', () => {
     const { rerender } = render(<InspectorContent {...defaultProps} offBoardCount={3} />);
-    expect(screen.getByTestId('bin-size-section')).toHaveAttribute('data-off-board-count', '3');
+    expect(screen.getByTestId('bin-size-section')).toBeInTheDocument();
+    expect(screen.getByTestId('bin-size-issues')).toHaveAttribute('data-off-board-count', '3');
 
     rerender(
       <InspectorContent
@@ -192,6 +186,7 @@ describe('InspectorContent', () => {
       />
     );
     expect(screen.getByTestId('bin-size-section')).toBeInTheDocument();
+    expect(screen.getByTestId('bin-size-issues')).toHaveAttribute('data-off-board-count', '0');
   });
 
   it('leads with the selected shape and keeps the bin block below it', () => {
@@ -219,13 +214,27 @@ describe('InspectorContent', () => {
     const warnings = screen.getByTestId('bin-size-issues');
     const shapeField = screen.getByTestId('compact-input-X');
     expect(warnings.compareDocumentPosition(shapeField)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
-    expect(screen.getByTestId('bin-size-section')).toHaveAttribute('data-show-issues', 'false');
   });
 
-  it('shows the bin warnings inside the bin block when nothing is selected', () => {
-    render(<InspectorContent {...defaultProps} offBoardCount={2} />);
-    expect(screen.getByTestId('bin-size-section')).toHaveAttribute('data-show-issues', 'true');
-    expect(screen.queryByTestId('bin-size-issues')).not.toBeInTheDocument();
+  // Clicking a pocket warning selects its shapes; a remount at that moment
+  // would collapse the expanded list the click came from.
+  it('keeps the warnings mounted when the selection changes', () => {
+    const cutouts = [createCutout()];
+    const { rerender } = render(
+      <InspectorContent {...defaultProps} cutouts={cutouts} offBoardCount={2} />
+    );
+    fireEvent.click(screen.getByTestId('bin-size-issues'));
+    rerender(
+      <InspectorContent
+        {...defaultProps}
+        cutouts={cutouts}
+        selection={new Set(['cutout1'])}
+        offBoardCount={2}
+      />
+    );
+    expect(screen.getByTestId('bin-size-issues')).toHaveAttribute('data-expanded', 'true');
+    rerender(<InspectorContent {...defaultProps} cutouts={cutouts} offBoardCount={2} />);
+    expect(screen.getByTestId('bin-size-issues')).toHaveAttribute('data-expanded', 'true');
   });
 
   // Bin-level controls are the ones you must not have to change selection to

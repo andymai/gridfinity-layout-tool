@@ -1,9 +1,9 @@
 /**
  * Always-visible bin-size block in the cutout inspector, so the bin can be
  * resized without leaving the editor. Reuses the main DimensionsSection
- * (self-wired to the designer store) and, when cutouts sit past the footprint,
- * surfaces a warning offering the two ways out: grow the board to them, or
- * clamp them back in.
+ * (self-wired to the designer store). Its warnings render separately at the
+ * top of the inspector: when cutouts sit past the footprint, they offer the
+ * two ways out, grow the board to them or clamp them back in.
  */
 
 import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
@@ -21,7 +21,7 @@ import { PocketIssueList, type PocketChecksView } from '../panel/CutoutsSection/
  */
 const WRAPPING_ACTION = 'h-auto min-h-6 whitespace-normal py-1 leading-tight';
 
-interface BinSizeSectionProps {
+interface BinSizeIssuesProps {
   /** Count of cutouts stranded past the board after a resize (0 = none). */
   readonly offBoardCount: number;
   /** Clamp every off-board cutout back inside the board. */
@@ -49,10 +49,6 @@ interface BinSizeSectionProps {
   readonly pocketChecks?: PocketChecksView;
 }
 
-/**
- * The bin size block's warnings on their own, for an inspector that shows the
- * block below a selection but must keep a stranded or too-thin cutout in view.
- */
 export function BinSizeIssues({
   offBoardCount,
   onClampOffBoard,
@@ -61,7 +57,7 @@ export function BinSizeIssues({
   onGrowToFit,
   depthShortfallCount = 0,
   pocketChecks,
-}: BinSizeSectionProps) {
+}: BinSizeIssuesProps) {
   const t = useTranslation();
   return (
     <>
@@ -144,16 +140,12 @@ export function BinSizeIssues({
   );
 }
 
-export function BinSizeSection({
-  showIssues = true,
-  ...issues
-}: BinSizeSectionProps & { readonly showIssues?: boolean }) {
+export function BinSizeSection() {
   const t = useTranslation();
   return (
     <div className="space-y-3 border-b border-stroke-subtle pb-3 pt-3">
       <SubHeader>{t('binDesigner.cutoutEditor.binSize')}</SubHeader>
       <DimensionsSection />
-      {showIssues && <BinSizeIssues {...issues} />}
     </div>
   );
 }

@@ -242,21 +242,28 @@ export function InspectorContent({
   };
   // Bin-level controls stay in every selection state so the user can resize the
   // board and clear the stacking lip without leaving the editor. With a
-  // selection they follow its sections, so the shape being edited comes first,
-  // and their warnings move to the top, because those name the selected shapes.
-  const binControls = (showIssues: boolean) => (
+  // selection they follow its sections, so the shape being edited comes first.
+  const binControls = (
     <>
-      <BinSizeSection {...binIssues} showIssues={showIssues} />
+      <BinSizeSection />
       <BinFeaturesSection />
       <FitTestButton />
       {!throughOnly && <ShadowBoardButton />}
     </>
   );
+  // The warnings lead in every state, under one key: clicking a pocket warning
+  // selects its shapes, and a remount there would collapse the list it was in.
+  const binWarnings = (
+    <div key="bin-warnings" className="space-y-3 pt-3 empty:hidden">
+      <BinSizeIssues {...binIssues} />
+    </div>
+  );
 
   if (selectedCutouts.length === 0) {
     return (
       <div className="space-y-1.5">
-        {binControls(true)}
+        {binWarnings}
+        {binControls}
         {board ? (
           <CutoutBoardSettings
             gridSize={board.gridSize}
@@ -381,9 +388,7 @@ export function InspectorContent({
 
   return (
     <div className="space-y-1.5">
-      <div className="space-y-3 pt-3 empty:hidden">
-        <BinSizeIssues {...binIssues} />
-      </div>
+      {binWarnings}
       {singleCutout && (
         <SingleCutoutInspector
           cutout={singleCutout}
@@ -574,7 +579,7 @@ export function InspectorContent({
         </div>
       )}
 
-      {binControls(false)}
+      {binControls}
     </div>
   );
 }
