@@ -1,0 +1,26 @@
+src/features/generation/worker/generators/dividerSplit.ts
+  s_66332f8bf1351d::t_1737fc833f1046 15,17-22,69-73,180-182
+src/features/generation/worker/generators/dividerSeamPlan.test.ts
+  s_66332f8bf1351d::t_156d778729cfd9 4,11,100-130
+  s_66332f8bf1351d::t_ecb6405d2594ba 131
+src/features/generation/worker/generators/dividerSplit.test.ts
+  s_66332f8bf1351d::t_156d778729cfd9 9,128-133
+src/features/generation/worker/generators/dividerSeamPlan.ts
+  s_66332f8bf1351d::t_1737fc833f1046 9,43-50,145-206
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "12148838f0ece123c8518d83dc8ba7f51d619d3d",
+  "prompts": {},
+  "sessions": {
+    "s_66332f8bf1351d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e6b72f33-456b-4cf1-810c-0805667759a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
