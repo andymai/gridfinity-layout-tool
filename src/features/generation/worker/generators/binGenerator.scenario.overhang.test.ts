@@ -11,7 +11,13 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { buildParams } from './__kernel-tests__/scenarioTypes';
-import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAssertions';
+import type { MeshData } from '@/features/generation/bridge/types';
+import {
+  assertStructurallyValid,
+  boundingBox,
+  columnCrossings,
+} from './__kernel-tests__/meshAssertions';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { deriveDimensions } from './pipeline/context';
 import {
   computeInteriorHeight,
@@ -247,5 +253,48 @@ describe('overhang feet toggle', () => {
       true
     );
     expect(withFeet.triangleCount).toBe(flat.triangleCount);
+  });
+});
+
+describe('overhang feet under half sockets', () => {
+  // Lowest surface over a column: ~0 under a foot, the floor's underside in a
+  // seam between feet (or nothing at all when the column misses the bin).
+  const lowestSurface = (mesh: MeshData, x: number, y: number): number =>
+    columnCrossings(mesh, x, y)[0] ?? Infinity;
+
+  it('subdivides the overhang feet at the same half-unit seams as the main feet', () => {
+    const generateBin = getGenerateBin();
+    // 1×1 bin, nominal footprint [-21, 21] on both axes. The right overhang is
+    // wider than a half unit (a 21mm half cell, then a 9mm leftover); the back
+    // one is narrower (one clipped cell).
+    const result = generateBin(
+      buildParams({
+        width: 1,
+        depth: 1,
+        base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
+        overhang: { left: 0, right: 30, front: 0, back: 12, feet: true },
+      }),
+      undefined,
+      true
+    );
+    assertStructurallyValid(result, 'half-socket overhang feet');
+
+    const FOOT = 0.5;
+    const SEAM = 2;
+    // Main feet: half cells, seam on x = 0.
+    expect(lowestSurface(result, -10.53, 10.47)).toBeLessThan(FOOT);
+    expect(lowestSurface(result, 0.13, 10.47)).toBeGreaterThan(SEAM);
+
+    // Right strip: a foot in each half cell along Y, split at y = 0.
+    expect(lowestSurface(result, 31.53, 10.47)).toBeLessThan(FOOT);
+    expect(lowestSurface(result, 31.53, -10.47)).toBeLessThan(FOOT);
+    expect(lowestSurface(result, 31.53, 0.13)).toBeGreaterThan(SEAM);
+    // ...and across X, a true half cell next to the grid edge, then the leftover.
+    expect(lowestSurface(result, 42.13, 10.47)).toBeGreaterThan(SEAM);
+
+    // Back strip: split at x = 0 like the main feet beside it.
+    expect(lowestSurface(result, -10.53, 27.07)).toBeLessThan(FOOT);
+    expect(lowestSurface(result, 10.53, 27.07)).toBeLessThan(FOOT);
+    expect(lowestSurface(result, 0.13, 27.07)).toBeGreaterThan(SEAM);
   });
 });
