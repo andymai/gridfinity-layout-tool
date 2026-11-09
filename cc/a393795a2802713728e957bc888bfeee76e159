@@ -1,0 +1,21 @@
+.claude/skills/print-export/SKILL.md
+  s_3a31e1e55d8387::t_453230975fcf6d 84
+scripts/doc-budget.json
+  s_3a31e1e55d8387::t_f84dd991f7e04d 19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cca393795a2802713728e957bc888bfeee76e159",
+  "prompts": {},
+  "sessions": {
+    "s_3a31e1e55d8387": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e4a9c58e-6bd7-48a3-bf8d-a597030395af",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
