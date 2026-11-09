@@ -316,15 +316,12 @@ describe('overhangFootCells', () => {
     forEachSocketCell(2, 1, undefined, 42, ALL_PLAN, (c) => main.push(c));
     const frame = overhangFootCells(2, 1, overhang(), 42, ALL_PLAN);
 
-    // Back strip runs along X: one foot per main-foot column, same width.
     const back = frame.filter((c) => c.centerY > 21 && c.centerX < 42);
     expect(back.map((c) => c.centerX)).toEqual(
       [...new Set(main.map((c) => c.centerX))].sort((a, b) => a - b)
     );
     expect(back.every((c) => near(c.widthUnits, 0.5))).toBe(true);
 
-    // Right strip runs along Y: one foot per main-foot row, and across X a
-    // true half cell against the grid edge before the 9mm leftover.
     const right = frame.filter((c) => c.centerX > 42 && c.centerY < 21);
     expect(right.every((c) => near(c.depthUnits, 0.5))).toBe(true);
     expect([...new Set(right.map((c) => c.widthUnits))]).toEqual([0.5, 9 / 42]);

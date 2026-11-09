@@ -315,15 +315,22 @@ describe('low-profile base: the relief tool', () => {
     120000
   );
 
-  it('leaves the feet under an overhang whole', async () => {
-    const { buildRidgeReliefTool } = await import('./ridgeReliefBuilder');
-    const { buildOverhangFeet, resolveSocketCellPlan } = await import('./socketBuilder');
-    const { resolveOverhang } = await import('./overhang');
-    const overhang = resolveOverhang({ left: 0, right: 14, front: 0, back: 0, feet: true });
-    const plan = resolveSocketCellPlan(false, undefined, undefined, undefined, 1, 2);
-    const relief = buildRidgeReliefTool(1, 2, undefined, 42, plan, undefined, overhang);
-    const feet = buildOverhangFeet(1, 2, overhang, 42, plan, true);
-    if (!relief || !feet) throw new Error('expected a relief tool and overhang feet');
-    expect(sharedVolume(relief, feet)).toBeLessThan(1e-4);
-  }, 120000);
+  it.each([
+    ['whole', false, 14],
+    ['half', true, 30],
+  ] as const)(
+    'leaves the feet under an overhang whole (%s sockets)',
+    async (_l, half, right) => {
+      const { buildRidgeReliefTool } = await import('./ridgeReliefBuilder');
+      const { buildOverhangFeet, resolveSocketCellPlan } = await import('./socketBuilder');
+      const { resolveOverhang } = await import('./overhang');
+      const overhang = resolveOverhang({ left: 0, right, front: 0, back: 0, feet: true });
+      const plan = resolveSocketCellPlan(half, undefined, undefined, undefined, 1, 2);
+      const relief = buildRidgeReliefTool(1, 2, undefined, 42, plan, undefined, overhang);
+      const feet = buildOverhangFeet(1, 2, overhang, 42, plan, true);
+      if (!relief || !feet) throw new Error('expected a relief tool and overhang feet');
+      expect(sharedVolume(relief, feet)).toBeLessThan(1e-4);
+    },
+    120000
+  );
 });

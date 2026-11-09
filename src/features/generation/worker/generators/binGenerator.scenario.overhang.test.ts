@@ -264,9 +264,6 @@ describe('overhang feet under half sockets', () => {
 
   it('subdivides the overhang feet at the same half-unit seams as the main feet', () => {
     const generateBin = getGenerateBin();
-    // 1×1 bin, nominal footprint [-21, 21] on both axes. The right overhang is
-    // wider than a half unit (a 21mm half cell, then a 9mm leftover); the back
-    // one is narrower (one clipped cell).
     const result = generateBin(
       buildParams({
         width: 1,
@@ -279,22 +276,21 @@ describe('overhang feet under half sockets', () => {
     );
     assertStructurallyValid(result, 'half-socket overhang feet');
 
-    const FOOT = 0.5;
-    const SEAM = 2;
-    // Main feet: half cells, seam on x = 0.
-    expect(lowestSurface(result, -10.53, 10.47)).toBeLessThan(FOOT);
-    expect(lowestSurface(result, 0.13, 10.47)).toBeGreaterThan(SEAM);
+    const foot = (x: number, y: number): void =>
+      expect(lowestSurface(result, x, y), `foot at (${x}, ${y})`).toBeLessThan(0.5);
+    const seam = (x: number, y: number): void =>
+      expect(lowestSurface(result, x, y), `seam at (${x}, ${y})`).toBeGreaterThan(2);
 
-    // Right strip: a foot in each half cell along Y, split at y = 0.
-    expect(lowestSurface(result, 31.53, 10.47)).toBeLessThan(FOOT);
-    expect(lowestSurface(result, 31.53, -10.47)).toBeLessThan(FOOT);
-    expect(lowestSurface(result, 31.53, 0.13)).toBeGreaterThan(SEAM);
-    // ...and across X, a true half cell next to the grid edge, then the leftover.
-    expect(lowestSurface(result, 42.13, 10.47)).toBeGreaterThan(SEAM);
+    foot(-10.53, 10.47);
+    seam(0.13, 10.47);
 
-    // Back strip: split at x = 0 like the main feet beside it.
-    expect(lowestSurface(result, -10.53, 27.07)).toBeLessThan(FOOT);
-    expect(lowestSurface(result, 10.53, 27.07)).toBeLessThan(FOOT);
-    expect(lowestSurface(result, 0.13, 27.07)).toBeGreaterThan(SEAM);
+    foot(31.53, 10.47);
+    foot(31.53, -10.47);
+    seam(31.53, 0.13);
+    seam(42.13, 10.47);
+
+    foot(-10.53, 27.07);
+    foot(10.53, 27.07);
+    seam(0.13, 27.07);
   });
 });
