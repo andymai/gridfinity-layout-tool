@@ -322,7 +322,7 @@ describe('low-profile base: the relief tool', () => {
     const overhang = resolveOverhang({ left: 0, right: 14, front: 0, back: 0, feet: true });
     const plan = resolveSocketCellPlan(false, undefined, undefined, undefined, 1, 2);
     const relief = buildRidgeReliefTool(1, 2, undefined, 42, plan, undefined, overhang);
-    const feet = buildOverhangFeet(1, 2, overhang, 42, true);
+    const feet = buildOverhangFeet(1, 2, overhang, 42, plan, true);
     if (!relief || !feet) throw new Error('expected a relief tool and overhang feet');
     expect(sharedVolume(relief, feet)).toBeLessThan(1e-4);
   }, 120000);
