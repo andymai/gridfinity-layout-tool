@@ -1,11 +1,3 @@
-/**
- * Always-visible bin-size block in the cutout inspector, so the bin can be
- * resized without leaving the editor. Reuses the main DimensionsSection
- * (self-wired to the designer store). Its warnings render separately at the
- * top of the inspector: when cutouts sit past the footprint, they offer the
- * two ways out, grow the board to them or clamp them back in.
- */
-
 import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
 import { Alert, Button } from '@/design-system';
 import { AlertTriangleIcon } from '@/design-system/Icon';
