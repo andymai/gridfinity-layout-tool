@@ -505,6 +505,7 @@ export function useExport(): UseExportReturn {
         // Scale a socket bin's pocket to the same nozzle the connectors use
         // (transient — never persisted). No-op for non-socket bins.
         const splitParams = withSocketNozzle(params, connectorConfig.nozzleSizeMm);
+        const printBed = { widthMm: printBedSize, depthMm: printBedDepth ?? printBedSize };
         const totalPieceCount = getSplitPieceCount(
           params.width,
           params.depth,
@@ -560,9 +561,10 @@ export function useExport(): UseExportReturn {
             () => {
               const bridge = getActiveBridge();
               if (!bridge) throw new Error('Bridge not available');
-              return format === 'step'
-                ? bridge.exportCombined(splitParams, 'step', { separatePieces: true })
-                : bridge.exportCombined(splitParams, 'stl');
+              return bridge.exportCombined(splitParams, format === 'step' ? 'step' : 'stl', {
+                separatePieces: format === 'step',
+                bedFit: { printBed, nozzleSizeMm: connectorConfig.nozzleSizeMm },
+              });
             },
             {
               onAttempt: (attempts) => {
@@ -641,6 +643,8 @@ export function useExport(): UseExportReturn {
     [
       params,
       chunkLimit,
+      printBedSize,
+      printBedDepth,
       hasDividers,
       hasLid,
       hasFeet,

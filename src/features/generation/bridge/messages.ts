@@ -391,6 +391,15 @@ export interface ExportCombinedPayload {
    * always per-piece.
    */
   readonly separatePieces?: boolean;
+  /**
+   * The print bed (mm) and nozzle a split export cuts for, so a removable
+   * divider longer than the bed comes back as jointed parts whose joint
+   * clearance suits the nozzle.
+   */
+  readonly bedFit?: {
+    readonly printBed: { readonly widthMm: number; readonly depthMm: number };
+    readonly nozzleSizeMm: number;
+  };
 }
 
 export interface GenerateSplitPreviewMessage {

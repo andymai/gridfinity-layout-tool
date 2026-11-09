@@ -94,7 +94,10 @@ export async function splitFiles(
     // `separatePieces` matters under STEP: the default compound assembly
     // bundles the bin in with its companions, and the body is already covered
     // by the split pieces above.
-    const combined = await bridge.exportCombined(params, workerFormat, { separatePieces: true });
+    const combined = await bridge.exportCombined(params, workerFormat, {
+      separatePieces: true,
+      bedFit: { printBed: split.printBed, nozzleSizeMm: printSettings.nozzleSizeMm },
+    });
     // The body is already covered by the split pieces — take only the extras.
     for (const p of combined.pieces) {
       if (p.label !== 'bin') pieces.push({ data: p.data, label: p.label });

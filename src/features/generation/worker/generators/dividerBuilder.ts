@@ -45,6 +45,13 @@ import { getEffectiveSlotDimensions } from './slotBuilder';
 import { cutPiecePattern, resolvePiecePatternContext } from './dividerPiecePatternBuilder';
 import type { PieceGeometry } from './dividerPiecePatternBuilder';
 import type { PieceObstruction } from './dividerPiecePatterns';
+import {
+  dividerJointClearance,
+  partLengthBudget,
+  planDividerSeams,
+  seamKeepOut,
+} from './dividerSeamPlan';
+import type { DividerBedFit } from './dividerSeamPlan';
 import { COPLANAR_OVERLAP, LIP_TAPER_WIDTH } from './generatorConstants';
 
 // Re-export shared math so existing imports from generation internals still work
@@ -54,6 +61,27 @@ export { calculateDividerHeight, calculateDividerLength };
 export interface LabeledDividerPiece {
   readonly shape: Shape3D;
   readonly label: string;
+  /** Where to cut the piece to fit the print bed; empty without a bed. */
+  readonly seams?: readonly number[];
+}
+
+/**
+ * Seams for one piece on the bed, and the pattern geometry that keeps each
+ * seam's joint solid. Without a bed, or when the piece fits, both pass through.
+ */
+function planPieceSeams(
+  geometry: PieceGeometry,
+  dividerHeight: number,
+  fit: DividerBedFit | undefined
+): { seams: readonly number[]; geometry: PieceGeometry } {
+  const budget = fit ? partLengthBudget(dividerHeight, fit.printBed) : null;
+  if (!fit || budget === null) return { seams: [], geometry };
+  const cl = dividerJointClearance(fit.nozzleSizeMm);
+  const obstructions = [...(geometry.notches ?? []), ...(geometry.grooves ?? [])];
+  const seams = planDividerSeams(geometry.length, budget, obstructions, cl);
+  if (seams.length === 0) return { seams, geometry };
+  const grooves = [...(geometry.grooves ?? []), ...seams.map((s) => seamKeepOut(s, cl))];
+  return { seams, geometry: { ...geometry, grooves } };
 }
 
 /**
@@ -314,13 +342,15 @@ function resolveKeepoutRelief(
  * instances in their slicer as needed.
  *
  * Pieces are stacked side-by-side on the plate (5mm gaps) in return order.
+ * With `fit`, a piece longer than the bed carries the seams to split it at.
  */
 export function buildUniqueDividerPieces(
   params: BinParams,
   innerW: number,
   innerD: number,
   wallHeight: number,
-  hasLip: boolean
+  hasLip: boolean,
+  fit?: DividerBedFit
 ): LabeledDividerPiece[] {
   if (params.style !== 'slotted') return [];
 
@@ -329,7 +359,7 @@ export function buildUniqueDividerPieces(
   // this stays consistent with slotBuilder (which only cuts authored slots when
   // the grid is present, else falls back to parametric).
   if (params.slotConfig.layout === 'custom' && params.slotConfig.customGrid) {
-    return buildAuthoredDividerPieces(params, innerW, innerD, wallHeight, hasLip);
+    return buildAuthoredDividerPieces(params, innerW, innerD, wallHeight, hasLip, fit);
   }
 
   const { slotConfig, dividerPieces } = params;
@@ -358,17 +388,22 @@ export function buildUniqueDividerPieces(
     axis === 'x' ? 'divider-horizontal' : 'divider-vertical';
 
   const pieces: LabeledDividerPiece[] = [];
+  // Every piece goes through `pattern` exactly once before its `addPiece`, so
+  // the seams planned there belong to the next piece added.
+  let pendingSeams: readonly number[] = [];
   const addPiece = (shape: Shape3D, label: string): void => {
+    const seams = pendingSeams;
+    pendingSeams = [];
     const yOffset = pieces.length * (dividerHeight + 5);
     if (yOffset === 0) {
-      pieces.push({ shape, label });
+      pieces.push({ shape, label, seams });
       return;
     }
     // translate() creates a new shape — dispose the pre-translation piece
     // to prevent leaking its intermediate handle across regenerations.
     const translated = translate(shape, [0, yOffset, 0]);
     shape.delete();
-    pieces.push({ shape: translated, label });
+    pieces.push({ shape: translated, label, seams });
   };
 
   const buildFullPiece = (axis: 'x' | 'y'): Shape3D => {
@@ -385,8 +420,11 @@ export function buildUniqueDividerPieces(
   const tabDepth = tabEngagement(slotDepth, clearance);
   const columns = (positions: readonly number[], width: number): PieceObstruction[] =>
     positions.map((offset) => ({ offset, width }));
-  const pattern = (piece: Shape3D, geometry: PieceGeometry): Shape3D =>
-    patternCtx ? cutPiecePattern(piece, patternCtx, geometry) : piece;
+  const pattern = (piece: Shape3D, geometry: PieceGeometry): Shape3D => {
+    const planned = planPieceSeams(geometry, dividerHeight, fit);
+    pendingSeams = planned.seams;
+    return patternCtx ? cutPiecePattern(piece, patternCtx, planned.geometry) : piece;
+  };
   // Every wall tab seats past a retention throat, so relieve every piece's tab
   // neck (inert at receptacle/free ends). Length varies per piece. The lid
   // keep-out notch rides on the same call, inert at an end that seats mid-cavity.
@@ -584,7 +622,8 @@ export function buildAuthoredDividerPieces(
   innerW: number,
   innerD: number,
   wallHeight: number,
-  hasLip: boolean
+  hasLip: boolean,
+  fit?: DividerBedFit
 ): LabeledDividerPiece[] {
   const { slotConfig, dividerPieces } = params;
   const grid = slotConfig.customGrid;
@@ -628,13 +667,16 @@ export function buildAuthoredDividerPieces(
       thickness,
       spec.fromTop
     );
-    if (patternCtx) {
-      shape = cutPiecePattern(shape, patternCtx, {
+    const planned = planPieceSeams(
+      {
         length: spec.length,
         tabEngagement: tabDepth,
         notches: spec.notchOffsets.map((offset) => ({ offset, width: slotWidth })),
-      });
-    }
+      },
+      dividerHeight,
+      fit
+    );
+    if (patternCtx) shape = cutPiecePattern(shape, patternCtx, planned.geometry);
     // Relieve the tab neck so a wall-anchored end's throat catches; inert at
     // abutting/T-junction ends that carry no tab.
     shape = cutDividerNeckRelief(shape, spec.length, dividerHeight, thickness, tabDepth, lock);
@@ -646,7 +688,7 @@ export function buildAuthoredDividerPieces(
       shape.delete();
       shape = translated;
     }
-    pieces.push({ shape, label: spec.label });
+    pieces.push({ shape, label: spec.label, seams: planned.seams });
     yOffset += dividerHeight + 5;
   }
   return pieces;

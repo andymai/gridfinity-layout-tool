@@ -493,6 +493,7 @@ export class GenerationBridge {
       tolerance?: number;
       angularTolerance?: number;
       separatePieces?: boolean;
+      bedFit?: { printBed: { widthMm: number; depthMm: number }; nozzleSizeMm: number };
       onProgress?: (progress: number) => void;
     }
   ): Promise<CombinedExportResult> {
