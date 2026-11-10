@@ -134,7 +134,7 @@
   "baseplate.cornerShapedPaddingNotice": "Skuffens form bestemmer hjørnene (Oppsett-fanen). Polstringen utvider platen rundt den.",
   "baseplate.decreasePadding": "Reduser {label}",
   "baseplate.detachMarginConnector": "Legg til kobling",
-  "baseplate.detachMarginConnectorDetail": "Kobler de lange skinnene til platen med samme kobling som sømmene, i stedet for å basere seg på friksjon. Korte skinner og hjørner forblir friksjonsfeste.",
+  "baseplate.detachMarginConnectorDetail": "Kobler skinnene til platen med samme kobling som sømmene, i stedet for å basere seg på friksjon.",
   "baseplate.detachMarginConnectorStyle": "Koblingen krever sømstilen Dovetail, Puslespill eller Dovetail key.",
   "baseplate.detachMargins": "Løsne marger som egne deler",
   "baseplate.detachMarginsTooSmall": "Margen er for liten på alle kanter til å løsnes.",

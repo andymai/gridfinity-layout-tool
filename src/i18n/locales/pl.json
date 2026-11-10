@@ -140,7 +140,7 @@
   "baseplate.cornerShapedPaddingNotice": "Narożniki wyznacza kształt szuflady (karta Układ). Margines powiększa płytę wokół niego.",
   "baseplate.decreasePadding": "Zmniejsz {label}",
   "baseplate.detachMarginConnector": "Dodaj łącznik",
-  "baseplate.detachMarginConnectorDetail": "Łączy długie listwy z płytą tym samym łącznikiem co szwy, zamiast polegać na tarciu. Krótkie listwy i narożniki pozostają na tarcie.",
+  "baseplate.detachMarginConnectorDetail": "Łączy listwy z płytą tym samym łącznikiem co szwy, zamiast polegać na tarciu.",
   "baseplate.detachMarginConnectorStyle": "Łącznik wymaga stylu szwu Jaskółczy ogon, Puzzle lub Klucz puzzle.",
   "baseplate.detachMargins": "Odłącz marginesy jako osobne części",
   "baseplate.detachMarginsTooSmall": "Margines jest zbyt mały na każdej krawędzi, aby go odłączyć.",

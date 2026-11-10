@@ -134,7 +134,7 @@
   "baseplate.cornerShapedPaddingNotice": "La forme du tiroir définit les coins (onglet Disposition). La marge agrandit la plaque autour d’elle.",
   "baseplate.decreasePadding": "Diminuer {label}",
   "baseplate.detachMarginConnector": "Ajouter un connecteur",
-  "baseplate.detachMarginConnectorDetail": "Assemble les longs rails à la plaque avec le même connecteur que les jointures, au lieu de compter sur la friction. Les rails courts et les coins restent ajustés par friction.",
+  "baseplate.detachMarginConnectorDetail": "Assemble les rails à la plaque avec le même connecteur que les jointures, au lieu de compter sur la friction.",
   "baseplate.detachMarginConnectorStyle": "Le connecteur nécessite le style de jointure Dovetail, Puzzle ou Dovetail key.",
   "baseplate.detachMargins": "Détacher les marges en pièces séparées",
   "baseplate.detachMarginsTooSmall": "Le remplissage est trop petit sur chaque bord pour être détaché.",

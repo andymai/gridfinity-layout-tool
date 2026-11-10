@@ -134,7 +134,7 @@
   "baseplate.cornerShapedPaddingNotice": "O formato da gaveta define os cantos (aba Layout). O preenchimento amplia a placa ao redor dele.",
   "baseplate.decreasePadding": "Diminuir {label}",
   "baseplate.detachMarginConnector": "Adicionar conector",
-  "baseplate.detachMarginConnectorDetail": "Une os trilhos longos à placa com o mesmo conector das emendas, em vez de depender do atrito. Trilhos curtos e cantos ficam por atrito.",
+  "baseplate.detachMarginConnectorDetail": "Une os trilhos à placa com o mesmo conector das emendas, em vez de depender do atrito.",
   "baseplate.detachMarginConnectorStyle": "O conector requer o estilo de emenda Dovetail, Quebra-cabeça ou Dovetail key.",
   "baseplate.detachMargins": "Separar margens como peças independentes",
   "baseplate.detachMarginsTooSmall": "O preenchimento é pequeno demais em todas as bordas para separar.",

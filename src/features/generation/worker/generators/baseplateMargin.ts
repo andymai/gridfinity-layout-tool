@@ -127,7 +127,8 @@ function buildMarginSolid(params: ResolvedBaseplateParams, margin: MarginPiece):
       params.gridUnitMm,
       MIN_PRINTABLE_TILE_MM,
       params.overTileHalfGrid,
-      params.overTileHalfGridSolidLeftover
+      params.overTileHalfGridSolidLeftover,
+      params
     )) {
       // Keep only the frame cells whose center lands inside this rail's
       // footprint. Corner cells fall inside the long rail that spans them.
@@ -149,18 +150,13 @@ function buildMarginSolid(params: ResolvedBaseplateParams, margin: MarginPiece):
     if (pockets.length > 0) rail = cutInBatches(rail, pockets);
   }
 
-  // Opt-in connector: carve seam grooves into a LONG rail's inner face to
-  // receive the body's tongues — or, under `dovetailKey`, one lobe of the seated
-  // key that also engages the body's own groove. Long rails are exactly
-  // the seam sides (splitPlanner marks the matching body edge `marginSeam`); short
-  // rails stay friction-fit. Positions are recomputed from the same
-  // `cellUnits`/`fractionalEdge` the body used, then shifted by `centerOffsetMm`
-  // onto the corner-extended rail.
-  if (
-    params.detachMarginConnector === true &&
-    isMarginSeamStyle(params.connectorStyle) &&
-    margin.role === 'long'
-  ) {
+  // Opt-in connector: carve seam grooves into the rail's inner face to receive
+  // the body's tongues — or, under `dovetailKey`, one lobe of the seated key that
+  // also engages the body's own groove (splitPlanner marks the matching body edge
+  // `marginSeam`). Positions are recomputed from the same `cellUnits`/
+  // `fractionalEdge` the body used, then shifted by `centerOffsetMm` onto the
+  // corner-extended rail.
+  if (params.detachMarginConnector === true && isMarginSeamStyle(params.connectorStyle)) {
     const seam = margin.seamConnector;
     // Keyed seams sit on cell BOUNDARIES (a two-cell junction, which is the foot
     // layout the seated key is relieved for); tongued seams sit on cell CENTERS

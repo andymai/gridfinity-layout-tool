@@ -202,12 +202,11 @@ describe('margin-seam connector geometry (#2414)', () => {
     expect(withConn.vertices.length).toBeGreaterThan(noConn.vertices.length);
   });
 
-  it('leaves short rails friction-fit (no groove)', () => {
-    // A short rail (role 'short') must not be grooved even with the connector on.
+  it('cuts a groove into a short rail too (#4921)', () => {
     const shortRail = frontRail({ id: 'margin-left-1', side: 'left', role: 'short' });
     const conn = generateMargin(baseParams(), shortRail, true);
     const plain = generateMargin(baseParams({ detachMarginConnector: false }), shortRail, true);
-    expect(conn.vertices.length).toBe(plain.vertices.length);
+    expect(conn.vertices.length).toBeGreaterThan(plain.vertices.length);
   });
 
   it('every body tongue seats in the matching rail groove in world space', () => {

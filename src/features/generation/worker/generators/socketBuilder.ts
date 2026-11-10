@@ -667,7 +667,7 @@ export function overhangFootCells(
     MIN_PRINTABLE_TILE_MM,
     plan.halfSockets,
     false,
-    plan.halfSockets
+    { halfNominal: plan.halfSockets }
   );
 }
 

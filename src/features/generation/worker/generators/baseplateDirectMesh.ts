@@ -179,7 +179,8 @@ export function generateBaseplateDirect(
         pitch,
         MIN_PRINTABLE_TILE_MM,
         overTileHalfGrid,
-        overTileHalfGridSolidLeftover
+        overTileHalfGridSolidLeftover,
+        cellOpts
       )
     );
     // Left/right margins tile along X; front/back along Y — so a non-square
@@ -343,7 +344,8 @@ export function generateBaseplateDirect(
         pitch,
         MIN_PRINTABLE_TILE_MM,
         overTileHalfGrid,
-        overTileHalfGridSolidLeftover
+        overTileHalfGridSolidLeftover,
+        cellOpts
       )) {
         addCellHoles(cell);
       }

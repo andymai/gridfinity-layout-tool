@@ -355,21 +355,31 @@ function marginAxisEntries(
   minMm: number,
   halfGrid: boolean,
   solidLeftover: boolean,
-  halfNominal: boolean
+  halfNominal: boolean,
+  fractionalEdge: 'start' | 'end' | undefined
 ): MarginAxisEntry[] {
   const totalNom = grid * unit;
   const entries: MarginAxisEntry[] = [];
   entries.push(
     ...marginStripEntries(-totalNom / 2, startMm, -1, unit, minMm, halfGrid, solidLeftover)
   );
+  const nominal = halfNominal ? decomposeHalfCells(grid) : decomposeCells(grid);
+  if (fractionalEdge === 'start') nominal.reverse();
   let offset = 0;
-  for (const s of halfNominal ? decomposeHalfCells(grid) : decomposeCells(grid)) {
+  for (const s of nominal) {
     entries.push({ units: s, center: offset + (s * unit) / 2 - totalNom / 2, margin: false });
     offset += s * unit;
   }
   entries.push(...marginStripEntries(totalNom / 2, endMm, 1, unit, minMm, halfGrid, solidLeftover));
   return entries;
 }
+
+export type FrameNominalOptions = Pick<
+  ForEachCellOptions,
+  'fractionalEdgeX' | 'fractionalEdgeY'
+> & {
+  readonly halfNominal?: boolean;
+};
 
 /**
  * Build the "frame" of clipped cells around a nominal grid — used to fill a
@@ -387,6 +397,8 @@ function marginAxisEntries(
  * strip — so a wide margin reads as a half-grid border rather than one big clip.
  * `solidLeftover` (half-grid only) drops that leftover strip so it stays solid.
  *
+ * `nominal` must carry the grid's fractional edges, as {@link forEachCell}
+ * takes them, or a strip is cut half a unit off the cells it borders. Its
  * `halfNominal` subdivides the strips along the nominal axis into 0.5-unit
  * cells instead of whole ones, matching {@link forEachCell}'s `halfSockets`.
  */
@@ -398,7 +410,7 @@ export function frameCells(
   minStripMm: number,
   halfGrid = false,
   solidLeftover = false,
-  halfNominal = false
+  nominal: FrameNominalOptions = {}
 ): CellInfo[] {
   // Left/right margins live on the X axis (unitX), front/back on Y (unitY).
   const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
@@ -410,7 +422,8 @@ export function frameCells(
     minStripMm,
     halfGrid,
     solidLeftover,
-    halfNominal
+    nominal.halfNominal ?? false,
+    nominal.fractionalEdgeX
   );
   const ys = marginAxisEntries(
     gridD,
@@ -420,7 +433,8 @@ export function frameCells(
     minStripMm,
     halfGrid,
     solidLeftover,
-    halfNominal
+    nominal.halfNominal ?? false,
+    nominal.fractionalEdgeY
   );
   const cells: CellInfo[] = [];
   for (const x of xs) {

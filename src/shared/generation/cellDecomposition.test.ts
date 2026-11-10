@@ -377,11 +377,35 @@ describe('frameCells half-grid solid leftover (#2397)', () => {
   });
 });
 
+describe('frameCells fractional edge (#4921)', () => {
+  const backStripXs = (edge: 'start' | 'end'): number[] =>
+    frameCells(2.5, 1, { left: 0, right: 0, front: 0, back: 12 }, 42, 8, false, false, {
+      fractionalEdgeX: edge,
+    }).map((c) => c.centerX);
+  const nominalXs = (edge: 'start' | 'end'): number[] => {
+    const xs: number[] = [];
+    forEachCell(2.5, 1, (c) => xs.push(c.centerX), { fractionalEdgeX: edge });
+    return xs;
+  };
+
+  it('cuts its strips on the cells forEachCell lays out', () => {
+    expect(backStripXs('start')).toEqual(nominalXs('start'));
+    expect(backStripXs('end')).toEqual(nominalXs('end'));
+    expect(backStripXs('start')).toEqual([-42, -10.5, 31.5]);
+  });
+
+  it("defaults to the 'end' edge", () => {
+    expect(
+      frameCells(2.5, 1, { left: 0, right: 0, front: 0, back: 12 }, 42, 8).map((c) => c.centerX)
+    ).toEqual(nominalXs('end'));
+  });
+});
+
 describe('frameCells halfNominal', () => {
   it('subdivides the strips along the nominal axis into half cells', () => {
     const margins = { left: 0, right: 0, front: 0, back: 12 };
     const whole = frameCells(2, 1, margins, 42, 8);
-    const halved = frameCells(2, 1, margins, 42, 8, false, false, true);
+    const halved = frameCells(2, 1, margins, 42, 8, false, false, { halfNominal: true });
     expect(whole.map((c) => c.centerX)).toEqual([-21, 21]);
     expect(halved.map((c) => c.centerX)).toEqual([-31.5, -10.5, 10.5, 31.5]);
     expect(halved.every((c) => c.widthUnits === 0.5)).toBe(true);
@@ -389,7 +413,7 @@ describe('frameCells halfNominal', () => {
 
   it('leaves the margin packing to halfGrid', () => {
     const margins = { left: 30, right: 0, front: 0, back: 0 };
-    const cells = frameCells(1, 1, margins, 42, 8, false, false, true);
+    const cells = frameCells(1, 1, margins, 42, 8, false, false, { halfNominal: true });
     expect(cells.map((c) => c.widthUnits)).toEqual([30 / 42, 30 / 42]);
     expect(cells.map((c) => c.depthUnits)).toEqual([0.5, 0.5]);
   });
