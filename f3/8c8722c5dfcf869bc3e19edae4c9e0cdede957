@@ -1,0 +1,27 @@
+src/features/bin-designer/components/panel/CutoutsSection/booleanGeometry.ts
+  s_3df95ffa72e9f4::t_ea0b5e4ad657e7 85-86
+  s_3df95ffa72e9f4::t_e843f0d8b287a0 33-47
+  s_3df95ffa72e9f4::t_09a6d9169fab80 117
+src/features/bin-designer/components/panel/CutoutsSection/renderer/GroupResultMesh.test.tsx
+  s_3df95ffa72e9f4::t_3064890242637d 1-4,7-22,24-27,32-45
+src/features/bin-designer/components/panel/CutoutsSection/renderer/GroupResultMesh.tsx
+  s_3df95ffa72e9f4::t_f97f1add7170f1 35-42
+src/features/bin-designer/components/panel/CutoutsSection/booleanGeometry.test.ts
+  s_3df95ffa72e9f4::t_014e3a62d7bb63 242-258
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f38c8722c5dfcf869bc3e19edae4c9e0cdede957",
+  "prompts": {},
+  "sessions": {
+    "s_3df95ffa72e9f4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "68ff3048-076a-4818-9354-6265ff4d1830",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
