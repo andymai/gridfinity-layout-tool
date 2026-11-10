@@ -354,7 +354,8 @@ function marginAxisEntries(
   unit: number,
   minMm: number,
   halfGrid: boolean,
-  solidLeftover: boolean
+  solidLeftover: boolean,
+  halfNominal: boolean
 ): MarginAxisEntry[] {
   const totalNom = grid * unit;
   const entries: MarginAxisEntry[] = [];
@@ -362,7 +363,7 @@ function marginAxisEntries(
     ...marginStripEntries(-totalNom / 2, startMm, -1, unit, minMm, halfGrid, solidLeftover)
   );
   let offset = 0;
-  for (const s of decomposeCells(grid)) {
+  for (const s of halfNominal ? decomposeHalfCells(grid) : decomposeCells(grid)) {
     entries.push({ units: s, center: offset + (s * unit) / 2 - totalNom / 2, margin: false });
     offset += s * unit;
   }
@@ -385,6 +386,9 @@ function marginAxisEntries(
  * grid edge outward before the leftover (< half a unit) falls back to a clipped
  * strip — so a wide margin reads as a half-grid border rather than one big clip.
  * `solidLeftover` (half-grid only) drops that leftover strip so it stays solid.
+ *
+ * `halfNominal` subdivides the strips along the nominal axis into 0.5-unit
+ * cells instead of whole ones, matching {@link forEachCell}'s `halfSockets`.
  */
 export function frameCells(
   gridW: number,
@@ -393,7 +397,8 @@ export function frameCells(
   gridUnitMm: GridUnitInput,
   minStripMm: number,
   halfGrid = false,
-  solidLeftover = false
+  solidLeftover = false,
+  halfNominal = false
 ): CellInfo[] {
   // Left/right margins live on the X axis (unitX), front/back on Y (unitY).
   const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
@@ -404,7 +409,8 @@ export function frameCells(
     unitX,
     minStripMm,
     halfGrid,
-    solidLeftover
+    solidLeftover,
+    halfNominal
   );
   const ys = marginAxisEntries(
     gridD,
@@ -413,7 +419,8 @@ export function frameCells(
     unitY,
     minStripMm,
     halfGrid,
-    solidLeftover
+    solidLeftover,
+    halfNominal
   );
   const cells: CellInfo[] = [];
   for (const x of xs) {

@@ -11,7 +11,13 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { buildParams } from './__kernel-tests__/scenarioTypes';
-import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAssertions';
+import type { MeshData } from '@/features/generation/bridge/types';
+import {
+  assertStructurallyValid,
+  boundingBox,
+  columnCrossings,
+} from './__kernel-tests__/meshAssertions';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { deriveDimensions } from './pipeline/context';
 import {
   computeInteriorHeight,
@@ -247,5 +253,44 @@ describe('overhang feet toggle', () => {
       true
     );
     expect(withFeet.triangleCount).toBe(flat.triangleCount);
+  });
+});
+
+describe('overhang feet under half sockets', () => {
+  // Lowest surface over a column: ~0 under a foot, the floor's underside in a
+  // seam between feet (or nothing at all when the column misses the bin).
+  const lowestSurface = (mesh: MeshData, x: number, y: number): number =>
+    columnCrossings(mesh, x, y)[0] ?? Infinity;
+
+  it('subdivides the overhang feet at the same half-unit seams as the main feet', () => {
+    const generateBin = getGenerateBin();
+    const result = generateBin(
+      buildParams({
+        width: 1,
+        depth: 1,
+        base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
+        overhang: { left: 0, right: 30, front: 0, back: 12, feet: true },
+      }),
+      undefined,
+      true
+    );
+    assertStructurallyValid(result, 'half-socket overhang feet');
+
+    const foot = (x: number, y: number): void =>
+      expect(lowestSurface(result, x, y), `foot at (${x}, ${y})`).toBeLessThan(0.5);
+    const seam = (x: number, y: number): void =>
+      expect(lowestSurface(result, x, y), `seam at (${x}, ${y})`).toBeGreaterThan(2);
+
+    foot(-10.53, 10.47);
+    seam(0.13, 10.47);
+
+    foot(31.53, 10.47);
+    foot(31.53, -10.47);
+    seam(31.53, 0.13);
+    seam(42.13, 10.47);
+
+    foot(-10.53, 27.07);
+    foot(10.53, 27.07);
+    seam(0.13, 27.07);
   });
 });

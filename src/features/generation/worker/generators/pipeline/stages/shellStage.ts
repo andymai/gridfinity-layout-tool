@@ -552,15 +552,14 @@ export const shellStage: PipelineStage = {
     let feetFused = false;
     try {
       if (dim.overhang.feet && hasOverhang(dim.overhang)) {
-        // Overhang feet are gap-fill tiling around the nominal grid (they don't
-        // mate with baseplate sockets), so they keep the default 'end'
-        // decomposition regardless of fractionalEdge — only the seam tiling at a
-        // fractional edge differs cosmetically, never the socket mating.
+        // The overhang frame keeps the default 'end' decomposition regardless
+        // of fractionalEdge: only the seam tiling at a fractional edge differs.
         feet = buildOverhangFeet(
           params.width,
           params.depth,
           dim.overhang,
           pitch,
+          dim.socketCellPlan,
           true,
           dim.socketHeight
         );
