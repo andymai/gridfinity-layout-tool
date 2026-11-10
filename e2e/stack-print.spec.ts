@@ -34,14 +34,7 @@ function stackSwitch(page: Page) {
   return page.getByRole('switch', { name: /vertical stack/i });
 }
 
-async function summaryText(page: Page): Promise<string> {
-  return (
-    (await page
-      .getByText(/\d+ stacks? · \d+ plates?/i)
-      .first()
-      .textContent()) ?? ''
-  );
-}
+const MANY_FILES = /(\d+) plates across (\d+) print files/i;
 
 test.beforeEach(async ({ page }) => {
   test.setTimeout(120_000);
@@ -52,7 +45,7 @@ test.beforeEach(async ({ page }) => {
 test('a single unsplit plate has nothing to stack', async ({ page }) => {
   await setDimensions(page, 2); // 84mm, fits any bed → unsplit, one plate
   await stackSwitch(page).click();
-  await expect(page.getByText(/1 stack · 1 plate/i)).toBeVisible();
+  await expect(page.getByText(/nothing to stack/i)).toBeVisible();
 });
 
 test('an evenly-tiled drawer dedupes into few tall stacks', async ({ page }) => {
@@ -61,7 +54,7 @@ test('an evenly-tiled drawer dedupes into few tall stacks', async ({ page }) => 
   await page.waitForTimeout(800);
   await stackSwitch(page).click();
   // Default 250mm build height fits all 16 in one tower.
-  await expect(page.getByText(/1 stack · 16 plates/i)).toBeVisible();
+  await expect(page.getByText(/16 plates stacked into 1 print file/i)).toBeVisible();
 });
 
 test('an unevenly-tiled drawer does not fully consolidate', async ({ page }) => {
@@ -69,11 +62,13 @@ test('an unevenly-tiled drawer does not fully consolidate', async ({ page }) => 
   await setBed(page, 180);
   await page.waitForTimeout(800);
   await stackSwitch(page).click();
-  await expect(page.getByText(/\d+ stacks · 16 plates/i)).toBeVisible();
+  const summary = page.getByText(MANY_FILES);
+  await expect(summary).toBeVisible();
   // Different-size tiles can't all stack together → more than one stack
   // (contrast the even 16×16 case, which collapses to a single stack).
-  const stacks = Number((await summaryText(page)).match(/(\d+) stacks/)?.[1]);
-  expect(stacks).toBeGreaterThan(1);
+  const [, plates, files] = (await summary.textContent())?.match(MANY_FILES) ?? [];
+  expect(Number(plates)).toBe(16);
+  expect(Number(files)).toBeGreaterThan(1);
 });
 
 test('mixed-size mode prints a whole uneven Eco Plate as one tower', async ({ page }) => {
@@ -130,36 +125,30 @@ test('build height drives the per-stack cap', async ({ page }) => {
   await setBed(page, 180);
   await page.waitForTimeout(800);
   await stackSwitch(page).click();
-  await expect(page.getByText(/1 stack · 16 plates/i)).toBeVisible();
+  await expect(page.getByText(/16 plates stacked into 1 print file/i)).toBeVisible();
 
   await setBuildHeight(page, 50); // ~9 tiles fit → 16 splits into 2 stacks
-  await expect(page.getByText(/2 stacks · 16 plates/i)).toBeVisible();
+  await expect(page.getByText(/16 plates across 2 print files/i)).toBeVisible();
 });
 
-test('stacking hides magnet + corner-radius controls and restores them on disable', async ({
-  page,
-}) => {
+test('stacking hides the magnet toggles and restores magnet holes on disable', async ({ page }) => {
   await setDimensions(page, 2);
 
-  // Turn magnets on, confirm the corner-radius slider is present.
-  const magnet = page.getByRole('switch', { name: /magnet/i });
-  await magnet.click();
-  await expect(magnet).toBeVisible();
+  const magnetHoles = page.getByRole('switch', { name: 'Magnet holes', exact: true });
+  await magnetHoles.click();
+  await expect(magnetHoles).toBeChecked();
   await expect(page.getByRole('slider', { name: 'Corner radius' })).toBeVisible();
 
-  // Enable stacking → magnet + corner-radius controls vanish, notice appears.
+  // Stacking strips both magnet kinds, but a corner radius still shapes the
+  // stacked tiles, so its slider stays.
   await stackSwitch(page).click();
   await expect(page.getByRole('switch', { name: /magnet/i })).toHaveCount(0);
-  await expect(page.getByRole('slider', { name: 'Corner radius' })).toHaveCount(0);
-  await expect(
-    page.getByText(/Connectors, magnet holes, and corner rounding are turned off/i)
-  ).toBeVisible();
+  await expect(page.getByRole('slider', { name: 'Corner radius' })).toBeVisible();
 
-  // Disable stacking → magnet toggle returns, still on (restored, not lost).
+  // Disable stacking → magnet holes return, still on (restored, not lost).
   await stackSwitch(page).click();
-  const magnetAgain = page.getByRole('switch', { name: /magnet/i });
-  await expect(magnetAgain).toBeVisible();
-  await expect(magnetAgain).toBeChecked();
+  await expect(magnetHoles).toBeVisible();
+  await expect(magnetHoles).toBeChecked();
 });
 
 test('the preview separation slider appears only while stacking', async ({ page }) => {
