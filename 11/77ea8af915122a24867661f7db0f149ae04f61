@@ -1,0 +1,24 @@
+src/features/generation/worker/generators/baseplateDetachedMargin.scenario.test.ts
+  s_664c3371f7a769::t_8a904337f14f9d 20,165,171
+  s_664c3371f7a769::t_3e40fd038dd967 126-137,141,150,167,170,172,202,220-253
+  s_664c3371f7a769::t_0d11f1db51f2be 254-255
+src/features/generation/worker/generators/baseplateConnectors.ts
+  s_664c3371f7a769::t_b0de7f165e5b49 443-447
+  s_664c3371f7a769::t_601ace86d45010 448,468-471
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1177ea8af915122a24867661f7db0f149ae04f61",
+  "prompts": {},
+  "sessions": {
+    "s_664c3371f7a769": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3a1e04bf-d9ec-4ac2-afd0-c8f362789969",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
