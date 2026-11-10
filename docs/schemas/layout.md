@@ -397,12 +397,12 @@ anything in combination with them.
 
 <!-- generated:start -->
 
-| Field        | Type      | Required | Default | Constraint   | Notes                                                                                                                                                                                                                                        |
-| ------------ | --------- | -------- | ------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enabled`    | `boolean` | yes      |         |              | Enable stack printing.                                                                                                                                                                                                                       |
-| `gapMm`      | `number`  | yes      | `0.2`   | >= 0.1, <= 1 | Air gap between stacked copies in mm. One print layer, about 0.2, is typical.                                                                                                                                                                |
-| `copies`     | `integer` |          | `1`     | >= 1, <= 20  | How many copies of the whole layout to print.                                                                                                                                                                                                |
-| `mixedSizes` | `boolean` |          | `false` |              | Allow differently sized tiles from one split baseplate in the same vertical stack. Smaller tiles sit above larger tiles on the same corner grid. Eco Plate may be used. Shaped, padded and connector-bearing tiles remain in uniform stacks. |
+| Field        | Type      | Required | Default | Constraint   | Notes                                                                                                                                                                                                                                 |
+| ------------ | --------- | -------- | ------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`    | `boolean` | yes      |         |              | Enable stack printing.                                                                                                                                                                                                                |
+| `gapMm`      | `number`  | yes      | `0.2`   | >= 0.1, <= 1 | Air gap between stacked copies in mm. One print layer, about 0.2, is typical.                                                                                                                                                         |
+| `copies`     | `integer` |          | `1`     | >= 1, <= 20  | How many copies of the whole layout to print.                                                                                                                                                                                         |
+| `mixedSizes` | `boolean` |          | `false` |              | Lets plates of different sizes from one split baseplate share a tower, and keeps Eco Plate on. Plates with margins or integral connectors can mix. Plates with a shaped outline or a half-grid edge stack only with identical plates. |
 
 <!-- generated:end -->
 

@@ -82,7 +82,7 @@ test('mixed-size mode prints a whole uneven Eco Plate as one tower', async ({ pa
   await page.waitForTimeout(800);
   await page.getByText('Eco plate', { exact: true }).click();
   await stackSwitch(page).click();
-  await page.getByText('Mix tile sizes in stacks', { exact: true }).click();
+  await page.getByText('Stack plates of different sizes', { exact: true }).click();
   await expect(page.getByText(/16 plates stacked into 1 print file/i)).toBeVisible();
 });
 
@@ -97,7 +97,7 @@ test('four distinct drawer parts with margins and connectors print once in one t
   }
   await page.getByRole('radio', { name: /Dovetail/i }).click();
   await stackSwitch(page).click();
-  await page.getByText('Mix tile sizes in stacks', { exact: true }).click();
+  await page.getByText('Stack plates of different sizes', { exact: true }).click();
   await expect(page.getByText(/4 plates stacked into 1 print file/i)).toBeVisible();
 });
 
@@ -121,7 +121,7 @@ test('tiled Eco Plate margins still stack the different parts of a 523 by 325 mm
   await page.getByText('Eco plate', { exact: true }).click();
   await page.getByRole('radio', { name: /Dovetail/i }).click();
   await stackSwitch(page).click();
-  await page.getByText('Mix tile sizes in stacks', { exact: true }).click();
+  await page.getByText('Stack plates of different sizes', { exact: true }).click();
   await expect(page.getByText(/6 plates across 2 print files/i)).toBeVisible();
 });
 

@@ -4890,9 +4890,9 @@ const en: Record<string, string> = {
   'baseplate.connectorNozzleNotice':
     'Connectors are enlarged so a {nozzle}mm nozzle can print them.',
   'baseplate.stackPrint.enable': 'Vertical stack',
-  'baseplate.stackPrint.mixedSizes.label': 'Mix tile sizes in stacks',
+  'baseplate.stackPrint.mixedSizes.label': 'Stack plates of different sizes',
   'baseplate.stackPrint.mixedSizes.info':
-    'Print every part of this split baseplate once when Complete sets is 1, including different sizes, Eco Plate, margins and connectors. Parts are turned to align their grids and fit above the part below. Build height, margins or an incompatible outline can require more than one stack. Check the exported file in your slicer and print a small test first.',
+    'Lets plates of different sizes share a tower, so a split baseplate prints in fewer files. Eco Plate stays on. Each plate turns to line up its grid with the plate below. A plate with a shaped outline or a half-grid edge stacks only with plates like it. Check the file in your slicer and print a small test first.',
   'baseplate.stackPrint.exportBanner':
     'Stack printing: {stacks} stacks ({plates} plates) export as a ZIP with a print guide.',
   'baseplate.stackPrint.gap.label': 'Gap',
@@ -4900,7 +4900,7 @@ const en: Record<string, string> = {
     'Air gap between stacked plates, about 0.2mm (one layer). Keep your slicer’s layer height at or below this gap or the plates fuse. No supports needed. Test a small stack first to fine-tune it.',
   'baseplate.stackPrint.copies.label': 'Complete sets',
   'baseplate.stackPrint.copies.info':
-    'How many complete sets of this project to print. Set to 1 for exactly one of each part. Larger values duplicate the whole set; towers that exceed build height split into separate files.',
+    'How many complete sets of this baseplate to print. At 1, each plate prints once. Each extra set adds one more copy of every plate. A tower taller than your build height splits into separate files.',
   'baseplate.stackPrint.output.oneFile': '{plates} plates stacked into 1 print file.',
   'baseplate.stackPrint.output.manyFiles':
     '{plates} plates across {files} print files ({breakdown}).',
@@ -4929,9 +4929,9 @@ const en: Record<string, string> = {
   'baseplate.stackPrint.sampleDescription':
     'A single stack of two 1×1 plates to fine-tune the air-gap separation before printing a full stack.',
   'baseplate.stackPrint.warning.singlePlate':
-    'This drawer makes a single plate. Increase Complete sets to stack copies, or split a larger drawer into parts to stack them.',
+    'This baseplate is one plate, so there is nothing to stack. Raise Complete sets to stack copies of it.',
   'baseplate.stackPrint.warning.incompatibleFootprints':
-    'These tiles cannot safely stack with the current margins and shapes. They remain separate print files; try a larger bed or different margins.',
+    'None of these plates can rest safely on another with the current margins and outlines, so each one prints as its own file. Different margins or a larger print bed can help.',
   'baseplate.stackPrint.warning.buildHeightCapped':
     'At a {gap}mm gap, your {maxHeight}mm build height fits only one plate per stack. Lower the gap or raise the build-height limit in print settings to stack into towers.',
   'baseplate.stackPrint.warning.plateTooTall':

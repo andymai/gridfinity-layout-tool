@@ -945,7 +945,7 @@
     },
     "StackPrintParams": {
       "type": "object",
-      "description": "Vertical stack printing. Identical pieces form towers by default; mixedSizes can combine compatible tiles from one split baseplate. Magnet holes, screws, solid floors and snap-clip connectors are disabled while enabled.",
+      "description": "Vertical stack printing. By default, identical plates stack into towers. Stacking turns off magnet holes, screw holes, solid floors and snap-clip connectors, and Eco Plate unless mixedSizes is on.",
       "required": ["enabled", "gapMm"],
       "properties": {
         "enabled": {
@@ -979,7 +979,7 @@
         "mixedSizes": {
           "type": "boolean",
           "default": false,
-          "description": "Allow differently sized tiles from one split baseplate in the same vertical stack. Smaller tiles sit above larger tiles on the same corner grid. Eco Plate may be used. Shaped, padded and connector-bearing tiles remain in uniform stacks."
+          "description": "Lets plates of different sizes from one split baseplate share a tower, and keeps Eco Plate on. Plates with margins or integral connectors can mix. Plates with a shaped outline or a half-grid edge stack only with identical plates."
         }
       }
     },
