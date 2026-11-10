@@ -30,7 +30,12 @@ import {
   MOUNT_MAGNETS_PER_PIECE_MIN,
   MOUNT_MAGNETS_PER_PIECE_MAX,
 } from '@/core/baseplateDefaults';
-import { STACK_PRINT_MIN_GAP_MM, STACK_PRINT_MAX_GAP_MM } from '@/core/types';
+import {
+  STACK_PRINT_MIN_GAP_MM,
+  STACK_PRINT_MAX_GAP_MM,
+  STACK_PRINT_MIN_COPIES,
+  STACK_PRINT_MAX_COPIES,
+} from '@/core/types';
 import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
 import { GRID_PITCH_MM_MAX } from '@/shared/utils/drawerOutline';
 import type { CommandType } from '../commands';
@@ -345,6 +350,8 @@ const baseplateParamsSchema = z.object({
     .object({
       enabled: z.boolean(),
       gapMm: z.number().min(STACK_PRINT_MIN_GAP_MM).max(STACK_PRINT_MAX_GAP_MM),
+      copies: z.number().int().min(STACK_PRINT_MIN_COPIES).max(STACK_PRINT_MAX_COPIES).optional(),
+      mixedSizes: z.boolean().optional(),
     })
     .optional(),
   splitOverride: z.object({ cols: splitChunkSizes, rows: splitChunkSizes }).optional(),

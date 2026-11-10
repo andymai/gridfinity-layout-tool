@@ -18,7 +18,7 @@ import {
   stackHeightCap,
   stackedPlateHeightMm,
   evaluateStackPrint,
-  planPhysicalStacks,
+  planStackPrint,
   type StackPrintStatus,
   type PhysicalStack,
 } from '../utils/stackPrint';
@@ -89,10 +89,26 @@ export function useStackPrintStatus(gapMm: number): StackPrintStatusInfo {
     const groups = stackGroupsFromTiling(tiling, fullParams, copies);
     const plateMm = stackedPlateHeightMm(lowProfileBase);
     const cap = stackHeightCap(maxPrintHeightMm, plateMm, gapMm);
-    return {
-      status: evaluateStackPrint(groups, cap, plateMm, maxPrintHeightMm),
-      plan: planPhysicalStacks(groups, cap),
-    };
+    const plan = planStackPrint(
+      tiling,
+      fullParams,
+      copies,
+      cap,
+      baseplateParams.stackPrint?.mixedSizes === true
+    );
+    const status =
+      baseplateParams.stackPrint?.mixedSizes === true && tiling?.isSplit
+        ? plateMm > maxPrintHeightMm
+          ? { kind: 'plateTooTall' as const }
+          : plan.some((tower) => tower.copies > 1)
+            ? { kind: 'ok' as const }
+            : cap <= 1 && plan.length > 1
+              ? { kind: 'buildHeightCapped' as const }
+              : plan.length > 1
+                ? { kind: 'incompatibleFootprints' as const }
+                : { kind: 'singlePlate' as const }
+        : evaluateStackPrint(groups, cap, plateMm, maxPrintHeightMm);
+    return { status, plan };
   }, [
     baseplateParams,
     drawerWidth,

@@ -4,14 +4,22 @@
  */
 
 import type { StackPrintParams } from '@/core/types';
-import { STACK_PRINT_MAX_STACK_HEIGHT, STACK_SEAM_TRIM_MM } from '@/core/types';
+import { STACK_SEAM_TRIM_MM } from '@/core/types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { effectiveCornerRadii } from '@/shared/generation/baseplateCorners';
 import { plateProfileHeightMm } from '@/shared/printSettings/gridfinityGeometry';
-import type { BaseplateTiling } from '../types/tiling';
-import { groupPiecesByFingerprint } from './pieceFingerprint';
 import { plainRoundingLimit } from './buildFullParams';
 import { turnedPlateOverhangMm } from './plateTurnOverhang';
+import { rotateMeshInPlane } from './stackMeshRotation';
+import type { StackGroup } from './stackPlanning';
+export type { StackGroup, PhysicalStack, StackLayer } from './stackPlanning';
+export {
+  planMixedPieceStacks,
+  planStackPrint,
+  planPhysicalStacks,
+  isUnstackedSplit,
+  stackGroupsFromTiling,
+} from './stackPlanning';
 
 /** Non-null mesh buffers (xyz-interleaved positions/normals, line-pair edges). */
 export interface StackMeshArrays {
@@ -19,58 +27,6 @@ export interface StackMeshArrays {
   readonly normals: Float32Array;
   readonly indices: Uint32Array;
   readonly edgeVertices: Float32Array;
-}
-
-/** One unique-piece group needing `quantity` copies for a single complete set. */
-export interface StackGroup {
-  readonly label: string;
-  readonly quantity: number;
-}
-
-/** One physical print job: a single piece repeated `copies` times in a tower. */
-export interface PhysicalStack {
-  readonly label: string;
-  readonly copies: number;
-}
-
-/**
- * Plan the physical stacks for a drawer. Each group needs `quantity` copies; a
- * group taller than `maxStackHeight` is split across several stacks (e.g. 18
- * copies, cap 8 -> 8 + 8 + 2). Groups/quantities at or below zero are skipped.
- * Returns one entry per physical tower to print.
- */
-export function planPhysicalStacks(
-  groups: readonly StackGroup[],
-  maxStackHeight: number = STACK_PRINT_MAX_STACK_HEIGHT
-): PhysicalStack[] {
-  const cap = Number.isFinite(maxStackHeight) ? Math.max(1, Math.floor(maxStackHeight)) : 1;
-  const stacks: PhysicalStack[] = [];
-
-  for (const group of groups) {
-    let remaining = Math.max(0, Math.floor(group.quantity));
-    while (remaining > 0) {
-      const copies = Math.min(cap, remaining);
-      stacks.push({ label: group.label, copies });
-      remaining -= copies;
-    }
-  }
-
-  return stacks;
-}
-
-/**
- * Whether a physical-stack plan maps 1:1 onto the tiling's split pieces: every
- * tower is a single plate (`copies === 1`) carrying a distinct piece label. Only
- * then do towers correspond to spatial piece positions (the "no stacks" preview
- * layout). A deduped or height-capped plan fails this: `cap === 1` expands a
- * quantity-N group into N same-label single-plate stacks, which satisfies the
- * count/copies tests but repeats a label — so checking label distinctness (not
- * just length) is what prevents the repeats from collapsing onto one position.
- */
-export function isUnstackedSplit(plan: readonly PhysicalStack[], pieceCount: number): boolean {
-  if (plan.length !== pieceCount) return false;
-  if (!plan.every((s) => s.copies === 1)) return false;
-  return new Set(plan.map((s) => s.label)).size === plan.length;
 }
 
 /**
@@ -105,6 +61,8 @@ export type StackPrintStatus =
   | { readonly kind: 'plateTooTall' }
   /** No repeated plate to stack (single unsplit plate, or an all-unique split). */
   | { readonly kind: 'singlePlate' }
+  /** Mixed tiles have no supported pair with the current shapes and margins. */
+  | { readonly kind: 'incompatibleFootprints' }
   /** Build height (at this gap) fits only one plate per tower. */
   | { readonly kind: 'buildHeightCapped' };
 
@@ -132,30 +90,6 @@ export function evaluateStackPrint(
   const effectiveCap = Number.isFinite(cap) ? Math.max(1, Math.floor(cap)) : 1;
   if (effectiveCap <= 1) return { kind: 'buildHeightCapped' };
   return { kind: 'ok' };
-}
-
-/**
- * Derive the identical-piece groups a drawer needs. For a single (unsplit)
- * plate that's one group of quantity 1; for a split plate each fingerprint
- * group contributes its piece count, labelled by its first piece (e.g. "A1").
- *
- * `copies` duplicates the whole layout: every group's quantity is multiplied by
- * it, so a single-plate layout with copies=3 becomes one group of quantity 3.
- */
-export function stackGroupsFromTiling(
-  tiling: BaseplateTiling | null,
-  params: ResolvedBaseplateParams,
-  copies = 1
-): StackGroup[] {
-  const n = Math.max(1, Math.floor(copies));
-  if (!tiling || !tiling.isSplit) return [{ label: 'plate', quantity: n }];
-  const groups = groupPiecesByFingerprint(tiling.pieces, params);
-  const result: StackGroup[] = [];
-  for (const group of groups.values()) {
-    const label = tiling.pieces[group.indices[0]]?.label ?? 'piece';
-    result.push({ label, quantity: group.indices.length * n });
-  }
-  return result;
 }
 
 /**
@@ -355,6 +289,33 @@ export function buildTowerLayers(
     layers.push(i === 0 ? bottom : translateMesh(flipped, 0, 0, i * strideMm));
   }
   return layers;
+}
+
+/** Bake one mixed tower using the same flip and Z stride as uniform towers. */
+export function buildMixedTowerLayers(
+  layers: readonly {
+    mesh: StackMeshArrays;
+    flip: PlateFlip;
+    dxMm: number;
+    dyMm: number;
+    rotationDeg?: 90 | 180 | 270;
+  }[],
+  strideMm: number
+): StackMeshArrays[] {
+  return layers.map(({ mesh, flip, dxMm, dyMm, rotationDeg }, i) => {
+    const oriented = rotationDeg ? rotateMeshInPlane(mesh, rotationDeg) : mesh;
+    const bounds = meshBounds(oriented.vertices);
+    const flipped = i > 0 || (layers.length > 1 && flip.flipBottom === true);
+    const placed = flipped
+      ? flipMeshUpsideDown(oriented, (bounds.minZ + bounds.maxZ) / 2, flip.axis)
+      : oriented;
+    return translateMesh(
+      placed,
+      dxMm + (flipped && flip.axis === 'y' ? flip.offsetMm : 0),
+      dyMm + (flipped && flip.axis === 'x' ? flip.offsetMm : 0),
+      i * strideMm - bounds.minZ
+    );
+  });
 }
 
 /** Translate a copy of the mesh buffers by (dx, dy, dz) (positions + edges). */

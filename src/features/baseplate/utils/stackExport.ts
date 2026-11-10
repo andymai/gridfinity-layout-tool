@@ -6,11 +6,13 @@
 import type { StackPrintParams } from '@/core/types';
 import {
   buildTowerLayers,
+  buildMixedTowerLayers,
   concatMeshes,
   meshBounds,
   stackStrideMm,
   DEFAULT_PLATE_FLIP,
   type PlateFlip,
+  type StackMeshArrays,
 } from './stackPrint';
 
 export interface StackExportSoup {
@@ -46,4 +48,35 @@ export function buildStackExportSoup(
   };
   const plates = concatMeshes(buildTowerLayers(base, copies, stride, flip));
   return { vertices: plates.vertices, normals: plates.normals };
+}
+
+/** Export a mixed-size tower from its ordered per-plate triangle soups. */
+export function buildMixedStackExportSoup(
+  layers: readonly {
+    vertices: Float32Array;
+    normals: Float32Array;
+    flip: PlateFlip;
+    dxMm: number;
+    dyMm: number;
+    rotationDeg?: 90 | 180 | 270;
+  }[],
+  stack: StackPrintParams
+): StackExportSoup {
+  if (layers.length === 0) return { vertices: new Float32Array(0), normals: new Float32Array(0) };
+  const first = meshBounds(layers[0].vertices);
+  const stride = stackStrideMm(first.maxZ - first.minZ, stack);
+  const meshes = layers.map((layer) => ({
+    mesh: {
+      vertices: layer.vertices,
+      normals: layer.normals,
+      indices: new Uint32Array(0),
+      edgeVertices: new Float32Array(0),
+    } satisfies StackMeshArrays,
+    flip: layer.flip,
+    dxMm: layer.dxMm,
+    dyMm: layer.dyMm,
+    rotationDeg: layer.rotationDeg,
+  }));
+  const result = concatMeshes(buildMixedTowerLayers(meshes, stride));
+  return { vertices: result.vertices, normals: result.normals };
 }

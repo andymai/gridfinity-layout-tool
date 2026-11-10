@@ -84,6 +84,8 @@ function stackWarning(
       return null;
     case 'singlePlate':
       return t('baseplate.stackPrint.warning.singlePlate');
+    case 'incompatibleFootprints':
+      return t('baseplate.stackPrint.warning.incompatibleFootprints');
     case 'buildHeightCapped':
       return t('baseplate.stackPrint.warning.buildHeightCapped', {
         gap: gapMm.toFixed(1),
@@ -109,7 +111,13 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
   const outputSummary = enabled && !warning ? stackOutputSummary(t, plan, railCount) : null;
 
   const patch = (next: Partial<StackPrintParams>): void => {
-    onChange({ enabled: true, gapMm, copies, ...next });
+    onChange({
+      enabled: true,
+      gapMm,
+      copies,
+      ...(stackPrint?.mixedSizes !== undefined ? { mixedSizes: stackPrint.mixedSizes } : {}),
+      ...next,
+    });
   };
 
   return (
@@ -127,6 +135,12 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
               </Alert>
             )}
 
+            <FeatureToggle
+              label={t('baseplate.stackPrint.mixedSizes.label')}
+              info={t('baseplate.stackPrint.mixedSizes.info')}
+              checked={stackPrint?.mixedSizes === true}
+              onChange={() => patch({ mixedSizes: stackPrint?.mixedSizes !== true })}
+            />
             <SettingsRow
               label={t('baseplate.stackPrint.copies.label')}
               info={t('baseplate.stackPrint.copies.info')}

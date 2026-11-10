@@ -945,7 +945,7 @@
     },
     "StackPrintParams": {
       "type": "object",
-      "description": "Vertical stack printing. Each identical-piece group is duplicated along Z so a drawer's worth of plates prints in one job. Connectors, magnet holes and corner rounding are auto-disabled while enabled.",
+      "description": "Vertical stack printing. Identical pieces form towers by default; mixedSizes can combine compatible tiles from one split baseplate. Magnet holes, screws, solid floors and snap-clip connectors are disabled while enabled.",
       "required": ["enabled", "gapMm"],
       "properties": {
         "enabled": {
@@ -975,6 +975,11 @@
             "default": "STACK_PRINT_DEFAULT_COPIES"
           },
           "description": "How many copies of the whole layout to print."
+        },
+        "mixedSizes": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow differently sized tiles from one split baseplate in the same vertical stack. Smaller tiles sit above larger tiles on the same corner grid. Eco Plate may be used. Shaped, padded and connector-bearing tiles remain in uniform stacks."
         }
       }
     },

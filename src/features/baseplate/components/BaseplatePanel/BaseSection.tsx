@@ -296,18 +296,20 @@ export function BaseSection() {
               {t('baseplate.connectors.snapClipTooThin')}
             </p>
           )}
+        {(!stackEnabled || baseplateParams.stackPrint?.mixedSizes === true) && (
+          <div className="border-t border-stroke-subtle pt-3">
+            <FeatureToggle
+              label={t('baseplate.ecoPlate')}
+              info={t('baseplate.ecoPlateDetail')}
+              checked={baseplateParams.ecoPlate === true}
+              onChange={() =>
+                updateParam('ecoPlate', baseplateParams.ecoPlate === true ? undefined : true)
+              }
+            />
+          </div>
+        )}
         {!stackEnabled && (
           <>
-            <div className="border-t border-stroke-subtle pt-3">
-              <FeatureToggle
-                label={t('baseplate.ecoPlate')}
-                info={t('baseplate.ecoPlateDetail')}
-                checked={baseplateParams.ecoPlate === true}
-                onChange={() =>
-                  updateParam('ecoPlate', baseplateParams.ecoPlate === true ? undefined : true)
-                }
-              />
-            </div>
             <div className="border-t border-stroke-subtle pt-3">
               <FeatureToggle
                 label={t('baseplate.magnetHoles')}

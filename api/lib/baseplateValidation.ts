@@ -177,8 +177,9 @@ function isValidStackPrint(value: unknown): boolean {
   ) {
     return false;
   }
+  if (value.mixedSizes !== undefined && !isBoolean(value.mixedSizes)) return false;
   return Object.keys(value).every(
-    (key) => key === 'enabled' || key === 'gapMm' || key === 'copies'
+    (key) => key === 'enabled' || key === 'gapMm' || key === 'copies' || key === 'mixedSizes'
   );
 }
 

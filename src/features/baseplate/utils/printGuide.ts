@@ -13,7 +13,7 @@ import { STACK_SEAM_TRIM_MM } from '@/core/types';
 import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
 import type { PieceGroup } from './pieceFingerprint';
 import { colToLetter } from './splitPlanner';
-import { planPhysicalStacks } from './stackPrint';
+import { planPhysicalStacks, type PhysicalStack } from './stackPrint';
 import { baseplateTotalHeight } from '@/shared/printSettings/baseplateHeight';
 import {
   TONGUE_PROTRUSION,
@@ -45,6 +45,7 @@ export interface PrintGuideInput {
   readonly stackCap?: number;
   /** Whole-layout copy multiplier (stacking only); ≥1, defaults to 1. */
   readonly copies?: number;
+  readonly mixedPlan?: readonly PhysicalStack[];
 }
 
 export function generatePrintGuide(input: PrintGuideInput): string {
@@ -64,13 +65,17 @@ export function generatePrintGuide(input: PrintGuideInput): string {
       baseFileName,
       stackPrint,
       input.stackCap,
-      input.copies
+      input.copies,
+      input.mixedPlan
     ),
+    ...(input.mixedPlan
+      ? [generateMixedTowerSection(input.mixedPlan, baseFileName, fileExtension)]
+      : []),
     ...(connectorKey ? [generateConnectorKeySection(connectorKey, parentParams)] : []),
     ...(input.margins && input.margins.length > 0
       ? [generateMarginSection(input.margins, stackPrint ? input.copies : 1)]
       : []),
-    generateGridMap(tiling),
+    generateGridMap(tiling, !!stackPrint),
     generateFooter(),
   ];
 
@@ -371,7 +376,8 @@ function generatePieceTable(
   baseName: string,
   stackPrint?: StackPrintParams,
   stackCap?: number,
-  copies = 1
+  copies = 1,
+  mixedPlan?: readonly PhysicalStack[]
 ): string {
   const lines = ['─── Pieces ──────────────────────────────────────', ''];
   const copyMult = Math.max(1, Math.floor(copies));
@@ -467,7 +473,9 @@ function generatePieceTable(
       lines.push(`    Features:  ${features.join(', ')}`);
     }
 
-    if (stackPrint) {
+    if (stackPrint && mixedPlan) {
+      lines.push(`    Assembles: ${positions}`);
+    } else if (stackPrint) {
       // Each physical stack is one file; an over-tall group splits into several.
       const towers = planPhysicalStacks([{ label: name, quantity: count }], stackCap);
       for (let s = 0; s < towers.length; s++) {
@@ -499,9 +507,28 @@ function generatePieceTable(
   return lines.join('\n');
 }
 
-function generateGridMap(tiling: BaseplateTiling): string {
-  // Each cell shows its piece's grid label, which is exactly the file-name
-  // suffix (baseplate_A1.stl → "A1"), so the map doubles as a file-to-slot key.
+function generateMixedTowerSection(
+  plan: readonly PhysicalStack[],
+  baseName: string,
+  extension: string
+): string {
+  const lines = [
+    '─── Print towers (bottom to top) ─────────────────',
+    '',
+    '  Print each file once. Every listed layer is one piece of this drawer.',
+  ];
+  for (const tower of plan) {
+    lines.push('', `  ${baseName}_${tower.label}${extension} — ${tower.copies} plate(s)`);
+    for (const [index, layer] of (tower.layers ?? []).entries()) {
+      lines.push(`    ${index + 1}. ${layer.pieceLabel} (${layer.groupName} shape)`);
+    }
+  }
+  return lines.join('\n');
+}
+
+function generateGridMap(tiling: BaseplateTiling, stacked = false): string {
+  // Every cell shows its assembly position. Unstacked files use that label;
+  // stacked files instead list the matching shapes in the tower guide.
   const labelLookup = new Map<string, string>();
   let maxNameLen = 3;
   for (const p of tiling.pieces) {
@@ -510,7 +537,13 @@ function generateGridMap(tiling: BaseplateTiling): string {
   }
   const cellWidth = maxNameLen + 4; // "[ name  ]"
 
-  const lines = ['─── Assembly Layout (front of drawer at bottom) ─', ''];
+  const lines = [
+    '─── Assembly Layout (front of drawer at bottom) ─',
+    ...(stacked
+      ? ['', '  Grid labels mark assembly positions; see the piece and tower lists above.']
+      : []),
+    '',
+  ];
 
   // Rows printed top-to-bottom (highest row at top, Row 1 at bottom)
   for (let r = tiling.rows - 1; r >= 0; r--) {

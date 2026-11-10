@@ -178,7 +178,7 @@ export type _CornerRadiiKeys = Assert<
   >
 >;
 
-export const STACK_PRINT_KEYS = ['enabled', 'gapMm', 'copies'] as const;
+export const STACK_PRINT_KEYS = ['enabled', 'gapMm', 'copies', 'mixedSizes'] as const;
 export type _StackPrintKeys = Assert<
   KeysMatch<keyof StackPrintParams, (typeof STACK_PRINT_KEYS)[number]>
 >;
