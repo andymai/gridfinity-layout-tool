@@ -440,9 +440,12 @@ export function buildConnectors(
   // - keyed (dovetailKey,): a female groove per interior cell BOUNDARY,
   //     with the seated key spanning into the rail's matching groove.
   // Either way the rail carries the mating half at the same anchors
-  // (`buildMarginSeamGroove`). Rails are solid (no sockets), so no tongue relief
-  // is needed. `hasMarginSeam` requires a style that supports a seam at all, so a
-  // stray snapClip edge emits nothing.
+  // (`buildMarginSeamGroove`). An over-tile rail's pockets open at the seam, so
+  // its tongues take the split seam's socket relief: within the tongue's reach
+  // only the pocket's near wall matters, whatever the pocket's depth. A
+  // solid-leftover rail under half a unit has no pocket, but the body cannot see
+  // the rail's padding, so its tongue is relieved too. `hasMarginSeam` requires a
+  // style that supports a seam at all, so a stray snapClip edge emits nothing.
   if (hasMarginSeam) {
     for (const def of edgeDefs) {
       if (edges[def.side] !== 'marginSeam') continue;
@@ -462,7 +465,10 @@ export function buildConnectors(
         continue;
       }
       const positions = def.centers.length > 0 ? def.centers : [0];
-      for (const bp of positions) tongues.push(mkTongue(pt, def.wallPos, bp, def.protrudeDir));
+      for (const bp of positions) {
+        const tongue = mkTongue(pt, def.wallPos, bp, def.protrudeDir);
+        tongues.push(params.overTile ? relieveTongue(tongue, bp, def) : tongue);
+      }
     }
   }
 

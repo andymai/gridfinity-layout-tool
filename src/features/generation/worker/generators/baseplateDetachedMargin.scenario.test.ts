@@ -1,13 +1,4 @@
 // @vitest-environment node
-/**
- * A detached-margin plate assembled from the planner's own output (#4921): an
- * 8.5×10 grid in a 366×435 drawer, its half column on the left, padding on the
- * left and back filled with half-grid tiles, both margins detached and joined
- * by puzzle connectors, split into six pieces for a 250×220 bed.
- *
- * Probed on the real meshes: the rails' pockets have to land on the body's grid
- * cells, and every rail has to be cut where its body piece grows a tongue.
- */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { mesh } from 'brepjs';
 import type { MeshData } from '@/features/generation/bridge/types';
@@ -26,7 +17,7 @@ import { boundingBox, columnCrossings } from './__kernel-tests__/meshAssertions'
 import { buildConnectors } from './baseplateConnectors';
 import { computeCellBoundariesMm, computeCellCentersMm } from './cellDecomposition';
 import { generateMargin } from './baseplateMargin';
-import { PLATE_PROFILE_HEIGHT } from './generatorTypes';
+import { PLATE_PROFILE_HEIGHT, toIndexedMeshData } from './generatorTypes';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -132,12 +123,22 @@ function bodyPieces(
   }));
 }
 
-/** World-space XY centers of the tongues a body grows past its grid edge on `side`. */
-function seamTongueCenters(
+interface SeamTongue {
+  /** World-space XY center. */
+  readonly x: number;
+  readonly y: number;
+  /** The tongue's mesh, in its body piece's frame. */
+  readonly mesh: MeshData;
+  readonly originX: number;
+  readonly originY: number;
+}
+
+/** The tongues a body grows past its grid edge on `side`. */
+function seamTongues(
   tiling: BaseplateTiling,
   params: ResolvedBaseplateParams,
   side: MarginPiece['side']
-): Array<{ x: number; y: number }> {
+): SeamTongue[] {
   const halfW = (tiling.totalWidthUnits * GU) / 2;
   const halfD = (tiling.totalDepthUnits * GU) / 2;
   const past = {
@@ -146,7 +147,7 @@ function seamTongueCenters(
     front: (_x: number, y: number) => y < -halfD,
     back: (_x: number, y: number) => y > halfD,
   }[side];
-  const out: Array<{ x: number; y: number }> = [];
+  const out: SeamTongue[] = [];
   for (const body of bodyPieces(tiling, params)) {
     const p = body.params;
     const w = p.width * GU + p.paddingLeft + p.paddingRight;
@@ -161,11 +162,14 @@ function seamTongueCenters(
     );
     holes.forEach((h) => h.delete());
     for (const nub of nubs) {
-      const bb = boundingBox(mesh(nub, { tolerance: 0.05, angularTolerance: 10 }).vertices);
+      const m = toIndexedMeshData(mesh(nub, { tolerance: 0.01, angularTolerance: 5 }));
       nub.delete();
+      const bb = boundingBox(m.vertices);
       const x = body.centerX + (bb.minX + bb.maxX) / 2;
       const y = body.centerY + (bb.minY + bb.maxY) / 2;
-      if (past(x, y)) out.push({ x, y });
+      if (past(x, y)) {
+        out.push({ x, y, mesh: m, originX: body.centerX, originY: body.centerY });
+      }
     }
   }
   return out;
@@ -195,7 +199,7 @@ describe('every detached side is joined by connectors (#4921)', () => {
 
     const meshes = new Map<string, { on: MeshData; off: MeshData }>();
     for (const side of sides) {
-      const tongues = seamTongueCenters(tiling, params, side);
+      const tongues = seamTongues(tiling, params, side);
       expect(tongues.length, `${side} seam tongues`).toBeGreaterThan(0);
       for (const t of tongues) {
         const rail = railAt(tiling, t.x, t.y);
@@ -210,6 +214,42 @@ describe('every detached side is joined by connectors (#4921)', () => {
         expect(topAt(pair.on, lx, ly), `${rail.id} open for the tongue at y=${t.y}`).toBe(
           -Infinity
         );
+      }
+    }
+  });
+
+  it.each([
+    ['split into six pieces', BED_W, BED_D],
+    ['unsplit', 500, 500],
+  ])('keeps every tongue out of the rail pocket a foot seats in (%s)', (_label, bedW, bedD) => {
+    const params = issueParams();
+    const plain = issueParams({ detachMarginConnector: false });
+    const tiling = computeBaseplateTiling(params, bedW, bedD);
+    const halfW = (tiling.totalWidthUnits * GU) / 2;
+    const halfD = (tiling.totalDepthUnits * GU) / 2;
+    const rails = new Map<string, { mesh: MeshData; top: number }>();
+    for (const side of ['left', 'back'] as const) {
+      for (const t of seamTongues(tiling, params, side)) {
+        const tongueTop = boundingBox(t.mesh.vertices).maxZ;
+        for (const past of [0.3, 0.8, 1.3]) {
+          const wx = side === 'left' ? -halfW - past : t.x;
+          const wy = side === 'left' ? t.y : halfD + past;
+          const piece = railAt(tiling, wx, wy);
+          let rail = rails.get(piece.id);
+          if (!rail) {
+            const m = generateMargin(plain, piece, true);
+            rail = { mesh: m, top: boundingBox(m.vertices).maxZ };
+            rails.set(piece.id, rail);
+          }
+          const at = `${side} tongue at (${t.x.toFixed(1)}, ${t.y.toFixed(1)}), ${past}mm in`;
+          const pocketDrop =
+            rail.top - topAt(rail.mesh, wx - piece.worldOffsetMm.x, wy - piece.worldOffsetMm.y);
+          expect(pocketDrop, `${at}: rail pocketed`).toBeGreaterThan(0.2);
+          const tongueDrop = tongueTop - topAt(t.mesh, wx - t.originX, wy - t.originY);
+          expect(tongueDrop, `${at}: below the pocket wall`).toBeGreaterThanOrEqual(
+            pocketDrop - 0.05
+          );
+        }
       }
     }
   });
