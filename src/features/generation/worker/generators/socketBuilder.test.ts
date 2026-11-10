@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { Shape3D } from 'brepjs';
 import type * as SocketBuilder from './socketBuilder';
+import type * as Overhang from './overhang';
 import { initTestKernel } from '@/test/initTestKernel';
 
 interface CellInfoLike {
@@ -44,6 +45,8 @@ let buildSingleCellSocket: BuildCellSocketFn;
 let buildSimplifiedCellSocket: BuildCellSocketFn;
 let forEachSocketCell: typeof SocketBuilder.forEachSocketCell;
 let resolveSocketCellPlan: typeof SocketBuilder.resolveSocketCellPlan;
+let overhangFootCells: typeof SocketBuilder.overhangFootCells;
+let resolveOverhang: typeof Overhang.resolveOverhang;
 
 let meshShape: (shape: unknown) => { vertices: ArrayLike<number>; triangles: ArrayLike<number> };
 
@@ -57,6 +60,8 @@ beforeAll(async () => {
   buildSimplifiedCellSocket = mod.buildSimplifiedCellSocket;
   forEachSocketCell = mod.forEachSocketCell;
   resolveSocketCellPlan = mod.resolveSocketCellPlan;
+  overhangFootCells = mod.overhangFootCells;
+  ({ resolveOverhang } = await import('./overhang'));
 
   meshShape = (shape) => meshFn(shape as never, { tolerance: 1, angularTolerance: 30 });
 }, 30000);
@@ -299,5 +304,38 @@ describe('forEachSocketCell foot lattice (#3467)', () => {
       (c) => c.centerX
     );
     expect(start).toEqual(end);
+  });
+});
+
+describe('overhangFootCells', () => {
+  const near = (a: number, b: number) => Math.abs(a - b) < 1e-6;
+  const overhang = () => resolveOverhang({ left: 0, right: 30, front: 0, back: 12, feet: true });
+
+  it('cuts the frame at the main feet seams under half sockets', () => {
+    const main: CellInfoLike[] = [];
+    forEachSocketCell(2, 1, undefined, 42, ALL_PLAN, (c) => main.push(c));
+    const frame = overhangFootCells(2, 1, overhang(), 42, ALL_PLAN);
+
+    const back = frame.filter((c) => c.centerY > 21 && c.centerX < 42);
+    expect(back.map((c) => c.centerX)).toEqual(
+      [...new Set(main.map((c) => c.centerX))].sort((a, b) => a - b)
+    );
+    expect(back.every((c) => near(c.widthUnits, 0.5))).toBe(true);
+
+    const right = frame.filter((c) => c.centerX > 42 && c.centerY < 21);
+    expect(right.every((c) => near(c.depthUnits, 0.5))).toBe(true);
+    expect([...new Set(right.map((c) => c.widthUnits))]).toEqual([0.5, 9 / 42]);
+    expect(right.filter((c) => near(c.widthUnits, 0.5)).map((c) => c.centerX)).toEqual([
+      52.5, 52.5,
+    ]);
+  });
+
+  it('keeps whole-unit strips without half sockets', () => {
+    const frame = overhangFootCells(2, 1, overhang(), 42, GRID_PLAN);
+    const back = frame.filter((c) => c.centerY > 21 && c.centerX < 42);
+    expect(back.map((c) => c.widthUnits)).toEqual([1, 1]);
+    const right = frame.filter((c) => c.centerX > 42 && c.centerY < 21);
+    expect(right).toHaveLength(1);
+    expect(right[0].widthUnits).toBeCloseTo(30 / 42, 9);
   });
 });

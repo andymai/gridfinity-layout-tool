@@ -401,6 +401,24 @@ describe('frameCells fractional edge (#4921)', () => {
   });
 });
 
+describe('frameCells halfNominal', () => {
+  it('subdivides the strips along the nominal axis into half cells', () => {
+    const margins = { left: 0, right: 0, front: 0, back: 12 };
+    const whole = frameCells(2, 1, margins, 42, 8);
+    const halved = frameCells(2, 1, margins, 42, 8, false, false, { halfNominal: true });
+    expect(whole.map((c) => c.centerX)).toEqual([-21, 21]);
+    expect(halved.map((c) => c.centerX)).toEqual([-31.5, -10.5, 10.5, 31.5]);
+    expect(halved.every((c) => c.widthUnits === 0.5)).toBe(true);
+  });
+
+  it('leaves the margin packing to halfGrid', () => {
+    const margins = { left: 30, right: 0, front: 0, back: 0 };
+    const cells = frameCells(1, 1, margins, 42, 8, false, false, { halfNominal: true });
+    expect(cells.map((c) => c.widthUnits)).toEqual([30 / 42, 30 / 42]);
+    expect(cells.map((c) => c.depthUnits)).toEqual([0.5, 0.5]);
+  });
+});
+
 describe('marginPocketDepthMm', () => {
   it('over-tile: whole margin is pocketed once it clears the threshold, else solid', () => {
     expect(marginPocketDepthMm(12, 42, 8, false)).toBeCloseTo(12, 9);
