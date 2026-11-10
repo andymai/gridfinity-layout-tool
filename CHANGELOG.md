@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.537.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.537.0...gridfinity-layout-tool-v4.537.1) (2026-11-10)
+
+
+### Bug Fixes
+
+* **baseplate:** key every detached margin and pocket it on the grid ([#4925](https://github.com/andymai/gridfinity-layout-tool/issues/4925)) ([5cbf7b2](https://github.com/andymai/gridfinity-layout-tool/commit/5cbf7b2a15cac6b261362536ace9a7668d387fff))
+* **bin-designer:** cut overhang feet at half-socket seams ([#4924](https://github.com/andymai/gridfinity-layout-tool/issues/4924)) ([1d9eadb](https://github.com/andymai/gridfinity-layout-tool/commit/1d9eadb0df8b979cb705025aa398cf2c6a5a04f5))
+* **supporters:** pause and muffle the credits when a bin is clicked mid-roll ([#4923](https://github.com/andymai/gridfinity-layout-tool/issues/4923)) ([10a7304](https://github.com/andymai/gridfinity-layout-tool/commit/10a73044506b4d731d1809e15409f6d9264b72a1))
+
 ## [4.537.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.536.1...gridfinity-layout-tool-v4.537.0) (2026-11-09)
 
 
