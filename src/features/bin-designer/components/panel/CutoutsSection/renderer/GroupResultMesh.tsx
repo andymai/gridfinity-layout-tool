@@ -32,7 +32,14 @@ export const GroupResultMesh = memo(function GroupResultMesh({
   // handles unions and looks slightly nicer with the SDF anti-aliasing.
   const result = useMemo(() => {
     if (!op || op === 'union') return null;
-    return applyGroupOp(members, op);
+    // No error boundary sits between this canvas and the app shell, so a
+    // clipper throw here would replace the whole Designer. The member outlines
+    // still draw and the worker cuts the real shape, so only the fill is lost.
+    try {
+      return applyGroupOp(members, op);
+    } catch {
+      return null;
+    }
   }, [members, op]);
 
   const fillColor = useMemo(() => {
