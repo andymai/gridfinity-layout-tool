@@ -1,0 +1,42 @@
+scripts/docs-capture/shots/overview.ts
+  s_1cc363bb3cc76d::t_e03455ab29f801 12,19,74-75,79,108,110,179
+apps/docs/index.md
+  s_1cc363bb3cc76d::t_5ea1996dd1be87 2,4-11,13-77
+scripts/contentRoutes.test.ts
+  s_1cc363bb3cc76d::t_7d7e23ccb2c129 9
+vercel.json
+  s_1cc363bb3cc76d::t_7d7e23ccb2c129 22-26
+scripts/docs-capture/shots/index.test.ts
+  s_1cc363bb3cc76d::t_145122c90b33d0 16,18-19
+scripts/check-user-docs.ts
+  s_1cc363bb3cc76d::t_87b5e9e501b346 98-107,129-130
+  s_1cc363bb3cc76d::t_145122c90b33d0 144,191-193,410-412
+apps/docs/.vitepress/navigation.ts
+  s_1cc363bb3cc76d::t_5ea1996dd1be87 6,16
+scripts/check-docker-parity.test.ts
+  s_1cc363bb3cc76d::t_7d7e23ccb2c129 187,321
+scripts/check-user-docs.test.ts
+  s_1cc363bb3cc76d::t_5b71aea011ae94 58,60-64,99-102,104-106,189-191,194-195,198-199
+docker/nginx.conf
+  s_1cc363bb3cc76d::t_7d7e23ccb2c129 130-131
+apps/docs/reference/faq.md
+  s_1cc363bb3cc76d::t_5ea1996dd1be87 22
+scripts/docs-capture/shots/index.ts
+  s_1cc363bb3cc76d::t_e03455ab29f801 9,13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "34d2626a06285c53ad7e9c7118a4eb8c013f7693",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
