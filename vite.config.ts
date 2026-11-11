@@ -9,7 +9,7 @@ import { versionPlugin } from './scripts/vite-plugin-version';
 import { contentRoutesPlugin } from './scripts/vite-plugin-content-routes';
 import { mediapipeAssetsPlugin } from './scripts/vite-plugin-mediapipe-assets';
 import { minifyJsonAssets } from './scripts/vite-plugin-minify-json-assets';
-import { CONTENT_LOCALES, CONTENT_SLUGS, DOCS_PREFIX } from './scripts/contentRoutes';
+import { CONTENT_LOCALES, CONTENT_SLUGS, DOCS_NAVIGATION } from './scripts/contentRoutes';
 
 // The prerendered content pages, mirroring the rewrites in vercel.json. They are
 // standalone static HTML, reachable from search rather than from inside the app,
@@ -28,9 +28,6 @@ const CONTENT_ROUTE_SOURCE = `/(?:(?:${CONTENT_LOCALES_ALT})/)?(?:${CONTENT_SLUG
 const CONTENT_ROUTE = new RegExp(`^${CONTENT_ROUTE_SOURCE}`);
 // RegExpRoute tests against the full href, where a leading ^ could never match.
 const CONTENT_ROUTE_HREF = new RegExp(CONTENT_ROUTE_SOURCE);
-// The user docs are a separate static site that the service worker never
-// holds, so it must not answer their navigations with the app shell.
-const DOCS_ROUTE = new RegExp(`^${DOCS_PREFIX}(?:/|$)`);
 
 // Chunks reachable from the entry by static import, i.e. the ones the app needs
 // to boot. Collected from the bundle graph so the precache can hold the boot
@@ -218,7 +215,8 @@ export default defineConfig({
           /^\/sitemap\.xml$/,
           /^\/robots\.txt$/,
           CONTENT_ROUTE,
-          DOCS_ROUTE,
+          // The docs are a separate static site that the service worker never holds.
+          DOCS_NAVIGATION,
           /^\/storage-bridge\.html$/,
         ],
         runtimeCaching: [
