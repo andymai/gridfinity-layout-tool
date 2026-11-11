@@ -1,0 +1,73 @@
+apps/docs/designer/compartments.md
+  s_1cc363bb3cc76d::t_2568e07f12cc84 52
+apps/docs/media/designer-compartments-grid.json
+  s_1cc363bb3cc76d::t_72cfa05a7216dc 1-5
+apps/docs/designer/colors.md
+  s_1cc363bb3cc76d::t_2568e07f12cc84 30
+apps/docs/media/designer-labels-and-text-tab-list.json
+  s_1cc363bb3cc76d::t_72cfa05a7216dc 1-5
+apps/docs/media/designer-getting-things-out-pull-tab.json
+  s_1cc363bb3cc76d::t_d34b9e73a71579 1-5
+apps/docs/media/designer-getting-things-out-scoop.json
+  s_1cc363bb3cc76d::t_d34b9e73a71579 1-2,4-5
+  s_1cc363bb3cc76d::t_65b64cb83a3607 3
+scripts/docs-capture/shots/designerBody.ts
+  s_1cc363bb3cc76d::t_7256ccb22041da 366-367,483
+  s_1cc363bb3cc76d::t_95ed90d482a341 130,142-144,146,148,151
+  s_1cc363bb3cc76d::t_f9370cef5e0a82 340,346,361-363
+  s_1cc363bb3cc76d::t_17e896895a49ae 590-593,624-625
+  s_1cc363bb3cc76d::t_b17a980cabe2f0 397
+  s_1cc363bb3cc76d::t_65dd9432115d37 441,447,449-451,453
+  s_1cc363bb3cc76d::t_10623d5b59ded2 106-110,116-128
+  s_1cc363bb3cc76d::t_63fc93cfdf531d 111-115,129,358
+  s_1cc363bb3cc76d::t_6192cad25a4c5c 514-516
+  s_1cc363bb3cc76d::t_206e2f3cba2025 390-396
+  s_1cc363bb3cc76d::t_811c82fe2a5561 430,435-438,452
+  s_1cc363bb3cc76d::t_b9779c1b49f13a 535-537
+  s_1cc363bb3cc76d::t_7774df2c6eac0f 22,24-25,29-39,41,44-47,51,54-56
+  s_1cc363bb3cc76d::t_9520306ba873fe 563,629,631-711,716-717,721-722,730
+  s_1cc363bb3cc76d::t_e6b555cbb391cc 630,713-715
+  s_1cc363bb3cc76d::t_66da32086437ca 14-17
+  s_1cc363bb3cc76d::t_877608dbf84a72 573-574,576-581,712,718-720
+  s_1cc363bb3cc76d::t_1d3ae60e29a46e 1-13,18-21,23,26-28,40,42-43,48-50,52-53,57-73,81,86-88,90-93,95-101,103-105,131-141,145,147,149-150,152-186,188-202
+  s_1cc363bb3cc76d::t_738befea7dbcdd 74-80,82-85,89,94,102,187
+  s_1cc363bb3cc76d::t_db4d2cf80b9fe8 203-339,341-345,347-357,359-360,364-365,368-389,398-429,431-434,439-440,442-446,448,454-482,484-513,517-534,538-562,564-572,575,582-589,594-623,626-628,725-729,731-738
+apps/docs/media/designer-colors-zones.json
+  s_1cc363bb3cc76d::t_72cfa05a7216dc 1-5
+apps/docs/designer/base.md
+  s_1cc363bb3cc76d::t_2568e07f12cc84 64,122
+apps/docs/designer/labels-and-text.md
+  s_1cc363bb3cc76d::t_2568e07f12cc84 33,119
+apps/docs/media/designer-labels-and-text-wall-text.json
+  s_1cc363bb3cc76d::t_72cfa05a7216dc 1-5
+apps/docs/designer/getting-things-out.md
+  s_1cc363bb3cc76d::t_2568e07f12cc84 53,94
+apps/docs/media/designer-base-mounting.json
+  s_1cc363bb3cc76d::t_66e16b416f7921 1-5
+apps/docs/media/designer-base-lightweight.json
+  s_1cc363bb3cc76d::t_d34b9e73a71579 1-5
+apps/docs/media/designer-compartments-bento.json
+  s_1cc363bb3cc76d::t_8d1749c77d9f5e 1-5
+apps/docs/media/designer-label-plates-export.json
+  s_1cc363bb3cc76d::t_b8919503f22a51 1-5
+apps/docs/media/designer-label-plates-socket-list.json
+  s_1cc363bb3cc76d::t_e123c577065816 1-5
+apps/docs/media/designer-labels-and-text-typography.json
+  s_1cc363bb3cc76d::t_07745cc6f98a0f 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e50dc84c938f110e5b1b79cae8234df09c48f6ed",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
