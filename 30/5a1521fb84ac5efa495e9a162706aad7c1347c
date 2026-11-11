@@ -1,0 +1,196 @@
+apps/docs/settings/offline.md
+  s_1cc363bb3cc76d::t_3b246c37b242ab 85
+  s_1cc363bb3cc76d::t_f3198a50bcc8f0 80
+apps/docs/cutouts/basics.md
+  s_1cc363bb3cc76d::t_e596acb397976d 80,124-125
+apps/docs/concepts/bin-anatomy.md
+  s_1cc363bb3cc76d::t_288097cb10ab2e 66
+  s_1cc363bb3cc76d::t_0c298e7e97761c 78-83
+  s_1cc363bb3cc76d::t_3fc38f9b2121f6 76,88
+  s_1cc363bb3cc76d::t_a73aff53223234 19
+apps/docs/reference/design-file.md
+  s_1cc363bb3cc76d::t_3dc01291952725 21
+  s_1cc363bb3cc76d::t_235da18534045c 71
+  s_1cc363bb3cc76d::t_1ec82e541fabc8 33,35
+  s_1cc363bb3cc76d::t_a73aff53223234 15
+apps/docs/baseplates/eco-and-stack-printing.md
+  s_1cc363bb3cc76d::t_6a415b0d9bb491 70
+apps/docs/reference/dimensions.md
+  s_1cc363bb3cc76d::t_235da18534045c 15,110
+apps/docs/introduction/your-data.md
+  s_1cc363bb3cc76d::t_0b2131b6a394bc 64
+  s_1cc363bb3cc76d::t_7ff749d0733b72 51
+  s_1cc363bb3cc76d::t_70587660085d48 41
+apps/docs/baseplates/basics.md
+  s_1cc363bb3cc76d::t_3c6f11637d45b0 65-66
+  s_1cc363bb3cc76d::t_9f6fe4137202d8 101
+apps/docs/designer/walls.md
+  s_1cc363bb3cc76d::t_7790d64ca5540d 100
+  s_1cc363bb3cc76d::t_27a9b5d06104d5 16
+  s_1cc363bb3cc76d::t_235da18534045c 92
+  s_1cc363bb3cc76d::t_a73aff53223234 76,83
+apps/docs/printing/print-list-and-zip.md
+  s_1cc363bb3cc76d::t_d554210aaa3868 90
+apps/docs/baseplates/magnets-and-screws.md
+  s_1cc363bb3cc76d::t_6eea2185ed3596 35
+apps/docs/settings/labs.md
+  s_1cc363bb3cc76d::t_e08d512e617b33 53-54
+apps/docs/designer/compartments.md
+  s_1cc363bb3cc76d::t_a73aff53223234 35,42,66,118
+  s_1cc363bb3cc76d::t_0c298e7e97761c 20-24
+  s_1cc363bb3cc76d::t_808cec3c9c9c50 25,80-81,97
+  s_1cc363bb3cc76d::t_ee0ce6a3c14044 84
+  s_1cc363bb3cc76d::t_235da18534045c 40,95
+  s_1cc363bb3cc76d::t_3b246c37b242ab 139
+apps/docs/layouts/find-bins-that-fit.md
+  s_1cc363bb3cc76d::t_3b246c37b242ab 66
+apps/docs/designer/save-and-reuse.md
+  s_1cc363bb3cc76d::t_24582368f83264 51
+  s_1cc363bb3cc76d::t_22782f56a2f826 76
+  s_1cc363bb3cc76d::t_1f39e6d80aa243 104
+  s_1cc363bb3cc76d::t_3b246c37b242ab 108-109,111
+apps/docs/concepts/print-bed-fit.md
+  s_1cc363bb3cc76d::t_04c71b7e506e30 68
+  s_1cc363bb3cc76d::t_09719c2f60d726 70
+apps/docs/designer/base.md
+  s_1cc363bb3cc76d::t_a73aff53223234 77
+  s_1cc363bb3cc76d::t_d96b91b2968970 15
+  s_1cc363bb3cc76d::t_23635d1046502e 118-119
+apps/docs/printing/fit-and-tolerances.md
+  s_1cc363bb3cc76d::t_0c298e7e97761c 51-62
+  s_1cc363bb3cc76d::t_6e11c93efa15aa 75,91
+apps/docs/layouts/placing-bins.md
+  s_1cc363bb3cc76d::t_57a9343230b901 99
+  s_1cc363bb3cc76d::t_50f59af95bc188 58
+  s_1cc363bb3cc76d::t_2e0e34d79a45b0 101
+apps/docs/layouts/organizing-layouts.md
+  s_1cc363bb3cc76d::t_59b0b2a7218f39 44
+  s_1cc363bb3cc76d::t_3b246c37b242ab 92-93
+  s_1cc363bb3cc76d::t_ce365ef5c4059a 65-66
+apps/docs/sharing/live-collaboration.md
+  s_1cc363bb3cc76d::t_3b246c37b242ab 80
+apps/docs/concepts/layouts-layers-stash.md
+  s_1cc363bb3cc76d::t_a354f165999209 60
+  s_1cc363bb3cc76d::t_e0d73e47dd1846 67
+  s_1cc363bb3cc76d::t_008eeac8bef98d 75
+  s_1cc363bb3cc76d::t_8004b798f7861f 57-59
+  s_1cc363bb3cc76d::t_5b7de25d8962a3 61-66
+apps/docs/concepts/preview-and-export.md
+  s_1cc363bb3cc76d::t_f42955e0f1da3e 28-29,73
+apps/docs/getting-started/first-bin.md
+  s_1cc363bb3cc76d::t_a73aff53223234 24,48,61
+apps/docs/layouts/categories.md
+  s_1cc363bb3cc76d::t_3b246c37b242ab 75-76
+apps/docs/designer/getting-things-out.md
+  s_1cc363bb3cc76d::t_235da18534045c 74
+  s_1cc363bb3cc76d::t_a73aff53223234 101
+apps/docs/designer/labels-and-text.md
+  s_1cc363bb3cc76d::t_64256a4f131087 30-31
+apps/docs/getting-started/first-baseplate.md
+  s_1cc363bb3cc76d::t_a73aff53223234 24,32,42,57,66
+apps/docs/settings/keyboard-and-command-palette.md
+  s_1cc363bb3cc76d::t_1442e4e9dc4a11 60
+  s_1cc363bb3cc76d::t_3b246c37b242ab 81
+apps/docs/reference/self-hosting.md
+  s_1cc363bb3cc76d::t_57a9343230b901 81
+  s_1cc363bb3cc76d::t_77236d2112f831 71,82,87
+apps/docs/sharing/share-links.md
+  s_1cc363bb3cc76d::t_1671872e88f7e9 40
+  s_1cc363bb3cc76d::t_3b246c37b242ab 108
+  s_1cc363bb3cc76d::t_1d0fb94d14489e 101
+apps/docs/sharing/accounts-and-sync.md
+  s_1cc363bb3cc76d::t_3b246c37b242ab 99
+apps/docs/concepts/saved-designs.md
+  s_1cc363bb3cc76d::t_e9c202c3fe2612 20
+apps/docs/layouts/layers.md
+  s_1cc363bb3cc76d::t_06d2bf2128e8d1 68
+  s_1cc363bb3cc76d::t_31f84db15b60fb 26
+  s_1cc363bb3cc76d::t_4bc746867f9a89 64
+  s_1cc363bb3cc76d::t_e0320e20134b51 93
+apps/docs/reference/glossary.md
+  s_1cc363bb3cc76d::t_5fd0b39476b256 115
+  s_1cc363bb3cc76d::t_3fc38f9b2121f6 73
+  s_1cc363bb3cc76d::t_235da18534045c 61,133
+  s_1cc363bb3cc76d::t_288097cb10ab2e 31,45,53,113,125,163,181
+apps/docs/sharing/community.md
+  s_1cc363bb3cc76d::t_c3a9c13b56aa0a 101
+apps/docs/reference/layout-file.md
+  s_1cc363bb3cc76d::t_235da18534045c 86-88,144
+  s_1cc363bb3cc76d::t_7fb42944dd7fd1 23
+apps/docs/concepts/multi-color.md
+  s_1cc363bb3cc76d::t_30a65c145164c6 54
+  s_1cc363bb3cc76d::t_6433eb8f0a93bd 34
+  s_1cc363bb3cc76d::t_37aaaacbccef31 20
+apps/docs/baseplates/splitting.md
+  s_1cc363bb3cc76d::t_ec4fc20e9afc2f 70
+  s_1cc363bb3cc76d::t_06e8029fa5b19d 71
+  s_1cc363bb3cc76d::t_b100e654cfebd1 55
+  s_1cc363bb3cc76d::t_f08ee64a13c4c3 91
+apps/docs/layouts/drawer-setup.md
+  s_1cc363bb3cc76d::t_36aa126347912c 52,108-109
+apps/docs/getting-started/workspace-tour.md
+  s_1cc363bb3cc76d::t_1442e4e9dc4a11 81
+  s_1cc363bb3cc76d::t_787ac491bb675c 100-106
+apps/docs/introduction/gridfinity-basics.md
+  s_1cc363bb3cc76d::t_0462e202639ee4 46
+  s_1cc363bb3cc76d::t_57ac0dc4f32e57 11
+apps/docs/designer/stacking.md
+  s_1cc363bb3cc76d::t_9d0b52a40eb238 76
+apps/docs/designer/lids.md
+  s_1cc363bb3cc76d::t_bf386c8a635202 102
+  s_1cc363bb3cc76d::t_9d0b52a40eb238 77
+  s_1cc363bb3cc76d::t_04112e6c3bfb99 96
+  s_1cc363bb3cc76d::t_7effda7811c96c 15
+  s_1cc363bb3cc76d::t_4d00c84abeac6c 49
+apps/docs/settings/settings.md
+  s_1cc363bb3cc76d::t_235da18534045c 55
+  s_1cc363bb3cc76d::t_670ccdc8439705 71
+  s_1cc363bb3cc76d::t_3b246c37b242ab 85
+apps/docs/printing/file-formats.md
+  s_1cc363bb3cc76d::t_670ccdc8439705 44,95
+  s_1cc363bb3cc76d::t_12b08b1811e471 88
+  s_1cc363bb3cc76d::t_50de4f3955fbf8 89
+apps/docs/reference/faq.md
+  s_1cc363bb3cc76d::t_7fb42944dd7fd1 93
+  s_1cc363bb3cc76d::t_235da18534045c 53
+apps/docs/designer/special-bins.md
+  s_1cc363bb3cc76d::t_fd35a931b34f1b 24
+  s_1cc363bb3cc76d::t_bb003fcf844a02 76
+  s_1cc363bb3cc76d::t_843056869cd1dd 68
+  s_1cc363bb3cc76d::t_02703ad3546b9c 93
+  s_1cc363bb3cc76d::t_a73aff53223234 17
+  s_1cc363bb3cc76d::t_a556d447fbb25b 40
+  s_1cc363bb3cc76d::t_88a39046563fbf 102
+  s_1cc363bb3cc76d::t_3b246c37b242ab 104
+apps/docs/designer/label-plates.md
+  s_1cc363bb3cc76d::t_3b246c37b242ab 103
+  s_1cc363bb3cc76d::t_0a27eaf5c88d8b 27
+  s_1cc363bb3cc76d::t_7790d64ca5540d 86
+  s_1cc363bb3cc76d::t_9d0b52a40eb238 37,40
+  s_1cc363bb3cc76d::t_13d264015570e8 97
+  s_1cc363bb3cc76d::t_7098fd48042e78 90,92
+apps/docs/designer/size-and-shape.md
+  s_1cc363bb3cc76d::t_235da18534045c 35,88,113
+  s_1cc363bb3cc76d::t_a73aff53223234 45
+apps/docs/designer/colors.md
+  s_1cc363bb3cc76d::t_3b246c37b242ab 98
+  s_1cc363bb3cc76d::t_fb7455b0764825 34
+apps/docs/cutouts/workshop.md
+  s_1cc363bb3cc76d::t_3b246c37b242ab 109-110
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "305a1521fb84ac5efa495e9a162706aad7c1347c",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
