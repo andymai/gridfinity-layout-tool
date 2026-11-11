@@ -22,7 +22,7 @@ The control has the same name on every screen: <Ui k="toolbar.findBins" />.
 - **On a computer:** click <Ui k="toolbar.findBins" /> in the toolbar above the grid. In a narrow window with two or more layers, it is in the <Ui k="common.moreOptions" /> menu of the toolbar.
 - **On a phone:** tap <Ui k="common.layers" /> in the bar at the bottom of the screen. Open the <Ui k="mobile.tabs.tools" /> tab and tap <Ui k="toolbar.findBins" />.
 
-<Screenshot id="layouts-find-bins-toolbar" alt="The grid toolbar with the Find bins that fit button turned on, and an empty area of the grid selected." spec="Layout editor on desktop. Layout with a 6 by 4 drawer and bins on most cells, with a 2 by 2 empty area. Click Find bins that fit so it shows as pressed, then start a drag across the empty 2 by 2 area. Crop to the toolbar and the grid." />
+<Screenshot id="layouts-find-bins-toolbar" alt="Find bins that fit is turned on in the grid toolbar. A drag selects an empty 2 by 2 area of the grid. The gallery then opens with the community designs that fit the gap." spec="Clip. Layout editor on desktop. Layout with a 6 by 4 drawer and bins on most cells, with a 2 by 2 empty area. Click Find bins that fit so it shows as pressed, then drag across the empty 2 by 2 area. Cut to the gallery that opens on the designs that fit, sorted by best fit. Crop to the toolbar and the grid, then to the gallery dialog. The community designs are made-up fixture cards with pictures taken in the bin designer." />
 
 ## Pick an empty area
 
@@ -35,7 +35,7 @@ Your drag can cross a bin. The Layout Tool then uses only the empty part. To sto
 
 The gallery shows only the designs that fit the area. A design must fit the width and the depth of the area, turned or not. It must also fit the free height above the active layer. A design made for a different grid unit or height unit does not show, because it would print at the wrong size.
 
-A banner above the cards gives the size of the area. The cards sort by <Ui k="community.gallery.sort.bestFit" />, so the designs that fill the area best come first.
+The filters panel shows the size of the area under <Ui k="community.gallery.viewingSection" />. When that panel is collapsed, a chip above the cards shows it. The cards sort by <Ui k="community.gallery.sort.bestFit" />, so the designs that fill the area best come first.
 
 1. Click a card to open the design.
 2. Click <Ui k="community.detail.placeInLayout" />.

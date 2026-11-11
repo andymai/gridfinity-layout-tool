@@ -59,7 +59,7 @@ An STL imprint is a cutout with the full 3D shape of a model, such as a model of
 
 ### Rotation
 
-The Layout Tool lays the model flat on one of its faces. Each axis has a rotation field that steps 15° at a time, or you can type an angle. The button beside each axis turns the model 90°. The dialog shows the footprint size, and it warns you when the model is larger than the inside of the bin.
+The Layout Tool lays the model flat on one of its faces. Each axis has a rotation field that steps 15° at a time, or you can type an angle. The Flip button beside each axis (Flip X, Flip Y and Flip Z) turns the model 90°. The dialog shows the footprint size, and it warns you when the model is larger than the inside of the bin.
 
 The model keeps its real size. The Layout Tool never scales it.
 

@@ -34,7 +34,7 @@ Split pieces keep the eco plate setting. With <Ui k="baseplate.stackPrint.enable
 
 By default, pieces with the same shape stack together, up to the number that the drawer needs. A stack that is taller than the build height splits into more files.
 
-<Screenshot id="baseplates-stack-section" alt="The Vertical stack settings with a gap of 0.2 mm and a message that counts the plates and print files." spec="Baseplate generator, 12 by 8 plate on a 256 mm bed so that it splits into identical pieces. Vertical stack on and expanded, Gap 0.2, Complete sets 1. Show the green output message. Preview shows the towers. Crop to the panel section and the preview." />
+<Screenshot id="baseplates-stack-section" alt="Vertical stack is turned on, and its settings open with a gap of 0.2 mm and a message that counts the plates and print files. In the preview, the Separate slider then pulls the tower of four plates apart." spec="Baseplate generator, 12 by 8 plate on a 256 mm bed, so that it splits into four identical pieces. Turn on Vertical stack in a close-up of the panel. Then, in the iso preview, drag the Separate slider to the top." />
 
 ### Print more than one set
 

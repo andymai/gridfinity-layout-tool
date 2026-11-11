@@ -92,7 +92,7 @@ The Layout Tool also moves bins to the stash for you in these cases:
 
 To put a bin back, drag it from the stash to the grid. You can also right-click it and choose <Ui k="mobile.binMenu.moveToGrid" />. This puts it in the front-left corner when that spot is free. <Ui k="staging.clearAll" /> deletes every bin in the stash.
 
-<Screenshot id="layouts-placing-bins-stash" alt="The stash below the grid with three bins in it, and one bin dragged out over the grid." spec="Layout editor on desktop. Layout with a 5 by 4 drawer, four bins on the grid and three bins of different sizes in the stash. Start a drag of one stash bin so its ghost shows over an empty area of the grid. Crop to the grid and the stash." />
+<Screenshot id="layouts-placing-bins-stash" alt="The stash below the grid holds three bins. One bin is dragged out of the stash and dropped into an empty spot on the grid." spec="Clip. Layout editor on desktop. Layout with a 5 by 4 drawer, four bins on the grid and three bins of different sizes in the stash. Drag the 2 by 2 stash bin onto the empty 2 by 2 area at the back right of the grid and hold on the result. Crop to the grid and the stash." />
 
 ## Drop a saved design into the drawer
 

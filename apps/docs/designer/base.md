@@ -25,14 +25,15 @@ When a body type cannot have a section, the section shows one line that tells yo
 ## Add magnet holes
 
 1. Under <Ui k="binDesigner.base.section.mounting" />, turn on <Ui k="binDesigner.base.magnetHoles" />.
-2. Set <Ui k="binDesigner.base.magnetDiameter" /> to the diameter of your magnets.
-3. Set <Ui k="binDesigner.base.magnetDepth" /> to the thickness of your magnets.
+2. Click <Ui k="common.customize" /> to show the hole settings.
+3. Set <Ui k="binDesigner.base.magnetDiameter" /> to the diameter of your magnets.
+4. Set <Ui k="binDesigner.base.magnetDepth" /> to the thickness of your magnets.
 
 The diameter goes from 4 to 10 mm, with a default of 6.5 mm. The depth goes from 1 to 4 mm, with a default of 2 mm. Not sure? Keep the defaults. They suit a standard 6 by 2 mm magnet.
 
 ### Hold magnets without glue
 
-Glue is messy. Two options under <Ui k="binDesigner.base.magnetHoles" /> help a magnet stay in its hole without it, and you can use both together.
+Glue is messy. Two options in the same <Ui k="common.customize" /> fold help a magnet stay in its hole without it, and you can use both together.
 
 | Option                                      | What it does                                                                            |
 | ------------------------------------------- | --------------------------------------------------------------------------------------- |
@@ -61,7 +62,7 @@ Three body types cannot have magnet or screw holes:
 A <Ui k="binDesigner.base.bodyType.nesting" /> body takes magnets but no screws, and places its magnets itself. See [Stacking](./stacking#nest-boxes-on-each-other).
 :::
 
-<Screenshot id="designer-base-mounting" alt="The Mounting group with magnet holes, crush ribs and corners only turned on." spec="Bin designer, Base group open, bin 3 x 3 x 3. Turn on Magnet holes, Crush ribs and Corners only. Show the Mounting section, and turn the preview to show the underside. Crop to panel plus preview." />
+<Screenshot id="designer-base-mounting" alt="Magnet holes is turned on in the Mounting section, then Crush ribs and Corners only. The bin then shows from below, with a magnet hole at each outer corner." spec="Bin designer, bin 3 x 3 x 3. Close-up of the Mounting section in the Base group: turn on Magnet holes, open Customize, turn on Crush ribs, then turn on Corners only. Cut to the bin from below." />
 
 ## Use half-size feet
 
@@ -102,7 +103,7 @@ A spacer needs its built-in feet to hold together, so it cannot have detachable 
 
 ## Make the floor lighter
 
-Want to save filament on a big batch? <Ui k="binDesigner.lightweight" /> under <Ui k="binDesigner.base.section.floor" /> hollows each foot. <Ui k="binDesigner.lightweightMode" /> sets the side it opens from:
+Want to save filament on a big batch? <Ui k="binDesigner.lightweight" /> under <Ui k="binDesigner.base.section.floor" /> hollows each foot. Click <Ui k="common.customize" /> under it to pick <Ui k="binDesigner.lightweightMode" />, the side it opens from:
 
 | Mode                                             | Result                                                                                                  |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
@@ -119,7 +120,7 @@ When another feature blocks the lightweight floor, the panel can show <Ui k="bin
 
 A spacer cannot have a lightweight floor. A <Ui k="binDesigner.tile" /> bin can use only the underside mode.
 
-<Screenshot id="designer-base-lightweight" alt="The Floor group with Lightweight floor on in the Underside mode, and the preview from below." spec="Bin designer, Base group open, bin 2 x 2 x 3. Turn on Lightweight floor and pick Underside. Turn the preview to show the hollow feet from below. Crop to panel plus preview." />
+<Screenshot id="designer-base-lightweight" alt="Lightweight floor is turned on in the Floor section and set to Underside. The bin then shows from below, with each foot hollow." spec="Bin designer, bin 2 x 2 x 3. Close-up of the Floor section in the Base group: turn on Lightweight floor, open Customize, pick Underside. Cut to the bin from below." />
 
 ## Use a low-profile base
 

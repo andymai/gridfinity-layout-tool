@@ -52,7 +52,7 @@ You can place a part on the base or on top of another part. The <Ui k="workshop.
 
 A cutter has a <Ui k="workshop.profile.title" />. Pick a <Ui k="workshop.profileShape.circle" />, a <Ui k="workshop.profileShape.rectangle" />, a <Ui k="workshop.profileShape.polygon" /> or a <Ui k="workshop.profileShape.slot" />. To cut the outline of a real tool, click <Ui k="workshop.profile.scan" />. See [Scan with your phone](./phone-scan).
 
-<Screenshot id="cutouts-workshop-build" alt="A Workshop build with posts and a cradle on a 2x1 base, and the Parts and Build sections in the panel." spec="Bin designer, Saved designs, New Workshop build. Load the Screwdriver station template on a 2x1 base. Select one part so the move handle, rotation ring and resize handles show. Crop to the full panel and the 3D view." />
+<Screenshot id="cutouts-workshop-build" alt="A Workshop build from the Screwdriver station template on a 3x2 base: a stepped riser with a bit bank on top. The bit bank is selected, with its rotation ring and size handles. The panel shows the Parts, Build and Selected part sections." spec="Bin designer, Saved designs, New Workshop build. Set the base to 3x2 and load the Screwdriver station template. Select the bit bank so the move handle, rotation ring and resize handles show. Crop to the full panel and the 3D view." />
 
 ## Select parts
 

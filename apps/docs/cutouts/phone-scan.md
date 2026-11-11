@@ -55,7 +55,7 @@ The sheet is A4, and all its marks also fit on US Letter. It has 18 black square
 Keep the tool inside the ring of squares, and don't let it cover a square. The scan still works with a few squares out of view, but each visible square makes the size more accurate.
 :::
 
-<Screenshot id="cutouts-phone-scan-sheet" alt="A wrench on the printed calibration sheet, photographed from straight above." spec="Real photo, not a UI capture. Printed calibration sheet on a plain desk, a 150 mm wrench inside the ring of black squares, no squares covered, phone held level above the center. Crop to the sheet with a small margin." />
+<Screenshot id="cutouts-phone-scan-sheet" alt="The calibration sheet: a ring of 18 black squares with an empty center for the tool, and a 100 mm bar under it to check the print scale." spec="The SVG file that Print calibration sheet saves, shown as an A4 page. Crop to the sheet with a small margin." />
 
 ## Start a scan on the computer
 

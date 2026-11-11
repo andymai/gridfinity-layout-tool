@@ -69,7 +69,7 @@ The <Ui k="binDesigner.shape.preset.l" /> preset needs at least 2 by 2 units. Th
 
 Wall patterns, wall cutouts and handles follow your outline. Compartments, label tabs, the finger scoop, overhang, pull tabs and label slots need a rectangle, and their controls tell you so.
 
-<Screenshot id="designer-size-and-shape-custom-shape" alt="The custom shape grid with an L-shaped footprint beside the 3D preview." spec="Bin designer, Shape group open, bin 4 x 3 x 3. Turn on Custom shape and click the L preset. Show the toggle, presets and cell grid, and the preview. Crop to panel plus preview." />
+<Screenshot id="designer-size-and-shape-custom-shape" alt="Turning on Custom shape shows the presets and the cell grid. The L preset clears two cells in one corner, and the preview shows the L-shaped bin." spec="Bin designer, Shape group open, bin 4 x 2 x 3. Turn on Custom shape and click the L preset in close-up, then show the bin in the preview." />
 
 ## Pick a body type
 

@@ -70,7 +70,7 @@ Every printer prints a little bigger or smaller than the next. A plate that clic
 4. Click the plate on the card into each socket. Find the socket that holds the plate firmly and releases it cleanly.
 5. Type the value embossed on that socket into <Ui k="binDesigner.plateFitOffset" />.
 
-The card has five sockets that step the offset from −0.10 to +0.10 mm. The offset field goes from −0.20 to +0.50 mm. A negative value makes the fit tighter, and a positive value makes it looser. The offset describes your printer, so the cutout sockets below use the same value.
+The card has five sockets that step the offset from −0.10 to +0.10 mm. The offset field goes from −0.20 to +0.50 mm. A negative value makes the fit tighter, and a positive value makes it looser. Each design keeps its own offset, so set it in every design that uses label plates. The cutout sockets below use the same value.
 
 ## Export the plates
 

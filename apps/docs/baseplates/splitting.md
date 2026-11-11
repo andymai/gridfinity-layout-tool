@@ -34,7 +34,7 @@ Each piece has a label, such as A1 or B2. The letter counts the columns from the
 
 If a smaller margin can save pieces, the map tells you how much to remove and from which sides.
 
-<Screenshot id="baseplates-splitting-map" alt="The split map of a plate in six pieces, with the seam ticks on the rulers beside it." spec="Baseplate generator, 10 by 7 plate on a 256 mm print bed so that it splits into several pieces. Scroll the panel to the split map at the bottom. Show the map with piece labels, the rulers with seam ticks, and the Reset to automatic line if present. Crop to the map area." />
+<Screenshot id="baseplates-splitting-map" alt="The split map of a plate in four pieces, with seam ticks on the rulers. A click on a tick adds a split, and a click on the old split removes it. The map then shows Custom split and Reset to automatic." spec="Baseplate generator, 10 by 7 plate on a 256 mm print bed, so that it splits into four pieces. Scroll the panel to the split map. Click the ruler tick at column 4, then the automatic split at column 5. Crop to the map area." />
 
 ## Draw your own split lines
 

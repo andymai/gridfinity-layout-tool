@@ -29,7 +29,7 @@ Nobody needs an account. The room never asks anyone to sign in.
 
 During a live session, avatars show in the header next to the share button. Each person gets a color and a guest name, made from an adjective and an animal.
 
-Click the avatars to open the <Ui k="collab.participants" /> list. The link owner has the <Ui k="collab.owner" /> mark, and you have <Ui k="collab.you" />. A small indicator shows your connection:
+Click the avatars to open the list of people in the session. The link owner has the <Ui k="collab.owner" /> mark, and you have <Ui k="collab.you" />. A small indicator shows your connection:
 
 | State                          | Meaning                                                         |
 | ------------------------------ | --------------------------------------------------------------- |
@@ -48,7 +48,7 @@ The work of the other people shows on your grid, each in their own color:
 - **Selection rings.** An outline around the bins that someone else selected.
 - **Ghosts.** An outline of a bin that someone draws, moves or resizes, before they let go.
 
-<Screenshot id="sharing-live-collaboration-grid" alt="The grid with a second person's named cursor, a selection ring on one bin, and a ghost outline of a bin that moves." spec="Layout editor, desktop, two browser profiles side by side on one edit link. In the second profile, select one bin, then start to drag a different bin and hold the mouse button. Capture the first profile's grid. Crop to the grid area around the cursor and the two bins." />
+<Screenshot id="sharing-live-collaboration-grid" alt="Another person's named cursor grabs a bin and drags it two cells to the right. A ghost outline in their color follows the cursor. A third person's ring stays on a different bin." spec="Clip of one browser's grid in a live room with two other people. One of them keeps a bin selected. The other moves their cursor onto a bin, grabs it and drags it two cells into empty space, without letting go. Crop to the grid." />
 
 ## What the room shares
 

@@ -79,7 +79,7 @@ Use <Ui k="staging.clearAll" /> only when you want to delete every bin in the st
 
 The 3D preview of the layout can show only the active layer, the layers up to the active layer, or all layers. <Ui k="grid.explodedView.label" /> pulls the layers apart vertically, so you can see each layer with the bins on it. [See the layers](../layouts/layers#see-the-layers) shows the buttons and the keys.
 
-<Screenshot id="concepts-layouts-exploded" alt="The 3D layout preview in exploded view, with three layers apart from each other." spec="Layout editor, desktop. Drawer 6 × 4 with three layers, each with two or three bins. 3D preview expanded, Explode on, Layer 2 active. Crop to the preview and its mode buttons." />
+<Screenshot id="concepts-layouts-exploded" alt="The expanded 3D layout preview of a drawer with three layers of bins. A click on Explode pulls the layers apart. Layer 2, the active layer, stays highlighted." spec="Clip. Layout editor, drawer 6 × 4 with three layers of two or three bins each, Layer 2 active. 3D preview expanded in All mode. The stacked drawer, a close-up click on Explode, then the layers apart." />
 
 ## Next steps
 

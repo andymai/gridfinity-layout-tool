@@ -30,7 +30,7 @@ You can also type a caption right on the compartment grid. Above the grid, selec
 
 A tab needs compartment walls to hang from. That's why the section shows only for the <Ui k="binDesigner.interior.standard.title" /> and <Ui k="binDesigner.interior.bento.title" /> interiors. A custom-shape bin or a very shallow bin can't carry a tab.
 
-<Screenshot id="designer-labels-and-text-tab-list" alt="The Label tabs section with three captions in the Label text list and the matching tabs in the 3D preview." spec="Bin designer, 3x1 bin with 3 compartments, Interior group open, Label tabs on, Printed text, captions SCREWS, NUTS, WASHERS. Show the panel section and the preview side by side. Crop to the panel section and the bin." />
+<Screenshot id="designer-labels-and-text-tab-list" alt="Screws, Nuts and Washers are typed into the Label text list, with Enter to go to the next row. The bin then shows the three captions in capitals on its label tabs." spec="Bin designer, 3 x 1 bin with 3 compartments, Interior group, Label tabs on, Printed text. Close-up of the Label text list: type Screws, press Enter, type Nuts, press Enter, type Washers. Cut to the bin from above, so the captions read." />
 
 ### One tab per compartment or per row
 
@@ -116,7 +116,7 @@ Wall text puts a caption on the side of the bin, on the outside or the inside.
 
 Inside text reads from inside the bin, so a caption on the back wall faces you when you open the drawer. The text goes in the clear area of each wall, away from cutouts and handles. Inside text also stays clear of dividers, scoops and label tabs. A solid bin has no inside face, and custom-shape bins take no wall text.
 
-<Screenshot id="designer-labels-and-text-wall-text" alt="Wall text on the front wall of a bin, with the Outside and Inside choice under each wall box." spec="Bin designer, Finishing group open, Wall text on, Front box set to CABLES with Outside, Engrave finish. Preview turned to show the front wall. Crop to the Wall text controls and the bin front." />
+<Screenshot id="designer-labels-and-text-wall-text" alt="Wall text is turned on and Cables is typed in the Front box, with Outside picked under it. The front of the bin then shows CABLES engraved." spec="Bin designer, bin 3 x 2 x 4. Close-up of the Finishing group: turn on Wall text, type Cables in the Front box. Outside and Engrave are the defaults. Cut to the bin in the Front view." />
 
 ## Add floor and lid text
 

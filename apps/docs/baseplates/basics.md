@@ -21,7 +21,7 @@ Open the layout for your drawer, then click <Ui k="toolSwitcher.baseplateGenerat
 
 The preview opens in a top view. Its buttons reset the view, turn on X-ray (<kbd>X</kbd>), change the projection (<kbd>P</kbd>), and change the preview color.
 
-The panel on the right has four sections, from top to bottom:
+The settings panel beside the preview has four sections, from top to bottom:
 
 | Section                                | What you set there                                                             |
 | -------------------------------------- | ------------------------------------------------------------------------------ |
@@ -32,7 +32,7 @@ The panel on the right has four sections, from top to bottom:
 
 Is the plate bigger than your print bed? Then a map of the pieces appears below these sections. See [Split for your print bed](./splitting).
 
-<Screenshot id="baseplates-basics-panel" alt="The baseplate generator with the preview on the left and the settings panel on the right." spec="Baseplate generator on desktop. Layout with a 6 by 4 drawer, Sync with layout on, no padding. Show the full window with the top-view preview and the panel with all four sections visible. Crop to the app window." />
+<Screenshot id="baseplates-basics-panel" alt="The baseplate generator with the settings panel on the left and the preview on the right." spec="Baseplate generator on desktop. Layout with a 6 by 4 drawer, Sync with layout on, no padding. Show the full window with the top-view preview and the panel with all four sections visible. Crop to the app window." />
 
 ## Size the plate from your layout
 
