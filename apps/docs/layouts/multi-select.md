@@ -42,7 +42,7 @@ Drag any selected bin, and all the selected bins move with it. The arrow keys mo
 
 Select two or more bins on a computer, and a toolbar shows above them with the group actions.
 
-<Screenshot id="layouts-multi-select-toolbar" alt="Four selected bins with the selection toolbar above them, showing the align buttons, category colors and bulk actions." spec="Layout editor on desktop. Layout with a 6 by 4 drawer, two layers, and four bins of different heights in a loose row on layer 1. Select the four bins with Ctrl+click so the selection toolbar shows. Crop to the toolbar and the selected bins." />
+<Screenshot id="layouts-multi-select-toolbar" alt="One bin is clicked, then three more with Ctrl held down. The selection toolbar shows above the four selected bins, with the align buttons, category colors and bulk actions." spec="Clip. Layout editor on desktop. Layout with an 8 by 4 drawer, two layers, and four bins of different heights in a loose row at the left of layer 1. Click the first bin, then Ctrl+click the other three with a Ctrl keycap on screen, so the selection toolbar shows. Crop to the grid and the toolbar." />
 
 | Button                                                                                                                                               | What it does                                                            |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
