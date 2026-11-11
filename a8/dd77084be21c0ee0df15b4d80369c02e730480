@@ -1,0 +1,69 @@
+scripts/docs-capture/shots/designerBody.ts
+  s_1cc363bb3cc76d::t_002aa81f692eb2 127-128
+  s_1cc363bb3cc76d::t_37ec1d780406dd 440
+  s_1cc363bb3cc76d::t_9bbe1ef855b73e 27
+  s_1cc363bb3cc76d::t_633bcb55a50081 74-75
+  s_1cc363bb3cc76d::t_212426cc242a67 96
+scripts/docs-capture/shots/sharingSettings.ts
+  s_1cc363bb3cc76d::t_86328dbaae9f39 593
+  s_1cc363bb3cc76d::t_8ecef1c7ff8716 20-22
+  s_1cc363bb3cc76d::t_75ccb453358f67 631-632
+  s_1cc363bb3cc76d::t_8019d36da96efd 168
+  s_1cc363bb3cc76d::t_118b7671484aef 415
+scripts/docs-capture/shots/cutouts.ts
+  s_1cc363bb3cc76d::t_f89dd5a77fedee 10-11
+  s_1cc363bb3cc76d::t_fcda7c4c62c769 94
+  s_1cc363bb3cc76d::t_020bda3cc0f40f 603
+  s_1cc363bb3cc76d::t_31ecf1d4a6d006 483-484
+  s_1cc363bb3cc76d::t_0b27129c0ab65e 761-762
+  s_1cc363bb3cc76d::t_24180ba28b1e93 321
+  s_1cc363bb3cc76d::t_67408936e0e579 562-563
+  s_1cc363bb3cc76d::t_f258946aadc97c 775
+  s_1cc363bb3cc76d::t_75fbe14070edba 174-175
+  s_1cc363bb3cc76d::t_350ed1147b9ee3 290
+scripts/docs-capture/shots/concepts.ts
+  s_1cc363bb3cc76d::t_09f121816e15cc 475
+  s_1cc363bb3cc76d::t_05dc80002407ae 51
+  s_1cc363bb3cc76d::t_96d5a879243b6d 256
+  s_1cc363bb3cc76d::t_5cc28c602d0ad1 274
+  s_1cc363bb3cc76d::t_398628a9829a18 360
+  s_1cc363bb3cc76d::t_c974f22dd53e95 17
+  s_1cc363bb3cc76d::t_90b3e2dc22a309 37
+  s_1cc363bb3cc76d::t_8f8d4e81d86538 57
+  s_1cc363bb3cc76d::t_c81db98a3d74f3 192
+scripts/docs-capture/shots/designerDetails.ts
+  s_1cc363bb3cc76d::t_cfd4ffdb4d9d45 620-621
+  s_1cc363bb3cc76d::t_b123fee7ee389c 335
+  s_1cc363bb3cc76d::t_16b5008aad8bd5 366
+  s_1cc363bb3cc76d::t_293a8e76cc8306 87
+  s_1cc363bb3cc76d::t_918195ba32e2fb 210-211
+scripts/docs-capture/shots/baseplatesPrinting.ts
+  s_1cc363bb3cc76d::t_918641911143fc 131
+  s_1cc363bb3cc76d::t_944566cb1ee5ad 399
+  s_1cc363bb3cc76d::t_08b544bb41436b 45
+scripts/docs-capture/shots/layouts.ts
+  s_1cc363bb3cc76d::t_3a1a31bbe02c18 16-17
+  s_1cc363bb3cc76d::t_e2fb84343dcd34 313
+  s_1cc363bb3cc76d::t_2f75299cf925af 441-442
+  s_1cc363bb3cc76d::t_5e74b635c71827 596
+  s_1cc363bb3cc76d::t_4f1b375730a050 194
+  s_1cc363bb3cc76d::t_f70df2c6d09d30 281-282
+  s_1cc363bb3cc76d::t_1a34664450a528 320-321
+  s_1cc363bb3cc76d::t_87c976dc44e8aa 720
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a8dd77084be21c0ee0df15b4d80369c02e730480",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
