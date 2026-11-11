@@ -1,0 +1,44 @@
+apps/docs/media/reference-design-file-import.json
+  h_b755e1950659f4 1-5
+apps/docs/media/reference-layout-file-import.json
+  h_b755e1950659f4 1-5
+apps/docs/media/reference-shortcuts-panel.json
+  h_b755e1950659f4 1-5
+apps/docs/media/settings-keyboard-palette.json
+  h_b755e1950659f4 1-5
+apps/docs/media/settings-labs-tab.json
+  h_b755e1950659f4 1-5
+apps/docs/media/settings-offline-reload-button.json
+  h_b755e1950659f4 1-5
+apps/docs/media/settings-settings-dialog.json
+  h_b755e1950659f4 1-5
+apps/docs/media/settings-spacemouse-general.json
+  h_b755e1950659f4 1-5
+apps/docs/media/sharing-accounts-sign-in-menu.json
+  h_b755e1950659f4 1-5
+apps/docs/media/sharing-community-gallery.json
+  h_b755e1950659f4 1-5
+apps/docs/media/sharing-community-publish.json
+  h_b755e1950659f4 1-5
+apps/docs/media/sharing-live-collaboration-grid.json
+  h_b755e1950659f4 1-5
+apps/docs/media/sharing-live-collaboration-participants.json
+  h_b755e1950659f4 1-5
+apps/docs/media/sharing-share-links-popover.json
+  h_b755e1950659f4 1-5
+apps/docs/sharing/live-collaboration.md
+  h_b755e1950659f4 51
+scripts/docs-capture/shots/sharingSettings.ts
+  h_b755e1950659f4 1-10,12-858
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fef7d0caa1212bcb222fbe9320b074bc778f55ed",
+  "prompts": {},
+  "humans": {
+    "h_b755e1950659f4": {
+      "author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
