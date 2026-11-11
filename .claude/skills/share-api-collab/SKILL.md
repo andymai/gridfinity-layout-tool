@@ -49,7 +49,7 @@ Read `api/README.md` first — it accurately documents the share lifecycle, Redi
 ### Extend the content filter
 
 1. Edit `BLOCKLIST` / `HARMFUL_PATTERNS` in `api/lib/contentFilter.ts`. Blocklist terms: lowercase ASCII in normalized form — matching runs after NFKD + zero-width strip + confusable folding + 0/1/3/4 leetspeak folding. `HARMFUL_PATTERNS` deliberately test RAW text (the zalgo detector needs the combining marks normalization strips) — do not "fix" that asymmetry.
-2. Do not add confusable digit mappings beyond 0/1/3/4 (corrupts names like "Bin 1/4 inch", see the comment above `CONFUSABLE_TO_LATIN`). Terms match whole words only, so list each inflected form ("spics").
+2. Do not add confusable digit mappings beyond 0/1/3/4 (corrupts names like "Bin 1/4 inch", see the comment above `CONFUSABLE_TO_LATIN`). `BLOCKLIST` matches whole words, so list each inflected form ("spics"). `ANYWHERE_TERMS` match with separators removed; add one only if no locale string or vocabulary label contains it.
 3. Test both the plain term and a homoglyph/zero-width bypass in `api/lib/contentFilter.test.ts`.
 4. The filter also gates designer shares, community publishing, print reports and assembly labels, never existing blobs. A new layout text field needs a `ContentField` and its message key in `useCloudShare.ts`.
 

@@ -650,6 +650,41 @@ describe('checkText', () => {
     }
   );
 
+  // The long slurs and the phrases match with every separator removed, so a
+  // compound or a joined phrase does not get past the whole-word match.
+  it.each([
+    'niggerish',
+    'dumbnigger',
+    'n.i.g.g.e.r',
+    'faggotry',
+    'bigfaggot',
+    'killyourself',
+    'gokillyourself',
+    'kill_your_self',
+    'childporn',
+  ])('rejects %s, which holds a term matched anywhere', (text) => {
+    expect(checkText(text).passed).toBe(false);
+  });
+
+  it.each(['rеtard', 'ｃｕｎｔ', 'k​ys', 'SP1C'])(
+    'rejects a disguised whole-word term: %j',
+    (text) => {
+      expect(checkText(text).passed).toBe(false);
+    }
+  );
+
+  // Each of these terms sits inside innocent text, so only the whole word
+  // blocks. "Aucun trou" is one of the app's own French strings.
+  it.each([
+    ['cuntface', 'cunt'],
+    ['Aucun trou', 'cunt'],
+    ['twatwaffle', 'twat'],
+    ['niggardly', 'nigga'],
+    ['Log chinking', 'chink'],
+  ])('passes %s, because %s matches whole words only', (text) => {
+    expect(checkText(text).passed).toBe(true);
+  });
+
   // An attribute name in HTML starts after whitespace, "/" or a quote, so a
   // word-start anchor costs nothing against real markup.
   it.each([

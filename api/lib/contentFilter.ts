@@ -3,21 +3,17 @@
  * Uses blocklist + pattern matching on user-generated text fields.
  */
 
-// Matched as whole words (phrases as consecutive words) in normalized text, so
-// a term inside a longer word ("spic" in "Spices", "retard" in "retardant")
-// never blocks. An inflected form only matches if it is listed here.
+// Matched as whole words in normalized text, so a term inside a longer word
+// ("spic" in "Spices", "retard" in "retardant") never blocks. An inflected
+// form only matches if it is listed here.
 //
 // Leave "cp" out: in maker text it is centipoise, chrome-plated or the Chicago
 // Pneumatic tool brand, and no word rule tells those apart from the slang.
 const BLOCKLIST = new Set([
   // Slurs and hate speech (abbreviated list)
-  'nigger',
-  'niggers',
   'nigga',
   'niggas',
   'niggaz',
-  'faggot',
-  'faggots',
   'fag',
   'fags',
   'retard',
@@ -38,11 +34,24 @@ const BLOCKLIST = new Set([
   'twat',
   'twats',
   // Violence
-  'kill yourself',
   'kys',
-  // Other harmful content
-  'child porn',
 ]);
+
+// Matched anywhere in normalized text with every separator removed, so a
+// compound ("niggerish") or a joined phrase ("killyourself") still blocks.
+//
+// A term belongs here only if no string in the app's locales or label
+// vocabulary contains it. "cunt" fails that ("Aucun trou" joins across the
+// space). "nigga" stays out because the only longer words that hold it are
+// "niggardly" and its kin. The known cost: "snigger", "faggoting" and
+// "skill yourself" block.
+const ANYWHERE_TERMS = [
+  'nigger',
+  'faggot',
+  // Phrases, written without their spaces
+  'killyourself',
+  'childporn',
+];
 
 // Patterns that suggest harmful content.
 //
@@ -269,6 +278,12 @@ export function checkText(text: string): ContentFilterResult {
   // (homoglyphs, zero-width chars, fullwidth, combining marks) can't bypass.
   for (const term of BLOCKLIST) {
     if (normalized.includes(` ${term} `)) {
+      return { passed: false, reason: 'contains prohibited content' };
+    }
+  }
+  const letters = normalized.replace(/ /g, '');
+  for (const term of ANYWHERE_TERMS) {
+    if (letters.includes(term)) {
       return { passed: false, reason: 'contains prohibited content' };
     }
   }
