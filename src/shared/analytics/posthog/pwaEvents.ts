@@ -4,6 +4,7 @@ import {
   onDisplayModeChange,
   type DisplayMode,
 } from '@/shared/pwa/displayMode';
+import type { InstallOutcome } from '@/shared/pwa/installPrompt';
 import { markFeatureUsed } from './eventsPerson';
 import { isFirstSession, loadAnalyticsData, saveAnalyticsData } from './identity';
 import { isAnalyticsActive } from './init';
@@ -66,4 +67,21 @@ export function listenForDisplayModeChanges(): void {
   } catch {
     // Fail silently
   }
+}
+
+export type PwaInstallPlacement = 'export_success' | 'settings';
+
+export function trackPwaInstallPromptShown(placement: PwaInstallPlacement): void {
+  trackEvent('pwa_install_prompt_shown', { placement });
+}
+
+export function trackPwaInstallPromptResult(
+  placement: PwaInstallPlacement,
+  outcome: InstallOutcome
+): void {
+  trackEvent('pwa_install_prompt_result', { placement, outcome });
+}
+
+export function trackPwaInstallOfferClosed(placement: PwaInstallPlacement): void {
+  trackEvent('pwa_install_offer_closed', { placement });
 }
