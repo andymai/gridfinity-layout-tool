@@ -1,0 +1,109 @@
+apps/docs/media/cutouts-import-stl-dialog.json
+  s_1cc363bb3cc76d::t_34b94c188898e4 1-5
+apps/docs/media/cutouts-print-checks-list.json
+  s_1cc363bb3cc76d::t_8e092800075fd4 4
+  s_1cc363bb3cc76d::t_651f2a717a57fa 1-2,5
+  s_1cc363bb3cc76d::t_34b94c188898e4 3
+apps/docs/media/cutouts-basics-editor.json
+  s_1cc363bb3cc76d::t_67c3117b456217 4
+  s_1cc363bb3cc76d::t_651f2a717a57fa 1-3,5
+apps/docs/media/cutouts-phone-scan-sheet.json
+  s_1cc363bb3cc76d::t_34b94c188898e4 1-2,5
+  s_1cc363bb3cc76d::t_b3ee772e118a09 3-4
+apps/docs/cutouts/arranging.md
+  s_1cc363bb3cc76d::t_e3413bbb86f408 55
+  s_1cc363bb3cc76d::t_fc74ed7b05e5f4 128
+apps/docs/cutouts/phone-scan.md
+  s_1cc363bb3cc76d::t_9643f309273da6 58
+apps/docs/cutouts/workshop.md
+  s_1cc363bb3cc76d::t_8f98f3b4847f25 55
+apps/docs/cutouts/basics.md
+  s_1cc363bb3cc76d::t_496af4b9be8830 29
+  s_1cc363bb3cc76d::t_c12702bf95592d 107
+apps/docs/cutouts/print-checks.md
+  s_1cc363bb3cc76d::t_51a5395448d7ca 53
+  s_1cc363bb3cc76d::t_e88a57139d1589 96
+apps/docs/media/cutouts-workshop-build.json
+  s_1cc363bb3cc76d::t_34b94c188898e4 1-5
+apps/docs/media/cutouts-arranging-ruler.json
+  s_1cc363bb3cc76d::t_4786f2146087fb 3-4
+  s_1cc363bb3cc76d::t_d1546969f89683 1-2,5
+apps/docs/media/cutouts-print-checks-finger.json
+  s_1cc363bb3cc76d::t_ecc20ee4b2ab0e 3-4
+  s_1cc363bb3cc76d::t_d1546969f89683 1-2,5
+scripts/docs-capture/shots/cutouts.ts
+  s_1cc363bb3cc76d::t_a34116d9cd1cb2 49-53
+  s_1cc363bb3cc76d::t_d4ca30e35fca84 105
+  s_1cc363bb3cc76d::t_971373ba13b246 584-586,588,594-595
+  s_1cc363bb3cc76d::t_ef707a09f39817 334-337
+  s_1cc363bb3cc76d::t_8f1b477ab0a1b6 785-789,791-795,802-808
+  s_1cc363bb3cc76d::t_e680c46560008a 169
+  s_1cc363bb3cc76d::t_3ae913dddc82a7 800-801
+  s_1cc363bb3cc76d::t_5433ad7b062c91 23
+  s_1cc363bb3cc76d::t_d665748caac984 9-13,17
+  s_1cc363bb3cc76d::t_6ed31ba8b762d3 4
+  s_1cc363bb3cc76d::t_92f62b44b0528d 714-715
+  s_1cc363bb3cc76d::t_1be7485cd82ac9 142
+  s_1cc363bb3cc76d::t_4220428556a99e 740-741,755-769,823-825,829,842-850,855-856,865,875
+  s_1cc363bb3cc76d::t_7db1945bd1032a 210-211
+  s_1cc363bb3cc76d::t_dde1a36ef06d68 333
+  s_1cc363bb3cc76d::t_f06f0c498820a5 583,587,589-593,596-622,637-667,670-713,716-732,734-739,749-754,770-784,796-799,811-815,817-822,826-828,830-841,851-854,857-860,862-864,866-869,882,884-886,891-893,896-897
+  s_1cc363bb3cc76d::t_8040f47599ac72 629-630
+  s_1cc363bb3cc76d::t_de926886891512 260
+  s_1cc363bb3cc76d::t_f0adcdc2d1926b 634-636
+  s_1cc363bb3cc76d::t_72501e3df8f6fb 790
+  s_1cc363bb3cc76d::t_d5b4ecba5175c9 42
+  s_1cc363bb3cc76d::t_9d2837f566cc17 513,518-520
+  s_1cc363bb3cc76d::t_4f99957fd2dbc6 175
+  s_1cc363bb3cc76d::t_fd9a281560b99e 514-517
+  s_1cc363bb3cc76d::t_8ff300f73c1893 870-871
+  s_1cc363bb3cc76d::t_4be186f8fb00c0 873,876,878,880-881,883
+  s_1cc363bb3cc76d::t_dedb9604af71d8 877,879
+  s_1cc363bb3cc76d::t_e59c8415dba292 2-3,5,7,15-16,18-20,22,24-29,32-41,43-48,54-76,82-83,91-104,106-108,111,113-141,143-153
+  s_1cc363bb3cc76d::t_21ae2b180e4b1a 77-79,81,84-90
+  s_1cc363bb3cc76d::t_8dbe81e24972de 733,742-748
+  s_1cc363bb3cc76d::t_f6e26f11116ec4 30-31
+  s_1cc363bb3cc76d::t_4aeedbc5c2cf9a 668
+  s_1cc363bb3cc76d::t_ddff98fdb9e2f6 258-259,264,275-276,279,283-284
+  s_1cc363bb3cc76d::t_2234a97d33eae9 109-110,112
+  s_1cc363bb3cc76d::t_61bcb2076eac89 170,172-174,177,179,183
+  s_1cc363bb3cc76d::t_1dc04d1ccb189e 809-810,816
+  s_1cc363bb3cc76d::t_0c3f566edf283d 21
+  s_1cc363bb3cc76d::t_cd46a938433f1c 312-313,317
+  s_1cc363bb3cc76d::t_db264a3b48069e 433-442
+  s_1cc363bb3cc76d::t_cf8ac60de7af45 155
+  s_1cc363bb3cc76d::t_f787aa2ccf6c9e 14
+  s_1cc363bb3cc76d::t_68f02510428ee6 623-628,631-633
+  s_1cc363bb3cc76d::t_82e3da9bc0df04 190
+  s_1cc363bb3cc76d::t_95c7991ff6b50b 669
+  s_1cc363bb3cc76d::t_a223766498099a 872
+  s_1cc363bb3cc76d::t_0f682ab7d9da1d 874
+  s_1cc363bb3cc76d::t_bac5aba5aff8e8 223-225,229,238-239,244-245,249,252-257,261-263,265-272,277-278,280-282,285-288,290
+  s_1cc363bb3cc76d::t_6400d56f54374a 154,156-168,171,176,178,180-182,184-189,191-205
+  s_1cc363bb3cc76d::t_7195e97dc9f22c 503-512,521-524,527
+  s_1cc363bb3cc76d::t_d6d5c0295748e5 294-311,314-316,318-332,338-432,443,445-502,525-526,528-582,889-890,894-895,898-899
+  s_1cc363bb3cc76d::t_20f438c7543cf0 1,6
+  s_1cc363bb3cc76d::t_61ce90a20cbd28 206-209,212-222,226-228,230-237,240-242,246-248,250-251,273-274,291-293
+  s_1cc363bb3cc76d::t_e9859c6350c85a 243
+  s_1cc363bb3cc76d::t_8011e74fc35290 8,80,289,444,861
+apps/docs/media/cutouts-basics-split.json
+  s_1cc363bb3cc76d::t_a69d849c9f9e76 1-5
+apps/docs/media/cutouts-arranging-repeat.json
+  s_1cc363bb3cc76d::t_113bbc2ea135c7 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a5d8dd5e7295c4c296ac329422c6da53abf6e62e",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
