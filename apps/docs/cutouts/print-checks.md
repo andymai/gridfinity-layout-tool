@@ -10,6 +10,7 @@ sources:
   - src/shared/utils/fitTestOutlinePlan.ts
   - src/features/bin-designer/components/panel/CutoutsSection/fingerAccessPlan.ts
   - src/features/bin-designer/components/CutoutWorkspace/FingerAccessControls.tsx
+  - src/features/bin-designer/components/CutoutWorkspace/BinSizeSection.tsx
 ---
 
 # Check before you print
@@ -54,7 +55,7 @@ Look at the 3D preview when two cutouts lean toward each other. The checks measu
 
 ## Print a fit test
 
-Print one small test before the whole bin. A fit test shows if your parts fit, for a fraction of the filament.
+Print one small test before the whole bin. A **fit test** shows if your parts fit, for a fraction of the filament.
 
 1. In the <Ui k="binDesigner.shapeList.tabProperties" /> tab, click <Ui k="binDesigner.cutouts.fitTest.button" />.
 2. Under <Ui k="binDesigner.cutouts.fitTest.mode" />, pick <Ui k="binDesigner.cutouts.fitTest.modeCard" /> or <Ui k="binDesigner.cutouts.fitTest.modeOutline" />, and set the size fields.
@@ -79,7 +80,7 @@ Then export a new test, or print the bin.
 
 ## Add finger access for a snug tool
 
-A snug cutout holds a tool well, but the tool can be hard to lift out. Finger access cuts a scoop beside the cutout, so a fingertip gets under the tool.
+A snug cutout holds a tool well, but the tool can be hard to lift out. **Finger access** cuts a scoop beside the cutout, so a fingertip gets under the tool.
 
 1. Select the cutout.
 2. In <Ui k="binDesigner.cutouts.section.shape" />, click <Ui k="binDesigner.cutouts.finger.add" />.
@@ -94,6 +95,26 @@ Already drew a slot or a circle for your finger? Select it, and you see the <Ui 
 A repeat can't get finger access, because each copy needs its own. Use <Ui k="binDesigner.cutouts.repeat.flatten" /> first.
 
 <Screenshot id="cutouts-print-checks-finger" alt="Clicking Add finger access on a long rectangle cutout. A scoop appears across its long side and comes in selected. Picking Round makes the scoop round, and the 3D preview zooms in on it." spec="Cut editor at half the window, 4x2 bin, one 140 x 22 mm rectangle selected. Click Add finger access, then pick Round with the Curved floor. Frame the board and the panel, then zoom the 3D preview in on the scoop." />
+
+## When it goes wrong
+
+### Two cutouts merge, but they don't touch on the board
+
+Move the cutouts apart. Or, on one of them, lower <Ui k="binDesigner.cutouts.clearance" /> or the size of the <Ui k="binDesigner.cutouts.entryProfile" />.
+
+The board shows the outline that you drew. The checks measure the cutout as the Layout Tool cuts it, and clearance and the entry edge both make it wider at the top. So two cutouts can meet at the top surface with a gap between their outlines.
+
+### A cutout breaks through the wall or sits under the lip
+
+Move the cutout in from the edge, or make the bin larger in <Ui k="binDesigner.cutoutEditor.binSize" />. For the lip warning, you can also turn off <Ui k="assembledHeight.stackingLip" /> in <Ui k="binDesigner.cutoutEditor.binFeatures" />.
+
+The bin wall needs at least 1.2 mm of plastic beside each cutout. The stacking lip hangs over the inside of the wall, so a tool in a cutout under it can catch as you lift it out.
+
+### A seam crosses a cutout on the fit test
+
+Leave a gap across the bin between the cutouts, and export the test again. Also check the print bed size. See [Fitting the print bed](../concepts/print-bed-fit).
+
+A test that is larger than your print bed exports as pieces. The Layout Tool moves each seam into a gap between the cutouts. With no gap, a seam runs through one cutout, and you can't test that cutout on this print.
 
 ## Next steps
 

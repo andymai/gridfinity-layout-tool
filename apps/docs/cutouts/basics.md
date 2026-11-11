@@ -8,11 +8,12 @@ sources:
   - src/features/bin-designer/types/cutout.ts
   - src/shared/utils/cutoutDepth.ts
   - src/shared/utils/cutoutSplit.ts
+  - src/shared/constraints/rules.ts
 ---
 
 # Cutout basics
 
-Give every tool its own spot. A cutout is a pocket shaped like a tool, which the Gridfinity Layout Tool cuts into the top of a solid bin. Draw one here, then set its size, depth, edges and label.
+Give every tool its own spot. A **cutout** is a pocket shaped like a tool, which the Gridfinity Layout Tool cuts into the top of a solid bin. Draw one here, then set its size, depth, edges and label.
 
 ## Open the cutout editor
 
@@ -114,6 +115,26 @@ Open <Ui k="binDesigner.cutouts.section.label" /> and type the text, up to 50 ch
 - <Ui k="binDesigner.cutoutLabelMode.socket" /> cuts a socket for a swappable label plate.
 
 <Ui k="binDesigner.cutoutTextAnchor" /> puts the label above, below, beside or on the cutout. To move it more, drag the label on the board, or use <Ui k="binDesigner.cutoutTextOffsetX" /> and <Ui k="binDesigner.cutoutTextOffsetY" />.
+
+## When it goes wrong
+
+### The cut editor is gray and won't open
+
+Read the line under <Ui k="binDesigner.editCutouts" />. It names the setting that blocks the cutouts. Is it a lightweight floor? Open <Ui k="binDesigner.group.base" />, and set <Ui k="binDesigner.lightweightMode" /> to <Ui k="binDesigner.lightweightMode.underside" />. The bin stays light, and the cutouts come back.
+
+A cutout cuts down into a solid floor. The inside lightweight mode hollows each foot from the inside, so no solid floor stays to cut into. A <Ui k="binDesigner.spacer" /> or a <Ui k="binDesigner.tile" /> bin has no room for cutouts at all.
+
+### You can't pick Through
+
+Hover over the gray <Ui k="binDesigner.cutouts.depthMode.through" /> button to read why. Is the cutout in a group? Ungroup it with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>. Does it lean? Set its <Ui k="binDesigner.cutouts.lean" /> to 0.
+
+A through cut opens out of the bottom of the bin, and some bins close that opening again. So the option is also off beside a tapered wall, with detachable feet, and on a <Ui k="binDesigner.base.bodyType.nesting" /> body.
+
+### The cutout comes out shallower than you typed
+
+Select the cutout and read the line under <Ui k="binDesigner.cutouts.cutDepth" />. It gives the depth that the bin has room for. Lower the depth or the lean, move the cutout away from the edge, or make the bin taller.
+
+A cutout can't go deeper than the plastic under the top surface. A lean also moves the floor of the cutout sideways, so it can meet a wall first. See [Cutouts that are too deep](./print-checks#cutouts-that-are-too-deep).
 
 ## Next steps
 

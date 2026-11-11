@@ -87,6 +87,30 @@ With the direct connection, the buttons do these actions:
 
 Every SpaceMouse has buttons 1 and 2, and the larger models have the others too. With the driver, assign these same actions to the buttons in the 3Dconnexion control panel. The Fit button of the puck works without an assignment.
 
+## When it goes wrong
+
+### The puck moves nothing
+
+Click inside the Layout Tool window, then move the mouse pointer over the 3D view that you want to move. Is a dialog with a 3D view open? Then the puck moves that view.
+
+The SpaceMouse moves nothing while another window is in front, even when you can see the Layout Tool behind it.
+
+### The SpaceMouse doesn't connect
+
+Read the status line below the switch:
+
+| Status                                   | What to do                                                                           |
+| ---------------------------------------- | ------------------------------------------------------------------------------------ |
+| <Ui k="spacemouse.status.unsupported" /> | Install the 3Dconnexion driver, or open the Layout Tool in Chrome, Edge or Opera.    |
+| <Ui k="spacemouse.status.error" />       | Click <Ui k="spacemouse.connect" />, and pick your SpaceMouse in the browser dialog. |
+| <Ui k="spacemouse.status.idle" />        | Click <Ui k="spacemouse.connect" />, and allow the connection.                       |
+
+### The speed and invert controls are missing
+
+Set the speed and the axes in the 3Dconnexion control panel.
+
+The 3Dconnexion driver runs the device, so its control panel holds these settings. Settings in the Layout Tool shows them only with the direct connection.
+
 ## Next steps
 
 - [Preview and export](../concepts/preview-and-export): what the 3D preview shows.

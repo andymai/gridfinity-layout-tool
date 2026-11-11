@@ -12,7 +12,7 @@ sources:
 
 # Categories and colors
 
-A full drawer plan gets busy fast. Categories help: give every bin a named color, like screws or kitchen tools, and you can read the drawer at a glance. Here's how to make categories in the Gridfinity Layout Tool, give them to bins, and see where their colors show up.
+A full drawer plan gets busy fast. **Categories** help: give every bin a named color, like screws or kitchen tools, and you can read the drawer at a glance. Here's how to make categories in the Gridfinity Layout Tool, give them to bins, and see where their colors show up.
 
 ## Find the categories
 
@@ -67,6 +67,22 @@ The category color is for planning only. It doesn't set the filament color of th
 ### Tell categories apart without color
 
 If some colors are hard for you to tell apart, open Settings and go to <Ui k="settings.tabs.accessibility" />. Turn on <Ui k="settings.categoryPatterns" />. Each category then gets its own pattern of lines, dots or grids on the canvas.
+
+## When it goes wrong
+
+### You can't delete a category
+
+Move its bins to a different category first. Select one bin of that category, and run <Ui k="commandPalette.selectByCategory" /> from the command palette. Click a different category, then delete the empty one.
+
+That command selects bins on the active layer only. So repeat it on each layer, and look in the stash too. The message that blocks the delete tells you how many bins still use the category. A layout also always keeps its last category.
+
+### The add button is gray
+
+A layout can have 20 categories. Delete one that no bin uses, or rename one and use it for the new group.
+
+### The print list shows one bin size on two rows
+
+Check the category and the label of those bins. The print list puts bins on one row only when they share the size, height, label, category and design. So two bins of one size with different categories take two rows. To merge the rows, give the bins the same category and label.
 
 ## Next steps
 

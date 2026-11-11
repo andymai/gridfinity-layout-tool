@@ -9,6 +9,8 @@ sources:
   - src/features/bin-designer/components/panel/BaseSection/BodyTypeTiles.tsx
   - src/features/bin-designer/constants/gridfinity.ts
   - src/shared/utils/cellMask.ts
+  - src/features/bin-designer/components/DesignerPage/useFractionalEdgeMismatch.ts
+  - src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
 ---
 
 # Size and shape
@@ -111,6 +113,26 @@ A bin that the layout extends into the drawer margin shows <Ui k="binDesigner.ov
 ## Slant (Experimental)
 
 <Ui k="binDesigner.slant.title" /> is also in the <Ui k="binDesigner.group.shape" /> group. It has the <Ui k="settings.experimental" /> label. It leans the bin to one side so tall items fit a shallow drawer, and the base stays flat on the grid. [Special bins](../designer/special-bins) explains it.
+
+## When it goes wrong
+
+### A banner says the half-unit foot is on the wrong edge
+
+Click <Ui k="binDesigner.fractionalEdgeMatchDrawer" /> in the banner. The bin designer moves the half-size feet to the edge where the bin sits in your drawer.
+
+The banner shows when a bin in the active layout uses this design, and that bin has its half-size feet on the other edge. See [Make half-unit sizes](#make-half-unit-sizes).
+
+### A feature turns off after you change the outline
+
+Read the note at the greyed-out control. It tells you what blocks it. To get the feature back, click <Ui k="common.reset" /> under <Ui k="binDesigner.shape.customShape" />, or turn off the overhang.
+
+Compartments, label tabs, the finger scoop, overhang, pull tabs, label slots and lip notches need a rectangular footprint. Pull tabs, label slots and lip notches also need a bin with no overhang.
+
+### The bin is too large for your print bed
+
+Keep <Ui k="binDesigner.splitExport.enableSplit" /> on in the export dialog. You get a ZIP file with one file for each piece. To print the bin in one piece, make it smaller.
+
+The export dialog checks the bin against the print bed size of your layout. Is that size wrong? Change it under <Ui k="common.physicalUnits" /> in the <Ui k="binDesigner.group.finishing" /> group. If the bin fits only at an angle, the dialog tells you to turn it in your slicer. [Fitting the print bed](../concepts/print-bed-fit#when-a-bin-is-too-large) explains the check.
 
 ## Next steps
 

@@ -9,11 +9,12 @@ sources:
   - src/features/bin-designer/components/CutoutWorkspace/CutoutSocketControls.tsx
   - src/features/bin-designer/components/CutoutWorkspace/CutoutPlateSettings.tsx
   - src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.tsx
+  - src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
 ---
 
 # Swappable label plates
 
-The contents of a drawer change. With swappable label plates, you print a new label, not a new bin. A plate is a small printed tag that clicks into a socket on the bin. The Gridfinity Layout Tool cuts the sockets, makes one plate for each socket, and exports all the plates as one file.
+The contents of a drawer change. With swappable label plates, you print a new label, not a new bin. A **plate** is a small printed tag that clicks into a socket on the bin. The Gridfinity Layout Tool cuts the sockets, makes one plate for each socket, and exports all the plates as one file.
 
 The sockets follow a common click-in label standard, so plates from other makers that follow the same standard fit too.
 
@@ -88,7 +89,7 @@ A layout export also includes the plates for every bin that has sockets, and the
 
 ## Add label slots to the outer walls
 
-A label slot is a vertical slot in an outer wall that takes a 1U plate. The plate drops in from the top and shows through a window in the wall. [Add label slots](./walls#add-label-slots) gives the steps and the limits. The plates for the slots appear in a plate list with the same export buttons.
+A **label slot** is a vertical slot in an outer wall that takes a 1U plate. The plate drops in from the top and shows through a window in the wall. [Add label slots](./walls#add-label-slots) gives the steps and the limits. The plates for the slots appear in a plate list with the same export buttons.
 
 ## Add sockets on cutout bins
 
@@ -100,6 +101,32 @@ A bin with custom cutouts can carry label sockets too, right beside each cutout.
 4. Set the <Ui k="binDesigner.cutoutSocket.width" />, the <Ui k="binDesigner.cutoutSocket.icon" /> and the <Ui k="binDesigner.cutoutSocket.orientation" />.
 
 The socket goes at the label position beside the cutout, in solid material. If there's no room, the panel tells you to move the cutout or try a different position. One bin holds up to 32 sockets, and all copies in a repeat share one plate. With no cutout selected, the board settings show the plate count, the plate fit and the export buttons. For the other label options of a cutout, see [Add a label](../cutouts/basics#add-a-label).
+
+## When it goes wrong
+
+### Label sockets won't turn on
+
+Make the bin wider. Even the smallest plate, 1U at 36 mm wide, must fit on a tab.
+
+Sockets come only in the standard plate widths. When no standard plate fits, even one plate across the whole bin, you can't select <Ui k="binDesigner.tabMode.socket" />.
+
+### The plates fall out, or won't click in
+
+Print the fit card, and type the value of the best socket into <Ui k="binDesigner.plateFitOffset" />. A negative value makes the fit tighter, and a positive value makes it looser.
+
+Every printer prints a little larger or smaller than the model. Each design keeps its own offset. See [Tune the fit for your printer](#tune-the-fit-for-your-printer).
+
+### No socket shows beside a cutout
+
+Read the message in the label settings of the cutout. Move the cutout, or try another label position or <Ui k="binDesigner.cutoutSocket.orientation" />. If the fill is too shallow, lower <Ui k="binDesigner.cutouts.topOffset" /> or make the bin taller.
+
+A socket needs solid material beside the cutout. One bin holds up to 32 sockets, and the message tells you when you go past that limit.
+
+### The plates are not in the bin file
+
+Download them on their own. In the export dialog, use the second download button. Or click <Ui k="binDesigner.plates.export" /> in the label section.
+
+The plates are separate prints, so the bin file never holds them. See [Troubleshooting prints](../printing/troubleshooting#the-label-plates-are-not-in-the-bin-file).
 
 ## Next steps
 

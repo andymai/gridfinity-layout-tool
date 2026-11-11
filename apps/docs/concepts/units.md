@@ -10,6 +10,9 @@ sources:
   - src/features/bin-designer/components/panel/PhysicalUnitsSection/
   - src/core/store/halfGridMode.ts
   - src/shared/generation/gridPitch.ts
+  - src/shared/utils/drawerCeiling.ts
+  - src/features/bin-designer/hooks/useSyncPhysicalUnits.ts
+  - src/features/bin-designer/store/slices/persistenceSlice.ts
 ---
 
 # Units and sizes
@@ -18,9 +21,9 @@ Will that stack of bins fit under the drawer above it? Gridfinity measures acros
 
 ## Grid units and height units
 
-A grid unit is one square cell of the grid. On a standard Gridfinity grid, one grid unit is 42 mm wide and 42 mm deep. A bin of 2 × 3 grid units covers 84 mm × 126 mm of the drawer.
+A **grid unit** is one square cell of the grid. On a standard Gridfinity grid, one grid unit is 42 mm wide and 42 mm deep. A bin of 2 × 3 grid units covers 84 mm × 126 mm of the drawer.
 
-A height unit is 7 mm of height. The count starts at the bottom of the feet, so the first height unit holds the feet and the floor. The room for your items starts above it.
+A **height unit** is 7 mm of height. The count starts at the bottom of the feet, so the first height unit holds the feet and the floor. The room for your items starts above it.
 
 | Size                                   | Millimeters on a standard grid |
 | -------------------------------------- | ------------------------------ |
@@ -97,6 +100,24 @@ You don't have to do this math yourself. Two tools do it for you:
 ::: tip
 A layout with <Ui k="baseplate.lowProfileBase" /> turned on in the baseplate generator uses feet that are 1.1 mm shorter. Each bin then gets 1.1 mm more room inside at the same height.
 :::
+
+## When it goes wrong
+
+### Your stack is taller than its height units
+
+Measure the inside height of your drawer, and add it with <Ui k="drawerDims.addMeasured" /> in the <Ui k="sidebar.gridSize" /> group. Then open <Ui k="stackSolver.title" /> to see the bin heights that really fit.
+
+Height units count only the bodies of the bins. The printed stack also has the 4.4 mm stacking lip on top, and a plate with magnet holes lifts every bin. The table in [How heights add up](#how-heights-add-up) shows each part.
+
+### Half-grid mode doesn't change the feet
+
+Turn on <Ui k="binDesigner.halfSockets" /> instead. In the bin designer, it's in the <Ui k="binDesigner.group.base" /> group, under <Ui k="binDesigner.base.section.feet" />. Half-grid mode changes only the sizes and the positions of bins. The pattern of the feet stays the same.
+
+### A new bin doesn't fit the plate that you printed before
+
+Open the layout of that drawer, then open the bin in the bin designer. Under <Ui k="common.physicalUnits" /> in the <Ui k="binDesigner.group.finishing" /> group, set <Ui k="binDesigner.gridUnit" /> to a larger value. Then set it back to the value of your drawer. Do the same for <Ui k="binDesigner.heightUnit" />. Then export the bin again.
+
+A saved design keeps the grid unit and the height unit that it had when you saved it. <Ui k="common.physicalUnits" /> shows the units of the open layout, not of the design. The bin designer copies them into the open design when you change a unit. See [A bin is too tight in the plate](../printing/troubleshooting#a-bin-is-too-tight-in-the-plate).
 
 ## Next steps
 

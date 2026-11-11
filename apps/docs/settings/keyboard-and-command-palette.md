@@ -8,11 +8,12 @@ sources:
   - src/design-system/Tabs/Tabs.tsx
   - src/shell/Modals/SettingsModal/TabNavigation/TabNavigation.tsx
   - src/features/bin-designer/components/ParameterPanel/DesignerSearchBar/DesignerSearchBar.tsx
+  - src/App.tsx
 ---
 
 # Keyboard and command palette
 
-Do you know what you want to do, but not where the button is? Press <kbd>Ctrl</kbd>+<kbd>K</kbd> and type it. The command palette of the Gridfinity Layout Tool finds any layout command from part of its name. With the palette and the keyboard controls on this page, you can plan a drawer with very few mouse clicks. For every shortcut, see [Keyboard shortcuts](../reference/shortcuts).
+Do you know what you want to do, but not where the button is? Press <kbd>Ctrl</kbd>+<kbd>K</kbd> and type it. The **command palette** of the Gridfinity Layout Tool finds any layout command from part of its name. With the palette and the keyboard controls on this page, you can plan a drawer with very few mouse clicks. For every shortcut, see [Keyboard shortcuts](../reference/shortcuts).
 
 ## Open the command palette
 
@@ -73,6 +74,20 @@ Most controls in the Layout Tool work from the keyboard. Press <kbd>Tab</kbd> to
 In the layout editor, a <Ui k="app.skipToGridEditor" /> link shows when it gets the keyboard focus. Press <kbd>Enter</kbd> on it to jump to the grid. On the grid, the arrow keys move the selected bins. See [Keyboard shortcuts](../reference/shortcuts) for all grid keys.
 
 In the bin designer, the search box at the top of the panel finds a setting by name. Type a word, pick a match with <kbd>↑</kbd> and <kbd>↓</kbd>, and press <kbd>Enter</kbd> to jump to that setting. <kbd>Esc</kbd> clears the search.
+
+## When it goes wrong
+
+### The command palette doesn't open
+
+Click an empty part of the grid, then press the keys again. Not in the layout editor? Click <Ui k="toolSwitcher.layout" /> first.
+
+The palette ignores <kbd>Ctrl</kbd>+<kbd>K</kbd> while a text field has the focus. It also doesn't open in the other tools.
+
+### A command is gray, and you can't select it
+
+Select the bins that the command works on, then open the palette again.
+
+Most bin commands need a selection. <Ui k="commandPalette.duplicateSelected" /> needs one bin or more. The align commands and <Ui k="commandPalette.matchHeight" /> need two or more. <Ui k="commandPalette.rotateBin" /> needs exactly one bin, with no size lock.
 
 ## Next steps
 

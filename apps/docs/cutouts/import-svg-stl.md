@@ -7,6 +7,7 @@ sources:
   - src/features/bin-designer/components/panel/CutoutsSection/svgExport/
   - src/features/bin-designer/components/panel/CutoutsSection/ToolThicknessPrompt.tsx
   - src/shared/utils/svg/svgViewBox.ts
+  - src/shared/utils/svg/svgLength.ts
   - src/features/generation/worker/generators/meshImport.ts
   - src/shared/generation/meshAsset.ts
 ---
@@ -32,7 +33,7 @@ Set the document units to millimeters in your vector app before you save the SVG
 
 ### Shapes with holes
 
-A path with an inner ring, such as the letter O or the ring of a spanner, comes in as one cutout with an island. The island is plastic that stays at full height inside the cutout. See [Trace a photo](./photo-trace#keep-holes-as-islands) for more about islands.
+A path with an inner ring, such as the letter O or the ring of a spanner, comes in as one cutout with an island. The **island** is plastic that stays at full height inside the cutout. See [Trace a photo](./photo-trace#keep-holes-as-islands) for more about islands.
 
 ### Set the tool thickness
 
@@ -48,7 +49,7 @@ Not sure yet? Click <Ui k="binDesigner.cutouts.depthPrompt.skip" /> to keep the 
 
 ## Cut an STL shape into a bin
 
-An STL imprint is a cutout with the full 3D shape of a model, such as a model of the tool itself. The tool then drops into a pocket that matches it.
+An **STL imprint** is a cutout with the full 3D shape of a model, such as a model of the tool itself. The tool then drops into a pocket that matches it.
 
 1. Open the cutout editor.
 2. Click <Ui k="binDesigner.cutouts.importStl" /> (or press <kbd>J</kbd>) and select the STL file.
@@ -89,6 +90,30 @@ Want to clean up a traced tool in a vector app? Send it out as an SVG.
 The file uses millimeters, so it opens at real size in a vector app. Rectangles and circles stay rectangles and circles. Paths keep their curves, and islands come with them. The outline is the size that you drew, with no clearance.
 
 When you finish, import the file again with <Ui k="binDesigner.cutouts.importSvg" />. It comes back at the same size.
+
+## When it goes wrong
+
+### The shapes come in too big or too small
+
+In your vector app, set the document units to millimeters, and save the SVG again. Then import the new file.
+
+The Layout Tool reads the size of the file in mm, cm, inches, points or picas. Pixels don't count as a real size. So in a file in pixels, or in a file with no unit, one unit becomes 1 mm.
+
+### The import finds no shapes
+
+In your vector app, change the text to paths, and save the SVG again. A placed image can't become a cutout, so draw its outline as a path.
+
+The Layout Tool reads only rectangles, circles, ellipses, polygons, polylines and paths. A file with only text or a placed image has nothing to cut, so a message tells you that it found no supported shapes.
+
+### The STL file won't import
+
+Read the message, and do what it asks:
+
+| Message says                     | What to do                                                                 |
+| -------------------------------- | -------------------------------------------------------------------------- |
+| The mesh isn't watertight        | Repair the model in your slicer, export it again, and import the new file. |
+| The file is too large            | Make the file smaller than 50 MB, for example with fewer triangles.        |
+| The triangle limit of the design | Remove an STL imprint from the design to free some triangles.              |
 
 ## Next steps
 

@@ -12,7 +12,7 @@ sources:
 
 # Stacking
 
-Gridfinity bins stack. The feet of one bin sit in the stacking lip of the bin below, so a deep drawer can hold more than one level. In the Gridfinity Layout Tool, you can shape that lip and lock small bins onto big ones. You can also see how tall a stack gets before you print it.
+Gridfinity bins stack. The feet of one bin sit in the **stacking lip** of the bin below, so a deep drawer can hold more than one level. In the Gridfinity Layout Tool, you can shape that lip and lock small bins onto big ones. You can also see how tall a stack gets before you print it.
 
 The stacking controls are in the <Ui k="binDesigner.base.section.stacking" /> section of the <Ui k="binDesigner.group.base" /> group, just under the body type tiles. The <Ui k="assembledHeight.title" /> readout is in the <Ui k="binDesigner.group.shape" /> group. It sits under <Ui k="binDesigner.dimensions" />.
 
@@ -101,6 +101,26 @@ The readout uses the baseplate of the active layout, which includes a low-profil
 Bins with the same number of height units come out the same height. A spacer counts like a bin of the same size, so a 2-unit spacer under a 2-unit bin reaches the top of a 4-unit bin.
 
 <Screenshot id="designer-stacking-assembled-height" alt="The Assembled height readout open, with the baseplate, bin and stacking lip rows and the drawer fit line." spec="Bin designer opened from a layout that has a measured drawer height, bin 2 x 2 x 6 with the stacking lip on. In the Shape group, click Assembled height to open the rows. Show the Dimensions section with the open readout and the fit line. Crop to the panel." />
+
+## When it goes wrong
+
+### The bin is taller than the drawer
+
+Click <Ui k="assembledHeight.title" /> to see which part adds the height. Then lower <Ui k="common.height" /> by one unit, or make the pull tab or the lid lower.
+
+The readout measures the bin on its baseplate, with its lip, pull tab and lid. The line under it compares that height with the measured height of your drawer.
+
+### The top of the lip prints rough or peels off
+
+Set <Ui k="binDesigner.base.lipTip" /> to <Ui k="binDesigner.base.lipTip.round" />. For the widest top line, pick <Ui k="binDesigner.base.lipTip.flat" />. Bins stack the same way with every shape.
+
+The standard lip ends in a point. Its top layer prints as a thin line with nothing under it, so it can scar or lift. See [Make the lip print cleanly](#make-the-lip-print-cleanly).
+
+### A small bin slides around on top of a big one
+
+Turn on <Ui k="binDesigner.base.lipNotches" /> on the big bin. A small ridge at each grid line then holds the small bin on one cell.
+
+Can't turn the notches on? The note under the switch names the cause: a lid, a custom shape, an overhang, a <Ui k="binDesigner.footLattice.half" /> foot lattice, or the bin size. See [Keep smaller bins in place on bigger ones](#keep-smaller-bins-in-place-on-bigger-ones).
 
 ## Next steps
 
