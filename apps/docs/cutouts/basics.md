@@ -26,7 +26,7 @@ The <Ui k="binDesigner.cutoutEditor.title" /> opens beside the 3D preview. The p
 The editor needs a desktop screen. On a phone or a tablet, you can scan a tool into the bin, but you move and change the cutouts on a computer.
 :::
 
-<Screenshot id="cutouts-basics-editor" alt="The cutout editor with a board of three cutouts and the Properties tab open." spec="Bin designer on desktop, 3x2 bin, Custom cutouts selected, Cut editor open. Draw one rectangle, one hexagon and one slot. Select the hexagon so the Properties tab shows Transform, Shape and Fit and insertion. Crop to the editor header, toolbar, board and Properties panel." />
+<Screenshot id="cutouts-basics-editor" alt="The cutout editor with a board of three cutouts and the Properties tab open." spec="Bin designer on desktop, 3x2 bin, Custom cutouts selected, Cut editor open. Draw one rectangle, one hexagon and one slot. Select the hexagon so the Properties tab shows Transform and Shape. Crop to the editor header, toolbar, board and Properties panel." />
 
 ## Draw a cutout
 
@@ -104,7 +104,7 @@ Some tools sit deeper at one end, such as a screwdriver with a thick handle. Giv
 
 Side A keeps the depth of the cutout. A split isn't available in a group, with a lean, or with a <Ui k="binDesigner.cutouts.depthMode.through" /> cut.
 
-<Screenshot id="cutouts-basics-split" alt="A slot cutout with a split line and the sides marked A and B." spec="Cut editor with one 120 x 25 mm slot. Use Split into two depths and draw a line across the slot at one third of its length. Side B depth 12 mm. Show the board with the A and B marks and the Shape section of Properties. Crop to the board and the Shape section." />
+<Screenshot id="cutouts-basics-split" alt="Clicking Split into two depths, then dragging a line across a slot at one third of its length. The board marks the sides A and B. Side B depth is set to 12 mm, and the 3D preview shows the deeper end." spec="Cut editor, 3 x 1 bin, 5 height units, one 110 x 24 mm slot. In close-up, click Split into two depths, drag a line across the slot at one third of its length, and set Side B depth to 12 mm. End on the 3D preview." />
 
 ## Add a label
 
