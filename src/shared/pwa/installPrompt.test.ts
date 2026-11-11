@@ -11,16 +11,16 @@ import {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-function fireInstallAvailable(outcome: 'accepted' | 'dismissed' = 'accepted'): {
-  prompt: ReturnType<typeof vi.fn>;
-} {
+function fireInstallAvailable(
+  outcome: 'accepted' | 'dismissed' = 'accepted'
+): ReturnType<typeof vi.fn> {
   const prompt = vi.fn().mockResolvedValue(undefined);
   const event = Object.assign(new Event('beforeinstallprompt'), {
     prompt,
     userChoice: Promise.resolve({ outcome, platform: 'web' }),
   });
   window.dispatchEvent(event);
-  return { prompt };
+  return prompt;
 }
 
 beforeAll(() => {
@@ -46,7 +46,7 @@ describe('install prompt', () => {
   });
 
   it('opens the dialog once and returns the outcome', async () => {
-    const { prompt } = fireInstallAvailable('dismissed');
+    const prompt = fireInstallAvailable('dismissed');
 
     await expect(promptInstall()).resolves.toBe('dismissed');
 

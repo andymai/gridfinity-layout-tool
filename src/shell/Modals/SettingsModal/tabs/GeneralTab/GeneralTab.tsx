@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import type { ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import { Button, Switch } from '@/design-system';
@@ -25,9 +26,7 @@ function InstallAppSection() {
   );
   const installed = isInstalledDisplayMode(displayMode);
 
-  let body = (
-    <p className="text-sm text-content-secondary">{t('settings.general.installAppManual')}</p>
-  );
+  let body: ReactNode;
   if (installed) {
     body = (
       <p className="text-sm text-content-secondary">{t('settings.general.installAppInstalled')}</p>
@@ -37,6 +36,10 @@ function InstallAppSection() {
       <Button variant="secondary" onClick={() => void install()}>
         {t('pwaInstall.install')}
       </Button>
+    );
+  } else {
+    body = (
+      <p className="text-sm text-content-secondary">{t('settings.general.installAppManual')}</p>
     );
   }
 
