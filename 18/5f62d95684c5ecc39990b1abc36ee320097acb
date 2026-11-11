@@ -1,0 +1,80 @@
+apps/docs/media/concepts-multi-color-zones.json
+  s_1cc363bb3cc76d::t_659f514311d009 3-4
+  s_1cc363bb3cc76d::t_e88e3f95995f40 1-2,5
+apps/docs/media/concepts-print-bed-split-bin.json
+  s_1cc363bb3cc76d::t_b349f4c0b668cd 1-2,5
+  s_1cc363bb3cc76d::t_fe2b7f619bd04e 3-4
+apps/docs/concepts/print-bed-fit.md
+  s_1cc363bb3cc76d::t_0748e74a20ef70 62
+apps/docs/media/concepts-layouts-exploded.json
+  s_1cc363bb3cc76d::t_31ef9d3e00d8b3 1-2,5
+  s_1cc363bb3cc76d::t_471a6190f2eff0 3-4
+scripts/docs-capture/shots/concepts.ts
+  s_1cc363bb3cc76d::t_90e46f612b61cd 428-429
+  s_1cc363bb3cc76d::t_959a7e768d1d9a 536-539
+  s_1cc363bb3cc76d::t_752bd299a499d1 106-109
+  s_1cc363bb3cc76d::t_e88e3f95995f40 113-116,121-131,134-152,155-165,167-168,170-178,581
+  s_1cc363bb3cc76d::t_659f514311d009 132-133,153-154,169
+  s_1cc363bb3cc76d::t_fccda4551e2cc3 104
+  s_1cc363bb3cc76d::t_fe2b7f619bd04e 261-281,305,308
+  s_1cc363bb3cc76d::t_de976a1b59c2a1 6,554-575
+  s_1cc363bb3cc76d::t_99335d5e289565 188-201,207,227,229,242,245,249,253
+  s_1cc363bb3cc76d::t_5107274bb6b75c 10-11,450-493,495,497,501-513,516-531,551-553,586
+  s_1cc363bb3cc76d::t_003576598cf36e 309,311,313-318,320,322-323,325
+  s_1cc363bb3cc76d::t_1071df6ce4530f 4,179-187,202-206,208-224,230-236,238-241,254-255,257-260,582
+  s_1cc363bb3cc76d::t_8101aea801c7d7 386-387,411-412,422,431-434,437,439-440,444-446
+  s_1cc363bb3cc76d::t_c7996ac0ea6d0a 426,430,435-436
+  s_1cc363bb3cc76d::t_8efb4403963fa1 427
+  s_1cc363bb3cc76d::t_d9e00d54e90f7b 2,494,498-500,541
+  s_1cc363bb3cc76d::t_5591185e2bd8e1 5,243-244,246-248,250-252,256
+  s_1cc363bb3cc76d::t_c248ce7e986fe1 441-443
+  s_1cc363bb3cc76d::t_d52d1bda588043 117-120,166,225-226,405-406,410
+  s_1cc363bb3cc76d::t_3ee0e643bd4d31 496,532-533
+  s_1cc363bb3cc76d::t_6a12ec3257419f 514-515
+  s_1cc363bb3cc76d::t_46b18034089262 18-20,22-29,31,36-37,39-58,76,82,105,399-402,423-424
+  s_1cc363bb3cc76d::t_fdc48e3b2d1002 228,237
+  s_1cc363bb3cc76d::t_a666c0145210f5 534-535,540,542-550
+  s_1cc363bb3cc76d::t_c76a3e6e16a14a 1,3,7-8,13-14,330-342,344-385,388-398,403-404,407-409,413-421,425,438,447-449
+  s_1cc363bb3cc76d::t_b349f4c0b668cd 282-304,306-307,310,312,319,321,324,326-329,583
+  s_1cc363bb3cc76d::t_ceb3792247ad4d 9,15-17,21,30,32-35,38,59-75,77-81,83-103,110-112,578-580,584-585,587-588
+  s_1cc363bb3cc76d::t_bf69753bbd06f0 343
+  s_1cc363bb3cc76d::t_a04dd1f95488a3 12
+apps/docs/media/concepts-bin-anatomy-overview.json
+  s_1cc363bb3cc76d::t_ceb3792247ad4d 1-2,5
+  s_1cc363bb3cc76d::t_752bd299a499d1 3-4
+apps/docs/concepts/layouts-layers-stash.md
+  s_1cc363bb3cc76d::t_eacf18b9922dfd 82
+apps/docs/introduction/gridfinity-basics.md
+  s_1cc363bb3cc76d::t_e0f0db8a5cc8df 36
+apps/docs/media/concepts-units-physical-units.json
+  s_1cc363bb3cc76d::t_ae6f1fd7488aa6 1-5
+apps/docs/media/concepts-saved-designs-layout-labels.json
+  s_1cc363bb3cc76d::t_5107274bb6b75c 1-2,5
+  s_1cc363bb3cc76d::t_a666c0145210f5 3-4
+apps/docs/media/concepts-layouts-layer-stack.json
+  s_1cc363bb3cc76d::t_31ef9d3e00d8b3 1-3,5
+  s_1cc363bb3cc76d::t_c06899ee5ef58c 4
+apps/docs/media/introduction-gridfinity-basics-parts.json
+  s_1cc363bb3cc76d::t_ceb3792247ad4d 1-2,5
+  s_1cc363bb3cc76d::t_11df25ca6c55fc 3-4
+apps/docs/media/concepts-preview-draft-exact.json
+  s_1cc363bb3cc76d::t_1071df6ce4530f 1-5
+apps/docs/concepts/preview-and-export.md
+  s_1cc363bb3cc76d::t_f2325a6c942548 49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "185f62d95684c5ecc39990b1abc36ee320097acb",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
