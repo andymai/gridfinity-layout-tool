@@ -6,13 +6,9 @@ import {
 } from '@/shared/pwa/displayMode';
 import { markFeatureUsed } from './eventsPerson';
 import { isFirstSession, loadAnalyticsData, saveAnalyticsData } from './identity';
-import { getPosthogInstance, isAnalyticsActive } from './init';
+import { isAnalyticsActive } from './init';
 import { trackEvent } from './trackEvent';
 
-/**
- * Track PWA app installation via the `appinstalled` browser event.
- * Call once from the app shell — the listener fires at most once per install.
- */
 export function listenForPwaInstall(): void {
   try {
     window.addEventListener(
@@ -63,14 +59,10 @@ export function noteCurrentDisplayMode(): void {
   }
 }
 
-/** `init.ts` registers the first `display_mode` value. */
 export function listenForDisplayModeChanges(): void {
   try {
     noteCurrentDisplayMode();
-    onDisplayModeChange((mode) => {
-      getPosthogInstance()?.register_for_session({ display_mode: mode });
-      noteInstalledLaunch(mode);
-    });
+    onDisplayModeChange(noteInstalledLaunch);
   } catch {
     // Fail silently
   }
