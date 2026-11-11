@@ -5,8 +5,8 @@
 
 import type { PostHog } from 'posthog-js';
 import { useSettingsStore } from '@/core/store/settings';
-import { getStableUserId, syncAnalyticsDataAcrossWindows } from './identity';
 import { getDisplayMode } from '@/shared/pwa/displayMode';
+import { getStableUserId, syncAnalyticsDataAcrossWindows } from './identity';
 import { filterExceptionForPosthog } from './errorFilters';
 
 // INITIALIZATION (LAZY LOADED)
@@ -81,20 +81,22 @@ export function initAnalytics(): void {
         // of the shape filterExceptionForPosthog reads.
         before_send: (event) => {
           const kept = filterExceptionForPosthog(event);
-          if (kept?.event === '$exception' && getExceptionContext) {
+          if (!kept) return null;
+          if (kept.event === '$exception' && getExceptionContext) {
             // Explicit context wins: `captureException` callers pass details
             // about the specific failure that the ambient layout can't know.
             kept.properties = { ...getExceptionContext(), ...kept.properties };
           }
+          // Per event, not `register_for_session`: PostHog clears session
+          // properties when its session rotates after 30 idle minutes, and an
+          // installed app window often stays open longer. Not `register`
+          // either: a tab and the app window share its localStorage. Set last,
+          // so it beats a stale value an older build registered in this tab.
+          kept.properties = { ...kept.properties, display_mode: getDisplayMode() };
           return kept as typeof event;
         },
       });
       posthogInstance = posthog;
-
-      // Session scope (sessionStorage) on purpose: a browser tab and the
-      // installed app window can be open at once, and `register` would let
-      // one overwrite the other through shared localStorage.
-      posthog.register_for_session({ display_mode: getDisplayMode() });
 
       // Fire a single pageview on app load
       posthog.capture('$pageview');

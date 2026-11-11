@@ -18,6 +18,12 @@ const PresenceAvatars = lazyWithRetry(() =>
   import('@/shell/Collab/PresenceAvatars').then(namedExport('PresenceAvatars'))
 );
 
+const SAVE_STATUS_LABEL_KEYS = {
+  saving: 'header.saving',
+  saved: 'header.saved',
+  error: 'header.saveFailed',
+} as const;
+
 interface MobileHeaderProps {
   onMenuClick: () => void;
   saveStatus: SaveStatus;
@@ -190,7 +196,7 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
               className="flex items-center justify-center w-7 h-7"
               role="status"
               aria-live="polite"
-              aria-label={saveStatus === 'saving' ? t('header.saving') : t('header.saved')}
+              aria-label={t(SAVE_STATUS_LABEL_KEYS[saveStatus])}
             >
               {saveStatus === 'saving' ? (
                 <svg
@@ -215,13 +221,13 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
                 </svg>
               ) : (
                 <svg
-                  className="w-3.5 h-3.5 text-success"
+                  className={`w-3.5 h-3.5 ${saveStatus === 'error' ? 'text-error' : 'text-success'}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                   aria-hidden="true"
                 >
-                  {ICON_PATHS.check.map((d) => (
+                  {(saveStatus === 'error' ? ICON_PATHS.close : ICON_PATHS.check).map((d) => (
                     <path
                       key={d}
                       strokeLinecap="round"

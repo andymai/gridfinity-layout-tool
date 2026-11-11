@@ -21,16 +21,14 @@ const state = vi.hoisted((): TestState => ({
   onChange: null,
 }));
 
-const { trackEvent, markFeatureUsed, registerForSession } = vi.hoisted(() => ({
+const { trackEvent, markFeatureUsed } = vi.hoisted(() => ({
   trackEvent: vi.fn(),
   markFeatureUsed: vi.fn(),
-  registerForSession: vi.fn(),
 }));
 
 vi.mock('./trackEvent', () => ({ trackEvent }));
 vi.mock('./eventsPerson', () => ({ markFeatureUsed }));
 vi.mock('./init', () => ({
-  getPosthogInstance: () => ({ register_for_session: registerForSession }),
   isAnalyticsActive: () => state.analyticsActive,
 }));
 vi.mock('@/shared/pwa/displayMode', async (importOriginal) => ({
@@ -125,12 +123,11 @@ describe('listenForDisplayModeChanges', () => {
     expect(markFeatureUsed).not.toHaveBeenCalled();
   });
 
-  it('updates the session property when the tab moves into the app window', () => {
+  it('flags the launch when the tab moves into the app window', () => {
     listenForDisplayModeChanges();
 
     state.onChange?.('standalone');
 
-    expect(registerForSession).toHaveBeenCalledWith({ display_mode: 'standalone' });
     expect(markFeatureUsed).toHaveBeenCalledWith('pwa_standalone');
   });
 });
