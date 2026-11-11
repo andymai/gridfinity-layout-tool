@@ -1,0 +1,44 @@
+apps/docs/designer/lids.md
+  h_b755e1950659f4 27
+apps/docs/designer/size-and-shape.md
+  h_b755e1950659f4 72
+apps/docs/designer/special-bins.md
+  h_b755e1950659f4 39,68
+apps/docs/designer/stacking.md
+  h_b755e1950659f4 52
+apps/docs/designer/walls.md
+  h_b755e1950659f4 73,143
+apps/docs/media/designer-lids-attachment.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-save-and-reuse-library.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-size-and-shape-custom-shape.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-size-and-shape-dimensions.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-special-bins-knife-block.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-special-bins-slant.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-stacking-assembled-height.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-stacking-top-rim.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-walls-drainage.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-walls-pattern.json
+  h_b755e1950659f4 1-5
+scripts/docs-capture/shots/designerDetails.ts
+  h_b755e1950659f4 1-9,11-769
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d6ed47ec764007af46a2212df4b023b07083ffa5",
+  "prompts": {},
+  "humans": {
+    "h_b755e1950659f4": {
+      "author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
