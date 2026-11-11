@@ -1,0 +1,243 @@
+apps/docs/baseplates/basics.md
+  s_1cc363bb3cc76d::t_b56e91ab144318 16,20,22,24,26,33,39,41,43,45,49,53,55,57,59,61,68,71,74,80,84,86,88,92,98
+  s_1cc363bb3cc76d::t_2164f81038afa7 46
+  s_1cc363bb3cc76d::t_06a31e080f974b 76-79
+  s_1cc363bb3cc76d::t_f8f263882a964b 75
+apps/docs/printing/fit-and-tolerances.md
+  s_1cc363bb3cc76d::t_47f4692e074c15 52-58,60-63,71-75
+  s_1cc363bb3cc76d::t_e1c7817cd31d98 12,17,21,23,27,29,36,40,48,59,69,76,84,89
+  s_1cc363bb3cc76d::t_1c9f1f8a9d0cb1 70
+apps/docs/printing/slicers.md
+  s_1cc363bb3cc76d::t_2164f81038afa7 34
+  s_1cc363bb3cc76d::t_a16f84e53406ae 16,20,32,44,46,50,56-58,62,64,81,85,89,103
+apps/docs/baseplates/magnets-and-screws.md
+  s_1cc363bb3cc76d::t_2996bedc0d6701 26
+  s_1cc363bb3cc76d::t_a069f12083571e 16
+  s_1cc363bb3cc76d::t_eab71af7ca0588 36
+  s_1cc363bb3cc76d::t_cbe7722ea83684 11
+  s_1cc363bb3cc76d::t_08214665c303f5 20,33-34,38-40,44,49,53,60-61,64,72,74,78,90,96,106,108
+apps/docs/reference/shortcuts.md
+  s_1cc363bb3cc76d::t_cb9b94cb588d40 17
+  s_1cc363bb3cc76d::t_903f3c31345b6c 20,25
+apps/docs/designer/stacking.md
+  s_1cc363bb3cc76d::t_98f45a9a25ad76 21,25,41,50,52,56,74,86,88,103
+  s_1cc363bb3cc76d::t_31f36010e46ceb 15,17
+  s_1cc363bb3cc76d::t_80f0ab7a4d0272 31,90-97
+apps/docs/baseplates/odd-shaped-drawers.md
+  s_1cc363bb3cc76d::t_8d2f8fbaaa8703 15,21-22,28,30,32,34,40,43,46,52,55,59,71,74,77
+apps/docs/cutouts/import-svg-stl.md
+  s_1cc363bb3cc76d::t_82ad1835396733 16,21,23,27,39,41-43,45-47,51,54-56,62,68,72,80,84-85,87,91
+apps/docs/getting-started/first-drawer.md
+  s_1cc363bb3cc76d::t_f61ba42ba8af16 17-19,23,27,29,33-37,43,45,48,51,55,61,63-66,68,78,82,95,97-98,100-101,103,106,109
+  s_1cc363bb3cc76d::t_c0ac05aed10ce6 99
+  s_1cc363bb3cc76d::t_c7a77e829cc2d4 41
+  s_1cc363bb3cc76d::t_a70455a7529ec1 110
+apps/docs/layouts/categories.md
+  s_1cc363bb3cc76d::t_ed758c9641f398 21,40,44,46-47,53,61,65,69
+  s_1cc363bb3cc76d::t_2ecc071e299fbc 15
+apps/docs/printing/file-formats.md
+  s_1cc363bb3cc76d::t_5d945c8fe9a4af 16,20-24,34,36,42,50,61,73,77,79,83
+apps/docs/introduction/your-data.md
+  s_1cc363bb3cc76d::t_b05fd154d3d339 16,20,27,29,41,49,51,62-64,70-76,80,88
+apps/docs/concepts/units.md
+  s_1cc363bb3cc76d::t_d27327da284a28 17,23,35,39,41-45,47-51,59,67,69,71,74,90,92
+apps/docs/settings/spacemouse.md
+  s_1cc363bb3cc76d::t_1bf552a492d839 13,20,22,28,35,37,43-48,50-58,71,88
+apps/docs/layouts/drawer-setup.md
+  s_1cc363bb3cc76d::t_76cd929ba0837a 17
+  s_1cc363bb3cc76d::t_22e2e1dba1557c 21,29,32,35,37,39-42,46,55,57,61,63,67,72,74,78-79,81,84,89,93,95,100-101,103
+  s_1cc363bb3cc76d::t_83201a76fae9ec 50
+apps/docs/concepts/print-bed-fit.md
+  s_1cc363bb3cc76d::t_b8ae0286402e67 16,20,22,47,49,54,60,66,68
+  s_1cc363bb3cc76d::t_baf8a119b4f427 41,43
+apps/docs/cutouts/basics.md
+  s_1cc363bb3cc76d::t_4c6c9ef0ae14a0 15,20-21,23,45,51,53,65,79,89,94,98,105,111,116
+  s_1cc363bb3cc76d::t_1cd437cd5f132e 33,85
+apps/docs/baseplates/eco-and-stack-printing.md
+  s_1cc363bb3cc76d::t_2164f81038afa7 61
+  s_1cc363bb3cc76d::t_322fb0dc6d96ed 16,20,28,30-31,41,53,63,67,69,73,75
+apps/docs/baseplates/splitting.md
+  s_1cc363bb3cc76d::t_2164f81038afa7 17
+  s_1cc363bb3cc76d::t_fd5cc31494d385 22-23,25,29,31,33,35,41,44,50,55,65,67,70-71,74,76,80,82-84,88,90,94,100
+apps/docs/designer/compartments.md
+  s_1cc363bb3cc76d::t_cadfbe420cae6a 18,27,35,42,46-47,49,51,62,70,77,83,87,91,100,104,108-109,119-121
+  s_1cc363bb3cc76d::t_8a2cb28cf0cb05 16
+apps/docs/layouts/multi-select.md
+  s_1cc363bb3cc76d::t_20b556a86a0bed 17,39,43,62,67,77-79,81,90,94,98,101
+  s_1cc363bb3cc76d::t_08ebf7c32fc21e 96-97,99
+  s_1cc363bb3cc76d::t_078a35deb88025 73
+apps/docs/concepts/multi-color.md
+  s_1cc363bb3cc76d::t_baf8a119b4f427 57
+  s_1cc363bb3cc76d::t_5bd960db72fa0b 7,17,39,55,65,68-70,73-79,85
+apps/docs/settings/keyboard-and-command-palette.md
+  s_1cc363bb3cc76d::t_bd8e3eb965db35 15,20,23,29,37,41,54,56,60,64,73,75
+apps/docs/index.md
+  s_1cc363bb3cc76d::t_7214f12a26b4d0 2,19,22,25,28,31,34
+  s_1cc363bb3cc76d::t_acbc6685e99eaf 8
+apps/docs/sharing/share-links.md
+  s_1cc363bb3cc76d::t_acbc6685e99eaf 15,24-27,78-82,103
+  s_1cc363bb3cc76d::t_a1fe6cb69403cb 20-22,29-31,35,38,43,47,49,57,61,63,65-66,68,70,76,84,87,92,95,101,107
+  s_1cc363bb3cc76d::t_4879c1e3e5c7fb 45
+  s_1cc363bb3cc76d::t_e13c60507d0ddd 28
+apps/docs/designer/walls.md
+  s_1cc363bb3cc76d::t_c7a77e829cc2d4 26
+  s_1cc363bb3cc76d::t_66d5904309d6f6 16,18,20-22,39,41-42,46-54,56,60,72,76,78-87,93-96,104-105,107-117,123,133,135,142
+apps/docs/reference/glossary.md
+  s_1cc363bb3cc76d::t_8a59d0258018f6 15,51
+apps/docs/printing/estimates.md
+  s_1cc363bb3cc76d::t_6e38b5bf279bcf 40
+  s_1cc363bb3cc76d::t_52dba4ac0cd868 15,38,49,51,55,57,59,62,67
+  s_1cc363bb3cc76d::t_edd741290f2a32 39
+apps/docs/designer/save-and-reuse.md
+  s_1cc363bb3cc76d::t_6f9e8521ac83aa 27-34,63-64,66,113
+  s_1cc363bb3cc76d::t_9d60d5591588ef 17,21,23,25,42,48,50,54,58,60-61,65,68,74,83-88,91,96,111,115
+  s_1cc363bb3cc76d::t_0a1ad97114998a 26,112
+apps/docs/reference/faq.md
+  s_1cc363bb3cc76d::t_b24a787f267624 11,16,22,26,30,36,40,44,48,58,62,66,76,80,90,94,98
+apps/docs/designer/special-bins.md
+  s_1cc363bb3cc76d::t_1ba636a4f61f32 17,21,23-27,29,37,43,50,52,56,58-60,62,64,66,68,72,74,76-78,80,82-87,89,91,95,99
+apps/docs/settings/offline.md
+  s_1cc363bb3cc76d::t_f5e58bc6a57fc0 14,18,24,26,33,39,42-43,54,56-61,63,67,73,75,77
+apps/docs/reference/self-hosting.md
+  s_1cc363bb3cc76d::t_5f2485cadf2d9a 15,17,31,60,85,96,102,111
+apps/docs/designer/getting-things-out.md
+  s_1cc363bb3cc76d::t_2e1ef487a273ba 57
+  s_1cc363bb3cc76d::t_960c7f1cb14ec4 16,18,22,24,26,29-30,35,46,53,59,74,79,81,84-85,92,94
+apps/docs/introduction/what-it-does.md
+  s_1cc363bb3cc76d::t_5d0f2749a0d03a 16,20,30,36,40,42,44,46,58,62,64,66,68
+apps/docs/sharing/accounts-and-sync.md
+  s_1cc363bb3cc76d::t_72e0391170d879 11,16,20,24,26,28,30,38-39,48-52,54-59,61,63,67,69,75,81-82,86,96,105-107,111
+  s_1cc363bb3cc76d::t_c1b0afb3ef8a30 85
+apps/docs/designer/labels-and-text.md
+  s_1cc363bb3cc76d::t_ff84158b38b17d 111
+  s_1cc363bb3cc76d::t_21eb037dfbce8a 98
+  s_1cc363bb3cc76d::t_2cc87245463626 68-75
+  s_1cc363bb3cc76d::t_b9f2cd6adf6ba9 17,21,23-25,27,29,31,33,37,41,49,51,55,57-60,64-66,77,81,84-90,94,113-115,119,123,125,129,131
+  s_1cc363bb3cc76d::t_918dc8c312786a 67,76,112
+apps/docs/introduction/gridfinity-basics.md
+  s_1cc363bb3cc76d::t_91509932cb48a3 22
+  s_1cc363bb3cc76d::t_64c690be00ce5a 16,38,40,42,46-48,52,65-70
+apps/docs/getting-started/first-baseplate.md
+  s_1cc363bb3cc76d::t_baf8a119b4f427 16
+  s_1cc363bb3cc76d::t_a0109e2c2b925f 18,20,22,24,30,34,36,39,44,46-47,49,53,62,64,68-69,73,75
+  s_1cc363bb3cc76d::t_a3010b11fc84f3 32
+apps/docs/settings/settings.md
+  s_1cc363bb3cc76d::t_47d5cb3ac393f2 72
+  s_1cc363bb3cc76d::t_aa79c31ee3a8fa 9,18,23,29-39,42-43,55,61-62,64-71,73-79,81,83,85-86,98
+  s_1cc363bb3cc76d::t_acbc6685e99eaf 41
+  s_1cc363bb3cc76d::t_4918091605af38 63
+  s_1cc363bb3cc76d::t_4879c1e3e5c7fb 14,21
+  s_1cc363bb3cc76d::t_260f305f61c4cc 40
+apps/docs/reference/layout-file.md
+  s_1cc363bb3cc76d::t_acbc6685e99eaf 15,127
+  s_1cc363bb3cc76d::t_d70712e85faaf4 21,26,30-32,34,80,125,133
+apps/docs/concepts/preview-and-export.md
+  s_1cc363bb3cc76d::t_6fbae3b17ca39d 16,24,28,43,53,59
+apps/docs/cutouts/photo-trace.md
+  s_1cc363bb3cc76d::t_4c08cf0d7c8319 15,20-21,23,27-28,35,37,42,50,52-53,55,57,63,67,71,81,85-86,88-89,91,95
+apps/docs/concepts/layouts-layers-stash.md
+  s_1cc363bb3cc76d::t_7abce971ce59f1 45,57-65,70
+  s_1cc363bb3cc76d::t_45e2980881279a 31,35,37,39,43,47,53,73-74
+  s_1cc363bb3cc76d::t_baf8a119b4f427 17
+  s_1cc363bb3cc76d::t_c727315326552f 71-72
+apps/docs/designer/lids.md
+  s_1cc363bb3cc76d::t_05d204e3eade36 15,19,21,23,25,27,31,33-39,41-43,47-54,56,58,62,66,68,82,88,92,94,102
+  s_1cc363bb3cc76d::t_f89496434d1e6e 103-104,109
+apps/docs/layouts/placing-bins.md
+  s_1cc363bb3cc76d::t_6631c384ea2313 17,21,25,34-35,40,44,48,52,56,58,60,64,69,73,75,83,87,107-109
+apps/docs/cutouts/arranging.md
+  s_1cc363bb3cc76d::t_ced8f76a7ce98f 94-95,98-99
+  s_1cc363bb3cc76d::t_c9db6f0c3cdf92 59
+  s_1cc363bb3cc76d::t_e9e152a96ba144 17,25,29,31-33,41,43-45,61-65,67,71,80,84,86,92,96-97,107-108,111-112,118,126
+  s_1cc363bb3cc76d::t_981ca4f47effeb 60
+apps/docs/printing/print-list-and-zip.md
+  s_1cc363bb3cc76d::t_e90b25579ea0e2 14,18,28,32,36,42,44,48-49,51-52,59-60,66,71,99,103-107
+  s_1cc363bb3cc76d::t_2164f81038afa7 34
+apps/docs/layouts/organizing-layouts.md
+  s_1cc363bb3cc76d::t_b95eb090a8995f 37-42
+  s_1cc363bb3cc76d::t_70baf94f1d9af6 34,43-44
+  s_1cc363bb3cc76d::t_dcfacb474ed4df 16,30,45,64,72,78,80,87
+apps/docs/printing/troubleshooting.md
+  s_1cc363bb3cc76d::t_2164f81038afa7 66,68,70,72-82
+  s_1cc363bb3cc76d::t_d70712e85faaf4 19-26,98-100,115
+  s_1cc363bb3cc76d::t_e938c3436fada4 17,40,42,46-48,58,110-114
+  s_1cc363bb3cc76d::t_8d1d871db0a709 12,30-38,44,50,56,60,62,64,86,94,102,104-106,121-123
+  s_1cc363bb3cc76d::t_afcbef67cc8183 18,49,57,59
+apps/docs/concepts/saved-designs.md
+  s_1cc363bb3cc76d::t_baf8a119b4f427 74
+  s_1cc363bb3cc76d::t_7c754fee93c0c1 16,28,30,35,48,50,71,76,80,87
+  s_1cc363bb3cc76d::t_725d33b7a90261 18,53,60
+  s_1cc363bb3cc76d::t_82ba31d17a4414 17
+apps/docs/sharing/community.md
+  s_1cc363bb3cc76d::t_3a5bc52c72c8d5 15,19-21,23,25,29-38,40,42-47,49,55,57-63,67-71,75,89,92,95,101,105-114,116,118,120,125-130,133
+apps/docs/cutouts/phone-scan.md
+  s_1cc363bb3cc76d::t_c81e73c50a419d 20-29,33,41-42,49-50,52,55,62-63,65,71-76,78,80-83,91-97,102,106,112-113,120,123,132-134
+  s_1cc363bb3cc76d::t_2f07ccf4d7e68c 19,98
+  s_1cc363bb3cc76d::t_c8e08d4e04c91a 84-90
+  s_1cc363bb3cc76d::t_ebc6cff560b9ab 17
+  s_1cc363bb3cc76d::t_3f1bbd2f8ed711 18
+apps/docs/designer/size-and-shape.md
+  s_1cc363bb3cc76d::t_7098858401f399 16,19-21,33,35,41-43,45-47,62,65,68,70,72,76,93,95,99,113
+apps/docs/concepts/bin-anatomy.md
+  s_1cc363bb3cc76d::t_38f21c1f18edbb 102-108
+  s_1cc363bb3cc76d::t_528c83bd0e1ea6 15-17,35-37,39,41,43,56,58,61,67,69-71,75,81,90,93,96,100,110,112
+  s_1cc363bb3cc76d::t_c83fe10c0a39d3 101
+apps/docs/getting-started/first-bin.md
+  s_1cc363bb3cc76d::t_21ce38e2c1c0bb 16,18,20,22,24,26,32,34-35,41-42,44,52-55,57,63,68,72-74,79,85-91
+apps/docs/layouts/layers.md
+  s_1cc363bb3cc76d::t_efe89a1e14a43f 64
+  s_1cc363bb3cc76d::t_c64b4aab2e43dd 16,24,36,38-42,52,54,58,60,80,88
+apps/docs/sharing/live-collaboration.md
+  s_1cc363bb3cc76d::t_67db326acfa472 15,21,24,26,30,32,34-39,45,47-49,55,62,65,70,74
+apps/docs/cutouts/print-checks.md
+  s_1cc363bb3cc76d::t_1cfd60f61824f8 17,21,25,30,50,57,59-62,71,82,87,92-94
+  s_1cc363bb3cc76d::t_adda9974425eab 45,64-67,69
+apps/docs/cutouts/workshop.md
+  s_1cc363bb3cc76d::t_f6958f9d20a64b 15,21-22,53,63-69,74-75,83,93-95,99,103,107-108
+  s_1cc363bb3cc76d::t_bdde169a458af2 26
+  s_1cc363bb3cc76d::t_d6871f8911db81 37,77
+apps/docs/designer/colors.md
+  s_1cc363bb3cc76d::t_34e095751d3e3d 11,16,22,24,26,28,30,34,47-51,54,72,74,76,87,93,99-114
+  s_1cc363bb3cc76d::t_b71c48f5a1b73e 62,80-85
+apps/docs/settings/labs.md
+  s_1cc363bb3cc76d::t_137ed5b82c32d0 16,24-25,27,33,35,37,39-45,53,61,66,68,78
+apps/docs/reference/dimensions.md
+  s_1cc363bb3cc76d::t_fca3b55b6d7087 15,47
+apps/docs/layouts/find-bins-that-fit.md
+  s_1cc363bb3cc76d::t_6e5b9cd719e9ba 16
+  s_1cc363bb3cc76d::t_e1764632ea767d 30,32,38,43,45,49,53,55,59
+apps/docs/designer/label-plates.md
+  s_1cc363bb3cc76d::t_a7b63edcd10cee 26
+  s_1cc363bb3cc76d::t_98d5890c702b42 16,18,22-24,28,55-61,65,80,83,87,95,100,102
+  s_1cc363bb3cc76d::t_927b51d798d5f7 32,39,43
+apps/docs/designer/base.md
+  s_1cc363bb3cc76d::t_97a769ce03744e 101
+  s_1cc363bb3cc76d::t_ca8a44bdce1fae 15,128
+  s_1cc363bb3cc76d::t_0ba7663b620066 55-61,95-99
+  s_1cc363bb3cc76d::t_2e307538534fa5 17-23,27,31,35,64,72,81,87,105,116,122,132
+  s_1cc363bb3cc76d::t_18a9fccf3a230f 100
+apps/docs/reference/design-file.md
+  s_1cc363bb3cc76d::t_acbc6685e99eaf 23
+  s_1cc363bb3cc76d::t_d2488428c3837c 110
+  s_1cc363bb3cc76d::t_80892725ad53b1 15,17,21,29,33,35,52
+apps/docs/getting-started/workspace-tour.md
+  s_1cc363bb3cc76d::t_3955c6ae24ee45 17,42,54,56,60,62,74-75,81,89,93,95,105,109,115-117,121-129,131-134
+  s_1cc363bb3cc76d::t_b71c48f5a1b73e 64,97-103,107-108,110-113
+  s_1cc363bb3cc76d::t_c2e4b4e06f790a 114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "15b72c02c1648ad0776c3dc127ecbd3a71796b39",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
