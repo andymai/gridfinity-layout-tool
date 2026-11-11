@@ -1,0 +1,48 @@
+apps/docs/designer/base.md
+  h_b755e1950659f4 64,122
+apps/docs/designer/colors.md
+  h_b755e1950659f4 30
+apps/docs/designer/compartments.md
+  h_b755e1950659f4 52
+apps/docs/designer/getting-things-out.md
+  h_b755e1950659f4 53,94
+apps/docs/designer/labels-and-text.md
+  h_b755e1950659f4 33,119
+apps/docs/media/designer-base-lightweight.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-base-mounting.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-colors-zones.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-compartments-bento.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-compartments-grid.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-getting-things-out-pull-tab.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-getting-things-out-scoop.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-label-plates-export.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-label-plates-socket-list.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-labels-and-text-tab-list.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-labels-and-text-typography.json
+  h_b755e1950659f4 1-5
+apps/docs/media/designer-labels-and-text-wall-text.json
+  h_b755e1950659f4 1-5
+scripts/docs-capture/shots/designerBody.ts
+  h_b755e1950659f4 1-6,8-737
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "89390ac6060f3bff72ed8529f1eb9f06580f6fd6",
+  "prompts": {},
+  "humans": {
+    "h_b755e1950659f4": {
+      "author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
