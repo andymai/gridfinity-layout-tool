@@ -10,6 +10,8 @@ sources:
   - src/features/bin-designer/components/VersionHistory/
   - src/features/bin-designer/components/panel/VariantSection/
   - src/features/bin-designer/hooks/usePlaceBinInLayout.ts
+  - src/features/bin-designer/components/DesignImportView/
+  - src/features/bin-designer/storage/DesignVersionService.ts
 ---
 
 # Save and reuse designs
@@ -39,7 +41,7 @@ The library lives in your browser. Sign in to keep the same designs on every dev
 
 ## Keep named versions
 
-A version is a named checkpoint of one design. Undo history ends when you reload the page, but a version stays until you delete it. Save one before you try a risky change.
+A **version** is a named checkpoint of one design. Undo history ends when you reload the page, but a version stays until you delete it. Save one before you try a risky change.
 
 1. Click <Ui k="binDesigner.versions.open" /> in the header.
 2. Click <Ui k="binDesigner.versions.save" />.
@@ -55,7 +57,7 @@ Each design holds up to 25 versions. When a design is full, a new version remove
 
 ## Make one design in several sizes
 
-A variant is a copy of a design that follows its parent, except for the values that you claim. Say you make one bin for a set of drill bits. A variant can then change the width or the cutout size. When you improve the parent, each variant gets the change.
+A **variant** is a copy of a design that follows its parent, except for the values that you claim. Say you make one bin for a set of drill bits. A variant can then change the width or the cutout size. When you improve the parent, each variant gets the change.
 
 1. In the library, open the menu of the parent design and click <Ui k="binDesigner.variants.create" />.
 2. In the variant, click <Ui k="binDesigner.variants.claim" /> next to each value that must differ, and set it.
@@ -71,7 +73,7 @@ A cutout keeps the position that the parent gives it. A variant locks all other 
 
 ## Organize with tags
 
-Tags group designs in the library, for example by drawer or by room. Tags sync with your account.
+**Tags** group designs in the library, for example by drawer or by room. Tags sync with your account.
 
 - Click <Ui k="binDesigner.tags.editAction" /> in the menu of a design. A design holds up to 12 tags of up to 32 characters.
 - Click a tag in the filter bar to show only the designs that carry it.
@@ -93,7 +95,7 @@ To use an example:
 
 ## Download and import a design file
 
-A design file is a small JSON file that holds every setting of a design. It isn't a printable model. Use it to keep a backup, to edit a design by hand, or to give a design to someone else.
+A **design file** is a small JSON file that holds every setting of a design. It isn't a printable model. Use it to keep a backup, to edit a design by hand, or to give a design to someone else.
 
 - In the export dialog, click <Ui k="binDesigner.downloadDesignJson" />.
 - In the library, click <Ui k="binDesigner.downloadJSON" /> in the menu of a design. To download many designs, click <Ui k="binDesigner.select" />, pick the designs, and click <Ui k="binDesigner.bulk.export" />.
@@ -113,6 +115,26 @@ In the library, open the menu of the design and click <Ui k="binDesigner.placeIn
 The layout editor opens and adds the bin as a linked bin. The bin goes to the first free spot on the active layer, turned if it fits only that way. If the layer has no room, the bin goes to the stash (the holding area off the grid). Drag it to the place you want.
 
 From then on, the bin follows the design. When you change the design, the linked bin in the layout changes too. To give a design to a bin that is already on the grid, see [Place and edit bins](../layouts/placing-bins#drop-a-saved-design-into-the-drawer).
+
+## When it goes wrong
+
+### An old version is gone
+
+Click <Ui k="binDesigner.versions.pin" /> on each version that you want to keep for good. A pinned version stays when the design is full.
+
+Each design holds up to 25 versions. When you save one more, the Layout Tool removes an automatic version first, then the oldest version without a pin. A message names the version that it removes.
+
+### You can't change a value in a variant
+
+Click <Ui k="binDesigner.variants.claim" /> next to the value, then change it. To edit everything, click <Ui k="binDesigner.variants.detach" />.
+
+A variant takes all its other values from its parent. It can claim only the values in [the table above](#make-one-design-in-several-sizes).
+
+### A design file won't import
+
+Read the error under the box. Is the file a layout file? Import it in the layout manager instead: see [Import a layout file](../reference/layout-file#import-a-layout-file).
+
+The import checks the file type and the main fields before it shows a preview. For a file that you edited by hand, see [Avoid the traps](../reference/design-file#avoid-the-traps).
 
 ## Next steps
 

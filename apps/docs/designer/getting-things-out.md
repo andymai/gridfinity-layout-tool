@@ -19,7 +19,7 @@ The finger scoop and the interior fillet are in the <Ui k="binDesigner.group.int
 
 ## Add a finger scoop
 
-A finger scoop is a ramp from the floor up to a wall. Push small items up the ramp with one finger, and they come out with no fuss.
+A **finger scoop** is a ramp from the floor up to a wall. Push small items up the ramp with one finger, and they come out with no fuss.
 
 1. In the <Ui k="binDesigner.group.interior" /> group, turn on <Ui k="binDesigner.fingerScoop" />.
 2. Click <Ui k="common.customize" /> to show the scoop settings.
@@ -70,7 +70,7 @@ The fillet needs a solid floor. It does not work with removable dividers, becaus
 
 ## Add a pull tab
 
-A pull tab is a raised grip that stands above the rim of a wall. Hold it to lift the bin out of a drawer.
+A **pull tab** is a raised grip that stands above the rim of a wall. Hold it to lift the bin out of a drawer.
 
 1. In the <Ui k="binDesigner.group.lid" /> group, turn on <Ui k="binDesigner.pullTab.title" />.
 2. Under <Ui k="binDesigner.pullTab.wall" />, pick one or more walls.
@@ -107,6 +107,26 @@ The bin designer uses the divider nearest the middle of the bin, and makes it th
 - The divider must be straight and at full height.
 - Label tabs must be off, because they use the tops of the dividers.
 - <Ui k="binDesigner.extraWallHeight" /> must be 0.
+
+## When it goes wrong
+
+### The panel warns that the scoop is very steep
+
+Make <Ui k="binDesigner.scoopRun" /> longer or <Ui k="binDesigner.scoopHeight" /> lower, so the height is no more than two times the run. Or click <Ui k="binDesigner.scoopRadiusAutoLabel" /> to go back to an auto scoop, which never gets that steep.
+
+A steep ramp prints with rough overhangs, and it's hard to reach into.
+
+### The fillet is smaller than the radius you set
+
+Set a smaller <Ui k="binDesigner.interiorFillet.radius" /> that fits your smallest compartment, or use fewer, larger compartments.
+
+A compartment that is too small for the radius gets the largest fillet that fits. The panel tells you when this happens.
+
+### You can't turn on the pull tab
+
+Read the note under the switch. It names what blocks the tab. Turn that feature off, then turn on the tab.
+
+A pull tab needs plain walls. Wall cutouts, handles, a wall pattern, wall text or label slots anywhere on the bin block it, even on a wall with no tab. The bin must also be rectangular and hollow, with no lid and no overhang.
 
 ## Next steps
 

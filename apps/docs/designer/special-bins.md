@@ -10,6 +10,8 @@ sources:
   - src/features/bin-designer/components/panel/SlantSection/
   - src/shared/utils/slantPlan.ts
   - src/features/bin-designer/components/panel/BaseSection/bodyType.ts
+  - src/features/bin-designer/components/CutoutWorkspace/CutoutKnifeControls.tsx
+  - src/features/bin-designer/components/panel/shared/SlantTooLargeNotice.tsx
 ---
 
 # Special bins
@@ -18,7 +20,7 @@ Not everything fits in a box with compartments. Kitchen knives want a slot each,
 
 ## Make a knife block
 
-A knife block holds kitchen knives flat in a drawer. Each blade hangs in its own slot, and a handle rest carries the handles at the right height, so the edge never touches the plastic.
+A **knife block** holds kitchen knives flat in a drawer. Each blade hangs in its own slot, and a handle rest carries the handles at the right height, so the edge never touches the plastic.
 
 1. In the bin designer, open the <Ui k="binDesigner.group.interior" /> group, pick <Ui k="binDesigner.interior.solid.title" />, and click <Ui k="binDesigner.editCutouts" />. [Draw a cutout](../cutouts/basics#draw-a-cutout) explains the board and its tools.
 2. Pick the <Ui k="binDesigner.cutouts.addKnifeSlot" /> tool (<kbd>K</kbd>) and place a slot on the board.
@@ -53,7 +55,7 @@ Rather not start from scratch? The gallery has a [knife block example](./save-an
 
 ## Make a slanted bin
 
-A slanted bin leans toward one side, while its base stays flat on the grid. Tall items such as pens then fit in a shallow drawer. <Ui k="binDesigner.slant.title" /> carries an <Ui k="settings.experimental" /> label.
+A **slanted bin** leans toward one side, while its base stays flat on the grid. Tall items such as pens then fit in a shallow drawer. <Ui k="binDesigner.slant.title" /> carries an <Ui k="settings.experimental" /> label.
 
 1. Open the <Ui k="binDesigner.group.shape" /> group and turn on <Ui k="binDesigner.slant.title" />. The bin leans 45° toward the back.
 2. Set the <Ui k="binDesigner.slant.angle" />, from 1° to 60°.
@@ -69,7 +71,7 @@ A slanted bin has no [stacking lip](./stacking) and no lid, and the Layout Tool 
 
 ## Add a sliding tray (Labs)
 
-A sliding tray is a shallow tray that rides on a rail inside or on top of a bin. Small parts ride in the tray, and you push it aside to reach what's under it. The rail runs along the front and back walls, so the tray slides from side to side.
+A **sliding tray** is a shallow tray that rides on a rail inside or on top of a bin. Small parts ride in the tray, and you push it aside to reach what's under it. The rail runs along the front and back walls, so the tray slides from side to side.
 
 The sliding tray is a Labs feature, so it's off by default. [Turn on a Labs feature](../settings/labs#turn-on-a-labs-feature) shows how to turn it on.
 
@@ -98,6 +100,32 @@ Two more kinds of design live in the design library:
 
 - **Imported bin.** Already have an STL of a bin? In the library, click <Ui k="common.import" /> and drop the STL file. Set the width, depth and height in units, then click <Ui k="binDesigner.importBin.save" />. The units set the space that the bin takes in a layout. The Layout Tool never resizes the mesh.
 - **Workshop build.** <Ui k="binDesigner.newWorkshop" /> starts a tool holder built from parts on a Gridfinity base. See [Workshop](../cutouts/workshop).
+
+## When it goes wrong
+
+### The panel says a knife slot is too deep for the bin
+
+Raise <Ui k="common.height" /> to the number of units that the message names. The slot then holds the whole blade.
+
+A slot needs the heel height plus 4 mm of depth. In a bin that is too short, the slot stops at the depth that the bin has, so the blade doesn't fit.
+
+### You can't turn on the handle rest
+
+Set <Ui k="binDesigner.cutouts.knifeOpenEnd" /> of at least one knife slot to <Ui k="binDesigner.cutouts.knifeOpenEnd.start" /> or <Ui k="binDesigner.cutouts.knifeOpenEnd.end" />.
+
+The rest carries the handles that lie past the block. A slot set to <Ui k="binDesigner.cutouts.knifeOpenEnd.enclosed" /> keeps the whole knife inside, so no handle comes out.
+
+### The bin won't slant
+
+Read the note under <Ui k="binDesigner.slant.title" />. It names the feature that blocks the slant. Turn that feature off, then turn on the slant.
+
+Some features don't work on a bin that leans, for example an overhang, a custom shape, removable dividers or a pull tab.
+
+### A slanted bin is too large for the print bed
+
+Lower the <Ui k="binDesigner.slant.angle" />, or make the bin smaller. A notice in the panel tells you while the bin is too large.
+
+The Layout Tool can't split a slanted bin, because a cut would cross its body at an angle. See [Fitting the print bed](../concepts/print-bed-fit#when-a-bin-is-too-large).
 
 ## Next steps
 

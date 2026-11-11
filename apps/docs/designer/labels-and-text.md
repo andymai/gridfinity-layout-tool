@@ -10,6 +10,7 @@ sources:
   - src/features/bin-designer/components/panel/FloorTextSection/
   - src/features/bin-designer/components/panel/LidSection/LidSection.tsx
   - src/features/bin-inspector/components/Inspector/BinLabelField/
+  - src/shared/utils/typePlan.ts
 ---
 
 # Labels and text
@@ -18,7 +19,7 @@ A label tells you what's in a bin before you open the drawer. You can print text
 
 ## Add label tabs
 
-A label tab is a small ledge along the top of a compartment wall. Print a caption on it, stick a paper label on it, or give it a [swappable label plate](./label-plates).
+A **label tab** is a small ledge along the top of a compartment wall. Print a caption on it, stick a paper label on it, or give it a [swappable label plate](./label-plates).
 
 1. In the bin designer, open the <Ui k="binDesigner.group.interior" /> group and turn on <Ui k="binDesigner.labelTabs" />.
 2. Under <Ui k="binDesigner.tabMode" />, keep <Ui k="binDesigner.tabMode.text" />.
@@ -129,6 +130,32 @@ For lid text, turn on the lid in the <Ui k="binDesigner.group.lid" /> group, the
 In the layout editor, each bin has a <Ui k="inspector.binLabel" /> box in the bin inspector. Click in it or start to type, and a list of suggestions opens. Each one tells you why it's there, for example <Ui k="inspector.labelSuggest.reason.nextInSet" />. On a computer, the top suggestion shows as gray text, and <kbd>Tab</kbd> accepts it. Your browser makes the suggestions from your layout and a built-in catalog of common labels.
 
 One design for many bins? If the design has only one caption, leave that caption blank. Each linked bin then prints its own <Ui k="inspector.binLabel" /> from the layout.
+
+## When it goes wrong
+
+### A caption is too long to print
+
+Click <Ui k="binDesigner.labelTextWidenTabs" /> under the row, or make the text shorter. In narrow compartments, <Ui k="binDesigner.labelTextPerRow" /> gives each row one full-width tab.
+
+Each caption must print at a size that you can read. A long caption on a narrow tab can't, so its row shows a warning.
+
+### You can't turn on label tabs
+
+Make the bin taller. A label tab needs more than 9 mm of depth inside the bin. Is the section not there at all? Pick the <Ui k="binDesigner.interior.standard.title" /> or <Ui k="binDesigner.interior.bento.title" /> interior.
+
+A tab hangs from the compartment walls. Removable dividers, solid bins and custom-shape bins can't carry tabs. See [Add label tabs](#add-label-tabs).
+
+### The letters are too thin to print
+
+Click the button under the warning in <Ui k="binDesigner.type.heading" />. It applies the fix that suits your font: a bold cut, more space between letters, or a larger size.
+
+The panel warns when the thinnest stroke of a letter is under 0.8 mm, about two lines of a 0.4 mm nozzle. Thinner strokes run together when they print.
+
+### The tabs print blank
+
+Type a caption in each row of <Ui k="binDesigner.labelText" />. <Ui k="binDesigner.labelTextNextBlank" /> takes you to the next empty row.
+
+A blank row prints a bare ledge. A linked bin can print its layout label instead, but only in the layout ZIP and the 3D layout preview. See [Troubleshooting prints](../printing/troubleshooting#the-labels-are-blank-or-missing).
 
 ## Next steps
 

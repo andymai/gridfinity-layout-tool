@@ -10,6 +10,9 @@ sources:
   - src/features/bin-designer/types/dividers.ts
   - src/features/bin-designer/utils/dividerAngle.ts
   - src/features/bin-designer/constants/gridfinity.ts
+  - src/features/bin-designer/utils/validation.ts
+  - src/features/bin-designer/store/slices/paramSlice/compartmentActions.ts
+  - src/shared/utils/slotMath.ts
 ---
 
 # Compartments and dividers
@@ -135,6 +138,32 @@ With interlocking pieces, <Ui k="binDesigner.slotPartialStyle" /> gives shorter 
 - <Ui k="binDesigner.slotPartialFull" />: one wall-to-wall piece for each slot.
 - <Ui k="binDesigner.slotPartialSnappable" />: each piece has score lines, so you can snap it to length. Use a divider of 1 mm or thicker.
 - <Ui k="binDesigner.slotPartialLengthSet" />: a set of pieces that span one or more compartments, each with the correct notches.
+
+## When it goes wrong
+
+### The dividers stop below the rim
+
+Turn off <Ui k="assembledHeight.stackingLip" /> in the <Ui k="binDesigner.group.base" /> group. Dividers at <Ui k="binDesigner.dividerAutoHeight" /> then reach the rim, but other bins can't stack on this one.
+
+With the lip on, <Ui k="binDesigner.dividerAutoHeight" /> is the tallest a divider can be. A bin stacked on top puts its feet just above the dividers. See [Stacking](./stacking#turn-the-stacking-lip-on-or-off).
+
+### The bin has no slots for the removable dividers
+
+Set <Ui k="binDesigner.wallThickness" /> to 0.8 mm or more, in the <Ui k="binDesigner.group.shape" /> group. While the wall is thinner, a warning shows above the slot controls.
+
+The bin designer cuts slots only in walls of 0.8 mm or thicker.
+
+### The column or row count won't go higher
+
+Make the bin wider or deeper, or make <Ui k="binDesigner.dividerThickness" /> thinner. Then add the column or row.
+
+Each compartment must stay at least 5 mm wide. The bin designer ignores a grid change that makes a compartment smaller.
+
+### Some compartment labels are gone after you change the grid
+
+Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> (<kbd>Cmd</kbd>+<kbd>Z</kbd> on a Mac) to undo the change. The labels come back.
+
+When you change the columns or rows, each label moves to the compartment at the same position. The bin designer clears a label with no compartment at its position, and a message tells you how many.
 
 ## Next steps
 

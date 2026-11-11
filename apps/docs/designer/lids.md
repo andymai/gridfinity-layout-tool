@@ -8,6 +8,8 @@ sources:
   - src/features/bin-designer/components/panel/HingeControls/
   - src/features/bin-designer/components/panel/LidGripControls/
   - src/features/bin-designer/utils/lidCompatibility.ts
+  - src/shared/utils/lidInteriorRelief.ts
+  - src/shared/utils/hingeLidPlan.ts
 ---
 
 # Lids
@@ -44,7 +46,7 @@ A magnetic lid takes 6 × 2 mm magnets by default. Glue the magnets in with matc
 
 ### Sliding lids
 
-A sliding lid is a flat plate that slides in and out of a channel. It doesn't need the stacking lip.
+A **sliding lid** is a flat plate that slides in and out of a channel. It doesn't need the stacking lip.
 
 | Setting                                    | What it does                                                                                                                                                                                                                          |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -59,7 +61,7 @@ The finger catch is a part of the stacking rim that moves with the lid, so the w
 
 ### Hinged lids
 
-A hinged lid has knuckles on one wall. A short piece of 1.75 mm filament goes through them as the hinge pin, so you need no metal pin. The panel tells you how long to cut each piece.
+A **hinged lid** has knuckles on one wall. A short piece of 1.75 mm filament goes through them as the hinge pin, so you need no metal pin. The panel tells you how long to cut each piece.
 
 - <Ui k="binDesigner.lid.hinge.side" />: the wall the lid swings up from. It starts on the <Ui k="binDesigner.lid.side.back" /> wall, so the open lid falls away from your hand.
 - <Ui k="binDesigner.lid.hinge.catch" />: <Ui k="binDesigner.lid.hinge.catch.none" />, <Ui k="binDesigner.lid.hinge.catch.detent" /> (the default) or <Ui k="binDesigner.lid.hinge.catch.magnets" />. Magnets give the strongest hold, and they still work with a cutout in the wall opposite the hinge.
@@ -110,6 +112,32 @@ A lid holds up to 24 shapes, clear of the mating wall and the magnets. Holes nee
 - <Ui k="binDesigner.lid.createMatchingTray" /> starts a new design with the same size as this bin. Its underside is a lid, so it sits on this bin as an organizer tray. To stack whole boxes without a lid, see [Nest boxes on each other](./stacking#nest-boxes-on-each-other).
 
 The lid exports with its rails up, ready to print. The default lid needs no supports, but a fused stack grid can need them.
+
+## When it goes wrong
+
+### You can't turn on the lid
+
+Read the note under the switch. It names the conflict to fix. If the stacking lip is off, click <Ui k="binDesigner.dependency.enableStackingLip" /> under the switch.
+
+Most lids grip the stacking lip. Wall cutouts or handles on every wall leave no lip to grip. A lid also can't sit down on divider pieces that are taller than the inside of the bin.
+
+### One wall has no click rail
+
+Look under <Ui k="binDesigner.lid.compat.heading" />. It names the feature that took the rail. For a finger scoop, lower the scoop height, or turn on <Ui k="binDesigner.lid.relieveInterior" /> under <Ui k="binDesigner.lid.advanced" />.
+
+A label tab, a wall cutout, a handle or a tall scoop at the top of a wall gets in the way of the rail. The bin designer then makes that rail shorter, or leaves it off.
+
+### A sliding lid catches on the dividers
+
+Turn on <Ui k="binDesigner.lid.relieveInterior" /> under <Ui k="binDesigner.lid.advanced" />. Dividers then stop a few millimeters below the rim, and label tabs sit lower.
+
+The lid sweeps across the whole top of the bin, so dividers, label tabs or a scoop at the rim stop it. While the option is off, the compatibility notes warn you.
+
+### A hinged lid won't stay shut
+
+Under <Ui k="binDesigner.lid.hinge.catch" />, pick <Ui k="binDesigner.lid.hinge.catch.magnets" />. Or make <Ui k="binDesigner.lid.extraHeight" /> lower.
+
+On a tall lid, the snap catch can't clear the rim as the lid opens. The bin designer then builds the lid without the catch, and the compatibility notes tell you.
 
 ## Next steps
 
