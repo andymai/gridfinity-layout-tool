@@ -1,0 +1,62 @@
+apps/docs/media/printing-estimates-summary.json
+  s_1cc363bb3cc76d::t_39030896a5a143 1-5
+apps/docs/media/baseplates-splitting-map.json
+  s_1cc363bb3cc76d::t_f82e8c245b38fb 1-5
+apps/docs/media/baseplates-basics-panel.json
+  s_1cc363bb3cc76d::t_f82e8c245b38fb 1-5
+apps/docs/baseplates/eco-and-stack-printing.md
+  s_1cc363bb3cc76d::t_b1c9e85caead61 37
+apps/docs/media/baseplates-stack-section.json
+  s_1cc363bb3cc76d::t_2a4fc49b05ebbd 1-5
+apps/docs/baseplates/odd-shaped-drawers.md
+  s_1cc363bb3cc76d::t_b1c9e85caead61 36
+apps/docs/media/printing-slicers-filament-map.json
+  s_1cc363bb3cc76d::t_39030896a5a143 1-5
+apps/docs/baseplates/magnets-and-screws.md
+  s_1cc363bb3cc76d::t_b1c9e85caead61 28,110
+apps/docs/media/printing-formats-dialog.json
+  s_1cc363bb3cc76d::t_a4f473211a73aa 3-4
+  s_1cc363bb3cc76d::t_39030896a5a143 1-2,5
+apps/docs/media/baseplates-magnets-base-section.json
+  s_1cc363bb3cc76d::t_2a4fc49b05ebbd 1-5
+apps/docs/media/baseplates-basics-library.json
+  s_1cc363bb3cc76d::t_f82e8c245b38fb 1-5
+apps/docs/media/printing-fit-connector-test.json
+  s_1cc363bb3cc76d::t_39030896a5a143 1-2,5
+  s_1cc363bb3cc76d::t_1942343d3fcef7 3-4
+apps/docs/media/printing-print-list.json
+  s_1cc363bb3cc76d::t_39030896a5a143 1-5
+scripts/docs-capture/shots/baseplatesPrinting.ts
+  s_1cc363bb3cc76d::t_581d4cc83fbabd 5,332-337,343-353
+  s_1cc363bb3cc76d::t_aefc51ab596309 6,83-84,99-129,235,280,300-301,307,309,320-322,325,354
+  s_1cc363bb3cc76d::t_2a4fc49b05ebbd 392
+  s_1cc363bb3cc76d::t_4554c94ebbf10e 1-4,7-29,32-36,38-82,85-98,130-132,142-145,151-152,154-211,213-221,224-234,236-279,281-282,291-299,302-303,327-331,338-342,355-356,365-391,393-469,472-502,504-560,562-563,566-579
+  s_1cc363bb3cc76d::t_8ba9fdae13e777 317-319,323
+  s_1cc363bb3cc76d::t_b87f8998de362d 357
+  s_1cc363bb3cc76d::t_f82e8c245b38fb 212
+  s_1cc363bb3cc76d::t_151973d7a068c9 471,503,561
+  s_1cc363bb3cc76d::t_023d28f59f26d5 133-141,146-150,153,222-223,283-290,304-306,308,310-316,324,326,358-364
+  s_1cc363bb3cc76d::t_807421eb1905ce 30-31,37,470
+apps/docs/baseplates/splitting.md
+  s_1cc363bb3cc76d::t_e4e42b2fcd155f 37
+apps/docs/media/baseplates-magnets-screw-settings.json
+  s_1cc363bb3cc76d::t_1fe6dbd0718c97 1-5
+apps/docs/media/baseplates-shaped-plate.json
+  s_1cc363bb3cc76d::t_123dd0414ff8a6 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "693e7af3bea19b412a217efbe6c0bfc9e422d487",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
