@@ -23,6 +23,11 @@ interface ToolSwitcherProps {
   compact?: boolean;
   /** Show icons only (no text labels) */
   iconOnly?: boolean;
+  /**
+   * Icons only below the xl breakpoint, labels from there up: below 1280px
+   * the labels would take the room the design name needs.
+   */
+  labelsFromXl?: boolean;
 }
 
 type Tool = 'planner' | 'designer' | 'baseplate';
@@ -71,7 +76,11 @@ function getIconSize(iconOnly: boolean, compact: boolean): string {
   return 'w-4 h-4';
 }
 
-export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcherProps) {
+export function ToolSwitcher({
+  compact = false,
+  iconOnly = false,
+  labelsFromXl = false,
+}: ToolSwitcherProps) {
   const t = useTranslation();
   const { isDesignerRoute, navigateToDesigner, navigateToPlanner } = useDesignerRouting();
   const { isBaseplateRoute, navigateToBaseplate } = useBaseplateRouting();
@@ -108,7 +117,8 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
   const intentFor = (tool: Tool): Partial<IntentPrefetchHandlers> =>
     tool === 'designer' ? designerIntent : tool === 'baseplate' ? baseplateIntent : {};
 
-  const segmentPadding = getSegmentPadding(iconOnly, compact);
+  const segmentPadding =
+    labelsFromXl && !iconOnly ? 'px-2 py-1 xl:px-3' : getSegmentPadding(iconOnly, compact);
   const fontSize = compact ? 'text-xs' : 'text-sm';
   const iconSize = getIconSize(iconOnly, compact);
 
@@ -143,7 +153,12 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
                 <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
               ))}
             </svg>
-            {!iconOnly && t(labelKey)}
+            {!iconOnly &&
+              (labelsFromXl ? (
+                <span className="hidden xl:inline">{t(labelKey)}</span>
+              ) : (
+                t(labelKey)
+              ))}
           </Button>
         ))}
       </div>

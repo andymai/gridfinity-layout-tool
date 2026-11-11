@@ -84,7 +84,8 @@ export function SaveStatusIndicator({
           />
         </svg>
       )}
-      {!compact && <span>{t(statusTextKey[status])}</span>}
+      {/* Below xl the icon stands alone, but screen readers still hear the status. */}
+      {!compact && <span className="sr-only xl:not-sr-only">{t(statusTextKey[status])}</span>}
     </div>
   );
 }
