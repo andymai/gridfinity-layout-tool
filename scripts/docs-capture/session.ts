@@ -309,7 +309,8 @@ export async function openDocsSession(
       frames.push(...ui.stop());
     },
     poster() {
-      poster = frames.length;
+      // The current take's frames join `frames` only when the take ends.
+      poster = frames.length + ui.recorded();
     },
     async keys(combo, label) {
       // Inside the take's frame, so the keycap is on camera.

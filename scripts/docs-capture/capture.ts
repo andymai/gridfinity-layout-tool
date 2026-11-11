@@ -54,7 +54,9 @@ async function main(): Promise<void> {
       }
       writeEntry(OUT, shot.id, encodeShot(shot.id, shot.kind, takes, SCALE, WORK, OUT));
       const seconds = ((Date.now() - started) / 1000).toFixed(0);
-      console.log(`${shot.id}: ${shot.kind}, ${light.frames.length} frames in ${seconds} s`);
+      process.stdout.write(
+        `${shot.id}: ${shot.kind}, ${light.frames.length} frames in ${seconds} s\n`
+      );
     } catch (e) {
       failed.push(shot.id);
       console.error(`${shot.id}: FAILED`, e);

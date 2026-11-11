@@ -4,6 +4,8 @@
  * format change fails the capture instead of producing a wrong picture.
  */
 
+import { STAGING_ID } from '../../src/core/constants';
+
 export interface FixtureBin {
   x: number;
   y: number;
@@ -82,7 +84,7 @@ export function layoutFile(f: FixtureLayout): object {
     if (!layer) throw new Error(`no layer ${b.layer ?? 0} in ${f.name}`);
     return bin(b, i, layer.id);
   });
-  const stashed = (f.stash ?? []).map((b, i) => bin(b, placed.length + i, '__staging__'));
+  const stashed = (f.stash ?? []).map((b, i) => bin(b, placed.length + i, STAGING_ID));
   return {
     version: '1.0',
     name: f.name,

@@ -37,7 +37,7 @@ async function main(): Promise<void> {
             return `${e.tagName.toLowerCase()}${e.getAttribute('role') ? `[${e.getAttribute('role')}]` : ''} "${name}" @${Math.round(r.x)},${Math.round(r.y)} ${Math.round(r.width)}x${Math.round(r.height)}`;
           })
       );
-    console.log(controls.join('\n'));
+    process.stdout.write(`${controls.join('\n')}\n`);
     await s.page.screenshot({ path: out });
   } finally {
     await s.close();

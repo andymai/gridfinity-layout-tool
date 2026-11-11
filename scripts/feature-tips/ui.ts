@@ -148,6 +148,8 @@ export interface UiSession {
   record(crop: Rect, scale?: number): Promise<void>;
   /** Stops recording and returns the frames since `record`. */
   stop(): Buffer[];
+  /** Frames recorded since `record`, before `stop` hands them over. */
+  recorded(): number;
   warm(frames: number): Promise<void>;
   hold(seconds: number): Promise<void>;
   park(x: number, y: number): Promise<void>;
@@ -263,6 +265,7 @@ export async function openUi(
       frames = [];
       await session.warm(2);
     },
+    recorded: () => frames.length,
     stop() {
       crop = null;
       return frames;
