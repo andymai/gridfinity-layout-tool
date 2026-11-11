@@ -23,6 +23,8 @@ export interface AnalyticsData {
   lastSetPayload: string;
   /** Whether the `$set_once` traits have ever been sent from this browser. */
   onceTraitsSent: boolean;
+  /** UTC day (YYYY-MM-DD) of the last `pwa_install_available` event. */
+  pwaInstallAvailableDay: string;
 }
 
 let analyticsCache: AnalyticsData | null = null;
@@ -36,6 +38,7 @@ export function createEmptyAnalyticsData(): AnalyticsData {
     designsCreated: 0,
     lastSetPayload: '',
     onceTraitsSent: false,
+    pwaInstallAvailableDay: '',
   };
 }
 

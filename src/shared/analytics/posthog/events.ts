@@ -3,20 +3,20 @@
  *
  * The 20+ tracking helpers are split across focused sibling modules; this
  * file re-exports the public surface and houses the small one-off
- * trackers (PWA install, UTM capture, gallery open/close) that don't
- * fit any of the larger groupings.
+ * trackers (UTM capture, gallery open/close) that don't fit any of the
+ * larger groupings.
  *
  * Sub-modules:
  *   - `eventsCore`         — layout/bin events + engagement milestones
  *   - `eventsPerson`       — person properties + feature-adoption flags
  *   - `eventsErrors`       — exception capture + failure tracking
+ *   - `pwaEvents`          — install availability, installs, display mode
  *   - `binExportEvents`    — sibling file (kept for line-cap headroom)
  */
 
 import { isFirstSession } from './identity';
 import { getPosthogInstance } from './init';
 import { trackEvent, getDeviceType } from './trackEvent';
-import { markFeatureUsed } from './eventsPerson';
 
 // Re-export so callers using the barrel keep working
 export { getDeviceType, trackEvent };
@@ -49,29 +49,11 @@ export {
   trackShareFailure,
   trackTemplateLoadError,
 } from './eventsErrors';
-
-// PWA INSTALL TRACKING
-
-/**
- * Track PWA app installation via the `appinstalled` browser event.
- * Call once from the app shell — the listener fires at most once per install.
- */
-export function listenForPwaInstall(): void {
-  try {
-    window.addEventListener(
-      'appinstalled',
-      () => {
-        trackEvent('pwa_installed', {
-          is_first_session: isFirstSession(),
-        });
-        markFeatureUsed('pwa_installed');
-      },
-      { once: true }
-    );
-  } catch {
-    // Fail silently
-  }
-}
+export {
+  listenForDisplayModeChanges,
+  listenForPwaInstall,
+  listenForPwaInstallAvailability,
+} from './pwaEvents';
 
 // UTM PARAMETER TRACKING
 
