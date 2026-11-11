@@ -81,7 +81,7 @@ The bin designer checks the bin against the print bed of the open layout. The va
 
 ### The export says the bin fits only when laid diagonally
 
-Export it whole, and turn it diagonally on the bed in your slicer. To print it in pieces instead, tick <Ui k="binDesigner.splitExport.enableSplit" /> in the export dialog. For a bin that fits at an angle, that box starts clear.
+Export it whole, and turn it diagonally on the bed in your slicer. To print it in pieces instead, tick <Ui k="binDesigner.splitExport.enableSplit" /> in the export dialog. For a bin that fits only at an angle, <Ui k="binDesigner.splitExport.enableSplit" /> starts off.
 
 ### You want to split a part in your slicer
 
