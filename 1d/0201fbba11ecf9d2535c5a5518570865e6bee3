@@ -1,0 +1,21 @@
+api/lib/contentFilter.ts
+  s_1cc363bb3cc76d::t_2744b727645138 74-76
+api/lib/contentFilter.test.ts
+  s_1cc363bb3cc76d::t_2f35c8505b5c72 613-615,620-630,675-676
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1d0201fbba11ecf9d2535c5a5518570865e6bee3",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
