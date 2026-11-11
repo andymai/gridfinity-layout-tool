@@ -1,0 +1,190 @@
+src/features/bin-designer/components/DesignerPage/DesignerHeader.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 109
+apps/docs/recipes/kitchen-utensil-drawer.md
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1-107
+scripts/docs-capture/encode.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 65-69
+package.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 28
+src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 26,280,517
+scripts/contentRoutes.test.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1-20
+scripts/feature-tips/tips3d.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 37-44,54,60-78,91-92,95-105,110,114-165,269-410,504-510
+vite.config.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 12,218-219,248-250
+src/shared/components/DocsLink/index.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1
+public/robots.txt
+  s_1cc363bb3cc76d::t_00c86e4de408ac 24
+src/i18n/locales/de.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1747-1753,3614-3615,3650
+src/shared/components/SaveStatusIndicator/SaveStatusIndicator.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 87-88
+vercel.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 481-489,544-556
+src/features/bin-designer/components/panel/BaseSection/FloorPatternSection.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 13,41
+src/shell/Mobile/MobileHelpModal/MobileHelpModal.test.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 40-46
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 7,77-89
+  s_1cc363bb3cc76d::t_8b7ca2fd87e69a 90
+src/shared/components/SaveStatusIndicator/SaveStatusIndicator.test.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 26-30
+apps/docs/recipes/electronics-craft-organizer.md
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1-134
+src/features/bin-designer/components/panel/BaseSection/FloorPatternSection.test.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 6,58-62
+  s_1cc363bb3cc76d::t_f6888dfcfa97ba 63
+scripts/copy-docs.test.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1-44
+src/shared/components/HeaderSupportLinks/HeaderSupportLinks.test.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 44,47-66,85,89,94,177,188-191
+src/shell/Mobile/MobileAboutStrip/MobileAboutStrip.test.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 32
+src/i18n/locales/ja.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1717-1723,3546-3547,3582
+apps/docs/recipes/hand-tool-pockets.md
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1-114
+src/i18n/locales/pt-BR.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1747-1753,3614-3615,3650
+src/shared/components/ToolSwitcher/ToolSwitcher.test.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 147-152
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.test.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 128-135
+src/i18n/locales/pl.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1807-1813,3750-3751,3786
+src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 143-156
+scripts/copy-docs.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1-69
+apps/docs/.vitepress/theme/custom.css
+  s_1cc363bb3cc76d::t_00c86e4de408ac 75-80
+src/features/bin-designer/data/featureTips/index.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 20-23,28-31,40-51,76-83,98-105,213-261
+apps/docs/recipes/deep-tool-drawer.md
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1-119
+apps/docs/.vitepress/theme/components/Screenshot.vue
+  s_1cc363bb3cc76d::t_00c86e4de408ac 40
+src/shared/components/DocsLink/DocsLink.test.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1-40
+src/shell/Modals/HelpModal/HelpModal.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 14,117-122
+  s_1cc363bb3cc76d::t_8541af2ec4c861 123
+src/i18n/locales/ka.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 232-233,1069,2057-2063
+src/i18n/locales/nb.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1747-1753,3614-3615,3650
+src/i18n/locales/es.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1747-1753,3614-3615,3650
+src/i18n/locales/zh-CN.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1717-1723,3546-3547,3582
+src/shell/Header/Header.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 106,146,208,234,287
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 40,319
+src/features/bin-designer/components/panel/WallsSection/PatternSelector.test.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 37-49
+src/features/bin-designer/components/panel/WallsSection/PatternSelector.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 12-13,262-263,274,289-297,300-307
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.test.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 7,516-529
+src/i18n/locales/ko.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1717-1723,3546-3547,3582
+src/i18n/locales/it.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1747-1753,3614-3615,3650
+src/shared/components/DocsLink/DocsLink.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1-49
+src/shell/Sidebar/Sidebar.test.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 430
+apps/docs/getting-started/workspace-tour.md
+  s_1cc363bb3cc76d::t_00c86e4de408ac 37,40,88
+apps/docs/getting-started/first-drawer.md
+  s_1cc363bb3cc76d::t_00c86e4de408ac 117
+docs/self-hosting.md
+  s_1cc363bb3cc76d::t_00c86e4de408ac 177-179,189-190
+src/features/bin-designer/components/panel/WallsSection/WallSurfaceSection.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 22,79-81,175-181
+src/shell/Mobile/MobileHeader/MobileHeader.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 8,83-101
+src/i18n/locales/uk.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1807-1813,3750-3751,3786
+apps/docs/settings/offline.md
+  s_1cc363bb3cc76d::t_00c86e4de408ac 44
+src/shell/Header/Header.test.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 77,83,113,384-396
+  s_1cc363bb3cc76d::t_e7b5c8a23ea2de 397-398
+src/i18n/locales/en.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 229-230,1187,2432-2445
+scripts/contentRoutes.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 40-49
+apps/docs/getting-started/first-baseplate.md
+  s_1cc363bb3cc76d::t_00c86e4de408ac 83
+apps/docs/recipes/screw-drawer.md
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1-127
+src/i18n/locales/fr.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1747-1753,3614-3615,3650
+scripts/feature-tips/appModules.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 13-19
+src/i18n/locales/nl.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1747-1753,3614-3615,3650
+src/shared/components/ToolSwitcher/ToolSwitcher.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 26-30,79-83,120-121,156-161
+src/shared/constants/iconPaths.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 46-48
+src/shell/Mobile/MobileHeader/MobileHeader.test.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 42-48
+src/shell/Mobile/MobileHelpModal/MobileHelpModal.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 4,124-134
+docker/nginx.conf
+  s_1cc363bb3cc76d::t_00c86e4de408ac 25-26,148-150
+  s_1cc363bb3cc76d::t_7628588124a946 151
+src/shell/Mobile/MobileAboutStrip/MobileAboutStrip.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 5,52-54
+  s_1cc363bb3cc76d::t_f33defb484189c 55
+scripts/check-docker-parity.test.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 6,21,140,184-189,292-328
+  s_1cc363bb3cc76d::t_ec2b6296449e04 329-330
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.test.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 8,287-291
+  s_1cc363bb3cc76d::t_b67ad1057a05c9 292
+src/shared/constants/links.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 8-10
+apps/docs/.vitepress/config.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 43-44,72-76,94,113,149-153
+src/shell/Sidebar/Sidebar.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 33,525-534
+apps/docs/getting-started/first-bin.md
+  s_1cc363bb3cc76d::t_00c86e4de408ac 99
+apps/docs/.vitepress/navigation.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 31-39
+  s_1cc363bb3cc76d::t_91f9d283a824e2 30
+scripts/feature-tips/stage.ts
+  s_1cc363bb3cc76d::t_00c86e4de408ac 85-89,152,188,215-216,225-227,230-231,256,258,321-342,345,350,354,436,438,492,544
+src/i18n/locales/cs.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1777-1783,3682-3683,3718
+src/i18n/locales/sv.json
+  s_1cc363bb3cc76d::t_00c86e4de408ac 1747-1753,3614-3615,3650
+src/shell/Modals/HelpModal/HelpModal.test.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 42-53
+src/shared/components/HeaderSupportLinks/HeaderSupportLinks.tsx
+  s_1cc363bb3cc76d::t_00c86e4de408ac 7,11,20,26-28,151-162,237,240-249,266
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6ea1ae7e9cc326c3764601aafe156e768f9a17e7",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
