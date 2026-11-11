@@ -55,9 +55,13 @@ describe('checkPage', () => {
     ]);
   });
 
-  it('asks every page but the home page for sources', () => {
+  it('asks every page for a title, a description and sources, the docs root too', () => {
     expect(checkPage(page('apps/docs/x.md', '', { sources: [] }), exists)[0]).toContain('sources');
-    expect(checkPage({ file: 'apps/docs/index.md', body: '', data: {} }, exists)).toEqual([]);
+    expect(checkPage({ file: 'apps/docs/index.md', body: '', data: {} }, exists)).toEqual([
+      'apps/docs/index.md: frontmatter needs a "title"',
+      'apps/docs/index.md: frontmatter needs a "description"',
+      'apps/docs/index.md: frontmatter needs "sources": the code paths this page describes',
+    ]);
   });
 });
 
@@ -92,8 +96,14 @@ describe('checkAppLink', () => {
 describe('checkSidebar', () => {
   it('reports pages without a sidebar entry and entries without a page', () => {
     expect(
-      checkSidebar(['apps/docs/index.md', 'apps/docs/a/b.md', 'apps/docs/a/c.md'], ['/a/b', '/a/d'])
+      checkSidebar(
+        ['apps/docs/index.md', 'apps/docs/a/b.md', 'apps/docs/a/c.md'],
+        ['/', '/a/b', '/a/d']
+      )
     ).toEqual(['sidebar: "/a/d" has no page', 'sidebar: page "/a/c" is not in the sidebar']);
+    expect(checkSidebar(['apps/docs/index.md'], [])).toEqual([
+      'sidebar: page "/index" is not in the sidebar',
+    ]);
   });
 });
 
@@ -176,19 +186,30 @@ describe('checkDocLinks', () => {
     ]);
   });
 
-  it('checks the links in frontmatter, such as the home page buttons and cards', () => {
-    const home: DocPage = {
-      file: 'apps/docs/index.md',
+  it('wants links from the docs root to start with a slash', () => {
+    const root = page(
+      'apps/docs/index.md',
+      '## Top\n[a](/designer/walls) [b](./designer/walls) [c](designer/walls) [d](#top) [e](https://x.dev/y)',
+      { prev: { link: 'designer/walls' } }
+    );
+    expect(checkDocLinks([root, page('apps/docs/designer/walls.md', '')], exists)).toEqual([
+      'apps/docs/index.md: link "./designer/walls" must start with "/" on the docs root',
+      'apps/docs/index.md: link "designer/walls" must start with "/" on the docs root',
+      'apps/docs/index.md: link "designer/walls" must start with "/" on the docs root',
+    ]);
+  });
+
+  it('checks the links in frontmatter, such as prev and next', () => {
+    const lids: DocPage = {
+      file: 'apps/docs/designer/lids.md',
       body: '',
       data: {
-        hero: {
-          actions: [{ link: '/designer/walls' }, { link: 'https://gridfinitylayouttool.com/' }],
-        },
-        features: [{ link: '/designer/gone' }],
+        prev: { text: 'Walls', link: '/designer/walls' },
+        next: { text: 'Gone', link: '/designer/gone' },
       },
     };
-    expect(checkDocLinks([home, page('apps/docs/designer/walls.md', '')], exists)).toEqual([
-      'apps/docs/index.md: link "/designer/gone" has no page',
+    expect(checkDocLinks([lids, page('apps/docs/designer/walls.md', '')], exists)).toEqual([
+      'apps/docs/designer/lids.md: link "/designer/gone" has no page',
     ]);
   });
 });
