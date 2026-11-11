@@ -30,7 +30,6 @@ export interface Clip {
 
 export interface Tip {
   id: FeatureTipId;
-  /** The feature's colour, from the app's preview palette. */
   color: string;
   capture(ctx: TipContext): Promise<Clip>;
 }
@@ -58,10 +57,7 @@ async function renderRun(stage: Stage, view: View, steps: readonly Step[]): Prom
   return frames;
 }
 
-/**
- * `before` held, the `grow` steps, `after` held, then the grow frames back.
- * Long holds on both ends, so it reads as before and after.
- */
+// Long holds on both ends, so the clip reads as before and after.
 async function sweepLoop(
   stage: Stage,
   view: View,
@@ -96,7 +92,6 @@ interface Sweep {
   zoned?: boolean;
 }
 
-/** Plain bin, then the feature appearing and growing from `from` to `to`. */
 function sweepTip({
   id,
   color,
@@ -124,17 +119,13 @@ function sweepTip({
 interface Fade {
   id: FeatureTipId;
   color: string;
-  /** The design without the feature, then each further state it turns on. */
   states: readonly ParamOverrides[];
   camera?: Camera;
   /** The designs paint their own colour zones, so the part is not tinted. */
   zoned?: boolean;
 }
 
-/**
- * For a feature with no value to sweep: the plain bin, each further state
- * crossfading in over the one before, a hold, then a fade back to the start.
- */
+/** For a feature with no value to sweep, where the states crossfade instead. */
 function fadeTip({ id, color, states, camera = CLIP_CAMERA, zoned = false }: Fade): Tip {
   return {
     id,
@@ -287,7 +278,6 @@ const LIP_CELLS = ['frontLeft', 'frontRight', 'backRight', 'backLeft'].flatMap((
   [0, 1, 2, 3].map((band) => `lip:${corner}:${band}`)
 );
 
-/** Multi-color zones: every zone in `body` but the accents. */
 function zones(
   body: string,
   accents: { lip?: string; labelTab?: string; text?: string } = {}
@@ -355,7 +345,6 @@ const lightweightFloor = fadeTip({
 const WALL_WORD = 'SCREWS';
 const WALL_TEXT_COLORS = zones(CLOUD, { text: '#f59e0b' });
 
-/** The word typed onto the front wall, a letter at a time. */
 const wallText = sweepTip({
   id: 'wallText',
   color: CLOUD,
@@ -377,7 +366,6 @@ const wallText = sweepTip({
 
 const LABELLED = { ...BIN, compartments: COMPARTMENTS, label: { enabled: true } };
 
-/** One colour, then the lip, then the label tabs take their own. */
 const multiColor = fadeTip({
   id: 'multiColor',
   color: CLOUD,
@@ -400,7 +388,6 @@ const PLATED = {
   featureColors: zones(CLOUD, { labelTab: '#fbbf24', text: '#334155' }),
 };
 
-/** The plates hover over their sockets, then drop in. */
 const labelPlates: Tip = {
   id: 'labelPlates',
   color: CLOUD,
