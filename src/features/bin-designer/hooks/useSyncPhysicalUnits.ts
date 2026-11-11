@@ -1,8 +1,7 @@
 /**
- * The layout owns the designer's X grid unit, height unit, magnet anchor and
- * low-profile base, so a designed bin mates with the baseplate. This hook
- * copies them into the designer's BinParams when either store changes. The Y
- * grid pitch stays a per-design override (see `usePhysicalUnitsSection`).
+ * The layout owns the designer's grid units (X and Y), height unit, magnet
+ * anchor and low-profile base, so a designed bin mates with the baseplate. This
+ * hook copies them into the designer's BinParams when either store changes.
  *
  * The copy pushes no undo entry: the user changed the layout, not the design.
  */
@@ -18,11 +17,15 @@ import type { BinParams } from '../types';
 import { withSyncedLidHeight } from '../utils/lidHeightUnits';
 import { withResolvedCutoutDepths } from '@/shared/utils/cutoutDepth';
 
-type LayoutUnits = Pick<Layout, 'gridUnitMm' | 'heightUnitMm' | 'magnetAnchor' | 'lowProfileBase'>;
+type LayoutUnits = Pick<
+  Layout,
+  'gridUnitMm' | 'gridUnitMmY' | 'heightUnitMm' | 'magnetAnchor' | 'lowProfileBase'
+>;
 
 function withLayoutUnits(params: BinParams, layout: LayoutUnits): BinParams {
   const sameUnits =
     params.gridUnitMm === layout.gridUnitMm &&
+    params.gridUnitMmY === layout.gridUnitMmY &&
     params.heightUnitMm === layout.heightUnitMm &&
     params.magnetAnchor === layout.magnetAnchor;
   const withUnits = sameUnits
@@ -30,6 +33,7 @@ function withLayoutUnits(params: BinParams, layout: LayoutUnits): BinParams {
     : withSyncedLidHeight({
         ...params,
         gridUnitMm: layout.gridUnitMm,
+        gridUnitMmY: layout.gridUnitMmY,
         heightUnitMm: layout.heightUnitMm,
         magnetAnchor: layout.magnetAnchor,
       });
@@ -55,9 +59,10 @@ function syncParams(layout: LayoutUnits, alreadyRegenerating: boolean): void {
 }
 
 export function useSyncPhysicalUnits(): void {
-  const { gridUnitMm, heightUnitMm, magnetAnchor, lowProfileBase } = useLayoutStore(
+  const { gridUnitMm, gridUnitMmY, heightUnitMm, magnetAnchor, lowProfileBase } = useLayoutStore(
     useShallow((state) => ({
       gridUnitMm: state.layout.gridUnitMm,
+      gridUnitMmY: state.layout.gridUnitMmY,
       heightUnitMm: state.layout.heightUnitMm,
       magnetAnchor: state.layout.magnetAnchor,
       lowProfileBase: state.layout.lowProfileBase,
@@ -65,8 +70,8 @@ export function useSyncPhysicalUnits(): void {
   );
 
   useEffect(() => {
-    syncParams({ gridUnitMm, heightUnitMm, magnetAnchor, lowProfileBase }, false);
-  }, [gridUnitMm, heightUnitMm, magnetAnchor, lowProfileBase]);
+    syncParams({ gridUnitMm, gridUnitMmY, heightUnitMm, magnetAnchor, lowProfileBase }, false);
+  }, [gridUnitMm, gridUnitMmY, heightUnitMm, magnetAnchor, lowProfileBase]);
 
   // The effect above runs only when the LAYOUT changes. A design load, a version
   // restore and an undo replace the params with the units of the saved state,

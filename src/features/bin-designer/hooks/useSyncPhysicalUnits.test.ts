@@ -181,17 +181,6 @@ describe('useSyncPhysicalUnits', () => {
       expect(params.magnetAnchor).toBe('center');
     });
 
-    it('keeps the Y pitch the design was saved with', () => {
-      renderHook(() => useSyncPhysicalUnits());
-
-      act(() => {
-        useDesignerStore.getState().loadDesign(savedDesign({ gridUnitMm: 42, gridUnitMmY: 30 }));
-      });
-
-      expect(useDesignerStore.getState().params.gridUnitMm).toBe(40);
-      expect(useDesignerStore.getState().params.gridUnitMmY).toBe(30);
-    });
-
     it('regenerates once for the load and leaves no undo entry', () => {
       renderHook(() => useSyncPhysicalUnits());
       const epochBefore = useDesignerStore.getState().generation.epoch;
@@ -294,5 +283,39 @@ describe('useSyncPhysicalUnits', () => {
     expect(useDesignerStore.getState().params.width).toBe(DEFAULT_BIN_PARAMS.width);
     expect(useDesignerStore.getState().params.gridUnitMm).toBe(40);
     expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore + 1);
+  });
+
+  describe('non-square grid', () => {
+    it("follows the layout's Y pitch and drops it when the layout goes square", () => {
+      renderHook(() => useSyncPhysicalUnits());
+
+      act(() => useLayoutStore.getState().setGridUnitMmY(22));
+      expect(useDesignerStore.getState().params.gridUnitMmY).toBe(22);
+
+      act(() => useLayoutStore.getState().setGridUnitMmY(null));
+      expect(useDesignerStore.getState().params.gridUnitMmY).toBeUndefined();
+    });
+
+    it('drops the Y pitch a design was saved with when the layout is square', () => {
+      renderHook(() => useSyncPhysicalUnits());
+
+      act(() => {
+        useDesignerStore.getState().loadDesign(savedDesign({ gridUnitMmY: 30 }));
+      });
+
+      expect(useDesignerStore.getState().params.gridUnitMmY).toBeUndefined();
+    });
+
+    it("gives a square design the layout's Y pitch", () => {
+      useLayoutStore.getState().setGridUnitMmY(22);
+      renderHook(() => useSyncPhysicalUnits());
+
+      act(() => {
+        useDesignerStore.getState().loadDesign(savedDesign({ width: 4 }));
+      });
+
+      expect(useDesignerStore.getState().params.width).toBe(4);
+      expect(useDesignerStore.getState().params.gridUnitMmY).toBe(22);
+    });
   });
 });
