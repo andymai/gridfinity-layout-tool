@@ -489,9 +489,8 @@ async function captureDrawerBaseplate(browser: Browser, render: DrawerRender): P
 // Web app manifest screenshots
 // ---------------------------------------------------------------------------
 
-// Chrome's richer install dialog accepts only PNG or JPEG, each side 320 to
-// 3840 px, the long side at most 2.3x the short side, and one aspect ratio per
-// form factor. vite.config.ts lists these files in the manifest.
+// Each frame must produce the size declared in scripts/manifestScreenshots.ts:
+// viewport times deviceScaleFactor. Its test fails on a mismatch.
 const MANIFEST_WIDE: BrowserContextOptions = {
   viewport: { width: 1440, height: 810 },
   deviceScaleFactor: 4 / 3,
