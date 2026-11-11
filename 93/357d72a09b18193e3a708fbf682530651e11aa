@@ -1,0 +1,47 @@
+apps/docs/cutouts/arranging.md
+  s_29533bbc5bb7f2::t_21a87dc5d8ccdb 55,128
+apps/docs/cutouts/basics.md
+  s_29533bbc5bb7f2::t_fb27d3d4ac1848 29,107
+apps/docs/cutouts/phone-scan.md
+  s_29533bbc5bb7f2::t_d14842b0f4491d 58
+apps/docs/cutouts/print-checks.md
+  s_29533bbc5bb7f2::t_7979aaab23d4a2 53,96
+apps/docs/cutouts/workshop.md
+  s_29533bbc5bb7f2::t_33341e48e9a6fe 55
+apps/docs/media/cutouts-arranging-repeat.json
+  s_29533bbc5bb7f2::t_4612a075258ecf 1-5
+apps/docs/media/cutouts-arranging-ruler.json
+  s_29533bbc5bb7f2::t_52f89292edb3f0 1-5
+apps/docs/media/cutouts-basics-editor.json
+  s_29533bbc5bb7f2::t_55a098581d8260 1-5
+apps/docs/media/cutouts-basics-split.json
+  s_29533bbc5bb7f2::t_df468726bfb775 1-5
+apps/docs/media/cutouts-import-stl-dialog.json
+  s_29533bbc5bb7f2::t_e79297857369ff 1-5
+apps/docs/media/cutouts-phone-scan-sheet.json
+  s_29533bbc5bb7f2::t_55e88224361b9b 1-5
+apps/docs/media/cutouts-print-checks-finger.json
+  s_29533bbc5bb7f2::t_5f477651fc66cd 1-5
+apps/docs/media/cutouts-print-checks-list.json
+  s_29533bbc5bb7f2::t_165303e8dd03ab 1-5
+apps/docs/media/cutouts-workshop-build.json
+  s_29533bbc5bb7f2::t_46df946b7c57b5 1-5
+scripts/docs-capture/shots/cutouts.ts
+  s_29533bbc5bb7f2::t_b375eb5b7f05c1 1-7,9-898
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "93357d72a09b18193e3a708fbf682530651e11aa",
+  "prompts": {},
+  "sessions": {
+    "s_29533bbc5bb7f2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a8a99b1df9c791f92",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
