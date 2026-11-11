@@ -8,6 +8,7 @@ sources:
   - src/liveblocks.config.ts
   - api/liveblocks-auth.ts
   - src/features/cloud-share/hooks/useCloudShareAutoSync.ts
+  - src/shared/utils/roomLinkStamp.ts
 ---
 
 # Work together live
@@ -59,10 +60,12 @@ The work of the other people shows on your grid, each in their own color:
 
 ## Who saves the link
 
-The room holds the live layout, but only the link owner's browser saves the room changes back to the share link. It saves them about one second after each change that the owner makes. A change from someone else waits for the next change from the owner.
+The room holds the live layout, but only the link owner's browser saves the room back to the share link. It saves about one second after each change in the room, whoever made it. While the owner is away, the room keeps every change, and the owner's next visit saves them to the link.
 
-::: warning
-Before someone joins, make sure that the owner made a change after the last edits of the others. Then wait a few seconds for the save. The app doesn't show when that save is done, or if it fails. When someone joins, the room loads the saved copy from the link. The room then loses the changes that are not in that copy.
+Someone who joins gets the room's latest layout, so the work of the others stays. The room takes the copy from the link only when that copy is newer. For example, the owner can edit the layout while the link is view-only, then turn editing back on.
+
+::: tip
+A view-only link opens no room. It shows the copy that the owner's browser last saved, so it can lag behind the room while the owner is away.
 :::
 
 ## Read-only rooms
@@ -81,11 +84,11 @@ Do you own the link? Open <Ui k="share.button.manageShare" />. The permission mu
 
 A view-only link opens no room. It shows a copy of the layout, so nobody sees the others.
 
-### Changes that other people made are gone
+### A view-only link doesn't show the latest changes
 
-After the others edit, ask the owner to move a bin and move it back. Then wait a few seconds before anyone joins or opens the link again. The app doesn't show when the save to the link is done.
+Ask the owner to open the layout. The owner's browser then saves the room to the link within a second or so.
 
-Only the owner's browser saves the room to the link, and only after a change that the owner makes. That save includes the changes of everyone in the room. When someone joins, the room loads the saved copy, so it loses the changes that are not in it. See [Who saves the link](#who-saves-the-link).
+Only the owner's browser saves the room to the link. While the owner is away, the room keeps every change, but a view-only link shows the copy that the owner last saved. See [Who saves the link](#who-saves-the-link).
 
 ### Your edits don't reach the others
 
