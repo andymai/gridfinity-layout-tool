@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.539.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.538.0...gridfinity-layout-tool-v4.539.0) (2026-11-11)
+
+
+### Features
+
+* **bin-designer:** video tips for seven more features ([#4943](https://github.com/andymai/gridfinity-layout-tool/issues/4943)) ([29c070a](https://github.com/andymai/gridfinity-layout-tool/commit/29c070aec2fcea5a9ac9edf8c0f468e56d30febd))
+* **docs:** capture light and dark screenshots and clips ([#4938](https://github.com/andymai/gridfinity-layout-tool/issues/4938)) ([8d915df](https://github.com/andymai/gridfinity-layout-tool/commit/8d915df3a51eb344e90fd4f0b383bd6dda9a8a3b))
+* **docs:** serve the user docs at /docs ([#4939](https://github.com/andymai/gridfinity-layout-tool/issues/4939)) ([7cc0ab0](https://github.com/andymai/gridfinity-layout-tool/commit/7cc0ab08772f8012d5ba5a1cc72667cb11348980))
+
+
+### Bug Fixes
+
+* **generation:** forward the lid face groups from a combined export ([#4946](https://github.com/andymai/gridfinity-layout-tool/issues/4946)) ([56074d7](https://github.com/andymai/gridfinity-layout-tool/commit/56074d73ae2c625dc8a4eb9e5d32407cefa7889e))
+* **header:** stop header controls overlapping below 1280px ([#4941](https://github.com/andymai/gridfinity-layout-tool/issues/4941)) ([201889e](https://github.com/andymai/gridfinity-layout-tool/commit/201889e2beb3e4f634817655b8e52f7ee356ddd1))
+
 ## [4.538.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.537.1...gridfinity-layout-tool-v4.538.0) (2026-11-11)
 
 
