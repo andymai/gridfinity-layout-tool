@@ -118,8 +118,5 @@ export default defineConfig({
     },
   },
   markdown: { config: uiLabels },
-  // The workspace pins esbuild 0.28 for security fixes. It rejects Vite 5's
-  // default `modules` target, which VitePress 1.6 still ships.
-  vite: { build: { target: 'es2022' } },
   sitemap: { hostname: `${siteUrl}/` },
 });

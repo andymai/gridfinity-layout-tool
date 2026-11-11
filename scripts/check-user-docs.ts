@@ -178,7 +178,7 @@ export function headingAnchors(body: string): Set<string> {
       ? custom[1]
       : slugify(
           m[1]
-            .replace(/<[^>]+>/g, '')
+            .replace(UI_TAG, '')
             .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
             .replace(/[*_]{1,2}([^*_]+)[*_]{1,2}/g, '$1')
             .replace(/`/g, '')
