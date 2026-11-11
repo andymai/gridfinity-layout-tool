@@ -74,12 +74,13 @@ vi.mock('@/shell/layoutExport/LayoutExportDialog', () => ({
 }));
 
 let mockIsCollaborative = false;
+let mockIsTablet = false;
 
 vi.mock('@/shared/hooks', async (importOriginal) => {
   const actual = await importOriginal<typeof SharedHooks>();
   return {
     ...actual,
-    useResponsive: () => ({ isTablet: false, isMobile: false }),
+    useResponsive: () => ({ isTablet: mockIsTablet, isMobile: false }),
   };
 });
 
@@ -109,6 +110,7 @@ describe('Header', () => {
     resetAllStores();
     vi.clearAllMocks();
     mockIsCollaborative = false;
+    mockIsTablet = false;
   });
 
   describe('rendering', () => {
@@ -376,6 +378,21 @@ describe('Header', () => {
       await waitFor(() => {
         expect(screen.queryByTestId('layout-manager-modal')).not.toBeInTheDocument();
       });
+    });
+  });
+
+  describe('fitting the header', () => {
+    it('shows the Print label and the tool labels only from xl, so the name keeps its room', () => {
+      render(<Header {...defaultProps} />);
+      expect(screen.getByText('Print')).toHaveClass('hidden', 'xl:inline');
+      expect(screen.getByText('Layout')).toHaveClass('hidden', 'xl:inline');
+    });
+
+    it('folds the support links into the More links menu on a tablet', () => {
+      mockIsTablet = true;
+      render(<Header {...defaultProps} />);
+      expect(screen.queryByLabelText('Show help and keyboard shortcuts')).toBeNull();
+      expect(screen.getByRole('button', { name: 'More links' })).toBeInTheDocument();
     });
   });
 

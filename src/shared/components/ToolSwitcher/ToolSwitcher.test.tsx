@@ -144,6 +144,12 @@ describe('ToolSwitcher', () => {
     expect(screen.queryByText('Baseplate')).not.toBeInTheDocument();
   });
 
+  it('keeps the labels for xl screens with labelsFromXl, and the tab names at every width', () => {
+    render(<ToolSwitcher labelsFromXl />);
+    expect(screen.getByText('Bins')).toHaveClass('hidden', 'xl:inline');
+    expect(screen.getByRole('tab', { name: 'Bins' })).toBeInTheDocument();
+  });
+
   it('has accessible labels', () => {
     render(<ToolSwitcher />);
     expect(screen.getByRole('navigation')).toHaveAttribute('aria-label', 'Tool switcher');

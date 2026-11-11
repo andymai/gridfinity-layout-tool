@@ -41,9 +41,10 @@ describe('HeaderSupportLinks', () => {
     expect(screen.getByLabelText('header.sendFeedback')).toBeInTheDocument();
   });
 
-  it('renders help button', () => {
+  it('renders help button, with its label from xl', () => {
     render(<HeaderSupportLinks />);
     expect(screen.getByLabelText('header.helpAndShortcuts')).toBeInTheDocument();
+    expect(screen.getByText('header.help')).toHaveClass('hidden', 'xl:inline');
   });
 
   it('shows the docs icon in the bar on desktop, and its label from 2xl', () => {
