@@ -15,7 +15,6 @@ import { nav, sidebar } from '../apps/docs/.vitepress/navigation';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DOCS_DIR = 'apps/docs';
-const HOME_PAGE = `${DOCS_DIR}/index.md`;
 const APP_ORIGIN = 'https://gridfinitylayouttool.com';
 const APP_ROUTES = new Set(['/', '/designer', '/baseplate', '/community', '/supporters']);
 const LOCALES: ReadonlySet<string> = new Set(CONTENT_LOCALES);
@@ -65,7 +64,6 @@ function pageSources(page: DocPage): string[] {
   return Array.isArray(sources) ? sources.filter((s): s is string => typeof s === 'string') : [];
 }
 
-// The home page keeps its hero buttons and feature cards in frontmatter.
 function frontmatterLinks(data: unknown): string[] {
   if (Array.isArray(data)) return data.flatMap(frontmatterLinks);
   if (typeof data !== 'object' || data === null) return [];
@@ -97,18 +95,16 @@ export function checkPage(page: DocPage, exists: (rel: string) => boolean): stri
   const problems: string[] = [];
   const at = (msg: string): string => `${page.file}: ${msg}`;
 
-  if (page.file !== HOME_PAGE) {
-    for (const field of ['title', 'description']) {
-      const value = page.data[field];
-      if (typeof value !== 'string' || value === '')
-        problems.push(at(`frontmatter needs a "${field}"`));
-    }
-    const sources = pageSources(page);
-    if (sources.length === 0)
-      problems.push(at('frontmatter needs "sources": the code paths this page describes'));
-    for (const source of sources) {
-      if (!exists(source)) problems.push(at(`source "${source}" does not exist`));
-    }
+  for (const field of ['title', 'description']) {
+    const value = page.data[field];
+    if (typeof value !== 'string' || value === '')
+      problems.push(at(`frontmatter needs a "${field}"`));
+  }
+  const sources = pageSources(page);
+  if (sources.length === 0)
+    problems.push(at('frontmatter needs "sources": the code paths this page describes'));
+  for (const source of sources) {
+    if (!exists(source)) problems.push(at(`source "${source}" does not exist`));
   }
 
   for (const [, key] of page.body.matchAll(UI_TAG)) {
@@ -130,8 +126,8 @@ export function checkPage(page: DocPage, exists: (rel: string) => boolean): stri
 
 export function checkSidebar(files: readonly string[], links: readonly string[]): string[] {
   const problems: string[] = [];
-  const pages = new Set(files.filter((f) => f !== HOME_PAGE).map(pageLink));
-  const linked = new Set(links);
+  const pages = new Set(files.map(pageLink));
+  const linked = new Set(links.map((link) => link.replace(/\/$/, '/index')));
   for (const link of linked) {
     if (!pages.has(link)) problems.push(`sidebar: "${link}" has no page`);
   }
@@ -141,18 +137,11 @@ export function checkSidebar(files: readonly string[], links: readonly string[])
   return problems;
 }
 
-/** A page's screenshot ids: its `<Screenshot>` tags, plus a home page's `heroClip`. */
-export function screenshotIds(page: DocPage): string[] {
-  const ids = [...page.body.matchAll(SCREENSHOT_TAG)].map(([, id]) => id);
-  const hero = (page.data.heroClip as { id?: unknown } | undefined)?.id;
-  return typeof hero === 'string' ? [...ids, hero] : ids;
-}
-
 export function checkScreenshotIds(pages: readonly DocPage[]): string[] {
   const seen = new Map<string, string>();
   const problems: string[] = [];
   for (const page of pages) {
-    for (const id of screenshotIds(page)) {
+    for (const [, id] of page.body.matchAll(SCREENSHOT_TAG)) {
       if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id))
         problems.push(`${page.file}: screenshot id "${id}" must be kebab-case`);
       const first = seen.get(id);
@@ -199,7 +188,9 @@ export function checkMedia(
   manifest: Record<string, MediaEntry>,
   files: readonly string[]
 ): string[] {
-  const used = new Set(pages.flatMap(screenshotIds));
+  const used = new Set(
+    pages.flatMap((p) => [...p.body.matchAll(SCREENSHOT_TAG)].map(([, id]) => id))
+  );
   const present = new Set(files);
   const owned = new Set<string>();
   const problems: string[] = [];
@@ -416,7 +407,9 @@ function main(): void {
     for (const row of rows)
       console.warn(`${row.behindDays.toFixed(1).padStart(6)} days  ${row.file}`);
     const manifest = readManifest();
-    const shots = pages.flatMap((page) => screenshotIds(page).map((id) => ({ page, id })));
+    const shots = pages.flatMap((page) =>
+      [...page.body.matchAll(SCREENSHOT_TAG)].map(([, id]) => ({ page, id }))
+    );
     const missing = shots.filter(({ id }) => !manifest[id]);
     if (missing.length > 0)
       console.warn(`\n${missing.length} of ${shots.length} screenshots are not captured yet.`);

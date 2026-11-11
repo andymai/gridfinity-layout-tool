@@ -10,7 +10,6 @@ import {
   docsForStagedSources,
   headingAnchors,
   mediaFiles,
-  screenshotIds,
 } from './check-user-docs';
 import type { DocPage } from './check-user-docs';
 
@@ -56,9 +55,13 @@ describe('checkPage', () => {
     ]);
   });
 
-  it('asks every page but the home page for sources', () => {
+  it('asks every page for a title, a description and sources, the docs root too', () => {
     expect(checkPage(page('apps/docs/x.md', '', { sources: [] }), exists)[0]).toContain('sources');
-    expect(checkPage({ file: 'apps/docs/index.md', body: '', data: {} }, exists)).toEqual([]);
+    expect(checkPage({ file: 'apps/docs/index.md', body: '', data: {} }, exists)).toEqual([
+      'apps/docs/index.md: frontmatter needs a "title"',
+      'apps/docs/index.md: frontmatter needs a "description"',
+      'apps/docs/index.md: frontmatter needs "sources": the code paths this page describes',
+    ]);
   });
 });
 
@@ -93,8 +96,14 @@ describe('checkAppLink', () => {
 describe('checkSidebar', () => {
   it('reports pages without a sidebar entry and entries without a page', () => {
     expect(
-      checkSidebar(['apps/docs/index.md', 'apps/docs/a/b.md', 'apps/docs/a/c.md'], ['/a/b', '/a/d'])
+      checkSidebar(
+        ['apps/docs/index.md', 'apps/docs/a/b.md', 'apps/docs/a/c.md'],
+        ['/', '/a/b', '/a/d']
+      )
     ).toEqual(['sidebar: "/a/d" has no page', 'sidebar: page "/a/c" is not in the sidebar']);
+    expect(checkSidebar(['apps/docs/index.md'], [])).toEqual([
+      'sidebar: page "/index" is not in the sidebar',
+    ]);
   });
 });
 
@@ -177,19 +186,17 @@ describe('checkDocLinks', () => {
     ]);
   });
 
-  it('checks the links in frontmatter, such as the home page buttons and cards', () => {
-    const home: DocPage = {
-      file: 'apps/docs/index.md',
+  it('checks the links in frontmatter, such as prev and next', () => {
+    const lids: DocPage = {
+      file: 'apps/docs/designer/lids.md',
       body: '',
       data: {
-        hero: {
-          actions: [{ link: '/designer/walls' }, { link: 'https://gridfinitylayouttool.com/' }],
-        },
-        features: [{ link: '/designer/gone' }],
+        prev: { text: 'Walls', link: '/designer/walls' },
+        next: { text: 'Gone', link: '/designer/gone' },
       },
     };
-    expect(checkDocLinks([home, page('apps/docs/designer/walls.md', '')], exists)).toEqual([
-      'apps/docs/index.md: link "/designer/gone" has no page',
+    expect(checkDocLinks([lids, page('apps/docs/designer/walls.md', '')], exists)).toEqual([
+      'apps/docs/designer/lids.md: link "/designer/gone" has no page',
     ]);
   });
 });
@@ -229,15 +236,5 @@ describe('checkMedia', () => {
       'apps/docs/media/gone.json: fills no <Screenshot> on any page',
       'apps/docs/media: old.png belongs to no capture',
     ]);
-  });
-});
-
-describe('screenshotIds', () => {
-  it('counts a home page heroClip with the page tags', () => {
-    const home = page('apps/docs/index.md', '<Screenshot id="a-tag" />', {
-      heroClip: { id: 'home-hero', alt: 'x' },
-    });
-    expect(screenshotIds(home)).toEqual(['a-tag', 'home-hero']);
-    expect(screenshotIds(page('apps/docs/x.md', ''))).toEqual([]);
   });
 });

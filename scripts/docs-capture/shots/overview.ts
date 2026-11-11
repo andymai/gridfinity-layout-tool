@@ -9,14 +9,14 @@ import type { Params } from './apps';
 import { cellCenter, openLayouts } from './layoutEditor';
 
 const ASPECT = 16 / 9;
-/** CSS px the hero clip shows at; every take is scaled to it. */
+/** CSS px the clip is captured at; every take is scaled to it. */
 const WIDTH = 960;
 
 /**
  * The Workbench drawer widened to 12 x 7, close to the clip's 16:9, so the grid
  * fills the frame: the canvas pins a narrower grid to its left edge.
  */
-const HERO_DRAWER: FixtureLayout = {
+const WIDE_DRAWER: FixtureLayout = {
   ...WORKBENCH,
   width: 12,
   bins: [
@@ -71,12 +71,12 @@ async function applyDesign(s: DocsSession, params: Params): Promise<void> {
   await s.ui.waitBuilt();
 }
 
-const homeHero: Shot = {
-  id: 'home-hero',
+const overview: Shot = {
+  id: 'introduction-overview',
   kind: 'clip',
   async take(s) {
     // Plan: the last bin drawn into the drawer's empty corner.
-    await openLayouts(s, HERO_DRAWER);
+    await openLayouts(s, WIDE_DRAWER);
     // With both side panels closed, the 16:9 frame holds the grid and nothing else.
     for (const name of ['sidebar.collapseLeftPanel', 'rightPanel.collapseRightPanel'] as const) {
       await s.page
@@ -105,9 +105,9 @@ const homeHero: Shot = {
     const measure = async (): Promise<Rect> =>
       union(
         await header('grid.selectColumnAria', 1),
-        await header('grid.selectColumnAria', HERO_DRAWER.width),
+        await header('grid.selectColumnAria', WIDE_DRAWER.width),
         await header('grid.selectRowAria', 1),
-        await header('grid.selectRowAria', HERO_DRAWER.depth)
+        await header('grid.selectRowAria', WIDE_DRAWER.depth)
       );
     // The canvas recentres after the panels close; frame it once it holds still.
     let cells = await measure();
@@ -176,4 +176,4 @@ const homeHero: Shot = {
   },
 };
 
-export const HOME: readonly Shot[] = [homeHero];
+export const OVERVIEW: readonly Shot[] = [overview];
