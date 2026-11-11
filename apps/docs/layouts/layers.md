@@ -1,0 +1,93 @@
+---
+title: Work in layers
+description: 'Add and order layers, stack bins on bins, use spacers, and view the layers in 3D.'
+sources:
+  - src/features/layers/
+  - src/shared/utils/restingStack.ts
+  - src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  - src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreviewControls.tsx
+  - src/features/grid-editor/components/Grid/GridCanvas/GridCanvas.tsx
+  - src/shared/hooks/use3DPreviewKeyboard.ts
+  - src/features/bin-designer/components/panel/BaseSection/BodyTypeTiles.tsx
+---
+
+# Work in layers
+
+A deep drawer can hold more than one level of bins. In the Gridfinity Layout Tool, each level is a layer. Bins on a higher layer sit on the bins below them, as they do in a real drawer. This page shows how to add layers, stack bins, and check the stacks in 3D.
+
+## How layers work
+
+The first layer is the bottom of the drawer. The <Ui k="common.layers" /> panel lists the top layer first.
+
+A layer sets the order of the stack, not a fixed height. Each bin rests on the tallest bin under it on a lower layer. With no bin under it, it rests on the baseplate. So a tall bin lifts the bins above it, and a short bin lets them sit lower.
+
+The height of a layer is only the height that new bins on that layer get. A change to it does not move or resize the bins that are already there.
+
+Only the tallest stack must fit in the drawer. The <Ui k="layers.tallestStack" /> bar in the <Ui k="common.layers" /> panel compares it with the drawer height. See [Set up the drawer](./drawer-setup#check-the-drawer-height).
+
+## Add, rename and order layers
+
+<Screenshot id="layouts-layers-panel" alt="The Layers panel with three layers, the active layer marked, and the Tallest stack bar below the list." spec="Layout editor on desktop, left panel open. Layout with a 5 by 4 drawer, drawer height 84 mm, and three layers that each hold two or three bins. Layer 2 active. Crop to the Layers group, from its title to the fill statistics line." />
+
+- To add a layer, click <Ui k="layers.addNewLayer" /> (the plus button) in the <Ui k="common.layers" /> panel. The new layer goes on top. A layout can have 10 layers.
+- To rename a layer, click its name, type a new name and press <kbd>Enter</kbd>.
+- To change the height for new bins, use the stepper on the layer row.
+- To change the order, drag a layer row up or down. The Layout Tool stops a new order that makes a stack taller than the drawer.
+- To delete a layer, click the delete button on its row (<Ui k="layers.deleteTooltip" />). Its bins move to the stash. A layout always keeps one layer.
+
+The height of a new layer comes from <Ui k="settings.defaultLayerHeight" /> in <Ui k="settings.tabs.defaults" />.
+
+## Change the active layer
+
+You draw and edit bins on the active layer only. To change it, click a layer row, or press <kbd>W</kbd> for the layer above and <kbd>S</kbd> for the layer below. With two or more layers, the toolbar above the grid shows the name and height of the active layer.
+
+When you change the layer, the Layout Tool clears the selection. To move bins to a different layer, select them and use <Ui k="selectionToolbar.moveToLayer" />. See [Work with several bins](./multi-select).
+
+## Stack bins on bins
+
+Draw or drop a bin on an upper layer over bins on a lower layer. The bin then rests on the tallest bin under it.
+
+A bin that rests on another bin shows a small tag on the grid, for example "on 6u". A warning icon shows next to the tag when part of its base has nothing under it. The inspector shows the same facts: the height that the bin rests at, and <Ui k="inspector.unevenSupport" />.
+
+### Reserve space above a bin
+
+Some contents stand higher than their bin, for example scissor handles. Set <Ui k="inspector.clearanceMmLabel" /> in the inspector to keep space free above the bin. The clearance does not make the printed bin taller.
+
+On the layers above, striped cells mark the clearance. No bin can rest there. Click a striped zone to go to the bin that reserves it.
+
+## Make short bins finish flush with spacers
+
+A spacer is an open frame with feet and no floor. You put it under a short bin so that the top of the short bin lines up with its taller neighbors.
+
+1. In the bin designer, open the <Ui k="binDesigner.group.base" /> group.
+2. Under <Ui k="binDesigner.base.bodyType" />, choose <Ui k="binDesigner.spacer" />.
+3. Set the height of the spacer, then save the design.
+4. In the layout editor, put the spacer on the lower layer.
+5. Put the short bin on the layer above, over the spacer.
+
+A spacer counts like a bin of the same height. For example, a 2u spacer under a 2u bin reaches the top of a 4u bin. At the standard 7 mm height unit, a spacer can be 1u tall. See [Special bins](../designer/special-bins).
+
+## See the layers
+
+With two or more layers, these views help you check the stacks.
+
+On the grid, turn on <Ui k="toolbar.showLayersBelow" /> in the toolbar. The bins of the lower layers then show as faint shapes under the active layer.
+
+In the 3D preview, open with <Ui k="toolbar.3dView" />, three buttons pick the layers to show:
+
+| Button                | What the preview shows                   |
+| --------------------- | ---------------------------------------- |
+| <Ui k="grid.focus" /> | The active layer only                    |
+| <Ui k="grid.stack" /> | The active layer and the layers below it |
+| <Ui k="grid.all" />   | All the layers                           |
+
+<Ui k="grid.explodedView.label" /> lifts each layer apart so that you can see between them. You can also press <kbd>E</kbd>. The exploded view shows all the layers, and it works on a computer screen only.
+
+<Screenshot id="layouts-layers-exploded" alt="The 3D preview in the exploded view, with three layers of bins lifted apart." spec="Layout editor on desktop with the 3D preview expanded (Space). Same three-layer layout as the Layers panel shot. Turn on Explode. Show an isometric angle where every layer and its label is visible. Crop to the preview." />
+
+## Next steps
+
+- [Set up the drawer](./drawer-setup): measure the drawer height for an exact check.
+- [Layouts, layers and the stash](../concepts/layouts-layers-stash): the ideas behind layers.
+- [Stacking](../designer/stacking): the stacking lip and how bins sit on each other.
+- [Special bins](../designer/special-bins): spacers and other body types.

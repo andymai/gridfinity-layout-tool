@@ -24,6 +24,8 @@ export default defineConfig([
     'coverage',
     'e2e',
     'scripts',
+    // The VitePress docs site: build tooling and Markdown, with its own build.
+    'apps/docs',
     'benchmarks',
     'reports',
     'brep-parts',

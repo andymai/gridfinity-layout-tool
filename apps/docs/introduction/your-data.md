@@ -1,0 +1,99 @@
+---
+title: Your data and privacy
+description: 'Learn what stays in your browser, what goes to the server, and how to control it.'
+sources:
+  - src/core/storage/
+  - src/core/sync/
+  - api/auth/README.md
+  - api/sync/account.ts
+  - src/shared/analytics/posthog/
+  - src/shell/Modals/SettingsModal/tabs/PrivacyTab/
+  - src/core/api/share.ts
+---
+
+# Your data and privacy
+
+The Gridfinity Layout Tool works without an account, and your work stays in your browser unless you choose otherwise. This page tells you what the Layout Tool keeps on your device, what it sends to the server, and which privacy choices you control. For the full legal text, read the [privacy policy](https://gridfinitylayouttool.com/privacy).
+
+## What stays in your browser
+
+When you do not sign in, the Layout Tool keeps all of your work in your browser on this device:
+
+- your layouts, and the history of each layout
+- your saved bin designs
+- your saved baseplates
+- your settings
+
+The Layout Tool saves each change automatically. It uses the database in your browser for most data. If your browser has no database, the Layout Tool uses the smaller local storage of about 5 MB. To see which one your browser uses, click <Ui k="sidebar.settings" /> (the gear icon in the header), then click <Ui k="settings.tabs.storage" />.
+
+The data stays until you delete it. Other browsers and other devices do not see it.
+
+To delete the data in this browser:
+
+1. Click <Ui k="sidebar.settings" /> (the gear icon) in the header.
+2. Click <Ui k="settings.tabs.storage" />.
+3. Click <Ui k="settings.storage.clearAllData" />, then confirm.
+
+This deletes your layouts, their history, the usage data, and the cached data. It keeps your settings, your saved bin designs and your saved baseplates. To remove everything, also clear the site data for gridfinitylayouttool.com in your browser settings.
+
+## Sign-in and sync
+
+Sign-in is optional. Sign in when you want the same layouts and designs on more than one device. You sign in with a Google or GitHub account. The Layout Tool does not ask for or keep a password.
+
+To sign in, click <Ui k="dock.workingLocally" /> at the bottom of the left sidebar. Then click <Ui k="auth.signInWithGoogle" /> or <Ui k="auth.signInWithGithub" />.
+
+<Screenshot id="introduction-your-data-sign-in" alt="The account menu at the bottom of the left sidebar, with the two sign-in choices." spec="Layout editor on desktop at 1440 px wide, signed out, one saved layout. Click the account dock at the bottom of the left sidebar to open its menu. Crop to the lower part of the sidebar so that the menu and both sign-in choices show." />
+
+From your Google or GitHub account, the Layout Tool gets three things only:
+
+- an account number that the provider gives you, so the Layout Tool knows you on your next visit
+- your email address
+- your display name
+
+When you sign in, the Layout Tool copies your work to your account on the server. It copies your layouts, saved bin designs, saved baseplates, layout folders, and the version history of your designs. Only your signed-in session can read them. Each account holds up to 100 layouts, 100 bin designs and 100 baseplates.
+
+::: info
+If another account signed in on this browser before, the Layout Tool asks what to do with the local layouts and designs. You can add them to the new account, or discard them.
+:::
+
+A sign-in lasts 30 days. To sign out, click <Ui k="sidebar.settings" />, click <Ui k="settings.tabs.account" />, and click <Ui k="account.signOut.button" />. The Layout Tool asks if you want to keep your local copies on this device or wipe them.
+
+To delete your account, click <Ui k="account.deleteAccount.button" /> on the same tab. This signs you out on each device. It deletes all of your synced data and the designs that you published to the community gallery. It also removes your likes and your reports. Local copies on this device stay.
+
+## What a share link publishes
+
+<Ui k="share.button.shareLayout" /> in the layout editor header makes a share link. When you click <Ui k="share.createShareLink" />, the Layout Tool uploads a copy of the layout to the server. The copy holds:
+
+- the layout name, the drawer size and the grid options
+- the layers, and each bin with its label, notes, custom properties and items
+- the categories and their colors
+- the bin designs that link to bins in the layout
+
+Anyone with the link can see the copy. By default, they can only view it. If you choose <Ui k="share.anyoneWithLinkCanEdit" />, people can edit the layout with you live. While you edit together, the other people see your cursor, your display name and the bins that you select. To stop the share, click <Ui k="share.deleteShareLink" />. The link then stops working.
+
+You can also share without a server copy. Click <Ui k="header.manageLayouts" /> in the menu next to the layout name, and share from there. That share window can put the whole layout inside the link itself, or save the layout as a JSON file.
+
+## What publishing makes public
+
+You can publish a bin design to the [community gallery](https://gridfinitylayouttool.com/community). Publishing needs sign-in. The design, its name and description, its preview images and 3D preview, and the public name that you choose become public. Search engines can find them, and anyone can download and remix the design under the CC BY 4.0 license. You can unpublish a design at any time. Copies that other people made before you unpublish stay with them.
+
+## Usage analytics
+
+To find bugs and choose what to improve, the Layout Tool sends usage events to an analytics service (PostHog). The events tell which features people use, the device type, errors, speed, and patterns such as drawer sizes and bin counts. A random ID in your browser groups your events. The events do not hold your name or your email address.
+
+To stop the usage events:
+
+1. Click <Ui k="sidebar.settings" /> in the header.
+2. Click <Ui k="settings.tabs.privacy" />.
+3. Turn off <Ui k="settings.helpImprove" />.
+
+When the switch is off, the Layout Tool does not start the analytics service, and it deletes the random ID from your browser.
+
+Your browser can also make this choice for you. If your browser sends a Global Privacy Control or Do Not Track signal, the switch starts off. The <Ui k="settings.tabs.privacy" /> tab then shows a note about the signal. You can still turn the switch on.
+
+## Next steps
+
+- [Accounts and sync](../sharing/accounts-and-sync): sign in, sync status, and what to do when sync fails
+- [Share a layout](../sharing/share-links): all the ways to share a layout
+- [Settings and accessibility](../settings/settings): the other settings tabs
+- [Install and work offline](../settings/offline): use the Layout Tool with no connection
