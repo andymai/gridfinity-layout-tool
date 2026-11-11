@@ -69,7 +69,6 @@ async function saveDesign(s: DocsSession, name: string, params: Params): Promise
   );
 }
 
-/** A fixture bin that prints a saved design, named by its key in the design table. */
 interface LinkedBin extends FixtureBin {
   design?: string;
 }
@@ -110,7 +109,6 @@ async function openLinkedLayout(
   return ids;
 }
 
-/** Off camera: reloads the bin designer on saved design `id`. */
 async function openDesign(s: DocsSession, id: string): Promise<void> {
   await s.page.evaluate(async (active) => {
     const storage = (await import(
@@ -123,7 +121,6 @@ async function openDesign(s: DocsSession, id: string): Promise<void> {
   await s.dismissToasts();
 }
 
-/** Off camera: scrolls the side panel so the top of `target` sits at `y`. */
 async function scrollPanel(s: DocsSession, target: Locator, y: number): Promise<void> {
   await target.evaluate((el, top) => {
     let n = el.parentElement;
@@ -198,7 +195,6 @@ async function builtMeshes(s: DocsSession, minTriangles: number): Promise<number
   }, minTriangles);
 }
 
-/** Waits off camera until the preview draws `count` built design meshes. */
 async function waitLinkedMeshes(s: DocsSession, count: number): Promise<void> {
   for (let i = 0; ; i++) {
     const built = await builtMeshes(s, 1000);
@@ -284,7 +280,6 @@ async function binsBox(s: DocsSession): Promise<Rect> {
   });
 }
 
-/** Opens the layout editor's 3D preview, expanded to the window. */
 async function expandPreview(s: DocsSession): Promise<void> {
   await s.page
     .getByRole('button', { name: label('toolbar.show3dPreview') })
@@ -299,10 +294,6 @@ async function expandPreview(s: DocsSession): Promise<void> {
   await s.ui.warm(40);
 }
 
-/**
- * Off camera: zooms the expanded preview with the wheel until the bins just
- * fit `area`, then pans them to its centre. Returns where they end up.
- */
 async function fitBins(s: DocsSession, area: Rect): Promise<Rect> {
   const fill = (b: Rect): number => Math.max(b.width / area.width, b.height / area.height);
   const [cx, cy] = [area.x + area.width / 2, area.y + area.height / 2];
@@ -344,7 +335,7 @@ async function fitBins(s: DocsSession, area: Rect): Promise<Rect> {
   return binsBox(s);
 }
 
-/** Off camera: turns the wheel over the preview at `at`, zooming out when `notches` is positive. */
+/** Positive `notches` zoom out. */
 async function wheelView(
   s: DocsSession,
   at: readonly [number, number],
@@ -358,11 +349,7 @@ async function wheelView(
   await s.ui.warm(10);
 }
 
-/**
- * Off camera: drags `dx`, `dy` CSS px across a 3D preview from `at`, with the
- * left button to turn the view (up to look from lower) or the right button
- * to pan it, then lets the camera settle.
- */
+/** The left button turns the view (drag up to look from lower); the right button pans it. */
 async function dragView(
   s: DocsSession,
   at: readonly [number, number],
@@ -494,10 +481,6 @@ async function grip(s: DocsSession): Promise<[number, number]> {
   return [c.x + c.width * 0.85, c.y + c.height * 0.5];
 }
 
-/**
- * Off camera: zooms the designer preview with the wheel until the part just
- * fits `area`, then pans it to the centre of `area`.
- */
 async function placePart(s: DocsSession, area: Rect): Promise<Rect> {
   const at = await grip(s);
   const fill = (b: Rect): number => Math.max(b.width / area.width, b.height / area.height);
@@ -517,7 +500,6 @@ async function placePart(s: DocsSession, area: Rect): Promise<Rect> {
   return partBox(s);
 }
 
-/** Where the designer's side panel ends at its default width. */
 const PANEL_EDGE = 320;
 
 const screwBlankCaption: Shot = {
@@ -837,7 +819,6 @@ const CRAFT_CAT = [
 
 const cellIds = (n: number): number[] => Array.from({ length: n }, (_, i) => i);
 
-/** A 3u tray with a swappable label plate on each compartment, white with black text. */
 function plateTray(w: number, d: number, cols: number, rows: number, texts: string[]): Params {
   return {
     width: w,
@@ -850,7 +831,6 @@ function plateTray(w: number, d: number, cols: number, rows: number, texts: stri
   };
 }
 
-/** A tray of 4 columns: one 3U plate across each row, with one caption for the row. */
 function rowTray(rowTexts: string[]): Params {
   const tray = plateTray(3, 2, 4, 2, []);
   return { ...tray, label: { ...(tray.label as Params), rowTexts } };
@@ -989,7 +969,6 @@ function mirrored(upper: readonly Pt[]): Pt[] {
   return [...upper, ...[...upper].reverse().map(([x, y]): Pt => [x, -y])];
 }
 
-/** 150 mm combination pliers, jaws to the left, closed handles to the right. */
 const PLIERS: Pt[] = mirrored([
   [0, 2.5],
   [6, 4],
@@ -1017,7 +996,6 @@ const PLIERS: Pt[] = mirrored([
   [76, 0.8],
 ]);
 
-/** A 150 mm adjustable wrench, its open jaw to the left. */
 const WRENCH: Pt[] = [
   [0, 9],
   [16, 9],
@@ -1047,7 +1025,6 @@ const WRENCH: Pt[] = [
   [0, 15],
 ];
 
-/** A 150 mm screwdriver, tip to the left. */
 const SCREWDRIVER: Pt[] = mirrored([
   [0, 2],
   [2, 3],
@@ -1135,7 +1112,6 @@ const CUT_EDITOR_STORAGE = {
 
 const TOOL_BIN: Params = { width: 4, depth: 3, height: 3 };
 
-/** The thickness prompt that a scan raises, over the board. */
 const thicknessPrompt = (s: DocsSession): Locator =>
   s.page
     .getByRole('region', {
@@ -1394,7 +1370,6 @@ const toolsHero: Shot = {
   },
 };
 
-/** Shots for the Recipes chapter. */
 export const RECIPES: readonly Shot[] = [
   screwDrawerHero,
   screwBlankCaption,
