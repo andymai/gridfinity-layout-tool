@@ -1,6 +1,6 @@
 ---
 title: Labs
-description: 'Turn on early features in Settings > Labs: Places and Find, the sliding tray, a second 3D engine and a speed overlay.'
+description: 'Turn on early features in Settings > Labs: finding what your bins hold, the sliding tray, a second 3D engine and a speed overlay.'
 sources:
   - src/core/labs/features.ts
   - src/shell/Modals/SettingsModal/tabs/LabsTab/LabsTab.tsx
@@ -9,6 +9,7 @@ sources:
   - src/features/bin-inspector/components/Inspector/BinItemsEditor/
   - src/features/bin-designer/components/panel/SlideTraySection/
   - src/features/bin-designer/components/PerfOverlay/PerfOverlay.tsx
+  - src/core/constants.ts
 ---
 
 # Labs
@@ -28,7 +29,7 @@ The feature starts at once in all open tabs. A card with more risk shows a warni
 
 <Screenshot id="settings-labs-tab" alt="The Labs tab in Settings, with the 3D Engine selector at the top and the feature cards below it." spec="Settings, Labs tab, desktop. Leave the 3D engine on Default and all cards off, so the medium-risk warning on the sliding tray card shows. Crop to the Labs tab content." />
 
-## Places and Find
+## Find What Your Bins Hold
 
 Forgot which drawer holds the hex keys? With this feature, you write down what each bin holds, and then find any item in all your layouts.
 

@@ -47,7 +47,7 @@ The panel shows a zone only when the bin has that part. For example, the <Ui k="
 Two more things can carry a color of their own:
 
 - A cutout, in the <Ui k="binDesigner.cutouts.section.color" /> section of the cutout editor. See [Color zones](../concepts/multi-color#color-zones).
-- A compartment in the Bento workspace. See [Draw compartments with Bento](./compartments#draw-compartments-with-bento).
+- A compartment in the <Ui k="binDesigner.openBentoWorkspace" />. See [Draw compartments with Bento](./compartments#draw-compartments-with-bento).
 
 ### Split the stacking lip
 
@@ -71,7 +71,7 @@ The switch above the bands shows the height in <Ui k="binDesigner.colors.accent.
 
 The <Ui k="binDesigner.textColor" /> covers all lettering: label tab text, plate text and icons, cutout labels, and wall, floor and lid text. Set it in the Text group here, or right under each finish picker in the text controls.
 
-Pick a Text color that stands out from the surface under the letters. Engraved and embossed letters show by their shape, even in one color. [Flat letters](./labels-and-text#pick-a-text-finish) show only by color.
+Pick a <Ui k="binDesigner.textColor" /> that stands out from the surface under the letters. Engraved and embossed letters show by their shape, even in one color. [Flat letters](./labels-and-text#pick-a-text-finish) show only by color.
 
 When flat letters have the same color as their surface, the panel warns you that they won't show. Click <Ui k="binDesigner.textColor.useContrasting" /> to pick a color that does.
 
@@ -109,7 +109,7 @@ To make the design single-color:
 
 1. Turn off <Ui k="binDesigner.group.colors" />.
 2. In the cutout editor, open the <Ui k="binDesigner.cutouts.section.color" /> section of each colored cutout and pick <Ui k="binDesigner.cutouts.color.off" />.
-3. In the Bento workspace, do the same for each colored compartment.
+3. In the <Ui k="binDesigner.openBentoWorkspace" />, do the same for each colored compartment.
 
 Your zone colors stay saved, so you can turn <Ui k="binDesigner.group.colors" /> back on later. <Ui k="binDesigner.colors.matchAllToBody" /> doesn't make a design single-color by itself. It leaves the text, lid and accent band colors as they are, and it doesn't touch cutout or compartment colors.
 

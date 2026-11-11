@@ -71,7 +71,7 @@ To put a layout in a folder, open its more actions menu and choose <Ui k="layout
 
 To rename a folder, double-click its name. To delete a folder, click its delete button two times. Don't worry about what's inside: its layouts and folders move up one level, so you lose no layouts.
 
-With the Places feature in Labs, a folder can also be a place, an area or a unit. See [Places and Find](../settings/labs#places-and-find).
+With the Places feature in Labs, a folder can also be a place, an area or a unit. See [Find What Your Bins Hold](../settings/labs#find-what-your-bins-hold).
 
 ## Go back to an earlier version
 

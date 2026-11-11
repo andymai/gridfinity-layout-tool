@@ -1,4 +1,4 @@
-import en from '../../../src/i18n/locales/en';
+import en from '../../../src/i18n/locales/en.ts';
 
 export const UI_TAG = /<Ui\s+k="([^"]+)"\s*\/>/g;
 export const MALFORMED_UI_TAG = /<Ui\b/;

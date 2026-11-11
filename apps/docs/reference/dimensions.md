@@ -34,8 +34,8 @@ Change the grid unit or the height unit only if your other parts use a size that
 | Outer width and depth               | Grid units × 42 mm, minus 0.5 mm. A 1 × 1 bin is 41.5 mm wide.          |
 | Height                              | Height units × 7 mm, from the bottom of the feet to the top of the wall |
 | Stacking lip                        | Rises above the wall top. It is not in the height.                      |
-| Wall thickness                      | 1.2 mm (default), 0.4 to 2.4 mm                                         |
-| Divider thickness                   | 1.2 mm (default), 0.4 to 2.4 mm                                         |
+| Wall thickness                      | 1.2 mm (default), 0.4 to 2.6 mm on the designer slider                  |
+| Divider thickness                   | 1.2 mm (default), 0.4 to 2.6 mm on the designer slider                  |
 | Width and depth in the bin designer | 0.5 to 16 grid units, in steps of 0.5                                   |
 | Height in the bin designer          | 2 to 50 height units. A spacer can be 1.                                |
 | Drawer size in a layout             | 0.5 to 50 grid units                                                    |

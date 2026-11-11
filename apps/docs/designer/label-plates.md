@@ -80,7 +80,7 @@ The label section lists every plate under <Ui k="binDesigner.plates.title" />, w
 - Click <Ui k="binDesigner.plates.preview" /> to turn the plate set around in a small 3D view.
 - Click <Ui k="binDesigner.plates.export" />, pick 3MF, STL or STEP, and download one file with a plate for each socket.
 
-The exported text depth snaps to whole layers. That means one filament change at the right layer gives you two-color labels. With multi-color on, a 3MF file prints the plate in the label tab color and the text in the Text color. See [Colors](./colors).
+The exported text depth snaps to whole layers. That means one filament change at the right layer gives you two-color labels. With multi-color on, a 3MF file prints the plate in the label tab color and the text in the <Ui k="binDesigner.textColor" />. See [Colors](./colors).
 
 A layout export also includes the plates for every bin that has sockets, and the print list shows how many plates to print. See [Print list and ZIP export](../printing/print-list-and-zip).
 

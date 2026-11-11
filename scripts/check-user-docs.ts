@@ -339,6 +339,14 @@ function main(): void {
     if (rows.length === 0) console.warn('No docs page is older than its sources.');
     for (const row of rows)
       console.warn(`${row.behindDays.toFixed(1).padStart(6)} days  ${row.file}`);
+    const ids = pages.flatMap((page) =>
+      [...page.body.matchAll(SCREENSHOT_TAG)].map(([, id]) => id)
+    );
+    const missing = ids.filter(
+      (id) => !fs.existsSync(path.join(ROOT, DOCS_DIR, 'public/screenshots', `${id}.png`))
+    );
+    if (missing.length > 0)
+      console.warn(`\n${missing.length} of ${ids.length} screenshots are not captured yet.`);
     return;
   }
 

@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitepress';
 import type { MarkdownRenderer } from 'vitepress';
-import { APP_URL, nav, sidebar } from './navigation';
-import { renderUiTags } from './uiLabels';
+import { APP_URL, nav, sidebar } from './navigation.ts';
+import { renderUiTags } from './uiLabels.ts';
 
 const SCREENSHOT_TAG = /<Screenshot\s[^>]*\bid="([^"]+)"[^>]*\/>/g;
 const screenshotsDir = fileURLToPath(new URL('../public/screenshots/', import.meta.url));
@@ -35,6 +35,8 @@ function docsMarkdown(md: MarkdownRenderer): void {
   });
 }
 
+const BASE = '/docs/';
+const SITE_TITLE = 'Gridfinity Layout Tool Docs';
 const siteUrl = `${APP_URL}/docs`;
 const defaultDescription =
   'How to plan Gridfinity drawers, design custom bins and baseplates, and print them with the free Gridfinity Layout Tool.';
@@ -57,15 +59,16 @@ function breadcrumbTrail(path: string): { name: string; url: string }[] | null {
 }
 
 export default defineConfig({
-  title: 'Gridfinity Layout Tool Docs',
+  title: SITE_TITLE,
   description: defaultDescription,
   lang: 'en-US',
-  base: '/docs/',
+  base: BASE,
   cleanUrls: true,
   lastUpdated: true,
   head: [
     // Head tags are not base-prefixed, unlike the theme logo.
-    ['link', { rel: 'icon', href: '/docs/favicon.svg', type: 'image/svg+xml' }],
+    ['link', { rel: 'icon', href: `${BASE}favicon.svg`, type: 'image/svg+xml' }],
+    ['link', { rel: 'apple-touch-icon', href: `${BASE}apple-touch-icon.png` }],
     ['meta', { name: 'theme-color', content: '#f59e0b' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'Gridfinity Layout Tool' }],
@@ -77,7 +80,7 @@ export default defineConfig({
       pageData.description ??
       defaultDescription;
     const title = (pageData.frontmatter.title as string | undefined) ?? pageData.title ?? 'Docs';
-    const fullTitle = `${title} | Gridfinity Layout Tool`;
+    const fullTitle = title === SITE_TITLE ? SITE_TITLE : `${title} | ${SITE_TITLE}`;
     const path = pageData.relativePath.replace(/(^|\/)index\.md$/, '$1').replace(/\.md$/, '');
     const url = `${siteUrl}/${path}`;
 
@@ -88,8 +91,12 @@ export default defineConfig({
       ['meta', { property: 'og:title', content: fullTitle }],
       ['meta', { property: 'og:description', content: description }],
       ['meta', { property: 'og:image', content: `${APP_URL}/og-image.png` }],
+      ['meta', { property: 'og:image:width', content: '1200' }],
+      ['meta', { property: 'og:image:height', content: '630' }],
+      ['meta', { property: 'og:image:alt', content: fullTitle }],
       ['meta', { name: 'twitter:title', content: fullTitle }],
-      ['meta', { name: 'twitter:description', content: description }]
+      ['meta', { name: 'twitter:description', content: description }],
+      ['meta', { name: 'twitter:image', content: `${APP_URL}/og-image.png` }]
     );
 
     if (pageData.relativePath !== 'index.md') {

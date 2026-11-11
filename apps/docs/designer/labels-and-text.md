@@ -133,6 +133,6 @@ One design for many bins? If the design has only one caption, leave that caption
 ## Next steps
 
 - [Swappable label plates](./label-plates): print labels on separate plates that you can change later.
-- [Colors](./colors): print text in a second filament with the Text color.
+- [Colors](./colors): print text in a second filament with the <Ui k="binDesigner.textColor" />.
 - [Lids](./lids): add a lid that carries its own text.
 - [Multi-color printing](../concepts/multi-color): learn how each color reaches your slicer.

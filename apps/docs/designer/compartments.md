@@ -9,6 +9,7 @@ sources:
   - src/features/bin-designer/types/compartments.ts
   - src/features/bin-designer/types/dividers.ts
   - src/features/bin-designer/utils/dividerAngle.ts
+  - src/features/bin-designer/constants/gridfinity.ts
 ---
 
 # Compartments and dividers
@@ -90,7 +91,7 @@ Each empty cell prints as its own small pocket. Turn on <Ui k="binDesigner.bento
 
 Small things in a deep compartment are hard to pick out. <Ui k="binDesigner.bento.floorRaise" /> lifts the floor of one compartment, so a short item sits nearer the rim. Tall items in other compartments keep the full depth.
 
-1. In the Bento workspace, select a compartment.
+1. In the <Ui k="binDesigner.openBentoWorkspace" />, select a compartment.
 2. Drag <Ui k="binDesigner.bento.floorRaise" /> to the height you need, in millimeters.
 
 The raised floor is solid, and the infill of your slicer keeps it light. The bin designer keeps at least 3 mm of depth above the raised floor. A finger scoop climbs from the raised floor. For a <Ui k="binDesigner.interior.standard.title" /> bin, pick <Ui k="binDesigner.interior.bento.title" />: the compartments stay the same, and you get the same control.

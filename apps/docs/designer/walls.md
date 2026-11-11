@@ -9,6 +9,7 @@ sources:
   - src/features/bin-designer/types/walls.ts
   - src/features/bin-designer/types/handles.ts
   - src/shared/utils/wallLabelSlotPlan.ts
+  - src/features/bin-designer/constants/gridfinity.ts
 ---
 
 # Walls
