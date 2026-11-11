@@ -23,6 +23,7 @@ import { useMutations } from '@/shared/contexts/MutationsContext';
 import { slugify } from '@/shared/utils/slug';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
+import type { TFunction } from '@/i18n';
 
 export type CloudShareStatus = 'idle' | 'sharing' | 'updating' | 'deleting' | 'success' | 'error';
 
@@ -53,6 +54,28 @@ interface CloudShareActions {
   remove: () => Promise<boolean>;
   copyUrl: () => Promise<boolean>;
   reset: () => void;
+}
+
+// MIRROR: `ContentField` in `api/lib/contentFilter.ts`.
+const BLOCKED_FIELD_KEYS = new Map<string, string>([
+  ['layoutName', 'cloudShare.error.blockedLayoutName'],
+  ['category', 'cloudShare.error.blockedCategory'],
+  ['binLabel', 'cloudShare.error.blockedBinLabel'],
+  ['binNotes', 'cloudShare.error.blockedBinNotes'],
+  ['binItem', 'cloudShare.error.blockedBinItem'],
+  ['binProperty', 'cloudShare.error.blockedBinProperty'],
+  ['linkedDesign', 'cloudShare.error.blockedLinkedDesign'],
+  ['authorName', 'cloudShare.error.blockedAuthorName'],
+]);
+
+function shareErrorMessage(err: ApiError | StorageMeshMissingError, t: TFunction): string {
+  if (err.code === 'STORAGE_MESH_MISSING') return t('toast.meshFileMissing');
+  if (err.code === 'API_CONTENT_BLOCKED') {
+    const field = err.blockedFields?.[0];
+    const key = field === undefined ? undefined : BLOCKED_FIELD_KEYS.get(field);
+    return t(key ?? 'cloudShare.error.blocked');
+  }
+  return getUserMessage(err);
 }
 
 /**
@@ -131,8 +154,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
 
   const handleError = useCallback(
     (err: ApiError | StorageMeshMissingError) => {
-      const message =
-        err.code === 'STORAGE_MESH_MISSING' ? t('toast.meshFileMissing') : getUserMessage(err);
+      const message = shareErrorMessage(err, t);
       trackEvent('ui.shareFailed', { layoutId: '', error: `${err.code}: ${message}` });
       setError({
         message,

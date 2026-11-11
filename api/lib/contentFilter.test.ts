@@ -316,6 +316,76 @@ describe('filterLayoutContent', () => {
       expect(result.passed).toBe(false);
     });
   });
+
+  // The blocklist matched as a substring, so any word that merely starts with
+  // or contains a listed term blocked the whole share.
+  describe('maker words that contain a listed term', () => {
+    it.each(['Spices', 'Spiced rum', 'Flame retardant tape', 'cp sockets', 'Scunthorpe bolts'])(
+      'passes the bin label %s',
+      (label) => {
+        const result = filterLayoutContent({
+          name: 'Kitchen',
+          bins: [{ label }],
+          categories: [{ name: 'Default' }],
+        });
+
+        expect(result).toEqual({ passed: true });
+      }
+    );
+
+    it('passes a category and a layout name made of such words', () => {
+      const result = filterLayoutContent({
+        name: 'Vandyke brown paints',
+        bins: [],
+        categories: [{ name: 'Spices' }],
+      });
+
+      expect(result.passed).toBe(true);
+    });
+  });
+
+  // `on\w+=` was written for inline handlers, but it matched "on" anywhere in
+  // a word, so ordinary key=value notes read as an event attribute.
+  describe('key=value notes', () => {
+    it.each([
+      'Connector=JST',
+      'Font=Arial',
+      'Content = M3 screws',
+      'Monitor=27in',
+      'One=M3, Two=M4',
+    ])('passes the note %s', (notes) => {
+      const result = filterLayoutContent({
+        name: 'Electronics',
+        bins: [{ label: 'Cables', notes }],
+        categories: [{ name: 'Default' }],
+      });
+
+      expect(result).toEqual({ passed: true });
+    });
+  });
+
+  describe('the field a block names', () => {
+    const clean = { name: 'My Layout', bins: [], categories: [{ name: 'Default' }] };
+
+    it.each([
+      ['layoutName', { ...clean, name: 'kys' }],
+      ['category', { ...clean, categories: [{ name: 'kys' }] }],
+      ['binLabel', { ...clean, bins: [{ label: 'kys' }] }],
+      ['binNotes', { ...clean, bins: [{ label: 'Tools', notes: 'kys' }] }],
+      ['binItem', { ...clean, bins: [{ items: [{ name: 'Screws', note: 'kys' }] }] }],
+      ['binProperty', { ...clean, bins: [{ customProperties: { kys: 'M3' } }] }],
+      ['binProperty', { ...clean, bins: [{ customProperties: { Size: 'kys' } }] }],
+    ])('names %s', (field, layout) => {
+      const result = filterLayoutContent(layout);
+
+      expect(result.passed).toBe(false);
+      expect(result.field).toBe(field);
+    });
+
+    it('names no field when the layout passes', () => {
+      expect(filterLayoutContent(clean)).toEqual({ passed: true });
+    });
+  });
 });
 
 describe('filterDisplayName', () => {
@@ -379,6 +449,13 @@ describe('filterSharedDesignsContent', () => {
 
     expect(result.passed).toBe(false);
     expect(result.reason).toContain('text');
+  });
+
+  it.each([
+    ['name', design({ name: 'kys' })],
+    ['engraved text', design({ params: { surfaceText: { lidText: 'kys' } } })],
+  ])('names the linked design as the field when its %s is blocked', (_part, blocked) => {
+    expect(filterSharedDesignsContent([design(), blocked]).field).toBe('linkedDesign');
   });
 
   it('blocks an offensive cutout label nested in an array', () => {
@@ -531,6 +608,58 @@ describe('checkText', () => {
     for (const text of sample) {
       expect(checkText(text).passed).toBe(filterDisplayName(text).passed);
     }
+  });
+
+  // Dropping the scheme was enough to get a link past the https? rule.
+  it.each([
+    'www.example.com',
+    'Get the STL at WWW.Example.org/thing/42',
+    'mirror:www.spam-site.net',
+  ])('rejects the scheme-less link %s', (text) => {
+    expect(checkText(text).passed).toBe(false);
+  });
+
+  it.each(['3.5mm drill', 'Firmware v2.1', 'bracket.stl', 'README.md', 'e.g. M3 screws', 'www.'])(
+    'passes dotted text that is not a link: %s',
+    (text) => {
+      expect(checkText(text).passed).toBe(true);
+    }
+  );
+
+  // Matching whole words must not open a gap for the forms the substring
+  // match caught: inflections, and the listed word glued to digits or symbols.
+  it.each([
+    'spic',
+    'Spics',
+    'retarded',
+    'Retards',
+    'niggers',
+    'n1ggers',
+    'faggots',
+    'faggot2',
+    '#retard',
+    'some_cunt_here',
+  ])('still rejects %s', (text) => {
+    expect(checkText(text).passed).toBe(false);
+  });
+
+  it.each(['kill-yourself', 'KILL   YOURSELF', 'kill\nyourself'])(
+    'rejects a listed phrase split by punctuation or extra space: %j',
+    (text) => {
+      expect(checkText(text).passed).toBe(false);
+    }
+  );
+
+  // An attribute name in HTML starts after whitespace, "/" or a quote, so a
+  // word-start anchor costs nothing against real markup.
+  it.each([
+    '<img src=x onerror=alert(1)>',
+    '<svg/onload=alert(1)>',
+    '<a href="#"onmouseover="alert(1)">x</a>',
+    '" autofocus onfocus=alert(1) x="',
+    'document.body.onload=steal',
+  ])('rejects the event attribute in %s', (text) => {
+    expect(checkText(text).passed).toBe(false);
   });
 });
 

@@ -114,6 +114,7 @@ export interface ApiErrorResponse {
   error: string;
   code: ErrorCodeType;
   retryAfter?: number;
+  field?: string;
 }
 
 /**
@@ -228,6 +229,17 @@ export function serviceUnavailable(
 
 export function serverError(res: VercelResponse): VercelResponse {
   return res.status(500).json({ error: 'Server error', code: ErrorCode.SERVER_ERROR });
+}
+
+export function contentBlocked(
+  res: VercelResponse,
+  blocked: { reason?: string; field?: string }
+): VercelResponse {
+  return res.status(400).json({
+    error: `Content blocked: ${blocked.reason}`,
+    code: ErrorCode.CONTENT_BLOCKED,
+    ...(blocked.field === undefined ? {} : { field: blocked.field }),
+  });
 }
 
 export function sendError(

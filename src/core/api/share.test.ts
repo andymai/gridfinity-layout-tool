@@ -882,6 +882,25 @@ describe('API error mapping', () => {
     expect(expectErr(result).code).toBe('API_CONTENT_BLOCKED');
   });
 
+  it('carries the field the server blocked into the error', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: () =>
+        Promise.resolve({
+          error: 'Content blocked: Category "Spices": contains prohibited content',
+          code: 'CONTENT_BLOCKED',
+          field: 'category',
+        }),
+    } as Response);
+
+    const result = await createShare('test-layout-id', mockLayout, 'view');
+
+    expect(expectErr(result)).toMatchObject({
+      code: 'API_CONTENT_BLOCKED',
+      blockedFields: ['category'],
+    });
+  });
+
   it('maps INVALID_PERMISSION to ApiValidationError', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,

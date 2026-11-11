@@ -6498,6 +6498,24 @@ const en: Record<string, string> = {
   'cloudShare.error.noExistingShare': 'No existing share to update.',
   'cloudShare.error.shareWasDeleted': 'Share was deleted. Create a new share instead.',
   'cloudShare.error.unableToUpdate': 'Unable to update share. Create a new share instead.',
+  'cloudShare.error.blocked':
+    "This layout has a link or other text that can't be shared. Check its name, categories and bins.",
+  'cloudShare.error.blockedLayoutName':
+    "The layout name has a link or other text that can't be shared. Change it and try again.",
+  'cloudShare.error.blockedCategory':
+    "A category name has a link or other text that can't be shared. Change it and try again.",
+  'cloudShare.error.blockedBinLabel':
+    "A bin label has a link or other text that can't be shared. Change it and try again.",
+  'cloudShare.error.blockedBinNotes':
+    "A bin's notes have a link or other text that can't be shared. Change them and try again.",
+  'cloudShare.error.blockedBinItem':
+    "An item in a bin's contents has a link or other text that can't be shared. Change it and try again.",
+  'cloudShare.error.blockedBinProperty':
+    "A bin's custom property has a link or other text that can't be shared. Change it and try again.",
+  'cloudShare.error.blockedLinkedDesign':
+    "A bin design in this layout has a link or other text that can't be shared. Change its name or text and try again.",
+  'cloudShare.error.blockedAuthorName':
+    "Your author name has a link or other text that can't be shared.",
 
   // Single-bin inspector aria-labels
   'inspector.single.heightAria': 'Bin height',

@@ -34,6 +34,7 @@ import {
   rateLimited,
   serviceUnavailable,
   sendError,
+  contentBlocked,
 } from './lib/shared.js';
 
 /**
@@ -106,14 +107,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // captions, cutout labels) reached every recipient of the public /d/{id}
       // link without ever meeting the blocklist the layout branch enforces.
       const designerContent = filterDesignParamsContent(result.payload.params);
-      if (!designerContent.passed) {
-        return sendError(
-          res,
-          400,
-          ErrorCode.CONTENT_BLOCKED,
-          `Content blocked: ${designerContent.reason}`
-        );
-      }
+      if (!designerContent.passed) return contentBlocked(res, designerContent);
 
       sharePayload = result.payload;
     } else {
@@ -134,14 +128,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       // Content filtering (layout shares only)
       const contentResult = filterLayoutContent(validationResult.layout);
-      if (!contentResult.passed) {
-        return sendError(
-          res,
-          400,
-          ErrorCode.CONTENT_BLOCKED,
-          `Content blocked: ${contentResult.reason}`
-        );
-      }
+      if (!contentResult.passed) return contentBlocked(res, contentResult);
 
       sharePayload = withoutLibraryPlacement(validationResult.layout);
 
@@ -157,14 +144,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Design names and engraved text are user-authored and shown to the
       // recipient, so they get the same moderation the layout does.
       const designContent = filterSharedDesignsContent(sharedDesigns);
-      if (!designContent.passed) {
-        return sendError(
-          res,
-          400,
-          ErrorCode.CONTENT_BLOCKED,
-          `Content blocked: ${designContent.reason}`
-        );
-      }
+      if (!designContent.passed) return contentBlocked(res, designContent);
 
       const resolved = await resolveShareMeshFiles(req, res, sharedDesignMeshHashes(sharedDesigns));
       if (!resolved) return;
@@ -181,12 +161,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (cleanAuthorName !== '') {
         const authorContent = filterDisplayName(cleanAuthorName);
         if (!authorContent.passed) {
-          return sendError(
-            res,
-            400,
-            ErrorCode.CONTENT_BLOCKED,
-            `Content blocked: ${authorContent.reason}`
-          );
+          return contentBlocked(res, { ...authorContent, field: 'authorName' });
         }
       } else {
         cleanAuthorName = undefined;

@@ -9,7 +9,14 @@ import * as shareApi from '@/core/api/share';
 import * as storage from '@/core/storage';
 import type { LayoutLibrary, CloudShareInfo } from '@/core/types';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
-import { ok, err, apiRateLimited, apiNotFound, storageMeshMissing } from '@/core/result';
+import {
+  ok,
+  err,
+  apiContentBlocked,
+  apiRateLimited,
+  apiNotFound,
+  storageMeshMissing,
+} from '@/core/result';
 
 // Mock the share API module
 vi.mock('@/core/api/share', () => ({
@@ -202,6 +209,69 @@ describe('useCloudShare', () => {
         code: 'STORAGE_MESH_MISSING',
         message:
           "An imported STL used here is missing from this device, so it can't be shared or exported.",
+      });
+    });
+
+    describe('when the server blocks the content', () => {
+      async function shareBlocked(blockedFields?: string[]) {
+        vi.mocked(shareApi.createShare).mockResolvedValue(err(apiContentBlocked(blockedFields)));
+        const { result } = renderHook(() => useCloudShare());
+        await act(async () => {
+          await result.current.share('view');
+        });
+        return result.current;
+      }
+
+      it.each([
+        [
+          'layoutName',
+          "The layout name has a link or other text that can't be shared. Change it and try again.",
+        ],
+        [
+          'category',
+          "A category name has a link or other text that can't be shared. Change it and try again.",
+        ],
+        [
+          'binLabel',
+          "A bin label has a link or other text that can't be shared. Change it and try again.",
+        ],
+        [
+          'binNotes',
+          "A bin's notes have a link or other text that can't be shared. Change them and try again.",
+        ],
+        [
+          'binItem',
+          "An item in a bin's contents has a link or other text that can't be shared. Change it and try again.",
+        ],
+        [
+          'binProperty',
+          "A bin's custom property has a link or other text that can't be shared. Change it and try again.",
+        ],
+        [
+          'linkedDesign',
+          "A bin design in this layout has a link or other text that can't be shared. Change its name or text and try again.",
+        ],
+        ['authorName', "Your author name has a link or other text that can't be shared."],
+      ])('names the %s it found', async (field, message) => {
+        const state = await shareBlocked([field]);
+
+        expect(state.status).toBe('error');
+        expect(state.error).toMatchObject({ code: 'API_CONTENT_BLOCKED', message });
+        expect(mockAnnounce).toHaveBeenCalledWith(`Share failed: ${message}`);
+      });
+
+      it.each([
+        ['no field', undefined],
+        ['a field this client does not know', ['somethingNew']],
+        ['an inherited object key', ['constructor']],
+      ])('falls back to a general message for %s', async (_case, blockedFields) => {
+        const state = await shareBlocked(blockedFields);
+
+        expect(state.error).toMatchObject({
+          code: 'API_CONTENT_BLOCKED',
+          message:
+            "This layout has a link or other text that can't be shared. Check its name, categories and bins.",
+        });
       });
     });
 

@@ -189,6 +189,20 @@ describe('share (create)', () => {
     expect(mocks.put).not.toHaveBeenCalled();
   });
 
+  it('names the field the filter blocked so the client can say where', async () => {
+    mocks.filterLayoutContent.mockReturnValue({
+      passed: false,
+      reason: 'Bin label: contains prohibited content',
+      field: 'binLabel',
+    });
+    const res = await handle(layoutBody());
+    expect(res._body).toEqual({
+      error: 'Content blocked: Bin label: contains prohibited content',
+      code: 'CONTENT_BLOCKED',
+      field: 'binLabel',
+    });
+  });
+
   it('validates designer shares through the designer validator', async () => {
     mocks.validateDesignerShare.mockReturnValue({
       valid: false,
@@ -257,7 +271,10 @@ describe('share (create)', () => {
     it('blocks offensive lid text', async () => {
       const res = await designerShare({ surfaceText: { lidText: 'kill yourself' } });
       expect(res._status).toBe(400);
-      expect((res._body as { code: string }).code).toBe('CONTENT_BLOCKED');
+      expect(res._body).toEqual({
+        error: 'Content blocked: contains prohibited content',
+        code: 'CONTENT_BLOCKED',
+      });
       expect(mocks.put).not.toHaveBeenCalled();
     });
 
@@ -284,7 +301,7 @@ describe('share (create)', () => {
     it('blocks an offensive author name', async () => {
       const res = await handle(layoutBody({ authorName: 'kys' }));
       expect(res._status).toBe(400);
-      expect((res._body as { code: string }).code).toBe('CONTENT_BLOCKED');
+      expect(res._body).toMatchObject({ code: 'CONTENT_BLOCKED', field: 'authorName' });
       expect(mocks.put).not.toHaveBeenCalled();
     });
 
@@ -364,12 +381,13 @@ describe('share (create)', () => {
     mocks.filterSharedDesignsContent.mockReturnValue({
       passed: false,
       reason: 'Design name: nope',
+      field: 'linkedDesign',
     });
 
     const res = await handle(layoutBody({ linkedDesigns: [{ id: 'design_1' }] }));
 
     expect(res._status).toBe(400);
-    expect((res._body as { code: string }).code).toBe('CONTENT_BLOCKED');
+    expect(res._body).toMatchObject({ code: 'CONTENT_BLOCKED', field: 'linkedDesign' });
     expect(mocks.put).not.toHaveBeenCalled();
   });
 

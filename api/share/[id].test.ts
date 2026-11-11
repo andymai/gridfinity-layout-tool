@@ -328,6 +328,58 @@ describe('share/[id]', () => {
       expect((res._body as { code: string }).code).toBe('CONTENT_BLOCKED');
       expect(mocks.put).not.toHaveBeenCalled();
     });
+
+    it('names the blocked layout field on a full update', async () => {
+      primeBlobFetch(shareBlob());
+      mocks.redisGet.mockResolvedValue(correctHash);
+      mocks.filterLayoutContent.mockReturnValue({
+        passed: false,
+        reason: 'Category "x": contains prohibited content',
+        field: 'category',
+      });
+      const res = await handle('PUT', {
+        body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+      });
+      expect(res._body).toEqual({
+        error: 'Content blocked: Category "x": contains prohibited content',
+        code: 'CONTENT_BLOCKED',
+        field: 'category',
+      });
+    });
+
+    // Real designs validator and filter: the design name is what blocks.
+    it('names a linked design when its name is blocked on a full update', async () => {
+      primeBlobFetch(shareBlob());
+      mocks.redisGet.mockResolvedValue(correctHash);
+      const params = {
+        width: 2,
+        depth: 2,
+        height: 6,
+        style: 'standard',
+        scoop: true,
+        base: {
+          style: 'magnet',
+          magnetDiameter: 6.2,
+          magnetDepth: 2.4,
+          screwDiameter: 3,
+          stackingLip: true,
+        },
+        compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
+        label: { enabled: false, support: 'bracket', depth: 12, width: 100, alignment: 'center' },
+        walls: { front: 0, back: 0, left: 0, right: 0 },
+        inserts: [],
+      };
+      const res = await handle('PUT', {
+        body: {
+          deleteToken: TOKEN,
+          layout: { name: 'Updated' },
+          linkedDesigns: [{ id: 'design_1', name: 'kys', params }],
+        },
+      });
+      expect(res._status).toBe(400);
+      expect(res._body).toMatchObject({ code: 'CONTENT_BLOCKED', field: 'linkedDesign' });
+      expect(mocks.put).not.toHaveBeenCalled();
+    });
   });
 
   describe('mesh files', () => {
