@@ -46,9 +46,11 @@ describe('initAnalytics before_send', () => {
     expect(beforeSend({ event: 'bin_created' })?.properties?.display_mode).toBe('browser');
   });
 
-  it('keeps a display_mode the caller set', () => {
-    const sent = beforeSend({ event: 'x', properties: { display_mode: 'minimal-ui' } });
+  it('replaces a stale display_mode that an older build registered for the session', () => {
+    displayMode.current = 'standalone';
 
-    expect(sent?.properties?.display_mode).toBe('minimal-ui');
+    const sent = beforeSend({ event: 'x', properties: { display_mode: 'browser' } });
+
+    expect(sent?.properties?.display_mode).toBe('standalone');
   });
 });

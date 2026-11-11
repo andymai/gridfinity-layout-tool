@@ -90,8 +90,9 @@ export function initAnalytics(): void {
           // Per event, not `register_for_session`: PostHog clears session
           // properties when its session rotates after 30 idle minutes, and an
           // installed app window often stays open longer. Not `register`
-          // either: a tab and the app window share its localStorage.
-          kept.properties = { display_mode: getDisplayMode(), ...kept.properties };
+          // either: a tab and the app window share its localStorage. Set last,
+          // so it beats a stale value an older build registered in this tab.
+          kept.properties = { ...kept.properties, display_mode: getDisplayMode() };
           return kept as typeof event;
         },
       });
