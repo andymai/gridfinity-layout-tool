@@ -61,9 +61,9 @@ The work of the other people shows on your grid, each in their own color:
 
 ## Who saves the link
 
-The room holds the live layout, but only the link owner's browser saves the room back to the share link. It saves about one second after each change in the room, whoever made it. While the owner is away, the room keeps every change, and the owner's next visit saves them to the link.
+The room holds the live layout, but only the link owner's browser saves the room back to the share link. It saves about one second after each change on the grid, whoever made it. Changes to bins in the stash go along with the next change on the grid. While the owner is away, the room keeps every change, and the owner's next visit saves them to the link.
 
-Someone who joins gets the room's latest layout, so the work of the others stays. The room takes the copy from the link only when the copy is newer and the room has no unsaved changes. For example, the owner can edit the layout while the link is view-only, then turn editing back on. A room from an older version of the Layout Tool keeps its own layout.
+Someone who joins gets the room's latest layout, so the work of the others stays. The room takes the copy from the link only when the copy is newer and the room has no unsaved changes. For example, the owner can edit the layout while the link is view-only, then turn editing back on. A room from an older version of the Layout Tool keeps its own layout when it has bins on the grid.
 
 ::: tip
 A view-only link opens no room, not even for the owner. It shows the copy that the owner's browser last saved, so it can lag behind the room.
