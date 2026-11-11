@@ -189,10 +189,13 @@ describe('checkDocLinks', () => {
   it('wants links from the docs root to start with a slash', () => {
     const root = page(
       'apps/docs/index.md',
-      '## Top\n[a](/designer/walls) [b](./designer/walls) [c](#top)'
+      '## Top\n[a](/designer/walls) [b](./designer/walls) [c](designer/walls) [d](#top) [e](https://x.dev/y)',
+      { prev: { link: 'designer/walls' } }
     );
     expect(checkDocLinks([root, page('apps/docs/designer/walls.md', '')], exists)).toEqual([
       'apps/docs/index.md: link "./designer/walls" must start with "/" on the docs root',
+      'apps/docs/index.md: link "designer/walls" must start with "/" on the docs root',
+      'apps/docs/index.md: link "designer/walls" must start with "/" on the docs root',
     ]);
   });
 

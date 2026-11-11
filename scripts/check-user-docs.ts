@@ -20,7 +20,8 @@ const APP_ROUTES = new Set(['/', '/designer', '/baseplate', '/community', '/supp
 const LOCALES: ReadonlySet<string> = new Set(CONTENT_LOCALES);
 const SCREENSHOT_TAG = /<Screenshot\s[^>]*\bid="([^"]+)"/g;
 const APP_LINK = /https:\/\/gridfinitylayouttool\.com(\/[^\s)"'#?]*)?/g;
-const DOC_LINK = /\]\(((?:\.{1,2}\/|\/(?!\/))[^)\s]*|#[^)\s]+)\)/g;
+const URL_SCHEME = /^[a-zA-Z][\w+.-]*:/;
+const DOC_LINK = /\]\(((?:\.{1,2}\/|\/(?!\/)|(?![a-zA-Z][\w+.-]*:)[\w-])[^)\s]*|#[^)\s]+)\)/g;
 
 export interface DocPage {
   readonly file: string;
@@ -291,7 +292,7 @@ export function checkDocLinks(
     const self = pageLink(page.file);
     const links = [
       ...[...page.body.matchAll(DOC_LINK)].map(([, link]) => link),
-      ...frontmatterLinks(page.data).filter((link) => link.startsWith('/')),
+      ...frontmatterLinks(page.data).filter((link) => !URL_SCHEME.test(link)),
     ];
     for (const link of links) {
       const [target, hash = ''] = link.split('#');
