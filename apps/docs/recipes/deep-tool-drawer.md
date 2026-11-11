@@ -87,7 +87,7 @@ Why handles and not a pull tab? A pull tab stands above the rim and adds to the 
 
 Look at the line under the measured size. It says that the tallest stack fits, with 5.9 mm to spare. Press <kbd>V</kbd> for the 3D preview, and turn on <Ui k="grid.explodedView.label" /> to see the trays lifted off their bins.
 
-Does a bottom bin hold something that stands taller than the bin, like a drill on its end? Select that bin and type the extra height in <Ui k="inspector.clearanceMmLabel" />. No tray can rest above it, and the drawer check counts the extra height. See [Reserve space above a bin](../layouts/layers#reserve-space-above-a-bin).
+Does a bottom bin hold something that stands taller than the bin, like a drill on its end? First move the tray above it to the stash, because the field hides while something rests on the bin. Then select the bin and type the extra height in <Ui k="inspector.clearanceMmLabel" />. No tray can rest above it now, and the drawer check counts the extra height. See [Reserve space above a bin](../layouts/layers#reserve-space-above-a-bin).
 
 ## Step 6: Make the plate and export
 
@@ -99,7 +99,9 @@ Print one tray before you print all eight parts. It shows you if the trays sit a
 
 ### The drawer doesn't close
 
-The editor lets you place a bin when the height units fit. Try a 7u tray: 14u + 7u = 21u, or 147 mm, which is under 150 mm. But the printed stack has its lips too, so it stands 151.05 mm tall. The line under the measured size warns that it stands 1.1 mm above the drawer. Trust that line, and lower one layer by 1u. See [Check the drawer height](../layouts/drawer-setup#check-the-drawer-height).
+The editor lets you place a bin when the height units fit. Try a 7u tray: 14u + 7u = 21u, or 147 mm, which is under 150 mm. But the printed stack has its lips too, so it stands 151.05 mm tall. The line under the measured size warns that it stands 1.1 mm above the drawer. Trust that line, and make the trays 1u lower: select them and change their height, or change the height of their design.
+
+The layer's own height is only the default for new bins, so it does not resize bins you placed. See [Check the drawer height](../layouts/drawer-setup#check-the-drawer-height).
 
 ### A tray rocks
 

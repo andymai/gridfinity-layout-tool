@@ -108,7 +108,7 @@ The 1 × 2, 3 × 4 and 1 × 6 bins have one compartment each. Make one design fo
 
 ## Step 7: Export and print
 
-Export the layout with <Ui k="header.export" /> and <Ui k="layoutExport.download" />. The ZIP holds the bins, and the plates in a `labels/` folder. The bin list counts the plates too.
+Export the layout with <Ui k="header.export" /> and <Ui k="layoutExport.download" />. Pick 3MF to keep the plate and text colors: one project file then holds the bins and the plates. With STL or STEP, the ZIP holds the bins, and the plates in a `labels/` folder. The bin list counts the plates too.
 
 Contents changed? Change the caption in the design, or the <Ui k="inspector.binLabel" /> in the layout. Then export the plates again, and print only the new plate.
 
@@ -124,7 +124,7 @@ With one filament, the change must come at the first layer of the letters. The l
 
 ### The plates are not in the bin file
 
-The plates are separate prints, so the bin file never holds them. Use <Ui k="binDesigner.plates.export" /> in the <Ui k="binDesigner.plates.title" /> list, or take them from the `labels/` folder of the layout ZIP. See [Troubleshooting prints](../printing/troubleshooting#the-label-plates-are-not-in-the-bin-file).
+The plates are separate prints, so the bin file never holds them. Use <Ui k="binDesigner.plates.export" /> in the <Ui k="binDesigner.plates.title" /> list, or take them from the layout ZIP. With 3MF they are in the project file, and with STL or STEP in the `labels/` folder. See [Troubleshooting prints](../printing/troubleshooting#the-label-plates-are-not-in-the-bin-file).
 
 ## Next steps
 
