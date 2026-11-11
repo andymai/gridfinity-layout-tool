@@ -1,0 +1,81 @@
+apps/docs/designer/labels-and-text.md
+  s_1cc363bb3cc76d::t_18a39c99972d1d 13
+  s_1cc363bb3cc76d::t_162ccbc62ad362 134-159
+  s_1cc363bb3cc76d::t_02d83a8f1f6bf2 22
+apps/docs/designer/walls.md
+  s_1cc363bb3cc76d::t_7a74c475e67a72 41
+  s_1cc363bb3cc76d::t_0ad1b040715c95 156
+  s_1cc363bb3cc76d::t_84ce7af1ca7406 146-155,157-171
+  s_1cc363bb3cc76d::t_c64fd141b67529 13
+apps/docs/designer/label-plates.md
+  s_1cc363bb3cc76d::t_e6896f489878e5 17
+  s_1cc363bb3cc76d::t_02bf19e48e96b5 92
+  s_1cc363bb3cc76d::t_ddf0345bf1df0f 12
+  s_1cc363bb3cc76d::t_e3b51d0963e722 105-130
+apps/docs/designer/base.md
+  s_1cc363bb3cc76d::t_6fd07cd660b1bb 146
+  s_1cc363bb3cc76d::t_d7b68ce2e5b68b 11
+  s_1cc363bb3cc76d::t_a45ab6475c49cd 16
+  s_1cc363bb3cc76d::t_26f4e5fcdccd2f 140-145,147-165
+apps/docs/designer/colors.md
+  s_1cc363bb3cc76d::t_30e4668e949346 62
+  s_1cc363bb3cc76d::t_5a732e9433117c 116-141
+  s_1cc363bb3cc76d::t_af40ca913d6211 93
+apps/docs/designer/size-and-shape.md
+  s_1cc363bb3cc76d::t_e82fca104c9a55 117-136
+  s_1cc363bb3cc76d::t_7f6d5715e4db63 12-13
+apps/docs/designer/compartments.md
+  s_1cc363bb3cc76d::t_350365fecea036 142-165,167
+  s_1cc363bb3cc76d::t_b627d87cabca7c 13-15
+  s_1cc363bb3cc76d::t_b0f522bd2b24f6 166
+apps/docs/designer/getting-things-out.md
+  s_1cc363bb3cc76d::t_c68a8b25904b9f 22
+  s_1cc363bb3cc76d::t_1f2ced43ec98de 111-122,124-130
+  s_1cc363bb3cc76d::t_5e96765da43b3b 73
+  s_1cc363bb3cc76d::t_f452761d8fff99 123
+apps/docs/designer/save-and-reuse.md
+  s_1cc363bb3cc76d::t_259b20b70853aa 125
+  s_1cc363bb3cc76d::t_5c681c8338cae8 13
+  s_1cc363bb3cc76d::t_7aed4792e0d1af 44
+  s_1cc363bb3cc76d::t_bbc45464717408 127
+  s_1cc363bb3cc76d::t_95161119591e9e 60
+  s_1cc363bb3cc76d::t_c67c1c51a16a87 98
+  s_1cc363bb3cc76d::t_de5e00c58dab98 119-124,126,128-138
+  s_1cc363bb3cc76d::t_de76c416c18efc 14
+  s_1cc363bb3cc76d::t_e3d3319a0b4780 76
+apps/docs/designer/lids.md
+  s_1cc363bb3cc76d::t_bc8841500f3a5b 116-121,123-125,127,129-133,135-141
+  s_1cc363bb3cc76d::t_f09a3077cd3701 122
+  s_1cc363bb3cc76d::t_d275241e35a967 11-12
+  s_1cc363bb3cc76d::t_763340116b8c5d 128
+  s_1cc363bb3cc76d::t_9b12cb263fc4b0 64
+  s_1cc363bb3cc76d::t_772e6f6a6826be 49
+  s_1cc363bb3cc76d::t_197c1c490d1a0c 126
+  s_1cc363bb3cc76d::t_8e2459b6bc26ce 134
+apps/docs/designer/stacking.md
+  s_1cc363bb3cc76d::t_3153e7aa82726a 15
+  s_1cc363bb3cc76d::t_43dd871b1d17bf 105-124
+apps/docs/designer/special-bins.md
+  s_1cc363bb3cc76d::t_6ba8589355f916 13-14
+  s_1cc363bb3cc76d::t_fa198dc3837ddc 23
+  s_1cc363bb3cc76d::t_7fcc9965730b1b 58
+  s_1cc363bb3cc76d::t_8a98302f2cefe6 104-121,123-129
+  s_1cc363bb3cc76d::t_180cef9daa7bd5 74
+  s_1cc363bb3cc76d::t_9ecbdf1f731610 122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f59c6f2434c29abaac0c243e6dbf6a679114804c",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
