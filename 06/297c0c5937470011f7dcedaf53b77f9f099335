@@ -1,0 +1,92 @@
+apps/docs/media/layouts-layers-exploded.json
+  s_1cc363bb3cc76d::t_a8fa52cf32729c 3-4
+  s_1cc363bb3cc76d::t_66b6080f9fbe68 1-2,5
+scripts/docs-capture/shots/layouts.ts
+  s_1cc363bb3cc76d::t_8ea937a2917a78 327,329-330
+  s_1cc363bb3cc76d::t_21025c56b60d2a 5-8,11,25,53-55,71,73-201,207-262,265-266,270-273,275-280,282-283
+  s_1cc363bb3cc76d::t_ab9b9a51219595 453
+  s_1cc363bb3cc76d::t_5d33dbab866dd6 549
+  s_1cc363bb3cc76d::t_2fecb379404a8a 337
+  s_1cc363bb3cc76d::t_9cef98a406cd24 202-206
+  s_1cc363bb3cc76d::t_d817dd011b6044 368
+  s_1cc363bb3cc76d::t_163ce638fee758 12-13
+  s_1cc363bb3cc76d::t_d41e56f537b842 322-326,328
+  s_1cc363bb3cc76d::t_ddc41a833efe2c 393,398-400
+  s_1cc363bb3cc76d::t_4d9a59c58eb52c 740
+  s_1cc363bb3cc76d::t_ecebfe6f2e1666 263-264
+  s_1cc363bb3cc76d::t_904a585a317e7e 431-436
+  s_1cc363bb3cc76d::t_c7ccc44d34f485 531
+  s_1cc363bb3cc76d::t_a8bc61a2b8d624 966-970
+  s_1cc363bb3cc76d::t_9d2614a6d7c225 9
+  s_1cc363bb3cc76d::t_876a219472c34b 651
+  s_1cc363bb3cc76d::t_cb3e99f0851ce3 64,67-70
+  s_1cc363bb3cc76d::t_5bd6f5bd7704d4 378,381,384-385,396
+  s_1cc363bb3cc76d::t_78f82e8149e9fb 942-943
+  s_1cc363bb3cc76d::t_e88f4e7fa6335e 293-294,296-304,314-321,331-336,338-344,347-348,350-359,361-367,369-377,379,382-383,386-388,391-392,394-395,397,401,403-430,437-452,454-461,463-471,473-482,484-494,497-530,532-548,550-564,574-594,596-598,611-615,617-649,665-667,979-984,986,989
+  s_1cc363bb3cc76d::t_d6bc922a2726be 60-63
+  s_1cc363bb3cc76d::t_2b2cfb334abf43 2
+  s_1cc363bb3cc76d::t_a0bbb6df5274f0 954,956
+  s_1cc363bb3cc76d::t_e6663880f60f11 658
+  s_1cc363bb3cc76d::t_f7f70ee590466d 1
+  s_1cc363bb3cc76d::t_99c743ba79f6f5 699
+  s_1cc363bb3cc76d::t_8e18bb0d71984f 56,59
+  s_1cc363bb3cc76d::t_9c9cf0b1cc9dc5 4,26-51,57-58,65-66,284-287
+  s_1cc363bb3cc76d::t_e240e5f1b58f9e 380
+  s_1cc363bb3cc76d::t_fd4023a98f617e 462
+  s_1cc363bb3cc76d::t_1191fe74b6cf39 926,928,934
+  s_1cc363bb3cc76d::t_01e2058dc75b89 668-698,700-739,741-925,927,929-933,935-941,944-953,955,957-965,971-976,985,987-988
+  s_1cc363bb3cc76d::t_c162138b280e38 52
+  s_1cc363bb3cc76d::t_3d7718c395801a 3
+  s_1cc363bb3cc76d::t_bb79b06bbce4df 14-24,72,288-292,295,305-313,389-390,402,616
+  s_1cc363bb3cc76d::t_f0121d2730e48e 472,483
+  s_1cc363bb3cc76d::t_5a42b380c2f875 495-496
+  s_1cc363bb3cc76d::t_a8fa52cf32729c 650,652-657,659-664
+  s_1cc363bb3cc76d::t_c07f8aff79e18d 267-269,274,281
+  s_1cc363bb3cc76d::t_15a27d78b9634b 565-573,595,599-604,606-610
+  s_1cc363bb3cc76d::t_6094d5ec02f17b 345-346
+  s_1cc363bb3cc76d::t_4ee541274e8ac8 10,349,360,605
+apps/docs/media/layouts-find-bins-toolbar.json
+  s_1cc363bb3cc76d::t_0ffff4f4c552ae 1-5
+apps/docs/media/layouts-categories-panel.json
+  s_1cc363bb3cc76d::t_fc372705137d08 1-5
+apps/docs/media/layouts-organizing-manager.json
+  s_1cc363bb3cc76d::t_a6977d2a016b02 1-5
+apps/docs/media/layouts-placing-bins-stash.json
+  s_1cc363bb3cc76d::t_21be483390d471 3
+  s_1cc363bb3cc76d::t_41ff7cb857c8d9 1-2,4-5
+apps/docs/layouts/multi-select.md
+  s_1cc363bb3cc76d::t_55a2dbf6a2c473 45
+apps/docs/layouts/find-bins-that-fit.md
+  s_1cc363bb3cc76d::t_1f5decf4a3c91f 25
+apps/docs/layouts/layers.md
+  s_1cc363bb3cc76d::t_1f70ca2750abcf 90
+apps/docs/media/layouts-drawer-setup-ceiling.json
+  s_1cc363bb3cc76d::t_66b6080f9fbe68 1-2,5
+  s_1cc363bb3cc76d::t_a8fa52cf32729c 3-4
+apps/docs/media/layouts-multi-select-toolbar.json
+  s_1cc363bb3cc76d::t_66b6080f9fbe68 1-2,5
+  s_1cc363bb3cc76d::t_a8fa52cf32729c 4
+  s_1cc363bb3cc76d::t_68f5597262a254 3
+apps/docs/media/layouts-layers-panel.json
+  s_1cc363bb3cc76d::t_66b6080f9fbe68 1-5
+apps/docs/layouts/placing-bins.md
+  s_1cc363bb3cc76d::t_8497e2f377e26a 95
+apps/docs/media/layouts-drawer-setup-grid-size.json
+  s_1cc363bb3cc76d::t_fc372705137d08 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "06297c0c5937470011f7dcedaf53b77f9f099335",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
