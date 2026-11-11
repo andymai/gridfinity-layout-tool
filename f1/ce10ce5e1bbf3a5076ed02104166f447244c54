@@ -1,0 +1,220 @@
+apps/docs/cutouts/photo-trace.md
+  s_1cc363bb3cc76d::t_240762d509b042 63,104-128
+  s_1cc363bb3cc76d::t_1ac5a4e43d0197 129
+src/features/bin-designer/components/panel/PhysicalUnitsSection/PhysicalUnitsSection.test.tsx
+  s_1cc363bb3cc76d::t_240762d509b042 5,7,11,19-21,29,32,41
+apps/docs/designer/size-and-shape.md
+  s_1cc363bb3cc76d::t_240762d509b042 12-13,117-135
+  s_1cc363bb3cc76d::t_382c9c5893ecaa 136
+apps/docs/designer/colors.md
+  s_1cc363bb3cc76d::t_240762d509b042 62,93,116-140
+  s_1cc363bb3cc76d::t_f908ad19f33ff7 141
+src/features/bin-designer/components/panel/PhysicalUnitsSection/usePhysicalUnitsSection.ts
+  s_1cc363bb3cc76d::t_240762d509b042 6,16,19,34
+scripts/docs-capture/shots/overview.ts
+  s_1cc363bb3cc76d::t_240762d509b042 1-175
+apps/docs/concepts/units.md
+  s_1cc363bb3cc76d::t_240762d509b042 13-14,23,25,63,103-119
+  s_1cc363bb3cc76d::t_2604183ba18ea2 120
+apps/docs/printing/troubleshooting.md
+  s_1cc363bb3cc76d::t_240762d509b042 7,69,71
+apps/docs/.vitepress/navigation.ts
+  s_1cc363bb3cc76d::t_240762d509b042 6,16
+apps/docs/designer/lids.md
+  s_1cc363bb3cc76d::t_240762d509b042 11-13,50,65,117-141
+  s_1cc363bb3cc76d::t_2e7611477211cc 142
+apps/docs/cutouts/print-checks.md
+  s_1cc363bb3cc76d::t_240762d509b042 13,58,83,99-117
+  s_1cc363bb3cc76d::t_69ab565992bdbc 118
+apps/docs/designer/stacking.md
+  s_1cc363bb3cc76d::t_240762d509b042 15,105-123
+  s_1cc363bb3cc76d::t_ff72f7b93a24df 124
+src/shared/analytics/posthog/init.ts
+  s_1cc363bb3cc76d::t_240762d509b042 9,84-85,90-95
+src/shared/analytics/posthog/init.test.ts
+  s_1cc363bb3cc76d::t_240762d509b042 1-56
+apps/docs/baseplates/splitting.md
+  s_1cc363bb3cc76d::t_240762d509b042 102-127
+apps/docs/layouts/drawer-setup.md
+  s_1cc363bb3cc76d::t_240762d509b042 13,30,38,62,94,108-132
+  s_1cc363bb3cc76d::t_5c4d1b48f10b0c 133
+apps/docs/layouts/find-bins-that-fit.md
+  s_1cc363bb3cc76d::t_240762d509b042 12-13,38,63-81
+  s_1cc363bb3cc76d::t_588061520ca44b 82
+apps/docs/cutouts/workshop.md
+  s_1cc363bb3cc76d::t_240762d509b042 11,104,113-143
+  s_1cc363bb3cc76d::t_e2b41a9287f654 144
+apps/docs/settings/spacemouse.md
+  s_1cc363bb3cc76d::t_240762d509b042 90-113
+apps/docs/designer/walls.md
+  s_1cc363bb3cc76d::t_240762d509b042 13,41,146-170
+  s_1cc363bb3cc76d::t_9e993a44a689c3 171
+apps/docs/sharing/accounts-and-sync.md
+  s_1cc363bb3cc76d::t_240762d509b042 113-138
+apps/docs/sharing/live-collaboration.md
+  s_1cc363bb3cc76d::t_240762d509b042 15,62,65,76-98
+  s_1cc363bb3cc76d::t_62d1b2c239525f 99
+apps/docs/concepts/preview-and-export.md
+  s_1cc363bb3cc76d::t_240762d509b042 12-13,69-85
+  s_1cc363bb3cc76d::t_71dbedbe5146f4 86
+apps/docs/sharing/share-links.md
+  s_1cc363bb3cc76d::t_240762d509b042 12-13,112-142
+  s_1cc363bb3cc76d::t_6a9621af2ece2b 143
+apps/docs/baseplates/magnets-and-screws.md
+  s_1cc363bb3cc76d::t_240762d509b042 11,79,113-135
+  s_1cc363bb3cc76d::t_01527ee8a75ef2 136
+apps/docs/designer/save-and-reuse.md
+  s_1cc363bb3cc76d::t_240762d509b042 13-14,44,60,76,98,119-137
+  s_1cc363bb3cc76d::t_7e3455e43d87b5 138
+scripts/check-user-docs.test.ts
+  s_1cc363bb3cc76d::t_240762d509b042 58,60-64,99-102,104-106,189-204,207-208,211-212
+src/shared/analytics/posthog/pwaEvents.ts
+  s_1cc363bb3cc76d::t_240762d509b042 9,65
+apps/docs/layouts/placing-bins.md
+  s_1cc363bb3cc76d::t_240762d509b042 13-15,20,114-149
+  s_1cc363bb3cc76d::t_97fc0116391a19 150
+src/shared/analytics/posthog/pwaEvents.test.ts
+  s_1cc363bb3cc76d::t_240762d509b042 24,126
+apps/docs/baseplates/eco-and-stack-printing.md
+  s_1cc363bb3cc76d::t_240762d509b042 8-9,18,94-118
+  s_1cc363bb3cc76d::t_c01d817f34eff3 119
+apps/docs/settings/settings.md
+  s_1cc363bb3cc76d::t_240762d509b042 108-121
+src/shared/hooks/useBeforeUnloadGuard.ts
+  s_1cc363bb3cc76d::t_240762d509b042 1-19
+src/shell/Header/Header.test.tsx
+  s_1cc363bb3cc76d::t_240762d509b042 343-351
+src/shell/Header/Header.tsx
+  s_1cc363bb3cc76d::t_240762d509b042 237-262
+docker/nginx.conf
+  s_1cc363bb3cc76d::t_240762d509b042 130-131
+apps/docs/concepts/multi-color.md
+  s_1cc363bb3cc76d::t_240762d509b042 13,22,38,88-100
+  s_1cc363bb3cc76d::t_99fbb042e2afe3 101
+apps/docs/concepts/print-bed-fit.md
+  s_1cc363bb3cc76d::t_240762d509b042 12-14,23,46,75-95
+  s_1cc363bb3cc76d::t_0dd63b7d72189a 96
+apps/docs/designer/label-plates.md
+  s_1cc363bb3cc76d::t_240762d509b042 12,17,92,105-129
+  s_1cc363bb3cc76d::t_34b7b7db6cd2b4 130
+apps/docs/concepts/bin-anatomy.md
+  s_1cc363bb3cc76d::t_240762d509b042 11,36,76,115-127
+  s_1cc363bb3cc76d::t_7a7e82b09e77e2 128
+src/features/bin-designer/hooks/useSyncPhysicalUnits.test.ts
+  s_1cc363bb3cc76d::t_240762d509b042 5,7,10-23,27-28,39,102-162,219-381
+apps/docs/layouts/organizing-layouts.md
+  s_1cc363bb3cc76d::t_240762d509b042 12-14,19,81,100-118
+  s_1cc363bb3cc76d::t_5d3e5cca60eddb 119
+apps/docs/designer/getting-things-out.md
+  s_1cc363bb3cc76d::t_240762d509b042 22,73,90,111-129
+  s_1cc363bb3cc76d::t_4e6f303eb73d1e 130
+scripts/check-user-docs.ts
+  s_1cc363bb3cc76d::t_240762d509b042 23-24,99-108,130-131,295,299-304
+apps/docs/getting-started/workspace-tour.md
+  s_1cc363bb3cc76d::t_240762d509b042 33
+src/shared/hooks/useAutoSave.test.ts
+  s_1cc363bb3cc76d::t_240762d509b042 7,14-21,639-1000
+apps/docs/layouts/multi-select.md
+  s_1cc363bb3cc76d::t_240762d509b042 13-16,107-135
+  s_1cc363bb3cc76d::t_fc56779a949423 136
+src/features/bin-designer/components/panel/PhysicalUnitsSection/usePhysicalUnitsSection.test.ts
+  s_1cc363bb3cc76d::t_240762d509b042 34-44,52-53,56-57,64,74
+src/features/bin-designer/hooks/useSyncPhysicalUnits.ts
+  s_1cc363bb3cc76d::t_240762d509b042 2-4,6,12,16,18,21-73,75,78,86-87,89-94,99-101
+apps/docs/media/introduction-overview.json
+  s_1cc363bb3cc76d::t_240762d509b042 1-5
+apps/docs/settings/offline.md
+  s_1cc363bb3cc76d::t_240762d509b042 84-97
+.claude/skills/analytics-and-labs/SKILL.md
+  s_1cc363bb3cc76d::t_240762d509b042 23
+apps/docs/cutouts/import-svg-stl.md
+  s_1cc363bb3cc76d::t_240762d509b042 10,36,52,94-116
+  s_1cc363bb3cc76d::t_dab03a366cfffe 117
+scripts/contentRoutes.test.ts
+  s_1cc363bb3cc76d::t_240762d509b042 9
+src/shared/pwa/displayMode.ts
+  s_1cc363bb3cc76d::t_240762d509b042 3-7
+src/shell/Mobile/MobileHeader/MobileHeader.tsx
+  s_1cc363bb3cc76d::t_240762d509b042 21-26,199,224,230
+apps/docs/designer/base.md
+  s_1cc363bb3cc76d::t_240762d509b042 9,12,17,141-165
+  s_1cc363bb3cc76d::t_af130825a34d41 166
+apps/docs/cutouts/phone-scan.md
+  s_1cc363bb3cc76d::t_240762d509b042 98,144-165
+  s_1cc363bb3cc76d::t_62230d3d3d5910 166
+apps/docs/cutouts/basics.md
+  s_1cc363bb3cc76d::t_240762d509b042 11,16,119-137
+  s_1cc363bb3cc76d::t_1dd4e72a6a297e 138
+apps/docs/settings/labs.md
+  s_1cc363bb3cc76d::t_240762d509b042 3,81-93
+  s_1cc363bb3cc76d::t_518bb996722c47 94
+src/shared/hooks/useAutoSave.ts
+  s_1cc363bb3cc76d::t_240762d509b042 5-6,8-10,12-16,22-32,34-70,73-223,235-236,238-244,247-248,250-251,253,255-256,258-265,267-268,270
+apps/docs/baseplates/odd-shaped-drawers.md
+  s_1cc363bb3cc76d::t_240762d509b042 80-99
+scripts/docs-capture/shots/index.ts
+  s_1cc363bb3cc76d::t_240762d509b042 9,14
+apps/docs/designer/compartments.md
+  s_1cc363bb3cc76d::t_240762d509b042 13-15,142-166
+  s_1cc363bb3cc76d::t_eec1f67c35dee8 167
+src/shared/hooks/useBeforeUnloadGuard.test.ts
+  s_1cc363bb3cc76d::t_240762d509b042 1-40
+apps/docs/baseplates/basics.md
+  s_1cc363bb3cc76d::t_240762d509b042 12-14,19,103-125
+  s_1cc363bb3cc76d::t_13a67b3ff3da6a 126
+apps/docs/designer/labels-and-text.md
+  s_1cc363bb3cc76d::t_240762d509b042 13-14,23,135-159
+  s_1cc363bb3cc76d::t_ee1a6292f9d238 160
+apps/docs/index.md
+  s_1cc363bb3cc76d::t_240762d509b042 2,4-11,13-77
+apps/docs/reference/faq.md
+  s_1cc363bb3cc76d::t_240762d509b042 22
+apps/docs/settings/keyboard-and-command-palette.md
+  s_1cc363bb3cc76d::t_240762d509b042 11,16,78-90
+  s_1cc363bb3cc76d::t_2d54691e75c66b 91
+apps/docs/layouts/layers.md
+  s_1cc363bb3cc76d::t_240762d509b042 12-13,18,66,94-112
+  s_1cc363bb3cc76d::t_84c4650851b744 113
+src/shell/Mobile/MobileHeader/MobileHeader.test.tsx
+  s_1cc363bb3cc76d::t_240762d509b042 63-76
+vercel.json
+  s_1cc363bb3cc76d::t_240762d509b042 22-26
+apps/docs/concepts/layouts-layers-stash.md
+  s_1cc363bb3cc76d::t_240762d509b042 14,19,85-93
+  s_1cc363bb3cc76d::t_6c8edd9a2251c8 94
+scripts/check-docker-parity.test.ts
+  s_1cc363bb3cc76d::t_240762d509b042 187,321
+src/features/bin-designer/hooks/useUnsavedWarning.ts
+  s_1cc363bb3cc76d::t_240762d509b042 10,19
+apps/docs/cutouts/arranging.md
+  s_1cc363bb3cc76d::t_240762d509b042 13-15,32,44,133-156
+  s_1cc363bb3cc76d::t_3073fc057d1e23 157
+apps/docs/sharing/community.md
+  s_1cc363bb3cc76d::t_240762d509b042 105,135-159
+  s_1cc363bb3cc76d::t_ab33a800581837 160
+apps/docs/concepts/saved-designs.md
+  s_1cc363bb3cc76d::t_240762d509b042 16,80,89-103
+  s_1cc363bb3cc76d::t_509d1a416b9973 104
+apps/docs/designer/special-bins.md
+  s_1cc363bb3cc76d::t_240762d509b042 13-14,23,58,74,104-128
+  s_1cc363bb3cc76d::t_20b50bccfdcaff 129
+apps/docs/layouts/categories.md
+  s_1cc363bb3cc76d::t_240762d509b042 15,71-85
+  s_1cc363bb3cc76d::t_52f127237aeebc 86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f1ce10ce5e1bbf3a5076ed02104166f447244c54",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
