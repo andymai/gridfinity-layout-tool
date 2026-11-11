@@ -62,7 +62,7 @@ The work of the other people shows on your grid, each in their own color:
 The room holds the live layout, but only the link owner's browser saves the room changes back to the share link. It saves them about one second after each change that the owner makes. A change from someone else waits for the next change from the owner.
 
 ::: warning
-Before someone joins, make sure that the owner made a change after the last edits of the others. When someone joins, the room loads the saved copy from the link. The room then loses the changes that are not in that copy.
+Before someone joins, make sure that the owner made a change after the last edits of the others. Then wait a few seconds for the save. The app doesn't show when that save is done, or if it fails. When someone joins, the room loads the saved copy from the link. The room then loses the changes that are not in that copy.
 :::
 
 ## Read-only rooms
@@ -83,7 +83,7 @@ A view-only link opens no room. It shows a copy of the layout, so nobody sees th
 
 ### Changes that other people made are gone
 
-After the others edit, ask the owner to move a bin and move it back. Do this before anyone joins or opens the link again.
+After the others edit, ask the owner to move a bin and move it back. Then wait a few seconds before anyone joins or opens the link again. The app doesn't show when the save to the link is done.
 
 Only the owner's browser saves the room to the link, and only after a change that the owner makes. That save includes the changes of everyone in the room. When someone joins, the room loads the saved copy, so it loses the changes that are not in it. See [Who saves the link](#who-saves-the-link).
 
