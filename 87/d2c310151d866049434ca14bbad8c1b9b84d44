@@ -1,0 +1,24 @@
+src/features/bin-designer/hooks/useSyncPhysicalUnits.ts
+  s_1cc363bb3cc76d::t_4c609c578378d5 37-42,44-49
+  s_1cc363bb3cc76d::t_d0ffe30d58da5f 43
+  s_1cc363bb3cc76d::t_0f354bb9d2fa98 19
+src/features/bin-designer/hooks/useSyncPhysicalUnits.test.ts
+  s_1cc363bb3cc76d::t_a6c3f9fa500236 102-122,141-144,148-162
+  s_1cc363bb3cc76d::t_c6bc9e97f6c211 123-140,145-147
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "87d2c310151d866049434ca14bbad8c1b9b84d44",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
