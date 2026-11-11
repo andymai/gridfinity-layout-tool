@@ -53,6 +53,7 @@ export {
   listenForDisplayModeChanges,
   listenForPwaInstall,
   listenForPwaInstallAvailability,
+  noteCurrentDisplayMode,
 } from './pwaEvents';
 
 // UTM PARAMETER TRACKING

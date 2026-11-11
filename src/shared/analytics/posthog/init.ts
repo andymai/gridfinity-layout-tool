@@ -152,6 +152,8 @@ export function optOutAnalytics(): void {
 export function optInAnalytics(): void {
   if (posthogInstance) {
     posthogInstance.opt_in_capturing();
+    // A launch from the installed app while analytics was off went unrecorded.
+    void import('./events').then(({ noteCurrentDisplayMode }) => noteCurrentDisplayMode());
   } else {
     // If posthog wasn't initialized, try to initialize now
     initPromise = null;

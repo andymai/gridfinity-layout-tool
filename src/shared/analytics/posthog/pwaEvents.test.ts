@@ -3,7 +3,11 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import type * as DisplayModeModule from '@/shared/pwa/displayMode';
 import type { DisplayMode } from '@/shared/pwa/displayMode';
 import { pruneAnalyticsData } from './identity';
-import { listenForDisplayModeChanges, listenForPwaInstallAvailability } from './pwaEvents';
+import {
+  listenForDisplayModeChanges,
+  listenForPwaInstallAvailability,
+  noteCurrentDisplayMode,
+} from './pwaEvents';
 
 interface TestState {
   analyticsActive: boolean;
@@ -105,6 +109,14 @@ describe('listenForDisplayModeChanges', () => {
     state.onChange?.('standalone');
 
     expect(markFeatureUsed).not.toHaveBeenCalled();
+  });
+
+  it('flags the current installed window when analytics turns back on', () => {
+    state.displayMode = 'standalone';
+
+    noteCurrentDisplayMode();
+
+    expect(markFeatureUsed).toHaveBeenCalledWith('pwa_standalone');
   });
 
   it('does not flag a browser-tab launch', () => {

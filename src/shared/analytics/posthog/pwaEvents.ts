@@ -55,10 +55,18 @@ function noteInstalledLaunch(mode: DisplayMode): void {
   if (isAnalyticsActive() && isInstalledDisplayMode(mode)) markFeatureUsed('pwa_standalone');
 }
 
+export function noteCurrentDisplayMode(): void {
+  try {
+    noteInstalledLaunch(getDisplayMode());
+  } catch {
+    // Fail silently
+  }
+}
+
 /** `init.ts` registers the first `display_mode` value. */
 export function listenForDisplayModeChanges(): void {
   try {
-    noteInstalledLaunch(getDisplayMode());
+    noteCurrentDisplayMode();
     onDisplayModeChange((mode) => {
       getPosthogInstance()?.register_for_session({ display_mode: mode });
       noteInstalledLaunch(mode);
