@@ -36,7 +36,7 @@ Each slot gets its size from the knife, with room to spare:
 
 A knife slot turns only in quarter turns, so it always lines up with a wall. If the bin is too short for the blade, the panel tells you how many height units the bin needs.
 
-<Screenshot id="designer-special-bins-knife-block" alt="A knife block with three knife slots and a separate handle rest, shown beside the Knife section of the cutout editor." spec="Open the Knife Block example from the gallery. Cut editor open, one knife slot selected so the Knife section with Preset, Blade, Heel, Spine and Handle side shows. Crop to the board and the Knife section." />
+<Screenshot id="designer-special-bins-knife-block" alt="The cut editor with the Knife Block example. The board holds three knife slots, and the selected slot shows its Knife section with the Santoku 7 inch preset, the blade, heel and spine sizes, and the handle side." spec="Open the Knife Block example from the gallery. Cut editor open, one knife slot selected so the Knife section with Preset, Blade, Heel, Spine and Handle side shows. Crop to the board and the Knife section." />
 
 ### Add a handle rest
 
@@ -65,7 +65,7 @@ Slanted bins in a row lean on each other. The last bin in a row needs something 
 
 A slanted bin has no [stacking lip](./stacking) and no lid, and the Layout Tool can't split it. If it's too large for your print bed, lower the angle or make the bin smaller. Some features don't work with a slant, for example an overhang, a custom shape, removable dividers or a pull tab. The panel names the feature that blocks the slant.
 
-<Screenshot id="designer-special-bins-slant" alt="A bin that leans toward the back, with the Slant section showing the angle, the side picker and the end support switch." spec="Bin designer, 1x2x6 bin, Shape group open, Slant on at 30 degrees toward the back, End support on. Preview from the side so the lean and the wedge show. Crop to the Slant section and the preview." />
+<Screenshot id="designer-special-bins-slant" alt="Turning on Slant shows the angle, the side picker and the End support switch. The angle steps down from 45 to 30 degrees and End support turns on. Then the side view shows the bin leaning toward the back, onto its wedge." spec="Bin designer, 1 x 2 x 6 bin, Shape group open. In close-up, turn on Slant, step the angle to 30 degrees and turn on End support. Then show the bin from the side." />
 
 ## Add a sliding tray (Labs)
 

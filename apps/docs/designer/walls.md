@@ -70,7 +70,7 @@ A wall pattern takes longer to build on a tall bin. If an export runs out of mem
 
 The pattern stops below <Ui k="binDesigner.extraWallHeight" />. For a taller patterned wall, raise the height of the bin. A solid bin and a <Ui k="binDesigner.tile" /> bin cannot have a wall pattern. A wall with divider slots stays solid.
 
-<Screenshot id="designer-walls-pattern" alt="A bin with a honeycomb pattern on the front wall only, and the Wall surface controls." spec="Bin designer, Finishing group open, bin 3 x 2 x 6. Pick Honeycomb, set Pattern scale to 50 percent, and in Patterned walls turn off every wall except the front. Show the Wall surface section and the preview from the front. Crop to panel plus preview." />
+<Screenshot id="designer-walls-pattern" alt="Picking Honeycomb as the wall pattern shows the scale, strut and wall controls. Under Patterned walls, the back, left and right walls turn off. Then the front view shows the honeycomb on the front wall only." spec="Bin designer, Finishing group open, bin 3 x 2 x 6. In close-up, pick Honeycomb and turn off every wall except the front under Patterned walls. Then show the bin from the front." />
 
 ## Cut openings in the walls
 
@@ -140,7 +140,7 @@ When the wall is too thin to hold the slot, a rib on the inside backs it. Each s
 
 The holes stay inside the flat bottom of each foot, so the edges that lock into the baseplate stay whole. If the holes are too large for the base, the panel asks for a finer scale. The inside mode of a lightweight floor leaves no solid floor to drill, so use its underside mode. A solid bin, a spacer and a <Ui k="binDesigner.tile" /> bin cannot have drainage holes.
 
-<Screenshot id="designer-walls-drainage" alt="A bin with round drainage holes through the floor, seen from below." spec="Bin designer, Finishing group open, bin 2 x 2 x 3. Turn on Drainage holes with the Round shape at 50 percent scale. Turn the preview to show the underside with the holes through the feet. Crop to panel plus preview." />
+<Screenshot id="designer-walls-drainage" alt="Turning on Drainage holes shows the Round hole shape at 50 percent scale. Then a view from below shows the round holes through the floor of each foot." spec="Bin designer, Finishing group open, bin 2 x 2 x 3. Turn on Drainage holes in close-up, then show the underside of the bin in the preview." />
 
 ## Next steps
 
