@@ -99,6 +99,67 @@ describe('useSyncPhysicalUnits', () => {
     expect(useDesignerStore.getState().history.past).toHaveLength(0);
   });
 
+  // 3u at 7mm on a 4.75mm socket is a 16.25mm wall, so a 6.25mm offset holds the
+  // fill 10mm above the floor. The fill keeps that height and the offset moves.
+  describe('a cutout fill held to the floor', () => {
+    const floorFill: Partial<BinParams> = {
+      height: 3,
+      heightUnitMm: 7,
+      cutoutConfig: { topOffset: 6.25, fillReference: 'floor' },
+    };
+
+    it('keeps its height when a design opens under a taller height unit', () => {
+      useLayoutStore.getState().setHeightUnitMm(10);
+      renderHook(() => useSyncPhysicalUnits());
+
+      act(() => {
+        useDesignerStore.getState().loadDesign(savedDesign(floorFill));
+      });
+
+      // 30 - 4.75 = 25.25mm of wall, less the 10mm fill.
+      expect(useDesignerStore.getState().params.cutoutConfig.topOffset).toBeCloseTo(15.25, 6);
+    });
+
+    it("keeps its height, and a through pocket's depth, when the layout's height unit changes", () => {
+      const through: Cutout = {
+        id: 'p1',
+        shape: 'rectangle',
+        x: 10,
+        y: 10,
+        width: 20,
+        depth: 15,
+        cutDepth: 10,
+        rotation: 0,
+        cornerRadius: 0,
+        label: '',
+        groupId: null,
+        depthMode: 'through',
+      };
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, ...floorFill, cutouts: [through] },
+      });
+      renderHook(() => useSyncPhysicalUnits());
+
+      act(() => useLayoutStore.getState().setHeightUnitMm(10));
+
+      const { params } = useDesignerStore.getState();
+      expect(params.cutoutConfig.topOffset).toBeCloseTo(15.25, 6);
+      expect(params.cutouts[0]?.cutDepth).toBeCloseTo(10, 6);
+    });
+
+    it('keeps its height when the layout turns the low-profile base on', () => {
+      useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, ...floorFill } });
+      renderHook(() => useSyncPhysicalUnits());
+
+      act(() => {
+        useLayoutStore.setState((s) => ({ layout: { ...s.layout, lowProfileBase: true } }));
+      });
+
+      // The 3.65mm low-profile socket leaves 21 - 3.65 = 17.35mm of wall.
+      expect(useDesignerStore.getState().params.cutoutConfig.topOffset).toBeCloseTo(7.35, 6);
+    });
+  });
+
   describe('low-profile base', () => {
     const setLayoutLowProfile = (enabled: boolean): void => {
       useLayoutStore.setState((state) => {
