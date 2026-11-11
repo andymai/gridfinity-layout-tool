@@ -19,7 +19,7 @@ Quick answers to the questions that makers ask most about the Gridfinity Layout 
 
 ### Is the Layout Tool free? Do I need an account?
 
-Yes, it's free, and no, you don't need an account. You can plan layouts, design bins and baseplates, and export files without one. Sign in only if you want to sync your work across devices. See [What the Layout Tool does](../introduction/what-it-does).
+Yes, it's free, and no, you don't need an account. You can plan layouts, design bins and baseplates, and export files without one. Sign in only if you want to sync your work across devices. See [What the Layout Tool does](../).
 
 ### What are Labs and Experimental features?
 

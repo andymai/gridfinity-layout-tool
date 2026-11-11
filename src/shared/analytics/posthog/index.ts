@@ -56,6 +56,7 @@ export {
   trackGalleryOpened,
   trackGalleryClosed,
   listenForPwaInstall,
+  listenForPwaInstallAvailability,
   captureUtmParameters,
   trackDesignCreated,
 } from './events';
