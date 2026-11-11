@@ -50,7 +50,7 @@ The checks skip cutouts that you drew to overlap, such as a cutout and its finge
 Look at the 3D preview when two cutouts lean toward each other. The checks measure at the top surface, so they don't see two cutouts that meet lower down.
 :::
 
-<Screenshot id="cutouts-print-checks-list" alt="The Pocket checks list shows a thin wall warning and a thin floor warning with its fix button." spec="Cut editor, 2x1 bin, 3u tall. Place a circle 1 mm from the left wall and a rectangle with To floor depth at 0.8 mm floor. Show the Properties tab with the Pocket checks list and the floor fix button, and the board with the two cutouts. Crop to the board and the panel." />
+<Screenshot id="cutouts-print-checks-list" alt="The Pocket checks list shows a thin wall warning and a thin floor warning with its fix button." spec="Cut editor, 2x1 bin, 3u tall, flat base (a socket base counts toward the floor, so it never runs thin). Place a small rectangle in a back corner, a circle, and a rectangle with To floor depth at 0.8 mm floor. Show the Properties tab with the Pocket checks list and the floor fix button, and the board with the cutouts. Crop to the board and the panel." />
 
 ## Print a fit test
 
@@ -93,7 +93,7 @@ Already drew a slot or a circle for your finger? Select it, and you see the <Ui 
 
 A repeat can't get finger access, because each copy needs its own. Use <Ui k="binDesigner.cutouts.repeat.flatten" /> first.
 
-<Screenshot id="cutouts-print-checks-finger" alt="A long rectangle cutout with a round finger access scoop across its long side." spec="Cut editor with one 140 x 22 mm rectangle. Select it and click Add finger access, then select the new scoop and pick the Round shape and Curved floor. Show the board with the slot and the scoop, and the 3D preview of the scoop. Crop to the board and the preview." />
+<Screenshot id="cutouts-print-checks-finger" alt="Clicking Add finger access on a long rectangle cutout. A scoop appears across its long side and comes in selected. Picking Round makes the scoop round, and the 3D preview zooms in on it." spec="Cut editor at half the window, 4x2 bin, one 140 x 22 mm rectangle selected. Click Add finger access, then pick Round with the Curved floor. Frame the board and the panel, then zoom the 3D preview in on the scoop." />
 
 ## Next steps
 

@@ -52,7 +52,7 @@ Already drew 3 or more matching cutouts in a row, a grid or a ring? Select them,
 
 The Layout Tool sets the rows and columns that fit at that pitch. It adds copies toward the far edges of the bin, so a cutout near a far edge has no room for more. When copies overlap, their cuts merge into one opening.
 
-<Screenshot id="cutouts-arranging-repeat" alt="A hexagon cutout repeated in a grid that fills a bin, with the Repeat section open." spec="Cut editor, 2x2 bin, one hexagon at 6.35 mm across flats near the front-left corner. Open Repeat, pick Grid, set pitch 12 mm, click Fill bin. Show the board full of hexagons and the Repeat section. Crop to the board and the panel." />
+<Screenshot id="cutouts-arranging-repeat" alt="In the Repeat section, clicking Add repeat, typing 12 mm for both pitches and clicking Fill bin. The repeat grows to 6 by 6, and the board fills with 36 hexagons." spec="Cut editor, 2x2 bin, one hexagon at 6.35 mm across flats near the front-left corner. In close-up on Repeat, click Add repeat, set Pitch X and Pitch Y to 12 mm, click Fill bin. End on the board full of hexagons." />
 
 ## Give each copy its own label
 
@@ -125,7 +125,7 @@ When a cutout goes past the edge of the bin, a warning shows how many cutouts th
 
 Click <Ui k="binDesigner.cutouts.rulerTool" /> (<kbd>M</kbd>) and drag between two points. For a quick measurement with the select tool, hold <kbd>Shift</kbd> and drag. The ruler snaps to corners, edge midpoints, centers and edges, and to the grid when snap is on. The rulers on the top and left edges of the board show millimeters. To measure the 3D model, use <Ui k="binDesigner.measure.short" /> in the preview.
 
-<Screenshot id="cutouts-arranging-ruler" alt="The ruler tool measures the gap between two cutouts on the board." spec="Cut editor with two rectangles 8 mm apart. Pick the Ruler tool and drag from the right edge of one rectangle to the left edge of the other so the snap marks and the distance label show. Crop to the board with the top and left rulers." />
+<Screenshot id="cutouts-arranging-ruler" alt="Pressing M for the ruler tool, then dragging from the edge of one cutout to the edge of the next. The ruler snaps to both edges and reads 8.0 mm." spec="Cut editor with two rectangles 8 mm apart, zoomed in on the gap. Press M and drag from the right edge of one rectangle to the left edge of the other so the snap ticks and the distance label show. Crop to the board with the top and left rulers." />
 
 ## Next steps
 
