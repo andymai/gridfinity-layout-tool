@@ -1,0 +1,47 @@
+apps/docs/media/recipes-kitchen-utensil-drawer-fit-card.json
+  s_1cc363bb3cc76d::t_0f9f73c58293e2 1-5
+scripts/docs-capture/shots/recipes.ts
+  s_1cc363bb3cc76d::t_0f9f73c58293e2 1-1387
+apps/docs/media/recipes-hand-tool-pockets-thickness.json
+  s_1cc363bb3cc76d::t_0f9f73c58293e2 1-5
+scripts/docs-capture/shots/index.ts
+  s_1cc363bb3cc76d::t_0f9f73c58293e2 10,23
+apps/docs/media/recipes-hand-tool-pockets-hero.json
+  s_1cc363bb3cc76d::t_0f9f73c58293e2 1-5
+apps/docs/media/recipes-screw-drawer-hero.json
+  s_1cc363bb3cc76d::t_0f9f73c58293e2 1-5
+apps/docs/media/recipes-deep-tool-drawer-handles.json
+  s_1cc363bb3cc76d::t_0f9f73c58293e2 1-5
+apps/docs/media/recipes-electronics-craft-organizer-plates.json
+  s_1cc363bb3cc76d::t_0f9f73c58293e2 1-5
+apps/docs/media/recipes-kitchen-utensil-drawer-plate-split.json
+  s_1cc363bb3cc76d::t_0f9f73c58293e2 1-5
+apps/docs/media/recipes-deep-tool-drawer-fit-bins.json
+  s_1cc363bb3cc76d::t_0f9f73c58293e2 1-5
+apps/docs/media/recipes-kitchen-utensil-drawer-hero.json
+  s_1cc363bb3cc76d::t_0f9f73c58293e2 1-5
+apps/docs/media/recipes-hand-tool-pockets-fit-test.json
+  s_1cc363bb3cc76d::t_0f9f73c58293e2 1-5
+apps/docs/media/recipes-screw-drawer-blank-caption.json
+  s_1cc363bb3cc76d::t_0f9f73c58293e2 1-5
+apps/docs/media/recipes-electronics-craft-organizer-hero.json
+  s_1cc363bb3cc76d::t_0f9f73c58293e2 1-5
+apps/docs/media/recipes-deep-tool-drawer-hero.json
+  s_1cc363bb3cc76d::t_0f9f73c58293e2 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "11f2fab61afd949490c8ff9b84beda880d431f6a",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
