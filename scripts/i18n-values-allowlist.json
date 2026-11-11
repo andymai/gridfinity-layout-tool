@@ -17,6 +17,7 @@
     "baseplate.magnetDepthInfo",
     "baseplate.magnetDiameterInfo",
     "baseplate.paddingBack",
+    "baseplate.stackPrint.tips.snapmaker.heading",
     "baseplate.paddingFront",
     "baseplate.paddingLeft",
     "baseplate.paddingRight",

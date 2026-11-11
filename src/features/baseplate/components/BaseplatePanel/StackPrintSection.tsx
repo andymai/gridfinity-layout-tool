@@ -206,6 +206,12 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
                       <strong>Bambu / Orca</strong> {t('baseplate.stackPrint.tips.multi.bambu')}
                     </p>
                   </div>
+                  <div className="space-y-0.5">
+                    <p className="font-medium text-content-primary">
+                      {t('baseplate.stackPrint.tips.snapmaker.heading')}
+                    </p>
+                    <p>{t('baseplate.stackPrint.tips.snapmaker.body')}</p>
+                  </div>
                 </div>
               </LabelInfo>
             </div>

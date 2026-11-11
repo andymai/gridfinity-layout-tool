@@ -336,6 +336,8 @@
   "baseplate.stackPrint.separationSlider": "인쇄 적층을 분리하여 살펴보기",
   "baseplate.stackPrint.tips.heading": "분리 요령",
   "baseplate.stackPrint.tips.multi.bambu": "지지대: 일반, 인터페이스 필라멘트: 비점착, 상단 Z: 0, 인터페이스 레이어: 1-2.",
+  "baseplate.stackPrint.tips.snapmaker.heading": "Snapmaker Orca",
+  "baseplate.stackPrint.tips.snapmaker.body": "Quality 탭에서 Wall generator를 Arachne로 설정하세요. Classic은 플레이트가 맞닿는 얇은 리지를 출력하지 않아 지지대 없는 긴 구간이 생깁니다.",
   "baseplate.stackPrint.tips.multi.body": "PLA 플레이트 사이에 PETG를(또는 PETG 사이에 PLA를) 사용하세요. 서로 붙지 않아 적층이 깔끔하게 분리됩니다. 먼저 간격을 ~0.4mm로 높이세요.",
   "baseplate.stackPrint.tips.multi.heading": "멀티 머티리얼",
   "baseplate.stackPrint.tips.multi.prusa": "지지대: 전체, 상단 접촉 Z: 0, 인터페이스 레이어: 1-2, 인터페이스 익스트루더: 비점착 필라멘트.",

@@ -336,6 +336,8 @@
   "baseplate.stackPrint.separationSlider": "分离打印叠以便检查",
   "baseplate.stackPrint.tips.heading": "分离小贴士",
   "baseplate.stackPrint.tips.multi.bambu": "支撑：普通，接触耗材：不粘，顶部 Z：0，接触层：1-2。",
+  "baseplate.stackPrint.tips.snapmaker.heading": "Snapmaker Orca",
+  "baseplate.stackPrint.tips.snapmaker.body": "在 Quality 选项卡中将 Wall generator 设为 Arachne。Classic 不会打印板材接合处的细筋，因此会出现很长的无支撑悬空段。",
   "baseplate.stackPrint.tips.multi.body": "在 PLA 板之间使用 PETG（或在 PETG 之间使用 PLA）。它们不会粘合，因此这一叠能干净地掰开。先把间隙提高到约 0.4mm。",
   "baseplate.stackPrint.tips.multi.heading": "多材料",
   "baseplate.stackPrint.tips.multi.prusa": "支撑：全部，顶部接触 Z：0，接触层：1-2，接触挤出机：不粘耗材。",

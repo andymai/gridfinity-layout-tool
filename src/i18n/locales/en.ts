@@ -4917,6 +4917,9 @@ const en: Record<string, string> = {
     'Support: Everywhere, Top contact Z: 0, interface layers: 1-2, interface extruder: non-stick filament.',
   'baseplate.stackPrint.tips.multi.bambu':
     'Support: Normal, interface filament: non-stick, Top Z: 0, interface layers: 1-2.',
+  'baseplate.stackPrint.tips.snapmaker.heading': 'Snapmaker Orca',
+  'baseplate.stackPrint.tips.snapmaker.body':
+    'Set Wall generator to Arachne on the Quality tab. Classic does not print the thin ridges where plates meet. Long unsupported spans result.',
   'baseplate.stackPrint.separate': 'Separate',
   'baseplate.stackPrint.together': 'Together',
   'baseplate.stackPrint.separationSlider': 'Separate the print stack to inspect it',

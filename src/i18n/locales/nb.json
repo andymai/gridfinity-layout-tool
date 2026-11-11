@@ -342,6 +342,8 @@
   "baseplate.stackPrint.separationSlider": "Skill utskriftsstabelen for å inspisere den",
   "baseplate.stackPrint.tips.heading": "Tips for å skille",
   "baseplate.stackPrint.tips.multi.bambu": "Støtte: Normal, grensesnittfilament: ikke-klebende, Top Z: 0, grensesnittlag: 1-2.",
+  "baseplate.stackPrint.tips.snapmaker.heading": "Snapmaker Orca",
+  "baseplate.stackPrint.tips.snapmaker.body": "Sett Wall generator til Arachne i fanen Quality. Classic skriver ikke ut de tynne ribbene der platene møtes, og det gir lange strekk uten støtte.",
   "baseplate.stackPrint.tips.multi.body": "Bruk PETG mellom PLA-plater (eller PLA mellom PETG). De binder seg ikke, slik at stabelen lett kan skilles. Øk gapet til ~0,4 mm først.",
   "baseplate.stackPrint.tips.multi.heading": "Flermateriale",
   "baseplate.stackPrint.tips.multi.prusa": "Støtte: Overalt, Top contact Z: 0, grensesnittlag: 1-2, grensesnittekstruder: ikke-klebende filament.",

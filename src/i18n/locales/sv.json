@@ -342,6 +342,8 @@
   "baseplate.stackPrint.separationSlider": "Separera utskriftsstapeln för att inspektera den",
   "baseplate.stackPrint.tips.heading": "Tips för att separera",
   "baseplate.stackPrint.tips.multi.bambu": "Support: Normal, interfacefilament: lossningsfilament, Top Z: 0, interfacelager: 1-2.",
+  "baseplate.stackPrint.tips.snapmaker.heading": "Snapmaker Orca",
+  "baseplate.stackPrint.tips.snapmaker.body": "Ställ in Wall generator på Arachne på fliken Quality. Classic skriver inte ut de tunna åsarna där plattorna möts, vilket ger långa sträckor utan stöd.",
   "baseplate.stackPrint.tips.multi.body": "Använd PETG mellan PLA-plattor (eller PLA mellan PETG). De fastnar inte, så stapeln separeras rent. Höj gapet till ~0,4 mm först.",
   "baseplate.stackPrint.tips.multi.heading": "Flermaterial",
   "baseplate.stackPrint.tips.multi.prusa": "Support: Överallt, Top contact Z: 0, interfacelager: 1-2, interface-extruder: lossningsfilament.",

@@ -354,6 +354,8 @@
   "baseplate.stackPrint.separationSlider": "Розділіть стос друку для огляду",
   "baseplate.stackPrint.tips.heading": "Поради щодо розділення",
   "baseplate.stackPrint.tips.multi.bambu": "Підтримка: Нормальна, філамент інтерфейсу: нелипкий, Top Z: 0, шари інтерфейсу: 1-2.",
+  "baseplate.stackPrint.tips.snapmaker.heading": "Snapmaker Orca",
+  "baseplate.stackPrint.tips.snapmaker.body": "Встановіть Wall generator на Arachne на вкладці Quality. Classic не друкує тонкі ребра в місцях стику плит, тому виникають довгі ділянки без опори.",
   "baseplate.stackPrint.tips.multi.body": "Використовуйте PETG між пластинами PLA (або PLA між PETG). Вони не склеюються, тому стос легко розділяється. Спочатку збільшіть зазор до ~0,4 мм.",
   "baseplate.stackPrint.tips.multi.heading": "Мультиматеріал",
   "baseplate.stackPrint.tips.multi.prusa": "Підтримка: Скрізь, Top contact Z: 0, шари інтерфейсу: 1-2, екструдер інтерфейсу: нелипкий філамент.",

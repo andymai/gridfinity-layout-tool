@@ -354,6 +354,8 @@
   "baseplate.stackPrint.separationSlider": "Rozdziel stos druku, aby go obejrzeć",
   "baseplate.stackPrint.tips.heading": "Wskazówki dotyczące rozdzielania",
   "baseplate.stackPrint.tips.multi.bambu": "Podpory: Normalne, filament styku: nieprzywierający, Górne Z: 0, warstwy styku: 1-2.",
+  "baseplate.stackPrint.tips.snapmaker.heading": "Snapmaker Orca",
+  "baseplate.stackPrint.tips.snapmaker.body": "Ustaw Wall generator na Arachne na karcie Quality. Classic nie drukuje cienkich żeber w miejscu styku płyt, przez co powstają długie odcinki bez podparcia.",
   "baseplate.stackPrint.tips.multi.body": "Użyj PETG między płytami PLA (lub PLA między PETG). Nie łączą się, więc stos rozdziela się czysto. Najpierw podnieś szczelinę do ~0,4 mm.",
   "baseplate.stackPrint.tips.multi.heading": "Wiele materiałów",
   "baseplate.stackPrint.tips.multi.prusa": "Podpory: Wszędzie, Górny kontakt Z: 0, warstwy styku: 1-2, ekstruder styku: filament nieprzywierający.",

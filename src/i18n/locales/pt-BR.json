@@ -342,6 +342,8 @@
   "baseplate.stackPrint.separationSlider": "Separe a pilha de impressão para inspecioná-la",
   "baseplate.stackPrint.tips.heading": "Dicas para separar",
   "baseplate.stackPrint.tips.multi.bambu": "Suporte: Normal, filamento de interface: antiaderente, Top Z: 0, camadas de interface: 1-2.",
+  "baseplate.stackPrint.tips.snapmaker.heading": "Snapmaker Orca",
+  "baseplate.stackPrint.tips.snapmaker.body": "Defina Wall generator como Arachne na aba Quality. O Classic não imprime as nervuras finas onde as placas se encontram, deixando vãos longos sem suporte.",
   "baseplate.stackPrint.tips.multi.body": "Use PETG entre placas de PLA (ou PLA entre PETG). Eles não aderem, então a pilha se separa facilmente. Aumente a fresta para ~0,4 mm primeiro.",
   "baseplate.stackPrint.tips.multi.heading": "Multimaterial",
   "baseplate.stackPrint.tips.multi.prusa": "Suporte: Em todo lugar, Top contact Z: 0, camadas de interface: 1-2, extrusor de interface: filamento antiaderente.",

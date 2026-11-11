@@ -342,6 +342,8 @@
   "baseplate.stackPrint.separationSlider": "Scheid de printstapel om hem te inspecteren",
   "baseplate.stackPrint.tips.heading": "Tips voor het scheiden",
   "baseplate.stackPrint.tips.multi.bambu": "Support: Normaal, interfacefilament: niet-klevend, Top Z: 0, interfacelagen: 1-2.",
+  "baseplate.stackPrint.tips.snapmaker.heading": "Snapmaker Orca",
+  "baseplate.stackPrint.tips.snapmaker.body": "Stel Wall generator in op Arachne op het tabblad Quality. Classic print de dunne ribbels waar de platen elkaar raken niet, waardoor lange stukken zonder steun ontstaan.",
   "baseplate.stackPrint.tips.multi.body": "Gebruik PETG tussen PLA-platen (of PLA tussen PETG). Ze hechten niet aan elkaar, zodat de stapel eenvoudig scheidt. Vergroot het gat eerst naar ~0,4 mm.",
   "baseplate.stackPrint.tips.multi.heading": "Multi-materiaal",
   "baseplate.stackPrint.tips.multi.prusa": "Support: Overal, Top contact Z: 0, interfacelagen: 1-2, interface extruder: niet-klevend filament.",

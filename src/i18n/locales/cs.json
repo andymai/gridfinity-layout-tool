@@ -348,6 +348,8 @@
   "baseplate.stackPrint.separationSlider": "Odděl tiskový stoh pro jeho prohlídku",
   "baseplate.stackPrint.tips.heading": "Rady k oddělování",
   "baseplate.stackPrint.tips.multi.bambu": "Podpora: Normální, filament kontaktu: nepřilnavý, Z shora: 0, kontaktní vrstvy: 1–2.",
+  "baseplate.stackPrint.tips.snapmaker.heading": "Snapmaker Orca",
+  "baseplate.stackPrint.tips.snapmaker.body": "Na kartě Quality nastavte Wall generator na Arachne. Classic netiskne tenká žebra v místě styku desek, takže vznikají dlouhé úseky bez podpory.",
   "baseplate.stackPrint.tips.multi.body": "Použij PETG mezi deskami z PLA (nebo PLA mezi PETG). Nespojí se, takže se stoh čistě rozdělí. Nejdřív zvyš mezeru na ~0,4 mm.",
   "baseplate.stackPrint.tips.multi.heading": "Více materiálů",
   "baseplate.stackPrint.tips.multi.prusa": "Podpora: Všude, kontakt Z shora: 0, kontaktní vrstvy: 1–2, extruder kontaktu: nepřilnavý filament.",

@@ -342,6 +342,8 @@
   "baseplate.stackPrint.separationSlider": "Séparer la pile d’impression pour l’inspecter",
   "baseplate.stackPrint.tips.heading": "Conseils pour séparer",
   "baseplate.stackPrint.tips.multi.bambu": "Support : Normal, filament interface : non-adhérent, Top Z : 0, couches interface : 1-2.",
+  "baseplate.stackPrint.tips.snapmaker.heading": "Snapmaker Orca",
+  "baseplate.stackPrint.tips.snapmaker.body": "Réglez Wall generator sur Arachne dans l’onglet Quality. Classic n’imprime pas les fines crêtes où les plaques se rejoignent, ce qui laisse de longues portées sans support.",
   "baseplate.stackPrint.tips.multi.body": "Utilisez du PETG entre des plaques PLA (ou du PLA entre du PETG). Ils ne collent pas, la pile se sépare donc facilement. Portez l'espace à ~0,4 mm d'abord.",
   "baseplate.stackPrint.tips.multi.heading": "Multimatière",
   "baseplate.stackPrint.tips.multi.prusa": "Support : Partout, Top contact Z : 0, couches interface : 1-2, extrudeur interface : filament non-adhérent.",

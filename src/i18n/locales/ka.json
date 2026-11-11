@@ -4098,6 +4098,8 @@
   "baseplate.stackPrint.tips.multi.body": "PLA ფირფიტებს შორის გამოიყენეთ PETG (ან PETG-ს შორის PLA). ისინი ერთმანეთს არ ეწებება, ამიტომ დასტა სუფთად განცალკევდება. ჯერ შუალედი ~0.4mm-მდე გაზარდეთ.",
   "baseplate.stackPrint.tips.multi.prusa": "საყრდენი: ყველგან, ზედა კონტაქტის Z: 0, ინტერფეისის ფენები: 1-2, ინტერფეისის ექსტრუდერი: არაწებოვანი ფილამენტი.",
   "baseplate.stackPrint.tips.multi.bambu": "საყრდენი: ნორმალური, ინტერფეისის ფილამენტი: არაწებოვანი, ზედა Z: 0, ინტერფეისის ფენები: 1-2.",
+  "baseplate.stackPrint.tips.snapmaker.heading": "Snapmaker Orca",
+  "baseplate.stackPrint.tips.snapmaker.body": "Quality ჩანართში დააყენეთ Wall generator მნიშვნელობაზე Arachne. Classic არ ბეჭდავს თხელ ქედებს, სადაც ფირფიტები ერთმანეთს ხვდება, ამიტომ წარმოიქმნება გრძელი მონაკვეთები საყრდენის გარეშე.",
   "baseplate.stackPrint.separate": "განცალკევებული",
   "baseplate.stackPrint.together": "ერთად",
   "baseplate.stackPrint.separationSlider": "შესამოწმებლად საბეჭდი დასტის განცალკევება",

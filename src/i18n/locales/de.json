@@ -342,6 +342,8 @@
   "baseplate.stackPrint.separationSlider": "Druckstapel zum Prüfen auseinanderziehen",
   "baseplate.stackPrint.tips.heading": "Tipps zum Trennen",
   "baseplate.stackPrint.tips.multi.bambu": "Support: Normal, Interface-Filament: Trennfilament, Top Z: 0, Interface-Lagen: 1-2.",
+  "baseplate.stackPrint.tips.snapmaker.heading": "Snapmaker Orca",
+  "baseplate.stackPrint.tips.snapmaker.body": "Setze Wall generator im Tab Quality auf Arachne. Classic druckt die dünnen Rippen nicht, an denen die Platten sich treffen, sodass lange Strecken ohne Stütze entstehen.",
   "baseplate.stackPrint.tips.multi.body": "PETG zwischen PLA-Platten verwenden (oder PLA zwischen PETG). Die Materialien haften nicht aneinander, der Stapel lässt sich sauber trennen. Den Spalt zuerst auf ~0,4 mm erhöhen.",
   "baseplate.stackPrint.tips.multi.heading": "Multi-Material",
   "baseplate.stackPrint.tips.multi.prusa": "Support: Überall, Top contact Z: 0, Interface-Lagen: 1-2, Interface-Extruder: Trennfilament.",

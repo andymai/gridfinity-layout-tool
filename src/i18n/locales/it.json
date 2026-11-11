@@ -342,6 +342,8 @@
   "baseplate.stackPrint.separationSlider": "Separa la pila di stampa per ispezionarla",
   "baseplate.stackPrint.tips.heading": "Consigli per separare",
   "baseplate.stackPrint.tips.multi.bambu": "Supporto: Normale, filamento d'interfaccia: antiaderente, Top Z: 0, layer d'interfaccia: 1-2.",
+  "baseplate.stackPrint.tips.snapmaker.heading": "Snapmaker Orca",
+  "baseplate.stackPrint.tips.snapmaker.body": "Imposta Wall generator su Arachne nella scheda Quality. Classic non stampa le creste sottili dove le piastre si incontrano, lasciando lunghi tratti senza supporto.",
   "baseplate.stackPrint.tips.multi.body": "Usa PETG tra le piastre in PLA (o PLA tra PETG). Non si legano, così la pila si separa in modo pulito. Prima aumenta lo spazio a ~0.4mm.",
   "baseplate.stackPrint.tips.multi.heading": "Multi-materiale",
   "baseplate.stackPrint.tips.multi.prusa": "Supporto: Ovunque, Top contact Z: 0, layer d'interfaccia: 1-2, estrusore d'interfaccia: filamento antiaderente.",
