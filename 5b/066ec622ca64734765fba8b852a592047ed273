@@ -1,0 +1,45 @@
+apps/docs/media/concepts-preview-draft-exact.json
+  s_1cc363bb3cc76d::t_fa4d060653da59 1-5
+apps/docs/concepts/preview-and-export.md
+  s_1cc363bb3cc76d::t_fa4d060653da59 49
+apps/docs/media/concepts-layouts-layer-stack.json
+  s_1cc363bb3cc76d::t_fa4d060653da59 1-5
+apps/docs/introduction/gridfinity-basics.md
+  s_1cc363bb3cc76d::t_fa4d060653da59 36
+apps/docs/concepts/layouts-layers-stash.md
+  s_1cc363bb3cc76d::t_fa4d060653da59 82
+apps/docs/media/concepts-print-bed-split-bin.json
+  s_1cc363bb3cc76d::t_fa4d060653da59 1-5
+apps/docs/media/concepts-units-physical-units.json
+  s_1cc363bb3cc76d::t_fa4d060653da59 1-5
+apps/docs/media/introduction-gridfinity-basics-parts.json
+  s_1cc363bb3cc76d::t_fa4d060653da59 1-5
+scripts/docs-capture/shots/concepts.ts
+  s_1cc363bb3cc76d::t_fa4d060653da59 1-11,13-587
+apps/docs/media/concepts-layouts-exploded.json
+  s_1cc363bb3cc76d::t_fa4d060653da59 1-5
+apps/docs/media/concepts-multi-color-zones.json
+  s_1cc363bb3cc76d::t_fa4d060653da59 1-5
+apps/docs/media/concepts-bin-anatomy-overview.json
+  s_1cc363bb3cc76d::t_fa4d060653da59 1-5
+apps/docs/concepts/print-bed-fit.md
+  s_1cc363bb3cc76d::t_fa4d060653da59 62
+apps/docs/media/concepts-saved-designs-layout-labels.json
+  s_1cc363bb3cc76d::t_fa4d060653da59 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5b066ec622ca64734765fba8b852a592047ed273",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
