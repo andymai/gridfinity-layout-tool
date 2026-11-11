@@ -1,0 +1,24 @@
+src/shared/hooks/useCollabSync.ts
+  s_1cc363bb3cc76d::t_2ba4f0876598a8 201-205
+  s_1cc363bb3cc76d::t_1019f68ffa795e 207,219,225,227
+src/shared/hooks/useCollabSync.scenario.twoBrowsers.test.ts
+  s_1cc363bb3cc76d::t_91ec75823586b8 138-150
+src/shared/hooks/useCollabSync.test.ts
+  s_1cc363bb3cc76d::t_ae2258e6668478 678-691
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5c95f210035f982969030855d16414fbe112be44",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
