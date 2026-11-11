@@ -1,0 +1,23 @@
+src/shared/utils/roomLinkStamp.ts
+  s_1cc363bb3cc76d::t_989e2e61363669 18-39,42-45
+api/lib/validation.crossBoundary.test.ts
+  s_1cc363bb3cc76d::t_5f7b56914b38d6 1-42
+src/shared/utils/roomLinkStamp.test.ts
+  s_1cc363bb3cc76d::t_9a204972998507 3,34-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "08faeae2e8c9486109219870fe9f3dc331ec9384",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
