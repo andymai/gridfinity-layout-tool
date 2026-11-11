@@ -15,9 +15,34 @@ export interface RoomLinkStamp {
 
 export type JoinOutcome = 'push-copy' | 'adopt-room';
 
+/**
+ * The top-level fields that a share stores: what `validateShareLayout` in
+ * api/lib/validation.ts keeps, less what `withoutLibraryPlacement` removes.
+ * A fetched copy has only these, so the owner's layout is compared on them too.
+ */
+const SHARED_LAYOUT_FIELDS = [
+  'version',
+  'name',
+  'drawer',
+  'layers',
+  'bins',
+  'categories',
+  'printBedSize',
+  'printBedDepth',
+  'gridUnitMm',
+  'gridUnitMmY',
+  'heightUnitMm',
+  'magnetAnchor',
+  'lowProfileBase',
+  'baseplateParams',
+] as const satisfies readonly (keyof Layout)[];
+
 /** Staging bins do not count: they never cause a share save. */
 export function roomLayoutFingerprint(layout: Layout): string {
-  return hashDesignContent({ ...layout, bins: getGridBins(layout.bins) });
+  const shared: Record<string, unknown> = {};
+  for (const field of SHARED_LAYOUT_FIELDS) shared[field] = layout[field];
+  shared.bins = getGridBins(layout.bins);
+  return hashDesignContent(shared);
 }
 
 export function stampFor(layout: Layout, linkUpdatedAt: string | undefined): RoomLinkStamp {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Layout } from '@/core/types';
-import { binId, gridUnits } from '@/core/types';
+import { baseplateDesignId, binId, gridUnits, mm } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
 import {
@@ -28,6 +28,27 @@ describe('roomLayoutFingerprint', () => {
   it('changes when a grid bin moves', () => {
     expect(roomLayoutFingerprint(withGridBin('a', 1))).not.toBe(
       roomLayoutFingerprint(withGridBin('a', 0))
+    );
+  });
+
+  it('ignores the fields that a share does not store', () => {
+    const publicCopy = withGridBin('a');
+    const ownerCopy: Layout = {
+      ...publicCopy,
+      activeBaseplateId: baseplateDesignId('bp-1'),
+      folderId: 'folder_1_abc',
+      purpose: 'workshop',
+    };
+    expect(roomLayoutFingerprint(ownerCopy)).toBe(roomLayoutFingerprint(publicCopy));
+  });
+
+  it('changes when a field that a share stores changes', () => {
+    const base = withGridBin('a');
+    expect(roomLayoutFingerprint({ ...base, gridUnitMmY: mm(40) })).not.toBe(
+      roomLayoutFingerprint(base)
+    );
+    expect(roomLayoutFingerprint({ ...base, name: 'Renamed' })).not.toBe(
+      roomLayoutFingerprint(base)
     );
   });
 
