@@ -1,0 +1,35 @@
+src/features/bin-designer/components/panel/PhysicalUnitsSection/usePhysicalUnitsSection.ts
+  s_1cc363bb3cc76d::t_927ccb7f61d431 6,16,19,34
+src/features/bin-designer/components/panel/PhysicalUnitsSection/usePhysicalUnitsSection.test.ts
+  s_1cc363bb3cc76d::t_64d3386dbbdd5e 34-44,52-53,56-57,64,74
+src/features/bin-designer/hooks/useSyncPhysicalUnits.test.ts
+  s_1cc363bb3cc76d::t_f668fe89483dd1 196-198,203-206,209-210
+  s_1cc363bb3cc76d::t_c1f186ce1b7abe 158-195,199-202,207,211-212,214-236,241-320
+  s_1cc363bb3cc76d::t_3a1274176234b6 5
+  s_1cc363bb3cc76d::t_ba97a8608d89f7 208,213
+  s_1cc363bb3cc76d::t_9e7b971cfb0ddc 237-240
+  s_1cc363bb3cc76d::t_5705f8c4a3e067 7,10-23,27-28,39
+src/features/bin-designer/components/panel/PhysicalUnitsSection/PhysicalUnitsSection.test.tsx
+  s_1cc363bb3cc76d::t_146cdf618ce134 5,7,11,19-21,29,32,41
+src/features/bin-designer/hooks/useSyncPhysicalUnits.ts
+  s_1cc363bb3cc76d::t_4566fb9c845d9d 2-4,6
+  s_1cc363bb3cc76d::t_d63ec59cf3e848 48-49
+  s_1cc363bb3cc76d::t_c46c8772204daf 12,16,20-47,50-60,62,65,73-74,86-88
+  s_1cc363bb3cc76d::t_b352b9c81f67c8 76-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ba9b799adc73065d7717e00d2df3a52aa4d98173",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
