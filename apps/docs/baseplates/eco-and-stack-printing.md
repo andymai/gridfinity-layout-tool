@@ -5,6 +5,8 @@ sources:
   - src/features/baseplate/components/BaseplatePanel/StackPrintSection.tsx
   - src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
   - src/features/baseplate/utils/stackPrint.ts
+  - src/features/baseplate/utils/stackPlanning.ts
+  - src/features/baseplate/hooks/useStackPrintStatus.ts
   - src/features/baseplate/utils/buildFullParams.ts
   - src/shared/generation/ecoPlate.ts
   - src/core/types/baseplate.ts
@@ -95,9 +97,9 @@ A message in the stack settings tells you when a stack can't form. Here's what e
 
 ### The message says there's nothing to stack
 
-Raise <Ui k="baseplate.stackPrint.copies.label" /> to 2 or more. The stack then holds copies of your plate.
+Does your baseplate split into pieces? Turn on <Ui k="baseplate.stackPrint.mixedSizes.label" />, so that pieces of different sizes share a tower. Is it one plate? Raise <Ui k="baseplate.stackPrint.copies.label" /> to 2 or more. The stack then holds copies of your plate.
 
-Your baseplate fits the bed in one piece, so one set holds only one plate.
+By default, only plates with the same shape stack together. Your baseplate fits the bed in one piece, or each piece has a different shape. So one set has no pair to stack.
 
 ### Each plate prints as its own file
 

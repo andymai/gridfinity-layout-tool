@@ -6,6 +6,7 @@ sources:
   - src/features/bin-designer/types/base.ts
   - src/shared/constraints/rules.ts
   - src/shared/utils/detachableFeetPlan.ts
+  - src/features/generation/worker/generators/detachableFeetBuilder.ts
   - src/shared/generation/lowProfileBase.ts
   - src/features/generation/worker/generators/socketBuilder.ts
   - src/features/bin-designer/components/DesignerPage/useFractionalEdgeMismatch.ts
@@ -159,9 +160,9 @@ A plain round hole holds a magnet only when its size suits your printer exactly.
 
 ### A detachable foot won't go on, or it comes loose
 
-Pick a smaller <Ui k="binDesigner.detachableFeet.pinSize" /> if a foot won't go on. Pick a larger one if a foot comes loose. Then print the feet again.
+Pick a smaller <Ui k="binDesigner.detachableFeet.pinSize" /> if a foot won't go on. Pick a larger one if a foot comes loose. Then print the bin and the feet again.
 
-The pin hole in the bin is always 3 mm wide. Each printer prints a small pin a little larger or smaller than its model, so the pin size lets you match your printer.
+The pin hole in the bin is always 3 mm wide. Each printer prints a small pin a little larger or smaller than its model, so the pin size lets you match your printer. On most bins, the pin size also moves some pins a little, and the holes in the bin move with them. So new feet line up only with a bin that you print at the same pin size.
 
 ## Next steps
 

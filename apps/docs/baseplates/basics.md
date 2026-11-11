@@ -10,6 +10,7 @@ sources:
   - src/features/baseplate/utils/designOwnership.ts
   - src/core/baseplateDefaults.ts
   - src/features/baseplate/components/BaseplatePanel/MeasuredDrawerOverflow.tsx
+  - src/features/baseplate/utils/fitPaddingToDrawer.ts
   - src/features/baseplate/components/BaseplatePreview/BaseplatePreview.tsx
 ---
 
@@ -103,7 +104,7 @@ Want a clean start? Click <Ui k="baseplate.reset" /> at the bottom of the panel,
 
 ### The plate is bigger than your drawer
 
-Click <Ui k="baseplate.fitPaddingToDrawer" /> under the warning. It makes the margins smaller until the plate fits. No button? Then the grid alone is too big for the drawer. Make the grid smaller in the layout editor, or turn off <Ui k="baseplate.syncWithLayout" /> and lower the steppers.
+Click <Ui k="baseplate.fitPaddingToDrawer" /> under the warning. It makes the margins smaller, but it can't make the grid smaller. Does the warning stay after the click, or is there no button? Then the grid alone is too big for the drawer. Make the grid smaller in the layout editor, or turn off <Ui k="baseplate.syncWithLayout" /> and lower the steppers.
 
 The panel compares the plate and its margins with the drawer size that you measured in the layout editor. The warning gives the overlap in millimeters.
 

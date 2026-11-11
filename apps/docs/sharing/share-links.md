@@ -9,6 +9,8 @@ sources:
   - src/core/storage/ShareService.ts
   - src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
   - api/liveblocks-auth.ts
+  - api/share.ts
+  - api/lib/contentFilter.ts
 ---
 
 # Share a layout
@@ -113,11 +115,19 @@ Want to send just one bin? Send its design file. It holds the editable design, n
 
 Read the message, and do what it asks:
 
-| Message is about   | What to do                                                                                         |
-| ------------------ | -------------------------------------------------------------------------------------------------- |
-| Blocked content    | Remove web addresses from bin labels and notes, and any character typed 11 or more times in a row. |
-| A layout too large | Remove bins that you don't need, or [share without the server](#share-without-the-server).         |
-| Too many bins      | Remove bins until the layout has 2,500 or fewer.                                                   |
+| Message is about   | What to do                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------------ |
+| Blocked content    | Find the blocked text, and change it. The list below the table tells you where to look.    |
+| A layout too large | Remove bins that you don't need, or [share without the server](#share-without-the-server). |
+| Too many bins      | Remove bins until the layout has 2,500 or fewer.                                           |
+
+The message about blocked content names only bin labels and notes. But the server reads all the text that you share:
+
+- The layout name and the category names
+- The label, the notes, the custom properties and the items of each bin
+- The name of each linked design, and all the text in it
+
+In that text, remove web addresses that start with `http://` or `https://`. Where one character comes 11 or more times in a row, type it fewer times. Remove `<script`, `javascript:`, and each equals sign (=) that comes after a word. Then reword offensive words. The server also finds them inside longer words, so a normal word can match.
 
 ### The link says that the share isn't found
 
