@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCollabSync } from '@/shared/hooks/useCollabSync';
 import { useLayoutStore } from '@/core/store/layout';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
 import type { Layout, Bin, LayerId } from '@/core/types';
 import { binId, categoryId, gridUnits, heightUnits, layerId, layoutId } from '@/core/types';
@@ -591,6 +592,116 @@ describe('useCollabSync', () => {
         version: 1,
         ...stampFor(layout, LATER),
       });
+    });
+  });
+
+  describe('room changes after an edit of its own', () => {
+    function ids(): string[] {
+      return useLayoutStore.getState().layout.bins.map((b) => b.id);
+    }
+
+    async function joinedRoomWith(start: Layout) {
+      useLayoutStore.setState({ layout: start, lastEditSource: 'init' });
+      let room = start;
+      mockUseStorage.mockImplementation((selector) => selector({ layout: room }));
+      const hook = renderHook(() => useCollabSync());
+      await act(async () => {
+        vi.advanceTimersByTime(600);
+      });
+      return {
+        setRoom: (layout: Layout) => {
+          room = layout;
+          hook.rerender();
+        },
+        editLocally: (layout: Layout) => {
+          act(() => {
+            useLayoutStore.setState({ layout, lastEditSource: 'local' });
+          });
+        },
+      };
+    }
+
+    it("imports a collaborator's edit that lands after this browser's own edit", async () => {
+      const room = await joinedRoomWith(createTestLayout([createBinOnGrid('a')]));
+      const ownEdit = createTestLayout([createBinOnGrid('a'), createBinOnGrid('own-b')]);
+      room.editLocally(ownEdit);
+      room.setRoom(ownEdit);
+
+      room.setRoom(
+        createTestLayout([createBinOnGrid('a'), createBinOnGrid('own-b'), createBinOnGrid('c')])
+      );
+
+      expect(ids()).toEqual(['a', 'own-b', 'c']);
+      expect(useLayoutStore.getState().lastEditSource).toBe('remote');
+    });
+
+    it("builds this browser's next edit on the collaborator's edit", async () => {
+      const room = await joinedRoomWith(createTestLayout([createBinOnGrid('a')]));
+      const ownEdit = createTestLayout([createBinOnGrid('a'), createBinOnGrid('own-b')]);
+      room.editLocally(ownEdit);
+      room.setRoom(ownEdit);
+      room.setRoom(
+        createTestLayout([createBinOnGrid('a'), createBinOnGrid('own-b'), createBinOnGrid('c')])
+      );
+
+      const current = useLayoutStore.getState().layout;
+      const nextEdit = { ...current, bins: [...current.bins, createBinOnGrid('own-d')] };
+      room.editLocally(nextEdit);
+
+      const pushed = mockUpdateRemoteLayout.mock.calls.at(-1)?.[0] as Layout | undefined;
+      expect(pushed?.bins.map((b) => b.id)).toEqual(['a', 'own-b', 'c', 'own-d']);
+    });
+
+    it('does not import its own push coming back from the room', async () => {
+      const room = await joinedRoomWith(createTestLayout([createBinOnGrid('a')]));
+      const ownEdit = createTestLayout([createBinOnGrid('a'), createBinOnGrid('own-b')]);
+      room.editLocally(ownEdit);
+
+      room.setRoom(JSON.parse(JSON.stringify(ownEdit)) as Layout);
+
+      expect(useLayoutStore.getState().layout).toBe(ownEdit);
+      expect(useLayoutStore.getState().lastEditSource).toBe('local');
+    });
+
+    it('keeps an edit the room has not received when a room change lands in the same render', async () => {
+      const room = await joinedRoomWith(createTestLayout([createBinOnGrid('a')]));
+      const ownEdit = createTestLayout([createBinOnGrid('a'), createBinOnGrid('own-b')]);
+      const theirs = createTestLayout([createBinOnGrid('a'), createBinOnGrid('their-c')]);
+      useLayoutStore.setState({ layout: ownEdit, lastEditSource: 'local' });
+
+      room.setRoom(theirs);
+
+      expect(ids()).toEqual(['a', 'own-b']);
+      expect(mockUpdateRemoteLayout).toHaveBeenLastCalledWith(ownEdit);
+    });
+
+    it('takes a room change that lands with a local action that left the layout as it was', async () => {
+      const start = createTestLayout([createBinOnGrid('a')]);
+      const room = await joinedRoomWith(start);
+      const theirs = createTestLayout([createBinOnGrid('a'), createBinOnGrid('their-c')]);
+      useLayoutStore.getState().setName(start.name);
+      expect(useLayoutStore.getState().layout).toBe(start);
+      expect(useLayoutStore.getState().lastEditSource).toBe('local');
+
+      room.setRoom(theirs);
+
+      expect(ids()).toEqual(['a', 'their-c']);
+      expect(mockUpdateRemoteLayout).not.toHaveBeenCalled();
+    });
+
+    it("adds no entry to this browser's undo history for an imported edit", async () => {
+      const room = await joinedRoomWith(createTestLayout([createBinOnGrid('a')]));
+      const ownEdit = createTestLayout([createBinOnGrid('a'), createBinOnGrid('own-b')]);
+      room.editLocally(ownEdit);
+      room.setRoom(ownEdit);
+      const pastBefore = useHistoryStore.getState().past.length;
+
+      room.setRoom(
+        createTestLayout([createBinOnGrid('a'), createBinOnGrid('own-b'), createBinOnGrid('c')])
+      );
+
+      expect(ids()).toEqual(['a', 'own-b', 'c']);
+      expect(useHistoryStore.getState().past).toHaveLength(pastBefore);
     });
   });
 
