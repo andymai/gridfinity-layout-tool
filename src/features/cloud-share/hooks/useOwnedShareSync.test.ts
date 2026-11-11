@@ -8,7 +8,7 @@ import * as shareApi from '@/core/api/share';
 import { ok, err, apiServerError } from '@/core/result';
 import type { LayoutLibrary, CloudShareInfo, Layout } from '@/core/types';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
-import { readOwnCopyRevision } from '@/features/cloud-share/utils';
+import { claimRoomSaves, readOwnCopyRevision } from '@/features/cloud-share/utils';
 import { stampFor } from '@/shared/utils/roomLinkStamp';
 
 // Mock the share API module
@@ -206,6 +206,21 @@ describe('useOwnedShareSync', () => {
       expect(readOwnCopyRevision(TEST_SHARE_ID)).toEqual(
         stampFor(useLayoutStore.getState().layout, '2026-11-01T10:00:00.000Z')
       );
+    });
+
+    it("saves and records nothing while the share's loaded room saves the link", async () => {
+      const release = claimRoomSaves(TEST_SHARE_ID);
+      try {
+        renderHook(() => useOwnedShareSync());
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5000);
+        });
+      } finally {
+        release();
+      }
+
+      expect(shareApi.updateShare).not.toHaveBeenCalled();
+      expect(readOwnCopyRevision(TEST_SHARE_ID)).toBeUndefined();
     });
 
     it('records nothing when the save fails', async () => {

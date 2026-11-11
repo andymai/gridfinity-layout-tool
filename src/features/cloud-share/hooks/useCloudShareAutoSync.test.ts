@@ -1,13 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCloudShareAutoSync } from './useCloudShareAutoSync';
+import { useOwnedShareSync } from './useOwnedShareSync';
 import { useLayoutStore } from '@/core/store/layout';
+import { useLibraryStore } from '@/core/store/library';
 import * as shareApi from '@/core/api/share';
 import { ok, err, apiServerError } from '@/core/result';
 import type { Layout } from '@/core/types';
-import { binId, gridUnits } from '@/core/types';
-import { createTestBin, createTestLayout } from '@/test/testUtils';
+import { binId, gridUnits, layoutId } from '@/core/types';
+import { createTestBin, createTestLayout, createTestLibrary } from '@/test/testUtils';
 import { stampFor, type RoomLinkStamp } from '@/shared/utils/roomLinkStamp';
+import { roomSavesShare } from '@/features/cloud-share/utils';
 
 interface FakeRoot {
   layout: Layout;
@@ -259,6 +262,97 @@ describe('useCloudShareAutoSync', () => {
 
     expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
     expect(shareApi.updateShare).toHaveBeenLastCalledWith(SHARE_ID, TOKEN, first);
+  });
+
+  describe("beside the owner's local uploader", () => {
+    const OWNED_LAYOUT_ID = layoutId('owned-layout');
+
+    beforeEach(() => {
+      const library = createTestLibrary(OWNED_LAYOUT_ID);
+      const [entry] = library.entries;
+      if (!entry) throw new Error('test library has no entry');
+      useLibraryStore.setState({
+        isLoaded: true,
+        library: {
+          ...library,
+          entries: [
+            {
+              ...entry,
+              cloudShare: { id: SHARE_ID, deleteToken: TOKEN, sharedAt: 0, permission: 'edit' },
+            },
+          ],
+        },
+      });
+    });
+
+    function renderBothUploaders() {
+      return renderHook(() => {
+        useOwnedShareSync();
+        useCloudShareAutoSync(SHARE_ID, TOKEN);
+      });
+    }
+
+    it("never saves the owner's older local layout over a room save", async () => {
+      const saved = layoutWith('saved');
+      openRoom(saved, stampFor(saved, SAVED_AT));
+      useLayoutStore.setState({ activeLayoutId: OWNED_LAYOUT_ID });
+      const { rerender } = renderBothUploaders();
+
+      const ownerEdit = layoutWith('saved', 'owner-b');
+      if (!room.root) throw new Error('room not open');
+      room.root = { ...room.root, layout: ownerEdit };
+      act(() => {
+        useLayoutStore.setState({ layout: ownerEdit, lastEditSource: 'local' });
+      });
+      rerender();
+      await advance(1000);
+      const collaboratorEdit = layoutWith('saved', 'owner-b', 'collab-c');
+      room.root = { ...room.root, layout: collaboratorEdit };
+      rerender();
+      await advance(6000);
+
+      expect(shareApi.updateShare).toHaveBeenLastCalledWith(SHARE_ID, TOKEN, collaboratorEdit);
+      expect(
+        vi.mocked(shareApi.updateShare).mock.calls.filter(([, , layout]) => layout === ownerEdit)
+      ).toHaveLength(1);
+    });
+
+    it('claims the share only while its room is loaded and the owner is in it', () => {
+      const { rerender, unmount } = renderHook(() => useCloudShareAutoSync(SHARE_ID, TOKEN));
+      expect(roomSavesShare(SHARE_ID)).toBe(false);
+
+      openRoom(layoutWith('saved'), {});
+      rerender();
+      expect(roomSavesShare(SHARE_ID)).toBe(true);
+
+      unmount();
+      expect(roomSavesShare(SHARE_ID)).toBe(false);
+    });
+
+    it('lets a visitor leave the share unclaimed', () => {
+      openRoom(layoutWith('saved'), {});
+      renderHook(() => useCloudShareAutoSync(SHARE_ID, undefined));
+
+      expect(roomSavesShare(SHARE_ID)).toBe(false);
+    });
+
+    it("lets the owner's local uploader save while the room has not loaded", async () => {
+      useLayoutStore.setState({
+        activeLayoutId: OWNED_LAYOUT_ID,
+        layout: layoutWith('saved'),
+        lastEditSource: 'init',
+      });
+      const { rerender } = renderBothUploaders();
+
+      const ownerEdit = layoutWith('saved', 'before-room-loads');
+      act(() => {
+        useLayoutStore.setState({ layout: ownerEdit, lastEditSource: 'local' });
+      });
+      rerender();
+      await advance(5000);
+
+      expect(shareApi.updateShare).toHaveBeenCalledWith(SHARE_ID, TOKEN, ownerEdit);
+    });
   });
 
   it('saves a pending change to its own share when the owner leaves the room', async () => {

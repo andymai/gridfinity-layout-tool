@@ -14,6 +14,7 @@ import { useEffect, useRef } from 'react';
 import { useMutation, useStorage, type LiveblocksStorage } from '@/liveblocks.config';
 import { updateShare } from '@/core/api/share';
 import { isOk } from '@/core/result';
+import { claimRoomSaves } from '@/features/cloud-share/utils';
 import {
   isLaterRevision,
   roomLayoutFingerprint,
@@ -62,6 +63,12 @@ export function useCloudShareAutoSync(
       mountedShareIdRef.current = null;
     };
   }, [shareId]);
+
+  const roomLoaded = Boolean(roomLayout);
+  useEffect(() => {
+    if (!shareId || !deleteToken || !roomLoaded) return;
+    return claimRoomSaves(shareId);
+  }, [shareId, deleteToken, roomLoaded]);
 
   useEffect(() => {
     pendingSaveRef.current = null;

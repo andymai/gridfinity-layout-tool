@@ -8,6 +8,10 @@
  * This runs independently of CollabProvider - the owner doesn't need to be
  * in "collab mode" for their changes to sync. This makes the app behave
  * like Google Docs where the shared version is always current.
+ *
+ * While the share's collab room is loaded, the room's uploader
+ * (useCloudShareAutoSync) saves the link and this hook saves nothing: the
+ * editor's layout can lag the room.
  */
 
 import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
@@ -17,7 +21,11 @@ import { useLibraryStore } from '@/core/store/library';
 import { updateShare } from '@/core/api/share';
 import { isOk } from '@/core/result';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
-import { createLayoutFingerprint, recordOwnCopyRevision } from '@/features/cloud-share/utils';
+import {
+  createLayoutFingerprint,
+  recordOwnCopyRevision,
+  roomSavesShare,
+} from '@/features/cloud-share/utils';
 import type { CloudShareInfo } from '@/core/types';
 
 /** Debounce delay for cloud share updates (5 seconds) */
@@ -56,6 +64,7 @@ export function useOwnedShareSync(): void {
 
     const { id: shareId, deleteToken } = cloudShare;
     if (!shareId || !deleteToken) return;
+    if (roomSavesShare(shareId)) return;
 
     const layoutFingerprint = createLayoutFingerprint(layout);
 
