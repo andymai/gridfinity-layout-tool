@@ -16,6 +16,7 @@ import { useDesignerStore } from '../store';
 import { setPendingMeshCache } from '../store/helpers';
 import type { BinParams } from '../types';
 import { withSyncedLidHeight } from '../utils/lidHeightUnits';
+import { heldCutoutFillMm, reanchorCutoutFill } from '../utils/cutoutFill';
 import { withResolvedCutoutDepths } from '@/shared/utils/cutoutDepth';
 
 type LayoutUnits = Pick<Layout, 'gridUnitMm' | 'heightUnitMm' | 'magnetAnchor' | 'lowProfileBase'>;
@@ -33,7 +34,19 @@ function withLayoutUnits(params: BinParams, layout: LayoutUnits): BinParams {
         heightUnitMm: layout.heightUnitMm,
         magnetAnchor: layout.magnetAnchor,
       });
-  return withResolvedCutoutDepths(withLowProfileBase(withUnits, layout.lowProfileBase));
+  const synced = withLowProfileBase(withUnits, layout.lowProfileBase);
+  return withResolvedCutoutDepths(withHeldCutoutFill(synced, params));
+}
+
+// The height unit and the low-profile base both move the wall height, and a
+// fill held to the floor keeps its height across that, as it does across every
+// param action (`applyCutoutFillAnchor`).
+function withHeldCutoutFill(next: BinParams, prev: BinParams): BinParams {
+  if (next === prev) return next;
+  const topOffset = reanchorCutoutFill(next, heldCutoutFillMm(prev));
+  return topOffset === undefined
+    ? next
+    : { ...next, cutoutConfig: { ...next.cutoutConfig, topOffset } };
 }
 
 function syncParams(layout: LayoutUnits, alreadyRegenerating: boolean): void {
