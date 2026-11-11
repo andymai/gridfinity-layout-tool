@@ -1,0 +1,64 @@
+apps/docs/recipes/screw-drawer.md
+  s_1cc363bb3cc76d::t_2b7ff3524e1ac3 17
+  s_1cc363bb3cc76d::t_6f0c58cda33fab 67
+  s_1cc363bb3cc76d::t_26207b643beb93 53
+  s_1cc363bb3cc76d::t_8b3861031198a7 1-2,4-16,18-35,37-49,51-52,54-66,68-127
+  s_1cc363bb3cc76d::t_12553d73a116cb 50
+  s_1cc363bb3cc76d::t_226dd8df5065ae 36
+  s_1cc363bb3cc76d::t_3edc9f025ddded 3
+apps/docs/recipes/deep-tool-drawer.md
+  s_1cc363bb3cc76d::t_513e4327ede87b 1-2,4-87,89-101,103-117
+  s_1cc363bb3cc76d::t_ac3baa55f924a4 102
+  s_1cc363bb3cc76d::t_642135ecd84ed1 3
+  s_1cc363bb3cc76d::t_96a49e76b0b88b 88
+apps/docs/recipes/hand-tool-pockets.md
+  s_1cc363bb3cc76d::t_107e1d8b77eb99 17
+  s_1cc363bb3cc76d::t_a222065978836a 93
+  s_1cc363bb3cc76d::t_11797a94394754 3
+  s_1cc363bb3cc76d::t_ecc393ca32deae 59
+  s_1cc363bb3cc76d::t_90377a7dca88ef 72-74,78
+  s_1cc363bb3cc76d::t_9c2ae9afbd06a5 1-2,4-16,18-25,27,29-34,36-58,60-71,75-77,79-90,92,94-114
+  s_1cc363bb3cc76d::t_d80340db66f10a 26,28
+  s_1cc363bb3cc76d::t_e7684d3d32a52d 35
+  s_1cc363bb3cc76d::t_404dd714b3e41a 91
+apps/docs/recipes/electronics-craft-organizer.md
+  s_1cc363bb3cc76d::t_1b2b9e2ceedef1 95
+  s_1cc363bb3cc76d::t_a2149571dad02e 1-11,13-16,18-31,40-53,55-60,62-74,76,78,80,84-88,90,92,94,96,98,102,110,112,114-118,120-126,128-134
+  s_1cc363bb3cc76d::t_f3b96085d12021 12,17,32,34-39,54,61,75,77,79,81-83,89,91,93,97,99-101,103-109,111,113,119,127
+  s_1cc363bb3cc76d::t_9d2b7683abd00e 33
+apps/docs/getting-started/first-baseplate.md
+  s_1cc363bb3cc76d::t_4faf3e6ed3f0bb 83
+apps/docs/.vitepress/navigation.ts
+  s_1cc363bb3cc76d::t_cc37c96cba5a30 31-39
+  s_1cc363bb3cc76d::t_c334a3c5ab7d38 30
+apps/docs/recipes/kitchen-utensil-drawer.md
+  s_1cc363bb3cc76d::t_c9dd1abb0d2ff6 71
+  s_1cc363bb3cc76d::t_074febcf9c6c09 86
+  s_1cc363bb3cc76d::t_e1da46bbaaac44 76
+  s_1cc363bb3cc76d::t_4697c00d2470bf 17
+  s_1cc363bb3cc76d::t_42a4678387cbd0 1-16,18-32,34-62,64-70,72-75,77,79-85,87-91,93-107
+  s_1cc363bb3cc76d::t_ea0c829692780b 63
+  s_1cc363bb3cc76d::t_41a5699ef8e18d 78
+  s_1cc363bb3cc76d::t_85a9aedebe062e 92
+  s_1cc363bb3cc76d::t_258be77f0a27a3 33
+apps/docs/getting-started/first-bin.md
+  s_1cc363bb3cc76d::t_b53801dd6dd7fa 99
+apps/docs/getting-started/first-drawer.md
+  s_1cc363bb3cc76d::t_adcfe52a68225b 117
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c605467febe801197cdae9a3ab8fb31d54491916",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
