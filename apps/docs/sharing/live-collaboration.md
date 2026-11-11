@@ -9,6 +9,7 @@ sources:
   - api/liveblocks-auth.ts
   - src/features/cloud-share/hooks/useCloudShareAutoSync.ts
   - src/shared/utils/roomLinkStamp.ts
+  - src/shared/hooks/useCollabMode.ts
 ---
 
 # Work together live
@@ -62,10 +63,14 @@ The work of the other people shows on your grid, each in their own color:
 
 The room holds the live layout, but only the link owner's browser saves the room back to the share link. It saves about one second after each change in the room, whoever made it. While the owner is away, the room keeps every change, and the owner's next visit saves them to the link.
 
-Someone who joins gets the room's latest layout, so the work of the others stays. The room takes the copy from the link only when that copy is newer. For example, the owner can edit the layout while the link is view-only, then turn editing back on.
+Someone who joins gets the room's latest layout, so the work of the others stays. The room takes the copy from the link only when the copy is newer and the room has no unsaved changes. For example, the owner can edit the layout while the link is view-only, then turn editing back on. A room from an older version of the Layout Tool keeps its own layout.
 
 ::: tip
-A view-only link opens no room. It shows the copy that the owner's browser last saved, so it can lag behind the room while the owner is away.
+A view-only link opens no room, not even for the owner. It shows the copy that the owner's browser last saved, so it can lag behind the room.
+:::
+
+::: warning
+Before you switch a link to view-only, wait until the others stop editing. People who are still in the room can keep editing, and nobody saves those changes until the owner joins the room again. Then the room keeps them over the owner's edits from the view-only time.
 :::
 
 ## Read-only rooms
@@ -86,9 +91,13 @@ A view-only link opens no room. It shows a copy of the layout, so nobody sees th
 
 ### A view-only link doesn't show the latest changes
 
-Ask the owner to open the layout. The owner's browser then saves the room to the link within a second or so.
+Ask the owner to open the layout while the link can edit. The owner's browser then joins the room and saves it to the link within a second or so. Is the link view-only? Then the owner does these steps:
 
-Only the owner's browser saves the room to the link. While the owner is away, the room keeps every change, but a view-only link shows the copy that the owner last saved. See [Who saves the link](#who-saves-the-link).
+1. Turn editing on for the link.
+2. Open the layout, and wait a few seconds.
+3. Turn view-only on again.
+
+Only the owner's browser saves the room to the link, and only while it is in the room. A view-only link opens no room, not even for the owner. See [Who saves the link](#who-saves-the-link).
 
 ### Your edits don't reach the others
 
