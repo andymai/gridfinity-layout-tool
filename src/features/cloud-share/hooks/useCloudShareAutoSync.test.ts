@@ -410,6 +410,120 @@ describe('useCloudShareAutoSync', () => {
     expect(room.root.metadata).toEqual({});
   });
 
+  describe('a change that arrives during an upload', () => {
+    type SaveResult = Awaited<ReturnType<typeof shareApi.updateShare>>;
+    let finishFirst: (value: SaveResult) => void;
+
+    beforeEach(() => {
+      finishFirst = () => {};
+      vi.mocked(shareApi.updateShare)
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              finishFirst = resolve;
+            })
+        )
+        .mockResolvedValue(savedResponse('2026-11-01T10:00:09.000Z'));
+    });
+
+    async function settleFirst(result: SaveResult): Promise<void> {
+      await act(async () => {
+        finishFirst(result);
+        await Promise.resolve();
+      });
+    }
+
+    function startFirstUpload() {
+      const saved = layoutWith('saved');
+      const stamp = stampFor(saved, SAVED_AT);
+      openRoom(saved, stamp);
+      const hook = renderHook(() => useCloudShareAutoSync(SHARE_ID, TOKEN));
+      collaboratorEdits(layoutWith('saved', 'first'));
+      hook.rerender();
+      return { ...hook, stamp };
+    }
+
+    it('uploads it when the upload ends, after the owner left the room', async () => {
+      const { rerender, unmount, stamp } = startFirstUpload();
+      await advance(1000);
+      const second = layoutWith('saved', 'first', 'second');
+      collaboratorEdits(second);
+      rerender();
+      await advance(1000);
+      unmount();
+      await settleFirst(savedResponse(NEXT_SAVE_AT));
+      await advance(0);
+
+      expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
+      expect(shareApi.updateShare).toHaveBeenLastCalledWith(SHARE_ID, TOKEN, second);
+      expect(room.root?.metadata).toMatchObject(stamp);
+    });
+
+    it('uploads a change still in its debounce when the owner leaves', async () => {
+      const { rerender, unmount } = startFirstUpload();
+      await advance(1000);
+      const second = layoutWith('saved', 'first', 'second');
+      collaboratorEdits(second);
+      rerender();
+      await advance(500);
+      unmount();
+      await settleFirst(savedResponse(NEXT_SAVE_AT));
+      await advance(0);
+
+      expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
+      expect(shareApi.updateShare).toHaveBeenLastCalledWith(SHARE_ID, TOKEN, second);
+    });
+
+    it('uploads it when the upload fails', async () => {
+      const { rerender } = startFirstUpload();
+      await advance(1000);
+      const second = layoutWith('saved', 'first', 'second');
+      collaboratorEdits(second);
+      rerender();
+      await advance(1000);
+      await settleFirst(err(apiServerError()));
+      rerender();
+      await advance(0);
+
+      expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
+      expect(shareApi.updateShare).toHaveBeenLastCalledWith(SHARE_ID, TOKEN, second);
+    });
+
+    it('uploads only the latest of several changes', async () => {
+      const { rerender } = startFirstUpload();
+      await advance(1000);
+      collaboratorEdits(layoutWith('saved', 'first', 'second'));
+      rerender();
+      await advance(1000);
+      const third = layoutWith('saved', 'first', 'second', 'third');
+      collaboratorEdits(third);
+      rerender();
+      await advance(1000);
+      await settleFirst(savedResponse(NEXT_SAVE_AT));
+      rerender();
+      await advance(5000);
+
+      expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
+      expect(shareApi.updateShare).toHaveBeenLastCalledWith(SHARE_ID, TOKEN, third);
+    });
+
+    it('drops a queued change that the room undid before the upload ended', async () => {
+      const { rerender } = startFirstUpload();
+      await advance(1000);
+      collaboratorEdits(layoutWith('saved', 'first', 'second'));
+      rerender();
+      await advance(1000);
+      collaboratorEdits(layoutWith('saved', 'first'));
+      rerender();
+      await advance(1000);
+      await settleFirst(savedResponse(NEXT_SAVE_AT));
+      rerender();
+      await advance(5000);
+
+      expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it('has nothing to save on leaving a room the link already holds', async () => {
     const saved = layoutWith('saved');
     openRoom(saved, stampFor(saved, SAVED_AT));
