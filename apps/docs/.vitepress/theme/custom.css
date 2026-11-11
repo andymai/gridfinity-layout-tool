@@ -34,16 +34,113 @@
   box-decoration-break: clone;
 }
 
-.docs-screenshot {
+.docs-figure {
   margin: 1.5rem 0;
 }
 
-.docs-screenshot img {
-  border-radius: 8px;
+.docs-figure-frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  line-height: 0;
   border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  background: var(--vp-c-bg-soft);
+  box-shadow: 0 8px 28px -14px rgba(0, 0, 0, 0.35);
 }
 
-.docs-screenshot-pending {
+.docs-figure-frame img,
+.docs-figure-frame video {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+}
+
+.docs-figure-zoom {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: zoom-in;
+}
+
+.docs-clip-toggle:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+}
+
+/* Inside the button: the frame clips anything drawn outside it. */
+.docs-figure-zoom:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: -3px;
+}
+
+html.dark .docs-only-light,
+html:not(.dark) .docs-only-dark {
+  display: none;
+}
+
+.docs-clip-toggle {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(17, 17, 17, 0.62);
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.docs-clip:hover .docs-clip-toggle,
+.docs-clip-toggle:focus-visible,
+.docs-clip-toggle[aria-label='Play the clip'] {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .docs-clip-toggle {
+    opacity: 0.85;
+  }
+}
+
+.docs-clip-toggle svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.docs-figure-dialog {
+  margin: auto;
+  max-width: 96vw;
+  max-height: 94vh;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-out;
+}
+
+.docs-figure-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.78);
+}
+
+.docs-figure-dialog img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 96vw;
+  max-height: 94vh;
+  border-radius: 8px;
+}
+
+.docs-figure-pending {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;

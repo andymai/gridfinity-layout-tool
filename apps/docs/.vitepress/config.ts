@@ -6,14 +6,17 @@ import { APP_URL, nav, sidebar } from './navigation.ts';
 import { renderUiTags } from './uiLabels.ts';
 
 const SCREENSHOT_TAG = /<Screenshot\s[^>]*\bid="([^"]+)"[^>]*\/>/g;
-const screenshotsDir = fileURLToPath(new URL('../public/screenshots/', import.meta.url));
+const captured = new Set(
+  fs
+    .readdirSync(fileURLToPath(new URL('../media/', import.meta.url)))
+    .filter((f) => f.endsWith('.json'))
+    .map((f) => f.slice(0, -'.json'.length))
+);
 
 // A screenshot that is not captured yet shows its capture spec in dev, so
 // writers see what is missing. A production build leaves it out for readers.
 function dropMissingScreenshots(html: string): string {
-  return html.replace(SCREENSHOT_TAG, (tag, id: string) =>
-    fs.existsSync(`${screenshotsDir}${id}.png`) ? tag : ''
-  );
+  return html.replace(SCREENSHOT_TAG, (tag, id: string) => (captured.has(id) ? tag : ''));
 }
 
 function docsMarkdown(md: MarkdownRenderer): void {

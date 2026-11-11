@@ -81,7 +81,7 @@ To hide the right panel, click <Ui k="rightPanel.collapseRightPanel" />.
 
 Prefer the keyboard? The command palette finds and runs any command in the layout editor. Press <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>Cmd</kbd>+<kbd>K</kbd> on a Mac), then type a part of the command name. The palette works in the layout editor on desktop and tablet screens. [Keyboard and command palette](../settings/keyboard-and-command-palette) explains what it finds.
 
-<Screenshot id="getting-started-workspace-tour-command-palette" alt="The command palette open over the layout editor, with a search for layer and the matching commands." spec="Layout editor, desktop 1440 px. Press Ctrl+K and type layer. Crop to the palette." />
+<Screenshot id="getting-started-workspace-tour-command-palette" alt="Ctrl+K opens the command palette over the layout editor. Typing layer lists the matching commands." spec="Layout editor. Press Ctrl+K, then type layer. Crop to the palette." />
 
 ## Help and search
 
