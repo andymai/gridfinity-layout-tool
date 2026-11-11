@@ -39,6 +39,13 @@ vi.mock('@/shared/components/ToolSwitcher', () => ({
 }));
 
 describe('MobileHeader', () => {
+  it('links to the docs in a new tab', () => {
+    render(<MobileHeader onLayoutNameClick={vi.fn()} />);
+    const docs = screen.getByText('header.docs').closest('a');
+    expect(docs).toHaveAttribute('href', '/docs');
+    expect(docs).toHaveAttribute('target', '_blank');
+  });
+
   it('renders the GitHub link', () => {
     render(<MobileHeader onMenuClick={vi.fn()} saveStatus="idle" />);
     const githubLink = screen.getByText('sidebar.github');

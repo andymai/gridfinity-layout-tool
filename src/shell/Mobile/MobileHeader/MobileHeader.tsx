@@ -5,7 +5,7 @@ import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useMutations } from '@/shared/contexts';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { CONSTRAINTS, DEFAULT_LAYOUT_NAME } from '@/core/constants';
-import { GITHUB_REPO_URL, KOFI_URL } from '@/shared/constants/links';
+import { DOCS_URL, GITHUB_REPO_URL, KOFI_URL } from '@/shared/constants/links';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import type { SaveStatus } from '@/shared/hooks';
 import { Button, IconButton, Input } from '@/design-system';
@@ -80,6 +80,25 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
           {t('toolSwitcher.gridfinityLayoutTool')}
         </span>
         <div className="flex items-center gap-3">
+          <a
+            href={DOCS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-xs text-content-tertiary hover:underline"
+          >
+            <svg
+              className="w-3 h-3"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              {ICON_PATHS.bookOpen.map((d) => (
+                <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+              ))}
+            </svg>
+            {t('header.docs')}
+          </a>
           <a
             href={KOFI_URL}
             target="_blank"

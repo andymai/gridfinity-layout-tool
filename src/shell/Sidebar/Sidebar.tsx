@@ -30,6 +30,7 @@ import { useTranslation, useLocale } from '@/i18n';
 import { LEARN_LINKS, learnHref } from './learnLinks';
 import { useOnboarding } from '@/features/onboarding';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
+import { DOCS_URL } from '@/shared/constants/links';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 import { PanelSection } from '@/shared/components/PanelSection';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
@@ -521,6 +522,16 @@ export function Sidebar() {
                   </p>
                   <AboutGridfinity className="mb-3" />
                   <ul className="text-xs leading-relaxed space-y-1">
+                    <li>
+                      <a
+                        href={DOCS_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-content-tertiary hover:text-content hover:underline"
+                      >
+                        {t('help.readDocs')}
+                      </a>
+                    </li>
                     {LEARN_LINKS.map((link) => (
                       <li key={link.slug}>
                         <a

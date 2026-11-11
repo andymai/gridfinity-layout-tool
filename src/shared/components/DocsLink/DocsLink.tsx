@@ -7,6 +7,8 @@ export interface DocsLinkProps {
   /** Accessible name and hover hint, when the short label needs a longer one. */
   ariaLabel?: string;
   className?: string;
+  /** Hides the label by breakpoint, leaving the icon, where the bar is short of room. */
+  labelClassName?: string;
 }
 
 /**
@@ -14,7 +16,7 @@ export interface DocsLinkProps {
  * pages. Styled as a ghost Button, but an anchor, so middle-click and "open
  * in new tab" work.
  */
-export function DocsLink({ label, ariaLabel, className }: DocsLinkProps) {
+export function DocsLink({ label, ariaLabel, className, labelClassName }: DocsLinkProps) {
   return (
     <a
       href={DOCS_URL}
@@ -41,7 +43,7 @@ export function DocsLink({ label, ariaLabel, className }: DocsLinkProps) {
           <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
         ))}
       </svg>
-      <span>{label}</span>
+      <span className={labelClassName}>{label}</span>
     </a>
   );
 }

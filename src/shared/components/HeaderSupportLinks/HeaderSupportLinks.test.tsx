@@ -46,14 +46,23 @@ describe('HeaderSupportLinks', () => {
     expect(screen.getByLabelText('header.helpAndShortcuts')).toBeInTheDocument();
   });
 
-  it('shows a docs link in the bar only from the 2xl breakpoint up', () => {
+  it('shows the docs icon in the bar on desktop, and its label from 2xl', () => {
     render(<HeaderSupportLinks />);
     const docs = screen.getByRole('link', { name: 'header.openDocs' });
     expect(docs).toHaveAttribute('href', '/docs');
     expect(docs).toHaveAttribute('target', '_blank');
-    expect(docs).toHaveTextContent('header.docs');
-    expect(docs).toHaveClass('hidden', '2xl:inline-flex');
+    expect(docs).toHaveClass('hidden', 'lg:inline-flex');
     expect(docs).not.toHaveClass('inline-flex');
+    expect(screen.getByText('header.docs')).toHaveClass('hidden', '2xl:inline');
+  });
+
+  it('keeps the Feedback label for the widest screens, where the docs label also fits', () => {
+    render(<HeaderSupportLinks />);
+    expect(screen.getByLabelText('header.sendFeedback')).toHaveTextContent('header.sendFeedback');
+    expect(screen.getByLabelText('header.sendFeedback').querySelector('span')).toHaveClass(
+      'hidden',
+      'min-[1680px]:inline'
+    );
   });
 
   it('renders the settings cog and opens settings via the global event (#4034)', () => {

@@ -37,6 +37,13 @@ describe('MobileHelpModal', () => {
     expect(screen.getByText('Mobile Help')).toBeInTheDocument();
   });
 
+  it('links to the docs beside the close button', () => {
+    render(<MobileHelpModal isOpen={true} onClose={vi.fn()} />);
+    const docs = screen.getByRole('link', { name: 'help.readDocs' });
+    expect(docs).toHaveAttribute('href', '/docs');
+    expect(docs).toHaveAttribute('target', '_blank');
+  });
+
   it('shows the search input', () => {
     const onClose = vi.fn();
     render(<MobileHelpModal isOpen={true} onClose={onClose} />);

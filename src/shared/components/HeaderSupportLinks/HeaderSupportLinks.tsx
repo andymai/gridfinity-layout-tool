@@ -25,8 +25,7 @@ import {
  *
  * The links sit in the overflow rather than the bar: the header has to hold
  * the design name and the export controls at every width, and those are the
- * actions a user came here for. Docs also gets a bar link on the widest
- * screens, where there is room for it.
+ * actions a user came here for. Docs is the exception, in the bar from lg up.
  */
 export interface HeaderSupportLinksProps {
   /**
@@ -235,16 +234,17 @@ export function HeaderSupportLinks({
             d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
           />
         </svg>
-        <span className="hidden lg:inline">{t('header.sendFeedback')}</span>
+        <span className="hidden min-[1680px]:inline">{t('header.sendFeedback')}</span>
       </Button>
 
-      {/* In the bar only where it costs the design name nothing: at 1280px a
-          Docs button clips it, so narrower headers reach the docs through the
-          overflow. */}
+      {/* Docs is an icon until 2xl and Feedback's label waits for 1680px: the
+          header has to keep room for the design name, and the Feedback label
+          gives back more width than the Docs icon takes. */}
       <DocsLink
         label={t('header.docs')}
         ariaLabel={t('header.openDocs')}
-        className="hidden 2xl:inline-flex"
+        className="hidden lg:inline-flex"
+        labelClassName="hidden 2xl:inline"
       />
 
       {/* Help */}

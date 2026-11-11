@@ -25,6 +25,12 @@ describe('DocsLink', () => {
     expect(link).toHaveTextContent('Docs');
   });
 
+  it('hides the label by breakpoint while the accessible name stays', () => {
+    render(<DocsLink label="Docs" ariaLabel="Open the docs" labelClassName="hidden 2xl:inline" />);
+    expect(screen.getByRole('link', { name: 'Open the docs' })).toBeInTheDocument();
+    expect(screen.getByText('Docs')).toHaveClass('hidden', '2xl:inline');
+  });
+
   it('adds the caller class to the link, letting it override the display', () => {
     render(<DocsLink label="Docs" className="ml-auto hidden 2xl:inline-flex" />);
     const link = screen.getByRole('link', { name: 'Docs' });
