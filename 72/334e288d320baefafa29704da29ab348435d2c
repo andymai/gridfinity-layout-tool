@@ -1,0 +1,49 @@
+src/shell/Mobile/MobileAboutStrip/MobileAboutStrip.tsx
+  s_1cc363bb3cc76d::t_eba03aeb31235d 5,52-54
+  s_1cc363bb3cc76d::t_fa12df00dd4f9a 55
+apps/docs/getting-started/workspace-tour.md
+  s_1cc363bb3cc76d::t_4468bb6b9c3fef 37,43
+src/shell/Mobile/MobileHeader/MobileHeader.test.tsx
+  s_1cc363bb3cc76d::t_fb3a0e3d682d99 42-48
+src/shell/Mobile/MobileHeader/MobileHeader.tsx
+  s_1cc363bb3cc76d::t_4f421f73a12804 8,83-101
+src/shared/components/DocsLink/DocsLink.tsx
+  s_1cc363bb3cc76d::t_1dce3174d8a56f 10-11,19,46
+src/shell/Mobile/MobileHelpModal/MobileHelpModal.tsx
+  s_1cc363bb3cc76d::t_eba03aeb31235d 4,124-134
+src/shell/Sidebar/Sidebar.tsx
+  s_1cc363bb3cc76d::t_734388d0fe8487 33
+  s_1cc363bb3cc76d::t_eba03aeb31235d 525-534
+src/shared/components/HeaderSupportLinks/HeaderSupportLinks.test.tsx
+  s_1cc363bb3cc76d::t_e320924e1c9882 49,54,56-65
+src/shared/components/HeaderSupportLinks/HeaderSupportLinks.tsx
+  s_1cc363bb3cc76d::t_20f1a014d4458b 237
+  s_1cc363bb3cc76d::t_1dce3174d8a56f 246
+  s_1cc363bb3cc76d::t_e5846fc08fdd37 247
+  s_1cc363bb3cc76d::t_e320924e1c9882 28,240-242
+src/shell/Mobile/MobileAboutStrip/MobileAboutStrip.test.tsx
+  s_1cc363bb3cc76d::t_e320924e1c9882 32
+src/shared/components/DocsLink/DocsLink.test.tsx
+  s_1cc363bb3cc76d::t_e320924e1c9882 28-33
+src/shell/Mobile/MobileHelpModal/MobileHelpModal.test.tsx
+  s_1cc363bb3cc76d::t_e320924e1c9882 40-41,43-46
+  s_1cc363bb3cc76d::t_9d046d2c2e691b 42
+src/shell/Sidebar/Sidebar.test.tsx
+  s_1cc363bb3cc76d::t_e320924e1c9882 430
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "72334e288d320baefafa29704da29ab348435d2c",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
