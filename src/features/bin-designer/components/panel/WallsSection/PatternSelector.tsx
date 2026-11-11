@@ -9,7 +9,8 @@
  * walls and have no meaning on a floor.
  */
 
-import { Select } from '@/design-system';
+import type { ReactNode } from 'react';
+import { Select, cn } from '@/design-system';
 import type { WallPatternType } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 
@@ -258,6 +259,8 @@ interface PatternSelectorProps {
   id?: string;
   /** i18n key for the field label. */
   labelKey?: string;
+  /** Rendered beside the label, e.g. a feature tip. */
+  labelAddon?: ReactNode;
 }
 
 export function PatternSelector({
@@ -268,6 +271,7 @@ export function PatternSelector({
   patterns,
   id = 'pattern-selector',
   labelKey = 'binDesigner.walls.pattern.label',
+  labelAddon,
 }: PatternSelectorProps) {
   const t = useTranslation();
 
@@ -282,11 +286,25 @@ export function PatternSelector({
     onChange(value === 'none' ? null : (value as WallPatternType));
   };
 
+  const label = (
+    <label
+      htmlFor={id}
+      className={cn('text-xs text-content-secondary', labelAddon === undefined && 'mb-2 block')}
+    >
+      {t(labelKey)}
+    </label>
+  );
+
   return (
     <div className={disabled ? 'opacity-50' : ''}>
-      <label htmlFor={id} className="text-xs text-content-secondary mb-2 block">
-        {t(labelKey)}
-      </label>
+      {labelAddon === undefined ? (
+        label
+      ) : (
+        <div className="mb-2 flex items-center gap-1.5">
+          {label}
+          {labelAddon}
+        </div>
+      )}
       <Select
         id={id}
         // Bound to the RESOLVED option, not the raw prop: when `patterns`

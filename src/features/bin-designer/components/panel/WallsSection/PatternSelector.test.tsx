@@ -34,6 +34,19 @@ describe('PatternSelector', () => {
     expect(screen.getByRole('combobox')).toBeInTheDocument();
   });
 
+  it('renders an addon beside the label, which still names the dropdown', () => {
+    render(
+      <PatternSelector
+        selectedPattern={null}
+        onChange={() => {}}
+        labelAddon={<button type="button">Watch</button>}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Watch' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Wall pattern' })).toBeInTheDocument();
+  });
+
   it('renders all pattern options in dropdown', () => {
     render(<PatternSelector selectedPattern={null} onChange={() => {}} />);
 

@@ -82,6 +82,11 @@ export interface Stage {
   fit(camera: Camera, bounds: Bounds): Promise<View>;
   /** Paints the part in `color` (a palette hex) from the next render on; null restores the preview colour. */
   setTint(color: string | null): void;
+  /**
+   * From the next render and bounds on, shows the label plates in their
+   * sockets, raised `mm` above the seat; null hides them with the overlays.
+   */
+  setPlateLift(mm: number | null): void;
   render(view: View): Promise<ThemeFrames>;
   blend(a: ThemeFrames, b: ThemeFrames, t: number): Promise<ThemeFrames>;
   close(): Promise<void>;
@@ -144,6 +149,7 @@ async function setUpStage(
   const page = await ctx.newPage();
   page.on('pageerror', (e) => console.error('pageerror', e.message));
   let tint: string | null = null;
+  let plateLift: number | null = null;
 
   const tiny = Buffer.from(JSON.stringify({ width: 1, depth: 1, height: 3 })).toString('base64');
   await page.goto(`${base}/?devThumbnails=1&params=${tiny}`);
@@ -179,7 +185,7 @@ async function setUpStage(
         // into the params they are given.
         const merged = structuredClone(deepMerge(DEFAULT_BIN_PARAMS, o)) as Record<string, unknown>;
         // setParams merges, so optional fields a previous design set must be cleared.
-        for (const k of ['cellMask', 'surfaceText', 'pullTab', 'slant'])
+        for (const k of ['cellMask', 'surfaceText', 'pullTab', 'slant', 'wallLabelSlots'])
           if (!(k in o)) merged[k] = undefined;
         useDesignerStore.getState().setParams(merged);
         // A Manifold draft lands first and can show holes the exact build fills,
@@ -206,7 +212,8 @@ async function setUpStage(
       return applied;
     },
     lidOffsetMax: () => page.evaluate(() => (window as unknown as Bridge).__tip.lidOffsetMax()),
-    bounds: () => page.evaluate(() => (window as unknown as Bridge).__tip.bounds()),
+    bounds: () =>
+      page.evaluate((lift) => (window as unknown as Bridge).__tip.bounds(lift), plateLift),
     fit: (camera, bounds) =>
       page.evaluate(([c, b]) => (window as unknown as Bridge).__tip.fit(c, b), [
         camera,
@@ -215,10 +222,13 @@ async function setUpStage(
     setTint(color) {
       tint = color;
     },
+    setPlateLift(mm) {
+      plateLift = mm;
+    },
     async render(view) {
       const urls = await page.evaluate(
-        ([v, c]) => (window as unknown as Bridge).__tip.render(v, c),
-        [view, tint] as const
+        ([v, c, lift]) => (window as unknown as Bridge).__tip.render(v, c, lift),
+        [view, tint, plateLift] as const
       );
       return toFrames(urls);
     },
@@ -243,9 +253,9 @@ interface Bridge {
     settle(frames: number): Promise<void>;
     setLidOffset(value: number): number;
     lidOffsetMax(): number;
-    bounds(): Bounds;
+    bounds(plateLift: number | null): Bounds;
     fit(camera: Camera, bounds: Bounds): View;
-    render(view: View, tint: string | null): Record<Theme, string>;
+    render(view: View, tint: string | null, plateLift: number | null): Record<Theme, string>;
     blend(
       a: Record<Theme, string>,
       b: Record<Theme, string>,
@@ -308,17 +318,40 @@ async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
     if (!isMesh(o) || Array.isArray(o.material)) return false;
     return Boolean((o.material as Partial<ShaderMaterial>).uniforms?.colorTop);
   };
-  const withHidden = <T>(s: Scene, fn: () => T): T => {
+  // The label plates share the overlays' render order, and each is drawn twice:
+  // seated at the pose the worker reports, and again in a reference row beside
+  // the bin. Only the seated draw sits on its seat.
+  const { useDesignerStore } = (await import(
+    '/src/features/bin-designer/store/designer.ts' as string
+  )) as DesignerStoreModule;
+  const seatedPlates = (s: Scene): Set<Object3D> => {
+    const seats = useDesignerStore.getState().generation.mesh?.labelPlates?.plates ?? [];
+    const found = new Set<Object3D>();
+    s.traverse((o) => {
+      if (!isMesh(o) || o.renderOrder !== 2) return;
+      const { x, y, z } = o.position;
+      const seated = seats.some(
+        (p) => Math.abs(x - p.seatX) + Math.abs(y - p.seatY) + Math.abs(z - p.seatZ) < 1e-3
+      );
+      if (seated) found.add(o);
+    });
+    return found;
+  };
+  const withHidden = <T>(s: Scene, plateLift: number | null, fn: () => T): T => {
+    const plates = plateLift === null ? new Set<Object3D>() : seatedPlates(s);
+    const lift = plateLift ?? 0;
     const hidden: Object3D[] = [];
     s.traverse((o) => {
-      if (o.visible && chrome(o)) {
+      if (o.visible && chrome(o) && !plates.has(o)) {
         hidden.push(o);
         o.visible = false;
       }
     });
+    for (const plate of plates) plate.position.z += lift;
     try {
       return fn();
     } finally {
+      for (const plate of plates) plate.position.z -= lift;
       for (const o of hidden) o.visible = true;
     }
   };
@@ -400,9 +433,9 @@ async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
     lidOffsetMax(): number {
       return Number(lidInput().max);
     },
-    bounds(): Bounds {
+    bounds(plateLift: number | null): Bounds {
       const s = scene();
-      return withHidden(s, () => {
+      return withHidden(s, plateLift, () => {
         const points: [number, number, number][] = [];
         s.updateMatrixWorld(true);
         s.traverse((o) => {
@@ -456,7 +489,7 @@ async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
       }
       return { camera: cam, center: center.toArray() as [number, number, number], dist };
     },
-    render(view: View, tint: string | null): Record<Theme, string> {
+    render(view: View, tint: string | null, plateLift: number | null): Record<Theme, string> {
       const s = scene();
       // The preview colour drives both the colour and a faint emissive glow;
       // tinting the colour alone leaves a grey glow that washes it out.
@@ -508,7 +541,7 @@ async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
       const hemi = hemisphere();
       const ground = hemi.groundColor.clone();
       // Composite in the same task as the render: the drawing buffer is not preserved.
-      const out = withHidden(s, () => {
+      const out = withHidden(s, plateLift, () => {
         const frames: Record<string, string> = {};
         for (const [theme, color] of Object.entries(surfaces) as [Theme, string][]) {
           hemi.groundColor.set(THREE_COLORS[theme].groundBounce);

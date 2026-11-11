@@ -19,6 +19,7 @@ import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest'
 import { useWallsSection } from './useWallsSection';
 import { PatternSelector } from './PatternSelector';
 import { FeatureToggle } from '../FeatureToggle';
+import { FeatureTip } from '../../FeatureTip';
 import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
 import { LabelPlatesControls } from '../LabelTabsSection/LabelPlatesControls';
 import { AnchorPicker } from '../../controls/AnchorPicker';
@@ -75,6 +76,9 @@ export function WallSurfaceSection() {
           onChange={handlers.handlePatternChange}
           disabled={state.patternDisabled}
           disabledReason={state.patternDisabledReason}
+          labelAddon={
+            <FeatureTip tip="wallPattern" feature={t('binDesigner.walls.pattern.label')} />
+          }
         />
         {state.patternPartialNote && state.patternEnabled && (
           <p className="text-label text-content-tertiary mt-1">{state.patternPartialNote}</p>
@@ -168,7 +172,13 @@ export function WallSurfaceSection() {
         checked={state.isWallTextOpen}
         onChange={handlers.toggleWallText}
         disabledReason={state.wallTextDisabledReason}
-        info={t('binDesigner.walls.text.hint')}
+        badge={
+          <FeatureTip
+            tip="wallText"
+            feature={t('binDesigner.walls.text.heading')}
+            detail={t('binDesigner.walls.text.hint')}
+          />
+        }
         primaryControls={
           <>
             <div className="grid grid-cols-2 gap-2">

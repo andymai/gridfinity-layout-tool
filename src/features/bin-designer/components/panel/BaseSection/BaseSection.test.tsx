@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { BaseSection } from './BaseSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import en from '@/i18n/locales/en';
 
 describe('BaseSection', () => {
   it('offers plain-rim rounding, stores its toggle, and limits radius for thinner walls', async () => {
@@ -71,6 +72,20 @@ describe('BaseSection', () => {
     expect(screen.getByText('Screw holes')).toBeInTheDocument();
     expect(screen.getByText('Stacking lip')).toBeInTheDocument();
     expect(screen.getByText('Lightweight floor')).toBeInTheDocument();
+  });
+
+  it('plays a clip of the magnet holes from the dot beside their toggle', async () => {
+    const user = userEvent.setup();
+    render(<BaseSection />);
+    await user.click(screen.getByRole('button', { name: 'Watch a clip: Magnet holes' }));
+    expect(screen.getByText(en['binDesigner.featureTip.magnetHoles'])).toBeInTheDocument();
+  });
+
+  it('plays a clip of the lightweight floor from the dot beside its toggle', async () => {
+    const user = userEvent.setup();
+    render(<BaseSection />);
+    await user.click(screen.getByRole('button', { name: 'Watch a clip: Lightweight floor' }));
+    expect(screen.getByText(en['binDesigner.featureTip.lightweightFloor'])).toBeInTheDocument();
   });
 
   describe('lip notches', () => {

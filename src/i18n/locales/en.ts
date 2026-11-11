@@ -2429,6 +2429,20 @@ const en: Record<string, string> = {
   'binDesigner.featureTip.overhang':
     'Grow the walls past the grid to fill the gap at the edge of a drawer.',
   'binDesigner.featureTip.slant': 'Lean the bin so tall things like pens fit a shallow drawer.',
+  'binDesigner.featureTip.wallPattern':
+    'Cut a pattern through the walls to save filament and see what is inside.',
+  'binDesigner.featureTip.drainageHoles':
+    'Holes through the floor and feet, so water and dust drain straight out.',
+  'binDesigner.featureTip.labelPlates':
+    'Print labels as plates that click into the tab, and swap them when the contents change.',
+  'binDesigner.featureTip.magnetHoles':
+    'Pockets under each foot for magnets, so the bin stays put on a magnetic baseplate.',
+  'binDesigner.featureTip.multiColor':
+    'Give the body, lip and labels their own filament color for a print in several colors.',
+  'binDesigner.featureTip.wallText':
+    'Put a name on a wall, raised or cut in, so you can tell bins apart at a glance.',
+  'binDesigner.featureTip.lightweightFloor':
+    'Hollow out the feet to save filament and print faster.',
   'binDesigner.lid.text.useStackLipOnly': 'Use stacking lip only',
   'binDesigner.lid.text.disabledStackable': 'Not available with a full stack grid.',
   'binDesigner.lid.text.disabledPolygon': 'Not available for custom-shape bins.',
