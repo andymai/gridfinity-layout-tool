@@ -59,7 +59,7 @@ Do not split a bin with color zones if you want to keep the colors. A split expo
 
 A slanted bin can't split, because a cut would cross its body at an angle. If a slanted bin is too large, use a smaller angle or make the bin smaller.
 
-<Screenshot id="concepts-print-bed-split-bin" alt="A bin that is too large for the print bed, shown in the bin designer as two pieces with the split options." spec="Bin designer, desktop. Print bed 180 × 180. Bin 6 × 2 × 3u, standard base, stacking lip on. Shape group open at the split options, preview in Exploded mode. Crop to the split options and the preview." />
+<Screenshot id="concepts-print-bed-split-bin" alt="A 6 by 2 bin that is too long for a 180 mm print bed, assembled in the bin designer preview. A click on Exploded shows its two pieces apart." spec="Clip. Bin designer, layout print bed 180 × 180, bin 6 × 2 × 3u, standard base, stacking lip on. The assembled bin, a close-up click on Exploded, then the two pieces apart." />
 
 ## When a baseplate is too large
 

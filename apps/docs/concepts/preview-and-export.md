@@ -46,7 +46,7 @@ On a slow device, a large design can take longer than the preview allows. The dr
 When you open a saved design again, the preview shows the exact model from your last session at once. The Layout Tool keeps it in this browser and rebuilds the model in the background.
 :::
 
-<Screenshot id="concepts-preview-draft-exact" alt="The same bin as a one-color draft and as the exact model with its color zones." spec="Bin designer, desktop. Bin 2 × 2 × 3u, standard base, stacking lip on, Multi-color on with body grey and stacking lip orange. Capture two frames: one right after a height change while the draft shows, one after the exact model arrives. Place them side by side and crop to the bin." />
+<Screenshot id="concepts-preview-draft-exact" alt="A click makes the bin one height unit taller. The preview shows a one-color draft first, then the exact model with its orange stacking lip." spec="Clip. Bin designer, bin 2 × 2, standard base, stacking lip on, Multi-color on with body grey and stacking lip orange. Close-up: the height stepper goes from 3 to 4. Cut to the preview: the one-color draft, then the exact model with its color zones." />
 
 ## What the export does differently
 
