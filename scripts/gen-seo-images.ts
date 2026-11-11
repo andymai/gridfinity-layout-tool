@@ -515,8 +515,8 @@ interface DesignerStoreModule {
 
 async function captureManifestDesigner(
   browser: Browser,
-  frame: BrowserContextOptions,
-  outFile: string
+  outFile: string,
+  frame: BrowserContextOptions
 ): Promise<void> {
   const page = await browser.newPage(frame);
   try {
@@ -579,10 +579,10 @@ async function captureManifestDesigner(
 async function captureManifestScreenshots(browser: Browser): Promise<void> {
   const out = (name: string): string => resolve(MANIFEST_OUT, name);
   await capturePlanner(browser, KITCHEN_DRAWER, out('layout-wide.png'), MANIFEST_WIDE);
-  await captureManifestDesigner(browser, MANIFEST_WIDE, out('designer-wide.png'));
+  await captureManifestDesigner(browser, out('designer-wide.png'), MANIFEST_WIDE);
   await captureBaseplate(browser, out('baseplate-wide.png'), MANIFEST_WIDE);
   await capturePlanner(browser, DESK_DRAWER, out('layout-narrow.png'), MANIFEST_NARROW);
-  await captureManifestDesigner(browser, MANIFEST_NARROW, out('designer-narrow.png'));
+  await captureManifestDesigner(browser, out('designer-narrow.png'), MANIFEST_NARROW);
 }
 
 // ---------------------------------------------------------------------------

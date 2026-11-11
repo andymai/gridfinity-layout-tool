@@ -34,7 +34,7 @@ export function manifestScreenshotEntries(): Array<{
   src: string;
   sizes: string;
   type: string;
-  form_factor: 'wide' | 'narrow';
+  form_factor: ManifestScreenshot['formFactor'];
   label: string;
 }> {
   return MANIFEST_SCREENSHOTS.map((shot) => ({
