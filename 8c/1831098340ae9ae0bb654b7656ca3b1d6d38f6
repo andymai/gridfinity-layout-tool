@@ -1,0 +1,130 @@
+src/i18n/locales/pt-BR.json
+  s_1cc363bb3cc76d::t_564a11fc589793 3607-3608,3643
+package.json
+  s_1cc363bb3cc76d::t_a85b652fbfdaca 28
+src/shared/components/HeaderSupportLinks/HeaderSupportLinks.test.tsx
+  s_1cc363bb3cc76d::t_890e6ab48b47bb 167
+  s_1cc363bb3cc76d::t_a7d42556ca55b8 75,79,84
+  s_1cc363bb3cc76d::t_71c9fbc3ed7ceb 50-54,57-58
+  s_1cc363bb3cc76d::t_663335aae885ae 49,55-56
+  s_1cc363bb3cc76d::t_79f6ae10fd0883 178-181
+src/i18n/locales/nb.json
+  s_1cc363bb3cc76d::t_3c35b70a63dc9d 3607-3608,3643
+src/i18n/locales/fr.json
+  s_1cc363bb3cc76d::t_9530eb8eb7c66b 3607-3608,3643
+src/shared/constants/iconPaths.ts
+  s_1cc363bb3cc76d::t_f4ff547be50f25 46-48
+src/i18n/locales/ja.json
+  s_1cc363bb3cc76d::t_b48f8ff76d7112 3539-3540,3575
+src/shared/components/DocsLink/index.ts
+  s_1cc363bb3cc76d::t_7ab7ad6c0c1c2a 1
+scripts/copy-docs.ts
+  s_1cc363bb3cc76d::t_baf605ba90d459 56-57
+  s_1cc363bb3cc76d::t_75a90de29c64ed 1-19,22-23,25,30-55,58-71
+  s_1cc363bb3cc76d::t_51d60ce53602e5 20-21,24,26-29
+src/i18n/locales/ka.json
+  s_1cc363bb3cc76d::t_1dd969c2689100 232-233,1069
+src/shell/Modals/HelpModal/HelpModal.test.tsx
+  s_1cc363bb3cc76d::t_e080274fb7d1bb 42-53
+src/i18n/locales/ko.json
+  s_1cc363bb3cc76d::t_b9cb8fa8e7f1a6 3539-3540,3575
+src/shell/Modals/HelpModal/HelpModal.tsx
+  s_1cc363bb3cc76d::t_3511867fade659 117
+  s_1cc363bb3cc76d::t_64679462e6e43f 14
+src/i18n/locales/en.ts
+  s_1cc363bb3cc76d::t_39ad9ca453576a 1187
+  s_1cc363bb3cc76d::t_a261c158dbb181 229-230
+src/i18n/locales/nl.json
+  s_1cc363bb3cc76d::t_bc592ad759f86a 3607-3608,3643
+apps/docs/getting-started/workspace-tour.md
+  s_1cc363bb3cc76d::t_9d109c17cd3989 42
+  s_1cc363bb3cc76d::t_6b80205a29c341 87
+  s_1cc363bb3cc76d::t_4c44ff12d775d2 39
+src/i18n/locales/cs.json
+  s_1cc363bb3cc76d::t_f1a9bb50b588a5 3675-3676,3711
+src/i18n/locales/es.json
+  s_1cc363bb3cc76d::t_bb167c242c83f9 3607-3608,3643
+apps/docs/.vitepress/config.ts
+  s_1cc363bb3cc76d::t_1054762c383c6c 110
+  s_1cc363bb3cc76d::t_d30b204fcd98d0 146-150
+  s_1cc363bb3cc76d::t_9e4cbfc04ca604 73
+  s_1cc363bb3cc76d::t_b93f3c9cfcac40 91
+  s_1cc363bb3cc76d::t_eb9a3e3540e5e7 40-41
+  s_1cc363bb3cc76d::t_d4dd873b5984dc 69-72
+vite.config.ts
+  s_1cc363bb3cc76d::t_adda8848fe00d1 221,252
+  s_1cc363bb3cc76d::t_5f9c75579cbd67 31-33
+  s_1cc363bb3cc76d::t_79a1148be1068c 250-251
+  s_1cc363bb3cc76d::t_cdcddb9fb328c0 12
+src/shared/components/HeaderSupportLinks/HeaderSupportLinks.tsx
+  s_1cc363bb3cc76d::t_1cafe77dceb31b 249
+  s_1cc363bb3cc76d::t_7316997cf848a0 7
+  s_1cc363bb3cc76d::t_30c341557a5d2f 244-246,248
+  s_1cc363bb3cc76d::t_702e6f77a4c9cb 20,26-29
+  s_1cc363bb3cc76d::t_b9b2d0ddee395a 11
+  s_1cc363bb3cc76d::t_fa9929d97d1f2c 241-243,247
+  s_1cc363bb3cc76d::t_7e2897bec4dc43 152-163
+docker/nginx.conf
+  s_1cc363bb3cc76d::t_69c8568d656b06 148-151
+  s_1cc363bb3cc76d::t_616da98a3813d4 25-26
+src/i18n/locales/de.json
+  s_1cc363bb3cc76d::t_f236aab9ea0459 3607-3608,3643
+src/shared/components/DocsLink/DocsLink.tsx
+  s_1cc363bb3cc76d::t_cb80de9aa2838b 1-6,8-16,18-43,45-47
+  s_1cc363bb3cc76d::t_a52e4498355f1d 17
+  s_1cc363bb3cc76d::t_bcabfbe45151a1 44
+  s_1cc363bb3cc76d::t_6608dc32b1c008 7
+public/robots.txt
+  s_1cc363bb3cc76d::t_7ff820707f3ad5 24
+docs/self-hosting.md
+  s_1cc363bb3cc76d::t_dc2cd846b779ed 177-179
+  s_1cc363bb3cc76d::t_8647733718e6e0 189-190
+src/i18n/locales/it.json
+  s_1cc363bb3cc76d::t_eb5483765f1ee8 3607-3608,3643
+src/i18n/locales/uk.json
+  s_1cc363bb3cc76d::t_4baacf0885c880 3743-3744,3779
+src/shared/components/DocsLink/DocsLink.test.tsx
+  s_1cc363bb3cc76d::t_c33eb6bb0e1de7 1-20,23-24,26-27,33-34
+  s_1cc363bb3cc76d::t_1536748d1ef94f 21-22,25,28-32
+src/i18n/locales/zh-CN.json
+  s_1cc363bb3cc76d::t_8d612a853e0593 3539-3540,3575
+scripts/copy-docs.test.ts
+  s_1cc363bb3cc76d::t_98f52ed469abc3 1-44
+src/i18n/locales/sv.json
+  s_1cc363bb3cc76d::t_4868219e42d20c 3607-3608,3643
+apps/docs/settings/offline.md
+  s_1cc363bb3cc76d::t_04a229ecd36080 44
+src/i18n/locales/pl.json
+  s_1cc363bb3cc76d::t_7628ae8086688e 3743-3744,3779
+scripts/contentRoutes.ts
+  s_1cc363bb3cc76d::t_91a33e7d7371ee 41-44
+  s_1cc363bb3cc76d::t_80d73298f78639 40,45
+scripts/check-docker-parity.test.ts
+  s_1cc363bb3cc76d::t_767ec9ebe295ea 21
+  s_1cc363bb3cc76d::t_11f61f740eb106 292-295,297-330
+  s_1cc363bb3cc76d::t_20f9fa686d2e6a 140
+  s_1cc363bb3cc76d::t_7e2daf74747ffa 184-189
+  s_1cc363bb3cc76d::t_3004234a366e1a 296
+  s_1cc363bb3cc76d::t_805c676e330a63 6
+src/shared/constants/links.ts
+  s_1cc363bb3cc76d::t_1042fd5057578a 8-10
+vercel.json
+  s_1cc363bb3cc76d::t_363c90216831a4 481-489
+  s_1cc363bb3cc76d::t_310bc989e2f64d 544-556
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8c1831098340ae9ae0bb654b7656ca3b1d6d38f6",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
