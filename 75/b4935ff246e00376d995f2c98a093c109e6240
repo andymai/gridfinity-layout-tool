@@ -1,0 +1,32 @@
+apps/docs/introduction/your-data.md
+  s_1cc363bb3cc76d::t_b171eaaa515f54 12
+  s_1cc363bb3cc76d::t_75f4e077c896f6 44,49-51
+scripts/check-user-docs.ts
+  s_1cc363bb3cc76d::t_c6b63fd7da89cd 77-80,82,122,269
+apps/docs/reference/dimensions.md
+  s_1cc363bb3cc76d::t_c6b63fd7da89cd 86-88,90-95
+  s_1cc363bb3cc76d::t_75f4e077c896f6 89
+  s_1cc363bb3cc76d::t_b171eaaa515f54 11
+apps/docs/sharing/share-links.md
+  s_1cc363bb3cc76d::t_75f4e077c896f6 85
+  s_1cc363bb3cc76d::t_b171eaaa515f54 11
+apps/docs/concepts/layouts-layers-stash.md
+  s_1cc363bb3cc76d::t_b171eaaa515f54 13
+  s_1cc363bb3cc76d::t_75f4e077c896f6 75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "75b4935ff246e00376d995f2c98a093c109e6240",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
