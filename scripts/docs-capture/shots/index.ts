@@ -6,6 +6,7 @@ import { DESIGNER_BODY } from './designerBody';
 import { DESIGNER_DETAILS } from './designerDetails';
 import { GETTING_STARTED } from './gettingStarted';
 import { LAYOUTS } from './layouts';
+import { RECIPES } from './recipes';
 import { SHARING_SETTINGS } from './sharingSettings';
 
 export const SHOTS: readonly Shot[] = [
@@ -17,4 +18,5 @@ export const SHOTS: readonly Shot[] = [
   ...CUTOUTS,
   ...BASEPLATES_PRINTING,
   ...SHARING_SETTINGS,
+  ...RECIPES,
 ];
