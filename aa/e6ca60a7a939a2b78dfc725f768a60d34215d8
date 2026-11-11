@@ -1,0 +1,33 @@
+scripts/docs-capture/shots/baseplatesPrinting.ts
+  s_1cc363bb3cc76d::t_579a7ac2119caa 1-4
+scripts/docs-capture/shots/concepts.ts
+  s_1cc363bb3cc76d::t_ef25532b9206fb 1-4
+scripts/docs-capture/shots/cutouts.ts
+  s_1cc363bb3cc76d::t_91a6f46c0f2cd6 1-4
+scripts/docs-capture/shots/designerBody.ts
+  s_1cc363bb3cc76d::t_e3b4b266ba5548 1-4
+scripts/docs-capture/shots/designerDetails.ts
+  s_1cc363bb3cc76d::t_cb752227620c89 1-4
+scripts/docs-capture/shots/index.ts
+  s_1cc363bb3cc76d::t_905bcc8afe67af 2-6,8-9,11-20
+scripts/docs-capture/shots/layouts.ts
+  s_1cc363bb3cc76d::t_3eba571308f6d9 1-4
+scripts/docs-capture/shots/sharingSettings.ts
+  s_1cc363bb3cc76d::t_90f80ae8632136 1-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "aae6ca60a7a939a2b78dfc725f768a60d34215d8",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
