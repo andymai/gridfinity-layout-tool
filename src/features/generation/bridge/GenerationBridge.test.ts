@@ -7,6 +7,7 @@ import type { MeshAsset, MeshAssetRef } from '@/shared/generation/meshAsset';
 import { __resetMeshStoreForTests } from '@/shared/generation/meshStore';
 import type { BinParams, Cutout } from '@/shared/types/bin';
 import { MeshUnavailableError } from './meshDelivery';
+import { FeatureTag } from '@/shared/types/generation';
 import type { WorkerResponse, MeshResultResponse } from './types';
 
 /**
@@ -629,6 +630,42 @@ describe('GenerationBridge', () => {
       await expect(bridge.exportSplitBin(DEFAULT_BIN_PARAMS, [], [])).rejects.toThrow(
         'Bridge has been destroyed'
       );
+    });
+  });
+
+  describe('exportCombined', () => {
+    // The lid is its own 3MF object, painted per triangle from these groups;
+    // without them its text prints in the lid colour.
+    it('resolves with the lid face groups alongside the bin ones', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      const combinedPromise = bridge.exportCombined(DEFAULT_BIN_PARAMS, 'stl');
+      await vi.advanceTimersByTimeAsync(0);
+
+      const msg = getWorker().messages.find(
+        (m) => (m as { type: string }).type === 'EXPORT_COMBINED'
+      ) as { type: string; payload: { requestId: string } };
+      expect(msg).toBeDefined();
+
+      const faceGroups = [{ start: 0, count: 3, tag: FeatureTag.BASE }];
+      const lidFaceGroups = [{ start: 0, count: 3, tag: FeatureTag.TEXT }];
+      getWorker().simulateResponse({
+        type: 'COMBINED_EXPORT_RESULT',
+        requestId: msg.payload.requestId,
+        pieces: [
+          { data: new ArrayBuffer(84), label: 'bin' },
+          { data: new ArrayBuffer(84), label: 'lid' },
+        ],
+        format: 'stl',
+        faceGroups,
+        lidFaceGroups,
+      });
+
+      const result = await combinedPromise;
+      expect(result.faceGroups).toEqual(faceGroups);
+      expect(result.lidFaceGroups).toEqual(lidFaceGroups);
     });
   });
 
