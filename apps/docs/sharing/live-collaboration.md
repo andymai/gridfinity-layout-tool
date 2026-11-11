@@ -29,7 +29,7 @@ Nobody needs an account. The room never asks anyone to sign in.
 
 During a live session, avatars show in the header next to the share button. Each person gets a color and a guest name, made from an adjective and an animal.
 
-Click the avatars to open the <Ui k="collab.participants" /> list. The link owner has the <Ui k="collab.owner" /> mark, and you have <Ui k="collab.you" />. A small indicator shows your connection:
+Click the avatars to open the list of people in the session. The link owner has the <Ui k="collab.owner" /> mark, and you have <Ui k="collab.you" />. A small indicator shows your connection:
 
 | State                          | Meaning                                                         |
 | ------------------------------ | --------------------------------------------------------------- |

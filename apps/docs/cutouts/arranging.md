@@ -83,7 +83,7 @@ To choose the front shape, right-click and use <Ui k="binDesigner.cutouts.arrang
 
 Select a group and more cutouts, then group them again. The outer group holds its contents in place when you move, align or repeat it. It doesn't change the cut. Groups go up to 10 levels deep.
 
-Double-click a cutout to work inside its group, and press <kbd>Esc</kbd> to go back out one level. The editor header shows the group that you're in. <Ui k="binDesigner.cutouts.ungroup" /> (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>) removes one level.
+Double-click a cutout to work inside its group, and press <kbd>Esc</kbd> to go back out one level. A double-click on a path cutout, such as a scan, a trace or a pen shape, edits its points instead. The editor header shows the group that you're in. <Ui k="binDesigner.cutouts.ungroup" /> (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>) removes one level.
 
 To repeat a group, select the whole group and use <Ui k="binDesigner.cutouts.section.repeat" />. Every copy keeps the same arrangement and the same angle.
 

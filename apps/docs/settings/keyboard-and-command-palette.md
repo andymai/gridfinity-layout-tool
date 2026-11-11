@@ -51,7 +51,7 @@ The palette sorts the commands into groups:
 | <Ui k="commandPalette.category.tools" />      | <Ui k="commandPalette.fillGaps" />, <Ui k="commandPalette.togglePaintMode" />, <Ui k="commandPalette.toggleHalfBin" />      |
 | <Ui k="commandPalette.category.export" />     | <Ui k="commandPalette.exportLayout3D" />, <Ui k="commandPalette.downloadLayout" />, <Ui k="commandPalette.copyShareLink" /> |
 
-The <Ui k="commandPalette.recent" /> group at the top shows up to five commands. It picks them from how often and how recently you used each command, and from what you do at the moment. For example, select some bins, and the align and delete commands move up. A command that can't run at the moment stays in its group, but you can't select it.
+The <Ui k="commandPalette.recent" /> group at the top shows up to five commands. It picks them from how often and how recently you used each command, and from what you do at the moment. For example, while bins are selected, the align and delete commands move up, if you used them before. A command that can't run at the moment stays in its group, but you can't select it.
 
 With the Places feature from [Labs](./labs) turned on, the palette also finds bins by what they hold, in all your layouts. These results show above the commands. Select one to open its layout and select the bin.
 

@@ -35,7 +35,7 @@ Your drag can cross a bin. The Layout Tool then uses only the empty part. To sto
 
 The gallery shows only the designs that fit the area. A design must fit the width and the depth of the area, turned or not. It must also fit the free height above the active layer. A design made for a different grid unit or height unit does not show, because it would print at the wrong size.
 
-A banner above the cards gives the size of the area. The cards sort by <Ui k="community.gallery.sort.bestFit" />, so the designs that fill the area best come first.
+The filters panel shows the size of the area under <Ui k="community.gallery.viewingSection" />. When that panel is collapsed, a chip above the cards shows it. The cards sort by <Ui k="community.gallery.sort.bestFit" />, so the designs that fill the area best come first.
 
 1. Click a card to open the design.
 2. Click <Ui k="community.detail.placeInLayout" />.

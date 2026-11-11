@@ -22,9 +22,10 @@ The finger scoop and the interior fillet are in the <Ui k="binDesigner.group.int
 A finger scoop is a ramp from the floor up to a wall. Push small items up the ramp with one finger, and they come out with no fuss.
 
 1. In the <Ui k="binDesigner.group.interior" /> group, turn on <Ui k="binDesigner.fingerScoop" />.
-2. Under <Ui k="binDesigner.scoopSide" />, pick one or more walls for the ramp.
-3. Under <Ui k="binDesigner.scoopStyle" />, pick the ramp shape.
-4. Set the size.
+2. Click <Ui k="common.customize" /> to show the scoop settings.
+3. Under <Ui k="binDesigner.scoopSide" />, pick one or more walls for the ramp.
+4. Under <Ui k="binDesigner.scoopStyle" />, pick the ramp shape.
+5. Set the size.
 
 The ramp can be <Ui k="binDesigner.scoopStyleCurved" /> or <Ui k="binDesigner.scoopStyleStraight" />.
 

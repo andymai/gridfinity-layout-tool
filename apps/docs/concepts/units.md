@@ -78,12 +78,12 @@ You can't turn off half-grid mode while a bin has a half-unit size or position. 
 
 The height in a drawer starts at the floor of the drawer and ends at the top of the highest stacking lip.
 
-| Part                        | Height it adds                                    |
-| --------------------------- | ------------------------------------------------- |
-| Plain baseplate under a bin | About 0.1 mm, because the feet sit in the pockets |
-| Baseplate with magnet holes | About 0.6 mm more than the magnet depth           |
-| First bin of H units        | H × 7 + 4.4 mm                                    |
-| Each bin stacked on top     | H × 7 mm less 0.35 mm                             |
+| Part                        | Height it adds                               |
+| --------------------------- | -------------------------------------------- |
+| Plain baseplate under a bin | Nothing, because the feet sit in the pockets |
+| Baseplate with magnet holes | About 0.6 mm more than the magnet depth      |
+| First bin of H units        | H × 7 + 4.4 mm                               |
+| Each bin stacked on top     | H × 7 mm less 0.35 mm                        |
 
 A baseplate with magnet holes has a floor under the magnets, so the bin sits higher. A solid floor under the plate adds its thickness in the same way.
 

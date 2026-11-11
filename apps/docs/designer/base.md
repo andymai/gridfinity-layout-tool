@@ -25,14 +25,15 @@ When a body type cannot have a section, the section shows one line that tells yo
 ## Add magnet holes
 
 1. Under <Ui k="binDesigner.base.section.mounting" />, turn on <Ui k="binDesigner.base.magnetHoles" />.
-2. Set <Ui k="binDesigner.base.magnetDiameter" /> to the diameter of your magnets.
-3. Set <Ui k="binDesigner.base.magnetDepth" /> to the thickness of your magnets.
+2. Click <Ui k="common.customize" /> to show the hole settings.
+3. Set <Ui k="binDesigner.base.magnetDiameter" /> to the diameter of your magnets.
+4. Set <Ui k="binDesigner.base.magnetDepth" /> to the thickness of your magnets.
 
 The diameter goes from 4 to 10 mm, with a default of 6.5 mm. The depth goes from 1 to 4 mm, with a default of 2 mm. Not sure? Keep the defaults. They suit a standard 6 by 2 mm magnet.
 
 ### Hold magnets without glue
 
-Glue is messy. Two options under <Ui k="binDesigner.base.magnetHoles" /> help a magnet stay in its hole without it, and you can use both together.
+Glue is messy. Two options in the same <Ui k="common.customize" /> fold help a magnet stay in its hole without it, and you can use both together.
 
 | Option                                      | What it does                                                                            |
 | ------------------------------------------- | --------------------------------------------------------------------------------------- |
@@ -102,7 +103,7 @@ A spacer needs its built-in feet to hold together, so it cannot have detachable 
 
 ## Make the floor lighter
 
-Want to save filament on a big batch? <Ui k="binDesigner.lightweight" /> under <Ui k="binDesigner.base.section.floor" /> hollows each foot. <Ui k="binDesigner.lightweightMode" /> sets the side it opens from:
+Want to save filament on a big batch? <Ui k="binDesigner.lightweight" /> under <Ui k="binDesigner.base.section.floor" /> hollows each foot. Click <Ui k="common.customize" /> under it to pick <Ui k="binDesigner.lightweightMode" />, the side it opens from:
 
 | Mode                                             | Result                                                                                                  |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
