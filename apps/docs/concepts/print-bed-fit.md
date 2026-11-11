@@ -11,6 +11,7 @@ sources:
   - src/features/baseplate/utils/splitPlanner.ts
   - src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
   - src/shell/layoutExport/planLayoutBinExport.ts
+  - src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
 ---
 
 # Fitting the print bed
@@ -85,7 +86,9 @@ Export it whole, and turn it diagonally on the bed in your slicer. To print it i
 
 ### You want to split a part in your slicer
 
-For one bin, clear <Ui k="binDesigner.splitExport.enableSplit" /> in the export dialog. The layout ZIP and the baseplate generator split each part that is larger than the print bed. To stop that, set the print bed to 3000 mm, the largest value. Set it back to your real bed before you need the Layout Tool to split again.
+For one bin, clear <Ui k="binDesigner.splitExport.enableSplit" /> in the export dialog. For a baseplate, clear <Ui k="baseplate.export.enableSplit" /> in the export dialog of the baseplate generator. That box isn't there while <Ui k="baseplate.stackPrint.enable" /> is on.
+
+The layout ZIP splits each part that is larger than the print bed. To stop that, set the print bed to 3000 mm, the largest value. Set it back to your real bed before you need the Layout Tool to split again.
 
 ### The baseplate export is gray
 

@@ -11,6 +11,8 @@ sources:
   - src/shell/Header/Header.tsx
   - src/core/storage/LayoutManager.ts
   - src/core/cqrs/store/retryQueue.ts
+  - src/shared/hooks/useAutoSave.ts
+  - src/shared/hooks/useAppWindowEvents.ts
 ---
 
 # Organize your layouts
@@ -100,7 +102,14 @@ The undo history keeps the last 100 changes of the open layout. When you open a 
 
 ### A message says the Layout Tool couldn't save your changes
 
-Free up space on your device, then reload the page. Your browser keeps your layouts on your device, so the Layout Tool can't save when the device is full. The message stays until you close it.
+Do these steps in this order:
+
+1. In the command palette, run <Ui k="commandPalette.downloadLayout" /> to keep a copy of the open layout.
+2. Free up space on your device.
+3. Make a small change to the layout, then undo it. The Layout Tool then saves the layout again.
+4. Wait for the check mark in the header before you reload the page.
+
+Your browser keeps your layouts on your device, so the Layout Tool can't save when the device is full. After a failed save, it tries again only when you change the layout. A reload before that save loses your recent changes. The message stays until you close it.
 
 ### Undo doesn't go back far enough
 

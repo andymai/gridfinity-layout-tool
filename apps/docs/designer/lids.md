@@ -10,6 +10,7 @@ sources:
   - src/features/bin-designer/utils/lidCompatibility.ts
   - src/shared/utils/lidInteriorRelief.ts
   - src/shared/utils/hingeLidPlan.ts
+  - src/shared/utils/lipGapPlan.ts
 ---
 
 # Lids
@@ -119,7 +120,7 @@ The lid exports with its rails up, ready to print. The default lid needs no supp
 
 Read the note under the switch. It names the conflict to fix. If the stacking lip is off, click <Ui k="binDesigner.dependency.enableStackingLip" /> under the switch.
 
-Most lids grip the stacking lip. Wall cutouts or handles on every wall leave no lip to grip. A lid also can't sit down on divider pieces that are taller than the inside of the bin.
+Most lids grip the stacking lip. Wall cutouts or handles block the lid only when they leave no usable lip on any wall. A lid also can't sit down on divider pieces that are taller than the inside of the bin.
 
 ### One wall has no click rail
 

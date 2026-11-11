@@ -59,10 +59,10 @@ The work of the other people shows on your grid, each in their own color:
 
 ## Who saves the link
 
-The room holds the live layout, but only the link owner's browser saves the room changes back to the share link. It saves them about one second after each change.
+The room holds the live layout, but only the link owner's browser saves the room changes back to the share link. It saves them about one second after each change that the owner makes. A change from someone else waits for the next change from the owner.
 
 ::: warning
-Keep the owner in the room while other people edit. When someone joins, the room loads the saved copy from the link. The room can then lose the changes that people made while the owner was away.
+Before someone joins, make sure that the owner made a change after the last edits of the others. When someone joins, the room loads the saved copy from the link. The room then loses the changes that are not in that copy.
 :::
 
 ## Read-only rooms
@@ -83,9 +83,9 @@ A view-only link opens no room. It shows a copy of the layout, so nobody sees th
 
 ### Changes that other people made are gone
 
-Keep the owner's tab open while other people edit.
+After the others edit, ask the owner to move a bin and move it back. Do this before anyone joins or opens the link again.
 
-Only the owner's browser saves the room to the link. When someone joins, the room loads the saved copy, so it can lose the changes from while the owner was away. See [Who saves the link](#who-saves-the-link).
+Only the owner's browser saves the room to the link, and only after a change that the owner makes. That save includes the changes of everyone in the room. When someone joins, the room loads the saved copy, so it loses the changes that are not in it. See [Who saves the link](#who-saves-the-link).
 
 ### Your edits don't reach the others
 

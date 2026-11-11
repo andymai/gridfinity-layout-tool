@@ -12,6 +12,7 @@ sources:
   - src/shared/generation/gridPitch.ts
   - src/shared/utils/drawerCeiling.ts
   - src/features/bin-designer/hooks/useSyncPhysicalUnits.ts
+  - src/features/bin-designer/store/slices/persistenceSlice.ts
 ---
 
 # Units and sizes
@@ -114,7 +115,9 @@ Turn on <Ui k="binDesigner.halfSockets" /> instead. In the bin designer, it's in
 
 ### A new bin doesn't fit the plate that you printed before
 
-Open the layout of that drawer, then export the bin again. The bin designer takes the grid unit and the height unit from the open layout. So a bin that you export while a layout with a different grid unit is open prints at that size. See [A bin is too tight in the plate](../printing/troubleshooting#a-bin-is-too-tight-in-the-plate).
+Open the layout of that drawer, then open the bin in the bin designer. Under <Ui k="common.physicalUnits" /> in the <Ui k="binDesigner.group.finishing" /> group, set <Ui k="binDesigner.gridUnit" /> to a larger value. Then set it back to the value of your drawer. Do the same for <Ui k="binDesigner.heightUnit" />. Then export the bin again.
+
+A saved design keeps the grid unit and the height unit that it had when you saved it. <Ui k="common.physicalUnits" /> shows the units of the open layout, not of the design. The bin designer copies them into the open design when you change a unit. See [A bin is too tight in the plate](../printing/troubleshooting#a-bin-is-too-tight-in-the-plate).
 
 ## Next steps
 

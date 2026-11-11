@@ -11,6 +11,7 @@ sources:
   - src/features/bin-designer/components/panel/LidSection/LidSection.tsx
   - src/features/bin-inspector/components/Inspector/BinLabelField/
   - src/shared/utils/typePlan.ts
+  - src/features/design-linking/hooks/useQuickExport.ts
 ---
 
 # Labels and text
@@ -155,7 +156,7 @@ The panel warns when the thinnest stroke of a letter is under 0.8 mm, about two 
 
 Type a caption in each row of <Ui k="binDesigner.labelText" />. <Ui k="binDesigner.labelTextNextBlank" /> takes you to the next empty row.
 
-A blank row prints a bare ledge. A linked bin can print its layout label instead, but only in the layout ZIP and the 3D layout preview. See [Troubleshooting prints](../printing/troubleshooting#the-labels-are-blank-or-missing).
+A blank row prints a bare ledge. A linked bin can print its layout label instead. Only the layout ZIP, the 3D layout preview and <Ui k="common.export" /> under <Ui k="designLinking.inspector.linkedDesign" /> in the inspector do this. See [Troubleshooting prints](../printing/troubleshooting#the-labels-are-blank-or-missing).
 
 ## Next steps
 
