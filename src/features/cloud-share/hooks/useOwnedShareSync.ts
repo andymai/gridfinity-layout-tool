@@ -17,7 +17,7 @@ import { useLibraryStore } from '@/core/store/library';
 import { updateShare } from '@/core/api/share';
 import { isOk } from '@/core/result';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
-import { createLayoutFingerprint } from '@/features/cloud-share/utils';
+import { createLayoutFingerprint, recordOwnCopyRevision } from '@/features/cloud-share/utils';
 import type { CloudShareInfo } from '@/core/types';
 
 /** Debounce delay for cloud share updates (5 seconds) */
@@ -69,6 +69,9 @@ export function useOwnedShareSync(): void {
 
       if (isOk(result)) {
         lastSyncedRef.current = layoutFingerprint;
+        if (result.value.lastUpdatedAt) {
+          recordOwnCopyRevision(shareId, result.value.lastUpdatedAt);
+        }
       }
       // Silently ignore failures - this is background sync
     } catch {

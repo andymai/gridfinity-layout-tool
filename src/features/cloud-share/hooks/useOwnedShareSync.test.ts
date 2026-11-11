@@ -8,6 +8,7 @@ import * as shareApi from '@/core/api/share';
 import { ok, err, apiServerError } from '@/core/result';
 import type { LayoutLibrary, CloudShareInfo, Layout } from '@/core/types';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
+import { readOwnCopyRevision } from '@/features/cloud-share/utils';
 
 // Mock the share API module
 vi.mock('@/core/api/share', () => ({
@@ -175,6 +176,42 @@ describe('useOwnedShareSync', () => {
         TEST_DELETE_TOKEN,
         expect.any(Object)
       );
+    });
+  });
+
+  describe('own copy revision', () => {
+    beforeEach(() => {
+      localStorage.removeItem('gridfinity-owned-share-revisions');
+      useLibraryStore.setState({ library: createTestLibrary(createCloudShareInfo()) });
+    });
+
+    it('records the link revision the server wrote for this copy', async () => {
+      vi.mocked(shareApi.updateShare).mockResolvedValue(
+        ok({
+          id: TEST_SHARE_ID,
+          url: `https://example.com/l/${TEST_SHARE_ID}`,
+          permission: 'view',
+          lastUpdatedAt: '2026-11-01T10:00:00.000Z',
+        })
+      );
+
+      renderHook(() => useOwnedShareSync());
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+
+      expect(readOwnCopyRevision(TEST_SHARE_ID)).toBe('2026-11-01T10:00:00.000Z');
+    });
+
+    it('records nothing when the save fails', async () => {
+      vi.mocked(shareApi.updateShare).mockResolvedValue(err(apiServerError()));
+
+      renderHook(() => useOwnedShareSync());
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+
+      expect(readOwnCopyRevision(TEST_SHARE_ID)).toBeUndefined();
     });
   });
 

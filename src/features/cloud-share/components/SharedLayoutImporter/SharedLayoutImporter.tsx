@@ -105,9 +105,22 @@ export function SharedLayoutImporter() {
   );
 
   const loadLayoutPreview = useCallback(
-    (layout: Layout, authorName?: string, cloudShareId?: string, permission?: 'view' | 'edit') => {
+    (
+      layout: Layout,
+      authorName?: string,
+      cloudShareId?: string,
+      permission?: 'view' | 'edit',
+      linkUpdatedAt?: string
+    ) => {
       activateLayout(layout, SHARED_PREVIEW_ID, `Viewing shared layout: ${layout.name}`);
-      setSharedLayoutPreview(layout, layout.name, authorName, cloudShareId, permission);
+      setSharedLayoutPreview(
+        layout,
+        layout.name,
+        authorName,
+        cloudShareId,
+        permission,
+        linkUpdatedAt
+      );
     },
     [activateLayout, setSharedLayoutPreview]
   );
@@ -257,7 +270,13 @@ export function SharedLayoutImporter() {
         console.error('Failed to track shared layout:', e);
       }
 
-      loadLayoutPreview(layout, metadata.authorName, initialCloudShareId, permission);
+      loadLayoutPreview(
+        layout,
+        metadata.authorName,
+        initialCloudShareId,
+        permission,
+        metadata.lastUpdatedAt
+      );
     };
 
     void loadCloudShare();

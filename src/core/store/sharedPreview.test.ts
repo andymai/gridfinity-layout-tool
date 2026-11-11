@@ -29,13 +29,21 @@ describe('sharedPreviewStore', () => {
       const layout = createTestLayout();
       useSharedPreviewStore
         .getState()
-        .setSharedLayoutPreview(layout, 'Original Name', 'Author', 'share-123', 'edit');
+        .setSharedLayoutPreview(
+          layout,
+          'Original Name',
+          'Author',
+          'share-123',
+          'edit',
+          '2026-11-01T10:00:00.000Z'
+        );
 
       const preview = useSharedPreviewStore.getState().sharedPreview;
       expect(preview?.originalName).toBe('Original Name');
       expect(preview?.authorName).toBe('Author');
       expect(preview?.cloudShareId).toBe('share-123');
       expect(preview?.permission).toBe('edit');
+      expect(preview?.linkUpdatedAt).toBe('2026-11-01T10:00:00.000Z');
     });
 
     it('clears preview when null is passed', () => {

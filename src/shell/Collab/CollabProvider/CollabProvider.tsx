@@ -16,6 +16,7 @@ import type { ReactNode } from 'react';
 import { useMemo, useCallback, useRef, useEffect } from 'react';
 import {
   RoomProvider,
+  useRoom,
   useUpdateMyPresence,
   isLiveblocksConfigured,
   type LiveblocksStorage,
@@ -25,6 +26,7 @@ import {
 import { useLibraryStore } from '@/core/store/library';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
+import { useSharedPreviewStore, type SharedPreviewData } from '@/core/store/sharedPreview';
 import { generateId } from '@/core/constants';
 import { generateGuestName, generateGuestColor } from '@/shared/utils/guestNames';
 import { trackEvent } from '@/shared/analytics/posthog';
@@ -33,10 +35,12 @@ import {
   type CollabPresenceActions,
   LocalMutationsProvider,
 } from '@/shared/contexts';
-import type { Coord } from '@/core/types';
+import type { CloudShareInfo, Coord } from '@/core/types';
 import { throttle } from '@/shared/utils';
+import { stampFor } from '@/shared/utils/roomLinkStamp';
 import { useCollabSync } from '@/shared/hooks/useCollabSync';
 import { useCloudShareAutoSync } from '@/features/cloud-share/hooks/useCloudShareAutoSync';
+import { readOwnCopyRevision } from '@/features/cloud-share/utils';
 
 interface CollabProviderProps {
   /** The share ID for the collaborative session */
@@ -72,6 +76,20 @@ function getUserId(): string {
 function useUserName(userId: string): string {
   const authorName = useLibraryStore((state) => state.library.settings.authorName);
   return authorName || generateGuestName(userId);
+}
+
+/**
+ * The share link revision that this browser's copy of the layout corresponds
+ * to: the owner's last save of its own copy, or the revision a visitor fetched.
+ */
+function copyRevisionFor(
+  shareId: string,
+  ownedShare: CloudShareInfo | null,
+  sharedPreview: SharedPreviewData | null
+): string | undefined {
+  if (ownedShare) return readOwnCopyRevision(shareId);
+  if (sharedPreview?.cloudShareId === shareId) return sharedPreview.linkUpdatedAt;
+  return undefined;
 }
 
 /**
@@ -121,6 +139,7 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
     () => entries.find((e) => e.cloudShare?.id === shareId)?.cloudShare ?? null,
     [entries, shareId]
   );
+  const sharedPreview = useSharedPreviewStore((state) => state.sharedPreview);
 
   // Initial presence - cursor starts as null (outside grid)
   // Color is deterministically generated from userId for variety
@@ -137,26 +156,50 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
   // Initial storage - the layout data to sync
   // The delete token is intentionally NOT stored in shared storage.
   // Cloud sync is owner-only: the delete token stays in the owner's local library.
-  const initialStorage: LiveblocksStorage = useMemo(
-    () => ({
+  // RoomProvider freezes initialStorage per room id, so this is taken once per room.
+  const { copyRevision, initialStorage } = useMemo(() => {
+    const revision = copyRevisionFor(shareId, cloudShare, sharedPreview);
+    const storage: LiveblocksStorage = {
       layout,
       metadata: {
         ownerId: userId,
         permission: cloudShare?.permission ?? 'edit',
-        version: 1,
+        version: 2,
+        ...stampFor(layout, revision),
       },
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: only use layout on initial mount, not on every change
-    []
-  );
+    };
+    return { copyRevision: revision, initialStorage: storage };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: the layout as the room is entered, not on every change
+  }, [roomId]);
 
   return (
     <RoomProvider id={roomId} initialPresence={initialPresence} initialStorage={initialStorage}>
-      <PresenceProvider shareId={shareId} ownerDeleteToken={cloudShare?.deleteToken}>
+      <PresenceProvider
+        roomId={roomId}
+        shareId={shareId}
+        ownerDeleteToken={cloudShare?.deleteToken}
+        copyRevision={copyRevision}
+      >
         {children}
       </PresenceProvider>
     </RoomProvider>
   );
+}
+
+interface RoomSyncProps {
+  shareId: string;
+  ownerDeleteToken: string | undefined;
+  copyRevision: string | undefined;
+}
+
+function RoomSync({ shareId, ownerDeleteToken, copyRevision }: RoomSyncProps): null {
+  // Enable bidirectional sync between Liveblocks and Zustand
+  useCollabSync(copyRevision);
+
+  // Auto-sync layout changes to cloud share storage (owner-only: token only present for owner)
+  useCloudShareAutoSync(shareId, ownerDeleteToken);
+
+  return null;
 }
 
 /**
@@ -170,21 +213,17 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
  * from this client without broadcasting the token to other collaborators.
  */
 function PresenceProvider({
+  roomId,
   shareId,
   ownerDeleteToken,
+  copyRevision,
   children,
-}: {
-  shareId: string;
-  ownerDeleteToken: string | undefined;
+}: RoomSyncProps & {
+  roomId: string;
   children: ReactNode;
 }) {
   const updateMyPresence = useUpdateMyPresence();
-
-  // Enable bidirectional sync between Liveblocks and Zustand
-  useCollabSync();
-
-  // Auto-sync layout changes to cloud share storage (owner-only: token only present for owner)
-  useCloudShareAutoSync(shareId, ownerDeleteToken);
+  const room = useRoom();
 
   // Auto-dismiss Liveblocks badge (injected asynchronously by Liveblocks SDK)
   useEffect(() => {
@@ -309,6 +348,17 @@ function PresenceProvider({
   return (
     <PresenceContext.Provider value={presenceActions}>
       <LocalMutationsProvider>{children}</LocalMutationsProvider>
+      {/* RoomProvider moves to a new room one render after the share changes.
+          Until it does, the room in context is the previous share's, and a
+          sync would pair it with this share's copy and delete token. */}
+      {room.id === roomId && (
+        <RoomSync
+          key={roomId}
+          shareId={shareId}
+          ownerDeleteToken={ownerDeleteToken}
+          copyRevision={copyRevision}
+        />
+      )}
     </PresenceContext.Provider>
   );
 }

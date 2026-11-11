@@ -1,16 +1,39 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { useRef } from 'react';
 import { render, screen } from '@testing-library/react';
 import { CollabProvider } from './CollabProvider';
-import { resetAllStores } from '@/test/testUtils';
+import { createTestBin, createTestLayout, resetAllStores } from '@/test/testUtils';
 import { useLibraryStore } from '@/core/store/library';
+import { useLayoutStore } from '@/core/store/layout';
+import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useCloudShareAutoSync } from '@/features/cloud-share/hooks/useCloudShareAutoSync';
-import { layoutId } from '@/core/types';
+import { useCollabSync } from '@/shared/hooks/useCollabSync';
+import { stampFor } from '@/shared/utils/roomLinkStamp';
+import { binId, layoutId } from '@/core/types';
 import type { LayoutEntry } from '@/core/types';
+import type { LiveblocksStorage } from '@/liveblocks.config';
+
+const room = vi.hoisted(() => ({
+  enteredId: '',
+  contextId: null as string | null,
+  initialStorage: [] as unknown[],
+}));
 
 vi.mock('@/liveblocks.config', () => ({
-  RoomProvider: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="room-provider">{children}</div>
-  ),
+  RoomProvider: ({
+    id,
+    initialStorage,
+    children,
+  }: {
+    id: string;
+    initialStorage: unknown;
+    children: React.ReactNode;
+  }) => {
+    room.enteredId = id;
+    room.initialStorage.push(initialStorage);
+    return <div data-testid="room-provider">{children}</div>;
+  },
+  useRoom: () => ({ id: room.contextId ?? room.enteredId }),
   useUpdateMyPresence: vi.fn(() => vi.fn()),
   isLiveblocksConfigured: true,
 }));
@@ -40,10 +63,17 @@ vi.mock('@/shared/utils/guestNames', () => ({
   generateGuestColor: vi.fn(() => '#ff0000'),
 }));
 
+function lastInitialStorage(): LiveblocksStorage {
+  return room.initialStorage[room.initialStorage.length - 1] as LiveblocksStorage;
+}
+
 describe('CollabProvider', () => {
   beforeEach(() => {
     resetAllStores();
     vi.clearAllMocks();
+    room.enteredId = '';
+    room.contextId = null;
+    room.initialStorage = [];
 
     const localStorageMock = {
       getItem: vi.fn(() => 'test-user-id'),
@@ -122,6 +152,112 @@ describe('CollabProvider', () => {
         </CollabProvider>
       );
       expect(useCloudShareAutoSync).toHaveBeenLastCalledWith('staleLayout1', undefined);
+    });
+
+    it("joins with the link revision of the owner's last save of its copy", () => {
+      vi.mocked(localStorage.getItem).mockImplementation((key: string) =>
+        key === 'gridfinity-owned-share-revisions'
+          ? JSON.stringify({ freshShare01: '2026-11-01T10:00:00.000Z' })
+          : 'test-user-id'
+      );
+      const layout = createTestLayout({ bins: [createTestBin({ id: binId('owned') })] });
+      useLayoutStore.setState({ layout });
+
+      render(
+        <CollabProvider shareId="freshShare01">
+          <div />
+        </CollabProvider>
+      );
+
+      expect(useCollabSync).toHaveBeenLastCalledWith('2026-11-01T10:00:00.000Z');
+      expect(lastInitialStorage().metadata).toMatchObject({
+        version: 2,
+        ...stampFor(layout, '2026-11-01T10:00:00.000Z'),
+      });
+    });
+  });
+
+  describe('a visitor joining from a share link', () => {
+    const fetched = createTestLayout({ bins: [createTestBin({ id: binId('fetched') })] });
+
+    beforeEach(() => {
+      useLayoutStore.setState({ layout: fetched });
+      useSharedPreviewStore
+        .getState()
+        .setSharedLayoutPreview(
+          fetched,
+          'Shared',
+          undefined,
+          'visitShare01',
+          'edit',
+          '2026-11-01T10:00:00.000Z'
+        );
+    });
+
+    it('joins with the link revision of the copy it fetched', () => {
+      render(
+        <CollabProvider shareId="visitShare01">
+          <div />
+        </CollabProvider>
+      );
+
+      expect(useCollabSync).toHaveBeenLastCalledWith('2026-11-01T10:00:00.000Z');
+      expect(useCloudShareAutoSync).toHaveBeenLastCalledWith('visitShare01', undefined);
+      expect(lastInitialStorage().metadata).toMatchObject(
+        stampFor(fetched, '2026-11-01T10:00:00.000Z')
+      );
+    });
+
+    it('takes no revision from a copy fetched for another share', () => {
+      render(
+        <CollabProvider shareId="otherShare01">
+          <div />
+        </CollabProvider>
+      );
+
+      expect(useCollabSync).toHaveBeenLastCalledWith(undefined);
+      expect(lastInitialStorage().metadata.linkUpdatedAt).toBeUndefined();
+    });
+  });
+
+  describe('switching shares', () => {
+    it('does not sync while the room context is still the previous room', () => {
+      room.contextId = 'gridfinity-previousShare';
+
+      render(
+        <CollabProvider shareId="nextShare01">
+          <div />
+        </CollabProvider>
+      );
+
+      expect(useCollabSync).not.toHaveBeenCalled();
+      expect(useCloudShareAutoSync).not.toHaveBeenCalled();
+    });
+
+    it('seeds the next room with the layout it opens, and starts its sync afresh', () => {
+      const syncInstances = new Set<symbol>();
+      vi.mocked(useCollabSync).mockImplementation(() => {
+        syncInstances.add(useRef(Symbol('sync')).current);
+      });
+      const first = createTestLayout({ name: 'First' });
+      useLayoutStore.setState({ layout: first });
+      const { rerender } = render(
+        <CollabProvider shareId="firstShare01">
+          <div />
+        </CollabProvider>
+      );
+
+      const second = createTestLayout({ name: 'Second' });
+      useLayoutStore.setState({ layout: second });
+      rerender(
+        <CollabProvider shareId="secondShare1">
+          <div />
+        </CollabProvider>
+      );
+
+      expect(room.enteredId).toBe('gridfinity-secondShare1');
+      expect(lastInitialStorage().layout).toBe(second);
+      expect(syncInstances.size).toBe(2);
     });
   });
 });
