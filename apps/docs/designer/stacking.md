@@ -49,7 +49,7 @@ The standard lip comes to a point. The top of that point prints as a thin line w
 
 All four shapes stack the same way, so you can change the peak without any worry about fit. The change is only at the top of the point.
 
-<Screenshot id="designer-stacking-top-rim" alt="The Top rim group with the stacking lip on, the Rounded lip peak and Lip notches turned on." spec="Bin designer, Base group open, bin 3 x 2 x 3. Keep Stacking lip on, pick Rounded under Lip peak and turn on Lip notches. Show the Top rim section and a close preview of the lip with its notches. Crop to panel plus preview." />
+<Screenshot id="designer-stacking-top-rim" alt="In the Top rim section, picking Rounded under Lip peak and turning on Lip notches. Then a close view of the bin shows a small notch on the lip at each grid line." spec="Bin designer, Base group open, bin 3 x 2 x 3. In close-up, pick Rounded under Lip peak and turn on Lip notches. Then show the bin up close in the preview." />
 
 ## Keep smaller bins in place on bigger ones
 

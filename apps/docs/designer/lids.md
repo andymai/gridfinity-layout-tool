@@ -24,7 +24,7 @@ Most lids grip the stacking lip of the bin. If the stacking lip is off, the pane
 
 Some features get in the way of a lid, for example handles that reach up into the lip. The section lists them under <Ui k="binDesigner.lid.compat.heading" />. Some come with a <Ui k="binDesigner.lid.compat.fixButton" /> button that clears the conflict for you.
 
-<Screenshot id="designer-lids-attachment" alt="The Lid section with the five attachment choices and the Top surface control." spec="Bin designer, 2x2x3 bin with stacking lip, Lid group open, Lid on, Click rails selected, Flat top. Crop to the Lid section from the Lid switch to the Top surface control, with the lid visible in the preview." />
+<Screenshot id="designer-lids-attachment" alt="Turning on the Lid switch shows the five attachment choices, and the preview shows the click-rail lid above the bin. Then picking Hinged stands the lid open on its hinge." spec="Bin designer, 2 x 2 x 3 bin. In the Lid group, turn on Lid in close-up, then show the click-rail lid in the preview. Pick Hinged in close-up, then show the hinged lid in the preview." />
 
 ## Pick how the lid attaches
 
