@@ -19,25 +19,33 @@ const room = vi.hoisted(() => ({
   canWrite: true,
 }));
 
-vi.mock('@/liveblocks.config', () => ({
-  useStorage: <T>(selector: (root: FakeRoot) => T): T | null =>
-    room.root ? selector(room.root) : null,
-  useMutation:
-    (callback: (context: unknown, ...args: unknown[]) => unknown) =>
-    (...args: unknown[]) =>
-      callback(
-        {
-          storage: {
-            get: (key: keyof FakeRoot) => room.root?.[key],
-            set: (key: keyof FakeRoot, value: never) => {
-              if (room.root) room.root = { ...room.root, [key]: value };
-            },
-          },
-          self: { canWrite: room.canWrite },
-        },
-        ...args
-      ),
-}));
+// Liveblocks memoizes a mutation on its deps (`[]` in the hook), so the fake
+// keeps its first function: a new one on every render would re-run every
+// effect that depends on it.
+vi.mock('@/liveblocks.config', async () => {
+  const { useState } = await import('react');
+  return {
+    useStorage: <T>(selector: (root: FakeRoot) => T): T | null =>
+      room.root ? selector(room.root) : null,
+    useMutation: (callback: (context: unknown, ...args: unknown[]) => unknown) =>
+      useState(
+        () =>
+          (...args: unknown[]) =>
+            callback(
+              {
+                storage: {
+                  get: (key: keyof FakeRoot) => room.root?.[key],
+                  set: (key: keyof FakeRoot, value: never) => {
+                    if (room.root) room.root = { ...room.root, [key]: value };
+                  },
+                },
+                self: { canWrite: room.canWrite },
+              },
+              ...args
+            )
+      )[0],
+  };
+});
 
 vi.mock('@/core/api/share', () => ({
   updateShare: vi.fn(),
@@ -223,6 +231,34 @@ describe('useCloudShareAutoSync', () => {
 
     expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
     expect(shareApi.updateShare).toHaveBeenLastCalledWith(SHARE_ID, TOKEN, second);
+  });
+
+  it('saves a layout it saved before, once another tab saved a different one', async () => {
+    const saved = layoutWith('saved');
+    openRoom(saved, stampFor(saved, SAVED_AT));
+    const { rerender } = renderHook(() => useCloudShareAutoSync(SHARE_ID, TOKEN));
+    const first = layoutWith('saved', 'first');
+    collaboratorEdits(first);
+    rerender();
+    await advance(1000);
+    expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
+
+    const otherTabSave = layoutWith('saved', 'other-tab');
+    if (!room.root) throw new Error('room not open');
+    room.root = {
+      layout: otherTabSave,
+      metadata: { ...room.root.metadata, ...stampFor(otherTabSave, '2026-11-01T10:00:20.000Z') },
+    };
+    rerender();
+    await advance(5000);
+    expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
+
+    collaboratorEdits(first);
+    rerender();
+    await advance(1000);
+
+    expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
+    expect(shareApi.updateShare).toHaveBeenLastCalledWith(SHARE_ID, TOKEN, first);
   });
 
   it('saves a pending change to its own share when the owner leaves the room', async () => {

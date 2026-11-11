@@ -45,7 +45,6 @@ export function useCloudShareAutoSync(
   const linkFingerprint = useStorage((root) => root.metadata?.linkFingerprint);
 
   const isSavingRef = useRef(false);
-  const uploadedFingerprintRef = useRef<string | null>(null);
   const mountedShareIdRef = useRef<string | null>(null);
   const pendingSaveRef = useRef<(() => void) | null>(null);
 
@@ -69,7 +68,9 @@ export function useCloudShareAutoSync(
     if (!shareId || !deleteToken || !roomLayout) return;
 
     const fingerprint = roomLayoutFingerprint(roomLayout);
-    if (fingerprint === linkFingerprint || fingerprint === uploadedFingerprintRef.current) return;
+    // The room's record is the only "already saved" signal: another owner tab
+    // can save a different layout after this one, which a per-tab memory misses.
+    if (fingerprint === linkFingerprint) return;
 
     const save = (): void => {
       pendingSaveRef.current = null;
@@ -80,7 +81,6 @@ export function useCloudShareAutoSync(
         .then((result) => {
           // Silently ignore failures - this is background sync, user isn't waiting
           if (!isOk(result)) return;
-          uploadedFingerprintRef.current = fingerprint;
           // A save that lands after the owner left the room must not stamp another room.
           if (mountedShareIdRef.current !== shareId) return;
           const { lastUpdatedAt } = result.value;
