@@ -9,8 +9,10 @@
  *   comes from a later share link revision and the room holds nothing the link
  *   lacks (`resolveJoin`)
  * - Local edits (lastEditSource === 'local') are pushed to Liveblocks
- * - Remote changes from Liveblocks are imported to Zustand with source: 'remote'
- * - Loop prevention via lastEditSource tracking and sync state machine
+ * - Remote changes from Liveblocks are imported to Zustand with source: 'remote',
+ *   whatever this browser's last edit was
+ * - Loop prevention: a room layout equal to the one this browser last pushed or
+ *   took is its own echo, and an imported layout is never pushed back
  *
  * @example
  * ```tsx
@@ -163,7 +165,7 @@ export function useCollabSync(copySave?: RoomLinkStamp): void {
 
     // State: ready - normal bidirectional sync
 
-    // Skip if this is the same layout we just synced
+    // Skip this browser's own push, or a layout it already took, coming back
     if (
       lastSyncedLayoutRef.current &&
       JSON.stringify(remoteLayout) === JSON.stringify(lastSyncedLayoutRef.current)
@@ -171,15 +173,27 @@ export function useCollabSync(copySave?: RoomLinkStamp): void {
       return;
     }
 
-    // Skip if last edit was local (we're the source of this change)
-    if (lastEditSource === 'local' && !writeRefusedRef.current) {
-      return;
+    // An edit of this browser's own that the room has not received yet (one
+    // that lands in the same render as the room's change) goes out now rather
+    // than be dropped. The room syncs whole layouts, so this later write is
+    // what every browser ends up with.
+    const { layout: storeLayout, lastEditSource: storeEditSource } = useLayoutStore.getState();
+    if (
+      !writeRefusedRef.current &&
+      storeEditSource === 'local' &&
+      JSON.stringify(storeLayout) !== JSON.stringify(lastSyncedLayoutRef.current)
+    ) {
+      writeRefusedRef.current = !updateRemoteLayout(storeLayout);
+      if (!writeRefusedRef.current) {
+        lastSyncedLayoutRef.current = storeLayout;
+        return;
+      }
     }
 
-    // Remote change detected - update local store
+    // Another browser's change, whatever this browser's last edit was
     lastSyncedLayoutRef.current = remoteLayout;
     importRoomLayout(remoteLayout);
-  }, [remoteLayout, lastEditSource, updateRemoteLayout, copySave, linkUpdatedAt, linkFingerprint]);
+  }, [remoteLayout, updateRemoteLayout, copySave, linkUpdatedAt, linkFingerprint]);
 
   // Effect: Local → Remote sync
   // When local layout changes, push to Liveblocks
