@@ -1,0 +1,113 @@
+scripts/check-user-docs.ts
+  s_1cc363bb3cc76d::t_e1d7f15f0512ee 159-213,321-325,343,407-409,411,413-416,419-423,425
+  s_1cc363bb3cc76d::t_92542225e0598a 417-418
+  s_1cc363bb3cc76d::t_0f3a2f4270c1f7 424
+scripts/docs-capture/shots/index.test.ts
+  s_1cc363bb3cc76d::t_83a8b9054cf988 1-40
+  s_1cc363bb3cc76d::t_f3bdbc6480f6b1 41-42
+scripts/docs-capture/fixtures.ts
+  s_1cc363bb3cc76d::t_4193235eff6fab 106
+  s_1cc363bb3cc76d::t_c6a25e77c1e389 1-105,107-126
+apps/docs/getting-started/workspace-tour.md
+  s_1cc363bb3cc76d::t_d37c3c2d2035bf 83
+scripts/docs-capture/encode.ts
+  s_1cc363bb3cc76d::t_14c36a98abda4a 1-121
+  s_1cc363bb3cc76d::t_2f433b480a8346 122-124
+scripts/docs-capture/probe.ts
+  s_1cc363bb3cc76d::t_9fabc99aabf1ba 1-46
+  s_1cc363bb3cc76d::t_fc9a76304f4b06 47-50
+apps/docs/.vitepress/theme/media.ts
+  s_1cc363bb3cc76d::t_8d7871bae3296f 1-26
+scripts/docs-capture/shots/index.ts
+  s_1cc363bb3cc76d::t_e6199083f6c180 1-4
+apps/docs/.vitepress/theme/custom.css
+  s_1cc363bb3cc76d::t_55a1117f110412 89,93-95,97-102
+  s_1cc363bb3cc76d::t_aef53fa163207b 37,41-47,49-88,90-92,96,103-111,113-131,134
+  s_1cc363bb3cc76d::t_931fa196a545ac 112
+scripts/check-user-docs.test.ts
+  s_1cc363bb3cc76d::t_6e98fad711503a 5,12,195-222,224
+  s_1cc363bb3cc76d::t_baf0981da02078 223,225-230
+scripts/docs-capture/shots/layoutEditor.ts
+  s_1cc363bb3cc76d::t_c50fb42924ec70 1-4,7-25,30-34,53
+  s_1cc363bb3cc76d::t_0314b26372d360 5-6,26-29,35-52
+scripts/docs-capture/shots/apps.ts
+  s_1cc363bb3cc76d::t_ba5bba93cbd36f 1-10,12-15,17-97,161
+  s_1cc363bb3cc76d::t_42bca72f54aee1 16
+  s_1cc363bb3cc76d::t_a0fd803c5c73bd 11,98-160
+  s_1cc363bb3cc76d::t_edf79b5905d755 162-185
+scripts/docs-capture/capture.ts
+  s_1cc363bb3cc76d::t_692afd86f3e9f3 1-74
+apps/docs/.vitepress/theme/components/Screenshot.vue
+  s_1cc363bb3cc76d::t_aef53fa163207b 15-16,71-77,84,90-97
+  s_1cc363bb3cc76d::t_fcb0faec26c546 2-5,7-14,17-65,69-70,78-83,85-89,98-146,149-151
+  s_1cc363bb3cc76d::t_b642ab1ff4b289 152
+apps/docs/getting-started/first-drawer.md
+  s_1cc363bb3cc76d::t_d37c3c2d2035bf 39,57
+scripts/docs-capture/session.ts
+  s_1cc363bb3cc76d::t_3f42e25e5b8374 1-51,57-58,61,63-86,108-168,174-180,182-185,206-208,210-217,224,230-263,266-282,292-298,300,302-305,308-314,317-318,320-333,338-349
+  s_1cc363bb3cc76d::t_2ef3f2f676376a 209,225,315-316,319
+  s_1cc363bb3cc76d::t_53f36a9168adef 190-204
+  s_1cc363bb3cc76d::t_809a5be8326e07 59-60,62,218-223,226-229,299,301,306-307
+  s_1cc363bb3cc76d::t_c9ca3cfb583edb 87-107
+  s_1cc363bb3cc76d::t_a0fd803c5c73bd 186-189,205
+  s_1cc363bb3cc76d::t_f50be7f68fb72a 52-56,283-291
+  s_1cc363bb3cc76d::t_48f3f73b726be0 169-173,181,264-265,334-337
+  s_1cc363bb3cc76d::t_5d2e811f4541bd 350-353
+scripts/feature-tips/ui.ts
+  s_1cc363bb3cc76d::t_809a5be8326e07 144-148,208,221,256,258
+  s_1cc363bb3cc76d::t_8c82186b6374ea 34,39
+  s_1cc363bb3cc76d::t_52348b3b162eb2 171-179,183-184,189-191
+  s_1cc363bb3cc76d::t_d0bc06bf4149cb 202
+apps/docs/getting-started/first-bin.md
+  s_1cc363bb3cc76d::t_d37c3c2d2035bf 59
+scripts/docs-capture/labels.ts
+  s_1cc363bb3cc76d::t_c3648377638252 7
+  s_1cc363bb3cc76d::t_834b1c1ed6c2b8 1-6,8-12
+scripts/docs-capture/shots/gettingStarted.ts
+  s_1cc363bb3cc76d::t_2de9dc3d58fcd7 243-246,256-258,264
+  s_1cc363bb3cc76d::t_7cfa6b6ae5819e 76-78
+  s_1cc363bb3cc76d::t_4193235eff6fab 2,41-44,48
+  s_1cc363bb3cc76d::t_1cd3113a36d541 1,3,5-6,10-36,46,49-55,58-74,80-82,90,93,97,100-103,107-109,111-115,119,126-172,174-188,196-203,215,219-221,225-227,229-236,249,253-255,259,261,263,265-266,268,270-280,284-294,299-310
+  s_1cc363bb3cc76d::t_c5d9f9972065cd 4,9,37-40,45,47,83-89,91-92,94-96,98-99,295-298
+  s_1cc363bb3cc76d::t_12a47404a3a76d 8
+  s_1cc363bb3cc76d::t_4576161cdcb0d7 189-195
+  s_1cc363bb3cc76d::t_35e4a3452b7629 56-57,75,79
+  s_1cc363bb3cc76d::t_25f8ca2aadfabc 104-106,110,123
+  s_1cc363bb3cc76d::t_b0cc14a249c370 216-218
+  s_1cc363bb3cc76d::t_02b7cbbc84aa80 222-224,228,250-252,262,269
+  s_1cc363bb3cc76d::t_f50be7f68fb72a 120-122,125,204-214,281-283
+  s_1cc363bb3cc76d::t_bbd52bb73d56cb 237-242,247-248,260,267
+  s_1cc363bb3cc76d::t_a0fd803c5c73bd 7,116-118,124,173
+apps/docs/media/manifest.json
+  s_1cc363bb3cc76d::t_4193235eff6fab 27,33,46,49-50
+  s_1cc363bb3cc76d::t_a0fd803c5c73bd 25
+  s_1cc363bb3cc76d::t_f50be7f68fb72a 37-41
+  s_1cc363bb3cc76d::t_a29ee0bd449028 1,47-48,51-52
+  s_1cc363bb3cc76d::t_02b7cbbc84aa80 44-45
+  s_1cc363bb3cc76d::t_c3648377638252 2-4,6-9,11-24,26,28-32,34-36,42-43
+  s_1cc363bb3cc76d::t_778003ada9f0d5 5,10
+apps/docs/.vitepress/config.ts
+  s_1cc363bb3cc76d::t_8406166e3c0b9d 9-15,20
+package.json
+  s_1cc363bb3cc76d::t_5104124361c6d8 71
+scripts/docs-capture/tsconfig.json
+  s_1cc363bb3cc76d::t_0780b168b699f6 1-10
+tsconfig.json
+  s_1cc363bb3cc76d::t_8a68039b9dc800 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c47d5c34a67492763a5e337f5e33604856859abd",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
