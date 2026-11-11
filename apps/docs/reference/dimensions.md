@@ -12,7 +12,7 @@ sources:
 
 # Gridfinity dimensions
 
-This page lists the measurements that the Gridfinity Layout Tool builds bins and baseplates to. Use it to compare a part with another Gridfinity model, or to measure a printed part when it does not fit. All values are in millimeters unless a row says otherwise.
+Does a printed part not fit, or do you want to mix in bins from another Gridfinity model? Grab your calipers and start here. This page lists the measurements that the Gridfinity Layout Tool builds bins and baseplates to. All values are in millimeters unless a row says otherwise.
 
 For size tables in inches and a list of common bin sizes, see [Gridfinity sizes](https://gridfinitylayouttool.com/gridfinity-sizes).
 
@@ -44,7 +44,7 @@ For example, a 2 × 3 bin with a height of 6 units is 83.5 mm × 125.5 mm. Its w
 
 ## Base profile
 
-Each grid cell under a bin has one foot. The foot is a tapered block that drops into a pocket of the baseplate.
+Each grid cell under a bin has one foot: a tapered block that drops into a pocket of the baseplate.
 
 | Part of the foot                  | Value   |
 | --------------------------------- | ------- |

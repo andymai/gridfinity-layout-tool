@@ -13,12 +13,11 @@ sources:
 
 # Eco plates and stack printing
 
-A drawer full of baseplates uses a lot of filament and many print jobs. An eco plate removes plastic that the bins do not need. Stack printing puts many plates on top of each other, so that one print job makes many plates.
+A drawer full of baseplates takes a lot of filament and a lot of print jobs. Two options cut both down. An eco plate leaves out plastic that the bins don't need. Stack printing builds a tower of plates, so one print job makes many plates.
 
 ## Save filament with an eco plate
 
-1. In the baseplate generator, open <Ui k="baseplate.sectionBase" />.
-2. Turn on <Ui k="baseplate.ecoPlate" />.
+In the baseplate generator, open <Ui k="baseplate.sectionBase" /> and turn on <Ui k="baseplate.ecoPlate" />.
 
 The Layout Tool cuts the straight joints between the corner posts down to a thin bar. A plate then uses up to a third less filament. The bins sit on the corner posts only.
 
@@ -26,10 +25,10 @@ Split pieces keep the eco plate setting. With <Ui k="baseplate.stackPrint.enable
 
 ## Print plates in a stack
 
-<Ui k="baseplate.stackPrint.enable" /> prints the plates of the drawer as a tower. The bottom plate prints right side up. Each plate above it prints upside down, with a thin air gap below it. After the print, you break the plates apart.
+<Ui k="baseplate.stackPrint.enable" /> prints the plates of your drawer as one tower. The bottom plate prints right side up. Each plate above it prints upside down, with a thin air gap below it. After the print, you break the plates apart.
 
-1. In the baseplate generator, turn on <Ui k="baseplate.stackPrint.enable" />. It is above the <Ui k="baseplate.sectionBase" /> section.
-2. Set <Ui k="baseplate.stackPrint.gap.label" />. The default is 0.2 mm, which is one layer. The range is 0.1 to 1 mm.
+1. In the baseplate generator, turn on <Ui k="baseplate.stackPrint.enable" />. It sits above the <Ui k="baseplate.sectionBase" /> section.
+2. Set <Ui k="baseplate.stackPrint.gap.label" />. The range is 0.1 to 1 mm. Not sure? Keep the default of 0.2 mm, which is one layer.
 3. In <Ui k="common.physicalUnits" />, set <Ui k="baseplate.maxPrintHeight" /> to the maximum Z height of your printer. The default is 250 mm.
 4. Read the message below the settings. It tells you how many plates go into how many print files.
 
@@ -39,7 +38,7 @@ By default, pieces with the same shape stack together, up to the number that the
 
 ### Print more than one set
 
-<Ui k="baseplate.stackPrint.copies.label" /> prints the whole baseplate more than once, for example for several drawers of the same size. At 1, each plate prints once. Each extra set adds one copy of every plate, up to 20 sets.
+Do you have several drawers of the same size? <Ui k="baseplate.stackPrint.copies.label" /> prints the whole baseplate more than once. At 1, each plate prints once. Each extra set adds one copy of every plate, up to 20 sets.
 
 ### Stack plates of different sizes
 
@@ -51,7 +50,7 @@ Open the file in your slicer and print a small test before you print a full towe
 
 ### What a stack changes
 
-A flipped plate must print without supports. So <Ui k="baseplate.stackPrint.enable" /> removes these features while it is on:
+A flipped plate must print without supports. So while <Ui k="baseplate.stackPrint.enable" /> is on, it removes these features:
 
 - <Ui k="baseplate.magnetHoles" />
 - <Ui k="baseplate.screwHoles.label" />
@@ -59,21 +58,21 @@ A flipped plate must print without supports. So <Ui k="baseplate.stackPrint.enab
 - <Ui k="baseplate.solidFloor" />
 - The <Ui k="baseplate.connectorStyle.snapClip" /> connector
 
-The other connector styles and a corner radius stay. When you turn off the stack, your settings come back. Each stacked plate is also 0.4 mm shorter, so that the plates meet on a flat ridge. Bins sit in these plates in the same way.
+The other connector styles and a corner radius stay. You lose nothing: when you turn off the stack, your settings come back.
 
-A STEP export never stacks.
+Each stacked plate is also 0.4 mm shorter, so that the plates meet on a flat ridge. Bins sit in these plates in the same way. A STEP export never stacks.
 
 ## Test the gap and separate the plates
 
-Click <Ui k="baseplate.stackPrint.sampleButton" /> in the stack settings. You get a stack of two 1 by 1 plates, to tune the gap before you print a full tower.
+Click <Ui k="baseplate.stackPrint.sampleButton" /> in the stack settings. You get a stack of two 1 by 1 plates. It's a cheap way to tune the gap before you print a full tower.
 
-To print a stack, slice the tower exactly as it is in the file, with no supports. The layer height must be the gap or less, or the plates join. [Stack-printed plates](../printing/slicers#stack-printed-plates) gives the slicer steps.
+Slice the tower exactly as it is in the file, with no supports. Keep the layer height at the gap or less, or the plates fuse together. [Stack-printed plates](../printing/slicers#stack-printed-plates) gives the slicer steps.
 
 To separate the plates, put a flat-head screwdriver in each gap and turn it gently.
 
-With two materials, you can print the gap in a material that does not bond, such as PETG between PLA plates. Make the gap about 0.4 mm first. The <Ui k="baseplate.stackPrint.tips.heading" /> help and [Slicer setup](../printing/slicers#stack-printed-plates) give the slicer settings.
+Have two materials? Print the gap in a material that doesn't bond, such as PETG between PLA plates. Make the gap about 0.4 mm first. The <Ui k="baseplate.stackPrint.tips.heading" /> help and [Slicer setup](../printing/slicers#stack-printed-plates) give the slicer settings.
 
-To look between the plates in the preview, use the <Ui k="baseplate.stackPrint.separate" /> slider.
+To look between the plates in the preview, drag the <Ui k="baseplate.stackPrint.separate" /> slider.
 
 ## Control the plate height
 

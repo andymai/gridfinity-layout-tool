@@ -8,31 +8,34 @@ sources:
   - src/shell/Modals/SettingsModal/tabs/AccountTab/AccountTab.tsx
   - api/lib/quota.ts
   - api/sync/account.ts
+  - src/core/storage/clearAppData.ts
 ---
 
 # Accounts and sync
 
-You can use the Gridfinity Layout Tool without an account. Your work then stays in the browser on one device. Sign in with Google or GitHub when you want the same layouts and designs on your computer, your laptop and your phone.
+You don't need an account to use the Gridfinity Layout Tool. Without one, your work stays in this browser on this device. Sign in with Google or GitHub when you want the same layouts and designs on your desktop, your laptop and your phone.
 
 ## Work without an account
 
-At the bottom of the side panel, the account button shows <Ui k="dock.workingLocally" />. The Layout Tool saves everything in this browser. Another browser or another device does not see it. See [Your data](../introduction/your-data) for where the browser keeps it and how to back it up.
+At the bottom of the side panel, the account button reads <Ui k="dock.workingLocally" />. Everything saves in this browser, and other browsers and devices can't see it. [Your data](../introduction/your-data) explains where the browser keeps it and how to back it up.
 
 ## Sign in
 
-1. Click <Ui k="dock.workingLocally" /> at the bottom of the side panel. The button is in the layout editor, the bin designer and the baseplate generator.
+1. Click <Ui k="dock.workingLocally" /> at the bottom of the side panel. You'll find it in the layout editor, the bin designer and the baseplate generator.
 2. Click <Ui k="auth.signInWithGoogle" /> or <Ui k="auth.signInWithGithub" />.
-3. Approve the sign-in on the Google or GitHub page.
+3. Approve the sign-in on the Google or GitHub page. The browser then takes you back to the Layout Tool.
 
-The browser then goes back to the Layout Tool. The same buttons are also in Settings, on the <Ui k="settings.tabs.account" /> tab.
+The same buttons are also in Settings, on the <Ui k="settings.tabs.account" /> tab.
 
-At the first sign-in on a device, the Layout Tool merges the local layouts and designs with the copies in your account. If the data on the device belongs to a different account, the <Ui k="syncDialog.accountMismatch.title" /> dialog asks what to do. Add the data to the account you use now, or click <Ui k="syncDialog.accountMismatch.discard" /> to remove it from the device.
+Your first sign-in on a device keeps the work that is already there. The Layout Tool merges the local layouts and designs with the copies in your account. If the data on the device belongs to a different account, the <Ui k="syncDialog.accountMismatch.title" /> dialog asks what to do. Add the data to the account that you use now, or click <Ui k="syncDialog.accountMismatch.discard" /> to remove it from the device.
 
 A sign-in lasts 30 days. After that, the Layout Tool signs you out and keeps your local copies. Sign in again to start the sync again.
 
 <Screenshot id="sharing-accounts-sign-in-menu" alt="The account menu open at the bottom of the side panel, with the Google and GitHub sign-in buttons." spec="Layout editor, desktop, signed out, with three layouts in the library. Click the account button at the bottom of the left side panel to open its menu. Show the menu and the button. Crop to the bottom of the side panel." />
 
 ## What syncs
+
+After you sign in, these items sync, up to a limit for each account:
 
 | Item                                                 | Limit for each account |
 | ---------------------------------------------------- | ---------------------- |
@@ -42,33 +45,44 @@ A sign-in lasts 30 days. After that, the Layout Tool signs you out and keeps you
 | <Ui k="binDesigner.versions.title" /> of bin designs | 500 versions, 25 MB    |
 | Folders in the layout manager                        | 200 folders            |
 
-These items do not sync: your settings, your Labs choices, and your share links. Each device keeps its own.
+Your settings, your Labs choices and your share links don't sync. Each device keeps its own.
 
-The Layout Tool sends a change about 3 seconds after you stop. While the tab is visible, it gets the changes from your other devices every 45 seconds. When you are offline, your changes stay in the browser and go to your account when the connection comes back.
+The Layout Tool sends a change about 3 seconds after you stop. While the tab is visible, it gets the changes from your other devices every 45 seconds. Offline? Your changes wait in the browser and go to your account when the connection comes back.
 
-The account button shows the state of the sync: <Ui k="dock.syncStatusIdle" />, <Ui k="dock.syncStatusSyncing" />, <Ui k="dock.syncStatusOffline" /> or <Ui k="dock.syncStatusError" />. For more detail, open Settings > <Ui k="settings.tabs.account" />. The <Ui k="account.sync.heading" /> section shows the time of the last sync and the number of changes that wait to upload.
+The account button shows the state of the sync:
 
-When your account reaches a limit, the server refuses the new item, and a message tells you that your cloud storage is full. Delete some items to make space. Deleted items do not count toward the limit.
+| Status                            | What it tells you                                      |
+| --------------------------------- | ------------------------------------------------------ |
+| <Ui k="dock.syncStatusIdle" />    | Your account has all your changes.                     |
+| <Ui k="dock.syncStatusSyncing" /> | The Layout Tool sends or gets changes at this moment.  |
+| <Ui k="dock.syncStatusOffline" /> | No connection. Your changes wait in the browser.       |
+| <Ui k="dock.syncStatusError" />   | The last sync failed. The Account tab shows the error. |
+
+For more detail, open Settings > <Ui k="settings.tabs.account" />. Its <Ui k="account.sync.heading" /> section shows the time of the last sync and how many changes wait to upload.
+
+When your account reaches a limit, the server refuses the new item, and a message tells you that your cloud storage is full. Delete some items to make space. Deleted items don't count toward the limit.
 
 ## When two devices change the same item
 
-Each layout, design and folder carries the time of its last change. When two devices change the same item, the newer change wins. The older device then takes the newer copy, and a message shows: <Ui k="sync.conflictPulled" />
+Each layout, design and folder records the time of its last change. When two devices change the same item, the newer change wins. The older device takes the newer copy and shows this message: <Ui k="sync.conflictPulled" />
 
-The newer copy replaces the whole item. The Layout Tool does not merge two sets of changes into one layout. If two changes have the same time to the millisecond, all devices choose the same winner.
+The newer copy replaces the whole item, so two sets of changes never merge into one layout. If the two changes have the same time to the millisecond, all devices pick the same winner.
 
 ::: tip
 Edit a layout on one device at a time. To edit one layout with other people at the same time, use [a live session](./live-collaboration).
 :::
 
-A deletion also syncs. If you delete an item on one device, your other devices remove it too. A device with an older edit of that item shows this message: <Ui k="sync.deletedElsewhere" /> Edit the item again on that device to bring it back.
+A deletion syncs too. Delete an item on one device, and your other devices remove it as well. A device with an older edit of that item shows this message: <Ui k="sync.deletedElsewhere" /> Edit the item again on that device to bring it back.
 
 ## Sign out
 
 1. Click your name at the bottom of the side panel.
 2. Click <Ui k="auth.signOut" />.
-3. In the <Ui k="syncDialog.signOut.title" /> dialog, select what happens to the data on this device:
-   - <Ui k="syncDialog.signOut.keep" /> keeps your layouts, designs, baseplates and folders on this device. Changes that did not upload yet go to your account at the next sign-in.
+3. In the <Ui k="syncDialog.signOut.title" /> dialog, pick what happens to the data on this device:
+   - <Ui k="syncDialog.signOut.keep" /> keeps your layouts, designs, baseplates and folders on this device. Changes that didn't upload yet go to your account at the next sign-in.
    - <Ui k="syncDialog.signOut.wipe" /> removes them from this device. The copies in your account stay.
+
+On your own computer, pick keep. On a shared computer, pick wipe.
 
 Settings > <Ui k="settings.tabs.account" /> has the same <Ui k="account.signOut.button" /> button.
 
@@ -79,7 +93,7 @@ Settings > <Ui k="settings.tabs.account" /> has the same <Ui k="account.signOut.
 3. In the dialog, click <Ui k="syncDialog.deleteAccount.confirm" />.
 
 ::: warning
-Make sure that you do not need the copies in your account. You cannot undo the deletion.
+Make sure that you don't need the copies in your account. You can't undo the deletion.
 :::
 
 The deletion removes these items from the server:
@@ -88,11 +102,13 @@ The deletion removes these items from the server:
 - every synced layout, design, baseplate, version and folder
 - your published designs in the community gallery, your likes and your print reports
 
-The local copies on this device stay. To remove them too, clear the browser data, or use <Ui k="settings.storage.clearAllData" /> on the <Ui k="settings.tabs.storage" /> tab. Share links are not part of your account, so the deletion does not remove them. Delete each link from the share button first. See [Share a layout](./share-links#change-or-delete-a-link).
+Share links aren't part of your account, so the deletion leaves them in place. Delete each link from the share button first, because only the browser that made a link can delete it. See [Share a layout](./share-links#change-or-delete-a-link).
+
+The local copies on this device stay too. <Ui k="settings.storage.clearAllData" /> on the <Ui k="settings.tabs.storage" /> tab removes your layouts, but it keeps your saved bin designs, your saved baseplates and your settings. To remove everything, clear the browser data for this site.
 
 ## When the server has no sign-in
 
-Sign-in and sync need the server of the Layout Tool. A self-hosted copy has no sign-in, and the sign-in buttons open a short page with a link back to the app. See [Self-hosting](../reference/self-hosting).
+Sign-in and sync need the server of the Layout Tool. A self-hosted copy has no sign-in, and its sign-in buttons open a short page with a link back to the app. See [Self-hosting](../reference/self-hosting).
 
 ## Next steps
 

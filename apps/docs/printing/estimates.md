@@ -12,7 +12,7 @@ sources:
 
 # Filament and time estimates
 
-The Gridfinity Layout Tool estimates the filament, the print time and the cost before you slice. Use the estimates to plan a drawer and to compare designs. Use your slicer for the final numbers.
+How much filament will this drawer take, how long will it print, and what will it cost? The Gridfinity Layout Tool gives you a quick estimate of all three before you slice. Use the estimates to plan a drawer and to compare designs, and use your slicer for the final numbers.
 
 ## Where the estimates show
 
@@ -35,7 +35,9 @@ The estimates use these values:
 
 - PLA, at 1.24 g/cm³
 - 1.75 mm filament, with about 330 m on a 1 kg spool
-- The values in Settings, in the <Ui k="settings.tabs.print" /> tab
+- The values in Settings, on the <Ui k="settings.tabs.print" /> tab
+
+Match the values in Settings to your own slicer and filament, and the numbers get closer to your real prints.
 
 | Setting                               | Default         | Effect on the estimate                                                              |
 | ------------------------------------- | --------------- | ----------------------------------------------------------------------------------- |
@@ -44,25 +46,25 @@ The estimates use these values:
 | <Ui k="settings.infillPercent" />     | 15%             | Time. Each percent above 15 adds 0.3%.                                              |
 | <Ui k="settings.nozzleSize" />        | 0.4 mm          | Time. A 0.6 mm nozzle takes about two thirds of the time.                           |
 
-The time model uses an average flow of 11 mm³ of plastic each second, for a 0.4 mm nozzle. It also adds 16 minutes for each print plate, for bed heating, the first layer and cooling. The bin list finds the number of plates from the total area of the bins and the size of your print bed.
+For time, the model uses an average flow of 11 mm³ of plastic each second, for a 0.4 mm nozzle. It also adds 16 minutes for each print plate, for bed heating, the first layer and cooling. The bin list finds the number of plates from the total area of the bins and the size of your print bed.
 
-The nozzle size changes only the time. The amount of plastic in a bin stays the same.
+The nozzle size changes only the time. A bin uses the same amount of plastic with any nozzle.
 
 ## What each estimate counts
 
-The bin list and the layout manifest know only the width, depth and height of each bin. They count a standard bin: the walls, the floor, the feet and the stacking lip. They do not count cutouts, dividers or compartments. For standard bins from 1 by 1 by 2 to 4 by 4 by 6, this model is within about 2% of the real volume.
+The bin list and the layout manifest know only the width, depth and height of each bin. So they count a standard bin: the walls, the floor, the feet and the stacking lip. They don't count cutouts, dividers or compartments. For standard bins from 1 by 1 by 2 to 4 by 4 by 6, this model is within about 2% of the real volume.
 
-The estimate in the bin designer uses the full design. It also counts the dividers, the label tabs and the scoops. Use it when a bin has many features.
+The estimate in the bin designer uses the full design, so it also counts the dividers, the label tabs and the scoops. Use it when a bin has many features.
 
-Some cases change the count:
+A few cases change the count:
 
 - A bin that is too large for the bed counts once for each piece.
-- Bins in the stash are not in the bin list.
+- Bins in the stash aren't in the bin list.
 - For an imported mesh design, the bin list uses the standard bin. The manifest uses the measured volume of the mesh when it has one.
 
 ## How far to trust the estimates
 
-The filament estimate is close for a standard bin. The Layout Tool tuned its model against the solids that its own generator builds. The time estimate is less exact. Print speed depends on your printer and your slicer profile, so treat the time as a rough guide.
+The filament estimate is close for a standard bin, because the Layout Tool tuned its model against the solids that its own generator builds. The time estimate is less exact. Print speed depends on your printer and your slicer profile, so treat the time as a rough guide.
 
 For the numbers that you plan with, slice the file. Your slicer knows your printer, your profile and the real shape.
 

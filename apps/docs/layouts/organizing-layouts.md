@@ -13,7 +13,7 @@ sources:
 
 # Organize your layouts
 
-Each drawer that you plan is one layout. The Gridfinity Layout Tool keeps all your layouts in a library in your browser, and it saves each change by itself. This page shows how to find, rename, copy and file your layouts, and how to go back to an earlier version.
+Plan one drawer, and soon you'll want to plan the whole workshop. Each drawer is one layout. The Gridfinity Layout Tool keeps all your layouts in a library in your browser, and it saves each change for you. Here's how to find, rename, copy and file your layouts, and how to go back to an earlier version when an idea doesn't work out.
 
 ## Rename and switch layouts
 
@@ -27,12 +27,21 @@ To open the layout manager, choose <Ui k="header.manageLayouts" /> in the menu, 
 
 <Screenshot id="layouts-organizing-manager" alt="The layout manager with the folder list on the left and layout cards in a grid on the right." spec="Layout editor on desktop. Library with about eight layouts and two folders, Garage and Kitchen, one with a subfolder. Press Ctrl+O. Select All layouts in the folder list so the cards show. Crop to the dialog." />
 
-The manager shows each layout with a small picture of its drawer. You can:
+The manager shows each layout with a small picture of its drawer, so you can spot the one you want. You can:
 
 - Click <Ui k="layouts.newLayout" /> to start an empty layout.
 - Type in the search field to find a layout by name.
-- Sort by <Ui k="layouts.sortRecent" />, <Ui k="layouts.sortName" />, <Ui k="layouts.sortSize" /> or <Ui k="layouts.sortBinCount" />.
+- Pick an order under <Ui k="layouts.sortBy" />. The table below shows the choices.
 - Click <Ui k="common.download" /> on a layout to save it as a file.
+
+| Order                           | Puts first                        |
+| ------------------------------- | --------------------------------- |
+| <Ui k="layouts.sortRecent" />   | The layouts that you changed last |
+| <Ui k="layouts.sortName" />     | Names in alphabetical order       |
+| <Ui k="layouts.sortSize" />     | The largest drawers, by area      |
+| <Ui k="layouts.sortBinCount" /> | The layouts with the most bins    |
+
+The open layout always comes first, whatever the order.
 
 The more actions menu of each layout has these items:
 
@@ -52,7 +61,7 @@ You can keep up to 500 layouts. The library always keeps at least one.
 
 ## Sort layouts into folders
 
-The folder list is on the left side of the manager. <Ui k="layouts.folders.all" /> shows every layout.
+Folders keep a big library tidy, for example one folder for the garage and one for the kitchen. The folder list is on the left side of the manager, and <Ui k="layouts.folders.all" /> shows every layout.
 
 1. Select the folder that the new folder goes in, or <Ui k="layouts.folders.all" /> for the top level.
 2. Click <Ui k="layouts.folders.newFolder" />.
@@ -60,22 +69,22 @@ The folder list is on the left side of the manager. <Ui k="layouts.folders.all" 
 
 To put a layout in a folder, open its more actions menu and choose <Ui k="layouts.folders.moveTo" />. Pick the folder, then click <Ui k="layouts.folders.move" />.
 
-To rename a folder, double-click its name. To delete a folder, click its delete button two times. Its layouts and folders move up one level, so you lose no layouts.
+To rename a folder, double-click its name. To delete a folder, click its delete button two times. Don't worry about what's inside: its layouts and folders move up one level, so you lose no layouts.
 
 With the Places feature in Labs, a folder can also be a place, an area or a unit. See [Places and Find](../settings/labs#places-and-find).
 
 ## Go back to an earlier version
 
-The Layout Tool saves a snapshot of the open layout every 2 minutes when it changes. On a computer, open the <Ui k="rightPanel.historyTab" /> tab in the right panel to see them. Each snapshot shows its age, a small picture, and the number of bins and layers.
+Tried an idea and don't like it? The Layout Tool saves a snapshot of the open layout every 2 minutes when it changes. On a computer, open the <Ui k="rightPanel.historyTab" /> tab in the right panel to see them. Each snapshot shows its age, a small picture, and the number of bins and layers.
 
-- Click <Ui k="snapshots.saveCheckpoint" /> to keep the current state with the date and time as its label.
+- Click <Ui k="snapshots.saveCheckpoint" /> to keep the current state, with the date and time as its label. Do this before a big change.
 - Click the name of a snapshot to give it a label.
 - The Layout Tool keeps the 10 newest snapshots without a label. It keeps labeled snapshots until you delete them.
 
 To go back, click <Ui k="snapshots.restore" /> on a snapshot. A dialog gives two choices:
 
 - <Ui k="snapshots.restore" /> replaces the current layout with the snapshot and clears the undo history.
-- <Ui k="snapshots.createCopy" /> opens the snapshot as a new layout and keeps the current one.
+- <Ui k="snapshots.createCopy" /> opens the snapshot as a new layout and keeps the current one. Pick this one if you're not sure.
 
 If the browser loses the data of a layout, the Layout Tool looks for it in its backup storage when it starts. If it finds the layout, it shows <Ui k="toast.layoutRecovered" />.
 

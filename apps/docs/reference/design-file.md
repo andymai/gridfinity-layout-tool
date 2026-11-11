@@ -12,27 +12,27 @@ sources:
 
 # Bin design file format
 
-A bin design file is a JSON text file that holds one design from the bin designer. It stores every setting of the bin, so the bin designer can open it again and change it. It is not a printable model: for a print, export an STL, 3MF or STEP file.
+A bin design file is a JSON text file that holds one design from the bin designer of the Gridfinity Layout Tool. It stores every setting of the bin, so you can open it again later and carry on with the design. It is not a printable model. To print, export an STL, 3MF or STEP file.
 
-Use a design file to back up a design, to send it to another person, or to move it to a different browser. The published schema is at [gridfinitylayouttool.com/schema](https://gridfinitylayouttool.com/schema).
+Use a design file to back up a design, send it to a friend, or move it to a different browser. The published schema is at [gridfinitylayouttool.com/schema](https://gridfinitylayouttool.com/schema).
 
 ## Export a design file
 
-You can export a design file from the export dialog of the bin designer, or from the menu of a design in <Ui k="binDesigner.savedDesigns" />. [Save and reuse designs](../designer/save-and-reuse#download-and-import-a-design-file) gives the steps.
+Export a design file from the export dialog of the bin designer, or from the menu of a design in <Ui k="binDesigner.savedDesigns" />. [Save and reuse designs](../designer/save-and-reuse#download-and-import-a-design-file) gives the steps.
 
-The file name is the design name. If the design has an imported STL shape, the file holds a copy of that shape, so the file is complete without other files.
+The file takes the name of the design. If the design has an imported STL shape, the file holds a copy of it. You don't need to send any other files.
 
 ::: info
 A Workshop build has no design file. The <Ui k="binDesigner.downloadJSON" /> item shows only for bin designs.
 :::
 
-The file always holds a standard base. If the design uses a low-profile base, the export removes it. The layout that you import the design into sets the base profile again.
+The file always holds a standard base. If the design uses a low-profile base, the export removes it, and the layout that you import the design into sets the base profile again.
 
 ## Import a design file
 
-In <Ui k="binDesigner.savedDesigns" />, click <Ui k="common.import" />, then drop the file or paste the JSON text into the <Ui k="binDesigner.designJson" /> box. Read the summary under <Ui k="binDesigner.readyToImportDesign" /> before you import. [Save and reuse designs](../designer/save-and-reuse#download-and-import-a-design-file) gives the full steps.
+In <Ui k="binDesigner.savedDesigns" />, click <Ui k="common.import" />. Then drop the file, or paste the JSON text into the <Ui k="binDesigner.designJson" /> box. Read the summary under <Ui k="binDesigner.readyToImportDesign" /> before you import. [Save and reuse designs](../designer/save-and-reuse#download-and-import-a-design-file) gives the full steps.
 
-The design goes into your saved designs and opens in the bin designer. The drop area also takes the STL file of a whole Gridfinity bin. That STL becomes a saved design with a fixed shape.
+The design goes into your saved designs and opens in the bin designer. The drop area also takes the STL file of a whole Gridfinity bin, which becomes a saved design with a fixed shape.
 
 <Screenshot id="reference-design-file-import" alt="The Import view of the saved designs dialog, with a pasted design and its import summary." spec="Bin designer. Open Saved designs and click Import. Paste the minimal design from this page into the Design JSON box so that the Ready to import design summary shows its name, dimensions and compartments. Crop to the dialog." />
 
@@ -49,7 +49,7 @@ The file wraps the bin settings in a small envelope:
 | `params`  | Yes      | All bin settings                                                     |
 | `_meta`   | No       | Where and when the file was exported                                 |
 
-The `params` object has nine required fields. The importer fills every other setting with its default value, so a file can leave them out.
+The `params` object has nine required fields. You can leave out every other setting, and the importer fills it with its default value.
 
 | Field           | Unit         | Range                                               | What it sets                                                        |
 | --------------- | ------------ | --------------------------------------------------- | ------------------------------------------------------------------- |
@@ -107,7 +107,7 @@ The importer applies more rules than the schema. It rejects a file when:
 - `style` is not one of the three styles
 - `cols` or `rows` is not a whole number from 1 to 12
 
-The importer lists each problem it finds. Correct them and import the file again.
+The importer lists each problem that it finds. Until you correct them, the import button stays off, so a file with problems never reaches your saved designs.
 
 ## Next steps
 

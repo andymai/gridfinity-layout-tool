@@ -14,11 +14,11 @@ sources:
 
 # Set up the drawer
 
-The drawer is the space that your layout fills. In the Gridfinity Layout Tool, you set the drawer size first and then place bins in it. This page shows how to size the grid, shape the drawer, and check that your bins fit under the drawer top.
+Every layout starts with the drawer. Get its size right in the Gridfinity Layout Tool, and the bins you plan will fit the real thing. Here's how to size the grid, match it to a measured drawer, shape an odd drawer, and check that your stacks clear the drawer top.
 
 ## Find the drawer settings
 
-On a computer, the drawer settings are in the <Ui k="sidebar.gridSize" /> group of the left panel.
+On a computer, open the <Ui k="sidebar.gridSize" /> group in the left panel.
 
 On a phone, tap <Ui k="mobile.settings" /> in the header. The same controls are in the <Ui k="settings.drawerDimensions" /> section.
 
@@ -26,76 +26,81 @@ On a phone, tap <Ui k="mobile.settings" /> in the header. The same controls are 
 
 ## Set the size in grid units
 
-The <Ui k="common.widthUnits" /> and <Ui k="common.depthUnits" /> steppers set the drawer size in grid units. One grid unit is 42 mm by default. Width goes from left to right. Depth goes from the front of the drawer to the back.
+Use the <Ui k="common.widthUnits" /> and <Ui k="common.depthUnits" /> steppers. They count in grid units, and one grid unit (one Gridfinity cell) is 42 mm by default. Width runs from left to right. Depth runs from the front of the drawer to the back.
 
 - Each step adds or removes one grid unit. With <Ui k="sidebar.halfBinMode" /> on, each step is half a unit.
-- You can type a value. A value that ends in .5 turns on half-grid mode.
+- You can also type a value. A value that ends in .5 turns on half-grid mode.
 - The largest drawer is 50 by 50 grid units.
 
-You can also resize the drawer on the canvas. Drag the right edge of the grid to add or remove columns. Drag the bottom edge for rows, and the bottom-right corner for both.
+Prefer to drag? Pull the right edge of the grid to add or remove columns. Pull the bottom edge for rows, or the bottom-right corner for both.
 
-When the drawer gets smaller, the bins that no longer fit move to the stash. See [Place and edit bins](./placing-bins#put-bins-in-the-stash).
+If the drawer gets smaller, you don't lose anything. Bins that no longer fit move to the stash, the holding area below the grid. See [Place and edit bins](./placing-bins#put-bins-in-the-stash).
 
-When the width or the depth ends in .5, <Ui k="sidebar.halfUnitEdgePosition" /> shows. Use it to put the half-unit column on the <Ui k="sidebar.left" /> or <Ui k="sidebar.right" />, and the half-unit row at the <Ui k="sidebar.bottom" /> or <Ui k="sidebar.top" />.
+When the width or the depth ends in .5, <Ui k="sidebar.halfUnitEdgePosition" /> appears. It picks where the half unit goes:
+
+- The half-unit column goes on the <Ui k="sidebar.left" /> or the <Ui k="sidebar.right" />.
+- The half-unit row goes at the <Ui k="sidebar.bottom" /> or the <Ui k="sidebar.top" />.
 
 ## Fit the grid to a measured drawer
 
-A real drawer is almost never an exact number of grid units. Enter its inside size, and the Layout Tool shows how well the grid fits.
+A real drawer is almost never an exact number of grid units. Measure the inside of yours, and the Layout Tool shows you how well the grid fits.
 
 1. Under the steppers, click <Ui k="drawerDims.addMeasured" />.
 2. Type the <Ui k="drawerDims.widthLabel" /> and the <Ui k="drawerDims.depthLabel" />.
-3. If you know it, type the <Ui k="drawerDims.heightLabel" />.
+3. Type the <Ui k="drawerDims.heightLabel" /> too, if you know it. The height check at the end of this page needs it.
 4. Press <kbd>Enter</kbd>.
 
 The line under the steppers then shows the grid size in millimeters and the free space around it. If the grid is larger than the drawer, the line turns into a warning that shows the overlap.
 
-The Layout Tool does not resize the grid by itself. When the largest grid that fits the drawer is different from your grid, a card shows that size and the free space that it leaves. Click <Ui k="drawerDims.suggestionUse" /> to apply it. If the better fit uses a half unit, the card tells you that it also turns on half-grid mode. To keep your grid, close the card with its X button. The card then stays closed until you enter a different measurement.
+Your measurement doesn't resize the grid on its own. Instead, when a different grid fits better, a card suggests the largest grid that fits and shows the room that it leaves. Click <Ui k="drawerDims.suggestionUse" /> to apply it. If the better fit needs a half unit, the card tells you that it also turns on half-grid mode.
 
-To remove the measurement, click <Ui k="drawerDims.clear" />, the small X next to the size.
+Happy with your own grid? Close the card with its X button. It stays closed until you enter a different measurement. To remove the measurement, click <Ui k="drawerDims.clear" />, the small X next to the size.
 
 ## Use the margin around the grid
 
-The space between the grid and the drawer walls is the margin. A baseplate fills it with padding. You set the padding in the baseplate generator, under <Ui k="baseplate.padding" />. See [Baseplate basics](../baseplates/basics#add-margins-around-the-grid).
+The gap between the grid and the drawer walls is the margin. A baseplate can fill it with padding, which you set under <Ui k="baseplate.padding" /> in the baseplate generator. See [Baseplate basics](../baseplates/basics#add-margins-around-the-grid).
 
-When the layout has padding, a dashed band around the grid shows the margin to scale. You cannot place bins in the band.
+When the layout has padding, a dashed band around the grid shows the margin to scale. You can't place bins in the band.
 
 ### Extend edge bins into the margin
 
-A bin that touches a padded edge can grow its walls into the margin.
+Want to use that space? A bin that touches a padded edge can grow its walls out into the margin.
 
 1. Select a bin that touches an edge of the grid.
 2. In the inspector, turn on <Ui k="inspector.extendToMargin" />.
 
-The bin must use a saved design. A bin without one shows <Ui k="inspector.extendToMargin.needsLink" /> under the toggle. Imported bins and Workshop designs keep their saved shape, so they cannot extend.
+This works only for a bin that uses a saved design. A bin without one shows <Ui k="inspector.extendToMargin.needsLink" /> under the toggle. Imported bins and Workshop designs keep their saved shape, so they can't extend.
 
-When the toggle is on, <Ui k="inspector.taper" /> angles the walls out from the base to the rim. This helps in a drawer with curved sides. Choose <Ui k="inspector.taper.chamfer" /> or <Ui k="inspector.taper.fillet" />, then set the <Ui k="inspector.taper.height" /> and the <Ui k="inspector.taper.flare" />.
+With the toggle on, <Ui k="inspector.taper" /> angles the walls out from the base to the rim. Use it in a drawer with curved sides. Pick <Ui k="inspector.taper.chamfer" /> or <Ui k="inspector.taper.fillet" /> for the profile. Then set the <Ui k="inspector.taper.height" /> and the <Ui k="inspector.taper.flare" />.
 
 ## Shape a drawer that is not a rectangle
 
+Does your drawer have a notch, a post or a cut corner? Remove the cells that it doesn't have.
+
 1. Under the steppers, turn on <Ui k="drawerShape.toggle" />. The <Ui k="drawerShape.editor.title" /> editor opens.
-2. Click or drag on cells to remove them from the drawer.
+2. Click or drag across cells to remove them from the drawer.
 3. Click <Ui k="drawerShape.editor.apply" />.
 
-Bins outside the new shape move to the stash. The <Ui k="drawerShape.actions" /> menu next to the toggle has two more ways to make a shape:
+Bins outside the new shape move to the stash. For more shape tools, open the <Ui k="drawerShape.actions" /> menu next to the toggle:
 
 - <Ui k="drawerShape.corners.open" /> cuts, rounds or notches each corner.
 - <Ui k="drawerShape.penOpen" /> lets you drag corners, curve edges and import an SVG or DXF outline.
 
-To go back to a rectangle, turn the toggle off, then click <Ui k="drawerShape.resetConfirm" />. Your bins stay where they are. For all the shape tools, see [Drawers that are not rectangles](../baseplates/odd-shaped-drawers).
+Changed your mind? Turn the toggle off, then click <Ui k="drawerShape.resetConfirm" /> to go back to a rectangle. Your bins stay where they are. For all the shape tools, see [Drawers that are not rectangles](../baseplates/odd-shaped-drawers).
 
 ## Check the drawer height
 
-<Ui k="sidebar.drawerHeight" /> is the height, in millimeters, that every stack of bins must stay under. Each step is one height unit, 7 mm by default. The Layout Tool does not let you place a bin that makes a stack taller than this height.
+A drawer that won't close is no fun. <Ui k="sidebar.drawerHeight" /> is the height, in millimeters, that every stack of bins must stay under. Each step is one height unit, 7 mm by default. The Layout Tool doesn't let you place a bin that makes a stack taller than this height.
 
-A printed bin is a little taller than its height units. Its stacking lip stands above the body, and a baseplate can add material under it. For a check against the real drawer, enter a measured height. The Layout Tool then measures the tallest stack in millimeters, with the lip, the baseplate and any clearance above the bins. It also sets <Ui k="sidebar.drawerHeight" /> from your measurement.
+A printed bin stands a little taller than its height units. Its stacking lip rises above the body, and a baseplate can add material under it. For a check against the real drawer, enter a measured height. The Layout Tool then measures the tallest stack in millimeters, with the lip, the baseplate and any clearance above the bins. It also sets <Ui k="sidebar.drawerHeight" /> from your measurement.
 
 The result shows under the measured size:
 
 - If the tallest stack fits, the line shows how many millimeters are free.
-- If it does not fit, a warning shows how far the stack stands above the drawer. The <Ui k="common.layers" /> panel and the inspector of each tall bin show the same warning.
-- Without a measured height, the line asks for one: <Ui k="drawerCeiling.measurePrompt" />.
+- If it doesn't fit, a warning shows how far the stack stands above the drawer. The <Ui k="common.layers" /> panel and the inspector of each tall bin show the same warning.
+- With no measured height, the line asks for one: <Ui k="drawerCeiling.measurePrompt" />.
 
-The 3D preview draws a flat plane at the <Ui k="drawerCeiling.planeLabel" />. A bin that goes through the plane is too tall for the drawer.
+The 3D preview also draws a flat plane at the <Ui k="drawerCeiling.planeLabel" />. Any bin that goes through the plane is too tall for the drawer.
 
 <Screenshot id="layouts-drawer-setup-ceiling" alt="The 3D preview with a plane at the measured drawer height and one stack that goes through it." spec="Layout editor on desktop with the 3D preview open. Layout with a 4 by 3 drawer, measured height 50 mm, and a 6u bin stacked on a 3u bin so the stack is too tall. Show the preview at an isometric angle with the plane label visible. Crop to the preview." />
 

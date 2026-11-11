@@ -12,7 +12,7 @@ sources:
 
 # Glossary
 
-This page explains the terms that you meet in the Gridfinity Layout Tool and in these docs, in alphabetical order. Each entry links to the page with the details.
+New to Gridfinity, or stuck on a word? Look it up here. This page explains the terms that you meet in the Gridfinity Layout Tool and in these docs, in alphabetical order. Each entry links to the page with the details.
 
 ## Numbers
 
@@ -48,7 +48,7 @@ This page explains the terms that you meet in the Gridfinity Layout Tool and in 
 
 **Compartment**: one open space inside a bin. Dividers separate the compartments. See [Compartments and dividers](../designer/compartments).
 
-**Connector**: the joint that locks two pieces of a split baseplate together. The styles are <Ui k="baseplate.connectorStyle.dovetail" />, <Ui k="baseplate.connectorStyle.puzzle" />, <Ui k="baseplate.connectorStyle.dovetailKey" /> and <Ui k="baseplate.connectorStyle.snapClip" />. See [Split for your print bed](../baseplates/splitting).
+**Connector**: the joint that locks two pieces of a split baseplate together. You can pick <Ui k="baseplate.connectorStyle.dovetail" /> or <Ui k="baseplate.connectorStyle.puzzle" />. <Ui k="baseplate.connectorStyle.dovetailKey" /> and <Ui k="baseplate.connectorStyle.snapClip" /> are the other two styles. See [Split for your print bed](../baseplates/splitting).
 
 **Cutout**: any shape that the bin designer cuts into a bin, for example the outline of a tool. You draw cutouts in the <Ui k="binDesigner.cutoutEditor.title" />. See [Cutout basics](../cutouts/basics).
 

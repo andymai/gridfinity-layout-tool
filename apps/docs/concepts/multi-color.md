@@ -4,6 +4,7 @@ description: 'Learn how color zones become filaments in a 3MF file, and what hap
 sources:
   - src/features/bin-designer/types/featureColors.ts
   - src/features/bin-designer/utils/materialMapping.ts
+  - src/features/bin-designer/utils/multiColorDesign.ts
   - src/features/generation/export/threemfExporter.ts
   - src/features/generation/export/threemfColor.ts
   - src/features/bin-designer/components/panel/ColorsSection/
@@ -13,7 +14,7 @@ sources:
 
 # Multi-color printing
 
-The bin designer can give each part of a bin its own filament color. The export writes a 3MF file in which each part carries its color. A printer with an AMS or another multi-material system then prints the bin in one job. This page explains color zones, what the 3MF file holds, and what happens when you print in one color.
+Got a printer with an AMS or another multi-material system? Give each part of a bin its own filament color: an orange lip, white label tabs, black text. The 3MF export carries those colors to your slicer, so the whole bin prints in one job. Here's how color zones work, what the 3MF file holds, and what happens when you print in one color.
 
 ## Color zones
 
@@ -35,7 +36,7 @@ The stacking lip can have more than one color, in up to 16 colored cells. See [S
 
 An accent band colors the top or the bottom of the body. It needs no stacking lip or feet, and it covers every zone under it except text.
 
-Cutouts can have their own colors too. Set the color in the <Ui k="binDesigner.cutouts.section.color" /> section of a cutout, and pick <Ui k="binDesigner.cutouts.color.floor" /> or <Ui k="binDesigner.cutouts.color.floorAndWalls" />. A colored cutout makes the design multi-color, even when the <Ui k="binDesigner.group.colors" /> switch is off.
+Cutouts and Bento compartments can have their own colors too. Open the <Ui k="binDesigner.cutouts.section.color" /> section of a cutout. There, pick <Ui k="binDesigner.cutouts.color.floor" /> or <Ui k="binDesigner.cutouts.color.floorAndWalls" />. A compartment in a <Ui k="binDesigner.interior.bento.title" /> bin has the same choices. A colored cutout or compartment makes the design multi-color, even when the <Ui k="binDesigner.group.colors" /> switch is off.
 
 <Screenshot id="concepts-multi-color-zones" alt="The Multi-color section of the bin designer with zone colors and a bin with a two-color stacking lip in the preview." spec="Bin designer, desktop. Bin 2 × 2 × 4u, stacking lip on, label tabs on with text Bolts, finger scoop on. Finishing group open at Multi-color, on. Body light grey, stacking lip split into 2 bands (orange top, grey bottom), label tab white, text black. Crop to the zone list and the preview." />
 
@@ -51,9 +52,9 @@ The export turns colors into filaments:
 
 In the export dialog, <Ui k="binDesigner.colors.slicerHandoff.show" /> lists the filaments with the numbers that the slicer shows.
 
-The file does not set the filament colors in your slicer. In the slicer, assign each filament to an AMS or MMU slot that holds the right color. [Map multi-color zones to filaments](../printing/slicers#map-multi-color-zones-to-filaments) gives the steps.
+The file doesn't set the filament colors in your slicer. In the slicer, assign each filament to an AMS or MMU slot that holds the right color. [Map multi-color zones to filaments](../printing/slicers#map-multi-color-zones-to-filaments) gives the steps.
 
-The file carries no slicer settings, so your own print profile stays in use. For this reason, Bambu Studio shows a notice that the file is not from Bambu Lab, and it loads only the geometry and the colors.
+The file carries no slicer settings, so your own print profile stays in use. For this reason, Bambu Studio shows a notice that the file is not from Bambu Lab, and it loads only the geometry and the colors. You can ignore that notice.
 
 ::: tip
 When a 3MF file holds several parts, the slicer can put them all on one plate. Use the arrange command of your slicer to spread them out.
@@ -61,20 +62,27 @@ When a 3MF file holds several parts, the slicer can put them all on one plate. U
 
 ## Print in one color
 
-A design with color zones still prints on a printer with one filament. These rules decide what the export does:
+Only one filament? A design with color zones still prints fine. These rules decide what the export writes:
 
-- When <Ui k="binDesigner.group.colors" /> is off, the preview shows one body color, and the 3MF file carries no color data.
-- When every zone has the body color, the design is single-color, and the 3MF file carries no color data.
 - STL and STEP files carry no colors. For a multi-color design, the export dialog turns off these formats and selects 3MF.
+- A colored cutout or a colored Bento compartment makes the design multi-color, whatever the <Ui k="binDesigner.group.colors" /> switch says.
+- With the switch off and nothing else colored, the preview shows one body color, and the 3MF file carries no color data.
+- With the switch on, the design is single-color only when every zone has the body color. Then the 3MF file carries no color data.
 - A split export prints each piece in one color.
 
-To print a multi-color design in one color, turn off <Ui k="binDesigner.group.colors" />, or use <Ui k="binDesigner.colors.matchAllToBody" />.
+To get a single-color file, and to use STL or STEP again, clear every color:
+
+1. For each colored cutout, set <Ui k="binDesigner.cutouts.section.color" /> to <Ui k="binDesigner.cutouts.color.off" />.
+2. In a Bento bin, set each colored compartment to <Ui k="binDesigner.cutouts.color.off" /> too.
+3. Turn off <Ui k="binDesigner.group.colors" />.
+
+<Ui k="binDesigner.colors.matchAllToBody" /> is only a partial shortcut. It sets the stacking lip, label tabs, feet, scoop and dividers to the body color. It leaves the text, the lid and the accent bands as they are, and it doesn't change cutout or compartment colors.
 
 ::: warning
 Do not use <Ui k="binDesigner.textMode.flat" /> text on a single-color print. Flat text is level with the surface, so it shows only in a second filament.
 :::
 
-You can also get two colors from a printer with one filament. Swappable label plates put the text depth on whole layers, so one filament change gives two-color labels.
+You can still get two colors from a printer with one filament. Swappable label plates put the text depth on whole layers, so one filament change gives two-color labels.
 
 ## Next steps
 

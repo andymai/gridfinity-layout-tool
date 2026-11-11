@@ -1,11 +1,11 @@
 ---
+description: 'Plan Gridfinity drawers, design custom bins and baseplates, and print them with the free Gridfinity Layout Tool.'
 layout: home
 title: Gridfinity Layout Tool Docs
-description: 'How to plan Gridfinity drawers, design custom bins and baseplates, and print them with the free Gridfinity Layout Tool.'
 hero:
   name: Gridfinity Layout Tool
   text: Plan the drawer. Design the bins. Print them.
-  tagline: Everything the Layout Tool can do, and how to do it.
+  tagline: These guides take you from a tape measure to a drawer of bins that fit what you own.
   actions:
     - theme: brand
       text: Plan your first drawer
@@ -16,21 +16,21 @@ hero:
       target: _self
 features:
   - title: Plan layouts
-    details: Measure a drawer, place bins on the grid, stack them in layers and get a print list.
+    details: Measure your drawer, drag bins onto the grid, stack them in layers, and get a print list of every bin.
     link: /layouts/drawer-setup
   - title: Design bins
-    details: Set the size, the compartments, the labels and the lid of a bin that fits what it holds.
+    details: Make a bin that fits what it holds, with the size, compartments, labels and lid that you want.
     link: /designer/size-and-shape
   - title: Cut pockets
-    details: Cut a pocket for each tool from a shape, a photo or a phone scan.
+    details: Give each tool its own pocket. Start from a shape, a photo or a phone scan.
     link: /cutouts/basics
   - title: Make baseplates
-    details: Add magnets or screws, and split a large plate to fit your print bed.
+    details: Add magnets or screws, and split a big plate into pieces that fit your print bed.
     link: /baseplates/basics
   - title: Print and export
-    details: Export STL, 3MF or STEP files, and set up your slicer for one or more colors.
+    details: Export STL, 3MF or STEP files, and set up your slicer for one color or several.
     link: /printing/file-formats
   - title: Share and sync
-    details: Share a layout, work on it together, and keep your designs on every device.
+    details: Send a layout to a friend, plan it together live, and keep your designs on every device.
     link: /sharing/share-links
 ---

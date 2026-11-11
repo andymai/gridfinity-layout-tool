@@ -12,13 +12,13 @@ sources:
 
 # Categories and colors
 
-A category is a named, colored group of bins, for example screws or kitchen tools. In the Gridfinity Layout Tool, categories make a full drawer easy to read at a glance. This page shows how to make categories, give them to bins, and where their colors show.
+A full drawer plan gets busy fast. Categories help: give every bin a named color, like screws or kitchen tools, and you can read the drawer at a glance. Here's how to make categories in the Gridfinity Layout Tool, give them to bins, and see where their colors show up.
 
 ## Find the categories
 
 On a computer, the categories are in the <Ui k="common.categories" /> group of the left panel. Each row shows the color, the name, and the number of bins in that category. On a phone, tap <Ui k="common.categories" /> in the bar at the bottom of the screen.
 
-A new layout starts with five categories: Coral, Sky, Green, Cloud and Charcoal. A layout can have 1 to 20 categories.
+A new layout starts with five categories: Coral, Sky, Green, Cloud and Charcoal. Rename them to suit your drawer. A layout can have 1 to 20 categories.
 
 <Screenshot id="layouts-categories-panel" alt="The Categories group with five categories, one open for editing with its name field and color palette." spec="Layout editor on desktop, left panel open. Layout with the five default categories and a few bins in Coral and Sky. Double-click the Sky name so its name field and color palette show. Crop to the Categories group." />
 
@@ -37,21 +37,20 @@ The inspector also has a <Ui k="common.category" /> field for the selected bin. 
 3. Click a color in the palette.
 4. Click outside the row to close it.
 
-To edit a category later, double-click its name or click <Ui k="categories.editCategory" />. To change only the color, click the color square and pick a new color. The palette has 14 colors.
+To edit a category later, double-click its name or click <Ui k="categories.editCategory" />. Only want a new color? Click the color square and pick one. The palette has 14 colors.
 
 ## Delete a category
 
-You can delete a category when no bin uses it. Move its bins to a different category first.
+You can delete a category when no bin uses it, so move its bins to a different category first.
 
-1. Hold the pointer over the category row.
-2. Click <Ui k="categories.deleteCategory" /> (the X).
-3. Click <Ui k="categories.confirmDelete.confirm" />.
+1. Hover over the category row and click <Ui k="categories.deleteCategory" /> (the X).
+2. Click <Ui k="categories.confirmDelete.confirm" />.
 
 If a bin still uses the category, a message tells you how many bins use it. A layout always keeps one category.
 
 ## Use the same categories in every layout
 
-Click <Ui k="categories.saveAsDefaults" /> in the group title. New layouts then start with your current categories. You can also see and change the defaults in Settings, on the <Ui k="settings.tabs.categories" /> tab, under <Ui k="settings.defaultCategories" />.
+Set up categories you like? Click <Ui k="categories.saveAsDefaults" /> in the group title, and new layouts start with your current categories. You can also see and change the defaults in Settings, on the <Ui k="settings.tabs.categories" /> tab, under <Ui k="settings.defaultCategories" />.
 
 ## What a category changes
 
@@ -59,15 +58,15 @@ Click <Ui k="categories.saveAsDefaults" /> in the group title. New layouts then 
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | Grid and stash                     | Fills each bin with the category color                                                                              |
 | 3D preview                         | Colors each bin                                                                                                     |
-| <Ui k="common.categories" /> group | Highlights the bins of a category on the grid when you hold the pointer over its row                                |
+| <Ui k="common.categories" /> group | Highlights the bins of a category on the grid when you hover over its row                                           |
 | Print list                         | Bins with the same size, height, label, category and design share one row with a count                              |
 | <Ui k="header.printLayout" /> view | <Ui k="print.sortOrder" /> can sort the bin list by category, and <Ui k="print.showCategoryColor" /> adds the color |
 
-The category color is for planning. It does not set the color of the printed bin. For bins in more than one filament color, see [Multi-color printing](../concepts/multi-color).
+The category color is for planning only. It doesn't set the filament color of the printed bin. For bins in more than one filament color, see [Multi-color printing](../concepts/multi-color).
 
 ### Tell categories apart without color
 
-If colors are hard for you to tell apart, open Settings and go to <Ui k="settings.tabs.accessibility" />. Turn on <Ui k="settings.categoryPatterns" />. Each category then gets its own pattern of lines, dots or grids on the canvas.
+If some colors are hard for you to tell apart, open Settings and go to <Ui k="settings.tabs.accessibility" />. Turn on <Ui k="settings.categoryPatterns" />. Each category then gets its own pattern of lines, dots or grids on the canvas.
 
 ## Next steps
 

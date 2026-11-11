@@ -13,7 +13,7 @@ sources:
 
 # Find bins that fit
 
-You do not have to design every bin yourself. The Gridfinity Layout Tool can show community designs that fit an empty area of your drawer. It can also suggest a bin size from a label. This page shows both tools.
+You don't have to design every bin yourself. Drag across an empty spot in your drawer, and the Gridfinity Layout Tool shows community designs that fit it. Not sure how big a bin should be? Type what it holds as its label, and the Layout Tool can suggest a size.
 
 ## Open the gap search
 
@@ -27,39 +27,36 @@ The control has the same name on every screen: <Ui k="toolbar.findBins" />.
 ## Pick an empty area
 
 1. Turn on <Ui k="toolbar.findBins" />.
-2. On the grid, drag across the empty cells that you want to fill.
-3. Release. The gallery opens on its community tab.
+2. Drag across the empty cells that you want to fill. When you let go, the gallery opens on its community tab.
 
-If your drag crosses a bin, the Layout Tool uses only the empty part. To stop without a search, press <kbd>Escape</kbd>. On a phone, tap the <Ui k="toolbar.findBins" /> button above the grid again.
+Your drag can cross a bin. The Layout Tool then uses only the empty part. To stop without a search, press <kbd>Escape</kbd>. On a phone, tap the <Ui k="toolbar.findBins" /> button above the grid again.
 
 ## Choose a design
 
 The gallery shows only the designs that fit the area. A design must fit the width and the depth of the area, turned or not. It must also fit the free height above the active layer. A design made for a different grid unit or height unit does not show, because it would print at the wrong size.
 
-A banner above the cards gives the size of the area. The Layout Tool sorts the cards by <Ui k="community.gallery.sort.bestFit" />, so the designs that fill the area best come first.
-
-To place a design:
+A banner above the cards gives the size of the area. The cards sort by <Ui k="community.gallery.sort.bestFit" />, so the designs that fill the area best come first.
 
 1. Click a card to open the design.
 2. Click <Ui k="community.detail.placeInLayout" />.
 
-The Layout Tool saves a copy of the design to your saved designs. Then it puts a bin that uses the copy in the area. If the design fits only when turned, the bin goes in turned.
+The Layout Tool saves a copy of the design to your saved designs. Then it puts a bin that uses the copy in the area. If the design fits only when turned, the bin goes in turned. Your copy is yours to change, so you can tweak it in the bin designer.
 
-If nothing fits, the gallery tells you. Select a larger area, or click <Ui k="community.gallery.clearFitsGap" /> to see all the designs. When you close the gallery, the search ends.
+Nothing fits? The gallery tells you. Select a larger area, or click <Ui k="community.gallery.clearFitsGap" /> to see all the designs. When you close the gallery, the search ends.
 
 ## Get a size from a label
 
-The inspector can suggest a size for a bin from its label. Use it when you know what goes in the bin, but not how large the bin must be.
+Know what goes in the bin, but not how big the bin must be? The inspector can suggest a size from the bin's label.
 
 1. Select a bin. On a phone, tap <Ui k="mobile.nav.bin" /> in the bar at the bottom of the screen to open the inspector.
 2. Type what the bin holds in the <Ui k="common.label" /> field, for example "screws".
-3. If a line with a size shows under the field, click <Ui k="inspector.sizeSuggestionApply" />.
+3. If a line with a size shows under the field, click <Ui k="inspector.sizeSuggestionApply" />. The bin changes to that size where it stands.
 
-The size gives the width, the depth and the height in units. When you apply it, the bin changes to that size where it stands.
+The suggestion gives the width, the depth and the height in units.
 
 The line shows only when the label matches a known size, and when that size is different from the current size. If the size does not fit where the bin is, the line shows <Ui k="inspector.sizeSuggestionNoFit" /> and has no apply button. A bin with a locked size cannot take the size. Click <Ui k="inspector.sizeSuggestionDismiss" /> (the X) to hide the line for that label.
 
-The Layout Tool finds the size on your device. Your label does not leave the browser for this suggestion.
+The Layout Tool finds the size on your device. Your label stays in your browser for this suggestion.
 
 ## Next steps
 

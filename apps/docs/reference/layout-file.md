@@ -12,28 +12,26 @@ sources:
 
 # Layout file format
 
-A layout file is a JSON text file that holds one planned drawer: the drawer size, the grid, the layers and every bin. It can also carry copies of the saved designs that its bins use. Use this page to edit a layout file by hand, to write one with a script, or to find why an import fails.
+A layout file is a plain JSON text file that holds one drawer that you planned in the Gridfinity Layout Tool. It has the drawer size, the grid, the layers and every bin. It can also carry copies of the saved designs that its bins use. Use this page to edit a layout file by hand, write one with a script, or find out why an import fails.
 
 The published schema and a short overview are at [gridfinitylayouttool.com/schema](https://gridfinitylayouttool.com/schema).
 
 ## Get a layout file
 
-The Layout Tool writes a layout file in two places:
+There are two ways to save one:
 
 - In the layout manager (<kbd>Ctrl</kbd>+<kbd>O</kbd>, or <kbd>Cmd</kbd>+<kbd>O</kbd> on a Mac), click <Ui k="common.download" /> on the row of a layout.
 - In the command palette, run <Ui k="commandPalette.downloadLayout" /> to save the layout that is open.
 
-Both files include a copy of each saved design that a bin in the layout uses. <Ui k="layouts.exportAll" /> in the layout manager saves every layout in one archive file.
+Both files include a copy of each saved design that a bin in the layout uses. To save every layout at once, click <Ui k="layouts.exportAll" /> in the layout manager. You get one archive file.
 
 ## Import a layout file
 
-1. Open the layout manager with <kbd>Ctrl</kbd>+<kbd>O</kbd>.
-2. Click <Ui k="common.import" />.
-3. Drop the file on the drop area, or paste the JSON text into the box below it.
-4. Read the summary under <Ui k="layouts.readyToImport" />.
-5. Click <Ui k="layouts.importLayout" />.
+1. Open the layout manager with <kbd>Ctrl</kbd>+<kbd>O</kbd>, and click <Ui k="common.import" />.
+2. Drop the file on the drop area, or paste the JSON text into the box below it.
+3. Read the summary under <Ui k="layouts.readyToImport" />, then click <Ui k="layouts.importLayout" />.
 
-The import adds a new layout to your library and opens it. The new name ends in "(imported)". Each design in the file goes into your saved designs, and the bins link to those copies. The import gives every layer, category and bin a new ID, so the IDs in a file only need to agree with each other.
+The import adds a new layout to your library and opens it, with "(imported)" at the end of its name. Each design in the file goes into your saved designs, and the bins link to those copies. The import gives every layer, category and bin a new ID, so the IDs in a file only need to agree with each other.
 
 <Screenshot id="reference-layout-file-import" alt="The Import view of the layout manager, with a pasted layout and the Ready to import summary." spec="Layout editor. Press Ctrl+O, click Import. Paste the minimal layout from this page into the JSON box so that the Ready to import summary shows the name, drawer size, layers and bins. Crop to the dialog." />
 
@@ -79,7 +77,7 @@ The full field list, with every baseplate and drawer outline field, is in the [l
 
 ## Avoid the traps
 
-These mistakes give a file that imports without an error but shows the wrong drawer.
+Watch out for these. Each one gives a file that imports without an error, but shows the wrong drawer.
 
 - **The grid origin is at the bottom left.** `x` grows to the right and `y` grows toward the back of the drawer. A bin at `"y": 0` sits at the front.
 - **The first layer is the bottom layer.** The app shows layers from the top down, but the file lists them from the bottom up.
@@ -124,15 +122,15 @@ This file holds a drawer 3 grid units wide and 2 deep, with one bin in the front
 
 ## Validate a file
 
-Add the `$schema` line from the example above to the top of your file. Most code editors then show completion and mark a wrong field or value while you type. The importer ignores this line.
+Add the `$schema` line from the example above to the top of your file. Most code editors then suggest field names and mark a wrong field or value while you type. The importer ignores this line.
 
-The schema cannot see how the parts fit together, so the importer applies more rules. The import fails when:
+The schema can't see how the parts fit together, so the importer applies a few more rules. The import fails when:
 
 - a bin `category` names no category in the file
 - a bin is outside the drawer, is taller than the drawer, or covers another bin on the same layer
 - a compartment or cell list in a design does not have one entry for each column and row
 
-Add bins one at a time and import after each change. A collision shows on the second bin of the two, which is often not the bin that you edited.
+Build up a file one bin at a time, and import it after each change. A collision shows on the second bin of the two, which is often not the bin that you edited.
 
 ::: tip
 If you work from a copy of the source code, run `pnpm run validate:json path/to/file.json`. It reports schema errors and import errors separately.

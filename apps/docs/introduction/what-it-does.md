@@ -13,11 +13,11 @@ sources:
 
 # What the Layout Tool does
 
-The Gridfinity Layout Tool helps you organize a drawer with 3D-printed Gridfinity bins. You plan the drawer, design the bins and the baseplate, and download the files for your slicer. This page shows the three tools, how they work together, and what you get at the end.
+Got a messy drawer and a 3D printer? The Gridfinity Layout Tool helps you turn one into a neat set of Gridfinity bins. You plan the drawer, design the bins and the plate under them, and download files that are ready for your slicer.
 
 ## Three tools for one drawer
 
-The tool switcher at the top left of each page has three tabs. Each tab opens one tool, and all three tools work on the same drawer.
+The tool switcher at the top left of each page has three tabs. Each tab opens one tool, and all three work on the same drawer.
 
 | Tab                                        | Tool                | What you do there                                                                                                      |
 | ------------------------------------------ | ------------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -27,23 +27,23 @@ The tool switcher at the top left of each page has three tabs. Each tab opens on
 
 <Screenshot id="introduction-what-it-does-tool-switcher" alt="The tool switcher with its three tabs at the top left of the layout editor header." spec="Layout editor on desktop at 1440 px wide, default empty layout, first tab active. Crop the left part of the header so that the three tool switcher tabs and the layout name show." />
 
-Each tool also has its own address:
+Each tool also has its own address, so you can bookmark the one you use most:
 
 - Layout editor: [gridfinitylayouttool.com](https://gridfinitylayouttool.com/)
 - Bin designer: [gridfinitylayouttool.com/designer](https://gridfinitylayouttool.com/designer)
 - Baseplate generator: [gridfinitylayouttool.com/baseplate](https://gridfinitylayouttool.com/baseplate)
 
-To go between the layout editor and the bin designer from the keyboard, press <kbd>Shift</kbd>+<kbd>D</kbd>.
+To jump between the layout editor and the bin designer from the keyboard, press <kbd>Shift</kbd>+<kbd>D</kbd>.
 
 ## How the tools work together
 
-The three tools share data, so you do not type the same size twice.
+The three tools share their data, so you never type the same size twice.
 
-**Linked bins.** A bin that you draw in the layout editor has a size, a height, a label and a category. It has no print file yet. To get one, you link the bin to a saved design from the bin designer. Select the bin, then click <Ui k="designLinking.inspector.createDesign" /> in the <Ui k="designLinking.inspector.linkedDesign" /> section of the right panel. The bin designer opens with a new design at the size of the bin, and the bin links to it. More than one bin can link to the same design.
+**Linked bins.** A bin that you draw in the layout editor starts as a plain box. It has a size, a height, a label and a category, but no print file yet. To get one, you link the bin to a saved design from the bin designer. Select the bin, then click <Ui k="designLinking.inspector.createDesign" /> in the right panel, under <Ui k="designLinking.inspector.linkedDesign" />. The bin designer opens with a new design at the size of the bin, and the bin links to it. Many bins can link to the same design.
 
-**The baseplate follows the drawer.** The baseplate generator reads the drawer size from your active layout. When you change the drawer in the layout editor, the plate changes too. To give the plate its own size, turn off <Ui k="baseplate.syncWithLayout" />.
+**The baseplate follows the drawer.** The baseplate generator reads the drawer size from your active layout. Change the drawer in the layout editor, and the plate changes too. To give the plate a size of its own, turn off <Ui k="baseplate.syncWithLayout" />.
 
-**One export for the whole drawer.** <Ui k="header.export" /> in the layout editor header downloads one ZIP file. The ZIP holds each linked bin and the baseplate. The export skips bins that have no linked design, and the dialog tells you how many it skipped.
+**One export for the whole drawer.** <Ui k="header.export" /> in the layout editor header downloads one ZIP file with each linked bin and the baseplate. The export skips bins that have no linked design, and the dialog tells you how many it skipped.
 
 ## What you get at the end
 
@@ -55,17 +55,17 @@ The three tools share data, so you do not type the same size twice.
 | The print list      | <Ui k="rightPanel.binList" /> in the right panel of the layout editor | Each bin size, how many you need, and estimates of filament, print time and cost.              |
 | A paper plan        | <Ui k="header.print" /> in the layout editor header                   | A drawing of the drawer with labels, a legend and the bin list, to print on paper.             |
 
-To paste the print list into a spreadsheet, click <Ui k="rightPanel.copyBinListAsTsv" /> (the copy icon in the list header).
+Want the print list in a spreadsheet? Click <Ui k="rightPanel.copyBinListAsTsv" /> (the copy icon in the list header), then paste.
 
 ## Free, in your browser, and offline
 
-The Layout Tool is free and open source. You do not need an account to use it.
+The Layout Tool is free and open source, and you don't need an account to use it.
 
-All three tools run in your web browser, and the 3D engine runs on your own computer. You do not install anything. Use a recent version of Chrome, Edge, Firefox or Safari.
+All three tools run in your web browser, and the 3D engine runs on your own computer. There's nothing to install. Use a recent version of Chrome, Edge, Firefox or Safari.
 
-Your browser keeps a copy of each tool that you open. After the first visit, the tool works without an internet connection. Some features need a connection: share links, sign-in and sync, and the [community gallery](https://gridfinitylayouttool.com/community).
+Your browser keeps a copy of each tool that you open. After your first visit, the tool works without an internet connection. A few features need a connection: share links, sign-in and sync, and the [community gallery](https://gridfinitylayouttool.com/community).
 
-The Layout Tool saves your work in your browser as you go. To use the same layouts and designs on more than one device, sign in. [Your data and privacy](./your-data) tells you what stays on your device and what goes to the server.
+Your work saves in your browser as you go, so you can close the tab and pick up later. To use the same layouts and designs on more than one device, sign in. [Your data and privacy](./your-data) tells you what stays on your device and what goes to the server.
 
 ## Next steps
 

@@ -14,15 +14,15 @@ sources:
 
 # Keyboard shortcuts
 
-This page lists the keyboard shortcuts in the Gridfinity Layout Tool, grouped by tool. Use it to find the key for a task that you do often. Each table gives the key for Windows and Linux, and the key for macOS.
+Learn the keys for the tasks that you do often, and you'll need the mouse less. This page lists the keyboard shortcuts in the Gridfinity Layout Tool, tool by tool. Each table gives the keys for Windows and Linux, and the keys for macOS.
 
 ::: tip
-Shortcuts do not work while the cursor is in a text field. Click an empty part of the canvas, then press the key again.
+Shortcuts don't work while the cursor is in a text field. If a key does nothing, click an empty part of the canvas and press it again.
 :::
 
 ## Open the shortcut list
 
-Press <kbd>?</kbd> or <kbd>/</kbd> in any tool to open the <Ui k="help.title" /> panel. The <Ui k="help.shortcuts" /> tab lists the main shortcuts, and the search field finds a shortcut by its name.
+Can't remember a key? Press <kbd>?</kbd> or <kbd>/</kbd> in any tool to open the <Ui k="help.title" /> panel. Its <Ui k="help.shortcuts" /> tab lists the main shortcuts, and the search field finds a shortcut by its name.
 
 <Screenshot id="reference-shortcuts-panel" alt="The Keyboard shortcuts panel open on the Shortcuts tab, with the General and Editing groups." spec="Layout editor with any layout open. Press ? to open the Keyboard shortcuts panel on the Shortcuts tab. The General and Editing groups must be visible. Crop to the panel." />
 

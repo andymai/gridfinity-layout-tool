@@ -12,34 +12,41 @@ sources:
 
 # Share a layout
 
-The Gridfinity Layout Tool can put a copy of a layout on its server and give you a link to it. Send the link to a person who helps you plan the drawer, or who wants to print the same bins. You decide if the people with the link can only view the layout or can also edit it.
+Want a second opinion on your drawer plan, or a friend who wants to print the same bins? Send them a share link. The Gridfinity Layout Tool puts a copy of your layout on its server. You decide if people with the link can only look, or can also edit with you.
 
 ## Make a share link
 
 1. Open the layout in the layout editor.
-2. Click <Ui k="share.button.shareLayout" /> in the header, beside the undo and redo buttons.
-3. In <Ui k="share.anyoneWithLinkCan" />, select <Ui k="share.anyoneWithLinkCanView" /> or <Ui k="share.anyoneWithLinkCanEdit" />.
-4. Click <Ui k="share.createShareLink" />.
+2. Click <Ui k="share.button.shareLayout" /> in the header, next to undo and redo.
+3. Under <Ui k="share.anyoneWithLinkCan" />, pick what the other person can do (see the table below).
+4. Click <Ui k="share.createShareLink" />. The link goes to your clipboard, ready to paste.
 
-The Layout Tool uploads the layout and copies the link to your clipboard. A check mark then shows on the share button, and its name changes to <Ui k="share.button.manageShare" />.
+| Pick                                   | The other person can                                                      |
+| -------------------------------------- | ------------------------------------------------------------------------- |
+| <Ui k="share.anyoneWithLinkCanView" /> | Look at the layout and save their own copy. Their changes stay with them. |
+| <Ui k="share.anyoneWithLinkCanEdit" /> | Edit the same layout with you, live.                                      |
+
+Not sure? Pick view. You can change it later.
+
+After you make the link, the share button gets a check mark and turns into <Ui k="share.button.manageShare" />.
 
 <Screenshot id="sharing-share-links-popover" alt="The share popover below the header share button, with the permission menu and the create link button." spec="Layout editor, desktop, a sample layout with about 10 bins on two layers. Click the share button in the header. Show the popover before you create a link, with the permission menu set to view. Crop to the header right side and the popover." />
 
-The command palette has the same controls. Run <Ui k="commandPalette.copyShareLink" /> to open them.
+Prefer the keyboard? Run <Ui k="commandPalette.copyShareLink" /> in the command palette to open the same controls.
 
 ::: info
-You must be online to make, change or delete a share link. You do not need an account.
+You must be online to make, change or delete a share link. You don't need an account.
 :::
 
 ## What the link holds
 
-The link holds the whole layout: the drawer, the layers, the categories, and the bins with their labels and notes. When a bin uses a saved design, a copy of the design goes with the layout. The person who opens the link gets their own copy of each design, so the linked bins look the same for them.
+The link carries the whole layout: the drawer, the layers, the categories, and the bins with their labels and notes. If a bin uses a saved design, a copy of that design goes along too. The person who opens the link gets their own copy of each design, so the linked bins look the same for them.
 
-When you change a layout that has a link, the Layout Tool updates the link a few seconds later. You do not have to share it again. A change to the stash alone does not start an update.
+You can still edit after you share. The Layout Tool updates the link a few seconds after each change, so you never have to share it again. A change to the stash alone doesn't start an update.
 
-A link stays until you delete it. Links do not expire. [Your data and privacy](../introduction/your-data#what-a-share-link-publishes) tells you who can see the copy.
+Links don't expire. A link stays until you delete it. [Your data and privacy](../introduction/your-data#what-a-share-link-publishes) explains who can see the copy.
 
-The server refuses a layout that is too large or that holds blocked text:
+The server turns away a layout that is too large or that holds blocked text:
 
 | Limit                   | Value                                                        |
 | ----------------------- | ------------------------------------------------------------ |
@@ -47,58 +54,57 @@ The server refuses a layout that is too large or that holds blocked text:
 | Bins in the layout      | 2,500                                                        |
 | Labels and notes        | No web addresses, and no character 11 or more times in a row |
 
-If the server refuses the text, the error message tells you to check the bin labels and notes.
+If the server refuses the text, the error message points you to the bin labels and notes.
 
 ## What the other person sees
 
-The link opens the layout editor with your layout. What happens next depends on the permission.
+The link opens the layout editor with your layout in it. What they can do next depends on the permission that you picked.
 
-**View only.** A banner at the top shows the name of the shared layout. The person can look at the layout and change it on their screen, but their changes do not go back to you. The banner has two buttons:
+**View only.** A banner at the top shows the name of the shared layout. They can look around and even change things on their screen, but their changes don't come back to you. The banner has two buttons:
 
-- <Ui k="share.banner.saveToMyLayouts" /> saves a copy in their own layouts, with "(imported)" after the name. The copy includes the changes they made.
-- <Ui k="share.banner.discardConfirm" /> closes the shared layout and opens their last layout again. The person loses their changes.
+- <Ui k="share.banner.saveToMyLayouts" /> keeps a copy in their own layouts, with "(imported)" after the name. The copy includes their changes.
+- <Ui k="share.banner.discardConfirm" /> closes the shared layout and opens their last layout again. They lose their changes.
 
-**Can edit.** The person joins a live session and edits the same layout as you. The banner does not show. See [Work together live](./live-collaboration).
+**Can edit.** They join a live session and edit the same layout as you, with no banner. See [Work together live](./live-collaboration).
 
-The person must be online to open the link.
+Either way, they must be online to open the link.
 
 <Screenshot id="sharing-share-links-banner" alt="The banner at the top of the layout editor for a view-only shared layout, with the save and discard buttons." spec="Open a view-only share link in a second browser profile with an empty library. Show the full width of the banner and the top of the grid below it. Crop to the top 250 px of the window." />
 
 ## Change or delete a link
 
-Click <Ui k="share.button.manageShare" /> in the header to open the link controls.
+Click <Ui k="share.button.manageShare" /> in the header to get the link controls back.
 
-| To do this                 | Do this                                                                                       |
-| -------------------------- | --------------------------------------------------------------------------------------------- |
-| Copy the link again        | Click <Ui k="common.copy" />.                                                                 |
-| Change who can edit        | Select a new value in <Ui k="share.anyoneWithLinkCan" />. A message lets you undo the change. |
-| Stop the link from working | Click <Ui k="share.deleteShareLink" />, then <Ui k="common.delete" />.                        |
+| To do this                 | Do this                                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------------------- |
+| Copy the link again        | Click <Ui k="common.copy" />.                                                               |
+| Change who can edit        | Pick a new value in <Ui k="share.anyoneWithLinkCan" />. A message lets you undo the change. |
+| Stop the link from working | Click <Ui k="share.deleteShareLink" />, then <Ui k="common.delete" />.                      |
 
-When you change an edit link to view only, the live session ends. A deleted link stops working for every person who has it.
+Switch an edit link to view only, and the live session ends. Delete a link, and it stops working for everyone who has it.
 
 ::: info
-Only the browser that made a link can change or delete it. A share link is not part of your account, and it does not sync to your other devices.
+Only the browser that made a link can change or delete it. A share link isn't part of your account, so it doesn't sync to your other devices.
 :::
 
 ## Share without the server
 
-The layout manager has three more ways to send a layout. These ways do not put a copy on the server.
+Rather not put a copy on the server? The layout manager has three other ways to send a layout.
 
 1. Open the layout manager with <kbd>Ctrl</kbd>+<kbd>O</kbd> (<kbd>Cmd</kbd>+<kbd>O</kbd> on a Mac).
-2. Open the actions menu on the layout.
-3. Click <Ui k="share.copyLink" />.
+2. Open the actions menu on the layout, and click <Ui k="share.copyLink" />.
 
 The <Ui k="share.title" /> dialog opens with three tabs:
 
 | Tab                        | What you get                                                                                                                                  |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| <Ui k="share.tabs.link" /> | A link that holds the whole layout in the address. No server is necessary. Very large layouts make long links that some browsers do not open. |
+| <Ui k="share.tabs.link" /> | A link that carries the whole layout in the address itself, with no server. Very large layouts make long links that some browsers don't open. |
 | <Ui k="share.tabs.file" /> | <Ui k="share.file.download" /> saves the layout as a JSON file. The other person imports it in the layout manager.                            |
-| <Ui k="share.tabs.json" /> | <Ui k="share.json.copy" /> copies the layout data to the clipboard.                                                                           |
+| <Ui k="share.tabs.json" /> | <Ui k="share.json.copy" /> copies the layout data to your clipboard.                                                                          |
 
 ## Share one bin design
 
-To send one bin design, send its design file. The file holds the editable design, not a printable model. The other person imports it in the bin designer. [Save and reuse designs](../designer/save-and-reuse#download-and-import-a-design-file) shows how to download and import the file. To share a design with every maker, publish it in [the community gallery](./community).
+Want to send just one bin? Send its design file. It holds the editable design, not a printable model, and the other person imports it in the bin designer. [Save and reuse designs](../designer/save-and-reuse#download-and-import-a-design-file) shows how to download and import the file. To share a design with every maker, publish it in [the community gallery](./community).
 
 ## Next steps
 
