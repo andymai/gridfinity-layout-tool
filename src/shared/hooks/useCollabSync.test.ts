@@ -675,6 +675,20 @@ describe('useCollabSync', () => {
       expect(mockUpdateRemoteLayout).toHaveBeenLastCalledWith(ownEdit);
     });
 
+    it('takes a room change that lands with a local action that left the layout as it was', async () => {
+      const start = createTestLayout([createBinOnGrid('a')]);
+      const room = await joinedRoomWith(start);
+      const theirs = createTestLayout([createBinOnGrid('a'), createBinOnGrid('their-c')]);
+      useLayoutStore.getState().setName(start.name);
+      expect(useLayoutStore.getState().layout).toBe(start);
+      expect(useLayoutStore.getState().lastEditSource).toBe('local');
+
+      room.setRoom(theirs);
+
+      expect(ids()).toEqual(['a', 'their-c']);
+      expect(mockUpdateRemoteLayout).not.toHaveBeenCalled();
+    });
+
     it("adds no entry to this browser's undo history for an imported edit", async () => {
       const room = await joinedRoomWith(createTestLayout([createBinOnGrid('a')]));
       const ownEdit = createTestLayout([createBinOnGrid('a'), createBinOnGrid('own-b')]);

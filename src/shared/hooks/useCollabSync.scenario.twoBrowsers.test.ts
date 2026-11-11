@@ -135,4 +135,17 @@ describe('two browsers in one room', () => {
       ['a', 'y'],
     ]).toContainEqual(inRoom);
   });
+
+  it("keep one browser's edit when the other submits its layout name unchanged at that moment", async () => {
+    const [first, second] = await twoBrowsersInRoom();
+
+    act(() => {
+      addBin(second, 'y');
+      const { setName, layout } = first.store.useLayoutStore.getState();
+      setName(layout.name);
+    });
+
+    const expected = ['a', 'y'];
+    expect(layoutsOf(first, second)).toEqual([expected, expected, expected]);
+  });
 });

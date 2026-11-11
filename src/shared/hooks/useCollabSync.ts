@@ -198,8 +198,13 @@ export function useCollabSync(copySave?: RoomLinkStamp): void {
   // Effect: Local → Remote sync
   // When local layout changes, push to Liveblocks
   useEffect(() => {
+    // The remote effect runs first in a commit and can take a room change that
+    // replaces this render's layout. Read the store as it is now, so a local
+    // action that left the layout unchanged never pushes the replaced layout.
+    const { layout: currentLayout, lastEditSource: currentEditSource } = useLayoutStore.getState();
+
     // Only sync local edits
-    if (lastEditSource !== 'local') {
+    if (currentEditSource !== 'local') {
       return;
     }
 
@@ -211,15 +216,15 @@ export function useCollabSync(copySave?: RoomLinkStamp): void {
     // Skip if this is the same layout we just received
     if (
       lastSyncedLayoutRef.current &&
-      JSON.stringify(localLayout) === JSON.stringify(lastSyncedLayoutRef.current)
+      JSON.stringify(currentLayout) === JSON.stringify(lastSyncedLayoutRef.current)
     ) {
       return;
     }
 
     // Push local changes to Liveblocks
-    writeRefusedRef.current = !updateRemoteLayout(localLayout);
+    writeRefusedRef.current = !updateRemoteLayout(currentLayout);
     if (!writeRefusedRef.current) {
-      lastSyncedLayoutRef.current = localLayout;
+      lastSyncedLayoutRef.current = currentLayout;
       return;
     }
     // The remote effect runs first in a commit, so a room update that landed
