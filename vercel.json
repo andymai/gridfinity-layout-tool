@@ -478,6 +478,15 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
+    },
+    {
+      "source": "/docs/assets/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ],
   "rewrites": [
@@ -532,6 +541,19 @@
     {
       "source": "/scan/:token([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})",
       "destination": "/"
+    },
+    {
+      "source": "/docs",
+      "destination": "/docs/index.html"
+    },
+    {
+      "source": "/docs/:path((?!assets/).+)",
+      "destination": "/docs/:path.html"
+    },
+    {
+      "source": "/docs/:path*",
+      "destination": "/docs/404.html",
+      "statusCode": 404
     }
   ]
 }

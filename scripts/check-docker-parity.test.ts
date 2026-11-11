@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { pathToRegexp } from 'path-to-regexp';
 import { describe, expect, it } from 'vitest';
 import { ErrorCode } from '../api/lib/shared';
-import { CONTENT_LOCALES, CONTENT_SLUGS } from './contentRoutes';
+import { CONTENT_LOCALES, CONTENT_SLUGS, DOCS_PREFIX } from './contentRoutes';
 
 const ROOT = join(import.meta.dirname, '..');
 const read = (rel: string): string => readFileSync(join(ROOT, rel), 'utf8');
@@ -18,7 +18,7 @@ interface VercelHeaderEntry {
 }
 interface VercelConfig {
   redirects?: (VercelRoute & { permanent?: boolean })[];
-  rewrites?: VercelRoute[];
+  rewrites?: (VercelRoute & { statusCode?: number })[];
   headers?: VercelHeaderEntry[];
 }
 
@@ -137,6 +137,7 @@ function evalMap(rows: MapRow[], input: string): string {
 function sampleFinalUri(source: string): string {
   if (source === '/(.*)') return '/index.html';
   if (source === '/assets/:path*') return '/assets/main-abc123.js';
+  if (source === '/docs/assets/:path*') return '/docs/assets/app.abc123.js';
   if (source === '/content.:hash.css') return '/content.abc123.css';
   if (source === '/workbox-:hash.js') return '/workbox-abc123.js';
   const locale = /^\/([A-Za-z-]+)\/:path\(\(\?!api\/\)\.\*\)$/.exec(source);
@@ -180,6 +181,12 @@ const SAMPLE_PATHS = [
   '/assets/main-abc.js',
   '/api/share',
   '/does-not-exist',
+  '/docs',
+  '/docs/',
+  '/docs/introduction/what-it-does',
+  '/docs/assets/app.abc.js',
+  '/docs/no/such/page',
+  '/docsx',
 ];
 
 describe('docker/nginx.conf mirrors vercel.json', () => {
@@ -279,6 +286,45 @@ describe('docker/nginx.conf mirrors vercel.json', () => {
           `|${slug}`.replace(/^\|what-is-gridfinity$/, 'what-is-gridfinity')
         );
       for (const locale of CONTENT_LOCALES) expect(localizedBlock?.text).toContain(locale);
+    });
+  });
+
+  describe('docs', () => {
+    const docsRewrites = rewrites.filter(
+      (r) => r.source === DOCS_PREFIX || r.source.startsWith(`${DOCS_PREFIX}/`)
+    );
+    const pageRewrite = docsRewrites.find((r) => r.source.startsWith(`${DOCS_PREFIX}/:path(`));
+    const notFoundRewrite = docsRewrites.find((r) => r.statusCode === 404);
+    const block = marked.find((m) => m.sources.includes(DOCS_PREFIX));
+
+    it('serves them under the base the VitePress build uses', () => {
+      expect(read('apps/docs/.vitepress/config.ts')).toContain(`const BASE = '${DOCS_PREFIX}/';`);
+      expect(block).toBeDefined();
+      expect(docsRewrites.every((r) => r.destination.startsWith(`${DOCS_PREFIX}/`))).toBe(true);
+    });
+
+    it('serves a page by its clean URL from its .html file', () => {
+      expect(pageRewrite?.destination).toBe(`${DOCS_PREFIX}/:path.html`);
+      expect(block?.text).toContain('try_files $uri $uri.html $uri/index.html =404;');
+    });
+
+    it('answers an unknown docs path with the docs 404 page and a 404 status', () => {
+      expect(notFoundRewrite?.destination).toBe(`${DOCS_PREFIX}/404.html`);
+      // A clean-URL rewrite whose .html is missing falls through to the next
+      // rewrite, so the 404 rule has to come after it.
+      expect(docsRewrites.at(-1)).toBe(notFoundRewrite);
+      expect(block?.text).toContain(`error_page 404 ${DOCS_PREFIX}/404.html;`);
+    });
+
+    it('lets docs HTML revalidate on both hosts', () => {
+      const page = `${DOCS_PREFIX}/introduction/what-it-does`;
+      const cacheRules = headerEntries.filter(
+        (h) => h.headers.some((x) => x.key === 'Cache-Control') && vercelRegex(h.source).test(page)
+      );
+      expect(cacheRules.map((h) => h.source)).toEqual([]);
+      expect(evalMap(mapRows('cc_by_uri'), `${page}.html`)).toBe(
+        'public, max-age=0, must-revalidate'
+      );
     });
   });
 

@@ -36,10 +36,10 @@ From left to right, the layout editor header has these controls:
 | <Ui k="header.sendFeedback" />      | Opens the issue tracker to report a problem.                                                          |
 | <Ui k="header.help" />              | Opens help and the list of keyboard shortcuts.                                                        |
 | <Ui k="sidebar.settings" />         | Opens the settings window (the gear icon).                                                            |
-| <Ui k="header.moreLinks" />         | Links to the source code and the Gridfinity community.                                                |
+| <Ui k="header.moreLinks" />         | Links to these docs, the source code and the Gridfinity community.                                    |
 | <Ui k="header.supportOnKofi" />     | Opens the page to support the project.                                                                |
 
-On narrow screens, some buttons show only an icon. Hover over an icon to see its name.
+On narrow screens, some buttons show only an icon. Hover over an icon to see its name. On a very wide screen, the header also shows <Ui k="header.docs" />, which opens these docs.
 
 ## The left sidebar
 
@@ -84,7 +84,7 @@ Prefer the keyboard? The command palette finds and runs any command in the layou
 
 ## Help and search
 
-Click <Ui k="header.help" /> in the header, or press <kbd>?</kbd> or <kbd>/</kbd>. The help window has two tabs: <Ui k="help.shortcuts" /> and <Ui k="help.tipsInfo" />.
+Click <Ui k="header.help" /> in the header, or press <kbd>?</kbd> or <kbd>/</kbd>. The help window has two tabs: <Ui k="help.shortcuts" /> and <Ui k="help.tipsInfo" />. <Ui k="help.readDocs" />, at the right of the search field, opens these docs in a new tab.
 
 Can't find a control? Type in the search field at the top of the window. The search finds shortcuts and features for the tool that you have open. A result for a control has a <Ui k="help.goTo" /> button, which takes you straight to it. In the layout editor, if no result matches, click <Ui k="help.openCommandPaletteWithQuery" />.
 

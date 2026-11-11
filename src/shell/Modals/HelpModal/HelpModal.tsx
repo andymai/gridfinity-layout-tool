@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { useTranslation } from '@/i18n';
 import { Button, Dialog, SearchInput, SegmentedControl } from '@/design-system';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
+import { DocsLink } from '@/shared/components/DocsLink';
 import { ShortcutBadge } from '@/shared/components/ShortcutBadge';
 import { SHORTCUT_CATEGORIES } from './helpModalShortcutData';
 import {
@@ -113,6 +114,7 @@ function HelpContent({ onClose, isTablet, searchRef }: HelpContentProps) {
           placeholder={t('help.searchPlaceholder')}
           wrapperClassName="min-w-0 max-w-xs flex-1"
         />
+        <DocsLink label={t('help.readDocs')} className="ml-auto shrink-0" />
       </Dialog.SubHeader>
       <Dialog.Body className="py-6 scrollbar-thin">
         {isSearching ? (
