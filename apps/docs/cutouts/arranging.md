@@ -10,6 +10,9 @@ sources:
   - src/features/bin-designer/components/panel/CutoutsSection/autoArrange.ts
   - src/features/bin-designer/utils/cutoutHierarchy.ts
   - src/features/bin-designer/components/panel/CutoutsSection/handlers/rulerHandler.ts
+  - src/features/bin-designer/components/panel/CutoutsSection/cutoutSectionVisibility.ts
+  - src/features/bin-designer/components/panel/CutoutsSection/PathfinderControls.tsx
+  - src/shared/utils/cutoutArray.ts
 ---
 
 # Arrange cutouts
@@ -26,7 +29,7 @@ The <Ui k="binDesigner.shapeList.tabShapes" /> tab lists every cutout. Use it to
 
 ## Repeat a cutout
 
-A repeat makes many copies from one cutout. Each copy follows the first one: its shape, size, depth and fit. Change the first, and every copy changes with it.
+A **repeat** makes many copies from one cutout. Each copy follows the first one: its shape, size, depth and fit. Change the first, and every copy changes with it.
 
 1. Select one cutout and open <Ui k="binDesigner.cutouts.section.repeat" />.
 2. Click a chip under <Ui k="binDesigner.cutouts.repeat.presetLabel" />, or click <Ui k="binDesigner.cutouts.repeat.create" />.
@@ -38,7 +41,7 @@ A repeat makes many copies from one cutout. Each copy follows the first one: its
 | <Ui k="binDesigner.cutouts.repeat.mode.staggered" /> | The same as a grid, with every other row moved over.                                                                                                                                                  |
 | <Ui k="binDesigner.cutouts.repeat.mode.radial" />    | <Ui k="binDesigner.cutouts.repeat.count" />, <Ui k="binDesigner.cutouts.repeat.radius" />, <Ui k="binDesigner.cutouts.repeat.startAngle" /> and <Ui k="binDesigner.cutouts.repeat.rotateToCenter" />. |
 
-The pitch is the distance from the center of one copy to the center of the next. A repeat has up to 50 columns or rows, and up to 400 copies. Pen shapes can't repeat.
+The **pitch** is the distance from the center of one copy to the center of the next. A repeat has up to 50 columns or rows, and up to 400 copies. Pen shapes can't repeat.
 
 Changed your mind? <Ui k="binDesigner.cutouts.repeat.flatten" /> turns the copies into separate cutouts that you can move one by one. <Ui k="binDesigner.cutouts.repeat.remove" /> goes back to one cutout.
 
@@ -126,6 +129,31 @@ When a cutout goes past the edge of the bin, a warning shows how many cutouts th
 Click <Ui k="binDesigner.cutouts.rulerTool" /> (<kbd>M</kbd>) and drag between two points. For a quick measurement with the select tool, hold <kbd>Shift</kbd> and drag. The ruler snaps to corners, edge midpoints, centers and edges, and to the grid when snap is on. The rulers on the top and left edges of the board show millimeters. To measure the 3D model, use <Ui k="binDesigner.measure.short" /> in the preview.
 
 <Screenshot id="cutouts-arranging-ruler" alt="Pressing M for the ruler tool, then dragging from the edge of one cutout to the edge of the next. The ruler snaps to both edges and reads 8.0 mm." spec="Cut editor with two rectangles 8 mm apart, zoomed in on the gap. Press M and drag from the right edge of one rectangle to the left edge of the other so the snap ticks and the distance label show. Crop to the board with the top and left rulers." />
+
+## When it goes wrong
+
+### A repeat won't take another row or column
+
+Move the cutout away from the edge that it is near, or lower the pitch. Then click <Ui k="binDesigner.cutouts.repeat.fillBin" /> again, or type the count.
+
+The copies go toward the far edges of the bin. A cutout near a far edge leaves no room for the next copy, so the count stops, and a note under the settings says so.
+
+### You can't repeat a cutout
+
+<Ui k="binDesigner.cutouts.section.repeat" /> then shows a message in place of its settings. The message gives the reason. Here's what each one asks of you:
+
+| What the cutout is                            | What to do                                                        |
+| --------------------------------------------- | ----------------------------------------------------------------- |
+| One part of a group                           | Click the group on the board to select all of it, then repeat it. |
+| A group with a repeat inside it               | Remove that inner repeat first.                                   |
+| A pen shape, a scan or a trace                | Leave it as one cutout. These outlines can't repeat.              |
+| A group that holds a pen shape, scan or trace | The group can't repeat either.                                    |
+
+### A group cuts nothing
+
+Pick <Ui k="binDesigner.cutouts.pathfinder.union" /> under <Ui k="binDesigner.cutouts.pathfinder.title" />, or move the shapes until they overlap.
+
+The other three ways to combine shapes can leave no area to cut. <Ui k="binDesigner.cutouts.pathfinder.intersect" /> cuts only where all shapes overlap, so shapes apart from each other leave nothing. A message tells you when the result is empty.
 
 ## Next steps
 

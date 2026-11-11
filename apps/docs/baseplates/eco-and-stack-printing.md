@@ -13,7 +13,7 @@ sources:
 
 # Eco plates and stack printing
 
-A drawer full of baseplates takes a lot of filament and a lot of print jobs. Two options cut both down. An eco plate leaves out plastic that the bins don't need. Stack printing builds a tower of plates, so one print job makes many plates.
+A drawer full of baseplates takes a lot of filament and a lot of print jobs. Two options cut both down. An **eco plate** leaves out plastic that the bins don't need. **Stack printing** builds a tower of plates, so one print job makes many plates.
 
 ## Save filament with an eco plate
 
@@ -88,6 +88,32 @@ A standard plate is 4.65 mm tall. These settings change the height:
 | <Ui k="baseplate.stackPrint.enable" />  | 0.4 mm lower                                                                                 |
 
 To keep a screw-down plate at the standard height, use a <Ui k="baseplate.screwHoles.headStyle.countersink" /> with a head diameter of 6 mm. The screws then fit in the solid corners where four pockets meet. See [Magnets and screws](./magnets-and-screws#keep-the-plate-at-standard-height).
+
+## When it goes wrong
+
+A message in the stack settings tells you when a stack can't form. Here's what each one means.
+
+### The message says there's nothing to stack
+
+Raise <Ui k="baseplate.stackPrint.copies.label" /> to 2 or more. The stack then holds copies of your plate.
+
+Your baseplate fits the bed in one piece, so one set holds only one plate.
+
+### Each plate prints as its own file
+
+Change the margins, or set a larger <Ui k="baseplate.printBedSize" /> if your printer has the room.
+
+A plate stacks only on a plate that holds it safely. With the margins and outlines that you have, no piece can rest on another one.
+
+### Only one plate fits in each stack, or a plate won't print
+
+Set <Ui k="baseplate.maxPrintHeight" /> to the real Z height of your printer. If that is already right, make the <Ui k="baseplate.stackPrint.gap.label" /> smaller.
+
+The stack can't be taller than the build height. When the limit is low, each tower holds only one plate. When a single plate is taller than the limit, the message tells you that it won't print.
+
+### Stacked plates stick together
+
+See [Stacked plates stick together](../printing/troubleshooting#stacked-plates-stick-together). Print the stack fit test before the next full tower.
 
 ## Next steps
 

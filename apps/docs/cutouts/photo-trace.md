@@ -60,7 +60,7 @@ When the outlines look right, click the add button to put the tools in the bin. 
 
 ## Keep holes as islands
 
-Some tools have holes, such as the ring of a spanner. Turn on <Ui k="scan.review.keepHoles" /> to keep plastic in each hole. This plastic is an island: it stays at full height inside the cutout, and the tool sits around it. A tool that lies inside a hole comes in as a separate tool.
+Some tools have holes, such as the ring of a spanner. Turn on <Ui k="scan.review.keepHoles" /> to keep plastic in each hole. This plastic is an **island**: it stays at full height inside the cutout, and the tool sits around it. A tool that lies inside a hole comes in as a separate tool.
 
 <Ui k="scan.review.keepHoles" /> is off at the start, because a shiny reflection can look like a hole.
 
@@ -100,6 +100,32 @@ Need the outline for something other than a bin? In <Ui k="binDesigner.cutouts.t
 | <Ui k="scan.export.format.stl" />                                      | A solid to subtract from a model in your CAD app. Set its <Ui k="scan.export.thickness" />, which starts at 10 mm. |
 
 The outlines are at true size. Tick the clearance box to add 0.4 mm on each side, the same room that a cutout leaves around the tool. On a phone, <Ui k="scan.export.button.download" /> on the review screen does the same.
+
+## When it goes wrong
+
+### The add button stays gray
+
+Set the scale first. Click <Ui k="binDesigner.cutouts.traceView.scale.drawRuler" /> and mark something of known length. Or click <Ui k="binDesigner.cutouts.traceView.scale.markPaper" /> and mark the four corners of the sheet.
+
+Without a size reference, the Layout Tool can't tell how big the tools are. So it adds nothing to the bin, and a note beside the buttons asks you to set the scale.
+
+### Tools are missing, or a shadow counts as a tool
+
+Click each missing tool in the photo. To leave out the clutter, click <Ui k="binDesigner.cutouts.traceView.region.draw" /> and drag a box around the tools. Then move <Ui k="binDesigner.cutouts.traceView.sensitivity" /> up for faint tools, or down to drop shadows and specks.
+
+The Layout Tool finds a tool by how its color differs from the surface. A tool in a color close to the surface can stay hidden, and a dark shadow can look like a tool.
+
+### The paper corners don't make a sheet
+
+Drag each corner point onto a corner of the paper. Does the message say that the long and short sides look alike? Then take the photo again from straight above, or draw a ruler.
+
+The four corners set the scale from the known size of an A4 or US Letter sheet. At a steep angle, the long side and the short side look almost the same length.
+
+### An outline setting has no effect
+
+Move the slider back a little, or click <Ui k="binDesigner.cutouts.outline.reset" />.
+
+Some values don't leave one clean pocket, for example when the new outline would cross itself. The Layout Tool then keeps the outline as it was, and a message tells you so.
 
 ## Next steps
 

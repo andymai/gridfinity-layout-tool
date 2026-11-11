@@ -110,6 +110,32 @@ The local copies on this device stay too. <Ui k="settings.storage.clearAllData" 
 
 Sign-in and sync need the server of the Layout Tool. A self-hosted copy has no sign-in, and its sign-in buttons open a short page with a link back to the app. See [Self-hosting](../reference/self-hosting).
 
+## When it goes wrong
+
+### Sync stops because your cloud storage is full
+
+Delete the layouts, designs, baseplates or old versions that you don't need. Then make a small change to the item that didn't sync, so that it uploads again.
+
+Each account has a limit for each kind of item. See [What syncs](#what-syncs). The server refuses the item that goes past the limit, and the Layout Tool doesn't try that change again by itself.
+
+### A message says that your changes couldn't sync
+
+Edit the item again to send it again. Your change stays in this browser. For the details, open Settings > <Ui k="settings.tabs.account" />, where <Ui k="account.sync.heading" /> shows the last error.
+
+After a network or server problem, the Layout Tool tries again by itself. When the tries run out, or the server refuses the change, it stops and tells you.
+
+### Your latest edits to a layout disappear
+
+Edit each layout on one device at a time. To edit with other people at the same time, use [a live session](./live-collaboration).
+
+When two devices change the same item, the newer change replaces the whole item, and the other device shows a message. See [When two devices change the same item](#when-two-devices-change-the-same-item).
+
+### You're signed out
+
+Sign in again. The Layout Tool keeps your local copies when it signs you out.
+
+A sign-in lasts 30 days. The Layout Tool also signs you out when the server no longer accepts your sign-in.
+
 ## Next steps
 
 - [Your data and privacy](../introduction/your-data): what the browser stores and how to back it up.

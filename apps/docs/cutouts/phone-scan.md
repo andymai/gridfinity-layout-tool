@@ -95,7 +95,7 @@ A soft shadow is usually fine. The phone looks at the change in color more than 
 
 On the computer, each outline comes into the cutout editor as a cutout. It already has 0.4 mm of clearance and an entry chamfer, so the tool drops in. The editor then asks how thick the tool is, to set the depth. See [Set the tool thickness](./import-svg-stl#set-the-tool-thickness).
 
-Before you print the whole bin, [print a fit test](./print-checks#print-a-fit-test). A fit test is a thin print of the bin top, so you learn about the fit before the full print.
+Before you print the whole bin, [print a fit test](./print-checks#print-a-fit-test). A **fit test** is a thin print of the bin top, so you learn about the fit before the full print.
 
 ### Use a card of a different size
 
@@ -140,6 +140,29 @@ You can start a scan from several places:
 Each place first asks if the photo is on your phone or on this computer.
 
 In the bin designer on a phone or a tablet, the scan runs on that device. It adds the tools to the bin, and makes the bin larger to fit them.
+
+## When it goes wrong
+
+### The computer says that phone scanning isn't available
+
+Connect the computer to the internet. Then click <Ui k="binDesigner.cutouts.scanImport.back" />, and click <Ui k="binDesigner.cutouts.scanImport.routePhone" /> again. No luck? Take the photo, copy it to the computer, and use [Trace a photo](./photo-trace).
+
+The outline goes from the phone to the computer through the server of the Layout Tool. If the computer can't reach the server, it can't make a scan link.
+
+### The phone can't send the outline
+
+Connect the phone to the internet again. Then tap <Ui k="scan.retake" /> and take the photo again.
+
+The phone keeps the photo and makes the outline by itself. Only the outline goes over the connection, so a lost connection stops it at the last step.
+
+### The cutout is the wrong size
+
+Hold a ruler to the tool, and compare it with the size on the review screen before you tap <Ui k="scan.use" />. If the size is off, change the reference:
+
+- A card is less exact than the calibration sheet. Print the sheet, and use it in place of the card.
+- Measure the 100 mm bar on the printed sheet. A printer that scales the page changes every scan by the same amount.
+- A printed baseplate is only as exact as the printer that made it.
+- For a tall tool, add a measuring strip. See [Measure a tall tool at its own height](#measure-a-tall-tool-at-its-own-height).
 
 ## Next steps
 

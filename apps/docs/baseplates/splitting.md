@@ -99,6 +99,32 @@ Click <Ui k="common.export" /> in the header. The export dialog tells you that t
 
 The guide groups pieces with the same shape, so you can print any copy again later. Want one file of the whole plate instead? Clear <Ui k="baseplate.export.enableSplit" />.
 
+## When it goes wrong
+
+### The plate splits into more pieces than you expect
+
+Read the notes above the map. If a smaller margin saves pieces, a note tells you how many millimeters to remove, and from which sides. You can also turn on <Ui k="baseplate.detachMargins" />, so the margins print as strips. And check that <Ui k="baseplate.printBedSize" /> matches your printer.
+
+The margins and the connector tongues count toward the size of each piece. A wide margin can make an edge piece too big for the bed. The plan also aims for the fewest build-plate loads, so it can pick more, smaller pieces.
+
+### Your own split lines are gone
+
+Draw them again on the map. Change the plate size first, then draw the splits.
+
+Your plan holds splits between particular cells. When the plate size changes, the old plan no longer fits the grid, so the Layout Tool goes back to the automatic split.
+
+### You can't pick a snap clip
+
+Read the line under <Ui k="baseplate.connectorStyle.snapClip" />. It gives the reason. Then do one of these:
+
+- Turn off <Ui k="baseplate.stackPrint.enable" />. Stacked plates can't hold clips.
+- On a low-profile plate, turn on <Ui k="baseplate.magnetHoles" /> or <Ui k="baseplate.solidFloor" />. The clip needs a taller plate.
+- Pick a different connector style.
+
+### The pieces or the keys are too tight
+
+See [The connector keys are too tight](../printing/troubleshooting#the-connector-keys-are-too-tight). Print the connector fit test first, and set <Ui k="baseplate.connectorFit.label" /> from it.
+
 ## Next steps
 
 - [Eco plates and stack printing](./eco-and-stack-printing): stack the pieces into towers and print them in fewer jobs.

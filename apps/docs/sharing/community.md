@@ -102,7 +102,7 @@ To update a published design, open its page, click <Ui k="community.detail.editO
 
 ## Post a print
 
-A print report tells the next maker how a design printed for you. It's a real help to anyone who is about to print the same bin.
+A **print report** tells the next maker how a design printed for you. It's a real help to anyone who is about to print the same bin.
 
 1. Open the design page and click <Ui k="community.print.cta" />. Sign in if the page asks.
 2. Under <Ui k="community.print.fitTitle" />, pick one answer:
@@ -131,6 +131,32 @@ The server can switch print reports off. The form then tells you that print repo
 4. Click <Ui k="community.report.submit" />.
 
 You must sign in to report. When 5 different people report a design, the gallery hides it until a moderator reviews it. To report a single print, use <Ui k="community.prints.report" /> on that print.
+
+## When it goes wrong
+
+### Publish won't accept the name or the description
+
+Give the design a name that says what it is, not the default name of a new design. In the description, say what the bin holds or what it's for. If the content filter flags a word, reword the text.
+
+The dialog and the server check the text against the rules in [Publish a design](#publish-a-design). A name with no letters, or with one character over and over, fails even when it's long enough.
+
+### The server says that the design is already in the gallery
+
+Change the design before you publish it. For a remix, change something in the copy first.
+
+The server refuses a design that matches a published design or a built-in example. Is the original of your remix gone? Then the dialog offers <Ui k="community.publish.error.publishWithoutRemix" />.
+
+### You reach the limit of published designs
+
+Open one of your published designs. In the menu of the publish dialog, click <Ui k="community.publish.unpublish" />. Then publish the new one.
+
+Each account can have 25 published designs at a time.
+
+### A photo won't attach to your print
+
+Use an image file under 25 MB. If the message says that the image is too detailed, crop it, and add it again.
+
+The Layout Tool shrinks each photo before upload. A very large or very detailed photo can't shrink far enough.
 
 ## Next steps
 

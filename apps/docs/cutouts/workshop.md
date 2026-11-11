@@ -8,6 +8,7 @@ sources:
   - src/shared/types/assembly.ts
   - src/features/bin-designer/components/CutoutWorkspace/ShadowBoardButton.tsx
   - src/features/bin-designer/components/panel/CutoutsSection/shadowBoard/
+  - src/features/bin-designer/utils/assemblyChecker.ts
 ---
 
 # Workshop
@@ -100,7 +101,7 @@ When the build looks right, click <Ui k="workshop.export.stl" />, <Ui k="worksho
 
 ## Export a shadow board
 
-A shadow board is a flat outline of a bin top. Use it to cut a matching board, a foam insert or a drawer liner on a laser cutter or a CNC machine. This export lives in the cutout editor of a bin with <Ui k="binDesigner.interior.solid.title" />, not in Workshop.
+A **shadow board** is a flat outline of a bin top. Use it to cut a matching board, a foam insert or a drawer liner on a laser cutter or a CNC machine. This export lives in the cutout editor of a bin with <Ui k="binDesigner.interior.solid.title" />, not in Workshop.
 
 1. Open the cutout editor. See [Cutout basics](./basics#open-the-cutout-editor).
 2. In the <Ui k="binDesigner.shapeList.tabProperties" /> tab, click <Ui k="binDesigner.shadowBoard.button" />.
@@ -108,6 +109,38 @@ A shadow board is a flat outline of a bin top. Use it to cut a matching board, a
 4. Click the download button.
 
 The file has the outline of the bin and every opening at true size. It includes each copy of a repeat, the result of each group, STL imprints, and openings through a wall. Cutouts that overlap become one opening. Entry edges, depths and leans have no outline.
+
+## When it goes wrong
+
+The part warnings in Workshop are advice. None of them stops an export, so read them before you print.
+
+### A part floats above its seat
+
+Set <Ui k="workshop.inspector.seatZ" /> to 0. Or drag the part onto the base or onto another part.
+
+A part with a seat height above 0 has nothing under it, so it would print in mid-air.
+
+### A part hangs off its parent or past the base
+
+Drag the part back. Its center must sit on the top of the part below it, and all of it must stay on the base.
+
+A part that sits on another part stands on that part's top face. Past that face, or past the edge of the base, the part has no support.
+
+### A hole or slot cuts into the socket
+
+Lower the <Ui k="workshop.field.cutDepth" /> of that cutter, or raise the <Ui k="workshop.base.floorThickness" /> of the base.
+
+A cutter that goes below the floor cuts into the Gridfinity feet under the base, the part that sits in the baseplate.
+
+### A part may need supports
+
+Make the overhang smaller, or turn on supports in your slicer. The warning shows above these values:
+
+| Part                           | Value                                            |
+| ------------------------------ | ------------------------------------------------ |
+| <Ui k="workshop.part.block" /> | A <Ui k="workshop.field.wedgeAngleDeg" /> of 45° |
+| <Ui k="workshop.part.arch" />  | A <Ui k="workshop.field.span" /> of 80 mm        |
+| <Ui k="workshop.part.hook" />  | A <Ui k="workshop.field.reach" /> of 40 mm       |
 
 ## Next steps
 

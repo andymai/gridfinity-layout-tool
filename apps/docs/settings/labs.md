@@ -1,6 +1,6 @@
 ---
 title: Labs
-description: 'Turn on early features in Settings > Labs: finding what your bins hold, the sliding tray, a second 3D engine and a speed overlay.'
+description: 'Try early features in Settings > Labs: bin contents search, a sliding tray, a second 3D engine and a speed overlay.'
 sources:
   - src/core/labs/features.ts
   - src/shell/Modals/SettingsModal/tabs/LabsTab/LabsTab.tsx
@@ -77,6 +77,20 @@ Make sure that each export is correct when the second engine is on. <Ui k="labs.
 ## Generation performance overlay
 
 Is a bin slow to update, and you want to know why? This feature shows a small overlay in the bin designer. It gives the time of each step that builds the bin model, the cache hit rates, and a history of recent models. It doesn't change the bin.
+
+## When it goes wrong
+
+### The 3D engine change does nothing
+
+Click <Ui k="labs.engine.reloadAction" /> in the message, or reload the page.
+
+The page loads one engine when it starts. A different engine takes over only after a reload.
+
+### A Labs feature is missing on another device
+
+Open Settings > <Ui k="settings.tabs.labs" /> on that device, and turn the feature on there too.
+
+Each browser keeps its own Labs choices, and your account doesn't sync them.
 
 ## Next steps
 

@@ -107,6 +107,30 @@ The <Ui k="share.title" /> dialog opens with three tabs:
 
 Want to send just one bin? Send its design file. It holds the editable design, not a printable model, and the other person imports it in the bin designer. [Save and reuse designs](../designer/save-and-reuse#download-and-import-a-design-file) shows how to download and import the file. To share a design with every maker, publish it in [the community gallery](./community).
 
+## When it goes wrong
+
+### The server refuses to share your layout
+
+Read the message, and do what it asks:
+
+| Message is about   | What to do                                                                                         |
+| ------------------ | -------------------------------------------------------------------------------------------------- |
+| Blocked content    | Remove web addresses from bin labels and notes, and any character typed 11 or more times in a row. |
+| A layout too large | Remove bins that you don't need, or [share without the server](#share-without-the-server).         |
+| Too many bins      | Remove bins until the layout has 2,500 or fewer.                                                   |
+
+### The link says that the share isn't found
+
+Copy the whole link again, and open it. Still not found? Ask the owner for a new link.
+
+A link doesn't expire. So when the server can't find a complete link, the owner deleted it, and it stops working for everyone.
+
+### You can't change or delete your link
+
+Open the layout in the browser that made the link, and change it there. If a message says that the share no longer exists, make a new link.
+
+The browser that makes a link keeps a key for it. Another browser or another device doesn't have that key, even with the same account.
+
 ## Next steps
 
 - [Work together live](./live-collaboration): edit one layout with other people at the same time.
