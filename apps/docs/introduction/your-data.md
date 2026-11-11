@@ -81,7 +81,7 @@ Search engines can find them, and anyone can download and remix the design under
 
 ## Usage analytics
 
-To find bugs and choose what to improve, the Layout Tool sends usage events to an analytics service (PostHog). The events tell which features people use, the device type, errors, speed, and patterns such as drawer sizes and bin counts. A random ID in your browser groups your events. The events don't hold your name or your email address.
+To find bugs and choose what to improve, the Layout Tool sends usage events to an analytics service (PostHog). The events tell which features people use, the device type, whether the Layout Tool runs as an installed app or in a browser tab, errors, speed, and patterns such as drawer sizes and bin counts. A random ID in your browser groups your events. The events don't hold your name or your email address.
 
 To stop the usage events:
 

@@ -5,7 +5,8 @@
 
 import type { PostHog } from 'posthog-js';
 import { useSettingsStore } from '@/core/store/settings';
-import { getStableUserId } from './identity';
+import { getStableUserId, syncAnalyticsDataAcrossWindows } from './identity';
+import { getDisplayMode } from '@/shared/pwa/displayMode';
 import { filterExceptionForPosthog } from './errorFilters';
 
 // INITIALIZATION (LAZY LOADED)
@@ -46,6 +47,8 @@ export function initAnalytics(): void {
     }
     return;
   }
+
+  syncAnalyticsDataAcrossWindows();
 
   // Lazy load posthog-js
   initPromise = import('posthog-js')
@@ -88,6 +91,11 @@ export function initAnalytics(): void {
       });
       posthogInstance = posthog;
 
+      // Session scope (sessionStorage) on purpose: a browser tab and the
+      // installed app window can be open at once, and `register` would let
+      // one overwrite the other through shared localStorage.
+      posthog.register_for_session({ display_mode: getDisplayMode() });
+
       // Fire a single pageview on app load
       posthog.capture('$pageview');
 
@@ -101,6 +109,7 @@ export function initAnalytics(): void {
         updatePersonProperties,
         getLayoutContext,
         listenForPwaInstall,
+        listenForDisplayModeChanges,
         captureUtmParameters,
       } = await import('./events');
       // Exceptions thrown before this resolves are still captured, just without
@@ -109,6 +118,7 @@ export function initAnalytics(): void {
       updatePersonProperties();
       captureUtmParameters();
       listenForPwaInstall();
+      listenForDisplayModeChanges();
 
       // Flush queued events
       for (const event of eventQueue) {
@@ -119,6 +129,10 @@ export function initAnalytics(): void {
     .catch(() => {
       // Fail silently
     });
+}
+
+export function isAnalyticsActive(): boolean {
+  return initPromise !== null && useSettingsStore.getState().settings.analyticsEnabled;
 }
 
 /**
@@ -138,6 +152,8 @@ export function optOutAnalytics(): void {
 export function optInAnalytics(): void {
   if (posthogInstance) {
     posthogInstance.opt_in_capturing();
+    // A launch from the installed app while analytics was off went unrecorded.
+    void import('./events').then(({ noteCurrentDisplayMode }) => noteCurrentDisplayMode());
   } else {
     // If posthog wasn't initialized, try to initialize now
     initPromise = null;

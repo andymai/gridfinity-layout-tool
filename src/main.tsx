@@ -7,7 +7,7 @@ import { LocaleProvider } from '@/i18n/context.tsx';
 import { detectBrowserLocale } from '@/i18n/detection.ts';
 import { isLocale } from '@/i18n/types.ts';
 import { useSettingsStore } from '@/core/store/settings.ts';
-import { initAnalytics } from '@/shared/analytics/posthog';
+import { initAnalytics, listenForPwaInstallAvailability } from '@/shared/analytics/posthog';
 import { getMlTelemetry } from '@/shared/analytics/useMLTracking';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library.ts';
@@ -64,6 +64,7 @@ if (isSmokeMode()) {
 } else {
   // Initialize Posthog analytics (no-op in dev)
   initAnalytics();
+  listenForPwaInstallAvailability();
 
   // Lazily initialize ML telemetry — the module is ~104 KB and not needed for
   // first paint. The shared loader never rejects (a stale-bundle load failure
