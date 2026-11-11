@@ -49,7 +49,7 @@ A compartment cannot be smaller than 5 mm. When you change the grid, the bin des
 
 A merged compartment is always a rectangle. Made a mess? <Ui k="common.reset" /> above the grid sets all compartments back to a uniform grid.
 
-<Screenshot id="designer-compartments-grid" alt="The compartment grid editor with 4 columns, 3 rows and two merged cells, beside the 3D preview." spec="Bin designer, Interior group open, bin 4 x 3 x 6. Pick Grid dividers, set Columns 4 and Rows 3, then drag across the two top-left cells to merge them. Show the steppers, the grid and the preview. Crop to panel plus preview." />
+<Screenshot id="designer-compartments-grid" alt="A drag across the two top left cells of a 4 by 3 compartment grid merges them into one compartment. The bin then shows one long compartment at the back left." spec="Bin designer, bin 4 x 3 x 6 with Grid dividers, 4 columns and 3 rows. Close-up of the compartment grid: drag across the two top left cells to merge them. Cut to the bin." />
 
 ## Tilt and lean dividers
 

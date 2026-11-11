@@ -27,7 +27,7 @@ The 3D preview shows each change right away. All zones start in the same light g
 
 Only a 3MF file keeps the colors. STL and STEP files carry no color data, so the export dialog turns them off for a multi-color design. To get them back, see [Go back to one color](#go-back-to-one-color).
 
-<Screenshot id="designer-colors-zones" alt="The Multi-color section with the Exterior, Interior, Add-ons and Text groups, next to a bin with a colored lip and label tabs." spec="Bin designer, 2x2x3 bin with 2 compartments, stacking lip, label tabs with captions, a scoop. Finishing group open, Multi-color on, body light gray, lip orange, label tab white, text black. Crop to the Color section and the preview." />
+<Screenshot id="designer-colors-zones" alt="Multi-color is turned on and the Exterior zones show. The Stacking lip zone is clicked and Orange is picked. The bin then shows an orange lip, white label tabs and black text." spec="Bin designer, 2 x 2 x 3 bin with 2 compartments, stacking lip, label tabs with captions, a scoop. Label tab zone white and Text zone black. Close-up of the Color section in the Finishing group: turn on Multi-color, click the Stacking lip zone, pick Orange. Cut to the bin." />
 
 ## Color zones
 

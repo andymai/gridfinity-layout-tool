@@ -50,7 +50,7 @@ The finger scoop needs a solid floor in a rectangular bin with compartment walls
 - The inside mode of a lightweight floor has no solid floor for the ramp. Change the mode to underside to keep both. See [The base](./base#hollow-the-floor-from-underneath).
 - A spacer, a base-only bin and a <Ui k="binDesigner.base.bodyType.nesting" /> body have no place for a scoop.
 
-<Screenshot id="designer-getting-things-out-scoop" alt="A bin with three compartments and curved finger scoops on the front and back walls." spec="Bin designer, Interior group open, bin 3 x 2 x 6 with Grid dividers set to 3 columns and 1 row. Turn on Finger scoop, pick the front and back walls and the Curved style. Show the Finger scoop section and the preview at an angle that shows the ramps. Crop to panel plus preview." />
+<Screenshot id="designer-getting-things-out-scoop" alt="Finger scoop is turned on, and the Back wall is added to the Front wall with the Curved style. The bin then shows three compartments with a curved ramp at the front and the back of each." spec="Bin designer, bin 3 x 2 x 6 with Grid dividers set to 3 columns and 1 row. Close-up of the Interior group: turn on Finger scoop, open Customize, add the Back wall. Curved is the default style. Cut to the bin from above, so the ramps show." />
 
 ## Round the inside with an interior fillet
 
@@ -91,7 +91,7 @@ Keep the walls with a pull tab plain. A pull tab needs a wall with no cutouts, h
 
 A pull tab also needs a rectangular, hollow bin with walls, no lid and no overhang. On a small bin, tabs on opposite walls can close the inside. If that happens, pick fewer walls or a thinner tab.
 
-<Screenshot id="designer-getting-things-out-pull-tab" alt="A bin with pull tabs on the front and back walls, seen from the front." spec="Bin designer, Lid group open, bin 3 x 2 x 4 with no other wall features. Turn on Pull tab and pick the front and back walls. Show the Pull tab section and the preview from the front at a low angle. Crop to panel plus preview." />
+<Screenshot id="designer-getting-things-out-pull-tab" alt="Pull tab is turned on, and the Back wall is added to the Front wall. The bin then shows a pull tab above the front wall and one above the back wall." spec="Bin designer, bin 3 x 2 x 4 with no other wall features. Close-up of the Lid group: turn on Pull tab, add the Back wall. Cut to the bin." />
 
 ## Lift a divided tray from the middle
 
