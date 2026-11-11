@@ -5,9 +5,9 @@
  * (i.e. untitled) and the user has made at least one change (undo history exists).
  */
 
-import { useEffect } from 'react';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useShallow } from 'zustand/react/shallow';
+import { useBeforeUnloadGuard } from '@/shared/hooks/useBeforeUnloadGuard';
 
 export function useUnsavedWarning(): void {
   const { hasUnsavedChanges } = useDesignerStore(
@@ -16,14 +16,5 @@ export function useUnsavedWarning(): void {
     }))
   );
 
-  useEffect(() => {
-    if (!hasUnsavedChanges) return;
-
-    const handler = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-    };
-
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
-  }, [hasUnsavedChanges]);
+  useBeforeUnloadGuard(hasUnsavedChanges);
 }

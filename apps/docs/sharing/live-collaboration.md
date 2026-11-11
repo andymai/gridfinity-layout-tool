@@ -12,7 +12,7 @@ sources:
 
 # Work together live
 
-Plan a drawer with a partner, or help a friend set up their first layout, without files that go back and forth. In the Gridfinity Layout Tool, a layout with an edit link becomes a live room. Everyone who opens the link edits the same layout at the same time, and sees what the others point at, select and move.
+Plan a drawer with a partner, or help a friend set up their first layout, without files that go back and forth. In the Gridfinity Layout Tool, a layout with an edit link becomes a **live room**. Everyone who opens the link edits the same layout at the same time, and sees what the others point at, select and move.
 
 ## Start a live session
 
@@ -59,10 +59,10 @@ The work of the other people shows on your grid, each in their own color:
 
 ## Who saves the link
 
-The room holds the live layout, but only the link owner's browser saves the room changes back to the share link. It saves them about one second after each change.
+The room holds the live layout, but only the link owner's browser saves the room changes back to the share link. It saves them about one second after each change that the owner makes. A change from someone else waits for the next change from the owner.
 
 ::: warning
-Keep the owner in the room while other people edit. When someone joins, the room loads the saved copy from the link. The room can then lose the changes that people made while the owner was away.
+Before someone joins, make sure that the owner made a change after the last edits of the others. Then wait a few seconds for the save. The app doesn't show when that save is done, or if it fails. When someone joins, the room loads the saved copy from the link. The room then loses the changes that are not in that copy.
 :::
 
 ## Read-only rooms
@@ -72,6 +72,30 @@ Each person gets the permission that the link has at the moment they connect. Sa
 ## When the server has no live service
 
 Live editing needs a collaboration service on the server, and that service is optional. Without it, an edit link still opens the layout, but no room starts. You see no avatars and no cursors, and your changes stay in your browser. A self-hosted copy of the Layout Tool has no share links and no live rooms. See [Self-hosting](../reference/self-hosting).
+
+## When it goes wrong
+
+### Nobody else shows up in the room
+
+Do you own the link? Open <Ui k="share.button.manageShare" />. The permission must be <Ui k="share.anyoneWithLinkCanEdit" />. Then make sure that everyone is online, and that they opened the link after the change.
+
+A view-only link opens no room. It shows a copy of the layout, so nobody sees the others.
+
+### Changes that other people made are gone
+
+After the others edit, ask the owner to move a bin and move it back. Then wait a few seconds before anyone joins or opens the link again. The app doesn't show when the save to the link is done.
+
+Only the owner's browser saves the room to the link, and only after a change that the owner makes. That save includes the changes of everyone in the room. When someone joins, the room loads the saved copy, so it loses the changes that are not in it. See [Who saves the link](#who-saves-the-link).
+
+### Your edits don't reach the others
+
+Open the link again.
+
+This happens when the owner changes the link to view only after your page loads. Your page then connects read-only, so the room ignores your changes. See [Read-only rooms](#read-only-rooms).
+
+### You drop out of the room
+
+When the status shows <Ui k="collab.reconnecting" />, wait a moment, and make sure that you're online. The Layout Tool joins the room again by itself.
 
 ## Next steps
 

@@ -105,6 +105,20 @@ Back up your layouts before you click <Ui k="settings.storage.clearAllData" />. 
 | <Ui k="settings.tabs.integrations" /> | The websites that STL search looks at for Gridfinity files. |
 | <Ui k="settings.tabs.labs" />         | Early features that you can turn on. See [Labs](./labs).    |
 
+## When it goes wrong
+
+### You change a default, but the open layout stays the same
+
+Change the value in the layout itself. Set the grid size in the layout editor. Set the grid unit and the print bed size in <Ui k="common.physicalUnits" /> of the baseplate generator.
+
+The values on the <Ui k="settings.tabs.defaults" /> tab apply only when you make a new layout. Each layout keeps its own grid unit and print bed size after that.
+
+### The storage status says that capacity is limited
+
+Keep a copy of your work first. [Sign in](../sharing/accounts-and-sync) to sync it, or [save each layout as a file](../sharing/share-links#share-without-the-server). Then work in a different browser.
+
+This browser doesn't support the large database that holds your layouts. So the Layout Tool falls back to about 5 MB of storage.
+
 ## Next steps
 
 - [Keyboard and command palette](./keyboard-and-command-palette): run any command without the mouse.

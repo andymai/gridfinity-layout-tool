@@ -9,11 +9,14 @@ sources:
   - src/features/baseplate/hooks/useBaseplateLibraryInit.ts
   - src/features/baseplate/utils/designOwnership.ts
   - src/core/baseplateDefaults.ts
+  - src/features/baseplate/components/BaseplatePanel/MeasuredDrawerOverflow.tsx
+  - src/features/baseplate/utils/fitPaddingToDrawer.ts
+  - src/features/baseplate/components/BaseplatePreview/BaseplatePreview.tsx
 ---
 
 # Baseplate basics
 
-A baseplate is the grid that your bins sit in. It holds each bin in its place, so nothing slides around when you open the drawer. The baseplate generator in the Gridfinity Layout Tool reads your drawer size from the layout and builds a plate to fit. Here's how to size it, fill the gap at the edges, and keep a separate plate for each drawer.
+A **baseplate** is the grid that your bins sit in. It holds each bin in its place, so nothing slides around when you open the drawer. The baseplate generator in the Gridfinity Layout Tool reads your drawer size from the layout and builds a plate to fit. Here's how to size it, fill the gap at the edges, and keep a separate plate for each drawer.
 
 ## Open the baseplate generator
 
@@ -96,6 +99,30 @@ Each card shows which layouts use the design. Pick a design that a different lay
 ## Reset to defaults
 
 Want a clean start? Click <Ui k="baseplate.reset" /> at the bottom of the panel, then confirm. The plate goes back to the default settings: no magnet holes, no margins, and the size from the layout. Your bins don't change. The grid unit and the print bed size keep their values too, because they belong to the layout.
+
+## When it goes wrong
+
+### The plate is bigger than your drawer
+
+Click <Ui k="baseplate.fitPaddingToDrawer" /> under the warning. It makes the margins smaller, but it can't make the grid smaller. Does the warning stay after the click, or is there no button? Then the grid alone is too big for the drawer. Make the grid smaller in the layout editor, or turn off <Ui k="baseplate.syncWithLayout" /> and lower the steppers.
+
+The panel compares the plate and its margins with the drawer size that you measured in the layout editor. The warning gives the overlap in millimeters.
+
+### An edge stays solid when you fill the margin with grid cells
+
+Make the margin on that edge 8 mm or wider.
+
+A clipped grid cell needs at least 8 mm of margin. On a narrower edge, the margin stays solid plastic, and the panel lists that edge as too small.
+
+### The preview stays empty or shows an error
+
+Reload the page. Does the message say that the browser can't run the 3D engine? Then update the browser, or open the Layout Tool in a recent Chrome, Edge, Firefox or Safari.
+
+The 3D engine builds the plate inside your browser. An old browser, or a security setting that turns off WebAssembly, stops the engine.
+
+### The bins are too tight in the plate
+
+See [A bin is too tight in the plate](../printing/troubleshooting#a-bin-is-too-tight-in-the-plate). The cause that you can fix is a bin with a different grid unit from the plate.
 
 ## Next steps
 

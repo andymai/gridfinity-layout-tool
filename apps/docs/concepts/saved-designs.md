@@ -13,7 +13,7 @@ sources:
 
 # Saved designs and linked bins
 
-Design a bin once, then use it all over your drawers. A bin in a layout is only a box with a size. A saved design is the full model from the bin designer, with its walls, compartments, labels and colors. Link the two, and the bin prints from the design.
+Design a bin once, then use it all over your drawers. A bin in a layout is only a box with a size. A **saved design** is the full model from the bin designer, with its walls, compartments, labels and colors. Link the two, and the bin prints from the design.
 
 Think of the design as a master copy. Every bin linked to it prints from it and changes with it. Here's what a link keeps in step, and how versions and variants of one design work.
 
@@ -77,7 +77,7 @@ Each linked bin then prints its own Bin label. You see the labels in the 3D prev
 
 ## Variants: one design in several sizes
 
-Need the same bin in a 1 × 1, a 2 × 1 and a 3 × 1? Make variants. A variant follows another design, its parent, except for the values that the variant claims. Make one with <Ui k="binDesigner.variants.create" />.
+Need the same bin in a 1 × 1, a 2 × 1 and a 3 × 1? Make variants. A **variant** follows another design, its parent, except for the values that the variant claims. Make one with <Ui k="binDesigner.variants.create" />.
 
 A variant can claim these values:
 
@@ -85,6 +85,22 @@ A variant can claim these values:
 - for each cutout: the width, depth, cut depth, clearance and chamfer
 
 All other values come from the parent. Change the parent, and each variant changes with it. To change a value in the variant, claim that value first. <Ui k="binDesigner.variants.detach" /> makes the variant a separate design that no longer follows the parent.
+
+## When it goes wrong
+
+### Some linked bins kept their old size
+
+Make room around those bins, then give each one the size of the design in the inspector. A linked bin takes the new size only where it has room, and a message tells you how many bins kept their old size. If <Ui k="designLinking.syncDialog.title" /> opens instead, it tells you how many bins it must unlink, because they can't fit.
+
+A bin with <Ui k="inspector.lockSize" /> on keeps its size too. That's what the lock is for.
+
+### The design didn't change when you resized a bin
+
+<Ui k="designLinking.blockedResize.title" /> means the design has cutouts, floor inserts or a custom compartment layout. A new size could break those parts, so the Layout Tool leaves the design as it is. Open the design in the bin designer, and change its size there. The dialog names the parts that stopped the resize.
+
+### The list of designs to link is empty
+
+<Ui k="designLinking.linkDialog.noCompatible" /> means no saved design has the footprint of this bin. Click <Ui k="designLinking.inspector.createDesign" /> to make a design from the bin, or resize the bin to match a design that you have. The list shows only designs with the same width and depth, or with the two swapped. The height can differ.
 
 ## Next steps
 

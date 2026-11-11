@@ -10,6 +10,8 @@ sources:
   - src/features/bin-designer/components/panel/PhysicalUnitsSection/
   - src/core/store/halfGridMode.ts
   - src/shared/generation/gridPitch.ts
+  - src/shared/utils/drawerCeiling.ts
+  - src/features/bin-designer/hooks/useSyncPhysicalUnits.ts
 ---
 
 # Units and sizes
@@ -18,9 +20,9 @@ Will that stack of bins fit under the drawer above it? Gridfinity measures acros
 
 ## Grid units and height units
 
-A grid unit is one square cell of the grid. On a standard Gridfinity grid, one grid unit is 42 mm wide and 42 mm deep. A bin of 2 × 3 grid units covers 84 mm × 126 mm of the drawer.
+A **grid unit** is one square cell of the grid. On a standard Gridfinity grid, one grid unit is 42 mm wide and 42 mm deep. A bin of 2 × 3 grid units covers 84 mm × 126 mm of the drawer.
 
-A height unit is 7 mm of height. The count starts at the bottom of the feet, so the first height unit holds the feet and the floor. The room for your items starts above it.
+A **height unit** is 7 mm of height. The count starts at the bottom of the feet, so the first height unit holds the feet and the floor. The room for your items starts above it.
 
 | Size                                   | Millimeters on a standard grid |
 | -------------------------------------- | ------------------------------ |
@@ -58,7 +60,7 @@ Bins and baseplates from other Gridfinity makers use the 42 mm grid. Keep 42 mm 
 
 The grid unit field has a chain icon. Click the chain to unlink X and Y, then type a different pitch for the depth. A grid that is not square can fill a drawer that is not a multiple of 42 mm. Only the cell pitch stretches. Holes, corner radii, walls and the stacking lip keep their size.
 
-In the bin designer, a separate Y pitch applies to that design only.
+The bin designer uses the X and Y pitch of the open layout. A pitch that you change in the bin designer changes the grid of the layout too.
 
 On a grid larger than 42 mm, the baseplate generator shows <Ui k="baseplate.magnetAnchor" />. It sets where the magnet holes sit in each cell, for the baseplate, the bins and the lids together.
 
@@ -97,6 +99,24 @@ You don't have to do this math yourself. Two tools do it for you:
 ::: tip
 A layout with <Ui k="baseplate.lowProfileBase" /> turned on in the baseplate generator uses feet that are 1.1 mm shorter. Each bin then gets 1.1 mm more room inside at the same height.
 :::
+
+## When it goes wrong
+
+### Your stack is taller than its height units
+
+Measure the inside height of your drawer, and add it with <Ui k="drawerDims.addMeasured" /> in the <Ui k="sidebar.gridSize" /> group. Then open <Ui k="stackSolver.title" /> to see the bin heights that really fit.
+
+Height units count only the bodies of the bins. The printed stack also has the 4.4 mm stacking lip on top, and a plate with magnet holes lifts every bin. The table in [How heights add up](#how-heights-add-up) shows each part.
+
+### Half-grid mode doesn't change the feet
+
+Turn on <Ui k="binDesigner.halfSockets" /> instead. In the bin designer, it's in the <Ui k="binDesigner.group.base" /> group, under <Ui k="binDesigner.base.section.feet" />. Half-grid mode changes only the sizes and the positions of bins. The pattern of the feet stays the same.
+
+### A new bin doesn't fit the plate that you printed before
+
+Open the layout of that drawer, then open the bin in the bin designer and export it again.
+
+The bin designer takes the grid unit and the height unit from the open layout. So a bin that you export while another layout is open uses the units of that layout. <Ui k="common.physicalUnits" />, in the <Ui k="binDesigner.group.finishing" /> group, shows the units that the export uses. See [A bin is too tight in the plate](../printing/troubleshooting#a-bin-is-too-tight-in-the-plate).
 
 ## Next steps
 

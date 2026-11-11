@@ -3,7 +3,7 @@ import type { DefaultTheme } from 'vitepress';
 export const APP_URL = 'https://gridfinitylayouttool.com';
 
 export const nav: DefaultTheme.NavItem[] = [
-  { text: 'Docs', link: '/introduction/what-it-does' },
+  { text: 'Docs', link: '/' },
   { text: 'Reference', link: '/reference/shortcuts' },
   { text: 'Community', link: `${APP_URL}/community`, target: '_self' },
   { text: 'Open the app', link: `${APP_URL}/`, target: '_self' },
@@ -13,7 +13,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
   {
     text: 'Introduction',
     items: [
-      { text: 'What the Layout Tool does', link: '/introduction/what-it-does' },
+      { text: 'What the Layout Tool does', link: '/' },
       { text: 'Gridfinity in five minutes', link: '/introduction/gridfinity-basics' },
       { text: 'Your data and privacy', link: '/introduction/your-data' },
     ],

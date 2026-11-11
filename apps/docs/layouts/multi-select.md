@@ -10,6 +10,10 @@ sources:
   - src/features/design-linking/components/Dialogs/MakeBentoDialog/
   - src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
   - src/shell/Mobile/MultiBinContextMenu/MultiBinContextMenu.tsx
+  - src/shared/hooks/interactions/useDragInteraction.ts
+  - src/shared/hooks/useAlignBins.ts
+  - src/features/design-linking/domain/mergeBins.ts
+  - src/features/design-linking/hooks/useBento.ts
 ---
 
 # Work with several bins
@@ -99,6 +103,36 @@ Right-click a bin to open its menu. On a touch screen, touch and hold the bin. T
 | A bin in a selection | <Ui k="common.category" />, <Ui k="mobile.binMenu.expandToFit" />, <Ui k="mobile.binMenu.mergeIntoOne" /> and <Ui k="inspector.multi.delete" />, for the whole selection                                                                                                                                                            |
 
 If the selection includes bins from the stash, the selection menu also has <Ui k="inspector.multi.layer" />, which puts them on a layer.
+
+## When it goes wrong
+
+### The selected bins won't move
+
+Find the bin that has no room, and make room for it. Or <kbd>Ctrl</kbd>+click it (<kbd>Cmd</kbd>+click on a Mac) to take it out of the selection. If one selected bin can't go to the new spot, none of them move.
+
+After a drag, a message names what is in the way. The arrow keys show no message, so the bins just stay where they are.
+
+### Some of the bins didn't change
+
+Make room around the bins that stayed, or change them one at a time. Align, rotate, match height and move to a layer skip a bin that has no room for the change. The message after the action tells you how many bins changed.
+
+Rotate and match height also skip a bin with a locked size. Click <Ui k="inspector.unlockAllSizes" /> in the inspector, then try again.
+
+### The merge dialog shows only a message
+
+Select a smaller group, and merge again. The dialog stops in these cases:
+
+- The selection has fewer than two bins on the active layer.
+- The bins need more than 12 compartments across or 12 down.
+- The merged bin would be more than 16 grid units on a side.
+
+Every bin edge becomes a compartment line. So bins of mixed sizes, or bins that sit on half units, need a fine grid of compartments. Line the bins up on whole grid units to keep the grid small.
+
+### The new bin opens, but the old bins stay in the layout
+
+The merged design is safe in your library. When you replace the bins, the merged bin must fit where they were. It takes the height of the tallest bin, so it can lift a stack above the drawer top. Then the Layout Tool keeps the old bins, and a message tells you.
+
+Lower or move the bins stacked above that area. Then delete the old bins, draw one bin over their area, and choose <Ui k="designLinking.menu.linkExisting" /> to link it to the merged design.
 
 ## Next steps
 

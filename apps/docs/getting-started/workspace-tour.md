@@ -30,6 +30,7 @@ From left to right, the layout editor header has these controls:
 | <Ui k="header.print" />             | Opens a paper plan of the drawer to print.                                                            |
 | <Ui k="header.export" />            | Downloads a ZIP of each linked bin and the baseplate.                                                 |
 | <Ui k="header.saved" />             | Shows that the Layout Tool saved your last change.                                                    |
+| <Ui k="header.saveFailed" />        | Shows that a save failed. The Layout Tool tries again by itself.                                      |
 | Undo and redo                       | Undo or redo your last change.                                                                        |
 | <Ui k="share.button.shareLayout" /> | Makes a share link for the layout.                                                                    |
 | <Ui k="header.changeLanguage" />    | Sets the language of the Layout Tool.                                                                 |

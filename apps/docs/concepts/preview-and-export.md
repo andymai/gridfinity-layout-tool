@@ -9,6 +9,8 @@ sources:
   - src/shared/generation/meshPersistence.ts
   - src/features/bin-designer/components/preview/BinMesh/BinMesh.tsx
   - src/features/grid-editor/components/Grid/IsometricPreview/
+  - src/features/bin-designer/components/preview/PreviewSkeleton/PreviewSkeleton.tsx
+  - src/features/bin-designer/hooks/useExport.ts
 ---
 
 # Preview and export
@@ -63,6 +65,24 @@ That's why an export takes longer than the preview. The bin designer gets a head
 ## The 3D preview of a layout
 
 The layout editor draws its 3D preview from the layout itself, not from the geometry engine. A plain bin shows as a simple shape with its size and category color. A bin linked to a saved design shows the model of that design. <Ui k="layoutExport.button" /> builds the exact model of each linked bin, the same way the bin designer does.
+
+## When it goes wrong
+
+### The preview shows a message about the 3D engine
+
+Update your browser, or open the Layout Tool in a recent Chrome, Edge, Firefox or Safari. If the message says that the engine failed to load, check your connection. Then click <Ui k="binDesigner.retry" />, or reload the page.
+
+The bin designer and the baseplate generator build each model in your browser, with WebAssembly. An old browser, or a security setting that turns WebAssembly off, stops the engine.
+
+### The preview says the model failed
+
+Click <Ui k="binDesigner.revertToWorking" /> to undo your last change, or click <Ui k="binDesigner.retry" />. Then change one value at a time, to find the one that breaks the model. <Ui k="common.export" /> stays gray until the preview has a model.
+
+### The export stops with an error
+
+Read the message. For a timeout or a memory error, make the bin lower, or make the wall pattern bolder or turn it off. Then export again. See [The export stops with an error](../printing/troubleshooting#the-export-stops-with-an-error).
+
+The export builds the finest model of the three steps, so a very complex design can run out of time or memory in the browser.
 
 ## Next steps
 
