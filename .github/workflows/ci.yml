@@ -65,6 +65,10 @@ jobs:
       - name: Check bundle size
         run: pnpm run size:check
 
+      # Fails on a dead docs link, or a <Ui> label that no longer resolves.
+      - name: Build docs
+        run: pnpm run docs:build
+
   # PRs: Split into two test groups for fast, balanced feedback (9 runners).
   #   Vitest shards by hashing the file path, not by duration, so the heavy
   #   brepjs/OpenCascade WASM generator tests (their own `generators` project)

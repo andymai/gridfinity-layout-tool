@@ -1,0 +1,55 @@
+:root {
+  --vp-c-brand-1: #b45309;
+  --vp-c-brand-2: #d97706;
+  --vp-c-brand-3: #f59e0b;
+  --vp-c-brand-soft: rgba(245, 158, 11, 0.14);
+}
+
+.dark {
+  --vp-c-brand-1: #fbbf24;
+  --vp-c-brand-2: #f59e0b;
+  --vp-c-brand-3: #d97706;
+  --vp-c-brand-soft: rgba(245, 158, 11, 0.16);
+}
+
+/* Black on amber, as in the app: white text on these ambers fails WCAG AA. */
+:root {
+  --vp-button-brand-text: #000;
+  --vp-button-brand-hover-text: #000;
+  --vp-button-brand-active-text: #000;
+  --vp-button-brand-active-bg: var(--vp-c-brand-2);
+}
+
+/* The theme's hover color, brand-2, is about 3.2:1 on white. */
+:root:not(.dark) .vp-doc a:hover {
+  color: #92400e;
+}
+
+.ui-label {
+  font-weight: 600;
+  padding: 0 0.3em;
+  border-radius: 4px;
+  background: var(--vp-c-default-soft);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.docs-screenshot {
+  margin: 1.5rem 0;
+}
+
+.docs-screenshot img {
+  border-radius: 8px;
+  border: 1px solid var(--vp-c-divider);
+}
+
+.docs-screenshot-pending {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem 1.25rem;
+  border: 1px dashed var(--vp-c-divider);
+  border-radius: 8px;
+  color: var(--vp-c-text-2);
+  font-size: 0.9rem;
+}

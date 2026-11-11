@@ -77,6 +77,11 @@
     "quality": "pnpm run typecheck && pnpm run lint && pnpm run knip",
     "test:profile": "pnpm run build:en-locale && tsx scripts/profile-tests.ts",
     "check:doc-drift": "tsx scripts/check-doc-drift.ts",
+    "check:user-docs": "tsx scripts/check-user-docs.ts",
+    "check:user-docs:staged": "tsx scripts/check-user-docs.ts --staged",
+    "docs:stale": "tsx scripts/check-user-docs.ts --stale",
+    "docs:dev": "pnpm --filter gridfinity-docs dev",
+    "docs:build": "pnpm --filter gridfinity-docs build",
     "validate:json": "tsx --tsconfig tsconfig.app.json scripts/validate-schema-json.ts",
     "gen:schema-docs": "tsx --tsconfig tsconfig.app.json scripts/gen-schema-docs.ts"
   },

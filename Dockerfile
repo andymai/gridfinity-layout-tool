@@ -15,6 +15,8 @@ RUN npm install -g corepack@0.36.0 && corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY patches ./patches
 COPY packages ./packages
+# A frozen install needs every workspace manifest the lockfile names.
+COPY apps/docs/package.json ./apps/docs/package.json
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --frozen-lockfile --store-dir /pnpm/store
 COPY . .
 # No .git in the context: version.json and the OCI revision label take these.
