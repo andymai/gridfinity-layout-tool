@@ -33,6 +33,10 @@ The bin and the plate must agree on the grid, though. The bin designer takes the
 - <Ui k="baseplate.magnetAnchor" />
 - <Ui k="baseplate.lowProfileBase" />
 
+::: warning
+Is your grid not square? The bin designer copies only the X value of the grid unit from your layout. Before you export a bin, open <Ui k="common.physicalUnits" /> in the <Ui k="binDesigner.group.finishing" /> group. Then set the Y value of <Ui k="binDesigner.gridUnit" /> to match the plate.
+:::
+
 Did you change one of these values? Then export the bins and the plate again. A low-profile bin still fits a standard plate, and a standard bin still fits a low-profile plate, with less grip.
 
 ## Set your nozzle size

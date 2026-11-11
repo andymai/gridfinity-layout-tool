@@ -65,7 +65,7 @@ A bin at the edge of the grid can also grow its walls into the margin, so that i
 
 ## Set the X and Y grid pitch
 
-<Ui k="baseplate.gridUnit" />, in <Ui k="common.physicalUnits" />, is the width of one grid cell. The Gridfinity standard is 42 mm, so leave it there unless you know you need a different size. To set a different pitch for X and Y, click the link button next to the value. For example, a drawer can fit 40 mm cells across and 42 mm cells front to back.
+<Ui k="baseplate.gridUnit" />, in <Ui k="common.physicalUnits" />, is the width of one grid cell. The Gridfinity standard is 42 mm, so leave it there unless you know you need a different size. To set a different pitch for X and Y, click the link button next to the value. For example, a drawer can fit 40 mm cells across and 42 mm cells front to back. The bin designer does not copy the Y value, so set it there too. [Fit and tolerances](../printing/fit-and-tolerances#how-a-bin-fits-the-plate) shows where.
 
 ::: warning
 Change the grid unit only when you know that you need it. The grid unit belongs to the layout, so the change also applies to every bin that you design for this layout.

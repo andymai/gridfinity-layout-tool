@@ -13,22 +13,16 @@ const UnrenderedUi = {
 };
 
 // After a deploy, an open tab still asks for the old chunk hashes, and the lazy
-// search box 404s. One reload picks up the new ones. The guard stops a broken
-// deploy from reloading in a loop.
+// search box 404s. One reload picks up the new ones. The stored time stops a
+// broken deploy from reloading in a loop, so with no storage there is no reload.
 function reloadOnStaleChunk(): void {
   const key = 'gridfinity-docs:stale-chunk-reload';
   window.addEventListener('vite:preloadError', (event) => {
-    let last = 0;
     try {
-      last = Number(sessionStorage.getItem(key) ?? 0);
-    } catch {
-      // Without sessionStorage the guard cannot hold, so allow the reload.
-    }
-    if (Date.now() - last < 10_000) return;
-    try {
+      if (Date.now() - Number(sessionStorage.getItem(key) ?? 0) < 10_000) return;
       sessionStorage.setItem(key, String(Date.now()));
     } catch {
-      // A missing guard costs at most one extra reload.
+      return;
     }
     event.preventDefault();
     window.location.reload();
