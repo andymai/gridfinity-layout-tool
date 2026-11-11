@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { FPS } from '../feature-tips/encode';
 import type { Theme } from '../feature-tips/stage';
@@ -14,8 +14,6 @@ export interface MediaEntry {
   width: number;
   height: number;
 }
-
-export type Manifest = Record<string, MediaEntry>;
 
 function ffmpeg(args: string[]): void {
   const run = spawnSync('ffmpeg', ['-y', '-loglevel', 'error', ...args], { stdio: 'inherit' });
@@ -112,13 +110,7 @@ export function encodeShot(
   return { kind, width: size.width, height: size.height };
 }
 
-export function readManifest(file: string): Manifest {
-  return existsSync(file) ? (JSON.parse(readFileSync(file, 'utf8')) as Manifest) : {};
-}
-
-export function writeManifest(file: string, manifest: Manifest): void {
-  const sorted = Object.fromEntries(
-    Object.entries(manifest).sort(([a], [b]) => a.localeCompare(b))
-  );
-  writeFileSync(file, `${JSON.stringify(sorted, null, 2)}\n`);
+/** One file per capture, so captures made on different branches never conflict. */
+export function writeEntry(outDir: string, id: string, entry: MediaEntry): void {
+  writeFileSync(join(outDir, `${id}.json`), `${JSON.stringify(entry, null, 2)}\n`);
 }

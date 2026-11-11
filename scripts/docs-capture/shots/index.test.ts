@@ -33,10 +33,11 @@ describe('docs capture shots', () => {
   });
 
   it('can recapture every captured entry', () => {
-    const manifest = JSON.parse(
-      fs.readFileSync(path.join(DOCS, 'media/manifest.json'), 'utf8')
-    ) as Record<string, { kind: string }>;
+    const media = path.join(DOCS, 'media');
     const byId = new Map(SHOTS.map((s) => [s.id, s.kind]));
-    for (const [id, entry] of Object.entries(manifest)) expect(byId.get(id), id).toBe(entry.kind);
+    for (const file of fs.readdirSync(media).filter((f) => f.endsWith('.json'))) {
+      const entry = JSON.parse(fs.readFileSync(path.join(media, file), 'utf8')) as { kind: string };
+      expect(byId.get(file.slice(0, -'.json'.length)), file).toBe(entry.kind);
+    }
   });
 });

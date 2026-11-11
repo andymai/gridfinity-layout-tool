@@ -1,6 +1,6 @@
 /**
  * Captures the user docs' screenshots and clips into apps/docs/media/, one per
- * theme, and records each in apps/docs/media/manifest.json.
+ * theme, with a <id>.json beside each that the docs read its kind and size from.
  *
  * Usage: run the dev server, then `pnpm run capture:docs [id,...]`.
  * BASE_URL picks the dev server (default http://localhost:5173). Frames stay
@@ -9,14 +9,13 @@
 
 import { resolve } from 'node:path';
 import type { Theme } from '../feature-tips/stage';
-import { encodeShot, readManifest, writeManifest } from './encode';
+import { encodeShot, writeEntry } from './encode';
 import { openDocsSession, SCALE } from './session';
 import type { TakeResult } from './session';
 import { SHOTS } from './shots';
 
 const ROOT = process.cwd();
 const OUT = resolve(ROOT, 'apps/docs/media');
-const MANIFEST = resolve(OUT, 'manifest.json');
 const WORK = resolve(ROOT, 'node_modules/.cache/docs-capture');
 const BASE = process.env.BASE_URL ?? 'http://localhost:5173';
 
@@ -53,11 +52,7 @@ async function main(): Promise<void> {
       if (shot.kind === 'still' && light.frames.length !== 1) {
         throw new Error(`a still recorded ${light.frames.length} frames`);
       }
-      const entry = encodeShot(shot.id, shot.kind, takes, SCALE, WORK, OUT);
-      // Read per shot: a long run must not drop entries another run wrote meanwhile.
-      const manifest = readManifest(MANIFEST);
-      manifest[shot.id] = entry;
-      writeManifest(MANIFEST, manifest);
+      writeEntry(OUT, shot.id, encodeShot(shot.id, shot.kind, takes, SCALE, WORK, OUT));
       const seconds = ((Date.now() - started) / 1000).toFixed(0);
       console.log(`${shot.id}: ${shot.kind}, ${light.frames.length} frames in ${seconds} s`);
     } catch (e) {

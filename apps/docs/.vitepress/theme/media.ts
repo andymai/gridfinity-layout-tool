@@ -1,5 +1,3 @@
-import manifest from '../../media/manifest.json';
-
 export type Theme = 'light' | 'dark';
 
 export interface MediaEntry {
@@ -9,6 +7,11 @@ export interface MediaEntry {
   height: number;
 }
 
+const entries = import.meta.glob<MediaEntry>('../../media/*.json', {
+  eager: true,
+  import: 'default',
+});
+
 const urls = import.meta.glob<string>('../../media/*.{webp,mp4}', {
   eager: true,
   query: '?url',
@@ -16,7 +19,7 @@ const urls = import.meta.glob<string>('../../media/*.{webp,mp4}', {
 });
 
 export function mediaEntry(id: string): MediaEntry | undefined {
-  return (manifest as Record<string, MediaEntry>)[id];
+  return entries[`../../media/${id}.json`];
 }
 
 export function mediaUrl(id: string, theme: Theme, ext: 'webp' | 'mp4'): string {

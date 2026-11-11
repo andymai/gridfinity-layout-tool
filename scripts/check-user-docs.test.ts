@@ -200,13 +200,14 @@ describe('checkMedia', () => {
     'a-clip': { kind: 'clip', width: 640, height: 480 },
   } as const;
   const all = [
-    'manifest.json',
+    'a-still.json',
+    'a-clip.json',
     ...mediaFiles('a-still', manifest['a-still']),
     ...mediaFiles('a-clip', manifest['a-clip']),
   ];
 
   it('accepts captures that fill a page and have both themes', () => {
-    expect(all).toHaveLength(7);
+    expect(all).toHaveLength(8);
     expect(checkMedia(pages, manifest, all)).toEqual([]);
   });
 
@@ -216,6 +217,7 @@ describe('checkMedia', () => {
       { ...manifest, gone: { kind: 'still', width: 1, height: 1 } },
       [
         ...all.filter((f) => f !== 'a-clip.dark.mp4'),
+        'gone.json',
         'gone.light.webp',
         'gone.dark.webp',
         'old.png',
@@ -223,8 +225,8 @@ describe('checkMedia', () => {
     );
     expect(problems).toEqual([
       'apps/docs/media: a-clip.dark.mp4 is missing for "a-clip"',
-      'apps/docs/media/manifest.json: "gone" fills no <Screenshot> on any page',
-      'apps/docs/media: old.png is not in the manifest',
+      'apps/docs/media/gone.json: fills no <Screenshot> on any page',
+      'apps/docs/media: old.png belongs to no capture',
     ]);
   });
 });

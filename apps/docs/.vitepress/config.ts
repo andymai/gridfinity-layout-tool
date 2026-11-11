@@ -7,11 +7,10 @@ import { renderUiTags } from './uiLabels.ts';
 
 const SCREENSHOT_TAG = /<Screenshot\s[^>]*\bid="([^"]+)"[^>]*\/>/g;
 const captured = new Set(
-  Object.keys(
-    JSON.parse(
-      fs.readFileSync(fileURLToPath(new URL('../media/manifest.json', import.meta.url)), 'utf8')
-    ) as object
-  )
+  fs
+    .readdirSync(fileURLToPath(new URL('../media/', import.meta.url)))
+    .filter((f) => f.endsWith('.json'))
+    .map((f) => f.slice(0, -'.json'.length))
 );
 
 // A screenshot that is not captured yet shows its capture spec in dev, so

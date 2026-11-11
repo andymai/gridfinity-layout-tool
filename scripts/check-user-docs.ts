@@ -157,7 +157,6 @@ export function checkScreenshotIds(pages: readonly DocPage[]): string[] {
 }
 
 const MEDIA_DIR = `${DOCS_DIR}/media`;
-const MANIFEST = `${MEDIA_DIR}/manifest.json`;
 
 export interface MediaEntry {
   kind: 'still' | 'clip';
@@ -165,14 +164,19 @@ export interface MediaEntry {
   height: number;
 }
 
+/** Each capture's `<id>.json`, by id. */
 function readManifest(): Record<string, MediaEntry> {
-  const file = path.join(ROOT, MANIFEST);
-  return fs.existsSync(file)
-    ? (JSON.parse(fs.readFileSync(file, 'utf8')) as Record<string, MediaEntry>)
-    : {};
+  return Object.fromEntries(
+    mediaDirFiles()
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => [
+        f.slice(0, -'.json'.length),
+        JSON.parse(fs.readFileSync(path.join(ROOT, MEDIA_DIR, f), 'utf8')) as MediaEntry,
+      ])
+  );
 }
 
-/** The files `scripts/docs-capture` writes for one entry. */
+/** The media files `scripts/docs-capture` writes for one entry, beside its `<id>.json`. */
 export function mediaFiles(id: string, entry: MediaEntry): string[] {
   const exts = entry.kind === 'clip' ? ['webp', 'mp4'] : ['webp'];
   return ['light', 'dark'].flatMap((theme) => exts.map((ext) => `${id}.${theme}.${ext}`));
@@ -180,8 +184,8 @@ export function mediaFiles(id: string, entry: MediaEntry): string[] {
 
 /**
  * Media must stay in step with the pages: each capture fills a `<Screenshot>`
- * on some page and has both themes on disk, and no file sits outside the
- * manifest, where nothing would ever show or replace it.
+ * on some page and has both themes on disk, and every file belongs to a
+ * capture, or nothing would ever show or replace it.
  */
 export function checkMedia(
   pages: readonly DocPage[],
@@ -192,21 +196,23 @@ export function checkMedia(
     pages.flatMap((p) => [...p.body.matchAll(SCREENSHOT_TAG)].map(([, id]) => id))
   );
   const present = new Set(files);
-  const owned = new Set(['manifest.json']);
+  const owned = new Set<string>();
   const problems: string[] = [];
   for (const [id, entry] of Object.entries(manifest)) {
-    if (!used.has(id)) problems.push(`${MANIFEST}: "${id}" fills no <Screenshot> on any page`);
+    const json = `${MEDIA_DIR}/${id}.json`;
+    owned.add(`${id}.json`);
+    if (!used.has(id)) problems.push(`${json}: fills no <Screenshot> on any page`);
     if (entry.kind !== 'still' && entry.kind !== 'clip')
-      problems.push(`${MANIFEST}: "${id}" has kind "${String(entry.kind)}"`);
+      problems.push(`${json}: kind "${String(entry.kind)}" is not still or clip`);
     if (!(entry.width > 0 && entry.height > 0))
-      problems.push(`${MANIFEST}: "${id}" needs a positive width and height`);
+      problems.push(`${json}: needs a positive width and height`);
     for (const file of mediaFiles(id, entry)) {
       owned.add(file);
       if (!present.has(file)) problems.push(`${MEDIA_DIR}: ${file} is missing for "${id}"`);
     }
   }
   for (const file of files) {
-    if (!owned.has(file)) problems.push(`${MEDIA_DIR}: ${file} is not in the manifest`);
+    if (!owned.has(file)) problems.push(`${MEDIA_DIR}: ${file} belongs to no capture`);
   }
   return problems;
 }
