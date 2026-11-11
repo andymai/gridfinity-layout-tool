@@ -1,0 +1,21 @@
+scripts/check-user-docs.ts
+  s_1cc363bb3cc76d::t_54d07d49b244e3 23-24,295
+scripts/check-user-docs.test.ts
+  s_1cc363bb3cc76d::t_51b827e60664cf 192-193,197-198
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "63761bb4f570cd3da6783c5a9f583a379e09cae3",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
