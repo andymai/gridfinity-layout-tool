@@ -58,7 +58,7 @@ Bins and baseplates from other Gridfinity makers use the 42 mm grid. Keep 42 mm 
 
 The grid unit field has a chain icon. Click the chain to unlink X and Y, then type a different pitch for the depth. A grid that is not square can fill a drawer that is not a multiple of 42 mm. Only the cell pitch stretches. Holes, corner radii, walls and the stacking lip keep their size.
 
-In the bin designer, a separate Y pitch applies to that design only.
+The bin designer uses the X and Y pitch of the open layout. A pitch that you change in the bin designer changes the grid of the layout too.
 
 On a grid larger than 42 mm, the baseplate generator shows <Ui k="baseplate.magnetAnchor" />. It sets where the magnet holes sit in each cell, for the baseplate, the bins and the lids together.
 
