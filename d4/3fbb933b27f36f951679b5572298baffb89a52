@@ -1,0 +1,22 @@
+apps/docs/recipes/electronics-craft-organizer.md
+  s_1cc363bb3cc76d::t_0b9797361caaf6 111,127
+apps/docs/recipes/deep-tool-drawer.md
+  s_1cc363bb3cc76d::t_0b9797361caaf6 90,102
+  s_1cc363bb3cc76d::t_3a7c519337698e 103-104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d43fbb933b27f36f951679b5572298baffb89a52",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
