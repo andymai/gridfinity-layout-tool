@@ -1,0 +1,46 @@
+src/shell/Mobile/MobileHeader/MobileHeader.test.tsx
+  s_1cc363bb3cc76d::t_aacaa7f5d42ea9 63-76
+src/shell/Header/Header.test.tsx
+  s_1cc363bb3cc76d::t_0d545c1c0dc672 343-351
+src/shared/hooks/useAutoSave.test.ts
+  s_1cc363bb3cc76d::t_30393f070eddbf 7,14-21
+  s_1cc363bb3cc76d::t_e6883819eb9eb7 719-720,722-727,736-737
+  s_1cc363bb3cc76d::t_1e7e06fbf95604 639-718,721,728-735,738-740,767-815,817-831,840-841,847-970
+  s_1cc363bb3cc76d::t_20592041846c62 741-766
+  s_1cc363bb3cc76d::t_2e502338fcf96b 816,832-839,842-846
+src/shared/hooks/useBeforeUnloadGuard.test.ts
+  s_1cc363bb3cc76d::t_f6e0199525df01 1-40
+src/features/bin-designer/hooks/useUnsavedWarning.ts
+  s_1cc363bb3cc76d::t_11b0278450709f 10,19
+src/shared/hooks/useAutoSave.ts
+  s_1cc363bb3cc76d::t_569903fc220949 5-6,8-10,12-16,22-32,34-70,73-90,95-107,110-122,124-221,233-234,236-242,245-246,248-249,251,253-254,256-263,265-266,268
+  s_1cc363bb3cc76d::t_b4958c8f946051 108-109
+  s_1cc363bb3cc76d::t_7ddde39546ea6f 91-92
+  s_1cc363bb3cc76d::t_97523c2dab18be 93-94
+  s_1cc363bb3cc76d::t_5ef31f822b2c8e 123
+src/shared/hooks/useBeforeUnloadGuard.ts
+  s_1cc363bb3cc76d::t_ecb609e964b9b2 4-5
+  s_1cc363bb3cc76d::t_950c12927f9c7c 1-3,6-19
+src/shell/Header/Header.tsx
+  s_1cc363bb3cc76d::t_a9004b70f550f3 237-262
+src/shell/Mobile/MobileHeader/MobileHeader.tsx
+  s_1cc363bb3cc76d::t_d444121909d510 21-26
+  s_1cc363bb3cc76d::t_18275f64c9669d 199
+  s_1cc363bb3cc76d::t_ecad86fcc6996b 224,230
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b12dfc828c55071eeb44ce5118fd9c0daf538622",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
