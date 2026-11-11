@@ -1,0 +1,48 @@
+apps/docs/.vitepress/uiLabels.ts
+  s_1cc363bb3cc76d::t_3e36b5492a0d1c 1
+apps/docs/designer/label-plates.md
+  s_1cc363bb3cc76d::t_85a49ad6e2ae57 83
+apps/docs/designer/labels-and-text.md
+  s_1cc363bb3cc76d::t_85a49ad6e2ae57 136
+apps/docs/reference/dimensions.md
+  s_1cc363bb3cc76d::t_85a49ad6e2ae57 37-38
+apps/docs/settings/labs.md
+  s_1cc363bb3cc76d::t_bf6461cad81d43 12
+  s_1cc363bb3cc76d::t_85a49ad6e2ae57 3,32
+apps/docs/.vitepress/theme/index.ts
+  s_1cc363bb3cc76d::t_596b7f431b712d 6-37,42-43
+scripts/check-user-docs.ts
+  s_1cc363bb3cc76d::t_3e36b5492a0d1c 345-349
+  s_1cc363bb3cc76d::t_645d766b610385 342-344
+apps/docs/designer/compartments.md
+  s_1cc363bb3cc76d::t_bf6461cad81d43 12
+  s_1cc363bb3cc76d::t_85a49ad6e2ae57 94
+apps/docs/layouts/organizing-layouts.md
+  s_1cc363bb3cc76d::t_85a49ad6e2ae57 74
+apps/docs/designer/colors.md
+  s_1cc363bb3cc76d::t_85a49ad6e2ae57 50,74,112
+apps/docs/.vitepress/config.ts
+  s_1cc363bb3cc76d::t_3e36b5492a0d1c 5-6,38-39,62,65,70-71,83,94-96,98-99
+apps/docs/designer/walls.md
+  s_1cc363bb3cc76d::t_bf6461cad81d43 12
+apps/docs/public/apple-touch-icon.png
+  s_1cc363bb3cc76d::t_0dfbe28f45338c 1
+apps/docs/public/favicon.svg
+  s_1cc363bb3cc76d::t_c0903d02ba8c30 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f5202b6cfdd84ac20ea2cc845c5b887a71438910",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
