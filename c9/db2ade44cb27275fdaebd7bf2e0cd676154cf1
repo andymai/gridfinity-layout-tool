@@ -1,0 +1,38 @@
+src/shared/components/SaveStatusIndicator/SaveStatusIndicator.tsx
+  s_1cc363bb3cc76d::t_1c98a374099b7b 87-88
+src/shared/components/ToolSwitcher/ToolSwitcher.test.tsx
+  s_1cc363bb3cc76d::t_03128ab5ba2d64 147-152
+src/shell/Header/Header.tsx
+  s_1cc363bb3cc76d::t_1c98a374099b7b 146,208,234,287
+  s_1cc363bb3cc76d::t_241d7954fe92b5 106
+src/shared/components/HeaderSupportLinks/HeaderSupportLinks.tsx
+  s_1cc363bb3cc76d::t_2288af7bf307df 266
+src/shell/Header/Header.test.tsx
+  s_1cc363bb3cc76d::t_03128ab5ba2d64 77,83,113,384-396
+  s_1cc363bb3cc76d::t_c0ec7f574b5be5 397-398
+src/shared/components/HeaderSupportLinks/HeaderSupportLinks.test.tsx
+  s_1cc363bb3cc76d::t_03128ab5ba2d64 44,47
+src/shared/components/SaveStatusIndicator/SaveStatusIndicator.test.tsx
+  s_1cc363bb3cc76d::t_03128ab5ba2d64 26-30
+src/shared/components/ToolSwitcher/ToolSwitcher.tsx
+  s_1cc363bb3cc76d::t_1c98a374099b7b 26,29,79-81,83,120,156,159-161
+  s_1cc363bb3cc76d::t_83e723997f743b 27-28,30,82,121,157-158
+src/features/bin-designer/components/DesignerPage/DesignerHeader.tsx
+  s_1cc363bb3cc76d::t_3e60451bab2e84 109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c9db2ade44cb27275fdaebd7bf2e0cd676154cf1",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
