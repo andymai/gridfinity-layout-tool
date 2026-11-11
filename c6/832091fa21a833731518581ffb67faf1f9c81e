@@ -1,0 +1,23 @@
+src/shared/hooks/useAutoSave.ts
+  s_1cc363bb3cc76d::t_6d571dd5bf429f 166
+  s_1cc363bb3cc76d::t_c8832800cc0f8f 165
+src/shared/hooks/useAutoSave.test.ts
+  s_1cc363bb3cc76d::t_3e13037f074f40 789,791-793
+  s_1cc363bb3cc76d::t_be17dd1c8ed1a3 767-788,790,794-796
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c6832091fa21a833731518581ffb67faf1f9c81e",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
