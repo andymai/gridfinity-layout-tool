@@ -1,9 +1,10 @@
-export type DisplayMode =
-  'window-controls-overlay' | 'standalone' | 'minimal-ui' | 'fullscreen' | 'browser';
-
 const MEDIA_MODES = ['window-controls-overlay', 'standalone', 'minimal-ui', 'fullscreen'] as const;
 
-function queryFor(mode: (typeof MEDIA_MODES)[number]): MediaQueryList {
+type MediaDisplayMode = (typeof MEDIA_MODES)[number];
+
+export type DisplayMode = MediaDisplayMode | 'browser';
+
+function queryFor(mode: MediaDisplayMode): MediaQueryList {
   return window.matchMedia(`(display-mode: ${mode})`);
 }
 

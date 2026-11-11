@@ -5,8 +5,8 @@
 
 import type { PostHog } from 'posthog-js';
 import { useSettingsStore } from '@/core/store/settings';
-import { getStableUserId, syncAnalyticsDataAcrossWindows } from './identity';
 import { getDisplayMode } from '@/shared/pwa/displayMode';
+import { getStableUserId, syncAnalyticsDataAcrossWindows } from './identity';
 import { filterExceptionForPosthog } from './errorFilters';
 
 // INITIALIZATION (LAZY LOADED)
