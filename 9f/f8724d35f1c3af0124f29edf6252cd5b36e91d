@@ -1,0 +1,45 @@
+apps/docs/layouts/find-bins-that-fit.md
+  s_1cc363bb3cc76d::t_1ce6efebec4e54 25
+apps/docs/layouts/layers.md
+  s_1cc363bb3cc76d::t_7fea6765bfd065 90
+apps/docs/layouts/multi-select.md
+  s_1cc363bb3cc76d::t_93992b393501ce 45
+apps/docs/layouts/placing-bins.md
+  s_1cc363bb3cc76d::t_751b88d7c782ea 95
+apps/docs/media/layouts-categories-panel.json
+  s_1cc363bb3cc76d::t_c36a53c7e1cae3 1-5
+apps/docs/media/layouts-drawer-setup-ceiling.json
+  s_1cc363bb3cc76d::t_8bb3e1a2170e3b 1-5
+apps/docs/media/layouts-drawer-setup-grid-size.json
+  s_1cc363bb3cc76d::t_bb36c40c5ad6a9 1-5
+apps/docs/media/layouts-find-bins-toolbar.json
+  s_1cc363bb3cc76d::t_3760c4618ba745 1-5
+apps/docs/media/layouts-layers-exploded.json
+  s_1cc363bb3cc76d::t_48ce202fe34c05 1-5
+apps/docs/media/layouts-layers-panel.json
+  s_1cc363bb3cc76d::t_92fbcc826816e6 1-5
+apps/docs/media/layouts-multi-select-toolbar.json
+  s_1cc363bb3cc76d::t_7345b00be6d853 1-5
+apps/docs/media/layouts-organizing-manager.json
+  s_1cc363bb3cc76d::t_ff802b5a16a1df 1-5
+apps/docs/media/layouts-placing-bins-stash.json
+  s_1cc363bb3cc76d::t_faa499f9f71b6a 1-5
+scripts/docs-capture/shots/layouts.ts
+  s_1cc363bb3cc76d::t_2e2d40454446e1 1-9,11-988
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9ff8724d35f1c3af0124f29edf6252cd5b36e91d",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
