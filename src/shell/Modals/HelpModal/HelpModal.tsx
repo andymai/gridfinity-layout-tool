@@ -114,7 +114,13 @@ function HelpContent({ onClose, isTablet, searchRef }: HelpContentProps) {
           placeholder={t('help.searchPlaceholder')}
           wrapperClassName="min-w-0 max-w-xs flex-1"
         />
-        <DocsLink label={t('help.readDocs')} className="ml-auto shrink-0" />
+        {/* Icon only on a phone, where the search field needs the row. */}
+        <DocsLink
+          label={t('help.readDocs')}
+          ariaLabel={t('help.readDocs')}
+          labelClassName="hidden sm:inline"
+          className="ml-auto shrink-0"
+        />
       </Dialog.SubHeader>
       <Dialog.Body className="py-6 scrollbar-thin">
         {isSearching ? (

@@ -19,7 +19,6 @@ const DOCS_BUILD = path.join(ROOT, 'apps', 'docs', '.vitepress', 'dist');
 
 const MANIFEST_START = 'precacheAndRoute([';
 
-/** The `url` of every entry in the precache manifest that workbox inlines into sw.js. */
 export function precacheUrls(serviceWorker: string): string[] {
   const start = serviceWorker.indexOf(MANIFEST_START);
   if (start < 0) return [];
@@ -30,7 +29,6 @@ export function precacheUrls(serviceWorker: string): string[] {
   return [...manifest.matchAll(/["']?url["']?\s*:\s*["']([^"']+)["']/g)].map((m) => m[1]);
 }
 
-/** Manifest URLs that fall under the docs prefix, with or without a leading slash. */
 export function docsUrls(urls: readonly string[]): string[] {
   const prefix = `${DOCS_PREFIX.slice(1)}/`;
   return urls.filter((url) => url.replace(/^\//, '').startsWith(prefix));
