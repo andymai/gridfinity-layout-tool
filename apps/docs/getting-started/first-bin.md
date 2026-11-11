@@ -96,3 +96,4 @@ After your first export, a message says <Ui k="binDesigner.plannerBridge.message
 - [Compartments and dividers](../designer/compartments): bento layouts, removable dividers and compartments of different sizes
 - [Labels and text](../designer/labels-and-text): text styles, swappable label plates and text on the floor
 - [File formats](../printing/file-formats): more about STL, 3MF and STEP
+- [Hand tools with custom pockets](../recipes/hand-tool-pockets): a solid bin with a pocket for each tool
