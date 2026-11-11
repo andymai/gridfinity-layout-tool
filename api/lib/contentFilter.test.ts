@@ -317,8 +317,6 @@ describe('filterLayoutContent', () => {
     });
   });
 
-  // The blocklist matched as a substring, so any word that merely starts with
-  // or contains a listed term blocked the whole share.
   describe('maker words that contain a listed term', () => {
     it.each(['Spices', 'Spiced rum', 'Flame retardant tape', 'cp sockets', 'Scunthorpe bolts'])(
       'passes the bin label %s',
@@ -344,8 +342,6 @@ describe('filterLayoutContent', () => {
     });
   });
 
-  // `on\w+=` was written for inline handlers, but it matched "on" anywhere in
-  // a word, so ordinary key=value notes read as an event attribute.
   describe('key=value notes', () => {
     it.each([
       'Connector=JST',
@@ -610,24 +606,29 @@ describe('checkText', () => {
     }
   });
 
-  // Dropping the scheme was enough to get a link past the https? rule.
   it.each([
     'www.example.com',
     'Get the STL at WWW.Example.org/thing/42',
     'mirror:www.spam-site.net',
+    'www.例子.com',
+    'www.example.中国',
+    'www.उदाहरण.भारत',
   ])('rejects the scheme-less link %s', (text) => {
     expect(checkText(text).passed).toBe(false);
   });
 
-  it.each(['3.5mm drill', 'Firmware v2.1', 'bracket.stl', 'README.md', 'e.g. M3 screws', 'www.'])(
-    'passes dotted text that is not a link: %s',
-    (text) => {
-      expect(checkText(text).passed).toBe(true);
-    }
-  );
+  it.each([
+    '3.5mm drill',
+    'Firmware v2.1',
+    'bracket.stl',
+    'README.md',
+    'e.g. M3 screws',
+    'www.',
+    'www.例子',
+  ])('passes dotted text that is not a link: %s', (text) => {
+    expect(checkText(text).passed).toBe(true);
+  });
 
-  // Matching whole words must not open a gap for the forms the substring
-  // match caught: inflections, and the listed word glued to digits or symbols.
   it.each([
     'spic',
     'Spics',
@@ -650,8 +651,6 @@ describe('checkText', () => {
     }
   );
 
-  // The long slurs and the phrases match with every separator removed, so a
-  // compound or a joined phrase does not get past the whole-word match.
   it.each([
     'niggerish',
     'dumbnigger',
@@ -673,8 +672,8 @@ describe('checkText', () => {
     }
   );
 
-  // Each of these terms sits inside innocent text, so only the whole word
-  // blocks. "Aucun trou" is one of the app's own French strings.
+  // Pins which terms stay out of ANYWHERE_TERMS: each one occurs inside
+  // innocent text. "Aucun trou" is one of the app's own French strings.
   it.each([
     ['cuntface', 'cunt'],
     ['Aucun trou', 'cunt'],
@@ -685,8 +684,6 @@ describe('checkText', () => {
     expect(checkText(text).passed).toBe(true);
   });
 
-  // An attribute name in HTML starts after whitespace, "/" or a quote, so a
-  // word-start anchor costs nothing against real markup.
   it.each([
     '<img src=x onerror=alert(1)>',
     '<svg/onload=alert(1)>',

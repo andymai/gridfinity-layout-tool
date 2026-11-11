@@ -71,8 +71,9 @@ const HARMFUL_PATTERNS = [
   // URLs (could be phishing/malicious)
   /https?:\/\/[^\s]+/i,
   // Scheme-less links. Bare hosts stay allowed: "bracket.stl" and
-  // "README.md" have the same shape as a domain.
-  /\bwww\.[a-z0-9-]{1,63}\.[a-z]{2}/i,
+  // "README.md" have the same shape as a domain. \p{M} is there because
+  // scripts such as Devanagari write vowels as marks (".भारत").
+  /\bwww\.[\p{L}\p{M}\p{N}-]{1,63}\.\p{L}[\p{L}\p{M}\p{N}]/iu,
   // Repeated characters suggesting spam
   /(.)\1{10,}/,
   // Zalgo text (combining characters spam)
