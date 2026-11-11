@@ -5307,7 +5307,7 @@
   "settings.general.installApp": "Instalar app",
   "settings.general.installAppHint": "Usa Layout Tool en su propia ventana, con un icono en el Dock, la barra de tareas o la pantalla de inicio.",
   "settings.general.installAppInstalled": "Estás usando la app instalada.",
-  "settings.general.installAppManual": "Para instalarla, usa el comando de instalación del menú de tu navegador.",
+  "settings.general.installAppManual": "Para instalarla, usa el comando de instalación del menú de tu navegador. No todos los navegadores lo tienen.",
   "settings.search.keywords.updateSummaries": "novedades, registro de cambios, actualizaciones, notas de versión, cambios recientes",
   "settings.search.keywords.installApp": "instalar, app, aplicación, pwa, escritorio, dock, barra de tareas, pantalla de inicio, ventana, acceso directo",
   "whatsNew.action.openTool.layout": "Abrir Diseño",

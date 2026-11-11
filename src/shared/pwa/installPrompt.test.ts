@@ -55,6 +55,16 @@ describe('install prompt', () => {
     await expect(promptInstall()).resolves.toBe('unavailable');
   });
 
+  it('reports unavailable when Chrome rejects the prompt', async () => {
+    const event = Object.assign(new Event('beforeinstallprompt'), {
+      prompt: vi.fn().mockRejectedValue(new DOMException('no user gesture', 'NotAllowedError')),
+      userChoice: new Promise(() => undefined),
+    });
+    window.dispatchEvent(event);
+
+    await expect(promptInstall()).resolves.toBe('unavailable');
+  });
+
   it('is unavailable after the app is installed', () => {
     fireInstallAvailable();
 

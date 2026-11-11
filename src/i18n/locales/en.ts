@@ -6262,7 +6262,7 @@ const en: Record<string, string> = {
     'Run the Layout Tool in its own window, with an icon on your dock, taskbar or home screen.',
   'settings.general.installAppInstalled': 'You are using the installed app.',
   'settings.general.installAppManual':
-    'To install, use the install command in the menu of your browser.',
+    'To install, use the install command in the menu of your browser. Not every browser has one.',
   'settings.spacemouse': 'SpaceMouse',
   'settings.spacemouseEnable': 'Use a SpaceMouse',
   'settings.spacemouseHint':

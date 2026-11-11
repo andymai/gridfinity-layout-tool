@@ -29,12 +29,19 @@ export function InstallAppOffer() {
     trackPwaInstallOfferClosed('export_success');
   };
 
+  // Hide at once: after a dismissal Chrome fires a fresh beforeinstallprompt,
+  // which would otherwise bring the row back while the view is still open.
+  const handleInstall = () => {
+    setClosed(true);
+    void install();
+  };
+
   return (
     <div className="mt-4 flex w-full items-center gap-1">
       <Button
         variant="ghost"
         fullWidth
-        onClick={() => void install()}
+        onClick={handleInstall}
         className="h-auto justify-start gap-3 px-3 py-2 text-left"
         leftIcon={
           <svg

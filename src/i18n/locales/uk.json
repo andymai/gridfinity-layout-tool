@@ -5549,7 +5549,7 @@
   "settings.general.installApp": "Установлення застосунку",
   "settings.general.installAppHint": "Запускайте Layout Tool в окремому вікні з іконкою в Dock, на панелі завдань або на головному екрані.",
   "settings.general.installAppInstalled": "Ви користуєтеся встановленим застосунком.",
-  "settings.general.installAppManual": "Щоб установити, скористайтеся командою встановлення в меню браузера.",
+  "settings.general.installAppManual": "Щоб установити, скористайтеся командою встановлення в меню браузера. Не кожен браузер її має.",
   "settings.search.keywords.updateSummaries": "що нового, журнал змін, оновлення, примітки до випуску, останні зміни",
   "settings.search.keywords.installApp": "установити, застосунок, pwa, робочий стіл, dock, панель завдань, головний екран, вікно, ярлик",
   "whatsNew.action.openTool.layout": "Відкрити Розкладка",

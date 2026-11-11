@@ -5549,7 +5549,7 @@
   "settings.general.installApp": "Instalacja aplikacji",
   "settings.general.installAppHint": "Uruchamiaj Layout Tool we własnym oknie, z ikoną w Docku, na pasku zadań lub na ekranie głównym.",
   "settings.general.installAppInstalled": "Używasz zainstalowanej aplikacji.",
-  "settings.general.installAppManual": "Aby zainstalować, użyj polecenia instalacji w menu przeglądarki.",
+  "settings.general.installAppManual": "Aby zainstalować, użyj polecenia instalacji w menu przeglądarki. Nie każda przeglądarka je ma.",
   "settings.search.keywords.updateSummaries": "nowości, dziennik zmian, aktualizacje, informacje o wydaniu, ostatnie zmiany",
   "settings.search.keywords.installApp": "instalacja, aplikacja, pwa, pulpit, dock, pasek zadań, ekran główny, okno, skrót",
   "whatsNew.action.openTool.layout": "Otwórz Układ",

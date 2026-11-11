@@ -5307,7 +5307,7 @@
   "settings.general.installApp": "Installer app",
   "settings.general.installAppHint": "Kjør Layout Tool i et eget vindu, med et ikon i Dock, på oppgavelinjen eller på startskjermen.",
   "settings.general.installAppInstalled": "Du bruker den installerte appen.",
-  "settings.general.installAppManual": "For å installere, bruk installeringskommandoen i menyen i nettleseren.",
+  "settings.general.installAppManual": "For å installere, bruk installeringskommandoen i menyen i nettleseren. Ikke alle nettlesere har en.",
   "settings.search.keywords.updateSummaries": "nyheter, endringslogg, oppdateringer, versjonsnotater, nylige endringer",
   "settings.search.keywords.installApp": "installer, app, pwa, skrivebord, dock, oppgavelinje, startskjerm, vindu, snarvei",
   "whatsNew.action.openTool.layout": "Åpne Oppsett",

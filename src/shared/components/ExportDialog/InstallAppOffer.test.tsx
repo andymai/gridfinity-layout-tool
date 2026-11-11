@@ -76,6 +76,21 @@ describe('InstallAppOffer', () => {
     expect(prompt).toHaveBeenCalledTimes(1);
   });
 
+  it('stays hidden after a dismissal brings back the browser event', async () => {
+    fireInstallAvailable();
+    render(<InstallAppOffer />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('pwaInstall.title'));
+      await Promise.resolve();
+    });
+    act(() => {
+      fireInstallAvailable();
+    });
+
+    expect(screen.queryByText('pwaInstall.title')).not.toBeInTheDocument();
+  });
+
   it('hides and starts the cooldown when the user closes it', () => {
     fireInstallAvailable();
     render(<InstallAppOffer />);

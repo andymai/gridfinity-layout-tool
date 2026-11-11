@@ -45,12 +45,17 @@ export function canPromptInstall(): boolean {
 export async function promptInstall(): Promise<InstallOutcome> {
   const event = deferredPrompt;
   if (!event) return 'unavailable';
-  // An event can open its dialog once. After a dismissal Chrome fires a fresh one.
+  // An event can open its dialog once.
   deferredPrompt = null;
   notify();
-  await event.prompt();
-  const { outcome } = await event.userChoice;
-  return outcome;
+  try {
+    await event.prompt();
+    const { outcome } = await event.userChoice;
+    return outcome;
+  } catch {
+    // Chrome rejects a prompt() outside a user gesture or on a used event.
+    return 'unavailable';
+  }
 }
 
 export function isInstallOfferClosed(now: number = Date.now()): boolean {
@@ -66,6 +71,6 @@ export function closeInstallOffer(now: number = Date.now()): void {
   try {
     localStorage.setItem(OFFER_STORAGE_KEY, String(now));
   } catch {
-    // Storage full or blocked: the offer can show again, which is harmless.
+    // Best effort: without storage the offer can show again.
   }
 }

@@ -5186,7 +5186,7 @@
   "settings.general.installApp": "应用安装",
   "settings.general.installAppHint": "在独立窗口中运行 Layout Tool，并在程序坞、任务栏或主屏幕上放置图标。",
   "settings.general.installAppInstalled": "你正在使用已安装的应用。",
-  "settings.general.installAppManual": "如需安装，请使用浏览器菜单中的安装命令。",
+  "settings.general.installAppManual": "如需安装，请使用浏览器菜单中的安装命令。并非所有浏览器都有此命令。",
   "settings.search.keywords.updateSummaries": "新增功能, 更新日志, 更新, 发行说明, 近期变更",
   "settings.search.keywords.installApp": "安装, 应用, pwa, 桌面, 程序坞, 任务栏, 主屏幕, 窗口, 快捷方式",
   "whatsNew.action.openTool.layout": "打开布局",

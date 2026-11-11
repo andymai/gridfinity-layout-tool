@@ -5186,7 +5186,7 @@
   "settings.general.installApp": "앱 설치하기",
   "settings.general.installAppHint": "Layout Tool을 별도 창에서 실행하고 Dock, 작업 표시줄 또는 홈 화면에 아이콘을 둡니다.",
   "settings.general.installAppInstalled": "설치된 앱을 사용하고 있습니다.",
-  "settings.general.installAppManual": "설치하려면 브라우저 메뉴의 설치 명령을 사용하세요.",
+  "settings.general.installAppManual": "설치하려면 브라우저 메뉴의 설치 명령을 사용하세요. 모든 브라우저에 있는 것은 아닙니다.",
   "settings.search.keywords.updateSummaries": "새로운 기능, 변경 로그, 업데이트, 릴리스 노트, 최근 변경 사항",
   "settings.search.keywords.installApp": "설치, 앱, pwa, 데스크톱, dock, 작업 표시줄, 홈 화면, 창, 바로가기",
   "whatsNew.action.openTool.layout": "레이아웃 열기",

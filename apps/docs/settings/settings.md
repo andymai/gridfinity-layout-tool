@@ -28,11 +28,12 @@ Changed something and want it back? Each section has a <Ui k="settings.section.r
 
 The <Ui k="settings.tabs.general" /> tab:
 
-| Setting                                         | What it does                                                                                  |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| <Ui k="settings.language" />                    | <Ui k="settings.autoDetect" /> follows your browser. You can also pick one of 16 languages.   |
-| <Ui k="settings.general.showUpdateSummaries" /> | Shows a short summary of the changes after an update. The sidebar marks new items either way. |
-| <Ui k="settings.spacemouse" />                  | Turns on a 3Dconnexion SpaceMouse. See [SpaceMouse](./spacemouse).                            |
+| Setting                                         | What it does                                                                                                       |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| <Ui k="settings.language" />                    | <Ui k="settings.autoDetect" /> follows your browser. You can also pick one of 16 languages.                        |
+| <Ui k="settings.general.showUpdateSummaries" /> | Shows a short summary of the changes after an update. The sidebar marks new items either way.                      |
+| <Ui k="settings.general.installApp" />          | Installs the Layout Tool as an app with its own window. See [Install and work offline](./offline#install-the-app). |
+| <Ui k="settings.spacemouse" />                  | Turns on a 3Dconnexion SpaceMouse. See [SpaceMouse](./spacemouse).                                                 |
 
 The <Ui k="settings.tabs.appearance" /> tab:
 
