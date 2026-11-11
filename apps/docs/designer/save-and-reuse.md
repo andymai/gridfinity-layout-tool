@@ -20,7 +20,7 @@ Every bin you design goes into your design library, and it saves as you go. Come
 
 You never need to press save. The bin designer keeps the open design in your library, and it saves a change about one second after you stop. To name the design, click its name in the header and type a new one.
 
-To open the library, click <Ui k="binDesigner.designs" /> next to the design name. On a phone, tap the design name. The <Ui k="binDesigner.savedDesigns" /> list opens. Click a design to open it, or click <Ui k="binDesigner.newDesign" /> to start a new bin. The current design stays in the library.
+To open the library, click the button next to the design name. Its tooltip reads <Ui k="binDesigner.openDesignList" />, and on a wide screen the button reads <Ui k="binDesigner.designs" />. On a phone, tap the design name. The <Ui k="binDesigner.savedDesigns" /> list opens. Click a design to open it, or click <Ui k="binDesigner.newDesign" /> to start a new bin. The current design stays in the library.
 
 Each design has a menu with these actions:
 
