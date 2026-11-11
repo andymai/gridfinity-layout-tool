@@ -243,9 +243,14 @@ const previewDraftExact: Shot = {
     const frames = 120;
     let shown = 0;
     await s.take(result, async () => {
-      while (shown < frames - 60 && !(await exactShown(s))) {
+      while (shown < frames - 30 && !(await exactShown(s))) {
         await s.ui.hold(1 / FPS);
         shown++;
+      }
+      if (!(await exactShown(s))) {
+        throw new Error(
+          'the exact model did not arrive within the clip; the poster would show the draft'
+        );
       }
       // Past the fade-in of the exact model's edges.
       await s.ui.hold(10 / FPS);
