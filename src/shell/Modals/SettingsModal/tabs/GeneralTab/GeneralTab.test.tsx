@@ -99,6 +99,7 @@ describe('GeneralTab', () => {
 
     beforeEach(() => {
       window.dispatchEvent(new Event('appinstalled'));
+      localStorage.clear();
     });
 
     it('points to the browser when the app cannot prompt an install', () => {
@@ -122,6 +123,17 @@ describe('GeneralTab', () => {
       fireEvent.click(screen.getByRole('button', { name: 'pwaInstall.install' }));
 
       expect(prompt).toHaveBeenCalledTimes(1);
+    });
+
+    it('says the app is installed after an install that stays in the tab', () => {
+      render(<GeneralTab />);
+
+      act(() => {
+        window.dispatchEvent(new Event('appinstalled'));
+      });
+
+      expect(screen.getByText('settings.general.installAppInstalledInBrowser')).toBeInTheDocument();
+      expect(screen.queryByText('settings.general.installAppManual')).not.toBeInTheDocument();
     });
 
     it('shows the installed note when the tab moves into the app window', () => {

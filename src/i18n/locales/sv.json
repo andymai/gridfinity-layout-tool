@@ -5307,6 +5307,7 @@
   "settings.general.installApp": "Installera app",
   "settings.general.installAppHint": "Kör Layout Tool i ett eget fönster, med en ikon i Dock, i aktivitetsfältet eller på hemskärmen.",
   "settings.general.installAppInstalled": "Du använder den installerade appen.",
+  "settings.general.installAppInstalledInBrowser": "Appen är installerad i den här webbläsaren. Öppna den från ikonen.",
   "settings.general.installAppManual": "Installera med installationskommandot i webbläsarens meny. Alla webbläsare har inte ett.",
   "settings.search.keywords.updateSummaries": "nyheter, ändringslogg, uppdateringar, versionsinformation, senaste ändringar",
   "settings.search.keywords.installApp": "installera, app, pwa, skrivbord, dock, aktivitetsfält, hemskärm, fönster, genväg",

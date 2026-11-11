@@ -6261,6 +6261,8 @@ const en: Record<string, string> = {
   'settings.general.installAppHint':
     'Run the Layout Tool in its own window, with an icon on your dock, taskbar or home screen.',
   'settings.general.installAppInstalled': 'You are using the installed app.',
+  'settings.general.installAppInstalledInBrowser':
+    'The app is installed in this browser. Open it from its icon.',
   'settings.general.installAppManual':
     'To install, use the install command in the menu of your browser. Not every browser has one.',
   'settings.spacemouse': 'SpaceMouse',

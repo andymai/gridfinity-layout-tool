@@ -5307,6 +5307,7 @@
   "settings.general.installApp": "App-installatie",
   "settings.general.installAppHint": "Gebruik Layout Tool in een eigen venster, met een pictogram in het Dock, op de taakbalk of op het beginscherm.",
   "settings.general.installAppInstalled": "Je gebruikt de geïnstalleerde app.",
+  "settings.general.installAppInstalledInBrowser": "De app is in deze browser geïnstalleerd. Open de app via het pictogram.",
   "settings.general.installAppManual": "Gebruik om te installeren de installatieopdracht in het menu van je browser. Niet elke browser heeft er een.",
   "settings.search.keywords.updateSummaries": "wat is er nieuw, wijzigingslogboek, updates, releaseopmerkingen, recente wijzigingen",
   "settings.search.keywords.installApp": "installeren, app, pwa, desktop, dock, taakbalk, beginscherm, venster, snelkoppeling",

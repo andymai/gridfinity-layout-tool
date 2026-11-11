@@ -5307,6 +5307,7 @@
   "settings.general.installApp": "Installazione dell'app",
   "settings.general.installAppHint": "Usa Layout Tool in una finestra dedicata, con un'icona nel Dock, nella barra delle applicazioni o nella schermata Home.",
   "settings.general.installAppInstalled": "Stai usando l'app installata.",
+  "settings.general.installAppInstalledInBrowser": "L'app è installata in questo browser. Aprila dalla sua icona.",
   "settings.general.installAppManual": "Per installarla, usa il comando di installazione nel menu del browser. Non tutti i browser lo hanno.",
   "settings.search.keywords.updateSummaries": "novità, registro modifiche, aggiornamenti, note di rilascio, modifiche recenti",
   "settings.search.keywords.installApp": "installa, app, applicazione, pwa, desktop, dock, barra delle applicazioni, schermata home, finestra, scorciatoia",

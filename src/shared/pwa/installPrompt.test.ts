@@ -7,6 +7,7 @@ import {
   isInstallOfferClosed,
   promptInstall,
   subscribeInstallPrompt,
+  wasAppInstalled,
 } from './installPrompt';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -65,12 +66,14 @@ describe('install prompt', () => {
     await expect(promptInstall()).resolves.toBe('unavailable');
   });
 
-  it('is unavailable after the app is installed', () => {
+  it('is unavailable after the app is installed, and remembers the install', () => {
     fireInstallAvailable();
+    expect(wasAppInstalled()).toBe(false);
 
     window.dispatchEvent(new Event('appinstalled'));
 
     expect(canPromptInstall()).toBe(false);
+    expect(wasAppInstalled()).toBe(true);
   });
 });
 

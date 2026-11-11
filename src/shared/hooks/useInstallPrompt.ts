@@ -6,17 +6,20 @@ import {
   closeInstallOffer,
   promptInstall,
   subscribeInstallPrompt,
+  wasAppInstalled,
 } from '@/shared/pwa/installPrompt';
 import type { InstallOutcome } from '@/shared/pwa/installPrompt';
 
 export interface InstallPrompt {
   canInstall: boolean;
+  wasInstalled: boolean;
   /** Call from a click handler: Chrome opens its dialog only on a user gesture. */
   install: () => Promise<InstallOutcome>;
 }
 
 export function useInstallPrompt(placement: PwaInstallPlacement): InstallPrompt {
   const canInstall = useSyncExternalStore(subscribeInstallPrompt, canPromptInstall, () => false);
+  const wasInstalled = useSyncExternalStore(subscribeInstallPrompt, wasAppInstalled, () => false);
 
   const install = useCallback(async (): Promise<InstallOutcome> => {
     const outcome = await promptInstall();
@@ -27,5 +30,5 @@ export function useInstallPrompt(placement: PwaInstallPlacement): InstallPrompt 
     return outcome;
   }, [placement]);
 
-  return { canInstall, install };
+  return { canInstall, wasInstalled, install };
 }

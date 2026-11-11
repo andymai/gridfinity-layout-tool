@@ -5307,6 +5307,7 @@
   "settings.general.installApp": "App-Installation",
   "settings.general.installAppHint": "Führen Sie das Layout Tool in einem eigenen Fenster aus, mit einem Symbol im Dock, in der Taskleiste oder auf dem Startbildschirm.",
   "settings.general.installAppInstalled": "Sie verwenden die installierte App.",
+  "settings.general.installAppInstalledInBrowser": "Die App ist in diesem Browser installiert. Öffnen Sie sie über ihr Symbol.",
   "settings.general.installAppManual": "Nutzen Sie zum Installieren den Installationsbefehl im Menü Ihres Browsers. Nicht jeder Browser hat einen.",
   "settings.search.keywords.updateSummaries": "neuerungen, änderungsprotokoll, aktualisierungen, versionshinweise, letzte änderungen",
   "settings.search.keywords.installApp": "installieren, app, pwa, desktop, dock, taskleiste, startbildschirm, fenster, verknüpfung",

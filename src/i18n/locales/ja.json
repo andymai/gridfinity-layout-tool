@@ -5186,6 +5186,7 @@
   "settings.general.installApp": "アプリのインストール",
   "settings.general.installAppHint": "Layout Tool を専用ウィンドウで実行し、Dock、タスクバー、ホーム画面にアイコンを置けます。",
   "settings.general.installAppInstalled": "インストール済みのアプリを使用しています。",
+  "settings.general.installAppInstalledInBrowser": "このブラウザにアプリがインストールされています。アイコンから開いてください。",
   "settings.general.installAppManual": "インストールするには、ブラウザのメニューにあるインストールコマンドを使ってください。すべてのブラウザにあるわけではありません。",
   "settings.search.keywords.updateSummaries": "新着情報, 変更履歴, 更新, リリースノート, 最近の変更",
   "settings.search.keywords.installApp": "インストール, アプリ, pwa, デスクトップ, dock, タスクバー, ホーム画面, ウィンドウ, ショートカット",

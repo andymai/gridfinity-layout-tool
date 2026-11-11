@@ -5173,6 +5173,7 @@
   "settings.general.installApp": "აპის ინსტალაცია",
   "settings.general.installAppHint": "გაუშვით Layout Tool ცალკე ფანჯარაში, ხატულით Dock-ში, ამოცანების პანელზე ან მთავარ ეკრანზე.",
   "settings.general.installAppInstalled": "თქვენ იყენებთ დაყენებულ აპს.",
+  "settings.general.installAppInstalledInBrowser": "აპი დაყენებულია ამ ბრაუზერში. გახსენით მისი ხატულიდან.",
   "settings.general.installAppManual": "დასაყენებლად გამოიყენეთ დაყენების ბრძანება ბრაუზერის მენიუში. ყველა ბრაუზერს არ აქვს.",
   "engagement.feedbackNudge": "ხელსაწყოსთვის იდეები გაქვთ? თქვენი გამოხმაურება განსაზღვრავს, რა შეიქმნება შემდეგ.",
   "engagement.giveFeedback": "გამოხმაურების გაზიარება",

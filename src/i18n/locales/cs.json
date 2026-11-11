@@ -5430,6 +5430,7 @@
   "settings.general.installApp": "Instalace aplikace",
   "settings.general.installAppHint": "Spouštěj Layout Tool ve vlastním okně s ikonou v Docku, na hlavním panelu nebo na domovské obrazovce.",
   "settings.general.installAppInstalled": "Používáš nainstalovanou aplikaci.",
+  "settings.general.installAppInstalledInBrowser": "Aplikace je v tomto prohlížeči nainstalovaná. Otevři ji z její ikony.",
   "settings.general.installAppManual": "K instalaci použij příkaz pro instalaci v nabídce prohlížeče. Ne každý prohlížeč ho má.",
   "settings.search.keywords.updateSummaries": "novinky, seznam změn, aktualizace, poznámky k vydání, nedávné změny",
   "settings.search.keywords.installApp": "instalace, aplikace, pwa, počítač, dok, hlavní panel, domovská obrazovka, okno, zástupce",

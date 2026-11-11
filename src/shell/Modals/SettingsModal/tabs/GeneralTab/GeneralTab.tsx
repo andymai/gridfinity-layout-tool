@@ -18,7 +18,7 @@ import { SelectableCard } from '../../components/SelectableCard/SelectableCard';
 
 function InstallAppSection() {
   const t = useTranslation();
-  const { canInstall, install } = useInstallPrompt('settings');
+  const { canInstall, wasInstalled, install } = useInstallPrompt('settings');
   const displayMode = useSyncExternalStore<DisplayMode>(
     onDisplayModeChange,
     getDisplayMode,
@@ -36,6 +36,12 @@ function InstallAppSection() {
       <Button variant="secondary" onClick={() => void install()}>
         {t('pwaInstall.install')}
       </Button>
+    );
+  } else if (wasInstalled) {
+    body = (
+      <p className="text-sm text-content-secondary">
+        {t('settings.general.installAppInstalledInBrowser')}
+      </p>
     );
   } else {
     body = (

@@ -5307,6 +5307,7 @@
   "settings.general.installApp": "Installation de l'application",
   "settings.general.installAppHint": "Utilisez Layout Tool dans sa propre fenêtre, avec une icône dans le Dock, la barre des tâches ou l'écran d'accueil.",
   "settings.general.installAppInstalled": "Vous utilisez l'application installée.",
+  "settings.general.installAppInstalledInBrowser": "L'application est installée dans ce navigateur. Ouvrez-la depuis son icône.",
   "settings.general.installAppManual": "Pour l'installer, utilisez la commande d'installation dans le menu de votre navigateur. Tous les navigateurs n'en ont pas.",
   "settings.search.keywords.updateSummaries": "nouveautés, journal des modifications, mises à jour, notes de version, changements récents",
   "settings.search.keywords.installApp": "installer, application, app, pwa, bureau, dock, barre des tâches, écran d'accueil, fenêtre, raccourci",
