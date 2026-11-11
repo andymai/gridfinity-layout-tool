@@ -57,7 +57,7 @@ A file from [stack printing](../baseplates/eco-and-stack-printing) holds a full 
 2. Don't add supports.
 3. Set the layer height to the gap or less. A taller layer closes the gap and fuses the plates together.
 
-The plates meet on a flat ridge that prints with the Arachne or the Classic wall generator.
+Set the wall generator to Arachne. The Classic generator does not print the thin ridges where plates meet, so the first ridge that prints spans a long gap with no support. Snapmaker Orca U1 presets use Classic, so change it on the Quality tab.
 
 ### Two materials for a clean break
 
