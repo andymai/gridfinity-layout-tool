@@ -21,7 +21,7 @@ In this tutorial, you make the baseplate for a drawer. You take the size from yo
 
 You can also open the [baseplate generator](https://gridfinitylayouttool.com/baseplate) directly.
 
-On your first visit, a card with the title <Ui k="baseplate.quickstart.title" /> tells you how the generator works. On a phone, the card does not show.
+On your first visit, a card with the title <Ui k="baseplate.quickstart.title" /> tells you how the baseplate generator works. On a phone, the card does not show.
 
 2. Click <Ui k="baseplate.quickstart.dismiss" /> to close the card. The card also closes when you make your first change.
 
@@ -29,7 +29,7 @@ The settings panel is on the left, and the 3D preview of the plate is on the rig
 
 ## Step 2: Check the size
 
-The generator works on your active layout. In the <Ui k="baseplate.sectionDimensions" /> group, <Ui k="baseplate.syncWithLayout" /> is on by default. The plate then has the same size as the drawer grid in the layout editor. While the option is on, you cannot change the <Ui k="baseplate.gridWidth" /> and <Ui k="baseplate.gridDepth" /> steppers.
+The baseplate generator works on your active layout. In the <Ui k="baseplate.sectionDimensions" /> group, <Ui k="baseplate.syncWithLayout" /> is on by default. The plate then has the same size as the drawer grid in the layout editor. While the option is on, you cannot change the <Ui k="baseplate.gridWidth" /> and <Ui k="baseplate.gridDepth" /> steppers.
 
 1. Look at the size line under the steppers. It shows the plate size in millimeters.
 2. Compare it with your drawer. The plate must be smaller than the inside of the drawer.
@@ -39,7 +39,7 @@ The generator works on your active layout. In the <Ui k="baseplate.sectionDimens
 When you change the drawer size in the layout editor, the plate changes with it.
 
 ::: tip
-To fill the drawer to the edges, click the size line. Then type the inside size of your drawer in millimeters. The generator picks the largest grid that fits and fills the gap at the sides with <Ui k="baseplate.padding" />. This turns off <Ui k="baseplate.syncWithLayout" />.
+To fill the drawer to the edges, click the size line. Then type the inside size of your drawer in millimeters. The baseplate generator picks the largest grid that fits and fills the gap at the sides with <Ui k="baseplate.padding" />. This turns off <Ui k="baseplate.syncWithLayout" />.
 :::
 
 ## Step 3: Add magnet holes
@@ -54,7 +54,7 @@ The default holes are 6.5 mm wide and 2 mm deep. They suit the common 6 × 2 mm 
 
 ## Step 4: Split the plate for your print bed
 
-The generator splits a plate that is larger than your print bed into pieces. Tell it the size of your print bed.
+The baseplate generator splits a plate that is larger than your print bed into pieces. Tell it the size of your print bed.
 
 1. Open the <Ui k="common.physicalUnits" /> group.
 2. Set <Ui k="baseplate.printBedSize" /> to the width and depth of your print bed in millimeters. The default is 256 × 256 mm.
@@ -63,7 +63,7 @@ This is the same print bed size that the layout editor uses. If the plate is too
 
 <Screenshot id="getting-started-first-baseplate-split" alt="The map of a baseplate split into four labeled pieces, with the split plate in the 3D preview." spec="Baseplate generator, desktop 1440 px, plate 9 x 7 grid units, print bed 220 x 220 mm. Scroll the panel to the split map at the bottom. Show the panel and the preview side by side." />
 
-To move a split, click a line on the map to add or remove a split. To go back to the generator's own split, click <Ui k="baseplate.splitResetAuto" />.
+To move a split, click a line on the map to add or remove a split. To go back to the baseplate generator's own split, click <Ui k="baseplate.splitResetAuto" />.
 
 When the plate splits, a <Ui k="baseplate.connectors.label" /> option shows in the <Ui k="baseplate.sectionBase" /> group. By default it is <Ui k="baseplate.connectors.none" />, and the pieces sit side by side. Pick a connector style to join the pieces.
 

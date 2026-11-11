@@ -13,7 +13,7 @@ sources:
 
 # Walls
 
-The walls of a bin in the Gridfinity Layout Tool can be thin or strong, solid or patterned. You can also cut openings, handles and label slots into them. This page also covers drainage holes, because they use the same patterns as the walls.
+The walls of a bin in the Gridfinity Layout Tool can be thin or strong, solid or patterned. You can also cut openings, handles and label slots into them. This page also covers drainage holes, because they use the same patterns as the walls. [Anatomy of a bin](../concepts/bin-anatomy#walls) shows where the walls sit in a bin.
 
 The controls are on three pages of the bin designer:
 
@@ -73,14 +73,14 @@ The pattern stops below <Ui k="binDesigner.extraWallHeight" />. For a taller pat
 4. Pick the walls in the wall picker.
 5. Set <Ui k="binDesigner.wallCutouts.span" /> and <Ui k="binDesigner.wallCutouts.height" />.
 
-The button beside each value changes it between a percentage of the wall and millimetres. In millimetres, the designer measures the height down from the rim, so bins of different heights get a cut at the same line. A cutout deeper than its wall stops at the wall.
+The button beside each value changes it between a percentage of the wall and millimeters. In millimeters, the bin designer measures the height down from the rim, so bins of different heights get a cut at the same line. A cutout deeper than its wall stops at the wall.
 
 <Ui k="binDesigner.wallCutouts.linked" /> gives all walls the same size. Click it to change to <Ui k="binDesigner.wallCutouts.independent" /> and size each wall alone. Two folds give more control:
 
 - <Ui k="binDesigner.wallCutouts.position" />: pick <Ui k="binDesigner.alignment.left" />, <Ui k="binDesigner.alignment.center" /> or <Ui k="binDesigner.alignment.right" />, and add an <Ui k="binDesigner.wallCutouts.offset" /> of up to 50 mm.
 - <Ui k="binDesigner.wallCutouts.corners" />: round the top corners, and set the bottom fillet or leave it on <Ui k="binDesigner.wallCutouts.cornerAuto" />.
 
-<Ui k="binDesigner.wallCutouts.interior" /> carries the opening through each divider. When you turn on wall cutouts on a bin with compartments, the designer turns this on for you.
+<Ui k="binDesigner.wallCutouts.interior" /> carries the opening through each divider. When you turn on wall cutouts on a bin with compartments, the bin designer turns this on for you.
 
 ## Add handles
 
@@ -89,7 +89,7 @@ The button beside each value changes it between a percentage of the wall and mil
 1. On the <Ui k="binDesigner.category.features" /> page, turn on <Ui k="binDesigner.handles" />.
 2. Pick a shape: <Ui k="binDesigner.handles.shape.rectangle" />, <Ui k="binDesigner.handles.shape.oval" /> or <Ui k="binDesigner.handles.shape.scoop" />.
 3. Pick the walls in the wall picker.
-4. Set <Ui k="binDesigner.handles.width" /> as a percentage of the wall, and <Ui k="binDesigner.handles.height" /> in millimetres.
+4. Set <Ui k="binDesigner.handles.width" /> as a percentage of the wall, and <Ui k="binDesigner.handles.height" /> in millimeters.
 
 The width goes from 10 to 100 %, and the height from 8 to 30 mm. The fold under the sizes sets the <Ui k="binDesigner.handles.verticalPosition" /> on the wall, from 20 to 90 %, and a <Ui k="binDesigner.handles.count" /> of 1 to 3 holes. <Ui k="binDesigner.handles.chamfer" /> adds a chamfer around the hole, and <Ui k="binDesigner.handles.interior" /> cuts the handles through the dividers too.
 
@@ -97,7 +97,7 @@ Wide holes can need supports when you print them. When label tabs are on, the ba
 
 ## Add label slots
 
-<Ui k="binDesigner.walls.labelSlots.heading" /> on the <Ui k="binDesigner.category.style" /> page cut a vertical slot in the cells of the walls you pick. Each slot holds a 1u label plate that drops in from the top and shows through a window in the wall.
+<Ui k="binDesigner.walls.labelSlots.heading" /> on the <Ui k="binDesigner.category.style" /> page cut a vertical slot in the cells of the walls you pick. Each slot holds a 1U label plate that drops in from the top and shows through a window in the wall.
 
 1. Turn on <Ui k="binDesigner.walls.labelSlots.heading" />.
 2. Pick the walls in <Ui k="binDesigner.walls.labelSlots.sides" />.

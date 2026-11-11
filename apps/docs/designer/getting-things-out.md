@@ -71,7 +71,7 @@ A pull tab is a raised grip that stands above the rim of a wall. Hold it to lift
 
 1. On the <Ui k="binDesigner.category.features" /> page, turn on <Ui k="binDesigner.pullTab.title" />.
 2. Under <Ui k="binDesigner.pullTab.wall" />, pick one or more walls.
-3. Set <Ui k="binDesigner.pullTab.width" />, in millimetres or as a percentage of the wall.
+3. Set <Ui k="binDesigner.pullTab.width" />, in millimeters or as a percentage of the wall.
 4. Set <Ui k="binDesigner.pullTab.height" />, from 3 to 40 mm.
 
 You can put a tab on one wall, on two opposite walls, or on all four. The tabs share the same size. Each wall with a tab gets thicker on the inside, to the value of <Ui k="binDesigner.pullTab.thickness" />. That value goes up to 4 mm. The tab is part of the <Ui k="assembledHeight.title" /> readout.
@@ -98,7 +98,7 @@ A large tray full of dividers is hard to lift from one end. Put the pull tab on 
 2. Under <Ui k="binDesigner.pullTab.wall" />, pick <Ui k="binDesigner.pullTab.side.center" />.
 3. If the bin has dividers in both directions, pick one under <Ui k="binDesigner.pullTab.centerAxis" />.
 
-The designer uses the divider nearest the middle of the bin, and makes it thicker on both sides. The center tab has these conditions:
+The bin designer uses the divider nearest the middle of the bin, and makes it thicker on both sides. The center tab has these conditions:
 
 - The divider must be straight and at full height.
 - Label tabs must be off, because they use the tops of the dividers.

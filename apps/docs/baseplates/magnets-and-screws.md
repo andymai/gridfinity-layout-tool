@@ -32,7 +32,7 @@ All three are off by default. <Ui k="baseplate.stackPrint.enable" /> removes all
 2. Set <Ui k="baseplate.magnetDiameter" />. The default is 6.5 mm, which fits a standard 6 mm magnet.
 3. Set <Ui k="baseplate.magnetDepth" />. The default is 2 mm, for a 6 by 2 mm magnet.
 
-The bins need magnets in the same places. In the bin designer, turn on magnet holes in the base of each bin. See [The base](../designer/base). Under <Ui k="binDesigner.base.section.mounting" />, the bin option <Ui k="binDesigner.base.cornerHolesOnly" /> puts holes only at the outer corners of a bin. A large bin then needs fewer magnets and lifts off the plate more easily.
+The bins need magnets in the same places. In the bin designer, turn on magnet holes in the base of each bin. See [The base](../designer/base#add-magnet-holes). Under <Ui k="binDesigner.base.section.mounting" />, the bin option <Ui k="binDesigner.base.cornerHolesOnly" /> puts holes only at the outer corners of a bin. A large bin then needs fewer magnets and lifts off the plate more easily.
 
 Magnet holes make the plate taller by the magnet depth plus 0.5 mm. The extra 0.5 mm is the floor under each hole.
 

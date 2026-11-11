@@ -52,7 +52,7 @@ Most dialogs, menus and lists also work from the keyboard. See [Keyboard and com
 
 These tabs set the values that a new layout or a new bin starts with. They do not change your existing layouts.
 
-**<Ui k="settings.tabs.defaults" />** sets the drawer width, depth and height, the <Ui k="settings.defaultLayerHeight" />, the <Ui k="settings.defaultPrintBedSize" /> and the <Ui k="settings.defaultGridUnit" />. The drawer size and the layer height are in grid units and height units. The print bed and the grid unit are in millimetres. The grid unit can go from 20 to 60 mm, and standard Gridfinity is 42 mm. <Ui k="settings.copyFromCurrentLayout" /> copies these values from the open layout. See [Units](../concepts/units).
+**<Ui k="settings.tabs.defaults" />** sets the drawer width, depth and height, the <Ui k="settings.defaultLayerHeight" />, the <Ui k="settings.defaultPrintBedSize" /> and the <Ui k="settings.defaultGridUnit" />. The drawer size and the layer height are in grid units and height units. The print bed and the grid unit are in millimeters. The grid unit can go from 20 to 60 mm, and standard Gridfinity is 42 mm. <Ui k="settings.copyFromCurrentLayout" /> copies these values from the open layout. See [Units](../concepts/units).
 
 **<Ui k="settings.tabs.print" />** holds the values for print estimates: <Ui k="settings.filamentCostPerKg" />, <Ui k="settings.printLayerHeight" />, <Ui k="settings.infillPercent" /> and <Ui k="settings.nozzleSize" />. Set them to match your slicer profile. Connectors, wall locks and baseplate clips scale to the nozzle size, so they print on wider nozzles. See [Estimates](../printing/estimates).
 
@@ -68,7 +68,7 @@ These tabs set the values that a new layout or a new bin starts with. They do no
 | <Ui k="settings.tabs.exports" /> | <Ui k="exportDestination.folder.title" /> puts exports in a folder, not in Downloads. <Ui k="exportDestination.url.title" /> also sends a copy of each export to an address. |
 
 ::: warning
-Back up your layouts before you click <Ui k="settings.storage.clearAllData" />. It deletes all layouts, snapshots and cached data in this browser, and you cannot undo it. Your settings stay.
+Back up your layouts before you click <Ui k="settings.storage.clearAllData" />. It deletes all layouts, snapshots and cached data in this browser, and you cannot undo it. Your settings, your saved bin designs and your saved baseplates stay.
 :::
 
 ## Advanced
@@ -82,5 +82,5 @@ Back up your layouts before you click <Ui k="settings.storage.clearAllData" />. 
 
 - [Keyboard and command palette](./keyboard-and-command-palette): run any command without the mouse.
 - [Labs](./labs): try the early features.
-- [Your data](../introduction/your-data): what the browser stores and how to back it up.
+- [Your data and privacy](../introduction/your-data): what the browser stores and how to back it up.
 - [Install and work offline](./offline): use the Layout Tool without a connection.

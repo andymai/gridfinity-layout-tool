@@ -17,7 +17,7 @@ A bin in a layout is a box with a size. A saved design is the full model of a bi
 
 ## The design library
 
-When you save a bin in the bin designer, it goes into your library as a saved design. After that first save, the bin designer saves your changes as you work. Open <Ui k="binDesigner.savedDesigns" /> in the bin designer to see your library.
+Each bin that you make in the bin designer goes into your library as a saved design. The bin designer saves your changes as you work. Open <Ui k="binDesigner.savedDesigns" /> in the bin designer to see your library.
 
 Your library lives in this browser. Sign in to sync it to your other devices.
 

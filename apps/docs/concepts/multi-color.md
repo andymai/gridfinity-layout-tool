@@ -17,7 +17,7 @@ The bin designer can give each part of a bin its own filament color. The export 
 
 ## Color zones
 
-A color zone is a part of the bin that takes one color. Turn on <Ui k="binDesigner.group.colors" /> in the <Ui k="binDesigner.group.finishing" /> group to see the zones. The designer shows a zone only when the bin has that part. For example, the <Ui k="binDesigner.colors.scoop" /> zone appears only on a bin with a finger scoop.
+A color zone is a part of the bin that takes one color. Turn on <Ui k="binDesigner.group.colors" /> in the <Ui k="binDesigner.group.finishing" /> group to see the zones. The bin designer shows a zone only when the bin has that part. For example, the <Ui k="binDesigner.colors.scoop" /> zone appears only on a bin with a finger scoop.
 
 | Zone                                       | What it colors                                                  |
 | ------------------------------------------ | --------------------------------------------------------------- |
@@ -31,7 +31,7 @@ A color zone is a part of the bin that takes one color. Turn on <Ui k="binDesign
 | <Ui k="binDesigner.colors.text" />         | Text on tabs, walls, the floor, cutouts and the lid             |
 | <Ui k="binDesigner.colors.accent.title" /> | A band at the top or the bottom of the body, in mm or in layers |
 
-The stacking lip can have more than one color. Turn on <Ui k="binDesigner.colors.lip.splitZones" />, then set <Ui k="binDesigner.colors.lip.cornersLabel" /> and <Ui k="binDesigner.colors.lip.bandsLabel" />. Each axis takes 1, 2 or 4, so the lip has up to 16 colored cells.
+The stacking lip can have more than one color, in up to 16 colored cells. See [Split the stacking lip](../designer/colors#split-the-stacking-lip).
 
 An accent band colors the top or the bottom of the body. It needs no stacking lip or feet, and it covers every zone under it except text.
 
@@ -51,7 +51,7 @@ The export turns colors into filaments:
 
 In the export dialog, <Ui k="binDesigner.colors.slicerHandoff.show" /> lists the filaments with the numbers that the slicer shows.
 
-The file does not set the filament colors in your slicer. In the slicer, assign each filament to an AMS or MMU slot that holds the right color.
+The file does not set the filament colors in your slicer. In the slicer, assign each filament to an AMS or MMU slot that holds the right color. [Map multi-color zones to filaments](../printing/slicers#map-multi-color-zones-to-filaments) gives the steps.
 
 The file carries no slicer settings, so your own print profile stays in use. For this reason, Bambu Studio shows a notice that the file is not from Bambu Lab, and it loads only the geometry and the colors.
 

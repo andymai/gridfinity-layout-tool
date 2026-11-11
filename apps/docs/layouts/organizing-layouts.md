@@ -41,7 +41,7 @@ The more actions menu of each layout has these items:
 | <Ui k="common.rename" />          | Changes the name                                                            |
 | <Ui k="common.duplicate" />       | Makes a copy with "(copy)" after the name                                   |
 | <Ui k="layouts.folders.moveTo" /> | Puts the layout in a folder                                                 |
-| <Ui k="share.copyLink" />         | Copies a share link for the layout                                          |
+| <Ui k="share.copyLink" />         | Opens <Ui k="share.title" />, to share the layout without a server copy     |
 | <Ui k="common.delete" />          | Deletes the layout after you click <Ui k="layouts.confirmDelete.confirm" /> |
 
 ::: warning
@@ -61,6 +61,8 @@ The folder list is on the left side of the manager. <Ui k="layouts.folders.all" 
 To put a layout in a folder, open its more actions menu and choose <Ui k="layouts.folders.moveTo" />. Pick the folder, then click <Ui k="layouts.folders.move" />.
 
 To rename a folder, double-click its name. To delete a folder, click its delete button two times. Its layouts and folders move up one level, so you lose no layouts.
+
+With the Places feature in Labs, a folder can also be a place, an area or a unit. See [Places and Find](../settings/labs#places-and-find).
 
 ## Go back to an earlier version
 
@@ -87,5 +89,5 @@ The undo history keeps the last 100 changes of the open layout. When you open a 
 
 - [Your data and privacy](../introduction/your-data): where the browser keeps your layouts.
 - [Accounts and sync](../sharing/accounts-and-sync): keep your layouts on all your devices.
-- [Layout file](../reference/layout-file): the file that a download makes.
-- [Share links](../sharing/share-links): send a layout to someone else.
+- [Layout file format](../reference/layout-file): the file that a download makes.
+- [Share a layout](../sharing/share-links): send a layout to someone else.

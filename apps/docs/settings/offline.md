@@ -77,11 +77,11 @@ When the button shows only the version number, you have the newest version that 
 Sometimes a stored copy of the app fails to load after an update. The app then clears that copy and loads the newest version from the server. It does this one time for each tab, so a damaged version cannot reload without end.
 
 ::: info
-A self-hosted copy of the Layout Tool on plain HTTP cannot install or work offline. Use HTTPS or `localhost`. See [Self-hosting](../reference/self-hosting).
+A self-hosted copy of the Layout Tool on plain HTTP cannot install or work offline. Use HTTPS or `localhost`. See [Use HTTPS](../reference/self-hosting#use-https).
 :::
 
 ## Next steps
 
-- [Your data](../introduction/your-data): where the browser keeps your layouts, and how to back them up.
+- [Your data and privacy](../introduction/your-data): where the browser keeps your layouts, and how to back them up.
 - [Accounts and sync](../sharing/accounts-and-sync): keep a copy of your work in your account.
 - [Settings and accessibility](./settings): the other tabs in Settings.

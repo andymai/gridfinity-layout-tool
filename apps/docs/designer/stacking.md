@@ -73,7 +73,7 @@ The <Ui k="binDesigner.base.bodyType.nesting" /> body type is for boxes that sta
 2. To hold the stack together, turn on <Ui k="binDesigner.base.magnetHoles" /> under <Ui k="binDesigner.base.section.mounting" />.
 3. Set <Ui k="binDesigner.lid.retentionEdgeMagnets" /> for a large box.
 
-With magnets on, the box gets four corner magnets. <Ui k="binDesigner.lid.retentionEdgeMagnets" /> adds up to 3 more magnets along each long edge, only where the edge is long enough for them. The magnet size is the same as for the lid. To get matching pockets at the top, choose a magnetic lid. See [Lids](./lids).
+With magnets on, the box gets four corner magnets. <Ui k="binDesigner.lid.retentionEdgeMagnets" /> adds up to 3 more magnets along each long edge, only where the edge is long enough for them. The magnet size is the same as for the lid. To get matching magnet holes at the top, choose a magnetic lid. See [Lids](./lids).
 
 A nesting box does not fit a Gridfinity baseplate. Its lower floor rules out a finger scoop, an interior fillet and removable dividers. Dividers and drainage holes still work.
 

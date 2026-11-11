@@ -78,13 +78,7 @@ To hide the right panel, click <Ui k="rightPanel.collapseRightPanel" />.
 
 ## The command palette
 
-The command palette finds and runs any command in the layout editor from the keyboard.
-
-1. Press <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>Cmd</kbd>+<kbd>K</kbd> on a Mac).
-2. Type a part of the command name, for example "layer".
-3. Press <kbd>Enter</kbd> to run the selected command.
-
-The command palette works in the layout editor on desktop and tablet screens.
+The command palette finds and runs any command in the layout editor from the keyboard. Press <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>Cmd</kbd>+<kbd>K</kbd> on a Mac) to open it, then type a part of the command name. The palette works in the layout editor on desktop and tablet screens. [Keyboard and command palette](../settings/keyboard-and-command-palette) explains what it finds.
 
 <Screenshot id="getting-started-workspace-tour-command-palette" alt="The command palette open over the layout editor, with a search for layer and the matching commands." spec="Layout editor, desktop 1440 px. Press Ctrl+K and type layer. Crop to the palette." />
 
@@ -102,6 +96,13 @@ The other two tools have the same plan. Each has a header, a settings panel on t
 - **Bin designer panel:** the groups <Ui k="binDesigner.group.shape" />, <Ui k="binDesigner.group.lid" />, <Ui k="binDesigner.group.interior" />, <Ui k="binDesigner.group.base" /> and <Ui k="binDesigner.group.finishing" />.
 - **Baseplate generator header:** the tool switcher, the baseplate name, and <Ui k="common.export" />.
 - **Baseplate generator panel:** <Ui k="baseplate.sectionDimensions" />, <Ui k="baseplate.sectionBase" />, <Ui k="common.physicalUnits" />, and the map of pieces for a split plate.
+
+The bin designer panel has two views. A switch next to the search field at the top of the panel changes between them:
+
+- <Ui k="binDesigner.panel.viewAsScroll" /> is the default. It shows the groups above in one long list.
+- <Ui k="binDesigner.panel.viewAsRail" /> puts the controls on five pages: <Ui k="binDesigner.category.shape" />, <Ui k="binDesigner.category.interior" />, <Ui k="binDesigner.category.features" />, <Ui k="binDesigner.category.style" /> and <Ui k="binDesigner.category.print" />.
+
+The pages of the bin designer chapter use the page names of <Ui k="binDesigner.panel.viewAsRail" />.
 
 ## Phones and tablets
 

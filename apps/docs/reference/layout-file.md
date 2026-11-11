@@ -20,7 +20,7 @@ The published schema and a short overview are at [gridfinitylayouttool.com/schem
 
 The Layout Tool writes a layout file in two places:
 
-- In the layout manager (<kbd>Ctrl</kbd>+<kbd>O</kbd>, or <kbd>Cmd</kbd>+<kbd>O</kbd> on macOS), click <Ui k="common.download" /> on the row of a layout.
+- In the layout manager (<kbd>Ctrl</kbd>+<kbd>O</kbd>, or <kbd>Cmd</kbd>+<kbd>O</kbd> on a Mac), click <Ui k="common.download" /> on the row of a layout.
 - In the command palette, run <Ui k="commandPalette.downloadLayout" /> to save the layout that is open.
 
 Both files include a copy of each saved design that a bin in the layout uses. <Ui k="layouts.exportAll" /> in the layout manager saves every layout in one archive file.
@@ -83,9 +83,9 @@ These mistakes give a file that imports without an error but shows the wrong dra
 
 - **The grid origin is at the bottom left.** `x` grows to the right and `y` grows toward the back of the drawer. A bin at `"y": 0` sits at the front.
 - **The first layer is the bottom layer.** The app shows layers from the top down, but the file lists them from the bottom up.
-- **Heights are not millimetres.** A bin `height` counts height units of 7 mm, so `"height": 6` is a 42 mm bin.
-- **Three units live in one file.** Width, depth and position are grid units. Heights are height units. A field that ends in `Mm` is millimetres.
-- **Drawer outline corners are millimetres.** A drawer that is not a rectangle has an `outline` whose corners are in millimetres, not grid units.
+- **Heights are not millimeters.** A bin `height` counts height units of 7 mm, so `"height": 6` is a 42 mm bin.
+- **Three units live in one file.** Width, depth and position are grid units. Heights are height units. A field that ends in `Mm` is millimeters.
+- **Drawer outline corners are millimeters.** A drawer that is not a rectangle has an `outline` whose corners are in millimeters, not grid units.
 - **Half steps are 0.5 only.** A size of `1.5` is correct. A size of `2.25` fails.
 - **The stash is not a layer.** A bin with `"layerId": "__staging__"` goes to the stash. Do not add `__staging__` to `layers`.
 - **Designs travel only inside the file.** A bin with a `linkedDesignId` and no matching `linkedDesigns` entry loses its design on import.
@@ -141,6 +141,6 @@ If you work from a copy of the source code, run `pnpm run validate:json path/to/
 ## Next steps
 
 - [Bin design file format](./design-file): the JSON file for one bin design.
-- [Units and sizes](../concepts/units): how grid units, height units and millimetres relate.
+- [Units and sizes](../concepts/units): how grid units, height units and millimeters relate.
 - [Layouts, layers and the stash](../concepts/layouts-layers-stash): what layers and the stash do in the app.
 - [Organize your layouts](../layouts/organizing-layouts): export, import and archive layouts in the layout manager.

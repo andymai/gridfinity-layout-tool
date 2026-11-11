@@ -68,7 +68,7 @@ Your browser keeps layouts and designs separately for each address, and the port
 | JSON import and export, layout archives                     | Yes          |                                                |
 | Install the app and work offline                            | HTTPS only   | Also works on `localhost`                      |
 | SpaceMouse                                                  | HTTPS only   | Also works on `localhost`                      |
-| Share a layout or a design by link, open a shared link      | No           | The app shows an error                         |
+| Share a layout by link, open a shared link                  | No           | The app shows an error                         |
 | Sign in and sync across devices                             | No           | The sign-in buttons open a short notice page   |
 | Community gallery and publish                               | No           | The gallery shows an error, and publish is off |
 | Live collaboration                                          | No           | The app does not offer it                      |
@@ -78,11 +78,13 @@ Your browser keeps layouts and designs separately for each address, and the port
 
 The container answers every request to `/api/` with a "service unavailable" status. The app reads that answer as "this feature is not available here".
 
+These pages explain the features that need the server: [Share a layout](../sharing/share-links), [Work together live](../sharing/live-collaboration), [Accounts and sync](../sharing/accounts-and-sync) and [The community gallery](../sharing/community).
+
 ## Move your data into your copy
 
 Your layouts on the public site stay in that browser storage. To bring them to your copy:
 
-1. On the public site, open the layout manager with <kbd>Ctrl</kbd>+<kbd>O</kbd> (<kbd>Cmd</kbd>+<kbd>O</kbd> on macOS).
+1. On the public site, open the layout manager with <kbd>Ctrl</kbd>+<kbd>O</kbd> (<kbd>Cmd</kbd>+<kbd>O</kbd> on a Mac).
 2. Click <Ui k="layouts.exportAll" />. The archive holds every layout and the bin designs that the layouts link to.
 3. Open your copy and open the layout manager.
 4. Click <Ui k="common.import" /> and drop the archive file.

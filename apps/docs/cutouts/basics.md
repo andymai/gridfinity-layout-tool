@@ -77,7 +77,7 @@ Open <Ui k="binDesigner.cutouts.section.fit" />:
 - <Ui k="binDesigner.cutouts.clearance" /> adds room on each side so a part drops in. It goes from 0 to 5 mm.
 - <Ui k="binDesigner.cutouts.entryProfile" /> sets the shape of the top edge. <Ui k="binDesigner.cutouts.entryProfile.chamfer" /> is a 45° bevel that guides bits and sockets in. <Ui k="binDesigner.cutouts.entryProfile.round" /> is a smooth curve for tools that you lift out by hand.
 
-New circles, polygons, slots and pen shapes start with 0.2 mm of clearance and a small chamfer. A rectangle has no clearance setting: it cuts to the size that you set.
+New circles, polygons, slots and pen shapes start with 0.2 mm of clearance and a small chamfer. A rectangle has no clearance setting: it cuts to the size that you set. To find the clearance that suits your printer, see [Fit and tolerances](../printing/fit-and-tolerances).
 
 To round the floor edges, set <Ui k="binDesigner.cutouts.scoopRadius" /> in <Ui k="binDesigner.cutouts.section.shape" />. On a rectangle, select <Ui k="binDesigner.cutouts.scoopSplit" /> to set each direction, and pick the edges that get the curve.
 
@@ -121,5 +121,5 @@ Open <Ui k="binDesigner.cutouts.section.label" /> and type the text, up to 50 ch
 - [Arrange cutouts](./arranging): repeat, group, align and pack your cutouts.
 - [Import SVG and STL shapes](./import-svg-stl): bring in a shape from another app.
 - [Check before you print](./print-checks): find thin walls and test the fit.
-- [Label plates](../designer/label-plates): print the plates for a socket label.
-- [Special bins](../designer/special-bins): build a knife block with knife slots.
+- [Swappable label plates](../designer/label-plates#add-sockets-on-cutout-bins): print the plates for a socket label.
+- [Special bins](../designer/special-bins#make-a-knife-block): build a knife block with knife slots.

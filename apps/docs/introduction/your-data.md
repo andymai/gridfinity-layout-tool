@@ -38,11 +38,7 @@ This deletes your layouts, their history, the usage data, and the cached data. I
 
 ## Sign-in and sync
 
-Sign-in is optional. Sign in when you want the same layouts and designs on more than one device. You sign in with a Google or GitHub account. The Layout Tool does not ask for or keep a password.
-
-To sign in, click <Ui k="dock.workingLocally" /> at the bottom of the left sidebar. Then click <Ui k="auth.signInWithGoogle" /> or <Ui k="auth.signInWithGithub" />.
-
-<Screenshot id="introduction-your-data-sign-in" alt="The account menu at the bottom of the left sidebar, with the two sign-in choices." spec="Layout editor on desktop at 1440 px wide, signed out, one saved layout. Click the account dock at the bottom of the left sidebar to open its menu. Crop to the lower part of the sidebar so that the menu and both sign-in choices show." />
+Sign-in is optional. Sign in when you want the same layouts and designs on more than one device. You sign in with a Google or GitHub account. The Layout Tool does not ask for or keep a password. [Accounts and sync](../sharing/accounts-and-sync) gives the steps to sign in, sign out and delete your account.
 
 From your Google or GitHub account, the Layout Tool gets three things only:
 
@@ -52,13 +48,7 @@ From your Google or GitHub account, the Layout Tool gets three things only:
 
 When you sign in, the Layout Tool copies your work to your account on the server. It copies your layouts, saved bin designs, saved baseplates, layout folders, and the version history of your designs. Only your signed-in session can read them. Each account holds up to 100 layouts, 100 bin designs and 100 baseplates.
 
-::: info
-If another account signed in on this browser before, the Layout Tool asks what to do with the local layouts and designs. You can add them to the new account, or discard them.
-:::
-
-A sign-in lasts 30 days. To sign out, click <Ui k="sidebar.settings" />, click <Ui k="settings.tabs.account" />, and click <Ui k="account.signOut.button" />. The Layout Tool asks if you want to keep your local copies on this device or wipe them.
-
-To delete your account, click <Ui k="account.deleteAccount.button" /> on the same tab. This signs you out on each device. It deletes all of your synced data and the designs that you published to the community gallery. It also removes your likes and your reports. Local copies on this device stay.
+When you delete your account, the server deletes all of your synced data and the designs that you published to the community gallery. It also removes your likes and your reports. Local copies on this device stay. See [Delete your account](../sharing/accounts-and-sync#delete-your-account).
 
 ## What a share link publishes
 
@@ -71,7 +61,7 @@ To delete your account, click <Ui k="account.deleteAccount.button" /> on the sam
 
 Anyone with the link can see the copy. By default, they can only view it. If you choose <Ui k="share.anyoneWithLinkCanEdit" />, people can edit the layout with you live. While you edit together, the other people see your cursor, your display name and the bins that you select. To stop the share, click <Ui k="share.deleteShareLink" />. The link then stops working.
 
-You can also share without a server copy. Click <Ui k="header.manageLayouts" /> in the menu next to the layout name, and share from there. That share window can put the whole layout inside the link itself, or save the layout as a JSON file.
+You can also share without a server copy. The share window of the layout manager can put the whole layout inside the link itself, or save the layout as a JSON file. See [Share without the server](../sharing/share-links#share-without-the-server).
 
 ## What publishing makes public
 

@@ -31,7 +31,7 @@ Only a 3MF file keeps the colors. STL and STEP files carry no color data, so the
 
 ## Color zones
 
-The panel shows a zone only when the bin has that part. For example, the <Ui k="binDesigner.colors.scoop" /> row shows only when the bin has scoops.
+The panel shows a zone only when the bin has that part. For example, the <Ui k="binDesigner.colors.scoop" /> row shows only when the bin has scoops. A cutout can also have its own color, in the <Ui k="binDesigner.cutouts.section.color" /> section of the cutout editor. See [Color zones](../concepts/multi-color#color-zones). In the Bento workspace, each compartment can have its own color too. See [Draw compartments with Bento](./compartments#draw-compartments-with-bento).
 
 | Group                                        | Zone                                   | What it colors                                                              |
 | -------------------------------------------- | -------------------------------------- | --------------------------------------------------------------------------- |
@@ -95,5 +95,5 @@ To use a palette, open the same menu and click the palette under <Ui k="binDesig
 
 - [Multi-color printing](../concepts/multi-color): learn how the colors reach your slicer.
 - [Labels and text](./labels-and-text): pick a finish that shows in two colors.
-- [Slicers](../printing/slicers): set up the filaments in your slicer.
+- [Slicer setup](../printing/slicers): set up the filaments in your slicer.
 - [File formats](../printing/file-formats): see which formats keep color.

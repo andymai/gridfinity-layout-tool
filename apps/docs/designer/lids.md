@@ -12,7 +12,7 @@ sources:
 
 # Lids
 
-A lid keeps dust out and keeps small parts in their compartments. The Gridfinity Layout Tool makes the lid as a second part that fits the bin. This page shows each way a lid can hold on, and how to shape its top and its grip.
+A lid keeps dust out and keeps small parts in their compartments. The Gridfinity Layout Tool makes the lid as a second part that fits the bin. This page shows each way a lid can hold on, and how to shape its top and its grip. [Anatomy of a bin](../concepts/bin-anatomy#lid) shows where the lid sits on a bin.
 
 ## Turn on a lid
 
@@ -46,7 +46,7 @@ A sliding lid is a flat plate. It does not need the stacking lip.
 
 - <Ui k="binDesigner.lid.slide.placement" />: <Ui k="binDesigner.lid.slide.placement.recessed" /> keeps the stacking lip, so other bins still stack on this one. <Ui k="binDesigner.lid.slide.placement.flush" /> gives the deepest inside, but you must turn the stacking lip off.
 - <Ui k="binDesigner.lid.slide.entrySide" />: the wall the lid slides out of. The two walls on each side of it carry the runners.
-- <Ui k="binDesigner.lid.slide.pull" />: <Ui k="binDesigner.lid.slide.pull.none" />, <Ui k="binDesigner.lid.slide.pull.notch" />, <Ui k="binDesigner.lid.slide.pull.tab" /> or <Ui k="binDesigner.lid.slide.pull.catch" />. The finger catch is a part of the stacking rim that moves with the lid, so the whole width becomes a pull.
+- <Ui k="binDesigner.lid.slide.pull" />: <Ui k="binDesigner.lid.slide.pull.none" />, <Ui k="binDesigner.lid.slide.pull.notch" />, <Ui k="binDesigner.lid.slide.pull.tab" /> or <Ui k="binDesigner.lid.slide.pull.catch" />. The finger catch is a part of the stacking rim that moves with the lid, so the whole width becomes a pull. It keeps the [lip peak](./stacking#make-the-lip-print-cleanly) shape of the rest of the rim.
 - <Ui k="binDesigner.lid.slide.detent" />: a small ramp on each runner. The lid clicks past it, so a knock cannot slide the lid open.
 
 <Ui k="binDesigner.lid.slide.clearance" />, under <Ui k="binDesigner.lid.advanced" />, sets the gap between the lid and its channel, from 0.1 to 0.6 mm. Raise it if the lid binds, and lower it if the lid rattles.
@@ -74,7 +74,7 @@ Under <Ui k="binDesigner.lid.section.topSurface" />, pick what the top of the li
 A stackable top has three more options:
 
 - <Ui k="binDesigner.lid.stackLipOnly" /> makes one lip around the edge, not a full grid. The top face stays clear, and it uses less filament.
-- <Ui k="binDesigner.lid.magnetHoles" /> cuts pockets for the magnets of the bin above.
+- <Ui k="binDesigner.lid.magnetHoles" /> cuts holes for the magnets of the bin above.
 - <Ui k="binDesigner.lid.separateStackPlate" /> prints the stack grid as its own flat part. Glue it onto the lid top after you print. The lid then prints without supports.
 
 ## Set the height and thickness
@@ -93,13 +93,13 @@ A sliding lid has no grip group. Use its <Ui k="binDesigner.lid.slide.pull" /> s
 
 ## Cut holes in the lid
 
-Click <Ui k="binDesigner.lid.editCutouts" /> to draw shapes that go through the lid. Use it for a slot to dispense parts, a vent, or a hole for a cable. A lid holds up to 24 shapes, clear of the mating wall and the magnets. The lid needs a flat top or a lip-only top, on a rectangular bin.
+Click <Ui k="binDesigner.lid.editCutouts" /> to draw shapes that go through the lid. Use it for a slot to dispense parts, a vent, or a hole for a cable. The button opens the cutout editor, with the same tools as for a bin. See [Draw a cutout](../cutouts/basics#draw-a-cutout). A lid holds up to 24 shapes, clear of the mating wall and the magnets. The lid needs a flat top or a lip-only top, on a rectangular bin.
 
 ## Other lid options
 
 - <Ui k="binDesigner.lid.section.text" /> puts text on the lid top. See [Labels and text](./labels-and-text#add-floor-and-lid-text).
 - <Ui k="binDesigner.lid.fill" /> fills the lid down to just above the dividers, so small parts stay in their compartments. It is available on friction and magnetic lids.
-- <Ui k="binDesigner.lid.createMatchingTray" /> starts a new design with the same size as this bin. Its underside is a lid, so it sits on this bin as an organizer tray.
+- <Ui k="binDesigner.lid.createMatchingTray" /> starts a new design with the same size as this bin. Its underside is a lid, so it sits on this bin as an organizer tray. To stack whole boxes without a lid, see [Nest boxes on each other](./stacking#nest-boxes-on-each-other).
 
 The lid exports with its rails up, ready to print. The default lid needs no supports, but a fused stack grid can need them.
 

@@ -72,5 +72,5 @@ If colors are hard for you to tell apart, open Settings and go to <Ui k="setting
 ## Next steps
 
 - [Work with several bins](./multi-select): select a group of bins and give them one category.
-- [Print list and ZIP export](../printing/print-list-and-zip): see how the print list groups your bins.
-- [Settings](../settings/settings): change the default categories and the patterns.
+- [The print list and ZIP export](../printing/print-list-and-zip): see how the print list groups your bins.
+- [Settings and accessibility](../settings/settings): change the default categories and the patterns.

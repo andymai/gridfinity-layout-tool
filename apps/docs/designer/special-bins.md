@@ -14,14 +14,14 @@ sources:
 
 # Special bins
 
-Most bins are a box with compartments. The Gridfinity Layout Tool also makes knife blocks, slanted bins and bins with a sliding tray. This page shows how to make each one, and lists the other bin types in the designer.
+Most bins are a box with compartments. The Gridfinity Layout Tool also makes knife blocks, slanted bins and bins with a sliding tray. This page shows how to make each one, and lists the other bin types in the bin designer.
 
 ## Make a knife block
 
 A knife block holds kitchen knives flat. Each blade hangs in its own slot, and a handle rest carries the handles at the right height, so the edge never touches the plastic.
 
 1. In the bin designer, select <Ui k="binDesigner.category.interior" /> and pick <Ui k="binDesigner.interior.solid.title" />.
-2. Open the <Ui k="binDesigner.editCutouts" />.
+2. Click <Ui k="binDesigner.editCutouts" /> to open the cutout editor. [Draw a cutout](../cutouts/basics#draw-a-cutout) explains the board and its tools.
 3. Pick the <Ui k="binDesigner.cutouts.addKnifeSlot" /> tool (<kbd>K</kbd>) and place a slot on the board.
 4. In the <Ui k="binDesigner.cutouts.section.knife" /> section, pick a <Ui k="binDesigner.cutouts.knifePreset" />, for example <Ui k="binDesigner.cutouts.knifePreset.santoku7" />. You can also type the measurements of your own knife.
 5. Set <Ui k="binDesigner.cutouts.knifeOpenEnd" /> to the end where the handle comes out.
@@ -37,7 +37,7 @@ The Layout Tool sizes each slot from the knife:
 
 A knife slot turns only in quarter turns, so it always lines up with a wall. If the bin is too short for the blade, the panel says how many height units the bin needs.
 
-<Screenshot id="designer-special-bins-knife-block" alt="A knife block with three knife slots and a separate handle rest, shown beside the Knife section of the cut editor." spec="Open the Knife Block example from the gallery. Cut editor open, one knife slot selected so the Knife section with Preset, Blade, Heel, Spine and Handle side shows. Crop to the board and the Knife section." />
+<Screenshot id="designer-special-bins-knife-block" alt="A knife block with three knife slots and a separate handle rest, shown beside the Knife section of the cutout editor." spec="Open the Knife Block example from the gallery. Cut editor open, one knife slot selected so the Knife section with Preset, Blade, Heel, Spine and Handle side shows. Crop to the board and the Knife section." />
 
 ### Add a handle rest
 
@@ -65,7 +65,7 @@ The panel shows how far the top reaches past the base, and the longest straight 
 
 Bins in a row lean on each other. The last bin in a row needs something to rest on: turn on <Ui k="binDesigner.slant.endSupport" /> to add a wedge. The wedge exports as a second part.
 
-A slanted bin has no stacking lip and no lid, and the Layout Tool cannot split it. If it is too large for your print bed, lower the angle or make the bin smaller. Some features do not work with a slant, for example an overhang, a custom shape, removable dividers or a pull tab. The panel names the feature that blocks the slant.
+A slanted bin has no [stacking lip](./stacking) and no lid, and the Layout Tool cannot split it. If it is too large for your print bed, lower the angle or make the bin smaller. Some features do not work with a slant, for example an overhang, a custom shape, removable dividers or a pull tab. The panel names the feature that blocks the slant.
 
 <Screenshot id="designer-special-bins-slant" alt="A bin that leans toward the back, with the Slant section showing the angle, the side picker and the end support switch." spec="Bin designer, 1x2x6 bin, Shape page, Slant on at 30 degrees toward the back, End support on. Preview from the side so the lean and the wedge show. Crop to the Slant section and the preview." />
 
@@ -73,11 +73,7 @@ A slanted bin has no stacking lip and no lid, and the Layout Tool cannot split i
 
 A sliding tray is a shallow tray that rides on a rail inside or on top of a bin. Small parts ride in the tray, and you push it aside to reach what is under it. The rail runs along the front and back walls, so the tray slides from side to side.
 
-The sliding tray is a Labs feature, so it is off by default. To turn it on:
-
-1. Open <Ui k="settings.title" />.
-2. Select the <Ui k="settings.tabs.labs" /> tab.
-3. Turn on the sliding tray feature.
+The sliding tray is a Labs feature, so it is off by default. [Turn on a Labs feature](../settings/labs#turn-on-a-labs-feature) shows how to turn it on.
 
 Labs marks the sliding tray as unfinished. The rail and tray shapes can still change, so a saved design with a tray may not open the same way later. See [Labs](../settings/labs).
 
@@ -94,16 +90,7 @@ A sliding tray needs a hollow bin. It is not available on solid bins, slotted bi
 
 ## Other bin types
 
-The <Ui k="binDesigner.base.bodyType" /> picker on the <Ui k="binDesigner.category.shape" /> page changes what the whole bin is. See [Base](./base) for each setting.
-
-| Body type                                     | What it makes                                                                          |
-| --------------------------------------------- | -------------------------------------------------------------------------------------- |
-| <Ui k="binDesigner.base.bodyType.standard" /> | Feet, floor and walls: the usual Gridfinity bin.                                       |
-| <Ui k="binDesigner.base.bodyType.nesting" />  | One continuous tapered base with a floor that rests on the print bed.                  |
-| <Ui k="binDesigner.flatFloor" />              | A bin that sits flat and does not lock into a baseplate.                               |
-| <Ui k="binDesigner.spacer" />                 | An open riser with no floor, to lift another bin flush.                                |
-| <Ui k="binDesigner.tile" />                   | Only the Gridfinity feet and floor, with no walls.                                     |
-| <Ui k="binDesigner.lidBottom" />              | A bin whose underside is a lid, so it sits on top of another bin as an organizer tray. |
+The <Ui k="binDesigner.base.bodyType" /> picker on the <Ui k="binDesigner.category.shape" /> page changes what the whole bin is. [Pick a body type](./size-and-shape#pick-a-body-type) describes the six body types. To lift short bins level with tall bins in a layout, see [Make short bins finish flush with spacers](../layouts/layers#make-short-bins-finish-flush-with-spacers).
 
 Two more kinds of design live in the design library:
 
@@ -112,7 +99,7 @@ Two more kinds of design live in the design library:
 
 ## Next steps
 
-- [Cutout basics](../cutouts/basics): learn the cut editor that makes knife slots.
+- [Cutout basics](../cutouts/basics): learn the cutout editor that makes knife slots.
 - [Lids](./lids): add a lid, or make an organizer tray that sits on a bin.
-- [Base](./base): set the feet, magnets and body type of a bin.
+- [The base](./base): set the feet, magnets and body type of a bin.
 - [Labs](../settings/labs): see the other features in Labs.

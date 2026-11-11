@@ -55,7 +55,7 @@ A bin that uses a saved design has a front and a back, so the Layout Tool also t
 
 Turn on <Ui k="sidebar.halfBinMode" /> in the left panel, or press <kbd>H</kbd>. Bins can then have sizes and positions in half grid units. The arrow keys move a bin with a half-unit size or position by half a unit.
 
-Half-grid mode does not change the feet under a bin. For a denser grid of feet, use the half sockets option in the bin designer.
+Half-grid mode does not change the feet under a bin. For a denser grid of feet, see [Use half-size feet](../designer/base#use-half-size-feet).
 
 To turn the mode off, no bin can have a half-unit size or position. If one does, a dialog opens. Click <Ui k="halfBinBlocked.close" /> to move those bins to the stash and turn the mode off, or <Ui k="common.cancel" /> to keep it on.
 
@@ -96,11 +96,9 @@ To put a bin back, drag it from the stash to the grid. You can also right-click 
 
 ## Drop a saved design into the drawer
 
-1. Open the bin designer and click <Ui k="binDesigner.designs" />.
-2. In <Ui k="binDesigner.savedDesigns" />, open the menu of a design.
-3. Choose <Ui k="binDesigner.placeInLayout.action" />.
+In the bin designer, <Ui k="binDesigner.placeInLayout.action" /> puts a saved design in the first free spot of the active layer. [Save and reuse designs](../designer/save-and-reuse#place-a-design-in-a-layout) gives the steps.
 
-The layout editor opens with the bin on the active layer, in the first free spot. The bin uses that design. If no spot is free, the bin goes to the stash. To give a bin that is already on the grid a design, right-click it and choose <Ui k="designLinking.menu.linkExisting" />.
+To give a bin that is already on the grid a design, right-click it and choose <Ui k="designLinking.menu.linkExisting" />. [Saved designs and linked bins](../concepts/saved-designs) explains what the link keeps in step.
 
 ## Delete and undo
 

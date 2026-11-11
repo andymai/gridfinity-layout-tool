@@ -77,4 +77,4 @@ Live editing needs a collaboration service on the server. This service is option
 
 - [Share a layout](./share-links): make, change and delete the link that opens the room.
 - [Accounts and sync](./accounts-and-sync): keep your own layouts on all your devices.
-- [Multi-select](../layouts/multi-select): select and move many bins at once.
+- [Work with several bins](../layouts/multi-select): select and move many bins at once.

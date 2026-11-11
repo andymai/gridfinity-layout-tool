@@ -54,17 +54,17 @@ The <Ui k="staging.stash" /> is the panel under the grid. A bin in the stash bel
 
 Bins go into the stash in these ways:
 
-| What you do                                            | What happens                                      |
-| ------------------------------------------------------ | ------------------------------------------------- |
-| Drag a bin onto the stash                              | The bin moves to the stash                        |
-| Shift+click a size in <Ui k="layers.sizeSelector" />   | A bin of that size goes to the stash              |
-| Delete a layer                                         | All bins on that layer move to the stash          |
-| Use <Ui k="layers.clearLayerLabel" />                  | All bins on the layer move to the stash           |
-| Make the drawer smaller                                | Bins that no longer fit move to the stash         |
-| Turn off half-grid mode and accept the move            | Bins with half-unit sizes or positions move there |
-| Place a saved design when the layout has no free space | The linked bin goes to the stash                  |
+| What you do                                                     | What happens                                      |
+| --------------------------------------------------------------- | ------------------------------------------------- |
+| Drag a bin onto the stash                                       | The bin moves to the stash                        |
+| <kbd>Shift</kbd>+click a size in <Ui k="layers.sizeSelector" /> | A bin of that size goes to the stash              |
+| Delete a layer                                                  | All bins on that layer move to the stash          |
+| Use <Ui k="layers.clearLayerLabel" />                           | All bins on the layer move to the stash           |
+| Make the drawer smaller                                         | Bins that no longer fit move to the stash         |
+| Turn off half-grid mode and accept the move                     | Bins with half-unit sizes or positions move there |
+| Place a saved design when the layout has no free space          | The linked bin goes to the stash                  |
 
-To use a stashed bin, drag it from the stash onto the grid. Press <kbd>R</kbd> to turn a stashed bin before you place it.
+To use a stashed bin, drag it from the stash onto the grid. Press <kbd>R</kbd> to turn a stashed bin before you place it. [Put bins in the stash](../layouts/placing-bins#put-bins-in-the-stash) shows the other ways to move bins in and out of the stash.
 
 ::: warning
 Use <Ui k="staging.clearAll" /> only when you want to delete every bin in the stash. You cannot undo it.
@@ -72,15 +72,7 @@ Use <Ui k="staging.clearAll" /> only when you want to delete every bin in the st
 
 ## See the layers in 3D
 
-The 3D preview of the layout has three layer modes:
-
-| Mode                  | What the preview shows                   |
-| --------------------- | ---------------------------------------- |
-| <Ui k="grid.focus" /> | Only the active layer                    |
-| <Ui k="grid.stack" /> | The active layer and the layers below it |
-| <Ui k="grid.all" />   | All layers                               |
-
-<Ui k="grid.explodedView.label" /> pulls the layers apart vertically, so you can see each layer with the bins on it. The other layers dim so the active layer stands out. Exploded view needs more than one layer and shows all layers. Press <kbd>E</kbd> to turn it on or off while the preview is open.
+The 3D preview of the layout can show only the active layer, the layers up to the active layer, or all layers. <Ui k="grid.explodedView.label" /> pulls the layers apart vertically, so you can see each layer with the bins on it. [See the layers](../layouts/layers#see-the-layers) shows the buttons and the keys.
 
 <Screenshot id="concepts-layouts-exploded" alt="The 3D layout preview in exploded view, with three layers apart from each other." spec="Layout editor, desktop. Drawer 6 × 4 with three layers, each with two or three bins. 3D preview expanded, Explode on, Layer 2 active. Crop to the preview and its mode buttons." />
 

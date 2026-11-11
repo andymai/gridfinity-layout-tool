@@ -23,7 +23,7 @@ A layer sets the order of the stack, not a fixed height. Each bin rests on the t
 
 The height of a layer is only the height that new bins on that layer get. A change to it does not move or resize the bins that are already there.
 
-Only the tallest stack must fit in the drawer. The <Ui k="layers.tallestStack" /> bar in the <Ui k="common.layers" /> panel compares it with the drawer height. See [Set up the drawer](./drawer-setup#check-the-drawer-height).
+Only the tallest stack must fit in the drawer. The <Ui k="layers.tallestStack" /> bar in the <Ui k="common.layers" /> panel compares it with the drawer height. See [Set up the drawer](./drawer-setup#check-the-drawer-height). For the height of one bin with its lip and lid, see [Read the assembled height](../designer/stacking#read-the-assembled-height).
 
 ## Add, rename and order layers
 
@@ -61,11 +61,11 @@ A spacer is an open frame with feet and no floor. You put it under a short bin s
 
 1. In the bin designer, open the <Ui k="binDesigner.group.base" /> group.
 2. Under <Ui k="binDesigner.base.bodyType" />, choose <Ui k="binDesigner.spacer" />.
-3. Set the height of the spacer, then save the design.
+3. Set the height of the spacer. The bin designer saves the design for you.
 4. In the layout editor, put the spacer on the lower layer.
 5. Put the short bin on the layer above, over the spacer.
 
-A spacer counts like a bin of the same height. For example, a 2u spacer under a 2u bin reaches the top of a 4u bin. At the standard 7 mm height unit, a spacer can be 1u tall. See [Special bins](../designer/special-bins).
+A spacer counts like a bin of the same height. For example, a 2u spacer under a 2u bin reaches the top of a 4u bin. At the standard 7 mm height unit, a spacer can be 1u tall. See [Pick a body type](../designer/size-and-shape#pick-a-body-type).
 
 ## See the layers
 
@@ -90,4 +90,4 @@ In the 3D preview, open with <Ui k="toolbar.3dView" />, three buttons pick the l
 - [Set up the drawer](./drawer-setup): measure the drawer height for an exact check.
 - [Layouts, layers and the stash](../concepts/layouts-layers-stash): the ideas behind layers.
 - [Stacking](../designer/stacking): the stacking lip and how bins sit on each other.
-- [Special bins](../designer/special-bins): spacers and other body types.
+- [Size and shape](../designer/size-and-shape#pick-a-body-type): spacers and the other body types.

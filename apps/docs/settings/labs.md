@@ -50,6 +50,8 @@ When the feature is on, the bin designer shows a <Ui k="binDesigner.slideTray.ti
 - <Ui k="binDesigner.slideTray.mount.interior" />: <Ui k="binDesigner.slideTray.mountHint.interior" />
 - <Ui k="binDesigner.slideTray.mount.rim" />: <Ui k="binDesigner.slideTray.mountHint.rim" />
 
+[Special bins](../designer/special-bins#add-a-sliding-tray-labs) explains the tray width, the rail drop, the clearance and the fit test.
+
 ::: warning
 Print a test before you print a full tray. The shape of the rail and the tray can still change, and the printed fit is not proven yet. A design that you save with a tray may not open the same way in a later version.
 :::

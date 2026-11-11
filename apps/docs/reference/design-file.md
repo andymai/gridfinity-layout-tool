@@ -12,16 +12,13 @@ sources:
 
 # Bin design file format
 
-A bin design file is a JSON text file that holds one design from the bin designer. It stores every setting of the bin, so the designer can open it again and change it. It is not a printable model: for a print, export an STL, 3MF or STEP file.
+A bin design file is a JSON text file that holds one design from the bin designer. It stores every setting of the bin, so the bin designer can open it again and change it. It is not a printable model: for a print, export an STL, 3MF or STEP file.
 
 Use a design file to back up a design, to send it to another person, or to move it to a different browser. The published schema is at [gridfinitylayouttool.com/schema](https://gridfinitylayouttool.com/schema).
 
 ## Export a design file
 
-You can export a design file from two places in the bin designer:
-
-- **The export dialog.** Click <Ui k="common.export" /> in the designer header, then click <Ui k="binDesigner.downloadDesignJson" />. The dialog stays open, so you can export a 3D file after it.
-- **The design list.** Open <Ui k="binDesigner.savedDesigns" />, open the actions menu of a design, and click <Ui k="binDesigner.downloadJSON" />.
+You can export a design file from the export dialog of the bin designer, or from the menu of a design in <Ui k="binDesigner.savedDesigns" />. [Save and reuse designs](../designer/save-and-reuse#download-and-import-a-design-file) gives the steps.
 
 The file name is the design name. If the design has an imported STL shape, the file holds a copy of that shape, so the file is complete without other files.
 
@@ -33,13 +30,9 @@ The file always holds a standard base. If the design uses a low-profile base, th
 
 ## Import a design file
 
-1. In the bin designer, open <Ui k="binDesigner.savedDesigns" />.
-2. Click <Ui k="common.import" />.
-3. Drop the file on the drop area, or paste the JSON text into the <Ui k="binDesigner.designJson" /> box.
-4. Read the summary under <Ui k="binDesigner.readyToImportDesign" />.
-5. Click <Ui k="binDesigner.importAndLoad" />.
+In <Ui k="binDesigner.savedDesigns" />, click <Ui k="common.import" />, then drop the file or paste the JSON text into the <Ui k="binDesigner.designJson" /> box. Read the summary under <Ui k="binDesigner.readyToImportDesign" /> before you import. [Save and reuse designs](../designer/save-and-reuse#download-and-import-a-design-file) gives the full steps.
 
-The design goes into your saved designs and opens in the designer. The drop area also takes the STL file of a whole Gridfinity bin. That STL becomes a saved design with a fixed shape.
+The design goes into your saved designs and opens in the bin designer. The drop area also takes the STL file of a whole Gridfinity bin. That STL becomes a saved design with a fixed shape.
 
 <Screenshot id="reference-design-file-import" alt="The Import view of the saved designs dialog, with a pasted design and its import summary." spec="Bin designer. Open Saved designs and click Import. Paste the minimal design from this page into the Design JSON box so that the Ready to import design summary shows its name, dimensions and compartments. Crop to the dialog." />
 
@@ -75,7 +68,7 @@ The `compartments` object has `cols`, `rows`, a divider `thickness` in mm, and a
 ## Avoid the traps
 
 - **Heights are height units.** `"height": 3` is a 21 mm bin at the standard 7 mm height unit.
-- **Some widths are percentages.** The width of a label tab, a handle and the wall cutouts is a percentage of its span. The label tab depth is in millimetres.
+- **Some widths are percentages.** The width of a label tab, a handle and the wall cutouts is a percentage of its span. The label tab depth is in millimeters.
 - **The cell count must match.** The `cells` list needs exactly `cols` multiplied by `rows` entries.
 - **Leave out two fields.** The app adds the magnet position from the layout and the nozzle size from your print settings. Do not write them in a file.
 

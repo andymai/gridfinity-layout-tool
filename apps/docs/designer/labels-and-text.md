@@ -27,6 +27,8 @@ A label tab is a ledge along the top of a compartment wall. It carries printed t
 
 Each row number matches a compartment number on the grid. To find the row for one compartment, click <Ui k="binDesigner.labelTextPickOnGrid" />, then click that compartment. Press <kbd>Enter</kbd> to go to the next row. A blank row prints a bare ledge, which still takes a paper label.
 
+You can also edit a caption on the compartment grid. Above the grid, select <Ui k="binDesigner.compartmentEditor.modeLabels" />, then click a compartment. [Set up the compartment grid](./compartments#set-up-the-compartment-grid) explains the grid.
+
 The section shows only for the <Ui k="binDesigner.interior.standard.title" /> and <Ui k="binDesigner.interior.bento.title" /> interiors, because a tab needs compartment walls. A custom-shape bin or a very shallow bin cannot carry a tab.
 
 <Screenshot id="designer-labels-and-text-tab-list" alt="The Label tabs section with three captions in the Label text list and the matching tabs in the 3D preview." spec="Bin designer, 3x1 bin with 3 compartments, Interior page open, Label tabs on, Printed text, captions SCREWS, NUTS, WASHERS. Show the panel section and the preview side by side. Crop to the panel section and the bin." />

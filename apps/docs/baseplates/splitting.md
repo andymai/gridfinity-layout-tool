@@ -52,7 +52,7 @@ If a piece of your plan is larger than the bed, the map shows a warning and you 
 
 ## Lock the pieces together
 
-By default the pieces sit loose next to each other. To join them, pick a style under <Ui k="baseplate.connectors.label" /> in the <Ui k="baseplate.sectionBase" /> section. The section shows connectors only when the plate splits.
+By default, <Ui k="baseplate.connectors.label" /> shows <Ui k="baseplate.connectors.none" />, and the pieces sit loose next to each other. To join them, pick a style under <Ui k="baseplate.connectors.label" /> in the <Ui k="baseplate.sectionBase" /> section. The section shows connectors only when the plate splits.
 
 | Style                                           | How it joins                                   |
 | ----------------------------------------------- | ---------------------------------------------- |
@@ -67,8 +67,8 @@ A <Ui k="baseplate.connectorStyle.dovetailKey" /> or a <Ui k="baseplate.connecto
 When you select a style, more settings show:
 
 - <Ui k="baseplate.connectorFit.label" /> changes the connector gap, from −0.3 to +0.3 mm in steps of 0.05 mm. A higher value gives a looser fit.
-- <Ui k="baseplate.dovetails.invert" /> swaps the tongue and groove sides on the seams. It applies to Dovetail and Puzzle.
-- <Ui k="baseplate.connectorSlotsAllEdges" /> also cuts slots into the outer edges, so each piece can key onto a plate that you print later. It applies to Puzzle key and Snap clip. Edges with a margin get no slots.
+- <Ui k="baseplate.dovetails.invert" /> swaps the tongue and groove sides on the seams. It applies to <Ui k="baseplate.connectorStyle.dovetail" /> and <Ui k="baseplate.connectorStyle.puzzle" />.
+- <Ui k="baseplate.connectorSlotsAllEdges" /> also cuts slots into the outer edges, so each piece can key onto a plate that you print later. It applies to <Ui k="baseplate.connectorStyle.dovetailKey" /> and <Ui k="baseplate.connectorStyle.snapClip" />. Edges with a margin get no slots.
 - <Ui k="baseplate.preferIdenticalPieces" /> makes opposite pieces the same shape, so the print guide can group them. This works only when opposite margins are equal.
 
 A <Ui k="baseplate.connectorStyle.snapClip" /> needs a plate that is tall enough. A low-profile plate without magnet holes or a solid floor is too thin for clips. Snap clips also do not work with <Ui k="baseplate.stackPrint.enable" />.
@@ -88,7 +88,7 @@ Click <Ui k="baseplate.connectorSample.button" /> below the connector settings. 
 
 Wide margins make large pieces. <Ui k="baseplate.detachMargins" /> in <Ui k="baseplate.sectionDimensions" /> prints each margin as a separate strip. A margin must be at least 8 mm wide to detach. If one strip prints badly, you can print that strip again by itself.
 
-Turn on <Ui k="baseplate.detachMarginConnector" /> to join each strip to the plate with the seam connector. This needs the Dovetail, Puzzle or Puzzle key style. Without it, the strips stay in place by friction. A plate with a custom drawer shape cannot detach its margins.
+Turn on <Ui k="baseplate.detachMarginConnector" /> to join each strip to the plate with the seam connector. This needs the <Ui k="baseplate.connectorStyle.dovetail" />, <Ui k="baseplate.connectorStyle.puzzle" /> or <Ui k="baseplate.connectorStyle.dovetailKey" /> style. Without it, the strips stay in place by friction. A plate with a custom drawer shape cannot detach its margins.
 
 ## Export a split plate
 

@@ -12,7 +12,7 @@ sources:
 
 # The base
 
-In the Gridfinity Layout Tool, the base is the underside of a bin: the feet, the holes for magnets and screws, and the floor. Use it to make a bin hold down firmly or use less filament.
+In the Gridfinity Layout Tool, the base is the underside of a bin: the feet, the holes for magnets and screws, and the floor. Use it to make a bin hold down firmly or use less filament. [Anatomy of a bin](../concepts/bin-anatomy#feet) explains how the feet sit in a baseplate.
 
 The base controls are at the bottom of the <Ui k="binDesigner.category.shape" /> page, below <Ui k="binDesigner.base.bodyType" />. They are in three groups: <Ui k="binDesigner.base.section.mounting" />, <Ui k="binDesigner.base.section.feet" /> and <Ui k="binDesigner.base.section.floor" />. When a body type cannot have a group, the group shows one line that tells you why.
 
@@ -74,7 +74,7 @@ Half sockets, a custom shape and a half-unit size keep the lattice on grid.
 
 The pin holes are 3 mm wide. Pick a smaller pin if a foot does not go on. Pick a larger pin if a foot comes loose.
 
-The feet go at the outer whole cells, never under the middle of the floor. The designer adds feet where the gap between two feet is more than 140 mm. The panel shows how much material the bin saves.
+The feet go at the outer whole cells, never under the middle of the floor. The bin designer adds feet where the gap between two feet is more than 140 mm. The panel shows how much material the bin saves.
 
 ::: warning
 Use a wall of 1 mm or thicker for detachable feet. A thinner wall leaves too little floor to hold a pin, so you cannot turn on the toggle.
@@ -114,6 +114,8 @@ When the layout uses it, the <Ui k="binDesigner.base.section.feet" /> group show
 A <Ui k="binDesigner.flatFloor" /> has no Gridfinity feet, so the bin sits flat on any surface and does not lock into a baseplate. A <Ui k="binDesigner.lidBottom" /> also has no feet, because its underside is a lid.
 
 These two body types cannot have magnet or screw holes, half sockets, a lightweight floor or detachable feet. Drainage holes still work on a flat base.
+
+For all six body types, see [Pick a body type](./size-and-shape#pick-a-body-type). For imported bins and Workshop builds, see [Other bin types](./special-bins#other-bin-types).
 
 ## Next steps
 

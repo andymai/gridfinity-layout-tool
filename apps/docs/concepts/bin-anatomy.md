@@ -16,7 +16,7 @@ Every Gridfinity bin has the same parts from the bottom up: feet, a floor, walls
 
 <Screenshot id="concepts-bin-anatomy-overview" alt="A bin in the designer preview with a stacking lip, two compartments, a label tab and a finger scoop." spec="Bin designer, desktop. Bin 2 × 2 × 4u, standard base with magnet holes, stacking lip on, 2 compartments side by side, label tabs on with texts Screws and Nuts, finger scoop on. Preview at the default front-right angle. Crop to the preview." />
 
-## Where each part lives in the designer
+## Where each part lives in the bin designer
 
 The bin designer panel puts the parts in five groups:
 
@@ -63,7 +63,7 @@ Under <Ui k="binDesigner.base.section.floor" />, <Ui k="binDesigner.lightweight"
 
 The walls stand on the floor and set the outer size of the bin. In the <Ui k="binDesigner.group.shape" /> group, <Ui k="binDesigner.style.section.walls" /> holds <Ui k="binDesigner.wallThickness" />. The bin designer starts at 1.2 mm, three lines of a 0.4 mm nozzle. Use a multiple of your nozzle size for the best result.
 
-<Ui k="binDesigner.wallCutouts" /> cut openings through the walls, for cables or front access. <Ui k="binDesigner.style.section.wallSurface" /> in the <Ui k="binDesigner.group.finishing" /> group puts a pattern on the outer faces of the walls.
+<Ui k="binDesigner.wallCutouts" /> cut openings through the walls, for cables or front access. <Ui k="binDesigner.style.section.wallSurface" /> in the <Ui k="binDesigner.group.finishing" /> group cuts a pattern of holes through the walls.
 
 ## Stacking lip
 
@@ -73,19 +73,19 @@ Without a stacking lip, no bin can stack on top, and a lid that sits on the bin 
 
 ## Interior
 
-The <Ui k="binDesigner.group.interior" /> group sets what is inside the walls. First pick one of four interior modes:
+The <Ui k="binDesigner.group.interior" /> group sets what is inside the walls. First pick one of four interior styles:
 
-| Interior mode                                  | What it makes                                         |
-| ---------------------------------------------- | ----------------------------------------------------- |
-| <Ui k="binDesigner.interior.standard.title" /> | Compartments in a grid, with fixed divider walls      |
-| <Ui k="binDesigner.interior.bento.title" />    | Compartments of any size, with walls where you want   |
-| <Ui k="binDesigner.interior.slotted.title" />  | Slots that hold dividers you print separately         |
-| <Ui k="binDesigner.interior.solid.title" />    | A solid bin with tool-shaped pockets cut into the top |
+| Interior style                                 | What it makes                                       |
+| ---------------------------------------------- | --------------------------------------------------- |
+| <Ui k="binDesigner.interior.standard.title" /> | Compartments in a grid, with fixed divider walls    |
+| <Ui k="binDesigner.interior.bento.title" />    | Compartments of any size, with walls where you want |
+| <Ui k="binDesigner.interior.slotted.title" />  | Slots that hold dividers you print separately       |
+| <Ui k="binDesigner.interior.solid.title" />    | A solid bin with tool-shaped cutouts in the top     |
 
 Then add the parts that help you find and remove items:
 
 - <Ui k="binDesigner.labelTabs" /> are tabs with a slope along a compartment edge. A label sits on each tab.
-- <Ui k="binDesigner.fingerScoop" /> is a curved ramp at the front of the bin, so you can slide small parts out.
+- <Ui k="binDesigner.fingerScoop" /> is a ramp from the floor up to a wall, so you can slide small parts out. The front wall is the default.
 - <Ui k="binDesigner.interiorFillet.label" /> rounds the edges where the walls meet the floor.
 
 A bin with a custom footprint (an L, T or U shape, for example) cannot have compartments, dividers, label tabs or a scoop. These parts need a rectangular bin.

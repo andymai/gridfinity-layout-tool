@@ -21,7 +21,7 @@ In this tutorial, you design one bin in the bin designer. You set its size, spli
 
 You can also open the [bin designer](https://gridfinitylayouttool.com/designer) directly, or press <kbd>Shift</kbd>+<kbd>D</kbd> in the layout editor.
 
-On your first visit, a card with the title <Ui k="binDesigner.quickstart.title" /> tells you how the designer works. On a phone, the card does not show.
+On your first visit, a card with the title <Ui k="binDesigner.quickstart.title" /> tells you how the bin designer works. On a phone, the card does not show.
 
 2. Click <Ui k="binDesigner.quickstart.dismiss" /> to close the card. The card also closes when you make your first change.
 
@@ -45,7 +45,7 @@ The size controls are at the top of the <Ui k="binDesigner.group.shape" /> group
 2. Set <Ui k="common.depth" /> in grid units.
 3. Set <Ui k="common.height" /> in height units.
 
-Below the steppers, the designer shows the outside size of the bin in millimeters. The <Ui k="binDesigner.interiorDimensions" /> line shows the space inside. To swap the width and the depth, click the arrow button between the two steppers.
+Below the steppers, the bin designer shows the outside size of the bin in millimeters. The <Ui k="binDesigner.interiorDimensions" /> line shows the space inside. To swap the width and the depth, click the arrow button between the two steppers.
 
 ::: tip
 A 1 × 1 bin is 42 × 42 mm, and each height unit adds 7 mm. [Gridfinity in five minutes](../introduction/gridfinity-basics) explains the units.
@@ -58,7 +58,7 @@ A 1 × 1 bin is 42 × 42 mm, and each height unit adds 7 mm. [Gridfinity in five
 3. Set <Ui k="binDesigner.columns" /> to the number of compartments from left to right.
 4. Set <Ui k="binDesigner.rows" /> to the number of compartments from front to back.
 
-The designer adds walls between the compartments. Below the steppers, a line shows the size of each compartment in millimeters. You can use up to 12 columns and 12 rows.
+The bin designer adds walls between the compartments. Below the steppers, a line shows the size of each compartment in millimeters. You can use up to 12 columns and 12 rows.
 
 <Screenshot id="getting-started-first-bin-compartments" alt="The interior group with three columns and two rows, and the bin with six compartments in the preview." spec="Bin designer, desktop 1440 px, 3 x 2 bin, 4 height units. In the interior group, set columns to 3 and rows to 2. Show the panel and the preview side by side." />
 

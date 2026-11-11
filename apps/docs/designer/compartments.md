@@ -17,12 +17,12 @@ Dividers split a bin of the Gridfinity Layout Tool into compartments, so small p
 
 The controls are on the <Ui k="binDesigner.category.interior" /> page of the bin designer. Pick one of four interior styles there:
 
-| Style                                          | What you get                                                                               |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| <Ui k="binDesigner.interior.standard.title" /> | A grid of compartments with fixed walls. Merge cells for larger compartments.              |
-| <Ui k="binDesigner.interior.bento.title" />    | Compartments of any size that you draw on a canvas.                                        |
-| <Ui k="binDesigner.interior.slotted.title" />  | Slots in the walls, and separate divider pieces that you push into them.                   |
-| <Ui k="binDesigner.interior.solid.title" />    | A solid bin with pockets cut in the shape of your tools. See [Cutouts](../cutouts/basics). |
+| Style                                          | What you get                                                                           |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------- |
+| <Ui k="binDesigner.interior.standard.title" /> | A grid of compartments with fixed walls. Merge cells for larger compartments.          |
+| <Ui k="binDesigner.interior.bento.title" />    | Compartments of any size that you draw on a canvas.                                    |
+| <Ui k="binDesigner.interior.slotted.title" />  | Slots in the walls, and separate divider pieces that you push into them.               |
+| <Ui k="binDesigner.interior.solid.title" />    | A solid bin with cutouts in the shape of your tools. See [Cutouts](../cutouts/basics). |
 
 The first three styles need a rectangular footprint.
 
@@ -32,14 +32,14 @@ The first three styles need a rectangular footprint.
 2. Set <Ui k="binDesigner.columns" /> and <Ui k="binDesigner.rows" />, from 1 to 12 each.
 3. Read the size of the smallest compartment under the steppers.
 
-To start from a size, open <Ui k="binDesigner.compartmentEditor.setBySize" /> and type the smallest opening you need in millimetres. The designer picks the largest number of columns and rows that keeps every compartment at that size or larger. The compartments at the edges can be wider.
+To start from a size, open <Ui k="binDesigner.compartmentEditor.setBySize" /> and type the smallest opening you need in millimeters. The bin designer picks the largest number of columns and rows that keeps every compartment at that size or larger. The compartments at the edges can be wider.
 
 With two or more compartments, two more controls appear:
 
 - <Ui k="binDesigner.dividerThickness" />: the same values as the wall thickness, from 0.4 to 2.6 mm.
-- <Ui k="binDesigner.dividerHeight" />: <Ui k="binDesigner.dividerAutoHeight" /> or a height in millimetres. With the stacking lip on, <Ui k="binDesigner.dividerAutoHeight" /> stops just below the feet of a bin stacked on top.
+- <Ui k="binDesigner.dividerHeight" />: <Ui k="binDesigner.dividerAutoHeight" /> or a height in millimeters. With the stacking lip on, <Ui k="binDesigner.dividerAutoHeight" /> stops just below the feet of a bin stacked on top.
 
-A compartment cannot be smaller than 5 mm. When you change the grid, the designer moves compartment labels by position and tells you if it clears some.
+A compartment cannot be smaller than 5 mm. When you change the grid, the bin designer moves compartment labels by position and tells you if it clears some.
 
 ## Merge and split compartments
 
@@ -63,7 +63,7 @@ A merged compartment is always a rectangle. <Ui k="common.reset" /> above the gr
 The lean has a limit for each compartment, and the panel shows it with the clear opening. <Ui k="binDesigner.angledDividers.applyLeanToAxis" /> copies the lean to the other dividers that run the same way. <Ui k="binDesigner.angledDividers.fineTune" /> holds a <Ui k="binDesigner.angledDividers.shiftLabel" /> control that moves the divider. <Ui k="binDesigner.angledDividers.resetToStraight" /> undoes the tilt.
 
 ::: warning
-Look at your scoops and label tabs after you tilt a divider. The designer removes scoops, label tabs and inserts along a tilted divider.
+Look at your scoops and label tabs after you tilt a divider. The bin designer removes scoops, label tabs and inserts along a tilted divider.
 :::
 
 ## Draw compartments with Bento
@@ -77,10 +77,11 @@ Bento gives you a large canvas where you draw each compartment. It needs a wide 
 
 Some more actions:
 
-- Shift-click a second compartment that touches the first to fuse them into one L, S or U shape.
-- Alt-drag a compartment to make a copy.
+- <kbd>Shift</kbd>+click a second compartment that touches the first to fuse them into one L, S or U shape.
+- <kbd>Alt</kbd>+drag a compartment to make a copy.
 - Drop a compartment on the <Ui k="binDesigner.bento.stashTitle" /> shelf to keep it for later. The shelf holds up to 36 compartments.
 - Use <Ui k="binDesigner.bento.wallsTitle" /> in the compartment panel to shift or turn a wall between two compartments.
+- Under <Ui k="common.color" /> in the compartment panel, pick <Ui k="binDesigner.cutouts.color.floor" /> or <Ui k="binDesigner.cutouts.color.floorAndWalls" /> to give one compartment its own color. The color prints in a second filament.
 
 Each empty cell prints as its own small pocket. Turn on <Ui k="binDesigner.bento.mergeBackground" /> to make one pocket from each open area instead.
 
@@ -91,9 +92,9 @@ Each empty cell prints as its own small pocket. Turn on <Ui k="binDesigner.bento
 <Ui k="binDesigner.bento.floorRaise" /> lifts the floor of one compartment. A short item then sits nearer the rim, and it is easier to pick out. Tall items in other compartments keep the full depth.
 
 1. In the Bento workspace, select a compartment.
-2. Drag <Ui k="binDesigner.bento.floorRaise" /> to the height you need, in millimetres.
+2. Drag <Ui k="binDesigner.bento.floorRaise" /> to the height you need, in millimeters.
 
-The raised floor is solid, and the infill of your slicer keeps it light. The designer keeps at least 3 mm of pocket above the raised floor. A finger scoop climbs from the raised floor. For a <Ui k="binDesigner.interior.standard.title" /> bin, pick <Ui k="binDesigner.interior.bento.title" />: the compartments stay the same, and you get the same control.
+The raised floor is solid, and the infill of your slicer keeps it light. The bin designer keeps at least 3 mm of depth above the raised floor. A finger scoop climbs from the raised floor. For a <Ui k="binDesigner.interior.standard.title" /> bin, pick <Ui k="binDesigner.interior.bento.title" />: the compartments stay the same, and you get the same control.
 
 ## Use removable dividers
 
@@ -114,7 +115,7 @@ The divider pieces have these controls:
 | <Ui k="binDesigner.dividerClearance" />   | 0 to 0.3 mm, default 0.25 mm. Use more for a looser fit.                |
 | <Ui k="binDesigner.dividerFloorGroove" /> | On by default: a 0.8 mm channel in the floor holds the bottom edge.     |
 
-<Ui k="binDesigner.slotLayoutCustom" /> lets you draw your own grid with <Ui k="binDesigner.customMerge" /> and <Ui k="binDesigner.customSplit" />. The designer then makes pieces that match the grid you drew.
+<Ui k="binDesigner.slotLayoutCustom" /> lets you draw your own grid with <Ui k="binDesigner.customMerge" /> and <Ui k="binDesigner.customSplit" />. The bin designer then makes pieces that match the grid you drew.
 
 The walls must be 0.8 mm or thicker for slots. Removable dividers turn off the compartment grid, label tabs, the finger scoop and the interior fillet. You cannot use them with tilted dividers or a <Ui k="binDesigner.base.bodyType.nesting" /> body.
 
@@ -135,5 +136,5 @@ With interlocking pieces, <Ui k="binDesigner.slotPartialStyle" /> gives shorter 
 
 - [Scoops, fillets and pull tabs](./getting-things-out): make each compartment easy to empty.
 - [Labels and text](./labels-and-text): put a label on each compartment.
-- [Cutouts](../cutouts/basics): cut pockets in the shape of your tools.
+- [Cutout basics](../cutouts/basics): cut the shapes of your tools into a bin.
 - [Walls](./walls#choose-which-walls-get-the-pattern): put a pattern on the dividers.

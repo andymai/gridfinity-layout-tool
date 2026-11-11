@@ -63,6 +63,6 @@ The Layout Tool finds the size on your device. Your label does not leave the bro
 
 ## Next steps
 
-- [Community designs](../sharing/community): browse, like and share designs.
+- [The community gallery](../sharing/community): browse, like and share designs.
 - [Saved designs and linked bins](../concepts/saved-designs): what the placed copy is and how to edit it.
 - [Place and edit bins](./placing-bins): resize or move the bin after you place it.

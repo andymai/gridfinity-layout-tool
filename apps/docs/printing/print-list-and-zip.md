@@ -87,7 +87,7 @@ my-drawer.zip
 - **manifest.txt** lists each bin file with its design, size, quantity and estimate. It also lists the bins that the export skipped.
 - **bins/** has one file for each design, not one for each bin. Print each file as many times as the manifest says. In STL, the lid, dividers and other parts are separate files. In STEP, they are in the same file as the bin.
 - A bin that is too large for the bed gets its own folder, with one file for each piece.
-- **labels/** has the swappable label plates, packed onto sheets of your bed size.
+- **labels/** has the swappable label plates, packed onto sheets of your bed size. To export the plates of one bin, see [Export the plates](../designer/label-plates#export-the-plates).
 - **baseplate/** has the plate files, the print guide and the assembly map. See [Split for your print bed](../baseplates/splitting).
 
 Two bins of one design can need different files. A bin that extends into the drawer margin gets a name that ends in its grid position, such as `_pos2-0`. The manifest lists where each of those files goes. A bin that prints its layout label gets that label in its file name. If two files get the same name, the second one ends in `-2`.

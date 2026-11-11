@@ -62,6 +62,8 @@ With a margin on at least one edge, two more options show:
 - <Ui k="baseplate.overTile" /> replaces the solid margin with clipped grid cells, edge by edge. An edge needs at least 8 mm of margin for a cell. <Ui k="baseplate.preferHalfGrid" /> fills the margin with 21 mm half cells first.
 - <Ui k="baseplate.detachMargins" /> prints the margins as separate strips. See [Split for your print bed](./splitting#detach-the-margins).
 
+A bin at the edge of the grid can also grow its walls into the margin, so that it fills the drawer. See [Set up the drawer](../layouts/drawer-setup#extend-edge-bins-into-the-margin).
+
 ## Set the X and Y grid pitch
 
 The <Ui k="baseplate.gridUnit" /> setting in <Ui k="common.physicalUnits" /> is the width of one grid cell. The Gridfinity standard is 42 mm. Click the link button next to the value to set a different pitch for X and Y. For example, use this for a drawer that fits 40 mm cells across and 42 mm cells front to back.
@@ -96,3 +98,4 @@ To start again, click <Ui k="baseplate.reset" /> at the bottom of the panel, the
 - [Split for your print bed](./splitting): print a plate that is larger than your printer.
 - [Drawers that are not rectangles](./odd-shaped-drawers): make a plate for a drawer with a custom shape.
 - [The print list and ZIP export](../printing/print-list-and-zip): export the plate together with all the bins of the layout.
+- [Gridfinity dimensions](../reference/dimensions#baseplate-pocket-profile): look up the size of each pocket in the plate.

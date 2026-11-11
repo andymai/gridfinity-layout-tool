@@ -12,7 +12,7 @@ sources:
 
 # Gridfinity dimensions
 
-This page lists the measurements that the Gridfinity Layout Tool builds bins and baseplates to. Use it to compare a part with another Gridfinity model, or to measure a printed part when it does not fit. All values are in millimetres unless a row says otherwise.
+This page lists the measurements that the Gridfinity Layout Tool builds bins and baseplates to. Use it to compare a part with another Gridfinity model, or to measure a printed part when it does not fit. All values are in millimeters unless a row says otherwise.
 
 For size tables in inches and a list of common bin sizes, see [Gridfinity sizes](https://gridfinitylayouttool.com/gridfinity-sizes).
 
@@ -107,7 +107,7 @@ A 6.5 mm hole takes a 6 mm magnet with room for print tolerance. Magnet holes ma
 
 ## Next steps
 
-- [Units and sizes](../concepts/units): how grid units, height units and millimetres work together in the app.
+- [Units and sizes](../concepts/units): how grid units, height units and millimeters work together in the app.
 - [Fit and tolerances](../printing/fit-and-tolerances): what to change when a printed bin is too tight or too loose.
 - [Magnets and screws](../baseplates/magnets-and-screws): add magnet holes and screw-down holes to a baseplate.
 - [The base](../designer/base): change the base of a bin in the bin designer.

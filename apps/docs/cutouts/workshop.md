@@ -106,5 +106,5 @@ The file has the outline of the bin and every opening at true size. It includes 
 ## Next steps
 
 - [Cutout basics](./basics): cut tool shapes into a solid bin.
-- [Saved designs](../concepts/saved-designs): find and reuse your Workshop builds.
-- [Placing bins](../layouts/placing-bins): put a build in a drawer layout.
+- [Saved designs and linked bins](../concepts/saved-designs): find and reuse your Workshop builds.
+- [Place and edit bins](../layouts/placing-bins): put a build in a drawer layout.

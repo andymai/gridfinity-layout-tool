@@ -57,7 +57,7 @@ With the Places feature in [Labs](./labs) on, the palette also finds bins by wha
 
 ## Search from the help dialog
 
-Press <kbd>?</kbd> to open <Ui k="help.title" />. Type in <Ui k="help.searchPlaceholder" /> to find a shortcut or a feature. If the help dialog does not find a match, click <Ui k="help.openCommandPaletteWithQuery" />. The command palette then opens with the same words.
+Press <kbd>?</kbd> or <kbd>/</kbd> to open <Ui k="help.title" />. Type in <Ui k="help.searchPlaceholder" /> to find a shortcut or a feature. If the help dialog does not find a match, click <Ui k="help.openCommandPaletteWithQuery" />. The command palette then opens with the same words.
 
 ## Move through menus and panels
 
@@ -78,4 +78,4 @@ In the bin designer, the search box at the top of the panel finds a setting by n
 
 - [Keyboard shortcuts](../reference/shortcuts): the full table of shortcuts in each tool.
 - [Settings and accessibility](./settings): reduce motion, high contrast and patterns for categories.
-- [Multi-select](../layouts/multi-select): select many bins, then align or move them with commands.
+- [Work with several bins](../layouts/multi-select): select many bins, then align or move them with commands.

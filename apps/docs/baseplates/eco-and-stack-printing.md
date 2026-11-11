@@ -67,11 +67,7 @@ A STEP export never stacks.
 
 Click <Ui k="baseplate.stackPrint.sampleButton" /> in the stack settings. You get a stack of two 1 by 1 plates, to tune the gap before you print a full tower.
 
-To print a stack:
-
-1. Print the file exactly as it is. Do not turn it or lay it flat.
-2. Do not add supports.
-3. Set the layer height in your slicer to the gap or less. A taller layer fills the gap and joins the plates.
+To print a stack, slice the tower exactly as it is in the file, with no supports. The layer height must be the gap or less, or the plates join. [Stack-printed plates](../printing/slicers#stack-printed-plates) gives the slicer steps.
 
 To separate the plates, put a flat-head screwdriver in each gap and turn it gently.
 

@@ -32,7 +32,7 @@ A spacer can go down to 1 height unit. The arrow button between the width and de
 
 Three readouts show the result:
 
-- The line under the width and depth gives the printed body in millimetres, without the stacking lip.
+- The line under the width and depth gives the printed body in millimeters, without the stacking lip.
 - <Ui k="binDesigner.interiorDimensions" /> gives the space from the floor to the top of the wall, before dividers, scoops and label tabs.
 - <Ui k="assembledHeight.title" /> gives the height of the bin on its baseplate. See [Stacking](./stacking#read-the-assembled-height).
 
@@ -42,7 +42,7 @@ Three readouts show the result:
 
 ## Make half-unit sizes
 
-Turn on <Ui k="binDesigner.halfBinMode" /> to change the width and depth in steps of 0.5. When you step down from 1 to 0.5, the designer turns on half-grid mode for you. The smallest bin is 0.5 by 0.5 units.
+Turn on <Ui k="binDesigner.halfBinMode" /> to change the width and depth in steps of 0.5. When you step down from 1 to 0.5, the bin designer turns on half-grid mode for you. The smallest bin is 0.5 by 0.5 units.
 
 A side that ends in .5 gets a row of half-size feet at one end. Use <Ui k="sidebar.halfUnitEdgePosition" /> to choose that end:
 
@@ -85,7 +85,7 @@ The <Ui k="binDesigner.base.bodyType" /> tiles at the bottom of the page decide 
 A drawer is rarely an exact number of grid units, so a gap stays at its edges. <Ui k="binDesigner.overhang.title" /> grows the walls outward to fill that gap.
 
 1. Turn on <Ui k="binDesigner.overhang.title" /> under <Ui k="binDesigner.shape.section.footprint" />.
-2. Set the millimetres for each side, from 0 to 42.
+2. Set the millimeters for each side, from 0 to 42.
 3. Turn on <Ui k="binDesigner.overhang.feet" /> if the overhang is wide.
 
 The feet stay on the grid, so the bottom of the overhang needs supports when you print it. <Ui k="binDesigner.overhang.feet" /> adds feet under the overhang where it is wide enough. On a flat base, the overhang rests on the print bed.
@@ -110,5 +110,5 @@ A bin that the layout extends into the drawer margin shows <Ui k="binDesigner.ov
 
 - [The base](./base): add magnets or screws, and choose the feet and the floor.
 - [Walls](./walls): set the wall thickness, patterns, cutouts and handles.
-- [Units and sizes](../concepts/units): see how units become millimetres.
+- [Units and sizes](../concepts/units): see how units become millimeters.
 - [Compartments and dividers](./compartments): divide the inside of the bin.

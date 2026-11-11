@@ -28,7 +28,7 @@ This page explains the terms that you meet in the Gridfinity Layout Tool and in 
 
 **Baseplate generator**: the tool that builds baseplates. Open it with the <Ui k="toolSwitcher.baseplateGenerator" /> tab. See [Make your first baseplate](../getting-started/first-baseplate).
 
-**Bento**: an interior mode where you draw compartments of any size, with walls only where you want them. See [Compartments and dividers](../designer/compartments).
+**Bento**: an interior style where you draw compartments of any size, with walls only where you want them. See [Compartments and dividers](../designer/compartments).
 
 **Bin**: one box on the grid. A bin is a whole number of grid units wide and deep, or a half unit in half-grid mode. See [Anatomy of a bin](../concepts/bin-anatomy).
 
@@ -42,7 +42,7 @@ This page explains the terms that you meet in the Gridfinity Layout Tool and in 
 
 **Clearance**: empty space that you reserve above a bin for contents that stick out, such as scissor handles. It blocks bins on the layers above, but it does not add height to the printed bin. See [Work in layers](../layouts/layers).
 
-**Command palette**: a search box for commands. Press <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>Cmd</kbd>+<kbd>K</kbd> on macOS) in the layout editor. See [Keyboard and command palette](../settings/keyboard-and-command-palette).
+**Command palette**: a search box for commands. Press <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>Cmd</kbd>+<kbd>K</kbd> on a Mac) in the layout editor. See [Keyboard and command palette](../settings/keyboard-and-command-palette).
 
 **Community**: the gallery of bin designs from other makers. You can preview a design in 3D, remix an editable copy and export it. See [The community gallery](../sharing/community).
 
@@ -50,7 +50,7 @@ This page explains the terms that you meet in the Gridfinity Layout Tool and in 
 
 **Connector**: the joint that locks two pieces of a split baseplate together. The styles are <Ui k="baseplate.connectorStyle.dovetail" />, <Ui k="baseplate.connectorStyle.puzzle" />, <Ui k="baseplate.connectorStyle.dovetailKey" /> and <Ui k="baseplate.connectorStyle.snapClip" />. See [Split for your print bed](../baseplates/splitting).
 
-**Cutout**: any shape that the bin designer cuts into a bin, for example a pocket for a tool. You draw cutouts in the <Ui k="binDesigner.cutoutEditor.title" />. See [Cutout basics](../cutouts/basics).
+**Cutout**: any shape that the bin designer cuts into a bin, for example the outline of a tool. You draw cutouts in the <Ui k="binDesigner.cutoutEditor.title" />. See [Cutout basics](../cutouts/basics).
 
 ## D
 
@@ -58,7 +58,7 @@ This page explains the terms that you meet in the Gridfinity Layout Tool and in 
 
 **Divider**: a wall inside a bin between two compartments. With <Ui k="binDesigner.interior.slotted.title" />, the dividers are separate parts that slide into slots. See [Compartments and dividers](../designer/compartments).
 
-**Drawer shape**: the outline of a drawer that is not a rectangle. You draw it in millimetres, and the baseplate follows it. See [Drawers that are not rectangles](../baseplates/odd-shaped-drawers).
+**Drawer shape**: the outline of a drawer that is not a rectangle. You draw it in millimeters, and the baseplate follows it. See [Drawers that are not rectangles](../baseplates/odd-shaped-drawers).
 
 ## E
 
@@ -70,7 +70,7 @@ This page explains the terms that you meet in the Gridfinity Layout Tool and in 
 
 ## F
 
-**Finger scoop**: a curved ramp at the front of a bin, so you can slide small parts out. See [Scoops, fillets and pull tabs](../designer/getting-things-out).
+**Finger scoop**: a ramp from the floor up to a wall of a bin, so you can slide small parts out. See [Scoops, fillets and pull tabs](../designer/getting-things-out).
 
 **Foot**: the tapered block under each grid cell of a bin. It drops into a pocket of the baseplate. See [Gridfinity dimensions](./dimensions#base-profile).
 
@@ -110,9 +110,9 @@ This page explains the terms that you meet in the Gridfinity Layout Tool and in 
 
 **Layout editor**: the tool where you plan a drawer. Open it with the <Ui k="toolSwitcher.layout" /> tab. See [Plan your first drawer](../getting-started/first-drawer).
 
-**Layout manager**: the dialog that lists all your layouts, with folders, import and export. Press <kbd>Ctrl</kbd>+<kbd>O</kbd> (<kbd>Cmd</kbd>+<kbd>O</kbd> on macOS). See [Organize your layouts](../layouts/organizing-layouts).
+**Layout manager**: the dialog that lists all your layouts, with folders, import and export. Press <kbd>Ctrl</kbd>+<kbd>O</kbd> (<kbd>Cmd</kbd>+<kbd>O</kbd> on a Mac). See [Organize your layouts](../layouts/organizing-layouts).
 
-**Lid**: a cover that the bin designer builds to fit the stacking lip of a bin. A lid needs a stacking lip on the bin. See [Lids](../designer/lids).
+**Lid**: a cover that the bin designer builds to fit a bin. Most lids grip the stacking lip of the bin. A sliding lid runs in a channel and needs no lip. See [Lids](../designer/lids).
 
 **Lightweight floor**: a base option that hollows each foot to save filament. See [The base](../designer/base).
 
@@ -122,7 +122,7 @@ This page explains the terms that you meet in the Gridfinity Layout Tool and in 
 
 ## M
 
-**Magnet hole**: a round pocket in the base of a bin or in a baseplate that holds a magnet. The default hole is 6.5 mm wide and 2 mm deep. See [Magnets and screws](../baseplates/magnets-and-screws).
+**Magnet hole**: a round hole in the base of a bin or in a baseplate that holds a magnet. The default hole is 6.5 mm wide and 2 mm deep. See [Magnets and screws](../baseplates/magnets-and-screws).
 
 ## O
 
@@ -130,7 +130,7 @@ This page explains the terms that you meet in the Gridfinity Layout Tool and in 
 
 ## P
 
-**Padding**: the solid margin, in millimetres, between the baseplate grid and the drawer wall on each side. See [Baseplate basics](../baseplates/basics).
+**Padding**: the solid margin, in millimeters, between the baseplate grid and the drawer wall on each side. See [Baseplate basics](../baseplates/basics).
 
 **Paint mode**: a way to place many bins of one size. Pick a size with the <Ui k="layers.sizeSelector" />, then drag on the grid. See [Place and edit bins](../layouts/placing-bins).
 
@@ -160,7 +160,7 @@ This page explains the terms that you meet in the Gridfinity Layout Tool and in 
 
 **Stacking lip**: the shaped rim at the top of a bin. The feet of another bin sit in it, so bins can stack. See [Stacking](../designer/stacking).
 
-**Stash**: the holding area beside the grid. Bins in the stash keep their size but are not in the drawer. A bin goes to the stash when a drawer resize has no room for it. See [Layouts, layers and the stash](../concepts/layouts-layers-stash).
+**Stash**: the holding area below the grid. Bins in the stash keep their size but are not in the drawer. A bin goes to the stash when a drawer resize has no room for it. See [Layouts, layers and the stash](../concepts/layouts-layers-stash).
 
 **STEP**: a 3D file format that the bin designer and the baseplate generator can export. A STEP file cannot carry an imported STL shape. See [File formats](../printing/file-formats).
 
@@ -178,7 +178,7 @@ This page explains the terms that you meet in the Gridfinity Layout Tool and in 
 
 **Wall cutout**: an opening through a bin wall for cables, front access or air. See [Walls](../designer/walls).
 
-**Wall pattern**: a surface pattern, such as hex or ribs, on the outer walls of a bin. See [Walls](../designer/walls).
+**Wall pattern**: a repeated shape of holes, such as a honeycomb, cut through the walls of a bin. See [Walls](../designer/walls#add-a-wall-pattern).
 
 **Workshop**: an Experimental way to build a tool holder out of parts. Start one with <Ui k="binDesigner.newWorkshop" /> in <Ui k="binDesigner.savedDesigns" />. See [Workshop](../cutouts/workshop).
 

@@ -24,7 +24,7 @@ The sockets follow a common click-in label standard, so plates from other makers
 3. Under <Ui k="binDesigner.tabMode" />, select <Ui k="binDesigner.tabMode.socket" />.
 4. Type the text for each plate in the <Ui k="binDesigner.labelText" /> list.
 
-Each label tab now has a pocket in its top face. A socket tab must be at least 14 mm deep, so the tab depth can grow when you switch. If no standard plate fits in the bin, the panel disables <Ui k="binDesigner.tabMode.socket" /> and tells you that the bin is too narrow.
+Each label tab now has a socket in its top face. A socket tab must be at least 14 mm deep, so the tab depth can grow when you switch. If no standard plate fits in the bin, the panel disables <Ui k="binDesigner.tabMode.socket" /> and tells you that the bin is too narrow.
 
 <Screenshot id="designer-label-plates-socket-list" alt="The Label tabs section in Swappable label mode, with a plate width and an icon picker under each caption." spec="Bin designer, 4x1 bin with 2 compartments, Interior page, Label tabs on, Swappable label, captions M3 and M4, a bolt icon on the first row. Crop to the Label style control, the caption list and the Socket style control." />
 
@@ -34,10 +34,10 @@ Under <Ui k="binDesigner.socketStyle" />, pick one of two styles. Both take the 
 
 | Style                                           | How the plate goes in                                                                               |
 | ----------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| <Ui k="binDesigner.socketStyle.clickIn" />      | You press the plate down into the pocket, and small ribs hold it. This is the default.              |
+| <Ui k="binDesigner.socketStyle.clickIn" />      | You press the plate down into the socket, and small ribs hold it. This is the default.              |
 | <Ui k="binDesigner.socketStyle.slideChannel" /> | The plate slides in from the compartment side, under retaining lips, and stops behind a small bump. |
 
-To lift a click-in plate out again, turn on <Ui k="binDesigner.socketRemovalHole" />. It cuts a small notch at the pocket edge, so a tweezer tip reaches under the plate.
+To lift a click-in plate out again, turn on <Ui k="binDesigner.socketRemovalHole" />. It cuts a small notch at the socket edge, so a tweezer tip reaches under the plate.
 
 ## Set the plate width and icon
 
@@ -83,29 +83,22 @@ A layout export also includes the plates for every bin that has sockets, and the
 
 ## Add label slots to the outer walls
 
-A label slot is a vertical slot in an outer wall that takes a 1U plate. The plate drops in from the top and shows through a window in the wall.
-
-1. Select <Ui k="binDesigner.category.style" /> in the panel.
-2. Turn on <Ui k="binDesigner.walls.labelSlots.heading" />.
-3. Under <Ui k="binDesigner.walls.labelSlots.sides" />, pick the walls.
-4. Set <Ui k="binDesigner.walls.labelSlots.spacing" /> to put a slot in every cell or in fewer cells.
-
-A rib on the inside of the wall backs each slot, and each slot cuts a notch in the stacking lip. Label slots are not available on custom-shape bins, on bins with an overhang, or on walls too short for a plate. The plates for the slots appear in a plate list with the same export buttons.
+A label slot is a vertical slot in an outer wall that takes a 1U plate. The plate drops in from the top and shows through a window in the wall. [Add label slots](./walls#add-label-slots) gives the steps and the limits. The plates for the slots appear in a plate list with the same export buttons.
 
 ## Add sockets on cutout bins
 
-A bin with custom cutouts can carry label sockets beside its tool pockets.
+A bin with custom cutouts can carry label sockets beside its cutouts.
 
-1. Open the cut editor and select a cutout.
+1. Open the cutout editor and select a cutout.
 2. Open the <Ui k="binDesigner.cutouts.section.label" /> section and select <Ui k="binDesigner.cutoutLabelMode.socket" />.
 3. Type the plate text.
 4. Set <Ui k="binDesigner.cutoutSocket.width" />, <Ui k="binDesigner.cutoutSocket.icon" /> and <Ui k="binDesigner.cutoutSocket.orientation" />.
 
-The socket goes at the label position beside the cutout, in solid material. If there is no room, the panel tells you to move the cutout or to try a different position. One bin holds up to 32 sockets. All copies in a repeat share one plate. With no cutout selected, the board settings show the plate count, the plate fit and the export buttons. See [Cutout basics](../cutouts/basics).
+The socket goes at the label position beside the cutout, in solid material. If there is no room, the panel tells you to move the cutout or to try a different position. One bin holds up to 32 sockets. All copies in a repeat share one plate. With no cutout selected, the board settings show the plate count, the plate fit and the export buttons. For the other label options of a cutout, see [Add a label](../cutouts/basics#add-a-label).
 
 ## Next steps
 
 - [Labels and text](./labels-and-text): set the font and finish that the plates use.
 - [Colors](./colors): print the plate text in a second filament.
-- [Print list and ZIP export](../printing/print-list-and-zip): print the plates for a whole drawer at once.
+- [The print list and ZIP export](../printing/print-list-and-zip): print the plates for a whole drawer at once.
 - [Fit and tolerances](../printing/fit-and-tolerances): tune other fits for your printer.

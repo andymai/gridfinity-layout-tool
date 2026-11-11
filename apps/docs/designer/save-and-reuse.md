@@ -48,7 +48,7 @@ Each design holds up to 25 versions. When a design is full, a new version remove
 
 ## Make one design in several sizes
 
-A variant is a copy of a design that follows its parent, except for the values that you claim. For example, make one bin for a set of drill bits, then a variant with a different width or pocket size. When you improve the parent, each variant gets the change.
+A variant is a copy of a design that follows its parent, except for the values that you claim. For example, make one bin for a set of drill bits, then a variant with a different width or cutout size. When you improve the parent, each variant gets the change.
 
 1. In the library, open the menu of the parent design.
 2. Click <Ui k="binDesigner.variants.create" />.
@@ -73,7 +73,7 @@ Tags sync with your account.
 
 ## Start from an example
 
-At the top of the designer panel, click <Ui k="binExamples.sidebarEntry" />. The gallery has two tabs. <Ui k="binExamples.gallery.tabs.examples" /> holds ready-made designs that show what the bin designer can do, such as lids, scoops and a knife block. <Ui k="binExamples.gallery.tabs.community" /> holds bins that other makers share.
+At the top of the bin designer panel, click <Ui k="binExamples.sidebarEntry" />. The gallery has two tabs. <Ui k="binExamples.gallery.tabs.examples" /> holds ready-made designs that show what the bin designer can do, such as lids, scoops and a knife block. <Ui k="binExamples.gallery.tabs.community" /> holds bins that other makers share.
 
 1. In the <Ui k="binExamples.gallery.tabs.examples" /> tab, filter by technique or search by name.
 2. Click an example to turn it in a 3D view.
@@ -101,11 +101,11 @@ The same drop zone takes an STL file and imports it as a bin. See [Special bins]
 1. In the library, open the menu of the design.
 2. Click <Ui k="binDesigner.placeInLayout.action" />.
 
-The layout editor opens and adds the bin as a linked bin. The bin goes to the first free spot on the active layer, turned if it fits only that way. If the layer has no room, the bin goes to the stash. Drag it to the place you want. When you change the design later, the linked bin in the layout changes too. See [Placing bins](../layouts/placing-bins).
+The layout editor opens and adds the bin as a linked bin. The bin goes to the first free spot on the active layer, turned if it fits only that way. If the layer has no room, the bin goes to the stash. Drag it to the place you want. When you change the design later, the linked bin in the layout changes too. To give a design to a bin that is already on the grid, see [Place and edit bins](../layouts/placing-bins#drop-a-saved-design-into-the-drawer).
 
 ## Next steps
 
-- [Saved designs](../concepts/saved-designs): learn how designs and linked bins work together.
-- [Placing bins](../layouts/placing-bins): arrange linked bins in a drawer.
+- [Saved designs and linked bins](../concepts/saved-designs): learn how designs and linked bins work together.
+- [Place and edit bins](../layouts/placing-bins): arrange linked bins in a drawer.
 - [Accounts and sync](../sharing/accounts-and-sync): keep your library on every device.
-- [Design file](../reference/design-file): read and edit the JSON design format.
+- [Bin design file format](../reference/design-file): read and edit the JSON design format.

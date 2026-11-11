@@ -98,7 +98,7 @@ A print report tells the next maker how a design printed for you.
 5. Fill in <Ui k="community.print.settingsTitle" /> if you want. All these fields are optional.
 6. Click <Ui k="community.print.save" />.
 
-You can post one print for each design. When you post again, your new report replaces the old one. The Layout Tool shrinks each photo before upload and removes its location data. The owner of a design can use a print photo as the card image.
+You can post one print for each design. When you post again, your new report replaces the old one. After a few people report their prints, the design shows their print times in place of the estimate. See [Filament and time estimates](../printing/estimates#how-far-to-trust-the-estimates). The Layout Tool shrinks each photo before upload and removes its location data. The owner of a design can use a print photo as the card image.
 
 The server can switch print reports off. The form then shows a message that print reports are not available.
 

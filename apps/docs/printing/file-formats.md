@@ -41,7 +41,7 @@ A STEP file holds the exact solid, not a mesh. Use it when you want to change th
 
 STEP is not available in these cases:
 
-- A bin with a cutout from an imported mesh. The Layout Tool cuts that pocket from the mesh, so no solid describes it.
+- A bin with a cutout from an imported mesh. The Layout Tool cuts that shape from the mesh, so no solid describes it.
 - A design that is an imported mesh. The layout ZIP skips these designs when you pick STEP.
 - A stacked baseplate. A STEP export of a baseplate never stacks.
 
@@ -85,8 +85,11 @@ By default, each export goes to your downloads. In Settings, the <Ui k="settings
 - <Ui k="exportDestination.folder.title" /> saves each export in a folder that you pick. This needs Chrome or Edge.
 - <Ui k="exportDestination.url.title" /> downloads the file and also sends a copy to a web address, such as a NAS.
 
+[Settings and accessibility](../settings/settings#account-and-data) lists the other tabs of Settings.
+
 ## Next steps
 
 - [The print list and ZIP export](./print-list-and-zip): export all the bins and the baseplate of a layout in one ZIP.
 - [Slicer setup](./slicers): open the files in your slicer.
 - [Multi-color printing](../concepts/multi-color): set up the colors that a 3MF file carries.
+- [Preview and export](../concepts/preview-and-export): learn why an export takes longer than the preview.

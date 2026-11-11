@@ -50,7 +50,7 @@ Yes. A layout file is plain JSON text with a published schema. Most code editors
 
 ### How do I convert my drawer to grid units?
 
-Measure the inside width and depth of the drawer in millimetres. Divide each value by 42 and round down. For example, a drawer of 380 mm × 260 mm takes a grid of 9 × 6. See [Set up the drawer](../layouts/drawer-setup).
+Measure the inside width and depth of the drawer in millimeters. Divide each value by 42 and round down. For example, a drawer of 380 mm × 260 mm takes a grid of 9 × 6. See [Set up the drawer](../layouts/drawer-setup).
 
 ### What do I do with the gap at the edge of the drawer?
 
@@ -90,7 +90,7 @@ Shortcuts do not work while the cursor is in a text field. Click an empty part o
 
 ### How many steps can I undo?
 
-The layout editor and the bin designer each keep the last 100 changes. Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> to undo, or <kbd>Cmd</kbd>+<kbd>Z</kbd> on macOS. See [Keyboard shortcuts](./shortcuts).
+The layout editor and the bin designer each keep the last 100 changes. Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> to undo, or <kbd>Cmd</kbd>+<kbd>Z</kbd> on a Mac. See [Keyboard shortcuts](./shortcuts).
 
 ### What is the stash?
 

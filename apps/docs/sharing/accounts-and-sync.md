@@ -96,7 +96,7 @@ Sign-in and sync need the server of the Layout Tool. A self-hosted copy has no s
 
 ## Next steps
 
-- [Your data](../introduction/your-data): what the browser stores and how to back it up.
+- [Your data and privacy](../introduction/your-data): what the browser stores and how to back it up.
 - [Share a layout](./share-links): send a layout to a person without an account.
 - [The community gallery](./community): publish a design under your public name.
 - [Settings and accessibility](../settings/settings): the other tabs in Settings.

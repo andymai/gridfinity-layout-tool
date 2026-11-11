@@ -8,6 +8,7 @@ sources:
   - src/features/bin-designer/constants/defaults.ts
   - src/features/bin-designer/types/base.ts
   - src/shared/utils/heightUnits.ts
+  - src/shared/printSettings/baseplateHeight.ts
 ---
 
 # Gridfinity in five minutes
@@ -42,7 +43,7 @@ Some drawers need a smaller step. A half grid unit is 21 mm. In the Layout Tool,
 
 ## Check the drawer height
 
-Before you print tall bins, add up the heights. Your tallest bin, plus the baseplate (about 5 mm), plus the lip (about 4.4 mm), must fit under the closed drawer. The layout editor does this check for you when you give it the measured height of the drawer. [Plan your first drawer](../getting-started/first-drawer) shows how.
+Before you print tall bins, add up the heights. Your tallest bin plus its lip (about 4.4 mm) must fit under the closed drawer. A plain baseplate adds almost no height, because the feet sit in its pockets. Magnet holes in the plate add the magnet depth plus about 0.6 mm. The layout editor does this check for you when you give it the measured height of the drawer. [Plan your first drawer](../getting-started/first-drawer) shows how.
 
 ## Magnets and screws
 

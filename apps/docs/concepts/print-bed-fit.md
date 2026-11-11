@@ -65,17 +65,9 @@ A slanted bin cannot split, because a cut would cross its body at an angle. If a
 
 The baseplate generator splits a large baseplate into pieces automatically. It shows the number of pieces, and how many times you must fill the print bed to print them all. The split leaves room on the bed for the connector tongues.
 
-<Ui k="baseplate.connectors.label" /> sets how the pieces join:
+By default the pieces sit loose. You can pick a connector style that locks them together, and you can move the split lines. If a piece is larger than the bed, the baseplate generator stops the export until you change the split. [Split for your print bed](../baseplates/splitting) shows how.
 
-| Connector                                       | What it does                |
-| ----------------------------------------------- | --------------------------- |
-| <Ui k="baseplate.connectors.none" />            | The pieces sit loose        |
-| <Ui k="baseplate.connectorStyle.dovetail" />    | A printed sliding joint     |
-| <Ui k="baseplate.connectorStyle.puzzle" />      | Puzzle shapes lock together |
-| <Ui k="baseplate.connectorStyle.dovetailKey" /> | A separate key locks them   |
-| <Ui k="baseplate.connectorStyle.snapClip" />    | A clip snaps into the seam  |
-
-To move the split lines, click a line in the split view to add or remove a split. The view then shows <Ui k="baseplate.splitCustom" />. <Ui k="baseplate.splitResetAuto" /> goes back to the automatic split. If a piece is larger than the bed, the baseplate generator stops the export until you change the split.
+A drawer shape changes the pieces of a split plate: each piece follows the outline, and a seam that the shape crosses gets no connector. See [Drawers that are not rectangles](../baseplates/odd-shaped-drawers#split-a-shaped-plate).
 
 ## Next steps
 

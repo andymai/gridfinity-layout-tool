@@ -37,7 +37,7 @@ The link holds the whole layout: the drawer, the layers, the categories, and the
 
 When you change a layout that has a link, the Layout Tool updates the link a few seconds later. You do not have to share it again. A change to the stash alone does not start an update.
 
-A link stays until you delete it. Links do not expire.
+A link stays until you delete it. Links do not expire. [Your data and privacy](../introduction/your-data#what-a-share-link-publishes) tells you who can see the copy.
 
 The server refuses a layout that is too large or that holds blocked text:
 
@@ -98,17 +98,11 @@ The <Ui k="share.title" /> dialog opens with three tabs:
 
 ## Share one bin design
 
-To send one bin design, send its design file:
-
-1. Open the design in the bin designer.
-2. Click <Ui k="common.export" /> in the header.
-3. Click <Ui k="binDesigner.downloadDesignJson" />.
-
-The file holds the editable design, not a printable model. The other person imports it in the bin designer. To share a design with every maker, publish it in [the community gallery](./community).
+To send one bin design, send its design file. The file holds the editable design, not a printable model. The other person imports it in the bin designer. [Save and reuse designs](../designer/save-and-reuse#download-and-import-a-design-file) shows how to download and import the file. To share a design with every maker, publish it in [the community gallery](./community).
 
 ## Next steps
 
 - [Work together live](./live-collaboration): edit one layout with other people at the same time.
 - [Accounts and sync](./accounts-and-sync): keep your own layouts on all your devices.
 - [The community gallery](./community): publish a bin design for everyone.
-- [Layout file](../reference/layout-file): what a layout JSON file holds.
+- [Layout file format](../reference/layout-file): what a layout JSON file holds.

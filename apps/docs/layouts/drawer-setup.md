@@ -49,7 +49,7 @@ A real drawer is almost never an exact number of grid units. Enter its inside si
 
 The line under the steppers then shows the grid size in millimeters and the free space around it. If the grid is larger than the drawer, the line turns into a warning that shows the overlap.
 
-The Layout Tool does not resize the grid by itself. When a different grid fits the drawer better, a card shows that size and the free space that it leaves. Click <Ui k="drawerDims.suggestionUse" /> to apply it. If the better fit uses a half unit, the card tells you that it also turns on half-grid mode.
+The Layout Tool does not resize the grid by itself. When the largest grid that fits the drawer is different from your grid, a card shows that size and the free space that it leaves. Click <Ui k="drawerDims.suggestionUse" /> to apply it. If the better fit uses a half unit, the card tells you that it also turns on half-grid mode. To keep your grid, close the card with its X button. The card then stays closed until you enter a different measurement.
 
 To remove the measurement, click <Ui k="drawerDims.clear" />, the small X next to the size.
 
@@ -105,3 +105,5 @@ The 3D preview draws a flat plane at the <Ui k="drawerCeiling.planeLabel" />. A 
 - [Work in layers](./layers): stack bins and keep the tallest stack under the drawer top.
 - [Units and sizes](../concepts/units): change the grid unit and the height unit.
 - [Baseplate basics](../baseplates/basics): make a plate that fills the margin.
+- [Split for your print bed](../baseplates/splitting): print a baseplate for a drawer that is larger than your printer.
+- [Plan your first drawer](../getting-started/first-drawer): set up a drawer and fill it, step by step.

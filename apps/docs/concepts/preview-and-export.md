@@ -25,6 +25,8 @@ The bin designer and the baseplate generator build the model in your browser. Ea
 
 A bin gets one draft at most. When the instant draft appears, the fast draft does not run.
 
+Labs has a second geometry engine that you can try in place of the main one. See [Alternative 3D engine](../settings/labs#alternative-3d-engine).
+
 In the baseplate generator, <Ui k="baseplate.computingGeometry" /> shows while the exact plate replaces the quick draft.
 
 ## Why the draft can look different
@@ -68,3 +70,4 @@ The layout editor draws its 3D preview from the layout itself, not from the geom
 - [The print list and ZIP export](../printing/print-list-and-zip): export every bin in a layout at once
 - [Multi-color printing](./multi-color): see what the 3MF file carries for each color zone
 - [Saved designs and linked bins](./saved-designs): see how a layout shows the model of a saved design
+- [SpaceMouse](../settings/spacemouse): move the 3D preview with a 3Dconnexion SpaceMouse
