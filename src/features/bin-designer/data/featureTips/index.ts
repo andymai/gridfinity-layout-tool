@@ -17,10 +17,18 @@ import cutEditorDark from './clips/cutEditor.dark.mp4';
 import cutEditorDarkPoster from './clips/cutEditor.dark.webp';
 import cutEditorLight from './clips/cutEditor.light.mp4';
 import cutEditorLightPoster from './clips/cutEditor.light.webp';
+import drainageHolesDark from './clips/drainageHoles.dark.mp4';
+import drainageHolesDarkPoster from './clips/drainageHoles.dark.webp';
+import drainageHolesLight from './clips/drainageHoles.light.mp4';
+import drainageHolesLightPoster from './clips/drainageHoles.light.webp';
 import handlesDark from './clips/handles.dark.mp4';
 import handlesDarkPoster from './clips/handles.dark.webp';
 import handlesLight from './clips/handles.light.mp4';
 import handlesLightPoster from './clips/handles.light.webp';
+import labelPlatesDark from './clips/labelPlates.dark.mp4';
+import labelPlatesDarkPoster from './clips/labelPlates.dark.webp';
+import labelPlatesLight from './clips/labelPlates.light.mp4';
+import labelPlatesLightPoster from './clips/labelPlates.light.webp';
 import labelTabsDark from './clips/labelTabs.dark.mp4';
 import labelTabsDarkPoster from './clips/labelTabs.dark.webp';
 import labelTabsLight from './clips/labelTabs.light.mp4';
@@ -29,6 +37,18 @@ import lidsDark from './clips/lids.dark.mp4';
 import lidsDarkPoster from './clips/lids.dark.webp';
 import lidsLight from './clips/lids.light.mp4';
 import lidsLightPoster from './clips/lids.light.webp';
+import lightweightFloorDark from './clips/lightweightFloor.dark.mp4';
+import lightweightFloorDarkPoster from './clips/lightweightFloor.dark.webp';
+import lightweightFloorLight from './clips/lightweightFloor.light.mp4';
+import lightweightFloorLightPoster from './clips/lightweightFloor.light.webp';
+import magnetHolesDark from './clips/magnetHoles.dark.mp4';
+import magnetHolesDarkPoster from './clips/magnetHoles.dark.webp';
+import magnetHolesLight from './clips/magnetHoles.light.mp4';
+import magnetHolesLightPoster from './clips/magnetHoles.light.webp';
+import multiColorDark from './clips/multiColor.dark.mp4';
+import multiColorDarkPoster from './clips/multiColor.dark.webp';
+import multiColorLight from './clips/multiColor.light.mp4';
+import multiColorLightPoster from './clips/multiColor.light.webp';
 import overhangDark from './clips/overhang.dark.mp4';
 import overhangDarkPoster from './clips/overhang.dark.webp';
 import overhangLight from './clips/overhang.light.mp4';
@@ -53,6 +73,14 @@ import wallCutoutsDark from './clips/wallCutouts.dark.mp4';
 import wallCutoutsDarkPoster from './clips/wallCutouts.dark.webp';
 import wallCutoutsLight from './clips/wallCutouts.light.mp4';
 import wallCutoutsLightPoster from './clips/wallCutouts.light.webp';
+import wallPatternDark from './clips/wallPattern.dark.mp4';
+import wallPatternDarkPoster from './clips/wallPattern.dark.webp';
+import wallPatternLight from './clips/wallPattern.light.mp4';
+import wallPatternLightPoster from './clips/wallPattern.light.webp';
+import wallTextDark from './clips/wallText.dark.mp4';
+import wallTextDarkPoster from './clips/wallText.dark.webp';
+import wallTextLight from './clips/wallText.light.mp4';
+import wallTextLightPoster from './clips/wallText.light.webp';
 import { LID_TIP_SEGMENT_SECONDS, LID_TIP_SEGMENTS } from './timing';
 
 export type FeatureTipId =
@@ -67,7 +95,14 @@ export type FeatureTipId =
   | 'pullTab'
   | 'overhang'
   | 'slant'
-  | 'lids';
+  | 'lids'
+  | 'wallPattern'
+  | 'drainageHoles'
+  | 'labelPlates'
+  | 'magnetHoles'
+  | 'multiColor'
+  | 'wallText'
+  | 'lightweightFloor';
 
 export interface FeatureTipClip {
   readonly video: string;
@@ -174,5 +209,54 @@ export const FEATURE_TIPS: Readonly<Record<FeatureTipId, FeatureTip>> = {
       labelKey: `binDesigner.lid.attachment.${attachment}`,
       fromSeconds: i * LID_TIP_SEGMENT_SECONDS,
     })),
+  },
+  wallPattern: {
+    captionKey: 'binDesigner.featureTip.wallPattern',
+    clips: {
+      light: { video: wallPatternLight, poster: wallPatternLightPoster },
+      dark: { video: wallPatternDark, poster: wallPatternDarkPoster },
+    },
+  },
+  drainageHoles: {
+    captionKey: 'binDesigner.featureTip.drainageHoles',
+    clips: {
+      light: { video: drainageHolesLight, poster: drainageHolesLightPoster },
+      dark: { video: drainageHolesDark, poster: drainageHolesDarkPoster },
+    },
+  },
+  labelPlates: {
+    captionKey: 'binDesigner.featureTip.labelPlates',
+    clips: {
+      light: { video: labelPlatesLight, poster: labelPlatesLightPoster },
+      dark: { video: labelPlatesDark, poster: labelPlatesDarkPoster },
+    },
+  },
+  magnetHoles: {
+    captionKey: 'binDesigner.featureTip.magnetHoles',
+    clips: {
+      light: { video: magnetHolesLight, poster: magnetHolesLightPoster },
+      dark: { video: magnetHolesDark, poster: magnetHolesDarkPoster },
+    },
+  },
+  multiColor: {
+    captionKey: 'binDesigner.featureTip.multiColor',
+    clips: {
+      light: { video: multiColorLight, poster: multiColorLightPoster },
+      dark: { video: multiColorDark, poster: multiColorDarkPoster },
+    },
+  },
+  wallText: {
+    captionKey: 'binDesigner.featureTip.wallText',
+    clips: {
+      light: { video: wallTextLight, poster: wallTextLightPoster },
+      dark: { video: wallTextDark, poster: wallTextDarkPoster },
+    },
+  },
+  lightweightFloor: {
+    captionKey: 'binDesigner.featureTip.lightweightFloor',
+    clips: {
+      light: { video: lightweightFloorLight, poster: lightweightFloorLightPoster },
+      dark: { video: lightweightFloorDark, poster: lightweightFloorDarkPoster },
+    },
   },
 };

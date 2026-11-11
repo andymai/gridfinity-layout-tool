@@ -10,7 +10,13 @@ export interface DesignerStoreModule {
   useDesignerStore: {
     getState(): {
       params: Record<string, unknown>;
-      generation: { status: string; isDraft: boolean; mesh: unknown };
+      generation: {
+        status: string;
+        isDraft: boolean;
+        mesh: {
+          labelPlates?: { plates: { seatX: number; seatY: number; seatZ: number }[] } | null;
+        } | null;
+      };
       setParams(params: Record<string, unknown>): void;
       newDesign(kind: 'bin'): void;
     };
