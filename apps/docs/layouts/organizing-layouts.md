@@ -9,11 +9,14 @@ sources:
   - src/core/cqrs/undo/historyStore.ts
   - src/shared/hooks/useLayoutActivation.ts
   - src/shell/Header/Header.tsx
+  - src/core/storage/LayoutManager.ts
+  - src/core/cqrs/store/retryQueue.ts
+  - src/shared/hooks/useAutoSave.ts
 ---
 
 # Organize your layouts
 
-Plan one drawer, and soon you'll want to plan the whole workshop. Each drawer is one layout. The Gridfinity Layout Tool keeps all your layouts in a library in your browser, and it saves each change for you. Here's how to find, rename, copy and file your layouts, and how to go back to an earlier version when an idea doesn't work out.
+Plan one drawer, and soon you'll want to plan the whole workshop. Each drawer is one **layout**. The Gridfinity Layout Tool keeps all your layouts in a library in your browser, and it saves each change for you. Here's how to find, rename, copy and file your layouts, and how to go back to an earlier version when an idea doesn't work out.
 
 ## Rename and switch layouts
 
@@ -75,7 +78,7 @@ With the Places feature in Labs, a folder can also be a place, an area or a unit
 
 ## Go back to an earlier version
 
-Tried an idea and don't like it? The Layout Tool saves a snapshot of the open layout every 2 minutes when it changes. On a computer, open the <Ui k="rightPanel.historyTab" /> tab in the right panel to see them. Each snapshot shows its age, a small picture, and the number of bins and layers.
+Tried an idea and don't like it? The Layout Tool saves a **snapshot** of the open layout every 2 minutes when it changes. On a computer, open the <Ui k="rightPanel.historyTab" /> tab in the right panel to see them. Each snapshot shows its age, a small picture, and the number of bins and layers.
 
 - Click <Ui k="snapshots.saveCheckpoint" /> to keep the current state, with the date and time as its label. Do this before a big change.
 - Click the name of a snapshot to give it a label.
@@ -93,6 +96,26 @@ If the browser loses the data of a layout, the Layout Tool looks for it in its b
 Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> to undo and <kbd>Ctrl</kbd>+<kbd>Y</kbd> to redo. On a Mac, use <kbd>Cmd</kbd>. The header also has undo and redo buttons.
 
 The undo history keeps the last 100 changes of the open layout. When you open a different layout or restore a snapshot, the history starts again. For an older state, use a snapshot.
+
+## When it goes wrong
+
+### A message says the Layout Tool couldn't save your changes
+
+Free up space on your device, then come back to the Layout Tool. When the header shows <Ui k="header.saved" />, your changes are safe.
+
+Your browser keeps your layouts on your device, so the Layout Tool can't save when the device is full. While a save fails, the header shows <Ui k="header.saveFailed" />. The Layout Tool tries again by itself, first after a few seconds and then every minute. It also tries again when you come back to the window. Until a save works, the browser asks before you close or reload the tab.
+
+### Undo doesn't go back far enough
+
+Restore a snapshot from the <Ui k="rightPanel.historyTab" /> tab instead. Undo keeps only the last 100 changes of the open layout. It also starts again when you open a different layout or restore a snapshot.
+
+### A snapshot that you wanted is gone
+
+Give a snapshot a label to keep it, or click <Ui k="snapshots.saveCheckpoint" /> before a big change. The Layout Tool keeps only the 10 newest snapshots without a label. Each new snapshot pushes out the oldest one without a label.
+
+### A new layout or a copy fails with a message
+
+Delete the layouts that you don't need. Download a layout first if you may want it later. The library holds up to 500 layouts, and at that limit a new layout or a copy fails. To see your count, open Settings and go to the <Ui k="settings.tabs.storage" /> tab.
 
 ## Next steps
 

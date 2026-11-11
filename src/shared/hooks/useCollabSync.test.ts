@@ -5,6 +5,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
 import type { Layout, Bin, LayerId } from '@/core/types';
 import { binId, categoryId, gridUnits, heightUnits, layerId, layoutId } from '@/core/types';
+import { stampFor, type RoomLinkStamp } from '@/shared/utils/roomLinkStamp';
 
 // Mock liveblocks hooks
 const mockUseStorage = vi.fn();
@@ -72,11 +73,10 @@ describe('useCollabSync', () => {
   });
 
   describe('initial sync', () => {
-    it('pushes local layout to remote when local has content', () => {
+    it('pushes a copy of unknown revision into an unstamped room without marking it saved', () => {
       const localLayout = createTestLayout([createBinOnGrid('bin1')]);
       useLayoutStore.setState({ layout: localLayout, lastEditSource: 'init' });
 
-      // Remote is empty
       const remoteLayout = createTestLayout();
       mockUseStorage.mockImplementation((selector) => {
         return selector({ layout: remoteLayout });
@@ -84,8 +84,36 @@ describe('useCollabSync', () => {
 
       renderHook(() => useCollabSync());
 
-      // Should push local to remote
-      expect(mockUpdateRemoteLayout).toHaveBeenCalledWith(localLayout);
+      expect(mockUpdateRemoteLayout.mock.calls).toEqual([[localLayout, undefined]]);
+    });
+
+    it('pushes a copy of known revision into an unstamped room with that revision', () => {
+      const localLayout = createTestLayout([createBinOnGrid('bin1')]);
+      useLayoutStore.setState({ layout: localLayout, lastEditSource: 'init' });
+      const emptyRoom = createTestLayout();
+      mockUseStorage.mockImplementation((selector) => selector({ layout: emptyRoom }));
+
+      renderHook(() => useCollabSync(stampFor(localLayout, '2026-11-01T10:00:00.000Z')));
+
+      expect(mockUpdateRemoteLayout.mock.calls).toEqual([
+        [localLayout, stampFor(localLayout, '2026-11-01T10:00:00.000Z')],
+      ]);
+    });
+
+    it('keeps an unstamped room that has bins rather than push its own copy', () => {
+      useLayoutStore.setState({
+        layout: createTestLayout([createBinOnGrid('copy')]),
+        lastEditSource: 'init',
+      });
+      const roomLayout = createTestLayout([createBinOnGrid('room')]);
+      mockUseStorage.mockImplementation((selector) => selector({ layout: roomLayout }));
+
+      renderHook(() =>
+        useCollabSync(stampFor(useLayoutStore.getState().layout, '2026-11-01T10:00:00.000Z'))
+      );
+
+      expect(mockUpdateRemoteLayout).not.toHaveBeenCalled();
+      expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual(['room']);
     });
 
     it('imports remote layout when local is empty and remote has content', () => {
@@ -226,6 +254,24 @@ describe('useCollabSync', () => {
 
       // Local store should have the remote bin
       expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
+    });
+
+    it("keeps the active layout id, so the owner's library still saves a collaborator's edit", async () => {
+      const initialLayout = createTestLayout();
+      useLayoutStore.setState({ layout: initialLayout, lastEditSource: 'init' });
+
+      let currentRemoteLayout = initialLayout;
+      mockUseStorage.mockImplementation((selector) => selector({ layout: currentRemoteLayout }));
+      const { rerender } = renderHook(() => useCollabSync());
+      await act(async () => {
+        vi.advanceTimersByTime(600);
+      });
+
+      currentRemoteLayout = createTestLayout([createBinOnGrid('remote-bin')]);
+      rerender();
+
+      expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual(['remote-bin']);
+      expect(useLayoutStore.getState().activeLayoutId).toBe('test-layout');
     });
 
     it('skips import when remote layout matches last synced layout', async () => {
@@ -405,6 +451,146 @@ describe('useCollabSync', () => {
       rerender();
 
       expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual(['owner-edit']);
+    });
+  });
+
+  describe('joining a stamped room', () => {
+    const SAVED_AT = '2026-11-01T10:00:00.000Z';
+    const LATER = '2026-11-01T10:05:00.000Z';
+    const EARLIER = '2026-11-01T09:00:00.000Z';
+
+    function joinRoom(room: Layout, stamp: RoomLinkStamp, copy: Layout, copyRevision?: string) {
+      useLayoutStore.setState({ layout: copy, lastEditSource: 'init' });
+      mockUseStorage.mockImplementation((selector) =>
+        selector({ layout: room, metadata: { ownerId: 'owner', ...stamp } })
+      );
+      const save = copyRevision ? stampFor(copy, copyRevision) : undefined;
+      return renderHook(() => useCollabSync(save));
+    }
+
+    function joinStaleRoomWith(copy: Layout, save: RoomLinkStamp) {
+      const stale = createTestLayout([createBinOnGrid('stale')]);
+      useLayoutStore.setState({ layout: copy, lastEditSource: 'init' });
+      mockUseStorage.mockImplementation((selector) =>
+        selector({ layout: stale, metadata: { ownerId: 'owner', ...stampFor(stale, SAVED_AT) } })
+      );
+      renderHook(() => useCollabSync(save));
+    }
+
+    it('takes no revision from a later save of a different layout', () => {
+      const otherTabSave = createTestLayout([createBinOnGrid('other-tab')]);
+
+      joinStaleRoomWith(
+        createTestLayout([createBinOnGrid('this-tab')]),
+        stampFor(otherTabSave, LATER)
+      );
+
+      expect(mockUpdateRemoteLayout).not.toHaveBeenCalled();
+      expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual(['stale']);
+    });
+
+    it('takes no revision from a record that names no layout', () => {
+      joinStaleRoomWith(createTestLayout([createBinOnGrid('copy')]), { linkUpdatedAt: LATER });
+
+      expect(mockUpdateRemoteLayout).not.toHaveBeenCalled();
+    });
+
+    it('takes no revision once the copy changed after its save', () => {
+      const savedCopy = createTestLayout([createBinOnGrid('saved-copy')]);
+
+      joinStaleRoomWith(
+        createTestLayout([createBinOnGrid('saved-copy'), createBinOnGrid('edited-since')]),
+        stampFor(savedCopy, LATER)
+      );
+
+      expect(mockUpdateRemoteLayout).not.toHaveBeenCalled();
+    });
+
+    it('takes the room when it holds edits made after the copy was saved to the link', () => {
+      const saved = createTestLayout([createBinOnGrid('saved')]);
+      const edited = createTestLayout([createBinOnGrid('saved'), createBinOnGrid('collab-edit')]);
+
+      joinRoom(edited, stampFor(saved, SAVED_AT), saved, SAVED_AT);
+
+      expect(mockUpdateRemoteLayout).not.toHaveBeenCalled();
+      expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual([
+        'saved',
+        'collab-edit',
+      ]);
+    });
+
+    it('takes the room over a copy older than the revision it recorded', () => {
+      const room = createTestLayout([createBinOnGrid('room')]);
+
+      joinRoom(room, stampFor(room, SAVED_AT), createTestLayout([createBinOnGrid('old')]), EARLIER);
+
+      expect(mockUpdateRemoteLayout).not.toHaveBeenCalled();
+      expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual(['room']);
+    });
+
+    it('keeps edits the link lacks even when the copy is from a later revision', () => {
+      const saved = createTestLayout([createBinOnGrid('saved')]);
+      const edited = createTestLayout([createBinOnGrid('collab-edit')]);
+
+      joinRoom(
+        edited,
+        stampFor(saved, SAVED_AT),
+        createTestLayout([createBinOnGrid('copy')]),
+        LATER
+      );
+
+      expect(mockUpdateRemoteLayout).not.toHaveBeenCalled();
+      expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual(['collab-edit']);
+    });
+
+    it('pushes a copy from a later link revision and records that revision', () => {
+      const stale = createTestLayout([createBinOnGrid('stale')]);
+      const newer = createTestLayout([createBinOnGrid('edited-outside-room')]);
+
+      joinRoom(stale, stampFor(stale, SAVED_AT), newer, LATER);
+
+      expect(mockUpdateRemoteLayout).toHaveBeenCalledWith(newer, stampFor(newer, LATER));
+      expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual([
+        'edited-outside-room',
+      ]);
+    });
+
+    it('keeps the active layout id when it takes the room layout', () => {
+      const room = createTestLayout([createBinOnGrid('room')]);
+
+      joinRoom(
+        room,
+        stampFor(room, SAVED_AT),
+        createTestLayout([createBinOnGrid('copy')]),
+        EARLIER
+      );
+
+      expect(useLayoutStore.getState().activeLayoutId).toBe('test-layout');
+    });
+
+    it('writes the stamp beside the layout, keeping the rest of the metadata', () => {
+      renderHook(() => useCollabSync());
+      const write = mockUseMutation.mock.calls[0]?.[0] as (
+        context: {
+          storage: { get: (key: string) => unknown; set: (key: string, value: unknown) => void };
+          self: { canWrite: boolean };
+        },
+        layout: Layout,
+        stamp?: RoomLinkStamp
+      ) => boolean;
+      const set = vi.fn();
+      const get = vi.fn(() => ({ ownerId: 'owner', permission: 'edit', version: 1 }));
+      const layout = createTestLayout([createBinOnGrid('copy')]);
+
+      write({ storage: { get, set }, self: { canWrite: true } }, layout, stampFor(layout, LATER));
+
+      expect(set).toHaveBeenCalledWith('layout', layout);
+      expect(set).toHaveBeenCalledWith('metadata', {
+        ownerId: 'owner',
+        permission: 'edit',
+        version: 1,
+        ...stampFor(layout, LATER),
+      });
     });
   });
 

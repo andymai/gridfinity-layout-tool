@@ -2,10 +2,13 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { act, render, screen } from '@testing-library/react';
 import { PhysicalUnitsSection } from './PhysicalUnitsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import { resetAllStores } from '@/test/testUtils';
 
 describe('PhysicalUnitsSection', () => {
   beforeEach(() => {
+    resetAllStores();
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS },
       ui: { ...DEFAULT_UI_STATE },
@@ -13,9 +16,9 @@ describe('PhysicalUnitsSection', () => {
   });
 
   it('renders a single linked grid unit field by default (square grid)', () => {
-    // DEFAULT_BIN_PARAMS has gridUnitMmY undefined (square): one linked field,
-    // no separate Y input until the pitches are unlinked.
-    expect(useDesignerStore.getState().params.gridUnitMmY).toBeUndefined();
+    // The default layout has no Y pitch (square): one linked field, no
+    // separate Y input until the pitches are unlinked.
+    expect(useLayoutStore.getState().layout.gridUnitMmY).toBeUndefined();
     render(<PhysicalUnitsSection />);
     expect(screen.getByLabelText('Grid unit X')).toBeInTheDocument();
     expect(screen.queryByLabelText('Grid unit Y')).not.toBeInTheDocument();
@@ -23,10 +26,10 @@ describe('PhysicalUnitsSection', () => {
   });
 
   it('renders linked (single field) when the stored Y pitch equals X', () => {
-    // A Y override equal to X is visually square: the linked control collapses
+    // A Y pitch equal to X is visually square: the linked control collapses
     // it to one field, same as the print bed's linked pair.
     act(() => {
-      useDesignerStore.setState((s) => ({ params: { ...s.params, gridUnitMmY: 42 } }));
+      useLayoutStore.getState().setGridUnitMmY(42);
     });
     render(<PhysicalUnitsSection />);
     expect(screen.getByLabelText('Grid unit X')).toHaveValue(42);
@@ -35,7 +38,7 @@ describe('PhysicalUnitsSection', () => {
 
   it('shows distinct X and Y values when grid is non-square (X=42mm, Y=40mm)', () => {
     act(() => {
-      useDesignerStore.setState((s) => ({ params: { ...s.params, gridUnitMmY: 40 } }));
+      useLayoutStore.getState().setGridUnitMmY(40);
     });
     render(<PhysicalUnitsSection />);
     expect(screen.getByLabelText('Grid unit X')).toHaveValue(42);

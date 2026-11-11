@@ -4,6 +4,7 @@ description: 'Solve common problems with exported files: tight bins, missing lab
 sources:
   - src/features/bin-designer/hooks/useSyncPhysicalUnits.ts
   - src/shell/layoutExport/planLayoutBinExport.ts
+  - src/features/design-linking/hooks/useQuickExport.ts
   - src/shell/layoutExport/buildLayoutManifest.ts
   - src/features/generation/README.md
   - src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
@@ -65,9 +66,9 @@ The same steps help when the plate pieces are too tight. See [Fit and tolerances
 
 ### The tabs print blank, but the layout shows text
 
-**Fix:** export the layout with <Ui k="header.export" />. Or type the label text in the design, in <Ui k="binDesigner.group.interior" />.
+**Fix:** export the layout with <Ui k="header.export" />, or export the bin with <Ui k="common.export" /> under <Ui k="designLinking.inspector.linkedDesign" /> in the inspector. Or type the label text in the design, in <Ui k="binDesigner.group.interior" />.
 
-**Why:** if <Ui k="binDesigner.labelText" /> is blank, linked bins print the label that they have in the layout. Only the 3D layout preview and the layout ZIP fill in those labels. An export from the bin designer prints the tabs blank.
+**Why:** if <Ui k="binDesigner.labelText" /> is blank, linked bins print the label that they have in the layout. Only the 3D layout preview, the layout ZIP and the inspector export fill in those labels. An export from the bin designer prints the tabs blank.
 
 ### The bin list warns about blank label tabs
 

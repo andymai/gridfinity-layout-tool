@@ -130,7 +130,8 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
         layout.name,
         metadata.authorName,
         entry.sourceShareId,
-        permission
+        permission,
+        metadata.lastUpdatedAt
       );
 
       setStatus('idle');

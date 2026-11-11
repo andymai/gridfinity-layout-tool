@@ -5,7 +5,9 @@
  * Zustand store and Liveblocks storage when in collaborative mode.
  *
  * Sync Strategy:
- * - On initial connection: prefer local state (API-fetched) over potentially stale remote
+ * - On initial connection: keep the room's layout, unless this browser's copy
+ *   comes from a later share link revision and the room holds nothing the link
+ *   lacks (`resolveJoin`)
  * - Local edits (lastEditSource === 'local') are pushed to Liveblocks
  * - Remote changes from Liveblocks are imported to Zustand with source: 'remote'
  * - Loop prevention via lastEditSource tracking and sync state machine
@@ -14,24 +16,28 @@
  * ```tsx
  * // Inside CollabProvider, after RoomProvider
  * function CollabSync({ children }: { children: ReactNode }) {
- *   useCollabSync();
+ *   useCollabSync(copySave);
  *   return <>{children}</>;
  * }
  * ```
  */
 
 import { useEffect, useRef } from 'react';
-import { useStorage, useMutation } from '@/liveblocks.config';
+import { useStorage, useMutation, type LiveblocksStorage } from '@/liveblocks.config';
 import { useLayoutStore } from '@/core/store/layout';
 import type { Layout } from '@/core/types';
-import { STAGING_ID } from '@/core/constants';
+import {
+  resolveJoin,
+  revisionOfCopy,
+  stampFor,
+  type RoomLinkStamp,
+} from '@/shared/utils/roomLinkStamp';
 
-/**
- * Check if a layout has actual content (bins on the grid, not just staging).
- * Used to determine if a layout is "empty" for sync purposes.
- */
-function layoutHasContent(layout: Layout): boolean {
-  return layout.bins.some((bin) => bin.layerId !== STAGING_ID);
+// The layout stays the active library entry, so the owner's autosave also
+// saves what collaborators change.
+function importRoomLayout(layout: Layout): void {
+  const { importLayout, activeLayoutId } = useLayoutStore.getState();
+  importLayout(layout, activeLayoutId ?? undefined, 'remote');
 }
 
 /**
@@ -46,8 +52,12 @@ type SyncState = 'pending' | 'initializing' | 'ready';
  * Synchronizes layout data between Zustand and Liveblocks storage.
  *
  * Must be used inside a Liveblocks RoomProvider context.
+ *
+ * @param copySave - The share link save that this browser's copy of the layout
+ *   came from, when known: its `lastUpdatedAt` and the saved layout's
+ *   fingerprint. The revision counts only if the copy is still that layout.
  */
-export function useCollabSync(): void {
+export function useCollabSync(copySave?: RoomLinkStamp): void {
   // Sync state machine
   const syncStateRef = useRef<SyncState>('pending');
   const lastSyncedLayoutRef = useRef<Layout | null>(null);
@@ -60,19 +70,27 @@ export function useCollabSync(): void {
 
   // Get layout from Liveblocks storage
   const remoteLayout = useStorage((root) => root.layout);
+  const linkUpdatedAt = useStorage((root) => root.metadata?.linkUpdatedAt);
+  const linkFingerprint = useStorage((root) => root.metadata?.linkFingerprint);
 
   const localLayout = useLayoutStore((state) => state.layout);
   const lastEditSource = useLayoutStore((state) => state.lastEditSource);
-  const importLayout = useLayoutStore((state) => state.importLayout);
 
   // The client joins on the permission it last saw, but the room grants the
   // share's current one, so a stale 'edit' lands here read-only. Liveblocks
   // throws on a write from a read-only connection, taking the provider down.
-  const updateRemoteLayout = useMutation(({ storage, self }, layout: Layout): boolean => {
-    if (!self.canWrite) return false;
-    storage.set('layout', layout);
-    return true;
-  }, []);
+  const updateRemoteLayout = useMutation(
+    ({ storage, self }, layout: Layout, stamp?: RoomLinkStamp): boolean => {
+      if (!self.canWrite) return false;
+      storage.set('layout', layout);
+      if (stamp) {
+        const metadata = storage.get('metadata') as LiveblocksStorage['metadata'] | undefined;
+        storage.set('metadata', { ...metadata, ...stamp });
+      }
+      return true;
+    },
+    []
+  );
 
   // Effect: Remote → Local sync
   // When remote layout changes, update local store.
@@ -98,15 +116,26 @@ export function useCollabSync(): void {
       // Read local layout fresh from the store, not from closure — that way
       // this branch doesn't need `localLayout` in the effect's dep array.
       const currentLocal = useLayoutStore.getState().layout;
-      const remoteHasContent = layoutHasContent(remoteLayout);
-      const localHasContent = layoutHasContent(currentLocal);
+      const copyRevision = revisionOfCopy(currentLocal, copySave);
+      const outcome = resolveJoin({
+        copy: currentLocal,
+        copyRevision,
+        room: remoteLayout,
+        stamp: {
+          linkUpdatedAt: linkUpdatedAt ?? undefined,
+          linkFingerprint: linkFingerprint ?? undefined,
+        },
+      });
 
-      // If local has content (from API fetch), push it to remote
-      // This ensures API-fetched data takes precedence over potentially stale remote
-      if (localHasContent) {
-        writeRefusedRef.current = !updateRemoteLayout(currentLocal);
+      if (outcome === 'push-copy') {
+        // A copy without a known revision goes in unrecorded, so the owner
+        // uploads it: it can hold edits that never reached the link.
+        writeRefusedRef.current = !updateRemoteLayout(
+          currentLocal,
+          copyRevision ? stampFor(currentLocal, copyRevision) : undefined
+        );
       }
-      if (localHasContent && !writeRefusedRef.current) {
+      if (outcome === 'push-copy' && !writeRefusedRef.current) {
         lastSyncedLayoutRef.current = currentLocal;
         // Move to ready state after a brief delay to let the push complete
         // Store timeout ID for cleanup on unmount
@@ -117,16 +146,11 @@ export function useCollabSync(): void {
         return;
       }
 
-      // If only remote has content, or the room refused ours, use the room's
-      if (remoteHasContent || writeRefusedRef.current) {
-        lastSyncedLayoutRef.current = remoteLayout;
-        importLayout(remoteLayout, undefined, 'remote');
-        syncStateRef.current = 'ready';
-        return;
-      }
-
-      // Both empty - ready for normal sync
+      // The room's layout wins, including when the room refused ours
       lastSyncedLayoutRef.current = remoteLayout;
+      if (JSON.stringify(remoteLayout) !== JSON.stringify(currentLocal)) {
+        importRoomLayout(remoteLayout);
+      }
       syncStateRef.current = 'ready';
       return;
     }
@@ -154,8 +178,8 @@ export function useCollabSync(): void {
 
     // Remote change detected - update local store
     lastSyncedLayoutRef.current = remoteLayout;
-    importLayout(remoteLayout, undefined, 'remote');
-  }, [remoteLayout, lastEditSource, importLayout, updateRemoteLayout]);
+    importRoomLayout(remoteLayout);
+  }, [remoteLayout, lastEditSource, updateRemoteLayout, copySave, linkUpdatedAt, linkFingerprint]);
 
   // Effect: Local → Remote sync
   // When local layout changes, push to Liveblocks
@@ -193,9 +217,9 @@ export function useCollabSync(): void {
       JSON.stringify(remote) !== JSON.stringify(lastSyncedLayoutRef.current)
     ) {
       lastSyncedLayoutRef.current = remote;
-      importLayout(remote, undefined, 'remote');
+      importRoomLayout(remote);
     }
-  }, [localLayout, lastEditSource, updateRemoteLayout, importLayout]);
+  }, [localLayout, lastEditSource, updateRemoteLayout]);
 
   // Cleanup effect: clear pending timeout on unmount only
   // Using empty deps [] ensures this only runs on unmount, not on re-renders

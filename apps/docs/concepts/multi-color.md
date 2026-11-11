@@ -10,6 +10,7 @@ sources:
   - src/features/bin-designer/components/panel/ColorsSection/
   - src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
   - src/features/generation/README.md
+  - src/features/bin-designer/components/panel/shared/FlatTextClashWarning.tsx
 ---
 
 # Multi-color printing
@@ -18,7 +19,7 @@ Got a printer with an AMS or another multi-material system? Give each part of a 
 
 ## Color zones
 
-A color zone is a part of the bin that takes one color. Turn on <Ui k="binDesigner.group.colors" /> in the <Ui k="binDesigner.group.finishing" /> group to see the zones. The bin designer shows a zone only when the bin has that part. For example, the <Ui k="binDesigner.colors.scoop" /> zone appears only on a bin with a finger scoop.
+A **color zone** is a part of the bin that takes one color. Turn on <Ui k="binDesigner.group.colors" /> in the <Ui k="binDesigner.group.finishing" /> group to see the zones. The bin designer shows a zone only when the bin has that part. For example, the <Ui k="binDesigner.colors.scoop" /> zone appears only on a bin with a finger scoop.
 
 | Zone                                       | What it colors                                                  |
 | ------------------------------------------ | --------------------------------------------------------------- |
@@ -34,7 +35,7 @@ A color zone is a part of the bin that takes one color. Turn on <Ui k="binDesign
 
 The stacking lip can have more than one color, in up to 16 colored cells. See [Split the stacking lip](../designer/colors#split-the-stacking-lip).
 
-An accent band colors the top or the bottom of the body. It needs no stacking lip or feet, and it covers every zone under it except text.
+An **accent band** colors the top or the bottom of the body. It needs no stacking lip or feet, and it covers every zone under it except text.
 
 Cutouts and Bento compartments can have their own colors too. Open the <Ui k="binDesigner.cutouts.section.color" /> section of a cutout. There, pick <Ui k="binDesigner.cutouts.color.floor" /> or <Ui k="binDesigner.cutouts.color.floorAndWalls" />. A compartment in a <Ui k="binDesigner.interior.bento.title" /> bin has the same choices. A colored cutout or compartment makes the design multi-color, even when the <Ui k="binDesigner.group.colors" /> switch is off.
 
@@ -83,6 +84,20 @@ Do not use <Ui k="binDesigner.textMode.flat" /> text on a single-color print. Fl
 :::
 
 You can still get two colors from a printer with one filament. Swappable label plates put the text depth on whole layers, so one filament change gives two-color labels.
+
+## When it goes wrong
+
+### STL and STEP are gray in the export dialog
+
+Export 3MF to keep the colors. For a one-color STL or STEP file, clear every color first, as [Print in one color](#print-in-one-color) shows. The export dialog turns these two formats off for a design with color, because they carry no color data. A colored cutout or Bento compartment counts too, even with the <Ui k="binDesigner.group.colors" /> switch off.
+
+### Flat text doesn't show
+
+Give the text a color that differs from the surface under it. If the text settings offer <Ui k="binDesigner.textColor.useContrasting" />, click it. On a printer with one filament, pick <Ui k="binDesigner.textMode.emboss" /> or <Ui k="binDesigner.textMode.engrave" /> instead. Flat letters are level with the surface, so only a second color makes them visible.
+
+### The slicer opens the file with one filament
+
+Add the other filaments in the slicer by hand, or update Bambu Studio to 2.9.1 or later. The colors are still in the file, but Bambu Studio 2.8 doesn't add its filaments when you open it on an empty plate. See [The colors are wrong](../printing/troubleshooting#the-colors-are-wrong).
 
 ## Next steps
 

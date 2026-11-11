@@ -8,6 +8,7 @@ sources:
   - src/features/baseplate/utils/mountMagnetFit.ts
   - src/shared/printSettings/baseplateHeight.ts
   - src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.tsx
+  - src/shared/generation/screwHolePlacement.ts
   - content/what-is-gridfinity.md
 ---
 
@@ -75,7 +76,7 @@ It skips a crossing on a split seam, on the plate edge, or where a screw goes. I
 
 ## Screw the plate down
 
-<Ui k="baseplate.screwHoles.label" /> adds vertical holes, so you can screw the plate to a drawer bottom, a bench or a wall. They're clearance holes, not pilot holes, so the screw goes through freely. A thread that bites into the plastic holds the plate off the surface.
+<Ui k="baseplate.screwHoles.label" /> adds vertical holes, so you can screw the plate to a drawer bottom, a bench or a wall. They're **clearance holes**, not pilot holes, so the screw goes through freely. A thread that bites into the plastic holds the plate off the surface.
 
 | Setting                                                | What it does                                                                                                                                                   | Default                                               |
 | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
@@ -108,6 +109,30 @@ If one piece of a split plate needs a pocket-floor screw, all the pieces get the
 To keep the standard plate height, use a <Ui k="baseplate.screwHoles.headStyle.countersink" /> with a 6 mm head diameter. A countersink of 6 mm or less fits where four pockets meet. M3 flat-head screws with these settings are a safe pick.
 
 <Screenshot id="baseplates-magnets-screw-settings" alt="Screw down is turned on and its settings open: a 3.4 mm hole, a countersink head of 6 mm and four screws for each piece. The plate in the preview then gets four countersunk holes where four pockets meet." spec="Baseplate generator, 4 by 3 plate. The plate in top view, then a close-up of the Base section: turn on Screw down, click Customize and scroll to Hole diameter 3.4, Countersink, Head diameter 6 and Screws per piece 4. Then the plate again with its screw holes." />
+
+## When it goes wrong
+
+### The magnet and screw settings are gone
+
+Turn off <Ui k="baseplate.stackPrint.enable" />. The settings come back with the values that you set.
+
+A stack prints most plates upside down, and the holes can't print that way without supports. So while the stack is on, <Ui k="baseplate.sectionBase" /> hides all three options. See [What a stack changes](./eco-and-stack-printing#what-a-stack-changes).
+
+### Some underside magnet holes are missing
+
+Read the warning below <Ui k="baseplate.mountMagnets.depth.label" />. It gives the deepest hole that fits at your diameter. Make the depth that value or less, or use a smaller magnet.
+
+The holes sit in the solid corners where four pockets meet, and a wide or deep hole doesn't fit there. The Layout Tool then skips that hole. It also skips a corner on a split seam, on the plate edge, or where a screw goes. <Ui k="baseplate.magnetHoles" /> and <Ui k="baseplate.solidFloor" /> make the plate taller, so a deeper hole fits.
+
+### A piece of the plate gets no screws
+
+Lower <Ui k="baseplate.screwHoles.edgeInset.label" /> until the piece gets its screws.
+
+The inset keeps screws away from each piece edge, by the number of grid units that you set. On a small piece, the inset covers the whole piece, so no place stays for a screw.
+
+### A bin sits high on the plate
+
+Look for a screw head or a magnet that stands up from the plate. See [A bin sits high on one spot](../printing/troubleshooting#a-bin-sits-high-on-one-spot).
 
 ## Next steps
 

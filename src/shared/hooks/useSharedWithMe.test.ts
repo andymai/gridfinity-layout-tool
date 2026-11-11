@@ -145,6 +145,31 @@ describe('useSharedWithMe', () => {
       expect(result.current.error).toBeNull();
     });
 
+    it('keeps the link revision of the copy it opened, for the collab room', async () => {
+      const entry = createTestEntry();
+      useSharedWithMeStore.setState({ entries: [entry] });
+      mockFetchShare.mockResolvedValueOnce({
+        ok: true,
+        value: {
+          layout: createTestLayout(),
+          metadata: {
+            createdAt: '2026-11-01T09:00:00.000Z',
+            lastUpdatedAt: '2026-11-01T10:00:00.000Z',
+            permission: 'edit',
+          },
+        },
+      });
+      const { result } = renderHook(() => useSharedWithMe());
+
+      await act(async () => {
+        await result.current.openSharedLayout(entry);
+      });
+
+      expect(useSharedPreviewStore.getState().sharedPreview?.linkUpdatedAt).toBe(
+        '2026-11-01T10:00:00.000Z'
+      );
+    });
+
     it('sets error state when offline', async () => {
       Object.defineProperty(navigator, 'onLine', {
         value: false,

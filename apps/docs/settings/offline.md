@@ -81,6 +81,20 @@ Once in a while, a stored copy of the app fails to load after an update. The app
 A self-hosted copy of the Layout Tool on plain HTTP cannot install or work offline. Use HTTPS or `localhost`. See [Use HTTPS](../reference/self-hosting#use-https).
 :::
 
+## When it goes wrong
+
+### A tool won't open offline
+
+Go online, open that tool, and wait until its preview shows a model. After an update, open each tool once more while you're online.
+
+The app keeps the files of a tool from the first time that you open it. A new version can change those files, and the app stores the new ones only when you open the tool. See [Get ready to work offline](#get-ready-to-work-offline).
+
+### The update doesn't arrive
+
+Click the version button at the bottom of the side panel when it shows <Ui k="pwaUpdate.reload" />.
+
+The Layout Tool waits for a pause in your work before it reloads. While you drag, type or keep a dialog open, it waits. See [How updates arrive](#how-updates-arrive).
+
 ## Next steps
 
 - [Your data and privacy](../introduction/your-data): where the browser keeps your layouts, and how to back them up.

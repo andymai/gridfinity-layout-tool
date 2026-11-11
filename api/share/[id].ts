@@ -182,7 +182,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       };
 
       await writeShare(id, blobPath, updatedData, newPermission);
-      return respondShare(res, id, newPermission);
+      return respondShare(res, id, newPermission, now);
     }
 
     // Full update with layout
@@ -235,7 +235,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
     const redis = getRedis();
     if (redis) await holdShareMeshes(redis, id, Object.keys(meshFiles));
     await writeShare(id, blobPath, updatedData, newPermission);
-    return respondShare(res, id, newPermission);
+    return respondShare(res, id, newPermission, now);
   } catch (error) {
     logger.error('Share update error', {
       error: error instanceof Error ? error.message : String(error),
@@ -348,7 +348,8 @@ async function writeShare(
 function respondShare(
   res: VercelResponse,
   id: string,
-  permission: ShareData['metadata']['permission']
+  permission: ShareData['metadata']['permission'],
+  lastUpdatedAt: string
 ) {
-  return res.status(200).json({ id, url: `${getBaseUrl()}/l/${id}`, permission });
+  return res.status(200).json({ id, url: `${getBaseUrl()}/l/${id}`, permission, lastUpdatedAt });
 }

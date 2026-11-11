@@ -59,7 +59,7 @@ The supports under a label tab print in the body color by default. Each support 
 
 ## Add accent bands
 
-An accent band recolors a strip at the top or the bottom of the bin body. Use it to color-code a set of bins. It works with or without a stacking lip and feet.
+An **accent band** recolors a strip at the top or the bottom of the bin body. Use it to color-code a set of bins. It works with or without a stacking lip and feet.
 
 1. Under <Ui k="binDesigner.colors.accent.title" />, turn on <Ui k="binDesigner.colors.zone.topAccent" />, <Ui k="binDesigner.colors.zone.bottomAccent" />, or both.
 2. Set the <Ui k="binDesigner.colors.accent.height" />. A new band is 2 mm high.
@@ -90,7 +90,7 @@ In the label section, the label tab color picker turns on multi-color for you wh
 
 ## Save a palette
 
-Found a color set you like? A palette stores one set of zone colors so you can use it on other bins.
+Found a color set you like? A **palette** stores one set of zone colors so you can use it on other bins.
 
 1. Open the <Ui k="binDesigner.colors.actions" /> menu.
 2. Click <Ui k="binDesigner.colors.savePalette" />.
@@ -112,6 +112,32 @@ To make the design single-color:
 3. In the <Ui k="binDesigner.openBentoWorkspace" />, do the same for each colored compartment.
 
 Your zone colors stay saved, so you can turn <Ui k="binDesigner.group.colors" /> back on later. <Ui k="binDesigner.colors.matchAllToBody" /> doesn't make a design single-color by itself. It leaves the text, lid and accent band colors as they are, and it doesn't touch cutout or compartment colors.
+
+## When it goes wrong
+
+### STL and STEP are greyed out in the export dialog
+
+Export as 3MF to keep the colors. For an STL or a STEP file, make the design single-color first. See [Go back to one color](#go-back-to-one-color).
+
+STL and STEP files carry no color data. Is only STEP greyed out? Then the bin has an imported mesh cutout, and STEP can't hold that.
+
+### Flat letters don't show
+
+Click <Ui k="binDesigner.textColor.useContrasting" /> under the warning. It picks a <Ui k="binDesigner.textColor" /> that stands out from the surface.
+
+Flat letters sit level with the surface, so only their color shows them. When the text color matches the surface, the letters disappear.
+
+### A split bin prints in one color
+
+Turn off <Ui k="binDesigner.splitExport.enableSplit" /> in the export dialog to keep the colors. If the bin is too large for your print bed, make it smaller, or print it in one color.
+
+A split export writes each piece in one color. The export dialog warns you before it drops the colors. See [Fitting the print bed](../concepts/print-bed-fit#when-a-bin-is-too-large).
+
+### The slicer shows only one filament
+
+Add the filaments in your slicer by hand, or update Bambu Studio to 2.9.1 or later. Then assign each filament to the correct slot.
+
+Bambu Studio 2.8 does not add the filaments of a 3MF file when it opens the file on an empty plate. The colors are still in the file. See [The colors are wrong](../printing/troubleshooting#the-colors-are-wrong).
 
 ## Next steps
 

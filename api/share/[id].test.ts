@@ -317,6 +317,33 @@ describe('share/[id]', () => {
       expect(written.layout).toEqual({ name: 'Updated' });
     });
 
+    it('returns the lastUpdatedAt it wrote, so a collab room can record the revision', async () => {
+      primeBlobFetch(shareBlob());
+      mocks.redisGet.mockResolvedValue(correctHash);
+      const res = await handle('PUT', {
+        body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+      });
+      expect(res._status).toBe(200);
+      const written = JSON.parse(mocks.put.mock.calls[0][1] as string) as {
+        metadata: { lastUpdatedAt: string };
+      };
+      expect(written.metadata.lastUpdatedAt).not.toBe('2026-01-02T00:00:00.000Z');
+      expect((res._body as { lastUpdatedAt: string }).lastUpdatedAt).toBe(
+        written.metadata.lastUpdatedAt
+      );
+    });
+
+    it('returns the lastUpdatedAt a permission-only update wrote', async () => {
+      primeBlobFetch(shareBlob({ deleteTokenHash: correctHash }));
+      const res = await handle('PUT', { body: { deleteToken: TOKEN, permission: 'edit' } });
+      const written = JSON.parse(mocks.put.mock.calls[0][1] as string) as {
+        metadata: { lastUpdatedAt: string };
+      };
+      expect((res._body as { lastUpdatedAt: string }).lastUpdatedAt).toBe(
+        written.metadata.lastUpdatedAt
+      );
+    });
+
     it('full updates validate and content-filter the new layout', async () => {
       primeBlobFetch(shareBlob());
       mocks.redisGet.mockResolvedValue(correctHash);

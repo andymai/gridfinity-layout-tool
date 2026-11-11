@@ -10,11 +10,14 @@ sources:
   - src/features/staging/
   - src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
   - src/features/bin-designer/hooks/usePlaceBinInLayout.ts
+  - src/shared/utils/validation.ts
+  - src/core/cqrs/v2/domain/bin/duplicateBin.ts
+  - src/shared/hooks/useExpandToFit.ts
 ---
 
 # Place and edit bins
 
-This is where a drawer plan takes shape. In the layout editor of the Gridfinity Layout Tool, you draw bins, move them around and tune their sizes until the drawer feels right. You can undo your last 100 changes, so try ideas freely. This page also covers the stash, a holding area for bins that are not in the drawer.
+This is where a drawer plan takes shape. In the layout editor of the Gridfinity Layout Tool, you draw bins, move them around and tune their sizes until the drawer feels right. You can undo your last 100 changes, so try ideas freely. This page also covers the **stash**, a holding area for bins that are not in the drawer.
 
 ## Draw a bin
 
@@ -107,6 +110,43 @@ Select bins and press <kbd>Delete</kbd> or <kbd>Backspace</kbd>. You can also ri
 Changed your mind? Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> (<kbd>Cmd</kbd>+<kbd>Z</kbd> on a Mac) to undo, and <kbd>Ctrl</kbd>+<kbd>Y</kbd> to redo. A message names each change that you undo. The Layout Tool keeps the last 100 changes.
 
 To empty the full active layer, click the clear button under the size brush in the left panel. Its label shows how many bins it clears. Clear deletes the bins. It does not put them in the stash, so undo is the only way to get them back. To keep the bins, select them and click <Ui k="selectionToolbar.moveToStash" /> instead. <Ui k="commandPalette.selectAll" /> in the command palette selects every bin on the active layer.
+
+## When it goes wrong
+
+### The bin won't drop where you want it
+
+Read the red tag over the bin while you drag. It names what is in the way. If you let go there anyway, the bin goes back, and a message repeats the reason.
+
+| The tag says                        | What to do                                                                 |
+| ----------------------------------- | -------------------------------------------------------------------------- |
+| <Ui k="grid.collision" />           | Move the other bin first, or pick a free spot.                             |
+| <Ui k="grid.outOfBounds" />         | Keep the whole bin on the grid, or make the drawer larger.                 |
+| <Ui k="grid.outsideDrawerShape" />  | Keep the bin on cells that the drawer shape keeps.                         |
+| <Ui k="grid.exceedsDrawerHeight" /> | Use a shorter bin, or a spot with lower bins under it.                     |
+| A bin on a lower layer blocks it    | Pick a spot outside the striped cells, or lower the clearance of that bin. |
+
+Next to a taken spot, the bin can also snap to the closest free spot. Hold <kbd>Ctrl</kbd> while you drag to stop the snap.
+
+### A copy doesn't show up next to the original
+
+Look in the stash below the grid, and drag the copy to an open spot. A copy needs a free spot right beside the original. When it finds none, the copy goes to the stash.
+
+### R doesn't turn the bin
+
+Read the message that shows. If it says <Ui k="toast.binSizeLocked" />, click <Ui k="inspector.unlockSize" /> in the inspector, and press <kbd>R</kbd> again.
+
+If the message says that the bin can't rotate, the turned bin has no room. It doesn't fit where it stands, or anywhere within 3 cells of it. Drag the bin to an open area first, then turn it.
+
+### Expand to fit leaves the gaps
+
+The message tells you what stopped it:
+
+| The message is about       | What to do                                                                   |
+| -------------------------- | ---------------------------------------------------------------------------- |
+| The shape of the selection | Select bins that make one row, one column or one full grid, on one layer.    |
+| Too much empty space       | Each side can grow 21 mm at most. Use larger bins, or select more of them.   |
+| Bins with a locked size    | Unlock their sizes in the inspector, then try again.                         |
+| A bin stacked on top       | The wider walls would lift a stack above the drawer. Lower that stack first. |
 
 ## Next steps
 

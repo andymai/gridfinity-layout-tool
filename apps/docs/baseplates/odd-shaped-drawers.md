@@ -77,6 +77,26 @@ With <Ui k="baseplate.stackPrint.enable" /> on, pieces with the same shape stack
 Give a shaped plate a moment after each change. The quick preview doesn't draw shaped plates, so the plate appears only when the full build is ready.
 :::
 
+## When it goes wrong
+
+### The plate stays a rectangle
+
+Turn on <Ui k="baseplate.syncWithLayout" /> in <Ui k="baseplate.sectionDimensions" />.
+
+The plate takes the drawer shape from the layout only while it is in sync. A plate size that you type in millimeters also turns sync off.
+
+### The margin does nothing
+
+Make the <Ui k="baseplate.padding" /> smaller, until the warning goes away.
+
+On any shape except one from <Ui k="drawerShape.corners.open" />, the margin moves each edge of the outline outward. A margin that is too large for the outline can't do that, so the Layout Tool ignores it.
+
+### The edge has broken bits of wall
+
+Turn on <Ui k="baseplate.wholeCellsOnly" />. Solid plastic then fills the cut cells along the edge.
+
+The shape cuts through the cells at the edge. A cut cell keeps a sliced pocket, and a sliced pocket can't hold a bin. See [How the plate follows the shape](#how-the-plate-follows-the-shape).
+
 ## Next steps
 
 - [Set up the drawer](../layouts/drawer-setup): draw, edit or import the drawer shape.

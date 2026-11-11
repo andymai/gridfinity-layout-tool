@@ -10,6 +10,7 @@ sources:
   - src/features/bin-designer/types/handles.ts
   - src/shared/utils/wallLabelSlotPlan.ts
   - src/features/bin-designer/constants/gridfinity.ts
+  - src/features/bin-designer/hooks/useExport.ts
 ---
 
 # Walls
@@ -37,7 +38,7 @@ For the best result, use a multiple of your nozzle size. For example, 1.2 mm is 
 
 ## Add a wall pattern
 
-A wall pattern cuts rows of holes through the walls, so you can see what's inside.
+A **wall pattern** cuts rows of holes through the walls, so you can see what's inside.
 
 1. In the <Ui k="binDesigner.group.finishing" /> group, go to <Ui k="binDesigner.style.section.wallSurface" />.
 2. Pick a <Ui k="binDesigner.walls.pattern.label" />.
@@ -141,6 +142,32 @@ When the wall is too thin to hold the slot, a rib on the inside backs it. Each s
 The holes stay inside the flat bottom of each foot, so the edges that lock into the baseplate stay whole. If the holes are too large for the base, the panel asks for a finer scale. The inside mode of a lightweight floor leaves no solid floor to drill, so use its underside mode. A solid bin, a spacer and a <Ui k="binDesigner.tile" /> bin cannot have drainage holes.
 
 <Screenshot id="designer-walls-drainage" alt="Turning on Drainage holes shows the Round hole shape at 50 percent scale. Then a view from below shows the round holes through the floor of each foot." spec="Bin designer, Finishing group open, bin 2 x 2 x 3. Turn on Drainage holes in close-up, then show the underside of the bin in the preview." />
+
+## When it goes wrong
+
+### The export times out or runs out of memory
+
+Make the wall pattern bolder: drag <Ui k="binDesigner.walls.pattern.scale" /> to the right for larger holes. You can also make the bin lower, or turn the pattern off. Then export again.
+
+A fine pattern on a tall bin has a very large number of holes, and the geometry engine runs out of memory or time. See [Troubleshooting prints](../printing/troubleshooting#the-export-stops-with-an-error).
+
+### The wall pattern breaks when you print
+
+Make <Ui k="binDesigner.walls.pattern.strutWidth" /> wider, and print again. 0.8 mm is the thinnest strut. A bin that takes knocks needs more.
+
+The struts are the solid plastic between the holes, and thin struts snap. A Kumiko pattern has no strut control.
+
+### The back wall won't take a handle
+
+Put the handle on another wall, or turn off <Ui k="binDesigner.labelTabs" />. Hover over a greyed-out wall in the wall picker to read why.
+
+While label tabs are on, the back wall can't have a handle. A wall with divider slots can't have one either.
+
+### Label slots won't turn on
+
+Read the note under the switch. Make the bin taller if the walls are too short, turn off the overhang, or reset a custom shape to a rectangle.
+
+Label slots need a rectangular bin with walls tall enough for an 11 mm plate. Is one wall greyed out in <Ui k="binDesigner.walls.labelSlots.sides" />? Its cells are too narrow for a 1U plate.
 
 ## Next steps
 
