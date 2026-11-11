@@ -13,10 +13,11 @@ function pageIds(): Set<string> {
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) walk(full);
       else if (entry.name.endsWith('.md'))
-        for (const [, id] of fs
+        // A `<Screenshot>` tag, or the home page's `heroClip` id in frontmatter.
+        for (const [, tag, hero] of fs
           .readFileSync(full, 'utf8')
-          .matchAll(/<Screenshot\s[^>]*\bid="([^"]+)"/g))
-          ids.add(id);
+          .matchAll(/<Screenshot\s[^>]*\bid="([^"]+)"|heroClip:\s*\n\s+id:\s*([\w-]+)/g))
+          ids.add(tag ?? hero ?? '');
     }
   };
   walk(DOCS);

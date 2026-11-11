@@ -150,3 +150,13 @@ html:not(.dark) .docs-only-dark {
   color: var(--vp-c-text-2);
   font-size: 0.9rem;
 }
+
+.docs-hero-clip {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+
+.docs-hero-clip .docs-figure {
+  margin: 0 auto;
+}

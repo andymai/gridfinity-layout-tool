@@ -10,6 +10,7 @@ import {
   docsForStagedSources,
   headingAnchors,
   mediaFiles,
+  screenshotIds,
 } from './check-user-docs';
 import type { DocPage } from './check-user-docs';
 
@@ -228,5 +229,15 @@ describe('checkMedia', () => {
       'apps/docs/media/gone.json: fills no <Screenshot> on any page',
       'apps/docs/media: old.png belongs to no capture',
     ]);
+  });
+});
+
+describe('screenshotIds', () => {
+  it('counts a home page heroClip with the page tags', () => {
+    const home = page('apps/docs/index.md', '<Screenshot id="a-tag" />', {
+      heroClip: { id: 'home-hero', alt: 'x' },
+    });
+    expect(screenshotIds(home)).toEqual(['a-tag', 'home-hero']);
+    expect(screenshotIds(page('apps/docs/x.md', ''))).toEqual([]);
   });
 });

@@ -14,6 +14,9 @@ hero:
       text: Open the app
       link: https://gridfinitylayouttool.com/
       target: _self
+heroClip:
+  id: home-hero
+  alt: Drawing the last bin into a drawer layout, then a bin designed with compartments, labels and color, then a baseplate split into pieces for the print bed.
 features:
   - title: Plan layouts
     details: Measure your drawer, drag bins onto the grid, stack them in layers, and get a print list of every bin.

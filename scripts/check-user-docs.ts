@@ -141,11 +141,18 @@ export function checkSidebar(files: readonly string[], links: readonly string[])
   return problems;
 }
 
+/** A page's screenshot ids: its `<Screenshot>` tags, plus a home page's `heroClip`. */
+export function screenshotIds(page: DocPage): string[] {
+  const ids = [...page.body.matchAll(SCREENSHOT_TAG)].map(([, id]) => id);
+  const hero = (page.data.heroClip as { id?: unknown } | undefined)?.id;
+  return typeof hero === 'string' ? [...ids, hero] : ids;
+}
+
 export function checkScreenshotIds(pages: readonly DocPage[]): string[] {
   const seen = new Map<string, string>();
   const problems: string[] = [];
   for (const page of pages) {
-    for (const [, id] of page.body.matchAll(SCREENSHOT_TAG)) {
+    for (const id of screenshotIds(page)) {
       if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id))
         problems.push(`${page.file}: screenshot id "${id}" must be kebab-case`);
       const first = seen.get(id);
@@ -192,9 +199,7 @@ export function checkMedia(
   manifest: Record<string, MediaEntry>,
   files: readonly string[]
 ): string[] {
-  const used = new Set(
-    pages.flatMap((p) => [...p.body.matchAll(SCREENSHOT_TAG)].map(([, id]) => id))
-  );
+  const used = new Set(pages.flatMap(screenshotIds));
   const present = new Set(files);
   const owned = new Set<string>();
   const problems: string[] = [];
@@ -411,9 +416,7 @@ function main(): void {
     for (const row of rows)
       console.warn(`${row.behindDays.toFixed(1).padStart(6)} days  ${row.file}`);
     const manifest = readManifest();
-    const shots = pages.flatMap((page) =>
-      [...page.body.matchAll(SCREENSHOT_TAG)].map(([, id]) => ({ page, id }))
-    );
+    const shots = pages.flatMap((page) => screenshotIds(page).map((id) => ({ page, id })));
     const missing = shots.filter(({ id }) => !manifest[id]);
     if (missing.length > 0)
       console.warn(`\n${missing.length} of ${shots.length} screenshots are not captured yet.`);

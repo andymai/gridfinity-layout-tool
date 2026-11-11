@@ -1,5 +1,7 @@
+import { h } from 'vue';
 import DefaultTheme from 'vitepress/theme';
 import type { Theme } from 'vitepress';
+import HeroClip from './components/HeroClip.vue';
 import Screenshot from './components/Screenshot.vue';
 import './custom.css';
 
@@ -31,6 +33,8 @@ function reloadOnStaleChunk(): void {
 
 const theme: Theme = {
   extends: DefaultTheme,
+  // The home page's clip sits under the hero text, wider than the hero's own image slot.
+  Layout: () => h(DefaultTheme.Layout, null, { 'home-hero-after': () => h(HeroClip) }),
   enhanceApp({ app }) {
     app.component('Screenshot', Screenshot);
     app.component('Ui', UnrenderedUi);
