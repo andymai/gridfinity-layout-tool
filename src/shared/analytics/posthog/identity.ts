@@ -28,6 +28,19 @@ export interface AnalyticsData {
 }
 
 let analyticsCache: AnalyticsData | null = null;
+let watchingOtherWindows = false;
+
+/**
+ * A second tab, or the installed app beside a tab, can write this record. Drop
+ * the cache on such a write, or the next save here puts the stale copy back.
+ */
+export function syncAnalyticsDataAcrossWindows(): void {
+  if (watchingOtherWindows) return;
+  watchingOtherWindows = true;
+  window.addEventListener('storage', (event) => {
+    if (event.key === ANALYTICS_STORAGE_KEY || event.key === null) analyticsCache = null;
+  });
+}
 
 export function createEmptyAnalyticsData(): AnalyticsData {
   return {

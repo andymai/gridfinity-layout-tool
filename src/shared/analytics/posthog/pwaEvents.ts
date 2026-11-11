@@ -52,13 +52,10 @@ export function listenForPwaInstallAvailability(): void {
 }
 
 function noteInstalledLaunch(mode: DisplayMode): void {
-  if (isInstalledDisplayMode(mode)) markFeatureUsed('pwa_standalone');
+  if (isAnalyticsActive() && isInstalledDisplayMode(mode)) markFeatureUsed('pwa_standalone');
 }
 
-/**
- * Keeps the `display_mode` session property current (init registers the first
- * value) and records a launch from the installed app as a person property.
- */
+/** `init.ts` registers the first `display_mode` value. */
 export function listenForDisplayModeChanges(): void {
   try {
     noteInstalledLaunch(getDisplayMode());

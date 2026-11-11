@@ -97,6 +97,16 @@ describe('listenForDisplayModeChanges', () => {
     expect(markFeatureUsed).toHaveBeenCalledWith('pwa_standalone');
   });
 
+  it('does not flag an installed launch while analytics is off', () => {
+    state.analyticsActive = false;
+    state.displayMode = 'standalone';
+
+    listenForDisplayModeChanges();
+    state.onChange?.('standalone');
+
+    expect(markFeatureUsed).not.toHaveBeenCalled();
+  });
+
   it('does not flag a browser-tab launch', () => {
     listenForDisplayModeChanges();
 

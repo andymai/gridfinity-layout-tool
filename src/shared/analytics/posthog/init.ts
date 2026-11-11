@@ -5,7 +5,7 @@
 
 import type { PostHog } from 'posthog-js';
 import { useSettingsStore } from '@/core/store/settings';
-import { getStableUserId } from './identity';
+import { getStableUserId, syncAnalyticsDataAcrossWindows } from './identity';
 import { getDisplayMode } from '@/shared/pwa/displayMode';
 import { filterExceptionForPosthog } from './errorFilters';
 
@@ -47,6 +47,8 @@ export function initAnalytics(): void {
     }
     return;
   }
+
+  syncAnalyticsDataAcrossWindows();
 
   // Lazy load posthog-js
   initPromise = import('posthog-js')
