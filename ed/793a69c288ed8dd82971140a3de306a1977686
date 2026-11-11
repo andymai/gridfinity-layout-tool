@@ -1,0 +1,117 @@
+.claude/skills/share-api-collab/SKILL.md
+  s_1cc363bb3cc76d::t_1d8beede406d6d 23
+src/shell/Collab/CollabProvider/CollabProvider.test.tsx
+  s_1cc363bb3cc76d::t_d871c6d15cf494 2,5,7-8,10-12,14-20,23-36
+  s_1cc363bb3cc76d::t_7ad69fe751ad8e 156-261
+  s_1cc363bb3cc76d::t_386d265dcb7ff3 66-69,74-76
+src/shared/utils/roomLinkStamp.ts
+  s_1cc363bb3cc76d::t_6bf13df8dd1484 1-5,10-17,19-61
+  s_1cc363bb3cc76d::t_32c816f9f9b1bd 6-9
+  s_1cc363bb3cc76d::t_428d0a1633ae53 18
+src/shared/hooks/useSharedWithMe.test.ts
+  s_1cc363bb3cc76d::t_289ad8f2cb6d93 148-172
+src/features/cloud-share/utils/ownCopyRevision.test.ts
+  s_1cc363bb3cc76d::t_afde7e595d35c0 1-52
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.test.tsx
+  s_1cc363bb3cc76d::t_6126adebf50668 137-166
+api/share/[id].ts
+  s_1cc363bb3cc76d::t_cc7cc23d998892 251
+  s_1cc363bb3cc76d::t_76f1ef500afe28 364-365,367
+  s_1cc363bb3cc76d::t_e15907078ebb65 184
+src/shared/hooks/useSharedWithMe.ts
+  s_1cc363bb3cc76d::t_718596e27d1e75 133-134
+src/features/cloud-share/utils/ownCopyRevision.ts
+  s_1cc363bb3cc76d::t_b3831d1442e94b 1-37
+src/liveblocks.config.ts
+  s_1cc363bb3cc76d::t_c6ee6ff187e6f9 13
+  s_1cc363bb3cc76d::t_fa2023ce1233c0 253-255
+  s_1cc363bb3cc76d::t_9d493111f7370b 58-59
+src/shell/Collab/CollabProvider/CollabProvider.tsx
+  s_1cc363bb3cc76d::t_20fc844cf7b735 351-361
+  s_1cc363bb3cc76d::t_f6580d6b5f26b1 142
+  s_1cc363bb3cc76d::t_24306253a985ce 216,219,221-222,226
+  s_1cc363bb3cc76d::t_ebfa12cb047642 19,29,38,40,43
+  s_1cc363bb3cc76d::t_b10f96c48e2164 82-94
+  s_1cc363bb3cc76d::t_2b28d4f7303970 159-162,167-168,170-173,177-182,189-203
+  s_1cc363bb3cc76d::t_ffbc807cca0b2a 81
+  s_1cc363bb3cc76d::t_db9ddf0dea212d 204
+src/features/cloud-share/hooks/useOwnedShareSync.test.ts
+  s_1cc363bb3cc76d::t_d12a1535cf5f2d 182-217
+  s_1cc363bb3cc76d::t_9d8fdd0e7be982 11
+src/core/api/share.test.ts
+  s_1cc363bb3cc76d::t_6226571a8d1571 236-269
+api/share/[id].test.ts
+  s_1cc363bb3cc76d::t_80907ab5990d71 320-346
+src/shared/utils/roomLinkStamp.test.ts
+  s_1cc363bb3cc76d::t_4c9243d9413aa8 1-155
+  s_1cc363bb3cc76d::t_8c5c0e48d08f5c 156-158
+  s_5638872954a546::t_180be9b9d05b1b 159-160
+src/core/api/share.ts
+  s_1cc363bb3cc76d::t_2531ea46ea5162 180-181
+  s_1cc363bb3cc76d::t_610f7465d82c4f 210-211
+src/shared/hooks/useCollabSync.ts
+  s_1cc363bb3cc76d::t_14403efd7348d5 67-68,76-87
+  s_1cc363bb3cc76d::t_e3cee57eb83ad9 117-120
+  s_1cc363bb3cc76d::t_0b3652563c5bc3 50-52,54
+  s_1cc363bb3cc76d::t_738f594e985d59 218,220
+  s_1cc363bb3cc76d::t_04fbd06b44000f 113-116,121-127,129,140,142-144
+  s_1cc363bb3cc76d::t_c7e3cf63fa4d46 172-180
+  s_1cc363bb3cc76d::t_49019c90a18b0a 31-32
+  s_1cc363bb3cc76d::t_bcb0cbf6adbde2 8-10,19,26,29,33-35
+src/features/cloud-share/hooks/useCloudShareAutoSync.ts
+  s_1cc363bb3cc76d::t_21289e25902195 29-31
+  s_1cc363bb3cc76d::t_82b4e6e93485d3 87-90
+  s_1cc363bb3cc76d::t_e6f9d6cb6c04d8 84
+  s_1cc363bb3cc76d::t_b066f3620c521d 2,5,13-14,17-21,27-28,44-49,51-58,61-65,69-73,76-83,85-86,91-97,103,105
+  s_1cc363bb3cc76d::t_425a44fac00ef6 68,74-75
+  s_1cc363bb3cc76d::t_77159457128b50 107-111
+  s_1cc363bb3cc76d::t_7379d411f89665 98-100,114,116
+  s_1cc363bb3cc76d::t_de09a8987aab69 50
+  s_1cc363bb3cc76d::t_8901bc34d73d5f 67
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.tsx
+  s_1cc363bb3cc76d::t_f20381e69ef5f9 108-114,116-123
+  s_1cc363bb3cc76d::t_e65d51f9d5e7e9 273-279
+src/core/store/sharedPreview.ts
+  s_1cc363bb3cc76d::t_4b91fed7f7da68 26-27
+  s_1cc363bb3cc76d::t_90fc1ab3aa61ed 65-72,81
+  s_1cc363bb3cc76d::t_14ebdf7d98da89 45-46
+src/shared/hooks/useCollabSync.test.ts
+  s_1cc363bb3cc76d::t_0a6bb928e8db85 8
+  s_1cc363bb3cc76d::t_6a31cd19235920 76,87-104
+  s_1cc363bb3cc76d::t_ab3edfdbe11249 247-264
+  s_1cc363bb3cc76d::t_d3476f90c8e0c3 445-545
+src/features/cloud-share/hooks/useCloudShareAutoSync.test.ts
+  s_1cc363bb3cc76d::t_adf23bf80c0eda 228,230-231,234-235,238-251
+  s_1cc363bb3cc76d::t_4ac7b3d7d082de 1-227,229,232-233,236-237,252-361
+src/core/store/sharedPreview.test.ts
+  s_1cc363bb3cc76d::t_7cadc76b01c571 32-39,46
+src/features/cloud-share/hooks/useOwnedShareSync.ts
+  s_1cc363bb3cc76d::t_79c2a8268c982f 72-74
+  s_1cc363bb3cc76d::t_0be299c894f7f2 20
+src/features/cloud-share/utils/index.ts
+  s_1cc363bb3cc76d::t_d1aa5ddc606b70 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ed793a69c288ed8dd82971140a3de306a1977686",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_5638872954a546": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-aa16044e0a7b5724c",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
