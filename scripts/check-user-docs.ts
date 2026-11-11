@@ -295,6 +295,12 @@ export function checkDocLinks(
     ];
     for (const link of links) {
       const [target, hash = ''] = link.split('#');
+      // The root is served at `/docs`, with no trailing slash, so a relative
+      // link there resolves against `/` and leaves the docs.
+      if (self === '/index' && target && !target.startsWith('/')) {
+        problems.push(`${page.file}: link "${link}" must start with "/" on the docs root`);
+        continue;
+      }
       const ext = path.posix.extname(target);
       if (ext && ext !== '.md') {
         const file = target.startsWith('/')

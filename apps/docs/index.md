@@ -67,11 +67,11 @@ All three tools run in your web browser, and the 3D engine runs on your own comp
 
 Your browser keeps a copy of each tool that you open. After your first visit, the tool works without an internet connection. A few features need a connection: share links, sign-in and sync, and the [community gallery](https://gridfinitylayouttool.com/community).
 
-Your work saves in your browser as you go, so you can close the tab and pick up later. To use the same layouts and designs on more than one device, sign in. [Your data and privacy](./introduction/your-data) tells you what stays on your device and what goes to the server.
+Your work saves in your browser as you go, so you can close the tab and pick up later. To use the same layouts and designs on more than one device, sign in. [Your data and privacy](/introduction/your-data) tells you what stays on your device and what goes to the server.
 
 ## Next steps
 
-- [Gridfinity in five minutes](./introduction/gridfinity-basics): the grid, the height units and the parts, if you are new to Gridfinity
-- [Plan your first drawer](./getting-started/first-drawer): a step-by-step tutorial in the layout editor
-- [A tour of the workspace](./getting-started/workspace-tour): where each panel and control is
-- [Install and work offline](./settings/offline): how the offline copy works
+- [Gridfinity in five minutes](/introduction/gridfinity-basics): the grid, the height units and the parts, if you are new to Gridfinity
+- [Plan your first drawer](/getting-started/first-drawer): a step-by-step tutorial in the layout editor
+- [A tour of the workspace](/getting-started/workspace-tour): where each panel and control is
+- [Install and work offline](/settings/offline): how the offline copy works

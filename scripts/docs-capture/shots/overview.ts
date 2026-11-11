@@ -29,7 +29,6 @@ const WIDE_DRAWER: FixtureLayout = {
 
 const canvas = (s: DocsSession): Promise<Rect> => s.box(s.page.locator('canvas').first());
 
-/** One bin's design in three cuts, each built before its frames are recorded. */
 const BIN_STATES: readonly Params[] = [
   { width: 3, depth: 2, height: 6 },
   {
@@ -75,7 +74,6 @@ const overview: Shot = {
   id: 'introduction-overview',
   kind: 'clip',
   async take(s) {
-    // Plan: the last bin drawn into the drawer's empty corner.
     await openLayouts(s, WIDE_DRAWER);
     // With both side panels closed, the 16:9 frame holds the grid and nothing else.
     for (const name of ['sidebar.collapseLeftPanel', 'rightPanel.collapseRightPanel'] as const) {
@@ -141,7 +139,6 @@ const overview: Shot = {
       WIDTH / area.width
     );
 
-    // Design: one bin, plain, then with compartments and labels, then in color.
     await s.ui.hideCursor();
     await openDesigner(s, 'Screw bin', BIN_STATES[0] ?? {});
     const shot = frameAround(await partBox(s), 70, ASPECT, await canvas(s));
@@ -153,8 +150,7 @@ const overview: Shot = {
       });
     }
 
-    // Print: the plate in pieces that fit a 220 mm bed.
-    await openBaseplate(s, { ...WORKBENCH, bins: [], printBedSize: 220 });
+    await openBaseplate(s, { ...WIDE_DRAWER, bins: [], printBedSize: 220 });
     const exploded: Locator = s.page
       .getByRole('button', { name: label('baseplate.viewExploded'), exact: true })
       .first();
