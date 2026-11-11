@@ -37,8 +37,7 @@ function sync(): void {
 
 function toggle(): void {
   wantsPlay.value = !playing.value;
-  if (wantsPlay.value) video.value?.play().catch(() => (playing.value = false));
-  else video.value?.pause();
+  sync();
 }
 
 watch(video, (now, before) => {
