@@ -1,0 +1,27 @@
+api/lib/contentFilter.test.ts
+  s_1cc363bb3cc76d::t_e9dec3a5385af6 669-675
+  s_1cc363bb3cc76d::t_4672b24164708e 653-668,676-687
+.claude/skills/share-api-collab/SKILL.md
+  s_1cc363bb3cc76d::t_20d77b473bbeaa 52
+api/lib/contentFilter.ts
+  s_1cc363bb3cc76d::t_043c0fdf74d1d9 45-47
+  s_1cc363bb3cc76d::t_cbbb50c24c3678 6-8,40-44,48-54
+  s_1cc363bb3cc76d::t_7f099a3d6420c5 284-289
+  s_1cc363bb3cc76d::t_18b8c4144b48d5 55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b9a218f758326917c8bb0d4359ea74e187b70adf",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
