@@ -1,5 +1,14 @@
 import type { DefaultTheme } from 'vitepress';
 
+export const APP_URL = 'https://gridfinitylayouttool.com';
+
+export const nav: DefaultTheme.NavItem[] = [
+  { text: 'Docs', link: '/introduction/what-it-does' },
+  { text: 'Reference', link: '/reference/shortcuts' },
+  { text: 'Community', link: `${APP_URL}/community`, target: '_self' },
+  { text: 'Open the app', link: `${APP_URL}/`, target: '_self' },
+];
+
 export const sidebar: DefaultTheme.SidebarItem[] = [
   {
     text: 'Introduction',

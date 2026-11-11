@@ -2,8 +2,6 @@
 import { ref } from 'vue';
 import { withBase } from 'vitepress';
 
-// `spec` tells the capture script what to set up before it takes the picture.
-// Until that capture exists, the figure shows the spec as a placeholder.
 const props = defineProps<{ id: string; alt: string; spec: string }>();
 const missing = ref(false);
 const src = withBase(`/screenshots/${props.id}.png`);

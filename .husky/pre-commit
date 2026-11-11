@@ -14,13 +14,8 @@ pnpm run check:component-structure
 pnpm run check:missing-tests
 pnpm run check:readme-reminders
 pnpm run check:whats-new
-# User docs: every UI label, source path, sidebar entry and app link must
-# resolve. A renamed i18n key or a moved source file breaks a docs page, so
-# en.ts and the content routes trigger the check as well as the docs.
-if git diff --cached --name-only | grep -qE '^(apps/docs/|src/i18n/locales/en\.ts$|scripts/contentRoutes\.ts$|scripts/check-user-docs)'; then
-  pnpm run check:user-docs
-fi
-# Warns only: names docs pages whose listed sources are in this commit.
+# Always: a commit that moves or deletes a file a docs page names breaks that page.
+pnpm run check:user-docs
 pnpm run check:user-docs:staged
 # Docs drift two ways: refs to deleted code, and unbounded growth. Only run
 # when a doc is actually staged — it walks every tracked file.

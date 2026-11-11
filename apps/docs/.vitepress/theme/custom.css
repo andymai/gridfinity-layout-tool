@@ -17,7 +17,8 @@
   padding: 0 0.3em;
   border-radius: 4px;
   background: var(--vp-c-default-soft);
-  white-space: nowrap;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 .docs-screenshot {

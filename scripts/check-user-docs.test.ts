@@ -138,6 +138,7 @@ describe('headingAnchors', () => {
       '```',
       '## Use `R` to rotate',
       '## Custom {#my-id}',
+      '## Paths like C:\\tools',
     ].join('\n');
     expect([...headingAnchors(body)]).toEqual([
       'walls',
@@ -146,26 +147,46 @@ describe('headingAnchors', () => {
       'add-label-slots-1',
       'use-r-to-rotate',
       'my-id',
+      'paths-like-c-tools',
     ]);
   });
 });
 
 describe('checkDocLinks', () => {
-  const pages = [
-    page(
-      'apps/docs/designer/walls.md',
-      '## Add label slots\n[base](./base#magnets) [self](#add-label-slots)'
-    ),
-    page(
-      'apps/docs/designer/base.md',
-      '## Magnets\n[walls](../designer/walls#nope) [gone](../concepts/gone)'
-    ),
-  ];
+  const files = new Set(['apps/docs/public/screenshots/a.png', 'apps/docs/designer/b.png']);
+  const exists = (rel: string): boolean => files.has(rel);
 
-  it('accepts links to real pages and headings, and reports the rest', () => {
-    expect(checkDocLinks(pages)).toEqual([
+  it('accepts links to real pages, headings and files, and reports the rest', () => {
+    const pages = [
+      page(
+        'apps/docs/designer/walls.md',
+        '## Add label slots\n[base](./base#magnets) [self](#add-label-slots) ![a](/screenshots/a.png) ![b](./b.png)'
+      ),
+      page(
+        'apps/docs/designer/base.md',
+        '## Magnets\n[walls](../designer/walls#nope) [gone](../concepts/gone) ![c](/screenshots/c.png)'
+      ),
+    ];
+    expect(checkDocLinks(pages, exists)).toEqual([
       'apps/docs/designer/base.md: link "../designer/walls#nope" has no heading "#nope"',
       'apps/docs/designer/base.md: link "../concepts/gone" has no page',
+      'apps/docs/designer/base.md: link "/screenshots/c.png" has no file apps/docs/public/screenshots/c.png',
+    ]);
+  });
+
+  it('checks the links in frontmatter, such as the home page buttons and cards', () => {
+    const home: DocPage = {
+      file: 'apps/docs/index.md',
+      body: '',
+      data: {
+        hero: {
+          actions: [{ link: '/designer/walls' }, { link: 'https://gridfinitylayouttool.com/' }],
+        },
+        features: [{ link: '/designer/gone' }],
+      },
+    };
+    expect(checkDocLinks([home, page('apps/docs/designer/walls.md', '')], exists)).toEqual([
+      'apps/docs/index.md: link "/designer/gone" has no page',
     ]);
   });
 });
