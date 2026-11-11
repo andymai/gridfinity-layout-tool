@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.538.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.537.1...gridfinity-layout-tool-v4.538.0) (2026-11-11)
+
+
+### Features
+
+* **baseplate:** stack mixed eco tiles vertically ([#4912](https://github.com/andymai/gridfinity-layout-tool/issues/4912)) ([f3c3832](https://github.com/andymai/gridfinity-layout-tool/commit/f3c3832b39bf77d2119dc0246f69be138a32ce30))
+
+
+### Bug Fixes
+
+* **baseplate:** correct the mixed-size stack wording and translations ([#4931](https://github.com/andymai/gridfinity-layout-tool/issues/4931)) ([3d0d17c](https://github.com/andymai/gridfinity-layout-tool/commit/3d0d17ce091d68443496b312ebb3a46b09fad227))
+* **bin-designer:** snap pathfinder rings before clipping ([#4930](https://github.com/andymai/gridfinity-layout-tool/issues/4930)) ([254e928](https://github.com/andymai/gridfinity-layout-tool/commit/254e9282f830ac4ba4776fbaa4eb688f737bef11))
+
 ## [4.537.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.537.0...gridfinity-layout-tool-v4.537.1) (2026-11-10)
 
 
