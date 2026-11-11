@@ -73,7 +73,7 @@ describe('useCollabSync', () => {
   });
 
   describe('initial sync', () => {
-    it('pushes local layout, with its stamp, into an unstamped room with no bins', () => {
+    it('pushes a copy of unknown revision into an unstamped room without marking it saved', () => {
       const localLayout = createTestLayout([createBinOnGrid('bin1')]);
       useLayoutStore.setState({ layout: localLayout, lastEditSource: 'init' });
 
@@ -84,10 +84,20 @@ describe('useCollabSync', () => {
 
       renderHook(() => useCollabSync());
 
-      expect(mockUpdateRemoteLayout).toHaveBeenCalledWith(
-        localLayout,
-        stampFor(localLayout, undefined)
-      );
+      expect(mockUpdateRemoteLayout.mock.calls).toEqual([[localLayout, undefined]]);
+    });
+
+    it('pushes a copy of known revision into an unstamped room with that revision', () => {
+      const localLayout = createTestLayout([createBinOnGrid('bin1')]);
+      useLayoutStore.setState({ layout: localLayout, lastEditSource: 'init' });
+      const emptyRoom = createTestLayout();
+      mockUseStorage.mockImplementation((selector) => selector({ layout: emptyRoom }));
+
+      renderHook(() => useCollabSync(stampFor(localLayout, '2026-11-01T10:00:00.000Z')));
+
+      expect(mockUpdateRemoteLayout.mock.calls).toEqual([
+        [localLayout, stampFor(localLayout, '2026-11-01T10:00:00.000Z')],
+      ]);
     });
 
     it('keeps an unstamped room that has bins rather than push its own copy', () => {

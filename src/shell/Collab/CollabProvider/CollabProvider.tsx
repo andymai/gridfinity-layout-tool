@@ -161,15 +161,18 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
   // The delete token is intentionally NOT stored in shared storage.
   // Cloud sync is owner-only: the delete token stays in the owner's local library.
   // RoomProvider freezes initialStorage per room id, so this is taken once per room.
+  // A seed without a known link revision stays unrecorded, so the owner
+  // uploads it: it can hold edits that never reached the link.
   const { copySave, initialStorage } = useMemo(() => {
     const save = copySaveFor(shareId, cloudShare, sharedPreview, layout);
+    const revision = revisionOfCopy(layout, save);
     const storage: LiveblocksStorage = {
       layout,
       metadata: {
         ownerId: userId,
         permission: cloudShare?.permission ?? 'edit',
         version: 2,
-        ...stampFor(layout, revisionOfCopy(layout, save)),
+        ...(revision ? stampFor(layout, revision) : {}),
       },
     };
     return { copySave: save, initialStorage: storage };

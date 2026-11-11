@@ -158,6 +158,21 @@ describe('CollabProvider', () => {
       expect(useCloudShareAutoSync).toHaveBeenLastCalledWith('staleLayout1', undefined);
     });
 
+    it('seeds a room unsaved when the copy has no known revision, so the owner uploads it', () => {
+      useLayoutStore.setState({
+        layout: createTestLayout({ bins: [createTestBin({ id: binId('restored-unsent') })] }),
+      });
+
+      render(
+        <CollabProvider shareId="freshShare01">
+          <div />
+        </CollabProvider>
+      );
+
+      expect(lastInitialStorage().metadata).not.toHaveProperty('linkFingerprint');
+      expect(lastInitialStorage().metadata).not.toHaveProperty('linkUpdatedAt');
+    });
+
     it("does not lend another tab's later save of a different layout to this tab's copy", () => {
       const savedByOtherTab = createTestLayout({
         bins: [createTestBin({ id: binId('other-tab') })],
@@ -254,6 +269,7 @@ describe('CollabProvider', () => {
 
       expect(useCollabSync).toHaveBeenLastCalledWith(undefined);
       expect(lastInitialStorage().metadata.linkUpdatedAt).toBeUndefined();
+      expect(lastInitialStorage().metadata.linkFingerprint).toBeUndefined();
     });
   });
 

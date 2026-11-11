@@ -128,9 +128,11 @@ export function useCollabSync(copySave?: RoomLinkStamp): void {
       });
 
       if (outcome === 'push-copy') {
+        // A copy without a known revision goes in unrecorded, so the owner
+        // uploads it: it can hold edits that never reached the link.
         writeRefusedRef.current = !updateRemoteLayout(
           currentLocal,
-          stampFor(currentLocal, copyRevision)
+          copyRevision ? stampFor(currentLocal, copyRevision) : undefined
         );
       }
       if (outcome === 'push-copy' && !writeRefusedRef.current) {
