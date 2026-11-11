@@ -87,7 +87,7 @@ In the 3D preview (open it with <Ui k="toolbar.3dView" />), three buttons pick t
 
 To look between the layers, turn on <Ui k="grid.explodedView.label" /> or press <kbd>E</kbd>. It lifts each layer apart. The exploded view shows all the layers, and it works on a computer screen only.
 
-<Screenshot id="layouts-layers-exploded" alt="The 3D preview in the exploded view, with three layers of bins lifted apart." spec="Layout editor on desktop with the 3D preview expanded (Space). Same three-layer layout as the Layers panel shot. Turn on Explode. Show an isometric angle where every layer and its label is visible. Crop to the preview." />
+<Screenshot id="layouts-layers-exploded" alt="The expanded 3D preview shows three layers of bins stacked in the drawer. A press of E lifts the layers apart, each with its name." spec="Clip. Layout editor on desktop with the 3D preview expanded (Space) and All selected. Same three-layer layout as the Layers panel shot, with the middle layer active. Zoom out so the exploded stack fits, then press E on camera with a keycap. Isometric angle where every layer and its label is visible. Crop to the preview." />
 
 ## Next steps
 
