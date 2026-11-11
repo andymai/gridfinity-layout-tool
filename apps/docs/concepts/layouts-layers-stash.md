@@ -11,11 +11,12 @@ sources:
   - src/shared/hooks/useExplodedLayerView.ts
   - src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreviewControls.tsx
   - src/features/staging/components/Staging/Staging.tsx
+  - src/features/print-export/utils/split.ts
 ---
 
 # Layouts, layers and the stash
 
-A layout is one drawer. Layers decide which bins stack on which, and the stash is a shelf beside the drawer for bins you don't need right now. Once you see how the three fit together, you can tell where a bin goes when you delete a layer or make the drawer smaller.
+A **layout** is one drawer. **Layers** decide which bins stack on which, and the **stash** is a shelf beside the drawer for bins you don't need right now. Once you see how the three fit together, you can tell where a bin goes when you delete a layer or make the drawer smaller.
 
 ## A layout is one drawer
 
@@ -80,6 +81,16 @@ Use <Ui k="staging.clearAll" /> only when you want to delete every bin in the st
 The 3D preview of the layout can show only the active layer, the layers up to the active layer, or all layers. <Ui k="grid.explodedView.label" /> pulls the layers apart vertically, so you can see each layer with the bins on it. [See the layers](../layouts/layers#see-the-layers) shows the buttons and the keys.
 
 <Screenshot id="concepts-layouts-exploded" alt="The expanded 3D layout preview of a drawer with three layers of bins. A click on Explode pulls the layers apart. Layer 2, the active layer, stays highlighted." spec="Clip. Layout editor, drawer 6 × 4 with three layers of two or three bins each, Layer 2 active. 3D preview expanded in All mode. The stacked drawer, a close-up click on Explode, then the layers apart." />
+
+## When it goes wrong
+
+### Bins are gone from the grid
+
+Look in the stash below the grid. Drag the bins back, or press <kbd>Ctrl</kbd>+<kbd>Z</kbd> (<kbd>Cmd</kbd>+<kbd>Z</kbd> on a Mac) to undo the change that moved them. A smaller drawer moves bins that no longer fit to the stash, and no message tells you. The table in [The stash holds bins that are off the grid](#the-stash-holds-bins-that-are-off-the-grid) lists the other changes that do the same.
+
+### Some bins aren't on the print list
+
+Look in the stash, and drag those bins onto the grid. A bin in the stash belongs to the layout but sits on no layer, so the print list leaves it out.
 
 ## Next steps
 

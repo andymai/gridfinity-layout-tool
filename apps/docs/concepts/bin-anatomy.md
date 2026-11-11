@@ -8,6 +8,7 @@ sources:
   - src/features/bin-designer/components/panel/InteriorSection/
   - src/features/bin-designer/components/panel/LidSection/
   - src/features/bin-designer/constants/defaults.ts
+  - src/shared/constraints/rules.ts
 ---
 
 # Anatomy of a bin
@@ -32,7 +33,7 @@ The bin designer panel puts the parts in five groups:
 
 ## Feet
 
-Each grid cell under the bin has a foot. The foot is 4.75 mm tall, with sloped sides at 45°. It drops into a pocket of the baseplate and stops the bin from sliding around. The outer walls of the bin are 0.5 mm smaller than its cells, so the feet drop in without force.
+Each grid cell under the bin has a **foot**. The foot is 4.75 mm tall, with sloped sides at 45°. It drops into a pocket of the baseplate and stops the bin from sliding around. The outer walls of the bin are 0.5 mm smaller than its cells, so the feet drop in without force.
 
 The <Ui k="binDesigner.group.base" /> group holds the options for the feet.
 
@@ -72,7 +73,7 @@ Want openings for cables or front access? <Ui k="binDesigner.wallCutouts" /> cut
 
 ## Stacking lip
 
-The stacking lip is the rim on top of the walls. It's 4.4 mm tall, and the feet of another bin sit in it, the same way they sit in a baseplate. Turn it on or off with <Ui k="assembledHeight.stackingLip" />. You find it in the <Ui k="binDesigner.group.base" /> group, under <Ui k="binDesigner.base.section.stacking" />. It sits with the feet because it is the partner of the feet of the bin above.
+The **stacking lip** is the rim on top of the walls. It's 4.4 mm tall, and the feet of another bin sit in it, the same way they sit in a baseplate. Turn it on or off with <Ui k="assembledHeight.stackingLip" />. You find it in the <Ui k="binDesigner.group.base" /> group, under <Ui k="binDesigner.base.section.stacking" />. It sits with the feet because it is the partner of the feet of the bin above.
 
 Without a stacking lip, no bin can stack on top, and a lid that sits on the bin has nothing to grip. A slanted bin has no stacking lip.
 
@@ -110,6 +111,20 @@ The <Ui k="binDesigner.group.lid" /> group adds a lid with <Ui k="binDesigner.li
 So for every lid except the sliding one, keep the stacking lip on.
 
 The top of the lid can be <Ui k="binDesigner.lid.topSurface.flat" /> or <Ui k="binDesigner.lid.topSurface.tray" />. Pick <Ui k="binDesigner.lid.topSurface.stackable" /> to give it a grid of sockets, so bins can stand on the lid.
+
+## When it goes wrong
+
+### Label tabs and the scoop are gray
+
+Click <Ui k="binDesigner.dependency.editFootprint" />, and make the bin a rectangle again. The gray controls tell you that they need a rectangular footprint. A bin with a custom footprint can't have compartments, dividers, label tabs or a scoop. See [Make a bin that is not a rectangle](../designer/size-and-shape#make-a-bin-that-is-not-a-rectangle).
+
+### The lid switch is gray
+
+Click <Ui k="binDesigner.dependency.enableStackingLip" /> under the switch. The switch shows <Ui k="binDesigner.lid.requiresStackingLip" />, because every lid except the sliding one sits on the stacking lip.
+
+### The scoop or the fillet won't turn on
+
+Set <Ui k="binDesigner.lightweightMode" /> to <Ui k="binDesigner.lightweightMode.underside" />. Then the bin keeps its lightweight floor and gets the scoop too. <Ui k="binDesigner.lightweightMode.interior" /> leaves no solid floor for a scoop ramp or a fillet. The same goes for drainage holes and cutouts in the top of the bin.
 
 ## Next steps
 

@@ -9,11 +9,13 @@ sources:
   - src/features/grid-editor/components/Grid/GridCanvas/GridCanvas.tsx
   - src/shared/hooks/use3DPreviewKeyboard.ts
   - src/features/bin-designer/components/panel/BaseSection/BodyTypeTiles.tsx
+  - src/core/cqrs/v2/domain/layer/reorderLayers.ts
+  - src/shared/utils/validationPlacement.ts
 ---
 
 # Work in layers
 
-A deep drawer has room for more than one level of bins. In the Gridfinity Layout Tool, each level is a layer. Bins on a higher layer sit on the bins below them, as they do in the real drawer. Here's how to add layers, stack bins, and check your stacks in 3D before you print.
+A deep drawer has room for more than one level of bins. In the Gridfinity Layout Tool, each level is a **layer**. Bins on a higher layer sit on the bins below them, as they do in the real drawer. Here's how to add layers, stack bins, and check your stacks in 3D before you print.
 
 ## How layers work
 
@@ -61,7 +63,7 @@ On the layers above, striped cells mark the clearance, and no bin can rest there
 
 ## Make short bins finish flush with spacers
 
-Want a short bin to sit level with its tall neighbors? Put a spacer under it. A spacer is an open frame with feet and no floor.
+Want a short bin to sit level with its tall neighbors? Put a spacer under it. A **spacer** is an open frame with feet and no floor.
 
 1. In the bin designer, open the <Ui k="binDesigner.group.base" /> group.
 2. Under <Ui k="binDesigner.base.bodyType" />, choose <Ui k="binDesigner.spacer" />.
@@ -88,6 +90,26 @@ In the 3D preview (open it with <Ui k="toolbar.3dView" />), three buttons pick t
 To look between the layers, turn on <Ui k="grid.explodedView.label" /> or press <kbd>E</kbd>. It lifts each layer apart. The exploded view shows all the layers, and it works on a computer screen only.
 
 <Screenshot id="layouts-layers-exploded" alt="The expanded 3D preview shows three layers of bins stacked in the drawer. A press of E lifts the layers apart, each with its name." spec="Clip. Layout editor on desktop with the 3D preview expanded (Space) and All selected. Same three-layer layout as the Layers panel shot, with the middle layer active. Zoom out so the exploded stack fits, then press E on camera with a keycap. Isometric angle where every layer and its label is visible. Crop to the preview." />
+
+## When it goes wrong
+
+### A layer won't move up or down
+
+Make room in the drawer first, then drag the row again. Lower the tallest bins, or raise <Ui k="sidebar.drawerHeight" /> if your real drawer has the room.
+
+The Layout Tool stops a new order that would push a stack past the drawer top. It also stops an order that would rest a bin in space that another bin reserves. The row goes back to its place, and an error message shows.
+
+### A bin won't go on the upper layer
+
+Read the red tag over the bin while you drag it. <Ui k="grid.exceedsDrawerHeight" /> means the bin would stand above the drawer top. It rests on the tallest bin under any part of it, so one tall bin below is enough. Use a shorter bin, or move it over shorter bins.
+
+A tag that names a bin on a lower layer means the striped cells are clearance. That bin keeps the space free for its items. Click a striped cell to jump to that bin, and lower its <Ui k="inspector.clearanceMmLabel" /> if its items don't need the space.
+
+### A warning icon shows next to the height tag
+
+Move the bin so that its whole base sits on bins of one height. Or fill the gap under it with a [spacer](#make-short-bins-finish-flush-with-spacers).
+
+The bin leans on a taller neighbor, or part of it hangs over an empty cell, so it can rock in the drawer. The inspector shows <Ui k="inspector.unevenSupport" /> for the same bin.
 
 ## Next steps
 
