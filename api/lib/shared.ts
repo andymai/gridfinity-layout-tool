@@ -286,9 +286,19 @@ export function getBaseUrl(): string {
  * catch turns that into a 500.
  */
 export async function loadShare(blobPath: string): Promise<ShareData | null> {
+  return (await loadShareVersion(blobPath))?.data ?? null;
+}
+
+/**
+ * {@link loadShare}, plus the ETag that `head` reports for the stored blob. A
+ * write with `ifMatch` set to it fails if another write lands first.
+ */
+export async function loadShareVersion(
+  blobPath: string
+): Promise<{ readonly data: ShareData; readonly etag: string } | null> {
   const blobInfo = await head(blobPath).catch(() => null);
   if (!blobInfo) return null;
   const response = await fetch(blobInfo.url);
   if (!response.ok) return null;
-  return (await response.json()) as ShareData;
+  return { data: (await response.json()) as ShareData, etag: blobInfo.etag };
 }
