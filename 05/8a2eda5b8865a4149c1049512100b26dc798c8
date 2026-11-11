@@ -1,0 +1,33 @@
+apps/docs/baseplates/eco-and-stack-printing.md
+  s_1cc363bb3cc76d::t_f6be011cfa37ec 100,102
+  s_1cc363bb3cc76d::t_ed5f7191e35a69 8-9
+apps/docs/baseplates/basics.md
+  s_1cc363bb3cc76d::t_7dad55886076cc 107
+  s_1cc363bb3cc76d::t_a99fb73e4fba5c 13
+apps/docs/designer/base.md
+  s_1cc363bb3cc76d::t_60754fa31a1955 163,165
+  s_1cc363bb3cc76d::t_9da2de64986638 9
+apps/docs/sharing/share-links.md
+  s_1cc363bb3cc76d::t_cd1538b8dd3633 120
+  s_1cc363bb3cc76d::t_3bfa71d59ecf38 124-129
+  s_1cc363bb3cc76d::t_bf3cebdbb03332 12-13
+  s_1cc363bb3cc76d::t_bedb23ed9a6394 130
+  s_1cc363bb3cc76d::t_773c3ae288430e 118-119
+  s_1cc363bb3cc76d::t_907965a3e52f48 121-123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "058a2eda5b8865a4149c1049512100b26dc798c8",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
