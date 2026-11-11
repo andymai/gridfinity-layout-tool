@@ -33,7 +33,7 @@ Some drawers need a smaller step. A half grid unit is 21 mm. In the Layout Tool,
 
 ## The parts of a drawer
 
-<Screenshot id="introduction-gridfinity-basics-parts" alt="A bin with a stacking lip that sits on a split baseplate in the 3D preview." spec="Baseplate generator at 1440 px wide, 4 x 3 plate, print bed 100 mm so that the plate splits. Separately, bin designer with a 2 x 1 bin, 4 height units, stacking lip on. Compose or crop one image that shows the plate pattern and a bin with its feet and lip visible, at an angle from the front left." />
+<Screenshot id="introduction-gridfinity-basics-parts" alt="A baseplate in the 3D preview, in four pieces for a small print bed. Then a bin from a low angle, with its feet under it and the stacking lip on top." spec="Clip. Baseplate generator, 4 x 3 plate on a 100 mm print bed, so the plate splits into four pieces. Cut to the bin designer: a 2 x 1 bin, 4 height units, stacking lip on, seen from a low angle so the feet show." />
 
 **The baseplate** is a flat plate with a raised grid pattern. It sits on the floor of the drawer, and you print it once. A plate is about 5 mm thick. Is the drawer larger than your print bed? Then the plate prints in pieces that sit side by side.
 
