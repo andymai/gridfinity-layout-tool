@@ -87,7 +87,7 @@ A recess on the inside of the tab gives your finger a grip. More controls shape 
 - <Ui k="binDesigner.pullTab.backRecess" /> adds the same grip on the outside of the wall.
 
 ::: warning
-Keep the walls with a pull tab plain. A pull tab needs a wall with no cutouts, handles, patterns, text or label slots.
+Keep every wall of the bin plain. Wall cutouts, handles, a wall pattern, wall text or label slots on any wall block the pull tab, even on a wall with no tab.
 :::
 
 A pull tab also needs a rectangular, hollow bin with walls, no lid and no overhang. On a small bin, tabs on opposite walls can close the inside. If that happens, pick fewer walls or a thinner tab.
