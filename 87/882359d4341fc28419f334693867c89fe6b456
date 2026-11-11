@@ -1,0 +1,35 @@
+scripts/contentRoutes.test.ts
+  s_1cc363bb3cc76d::t_41d355289a45ef 1-14
+  s_1cc363bb3cc76d::t_4ad45613a06fb1 15-17
+  s_f46106f1a44b21::t_43371228a15236 18-20
+src/shell/Modals/HelpModal/HelpModal.tsx
+  s_1cc363bb3cc76d::t_8a457b6c0d8eb4 117-123
+vite.config.ts
+  s_1cc363bb3cc76d::t_41d355289a45ef 12,218-219
+scripts/contentRoutes.ts
+  s_1cc363bb3cc76d::t_41d355289a45ef 46-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "87882359d4341fc28419f334693867c89fe6b456",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f46106f1a44b21": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-ae3a9017f6dc82196",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
