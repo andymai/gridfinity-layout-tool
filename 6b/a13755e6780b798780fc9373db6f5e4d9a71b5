@@ -1,0 +1,85 @@
+apps/docs/media/reference-shortcuts-panel.json
+  s_1cc363bb3cc76d::t_3870583cbb608b 3-4
+  s_1cc363bb3cc76d::t_25dbc6c6e9cbd8 1-2,5
+apps/docs/media/reference-design-file-import.json
+  s_1cc363bb3cc76d::t_efba67df33e392 3-4
+  s_1cc363bb3cc76d::t_97fb320a853132 1-2,5
+apps/docs/media/reference-layout-file-import.json
+  s_1cc363bb3cc76d::t_90a1278748505a 1-2,5
+  s_1cc363bb3cc76d::t_efba67df33e392 3-4
+apps/docs/media/settings-offline-reload-button.json
+  s_1cc363bb3cc76d::t_90a1278748505a 1-2,5
+  s_1cc363bb3cc76d::t_1c83b300dd7e0e 3-4
+apps/docs/media/sharing-community-publish.json
+  s_1cc363bb3cc76d::t_4f70b715336073 1-2,5
+  s_1cc363bb3cc76d::t_efba67df33e392 3-4
+apps/docs/media/settings-labs-tab.json
+  s_1cc363bb3cc76d::t_177e5940614d0c 1-5
+scripts/docs-capture/shots/sharingSettings.ts
+  s_1cc363bb3cc76d::t_486f6469640fae 168-188,192,211
+  s_1cc363bb3cc76d::t_8f67cf824026d7 735,750
+  s_1cc363bb3cc76d::t_ce5a89d6f0ff0b 1-2,5-6,9,12-51,53-72,76-85,87-88,92-95,97-100,102-107,109-115,121-123,131-132,136,140-142,152-162,164-166,189-191,193-194,206-210,212-214,218-220,222-234,241-246,248-251,253-264,271-288,290-291,293-325,331,334-354,580-581,843-845,851-859
+  s_1cc363bb3cc76d::t_75941d4fbdab57 657-658,696
+  s_1cc363bb3cc76d::t_84af3a10ca0e0f 757-759
+  s_1cc363bb3cc76d::t_bf55a01c6e3ab0 116-120,124-130,133-135,137-139,145-151,195-205
+  s_1cc363bb3cc76d::t_03a1f30928cdbb 695
+  s_1cc363bb3cc76d::t_7e02b19f6c5581 662-667
+  s_1cc363bb3cc76d::t_bc8c5225d641a1 420-421,423,428-435,441-451,453-467,477-485,488-495,499,528
+  s_1cc363bb3cc76d::t_bb6e814c69b514 760-763,774-775,777,780,790-793,809,814-816,821-822,824-828,836-837
+  s_1cc363bb3cc76d::t_5650e70b7d80cd 3,10,582-623,634-656,659-661,673,683-687,689-694,697-702,705-727,734,736-749,751-756,764-771,778-779,781-786,789,838-840,849-850
+  s_1cc363bb3cc76d::t_c79dd994c05ca1 7-8,89-91,96,101,167,624-633,672,674-682,688,703-704
+  s_1cc363bb3cc76d::t_cb34dbf90b0d8f 52
+  s_1cc363bb3cc76d::t_c559d9b4775e3f 4,360-399,402-419,422,452,468-476,486-487,496-498,500-527,531-532,539-577,579,846-848
+  s_1cc363bb3cc76d::t_406334d40ad163 400-401,529-530,533-538
+  s_1cc363bb3cc76d::t_13d0b871730869 424-427,436-440
+  s_1cc363bb3cc76d::t_33b3bb882a8647 108,143-144,215-217,221,235-239,247,265-269,289,292,330,332,355-359
+  s_1cc363bb3cc76d::t_729224ebfde188 326-329,333
+  s_1cc363bb3cc76d::t_d89ca9fe85802a 73-75,86,163,240,270,578
+  s_1cc363bb3cc76d::t_59230e54da085f 252
+  s_1cc363bb3cc76d::t_121697a657a2a3 668-671,728-733
+  s_1cc363bb3cc76d::t_713333834e6c4f 772-773,794-808,810-813,818-820,823,829-835
+  s_1cc363bb3cc76d::t_9623152b4c0315 776,787-788,817
+  s_1cc363bb3cc76d::t_37ef25da36011e 11
+apps/docs/media/settings-keyboard-palette.json
+  s_1cc363bb3cc76d::t_27a21f0303f427 1-2,5
+  s_1cc363bb3cc76d::t_177e5940614d0c 3-4
+apps/docs/media/sharing-share-links-popover.json
+  s_1cc363bb3cc76d::t_90a1278748505a 1-2,5
+  s_1cc363bb3cc76d::t_ea1c053036df7b 4
+  s_1cc363bb3cc76d::t_4f70b715336073 3
+apps/docs/media/sharing-live-collaboration-participants.json
+  s_1cc363bb3cc76d::t_b7d78275c279b6 1-2,4-5
+  s_1cc363bb3cc76d::t_c4c72a4941c88b 3
+apps/docs/media/sharing-accounts-sign-in-menu.json
+  s_1cc363bb3cc76d::t_1c83b300dd7e0e 3-4
+  s_1cc363bb3cc76d::t_90a1278748505a 1-2,5
+apps/docs/sharing/live-collaboration.md
+  s_1cc363bb3cc76d::t_8e6c8318bb7ffb 51
+apps/docs/media/sharing-community-gallery.json
+  s_1cc363bb3cc76d::t_4f70b715336073 1-3,5
+  s_1cc363bb3cc76d::t_6038bde174ad38 4
+apps/docs/media/sharing-live-collaboration-grid.json
+  s_1cc363bb3cc76d::t_84af3a10ca0e0f 1,3-5
+  s_1cc363bb3cc76d::t_c4c72a4941c88b 2
+apps/docs/media/settings-spacemouse-general.json
+  s_1cc363bb3cc76d::t_90a1278748505a 3-4
+  s_1cc363bb3cc76d::t_177e5940614d0c 1-2,5
+apps/docs/media/settings-settings-dialog.json
+  s_1cc363bb3cc76d::t_a9505b7919e80a 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6ba13755e6780b798780fc9373db6f5e4d9a71b5",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
