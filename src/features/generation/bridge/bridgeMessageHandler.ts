@@ -346,6 +346,7 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
           pieces: response.pieces,
           format: response.format,
           faceGroups: response.faceGroups,
+          lidFaceGroups: response.lidFaceGroups,
         });
         break;
 
