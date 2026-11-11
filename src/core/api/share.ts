@@ -177,6 +177,8 @@ export interface UpdateShareResponse {
   id: string;
   url: string;
   permission: SharePermission;
+  /** The share's new `metadata.lastUpdatedAt`. Absent from servers that predate it. */
+  lastUpdatedAt?: string;
 }
 
 // Type guards for runtime validation of API responses
@@ -205,7 +207,8 @@ function isUpdateShareResponse(data: unknown): data is UpdateShareResponse {
     'permission' in data &&
     typeof obj.id === 'string' &&
     typeof obj.url === 'string' &&
-    (obj.permission === 'view' || obj.permission === 'edit')
+    (obj.permission === 'view' || obj.permission === 'edit') &&
+    (obj.lastUpdatedAt === undefined || typeof obj.lastUpdatedAt === 'string')
   );
 }
 

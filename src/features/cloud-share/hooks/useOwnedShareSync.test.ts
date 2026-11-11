@@ -8,6 +8,8 @@ import * as shareApi from '@/core/api/share';
 import { ok, err, apiServerError } from '@/core/result';
 import type { LayoutLibrary, CloudShareInfo, Layout } from '@/core/types';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
+import { claimRoomSaves, readOwnCopyRevision } from '@/features/cloud-share/utils';
+import { stampFor } from '@/shared/utils/roomLinkStamp';
 
 // Mock the share API module
 vi.mock('@/core/api/share', () => ({
@@ -178,6 +180,61 @@ describe('useOwnedShareSync', () => {
     });
   });
 
+  describe('own copy revision', () => {
+    beforeEach(() => {
+      localStorage.removeItem('gridfinity-owned-share-revisions');
+      useLibraryStore.setState({ library: createTestLibrary(createCloudShareInfo()) });
+    });
+
+    it('records the link revision the server wrote, with the layout it saved', async () => {
+      vi.mocked(shareApi.updateShare).mockResolvedValue(
+        ok({
+          id: TEST_SHARE_ID,
+          url: `https://example.com/l/${TEST_SHARE_ID}`,
+          permission: 'view',
+          lastUpdatedAt: '2026-11-01T10:00:00.000Z',
+        })
+      );
+
+      renderHook(() => useOwnedShareSync());
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+
+      const uploaded = vi.mocked(shareApi.updateShare).mock.calls[0]?.[2];
+      expect(uploaded).toBe(useLayoutStore.getState().layout);
+      expect(readOwnCopyRevision(TEST_SHARE_ID)).toEqual(
+        stampFor(useLayoutStore.getState().layout, '2026-11-01T10:00:00.000Z')
+      );
+    });
+
+    it("saves and records nothing while the share's loaded room saves the link", async () => {
+      const release = claimRoomSaves(TEST_SHARE_ID);
+      try {
+        renderHook(() => useOwnedShareSync());
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5000);
+        });
+      } finally {
+        release();
+      }
+
+      expect(shareApi.updateShare).not.toHaveBeenCalled();
+      expect(readOwnCopyRevision(TEST_SHARE_ID)).toBeUndefined();
+    });
+
+    it('records nothing when the save fails', async () => {
+      vi.mocked(shareApi.updateShare).mockResolvedValue(err(apiServerError()));
+
+      renderHook(() => useOwnedShareSync());
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+
+      expect(readOwnCopyRevision(TEST_SHARE_ID)).toBeUndefined();
+    });
+  });
+
   describe('debouncing', () => {
     it('debounces sync by 5 seconds', async () => {
       useLibraryStore.setState({
@@ -257,6 +314,82 @@ describe('useOwnedShareSync', () => {
 
       // Should still be 1 call - skipped because fingerprint matches
       expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
+    });
+
+    it('saves the same layout again once a room claimed the share in between', async () => {
+      vi.mocked(shareApi.updateShare).mockResolvedValue(
+        ok({ id: TEST_SHARE_ID, url: `https://example.com/l/${TEST_SHARE_ID}`, permission: 'edit' })
+      );
+      useLibraryStore.setState({
+        library: createTestLibrary(createCloudShareInfo()),
+      });
+      const { rerender } = renderHook(() => useOwnedShareSync());
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+      expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
+
+      claimRoomSaves(TEST_SHARE_ID)();
+      act(() => {
+        useLayoutStore.setState({
+          layout: { ...useLayoutStore.getState().layout },
+          lastEditSource: 'local',
+        });
+      });
+      rerender();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+
+      expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
+    });
+
+    it('saves a layout to a second share even when it saved the same layout to the first', async () => {
+      // Share ids that no room claims in this file, so only the share tells the saves apart.
+      const library = createTestLibrary({ ...createCloudShareInfo(), id: 'unclaimed-first' });
+      const [entry] = library.entries;
+      if (!entry) throw new Error('test library has no entry');
+      const secondLayoutId = layoutId('second-layout-id');
+      useLibraryStore.setState({
+        library: {
+          ...library,
+          entries: [
+            entry,
+            {
+              ...entry,
+              id: secondLayoutId,
+              cloudShare: { ...createCloudShareInfo(), id: 'unclaimed-second' },
+            },
+          ],
+        },
+      });
+      const { rerender } = renderHook(() => useOwnedShareSync());
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+      expect(shareApi.updateShare).toHaveBeenLastCalledWith(
+        'unclaimed-first',
+        TEST_DELETE_TOKEN,
+        expect.any(Object)
+      );
+
+      act(() => {
+        useLayoutStore.setState({
+          activeLayoutId: secondLayoutId,
+          layout: { ...useLayoutStore.getState().layout },
+          lastEditSource: 'local',
+        });
+      });
+      rerender();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+
+      expect(shareApi.updateShare).toHaveBeenLastCalledWith(
+        'unclaimed-second',
+        TEST_DELETE_TOKEN,
+        expect.any(Object)
+      );
     });
 
     it('syncs again when layout actually changes', async () => {
