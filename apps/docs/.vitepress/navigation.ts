@@ -28,6 +28,16 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
     ],
   },
   {
+    text: 'Recipes',
+    items: [
+      { text: 'A screw and small-parts drawer', link: '/recipes/screw-drawer' },
+      { text: 'A deep tool drawer in two layers', link: '/recipes/deep-tool-drawer' },
+      { text: 'A kitchen utensil drawer', link: '/recipes/kitchen-utensil-drawer' },
+      { text: 'Hand tools with custom pockets', link: '/recipes/hand-tool-pockets' },
+      { text: 'An electronics and craft organizer', link: '/recipes/electronics-craft-organizer' },
+    ],
+  },
+  {
     text: 'Core concepts',
     items: [
       { text: 'Units and sizes', link: '/concepts/units' },

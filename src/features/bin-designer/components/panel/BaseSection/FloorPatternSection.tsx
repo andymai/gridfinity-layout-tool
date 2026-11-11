@@ -10,6 +10,7 @@ import { SliderInput } from '@/design-system';
 import { FLOOR_PATTERN_TYPES } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { FeatureToggle } from '../FeatureToggle';
+import { FeatureTip } from '../../FeatureTip';
 import { Hint, SubHeader } from '../shared';
 import { PatternSelector } from '../WallsSection/PatternSelector';
 import { UnavailableFamily } from './BaseSection';
@@ -37,6 +38,7 @@ export function FloorPatternSection() {
         checked={state.floorPatternEnabled}
         onChange={handlers.toggleFloorPattern}
         disabledReason={handlers.floorPatternDisabledReason}
+        badge={<FeatureTip tip="drainageHoles" feature={t('binDesigner.base.floorPattern')} />}
         primaryControls={
           <>
             <PatternSelector

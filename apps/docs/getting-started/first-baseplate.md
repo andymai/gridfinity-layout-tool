@@ -80,3 +80,4 @@ After your first export, a message says <Ui k="baseplate.plannerBridge.message" 
 - [Magnets and screws](../baseplates/magnets-and-screws): magnet sizes, screw holes and magnets under the plate
 - [Split for your print bed](../baseplates/splitting): connector styles, fit and custom splits
 - [Eco plates and stack printing](../baseplates/eco-and-stack-printing): use less filament and print plates in a stack
+- [A kitchen utensil drawer](../recipes/kitchen-utensil-drawer): a half-grid plate with padding, split for a 220 mm bed

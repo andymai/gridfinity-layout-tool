@@ -37,6 +37,7 @@ import { useSwapZoneWithToast } from '@/features/bin-designer/hooks/useSwapZoneW
 import { useActiveColorZones } from '@/features/bin-designer/hooks/useActiveColorZones';
 import { FlatTextClashWarning } from '../shared';
 import { FeatureToggle } from '../FeatureToggle';
+import { FeatureTip } from '../../FeatureTip';
 import { SubHeader } from '../shared';
 import { ColorZoneRow } from './ColorZoneRow';
 import { ColorGroup } from './ColorGroup';
@@ -315,6 +316,7 @@ export function ColorsSection() {
         label={t('binDesigner.group.colors')}
         checked={multiColorEnabled}
         onChange={handleToggleMultiColor}
+        badge={<FeatureTip tip="multiColor" feature={t('binDesigner.group.colors')} />}
         primaryControls={
           <>
             <div className="flex items-center justify-end gap-2">

@@ -5,3 +5,6 @@ export const GITHUB_REPO_URL = 'https://github.com/andymai/gridfinity-layout-too
 export const GITHUB_ISSUES_URL = `${GITHUB_REPO_URL}/issues`;
 export const GITHUB_RELEASES_URL = `${GITHUB_REPO_URL}/releases`;
 export const REDDIT_GRIDFINITY_URL = 'https://www.reddit.com/r/gridfinity/';
+// Same-origin and unslashed, so a self-hosted image links to its own copy and
+// the host's trailing-slash redirect is skipped.
+export const DOCS_URL = '/docs';

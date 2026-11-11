@@ -62,7 +62,11 @@ export function encodeShot(
     take.frames.forEach((f, i) => writeFileSync(join(dir, `${String(i).padStart(4, '0')}.png`), f));
     const posterPng = join(dir, `${String(take.poster).padStart(4, '0')}.png`);
     webp(posterPng, join(outDir, `${id}.${theme}.webp`), size, scale);
-    if (kind === 'still') continue;
+    if (kind === 'still') {
+      // A shot that was a clip before must not leave its video behind.
+      rmSync(join(outDir, `${id}.${theme}.mp4`), { force: true });
+      continue;
+    }
 
     const seconds = take.frames.length / FPS;
     if (seconds < LOOP_FADE_S * 2)

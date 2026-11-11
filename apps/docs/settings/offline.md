@@ -41,6 +41,7 @@ These features need the server, so they do not work offline:
 | [Sign-in and sync](../sharing/accounts-and-sync) | Changes wait in the browser and upload when the connection comes back. |
 | [The community gallery](../sharing/community)    | The gallery doesn't load. It tries again when you are back online.     |
 | [Phone scan](../cutouts/phone-scan)              | The phone can't send the scan to your computer.                        |
+| These docs                                       | The pages don't load. The app does not keep a copy of them.            |
 
 ## How updates arrive
 

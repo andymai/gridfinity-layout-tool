@@ -39,6 +39,18 @@ describe('HelpModal', () => {
     expect(screen.getByPlaceholderText('help.searchPlaceholder')).toHaveFocus();
   });
 
+  it('links to the docs in a new tab, and keeps the link while searching', () => {
+    render(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    const docs = screen.getByRole('link', { name: 'help.readDocs' });
+    expect(docs).toHaveAttribute('href', '/docs');
+    expect(docs).toHaveAttribute('target', '_blank');
+
+    fireEvent.change(screen.getByPlaceholderText('help.searchPlaceholder'), {
+      target: { value: 'rotate' },
+    });
+    expect(screen.getByRole('link', { name: 'help.readDocs' })).toBeInTheDocument();
+  });
+
   it('switches between shortcuts and tips', () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
     expect(screen.getByText('help.commandPaletteTip')).toBeInTheDocument();

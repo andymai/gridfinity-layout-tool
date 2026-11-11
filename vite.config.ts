@@ -9,7 +9,7 @@ import { versionPlugin } from './scripts/vite-plugin-version';
 import { contentRoutesPlugin } from './scripts/vite-plugin-content-routes';
 import { mediapipeAssetsPlugin } from './scripts/vite-plugin-mediapipe-assets';
 import { minifyJsonAssets } from './scripts/vite-plugin-minify-json-assets';
-import { CONTENT_LOCALES, CONTENT_SLUGS } from './scripts/contentRoutes';
+import { CONTENT_LOCALES, CONTENT_SLUGS, DOCS_NAVIGATION } from './scripts/contentRoutes';
 
 // The prerendered content pages, mirroring the rewrites in vercel.json. They are
 // standalone static HTML, reachable from search rather than from inside the app,
@@ -215,6 +215,8 @@ export default defineConfig({
           /^\/sitemap\.xml$/,
           /^\/robots\.txt$/,
           CONTENT_ROUTE,
+          // The docs are a separate static site that the service worker never holds.
+          DOCS_NAVIGATION,
           /^\/storage-bridge\.html$/,
         ],
         runtimeCaching: [
@@ -243,7 +245,9 @@ export default defineConfig({
             // filenames are content-hashed, so a new build is a new URL and a stale
             // copy is unreachable rather than wrong. maxEntries is generous because
             // the whole point is that a given visitor only ever pulls their subset.
-            urlPattern: /\/assets\/.*\.js$/,
+            // The `//host` prefix keeps out /docs/assets/: docs pages are in the
+            // service worker's scope, and their chunks would evict the app's.
+            urlPattern: /\/\/[^/]+\/assets\/.*\.js$/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'lazy-chunks',

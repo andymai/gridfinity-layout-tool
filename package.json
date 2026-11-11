@@ -25,7 +25,7 @@
   ],
   "scripts": {
     "dev": "pnpm run build:content && pnpm run build:en-locale && vite",
-    "build": "pnpm run build:content && pnpm run build:en-locale && tsgo -b && vite build && tsx scripts/build-route-entries.ts",
+    "build": "pnpm run build:content && pnpm run build:en-locale && tsgo -b && vite build && tsx scripts/build-route-entries.ts && pnpm run docs:build && tsx scripts/copy-docs.ts",
     "build:content": "tsx scripts/build-content.ts",
     "gen:seo-images": "tsx scripts/gen-seo-images.ts",
     "gen:webp": "tsx scripts/gen-webp-variants.ts",

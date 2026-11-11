@@ -106,7 +106,7 @@ export function DesignerHeader({ isDesktop, isMobile, nameEditor }: DesignerHead
         /* ---- Desktop action bar ---- */
         <>
           <div className="flex items-center gap-3 min-w-0">
-            <ToolSwitcher />
+            <ToolSwitcher labelsFromXl />
 
             {/* Design name (click to rename inline) */}
             {isEditingName ? (

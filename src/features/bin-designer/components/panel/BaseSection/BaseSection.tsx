@@ -23,6 +23,7 @@ import { PanelSection } from '@/shared/components/PanelSection';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { Button, SegmentedControl, SliderInput } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
+import { FeatureTip } from '../../FeatureTip';
 import {
   FieldLabel,
   Hint,
@@ -276,6 +277,7 @@ export function BaseSection() {
               diameter: state.magnetDiameter,
               depth: state.magnetDepth,
             })}
+            badge={<FeatureTip tip="magnetHoles" feature={t('binDesigner.base.magnetHoles')} />}
           >
             <SliderInput
               label={t('binDesigner.base.magnetDiameter')}
@@ -512,6 +514,7 @@ export function BaseSection() {
               onChange={handlers.toggleLightweight}
               disabledReason={handlers.lightweightDisabledReason}
               valueSummary={t(`binDesigner.lightweightMode.${state.lightweightMode}`)}
+              badge={<FeatureTip tip="lightweightFloor" feature={t('binDesigner.lightweight')} />}
             >
               {/* Relief side (#3524). Nested now that the toggle's blocked case
                   has its own way out: the mode decides whether the feature CAN

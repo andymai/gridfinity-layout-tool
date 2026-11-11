@@ -5,6 +5,7 @@ import { DEFAULT_SETTINGS, useSettingsStore } from '@/core/store';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import { makeUniformLipCells } from '@/features/bin-designer/types/featureColors';
+import en from '@/i18n/locales/en';
 import type {
   FeatureColorConfig,
   LipColorConfig,
@@ -282,5 +283,11 @@ describe('ColorsSection', () => {
     });
     render(<ColorsSection />);
     expect(useDesignerStore.getState().params.featureColors.bottomAccent?.heightMm).toBe(7);
+  });
+
+  it('plays a clip of multi-color from the dot beside its toggle', () => {
+    render(<ColorsSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Multi-color' }));
+    expect(screen.getByText(en['binDesigner.featureTip.multiColor'])).toBeInTheDocument();
   });
 });

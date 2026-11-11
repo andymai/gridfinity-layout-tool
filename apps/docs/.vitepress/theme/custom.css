@@ -67,10 +67,15 @@
   cursor: zoom-in;
 }
 
-.docs-figure-zoom:focus-visible,
 .docs-clip-toggle:focus-visible {
   outline: 2px solid var(--vp-c-brand-1);
   outline-offset: 2px;
+}
+
+/* Inside the button: the frame clips anything drawn outside it. */
+.docs-figure-zoom:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: -3px;
 }
 
 html.dark .docs-only-light,

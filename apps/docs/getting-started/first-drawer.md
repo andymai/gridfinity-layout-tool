@@ -114,3 +114,4 @@ Want the draw hint back? Click <Ui k="sidebar.settings" /> in the header, then c
 - [Make your first baseplate](./first-baseplate): make the plate for this drawer
 - [Place and edit bins](../layouts/placing-bins): all the ways to draw, move and resize bins
 - [The print list and ZIP export](../printing/print-list-and-zip): what each column and file in the export means
+- [A screw and small-parts drawer](../recipes/screw-drawer): a full drawer of labeled bins, from tape measure to print

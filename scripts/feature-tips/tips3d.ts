@@ -30,16 +30,18 @@ export interface Clip {
 
 export interface Tip {
   id: FeatureTipId;
-  /** The feature's colour in the launch sizzle, from the app's preview palette. */
   color: string;
   capture(ctx: TipContext): Promise<Clip>;
 }
 
-async function renderRun(
-  stage: Stage,
-  view: View,
-  steps: readonly { params: ParamOverrides; lid?: number }[]
-): Promise<ThemeFrames[]> {
+interface Step {
+  params: ParamOverrides;
+  lid?: number;
+  /** Label plates shown this far above their seats; see `Stage.setPlateLift`. */
+  plates?: number;
+}
+
+async function renderRun(stage: Stage, view: View, steps: readonly Step[]): Promise<ThemeFrames[]> {
   const frames: ThemeFrames[] = [];
   let built = '';
   for (const step of steps) {
@@ -49,9 +51,29 @@ async function renderRun(
       built = key;
     }
     if (step.lid !== undefined) await stage.setLidOffset(step.lid);
+    if (step.plates !== undefined) stage.setPlateLift(step.plates);
     frames.push(await stage.render(view));
   }
   return frames;
+}
+
+// Long holds on both ends, so the clip reads as before and after.
+async function sweepLoop(
+  stage: Stage,
+  view: View,
+  before: Step,
+  grow: readonly Step[],
+  after: Step
+): Promise<Clip> {
+  const held = 21;
+  const payoff = 30;
+  const out = await renderRun(stage, view, [
+    ...hold(held, before),
+    ...grow,
+    ...hold(payoff, after),
+  ]);
+  const back = out.slice(held, held + grow.length).reverse();
+  return { frames: [...out, ...back], poster: held + grow.length + payoff / 2 };
 }
 
 interface Sweep {
@@ -66,31 +88,81 @@ interface Sweep {
   /** Rounds each swept value, so the frames ask for buildable sizes. */
   step: number;
   camera?: Camera;
+  /** The designs paint their own colour zones, so the part is not tinted. */
+  zoned?: boolean;
 }
 
-/**
- * Plain bin, the feature appearing and growing from `from` to `to`, a hold,
- * then the same frames back. Long holds on both ends, so it reads as before
- * and after.
- */
-function sweepTip({ id, color, base, at, from, to, step, camera = CLIP_CAMERA }: Sweep): Tip {
+function sweepTip({
+  id,
+  color,
+  base,
+  at,
+  from,
+  to,
+  step,
+  camera = CLIP_CAMERA,
+  zoned = false,
+}: Sweep): Tip {
   return {
     id,
     color,
     async capture({ stage }) {
-      stage.setTint(color);
+      stage.setTint(zoned ? null : color);
       await stage.setParams(at(to));
       const view = await stage.fit(camera, await stage.bounds());
       const grow = ramp(30, from, to).map((v) => ({ params: at(Math.round(v / step) * step) }));
-      const before = 21;
-      const after = 30;
-      const out = await renderRun(stage, view, [
-        ...hold(before, { params: base }),
-        ...grow,
-        ...hold(after, { params: at(to) }),
-      ]);
-      const back = out.slice(before, before + grow.length).reverse();
-      return { frames: [...out, ...back], poster: before + grow.length + after / 2 };
+      return sweepLoop(stage, view, { params: base }, grow, { params: at(to) });
+    },
+  };
+}
+
+interface Fade {
+  id: FeatureTipId;
+  color: string;
+  states: readonly ParamOverrides[];
+  camera?: Camera;
+  /** The designs paint their own colour zones, so the part is not tinted. */
+  zoned?: boolean;
+}
+
+/** For a feature with no value to sweep, where the states crossfade instead. */
+function fadeTip({ id, color, states, camera = CLIP_CAMERA, zoned = false }: Fade): Tip {
+  return {
+    id,
+    color,
+    async capture({ stage }) {
+      const last = states[states.length - 1];
+      if (!last || states.length < 2) throw new Error(`${id} needs two states`);
+      stage.setTint(zoned ? null : color);
+      await stage.setParams(last);
+      const view = await stage.fit(camera, await stage.bounds());
+      const shots = await renderRun(
+        stage,
+        view,
+        states.map((params) => ({ params }))
+      );
+      const fade = 12;
+      const holds = [21, ...states.slice(2).map(() => 15), 48];
+      const frames: ThemeFrames[] = [];
+      let poster = 0;
+      for (const [i, shot] of shots.entries()) {
+        const prev = shots[i - 1];
+        if (prev) {
+          for (let k = 1; k <= fade; k++) {
+            frames.push(await stage.blend(prev, shot, easeInOut(k / fade)));
+          }
+        }
+        const held = holds[i] ?? 0;
+        if (i === shots.length - 1) poster = frames.length + Math.floor(held / 2);
+        frames.push(...hold(held, shot));
+      }
+      const end = shots[shots.length - 1];
+      const start = shots[0];
+      if (!end || !start) throw new Error(`${id} rendered nothing`);
+      // Stops one step short: the loop's next frame is the first state itself.
+      for (let k = 1; k < fade; k++)
+        frames.push(await stage.blend(end, start, easeInOut(k / fade)));
+      return { frames, poster };
     },
   };
 }
@@ -194,6 +266,148 @@ const pullTab = sweepTip({
   camera: FACING_FRONT_WALL,
 });
 
+/** Lower walls, so more of the floor shows from the raised camera. */
+const SHALLOW_BIN = { width: 2, depth: 2, height: 3 };
+const FROM_BELOW: Camera = { ...CLIP_CAMERA, el: -50 };
+// The palette's saturated colours all belong to earlier tips. Of the rest,
+// slate, stone and charcoal render too dark to hold the bin's outline on the
+// dark card, so these tips share cloud and carry accents where they have zones.
+const CLOUD = '#e2e8f0';
+
+const LIP_CELLS = ['frontLeft', 'frontRight', 'backRight', 'backLeft'].flatMap((corner) =>
+  [0, 1, 2, 3].map((band) => `lip:${corner}:${band}`)
+);
+
+function zones(
+  body: string,
+  accents: { lip?: string; labelTab?: string; text?: string } = {}
+): Record<string, unknown> {
+  const lip = accents.lip ?? body;
+  return {
+    enabled: true,
+    body,
+    base: body,
+    scoop: body,
+    dividers: body,
+    lid: body,
+    labelTab: accents.labelTab ?? body,
+    text: accents.text ?? body,
+    lip: { corners: 1, bands: 1, cells: Object.fromEntries(LIP_CELLS.map((c) => [c, lip])) },
+  };
+}
+
+const wallPattern = sweepTip({
+  id: 'wallPattern',
+  color: CLOUD,
+  base: TOTE,
+  at: (scale) => ({
+    ...TOTE,
+    wallPattern: {
+      enabled: true,
+      pattern: 'honeycomb',
+      scale,
+      sides: { left: false, right: false, front: true, back: false },
+    },
+  }),
+  from: 0.1,
+  to: 0.9,
+  step: 0.05,
+  camera: FACING_FRONT_WALL,
+});
+
+const drainageHoles = sweepTip({
+  id: 'drainageHoles',
+  color: CLOUD,
+  base: SHALLOW_BIN,
+  at: (scale) => ({ ...SHALLOW_BIN, floorPattern: { enabled: true, pattern: 'round', scale } }),
+  from: 0.3,
+  to: 1,
+  step: 0.1,
+});
+
+const magnetHoles = sweepTip({
+  id: 'magnetHoles',
+  color: CLOUD,
+  base: BIN,
+  at: (magnetDiameter) => ({ ...BIN, base: { style: 'magnet', magnetDiameter } }),
+  from: 4,
+  to: 7,
+  step: 0.5,
+  camera: FROM_BELOW,
+});
+
+const lightweightFloor = fadeTip({
+  id: 'lightweightFloor',
+  color: CLOUD,
+  states: [SHALLOW_BIN, { ...SHALLOW_BIN, base: { lightweight: true } }],
+});
+
+const WALL_WORD = 'SCREWS';
+const WALL_TEXT_COLORS = zones(CLOUD, { text: '#f59e0b' });
+
+const wallText = sweepTip({
+  id: 'wallText',
+  color: CLOUD,
+  zoned: true,
+  base: { ...BIN, featureColors: WALL_TEXT_COLORS },
+  at: (letters) => ({
+    ...BIN,
+    featureColors: WALL_TEXT_COLORS,
+    surfaceText: {
+      walls: { front: WALL_WORD.slice(0, letters) },
+      style: { mode: 'emboss', anchor: 'center', sizeMode: 'fixed', fixedSize: 12 },
+    },
+  }),
+  from: 1,
+  to: WALL_WORD.length,
+  step: 1,
+  camera: FACING_FRONT_WALL,
+});
+
+const LABELLED = { ...BIN, compartments: COMPARTMENTS, label: { enabled: true } };
+
+const multiColor = fadeTip({
+  id: 'multiColor',
+  color: CLOUD,
+  zoned: true,
+  states: [
+    { ...LABELLED, featureColors: zones(CLOUD) },
+    { ...LABELLED, featureColors: zones(CLOUD, { lip: '#fbbf24' }) },
+    { ...LABELLED, featureColors: zones(CLOUD, { lip: '#fbbf24', labelTab: '#f87171' }) },
+  ],
+});
+
+/** How far above its socket each label plate starts before it drops in, in mm. */
+const PLATE_DROP = 18;
+const PLATED = {
+  ...BIN,
+  compartments: { ...COMPARTMENTS, compartmentTexts: ['M3', 'M4'] },
+  // 14 mm is MIN_LABEL_SOCKET_TAB_DEPTH_MM: a shallower shelf builds no socket.
+  label: { enabled: true, mode: 'socket', depth: 14 },
+  // The tint paints the bin; the plates keep the label and text zones.
+  featureColors: zones(CLOUD, { labelTab: '#fbbf24', text: '#334155' }),
+};
+
+const labelPlates: Tip = {
+  id: 'labelPlates',
+  color: CLOUD,
+  async capture({ stage }) {
+    stage.setTint(this.color);
+    await stage.setParams(PLATED);
+    stage.setPlateLift(PLATE_DROP);
+    try {
+      const view = await stage.fit(CLIP_CAMERA, await stage.bounds());
+      const drop = ramp(30, PLATE_DROP, 0).map((plates) => ({ params: PLATED, plates }));
+      return await sweepLoop(stage, view, { params: PLATED, plates: PLATE_DROP }, drop, {
+        params: PLATED,
+        plates: 0,
+      });
+    } finally {
+      stage.setPlateLift(null);
+    }
+  },
+};
+
 /** How far each lid type opens: mm for capping and sliding lids; a hinged lid swings to its stop. */
 // From above, a lift reads shorter than a slide, hence the longer lift.
 const LID_OPEN: Partial<Record<LidAttachment, number>> = { friction: 36, slide: 42 };
@@ -287,4 +501,11 @@ export const TIPS_3D: readonly Tip[] = [
   overhang,
   slant,
   pullTab,
+  wallPattern,
+  drainageHoles,
+  labelPlates,
+  magnetHoles,
+  multiColor,
+  wallText,
+  lightweightFloor,
 ];
