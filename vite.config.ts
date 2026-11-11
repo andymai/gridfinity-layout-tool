@@ -10,6 +10,7 @@ import { contentRoutesPlugin } from './scripts/vite-plugin-content-routes';
 import { mediapipeAssetsPlugin } from './scripts/vite-plugin-mediapipe-assets';
 import { minifyJsonAssets } from './scripts/vite-plugin-minify-json-assets';
 import { CONTENT_LOCALES, CONTENT_SLUGS, DOCS_NAVIGATION } from './scripts/contentRoutes';
+import { manifestScreenshotEntries } from './scripts/manifestScreenshots';
 
 // The prerendered content pages, mirroring the rewrites in vercel.json. They are
 // standalone static HTML, reachable from search rather than from inside the app,
@@ -120,44 +121,7 @@ export default defineConfig({
         background_color: '#0f0f12',
         display: 'standalone',
         start_url: '/',
-        // Regenerate with `ONLY=manifest pnpm run gen:seo-images`.
-        screenshots: [
-          {
-            src: '/screenshots/layout-wide.png',
-            sizes: '1920x1080',
-            type: 'image/png',
-            form_factor: 'wide',
-            label: 'Layout editor with a kitchen drawer of labeled, color-coded bins',
-          },
-          {
-            src: '/screenshots/designer-wide.png',
-            sizes: '1920x1080',
-            type: 'image/png',
-            form_factor: 'wide',
-            label: 'Bin designer with a 3D preview of a multicolor organizer bin',
-          },
-          {
-            src: '/screenshots/baseplate-wide.png',
-            sizes: '1920x1080',
-            type: 'image/png',
-            form_factor: 'wide',
-            label: 'Baseplate generator with a 3D preview of a magnet baseplate',
-          },
-          {
-            src: '/screenshots/layout-narrow.png',
-            sizes: '780x1688',
-            type: 'image/png',
-            form_factor: 'narrow',
-            label: 'Layout editor on a phone',
-          },
-          {
-            src: '/screenshots/designer-narrow.png',
-            sizes: '780x1688',
-            type: 'image/png',
-            form_factor: 'narrow',
-            label: 'Bin designer on a phone',
-          },
-        ],
+        screenshots: manifestScreenshotEntries(),
         shortcuts: [
           { name: 'Bin designer', url: '/designer' },
           { name: 'Baseplate generator', url: '/baseplate' },

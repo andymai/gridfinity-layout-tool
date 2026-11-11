@@ -19,7 +19,7 @@ Your browser can install the Layout Tool as an app. While the Layout Tool is ope
 
 The installed app has the name Gridfinity Layout Tool. It opens in its own window, without the address bar, and starts on the layout editor. It uses the same data as the browser tab, because it is the same site.
 
-To open the bin designer or the baseplate generator directly, right-click the app icon in the taskbar or the dock. On a phone, touch and hold the app icon.
+To open the bin designer or the baseplate generator directly, right-click the app icon in the taskbar or the dock. On Android, touch and hold the app icon.
 
 ## Get ready to work offline
 
