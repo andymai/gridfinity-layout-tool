@@ -357,7 +357,7 @@ function clipToOuterFootprint(
   tabs: Shape3D,
   dims: TabBuildDimensions
 ): Shape3D {
-  const { innerW, innerD, wallThickness, shelfTopZ, tabHeight } = dims;
+  const { innerW, innerD, wallThickness } = dims;
 
   // A tab corner can only poke past the rounded outer corner when
   // wt < R·(1 − 1/√2); at or above that the intersect is a guaranteed no-op,
@@ -367,12 +367,14 @@ function clipToOuterFootprint(
   const outerW = innerW + 2 * wallThickness;
   const outerD = innerD + 2 * wallThickness;
   try {
+    // Spans the tabs' whole height, not just the shelf: embossed glyphs and the
+    // retaining rim stand above it. A cap at the shelf would slice them flat
+    // and leave an untagged cap face that prints in the tab colour.
+    const { zMin, zMax } = getBounds(tabs);
     const footprint = scope.register(
-      sketch(
-        drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS),
-        'XY',
-        shelfTopZ - tabHeight - 0.1
-      ).extrude(tabHeight + 0.2)
+      sketch(drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS), 'XY', zMin - 0.1).extrude(
+        zMax - zMin + 0.2
+      )
     );
     return scope.register(unwrap(intersect(tabs as ValidSolid, footprint as ValidSolid)));
   } catch {
@@ -719,6 +721,8 @@ export const labelTabsFeature: FeatureBuilder = {
         : 'text';
     return compactKey(
       buildCacheKey(
+        // `v13`: the thin-wall footprint clip spans the tabs' full height, so
+        // embossed glyphs on a sub-1.1mm wall keep their height and TEXT tag.
         // `v12`: the shelf datum follows the lid — `labelShelfKeepoutMm`
         // sinks it under an interior-relieving or sliding lid — so the key
         // carries that keepout. Without it, toggling the lid served a shelf
@@ -736,7 +740,7 @@ export const labelTabsFeature: FeatureBuilder = {
         // `v5`: extrudes the shelf COPLANAR_OVERLAP proud (geometry +
         // face tags changed), so older IndexedDB entries must be invalidated.
         // `v4`: added `edges` + `inset` to LabelTabConfig.
-        'v12',
+        'v13',
         socketKeyPart,
         dim.shellKey,
         // The one lid-derived number the shelf geometry consumes.

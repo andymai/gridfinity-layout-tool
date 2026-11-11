@@ -112,6 +112,21 @@ describe('label-tab text color tag', () => {
     expect(Math.min(...text.flatMap((t) => [...t.zs]))).toBeGreaterThanOrEqual(shelfTop - 0.05);
   }, 120_000);
 
+  // Under ~1.1mm the tabs are clipped to the rounded outer footprint. A clip
+  // lower than the glyphs cuts them to a sliver with an untagged cap face,
+  // which prints in the tab colour.
+  it('keeps embossed glyphs full height and TEXT-capped on a thin wall', () => {
+    const p = { ...params('emboss'), wallThickness: 0.8 };
+    const tris = triangles(getGenerateBin()(p));
+    const text = tris.filter((t) => t.tag === FeatureTag.TEXT);
+    const glyphTop = Math.max(...text.flatMap((t) => [...t.zs]));
+
+    expect(glyphTop - tabTopZ(tris)).toBeCloseTo(p.textDefaults.depth, 1);
+    const capped = tris.filter((t) => t.zs.every((z) => Math.abs(z - glyphTop) < 1e-3));
+    expect(capped.length).toBeGreaterThan(0);
+    expect(capped.every((t) => t.tag === FeatureTag.TEXT)).toBe(true);
+  }, 120_000);
+
   it('tags engraved glyph walls and floors TEXT, below the shelf top', () => {
     const m = getGenerateBin()(params('engrave'));
     const tris = triangles(m);
