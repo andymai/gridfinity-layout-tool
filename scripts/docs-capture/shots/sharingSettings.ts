@@ -14,13 +14,12 @@ interface Reply {
   json: unknown;
 }
 
-/** Answers one API call, or returns undefined to leave it to the next handler. */
 type Handler = (path: string, url: URL, method: string) => Reply | undefined;
 
 /**
- * Answers the app's API calls with made-up data, since the dev server has no
- * API. Without an answer to /api/auth/me the session stays unknown and the
- * account button never renders, so every shot here answers it as signed out.
+ * The dev server has no API. Without an answer to /api/auth/me the session
+ * stays unknown and the account button never renders, so every shot here
+ * answers it as signed out.
  */
 async function routeApi(s: DocsSession, ...handlers: Handler[]): Promise<void> {
   const signedOut: Handler = (path) =>
@@ -45,7 +44,6 @@ async function openEditor(s: DocsSession, ...fixtures: FixtureLayout[]): Promise
   await openLayouts(s, ...fixtures);
 }
 
-/** Opens Settings from the header gear on `tab`, off camera. */
 async function openSettings(s: DocsSession, tab: Parameters<typeof label>[0]): Promise<Locator> {
   await s.page
     .locator('header')
@@ -61,7 +59,6 @@ async function openSettings(s: DocsSession, tab: Parameters<typeof label>[0]): P
   return dialog;
 }
 
-/** The first ```json block under `heading` on a docs page: the example the page shows. */
 function pageExample(page: string, heading: string): string {
   const md = readFileSync(resolve(process.cwd(), 'apps/docs', page), 'utf8');
   const after = md.slice(md.indexOf(`## ${heading}`));
@@ -168,7 +165,7 @@ const shortcutsPanel: Shot = {
 const CLOCK = Date.UTC(2026, 10, 2, 16, 30);
 const HOUR = 3600 * 1000;
 
-/** A week of palette use, so the Recent group has something to rank. */
+/** Gives the Recent group something to rank. */
 const PALETTE_HISTORY = Object.fromEntries(
   (
     [
@@ -364,7 +361,6 @@ const reloadButton: Shot = {
 /** A share id has twelve letters and digits (isValidLayoutId). */
 const SHARE_ID = 'Kd7pQ2xVm9Ts';
 
-/** A friend's kitchen drawer, as GET /api/share/:id returns it. */
 const SHARED_DRAWER: FixtureLayout = {
   name: 'Kitchen utensil drawer',
   width: 8,
@@ -416,10 +412,7 @@ const shareBanner: Shot = {
   },
 };
 
-/**
- * The built-in examples whose thumbnails the gallery cards show, with the
- * techniques and size (grid units, height units) that each one has.
- */
+/** Each entry must match the techniques and size of its built-in example. */
 const EXAMPLES: Record<string, { techniques: string[]; size: number[]; workshop?: true }> = {
   'hero-multicolor-organizer': {
     techniques: ['compartments', 'labelTab', 'scoop'],
@@ -445,7 +438,6 @@ const EXAMPLES: Record<string, { techniques: string[]; size: number[]; workshop?
   'toothpick-holder': { techniques: ['lid'], size: [1, 1, 3] },
 };
 
-/** Example, name, author, category, likes, remixes, prints, days since publishing. */
 type Card = [string, string, string, string, number, number, number, number];
 
 /** Made-up gallery records, by makers with made-up handles. */
@@ -467,14 +459,12 @@ const CARDS: Card[] = [
   ['toothpick-holder', 'Toothpick holder', 'benchtop_wren', 'kitchen', 6, 0, 3, 4],
 ];
 
-/** A stable 32-hex public id for each made-up author. */
 function authorId(author: string): string {
   let hex = '';
   for (const ch of author.repeat(8)) hex += ch.charCodeAt(0).toString(16).slice(-1);
   return hex.slice(0, 32).padEnd(32, '0');
 }
 
-/** One card as GET /api/community lists it. Metrics are in mm. */
 function communityCard(
   [example, name, author, category, likes, remixes, prints, daysAgo]: Card,
   i: number
@@ -579,14 +569,11 @@ const publishDialog: Shot = {
   },
 };
 
-/** The share behind the live room: an edit link to the workbench drawer. */
 const ROOM_SHARE_ID = 'Rm4kW8zTq2Lx';
 const ROOM_ID = `gridfinity-${ROOM_SHARE_ID}`;
-/** This browser's anonymous id (localStorage gridfinity-user-id), and the others'. */
 const SELF_UID = 'docs-guest-self';
 const OWNER_UID = 'docs-link-owner';
 const GUEST_UID = 'docs-guest-two';
-/** Liveblocks connection ids: one per browser in the room. */
 const OWNER_ACTOR = 1;
 const GUEST_ACTOR = 2;
 const SELF_ACTOR = 3;
@@ -603,10 +590,7 @@ const editShare: Handler = (path, _url, method) =>
 
 const b64url = (o: object): string => Buffer.from(JSON.stringify(o)).toString('base64url');
 
-/**
- * What /api/liveblocks-auth signs: a room token for this browser. The client
- * reads the payload only; nothing checks the signature.
- */
+/** The client reads the payload only; nothing checks the signature. */
 const roomToken: Handler = (path, _url, method) => {
   if (path !== '/api/liveblocks-auth' || method !== 'POST') return undefined;
   const iat = Math.floor(CLOCK / 1000);
@@ -640,16 +624,12 @@ interface Presence {
 }
 
 interface Room {
-  /** Sets another browser's presence, as the room relays it to this one. */
   presence(actor: number, data: Partial<Presence>): void;
 }
 
 /**
- * Plays the Liveblocks server for one room on a routed WebSocket, so nothing
- * leaves the machine: the room state with two other browsers in it, the
- * stored metadata (with the link owner's id), acks for this browser's storage
- * writes, and the heartbeat. The layout itself comes from this browser, which
- * writes it into the empty room as the app does on a first join.
+ * The layout itself comes from this browser, which writes it into the empty
+ * room as the app does on a first join.
  */
 async function joinRoom(s: DocsSession): Promise<Room> {
   // Without a public key the app never opens a room, so nothing here is used.
@@ -719,7 +699,6 @@ async function joinRoom(s: DocsSession): Promise<Room> {
   };
 }
 
-/** Joins the room on the edit link, with the other two browsers idle in it. */
 async function openRoom(s: DocsSession): Promise<Room> {
   const room = await joinRoom(s);
   await s.open(`/l/${ROOM_SHARE_ID}/workbench`, grid);
@@ -784,10 +763,6 @@ const participants: Shot = {
 
 const easeInOut = (t: number): number => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 
-/**
- * A third person grabs Fuses and drags it two cells to the right, into the
- * empty corner, while the link owner keeps Washers selected.
- */
 const roomGrid: Shot = {
   id: 'sharing-live-collaboration-grid',
   kind: 'clip',
@@ -807,12 +782,10 @@ const roomGrid: Shot = {
     const hold = { x: (ax + bx) / 2, y: (ay + by) / 2 };
     const start = { x: hold.x - cell * 1.6, y: hold.y + cell * 0.9 };
     const pointer = { ...start };
-    /** The guest's pointer in the room's units: 0 to 1 across the grid, from the top left. */
     const at = (x: number, y: number): { x: number; y: number } => ({
       x: (x - area.x) / area.width,
       y: (y - area.y) / area.height,
     });
-    /** Moves the guest's pointer over `frames` frames; `extra` adds to each update. */
     const glide = async (
       frames: number,
       to: { x: number; y: number },

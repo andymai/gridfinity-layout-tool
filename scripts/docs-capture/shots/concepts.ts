@@ -14,11 +14,7 @@ const WINDOW: Rect = { x: 0, y: 0, ...DESKTOP };
 
 const preview = (s: DocsSession): Promise<Rect> => s.box(s.page.locator('canvas').first());
 
-/**
- * Off camera: drags `dx`, `dy` CSS px across a 3D preview from `at`, with the
- * left button to turn the view (up to look from lower) or the right button
- * to pan it, then lets the camera settle.
- */
+/** The left button turns the view (drag up to look from lower), and the right button pans it. */
 async function dragView(
   s: DocsSession,
   at: readonly [number, number],
@@ -38,7 +34,7 @@ async function dragView(
   await s.ui.warm(150);
 }
 
-/** Off camera: turns the wheel over a 3D preview at `at`, zooming out when `notches` is positive. */
+/** A positive `notches` zooms out. */
 async function wheelView(
   s: DocsSession,
   at: readonly [number, number],
@@ -52,13 +48,13 @@ async function wheelView(
   await s.ui.warm(10);
 }
 
-/** A point in the 3D preview clear of the part, to grab the view by. */
+/** A point clear of the part, to grab the view by. */
 async function grip(s: DocsSession): Promise<[number, number]> {
   const c = await preview(s);
   return [c.x + c.width * 0.75, c.y + c.height * 0.5];
 }
 
-/** A 4 x 3 drawer on a 100 mm bed, so its baseplate prints in pieces. */
+/** The 100 mm bed makes the baseplate print in pieces. */
 const SMALL_BED_DRAWER: FixtureLayout = {
   name: 'Workbench',
   width: 4,
@@ -67,7 +63,6 @@ const SMALL_BED_DRAWER: FixtureLayout = {
   printBedSize: 100,
 };
 
-/** The plate in the baseplate generator, then a cut to a bin with its feet and lip. */
 const basicsParts: Shot = {
   id: 'introduction-gridfinity-basics-parts',
   kind: 'clip',
@@ -110,7 +105,6 @@ const binAnatomy: Shot = {
   },
 };
 
-/** Off camera: scrolls the panel that holds `target` so its top sits at `top` (CSS px). */
 async function scrollTo(s: DocsSession, target: Locator, top: number): Promise<void> {
   await target.evaluate((el, y) => {
     let n = el.parentElement;
@@ -185,10 +179,6 @@ const exactShown = (s: DocsSession): Promise<boolean> =>
     return g.status === 'complete' && !g.isDraft;
   });
 
-/**
- * Holds each message to a worker for `window.__docsWorkerDelay` ms once a shot
- * sets it, in send order, as on a slower device.
- */
 function slowWorkers(): void {
   const post = Worker.prototype.postMessage;
   Worker.prototype.postMessage = function (this: Worker, ...args: unknown[]): void {
@@ -199,7 +189,7 @@ function slowWorkers(): void {
   } as typeof post;
 }
 
-/** A height step in close-up, then the one-color draft that the exact model with its orange lip replaces. */
+/** The orange lip shows when the exact model replaces the one-color draft. */
 const previewDraftExact: Shot = {
   id: 'concepts-preview-draft-exact',
   kind: 'clip',
@@ -263,10 +253,7 @@ const previewDraftExact: Shot = {
   },
 };
 
-/**
- * Waits off camera for the split pieces, which build after the bin itself:
- * a quick draft first, then the exact pieces in their place.
- */
+/** The pieces build after the bin: a quick draft first, then the exact pieces in its place. */
 async function waitPieces(s: DocsSession): Promise<void> {
   for (let i = 0; ; i++) {
     const pieces = await s.page.evaluate(async () => {
@@ -284,7 +271,7 @@ async function waitPieces(s: DocsSession): Promise<void> {
   await s.ui.warm(30);
 }
 
-/** A drawer whose layout prints on a 180 mm bed, too small for a 6-unit bin. */
+/** A 180 mm bed is too small for a 6-unit bin. */
 const SMALL_PRINTER: FixtureLayout = {
   name: 'Garage shelf',
   width: 8,
@@ -332,7 +319,6 @@ const printBedSplitBin: Shot = {
   },
 };
 
-/** A desk drawer with one small bin on Layer 2 that rests on a bin of Layer 1. */
 const RESTING: FixtureLayout = {
   name: 'Desk drawer',
   width: 6,
@@ -349,7 +335,6 @@ const RESTING: FixtureLayout = {
   ],
 };
 
-/** Three layers of desk supplies, each resting on the one below. */
 const THREE_LAYERS: FixtureLayout = {
   name: 'Desk drawer',
   width: 6,
@@ -372,11 +357,10 @@ const THREE_LAYERS: FixtureLayout = {
   ],
 };
 
-/** A button of the layout 3D preview, which names its buttons by title only. */
+/** The layout 3D preview names its buttons by title only. */
 const previewButton = (s: DocsSession, title: string): Locator =>
   s.page.locator(`button[title="${title}"]:visible`).first();
 
-/** Off camera: makes `layer` active and opens the layout 3D preview with all layers. */
 async function openLayerPreview(s: DocsSession, layer: string): Promise<void> {
   await s.ui.preClick(
     s.page.getByRole('button', { name: label('layers.selectLayer', { name: layer }) })
@@ -452,10 +436,6 @@ const layersExploded: Shot = {
   },
 };
 
-/**
- * Off camera: saves a bin design to the library on the open page, its params
- * merged into the defaults, and returns its id.
- */
 async function saveDesign(s: DocsSession, name: string, params: Params): Promise<string> {
   return s.page.evaluate(
     async ([n, p]) => {
@@ -492,7 +472,7 @@ async function saveDesign(s: DocsSession, name: string, params: Params): Promise
   );
 }
 
-/** Three bins of one saved design, each printing its own Bin label on the shared tab. */
+/** Each bin prints its own Bin label on the shared tab of the design. */
 const LINKED_LABELS: FixtureLayout = {
   name: 'Fastener drawer',
   width: 6,

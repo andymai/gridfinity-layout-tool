@@ -10,13 +10,11 @@ import type { Params } from './apps';
 
 /** The designer's settings panel, below the app header. */
 const PANEL: Rect = { x: 0, y: 48, width: 319, height: DESKTOP.height - 48 };
-/** Close-ups fill a clip this wide. */
 const CLIP_WIDTH = 640;
 
 const toggle = (s: DocsSession, key: Parameters<typeof label>[0]): Locator =>
   s.page.getByRole('switch', { name: label(key), exact: true }).first();
 
-/** A 4:3 crop of the panel's full width from `top`, for a close-up take. */
 const panelFrame = (top: number): Rect => ({
   x: PANEL.x,
   y: top,
@@ -24,14 +22,12 @@ const panelFrame = (top: number): Rect => ({
   height: (PANEL.width * 3) / 4,
 });
 
-/** A 4:3 crop of the panel around `targets`, for a close-up take. */
 async function closeUp(s: DocsSession, ...targets: Locator[]): Promise<Rect> {
   const boxes: Rect[] = [];
   for (const t of targets) boxes.push(await s.box(t));
   return frameAround(union(...boxes), 12, 4 / 3, PANEL);
 }
 
-/** Off camera: waits for the exact build, then frames the part in the preview. */
 async function partFrame(s: DocsSession): Promise<Rect> {
   await s.ui.hideCursor();
   await s.ui.waitBuilt();
@@ -39,7 +35,6 @@ async function partFrame(s: DocsSession): Promise<Rect> {
   return frameAround(await partBox(s), 40, 4 / 3, canvas);
 }
 
-/** The result of a close-up: the part, held for the poster. */
 async function holdOnPart(s: DocsSession): Promise<void> {
   await s.take(await partFrame(s), async () => {
     s.poster();
@@ -47,7 +42,6 @@ async function holdOnPart(s: DocsSession): Promise<void> {
   });
 }
 
-/** The Dimensions section, from its heading to the Half-grid mode switch. */
 async function dimensionsSection(s: DocsSession): Promise<Rect> {
   const heading = await s.box(
     s.page.getByText(label('binDesigner.dimensions'), { exact: true }).first()
@@ -66,7 +60,6 @@ const dimensions: Shot = {
   },
 };
 
-/** On camera: eases the scroller around `inside` down by `dy` px, as a person scrolls on a little. */
 async function scrollBy(s: DocsSession, inside: Locator, dy: number, frames = 10): Promise<void> {
   const scroller = await inside.evaluateHandle((el) => {
     let n = el.parentElement;
@@ -91,11 +84,7 @@ async function scrollBy(s: DocsSession, inside: Locator, dy: number, frames = 10
   }
 }
 
-/**
- * Custom shape turned on in close-up, a short scroll to its cell grid, the L
- * preset, then the L-shaped bin it builds. Two units deep, so the presets and
- * the whole grid share one close-up.
- */
+/** Two units deep, so the presets and the whole grid share one close-up. */
 const customShape: Shot = {
   id: 'designer-size-and-shape-custom-shape',
   kind: 'clip',
@@ -146,13 +135,11 @@ const viewButton = (s: DocsSession, view: keyof typeof VIEWS): Locator => {
   });
 };
 
-/** Off camera: turns the preview to a preset view and lets the camera settle. */
 async function setView(s: DocsSession, view: keyof typeof VIEWS): Promise<void> {
   await viewButton(s, view).click({ force: true });
   await s.ui.warm(90);
 }
 
-/** The preview below its camera toolbar, for a part zoomed in to fill it. */
 async function belowToolbar(s: DocsSession): Promise<Rect> {
   const canvas = await s.box(s.page.locator('canvas').first());
   const bar = await s.box(viewButton(s, 'front'));
@@ -160,7 +147,6 @@ async function belowToolbar(s: DocsSession): Promise<Rect> {
   return { ...canvas, y: top, height: canvas.y + canvas.height - top };
 }
 
-/** Off camera: wheels the preview camera in on the part, `steps` notches. */
 async function zoomPreview(s: DocsSession, steps: number): Promise<void> {
   const canvas = await s.box(s.page.locator('canvas').first());
   await s.page.mouse.move(canvas.x + canvas.width / 2, canvas.y + canvas.height / 2);
@@ -171,7 +157,6 @@ async function zoomPreview(s: DocsSession, steps: number): Promise<void> {
   await s.ui.warm(60);
 }
 
-/** Rounded lip peak and lip notches picked in close-up, then the notched rim up close. */
 const topRim: Shot = {
   id: 'designer-stacking-top-rim',
   kind: 'clip',
@@ -207,10 +192,6 @@ const topRim: Shot = {
   },
 };
 
-/**
- * Off camera: drags the preview up until the camera looks at the part from
- * below, as a person turns it over to check the underside.
- */
 async function orbitBelow(s: DocsSession): Promise<void> {
   const canvas = await s.box(s.page.locator('canvas').first());
   const x = canvas.x + canvas.width / 2;
@@ -226,10 +207,8 @@ async function orbitBelow(s: DocsSession): Promise<void> {
 }
 
 /**
- * Drainage holes turned on in close-up, then the bin turned over to show them
- * through the feet. The switch adds a note to Lightweight floor, higher in the
- * panel; on a shorter window that note is above the visible part of the panel,
- * so the browser keeps the switch in place as the panel grows.
+ * On this short window, the note the switch adds to Lightweight floor is out of
+ * view above, so the browser keeps the switch in place as the panel grows.
  */
 const drainage: Shot = {
   id: 'designer-walls-drainage',
@@ -261,10 +240,6 @@ const drainage: Shot = {
   },
 };
 
-/**
- * Honeycomb picked in close-up, a scroll to the wall picker, three walls
- * turned off, then the bin from the front with the pattern on that wall alone.
- */
 const wallPattern: Shot = {
   id: 'designer-walls-pattern',
   kind: 'clip',
@@ -306,10 +281,6 @@ const wallPattern: Shot = {
   },
 };
 
-/**
- * Slant turned on and set to 30 degrees in close-up, a short scroll, End
- * support on, then the bin from the side, leaning back onto its wedge.
- */
 const slant: Shot = {
   id: 'designer-special-bins-slant',
   kind: 'clip',
@@ -350,10 +321,6 @@ const slant: Shot = {
   },
 };
 
-/**
- * The lid turned on in close-up, the click-rail lid it starts with, then
- * Hinged picked and the lid standing open on its hinge.
- */
 const lidAttachment: Shot = {
   id: 'designer-lids-attachment',
   kind: 'clip',
@@ -365,7 +332,7 @@ const lidAttachment: Shot = {
       exact: true,
     });
     await s.ui.preReveal(sw);
-    // From the group title down to the attachment choices, which end just inside the frame.
+    // The attachment choices end just inside this frame.
     const group = s.page.getByRole('heading', {
       name: label('binDesigner.group.lid'),
       exact: true,
@@ -396,7 +363,7 @@ const lidAttachment: Shot = {
   },
 };
 
-/** A drawer measured 62 mm tall inside, so the readout has a fit line to report. */
+/** The measured height gives the readout a fit line to report. */
 const MEASURED_DRAWER: FixtureLayout = {
   name: 'Desk drawer',
   width: 9,
@@ -433,12 +400,6 @@ interface Seeding {
   __seed?: { ids?: string[]; error?: string };
 }
 
-/**
- * Off camera: saves `designs` through the library's own save path, removes
- * every other design, renders each thumbnail with the regenerator the
- * designer's boot pass uses, and reloads the designer on the first one.
- * Returns the new ids in order.
- */
 async function seedLibrary(s: DocsSession, designs: readonly LibraryDesign[]): Promise<string[]> {
   await s.open('/designer', designerReady);
   // Started in the background and polled: the renders wait on timers that
@@ -512,7 +473,6 @@ async function seedLibrary(s: DocsSession, designs: readonly LibraryDesign[]): P
   }
 }
 
-/** Off camera: reloads the designer on saved design `id`. */
 async function openDesign(s: DocsSession, id: string): Promise<void> {
   await s.page.evaluate(async (active) => {
     const storage = (await import(
@@ -525,7 +485,6 @@ async function openDesign(s: DocsSession, id: string): Promise<void> {
   await s.dismissToasts();
 }
 
-/** Compartment ids for a cols x rows grid with no merged cells. */
 const cells = (cols: number, rows: number): Params => ({
   cols,
   rows,
@@ -587,7 +546,6 @@ const library: Shot = {
   },
 };
 
-/** A row of round holes for drill bits, 3 to 10 mm, in a solid 3 x 1 bin. */
 const DRILL_HOLES: Params[] = [3, 4, 5, 6, 8, 10].map((d, i) => ({
   id: `bit-${d}mm`,
   shape: 'circle',
@@ -620,7 +578,6 @@ const variant: Shot = {
       },
     ]);
     if (!parent) throw new Error('no parent design');
-    // The storage call behind the library's Create variant, with the width already claimed.
     const child = await s.page.evaluate(async (parentId) => {
       const storage = (await import(
         '/src/features/bin-designer/storage/DesignerStorage.ts' as string
@@ -660,9 +617,8 @@ const variant: Shot = {
 };
 
 /**
- * The Knife Block example from the gallery, in the cut editor, with its
- * middle slot picked so the Knife section shows. The board is zoomed out a
- * step, so the whole block fits beside the inspector.
+ * The shot picks a slot so the Knife section shows, and zooms the board out a
+ * step so the whole block fits beside the inspector.
  */
 const knifeBlock: Shot = {
   id: 'designer-special-bins-knife-block',

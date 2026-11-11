@@ -7,9 +7,8 @@ import { designerReady, openDesigner } from './apps';
 import type { Params } from './apps';
 
 /**
- * First-run cards off and the inspector open. The editor takes 62% of the
- * window: at half, its header wraps Clear all and the pointer readout runs
- * into Duplicate.
+ * The editor takes 62% of the window: at half, its header wraps Clear all and
+ * the pointer readout runs into Duplicate.
  */
 const CUT_EDITOR_STORAGE = {
   'gridfinity-cutout-quickstart-seen': 'true',
@@ -17,7 +16,6 @@ const CUT_EDITOR_STORAGE = {
   'gridfinity-cutout-split': '0.62',
 };
 
-/** A cutout as the draw tools make it, with the fields a shot changes. */
 interface CutoutSpec {
   id: string;
   shape: 'rectangle' | 'circle' | 'polygon' | 'slot';
@@ -27,7 +25,6 @@ interface CutoutSpec {
   y: number;
   width: number;
   depth: number;
-  /** A hexagon's size: sets width and depth the way the Across flats field does. */
   acrossFlats?: number;
   [field: string]: unknown;
 }
@@ -35,10 +32,6 @@ interface CutoutSpec {
 const doneButton = (page: Page): Locator =>
   page.getByRole('button', { name: label('binDesigner.cutoutEditor.done'), exact: true }).first();
 
-/**
- * The bin designer on a solid bin with `cutouts`, in the cutout editor. Each
- * cutout starts from the app's own defaults for its shape.
- */
 async function openCutEditor(
   s: DocsSession,
   name: string,
@@ -98,10 +91,7 @@ async function openCutEditor(
   await s.dismissToasts();
 }
 
-/**
- * Maps board mm (from the inside front-left corner) to screen px, read off
- * the rulers' tick labels, so it follows the editor's own zoom and pan.
- */
+/** Reads the rulers' tick labels, so it follows the editor's own zoom and pan. */
 async function boardToScreen(page: Page): Promise<(mm: [number, number]) => [number, number]> {
   const m = await page.evaluate(() => {
     const rulers = [...document.querySelectorAll('svg')].filter((svg) => {
@@ -138,7 +128,6 @@ async function boardToScreen(page: Page): Promise<(mm: [number, number]) => [num
   return ([x, y]) => [m.x.px0 + (x - m.x.mm0) * m.x.perMm, m.y.px0 + (y - m.y.mm0) * m.y.perMm];
 }
 
-/** The screen box of a board area given in mm by its front-left corner and size. */
 function boardRect(
   toScreen: (mm: [number, number]) => [number, number],
   x: number,
@@ -151,7 +140,6 @@ function boardRect(
   return { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
 }
 
-/** The inside of the bin that cutouts sit in, in mm, as the editor's board shows it. */
 async function interior(s: DocsSession): Promise<{ innerW: number; innerD: number }> {
   return s.page.evaluate(async () => {
     const { useDesignerStore } = (await import(
@@ -165,7 +153,6 @@ async function interior(s: DocsSession): Promise<{ innerW: number; innerD: numbe
   });
 }
 
-/** The inspector dock: the column holding the Properties and Shapes tabs. */
 async function dockBox(s: DocsSession): Promise<Rect> {
   const tab = await s.page
     .getByRole('tab', { name: label('binDesigner.shapeList.tabProperties') })
@@ -184,8 +171,8 @@ async function dockBox(s: DocsSession): Promise<Rect> {
 }
 
 /**
- * Off camera: centres `target` in the dock's own scroller. scrollIntoView
- * would also nudge the editor pane, leaving measured board positions stale.
+ * scrollIntoView would also nudge the editor pane, leaving measured board
+ * positions stale.
  */
 async function dockReveal(s: DocsSession, target: Locator): Promise<void> {
   await target.evaluate((el) => {
@@ -203,7 +190,6 @@ async function dockReveal(s: DocsSession, target: Locator): Promise<void> {
   await s.ui.warm(10);
 }
 
-/** Off camera: selects the cutout under a board point, then parks the pointer off the board. */
 async function selectAt(s: DocsSession, mm: [number, number]): Promise<void> {
   const [x, y] = (await boardToScreen(s.page))(mm);
   await s.page.mouse.click(x, y);
@@ -214,7 +200,6 @@ async function selectAt(s: DocsSession, mm: [number, number]): Promise<void> {
   await s.ui.warm(20);
 }
 
-/** The whole board, in screen px. */
 async function boardBox(s: DocsSession): Promise<Rect> {
   const { innerW, innerD } = await interior(s);
   return boardRect(await boardToScreen(s.page), 0, 0, innerW, innerD);
@@ -293,7 +278,6 @@ const printChecksList: Shot = {
 
 type Pt = [number, number];
 
-/** Points on a circle round `c`, from angle `a0` to `a1` (radians, counterclockwise). */
 function arc(c: Pt, r: number, a0: number, a1: number, steps: number): Pt[] {
   const out: Pt[] = [];
   for (let i = 0; i <= steps; i++) {
@@ -303,10 +287,7 @@ function arc(c: Pt, r: number, a0: number, a1: number, steps: number): Pt[] {
   return out;
 }
 
-/**
- * A 150 mm double open-end wrench outline, counterclockwise: a 13 mm jaw at
- * the left end, a 10 mm jaw at the right, joined by an 11 mm shaft.
- */
+/** The outline runs counterclockwise, as `triangulate` needs. */
 function wrenchOutline(): Pt[] {
   const shaft = 5.5;
   // How far a jaw's lips stand out from the head's centre, along the wrench.
@@ -337,7 +318,7 @@ function wrenchOutline(): Pt[] {
   ];
 }
 
-/** Ear-clipping triangulation of a simple counterclockwise polygon, as index triples. */
+/** The polygon must be simple and counterclockwise. */
 function triangulate(poly: readonly Pt[]): [number, number, number][] {
   const idx = poly.map((_, i) => i);
   const tris: [number, number, number][] = [];
@@ -373,7 +354,6 @@ function triangulate(poly: readonly Pt[]): [number, number, number][] {
   return tris;
 }
 
-/** The wrench outline extruded 6 mm, as a closed binary STL. */
 function wrenchStl(): Buffer {
   const outline = wrenchOutline();
   const thick = 6;
@@ -475,7 +455,6 @@ async function pendingScan(page: Page): Promise<void> {
   );
 }
 
-/** Paper on a desk, in the docs' light or dark tone. */
 const DESK = { light: '#e7e5e4', dark: '#27272a' };
 
 const phoneScanSheet: Shot = {
@@ -501,9 +480,8 @@ const phoneScanSheet: Shot = {
     await sheetButton.click({ force: true });
     await s.ui.warm(6);
     const svg = readFileSync(await (await download).path(), 'utf8');
-    // The saved file, laid over the app as a printed page on a desk. Inline, so
-    // its Helvetica falls back to the app's own sans: headless Chromium has no
-    // Helvetica or Arial and would set the text in a monospace face.
+    // Inline, so its Helvetica falls back to the app's own sans: headless
+    // Chromium has no Helvetica or Arial and would set the text in a monospace face.
     await s.page.evaluate(
       ([markup, desk]) => {
         const layer = document.createElement('div');
@@ -581,9 +559,8 @@ const workshopBuild: Shot = {
 };
 
 /**
- * A 4:3 frame across the 3D preview beside the editor, centred on its middle,
- * where the preview frames the bin. (`partBox` reads the first canvas on the
- * page, which here is the board's, so it cannot place this frame.)
+ * `partBox` reads the first canvas, which here is the board's, so this frame
+ * assumes that the preview centres the bin.
  */
 async function previewFrame(s: DocsSession): Promise<Rect> {
   const canvas = await s.page.evaluate(() => {
@@ -595,7 +572,6 @@ async function previewFrame(s: DocsSession): Promise<Rect> {
   return { x: canvas.x, y: canvas.y + (canvas.height - height) / 2, width: canvas.width, height };
 }
 
-/** Selects all of a number field's text and types `value` on camera. */
 async function typeInto(s: DocsSession, field: Locator, value: string): Promise<void> {
   await s.ui.click(field);
   await s.page.keyboard.press('ControlOrMeta+a');
@@ -624,7 +600,7 @@ const basicsSplit: Shot = {
       .getByRole('switch', { name: label('binDesigner.cutouts.finger.name'), exact: true })
       .first();
     await dockReveal(s, finger);
-    // From the Finger access row down: the split button, then the side B fields in its place.
+    // The side B fields take the split button's place, so one frame shows both in turn.
     const splitArea = async (): Promise<Rect> => {
       // Just under the Scoop radius slider, whose knob would peek in at the top edge.
       const top = (await s.box(finger)).y - 8;
@@ -752,7 +728,6 @@ const arrangingRepeat: Shot = {
   },
 };
 
-/** Off camera: steps the board's zoom with the editor header's buttons. */
 async function editorZoom(
   s: DocsSession,
   key: 'binDesigner.cutoutEditor.zoomIn' | 'binDesigner.cutoutEditor.zoomOut',
@@ -783,8 +758,8 @@ const arrangingRuler: Shot = {
       { id: 'pliers', shape: 'rectangle', ...pliers },
     ]);
     const mid = gauge.y + gauge.depth * 0.7;
-    // Off camera: wheel in on the gap until it is wider than the distance
-    // label, which sits on the line's midpoint and would hide the line's ticks.
+    // The gap must be wider than the distance label, which sits on the line's
+    // midpoint and would hide the line's ticks.
     const gap = (await boardToScreen(s.page))([(gauge.x + gauge.width + pliers.x) / 2, mid]);
     await s.page.mouse.move(...gap);
     for (let i = 0; i < 11; i++) {
@@ -797,8 +772,7 @@ const arrangingRuler: Shot = {
     const dock = await dockBox(s);
     const from = toScreen([gauge.x + gauge.width, mid]);
     const to = toScreen([pliers.x, mid]);
-    // From the corner of the top and left rulers (24 px deep, along the board
-    // canvas's top and left edges) to just past the gap.
+    // The top and left rulers are 24 px deep, along the board canvas's top and left edges.
     const corner = await s.page.evaluate(() => {
       const r = document.querySelector('canvas')?.getBoundingClientRect();
       if (!r) throw new Error('no board canvas');

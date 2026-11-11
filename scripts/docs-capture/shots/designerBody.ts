@@ -9,9 +9,7 @@ type Key = Parameters<typeof label>[0];
 
 /** Below the app header. */
 const WORKSPACE: Rect = { x: 0, y: 48, width: DESKTOP.width, height: DESKTOP.height - 48 };
-/** CSS px a close-up of the panel shows at in the docs. */
 const CLOSE_UP_WIDTH = 640;
-/** The narrowest close-up, in CSS px of the window. */
 const MIN_CLOSE_UP = 460;
 /** The right edge of the side panel at its default width. */
 const PANEL_EDGE = 320;
@@ -26,10 +24,7 @@ const text = (s: DocsSession, key: Key): Locator => texts(s, key).first();
 const customize = (s: DocsSession): Locator =>
   s.page.getByRole('button', { name: label('common.customize'), exact: true });
 
-/**
- * The nearest of `candidates` below (or above) `anchor`, for a control or a
- * heading whose name repeats down the panel.
- */
+/** Use it for a control or a heading whose name repeats down the panel. */
 async function nearest(
   s: DocsSession,
   candidates: Locator,
@@ -55,7 +50,6 @@ async function nearest(
 const below = (s: DocsSession, candidates: Locator, anchor: Locator): Promise<Locator> =>
   nearest(s, candidates, anchor, 'below');
 
-/** Off camera: scrolls the side panel so the top of `target` sits at `y`. */
 async function scrollPanel(s: DocsSession, target: Locator, y: number): Promise<void> {
   await target.evaluate((el, top) => {
     let n = el.parentElement;
@@ -72,17 +66,13 @@ async function scrollPanel(s: DocsSession, target: Locator, y: number): Promise<
 type Step = () => Locator | Promise<Locator>;
 
 interface Placed {
-  /** The control the panel scrolls to. */
   anchor: Locator;
-  /** Where the top of `anchor` sits, CSS px from the top of the window. */
   y: number;
 }
 
 /**
- * Off camera: scrolls the panel to `at`, clicks through `steps`, measures
- * `area`, then starts the design over and scrolls back. A take is framed
- * before it starts, so this is how it frames controls that only show once its
- * own clicks have run.
+ * A take is framed before it starts, so this is how it frames controls that
+ * only show once its own clicks have run.
  */
 async function dryRun(
   s: DocsSession,
@@ -103,11 +93,7 @@ async function dryRun(
   return box;
 }
 
-/**
- * A close-up of the panel at `area`, sized so every close-up shows at the same
- * width. A small area is framed wider, so its text is not blown up past the
- * other close-ups.
- */
+/** A small area is framed wider, so its text is not blown up past the other close-ups. */
 async function closeUp(
   s: DocsSession,
   area: Rect,
@@ -130,7 +116,6 @@ async function closeUp(
   return frame;
 }
 
-/** Clicks each step in turn, as the reader would. */
 async function clickThrough(s: DocsSession, steps: readonly Step[], pause = 0.3): Promise<void> {
   for (const step of steps) {
     await s.ui.click(await step());
@@ -139,9 +124,8 @@ async function clickThrough(s: DocsSession, steps: readonly Step[], pause = 0.3)
 }
 
 /**
- * Off camera: turns the preview by a drag on empty canvas. A drag up lowers
- * the camera, so a negative `dy` looks at the underside; a drag right swings
- * it to the left of the bin.
+ * A drag up lowers the camera, so a negative `dy` looks at the underside; a
+ * drag right swings it to the left of the bin.
  */
 async function orbit(s: DocsSession, dy: number, dx = 0): Promise<void> {
   const c = await s.box(s.page.locator('canvas').first());
@@ -154,7 +138,6 @@ async function orbit(s: DocsSession, dy: number, dx = 0): Promise<void> {
   await s.ui.warm(60);
 }
 
-/** The cut to the built part in the preview, held as the clip's payoff. */
 async function cutToPart(s: DocsSession, hold = 2): Promise<void> {
   await s.ui.hideCursor();
   await s.ui.waitBuilt();
@@ -167,7 +150,6 @@ async function cutToPart(s: DocsSession, hold = 2): Promise<void> {
 
 const MOUNTING_BIN: Params = { width: 3, depth: 3, height: 3 };
 
-/** Magnet holes, then crush ribs and corners only in close-up, then the underside of the bin. */
 const baseMounting: Shot = {
   id: 'designer-base-mounting',
   kind: 'clip',
@@ -202,7 +184,6 @@ const baseMounting: Shot = {
 
 const LIGHTWEIGHT_BIN: Params = { width: 2, depth: 2, height: 3 };
 
-/** Lightweight floor turned on and set to Underside in close-up, then the hollow feet from below. */
 const baseLightweight: Shot = {
   id: 'designer-base-lightweight',
   kind: 'clip',
@@ -241,7 +222,6 @@ const baseLightweight: Shot = {
   },
 };
 
-/** One row of three compartments, as a parts bin with a scoop in each. */
 const SCOOP_BIN: Params = {
   width: 3,
   depth: 2,
@@ -249,7 +229,6 @@ const SCOOP_BIN: Params = {
   compartments: { cols: 3, rows: 1, cells: [0, 1, 2] },
 };
 
-/** Finger scoop turned on and the back wall added in close-up, then the ramps in the bin. */
 const scoop: Shot = {
   id: 'designer-getting-things-out-scoop',
   kind: 'clip',
@@ -292,7 +271,6 @@ const scoop: Shot = {
 
 const PULL_TAB_BIN: Params = { width: 3, depth: 2, height: 4 };
 
-/** Pull tab turned on and the back wall added in close-up, then the two tabs on the bin. */
 const pullTab: Shot = {
   id: 'designer-getting-things-out-pull-tab',
   kind: 'clip',
@@ -323,7 +301,6 @@ const pullTab: Shot = {
   },
 };
 
-/** Four by three cells, every cell its own compartment. */
 const GRID_BIN: Params = {
   width: 4,
   depth: 3,
@@ -331,7 +308,6 @@ const GRID_BIN: Params = {
   compartments: { cols: 4, rows: 3, cells: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] },
 };
 
-/** A drag across the two top-left cells of the compartment grid, then the bin with them merged. */
 const compartmentGrid: Shot = {
   id: 'designer-compartments-grid',
   kind: 'clip',
@@ -369,7 +345,6 @@ const compartmentGrid: Shot = {
   },
 };
 
-/** Three compartments with label tabs on and no captions yet. */
 const TAB_BIN: Params = {
   width: 3,
   depth: 1,
@@ -381,7 +356,6 @@ const TAB_BIN: Params = {
 const tabCaption = (s: DocsSession, n: number): Locator =>
   s.page.getByRole('textbox', { name: label('binDesigner.tabEngravedTextAriaLabel', { n }) });
 
-/** Three captions typed into the label list, Enter moving to the next row, then the tabs on the bin. */
 const tabList: Shot = {
   id: 'designer-labels-and-text-tab-list',
   kind: 'clip',
@@ -412,7 +386,6 @@ const tabList: Shot = {
 
 const WALL_TEXT_BIN: Params = { width: 3, depth: 2, height: 4 };
 
-/** Wall text turned on and CABLES typed in the Front box, then the front of the bin. */
 const wallText: Shot = {
   id: 'designer-labels-and-text-wall-text',
   kind: 'clip',
@@ -464,7 +437,7 @@ const wallText: Shot = {
   },
 };
 
-/** Two labeled compartments with a scoop; the tabs print white and the text black once multi-color is on. */
+/** The tabs print white and the text black once multi-color is on. */
 const COLOR_BIN: Params = {
   width: 2,
   depth: 2,
@@ -475,7 +448,6 @@ const COLOR_BIN: Params = {
   featureColors: { labelTab: '#f5f5f5', text: '#1f2937' },
 };
 
-/** Multi-color turned on and the lip set to orange in close-up, then the colored bin. */
 const colorZones: Shot = {
   id: 'designer-colors-zones',
   kind: 'clip',
@@ -539,7 +511,6 @@ const colorZones: Shot = {
   },
 };
 
-/** Two compartments with swappable plates: M3 with a bolt icon, M4 with none. */
 const SOCKET_BIN: Params = {
   width: 4,
   depth: 1,
@@ -554,7 +525,6 @@ const SOCKET_BIN: Params = {
   label: { enabled: true, mode: 'socket' },
 };
 
-/** `area` padded, and kept inside the side panel. */
 function panelCrop(area: Rect): Rect {
   const x = Math.max(4, area.x - 12);
   return {
@@ -632,10 +602,8 @@ const BENTO_VIEW = { width: 1680, height: 940 };
 /** Label tabs on, as typing a compartment label in the Bento workspace turns them on. */
 const BENTO_BIN: Params = { width: 4, depth: 3, height: 6, label: { enabled: true } };
 
-/** Five compartments on an 8 x 6 drawing grid, the first fused into an L. */
 const BENTO_DRAWING = {
   grid: { cols: 8, rows: 6 },
-  /** Two rectangles fused into one L shape. */
   fused: [
     { col: 0, row: 0, w: 2, h: 6 },
     { col: 2, row: 0, w: 3, h: 2 },
@@ -654,11 +622,9 @@ const BENTO_DRAWING = {
     { col: 5, row: 0, text: 'Flux' },
     { col: 7, row: 0, text: 'Tips' },
   ],
-  /** The compartment selected in the panel, with its floor raised for short tips. */
   raised: { col: 7, row: 0, mm: 20 },
 };
 
-/** The Bento workspace with five drawn compartments and one selected, its floor raised. */
 const bento: Shot = {
   id: 'designer-compartments-bento',
   kind: 'still',
@@ -715,7 +681,6 @@ const bento: Shot = {
     );
     await s.ui.waitBuilt();
     await s.dismissToasts();
-    // The workspace ends where the 3D preview begins.
     const preview = await s.box(s.page.locator('canvas').first());
     await s.still({ x: 0, y: 48, width: preview.x, height: BENTO_VIEW.height - 48 });
   },

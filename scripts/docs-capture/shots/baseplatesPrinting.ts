@@ -27,7 +27,6 @@ const PLATE: Params = {
 const KITCHEN: FixtureLayout = { name: 'Kitchen', width: 6, depth: 4, height: 10 };
 const VAN: FixtureLayout = { name: 'Van drawer', width: 4, depth: 3, height: 8 };
 
-/** The baseplate generator on `layout`, with `plate` and `drawer` merged into its file. */
 async function openPlate(
   s: DocsSession,
   layout: FixtureLayout,
@@ -43,7 +42,7 @@ async function openPlate(
   await waitBaseplate(s);
 }
 
-/** Renames the plate design the active layout uses, where the header and the library read it. */
+/** The header and the library read the plate name from storage and the registry. */
 async function nameActivePlate(s: DocsSession, name: string): Promise<void> {
   await s.page.evaluate(async (n) => {
     type Res = { ok: boolean; value?: { id: string; name: string; updatedAt: string } };
@@ -85,7 +84,6 @@ const view = (s: DocsSession, key: 'baseplate.isoView' | 'baseplate.topView'): L
 const toggle = (s: DocsSession, name: string): Locator =>
   s.page.getByRole('switch', { name, exact: true });
 
-/** A 4:3 close-up of the panel, `above` CSS px over `target`. */
 async function panelCloseUp(s: DocsSession, target: Locator, above: number): Promise<Rect> {
   const p = await panel(s);
   const t = await s.box(target);
@@ -98,7 +96,6 @@ async function plateFrame(s: DocsSession, margin = 28): Promise<Rect> {
 
 const ease = (t: number): number => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 
-/** On camera, scrolls the panel until the top of `target` is at `y`. */
 async function scrollPanelTo(
   s: DocsSession,
   target: Locator,
@@ -127,22 +124,16 @@ async function scrollPanelTo(
   }
 }
 
-/** Clip width in the docs, in CSS px. */
 const CLIP_WIDTH = 640;
 
 interface BeforeAfter {
   closeUp: Rect;
-  /** Where the cursor waits in the close-up: on nothing that shows a hover state. */
+  /** Put it on nothing that shows a hover state. */
   rest: [number, number];
-  /** The preview frame; the whole plate when absent. */
   plate?: Rect;
   act(): Promise<void>;
 }
 
-/**
- * Before and after for one panel control: the plate, a close-up of the
- * control in use, then the rebuilt plate in the same frame.
- */
 async function beforeAfter(
   s: DocsSession,
   { closeUp, rest, plate: frame, act }: BeforeAfter
@@ -405,7 +396,7 @@ const splittingMap: Shot = {
   },
 };
 
-/** A 6 by 4 tool drawer for a 180 mm bed, where the screwdriver bin must split. */
+/** On a 180 mm bed, the screwdriver bin must split. */
 const TOOL_DRAWER: FixtureLayout = {
   name: 'Tool drawer',
   width: 6,
@@ -504,7 +495,6 @@ const formatsDialog: Shot = {
   },
 };
 
-/** All sixteen lip cells in one color. */
 function lipCells(color: string): Record<string, string> {
   const cells: Record<string, string> = {};
   for (const corner of ['frontLeft', 'frontRight', 'backRight', 'backLeft'])

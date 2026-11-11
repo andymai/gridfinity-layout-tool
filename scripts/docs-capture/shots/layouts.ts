@@ -13,8 +13,8 @@ const WINDOW: Rect = { x: 0, y: 0, ...DESKTOP };
 const WORKSPACE: Rect = { x: 0, y: 48, width: DESKTOP.width, height: DESKTOP.height - 48 };
 
 /**
- * The payoff hold as a take of its own on the same crop: frames join the clip
- * only when a take ends, so `s.poster()` inside a take marks its first frame.
+ * Frames join the clip only when a take ends, so `s.poster()` inside a take
+ * marks its first frame.
  */
 async function payoff(s: DocsSession, area: Rect, seconds: number): Promise<void> {
   await s.take(area, async () => {
@@ -23,7 +23,6 @@ async function payoff(s: DocsSession, area: Rect, seconds: number): Promise<void
   });
 }
 
-/** Four bins on the grid, three waiting in the stash, a 2 x 2 gap at the back right. */
 const TOOL_DRAWER: FixtureLayout = {
   name: 'Tool drawer',
   width: 5,
@@ -73,7 +72,6 @@ const placingStash: Shot = {
   },
 };
 
-/** Bins on every cell but a 2 x 2 gap at the back right. */
 const GAP_DRAWER: FixtureLayout = {
   name: 'Tool drawer',
   width: 6,
@@ -98,7 +96,6 @@ interface CommunityFixture {
   category: string;
   techniques: string[];
   likes: number;
-  /** Merged into the designer defaults; `width`, `depth` and `height` in units. */
   params: Params & { width: number; depth: number; height: number };
 }
 
@@ -194,11 +191,7 @@ const COMMUNITY: CommunityFixture[] = [
   },
 ];
 
-/**
- * Builds each design in the bin designer and takes its card picture there, as
- * a publish does, then answers the gallery's list request with the cards.
- * Designs the gap filter hides need no picture.
- */
+/** Designs the gap filter hides need no picture. */
 async function serveCommunity(
   s: DocsSession,
   designs: CommunityFixture[],
@@ -252,7 +245,6 @@ async function serveCommunity(
   );
 }
 
-/** The button pressed and a drag across the gap, then a cut to the designs that fit it. */
 const findBinsToolbar: Shot = {
   id: 'layouts-find-bins-toolbar',
   kind: 'clip',
@@ -286,9 +278,8 @@ const findBinsToolbar: Shot = {
 };
 
 /**
- * Four bins of different heights in a loose row at the left, on the bottom
- * layer. The selection toolbar's left edge sits at the selection's centre, so
- * a selection on the left keeps the toolbar over the grid.
+ * The selection toolbar's left edge sits at the selection's centre, so a
+ * selection on the left keeps the toolbar over the grid.
  */
 const BENCH_DRAWER: FixtureLayout = {
   name: 'Bench drawer',
@@ -319,19 +310,15 @@ interface PageHooks {
   __docs: { keycap(label: string, x: number, y: number): void; clearKeycaps(): void };
 }
 
-/**
- * A bin's centre. A click near a bin's bottom edge selected its neighbour
- * instead, so clicks go to the middle.
- */
+/** A click near a bin's bottom edge selected its neighbour instead, so clicks go to the middle. */
 async function middle(s: DocsSession, target: Locator): Promise<[number, number]> {
   const b = await s.box(target);
   return [b.x + b.width / 2, b.y + b.height / 2];
 }
 
 /**
- * A click with Ctrl held. The kit clicks through raw input events, which carry
- * no modifier keys, so the press goes through Playwright's mouse once the drawn
- * cursor is there.
+ * The kit clicks through raw input events, which carry no modifier keys, so the
+ * press goes through Playwright's mouse once the drawn cursor is there.
  */
 async function ctrlClick(s: DocsSession, target: Locator): Promise<void> {
   const [x, y] = await middle(s, target);
@@ -352,7 +339,6 @@ async function ctrlClick(s: DocsSession, target: Locator): Promise<void> {
   await s.ui.hold(0.3);
 }
 
-/** A keycap held on screen at the bottom of `frame`, as `s.keys` draws one. */
 async function showKeycap(s: DocsSession, text: string, frame: Rect): Promise<void> {
   await s.page.evaluate(([t, x, y]) => (window as unknown as PageHooks).__docs.keycap(t, x, y), [
     text,
@@ -367,7 +353,6 @@ async function clearKeycaps(s: DocsSession): Promise<void> {
 
 const SELECTED = ['Pliers', 'Sockets', 'M3', 'Fuses'] as const;
 
-/** One click, then three Ctrl+clicks, and the selection toolbar appears above the bins. */
 const multiSelectToolbar: Shot = {
   id: 'layouts-multi-select-toolbar',
   kind: 'clip',
@@ -403,7 +388,6 @@ const multiSelectToolbar: Shot = {
   },
 };
 
-/** Three layers, each bin resting fully on the one below; the tallest stack is 9 of 12u. */
 const DEEP_DRAWER: FixtureLayout = {
   name: 'Deep drawer',
   width: 5,
@@ -428,7 +412,6 @@ const DEEP_DRAWER: FixtureLayout = {
   ],
 };
 
-/** The left panel's full width, from `top` to `bottom`. */
 async function panelCrop(s: DocsSession, top: number, bottom: number): Promise<Rect> {
   const panel = await s.box(s.page.locator('aside').first());
   return { x: panel.x, y: top, width: panel.width, height: bottom - top };
@@ -455,9 +438,8 @@ const layersPanel: Shot = {
 };
 
 /**
- * The screen box (CSS px) of the bins in the layout editor's 3D preview. Each
- * layer's bins are one merged mesh of 36 triangles a bin; floor planes, text
- * and markers have far fewer, so they do not widen the box.
+ * Each layer's bins are one merged mesh of 36 triangles a bin; floor planes,
+ * text and markers have far fewer, so they do not widen the box.
  */
 async function binsBox(s: DocsSession): Promise<Rect> {
   return s.page.evaluate(() => {
@@ -527,7 +509,6 @@ async function binsBox(s: DocsSession): Promise<Rect> {
   });
 }
 
-/** Opens the layout editor's 3D preview, expanded to the window. */
 async function expandPreview(s: DocsSession): Promise<void> {
   await s.page
     .getByRole('button', { name: label('toolbar.show3dPreview') })
@@ -542,10 +523,6 @@ async function expandPreview(s: DocsSession): Promise<void> {
   await s.ui.warm(40);
 }
 
-/**
- * Zooms the preview out with the wheel until the bins are at most `height`
- * tall, then pans with a right drag to centre them on `at`.
- */
 async function fitPreview(s: DocsSession, height: number, at: [number, number]): Promise<Rect> {
   const [cx, cy] = [DESKTOP.width / 2, DESKTOP.height / 2];
   await s.page.mouse.move(cx, cy);
@@ -576,7 +553,6 @@ async function fitPreview(s: DocsSession, height: number, at: [number, number]):
 /** Above the preview's shortcut bar and below its camera buttons. */
 const STAGE: Rect = { x: 0, y: 52, width: DESKTOP.width, height: 740 };
 
-/** All three layers stacked, then E lifts them apart. */
 const layersExploded: Shot = {
   id: 'layouts-layers-exploded',
   kind: 'clip',
@@ -617,7 +593,7 @@ const layersExploded: Shot = {
   },
 };
 
-/** A 6u bin on a 3u bin under a drawer measured at 50 mm: the stack is too tall. */
+/** The 50 mm measured height makes the stack too tall. */
 const DESK_DRAWER: FixtureLayout = {
   name: 'Desk drawer',
   width: 4,
@@ -665,7 +641,6 @@ const drawerCeiling: Shot = {
   },
 };
 
-/** A 6 x 4 grid in a drawer measured at 260 x 180 x 60 mm: 8 and 12 mm to spare. */
 const MEASURED_DRAWER: FixtureLayout = {
   name: 'Tool drawer',
   width: 6,
@@ -700,7 +675,6 @@ const drawerGridSize: Shot = {
   },
 };
 
-/** The five default categories, with bins in the first two. */
 const KITCHEN_DRAWER: FixtureLayout = {
   name: 'Kitchen drawer',
   width: 6,
@@ -743,7 +717,7 @@ const categoriesPanel: Shot = {
 
 type PackedBin = [w: number, d: number, label: string, cat: string];
 
-/** Bins packed left to right in rows from the front: a drawer that only has to read as one. */
+/** Each drawer only has to read as a drawer, so a plain row packing is enough. */
 function packed(
   name: string,
   width: number,
@@ -785,7 +759,6 @@ const CRAFT_CATEGORIES = [
   { name: 'Paint', color: '#fbbf24' },
 ];
 
-/** Nine drawers; `folder` is the path of folder names each one is filed under. */
 const LIBRARY: { folder: string[]; layout: FixtureLayout }[] = [
   {
     folder: ['Garage'],
@@ -895,7 +868,6 @@ const LIBRARY: { folder: string[]; layout: FixtureLayout }[] = [
   },
 ];
 
-/** Files each layout of `LIBRARY` in its folder, through the library's own folder rules. */
 async function fileLibrary(s: DocsSession): Promise<void> {
   await s.page.evaluate(
     async (placements) => {
