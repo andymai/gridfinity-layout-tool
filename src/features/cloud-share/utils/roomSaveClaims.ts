@@ -5,8 +5,12 @@
  */
 const claims = new Map<string, number>();
 
+/** How many times a room claimed each share; it never goes down. */
+const claimCounts = new Map<string, number>();
+
 export function claimRoomSaves(shareId: string): () => void {
   claims.set(shareId, (claims.get(shareId) ?? 0) + 1);
+  claimCounts.set(shareId, (claimCounts.get(shareId) ?? 0) + 1);
   let released = false;
   return () => {
     if (released) return;
@@ -19,4 +23,12 @@ export function claimRoomSaves(shareId: string): () => void {
 
 export function roomSavesShare(shareId: string): boolean {
   return claims.has(shareId);
+}
+
+/**
+ * Changes each time a room claims the share. A save made before a claim may
+ * no longer be what the link holds: the room can save other content.
+ */
+export function roomClaimCount(shareId: string): number {
+  return claimCounts.get(shareId) ?? 0;
 }

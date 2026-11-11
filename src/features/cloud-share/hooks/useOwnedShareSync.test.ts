@@ -316,6 +316,82 @@ describe('useOwnedShareSync', () => {
       expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
     });
 
+    it('saves the same layout again once a room claimed the share in between', async () => {
+      vi.mocked(shareApi.updateShare).mockResolvedValue(
+        ok({ id: TEST_SHARE_ID, url: `https://example.com/l/${TEST_SHARE_ID}`, permission: 'edit' })
+      );
+      useLibraryStore.setState({
+        library: createTestLibrary(createCloudShareInfo()),
+      });
+      const { rerender } = renderHook(() => useOwnedShareSync());
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+      expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
+
+      claimRoomSaves(TEST_SHARE_ID)();
+      act(() => {
+        useLayoutStore.setState({
+          layout: { ...useLayoutStore.getState().layout },
+          lastEditSource: 'local',
+        });
+      });
+      rerender();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+
+      expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
+    });
+
+    it('saves a layout to a second share even when it saved the same layout to the first', async () => {
+      // Share ids that no room claims in this file, so only the share tells the saves apart.
+      const library = createTestLibrary({ ...createCloudShareInfo(), id: 'unclaimed-first' });
+      const [entry] = library.entries;
+      if (!entry) throw new Error('test library has no entry');
+      const secondLayoutId = layoutId('second-layout-id');
+      useLibraryStore.setState({
+        library: {
+          ...library,
+          entries: [
+            entry,
+            {
+              ...entry,
+              id: secondLayoutId,
+              cloudShare: { ...createCloudShareInfo(), id: 'unclaimed-second' },
+            },
+          ],
+        },
+      });
+      const { rerender } = renderHook(() => useOwnedShareSync());
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+      expect(shareApi.updateShare).toHaveBeenLastCalledWith(
+        'unclaimed-first',
+        TEST_DELETE_TOKEN,
+        expect.any(Object)
+      );
+
+      act(() => {
+        useLayoutStore.setState({
+          activeLayoutId: secondLayoutId,
+          layout: { ...useLayoutStore.getState().layout },
+          lastEditSource: 'local',
+        });
+      });
+      rerender();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+
+      expect(shareApi.updateShare).toHaveBeenLastCalledWith(
+        'unclaimed-second',
+        TEST_DELETE_TOKEN,
+        expect.any(Object)
+      );
+    });
+
     it('syncs again when layout actually changes', async () => {
       useLibraryStore.setState({
         library: createTestLibrary(createCloudShareInfo()),
