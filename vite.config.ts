@@ -109,13 +109,59 @@ export default defineConfig({
       // except manifest icons (icon-192, icon-512) which are excluded via globIgnores
       // since they're auto-added by vite-plugin-pwa from manifest.icons below.
       manifest: {
+        // Pinned to the identity Chrome derived from start_url before an id
+        // existed. Any other value splits existing installs into a second app.
+        id: '/',
         name: 'Gridfinity Layout Tool',
         short_name: 'Gridfinity',
-        description: 'Design Gridfinity drawer layouts for 3D printing',
+        description:
+          'Plan Gridfinity drawer layouts, design custom bins and baseplates, and export them for 3D printing.',
         theme_color: '#0f0f12',
         background_color: '#0f0f12',
         display: 'standalone',
         start_url: '/',
+        // Regenerate with `ONLY=manifest pnpm run gen:seo-images`.
+        screenshots: [
+          {
+            src: '/screenshots/layout-wide.png',
+            sizes: '1920x1080',
+            type: 'image/png',
+            form_factor: 'wide',
+            label: 'Layout editor with a kitchen drawer of labeled, color-coded bins',
+          },
+          {
+            src: '/screenshots/designer-wide.png',
+            sizes: '1920x1080',
+            type: 'image/png',
+            form_factor: 'wide',
+            label: 'Bin designer with a 3D preview of a multicolor organizer bin',
+          },
+          {
+            src: '/screenshots/baseplate-wide.png',
+            sizes: '1920x1080',
+            type: 'image/png',
+            form_factor: 'wide',
+            label: 'Baseplate generator with a 3D preview of a magnet baseplate',
+          },
+          {
+            src: '/screenshots/layout-narrow.png',
+            sizes: '780x1688',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'Layout editor on a phone',
+          },
+          {
+            src: '/screenshots/designer-narrow.png',
+            sizes: '780x1688',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'Bin designer on a phone',
+          },
+        ],
+        shortcuts: [
+          { name: 'Bin designer', url: '/designer' },
+          { name: 'Baseplate generator', url: '/baseplate' },
+        ],
         icons: [
           {
             src: '/icons/icon-192.png',
@@ -143,6 +189,8 @@ export default defineConfig({
         // Exclude manifest icons from glob - they're auto-added via manifest.icons
         // This prevents duplicate precache entries
         globIgnores: [
+          // Manifest screenshots: only the install dialog loads them.
+          'screenshots/**',
           'icons/icon-192.png',
           'icons/icon-512.png',
           'storage-bridge.html',

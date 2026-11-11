@@ -15,7 +15,7 @@
  */
 
 import { chromium } from '@playwright/test';
-import type { Browser, Page } from '@playwright/test';
+import type { Browser, BrowserContextOptions, Page } from '@playwright/test';
 import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -23,6 +23,7 @@ const BASE = process.env.BASE_URL ?? 'http://localhost:5173';
 const LANDING_OUT = resolve(process.cwd(), 'public/images/landing');
 const OG_OUT = resolve(process.cwd(), 'public/og');
 const SERP_OUT = resolve(process.cwd(), 'public/images/serp');
+const MANIFEST_OUT = resolve(process.cwd(), 'public/screenshots');
 
 const SHOT_VIEWPORT = { width: 1200, height: 675 };
 const OG_VIEWPORT = { width: 1200, height: 630 };
@@ -30,6 +31,7 @@ const OG_VIEWPORT = { width: 1200, height: 630 };
 // SERP_THUMBNAIL_PX in scripts/build-content.ts, which declares these
 // dimensions in the ImageObject.
 const SERP_VIEWPORT = { width: 1200, height: 1200 };
+const SHOT_FRAME: BrowserContextOptions = { viewport: SHOT_VIEWPORT, deviceScaleFactor: 2 };
 
 // ---------------------------------------------------------------------------
 // Seeded layouts
@@ -104,6 +106,31 @@ const KITCHEN_DRAWER: SeedLayout = {
   ],
 };
 
+// Deeper than wide, so it fills a phone screen in portrait.
+const DESK_DRAWER: SeedLayout = {
+  name: 'Desk Drawer',
+  drawer: { width: 6, depth: 9, height: 6 },
+  categories: [
+    { id: 'cat-writing', name: 'Writing', color: '#fbbf24' },
+    { id: 'cat-cutting', name: 'Cutting', color: '#f87171' },
+    { id: 'cat-office', name: 'Office', color: '#4ade80' },
+    { id: 'cat-tech', name: 'Tech', color: '#38bdf8' },
+  ],
+  bins: [
+    { x: 0, y: 7, width: 2, depth: 2, label: 'Pens', category: 'cat-writing' },
+    { x: 2, y: 7, width: 2, depth: 2, label: 'Pencils', category: 'cat-writing' },
+    { x: 4, y: 7, width: 2, depth: 2, label: 'Erasers', category: 'cat-writing' },
+    { x: 0, y: 5, width: 3, depth: 2, label: 'Scissors', category: 'cat-cutting' },
+    { x: 3, y: 5, width: 3, depth: 2, label: 'Tape', category: 'cat-office' },
+    { x: 0, y: 3, width: 2, depth: 2, label: 'Clips', category: 'cat-office' },
+    { x: 2, y: 3, width: 2, depth: 2, label: 'Pins', category: 'cat-office' },
+    { x: 4, y: 3, width: 2, depth: 2, label: 'Notes', category: 'cat-writing' },
+    { x: 0, y: 1, width: 4, depth: 2, label: 'Cables', category: 'cat-tech' },
+    { x: 4, y: 1, width: 2, depth: 2, label: 'USB', category: 'cat-tech' },
+    { x: 0, y: 0, width: 6, depth: 1, label: 'Rulers', category: 'cat-cutting' },
+  ],
+};
+
 function buildLayoutPayload(seed: SeedLayout): object {
   return {
     version: '1.0',
@@ -169,12 +196,16 @@ async function seedPlannerPage(
   );
 }
 
-async function capturePlanner(browser: Browser, seed: SeedLayout, outFile: string): Promise<void> {
-  const page = await browser.newPage({ viewport: SHOT_VIEWPORT, deviceScaleFactor: 2 });
+async function capturePlanner(
+  browser: Browser,
+  seed: SeedLayout,
+  outFile: string,
+  frame: BrowserContextOptions = SHOT_FRAME
+): Promise<void> {
+  const page = await browser.newPage(frame);
   try {
     await seedPlannerPage(page, seed, 'dark');
     await page.goto(BASE);
-    await page.waitForSelector('[role="application"]', { timeout: 30000 });
     await page.waitForFunction(
       (count) => document.querySelectorAll('[data-bin-id]').length >= count,
       seed.bins.length,
@@ -330,20 +361,35 @@ async function captureSerpThumbnail(browser: Browser, spec: SerpSpec): Promise<v
 // Baseplate maker screenshot
 // ---------------------------------------------------------------------------
 
-async function captureBaseplate(browser: Browser, outFile: string): Promise<void> {
-  const page = await browser.newPage({ viewport: SHOT_VIEWPORT, deviceScaleFactor: 2 });
+async function captureBaseplate(
+  browser: Browser,
+  outFile: string,
+  frame: BrowserContextOptions = SHOT_FRAME
+): Promise<void> {
+  const page = await browser.newPage(frame);
   try {
     await seedPlannerPage(page, TOOL_DRAWER, 'dark');
     await page.goto(`${BASE}/baseplate`);
     await page.waitForSelector('canvas', { timeout: 60000 });
     // A 3D assembled iso view with magnet holes reads better than the
     // default top-down exploded view.
-    const magnetSwitch = page.getByRole('switch', { name: /magnet/i });
+    const magnetSwitch = page.getByRole('switch', { name: 'Magnet holes', exact: true });
     if ((await magnetSwitch.count()) > 0) await magnetSwitch.click();
     await page.getByRole('button', { name: 'Assembled' }).click();
     await page.getByRole('button', { name: /Iso/ }).click();
     // Baseplate preview generates via the worker; give it time to draw.
     await page.waitForTimeout(15000);
+    await page.waitForFunction(() => !document.body.innerText.includes('Refining'), undefined, {
+      timeout: 180000,
+      polling: 500,
+    });
+    // The magnet switch click scrolls the settings panel down to it.
+    await page.evaluate(() => {
+      for (const el of document.querySelectorAll<HTMLElement>('*')) {
+        if (el.scrollTop > 0) el.scrollTop = 0;
+      }
+    });
+    await page.waitForTimeout(500);
     writeFileSync(outFile, await page.screenshot({ type: 'png' }));
     console.log(`wrote ${outFile}`);
   } finally {
@@ -437,6 +483,107 @@ async function captureDrawerBaseplate(browser: Browser, render: DrawerRender): P
   } finally {
     await page.close();
   }
+}
+
+// ---------------------------------------------------------------------------
+// Web app manifest screenshots
+// ---------------------------------------------------------------------------
+
+// Chrome's richer install dialog accepts only PNG or JPEG, each side 320 to
+// 3840 px, the long side at most 2.3x the short side, and one aspect ratio per
+// form factor. vite.config.ts lists these files in the manifest.
+const MANIFEST_WIDE: BrowserContextOptions = {
+  viewport: { width: 1440, height: 810 },
+  deviceScaleFactor: 4 / 3,
+};
+const MANIFEST_NARROW: BrowserContextOptions = {
+  viewport: { width: 390, height: 844 },
+  deviceScaleFactor: 2,
+  isMobile: true,
+  hasTouch: true,
+};
+
+interface DesignerStoreModule {
+  useDesignerStore: {
+    getState(): {
+      newDesign(kind: 'bin'): void;
+      setParams(params: unknown): void;
+      setDesignName(name: string): void;
+      generation: { status: string; isDraft: boolean };
+    };
+  };
+}
+
+async function captureManifestDesigner(
+  browser: Browser,
+  frame: BrowserContextOptions,
+  outFile: string
+): Promise<void> {
+  const page = await browser.newPage(frame);
+  try {
+    await page.addInitScript(() => {
+      window.localStorage.setItem(
+        'gridfinity-settings-v1',
+        JSON.stringify({ theme: 'dark', dismissedHints: ['designer-touch'] })
+      );
+      window.localStorage.setItem('gridfinity-designer-quickstart-seen', 'true');
+      window.localStorage.setItem('gridfinity-designer-planner-bridge-seen', 'true');
+      window.localStorage.setItem('gridfinity-onboarding-welcome-seen', 'true');
+    });
+    await page.goto(`${BASE}/designer`);
+    await page.waitForSelector('canvas', { timeout: 60000 });
+    await page.evaluate(async () => {
+      const { useDesignerStore } = (await import(
+        '/src/features/bin-designer/store/designer.ts' as string
+      )) as DesignerStoreModule;
+      const { HERO_EXAMPLES } = (await import(
+        '/src/features/bin-designer/data/examples/heroes.ts' as string
+      )) as { HERO_EXAMPLES: Array<{ id: string; params: unknown }> };
+      const hero = HERO_EXAMPLES.find((e) => e.id === 'hero-multicolor-organizer');
+      if (!hero) throw new Error('hero-multicolor-organizer example is missing');
+      const store = useDesignerStore.getState();
+      store.newDesign('bin');
+      // The store freezes what it holds, and some setters write into their input.
+      store.setParams(structuredClone(hero.params));
+      store.setDesignName('Multicolor Organizer');
+    });
+    for (let i = 0; ; i++) {
+      const status = await page.evaluate(async () => {
+        const { useDesignerStore } = (await import(
+          '/src/features/bin-designer/store/designer.ts' as string
+        )) as DesignerStoreModule;
+        const g = useDesignerStore.getState().generation;
+        return g.status === 'complete' && !g.isDraft ? 'built' : g.status;
+      });
+      if (status === 'built') break;
+      if (status === 'error') throw new Error('designer generation failed');
+      if (i >= 400) throw new Error('designer generation did not finish within 120 s');
+      await page.waitForTimeout(300);
+    }
+    // The iso preset leaves wide margins. The narrow layout has no room to spare.
+    const viewport = page.viewportSize();
+    if (viewport && viewport.width > viewport.height) {
+      await page.mouse.move(viewport.width * 0.62, viewport.height * 0.55);
+      for (let i = 0; i < 3; i++) {
+        await page.mouse.wheel(0, -240);
+        await page.waitForTimeout(120);
+      }
+    }
+    await page.waitForTimeout(1500);
+    writeFileSync(outFile, await page.screenshot({ type: 'png' }));
+    console.log(`wrote ${outFile}`);
+  } finally {
+    await page.close();
+  }
+}
+
+async function captureManifestScreenshots(browser: Browser): Promise<void> {
+  const out = (name: string): string => resolve(MANIFEST_OUT, name);
+  await capturePlanner(browser, KITCHEN_DRAWER, out('layout-wide.png'), MANIFEST_WIDE);
+  await captureManifestDesigner(browser, MANIFEST_WIDE, out('designer-wide.png'));
+  await captureBaseplate(browser, out('baseplate-wide.png'), MANIFEST_WIDE);
+  await capturePlanner(browser, DESK_DRAWER, out('layout-narrow.png'), MANIFEST_NARROW);
+  await captureManifestDesigner(browser, MANIFEST_NARROW, out('designer-narrow.png'));
 }
 
 // ---------------------------------------------------------------------------
@@ -688,6 +835,7 @@ async function main(): Promise<void> {
   mkdirSync(LANDING_OUT, { recursive: true });
   mkdirSync(OG_OUT, { recursive: true });
   mkdirSync(SERP_OUT, { recursive: true });
+  mkdirSync(MANIFEST_OUT, { recursive: true });
   const browser = await chromium.launch();
   try {
     const only = process.env.ONLY?.split(',').map((s) => s.trim());
@@ -770,6 +918,9 @@ async function main(): Promise<void> {
     }
     if (want('drawers')) {
       for (const render of DRAWER_RENDERS) await captureDrawerBaseplate(browser, render);
+    }
+    if (want('manifest')) {
+      await captureManifestScreenshots(browser);
     }
     if (want('og')) {
       await renderOgCards(browser);
