@@ -162,6 +162,8 @@ function createLayoutSaver(
     if (trigger === 'edit') {
       trackLayoutSaveFailure(error.code, error.message, failureCount);
     }
+    // A save that succeeded just before this queued one started a timer back to idle.
+    window.clearTimeout(savedTimer);
     onStatus('error');
 
     const message = getUserMessage(error);

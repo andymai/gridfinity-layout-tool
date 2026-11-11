@@ -764,6 +764,36 @@ describe('useAutoSave', () => {
       expect(newestWrite.drawer.width).toBe(14);
     });
 
+    it('keeps the failure when an edit queued behind a successful save fails', async () => {
+      let finishFirstSave = (): void => {};
+      save.mockImplementationOnce(
+        (id, _layout, library) =>
+          new Promise((resolve) => {
+            finishFirstSave = () => resolve(saveResultFor(id, library));
+          })
+      );
+      const { result } = renderHook(() => useAutoSave());
+
+      editLayout(12);
+      await advance(SAVE_DEBOUNCE_MS);
+      editLayout(14);
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(save).toHaveBeenCalledTimes(1);
+
+      save.mockResolvedValue(err(storageQuotaExceeded()));
+      finishFirstSave();
+      await settle();
+      expect(save).toHaveBeenCalledTimes(2);
+      expect(result.current).toBe('error');
+
+      await advance(2000);
+      expect(save).toHaveBeenCalledTimes(3);
+      expect(result.current).toBe('error');
+
+      await advance(500);
+      expect(result.current).toBe('error');
+    });
+
     it.each(['focus', 'online'])('retries right away when the window fires %s', async (type) => {
       save.mockResolvedValueOnce(err(storageQuotaExceeded()));
       const { result } = renderHook(() => useAutoSave());
