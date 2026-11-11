@@ -46,6 +46,25 @@ describe('HeaderSupportLinks', () => {
     expect(screen.getByLabelText('header.helpAndShortcuts')).toBeInTheDocument();
   });
 
+  it('shows the docs icon in the bar on desktop, and its label from 2xl', () => {
+    render(<HeaderSupportLinks />);
+    const docs = screen.getByRole('link', { name: 'header.openDocs' });
+    expect(docs).toHaveAttribute('href', '/docs');
+    expect(docs).toHaveAttribute('target', '_blank');
+    expect(docs).toHaveClass('hidden', 'lg:inline-flex');
+    expect(docs).not.toHaveClass('inline-flex');
+    expect(screen.getByText('header.docs')).toHaveClass('hidden', '2xl:inline');
+  });
+
+  it('keeps the Feedback label for the widest screens, where the docs label also fits', () => {
+    render(<HeaderSupportLinks />);
+    expect(screen.getByLabelText('header.sendFeedback')).toHaveTextContent('header.sendFeedback');
+    expect(screen.getByLabelText('header.sendFeedback').querySelector('span')).toHaveClass(
+      'hidden',
+      'min-[1680px]:inline'
+    );
+  });
+
   it('renders the settings cog and opens settings via the global event (#4034)', () => {
     const dispatch = vi.spyOn(window, 'dispatchEvent');
     render(<HeaderSupportLinks />);
@@ -62,14 +81,16 @@ describe('HeaderSupportLinks', () => {
     render(<HeaderSupportLinks />);
     expect(screen.queryByText('header.starOnGithubLong')).not.toBeInTheDocument();
     expect(screen.queryByText('common.redditCommunity')).not.toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'header.docs' })).not.toBeInTheDocument();
     expect(screen.getByLabelText('header.moreLinks')).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('renders GitHub and r/gridfinity as real links inside the overflow', () => {
+  it('renders Docs, GitHub and r/gridfinity as real links inside the overflow', () => {
     render(<HeaderSupportLinks />);
 
     fireEvent.click(screen.getByLabelText('header.moreLinks'));
 
+    expect(screen.getByRole('menuitem', { name: 'header.docs' })).toHaveAttribute('href', '/docs');
     expect(screen.getByText('header.starOnGithubLong').closest('a')).toHaveAttribute(
       'href',
       'https://github.com/andymai/gridfinity-layout-tool'
@@ -152,6 +173,7 @@ describe('HeaderSupportLinks', () => {
       expect(screen.queryByLabelText('header.sendFeedback')).toBeNull();
       expect(screen.queryByLabelText('header.helpAndShortcuts')).toBeNull();
       expect(screen.queryByLabelText('header.supportOnKofi')).toBeNull();
+      expect(screen.queryByRole('link', { name: 'header.openDocs' })).toBeNull();
     });
 
     it('still reaches every action through the overflow', () => {
@@ -162,6 +184,10 @@ describe('HeaderSupportLinks', () => {
       expect(screen.getByRole('menuitem', { name: 'header.helpAndShortcuts' })).toBeInTheDocument();
       expect(screen.getByRole('menuitem', { name: 'header.supportOnKofi' })).toBeInTheDocument();
       expect(screen.getByText('header.starOnGithubLong')).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: 'header.docs' })).toHaveAttribute(
+        'href',
+        '/docs'
+      );
     });
 
     it('dispatches the help event from the overflow', () => {

@@ -37,3 +37,13 @@ export const CONTENT_SLUGS = [
   'gridfinity-ikea-malm',
   'gridfinity-ikea-helmer',
 ] as const;
+
+// Where the user docs (apps/docs) are served. The service worker's navigation
+// denylist and scripts/copy-docs.ts read it; the VitePress base, the
+// vercel.json docs rewrites and docker/nginx.conf repeat it, and
+// check-docker-parity.test.ts holds those to it.
+export const DOCS_PREFIX = '/docs';
+
+// Workbox's NavigationRoute tests its denylist against pathname + search, so a
+// query or hash may follow the prefix: /docs?utm_source=help is a docs page too.
+export const DOCS_NAVIGATION = new RegExp(`^${DOCS_PREFIX}(?:[/?#]|$)`);

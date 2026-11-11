@@ -427,6 +427,7 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       const expectedHrefs = [
+        '/docs',
         '/what-is-gridfinity',
         '/guide',
         '/gridfinity-generator',

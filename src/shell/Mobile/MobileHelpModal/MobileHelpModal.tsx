@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { IconButton, Input, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { DocsLink } from '@/shared/components/DocsLink';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { getAllHelpEntries } from '@/shell/Modals/HelpModal/helpEntryAggregator';
 import { searchHelpEntries } from '@/shell/Modals/HelpModal/helpSearch';
@@ -120,14 +121,17 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
             <h2 id="mobile-help-title" style={STYLES.title}>
               {t('mobile.help')}
             </h2>
-            <IconButton
-              size="lg"
-              onClick={handleClose}
-              className="w-10 h-10"
-              aria-label={t('common.close')}
-            >
-              <XIcon />
-            </IconButton>
+            <div className="flex items-center gap-1">
+              <DocsLink label={t('help.readDocs')} />
+              <IconButton
+                size="lg"
+                onClick={handleClose}
+                className="w-10 h-10"
+                aria-label={t('common.close')}
+              >
+                <XIcon />
+              </IconButton>
+            </div>
           </div>
 
           {/* Search */}

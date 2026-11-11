@@ -29,6 +29,7 @@ describe('MobileAboutStrip', () => {
       'href',
       '/gridfinity-generator'
     );
+    expect(screen.getByRole('link', { name: 'header.docs' })).toHaveAttribute('href', '/docs');
   });
 
   it('keeps the definitional copy in the DOM behind a collapsed disclosure', () => {

@@ -4,9 +4,11 @@ import { Button, IconButton, Menu } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { trackEvent } from '@/shared/analytics/posthog';
+import { DocsLink } from '@/shared/components/DocsLink';
 import { LanguageSelector } from '@/shared/components/LanguageSelector';
 import { GITHUB_ICON_PATH, ICON_PATHS, REDDIT_ICON_PATH } from '@/shared/constants/iconPaths';
 import {
+  DOCS_URL,
   GITHUB_ISSUES_URL,
   GITHUB_REPO_URL,
   KOFI_URL,
@@ -15,15 +17,15 @@ import {
 
 /**
  * Shared header support links: Language selector, Feedback, Help, an overflow
- * menu (GitHub, r/gridfinity), and the Ko-fi tip button.
+ * menu (Docs, GitHub, r/gridfinity), and the Ko-fi tip button.
  *
  * Used in the top-right of all three desktop headers (grid planner, bin designer, baseplate generator)
  * to provide a consistent set of support/engagement actions, and in `compact`
  * form below desktop wherever a header has no menu of its own to reach Settings.
  *
- * The two outbound links sit in the overflow rather than the bar: the header
- * has to hold the design name and the export controls at every width, and
- * those are the actions a user came here for.
+ * The links sit in the overflow rather than the bar: the header has to hold
+ * the design name and the export controls at every width, and those are the
+ * actions a user came here for. Docs is the exception, in the bar from lg up.
  */
 export interface HeaderSupportLinksProps {
   /**
@@ -147,6 +149,18 @@ export function HeaderSupportLinks({
         </>
       )}
       <Menu.Item
+        href={DOCS_URL}
+        icon={
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            {ICON_PATHS.bookOpen.map((d) => (
+              <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+            ))}
+          </svg>
+        }
+      >
+        {t('header.docs')}
+      </Menu.Item>
+      <Menu.Item
         href={GITHUB_REPO_URL}
         icon={
           <svg fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
@@ -220,8 +234,18 @@ export function HeaderSupportLinks({
             d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
           />
         </svg>
-        <span className="hidden lg:inline">{t('header.sendFeedback')}</span>
+        <span className="hidden min-[1680px]:inline">{t('header.sendFeedback')}</span>
       </Button>
+
+      {/* Docs is an icon until 2xl and Feedback's label waits for 1680px: the
+          header has to keep room for the design name, and the Feedback label
+          gives back more width than the Docs icon takes. */}
+      <DocsLink
+        label={t('header.docs')}
+        ariaLabel={t('header.openDocs')}
+        className="hidden lg:inline-flex"
+        labelClassName="hidden 2xl:inline"
+      />
 
       {/* Help */}
       <Button

@@ -174,9 +174,9 @@ values feed `version.json`; without them it reports an unknown commit. The
 source maps are for error-tracking upload and nothing serves them.
 
 `dist/` then holds the app shell, the prerendered content pages as
-directories with an `index.html`, the hashed `assets/`, the geometry kernels
-and the service worker. The minimum a static host needs, and what
-`docker/nginx.conf` does in full:
+directories with an `index.html`, the hashed `assets/`, the geometry kernels,
+the service worker and the user docs in `docs/`. The minimum a static host
+needs, and what `docker/nginx.conf` does in full:
 
 - Serve `/assets/*` as immutable for a year; serve `sw.js`, `index.html` and
   `manifest.webmanifest` with `max-age=0, must-revalidate`; serve
@@ -186,6 +186,8 @@ and the service worker. The minimum a static host needs, and what
 - Answer the in-app routes `/supporters`, `/community`, `/s/<id>`,
   `/l/<id>` and `/scan/<id>` with the shell, and everything else that does not
   exist with a 404, never with the shell.
+- Serve `/docs/<page>` from `docs/<page>.html`, and answer a missing `/docs/*`
+  path with `docs/404.html` and a 404 status.
 - Answer `/api/*` with a 503; the app treats that as "feature unavailable".
 - Set the same security headers the container sets (they are listed in the
   config).
