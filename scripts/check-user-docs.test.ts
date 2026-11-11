@@ -2,12 +2,14 @@ import { describe, it, expect } from 'vitest';
 import {
   checkAppLink,
   checkDocLinks,
+  checkMedia,
   checkPage,
   checkScreenshotIds,
   checkSidebar,
   collectProblems,
   docsForStagedSources,
   headingAnchors,
+  mediaFiles,
 } from './check-user-docs';
 import type { DocPage } from './check-user-docs';
 
@@ -187,6 +189,42 @@ describe('checkDocLinks', () => {
     };
     expect(checkDocLinks([home, page('apps/docs/designer/walls.md', '')], exists)).toEqual([
       'apps/docs/index.md: link "/designer/gone" has no page',
+    ]);
+  });
+});
+
+describe('checkMedia', () => {
+  const pages = [page('apps/docs/a.md', '<Screenshot id="a-still" /> <Screenshot id="a-clip" />')];
+  const manifest = {
+    'a-still': { kind: 'still', width: 400, height: 300 },
+    'a-clip': { kind: 'clip', width: 640, height: 480 },
+  } as const;
+  const all = [
+    'manifest.json',
+    ...mediaFiles('a-still', manifest['a-still']),
+    ...mediaFiles('a-clip', manifest['a-clip']),
+  ];
+
+  it('accepts captures that fill a page and have both themes', () => {
+    expect(all).toHaveLength(7);
+    expect(checkMedia(pages, manifest, all)).toEqual([]);
+  });
+
+  it('reports a missing theme, an orphan entry and a stray file', () => {
+    const problems = checkMedia(
+      pages,
+      { ...manifest, gone: { kind: 'still', width: 1, height: 1 } },
+      [
+        ...all.filter((f) => f !== 'a-clip.dark.mp4'),
+        'gone.light.webp',
+        'gone.dark.webp',
+        'old.png',
+      ]
+    );
+    expect(problems).toEqual([
+      'apps/docs/media: a-clip.dark.mp4 is missing for "a-clip"',
+      'apps/docs/media/manifest.json: "gone" fills no <Screenshot> on any page',
+      'apps/docs/media: old.png is not in the manifest',
     ]);
   });
 });

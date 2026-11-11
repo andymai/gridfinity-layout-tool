@@ -31,12 +31,12 @@ export interface Rect {
 
 const easeInOut = (t: number): number => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 
-function clockInit(): void {
+function clockInit(fixedEpoch: number | null): void {
   const w = window as unknown as Record<string, unknown>;
   w.__name = (f: unknown) => f;
   let now = 0;
   let seed = 4242;
-  const epoch = Date.now();
+  const epoch = fixedEpoch ?? Date.now();
   Math.random = () => {
     seed = (seed + 0x6d2b79f5) | 0;
     let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
@@ -141,8 +141,11 @@ interface PageHooks {
 
 export interface UiSession {
   page: Page;
-  /** Starts recording `crop` (CSS px, 4:3), re-rasterised to fill the frame. */
-  record(crop: Rect): Promise<void>;
+  /**
+   * Starts recording `crop` (CSS px, 4:3), re-rasterised to fill the frame, or
+   * at `scale` image px per CSS px.
+   */
+  record(crop: Rect, scale?: number): Promise<void>;
   /** Stops recording and returns the frames since `record`. */
   stop(): Buffer[];
   warm(frames: number): Promise<void>;
@@ -165,17 +168,27 @@ export interface UiSession {
   close(): Promise<void>;
 }
 
+export interface UiOptions {
+  /** Defaults to 4, for close-ups magnified 3 to 4x. */
+  deviceScaleFactor?: number;
+  /** Image px per CSS px in each frame. Defaults to filling FRAME_PX.width. */
+  outputScale?: number;
+  /** A fixed start for Date.now, so dates on screen stay the same between takes. */
+  epoch?: number;
+}
+
 export async function openUi(
   viewport: { width: number; height: number },
   theme: Theme,
-  storage: Record<string, string>
+  storage: Record<string, string>,
+  options: UiOptions = {}
 ): Promise<UiSession> {
   const browser: Browser = await chromium.launch({ args: GPU_ARGS });
   const ctx = await browser.newContext({
     viewport,
-    // Close-ups magnify 3 to 4x; canvases keep the backing store they were
-    // given, so they need the density up front to stay sharp.
-    deviceScaleFactor: 4,
+    // Canvases keep the backing store they were given, so they need the
+    // density up front to stay sharp when a frame magnifies them.
+    deviceScaleFactor: options.deviceScaleFactor ?? 4,
     colorScheme: theme,
     serviceWorkers: 'block',
   });
@@ -186,12 +199,13 @@ export async function openUi(
       // A storage-less page still renders; it just starts from defaults.
     }
   }, storage);
-  await ctx.addInitScript(clockInit);
+  await ctx.addInitScript(clockInit, options.epoch ?? null);
   const page = await ctx.newPage();
   page.on('pageerror', (e) => console.error('pageerror', e.message));
   const cdp: CDPSession = await ctx.newCDPSession(page);
 
   let crop: Rect | null = null;
+  let cropScale: number | undefined;
   let frames: Buffer[] = [];
   let cx = viewport.width / 2;
   let cy = viewport.height / 2;
@@ -204,7 +218,7 @@ export async function openUi(
     if (!crop) return;
     const { data } = await cdp.send('Page.captureScreenshot', {
       format: 'png',
-      clip: { ...crop, scale: FRAME_PX.width / crop.width },
+      clip: { ...crop, scale: cropScale ?? options.outputScale ?? FRAME_PX.width / crop.width },
     });
     frames.push(Buffer.from(data, 'base64'));
   };
@@ -239,8 +253,9 @@ export async function openUi(
 
   const session: UiSession = {
     page,
-    async record(rect) {
+    async record(rect, scale) {
       crop = rect;
+      cropScale = scale;
       frames = [];
       // A scaled capture re-rasterises the page, and a WebGL canvas that has not
       // redrawn since comes back blank; one discarded capture and a step let it.

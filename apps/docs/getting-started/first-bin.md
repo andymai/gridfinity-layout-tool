@@ -56,7 +56,7 @@ Open the <Ui k="binDesigner.group.interior" /> group. A new design already uses 
 
 The bin designer adds walls between the compartments, and a line below the steppers shows the size of each compartment in millimeters. You can use up to 12 columns and 12 rows.
 
-<Screenshot id="getting-started-first-bin-compartments" alt="The interior group with three columns and two rows, and the bin with six compartments in the preview." spec="Bin designer, desktop 1440 px, 3 x 2 bin, 4 height units. In the interior group, set columns to 3 and rows to 2. Show the panel and the preview side by side." />
+<Screenshot id="getting-started-first-bin-compartments" alt="Clicking the Columns and Rows steppers to 3 columns and 2 rows, then the 3D preview of the bin with six compartments." spec="Bin designer, 3 x 2 bin, 4 height units. In the Interior group, set Columns to 3 and Rows to 2 in close-up, then show the bin in the preview." />
 
 ## Step 5: Add a label tab
 

@@ -36,7 +36,7 @@ On your first visit, you get an empty layout. On a desktop screen, the grid is 1
    - <Ui k="drawerDims.depthLabel" />
    - <Ui k="drawerDims.heightLabel" />
 
-<Screenshot id="getting-started-first-drawer-measured-size" alt="The grid size group in the left sidebar, with the measured drawer size and a suggestion card that offers a grid fit." spec="Layout editor, desktop 1440 px, default empty layout. Add a measured size of 400 x 300 x 80 mm and press Enter. Crop to the grid size group with the suggestion card." />
+<Screenshot id="getting-started-first-drawer-measured-size" alt="Typing a measured drawer size of 400 by 300 by 80 mm into the Grid size group. A card then suggests a grid that fits." spec="Layout editor, desktop 1440 px, default empty layout. Add a measured size of 400 x 300 x 80 mm and press Enter. Crop to the grid size group with the suggestion card." />
 
 Your measurement doesn't resize the grid on its own. Instead, a card suggests the largest grid that fits, and shows how much spare room it leaves.
 
@@ -54,7 +54,7 @@ The measured height also sets <Ui k="sidebar.drawerHeight" />. Once you place bi
 
 Drag across the empty cells you want the bin to cover. The bin appears and stays selected, so you can edit it right away. It gets the height of the active layer, and the right panel shows <Ui k="rightPanel.binProperties" />.
 
-<Screenshot id="getting-started-first-drawer-draw-bin" alt="A new 2 by 3 bin on the grid, selected, with its properties in the right panel." spec="Layout editor, desktop 1440 px, grid 9 x 7. Draw one 2 x 3 bin at the bottom left and keep it selected. Show the full window." />
+<Screenshot id="getting-started-first-drawer-draw-bin" alt="Dragging across the grid from the bottom-left cell draws a new 2 by 3 bin, which stays selected." spec="Layout editor, grid 9 x 7. Drag from the bottom-left cell to draw a 2 x 3 bin. Crop to the grid." />
 
 ## Step 4: Edit the bin
 

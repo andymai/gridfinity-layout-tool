@@ -156,6 +156,61 @@ export function checkScreenshotIds(pages: readonly DocPage[]): string[] {
   return problems;
 }
 
+const MEDIA_DIR = `${DOCS_DIR}/media`;
+const MANIFEST = `${MEDIA_DIR}/manifest.json`;
+
+export interface MediaEntry {
+  kind: 'still' | 'clip';
+  width: number;
+  height: number;
+}
+
+function readManifest(): Record<string, MediaEntry> {
+  const file = path.join(ROOT, MANIFEST);
+  return fs.existsSync(file)
+    ? (JSON.parse(fs.readFileSync(file, 'utf8')) as Record<string, MediaEntry>)
+    : {};
+}
+
+/** The files `scripts/docs-capture` writes for one entry. */
+export function mediaFiles(id: string, entry: MediaEntry): string[] {
+  const exts = entry.kind === 'clip' ? ['webp', 'mp4'] : ['webp'];
+  return ['light', 'dark'].flatMap((theme) => exts.map((ext) => `${id}.${theme}.${ext}`));
+}
+
+/**
+ * Media must stay in step with the pages: each capture fills a `<Screenshot>`
+ * on some page and has both themes on disk, and no file sits outside the
+ * manifest, where nothing would ever show or replace it.
+ */
+export function checkMedia(
+  pages: readonly DocPage[],
+  manifest: Record<string, MediaEntry>,
+  files: readonly string[]
+): string[] {
+  const used = new Set(
+    pages.flatMap((p) => [...p.body.matchAll(SCREENSHOT_TAG)].map(([, id]) => id))
+  );
+  const present = new Set(files);
+  const owned = new Set(['manifest.json']);
+  const problems: string[] = [];
+  for (const [id, entry] of Object.entries(manifest)) {
+    if (!used.has(id)) problems.push(`${MANIFEST}: "${id}" fills no <Screenshot> on any page`);
+    if (entry.kind !== 'still' && entry.kind !== 'clip')
+      problems.push(`${MANIFEST}: "${id}" has kind "${String(entry.kind)}"`);
+    if (!(entry.width > 0 && entry.height > 0))
+      problems.push(`${MANIFEST}: "${id}" needs a positive width and height`);
+    for (const file of mediaFiles(id, entry)) {
+      owned.add(file);
+      if (!present.has(file)) problems.push(`${MEDIA_DIR}: ${file} is missing for "${id}"`);
+    }
+  }
+  for (const file of files) {
+    if (!owned.has(file)) problems.push(`${MEDIA_DIR}: ${file} is not in the manifest`);
+  }
+  return problems;
+}
+
 // VitePress's own slugify (vitepress/dist/node, `slugify`), so anchors match the build.
 function slugify(text: string): string {
   return text
@@ -263,6 +318,11 @@ const NAV_LINKS: DocPage = {
   body: '',
 };
 
+function mediaDirFiles(): string[] {
+  const dir = path.join(ROOT, MEDIA_DIR);
+  return fs.existsSync(dir) ? fs.readdirSync(dir) : [];
+}
+
 export function collectProblems(pages: readonly DocPage[] = readDocPages()): string[] {
   const exists = (rel: string): boolean => fs.existsSync(path.join(ROOT, rel));
   const navAppLinks = frontmatterLinks(NAV_LINKS.data)
@@ -280,6 +340,7 @@ export function collectProblems(pages: readonly DocPage[] = readDocPages()): str
     ),
     ...checkScreenshotIds(pages),
     ...checkDocLinks([...pages, NAV_LINKS], exists),
+    ...checkMedia(pages, readManifest(), mediaDirFiles()),
   ];
 }
 
@@ -343,14 +404,25 @@ function main(): void {
     if (rows.length === 0) console.warn('No docs page is older than its sources.');
     for (const row of rows)
       console.warn(`${row.behindDays.toFixed(1).padStart(6)} days  ${row.file}`);
-    const ids = pages.flatMap((page) =>
-      [...page.body.matchAll(SCREENSHOT_TAG)].map(([, id]) => id)
+    const manifest = readManifest();
+    const shots = pages.flatMap((page) =>
+      [...page.body.matchAll(SCREENSHOT_TAG)].map(([, id]) => ({ page, id }))
     );
-    const missing = ids.filter(
-      (id) => !fs.existsSync(path.join(ROOT, DOCS_DIR, 'public/screenshots', `${id}.png`))
-    );
+    const missing = shots.filter(({ id }) => !manifest[id]);
     if (missing.length > 0)
-      console.warn(`\n${missing.length} of ${ids.length} screenshots are not captured yet.`);
+      console.warn(`\n${missing.length} of ${shots.length} screenshots are not captured yet.`);
+    // A capture older than its page's sources may show a UI that has changed.
+    const old = shots.filter(({ page, id }) => {
+      const entry = manifest[id];
+      if (!entry) return false;
+      const shotTime = lastCommitTime(mediaFiles(id, entry).map((f) => `${MEDIA_DIR}/${f}`));
+      const sources = pageSources(page);
+      return shotTime > 0 && sources.length > 0 && lastCommitTime(sources) > shotTime;
+    });
+    if (old.length > 0) {
+      console.warn(`\n${old.length} captures are older than their page's sources:`);
+      for (const { id } of old) console.warn(`  pnpm run capture:docs ${id}`);
+    }
     return;
   }
 
