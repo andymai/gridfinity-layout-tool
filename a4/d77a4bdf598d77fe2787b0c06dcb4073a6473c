@@ -1,0 +1,25 @@
+apps/docs/.vitepress/theme/index.ts
+  s_1cc363bb3cc76d::t_bec8e03701be8c 16-17,22,25
+apps/docs/printing/fit-and-tolerances.md
+  s_1cc363bb3cc76d::t_d089df857ec172 36-39
+apps/docs/.vitepress/theme/custom.css
+  s_1cc363bb3cc76d::t_bec8e03701be8c 15-22
+apps/docs/baseplates/basics.md
+  s_1cc363bb3cc76d::t_d089df857ec172 68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a4d77a4bdf598d77fe2787b0c06dcb4073a6473c",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
