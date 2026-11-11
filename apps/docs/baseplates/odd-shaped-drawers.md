@@ -33,7 +33,7 @@ Want a clean edge? Turn on <Ui k="baseplate.wholeCellsOnly" /> under <Ui k="base
 
 When the shape makes the plate bigger than the grid cells, the size under the steppers shows <Ui k="baseplate.inclShape" />.
 
-<Screenshot id="baseplates-shaped-plate" alt="A baseplate cut to a drawer shape with two rounded corners and a notch." spec="Baseplate generator. Layout with an 8 by 6 drawer, a custom shape from Draw shape with two rounded back corners and a front-right notch. Sync with layout on. Preview in iso view. Show the panel with Grid position and Fit whole cells only visible. Crop to the app window." />
+<Screenshot id="baseplates-shaped-plate" alt="A baseplate cut to a drawer shape with two rounded back corners and a notch at the front right. Fit whole cells only is turned on, and solid plastic then fills the cut cells along the edge." spec="Baseplate generator. Layout with a 6 by 5 drawer and a shape from Corner cuts: two rounded back corners and a notch at the front right. Sync with layout on, preview in iso view. The plate with its cut pockets, then a close-up of Grid position and Fit whole cells only as it is turned on, then the plate again." />
 
 ## Move the grid inside the shape
 

@@ -25,7 +25,7 @@ A plain baseplate holds bins by the shape of its pockets, and for a normal drawe
 
 All three are off by default. <Ui k="baseplate.stackPrint.enable" /> removes all three, because the flipped plates in a stack can't print the holes without supports. See [Eco plates and stack printing](./eco-and-stack-printing).
 
-<Screenshot id="baseplates-magnets-base-section" alt="The Base section with Magnet holes and Screw down turned on." spec="Baseplate generator, 4 by 3 plate, no split. Base section expanded with Magnet holes on and expanded, Screw down on and collapsed. Crop to the Base section of the panel." />
+<Screenshot id="baseplates-magnets-base-section" alt="Magnet holes is turned on in the Base section, where Screw down is already on. The plate in the preview then gets a magnet hole in each corner of every pocket." spec="Baseplate generator, 4 by 3 plate, no split, Screw down on. The plate in iso view, then a close-up of the Base section where Magnet holes is turned on, then the plate again with its magnet holes." />
 
 ## Add magnet holes for the bins
 
@@ -107,7 +107,7 @@ If one piece of a split plate needs a pocket-floor screw, all the pieces get the
 
 To keep the standard plate height, use a <Ui k="baseplate.screwHoles.headStyle.countersink" /> with a 6 mm head diameter. A countersink of 6 mm or less fits where four pockets meet. M3 flat-head screws with these settings are a safe pick.
 
-<Screenshot id="baseplates-magnets-screw-settings" alt="The Screw down settings with a countersink head of 6 mm and four screws for each piece." spec="Baseplate generator, 4 by 3 plate. Base section with Screw down on and expanded: Hole diameter 3.4, Countersink, Head diameter 6, Screws per piece 4. Preview in iso view with screw holes visible. Crop to the panel section and the preview side by side." />
+<Screenshot id="baseplates-magnets-screw-settings" alt="Screw down is turned on and its settings open: a 3.4 mm hole, a countersink head of 6 mm and four screws for each piece. The plate in the preview then gets four countersunk holes where four pockets meet." spec="Baseplate generator, 4 by 3 plate. The plate in top view, then a close-up of the Base section: turn on Screw down, click Customize and scroll to Hole diameter 3.4, Countersink, Head diameter 6 and Screws per piece 4. Then the plate again with its screw holes." />
 
 ## Next steps
 
