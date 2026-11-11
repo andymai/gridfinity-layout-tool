@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { claimRoomSaves, roomSavesShare } from './roomSaveClaims';
+import { claimRoomSaves, roomClaimCount, roomSavesShare } from './roomSaveClaims';
 
 describe('room save claims', () => {
   it('holds a share from claim to release', () => {
@@ -22,6 +22,19 @@ describe('room save claims', () => {
 
     second();
     expect(roomSavesShare('share-a')).toBe(false);
+  });
+
+  it('moves the claim count forward on each claim, per share, and never back', () => {
+    const before = roomClaimCount('share-count');
+    const release = claimRoomSaves('share-count');
+    expect(roomClaimCount('share-count')).toBe(before + 1);
+    expect(roomClaimCount('share-other')).toBe(0);
+
+    release();
+    expect(roomClaimCount('share-count')).toBe(before + 1);
+
+    claimRoomSaves('share-count')();
+    expect(roomClaimCount('share-count')).toBe(before + 2);
   });
 
   it('counts a release only once', () => {

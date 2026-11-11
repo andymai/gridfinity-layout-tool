@@ -353,6 +353,42 @@ describe('useCloudShareAutoSync', () => {
 
       expect(shareApi.updateShare).toHaveBeenCalledWith(SHARE_ID, TOKEN, ownerEdit);
     });
+
+    it("saves the owner's earlier layout again after a room saved another one", async () => {
+      const original = layoutWith('saved');
+      useLayoutStore.setState({
+        activeLayoutId: OWNED_LAYOUT_ID,
+        layout: original,
+        lastEditSource: 'init',
+      });
+      const { rerender } = renderBothUploaders();
+      const layoutA = layoutWith('saved', 'a');
+      act(() => {
+        useLayoutStore.setState({ layout: layoutA, lastEditSource: 'local' });
+      });
+      rerender();
+      await advance(5000);
+      expect(shareApi.updateShare).toHaveBeenLastCalledWith(SHARE_ID, TOKEN, layoutA);
+
+      openRoom(layoutA, stampFor(layoutA, SAVED_AT));
+      rerender();
+      const layoutB = layoutWith('saved', 'b');
+      collaboratorEdits(layoutB);
+      rerender();
+      await advance(1000);
+      expect(shareApi.updateShare).toHaveBeenLastCalledWith(SHARE_ID, TOKEN, layoutB);
+
+      room.root = null;
+      rerender();
+      const restoredA = layoutWith('saved', 'a');
+      act(() => {
+        useLayoutStore.setState({ layout: restoredA, lastEditSource: 'local' });
+      });
+      rerender();
+      await advance(5000);
+
+      expect(shareApi.updateShare).toHaveBeenLastCalledWith(SHARE_ID, TOKEN, restoredA);
+    });
   });
 
   it('saves a pending change to its own share when the owner leaves the room', async () => {
