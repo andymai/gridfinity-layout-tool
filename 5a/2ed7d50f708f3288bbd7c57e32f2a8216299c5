@@ -1,0 +1,46 @@
+apps/docs/baseplates/eco-and-stack-printing.md
+  h_b755e1950659f4 37
+apps/docs/baseplates/magnets-and-screws.md
+  h_b755e1950659f4 28,110
+apps/docs/baseplates/odd-shaped-drawers.md
+  h_b755e1950659f4 36
+apps/docs/baseplates/splitting.md
+  h_b755e1950659f4 37
+apps/docs/media/baseplates-basics-library.json
+  h_b755e1950659f4 1-5
+apps/docs/media/baseplates-basics-panel.json
+  h_b755e1950659f4 1-5
+apps/docs/media/baseplates-magnets-base-section.json
+  h_b755e1950659f4 1-5
+apps/docs/media/baseplates-magnets-screw-settings.json
+  h_b755e1950659f4 1-5
+apps/docs/media/baseplates-shaped-plate.json
+  h_b755e1950659f4 1-5
+apps/docs/media/baseplates-splitting-map.json
+  h_b755e1950659f4 1-5
+apps/docs/media/baseplates-stack-section.json
+  h_b755e1950659f4 1-5
+apps/docs/media/printing-estimates-summary.json
+  h_b755e1950659f4 1-5
+apps/docs/media/printing-fit-connector-test.json
+  h_b755e1950659f4 1-5
+apps/docs/media/printing-formats-dialog.json
+  h_b755e1950659f4 1-5
+apps/docs/media/printing-print-list.json
+  h_b755e1950659f4 1-5
+apps/docs/media/printing-slicers-filament-map.json
+  h_b755e1950659f4 1-5
+scripts/docs-capture/shots/baseplatesPrinting.ts
+  h_b755e1950659f4 1-11,13-578
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5a2ed7d50f708f3288bbd7c57e32f2a8216299c5",
+  "prompts": {},
+  "humans": {
+    "h_b755e1950659f4": {
+      "author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
