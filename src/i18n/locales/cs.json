@@ -5440,7 +5440,7 @@
   "pwaUpdate.reloadAria": "Načíst znovu do nové verze",
   "pwaUpdate.readyTooltip": "Je připravena nová verze. Použije se sama, až se zastavíte, nebo načtěte znovu hned.",
   "pwaInstall.title": "Nainstalovat aplikaci",
-  "pwaInstall.description": "Otevírej ji z Docku nebo hlavního panelu ve vlastním okně.",
+  "pwaInstall.description": "Otevírej ji z vlastní ikony ve vlastním okně.",
   "pwaInstall.install": "Nainstalovat",
   "pwaInstall.notNow": "Teď ne",
   "whatsNew.openTooltip": "Podívejte se, co se nedávno změnilo",

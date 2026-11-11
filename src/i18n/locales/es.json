@@ -5317,7 +5317,7 @@
   "pwaUpdate.reloadAria": "Recargar con la nueva versión",
   "pwaUpdate.readyTooltip": "Hay una nueva versión lista. Se aplicará sola cuando hagas una pausa, o recarga ahora.",
   "pwaInstall.title": "Instalar la app",
-  "pwaInstall.description": "Ábrela desde el Dock o la barra de tareas, en su propia ventana.",
+  "pwaInstall.description": "Ábrela desde su propio icono, en su propia ventana.",
   "pwaInstall.install": "Instalar",
   "pwaInstall.notNow": "Ahora no",
   "whatsNew.openTooltip": "Mira qué ha cambiado recientemente",

@@ -1511,7 +1511,7 @@
   "pwaUpdate.reloadAria": "ახალ ვერსიაში ხელახლა ჩატვირთვა",
   "pwaUpdate.readyTooltip": "ახალი ვერსია მზადაა. ის ავტომატურად გამოიყენება, როცა მუშაობას შეაჩერებთ, ან ახლავე ჩატვირთეთ ხელახლა.",
   "pwaInstall.title": "აპის დაყენება",
-  "pwaInstall.description": "გახსენით Dock-იდან ან ამოცანების პანელიდან, ცალკე ფანჯარაში.",
+  "pwaInstall.description": "გახსენით საკუთარი ხატულიდან, ცალკე ფანჯარაში.",
   "pwaInstall.install": "დაყენება",
   "pwaInstall.notNow": "ახლა არა",
   "toast.sessionRestored": "სესია აღდგა",

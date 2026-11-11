@@ -1731,7 +1731,7 @@ const en: Record<string, string> = {
   'pwaUpdate.readyTooltip':
     'A new version is ready. It applies on its own when you pause, or reload now.',
   'pwaInstall.title': 'Install the app',
-  'pwaInstall.description': 'Open it from your dock or taskbar, in its own window.',
+  'pwaInstall.description': 'Open it from its own icon, in its own window.',
   'pwaInstall.install': 'Install',
   'pwaInstall.notNow': 'Not now',
   'toast.sessionRestored': 'Session restored',

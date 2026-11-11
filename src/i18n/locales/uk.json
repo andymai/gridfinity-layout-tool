@@ -5559,7 +5559,7 @@
   "pwaUpdate.reloadAria": "Перезавантажити в нову версію",
   "pwaUpdate.readyTooltip": "Нова версія готова. Вона застосується сама, коли ви зробите паузу, або перезавантажте зараз.",
   "pwaInstall.title": "Установити застосунок",
-  "pwaInstall.description": "Відкривайте його з Dock або панелі завдань в окремому вікні.",
+  "pwaInstall.description": "Відкривайте його з власної іконки в окремому вікні.",
   "pwaInstall.install": "Установити",
   "pwaInstall.notNow": "Не зараз",
   "whatsNew.openTooltip": "Подивіться, що змінилося нещодавно",

@@ -1,9 +1,15 @@
+import { useSyncExternalStore } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import { Button, Switch } from '@/design-system';
 import { useTranslation, useLocale, SUPPORTED_LOCALES, detectBrowserLocale } from '@/i18n';
 import { useInstallPrompt } from '@/shared/hooks/useInstallPrompt';
-import { getDisplayMode, isInstalledDisplayMode } from '@/shared/pwa/displayMode';
+import {
+  getDisplayMode,
+  isInstalledDisplayMode,
+  onDisplayModeChange,
+} from '@/shared/pwa/displayMode';
+import type { DisplayMode } from '@/shared/pwa/displayMode';
 import { SpaceMouseSettings } from '@/shared/spacemouse/components/SpaceMouseSettings';
 import { useSpaceMouseStore } from '@/shared/spacemouse/settingsStore';
 import { SettingSection } from '../../components/SettingSection/SettingSection';
@@ -12,7 +18,12 @@ import { SelectableCard } from '../../components/SelectableCard/SelectableCard';
 function InstallAppSection() {
   const t = useTranslation();
   const { canInstall, install } = useInstallPrompt('settings');
-  const installed = isInstalledDisplayMode(getDisplayMode());
+  const displayMode = useSyncExternalStore<DisplayMode>(
+    onDisplayModeChange,
+    getDisplayMode,
+    () => 'browser'
+  );
+  const installed = isInstalledDisplayMode(displayMode);
 
   let body = (
     <p className="text-sm text-content-secondary">{t('settings.general.installAppManual')}</p>

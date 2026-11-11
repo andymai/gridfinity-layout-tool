@@ -123,5 +123,33 @@ describe('GeneralTab', () => {
 
       expect(prompt).toHaveBeenCalledTimes(1);
     });
+
+    it('shows the installed note when the tab moves into the app window', () => {
+      const originalMatchMedia = window.matchMedia;
+      let standalone = false;
+      const listeners = new Set<() => void>();
+      window.matchMedia = (query: string) =>
+        ({
+          media: query,
+          get matches() {
+            return standalone && query.includes('standalone');
+          },
+          addEventListener: (_type: string, cb: () => void) => listeners.add(cb),
+          removeEventListener: (_type: string, cb: () => void) => listeners.delete(cb),
+        }) as unknown as MediaQueryList;
+      try {
+        render(<GeneralTab />);
+        expect(screen.queryByText('settings.general.installAppInstalled')).not.toBeInTheDocument();
+
+        act(() => {
+          standalone = true;
+          for (const cb of listeners) cb();
+        });
+
+        expect(screen.getByText('settings.general.installAppInstalled')).toBeInTheDocument();
+      } finally {
+        window.matchMedia = originalMatchMedia;
+      }
+    });
   });
 });

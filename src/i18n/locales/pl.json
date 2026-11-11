@@ -5559,7 +5559,7 @@
   "pwaUpdate.reloadAria": "Wczytaj ponownie w nowej wersji",
   "pwaUpdate.readyTooltip": "Nowa wersja jest gotowa. Zastosuje się sama, gdy zrobisz przerwę, albo wczytaj ponownie teraz.",
   "pwaInstall.title": "Zainstaluj aplikację",
-  "pwaInstall.description": "Otwieraj ją z Docka lub paska zadań, we własnym oknie.",
+  "pwaInstall.description": "Otwieraj ją z własnej ikony, we własnym oknie.",
   "pwaInstall.install": "Zainstaluj",
   "pwaInstall.notNow": "Nie teraz",
   "whatsNew.openTooltip": "Zobacz, co ostatnio się zmieniło",
