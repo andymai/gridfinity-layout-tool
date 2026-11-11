@@ -9,6 +9,7 @@ sources:
   - src/shared/analytics/posthog/
   - src/shell/Modals/SettingsModal/tabs/PrivacyTab/
   - src/core/api/share.ts
+  - api/auth/providers/github.ts
 ---
 
 # Your data and privacy
@@ -40,11 +41,14 @@ This deletes your layouts, their history, the usage data, and the cached data. I
 
 Sign-in is optional. Sign in when you want the same layouts and designs on more than one device. You sign in with a Google or GitHub account, so the Layout Tool never asks for a password or keeps one. [Accounts and sync](../sharing/accounts-and-sync) gives the steps to sign in, sign out and delete your account.
 
-From your Google or GitHub account, the Layout Tool gets three things only:
+From your Google or GitHub account, the Layout Tool keeps these things:
 
 - an account number that the provider gives you, so the Layout Tool knows you on your next visit
 - your email address
 - your display name
+- with GitHub, your GitHub username
+
+With GitHub, the Layout Tool also reads the list of email addresses that GitHub verified for you. It uses them only to recognize Ko-fi supporters, and it keeps one-way codes made from them, not the addresses.
 
 When you sign in, the Layout Tool copies your work to your account on the server. That covers your layouts, saved bin designs, saved baseplates, layout folders, and the version history of your designs. Only your signed-in session can read them. Each account holds up to 100 layouts, 100 bin designs and 100 baseplates.
 

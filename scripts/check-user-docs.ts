@@ -74,8 +74,12 @@ function frontmatterLinks(data: unknown): string[] {
   );
 }
 
+function isAppUrl(link: string): boolean {
+  return URL.canParse(link) && new URL(link).origin === APP_ORIGIN;
+}
+
 export function checkAppLink(url: string, exists: (rel: string) => boolean): string | null {
-  const route = url.slice(APP_ORIGIN.length).replace(/\/$/, '') || '/';
+  const route = new URL(url).pathname.replace(/\/$/, '') || '/';
   if (route === '/docs' || route.startsWith('/docs/'))
     return `${url}: link to another docs page with a relative link`;
   if (APP_ROUTES.has(route)) return null;
@@ -115,7 +119,7 @@ export function checkPage(page: DocPage, exists: (rel: string) => boolean): stri
     problems.push(at('malformed <Ui> tag: write <Ui k="the.key" />'));
   const appLinks = [
     ...[...page.body.matchAll(APP_LINK)].map(([url]) => url),
-    ...frontmatterLinks(page.data).filter((link) => link.startsWith(APP_ORIGIN)),
+    ...frontmatterLinks(page.data).filter(isAppUrl),
   ];
   for (const url of appLinks) {
     const problem = checkAppLink(url, exists);
@@ -262,7 +266,7 @@ const NAV_LINKS: DocPage = {
 export function collectProblems(pages: readonly DocPage[] = readDocPages()): string[] {
   const exists = (rel: string): boolean => fs.existsSync(path.join(ROOT, rel));
   const navAppLinks = frontmatterLinks(NAV_LINKS.data)
-    .filter((link) => link.startsWith(APP_ORIGIN))
+    .filter(isAppUrl)
     .flatMap((url) => {
       const problem = checkAppLink(url, exists);
       return problem ? [`${NAV_LINKS.file}: ${problem}`] : [];

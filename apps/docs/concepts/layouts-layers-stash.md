@@ -10,6 +10,7 @@ sources:
   - src/features/layers/
   - src/shared/hooks/useExplodedLayerView.ts
   - src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreviewControls.tsx
+  - src/features/staging/components/Staging/Staging.tsx
 ---
 
 # Layouts, layers and the stash
@@ -71,7 +72,7 @@ Clear a layer only when you want to delete its bins. The clear button in the act
 :::
 
 ::: warning
-Use <Ui k="staging.clearAll" /> only when you want to delete every bin in the stash. You can't undo it.
+Use <Ui k="staging.clearAll" /> only when you want to delete every bin in the stash. If you clear it by mistake, press <kbd>Ctrl</kbd>+<kbd>Z</kbd> (<kbd>Cmd</kbd>+<kbd>Z</kbd> on a Mac) to get the bins back.
 :::
 
 ## See the layers in 3D

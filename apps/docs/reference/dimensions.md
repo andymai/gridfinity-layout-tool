@@ -8,6 +8,7 @@ sources:
   - src/features/bin-designer/constants/gridfinity.ts
   - src/features/bin-designer/constants/defaults.ts
   - src/core/baseplateDefaults.ts
+  - src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
 ---
 
 # Gridfinity dimensions
@@ -82,16 +83,16 @@ A low-profile base removes 1.1 mm from the straight middle band of the foot and 
 
 ## Magnets and screws
 
-| Hole                                   | Default                                                           | Range                           |
-| -------------------------------------- | ----------------------------------------------------------------- | ------------------------------- |
-| Magnet hole in a bin                   | 6.5 mm wide, 2 mm deep                                            | 4 to 10 mm wide, 1 to 4 mm deep |
-| Magnet hole in a baseplate             | 6.5 mm wide, 2 mm deep                                            | 4 to 10 mm wide, 1 to 4 mm deep |
-| Material under a baseplate magnet hole | 0.5 mm                                                            |                                 |
-| Magnet position at a 42 mm grid        | 13 mm from the cell center on each axis (8 mm from the cell edge) |                                 |
-| Screw hole in a bin                    | 3 mm (M3)                                                         | 2 to 6 mm                       |
-| Screw-down hole in a baseplate         | 3.4 mm (clearance for M3)                                         | 2 to 8 mm                       |
-| Countersink head in a baseplate        | 6 mm wide                                                         |                                 |
-| Counterbore in a baseplate             | 5.5 mm wide, 3 mm deep                                            |                                 |
+| Hole                                   | Default                                                           | Range                              |
+| -------------------------------------- | ----------------------------------------------------------------- | ---------------------------------- |
+| Magnet hole in a bin                   | 6.5 mm wide, 2 mm deep                                            | 4 to 10 mm wide, 1 to 4 mm deep    |
+| Magnet hole in a baseplate             | 6.5 mm wide, 2 mm deep                                            | 1 to 20 mm wide, 0.5 to 10 mm deep |
+| Material under a baseplate magnet hole | 0.5 mm                                                            |                                    |
+| Magnet position at a 42 mm grid        | 13 mm from the cell center on each axis (8 mm from the cell edge) |                                    |
+| Screw hole in a bin                    | 3 mm (M3)                                                         | 2 to 6 mm                          |
+| Screw-down hole in a baseplate         | 3.4 mm (clearance for M3)                                         | 2 to 8 mm                          |
+| Countersink head in a baseplate        | 6 mm wide                                                         |                                    |
+| Counterbore in a baseplate             | 5.5 mm wide, 3 mm deep                                            |                                    |
 
 A 6.5 mm hole takes a 6 mm magnet with room for print tolerance. Magnet holes make a baseplate taller by the magnet depth plus 0.5 mm. The baseplate screw-down hole is a clearance hole: the screw passes through it and pulls the plate down onto the drawer.
 

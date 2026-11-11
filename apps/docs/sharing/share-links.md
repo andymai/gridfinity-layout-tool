@@ -8,6 +8,7 @@ sources:
   - src/core/result/catalog.ts
   - src/core/storage/ShareService.ts
   - src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
+  - api/liveblocks-auth.ts
 ---
 
 # Share a layout
@@ -81,7 +82,7 @@ Click <Ui k="share.button.manageShare" /> in the header to get the link controls
 | Change who can edit        | Pick a new value in <Ui k="share.anyoneWithLinkCan" />. A message lets you undo the change. |
 | Stop the link from working | Click <Ui k="share.deleteShareLink" />, then <Ui k="common.delete" />.                      |
 
-Switch an edit link to view only, and the live session ends. Delete a link, and it stops working for everyone who has it.
+Switch an edit link to view only, and anyone who opens the link after that can only look. People already in a live session can keep editing until they leave and come back. Delete a link, and it stops working for everyone who has it.
 
 ::: info
 Only the browser that made a link can change or delete it. A share link isn't part of your account, so it doesn't sync to your other devices.
