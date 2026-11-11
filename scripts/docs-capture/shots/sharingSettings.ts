@@ -632,18 +632,6 @@ interface Room {
  * room as the app does on a first join.
  */
 async function joinRoom(s: DocsSession): Promise<Room> {
-  // Without a public key the app never opens a room, so nothing here is used.
-  const configured = await s.page.evaluate(async () => {
-    const { isLiveblocksConfigured } = (await import('/src/liveblocks.config.ts' as string)) as {
-      isLiveblocksConfigured: boolean;
-    };
-    return isLiveblocksConfigured;
-  });
-  if (!configured) {
-    throw new Error(
-      'live room shots need VITE_LIVEBLOCKS_PUBLIC_KEY (any value) in the dev server env'
-    );
-  }
   let socket: WebSocketRoute | null = null;
   const send = (msg: object): void => socket?.send(JSON.stringify(msg));
   const service = (url: URL): boolean =>
@@ -702,6 +690,18 @@ async function joinRoom(s: DocsSession): Promise<Room> {
 async function openRoom(s: DocsSession): Promise<Room> {
   const room = await joinRoom(s);
   await s.open(`/l/${ROOM_SHARE_ID}/workbench`, grid);
+  // Without a public key the app never opens a room, so nothing here is used.
+  const configured = await s.page.evaluate(async () => {
+    const { isLiveblocksConfigured } = (await import('/src/liveblocks.config.ts' as string)) as {
+      isLiveblocksConfigured: boolean;
+    };
+    return isLiveblocksConfigured;
+  });
+  if (!configured) {
+    throw new Error(
+      'live room shots need VITE_LIVEBLOCKS_PUBLIC_KEY (any value) in the dev server env'
+    );
+  }
   const people = await s.page.evaluate(
     async (ids) => {
       const { generateGuestName, generateGuestColor } = (await import(
