@@ -70,7 +70,7 @@ export function useOwnedShareSync(): void {
       if (isOk(result)) {
         lastSyncedRef.current = layoutFingerprint;
         if (result.value.lastUpdatedAt) {
-          recordOwnCopyRevision(shareId, result.value.lastUpdatedAt);
+          recordOwnCopyRevision(shareId, result.value.lastUpdatedAt, layout);
         }
       }
       // Silently ignore failures - this is background sync

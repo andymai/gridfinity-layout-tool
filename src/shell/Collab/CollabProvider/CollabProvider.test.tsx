@@ -7,6 +7,7 @@ import { useLibraryStore } from '@/core/store/library';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useCloudShareAutoSync } from '@/features/cloud-share/hooks/useCloudShareAutoSync';
+import { recordOwnCopyRevision } from '@/features/cloud-share/utils';
 import { useCollabSync } from '@/shared/hooks/useCollabSync';
 import { stampFor } from '@/shared/utils/roomLinkStamp';
 import { binId, layoutId } from '@/core/types';
@@ -75,9 +76,12 @@ describe('CollabProvider', () => {
     room.contextId = null;
     room.initialStorage = [];
 
+    const stored = new Map<string, string>([['gridfinity-user-id', 'test-user-id']]);
     const localStorageMock = {
-      getItem: vi.fn(() => 'test-user-id'),
-      setItem: vi.fn(),
+      getItem: vi.fn((key: string) => stored.get(key) ?? null),
+      setItem: vi.fn((key: string, value: string) => {
+        stored.set(key, value);
+      }),
       removeItem: vi.fn(),
       clear: vi.fn(),
       length: 0,
@@ -154,13 +158,27 @@ describe('CollabProvider', () => {
       expect(useCloudShareAutoSync).toHaveBeenLastCalledWith('staleLayout1', undefined);
     });
 
-    it("joins with the link revision of the owner's last save of its copy", () => {
-      vi.mocked(localStorage.getItem).mockImplementation((key: string) =>
-        key === 'gridfinity-owned-share-revisions'
-          ? JSON.stringify({ freshShare01: '2026-11-01T10:00:00.000Z' })
-          : 'test-user-id'
+    it("does not lend another tab's later save of a different layout to this tab's copy", () => {
+      const savedByOtherTab = createTestLayout({
+        bins: [createTestBin({ id: binId('other-tab') })],
+      });
+      recordOwnCopyRevision('freshShare01', '2026-11-01T10:00:00.000Z', savedByOtherTab);
+      useLayoutStore.setState({
+        layout: createTestLayout({ bins: [createTestBin({ id: binId('this-tab') })] }),
+      });
+
+      render(
+        <CollabProvider shareId="freshShare01">
+          <div />
+        </CollabProvider>
       );
+
+      expect(lastInitialStorage().metadata.linkUpdatedAt).toBeUndefined();
+    });
+
+    it("joins with the link revision of the owner's last save of its copy", () => {
       const layout = createTestLayout({ bins: [createTestBin({ id: binId('owned') })] });
+      recordOwnCopyRevision('freshShare01', '2026-11-01T10:00:00.000Z', layout);
       useLayoutStore.setState({ layout });
 
       render(
@@ -169,11 +187,30 @@ describe('CollabProvider', () => {
         </CollabProvider>
       );
 
-      expect(useCollabSync).toHaveBeenLastCalledWith('2026-11-01T10:00:00.000Z');
+      expect(useCollabSync).toHaveBeenLastCalledWith(stampFor(layout, '2026-11-01T10:00:00.000Z'));
       expect(lastInitialStorage().metadata).toMatchObject({
         version: 2,
         ...stampFor(layout, '2026-11-01T10:00:00.000Z'),
       });
+    });
+
+    it('lends no revision from a record that names no layout', () => {
+      localStorage.setItem(
+        'gridfinity-owned-share-revisions',
+        JSON.stringify({ freshShare01: '2026-11-01T10:00:00.000Z' })
+      );
+      useLayoutStore.setState({
+        layout: createTestLayout({ bins: [createTestBin({ id: binId('owned') })] }),
+      });
+
+      render(
+        <CollabProvider shareId="freshShare01">
+          <div />
+        </CollabProvider>
+      );
+
+      expect(useCollabSync).toHaveBeenLastCalledWith({ linkUpdatedAt: '2026-11-01T10:00:00.000Z' });
+      expect(lastInitialStorage().metadata.linkUpdatedAt).toBeUndefined();
     });
   });
 
@@ -201,7 +238,7 @@ describe('CollabProvider', () => {
         </CollabProvider>
       );
 
-      expect(useCollabSync).toHaveBeenLastCalledWith('2026-11-01T10:00:00.000Z');
+      expect(useCollabSync).toHaveBeenLastCalledWith(stampFor(fetched, '2026-11-01T10:00:00.000Z'));
       expect(useCloudShareAutoSync).toHaveBeenLastCalledWith('visitShare01', undefined);
       expect(lastInitialStorage().metadata).toMatchObject(
         stampFor(fetched, '2026-11-01T10:00:00.000Z')

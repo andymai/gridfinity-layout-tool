@@ -16,7 +16,7 @@
  * ```tsx
  * // Inside CollabProvider, after RoomProvider
  * function CollabSync({ children }: { children: ReactNode }) {
- *   useCollabSync(copyRevision);
+ *   useCollabSync(copySave);
  *   return <>{children}</>;
  * }
  * ```
@@ -26,7 +26,12 @@ import { useEffect, useRef } from 'react';
 import { useStorage, useMutation, type LiveblocksStorage } from '@/liveblocks.config';
 import { useLayoutStore } from '@/core/store/layout';
 import type { Layout } from '@/core/types';
-import { resolveJoin, stampFor, type RoomLinkStamp } from '@/shared/utils/roomLinkStamp';
+import {
+  resolveJoin,
+  revisionOfCopy,
+  stampFor,
+  type RoomLinkStamp,
+} from '@/shared/utils/roomLinkStamp';
 
 // The layout stays the active library entry, so the owner's autosave also
 // saves what collaborators change.
@@ -48,10 +53,11 @@ type SyncState = 'pending' | 'initializing' | 'ready';
  *
  * Must be used inside a Liveblocks RoomProvider context.
  *
- * @param copyRevision - The share link's `lastUpdatedAt` that this browser's
- *   copy of the layout corresponds to, when known.
+ * @param copySave - The share link save that this browser's copy of the layout
+ *   came from, when known: its `lastUpdatedAt` and the saved layout's
+ *   fingerprint. The revision counts only if the copy is still that layout.
  */
-export function useCollabSync(copyRevision?: string): void {
+export function useCollabSync(copySave?: RoomLinkStamp): void {
   // Sync state machine
   const syncStateRef = useRef<SyncState>('pending');
   const lastSyncedLayoutRef = useRef<Layout | null>(null);
@@ -110,6 +116,7 @@ export function useCollabSync(copyRevision?: string): void {
       // Read local layout fresh from the store, not from closure — that way
       // this branch doesn't need `localLayout` in the effect's dep array.
       const currentLocal = useLayoutStore.getState().layout;
+      const copyRevision = revisionOfCopy(currentLocal, copySave);
       const outcome = resolveJoin({
         copy: currentLocal,
         copyRevision,
@@ -170,14 +177,7 @@ export function useCollabSync(copyRevision?: string): void {
     // Remote change detected - update local store
     lastSyncedLayoutRef.current = remoteLayout;
     importRoomLayout(remoteLayout);
-  }, [
-    remoteLayout,
-    lastEditSource,
-    updateRemoteLayout,
-    copyRevision,
-    linkUpdatedAt,
-    linkFingerprint,
-  ]);
+  }, [remoteLayout, lastEditSource, updateRemoteLayout, copySave, linkUpdatedAt, linkFingerprint]);
 
   // Effect: Local → Remote sync
   // When local layout changes, push to Liveblocks

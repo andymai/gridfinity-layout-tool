@@ -27,6 +27,16 @@ export function stampFor(layout: Layout, linkUpdatedAt: string | undefined): Roo
   };
 }
 
+/**
+ * The link revision of `copy`, when `save` records that revision for this same
+ * layout. A save without a fingerprint, or of another layout, says nothing
+ * about the copy.
+ */
+export function revisionOfCopy(copy: Layout, save: RoomLinkStamp | undefined): string | undefined {
+  if (save?.linkFingerprint === undefined) return undefined;
+  return save.linkFingerprint === roomLayoutFingerprint(copy) ? save.linkUpdatedAt : undefined;
+}
+
 export function isLaterRevision(revision: string | undefined, than: string | undefined): boolean {
   if (!revision || !than) return false;
   const a = Date.parse(revision);

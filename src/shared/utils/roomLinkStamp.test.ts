@@ -3,7 +3,13 @@ import type { Layout } from '@/core/types';
 import { binId, gridUnits } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
-import { isLaterRevision, resolveJoin, roomLayoutFingerprint, stampFor } from './roomLinkStamp';
+import {
+  isLaterRevision,
+  resolveJoin,
+  revisionOfCopy,
+  roomLayoutFingerprint,
+  stampFor,
+} from './roomLinkStamp';
 
 const T1 = '2026-11-01T10:00:00.000Z';
 const T2 = '2026-11-01T10:00:05.000Z';
@@ -44,6 +50,31 @@ describe('stampFor', () => {
 
   it('leaves the revision out when it is unknown', () => {
     expect(Object.keys(stampFor(withGridBin('a'), undefined))).toEqual(['linkFingerprint']);
+  });
+});
+
+describe('revisionOfCopy', () => {
+  const saved = withGridBin('saved');
+
+  it('gives the revision to the layout that was saved at it', () => {
+    expect(revisionOfCopy(saved, stampFor(saved, T1))).toBe(T1);
+  });
+
+  it('gives the revision to a JSON round trip of that layout', () => {
+    const roundTripped = JSON.parse(JSON.stringify(saved)) as Layout;
+    expect(revisionOfCopy(roundTripped, stampFor(saved, T1))).toBe(T1);
+  });
+
+  it('gives no revision to a different layout', () => {
+    expect(revisionOfCopy(withGridBin('other'), stampFor(saved, T1))).toBeUndefined();
+  });
+
+  it('gives no revision when the save names no layout', () => {
+    expect(revisionOfCopy(saved, { linkUpdatedAt: T1 })).toBeUndefined();
+  });
+
+  it('gives no revision without a save', () => {
+    expect(revisionOfCopy(saved, undefined)).toBeUndefined();
   });
 });
 

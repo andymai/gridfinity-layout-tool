@@ -9,6 +9,7 @@ import { ok, err, apiServerError } from '@/core/result';
 import type { LayoutLibrary, CloudShareInfo, Layout } from '@/core/types';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
 import { readOwnCopyRevision } from '@/features/cloud-share/utils';
+import { stampFor } from '@/shared/utils/roomLinkStamp';
 
 // Mock the share API module
 vi.mock('@/core/api/share', () => ({
@@ -185,7 +186,7 @@ describe('useOwnedShareSync', () => {
       useLibraryStore.setState({ library: createTestLibrary(createCloudShareInfo()) });
     });
 
-    it('records the link revision the server wrote for this copy', async () => {
+    it('records the link revision the server wrote, with the layout it saved', async () => {
       vi.mocked(shareApi.updateShare).mockResolvedValue(
         ok({
           id: TEST_SHARE_ID,
@@ -200,7 +201,11 @@ describe('useOwnedShareSync', () => {
         await vi.advanceTimersByTimeAsync(5000);
       });
 
-      expect(readOwnCopyRevision(TEST_SHARE_ID)).toBe('2026-11-01T10:00:00.000Z');
+      const uploaded = vi.mocked(shareApi.updateShare).mock.calls[0]?.[2];
+      expect(uploaded).toBe(useLayoutStore.getState().layout);
+      expect(readOwnCopyRevision(TEST_SHARE_ID)).toEqual(
+        stampFor(useLayoutStore.getState().layout, '2026-11-01T10:00:00.000Z')
+      );
     });
 
     it('records nothing when the save fails', async () => {

@@ -98,7 +98,9 @@ describe('useCollabSync', () => {
       const roomLayout = createTestLayout([createBinOnGrid('room')]);
       mockUseStorage.mockImplementation((selector) => selector({ layout: roomLayout }));
 
-      renderHook(() => useCollabSync('2026-11-01T10:00:00.000Z'));
+      renderHook(() =>
+        useCollabSync(stampFor(useLayoutStore.getState().layout, '2026-11-01T10:00:00.000Z'))
+      );
 
       expect(mockUpdateRemoteLayout).not.toHaveBeenCalled();
       expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual(['room']);
@@ -452,8 +454,47 @@ describe('useCollabSync', () => {
       mockUseStorage.mockImplementation((selector) =>
         selector({ layout: room, metadata: { ownerId: 'owner', ...stamp } })
       );
-      return renderHook(() => useCollabSync(copyRevision));
+      const save = copyRevision ? stampFor(copy, copyRevision) : undefined;
+      return renderHook(() => useCollabSync(save));
     }
+
+    function joinStaleRoomWith(copy: Layout, save: RoomLinkStamp) {
+      const stale = createTestLayout([createBinOnGrid('stale')]);
+      useLayoutStore.setState({ layout: copy, lastEditSource: 'init' });
+      mockUseStorage.mockImplementation((selector) =>
+        selector({ layout: stale, metadata: { ownerId: 'owner', ...stampFor(stale, SAVED_AT) } })
+      );
+      renderHook(() => useCollabSync(save));
+    }
+
+    it('takes no revision from a later save of a different layout', () => {
+      const otherTabSave = createTestLayout([createBinOnGrid('other-tab')]);
+
+      joinStaleRoomWith(
+        createTestLayout([createBinOnGrid('this-tab')]),
+        stampFor(otherTabSave, LATER)
+      );
+
+      expect(mockUpdateRemoteLayout).not.toHaveBeenCalled();
+      expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual(['stale']);
+    });
+
+    it('takes no revision from a record that names no layout', () => {
+      joinStaleRoomWith(createTestLayout([createBinOnGrid('copy')]), { linkUpdatedAt: LATER });
+
+      expect(mockUpdateRemoteLayout).not.toHaveBeenCalled();
+    });
+
+    it('takes no revision once the copy changed after its save', () => {
+      const savedCopy = createTestLayout([createBinOnGrid('saved-copy')]);
+
+      joinStaleRoomWith(
+        createTestLayout([createBinOnGrid('saved-copy'), createBinOnGrid('edited-since')]),
+        stampFor(savedCopy, LATER)
+      );
+
+      expect(mockUpdateRemoteLayout).not.toHaveBeenCalled();
+    });
 
     it('takes the room when it holds edits made after the copy was saved to the link', () => {
       const saved = createTestLayout([createBinOnGrid('saved')]);

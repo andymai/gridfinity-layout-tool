@@ -35,9 +35,9 @@ import {
   type CollabPresenceActions,
   LocalMutationsProvider,
 } from '@/shared/contexts';
-import type { CloudShareInfo, Coord } from '@/core/types';
+import type { CloudShareInfo, Coord, Layout } from '@/core/types';
 import { throttle } from '@/shared/utils';
-import { stampFor } from '@/shared/utils/roomLinkStamp';
+import { revisionOfCopy, stampFor, type RoomLinkStamp } from '@/shared/utils/roomLinkStamp';
 import { useCollabSync } from '@/shared/hooks/useCollabSync';
 import { useCloudShareAutoSync } from '@/features/cloud-share/hooks/useCloudShareAutoSync';
 import { readOwnCopyRevision } from '@/features/cloud-share/utils';
@@ -79,16 +79,20 @@ function useUserName(userId: string): string {
 }
 
 /**
- * The share link revision that this browser's copy of the layout corresponds
- * to: the owner's last save of its own copy, or the revision a visitor fetched.
+ * The share link save that this browser's copy of the layout came from: the
+ * owner's last save of its own copy, or the copy a visitor fetched, which is
+ * the layout in the editor as the room opens.
  */
-function copyRevisionFor(
+function copySaveFor(
   shareId: string,
   ownedShare: CloudShareInfo | null,
-  sharedPreview: SharedPreviewData | null
-): string | undefined {
+  sharedPreview: SharedPreviewData | null,
+  layout: Layout
+): RoomLinkStamp | undefined {
   if (ownedShare) return readOwnCopyRevision(shareId);
-  if (sharedPreview?.cloudShareId === shareId) return sharedPreview.linkUpdatedAt;
+  if (sharedPreview?.cloudShareId === shareId && sharedPreview.linkUpdatedAt) {
+    return stampFor(layout, sharedPreview.linkUpdatedAt);
+  }
   return undefined;
 }
 
@@ -157,18 +161,18 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
   // The delete token is intentionally NOT stored in shared storage.
   // Cloud sync is owner-only: the delete token stays in the owner's local library.
   // RoomProvider freezes initialStorage per room id, so this is taken once per room.
-  const { copyRevision, initialStorage } = useMemo(() => {
-    const revision = copyRevisionFor(shareId, cloudShare, sharedPreview);
+  const { copySave, initialStorage } = useMemo(() => {
+    const save = copySaveFor(shareId, cloudShare, sharedPreview, layout);
     const storage: LiveblocksStorage = {
       layout,
       metadata: {
         ownerId: userId,
         permission: cloudShare?.permission ?? 'edit',
         version: 2,
-        ...stampFor(layout, revision),
+        ...stampFor(layout, revisionOfCopy(layout, save)),
       },
     };
-    return { copyRevision: revision, initialStorage: storage };
+    return { copySave: save, initialStorage: storage };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: the layout as the room is entered, not on every change
   }, [roomId]);
 
@@ -178,7 +182,7 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
         roomId={roomId}
         shareId={shareId}
         ownerDeleteToken={cloudShare?.deleteToken}
-        copyRevision={copyRevision}
+        copySave={copySave}
       >
         {children}
       </PresenceProvider>
@@ -189,12 +193,12 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
 interface RoomSyncProps {
   shareId: string;
   ownerDeleteToken: string | undefined;
-  copyRevision: string | undefined;
+  copySave: RoomLinkStamp | undefined;
 }
 
-function RoomSync({ shareId, ownerDeleteToken, copyRevision }: RoomSyncProps): null {
+function RoomSync({ shareId, ownerDeleteToken, copySave }: RoomSyncProps): null {
   // Enable bidirectional sync between Liveblocks and Zustand
-  useCollabSync(copyRevision);
+  useCollabSync(copySave);
 
   // Auto-sync layout changes to cloud share storage (owner-only: token only present for owner)
   useCloudShareAutoSync(shareId, ownerDeleteToken);
@@ -216,7 +220,7 @@ function PresenceProvider({
   roomId,
   shareId,
   ownerDeleteToken,
-  copyRevision,
+  copySave,
   children,
 }: RoomSyncProps & {
   roomId: string;
@@ -356,7 +360,7 @@ function PresenceProvider({
           key={roomId}
           shareId={shareId}
           ownerDeleteToken={ownerDeleteToken}
-          copyRevision={copyRevision}
+          copySave={copySave}
         />
       )}
     </PresenceContext.Provider>
