@@ -4,14 +4,21 @@ import { useAutoSave } from '@/shared/hooks';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useToastStore } from '@/core/store/toast';
-import { resetAllStores, setupFakeTimers } from '@/test/testUtils';
+import { createTestLayout, resetAllStores, setupFakeTimers } from '@/test/testUtils';
 import * as storage from '@/core/storage';
 import type { SaveResult } from '@/core/storage';
 import { err, ok, storageNotFound, storageQuotaExceeded, storageUnavailable } from '@/core/result';
 import type { Result, StorageError } from '@/core/result';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
-import type { LayoutLibrary, LayoutPreview } from '@/core/types';
+import type { Layout, LayoutLibrary, LayoutPreview } from '@/core/types';
+import { captureException, trackLayoutSaveFailure } from '@/shared/analytics/posthog';
+
+vi.mock('@/shared/analytics/posthog', async (orig) => ({
+  ...(await orig<Record<string, unknown>>()),
+  trackLayoutSaveFailure: vi.fn(),
+  captureException: vi.fn(),
+}));
 
 // Mock the storage module with atomic API functions
 // Note: vi.mock is hoisted, so we must define the factory inline
@@ -627,6 +634,338 @@ describe('useAutoSave', () => {
           settings: { authorName: 'Modified Author' },
         })
       );
+    });
+  });
+
+  describe('retry after a failed save', () => {
+    const save = vi.mocked(storage.saveLayoutWithMetadata);
+
+    async function advance(ms: number): Promise<void> {
+      await act(async () => {
+        timerUtils.advanceTime(ms);
+        for (let i = 0; i < 5; i++) await Promise.resolve();
+      });
+    }
+
+    async function settle(): Promise<void> {
+      await act(async () => {
+        for (let i = 0; i < 5; i++) await Promise.resolve();
+      });
+    }
+
+    function editLayout(width: number): void {
+      act(() => {
+        useLayoutStore.getState().updateDrawer({ width: gridUnits(width), depth: gridUnits(10) });
+      });
+    }
+
+    beforeEach(() => {
+      save.mockImplementation((id, _layout, library) =>
+        Promise.resolve(saveResultFor(id, library))
+      );
+    });
+
+    it('saves the layout again by itself once storage recovers, with no further edit', async () => {
+      save.mockResolvedValueOnce(err(storageQuotaExceeded()));
+      const { result } = renderHook(() => useAutoSave());
+
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(result.current).toBe('error');
+
+      await advance(1999);
+      expect(save).toHaveBeenCalledTimes(1);
+
+      await advance(1);
+      expect(save).toHaveBeenCalledTimes(2);
+      expect(save).toHaveBeenLastCalledWith(
+        TEST_LAYOUT_ID,
+        useLayoutStore.getState().layout,
+        useLibraryStore.getState().library
+      );
+      expect(result.current).toBe('saved');
+    });
+
+    it('backs off 2 s, 5 s, 15 s, 30 s, then every 60 s while the save keeps failing', async () => {
+      save.mockResolvedValue(err(storageQuotaExceeded()));
+      renderHook(() => useAutoSave());
+
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(save).toHaveBeenCalledTimes(1);
+
+      const expectedGaps = [2000, 5000, 15000, 30000, 60000, 60000];
+      for (const [index, gap] of expectedGaps.entries()) {
+        await advance(gap - 1);
+        expect(save).toHaveBeenCalledTimes(index + 1);
+        await advance(1);
+        expect(save).toHaveBeenCalledTimes(index + 2);
+      }
+    });
+
+    it('stops retrying once a save succeeds', async () => {
+      save.mockResolvedValueOnce(err(storageQuotaExceeded()));
+      const { result } = renderHook(() => useAutoSave());
+
+      await advance(SAVE_DEBOUNCE_MS);
+      await advance(2000);
+      expect(save).toHaveBeenCalledTimes(2);
+      expect(result.current).toBe('saved');
+
+      await advance(120_000);
+      expect(save).toHaveBeenCalledTimes(2);
+      expect(result.current).toBe('idle');
+    });
+
+    it('keeps showing the failure while a later save runs, until one succeeds', async () => {
+      let finishSave = (): void => {};
+      save.mockResolvedValueOnce(err(storageQuotaExceeded()));
+      save.mockImplementationOnce(
+        (id, _layout, library) =>
+          new Promise((resolve) => {
+            finishSave = () => resolve(saveResultFor(id, library));
+          })
+      );
+      const { result } = renderHook(() => useAutoSave());
+
+      await advance(SAVE_DEBOUNCE_MS);
+      editLayout(12);
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(save).toHaveBeenCalledTimes(2);
+      expect(result.current).toBe('error');
+
+      finishSave();
+      await settle();
+      expect(result.current).toBe('saved');
+    });
+
+    it('runs one save at a time, then writes the newest layout', async () => {
+      let finishFirstSave = (): void => {};
+      save.mockImplementationOnce(
+        (id, _layout, library) =>
+          new Promise((resolve) => {
+            finishFirstSave = () => resolve(saveResultFor(id, library));
+          })
+      );
+      renderHook(() => useAutoSave());
+
+      editLayout(12);
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(save).toHaveBeenCalledTimes(1);
+
+      editLayout(14);
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(save).toHaveBeenCalledTimes(1);
+
+      finishFirstSave();
+      await settle();
+      expect(save).toHaveBeenCalledTimes(2);
+      const newestWrite = save.mock.calls[1][1];
+      expect(newestWrite).toBe(useLayoutStore.getState().layout);
+      expect(newestWrite.drawer.width).toBe(14);
+    });
+
+    it.each(['focus', 'online'])('retries right away when the window fires %s', async (type) => {
+      save.mockResolvedValueOnce(err(storageQuotaExceeded()));
+      const { result } = renderHook(() => useAutoSave());
+
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(save).toHaveBeenCalledTimes(1);
+
+      act(() => {
+        window.dispatchEvent(new Event(type));
+      });
+      await settle();
+
+      expect(save).toHaveBeenCalledTimes(2);
+      expect(result.current).toBe('saved');
+    });
+
+    it.each(['focus', 'online'])('does not save on %s when nothing failed', async (type) => {
+      renderHook(() => useAutoSave());
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(save).toHaveBeenCalledTimes(1);
+
+      act(() => {
+        window.dispatchEvent(new Event(type));
+      });
+      await settle();
+
+      expect(save).toHaveBeenCalledTimes(1);
+    });
+
+    it('saves the current layout on a retry, not the layout from the failed attempt', async () => {
+      save.mockResolvedValueOnce(err(storageQuotaExceeded()));
+      renderHook(() => useAutoSave());
+
+      await advance(SAVE_DEBOUNCE_MS);
+      const failedLayout = save.mock.calls[0][1];
+
+      editLayout(13);
+      act(() => {
+        window.dispatchEvent(new Event('focus'));
+      });
+      await settle();
+
+      expect(save).toHaveBeenCalledTimes(2);
+      const retriedLayout = save.mock.calls[1][1];
+      expect(retriedLayout).not.toBe(failedLayout);
+      expect(retriedLayout).toBe(useLayoutStore.getState().layout);
+      expect(retriedLayout.drawer.width).toBe(13);
+    });
+
+    it("never writes one layout's content under another layout's id after a switch mid-save", async () => {
+      const layoutA = useLayoutStore.getState().layout;
+      const idB = layoutId('layout-b');
+      const layoutB: Layout = createTestLayout({ name: 'Layout B' });
+      const library = useLibraryStore.getState().library;
+      useLibraryStore.setState({
+        library: { ...library, entries: [...library.entries, { ...library.entries[0], id: idB }] },
+      });
+
+      save.mockImplementationOnce(() => {
+        useLayoutStore.getState().importLayout(layoutB, idB, 'init');
+        return Promise.resolve(err(storageQuotaExceeded()));
+      });
+      renderHook(() => useAutoSave());
+
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(save.mock.calls[0][0]).toBe(TEST_LAYOUT_ID);
+      expect(save.mock.calls[0][1]).toBe(layoutA);
+
+      act(() => {
+        window.dispatchEvent(new Event('focus'));
+      });
+      await settle();
+      expect(save).toHaveBeenCalledTimes(2);
+
+      await advance(120_000);
+      for (const [id, layout] of save.mock.calls.slice(1)) {
+        expect(id).toBe(idB);
+        expect(layout).toBe(useLayoutStore.getState().layout);
+        expect(layout.name).toBe('Layout B');
+      }
+    });
+
+    it('stops retrying and leaves no timers after unmount', async () => {
+      save.mockResolvedValue(err(storageQuotaExceeded()));
+      const { unmount } = renderHook(() => useAutoSave());
+
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(save).toHaveBeenCalledTimes(1);
+
+      unmount();
+      expect(vi.getTimerCount()).toBe(0);
+
+      await advance(120_000);
+      act(() => {
+        window.dispatchEvent(new Event('focus'));
+      });
+      await settle();
+      expect(save).toHaveBeenCalledTimes(1);
+    });
+
+    it('treats a save that throws as a failure: reports it and retries', async () => {
+      const thrown = new Error('backend exploded');
+      save.mockRejectedValueOnce(thrown);
+      const { result } = renderHook(() => useAutoSave());
+
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(result.current).toBe('error');
+      expect(captureException).toHaveBeenCalledWith(thrown, expect.any(Object));
+
+      await advance(2000);
+      expect(save).toHaveBeenCalledTimes(2);
+      expect(result.current).toBe('saved');
+    });
+
+    it('reports a failed save to analytics once per edit, not once per retry', async () => {
+      save.mockResolvedValue(err(storageQuotaExceeded()));
+      renderHook(() => useAutoSave());
+
+      await advance(SAVE_DEBOUNCE_MS);
+      await advance(2000);
+      await advance(5000);
+      expect(save).toHaveBeenCalledTimes(3);
+      expect(trackLayoutSaveFailure).toHaveBeenCalledTimes(1);
+    });
+
+    it('dismisses the save-failure toast once a retry succeeds', async () => {
+      save.mockResolvedValueOnce(err(storageQuotaExceeded()));
+      renderHook(() => useAutoSave());
+
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(useToastStore.getState().toasts).toHaveLength(1);
+
+      await advance(2000);
+      expect(useToastStore.getState().toasts).toHaveLength(0);
+    });
+  });
+
+  describe('unload guard', () => {
+    const save = vi.mocked(storage.saveLayoutWithMetadata);
+
+    function unloadIsBlocked(): boolean {
+      const event = new Event('beforeunload', { cancelable: true });
+      window.dispatchEvent(event);
+      return event.defaultPrevented;
+    }
+
+    async function advance(ms: number): Promise<void> {
+      await act(async () => {
+        timerUtils.advanceTime(ms);
+        for (let i = 0; i < 5; i++) await Promise.resolve();
+      });
+    }
+
+    beforeEach(() => {
+      save.mockImplementation((id, _layout, library) =>
+        Promise.resolve(saveResultFor(id, library))
+      );
+    });
+
+    it('does not block a reload of a layout that has no edits', async () => {
+      renderHook(() => useAutoSave());
+      expect(unloadIsBlocked()).toBe(false);
+
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(unloadIsBlocked()).toBe(false);
+    });
+
+    it('blocks a reload while an edit waits to save, and stops once it is saved', async () => {
+      renderHook(() => useAutoSave());
+
+      act(() => {
+        useLayoutStore.getState().updateDrawer({ width: gridUnits(12), depth: gridUnits(10) });
+      });
+      expect(unloadIsBlocked()).toBe(true);
+
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(unloadIsBlocked()).toBe(false);
+    });
+
+    it('blocks a reload while a save is failed, and stops once a retry saves', async () => {
+      save.mockResolvedValueOnce(err(storageQuotaExceeded()));
+      renderHook(() => useAutoSave());
+
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(unloadIsBlocked()).toBe(true);
+
+      await advance(2000);
+      expect(save).toHaveBeenCalledTimes(2);
+      expect(unloadIsBlocked()).toBe(false);
+    });
+
+    it('removes the guard on unmount', async () => {
+      save.mockResolvedValue(err(storageQuotaExceeded()));
+      const { unmount } = renderHook(() => useAutoSave());
+
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(unloadIsBlocked()).toBe(true);
+
+      unmount();
+      expect(unloadIsBlocked()).toBe(false);
     });
   });
 });
