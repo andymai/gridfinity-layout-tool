@@ -1,0 +1,23 @@
+apps/docs/.vitepress/theme/components/Screenshot.vue
+  s_1cc363bb3cc76d::t_01fd8aa38fd3d5 40
+apps/docs/.vitepress/theme/custom.css
+  s_1cc363bb3cc76d::t_4aac9df9a9cac5 75-80
+scripts/docs-capture/encode.ts
+  s_1cc363bb3cc76d::t_88f6cc59c6b6f0 65-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "58908c5cd4649b495040ce279c14ea2b07c809a8",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
