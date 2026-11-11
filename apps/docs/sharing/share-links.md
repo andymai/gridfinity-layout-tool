@@ -51,13 +51,13 @@ Links don't expire. A link stays until you delete it. [Your data and privacy](..
 
 The server turns away a layout that is too large or that holds blocked text:
 
-| Limit                   | Value                                                        |
-| ----------------------- | ------------------------------------------------------------ |
-| Size of the layout data | 500 KB                                                       |
-| Bins in the layout      | 2,500                                                        |
-| Labels and notes        | No web addresses, and no character 11 or more times in a row |
+| Limit                   | Value                                                                            |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| Size of the layout data | 500 KB                                                                           |
+| Bins in the layout      | 2,500                                                                            |
+| Text                    | No web addresses, no character 11 or more times in a row, and no offensive words |
 
-If the server refuses the text, the error message points you to the bin labels and notes.
+If the server refuses the text, the error message names where it found it.
 
 ## What the other person sees
 
@@ -117,17 +117,11 @@ Read the message, and do what it asks:
 
 | Message is about   | What to do                                                                                 |
 | ------------------ | ------------------------------------------------------------------------------------------ |
-| Blocked content    | Find the blocked text, and change it. The list below the table tells you where to look.    |
+| Blocked content    | Change the text that the message names, then share again.                                  |
 | A layout too large | Remove bins that you don't need, or [share without the server](#share-without-the-server). |
 | Too many bins      | Remove bins until the layout has 2,500 or fewer.                                           |
 
-The message about blocked content names only bin labels and notes. But the server reads all the text that you share:
-
-- The layout name and the category names
-- The label, the notes, the custom properties and the items of each bin
-- The name of each linked design, and all the text in it
-
-In that text, remove web addresses that start with `http://` or `https://`. Where one character comes 11 or more times in a row, type it fewer times. Remove `<script`, `javascript:`, and each equals sign (=) that comes after a word. Then reword offensive words. The server also finds them inside longer words, so a normal word can match.
+The server reads all the text that you share. That is the layout name, the category names, each linked bin design, and the labels, notes, contents and custom properties of each bin. In the text that the message names, remove web addresses that start with `http://`, `https://` or `www.`. Type a character fewer times where it comes 11 or more times in a row. Then reword offensive words.
 
 ### The link says that the share isn't found
 

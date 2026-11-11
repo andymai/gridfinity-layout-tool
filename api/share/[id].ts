@@ -30,6 +30,7 @@ import {
   type ShareData,
   rateLimited,
   sendError,
+  contentBlocked,
   loadShare,
 } from '../lib/shared.js';
 
@@ -197,14 +198,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
 
     // Content filtering
     const contentResult = filterLayoutContent(validationResult.layout);
-    if (!contentResult.passed) {
-      return sendError(
-        res,
-        400,
-        ErrorCode.CONTENT_BLOCKED,
-        `Content blocked: ${contentResult.reason}`
-      );
-    }
+    if (!contentResult.passed) return contentBlocked(res, contentResult);
 
     const designsResult = validateSharedDesigns(linkedDesigns);
     if (isSharedDesignsError(designsResult)) {
@@ -215,14 +209,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
     }
 
     const designContent = filterSharedDesignsContent(designsResult.designs);
-    if (!designContent.passed) {
-      return sendError(
-        res,
-        400,
-        ErrorCode.CONTENT_BLOCKED,
-        `Content blocked: ${designContent.reason}`
-      );
-    }
+    if (!designContent.passed) return contentBlocked(res, designContent);
 
     const meshFiles = await resolveShareMeshFiles(
       req,

@@ -316,6 +316,72 @@ describe('filterLayoutContent', () => {
       expect(result.passed).toBe(false);
     });
   });
+
+  describe('maker words that contain a listed term', () => {
+    it.each(['Spices', 'Spiced rum', 'Flame retardant tape', 'cp sockets', 'Scunthorpe bolts'])(
+      'passes the bin label %s',
+      (label) => {
+        const result = filterLayoutContent({
+          name: 'Kitchen',
+          bins: [{ label }],
+          categories: [{ name: 'Default' }],
+        });
+
+        expect(result).toEqual({ passed: true });
+      }
+    );
+
+    it('passes a category and a layout name made of such words', () => {
+      const result = filterLayoutContent({
+        name: 'Vandyke brown paints',
+        bins: [],
+        categories: [{ name: 'Spices' }],
+      });
+
+      expect(result.passed).toBe(true);
+    });
+  });
+
+  describe('key=value notes', () => {
+    it.each([
+      'Connector=JST',
+      'Font=Arial',
+      'Content = M3 screws',
+      'Monitor=27in',
+      'One=M3, Two=M4',
+    ])('passes the note %s', (notes) => {
+      const result = filterLayoutContent({
+        name: 'Electronics',
+        bins: [{ label: 'Cables', notes }],
+        categories: [{ name: 'Default' }],
+      });
+
+      expect(result).toEqual({ passed: true });
+    });
+  });
+
+  describe('the field a block names', () => {
+    const clean = { name: 'My Layout', bins: [], categories: [{ name: 'Default' }] };
+
+    it.each([
+      ['layoutName', { ...clean, name: 'kys' }],
+      ['category', { ...clean, categories: [{ name: 'kys' }] }],
+      ['binLabel', { ...clean, bins: [{ label: 'kys' }] }],
+      ['binNotes', { ...clean, bins: [{ label: 'Tools', notes: 'kys' }] }],
+      ['binItem', { ...clean, bins: [{ items: [{ name: 'Screws', note: 'kys' }] }] }],
+      ['binProperty', { ...clean, bins: [{ customProperties: { kys: 'M3' } }] }],
+      ['binProperty', { ...clean, bins: [{ customProperties: { Size: 'kys' } }] }],
+    ])('names %s', (field, layout) => {
+      const result = filterLayoutContent(layout);
+
+      expect(result.passed).toBe(false);
+      expect(result.field).toBe(field);
+    });
+
+    it('names no field when the layout passes', () => {
+      expect(filterLayoutContent(clean)).toEqual({ passed: true });
+    });
+  });
 });
 
 describe('filterDisplayName', () => {
@@ -379,6 +445,13 @@ describe('filterSharedDesignsContent', () => {
 
     expect(result.passed).toBe(false);
     expect(result.reason).toContain('text');
+  });
+
+  it.each([
+    ['name', design({ name: 'kys' })],
+    ['engraved text', design({ params: { surfaceText: { lidText: 'kys' } } })],
+  ])('names the linked design as the field when its %s is blocked', (_part, blocked) => {
+    expect(filterSharedDesignsContent([design(), blocked]).field).toBe('linkedDesign');
   });
 
   it('blocks an offensive cutout label nested in an array', () => {
@@ -531,6 +604,94 @@ describe('checkText', () => {
     for (const text of sample) {
       expect(checkText(text).passed).toBe(filterDisplayName(text).passed);
     }
+  });
+
+  it.each([
+    'www.example.com',
+    'Get the STL at WWW.Example.org/thing/42',
+    'mirror:www.spam-site.net',
+    'www.例子.com',
+    'www.example.中国',
+    'www.उदाहरण.भारत',
+  ])('rejects the scheme-less link %s', (text) => {
+    expect(checkText(text).passed).toBe(false);
+  });
+
+  it.each([
+    '3.5mm drill',
+    'Firmware v2.1',
+    'bracket.stl',
+    'README.md',
+    'e.g. M3 screws',
+    'www.',
+    'www.例子',
+  ])('passes dotted text that is not a link: %s', (text) => {
+    expect(checkText(text).passed).toBe(true);
+  });
+
+  it.each([
+    'spic',
+    'Spics',
+    'retarded',
+    'Retards',
+    'niggers',
+    'n1ggers',
+    'faggots',
+    'faggot2',
+    '#retard',
+    'some_cunt_here',
+  ])('still rejects %s', (text) => {
+    expect(checkText(text).passed).toBe(false);
+  });
+
+  it.each(['kill-yourself', 'KILL   YOURSELF', 'kill\nyourself'])(
+    'rejects a listed phrase split by punctuation or extra space: %j',
+    (text) => {
+      expect(checkText(text).passed).toBe(false);
+    }
+  );
+
+  it.each([
+    'niggerish',
+    'dumbnigger',
+    'n.i.g.g.e.r',
+    'faggotry',
+    'bigfaggot',
+    'killyourself',
+    'gokillyourself',
+    'kill_your_self',
+    'childporn',
+  ])('rejects %s, which holds a term matched anywhere', (text) => {
+    expect(checkText(text).passed).toBe(false);
+  });
+
+  it.each(['rеtard', 'ｃｕｎｔ', 'k​ys', 'SP1C'])(
+    'rejects a disguised whole-word term: %j',
+    (text) => {
+      expect(checkText(text).passed).toBe(false);
+    }
+  );
+
+  // Pins which terms stay out of ANYWHERE_TERMS: each one occurs inside
+  // innocent text. "Aucun trou" is one of the app's own French strings.
+  it.each([
+    ['cuntface', 'cunt'],
+    ['Aucun trou', 'cunt'],
+    ['twatwaffle', 'twat'],
+    ['niggardly', 'nigga'],
+    ['Log chinking', 'chink'],
+  ])('passes %s, because %s matches whole words only', (text) => {
+    expect(checkText(text).passed).toBe(true);
+  });
+
+  it.each([
+    '<img src=x onerror=alert(1)>',
+    '<svg/onload=alert(1)>',
+    '<a href="#"onmouseover="alert(1)">x</a>',
+    '" autofocus onfocus=alert(1) x="',
+    'document.body.onload=steal',
+  ])('rejects the event attribute in %s', (text) => {
+    expect(checkText(text).passed).toBe(false);
   });
 });
 
