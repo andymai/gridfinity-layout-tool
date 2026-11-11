@@ -1,0 +1,101 @@
+apps/docs/media/designer-size-and-shape-custom-shape.json
+  s_1cc363bb3cc76d::t_9f661ca0d56a13 1-5
+apps/docs/media/designer-special-bins-knife-block.json
+  s_1cc363bb3cc76d::t_2d5c8c57e58783 1-2,5
+  s_1cc363bb3cc76d::t_4b73ed0cba41a4 4
+  s_1cc363bb3cc76d::t_2018e3a57dd58d 3
+apps/docs/designer/walls.md
+  s_1cc363bb3cc76d::t_3ac09152905f35 73
+  s_1cc363bb3cc76d::t_f2e3972abb131b 143
+apps/docs/media/designer-walls-pattern.json
+  s_1cc363bb3cc76d::t_7c811daa5a5527 1-5
+apps/docs/designer/size-and-shape.md
+  s_1cc363bb3cc76d::t_1d003ea19bfee5 72
+apps/docs/media/designer-stacking-top-rim.json
+  s_1cc363bb3cc76d::t_584406f5a06010 1-5
+apps/docs/media/designer-lids-attachment.json
+  s_1cc363bb3cc76d::t_6783db03bc7043 1-5
+apps/docs/media/designer-stacking-assembled-height.json
+  s_1cc363bb3cc76d::t_cb4f237180b9f6 1-5
+apps/docs/designer/lids.md
+  s_1cc363bb3cc76d::t_9f9398c5ac643a 27
+apps/docs/media/designer-special-bins-slant.json
+  s_1cc363bb3cc76d::t_50e5709864a031 1-5
+scripts/docs-capture/shots/designerDetails.ts
+  s_1cc363bb3cc76d::t_9a1ac3abe216d9 503-505
+  s_1cc363bb3cc76d::t_dcb80dcc5076dc 2
+  s_1cc363bb3cc76d::t_3c942203420245 646-652
+  s_1cc363bb3cc76d::t_fd6da8de3d70fe 368,373
+  s_1cc363bb3cc76d::t_70d91c5c9961c7 3-4,6,8-9
+  s_1cc363bb3cc76d::t_0bdfb73f25c7be 228-233,237
+  s_1cc363bb3cc76d::t_215b95e931a3b6 245-247
+  s_1cc363bb3cc76d::t_0dd8e400a18cee 586
+  s_1cc363bb3cc76d::t_ae98fa61dd8079 753
+  s_1cc363bb3cc76d::t_f5e8d83327e2df 662-720,745-747,751,754-755
+  s_1cc363bb3cc76d::t_d474afcb5edec4 439,442
+  s_1cc363bb3cc76d::t_89c34cd95fba6f 723-730,732
+  s_1cc363bb3cc76d::t_3c8a5b5a3032c1 721-722,731,733-744,752
+  s_1cc363bb3cc76d::t_b37fe368254cc8 422
+  s_1cc363bb3cc76d::t_80619223a772e0 309-321,325-332,339-352,764
+  s_1cc363bb3cc76d::t_d1b8990dc9149a 119
+  s_1cc363bb3cc76d::t_42b7a5cef4fa55 163-201,204-209
+  s_1cc363bb3cc76d::t_c2c0da93c572b2 19-26
+  s_1cc363bb3cc76d::t_7fb28dbce5856e 536-540,543-544
+  s_1cc363bb3cc76d::t_792b45dcb7eb76 562-564,568
+  s_1cc363bb3cc76d::t_0081e53f3e397a 590-622,624-643,653-661
+  s_1cc363bb3cc76d::t_f2b9c531a30cdb 644-645
+  s_1cc363bb3cc76d::t_e6b1dc89188765 369-370,372,374-376
+  s_1cc363bb3cc76d::t_8339ee2859c943 438,440
+  s_1cc363bb3cc76d::t_038a394a39b8b4 623
+  s_1cc363bb3cc76d::t_1a41ce605def18 585
+  s_1cc363bb3cc76d::t_1de426a2703618 137-154,158
+  s_1cc363bb3cc76d::t_a379f55af1d2ba 1,5,7,11-18,27-49,60-64,66-68,99-102,104,107,111,115-118,120,122-124,128,130,132-136
+  s_1cc363bb3cc76d::t_f7b0b4ba3adac3 506
+  s_1cc363bb3cc76d::t_2d5c8c57e58783 748-750,769
+  s_1cc363bb3cc76d::t_954342405acc29 768
+  s_1cc363bb3cc76d::t_0a5c6d00143789 432-435,444-445,449-495,507,509
+  s_1cc363bb3cc76d::t_e45aad8b4f0ee4 515-525
+  s_1cc363bb3cc76d::t_d70269e69ba209 353-367,377-388,390-398,765
+  s_1cc363bb3cc76d::t_6450b4773c12b4 766-767
+  s_1cc363bb3cc76d::t_2364006e300351 399-418,421,423-431,436-437,441,443,513-514,526-535,541-542,545-561,565-567,569-584,587-589
+  s_1cc363bb3cc76d::t_64f18c900f3e88 69-98,103,105-106,110,121,125-127,129,131
+  s_1cc363bb3cc76d::t_79456cc247a29c 155-157,159-162
+  s_1cc363bb3cc76d::t_86bfdee5eeeed1 264-308,758-763,770
+  s_1cc363bb3cc76d::t_a7bb569fb42138 210-227,234-236,238-244,248-263
+  s_1cc363bb3cc76d::t_eab1b98b61e68c 202-203
+  s_1cc363bb3cc76d::t_b798e3bb1e509d 108-109,112-114
+  s_1cc363bb3cc76d::t_4d62ecf9511fb5 389
+  s_1cc363bb3cc76d::t_0ba2c1853a30a8 322-324,333-338
+  s_1cc363bb3cc76d::t_0bf3e7c1017804 446-448,496-502,508,510-512
+  s_1cc363bb3cc76d::t_27434ddedf634d 419-420
+  s_1cc363bb3cc76d::t_1452e6da2481a5 50-59,65
+  s_1cc363bb3cc76d::t_a2210a05ac7695 10,371
+apps/docs/designer/stacking.md
+  s_1cc363bb3cc76d::t_dfc562136518af 52
+apps/docs/media/designer-walls-drainage.json
+  s_1cc363bb3cc76d::t_f0910e1a71d5f4 1-5
+apps/docs/media/designer-save-and-reuse-library.json
+  s_1cc363bb3cc76d::t_b9a60a0cc8c663 4
+  s_1cc363bb3cc76d::t_237d0037bd4cf8 1-3,5
+apps/docs/designer/special-bins.md
+  s_1cc363bb3cc76d::t_a7c1019e54254f 68
+  s_1cc363bb3cc76d::t_242efdd91a15ca 39
+apps/docs/media/designer-size-and-shape-dimensions.json
+  s_1cc363bb3cc76d::t_9f661ca0d56a13 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "20e2d0c5b860d19640819de4addd363f0b03e7a7",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
