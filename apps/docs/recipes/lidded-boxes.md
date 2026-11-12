@@ -83,12 +83,14 @@ The bin designer saves each change, so you never press save. An STL export is a 
 
 ## Step 7: Print and fit the magnets
 
+The back magnets go in the other way up from the front ones. Then the lid closes only one way round, and a lid that is turned around pushes away.
+
 1. Print the box, the lid and the stack plate.
 2. Glue the stack plate onto the lid top, with the grid up.
-3. Glue a magnet into each corner of the box, all with the same side up.
-4. Put a loose magnet on a box magnet, so that the two pull together. Mark the top of the loose magnet with a pen.
-5. Glue that magnet into a corner pocket of the lid, with the marked side into the pocket. Do the same for each corner.
-6. Before the glue sets, put the lid on, and make sure that each corner pulls shut.
+3. Stack the 8 magnets of one box into a column. Mark the top of each magnet with a pen while it is on the column, so that each mark is on the same pole.
+4. Glue the 2 front magnets of the box with the mark up, and the 2 back magnets with the mark down.
+5. Pick one long edge of the lid as its front. Glue the 2 front magnets of the lid with the mark into the pocket, and the 2 back magnets with the mark out.
+6. Before the glue sets, put the lid on with its front at the front of the box, and make sure that each corner pulls shut. Then turn the lid around, and make sure that it pushes away.
 
 ## When it goes wrong
 
@@ -98,7 +100,11 @@ Pick <Ui k="binDesigner.lid.attachment.magnetic" /> or <Ui k="binDesigner.lid.at
 
 ### One corner of the lid pushes away
 
-The lid magnet in that corner is the wrong way round. Before the glue sets, take it out and turn it over.
+Make sure that the lid is the correct way round. If it is, the lid magnet in that corner is the wrong way up. Before the glue sets, take it out and turn it over.
+
+### The lid closes both ways round
+
+The back magnets face the same way as the front ones. Before the glue sets, turn over the 2 back magnets of the box and the 2 back magnets of the lid.
 
 ### The box on top slides off the lid
 

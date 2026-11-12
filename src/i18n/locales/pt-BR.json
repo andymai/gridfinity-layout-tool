@@ -1679,7 +1679,7 @@
   "binDesigner.lid.retentionMagnetDiameter": "Diâmetro do ímã",
   "binDesigner.lid.retentionMagnetDiameterAria": "Diâmetro do ímã de retenção em milímetros",
   "binDesigner.lid.retentionMagnetHint": "Pressione um ímã de ⌀{diameter} × {depth} mm em cada canto do compartimento e da tampa.",
-  "binDesigner.lid.retentionMagnetHintDetail": "Cole-os de modo que cada ímã da tampa atraia o ímã do compartimento logo abaixo.",
+  "binDesigner.lid.retentionMagnetHintDetail": "Cole os ímãs de trás invertidos em relação aos da frente, no compartimento e na tampa. Cada ímã da tampa deve atrair o ímã do compartimento logo abaixo, assim a tampa só fecha em um sentido.",
   "binDesigner.lid.section.attaches": "Como se fixa",
   "binDesigner.lid.section.grip": "Pega da tampa",
   "binDesigner.lid.section.text": "Texto da tampa",
