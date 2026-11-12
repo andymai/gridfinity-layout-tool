@@ -464,9 +464,6 @@ export default function App() {
           return null;
         })()}
 
-        {/* ARIA live region for screen reader announcements */}
-        <LiveRegion />
-
         {/* Shared layout URL importer - only load when URL has share params */}
         {hasShareUrl && (
           <BackgroundMountBoundary mountName="SharedLayoutImporter">
@@ -506,6 +503,9 @@ export default function App() {
         </Suspense>
       </BackgroundMountBoundary>
       {routeContent}
+      {/* The only reader of liveMessage. It stays outside routeContent so that
+          every shell tree and route has exactly one. */}
+      <LiveRegion />
       <ToastContainer />
       {binExampleGalleryOpen && (
         <Suspense fallback={null}>
