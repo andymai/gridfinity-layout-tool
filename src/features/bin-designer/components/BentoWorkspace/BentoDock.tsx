@@ -203,7 +203,7 @@ export function BentoDock({
                     data-testid={`bento-dock-row-${row.id}`}
                     className={`h-auto justify-start gap-2 rounded-md px-2 py-1.5 text-left text-xs font-normal transition-colors ${
                       isSelected
-                        ? 'bg-accent/20 text-content-primary'
+                        ? 'bg-accent/20 text-content'
                         : 'text-content-secondary hover:bg-surface-hover'
                     }`}
                   >

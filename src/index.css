@@ -137,6 +137,16 @@
   /* Motion easings - generate ease-out-quart / ease-in-out-quart utilities */
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+
+  /* Enter animations are theme keys, not plain classes, so that variants such
+     as motion-safe: and max-md: apply to them. */
+  --animate-fade-in: fadeIn var(--transition-normal) forwards;
+  --animate-scale-in: scaleIn var(--transition-normal) forwards;
+  --animate-slide-up: slideUp var(--transition-normal) forwards;
+  --animate-slide-down: slideDown var(--transition-normal) forwards;
+  /* For staggered cards: the backwards fill holds the first frame through the
+     card's inline animationDelay, so no card shows before its turn. */
+  --animate-fade-in-up: slideUp var(--transition-normal) backwards;
 }
 
 /* Shadow utilities must reference the runtime var, not a build-time literal:
@@ -147,6 +157,13 @@
   --shadow-md: var(--elevation-md);
   --shadow-lg: var(--elevation-lg);
   --shadow-xl: var(--elevation-xl);
+}
+
+/* --shadow-elevated keeps its per-theme value in :root and themes.css under
+   the same name. `reference` stops Tailwind from also writing a copy that
+   points at itself into its theme layer. */
+@theme inline reference {
+  --shadow-elevated: var(--shadow-elevated);
 }
 
 /* 1px that renders as a true hairline on high-density screens. Pair with a
@@ -933,18 +950,6 @@ input[type='range']:hover::-moz-range-thumb {
 }
 
 /* Animation utility classes */
-.animate-fade-in {
-  animation: fadeIn var(--transition-normal) forwards;
-}
-
-.animate-scale-in {
-  animation: scaleIn var(--transition-normal) forwards;
-}
-
-.animate-slide-up {
-  animation: slideUp var(--transition-normal) forwards;
-}
-
 .animate-shake {
   animation: shake 0.4s ease-in-out;
 }
@@ -1269,6 +1274,8 @@ input[type='range']:hover::-moz-range-thumb {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    /* A backwards fill holds a staggered card hidden through its delay. */
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }

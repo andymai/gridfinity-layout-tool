@@ -90,7 +90,7 @@ export function CutoutQuickstartOverlay({
 
   return (
     <div
-      className="absolute top-12 right-3 z-40 w-80 rounded-xl border border-stroke-subtle bg-surface-elevated shadow-lg animate-in fade-in slide-in-from-top-2 duration-200"
+      className="absolute top-12 right-3 z-40 w-80 rounded-xl border border-stroke-subtle bg-surface-elevated shadow-lg animate-slide-down duration-200"
       role="dialog"
       aria-labelledby="cutout-quickstart-title"
     >

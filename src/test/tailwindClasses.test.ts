@@ -16,7 +16,23 @@ describe('findClassesWithoutCss', () => {
   });
 
   it('passes plain classes that the app stylesheet defines', async () => {
-    expect(await findClassesWithoutCss(['animate-fade-in', 'btn'])).toEqual([]);
+    expect(await findClassesWithoutCss(['animate-settle-in', 'btn'])).toEqual([]);
+  });
+
+  it('passes plain classes from a stylesheet that a component imports', async () => {
+    expect(await findClassesWithoutCss(['no-print', 'print-portal'])).toEqual([]);
+  });
+
+  it('passes the theme animations and the elevated shadow, with variants', async () => {
+    expect(
+      await findClassesWithoutCss([
+        'motion-safe:animate-fade-in',
+        'animate-fade-in-up',
+        'animate-slide-down',
+        'max-md:animate-slide-up',
+        'shadow-elevated',
+      ])
+    ).toEqual([]);
   });
 
   it('passes the group and peer markers', async () => {
@@ -30,8 +46,8 @@ describe('findClassesWithoutCss', () => {
   });
 
   it('reports a variant on a plain class, which Tailwind cannot generate', async () => {
-    expect(await findClassesWithoutCss(['motion-safe:animate-fade-in'])).toEqual([
-      'motion-safe:animate-fade-in',
+    expect(await findClassesWithoutCss(['motion-safe:animate-settle-in'])).toEqual([
+      'motion-safe:animate-settle-in',
     ]);
   });
 

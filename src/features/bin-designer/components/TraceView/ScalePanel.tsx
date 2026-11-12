@@ -147,7 +147,7 @@ export function ScalePanel({
 
   return (
     <section className="flex flex-col gap-2" aria-labelledby={`${fieldId}-heading`}>
-      <h3 id={`${fieldId}-heading`} className="text-sm font-semibold text-content-primary">
+      <h3 id={`${fieldId}-heading`} className="text-sm font-semibold text-content">
         {t('binDesigner.cutouts.traceView.scale.heading')}
       </h3>
 
@@ -158,7 +158,7 @@ export function ScalePanel({
           </p>
           {marks.length === 2 && (
             <div className="flex flex-col gap-1">
-              <label htmlFor={fieldId} className="text-xs font-medium text-content-primary">
+              <label htmlFor={fieldId} className="text-xs font-medium text-content">
                 {t('binDesigner.cutouts.traceView.ruler.length')}
               </label>
               <Input

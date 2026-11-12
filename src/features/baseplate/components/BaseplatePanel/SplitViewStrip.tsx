@@ -275,7 +275,7 @@ export function SplitViewStrip({
                       overage
                         ? 'border-danger bg-danger/10 text-danger ring-1 ring-danger'
                         : isSelected
-                          ? 'border-accent bg-surface-elevated text-content-primary ring-2 ring-accent'
+                          ? 'border-accent bg-surface-elevated text-content ring-2 ring-accent'
                           : isHovered
                             ? 'border-accent/50 bg-surface-elevated text-content-secondary ring-1 ring-accent/50'
                             : 'border-stroke-subtle bg-surface-elevated text-content-tertiary'

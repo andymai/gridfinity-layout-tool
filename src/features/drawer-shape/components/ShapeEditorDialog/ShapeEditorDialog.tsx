@@ -219,7 +219,7 @@ export function ShapeEditorDialog({ open, onClose }: ShapeEditorDialogProps) {
                     className={
                       filled
                         ? 'rounded-sm bg-accent/70 ring-1 ring-accent'
-                        : 'rounded-sm bg-surface-sunken ring-1 ring-stroke-subtle'
+                        : 'rounded-sm bg-surface ring-1 ring-stroke-subtle'
                     }
                   />
                 );

@@ -1,6 +1,6 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { __unstable__loadDesignSystem } from 'tailwindcss';
 
 type DesignSystem = Awaited<ReturnType<typeof __unstable__loadDesignSystem>>;
@@ -27,28 +27,30 @@ function collectPlainClasses(css: string, into: Set<string>): void {
 }
 
 async function loadAppStyles(): Promise<AppStyles> {
-  const plainClasses = new Set<string>();
-  const read = (path: string): string => {
-    const content = readFileSync(path, 'utf8');
-    if (path.startsWith(SRC_DIR)) collectPlainClasses(content, plainClasses);
-    return content;
-  };
-
-  const designSystem = await __unstable__loadDesignSystem(read(APP_STYLESHEET), {
+  const designSystem = await __unstable__loadDesignSystem(readFileSync(APP_STYLESHEET, 'utf8'), {
     base: dirname(APP_STYLESHEET),
     loadStylesheet: async (id, base) => {
       const path =
         id === 'tailwindcss' ? require.resolve('tailwindcss/index.css') : resolve(base, id);
-      return { path, base: dirname(path), content: read(path) };
+      return { path, base: dirname(path), content: readFileSync(path, 'utf8') };
     },
   });
+  // Read every stylesheet, not only index.css and its imports: some
+  // components import their own (print.css).
+  const plainClasses = new Set<string>();
+  for (const entry of readdirSync(SRC_DIR, { recursive: true, encoding: 'utf8' })) {
+    if (entry.endsWith('.css')) {
+      collectPlainClasses(readFileSync(join(SRC_DIR, entry), 'utf8'), plainClasses);
+    }
+  }
   return { designSystem, plainClasses };
 }
 
 /**
- * The classes that the app's stylesheet (`src/index.css`, its Tailwind theme
- * and its imports) gives no rule. Tailwind drops an unknown utility without a
- * warning, so a class such as `bg-primary` renders as nothing.
+ * The classes that the app's stylesheets give no rule: `src/index.css` with
+ * its Tailwind theme and imports, and every other stylesheet under `src`.
+ * Tailwind drops an unknown utility without a warning, so a class such as
+ * `bg-primary` renders as nothing.
  */
 export async function findClassesWithoutCss(classNames: Iterable<string>): Promise<string[]> {
   appStyles ??= loadAppStyles();

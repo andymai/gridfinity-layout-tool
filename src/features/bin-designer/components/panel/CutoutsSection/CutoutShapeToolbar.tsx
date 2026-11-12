@@ -100,7 +100,7 @@ export function CutoutShapeToolbar({
     : 'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all duration-100 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60';
   const btnActive = 'bg-accent text-on-accent shadow-sm ring-1 ring-accent/40';
   const btnInactive =
-    'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover hover:text-content-primary hover:border-stroke';
+    'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover hover:text-content hover:border-stroke';
   // The scan action is special (not a drawing tool); a subtle accent tint
   // makes it discoverable without competing with the active-tool highlight.
   const btnAccent =

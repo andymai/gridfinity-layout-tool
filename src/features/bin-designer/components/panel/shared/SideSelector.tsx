@@ -115,7 +115,7 @@ function Cross({
       {middle ?? (
         // Center bin glyph: grounds the four sides in physical space.
         <div aria-hidden className="col-start-2 row-start-2 flex items-center justify-center">
-          <div className="h-5 w-7 rounded-sm border border-stroke-subtle bg-surface-tertiary" />
+          <div className="h-5 w-7 rounded-sm border border-stroke-subtle bg-surface-elevated" />
         </div>
       )}
     </div>

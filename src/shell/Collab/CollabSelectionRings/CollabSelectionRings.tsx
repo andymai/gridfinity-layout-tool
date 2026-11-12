@@ -119,7 +119,7 @@ export function CollabSelectionRings({ className }: CollabSelectionRingsProps) {
       {allRings.map(({ binId, userId, gridCol, gridColSpan, gridRowStart, gridRowSpan, color }) => (
         <div
           key={`${userId}-${binId}`}
-          className="rounded-sm animate-in fade-in duration-200"
+          className="rounded-sm animate-fade-in duration-200"
           style={{
             gridColumn: `${gridCol} / span ${gridColSpan}`,
             gridRow: `${gridRowStart} / span ${gridRowSpan}`,

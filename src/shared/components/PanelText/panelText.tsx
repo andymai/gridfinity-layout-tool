@@ -49,7 +49,7 @@ export function OptionNotes({
     <dl className="space-y-1.5">
       {options.map((option) => (
         <div key={option.label}>
-          <dt className="font-medium text-content-primary">{option.label}</dt>
+          <dt className="font-medium text-content">{option.label}</dt>
           <dd>{option.note}</dd>
         </div>
       ))}

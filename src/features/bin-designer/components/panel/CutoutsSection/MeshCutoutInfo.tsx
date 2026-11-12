@@ -22,7 +22,7 @@ export function MeshCutoutInfo({ cutout }: MeshCutoutInfoProps) {
 
   const { sizeMm } = asset;
   return (
-    <div className="rounded border border-stroke-subtle bg-surface-sunken px-2 py-1.5 text-xs text-content-secondary">
+    <div className="rounded border border-stroke-subtle bg-surface px-2 py-1.5 text-xs text-content-secondary">
       <div className="truncate font-medium text-content" title={asset.name}>
         {asset.name}
       </div>
