@@ -70,6 +70,14 @@ export function useLayoutSwitcher() {
 
   const addToast = useToastStore((state) => state.addToast);
 
+  const failureMessage = useCallback(
+    (error: StorageError | LayoutError, fallbackKey: string): string =>
+      error.code === 'LAYOUT_LIBRARY_LIMIT'
+        ? t('toast.layoutLimitReached', { max: error.maxCount })
+        : t(fallbackKey),
+    [t]
+  );
+
   /**
    * Save the current layout to storage and update library entry.
    * Uses atomic save for data consistency.
@@ -180,7 +188,7 @@ export function useLayoutSwitcher() {
         });
 
         if (isErr(result)) {
-          addToast(t('toast.layoutCreateFailed'), 'error');
+          addToast(failureMessage(result.error, 'toast.layoutCreateFailed'), 'error');
           return result;
         }
 
@@ -205,6 +213,7 @@ export function useLayoutSwitcher() {
       setLibrary,
       activateLayout,
       addToast,
+      failureMessage,
       settings,
       t,
     ]
@@ -278,7 +287,7 @@ export function useLayoutSwitcher() {
         const result = await duplicateLayoutStorage(id, currentLibrary);
 
         if (isErr(result)) {
-          addToast(t('toast.layoutDuplicateFailed'), 'error');
+          addToast(failureMessage(result.error, 'toast.layoutDuplicateFailed'), 'error');
           return result;
         }
 
@@ -295,7 +304,7 @@ export function useLayoutSwitcher() {
         return err(fromUnknown(error));
       }
     },
-    [getEntry, setLibrary, addToast, t]
+    [getEntry, setLibrary, addToast, failureMessage, t]
   );
 
   const renameLayout = useCallback(
@@ -340,7 +349,7 @@ export function useLayoutSwitcher() {
         });
 
         if (isErr(result)) {
-          addToast(t('toast.layoutImportFailed'), 'error');
+          addToast(failureMessage(result.error, 'toast.layoutImportFailed'), 'error');
           return result;
         }
 
@@ -355,7 +364,7 @@ export function useLayoutSwitcher() {
         return err(fromUnknown(error));
       }
     },
-    [setLibrary, addToast, t]
+    [setLibrary, addToast, failureMessage, t]
   );
 
   return {

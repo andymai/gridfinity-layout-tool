@@ -74,10 +74,9 @@ export function SharedLayoutBanner() {
   if (isCollaborative) return null;
 
   const handleSave = async () => {
-    // Add suffix to indicate it was imported
     const savedLayout = {
       ...layout, // Use current layout state (user may have made edits)
-      name: `${sharedLayoutOriginalName || layout.name} (imported)`,
+      name: t('share.banner.importedName', { name: sharedLayoutOriginalName || layout.name }),
     };
 
     // Use atomic createLayoutEntry API for storage + library entry in one operation
@@ -184,7 +183,7 @@ export function SharedLayoutBanner() {
         title={t('share.banner.discardTitle')}
         message={t('share.banner.discardMessage')}
         confirmText={t('share.banner.discardConfirm')}
-        cancelText="Keep viewing"
+        cancelText={t('share.banner.keepViewing')}
         destructive
         onConfirm={handleDiscard}
         onCancel={() => setShowDiscardConfirm(false)}

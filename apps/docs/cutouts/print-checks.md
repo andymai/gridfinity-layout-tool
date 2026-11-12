@@ -62,6 +62,8 @@ Print one small test before the whole bin. A **fit test** shows if your parts fi
 3. Pick a file format and export the file.
 4. Print it flat, the way it comes out, and put each part in its place.
 
+<Screenshot id="cutouts-print-checks-fit-test" alt="The Print fit test button in the Properties tab. In the Cutout fit test dialog, picking Outline only shows Outline height and Ring width, and STEP turns gray." spec="Cut editor, 3x1 bin with three circles and a slot. In close-up, point at Print fit test. In the dialog, click Outline only." />
+
 | Type                                               | What prints                                                                                   | Pick it when                                        | Settings                                                                                                                                                                                          |
 | -------------------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <Ui k="binDesigner.cutouts.fitTest.modeCard" />    | A thin slice of the top of the bin, with every cutout at its real size, position and spacing. | You also want to check the spacing between cutouts. | <Ui k="binDesigner.cutouts.fitTest.thickness" /> starts between 3 and 5 mm, from your deepest cutout. A cutout deeper than the card goes through it.                                              |

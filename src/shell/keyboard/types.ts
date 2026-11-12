@@ -51,7 +51,7 @@ export interface KeyboardContext {
   updateBin: (id: BinId, updates: Partial<Bin>) => Result<unknown, unknown>;
 
   // Mode toggles
-  toggleHalfGridMode: () => Result<undefined, LayoutError>;
+  requestHalfGridToggle: () => void;
 
   handleNavigationKey: (key: string) => void;
   navigateToDesigner: () => void;

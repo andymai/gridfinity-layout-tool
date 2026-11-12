@@ -65,6 +65,8 @@ With the bin selected, change it in the right panel:
 - <Ui k="common.label" />: a name, for example "Screws".
 - <Ui k="common.category" />: a group for the bin. The category gives the bin its color on the grid.
 
+<Screenshot id="getting-started-first-drawer-edit-bin" alt="A selected 2 by 3 bin next to its properties in the right panel. The height goes up to 42 mm, the label Drill bits goes in, and the category changes to Green." spec="Layout editor, desktop 1440 px, empty 9 x 7 grid with one new 2 x 3 bin at the right edge, selected. Click the plus of Height (mm) three times, type Drill bits in Label, pick Green in Category. Frame the bin and the right panel." />
+
 You can also change a bin right on the grid:
 
 | To do this            | Do this                                                                    |
@@ -75,11 +77,15 @@ You can also change a bin right on the grid:
 | Copy a bin            | Press <kbd>Ctrl</kbd>+<kbd>D</kbd> (<kbd>Cmd</kbd>+<kbd>D</kbd> on a Mac). |
 | Delete a bin          | Press <kbd>Delete</kbd>.                                                   |
 
+<Screenshot id="getting-started-first-drawer-grid-edits" alt="On the grid, the Drill bits bin moves up three rows and its right edge drags one cell wider. R turns it, Ctrl D copies it, and Delete removes the copy." spec="Layout editor, desktop 1440 px, 9 x 7 grid with six bins. Drag Drill bits up to rows 4 and 5, drag its right edge one column, press R, Ctrl+D, then Delete. Crop to the grid." />
+
 Keep drawing until the drawer looks right. Made a mistake? Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> (<kbd>Cmd</kbd>+<kbd>Z</kbd> on a Mac) to undo it.
 
 ## Step 5: Look at the drawer in 3D
 
 Click <Ui k="toolbar.3dView" /> in the toolbar above the grid, or press <kbd>V</kbd>. The 3D preview opens next to the grid and shows your bins at their real heights. It's a quick way to spot a bin that is too tall.
+
+<Screenshot id="getting-started-first-drawer-3d-view" alt="Clicking 3D View in the toolbar opens the 3D preview beside the grid. A close-up shows each bin at its real height." spec="Layout editor, desktop 1440 px, 9 x 7 grid with six bins of 3u and 6u. Click 3D View, then cut to the preview, zoomed on the bins." />
 
 ## Step 6: Read the print list
 
@@ -97,8 +103,13 @@ A bin on the grid has no print file until you link it to a saved design. Here's 
 1. Select a bin on the grid. In the right panel, under <Ui k="designLinking.inspector.linkedDesign" />, click <Ui k="designLinking.inspector.createDesign" />.
 2. A window titled <Ui k="designLinking.createDialog.title" /> opens. Type a name, or click <Ui k="designLinking.createDialog.useLabel" />.
 3. Click <Ui k="designLinking.createDialog.create" />. The bin designer opens with a new design at the size of the bin. The Layout Tool saves the design and links it to the bin for you.
+
+<Screenshot id="getting-started-first-drawer-create-design" alt="Selecting the Drill bits bin and clicking Create under Linked design. In the Create design from bin window, Use bin label fills in the name, and Create & open designer opens the bin designer with the new design." spec="Layout editor, desktop 1440 px, 9 x 7 grid with six bins. Click Drill bits, then Create in the right panel. In the window, click Use bin label, then Create & open designer. Cut to the bin designer with the 3 x 2 bin." />
+
 4. Click <Ui k="toolSwitcher.layout" /> in the tool switcher to go back to the layout editor.
 5. Click <Ui k="header.export" /> in the header, then click <Ui k="layoutExport.download" />.
+
+<Screenshot id="getting-started-first-drawer-export" alt="The Export window of the layout editor, with the format, the file name, a note that 5 of the 6 bins have no linked design and are skipped, and Download ZIP." spec="Layout editor, desktop 1440 px, 9 x 7 grid with six bins, Drill bits linked to a design made with Create. Click Export in the header. Crop to the window." />
 
 The ZIP file holds each linked bin and the baseplate for the drawer. The export skips bins without a linked design and tells you how many it skipped. [Design your first bin](./first-bin) shows what you can change in the design.
 

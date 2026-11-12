@@ -90,6 +90,8 @@ Click <Ui k="header.help" /> in the header, or press <kbd>?</kbd> or <kbd>/</kbd
 
 Can't find a control? Type in the search field at the top of the window. The search finds shortcuts and features for the tool that you have open. A result for a control has a <Ui k="help.goTo" /> button, which takes you straight to it. In the layout editor, if no result matches, click <Ui k="help.openCommandPaletteWithQuery" />.
 
+<Screenshot id="getting-started-workspace-tour-help-search" alt="Pressing ? opens the help window. Typing half finds the Half-grid mode feature, and Go to takes you to its switch in the sidebar, which flashes." spec="Layout editor, desktop 1440 px, sample layout. Press ?, type half, click Go to on the Half-grid mode result. Cut to the switch in the left sidebar." />
+
 ## The bin designer and the baseplate generator
 
 The other two tools follow the same plan: a header, a settings panel on the left, and a 3D preview on the right.
@@ -116,6 +118,8 @@ The bin designer panel puts its settings in five groups. Click a group to open i
 
 This is the <Ui k="binDesigner.panel.viewAsScroll" /> view, the default, and every bin designer page in these docs uses it. A switch next to the search field at the top of the panel also offers <Ui k="binDesigner.panel.viewAsRail" />, a more compact view of the same settings.
 
+<Screenshot id="getting-started-workspace-tour-designer" alt="The bin designer header with the tool switcher, the design name and its buttons, above the settings panel with the Shape, Lid, Interior, Base and Finishing groups closed." spec="Bin designer, desktop 1440 px, a 3 x 2 x 4 design. Close all five groups. Crop to the header up to Version history and the panel down to the Finishing group." />
+
 The baseplate generator header has the tool switcher, the baseplate name, and <Ui k="common.export" />. Its panel starts with the <Ui k="baseplate.sectionDimensions" /> and <Ui k="baseplate.sectionBase" /> groups. Below them come <Ui k="common.physicalUnits" /> and, for a split plate, the map of pieces.
 
 ## Phones and tablets
@@ -134,6 +138,8 @@ The four phone tabs are:
 - <Ui k="mobile.nav.bin" />: the properties of the selected bin
 - <Ui k="common.categories" />: the categories and their colors
 - <Ui k="mobile.nav.list" />: the bin list
+
+<Screenshot id="getting-started-workspace-tour-phone" alt="The layout editor on a phone, with the grid in the middle, the stash below it and the Layers, Bin, Categories and List tabs at the bottom." spec="Layout editor on a 390 x 844 px phone screen, sample layout. Show the full screen." />
 
 On a phone, the grid has no edge handles. To set the drawer size, tap <Ui k="mobile.settings" /> in the header. The command palette and the cutout editor need a larger screen.
 

@@ -8,6 +8,13 @@ vi.mock('@/features/bin-designer/utils/exampleToDesign', () => ({
   exampleToDesign: vi.fn().mockResolvedValue({ ok: true, value: { id: 'd1' } }),
 }));
 
+// The real viewer mounts an R3F Canvas, whose react-use-measure arms a 50 ms
+// timer that unmount does not clear. When it fires after the jsdom teardown,
+// it throws "HTMLElement is not defined" and fails the run.
+vi.mock('./Example3DViewer', () => ({
+  Example3DViewer: () => <div data-testid="example-3d-viewer" />,
+}));
+
 describe('ExampleGalleryContent', () => {
   // Count only card thumbnails, not incidental icon SVGs that may expose role="img".
   const cardThumbCount = (container: HTMLElement): number =>
@@ -39,6 +46,7 @@ describe('ExampleGalleryContent', () => {
     if (firstCard) fireEvent.click(firstCard);
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByTestId('example-3d-viewer')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Back to gallery' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

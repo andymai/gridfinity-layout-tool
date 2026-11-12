@@ -24,6 +24,8 @@ This page also shows how to export a shadow board from the cutout editor.
 
 The panel on the left holds the parts, the build tree and the base settings. The 3D view on the right is where you place the parts. A build saves to your saved designs like a bin, and you can link it to a bin in a layout.
 
+<Screenshot id="cutouts-workshop-start" alt="Clicking Designs in the header, then New Workshop build (experimental) in Saved designs, and New design to confirm. The empty build opens with the parts and the templates in the panel." spec="Bin designer at 1600 x 960 with two named designs. Click Designs, then New Workshop build (experimental), then New design in the confirm box. End on the empty build." />
+
 Not sure what to build first? When the build is empty, the <Ui k="workshop.tree.title" /> section offers templates to start from:
 
 - <Ui k="workshop.template.pliersRack" />
@@ -41,6 +43,8 @@ Under <Ui k="workshop.base.title" />, set the <Ui k="workshop.envelope.width" />
 
 1. In <Ui k="workshop.palette.title" />, click a part.
 2. Click a surface in the 3D view to place it there.
+
+<Screenshot id="cutouts-workshop-place" alt="Clicking Post in Parts, then clicking the base in the 3D view. A post stands on the base where the click lands." spec="New Workshop build with a 2x2 base. In close-up, click Post. In the 3D view, click the middle of the base." />
 
 You can place a part on the base or on top of another part. The <Ui k="workshop.tree.title" /> section shows which part sits on which.
 
@@ -107,6 +111,8 @@ A **shadow board** is a flat outline of a bin top. Use it to cut a matching boar
 2. In the <Ui k="binDesigner.shapeList.tabProperties" /> tab, click <Ui k="binDesigner.shadowBoard.button" />.
 3. Pick <Ui k="binDesigner.shadowBoard.format.svg" /> or <Ui k="binDesigner.shadowBoard.format.dxf" />. To make each opening larger by its clearance, tick <Ui k="binDesigner.shadowBoard.clearance" />.
 4. Click the download button.
+
+<Screenshot id="cutouts-workshop-shadow-board" alt="Export shadow board in the Properties tab, open, with SVG and DXF, Include each pocket's clearance and Download SVG." spec="Cut editor, 4x2 bin with three cutouts, nothing selected. Click Export shadow board. Crop to the button and its box." />
 
 The file has the outline of the bin and every opening at true size. It includes each copy of a repeat, the result of each group, STL imprints, and openings through a wall. Cutouts that overlap become one opening. Entry edges, depths and leans have no outline.
 

@@ -46,6 +46,24 @@ describe('sharedPreviewStore', () => {
       expect(preview?.linkUpdatedAt).toBe('2026-11-01T10:00:00.000Z');
     });
 
+    it("keeps the map from the owner's design ids to this browser's", () => {
+      const store = useSharedPreviewStore.getState();
+      store.setSharedLayoutPreview(createTestLayout(), 'Name', undefined, 'share-123', 'edit');
+      expect(useSharedPreviewStore.getState().sharedPreview?.designIds).toBeUndefined();
+
+      const designIds = { 'owner-a': 'local-a' };
+      store.setSharedLayoutPreview(
+        createTestLayout(),
+        'Name',
+        undefined,
+        'share-123',
+        'edit',
+        undefined,
+        designIds
+      );
+      expect(useSharedPreviewStore.getState().sharedPreview?.designIds).toEqual(designIds);
+    });
+
     it('clears preview when null is passed', () => {
       const layout = createTestLayout();
       useSharedPreviewStore.getState().setSharedLayoutPreview(layout);

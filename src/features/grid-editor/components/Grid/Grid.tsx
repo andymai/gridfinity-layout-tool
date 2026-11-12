@@ -393,6 +393,11 @@ export function Grid({
                     height: gridHeight,
                     backgroundColor: 'var(--grid-bg)',
                     boxShadow: 'var(--shadow-lg)',
+                    // A hovered or selected bin raises its z-index to the axis
+                    // labels' 30 or past it, and its resize handles reach past
+                    // the grid edge. Without a stacking context of its own, a
+                    // first-column bin covers the row numbers and takes their clicks.
+                    isolation: 'isolate',
                   }}
                   role="application"
                   aria-label={t('grid.gridAria', { width: drawer.width, depth: drawer.depth })}

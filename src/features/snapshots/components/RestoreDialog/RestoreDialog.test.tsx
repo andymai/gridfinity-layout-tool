@@ -45,6 +45,19 @@ describe('RestoreDialog', () => {
     expect(screen.getByText(/3 bins/)).toBeInTheDocument();
   });
 
+  it('counts a single layer in the singular', () => {
+    render(
+      <RestoreDialog
+        snapshot={makeSnapshot()}
+        onReplace={vi.fn()}
+        onCreateCopy={vi.fn()}
+        onClose={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('3 bins · 1 layer')).toBeInTheDocument();
+  });
+
   it('calls onReplace when Restore clicked', () => {
     const onReplace = vi.fn();
     const snapshot = makeSnapshot();

@@ -60,28 +60,6 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
     ) : null,
 }));
 
-vi.mock('@/shell/Modals/HalfGridModeBlockedModal', () => ({
-  HalfGridModeBlockedModal: ({
-    isOpen,
-    onClose,
-    onRemediate,
-  }: {
-    isOpen: boolean;
-    onClose: () => void;
-    onRemediate: () => void;
-  }) =>
-    isOpen ? (
-      <div data-testid="half-bin-blocked-modal">
-        <button data-testid="close-modal" onClick={onClose}>
-          Close
-        </button>
-        <button data-testid="remediate-btn" onClick={onRemediate}>
-          Remediate
-        </button>
-      </div>
-    ) : null,
-}));
-
 vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({ isDesktop: true, isMobile: false, isTablet: false }),
 }));

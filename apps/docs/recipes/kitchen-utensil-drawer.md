@@ -62,6 +62,8 @@ Bins on the first layer start at 3u. In the <Ui k="common.layers" /> panel, set 
 
 The long bins get a <Ui k="grid.split" /> tag or a warning mark on the grid, because 336 mm doesn't fit the bed. Select one, and the inspector shows <Ui k="inspector.split.title" />: it needs 2 pieces. The Gridfinity Layout Tool cuts a long bin into equal pieces, so each piece is a 2 × 4 part of 168 mm. The bin list counts both pieces.
 
+<Screenshot id="recipes-kitchen-utensil-drawer-long-bin" alt="A drag from the front edge draws a 2 by 8 bin on the half grid, and the bin shows a Split tag. The inspector then shows Oversized for print bed: the bin is 84 by 336 mm and the bed is 220 by 220 mm." spec="Clip. Layout editor, desktop 1440 px, half-grid mode on, left panel closed. Layout with a 9.5 x 11 grid, measured size 405 x 480 x 75 mm, print bed 220 x 220 mm, one layer at 6u, no bins. Drag from near the front left corner of column 1 row 1 to near the back right corner of column 2 row 8, so the half-cell snap gives 2 x 8. Crop to the grid, then cut to the warning in the inspector." />
+
 Link each bin to a design, as in [Plan your first drawer](../getting-started/first-drawer#step-7-get-the-print-files). For the four long bins, one design is enough. Link the first, then use <Ui k="designLinking.inspector.linkExisting" /> on the others.
 
 In the design of the long bin, the <Ui k="binDesigner.group.shape" /> group shows the split. Keep <Ui k="binDesigner.splitConnectors" /> on. It adds a sloped joint in the floor, so the two halves line up, with a small gap for glue.
@@ -74,6 +76,8 @@ The half-grid used most of the spare width. Now 6 mm stays free across, and 18 m
 2. Click the millimeter size under the steppers in <Ui k="baseplate.sectionDimensions" />, and type 405 and 480.
 
 The plate keeps the 9.5 × 11 grid. It adds <Ui k="baseplate.padding" /> of 3 mm at each side and 9 mm at the front and the back. The plate is now 405 × 480 mm, and <Ui k="baseplate.syncWithLayout" /> turns off.
+
+<Screenshot id="recipes-kitchen-utensil-drawer-padding" alt="A click on the 399 by 462 mm size line opens two fields. Typing 405 and 480 makes the line read 405 by 480 mm incl. padding, and Sync with layout turns off. The preview then shows the plate in six pieces, with a solid edge at the front and the back." spec="Clip. Baseplate generator, desktop 1440 px, half-grid mode on. Layout with a 9.5 x 11 grid, print bed 220 x 220 mm, Sync with layout on. In a close-up of the Dimensions group, click the size line, type 405, press Tab, type 480, press Enter, with keycaps. Cut to the built plate in the preview." />
 
 Want the bins to fill the gap too? Back in the layout editor, select a bin that touches the edge. Turn on <Ui k="inspector.extendToMargin" /> in the inspector, and its walls grow into the padding. A long bin with 9 mm more at the front still prints in two pieces. Its front piece is 4 × 42 + 9 = 177 mm long, which fits the bed.
 

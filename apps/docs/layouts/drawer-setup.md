@@ -35,6 +35,8 @@ Use the <Ui k="common.widthUnits" /> and <Ui k="common.depthUnits" /> steppers. 
 
 Prefer to drag? Pull the right edge of the grid to add or remove columns. Pull the bottom edge for rows, or the bottom-right corner for both.
 
+<Screenshot id="layouts-drawer-setup-drag-edge" alt="The right edge of the grid is dragged out, and two columns appear. Then the bottom-right corner is dragged out for one more column and one more row." spec="Clip. Layout editor on desktop. Layout with a 5 by 3 drawer and four bins. Drag the handle on the right edge of the grid out by two columns. Then drag the corner handle out by one column and one row. Crop to the canvas between the side panels." />
+
 If the drawer gets smaller, you don't lose anything. Bins that no longer fit move to the **stash**, the holding area below the grid. See [Place and edit bins](./placing-bins#put-bins-in-the-stash).
 
 When the width or the depth ends in .5, <Ui k="sidebar.halfUnitEdgePosition" /> appears. It picks where the half unit goes:
@@ -54,6 +56,8 @@ A real drawer is almost never an exact number of grid units. Measure the inside 
 The line under the steppers then shows the grid size in millimeters and the free space around it. If the grid is larger than the drawer, the line turns into a warning that shows the overlap.
 
 Your measurement doesn't resize the grid on its own. Instead, when a different grid fits better, a card suggests the largest grid that fits and shows the room that it leaves. Click <Ui k="drawerDims.suggestionUse" /> to apply it. If the better fit needs a half unit, the card tells you that it also turns on half-grid mode.
+
+<Screenshot id="layouts-drawer-setup-measured" alt="Add your drawer's measured size is clicked, and 430, 310 and 80 are typed. The line under the steppers warns that the 11 by 8 grid is larger than the drawer. A card suggests 10 by 7 units, and Fit grid applies it." spec="Clip. Layout editor on desktop, left panel open. Layout with an 11 by 8 grid and no measured size. In the Grid size group, click Add your drawer's measured size, type 430, 310 and 80 with Tab between them, and press Enter. Hold on the warning and the card, then click Fit grid. Crop to the Grid size group." />
 
 Happy with your own grid? Close the card with its X button. It stays closed until you enter a different measurement. To remove the measurement, click <Ui k="drawerDims.clear" />, the small X next to the size.
 
@@ -81,6 +85,8 @@ Does your drawer have a notch, a post or a cut corner? Remove the cells that it 
 1. Under the steppers, turn on <Ui k="drawerShape.toggle" />. The <Ui k="drawerShape.editor.title" /> editor opens.
 2. Click or drag across cells to remove them from the drawer.
 3. Click <Ui k="drawerShape.editor.apply" />.
+
+<Screenshot id="layouts-drawer-setup-shape" alt="Custom drawer shape is turned on, and the Drawer shape editor opens. A drag across the back right corner takes six cells out. After Apply shape, the grid has a notch in that corner." spec="Clip. Layout editor on desktop with the Workbench sample, which leaves the back right corner empty. Close-up: turn on Custom drawer shape. Cut to the editor: drag across the six empty cells at the back right, then click Apply shape. Cut to the grid with its new shape." />
 
 Bins outside the new shape move to the stash. For more shape tools, open the <Ui k="drawerShape.actions" /> menu next to the toggle:
 
@@ -116,6 +122,8 @@ Your measurement never resizes the grid on its own. So the grid can stay too lar
 ### The height check says your stack stands above the drawer
 
 Make the tallest stack lower. Select a bin in that stack and make it one height unit shorter. To see which bin heights fit, open <Ui k="stackSolver.title" /> in the <Ui k="common.physicalUnits" /> group.
+
+<Screenshot id="layouts-drawer-setup-height-check" alt="The Grid size group of a drawer with a measured height of 50 mm. Under the measured size, a warning says how far the tallest stack stands above the drawer." spec="Layout editor on desktop, left panel open. Layout with a 4 by 3 drawer, a measured size of 180 x 140 x 50 mm, and a 6u bin stacked on a 3u bin. Crop to the Grid size group, from its title to the line above Half-grid mode." />
 
 The Layout Tool lets you place a bin when its height units fit under <Ui k="sidebar.drawerHeight" />. But each printed bin also has a 4.4 mm stacking lip, and a plate with magnet holes lifts every bin. Only the check against your measured height counts those millimeters. See [How heights add up](../concepts/units#how-heights-add-up).
 

@@ -24,10 +24,26 @@ import { CONSTRAINTS } from '@/core/constants';
 import { getLayerBins } from '@/shared/utils';
 import { getDisplayLayers } from '@/shared/utils/collision';
 import { isOk, isErr, getUserMessage } from '@/core/result';
+import type { LayoutError } from '@/core/result';
+import { useToastStore } from '@/core/store/toast';
 import { useResultToast } from '@/shared/hooks';
 import { useRestingStack } from '@/shared/hooks/useRestingStack';
+import type { StackViolation } from '@/shared/utils/restingStack';
+import { useTranslation } from '@/i18n';
 import type { HeightUnits, Layer, LayerId } from '@/core/types';
 import { batch } from '@/core/cqrs';
+
+const REORDER_BLOCKED_KEY: Record<StackViolation['kind'], string> = {
+  exceeds_height: 'layers.reorderBlocked.exceedsHeight',
+  clearance: 'layers.reorderBlocked.clearance',
+};
+
+function reorderBlockedKey(error: LayoutError): string | undefined {
+  if (error.code !== 'LAYOUT_INVALID_OPERATION' || error.reason === undefined) return undefined;
+  return Object.hasOwn(REORDER_BLOCKED_KEY, error.reason)
+    ? REORDER_BLOCKED_KEY[error.reason as StackViolation['kind']]
+    : undefined;
+}
 
 export interface LayerListController {
   layers: Layer[];
@@ -56,6 +72,8 @@ export function useLayerListController(options?: {
   onReorderError?: (message: string) => void;
 }): LayerListController {
   const onReorderError = options?.onReorderError;
+  const t = useTranslation();
+  const addToast = useToastStore((state) => state.addToast);
   const [deleteLayerId, setDeleteLayerId] = useState<LayerId | null>(null);
 
   const layout = useLayoutStore((state) => state.layout);
@@ -142,12 +160,16 @@ export function useLayerListController(options?: {
     const toArrayIndex = displayToArrayIndex(toDisplayIndex);
     batch(() => {
       const result = reorderLayers(fromArrayIndex, toArrayIndex);
-      if (isErr(result)) {
-        if (onReorderError) {
-          onReorderError(getUserMessage(result.error));
-        } else {
-          showErrorToast(result.error);
-        }
+      if (!isErr(result)) return;
+      const blockedKey = reorderBlockedKey(result.error);
+      if (blockedKey !== undefined) {
+        const message = t(blockedKey);
+        if (onReorderError) onReorderError(message);
+        else addToast(message, 'error');
+      } else if (onReorderError) {
+        onReorderError(getUserMessage(result.error));
+      } else {
+        showErrorToast(result.error);
       }
     });
   };

@@ -45,6 +45,8 @@ An outline is flat, so after an SVG import the editor asks how thick the tool is
 
 The Layout Tool cuts the cutout so the tool sits flush with the top. If the bin is too short, the prompt offers to make it taller.
 
+<Screenshot id="cutouts-import-svg" alt="Clicking Import SVG and choosing a file of a ratchet and its sockets. Each shape comes in as its own cutout. In the prompt, typing 12 in Thickness (mm) and clicking Set depth cuts the pockets 12 mm deep." spec="Cut editor, 4x2 bin, empty. Click Import SVG in the toolbar and choose a 150 x 75 mm SVG with a ratchet path, three circles and a rounded rectangle. Show the board, then type 12 in Thickness (mm) and click Set depth. End on the 3D preview." />
+
 Not sure yet? Click <Ui k="binDesigner.cutouts.depthPrompt.skip" /> to keep the 5 mm start depth. You can change the <Ui k="binDesigner.cutouts.cutDepth" /> of each cutout later.
 
 ## Cut an STL shape into a bin
@@ -68,6 +70,8 @@ The model keeps its real size. The Layout Tool never scales it.
 
 The imprint lands in the middle of the bin. Its depth is the height of the model, and it starts with 0.4 mm of clearance and an entry chamfer. On the board, the imprint shows as its outline seen from above. You can move it and turn it, but you can't change its width or height.
 
+<Screenshot id="cutouts-import-stl-result" alt="Clicking Place in bin in the Place STL imprint dialog. The board shows the outline of the wrench from above, and the 3D preview shows the pocket in its full shape." spec="Cut editor, 4x2 bin. Import the 150 mm wrench STL and click Place in bin. Cut to the board, then to the 3D preview." />
+
 ### Clearance
 
 <Ui k="binDesigner.cutouts.clearance" /> makes the cutout larger than the model on every side, so the real part drops in. For an imprint, it goes up to 5 mm. A model from a 3D scan can have a rough surface, so give it a higher value.
@@ -86,6 +90,8 @@ Want to clean up a traced tool in a vector app? Send it out as an SVG.
 
 1. Select one or more cutouts.
 2. Right-click the selection and click <Ui k="binDesigner.cutouts.exportSvg" />.
+
+<Screenshot id="cutouts-import-export-svg" alt="Two selected slots, and the menu that a right-click opens, with Export SVG under Copy and Duplicate." spec="Cut editor, 3x2 bin, two slots, both selected. Right-click one and hover Export SVG. Crop to the board and the top of the menu." />
 
 The file uses millimeters, so it opens at real size in a vector app. Rectangles and circles stay rectangles and circles. Paths keep their curves, and islands come with them. The outline is the size that you drew, with no clearance.
 

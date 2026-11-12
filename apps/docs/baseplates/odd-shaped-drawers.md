@@ -43,6 +43,8 @@ On a shaped plate, the drawer sets the outer size. Your only free choice is wher
 2. Change the X and Y values of <Ui k="drawerShape.gridAlignment.title" />. For example, push the grid against the front-left corner.
 3. To go back, click <Ui k="drawerShape.gridAlignment.reset" />.
 
+<Screenshot id="baseplates-odd-shaped-grid-position" alt="Grid position in the Dimensions section of a shaped plate. Under Grid shift (mm), X is at minus 6 and Y is at 0. Reset sits beside the Grid shift (mm) label, and a note below gives the alignment in millimeters." spec="Baseplate generator, layout with a 6 by 5 drawer and a shape from Corner cuts, Sync with layout on, grid shift X of minus 6 mm. Crop to the panel from Grid position down to the note under the X and Y values." />
+
 The outer size of the plate stays the same, and only the cells move. The layout editor has the same control under the shape toggle, and both places change the same value.
 
 ## Margins around a shape

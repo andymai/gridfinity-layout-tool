@@ -688,12 +688,7 @@ describe('RightPanel', () => {
       fireEvent.click(screen.getByText('8×8'));
 
       expect(screen.getByTestId('split-preview')).toBeInTheDocument();
-      // Text is split across multiple text nodes: "Split into" + "4" + "Pieces"
-      expect(
-        screen.getByText((content, element) => {
-          return element?.textContent === 'Split into4Pieces';
-        })
-      ).toBeInTheDocument();
+      expect(screen.getByText('Split into 4 pieces')).toBeInTheDocument();
     });
 
     it('collapses split preview when clicked again', () => {

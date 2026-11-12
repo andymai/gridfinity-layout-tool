@@ -13,13 +13,12 @@ import { useLayoutStore } from '@/core/store/layout';
 import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '@/core/constants';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { isBinLocked, planBinRotation } from '@/shared/utils/binLocation';
-import { validateHalfGridModeToggle } from '@/shared/utils/halfGridConstraints';
 import { getLayerBins } from '@/shared/utils/bins';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { findBinById, findBinsByIds } from '@/shared/utils/entity';
 import { expandPairIds, pairPartner } from '@/shared/utils/binPairs';
 import { findNearestBin } from '@/features/grid-editor/utils/navigation';
-import { isOk, isErr } from '@/core/result';
+import { isOk } from '@/core/result';
 import type { BinId, GridUnits } from '@/core/types';
 import type { KeyboardContext } from './types';
 
@@ -284,7 +283,7 @@ export function handleRotate(e: KeyboardEvent, ctx: KeyboardContext): boolean {
 
   const plan = planBinRotation(bin, ctx.layout);
   if (!plan.valid) {
-    ctx.addToast(plan.message, 'error');
+    ctx.addToast(ctx.t(plan.messageKey), 'error');
     return true;
   }
 
@@ -453,16 +452,6 @@ export function handleHalfBinToggle(e: KeyboardEvent, ctx: KeyboardContext): boo
   const ctrlOrMeta = e.ctrlKey || e.metaKey;
   if (e.key.toLowerCase() !== SHORTCUTS.HALF_BIN_TOGGLE || ctrlOrMeta) return false;
   e.preventDefault();
-
-  const result = ctx.toggleHalfGridMode();
-  if (isErr(result)) {
-    const validationResult = validateHalfGridModeToggle(ctx.layout, false);
-    if (validationResult.violation) {
-      ctx.addToast(
-        `Cannot disable half-bin mode: ${validationResult.violation.count} bin${validationResult.violation.count !== 1 ? 's have' : ' has'} fractional dimensions. Move them to staging first.`,
-        'error'
-      );
-    }
-  }
+  ctx.requestHalfGridToggle();
   return true;
 }

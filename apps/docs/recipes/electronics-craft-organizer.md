@@ -60,6 +60,8 @@ Put electronics in the front rows and craft in the back rows. The bottom of the 
 
 A new layout has five categories. In the <Ui k="common.categories" /> group, rename one to Electronics and one to Craft. Select the front bins and click Electronics, then do the same for the back bins and Craft. See [Categories and colors](../layouts/categories).
 
+<Screenshot id="recipes-electronics-craft-organizer-categories" alt="In the Categories group, the edit buttons rename Coral to Craft and Sky to Electronics. A click on row number 1 and a Shift click on row number 6 select the front bins. A click on Electronics turns them blue, and the back bins stay Craft." spec="Clip. Layout editor, 1440 x 780 px. Layout with a 7 x 12 grid, the five default categories, and the 15 bins of the plan, all in Coral. Click the edit button of Coral and type Craft, then of Sky and type Electronics, each with Enter. Click the row 1 number, Shift click the row 6 number with a keycap, then click Electronics. Press Escape off camera, then show the result. Crop to the sidebar and the grid." />
+
 ## Step 3: Design a parts tray with plates
 
 1. Select a parts tray, and click <Ui k="designLinking.inspector.createDesign" /> under <Ui k="designLinking.inspector.linkedDesign" />.

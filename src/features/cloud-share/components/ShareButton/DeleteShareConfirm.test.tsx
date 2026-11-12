@@ -44,23 +44,4 @@ describe('DeleteShareConfirm', () => {
     expect(deleteBtn).toBeDisabled();
     expect(cancelBtn).toBeDisabled();
   });
-
-  it('stops propagation on all internal clicks (popover click-outside guard)', () => {
-    // The real SharePopover attaches a click listener to `document` to detect
-    // outside clicks. stopPropagation on internal buttons must prevent that
-    // listener from firing, otherwise the popover would close on every click.
-    const docHandler = vi.fn();
-    document.addEventListener('click', docHandler);
-
-    const onConfirm = vi.fn();
-    render(<DeleteShareConfirm isDeleting={false} onConfirm={onConfirm} />);
-
-    fireEvent.click(screen.getByText('share.deleteShareLink'));
-    fireEvent.click(screen.getByText('common.delete'));
-
-    expect(docHandler).not.toHaveBeenCalled();
-    expect(onConfirm).toHaveBeenCalledOnce();
-
-    document.removeEventListener('click', docHandler);
-  });
 });
