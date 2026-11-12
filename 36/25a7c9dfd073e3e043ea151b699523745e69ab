@@ -1,0 +1,21 @@
+scripts/check-union-exhaustiveness.sh
+  s_318f7448545264::t_c602276bafd04f 30
+src/shared/types/community.ts
+  s_318f7448545264::t_a561d9ac3a2ac9 148
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3625a7c9dfd073e3e043ea151b699523745e69ab",
+  "prompts": {},
+  "sessions": {
+    "s_318f7448545264": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-ab327ce1e1fd72601",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
