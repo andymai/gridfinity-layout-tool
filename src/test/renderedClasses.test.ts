@@ -124,6 +124,27 @@ const SHORTHAND_RETURN = [
   `};`,
 ].join('\n');
 
+const COMPOSED_PROPS = [
+  `const base = { className: 'h-4 text-accentx', fill: 'none' };`,
+  `const props = { ...base, role: 'img' };`,
+  `const ghost = { className: 'opacity-50' };`,
+  `const tone = { colorClass: 'text-content' };`,
+  `const toned = { ...tone, label: 'Tone' };`,
+  `function iconProps() {`,
+  `  return { ...ghost, 'aria-hidden': true };`,
+  `}`,
+  `function chain(): ChainProps {`,
+  `  return { ...chain(), iconClass: 'w-4' };`,
+  `}`,
+  `export const Icon = () => (`,
+  `  <div {...props}>`,
+  `    <svg {...iconProps()} />`,
+  `    <i {...chain()} />`,
+  `    <b className={toned.colorClass} />`,
+  `  </div>`,
+  `);`,
+].join('\n');
+
 const DOM_ASSIGNMENT = [
   `const PULSE = 'animate-pulse';`,
   `export function showError(root: HTMLElement, visible: boolean): void {`,
@@ -356,6 +377,22 @@ describe('collectRenderedClasses', () => {
   it('reports a misspelled class behind a shorthand property where it is written', async () => {
     expect(await classesWithoutCss(collect({ 'Notice.tsx': SHORTHAND_RETURN }))).toEqual([
       'src/Notice.tsx:1 bg-warning-mutedx',
+    ]);
+  });
+
+  it('reads the entries that an object spreads in from another object or a helper', () => {
+    expect(names({ 'Icon.tsx': COMPOSED_PROPS })).toEqual([
+      'h-4',
+      'text-accentx',
+      'opacity-50',
+      'w-4',
+      'text-content',
+    ]);
+  });
+
+  it('reports a misspelled class that an object spreads in where it is written', async () => {
+    expect(await classesWithoutCss(collect({ 'Icon.tsx': COMPOSED_PROPS }))).toEqual([
+      'src/Icon.tsx:1 text-accentx',
     ]);
   });
 

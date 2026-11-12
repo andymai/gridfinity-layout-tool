@@ -203,6 +203,7 @@ export function collectRenderedClasses(
   const found: RenderedClass[] = [];
   const seen = new Set<ts.Node>();
   const resolving = new Set<ts.Node>();
+  const expanding = new Set<ts.Node>();
 
   const locate = (unit: SourceUnit, node: ts.Node): string => {
     const { line } = unit.source.getLineAndCharacterOfPosition(node.getStart(unit.source));
@@ -407,17 +408,29 @@ export function collectRenderedClasses(
   };
 
   // A shorthand entry (`{ frameClass }`) holds the binding of that name where
-  // the object is written.
-  const objectEntries = (unit: SourceUnit, object: ts.ObjectLiteralExpression): ObjectEntry[] =>
-    object.properties.flatMap((property): ObjectEntry[] => {
+  // the object is written, and a spread entry (`{ ...base }`) holds the
+  // entries of each object that it spreads in. An object on the stack spreads
+  // in nothing, so a helper that returns `{ ...chain(), role }` stops.
+  const objectEntries = (unit: SourceUnit, object: ts.ObjectLiteralExpression): ObjectEntry[] => {
+    if (expanding.has(object)) return [];
+    expanding.add(object);
+    const entries = object.properties.flatMap((property): ObjectEntry[] => {
       if (ts.isPropertyAssignment(property)) {
         return [{ key: propertyName(property.name), value: { unit, node: property.initializer } }];
       }
       if (ts.isShorthandPropertyAssignment(property)) {
         return [{ key: property.name.text, value: { unit, node: property.name } }];
       }
+      if (ts.isSpreadAssignment(property)) {
+        return resolveObjects(unit, property.expression).flatMap((spread) =>
+          ts.isObjectLiteralExpression(spread.node) ? objectEntries(spread.unit, spread.node) : []
+        );
+      }
       return [];
     });
+    expanding.delete(object);
+    return entries;
+  };
 
   // A key known only at runtime (`SIZES[size]`) can select any entry, so the
   // lookup stands for all of them. An array answers only an indexed read.
