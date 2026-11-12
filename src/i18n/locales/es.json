@@ -3281,7 +3281,7 @@
   "designLinking.blockedResize.reasons.cutouts": "Tiene recortes",
   "designLinking.blockedResize.reasons.inserts": "Tiene insertos de piso",
   "designLinking.blockedResize.title": "Diseño no actualizado",
-  "designLinking.confirm.deleteMessage": "This will permanently delete \"{name}\" and unlink it from this bin. This cannot be undone.",
+  "designLinking.confirm.deleteMessage": "Esto eliminará permanentemente el modelo 3D «{name}» y lo desvinculará de este bin. Esto no se puede deshacer.",
   "designLinking.confirm.deleteTitle": "Eliminar modelo 3D",
   "designLinking.confirm.unlinkMessage": "Esto eliminará el vínculo entre esta caja y el modelo 3D. El modelo no se eliminará.",
   "designLinking.confirm.unlinkTitle": "Desvincular modelo 3D",
