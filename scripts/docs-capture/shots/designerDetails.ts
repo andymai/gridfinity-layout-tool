@@ -1393,7 +1393,6 @@ const versions: Shot = {
     const button = await s.box(open);
     // Ends in the gap before the language menu, so no header control is cut in half.
     const header: Rect = { x: button.x + button.width + 6 - 500, y: 0, width: 500, height: 375 };
-    // Room below for the version the clip adds.
     const list = frameAround({ ...naming, height: naming.height + 70 }, 20, 4 / 3, WINDOW);
     await s.ui.park(header.x + header.width * 0.7, header.y + header.height * 0.6);
     await s.take(
