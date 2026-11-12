@@ -75,6 +75,8 @@ Each bin design has the switch <Ui k="binDesigner.splitToFitBed" />. It is on by
 - On the grid, the bin shows <Ui k="grid.oversized" /> instead of <Ui k="grid.split" />. The inspector and the print list tell you that the bin prints in one piece.
 - The layout ZIP writes one file for the bin, and the manifest tells you to split it in your slicer.
 
+<Screenshot id="concepts-print-bed-one-piece" alt="A 6 by 2 bin on a 180 mm print bed shows as two pieces in the bin designer preview. A click turns off Split to fit the print bed. The panel then says that the bin is larger than the bed and exports in one piece, and the preview shows one whole bin." spec="Clip. Bin designer, layout print bed 180 × 180, bin 6 × 2 × 3u. The two pieces apart, a close-up click on Split to fit the print bed, then the whole bin." />
+
 The switch is part of the design, so it applies to each bin of that design, in each layout. Baseplates still split as before. When the switch is off, it stays in the <Ui k="binDesigner.group.shape" /> group even for a bin that fits, so you can turn it on again.
 
 ## When a baseplate is too large
