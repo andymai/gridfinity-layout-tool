@@ -20,6 +20,8 @@ Got a photo of your tools? The Gridfinity Layout Tool finds the outline of each 
 2. Click <Ui k="binDesigner.cutouts.scanImport.title" /> in the editor header, then <Ui k="binDesigner.cutouts.traceView.open" />.
 3. Drop a photo on the window, or click <Ui k="binDesigner.cutouts.traceView.drop.choose" />.
 
+<Screenshot id="cutouts-photo-trace-open" alt="Clicking Scan a tool in the editor header, then From a photo on this computer. Trace a photo opens, and Choose a photo loads a photo of three tools on the calibration sheet, each with a traced outline." spec="Cut editor at 1200 x 900. In close-up, click Scan a tool, then From a photo on this computer. In Trace a photo, click Choose a photo and pick a made-up photo of a wrench, a screwdriver and pliers on the calibration sheet. End on the traced window." />
+
 Shortcut: drop a photo straight on the board, or paste one with <kbd>Ctrl</kbd>+<kbd>V</kbd>. <Ui k="binDesigner.cutouts.traceView.title" /> then opens with that photo.
 
 ## Take a photo that traces well
@@ -64,6 +66,8 @@ Some tools have holes, such as the ring of a spanner. Turn on <Ui k="scan.review
 
 <Ui k="scan.review.keepHoles" /> is off at the start, because a shiny reflection can look like a hole.
 
+<Screenshot id="cutouts-photo-trace-islands" alt="Turning on Keep holes in Trace a photo. The ring of the wrench gets an outline of its own, so plastic stays in the hole." spec="Trace a photo with the tools photo. In close-up, turn on Keep holes. Cut to the photo, close in on the closed ring of the wrench." />
+
 In the bin, the clearance makes each island smaller, and the entry edge runs around it. A cutout keeps up to 64 islands. When an island gets too thin to print, <Ui k="binDesigner.cutoutEditor.checks.title" /> shows a warning with <Ui k="binDesigner.cutoutEditor.checks.islandFix" />.
 
 ## Tidy up an outline
@@ -79,6 +83,8 @@ A traced outline can come out a little lumpy. Before you add the tools, <Ui k="b
 | <Ui k="binDesigner.cutouts.outline.roundInside" /> | Rounds the inside corners of the outline.                                                                                                                                      |
 
 Feel free to experiment. Each change starts from the outline that you had when you opened the section, so you can move a slider back and forth. <Ui k="binDesigner.cutouts.outline.reset" /> puts the outline back. With several tools in one photo, mirror each tool after you add it.
+
+<Screenshot id="cutouts-photo-trace-cleanup" alt="In Clean up outlines, moving Simplify to 0.7 mm and turning on Smooth into curves. The outlines of the screwdriver and the pliers change in the photo as the controls move." spec="Trace a photo with the tools photo. Frame the right part of the photo and the panel. Drag Simplify to about 0.7 mm, then turn on Smooth into curves." />
 
 ## Edit points up close
 
