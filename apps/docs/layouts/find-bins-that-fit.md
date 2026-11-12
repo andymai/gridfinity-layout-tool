@@ -10,6 +10,7 @@ sources:
   - src/features/community/components/CommunityGalleryTab/
   - src/features/bin-recommender/
   - src/features/bin-inspector/hooks/useBinInspector.ts
+  - src/features/bin-inspector/components/Inspector/BinLabelField/
   - src/features/community/utils/gapFit.ts
 ---
 
@@ -52,7 +53,8 @@ Know what goes in the bin, but not how big the bin must be? The inspector can su
 
 1. Select a bin. On a phone, tap <Ui k="mobile.nav.bin" /> in the bar at the bottom of the screen to open the inspector.
 2. Type what the bin holds in the <Ui k="common.label" /> field, for example "screws".
-3. If a line with a size shows under the field, click <Ui k="inspector.sizeSuggestionApply" />. The bin changes to that size where it stands.
+3. A list of labels opens under the field and covers the suggestion. Press <kbd>Escape</kbd> to close the list. On a phone, tap outside the field.
+4. If a line with a size shows under the field, click <Ui k="inspector.sizeSuggestionApply" />. The bin changes to that size where it stands.
 
 <Screenshot id="layouts-find-bins-size-suggestion" alt="A 1 by 1 bin with no label is selected. In the inspector, screws is typed in the Label field. Escape closes the list of labels, and a line suggests a size. A click on Apply makes the bin that size on the grid." spec="Clip. Layout editor on desktop. Layout with a 6 by 4 drawer and one 1 by 1 bin with no label, with free cells around it. Click the bin. Close-up on the Label field: type screws, press Escape with a keycap, click Apply. Cut to the grid." />
 

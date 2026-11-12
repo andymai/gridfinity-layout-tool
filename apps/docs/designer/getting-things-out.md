@@ -102,7 +102,8 @@ A large tray full of dividers is hard to lift from one end. Put the pull tab on 
 
 1. Make a divider that runs from wall to wall at full height. See [Compartments and dividers](./compartments).
 2. Under <Ui k="binDesigner.pullTab.wall" />, pick <Ui k="binDesigner.pullTab.side.center" />.
-3. If the bin has dividers in both directions, pick one under <Ui k="binDesigner.pullTab.centerAxis" />.
+3. If <Ui k="binDesigner.pullTab.side.front" /> is on, click it to turn it off. The walls that you picked before stay on when you add <Ui k="binDesigner.pullTab.side.center" />. Turn off any other wall that is still on.
+4. If the bin has dividers in both directions, pick one under <Ui k="binDesigner.pullTab.centerAxis" />.
 
 <Screenshot id="designer-getting-things-out-center-tab" alt="Pull tab is turned on, Center is picked, Front is turned off, and Left to right is picked under Center divider. The bin then shows a pull tab on the divider across its middle." spec="Bin designer, bin 4 x 3 x 4 with Grid dividers set to 2 columns and 2 rows. Close-up of the Lid group: turn on Pull tab, click Center, click Front to turn it off, pick Left to right. Cut to the bin." />
 

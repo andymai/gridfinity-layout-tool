@@ -58,7 +58,7 @@ Look at the 3D preview when two cutouts lean toward each other. The checks measu
 Print one small test before the whole bin. A **fit test** shows if your parts fit, for a fraction of the filament.
 
 1. In the <Ui k="binDesigner.shapeList.tabProperties" /> tab, click <Ui k="binDesigner.cutouts.fitTest.button" />.
-2. Under <Ui k="binDesigner.cutouts.fitTest.mode" />, pick <Ui k="binDesigner.cutouts.fitTest.modeCard" /> or <Ui k="binDesigner.cutouts.fitTest.modeOutline" />, and set the size fields.
+2. The <Ui k="common.export" /> window opens. Below the file name, pick <Ui k="binDesigner.cutouts.fitTest.modeCard" /> or <Ui k="binDesigner.cutouts.fitTest.modeOutline" />, and set the size fields.
 3. Pick a file format and export the file.
 4. Print it flat, the way it comes out, and put each part in its place.
 

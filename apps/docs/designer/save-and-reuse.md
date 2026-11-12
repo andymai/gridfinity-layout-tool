@@ -11,6 +11,7 @@ sources:
   - src/features/bin-designer/components/panel/VariantSection/
   - src/features/bin-designer/hooks/usePlaceBinInLayout.ts
   - src/features/bin-designer/components/DesignImportView/
+  - src/shell/Modals/DesignGalleryModal/useGalleryTab.ts
   - src/features/bin-designer/storage/DesignVersionService.ts
 ---
 
@@ -91,11 +92,12 @@ Don't want to start from a blank bin? At the top of the bin designer panel, clic
 - <Ui k="binExamples.gallery.tabs.examples" /> holds ready-made designs that show what the bin designer can do, such as lids, scoops and a knife block.
 - <Ui k="binExamples.gallery.tabs.community" /> holds bins that other makers share. See [Community designs](../sharing/community).
 
-To use an example:
+The gallery opens on the <Ui k="binExamples.gallery.tabs.community" /> tab. To use an example:
 
-1. In the <Ui k="binExamples.gallery.tabs.examples" /> tab, filter by technique or search by name.
-2. Click an example to turn it around in a 3D view.
-3. Click <Ui k="binExamples.useAsNewDesign" />. The example becomes a new saved design that you can edit.
+1. Click the <Ui k="binExamples.gallery.tabs.examples" /> tab.
+2. Filter by technique, or search by name.
+3. Click an example to turn it around in a 3D view.
+4. Click <Ui k="binExamples.useAsNewDesign" />. The example becomes a new saved design that you can edit.
 
 <Screenshot id="designer-save-and-reuse-examples" alt="Clicking Community designs opens the gallery on its Community tab, and Examples changes to the examples. A search for honeycomb finds the Honeycomb Caddy example. Its card opens a 3D view that turns with a drag, and Use as new design opens the caddy in the bin designer." spec="Bin designer, community API left unanswered so its tab shows the loading state. Click Community designs at the top of the panel, then the Examples tab. Search for honeycomb and click the Honeycomb Caddy. Turn the 3D view, click Use as new design, then show the new bin." />
 

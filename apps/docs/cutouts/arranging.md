@@ -73,7 +73,7 @@ An empty line leaves that copy with no label. When the list is short, the remain
 
 ## Group cutouts
 
-Select two or more cutouts and click <Ui k="binDesigner.cutouts.group" />, or press <kbd>Ctrl</kbd>+<kbd>G</kbd>. A group of loose cutouts cuts as one shape. Under <Ui k="binDesigner.cutouts.pathfinder.title" />, pick how the shapes combine:
+Select two or more cutouts and click <Ui k="binDesigner.cutouts.group" />, or press <kbd>Ctrl</kbd>+<kbd>G</kbd>. A group of loose cutouts cuts as one shape. To pick how the shapes combine, click one of the four icon buttons in the toolbar under the editor header. Hold the pointer on a button to see its name:
 
 | Operation                                           | Result                                                          |
 | --------------------------------------------------- | --------------------------------------------------------------- |
@@ -161,7 +161,7 @@ The copies go toward the far edges of the bin. A cutout near a far edge leaves n
 
 ### A group cuts nothing
 
-Pick <Ui k="binDesigner.cutouts.pathfinder.union" /> under <Ui k="binDesigner.cutouts.pathfinder.title" />, or move the shapes until they overlap.
+Click the <Ui k="binDesigner.cutouts.pathfinder.union" /> icon in the toolbar under the editor header, or move the shapes until they overlap.
 
 The other three ways to combine shapes can leave no area to cut. <Ui k="binDesigner.cutouts.pathfinder.intersect" /> cuts only where all shapes overlap, so shapes apart from each other leave nothing. A message tells you when the result is empty.
 

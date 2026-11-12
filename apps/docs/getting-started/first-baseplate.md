@@ -5,6 +5,7 @@ sources:
   - src/features/baseplate/hooks/useBaseplateFirstRun.ts
   - src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
   - src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
+  - src/shared/components/FeatureToggle/FeatureToggle.tsx
   - src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.tsx
   - src/features/baseplate/components/BaseplatePanel/SplitViewStrip.tsx
   - src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
@@ -44,7 +45,8 @@ Want the plate to fill the drawer to the edges? Click the size line, then type t
 Magnets are optional. Add them if your bins also have magnets, or if the drawer gets hard use. Not sure? Skip them. The feet hold bins well in a drawer that gets normal use.
 
 1. Open the <Ui k="baseplate.sectionBase" /> group, and turn on <Ui k="baseplate.magnetHoles" />.
-2. Set <Ui k="baseplate.magnetDiameter" /> and <Ui k="baseplate.magnetDepth" /> to suit your magnets.
+2. Click <Ui k="common.customize" /> under the switch. The line also shows the hole size.
+3. Set <Ui k="baseplate.magnetDiameter" /> and <Ui k="baseplate.magnetDepth" /> to suit your magnets.
 
 The default holes are 6.5 mm wide and 2 mm deep, which suits the common 6 × 2 mm disc magnet. The preview shows the holes in the plate.
 
