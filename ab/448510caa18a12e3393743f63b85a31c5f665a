@@ -1,0 +1,35 @@
+src/features/bin-inspector/components/Inspector/MultiBinInspector/MultiBinInspector.test.tsx
+  s_1cc363bb3cc76d::t_30e2f789dce822 65
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.test.tsx
+  s_1cc363bb3cc76d::t_85a164878798e2 70,271
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_1cc363bb3cc76d::t_94e3c309a216d3 352
+src/features/bin-inspector/components/Inspector/SplitWarning/SplitWarning.test.tsx
+  s_1cc363bb3cc76d::t_ee7b951da696dd 138-154
+src/features/bin-inspector/components/Inspector/SplitWarning/SplitWarning.tsx
+  s_1cc363bb3cc76d::t_ad09b61e1912f6 11-12,23-24,30-31,121,125-126,186-187,212-213
+src/features/bin-inspector/hooks/binInspectorTypes.ts
+  s_1cc363bb3cc76d::t_3c3d47e088bcfb 23-24
+src/features/bin-inspector/hooks/useBinInspector.test.ts
+  s_1cc363bb3cc76d::t_74f7169f60b928 118
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_1cc363bb3cc76d::t_e6c0cd5060df2c 20,74,94,102,116,153,158
+src/shell/RightPanel/RightPanel.test.tsx
+  s_1cc363bb3cc76d::t_226a521562d3d0 140
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ab448510caa18a12e3393743f63b85a31c5f665a",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
