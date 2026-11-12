@@ -891,7 +891,6 @@ const basicsOpen: Shot = {
     const editorCard = s.page
       .getByRole('button', { name: new RegExp(`^${label('binDesigner.editCutouts')}`) })
       .first();
-    // Off camera, once, to frame the shot on where the editor card appears.
     await solid.click({ force: true });
     await s.until(editorCard);
     const card = await s.box(editorCard);
@@ -934,7 +933,6 @@ const basicsOpen: Shot = {
   },
 };
 
-/** Left of the inspector, below the editor header. */
 async function boardArea(s: DocsSession): Promise<Rect> {
   const dock = await dockBox(s);
   const view = s.page.viewportSize() ?? DESKTOP;
@@ -958,7 +956,6 @@ async function boardFrame(s: DocsSession, margin = 20): Promise<Rect> {
   return frameAround(await boardBox(s), margin, 4 / 3, area);
 }
 
-/** Wheel steps on camera; the preview zooms toward its own centre. */
 async function previewZoom(s: DocsSession, frame: Rect, steps: number): Promise<void> {
   await s.page.mouse.move(frame.x + frame.width * 0.5, frame.y + frame.height * 0.5);
   for (let i = 0; i < steps; i++) {
@@ -1032,7 +1029,6 @@ const basicsWallOpening: Shot = {
       .first();
     await dockReveal(s, right);
     const row = await s.box(right);
-    // From the Open through wall row down to the channel fields it opens.
     const closeUp = { x: dock.x, y: row.y - 8, width: dock.width, height: (dock.width * 3) / 4 };
     // Beside the hint, clear of the Repeat controls below.
     await s.ui.park(closeUp.x + closeUp.width * 0.75, closeUp.y + closeUp.height * 0.32);
@@ -1114,7 +1110,6 @@ const basicsLabel: Shot = {
  * button, and short enough that the board sits close under it.
  */
 const TOOLBAR_VIEW = { width: 1680, height: 620 };
-/** The header, the selection toolbar and the board, left of the inspector. */
 const TOOLBAR_FRAME = { x: 0, y: 48, width: 760, height: 570 };
 
 /** The selection toolbar's own button: the inspector repeats some of its names. */
@@ -1175,7 +1170,6 @@ const arrangingAutoArrange: Shot = {
       { id: 'square', shape: 'rectangle', x: 128, y: 12, width: 22, depth: 50, rotation: 12 },
     ]);
     const area = await boardArea(s);
-    // The header, the selection toolbar and the board, left of the inspector.
     const wide = { x: 0, y: 48, width: area.width, height: (area.width * 3) / 4 };
     await s.ui.park(wide.width * 0.55, wide.y + wide.height * 0.92);
     await s.take(
@@ -1189,7 +1183,6 @@ const arrangingAutoArrange: Shot = {
     );
 
     const auto = await toolbarButton(s, label('binDesigner.cutouts.autoArrange'));
-    // Off camera, once, to frame the close-up on where the box opens.
     await auto.click({ force: true });
     await s.ui.warm(20);
     const head = await s.box(auto);
@@ -1312,7 +1305,6 @@ const arrangingGroup: Shot = {
   viewport: TOOLBAR_VIEW,
   storage: CUT_EDITOR_STORAGE,
   async take(s) {
-    // A roll of tape: the front circle keeps a post of plastic inside the ring.
     await openCutEditor(s, 'Tape roll holder', { width: 2, depth: 2, height: 4 }, [
       { id: 'roll', shape: 'circle', x: 8.05, y: 8.05, width: 65, depth: 65 },
       { id: 'core', shape: 'circle', x: 25.55, y: 25.55, width: 30, depth: 30 },
@@ -1387,7 +1379,6 @@ const arrangingOffBoard: Shot = {
   },
 };
 
-/** A ratchet, three sockets and an extension bar, drawn in mm as a vector app saves them. */
 const RATCHET_SET_SVG = [
   '<svg xmlns="http://www.w3.org/2000/svg" width="150mm" height="75mm" viewBox="0 0 150 75">',
   '<path d="M 31 17 L 136 18 A 4 4 0 0 1 136 26 L 31 27 A 13 13 0 1 1 31 17 Z"/>',
@@ -1401,7 +1392,6 @@ const railButton = (
   key: 'binDesigner.cutouts.importSvg' | 'binDesigner.cutouts.importStl'
 ): Locator => s.page.getByRole('button', { name: label(key), exact: true }).first();
 
-/** The tool rail around `button`, with a strip of the board beside it. */
 async function railCloseUp(s: DocsSession, button: Locator): Promise<Rect> {
   const b = await s.box(button);
   return { x: 0, y: b.y + b.height / 2 - 120, width: 320, height: 240 };
@@ -1482,7 +1472,6 @@ const importSvg: Shot = {
       await s.ui.moveTo(at.x + at.width / 2, at.y + at.height / 2);
       await s.ui.hold(0.3);
     });
-    // Off camera: the prompt closes at once, and the next take shows the result.
     await apply.click({ force: true });
     await s.ui.hideCursor();
     await s.ui.waitBuilt();
@@ -1531,7 +1520,6 @@ const importStlResult: Shot = {
       },
       640 / closeUp.width
     );
-    // Off camera: the dialog closes at once, and the next take shows the result.
     await place.click({ force: true });
     await s.ui.hideCursor();
     await s.ui.waitBuilt();
@@ -1619,7 +1607,6 @@ function drawToolPhoto(): string {
   desk.addColorStop(1, '#7f6142');
   g.fillStyle = desk;
   g.fillRect(0, 0, W, H);
-  // Faint grain along the desk.
   for (let i = 0; i < 90; i++) {
     const y = (i * 997) % H;
     g.strokeStyle = `rgba(60,40,20,${0.05 + ((i * 37) % 10) / 200})`;
@@ -1786,7 +1773,6 @@ function drawToolPhoto(): string {
     p.closePath();
   });
   g.restore();
-  // A soft light falloff toward one corner, as from a desk lamp.
   const lamp = g.createRadialGradient(W * 0.35, H * 0.3, 100, W * 0.5, H * 0.5, H * 0.85);
   lamp.addColorStop(0, 'rgba(255,250,235,0.06)');
   lamp.addColorStop(1, 'rgba(0,0,0,0.16)');
@@ -1795,7 +1781,6 @@ function drawToolPhoto(): string {
   return c.toDataURL('image/jpeg', 0.9);
 }
 
-/** The tools photo as the file a maker would choose. */
 async function toolPhoto(
   s: DocsSession
 ): Promise<{ name: string; mimeType: string; buffer: Buffer }> {
@@ -1824,7 +1809,6 @@ const photoRoute = (page: Page): Locator =>
     .getByRole('button', { name: new RegExp(`^${label('binDesigner.cutouts.traceView.open')}`) })
     .first();
 
-/** Off camera: Trace a photo, with the tools photo traced. */
 async function openTraceView(s: DocsSession): Promise<void> {
   await openCutEditor(s, 'Tool tray', { width: 4, depth: 5, height: 4 }, []);
   const photo = await toolPhoto(s);
@@ -1852,7 +1836,6 @@ async function traced(s: DocsSession): Promise<void> {
   await s.ui.warm(10);
 }
 
-/** The photo as shown, under the outlines the tracer draws over it. */
 async function tracePhotoBox(s: DocsSession): Promise<Rect> {
   return s.box(
     s.page
@@ -1888,7 +1871,6 @@ const photoTraceOpen: Shot = {
     await openCutEditor(s, 'Tool tray', { width: 4, depth: 5, height: 4 }, []);
     const photo = await toolPhoto(s);
     const scan = scanButton(s.page);
-    // Off camera, once, to frame the close-up on where the choice opens.
     await s.ui.preClick(scan);
     const choice = s.page.getByRole('dialog').first();
     await s.until(photoRoute(s.page));
@@ -1913,7 +1895,6 @@ const photoTraceOpen: Shot = {
       },
       640 / closeUp.width
     );
-    // Off camera: the window opens over everything, and the next take starts in it.
     await photoRoute(s.page).click({ force: true });
     const choose = s.page
       .getByRole('button', {
@@ -1999,7 +1980,6 @@ const photoTraceCleanup: Shot = {
     const sw = await s.box(curves);
     const track = await s.box(simplify);
     const photo = await tracePhotoBox(s);
-    // The screwdriver and the pliers beside the panel: each outline changes as the controls move.
     const left = photo.x + photo.width * 0.36;
     const right = sw.x + sw.width + 12;
     const frame = frameAround(
@@ -2026,7 +2006,6 @@ const photoTraceCleanup: Shot = {
   },
 };
 
-/** A traced tool outline, as a phone sends it: the feature-tips fixture. */
 const SCAN_OUTLINE = readFileSync(
   resolve(process.cwd(), 'scripts/feature-tips/fixtures/scan-outline.svg'),
   'utf8'
@@ -2211,7 +2190,6 @@ const printChecksFitTest: Shot = {
       },
       640 / closeUp.width
     );
-    // Off camera: the dialog covers the panel, and the next take starts in it.
     await button.click({ force: true });
     const outline = s.page
       .getByRole('radio', { name: label('binDesigner.cutouts.fitTest.modeOutline'), exact: true })
@@ -2221,7 +2199,6 @@ const printChecksFitTest: Shot = {
       s.page.getByText(label('binDesigner.cutouts.fitTest.dialogTitle'), { exact: true }).first()
     );
     const mode = await s.box(outline);
-    // From the dialog's subtitle down past the size fields the mode opens.
     const frame = frameAround(
       { x: title.x - 8, y: title.y - 8, width: 440, height: mode.y + 200 - title.y },
       12,
@@ -2280,7 +2257,6 @@ const workshopShadowBoard: Shot = {
   },
 };
 
-/** Off camera: renames the open design through the name in the app header, which saves it. */
 async function renameDesign(s: DocsSession, name: string): Promise<void> {
   const current = await s.page.evaluate(async () => {
     const { useDesignerStore } = (await import(
@@ -2290,7 +2266,6 @@ async function renameDesign(s: DocsSession, name: string): Promise<void> {
   });
   await s.page.getByRole('button', { name: current, exact: true }).first().click({ force: true });
   await s.ui.warm(10);
-  // The click opens the name for editing, with the cursor in it.
   await s.page.keyboard.press('ControlOrMeta+a');
   await s.page.keyboard.type(name);
   await s.page.keyboard.press('Enter');
@@ -2319,7 +2294,6 @@ const workshopStart: Shot = {
     const workshop = s.page
       .getByRole('button', { name: label('binDesigner.newWorkshop'), exact: true })
       .first();
-    // Off camera, once, to frame the close-up on the dialog's header row.
     await s.ui.preClick(designs);
     await s.until(workshop);
     const list = s.page.getByRole('dialog', { name: label('binDesigner.savedDesigns') });
@@ -2356,7 +2330,6 @@ const workshopStart: Shot = {
       await s.ui.moveTo(at.x + at.width / 2, at.y + at.height / 2);
       await s.ui.hold(0.3);
     });
-    // Off camera: the build replaces the dialog at once, and the next take shows it.
     await go.click({ force: true });
     await s.until(
       s.page
