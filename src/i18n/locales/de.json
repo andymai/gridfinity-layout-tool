@@ -1679,7 +1679,7 @@
   "binDesigner.lid.retentionMagnetDiameter": "Magnetdurchmesser",
   "binDesigner.lid.retentionMagnetDiameterAria": "Rückhaltemagnet-Durchmesser in Millimetern",
   "binDesigner.lid.retentionMagnetHint": "Drücke in jede Ecke von Behälter und Deckel einen ⌀{diameter} × {depth} mm Magneten.",
-  "binDesigner.lid.retentionMagnetHintDetail": "Klebe sie mit gleich ausgerichteten Polen ein, damit der Deckel nur in einer Richtung schließt.",
+  "binDesigner.lid.retentionMagnetHintDetail": "Klebe sie so ein, dass jeder Magnet im Deckel den Magneten im Behälter darunter anzieht.",
   "binDesigner.lid.section.attaches": "Befestigungsart",
   "binDesigner.lid.section.grip": "Deckelgriff",
   "binDesigner.lid.section.text": "Deckeltext",

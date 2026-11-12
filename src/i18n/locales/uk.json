@@ -1741,7 +1741,7 @@
   "binDesigner.lid.retentionMagnetDiameter": "Діаметр магніту",
   "binDesigner.lid.retentionMagnetDiameterAria": "Діаметр утримувального магніту в міліметрах",
   "binDesigner.lid.retentionMagnetHint": "Вставте магніт ⌀{diameter} × {depth} мм у кожен кут контейнера та кришки.",
-  "binDesigner.lid.retentionMagnetHintDetail": "Приклейте їх однаковими полюсами один до одного, щоб кришка закривалася лише в один бік.",
+  "binDesigner.lid.retentionMagnetHintDetail": "Приклейте їх так, щоб кожен магніт кришки притягувався до магніту контейнера під ним.",
   "binDesigner.lid.section.attaches": "Спосіб кріплення",
   "binDesigner.lid.section.grip": "Захват кришки",
   "binDesigner.lid.section.text": "Текст на кришці",

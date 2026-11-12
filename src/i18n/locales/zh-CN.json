@@ -1648,7 +1648,7 @@
   "binDesigner.lid.retentionMagnetDiameter": "磁铁直径",
   "binDesigner.lid.retentionMagnetDiameterAria": "固定磁铁直径（毫米）",
   "binDesigner.lid.retentionMagnetHint": "在收纳盒和盖子的每个角压入一颗 ⌀{diameter} × {depth} mm 磁铁。",
-  "binDesigner.lid.retentionMagnetHintDetail": "用相同磁极相对地把它们粘牢，使盖子只能以一种方向合上。",
+  "binDesigner.lid.retentionMagnetHintDetail": "粘贴时，让盖子上的每颗磁铁都与其下方收纳盒中的磁铁相互吸引。",
   "binDesigner.lid.section.attaches": "如何固定",
   "binDesigner.lid.section.grip": "盖子抓手",
   "binDesigner.lid.section.text": "盖子文字",
