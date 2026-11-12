@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useKeyboard } from './useKeyboard';
+import { handleNewLayout } from './handlers';
+import type { KeyboardContext } from './types';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useSelectionStore } from '@/core/store/selection';
@@ -8,6 +10,7 @@ import { useInteractionStore } from '@/core/store/interaction';
 import { useViewStore } from '@/core/store/view';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { useLibraryStore } from '@/core/store/library';
+import { useToastStore } from '@/core/store/toast';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
 import { resetAllStores, getBinId } from '@/test/testUtils';
 import { gridUnits, heightUnits } from '@/core/types';
@@ -1483,6 +1486,45 @@ describe('useKeyboard', () => {
 
       expect(useLibraryStore.getState().library.entries).toHaveLength(entriesBefore);
       expect(event?.defaultPrevented).toBe(false);
+    });
+
+    function createdToastCount(): number {
+      return useToastStore
+        .getState()
+        .toasts.filter(
+          (toast) => toast.type === 'success' && toast.message === 'New layout created'
+        ).length;
+    }
+
+    it.each([
+      ['Shift+N', 'N', { shiftKey: true }],
+      ['Ctrl+N', 'n', { ctrlKey: true }],
+    ])('claims the repeats of a held %s without creating a layout', (_label, key, modifiers) => {
+      const createNewLayout = vi.fn(() => Promise.resolve());
+      const ctx = { createNewLayout } as unknown as KeyboardContext;
+      const repeat = createKeyboardEvent(key, { ...modifiers, repeat: true });
+
+      expect(handleNewLayout(repeat, ctx)).toBe(true);
+      expect(repeat.defaultPrevented).toBe(true);
+      expect(createNewLayout).not.toHaveBeenCalled();
+    });
+
+    it('creates one layout for a second Shift+N while the first is still pending', async () => {
+      const entriesBefore = useLibraryStore.getState().library.entries.length;
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('N', { shiftKey: true });
+        pressKey('N', { shiftKey: true });
+      });
+      await vi.waitFor(() => {
+        expect(createdToastCount()).toBeGreaterThan(0);
+      });
+      await settle();
+      await settle();
+
+      expect(createdToastCount()).toBe(1);
+      expect(useLibraryStore.getState().library.entries).toHaveLength(entriesBefore + 1);
     });
 
     it('leaves Shift+N to a text field that has the focus', async () => {

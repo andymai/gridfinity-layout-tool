@@ -508,6 +508,40 @@ describe('useLayoutSwitcher', () => {
       expect(toasts.some((t) => t.message.includes('created'))).toBe(true);
     });
 
+    it('starts one creation while another is still pending, from any caller', async () => {
+      const keyboard = renderHook(() => useLayoutSwitcher());
+      const layoutManager = renderHook(() => useLayoutSwitcher());
+
+      let results: Awaited<ReturnType<typeof keyboard.result.current.createNewLayout>>[] = [];
+      await act(async () => {
+        results = await Promise.all([
+          keyboard.result.current.createNewLayout(),
+          layoutManager.result.current.createNewLayout(),
+          keyboard.result.current.createNewLayout(),
+        ]);
+      });
+
+      expect(storage.createLayoutEntry).toHaveBeenCalledTimes(1);
+      expect(results.map((r) => expectOk(r))).toEqual([
+        'new-layout-id',
+        'new-layout-id',
+        'new-layout-id',
+      ]);
+    });
+
+    it('starts a new creation once the pending one settles', async () => {
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      await act(async () => {
+        await result.current.createNewLayout();
+      });
+      await act(async () => {
+        await result.current.createNewLayout();
+      });
+
+      expect(storage.createLayoutEntry).toHaveBeenCalledTimes(2);
+    });
+
     it('uses default name if none provided', async () => {
       const { result } = renderHook(() => useLayoutSwitcher());
 

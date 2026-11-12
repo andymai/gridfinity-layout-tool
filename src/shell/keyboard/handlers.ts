@@ -150,8 +150,10 @@ export function handleNewLayout(e: KeyboardEvent, ctx: KeyboardContext): boolean
   const viaShift = e.shiftKey && !ctrlOrMeta;
   const viaCtrlOrMeta = ctrlOrMeta && !e.shiftKey;
   if (!viaShift && !viaCtrlOrMeta) return false;
+  // A repeat must still prevent the default, or a held Ctrl+N opens browser
+  // windows in an installed app window.
   e.preventDefault();
-  void ctx.createNewLayout();
+  if (!e.repeat) void ctx.createNewLayout();
   return true;
 }
 
