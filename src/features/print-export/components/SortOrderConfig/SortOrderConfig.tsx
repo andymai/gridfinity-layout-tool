@@ -87,7 +87,7 @@ export function SortOrderConfig({ sortOrder, onChange }: SortOrderConfigProps) {
   const activeSortFields = sortOrder.filter((s) => s.enabled);
 
   return (
-    <div className="sort-order-config">
+    <div>
       {/* Active sort summary */}
       {activeSortFields.length > 0 && (
         <div className="text-xs text-content-tertiary mb-2">

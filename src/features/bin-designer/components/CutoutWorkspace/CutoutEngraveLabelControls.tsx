@@ -227,7 +227,9 @@ export function CutoutEngraveLabelControls({
       )}
       {!isTextElement && (
         <div className="space-y-1">
-          <span className="text-micro text-text-muted">{t('binDesigner.cutoutTextAnchor')}</span>
+          <span className="text-micro text-content-tertiary">
+            {t('binDesigner.cutoutTextAnchor')}
+          </span>
           <div
             role="group"
             aria-label={t('binDesigner.cutoutTextAnchor')}

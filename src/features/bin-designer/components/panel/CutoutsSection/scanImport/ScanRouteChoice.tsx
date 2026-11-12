@@ -53,7 +53,7 @@ function RouteCard({
       className="flex h-full flex-col items-center gap-2 text-center"
     >
       <span className="text-accent">{icon}</span>
-      <span className="text-sm font-semibold text-content-primary">{title}</span>
+      <span className="text-sm font-semibold text-content">{title}</span>
       <span className="text-xs leading-relaxed text-content-tertiary">{help}</span>
     </Card>
   );

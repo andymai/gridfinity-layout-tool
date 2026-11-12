@@ -48,7 +48,7 @@ export function MeasureOverlay() {
         <div
           role="group"
           aria-label={t('binDesigner.measure.mode')}
-          className="inline-flex gap-0.5 rounded-full bg-surface-tertiary p-0.5"
+          className="inline-flex gap-0.5 rounded-full bg-surface p-0.5"
         >
           {MODES.map((m) => (
             <Button

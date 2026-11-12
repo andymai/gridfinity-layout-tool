@@ -319,7 +319,7 @@ export function PatternSelector({
           name: t(optionLabelKey),
           group: groupKey ? t(groupKey) : undefined,
         }))}
-        leftIcon={<SelectedIcon className="w-4 h-4 text-content-primary" />}
+        leftIcon={<SelectedIcon className="w-4 h-4 text-content" />}
         fullWidth
       />
       {disabled && disabledReason && (

@@ -96,7 +96,7 @@ export function HeightUnitSolver({
                 ? t('stackSolver.rowSingle')
                 : t('stackSolver.rowStacked', { count: row.count })}
             </span>
-            <span className={row.units === null ? 'text-content-disabled' : 'text-content-primary'}>
+            <span className={row.units === null ? 'text-content-disabled' : 'text-content'}>
               {row.units === null
                 ? t('stackSolver.rowNoFit')
                 : t('stackSolver.rowFit', {

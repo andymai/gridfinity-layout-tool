@@ -154,7 +154,7 @@ Icon-only buttons get a 44px `touchTarget` by default (per Apple HIG).
 
 ## Elevation
 
-`--elevation-sm/md/lg/xl` are the source of truth (dark in `index.css`, light in `themes.css`). The `shadow-sm/md/lg/xl` utilities resolve through them at runtime via the `@theme inline` map, so elevation is theme-aware everywhere; the legacy `--shadow-*` names remain as pointers for raw CSS. `--shadow-elevated`/`--shadow-floating` are raw-CSS-only surface shadows.
+`--elevation-sm/md/lg/xl` are the source of truth (dark in `index.css`, light in `themes.css`). The `shadow-sm/md/lg/xl` utilities resolve through them at runtime via the `@theme inline` map, so elevation is theme-aware everywhere; the legacy `--shadow-*` names remain as pointers for raw CSS. The `shadow-elevated` utility reads `--shadow-elevated` at runtime in the same way. `--shadow-floating` is a raw-CSS-only surface shadow.
 
 Hairline borders: the `hairline` utility renders 1px, thinning to 0.5px on ≥2dppx screens; pair with a stroke color (`hairline` constant in `variants.ts` composes `border-stroke-subtle`).
 
@@ -169,7 +169,7 @@ Hairline borders: the `hairline` utility renders 1px, thinning to 0.5px on ≥2d
 | `--ease-in-out-quart` | `cubic-bezier(0.76, 0, 0.24, 1)`          | Symmetric moves (`ease-in-out-quart` utility)   |
 | `--transition-spring` | `200ms cubic-bezier(0.34, 1.56, 0.64, 1)` | Bouncy feedback                                 |
 
-Legacy `--transition-fast/normal/slow` resolve through the motion tokens. Both reduce-motion paths (`prefers-reduced-motion` and `data-reduce-motion`) blanket-zero all durations, so no per-token handling is needed.
+Legacy `--transition-fast/normal/slow` resolve through the motion tokens. The enter animations (`animate-fade-in`, `animate-scale-in`, `animate-slide-up`, `animate-slide-down`, `animate-fade-in-up`) are `--animate-*` theme keys, so variants such as `motion-safe:` apply to them. Use `animate-fade-in-up` for staggered cards: it holds the first frame through an inline `animationDelay`. Both reduce-motion paths (`prefers-reduced-motion` and `data-reduce-motion`) blanket-zero all durations, so no per-token handling is needed.
 
 ## Responsive Breakpoints
 

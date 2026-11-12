@@ -99,7 +99,7 @@ export function BentoGridSetup({
         onPointerDown={(e) => e.stopPropagation()}
       >
         <div>
-          <h3 className="text-sm font-semibold text-content-primary">
+          <h3 className="text-sm font-semibold text-content">
             {t('binDesigner.bento.gridSetupTitle')}
           </h3>
           <p className="mt-0.5 text-xs leading-relaxed text-content-secondary">

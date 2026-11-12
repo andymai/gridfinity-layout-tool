@@ -40,7 +40,7 @@ export function ScanScaleField({ svg, parsed, targetText, onChange }: ScanScaleF
         />
       </div>
       <div className="flex flex-col gap-1">
-        <label htmlFor={fieldId} className="text-sm font-medium text-content-primary">
+        <label htmlFor={fieldId} className="text-sm font-medium text-content">
           {t(
             parsed.sizedByLongest
               ? 'binDesigner.cutouts.scanImport.scaleLabelLongest'

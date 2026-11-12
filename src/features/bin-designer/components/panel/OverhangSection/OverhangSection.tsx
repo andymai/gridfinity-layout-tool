@@ -119,7 +119,7 @@ export function OverhangSection() {
               />
             </div>
 
-            <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
+            <div className="mt-3 flex flex-col gap-2 border-t border-stroke-subtle pt-3">
               <FeatureToggle
                 label={t('binDesigner.overhang.taper.title')}
                 checked={taper.enabled}

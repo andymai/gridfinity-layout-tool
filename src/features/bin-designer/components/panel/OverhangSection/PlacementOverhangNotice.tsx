@@ -34,7 +34,7 @@ export function PlacementOverhangNotice() {
         {placement.sides.map(({ side, mm }) => (
           <Fragment key={side}>
             <dt className="text-content-secondary">{t(`binDesigner.overhang.side.${side}`)}</dt>
-            <dd className="tabular-nums text-content-primary">{formatMm(mm)} mm</dd>
+            <dd className="tabular-nums text-content">{formatMm(mm)} mm</dd>
           </Fragment>
         ))}
       </dl>

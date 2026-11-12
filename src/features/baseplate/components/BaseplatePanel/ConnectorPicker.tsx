@@ -156,7 +156,7 @@ export function ConnectorPicker({
                   <Icon />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h4 className="text-sm font-medium text-content-primary">{t(titleKey)}</h4>
+                  <h4 className="text-sm font-medium text-content">{t(titleKey)}</h4>
                   <p className="mt-0.5 text-xs text-content-secondary">{t(descKey)}</p>
                   {disabled && (
                     <p className="mt-0.5 text-label text-content-tertiary">{disabledReason}</p>

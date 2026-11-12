@@ -27,7 +27,7 @@ interface ModeTilesProps<T extends string> {
 
 const COLUMNS = { 2: 'grid-cols-2', 3: 'grid-cols-3' } as const;
 
-const TILE_ON = 'border-accent bg-accent/10 text-content-primary';
+const TILE_ON = 'border-accent bg-accent/10 text-content';
 const TILE_OFF =
   'border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover hover:text-content';
 

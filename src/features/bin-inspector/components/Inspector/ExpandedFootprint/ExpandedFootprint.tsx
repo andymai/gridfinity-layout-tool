@@ -47,11 +47,11 @@ export function ExpandedFootprint({ bin, layout }: ExpandedFootprintProps) {
   const outerD = bin.depth * effectiveGridUnitMmY(layout) + front + back;
 
   return (
-    <div className="rounded-md border border-subtle p-2">
+    <div className="rounded-md border border-stroke-subtle p-2">
       <div className="flex items-start justify-between gap-2">
         <div>
           <SubHeader as="p">{t('inspector.expandedFootprint')}</SubHeader>
-          <p className="text-sm text-content-primary">
+          <p className="text-sm text-content">
             {formatMm(outerW)} × {formatMm(outerD)} mm
           </p>
         </div>

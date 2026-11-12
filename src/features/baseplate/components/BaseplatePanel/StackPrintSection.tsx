@@ -189,13 +189,13 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
               <LabelInfo label={t('baseplate.stackPrint.tips.heading')}>
                 <div className="space-y-2">
                   <div className="space-y-0.5">
-                    <p className="font-medium text-content-primary">
+                    <p className="font-medium text-content">
                       {t('baseplate.stackPrint.tips.single.heading')}
                     </p>
                     <p>{t('baseplate.stackPrint.tips.single.body')}</p>
                   </div>
                   <div className="space-y-0.5">
-                    <p className="font-medium text-content-primary">
+                    <p className="font-medium text-content">
                       {t('baseplate.stackPrint.tips.multi.heading')}
                     </p>
                     <p>{t('baseplate.stackPrint.tips.multi.body')}</p>

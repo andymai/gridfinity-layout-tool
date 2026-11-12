@@ -27,7 +27,7 @@ export function ScanToolList({ shapes, units, disabled = false, onRemove }: Scan
             >
               {index}
             </span>
-            <span className="flex flex-1 flex-col text-sm text-content-primary">
+            <span className="flex flex-1 flex-col text-sm text-content">
               {t('scan.review.toolLabel', { index })}
               {shape.underStrip && (
                 <span className="text-xs text-warning">{t('scan.review.underStrip')}</span>

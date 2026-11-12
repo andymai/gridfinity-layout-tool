@@ -819,7 +819,7 @@ export function CutoutWorkspace() {
             >
               {photoDrop.dragging && (
                 <div className="pointer-events-none absolute inset-2 z-20 flex items-center justify-center rounded-lg border-2 border-dashed border-accent bg-accent/10">
-                  <span className="flex items-center gap-2 rounded-md bg-surface px-3 py-2 text-sm font-medium text-content-primary shadow">
+                  <span className="flex items-center gap-2 rounded-md bg-surface px-3 py-2 text-sm font-medium text-content shadow">
                     <ScanToolIcon size="sm" className="text-accent" />
                     {t('binDesigner.cutouts.dropPhoto')}
                   </span>

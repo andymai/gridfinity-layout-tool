@@ -40,7 +40,7 @@ function DropZone({ onChoose }: { readonly onChoose: () => void }) {
         <circle cx="9" cy="10" r="1.75" />
         <path d="M21 16l-5-5-9 9" />
       </svg>
-      <p className="text-base font-semibold text-content-primary">
+      <p className="text-base font-semibold text-content">
         {t('binDesigner.cutouts.traceView.drop.title')}
       </p>
       <Button type="button" variant="primary" onClick={onChoose}>
@@ -239,7 +239,7 @@ export function TraceView({ open, onClose, onTraced, initialPhoto }: TraceViewPr
           )}
           {session.cleanup.available && count > 0 && (
             <section className="flex flex-col gap-2">
-              <h3 className="text-sm font-semibold text-content-primary">
+              <h3 className="text-sm font-semibold text-content">
                 {t('binDesigner.cutouts.traceView.cleanup.heading')}
               </h3>
               {!session.cleanup.canMirror && (

@@ -120,7 +120,7 @@ export function LabelIconPicker({ value, onChange, ownerName }: LabelIconPickerP
         anchorRef={anchorRef}
         isOpen={isOpen}
         onClose={close}
-        className="w-72 rounded-lg border border-stroke-subtle bg-surface-raised p-2 shadow-lg"
+        className="w-72 rounded-lg border border-stroke-subtle bg-surface-elevated p-2 shadow-lg"
         aria-label={dialogLabel}
       >
         <Input
