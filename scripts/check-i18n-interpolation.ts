@@ -5,6 +5,7 @@
  * 1. Translation calls that pass params but the string doesn't use them
  * 2. Translation strings with placeholders that are never called with params
  * 3. Double-brace tokens (`{{name}}`) in any locale, which render with a stray pair of braces
+ * 4. Locale strings whose placeholders differ from the en.ts string for the same key
  *
  * Usage: pnpm exec tsx scripts/check-i18n-interpolation.ts
  * Exit code 0 = all interpolations match, 1 = mismatches found
@@ -18,7 +19,7 @@ const ROOT_DIR = join(import.meta.dirname, '..');
 const LOCALES_DIR = join(ROOT_DIR, 'src', 'i18n', 'locales');
 const SRC_DIR = join(ROOT_DIR, 'src');
 
-interface TranslationString {
+export interface TranslationString {
   key: string;
   value: string;
   placeholders: string[];
@@ -74,7 +75,7 @@ function removeIcuBlocks(value: string): string {
 
 // Extract placeholders from a translation string (e.g., {count}, {name})
 // Also handles ICU message format like {count, plural, one {person} other {people}}
-function extractPlaceholders(value: string): string[] {
+export function extractPlaceholders(value: string): string[] {
   const placeholders: string[] = [];
 
   // First, extract ICU format variable names: {count, plural, ...} or {name, select, ...}
@@ -103,9 +104,7 @@ function extractPlaceholders(value: string): string[] {
   return [...new Set(placeholders)].sort();
 }
 
-// Parse en.ts to extract keys, values, and their placeholders
-function getTranslationStrings(): Map<string, TranslationString> {
-  const content = readFileSync(join(LOCALES_DIR, 'en.ts'), 'utf-8');
+export function parseEnglishStrings(content: string): Map<string, TranslationString> {
   const translations = new Map<string, TranslationString>();
 
   // Match key-value pairs with single-quoted values: 'key.name': 'value',
@@ -129,6 +128,13 @@ function getTranslationStrings(): Map<string, TranslationString> {
     translations.set(key, { key, value, placeholders });
   }
 
+  return translations;
+}
+
+function withPluralBases(
+  enStrings: ReadonlyMap<string, TranslationString>
+): Map<string, TranslationString> {
+  const translations = new Map(enStrings);
   // Code calls a plural family by its base key, so the base stands for the
   // placeholders its forms use between them, plus `count`, which picks the
   // form even when no form prints it ("person" / "people").
@@ -364,9 +370,19 @@ function findZeroParamCalls(
   return mismatches;
 }
 
+function readLocales(): [string, Record<string, unknown>][] {
+  return readdirSync(LOCALES_DIR)
+    .filter((f) => f.endsWith('.json') && f !== 'en.json')
+    .sort()
+    .map((file) => [
+      file,
+      JSON.parse(readFileSync(join(LOCALES_DIR, file), 'utf-8')) as Record<string, unknown>,
+    ]);
+}
+
 // interpolate() replaces `{name}`, so `{{name}}` renders as `{value}`, and the placeholder
 // checks above still match the inner token.
-function findDoubleBraces(): string[] {
+function findDoubleBraces(locales: [string, Record<string, unknown>][]): string[] {
   const token = /\{\{[a-zA-Z_][a-zA-Z0-9_]*\}\}/;
   const found: string[] = [];
   readFileSync(join(LOCALES_DIR, 'en.ts'), 'utf-8')
@@ -374,13 +390,7 @@ function findDoubleBraces(): string[] {
     .forEach((line, i) => {
       if (token.test(line)) found.push(`src/i18n/locales/en.ts:${i + 1}: ${line.trim()}`);
     });
-  for (const file of readdirSync(LOCALES_DIR).filter(
-    (f) => f.endsWith('.json') && f !== 'en.json'
-  )) {
-    const strings = JSON.parse(readFileSync(join(LOCALES_DIR, file), 'utf-8')) as Record<
-      string,
-      unknown
-    >;
+  for (const [file, strings] of locales) {
     for (const [key, value] of Object.entries(strings)) {
       if (typeof value === 'string' && token.test(value))
         found.push(`src/i18n/locales/${file}: ${key}`);
@@ -389,48 +399,91 @@ function findDoubleBraces(): string[] {
   return found;
 }
 
-// Main execution
-console.log('\n🔍 Checking i18n interpolation placeholders...\n');
+export interface LocalePlaceholderMismatch {
+  key: string;
+  expected: string[];
+  actual: string[];
+}
 
-const doubleBraces = findDoubleBraces();
-if (doubleBraces.length > 0) {
+// A plural form is held to the en.ts `_other` form, not to the English form of
+// the same name: a locale has forms English lacks (`_few`, `_many`), and its
+// `_one` can cover more than 1 (0 in French, 21 in Ukrainian), so every form
+// must print what the general form prints.
+export function findLocalePlaceholderMismatches(
+  en: ReadonlyMap<string, TranslationString>,
+  strings: Readonly<Record<string, unknown>>
+): LocalePlaceholderMismatch[] {
+  const mismatches: LocalePlaceholderMismatch[] = [];
+  for (const [key, value] of Object.entries(strings)) {
+    if (typeof value !== 'string') continue;
+    const base = pluralBase(key);
+    const reference = (base === null ? undefined : en.get(`${base}_other`)) ?? en.get(key);
+    if (!reference) continue;
+    const actual = extractPlaceholders(value);
+    if (actual.join(',') !== reference.placeholders.join(',')) {
+      mismatches.push({ key, expected: reference.placeholders, actual });
+    }
+  }
+  return mismatches.sort((a, b) => a.key.localeCompare(b.key));
+}
+
+const MISMATCH_EXIT =
+  '❌ i18n interpolation mismatch detected. Fix the translation strings or code usage.\n';
+
+function main(): number {
+  console.log('\n🔍 Checking i18n interpolation placeholders...\n');
+
+  const locales = readLocales();
+  const doubleBraces = findDoubleBraces(locales);
+  if (doubleBraces.length > 0) {
+    console.log(
+      `❌ Found ${doubleBraces.length} double-brace placeholder(s); use {name}, not {{name}}:\n`
+    );
+    for (const line of doubleBraces) console.log(`   ${line}`);
+    console.error(`\n${MISMATCH_EXIT}`);
+    return 1;
+  }
+
+  const enStrings = parseEnglishStrings(readFileSync(join(LOCALES_DIR, 'en.ts'), 'utf-8'));
+  const translations = withPluralBases(enStrings);
+  console.log(`📋 Found ${translations.size} translation strings in en.ts`);
+
+  const stringsWithPlaceholders = [...translations.values()].filter(
+    (t) => t.placeholders.length > 0
+  );
+  console.log(`   └─ ${stringsWithPlaceholders.length} strings have interpolation placeholders`);
+
+  const enValues = Object.fromEntries([...enStrings].map(([key, entry]) => [key, entry.value]));
+  const localeMismatches = [['en.ts', enValues] as const, ...locales]
+    .map(([file, strings]) => [file, findLocalePlaceholderMismatches(enStrings, strings)] as const)
+    .filter(([, found]) => found.length > 0);
+  const localeMismatchCount = localeMismatches.reduce((n, [, found]) => n + found.length, 0);
   console.log(
-    `❌ Found ${doubleBraces.length} double-brace placeholder(s); use {name}, not {{name}}:\n`
+    `   └─ ${locales.length} locale files compared with en.ts: ${localeMismatchCount} placeholder mismatch(es)`
   );
-  for (const line of doubleBraces) console.log(`   ${line}`);
-  console.error(
-    '\n❌ i18n interpolation mismatch detected. Fix the translation strings or code usage.\n'
-  );
-  process.exit(1);
-}
 
-const translations = getTranslationStrings();
-console.log(`📋 Found ${translations.size} translation strings in en.ts`);
+  const sourceFiles = getSourceFiles(SRC_DIR);
+  console.log(`\n📁 Scanning ${sourceFiles.length} source files for t() calls...`);
 
-const stringsWithPlaceholders = [...translations.values()].filter((t) => t.placeholders.length > 0);
-console.log(`   └─ ${stringsWithPlaceholders.length} strings have interpolation placeholders`);
+  const allCalls: TranslationCall[] = [];
+  for (const file of sourceFiles) {
+    const calls = extractTranslationCalls(file);
+    allCalls.push(...calls);
+  }
 
-const sourceFiles = getSourceFiles(SRC_DIR);
-console.log(`\n📁 Scanning ${sourceFiles.length} source files for t() calls...`);
+  console.log(`   └─ Found ${allCalls.length} translation calls with parameters\n`);
 
-const allCalls: TranslationCall[] = [];
-for (const file of sourceFiles) {
-  const calls = extractTranslationCalls(file);
-  allCalls.push(...calls);
-}
+  const mismatches = [
+    ...findMismatches(translations, allCalls),
+    ...findZeroParamCalls(sourceFiles, translations),
+  ];
 
-console.log(`   └─ Found ${allCalls.length} translation calls with parameters\n`);
+  if (mismatches.length === 0 && localeMismatchCount === 0) {
+    console.log('✅ All interpolation placeholders match code usage and en.ts.\n');
+    return 0;
+  }
 
-const mismatches = [
-  ...findMismatches(translations, allCalls),
-  ...findZeroParamCalls(sourceFiles, translations),
-];
-
-if (mismatches.length === 0) {
-  console.log('✅ All interpolation placeholders match code usage.\n');
-  process.exit(0);
-} else {
-  console.log(`❌ Found ${mismatches.length} interpolation mismatch(es):\n`);
+  console.log(`❌ Found ${mismatches.length + localeMismatchCount} interpolation mismatch(es):\n`);
 
   const unusedParams = mismatches.filter((m) => m.type === 'unused-params');
   const missingPlaceholders = mismatches.filter((m) => m.type === 'missing-placeholders');
@@ -475,8 +528,26 @@ if (mismatches.length === 0) {
     }
   }
 
-  console.error(
-    '❌ i18n interpolation mismatch detected. Fix the translation strings or code usage.\n'
-  );
-  process.exit(1);
+  if (localeMismatchCount > 0) {
+    console.log('⚠️  Locale strings whose placeholders differ from en.ts:');
+    console.log(
+      '   (A plural form is compared with the en.ts _other form. A dropped placeholder hides\n' +
+        '    the value; one that en.ts lacks renders literally)\n'
+    );
+    const show = (names: string[]) => (names.length > 0 ? `{${names.join('}, {')}}` : '(none)');
+    for (const [file, found] of localeMismatches) {
+      console.log(`   src/i18n/locales/${file}`);
+      for (const m of found) {
+        console.log(`     ${m.key}: en.ts ${show(m.expected)}, locale ${show(m.actual)}`);
+      }
+      console.log('');
+    }
+  }
+
+  console.error(MISMATCH_EXIT);
+  return 1;
+}
+
+if (process.argv[1]?.endsWith('check-i18n-interpolation.ts')) {
+  process.exit(main());
 }

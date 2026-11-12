@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useActionHandlers } from './commandPaletteActionHandlers';
 import { useHalfGridModeStore, useLayoutStore, useToastStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
-import { STAGING_ID } from '@/core/constants';
+import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { createTestBin, createTestLayout, getBinId, resetAllStores } from '@/test/testUtils';
 import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
 import type { Bin } from '@/core/types';
@@ -113,6 +113,33 @@ describe('clear-layer', () => {
 describe('useActionHandlers', () => {
   beforeEach(() => {
     resetAllStores();
+  });
+
+  describe('add-layer', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('names the layer limit when the layout is full', () => {
+      const limits: { readonly LAYERS_MAX: number } = CONSTRAINTS;
+      vi.spyOn(limits, 'LAYERS_MAX', 'get').mockReturnValue(2);
+      useLayoutStore.setState({
+        layout: createTestLayout({
+          layers: [
+            { id: L1, name: 'Layer 1', height: heightUnits(3) },
+            { id: L2, name: 'Layer 2', height: heightUnits(3) },
+          ],
+        }),
+      });
+      const { result } = renderHook(() => useActionHandlers());
+
+      act(() => {
+        result.current['add-layer']?.();
+      });
+
+      expect(useLayoutStore.getState().layout.layers).toHaveLength(2);
+      expect(useToastStore.getState().toasts.at(-1)?.message).toBe('Maximum 2 layers reached');
+    });
   });
 
   describe('toggle-half-bin', () => {

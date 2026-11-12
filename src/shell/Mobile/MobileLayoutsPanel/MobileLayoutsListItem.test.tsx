@@ -105,6 +105,26 @@ describe('LayoutListItem', () => {
     expect(screen.getByText('layouts.import.layers_other')).toBeInTheDocument();
   });
 
+  it.each([
+    [1, 'mobile.layouts.previewBins_one'],
+    [2, 'mobile.layouts.previewBins_other'],
+  ])('counts %i bin(s) with a plural form', (binCount, form) => {
+    const entry = makeEntry();
+    entry.preview.binCount = binCount;
+    render(
+      <LayoutListItem
+        entry={entry}
+        isActive={false}
+        isSwiping={false}
+        swipeX={0}
+        canDelete
+        onSelect={vi.fn()}
+        {...noopHandlers}
+      />
+    );
+    expect(screen.getByText(form)).toBeInTheDocument();
+  });
+
   it('names each swipe action with a translated label', () => {
     render(
       <LayoutListItem
