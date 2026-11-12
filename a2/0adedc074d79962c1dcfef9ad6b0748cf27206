@@ -1,0 +1,22 @@
+scripts/check-doc-drift.test.ts
+  s_1cc363bb3cc76d::t_af68ceba110279 61-68
+scripts/check-doc-drift.ts
+  s_1cc363bb3cc76d::t_a5b618fbe3663e 109-117,120,124
+  s_1cc363bb3cc76d::t_10e2a3bdcc217a 121-122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a20adedc074d79962c1dcfef9ad6b0748cf27206",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
