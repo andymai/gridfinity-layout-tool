@@ -58,6 +58,18 @@ describe('result-exhaustion hook', () => {
     expect(blocks(dir)).toBe(true);
   });
 
+  it('blocks a discarded conditional expression with a zero-argument call', () => {
+    const dir = repo();
+    stage(dir, 'a.ts', 'export function f(c: boolean) {\n  c ? addLayer() : deleteLayer(id);\n}\n');
+    expect(blocks(dir)).toBe(true);
+  });
+
+  it('allows a zero-argument method signature', () => {
+    const dir = repo();
+    stage(dir, 'a.ts', 'interface Layers {\n  addLayer(): Result;\n}\n');
+    expect(blocks(dir)).toBe(false);
+  });
+
   it('allows a method signature in a type', () => {
     const dir = repo();
     stage(
@@ -82,7 +94,12 @@ describe('result-exhaustion hook', () => {
       );
       git(dir, 'commit', '-qam', 'main');
       git(dir, 'checkout', '-q', 'feat');
-      spawnSync('git', ['merge', 'main'], { cwd: dir, stdio: 'ignore' });
+      spawnSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', 'merge', 'main'], {
+        cwd: dir,
+        stdio: 'ignore',
+      });
+      const merging = spawnSync('git', ['rev-parse', '-q', '--verify', 'MERGE_HEAD'], { cwd: dir });
+      expect(merging.status).toBe(0);
       return dir;
     }
 
