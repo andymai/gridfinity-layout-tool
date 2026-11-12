@@ -1,11 +1,22 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import {
+  apiNetworkError,
+  apiRateLimited,
+  apiServerError,
+  apiTimeout,
+  apiUnauthorized,
+  err,
+  ok,
+  type ApiError,
+} from '@/core/result';
 import {
   __resetShareUploadsForTests,
   dropWaitingUpload,
   keepShareLayout,
   queueShareUpload,
-  type SavedUpload,
+  UPLOAD_RETRY_DELAYS_MS,
   type ShareUpload,
+  type UploadAnswer,
 } from './shareUploads';
 
 const SHARE = 'share-1';
@@ -17,28 +28,45 @@ const SHARE = 'share-1';
 function uploads() {
   const runs: string[] = [];
   const records: string[] = [];
-  const finishers: ((saved: SavedUpload | null) => void)[] = [];
-  const make = (key: string, name = key): ShareUpload => ({
-    key,
-    send: () =>
-      new Promise<SavedUpload | null>((resolve) => {
-        runs.push(key);
-        finishers.push(resolve);
-      }),
-    record: () => {
-      records.push(name);
-    },
-  });
-  const finishNext = async (saved: boolean): Promise<void> => {
-    finishers.shift()?.(saved ? { lastUpdatedAt: '2026-11-01T10:00:00.000Z' } : null);
+  const finishers: ((answer: UploadAnswer) => void)[] = [];
+  /** The layout that the uploader holds now. Only an upload of it is current. */
+  let latest: string | null = null;
+  const make = (key: string, name = key): ShareUpload => {
+    latest = key;
+    return {
+      key,
+      send: () =>
+        new Promise<UploadAnswer>((resolve) => {
+          runs.push(key);
+          finishers.push(resolve);
+        }),
+      record: () => {
+        records.push(name);
+      },
+      current: () => latest === key,
+    };
+  };
+  const replaceLayout = (key: string): void => {
+    latest = key;
+  };
+  const answerNext = async (answer: UploadAnswer): Promise<void> => {
+    finishers.shift()?.(answer);
     for (let i = 0; i < 5; i++) await Promise.resolve();
   };
-  return { runs, records, make, finishNext };
+  /** A save, or an answer that a retry cannot change. */
+  const finishNext = (saved: boolean): Promise<void> =>
+    answerNext(saved ? ok({ lastUpdatedAt: '2026-11-01T10:00:00.000Z' }) : err(apiUnauthorized()));
+  const failNext = (error: ApiError = apiServerError(503)): Promise<void> => answerNext(err(error));
+  return { runs, records, make, replaceLayout, finishNext, failNext };
 }
 
 describe('shareUploads', () => {
   beforeEach(() => {
     __resetShareUploadsForTests();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('runs one upload at a time, then the latest request that waited', async () => {
@@ -102,5 +130,136 @@ describe('shareUploads', () => {
     dropWaitingUpload(SHARE);
     await finishNext(true);
     expect(runs).toEqual(['a']);
+  });
+
+  describe('an upload that failed with a retryable error', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    it('runs again after a wait, and records the save', async () => {
+      const { runs, records, make, failNext, finishNext } = uploads();
+      queueShareUpload(SHARE, make('a'));
+      await failNext(apiServerError(503));
+      await vi.advanceTimersByTimeAsync(UPLOAD_RETRY_DELAYS_MS[0] - 1);
+      expect(runs).toEqual(['a']);
+
+      await vi.advanceTimersByTimeAsync(1);
+      expect(runs).toEqual(['a', 'a']);
+      await finishNext(true);
+      expect(records).toEqual(['a']);
+    });
+
+    it.each<ApiError>([apiNetworkError(), apiRateLimited(30), apiTimeout()])(
+      'runs again after $code',
+      async (error) => {
+        const { runs, make, failNext } = uploads();
+        queueShareUpload(SHARE, make('a'));
+        await failNext(error);
+        await vi.advanceTimersByTimeAsync(UPLOAD_RETRY_DELAYS_MS[0]);
+        expect(runs).toEqual(['a', 'a']);
+      }
+    );
+
+    it('stops after the last wait', async () => {
+      const { runs, make, failNext } = uploads();
+      queueShareUpload(SHARE, make('a'));
+      for (const delay of UPLOAD_RETRY_DELAYS_MS) {
+        await failNext();
+        await vi.advanceTimersByTimeAsync(delay);
+      }
+      await failNext();
+      await vi.runAllTimersAsync();
+      expect(runs).toHaveLength(UPLOAD_RETRY_DELAYS_MS.length + 1);
+    });
+
+    it('gives way to a newer upload', async () => {
+      const { runs, make, failNext } = uploads();
+      queueShareUpload(SHARE, make('a'));
+      await failNext();
+      queueShareUpload(SHARE, make('b'));
+      await vi.runAllTimersAsync();
+      expect(runs).toEqual(['a', 'b']);
+    });
+
+    it('stops when the link holds the layout, or a newer one replaces it', async () => {
+      const { runs, make, failNext } = uploads();
+      queueShareUpload(SHARE, make('a'));
+      await failNext();
+      keepShareLayout(SHARE, make('saved'));
+      await vi.runAllTimersAsync();
+      expect(runs).toEqual(['a']);
+
+      queueShareUpload(SHARE, make('b'));
+      await failNext();
+      dropWaitingUpload(SHARE);
+      await vi.runAllTimersAsync();
+      expect(runs).toEqual(['a', 'b']);
+    });
+
+    it('does not run when a newer edit came while it was in flight', async () => {
+      const { runs, make, replaceLayout, failNext } = uploads();
+      queueShareUpload(SHARE, make('a'));
+      replaceLayout('b');
+      dropWaitingUpload(SHARE);
+      await failNext();
+      await vi.runAllTimersAsync();
+      expect(runs).toEqual(['a']);
+    });
+
+    it('waits for a current() that answers later, and loses to a newer upload in that time', async () => {
+      const { runs, make, failNext } = uploads();
+      let answer: (current: boolean) => void = () => undefined;
+      const slow: ShareUpload = {
+        ...make('a'),
+        current: () =>
+          new Promise<boolean>((resolve) => {
+            answer = resolve;
+          }),
+      };
+      queueShareUpload(SHARE, slow);
+      await failNext();
+      await vi.advanceTimersByTimeAsync(UPLOAD_RETRY_DELAYS_MS[0]);
+      queueShareUpload(SHARE, make('b'));
+      answer(true);
+      await vi.runAllTimersAsync();
+      expect(runs).toEqual(['a', 'b']);
+    });
+
+    it('runs when a current() that answers later says yes', async () => {
+      const { runs, make, failNext } = uploads();
+      queueShareUpload(SHARE, { ...make('a'), current: () => Promise.resolve(true) });
+      await failNext();
+      await vi.advanceTimersByTimeAsync(UPLOAD_RETRY_DELAYS_MS[0]);
+      expect(runs).toEqual(['a', 'a']);
+    });
+
+    it('does not run when a newer layout came during the wait, with no upload of its own', async () => {
+      const { runs, make, replaceLayout, failNext } = uploads();
+      queueShareUpload(SHARE, make('a'));
+      await failNext();
+      replaceLayout('remote');
+      await vi.runAllTimersAsync();
+      expect(runs).toEqual(['a']);
+    });
+  });
+
+  it('does not run again when the link refused the upload, or the send threw', async () => {
+    vi.useFakeTimers();
+    const { runs, make, finishNext } = uploads();
+    queueShareUpload(SHARE, make('a'));
+    await finishNext(false);
+    queueShareUpload(SHARE, {
+      key: 'b',
+      send: () => {
+        runs.push('b');
+        return Promise.reject(new Error('bug'));
+      },
+      record: () => undefined,
+      current: () => true,
+    });
+    for (let i = 0; i < 5; i++) await Promise.resolve();
+    await vi.runAllTimersAsync();
+    expect(runs).toEqual(['a', 'b']);
   });
 });

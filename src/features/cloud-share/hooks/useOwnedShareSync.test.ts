@@ -5,17 +5,26 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { createDefaultLayout, SHARED_PREVIEW_ID } from '@/core/constants';
 import * as shareApi from '@/core/api/share';
+import * as storage from '@/core/storage';
 import { ok, err, apiServerError } from '@/core/result';
 import type { LayoutLibrary, CloudShareInfo, Layout } from '@/core/types';
 import { gridUnits, heightUnits, layoutId, mm } from '@/core/types';
 import { claimRoomSaves, readOwnCopyRevision } from '@/features/cloud-share/utils';
-import { __resetShareUploadsForTests } from '@/features/cloud-share/utils/shareUploads';
+import {
+  __resetShareUploadsForTests,
+  UPLOAD_RETRY_DELAYS_MS,
+} from '@/features/cloud-share/utils/shareUploads';
 import { stampFor } from '@/shared/utils/roomLinkStamp';
 
 // Mock the share API module
 vi.mock('@/core/api/share', () => ({
   updateShare: vi.fn(),
 }));
+
+vi.mock('@/core/storage', async (importOriginal) => {
+  const actual = await importOriginal<typeof storage>();
+  return { ...actual, loadLayoutAsync: vi.fn(actual.loadLayoutAsync) };
+});
 
 const TEST_LAYOUT_ID = layoutId('test-layout-id');
 const TEST_SHARE_ID = 'share-123';
@@ -518,6 +527,151 @@ describe('useOwnedShareSync', () => {
       });
 
       expect(shareApi.updateShare).toHaveBeenCalled();
+    });
+
+    describe('after a server error', () => {
+      function failFirstUpload(): void {
+        vi.mocked(shareApi.updateShare).mockResolvedValueOnce(err(apiServerError(503)));
+        useLibraryStore.setState({ library: createTestLibrary(createCloudShareInfo()) });
+        renderHook(() => useOwnedShareSync());
+      }
+
+      it('uploads the same layout again with no new edit', async () => {
+        failFirstUpload();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5000);
+        });
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(UPLOAD_RETRY_DELAYS_MS[0]);
+        });
+
+        expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
+        const [first, second] = vi.mocked(shareApi.updateShare).mock.calls;
+        expect(second?.[2]).toBe(first?.[2]);
+      });
+
+      it('uploads it again after the owner switches to another layout', async () => {
+        const saved = useLayoutStore.getState().layout;
+        vi.mocked(storage.loadLayoutAsync).mockResolvedValueOnce(saved);
+        failFirstUpload();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5000);
+        });
+        act(() => {
+          useLayoutStore.setState({
+            layout: { ...createDefaultLayout(), name: 'Another layout' },
+            activeLayoutId: layoutId('another-layout'),
+            lastEditSource: 'init',
+          });
+        });
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(UPLOAD_RETRY_DELAYS_MS[0]);
+        });
+
+        expect(storage.loadLayoutAsync).toHaveBeenCalledWith(TEST_LAYOUT_ID);
+        expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
+        expect(vi.mocked(shareApi.updateShare).mock.calls[1]?.[2]).toBe(saved);
+      });
+
+      it('does not upload it again once the stored layout changed', async () => {
+        vi.mocked(storage.loadLayoutAsync).mockResolvedValueOnce({
+          ...createDefaultLayout(),
+          name: 'Changed on another device',
+        });
+        failFirstUpload();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5000);
+        });
+        act(() => {
+          useLayoutStore.setState({
+            layout: createDefaultLayout(),
+            activeLayoutId: layoutId('another-layout'),
+            lastEditSource: 'init',
+          });
+        });
+        await act(async () => {
+          await vi.runAllTimersAsync();
+        });
+
+        expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
+      });
+
+      function switchAway(): void {
+        act(() => {
+          useLayoutStore.setState({
+            layout: { ...createDefaultLayout(), name: 'Another layout' },
+            activeLayoutId: layoutId('another-layout'),
+            lastEditSource: 'init',
+          });
+        });
+      }
+
+      it('does not upload it again when the owner came back to a replaced layout during the read', async () => {
+        const saved = useLayoutStore.getState().layout;
+        let answer: (layout: Layout) => void = () => undefined;
+        vi.mocked(storage.loadLayoutAsync).mockImplementationOnce(
+          () =>
+            new Promise<Layout>((resolve) => {
+              answer = resolve;
+            })
+        );
+        failFirstUpload();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5000);
+        });
+        switchAway();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(UPLOAD_RETRY_DELAYS_MS[0]);
+        });
+        act(() => {
+          useLayoutStore.setState({
+            layout: { ...saved, name: 'From another device' },
+            activeLayoutId: TEST_LAYOUT_ID,
+            lastEditSource: 'remote',
+          });
+        });
+        await act(async () => {
+          answer(saved);
+          await vi.runAllTimersAsync();
+        });
+
+        expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
+      });
+
+      it('does not upload it again once account sync removed the library entry', async () => {
+        vi.mocked(storage.loadLayoutAsync).mockResolvedValueOnce(useLayoutStore.getState().layout);
+        failFirstUpload();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5000);
+        });
+        switchAway();
+        act(() => {
+          useLibraryStore.setState({ library: { ...createTestLibrary(), entries: [] } });
+        });
+        await act(async () => {
+          await vi.runAllTimersAsync();
+        });
+
+        expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
+      });
+
+      it('does not upload it again once account sync replaced it', async () => {
+        failFirstUpload();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5000);
+        });
+        act(() => {
+          useLayoutStore.setState({
+            layout: { ...createDefaultLayout(), name: 'From another device' },
+            lastEditSource: 'remote',
+          });
+        });
+        await act(async () => {
+          await vi.runAllTimersAsync();
+        });
+
+        expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
+      });
     });
 
     it('silently handles network errors', async () => {

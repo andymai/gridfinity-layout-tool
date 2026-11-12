@@ -19,8 +19,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { updateShare } from '@/core/api/share';
-import { isOk } from '@/core/result';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
+import { loadLayoutAsync } from '@/core/storage';
 import {
   dropWaitingUpload,
   keepShareLayout,
@@ -31,7 +31,7 @@ import {
   type ShareUpload,
 } from '@/features/cloud-share/utils';
 import { roomLayoutFingerprint } from '@/shared/utils/roomLinkStamp';
-import type { CloudShareInfo } from '@/core/types';
+import type { CloudShareInfo, Layout } from '@/core/types';
 
 /** Debounce delay for cloud share updates (5 seconds) */
 const CLOUD_SYNC_DEBOUNCE_MS = 5000;
@@ -77,6 +77,7 @@ export function useOwnedShareSync(): void {
     if (!cloudShare) return;
 
     const { id: shareId, deleteToken } = cloudShare;
+    const layoutId = activeLayoutId;
     if (!shareId || !deleteToken) return;
     if (roomSavesShare(shareId)) return;
 
@@ -85,14 +86,41 @@ export function useOwnedShareSync(): void {
     const claimCount = roomClaimCount(shareId);
     const upload: ShareUpload = {
       key: `local:${layoutFingerprint}`,
-      // Silently ignore failures - this is background sync
-      send: () =>
-        updateShare(shareId, deleteToken, layout).then((result) =>
-          isOk(result) ? result.value : null
-        ),
+      send: () => updateShare(shareId, deleteToken, layout),
       record: ({ lastUpdatedAt }) => {
         lastSyncedRef.current = { shareId, fingerprint: layoutFingerprint, claimCount };
         if (lastUpdatedAt) recordOwnCopyRevision(shareId, lastUpdatedAt, layout);
+      },
+      // A remote layout from account sync replaces this one without a local
+      // edit, so only the stored layout can say whether it is still current.
+      // Coming back to a layout queues no upload, so a retry must outlive a
+      // switch to another layout. Account sync can also remove the library
+      // entry and keep its stored layout.
+      current: async () => {
+        if (layoutId === null) return false;
+        const shared = (): boolean => {
+          const entry = useLibraryStore
+            .getState()
+            .library.entries.find((candidate) => candidate.id === layoutId);
+          return (
+            entry?.cloudShare?.id === shareId &&
+            entry.cloudShare.deleteToken === deleteToken &&
+            !roomSavesShare(shareId)
+          );
+        };
+        const matches = (stored: Layout | null): boolean =>
+          stored !== null && roomLayoutFingerprint(stored) === layoutFingerprint;
+        const active = (): Layout | null => {
+          const state = useLayoutStore.getState();
+          return state.activeLayoutId === layoutId ? state.layout : null;
+        };
+
+        if (!shared()) return false;
+        const before = active();
+        if (before) return matches(before);
+        const stored = await loadLayoutAsync(layoutId);
+        // The owner can open the layout again while storage answers.
+        return shared() && matches(active() ?? stored);
       },
     };
 
@@ -109,7 +137,7 @@ export function useOwnedShareSync(): void {
     }
 
     queueShareUpload(shareId, upload);
-  }, [cloudShare, layout]);
+  }, [cloudShare, layout, activeLayoutId]);
 
   // Keep both refs aligned with the latest committed values. Uses
   // `useLayoutEffect` (not `useEffect`) so the refs update synchronously

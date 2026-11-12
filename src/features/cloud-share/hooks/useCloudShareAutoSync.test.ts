@@ -11,7 +11,10 @@ import { binId, gridUnits, layoutId } from '@/core/types';
 import { createTestBin, createTestLayout, createTestLibrary } from '@/test/testUtils';
 import { stampFor, type RoomLinkStamp } from '@/shared/utils/roomLinkStamp';
 import { roomSavesShare } from '@/features/cloud-share/utils';
-import { __resetShareUploadsForTests } from '@/features/cloud-share/utils/shareUploads';
+import {
+  __resetShareUploadsForTests,
+  UPLOAD_RETRY_DELAYS_MS,
+} from '@/features/cloud-share/utils/shareUploads';
 
 interface FakeRoot {
   layout: Layout;
@@ -703,6 +706,25 @@ describe('useCloudShareAutoSync', () => {
 
     expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
     expect(room.root?.metadata).toMatchObject(stamp);
+  });
+
+  it('saves the edit again after a server error, with no new edit', async () => {
+    vi.mocked(shareApi.updateShare)
+      .mockResolvedValueOnce(err(apiServerError()))
+      .mockResolvedValue(savedResponse(NEXT_SAVE_AT));
+    const saved = layoutWith('saved');
+    openRoom(saved, stampFor(saved, SAVED_AT));
+    const { rerender } = renderHook(() => useCloudShareAutoSync(SHARE_ID, TOKEN));
+
+    const edited = layoutWith('saved', 'collab-edit');
+    collaboratorEdits(edited);
+    rerender();
+    await advance(1000);
+    await advance(UPLOAD_RETRY_DELAYS_MS[0]);
+
+    expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
+    expect(shareApi.updateShare).toHaveBeenLastCalledWith(SHARE_ID, TOKEN, edited);
+    expect(room.root?.metadata).toMatchObject(stampFor(edited, NEXT_SAVE_AT));
   });
 
   it('swallows a network error without stamping the room', async () => {

@@ -13,7 +13,6 @@
 import { useEffect, useRef } from 'react';
 import { useMutation, useStorage, type LiveblocksStorage } from '@/liveblocks.config';
 import { updateShare } from '@/core/api/share';
-import { isOk } from '@/core/result';
 import {
   claimRoomSaves,
   dropWaitingUpload,
@@ -53,6 +52,7 @@ export function useCloudShareAutoSync(
 
   const mountedShareIdRef = useRef<string | null>(null);
   const pendingSaveRef = useRef<(() => void) | null>(null);
+  const latestFingerprintRef = useRef<string | null>(null);
 
   const recordSave = useMutation(({ storage, self }, saved: RoomLinkStamp): void => {
     if (!self.canWrite) return;
@@ -77,16 +77,14 @@ export function useCloudShareAutoSync(
 
   useEffect(() => {
     pendingSaveRef.current = null;
+    latestFingerprintRef.current = null;
     if (!shareId || !deleteToken || !roomLayout) return;
 
     const fingerprint = roomLayoutFingerprint(roomLayout);
+    latestFingerprintRef.current = fingerprint;
     const upload: ShareUpload = {
       key: `room:${fingerprint}`,
-      // Silently ignore failures - this is background sync, user isn't waiting
-      send: () =>
-        updateShare(shareId, deleteToken, roomLayout).then((result) =>
-          isOk(result) ? result.value : null
-        ),
+      send: () => updateShare(shareId, deleteToken, roomLayout),
       record: ({ lastUpdatedAt }) => {
         // A save that lands after the owner left the room must not stamp another room.
         if (mountedShareIdRef.current !== shareId) return;
@@ -95,6 +93,10 @@ export function useCloudShareAutoSync(
           ...(lastUpdatedAt ? { linkUpdatedAt: lastUpdatedAt } : {}),
         });
       },
+      // After the owner leaves, the room keeps the change as unsaved, and the
+      // owner's next visit saves it, so a retry would only race other tabs.
+      current: () =>
+        mountedShareIdRef.current === shareId && latestFingerprintRef.current === fingerprint,
     };
 
     // The room's record is the only "already saved" signal: another owner tab

@@ -6,42 +6,96 @@
  * never lands after a newer one from this tab.
  */
 
+import { isOk, isRetryable, type ErrorCode, type Result } from '@/core/result';
+
 /** The link's answer to a save that it took. */
 export interface SavedUpload {
   readonly lastUpdatedAt?: string;
 }
 
+/** The save that the link took, or the error that it gave instead. */
+export type UploadAnswer = Result<SavedUpload, { readonly code: ErrorCode }>;
+
 export interface ShareUpload {
   /** The layout that the upload saves. Equal keys save equal layouts. */
   readonly key: string;
-  /** Resolves with the link's answer, or null when the link did not take it. */
-  readonly send: () => Promise<SavedUpload | null>;
+  readonly send: () => Promise<UploadAnswer>;
   /** Records a save of this layout, whichever request sent it. */
   readonly record: (saved: SavedUpload) => void;
+  /**
+   * False once a newer layout replaces this one, by any path (a local edit, a
+   * remote one, the owner leaving the room). A retry sends only a current layout.
+   */
+  readonly current: () => boolean | Promise<boolean>;
 }
+
+/**
+ * Waits before each new try of an upload that failed with a retryable error.
+ * Both uploaders save only after an edit, so without a retry the link keeps
+ * the older layout until the next edit.
+ */
+export const UPLOAD_RETRY_DELAYS_MS = [2_000, 5_000, 15_000, 30_000, 60_000] as const;
 
 interface ShareQueue {
   waiting: ShareUpload | null;
 }
 
 const queues = new Map<string, ShareQueue>();
+const retries = new Map<string, ReturnType<typeof setTimeout>>();
+/** Moves on with each request, so a retry that awaits `current()` can see it lost. */
+const epochs = new Map<string, number>();
 
-function start(shareId: string, upload: ShareUpload): void {
+function supersedeRetry(shareId: string): void {
+  const timer = retries.get(shareId);
+  if (timer !== undefined) clearTimeout(timer);
+  retries.delete(shareId);
+  epochs.set(shareId, (epochs.get(shareId) ?? 0) + 1);
+}
+
+function scheduleRetry(shareId: string, upload: ShareUpload, attempt: number): void {
+  const epoch = epochs.get(shareId);
+  retries.set(
+    shareId,
+    setTimeout(() => {
+      retries.delete(shareId);
+      void Promise.resolve()
+        .then(upload.current)
+        .catch(() => false)
+        .then((current) => {
+          if (current && epochs.get(shareId) === epoch) start(shareId, upload, attempt + 1);
+        });
+    }, UPLOAD_RETRY_DELAYS_MS[attempt])
+  );
+}
+
+function start(shareId: string, upload: ShareUpload, attempt = 0): void {
+  supersedeRetry(shareId);
   const queue: ShareQueue = { waiting: null };
   queues.set(shareId, queue);
   void upload
     .send()
-    .catch(() => null)
-    .then((saved) => {
+    .catch((): null => null)
+    .then((answer) => {
       if (queues.get(shareId) !== queue) return;
       queues.delete(shareId);
+      const saved = answer && isOk(answer) ? answer.value : null;
       if (saved) upload.record(saved);
       const next = queue.waiting;
-      if (!next) return;
-      // The request that sent this layout can be gone (a room that the owner
-      // left), so the one that waits for it records the save.
-      if (saved && next.key === upload.key) next.record(saved);
-      else start(shareId, next);
+      if (next) {
+        // The request that sent this layout can be gone (a room that the
+        // owner left), so the one that waits for it records the save.
+        if (saved && next.key === upload.key) next.record(saved);
+        else start(shareId, next);
+        return;
+      }
+      if (
+        answer &&
+        !answer.ok &&
+        isRetryable(answer.error.code) &&
+        attempt < UPLOAD_RETRY_DELAYS_MS.length
+      ) {
+        scheduleRetry(shareId, upload, attempt);
+      }
     });
 }
 
@@ -58,16 +112,21 @@ export function queueShareUpload(shareId: string, upload: ShareUpload): void {
  * waits for it, and runs if the link took another layout.
  */
 export function keepShareLayout(shareId: string, upload: ShareUpload): void {
+  supersedeRetry(shareId);
   const queue = queues.get(shareId);
   if (queue) queue.waiting = upload;
 }
 
 /** Drop what waits for the share: a newer layout replaces it. */
 export function dropWaitingUpload(shareId: string): void {
+  supersedeRetry(shareId);
   const queue = queues.get(shareId);
   if (queue) queue.waiting = null;
 }
 
 export function __resetShareUploadsForTests(): void {
   queues.clear();
+  for (const timer of retries.values()) clearTimeout(timer);
+  retries.clear();
+  epochs.clear();
 }

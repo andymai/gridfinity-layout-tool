@@ -22,6 +22,8 @@ const mocks = vi.hoisted(() => ({
   head: vi.fn(),
   del: vi.fn(),
   redisSet: vi.fn(),
+  reserveShareRevision: vi.fn(),
+  verifyShareRevision: vi.fn(),
   validateShareLayout: vi.fn(),
   isValidationError: vi.fn(),
   validateSharedDesigns: vi.fn(),
@@ -112,14 +114,23 @@ async function handle(body: Record<string, unknown>, method = 'POST') {
   return res;
 }
 
+/** Later than any test's clock, so the counter's stamp is the one that wins. */
+const REVISION_STAMP = Date.parse('2099-01-01T00:00:00.000Z');
+
 describe('share (create)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.TOKEN_SALT = 'test-salt';
     delete process.env.VERCEL_ENV;
     mocks.checkRateLimit.mockResolvedValue({ allowed: true });
-    mocks.getRedis.mockReturnValue({ set: mocks.redisSet });
+    mocks.getRedis.mockReturnValue({
+      set: mocks.redisSet,
+      reserveShareRevision: mocks.reserveShareRevision,
+      verifyShareRevision: mocks.verifyShareRevision,
+    });
     mocks.redisSet.mockResolvedValue('OK');
+    mocks.reserveShareRevision.mockResolvedValue([REVISION_STAMP, 0]);
+    mocks.verifyShareRevision.mockResolvedValue(1);
     mocks.put.mockResolvedValue({ url: 'blob://ok' });
     mocks.validateShareLayout.mockReturnValue({ layout: { name: 'My Drawer' } });
     mocks.isValidationError.mockReturnValue(false);
@@ -219,6 +230,29 @@ describe('share (create)', () => {
     const res = await handle(layoutBody());
     expect(res._status).toBe(503);
     expect(mocks.put).not.toHaveBeenCalled();
+  });
+
+  it('fails closed with 503, and writes no blob, when the revision reservation fails', async () => {
+    mocks.reserveShareRevision.mockRejectedValue(new Error('redis down'));
+    const res = await handle(layoutBody());
+    expect(res._status).toBe(503);
+    expect(mocks.put).not.toHaveBeenCalled();
+  });
+
+  it('stamps the share from the counter and marks the counter verified after the put', async () => {
+    const res = await handle(layoutBody());
+    expect(res._status).toBe(201);
+    const written = JSON.parse(mocks.put.mock.calls[0][1] as string) as {
+      metadata: { createdAt: string; lastUpdatedAt: string };
+    };
+    expect(written.metadata.lastUpdatedAt).toBe(new Date(REVISION_STAMP).toISOString());
+    expect(mocks.verifyShareRevision).toHaveBeenCalledWith(
+      `share:revision:${VALID_ID}`,
+      REVISION_STAMP
+    );
+    const [putAt] = mocks.put.mock.invocationCallOrder;
+    const [verifiedAt] = mocks.verifyShareRevision.mock.invocationCallOrder;
+    expect(verifiedAt).toBeGreaterThan(putAt);
   });
 
   it('creates the share: CAS blob put, hash in Redis, 201 with token and url', async () => {
