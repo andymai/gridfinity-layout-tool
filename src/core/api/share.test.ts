@@ -22,6 +22,7 @@ import {
   meshCloudSession,
 } from '@/shared/generation/meshCloud';
 import type * as MeshCloud from '@/shared/generation/meshCloud';
+import { prepareBinParamsAsIs } from '@/test/mocks/designStorePort';
 
 vi.mock('@/shared/generation/meshCloud', async (importOriginal) => ({
   ...(await importOriginal<typeof MeshCloud>()),
@@ -355,6 +356,7 @@ describe('linked designs travelling with a share', () => {
       upsertRegistryEntry: () => Promise.reject(new Error('unused')),
       registryEdgeFields: async () => ({}),
       registryPlacementFields: async () => ({}),
+      prepareBinParams: prepareBinParamsAsIs,
     };
     registerDesignStorePort(port);
   };
@@ -453,6 +455,7 @@ describe('linked designs over the server per-design cap', () => {
       upsertRegistryEntry: () => Promise.reject(new Error('unused')),
       registryEdgeFields: async () => ({}),
       registryPlacementFields: async () => ({}),
+      prepareBinParams: prepareBinParamsAsIs,
     });
   };
 
@@ -580,6 +583,7 @@ describe('linked designs naming mesh files', () => {
       upsertRegistryEntry: () => Promise.reject(new Error('unused')),
       registryEdgeFields: async () => ({}),
       registryPlacementFields: async () => ({}),
+      prepareBinParams: prepareBinParamsAsIs,
     });
   };
 
@@ -705,6 +709,7 @@ describe('linked designs naming mesh files', () => {
       upsertRegistryEntry: () => Promise.reject(new Error('unused')),
       registryEdgeFields: async () => ({}),
       registryPlacementFields: async () => ({}),
+      prepareBinParams: prepareBinParamsAsIs,
     });
 
     expectOk(await createShare('abc123xyz789', layout, 'view'));

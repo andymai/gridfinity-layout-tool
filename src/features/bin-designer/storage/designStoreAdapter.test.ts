@@ -155,3 +155,24 @@ describe('designStoreAdapter.registryPlacementFields', () => {
     expect(on.splitToFitBed).toBeUndefined();
   });
 });
+
+describe('designStoreAdapter.prepareBinParams', () => {
+  it('migrates params a file brings, with the size the registry records', async () => {
+    const { slide: _slide, ...legacy } = { ...DEFAULT_BIN_PARAMS, width: 8, splitToFitBed: false };
+    const prepared = await designStoreAdapter.prepareBinParams(legacy);
+    expect(prepared).toMatchObject({ width: 8, depth: DEFAULT_BIN_PARAMS.depth, height: 3 });
+    expect(prepared?.params).toMatchObject({
+      slide: DEFAULT_BIN_PARAMS.slide,
+      splitToFitBed: false,
+    });
+  });
+
+  it.each([
+    ['params that throw on migration', { ...DEFAULT_BIN_PARAMS, cutouts: {} }],
+    ['a size that is not a number', { ...DEFAULT_BIN_PARAMS, width: 'wide' }],
+    ['no object at all', 'params'],
+    ['an array', [DEFAULT_BIN_PARAMS]],
+  ])('refuses %s', async (_label, params) => {
+    expect(await designStoreAdapter.prepareBinParams(params)).toBeNull();
+  });
+});

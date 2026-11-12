@@ -31,6 +31,14 @@ export interface LoadedDesignData {
   readonly structure?: unknown;
 }
 
+/** Bin params a design from outside the app can be stored with, plus the size the registry records. */
+export interface PreparedBinParams {
+  readonly params: unknown;
+  readonly width: number;
+  readonly depth: number;
+  readonly height: number;
+}
+
 /** What core hands the port to persist a design. */
 export interface SaveDesignInput {
   /** Omit to mint a fresh id; provide to upsert a specific design. */
@@ -128,6 +136,13 @@ export interface DesignStorePort {
    * whether the print list may cut it.
    */
   registryPlacementFields(params: unknown): Promise<DesignRegistryPlacementFields>;
+  /**
+   * Migrate the params of a design that arrives from outside the app (a layout
+   * file, a share) before it is stored, or `null` when they cannot be: such a
+   * design is skipped, because stored params that throw on migration break
+   * every later read of the design.
+   */
+  prepareBinParams(params: unknown): Promise<PreparedBinParams | null>;
 }
 
 let port: DesignStorePort | null = null;

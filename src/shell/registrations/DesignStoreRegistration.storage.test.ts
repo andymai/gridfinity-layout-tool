@@ -10,7 +10,11 @@ import { designId } from '@/core/types';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { loadRegistry } from '@/features/bin-designer/store/customBinRegistry';
-import { closeDesignerDb, loadDesign } from '@/features/bin-designer/storage/DesignerStorage';
+import {
+  closeDesignerDb,
+  listDesigns,
+  loadDesign,
+} from '@/features/bin-designer/storage/DesignerStorage';
 import '@/shell/registrations/DesignStoreRegistration';
 
 function deleteDb(name: string): Promise<void> {
@@ -58,5 +62,38 @@ describe('a layout file that carries its designs', () => {
       depth: 1,
       splitToFitBed: false,
     });
+  });
+
+  // A broken design must cost only itself: before, its params reached storage
+  // as they were, and registering them threw inside migrateParams, which
+  // rejected the whole restore and left the import unfinished.
+  it('skips a design whose params cannot migrate, and imports the rest', async () => {
+    const layout = createTestLayout({
+      bins: [
+        createTestBin({ linkedDesignId: designId('broken') }),
+        createTestBin({ linkedDesignId: designId('good') }),
+      ],
+    });
+    const json = JSON.stringify({
+      ...layout,
+      linkedDesigns: [
+        { id: 'broken', name: 'Broken', params: { ...DEFAULT_BIN_PARAMS, cutouts: {} } },
+        {
+          id: 'good',
+          name: 'Good',
+          params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 1, splitToFitBed: false },
+        },
+      ],
+    });
+
+    const { layout: restored, importedDesignCount } = await restoreEmbeddedDesigns(json, layout);
+
+    expect(importedDesignCount).toBe(1);
+    const [brokenBin, goodBin] = restored.bins;
+    expect(brokenBin.linkedDesignId).toBe('broken');
+    expect(goodBin.linkedDesignId).not.toBe('good');
+    const stored = await listDesigns();
+    expect(stored.ok && stored.value.map((d) => d.name)).toEqual(['Good']);
+    expect(loadRegistry().map((r) => [r.name, r.splitToFitBed])).toEqual([['Good', false]]);
   });
 });
