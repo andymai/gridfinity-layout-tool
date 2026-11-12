@@ -1,0 +1,21 @@
+src/design-system/Combobox/Combobox.tsx
+  s_1cc363bb3cc76d::t_50c727466f77fe 164-168
+src/design-system/Combobox/Combobox.test.tsx
+  s_1cc363bb3cc76d::t_02597832dece13 253-293
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4bc19a3fa184b6fb838e371b357e05a631cef655",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
