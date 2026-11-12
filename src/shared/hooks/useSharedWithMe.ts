@@ -141,16 +141,8 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
         status: 'available',
       });
 
-      // The share's live room is open already, and it can hold edits that the
-      // link's copy lacks, so the editor keeps the room's layout.
-      const open = useSharedPreviewStore.getState().sharedPreview;
-      const roomOpen =
-        open?.cloudShareId === entry.sourceShareId &&
-        open.permission === 'edit' &&
-        permission === 'edit';
-      if (!roomOpen) {
-        activateLayout(layout, SHARED_PREVIEW_ID, t('share.history.opened', { name: layout.name }));
-      }
+      // Load layout and reset UI state
+      activateLayout(layout, SHARED_PREVIEW_ID, t('share.history.opened', { name: layout.name }));
 
       // Set preview state so the banner shows
       setSharedLayoutPreview(

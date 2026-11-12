@@ -1257,6 +1257,42 @@ describe('storage-share', () => {
       });
     });
 
+    it('restores neither of two designs whose local ids collide, and keeps their owner ids', async () => {
+      mockSaveDesign.mockImplementation((input: { id: string }) =>
+        Promise.resolve(savedAs(input.id))
+      );
+      // djb2 gives `design-ab` and `design-bA` one hash after any prefix.
+      const designs = ['design-ab', 'design-bA', 'remote-design-1'].map((id) => ({
+        id,
+        name: id,
+        params: { ...DEFAULT_BIN_PARAMS },
+      }));
+      const ids = sharedDesignIds(SHARE_ID, designs);
+      expect(ids['design-ab']).toBe(ids['design-bA']);
+
+      const base = layoutLinkedTo('design-ab');
+      const [first] = base.bins;
+      if (!first) throw new Error('test layout has no bin');
+      const linked: Layout = {
+        ...base,
+        bins: designs.map((design, i) => ({
+          ...first,
+          id: binId(`bin-${i}`),
+          x: gridUnits(i),
+          linkedDesignId: designId(design.id),
+        })),
+      };
+
+      const result = await restoreSharedDesigns(SHARE_ID, linked, designs);
+
+      expect(mockSaveDesign).toHaveBeenCalledTimes(1);
+      expect(result.bins.map((bin) => bin.linkedDesignId)).toEqual([
+        'design-ab',
+        'design-bA',
+        ids['remote-design-1'],
+      ]);
+    });
+
     it('keeps the bin unlinked when the design fails to persist', async () => {
       mockSaveDesign.mockResolvedValue(err(storageNotFound('nope')));
       const layout = layoutLinkedTo('remote-design-1');

@@ -385,8 +385,18 @@ export async function restoreSharedDesigns(
   const port = getDesignStorePort();
   if (port === null) return layout;
 
+  // The local id is a 32-bit hash, so two designs can share one. Saving both
+  // under it would keep only the last, and both bins would name it. So neither
+  // restores, and their bins keep the owner's ids, which a collab room needs.
+  const localIdCounts = new Map<DesignId, number>();
+  for (const design of designs) {
+    const localId = sharedDesignLocalId(shareId, design.id);
+    localIdCounts.set(localId, (localIdCounts.get(localId) ?? 0) + 1);
+  }
+
   const idMap = new Map<string, DesignId>();
   for (const design of designs) {
+    if ((localIdCounts.get(sharedDesignLocalId(shareId, design.id)) ?? 0) > 1) continue;
     if (
       design.kind === 'assembly' &&
       isAssemblyEnvelope(design.envelope) &&
