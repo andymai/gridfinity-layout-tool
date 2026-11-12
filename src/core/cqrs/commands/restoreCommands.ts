@@ -13,7 +13,7 @@ import type { SelectionSnapshot } from '../undo/historyStore';
  * snapshot was captured. When present, the handler restores the exact
  * selection (active layer/category + selected/focused bins). When absent,
  * the handler falls back to pruning stale references against the
- * restored layout.
+ * restored layout. `halfGridMode`, when present, is set with the layout.
  */
 export type RestoreLayoutCommand = BaseCommand<
   'layout.restore',
@@ -21,6 +21,7 @@ export type RestoreLayoutCommand = BaseCommand<
     readonly layout: Layout;
     readonly direction: 'undo' | 'redo';
     readonly selection?: SelectionSnapshot;
+    readonly halfGridMode?: boolean;
   }
 >;
 

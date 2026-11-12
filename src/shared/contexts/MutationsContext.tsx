@@ -50,11 +50,14 @@ export interface Mutations {
   duplicateBin: (id: BinId) => Result<BinId, ValidationError | LayoutError>;
   moveBinToStaging: (id: BinId) => Result<void, LayoutError>;
   moveBinsToStaging: (ids: BinId[]) => Result<void, LayoutError>;
-  /** Stops at the first bin that does not fit, keeping the ones before it. */
+  /**
+   * Stops at the first bin that does not fit, keeping the ones before it.
+   * The value is how many bins it restored.
+   */
   restoreBinsFromStaging: (
     ids: BinId[],
     layerId: LayerId
-  ) => Result<void, ValidationError | LayoutError>;
+  ) => Result<number, ValidationError | LayoutError>;
   moveBinFromStaging: (
     id: BinId,
     layerId: LayerId,

@@ -38,6 +38,23 @@ describe('commandDescriptions', () => {
       );
     });
 
+    it('returns a counted key for several bin commands of one type', () => {
+      expect(getCommandDescriptionKey('bin.update', 3)).toBe('undo.binsUpdatedCount');
+      expect(getCommandDescriptionKey('bin.add', 2)).toBe('undo.binsAddedCount');
+      expect(getCommandDescriptionKey('bin.delete', 2)).toBe('undo.binsDeletedCount');
+      expect(getCommandDescriptionKey('bin.duplicate', 2)).toBe('undo.binsDuplicatedCount');
+      expect(getCommandDescriptionKey('bin.moveToStaging', 2)).toBe('undo.binsMovedToStagingCount');
+      expect(getCommandDescriptionKey('bin.moveFromStaging', 2)).toBe(
+        'undo.binsMovedFromStagingCount'
+      );
+    });
+
+    it('keeps the single key for one command, or for a command with no counted key', () => {
+      expect(getCommandDescriptionKey('bin.update', 1)).toBe('undo.binUpdated');
+      expect(getCommandDescriptionKey('drawer.update', 3)).toBe('undo.drawerUpdated');
+      expect(getCommandDescriptionKey('bin.deleteBatch', 2)).toBe('undo.binsDeleted');
+    });
+
     it('returns unknown action key for "unknown" type', () => {
       expect(getCommandDescriptionKey('unknown')).toBe('undo.unknownAction');
     });

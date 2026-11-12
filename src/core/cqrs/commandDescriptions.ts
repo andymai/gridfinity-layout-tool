@@ -40,7 +40,21 @@ const DESCRIPTIONS: Readonly<Partial<Record<CommandType, string>>> = {
   'layout.setActiveBaseplate': 'undo.activeBaseplateChanged',
 };
 
-export function getCommandDescriptionKey(commandType: CommandType | 'unknown'): string {
+/** Plural families for a batch that ran several commands of one type, each on its own bin. */
+const COUNTED_DESCRIPTIONS: Readonly<Partial<Record<CommandType, string>>> = {
+  'bin.add': 'undo.binsAddedCount',
+  'bin.update': 'undo.binsUpdatedCount',
+  'bin.delete': 'undo.binsDeletedCount',
+  'bin.duplicate': 'undo.binsDuplicatedCount',
+  'bin.moveToStaging': 'undo.binsMovedToStagingCount',
+  'bin.moveFromStaging': 'undo.binsMovedFromStagingCount',
+};
+
+export function getCommandDescriptionKey(
+  commandType: CommandType | 'unknown',
+  commandCount = 1
+): string {
   if (commandType === 'unknown') return 'undo.unknownAction';
-  return DESCRIPTIONS[commandType] ?? 'undo.unknownAction';
+  const counted = commandCount > 1 ? COUNTED_DESCRIPTIONS[commandType] : undefined;
+  return counted ?? DESCRIPTIONS[commandType] ?? 'undo.unknownAction';
 }

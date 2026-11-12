@@ -343,6 +343,37 @@ describe('bulk bin actions', () => {
       expect(useHistoryStore.getState().past).toHaveLength(1);
     });
 
+    it('reports the bins it restored and the bins that stayed in the stash', () => {
+      seed([
+        createTestBin({ id: binId('occupant'), layerId: L1, x: gridUnits(2), y: gridUnits(0) }),
+        createTestBin({ id: binId('s1'), layerId: STAGING_ID, x: gridUnits(0), y: gridUnits(0) }),
+        createTestBin({ id: binId('blocked'), layerId: STAGING_ID, x: gridUnits(2) }),
+        createTestBin({ id: binId('s3'), layerId: STAGING_ID, x: gridUnits(4) }),
+      ]);
+
+      run('restore-from-staging');
+
+      const toast = useToastStore.getState().toasts.at(-1);
+      expect(toast?.message).toBe('Restored 1/3 from stash (2 still in stash)');
+      expect(toast?.type).toBe('info');
+    });
+
+    it('reports that nothing came back when the first stashed bin does not fit', () => {
+      seed([
+        createTestBin({ id: binId('occupant'), layerId: L1, x: gridUnits(0), y: gridUnits(0) }),
+        createTestBin({ id: binId('blocked'), layerId: STAGING_ID, x: gridUnits(0) }),
+        createTestBin({ id: binId('s2'), layerId: STAGING_ID, x: gridUnits(4) }),
+      ]);
+
+      run('restore-from-staging');
+
+      expect(placement('s2')?.layerId).toBe(STAGING_ID);
+      expect(useToastStore.getState().toasts.at(-1)?.message).toBe(
+        'Restored 0/2 from stash (2 still in stash)'
+      );
+      expect(useHistoryStore.getState().past).toHaveLength(0);
+    });
+
     it('restores a full stash in one store update', () => {
       seed(fullLayer(STAGING_ID));
 

@@ -434,13 +434,26 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       'restore-from-staging':
         stagingBins.length > 0
           ? () => {
-              batch(() => {
+              const total = stagingBins.length;
+              const result = batch(() =>
                 restoreBinsFromStaging(
                   stagingBins.map((bin) => bin.id),
                   activeLayerId
+                )
+              );
+              const restored = isOk(result) ? result.value : 0;
+              if (restored < total) {
+                addToast(
+                  t('toast.restoredFromStagingPartial', {
+                    restored,
+                    total,
+                    skipped: total - restored,
+                  }),
+                  'info'
                 );
-              });
-              addToast(t('toast.restoredFromStaging', { count: stagingBins.length }), 'success');
+              } else {
+                addToast(t('toast.restoredFromStaging', { count: restored }), 'success');
+              }
             }
           : null,
     };

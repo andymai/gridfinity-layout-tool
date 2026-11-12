@@ -102,6 +102,25 @@ describe('v2 bin.restoreFromStaging', () => {
     expect(restoredIds(layout, ['a', 'blocked', 'after'], 'layer_1')).toEqual([binId('a')]);
   });
 
+  it('returns how many bins it restored', () => {
+    const layout = makeLayout({
+      bins: [
+        makeBin('occupant', { x: gridUnits(3), y: gridUnits(0) }),
+        staged('a', 0, 0),
+        staged('b', 1, 0),
+        staged('blocked', 3, 0),
+        staged('after', 5, 0),
+      ],
+    });
+
+    const result = restoreBinsFromStaging.handle(
+      { ids: ['a', 'b', 'blocked', 'after'], layerId: 'layer_1' },
+      { aggregate: layout }
+    );
+
+    expect(isOk(result) && result.value.value).toBe(2);
+  });
+
   it('checks each bin against the bins returned before it', () => {
     const layout = makeLayout({
       bins: [

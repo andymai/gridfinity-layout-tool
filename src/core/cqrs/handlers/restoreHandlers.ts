@@ -8,6 +8,7 @@
 
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import type { SelectionState } from '@/core/store/selection';
 import { ok } from '@/core/result';
 import type { Layout, BinId, LayerId, CategoryId } from '@/core/types';
@@ -116,9 +117,10 @@ function pruneSelection(layout: Layout, current: SelectionState): Partial<Select
 export function handleRestoreLayout(
   command: RestoreLayoutCommand
 ): CommandResult<void, DomainEvent> {
-  const { layout, direction, selection: snapshot } = command.payload;
+  const { layout, direction, selection: snapshot, halfGridMode } = command.payload;
 
   useLayoutStore.getState().restoreLayout(layout);
+  if (halfGridMode !== undefined) useHalfGridModeStore.getState().setHalfGridMode(halfGridMode);
 
   const selection = useSelectionStore.getState();
   const updates = snapshot

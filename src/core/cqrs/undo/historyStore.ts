@@ -6,6 +6,7 @@ import { commandBus } from '@/core/cqrs/bus/commandBus';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useToastStore } from '@/core/store/toast';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { CONSTRAINTS } from '@/core/constants';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { getCommandDescriptionKey } from '@/core/cqrs/commandDescriptions';
@@ -35,11 +36,38 @@ export function captureSelectionSnapshot(): SelectionSnapshot {
   };
 }
 
+function describeEntry(commandType: CommandType | 'unknown', commandCount = 1): string {
+  return getStaticTranslation(getCommandDescriptionKey(commandType, commandCount), {
+    count: commandCount,
+  });
+}
+
 export interface HistoryEntry {
   layout: Layout;
   commandType: CommandType | 'unknown';
+  /** How many `commandType` commands in a batch changed the layout. A mixed batch counts as one. */
+  commandCount?: number;
   /** Selection captured at the same moment as `layout`. */
   selection?: SelectionSnapshot;
+  /**
+   * Half-grid mode to restore with `layout`. Set only when the entry's own
+   * action changed the mode: the mode is a preference outside the layout,
+   * so other entries must leave it as the user last set it.
+   */
+  halfGridMode?: boolean;
+}
+
+export type HistoryEntryDetails = Pick<HistoryEntry, 'commandCount' | 'halfGridMode'>;
+
+function entryForCurrentState(entry: HistoryEntry): HistoryEntry {
+  return {
+    ...entry,
+    layout: useLayoutStore.getState().layout,
+    selection: captureSelectionSnapshot(),
+    ...(entry.halfGridMode === undefined
+      ? {}
+      : { halfGridMode: useHalfGridModeStore.getState().halfGridMode }),
+  };
 }
 
 interface HistoryState {
@@ -52,7 +80,8 @@ interface HistoryState {
   push: (
     layout: Layout,
     commandType?: CommandType | 'unknown',
-    selection?: SelectionSnapshot
+    selection?: SelectionSnapshot,
+    details?: HistoryEntryDetails
   ) => void;
   undo: () => void;
   redo: () => void;
@@ -80,9 +109,9 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   canUndo: false,
   canRedo: false,
 
-  push: (layout, commandType = 'unknown', selection) => {
+  push: (layout, commandType = 'unknown', selection, details) => {
     set((state) => {
-      const entry: HistoryEntry = { layout, commandType, selection };
+      const entry: HistoryEntry = { layout, commandType, selection, ...details };
       const newPast = [...state.past, entry];
       if (newPast.length > CONSTRAINTS.UNDO_LIMIT) {
         newPast.shift();
@@ -100,14 +129,14 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     const { past } = get();
     if (past.length === 0) return;
 
-    const current = useLayoutStore.getState().layout;
-    const currentSelection = captureSelectionSnapshot();
     const previousEntry = past[past.length - 1];
-    const { layout: previous, commandType, selection: previousSelection } = previousEntry;
+    const reverse = entryForCurrentState(previousEntry);
+    const current = reverse.layout;
+    const { layout: previous, commandType, commandCount } = previousEntry;
 
     set((state) => ({
       past: state.past.slice(0, -1),
-      future: [{ layout: current, commandType, selection: currentSelection }, ...state.future],
+      future: [reverse, ...state.future],
       canUndo: state.past.length > 1,
       canRedo: true,
     }));
@@ -116,17 +145,16 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       createCommand('layout.restore', {
         layout: previous,
         direction: 'undo',
-        selection: previousSelection,
+        selection: previousEntry.selection,
+        halfGridMode: previousEntry.halfGridMode,
       })
     );
 
     // Show undo toast with action description
-    // NOTE: getStaticTranslation uses English only. Full locale support
-    // requires a locale-aware static helper or toast i18n key support.
-    const descKey = getCommandDescriptionKey(commandType);
-    const action = getStaticTranslation(descKey);
     useToastStore.getState().addToast({
-      message: getStaticTranslation('undo.undid', { action }),
+      message: getStaticTranslation('undo.undid', {
+        action: describeEntry(commandType, commandCount),
+      }),
       type: 'info',
       duration: 2000,
     });
@@ -140,13 +168,11 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     const { future } = get();
     if (future.length === 0) return;
 
-    const current = useLayoutStore.getState().layout;
-    const currentSelection = captureSelectionSnapshot();
     const nextEntry = future[0];
-    const { layout: next, commandType, selection: nextSelection } = nextEntry;
+    const { layout: next, commandType, commandCount } = nextEntry;
 
     set((state) => ({
-      past: [...state.past, { layout: current, commandType, selection: currentSelection }],
+      past: [...state.past, entryForCurrentState(nextEntry)],
       future: state.future.slice(1),
       canUndo: true,
       canRedo: state.future.length > 1,
@@ -156,15 +182,16 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       createCommand('layout.restore', {
         layout: next,
         direction: 'redo',
-        selection: nextSelection,
+        selection: nextEntry.selection,
+        halfGridMode: nextEntry.halfGridMode,
       })
     );
 
     // Show redo toast with action description
-    const descKey = getCommandDescriptionKey(commandType);
-    const action = getStaticTranslation(descKey);
     useToastStore.getState().addToast({
-      message: getStaticTranslation('undo.redid', { action }),
+      message: getStaticTranslation('undo.redid', {
+        action: describeEntry(commandType, commandCount),
+      }),
       type: 'info',
       duration: 2000,
     });
