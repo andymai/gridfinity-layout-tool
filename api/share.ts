@@ -187,6 +187,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // A deleted share with this id can still be on the CDN, so the first
     // update can read that share's older stamp instead of this one.
     const reserved = redis ? await reserveShareRevision(redis, shareId, Date.now()) : null;
+    if (redis && !reserved) {
+      // A stamp that the counter does not know can put a verified counter
+      // behind the blob, as on PUT.
+      return serviceUnavailable(res, 'Service temporarily unavailable. Please try again.');
+    }
     const stampMs = reserved?.stampMs ?? Date.now();
     const nowIso = new Date(stampMs).toISOString();
 
