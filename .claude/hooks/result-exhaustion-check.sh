@@ -61,8 +61,10 @@ for file in "${TS_FILES[@]}"; do
   # Pattern 1: Result-returning function called but result not stored or checked
   # e.g., addBin({ ... }); // Result ignored
   # This is tricky - look for function calls not assigned to anything
-  # A method signature in a type, `updateBin(id: string): Result`, is not a call.
-  IGNORED_RESULTS=$(echo "$ADDED_LINES" | grep -E "^\+.*\b(${RESULT_FUNCTIONS})\s*\(" | grep -vE "\b(${RESULT_FUNCTIONS})\s*\([^()]*\)\s*:" | grep -v '=' | grep -v 'isOk' | grep -v 'isErr' | grep -v 'return ' | grep -v 'export function' | head -3)
+  # A method signature in a type, `updateBin(id: string): Result`, is not a
+  # call. Its first parameter carries a type; a call's first argument never
+  # does, so a discarded `c ? updateBin(id) : deleteBin(id);` still counts.
+  IGNORED_RESULTS=$(echo "$ADDED_LINES" | grep -E "^\+.*\b(${RESULT_FUNCTIONS})\s*\(" | grep -vE "\b(${RESULT_FUNCTIONS})\s*\(\s*[A-Za-z_\$][A-Za-z0-9_\$]*\??\s*:[^()]*\)\s*:" | grep -v '=' | grep -v 'isOk' | grep -v 'isErr' | grep -v 'return ' | grep -v 'export function' | head -3)
 
   if [[ -n "$IGNORED_RESULTS" ]]; then
     ISSUES+="  $file: Result-returning function called but result ignored\n"
