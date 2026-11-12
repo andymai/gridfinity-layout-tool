@@ -1,0 +1,21 @@
+src/features/grid-editor/components/Grid/Grid.tsx
+  s_1cc363bb3cc76d::t_7e59a86f25965a 396-400
+src/features/grid-editor/components/Grid/Grid.test.tsx
+  s_1cc363bb3cc76d::t_4204fbc14a46b1 256-263
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8523368913b3d2b42eef2af1d21c52108a651f13",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
