@@ -1101,7 +1101,7 @@ const splitRow: Shot = {
     await s.dismissToasts();
     // Off the row, which would keep its hover shade.
     await s.ui.park(TALL.width - 140, 160);
-    const into = list.getByText(label('rightPanel.splitInto').trim()).first();
+    const into = list.getByText(label('rightPanel.splitIntoPieces_other', { count: 2 })).first();
     await s.until(into);
     const head = await s.box(binListHeader(s));
     const table = await s.box(list.getByRole('table').first());
