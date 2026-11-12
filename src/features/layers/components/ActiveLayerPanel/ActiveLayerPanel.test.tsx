@@ -209,9 +209,9 @@ describe('ActiveLayerPanel', () => {
     });
 
     it.each([
-      ['Fill 1 gap', 1],
-      ['Fill 2 gaps', 2],
-    ])('reads "%s" for that many empty cells', (label, cells) => {
+      ['Fill 1 gap', 'Fill 1 empty cell with a 1×1 bin', 1],
+      ['Fill 2 gaps', 'Fill 2 empty cells with 1×1 bins', 2],
+    ])('reads "%s" for that many empty cells', (label, title, cells) => {
       const { layout } = useLayoutStore.getState();
       useLayoutStore.setState({
         layout: {
@@ -222,7 +222,7 @@ describe('ActiveLayerPanel', () => {
 
       render(<ActiveLayerPanel />);
 
-      expect(screen.getByText(label)).toBeInTheDocument();
+      expect(screen.getByText(label).closest('button')).toHaveAttribute('title', title);
     });
 
     it('disables fill gaps when no empty cells', () => {

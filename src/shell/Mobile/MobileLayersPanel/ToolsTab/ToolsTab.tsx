@@ -160,9 +160,7 @@ export function ToolsTab() {
             </svg>
           }
         >
-          {emptyCells > 0
-            ? t('mobile.tools.fillGaps', { count: emptyCells })
-            : t('mobile.tools.noGaps')}
+          {emptyCells > 0 ? t('layers.fillGaps', { count: emptyCells }) : t('mobile.tools.noGaps')}
         </Button>
 
         {/* Community "find bins that fit": arms a one-shot gap selection on the grid */}
@@ -199,7 +197,7 @@ export function ToolsTab() {
           }
         >
           {layerBins.length > 0
-            ? t('mobile.tools.clearBins', { count: layerBins.length })
+            ? t('layers.clearBins', { count: layerBins.length })
             : t('mobile.tools.noBins')}
         </Button>
       </div>

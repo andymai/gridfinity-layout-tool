@@ -19,13 +19,31 @@ describe('translated strings', () => {
 
 describe('plural families', () => {
   it.each([
-    ['cs', 'Vyplnit 2 mezery', 'Vyplnit 5 mezer'],
-    ['pl', 'Wypełnij 2 luki', 'Wypełnij 5 luk'],
-    ['uk', 'Заповнити 2 проміжки', 'Заповнити 5 проміжків'],
-  ])('%s words 2 gaps apart from 5 gaps', (code, two, five) => {
+    ['cs', 'layers.fillGaps', 'Vyplnit 2 mezery', 'Vyplnit 5 mezer'],
+    ['pl', 'layers.fillGaps', 'Wypełnij 2 luki', 'Wypełnij 5 luk'],
+    ['uk', 'layers.fillGaps', 'Заповнити 2 проміжки', 'Заповнити 5 проміжків'],
+    [
+      'cs',
+      'layers.fillGapsTitle',
+      'Vyplnit 2 prázdné buňky biny 1×1',
+      'Vyplnit 5 prázdných buněk biny 1×1',
+    ],
+    [
+      'pl',
+      'layers.fillGapsTitle',
+      'Wypełnij 2 puste komórki binami 1×1',
+      'Wypełnij 5 pustych komórek binami 1×1',
+    ],
+    [
+      'uk',
+      'layers.fillGapsTitle',
+      'Заповнити 2 порожні клітинки бінами 1×1',
+      'Заповнити 5 порожніх клітинок бінами 1×1',
+    ],
+  ])('%s words %s for 2 apart from 5', (code, key, two, five) => {
     const strings = Object.fromEntries(locales)[`${code}.json`];
     const fill = (count: number) =>
-      interpolate(lookupPlural(strings, code, 'layers.fillGaps', count) ?? '', { count });
+      interpolate(lookupPlural(strings, code, key, count) ?? '', { count });
     expect(fill(2)).toBe(two);
     expect(fill(5)).toBe(five);
   });
