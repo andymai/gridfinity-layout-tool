@@ -1,0 +1,73 @@
+scripts/docs-capture/shots/concepts.ts
+  s_1cc363bb3cc76d::t_0af8fef59b1f1c 2
+  s_1cc363bb3cc76d::t_144c79f374f32a 562-583,585-888,893,896,904-907
+  s_1cc363bb3cc76d::t_4eb6d64e034ad1 11
+  s_1cc363bb3cc76d::t_db92123c92c3a0 894,898-903
+  s_1cc363bb3cc76d::t_9688682088fc8d 9,584,889-892,895,897,908-1338,1349-1365
+apps/docs/concepts/bin-anatomy.md
+  s_1cc363bb3cc76d::t_797fa721f46ab1 42-43,80-81,95-96,131-132
+apps/docs/concepts/layouts-layers-stash.md
+  s_1cc363bb3cc76d::t_93cb70de2f930a 51-52,71-72,75-76
+apps/docs/concepts/multi-color.md
+  s_1cc363bb3cc76d::t_afab91c4fbe453 56-57
+apps/docs/concepts/preview-and-export.md
+  s_1cc363bb3cc76d::t_aa8a0fe8609ad4 69-70
+apps/docs/concepts/print-bed-fit.md
+  s_1cc363bb3cc76d::t_23e79ac8b86e14 52-53,89-90
+apps/docs/concepts/saved-designs.md
+  s_1cc363bb3cc76d::t_c15e3f74f13c2f 33-34,50-51
+apps/docs/concepts/units.md
+  s_1cc363bb3cc76d::t_dbacbf20ab6908 63-64,73-74,103-104
+apps/docs/introduction/gridfinity-basics.md
+  s_1cc363bb3cc76d::t_f51af6b8207b14 63-64
+apps/docs/media/concepts-bin-anatomy-feet.json
+  s_1cc363bb3cc76d::t_f55418a49718e9 1-5
+apps/docs/media/concepts-bin-anatomy-interior-styles.json
+  s_1cc363bb3cc76d::t_935f5fdce38ce4 1-5
+apps/docs/media/concepts-bin-anatomy-lid-needs-lip.json
+  s_1cc363bb3cc76d::t_2be8c39177958c 1-5
+apps/docs/media/concepts-bin-anatomy-stacking-lip.json
+  s_1cc363bb3cc76d::t_d2c69e15988f1e 1-5
+apps/docs/media/concepts-layouts-clearance.json
+  s_1cc363bb3cc76d::t_c44d1a5ede2dc0 1-5
+apps/docs/media/concepts-layouts-smaller-drawer.json
+  s_1cc363bb3cc76d::t_58b9b448e1eddd 1-5
+apps/docs/media/concepts-layouts-stash-place.json
+  s_1cc363bb3cc76d::t_26df0c54552357 1-5
+apps/docs/media/concepts-multi-color-export.json
+  s_1cc363bb3cc76d::t_6e310d3935a18e 1-5
+apps/docs/media/concepts-preview-layout-models.json
+  s_1cc363bb3cc76d::t_ed339e05e995f5 1-5
+apps/docs/media/concepts-print-bed-diagonal.json
+  s_1cc363bb3cc76d::t_5a9e25b1bd56cc 1-5
+apps/docs/media/concepts-print-bed-layout-split.json
+  s_1cc363bb3cc76d::t_075cec977ebaf4 1-5
+apps/docs/media/concepts-saved-designs-link-inspector.json
+  s_1cc363bb3cc76d::t_6602ac659ca184 1-5
+apps/docs/media/concepts-saved-designs-size-sync.json
+  s_1cc363bb3cc76d::t_fb64e2cfac2b5c 1-5
+apps/docs/media/concepts-units-half-grid.json
+  s_1cc363bb3cc76d::t_a4757d6225d9b2 1-5
+apps/docs/media/concepts-units-stack-solver.json
+  s_1cc363bb3cc76d::t_429114ef589063 1-5
+apps/docs/media/concepts-units-unlink-pitch.json
+  s_1cc363bb3cc76d::t_814d0e7096b620 1-5
+apps/docs/media/introduction-gridfinity-basics-magnet-holes.json
+  s_1cc363bb3cc76d::t_227dbe338d9849 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "27c0094423428828dba2c736a041b21ed4cd2b44",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
