@@ -361,6 +361,28 @@ async function captureSerpThumbnail(browser: Browser, spec: SerpSpec): Promise<v
 // Baseplate maker screenshot
 // ---------------------------------------------------------------------------
 
+/**
+ * The "Refining" status also clears when refinement fails, leaving the draft
+ * preview up behind an error toast or an error overlay. Neither may be saved.
+ */
+async function baseplateFailure(page: Page): Promise<string | null> {
+  return page.evaluate(async () => {
+    const { useBaseplatePageStore } =
+      await import('/src/features/baseplate/store/baseplatePageStore.ts');
+    const { useToastStore } = await import('/src/core/store/toast.ts');
+    const state = useBaseplatePageStore.getState();
+    const meshErrors = [state.generation.mesh, ...state.pieceMeshes.map((p) => p.mesh)]
+      .map((mesh) => mesh.error)
+      .filter((error): error is string => error !== null);
+    const errorToasts = useToastStore
+      .getState()
+      .toasts.filter((t) => t.type === 'error')
+      .map((t) => t.message);
+    if (state.generation.status !== 'complete') return `status ${state.generation.status}`;
+    return [...meshErrors, ...errorToasts][0] ?? null;
+  });
+}
+
 async function captureBaseplate(
   browser: Browser,
   outFile: string,
@@ -383,6 +405,8 @@ async function captureBaseplate(
       timeout: 180000,
       polling: 500,
     });
+    const failure = await baseplateFailure(page);
+    if (failure !== null) throw new Error(`${outFile}: baseplate did not finish (${failure})`);
     // The magnet switch click scrolls the settings panel down to it.
     await page.evaluate(() => {
       for (const el of document.querySelectorAll<HTMLElement>('*')) {
@@ -452,23 +476,7 @@ async function captureDrawerBaseplate(browser: Browser, render: DrawerRender): P
       timeout: 180000,
       polling: 500,
     });
-    // The status also clears when refinement fails, leaving the draft preview
-    // up behind an error toast, or an error overlay. Neither may be saved.
-    const failure = await page.evaluate(async () => {
-      const { useBaseplatePageStore } =
-        await import('/src/features/baseplate/store/baseplatePageStore.ts');
-      const { useToastStore } = await import('/src/core/store/toast.ts');
-      const state = useBaseplatePageStore.getState();
-      const meshErrors = [state.generation.mesh, ...state.pieceMeshes.map((p) => p.mesh)]
-        .map((mesh) => mesh.error)
-        .filter((error): error is string => error !== null);
-      const errorToasts = useToastStore
-        .getState()
-        .toasts.filter((t) => t.type === 'error')
-        .map((t) => t.message);
-      if (state.generation.status !== 'complete') return `status ${state.generation.status}`;
-      return [...meshErrors, ...errorToasts][0] ?? null;
-    });
+    const failure = await baseplateFailure(page);
     if (failure !== null) throw new Error(`${render.slug}: baseplate did not finish (${failure})`);
     // Centre of the 3D view, right of the settings panel.
     await page.mouse.move(SHOT_VIEWPORT.width * 0.6, SHOT_VIEWPORT.height * 0.55);
