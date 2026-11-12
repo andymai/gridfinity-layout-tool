@@ -31,16 +31,21 @@ function relink(layout: Layout, ids: ReadonlyMap<string, string>): Layout {
 export function roomDesignIds(
   ownerToLocal: Readonly<Record<string, string>> | undefined
 ): RoomDesignIds {
-  const pairs = Object.entries(ownerToLocal ?? {});
-  if (pairs.length === 0) return SAME_IDS;
-  const toLocalIds = new Map(pairs);
-  // The local id is a 32-bit hash, so two owner ids can share one. Such a local
-  // id stays as it is in the room: the owner then misses that design, where a
-  // guess could give a bin the wrong design.
+  // The local id is a 32-bit hash, so two owner ids can share one. Neither
+  // moves: a shared local id would lose which owner design each bin had, and
+  // the owner's browser cannot load it.
   const owners = new Map<string, string | null>();
-  for (const [owner, local] of pairs) owners.set(local, owners.has(local) ? null : owner);
+  for (const [owner, local] of Object.entries(ownerToLocal ?? {})) {
+    owners.set(local, owners.has(local) ? null : owner);
+  }
+  const toLocalIds = new Map<string, string>();
   const toRoomIds = new Map<string, string>();
-  for (const [local, owner] of owners) if (owner !== null) toRoomIds.set(local, owner);
+  for (const [local, owner] of owners) {
+    if (owner === null) continue;
+    toLocalIds.set(owner, local);
+    toRoomIds.set(local, owner);
+  }
+  if (toLocalIds.size === 0) return SAME_IDS;
   return {
     toLocal: (roomLayout) => relink(roomLayout, toLocalIds),
     toRoom: (localLayout) => relink(localLayout, toRoomIds),

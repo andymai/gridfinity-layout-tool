@@ -177,6 +177,35 @@ describe('useSharedWithMe', () => {
       );
     });
 
+    it("keeps the room's layout when the share's live room is open already", async () => {
+      const entry = createTestEntry({ permission: 'edit' });
+      useSharedWithMeStore.setState({ entries: [entry] });
+      const inRoom: Layout = { ...createTestLayout(), name: 'Room edits' };
+      useLayoutStore.setState({ layout: inRoom });
+      useSharedPreviewStore
+        .getState()
+        .setSharedLayoutPreview(inRoom, 'Shared', undefined, 'share-abc123', 'edit');
+      const linkedDesigns = [{ id: 'owner-design', name: 'Tray', params: {} as never }];
+      mockFetchShare.mockResolvedValueOnce({
+        ok: true,
+        value: {
+          layout: createTestLayout(),
+          linkedDesigns,
+          metadata: { createdAt: '2026-11-01T09:00:00.000Z', permission: 'edit' },
+        },
+      });
+      const { result } = renderHook(() => useSharedWithMe());
+
+      await act(async () => {
+        await result.current.openSharedLayout(entry);
+      });
+
+      expect(useLayoutStore.getState().layout).toBe(inRoom);
+      expect(useSharedPreviewStore.getState().sharedPreview?.designIds).toEqual(
+        sharedDesignIds('share-abc123', linkedDesigns)
+      );
+    });
+
     it("restores the share's designs and keeps their id map, for the collab room", async () => {
       const entry = createTestEntry({ permission: 'edit' });
       useSharedWithMeStore.setState({ entries: [entry] });
