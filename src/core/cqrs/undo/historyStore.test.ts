@@ -8,6 +8,7 @@ import { binId, gridUnits, heightUnits } from '@/core/types';
 import type { Bin } from '@/core/types';
 import { createTestBin, createTestLayout, resetAllStores } from '@/test/testUtils';
 import { useToastStore } from '@/core/store/toast';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { batch, commandBus, createCqrsMutations } from '@/core/cqrs';
 
 describe('history store', () => {
@@ -712,6 +713,18 @@ describe('history store', () => {
 
       useHistoryStore.getState().undo();
       expect(lastToast()).toBe('↩ Undid: Updated 2 bins');
+    });
+
+    it('leaves half-grid mode alone when the undone batch did not change it', () => {
+      batch(() => mutations.updateBin(binId('a'), { label: 'Screws' }));
+      useHalfGridModeStore.getState().setHalfGridMode(true);
+
+      useHistoryStore.getState().undo();
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
+
+      useHalfGridModeStore.getState().setHalfGridMode(false);
+      useHistoryStore.getState().redo();
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(false);
     });
 
     it('names a mixed batch after its first command', () => {

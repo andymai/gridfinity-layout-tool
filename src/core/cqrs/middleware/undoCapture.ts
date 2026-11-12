@@ -10,6 +10,7 @@
  */
 
 import { useLayoutStore } from '@/core/store/layout';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { useHistoryStore, captureSelectionSnapshot } from '@/core/cqrs/undo/historyStore';
 import type { SelectionSnapshot } from '@/core/cqrs/undo/historyStore';
 import type { Layout } from '@/core/types';
@@ -27,6 +28,7 @@ let isBatching = false;
 let batchCommandType: CommandType | null = null;
 let batchCommandCount = 0;
 let batchMixed = false;
+let batchHalfGridMode = false;
 
 function recordBatchCommand(type: CommandType): void {
   if (batchCommandType === null) {
@@ -41,14 +43,11 @@ function recordBatchCommand(type: CommandType): void {
 
 function pushBatchEntry(snapshot: Layout, selectionSnapshot: SelectionSnapshot): void {
   const counted = !batchMixed && batchCommandCount > 1;
-  useHistoryStore
-    .getState()
-    .push(
-      snapshot,
-      batchCommandType ?? 'unknown',
-      selectionSnapshot,
-      counted ? { commandCount: batchCommandCount } : undefined
-    );
+  const modeChanged = useHalfGridModeStore.getState().halfGridMode !== batchHalfGridMode;
+  useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown', selectionSnapshot, {
+    ...(counted ? { commandCount: batchCommandCount } : {}),
+    ...(modeChanged ? { halfGridMode: batchHalfGridMode } : {}),
+  });
   mlTracking.recordAction();
 }
 
@@ -57,6 +56,7 @@ function resetBatchState(): void {
   batchCommandType = null;
   batchCommandCount = 0;
   batchMixed = false;
+  batchHalfGridMode = false;
 }
 
 export function undoCaptureMiddleware(
@@ -134,6 +134,9 @@ export function undoCaptureMiddleware(
  * Supports nesting — inner batch() calls are no-ops (the outermost
  * batch owns the snapshot).
  *
+ * A half-grid mode change inside the callback joins the entry, so undo and
+ * redo set the mode back with the layout.
+ *
  * @returns The return value of the callback.
  *
  * @example
@@ -157,6 +160,7 @@ export function batch<T>(fn: () => T): T {
 
   resetBatchState();
   isBatching = true;
+  batchHalfGridMode = useHalfGridModeStore.getState().halfGridMode;
   try {
     const result = fn();
 

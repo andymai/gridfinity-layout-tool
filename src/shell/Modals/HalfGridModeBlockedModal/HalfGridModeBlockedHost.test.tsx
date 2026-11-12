@@ -114,6 +114,28 @@ describe('HalfGridModeBlockedHost', () => {
     expect(layerOf(halfAgain)).toBe(layerId);
   });
 
+  it('turns the mode back on with the undo that brings the bins back', () => {
+    const half = addBin(0, 1.5);
+    useHalfGridModeStore.getState().requestHalfGridToggle();
+    render(<HalfGridModeBlockedHost />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Move to stash and turn off' }));
+    act(() => {
+      useHistoryStore.getState().undo();
+    });
+
+    expect(layerOf(half)).toBe(layerId);
+    expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
+    expect(localStorage.getItem('gridfinity-half-bin-mode')).toBe('true');
+
+    act(() => {
+      useHistoryStore.getState().redo();
+    });
+
+    expect(layerOf(half)).toBe(STAGING_ID);
+    expect(useHalfGridModeStore.getState().halfGridMode).toBe(false);
+  });
+
   it('keeps the mode on and the bins in place on Cancel', () => {
     const half = addBin(0, 1.5);
     useHalfGridModeStore.getState().requestHalfGridToggle();

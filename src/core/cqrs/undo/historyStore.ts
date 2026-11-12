@@ -6,6 +6,7 @@ import { commandBus } from '@/core/cqrs/bus/commandBus';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useToastStore } from '@/core/store/toast';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { CONSTRAINTS } from '@/core/constants';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { getCommandDescriptionKey } from '@/core/cqrs/commandDescriptions';
@@ -48,10 +49,28 @@ export interface HistoryEntry {
   commandCount?: number;
   /** Selection captured at the same moment as `layout`. */
   selection?: SelectionSnapshot;
+  /**
+   * Half-grid mode to restore with `layout`. Set only when the entry's own
+   * action changed the mode: the mode is a preference outside the layout,
+   * so other entries must leave it as the user last set it.
+   */
+  halfGridMode?: boolean;
 }
 
 /** Entry fields that only some pushes carry. */
-export type HistoryEntryDetails = Pick<HistoryEntry, 'commandCount'>;
+export type HistoryEntryDetails = Pick<HistoryEntry, 'commandCount' | 'halfGridMode'>;
+
+/** The entry that takes the current state back the other way, for the same action. */
+function entryForCurrentState(entry: HistoryEntry): HistoryEntry {
+  return {
+    ...entry,
+    layout: useLayoutStore.getState().layout,
+    selection: captureSelectionSnapshot(),
+    ...(entry.halfGridMode === undefined
+      ? {}
+      : { halfGridMode: useHalfGridModeStore.getState().halfGridMode }),
+  };
+}
 
 interface HistoryState {
   past: HistoryEntry[];
@@ -112,22 +131,14 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     const { past } = get();
     if (past.length === 0) return;
 
-    const current = useLayoutStore.getState().layout;
-    const currentSelection = captureSelectionSnapshot();
     const previousEntry = past[past.length - 1];
-    const {
-      layout: previous,
-      commandType,
-      commandCount,
-      selection: previousSelection,
-    } = previousEntry;
+    const reverse = entryForCurrentState(previousEntry);
+    const current = reverse.layout;
+    const { layout: previous, commandType, commandCount } = previousEntry;
 
     set((state) => ({
       past: state.past.slice(0, -1),
-      future: [
-        { layout: current, commandType, commandCount, selection: currentSelection },
-        ...state.future,
-      ],
+      future: [reverse, ...state.future],
       canUndo: state.past.length > 1,
       canRedo: true,
     }));
@@ -136,7 +147,8 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       createCommand('layout.restore', {
         layout: previous,
         direction: 'undo',
-        selection: previousSelection,
+        selection: previousEntry.selection,
+        halfGridMode: previousEntry.halfGridMode,
       })
     );
 
@@ -160,16 +172,11 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     const { future } = get();
     if (future.length === 0) return;
 
-    const current = useLayoutStore.getState().layout;
-    const currentSelection = captureSelectionSnapshot();
     const nextEntry = future[0];
-    const { layout: next, commandType, commandCount, selection: nextSelection } = nextEntry;
+    const { layout: next, commandType, commandCount } = nextEntry;
 
     set((state) => ({
-      past: [
-        ...state.past,
-        { layout: current, commandType, commandCount, selection: currentSelection },
-      ],
+      past: [...state.past, entryForCurrentState(nextEntry)],
       future: state.future.slice(1),
       canUndo: true,
       canRedo: state.future.length > 1,
@@ -179,7 +186,8 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       createCommand('layout.restore', {
         layout: next,
         direction: 'redo',
-        selection: nextSelection,
+        selection: nextEntry.selection,
+        halfGridMode: nextEntry.halfGridMode,
       })
     );
 

@@ -38,8 +38,8 @@ export function HalfGridModeBlockedHost() {
       for (const id of violation?.binIds ?? []) {
         if (isOk(updateBin(toBinId(id), { layerId: STAGING_ID }))) movedCount++;
       }
+      setHalfGridMode(false);
     });
-    setHalfGridMode(false);
     dismissBlockedViolation();
     if (movedCount > 0) addToast(t('toast.movedToStash', { count: movedCount }), 'success');
   }, [updateBin, setHalfGridMode, dismissBlockedViolation, addToast, t]);
