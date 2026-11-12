@@ -1,0 +1,23 @@
+src/core/storage/index.ts
+  s_1cc363bb3cc76d::t_5bd09f05726e87 41
+src/core/store/library.ts
+  s_1cc363bb3cc76d::t_5bd09f05726e87 14
+src/core/cqrs/v2/domain/library/duplicateEntry.ts
+  s_1cc363bb3cc76d::t_5bd09f05726e87 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bedf478cc6ffb7c9cca193602e65534e97fc4550",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
