@@ -1122,7 +1122,6 @@ const savedDesignsLinkInspector: Shot = {
   },
 };
 
-/** Three bins linked to one 2 x 1 design, with a free row behind them to grow into. */
 const LINKED_ROW: FixtureLayout = {
   name: 'Fastener drawer',
   width: 6,
@@ -1195,7 +1194,6 @@ const savedDesignsSizeSync: Shot = {
   },
 };
 
-/** A 6-unit bin is longer than a 180 mm bed. */
 const OVERSIZED: FixtureLayout = {
   name: 'Garage shelf',
   width: 6,
