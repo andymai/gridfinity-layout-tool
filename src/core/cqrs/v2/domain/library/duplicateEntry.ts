@@ -8,7 +8,7 @@ import { z } from 'zod';
 import type { Result, LayoutError } from '@/core/result';
 import { ok, err, layoutInvalidOperation } from '@/core/result';
 import { generateLayoutId } from '@/shared/utils';
-import { layoutCopyName } from '@/core/storage/layoutNames';
+import { layoutCopyName } from '@/core/storage';
 import { layoutId as toLayoutId } from '@/core/types';
 import type { LayoutEntry, LayoutId } from '@/core/types';
 import { defineCommand } from '../../defineCommand';

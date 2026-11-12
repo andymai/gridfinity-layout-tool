@@ -11,7 +11,7 @@ import { gridUnits, heightUnits } from '@/core/types';
 import { CONSTRAINTS, getDefaultDrawerSize } from '@/core/constants';
 import type { Result, Unit, LayoutError } from '@/core/result';
 import { err, layoutLastEntity, OK } from '@/core/result';
-import { layoutCopyName } from '@/core/storage/layoutNames';
+import { layoutCopyName } from '@/core/storage';
 
 // Re-export computePreview for backward compatibility with existing imports
 export { computePreview } from '@/core/storage';
