@@ -1,0 +1,90 @@
+src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedHost.test.tsx
+  s_1cc363bb3cc76d::t_a22a8eff923516 1-162
+src/shell/keyboard/handlers.ts
+  s_1cc363bb3cc76d::t_847324b05d08e4 21
+  s_1cc363bb3cc76d::t_a2db4e58661efe 424
+src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedHost.tsx
+  s_1cc363bb3cc76d::t_42635c583e1b7d 1-50
+apps/docs/layouts/placing-bins.md
+  s_1cc363bb3cc76d::t_b36afa198c0af9 63
+src/shell/keyboard/useKeyboard.test.ts
+  s_1cc363bb3cc76d::t_bc1deee82b2126 10
+  s_1cc363bb3cc76d::t_473e3df8923cd0 1392,1396-1408,1417-1422
+src/shared/hooks/useDrawerSettings.ts
+  s_1cc363bb3cc76d::t_a3cb014de59fc7 221
+  s_1cc363bb3cc76d::t_56c798ec3ccb55 14,21,133,196,199,222,480
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.test.ts
+  s_1cc363bb3cc76d::t_452a99fe0aa4b5 1-55
+.claude/skills/grid-editor/SKILL.md
+  s_1cc363bb3cc76d::t_95ad5bd02cd99d 69-82
+src/App.tsx
+  s_1cc363bb3cc76d::t_257fca0e684c91 4,243
+src/core/store/halfGridMode.test.ts
+  s_1cc363bb3cc76d::t_fa3bc74339bf57 9,367-426
+src/core/store/halfGridMode.ts
+  s_1cc363bb3cc76d::t_65eba5e57a6ec1 3,49-50,68-76,87,89-90,106,140-149
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.ts
+  s_1cc363bb3cc76d::t_0c3a3fb6dc19fd 123,125,445,520
+src/i18n/locales/cs.json
+  s_1cc363bb3cc76d::t_e980b313580896 3679,3682-3685
+src/i18n/locales/de.json
+  s_1cc363bb3cc76d::t_35407b05dea25c 3612,3615-3617
+src/i18n/locales/en.ts
+  s_1cc363bb3cc76d::t_93a4d92681d1f7 1922,1925-1928,1930
+src/i18n/locales/es.json
+  s_1cc363bb3cc76d::t_be326ae87d2113 3612,3615-3617
+src/i18n/locales/fr.json
+  s_1cc363bb3cc76d::t_bd1226255441c7 3612,3615-3617
+src/i18n/locales/it.json
+  s_1cc363bb3cc76d::t_34e72ef2e2c7ef 3612,3615-3617
+src/i18n/locales/ja.json
+  s_1cc363bb3cc76d::t_45cb74f5c4db16 3545,3548-3549
+src/i18n/locales/ka.json
+  s_1cc363bb3cc76d::t_19c0a7e0996836 1673,1675-1676,1678
+src/i18n/locales/ko.json
+  s_1cc363bb3cc76d::t_1f2e51e7e1cd06 3545,3548-3549
+src/i18n/locales/nb.json
+  s_1cc363bb3cc76d::t_9f7607b5e3e847 3612,3615-3617
+src/i18n/locales/nl.json
+  s_1cc363bb3cc76d::t_5d2051633b8122 3612,3615-3617
+src/i18n/locales/pl.json
+  s_1cc363bb3cc76d::t_ed8b4113fa0a7b 3746,3749-3753
+src/i18n/locales/pt-BR.json
+  s_1cc363bb3cc76d::t_4be4e0615851b0 3612,3615-3617
+src/i18n/locales/sv.json
+  s_1cc363bb3cc76d::t_cb682fa96cf28e 3612,3615-3617
+src/i18n/locales/uk.json
+  s_1cc363bb3cc76d::t_c2ba913648937b 3746,3749-3753
+src/i18n/locales/zh-CN.json
+  s_1cc363bb3cc76d::t_537ba5e2caaf55 3545,3548-3549
+src/shared/hooks/useDrawerSettings.test.ts
+  s_1cc363bb3cc76d::t_9c674392113abe 8,169,184,192-196
+src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedModal.test.tsx
+  s_1cc363bb3cc76d::t_36b85bd30abcf0 61,64,67-71,74,79-83,92,95,106,126,130,164,167,180,192,205,223,236,248,255,273
+src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedModal.tsx
+  s_1cc363bb3cc76d::t_22094e090d58c2 127,180
+src/shell/Modals/HalfGridModeBlockedModal/index.ts
+  s_1cc363bb3cc76d::t_c0e607c6e1ccde 2
+src/shell/Modals/index.ts
+  s_1cc363bb3cc76d::t_fb078adde4b6ca 1
+src/shell/keyboard/types.ts
+  s_1cc363bb3cc76d::t_1c3e59c4a33556 53
+src/shell/keyboard/useKeyboard.ts
+  s_1cc363bb3cc76d::t_700e29fb7247b3 148,201,236
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8b7ca019d73cc8384e9daa72954bff342b3817da",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
