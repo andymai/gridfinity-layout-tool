@@ -78,7 +78,6 @@ async function gridFrame(
   return frameAround({ ...box, height: box.height + (keycaps ? 44 : 0) }, 12, 4 / 3, WORKSPACE);
 }
 
-/** Clicks a stepper button `times` times: the first on camera with the cursor, the rest in quick repeat. */
 async function stepTimes(s: DocsSession, target: Locator, times: number): Promise<void> {
   await s.ui.click(target);
   const b = await s.box(target);
@@ -579,7 +578,6 @@ async function below(s: DocsSession, candidates: Locator, anchor: Locator): Prom
   throw new Error(`nothing like ${String(candidates)} below ${String(anchor)}`);
 }
 
-/** A point in the designer's 3D preview clear of the part, to grab the view by. */
 async function grip(s: DocsSession): Promise<[number, number]> {
   const c = await s.box(s.page.locator('canvas').first());
   return [c.x + c.width * 0.85, c.y + c.height * 0.5];

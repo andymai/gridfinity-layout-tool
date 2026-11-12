@@ -558,7 +558,6 @@ const createButton = (s: DocsSession): Locator =>
     .getByRole('button', { name: label('designLinking.inspector.createDesign'), exact: true })
     .first();
 
-/** Off camera: waits after a load of the bin designer until its part is built. */
 async function waitDesigner(s: DocsSession): Promise<void> {
   await designerReady(s.page).first().waitFor({ timeout: 90000 });
   await s.page.waitForTimeout(1500);
