@@ -13,7 +13,7 @@ import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import type { InteractionContext, ModeHandlers, DragStartArgs } from './types';
-import { groupMoveLands, moveOrder } from './moveOrder';
+import { groupMoveLands, moveOrder, swapLands, swapUpdates } from './moveOrder';
 import type {
   BinId,
   Coord,
@@ -210,7 +210,10 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
 
           if (targetBin) {
             const swapResult = canSwapBins(draggedBin, targetBin, layout);
-            if (swapResult.compatible) {
+            if (
+              swapResult.compatible &&
+              swapLands(draggedBin, targetBin, swapResult.requiresRotation, layout)
+            ) {
               // Preserve countdown if we're still hovering the same target
               const existingCountdown =
                 interaction.swapTarget?.binId === targetBin.id
@@ -322,32 +325,23 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
     if (interaction.swapTarget && interaction.swapMode) {
       const draggedBin = findBinById(layout, interaction.binIds[0]);
       const targetBin = findBinById(layout, interaction.swapTarget.binId);
+      const { requiresRotation } = interaction.swapTarget;
 
-      if (draggedBin && targetBin) {
-        const { requiresRotation } = interaction.swapTarget;
-
+      if (draggedBin && targetBin && swapLands(draggedBin, targetBin, requiresRotation, layout)) {
         // Track swap for analytics
         mlTracking.trackMove(draggedBin, { x: draggedBin.x, y: draggedBin.y }, 'swap', 2);
 
         execute(() => {
-          // Move dragged bin to target's position (with rotation if needed)
-          updateBin(draggedBin.id, {
-            x: targetBin.x,
-            y: targetBin.y,
-            width: requiresRotation ? draggedBin.depth : draggedBin.width,
-            depth: requiresRotation ? draggedBin.width : draggedBin.depth,
-          });
-
-          // Move target bin to dragged bin's original position
-          updateBin(targetBin.id, {
-            x: draggedBin.x,
-            y: draggedBin.y,
-          });
+          for (const { id, updates } of swapUpdates(draggedBin, targetBin, requiresRotation)) {
+            updateBin(id, updates);
+          }
         });
 
         // Show toast (operation is undoable via Ctrl+Z)
         const message = requiresRotation ? t('toast.binsSwappedRotated') : t('toast.binsSwapped');
         addToast(message, 'success');
+      } else if (draggedBin && targetBin) {
+        addToast(getPlacementErrorMessage(t, 'collision'), 'info');
       }
 
       setSelectedBins([]);
