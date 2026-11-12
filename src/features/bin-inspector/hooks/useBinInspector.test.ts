@@ -777,8 +777,10 @@ describe('useBinInspector', () => {
         result.current.requestDelete();
       });
 
-      expect(result.current.deleteConfirmState).not.toBeNull();
-      expect(result.current.deleteConfirmState?.title).toBe('Delete Bin');
+      expect(result.current.deleteConfirmState).toEqual({
+        title: 'Delete bin',
+        message: 'Delete this 2×2 bin?',
+      });
     });
 
     it('requestDelete shows multi-delete title for multiple bins', () => {
@@ -793,7 +795,10 @@ describe('useBinInspector', () => {
         result.current.requestDelete();
       });
 
-      expect(result.current.deleteConfirmState?.title).toBe('Delete Bins');
+      expect(result.current.deleteConfirmState).toEqual({
+        title: 'Delete bins',
+        message: 'Delete 2 selected bins?',
+      });
     });
 
     it('confirmDelete removes bins and clears selection', () => {

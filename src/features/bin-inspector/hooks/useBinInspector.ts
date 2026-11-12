@@ -356,14 +356,22 @@ export function useBinInspector(): UseBinInspectorReturn {
   const requestDelete = useCallback(() => {
     if (selectedBins.length === 0) return;
 
-    setDeleteConfirmState({
-      title: selectedBins.length > 1 ? 'Delete Bins' : 'Delete Bin',
-      message:
-        selectedBins.length > 1
-          ? `Delete ${selectedBins.length} selected bins?`
-          : `Delete this ${bin?.width}×${bin?.depth} bin?`,
-    });
-  }, [selectedBins, bin]);
+    const [first] = selectedBins;
+    setDeleteConfirmState(
+      selectedBins.length > 1
+        ? {
+            title: t('inspector.confirmDelete.titleMulti'),
+            message: t('inspector.confirmDelete.messageMulti', { count: selectedBins.length }),
+          }
+        : {
+            title: t('inspector.confirmDelete.title'),
+            message: t('inspector.confirmDelete.message', {
+              width: first.width,
+              depth: first.depth,
+            }),
+          }
+    );
+  }, [selectedBins, t]);
 
   const confirmDeleteAction = useCallback(() => {
     if (selectedBins.length === 0) return;
