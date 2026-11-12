@@ -67,10 +67,6 @@ export function OverhangSection() {
                       label: t('binDesigner.overhang.feet'),
                       note: t('binDesigner.overhang.feetHint'),
                     },
-                    {
-                      label: t('binDesigner.overhang.taper.title'),
-                      note: t('binDesigner.overhang.taper.hint'),
-                    },
                   ]}
                 />
               </div>
@@ -124,6 +120,13 @@ export function OverhangSection() {
                 label={t('binDesigner.overhang.taper.title')}
                 checked={taper.enabled}
                 onChange={handlers.toggleTaper}
+                badge={
+                  <FeatureTip
+                    tip="taperWalls"
+                    feature={t('binDesigner.overhang.taper.title')}
+                    detail={t('binDesigner.overhang.taper.hint')}
+                  />
+                }
                 primaryControls={
                   <>
                     <TaperProfileCards

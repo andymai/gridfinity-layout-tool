@@ -2470,6 +2470,16 @@ const en: Record<string, string> = {
     'Put a name on a wall, raised or cut in, so you can tell bins apart at a glance.',
   'binDesigner.featureTip.lightweightFloor':
     'Hollow out the feet to save filament and print faster.',
+  'binDesigner.featureTip.labelSlots':
+    'Drop a printed label plate into a window in the wall, and swap it when the contents change.',
+  'binDesigner.featureTip.detachableFeet':
+    'Print the bin with a flat bottom, and the feet as separate parts that press on.',
+  'binDesigner.featureTip.halfSockets':
+    'Split each foot into four small feet, so the bin can sit on a half-unit position.',
+  'binDesigner.featureTip.interiorFillet':
+    'Round the inside edges and corners, so small parts do not catch in a corner.',
+  'binDesigner.featureTip.taperWalls':
+    'Flare the wall out above the base, so the bin fills a drawer with curved sides.',
   'binDesigner.lid.text.useStackLipOnly': 'Use stacking lip only',
   'binDesigner.lid.text.disabledStackable': 'Not available with a full stack grid.',
   'binDesigner.lid.text.disabledPolygon': 'Not available for custom-shape bins.',

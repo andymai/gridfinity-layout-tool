@@ -278,7 +278,13 @@ export function WallSurfaceSection() {
         checked={state.labelSlotsEnabled}
         onChange={handlers.toggleLabelSlots}
         disabledReason={state.labelSlotsDisabledReason}
-        info={t('binDesigner.walls.labelSlots.hint')}
+        badge={
+          <FeatureTip
+            tip="labelSlots"
+            feature={t('binDesigner.walls.labelSlots.heading')}
+            detail={t('binDesigner.walls.labelSlots.hint')}
+          />
+        }
         primaryControls={
           <>
             <div>
