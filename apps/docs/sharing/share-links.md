@@ -84,7 +84,7 @@ Click <Ui k="share.button.manageShare" /> in the header to get the link controls
 | Change who can edit        | Pick a new value in <Ui k="share.anyoneWithLinkCan" />. A message lets you undo the change. |
 | Stop the link from working | Click <Ui k="share.deleteShareLink" />, then <Ui k="common.delete" />.                      |
 
-<Screenshot id="sharing-share-links-manage" alt="The pointer clicks Manage share in the header. The popover shows the link with a Copy button, the permission menu and Delete share link. The pointer clicks Delete share link, and the popover asks you to confirm with Delete or Cancel." spec="Clip. Layout editor, desktop, a layout with a share link routed to made-up data. Click Manage share, hold on the popover, then click Delete share link and hold on the confirm step. Do not click Delete. Crop to the header right side and the popover." />
+<Screenshot id="sharing-share-links-manage" alt="The pointer clicks Manage share in the header. The popover shows the link with a Copy button, the permission menu and Delete share link. The pointer clicks Delete share link, and the popover asks you to confirm with Delete or Cancel." spec="Clip. Layout editor, desktop, served under the public origin, a layout with a share link routed to made-up data. Click Manage share, hold on the popover, then click Delete share link and hold on the confirm step. Do not click Delete. Crop to the header right side and the popover." />
 
 Switch an edit link to view only, and anyone who opens the link after that can only look. People already in a live session can keep editing until they leave and come back. Delete a link, and it stops working for everyone who has it.
 
@@ -107,7 +107,7 @@ The <Ui k="share.title" /> dialog opens with three tabs:
 | <Ui k="share.tabs.file" /> | <Ui k="share.file.download" /> saves the layout as a JSON file. The other person imports it in the layout manager.                            |
 | <Ui k="share.tabs.json" /> | <Ui k="share.json.copy" /> copies the layout data to your clipboard.                                                                          |
 
-<Screenshot id="sharing-share-links-without-server" alt="Ctrl+O opens the layout manager. The pointer opens the actions menu of the layout and clicks Copy link. The Share layout dialog opens on its Link tab, then the pointer clicks the File tab and the JSON tab." spec="Clip. Layout editor, desktop, one sample layout. Press Ctrl+O, open the actions menu on the layout card, click Copy link, then click the File and JSON tabs. Crop to the layout manager." />
+<Screenshot id="sharing-share-links-without-server" alt="Ctrl+O opens the layout manager. The pointer opens the actions menu of the layout and clicks Copy link. The Share layout dialog opens on its Link tab, then the pointer clicks the File tab and the JSON tab." spec="Clip. Layout editor, desktop, served under the public origin, one sample layout. Press Ctrl+O, open the actions menu on the layout card, click Copy link, then click the File and JSON tabs. Crop to the layout manager." />
 
 ## Share one bin design
 

@@ -34,9 +34,65 @@ async function routeApi(s: DocsSession, ...handlers: Handler[]): Promise<void> {
         const reply = handle(url.pathname, url, route.request().method());
         if (reply) return route.fulfill({ status: reply.status ?? 200, json: reply.json });
       }
-      return route.continue();
+      // Not continue: under the public origin, the next handler serves it from the dev app.
+      return route.fallback();
     }
   );
+}
+
+/** Where makers use the app: link fields build their addresses from this origin. */
+const SITE = 'https://gridfinitylayouttool.com';
+const DEV = process.env.BASE_URL ?? 'http://localhost:5173';
+
+/**
+ * Serves the dev app under the public origin. The requests go out from Node,
+ * because a route may not change http to https. Validators are dropped so the
+ * dev server never answers 304 to a request the browser did not cache.
+ */
+async function servePublicOrigin(s: DocsSession): Promise<void> {
+  const context = s.page.context();
+  await context.route(
+    (url) => url.origin === SITE,
+    async (route) => {
+      const req = route.request();
+      const url = new URL(req.url());
+      const headers = { ...req.headers() };
+      for (const h of ['host', 'origin', 'referer', 'if-none-match', 'if-modified-since'])
+        delete headers[h];
+      const response = await context.request.fetch(`${DEV}${url.pathname}${url.search}`, {
+        method: req.method(),
+        headers,
+        data: req.postDataBuffer() ?? undefined,
+        maxRedirects: 0,
+      });
+      await route.fulfill({ response });
+    }
+  );
+  // Kept open and silent: a socket that opens and then closes makes Vite reload the page.
+  await s.page.routeWebSocket(
+    (url) => url.hostname === new URL(SITE).hostname,
+    () => undefined
+  );
+}
+
+/** What s.open does, at a path on the public origin. */
+async function openPublic(s: DocsSession, path: string): Promise<void> {
+  await s.page.goto(`${SITE}${path}`, { waitUntil: 'load' });
+  await grid(s.page).first().waitFor({ timeout: 90000 });
+  await s.page.waitForTimeout(1500);
+  await s.ui.warm(30);
+  await s.dismissToasts();
+  if (!(await s.page.evaluate(() => window.isSecureContext))) {
+    throw new Error(`${SITE} did not load as a secure context`);
+  }
+}
+
+/** The layout editor on `fixtures` under the public origin, the last one active. */
+async function openPublicEditor(s: DocsSession, ...fixtures: FixtureLayout[]): Promise<void> {
+  await servePublicOrigin(s);
+  await routeApi(s);
+  await openPublic(s, '/');
+  await s.importLayouts(fixtures.map(layoutFile), grid);
 }
 
 async function openEditor(s: DocsSession, ...fixtures: FixtureLayout[]): Promise<void> {
@@ -881,19 +937,32 @@ const shareCreate: Shot = {
     await share.click({ force: true });
     await s.until(sharePopoverOf(s));
     const p = await s.box(sharePopoverOf(s));
+    const create = s.page.getByRole('button', { name: label('share.createShareLink') }).first();
+    const c = await s.box(create);
     await s.page.keyboard.press('Escape');
     await blurFocus(s);
-    const area = await headerStrip(s, p.y + p.height + 28);
-    const create = s.page.getByRole('button', { name: label('share.createShareLink') }).first();
+    const strip = await headerStrip(s, 0);
+    // The close-up below spans redo and share with no part of a third icon; the
+    // header is too short for that at a wider aspect.
+    const aspect = 1.6;
+    const area = {
+      ...strip,
+      height: Math.max(strip.width / aspect, p.y + p.height + 28 - strip.y),
+    };
     const header = await s.box(s.page.locator('header').first());
     const b = await s.box(share);
+    const redo = await s.box(s.page.getByRole('button', { name: /^Redo/ }).first());
     await s.ui.park(...(await toolbarRest(s)));
     await s.take(
       area,
       async () => {
         await s.ui.hold(0.4);
         await s.ui.click(share);
-        await s.ui.hold(0.9);
+        await s.ui.hold(0.5);
+        await s.ui.moveTo(c.x + c.width / 2, c.y + c.height / 2);
+        await s.ui.hold(0.2);
+        s.poster();
+        await s.ui.hold(0.6);
         await s.ui.click(create);
         await s.ui.hold(1.2);
       },
@@ -902,9 +971,8 @@ const shareCreate: Shot = {
     await s.ui.hideCursor();
     await s.until(shareButton(s, 'manageShare'));
     await s.dismissToasts();
-    const closeUp = frameAround(b, 20, area.width / area.height, header);
+    const closeUp = frameAround(union(redo, b), 6, area.width / area.height, header);
     await s.take(closeUp, async () => {
-      s.poster();
       await s.ui.hold(2);
     });
   },
@@ -914,7 +982,7 @@ const shareManage: Shot = {
   id: 'sharing-share-links-manage',
   kind: 'clip',
   async take(s) {
-    await openEditor(s, TWO_LAYERS);
+    await openPublicEditor(s, TWO_LAYERS);
     await routeApi(s, shareServer);
     await makeShareLink(s);
     const manage = shareButton(s, 'manageShare');
@@ -957,9 +1025,9 @@ const shareWithoutServer: Shot = {
   kind: 'clip',
   viewport: MANAGER_VIEWPORT,
   async take(s) {
-    await openEditor(s, WORKBENCH);
+    await openPublicEditor(s, WORKBENCH);
     // Loaded again from the root, so the address names the open layout, as the link tab copies it.
-    await s.open('/', grid);
+    await openPublic(s, '/');
     const manager = s.page.getByRole('dialog').first();
     const more = s.page
       .getByRole('button', { name: label('layouts.moreActionsFor', { name: WORKBENCH.name }) })
