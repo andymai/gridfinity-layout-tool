@@ -1,0 +1,21 @@
+src/features/grid-editor/components/Grid/QuickLabelPopover/QuickLabelPopover.test.tsx
+  s_1cc363bb3cc76d::t_5201790ea4084b 1,191-259
+src/features/grid-editor/components/Grid/QuickLabelPopover/QuickLabelPopover.tsx
+  s_1cc363bb3cc76d::t_8e599499e7afe4 1,10,37-43,110-111,116,130,134-137
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f2accf9fead6a0a9636e73d2ba8ff24a40b1b1f1",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
