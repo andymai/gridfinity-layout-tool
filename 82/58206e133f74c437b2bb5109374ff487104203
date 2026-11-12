@@ -1,0 +1,27 @@
+src/core/storage/ShareService.ts
+  s_1cc363bb3cc76d::t_807cdf7ed33346 20,240-264,316-321,331,338,484
+src/features/bin-designer/store/customBinRegistry.ts
+  s_1cc363bb3cc76d::t_b8f4a8677c95b0 616
+src/features/bin-designer/sync/designAdapter.storage.test.ts
+  s_1cc363bb3cc76d::t_7195786194487c 1-72
+src/features/bin-designer/sync/designAdapter.ts
+  s_1cc363bb3cc76d::t_999923e9e31bf8 26,30,382-390
+src/shell/registrations/DesignStoreRegistration.storage.test.ts
+  s_1cc363bb3cc76d::t_4323aa8a9dd703 1-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8258206e133f74c437b2bb5109374ff487104203",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
