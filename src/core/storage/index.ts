@@ -38,6 +38,7 @@ export type {
 
 // Consider using atomic operations above instead for automatic library sync.
 export { saveLayoutAsync, loadLayoutAsync } from './LayoutService';
+export { layoutCopyName } from './layoutNames';
 
 // Use these when you need explicit error handling with Result types
 export { loadLayoutResult, deleteLayoutResult } from './LayoutService';

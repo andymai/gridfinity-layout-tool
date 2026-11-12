@@ -9,11 +9,14 @@ sources:
   - src/features/baseplate/hooks/useBaseplateLibraryInit.ts
   - src/features/baseplate/utils/designOwnership.ts
   - src/core/baseplateDefaults.ts
+  - src/features/baseplate/components/BaseplatePanel/MeasuredDrawerOverflow.tsx
+  - src/features/baseplate/utils/fitPaddingToDrawer.ts
+  - src/features/baseplate/components/BaseplatePreview/BaseplatePreview.tsx
 ---
 
 # Baseplate basics
 
-A baseplate is the grid that your bins sit in. It holds each bin in its place, so nothing slides around when you open the drawer. The baseplate generator in the Gridfinity Layout Tool reads your drawer size from the layout and builds a plate to fit. Here's how to size it, fill the gap at the edges, and keep a separate plate for each drawer.
+A **baseplate** is the grid that your bins sit in. It holds each bin in its place, so nothing slides around when you open the drawer. The baseplate generator in the Gridfinity Layout Tool reads your drawer size from the layout and builds a plate to fit. Here's how to size it, fill the gap at the edges, and keep a separate plate for each drawer.
 
 ## Open the baseplate generator
 
@@ -46,6 +49,8 @@ Know your drawer in millimeters? Click the millimeter size under the steppers an
 2. It divides the leftover space equally into left and right padding, and into front and back padding.
 3. It turns off <Ui k="baseplate.syncWithLayout" />.
 
+<Screenshot id="baseplates-basics-size-mm" alt="The millimeter size under the Width and Depth steppers is clicked, and 220 by 180 mm is typed. The steppers change to 5 by 4, Sync with layout turns off, and the size now reads incl. padding. The plate in the preview then has a solid margin around its grid." spec="Baseplate generator, layout with a 4 by 3 drawer, Sync with layout on, no padding. Close-up of the Dimensions section: click the millimeter size, type 220, Tab, type 180, Enter. Then cut to the plate in top view." />
+
 If a half grid unit (21 mm) also fits, it turns on <Ui k="sidebar.halfBinMode" /> and uses the half unit. <Ui k="sidebar.halfUnitEdgePosition" /> then sets which side gets the half cell.
 
 ## Add margins around the grid
@@ -54,7 +59,11 @@ Drawers are almost never an exact number of grid units wide, so you usually get 
 
 The nine buttons in the middle move the grid inside the total margin. <Ui k="baseplate.paddingAnchor.c" /> puts the grid in the center, and <Ui k="baseplate.paddingAnchor.bl" /> pushes it into the front-left corner. Change one stepper by hand, and the anchor shows <Ui k="baseplate.paddingAnchor.custom" />.
 
+<Screenshot id="baseplates-basics-margins" alt="A plate with 8 mm of margin left and right and 6 mm back and front. A click on the front-left anchor button sets the left and front margins to 0, the right margin to 16 mm and the back margin to 12 mm. The grid then sits in the front-left corner of the plate." spec="Baseplate generator, layout with a 5 by 4 drawer, padding 8 mm left and right and 6 mm back and front. The plate in top view, then a close-up of the padding steppers where the front-left anchor button is clicked, then the plate again." />
+
 Did you enter the drawer size in millimeters in the layout editor? Then the panel compares the plate with that size. If the plate is too big, a warning shows the overlap and a <Ui k="baseplate.fitPaddingToDrawer" /> button. Click it to shrink the margins until the plate fits.
+
+<Screenshot id="baseplates-basics-fit-drawer" alt="Under the plate size, a warning says that the plate is 8 by 4 mm over the 218 by 176 mm drawer. A click on Fit padding to drawer removes the warning, and each padding stepper then shows 4 mm." spec="Baseplate generator, layout with a 5 by 4 drawer and a measured size of 218 by 176 mm, padding 8 mm left and right and 6 mm back and front. Close-up of the plate size, the warning and the button: click Fit padding to drawer. Cut to a close-up of the padding steppers." />
 
 Once at least one edge has a margin, two more options appear:
 
@@ -96,6 +105,30 @@ Each card shows which layouts use the design. Pick a design that a different lay
 ## Reset to defaults
 
 Want a clean start? Click <Ui k="baseplate.reset" /> at the bottom of the panel, then confirm. The plate goes back to the default settings: no magnet holes, no margins, and the size from the layout. Your bins don't change. The grid unit and the print bed size keep their values too, because they belong to the layout.
+
+## When it goes wrong
+
+### The plate is bigger than your drawer
+
+Click <Ui k="baseplate.fitPaddingToDrawer" /> under the warning. It makes the margins smaller, but it can't make the grid smaller. Does the warning stay after the click, or is there no button? Then the grid alone is too big for the drawer. Make the grid smaller in the layout editor, or turn off <Ui k="baseplate.syncWithLayout" /> and lower the steppers.
+
+The panel compares the plate and its margins with the drawer size that you measured in the layout editor. The warning gives the overlap in millimeters.
+
+### An edge stays solid when you fill the margin with grid cells
+
+Make the margin on that edge 8 mm or wider.
+
+A clipped grid cell needs at least 8 mm of margin. On a narrower edge, the margin stays solid plastic, and the panel lists that edge as too small.
+
+### The preview stays empty or shows an error
+
+Reload the page. Does the message say that the browser can't run the 3D engine? Then update the browser, or open the Layout Tool in a recent Chrome, Edge, Firefox or Safari.
+
+The 3D engine builds the plate inside your browser. An old browser, or a security setting that turns off WebAssembly, stops the engine.
+
+### The bins are too tight in the plate
+
+See [A bin is too tight in the plate](../printing/troubleshooting#a-bin-is-too-tight-in-the-plate). The cause that you can fix is a bin with a different grid unit from the plate.
 
 ## Next steps
 

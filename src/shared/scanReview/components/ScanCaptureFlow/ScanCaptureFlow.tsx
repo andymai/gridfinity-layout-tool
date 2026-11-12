@@ -273,7 +273,7 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
 
   return (
     <div
-      className={`flex flex-col bg-surface text-content-primary ${
+      className={`flex flex-col bg-surface text-content ${
         layout === 'page' ? 'h-[100dvh] min-h-[100dvh]' : 'h-full min-h-0'
       }`}
       style={layout === 'page' ? { paddingTop: 'env(safe-area-inset-top)' } : undefined}
@@ -348,7 +348,7 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
                 <CardStatusIcon ok={measured !== null} />
                 {measured ? (
                   <div className="flex flex-col gap-0.5 text-left">
-                    <p className="text-sm font-semibold text-content-primary">
+                    <p className="text-sm font-semibold text-content">
                       {toolCount > 1
                         ? t('scan.review.toolsFound', { count: toolCount })
                         : t('binDesigner.cutouts.scanImport.resultSize', {
@@ -419,7 +419,7 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
                 <div className="flex w-full items-start gap-2.5 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2.5 text-left">
                   <TapIcon />
                   <div className="flex flex-col gap-0.5">
-                    <p className="text-sm font-semibold text-content-primary">
+                    <p className="text-sm font-semibold text-content">
                       {t(
                         toolCount > 1 ? 'scan.review.confirmTitleMany' : 'scan.review.confirmTitle'
                       )}

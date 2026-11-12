@@ -23,9 +23,24 @@ export interface AnalyticsData {
   lastSetPayload: string;
   /** Whether the `$set_once` traits have ever been sent from this browser. */
   onceTraitsSent: boolean;
+  /** UTC day (YYYY-MM-DD) of the last `pwa_install_available` event. */
+  pwaInstallAvailableDay: string;
 }
 
 let analyticsCache: AnalyticsData | null = null;
+let watchingOtherWindows = false;
+
+/**
+ * A second tab, or the installed app beside a tab, can write this record. Drop
+ * the cache on such a write, or the next save here puts the stale copy back.
+ */
+export function syncAnalyticsDataAcrossWindows(): void {
+  if (watchingOtherWindows) return;
+  watchingOtherWindows = true;
+  window.addEventListener('storage', (event) => {
+    if (event.key === ANALYTICS_STORAGE_KEY || event.key === null) analyticsCache = null;
+  });
+}
 
 export function createEmptyAnalyticsData(): AnalyticsData {
   return {
@@ -36,6 +51,7 @@ export function createEmptyAnalyticsData(): AnalyticsData {
     designsCreated: 0,
     lastSetPayload: '',
     onceTraitsSent: false,
+    pwaInstallAvailableDay: '',
   };
 }
 

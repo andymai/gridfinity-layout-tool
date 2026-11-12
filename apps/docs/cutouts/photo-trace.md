@@ -20,6 +20,8 @@ Got a photo of your tools? The Gridfinity Layout Tool finds the outline of each 
 2. Click <Ui k="binDesigner.cutouts.scanImport.title" /> in the editor header, then <Ui k="binDesigner.cutouts.traceView.open" />.
 3. Drop a photo on the window, or click <Ui k="binDesigner.cutouts.traceView.drop.choose" />.
 
+<Screenshot id="cutouts-photo-trace-open" alt="Clicking Scan a tool in the editor header, then From a photo on this computer. Trace a photo opens, and Choose a photo loads a photo of three tools on the calibration sheet, each with a traced outline." spec="Cut editor at 1200 x 900. In close-up, click Scan a tool, then From a photo on this computer. In Trace a photo, click Choose a photo and pick a made-up photo of a wrench, a screwdriver and pliers on the calibration sheet. End on the traced window." />
+
 Shortcut: drop a photo straight on the board, or paste one with <kbd>Ctrl</kbd>+<kbd>V</kbd>. <Ui k="binDesigner.cutouts.traceView.title" /> then opens with that photo.
 
 ## Take a photo that traces well
@@ -60,9 +62,11 @@ When the outlines look right, click the add button to put the tools in the bin. 
 
 ## Keep holes as islands
 
-Some tools have holes, such as the ring of a spanner. Turn on <Ui k="scan.review.keepHoles" /> to keep plastic in each hole. This plastic is an island: it stays at full height inside the cutout, and the tool sits around it. A tool that lies inside a hole comes in as a separate tool.
+Some tools have holes, such as the ring of a spanner. Turn on <Ui k="scan.review.keepHoles" /> to keep plastic in each hole. This plastic is an **island**: it stays at full height inside the cutout, and the tool sits around it. A tool that lies inside a hole comes in as a separate tool.
 
 <Ui k="scan.review.keepHoles" /> is off at the start, because a shiny reflection can look like a hole.
+
+<Screenshot id="cutouts-photo-trace-islands" alt="Turning on Keep holes in Trace a photo. The ring of the wrench gets an outline of its own, so plastic stays in the hole." spec="Trace a photo with the tools photo. In close-up, turn on Keep holes. Cut to the photo, close in on the closed ring of the wrench." />
 
 In the bin, the clearance makes each island smaller, and the entry edge runs around it. A cutout keeps up to 64 islands. When an island gets too thin to print, <Ui k="binDesigner.cutoutEditor.checks.title" /> shows a warning with <Ui k="binDesigner.cutoutEditor.checks.islandFix" />.
 
@@ -79,6 +83,8 @@ A traced outline can come out a little lumpy. Before you add the tools, <Ui k="b
 | <Ui k="binDesigner.cutouts.outline.roundInside" /> | Rounds the inside corners of the outline.                                                                                                                                      |
 
 Feel free to experiment. Each change starts from the outline that you had when you opened the section, so you can move a slider back and forth. <Ui k="binDesigner.cutouts.outline.reset" /> puts the outline back. With several tools in one photo, mirror each tool after you add it.
+
+<Screenshot id="cutouts-photo-trace-cleanup" alt="In Clean up outlines, moving Simplify to 0.7 mm and turning on Smooth into curves. The outlines of the screwdriver and the pliers change in the photo as the controls move." spec="Trace a photo with the tools photo. Frame the right part of the photo and the panel. Drag Simplify to about 0.7 mm, then turn on Smooth into curves." />
 
 ## Edit points up close
 
@@ -100,6 +106,32 @@ Need the outline for something other than a bin? In <Ui k="binDesigner.cutouts.t
 | <Ui k="scan.export.format.stl" />                                      | A solid to subtract from a model in your CAD app. Set its <Ui k="scan.export.thickness" />, which starts at 10 mm. |
 
 The outlines are at true size. Tick the clearance box to add 0.4 mm on each side, the same room that a cutout leaves around the tool. On a phone, <Ui k="scan.export.button.download" /> on the review screen does the same.
+
+## When it goes wrong
+
+### The add button stays gray
+
+Set the scale first. Click <Ui k="binDesigner.cutouts.traceView.scale.drawRuler" /> and mark something of known length. Or click <Ui k="binDesigner.cutouts.traceView.scale.markPaper" /> and mark the four corners of the sheet.
+
+Without a size reference, the Layout Tool can't tell how big the tools are. So it adds nothing to the bin, and a note beside the buttons asks you to set the scale.
+
+### Tools are missing, or a shadow counts as a tool
+
+Click each missing tool in the photo. To leave out the clutter, click <Ui k="binDesigner.cutouts.traceView.region.draw" /> and drag a box around the tools. Then move <Ui k="binDesigner.cutouts.traceView.sensitivity" /> up for faint tools, or down to drop shadows and specks.
+
+The Layout Tool finds a tool by how its color differs from the surface. A tool in a color close to the surface can stay hidden, and a dark shadow can look like a tool.
+
+### The paper corners don't make a sheet
+
+Drag each corner point onto a corner of the paper. Does the message say that the long and short sides look alike? Then take the photo again from straight above, or draw a ruler.
+
+The four corners set the scale from the known size of an A4 or US Letter sheet. At a steep angle, the long side and the short side look almost the same length.
+
+### An outline setting has no effect
+
+Move the slider back a little, or click <Ui k="binDesigner.cutouts.outline.reset" />.
+
+Some values don't leave one clean pocket, for example when the new outline would cross itself. The Layout Tool then keeps the outline as it was, and a message tells you so.
 
 ## Next steps
 

@@ -5,10 +5,14 @@ sources:
   - src/core/constants.ts
   - src/core/bedFit.ts
   - src/shared/utils/binSplitFit.ts
+  - src/features/bin-inspector/components/Inspector/SplitWarning/
   - src/features/bin-designer/hooks/useLayoutPrintBed.ts
   - src/features/bin-designer/components/panel/SplitOptionsSection/
   - src/features/baseplate/components/BaseplatePanel/SplitViewStrip.tsx
   - src/features/baseplate/utils/splitPlanner.ts
+  - src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
+  - src/shell/layoutExport/planLayoutBinExport.ts
+  - src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
 ---
 
 # Fitting the print bed
@@ -17,7 +21,7 @@ Every printer has a largest part that it can print. Tell the Gridfinity Layout T
 
 ## One bed size for each layout
 
-The print bed size is a width and a depth in millimeters. The default is a 256 mm square bed, and you can set any size from 42 mm to 3000 mm. The width and depth fields have a chain icon. Click the chain to unlink them for a bed that is not square.
+The **print bed size** is a width and a depth in millimeters. The default is a 256 mm square bed, and you can set any size from 42 mm to 3000 mm. The width and depth fields have a chain icon. Click the chain to unlink them for a bed that is not square.
 
 The bed size belongs to the layout. All three tools show the same value, and the layout ZIP export uses it too. Change it in one tool, and the other tools use the changed value.
 
@@ -40,11 +44,13 @@ The Layout Tool measures the part in millimeters and tries three placements on t
 
 A long, narrow part can fit at an angle when it doesn't fit square. Think of a long ruler that fits from corner to corner on a small desk. For example, a 63 mm × 294 mm part is too long for a 256 mm bed both ways round, but it fits at 45°. When a bin fits only at an angle, the bin designer tells you to turn it in your slicer, or to split it.
 
-An overhang counts in the check. An overhang makes the body larger than its grid cells. So a bin that fits by its grid size can still be too large to print.
+An overhang counts in the check. An **overhang** makes the body larger than its grid cells. So a bin that fits by its grid size can still be too large to print.
 
 ## When a bin is too large
 
-In the layout editor, a bin that doesn't fit shows <Ui k="grid.split" /> or a warning mark on the grid. The inspector shows <Ui k="inspector.split.title" /> with the number of pieces. The print list counts each piece, so your totals stay right.
+In the layout editor, a bin that doesn't fit shows <Ui k="grid.split" /> or a warning mark on the grid. On a desktop, the inspector shows <Ui k="inspector.split.title" />, with the size of the bin and the size of the bed. On a phone, the inspector shows the number of pieces. The print list counts each piece, so your totals stay right.
+
+<Screenshot id="concepts-print-bed-layout-split" alt="A 6 by 1 bin in a layout with a 180 mm print bed shows a warning mark on the grid. A click selects it, and the inspector shows Oversized for print bed: the bin does not fit the bed, so it prints in pieces." spec="Clip. Layout editor, drawer 6 × 3, print bed 180 mm, a 6 × 1 bin in the front row. The grid, a click on the bin, then a close-up of the inspector card." />
 
 In the bin designer, the split options appear in the <Ui k="binDesigner.group.shape" /> group when the bin needs a split. The bin splits along the width, the depth or both. Two kinds of connectors hold the pieces together:
 
@@ -68,6 +74,30 @@ The baseplate generator splits a large baseplate into pieces for you. It shows t
 By default, the pieces sit loose. You can pick a connector style that locks them together, and you can move the split lines. If a piece is larger than the bed, the baseplate generator stops the export until you change the split. [Split for your print bed](../baseplates/splitting) shows how.
 
 A drawer shape changes the pieces of a split plate: each piece follows the outline, and a seam that the shape crosses gets no connector. See [Drawers that are not rectangles](../baseplates/odd-shaped-drawers#split-a-shaped-plate).
+
+## When it goes wrong
+
+### A bin too large for your printer doesn't split
+
+Open the layout that the bin belongs to, and check <Ui k="sidebar.printBed" /> in the <Ui k="common.physicalUnits" /> group. Set it to the bed of your printer.
+
+The bin designer checks the bin against the print bed of the open layout. The value in <Ui k="settings.tabs.defaults" /> only applies to layouts that you create later.
+
+### The export says the bin fits only when laid diagonally
+
+Export it whole, and turn it diagonally on the bed in your slicer. To print it in pieces instead, tick <Ui k="binDesigner.splitExport.enableSplit" /> in the export dialog. For a bin that fits only at an angle, <Ui k="binDesigner.splitExport.enableSplit" /> starts off.
+
+<Screenshot id="concepts-print-bed-diagonal" alt="The export dialog for a 1 by 7 bin and a 256 mm print bed. A note says that the bin fits only when laid diagonally, and Split into pieces is clear." spec="Bin designer, bin 1 × 7 × 3u, print bed 256 mm. Export dialog open. Crop from the dialog title to the split note." />
+
+### You want to split a part in your slicer
+
+For one bin, clear <Ui k="binDesigner.splitExport.enableSplit" /> in the export dialog. For a baseplate, clear <Ui k="baseplate.export.enableSplit" /> in the export dialog of the baseplate generator. That box isn't there while <Ui k="baseplate.stackPrint.enable" /> is on.
+
+The layout ZIP splits each part that is larger than the print bed. To stop that, set the print bed to 3000 mm, the largest value. Set it back to your real bed before you need the Layout Tool to split again.
+
+### The baseplate export is gray
+
+Click <Ui k="baseplate.splitResetAuto" />, or move your split lines so that each piece fits the bed. A red message in the split view names the pieces that are too large. The baseplate generator stops the export until every piece fits.
 
 ## Next steps
 

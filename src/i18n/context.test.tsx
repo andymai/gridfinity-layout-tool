@@ -168,6 +168,34 @@ describe('plural forms', () => {
   });
 });
 
+describe('interpolated values', () => {
+  const name = "Budget $& $$ $' $` {count}";
+
+  afterEach(() => {
+    _resetActiveTranslations();
+  });
+
+  it('inserts user text literally outside React', () => {
+    expect(getStaticTranslation('layouts.importedName', { name })).toBe(`${name} (imported)`);
+    expect(getStaticTranslation('layers.confirmDelete.message', { name, count: 2 })).toBe(
+      `Delete "${name}"? The 2 bins on this layer will be moved to the Stash.`
+    );
+  });
+
+  it('inserts user text literally through the provider, on the plural path too', async () => {
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <LocaleProvider initialLocale="en">{children}</LocaleProvider>
+    );
+    const { result } = renderHook(() => useLocale(), { wrapper });
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    expect(result.current.t('layouts.importedName', { name })).toBe(`${name} (imported)`);
+    expect(result.current.t('layers.confirmDelete.message', { name, count: 1 })).toBe(
+      `Delete "${name}"? The 1 bin on this layer will be moved to the Stash.`
+    );
+  });
+});
+
 describe('LocaleProvider + useLocale', () => {
   it('provides locale, setLocale, and isLoading', async () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
@@ -218,6 +246,8 @@ describe('fallback strings', () => {
     'toast.drawerLinkOpened',
     'toast.drawerLinkInvalid',
     'toast.layoutCreateFailed',
+    'layouts.copyName',
+    'layouts.importedName',
   ])('resolves %s exactly as en.ts does before any locale loads', (key) => {
     _setLoadedEn(null);
     _resetActiveTranslations();

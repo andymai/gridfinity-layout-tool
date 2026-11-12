@@ -10,6 +10,9 @@ sources:
   - src/features/bin-designer/types/dividers.ts
   - src/features/bin-designer/utils/dividerAngle.ts
   - src/features/bin-designer/constants/gridfinity.ts
+  - src/features/bin-designer/utils/validation.ts
+  - src/features/bin-designer/store/slices/paramSlice/compartmentActions.ts
+  - src/shared/utils/slotMath.ts
 ---
 
 # Compartments and dividers
@@ -60,6 +63,8 @@ A merged compartment is always a rectangle. Made a mess? <Ui k="common.reset" />
 3. Set <Ui k="binDesigner.angledDividers.angleLabel" /> to turn the divider in plan, up to 60°.
 4. Set <Ui k="binDesigner.angledDividers.leanLabel" /> to stand the divider over, so contents rest at a slope.
 
+<Screenshot id="designer-compartments-diagonal" alt="Diagonal dividers is turned on, and the divider between Comp 1 and Comp 2 is picked in the list. Angle and Lean are set to 15°. The bin then shows the divider at an angle, and it leans to one side." spec="Bin designer, bin 3 x 4 x 4 with Grid dividers, 2 columns and 1 row. Close-up of the Interior group under the compartment grid: turn on Diagonal dividers, pick the divider in the list, click the 15° Angle preset, then the 15° Lean preset. Cut to the bin from a little higher than the default view." />
+
 The lean has a limit for each compartment, and the panel shows it with the clear opening. <Ui k="binDesigner.angledDividers.applyLeanToAxis" /> copies the lean to the other dividers that run the same way. <Ui k="binDesigner.angledDividers.fineTune" /> holds a <Ui k="binDesigner.angledDividers.shiftLabel" /> control that moves the divider. To start over, click <Ui k="binDesigner.angledDividers.resetToStraight" />.
 
 ::: warning
@@ -74,6 +79,8 @@ Bento gives you a large canvas where you draw each compartment, like a bento box
 2. On an empty canvas, choose the drawing grid. Compartments snap to it.
 3. Drag on the canvas to draw a compartment.
 4. Drag a compartment to move it, or pull its handles to change its size.
+
+<Screenshot id="designer-compartments-bento-draw" alt="Bento is picked, and Bento workspace is clicked. On the empty canvas, the 8×6 grid is picked, and three compartments are drawn with drags. The right handle of the last one is pulled to make it wider. The bin then shows the three compartments." spec="Bin designer on a wide window, bin 4 x 3 x 6. Close-up of the Interior cards: pick Bento, click Bento workspace. Cut to the canvas: pick 8×6, draw three compartments, pull the right handle of the last one. Cut to the bin." />
 
 A few more moves:
 
@@ -94,6 +101,8 @@ Small things in a deep compartment are hard to pick out. <Ui k="binDesigner.bent
 1. In the <Ui k="binDesigner.openBentoWorkspace" />, select a compartment.
 2. Drag <Ui k="binDesigner.bento.floorRaise" /> to the height you need, in millimeters.
 
+<Screenshot id="designer-compartments-floor-raise" alt="The bin shows five compartments of full depth. The narrow Tips compartment is clicked on the Bento canvas, and Floor raise is dragged to 24 mm in the compartment panel. The bin then shows the Tips compartment with its floor near the rim." spec="Bin designer on a wide window, the soldering kit bin with five labeled compartments in the Bento workspace. Start on the bin from a little higher than the default view. Close-up of the canvas and the compartment panel: click the Tips compartment, drag Floor raise to 24 mm. Cut to the bin again." />
+
 The raised floor is solid, and the infill of your slicer keeps it light. The bin designer keeps at least 3 mm of depth above the raised floor. A finger scoop climbs from the raised floor. For a <Ui k="binDesigner.interior.standard.title" /> bin, pick <Ui k="binDesigner.interior.bento.title" />: the compartments stay the same, and you get the same control.
 
 ## Use removable dividers
@@ -105,6 +114,8 @@ Not sure how you'll split the bin yet? <Ui k="binDesigner.interior.slotted.title
 3. Pick a <Ui k="binDesigner.slotDirection" />. Pick <Ui k="binDesigner.slotBoth" /> for pieces in both directions.
 4. Set <Ui k="binDesigner.slotSpacing" />, from 10 to 50 mm.
 5. Set the height, thickness and fit of the pieces.
+
+<Screenshot id="designer-compartments-removable" alt="Removable dividers is picked, with Even spacing and Both. Each Compartment width is set to 40. The bin then shows slots in its walls, and the divider pieces lie beside it." spec="Bin designer, bin 3 x 3 x 4. Close-up of the Interior group: pick Removable dividers, Even spacing and Both, then type 40 in each Compartment width box. Cut to the bin from above." />
 
 For pieces in one direction only, pick <Ui k="binDesigner.slotVertical" /> or <Ui k="binDesigner.slotHorizontal" />.
 
@@ -135,6 +146,32 @@ With interlocking pieces, <Ui k="binDesigner.slotPartialStyle" /> gives shorter 
 - <Ui k="binDesigner.slotPartialFull" />: one wall-to-wall piece for each slot.
 - <Ui k="binDesigner.slotPartialSnappable" />: each piece has score lines, so you can snap it to length. Use a divider of 1 mm or thicker.
 - <Ui k="binDesigner.slotPartialLengthSet" />: a set of pieces that span one or more compartments, each with the correct notches.
+
+## When it goes wrong
+
+### The dividers stop below the rim
+
+Turn off <Ui k="assembledHeight.stackingLip" /> in the <Ui k="binDesigner.group.base" /> group. Dividers at <Ui k="binDesigner.dividerAutoHeight" /> then reach the rim, but other bins can't stack on this one.
+
+With the lip on, <Ui k="binDesigner.dividerAutoHeight" /> is the tallest a divider can be. A bin stacked on top puts its feet just above the dividers. See [Stacking](./stacking#turn-the-stacking-lip-on-or-off).
+
+### The bin has no slots for the removable dividers
+
+Set <Ui k="binDesigner.wallThickness" /> to 0.8 mm or more, in the <Ui k="binDesigner.group.shape" /> group. While the wall is thinner, a warning shows above the slot controls.
+
+The bin designer cuts slots only in walls of 0.8 mm or thicker.
+
+### The column or row count won't go higher
+
+Make the bin wider or deeper, or make <Ui k="binDesigner.dividerThickness" /> thinner. Then add the column or row.
+
+Each compartment must stay at least 5 mm wide. The bin designer ignores a grid change that makes a compartment smaller.
+
+### Some compartment labels are gone after you change the grid
+
+Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> (<kbd>Cmd</kbd>+<kbd>Z</kbd> on a Mac) to undo the change. The labels come back.
+
+When you change the columns or rows, each label moves to the compartment at the same position. The bin designer clears a label with no compartment at its position, and a message tells you how many.
 
 ## Next steps
 

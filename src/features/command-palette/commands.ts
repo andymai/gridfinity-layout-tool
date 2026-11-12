@@ -363,7 +363,7 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     id: 'select-all',
     labelKey: 'commandPalette.selectAll',
     category: 'edit',
-    shortcut: { keys: 'A', modifier: true },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.SELECT_ALL), modifier: true },
     keywords: ['all', 'layer', 'bins'],
   },
   {
@@ -389,7 +389,7 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     id: 'new-layout',
     labelKey: 'commandPalette.newLayout',
     category: 'navigation',
-    shortcut: { keys: 'N', modifier: true },
+    shortcut: { keys: formatShortcutKeys(SHORTCUTS.NEW_LAYOUT), shift: true },
     keywords: ['create', 'blank', 'fresh'],
   },
   {

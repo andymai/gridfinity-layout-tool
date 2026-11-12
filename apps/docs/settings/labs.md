@@ -1,6 +1,6 @@
 ---
 title: Labs
-description: 'Turn on early features in Settings > Labs: finding what your bins hold, the sliding tray, a second 3D engine and a speed overlay.'
+description: 'Try early features in Settings > Labs: bin contents search, a sliding tray, a second 3D engine and a speed overlay.'
 sources:
   - src/core/labs/features.ts
   - src/shell/Modals/SettingsModal/tabs/LabsTab/LabsTab.tsx
@@ -35,7 +35,11 @@ Forgot which drawer holds the hex keys? With this feature, you write down what e
 
 **Say what a bin holds.** Select a bin in the layout editor, and the inspector gets a <Ui k="inspector.contents.title" /> section. Type an item in <Ui k="inspector.contents.addPlaceholder" />, or paste a list to add many items at once. Each item can have a quantity. A bin holds up to 100 items.
 
+<Screenshot id="settings-labs-bin-contents" alt="The Contents section in the inspector of a selected bin. It lists six hex keys with their quantities, and a box to add an item or paste a list." spec="Layout editor, desktop, with the Find what your bins hold feature on. Select a bin with six items in its contents. Crop to the Contents section of the inspector." />
+
 **Find a bin.** In the layout editor, press <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>Cmd</kbd>+<kbd>K</kbd> on a Mac) and type what you look for. The command palette shows the matching bins above the commands, with the folder, the layout and the layer of each one. It searches item names, bin labels and notes. Select a result to open its layout and select the bin. On a phone, use <Ui k="places.find.placeholder" /> in the layouts sheet.
+
+<Screenshot id="settings-labs-find" alt="The command palette with hex key typed. The Bins group lists two matches: 1.5 mm hex key in the Workbench layout and Ball-end hex key set in the Garage bench layout, each with its layer." spec="Layout editor, desktop, with the Find what your bins hold feature on and two layouts whose bins list hex keys in their contents. Press Ctrl+K and type hex key. Crop to the palette." />
 
 **Folders as places.** In the layout manager, a folder can be one of three kinds:
 
@@ -77,6 +81,20 @@ Make sure that each export is correct when the second engine is on. <Ui k="labs.
 ## Generation performance overlay
 
 Is a bin slow to update, and you want to know why? This feature shows a small overlay in the bin designer. It gives the time of each step that builds the bin model, the cache hit rates, and a history of recent models. It doesn't change the bin.
+
+## When it goes wrong
+
+### The 3D engine change does nothing
+
+Click <Ui k="labs.engine.reloadAction" /> in the message, or reload the page.
+
+The page loads one engine when it starts. A different engine takes over only after a reload.
+
+### A Labs feature is missing on another device
+
+Open Settings > <Ui k="settings.tabs.labs" /> on that device, and turn the feature on there too.
+
+Each browser keeps its own Labs choices, and your account doesn't sync them.
 
 ## Next steps
 

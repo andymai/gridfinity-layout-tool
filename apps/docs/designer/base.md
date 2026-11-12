@@ -6,13 +6,15 @@ sources:
   - src/features/bin-designer/types/base.ts
   - src/shared/constraints/rules.ts
   - src/shared/utils/detachableFeetPlan.ts
+  - src/features/generation/worker/generators/detachableFeetBuilder.ts
   - src/shared/generation/lowProfileBase.ts
   - src/features/generation/worker/generators/socketBuilder.ts
+  - src/features/bin-designer/components/DesignerPage/useFractionalEdgeMismatch.ts
 ---
 
 # The base
 
-The base is the underside of a bin: the feet that lock into a baseplate, the holes for magnets and screws, and the floor. Add magnets to the bins and the baseplate, and your bins snap onto the plate instead of sliding around. Hollow the feet, and the bin uses less filament. [Anatomy of a bin](../concepts/bin-anatomy#feet) explains how the feet sit in a baseplate.
+The **base** is the underside of a bin: the feet that lock into a baseplate, the holes for magnets and screws, and the floor. Add magnets to the bins and the baseplate, and your bins snap onto the plate instead of sliding around. Hollow the feet, and the bin uses less filament. [Anatomy of a bin](../concepts/bin-anatomy#feet) explains how the feet sit in a baseplate.
 
 In the bin designer of the Gridfinity Layout Tool, open the <Ui k="binDesigner.group.base" /> group. Below the <Ui k="binDesigner.base.bodyType" /> tiles and the stacking lip controls, the base controls sit in three sections:
 
@@ -68,6 +70,8 @@ A <Ui k="binDesigner.base.bodyType.nesting" /> body takes magnets but no screws,
 
 Turn on <Ui k="binDesigner.halfSockets" /> under <Ui k="binDesigner.base.section.feet" /> to split each foot into feet half a grid unit wide. These feet seat in a baseplate at either half-unit offset.
 
+<Screenshot id="designer-base-half-sockets" alt="Half sockets is turned on in the Feet section. The bin then shows from below, with four small feet under each grid cell." spec="Bin designer, bin 2 x 2 x 3. Close-up of the Feet section in the Base group: turn on Half sockets. Cut to the bin from below." />
+
 ### Set the foot lattice
 
 A foot must land inside one pocket of the baseplate. A full foot on the edge of a pocket doesn't drop in. The <Ui k="binDesigner.footLattice" /> fold sets where the feet fall on each axis:
@@ -84,6 +88,8 @@ Half sockets, a custom shape and a half-unit size keep the lattice on grid.
 1. Turn on <Ui k="binDesigner.detachableFeet" />.
 2. Pick a <Ui k="binDesigner.detachableFeet.pinSize" />, from ø2.6 to ø3.2 mm. The default is ø2.8 mm.
 3. Drag the slider in the 3D preview to drop the feet off the bin and look at the joint.
+
+<Screenshot id="designer-base-detachable-feet" alt="Detachable feet is turned on, Customize is opened, and the ø2.7mm pin size is picked. In the 3D preview, the slider then moves from Attached to Detached, and the feet drop off the bin." spec="Bin designer, bin 3 x 2 x 4. Close-up of the Feet section in the Base group: turn on Detachable feet, open Customize, pick ø2.7mm. Cut to the 3D preview, a little below the default view, with the slider at its right edge: drag it from Attached to Detached." />
 
 The pin holes are 3 mm wide. If a foot won't go on, pick a smaller pin. If a foot comes loose, pick a larger pin.
 
@@ -135,6 +141,32 @@ A <Ui k="binDesigner.flatFloor" /> has no Gridfinity feet, so the bin sits flat 
 These two body types cannot have magnet or screw holes, half sockets, a lightweight floor or detachable feet. Drainage holes still work on a flat base.
 
 For all six body types, see [Pick a body type](./size-and-shape#pick-a-body-type). For imported bins and Workshop builds, see [Other bin types](./special-bins#other-bin-types).
+
+## When it goes wrong
+
+### A banner says the bin won't drop into a baseplate
+
+Click <Ui k="binDesigner.fractionalEdgeMatchDrawer" /> in the banner. The bin designer sets the foot lattice to match where the bin sits in your drawer.
+
+The bin sits half a unit off the grid in the layout, but its feet follow the grid. The feet then land on the ridges between the pockets. See [Set the foot lattice](#set-the-foot-lattice).
+
+### A big bin is hard to lift off the baseplate
+
+Turn on <Ui k="binDesigner.base.cornerHolesOnly" /> under <Ui k="binDesigner.base.section.mounting" />, and print the bin again. It then takes magnets at its outer corners only.
+
+Each magnet adds grip, and by default every foot gets its holes. A large bin with magnets under every foot holds very firmly.
+
+### Magnets fall out of their holes
+
+Turn on <Ui k="binDesigner.base.magnetCrushRibs" /> in the <Ui k="common.customize" /> fold of the magnet holes. Print the bin again, and press the magnets in.
+
+A plain round hole holds a magnet only when its size suits your printer exactly. The ribs crush as the magnet goes in, so it holds without glue. See [Fit and tolerances](../printing/fit-and-tolerances).
+
+### A detachable foot won't go on, or it comes loose
+
+Pick a smaller <Ui k="binDesigner.detachableFeet.pinSize" /> if a foot won't go on. Pick a larger one if a foot comes loose. Then print the bin and the feet again.
+
+The pin hole in the bin is always 3 mm wide. Each printer prints a small pin a little larger or smaller than its model, so the pin size lets you match your printer. On most bins, the pin size also moves some pins a little, and the holes in the bin move with them. So new feet line up only with a bin that you print at the same pin size.
 
 ## Next steps
 

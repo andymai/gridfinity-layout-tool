@@ -5,6 +5,8 @@ sources:
   - src/features/baseplate/components/BaseplatePanel/StackPrintSection.tsx
   - src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
   - src/features/baseplate/utils/stackPrint.ts
+  - src/features/baseplate/utils/stackPlanning.ts
+  - src/features/baseplate/hooks/useStackPrintStatus.ts
   - src/features/baseplate/utils/buildFullParams.ts
   - src/shared/generation/ecoPlate.ts
   - src/core/types/baseplate.ts
@@ -13,13 +15,15 @@ sources:
 
 # Eco plates and stack printing
 
-A drawer full of baseplates takes a lot of filament and a lot of print jobs. Two options cut both down. An eco plate leaves out plastic that the bins don't need. Stack printing builds a tower of plates, so one print job makes many plates.
+A drawer full of baseplates takes a lot of filament and a lot of print jobs. Two options cut both down. An **eco plate** leaves out plastic that the bins don't need. **Stack printing** builds a tower of plates, so one print job makes many plates.
 
 ## Save filament with an eco plate
 
 In the baseplate generator, open <Ui k="baseplate.sectionBase" /> and turn on <Ui k="baseplate.ecoPlate" />.
 
 The Layout Tool cuts the straight joints between the corner posts down to a thin bar. A plate then uses up to a third less filament. The bins sit on the corner posts only.
+
+<Screenshot id="baseplates-eco-plate" alt="A 4 by 3 plate in the preview. Eco plate is turned on in the Base section, and the joints between the corner posts then become thin bars." spec="Baseplate generator, 4 by 3 plate, iso view. The plate, then a close-up of the Base section where Eco plate is turned on, then the plate again." />
 
 Split pieces keep the eco plate setting. With <Ui k="baseplate.stackPrint.enable" /> on, the eco plate stays only when <Ui k="baseplate.stackPrint.mixedSizes.label" /> is also on.
 
@@ -39,6 +43,8 @@ By default, pieces with the same shape stack together, up to the number that the
 ### Print more than one set
 
 Do you have several drawers of the same size? <Ui k="baseplate.stackPrint.copies.label" /> prints the whole baseplate more than once. At 1, each plate prints once. Each extra set adds one copy of every plate, up to 20 sets.
+
+<Screenshot id="baseplates-eco-stack-copies" alt="Vertical stack is on for a plate that fits the bed in one piece, and a warning says that there is nothing to stack. Complete sets is raised to 4. The message then says that 4 plates stack into 1 print file, and the preview shows a tower of four plates." spec="Baseplate generator, 4 by 3 plate on a 256 mm bed, iso view, Vertical stack on. A close-up of the stack settings: click the plus button of Complete sets three times. Then the tower in the preview." />
 
 ### Stack plates of different sizes
 
@@ -88,6 +94,32 @@ A standard plate is 4.65 mm tall. These settings change the height:
 | <Ui k="baseplate.stackPrint.enable" />  | 0.4 mm lower                                                                                 |
 
 To keep a screw-down plate at the standard height, use a <Ui k="baseplate.screwHoles.headStyle.countersink" /> with a head diameter of 6 mm. The screws then fit in the solid corners where four pockets meet. See [Magnets and screws](./magnets-and-screws#keep-the-plate-at-standard-height).
+
+## When it goes wrong
+
+A message in the stack settings tells you when a stack can't form. Here's what each one means.
+
+### The message says there's nothing to stack
+
+Does your baseplate split into pieces? Turn on <Ui k="baseplate.stackPrint.mixedSizes.label" />, so that pieces of different sizes share a tower. Is it one plate? Raise <Ui k="baseplate.stackPrint.copies.label" /> to 2 or more. The stack then holds copies of your plate.
+
+By default, only plates with the same shape stack together. Your baseplate fits the bed in one piece, or each piece has a different shape. So one set has no pair to stack.
+
+### Each plate prints as its own file
+
+Change the margins, or set a larger <Ui k="baseplate.printBedSize" /> if your printer has the room.
+
+A plate stacks only on a plate that holds it safely. With the margins and outlines that you have, no piece can rest on another one.
+
+### Only one plate fits in each stack, or a plate won't print
+
+Set <Ui k="baseplate.maxPrintHeight" /> to the real Z height of your printer. If that is already right, make the <Ui k="baseplate.stackPrint.gap.label" /> smaller.
+
+The stack can't be taller than the build height. When the limit is low, each tower holds only one plate. When a single plate is taller than the limit, the message tells you that it won't print.
+
+### Stacked plates stick together
+
+See [Stacked plates stick together](../printing/troubleshooting#stacked-plates-stick-together). Print the stack fit test before the next full tower.
 
 ## Next steps
 

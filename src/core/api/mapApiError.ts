@@ -30,6 +30,8 @@ export interface ApiErrorResponseBody {
   error: string;
   code: string;
   retryAfter?: number;
+  /** The kind of text a CONTENT_BLOCKED response found, e.g. `binLabel`. */
+  field?: string;
 }
 
 /**
@@ -41,7 +43,8 @@ export function isApiErrorResponse(data: unknown): data is ApiErrorResponseBody 
   return (
     typeof record.error === 'string' &&
     typeof record.code === 'string' &&
-    (!('retryAfter' in record) || typeof record.retryAfter === 'number')
+    (!('retryAfter' in record) || typeof record.retryAfter === 'number') &&
+    (!('field' in record) || typeof record.field === 'string')
   );
 }
 
@@ -61,7 +64,7 @@ export function mapApiErrorResponse(response: ApiErrorResponseBody): ApiError {
     case 'BIN_LIMIT':
       return apiBinLimit();
     case 'CONTENT_BLOCKED':
-      return apiContentBlocked();
+      return apiContentBlocked(response.field === undefined ? undefined : [response.field]);
     case 'NOT_FOUND':
       return apiNotFound();
     case 'UNAUTHORIZED':

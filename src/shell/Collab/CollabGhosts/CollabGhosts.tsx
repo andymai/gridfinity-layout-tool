@@ -199,7 +199,7 @@ export function CollabGhosts({ className }: CollabGhostsProps) {
     return (
       <div
         key={key}
-        className="animate-in fade-in duration-150"
+        className="animate-fade-in duration-150"
         style={{
           position: 'absolute',
           left,
@@ -243,7 +243,7 @@ export function CollabGhosts({ className }: CollabGhostsProps) {
       ghosts.push(
         <div
           key={`${keyPrefix}-${binId}`}
-          className="animate-in fade-in duration-150"
+          className="animate-fade-in duration-150"
           style={{
             position: 'absolute',
             left,
@@ -292,7 +292,7 @@ export function CollabGhosts({ className }: CollabGhostsProps) {
       ghosts.push(
         <div
           key={`${keyPrefix}-${binId}`}
-          className="animate-in fade-in duration-150"
+          className="animate-fade-in duration-150"
           style={{
             position: 'absolute',
             left,

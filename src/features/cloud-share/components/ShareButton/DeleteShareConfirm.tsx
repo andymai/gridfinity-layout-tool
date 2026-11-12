@@ -9,10 +9,7 @@ interface DeleteShareConfirmProps {
 
 /**
  * Two-step delete affordance for an existing share link: a subtle "Delete"
- * link that expands into an inline confirm panel. Click events stop
- * propagation so the popover's click-outside handler doesn't see the
- * confirm-flow buttons being removed from the DOM mid-flow as an outside
- * click.
+ * link that expands into an inline confirm panel.
  */
 export function DeleteShareConfirm({ isDeleting, onConfirm }: DeleteShareConfirmProps) {
   const t = useTranslation();
@@ -22,8 +19,7 @@ export function DeleteShareConfirm({ isDeleting, onConfirm }: DeleteShareConfirm
     return (
       <Button
         variant="ghost"
-        onClick={(e) => {
-          e.stopPropagation();
+        onClick={() => {
           setShowConfirm(true);
         }}
         className="text-sm font-normal text-content-tertiary hover:text-error hover:bg-transparent transition-colors"
@@ -40,8 +36,7 @@ export function DeleteShareConfirm({ isDeleting, onConfirm }: DeleteShareConfirm
         <Button
           variant="danger"
           loading={isDeleting}
-          onClick={(e) => {
-            e.stopPropagation();
+          onClick={() => {
             onConfirm();
           }}
           className="text-sm px-3 py-1.5"
@@ -50,8 +45,7 @@ export function DeleteShareConfirm({ isDeleting, onConfirm }: DeleteShareConfirm
         </Button>
         <Button
           variant="secondary"
-          onClick={(e) => {
-            e.stopPropagation();
+          onClick={() => {
             setShowConfirm(false);
           }}
           disabled={isDeleting}

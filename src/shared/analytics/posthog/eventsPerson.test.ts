@@ -37,6 +37,7 @@ beforeEach(() => {
     designsCreated: 0,
     lastSetPayload: '',
     onceTraitsSent: false,
+    pwaInstallAvailableDay: '',
   };
 });
 

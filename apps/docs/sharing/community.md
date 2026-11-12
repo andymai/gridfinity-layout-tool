@@ -22,6 +22,8 @@ There are three ways in:
 - Open [the community page](https://gridfinitylayouttool.com/community) in your browser.
 - In the layout editor, pick an empty area of the drawer to see the designs that fit it. See [Find bins that fit](../layouts/find-bins-that-fit).
 
+<Screenshot id="sharing-community-open-gallery" alt="In the bin designer panel, the pointer clicks Community designs. The gallery opens on its Community tab, with a grid of design cards." spec="Clip. Bin designer, desktop, with the community API routed to made-up designs. A close-up of the Community designs entry in the panel, then a cut to the gallery dialog on its Community tab." />
+
 You don't need an account to browse, open or remix a design.
 
 ## Find a design
@@ -61,6 +63,8 @@ Click a card to open its design page, with 3D views, the dimensions and the post
 | <Ui k="community.detail.share" />         | Copies a link to the design page.                                                      |
 | The heart                                 | Likes the design. You must sign in to like a design.                                   |
 | <Ui k="community.detail.report" />        | Tells the moderators about a problem. See [Report a design](#report-a-design).         |
+
+<Screenshot id="sharing-community-design-page" alt="The design page of a community design: the 3D view on the left, and on the right the maker, the Remix button, the counts, the Like this design button, the description, the dimensions and the print estimates. Link to this design and Report are at the bottom." spec="Community design page, desktop, with the community API routed to a made-up design built on a built-in example. Show the whole dialog." />
 
 ## Publish a design
 
@@ -102,7 +106,7 @@ To update a published design, open its page, click <Ui k="community.detail.editO
 
 ## Post a print
 
-A print report tells the next maker how a design printed for you. It's a real help to anyone who is about to print the same bin.
+A **print report** tells the next maker how a design printed for you. It's a real help to anyone who is about to print the same bin.
 
 1. Open the design page and click <Ui k="community.print.cta" />. Sign in if the page asks.
 2. Under <Ui k="community.print.fitTitle" />, pick one answer:
@@ -112,6 +116,8 @@ A print report tells the next maker how a design printed for you. It's a real he
 3. Add a photo, a note, or both. The form needs at least one of them.
 4. Fill in <Ui k="community.print.settingsTitle" /> if you like. All these fields are optional.
 5. Click <Ui k="community.print.save" />.
+
+<Screenshot id="sharing-community-post-print" alt="The Add your print form with Fit as designed picked, a note about the print, PETG as the material, and the Post print button. More optional settings are lower in the form." spec="Community design page, desktop, signed in through routed made-up account data. Click I printed this, pick Fit as designed, type a note, and fill in some settings. Show the whole dialog, scrolled to the top." />
 
 You can post one print for each design, and a new post replaces your old one. After a few people report their prints, the design shows their print times in place of the estimate. See [Filament and time estimates](../printing/estimates#how-far-to-trust-the-estimates).
 
@@ -130,7 +136,37 @@ The server can switch print reports off. The form then tells you that print repo
 3. Add a note for the moderator if you like.
 4. Click <Ui k="community.report.submit" />.
 
+<Screenshot id="sharing-community-report" alt="The Report this design dialog with four reasons, Doesn't generate correctly picked, a note for the moderator, and the Submit report button." spec="Community design page, desktop, signed in through routed made-up account data. Click Report, pick a reason and type a short note. Crop to the dialog." />
+
 You must sign in to report. When 5 different people report a design, the gallery hides it until a moderator reviews it. To report a single print, use <Ui k="community.prints.report" /> on that print.
+
+## When it goes wrong
+
+### Publish won't accept the name or the description
+
+Give the design a name that says what it is, not the default name of a new design. In the description, say what the bin holds or what it's for. If the content filter flags a word, reword the text.
+
+The dialog and the server check the text against the rules in [Publish a design](#publish-a-design). A name with no letters, or with one character over and over, fails even when it's long enough.
+
+<Screenshot id="sharing-community-publish-checks" alt="The publish dialog with the one-word description Bits. A note next to the Publish button says that the description is too short." spec="Bin designer, desktop, a named 2 by 3 bin, signed in through routed made-up account data. Click Publish, fill in the name, a one-word description, a category and a public name. Show the whole dialog." />
+
+### The server says that the design is already in the gallery
+
+Change the design before you publish it. For a remix, change something in the copy first.
+
+The server refuses a design that matches a published design or a built-in example. Is the original of your remix gone? Then the dialog offers <Ui k="community.publish.error.publishWithoutRemix" />.
+
+### You reach the limit of published designs
+
+Open one of your published designs. In the menu of the publish dialog, click <Ui k="community.publish.unpublish" />. Then publish the new one.
+
+Each account can have 25 published designs at a time.
+
+### A photo won't attach to your print
+
+Use an image file under 25 MB. If the message says that the image is too detailed, crop it, and add it again.
+
+The Layout Tool shrinks each photo before upload. A very large or very detailed photo can't shrink far enough.
 
 ## Next steps
 

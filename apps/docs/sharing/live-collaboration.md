@@ -8,11 +8,13 @@ sources:
   - src/liveblocks.config.ts
   - api/liveblocks-auth.ts
   - src/features/cloud-share/hooks/useCloudShareAutoSync.ts
+  - src/shared/utils/roomLinkStamp.ts
+  - src/shared/hooks/useCollabMode.ts
 ---
 
 # Work together live
 
-Plan a drawer with a partner, or help a friend set up their first layout, without files that go back and forth. In the Gridfinity Layout Tool, a layout with an edit link becomes a live room. Everyone who opens the link edits the same layout at the same time, and sees what the others point at, select and move.
+Plan a drawer with a partner, or help a friend set up their first layout, without files that go back and forth. In the Gridfinity Layout Tool, a layout with an edit link becomes a **live room**. Everyone who opens the link edits the same layout at the same time, and sees what the others point at, select and move.
 
 ## Start a live session
 
@@ -59,10 +61,16 @@ The work of the other people shows on your grid, each in their own color:
 
 ## Who saves the link
 
-The room holds the live layout, but only the link owner's browser saves the room changes back to the share link. It saves them about one second after each change.
+The room holds the live layout, but only the link owner's browser saves the room back to the share link. It saves about one second after each change on the grid, whoever made it. Changes to bins in the stash go along with the next change on the grid. While the owner is away, the room keeps every change, and the owner's next visit saves them to the link.
+
+Someone who joins gets the room's latest layout, so the work of the others stays. The room takes the copy from the link only when the copy is newer and the room has no unsaved changes. For example, the owner can edit the layout while the link is view-only, then turn editing back on. A room from an older version of the Layout Tool keeps its own layout when it has bins on the grid.
+
+::: tip
+A view-only link opens no room, not even for the owner. It shows the copy that the owner's browser last saved, so it can lag behind the room.
+:::
 
 ::: warning
-Keep the owner in the room while other people edit. When someone joins, the room loads the saved copy from the link. The room can then lose the changes that people made while the owner was away.
+Before you switch a link to view-only, wait until the others stop editing. People who are still in the room can keep editing, and nobody saves those changes until the owner joins the room again. Then the room keeps them over the owner's edits from the view-only time.
 :::
 
 ## Read-only rooms
@@ -72,6 +80,34 @@ Each person gets the permission that the link has at the moment they connect. Sa
 ## When the server has no live service
 
 Live editing needs a collaboration service on the server, and that service is optional. Without it, an edit link still opens the layout, but no room starts. You see no avatars and no cursors, and your changes stay in your browser. A self-hosted copy of the Layout Tool has no share links and no live rooms. See [Self-hosting](../reference/self-hosting).
+
+## When it goes wrong
+
+### Nobody else shows up in the room
+
+Do you own the link? Open <Ui k="share.button.manageShare" />. The permission must be <Ui k="share.anyoneWithLinkCanEdit" />. Then make sure that everyone is online, and that they opened the link after the change.
+
+A view-only link opens no room. It shows a copy of the layout, so nobody sees the others.
+
+### A view-only link doesn't show the latest changes
+
+Ask the owner to open the layout while the link can edit. The owner's browser then joins the room and saves it to the link within a second or so. Is the link view-only? Then the owner does these steps:
+
+1. Turn editing on for the link.
+2. Open the layout, and wait a few seconds.
+3. Turn view-only on again.
+
+Only the owner's browser saves the room to the link, and only while it is in the room. A view-only link opens no room, not even for the owner. See [Who saves the link](#who-saves-the-link).
+
+### Your edits don't reach the others
+
+Open the link again.
+
+This happens when the owner changes the link to view only after your page loads. Your page then connects read-only, so the room ignores your changes. See [Read-only rooms](#read-only-rooms).
+
+### You drop out of the room
+
+When the status shows <Ui k="collab.reconnecting" />, wait a moment, and make sure that you're online. The Layout Tool joins the room again by itself.
 
 ## Next steps
 

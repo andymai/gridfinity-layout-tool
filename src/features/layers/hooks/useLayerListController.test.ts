@@ -5,7 +5,8 @@ import { useLayerListController } from './useLayerListController';
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { createTestBin, resetAllStores } from '@/test/testUtils';
-import { ok, err } from '@/core/result';
+import { ok, err, layoutInvalidOperation } from '@/core/result';
+import { useToastStore } from '@/core/store/toast';
 import { binId, heightUnits, layerId } from '@/core/types';
 import type { Layer } from '@/core/types';
 
@@ -104,6 +105,35 @@ describe('useLayerListController', () => {
       result.current.reorderByDisplayIndex(0, 1);
     });
     expect(onReorderError).toHaveBeenCalledTimes(1);
+  });
+
+  describe('a reorder the drawer refuses', () => {
+    it.each([
+      ['exceeds_height', 'layers.reorderBlocked.exceedsHeight'],
+      ['clearance', 'layers.reorderBlocked.clearance'],
+    ])('passes the translated %s reason to onReorderError', (reason, key) => {
+      mutations.reorderLayers.mockReturnValue(err(layoutInvalidOperation('reorderLayers', reason)));
+      const onReorderError = vi.fn();
+      const { result } = renderHook(() => useLayerListController({ onReorderError }));
+      act(() => {
+        result.current.reorderByDisplayIndex(0, 1);
+      });
+      expect(onReorderError).toHaveBeenCalledWith(key);
+    });
+
+    it('toasts the translated reason when no inline banner takes it', () => {
+      useToastStore.setState({ toasts: [] });
+      mutations.reorderLayers.mockReturnValue(
+        err(layoutInvalidOperation('reorderLayers', 'exceeds_height'))
+      );
+      const { result } = renderHook(() => useLayerListController());
+      act(() => {
+        result.current.reorderByDisplayIndex(0, 1);
+      });
+      expect(useToastStore.getState().toasts).toMatchObject([
+        { message: 'layers.reorderBlocked.exceedsHeight', type: 'error' },
+      ]);
+    });
   });
 
   it('delete flow: request opens, confirm deletes and reassigns the active layer', () => {

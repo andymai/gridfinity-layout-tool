@@ -442,6 +442,23 @@ describe('RightPanel', () => {
       expect(screen.getByTitle('M3')).toBeInTheDocument();
     });
 
+    it('counts custom properties with the plural form that fits the count', () => {
+      mockPrintListReturn = createMockPrintList({
+        rows: [
+          { ...printRow, customProperties: { SKU: 'A1' } },
+          { ...printRow, size: '1×1', customProperties: { SKU: 'B2', Qty: '4' } },
+        ],
+        totalBins: 4,
+        totalPieces: 4,
+        totalFilament: 3,
+      });
+
+      render(<RightPanel />);
+
+      expect(screen.getByTitle('1 custom property')).toBeInTheDocument();
+      expect(screen.getByTitle('2 custom properties')).toBeInTheDocument();
+    });
+
     it('shows PrintListSummary', () => {
       render(<RightPanel />);
 
@@ -688,12 +705,7 @@ describe('RightPanel', () => {
       fireEvent.click(screen.getByText('8×8'));
 
       expect(screen.getByTestId('split-preview')).toBeInTheDocument();
-      // Text is split across multiple text nodes: "Split into" + "4" + "Pieces"
-      expect(
-        screen.getByText((content, element) => {
-          return element?.textContent === 'Split into4Pieces';
-        })
-      ).toBeInTheDocument();
+      expect(screen.getByText('Split into 4 pieces')).toBeInTheDocument();
     });
 
     it('collapses split preview when clicked again', () => {

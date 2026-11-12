@@ -56,7 +56,7 @@ export function ToolsPanel({
   return (
     <section className="flex flex-col gap-3" aria-labelledby={`${id}-heading`}>
       <div className="flex items-center justify-between gap-2">
-        <h3 id={`${id}-heading`} className="text-sm font-semibold text-content-primary">
+        <h3 id={`${id}-heading`} className="text-sm font-semibold text-content">
           {t('binDesigner.cutouts.traceView.tools.heading')}
         </h3>
         {canUndo && (
@@ -97,7 +97,7 @@ export function ToolsPanel({
 
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between text-xs">
-          <span id={`${id}-sensitivity`} className="font-medium text-content-primary">
+          <span id={`${id}-sensitivity`} className="font-medium text-content">
             {t('binDesigner.cutouts.traceView.sensitivity')}
           </span>
           <span className="text-content-secondary">{valueText}</span>

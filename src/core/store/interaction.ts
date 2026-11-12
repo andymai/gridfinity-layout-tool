@@ -83,7 +83,10 @@ export const useInteractionStore = create<InteractionStore>((set) => ({
   ...INITIAL_INTERACTION_STATE,
 
   // Interaction actions
-  setInteraction: (interaction) => set({ interaction }),
+  // A drop target lives only as long as its drag. Escape and Shift+N end a drag
+  // without the drop handler's cleanup, which would leave the stash lit.
+  setInteraction: (interaction) =>
+    set(interaction ? { interaction } : { interaction: null, dropTarget: null }),
   setDropTarget: (target) => set({ dropTarget: target }),
 
   // Paint mode and gap-select mode are mutually exclusive: both claim the

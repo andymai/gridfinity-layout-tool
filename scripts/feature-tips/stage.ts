@@ -74,7 +74,11 @@ export type ParamOverrides = { [K in keyof BinParams]?: unknown };
 export interface Stage {
   page: Page;
   setParams(overrides: ParamOverrides): Promise<void>;
-  /** Drives the preview's lid slider: mm for a capping/sliding lid, degrees for a hinged one. */
+  /**
+   * Drives the preview's first explode slider: the lid's (mm for a capping or
+   * sliding lid, degrees for a hinged one), or on a lidless bin the
+   * detachable feet's (mm dropped).
+   */
   setLidOffset(value: number): Promise<number>;
   lidOffsetMax(): Promise<number>;
   bounds(): Promise<Bounds>;
@@ -185,7 +189,14 @@ async function setUpStage(
         // into the params they are given.
         const merged = structuredClone(deepMerge(DEFAULT_BIN_PARAMS, o)) as Record<string, unknown>;
         // setParams merges, so optional fields a previous design set must be cleared.
-        for (const k of ['cellMask', 'surfaceText', 'pullTab', 'slant', 'wallLabelSlots'])
+        for (const k of [
+          'cellMask',
+          'surfaceText',
+          'pullTab',
+          'slant',
+          'wallLabelSlots',
+          'interiorFilletMm',
+        ])
           if (!(k in o)) merged[k] = undefined;
         useDesignerStore.getState().setParams(merged);
         // A Manifold draft lands first and can show holes the exact build fills,
@@ -360,7 +371,7 @@ async function installBridge(surfaces: Record<Theme, string>): Promise<void> {
     const input = document.querySelector<HTMLInputElement>(
       '#dev-thumbnail-route input[type="range"]'
     );
-    if (!input) throw new Error('no lid slider: is the lid enabled and built?');
+    if (!input) throw new Error('no explode slider: is a lid or detachable feet built?');
     return input;
   };
 

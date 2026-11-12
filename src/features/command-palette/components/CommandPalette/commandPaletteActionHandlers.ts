@@ -24,6 +24,7 @@ import {
   useSharePopoverStore,
 } from '@/core/store';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
+import { CONSTRAINTS } from '@/core/constants';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { batch } from '@/core/cqrs';
@@ -120,9 +121,9 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       togglePreviewExpanded: s.togglePreviewExpanded,
     }))
   );
-  const { toggleHalfGridMode, halfGridMode } = useHalfGridModeStore(
+  const { requestHalfGridToggle, halfGridMode } = useHalfGridModeStore(
     useShallow((s) => ({
-      toggleHalfGridMode: s.toggleHalfGridMode,
+      requestHalfGridToggle: s.requestHalfGridToggle,
       halfGridMode: s.halfGridMode,
     }))
   );
@@ -136,7 +137,8 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       fillLayer: s.fillLayer,
     }))
   );
-  const { deleteBin, duplicateBin, updateBin, moveBinToStaging, addLayer } = useMutations();
+  const { deleteBin, duplicateBin, updateBin, moveBinToStaging, moveBinsToStaging, addLayer } =
+    useMutations();
   const { createNewLayout, duplicateLayout, activeLayoutId } = useLayoutSwitcher();
   const { alignBins } = useAlignBins();
   const { rotateAll, matchHeight } = useSelectionActions();
@@ -247,7 +249,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       return () => {
         const plan = planBinRotation(bin, layout);
         if (!plan.valid) {
-          addToast(plan.message, 'error');
+          addToast(t(plan.messageKey), 'error');
           return;
         }
         if (!batch(() => isOk(updateBin(bin.id, plan.updates)))) return;
@@ -355,7 +357,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
         if (isOk(result)) {
           setActiveLayer(result.value);
         } else {
-          addToast(t('layers.maxLayersReached', { max: 10 }), 'error');
+          addToast(t('layers.maxLayersReached', { max: CONSTRAINTS.LAYERS_MAX }), 'error');
         }
       },
       'layer-up':
@@ -369,11 +371,10 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       'clear-layer': () => {
         if (layerBins.length === 0) return;
         batch(() => {
-          for (const b of layerBins) {
-            const result = deleteBin(b.id);
-            if (isErr(result)) break;
-          }
+          moveBinsToStaging(layerBins.map((b) => b.id));
+          setSelectedBins([]);
         });
+        addToast(t('toast.clearComplete', { count: layerBins.length }), 'success');
       },
     };
 
@@ -442,12 +443,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     };
 
     const tools: Record<string, ActionHandler> = {
-      'toggle-half-bin': () => {
-        const result = toggleHalfGridMode();
-        if (!isOk(result)) {
-          addToast(t('halfBinBlocked.title'), 'error');
-        }
-      },
+      'toggle-half-bin': requestHalfGridToggle,
       'fill-gaps': () => fillLayerGaps(activeLayerId, activeCategoryId, halfGridMode),
       'toggle-paint-mode': () => {
         if (paintSize) {
@@ -504,6 +500,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     duplicateBin,
     updateBin,
     moveBinToStaging,
+    moveBinsToStaging,
     addLayer,
     fillLayerGaps,
     fillLayer,
@@ -522,7 +519,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     togglePreviewExpanded,
     toggleShowOtherLayers,
     showQuickLabel,
-    toggleHalfGridMode,
+    requestHalfGridToggle,
     zoomIn,
     zoomOut,
     alignBins,

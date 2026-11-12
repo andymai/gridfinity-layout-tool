@@ -35,6 +35,7 @@ import {
 } from 'react';
 import type { ReactNode } from 'react';
 import type { Locale, Translations, TranslationVars } from './types';
+import { interpolate } from './interpolate';
 import { lookupPlural, pluralCount } from './plural';
 
 const fallback: Translations = {
@@ -44,6 +45,10 @@ const fallback: Translations = {
   'toast.drawerLinkOpened': 'Layout sized to your drawer: a {width} × {depth} grid',
   'toast.drawerLinkInvalid': "That drawer link has a size the planner can't open",
   'toast.layoutCreateFailed': 'Failed to create layout',
+  // A duplicate or an import stores its name, so a failed locale load must not
+  // save the raw key in place of the layout name.
+  'layouts.copyName': '{name} (copy)',
+  'layouts.importedName': '{name} (imported)',
   'errorBoundary.heading': 'Something went wrong',
   'errorBoundary.description': 'The app encountered an unexpected error. Your layout data is safe.',
   'errorBoundary.hint':
@@ -137,12 +142,7 @@ export function getStaticTranslation(key: string, vars?: TranslationVars): strin
     (_active && lookupKey(_active, `${key}_other`)) ??
     _loadedEn?.[`${key}_other`] ??
     key;
-  if (!vars) return template;
-  let result = template;
-  for (const [k, value] of Object.entries(vars)) {
-    result = result.replaceAll(`{${k}}`, String(value));
-  }
-  return result;
+  return interpolate(template, vars);
 }
 
 /**
@@ -167,25 +167,12 @@ export function _resetActiveTranslations(): void {
 }
 
 /**
- * Interpolate variables into a translation string.
- * Replaces {variableName} placeholders with provided values.
- */
-/**
  * Look up a key in a translations map, returning undefined when absent.
  * Needed because Record<string, string> tells TS every key exists,
  * but at runtime a locale file may not contain every possible key.
  */
 function lookupKey(map: Translations, key: string): string | undefined {
   return key in map ? map[key] : undefined;
-}
-
-function interpolate(template: string, vars?: TranslationVars): string {
-  if (!vars) return template;
-  let result = template;
-  for (const [key, value] of Object.entries(vars)) {
-    result = result.replaceAll(`{${key}}`, String(value));
-  }
-  return result;
 }
 
 /**

@@ -15,7 +15,13 @@ No Wi-Fi in the workshop? No problem. The Gridfinity Layout Tool runs in your br
 
 ## Install the app
 
-Your browser can install the Layout Tool as an app. While the Layout Tool is open, use the install command of your browser. The app has no install button of its own.
+Your browser can install the Layout Tool as an app. In Chrome, Edge and other Chromium browsers:
+
+1. Click <Ui k="sidebar.settings" /> (the gear icon) in the header.
+2. Click <Ui k="settings.tabs.general" />.
+3. In <Ui k="settings.general.installApp" />, click <Ui k="pwaInstall.install" />.
+
+After you download a file, the export window can also show <Ui k="pwaInstall.title" />. In other browsers, use the install command of your browser.
 
 The installed app has the name Gridfinity Layout Tool. It opens in its own window, without the address bar, and starts on the layout editor. It uses the same data as the browser tab, because it is the same site.
 
@@ -82,6 +88,20 @@ Once in a while, a stored copy of the app fails to load after an update. The app
 ::: info
 A self-hosted copy of the Layout Tool on plain HTTP cannot install or work offline. Use HTTPS or `localhost`. See [Use HTTPS](../reference/self-hosting#use-https).
 :::
+
+## When it goes wrong
+
+### A tool won't open offline
+
+Go online, open that tool, and wait until its preview shows a model. After an update, open each tool once more while you're online.
+
+The app keeps the files of a tool from the first time that you open it. A new version can change those files, and the app stores the new ones only when you open the tool. See [Get ready to work offline](#get-ready-to-work-offline).
+
+### The update doesn't arrive
+
+Click the version button at the bottom of the side panel when it shows <Ui k="pwaUpdate.reload" />.
+
+The Layout Tool waits for a pause in your work before it reloads. While you drag, type or keep a dialog open, it waits. See [How updates arrive](#how-updates-arrive).
 
 ## Next steps
 

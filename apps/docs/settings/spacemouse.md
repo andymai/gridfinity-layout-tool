@@ -32,6 +32,8 @@ The Layout Tool can connect to the SpaceMouse in two ways, and it tries the driv
 | 3Dconnexion driver | The 3Dconnexion driver is installed and runs on the computer | Any browser           | The 3Dconnexion control panel. Settings shows <Ui k="spacemouse.driverManaged" /> |
 | Direct             | No driver answers                                            | Chrome, Edge or Opera | Settings in the Layout Tool                                                       |
 
+<Screenshot id="settings-spacemouse-driver" alt="The SpaceMouse section on the General tab with the switch on and a device connected through the 3Dconnexion driver. A note says that speed and axis direction are set in the 3Dconnexion control panel. No speed or invert controls show." spec="Settings, General tab, desktop. Turn on the SpaceMouse switch, with the driver connection set in the app state, because the capture machine has no driver. Crop to the SpaceMouse section." />
+
 If the status shows <Ui k="spacemouse.status.unsupported" />, this browser can't make a direct connection. Install the 3Dconnexion driver, or use Chrome, Edge or Opera. If the driver stops, the Layout Tool changes to the direct connection.
 
 After the first pairing, the direct connection finds the same device again by itself. If the status shows <Ui k="spacemouse.status.error" />, click <Ui k="spacemouse.connect" /> to try again.
@@ -86,6 +88,30 @@ With the direct connection, the buttons do these actions:
 | 8      | Redo                      |
 
 Every SpaceMouse has buttons 1 and 2, and the larger models have the others too. With the driver, assign these same actions to the buttons in the 3Dconnexion control panel. The Fit button of the puck works without an assignment.
+
+## When it goes wrong
+
+### The puck moves nothing
+
+Click inside the Layout Tool window, then move the mouse pointer over the 3D view that you want to move. Is a dialog with a 3D view open? Then the puck moves that view.
+
+The SpaceMouse moves nothing while another window is in front, even when you can see the Layout Tool behind it.
+
+### The SpaceMouse doesn't connect
+
+Read the status line below the switch:
+
+| Status                                   | What to do                                                                           |
+| ---------------------------------------- | ------------------------------------------------------------------------------------ |
+| <Ui k="spacemouse.status.unsupported" /> | Install the 3Dconnexion driver, or open the Layout Tool in Chrome, Edge or Opera.    |
+| <Ui k="spacemouse.status.error" />       | Click <Ui k="spacemouse.connect" />, and pick your SpaceMouse in the browser dialog. |
+| <Ui k="spacemouse.status.idle" />        | Click <Ui k="spacemouse.connect" />, and allow the connection.                       |
+
+### The speed and invert controls are missing
+
+Set the speed and the axes in the 3Dconnexion control panel.
+
+The 3Dconnexion driver runs the device, so its control panel holds these settings. Settings in the Layout Tool shows them only with the direct connection.
 
 ## Next steps
 

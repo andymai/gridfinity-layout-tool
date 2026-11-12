@@ -15,13 +15,13 @@ import { nav, sidebar } from '../apps/docs/.vitepress/navigation';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DOCS_DIR = 'apps/docs';
-const HOME_PAGE = `${DOCS_DIR}/index.md`;
 const APP_ORIGIN = 'https://gridfinitylayouttool.com';
 const APP_ROUTES = new Set(['/', '/designer', '/baseplate', '/community', '/supporters']);
 const LOCALES: ReadonlySet<string> = new Set(CONTENT_LOCALES);
 const SCREENSHOT_TAG = /<Screenshot\s[^>]*\bid="([^"]+)"/g;
 const APP_LINK = /https:\/\/gridfinitylayouttool\.com(\/[^\s)"'#?]*)?/g;
-const DOC_LINK = /\]\(((?:\.{1,2}\/|\/(?!\/))[^)\s]*|#[^)\s]+)\)/g;
+const URL_SCHEME = /^[a-zA-Z][\w+.-]*:/;
+const DOC_LINK = /\]\(((?:\.{1,2}\/|\/(?!\/)|(?![a-zA-Z][\w+.-]*:)[\w-])[^)\s]*|#[^)\s]+)\)/g;
 
 export interface DocPage {
   readonly file: string;
@@ -65,7 +65,6 @@ function pageSources(page: DocPage): string[] {
   return Array.isArray(sources) ? sources.filter((s): s is string => typeof s === 'string') : [];
 }
 
-// The home page keeps its hero buttons and feature cards in frontmatter.
 function frontmatterLinks(data: unknown): string[] {
   if (Array.isArray(data)) return data.flatMap(frontmatterLinks);
   if (typeof data !== 'object' || data === null) return [];
@@ -97,18 +96,16 @@ export function checkPage(page: DocPage, exists: (rel: string) => boolean): stri
   const problems: string[] = [];
   const at = (msg: string): string => `${page.file}: ${msg}`;
 
-  if (page.file !== HOME_PAGE) {
-    for (const field of ['title', 'description']) {
-      const value = page.data[field];
-      if (typeof value !== 'string' || value === '')
-        problems.push(at(`frontmatter needs a "${field}"`));
-    }
-    const sources = pageSources(page);
-    if (sources.length === 0)
-      problems.push(at('frontmatter needs "sources": the code paths this page describes'));
-    for (const source of sources) {
-      if (!exists(source)) problems.push(at(`source "${source}" does not exist`));
-    }
+  for (const field of ['title', 'description']) {
+    const value = page.data[field];
+    if (typeof value !== 'string' || value === '')
+      problems.push(at(`frontmatter needs a "${field}"`));
+  }
+  const sources = pageSources(page);
+  if (sources.length === 0)
+    problems.push(at('frontmatter needs "sources": the code paths this page describes'));
+  for (const source of sources) {
+    if (!exists(source)) problems.push(at(`source "${source}" does not exist`));
   }
 
   for (const [, key] of page.body.matchAll(UI_TAG)) {
@@ -130,8 +127,8 @@ export function checkPage(page: DocPage, exists: (rel: string) => boolean): stri
 
 export function checkSidebar(files: readonly string[], links: readonly string[]): string[] {
   const problems: string[] = [];
-  const pages = new Set(files.filter((f) => f !== HOME_PAGE).map(pageLink));
-  const linked = new Set(links);
+  const pages = new Set(files.map(pageLink));
+  const linked = new Set(links.map((link) => link.replace(/\/$/, '/index')));
   for (const link of linked) {
     if (!pages.has(link)) problems.push(`sidebar: "${link}" has no page`);
   }
@@ -295,10 +292,16 @@ export function checkDocLinks(
     const self = pageLink(page.file);
     const links = [
       ...[...page.body.matchAll(DOC_LINK)].map(([, link]) => link),
-      ...frontmatterLinks(page.data).filter((link) => link.startsWith('/')),
+      ...frontmatterLinks(page.data).filter((link) => !URL_SCHEME.test(link)),
     ];
     for (const link of links) {
       const [target, hash = ''] = link.split('#');
+      // The root is served at `/docs`, with no trailing slash, so a relative
+      // link there resolves against `/` and leaves the docs.
+      if (self === '/index' && target && !target.startsWith('/')) {
+        problems.push(`${page.file}: link "${link}" must start with "/" on the docs root`);
+        continue;
+      }
       const ext = path.posix.extname(target);
       if (ext && ext !== '.md') {
         const file = target.startsWith('/')

@@ -458,17 +458,18 @@ const en: Record<string, string> = {
   'layoutExport.progress.bins': 'Exporting bins ({current}/{total})',
   'layoutExport.progress.baseplate': 'Exporting baseplate ({current}/{total})',
   'layoutExport.progress.labels': 'Exporting label plates ({current}/{total})',
-  'rightPanel.customPropertiesCount': '{count} custom properties',
+  'rightPanel.customPropertiesCount_one': '{count} custom property',
+  'rightPanel.customPropertiesCount_other': '{count} custom properties',
   'rightPanel.expandRightPanel': 'Expand right panel',
   'rightPanel.filamentAbbrev': 'Fil.',
   'rightPanel.inspector': 'Inspector',
   'rightPanel.moreCategories': '+{count}',
   'rightPanel.multiSelection': 'Multi-selection',
   'rightPanel.pcsAbbrev': 'Pcs',
-  'rightPanel.pieces': 'Pieces',
   'rightPanel.qtyAbbrev': 'Qty',
   'rightPanel.selection': 'Selection',
-  'rightPanel.splitInto': 'Split into',
+  'rightPanel.splitIntoPieces_one': 'Split into {count} piece',
+  'rightPanel.splitIntoPieces_other': 'Split into {count} pieces',
   'rightPanel.unknownCategory': 'Unknown category',
   'rightPanel.historyTab': 'History',
 
@@ -486,7 +487,8 @@ const en: Record<string, string> = {
   'snapshots.labelPlaceholder': 'Add a label...',
   'snapshots.bins_one': '{count} bin',
   'snapshots.bins_other': '{count} bins',
-  'snapshots.layers': '{count} layers',
+  'snapshots.layers_one': '{count} layer',
+  'snapshots.layers_other': '{count} layers',
   'snapshots.autoSaved': 'Auto-saved',
   'snapshots.justNow': 'Just now',
   'snapshots.minutesAgo': '{count} min ago',
@@ -579,7 +581,7 @@ const en: Record<string, string> = {
   'inspector.deleteAll': 'Delete all',
   'inspector.deselectAllBins': 'Deselect all bins',
   'inspector.deselectBin': 'Deselect bin',
-  'inspector.fitsPrintBedDimensions': '{binWidth}×{binDepth} fits print bed ({max}mm)',
+  'inspector.fitsPrintBedDimensions': '{binWidth}×{binDepth} fits print bed (max {max} units)',
   'inspector.fitsPrintBedDiagonally': '{binWidth}×{binDepth} fits print bed laid diagonally',
   'inspector.layer': 'Layer',
   'inspector.extendToMargin': 'Extend into drawer margin',
@@ -660,6 +662,8 @@ const en: Record<string, string> = {
   'layers.fillTitle': 'Fill empty space with {width}×{depth} bins',
   'layers.fillWith': 'Fill with ',
   'layers.maxLayersReached': 'Maximum {max} layers reached',
+  'layers.reorderBlocked.exceedsHeight': 'Reordering would stack bins past the drawer top',
+  'layers.reorderBlocked.clearance': "Reordering would rest a bin inside another bin's clearance",
   'layers.clearLayerLabel': 'Clear layer',
   'layers.noBinsToClear': 'No bins to clear',
   'layers.noGaps': 'No gaps',
@@ -695,8 +699,7 @@ const en: Record<string, string> = {
   'categories.deleteCategory': 'Delete category',
   'categories.editCategory': 'Edit category',
   'categories.confirmDelete.title': 'Delete category',
-  'categories.confirmDelete.message':
-    'Delete "{name}"? Bins in this category will be moved to the default category.',
+  'categories.confirmDelete.message': 'Delete "{name}"? No bins use this category.',
   'categories.confirmDelete.confirm': 'Delete category',
   'categories.cannotDeleteLast': 'Cannot delete the last category',
   'categories.categoryNamePlaceholder': 'Category name',
@@ -721,8 +724,8 @@ const en: Record<string, string> = {
   // Staging / Stash
   'staging.rotateBin': 'Rotate bin (R)',
   'staging.clearStash.title': 'Clear stash',
-  'staging.clearStash.message_one': 'Delete the {count} stashed bin? This cannot be undone.',
-  'staging.clearStash.message_other': 'Delete all {count} stashed bins? This cannot be undone.',
+  'staging.clearStash.message_one': 'Delete the {count} stashed bin? You can undo this.',
+  'staging.clearStash.message_other': 'Delete all {count} stashed bins? You can undo this.',
   'staging.clearStash.confirm': 'Clear all',
   'staging.binCount_one': '{count} bin',
   'staging.binCount_other': '{count} bins',
@@ -812,7 +815,7 @@ const en: Record<string, string> = {
   'print.position': 'Position',
   'print.propEntry': '{key}: {value}',
   'print.selectAtLeastOneLayerToPrint': 'Select at least one layer to print',
-  'print.sortingBy': 'Sorting by',
+  'print.sortingBy': 'Sorting by {fields}',
   'print.orientation': 'Page orientation',
   'print.portrait': 'Portrait',
   'print.landscape': 'Landscape',
@@ -846,6 +849,7 @@ const en: Record<string, string> = {
   'share.banner.discardMessage':
     "Any changes you made will be lost. You'll return to your previous layout.",
   'share.banner.discardConfirm': 'Discard',
+  'share.banner.keepViewing': 'Keep viewing',
   'share.banner.viewingLayout': 'Viewing "{name}"',
   'share.shareToCloud': 'Share to cloud',
   'share.copyLink': 'Copy link',
@@ -899,6 +903,8 @@ const en: Record<string, string> = {
   'layouts.shareLayout': 'Share layout',
   'layouts.searchPlaceholder': 'Search layouts...',
   'layouts.layoutNamePlaceholder': 'Layout name',
+  'layouts.copyName': '{name} (copy)',
+  'layouts.importedName': '{name} (imported)',
   'layouts.confirmDelete.title': 'Delete layout',
   'layouts.confirmDelete.message': 'Delete "{name}"? This cannot be undone.',
   'layouts.confirmDelete.confirm': 'Delete layout',
@@ -907,19 +913,23 @@ const en: Record<string, string> = {
   'layouts.import.pasteLink': 'Or paste a share link:',
   'layouts.import.placeholder':
     '{"version": "1.0", "name": "My Layout", ...} or https://...#share=...',
-  'layouts.import.bins': '{count} bins',
+  'layouts.import.bins_one': '{count} bin',
+  'layouts.import.bins_other': '{count} bins',
   'layouts.import.closeImportDialog': 'Close import dialog',
   'layouts.import.drawerSize': 'Drawer: {size}',
-  'layouts.import.layers': '{count} layers',
+  'layouts.import.layers_one': '{count} layer',
+  'layouts.import.layers_other': '{count} layers',
   'layouts.import.preview': 'Preview',
   'layouts.import.selectJsonFileToImport': 'Select JSON file to import',
   'layouts.accessed': 'Accessed',
   'layouts.active': 'Active',
   'layouts.availableLayouts': 'Available layouts',
-  'layouts.binCount': '{count} bins',
+  'layouts.binCount_one': '{count} bin',
+  'layouts.binCount_other': '{count} bins',
   'layouts.binDesigns': 'Bin designs',
   'layouts.bins': 'bins',
-  'layouts.binsWillBeDeleted': '{count} bins will be deleted',
+  'layouts.binsWillBeDeleted_one': '{count} bin will be deleted',
+  'layouts.binsWillBeDeleted_other': '{count} bins will be deleted',
   'layouts.browseFiles': 'Browse files',
   'layouts.clearSearch': 'Clear search',
   'layouts.moreActionsFor': 'More actions for {name}',
@@ -1526,8 +1536,14 @@ const en: Record<string, string> = {
   'mobile.layouts.layoutCount_one': '{count} layout',
   'mobile.layouts.layoutCount_other': '{count} layouts',
   'mobile.layouts.permission': 'Permission',
-  'mobile.layouts.previewBins': '{count} bins',
+  'mobile.layouts.previewBins_one': '{count} bin',
+  'mobile.layouts.previewBins_other': '{count} bins',
   'mobile.layouts.renameLayout': 'Rename layout',
+  'mobile.layouts.renameAria': 'Rename {name}',
+  'mobile.layouts.shareAria': 'Share {name}',
+  'mobile.layouts.duplicateAria': 'Duplicate {name}',
+  'mobile.layouts.moveAria': 'Move {name}',
+  'mobile.layouts.deleteAria': 'Delete {name}',
   'mobile.layouts.shareDescription':
     'Share your layout to the cloud. Anyone with the link can import it.',
   'mobile.layouts.sharedOn': 'Shared on',
@@ -1686,6 +1702,8 @@ const en: Record<string, string> = {
   'toast.layoutDeleteFailed': 'Failed to delete layout',
   'toast.layoutDuplicateFailed': 'Failed to duplicate layout',
   'toast.layoutImportFailed': 'Failed to import layout',
+  'toast.layoutLimitReached':
+    'Layout limit reached ({max}). Delete a layout you no longer need, then try again.',
   'toast.layoutSaveFailed': 'Failed to save layout',
   'toast.layoutRenameFailed': 'Failed to rename layout',
   'toast.eventPersistFailedDiskFull':
@@ -1730,6 +1748,10 @@ const en: Record<string, string> = {
   'pwaUpdate.reloadAria': 'Reload into the new version',
   'pwaUpdate.readyTooltip':
     'A new version is ready. It applies on its own when you pause, or reload now.',
+  'pwaInstall.title': 'Install the app',
+  'pwaInstall.description': 'Open it from its own icon, in its own window.',
+  'pwaInstall.install': 'Install',
+  'pwaInstall.notNow': 'Not now',
   'toast.sessionRestored': 'Session restored',
   'toast.rotateRepositioned_one': 'Bin rotated and moved {count} cell to fit',
   'toast.rotateRepositioned_other': 'Bin rotated and moved {count} cells to fit',
@@ -1763,6 +1785,11 @@ const en: Record<string, string> = {
   'toast.rotateAllComplete_one': 'Rotated {count} bin',
   'toast.rotateAllComplete_other': 'Rotated {count} bins',
   'toast.pairRotateBlocked': 'No room to rotate the knife block and its rest together',
+  'toast.rotateBlocked.default': 'Cannot rotate bin',
+  'toast.rotateBlocked.bounds': 'Cannot rotate: bin would exceed drawer bounds',
+  'toast.rotateBlocked.collision': 'Cannot rotate: would collide with another bin',
+  'toast.rotateBlocked.clearance': 'Cannot rotate: space is blocked by a bin below',
+  'toast.rotateBlocked.drawerShape': 'Cannot rotate: bin would leave the drawer shape',
   'toast.rotateAllPartial': 'Rotated {rotated}/{total} bins ({skipped} skipped due to collision)',
   'toast.expandToFitComplete_one': 'Expanded {count} bin to fit',
   'toast.expandToFitComplete_other': 'Expanded {count} bins to fit',
@@ -1908,7 +1935,9 @@ const en: Record<string, string> = {
   // Baseplate-specific export keys
   'baseplate.export.splitSuccess': 'Baseplate exported ({count} pieces)',
   'baseplate.export.splitBanner':
-    'Baseplate exceeds {size}mm print bed — will export as {count} pieces in a ZIP with print guide',
+    'Baseplate exceeds {size}mm print bed — will export as {count} pieces in a ZIP with print guide.',
+  'baseplate.export.bedLoads_one': 'Prints in {count} build-plate load.',
+  'baseplate.export.bedLoads_other': 'Prints in {count} build-plate loads.',
   'baseplate.export.enableSplit': 'Split into pieces',
   'baseplate.export.threeDModel': '3D model',
   'baseplate.export.threeDModelDescription': 'Export a printable baseplate model',
@@ -1919,14 +1948,16 @@ const en: Record<string, string> = {
   // Drawer Settings
 
   // Half-Bin Mode Blocked
-  'halfBinBlocked.title': 'Cannot disable half-grid mode',
+  'halfBinBlocked.title': 'Turn off half-grid mode?',
   'halfBinBlocked.message':
     'Some bins use fractional dimensions. Resize or delete these bins before disabling half-grid mode.',
+  'halfBinBlocked.stashMessage_one':
+    '{count} bin has a half-unit size or position. To turn off half-grid mode, move it to the stash.',
+  'halfBinBlocked.stashMessage_other':
+    '{count} bins have a half-unit size or position. To turn off half-grid mode, move them to the stash.',
   'halfBinBlocked.cancelAriaLabel': 'Cancel and keep half-grid mode enabled',
-  'halfBinBlocked.close': 'Got it',
+  'halfBinBlocked.confirm': 'Move to stash and turn off',
   'halfBinBlocked.errorFallback': 'An error occurred while moving bins',
-  'halfBinMode.remediate.ariaLabel':
-    'Move {count} fractional bins to stash and disable half-grid mode',
 
   // Inspiration Gallery
   'gallery.title': 'Inspiration gallery',
@@ -2443,6 +2474,16 @@ const en: Record<string, string> = {
     'Put a name on a wall, raised or cut in, so you can tell bins apart at a glance.',
   'binDesigner.featureTip.lightweightFloor':
     'Hollow out the feet to save filament and print faster.',
+  'binDesigner.featureTip.labelSlots':
+    'Drop a printed label plate into a window in the wall, and swap it when the contents change.',
+  'binDesigner.featureTip.detachableFeet':
+    'Print the bin with a flat bottom, and the feet as separate parts that press on.',
+  'binDesigner.featureTip.halfSockets':
+    'Split each foot into four small feet, so the bin can sit on a half-unit position.',
+  'binDesigner.featureTip.interiorFillet':
+    'Round the inside edges and corners, so small parts do not catch in a corner.',
+  'binDesigner.featureTip.taperWalls':
+    'Flare the wall out above the base, so the bin fills a drawer with curved sides.',
   'binDesigner.lid.text.useStackLipOnly': 'Use stacking lip only',
   'binDesigner.lid.text.disabledStackable': 'Not available with a full stack grid.',
   'binDesigner.lid.text.disabledPolygon': 'Not available for custom-shape bins.',
@@ -4420,6 +4461,8 @@ const en: Record<string, string> = {
     'Magnet size is shared with the lid. Choose a magnetic lid for matching pockets at the top.',
   'binDesigner.base.nesting.floorFeaturesUnavailable':
     'Not available with the lowered Nesting floor',
+  'binDesigner.base.nesting.disablesHalfSockets': 'A Nesting base has no sockets',
+  'binDesigner.base.nesting.disablesShelling': 'Nothing to shell through on a Nesting base',
   'binDesigner.base.section.stacking': 'Top rim',
   'binDesigner.base.section.mounting': 'Mounting',
   'binDesigner.base.section.feet': 'Feet',
@@ -4570,7 +4613,9 @@ const en: Record<string, string> = {
   'binDesigner.versions.saved': 'Saved “{name}”.',
   'binDesigner.versions.deleted': 'Deleted “{name}”.',
   'binDesigner.versions.evicted':
-    'Oldest version “{name}” was removed to make room. Pin a version to keep it.',
+    'Oldest unpinned version “{name}” was removed to make room. Pin a version to keep it.',
+  'binDesigner.versions.evictedAutomatic':
+    'Automatic version “{name}” was removed to make room. Pin a version to keep it.',
   'binDesigner.versions.emptyTitle': 'No versions yet',
   'binDesigner.versions.emptyBody':
     'Save one when the design reaches a state worth keeping, then come back to it any time.',
@@ -6073,6 +6118,7 @@ const en: Record<string, string> = {
   'undo.binsDeleted': 'Deleted bins',
   'undo.binDuplicated': 'Duplicated bin',
   'undo.binMovedToStaging': 'Moved bin to stash',
+  'undo.binsMovedToStaging': 'Moved bins to stash',
   'undo.binMovedFromStaging': 'Moved bin from stash',
   'undo.layerFilled': 'Filled layer',
   'undo.gapsFilled': 'Filled gaps',
@@ -6249,8 +6295,18 @@ const en: Record<string, string> = {
   'settings.general.showUpdateSummaries': 'Show update summaries',
   'settings.search.keywords.updateSummaries':
     "what's new, changelog, updates, release notes, recent changes",
+  'settings.search.keywords.installApp':
+    'install, app, pwa, desktop, dock, taskbar, home screen, window, shortcut',
   'settings.general.showUpdateSummariesDesc':
     'After an update, show a short summary of what changed. Unseen highlights are badged in the sidebar either way.',
+  'settings.general.installApp': 'Install app',
+  'settings.general.installAppHint':
+    'Run the Layout Tool in its own window, with an icon on your dock, taskbar or home screen.',
+  'settings.general.installAppInstalled': 'You are using the installed app.',
+  'settings.general.installAppInstalledInBrowser':
+    'The app is installed in this browser. Open it from its icon.',
+  'settings.general.installAppManual':
+    'To install, use the install command in the menu of your browser. Not every browser has one.',
   'settings.spacemouse': 'SpaceMouse',
   'settings.spacemouseEnable': 'Use a SpaceMouse',
   'settings.spacemouseHint':
@@ -6432,10 +6488,6 @@ const en: Record<string, string> = {
   // Layers panel announcements
   'layers.announce.renamedTo': 'Renamed to {name}',
 
-  // Half-bin mode remediation
-  'halfBinMode.toast.movedToStaging_one': 'Moved {count} bin to staging',
-  'halfBinMode.toast.movedToStaging_other': 'Moved {count} bins to staging',
-
   // Inspiration gallery announcements
   'gallery.announce.showing': 'Showing {count} {label} layouts',
   'gallery.announce.allThemes': 'all themes',
@@ -6498,6 +6550,24 @@ const en: Record<string, string> = {
   'cloudShare.error.noExistingShare': 'No existing share to update.',
   'cloudShare.error.shareWasDeleted': 'Share was deleted. Create a new share instead.',
   'cloudShare.error.unableToUpdate': 'Unable to update share. Create a new share instead.',
+  'cloudShare.error.blocked':
+    "This layout has a link or other text that can't be shared. Check its name, categories and bins.",
+  'cloudShare.error.blockedLayoutName':
+    "The layout name has a link or other text that can't be shared. Change it and try again.",
+  'cloudShare.error.blockedCategory':
+    "A category name has a link or other text that can't be shared. Change it and try again.",
+  'cloudShare.error.blockedBinLabel':
+    "A bin label has a link or other text that can't be shared. Change it and try again.",
+  'cloudShare.error.blockedBinNotes':
+    "A bin's notes have a link or other text that can't be shared. Change them and try again.",
+  'cloudShare.error.blockedBinItem':
+    "An item in a bin's contents has a link or other text that can't be shared. Change it and try again.",
+  'cloudShare.error.blockedBinProperty':
+    "A bin's custom property has a link or other text that can't be shared. Change it and try again.",
+  'cloudShare.error.blockedLinkedDesign':
+    "A bin design in this layout has a link or other text that can't be shared. Change its name or text and try again.",
+  'cloudShare.error.blockedAuthorName':
+    "Your author name has a link or other text that can't be shared.",
 
   // Single-bin inspector aria-labels
   'inspector.single.heightAria': 'Bin height',

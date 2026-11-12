@@ -10,11 +10,11 @@ import { useInteractionStore } from '@/core/store';
 export function LiveRegion() {
   const liveMessage = useInteractionStore((state) => state.liveMessage);
 
-  if (!liveMessage) return null;
-
+  // Stays mounted while empty: screen readers announce a change inside a live
+  // region that already exists, and often skip one inserted with its text.
   return (
     <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-      {liveMessage}
+      {liveMessage ?? ''}
     </div>
   );
 }

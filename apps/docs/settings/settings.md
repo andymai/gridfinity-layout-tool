@@ -20,6 +20,8 @@ Make the app look and work the way you like. The Settings dialog of the Gridfini
 
 Need to find one setting? Type a word in <Ui k="settings.search.placeholder" /> at the top of the dialog, for example "dark" or "nozzle". Each result shows the tab that holds it.
 
+<Screenshot id="settings-settings-search" alt="The pointer clicks the search box at the top of Settings and types dark. The result Theme in Appearance shows below the box. The pointer clicks it, and the Appearance tab opens at the Theme setting." spec="Clip. Settings, desktop, opened on the General tab. Type dark in the search box and click the result. Crop to the top of the dialog." />
+
 Changed something and want it back? Each section has a <Ui k="settings.section.reset" /> button that puts that section back to its defaults. At the bottom of the dialog, <Ui k="settings.resetTabDefaults" /> puts every setting back to its default, and you can't undo it. <Ui k="settings.resetOnboarding" /> shows the first-time tutorial again after a reload.
 
 <Screenshot id="settings-settings-dialog" alt="The Settings dialog with the tab list in four groups on the left and the Appearance tab open on the right." spec="Desktop, any tool. Open Settings from the gear in the header and select the Appearance tab. Show the whole dialog, with the search box and the four tab groups visible." />
@@ -28,11 +30,12 @@ Changed something and want it back? Each section has a <Ui k="settings.section.r
 
 The <Ui k="settings.tabs.general" /> tab:
 
-| Setting                                         | What it does                                                                                  |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| <Ui k="settings.language" />                    | <Ui k="settings.autoDetect" /> follows your browser. You can also pick one of 16 languages.   |
-| <Ui k="settings.general.showUpdateSummaries" /> | Shows a short summary of the changes after an update. The sidebar marks new items either way. |
-| <Ui k="settings.spacemouse" />                  | Turns on a 3Dconnexion SpaceMouse. See [SpaceMouse](./spacemouse).                            |
+| Setting                                         | What it does                                                                                                       |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| <Ui k="settings.language" />                    | <Ui k="settings.autoDetect" /> follows your browser. You can also pick one of 16 languages.                        |
+| <Ui k="settings.general.showUpdateSummaries" /> | Shows a short summary of the changes after an update. The sidebar marks new items either way.                      |
+| <Ui k="settings.general.installApp" />          | Installs the Layout Tool as an app with its own window. See [Install and work offline](./offline#install-the-app). |
+| <Ui k="settings.spacemouse" />                  | Turns on a 3Dconnexion SpaceMouse. See [SpaceMouse](./spacemouse).                                                 |
 
 The <Ui k="settings.tabs.appearance" /> tab:
 
@@ -71,6 +74,8 @@ These tabs set the values that a new layout or a new bin starts with. Your exist
 
 Not sure about the grid unit? Keep 42 mm, unless your other parts use a size that is not standard. After you set up one drawer the way you like, <Ui k="settings.copyFromCurrentLayout" /> copies these values from the open layout. See [Units](../concepts/units).
 
+<Screenshot id="settings-settings-defaults" alt="The Layout defaults tab in Settings, with the drawer size, the layer height, the print bed size, the grid unit and the Copy from current layout button." spec="Settings, Layout defaults tab, desktop, default values. Crop to the tab content down to the Copy from current layout button." />
+
 **<Ui k="settings.tabs.print" />** holds the values that the print estimates use. Set them to match your slicer profile:
 
 - <Ui k="settings.filamentCostPerKg" />
@@ -104,6 +109,20 @@ Back up your layouts before you click <Ui k="settings.storage.clearAllData" />. 
 | ------------------------------------- | ----------------------------------------------------------- |
 | <Ui k="settings.tabs.integrations" /> | The websites that STL search looks at for Gridfinity files. |
 | <Ui k="settings.tabs.labs" />         | Early features that you can turn on. See [Labs](./labs).    |
+
+## When it goes wrong
+
+### You change a default, but the open layout stays the same
+
+Change the value in the layout itself. Set the grid size in the layout editor. Set the grid unit and the print bed size in <Ui k="common.physicalUnits" /> of the baseplate generator.
+
+The values on the <Ui k="settings.tabs.defaults" /> tab apply only when you make a new layout. Each layout keeps its own grid unit and print bed size after that.
+
+### The storage status says that capacity is limited
+
+Keep a copy of your work first. [Sign in](../sharing/accounts-and-sync) to sync it, or [save each layout as a file](../sharing/share-links#share-without-the-server). Then work in a different browser.
+
+This browser doesn't support the large database that holds your layouts. So the Layout Tool falls back to about 5 MB of storage.
 
 ## Next steps
 

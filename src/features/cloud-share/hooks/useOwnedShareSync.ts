@@ -8,6 +8,10 @@
  * This runs independently of CollabProvider - the owner doesn't need to be
  * in "collab mode" for their changes to sync. This makes the app behave
  * like Google Docs where the shared version is always current.
+ *
+ * While the share's collab room is loaded, the room's uploader
+ * (useCloudShareAutoSync) saves the link and this hook saves nothing: the
+ * editor's layout can lag the room.
  */
 
 import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
@@ -15,13 +19,32 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { updateShare } from '@/core/api/share';
-import { isOk } from '@/core/result';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
-import { createLayoutFingerprint } from '@/features/cloud-share/utils';
-import type { CloudShareInfo } from '@/core/types';
+import { loadLayoutAsync } from '@/core/storage';
+import {
+  dropWaitingUpload,
+  keepShareLayout,
+  queueShareUpload,
+  recordOwnCopyRevision,
+  roomClaimCount,
+  roomSavesShare,
+  type ShareUpload,
+} from '@/features/cloud-share/utils';
+import { roomLayoutFingerprint } from '@/shared/utils/roomLinkStamp';
+import type { CloudShareInfo, Layout } from '@/core/types';
 
 /** Debounce delay for cloud share updates (5 seconds) */
 const CLOUD_SYNC_DEBOUNCE_MS = 5000;
+
+/**
+ * This hook's last save. A room that claimed the share since then can have
+ * saved other content, so the save no longer says what the link holds.
+ */
+interface LastSave {
+  shareId: string;
+  fingerprint: string;
+  claimCount: number;
+}
 
 /**
  * Syncs owned shared layouts to Blob storage when edited locally.
@@ -31,12 +54,11 @@ const CLOUD_SYNC_DEBOUNCE_MS = 5000;
  */
 export function useOwnedShareSync(): void {
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastSyncedRef = useRef<string | null>(null);
-  const isSyncingRef = useRef(false);
+  const lastSyncedRef = useRef<LastSave | null>(null);
   // Track cloud share info in a ref to avoid stale closures in cleanup
   const cloudShareRef = useRef<CloudShareInfo | null>(null);
   // Track sync function in a ref to always call the latest version
-  const syncToCloudRef = useRef<() => Promise<void>>(() => Promise.resolve());
+  const syncToCloudRef = useRef<() => void>(() => {});
 
   const { layout, activeLayoutId, lastEditSource } = useLayoutStore(
     useShallow((state) => ({
@@ -51,32 +73,71 @@ export function useOwnedShareSync(): void {
   // Find cloudShare info for the active layout
   const cloudShare = entries.find((e) => e.id === activeLayoutId)?.cloudShare ?? null;
 
-  const syncToCloud = useCallback(async () => {
-    if (!cloudShare || isSyncingRef.current) return;
+  const syncToCloud = useCallback(() => {
+    if (!cloudShare) return;
 
     const { id: shareId, deleteToken } = cloudShare;
+    const layoutId = activeLayoutId;
     if (!shareId || !deleteToken) return;
+    if (roomSavesShare(shareId)) return;
 
-    const layoutFingerprint = createLayoutFingerprint(layout);
+    // What the link stores of the layout, so an edit to any stored field saves.
+    const layoutFingerprint = roomLayoutFingerprint(layout);
+    const claimCount = roomClaimCount(shareId);
+    const upload: ShareUpload = {
+      key: `local:${layoutFingerprint}`,
+      send: () => updateShare(shareId, deleteToken, layout),
+      record: ({ lastUpdatedAt }) => {
+        lastSyncedRef.current = { shareId, fingerprint: layoutFingerprint, claimCount };
+        if (lastUpdatedAt) recordOwnCopyRevision(shareId, lastUpdatedAt, layout);
+      },
+      // A remote layout from account sync replaces this one without a local
+      // edit, so only the stored layout can say whether it is still current.
+      // Coming back to a layout queues no upload, so a retry must outlive a
+      // switch to another layout. Account sync can also remove the library
+      // entry and keep its stored layout.
+      current: async () => {
+        if (layoutId === null) return false;
+        const shared = (): boolean => {
+          const entry = useLibraryStore
+            .getState()
+            .library.entries.find((candidate) => candidate.id === layoutId);
+          return (
+            entry?.cloudShare?.id === shareId &&
+            entry.cloudShare.deleteToken === deleteToken &&
+            !roomSavesShare(shareId)
+          );
+        };
+        const matches = (stored: Layout | null): boolean =>
+          stored !== null && roomLayoutFingerprint(stored) === layoutFingerprint;
+        const active = (): Layout | null => {
+          const state = useLayoutStore.getState();
+          return state.activeLayoutId === layoutId ? state.layout : null;
+        };
 
-    // Skip if nothing changed since last sync
-    if (layoutFingerprint === lastSyncedRef.current) return;
+        if (!shared()) return false;
+        const before = active();
+        if (before) return matches(before);
+        const stored = await loadLayoutAsync(layoutId);
+        // The owner can open the layout again while storage answers.
+        return shared() && matches(active() ?? stored);
+      },
+    };
 
-    isSyncingRef.current = true;
-
-    try {
-      const result = await updateShare(shareId, deleteToken, layout);
-
-      if (isOk(result)) {
-        lastSyncedRef.current = layoutFingerprint;
-      }
-      // Silently ignore failures - this is background sync
-    } catch {
-      // Silently ignore network errors
-    } finally {
-      isSyncingRef.current = false;
+    // The link still holds this layout from this hook's last save, unless an
+    // upload in flight replaces it.
+    const last = lastSyncedRef.current;
+    if (
+      last?.shareId === shareId &&
+      last.fingerprint === layoutFingerprint &&
+      last.claimCount === claimCount
+    ) {
+      keepShareLayout(shareId, upload);
+      return;
     }
-  }, [cloudShare, layout]);
+
+    queueShareUpload(shareId, upload);
+  }, [cloudShare, layout, activeLayoutId]);
 
   // Keep both refs aligned with the latest committed values. Uses
   // `useLayoutEffect` (not `useEffect`) so the refs update synchronously
@@ -97,6 +158,8 @@ export function useOwnedShareSync(): void {
     if (!cloudShare) return;
     if (lastEditSource !== 'local') return;
     if (activeLayoutId === SHARED_PREVIEW_ID) return;
+    // A newer local layout replaces what waits, unless a room saves the share.
+    if (!roomSavesShare(cloudShare.id)) dropWaitingUpload(cloudShare.id);
 
     // Clear existing timer
     if (debounceTimerRef.current) {
@@ -109,7 +172,7 @@ export function useOwnedShareSync(): void {
     // firing), which would then call `updateShare` with a stale delete token.
     // The ref always points at the latest `useCallback` result.
     debounceTimerRef.current = setTimeout(() => {
-      void syncToCloudRef.current();
+      syncToCloudRef.current();
     }, CLOUD_SYNC_DEBOUNCE_MS);
 
     return () => {
@@ -126,7 +189,7 @@ export function useOwnedShareSync(): void {
       if (cloudShareRef.current && debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
         // Fire-and-forget sync before unmount using the latest sync function
-        void syncToCloudRef.current();
+        syncToCloudRef.current();
       }
     };
   }, []); // Empty deps - refs provide current values

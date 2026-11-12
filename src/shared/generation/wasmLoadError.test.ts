@@ -47,6 +47,10 @@ describe('isStaleAssetError', () => {
       'Kernel init failed: Importing a module script is canceled. (first attempt: Kernel init failed: Importing a module script is canceled.)',
     ],
     [
+      'Safari import refused as cross-origin',
+      'Kernel init failed: Cross-origin script load denied by Cross-Origin Resource Sharing policy. (first attempt: Kernel init failed: Cross-origin script load denied by Cross-Origin Resource Sharing policy.)',
+    ],
+    [
       'Firefox dynamic import',
       'Kernel init failed: error loading dynamically imported module: https://x/assets/occt-wasm-C7KBdFbv.js',
     ],

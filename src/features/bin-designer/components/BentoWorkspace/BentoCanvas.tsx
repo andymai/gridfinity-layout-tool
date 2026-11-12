@@ -411,7 +411,7 @@ export function BentoCanvas({
             >
               <div className="flex h-full w-full flex-col items-center justify-center overflow-hidden text-center">
                 {label ? (
-                  <span className="max-w-full truncate px-1 text-xs font-medium text-content-primary">
+                  <span className="max-w-full truncate px-1 text-xs font-medium text-content">
                     {label}
                   </span>
                 ) : null}

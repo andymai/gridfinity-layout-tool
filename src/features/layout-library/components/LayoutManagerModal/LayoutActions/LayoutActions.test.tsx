@@ -186,32 +186,21 @@ describe('LayoutActions', () => {
       expect(screen.getByText('Delete layout')).toBeInTheDocument();
     });
 
-    it('shows bin count in confirmation when bins exist', () => {
+    it.each([
+      [1, '1 bin will be deleted'],
+      [2, '2 bins will be deleted'],
+    ])('names %i bin(s) in the confirmation', (binCount, message) => {
       render(
         <LayoutActions
           {...defaultProps}
-          entry={createTestEntry({ preview: { ...defaultProps.entry.preview, binCount: 5 } })}
+          entry={createTestEntry({ preview: { ...defaultProps.entry.preview, binCount } })}
         />
       );
 
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
       fireEvent.click(screen.getByRole('menuitem', { name: /Delete/ }));
 
-      expect(screen.getByText(/bins will be deleted/)).toBeInTheDocument();
-    });
-
-    it('shows singular bin message when 1 bin', () => {
-      render(
-        <LayoutActions
-          {...defaultProps}
-          entry={createTestEntry({ preview: { ...defaultProps.entry.preview, binCount: 1 } })}
-        />
-      );
-
-      fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
-      fireEvent.click(screen.getByRole('menuitem', { name: /Delete/ }));
-
-      expect(screen.getByText(/bins will be deleted/)).toBeInTheDocument();
+      expect(screen.getByText(message)).toBeInTheDocument();
     });
 
     it('calls onDelete on second delete click', () => {
@@ -237,7 +226,7 @@ describe('LayoutActions', () => {
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
       fireEvent.click(screen.getByRole('menuitem', { name: /Delete/ }));
 
-      expect(screen.queryByText(/bins will be deleted/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/will be deleted/)).not.toBeInTheDocument();
     });
   });
 

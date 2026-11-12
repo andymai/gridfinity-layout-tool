@@ -97,10 +97,7 @@ export const PresenceAvatar = memo(function PresenceAvatar({
             className={`absolute ${config.crown} bg-warning rounded-full flex items-center justify-center`}
             aria-hidden="true"
           >
-            <CrownIcon
-              className="w-2/3 h-2/3 text-warning-foreground"
-              ariaLabel={t('collab.owner')}
-            />
+            <CrownIcon className="w-2/3 h-2/3 text-on-light" ariaLabel={t('collab.owner')} />
           </div>
         )}
       </div>

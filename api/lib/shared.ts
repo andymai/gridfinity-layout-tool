@@ -114,6 +114,7 @@ export interface ApiErrorResponse {
   error: string;
   code: ErrorCodeType;
   retryAfter?: number;
+  field?: string;
 }
 
 /**
@@ -154,12 +155,6 @@ export {
 /** TTL for share:lastAccessed keys (1 year — matches the report-counter TTL). */
 export const SHARE_LAST_ACCESSED_TTL_SECONDS = 365 * 24 * 60 * 60;
 
-// Vercel Blob takes up to 60s to propagate an overwrite through its CDN, and a
-// public store has no read that bypasses it, so a share read right after an
-// update can return the previous permission. The Redis copy only has to
-// outlive that window.
-export const SHARE_PERMISSION_TTL_SECONDS = 120;
-
 export async function resolveSharePermission(
   redis: Pick<Redis, 'get'> | null,
   shareId: string,
@@ -170,20 +165,6 @@ export async function resolveSharePermission(
     if (recent === 'view' || recent === 'edit') return recent;
   }
   return share.metadata.permission;
-}
-
-export async function recordSharePermission(
-  redis: Pick<Redis, 'set' | 'del'> | null,
-  shareId: string,
-  permission: ShareMetadata['permission']
-): Promise<void> {
-  if (!redis) return;
-  const key = sharePermissionKey(shareId);
-  try {
-    await redis.set(key, permission, 'EX', SHARE_PERMISSION_TTL_SECONDS);
-  } catch {
-    await redis.del(key).catch(() => undefined);
-  }
 }
 
 /**
@@ -228,6 +209,17 @@ export function serviceUnavailable(
 
 export function serverError(res: VercelResponse): VercelResponse {
   return res.status(500).json({ error: 'Server error', code: ErrorCode.SERVER_ERROR });
+}
+
+export function contentBlocked(
+  res: VercelResponse,
+  blocked: { reason?: string; field?: string }
+): VercelResponse {
+  return res.status(400).json({
+    error: `Content blocked: ${blocked.reason}`,
+    code: ErrorCode.CONTENT_BLOCKED,
+    ...(blocked.field === undefined ? {} : { field: blocked.field }),
+  });
 }
 
 export function sendError(
@@ -279,4 +271,32 @@ export async function loadShare(blobPath: string): Promise<ShareData | null> {
   const response = await fetch(blobInfo.url);
   if (!response.ok) return null;
   return (await response.json()) as ShareData;
+}
+
+/**
+ * {@link loadShare}, plus two ETags for a write with `ifMatch`, and the stored
+ * blob's upload time.
+ *
+ * `etag` and `uploadedAt` come from `head`, which is current. The body comes
+ * through the CDN, which serves an older body for up to a minute after an
+ * overwrite. `bodyEtag` is the ETag of the body that was read, or null when
+ * the response has none. A write that keeps content from the body must match
+ * `bodyEtag`, or it can put an older body back.
+ */
+export async function loadShareVersion(blobPath: string): Promise<{
+  readonly data: ShareData;
+  readonly etag: string;
+  readonly bodyEtag: string | null;
+  readonly uploadedAt: Date;
+} | null> {
+  const blobInfo = await head(blobPath).catch(() => null);
+  if (!blobInfo) return null;
+  const response = await fetch(blobInfo.url);
+  if (!response.ok) return null;
+  return {
+    data: (await response.json()) as ShareData,
+    etag: blobInfo.etag,
+    bodyEtag: response.headers.get('etag'),
+    uploadedAt: blobInfo.uploadedAt,
+  };
 }

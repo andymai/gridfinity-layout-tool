@@ -46,6 +46,8 @@ Match the values in Settings to your own slicer and filament, and the numbers ge
 | <Ui k="settings.infillPercent" />     | 15%             | Time. Each percent above 15 adds 0.3%.                                              |
 | <Ui k="settings.nozzleSize" />        | 0.4 mm          | Time. A 0.6 mm nozzle takes about two thirds of the time.                           |
 
+<Screenshot id="printing-estimates-settings" alt="The Print & material tab of Settings, with Filament cost at 20 dollars for each kg, Layer height at 0.2 mm, Infill at 15% and Nozzle size at 0.4 mm." spec="Layout editor. Open Settings and click the Print & material tab. Crop to the top of the dialog, down to the tab list entry." />
+
 For time, the model uses an average flow of 11 mm³ of plastic each second, for a 0.4 mm nozzle. It also adds 16 minutes for each print plate, for bed heating, the first layer and cooling. The bin list finds the number of plates from the total area of the bins and the size of your print bed.
 
 The nozzle size changes only the time. A bin uses the same amount of plastic with any nozzle.

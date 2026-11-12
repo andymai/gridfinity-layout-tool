@@ -17,18 +17,34 @@ import cutEditorDark from './clips/cutEditor.dark.mp4';
 import cutEditorDarkPoster from './clips/cutEditor.dark.webp';
 import cutEditorLight from './clips/cutEditor.light.mp4';
 import cutEditorLightPoster from './clips/cutEditor.light.webp';
+import detachableFeetDark from './clips/detachableFeet.dark.mp4';
+import detachableFeetDarkPoster from './clips/detachableFeet.dark.webp';
+import detachableFeetLight from './clips/detachableFeet.light.mp4';
+import detachableFeetLightPoster from './clips/detachableFeet.light.webp';
 import drainageHolesDark from './clips/drainageHoles.dark.mp4';
 import drainageHolesDarkPoster from './clips/drainageHoles.dark.webp';
 import drainageHolesLight from './clips/drainageHoles.light.mp4';
 import drainageHolesLightPoster from './clips/drainageHoles.light.webp';
+import halfSocketsDark from './clips/halfSockets.dark.mp4';
+import halfSocketsDarkPoster from './clips/halfSockets.dark.webp';
+import halfSocketsLight from './clips/halfSockets.light.mp4';
+import halfSocketsLightPoster from './clips/halfSockets.light.webp';
 import handlesDark from './clips/handles.dark.mp4';
 import handlesDarkPoster from './clips/handles.dark.webp';
 import handlesLight from './clips/handles.light.mp4';
 import handlesLightPoster from './clips/handles.light.webp';
+import interiorFilletDark from './clips/interiorFillet.dark.mp4';
+import interiorFilletDarkPoster from './clips/interiorFillet.dark.webp';
+import interiorFilletLight from './clips/interiorFillet.light.mp4';
+import interiorFilletLightPoster from './clips/interiorFillet.light.webp';
 import labelPlatesDark from './clips/labelPlates.dark.mp4';
 import labelPlatesDarkPoster from './clips/labelPlates.dark.webp';
 import labelPlatesLight from './clips/labelPlates.light.mp4';
 import labelPlatesLightPoster from './clips/labelPlates.light.webp';
+import labelSlotsDark from './clips/labelSlots.dark.mp4';
+import labelSlotsDarkPoster from './clips/labelSlots.dark.webp';
+import labelSlotsLight from './clips/labelSlots.light.mp4';
+import labelSlotsLightPoster from './clips/labelSlots.light.webp';
 import labelTabsDark from './clips/labelTabs.dark.mp4';
 import labelTabsDarkPoster from './clips/labelTabs.dark.webp';
 import labelTabsLight from './clips/labelTabs.light.mp4';
@@ -69,6 +85,10 @@ import slantDark from './clips/slant.dark.mp4';
 import slantDarkPoster from './clips/slant.dark.webp';
 import slantLight from './clips/slant.light.mp4';
 import slantLightPoster from './clips/slant.light.webp';
+import taperWallsDark from './clips/taperWalls.dark.mp4';
+import taperWallsDarkPoster from './clips/taperWalls.dark.webp';
+import taperWallsLight from './clips/taperWalls.light.mp4';
+import taperWallsLightPoster from './clips/taperWalls.light.webp';
 import wallCutoutsDark from './clips/wallCutouts.dark.mp4';
 import wallCutoutsDarkPoster from './clips/wallCutouts.dark.webp';
 import wallCutoutsLight from './clips/wallCutouts.light.mp4';
@@ -102,7 +122,12 @@ export type FeatureTipId =
   | 'magnetHoles'
   | 'multiColor'
   | 'wallText'
-  | 'lightweightFloor';
+  | 'lightweightFloor'
+  | 'labelSlots'
+  | 'detachableFeet'
+  | 'halfSockets'
+  | 'interiorFillet'
+  | 'taperWalls';
 
 export interface FeatureTipClip {
   readonly video: string;
@@ -257,6 +282,41 @@ export const FEATURE_TIPS: Readonly<Record<FeatureTipId, FeatureTip>> = {
     clips: {
       light: { video: lightweightFloorLight, poster: lightweightFloorLightPoster },
       dark: { video: lightweightFloorDark, poster: lightweightFloorDarkPoster },
+    },
+  },
+  labelSlots: {
+    captionKey: 'binDesigner.featureTip.labelSlots',
+    clips: {
+      light: { video: labelSlotsLight, poster: labelSlotsLightPoster },
+      dark: { video: labelSlotsDark, poster: labelSlotsDarkPoster },
+    },
+  },
+  detachableFeet: {
+    captionKey: 'binDesigner.featureTip.detachableFeet',
+    clips: {
+      light: { video: detachableFeetLight, poster: detachableFeetLightPoster },
+      dark: { video: detachableFeetDark, poster: detachableFeetDarkPoster },
+    },
+  },
+  halfSockets: {
+    captionKey: 'binDesigner.featureTip.halfSockets',
+    clips: {
+      light: { video: halfSocketsLight, poster: halfSocketsLightPoster },
+      dark: { video: halfSocketsDark, poster: halfSocketsDarkPoster },
+    },
+  },
+  interiorFillet: {
+    captionKey: 'binDesigner.featureTip.interiorFillet',
+    clips: {
+      light: { video: interiorFilletLight, poster: interiorFilletLightPoster },
+      dark: { video: interiorFilletDark, poster: interiorFilletDarkPoster },
+    },
+  },
+  taperWalls: {
+    captionKey: 'binDesigner.featureTip.taperWalls',
+    clips: {
+      light: { video: taperWallsLight, poster: taperWallsLightPoster },
+      dark: { video: taperWallsDark, poster: taperWallsDarkPoster },
     },
   },
 };

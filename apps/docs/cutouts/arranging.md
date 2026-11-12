@@ -10,6 +10,9 @@ sources:
   - src/features/bin-designer/components/panel/CutoutsSection/autoArrange.ts
   - src/features/bin-designer/utils/cutoutHierarchy.ts
   - src/features/bin-designer/components/panel/CutoutsSection/handlers/rulerHandler.ts
+  - src/features/bin-designer/components/panel/CutoutsSection/cutoutSectionVisibility.ts
+  - src/features/bin-designer/components/panel/CutoutsSection/PathfinderControls.tsx
+  - src/shared/utils/cutoutArray.ts
 ---
 
 # Arrange cutouts
@@ -26,7 +29,7 @@ The <Ui k="binDesigner.shapeList.tabShapes" /> tab lists every cutout. Use it to
 
 ## Repeat a cutout
 
-A repeat makes many copies from one cutout. Each copy follows the first one: its shape, size, depth and fit. Change the first, and every copy changes with it.
+A **repeat** makes many copies from one cutout. Each copy follows the first one: its shape, size, depth and fit. Change the first, and every copy changes with it.
 
 1. Select one cutout and open <Ui k="binDesigner.cutouts.section.repeat" />.
 2. Click a chip under <Ui k="binDesigner.cutouts.repeat.presetLabel" />, or click <Ui k="binDesigner.cutouts.repeat.create" />.
@@ -38,7 +41,7 @@ A repeat makes many copies from one cutout. Each copy follows the first one: its
 | <Ui k="binDesigner.cutouts.repeat.mode.staggered" /> | The same as a grid, with every other row moved over.                                                                                                                                                  |
 | <Ui k="binDesigner.cutouts.repeat.mode.radial" />    | <Ui k="binDesigner.cutouts.repeat.count" />, <Ui k="binDesigner.cutouts.repeat.radius" />, <Ui k="binDesigner.cutouts.repeat.startAngle" /> and <Ui k="binDesigner.cutouts.repeat.rotateToCenter" />. |
 
-The pitch is the distance from the center of one copy to the center of the next. A repeat has up to 50 columns or rows, and up to 400 copies. Pen shapes can't repeat.
+The **pitch** is the distance from the center of one copy to the center of the next. A repeat has up to 50 columns or rows, and up to 400 copies. Pen shapes can't repeat.
 
 Changed your mind? <Ui k="binDesigner.cutouts.repeat.flatten" /> turns the copies into separate cutouts that you can move one by one. <Ui k="binDesigner.cutouts.repeat.remove" /> goes back to one cutout.
 
@@ -62,13 +65,15 @@ In a set of drill bits, each bit has its own size. Give each copy its own label 
 2. Click <Ui k="binDesigner.cutouts.repeat.labels.enable" />.
 3. Type one label on each line, or paste a list.
 
+<Screenshot id="cutouts-arranging-repeat-labels" alt="In the Label section of a repeat of six holes, clicking Label each copy separately and typing one size on each line. The board and the 3D preview show each hole with its own size." spec="Cut editor, 3x1 bin, a 9 mm circle repeated 6 times at 19 mm, with the single label Drill. In close-up on Label, click Label each copy separately, select all, and type 3 mm to 10 mm on six lines. Cut to the board, then to the 3D preview." />
+
 The labels fill the copies top row first, then left to right. A ring fills in order from the first copy. Got a list with commas? <Ui k="binDesigner.cutouts.repeat.labels.splitCommas" /> changes it into lines.
 
 An empty line leaves that copy with no label. When the list is short, the remaining copies use the single label. A socket label has one plate for all copies, so all copies share its text.
 
 ## Group cutouts
 
-Select two or more cutouts and click <Ui k="binDesigner.cutouts.group" />, or press <kbd>Ctrl</kbd>+<kbd>G</kbd>. A group of loose cutouts cuts as one shape. Under <Ui k="binDesigner.cutouts.pathfinder.title" />, pick how the shapes combine:
+Select two or more cutouts and click <Ui k="binDesigner.cutouts.group" />, or press <kbd>Ctrl</kbd>+<kbd>G</kbd>. A group of loose cutouts cuts as one shape. To pick how the shapes combine, click one of the four icon buttons in the toolbar under the editor header. Hold the pointer on a button to see its name:
 
 | Operation                                           | Result                                                          |
 | --------------------------------------------------- | --------------------------------------------------------------- |
@@ -78,6 +83,8 @@ Select two or more cutouts and click <Ui k="binDesigner.cutouts.group" />, or pr
 | <Ui k="binDesigner.cutouts.pathfinder.exclude" />   | The shapes join, but the area where they overlap stays solid.   |
 
 To choose the front shape, right-click and use <Ui k="binDesigner.cutouts.arrange.bringToFront" /> or <Ui k="binDesigner.cutouts.arrange.sendToBack" />.
+
+<Screenshot id="cutouts-arranging-group" alt="Pressing Ctrl A and Ctrl G groups a large circle and a small circle in front of it. Clicking Minus front in the toolbar leaves a ring, and the 3D preview shows a post of plastic in the middle." spec="Cut editor at 1680 x 620, 2x2 bin, a 65 mm circle and a 30 mm circle in front of it, centered. Press Ctrl+A and Ctrl+G, then click Minus front in the toolbar. End on the 3D preview." />
 
 ### Groups inside groups
 
@@ -98,6 +105,8 @@ Select two or more cutouts, and a toolbar opens under the editor header. A group
 | <Ui k="binDesigner.cutouts.distributeH" />, <Ui k="binDesigner.cutouts.distributeV" />                                           | Make the spaces equal. They need three or more cutouts.          |
 | <Ui k="binDesigner.cutouts.centerInBin" />, <Ui k="binDesigner.cutouts.centerH" />, <Ui k="binDesigner.cutouts.centerV" />       | Center the selection in the bin.                                 |
 
+<Screenshot id="cutouts-arranging-align" alt="Dragging a box across three circles selects them, and a toolbar opens under the editor header. Clicking Align bottom lines them up, and Distribute horizontally makes the spaces equal." spec="Cut editor at 1680 x 620, 4x2 bin, three circles of 16, 19 and 23 mm at uneven positions. Drag a selection box across them, then click Align bottom and Distribute horizontally in the toolbar." />
+
 ## Edit several cutouts at once
 
 With two or more cutouts selected, <Ui k="binDesigner.shapeList.tabProperties" /> shows the settings that they share: position, size, rotation, depth, scoop, entry edge and color. When the values differ, the field shows a short dash. Type a value to give it to all selected cutouts.
@@ -111,6 +120,8 @@ Traced a pile of tools at odd angles? Auto-arrange packs them neatly.
 3. Set the <Ui k="binDesigner.cutouts.gap" /> (it starts at 2 mm), and turn <Ui k="binDesigner.cutouts.staggered" /> and <Ui k="binDesigner.cutouts.turnToFit" /> on or off.
 4. Click <Ui k="binDesigner.cutouts.autoArrange" /> in the box.
 
+<Screenshot id="cutouts-arranging-auto-arrange" alt="Pressing Ctrl A selects four tools that lie at odd angles. In the toolbar, Auto-arrange opens a box with Gap, Stagger rows and Turn shapes to fit. Clicking Auto-arrange in the box packs the tools square and tight." spec="Cut editor at 1440 x 570, 4x2 bin, two rectangles and two slots at different angles. Press Ctrl+A, click Auto-arrange in the toolbar, then Auto-arrange in its box. End on the packed board." />
+
 <Ui k="binDesigner.cutouts.turnToFit" /> is on at the start. It turns each shape to take the least room, so a tool traced at an angle lies square. Groups move as one and keep their angle.
 
 ## Bring back a cutout that is off the board
@@ -121,11 +132,38 @@ When a cutout goes past the edge of the bin, a warning shows how many cutouts th
 - <Ui k="binDesigner.cutouts.centerInBin" /> moves the cutouts to the middle. It shows only when they fit in the bin.
 - <Ui k="binDesigner.cutoutEditor.bringBackIn" /> moves each cutout back inside the edge.
 
+<Screenshot id="cutouts-arranging-off-board" alt="A repeat of sockets runs past the right edge of the board. The Properties tab warns that 1 cutout will be clipped, and offers Grow bin to 4 × 1, Center in bin and Bring back in." spec="Cut editor, 3x1 bin, a slot and a 20 mm circle repeated 4 times at 24 mm, so the last copy goes past the right edge. Crop to the board and the warning." />
+
 ## Measure on the board
 
 Click <Ui k="binDesigner.cutouts.rulerTool" /> (<kbd>M</kbd>) and drag between two points. For a quick measurement with the select tool, hold <kbd>Shift</kbd> and drag. The ruler snaps to corners, edge midpoints, centers and edges, and to the grid when snap is on. The rulers on the top and left edges of the board show millimeters. To measure the 3D model, use <Ui k="binDesigner.measure.short" /> in the preview.
 
 <Screenshot id="cutouts-arranging-ruler" alt="Pressing M for the ruler tool, then dragging from the edge of one cutout to the edge of the next. The ruler snaps to both edges and reads 8.0 mm." spec="Cut editor with two rectangles 8 mm apart, zoomed in on the gap. Press M and drag from the right edge of one rectangle to the left edge of the other so the snap ticks and the distance label show. Crop to the board with the top and left rulers." />
+
+## When it goes wrong
+
+### A repeat won't take another row or column
+
+Move the cutout away from the edge that it is near, or lower the pitch. Then click <Ui k="binDesigner.cutouts.repeat.fillBin" /> again, or type the count.
+
+The copies go toward the far edges of the bin. A cutout near a far edge leaves no room for the next copy, so the count stops, and a note under the settings says so.
+
+### You can't repeat a cutout
+
+<Ui k="binDesigner.cutouts.section.repeat" /> then shows a message in place of its settings. The message gives the reason. Here's what each one asks of you:
+
+| What the cutout is                            | What to do                                                        |
+| --------------------------------------------- | ----------------------------------------------------------------- |
+| One part of a group                           | Click the group on the board to select all of it, then repeat it. |
+| A group with a repeat inside it               | Remove that inner repeat first.                                   |
+| A pen shape, a scan or a trace                | Leave it as one cutout. These outlines can't repeat.              |
+| A group that holds a pen shape, scan or trace | The group can't repeat either.                                    |
+
+### A group cuts nothing
+
+Click the <Ui k="binDesigner.cutouts.pathfinder.union" /> icon in the toolbar under the editor header, or move the shapes until they overlap.
+
+The other three ways to combine shapes can leave no area to cut. <Ui k="binDesigner.cutouts.pathfinder.intersect" /> cuts only where all shapes overlap, so shapes apart from each other leave nothing. A message tells you when the result is empty.
 
 ## Next steps
 

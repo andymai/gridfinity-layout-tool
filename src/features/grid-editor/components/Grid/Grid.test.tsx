@@ -253,6 +253,14 @@ describe('Grid', () => {
       expect(gridElement).toHaveAttribute('aria-label', 'Gridfinity drawer grid, 10 by 8');
     });
 
+    // A hovered or selected bin raises its z-index above the axis labels' 30, and
+    // its resize handles reach past the grid edge onto the row numbers.
+    it('stacks the grid content in its own context, below the axis labels', () => {
+      render(<Grid />);
+
+      expect(screen.getByRole('application').style.isolation).toBe('isolate');
+    });
+
     it('renders axis labels when visible', () => {
       render(<Grid />);
 

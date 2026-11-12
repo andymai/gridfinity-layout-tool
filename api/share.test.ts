@@ -22,6 +22,9 @@ const mocks = vi.hoisted(() => ({
   head: vi.fn(),
   del: vi.fn(),
   redisSet: vi.fn(),
+  reserveShareRevision: vi.fn(),
+  verifyShareRevision: vi.fn(),
+  recordSharePermission: vi.fn(),
   validateShareLayout: vi.fn(),
   isValidationError: vi.fn(),
   validateSharedDesigns: vi.fn(),
@@ -112,15 +115,26 @@ async function handle(body: Record<string, unknown>, method = 'POST') {
   return res;
 }
 
+/** Later than any test's clock, so the counter's stamp is the one that wins. */
+const REVISION_STAMP = Date.parse('2099-01-01T00:00:00.000Z');
+
 describe('share (create)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.TOKEN_SALT = 'test-salt';
     delete process.env.VERCEL_ENV;
     mocks.checkRateLimit.mockResolvedValue({ allowed: true });
-    mocks.getRedis.mockReturnValue({ set: mocks.redisSet });
+    mocks.getRedis.mockReturnValue({
+      set: mocks.redisSet,
+      reserveShareRevision: mocks.reserveShareRevision,
+      verifyShareRevision: mocks.verifyShareRevision,
+      recordSharePermission: mocks.recordSharePermission,
+    });
     mocks.redisSet.mockResolvedValue('OK');
-    mocks.put.mockResolvedValue({ url: 'blob://ok' });
+    mocks.recordSharePermission.mockResolvedValue(1);
+    mocks.reserveShareRevision.mockResolvedValue([REVISION_STAMP, 0]);
+    mocks.verifyShareRevision.mockResolvedValue(1);
+    mocks.put.mockResolvedValue({ url: 'blob://ok', etag: '"etag-created"' });
     mocks.validateShareLayout.mockReturnValue({ layout: { name: 'My Drawer' } });
     mocks.isValidationError.mockReturnValue(false);
     mocks.filterLayoutContent.mockReturnValue({ passed: true });
@@ -189,6 +203,20 @@ describe('share (create)', () => {
     expect(mocks.put).not.toHaveBeenCalled();
   });
 
+  it('names the field the filter blocked so the client can say where', async () => {
+    mocks.filterLayoutContent.mockReturnValue({
+      passed: false,
+      reason: 'Bin label: contains prohibited content',
+      field: 'binLabel',
+    });
+    const res = await handle(layoutBody());
+    expect(res._body).toEqual({
+      error: 'Content blocked: Bin label: contains prohibited content',
+      code: 'CONTENT_BLOCKED',
+      field: 'binLabel',
+    });
+  });
+
   it('validates designer shares through the designer validator', async () => {
     mocks.validateDesignerShare.mockReturnValue({
       valid: false,
@@ -205,6 +233,29 @@ describe('share (create)', () => {
     const res = await handle(layoutBody());
     expect(res._status).toBe(503);
     expect(mocks.put).not.toHaveBeenCalled();
+  });
+
+  it('fails closed with 503, and writes no blob, when the revision reservation fails', async () => {
+    mocks.reserveShareRevision.mockRejectedValue(new Error('redis down'));
+    const res = await handle(layoutBody());
+    expect(res._status).toBe(503);
+    expect(mocks.put).not.toHaveBeenCalled();
+  });
+
+  it('stamps the share from the counter and marks the counter verified after the put', async () => {
+    const res = await handle(layoutBody());
+    expect(res._status).toBe(201);
+    const written = JSON.parse(mocks.put.mock.calls[0][1] as string) as {
+      metadata: { createdAt: string; lastUpdatedAt: string };
+    };
+    expect(written.metadata.lastUpdatedAt).toBe(new Date(REVISION_STAMP).toISOString());
+    expect(mocks.verifyShareRevision).toHaveBeenCalledWith(
+      `share:revision:${VALID_ID}`,
+      REVISION_STAMP
+    );
+    const [putAt] = mocks.put.mock.invocationCallOrder;
+    const [verifiedAt] = mocks.verifyShareRevision.mock.invocationCallOrder;
+    expect(verifiedAt).toBeGreaterThan(putAt);
   });
 
   it('creates the share: CAS blob put, hash in Redis, 201 with token and url', async () => {
@@ -230,11 +281,18 @@ describe('share (create)', () => {
   it('records the new permission so a reused id cannot inherit a deleted share', async () => {
     const res = await handle(layoutBody({ permission: 'view' }));
     expect(res._status).toBe(201);
-    expect(mocks.redisSet).toHaveBeenCalledWith(
+    const [, storedHash] = mocks.redisSet.mock.calls.find(
+      ([key]) => key === `share:hash:${VALID_ID}`
+    ) as [string, string];
+    expect(mocks.recordSharePermission).toHaveBeenCalledWith(
       `share:permission:${VALID_ID}`,
-      'view',
-      'EX',
-      expect.any(Number)
+      `share:permissionVersion:${VALID_ID}`,
+      `share:hash:${VALID_ID}`,
+      storedHash,
+      REVISION_STAMP,
+      expect.any(Number),
+      '"etag-created"',
+      'view'
     );
   });
 
@@ -257,7 +315,10 @@ describe('share (create)', () => {
     it('blocks offensive lid text', async () => {
       const res = await designerShare({ surfaceText: { lidText: 'kill yourself' } });
       expect(res._status).toBe(400);
-      expect((res._body as { code: string }).code).toBe('CONTENT_BLOCKED');
+      expect(res._body).toEqual({
+        error: 'Content blocked: contains prohibited content',
+        code: 'CONTENT_BLOCKED',
+      });
       expect(mocks.put).not.toHaveBeenCalled();
     });
 
@@ -284,7 +345,7 @@ describe('share (create)', () => {
     it('blocks an offensive author name', async () => {
       const res = await handle(layoutBody({ authorName: 'kys' }));
       expect(res._status).toBe(400);
-      expect((res._body as { code: string }).code).toBe('CONTENT_BLOCKED');
+      expect(res._body).toMatchObject({ code: 'CONTENT_BLOCKED', field: 'authorName' });
       expect(mocks.put).not.toHaveBeenCalled();
     });
 
@@ -364,12 +425,13 @@ describe('share (create)', () => {
     mocks.filterSharedDesignsContent.mockReturnValue({
       passed: false,
       reason: 'Design name: nope',
+      field: 'linkedDesign',
     });
 
     const res = await handle(layoutBody({ linkedDesigns: [{ id: 'design_1' }] }));
 
     expect(res._status).toBe(400);
-    expect((res._body as { code: string }).code).toBe('CONTENT_BLOCKED');
+    expect(res._body).toMatchObject({ code: 'CONTENT_BLOCKED', field: 'linkedDesign' });
     expect(mocks.put).not.toHaveBeenCalled();
   });
 

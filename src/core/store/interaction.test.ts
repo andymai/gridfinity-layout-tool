@@ -72,6 +72,24 @@ describe('interaction store', () => {
       getState().setDropTarget(null);
       expect(getState().dropTarget).toBeNull();
     });
+
+    it('clears with the interaction that ends, and stays while one is set', () => {
+      getState().setInteraction({
+        type: 'draw',
+        start: { x: gridUnits(0), y: gridUnits(0) },
+        current: { x: gridUnits(1), y: gridUnits(1) },
+      });
+      getState().setDropTarget('staging');
+      getState().setInteraction({
+        type: 'draw',
+        start: { x: gridUnits(0), y: gridUnits(0) },
+        current: { x: gridUnits(2), y: gridUnits(2) },
+      });
+      expect(getState().dropTarget).toBe('staging');
+
+      getState().setInteraction(null);
+      expect(getState().dropTarget).toBeNull();
+    });
   });
 
   describe('paint mode', () => {

@@ -2,12 +2,30 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useSyncPhysicalUnits } from './useSyncPhysicalUnits';
 import { useDesignerStore } from '../store';
+import { _resetPendingMeshCache } from '../store/designer';
 import { useLayoutStore } from '@/core/store/layout';
+import { createDefaultLayout } from '@/core/constants';
 import { DEFAULT_BIN_PARAMS, DEFAULT_GENERATION_STATE } from '../constants';
 import { lidTopAboveRimMm } from '@/shared/printSettings/assembledHeight';
+import type { DesignId } from '@/core/types';
+import type { BinParams, Cutout, SavedDesign } from '../types';
+
+function savedDesign(params: Partial<BinParams>): SavedDesign {
+  return {
+    id: 'saved-elsewhere' as DesignId,
+    name: 'Saved elsewhere',
+    params: { ...DEFAULT_BIN_PARAMS, ...params },
+    thumbnail: null,
+    createdAt: '2026-01-01T00:00:00Z',
+    updatedAt: '2026-01-01T00:00:00Z',
+    exportFileNameConfig: null,
+  };
+}
 
 describe('useSyncPhysicalUnits', () => {
   beforeEach(() => {
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+    _resetPendingMeshCache();
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS },
       generation: {
@@ -18,8 +36,7 @@ describe('useSyncPhysicalUnits', () => {
         epoch: 0,
       },
     });
-    useLayoutStore.getState().setGridUnitMm(42);
-    useLayoutStore.getState().setHeightUnitMm(7);
+    useLayoutStore.setState({ layout: createDefaultLayout() });
   });
 
   it('skips update when values already match', () => {
@@ -82,6 +99,67 @@ describe('useSyncPhysicalUnits', () => {
     expect(useDesignerStore.getState().history.past).toHaveLength(0);
   });
 
+  // 3u at 7mm on a 4.75mm socket is a 16.25mm wall, so a 6.25mm offset holds the
+  // fill 10mm above the floor. The fill keeps that height and the offset moves.
+  describe('a cutout fill held to the floor', () => {
+    const floorFill: Partial<BinParams> = {
+      height: 3,
+      heightUnitMm: 7,
+      cutoutConfig: { topOffset: 6.25, fillReference: 'floor' },
+    };
+
+    it('keeps its height when a design opens under a taller height unit', () => {
+      useLayoutStore.getState().setHeightUnitMm(10);
+      renderHook(() => useSyncPhysicalUnits());
+
+      act(() => {
+        useDesignerStore.getState().loadDesign(savedDesign(floorFill));
+      });
+
+      // 30 - 4.75 = 25.25mm of wall, less the 10mm fill.
+      expect(useDesignerStore.getState().params.cutoutConfig.topOffset).toBeCloseTo(15.25, 6);
+    });
+
+    it("keeps its height, and a through pocket's depth, when the layout's height unit changes", () => {
+      const through: Cutout = {
+        id: 'p1',
+        shape: 'rectangle',
+        x: 10,
+        y: 10,
+        width: 20,
+        depth: 15,
+        cutDepth: 10,
+        rotation: 0,
+        cornerRadius: 0,
+        label: '',
+        groupId: null,
+        depthMode: 'through',
+      };
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, ...floorFill, cutouts: [through] },
+      });
+      renderHook(() => useSyncPhysicalUnits());
+
+      act(() => useLayoutStore.getState().setHeightUnitMm(10));
+
+      const { params } = useDesignerStore.getState();
+      expect(params.cutoutConfig.topOffset).toBeCloseTo(15.25, 6);
+      expect(params.cutouts[0]?.cutDepth).toBeCloseTo(10, 6);
+    });
+
+    it('keeps its height when the layout turns the low-profile base on', () => {
+      useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, ...floorFill } });
+      renderHook(() => useSyncPhysicalUnits());
+
+      act(() => {
+        useLayoutStore.setState((s) => ({ layout: { ...s.layout, lowProfileBase: true } }));
+      });
+
+      // The 3.65mm low-profile socket leaves 21 - 3.65 = 17.35mm of wall.
+      expect(useDesignerStore.getState().params.cutoutConfig.topOffset).toBeCloseTo(7.35, 6);
+    });
+  });
+
   describe('low-profile base', () => {
     const setLayoutLowProfile = (enabled: boolean): void => {
       useLayoutStore.setState((state) => {
@@ -136,6 +214,169 @@ describe('useSyncPhysicalUnits', () => {
       const { params } = useDesignerStore.getState();
       expect(params.width).toBe(3);
       expect(params.base.lowProfile).toBe(true);
+    });
+  });
+
+  describe('a design opened after mount', () => {
+    beforeEach(() => {
+      useLayoutStore.getState().setGridUnitMm(40);
+      useLayoutStore.getState().setHeightUnitMm(10);
+      useLayoutStore.getState().setMagnetAnchor('center');
+    });
+
+    it("takes the layout's units, not the ones it was saved with", () => {
+      renderHook(() => useSyncPhysicalUnits());
+
+      act(() => {
+        useDesignerStore
+          .getState()
+          .loadDesign(
+            savedDesign({ width: 4, gridUnitMm: 42, heightUnitMm: 7, magnetAnchor: 'edge' })
+          );
+      });
+
+      const { params } = useDesignerStore.getState();
+      expect(params.width).toBe(4);
+      expect(params.gridUnitMm).toBe(40);
+      expect(params.heightUnitMm).toBe(10);
+      expect(params.magnetAnchor).toBe('center');
+    });
+
+    it('regenerates once for the load and leaves no undo entry', () => {
+      renderHook(() => useSyncPhysicalUnits());
+      const epochBefore = useDesignerStore.getState().generation.epoch;
+
+      act(() => {
+        useDesignerStore.getState().loadDesign(savedDesign({ gridUnitMm: 42, heightUnitMm: 7 }));
+      });
+
+      expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore + 1);
+      expect(useDesignerStore.getState().history.past).toHaveLength(0);
+    });
+
+    // These two restore a version rather than load a design: `loadDesign` makes
+    // a second store write, whose `set` re-derives the lid and the pockets on
+    // its own. A restore is one write, so only the sync can re-derive them.
+    it("keeps a unit-sized lid on the layout's unit line", () => {
+      renderHook(() => useSyncPhysicalUnits());
+
+      act(() => {
+        useDesignerStore.getState().restoreVersion({
+          name: 'v1',
+          params: {
+            ...DEFAULT_BIN_PARAMS,
+            heightUnitMm: 7,
+            lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, heightUnits: 2 },
+          },
+        });
+      });
+
+      expect(lidTopAboveRimMm(useDesignerStore.getState().params)).toBeCloseTo(2 * 10, 6);
+    });
+
+    // 3u at 10mm on a 4.75mm socket is 25.25mm of fill, so a floor 8mm above
+    // the underside leaves 25.25 + 4.75 - 8 = 22mm. At the saved 7mm it was 13.
+    it("resolves a floored pocket against the layout's height unit", () => {
+      const pocket: Cutout = {
+        id: 'p1',
+        shape: 'rectangle',
+        x: 10,
+        y: 10,
+        width: 20,
+        depth: 15,
+        cutDepth: 13,
+        rotation: 0,
+        cornerRadius: 0,
+        label: '',
+        groupId: null,
+        depthMode: 'floor',
+        floorMm: 8,
+      };
+      renderHook(() => useSyncPhysicalUnits());
+
+      act(() => {
+        useDesignerStore.getState().restoreVersion({
+          name: 'v1',
+          params: { ...DEFAULT_BIN_PARAMS, height: 3, heightUnitMm: 7, cutouts: [pocket] },
+        });
+      });
+
+      expect(useDesignerStore.getState().params.cutouts[0]?.cutDepth).toBe(22);
+    });
+
+    it("gives a restored version the layout's units, and undo keeps them", () => {
+      renderHook(() => useSyncPhysicalUnits());
+      const widthBefore = useDesignerStore.getState().params.width;
+
+      act(() => {
+        useDesignerStore.getState().restoreVersion({
+          name: 'v1',
+          params: { ...DEFAULT_BIN_PARAMS, width: 4, gridUnitMm: 42, heightUnitMm: 7 },
+        });
+      });
+      expect(useDesignerStore.getState().params.width).toBe(4);
+      expect(useDesignerStore.getState().params.gridUnitMm).toBe(40);
+      expect(useDesignerStore.getState().params.heightUnitMm).toBe(10);
+
+      act(() => useDesignerStore.getState().undo());
+      expect(useDesignerStore.getState().params.width).toBe(widthBefore);
+      expect(useDesignerStore.getState().params.gridUnitMm).toBe(40);
+    });
+  });
+
+  it('does not bring back old units when undo crosses a layout unit change', () => {
+    renderHook(() => useSyncPhysicalUnits());
+    useDesignerStore.getState().setGenerationResult({
+      vertices: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9]),
+      normals: new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0]),
+      indices: new Uint32Array([0, 1, 2]),
+      edgeVertices: new Float32Array(0),
+      error: null,
+      timingMs: 100,
+    });
+    act(() => useDesignerStore.getState().setParam('width', 4));
+    act(() => useLayoutStore.getState().setGridUnitMm(40));
+    const epochBefore = useDesignerStore.getState().generation.epoch;
+
+    act(() => useDesignerStore.getState().undo());
+
+    // The entry's cached mesh was built at 42mm, so it must not stand in.
+    expect(useDesignerStore.getState().params.width).toBe(DEFAULT_BIN_PARAMS.width);
+    expect(useDesignerStore.getState().params.gridUnitMm).toBe(40);
+    expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore + 1);
+  });
+
+  describe('non-square grid', () => {
+    it("follows the layout's Y pitch and drops it when the layout goes square", () => {
+      renderHook(() => useSyncPhysicalUnits());
+
+      act(() => useLayoutStore.getState().setGridUnitMmY(22));
+      expect(useDesignerStore.getState().params.gridUnitMmY).toBe(22);
+
+      act(() => useLayoutStore.getState().setGridUnitMmY(null));
+      expect(useDesignerStore.getState().params.gridUnitMmY).toBeUndefined();
+    });
+
+    it('drops the Y pitch a design was saved with when the layout is square', () => {
+      renderHook(() => useSyncPhysicalUnits());
+
+      act(() => {
+        useDesignerStore.getState().loadDesign(savedDesign({ gridUnitMmY: 30 }));
+      });
+
+      expect(useDesignerStore.getState().params.gridUnitMmY).toBeUndefined();
+    });
+
+    it("gives a square design the layout's Y pitch", () => {
+      useLayoutStore.getState().setGridUnitMmY(22);
+      renderHook(() => useSyncPhysicalUnits());
+
+      act(() => {
+        useDesignerStore.getState().loadDesign(savedDesign({ width: 4 }));
+      });
+
+      expect(useDesignerStore.getState().params.width).toBe(4);
+      expect(useDesignerStore.getState().params.gridUnitMmY).toBe(22);
     });
   });
 });

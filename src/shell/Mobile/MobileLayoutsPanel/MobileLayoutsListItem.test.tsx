@@ -87,4 +87,65 @@ describe('LayoutListItem', () => {
     fireEvent.click(screen.getByText('My Layout'));
     expect(onSelect).toHaveBeenCalledWith('entry-1');
   });
+
+  it('counts layers with a plural form', () => {
+    const entry = makeEntry();
+    entry.preview.layerCount = 2;
+    render(
+      <LayoutListItem
+        entry={entry}
+        isActive={false}
+        isSwiping={false}
+        swipeX={0}
+        canDelete
+        onSelect={vi.fn()}
+        {...noopHandlers}
+      />
+    );
+    expect(screen.getByText('layouts.import.layers_other')).toBeInTheDocument();
+  });
+
+  it.each([
+    [1, 'mobile.layouts.previewBins_one'],
+    [2, 'mobile.layouts.previewBins_other'],
+  ])('counts %i bin(s) with a plural form', (binCount, form) => {
+    const entry = makeEntry();
+    entry.preview.binCount = binCount;
+    render(
+      <LayoutListItem
+        entry={entry}
+        isActive={false}
+        isSwiping={false}
+        swipeX={0}
+        canDelete
+        onSelect={vi.fn()}
+        {...noopHandlers}
+      />
+    );
+    expect(screen.getByText(form)).toBeInTheDocument();
+  });
+
+  it('names each swipe action with a translated label', () => {
+    render(
+      <LayoutListItem
+        entry={makeEntry()}
+        isActive={false}
+        isSwiping={false}
+        swipeX={0}
+        canDelete
+        onSelect={vi.fn()}
+        onMove={vi.fn()}
+        {...noopHandlers}
+      />
+    );
+    for (const key of [
+      'mobile.layouts.renameAria',
+      'mobile.layouts.shareAria',
+      'mobile.layouts.duplicateAria',
+      'mobile.layouts.moveAria',
+      'mobile.layouts.deleteAria',
+    ]) {
+      expect(screen.getByRole('button', { name: key })).toBeInTheDocument();
+    }
+  });
 });

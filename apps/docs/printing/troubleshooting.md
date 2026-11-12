@@ -4,6 +4,7 @@ description: 'Solve common problems with exported files: tight bins, missing lab
 sources:
   - src/features/bin-designer/hooks/useSyncPhysicalUnits.ts
   - src/shell/layoutExport/planLayoutBinExport.ts
+  - src/features/design-linking/hooks/useQuickExport.ts
   - src/shell/layoutExport/buildLayoutManifest.ts
   - src/features/generation/README.md
   - src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
@@ -65,15 +66,17 @@ The same steps help when the plate pieces are too tight. See [Fit and tolerances
 
 ### The tabs print blank, but the layout shows text
 
-**Fix:** export the layout with <Ui k="header.export" />. Or type the label text in the design, in <Ui k="binDesigner.group.interior" />.
+**Fix:** export the layout with <Ui k="header.export" />, or export the bin with <Ui k="common.export" /> under <Ui k="designLinking.inspector.linkedDesign" /> in the inspector. Or type the label text in the design, in <Ui k="binDesigner.group.interior" />.
 
-**Why:** if <Ui k="binDesigner.labelText" /> is blank, linked bins print the label that they have in the layout. Only the 3D layout preview and the layout ZIP fill in those labels. An export from the bin designer prints the tabs blank.
+**Why:** if <Ui k="binDesigner.labelText" /> is blank, linked bins print the label that they have in the layout. Only the 3D layout preview, the layout ZIP and the inspector export fill in those labels. An export from the bin designer prints the tabs blank.
 
 ### The bin list warns about blank label tabs
 
 **Fix:** add the text in the bin designer.
 
 **Why:** the bin list shows <Ui k="print.row.blankLabelTabs" /> on a row whose tabs will print with no text.
+
+<Screenshot id="printing-troubleshooting-blank-labels" alt="The bin list with a row of three 1 by 1 bins that have no label. Below the size, the row shows Label tabs are blank." spec="Layout editor with three unlabeled 1 by 1 bins, linked to a saved design that has label tabs and no label text, and three labeled bins. Crop to the bin list." />
 
 ### The label plates are not in the bin file
 

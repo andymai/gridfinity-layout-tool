@@ -24,6 +24,8 @@ Most drawers are bigger than a print bed. That's fine. The baseplate generator c
 
 Any plate that is bigger than the bed splits automatically. The print bed size belongs to the layout, so the bins of the layout use the same value.
 
+<Screenshot id="baseplates-splitting-bed-size" alt="A 6 by 4 plate fits a 256 mm print bed in one piece. In Physical units, Print bed size is changed to 180 mm, and the plate splits into two pieces." spec="Baseplate generator, layout with a 6 by 4 drawer on a 256 mm bed. The plate in top view, then a close-up of Physical units: click Print bed size, type 180, Enter. Then the plate again in two pieces." />
+
 ## Read the automatic split
 
 When the plate splits, a map of the pieces appears at the bottom of the panel. It shows how many pieces you get, the bed size, and how many build-plate loads they take.
@@ -71,6 +73,8 @@ Pick a style, and more settings appear:
 - <Ui k="baseplate.connectorSlotsAllEdges" /> also cuts slots into the outer edges, so each piece can key onto a plate that you print later. It works with <Ui k="baseplate.connectorStyle.dovetailKey" /> and <Ui k="baseplate.connectorStyle.snapClip" />. Edges with a margin get no slots.
 - <Ui k="baseplate.preferIdenticalPieces" /> makes opposite pieces the same shape, so the print guide can group them. This works only when opposite margins are equal.
 
+<Screenshot id="baseplates-splitting-connectors" alt="The seam between two plate pieces, with no connectors. In the Connectors list, Dovetail is picked, and its card opens with Tolerance, Invert connectors and Fewer unique parts. The pieces then get dovetail tongues along the seam." spec="Baseplate generator, 6 by 4 plate on a 180 mm bed, so that it splits into two pieces. Iso view, zoomed in on the seam. The seam, then a close-up of the Connectors list where Dovetail is clicked, then the seam again." />
+
 A <Ui k="baseplate.connectorStyle.snapClip" /> needs a plate that is tall enough. A low-profile plate without magnet holes or a solid floor is too thin for clips. Snap clips also don't work with <Ui k="baseplate.stackPrint.enable" />.
 
 With a <Ui k="settings.nozzleSize" /> above 0.4 mm, the Layout Tool makes the connectors bigger, so that your nozzle can print them.
@@ -98,6 +102,34 @@ Click <Ui k="common.export" /> in the header. The export dialog tells you that t
 - `assembly-map.png`, a top view that shows where each piece goes.
 
 The guide groups pieces with the same shape, so you can print any copy again later. Want one file of the whole plate instead? Clear <Ui k="baseplate.export.enableSplit" />.
+
+<Screenshot id="baseplates-splitting-export" alt="The export dialog of a plate that is bigger than the print bed. A note says that the plate exports as 4 pieces in a ZIP with a print guide, and Split into pieces is selected." spec="Baseplate generator, 10 by 7 plate on a 256 mm bed, so that it splits into four pieces. Click Export in the header. Crop to the dialog." />
+
+## When it goes wrong
+
+### The plate splits into more pieces than you expect
+
+Read the notes above the map. If a smaller margin saves pieces, a note tells you how many millimeters to remove, and from which sides. You can also turn on <Ui k="baseplate.detachMargins" />, so the margins print as strips. And check that <Ui k="baseplate.printBedSize" /> matches your printer.
+
+The margins and the connector tongues count toward the size of each piece. A wide margin can make an edge piece too big for the bed. The plan also aims for the fewest build-plate loads, so it can pick more, smaller pieces.
+
+### Your own split lines are gone
+
+Draw them again on the map. Change the plate size first, then draw the splits.
+
+Your plan holds splits between particular cells. When the plate size changes, the old plan no longer fits the grid, so the Layout Tool goes back to the automatic split.
+
+### You can't pick a snap clip
+
+Read the line under <Ui k="baseplate.connectorStyle.snapClip" />. It gives the reason. Then do one of these:
+
+- Turn off <Ui k="baseplate.stackPrint.enable" />. Stacked plates can't hold clips.
+- On a low-profile plate, turn on <Ui k="baseplate.magnetHoles" /> or <Ui k="baseplate.solidFloor" />. The clip needs a taller plate.
+- Pick a different connector style.
+
+### The pieces or the keys are too tight
+
+See [The connector keys are too tight](../printing/troubleshooting#the-connector-keys-are-too-tight). Print the connector fit test first, and set <Ui k="baseplate.connectorFit.label" /> from it.
 
 ## Next steps
 

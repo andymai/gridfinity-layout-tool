@@ -9,7 +9,15 @@ import * as shareApi from '@/core/api/share';
 import * as storage from '@/core/storage';
 import type { LayoutLibrary, CloudShareInfo } from '@/core/types';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
-import { ok, err, apiRateLimited, apiNotFound, storageMeshMissing } from '@/core/result';
+import {
+  ok,
+  err,
+  apiContentBlocked,
+  apiRateLimited,
+  apiNotFound,
+  apiUnauthorized,
+  storageMeshMissing,
+} from '@/core/result';
 
 // Mock the share API module
 vi.mock('@/core/api/share', () => ({
@@ -205,6 +213,69 @@ describe('useCloudShare', () => {
       });
     });
 
+    describe('when the server blocks the content', () => {
+      async function shareBlocked(blockedFields?: string[]) {
+        vi.mocked(shareApi.createShare).mockResolvedValue(err(apiContentBlocked(blockedFields)));
+        const { result } = renderHook(() => useCloudShare());
+        await act(async () => {
+          await result.current.share('view');
+        });
+        return result.current;
+      }
+
+      it.each([
+        [
+          'layoutName',
+          "The layout name has a link or other text that can't be shared. Change it and try again.",
+        ],
+        [
+          'category',
+          "A category name has a link or other text that can't be shared. Change it and try again.",
+        ],
+        [
+          'binLabel',
+          "A bin label has a link or other text that can't be shared. Change it and try again.",
+        ],
+        [
+          'binNotes',
+          "A bin's notes have a link or other text that can't be shared. Change them and try again.",
+        ],
+        [
+          'binItem',
+          "An item in a bin's contents has a link or other text that can't be shared. Change it and try again.",
+        ],
+        [
+          'binProperty',
+          "A bin's custom property has a link or other text that can't be shared. Change it and try again.",
+        ],
+        [
+          'linkedDesign',
+          "A bin design in this layout has a link or other text that can't be shared. Change its name or text and try again.",
+        ],
+        ['authorName', "Your author name has a link or other text that can't be shared."],
+      ])('names the %s it found', async (field, message) => {
+        const state = await shareBlocked([field]);
+
+        expect(state.status).toBe('error');
+        expect(state.error).toMatchObject({ code: 'API_CONTENT_BLOCKED', message });
+        expect(mockAnnounce).toHaveBeenCalledWith(`Share failed: ${message}`);
+      });
+
+      it.each([
+        ['no field', undefined],
+        ['a field this client does not know', ['somethingNew']],
+        ['an inherited object key', ['constructor']],
+      ])('falls back to a general message for %s', async (_case, blockedFields) => {
+        const state = await shareBlocked(blockedFields);
+
+        expect(state.error).toMatchObject({
+          code: 'API_CONTENT_BLOCKED',
+          message:
+            "This layout has a link or other text that can't be shared. Check its name, categories and bins.",
+        });
+      });
+    });
+
     it('handles offline state', async () => {
       Object.defineProperty(navigator, 'onLine', { value: false });
 
@@ -219,6 +290,10 @@ describe('useCloudShare', () => {
       expect(result.current.status).toBe('error');
       expect(result.current.error?.code).toBe('NETWORK_ERROR');
       expect(result.current.error?.message).toContain('offline');
+      expect(mockAnnounce).toHaveBeenCalledWith(
+        "Share failed: You're offline. Connect to the internet to share."
+      );
+      expect(shareApi.createShare).not.toHaveBeenCalled();
     });
 
     it('updates status to sharing during request', async () => {
@@ -320,6 +395,140 @@ describe('useCloudShare', () => {
       // Should still succeed (already deleted is fine)
       expect(success).toBe(true);
       expect(clearCloudShareSpy).toHaveBeenCalled();
+    });
+
+    it('refuses offline and announces why', async () => {
+      useLibraryStore.setState({
+        library: createTestLibrary({
+          id: 'to-delete',
+          deleteToken: 'delete-token',
+          sharedAt: Date.now(),
+          permission: 'view',
+        }),
+      });
+      Object.defineProperty(navigator, 'onLine', { value: false });
+
+      const { result } = renderHook(() => useCloudShare());
+
+      let success: boolean | undefined;
+      await act(async () => {
+        success = await result.current.remove();
+      });
+
+      expect(success).toBe(false);
+      expect(result.current.status).toBe('error');
+      expect(result.current.error).toMatchObject({
+        code: 'NETWORK_ERROR',
+        message: "You're offline. Connect to the internet to delete.",
+      });
+      expect(mockAnnounce).toHaveBeenCalledWith(
+        "Share failed: You're offline. Connect to the internet to delete."
+      );
+      expect(shareApi.deleteShare).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updatePermission', () => {
+    const existingShare: CloudShareInfo = {
+      id: 'to-update',
+      deleteToken: 'update-token',
+      sharedAt: Date.now(),
+      permission: 'view',
+    };
+
+    async function update(): Promise<{
+      success: boolean | undefined;
+      state: ReturnType<typeof useCloudShare>;
+    }> {
+      const { result } = renderHook(() => useCloudShare());
+      let success: boolean | undefined;
+      await act(async () => {
+        success = await result.current.updatePermission('edit');
+      });
+      return { success, state: result.current };
+    }
+
+    it('announces the new permission on success', async () => {
+      useLibraryStore.setState({ library: createTestLibrary(existingShare) });
+      vi.mocked(shareApi.updatePermission).mockResolvedValue(
+        ok({ id: 'to-update', url: 'https://example.com/l/to-update', permission: 'edit' })
+      );
+
+      const { success, state } = await update();
+
+      expect(success).toBe(true);
+      expect(state.status).toBe('success');
+      expect(mockAnnounce).toHaveBeenCalledWith(
+        'Share updated. Anyone with the link can now edit.'
+      );
+    });
+
+    it('refuses without an existing share and announces why', async () => {
+      const { success, state } = await update();
+
+      expect(success).toBe(false);
+      expect(state.status).toBe('error');
+      expect(state.error).toMatchObject({
+        code: 'NOT_FOUND',
+        message: 'No existing share to update.',
+      });
+      expect(mockAnnounce).toHaveBeenCalledWith('Share failed: No existing share to update.');
+      expect(shareApi.updatePermission).not.toHaveBeenCalled();
+    });
+
+    it('refuses offline and announces why', async () => {
+      useLibraryStore.setState({ library: createTestLibrary(existingShare) });
+      Object.defineProperty(navigator, 'onLine', { value: false });
+
+      const { success, state } = await update();
+
+      expect(success).toBe(false);
+      expect(state.status).toBe('error');
+      expect(state.error).toMatchObject({
+        code: 'NETWORK_ERROR',
+        message: "You're offline. Connect to the internet to update.",
+      });
+      expect(mockAnnounce).toHaveBeenCalledWith(
+        "Share failed: You're offline. Connect to the internet to update."
+      );
+      expect(shareApi.updatePermission).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      [
+        'deleted on the server',
+        apiNotFound('to-update'),
+        'Share was deleted. Create a new share instead.',
+      ],
+      [
+        'this device may no longer update',
+        apiUnauthorized(),
+        'Unable to update share. Create a new share instead.',
+      ],
+    ])('forgets a share %s and announces why', async (_case, error, message) => {
+      useLibraryStore.setState({ library: createTestLibrary(existingShare) });
+      vi.mocked(shareApi.updatePermission).mockResolvedValue(err(error));
+
+      const { success, state } = await update();
+
+      expect(success).toBe(false);
+      expect(state.status).toBe('error');
+      expect(state.error).toMatchObject({ code: error.code, message });
+      expect(clearCloudShareSpy).toHaveBeenCalledWith(TEST_LAYOUT_ID);
+      expect(mockAnnounce).toHaveBeenCalledWith(`Share failed: ${message}`);
+    });
+
+    it('announces any other server error', async () => {
+      useLibraryStore.setState({ library: createTestLibrary(existingShare) });
+      vi.mocked(shareApi.updatePermission).mockResolvedValue(err(apiRateLimited(60)));
+
+      const { success, state } = await update();
+
+      expect(success).toBe(false);
+      expect(state.status).toBe('error');
+      expect(state.error?.code).toBe('API_RATE_LIMITED');
+      expect(clearCloudShareSpy).not.toHaveBeenCalled();
+      expect(mockAnnounce).toHaveBeenCalledWith(expect.stringMatching(/^Share failed: /));
     });
   });
 

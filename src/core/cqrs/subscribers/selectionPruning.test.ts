@@ -198,6 +198,25 @@ describe('selectionPruning subscriber', () => {
     });
   });
 
+  describe('bin.batchMovedToStaging', () => {
+    it('removes every staged bin from selection', () => {
+      useSelectionStore.setState({
+        selectedBinIds: [binId('bin1'), binId('bin2'), binId('bin3')],
+      });
+
+      bus.publish(
+        makeEvent('bin.batchMovedToStaging', {
+          moves: [
+            { id: binId('bin1'), previousLayerId: layerId('layer1') },
+            { id: binId('bin3'), previousLayerId: layerId('layer1') },
+          ],
+        })
+      );
+
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([binId('bin2')]);
+    });
+  });
+
   describe('layer.deleted', () => {
     it('resets activeLayerId when active layer is deleted', () => {
       useSelectionStore.setState({

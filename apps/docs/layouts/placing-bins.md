@@ -10,11 +10,14 @@ sources:
   - src/features/staging/
   - src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
   - src/features/bin-designer/hooks/usePlaceBinInLayout.ts
+  - src/shared/utils/validation.ts
+  - src/core/cqrs/v2/domain/bin/duplicateBin.ts
+  - src/shared/hooks/useExpandToFit.ts
 ---
 
 # Place and edit bins
 
-This is where a drawer plan takes shape. In the layout editor of the Gridfinity Layout Tool, you draw bins, move them around and tune their sizes until the drawer feels right. You can undo your last 100 changes, so try ideas freely. This page also covers the stash, a holding area for bins that are not in the drawer.
+This is where a drawer plan takes shape. In the layout editor of the Gridfinity Layout Tool, you draw bins, move them around and tune their sizes until the drawer feels right. You can undo your last 100 changes, so try ideas freely. This page also covers the **stash**, a holding area for bins that are not in the drawer.
 
 ## Draw a bin
 
@@ -22,12 +25,16 @@ Drag across the empty cells you want the bin to cover. The bin appears and stays
 
 If the area touches another bin, the Layout Tool makes the new bin smaller so that it fits. To stop this snap, hold <kbd>Ctrl</kbd> while you drag.
 
+<Screenshot id="layouts-placing-bins-draw" alt="A drag across four empty cells draws a 2 by 2 bin, and the new bin stays selected. A second drag takes in a corner of that bin, so the next bin snaps to the free cells." spec="Clip. Layout editor on desktop. Layout with a 6 by 4 drawer, four bins on the left and an empty area on the right. Drag across an empty 2 by 2 area. Then drag across an area that overlaps a corner of the new bin. Crop to the grid." />
+
 Need a lot of bins of one size? Use the size brush:
 
 1. In the left panel, click <Ui k="layers.sizeSelector" />.
 2. Pick a size under <Ui k="layers.squares" /> or <Ui k="layers.rectangles" />.
 3. Click the grid to place one bin, or drag to fill an area.
 4. Press <kbd>Escape</kbd> to stop.
+
+<Screenshot id="layouts-placing-bins-size-brush" alt="Size brush opens its sizes, and 1×1 is picked. Back on the grid, a click places one bin, and a drag fills a block of cells with 1 by 1 bins. Escape stops the brush." spec="Clip. Layout editor on desktop. Layout with a 6 by 4 drawer and an empty area at the back. Close-up: click Size brush, then the 1×1 square. Cut to the grid: click one cell, drag across a block of cells, and press Escape with a keycap. Crop to the grid." />
 
 ## Move and copy bins
 
@@ -37,15 +44,21 @@ Need a lot of bins of one size? Use the size brush:
 - Press an arrow key to move the selected bins one grid unit.
 - Press <kbd>Ctrl</kbd>+<kbd>D</kbd> (<kbd>Cmd</kbd>+<kbd>D</kbd> on a Mac) to duplicate the selected bins.
 
+<Screenshot id="layouts-placing-bins-move-copy" alt="The M4 bin is dragged to an empty cell and moves there. Then the M3 bin is dragged with Alt held, and a copy lands at the drop spot while the original stays." spec="Clip. Layout editor on desktop. Layout with a 6 by 4 drawer and an empty area at the back right. Drag M4 to an empty cell. Then hold Alt, with a keycap, and drag M3 to a different empty cell. Crop to the grid." />
+
 A duplicate goes to the first free spot to the right, below, to the left or above the original. If there is no free spot, it goes to the stash.
 
 ## Resize a bin
 
 Select one bin, and handles show on its edges and corners. Drag a handle to change the width, the depth or both. Prefer exact numbers? Type a <Ui k="common.width" /> and a <Ui k="common.depth" /> in the inspector on the right.
 
+<Screenshot id="layouts-placing-bins-resize" alt="A click on the Screwdrivers bin shows its handles. The right edge handle makes it one unit wider. Then the top-right corner handle makes it wider and deeper." spec="Clip. Layout editor on desktop. Layout with a 6 by 3 drawer and a 2 by 1 Screwdrivers bin at the front left, with free cells to its right and behind it. Click the bin, drag the right edge handle out by one cell, then drag the top-right corner handle out by one cell each way. Crop to the grid." />
+
 ## Rotate a bin
 
 Select one bin and press <kbd>R</kbd>, or right-click it and choose <Ui k="mobile.binMenu.rotate" />. The width and the depth swap.
+
+<Screenshot id="layouts-placing-bins-rotate" alt="The Pliers bin, 1 by 3, is selected. A press of R turns it into a 3 by 1 bin." spec="Clip. Layout editor on desktop. Layout with a 6 by 4 drawer and a 1 by 3 Pliers bin with free cells to its right. Click Pliers, then press R with a keycap. Crop to the grid." />
 
 If the turned bin has no room where it is, the Layout Tool moves it to the nearest free spot. A message tells you how far it went.
 
@@ -57,7 +70,7 @@ Need a bin between two sizes? Turn on <Ui k="sidebar.halfBinMode" /> in the left
 
 Half-grid mode doesn't change the feet under a bin. For a denser grid of feet, see [Use half-size feet](../designer/base#use-half-size-feet).
 
-To turn the mode off, every bin needs a whole-unit size and position. If one doesn't have them, a dialog opens. Click <Ui k="halfBinBlocked.close" /> to move those bins to the stash and turn the mode off, or <Ui k="common.cancel" /> to keep it on.
+To turn the mode off, every bin needs a whole-unit size and position. If a bin doesn't have them, the switch and <kbd>H</kbd> open the same dialog. Click <Ui k="halfBinBlocked.confirm" /> to put those bins in the stash, or <Ui k="common.cancel" /> to keep the mode on.
 
 ## Lock a bin size
 
@@ -72,6 +85,8 @@ A locked bin has no resize handles, and <kbd>R</kbd> doesn't rotate it. A duplic
 
 Small gaps left between bins? Right-click a bin and choose <Ui k="mobile.binMenu.expandToFit" />. The walls of the bin grow out into the empty space around it, up to 21 mm on each side. The feet stay on the grid.
 
+<Screenshot id="layouts-placing-bins-expand-to-fit" alt="A right-click on the Pliers bin opens its menu, and Expand to fit is chosen. The walls of Pliers grow into the empty column beside it, and a dashed line shows where its feet stay." spec="Clip. Layout editor on desktop. Layout with a 7 by 3 drawer: three 2 by 3 bins with one empty column between the first and the second. Right-click the first bin and choose Expand to fit. Crop to the grid and the menu." />
+
 To expand a row, a column or a full grid of bins on one layer in one step, select them all first. To undo an expansion later, select the bin. Then click <Ui k="common.reset" /> under <Ui k="inspector.expandedFootprint" /> in the inspector.
 
 ## Merge bins into one
@@ -83,6 +98,8 @@ Select two or more bins on one layer and choose <Ui k="mobile.binMenu.mergeIntoO
 The stash, below the grid, holds bins that are not in the drawer. It's a safe place to park a bin while you try ideas. Bins in the stash are not on the print list.
 
 To put a bin in the stash, drag it onto the stash, or click <Ui k="inspector.toStash" /> in the inspector. In the size brush, hold <kbd>Shift</kbd> and click a size to add a new bin of that size to the stash.
+
+To move every bin on the active layer to the stash, click the clear button under the size brush in the left panel. Its label shows how many bins it moves. Then click <Ui k="layers.clearLayer.confirm" />.
 
 The Layout Tool also moves bins to the stash for you in these cases:
 
@@ -106,7 +123,44 @@ Select bins and press <kbd>Delete</kbd> or <kbd>Backspace</kbd>. You can also ri
 
 Changed your mind? Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> (<kbd>Cmd</kbd>+<kbd>Z</kbd> on a Mac) to undo, and <kbd>Ctrl</kbd>+<kbd>Y</kbd> to redo. A message names each change that you undo. The Layout Tool keeps the last 100 changes.
 
-To empty the full active layer, click the clear button under the size brush in the left panel. Its label shows how many bins it clears. Clear deletes the bins. It does not put them in the stash, so undo is the only way to get them back. To keep the bins, select them and click <Ui k="selectionToolbar.moveToStash" /> instead. <Ui k="commandPalette.selectAll" /> in the command palette selects every bin on the active layer.
+## When it goes wrong
+
+### The bin won't drop where you want it
+
+Read the red tag over the bin while you drag. It names what is in the way. If you let go there anyway, the bin goes back, and a message repeats the reason.
+
+| The tag says                        | What to do                                                                 |
+| ----------------------------------- | -------------------------------------------------------------------------- |
+| <Ui k="grid.collision" />           | Move the other bin first, or pick a free spot.                             |
+| <Ui k="grid.outOfBounds" />         | Keep the whole bin on the grid, or make the drawer larger.                 |
+| <Ui k="grid.outsideDrawerShape" />  | Keep the bin on cells that the drawer shape keeps.                         |
+| <Ui k="grid.exceedsDrawerHeight" /> | Use a shorter bin, or a spot with lower bins under it.                     |
+| A bin on a lower layer blocks it    | Pick a spot outside the striped cells, or lower the clearance of that bin. |
+
+Next to a taken spot, the bin can also snap to the closest free spot. Hold <kbd>Ctrl</kbd> while you drag to stop the snap.
+
+<Screenshot id="layouts-placing-bins-blocked" alt="The M4 bin is dragged onto Hex keys. With Ctrl held, the snap stops, and a red tag names the collision. On release, M4 goes back to where it was." spec="Clip. Layout editor on desktop. Layout with a 6 by 4 drawer. Drag M4 onto the Hex keys bin and hold. Then hold Ctrl, with a keycap, so the snap stops and the red tag shows. Let go, and hold on M4 back in its spot. Crop to the grid." />
+
+### A copy doesn't show up next to the original
+
+Look in the stash below the grid, and drag the copy to an open spot. A copy needs a free spot right beside the original. When it finds none, the copy goes to the stash.
+
+### R doesn't turn the bin
+
+Read the message that shows. If it says <Ui k="toast.binSizeLocked" />, click <Ui k="inspector.unlockSize" /> in the inspector, and press <kbd>R</kbd> again.
+
+If the message says that the bin can't rotate, the turned bin has no room. It doesn't fit where it stands, or anywhere within 3 cells of it. Drag the bin to an open area first, then turn it.
+
+### Expand to fit leaves the gaps
+
+The message tells you what stopped it:
+
+| The message is about       | What to do                                                                   |
+| -------------------------- | ---------------------------------------------------------------------------- |
+| The shape of the selection | Select bins that make one row, one column or one full grid, on one layer.    |
+| Too much empty space       | Each side can grow 21 mm at most. Use larger bins, or select more of them.   |
+| Bins with a locked size    | Unlock their sizes in the inspector, then try again.                         |
+| A bin stacked on top       | The wider walls would lift a stack above the drawer. Lower that stack first. |
 
 ## Next steps
 

@@ -1,11 +1,64 @@
+import { useSyncExternalStore } from 'react';
+import type { ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
-import { Switch } from '@/design-system';
+import { Button, Switch } from '@/design-system';
 import { useTranslation, useLocale, SUPPORTED_LOCALES, detectBrowserLocale } from '@/i18n';
+import { useInstallPrompt } from '@/shared/hooks/useInstallPrompt';
+import {
+  getDisplayMode,
+  isInstalledDisplayMode,
+  onDisplayModeChange,
+} from '@/shared/pwa/displayMode';
+import type { DisplayMode } from '@/shared/pwa/displayMode';
 import { SpaceMouseSettings } from '@/shared/spacemouse/components/SpaceMouseSettings';
 import { useSpaceMouseStore } from '@/shared/spacemouse/settingsStore';
 import { SettingSection } from '../../components/SettingSection/SettingSection';
 import { SelectableCard } from '../../components/SelectableCard/SelectableCard';
+
+function InstallAppSection() {
+  const t = useTranslation();
+  const { canInstall, wasInstalled, install } = useInstallPrompt('settings');
+  const displayMode = useSyncExternalStore<DisplayMode>(
+    onDisplayModeChange,
+    getDisplayMode,
+    () => 'browser'
+  );
+  const installed = isInstalledDisplayMode(displayMode);
+
+  let body: ReactNode;
+  if (installed) {
+    body = (
+      <p className="text-sm text-content-secondary">{t('settings.general.installAppInstalled')}</p>
+    );
+  } else if (canInstall) {
+    body = (
+      <Button variant="secondary" onClick={() => void install()}>
+        {t('pwaInstall.install')}
+      </Button>
+    );
+  } else if (wasInstalled) {
+    body = (
+      <p className="text-sm text-content-secondary">
+        {t('settings.general.installAppInstalledInBrowser')}
+      </p>
+    );
+  } else {
+    body = (
+      <p className="text-sm text-content-secondary">{t('settings.general.installAppManual')}</p>
+    );
+  }
+
+  return (
+    <SettingSection
+      id="install-app"
+      title={t('settings.general.installApp')}
+      hint={t('settings.general.installAppHint')}
+    >
+      {body}
+    </SettingSection>
+  );
+}
 
 export function GeneralTab() {
   const t = useTranslation();
@@ -75,6 +128,8 @@ export function GeneralTab() {
           />
         </div>
       </SettingSection>
+
+      <InstallAppSection />
 
       <SettingSection
         id="spacemouse"

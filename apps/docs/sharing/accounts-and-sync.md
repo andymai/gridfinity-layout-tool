@@ -82,6 +82,8 @@ A deletion syncs too. Delete an item on one device, and your other devices remov
    - <Ui k="syncDialog.signOut.keep" /> keeps your layouts, designs, baseplates and folders on this device. Changes that didn't upload yet go to your account at the next sign-in.
    - <Ui k="syncDialog.signOut.wipe" /> removes them from this device. The copies in your account stay.
 
+<Screenshot id="sharing-accounts-sign-out" alt="The pointer clicks the account button with your name at the bottom of the side panel. The menu shows the sync status, Settings and Sign out. The pointer clicks Sign out, and the Sign out dialog asks if you keep or wipe the data on this device." spec="Clip. Layout editor, desktop, signed in through routed made-up account data, with three layouts in the library. Click the account button, then Sign out, in a crop of the bottom of the side panel. Cut to the Sign out dialog." />
+
 On your own computer, pick keep. On a shared computer, pick wipe.
 
 Settings > <Ui k="settings.tabs.account" /> has the same <Ui k="account.signOut.button" /> button.
@@ -91,6 +93,8 @@ Settings > <Ui k="settings.tabs.account" /> has the same <Ui k="account.signOut.
 1. Open Settings > <Ui k="settings.tabs.account" />.
 2. Under <Ui k="account.dangerZone.heading" />, click <Ui k="account.deleteAccount.button" />.
 3. In the dialog, click <Ui k="syncDialog.deleteAccount.confirm" />.
+
+<Screenshot id="sharing-accounts-account-tab" alt="The Account tab in Settings. It shows the name and email of the account, the Cloud sync status with the time of the last sync, the Sign out button, and the Delete account button under Danger zone." spec="Settings, Account tab, desktop, signed in through routed made-up account data with all changes synced. Crop to the tab content from the Account heading to the Delete account button." />
 
 ::: warning
 Make sure that you don't need the copies in your account. You can't undo the deletion.
@@ -109,6 +113,32 @@ The local copies on this device stay too. <Ui k="settings.storage.clearAllData" 
 ## When the server has no sign-in
 
 Sign-in and sync need the server of the Layout Tool. A self-hosted copy has no sign-in, and its sign-in buttons open a short page with a link back to the app. See [Self-hosting](../reference/self-hosting).
+
+## When it goes wrong
+
+### Sync stops because your cloud storage is full
+
+Delete the layouts, designs, baseplates or old versions that you don't need. Then make a small change to the item that didn't sync, so that it uploads again.
+
+Each account has a limit for each kind of item. See [What syncs](#what-syncs). The server refuses the item that goes past the limit, and the Layout Tool doesn't try that change again by itself.
+
+### A message says that your changes couldn't sync
+
+Edit the item again to send it again. Your change stays in this browser. For the details, open Settings > <Ui k="settings.tabs.account" />, where <Ui k="account.sync.heading" /> shows the last error.
+
+After a network or server problem, the Layout Tool tries again by itself. When the tries run out, or the server refuses the change, it stops and tells you.
+
+### Your latest edits to a layout disappear
+
+Edit each layout on one device at a time. To edit with other people at the same time, use [a live session](./live-collaboration).
+
+When two devices change the same item, the newer change replaces the whole item, and the other device shows a message. See [When two devices change the same item](#when-two-devices-change-the-same-item).
+
+### You're signed out
+
+Sign in again. The Layout Tool keeps your local copies when it signs you out.
+
+A sign-in lasts 30 days. The Layout Tool also signs you out when the server no longer accepts your sign-in.
 
 ## Next steps
 

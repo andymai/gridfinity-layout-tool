@@ -60,6 +60,20 @@ describe('MobileHeader', () => {
     expect(screen.getByText('sidebar.tip')).toBeInTheDocument();
   });
 
+  it.each([
+    ['saving', 'header.saving'],
+    ['saved', 'header.saved'],
+    ['error', 'header.saveFailed'],
+  ] as const)('names the %s save status for screen readers', (saveStatus, label) => {
+    render(<MobileHeader onMenuClick={vi.fn()} saveStatus={saveStatus} />);
+    expect(screen.getByRole('status')).toHaveAttribute('aria-label', label);
+  });
+
+  it('shows no save status while idle', () => {
+    render(<MobileHeader onMenuClick={vi.fn()} saveStatus="idle" />);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
   it('swaps the layout name for a text field on long press', () => {
     // Rename is the context-menu path here; a plain tap opens the layouts
     // panel instead, which is why this name is not click-to-edit.

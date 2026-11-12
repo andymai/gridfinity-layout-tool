@@ -9,6 +9,9 @@ sources:
   - src/shell/Modals/DesignGalleryModal/communityDesignerBridge.ts
   - src/features/community/components/CommunityGalleryTab/
   - src/features/bin-recommender/
+  - src/features/bin-inspector/hooks/useBinInspector.ts
+  - src/features/bin-inspector/components/Inspector/BinLabelField/
+  - src/features/community/utils/gapFit.ts
 ---
 
 # Find bins that fit
@@ -33,7 +36,7 @@ Your drag can cross a bin. The Layout Tool then uses only the empty part. To sto
 
 ## Choose a design
 
-The gallery shows only the designs that fit the area. A design must fit the width and the depth of the area, turned or not. It must also fit the free height above the active layer. A design made for a different grid unit or height unit does not show, because it would print at the wrong size.
+The gallery shows only the designs that fit the area. A design must fit the width and the depth of the area, turned or not. It must also fit the free height above the active layer. A design made for a different grid unit does not show, because it would print at the wrong size.
 
 The filters panel shows the size of the area under <Ui k="community.gallery.viewingSection" />. When that panel is collapsed, a chip above the cards shows it. The cards sort by <Ui k="community.gallery.sort.bestFit" />, so the designs that fill the area best come first.
 
@@ -50,13 +53,36 @@ Know what goes in the bin, but not how big the bin must be? The inspector can su
 
 1. Select a bin. On a phone, tap <Ui k="mobile.nav.bin" /> in the bar at the bottom of the screen to open the inspector.
 2. Type what the bin holds in the <Ui k="common.label" /> field, for example "screws".
-3. If a line with a size shows under the field, click <Ui k="inspector.sizeSuggestionApply" />. The bin changes to that size where it stands.
+3. A list of labels opens under the field and covers the suggestion. Press <kbd>Escape</kbd> to close the list. On a phone, tap outside the field.
+4. If a line with a size shows under the field, click <Ui k="inspector.sizeSuggestionApply" />. The bin changes to that size where it stands.
+
+<Screenshot id="layouts-find-bins-size-suggestion" alt="A 1 by 1 bin with no label is selected. In the inspector, screws is typed in the Label field. Escape closes the list of labels, and a line suggests a size. A click on Apply makes the bin that size on the grid." spec="Clip. Layout editor on desktop. Layout with a 6 by 4 drawer and one 1 by 1 bin with no label, with free cells around it. Click the bin. Close-up on the Label field: type screws, press Escape with a keycap, click Apply. Cut to the grid." />
 
 The suggestion gives the width, the depth and the height in units.
 
 The line shows only when the label matches a known size, and when that size is different from the current size. If the size does not fit where the bin is, the line shows <Ui k="inspector.sizeSuggestionNoFit" /> and has no apply button. A bin with a locked size cannot take the size. Click <Ui k="inspector.sizeSuggestionDismiss" /> (the X) to hide the line for that label.
 
 The Layout Tool finds the size on your device. Your label stays in your browser for this suggestion.
+
+## When it goes wrong
+
+### The gallery says nothing fits
+
+Select a larger area, or an area with more free height above it, such as one on a lower layer. To browse every design instead, click <Ui k="community.gallery.clearFitsGap" />.
+
+A design shows only when it fits the width, the depth and the free height of your area. It must also use the grid unit of your layout.
+
+### A red message shows, and the gallery doesn't open
+
+The area has no room for even the shortest bin. Pick an area with less under it, or switch to a lower layer. The message names the cause: <Ui k="grid.exceedsDrawerHeight" />, or a bin on a lower layer that keeps the space free for its items.
+
+### The size suggestion says it won't fit here
+
+<Ui k="inspector.sizeSuggestionNoFit" /> means the suggested size has no room where the bin stands. Move the bin to an open spot, or move its neighbors, and <Ui k="inspector.sizeSuggestionApply" /> comes back. A bin with a locked size shows the same note, so click <Ui k="inspector.unlockSize" /> first.
+
+### A design shows, but it won't go into the gap
+
+Pick a different design. A message says the design doesn't fit, and the gallery stays open for you. The gallery checks only the grid unit of each design. So a design made with a different height unit, or with cells of a different depth, can still show. The Layout Tool can't place it, because it would print at the wrong size.
 
 ## Next steps
 

@@ -13,13 +13,12 @@ import { useLayoutStore } from '@/core/store/layout';
 import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '@/core/constants';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { isBinLocked, planBinRotation } from '@/shared/utils/binLocation';
-import { validateHalfGridModeToggle } from '@/shared/utils/halfGridConstraints';
 import { getLayerBins } from '@/shared/utils/bins';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { findBinById, findBinsByIds } from '@/shared/utils/entity';
 import { expandPairIds, pairPartner } from '@/shared/utils/binPairs';
 import { findNearestBin } from '@/features/grid-editor/utils/navigation';
-import { isOk, isErr } from '@/core/result';
+import { isOk } from '@/core/result';
 import type { BinId, GridUnits } from '@/core/types';
 import type { KeyboardContext } from './types';
 
@@ -71,6 +70,17 @@ export function handleEscape(e: KeyboardEvent, ctx: KeyboardContext): boolean {
   ctx.setSelectedBins([]);
   ctx.setPaintSize(null);
   ctx.setGapSelectArmed(false);
+  return true;
+}
+
+export function handleSelectAll(e: KeyboardEvent, ctx: KeyboardContext): boolean {
+  const ctrlOrMeta = e.ctrlKey || e.metaKey;
+  if (!ctrlOrMeta || e.shiftKey || e.altKey || e.key.toLowerCase() !== SHORTCUTS.SELECT_ALL)
+    return false;
+  // Claimed on an empty layer too: the browser default selects the page's text.
+  e.preventDefault();
+  const layerBinIds = getLayerBins(ctx.layout.bins, ctx.activeLayerId).map((bin) => bin.id);
+  if (layerBinIds.length > 0) ctx.setSelectedBins(layerBinIds);
   return true;
 }
 
@@ -127,6 +137,26 @@ export function handleLayoutManager(e: KeyboardEvent, ctx: KeyboardContext): boo
   if (!ctrlOrMeta || e.key.toLowerCase() !== SHORTCUTS.LAYOUT_MANAGER) return false;
   e.preventDefault();
   ctx.setShowLayoutManager(true);
+  return true;
+}
+
+export function handleNewLayout(e: KeyboardEvent, ctx: KeyboardContext): boolean {
+  if (e.altKey || e.key.toLowerCase() !== SHORTCUTS.NEW_LAYOUT) return false;
+  const ctrlOrMeta = e.ctrlKey || e.metaKey;
+  // Shift+N is the advertised key. A browser tab keeps Ctrl/Cmd+N for a new
+  // window and never sends it to the page; an installed app window and
+  // fullscreen do send it, so it binds as well.
+  const viaShift = e.shiftKey && !ctrlOrMeta;
+  const viaCtrlOrMeta = ctrlOrMeta && !e.shiftKey;
+  if (!viaShift && !viaCtrlOrMeta) return false;
+  // A repeat must still prevent the default, or a held Ctrl+N opens browser
+  // windows in an installed app window.
+  e.preventDefault();
+  if (e.repeat) return true;
+  // A draw or drag still in progress would otherwise land in the new layout
+  // when the pointer comes up.
+  ctx.setInteraction(null);
+  void ctx.createNewLayout();
   return true;
 }
 
@@ -253,7 +283,7 @@ export function handleRotate(e: KeyboardEvent, ctx: KeyboardContext): boolean {
 
   const plan = planBinRotation(bin, ctx.layout);
   if (!plan.valid) {
-    ctx.addToast(plan.message, 'error');
+    ctx.addToast(ctx.t(plan.messageKey), 'error');
     return true;
   }
 
@@ -422,16 +452,6 @@ export function handleHalfBinToggle(e: KeyboardEvent, ctx: KeyboardContext): boo
   const ctrlOrMeta = e.ctrlKey || e.metaKey;
   if (e.key.toLowerCase() !== SHORTCUTS.HALF_BIN_TOGGLE || ctrlOrMeta) return false;
   e.preventDefault();
-
-  const result = ctx.toggleHalfGridMode();
-  if (isErr(result)) {
-    const validationResult = validateHalfGridModeToggle(ctx.layout, false);
-    if (validationResult.violation) {
-      ctx.addToast(
-        `Cannot disable half-bin mode: ${validationResult.violation.count} bin${validationResult.violation.count !== 1 ? 's have' : ' has'} fractional dimensions. Move them to staging first.`,
-        'error'
-      );
-    }
-  }
+  ctx.requestHalfGridToggle();
   return true;
 }

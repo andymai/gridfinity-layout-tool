@@ -58,9 +58,7 @@ export function ProgressSteps({
                 i + 1
               )}
             </span>
-            <span
-              className={`text-xs ${active ? 'text-content-primary' : 'text-content-tertiary'}`}
-            >
+            <span className={`text-xs ${active ? 'text-content' : 'text-content-tertiary'}`}>
               {labels[i]}
             </span>
             {i < order.length - 1 && <span className="h-px w-4 bg-stroke-subtle" />}
@@ -285,7 +283,7 @@ function OverlayChip({
 }) {
   return (
     <span
-      className="absolute flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full bg-surface/95 px-2.5 py-1 text-label font-medium text-content-primary shadow-md ring-1 ring-black/[0.06] backdrop-blur-sm"
+      className="absolute flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full bg-surface/95 px-2.5 py-1 text-label font-medium text-content shadow-md ring-1 ring-black/[0.06] backdrop-blur-sm"
       style={{ left: `${leftPct}%`, top: `${topPct}%` }}
     >
       {tone === 'neutral' ? (

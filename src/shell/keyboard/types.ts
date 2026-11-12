@@ -42,6 +42,7 @@ export interface KeyboardContext {
   zoomIn: () => void;
   zoomOut: () => void;
   setShowLayoutManager: (show: boolean) => void;
+  createNewLayout: () => Promise<unknown>;
 
   // Mutations
   batch: <T>(fn: () => T) => T;
@@ -50,7 +51,7 @@ export interface KeyboardContext {
   updateBin: (id: BinId, updates: Partial<Bin>) => Result<unknown, unknown>;
 
   // Mode toggles
-  toggleHalfGridMode: () => Result<undefined, LayoutError>;
+  requestHalfGridToggle: () => void;
 
   handleNavigationKey: (key: string) => void;
   navigateToDesigner: () => void;

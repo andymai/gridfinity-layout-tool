@@ -173,7 +173,7 @@ export function TipsSection() {
         {TIP_KEYS.map((key) => (
           <li key={key} className="flex items-start gap-2">
             <span style={STYLES.colorPrimary}>•</span>
-            <span>{t(key)}</span>
+            <span>{t(key, { cmd: '⌘' })}</span>
           </li>
         ))}
       </ul>

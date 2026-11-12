@@ -12,6 +12,8 @@ import {
   type SharedDesignShape,
 } from './lib/validation.js';
 import { holdShareMeshes } from './lib/meshIndex.js';
+import { reserveShareRevision, verifyShareRevision } from './lib/shareRevision.js';
+import { recordSharePermission } from './lib/sharePermission.js';
 import { resolveShareMeshFiles } from './lib/shareMeshes.js';
 import { validateDesignerShare } from './lib/designerValidation.js';
 import {
@@ -29,11 +31,11 @@ import {
   methodNotAllowed,
   getBaseUrl,
   shareHashKey,
-  recordSharePermission,
   type ShareData,
   rateLimited,
   serviceUnavailable,
   sendError,
+  contentBlocked,
 } from './lib/shared.js';
 
 /**
@@ -106,14 +108,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // captions, cutout labels) reached every recipient of the public /d/{id}
       // link without ever meeting the blocklist the layout branch enforces.
       const designerContent = filterDesignParamsContent(result.payload.params);
-      if (!designerContent.passed) {
-        return sendError(
-          res,
-          400,
-          ErrorCode.CONTENT_BLOCKED,
-          `Content blocked: ${designerContent.reason}`
-        );
-      }
+      if (!designerContent.passed) return contentBlocked(res, designerContent);
 
       sharePayload = result.payload;
     } else {
@@ -134,14 +129,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       // Content filtering (layout shares only)
       const contentResult = filterLayoutContent(validationResult.layout);
-      if (!contentResult.passed) {
-        return sendError(
-          res,
-          400,
-          ErrorCode.CONTENT_BLOCKED,
-          `Content blocked: ${contentResult.reason}`
-        );
-      }
+      if (!contentResult.passed) return contentBlocked(res, contentResult);
 
       sharePayload = withoutLibraryPlacement(validationResult.layout);
 
@@ -157,14 +145,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Design names and engraved text are user-authored and shown to the
       // recipient, so they get the same moderation the layout does.
       const designContent = filterSharedDesignsContent(sharedDesigns);
-      if (!designContent.passed) {
-        return sendError(
-          res,
-          400,
-          ErrorCode.CONTENT_BLOCKED,
-          `Content blocked: ${designContent.reason}`
-        );
-      }
+      if (!designContent.passed) return contentBlocked(res, designContent);
 
       const resolved = await resolveShareMeshFiles(req, res, sharedDesignMeshHashes(sharedDesigns));
       if (!resolved) return;
@@ -181,12 +162,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (cleanAuthorName !== '') {
         const authorContent = filterDisplayName(cleanAuthorName);
         if (!authorContent.passed) {
-          return sendError(
-            res,
-            400,
-            ErrorCode.CONTENT_BLOCKED,
-            `Content blocked: ${authorContent.reason}`
-          );
+          return contentBlocked(res, { ...authorContent, field: 'authorName' });
         }
       } else {
         cleanAuthorName = undefined;
@@ -208,7 +184,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const deleteToken = generateDeleteToken();
     const deleteTokenHash = await hashToken(deleteToken);
 
-    const nowIso = new Date().toISOString();
+    // A deleted share with this id can still be on the CDN, so the first
+    // update can read that share's older stamp instead of this one.
+    const reserved = redis ? await reserveShareRevision(redis, shareId, Date.now()) : null;
+    if (redis && !reserved) {
+      // A stamp that the counter does not know can put a verified counter
+      // behind the blob, as on PUT.
+      return serviceUnavailable(res, 'Service temporarily unavailable. Please try again.');
+    }
+    const stampMs = reserved?.stampMs ?? Date.now();
+    const nowIso = new Date(stampMs).toISOString();
 
     // deleteTokenHash and reportCount are in Redis, not in the public blob,
     // to prevent exposure via the CDN URL. lastAccessedAt is also in Redis
@@ -236,13 +221,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // SECURITY: allowOverwrite MUST stay false. The MED-1 race fix depends on
     // it. Don't rely on the library default (which is currently false but
     // could change in a future major version).
+    let etag: string;
     try {
-      await put(blobPath, JSON.stringify(shareData), {
+      ({ etag } = await put(blobPath, JSON.stringify(shareData), {
         access: 'public',
         contentType: 'application/json',
         addRandomSuffix: false,
         allowOverwrite: false,
-      });
+      }));
     } catch (putErr) {
       // The blob already exists (or some other put failure). Probe with head()
       // to distinguish "lost the race" from genuine errors.
@@ -277,7 +263,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    await recordSharePermission(redis, shareId, permission);
+    await recordSharePermission(redis, shareId, {
+      stampMs,
+      etag,
+      permission,
+      tokenHash: deleteTokenHash,
+    });
+    // The new blob holds only this stamp, which the counter handed out.
+    if (redis && reserved && !reserved.verified) {
+      await verifyShareRevision(redis, shareId, stampMs);
+    }
 
     // Return success response
     const shareUrl = `${getBaseUrl()}/${type === 'designer' ? 'd' : 'l'}/${shareId}`;

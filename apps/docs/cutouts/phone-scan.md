@@ -62,6 +62,8 @@ Keep the tool inside the ring of squares, and don't let it cover a square. The s
 1. In the bin designer, click <Ui k="binDesigner.cutouts.scanImport.title" />, then <Ui k="binDesigner.cutouts.scanImport.routePhone" />.
 2. Point the phone camera at the QR code and open the link.
 
+<Screenshot id="cutouts-phone-scan-start" alt="Clicking Scan a tool, then With your phone. The dialog shows a QR code, the link and Waiting for your photo, with Print calibration sheet and Print measuring strips below." spec="Cut editor, 2x4 bin, with the scan session requests answered by fixture data. Click Scan a tool, then With your phone. Hold on the QR code." />
+
 Took longer than 10 minutes? No problem. Click <Ui k="binDesigner.cutouts.scanImport.back" />, then click <Ui k="binDesigner.cutouts.scanImport.routePhone" /> again for a new code. If phone scanning isn't available, <Ui k="binDesigner.cutouts.scanImport.upload" /> accepts an outline that you traced in another app.
 
 ## Take the photo on the phone
@@ -95,7 +97,9 @@ A soft shadow is usually fine. The phone looks at the change in color more than 
 
 On the computer, each outline comes into the cutout editor as a cutout. It already has 0.4 mm of clearance and an entry chamfer, so the tool drops in. The editor then asks how thick the tool is, to set the depth. See [Set the tool thickness](./import-svg-stl#set-the-tool-thickness).
 
-Before you print the whole bin, [print a fit test](./print-checks#print-a-fit-test). A fit test is a thin print of the bin top, so you learn about the fit before the full print.
+<Screenshot id="cutouts-phone-scan-arrives" alt="The scan dialog waits, then shows Added 1 cutout when the outline arrives from the phone. After Done, the new cutout is on the board, and the editor asks How thick is this tool?" spec="Cut editor, 2x4 bin, scan dialog waiting on fixture data. Let the fixture outline arrive, then click Done off camera. Cut to the board with the thickness prompt." />
+
+Before you print the whole bin, [print a fit test](./print-checks#print-a-fit-test). A **fit test** is a thin print of the bin top, so you learn about the fit before the full print.
 
 ### Use a card of a different size
 
@@ -140,6 +144,29 @@ You can start a scan from several places:
 Each place first asks if the photo is on your phone or on this computer.
 
 In the bin designer on a phone or a tablet, the scan runs on that device. It adds the tools to the bin, and makes the bin larger to fit them.
+
+## When it goes wrong
+
+### The computer says that phone scanning isn't available
+
+Connect the computer to the internet. Then click <Ui k="binDesigner.cutouts.scanImport.back" />, and click <Ui k="binDesigner.cutouts.scanImport.routePhone" /> again. No luck? Take the photo, copy it to the computer, and use [Trace a photo](./photo-trace).
+
+The outline goes from the phone to the computer through the server of the Layout Tool. If the computer can't reach the server, it can't make a scan link.
+
+### The phone can't send the outline
+
+Connect the phone to the internet again. Then tap <Ui k="scan.retake" /> and take the photo again.
+
+The phone keeps the photo and makes the outline by itself. Only the outline goes over the connection, so a lost connection stops it at the last step.
+
+### The cutout is the wrong size
+
+Hold a ruler to the tool, and compare it with the size on the review screen before you tap <Ui k="scan.use" />. If the size is off, change the reference:
+
+- A card is less exact than the calibration sheet. Print the sheet, and use it in place of the card.
+- Measure the 100 mm bar on the printed sheet. A printer that scales the page changes every scan by the same amount.
+- A printed baseplate is only as exact as the printer that made it.
+- For a tall tool, add a measuring strip. See [Measure a tall tool at its own height](#measure-a-tall-tool-at-its-own-height).
 
 ## Next steps
 

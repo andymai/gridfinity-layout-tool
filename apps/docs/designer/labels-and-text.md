@@ -10,6 +10,8 @@ sources:
   - src/features/bin-designer/components/panel/FloorTextSection/
   - src/features/bin-designer/components/panel/LidSection/LidSection.tsx
   - src/features/bin-inspector/components/Inspector/BinLabelField/
+  - src/shared/utils/typePlan.ts
+  - src/features/design-linking/hooks/useQuickExport.ts
 ---
 
 # Labels and text
@@ -18,7 +20,7 @@ A label tells you what's in a bin before you open the drawer. You can print text
 
 ## Add label tabs
 
-A label tab is a small ledge along the top of a compartment wall. Print a caption on it, stick a paper label on it, or give it a [swappable label plate](./label-plates).
+A **label tab** is a small ledge along the top of a compartment wall. Print a caption on it, stick a paper label on it, or give it a [swappable label plate](./label-plates).
 
 1. In the bin designer, open the <Ui k="binDesigner.group.interior" /> group and turn on <Ui k="binDesigner.labelTabs" />.
 2. Under <Ui k="binDesigner.tabMode" />, keep <Ui k="binDesigner.tabMode.text" />.
@@ -104,6 +106,8 @@ Each text surface has a <Ui k="binDesigner.textMode" /> picker. Not sure? Pick E
 | <Ui k="binDesigner.textMode.through-cut" /> | Letters cut all the way through, in <Ui k="binDesigner.type.font.allerta-stencil" /> so letter centers stay attached | Tabs, walls and lid                |
 | <Ui k="binDesigner.textMode.flat" />        | Letters level with the surface, in the <Ui k="binDesigner.textColor" />                                              | Every surface, with multi-color on |
 
+<Screenshot id="designer-labels-and-text-finish" alt="In the Tab text fold, Emboss is picked, and the captions stand up from the label tabs. Then Through-cut is picked, and the captions cut through the tabs." spec="Bin designer, 3 x 1 bin with label tab captions Screws, Nuts and Washers. Close-up of the label section: open Tab text, pick Emboss. Cut to the bin from above. Close-up again: pick Through-cut. Cut to the bin." />
+
 Flat letters show only in a second filament, so the picker offers Flat only when multi-color is on. If the Text color matches the surface under flat letters, the panel warns you and offers <Ui k="binDesigner.textColor.useContrasting" />. See [Colors](./colors).
 
 ## Add wall text
@@ -122,13 +126,43 @@ Inside text reads from inside the bin, so a caption on the back wall faces you w
 
 For floor text, open the <Ui k="binDesigner.group.finishing" /> group, turn on <Ui k="binDesigner.floor.text.heading" /> and type the text. It goes on the largest clear part of the floor, away from dividers, scoops and raised floors. A floor has a base under it, so it can't take Through-cut. <Ui k="binDesigner.lid.text.rotation" /> turns the text in quarter turns.
 
+<Screenshot id="designer-labels-and-text-floor-text" alt="Floor text is turned on, and M4 x 10 is typed in its box. The bin then shows M4 X 10 on its floor, seen from the top." spec="Bin designer, bin 2 x 2 x 3. Close-up of the Finishing group: turn on Floor text, type M4 x 10. Cut to the bin in the Top view." />
+
 For lid text, turn on the lid in the <Ui k="binDesigner.group.lid" /> group, then turn on <Ui k="binDesigner.lid.section.text" />. A full stack grid covers the lid top, so lid text needs a flat top, a tray, or <Ui k="binDesigner.lid.stackLipOnly" />. See [Lids](./lids).
 
 ## Use label suggestions
 
 In the layout editor, each bin has a <Ui k="inspector.binLabel" /> box in the bin inspector. Click in it or start to type, and a list of suggestions opens. Each one tells you why it's there, for example <Ui k="inspector.labelSuggest.reason.nextInSet" />. On a computer, the top suggestion shows as gray text, and <kbd>Tab</kbd> accepts it. Your browser makes the suggestions from your layout and a built-in catalog of common labels.
 
+<Screenshot id="designer-labels-and-text-suggestions" alt="In the layout editor, a new bin in the Fasteners category is selected. A click in the Bin label box opens the suggestions, each with its reason. M is typed, and the top suggestion, M6, shows as gray text. Tab accepts it, and the bin on the grid shows M6." spec="Layout editor, the Workbench sample with a new unlabeled 1 x 1 bin in the Fasteners category, which holds M3, M4 and M5. Select it. Frame the bin and the Bin label box in the bin inspector: click in the box, type M, press Tab." />
+
 One design for many bins? If the design has only one caption, leave that caption blank. Each linked bin then prints its own <Ui k="inspector.binLabel" /> from the layout.
+
+## When it goes wrong
+
+### A caption is too long to print
+
+Click <Ui k="binDesigner.labelTextWidenTabs" /> under the row, or make the text shorter. In narrow compartments, <Ui k="binDesigner.labelTextPerRow" /> gives each row one full-width tab.
+
+Each caption must print at a size that you can read. A long caption on a narrow tab can't, so its row shows a warning.
+
+### You can't turn on label tabs
+
+Make the bin taller. A label tab needs more than 9 mm of depth inside the bin. Is the section not there at all? Pick the <Ui k="binDesigner.interior.standard.title" /> or <Ui k="binDesigner.interior.bento.title" /> interior.
+
+A tab hangs from the compartment walls. Removable dividers, solid bins and custom-shape bins can't carry tabs. See [Add label tabs](#add-label-tabs).
+
+### The letters are too thin to print
+
+Click the button under the warning in <Ui k="binDesigner.type.heading" />. It applies the fix that suits your font: a bold cut, more space between letters, or a larger size.
+
+The panel warns when the thinnest stroke of a letter is under 0.8 mm, about two lines of a 0.4 mm nozzle. Thinner strokes run together when they print.
+
+### The tabs print blank
+
+Type a caption in each row of <Ui k="binDesigner.labelText" />. <Ui k="binDesigner.labelTextNextBlank" /> takes you to the next empty row.
+
+A blank row prints a bare ledge. A linked bin can print its layout label instead. Only the layout ZIP, the 3D layout preview and <Ui k="common.export" /> under <Ui k="designLinking.inspector.linkedDesign" /> in the inspector do this. See [Troubleshooting prints](../printing/troubleshooting#the-labels-are-blank-or-missing).
 
 ## Next steps
 

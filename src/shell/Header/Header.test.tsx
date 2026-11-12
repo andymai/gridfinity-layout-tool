@@ -340,6 +340,15 @@ describe('Header', () => {
 
       expect(screen.getByText('Saving...')).toBeInTheDocument();
     });
+
+    it('shows Save failed in a live region when a save failed', () => {
+      render(<Header {...defaultProps} saveStatus="error" />);
+
+      const status = screen.getByText('Save failed').closest('div');
+      expect(status).toHaveAttribute('role', 'status');
+      expect(status).toHaveAttribute('aria-live', 'polite');
+      expect(screen.queryByText('Saved')).not.toBeInTheDocument();
+    });
   });
 
   describe('share button', () => {

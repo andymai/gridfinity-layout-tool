@@ -487,6 +487,7 @@ export const SHORTCUTS = {
   REDO: 'y', // with Ctrl/Cmd
   REDO_ALT: 'Z', // Shift+Ctrl/Cmd+Z
   DUPLICATE: 'd', // with Ctrl/Cmd
+  SELECT_ALL: 'a', // with Ctrl/Cmd - every bin on the active layer
   ROTATE: 'r', // Rotate bin (swap width/depth) - standalone key, no Ctrl/Cmd
   ZOOM_IN: ['+', '='],
   ZOOM_OUT: ['-'],
@@ -512,6 +513,7 @@ export const SHORTCUTS = {
   HALF_BIN_TOGGLE: 'h',
   // Layout management
   LAYOUT_MANAGER: 'o', // with Ctrl/Cmd - "Open" layouts
+  NEW_LAYOUT: 'n', // with Shift; Ctrl/Cmd+N too, where the browser passes it on
   // Tool switching
   TOOL_SWITCH: 'D', // Shift+D — toggle between Layout and Bins
 } as const;

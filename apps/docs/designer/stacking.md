@@ -12,7 +12,7 @@ sources:
 
 # Stacking
 
-Gridfinity bins stack. The feet of one bin sit in the stacking lip of the bin below, so a deep drawer can hold more than one level. In the Gridfinity Layout Tool, you can shape that lip and lock small bins onto big ones. You can also see how tall a stack gets before you print it.
+Gridfinity bins stack. The feet of one bin sit in the **stacking lip** of the bin below, so a deep drawer can hold more than one level. In the Gridfinity Layout Tool, you can shape that lip and lock small bins onto big ones. You can also see how tall a stack gets before you print it.
 
 The stacking controls are in the <Ui k="binDesigner.base.section.stacking" /> section of the <Ui k="binDesigner.group.base" /> group, just under the body type tiles. The <Ui k="assembledHeight.title" /> readout is in the <Ui k="binDesigner.group.shape" /> group. It sits under <Ui k="binDesigner.dimensions" />.
 
@@ -33,6 +33,8 @@ When the lip is off, <Ui k="binDesigner.base.rimFillet" /> appears. It rounds th
 1. Turn off <Ui k="assembledHeight.stackingLip" />.
 2. Turn on <Ui k="binDesigner.base.rimFillet" />.
 3. Set <Ui k="binDesigner.base.rimFillet.radius" />. The default is 0.4 mm.
+
+<Screenshot id="designer-stacking-round-rim" alt="A close view of a bin with its stacking lip. Turning off Stacking lip leaves a plain wall at the rim. Then Round top rim turns on and shows the Rim fillet radius slider at 0.4 mm." spec="Bin designer, bin 2 x 2 x 3, preview zoomed in. Show the bin, then turn off Stacking lip in close-up and show the bin again. Then turn on Round top rim in close-up." />
 
 The thinner of the wall and the dividers limits the radius. The option needs a rectangular, hollow bin with walls.
 
@@ -73,6 +75,8 @@ The <Ui k="binDesigner.base.bodyType.nesting" /> body type is for boxes that sta
 2. To hold the stack together, turn on <Ui k="binDesigner.base.magnetHoles" /> under <Ui k="binDesigner.base.section.mounting" />.
 3. For a large box, set <Ui k="binDesigner.lid.retentionEdgeMagnets" />.
 
+<Screenshot id="designer-stacking-nesting" alt="Picking the Nesting body type gives the box one tapered base. Then Magnet holes turns on under Mounting, and a view from below shows a magnet hole in each corner." spec="Bin designer, bin 2 x 2 x 6. In close-up, pick Nesting, then show the box. Turn on Magnet holes, then show the box from below." />
+
 With magnets on, the box gets four corner magnets. <Ui k="binDesigner.lid.retentionEdgeMagnets" /> adds up to 3 more magnets along each long edge, only where the edge is long enough for them. The magnet size is the same as for the lid. To get matching magnet holes at the top, choose a magnetic lid. See [Lids](./lids).
 
 A nesting box does not fit a Gridfinity baseplate. Its lower floor rules out a finger scoop, an interior fillet and removable dividers. Dividers and drainage holes still work.
@@ -101,6 +105,26 @@ The readout uses the baseplate of the active layout, which includes a low-profil
 Bins with the same number of height units come out the same height. A spacer counts like a bin of the same size, so a 2-unit spacer under a 2-unit bin reaches the top of a 4-unit bin.
 
 <Screenshot id="designer-stacking-assembled-height" alt="The Assembled height readout open, with the baseplate, bin and stacking lip rows and the drawer fit line." spec="Bin designer opened from a layout that has a measured drawer height, bin 2 x 2 x 6 with the stacking lip on. In the Shape group, click Assembled height to open the rows. Show the Dimensions section with the open readout and the fit line. Crop to the panel." />
+
+## When it goes wrong
+
+### The bin is taller than the drawer
+
+Click <Ui k="assembledHeight.title" /> to see which part adds the height. Then lower <Ui k="common.height" /> by one unit, or make the pull tab or the lid lower.
+
+The readout measures the bin on its baseplate, with its lip, pull tab and lid. The line under it compares that height with the measured height of your drawer.
+
+### The top of the lip prints rough or peels off
+
+Set <Ui k="binDesigner.base.lipTip" /> to <Ui k="binDesigner.base.lipTip.round" />. For the widest top line, pick <Ui k="binDesigner.base.lipTip.flat" />. Bins stack the same way with every shape.
+
+The standard lip ends in a point. Its top layer prints as a thin line with nothing under it, so it can scar or lift. See [Make the lip print cleanly](#make-the-lip-print-cleanly).
+
+### A small bin slides around on top of a big one
+
+Turn on <Ui k="binDesigner.base.lipNotches" /> on the big bin. A small ridge at each grid line then holds the small bin on one cell.
+
+Can't turn the notches on? The note under the switch names the cause: a lid, a custom shape, an overhang, a <Ui k="binDesigner.footLattice.half" /> foot lattice, or the bin size. See [Keep smaller bins in place on bigger ones](#keep-smaller-bins-in-place-on-bigger-ones).
 
 ## Next steps
 

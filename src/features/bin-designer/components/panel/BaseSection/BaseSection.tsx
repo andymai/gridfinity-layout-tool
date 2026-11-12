@@ -391,6 +391,7 @@ export function BaseSection() {
             checked={state.hasDetachableFeet}
             onChange={handlers.toggleDetachableFeet}
             disabledReason={handlers.detachableFeetDisabledReason}
+            badge={<FeatureTip tip="detachableFeet" feature={t('binDesigner.detachableFeet')} />}
             valueSummary={t('binDesigner.detachableFeet.summary', {
               count: state.detachableFootCount,
               diameter: state.pinDiameter,
@@ -433,6 +434,7 @@ export function BaseSection() {
             checked={state.hasHalfSockets}
             onChange={handlers.toggleHalfSockets}
             disabledReason={handlers.halfSocketsDisabledReason}
+            badge={<FeatureTip tip="halfSockets" feature={t('binDesigner.halfSockets')} />}
           />
 
           {/* Why the lattice below is missing, in the slot it would occupy. The

@@ -10,6 +10,7 @@ sources:
   - src/features/bin-designer/types/handles.ts
   - src/shared/utils/wallLabelSlotPlan.ts
   - src/features/bin-designer/constants/gridfinity.ts
+  - src/features/bin-designer/hooks/useExport.ts
 ---
 
 # Walls
@@ -37,7 +38,7 @@ For the best result, use a multiple of your nozzle size. For example, 1.2 mm is 
 
 ## Add a wall pattern
 
-A wall pattern cuts rows of holes through the walls, so you can see what's inside.
+A **wall pattern** cuts rows of holes through the walls, so you can see what's inside.
 
 1. In the <Ui k="binDesigner.group.finishing" /> group, go to <Ui k="binDesigner.style.section.wallSurface" />.
 2. Pick a <Ui k="binDesigner.walls.pattern.label" />.
@@ -87,6 +88,8 @@ The pattern stops below <Ui k="binDesigner.extraWallHeight" />. For a taller pat
 | <Ui k="binDesigner.wallCutouts.shape.scoop" />  | A half circle                 |
 | <Ui k="binDesigner.wallCutouts.shape.funnel" /> | A tapered U, wider at the top |
 
+<Screenshot id="designer-walls-cutouts" alt="Turning on Wall cutouts shows the shape choice and the wall picker, with Left and Right on. Picking Scoop, turning on Front and raising the height cuts a half circle into three walls." spec="Bin designer, bin 2 x 2 x 4. In close-up, turn on Wall cutouts, pick Scoop, turn on the front wall and raise the height twice. Then show the bin." />
+
 The button beside each value changes it between a percentage of the wall and millimeters. In millimeters, the bin designer measures the height down from the rim, so bins of different heights get a cut at the same line. A cutout deeper than its wall stops at the wall.
 
 <Ui k="binDesigner.wallCutouts.linked" /> gives all walls the same size. Click it to change to <Ui k="binDesigner.wallCutouts.independent" /> and size each wall alone. Two folds give more control:
@@ -117,6 +120,8 @@ The button beside each value changes it between a percentage of the wall and mil
 | <Ui k="binDesigner.handles.chamfer" />          | A chamfer around the hole                                                                                                               |
 | <Ui k="binDesigner.handles.interior" />         | Cuts the handles through the dividers too                                                                                               |
 
+<Screenshot id="designer-walls-handles" alt="Turning on Handles shows the hole shape and the wall picker, and Pull tab gets a note that it needs an unbroken wall. Picking Oval, turning off Front and raising the height leaves an oval hole in the left and right walls." spec="Bin designer, bin 3 x 2 x 6. In close-up, turn on Handles, pick Oval, turn off the front wall and raise the height twice. Then show the bin." />
+
 Wide holes can need supports when you print them. When label tabs are on, the back wall cannot have a handle. A wall with divider slots cannot have a handle either. When the slots run in one direction only, the other two walls can.
 
 ## Add label slots
@@ -126,6 +131,8 @@ Want labels that you can swap later? <Ui k="binDesigner.walls.labelSlots.heading
 1. Turn on <Ui k="binDesigner.walls.labelSlots.heading" />.
 2. Pick the walls in <Ui k="binDesigner.walls.labelSlots.sides" />.
 3. Set <Ui k="binDesigner.walls.labelSlots.spacing" />, from <Ui k="binDesigner.walls.labelSlots.everyCell" /> to one slot in every 6 cells.
+
+<Screenshot id="designer-walls-label-slots" alt="Turning on Label slots shows Walls with label slots, with Front on, and Slot spacing at Every cell. Turning on Right adds two slots. The preview shows a window in each cell of the front and right walls, with label plates beside the bin." spec="Bin designer, bin 3 x 2 x 6. In close-up, turn on Label slots and turn on the right wall. Then show the bin." />
 
 When the wall is too thin to hold the slot, a rib on the inside backs it. Each slot also notches the stacking lip. A wall thinner than 0.8 mm leaves a fragile frame in front of the plate. Label slots need a rectangular bin with no overhang, and walls tall enough for an 11 mm plate. [Swappable label plates](./label-plates) explains the plates.
 
@@ -141,6 +148,32 @@ When the wall is too thin to hold the slot, a rib on the inside backs it. Each s
 The holes stay inside the flat bottom of each foot, so the edges that lock into the baseplate stay whole. If the holes are too large for the base, the panel asks for a finer scale. The inside mode of a lightweight floor leaves no solid floor to drill, so use its underside mode. A solid bin, a spacer and a <Ui k="binDesigner.tile" /> bin cannot have drainage holes.
 
 <Screenshot id="designer-walls-drainage" alt="Turning on Drainage holes shows the Round hole shape at 50 percent scale. Then a view from below shows the round holes through the floor of each foot." spec="Bin designer, Finishing group open, bin 2 x 2 x 3. Turn on Drainage holes in close-up, then show the underside of the bin in the preview." />
+
+## When it goes wrong
+
+### The export times out or runs out of memory
+
+Make the wall pattern bolder: drag <Ui k="binDesigner.walls.pattern.scale" /> to the right for larger holes. You can also make the bin lower, or turn the pattern off. Then export again.
+
+A fine pattern on a tall bin has a very large number of holes, and the geometry engine runs out of memory or time. See [Troubleshooting prints](../printing/troubleshooting#the-export-stops-with-an-error).
+
+### The wall pattern breaks when you print
+
+Make <Ui k="binDesigner.walls.pattern.strutWidth" /> wider, and print again. 0.8 mm is the thinnest strut. A bin that takes knocks needs more.
+
+The struts are the solid plastic between the holes, and thin struts snap. A Kumiko pattern has no strut control.
+
+### The back wall won't take a handle
+
+Put the handle on another wall, or turn off <Ui k="binDesigner.labelTabs" />. Hover over a greyed-out wall in the wall picker to read why.
+
+While label tabs are on, the back wall can't have a handle. A wall with divider slots can't have one either.
+
+### Label slots won't turn on
+
+Read the note under the switch. Make the bin taller if the walls are too short, turn off the overhang, or reset a custom shape to a rectangle.
+
+Label slots need a rectangular bin with walls tall enough for an 11 mm plate. Is one wall greyed out in <Ui k="binDesigner.walls.labelSlots.sides" />? Its cells are too narrow for a 1U plate.
 
 ## Next steps
 

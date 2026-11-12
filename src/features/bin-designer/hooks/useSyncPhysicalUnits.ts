@@ -1,27 +1,81 @@
 /**
- * Syncs gridUnitMm, heightUnitMm, the magnet anchor and the low-profile base from
- * the layout store into the designer store's BinParams. This ensures the bin
- * designer always uses the layout's physical unit settings — and its
- * layout-scoped base geometry — for generation and export, so a designed bin
- * mates with the baseplate.
+ * The layout owns the designer's grid units (X and Y), height unit, magnet
+ * anchor and low-profile base, so a designed bin mates with the baseplate. This
+ * hook copies them into the designer's BinParams when either store changes.
  *
- * Updates are applied WITHOUT pushing history (no undo entry) since the user
- * changed the value in the layout store, not via the designer panel.
+ * The copy pushes no undo entry: the user changed the layout, not the design.
  */
 
 import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
+import type { Layout } from '@/core/types';
 import { withLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { useDesignerStore } from '../store';
 import { setPendingMeshCache } from '../store/helpers';
+import type { BinParams } from '../types';
 import { withSyncedLidHeight } from '../utils/lidHeightUnits';
+import { heldCutoutFillMm, reanchorCutoutFill } from '../utils/cutoutFill';
 import { withResolvedCutoutDepths } from '@/shared/utils/cutoutDepth';
 
+type LayoutUnits = Pick<
+  Layout,
+  'gridUnitMm' | 'gridUnitMmY' | 'heightUnitMm' | 'magnetAnchor' | 'lowProfileBase'
+>;
+
+function withLayoutUnits(params: BinParams, layout: LayoutUnits): BinParams {
+  const sameUnits =
+    params.gridUnitMm === layout.gridUnitMm &&
+    params.gridUnitMmY === layout.gridUnitMmY &&
+    params.heightUnitMm === layout.heightUnitMm &&
+    params.magnetAnchor === layout.magnetAnchor;
+  const withUnits = sameUnits
+    ? params
+    : withSyncedLidHeight({
+        ...params,
+        gridUnitMm: layout.gridUnitMm,
+        gridUnitMmY: layout.gridUnitMmY,
+        heightUnitMm: layout.heightUnitMm,
+        magnetAnchor: layout.magnetAnchor,
+      });
+  const synced = withLowProfileBase(withUnits, layout.lowProfileBase);
+  return withResolvedCutoutDepths(withHeldCutoutFill(synced, params));
+}
+
+// The height unit and the low-profile base both move the wall height, and a
+// fill held to the floor keeps its height across that, as it does across every
+// param action (`applyCutoutFillAnchor`).
+function withHeldCutoutFill(next: BinParams, prev: BinParams): BinParams {
+  if (next === prev) return next;
+  const topOffset = reanchorCutoutFill(next, heldCutoutFillMm(prev));
+  return topOffset === undefined
+    ? next
+    : { ...next, cutoutConfig: { ...next.cutoutConfig, topOffset } };
+}
+
+function syncParams(layout: LayoutUnits, alreadyRegenerating: boolean): void {
+  const { params, generation } = useDesignerStore.getState();
+  const synced = withLayoutUnits(params, layout);
+  if (synced === params) return;
+
+  // The pending mesh has the old units, so it must not attach to the next undo
+  // entry.
+  setPendingMeshCache(null);
+
+  useDesignerStore.setState({
+    params: synced,
+    generation: {
+      ...generation,
+      epoch: alreadyRegenerating ? generation.epoch : generation.epoch + 1,
+    },
+  });
+}
+
 export function useSyncPhysicalUnits(): void {
-  const { gridUnitMm, heightUnitMm, magnetAnchor, lowProfileBase } = useLayoutStore(
+  const { gridUnitMm, gridUnitMmY, heightUnitMm, magnetAnchor, lowProfileBase } = useLayoutStore(
     useShallow((state) => ({
       gridUnitMm: state.layout.gridUnitMm,
+      gridUnitMmY: state.layout.gridUnitMmY,
       heightUnitMm: state.layout.heightUnitMm,
       magnetAnchor: state.layout.magnetAnchor,
       lowProfileBase: state.layout.lowProfileBase,
@@ -29,54 +83,23 @@ export function useSyncPhysicalUnits(): void {
   );
 
   useEffect(() => {
-    const { params } = useDesignerStore.getState();
-    if (
-      params.gridUnitMm === gridUnitMm &&
-      params.heightUnitMm === heightUnitMm &&
-      params.magnetAnchor === magnetAnchor &&
-      withLowProfileBase(params, lowProfileBase) === params
-    ) {
-      return;
-    }
+    syncParams({ gridUnitMm, gridUnitMmY, heightUnitMm, magnetAnchor, lowProfileBase }, false);
+  }, [gridUnitMm, gridUnitMmY, heightUnitMm, magnetAnchor, lowProfileBase]);
 
-    // Clear pending mesh cache — the old mesh was generated with different
-    // physical units and would be incorrectly associated with the next undo entry.
-    setPendingMeshCache(null);
-
-    // Update params without history push — epoch increments to trigger regeneration
-    useDesignerStore.setState((state) => ({
-      params: withResolvedCutoutDepths(
-        withSyncedLidHeight({
-          ...withLowProfileBase(state.params, lowProfileBase),
-          gridUnitMm,
-          heightUnitMm,
-          magnetAnchor,
-        })
-      ),
-      generation: {
-        ...state.generation,
-        epoch: state.generation.epoch + 1,
-      },
-    }));
-  }, [gridUnitMm, heightUnitMm, magnetAnchor, lowProfileBase]);
-
-  // The effect above only fires when the LAYOUT changes. Opening another design
-  // replaces the params wholesale, and a design saved in a standard drawer would
-  // then preview and export standard feet inside a low-profile one. The other
-  // fields carry their own value in the design; this one never may.
+  // The effect above runs only when the LAYOUT changes. A design load, a version
+  // restore and an undo replace the params with the units of the saved state,
+  // and the preview and the export would then use a pitch the drawer does not
+  // have. A replacement that bumped the epoch already regenerates from the
+  // synced params. A cache-hit undo does not, and its cached mesh has the old
+  // units.
   useEffect(
     () =>
       useDesignerStore.subscribe((state, prev) => {
         if (state.params === prev.params) return;
-        const synced = withResolvedCutoutDepths(
-          withLowProfileBase(state.params, useLayoutStore.getState().layout.lowProfileBase)
+        syncParams(
+          useLayoutStore.getState().layout,
+          state.generation.epoch !== prev.generation.epoch
         );
-        if (synced === state.params) return;
-        setPendingMeshCache(null);
-        useDesignerStore.setState({
-          params: synced,
-          generation: { ...state.generation, epoch: state.generation.epoch + 1 },
-        });
       }),
     []
   );

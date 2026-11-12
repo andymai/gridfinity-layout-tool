@@ -19,7 +19,7 @@ The finger scoop and the interior fillet are in the <Ui k="binDesigner.group.int
 
 ## Add a finger scoop
 
-A finger scoop is a ramp from the floor up to a wall. Push small items up the ramp with one finger, and they come out with no fuss.
+A **finger scoop** is a ramp from the floor up to a wall. Push small items up the ramp with one finger, and they come out with no fuss.
 
 1. In the <Ui k="binDesigner.group.interior" /> group, turn on <Ui k="binDesigner.fingerScoop" />.
 2. Click <Ui k="common.customize" /> to show the scoop settings.
@@ -60,6 +60,8 @@ The finger scoop needs a solid floor in a rectangular bin with compartment walls
 1. In the <Ui k="binDesigner.group.interior" /> group, turn on <Ui k="binDesigner.interiorFillet.label" />.
 2. Set the <Ui k="binDesigner.interiorFillet.radius" />, from 0.5 to 15 mm.
 
+<Screenshot id="designer-getting-things-out-fillet" alt="Interior fillet is turned on, and Radius is dragged up from 2.5 mm. The bin then shows rounded edges and corners inside each compartment." spec="Bin designer, bin 3 x 2 x 4 with Grid dividers set to 3 columns and 1 row. Close-up of the Interior group: turn on Interior fillet, drag Radius up to about 7 mm. Cut to the bin from above." />
+
 The radius starts at the radius of the inside corners of the bin, so the fillet meets the corners without a step.
 
 ### Limits of the fillet
@@ -70,7 +72,7 @@ The fillet needs a solid floor. It does not work with removable dividers, becaus
 
 ## Add a pull tab
 
-A pull tab is a raised grip that stands above the rim of a wall. Hold it to lift the bin out of a drawer.
+A **pull tab** is a raised grip that stands above the rim of a wall. Hold it to lift the bin out of a drawer.
 
 1. In the <Ui k="binDesigner.group.lid" /> group, turn on <Ui k="binDesigner.pullTab.title" />.
 2. Under <Ui k="binDesigner.pullTab.wall" />, pick one or more walls.
@@ -87,7 +89,7 @@ A recess on the inside of the tab gives your finger a grip. More controls shape 
 - <Ui k="binDesigner.pullTab.backRecess" /> adds the same grip on the outside of the wall.
 
 ::: warning
-Keep the walls with a pull tab plain. A pull tab needs a wall with no cutouts, handles, patterns, text or label slots.
+Keep every wall of the bin plain. Wall cutouts, handles, a wall pattern, wall text or label slots on any wall block the pull tab, even on a wall with no tab.
 :::
 
 A pull tab also needs a rectangular, hollow bin with walls, no lid and no overhang. On a small bin, tabs on opposite walls can close the inside. If that happens, pick fewer walls or a thinner tab.
@@ -100,13 +102,36 @@ A large tray full of dividers is hard to lift from one end. Put the pull tab on 
 
 1. Make a divider that runs from wall to wall at full height. See [Compartments and dividers](./compartments).
 2. Under <Ui k="binDesigner.pullTab.wall" />, pick <Ui k="binDesigner.pullTab.side.center" />.
-3. If the bin has dividers in both directions, pick one under <Ui k="binDesigner.pullTab.centerAxis" />.
+3. If <Ui k="binDesigner.pullTab.side.front" /> is on, click it to turn it off. The walls that you picked before stay on when you add <Ui k="binDesigner.pullTab.side.center" />. Turn off any other wall that is still on.
+4. If the bin has dividers in both directions, pick one under <Ui k="binDesigner.pullTab.centerAxis" />.
+
+<Screenshot id="designer-getting-things-out-center-tab" alt="Pull tab is turned on, Center is picked, Front is turned off, and Left to right is picked under Center divider. The bin then shows a pull tab on the divider across its middle." spec="Bin designer, bin 4 x 3 x 4 with Grid dividers set to 2 columns and 2 rows. Close-up of the Lid group: turn on Pull tab, click Center, click Front to turn it off, pick Left to right. Cut to the bin." />
 
 The bin designer uses the divider nearest the middle of the bin, and makes it thicker on both sides. The center tab has these conditions:
 
 - The divider must be straight and at full height.
 - Label tabs must be off, because they use the tops of the dividers.
 - <Ui k="binDesigner.extraWallHeight" /> must be 0.
+
+## When it goes wrong
+
+### The panel warns that the scoop is very steep
+
+Make <Ui k="binDesigner.scoopRun" /> longer or <Ui k="binDesigner.scoopHeight" /> lower, so the height is no more than two times the run. Or click <Ui k="binDesigner.scoopRadiusAutoLabel" /> to go back to an auto scoop, which never gets that steep.
+
+A steep ramp prints with rough overhangs, and it's hard to reach into.
+
+### The fillet is smaller than the radius you set
+
+Set a smaller <Ui k="binDesigner.interiorFillet.radius" /> that fits your smallest compartment, or use fewer, larger compartments.
+
+A compartment that is too small for the radius gets the largest fillet that fits. The panel tells you when this happens.
+
+### You can't turn on the pull tab
+
+Read the note under the switch. It names what blocks the tab. Turn that feature off, then turn on the tab.
+
+A pull tab needs plain walls. Wall cutouts, handles, a wall pattern, wall text or label slots anywhere on the bin block it, even on a wall with no tab. The bin must also be rectangular and hollow, with no lid and no overhang.
 
 ## Next steps
 

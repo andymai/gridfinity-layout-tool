@@ -105,9 +105,24 @@ export function SharedLayoutImporter() {
   );
 
   const loadLayoutPreview = useCallback(
-    (layout: Layout, authorName?: string, cloudShareId?: string, permission?: 'view' | 'edit') => {
+    (
+      layout: Layout,
+      authorName?: string,
+      cloudShareId?: string,
+      permission?: 'view' | 'edit',
+      linkUpdatedAt?: string,
+      designIds?: Readonly<Record<string, string>>
+    ) => {
       activateLayout(layout, SHARED_PREVIEW_ID, `Viewing shared layout: ${layout.name}`);
-      setSharedLayoutPreview(layout, layout.name, authorName, cloudShareId, permission);
+      setSharedLayoutPreview(
+        layout,
+        layout.name,
+        authorName,
+        cloudShareId,
+        permission,
+        linkUpdatedAt,
+        designIds
+      );
     },
     [activateLayout, setSharedLayoutPreview]
   );
@@ -236,10 +251,13 @@ export function SharedLayoutImporter() {
       //. A storage failure degrades to the plain layout rather than
       // dropping the share.
       let layout = result.value.layout;
+      let designIds: Record<string, string> | undefined;
       if (linkedDesigns && linkedDesigns.length > 0) {
         try {
           const { restoreSharedDesigns } = await import('@/core/storage');
-          layout = await restoreSharedDesigns(initialCloudShareId, layout, linkedDesigns);
+          const restored = await restoreSharedDesigns(initialCloudShareId, layout, linkedDesigns);
+          layout = restored.layout;
+          designIds = restored.designIds;
         } catch (e) {
           console.error('Failed to restore shared bin designs:', e);
         }
@@ -257,7 +275,14 @@ export function SharedLayoutImporter() {
         console.error('Failed to track shared layout:', e);
       }
 
-      loadLayoutPreview(layout, metadata.authorName, initialCloudShareId, permission);
+      loadLayoutPreview(
+        layout,
+        metadata.authorName,
+        initialCloudShareId,
+        permission,
+        metadata.lastUpdatedAt,
+        designIds
+      );
     };
 
     void loadCloudShare();

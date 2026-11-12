@@ -23,6 +23,7 @@ import { useMutations } from '@/shared/contexts/MutationsContext';
 import { slugify } from '@/shared/utils/slug';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
+import type { TFunction } from '@/i18n';
 
 export type CloudShareStatus = 'idle' | 'sharing' | 'updating' | 'deleting' | 'success' | 'error';
 
@@ -53,6 +54,28 @@ interface CloudShareActions {
   remove: () => Promise<boolean>;
   copyUrl: () => Promise<boolean>;
   reset: () => void;
+}
+
+// MIRROR: `ContentField` in `api/lib/contentFilter.ts`.
+const BLOCKED_FIELD_KEYS = new Map<string, string>([
+  ['layoutName', 'cloudShare.error.blockedLayoutName'],
+  ['category', 'cloudShare.error.blockedCategory'],
+  ['binLabel', 'cloudShare.error.blockedBinLabel'],
+  ['binNotes', 'cloudShare.error.blockedBinNotes'],
+  ['binItem', 'cloudShare.error.blockedBinItem'],
+  ['binProperty', 'cloudShare.error.blockedBinProperty'],
+  ['linkedDesign', 'cloudShare.error.blockedLinkedDesign'],
+  ['authorName', 'cloudShare.error.blockedAuthorName'],
+]);
+
+function shareErrorMessage(err: ApiError | StorageMeshMissingError, t: TFunction): string {
+  if (err.code === 'STORAGE_MESH_MISSING') return t('toast.meshFileMissing');
+  if (err.code === 'API_CONTENT_BLOCKED') {
+    const field = err.blockedFields?.[0];
+    const key = field === undefined ? undefined : BLOCKED_FIELD_KEYS.get(field);
+    return t(key ?? 'cloudShare.error.blocked');
+  }
+  return getUserMessage(err);
 }
 
 /**
@@ -129,30 +152,30 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     [targetLayoutId, setCloudShare, announceToScreenReader, t]
   );
 
-  const handleError = useCallback(
-    (err: ApiError | StorageMeshMissingError) => {
-      const message =
-        err.code === 'STORAGE_MESH_MISSING' ? t('toast.meshFileMissing') : getUserMessage(err);
-      trackEvent('ui.shareFailed', { layoutId: '', error: `${err.code}: ${message}` });
-      setError({
-        message,
-        code: err.code,
-        retryAfter: 'retryAfter' in err ? err.retryAfter : undefined,
-      });
+  // The popover and the mobile panel render the error outside any live region,
+  // so every error must go through here to reach a screen reader.
+  const showError = useCallback(
+    (message: string, code: string, retryAfter?: number) => {
+      setError({ message, code, retryAfter });
       setStatus('error');
       announceToScreenReader(t('cloudShare.announce.shareFailed', { message }));
     },
     [announceToScreenReader, t]
   );
 
+  const handleError = useCallback(
+    (err: ApiError | StorageMeshMissingError) => {
+      const message = shareErrorMessage(err, t);
+      trackEvent('ui.shareFailed', { layoutId: '', error: `${err.code}: ${message}` });
+      showError(message, err.code, 'retryAfter' in err ? err.retryAfter : undefined);
+    },
+    [showError, t]
+  );
+
   const share = useCallback(
     async (permission: SharePermission = 'view'): Promise<boolean> => {
       if (!navigator.onLine) {
-        setError({
-          message: t('cloudShare.error.offlineShare'),
-          code: 'NETWORK_ERROR',
-        });
-        setStatus('error');
+        showError(t('cloudShare.error.offlineShare'), 'NETWORK_ERROR');
         return false;
       }
 
@@ -173,26 +196,18 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
         return false;
       }
     },
-    [targetLayoutId, layout, authorName, handleSuccess, handleError, t]
+    [targetLayoutId, layout, authorName, handleSuccess, handleError, showError, t]
   );
 
   const updatePermissionAction = useCallback(
     async (permission: SharePermission): Promise<boolean> => {
       if (!existingShare) {
-        setError({
-          message: t('cloudShare.error.noExistingShare'),
-          code: 'NOT_FOUND',
-        });
-        setStatus('error');
+        showError(t('cloudShare.error.noExistingShare'), 'NOT_FOUND');
         return false;
       }
 
       if (!navigator.onLine) {
-        setError({
-          message: t('cloudShare.error.offlineUpdate'),
-          code: 'NETWORK_ERROR',
-        });
-        setStatus('error');
+        showError(t('cloudShare.error.offlineUpdate'), 'NETWORK_ERROR');
         return false;
       }
 
@@ -235,20 +250,13 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
         // Handle specific errors
         if (result.error.code === 'API_NOT_FOUND') {
           clearCloudShare(targetLayoutId);
-          setError({
-            message: t('cloudShare.error.shareWasDeleted'),
-            code: result.error.code,
-          });
+          showError(t('cloudShare.error.shareWasDeleted'), result.error.code);
         } else if (result.error.code === 'API_UNAUTHORIZED') {
           clearCloudShare(targetLayoutId);
-          setError({
-            message: t('cloudShare.error.unableToUpdate'),
-            code: result.error.code,
-          });
+          showError(t('cloudShare.error.unableToUpdate'), result.error.code);
         } else {
           handleError(result.error);
         }
-        setStatus('error');
         return false;
       }
     },
@@ -258,6 +266,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       setCloudShare,
       clearCloudShare,
       handleError,
+      showError,
       announceToScreenReader,
       t,
     ]
@@ -269,11 +278,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     }
 
     if (!navigator.onLine) {
-      setError({
-        message: t('cloudShare.error.offlineDelete'),
-        code: 'NETWORK_ERROR',
-      });
-      setStatus('error');
+      showError(t('cloudShare.error.offlineDelete'), 'NETWORK_ERROR');
       return false;
     }
 
@@ -302,7 +307,15 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       handleError(result.error);
       return false;
     }
-  }, [existingShare, targetLayoutId, clearCloudShare, handleError, announceToScreenReader, t]);
+  }, [
+    existingShare,
+    targetLayoutId,
+    clearCloudShare,
+    handleError,
+    showError,
+    announceToScreenReader,
+    t,
+  ]);
 
   const copyUrl = useCallback(async (): Promise<boolean> => {
     // Construct URL using unified /l/{shareId}/{slug} format

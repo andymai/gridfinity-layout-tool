@@ -28,6 +28,7 @@ export type {
   DrawerMeasuredCommittedProperties,
   DrawerShapeAppliedProperties,
   DrawerShapeEditor,
+  PwaInstallPlacement,
 } from './events';
 export type { BinExportProperties } from './binExportEvents';
 export { trackBinExportSucceeded, trackBinExportFailure } from './binExportEvents';
@@ -56,6 +57,10 @@ export {
   trackGalleryOpened,
   trackGalleryClosed,
   listenForPwaInstall,
+  listenForPwaInstallAvailability,
+  trackPwaInstallOfferClosed,
+  trackPwaInstallPromptResult,
+  trackPwaInstallPromptShown,
   captureUtmParameters,
   trackDesignCreated,
 } from './events';

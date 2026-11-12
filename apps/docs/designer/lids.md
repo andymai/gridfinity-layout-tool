@@ -8,6 +8,9 @@ sources:
   - src/features/bin-designer/components/panel/HingeControls/
   - src/features/bin-designer/components/panel/LidGripControls/
   - src/features/bin-designer/utils/lidCompatibility.ts
+  - src/shared/utils/lidInteriorRelief.ts
+  - src/shared/utils/hingeLidPlan.ts
+  - src/shared/utils/lipGapPlan.ts
 ---
 
 # Lids
@@ -44,7 +47,7 @@ A magnetic lid takes 6 × 2 mm magnets by default. Glue the magnets in with matc
 
 ### Sliding lids
 
-A sliding lid is a flat plate that slides in and out of a channel. It doesn't need the stacking lip.
+A **sliding lid** is a flat plate that slides in and out of a channel. It doesn't need the stacking lip.
 
 | Setting                                    | What it does                                                                                                                                                                                                                          |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -53,13 +56,15 @@ A sliding lid is a flat plate that slides in and out of a channel. It doesn't ne
 | <Ui k="binDesigner.lid.slide.pull" />      | What your finger pulls on: <Ui k="binDesigner.lid.slide.pull.none" />, <Ui k="binDesigner.lid.slide.pull.notch" />, <Ui k="binDesigner.lid.slide.pull.tab" /> or <Ui k="binDesigner.lid.slide.pull.catch" />.                         |
 | <Ui k="binDesigner.lid.slide.detent" />    | Adds a small ramp on each runner. The lid clicks past it, so a knock can't slide the lid open.                                                                                                                                        |
 
+<Screenshot id="designer-lids-sliding" alt="Picking Sliding under How it attaches shows Channel position, Opens toward, Pull and Click shut. Then the Open and Closed slider beside the preview slides the lid into its channel and back out." spec="Bin designer, 2 x 2 x 3 bin with a lid. In close-up, pick Sliding and show its settings. Then drag the lid slider at the side of the preview to Closed and back." />
+
 The finger catch is a part of the stacking rim that moves with the lid, so the whole width becomes a pull. It keeps the [lip peak](./stacking#make-the-lip-print-cleanly) shape of the rest of the rim.
 
 <Ui k="binDesigner.lid.slide.clearance" />, under <Ui k="binDesigner.lid.advanced" />, sets the gap between the lid and its channel, from 0.1 to 0.6 mm. If the lid binds, raise it. If the lid rattles, lower it.
 
 ### Hinged lids
 
-A hinged lid has knuckles on one wall. A short piece of 1.75 mm filament goes through them as the hinge pin, so you need no metal pin. The panel tells you how long to cut each piece.
+A **hinged lid** has knuckles on one wall. A short piece of 1.75 mm filament goes through them as the hinge pin, so you need no metal pin. The panel tells you how long to cut each piece.
 
 - <Ui k="binDesigner.lid.hinge.side" />: the wall the lid swings up from. It starts on the <Ui k="binDesigner.lid.side.back" /> wall, so the open lid falls away from your hand.
 - <Ui k="binDesigner.lid.hinge.catch" />: <Ui k="binDesigner.lid.hinge.catch.none" />, <Ui k="binDesigner.lid.hinge.catch.detent" /> (the default) or <Ui k="binDesigner.lid.hinge.catch.magnets" />. Magnets give the strongest hold, and they still work with a cutout in the wall opposite the hinge.
@@ -76,6 +81,8 @@ Under <Ui k="binDesigner.lid.section.topSurface" />, pick what the top of the li
 | <Ui k="binDesigner.lid.topSurface.flat" />      | A plain closed top.                                                                                                                                                                 |
 | <Ui k="binDesigner.lid.topSurface.stackable" /> | A grid of Gridfinity sockets, so another bin locks onto the lid.                                                                                                                    |
 | <Ui k="binDesigner.lid.topSurface.tray" />      | A shallow recess in the top that holds small parts. Set its <Ui k="binDesigner.lid.trayDepth" /> and <Ui k="binDesigner.lid.trayWall" /> under <Ui k="binDesigner.lid.advanced" />. |
+
+<Screenshot id="designer-lids-top-surface" alt="Under Top surface, picking Stackable puts a grid of sockets on the lid. Then picking Tray turns the lid top into a shallow recess." spec="Bin designer, 2 x 2 x 3 bin with a click-rail lid. In close-up, pick Stackable, then show the bin. Pick Tray, then show the bin." />
 
 A stackable top has three more options:
 
@@ -110,6 +117,34 @@ A lid holds up to 24 shapes, clear of the mating wall and the magnets. Holes nee
 - <Ui k="binDesigner.lid.createMatchingTray" /> starts a new design with the same size as this bin. Its underside is a lid, so it sits on this bin as an organizer tray. To stack whole boxes without a lid, see [Nest boxes on each other](./stacking#nest-boxes-on-each-other).
 
 The lid exports with its rails up, ready to print. The default lid needs no supports, but a fused stack grid can need them.
+
+## When it goes wrong
+
+### You can't turn on the lid
+
+Read the note under the switch. It names the conflict to fix. If the stacking lip is off, click <Ui k="binDesigner.dependency.enableStackingLip" /> under the switch.
+
+<Screenshot id="designer-lids-needs-stacking-lip" alt="The Lid group of a bin with no stacking lip. The Lid switch is greyed out, with the note Requires stacking lip and an Enable stacking lip button under it." spec="Bin designer, default bin with the stacking lip off. Crop the Lid group from its heading to the Enable stacking lip button." />
+
+Most lids grip the stacking lip. Wall cutouts or handles block the lid only when they leave no usable lip on any wall. A lid also can't sit down on divider pieces that are taller than the inside of the bin.
+
+### One wall has no click rail
+
+Look under <Ui k="binDesigner.lid.compat.heading" />. It names the feature that took the rail. For a finger scoop, lower the scoop height, or turn on <Ui k="binDesigner.lid.relieveInterior" /> under <Ui k="binDesigner.lid.advanced" />.
+
+A label tab, a wall cutout, a handle or a tall scoop at the top of a wall gets in the way of the rail. The bin designer then makes that rail shorter, or leaves it off.
+
+### A sliding lid catches on the dividers
+
+Turn on <Ui k="binDesigner.lid.relieveInterior" /> under <Ui k="binDesigner.lid.advanced" />. Dividers then stop a few millimeters below the rim, and label tabs sit lower.
+
+The lid sweeps across the whole top of the bin, so dividers, label tabs or a scoop at the rim stop it. While the option is off, the compatibility notes warn you.
+
+### A hinged lid won't stay shut
+
+Under <Ui k="binDesigner.lid.hinge.catch" />, pick <Ui k="binDesigner.lid.hinge.catch.magnets" />. Or make <Ui k="binDesigner.lid.extraHeight" /> lower.
+
+On a tall lid, the snap catch can't clear the rim as the lid opens. The bin designer then builds the lid without the catch, and the compatibility notes tell you.
 
 ## Next steps
 

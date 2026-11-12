@@ -78,7 +78,6 @@ vi.mock('@/shared/hooks/useDrawerSettings', () => ({
     handleDrawerWidthInput: vi.fn(),
     handleDrawerDepthInput: vi.fn(),
     handleHalfBinToggle: vi.fn(),
-    handleRemediate: vi.fn(),
     handleSaveDefaults: vi.fn(),
     handleFractionalEdgeChange: vi.fn(),
     handleGridUnitChange: vi.fn(),
@@ -87,9 +86,6 @@ vi.mock('@/shared/hooks/useDrawerSettings', () => ({
     toggleSTLSite: vi.fn(),
     showSaveDefaultsConfirm: false,
     setShowSaveDefaultsConfirm: vi.fn(),
-    showHalfBinBlockedModal: false,
-    setShowHalfBinBlockedModal: vi.fn(),
-    halfBinViolation: null,
   }),
 }));
 

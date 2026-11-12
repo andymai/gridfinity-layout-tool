@@ -86,9 +86,7 @@ export function PhoneToolList() {
           return (
             <li key={cutout.id} className="space-y-1.5 rounded-md border border-stroke-subtle p-2">
               <div className="flex items-center gap-1">
-                <span className="min-w-0 flex-1 truncate text-xs text-content-primary">
-                  {label}
-                </span>
+                <span className="min-w-0 flex-1 truncate text-xs text-content">{label}</span>
                 <IconButton
                   type="button"
                   size="sm"

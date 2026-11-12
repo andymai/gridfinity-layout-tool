@@ -6,7 +6,7 @@ describe('DOCS_NAVIGATION', () => {
     for (const url of [
       '/docs',
       '/docs/',
-      '/docs/introduction/what-it-does',
+      '/docs/introduction/gridfinity-basics',
       '/docs?utm_source=help',
       '/docs#top',
     ])

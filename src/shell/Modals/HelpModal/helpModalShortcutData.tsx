@@ -58,7 +58,11 @@ export const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
         keys: formatShortcutKeys(SHORTCUTS.QUICK_LABEL),
         descriptionKey: 'help.shortcut.quickLabel',
       },
-      { keys: 'A', descriptionKey: 'help.shortcut.selectAll', modifier: true },
+      {
+        keys: formatShortcutKeys(SHORTCUTS.SELECT_ALL),
+        descriptionKey: 'help.shortcut.selectAll',
+        modifier: true,
+      },
       { keys: 'Arrow keys', descriptionKey: 'help.shortcut.nudge' },
     ],
   },

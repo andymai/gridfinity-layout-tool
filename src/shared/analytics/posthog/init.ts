@@ -5,7 +5,8 @@
 
 import type { PostHog } from 'posthog-js';
 import { useSettingsStore } from '@/core/store/settings';
-import { getStableUserId } from './identity';
+import { getDisplayMode } from '@/shared/pwa/displayMode';
+import { getStableUserId, syncAnalyticsDataAcrossWindows } from './identity';
 import { filterExceptionForPosthog } from './errorFilters';
 
 // INITIALIZATION (LAZY LOADED)
@@ -47,6 +48,8 @@ export function initAnalytics(): void {
     return;
   }
 
+  syncAnalyticsDataAcrossWindows();
+
   // Lazy load posthog-js
   initPromise = import('posthog-js')
     .then(async ({ default: posthog }) => {
@@ -78,11 +81,18 @@ export function initAnalytics(): void {
         // of the shape filterExceptionForPosthog reads.
         before_send: (event) => {
           const kept = filterExceptionForPosthog(event);
-          if (kept?.event === '$exception' && getExceptionContext) {
+          if (!kept) return null;
+          if (kept.event === '$exception' && getExceptionContext) {
             // Explicit context wins: `captureException` callers pass details
             // about the specific failure that the ambient layout can't know.
             kept.properties = { ...getExceptionContext(), ...kept.properties };
           }
+          // Per event, not `register_for_session`: PostHog clears session
+          // properties when its session rotates after 30 idle minutes, and an
+          // installed app window often stays open longer. Not `register`
+          // either: a tab and the app window share its localStorage. Set last,
+          // so it beats a stale value an older build registered in this tab.
+          kept.properties = { ...kept.properties, display_mode: getDisplayMode() };
           return kept as typeof event;
         },
       });
@@ -101,6 +111,7 @@ export function initAnalytics(): void {
         updatePersonProperties,
         getLayoutContext,
         listenForPwaInstall,
+        listenForDisplayModeChanges,
         captureUtmParameters,
       } = await import('./events');
       // Exceptions thrown before this resolves are still captured, just without
@@ -109,6 +120,7 @@ export function initAnalytics(): void {
       updatePersonProperties();
       captureUtmParameters();
       listenForPwaInstall();
+      listenForDisplayModeChanges();
 
       // Flush queued events
       for (const event of eventQueue) {
@@ -119,6 +131,10 @@ export function initAnalytics(): void {
     .catch(() => {
       // Fail silently
     });
+}
+
+export function isAnalyticsActive(): boolean {
+  return initPromise !== null && useSettingsStore.getState().settings.analyticsEnabled;
 }
 
 /**
@@ -138,6 +154,8 @@ export function optOutAnalytics(): void {
 export function optInAnalytics(): void {
   if (posthogInstance) {
     posthogInstance.opt_in_capturing();
+    // A launch from the installed app while analytics was off went unrecorded.
+    void import('./events').then(({ noteCurrentDisplayMode }) => noteCurrentDisplayMode());
   } else {
     // If posthog wasn't initialized, try to initialize now
     initPromise = null;

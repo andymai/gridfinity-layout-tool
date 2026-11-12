@@ -234,6 +234,32 @@ export function Header({ saveStatus }: HeaderProps) {
             <span className="sr-only xl:not-sr-only">{t('header.saved')}</span>
           </div>
         )}
+        {saveStatus === 'error' && (
+          <div
+            className="flex items-center gap-1.5 px-2 py-1 text-micro mr-2 text-error"
+            aria-live="polite"
+            role="status"
+          >
+            <svg
+              className="w-3 h-3"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              {ICON_PATHS.close.map((d) => (
+                <path
+                  key={d}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d={d}
+                />
+              ))}
+            </svg>
+            <span className="sr-only xl:not-sr-only">{t('header.saveFailed')}</span>
+          </div>
+        )}
 
         <div className="flex items-center">
           <IconButton

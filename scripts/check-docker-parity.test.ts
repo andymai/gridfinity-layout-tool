@@ -184,6 +184,7 @@ const SAMPLE_PATHS = [
   '/docs',
   '/docs/',
   '/docs/introduction/what-it-does',
+  '/docs/introduction/gridfinity-basics',
   '/docs/assets/app.abc.js',
   '/docs/no/such/page',
   '/docsx',
@@ -317,7 +318,7 @@ describe('docker/nginx.conf mirrors vercel.json', () => {
     });
 
     it('lets docs HTML revalidate on both hosts', () => {
-      const page = `${DOCS_PREFIX}/introduction/what-it-does`;
+      const page = `${DOCS_PREFIX}/introduction/gridfinity-basics`;
       const cacheRules = headerEntries.filter(
         (h) => h.headers.some((x) => x.key === 'Cache-Control') && vercelRegex(h.source).test(page)
       );

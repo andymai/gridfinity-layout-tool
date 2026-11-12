@@ -9,11 +9,13 @@ sources:
   - src/features/grid-editor/components/Grid/GridCanvas/GridCanvas.tsx
   - src/shared/hooks/use3DPreviewKeyboard.ts
   - src/features/bin-designer/components/panel/BaseSection/BodyTypeTiles.tsx
+  - src/core/cqrs/v2/domain/layer/reorderLayers.ts
+  - src/shared/utils/validationPlacement.ts
 ---
 
 # Work in layers
 
-A deep drawer has room for more than one level of bins. In the Gridfinity Layout Tool, each level is a layer. Bins on a higher layer sit on the bins below them, as they do in the real drawer. Here's how to add layers, stack bins, and check your stacks in 3D before you print.
+A deep drawer has room for more than one level of bins. In the Gridfinity Layout Tool, each level is a **layer**. Bins on a higher layer sit on the bins below them, as they do in the real drawer. Here's how to add layers, stack bins, and check your stacks in 3D before you print.
 
 ## How layers work
 
@@ -35,11 +37,11 @@ Only the tallest stack must fit in the drawer. The <Ui k="layers.tallestStack" /
 - To change the order, drag a layer row up or down. The Layout Tool stops a new order that makes a stack taller than the drawer.
 - To delete a layer, click the delete button on its row (<Ui k="layers.deleteTooltip" />). Its bins move to the stash, so you keep them. A layout always keeps one layer.
 
+<Screenshot id="layouts-layers-add-rename" alt="A click on the plus button adds Layer 4 at the top of the list. A click on its name opens the name for editing, and Lid tray is typed in." spec="Clip. Layout editor on desktop, left panel open. Layout with three layers. Click Add new layer, click the name of the new layer, type a name and press Enter. Crop to the Layers group." />
+
 New layers get their height from <Ui k="settings.defaultLayerHeight" /> in <Ui k="settings.tabs.defaults" />.
 
-::: warning
-Do not use the clear button under the size brush to stash bins. It deletes every bin on the active layer, and only undo brings them back. To keep the bins, move them to the stash: see [Delete and undo](./placing-bins#delete-and-undo).
-:::
+To empty the active layer, click the clear button under the size brush, then click <Ui k="layers.clearLayer.confirm" />. All the bins on the layer move to the stash, and one undo puts them back.
 
 ## Change the active layer
 
@@ -53,15 +55,19 @@ Draw or drop a bin on an upper layer, over bins on a lower layer. The bin then r
 
 A bin that rests on another bin shows a small tag on the grid, for example "on 6u". If part of its base has nothing under it, a warning icon shows next to the tag. The inspector shows the same facts: the height that the bin rests at, and <Ui k="inspector.unevenSupport" />.
 
+<Screenshot id="layouts-layers-stack" alt="A press of W makes Layer 2 the active layer, and the bins of Layer 1 show faintly under it. A new bin drawn over them rests on them, and its tag shows the height it rests at." spec="Clip. Layout editor on desktop. Layout with a 5 by 4 drawer, four bins on Layer 1 and one on Layer 2. Press W with a keycap, then draw a 2 by 2 bin over the bins of Layer 1. Crop to the toolbar and the grid, then cut to a close-up of the new bin and its tag." />
+
 ### Reserve space above a bin
 
 Some things stand taller than their bin, like scissor handles. Set <Ui k="inspector.clearanceMmLabel" /> in the inspector to keep space free above the bin. The clearance doesn't make the printed bin taller.
 
 On the layers above, striped cells mark the clearance, and no bin can rest there. Click a striped zone to jump to the bin that reserves it.
 
+<Screenshot id="layouts-layers-clearance" alt="Layer 2 is active. Striped cells cover the Scissors bin on Layer 1, which keeps space free above it, so no bin can rest there." spec="Layout editor on desktop. Layout with a 5 by 3 drawer and two layers. On Layer 1, a Scissors bin has a clearance of 4 height units. Make Layer 2 active. Crop to the grid." />
+
 ## Make short bins finish flush with spacers
 
-Want a short bin to sit level with its tall neighbors? Put a spacer under it. A spacer is an open frame with feet and no floor.
+Want a short bin to sit level with its tall neighbors? Put a spacer under it. A **spacer** is an open frame with feet and no floor.
 
 1. In the bin designer, open the <Ui k="binDesigner.group.base" /> group.
 2. Under <Ui k="binDesigner.base.bodyType" />, choose <Ui k="binDesigner.spacer" />.
@@ -88,6 +94,26 @@ In the 3D preview (open it with <Ui k="toolbar.3dView" />), three buttons pick t
 To look between the layers, turn on <Ui k="grid.explodedView.label" /> or press <kbd>E</kbd>. It lifts each layer apart. The exploded view shows all the layers, and it works on a computer screen only.
 
 <Screenshot id="layouts-layers-exploded" alt="The expanded 3D preview shows three layers of bins stacked in the drawer. A press of E lifts the layers apart, each with its name." spec="Clip. Layout editor on desktop with the 3D preview expanded (Space) and All selected. Same three-layer layout as the Layers panel shot, with the middle layer active. Zoom out so the exploded stack fits, then press E on camera with a keycap. Isometric angle where every layer and its label is visible. Crop to the preview." />
+
+## When it goes wrong
+
+### A layer won't move up or down
+
+Make room in the drawer first, then drag the row again. Lower the tallest bins, or raise <Ui k="sidebar.drawerHeight" /> if your real drawer has the room.
+
+The Layout Tool stops a new order that would push a stack past the drawer top. It also stops an order that would rest a bin in space that another bin reserves. The row goes back to its place, and an error message shows.
+
+### A bin won't go on the upper layer
+
+Read the red tag over the bin while you drag it. <Ui k="grid.exceedsDrawerHeight" /> means the bin would stand above the drawer top. It rests on the tallest bin under any part of it, so one tall bin below is enough. Use a shorter bin, or move it over shorter bins.
+
+A tag that names a bin on a lower layer means the striped cells are clearance. That bin keeps the space free for its items. Click a striped cell to jump to that bin, and lower its <Ui k="inspector.clearanceMmLabel" /> if its items don't need the space.
+
+### A warning icon shows next to the height tag
+
+Move the bin so that its whole base sits on bins of one height. Or fill the gap under it with a [spacer](#make-short-bins-finish-flush-with-spacers).
+
+The bin leans on a taller neighbor, or part of it hangs over an empty cell, so it can rock in the drawer. The inspector shows <Ui k="inspector.unevenSupport" /> for the same bin.
 
 ## Next steps
 
