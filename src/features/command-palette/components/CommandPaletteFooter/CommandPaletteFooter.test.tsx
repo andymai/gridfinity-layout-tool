@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { CommandPaletteFooter } from './CommandPaletteFooter';
 import { COMMAND_DEFINITIONS } from '../../commands';
 import type { CommandDefinition } from '../../commands';
+import { findClassesWithoutCss } from '@/test/tailwindClasses';
 
 vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string, params?: Record<string, unknown>) => {
@@ -74,6 +75,23 @@ describe('CommandPaletteFooter', () => {
     render(<CommandPaletteFooter selectedCommand={commandWithoutShortcut} matchCount={3} />);
 
     expect(screen.getByText(/commandPalette.footer.commandCount/)).toBeInTheDocument();
+  });
+
+  it('keeps the keycap height whether it shows the shortcut badge or the count', async () => {
+    const { container, rerender } = render(
+      <CommandPaletteFooter selectedCommand={mockCommand} matchCount={5} />
+    );
+    const keycapHeight = [...screen.getByText('K').classList].find((name) =>
+      name.startsWith('h-[')
+    );
+    if (!keycapHeight) throw new Error('the keycap has no fixed height');
+    const footer = container.firstElementChild;
+    if (!footer) throw new Error('footer not found');
+
+    expect(footer).toHaveClass('box-content', keycapHeight);
+    rerender(<CommandPaletteFooter selectedCommand={null} matchCount={5} />);
+    expect(container.firstElementChild).toHaveClass('box-content', keycapHeight);
+    expect(await findClassesWithoutCss(footer.classList)).toEqual([]);
   });
 
   it('renders keyboard hint badges', () => {

@@ -19,7 +19,9 @@ export function CommandPaletteFooter({ selectedCommand, matchCount }: CommandPal
   const t = useTranslation();
 
   return (
-    <div className="flex items-center justify-between px-3 py-2 border-t border-stroke-subtle bg-surface-secondary/50 text-label text-content-tertiary">
+    // The content height is the keycap height of ShortcutBadge, so the footer
+    // does not grow when the badge replaces the count.
+    <div className="box-content flex h-[22px] items-center justify-between px-3 py-2 border-t border-stroke-subtle bg-surface-secondary/50 text-label text-content-tertiary">
       {/* Left: Action hints */}
       <div className="flex items-center gap-3">
         <span className="flex items-center gap-1">
