@@ -1,0 +1,27 @@
+src/core/store/index.ts
+  s_1cc363bb3cc76d::t_5c20f6e59ba227 7
+src/core/store/openLayoutSaves.test.ts
+  s_1cc363bb3cc76d::t_0656c5d2d76012 1-7,52-89
+src/core/store/openLayoutSaves.ts
+  s_1cc363bb3cc76d::t_dcd51f6c3c8495 16-23,28,33,48-59,61-64
+src/core/sync/adapters/layoutAdapter.ts
+  s_1cc363bb3cc76d::t_33aa1238c035ee 2,219
+src/features/layout-library/hooks/useLayoutRouting.overlap.test.ts
+  s_1cc363bb3cc76d::t_8b6d6c38fcd64a 7-8,11-14,49-71,99,107-171
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b08c135e1c0d911eba90f79a8857fb5ae25464bc",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
