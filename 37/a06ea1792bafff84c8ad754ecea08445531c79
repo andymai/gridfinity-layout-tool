@@ -1,0 +1,21 @@
+src/features/bin-designer/hooks/useSplitPreview.test.ts
+  s_1cc363bb3cc76d::t_f7e4dac626ffbe 457-504
+src/features/bin-designer/hooks/useSplitPreview.ts
+  s_1cc363bb3cc76d::t_36c6e6ba2c5e3b 75,78,106-107,211-214,227-230,232,284
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "37a06ea1792bafff84c8ad754ecea08445531c79",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
