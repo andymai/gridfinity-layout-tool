@@ -1,19 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { createLayoutWithSettings, isRealLayoutId } from '@/core/constants';
-import { isErr, isOk, OK } from '@/core/result';
-import type { Result, StorageError, Unit } from '@/core/result';
+import { createLayoutWithSettings } from '@/core/constants';
+import { isErr, isOk } from '@/core/result';
 import {
   queueLibraryWrite,
+  saveOpenLayout,
   useLayoutStore,
   useLibraryStore,
   useSettingsStore,
   useToastStore,
 } from '@/core/store';
-import {
-  createLayoutEntry,
-  saveLayoutWithMetadata,
-  wasLibrarySeededThisLoad,
-} from '@/core/storage';
+import { createLayoutEntry, wasLibrarySeededThisLoad } from '@/core/storage';
 import type { Layout, LayoutId } from '@/core/types';
 import { layoutId as toLayoutId } from '@/core/types';
 import { trackLayoutAction } from '@/shared/analytics/posthog';
@@ -102,17 +98,6 @@ export function useDrawerLinkImport({ disabled, syncLayoutUrl }: DrawerLinkImpor
   }, [link, disabled, isReady, activateLayout, t]);
 
   return link !== null;
-}
-
-function saveOpenLayout(): Promise<Result<Unit, StorageError>> {
-  return queueLibraryWrite(async (library) => {
-    const { activeLayoutId, layout } = useLayoutStore.getState();
-    if (!isRealLayoutId(activeLayoutId)) return OK;
-    const saved = await saveLayoutWithMetadata(activeLayoutId, layout, library);
-    if (isErr(saved)) return saved;
-    useLibraryStore.getState().setLibrary(saved.value.library);
-    return OK;
-  });
 }
 
 async function openDrawerLink(

@@ -1,19 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { queueLibraryWrite, useLayoutStore, useLibraryStore, useToastStore } from '@/core/store';
+import {
+  noteOpenLayoutSaved,
+  queueLibraryWrite,
+  readOpenLayout,
+  savedLaterCopy,
+  useLayoutStore,
+  useLibraryStore,
+  useToastStore,
+} from '@/core/store';
+import type { OpenLayoutRead } from '@/core/store';
 import { saveLayoutWithMetadata } from '@/core/storage';
-import type { SaveResult } from '@/core/storage';
 import { isRealLayoutId } from '@/core/constants';
 import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils';
-import {
-  err,
-  isErr,
-  isOk,
-  ok,
-  getUserMessage,
-  isRetryable,
-  storageUnavailable,
-} from '@/core/result';
+import { err, isErr, ok, getUserMessage, isRetryable, storageUnavailable } from '@/core/result';
 import type { Result, StorageError } from '@/core/result';
 import type { Layout, LayoutId } from '@/core/types';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -51,17 +51,27 @@ function reportSaveCrash(error: unknown): void {
   });
 }
 
-/** Resolves to `ok(null)` when the layout left the library before this save's turn. */
+/**
+ * Saves the newest copy of the layout that `read` saw: the open layout as it
+ * is at this save's turn, or `read` itself when that layout is closed. Resolves
+ * to the copy it saved, or to `ok(null)` when there is nothing to save: the
+ * layout left the library, or a write ahead in the queue saved a later copy.
+ */
 async function writeLayout(
   savingLayoutId: LayoutId,
-  layout: Layout
-): Promise<Result<SaveResult | null, StorageError>> {
+  read: OpenLayoutRead
+): Promise<Result<Layout | null, StorageError>> {
   try {
     return await queueLibraryWrite(async (library) => {
       if (!library.entries.some((entry) => entry.id === savingLayoutId)) return ok(null);
-      const saved = await saveLayoutWithMetadata(savingLayoutId, layout, library);
-      if (isOk(saved)) useLibraryStore.getState().setLibrary(saved.value.library);
-      return saved;
+      const open = readOpenLayout();
+      const newest = open.id === savingLayoutId ? open : read;
+      if (savedLaterCopy(newest)) return ok(null);
+      const saved = await saveLayoutWithMetadata(savingLayoutId, newest.layout, library);
+      if (isErr(saved)) return saved;
+      noteOpenLayoutSaved(newest);
+      useLibraryStore.getState().setLibrary(saved.value.library);
+      return ok(newest.layout);
     });
   } catch (error: unknown) {
     reportSaveCrash(error);
@@ -125,22 +135,23 @@ function createLayoutSaver(
       return;
     }
 
-    const { layout, activeLayoutId: savingLayoutId } = useLayoutStore.getState();
+    const read = readOpenLayout();
+    const savingLayoutId = read.id;
     if (!isRealLayoutId(savingLayoutId)) return;
 
     window.clearTimeout(retryTimer);
     retryTimer = undefined;
     inFlight = true;
-    const result = await writeLayout(savingLayoutId, layout);
+    const result = await writeLayout(savingLayoutId, read);
     inFlight = false;
     if (isDisposed()) return;
 
     if (isErr(result)) {
       handleFailure(result.error, trigger);
     } else if (result.value === null) {
-      handleDeleted();
+      handleNothingToSave();
     } else if (useLayoutStore.getState().activeLayoutId === savingLayoutId) {
-      handleSuccess(savingLayoutId, layout);
+      handleSuccess(savingLayoutId, result.value);
     } else if (failureCount === 0) {
       // The user switched layouts during the save. The status follows the open layout.
       onStatus('idle');
@@ -167,9 +178,9 @@ function createLayoutSaver(
     }, SAVED_DISPLAY_MS);
   }
 
-  // A save of a deleted layout can only fail, and a failure of a layout that
-  // is gone tells nothing about the layout that opens in its place.
-  function handleDeleted(): void {
+  // The layout is deleted, or a later copy of it is in storage, so the failures
+  // of its earlier saves are over.
+  function handleNothingToSave(): void {
     failureCount = 0;
     hasShownError = false;
     dismissFailureToast();

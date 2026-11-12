@@ -8,7 +8,13 @@ import { connectLibraryPersistence, eventBus } from '@/core/cqrs';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useToastStore } from '@/core/store/toast';
-import { createLayoutEntry, layoutCopyName, loadLibraryAsync } from '@/core/storage';
+import { queueLibraryWrite } from '@/core/store/libraryWrites';
+import {
+  createLayoutEntry,
+  layoutCopyName,
+  loadLayoutAsync,
+  loadLibraryAsync,
+} from '@/core/storage';
 import { clearAllData, getAllLayoutIds } from '@/core/storage/backends/indexedDB';
 import { createDefaultLayout } from '@/core/constants';
 import { expectOk, resetAllStores } from '@/test/testUtils';
@@ -70,6 +76,23 @@ async function libraryState(): Promise<LibraryState> {
 function everywhere(names: string[]): LibraryState {
   const sorted = [...names].sort();
   return { store: sorted, stored: sorted, blobs: sorted.length };
+}
+
+/** Holds the library queue until the returned function runs. */
+function holdQueue(): () => Promise<void> {
+  let release = (): void => undefined;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const held = queueLibraryWrite(() => gate);
+  return async () => {
+    release();
+    await held;
+  };
+}
+
+async function storedName(id: LayoutId): Promise<string | undefined> {
+  return (await loadLayoutAsync(id))?.name;
 }
 
 // A write that saves the library without waiting for it lands a moment later.
@@ -323,5 +346,67 @@ describe('useLayoutSwitcher library writes that overlap', () => {
 
     expect(errorToasts()).toEqual([]);
     expect(await libraryState()).toEqual(everywhere(['B edited']));
+  });
+
+  it('keeps a rename that a switch saved when an older autosave of that layout runs after it', async () => {
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'requestIdleCallback', 'cancelIdleCallback'],
+    });
+    const [a, b] = await seed('A', 'B');
+    const autosave = renderHook(() => useAutoSave());
+    const switcher = renderHook(() => useLayoutSwitcher());
+    act(() => {
+      useLayoutStore.getState().importLayout(namedLayout('A edited'), a, 'local');
+    });
+
+    const release = holdQueue();
+    let switched: Promise<unknown> = Promise.resolve();
+    act(() => {
+      switcher.result.current.renameLayout(a, 'A renamed');
+      switched = switcher.result.current.switchLayout(b);
+      // The autosave of A reads A before the rename, and waits behind the switch.
+      vi.advanceTimersByTime(3000);
+    });
+    await act(async () => {
+      await release();
+      await switched;
+    });
+    await untilStatus(
+      () => autosave.result.current,
+      (current) => current !== 'saving'
+    );
+
+    expect(await storedName(a)).toBe('A renamed');
+    expect(await libraryState()).toEqual(everywhere(['A renamed', 'B']));
+  });
+
+  it('saves the newest content of the open layout when its autosave waited for its turn', async () => {
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'requestIdleCallback', 'cancelIdleCallback'],
+    });
+    const [a] = await seed('A', 'B');
+    const autosave = renderHook(() => useAutoSave());
+    act(() => {
+      useLayoutStore.getState().importLayout(namedLayout('A edited'), a, 'local');
+    });
+
+    const release = holdQueue();
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    act(() => {
+      useLayoutStore.getState().importLayout(namedLayout('A edited again'), a, 'local');
+    });
+    await act(async () => {
+      await release();
+    });
+    await untilSaved(() => autosave.result.current);
+
+    expect(await storedName(a)).toBe('A edited again');
+    expect(await libraryState()).toEqual(everywhere(['A edited again', 'B']));
+    // The tab holds no unsaved edit, so closing it does not ask.
+    const unload = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(unload);
+    expect(unload.defaultPrevented).toBe(false);
   });
 });

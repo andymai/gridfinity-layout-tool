@@ -2,7 +2,10 @@ import { useCallback, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import {
+  noteOpenLayoutSaved,
   queueLibraryWrite,
+  readOpenLayout,
+  saveOpenLayout,
   useLibraryStore,
   useToastStore,
   useSettingsStore,
@@ -14,7 +17,6 @@ import { layoutId } from '@/core/types';
 import { useLayoutActivation } from '@/shared/hooks/useLayoutActivation';
 import { isErr, isOk } from '@/core/result';
 import {
-  saveLayoutWithMetadata,
   createLayoutEntry,
   deleteLayoutWithEntry,
   duplicateLayoutEntry as duplicateLayoutStorage,
@@ -88,15 +90,8 @@ export function useLayoutSwitcher() {
    * Save the current layout to storage and update library entry.
    */
   const saveCurrentLayout = useCallback(async () => {
-    const result = await queueLibraryWrite(async (library) => {
-      const { activeLayoutId: currentActiveId, layout } = useLayoutStore.getState();
-      if (!isRealLayoutId(currentActiveId)) return OK;
-      const saved = await saveLayoutWithMetadata(currentActiveId, layout, library);
-      if (isOk(saved)) setLibrary(saved.value.library);
-      return saved;
-    });
-    if (isErr(result)) addToast(t('toast.layoutSaveFailed'), 'error');
-  }, [setLibrary, addToast, t]);
+    if (isErr(await saveOpenLayout())) addToast(t('toast.layoutSaveFailed'), 'error');
+  }, [addToast, t]);
 
   /**
    * Switch to a different layout.
@@ -119,14 +114,15 @@ export function useLayoutSwitcher() {
         clearSharedLayoutPreview();
 
         const result = await queueLibraryWrite(async (library) => {
-          const { activeLayoutId: currentActiveId, layout } = useLayoutStore.getState();
+          const open = readOpenLayout();
           const switched = await switchActiveLayout(
-            currentActiveId || SHARED_PREVIEW_ID,
-            layout,
+            open.id || SHARED_PREVIEW_ID,
+            open.layout,
             targetId,
             library
           );
           if (isOk(switched)) {
+            if (isRealLayoutId(open.id)) noteOpenLayoutSaved(open);
             setLibrary(switched.value.library);
             activateLayout(switched.value.targetLayout, targetId);
           }
