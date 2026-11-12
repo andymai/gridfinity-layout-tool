@@ -390,10 +390,19 @@ describe('Bin', () => {
       };
       render(<Bin {...defaultProps} bin={largeBin} />);
       expect(screen.queryByText('Split')).not.toBeInTheDocument();
-      expect(screen.getByText('Oversized')).toHaveAttribute(
-        'title',
-        'Exceeds print size, prints in one piece'
+      expect(screen.getByTitle('Exceeds print size, prints in one piece')).toHaveTextContent(
+        'Oversized'
       );
+    });
+
+    // The chip sits on the category colour, so it brings its own ground.
+    it('marks the bin with a chip that paints its own ground, label or not', () => {
+      const largeBin = { ...defaultBin, width: gridUnits(7), depth: gridUnits(7) };
+      const { rerender } = render(<Bin {...defaultProps} bin={largeBin} />);
+      expect(screen.getByTitle('Exceeds print size, will be split')).toHaveClass('bg-black/70');
+
+      rerender(<Bin {...defaultProps} bin={{ ...largeBin, label: 'Spatulas' }} />);
+      expect(screen.getByLabelText('Exceeds print size, will be split')).toHaveClass('bg-black/70');
     });
   });
 

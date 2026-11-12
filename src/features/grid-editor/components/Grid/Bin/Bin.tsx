@@ -24,6 +24,7 @@ import type { BinProps } from './binPropsAreEqual';
 import { binPropsAreEqual } from './binPropsAreEqual';
 import { useBinHighlighting } from './useBinHighlighting';
 import { useBinBedFit } from './useBinBedFit';
+import { BinOverBedChip } from './BinOverBedChip';
 import { useBinSelection } from './useBinSelection';
 import { useBinPointerInteraction } from './useBinPointerInteraction';
 
@@ -108,10 +109,6 @@ function BinComponent({
   const isMultiSelect = selectedBinIds.length > 1;
 
   const bedFit = useBinBedFit(bin);
-  const overBed = bedFit !== 'fits';
-  const overBedTitle = t(
-    bedFit === 'keptWhole' ? 'grid.exceedsPrintSizeWhole' : 'grid.exceedsPrintSize'
-  );
   const riseKey = useLinkedRiseKey();
   const restingZ = useLayoutStore(
     (state) =>
@@ -462,20 +459,12 @@ function BinComponent({
           >
             {primaryText}
             {/* Split badge (only when dimensions are primary) */}
-            {!showLabel && overBed && (
-              <span
-                className="ml-0.5 rounded-sm"
-                title={overBedTitle}
-                style={{
-                  fontSize: `${Math.round(secondaryFontSize * 0.9)}px`,
-                  padding: '0px 3px',
-                  backgroundColor: 'var(--overlay-medium)',
-                  color: 'var(--color-warning)',
-                  fontWeight: 500,
-                }}
-              >
-                {t(bedFit === 'keptWhole' ? 'grid.oversized' : 'grid.split')}
-              </span>
+            {!showLabel && bedFit !== 'fits' && (
+              <BinOverBedChip
+                bedFit={bedFit}
+                fontSize={Math.round(secondaryFontSize * 0.9)}
+                className="ml-0.5"
+              />
             )}
           </div>
           {/* Secondary text (dimensions when label is primary) */}
@@ -491,15 +480,13 @@ function BinComponent({
               }}
             >
               {secondaryText}
-              {overBed && (
-                <span
+              {bedFit !== 'fits' && (
+                <BinOverBedChip
+                  bedFit={bedFit}
+                  fontSize={secondaryFontSize}
+                  iconOnly
                   className="ml-1"
-                  title={overBedTitle}
-                  style={{ color: 'var(--color-warning)' }}
-                  aria-label={overBedTitle}
-                >
-                  {WARNING_ICON}
-                </span>
+                />
               )}
             </div>
           )}
