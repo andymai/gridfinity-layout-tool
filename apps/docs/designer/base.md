@@ -70,6 +70,8 @@ A <Ui k="binDesigner.base.bodyType.nesting" /> body takes magnets but no screws,
 
 Turn on <Ui k="binDesigner.halfSockets" /> under <Ui k="binDesigner.base.section.feet" /> to split each foot into feet half a grid unit wide. These feet seat in a baseplate at either half-unit offset.
 
+<Screenshot id="designer-base-half-sockets" alt="Half sockets is turned on in the Feet section. The bin then shows from below, with four small feet under each grid cell." spec="Bin designer, bin 2 x 2 x 3. Close-up of the Feet section in the Base group: turn on Half sockets. Cut to the bin from below." />
+
 ### Set the foot lattice
 
 A foot must land inside one pocket of the baseplate. A full foot on the edge of a pocket doesn't drop in. The <Ui k="binDesigner.footLattice" /> fold sets where the feet fall on each axis:
@@ -86,6 +88,8 @@ Half sockets, a custom shape and a half-unit size keep the lattice on grid.
 1. Turn on <Ui k="binDesigner.detachableFeet" />.
 2. Pick a <Ui k="binDesigner.detachableFeet.pinSize" />, from ø2.6 to ø3.2 mm. The default is ø2.8 mm.
 3. Drag the slider in the 3D preview to drop the feet off the bin and look at the joint.
+
+<Screenshot id="designer-base-detachable-feet" alt="Detachable feet is turned on, Customize is opened, and the ø2.7mm pin size is picked. In the 3D preview, the slider then moves from Attached to Detached, and the feet drop off the bin." spec="Bin designer, bin 3 x 2 x 4. Close-up of the Feet section in the Base group: turn on Detachable feet, open Customize, pick ø2.7mm. Cut to the 3D preview, a little below the default view, with the slider at its right edge: drag it from Attached to Detached." />
 
 The pin holes are 3 mm wide. If a foot won't go on, pick a smaller pin. If a foot comes loose, pick a larger pin.
 

@@ -2,8 +2,10 @@ import type { Locator } from '@playwright/test';
 import { label } from '../labels';
 import { DESKTOP, frameAround, union } from '../session';
 import type { DocsSession, Rect, Shot } from '../session';
+import { WORKBENCH } from '../fixtures';
 import { openDesigner, partBox, setDesign } from './apps';
 import type { Params } from './apps';
+import { cellCenter, openLayouts } from './layoutEditor';
 
 type Key = Parameters<typeof label>[0];
 
@@ -142,10 +144,16 @@ async function cutToPart(s: DocsSession, hold = 2): Promise<void> {
   await s.ui.hideCursor();
   await s.ui.waitBuilt();
   const canvas = await s.box(s.page.locator('canvas').first());
-  await s.take(frameAround(await partBox(s), 40, 4 / 3, canvas), async () => {
-    s.poster();
-    await s.ui.hold(hold);
-  });
+  const frame = frameAround(await partBox(s), 40, 4 / 3, canvas);
+  // The zoom sizes the clip only when this is its first take.
+  await s.take(
+    frame,
+    async () => {
+      s.poster();
+      await s.ui.hold(hold);
+    },
+    CLOSE_UP_WIDTH / frame.width
+  );
 }
 
 const MOUNTING_BIN: Params = { width: 3, depth: 3, height: 3 };
@@ -448,25 +456,30 @@ const COLOR_BIN: Params = {
   featureColors: { labelTab: '#f5f5f5', text: '#1f2937' },
 };
 
+/** A one-time banner, which a maker who has used multi-color before already closed. */
+async function dismissColorHint(s: DocsSession): Promise<void> {
+  await s.page.evaluate(async () => {
+    const { useSettingsStore } = (await import('/src/core/store/settings.ts' as string)) as {
+      useSettingsStore: {
+        getState(): {
+          settings: { dismissedHints: string[] };
+          updateSettings(u: { dismissedHints: string[] }): void;
+        };
+      };
+    };
+    const st = useSettingsStore.getState();
+    st.updateSettings({ dismissedHints: [...st.settings.dismissedHints, 'multi-color-export'] });
+  });
+  await s.ui.warm(6);
+}
+
 const colorZones: Shot = {
   id: 'designer-colors-zones',
   kind: 'clip',
   async take(s) {
     const name = 'Fasteners';
     await openDesigner(s, name, COLOR_BIN);
-    // A one-time banner, which a maker who has used multi-color before already closed.
-    await s.page.evaluate(async () => {
-      const { useSettingsStore } = (await import('/src/core/store/settings.ts' as string)) as {
-        useSettingsStore: {
-          getState(): {
-            settings: { dismissedHints: string[] };
-            updateSettings(u: { dismissedHints: string[] }): void;
-          };
-        };
-      };
-      const st = useSettingsStore.getState();
-      st.updateSettings({ dismissedHints: [...st.settings.dismissedHints, 'multi-color-export'] });
-    });
+    await dismissColorHint(s);
     const colorToggle = toggle(s, 'binDesigner.group.colors');
     const heading = await nearest(
       s,
@@ -602,7 +615,25 @@ const BENTO_VIEW = { width: 1680, height: 940 };
 /** Label tabs on, as typing a compartment label in the Bento workspace turns them on. */
 const BENTO_BIN: Params = { width: 4, depth: 3, height: 6, label: { enabled: true } };
 
-const BENTO_DRAWING = {
+interface BentoRect {
+  col: number;
+  row: number;
+  w: number;
+  h: number;
+}
+
+interface BentoDrawing {
+  grid: { cols: number; rows: number };
+  /** Two compartments fused into one L. */
+  fused: [BentoRect, BentoRect];
+  compartments: BentoRect[];
+  /** Each label is found by a cell of its compartment, since ids renumber on every draw. */
+  labels: { col: number; row: number; text: string }[];
+  /** Raised and selected, so the compartment panel shows its Floor raise. */
+  raised?: { col: number; row: number; mm: number };
+}
+
+const BENTO_DRAWING: BentoDrawing = {
   grid: { cols: 8, rows: 6 },
   fused: [
     { col: 0, row: 0, w: 2, h: 6 },
@@ -614,7 +645,6 @@ const BENTO_DRAWING = {
     { col: 5, row: 0, w: 2, h: 3 },
     { col: 7, row: 0, w: 1, h: 3 },
   ],
-  /** Each label is found by a cell of its compartment, since ids renumber on every draw. */
   labels: [
     { col: 0, row: 0, text: 'Wire cutters' },
     { col: 2, row: 2, text: 'Heat shrink' },
@@ -625,6 +655,59 @@ const BENTO_DRAWING = {
   raised: { col: 7, row: 0, mm: 20 },
 };
 
+/** Draws `d` through the Bento store and opens the workspace on it. */
+async function drawBento(s: DocsSession, d: BentoDrawing): Promise<void> {
+  await s.page.evaluate(async (d) => {
+    type Rect = { col: number; row: number; w: number; h: number };
+    const { useDesignerStore } = (await import(
+      '/src/features/bin-designer/store/designer.ts' as string
+    )) as {
+      useDesignerStore: {
+        getState(): {
+          params: { compartments: { cols: number; cells: number[] } };
+          setInteriorCard(card: 'bento'): void;
+          setBentoGridPreserving(cols: number, rows: number): unknown;
+          drawBentoCompartment(rect: Rect): number | null;
+          mergeBentoCompartments(ids: number[]): number | null;
+          setCompartmentText(id: number, text: string): void;
+          setCompartmentFloorRaise(id: number, mm: number): void;
+          setSelectedBentoCompartmentId(id: number): void;
+          setBentoWorkspaceOpen(open: boolean): void;
+        };
+      };
+    };
+    const st = () => useDesignerStore.getState();
+    const must = (id: number | null): number => {
+      if (id === null) throw new Error('a bento draw was refused');
+      return id;
+    };
+    st().setInteriorCard('bento');
+    st().setBentoGridPreserving(d.grid.cols, d.grid.rows);
+    const [a, b] = d.fused;
+    const first = must(st().drawBentoCompartment(a));
+    const second = must(st().drawBentoCompartment(b));
+    must(st().mergeBentoCompartments([first, second]));
+    for (const r of d.compartments) must(st().drawBentoCompartment(r));
+    const at = (col: number, row: number): number => {
+      const c = st().params.compartments;
+      const id = c.cells[row * c.cols + col];
+      if (id === undefined) throw new Error(`no cell at ${col}, ${row}`);
+      return id;
+    };
+    for (const l of d.labels) st().setCompartmentText(at(l.col, l.row), l.text);
+    st().setBentoWorkspaceOpen(true);
+    if (!d.raised) return;
+    const raised = at(d.raised.col, d.raised.row);
+    st().setCompartmentFloorRaise(raised, d.raised.mm);
+    st().setSelectedBentoCompartmentId(raised);
+  }, d);
+}
+
+const fitBento = (s: DocsSession): Promise<void> =>
+  s.ui.preClick(
+    s.page.getByRole('button', { name: label('binDesigner.cutoutEditor.fitToView'), exact: true })
+  );
+
 const bento: Shot = {
   id: 'designer-compartments-bento',
   kind: 'still',
@@ -632,53 +715,9 @@ const bento: Shot = {
   storage: { 'gridfinity-bento-quickstart-seen-v2': 'true' },
   async take(s) {
     await openDesigner(s, 'Soldering kit', BENTO_BIN);
-    await s.page.evaluate(async (d) => {
-      type Rect = { col: number; row: number; w: number; h: number };
-      const { useDesignerStore } = (await import(
-        '/src/features/bin-designer/store/designer.ts' as string
-      )) as {
-        useDesignerStore: {
-          getState(): {
-            params: { compartments: { cols: number; cells: number[] } };
-            setInteriorCard(card: 'bento'): void;
-            setBentoGridPreserving(cols: number, rows: number): unknown;
-            drawBentoCompartment(rect: Rect): number | null;
-            mergeBentoCompartments(ids: number[]): number | null;
-            setCompartmentText(id: number, text: string): void;
-            setCompartmentFloorRaise(id: number, mm: number): void;
-            setSelectedBentoCompartmentId(id: number): void;
-            setBentoWorkspaceOpen(open: boolean): void;
-          };
-        };
-      };
-      const st = () => useDesignerStore.getState();
-      const must = (id: number | null): number => {
-        if (id === null) throw new Error('a bento draw was refused');
-        return id;
-      };
-      st().setInteriorCard('bento');
-      st().setBentoGridPreserving(d.grid.cols, d.grid.rows);
-      const [a, b] = d.fused;
-      const first = must(st().drawBentoCompartment(a));
-      const second = must(st().drawBentoCompartment(b));
-      must(st().mergeBentoCompartments([first, second]));
-      for (const r of d.compartments) must(st().drawBentoCompartment(r));
-      const at = (col: number, row: number): number => {
-        const c = st().params.compartments;
-        const id = c.cells[row * c.cols + col];
-        if (id === undefined) throw new Error(`no cell at ${col}, ${row}`);
-        return id;
-      };
-      for (const l of d.labels) st().setCompartmentText(at(l.col, l.row), l.text);
-      const raised = at(d.raised.col, d.raised.row);
-      st().setCompartmentFloorRaise(raised, d.raised.mm);
-      st().setBentoWorkspaceOpen(true);
-      st().setSelectedBentoCompartmentId(raised);
-    }, BENTO_DRAWING);
+    await drawBento(s, BENTO_DRAWING);
     await s.until(s.page.getByText(label('binDesigner.bento.floorRaise'), { exact: true }).first());
-    await s.ui.preClick(
-      s.page.getByRole('button', { name: label('binDesigner.cutoutEditor.fitToView'), exact: true })
-    );
+    await fitBento(s);
     await s.ui.waitBuilt();
     await s.dismissToasts();
     const preview = await s.box(s.page.locator('canvas').first());
@@ -686,17 +725,995 @@ const bento: Shot = {
   },
 };
 
+const HALF_BIN: Params = { width: 2, depth: 2, height: 3 };
+
+const halfSockets: Shot = {
+  id: 'designer-base-half-sockets',
+  kind: 'clip',
+  async take(s) {
+    const name = 'Washers';
+    await openDesigner(s, name, HALF_BIN);
+    const half = toggle(s, 'binDesigner.halfSockets');
+    const heading = await nearest(s, texts(s, 'binDesigner.base.section.feet'), half, 'above');
+    const area = await dryRun(
+      s,
+      { anchor: heading, y: 300 },
+      [() => half],
+      async () => union(await s.box(heading), await s.box(half)),
+      () => setDesign(s, name, HALF_BIN)
+    );
+    await closeUp(s, area, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.click(half);
+      await s.ui.hold(0.6);
+    });
+    await orbit(s, -240);
+    await cutToPart(s);
+  },
+};
+
+const FEET_BIN: Params = { width: 3, depth: 2, height: 4 };
+
+const detachableFeet: Shot = {
+  id: 'designer-base-detachable-feet',
+  kind: 'clip',
+  async take(s) {
+    const name = 'Pliers';
+    await openDesigner(s, name, FEET_BIN);
+    const feet = toggle(s, 'binDesigner.detachableFeet');
+    const heading = await nearest(s, texts(s, 'binDesigner.base.section.feet'), feet, 'above');
+    const pin = (): Locator =>
+      s.page
+        .getByRole('radiogroup', { name: label('binDesigner.detachableFeet.pinSize') })
+        .getByRole('radio', { name: 'ø2.7mm' });
+    const steps: Step[] = [() => feet, () => below(s, customize(s), feet), pin];
+    const area = await dryRun(
+      s,
+      { anchor: heading, y: 220 },
+      steps,
+      async () => union(await s.box(heading), await s.box(pin().locator('..'))),
+      () => setDesign(s, name, FEET_BIN)
+    );
+    await closeUp(s, area, async () => {
+      await s.ui.hold(0.4);
+      await clickThrough(s, steps, 0.35);
+      await s.ui.hold(0.3);
+    });
+    await s.ui.hideCursor();
+    await s.ui.waitBuilt();
+    // A little below the default view, so the feet show as they drop.
+    await orbit(s, -70);
+    await s.ui.warm(90);
+    const slider = s.page.getByRole('slider', {
+      name: label('binDesigner.preview.feetDetachSlider'),
+    });
+    const track = await s.box(slider.locator('..'));
+    // Off camera, drop the feet once to frame the part at its tallest.
+    await slider.focus();
+    const ends: Rect[] = [];
+    for (const key of ['Home', 'End']) {
+      await s.page.keyboard.press(key);
+      await s.ui.warm(30);
+      ends.push(await partBox(s));
+    }
+    // The track is inverted, so which key attaches the feet is read, not assumed.
+    if ((await slider.getAttribute('aria-valuenow')) !== '0') {
+      await s.page.keyboard.press('Home');
+      await s.ui.warm(30);
+    }
+    if ((await slider.getAttribute('aria-valuenow')) !== '0')
+      throw new Error('the feet do not go back on the bin');
+    await slider.blur();
+    const canvas = await s.box(s.page.locator('canvas').first());
+    const frame = frameAround(
+      union(...ends, await s.box(slider.locator('../..'))),
+      24,
+      4 / 3,
+      canvas
+    );
+    const x = track.x + track.width / 2;
+    await s.ui.park(x - 50, track.y - 40);
+    await s.take(frame, async () => {
+      await s.ui.hold(0.5);
+      await s.ui.drag([x, track.y + 3], [x, track.y + track.height - 3], 36);
+      await s.ui.moveTo(x - 70, track.y + track.height + 60);
+      s.poster();
+      await s.ui.hold(2);
+    });
+  },
+};
+
+const ACCENT_BIN: Params = {
+  width: 2,
+  depth: 2,
+  height: 5,
+  featureColors: { enabled: true },
+};
+
+const colorPicker = (s: DocsSession): Locator => s.page.getByRole('dialog').first();
+
+/** Picks a preset in the open color picker, in a close-up cut beside the zone row. */
+async function pickColor(
+  s: DocsSession,
+  row: Locator,
+  color: Parameters<typeof label>[0]
+): Promise<void> {
+  const picker = colorPicker(s);
+  await s.until(picker);
+  const pick = union(await s.box(row), await s.box(picker));
+  await s.take(frameAround(pick, 16, 4 / 3, WORKSPACE), async () => {
+    await s.ui.hold(0.3);
+    await s.ui.click(picker.getByRole('button', { name: label(color), exact: true }));
+    await s.ui.hold(0.6);
+  });
+  await s.page.keyboard.press('Escape');
+  await s.ui.warm(10);
+}
+
+const accentBands: Shot = {
+  id: 'designer-colors-accent-bands',
+  kind: 'clip',
+  async take(s) {
+    const name = 'Hex keys';
+    await openDesigner(s, name, ACCENT_BIN);
+    await dismissColorHint(s);
+    const heading = text(s, 'binDesigner.colors.accent.title');
+    const top = toggle(s, 'binDesigner.colors.zone.topAccent');
+    const height = (): Locator =>
+      s.page.getByRole('slider', { name: label('binDesigner.colors.accent.height') }).first();
+    const row = (): Locator =>
+      s.page
+        .getByRole('button', {
+          name: new RegExp(`^${label('binDesigner.colors.zone.topAccent')}: #`),
+        })
+        .first();
+    const area = await dryRun(
+      s,
+      { anchor: heading, y: 260 },
+      [() => top],
+      async () => union(await s.box(heading), await s.box(row())),
+      () => setDesign(s, name, ACCENT_BIN)
+    );
+    await closeUp(s, area, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.click(top);
+      await s.ui.hold(0.5);
+      const track = await s.box(height());
+      const y = track.y + track.height / 2;
+      // 2 mm sits near the left end of the track; the drag ends near 7 mm.
+      await s.ui.drag([track.x + track.width * 0.06, y], [track.x + track.width * 0.2, y], 16);
+      await s.ui.hold(0.4);
+      await s.ui.click(row());
+      await s.ui.hold(0.2);
+    });
+    await pickColor(s, row(), 'colors.filament.blue');
+    await cutToPart(s);
+  },
+};
+
+/** Every cell of the stacking lip in one color, as the lip row's picker sets it. */
+const lipCells = (hex: string): Record<string, string> =>
+  Object.fromEntries(
+    ['frontLeft', 'frontRight', 'backRight', 'backLeft'].flatMap((corner) =>
+      [0, 1, 2, 3].map((band) => [`lip:${corner}:${band}`, hex])
+    )
+  );
+
+const PALETTE_BIN: Params = {
+  ...COLOR_BIN,
+  featureColors: {
+    enabled: true,
+    lip: { cells: lipCells('#f97316') },
+    labelTab: '#f5f5f5',
+    text: '#1f2937',
+  },
+};
+
+const savePalette: Shot = {
+  id: 'designer-colors-save-palette',
+  kind: 'clip',
+  async take(s) {
+    await openDesigner(s, 'Fasteners', PALETTE_BIN);
+    await dismissColorHint(s);
+    const colorToggle = toggle(s, 'binDesigner.group.colors');
+    const actions = s.page
+      .getByRole('button', { name: label('binDesigner.colors.actions'), exact: true })
+      .first();
+    const menu = s.page.getByRole('menu').first();
+    const heading = await nearest(
+      s,
+      texts(s, 'binDesigner.style.section.color'),
+      colorToggle,
+      'above'
+    );
+    await scrollPanel(s, heading, 150);
+    // Off camera, open the menu once to frame the take on it.
+    await actions.click({ force: true });
+    await s.until(menu);
+    const area = union(await s.box(heading), await s.box(menu));
+    await s.page.keyboard.press('Escape');
+    await s.ui.warm(12);
+    await closeUp(s, area, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.click(actions);
+      await s.ui.hold(0.4);
+      await s.ui.click(
+        s.page.getByRole('menuitem', { name: label('binDesigner.colors.savePalette') })
+      );
+      await s.ui.hold(0.3);
+      await s.type('Shop orange');
+      await s.keys('Enter');
+      await s.ui.hold(0.6);
+      await s.ui.click(actions);
+      s.poster();
+      await s.ui.hold(2);
+    });
+  },
+};
+
+const BENTO_DRAW_BIN: Params = { width: 4, depth: 3, height: 6 };
+
+/** The drawing grid's box on screen: the one pocket of an empty canvas fills it. */
+async function bentoGrid(s: DocsSession): Promise<Rect> {
+  const pockets = s.page.getByTestId('bento-pocket');
+  const boxes: Rect[] = [];
+  for (let i = 0; i < (await pockets.count()); i++) boxes.push(await s.box(pockets.nth(i)));
+  if (boxes.length === 0) throw new Error('the Bento canvas shows no pockets');
+  return union(...boxes);
+}
+
+const bentoDraw: Shot = {
+  id: 'designer-compartments-bento-draw',
+  kind: 'clip',
+  viewport: BENTO_VIEW,
+  storage: { 'gridfinity-bento-quickstart-seen-v2': 'true' },
+  async take(s) {
+    const name = 'Soldering kit';
+    await openDesigner(s, name, BENTO_DRAW_BIN);
+    const cards = s.page
+      .getByRole('radiogroup', { name: label('binDesigner.group.interior'), exact: true })
+      .first();
+    const card = cards.getByRole('radio', {
+      name: label('binDesigner.interior.bento.title'),
+      exact: true,
+    });
+    const launch = (): Locator =>
+      s.page
+        .getByRole('button', { name: new RegExp(`^${label('binDesigner.openBentoWorkspace')}`) })
+        .first();
+    const area = await dryRun(
+      s,
+      { anchor: cards, y: 150 },
+      [() => card],
+      async () => union(await s.box(cards), await s.box(launch())),
+      () => setDesign(s, name, BENTO_DRAW_BIN)
+    );
+    await closeUp(s, area, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.click(card);
+      await s.ui.hold(0.5);
+      const b = await s.box(launch());
+      await s.ui.moveTo(b.x + b.width / 2, b.y + b.height / 2);
+      await s.ui.hold(0.2);
+    });
+    // The workspace opens over the panel, inside this close-up's frame, so the
+    // click lands just after the cut.
+    await launch().click({ force: true });
+    const setup = s.page.getByText(label('binDesigner.bento.gridSetupTitle'), { exact: true });
+    await s.until(setup);
+    await s.page.waitForTimeout(1500);
+    await s.ui.warm(30);
+    const grid = await bentoGrid(s);
+    const frame = frameAround(grid, 30, 4 / 3, WORKSPACE);
+    const cols = 8;
+    const rows = 6;
+    // Rows count down from the top of the canvas here.
+    const at = (col: number, row: number): [number, number] => [
+      grid.x + ((col + 0.5) * grid.width) / cols,
+      grid.y + ((row + 0.5) * grid.height) / rows,
+    ];
+    const edge = (col: number, row: number): [number, number] => [
+      grid.x + (col * grid.width) / cols,
+      grid.y + ((row + 0.5) * grid.height) / rows,
+    ];
+    await s.ui.park(frame.x + frame.width * 0.5, frame.y + frame.height - 20);
+    await s.take(frame, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.click(
+        s.page.getByRole('button', { name: new RegExp(`^${cols}×${rows}`) }).first()
+      );
+      await s.ui.hold(0.5);
+      await s.ui.drag(at(0, 0), at(2, 5), 16);
+      await s.ui.hold(0.3);
+      await s.ui.drag(at(3, 0), at(7, 2), 16);
+      await s.ui.hold(0.3);
+      await s.ui.drag(at(3, 3), at(5, 5), 14);
+      await s.ui.hold(0.4);
+      // The new compartment is selected; its right handle sits on its right edge.
+      await s.ui.drag(edge(6, 4), edge(8, 4), 14);
+      await s.ui.hold(0.6);
+    });
+    await cutToPart(s);
+  },
+};
+
+const floorRaise: Shot = {
+  id: 'designer-compartments-floor-raise',
+  kind: 'clip',
+  viewport: BENTO_VIEW,
+  storage: { 'gridfinity-bento-quickstart-seen-v2': 'true' },
+  async take(s) {
+    await openDesigner(s, 'Soldering kit', BENTO_BIN);
+    await drawBento(s, { ...BENTO_DRAWING, raised: undefined });
+    await s.until(s.page.getByTestId('bento-canvas'));
+    await fitBento(s);
+    await s.ui.waitBuilt();
+    await s.dismissToasts();
+    // A little higher than the default view, so the raised floor shows against
+    // its deep neighbors; the clip opens on the bin before the change.
+    await orbit(s, 50);
+    await cutToPart(s, 1.2);
+    const drawn = s.page.locator('[data-testid^="bento-compartment-"]');
+    const boxes: Rect[] = [];
+    for (let i = 0; i < (await drawn.count()); i++) boxes.push(await s.box(drawn.nth(i)));
+    // Tips is the only compartment one cell wide.
+    const narrowest = boxes.indexOf(boxes.reduce((a, b) => (b.width < a.width ? b : a)));
+    const tips = drawn.nth(narrowest);
+    const slider = (): Locator =>
+      s.page.getByRole('slider', { name: label('binDesigner.bento.floorRaise') }).first();
+    // Off camera, select it once to frame the slider it shows.
+    await tips.click({ force: true });
+    await s.until(slider());
+    const area = union(
+      await s.box(tips),
+      await s.box(s.page.getByText(label('binDesigner.bento.floorRaise'), { exact: true }).first()),
+      await s.box(slider())
+    );
+    await s.page.keyboard.press('Escape');
+    await s.ui.warm(20);
+    if (await slider().isVisible()) throw new Error('the compartment stays selected');
+    await closeUp(s, area, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.click(tips);
+      await s.ui.hold(0.5);
+      await slide(s, slider(), 24, 20);
+      await s.ui.hold(0.6);
+    });
+    await cutToPart(s);
+  },
+};
+
+const DIAGONAL_BIN: Params = {
+  width: 3,
+  depth: 4,
+  height: 4,
+  compartments: { cols: 2, rows: 1, cells: [0, 1] },
+};
+
+async function setDiagonalEditing(s: DocsSession, on: boolean): Promise<void> {
+  await s.page.evaluate(async (v) => {
+    const { useSettingsStore } = (await import('/src/core/store/settings.ts' as string)) as {
+      useSettingsStore: {
+        getState(): { updateSetting(key: 'angledDividersEnabled', value: boolean): void };
+      };
+    };
+    useSettingsStore.getState().updateSetting('angledDividersEnabled', v);
+  }, on);
+  await s.ui.warm(6);
+}
+
+const diagonalDividers: Shot = {
+  id: 'designer-compartments-diagonal',
+  kind: 'clip',
+  async take(s) {
+    const name = 'Cutlery';
+    await openDesigner(s, name, DIAGONAL_BIN);
+    const diagonal = toggle(s, 'binDesigner.angledDividers.title');
+    const preset = (key: 'presetAngle' | 'presetLean'): Locator =>
+      s.page
+        .getByRole('button', { name: label(`binDesigner.angledDividers.${key}`, { angle: 15 }) })
+        .first();
+    const steps: Step[] = [
+      () => diagonal,
+      // The grid above names its divider the same way; the list row sits below the switch.
+      async () => {
+        const named = s.page.getByRole('button', {
+          name: label('binDesigner.angledDividers.editRowLabel', { a: 1, b: 2 }),
+        });
+        await s.until(named.nth(1));
+        return below(s, named, diagonal);
+      },
+      () => preset('presetAngle'),
+      () => preset('presetLean'),
+    ];
+    const area = await dryRun(
+      s,
+      { anchor: diagonal, y: 200 },
+      steps,
+      async () =>
+        union(
+          await s.box(diagonal),
+          await s.box(
+            s.page
+              .getByRole('spinbutton', {
+                name: label('binDesigner.angledDividers.leanLabel'),
+                exact: true,
+              })
+              .first()
+          )
+        ),
+      async () => {
+        // The picked divider outlives the switch, and would skip the list next time.
+        await s.page
+          .getByRole('button', {
+            name: label('binDesigner.angledDividers.backToList'),
+            exact: true,
+          })
+          .first()
+          .click({ force: true });
+        await s.ui.warm(6);
+        await setDiagonalEditing(s, false);
+        await setDesign(s, name, DIAGONAL_BIN);
+      }
+    );
+    await closeUp(s, area, async () => {
+      await s.ui.hold(0.4);
+      await clickThrough(s, steps, 0.45);
+      await s.ui.hold(0.3);
+    });
+    await orbit(s, 80);
+    await cutToPart(s);
+  },
+};
+
+const SLOTTED_BIN: Params = { width: 3, depth: 3, height: 4 };
+
+const removableDividers: Shot = {
+  id: 'designer-compartments-removable',
+  kind: 'clip',
+  async take(s) {
+    const name = 'Spare parts';
+    await openDesigner(s, name, SLOTTED_BIN);
+    const cards = s.page
+      .getByRole('radiogroup', { name: label('binDesigner.group.interior'), exact: true })
+      .first();
+    const slotted = cards.getByRole('radio', {
+      name: label('binDesigner.interior.slotted.title'),
+      exact: true,
+    });
+    const button = (key: Key): Locator =>
+      s.page.getByRole('button', { name: label(key), exact: true }).first();
+    // With both directions on, each direction gets its own width.
+    const spacing = (): Locator =>
+      s.page.getByRole('spinbutton', { name: new RegExp(`^${label('binDesigner.slotSpacing')}`) });
+    const steps: Step[] = [
+      () => slotted,
+      () => button('binDesigner.slotLayoutEven'),
+      () => button('binDesigner.slotBoth'),
+    ];
+    const area = await dryRun(
+      s,
+      { anchor: cards, y: 190 },
+      steps,
+      async () => union(await s.box(cards), await s.box(spacing().last())),
+      () => setDesign(s, name, SLOTTED_BIN)
+    );
+    await closeUp(s, area, async () => {
+      await s.ui.hold(0.4);
+      await clickThrough(s, steps, 0.4);
+      for (const i of [0, 1]) {
+        await s.ui.click(spacing().nth(i));
+        await s.page.keyboard.press('ControlOrMeta+a');
+        await s.type('40');
+        await s.keys('Enter');
+      }
+      await s.ui.hold(0.3);
+    });
+    await orbit(s, 90);
+    await cutToPart(s);
+  },
+};
+
+/** Drags a range slider's thumb from its value to `to`, on camera. */
+async function slide(s: DocsSession, slider: Locator, to: number, frames = 18): Promise<void> {
+  const b = await s.box(slider);
+  const [min, max, now] = await slider.evaluate((el) => {
+    const input = el as HTMLInputElement;
+    return [Number(input.min), Number(input.max), Number(input.value)];
+  });
+  const x = (v: number): number => b.x + ((v - min) / (max - min)) * b.width;
+  const y = b.y + b.height / 2;
+  await s.ui.drag([x(now), y], [x(to), y], frames);
+}
+
+const FILLET_BIN: Params = {
+  width: 3,
+  depth: 2,
+  height: 4,
+  compartments: { cols: 3, rows: 1, cells: [0, 1, 2] },
+};
+
+const interiorFillet: Shot = {
+  id: 'designer-getting-things-out-fillet',
+  kind: 'clip',
+  async take(s) {
+    const name = 'Small parts';
+    await openDesigner(s, name, FILLET_BIN);
+    const fillet = toggle(s, 'binDesigner.interiorFillet.label');
+    const radius = (): Locator =>
+      s.page.getByRole('slider', { name: label('binDesigner.interiorFillet.radius') }).first();
+    const area = await dryRun(
+      s,
+      { anchor: fillet, y: 280 },
+      [() => fillet],
+      async () => union(await s.box(fillet), await s.box(radius())),
+      () => setDesign(s, name, FILLET_BIN)
+    );
+    await closeUp(s, area, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.click(fillet);
+      await s.ui.hold(0.5);
+      // The drag lands short of its target on the stepped clock; 11 ends near 7 mm.
+      await slide(s, radius(), 11);
+      await s.ui.hold(0.4);
+    });
+    // Higher than the default view, so the rounded floor of each compartment shows.
+    await orbit(s, 150);
+    await cutToPart(s);
+  },
+};
+
+const CENTER_TAB_BIN: Params = {
+  width: 4,
+  depth: 3,
+  height: 4,
+  compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3] },
+};
+
+const centerTab: Shot = {
+  id: 'designer-getting-things-out-center-tab',
+  kind: 'clip',
+  async take(s) {
+    const name = 'Paint tray';
+    await openDesigner(s, name, CENTER_TAB_BIN);
+    const tabToggle = toggle(s, 'binDesigner.pullTab.title');
+    const walls = s.page.getByRole('group', { name: label('binDesigner.pullTab.sideAria') });
+    const wall = (key: Key): Locator =>
+      walls.getByRole('switch', { name: label(key), exact: true });
+    const axis = s.page
+      .getByRole('group', { name: label('binDesigner.pullTab.centerAxis'), exact: true })
+      .getByRole('button', { name: label('binDesigner.pullTab.centerAxis.width'), exact: true });
+    const steps: Step[] = [
+      () => tabToggle,
+      () => wall('binDesigner.pullTab.side.center'),
+      () => wall('binDesigner.pullTab.side.front'),
+      () => axis,
+    ];
+    const area = await dryRun(
+      s,
+      { anchor: tabToggle, y: 220 },
+      steps,
+      async () => union(await s.box(tabToggle), await s.box(axis)),
+      () => setDesign(s, name, CENTER_TAB_BIN)
+    );
+    await closeUp(s, area, async () => {
+      await s.ui.hold(0.4);
+      await clickThrough(s, steps, 0.45);
+      await s.ui.hold(0.3);
+    });
+    await cutToPart(s);
+  },
+};
+
+const SOCKET_ON_BIN: Params = {
+  width: 4,
+  depth: 1,
+  height: 4,
+  compartments: { cols: 2, rows: 1, cells: [0, 1], compartmentTexts: ['M3', 'M4'] },
+};
+
+const labelStyle = (s: DocsSession, key: Key): Locator =>
+  s.page
+    .getByRole('group', { name: label('binDesigner.tabMode'), exact: true })
+    .getByRole('button', { name: label(key), exact: true });
+
+const socketsOn: Shot = {
+  id: 'designer-label-plates-sockets',
+  kind: 'clip',
+  async take(s) {
+    const name = 'M3 and M4 screws';
+    await openDesigner(s, name, SOCKET_ON_BIN);
+    const tabs = toggle(s, 'binDesigner.labelTabs');
+    const socket = (): Locator => labelStyle(s, 'binDesigner.tabMode.socket');
+    const steps: Step[] = [() => tabs, socket];
+    const area = await dryRun(
+      s,
+      { anchor: tabs, y: 220 },
+      steps,
+      async () =>
+        union(
+          await s.box(tabs),
+          await s.box(
+            s.page.getByRole('button', {
+              name: new RegExp(
+                `^${label('binDesigner.plateIconAria', { owner: label('binDesigner.plateIconOwnerCompartment', { n: 2 }) })}`
+              ),
+            })
+          )
+        ),
+      () => setDesign(s, name, SOCKET_ON_BIN)
+    );
+    await closeUp(s, area, async () => {
+      await s.ui.hold(0.4);
+      await clickThrough(s, steps, 0.6);
+      await s.ui.hold(0.4);
+    });
+    // Higher than the default view, so the plates in the tabs read.
+    await orbit(s, 70);
+    await cutToPart(s);
+  },
+};
+
+const plateFit: Shot = {
+  id: 'designer-label-plates-fit',
+  kind: 'clip',
+  async take(s) {
+    await openDesigner(s, 'M3 and M4 screws', SOCKET_BIN);
+    const group = s.page
+      .getByRole('button', { name: label('binDesigner.plateFitGroup'), exact: true })
+      .first();
+    const card = (): Locator =>
+      s.page
+        .getByRole('button', { name: label('binDesigner.fitSample.button'), exact: true })
+        .first();
+    const offset = (): Locator =>
+      s.page.getByRole('button', {
+        name: label('common.increaseAria', { what: label('binDesigner.plateFitOffset') }),
+      });
+    const area = await dryRun(
+      s,
+      { anchor: group, y: 300 },
+      [() => group],
+      async () => union(await s.box(group), await s.box(card())),
+      async () => {
+        await group.click({ force: true });
+        await s.ui.warm(12);
+      }
+    );
+    const frame = await closeUp(s, area, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.click(group);
+      await s.ui.hold(0.5);
+      await s.ui.click(card());
+      await s.ui.hold(0.2);
+    });
+    const dialog = s.page.getByRole('dialog').first();
+    await s.until(dialog);
+    // The card's own instructions, large enough to read; the export options above them are not the step.
+    const tips = union(
+      await s.box(dialog.getByText(label('binDesigner.fitSample.tipsTitle'), { exact: true })),
+      await s.box(dialog.getByRole('button', { name: /^Download/ }).first())
+    );
+    await s.ui.hideCursor();
+    await s.take(frameAround(tips, 16, 4 / 3, WORKSPACE), async () => {
+      s.poster();
+      await s.ui.hold(3);
+    });
+    await s.page.keyboard.press('Escape');
+    await s.page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await s.ui.warm(20);
+    await s.take(frame, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.click(offset());
+      await s.ui.hold(1.2);
+    });
+  },
+};
+
+const iconPicker: Shot = {
+  id: 'designer-label-plates-icon',
+  kind: 'still',
+  async take(s) {
+    await openDesigner(s, 'M3 and M4 screws', SOCKET_BIN);
+    const icon = s.page
+      .getByRole('button', {
+        name: new RegExp(
+          `^${label('binDesigner.plateIconAria', { owner: label('binDesigner.plateIconOwnerCompartment', { n: 2 }) })}`
+        ),
+      })
+      .first();
+    await scrollPanel(s, icon, 260);
+    await icon.click({ force: true });
+    const search = s.page
+      .getByPlaceholder(label('binDesigner.plateIcon.searchPlaceholder'))
+      .first();
+    await s.until(search);
+    const popover = search.locator(
+      'xpath=ancestor::*[@role="dialog" or @role="listbox" or @role="menu"][1]'
+    );
+    if ((await popover.count()) === 0) throw new Error('the icon picker has no popover');
+    const caption = s.page.getByRole('textbox', {
+      name: label('binDesigner.tabEngravedTextAriaLabel', { n: 2 }),
+    });
+    const area = union(await s.box(caption), await s.box(popover));
+    await s.ui.hideCursor();
+    // From the panel's left edge, so no caption or label in it is cut; the
+    // top stops short of the row above.
+    await s.still(
+      { x: 0, y: area.y - 6, width: area.x + area.width + 12, height: area.height + 18 },
+      1.25
+    );
+  },
+};
+
+const finishTabs = (s: DocsSession): Locator =>
+  s.page.getByRole('button', { name: new RegExp(`^${label('binDesigner.tabTextGroup')}`) }).first();
+
+const textFinish: Shot = {
+  id: 'designer-labels-and-text-finish',
+  kind: 'clip',
+  async take(s) {
+    const name = 'Hardware';
+    await openDesigner(s, name, TYPE_BIN);
+    const group = finishTabs(s);
+    const finish = (key: Key): Locator =>
+      s.page
+        .getByRole('radiogroup', { name: label('binDesigner.textMode'), exact: true })
+        .first()
+        .getByRole('radio', { name: label(key), exact: true });
+    const area = await dryRun(
+      s,
+      { anchor: group, y: 300 },
+      [() => group],
+      async () => union(await s.box(group), await s.box(finish('binDesigner.textMode.emboss'))),
+      async () => {
+        await group.click({ force: true });
+        await s.ui.warm(12);
+      }
+    );
+    // Higher than the default view, so the captions on the tabs read.
+    await orbit(s, 140);
+    for (const key of [
+      'binDesigner.textMode.emboss',
+      'binDesigner.textMode.through-cut',
+    ] as const) {
+      await closeUp(s, area, async () => {
+        await s.ui.hold(0.4);
+        if (key === 'binDesigner.textMode.emboss') {
+          await s.ui.click(group);
+          await s.ui.hold(0.4);
+        }
+        await s.ui.click(finish(key));
+        await s.ui.hold(0.4);
+      });
+      await cutToPart(s, key === 'binDesigner.textMode.emboss' ? 1.4 : 2);
+    }
+  },
+};
+
+const FLOOR_TEXT_BIN: Params = { width: 2, depth: 2, height: 3 };
+
+const floorText: Shot = {
+  id: 'designer-labels-and-text-floor-text',
+  kind: 'clip',
+  async take(s) {
+    const name = 'Spare screws';
+    await openDesigner(s, name, FLOOR_TEXT_BIN);
+    const floorToggle = toggle(s, 'binDesigner.floor.text.heading');
+    const box = (): Locator =>
+      s.page
+        .getByRole('textbox', { name: label('binDesigner.floor.text.heading'), exact: true })
+        .first();
+    let boxY = 0;
+    const area = await dryRun(
+      s,
+      { anchor: floorToggle, y: 240 },
+      [() => floorToggle],
+      async () => {
+        boxY = (await s.box(box())).y;
+        return union(await s.box(floorToggle), await s.box(box()));
+      },
+      () => setDesign(s, name, FLOOR_TEXT_BIN)
+    );
+    const frame = await closeUp(s, area, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.click(floorToggle);
+      await s.ui.hold(0.35);
+      await s.ui.click(box());
+      await s.type('M4 x 10');
+      await s.ui.hold(0.1);
+    });
+    // The first text on a bin adds the Typography section above, which pushes
+    // the floor text down; the panel is scrolled back before the take goes on.
+    await s.until(text(s, 'binDesigner.type.heading'));
+    await scrollPanel(s, box(), boxY);
+    await s.take(frame, () => s.ui.hold(0.5));
+    await s.ui.preClick(
+      s.page.getByRole('button', {
+        name: label('binDesigner.cameraPresetAria', { view: label('workshop.view.top'), key: '3' }),
+      })
+    );
+    await s.ui.warm(40);
+    await cutToPart(s);
+  },
+};
+
+/** WORKBENCH with a new Fasteners bin, still unlabeled, so M6 comes next in the M3 to M5 set. */
+const SUGGEST_LAYOUT = {
+  ...WORKBENCH,
+  bins: [...(WORKBENCH.bins ?? []), { x: 6, y: 5, w: 1, d: 1, h: 6, cat: 'Fasteners' }],
+};
+
+const labelSuggestions: Shot = {
+  id: 'designer-labels-and-text-suggestions',
+  kind: 'clip',
+  async take(s) {
+    await openLayouts(s, SUGGEST_LAYOUT);
+    const [x, y] = await cellCenter(s, 7, 6);
+    const half = ((await cellCenter(s, 8, 6))[0] - x) / 2;
+    const bin: Rect = { x: x - half, y: y - half, width: half * 2, height: half * 2 };
+    await s.ui.clickAt(x, y);
+    await s.ui.warm(20);
+    await s.dismissToasts();
+    const field = s.page.getByRole('combobox', { name: label('inspector.binLabel') }).first();
+    await s.until(field);
+    await s.ui.preReveal(field);
+    // Off camera, open the list once to frame the take on it.
+    await field.focus();
+    const list = s.page.getByRole('listbox').first();
+    await s.until(list);
+    // With the bin on the grid, so its label shows as it is typed.
+    const area = union(bin, await s.box(field), await s.box(list));
+    await s.page.keyboard.press('Escape');
+    await s.page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await s.ui.warm(20);
+    await s.page.waitForTimeout(500);
+    await s.dismissToasts();
+    const frame = frameAround(area, 24, 4 / 3, WORKSPACE);
+    await s.ui.park(frame.x + frame.width * 0.6, frame.y + frame.height - 30);
+    await s.take(
+      frame,
+      async () => {
+        await s.ui.hold(0.4);
+        await s.ui.click(field);
+        await s.ui.hold(0.6);
+        await s.type('M');
+        s.poster();
+        await s.ui.hold(1.4);
+        await s.keys('Tab');
+        await s.ui.hold(1.2);
+      },
+      CLOSE_UP_WIDTH / frame.width
+    );
+  },
+};
+
+const SPLIT_LIP_BIN: Params = {
+  width: 2,
+  depth: 2,
+  height: 3,
+  featureColors: { enabled: true },
+};
+
+const splitLip: Shot = {
+  id: 'designer-colors-split-lip',
+  kind: 'clip',
+  async take(s) {
+    const name = 'Fasteners';
+    await openDesigner(s, name, SPLIT_LIP_BIN);
+    await dismissColorHint(s);
+    const split = toggle(s, 'binDesigner.colors.lip.splitZones');
+    const corners = (): Locator =>
+      s.page
+        .getByRole('radiogroup', { name: label('binDesigner.colors.lip.cornersLabel') })
+        .getByRole('radio', { name: '4', exact: true });
+    const cell = (key: Key): Locator =>
+      s.page.getByRole('button', { name: new RegExp(`^${label(key)}: #`) }).first();
+    const lip = (): Locator => cell('binDesigner.colors.lip');
+    const area = await dryRun(
+      s,
+      { anchor: lip(), y: 260 },
+      [() => split, corners],
+      async () =>
+        union(
+          await s.box(cell('binDesigner.colors.body')),
+          await s.box(cell('binDesigner.colors.lip.backLeft')),
+          await s.box(split)
+        ),
+      () => setDesign(s, name, SPLIT_LIP_BIN)
+    );
+    await closeUp(s, area, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.click(split);
+      await s.ui.hold(0.4);
+      await s.ui.click(corners());
+      await s.ui.hold(0.5);
+      await s.ui.click(cell('binDesigner.colors.lip.frontLeft'));
+      await s.ui.hold(0.2);
+    });
+    await pickColor(s, cell('binDesigner.colors.lip.frontLeft'), 'colors.filament.orange');
+    await closeUp(s, area, async () => {
+      await s.ui.hold(0.3);
+      await s.ui.click(cell('binDesigner.colors.lip.backRight'));
+      await s.ui.hold(0.2);
+    });
+    await pickColor(s, cell('binDesigner.colors.lip.backRight'), 'colors.filament.orange');
+    await cutToPart(s);
+  },
+};
+
+/** Flat captions in the label tab color: the clash the panel warns about. */
+const FLAT_BIN: Params = {
+  ...TYPE_BIN,
+  textDefaults: { mode: 'flat' },
+  featureColors: { enabled: true },
+};
+
+const flatText: Shot = {
+  id: 'designer-colors-flat-text',
+  kind: 'clip',
+  async take(s) {
+    const name = 'Hardware';
+    await openDesigner(s, name, FLAT_BIN);
+    await dismissColorHint(s);
+    const group = finishTabs(s);
+    const fix = (): Locator =>
+      s.page
+        .getByRole('button', { name: label('binDesigner.textColor.useContrasting'), exact: true })
+        .first();
+    const area = await dryRun(
+      s,
+      { anchor: group, y: 260 },
+      [() => group],
+      async () => union(await s.box(group), await s.box(fix())),
+      async () => {
+        await group.click({ force: true });
+        await s.ui.warm(12);
+      }
+    );
+    // Higher than the default view, so the captions on the tabs read.
+    await orbit(s, 140);
+    await cutToPart(s, 1.2);
+    await closeUp(s, area, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.click(group);
+      await s.ui.hold(0.8);
+      await s.ui.click(fix());
+      await s.ui.hold(0.5);
+    });
+    await cutToPart(s);
+  },
+};
+
 export const DESIGNER_BODY: readonly Shot[] = [
   baseMounting,
+  halfSockets,
+  detachableFeet,
   baseLightweight,
   colorZones,
+  splitLip,
+  accentBands,
+  flatText,
+  savePalette,
   compartmentGrid,
+  diagonalDividers,
+  bentoDraw,
   bento,
+  floorRaise,
+  removableDividers,
   scoop,
+  interiorFillet,
   pullTab,
+  centerTab,
+  socketsOn,
   socketList,
+  iconPicker,
+  plateFit,
   plateExport,
   tabList,
   typography,
+  textFinish,
   wallText,
+  floorText,
+  labelSuggestions,
 ];
