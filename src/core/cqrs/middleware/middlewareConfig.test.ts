@@ -16,6 +16,7 @@ describe('getMiddlewareFlags', () => {
       'bin.duplicate',
       'bin.moveToStaging',
       'bin.moveToStagingBatch',
+      'bin.restoreFromStaging',
       'bin.moveFromStaging',
       'bin.fillLayer',
       'bin.fillGaps',

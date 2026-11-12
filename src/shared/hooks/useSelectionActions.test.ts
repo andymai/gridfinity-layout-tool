@@ -4,8 +4,10 @@ import { useSelectionActions } from './useSelectionActions';
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useToastStore } from '@/core/store/toast';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { createTestLayout, createTestBin, resetAllStores } from '@/test/testUtils';
 import { binId, categoryId, gridUnits, heightUnits, layerId } from '@/core/types';
+import type { Bin } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 
 describe('useSelectionActions', () => {
@@ -239,6 +241,35 @@ describe('useSelectionActions', () => {
       expect(updatedBins.every((b) => b.layerId === STAGING_ID)).toBe(true);
       expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
       expect(useToastStore.getState().toasts.length).toBeGreaterThan(0);
+    });
+
+    it('stashes a full layer in one store update and one undo step', () => {
+      const bins: Bin[] = [];
+      for (let x = 0; x < 10; x++) {
+        for (let y = 0; y < 8; y++) {
+          bins.push(createTestBin({ id: binId(`f-${x}-${y}`), x: gridUnits(x), y: gridUnits(y) }));
+        }
+      }
+      useLayoutStore.setState({ layout: createTestLayout({ bins }) });
+      useSelectionStore.setState({ selectedBinIds: bins.map((b) => b.id) });
+      useHistoryStore.getState().clear();
+      const { result } = renderHook(() => useSelectionActions());
+      let storeUpdates = 0;
+      const unsubscribe = useLayoutStore.subscribe(() => {
+        storeUpdates++;
+      });
+
+      act(() => {
+        result.current.moveToStash();
+      });
+      unsubscribe();
+
+      expect(storeUpdates).toBe(1);
+      expect(useLayoutStore.getState().layout.bins.every((b) => b.layerId === STAGING_ID)).toBe(
+        true
+      );
+      expect(useToastStore.getState().toasts.at(-1)?.message).toBe('Moved 80 bins to stash');
+      expect(useHistoryStore.getState().past).toHaveLength(1);
     });
   });
 

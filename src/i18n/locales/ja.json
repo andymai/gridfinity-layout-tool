@@ -5001,6 +5001,7 @@
   "undo.binDeleted": "ビンを削除",
   "undo.binDuplicated": "ビンを複製",
   "undo.binMovedFromStaging": "ステージングからビンを移動",
+  "undo.binsMovedFromStaging": "ステージングからビンを移動",
   "undo.binMovedToStaging": "ビンをステージングへ移動",
   "undo.binsMovedToStaging": "ビンをステージングへ移動",
   "undo.binUpdated": "ビンを更新",

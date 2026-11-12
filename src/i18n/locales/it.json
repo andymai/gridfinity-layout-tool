@@ -5130,6 +5130,7 @@
   "undo.binDeleted": "Bin eliminato",
   "undo.binDuplicated": "Bin duplicato",
   "undo.binMovedFromStaging": "Bin spostato dall'area di sosta",
+  "undo.binsMovedFromStaging": "Bin spostati dall'area di sosta",
   "undo.binMovedToStaging": "Bin spostato nell'area di sosta",
   "undo.binsMovedToStaging": "Bin spostati nell'area di sosta",
   "undo.binUpdated": "Bin aggiornato",

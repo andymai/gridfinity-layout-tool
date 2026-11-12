@@ -5388,6 +5388,7 @@
   "undo.binDeleted": "Usunięto bin",
   "undo.binDuplicated": "Zduplikowano bin",
   "undo.binMovedFromStaging": "Przeniesiono bin z Stash",
+  "undo.binsMovedFromStaging": "Przeniesiono biny z Stash",
   "undo.binMovedToStaging": "Przeniesiono bin do Stash",
   "undo.binsMovedToStaging": "Przeniesiono biny do Stash",
   "undo.binUpdated": "Zaktualizowano bin",

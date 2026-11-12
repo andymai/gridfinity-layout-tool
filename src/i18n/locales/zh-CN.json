@@ -5001,6 +5001,7 @@
   "undo.binDeleted": "已删除收纳盒",
   "undo.binDuplicated": "已复制收纳盒",
   "undo.binMovedFromStaging": "已将收纳盒移出暂存区",
+  "undo.binsMovedFromStaging": "已将收纳盒移出暂存区",
   "undo.binMovedToStaging": "已将收纳盒移入暂存区",
   "undo.binsMovedToStaging": "已将收纳盒移入暂存区",
   "undo.binUpdated": "已更新收纳盒",

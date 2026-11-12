@@ -71,7 +71,7 @@ export function useBinInspector(): UseBinInspectorReturn {
 
   const layout = useLayoutStore((state) => state.layout);
   const overhangSpanFor = useBinOverhangSpan();
-  const { updateBin, deleteBin, moveBinToStaging } = useMutations();
+  const { updateBin, deleteBin, moveBinsToStaging } = useMutations();
 
   const selectedBins = useMemo(
     () => layout.bins.filter((b) => selectedBinIds.includes(b.id)),
@@ -401,13 +401,14 @@ export function useBinInspector(): UseBinInspectorReturn {
       ),
     ];
     batch(() => {
-      for (const id of stashIds) {
-        moveBinToStaging(id);
-      }
+      moveBinsToStaging(stashIds);
     });
+    // Pruning drops only the bins the batch moved; a selected bin already in
+    // the stash would stay selected.
+    setSelectedBins([]);
 
     closeMobilePanel();
-  }, [selectedBins, moveBinToStaging, closeMobilePanel]);
+  }, [selectedBins, moveBinsToStaging, setSelectedBins, closeMobilePanel]);
 
   const clearSelection = useCallback(() => {
     setSelectedBins([]);

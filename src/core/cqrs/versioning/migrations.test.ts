@@ -171,6 +171,7 @@ describe('CURRENT_EVENT_VERSIONS registry completeness', () => {
     'bin.expandedToFit',
     'bin.movedToStaging',
     'bin.batchMovedToStaging',
+    'bin.restoredFromStaging',
     'bin.movedFromStaging',
     'bin.layerFilled',
     'bin.layerCleared',

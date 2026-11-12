@@ -34,6 +34,7 @@ const COMMAND_PROFILES: Readonly<Record<CommandType, MiddlewareProfile>> = {
   'bin.duplicate': 'domain',
   'bin.moveToStaging': 'domain',
   'bin.moveToStagingBatch': 'domain',
+  'bin.restoreFromStaging': 'domain',
   'bin.moveFromStaging': 'domain',
   'bin.fillLayer': 'domain',
   'bin.fillGaps': 'domain',

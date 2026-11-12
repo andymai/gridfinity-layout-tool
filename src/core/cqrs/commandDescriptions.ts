@@ -14,6 +14,7 @@ const DESCRIPTIONS: Readonly<Partial<Record<CommandType, string>>> = {
   'bin.duplicate': 'undo.binDuplicated',
   'bin.moveToStaging': 'undo.binMovedToStaging',
   'bin.moveToStagingBatch': 'undo.binsMovedToStaging',
+  'bin.restoreFromStaging': 'undo.binsMovedFromStaging',
   'bin.moveFromStaging': 'undo.binMovedFromStaging',
   'bin.fillLayer': 'undo.layerFilled',
   'bin.fillGaps': 'undo.gapsFilled',
