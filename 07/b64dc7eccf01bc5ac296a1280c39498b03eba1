@@ -1,0 +1,33 @@
+src/shell/Collab/PresenceDropdown/PresenceDropdown.test.tsx
+  s_1cc363bb3cc76d::t_611442ba5e5f18 2
+  s_1cc363bb3cc76d::t_59a4433acf0897 112-180
+src/features/cloud-share/hooks/useCloudShare.ts
+  s_1cc363bb3cc76d::t_68700b8b2826ef 199,205,210
+  s_1cc363bb3cc76d::t_847f3ace075756 310-318
+  s_1cc363bb3cc76d::t_a39f48098239b8 155-165,170,172,178
+  s_1cc363bb3cc76d::t_09eb40cffc77e7 253,256,269,281
+src/shell/Collab/PresenceDropdown/PresenceDropdown.tsx
+  s_1cc363bb3cc76d::t_0bfdb9c696a216 101-103,106-108
+src/features/cloud-share/hooks/useCloudShare.test.ts
+  s_1cc363bb3cc76d::t_1b9ac3d1484c14 18
+  s_1cc363bb3cc76d::t_a6808adbf8d418 399-500,502-503,505-532
+  s_1cc363bb3cc76d::t_5efbb25deeb805 504
+  s_1cc363bb3cc76d::t_85c49cd8f1b8df 293-296
+  s_1cc363bb3cc76d::t_834264a8005d37 501
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "07b64dc7eccf01bc5ac296a1280c39498b03eba1",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
