@@ -1,0 +1,43 @@
+apps/docs/.vitepress/navigation.ts
+  s_7dc03ec4cfdd4b::t_6c05fa397edfd6 38
+apps/docs/media/recipes-lidded-boxes-hero.json
+  s_7dc03ec4cfdd4b::t_d42e397c6bd276 3-4
+  s_7dc03ec4cfdd4b::t_d593f1379bdb55 1-2,5
+apps/docs/media/recipes-lidded-boxes-lid.json
+  s_7dc03ec4cfdd4b::t_d593f1379bdb55 1-3,5
+  s_7dc03ec4cfdd4b::t_d42e397c6bd276 4
+apps/docs/recipes/lidded-boxes.md
+  s_7dc03ec4cfdd4b::t_06d14665997ee3 3
+  s_7dc03ec4cfdd4b::t_8fa2597ccf510f 89-91
+  s_7dc03ec4cfdd4b::t_6c05fa397edfd6 20,28-33,39-42,56,78-79,82,86,88,101
+  s_7dc03ec4cfdd4b::t_e4b3be2c694b1a 65-66
+  s_7dc03ec4cfdd4b::t_f85e18ed054f16 1-2,4-13,15-19,21-27,34,36-38,43-55,57-64,67-77,80-81,83-85,87,92-100,102-112
+  s_7dc03ec4cfdd4b::t_45c65e6b3489bc 35
+  s_7dc03ec4cfdd4b::t_17a7dbb460ab00 14
+scripts/docs-capture/shots/recipes.ts
+  s_7dc03ec4cfdd4b::t_ecd0641665132d 1539-1568,1591-1608,1618-1660
+  s_7dc03ec4cfdd4b::t_d42e397c6bd276 1609-1617
+  s_7dc03ec4cfdd4b::t_d593f1379bdb55 2149-2150
+  s_7dc03ec4cfdd4b::t_b768f0c00d717e 2151
+  s_7dc03ec4cfdd4b::t_dc53b3e15b9963 1569-1590
+apps/docs/designer/lids.md
+  s_7dc03ec4cfdd4b::t_65fae8bc6247ab 153
+apps/docs/media/recipes-lidded-boxes-stack-top.json
+  s_7dc03ec4cfdd4b::t_b768f0c00d717e 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "65b4b1a1b0cde1b21ba1382e5512406afc524235",
+  "prompts": {},
+  "sessions": {
+    "s_7dc03ec4cfdd4b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6e1971db-3144-4b89-9c8a-56a37ed47e41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
