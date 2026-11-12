@@ -17,6 +17,7 @@ export type {
   DeleteBinsCommand,
   DuplicateBinCommand,
   MoveBinToStagingCommand,
+  MoveBinsToStagingCommand,
   MoveBinFromStagingCommand,
   FillLayerCommand,
   FillLayerGapsCommand,

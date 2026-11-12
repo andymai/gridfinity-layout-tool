@@ -17,7 +17,7 @@ const mutations = vi.hoisted(() => ({
   fillLayer: vi.fn(),
   fillLayerGaps: vi.fn(),
   clearLayer: vi.fn(),
-  moveBinToStaging: vi.fn(() => OK),
+  moveBinsToStaging: vi.fn(() => OK),
 }));
 
 vi.mock('@/shared/contexts', () => ({
@@ -108,7 +108,7 @@ describe('useLayerFillActions', () => {
     act(() => {
       result.current.confirmClear();
     });
-    expect(mutations.moveBinToStaging.mock.calls).toEqual([[binId('a')], [binId('b')]]);
+    expect(mutations.moveBinsToStaging.mock.calls).toEqual([[[binId('a'), binId('b')]]]);
     expect(mutations.clearLayer).not.toHaveBeenCalled();
     expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
     expect(result.current.clearConfirmOpen).toBe(false);
@@ -120,7 +120,7 @@ describe('useLayerFillActions', () => {
     act(() => {
       result.current.confirmClear();
     });
-    expect(mutations.moveBinToStaging).not.toHaveBeenCalled();
+    expect(mutations.moveBinsToStaging).not.toHaveBeenCalled();
     expect(mutations.clearLayer).not.toHaveBeenCalled();
   });
 

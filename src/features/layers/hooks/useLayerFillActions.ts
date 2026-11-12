@@ -20,7 +20,6 @@ import { useToastStore } from '@/core/store/toast';
 import { getLayerBins } from '@/shared/utils';
 import { useTranslation } from '@/i18n';
 import { batch } from '@/core/cqrs';
-import { isErr } from '@/core/result';
 import type { Bin, Layer } from '@/core/types';
 
 export interface LayerFillActions {
@@ -43,7 +42,7 @@ export function useLayerFillActions(options?: { onAfterAction?: () => void }): L
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
 
   const layout = useLayoutStore((state) => state.layout);
-  const { fillLayer, fillLayerGaps, moveBinToStaging } = useMutations();
+  const { fillLayer, fillLayerGaps, moveBinsToStaging } = useMutations();
 
   const { activeLayerId, activeCategoryId, setSelectedBins } = useSelectionStore(
     useShallow((state) => ({
@@ -83,9 +82,7 @@ export function useLayerFillActions(options?: { onAfterAction?: () => void }): L
     if (!activeLayerId || layerBins.length === 0) return;
     const count = layerBins.length;
     batch(() => {
-      for (const bin of layerBins) {
-        if (isErr(moveBinToStaging(bin.id))) break;
-      }
+      moveBinsToStaging(layerBins.map((b) => b.id));
       setSelectedBins([]);
     });
     addToast(t('toast.clearComplete', { count }), 'success');

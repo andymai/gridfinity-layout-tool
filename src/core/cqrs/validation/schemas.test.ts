@@ -17,6 +17,7 @@ describe('COMMAND_SCHEMAS', () => {
     'bin.deleteBatch',
     'bin.duplicate',
     'bin.moveToStaging',
+    'bin.moveToStagingBatch',
     'bin.moveFromStaging',
     'bin.fillLayer',
     'bin.fillGaps',
@@ -45,9 +46,9 @@ describe('COMMAND_SCHEMAS', () => {
     }
   });
 
-  it('has exactly 40 schemas', () => {
+  it('has exactly 41 schemas', () => {
     const registeredCount = Object.keys(COMMAND_SCHEMAS).length;
-    expect(registeredCount).toBe(40);
+    expect(registeredCount).toBe(41);
   });
 });
 

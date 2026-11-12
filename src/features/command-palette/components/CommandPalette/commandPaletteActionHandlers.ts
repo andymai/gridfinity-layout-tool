@@ -136,7 +136,8 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       fillLayer: s.fillLayer,
     }))
   );
-  const { deleteBin, duplicateBin, updateBin, moveBinToStaging, addLayer } = useMutations();
+  const { deleteBin, duplicateBin, updateBin, moveBinToStaging, moveBinsToStaging, addLayer } =
+    useMutations();
   const { createNewLayout, duplicateLayout, activeLayoutId } = useLayoutSwitcher();
   const { alignBins } = useAlignBins();
   const { rotateAll, matchHeight } = useSelectionActions();
@@ -369,9 +370,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       'clear-layer': () => {
         if (layerBins.length === 0) return;
         batch(() => {
-          for (const b of layerBins) {
-            if (isErr(moveBinToStaging(b.id))) break;
-          }
+          moveBinsToStaging(layerBins.map((b) => b.id));
           setSelectedBins([]);
         });
         addToast(t('toast.clearComplete', { count: layerBins.length }), 'success');
@@ -505,6 +504,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     duplicateBin,
     updateBin,
     moveBinToStaging,
+    moveBinsToStaging,
     addLayer,
     fillLayerGaps,
     fillLayer,

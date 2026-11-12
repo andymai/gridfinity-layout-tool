@@ -13,6 +13,7 @@ const DESCRIPTIONS: Readonly<Partial<Record<CommandType, string>>> = {
   'bin.deleteBatch': 'undo.binsDeleted',
   'bin.duplicate': 'undo.binDuplicated',
   'bin.moveToStaging': 'undo.binMovedToStaging',
+  'bin.moveToStagingBatch': 'undo.binsMovedToStaging',
   'bin.moveFromStaging': 'undo.binMovedFromStaging',
   'bin.fillLayer': 'undo.layerFilled',
   'bin.fillGaps': 'undo.gapsFilled',

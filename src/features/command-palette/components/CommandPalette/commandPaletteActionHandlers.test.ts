@@ -8,6 +8,7 @@ import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { STAGING_ID } from '@/core/constants';
 import { createTestBin, createTestLayout, resetAllStores } from '@/test/testUtils';
 import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
+import type { Bin } from '@/core/types';
 
 const L1 = layerId('layer1');
 const L2 = layerId('layer2');
@@ -79,5 +80,33 @@ describe('clear-layer', () => {
     expect(useLayoutStore.getState().layout).toBe(before);
     expect(useToastStore.getState().toasts).toHaveLength(0);
     expect(useHistoryStore.getState().past).toHaveLength(0);
+  });
+
+  it('moves a full layer to the stash in one store update', () => {
+    const bins: Bin[] = [];
+    for (let x = 0; x < 10; x++) {
+      for (let y = 0; y < 8; y++) {
+        bins.push(
+          createTestBin({ id: binId(`f-${x}-${y}`), layerId: L1, x: gridUnits(x), y: gridUnits(y) })
+        );
+      }
+    }
+    useLayoutStore.setState({ layout: { ...useLayoutStore.getState().layout, bins } });
+    let storeUpdates = 0;
+    const unsubscribe = useLayoutStore.subscribe(() => {
+      storeUpdates++;
+    });
+    const { result } = renderHook(() => useActionHandlers());
+
+    act(() => {
+      result.current['clear-layer']?.();
+    });
+    unsubscribe();
+
+    expect(storeUpdates).toBe(1);
+    expect(placement('f-9-7')).toEqual({ layerId: STAGING_ID, x: 9, y: 7 });
+    expect(useLayoutStore.getState().layout.bins.every((b) => b.layerId === STAGING_ID)).toBe(true);
+    expect(useToastStore.getState().toasts.at(-1)?.message).toBe('Cleared 80 bins from layer');
+    expect(useHistoryStore.getState().past).toHaveLength(1);
   });
 });

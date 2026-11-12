@@ -168,6 +168,11 @@ const binDuplicateSchema = z.object({ id: binIdSchema });
 /** bin.moveToStaging */
 const binMoveToStagingSchema = z.object({ id: binIdSchema });
 
+/** bin.moveToStagingBatch */
+const binMoveToStagingBatchSchema = z.object({
+  ids: z.array(binIdSchema).min(1),
+});
+
 /** bin.moveFromStaging */
 const binMoveFromStagingSchema = z.object({
   id: binIdSchema,
@@ -420,6 +425,7 @@ export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> 
   'bin.deleteBatch': binDeleteBatchSchema,
   'bin.duplicate': binDuplicateSchema,
   'bin.moveToStaging': binMoveToStagingSchema,
+  'bin.moveToStagingBatch': binMoveToStagingBatchSchema,
   'bin.moveFromStaging': binMoveFromStagingSchema,
   'bin.fillLayer': binFillLayerSchema,
   'bin.fillGaps': binFillGapsSchema,

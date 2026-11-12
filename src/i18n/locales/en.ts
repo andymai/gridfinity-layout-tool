@@ -6073,6 +6073,7 @@ const en: Record<string, string> = {
   'undo.binsDeleted': 'Deleted bins',
   'undo.binDuplicated': 'Duplicated bin',
   'undo.binMovedToStaging': 'Moved bin to stash',
+  'undo.binsMovedToStaging': 'Moved bins to stash',
   'undo.binMovedFromStaging': 'Moved bin from stash',
   'undo.layerFilled': 'Filled layer',
   'undo.gapsFilled': 'Filled gaps',

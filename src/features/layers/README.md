@@ -5,7 +5,7 @@ Vertical stacking system for multi-height drawer organization.
 ```mermaid
 graph TB
     LP[LayerPanel] --> AL[addLayer] & DL[deleteLayer] & RL[reorderLayers]
-    ALP[ActiveLayerPanel] --> FL[fillLayer] & CLR[moveBinToStaging] & SAL[setActiveLayer]
+    ALP[ActiveLayerPanel] --> FL[fillLayer] & CLR[moveBinsToStaging] & SAL[setActiveLayer]
     SAL --> SEL[(selection)]
     DL -->|bins to staging| LAY[(layout)]
 ```

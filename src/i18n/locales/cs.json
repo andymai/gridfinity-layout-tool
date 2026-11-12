@@ -5219,6 +5219,7 @@
   "undo.binDuplicated": "Duplikován bin",
   "undo.binMovedFromStaging": "Bin přesunut ze Stash",
   "undo.binMovedToStaging": "Bin přesunut do Stash",
+  "undo.binsMovedToStaging": "Biny přesunuty do Stash",
   "undo.binUpdated": "Aktualizován bin",
   "undo.binsDeleted": "Smazány biny",
   "undo.binsExpanded": "Biny roztaženy",
