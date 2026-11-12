@@ -30,6 +30,11 @@ export type MoveBinsToStagingCommand = BaseCommand<
   { readonly ids: ReadonlyArray<BinId> }
 >;
 
+export type RestoreBinsFromStagingCommand = BaseCommand<
+  'bin.restoreFromStaging',
+  { readonly ids: ReadonlyArray<BinId>; readonly layerId: LayerId }
+>;
+
 export type MoveBinFromStagingCommand = BaseCommand<
   'bin.moveFromStaging',
   {
@@ -74,6 +79,7 @@ export type BinCommand =
   | DuplicateBinCommand
   | MoveBinToStagingCommand
   | MoveBinsToStagingCommand
+  | RestoreBinsFromStagingCommand
   | MoveBinFromStagingCommand
   | FillLayerCommand
   | FillLayerGapsCommand

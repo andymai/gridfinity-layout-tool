@@ -33,6 +33,7 @@ import { useLayoutSwitcher } from '@/shared/hooks';
 import { getStagingBins, getLayerBins } from '@/shared/utils';
 import { findBinById } from '@/shared/utils/entity';
 import { isBinLocked, planBinRotation } from '@/shared/utils/binLocation';
+import { expandPairIds } from '@/shared/utils/binPairs';
 import { useAlignBins } from '@/shared/hooks/useAlignBins';
 import { useSelectionActions } from '@/shared/hooks/useSelectionActions';
 import { useExpandToFit } from '@/shared/hooks/useExpandToFit';
@@ -137,8 +138,14 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       fillLayer: s.fillLayer,
     }))
   );
-  const { deleteBin, duplicateBin, updateBin, moveBinToStaging, moveBinsToStaging, addLayer } =
-    useMutations();
+  const {
+    deleteBins,
+    duplicateBin,
+    updateBin,
+    moveBinsToStaging,
+    restoreBinsFromStaging,
+    addLayer,
+  } = useMutations();
   const { createNewLayout, duplicateLayout, activeLayoutId } = useLayoutSwitcher();
   const { alignBins } = useAlignBins();
   const { rotateAll, matchHeight } = useSelectionActions();
@@ -151,6 +158,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     const layerBins = getLayerBins(layout.bins, activeLayerId);
     const stagingBins = getStagingBins(layout.bins);
     const categories = layout.categories;
+    const withPartners = (): BinId[] => [...expandPairIds(new Set(selectedBinIds), layout.bins)];
 
     function clearSelection(): void {
       setSelectedBins([]);
@@ -267,10 +275,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       'delete-selected': hasBinsSelected
         ? () => {
             batch(() => {
-              for (const id of selectedBinIds) {
-                const result = deleteBin(id);
-                if (isErr(result)) break;
-              }
+              deleteBins(withPartners());
             });
             // Selection cleanup handled by CQRS selectionPruning subscriber
           }
@@ -407,23 +412,21 @@ export function useActionHandlers(): Record<string, ActionHandler> {
         : null,
       'move-to-stash': hasBinsSelected
         ? () => {
+            const stashIds = withPartners();
             batch(() => {
-              for (const id of selectedBinIds) {
-                if (isErr(moveBinToStaging(id))) break;
-              }
+              moveBinsToStaging(stashIds);
             });
-            addToast(t('toast.movedToStash', { count: selectedBinIds.length }), 'info');
-            // Selection cleanup handled by CQRS selectionPruning subscriber
+            addToast(t('toast.movedToStash', { count: stashIds.length }), 'info');
+            // Pruning drops only the bins the batch moved; a selected bin
+            // already in the stash would stay selected.
+            setSelectedBins([]);
           }
         : null,
       'clear-staging':
         stagingBins.length > 0
           ? () => {
               batch(() => {
-                for (const bin of stagingBins) {
-                  const result = deleteBin(bin.id);
-                  if (isErr(result)) break;
-                }
+                deleteBins(stagingBins.map((bin) => bin.id));
               });
               addToast(t('toast.stagingCleared', { count: stagingBins.length }), 'success');
             }
@@ -432,10 +435,10 @@ export function useActionHandlers(): Record<string, ActionHandler> {
         stagingBins.length > 0
           ? () => {
               batch(() => {
-                for (const bin of stagingBins) {
-                  const result = updateBin(bin.id, { layerId: activeLayerId });
-                  if (isErr(result)) break;
-                }
+                restoreBinsFromStaging(
+                  stagingBins.map((bin) => bin.id),
+                  activeLayerId
+                );
               });
               addToast(t('toast.restoredFromStaging', { count: stagingBins.length }), 'success');
             }
@@ -496,11 +499,11 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     showIsometricPreview,
     halfGridMode,
     paintSize,
-    deleteBin,
+    deleteBins,
     duplicateBin,
     updateBin,
-    moveBinToStaging,
     moveBinsToStaging,
+    restoreBinsFromStaging,
     addLayer,
     fillLayerGaps,
     fillLayer,

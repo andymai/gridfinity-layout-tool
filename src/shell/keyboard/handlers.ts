@@ -52,9 +52,7 @@ export function handleDelete(e: KeyboardEvent, ctx: KeyboardContext): boolean {
     : null;
 
   ctx.batch(() => {
-    for (const binId of deleteIds) {
-      ctx.deleteBin(binId);
-    }
+    ctx.deleteBins(deleteIds);
   });
   ctx.setSelectedBins([]);
   if (focusedBin) {

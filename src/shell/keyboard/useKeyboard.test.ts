@@ -12,9 +12,9 @@ import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { useLibraryStore } from '@/core/store/library';
 import { useToastStore } from '@/core/store/toast';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
-import { resetAllStores, getBinId } from '@/test/testUtils';
-import { gridUnits, heightUnits } from '@/core/types';
-import type { BinId, LayerId } from '@/core/types';
+import { resetAllStores, getBinId, createTestBin } from '@/test/testUtils';
+import { binId as toBinId, gridUnits, heightUnits } from '@/core/types';
+import type { Bin, BinId, LayerId } from '@/core/types';
 
 function createKeyboardEvent(key: string, options: Partial<KeyboardEventInit> = {}): KeyboardEvent {
   return new KeyboardEvent('keydown', {
@@ -154,6 +154,40 @@ describe('useKeyboard', () => {
       });
 
       expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
+    });
+
+    it('deletes a full layer in one store update and one undo step', () => {
+      const { layout } = useLayoutStore.getState();
+      const bins: Bin[] = [];
+      for (let x = 0; x < 8; x++) {
+        for (let y = 0; y < 8; y++) {
+          bins.push(
+            createTestBin({
+              id: toBinId(`f-${x}-${y}`),
+              layerId: layout.layers[0].id,
+              x: gridUnits(x),
+              y: gridUnits(y),
+            })
+          );
+        }
+      }
+      useLayoutStore.setState({ layout: { ...layout, bins } });
+      useSelectionStore.getState().setSelectedBins(bins.map((b) => b.id));
+      useHistoryStore.getState().clear();
+      renderHook(() => useKeyboard());
+      let storeUpdates = 0;
+      const unsubscribe = useLayoutStore.subscribe(() => {
+        storeUpdates++;
+      });
+
+      act(() => {
+        pressKey('Delete');
+      });
+      unsubscribe();
+
+      expect(storeUpdates).toBe(1);
+      expect(useLayoutStore.getState().layout.bins).toEqual([]);
+      expect(useHistoryStore.getState().past).toHaveLength(1);
     });
 
     it('moves focus to the nearest surviving bin after deleting the focused bin', () => {

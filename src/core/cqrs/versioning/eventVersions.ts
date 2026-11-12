@@ -17,6 +17,7 @@ export const CURRENT_EVENT_VERSIONS: Record<DomainEventType, number> = {
   'bin.duplicated': 1,
   'bin.movedToStaging': 1,
   'bin.batchMovedToStaging': 1,
+  'bin.restoredFromStaging': 1,
   'bin.movedFromStaging': 1,
   'bin.layerFilled': 1,
   'bin.expandedToFit': 1,

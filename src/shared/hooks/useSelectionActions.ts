@@ -5,6 +5,7 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
+import { useMutations } from '@/shared/contexts';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { isBinLocked } from '@/shared/utils/binLocation';
 import { quarterTurnCandidate, quarterTurnUpdates } from '@/shared/utils/rotation';
@@ -21,15 +22,15 @@ import { batch } from '@/core/cqrs';
  */
 export function useSelectionActions() {
   const t = useTranslation();
-  const { bins, layout, updateBin, deleteBins, moveBinToStaging } = useLayoutStore(
+  const { bins, layout, updateBin, deleteBins } = useLayoutStore(
     useShallow((s) => ({
       bins: s.layout.bins,
       layout: s.layout,
       updateBin: s.updateBin,
       deleteBins: s.deleteBins,
-      moveBinToStaging: s.moveBinToStaging,
     }))
   );
+  const { moveBinsToStaging } = useMutations();
   const { selectedBinIds, clearSelection } = useSelectionStore(
     useShallow((s) => ({
       selectedBinIds: s.selectedBinIds,
@@ -266,9 +267,7 @@ export function useSelectionActions() {
     const count = stashIds.length;
 
     batch(() => {
-      for (const id of stashIds) {
-        moveBinToStaging(id);
-      }
+      moveBinsToStaging(stashIds);
     });
 
     clearSelection();
@@ -277,7 +276,7 @@ export function useSelectionActions() {
       type: 'success',
       duration: 2000,
     });
-  }, [selectedBinIds, moveBinToStaging, clearSelection, addToast, t]);
+  }, [selectedBinIds, moveBinsToStaging, clearSelection, addToast, t]);
 
   const deleteAll = useCallback(() => {
     if (selectedBinIds.length === 0) return;

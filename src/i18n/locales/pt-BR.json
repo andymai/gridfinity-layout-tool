@@ -5128,6 +5128,7 @@
   "undo.binDeleted": "Bin excluido",
   "undo.binDuplicated": "Bin duplicado",
   "undo.binMovedFromStaging": "Bin movido do stash",
+  "undo.binsMovedFromStaging": "Bins movidos do stash",
   "undo.binMovedToStaging": "Bin movido para o stash",
   "undo.binsMovedToStaging": "Bins movidos para o stash",
   "undo.binUpdated": "Bin atualizado",

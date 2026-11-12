@@ -82,6 +82,14 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
       return extractResult(result);
     },
 
+    restoreBinsFromStaging(
+      ids: BinId[],
+      layerId: LayerId
+    ): Result<void, ValidationError | LayoutError> {
+      const result = bus.dispatch(createCommand('bin.restoreFromStaging', { ids, layerId }));
+      return extractResult(result);
+    },
+
     moveBinFromStaging(
       id: BinId,
       layerId: LayerId,

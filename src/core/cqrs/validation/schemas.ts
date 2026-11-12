@@ -172,6 +172,11 @@ const binMoveToStagingBatchSchema = z.object({
   ids: z.array(binIdSchema).min(1),
 });
 
+const binRestoreFromStagingSchema = z.object({
+  ids: z.array(binIdSchema).min(1),
+  layerId: layerIdSchema,
+});
+
 /** bin.moveFromStaging */
 const binMoveFromStagingSchema = z.object({
   id: binIdSchema,
@@ -417,7 +422,7 @@ const layoutSetActiveBaseplateSchema = z.object({
  * UI and restore commands are excluded (validation=false in their middleware profiles).
  */
 export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> = {
-  // Bin commands (9)
+  // Bin commands
   'bin.add': binAddSchema,
   'bin.update': binUpdateSchema,
   'bin.delete': binDeleteSchema,
@@ -425,24 +430,25 @@ export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> 
   'bin.duplicate': binDuplicateSchema,
   'bin.moveToStaging': binMoveToStagingSchema,
   'bin.moveToStagingBatch': binMoveToStagingBatchSchema,
+  'bin.restoreFromStaging': binRestoreFromStagingSchema,
   'bin.moveFromStaging': binMoveFromStagingSchema,
   'bin.fillLayer': binFillLayerSchema,
   'bin.fillGaps': binFillGapsSchema,
   'bin.expandToFit': binExpandToFitSchema,
   'bin.clearLayer': binClearLayerSchema,
 
-  // Layer commands (4)
+  // Layer commands
   'layer.add': layerAddSchema,
   'layer.update': layerUpdateSchema,
   'layer.delete': layerDeleteSchema,
   'layer.reorder': layerReorderSchema,
 
-  // Category commands (3)
+  // Category commands
   'category.add': categoryAddSchema,
   'category.update': categoryUpdateSchema,
   'category.delete': categoryDeleteSchema,
 
-  // Drawer/layout commands (7)
+  // Drawer/layout commands
   'drawer.update': drawerUpdateSchema,
   'drawer.setOutline': z.object({ outline: drawerOutlineSchema.nullable() }),
   'layout.setName': layoutSetNameSchema,
@@ -455,7 +461,7 @@ export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> 
   'layout.setBaseplateParams': layoutSetBaseplateParamsSchema,
   'layout.setActiveBaseplate': layoutSetActiveBaseplateSchema,
 
-  // Library commands (10)
+  // Library commands
   'library.createEntry': libraryCreateEntrySchema,
   'library.deleteEntry': libraryDeleteEntrySchema,
   'library.duplicateEntry': libraryDuplicateEntrySchema,
@@ -467,7 +473,7 @@ export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> 
   'library.renameEntry': libraryRenameEntrySchema,
   'library.importLayout': libraryImportLayoutSchema,
 
-  // Designer commands (1)
+  // Designer commands
   'designer.save': designerSaveSchema,
 };
 

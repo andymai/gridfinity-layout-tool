@@ -18,6 +18,7 @@ import { deleteBins } from './domain/bin/deleteBins';
 import { duplicateBin } from './domain/bin/duplicateBin';
 import { moveBinToStaging } from './domain/bin/moveBinToStaging';
 import { moveBinsToStaging } from './domain/bin/moveBinsToStaging';
+import { restoreBinsFromStaging } from './domain/bin/restoreBinsFromStaging';
 import { moveBinFromStaging } from './domain/bin/moveBinFromStaging';
 import { fillLayer } from './domain/bin/fillLayer';
 import { fillGaps } from './domain/bin/fillGaps';
@@ -76,6 +77,7 @@ export const v2HandlerOverrides: Record<string, V2HandlerFn> = {
   [duplicateBin.type]: wrapV2Handler(duplicateBin) as V2HandlerFn,
   [moveBinToStaging.type]: wrapV2Handler(moveBinToStaging) as V2HandlerFn,
   [moveBinsToStaging.type]: wrapV2Handler(moveBinsToStaging) as V2HandlerFn,
+  [restoreBinsFromStaging.type]: wrapV2Handler(restoreBinsFromStaging) as V2HandlerFn,
   [moveBinFromStaging.type]: wrapV2Handler(moveBinFromStaging) as V2HandlerFn,
   [fillLayer.type]: wrapV2Handler(fillLayer) as V2HandlerFn,
   [fillGaps.type]: wrapV2Handler(fillGaps) as V2HandlerFn,
@@ -120,6 +122,7 @@ export const v2Commands = [
   duplicateBin,
   moveBinToStaging,
   moveBinsToStaging,
+  restoreBinsFromStaging,
   moveBinFromStaging,
   fillLayer,
   fillGaps,

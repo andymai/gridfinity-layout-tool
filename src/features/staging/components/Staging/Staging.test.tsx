@@ -328,6 +328,26 @@ describe('Staging', () => {
       expect(stashedIds()).toEqual(bins.map((b) => b.id));
     });
 
+    it('clears a full stash in one store update', () => {
+      addStagedBins(Array.from({ length: 80 }, (_, i) => ({ x: gridUnits(i % 10) })));
+      useHistoryStore.getState().clear();
+      render(<Staging />);
+      fireEvent.click(screen.getByText('Clear all'));
+      let storeUpdates = 0;
+      const unsubscribe = useLayoutStore.subscribe(() => {
+        storeUpdates++;
+      });
+
+      fireEvent.click(screen.getByTestId('confirm-button'));
+      unsubscribe();
+
+      expect(storeUpdates).toBe(1);
+      expect(useLayoutStore.getState().layout.bins.filter((b) => b.layerId === STAGING_ID)).toEqual(
+        []
+      );
+      expect(useHistoryStore.getState().past).toHaveLength(1);
+    });
+
     it('deletes all staged bins when confirmed', () => {
       addStagedBins([{}, {}, {}]);
 

@@ -11,6 +11,7 @@ export type {
   BinDuplicatedEvent,
   BinMovedToStagingEvent,
   BinsMovedToStagingEvent,
+  BinsRestoredFromStagingEvent,
   BinMovedFromStagingEvent,
   LayerFilledEvent,
   BinsExpandedToFitEvent,

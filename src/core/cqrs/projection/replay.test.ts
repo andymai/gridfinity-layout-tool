@@ -110,6 +110,24 @@ describe('applyEvent', () => {
     ]);
   });
 
+  it('applies bin.restoredFromStaging — returns the listed bins in place, without an overhang', () => {
+    const overhang = { left: 0, right: 4, front: 0, back: 0 };
+    const a = makeBin({ id: binId('bin_a'), layerId: STAGING_ID, x: gridUnits(2), overhang });
+    const b = makeBin({ id: binId('bin_b'), layerId: STAGING_ID, x: gridUnits(3) });
+    const layout = makeLayout([a, b]);
+    const event: DomainEvent = {
+      type: 'bin.restoredFromStaging',
+      payload: { layerId: layerId('layer_1'), moves: [{ id: a.id, previousOverhang: overhang }] },
+      meta: baseMeta,
+    };
+
+    const result = applyEvent(layout, event);
+    expect(result.bins.map((bin) => [bin.id, bin.layerId, bin.x, bin.overhang])).toEqual([
+      [binId('bin_a'), layerId('layer_1'), 2, undefined],
+      [binId('bin_b'), STAGING_ID, 3, undefined],
+    ]);
+  });
+
   it('applies layer.added', () => {
     const layout = makeLayout();
     const event: DomainEvent = {

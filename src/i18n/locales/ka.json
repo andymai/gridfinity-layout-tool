@@ -5041,6 +5041,7 @@
   "undo.binMovedToStaging": "ყუთი დროებით საცავში გადავიდა",
   "undo.binsMovedToStaging": "ყუთები დროებით საცავში გადავიდა",
   "undo.binMovedFromStaging": "ყუთი დროებითი საცავიდან გადავიდა",
+  "undo.binsMovedFromStaging": "ყუთები დროებითი საცავიდან გადავიდა",
   "undo.layerFilled": "ფენა შეივსო",
   "undo.gapsFilled": "შუალედები შეივსო",
   "undo.binsExpanded": "ყუთები გაფართოვდა",
