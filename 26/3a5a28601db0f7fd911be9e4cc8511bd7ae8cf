@@ -1,0 +1,53 @@
+src/i18n/locales/en.ts
+  s_7dc03ec4cfdd4b::t_30f72a36d7318a 2634
+src/i18n/locales/nb.json
+  s_7dc03ec4cfdd4b::t_30f72a36d7318a 1682
+src/i18n/locales/es.json
+  s_7dc03ec4cfdd4b::t_30f72a36d7318a 1682
+src/i18n/locales/nl.json
+  s_7dc03ec4cfdd4b::t_30f72a36d7318a 1682
+src/i18n/locales/zh-CN.json
+  s_7dc03ec4cfdd4b::t_30f72a36d7318a 1651
+src/i18n/locales/pl.json
+  s_7dc03ec4cfdd4b::t_30f72a36d7318a 1744
+src/i18n/locales/ja.json
+  s_7dc03ec4cfdd4b::t_30f72a36d7318a 1651
+src/i18n/locales/ka.json
+  s_7dc03ec4cfdd4b::t_30f72a36d7318a 2210
+src/i18n/locales/cs.json
+  s_7dc03ec4cfdd4b::t_30f72a36d7318a 1713
+src/i18n/locales/fr.json
+  s_7dc03ec4cfdd4b::t_30f72a36d7318a 1682
+src/i18n/locales/uk.json
+  s_7dc03ec4cfdd4b::t_30f72a36d7318a 1744
+apps/docs/designer/lids.md
+  s_7dc03ec4cfdd4b::t_f7ea2ad55ce40f 46
+apps/docs/recipes/lidded-boxes.md
+  s_7dc03ec4cfdd4b::t_f7ea2ad55ce40f 86-87,90-93,103-107
+src/i18n/locales/de.json
+  s_7dc03ec4cfdd4b::t_30f72a36d7318a 1682
+src/i18n/locales/pt-BR.json
+  s_7dc03ec4cfdd4b::t_30f72a36d7318a 1682
+src/i18n/locales/it.json
+  s_7dc03ec4cfdd4b::t_30f72a36d7318a 1682
+src/i18n/locales/ko.json
+  s_7dc03ec4cfdd4b::t_30f72a36d7318a 1651
+src/i18n/locales/sv.json
+  s_7dc03ec4cfdd4b::t_30f72a36d7318a 1682
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "263a5a28601db0f7fd911be9e4cc8511bd7ae8cf",
+  "prompts": {},
+  "sessions": {
+    "s_7dc03ec4cfdd4b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6e1971db-3144-4b89-9c8a-56a37ed47e41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
