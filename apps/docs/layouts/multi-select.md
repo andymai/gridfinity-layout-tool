@@ -27,6 +27,8 @@ Got a row of bins that all need the same change? Select them together and make t
 - Hold <kbd>Shift</kbd> and click a second row or column number to add all the rows or columns between the two.
 - Hold <kbd>Ctrl</kbd> and click a row or column number to add its bins, or to remove them.
 
+<Screenshot id="layouts-multi-select-rows" alt="A click on row number 1 selects every bin in that row. A click on row number 2 with Shift held adds the bins of row 2." spec="Clip. Layout editor on desktop. Layout with a 6 by 4 drawer and rows of small bins. Click row number 1. Then hold Shift, with a keycap, and click row number 2. Crop to the grid, its numbers and the selection toolbar." />
+
 The command palette (<kbd>Ctrl</kbd>+<kbd>K</kbd>, or <kbd>Cmd</kbd>+<kbd>K</kbd> on a Mac) has more ways to select:
 
 | Command                                    | What it selects                                                          |
@@ -61,6 +63,8 @@ Select two or more bins on a computer, and a toolbar shows above them with the g
 
 Align, rotate and match height skip a bin that has no room for the change. Rotate and match height also skip a bin with a locked size. A message tells you how many bins changed.
 
+<Screenshot id="layouts-multi-select-align" alt="Three small bins sit at different columns and are selected. A click on Align left in the selection toolbar lines up their left edges." spec="Clip. Layout editor on desktop. Layout with a 6 by 4 drawer and three 1 by 1 bins in a ragged column, all selected, with the selection toolbar showing. Click Align left. Crop to the grid and the toolbar." />
+
 ## Edit all the selected bins
 
 With two or more bins selected, the inspector on the right edits them all at once:
@@ -72,6 +76,8 @@ With two or more bins selected, the inspector on the right edits them all at onc
 - <Ui k="inspector.lockAllSizes" /> locks the size of every selected bin.
 - <Ui k="inspector.toStash" /> and <Ui k="inspector.deleteAll" /> act on the whole selection.
 
+<Screenshot id="layouts-multi-select-inspector" alt="The Multi-selection group of the inspector with three bins selected. It has the category, the height buttons, Set property, Lock all sizes, Merge into a bento, To stash and Delete all." spec="Layout editor on desktop with three bins selected. Crop to the Multi-selection group of the right panel, from its title to the Delete all button." />
+
 ## Merge the selection into one bin
 
 Want one bin in place of a cluster of small ones? <Ui k="mobile.binMenu.mergeIntoOne" /> makes one bin with a compartment where each selected bin was. You find it in the inspector and in the bin menu.
@@ -81,6 +87,8 @@ Want one bin in place of a cluster of small ones? <Ui k="mobile.binMenu.mergeInt
 3. Type a <Ui k="designLinking.bento.nameLabel" /> for the new bin.
 4. Set the <Ui k="designLinking.bento.heightLabel" /> and the <Ui k="designLinking.bento.dividerLabel" />.
 5. Click <Ui k="designLinking.bento.confirm" />.
+
+<Screenshot id="layouts-multi-select-merge-dialog" alt="The Merge into a bento dialog for three selected bins. It shows a plan of the compartments, the Name field with Screw tray typed in, the Height and Divider walls settings, and the Create bento button." spec="Layout editor on desktop. Layout with a row of 1 by 1 bins and a 2 by 1 Nuts bin above the first two. Select M3, M4 and Nuts, click Merge into a bento in the inspector, and type a name. Crop to the dialog." />
 
 The Layout Tool saves the new bin as a design and opens it in the bin designer. Your layout stays as it is, unless you also select the option to replace the bins with the new one.
 
@@ -101,6 +109,8 @@ Right-click a bin to open its menu. On a touch screen, touch and hold the bin. T
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | One bin              | <Ui k="common.duplicate" />, <Ui k="mobile.binMenu.rotate" />, <Ui k="mobile.binMenu.lockSize" />, <Ui k="mobile.binMenu.expandToFit" />, <Ui k="mobile.binMenu.toStash" />, <Ui k="common.delete" />, <Ui k="stlSearch.findSTL" />, and the <Ui k="designLinking.menu.sectionTitle" /> actions that link the bin to a saved design |
 | A bin in a selection | <Ui k="common.category" />, <Ui k="mobile.binMenu.expandToFit" />, <Ui k="mobile.binMenu.mergeIntoOne" /> and <Ui k="inspector.multi.delete" />, for the whole selection                                                                                                                                                            |
+
+<Screenshot id="layouts-multi-select-bin-menu" alt="The menu that a right-click on one bin opens. It has Duplicate, Rotate, Lock size, Expand to fit, To stash, Find STL, the Bin design actions and Delete." spec="Layout editor on desktop. Right-click one bin with nothing selected. Crop to the grid and the menu." />
 
 If the selection includes bins from the stash, the selection menu also has <Ui k="inspector.multi.layer" />, which puts them on a layer.
 

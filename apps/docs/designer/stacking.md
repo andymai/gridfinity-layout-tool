@@ -34,6 +34,8 @@ When the lip is off, <Ui k="binDesigner.base.rimFillet" /> appears. It rounds th
 2. Turn on <Ui k="binDesigner.base.rimFillet" />.
 3. Set <Ui k="binDesigner.base.rimFillet.radius" />. The default is 0.4 mm.
 
+<Screenshot id="designer-stacking-round-rim" alt="A close view of a bin with its stacking lip. Turning off Stacking lip leaves a plain wall at the rim. Then Round top rim turns on and shows the Rim fillet radius slider at 0.4 mm." spec="Bin designer, bin 2 x 2 x 3, preview zoomed in. Show the bin, then turn off Stacking lip in close-up and show the bin again. Then turn on Round top rim in close-up." />
+
 The thinner of the wall and the dividers limits the radius. The option needs a rectangular, hollow bin with walls.
 
 ## Make the lip print cleanly
@@ -72,6 +74,8 @@ The <Ui k="binDesigner.base.bodyType.nesting" /> body type is for boxes that sta
 1. Under <Ui k="binDesigner.base.bodyType" />, pick <Ui k="binDesigner.base.bodyType.nesting" />.
 2. To hold the stack together, turn on <Ui k="binDesigner.base.magnetHoles" /> under <Ui k="binDesigner.base.section.mounting" />.
 3. For a large box, set <Ui k="binDesigner.lid.retentionEdgeMagnets" />.
+
+<Screenshot id="designer-stacking-nesting" alt="Picking the Nesting body type gives the box one tapered base. Then Magnet holes turns on under Mounting, and a view from below shows a magnet hole in each corner." spec="Bin designer, bin 2 x 2 x 6. In close-up, pick Nesting, then show the box. Turn on Magnet holes, then show the box from below." />
 
 With magnets on, the box gets four corner magnets. <Ui k="binDesigner.lid.retentionEdgeMagnets" /> adds up to 3 more magnets along each long edge, only where the edge is long enough for them. The magnet size is the same as for the lid. To get matching magnet holes at the top, choose a magnetic lid. See [Lids](./lids).
 

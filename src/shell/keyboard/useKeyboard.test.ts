@@ -7,6 +7,7 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useViewStore } from '@/core/store/view';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
+import { useToastStore } from '@/core/store/toast';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
 import { resetAllStores, getBinId } from '@/test/testUtils';
 import { gridUnits, heightUnits } from '@/core/types';
@@ -892,6 +893,41 @@ describe('useKeyboard', () => {
       expect(bins[0].width).toBe(3);
       expect(bins[0].depth).toBe(2);
     });
+
+    it('toasts the translated reason when the turned bin cannot fit anywhere near', () => {
+      const { layout } = useLayoutStore.getState();
+      useLayoutStore.setState({
+        layout: {
+          ...layout,
+          drawer: { ...layout.drawer, width: gridUnits(2), depth: gridUnits(4) },
+        },
+      });
+      const binId = getBinId(
+        useLayoutStore.getState().addBin({
+          layerId: layout.layers[0].id,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(1),
+          depth: gridUnits(3),
+          height: heightUnits(3),
+          category: layout.categories[0].id,
+          label: '',
+          notes: '',
+        })
+      );
+      useSelectionStore.getState().setSelectedBins([binId]);
+      useToastStore.setState({ toasts: [] });
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('r');
+      });
+
+      expect(useToastStore.getState().toasts.map((toast) => toast.message)).toEqual([
+        'Cannot rotate: bin would exceed drawer bounds',
+      ]);
+      expect(useLayoutStore.getState().layout.bins[0].width).toBe(1);
+    });
   });
 
   describe('layer navigation shortcuts', () => {
@@ -1388,36 +1424,37 @@ describe('useKeyboard', () => {
       expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
     });
 
-    it('shows error toast when toggle fails due to fractional bins', () => {
-      // First enable half-bin mode
+    it('opens the turn-off dialog, not a toast, when a half-unit bin blocks the H key', () => {
       useHalfGridModeStore.setState({ halfGridMode: true });
 
-      // Add a bin with fractional dimensions
       const { addBin, layout } = useLayoutStore.getState();
-      const layerId = layout.layers[0].id;
-      const categoryId = layout.categories[0].id;
-
-      addBin({
-        layerId,
-        x: gridUnits(0.5), // Fractional position
-        y: gridUnits(0),
-        width: gridUnits(2),
-        depth: gridUnits(2),
-        height: heightUnits(3),
-        category: categoryId,
-        label: '',
-        notes: '',
-      });
+      const binId = getBinId(
+        addBin({
+          layerId: layout.layers[0].id,
+          x: gridUnits(0.5),
+          y: gridUnits(0),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          height: heightUnits(3),
+          category: layout.categories[0].id,
+          label: '',
+          notes: '',
+        })
+      );
 
       renderHook(() => useKeyboard());
 
-      // Try to disable half-bin mode (should fail due to fractional bin)
       act(() => {
         pressKey('h');
       });
 
-      // Half-bin mode should still be enabled
       expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
+      expect(useHalfGridModeStore.getState().blockedViolation).toEqual({
+        type: 'fractional_bins_exist',
+        binIds: [binId],
+        count: 1,
+      });
+      expect(useToastStore.getState().toasts).toEqual([]);
     });
   });
 

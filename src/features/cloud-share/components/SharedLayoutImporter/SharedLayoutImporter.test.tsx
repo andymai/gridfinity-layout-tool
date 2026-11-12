@@ -12,6 +12,9 @@ vi.mock('@/core/storage', () => ({
   clearSharedLayoutFromURL: vi.fn(),
   getCloudShareIdFromURL: vi.fn(() => null),
   clearCloudShareFromURL: vi.fn(),
+  restoreSharedDesigns: vi.fn((_shareId: string, layout: unknown) =>
+    Promise.resolve({ layout, designIds: {} })
+  ),
 }));
 
 vi.mock('@/core/api/share', () => ({
@@ -162,6 +165,42 @@ describe('SharedLayoutImporter opening a cloud share', () => {
       expect(useSharedPreviewStore.getState().sharedPreview?.linkUpdatedAt).toBe(
         '2026-11-01T10:00:00.000Z'
       )
+    );
+  });
+
+  it("keeps the map from the owner's design ids to the restored ones, for the collab room", async () => {
+    vi.resetModules();
+    const storage = await import('@/core/storage');
+    vi.mocked(storage.getCloudShareIdFromURL).mockReturnValue('abc123xyz789');
+    vi.mocked(storage.restoreSharedDesigns).mockImplementation((_shareId, layout) =>
+      Promise.resolve({ layout, designIds: { 'owner-design': 'design_shared_1' as never } })
+    );
+    (await import('@/core/store/library')).useLibraryStore.setState({ isLoaded: true });
+    (await import('@/core/store/sharedWithMe')).useSharedWithMeStore.setState({ isLoaded: true });
+    const { ok } = await import('@/core/result');
+    const { fetchShare } = await import('@/core/api/share');
+    const linkedDesigns = [{ id: 'owner-design', name: 'Tray', params: {} as never }];
+    vi.mocked(fetchShare).mockResolvedValue(
+      ok({
+        layout: { name: 'Shared', bins: [], layers: [], categories: [] } as never,
+        linkedDesigns,
+        metadata: { createdAt: '2026-01-01T00:00:00.000Z', permission: 'edit' },
+      })
+    );
+    const { useSharedPreviewStore } = await import('@/core/store/sharedPreview');
+    const { SharedLayoutImporter: Importer } = await import('./SharedLayoutImporter');
+
+    render(<Importer />);
+
+    await waitFor(() =>
+      expect(useSharedPreviewStore.getState().sharedPreview?.designIds).toEqual({
+        'owner-design': 'design_shared_1',
+      })
+    );
+    expect(storage.restoreSharedDesigns).toHaveBeenCalledWith(
+      'abc123xyz789',
+      expect.anything(),
+      linkedDesigns
     );
   });
 });

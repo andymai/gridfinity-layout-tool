@@ -20,6 +20,8 @@ Make the app look and work the way you like. The Settings dialog of the Gridfini
 
 Need to find one setting? Type a word in <Ui k="settings.search.placeholder" /> at the top of the dialog, for example "dark" or "nozzle". Each result shows the tab that holds it.
 
+<Screenshot id="settings-settings-search" alt="The pointer clicks the search box at the top of Settings and types dark. The result Theme in Appearance shows below the box. The pointer clicks it, and the Appearance tab opens at the Theme setting." spec="Clip. Settings, desktop, opened on the General tab. Type dark in the search box and click the result. Crop to the top of the dialog." />
+
 Changed something and want it back? Each section has a <Ui k="settings.section.reset" /> button that puts that section back to its defaults. At the bottom of the dialog, <Ui k="settings.resetTabDefaults" /> puts every setting back to its default, and you can't undo it. <Ui k="settings.resetOnboarding" /> shows the first-time tutorial again after a reload.
 
 <Screenshot id="settings-settings-dialog" alt="The Settings dialog with the tab list in four groups on the left and the Appearance tab open on the right." spec="Desktop, any tool. Open Settings from the gear in the header and select the Appearance tab. Show the whole dialog, with the search box and the four tab groups visible." />
@@ -70,6 +72,8 @@ These tabs set the values that a new layout or a new bin starts with. Your exist
 | <Ui k="settings.defaultGridUnit" />     | Millimeters, from 20 to 60. Standard Gridfinity is 42.  |
 
 Not sure about the grid unit? Keep 42 mm, unless your other parts use a size that is not standard. After you set up one drawer the way you like, <Ui k="settings.copyFromCurrentLayout" /> copies these values from the open layout. See [Units](../concepts/units).
+
+<Screenshot id="settings-settings-defaults" alt="The Layout defaults tab in Settings, with the drawer size, the layer height, the print bed size, the grid unit and the Copy from current layout button." spec="Settings, Layout defaults tab, desktop, default values. Crop to the tab content down to the Copy from current layout button." />
 
 **<Ui k="settings.tabs.print" />** holds the values that the print estimates use. Set them to match your slicer profile:
 

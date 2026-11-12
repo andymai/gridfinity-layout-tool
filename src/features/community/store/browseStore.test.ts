@@ -355,6 +355,41 @@ describe('filterAndSortCards', () => {
     expect(ids({ sort: 'remixes' })).toEqual(['spice', 'pens', 'screws']);
   });
 
+  it('sorts by prints with newest breaking ties and an absent count reading as none', () => {
+    const printed: readonly CommunityCard[] = [
+      card('old-top', { counts: { likes: 0, remixes: 0, exports: 0, prints: 7 }, createdAt: 1000 }),
+      card('newest-none', { counts: { likes: 0, remixes: 0, exports: 0 }, createdAt: 5000 }),
+      card('mid-tied', {
+        counts: { likes: 0, remixes: 0, exports: 0, prints: 3 },
+        createdAt: 2000,
+      }),
+      card('zero', { counts: { likes: 0, remixes: 0, exports: 0, prints: 0 }, createdAt: 4000 }),
+      card('new-tied', {
+        counts: { likes: 0, remixes: 0, exports: 0, prints: 3 },
+        createdAt: 3000,
+      }),
+    ];
+    const sorted = filterAndSortCards(printed, { ...INITIAL_BROWSE_FILTERS, sort: 'prints' });
+    expect(sorted.map((item) => item.id)).toEqual([
+      'old-top',
+      'new-tied',
+      'mid-tied',
+      'newest-none',
+      'zero',
+    ]);
+  });
+
+  it.each(['newest', 'likes', 'remixes', 'prints', 'best-fit'] as const)(
+    'breaks a full %s tie by id, whatever the input order',
+    (sort) => {
+      const tied = ['zzz', 'aaa', 'mmm'].map((id) =>
+        card(id, { counts: { likes: 2, remixes: 2, exports: 0, prints: 2 }, createdAt: 5000 })
+      );
+      const sorted = filterAndSortCards(tied, { ...INITIAL_BROWSE_FILTERS, sort });
+      expect(sorted.map((item) => item.id)).toEqual(['aaa', 'mmm', 'zzz']);
+    }
+  );
+
   it('filters to a single author by public id', () => {
     expect(ids({ author: { id: ALICE, name: 'Alice' } })).toEqual(['screws', 'pens']);
     expect(ids({ author: { id: BOB, name: 'Bob' } })).toEqual(['spice']);

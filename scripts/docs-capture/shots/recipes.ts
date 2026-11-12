@@ -2,13 +2,114 @@ import type { Locator, Page } from '@playwright/test';
 import { layoutFile } from '../fixtures';
 import type { FixtureBin, FixtureLayout } from '../fixtures';
 import { label } from '../labels';
-import { DESKTOP, frameAround, pad } from '../session';
+import { DESKTOP, frameAround, pad, union } from '../session';
 import type { DocsSession, Rect, Shot } from '../session';
 import type { Params } from './apps';
 import { designerReady, openBaseplate, openDesigner, partBox, waitBaseplate } from './apps';
-import { grid, openLayouts } from './layoutEditor';
+import { cellCenter, grid, gridArea, openLayouts } from './layoutEditor';
 
 const WINDOW: Rect = { x: 0, y: 0, ...DESKTOP };
+const WORKSPACE: Rect = { x: 0, y: 48, width: DESKTOP.width, height: DESKTOP.height - 48 };
+/** Clip width (CSS px) for close-up takes: legible in the docs column. */
+const CLIP_WIDTH = 640;
+
+/** Cells are 1-based, row 1 at the front, as `cellCenter` counts them. */
+async function drawBin(
+  s: DocsSession,
+  [c0, r0]: readonly [number, number],
+  [c1, r1]: readonly [number, number]
+): Promise<void> {
+  const from = await cellCenter(s, c0, r0);
+  const to = await cellCenter(s, c1, r1);
+  const frames = Math.round(
+    Math.min(26, Math.max(10, Math.hypot(to[0] - from[0], to[1] - from[1]) / 18))
+  );
+  await s.ui.drag(from, to, frames);
+}
+
+async function duplicate(s: DocsSession, times: number): Promise<void> {
+  for (let i = 0; i < times; i++) await s.keys('ControlOrMeta+d', 'Ctrl D');
+}
+
+/**
+ * Clicks `target` on camera with `key` held and its keycap on screen. The
+ * kit's clicks carry no modifier keys, so the click itself goes through
+ * Playwright's mouse, which does.
+ */
+async function clickHolding(
+  s: DocsSession,
+  key: string,
+  cap: string,
+  frame: Rect,
+  target: Locator
+): Promise<void> {
+  const b = await s.box(target);
+  const [x, y] = [b.x + b.width / 2, b.y + b.height / 2];
+  await s.page.evaluate(
+    ([text, kx, ky]) =>
+      (
+        window as unknown as { __docs: { keycap(l: string, x: number, y: number): void } }
+      ).__docs.keycap(text, kx, ky),
+    [cap, frame.x + frame.width / 2, frame.y + frame.height - 56] as const
+  );
+  await s.page.keyboard.down(key);
+  await s.ui.moveTo(x, y);
+  await s.ui.hold(0.1);
+  await s.page.mouse.click(x, y);
+  await s.ui.hold(0.3);
+  await s.page.keyboard.up(key);
+  await s.page.evaluate(() =>
+    (window as unknown as { __docs: { clearKeycaps(): void } }).__docs.clearKeycaps()
+  );
+}
+
+/**
+ * The grid with its numbers, at the clip's 4:3. `keycaps` leaves a band
+ * below the column numbers, where a keycap shows without covering them.
+ */
+async function gridFrame(
+  s: DocsSession,
+  width: number,
+  depth: number,
+  keycaps = false
+): Promise<Rect> {
+  const box = await gridArea(s, width, depth);
+  return frameAround({ ...box, height: box.height + (keycaps ? 44 : 0) }, 12, 4 / 3, WORKSPACE);
+}
+
+async function stepTimes(s: DocsSession, target: Locator, times: number): Promise<void> {
+  await s.ui.click(target);
+  const b = await s.box(target);
+  for (let i = 1; i < times; i++) {
+    await s.page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+    await s.ui.hold(0.1);
+  }
+}
+
+async function binId(s: DocsSession, text: string | RegExp): Promise<string> {
+  const id = await s.page
+    .locator('[data-bin-id]', { hasText: text })
+    .first()
+    .getAttribute('data-bin-id');
+  if (!id) throw new Error(`no bin ${String(text)} on the grid`);
+  return id;
+}
+
+async function linkBin(s: DocsSession, id: string, design: string): Promise<void> {
+  await s.page.evaluate(
+    async ([bin, linked]) => {
+      const { useLayoutStore } = (await import('/src/core/store/layout/index.ts' as string)) as {
+        useLayoutStore: {
+          getState(): { updateBin(id: string, u: object): { ok: boolean; error?: unknown } };
+        };
+      };
+      const res = useLayoutStore.getState().updateBin(bin, { linkedDesignId: linked });
+      if (!res.ok) throw new Error(`could not link ${bin}: ${JSON.stringify(res.error)}`);
+    },
+    [id, design] as const
+  );
+  await s.ui.warm(20);
+}
 
 /**
  * Off camera: saves a bin design to the library on the open page, its params
@@ -475,7 +576,6 @@ async function below(s: DocsSession, candidates: Locator, anchor: Locator): Prom
   throw new Error(`nothing like ${String(candidates)} below ${String(anchor)}`);
 }
 
-/** A point in the designer's 3D preview clear of the part, to grab the view by. */
 async function grip(s: DocsSession): Promise<[number, number]> {
   const c = await s.box(s.page.locator('canvas').first());
   return [c.x + c.width * 0.85, c.y + c.height * 0.5];
@@ -527,6 +627,177 @@ const screwBlankCaption: Shot = {
     await placePart(s, { x: PANEL_EDGE + 70, y: top + 70, width: 400, height: height - 140 });
     await s.ui.hideCursor();
     await s.still({ x: 0, y: top, width: PANEL_EDGE + 540, height });
+  },
+};
+
+const SCREW_STEP_3: LinkedLayout = {
+  ...SCREW_STEP_2,
+  bins: SCREW_STEP_2.bins.map((b) => (b.cat === 'Bolts' ? { ...b, design: 'bolt' } : b)),
+};
+
+const screwCopyRow: Shot = {
+  id: 'recipes-screw-drawer-copy-row',
+  kind: 'clip',
+  async take(s) {
+    await openLinkedLayout(s, SCREW_STEP_3, {
+      screw: SCREW_DESIGNS.screw,
+      bolt: SCREW_DESIGNS.bolt,
+    });
+    await s.dismissToasts();
+    const area = await gridFrame(s, 8, 6, true);
+    const first = await cellCenter(s, 1, 1);
+    const row1 = s.page.getByRole('button', {
+      name: label('grid.selectRowAria', { row: 1 }),
+      exact: true,
+    });
+    // Clear of the selection toolbar, which shows over row 3 once row 2 is selected.
+    const rest = await cellCenter(s, 3, 4);
+    await s.ui.park(rest[0], rest[1]);
+    await s.take(
+      area,
+      async () => {
+        await s.ui.hold(0.4);
+        await s.ui.clickAt(first[0], first[1]);
+        await s.ui.moveTo(rest[0], rest[1]);
+        await s.ui.hold(0.2);
+        await duplicate(s, 7);
+        await s.ui.hold(0.3);
+        await s.ui.click(row1);
+        await s.ui.hold(0.3);
+        await duplicate(s, 1);
+        await s.ui.moveTo(rest[0], rest[1]);
+        s.poster();
+        await s.ui.hold(1.6);
+      },
+      CLIP_WIDTH / area.width
+    );
+  },
+};
+
+const M3_ROW = M3.map((_, x) => ({ x, y: 0, w: 1, d: 1, h: 3, cat: 'Screws', design: 'screw' }));
+
+const SCREW_COPIED: LinkedLayout = {
+  ...SCREW_DRAWER,
+  bins: [
+    ...M3_ROW.map((b, x) => (x < 2 ? { ...b, label: M3[x] } : b)),
+    ...M3_ROW.map((b) => ({ ...b, y: 1 })),
+    ...LONG.map((_, x) => ({ x, y: 2, w: 1, d: 2, h: 3, cat: 'Bolts', design: 'bolt' })),
+    { x: 0, y: 4, w: 4, d: 2, h: 3, cat: 'Nuts and washers' },
+    { x: 4, y: 4, w: 4, d: 2, h: 3, cat: 'Nuts and washers' },
+  ],
+};
+
+const screwLabelSuggest: Shot = {
+  id: 'recipes-screw-drawer-label-suggest',
+  kind: 'clip',
+  async take(s) {
+    await openLinkedLayout(s, SCREW_COPIED, {
+      screw: SCREW_DESIGNS.screw,
+      bolt: SCREW_DESIGNS.bolt,
+    });
+    await s.dismissToasts();
+    const [a, b] = [await cellCenter(s, 1, 1), await cellCenter(s, 2, 2)];
+    const [cw, ch] = [b[0] - a[0], a[1] - b[1]];
+    const end = await cellCenter(s, 4, 2);
+    const row = frameAround(
+      {
+        x: a[0] - cw / 2,
+        y: end[1] - ch / 2,
+        width: end[0] - a[0] + cw,
+        height: a[1] - end[1] + ch,
+      },
+      30,
+      4 / 3,
+      WORKSPACE
+    );
+    const third = await cellCenter(s, 3, 1);
+    const field = s.page.getByRole('combobox', { name: label('inspector.binLabel') }).first();
+    // Below the row numbers and left of the column numbers: a cursor on a bin
+    // or on a number leaves its hover on screen.
+    const rest: [number, number] = [a[0] - cw / 2 - 18, a[1] + ch / 2 + 24];
+    await s.ui.park(...rest);
+    await s.take(
+      row,
+      async () => {
+        await s.ui.hold(0.4);
+        // A hovered bin's side handle reaches 43 px into its neighbour at
+        // mid-height, which covers this bin's centre: press below it.
+        await s.ui.clickAt(third[0], third[1] + ch * 0.32);
+        await s.ui.hold(0.5);
+      },
+      CLIP_WIDTH / row.width
+    );
+    await s.ui.preClick(field);
+    const list = s.page.getByRole('listbox').first();
+    await s.until(list);
+    const inspector = frameAround(
+      union(await s.box(field), await s.box(list)),
+      16,
+      4 / 3,
+      WORKSPACE
+    );
+    await field.evaluate((el) => (el as HTMLElement).blur());
+    await s.ui.warm(10);
+    const f = await s.box(field);
+    await s.ui.park(f.x + f.width * 0.8, f.y - 40);
+    await s.take(inspector, async () => {
+      await s.ui.hold(0.3);
+      await s.ui.click(field);
+      await s.ui.hold(1.4);
+      await s.keys('Tab');
+      await s.ui.hold(0.8);
+    });
+    await s.page.keyboard.press('Enter');
+    await s.ui.warm(10);
+    await s.ui.park(...rest);
+    await s.take(row, async () => {
+      s.poster();
+      await s.ui.hold(1.8);
+    });
+  },
+};
+
+const screwDrawKinds: Shot = {
+  id: 'recipes-screw-drawer-draw-kinds',
+  kind: 'clip',
+  async take(s) {
+    await openLayouts(s, { ...SCREW_DRAWER, bins: [] });
+    const area = await gridFrame(s, 8, 6);
+    const rest = await cellCenter(s, 7, 2);
+    await s.ui.park(rest[0], rest[1]);
+    await s.take(
+      area,
+      async () => {
+        await s.ui.hold(0.5);
+        // Each drag starts at the corner away from the last bin: a press on the
+        // selected bin's edge handle resizes it instead of drawing.
+        for (const [from, to] of [
+          [
+            [1, 1],
+            [1, 1],
+          ],
+          [
+            [1, 4],
+            [1, 3],
+          ],
+          [
+            [4, 6],
+            [1, 5],
+          ],
+          [
+            [8, 6],
+            [5, 5],
+          ],
+        ] as const) {
+          await drawBin(s, from, to);
+          await s.ui.hold(0.5);
+        }
+        await s.ui.moveTo(rest[0], rest[1]);
+        s.poster();
+        await s.ui.hold(1.6);
+      },
+      CLIP_WIDTH / area.width
+    );
   },
 };
 
@@ -647,6 +918,124 @@ const deepFitBins: Shot = {
   },
 };
 
+const layerStep = (s: DocsSession, layer: string, dir: 'increase' | 'decrease'): Locator =>
+  s.page.getByRole('button', { name: label(`layers.${dir}Height`, { name: layer }) }).first();
+
+async function layersCloseUp(s: DocsSession, rows: number): Promise<Rect> {
+  const head = await s.box(
+    s.page.getByRole('button', { name: label('common.layers'), exact: true }).first()
+  );
+  const row = await s.box(
+    s.page.getByRole('button', { name: label('layers.selectLayer', { name: 'Layer 1' }) }).first()
+  );
+  const box = union(head, row);
+  // Each layer added above pushes the first row down by one row's pitch.
+  const grown = { ...box, height: box.height + (rows - 1) * (row.height + 8) };
+  return frameAround(grown, 24, 4 / 3, WORKSPACE);
+}
+
+const deepBottomLayer: Shot = {
+  id: 'recipes-deep-tool-drawer-bottom-layer',
+  kind: 'clip',
+  async take(s) {
+    await openLayouts(s, { ...DEEP_DRAWER, layers: [{ name: 'Layer 1', height: 3 }], bins: [] });
+    const closeUp = await layersCloseUp(s, 1);
+    const up = layerStep(s, 'Layer 1', 'increase');
+    const area = await gridFrame(s, 10, 8, true);
+    await s.ui.park(closeUp.x + closeUp.width * 0.55, closeUp.y + closeUp.height * 0.85);
+    await s.take(
+      closeUp,
+      async () => {
+        await s.ui.hold(0.4);
+        await stepTimes(s, up, 11);
+        await s.ui.hold(0.7);
+      },
+      CLIP_WIDTH / closeUp.width
+    );
+    const rest = await cellCenter(s, 8, 6);
+    await s.ui.park(rest[0], rest[1]);
+    await s.take(area, async () => {
+      await s.ui.hold(0.3);
+      await drawBin(s, [1, 1], [5, 4]);
+      await s.ui.hold(0.4);
+    });
+    // Step 3's Create design, as a cut: the bin comes back linked.
+    const id = await saveDesign(s, DEEP_DESIGNS.bin.name, DEEP_DESIGNS.bin.params);
+    await linkBin(s, await binId(s, /./), id);
+    await s.dismissToasts();
+    const below = await s.box(
+      s.page.getByRole('button', {
+        name: label('grid.selectColumnAria', { column: 8 }),
+        exact: true,
+      })
+    );
+    await s.ui.park(below.x + below.width / 2, below.y + below.height + 20);
+    await s.take(area, async () => {
+      await s.ui.hold(0.4);
+      await duplicate(s, 3);
+      s.poster();
+      await s.ui.hold(1.6);
+    });
+  },
+};
+
+const deepTrayLayer: Shot = {
+  id: 'recipes-deep-tool-drawer-tray-layer',
+  kind: 'clip',
+  async take(s) {
+    await openLinkedLayout(
+      s,
+      {
+        ...DEEP_DRAWER,
+        layers: [{ name: 'Layer 1', height: 14 }],
+        bins: DEEP_DRAWER.bins.filter((b) => !b.layer),
+      },
+      { bin: DEEP_DESIGNS.bin }
+    );
+    const closeUp = await layersCloseUp(s, 2);
+    const add = s.page.getByRole('button', { name: label('layers.addNewLayer') }).first();
+    const area = await gridFrame(s, 10, 8);
+    await s.ui.park(closeUp.x + closeUp.width * 0.55, closeUp.y + closeUp.height * 0.9);
+    await s.take(
+      closeUp,
+      async () => {
+        await s.ui.hold(0.4);
+        await s.ui.click(add);
+        await s.ui.hold(0.6);
+        const height = await s.page
+          .getByRole('button', { name: label('layers.selectLayer', { name: 'Layer 2' }) })
+          .first()
+          .innerText();
+        const now = Number(/(\d+)u/.exec(height)?.[1] ?? NaN);
+        if (!Number.isFinite(now)) throw new Error(`no height on the new layer: ${height}`);
+        if (now !== 6)
+          await stepTimes(
+            s,
+            layerStep(s, 'Layer 2', now < 6 ? 'increase' : 'decrease'),
+            Math.abs(now - 6)
+          );
+        await s.ui.hold(0.7);
+      },
+      CLIP_WIDTH / closeUp.width
+    );
+    const rest = await cellCenter(s, 8, 6);
+    await s.ui.park(rest[0], rest[1]);
+    await s.dismissToasts();
+    await s.take(area, async () => {
+      await s.ui.hold(0.3);
+      await drawBin(s, [1, 1], [5, 4]);
+      await s.ui.moveTo(rest[0], rest[1]);
+      // The tray over its bin tells more as a still than the tag's close-up.
+      s.poster();
+      await s.ui.hold(1.2);
+    });
+    const tag = await s.box(s.page.getByTestId('resting-badge').first());
+    await s.take(frameAround(tag, 100, 4 / 3, WORKSPACE), async () => {
+      await s.ui.hold(1.8);
+    });
+  },
+};
+
 const deepHandles: Shot = {
   id: 'recipes-deep-tool-drawer-handles',
   kind: 'still',
@@ -763,6 +1152,92 @@ const kitchenFitCard: Shot = {
       },
       1.5
     );
+  },
+};
+
+const kitchenLongBin: Shot = {
+  id: 'recipes-kitchen-utensil-drawer-long-bin',
+  kind: 'clip',
+  storage: HALF_GRID,
+  async take(s) {
+    await openLayouts(s, { ...KITCHEN_DRAWER, bins: [] });
+    // The drawer is deeper than wide: without the sidebar, empty canvas fills the 4:3 frame beside it.
+    await s.ui.preClick(
+      s.page.getByRole('button', { name: label('sidebar.collapseLeftPanel') }).first()
+    );
+    await s.page.waitForTimeout(800);
+    await s.ui.warm(30);
+    // The half-wide column has no number of its own; the grid's box includes it.
+    const area = await gridFrame(s, 9, 11);
+    const [a, b] = [await cellCenter(s, 1, 1), await cellCenter(s, 2, 2)];
+    const [cw, ch] = [b[0] - a[0], a[1] - b[1]];
+    const end = await cellCenter(s, 2, 8);
+    const rest = await cellCenter(s, 7, 4);
+    await s.ui.park(rest[0], rest[1]);
+    await s.take(
+      area,
+      async () => {
+        await s.ui.hold(0.4);
+        // Half-grid mode snaps to half cells: from near the front-left corner
+        // of the first cell to near the back-right corner of the last.
+        await s.ui.drag(
+          [a[0] - cw * 0.3, a[1] + ch * 0.3],
+          [end[0] + cw * 0.3, end[1] - ch * 0.3],
+          24
+        );
+        await s.ui.moveTo(rest[0], rest[1]);
+        await s.ui.hold(1.2);
+      },
+      CLIP_WIDTH / area.width
+    );
+    await s.dismissToasts();
+    const title = s.page.getByText(label('inspector.split.title'), { exact: true }).first();
+    await s.ui.preReveal(title);
+    const note = title.locator('xpath=ancestor::div[contains(@class, "border-warning")][1]');
+    await s.take(frameAround(await s.box(note), 36, 4 / 3, WORKSPACE), async () => {
+      s.poster();
+      await s.ui.hold(2);
+    });
+  },
+};
+
+const kitchenPadding: Shot = {
+  id: 'recipes-kitchen-utensil-drawer-padding',
+  kind: 'clip',
+  storage: HALF_GRID,
+  async take(s) {
+    await openBaseplate(s, KITCHEN_DRAWER);
+    const edit = s.page
+      .getByRole('button', { name: label('baseplate.editDimensions'), exact: true })
+      .first();
+    const sync = s.page.getByText(label('baseplate.syncWithLayout'), { exact: true }).first();
+    await s.ui.preReveal(edit);
+    const closeUp = frameAround(union(await s.box(sync), await s.box(edit)), 28, 4 / 3, WORKSPACE);
+    const e = await s.box(edit);
+    await s.ui.park(e.x + e.width / 2, e.y + e.height + 60);
+    await s.take(
+      closeUp,
+      async () => {
+        await s.ui.hold(0.4);
+        // The width field opens focused, its value selected.
+        await s.ui.click(edit);
+        await s.ui.hold(0.4);
+        await s.type('405');
+        await s.keys('Tab');
+        await s.type('480');
+        await s.keys('Enter');
+        await s.ui.hold(0.3);
+        s.poster();
+        await s.ui.hold(1.5);
+      },
+      CLIP_WIDTH / closeUp.width
+    );
+    await waitBaseplate(s);
+    await s.ui.hideCursor();
+    const canvas = await s.box(s.page.locator('canvas').first());
+    await s.take(frameAround(await partBox(s), 40, 4 / 3, canvas), async () => {
+      await s.ui.hold(1.8);
+    });
   },
 };
 
@@ -934,6 +1409,70 @@ const craftHero: Shot = {
     await dragView(s, [720, 420], 40, 40);
     await fitBins(s, HERO_BINS);
     await s.still(HERO_CROP);
+  },
+};
+
+/** Every bin starts in the first category, so the back bins are Craft once it is renamed. */
+const craftCategories: Shot = {
+  id: 'recipes-electronics-craft-organizer-categories',
+  kind: 'clip',
+  // Short enough that the 12-row grid and the sidebar fit one frame about 750 px wide.
+  viewport: { width: DESKTOP.width, height: 780 },
+  async take(s) {
+    await openLayouts(s, {
+      ...CRAFT_DRAWER,
+      categories: undefined,
+      bins: CRAFT_DRAWER.bins.map(({ x, y, w, d, h, label: l }) => ({ x, y, w, d, h, label: l })),
+    });
+    const edit = (name: string): Locator =>
+      s.page.getByRole('button', { name: label('categories.editCategoryAria', { name }) }).first();
+    const head = s.page.getByRole('button', { name: label('common.categories'), exact: true });
+    await s.ui.preReveal(head);
+    const panel = union(await s.box(head.first()), await s.box(edit('Charcoal')));
+    const row = (n: number): Locator =>
+      s.page.getByRole('button', { name: label('grid.selectRowAria', { row: n }), exact: true });
+    const cells = await gridArea(s, 7, 12);
+    const area = frameAround(union(panel, cells), 12, 4 / 3, {
+      x: 0,
+      y: 48,
+      width: DESKTOP.width,
+      height: 780 - 48,
+    });
+    const rest: [number, number] = [cells.x + cells.width + 60, cells.y + cells.height * 0.6];
+    const rename = async (from: string, to: string): Promise<void> => {
+      await s.ui.click(edit(from));
+      await s.ui.hold(0.3);
+      await s.page.keyboard.press('ControlOrMeta+a');
+      await s.type(to);
+      await s.keys('Enter');
+      await s.ui.hold(0.3);
+    };
+    await s.ui.park(...rest);
+    await s.take(area, async () => {
+      await s.ui.hold(0.4);
+      await rename('Coral', 'Craft');
+      await rename('Sky', 'Electronics');
+      await s.ui.click(row(1));
+      await clickHolding(s, 'Shift', 'Shift', area, row(6));
+      await s.ui.hold(0.4);
+      await s.ui.click(
+        s.page.getByRole('button', {
+          name: label('categories.applyToSelectedBins_other', { name: 'Electronics', count: 9 }),
+          exact: true,
+        })
+      );
+      await s.ui.moveTo(...rest);
+      await s.ui.hold(0.8);
+    });
+    // The selection toolbar runs past the frame; the payoff shows the colors without it.
+    await s.page.keyboard.press('Escape');
+    // The key press leaves a focus ring on the category button.
+    await s.page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await s.ui.warm(10);
+    await s.take(area, async () => {
+      s.poster();
+      await s.ui.hold(1.6);
+    });
   },
 };
 
@@ -1247,7 +1786,7 @@ const toolsThickness: Shot = {
  * the group dragged to where each tool's finger cut fits in front of it, and
  * Add finger access on each tool, placed by the app's own planner.
  */
-async function pocketTools(s: DocsSession): Promise<void> {
+async function pocketTools(s: DocsSession, fingers = true): Promise<void> {
   const prompt = thicknessPrompt(s);
   await prompt.getByLabel(label('binDesigner.cutouts.depthPrompt.thickness')).fill('18');
   await prompt.getByLabel(label('binDesigner.cutouts.depthPrompt.proud')).fill('3');
@@ -1259,58 +1798,118 @@ async function pocketTools(s: DocsSession): Promise<void> {
   );
   await s.ui.waitBuilt();
   const frontEdge = Math.min(...PLIERS.map(([, y]) => (TOOL_ROWS[0]?.y ?? 0) + y));
-  await s.page.evaluate(async (front) => {
-    type Cut = { id: string; x: number; y: number; width: number; depth: number; finger?: unknown };
-    const { useDesignerStore } = (await import(
-      '/src/features/bin-designer/store/designer.ts' as string
-    )) as {
-      useDesignerStore: {
-        getState(): {
-          params: { cutouts: Cut[]; cutoutConfig: { topOffset: number } };
-          updateCutoutsBatch(updates: Map<string, Partial<Cut>>): void;
-          addFingerAccess(pocketId: string, finger: object): boolean;
+  await s.page.evaluate(
+    async ([front, withFingers]) => {
+      type Cut = {
+        id: string;
+        x: number;
+        y: number;
+        width: number;
+        depth: number;
+        finger?: unknown;
+      };
+      const { useDesignerStore } = (await import(
+        '/src/features/bin-designer/store/designer.ts' as string
+      )) as {
+        useDesignerStore: {
+          getState(): {
+            params: { cutouts: Cut[]; cutoutConfig: { topOffset: number } };
+            updateCutoutsBatch(updates: Map<string, Partial<Cut>>): void;
+            addFingerAccess(pocketId: string, finger: object): boolean;
+          };
         };
       };
-    };
-    const { translateCutout } = (await import(
-      '/src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.ts' as string
-    )) as { translateCutout(c: Cut, dx: number, dy: number): Cut };
-    const { binBoard } = (await import(
-      '/src/features/bin-designer/components/panel/CutoutsSection/packIntoBin.ts' as string
-    )) as { binBoard(params: unknown): { width: number; depth: number } };
-    const { planFingerAccess } = (await import(
-      '/src/features/bin-designer/components/panel/CutoutsSection/fingerAccessPlan.ts' as string
-    )) as { planFingerAccess(pocket: Cut, board: unknown, maxCutDepth: number): object | null };
-    const { binDimensions } = (await import(
-      '/src/features/bin-designer/utils/binDimensions.ts' as string
-    )) as { binDimensions(params: unknown): { wallHeight: number } };
-    const store = useDesignerStore;
-    const tools = store.getState().params.cutouts;
-    const board = binBoard(store.getState().params);
-    const minX = Math.min(...tools.map((c) => c.x));
-    const maxX = Math.max(...tools.map((c) => c.x + c.width));
-    const minY = Math.min(...tools.map((c) => c.y));
-    const dx = (board.width - (maxX - minX)) / 2 - minX;
-    const dy = front - minY;
-    store
-      .getState()
-      .updateCutoutsBatch(new Map(tools.map((c) => [c.id, translateCutout(c, dx, dy)])));
-    const { params } = store.getState();
-    const maxCutDepth = Math.max(
-      0,
-      binDimensions(params).wallHeight - params.cutoutConfig.topOffset
-    );
-    for (const pocket of params.cutouts) {
-      const plan = planFingerAccess(pocket, binBoard(params), maxCutDepth);
-      if (!plan) throw new Error('a tool took no finger access');
-      if (!store.getState().addFingerAccess(pocket.id, { ...plan, id: crypto.randomUUID() }))
-        throw new Error('finger access was refused');
-    }
-  }, frontEdge);
+      const { translateCutout } = (await import(
+        '/src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.ts' as string
+      )) as { translateCutout(c: Cut, dx: number, dy: number): Cut };
+      const { binBoard } = (await import(
+        '/src/features/bin-designer/components/panel/CutoutsSection/packIntoBin.ts' as string
+      )) as { binBoard(params: unknown): { width: number; depth: number } };
+      const { planFingerAccess } = (await import(
+        '/src/features/bin-designer/components/panel/CutoutsSection/fingerAccessPlan.ts' as string
+      )) as { planFingerAccess(pocket: Cut, board: unknown, maxCutDepth: number): object | null };
+      const { binDimensions } = (await import(
+        '/src/features/bin-designer/utils/binDimensions.ts' as string
+      )) as { binDimensions(params: unknown): { wallHeight: number } };
+      const store = useDesignerStore;
+      const tools = store.getState().params.cutouts;
+      const board = binBoard(store.getState().params);
+      const minX = Math.min(...tools.map((c) => c.x));
+      const maxX = Math.max(...tools.map((c) => c.x + c.width));
+      const minY = Math.min(...tools.map((c) => c.y));
+      const dx = (board.width - (maxX - minX)) / 2 - minX;
+      const dy = front - minY;
+      store
+        .getState()
+        .updateCutoutsBatch(new Map(tools.map((c) => [c.id, translateCutout(c, dx, dy)])));
+      const { params } = store.getState();
+      const maxCutDepth = Math.max(
+        0,
+        binDimensions(params).wallHeight - params.cutoutConfig.topOffset
+      );
+      for (const pocket of withFingers ? params.cutouts : []) {
+        const plan = planFingerAccess(pocket, binBoard(params), maxCutDepth);
+        if (!plan) throw new Error('a tool took no finger access');
+        if (!store.getState().addFingerAccess(pocket.id, { ...plan, id: crypto.randomUUID() }))
+          throw new Error('finger access was refused');
+      }
+    },
+    [frontEdge, fingers] as const
+  );
   await s.ui.warm(10);
   await s.ui.waitBuilt();
   await s.dismissToasts();
 }
+
+const toolsFingerAccess: Shot = {
+  id: 'recipes-hand-tool-pockets-finger-access',
+  kind: 'clip',
+  storage: CUT_EDITOR_STORAGE,
+  async take(s) {
+    await scanTools(s);
+    await pocketTools(s, false);
+    const tab = (key: 'tabShapes' | 'tabProperties'): Locator =>
+      s.page.getByRole('tab', { name: label(`binDesigner.shapeList.${key}`) }).first();
+    // A scanned outline is named by its size; the pliers are the 150 x 38 mm one.
+    const pliers = s.page.getByRole('option', { name: 'Path 150×38' }).first();
+    const add = s.page
+      .getByRole('button', { name: label('binDesigner.cutouts.finger.add'), exact: true })
+      .first();
+    const board = await boardBox(s);
+    const tabs = union(await s.box(tab('tabProperties')), await s.box(tab('tabShapes')));
+    // The panel's header buttons mark its right edge; Add finger access shows at about y 600.
+    const edge = await s.box(
+      s.page.getByRole('button', { name: label('binDesigner.cutoutEditor.delete') }).first()
+    );
+    const area = frameAround(
+      union(pad(board, 18, DESKTOP), tabs, edge, { ...tabs, y: 640, height: 1 }),
+      10,
+      4 / 3,
+      WORKSPACE
+    );
+    // Every target is in view: the kit's click would scroll the editor first.
+    const tap = async (target: Locator): Promise<void> => {
+      const b = await s.box(target);
+      await s.ui.clickAt(b.x + b.width / 2, b.y + b.height / 2);
+    };
+    const rest: [number, number] = [board.x + board.width * 0.5, board.y - 40];
+    await s.ui.park(...rest);
+    await s.take(area, async () => {
+      await s.ui.hold(0.4);
+      await tap(tab('tabShapes'));
+      await s.ui.hold(0.4);
+      await tap(pliers);
+      await s.ui.hold(0.5);
+      await tap(tab('tabProperties'));
+      await s.ui.hold(0.5);
+      await tap(add);
+      await s.ui.hold(0.3);
+      await s.ui.moveTo(...rest);
+      s.poster();
+      await s.ui.hold(1.8);
+    });
+  },
+};
 
 const toolsFitTest: Shot = {
   id: 'recipes-hand-tool-pockets-fit-test',
@@ -1372,16 +1971,25 @@ const toolsHero: Shot = {
 
 export const RECIPES: readonly Shot[] = [
   screwDrawerHero,
+  screwDrawKinds,
   screwBlankCaption,
+  screwCopyRow,
+  screwLabelSuggest,
   deepDrawerHero,
   deepFitBins,
+  deepBottomLayer,
+  deepTrayLayer,
   deepHandles,
   kitchenHero,
   kitchenFitCard,
+  kitchenLongBin,
+  kitchenPadding,
   kitchenPlateSplit,
   craftHero,
+  craftCategories,
   craftPlates,
   toolsThickness,
+  toolsFingerAccess,
   toolsFitTest,
   toolsHero,
 ];

@@ -292,3 +292,31 @@ export async function loadShare(blobPath: string): Promise<ShareData | null> {
   if (!response.ok) return null;
   return (await response.json()) as ShareData;
 }
+
+/**
+ * {@link loadShare}, plus two ETags for a write with `ifMatch`, and the stored
+ * blob's upload time.
+ *
+ * `etag` and `uploadedAt` come from `head`, which is current. The body comes
+ * through the CDN, which serves an older body for up to a minute after an
+ * overwrite. `bodyEtag` is the ETag of the body that was read, or null when
+ * the response has none. A write that keeps content from the body must match
+ * `bodyEtag`, or it can put an older body back.
+ */
+export async function loadShareVersion(blobPath: string): Promise<{
+  readonly data: ShareData;
+  readonly etag: string;
+  readonly bodyEtag: string | null;
+  readonly uploadedAt: Date;
+} | null> {
+  const blobInfo = await head(blobPath).catch(() => null);
+  if (!blobInfo) return null;
+  const response = await fetch(blobInfo.url);
+  if (!response.ok) return null;
+  return {
+    data: (await response.json()) as ShareData,
+    etag: blobInfo.etag,
+    bodyEtag: response.headers.get('etag'),
+    uploadedAt: blobInfo.uploadedAt,
+  };
+}

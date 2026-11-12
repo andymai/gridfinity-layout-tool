@@ -74,7 +74,8 @@ const fieldSize: Record<ComboboxSize, string> = {
  * ghost completion. Generic and controlled — the caller owns filtering/ranking
  * and simply passes `options` (+ an optional `ghost`).
  *
- * Keyboard: ↑/↓ move the active option, Enter accepts it, Tab/→ accept the ghost
+ * Keyboard: ↑/↓ move the active option, Enter accepts it (or, with no active
+ * option, closes the list and keeps the typed value), Tab/→ accept the ghost
  * (when the caret is at the end), Esc closes the list but keeps the value.
  */
 export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Combobox(
@@ -104,7 +105,10 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
   // Set when the user explicitly opens a closed, empty field with ArrowDown, so
   // the list can open even when `openOnFocus` is off and nothing is typed.
   const [manualOpen, setManualOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
+  // Only the arrow keys set this (-1 = none). The top option is often a loose
+  // match, so Enter keeps the typed text; pointer hover is CSS-only because a
+  // list that opens under a resting pointer would otherwise pick Enter's row.
+  const [activeIndex, setActiveIndex] = useState(-1);
   const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
 
   const hasOptions = options.length > 0;
@@ -115,7 +119,7 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
 
   // Keep the active row within bounds as the option set changes.
   useEffect(() => {
-    setActiveIndex((i) => (i >= options.length ? 0 : i));
+    setActiveIndex((i) => (i >= options.length ? -1 : i));
   }, [options]);
 
   // Position the portal list under the field.
@@ -146,7 +150,7 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
       onCommit?.(clamped, { viaGhost, option });
       setDismissed(true);
       setManualOpen(false);
-      setActiveIndex(0);
+      setActiveIndex(-1);
     },
     [clampValue, onChange, onCommit]
   );
@@ -176,6 +180,7 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
         e.preventDefault();
         setDismissed(false);
         setManualOpen(true);
+        setActiveIndex(0);
       }
       return;
     }
@@ -184,11 +189,15 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
       setActiveIndex((i) => (i + 1) % options.length);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setActiveIndex((i) => (i - 1 + options.length) % options.length);
-    } else if (e.key === 'Enter' && activeIndex >= 0 && activeIndex < options.length) {
+      setActiveIndex((i) => (i <= 0 ? options.length - 1 : i - 1));
+    } else if (e.key === 'Enter') {
       e.preventDefault();
-      const option = options[activeIndex];
-      commit(option.value, false, option);
+      if (activeIndex >= 0 && activeIndex < options.length) {
+        const option = options[activeIndex];
+        commit(option.value, false, option);
+      } else {
+        setDismissed(true);
+      }
     }
   };
 
@@ -224,11 +233,13 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
         aria-expanded={open}
         aria-controls={listboxId}
         aria-autocomplete="list"
-        aria-activedescendant={open ? `${listboxId}-opt-${activeIndex}` : undefined}
+        aria-activedescendant={
+          open && activeIndex >= 0 ? `${listboxId}-opt-${activeIndex}` : undefined
+        }
         placeholder={activeGhost ? undefined : placeholder}
         onChange={(e) => {
           setDismissed(false);
-          setActiveIndex(0);
+          setActiveIndex(-1);
           onChange(clampValue(e.target.value));
         }}
         onFocus={() => {
@@ -238,6 +249,7 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
         onBlur={() => {
           setFocused(false);
           setManualOpen(false);
+          setActiveIndex(-1);
         }}
         onKeyDown={handleKeyDown}
         className={cn(
@@ -269,11 +281,12 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
                   tabIndex={-1}
                   // Prevent the input blur that would close the list before click lands.
                   onMouseDown={(e) => e.preventDefault()}
-                  onMouseEnter={() => setActiveIndex(index)}
                   onClick={() => commit(option.value, false, option)}
                   className={cn(
                     'flex cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left text-sm',
-                    active ? 'bg-surface-hover text-content' : 'text-content-secondary'
+                    active
+                      ? 'bg-surface-hover text-content'
+                      : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                   )}
                 >
                   {renderOption ? (

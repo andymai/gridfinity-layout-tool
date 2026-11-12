@@ -88,6 +88,13 @@ describe('SelectionToolbar', () => {
     expect(screen.getByText('3')).toBeInTheDocument();
   });
 
+  it('centres over the selection without a transform that scale-in overrides', () => {
+    render(<SelectionToolbar {...defaultProps} />);
+    const toolbar = screen.getByRole('toolbar');
+    expect(toolbar).toHaveClass('animate-scale-in', '-translate-x-1/2');
+    expect(toolbar.style.transform).toBe('');
+  });
+
   it('renders 4 alignment buttons', () => {
     render(<SelectionToolbar {...defaultProps} />);
     expect(screen.getByLabelText('commandPalette.alignLeft')).toBeInTheDocument();

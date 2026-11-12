@@ -214,6 +214,17 @@ describe('BaseSection', () => {
       expect(screen.getByRole('switch', { name: 'Half sockets' })).toBeInTheDocument();
     });
 
+    it('names the Nesting body, not a lid base, where it rules out sockets and shelling', async () => {
+      const user = userEvent.setup();
+      render(<BaseSection />);
+      await user.click(screen.getByRole('radio', { name: 'Nesting' }));
+
+      expect(screen.getByText('A Nesting base has no sockets')).toBeInTheDocument();
+      expect(screen.getByText('Nothing to shell through on a Nesting base')).toBeInTheDocument();
+      expect(screen.queryByText(en['binDesigner.lidBaseDisablesHalfSockets'])).toBeNull();
+      expect(screen.queryByText(en['binDesigner.lidBaseDisablesShelling'])).toBeNull();
+    });
+
     it('keeps every family on an ordinary bin', () => {
       render(<BaseSection />);
 

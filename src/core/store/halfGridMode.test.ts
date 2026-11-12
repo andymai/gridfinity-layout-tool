@@ -6,6 +6,7 @@ import {
   createIsolatedLocalStorageMock,
   expectOk,
   expectErr,
+  getBinId,
 } from '@/test/testUtils';
 import { gridUnits, heightUnits } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
@@ -361,6 +362,66 @@ describe('halfGridMode store', () => {
       } else {
         throw new Error('Expected LAYOUT_INVALID_OPERATION error');
       }
+    });
+  });
+
+  describe('requestHalfGridToggle', () => {
+    function addHalfUnitBin() {
+      const { layout, addBin } = useLayoutStore.getState();
+      return getBinId(
+        addBin({
+          layerId: layout.layers[0].id,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(1.5),
+          depth: gridUnits(1),
+          height: heightUnits(3),
+          category: layout.categories[0].id,
+          label: '',
+          notes: '',
+        })
+      );
+    }
+
+    it('turns the mode on without holding a violation', () => {
+      useHalfGridModeStore.getState().requestHalfGridToggle();
+
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
+      expect(useHalfGridModeStore.getState().blockedViolation).toBeNull();
+    });
+
+    it('turns the mode off when no bin sits on a half unit', () => {
+      useHalfGridModeStore.getState().setHalfGridMode(true);
+
+      useHalfGridModeStore.getState().requestHalfGridToggle();
+
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(false);
+      expect(useHalfGridModeStore.getState().blockedViolation).toBeNull();
+    });
+
+    it('holds the blocking bins and keeps the mode on', () => {
+      useHalfGridModeStore.getState().setHalfGridMode(true);
+      const id = addHalfUnitBin();
+
+      useHalfGridModeStore.getState().requestHalfGridToggle();
+
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
+      expect(useHalfGridModeStore.getState().blockedViolation).toEqual({
+        type: 'fractional_bins_exist',
+        binIds: [id],
+        count: 1,
+      });
+    });
+
+    it('dismissBlockedViolation clears the held bins', () => {
+      useHalfGridModeStore.getState().setHalfGridMode(true);
+      addHalfUnitBin();
+      useHalfGridModeStore.getState().requestHalfGridToggle();
+
+      useHalfGridModeStore.getState().dismissBlockedViolation();
+
+      expect(useHalfGridModeStore.getState().blockedViolation).toBeNull();
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
     });
   });
 });

@@ -10,10 +10,11 @@ import { registerLinkedExcessResolver } from '@/shared/utils/collision';
 import { registerLinkedSlantResolver } from '@/shared/utils/placedSlant';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
 import { binId, designId, gridUnits, heightUnits, layerId } from '@/core/types';
+import en from '@/i18n/locales/en';
 
 function expectRotationValid(result: RotationResult): Extract<RotationResult, { valid: true }> {
   expect(result.valid).toBe(true);
-  if (!result.valid) throw new Error(`Expected a valid rotation: ${result.message}`);
+  if (!result.valid) throw new Error(`Expected a valid rotation: ${result.messageKey}`);
   return result;
 }
 
@@ -245,10 +246,7 @@ describe('validateRotation', () => {
       const result = validateRotation(bin1, layout);
 
       // Should fail as there's no space for the rotated 2x1 bin
-      expect(result.valid).toBe(false);
-      if (!result.valid) {
-        expect(result.message).toBeDefined();
-      }
+      expect(result).toEqual({ valid: false, messageKey: 'toast.rotateBlocked.collision' });
     });
   });
 
@@ -284,6 +282,71 @@ describe('validateRotation', () => {
 
       expect(result.valid).toBe(true);
     });
+  });
+});
+
+// The reason reaches a toast as is, so it has to be a translation key, not text.
+describe('validateRotationInPlace blocked reasons', () => {
+  function expectBlockedKey(result: RotationResult): string {
+    if (result.valid) throw new Error('Expected the rotation to be blocked');
+    expect(en).toHaveProperty(result.messageKey);
+    return result.messageKey;
+  }
+
+  it('names the drawer bounds when the turned bin would stick out', () => {
+    const layout = createTestLayout({
+      drawer: { width: gridUnits(2), depth: gridUnits(4), height: heightUnits(12) },
+    });
+    const bin = createTestBin({ width: gridUnits(1), depth: gridUnits(3) });
+    layout.bins = [bin];
+
+    expect(expectBlockedKey(validateRotationInPlace(bin, layout))).toBe(
+      'toast.rotateBlocked.bounds'
+    );
+  });
+
+  it('names the other bin when the turned bin would overlap it', () => {
+    const layout = createTestLayout();
+    const bin = createTestBin({ id: binId('turning'), width: gridUnits(2), depth: gridUnits(3) });
+    const neighbour = createTestBin({
+      id: binId('neighbour'),
+      x: gridUnits(2),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+    });
+    layout.bins = [bin, neighbour];
+
+    expect(expectBlockedKey(validateRotationInPlace(bin, layout))).toBe(
+      'toast.rotateBlocked.collision'
+    );
+  });
+
+  it('names the clearance when the turned bin would rest on space a lower bin reserves', () => {
+    const layout = createTestLayout({
+      layers: [
+        { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
+      ],
+    });
+    const reserving = createTestBin({
+      id: binId('reserving'),
+      x: gridUnits(1),
+      width: gridUnits(2),
+      depth: gridUnits(3),
+      clearanceHeight: heightUnits(2),
+      layerId: layerId('layer1'),
+    });
+    const bin = createTestBin({
+      id: binId('turning'),
+      width: gridUnits(1),
+      depth: gridUnits(3),
+      layerId: layerId('layer2'),
+    });
+    layout.bins = [reserving, bin];
+
+    expect(expectBlockedKey(validateRotationInPlace(bin, layout))).toBe(
+      'toast.rotateBlocked.clearance'
+    );
   });
 });
 
@@ -431,7 +494,10 @@ describe('planBinTurn', () => {
       height: heightUnits(6),
     });
     layout.bins = [bin];
-    expect(planBinTurn(bin, layout, true)).toMatchObject({ valid: false });
+    expect(planBinTurn(bin, layout, true)).toEqual({
+      valid: false,
+      messageKey: 'toast.rotateBlocked.default',
+    });
   });
 
   it('checks a quarter turn with the half turn it would bring', () => {

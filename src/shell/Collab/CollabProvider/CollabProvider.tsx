@@ -38,6 +38,7 @@ import {
 import type { CloudShareInfo, Coord, Layout } from '@/core/types';
 import { throttle } from '@/shared/utils';
 import { revisionOfCopy, stampFor, type RoomLinkStamp } from '@/shared/utils/roomLinkStamp';
+import { roomDesignIds, type RoomDesignIds } from '@/shared/utils/roomDesignIds';
 import { useCollabSync } from '@/shared/hooks/useCollabSync';
 import { useCloudShareAutoSync } from '@/features/cloud-share/hooks/useCloudShareAutoSync';
 import { readOwnCopyRevision } from '@/features/cloud-share/utils';
@@ -81,7 +82,8 @@ function useUserName(userId: string): string {
 /**
  * The share link save that this browser's copy of the layout came from: the
  * owner's last save of its own copy, or the copy a visitor fetched, which is
- * the layout in the editor as the room opens.
+ * the layout in the editor as the room opens. `layout` carries the room's
+ * design ids, as the link's saves do.
  */
 function copySaveFor(
   shareId: string,
@@ -157,6 +159,14 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
     [userName, userId]
   );
 
+  // Not frozen with the seed: opening the share again from "Shared with me"
+  // keeps the room but can bring designs that the share gained.
+  const visitorDesignIds =
+    cloudShare === null && sharedPreview?.cloudShareId === shareId
+      ? sharedPreview.designIds
+      : undefined;
+  const designIds = useMemo(() => roomDesignIds(visitorDesignIds), [visitorDesignIds]);
+
   // Initial storage - the layout data to sync
   // The delete token is intentionally NOT stored in shared storage.
   // Cloud sync is owner-only: the delete token stays in the owner's local library.
@@ -164,15 +174,16 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
   // A seed without a known link revision stays unrecorded, so the owner
   // uploads it: it can hold edits that never reached the link.
   const { copySave, initialStorage } = useMemo(() => {
-    const save = copySaveFor(shareId, cloudShare, sharedPreview, layout);
-    const revision = revisionOfCopy(layout, save);
+    const roomCopy = designIds.toRoom(layout);
+    const save = copySaveFor(shareId, cloudShare, sharedPreview, roomCopy);
+    const revision = revisionOfCopy(roomCopy, save);
     const storage: LiveblocksStorage = {
-      layout,
+      layout: roomCopy,
       metadata: {
         ownerId: userId,
         permission: cloudShare?.permission ?? 'edit',
         version: 2,
-        ...(revision ? stampFor(layout, revision) : {}),
+        ...(revision ? stampFor(roomCopy, revision) : {}),
       },
     };
     return { copySave: save, initialStorage: storage };
@@ -186,6 +197,7 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
         shareId={shareId}
         ownerDeleteToken={cloudShare?.deleteToken}
         copySave={copySave}
+        designIds={designIds}
       >
         {children}
       </PresenceProvider>
@@ -197,11 +209,12 @@ interface RoomSyncProps {
   shareId: string;
   ownerDeleteToken: string | undefined;
   copySave: RoomLinkStamp | undefined;
+  designIds: RoomDesignIds;
 }
 
-function RoomSync({ shareId, ownerDeleteToken, copySave }: RoomSyncProps): null {
+function RoomSync({ shareId, ownerDeleteToken, copySave, designIds }: RoomSyncProps): null {
   // Enable bidirectional sync between Liveblocks and Zustand
-  useCollabSync(copySave);
+  useCollabSync(copySave, designIds);
 
   // Auto-sync layout changes to cloud share storage (owner-only: token only present for owner)
   useCloudShareAutoSync(shareId, ownerDeleteToken);
@@ -224,6 +237,7 @@ function PresenceProvider({
   shareId,
   ownerDeleteToken,
   copySave,
+  designIds,
   children,
 }: RoomSyncProps & {
   roomId: string;
@@ -364,6 +378,7 @@ function PresenceProvider({
           shareId={shareId}
           ownerDeleteToken={ownerDeleteToken}
           copySave={copySave}
+          designIds={designIds}
         />
       )}
     </PresenceContext.Provider>

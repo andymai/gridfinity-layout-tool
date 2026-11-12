@@ -5,7 +5,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore, useToastStore, useHalfGridModeStore } from '@/core/store';
 import { useSettingsStore } from '@/core/store/settings';
 import { resetAllStores } from '@/test/testUtils';
-import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { CONSTRAINTS } from '@/core/constants';
 import { gridUnits, heightUnits } from '@/core/types';
 
 describe('useDrawerSettings', () => {
@@ -166,37 +166,7 @@ describe('useDrawerSettings', () => {
       expect(result.current.halfGridMode).toBe(true);
     });
 
-    it('handleHalfBinToggle shows modal when violations exist', () => {
-      // Enable half-bin mode first
-      useHalfGridModeStore.getState().setHalfGridMode(true);
-
-      // Add a bin with fractional dimensions
-      const layout = useLayoutStore.getState().layout;
-      useLayoutStore.getState().addBin({
-        layerId: layout.layers[0].id,
-        x: gridUnits(0),
-        y: gridUnits(0),
-        width: gridUnits(1.5),
-        depth: gridUnits(1),
-        height: heightUnits(3),
-        category: layout.categories[0].id,
-        label: '',
-        notes: '',
-      });
-
-      const { result } = renderHook(() => useDrawerSettings());
-
-      act(() => {
-        result.current.handleHalfBinToggle();
-      });
-
-      // Modal should be shown when trying to disable with fractional bins
-      expect(result.current.showHalfBinBlockedModal).toBe(true);
-      expect(result.current.halfBinViolation).not.toBeNull();
-    });
-
-    it('handleRemediate continues moving remaining bins when one was deleted', () => {
-      // Enable half-bin mode and add two fractional bins
+    it('handleHalfBinToggle opens the shared dialog when a bin sits on a half unit', () => {
       useHalfGridModeStore.getState().setHalfGridMode(true);
 
       const layout = useLayoutStore.getState().layout;
@@ -211,85 +181,20 @@ describe('useDrawerSettings', () => {
         label: '',
         notes: '',
       });
-      useLayoutStore.getState().addBin({
-        layerId: layout.layers[0].id,
-        x: gridUnits(3),
-        y: gridUnits(0),
-        width: gridUnits(2.5),
-        depth: gridUnits(1),
-        height: heightUnits(3),
-        category: layout.categories[0].id,
-        label: '',
-        notes: '',
-      });
+      const fractionalId = useLayoutStore.getState().layout.bins[0].id;
 
       const { result } = renderHook(() => useDrawerSettings());
 
-      // Trigger toggle to set up violation state (captures bin IDs)
       act(() => {
         result.current.handleHalfBinToggle();
       });
 
-      // Delete one fractional bin before remediation
-      const bins = useLayoutStore.getState().layout.bins;
-      const fractionalBin = bins.find((b) => b.width === 1.5);
-      expect(fractionalBin).toBeDefined();
-      act(() => {
-        useLayoutStore.getState().deleteBin(fractionalBin!.id);
+      expect(result.current.halfGridMode).toBe(true);
+      expect(useHalfGridModeStore.getState().blockedViolation).toEqual({
+        type: 'fractional_bins_exist',
+        binIds: [fractionalId],
+        count: 1,
       });
-
-      // Now remediate - the deleted bin should be skipped, remaining bins still moved
-      act(() => {
-        result.current.handleRemediate();
-      });
-
-      // The remaining fractional bin (2.5 wide) should still be moved to staging
-      const updatedBins = useLayoutStore.getState().layout.bins;
-      const remainingFractional = updatedBins.find((b) => b.width === 2.5);
-      expect(remainingFractional?.layerId).toBe(STAGING_ID);
-
-      // Toast should reflect actual count moved (1), not original violation count (2)
-      const toasts = useToastStore.getState().toasts;
-      const lastToast = toasts[toasts.length - 1];
-      expect(lastToast.message).toBe('Moved 1 bin to staging');
-    });
-
-    it('handleRemediate moves fractional bins to staging', () => {
-      // Enable half-bin mode
-      useHalfGridModeStore.getState().setHalfGridMode(true);
-
-      // Add a bin with fractional dimensions
-      const layout = useLayoutStore.getState().layout;
-      useLayoutStore.getState().addBin({
-        layerId: layout.layers[0].id,
-        x: gridUnits(0),
-        y: gridUnits(0),
-        width: gridUnits(1.5),
-        depth: gridUnits(1),
-        height: heightUnits(3),
-        category: layout.categories[0].id,
-        label: '',
-        notes: '',
-      });
-
-      const { result } = renderHook(() => useDrawerSettings());
-
-      // Trigger toggle to set up violation state
-      act(() => {
-        result.current.handleHalfBinToggle();
-      });
-
-      // Now remediate
-      act(() => {
-        result.current.handleRemediate();
-      });
-
-      // Check bins were moved to staging
-      const bins = useLayoutStore.getState().layout.bins;
-      const fractionalBin = bins.find((b) => b.width === 1.5);
-      expect(fractionalBin?.layerId).toBe(STAGING_ID);
-      expect(result.current.halfGridMode).toBe(false);
-      expect(result.current.showHalfBinBlockedModal).toBe(false);
     });
 
     it('handleDrawerWidthInput auto-enables half-bin mode for fractional value', () => {

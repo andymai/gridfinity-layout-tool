@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useState, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { GlobalSettingsModal } from '@/shell/Modals/SettingsModal/GlobalSettingsModal';
+import { HalfGridModeBlockedHost } from '@/shell/Modals';
 import { useLayoutStore, useLibraryStore, useSelectionStore, useViewStore } from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
@@ -239,6 +240,7 @@ export default function App() {
   const wrapWithMutations = (content: React.ReactNode) => {
     const dialogs = (
       <>
+        <HalfGridModeBlockedHost />
         <Suspense fallback={null}>
           <DesignLinkingDialogs />
         </Suspense>
@@ -462,9 +464,6 @@ export default function App() {
           return null;
         })()}
 
-        {/* ARIA live region for screen reader announcements */}
-        <LiveRegion />
-
         {/* Shared layout URL importer - only load when URL has share params */}
         {hasShareUrl && (
           <BackgroundMountBoundary mountName="SharedLayoutImporter">
@@ -504,6 +503,9 @@ export default function App() {
         </Suspense>
       </BackgroundMountBoundary>
       {routeContent}
+      {/* The only reader of liveMessage. It stays outside routeContent so that
+          every shell tree and route has exactly one. */}
+      <LiveRegion />
       <ToastContainer />
       {binExampleGalleryOpen && (
         <Suspense fallback={null}>

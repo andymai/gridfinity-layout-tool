@@ -56,6 +56,8 @@ A **sliding lid** is a flat plate that slides in and out of a channel. It doesn'
 | <Ui k="binDesigner.lid.slide.pull" />      | What your finger pulls on: <Ui k="binDesigner.lid.slide.pull.none" />, <Ui k="binDesigner.lid.slide.pull.notch" />, <Ui k="binDesigner.lid.slide.pull.tab" /> or <Ui k="binDesigner.lid.slide.pull.catch" />.                         |
 | <Ui k="binDesigner.lid.slide.detent" />    | Adds a small ramp on each runner. The lid clicks past it, so a knock can't slide the lid open.                                                                                                                                        |
 
+<Screenshot id="designer-lids-sliding" alt="Picking Sliding under How it attaches shows Channel position, Opens toward, Pull and Click shut. Then the Open and Closed slider beside the preview slides the lid into its channel and back out." spec="Bin designer, 2 x 2 x 3 bin with a lid. In close-up, pick Sliding and show its settings. Then drag the lid slider at the side of the preview to Closed and back." />
+
 The finger catch is a part of the stacking rim that moves with the lid, so the whole width becomes a pull. It keeps the [lip peak](./stacking#make-the-lip-print-cleanly) shape of the rest of the rim.
 
 <Ui k="binDesigner.lid.slide.clearance" />, under <Ui k="binDesigner.lid.advanced" />, sets the gap between the lid and its channel, from 0.1 to 0.6 mm. If the lid binds, raise it. If the lid rattles, lower it.
@@ -79,6 +81,8 @@ Under <Ui k="binDesigner.lid.section.topSurface" />, pick what the top of the li
 | <Ui k="binDesigner.lid.topSurface.flat" />      | A plain closed top.                                                                                                                                                                 |
 | <Ui k="binDesigner.lid.topSurface.stackable" /> | A grid of Gridfinity sockets, so another bin locks onto the lid.                                                                                                                    |
 | <Ui k="binDesigner.lid.topSurface.tray" />      | A shallow recess in the top that holds small parts. Set its <Ui k="binDesigner.lid.trayDepth" /> and <Ui k="binDesigner.lid.trayWall" /> under <Ui k="binDesigner.lid.advanced" />. |
+
+<Screenshot id="designer-lids-top-surface" alt="Under Top surface, picking Stackable puts a grid of sockets on the lid. Then picking Tray turns the lid top into a shallow recess." spec="Bin designer, 2 x 2 x 3 bin with a click-rail lid. In close-up, pick Stackable, then show the bin. Pick Tray, then show the bin." />
 
 A stackable top has three more options:
 
@@ -119,6 +123,8 @@ The lid exports with its rails up, ready to print. The default lid needs no supp
 ### You can't turn on the lid
 
 Read the note under the switch. It names the conflict to fix. If the stacking lip is off, click <Ui k="binDesigner.dependency.enableStackingLip" /> under the switch.
+
+<Screenshot id="designer-lids-needs-stacking-lip" alt="The Lid group of a bin with no stacking lip. The Lid switch is greyed out, with the note Requires stacking lip and an Enable stacking lip button under it." spec="Bin designer, default bin with the stacking lip off. Crop the Lid group from its heading to the Enable stacking lip button." />
 
 Most lids grip the stacking lip. Wall cutouts or handles block the lid only when they leave no usable lip on any wall. A lid also can't sit down on divider pieces that are taller than the inside of the bin.
 

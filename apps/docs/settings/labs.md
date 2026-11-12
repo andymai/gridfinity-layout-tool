@@ -35,7 +35,11 @@ Forgot which drawer holds the hex keys? With this feature, you write down what e
 
 **Say what a bin holds.** Select a bin in the layout editor, and the inspector gets a <Ui k="inspector.contents.title" /> section. Type an item in <Ui k="inspector.contents.addPlaceholder" />, or paste a list to add many items at once. Each item can have a quantity. A bin holds up to 100 items.
 
+<Screenshot id="settings-labs-bin-contents" alt="The Contents section in the inspector of a selected bin. It lists six hex keys with their quantities, and a box to add an item or paste a list." spec="Layout editor, desktop, with the Find what your bins hold feature on. Select a bin with six items in its contents. Crop to the Contents section of the inspector." />
+
 **Find a bin.** In the layout editor, press <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>Cmd</kbd>+<kbd>K</kbd> on a Mac) and type what you look for. The command palette shows the matching bins above the commands, with the folder, the layout and the layer of each one. It searches item names, bin labels and notes. Select a result to open its layout and select the bin. On a phone, use <Ui k="places.find.placeholder" /> in the layouts sheet.
+
+<Screenshot id="settings-labs-find" alt="The command palette with hex key typed. The Bins group lists two matches: 1.5 mm hex key in the Workbench layout and Ball-end hex key set in the Garage bench layout, each with its layer." spec="Layout editor, desktop, with the Find what your bins hold feature on and two layouts whose bins list hex keys in their contents. Press Ctrl+K and type hex key. Crop to the palette." />
 
 **Folders as places.** In the layout manager, a folder can be one of three kinds:
 
