@@ -1,0 +1,21 @@
+src/features/layout-library/hooks/useLayoutRouting.overlap.test.ts
+  s_1cc363bb3cc76d::t_ecfb85f3b0b1b6 1-84
+src/features/layout-library/hooks/useLayoutRouting.ts
+  s_1cc363bb3cc76d::t_bd5198abd400d0 4,112-113,116-151
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "00815bc9441a80cb2ec4144d787bb407453baf40",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
