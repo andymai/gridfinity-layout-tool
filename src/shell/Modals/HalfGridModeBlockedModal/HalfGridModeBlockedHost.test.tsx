@@ -5,7 +5,7 @@ import { useKeyboard } from '@/shell/keyboard';
 import { useHalfGridModeStore, useLayoutStore, useToastStore } from '@/core/store';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { STAGING_ID } from '@/core/constants';
-import { gridUnits, heightUnits } from '@/core/types';
+import { gridUnits, heightUnits, layoutId } from '@/core/types';
 import type { BinId } from '@/core/types';
 import { resetAllStores, getBinId } from '@/test/testUtils';
 
@@ -158,5 +158,22 @@ describe('HalfGridModeBlockedHost', () => {
 
     expect(useHalfGridModeStore.getState().halfGridMode).toBe(false);
     expect(toastMessages()).toEqual([]);
+  });
+
+  it('closes without moving bins when the active layout changes under the dialog', () => {
+    useLayoutStore.getState().setActiveLayoutId(layoutId('layout-a'));
+    const half = addBin(0, 1.5);
+    useHalfGridModeStore.getState().requestHalfGridToggle();
+    render(<HalfGridModeBlockedHost />);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    act(() => {
+      useLayoutStore.getState().setActiveLayoutId(layoutId('layout-b'));
+    });
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(useHalfGridModeStore.getState().blockedViolation).toBeNull();
+    expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
+    expect(layerOf(half)).toBe(layerId);
   });
 });

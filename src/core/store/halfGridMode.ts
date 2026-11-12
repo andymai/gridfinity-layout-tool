@@ -5,6 +5,7 @@ import { markFeatureUsed } from '@/shared/analytics/posthog';
 import { useLayoutStore } from './layout';
 import { useToastStore } from './toast';
 import type { Result, Unit, LayoutError, StorageError } from '@/core/result';
+import type { LayoutId } from '@/core/types';
 import { err, getUserMessage, isOk, layoutInvalidOperation, OK } from '@/core/result';
 import { saveToLocalStorage, loadFromLocalStorage } from '@/core/storage/backends/localStorage';
 
@@ -48,6 +49,8 @@ interface HalfGridModeState {
   halfGridMode: boolean;
   /** The bins that blocked the last user turn-off. While set, the shell shows its dialog. */
   blockedViolation: HalfGridConstraintViolation | null;
+  /** The active layout when the turn-off was blocked. The dialog belongs to it alone. */
+  blockedLayoutId: LayoutId | null;
 }
 
 interface HalfGridModeActions {
@@ -87,6 +90,7 @@ export type HalfGridModeStore = HalfGridModeState & HalfGridModeActions;
 export const INITIAL_HALF_GRID_MODE_STATE: HalfGridModeState = {
   halfGridMode: false,
   blockedViolation: null,
+  blockedLayoutId: null,
 };
 
 /**
@@ -104,6 +108,7 @@ function toastStorageFailure(error: StorageError): void {
 export const useHalfGridModeStore = create<HalfGridModeStore>((set) => ({
   halfGridMode: loadFromStorage(),
   blockedViolation: null,
+  blockedLayoutId: null,
 
   toggleHalfGridMode: () => {
     const state = useHalfGridModeStore.getState();
@@ -139,12 +144,13 @@ export const useHalfGridModeStore = create<HalfGridModeStore>((set) => ({
 
   requestHalfGridToggle: () => {
     if (isOk(useHalfGridModeStore.getState().toggleHalfGridMode())) return;
-    const { violation } = validateHalfGridModeToggle(useLayoutStore.getState().layout, false);
-    if (violation) set({ blockedViolation: violation });
+    const { layout, activeLayoutId } = useLayoutStore.getState();
+    const { violation } = validateHalfGridModeToggle(layout, false);
+    if (violation) set({ blockedViolation: violation, blockedLayoutId: activeLayoutId });
   },
 
   dismissBlockedViolation: () => {
-    set({ blockedViolation: null });
+    set({ blockedViolation: null, blockedLayoutId: null });
   },
 
   setHalfGridMode: (enabled) => {

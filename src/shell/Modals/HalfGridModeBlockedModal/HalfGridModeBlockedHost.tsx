@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { batch } from '@/core/cqrs';
 import { useHalfGridModeStore, useLayoutStore, useToastStore } from '@/core/store';
@@ -12,13 +12,19 @@ import { HalfGridModeBlockedModal } from './HalfGridModeBlockedModal';
 
 export function HalfGridModeBlockedHost() {
   const t = useTranslation();
-  const { blockedViolation, dismissBlockedViolation, setHalfGridMode } = useHalfGridModeStore(
-    useShallow((s) => ({
-      blockedViolation: s.blockedViolation,
-      dismissBlockedViolation: s.dismissBlockedViolation,
-      setHalfGridMode: s.setHalfGridMode,
-    }))
-  );
+  const { blockedViolation, blockedLayoutId, dismissBlockedViolation, setHalfGridMode } =
+    useHalfGridModeStore(
+      useShallow((s) => ({
+        blockedViolation: s.blockedViolation,
+        blockedLayoutId: s.blockedLayoutId,
+        dismissBlockedViolation: s.dismissBlockedViolation,
+        setHalfGridMode: s.setHalfGridMode,
+      }))
+    );
+  const activeLayoutId = useLayoutStore((s) => s.activeLayoutId);
+  // Browser Back and Forward switch layouts under an open dialog. Its count and
+  // its confirm belong to the layout that blocked the turn-off.
+  const isForOtherLayout = blockedViolation !== null && blockedLayoutId !== activeLayoutId;
   const addToast = useToastStore((s) => s.addToast);
   const { updateBin } = useMutations();
 
@@ -38,7 +44,11 @@ export function HalfGridModeBlockedHost() {
     if (movedCount > 0) addToast(t('toast.movedToStash', { count: movedCount }), 'success');
   }, [updateBin, setHalfGridMode, dismissBlockedViolation, addToast, t]);
 
-  if (!blockedViolation) return null;
+  useEffect(() => {
+    if (isForOtherLayout) dismissBlockedViolation();
+  }, [isForOtherLayout, dismissBlockedViolation]);
+
+  if (!blockedViolation || isForOtherLayout) return null;
   return (
     <HalfGridModeBlockedModal
       isOpen
