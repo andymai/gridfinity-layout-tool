@@ -108,6 +108,22 @@ const RECURSIVE_RETURN = [
   `);`,
 ].join('\n');
 
+const SHORTHAND_RETURN = [
+  `const frameClass = 'border-warning/30 bg-warning-mutedx';`,
+  `function copy() {`,
+  `  const iconClass = 'h-4 w-4';`,
+  `  return { frameClass, iconClass, label: 'Hidden' };`,
+  `}`,
+  `export const Notice = () => {`,
+  `  const { iconClass } = copy();`,
+  `  return (`,
+  `    <div className={copy().frameClass}>`,
+  `      <i className={iconClass} />`,
+  `    </div>`,
+  `  );`,
+  `};`,
+].join('\n');
+
 const DOM_ASSIGNMENT = [
   `const PULSE = 'animate-pulse';`,
   `export function showError(root: HTMLElement, visible: boolean): void {`,
@@ -325,6 +341,21 @@ describe('collectRenderedClasses', () => {
   it('reports a misspelled class in the base case of a recursive helper where it is written', async () => {
     expect(await classesWithoutCss(collect({ 'Grid.tsx': RECURSIVE_RETURN }))).toEqual([
       'src/Grid.tsx:2 p-2x',
+    ]);
+  });
+
+  it('reads a shorthand property through a member read and destructuring', () => {
+    expect(names({ 'Notice.tsx': SHORTHAND_RETURN })).toEqual([
+      'border-warning/30',
+      'bg-warning-mutedx',
+      'h-4',
+      'w-4',
+    ]);
+  });
+
+  it('reports a misspelled class behind a shorthand property where it is written', async () => {
+    expect(await classesWithoutCss(collect({ 'Notice.tsx': SHORTHAND_RETURN }))).toEqual([
+      'src/Notice.tsx:1 bg-warning-mutedx',
     ]);
   });
 

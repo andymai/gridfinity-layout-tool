@@ -27,6 +27,12 @@ interface Located<T extends ts.Node> {
 
 type ObjectOrArray = ts.ObjectLiteralExpression | ts.ArrayLiteralExpression;
 
+interface ObjectEntry {
+  /** `undefined` for a computed key. */
+  readonly key: string | undefined;
+  readonly value: Located<ts.Expression>;
+}
+
 /** One level of a destructuring pattern, from the outer value in. */
 interface BindingStep {
   /** The property that the step reads; `undefined` reads every entry. */
@@ -400,6 +406,19 @@ export function collectRenderedClasses(
     return objects;
   };
 
+  // A shorthand entry (`{ frameClass }`) holds the binding of that name where
+  // the object is written.
+  const objectEntries = (unit: SourceUnit, object: ts.ObjectLiteralExpression): ObjectEntry[] =>
+    object.properties.flatMap((property): ObjectEntry[] => {
+      if (ts.isPropertyAssignment(property)) {
+        return [{ key: propertyName(property.name), value: { unit, node: property.initializer } }];
+      }
+      if (ts.isShorthandPropertyAssignment(property)) {
+        return [{ key: property.name.text, value: { unit, node: property.name } }];
+      }
+      return [];
+    });
+
   // A key known only at runtime (`SIZES[size]`) can select any entry, so the
   // lookup stands for all of them. An array answers only an indexed read.
   const readMember = (
@@ -415,12 +434,9 @@ export function collectRenderedClasses(
           .filter((e) => !ts.isOmittedExpression(e))
           .map((e) => ({ unit: container.unit, node: ts.isSpreadElement(e) ? e.expression : e }));
       }
-      return container.node.properties
-        .filter(
-          (p): p is ts.PropertyAssignment =>
-            ts.isPropertyAssignment(p) && (key === undefined || propertyName(p.name) === key)
-        )
-        .map((p) => ({ unit: container.unit, node: p.initializer }));
+      return objectEntries(container.unit, container.node)
+        .filter((entry) => key === undefined || entry.key === key)
+        .map((entry) => entry.value);
     });
 
   const resolveMembers = (
@@ -446,8 +462,8 @@ export function collectRenderedClasses(
         scanClasses(container.unit, container.node);
         continue;
       }
-      for (const property of container.node.properties) {
-        if (ts.isPropertyAssignment(property)) scanClasses(container.unit, property.initializer);
+      for (const { value } of objectEntries(container.unit, container.node)) {
+        scanClasses(value.unit, value.node);
       }
     }
   };
@@ -455,18 +471,8 @@ export function collectRenderedClasses(
   const scanClassProperties = (unit: SourceUnit, node: ts.Expression): void => {
     for (const container of resolveObjects(unit, node)) {
       if (!ts.isObjectLiteralExpression(container.node)) continue;
-      for (const property of container.node.properties) {
-        if (ts.isPropertyAssignment(property)) {
-          const key = propertyName(property.name);
-          if (key !== undefined && CLASS_ATTRIBUTE.test(key)) {
-            scanClasses(container.unit, property.initializer);
-          }
-        } else if (
-          ts.isShorthandPropertyAssignment(property) &&
-          CLASS_ATTRIBUTE.test(property.name.text)
-        ) {
-          scanClasses(container.unit, property.name);
-        }
+      for (const { key, value } of objectEntries(container.unit, container.node)) {
+        if (key !== undefined && CLASS_ATTRIBUTE.test(key)) scanClasses(value.unit, value.node);
       }
     }
   };
