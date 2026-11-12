@@ -45,9 +45,9 @@ const SITE = 'https://gridfinitylayouttool.com';
 const DEV = process.env.BASE_URL ?? 'http://localhost:5173';
 
 /**
- * Serves the dev app under the public origin. The requests go out from Node,
- * because a route may not change http to https. Validators are dropped so the
- * dev server never answers 304 to a request the browser did not cache.
+ * The requests go out from Node, because a route may not change http to https.
+ * Validators are dropped so the dev server never answers 304 to a request the
+ * browser did not cache.
  */
 async function servePublicOrigin(s: DocsSession): Promise<void> {
   const context = s.page.context();
@@ -75,7 +75,7 @@ async function servePublicOrigin(s: DocsSession): Promise<void> {
   );
 }
 
-/** What s.open does, at a path on the public origin. */
+/** s.open always loads from BASE_URL. */
 async function openPublic(s: DocsSession, path: string): Promise<void> {
   await s.page.goto(`${SITE}${path}`, { waitUntil: 'load' });
   await grid(s.page).first().waitFor({ timeout: 90000 });
@@ -87,7 +87,6 @@ async function openPublic(s: DocsSession, path: string): Promise<void> {
   }
 }
 
-/** The layout editor on `fixtures` under the public origin, the last one active. */
 async function openPublicEditor(s: DocsSession, ...fixtures: FixtureLayout[]): Promise<void> {
   await servePublicOrigin(s);
   await routeApi(s);
@@ -892,7 +891,6 @@ const shareButton = (s: DocsSession, key: 'shareLayout' | 'manageShare'): Locato
 const sharePopoverOf = (s: DocsSession): Locator =>
   s.page.getByRole('dialog', { name: label('share.title') }).first();
 
-/** The header from "Find bins that fit" to the share button, down to `bottom`. */
 async function headerStrip(s: DocsSession, bottom: number): Promise<Rect> {
   const header = await s.box(s.page.locator('header').first());
   const find = await s.box(s.page.getByRole('button', { name: label('toolbar.findBins') }).first());
@@ -914,7 +912,6 @@ async function blurFocus(s: DocsSession): Promise<void> {
   await s.ui.warm(20);
 }
 
-/** Off camera: makes the share link, so the button reads "Manage share". */
 async function makeShareLink(s: DocsSession): Promise<void> {
   await shareButton(s, 'shareLayout').click({ force: true });
   await s.until(sharePopoverOf(s));
@@ -1070,11 +1067,12 @@ const shareWithoutServer: Shot = {
   },
 };
 
-/** One bin label holds a web address, which the server's content filter refuses. */
+const BLOCKED_LABEL = 'Drill bits www.example.com';
+
 const BLOCKED_DRAWER: FixtureLayout = {
   ...TWO_LAYERS,
   bins: (TWO_LAYERS.bins ?? []).map((b) =>
-    b.label === 'Fuses' ? { ...b, label: 'Fuses www.example.com' } : b
+    b.label === 'Drill bits' ? { ...b, label: BLOCKED_LABEL } : b
   ),
 };
 
@@ -1090,6 +1088,9 @@ const shareBlocked: Shot = {
   id: 'sharing-share-links-blocked',
   kind: 'still',
   async take(s) {
+    if (!BLOCKED_DRAWER.bins?.some((b) => b.label === BLOCKED_LABEL)) {
+      throw new Error('no bin in the layout holds the web address the server refuses');
+    }
     await openEditor(s, BLOCKED_DRAWER);
     await routeApi(s, blockedShare);
     const share = shareButton(s, 'shareLayout');
@@ -1121,7 +1122,6 @@ const SIGNED_IN_USER = {
 /** The last account on this device, so a sign-in does not ask about someone else's data. */
 const SIGNED_IN_STORAGE = { 'gflt-last-signed-in-user': SIGNED_IN_USER.userId };
 
-/** A signed-in session over an empty account: every upload lands, nothing comes down. */
 const signedIn: Handler = (path, _url, method) => {
   if (path === '/api/auth/me') return { json: { authenticated: true, user: SIGNED_IN_USER } };
   if (path === '/api/auth/logout') return { json: {} };
@@ -1143,7 +1143,6 @@ const signedIn: Handler = (path, _url, method) => {
   return undefined;
 };
 
-/** A Settings tab's content with the dialog's own margin around it, down to `bottom`. */
 function panelCrop(panel: Rect, bottom: number): Rect {
   return {
     x: panel.x - 24,
@@ -1227,7 +1226,6 @@ const accountTab: Shot = {
 const SORTER_ID = 'cd0000000001';
 const SORTER_EXAMPLE = 'hero-multicolor-organizer';
 
-/** The gallery's first card as the server returns it whole, built on the matching example. */
 async function sorterDetail(s: DocsSession): Promise<object> {
   const params = await s.page.evaluate(async (id) => {
     const { HERO_EXAMPLES } = (await import(
@@ -1293,7 +1291,6 @@ async function openSorter(s: DocsSession, ...handlers: Handler[]): Promise<Locat
   return dialog;
 }
 
-/** A form that scrolls inside its dialog, back at its top, where its steps start. */
 async function scrollToTop(s: DocsSession, dialog: Locator): Promise<void> {
   await dialog.evaluate((root) => {
     for (const n of root.querySelectorAll<HTMLElement>('*')) {
@@ -1370,7 +1367,6 @@ const reportDesign: Shot = {
   },
 };
 
-/** This account has published nothing yet. */
 const noDesignsOfMine: Handler = (path, url, method) =>
   path === '/api/community' && method === 'GET' && url.searchParams.get('mine') === '1'
     ? { json: { items: [], nextCursor: null, likedIds: [], supporterAuthorIds: [], indexSlots: 0 } }
@@ -1504,7 +1500,6 @@ async function selectBins(s: DocsSession, ...names: string[]): Promise<void> {
   await s.dismissToasts();
 }
 
-/** The palette's place on screen, from opening it once off camera. */
 async function paletteBox(s: DocsSession): Promise<Rect> {
   await s.page.keyboard.press('ControlOrMeta+k');
   const root = s.page.locator('[cmdk-root]').first();
@@ -1660,7 +1655,6 @@ const LABS_ON = {
   }),
 };
 
-/** What each labelled bin holds, as [name, qty] pairs. */
 type Contents = Record<string, [string, number][]>;
 
 const WORKBENCH_CONTENTS: Contents = {
