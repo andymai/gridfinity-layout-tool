@@ -876,15 +876,18 @@ interface AppImport {
 /**
  * After a hot update the dev server serves the app's copy of a changed module
  * as `<path>?t=<stamp>`, and a bare `import(path)` loads a second copy with its
- * own empty store. This imports the copy the app loaded, found by its URL.
+ * own empty store. This imports the newest copy the page loaded, found by its URL.
  */
 async function installAppImport(s: DocsSession): Promise<void> {
   const install = (): void => {
+    // The buffer keeps 250 entries by default and drops the rest, which loses
+    // the URL of a later hot update.
+    performance.setResourceTimingBufferSize(100_000);
     (window as unknown as AppImport).__appImport = (path: string) => {
       const loaded = performance
         .getEntriesByType('resource')
         .map((e) => e.name)
-        .find((name) => new URL(name).pathname === path);
+        .findLast((name) => new URL(name).pathname === path);
       return import(/* @vite-ignore */ loaded ?? path) as Promise<unknown>;
     };
   };
