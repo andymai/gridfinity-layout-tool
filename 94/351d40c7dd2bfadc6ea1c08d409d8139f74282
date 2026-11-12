@@ -1,0 +1,85 @@
+api/share/[id].ts
+  s_1cc363bb3cc76d::t_8de0236471c3ec 197
+  s_1cc363bb3cc76d::t_17f4cd0380ca64 208
+  s_1cc363bb3cc76d::t_93a8840e927722 33
+.claude/skills/share-api-collab/SKILL.md
+  s_1cc363bb3cc76d::t_8d557741b30912 52,54
+api/lib/contentFilter.test.ts
+  s_1cc363bb3cc76d::t_d8e140481caa49 319-384,450-456,608-695
+api/lib/contentFilter.ts
+  s_1cc363bb3cc76d::t_3f2b969b7c92a3 6-11,15-16,18,20-21,23,25,27,29,31,33,35,40-55,67-70,73-76,83-98,102,120,127-131,140,146,153-157,161-165,174,232-233,241-244,252,281-287,388,393-397
+api/lib/shared.ts
+  s_1cc363bb3cc76d::t_a1613ed6c52126 117,234-244
+api/share.test.ts
+  s_1cc363bb3cc76d::t_1031d5d0d34580 192-205,274-277,304,384,390
+api/share.ts
+  s_1cc363bb3cc76d::t_df14cd068b147a 37,110,131,147,164
+api/share/[id].test.ts
+  s_1cc363bb3cc76d::t_244f7cba902740 462-513
+apps/docs/sharing/live-collaboration.md
+  s_1cc363bb3cc76d::t_40474feb22b8c3 11-12,64-70,73,92-94,96-98,100
+apps/docs/sharing/share-links.md
+  s_1cc363bb3cc76d::t_2791f75d657a16 54-58,60,120,124
+src/core/api/mapApiError.test.ts
+  s_1cc363bb3cc76d::t_67b13ddea34944 34-43,70-83
+src/core/api/mapApiError.ts
+  s_1cc363bb3cc76d::t_4ed2e80a74f564 33-34,46-47,67
+src/core/api/share.test.ts
+  s_1cc363bb3cc76d::t_c791327f598214 919-937
+src/features/cloud-share/hooks/useCloudShare.test.ts
+  s_1cc363bb3cc76d::t_c0f6c55328f68b 12-19,215-277
+src/features/cloud-share/hooks/useCloudShare.ts
+  s_1cc363bb3cc76d::t_e163150b68991f 26,59-80,157
+src/i18n/locales/cs.json
+  s_1cc363bb3cc76d::t_1711534bf64c0e 2631-2639
+src/i18n/locales/de.json
+  s_1cc363bb3cc76d::t_e5aed6dbf8cf13 2595-2603
+src/i18n/locales/en.ts
+  s_1cc363bb3cc76d::t_3827b8182fbbc0 6501-6518
+src/i18n/locales/es.json
+  s_1cc363bb3cc76d::t_b233b30b3a2002 2595-2603
+src/i18n/locales/fr.json
+  s_1cc363bb3cc76d::t_f72b69221dac15 2595-2603
+src/i18n/locales/it.json
+  s_1cc363bb3cc76d::t_7022293a5813c3 2595-2603
+src/i18n/locales/ja.json
+  s_1cc363bb3cc76d::t_2bafbf3fa57914 2559-2567
+src/i18n/locales/ka.json
+  s_1cc363bb3cc76d::t_a5371bcd165e2f 5344-5352
+src/i18n/locales/ko.json
+  s_1cc363bb3cc76d::t_e30a9cdcb3a0f5 2559-2567
+src/i18n/locales/nb.json
+  s_1cc363bb3cc76d::t_290b0bd4b6c4db 2595-2603
+src/i18n/locales/nl.json
+  s_1cc363bb3cc76d::t_83260068e68fa6 2595-2603
+src/i18n/locales/pl.json
+  s_1cc363bb3cc76d::t_8f25c8ec380a00 2667-2675
+src/i18n/locales/pt-BR.json
+  s_1cc363bb3cc76d::t_b9fadc937d3abd 2595-2603
+src/i18n/locales/sv.json
+  s_1cc363bb3cc76d::t_7a33a98ce4e8a1 2595-2603
+src/i18n/locales/uk.json
+  s_1cc363bb3cc76d::t_afae447bb01899 2667-2675
+src/i18n/locales/zh-CN.json
+  s_1cc363bb3cc76d::t_37a0485dac8e3b 2559-2567
+src/shared/generation/wasmLoadError.test.ts
+  s_1cc363bb3cc76d::t_38b65398ed91ac 49-52
+src/shared/generation/wasmLoadError.ts
+  s_1cc363bb3cc76d::t_60a07e36f57b82 39-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "94351d40c7dd2bfadc6ea1c08d409d8139f74282",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
