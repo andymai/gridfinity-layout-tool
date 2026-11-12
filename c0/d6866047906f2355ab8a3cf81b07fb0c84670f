@@ -1,0 +1,59 @@
+e2e/staging.spec.ts
+  s_1cc363bb3cc76d::t_28f0c4c0dd9f49 25,28,75,93,146,177,320,377
+src/features/layers/components/ActiveLayerPanel/ActiveLayerPanel.test.tsx
+  s_1cc363bb3cc76d::t_7663dd45b9f2e7 212-214,225
+src/i18n/locales/cs.json
+  s_1cc363bb3cc76d::t_acd13cb3fd21ce 4104-4106
+src/i18n/locales/de.json
+  s_1cc363bb3cc76d::t_e5e9ceb41fb1dc 4028-4029
+src/i18n/locales/en.ts
+  s_1cc363bb3cc76d::t_9a36dd83394455 662-663
+src/i18n/locales/es.json
+  s_1cc363bb3cc76d::t_a2511c698c426f 4028-4029
+src/i18n/locales/fr.json
+  s_1cc363bb3cc76d::t_7ec352c21f2138 4028-4029
+src/i18n/locales/it.json
+  s_1cc363bb3cc76d::t_56feb7410b8ede 4028-4029
+src/i18n/locales/ja.json
+  s_1cc363bb3cc76d::t_1b75dd11b4b761 3952
+src/i18n/locales/ka.json
+  s_1cc363bb3cc76d::t_7e40ba8fd87f70 609-610
+src/i18n/locales/ko.json
+  s_1cc363bb3cc76d::t_15db5af6847b33 3952
+src/i18n/locales/localeStrings.test.ts
+  s_1cc363bb3cc76d::t_d8e0b9993662fd 22-43,46
+src/i18n/locales/nb.json
+  s_1cc363bb3cc76d::t_00aa48ee0965c5 4028-4029
+src/i18n/locales/nl.json
+  s_1cc363bb3cc76d::t_2a3cdae46f8968 4028-4029
+src/i18n/locales/pl.json
+  s_1cc363bb3cc76d::t_aa5bd129e9f186 4180-4183
+src/i18n/locales/pt-BR.json
+  s_1cc363bb3cc76d::t_94ce0977e3eda4 4028-4029
+src/i18n/locales/sv.json
+  s_1cc363bb3cc76d::t_4415d065d2ede0 4028-4029
+src/i18n/locales/uk.json
+  s_1cc363bb3cc76d::t_9934f979f171c9 4180-4183
+src/i18n/locales/zh-CN.json
+  s_1cc363bb3cc76d::t_2eac813761c7a3 3952
+src/shell/Mobile/MobileLayersPanel/ToolsTab/ToolsTab.test.tsx
+  s_1cc363bb3cc76d::t_ca5b124325bcb8 11-12,26-70
+src/shell/Mobile/MobileLayersPanel/ToolsTab/ToolsTab.tsx
+  s_1cc363bb3cc76d::t_3e78f4972dd536 163,200
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c0d6866047906f2355ab8a3cf81b07fb0c84670f",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
