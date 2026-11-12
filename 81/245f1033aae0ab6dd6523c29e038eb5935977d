@@ -1,0 +1,22 @@
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.ts
+  s_1cc363bb3cc76d::t_d5dd4039432d5d 27
+  s_1cc363bb3cc76d::t_84afb390f3b86a 360
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.test.ts
+  s_1cc363bb3cc76d::t_7c67af6b5dda2b 1,7,118-143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "81245f1033aae0ab6dd6523c29e038eb5935977d",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
