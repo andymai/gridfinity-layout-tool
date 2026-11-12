@@ -22,15 +22,13 @@ import { batch } from '@/core/cqrs';
  */
 export function useSelectionActions() {
   const t = useTranslation();
-  const { bins, layout, updateBin, deleteBins } = useLayoutStore(
+  const { bins, layout } = useLayoutStore(
     useShallow((s) => ({
       bins: s.layout.bins,
       layout: s.layout,
-      updateBin: s.updateBin,
-      deleteBins: s.deleteBins,
     }))
   );
-  const { moveBinsToStaging } = useMutations();
+  const { updateBin, deleteBins, moveBinsToStaging } = useMutations();
   const { selectedBinIds, clearSelection } = useSelectionStore(
     useShallow((s) => ({
       selectedBinIds: s.selectedBinIds,

@@ -296,4 +296,114 @@ describe('useSelectionActions', () => {
       expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
     });
   });
+
+  describe('undo label', () => {
+    function undoToast(): string | undefined {
+      act(() => {
+        useHistoryStore.getState().undo();
+      });
+      return useToastStore.getState().toasts.at(-1)?.message;
+    }
+
+    function seedTwoLayers(): void {
+      const layout = createTestLayout({
+        layers: [
+          { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+          { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
+        ],
+        bins: [
+          createTestBin({
+            id: binId('a'),
+            layerId: layerId('layer1'),
+            x: gridUnits(0),
+            width: gridUnits(1),
+            depth: gridUnits(2),
+            height: heightUnits(2),
+          }),
+          createTestBin({
+            id: binId('b'),
+            layerId: layerId('layer1'),
+            x: gridUnits(3),
+            width: gridUnits(1),
+            depth: gridUnits(2),
+            height: heightUnits(3),
+          }),
+          createTestBin({
+            id: binId('c'),
+            layerId: layerId('layer1'),
+            x: gridUnits(6),
+            width: gridUnits(1),
+            depth: gridUnits(2),
+            height: heightUnits(1),
+          }),
+        ],
+      });
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('a'), binId('b'), binId('c')] });
+      useHistoryStore.getState().clear();
+    }
+
+    beforeEach(seedTwoLayers);
+
+    it('names setCategory after the bins it updated', () => {
+      const { result } = renderHook(() => useSelectionActions());
+      act(() => {
+        result.current.setCategory(categoryId('new-cat'));
+      });
+
+      expect(useHistoryStore.getState().past).toHaveLength(1);
+      expect(undoToast()).toBe('↩ Undid: Updated 3 bins');
+    });
+
+    it('names rotateAll after the bins it updated', () => {
+      const { result } = renderHook(() => useSelectionActions());
+      act(() => {
+        result.current.rotateAll();
+      });
+
+      expect(useHistoryStore.getState().past).toHaveLength(1);
+      expect(undoToast()).toBe('↩ Undid: Updated 3 bins');
+    });
+
+    it('names matchHeight after the bins it updated', () => {
+      const { result } = renderHook(() => useSelectionActions());
+      act(() => {
+        result.current.matchHeight();
+      });
+
+      expect(useHistoryStore.getState().past).toHaveLength(1);
+      expect(undoToast()).toBe('↩ Undid: Updated 2 bins');
+    });
+
+    it('names moveToLayer after the bins it updated', () => {
+      const { result } = renderHook(() => useSelectionActions());
+      act(() => {
+        result.current.moveToLayer(layerId('layer2'));
+      });
+
+      expect(useHistoryStore.getState().past).toHaveLength(1);
+      expect(undoToast()).toBe('↩ Undid: Updated 3 bins');
+    });
+
+    it('names moveToStash as a move to the stash', () => {
+      const { result } = renderHook(() => useSelectionActions());
+      act(() => {
+        result.current.moveToStash();
+      });
+
+      expect(useHistoryStore.getState().past).toHaveLength(1);
+      expect(undoToast()).toBe('↩ Undid: Moved bins to stash');
+    });
+
+    it('names deleteAll as a delete', () => {
+      const { result } = renderHook(() => useSelectionActions());
+      act(() => {
+        result.current.deleteAll();
+      });
+
+      expect(useHistoryStore.getState().past).toHaveLength(1);
+      expect(undoToast()).toBe('↩ Undid: Deleted bins');
+      expect(useLayoutStore.getState().layout.bins).toHaveLength(3);
+    });
+  });
 });
