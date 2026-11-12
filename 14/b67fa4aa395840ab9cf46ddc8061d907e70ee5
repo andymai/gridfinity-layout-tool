@@ -1,0 +1,20 @@
+src/features/bin-designer/components/ExampleGallery/ExampleGalleryContent.test.tsx
+  s_1cc363bb3cc76d::t_cd1f919c4cab61 11-17
+  s_1cc363bb3cc76d::t_9fe8a857a1b03d 49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "14b67fa4aa395840ab9cf46ddc8061d907e70ee5",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
