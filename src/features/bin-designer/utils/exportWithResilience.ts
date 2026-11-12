@@ -17,7 +17,8 @@
  *
  * Non-retryable errors (`INVALID_PARAMS`, `EMPTY_GEOMETRY`) are surfaced
  * immediately — they're caused by user input the worker can't process, and
- * retrying just delays the inevitable error toast.
+ * retrying just delays the inevitable error toast. `OUT_OF_MEMORY` is surfaced
+ * immediately too, and `KERNEL_CRASHED` skips steps 2-3.
  */
 
 import { bridgeManager } from '@/shared/generation/bridge';
@@ -114,11 +115,15 @@ export async function exportWithResilience<T>(
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       if (!isRetryable(error)) throw error;
-      // A trapped kernel refuses every later request until the worker is
-      // replaced, and a heap at the wasm32 ceiling never shrinks, so the
-      // in-process retries can only fail; go straight to the restart.
       const code = extractErrorCode(error);
-      if (code === 'KERNEL_CRASHED' || code === 'OUT_OF_MEMORY') break;
+      // The design needs more heap than a wasm32 kernel can address, so a fresh
+      // worker runs out the same way, minutes later. The bridge already replaced
+      // the worker when the error arrived.
+      if (code === 'OUT_OF_MEMORY') throw error;
+      // A trapped kernel refuses every later request until the worker is
+      // replaced, so the in-process retries can only fail; go straight to the
+      // restart.
+      if (code === 'KERNEL_CRASHED') break;
       if (attempt === RETRY_DELAYS_MS.length) break; // out of in-process retries
       retryCount++;
       options.onAttempt?.({ retryCount, restartCount });
