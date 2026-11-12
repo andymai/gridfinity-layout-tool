@@ -49,7 +49,7 @@ A **version** is a named checkpoint of one design. Undo history ends when you re
 
 To go back to a version, click <Ui k="binDesigner.versions.restore" /> on it. Nothing gets lost: the Layout Tool first saves your current state as an automatic version, and one undo reverses the restore.
 
-Each design holds up to 25 versions. When a design is full, a new version removes the oldest one. Pinned versions stay, so click <Ui k="binDesigner.versions.pin" /> on any version you want to keep for good.
+Each design holds up to 25 versions. When a design is full, a new version removes an automatic version first, then the oldest one. Pinned versions stay, so click <Ui k="binDesigner.versions.pin" /> on any version you want to keep for good.
 
 ### Branch from a version
 

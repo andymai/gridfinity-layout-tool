@@ -54,15 +54,9 @@ export const reorderLayers = defineCommand({
       resolveRestingStack(layout.bins, newLayers),
       layout.drawer.height
     );
+    // The violation kind travels in `reason`, so the caller can say why.
     if (violations.length > 0) {
-      return err(
-        layoutInvalidOperation(
-          'reorderLayers',
-          violations[0].kind === 'exceeds_height'
-            ? 'Reordering would stack bins past the drawer top'
-            : "Reordering would rest a bin inside another bin's clearance"
-        )
-      );
+      return err(layoutInvalidOperation('reorderLayers', violations[0].kind));
     }
 
     return ok({ value: undefined, event: { payload: { fromIndex, toIndex } } });

@@ -564,9 +564,9 @@ export function RightPanel() {
                                         <SplitPreview width={w} depth={d} pieces={row.pieces} />
                                         <div className="text-xs text-content-secondary">
                                           <div className="font-medium mb-1">
-                                            {t('rightPanel.splitInto')}
-                                            {row.totalPieces}
-                                            {t('rightPanel.pieces')}
+                                            {t('rightPanel.splitIntoPieces', {
+                                              count: row.totalPieces,
+                                            })}
                                           </div>
                                           {row.pieces.map((piece) => (
                                             <div

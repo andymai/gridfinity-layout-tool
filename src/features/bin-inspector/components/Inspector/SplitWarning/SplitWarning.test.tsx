@@ -19,6 +19,19 @@ describe('SplitWarning', () => {
       expect(screen.getByText(/fits print bed/)).toBeInTheDocument();
     });
 
+    // The limit is in grid units, the same unit as the bin size it sits beside.
+    it('states the largest bin the bed takes in grid units, not millimeters', () => {
+      render(<SplitWarning {...defaultProps} />);
+
+      expect(screen.getByText('2×2 fits print bed (max 6×6 units)')).toBeInTheDocument();
+    });
+
+    it('states each axis of the limit on a rectangular bed', () => {
+      render(<SplitWarning {...defaultProps} maxGridUnits={{ width: 6, depth: 5 }} />);
+
+      expect(screen.getByText('2×2 fits print bed (max 6×5 units)')).toBeInTheDocument();
+    });
+
     it('shows success checkmark icon', () => {
       const { container } = render(<SplitWarning {...defaultProps} />);
 

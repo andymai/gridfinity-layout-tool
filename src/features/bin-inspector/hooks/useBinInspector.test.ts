@@ -971,6 +971,27 @@ describe('useBinInspector', () => {
 
       expect(rotateResult).toBe(false);
     });
+
+    it('toasts the translated reason when the turned bin cannot fit anywhere near', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.drawer = { ...layout.drawer, width: gridUnits(2), depth: gridUnits(4) };
+      layout.bins = [{ ...createBin('bin1', 'layer1'), width: gridUnits(1), depth: gridUnits(3) }];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
+      useToastStore.setState({ toasts: [] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      let rotateResult: boolean = true;
+      act(() => {
+        rotateResult = result.current.rotateBin();
+      });
+
+      expect(rotateResult).toBe(false);
+      expect(useToastStore.getState().toasts.map((toast) => toast.message)).toEqual([
+        'Cannot rotate: bin would exceed drawer bounds',
+      ]);
+    });
   });
 
   describe('applySuggestedSize', () => {

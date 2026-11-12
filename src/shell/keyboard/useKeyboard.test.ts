@@ -7,6 +7,7 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useViewStore } from '@/core/store/view';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
+import { useToastStore } from '@/core/store/toast';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
 import { resetAllStores, getBinId } from '@/test/testUtils';
 import { gridUnits, heightUnits } from '@/core/types';
@@ -891,6 +892,41 @@ describe('useKeyboard', () => {
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins[0].width).toBe(3);
       expect(bins[0].depth).toBe(2);
+    });
+
+    it('toasts the translated reason when the turned bin cannot fit anywhere near', () => {
+      const { layout } = useLayoutStore.getState();
+      useLayoutStore.setState({
+        layout: {
+          ...layout,
+          drawer: { ...layout.drawer, width: gridUnits(2), depth: gridUnits(4) },
+        },
+      });
+      const binId = getBinId(
+        useLayoutStore.getState().addBin({
+          layerId: layout.layers[0].id,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(1),
+          depth: gridUnits(3),
+          height: heightUnits(3),
+          category: layout.categories[0].id,
+          label: '',
+          notes: '',
+        })
+      );
+      useSelectionStore.getState().setSelectedBins([binId]);
+      useToastStore.setState({ toasts: [] });
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('r');
+      });
+
+      expect(useToastStore.getState().toasts.map((toast) => toast.message)).toEqual([
+        'Cannot rotate: bin would exceed drawer bounds',
+      ]);
+      expect(useLayoutStore.getState().layout.bins[0].width).toBe(1);
     });
   });
 
