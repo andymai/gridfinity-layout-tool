@@ -1,8 +1,10 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { Shape3D } from 'brepjs';
+import type { LipTipStyle } from '@/shared/types/bin';
 import { initTestKernel } from '@/test/initTestKernel';
 import { LIP_TAPER_WIDTH, LIP_OVERLAP } from './generatorConstants';
+import type * as BoxBuilder from './boxBuilder';
 
 type BuildBinBoxFn = (
   gridW: number,
@@ -12,12 +14,13 @@ type BuildBinBoxFn = (
   solid: boolean,
   cutoutTopOffset?: number
 ) => Shape3D;
-type BuildTopShapeFn = (gridW: number, gridD: number, includeLip: boolean) => Shape3D;
+type BuildTopShapeFn = typeof BoxBuilder.buildTopShape;
 
 let buildBinBox: BuildBinBoxFn;
 let buildTopShape: BuildTopShapeFn;
 
 let meshShape: (shape: unknown) => { vertices: ArrayLike<number>; triangles: ArrayLike<number> };
+let simplifies: (shape: Shape3D) => boolean;
 let shapeBounds: (shape: unknown) => {
   xMin: number;
   xMax: number;
@@ -28,7 +31,7 @@ let shapeBounds: (shape: unknown) => {
 };
 
 beforeAll(async () => {
-  const { mesh: meshFn, getBounds } = await import('brepjs');
+  const { mesh: meshFn, getBounds, simplify, isOk } = await import('brepjs');
   await initTestKernel();
 
   const mod = await import('./boxBuilder');
@@ -37,6 +40,7 @@ beforeAll(async () => {
 
   meshShape = (shape) => meshFn(shape as never, { tolerance: 1, angularTolerance: 30 });
   shapeBounds = (shape) => getBounds(shape as never);
+  simplifies = (shape) => isOk(simplify(shape));
 }, 30000);
 
 describe('buildBinBox', () => {
@@ -160,4 +164,18 @@ describe('buildTopShape', () => {
     expect(lipDepthDelta).toBeGreaterThan(expectedDelta - 0.1);
     expect(lipDepthDelta).toBeLessThan(expectedDelta + 0.1);
   }, 60000);
+
+  // A Nesting body merges same-domain faces across the whole bin, and OCCT's
+  // unifySameDomain throws on a face two of the lip's cuts both laid down.
+  it.each<LipTipStyle>(['sharp', 'round', 'chamfer', 'flat'])(
+    'a notched lip with a %s tip merges its same-domain faces',
+    (lipTip) => {
+      const notches = { fractionalEdgeX: 'end', fractionalEdgeY: 'end' } as const;
+      for (const includeLip of [true, false]) {
+        const lip = buildTopShape(3, 2, includeLip, 42, undefined, undefined, lipTip, notches);
+        expect(simplifies(lip), `support: ${includeLip}`).toBe(true);
+      }
+    },
+    60000
+  );
 });
