@@ -155,6 +155,19 @@ describe('Popover', () => {
     expect(dialog.className).toContain('p-4');
   });
 
+  it('lets a caller class replace the base class it conflicts with', () => {
+    render(
+      <Popover anchorRef={anchorRef} isOpen onClose={vi.fn()} className="rounded-lg shadow-md">
+        <span>Content</span>
+      </Popover>
+    );
+
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveClass('rounded-lg', 'shadow-md', 'bg-surface-elevated');
+    expect(dialog).not.toHaveClass('rounded-xl');
+    expect(dialog).not.toHaveClass('shadow-xl');
+  });
+
   it('names the dialog so callers need not nest one of their own', () => {
     render(
       <Popover anchorRef={anchorRef} isOpen onClose={vi.fn()} aria-label="Plate icons">

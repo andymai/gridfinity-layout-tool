@@ -7,6 +7,7 @@ import {
   type RefObject,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { cn } from '../cn';
 
 type Placement = 'bottom-start' | 'bottom-end' | 'top-start' | 'top-end';
 
@@ -43,7 +44,7 @@ export function Popover({
   placement = 'bottom-start',
   offset: gap = 6,
   children,
-  className = '',
+  className,
   'aria-label': ariaLabel,
   onPointerEnter,
   onPointerLeave,
@@ -163,7 +164,10 @@ export function Popover({
       aria-label={ariaLabel}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
-      className={`fixed z-50 bg-surface-elevated border border-stroke-subtle rounded-xl shadow-xl animate-scale-in ${className}`}
+      className={cn(
+        'fixed z-50 bg-surface-elevated border border-stroke-subtle rounded-xl shadow-xl animate-scale-in',
+        className
+      )}
       style={{ top: position.top, left: position.left, zIndex: layer }}
     >
       {children}
