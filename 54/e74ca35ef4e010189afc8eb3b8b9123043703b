@@ -1,0 +1,26 @@
+src/shell/Collab/PresenceAvatar/PresenceAvatar.tsx
+  s_1cc363bb3cc76d::t_31fedb6af40689 79
+  s_1cc363bb3cc76d::t_b9f2b7890d7cd2 92-94
+src/shell/Collab/PresenceAvatar/PresenceAvatar.test.tsx
+  s_1cc363bb3cc76d::t_925ccd57f03f34 7-8,10,17,121-134
+src/shell/Collab/PresenceAvatarBar/PresenceAvatarBar.test.tsx
+  s_1cc363bb3cc76d::t_08e0cee5c1d502 2,57-66
+src/shell/Collab/PresenceAvatarList/PresenceAvatarList.test.tsx
+  s_1cc363bb3cc76d::t_7603630298e294 67-75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "54e74ca35ef4e010189afc8eb3b8b9123043703b",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
