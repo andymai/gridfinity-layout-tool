@@ -1,5 +1,39 @@
 # Changelog
 
+## [4.540.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.539.0...gridfinity-layout-tool-v4.540.0) (2026-11-12)
+
+
+### Features
+
+* **analytics:** measure install availability and installed-app use ([#4950](https://github.com/andymai/gridfinity-layout-tool/issues/4950)) ([d4731f0](https://github.com/andymai/gridfinity-layout-tool/commit/d4731f0595190227a900a440749556059660bc78))
+* **docs:** open /docs on the first docs page, with an overview clip ([#4951](https://github.com/andymai/gridfinity-layout-tool/issues/4951)) ([88f031a](https://github.com/andymai/gridfinity-layout-tool/commit/88f031a27bb3d2875ef0eb411bc2cbbf8a045ede))
+
+
+### Bug Fixes
+
+* **analytics:** keep display_mode on events after an idle gap ([#4955](https://github.com/andymai/gridfinity-layout-tool/issues/4955)) ([4f67964](https://github.com/andymai/gridfinity-layout-tool/commit/4f679646980128bb07e95d92282064005e9631fe))
+* **bin-designer:** keep a claimed variant row inside the panel ([#4981](https://github.com/andymai/gridfinity-layout-tool/issues/4981)) ([e57c72a](https://github.com/andymai/gridfinity-layout-tool/commit/e57c72aa52e3c83f5fd512f269f864c2572b057d))
+* **bin-designer:** take the layout's units when a design opens ([#4957](https://github.com/andymai/gridfinity-layout-tool/issues/4957)) ([c7250c1](https://github.com/andymai/gridfinity-layout-tool/commit/c7250c1359529455800b506a01e8772b4e6d66da))
+* **bin-designer:** take the Y grid pitch from the layout ([#4958](https://github.com/andymai/gridfinity-layout-tool/issues/4958)) ([a0c08a4](https://github.com/andymai/gridfinity-layout-tool/commit/a0c08a4dbfad5ab99953c42bc769a389b5d8e78e))
+* **cloud-share:** upload a change that waits for an upload in flight to its share ([#4968](https://github.com/andymai/gridfinity-layout-tool/issues/4968)) ([b95681f](https://github.com/andymai/gridfinity-layout-tool/commit/b95681f311e8ff4c4960ff81fcf6f9072a983b23)), closes [#4961](https://github.com/andymai/gridfinity-layout-tool/issues/4961)
+* **collab:** import collaborators' edits after this browser's own edit ([#4962](https://github.com/andymai/gridfinity-layout-tool/issues/4962)) ([62a081f](https://github.com/andymai/gridfinity-layout-tool/commit/62a081fa45816e5ae309c10de8518c496456bc02))
+* **collab:** keep the owner's design ids in a room and a visitor's own in its copy ([#4969](https://github.com/andymai/gridfinity-layout-tool/issues/4969)) ([c056a92](https://github.com/andymai/gridfinity-layout-tool/commit/c056a92477e0983602aa0fc60d078fb501e261bb)), closes [#4961](https://github.com/andymai/gridfinity-layout-tool/issues/4961)
+* **collab:** save collaborators' edits and keep the newer room on join ([#4959](https://github.com/andymai/gridfinity-layout-tool/issues/4959)) ([fd28fe1](https://github.com/andymai/gridfinity-layout-tool/commit/fd28fe181b021c453d4b9c034b3c6e767fb32f19))
+* **community:** order similar designs like the gallery and check the prints count ([#4986](https://github.com/andymai/gridfinity-layout-tool/issues/4986)) ([4c6f84c](https://github.com/andymai/gridfinity-layout-tool/commit/4c6f84c93c9fac70c79a35681c97905600263d78))
+* **community:** sort the gallery by print count on "Most printed" ([#4974](https://github.com/andymai/gridfinity-layout-tool/issues/4974)) ([e5c7cc3](https://github.com/andymai/gridfinity-layout-tool/commit/e5c7cc3ef6585e07a7ed1e08fba2f80f06f32749))
+* **design-system:** keep the typed label when Enter is pressed ([#4984](https://github.com/andymai/gridfinity-layout-tool/issues/4984)) ([1d30b91](https://github.com/andymai/gridfinity-layout-tool/commit/1d30b913fc20f58eba03262a374834ca31e7c4c2))
+* **generation:** keep embossed tab text full height on thin walls ([#4945](https://github.com/andymai/gridfinity-layout-tool/issues/4945)) ([94a3f13](https://github.com/andymai/gridfinity-layout-tool/commit/94a3f13786d6237fe96137ef9e1b294ba9d5298b))
+* **generation:** treat Safari's refused cross-origin kernel import as a stale asset ([#4966](https://github.com/andymai/gridfinity-layout-tool/issues/4966)) ([c305517](https://github.com/andymai/gridfinity-layout-tool/commit/c305517dacadf39febaae01249daa4eb280e0619)), closes [#4940](https://github.com/andymai/gridfinity-layout-tool/issues/4940)
+* **grid-editor:** centre the selection toolbar over the selection ([#4991](https://github.com/andymai/gridfinity-layout-tool/issues/4991)) ([611858e](https://github.com/andymai/gridfinity-layout-tool/commit/611858edc3ae28d47eb42c52ef8db0cacaaeec76))
+* **grid-editor:** keep row and column numbers above hovered bins ([#4990](https://github.com/andymai/gridfinity-layout-tool/issues/4990)) ([d1e2544](https://github.com/andymai/gridfinity-layout-tool/commit/d1e25449cd7b4a8591ab94f3bf94c8e609cc427c))
+* **grid-editor:** one dialog for turning off half-grid mode, from every entry point ([#4982](https://github.com/andymai/gridfinity-layout-tool/issues/4982)) ([52b3ad3](https://github.com/andymai/gridfinity-layout-tool/commit/52b3ad35b13f69975d75ae3ae73a71b375d87e1b))
+* **i18n:** correct twelve messages and translate the hard-coded ones ([#4993](https://github.com/andymai/gridfinity-layout-tool/issues/4993)) ([1c20bc9](https://github.com/andymai/gridfinity-layout-tool/commit/1c20bc9bc8b3f218c238a7b260fefe419982ec48))
+* **scripts:** look up doc references in a token set before scanning the haystack ([#4983](https://github.com/andymai/gridfinity-layout-tool/issues/4983)) ([c1e1d95](https://github.com/andymai/gridfinity-layout-tool/commit/c1e1d95dac39817b010c6efa32856c48a9a35094))
+* **share:** keep the share popover open when a click inside it changes the status ([#4977](https://github.com/andymai/gridfinity-layout-tool/issues/4977)) ([4331154](https://github.com/andymai/gridfinity-layout-tool/commit/4331154ef5d6690e450bc6ec83fcf256bc0d6c7e))
+* **share:** match whole words in the content filter and name the blocked field ([#4964](https://github.com/andymai/gridfinity-layout-tool/issues/4964)) ([fafd7af](https://github.com/andymai/gridfinity-layout-tool/commit/fafd7af8b006a49d44dca079c9cb53f5559eb1ef))
+* **share:** write a share update only over the blob it read ([#4967](https://github.com/andymai/gridfinity-layout-tool/issues/4967)) ([bd1d75e](https://github.com/andymai/gridfinity-layout-tool/commit/bd1d75e49d6b490fc5156a0ab2d26e28ef1af811)), closes [#4961](https://github.com/andymai/gridfinity-layout-tool/issues/4961)
+* **storage:** retry a failed layout save and guard the tab while unsaved ([#4956](https://github.com/andymai/gridfinity-layout-tool/issues/4956)) ([8158db8](https://github.com/andymai/gridfinity-layout-tool/commit/8158db8f971929eb2ae2348812d6d2b9755ad47c))
+
 ## [4.539.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.538.0...gridfinity-layout-tool-v4.539.0) (2026-11-11)
 
 
