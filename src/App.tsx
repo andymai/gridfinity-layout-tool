@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useState, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { GlobalSettingsModal } from '@/shell/Modals/SettingsModal/GlobalSettingsModal';
+import { HalfGridModeBlockedHost } from '@/shell/Modals';
 import { useLayoutStore, useLibraryStore, useSelectionStore, useViewStore } from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
@@ -239,6 +240,7 @@ export default function App() {
   const wrapWithMutations = (content: React.ReactNode) => {
     const dialogs = (
       <>
+        <HalfGridModeBlockedHost />
         <Suspense fallback={null}>
           <DesignLinkingDialogs />
         </Suspense>

@@ -1919,14 +1919,16 @@ const en: Record<string, string> = {
   // Drawer Settings
 
   // Half-Bin Mode Blocked
-  'halfBinBlocked.title': 'Cannot disable half-grid mode',
+  'halfBinBlocked.title': 'Turn off half-grid mode?',
   'halfBinBlocked.message':
     'Some bins use fractional dimensions. Resize or delete these bins before disabling half-grid mode.',
+  'halfBinBlocked.stashMessage_one':
+    '{count} bin has a half-unit size or position. To turn off half-grid mode, move it to the stash.',
+  'halfBinBlocked.stashMessage_other':
+    '{count} bins have a half-unit size or position. To turn off half-grid mode, move them to the stash.',
   'halfBinBlocked.cancelAriaLabel': 'Cancel and keep half-grid mode enabled',
-  'halfBinBlocked.close': 'Got it',
+  'halfBinBlocked.confirm': 'Move to stash and turn off',
   'halfBinBlocked.errorFallback': 'An error occurred while moving bins',
-  'halfBinMode.remediate.ariaLabel':
-    'Move {count} fractional bins to stash and disable half-grid mode',
 
   // Inspiration Gallery
   'gallery.title': 'Inspiration gallery',
@@ -6431,10 +6433,6 @@ const en: Record<string, string> = {
 
   // Layers panel announcements
   'layers.announce.renamedTo': 'Renamed to {name}',
-
-  // Half-bin mode remediation
-  'halfBinMode.toast.movedToStaging_one': 'Moved {count} bin to staging',
-  'halfBinMode.toast.movedToStaging_other': 'Moved {count} bins to staging',
 
   // Inspiration gallery announcements
   'gallery.announce.showing': 'Showing {count} {label} layouts',

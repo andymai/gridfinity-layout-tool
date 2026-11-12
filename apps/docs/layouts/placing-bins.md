@@ -60,7 +60,7 @@ Need a bin between two sizes? Turn on <Ui k="sidebar.halfBinMode" /> in the left
 
 Half-grid mode doesn't change the feet under a bin. For a denser grid of feet, see [Use half-size feet](../designer/base#use-half-size-feet).
 
-To turn the mode off, every bin needs a whole-unit size and position. If one doesn't have them, a dialog opens. Click <Ui k="halfBinBlocked.close" /> to move those bins to the stash and turn the mode off, or <Ui k="common.cancel" /> to keep it on.
+To turn the mode off, every bin needs a whole-unit size and position. If a bin doesn't have them, the switch and <kbd>H</kbd> open the same dialog. Click <Ui k="halfBinBlocked.confirm" /> to put those bins in the stash, or <Ui k="common.cancel" /> to keep the mode on.
 
 ## Lock a bin size
 

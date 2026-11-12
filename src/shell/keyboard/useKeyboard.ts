@@ -145,7 +145,7 @@ export function useKeyboard({ disabled = false }: UseKeyboardOptions = {}) {
     }))
   );
 
-  const toggleHalfGridMode = useHalfGridModeStore((state) => state.toggleHalfGridMode);
+  const requestHalfGridToggle = useHalfGridModeStore((state) => state.requestHalfGridToggle);
   const addToast = useToastStore((state) => state.addToast);
   const { navigateToDesigner } = useDesignerRouting();
   const { handleNavigationKey } = useGridNavigation();
@@ -198,7 +198,7 @@ export function useKeyboard({ disabled = false }: UseKeyboardOptions = {}) {
         deleteBin,
         duplicateBin,
         updateBin,
-        toggleHalfGridMode,
+        requestHalfGridToggle,
         handleNavigationKey,
         navigateToDesigner,
         addToast,
@@ -233,7 +233,7 @@ export function useKeyboard({ disabled = false }: UseKeyboardOptions = {}) {
       showQuickLabel,
       activeCategoryId,
       setActiveCategory,
-      toggleHalfGridMode,
+      requestHalfGridToggle,
       setShowLayoutManager,
       addToast,
       navigateToDesigner,

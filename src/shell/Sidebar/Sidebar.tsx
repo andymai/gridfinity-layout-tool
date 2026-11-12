@@ -14,7 +14,6 @@ import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { DrawerDimensionsSummary } from '@/shared/components/DrawerDimensionsSummary';
 import { GridUnitInput } from '@/shared/components/GridUnitInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
-import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
@@ -97,14 +96,10 @@ export function Sidebar() {
     handleDrawerDepthInput,
     handleFractionalEdgeChange,
     handleHalfBinToggle,
-    handleRemediate,
     handleGridUnitChange,
     setHeightUnitMm,
     setPrintBedSize,
     resetGridfinityStandard,
-    showHalfBinBlockedModal,
-    setShowHalfBinBlockedModal,
-    halfBinViolation,
   } = useDrawerSettings();
   const drawerCeiling = useDrawerCeiling();
 
@@ -562,15 +557,6 @@ export function Sidebar() {
             }
           />
         </div>
-      )}
-
-      {halfBinViolation && (
-        <HalfGridModeBlockedModal
-          isOpen={showHalfBinBlockedModal}
-          violation={halfBinViolation}
-          onClose={() => setShowHalfBinBlockedModal(false)}
-          onRemediate={handleRemediate}
-        />
       )}
 
       {showInspirationGallery && (

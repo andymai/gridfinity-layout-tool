@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { validateHalfGridModeToggle } from '@/shared/utils/halfGridConstraints';
+import type { HalfGridConstraintViolation } from '@/shared/utils/halfGridConstraints';
 import { markFeatureUsed } from '@/shared/analytics/posthog';
 import { useLayoutStore } from './layout';
 import { useToastStore } from './toast';
@@ -45,6 +46,8 @@ function saveToStorage(enabled: boolean): Result<void, StorageError> {
 
 interface HalfGridModeState {
   halfGridMode: boolean;
+  /** The bins that blocked the last user turn-off. While set, the shell shows its dialog. */
+  blockedViolation: HalfGridConstraintViolation | null;
 }
 
 interface HalfGridModeActions {
@@ -63,6 +66,15 @@ interface HalfGridModeActions {
   toggleHalfGridMode: () => Result<Unit, LayoutError>;
 
   /**
+   * The layout editor's toggle (switch, H key, command palette). A blocked
+   * turn-off records the violation in `blockedViolation`, so each of them
+   * opens the same dialog.
+   */
+  requestHalfGridToggle: () => void;
+
+  dismissBlockedViolation: () => void;
+
+  /**
    * Set half-bin mode directly without validation.
    * Use with caution - caller is responsible for ensuring valid state.
    * Returns Result indicating if persistence succeeded.
@@ -72,9 +84,10 @@ interface HalfGridModeActions {
 
 export type HalfGridModeStore = HalfGridModeState & HalfGridModeActions;
 
-export const INITIAL_HALF_GRID_MODE_STATE = {
+export const INITIAL_HALF_GRID_MODE_STATE: HalfGridModeState = {
   halfGridMode: false,
-} as const;
+  blockedViolation: null,
+};
 
 /**
  * Toast a storage error so the user learns the preference wasn't persisted,
@@ -90,6 +103,7 @@ function toastStorageFailure(error: StorageError): void {
 
 export const useHalfGridModeStore = create<HalfGridModeStore>((set) => ({
   halfGridMode: loadFromStorage(),
+  blockedViolation: null,
 
   toggleHalfGridMode: () => {
     const state = useHalfGridModeStore.getState();
@@ -121,6 +135,16 @@ export const useHalfGridModeStore = create<HalfGridModeStore>((set) => ({
     set({ halfGridMode: false });
     if (!isOk(saveResult)) toastStorageFailure(saveResult.error);
     return OK;
+  },
+
+  requestHalfGridToggle: () => {
+    if (isOk(useHalfGridModeStore.getState().toggleHalfGridMode())) return;
+    const { violation } = validateHalfGridModeToggle(useLayoutStore.getState().layout, false);
+    if (violation) set({ blockedViolation: violation });
+  },
+
+  dismissBlockedViolation: () => {
+    set({ blockedViolation: null });
   },
 
   setHalfGridMode: (enabled) => {
