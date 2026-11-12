@@ -1,0 +1,37 @@
+apps/docs/concepts/layouts-layers-stash.md
+  s_1cc363bb3cc76d::t_2ee496ae3091a1 67
+apps/docs/layouts/layers.md
+  s_1cc363bb3cc76d::t_2329e512059823 42
+apps/docs/layouts/placing-bins.md
+  s_1cc363bb3cc76d::t_7918f19230f175 90-91
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.test.ts
+  s_1cc363bb3cc76d::t_799fa95316967e 1-83
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.ts
+  s_1cc363bb3cc76d::t_ef5bcf565ff94c 373,375,377
+src/features/layers/README.md
+  s_1cc363bb3cc76d::t_eb3bd9ce4b1a4d 8
+src/features/layers/components/ActiveLayerPanel/ActiveLayerPanel.test.tsx
+  s_1cc363bb3cc76d::t_6b82d5479cad70 300,317-319
+src/features/layers/hooks/useLayerFillActions.scenario.clear.test.ts
+  s_1cc363bb3cc76d::t_67215564a75839 1-63
+src/features/layers/hooks/useLayerFillActions.test.ts
+  s_1cc363bb3cc76d::t_a7bab8a7d27e9a 10-11,20,88,92-99,111-112,123
+src/features/layers/hooks/useLayerFillActions.ts
+  s_1cc363bb3cc76d::t_34d4bb0b5c59a4 23,34,46,86-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f7ddb2f0f835597bd58a65f8e17e5086feb45051",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
