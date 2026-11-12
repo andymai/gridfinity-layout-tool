@@ -161,6 +161,11 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    // While an IME composes, Enter, the arrows and Escape belong to it. Safari
+    // reports the Enter that ends a composition with keyCode 229 and isComposing
+    // already false.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- no standard replacement for the 229 signal
+    if (e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229) return;
     if (e.key === 'Escape') {
       if (open) {
         e.preventDefault();

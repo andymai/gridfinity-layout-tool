@@ -250,6 +250,47 @@ describe('Combobox', () => {
     expect(screen.getAllByRole('option')[0]).toHaveAttribute('aria-selected', 'true');
   });
 
+  describe('during IME composition', () => {
+    const composing = [
+      ['isComposing', { isComposing: true }],
+      ['keyCode 229', { keyCode: 229 }],
+    ] as const;
+
+    it.each(composing)('ignores the Enter that ends a composition (%s)', (_, flag) => {
+      const onCommit = vi.fn();
+      render(<Harness onCommit={onCommit} />);
+      const input = screen.getByRole('combobox', { name: 'Label' });
+      fireEvent.focus(input);
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+
+      fireEvent.keyDown(input, { key: 'Enter', ...flag });
+      expect(onCommit).not.toHaveBeenCalled();
+      expect(screen.getByRole('listbox')).toBeInTheDocument();
+      expect(screen.getAllByRole('option')[0]).toHaveAttribute('aria-selected', 'true');
+    });
+
+    it.each(composing)('leaves the highlight to the IME arrow keys (%s)', (_, flag) => {
+      render(<Harness />);
+      const input = screen.getByRole('combobox', { name: 'Label' });
+      fireEvent.focus(input);
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+
+      fireEvent.keyDown(input, { key: 'ArrowDown', ...flag });
+      fireEvent.keyDown(input, { key: 'ArrowUp', ...flag });
+      fireEvent.keyDown(input, { key: 'ArrowUp', ...flag });
+      expect(screen.getAllByRole('option')[0]).toHaveAttribute('aria-selected', 'true');
+    });
+
+    it('keeps the list open on the Escape that cancels a composition', () => {
+      render(<Harness initial="scr" />);
+      const input = screen.getByRole('combobox', { name: 'Label' });
+      fireEvent.focus(input);
+
+      fireEvent.keyDown(input, { key: 'Escape', isComposing: true });
+      expect(screen.getByRole('listbox')).toBeInTheDocument();
+    });
+  });
+
   it('clamps typed input to maxLength', () => {
     render(<Harness />);
     const input = screen.getByRole('combobox', { name: 'Label' });
