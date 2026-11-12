@@ -129,6 +129,81 @@ describe('useSelectionActions', () => {
     });
   });
 
+  describe('rotateAll counts', () => {
+    it('reports the turns that the command took', () => {
+      // Each bin passes the check with the others lifted out, but 'a' turns
+      // first, onto 'b' while 'b' still stands, so the command refuses it.
+      const bins = [
+        createTestBin({
+          id: binId('a'),
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(1),
+          depth: gridUnits(2),
+        }),
+        createTestBin({
+          id: binId('b'),
+          x: gridUnits(1),
+          y: gridUnits(0),
+          width: gridUnits(1),
+          depth: gridUnits(2),
+        }),
+      ];
+      useLayoutStore.setState({ layout: createTestLayout({ bins }) });
+      useSelectionStore.setState({ selectedBinIds: [binId('a'), binId('b')] });
+
+      const { result } = renderHook(() => useSelectionActions());
+      act(() => {
+        result.current.rotateAll();
+      });
+
+      const turned = useLayoutStore.getState().layout.bins.filter((b) => b.width === 2);
+      expect(turned.map((b) => b.id)).toEqual([binId('b')]);
+      expect(useToastStore.getState().toasts.at(-1)?.message).toBe(
+        'Rotated 1/2 bins (1 skipped due to collision)'
+      );
+    });
+  });
+
+  describe('matchHeight counts', () => {
+    it('reports the heights that the command set', () => {
+      const layout = createTestLayout({
+        drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(5) },
+        layers: [
+          { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(2) },
+          { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(2) },
+        ],
+        bins: [
+          createTestBin({ id: binId('low'), layerId: layerId('layer1'), height: heightUnits(2) }),
+          createTestBin({ id: binId('top'), layerId: layerId('layer2'), height: heightUnits(2) }),
+          createTestBin({
+            id: binId('tall'),
+            layerId: layerId('layer1'),
+            x: gridUnits(5),
+            height: heightUnits(3),
+          }),
+        ],
+      });
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('low'), binId('top'), binId('tall')] });
+
+      const { result } = renderHook(() => useSelectionActions());
+      act(() => {
+        result.current.matchHeight();
+      });
+
+      // 'top' passes the check with 'low' lifted out, but once 'low' is
+      // raised it would stand past the drawer, so the command refuses it.
+      const heights = useLayoutStore.getState().layout.bins.map((b) => [b.id, b.height]);
+      expect(heights).toEqual([
+        [binId('low'), 3],
+        [binId('top'), 2],
+        [binId('tall'), 3],
+      ]);
+      expect(useToastStore.getState().toasts.at(-1)?.message).toBe('Set 1 bin to height 3u');
+    });
+  });
+
   describe('matchHeight', () => {
     it('sets all selected bins to the tallest height', () => {
       const bins = [
