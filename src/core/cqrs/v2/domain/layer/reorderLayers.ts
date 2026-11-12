@@ -54,7 +54,6 @@ export const reorderLayers = defineCommand({
       resolveRestingStack(layout.bins, newLayers),
       layout.drawer.height
     );
-    // The violation kind travels in `reason`, so the caller can say why.
     if (violations.length > 0) {
       return err(layoutInvalidOperation('reorderLayers', violations[0].kind));
     }

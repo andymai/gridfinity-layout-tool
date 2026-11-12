@@ -33,7 +33,6 @@ import { useTranslation } from '@/i18n';
 import type { HeightUnits, Layer, LayerId } from '@/core/types';
 import { batch } from '@/core/cqrs';
 
-/** Why `layer.reorder` refused, keyed by the violation kind it reports in `reason`. */
 const REORDER_BLOCKED_KEY: Record<StackViolation['kind'], string> = {
   exceeds_height: 'layers.reorderBlocked.exceedsHeight',
   clearance: 'layers.reorderBlocked.clearance',
