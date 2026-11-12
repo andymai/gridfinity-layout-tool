@@ -65,6 +65,8 @@ In a set of drill bits, each bit has its own size. Give each copy its own label 
 2. Click <Ui k="binDesigner.cutouts.repeat.labels.enable" />.
 3. Type one label on each line, or paste a list.
 
+<Screenshot id="cutouts-arranging-repeat-labels" alt="In the Label section of a repeat of six holes, clicking Label each copy separately and typing one size on each line. The board and the 3D preview show each hole with its own size." spec="Cut editor, 3x1 bin, a 9 mm circle repeated 6 times at 19 mm, with the single label Drill. In close-up on Label, click Label each copy separately, select all, and type 3 mm to 10 mm on six lines. Cut to the board, then to the 3D preview." />
+
 The labels fill the copies top row first, then left to right. A ring fills in order from the first copy. Got a list with commas? <Ui k="binDesigner.cutouts.repeat.labels.splitCommas" /> changes it into lines.
 
 An empty line leaves that copy with no label. When the list is short, the remaining copies use the single label. A socket label has one plate for all copies, so all copies share its text.
@@ -81,6 +83,8 @@ Select two or more cutouts and click <Ui k="binDesigner.cutouts.group" />, or pr
 | <Ui k="binDesigner.cutouts.pathfinder.exclude" />   | The shapes join, but the area where they overlap stays solid.   |
 
 To choose the front shape, right-click and use <Ui k="binDesigner.cutouts.arrange.bringToFront" /> or <Ui k="binDesigner.cutouts.arrange.sendToBack" />.
+
+<Screenshot id="cutouts-arranging-group" alt="Pressing Ctrl A and Ctrl G groups a large circle and a small circle in front of it. Clicking Minus front in the toolbar leaves a ring, and the 3D preview shows a post of plastic in the middle." spec="Cut editor at 1680 x 620, 2x2 bin, a 65 mm circle and a 30 mm circle in front of it, centered. Press Ctrl+A and Ctrl+G, then click Minus front in the toolbar. End on the 3D preview." />
 
 ### Groups inside groups
 
@@ -101,6 +105,8 @@ Select two or more cutouts, and a toolbar opens under the editor header. A group
 | <Ui k="binDesigner.cutouts.distributeH" />, <Ui k="binDesigner.cutouts.distributeV" />                                           | Make the spaces equal. They need three or more cutouts.          |
 | <Ui k="binDesigner.cutouts.centerInBin" />, <Ui k="binDesigner.cutouts.centerH" />, <Ui k="binDesigner.cutouts.centerV" />       | Center the selection in the bin.                                 |
 
+<Screenshot id="cutouts-arranging-align" alt="Dragging a box across three circles selects them, and a toolbar opens under the editor header. Clicking Align bottom lines them up, and Distribute horizontally makes the spaces equal." spec="Cut editor at 1680 x 620, 4x2 bin, three circles of 16, 19 and 23 mm at uneven positions. Drag a selection box across them, then click Align bottom and Distribute horizontally in the toolbar." />
+
 ## Edit several cutouts at once
 
 With two or more cutouts selected, <Ui k="binDesigner.shapeList.tabProperties" /> shows the settings that they share: position, size, rotation, depth, scoop, entry edge and color. When the values differ, the field shows a short dash. Type a value to give it to all selected cutouts.
@@ -114,6 +120,8 @@ Traced a pile of tools at odd angles? Auto-arrange packs them neatly.
 3. Set the <Ui k="binDesigner.cutouts.gap" /> (it starts at 2 mm), and turn <Ui k="binDesigner.cutouts.staggered" /> and <Ui k="binDesigner.cutouts.turnToFit" /> on or off.
 4. Click <Ui k="binDesigner.cutouts.autoArrange" /> in the box.
 
+<Screenshot id="cutouts-arranging-auto-arrange" alt="Pressing Ctrl A selects four tools that lie at odd angles. In the toolbar, Auto-arrange opens a box with Gap, Stagger rows and Turn shapes to fit. Clicking Auto-arrange in the box packs the tools square and tight." spec="Cut editor at 1440 x 570, 4x2 bin, two rectangles and two slots at different angles. Press Ctrl+A, click Auto-arrange in the toolbar, then Auto-arrange in its box. End on the packed board." />
+
 <Ui k="binDesigner.cutouts.turnToFit" /> is on at the start. It turns each shape to take the least room, so a tool traced at an angle lies square. Groups move as one and keep their angle.
 
 ## Bring back a cutout that is off the board
@@ -123,6 +131,8 @@ When a cutout goes past the edge of the bin, a warning shows how many cutouts th
 - A button that makes the bin larger to fit the cutouts. It names the new size.
 - <Ui k="binDesigner.cutouts.centerInBin" /> moves the cutouts to the middle. It shows only when they fit in the bin.
 - <Ui k="binDesigner.cutoutEditor.bringBackIn" /> moves each cutout back inside the edge.
+
+<Screenshot id="cutouts-arranging-off-board" alt="A repeat of sockets runs past the right edge of the board. The Properties tab warns that 1 cutout will be clipped, and offers Grow bin to 4 × 1, Center in bin and Bring back in." spec="Cut editor, 3x1 bin, a slot and a 20 mm circle repeated 4 times at 24 mm, so the last copy goes past the right edge. Crop to the board and the warning." />
 
 ## Measure on the board
 
