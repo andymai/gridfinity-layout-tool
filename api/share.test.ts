@@ -281,13 +281,19 @@ describe('share (create)', () => {
   it('records the new permission so a reused id cannot inherit a deleted share', async () => {
     const res = await handle(layoutBody({ permission: 'view' }));
     expect(res._status).toBe(201);
+    const [, storedHash] = mocks.redisSet.mock.calls.find(
+      ([key]) => key === `share:hash:${VALID_ID}`
+    ) as [string, string];
     expect(mocks.recordSharePermission).toHaveBeenCalledWith(
       `share:permission:${VALID_ID}`,
       `share:permissionVersion:${VALID_ID}`,
+      `share:hash:${VALID_ID}`,
+      storedHash,
+      1,
       REVISION_STAMP,
+      expect.any(Number),
       '"etag-created"',
-      'view',
-      expect.any(Number)
+      'view'
     );
   });
 

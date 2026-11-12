@@ -263,7 +263,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    await recordSharePermission(redis, shareId, { stampMs, etag, permission });
+    await recordSharePermission(redis, shareId, {
+      stampMs,
+      etag,
+      permission,
+      tokenHash: deleteTokenHash,
+      creates: true,
+    });
     // The new blob holds only this stamp, which the counter handed out.
     if (redis && reserved && !reserved.verified) {
       await verifyShareRevision(redis, shareId, stampMs);

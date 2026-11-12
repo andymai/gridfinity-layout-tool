@@ -7,7 +7,13 @@ import {
 } from './sharePermission.js';
 
 const STAMP = Date.parse('2026-03-01T10:00:00.000Z');
-const WRITE = { stampMs: STAMP, etag: '"etag-2"', permission: 'view' } as const;
+const WRITE = {
+  stampMs: STAMP,
+  etag: '"etag-2"',
+  permission: 'view',
+  tokenHash: 'h1',
+  creates: false,
+} as const;
 
 function scripted(record: unknown, forget: unknown = vi.fn().mockResolvedValue(1)) {
   const client = {
@@ -20,7 +26,7 @@ function scripted(record: unknown, forget: unknown = vi.fn().mockResolvedValue(1
 }
 
 describe('recordSharePermission', () => {
-  it('registers the scripts once per client and passes both keys, the write and the TTL', async () => {
+  it('registers the scripts once per client and passes the keys, the fence and the write', async () => {
     const record = vi.fn().mockResolvedValue(1);
     const { client, redis } = scripted(record);
 
@@ -31,10 +37,30 @@ describe('recordSharePermission', () => {
     expect(record).toHaveBeenCalledWith(
       'share:permission:s1',
       'share:permissionVersion:s1',
+      'share:hash:s1',
+      'h1',
+      0,
       STAMP,
+      SHARE_PERMISSION_TTL_SECONDS,
       '"etag-2"',
-      'view',
-      SHARE_PERMISSION_TTL_SECONDS
+      'view'
+    );
+  });
+
+  it('marks a creation, and passes no hash for a share that keeps it in the blob', async () => {
+    const record = vi.fn().mockResolvedValue(1);
+    const { redis } = scripted(record);
+    await recordSharePermission(redis, 's1', { ...WRITE, tokenHash: null, creates: true });
+    expect(record).toHaveBeenCalledWith(
+      'share:permission:s1',
+      'share:permissionVersion:s1',
+      'share:hash:s1',
+      '',
+      1,
+      STAMP,
+      SHARE_PERMISSION_TTL_SECONDS,
+      '"etag-2"',
+      'view'
     );
   });
 
@@ -45,6 +71,9 @@ describe('recordSharePermission', () => {
     expect(forget).toHaveBeenCalledWith(
       'share:permission:s1',
       'share:permissionVersion:s1',
+      'share:hash:s1',
+      'h1',
+      0,
       STAMP,
       SHARE_PERMISSION_TTL_SECONDS
     );

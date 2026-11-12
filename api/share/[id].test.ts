@@ -139,22 +139,29 @@ const PERMISSION_VERSION_KEY = `share:permissionVersion:abc123DEF456`;
 function recordPermission(
   _permissionKey: string,
   versionKey: string,
+  _hashKey: string,
+  _tokenHash: string,
+  creates: number,
   stampMs: number,
+  _ttlSeconds: number,
   etag: string,
   permission: string
 ): Promise<number> {
   const last = permissionRecords.get(versionKey);
-  if (last && last.stamp >= stampMs) return Promise.resolve(0);
+  if (!creates && last && last.stamp >= stampMs) return Promise.resolve(0);
   permissionRecords.set(versionKey, { stamp: stampMs, etag, permission });
   return Promise.resolve(1);
 }
 function forgetPermission(
   _permissionKey: string,
   versionKey: string,
+  _hashKey: string,
+  _tokenHash: string,
+  creates: number,
   stampMs: number
 ): Promise<number> {
   const last = permissionRecords.get(versionKey);
-  if (last && last.stamp >= stampMs) return Promise.resolve(0);
+  if (!creates && last && last.stamp >= stampMs) return Promise.resolve(0);
   permissionRecords.set(versionKey, { stamp: stampMs, etag: null, permission: null });
   return Promise.resolve(1);
 }
@@ -371,13 +378,34 @@ describe('share/[id]', () => {
       primeBlobFetch(shareBlob({ deleteTokenHash: correctHash }));
       const res = await handle('PUT', { body: { deleteToken: TOKEN, permission: 'edit' } });
       expect(res._status).toBe(200);
+      // The token hash came from the blob, so the record needs no Redis hash.
       expect(mocks.recordSharePermission).toHaveBeenCalledWith(
         `share:permission:${VALID_ID}`,
         PERMISSION_VERSION_KEY,
+        `share:hash:${VALID_ID}`,
+        '',
+        0,
         Date.parse(writtenAt(0).metadata.lastUpdatedAt),
+        expect.any(Number),
         '"etag-written"',
-        'edit',
-        expect.any(Number)
+        'edit'
+      );
+    });
+
+    it('records under the Redis token hash that let the update in', async () => {
+      primeBlobFetch(shareBlob());
+      mocks.redisGet.mockResolvedValue(correctHash);
+      await handle('PUT', { body: { deleteToken: TOKEN, permission: 'edit' } });
+      expect(mocks.recordSharePermission).toHaveBeenCalledWith(
+        `share:permission:${VALID_ID}`,
+        PERMISSION_VERSION_KEY,
+        `share:hash:${VALID_ID}`,
+        correctHash,
+        0,
+        expect.any(Number),
+        expect.any(Number),
+        '"etag-written"',
+        'edit'
       );
     });
 
@@ -421,6 +449,9 @@ describe('share/[id]', () => {
       expect(mocks.forgetSharePermission).toHaveBeenCalledWith(
         `share:permission:${VALID_ID}`,
         PERMISSION_VERSION_KEY,
+        `share:hash:${VALID_ID}`,
+        '',
+        0,
         Date.parse(writtenAt(0).metadata.lastUpdatedAt),
         expect.any(Number)
       );

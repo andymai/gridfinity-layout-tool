@@ -206,12 +206,13 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
     }
 
     const tokenCheck = await verifyDeleteToken(id, loaded.data, deleteToken);
-    if (tokenCheck === 'missing') {
+    if (tokenCheck.status === 'missing') {
       return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
-    if (tokenCheck === 'mismatch') {
+    if (tokenCheck.status === 'mismatch') {
       return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Invalid delete token');
     }
+    let { tokenHash } = tokenCheck;
 
     const invalidPermission = () =>
       sendError(
@@ -307,7 +308,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
           },
         };
 
-        if (await writeShare(id, blobPath, updatedData, stampMs, ifMatch)) {
+        if (await writeShare(id, blobPath, updatedData, { stampMs, tokenHash }, ifMatch)) {
           if (redis && reserved && !reserved.verified && ifMatch === loaded.bodyEtag) {
             await verifyShareRevision(redis, id, stampMs);
           }
@@ -326,10 +327,12 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       // A stale CDN body needs time to clear; an ETag race does not mind.
       await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS * attempt));
       const reloaded = await loadShareVersion(blobPath);
-      if (!reloaded || (await verifyDeleteToken(id, reloaded.data, deleteToken)) !== 'ok') {
+      const recheck = reloaded && (await verifyDeleteToken(id, reloaded.data, deleteToken));
+      if (!reloaded || recheck?.status !== 'ok') {
         return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
       }
       loaded = reloaded;
+      tokenHash = recheck.tokenHash;
     }
   } catch (error) {
     logger.error('Share update error', {
@@ -378,10 +381,10 @@ async function handleDelete(
     }
 
     const tokenCheck = await verifyDeleteToken(_id, existingData, deleteToken);
-    if (tokenCheck === 'missing') {
+    if (tokenCheck.status === 'missing') {
       return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
-    if (tokenCheck === 'mismatch') {
+    if (tokenCheck.status === 'mismatch') {
       return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Invalid delete token');
     }
 
@@ -413,17 +416,19 @@ async function handleDelete(
   }
 }
 
+/** `tokenHash` is the Redis hash that matched, which fences the write's permission record. */
 async function verifyDeleteToken(
   id: string,
   existing: ShareData,
   deleteToken: string
-): Promise<'ok' | 'missing' | 'mismatch'> {
+): Promise<{ readonly status: 'ok' | 'missing' | 'mismatch'; readonly tokenHash: string | null }> {
   // New shares keep the hash in Redis; pre-migration shares carry it in the blob.
   const redis = getRedis();
-  const storedHash =
-    (redis ? await redis.get(shareHashKey(id)) : null) ?? existing.metadata.deleteTokenHash;
-  if (!storedHash) return 'missing';
-  return timingSafeCompare(await hashToken(deleteToken), storedHash) ? 'ok' : 'mismatch';
+  const tokenHash = redis ? await redis.get(shareHashKey(id)) : null;
+  const storedHash = tokenHash ?? existing.metadata.deleteTokenHash;
+  if (!storedHash) return { status: 'missing', tokenHash };
+  const matches = timingSafeCompare(await hashToken(deleteToken), storedHash);
+  return { status: matches ? 'ok' : 'mismatch', tokenHash };
 }
 
 /** False when another write replaced the blob that `ifMatch` names. */
@@ -431,7 +436,7 @@ async function writeShare(
   id: string,
   blobPath: string,
   data: ShareData,
-  stampMs: number,
+  write: { readonly stampMs: number; readonly tokenHash: string | null },
   ifMatch: string
 ): Promise<boolean> {
   let etag: string;
@@ -448,9 +453,10 @@ async function writeShare(
     throw error;
   }
   await recordSharePermission(getRedis(), id, {
-    stampMs,
+    ...write,
     etag,
     permission: data.metadata.permission,
+    creates: false,
   });
   return true;
 }
