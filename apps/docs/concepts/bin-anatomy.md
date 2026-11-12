@@ -39,6 +39,8 @@ The <Ui k="binDesigner.group.base" /> group holds the options for the feet.
 
 **Holes under the feet.** <Ui k="binDesigner.base.section.mounting" /> holds the holes. <Ui k="binDesigner.base.magnetHoles" /> start at 6.5 mm wide and 2 mm deep, for 6 mm magnets. <Ui k="binDesigner.base.screwHoles" /> start at 3 mm, for M3 screws.
 
+<Screenshot id="concepts-bin-anatomy-feet" alt="The underside of a 2 by 1 bin with magnet holes. Each of the two feet has sloped sides and a round magnet hole in each corner." spec="Bin designer, bin 2 × 1 × 3u, magnet base. Preview turned to look up at the underside. Crop to the bin." />
+
 **The feet themselves.** <Ui k="binDesigner.base.section.feet" /> holds <Ui k="binDesigner.halfSockets" />, a denser grid of smaller feet. It also holds <Ui k="binDesigner.detachableFeet" />, feet that you print as separate parts and attach with pins.
 
 <Ui k="binDesigner.base.bodyType" /> changes the bin as a whole. A new design starts as a standard bin.
@@ -75,6 +77,8 @@ Want openings for cables or front access? <Ui k="binDesigner.wallCutouts" /> cut
 
 The **stacking lip** is the rim on top of the walls. It's 4.4 mm tall, and the feet of another bin sit in it, the same way they sit in a baseplate. Turn it on or off with <Ui k="assembledHeight.stackingLip" />. You find it in the <Ui k="binDesigner.group.base" /> group, under <Ui k="binDesigner.base.section.stacking" />. It sits with the feet because it is the partner of the feet of the bin above.
 
+<Screenshot id="concepts-bin-anatomy-stacking-lip" alt="A 2 by 1 bin without a stacking lip. A click on Stacking lip, under Top rim in the Base group, adds the rim on top of the walls." spec="Clip. Bin designer, bin 2 × 1 × 4u, stacking lip off. The bin, a close-up click on the Stacking lip switch, then the bin with its lip." />
+
 Without a stacking lip, no bin can stack on top, and a lid that sits on the bin has nothing to grip. A slanted bin has no stacking lip.
 
 ## Interior
@@ -87,6 +91,8 @@ The <Ui k="binDesigner.group.interior" /> group sets what's inside the walls. Fi
 | <Ui k="binDesigner.interior.bento.title" />    | Compartments of any size, with walls where you want |
 | <Ui k="binDesigner.interior.slotted.title" />  | Slots that hold dividers you print separately       |
 | <Ui k="binDesigner.interior.solid.title" />    | A solid bin with tool-shaped cutouts in the top     |
+
+<Screenshot id="concepts-bin-anatomy-interior-styles" alt="The Interior group with its four interior styles: Grid dividers, Bento, Removable dividers and Custom cutouts." spec="Bin designer, default bin. Crop the panel to the Interior group header and its four style cards." />
 
 Then add the parts that help you find and grab your items:
 
@@ -121,6 +127,8 @@ Click <Ui k="binDesigner.dependency.editFootprint" />, and make the bin a rectan
 ### The lid switch is gray
 
 Click <Ui k="binDesigner.dependency.enableStackingLip" /> under the switch. The switch shows <Ui k="binDesigner.lid.requiresStackingLip" />, because every lid except the sliding one sits on the stacking lip.
+
+<Screenshot id="concepts-bin-anatomy-lid-needs-lip" alt="The Lid group of a bin without a stacking lip. The Lid switch is gray, with Requires stacking lip and the Enable stacking lip button under it." spec="Bin designer, bin 2 × 1 × 4u, stacking lip off. Crop the panel to the Lid group header, the Lid switch and Enable stacking lip." />
 
 ### The scoop or the fillet won't turn on
 

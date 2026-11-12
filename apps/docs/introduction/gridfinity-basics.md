@@ -60,6 +60,8 @@ Magnets are optional. The shape of the feet holds bins well enough in a drawer t
 
 The default magnet holes suit the common 6 × 2 mm disc magnet. The holes are 6.5 mm wide, so the magnet has some clearance.
 
+<Screenshot id="introduction-gridfinity-basics-magnet-holes" alt="A baseplate of 3 by 2 cells in the baseplate generator. A click on Magnet holes adds a round hole in each corner of every pocket." spec="Clip. Baseplate generator, plate 3 × 2, seen from above. The plain plate, a close-up click on the Magnet holes switch in the Base group, then the plate with its magnet holes." />
+
 ## Other grid sizes
 
 The Layout Tool uses 42 mm and 7 mm by default. Keep them unless you build a system of your own. To change them, open the <Ui k="common.physicalUnits" /> group in the layout editor sidebar.

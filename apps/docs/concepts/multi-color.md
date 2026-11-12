@@ -53,6 +53,8 @@ The export turns colors into filaments:
 
 In the export dialog, <Ui k="binDesigner.colors.slicerHandoff.show" /> lists the filaments with the numbers that the slicer shows.
 
+<Screenshot id="concepts-multi-color-export" alt="The export dialog for a bin with four colors. STL and STEP are gray, and 3MF is selected. Show filament mapping lists filaments 1 to 4 with the zones that use each one." spec="Bin designer, bin 2 × 2 × 4u with label tab text Bolts. Multi-color on: body grey, one front left lip cell orange, label tab white, text dark. Export dialog open with Show filament mapping expanded. Crop from the dialog title to Filament 4." />
+
 The file doesn't set the filament colors in your slicer. In the slicer, assign each filament to an AMS or MMU slot that holds the right color. [Map multi-color zones to filaments](../printing/slicers#map-multi-color-zones-to-filaments) gives the steps.
 
 The file carries no slicer settings, so your own print profile stays in use. For this reason, Bambu Studio shows a notice that the file is not from Bambu Lab, and it loads only the geometry and the colors. You can ignore that notice.

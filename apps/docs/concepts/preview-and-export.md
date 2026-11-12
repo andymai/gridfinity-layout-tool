@@ -66,6 +66,8 @@ That's why an export takes longer than the preview. The bin designer gets a head
 
 The layout editor draws its 3D preview from the layout itself, not from the geometry engine. A plain bin shows as a simple shape with its size and category color. A bin linked to a saved design shows the model of that design. <Ui k="layoutExport.button" /> builds the exact model of each linked bin, the same way the bin designer does.
 
+<Screenshot id="concepts-preview-layout-models" alt="The 3D preview of a layout. The linked Small parts bin shows the model of its design, with four compartments and label tabs. The other bins show as plain boxes in their category colors." spec="Layout editor, drawer 6 × 3 with four bins. One bin is linked to a saved 2 × 2 design with four compartments, label tabs and a scoop. Expanded 3D preview. Crop to the bins." />
+
 ## When it goes wrong
 
 ### The preview shows a message about the 3D engine

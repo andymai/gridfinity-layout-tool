@@ -49,6 +49,8 @@ An overhang counts in the check. An **overhang** makes the body larger than its 
 
 In the layout editor, a bin that doesn't fit shows <Ui k="grid.split" /> or a warning mark on the grid. The inspector shows <Ui k="inspector.split.title" /> with the number of pieces. The print list counts each piece, so your totals stay right.
 
+<Screenshot id="concepts-print-bed-layout-split" alt="A 6 by 1 bin in a layout with a 180 mm print bed shows a warning mark on the grid. A click selects it, and the inspector shows Oversized for print bed: the bin does not fit the bed, so it prints in pieces." spec="Clip. Layout editor, drawer 6 × 3, print bed 180 mm, a 6 × 1 bin in the front row. The grid, a click on the bin, then a close-up of the inspector card." />
+
 In the bin designer, the split options appear in the <Ui k="binDesigner.group.shape" /> group when the bin needs a split. The bin splits along the width, the depth or both. Two kinds of connectors hold the pieces together:
 
 - <Ui k="binDesigner.splitConnectors" /> adds a joint with a 45° slope in the floor, so the pieces line up. A bin with a lightweight floor has no solid floor for it.
@@ -83,6 +85,8 @@ The bin designer checks the bin against the print bed of the open layout. The va
 ### The export says the bin fits only when laid diagonally
 
 Export it whole, and turn it diagonally on the bed in your slicer. To print it in pieces instead, tick <Ui k="binDesigner.splitExport.enableSplit" /> in the export dialog. For a bin that fits only at an angle, <Ui k="binDesigner.splitExport.enableSplit" /> starts off.
+
+<Screenshot id="concepts-print-bed-diagonal" alt="The export dialog for a 1 by 7 bin and a 256 mm print bed. A note says that the bin fits only when laid diagonally, and Split into pieces is clear." spec="Bin designer, bin 1 × 7 × 3u, print bed 256 mm. Export dialog open. Crop from the dialog title to the split note." />
 
 ### You want to split a part in your slicer
 
