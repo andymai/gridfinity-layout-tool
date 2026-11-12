@@ -24,6 +24,7 @@ import {
   useSharePopoverStore,
 } from '@/core/store';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
+import { CONSTRAINTS } from '@/core/constants';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { batch } from '@/core/cqrs';
@@ -356,7 +357,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
         if (isOk(result)) {
           setActiveLayer(result.value);
         } else {
-          addToast(t('layers.maxLayersReached', { max: 10 }), 'error');
+          addToast(t('layers.maxLayersReached', { max: CONSTRAINTS.LAYERS_MAX }), 'error');
         }
       },
       'layer-up':
