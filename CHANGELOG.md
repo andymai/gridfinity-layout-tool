@@ -1,5 +1,27 @@
 # Changelog
 
+## [4.541.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.540.0...gridfinity-layout-tool-v4.541.0) (2026-11-12)
+
+
+### Features
+
+* **pwa:** offer an install button after export and in Settings ([#4954](https://github.com/andymai/gridfinity-layout-tool/issues/4954)) ([ad4334b](https://github.com/andymai/gridfinity-layout-tool/commit/ad4334bb09ad108aea730b28335d1f2a73a9a2fc))
+* **pwa:** richer install dialog and app shortcuts ([#4952](https://github.com/andymai/gridfinity-layout-tool/issues/4952)) ([ae83531](https://github.com/andymai/gridfinity-layout-tool/commit/ae835319203b3c6419aeb35e7c8aa41eacde344a))
+
+
+### Bug Fixes
+
+* **ci:** make the coverage run on main pass again ([#5007](https://github.com/andymai/gridfinity-layout-tool/issues/5007)) ([1c126cf](https://github.com/andymai/gridfinity-layout-tool/commit/1c126cf08b9178c459edcab3b204d0530a870ebd))
+* **command-palette:** keep the footer one height with a shortcut badge or the count ([#5009](https://github.com/andymai/gridfinity-layout-tool/issues/5009)) ([5792931](https://github.com/andymai/gridfinity-layout-tool/commit/57929311d6be9e19258e2b05b30de78829e41c5d))
+* **deps:** clear the OSV and toolchain advisories on main ([#5008](https://github.com/andymai/gridfinity-layout-tool/issues/5008)) ([dc26c9d](https://github.com/andymai/gridfinity-layout-tool/commit/dc26c9d4631af701ff02cca2fc00690259cf09f3))
+* **i18n:** one phrase for the quick label header, named avatars, and five plural counts ([#5011](https://github.com/andymai/gridfinity-layout-tool/issues/5011)) ([6ab1903](https://github.com/andymai/gridfinity-layout-tool/commit/6ab1903417224f3d150ac1f3af48eacd065707cc))
+* **ui:** seven small fixes to popovers, history rows, presence, the Soon pill, IME input and the palette footer ([#5006](https://github.com/andymai/gridfinity-layout-tool/issues/5006)) ([447a92a](https://github.com/andymai/gridfinity-layout-tool/commit/447a92a3a0fda23e539bc2a740409035fdfe2bd3))
+
+
+### Performance
+
+* **bins:** stash, delete and restore many bins in one command, and keep pairs together ([#5012](https://github.com/andymai/gridfinity-layout-tool/issues/5012)) ([71b1bda](https://github.com/andymai/gridfinity-layout-tool/commit/71b1bdab490f0b75b6391d99434f2eb5014f992e))
+
 ## [4.540.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.539.0...gridfinity-layout-tool-v4.540.0) (2026-11-12)
 
 
