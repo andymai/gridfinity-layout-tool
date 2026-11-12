@@ -1,0 +1,86 @@
+scripts/docs-capture/shots/layouts.ts
+  s_1cc363bb3cc76d::t_51a6ac1478fd40 2378-2384
+  s_1cc363bb3cc76d::t_3cd106a64e56b3 2,4,872-894,900-902,911-913,954,979-2375,2385-2403
+apps/docs/layouts/categories.md
+  s_1cc363bb3cc76d::t_5ada4294f83b7e 31-32,42-43,75-76
+apps/docs/layouts/drawer-setup.md
+  s_1cc363bb3cc76d::t_4acc7e1668dccf 38-39,60-61,89-90,126-127
+apps/docs/layouts/find-bins-that-fit.md
+  s_1cc363bb3cc76d::t_8f3dd9c9b6c26b 57-58
+apps/docs/layouts/layers.md
+  s_1cc363bb3cc76d::t_80cb9fac398831 40-41,60-61,68-69
+apps/docs/layouts/multi-select.md
+  s_1cc363bb3cc76d::t_b1bc87e7a603be 30-31,66-67,79-80,91-92,113-114
+apps/docs/layouts/organizing-layouts.md
+  s_1cc363bb3cc76d::t_d8e58787c83020 27-28,75-76,96-97
+apps/docs/layouts/placing-bins.md
+  s_1cc363bb3cc76d::t_d3b27e103b8100 28-29,37-38,47-48,55-56,61-62,88-89,142-143
+apps/docs/media/layouts-categories-add.json
+  s_1cc363bb3cc76d::t_20e01a588496b5 1-5
+apps/docs/media/layouts-categories-assign.json
+  s_1cc363bb3cc76d::t_cc60ebd078bde7 1-5
+apps/docs/media/layouts-categories-patterns.json
+  s_1cc363bb3cc76d::t_5fb89977a35519 1-5
+apps/docs/media/layouts-drawer-setup-drag-edge.json
+  s_1cc363bb3cc76d::t_ce2a5b1897b7d9 1-5
+apps/docs/media/layouts-drawer-setup-height-check.json
+  s_1cc363bb3cc76d::t_d8fd86f8085111 1-5
+apps/docs/media/layouts-drawer-setup-measured.json
+  s_1cc363bb3cc76d::t_9661368112322e 1-5
+apps/docs/media/layouts-drawer-setup-shape.json
+  s_1cc363bb3cc76d::t_c2faa3f7531fae 1-5
+apps/docs/media/layouts-find-bins-size-suggestion.json
+  s_1cc363bb3cc76d::t_1dd61c809ce638 1-5
+apps/docs/media/layouts-layers-add-rename.json
+  s_1cc363bb3cc76d::t_33e401120d8443 1-5
+apps/docs/media/layouts-layers-clearance.json
+  s_1cc363bb3cc76d::t_481869f14507b8 1-5
+apps/docs/media/layouts-layers-stack.json
+  s_1cc363bb3cc76d::t_6a7734e5290f5f 1-5
+apps/docs/media/layouts-multi-select-align.json
+  s_1cc363bb3cc76d::t_f787a84e5fea93 1-5
+apps/docs/media/layouts-multi-select-bin-menu.json
+  s_1cc363bb3cc76d::t_cd363ef61ec48f 1-5
+apps/docs/media/layouts-multi-select-inspector.json
+  s_1cc363bb3cc76d::t_6ba5e4faa9bf35 1-5
+apps/docs/media/layouts-multi-select-merge-dialog.json
+  s_1cc363bb3cc76d::t_1a438c374e7d8d 1-5
+apps/docs/media/layouts-multi-select-rows.json
+  s_1cc363bb3cc76d::t_a03e3daa5b738c 1-5
+apps/docs/media/layouts-organizing-history.json
+  s_1cc363bb3cc76d::t_b3434512381254 1-5
+apps/docs/media/layouts-organizing-new-folder.json
+  s_1cc363bb3cc76d::t_f8809d6580122c 1-5
+apps/docs/media/layouts-organizing-switch-menu.json
+  s_1cc363bb3cc76d::t_c7ed9853f0fde5 1-5
+apps/docs/media/layouts-placing-bins-blocked.json
+  s_1cc363bb3cc76d::t_d3b77f495dd2b8 1-5
+apps/docs/media/layouts-placing-bins-draw.json
+  s_1cc363bb3cc76d::t_1cc7def0a7c465 1-5
+apps/docs/media/layouts-placing-bins-expand-to-fit.json
+  s_1cc363bb3cc76d::t_5f7437ba29fe10 1-5
+apps/docs/media/layouts-placing-bins-move-copy.json
+  s_1cc363bb3cc76d::t_556f92a07c5686 1-5
+apps/docs/media/layouts-placing-bins-resize.json
+  s_1cc363bb3cc76d::t_d71258d6c45ff8 1-5
+apps/docs/media/layouts-placing-bins-rotate.json
+  s_1cc363bb3cc76d::t_2b24d3c9551c65 1-5
+apps/docs/media/layouts-placing-bins-size-brush.json
+  s_1cc363bb3cc76d::t_e8310e66784a51 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f9718aecf71c29a5c409ba1f824754d1d8b8ce9a",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
