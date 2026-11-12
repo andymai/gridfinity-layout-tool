@@ -9,26 +9,25 @@ import {
 const STAMP = Date.parse('2026-03-01T10:00:00.000Z');
 const WRITE = { stampMs: STAMP, etag: '"etag-2"', permission: 'view' } as const;
 
-function scripted(record: unknown) {
+function scripted(record: unknown, forget: unknown = vi.fn().mockResolvedValue(1)) {
   const client = {
-    del: vi.fn().mockResolvedValue(2),
     hmget: vi.fn(),
     defineCommand: vi.fn((name: string) => {
-      Object.assign(client, { [name]: record });
+      Object.assign(client, { [name]: name === 'recordSharePermission' ? record : forget });
     }),
   };
   return { client, redis: client as unknown as Redis };
 }
 
 describe('recordSharePermission', () => {
-  it('registers the script once per client and passes both keys, the write and the TTL', async () => {
+  it('registers the scripts once per client and passes both keys, the write and the TTL', async () => {
     const record = vi.fn().mockResolvedValue(1);
     const { client, redis } = scripted(record);
 
     await recordSharePermission(redis, 's1', WRITE);
     await recordSharePermission(redis, 's1', WRITE);
 
-    expect(client.defineCommand).toHaveBeenCalledTimes(1);
+    expect(client.defineCommand).toHaveBeenCalledTimes(2);
     expect(record).toHaveBeenCalledWith(
       'share:permission:s1',
       'share:permissionVersion:s1',
@@ -39,10 +38,24 @@ describe('recordSharePermission', () => {
     );
   });
 
-  it('drops both keys when Redis fails, so an older record cannot outlive the write', async () => {
-    const { client, redis } = scripted(vi.fn().mockRejectedValue(new Error('redis down')));
+  it('forgets the older record under the stamp of the write when recording fails', async () => {
+    const forget = vi.fn().mockResolvedValue(1);
+    const { redis } = scripted(vi.fn().mockRejectedValue(new Error('redis down')), forget);
     await recordSharePermission(redis, 's1', WRITE);
-    expect(client.del).toHaveBeenCalledWith('share:permission:s1', 'share:permissionVersion:s1');
+    expect(forget).toHaveBeenCalledWith(
+      'share:permission:s1',
+      'share:permissionVersion:s1',
+      STAMP,
+      SHARE_PERMISSION_TTL_SECONDS
+    );
+  });
+
+  it('does not throw when forgetting fails too', async () => {
+    const { redis } = scripted(
+      vi.fn().mockRejectedValue(new Error('redis down')),
+      vi.fn().mockRejectedValue(new Error('redis down'))
+    );
+    await expect(recordSharePermission(redis, 's1', WRITE)).resolves.toBeUndefined();
   });
 
   it('does nothing without Redis', async () => {

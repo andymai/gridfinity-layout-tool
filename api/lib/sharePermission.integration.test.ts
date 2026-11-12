@@ -86,6 +86,67 @@ describe.skipIf(!REDIS_TEST_URL)('share permission records (real Redis)', () => 
     expect(await recordedPermissionOf(redis, 's1', '"etag-2"')).toBe('view');
   });
 
+  /** The record command fails, as on a timeout, while the cleanup still runs. */
+  function failingRecord(client: Redis): Redis {
+    return new Proxy(client, {
+      get(target, prop) {
+        if (prop === 'recordSharePermission') return () => Promise.reject(new Error('timeout'));
+        const value: unknown = Reflect.get(target, prop, target);
+        return typeof value === 'function' ? (value as () => unknown).bind(target) : value;
+      },
+    });
+  }
+
+  it('keeps the record of a later write when an earlier write fails to record', async () => {
+    await recordSharePermission(redis, 's1', {
+      stampMs: STAMP + 2,
+      etag: '"etag-2"',
+      permission: 'view',
+    });
+    await recordSharePermission(failingRecord(redis), 's1', {
+      stampMs: STAMP + 1,
+      etag: '"etag-1"',
+      permission: 'edit',
+    });
+    await recordSharePermission(redis, 's1', {
+      stampMs: STAMP,
+      etag: '"etag-0"',
+      permission: 'edit',
+    });
+
+    expect(await redis.get(sharePermissionKey('s1'))).toBe('view');
+    expect(await recordedPermissionOf(redis, 's1', '"etag-2"')).toBe('view');
+  });
+
+  it('refuses the late records of older writes after a write fails to record', async () => {
+    await recordSharePermission(redis, 's1', {
+      stampMs: STAMP,
+      etag: '"etag-0"',
+      permission: 'edit',
+    });
+    await recordSharePermission(failingRecord(redis), 's1', {
+      stampMs: STAMP + 2,
+      etag: '"etag-2"',
+      permission: 'view',
+    });
+    await recordSharePermission(redis, 's1', {
+      stampMs: STAMP + 1,
+      etag: '"etag-1"',
+      permission: 'edit',
+    });
+
+    expect(await redis.get(sharePermissionKey('s1'))).toBeNull();
+    expect(await recordedPermissionOf(redis, 's1', '"etag-1"')).toBeNull();
+    expect(await recordedPermissionOf(redis, 's1', '"etag-2"')).toBeNull();
+
+    await recordSharePermission(redis, 's1', {
+      stampMs: STAMP + 3,
+      etag: '"etag-3"',
+      permission: 'view',
+    });
+    expect(await recordedPermissionOf(redis, 's1', '"etag-3"')).toBe('view');
+  });
+
   it('keeps each share apart', async () => {
     await recordSharePermission(redis, 's1', {
       stampMs: STAMP + 1,

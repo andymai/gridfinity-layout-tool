@@ -35,6 +35,7 @@ const mocks = vi.hoisted(() => ({
   reserveShareRevision: vi.fn(),
   verifyShareRevision: vi.fn(),
   recordSharePermission: vi.fn(),
+  forgetSharePermission: vi.fn(),
   redisHmget: vi.fn(),
   validateShareLayout: vi.fn(),
   isValidationError: vi.fn(),
@@ -129,8 +130,11 @@ function verify(key: string, stampMs: number): Promise<number> {
   return Promise.resolve(1);
 }
 
-/** The permission record script's semantics, as `sharePermission.integration.test.ts` runs it. */
-const permissionRecords = new Map<string, { stamp: number; etag: string; permission: string }>();
+/** The permission record scripts' semantics, as `sharePermission.integration.test.ts` runs them. */
+const permissionRecords = new Map<
+  string,
+  { stamp: number; etag: string | null; permission: string | null }
+>();
 const PERMISSION_VERSION_KEY = `share:permissionVersion:abc123DEF456`;
 function recordPermission(
   _permissionKey: string,
@@ -142,6 +146,16 @@ function recordPermission(
   const last = permissionRecords.get(versionKey);
   if (last && last.stamp >= stampMs) return Promise.resolve(0);
   permissionRecords.set(versionKey, { stamp: stampMs, etag, permission });
+  return Promise.resolve(1);
+}
+function forgetPermission(
+  _permissionKey: string,
+  versionKey: string,
+  stampMs: number
+): Promise<number> {
+  const last = permissionRecords.get(versionKey);
+  if (last && last.stamp >= stampMs) return Promise.resolve(0);
+  permissionRecords.set(versionKey, { stamp: stampMs, etag: null, permission: null });
   return Promise.resolve(1);
 }
 function readRecord(key: string, ...fields: ('etag' | 'permission')[]): Promise<(string | null)[]> {
@@ -217,11 +231,13 @@ describe('share/[id]', () => {
       reserveShareRevision: mocks.reserveShareRevision,
       verifyShareRevision: mocks.verifyShareRevision,
       recordSharePermission: mocks.recordSharePermission,
+      forgetSharePermission: mocks.forgetSharePermission,
       hmget: mocks.redisHmget,
     });
     revisions.clear();
     permissionRecords.clear();
     mocks.recordSharePermission.mockImplementation(recordPermission);
+    mocks.forgetSharePermission.mockImplementation(forgetPermission);
     mocks.redisHmget.mockImplementation(readRecord);
     mocks.reserveShareRevision.mockImplementation(reserve);
     mocks.verifyShareRevision.mockImplementation(verify);
@@ -402,9 +418,11 @@ describe('share/[id]', () => {
       mocks.recordSharePermission.mockRejectedValue(new Error('redis down'));
       const res = await handle('PUT', { body: { deleteToken: TOKEN, permission: 'view' } });
       expect(res._status).toBe(200);
-      expect(mocks.redisDel).toHaveBeenCalledWith(
+      expect(mocks.forgetSharePermission).toHaveBeenCalledWith(
         `share:permission:${VALID_ID}`,
-        PERMISSION_VERSION_KEY
+        PERMISSION_VERSION_KEY,
+        Date.parse(writtenAt(0).metadata.lastUpdatedAt),
+        expect.any(Number)
       );
     });
 

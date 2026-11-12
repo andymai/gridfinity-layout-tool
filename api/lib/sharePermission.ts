@@ -23,6 +23,18 @@ redis.call('SET', KEYS[1], ARGV[3], 'EX', ARGV[4])
 return 1
 `;
 
+// A write that landed but could not record. Its stamp stays, with no ETag or
+// permission, so readers fall back to the blob and the late record of an older
+// write still loses. The record of a later write stays as it is.
+const FORGET_PERMISSION_LUA = `
+local last = tonumber(redis.call('HGET', KEYS[2], 'stamp'))
+if last and last >= tonumber(ARGV[1]) then return 0 end
+redis.call('DEL', KEYS[1], KEYS[2])
+redis.call('HSET', KEYS[2], 'stamp', ARGV[1])
+redis.call('EXPIRE', KEYS[2], ARGV[2])
+return 1
+`;
+
 interface PermissionRedis extends Redis {
   recordSharePermission(
     permissionKey: string,
@@ -32,12 +44,19 @@ interface PermissionRedis extends Redis {
     permission: Permission,
     ttlSeconds: number
   ): Promise<number>;
+  forgetSharePermission(
+    permissionKey: string,
+    versionKey: string,
+    stampMs: number,
+    ttlSeconds: number
+  ): Promise<number>;
 }
 
 function permissionClient(redis: Redis): PermissionRedis {
   const client = redis as PermissionRedis;
   if (typeof client.recordSharePermission !== 'function') {
     client.defineCommand('recordSharePermission', { numberOfKeys: 2, lua: RECORD_PERMISSION_LUA });
+    client.defineCommand('forgetSharePermission', { numberOfKeys: 2, lua: FORGET_PERMISSION_LUA });
   }
   return client;
 }
@@ -60,10 +79,13 @@ export async function recordSharePermission(
   write: SharePermissionWrite
 ): Promise<void> {
   if (!redis) return;
+  const client = permissionClient(redis);
+  const permissionKey = sharePermissionKey(shareId);
+  const versionKey = sharePermissionVersionKey(shareId);
   try {
-    await permissionClient(redis).recordSharePermission(
-      sharePermissionKey(shareId),
-      sharePermissionVersionKey(shareId),
+    await client.recordSharePermission(
+      permissionKey,
+      versionKey,
       write.stampMs,
       write.etag,
       write.permission,
@@ -74,10 +96,8 @@ export async function recordSharePermission(
       id: shareId,
       error: error instanceof Error ? error.message : String(error),
     });
-    // An older record must not outlive this write. Without one, reads fall
-    // back to the blob, and a later write waits for a body that proves it.
-    await redis
-      .del(sharePermissionKey(shareId), sharePermissionVersionKey(shareId))
+    await client
+      .forgetSharePermission(permissionKey, versionKey, write.stampMs, SHARE_PERMISSION_TTL_SECONDS)
       .catch(() => undefined);
   }
 }
