@@ -265,6 +265,19 @@ describe('SharedLayoutBanner', () => {
       expect(screen.getByRole('alert')).toHaveClass('bg-accent', 'text-on-accent');
     });
 
+    it('draws both buttons on the surface pair, whose contrast does not depend on the accent', () => {
+      render(<SharedLayoutBanner />);
+
+      for (const name of [/Save to My Layouts/i, /Discard/i]) {
+        expect(screen.getByRole('button', { name })).toHaveClass(
+          'bg-surface',
+          'text-content',
+          'hover:bg-surface-hover',
+          'hover:text-content'
+        );
+      }
+    });
+
     it('gives every class it renders a CSS rule', async () => {
       const { container } = render(<SharedLayoutBanner />);
 

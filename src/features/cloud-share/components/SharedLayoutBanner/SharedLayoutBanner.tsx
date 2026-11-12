@@ -173,7 +173,7 @@ export function SharedLayoutBanner() {
         <Button
           variant="ghost"
           onClick={() => setShowDiscardConfirm(true)}
-          className="px-3 bg-on-accent/15 hover:bg-on-accent/25 text-on-accent hover:text-on-accent"
+          className="px-3 bg-surface text-content hover:bg-surface-hover"
         >
           {t('share.banner.discardConfirm')}
         </Button>
