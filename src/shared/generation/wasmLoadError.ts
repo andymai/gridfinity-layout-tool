@@ -36,6 +36,9 @@ const STALE_ASSET_SIGNATURES = [
   'Importing a module script failed',
   // Safari again, when the network layer drops the import mid-flight.
   'Importing a module script is canceled',
+  // Safari, when the import's response fails its access check. The kernel is
+  // same-origin, so whatever came back was not the asset.
+  'Cross-origin script load denied',
   'NetworkError when attempting to fetch resource',
   // Safari's fetch rejection, which carries no detail at all.
   'Load failed',
