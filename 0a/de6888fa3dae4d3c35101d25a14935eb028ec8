@@ -1,0 +1,104 @@
+src/core/cqrs/v2/domain/bin/moveBinsToStaging.ts
+  s_1cc363bb3cc76d::t_fca502dd618b5d 2-4
+  s_1cc363bb3cc76d::t_f80fbeb2d1eec9 1,5-43
+src/core/cqrs/commandDescriptions.ts
+  s_1cc363bb3cc76d::t_a093b4df126f98 16
+src/core/cqrs/commands/binCommands.ts
+  s_1cc363bb3cc76d::t_56b4b3f4d469a3 28-32,76
+src/core/cqrs/commands/index.ts
+  s_1cc363bb3cc76d::t_fe25af645eaa4a 20
+src/core/cqrs/events/binEvents.ts
+  s_1cc363bb3cc76d::t_970f3a9da53b28 39-45,113
+src/core/cqrs/events/index.ts
+  s_1cc363bb3cc76d::t_dde3de077be1c3 13
+src/core/cqrs/index.ts
+  s_1cc363bb3cc76d::t_2091f7d7ff66e3 50,103
+src/core/cqrs/integration/mutationsAdapter.ts
+  s_1cc363bb3cc76d::t_d1077378f82274 80-84
+src/core/cqrs/middleware/middlewareConfig.test.ts
+  s_1cc363bb3cc76d::t_e55542269ca5fd 10,18
+src/core/cqrs/middleware/middlewareConfig.ts
+  s_1cc363bb3cc76d::t_df49bee36dad69 36
+src/core/cqrs/projection/replay.test.ts
+  s_1cc363bb3cc76d::t_6a8c336c47cfa2 96-112
+src/core/cqrs/projection/replay.ts
+  s_1cc363bb3cc76d::t_87c2553c55a67c 53-58
+src/core/cqrs/subscribers/selectionPruning.test.ts
+  s_1cc363bb3cc76d::t_61da9711665ee5 201-219
+src/core/cqrs/subscribers/selectionPruning.ts
+  s_1cc363bb3cc76d::t_8047f33b984a64 111-116
+src/core/cqrs/v2/domain/bin/moveBinsToStaging.test.ts
+  s_1cc363bb3cc76d::t_90c6a8c0951df4 1-60
+src/core/cqrs/v2/registry.ts
+  s_1cc363bb3cc76d::t_d158274663ad12 20,78,122
+src/core/cqrs/validation/schemas.test.ts
+  s_1cc363bb3cc76d::t_2319c368549f00 20,49,51
+src/core/cqrs/validation/schemas.ts
+  s_1cc363bb3cc76d::t_bc81b5ad5fb633 171-175,428
+src/core/cqrs/versioning/eventVersions.ts
+  s_1cc363bb3cc76d::t_e21ff3bc55f664 19
+src/core/cqrs/versioning/migrations.test.ts
+  s_1cc363bb3cc76d::t_4820e5f04838b2 173
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.test.ts
+  s_1cc363bb3cc76d::t_342806bd7a34db 11,84-111
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.ts
+  s_1cc363bb3cc76d::t_2d700988364967 139-140,373,507
+src/features/layers/README.md
+  s_1cc363bb3cc76d::t_f824401c81dd64 8
+src/features/layers/hooks/useLayerFillActions.scenario.clear.test.ts
+  s_1cc363bb3cc76d::t_538bac772804cd 11,61,65-92
+src/features/layers/hooks/useLayerFillActions.test.ts
+  s_1cc363bb3cc76d::t_517186c3702c96 20,111,123
+src/features/layers/hooks/useLayerFillActions.ts
+  s_1cc363bb3cc76d::t_04670d0e7f51ae 45,85
+src/i18n/locales/cs.json
+  s_1cc363bb3cc76d::t_970ba03a615c4d 5222
+src/i18n/locales/de.json
+  s_1cc363bb3cc76d::t_1941ece1ffd94a 5101
+src/i18n/locales/en.ts
+  s_1cc363bb3cc76d::t_30cd9efa9e04a6 6076
+src/i18n/locales/es.json
+  s_1cc363bb3cc76d::t_d996460d38b06b 5101
+src/i18n/locales/fr.json
+  s_1cc363bb3cc76d::t_c1584315fd07b8 5101
+src/i18n/locales/it.json
+  s_1cc363bb3cc76d::t_f7483597c34a07 5101
+src/i18n/locales/ja.json
+  s_1cc363bb3cc76d::t_cc68a3f6efdfdd 4982
+src/i18n/locales/ka.json
+  s_1cc363bb3cc76d::t_d6b902b9db86d0 5005
+src/i18n/locales/ko.json
+  s_1cc363bb3cc76d::t_ce5cb0d6c07416 4982
+src/i18n/locales/nb.json
+  s_1cc363bb3cc76d::t_5dfb45f18493e2 5101
+src/i18n/locales/nl.json
+  s_1cc363bb3cc76d::t_955b8a30f8ba08 5101
+src/i18n/locales/pl.json
+  s_1cc363bb3cc76d::t_5334d01dd999ad 5339
+src/i18n/locales/pt-BR.json
+  s_1cc363bb3cc76d::t_6eb74f6685a643 5101
+src/i18n/locales/sv.json
+  s_1cc363bb3cc76d::t_6570388f7c9711 5101
+src/i18n/locales/uk.json
+  s_1cc363bb3cc76d::t_0b4f7b03002fb2 5339
+src/i18n/locales/zh-CN.json
+  s_1cc363bb3cc76d::t_88025ff42cbe5d 4982
+src/shared/contexts/MutationsContext.tsx
+  s_1cc363bb3cc76d::t_2a3b04c9ddc68e 52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0ade6888fa3dae4d3c35101d25a14935eb028ec8",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
