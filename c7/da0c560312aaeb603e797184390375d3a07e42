@@ -1,0 +1,23 @@
+scripts/check-i18n-interpolation.test.ts
+  s_1cc363bb3cc76d::t_3fb443843ef333 1-97
+.claude/skills/i18n-changes/SKILL.md
+  s_1cc363bb3cc76d::t_e4634b7753b02b 66
+scripts/check-i18n-interpolation.ts
+  s_1cc363bb3cc76d::t_78f012d65cc1ef 8,22,78,107,131-137,373-382,385,393,402-406,408-427,430-445,447-449,451-454,456-474,476-479,481-484,486,531-552
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c7da0c560312aaeb603e797184390375d3a07e42",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
