@@ -31,7 +31,7 @@ import {
   type ShareUpload,
 } from '@/features/cloud-share/utils';
 import { roomLayoutFingerprint } from '@/shared/utils/roomLinkStamp';
-import type { CloudShareInfo } from '@/core/types';
+import type { CloudShareInfo, Layout } from '@/core/types';
 
 /** Debounce delay for cloud share updates (5 seconds) */
 const CLOUD_SYNC_DEBOUNCE_MS = 5000;
@@ -94,13 +94,33 @@ export function useOwnedShareSync(): void {
       // A remote layout from account sync replaces this one without a local
       // edit, so only the stored layout can say whether it is still current.
       // Coming back to a layout queues no upload, so a retry must outlive a
-      // switch to another layout.
+      // switch to another layout. Account sync can also remove the library
+      // entry and keep its stored layout.
       current: async () => {
-        if (layoutId === null || roomSavesShare(shareId)) return false;
-        const state = useLayoutStore.getState();
-        const stored =
-          state.activeLayoutId === layoutId ? state.layout : await loadLayoutAsync(layoutId);
-        return stored !== null && roomLayoutFingerprint(stored) === layoutFingerprint;
+        if (layoutId === null) return false;
+        const shared = (): boolean => {
+          const entry = useLibraryStore
+            .getState()
+            .library.entries.find((candidate) => candidate.id === layoutId);
+          return (
+            entry?.cloudShare?.id === shareId &&
+            entry.cloudShare.deleteToken === deleteToken &&
+            !roomSavesShare(shareId)
+          );
+        };
+        const matches = (stored: Layout | null): boolean =>
+          stored !== null && roomLayoutFingerprint(stored) === layoutFingerprint;
+        const active = (): Layout | null => {
+          const state = useLayoutStore.getState();
+          return state.activeLayoutId === layoutId ? state.layout : null;
+        };
+
+        if (!shared()) return false;
+        const before = active();
+        if (before) return matches(before);
+        const stored = await loadLayoutAsync(layoutId);
+        // The owner can open the layout again while storage answers.
+        return shared() && matches(active() ?? stored);
       },
     };
 

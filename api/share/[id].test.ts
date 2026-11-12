@@ -31,6 +31,7 @@ const mocks = vi.hoisted(() => ({
   redisSet: vi.fn(),
   redisDel: vi.fn(),
   reserveShareRevision: vi.fn(),
+  seedShareRevision: vi.fn(),
   validateShareLayout: vi.fn(),
   isValidationError: vi.fn(),
   filterLayoutContent: vi.fn(),
@@ -107,10 +108,18 @@ function shareBlob(metadata: Record<string, unknown> = {}) {
 const BLOB_URL = 'https://blob.example/shares/x.json';
 const UPLOADED_AT = new Date('2026-01-02T00:00:00.000Z');
 
-/** The reservation script's semantics, as `shareRevision.integration.test.ts` runs them. */
+/** The revision scripts' semantics, as `shareRevision.integration.test.ts` runs them. */
 const revisions = new Map<string, number>();
-function reserve(key: string, floorMs: number): Promise<number> {
-  const stamp = Math.max(floorMs, (revisions.get(key) ?? 0) + 1);
+const REVISION_KEY = `share:revision:abc123DEF456`;
+function reserve(key: string, floorMs: number): Promise<number | null> {
+  const last = revisions.get(key);
+  if (last === undefined) return Promise.resolve(null);
+  const stamp = Math.max(floorMs, last + 1);
+  revisions.set(key, stamp);
+  return Promise.resolve(stamp);
+}
+function seed(key: string, stampMs: number): Promise<number> {
+  const stamp = Math.max(stampMs, revisions.get(key) ?? 0);
   revisions.set(key, stamp);
   return Promise.resolve(stamp);
 }
@@ -176,9 +185,11 @@ describe('share/[id]', () => {
       set: mocks.redisSet,
       del: mocks.redisDel,
       reserveShareRevision: mocks.reserveShareRevision,
+      seedShareRevision: mocks.seedShareRevision,
     });
     revisions.clear();
     mocks.reserveShareRevision.mockImplementation(reserve);
+    mocks.seedShareRevision.mockImplementation(seed);
     mocks.redisGet.mockResolvedValue(null);
     mocks.redisSet.mockResolvedValue('OK');
     mocks.redisDel.mockResolvedValue(1);
@@ -414,7 +425,7 @@ describe('share/[id]', () => {
         vi.useFakeTimers({ toFake: ['Date'] });
         try {
           vi.setSystemTime(new Date('2026-03-01T10:00:06.000Z'));
-          revisions.set(`share:revision:${VALID_ID}`, Date.parse('2026-03-01T10:00:10.000Z'));
+          revisions.set(REVISION_KEY, Date.parse('2026-03-01T10:00:10.000Z'));
           primeBlobFetch(shareBlob({ lastUpdatedAt: '2026-03-01T10:00:00.000Z' }), '"etag-old"');
           mocks.head.mockResolvedValue({
             url: BLOB_URL,
@@ -434,6 +445,62 @@ describe('share/[id]', () => {
         } finally {
           vi.useRealTimers();
         }
+      });
+
+      describe('with no revision counter yet', () => {
+        it('writes a full update only over the body that set its floor, and seeds the counter', async () => {
+          vi.useFakeTimers({ toFake: ['Date'] });
+          try {
+            vi.setSystemTime(new Date('2026-03-01T10:00:06.000Z'));
+            mocks.head.mockResolvedValue({
+              url: BLOB_URL,
+              etag: '"etag-new"',
+              uploadedAt: new Date('2026-03-01T10:00:05.000Z'),
+            });
+            mocks.fetch
+              .mockResolvedValueOnce(
+                blobResponse(shareBlob({ lastUpdatedAt: '2026-03-01T10:00:00.000Z' }), '"etag-old"')
+              )
+              .mockResolvedValue(
+                blobResponse(shareBlob({ lastUpdatedAt: '2026-03-01T10:00:10.000Z' }), '"etag-new"')
+              );
+            mocks.put.mockImplementation(
+              (_path: string, _body: string, options: { ifMatch: string }) =>
+                options.ifMatch === '"etag-new"'
+                  ? Promise.resolve({ url: 'blob://ok' })
+                  : Promise.reject(new BlobPreconditionFailedError())
+            );
+            mocks.redisGet.mockResolvedValue(correctHash);
+            const res = await handle('PUT', {
+              body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+            });
+
+            expect(res._status).toBe(200);
+            expect(
+              mocks.put.mock.calls.map(([, , options]) => (options as { ifMatch: string }).ifMatch)
+            ).toEqual(['"etag-old"', '"etag-new"']);
+            expect(writtenAt(1).metadata.lastUpdatedAt).toBe('2026-03-01T10:00:10.001Z');
+            expect(revisions.get(REVISION_KEY)).toBe(Date.parse('2026-03-01T10:00:10.001Z'));
+          } finally {
+            vi.useRealTimers();
+          }
+        });
+
+        it('falls back to the current blob when the body has no ETag', async () => {
+          mocks.head.mockResolvedValue({
+            url: BLOB_URL,
+            etag: '"etag-1"',
+            uploadedAt: UPLOADED_AT,
+          });
+          mocks.fetch.mockResolvedValue(blobResponse(shareBlob()));
+          mocks.redisGet.mockResolvedValue(correctHash);
+          const res = await handle('PUT', {
+            body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+          });
+
+          expect(res._status).toBe(200);
+          expect(mocks.put.mock.calls[0][2]).toMatchObject({ ifMatch: '"etag-1"' });
+        });
       });
 
       it('reserves a new stamp after each read', async () => {
@@ -557,6 +624,7 @@ describe('share/[id]', () => {
       });
 
       it('writes a full update over the current blob while the CDN serves an older body', async () => {
+        revisions.set(REVISION_KEY, Date.parse('2026-01-02T00:00:00.000Z'));
         primeBlobFetch(shareBlob(), '"etag-old"');
         mocks.head.mockResolvedValue({
           url: BLOB_URL,

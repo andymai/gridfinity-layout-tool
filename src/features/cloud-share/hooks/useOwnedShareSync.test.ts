@@ -596,6 +596,65 @@ describe('useOwnedShareSync', () => {
         expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
       });
 
+      function switchAway(): void {
+        act(() => {
+          useLayoutStore.setState({
+            layout: { ...createDefaultLayout(), name: 'Another layout' },
+            activeLayoutId: layoutId('another-layout'),
+            lastEditSource: 'init',
+          });
+        });
+      }
+
+      it('does not upload it again when the owner came back to a replaced layout during the read', async () => {
+        const saved = useLayoutStore.getState().layout;
+        let answer: (layout: Layout) => void = () => undefined;
+        vi.mocked(storage.loadLayoutAsync).mockImplementationOnce(
+          () =>
+            new Promise<Layout>((resolve) => {
+              answer = resolve;
+            })
+        );
+        failFirstUpload();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5000);
+        });
+        switchAway();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(UPLOAD_RETRY_DELAYS_MS[0]);
+        });
+        act(() => {
+          useLayoutStore.setState({
+            layout: { ...saved, name: 'From another device' },
+            activeLayoutId: TEST_LAYOUT_ID,
+            lastEditSource: 'remote',
+          });
+        });
+        await act(async () => {
+          answer(saved);
+          await vi.runAllTimersAsync();
+        });
+
+        expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
+      });
+
+      it('does not upload it again once account sync removed the library entry', async () => {
+        vi.mocked(storage.loadLayoutAsync).mockResolvedValueOnce(useLayoutStore.getState().layout);
+        failFirstUpload();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5000);
+        });
+        switchAway();
+        act(() => {
+          useLibraryStore.setState({ library: { ...createTestLibrary(), entries: [] } });
+        });
+        await act(async () => {
+          await vi.runAllTimersAsync();
+        });
+
+        expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
+      });
+
       it('does not upload it again once account sync replaced it', async () => {
         failFirstUpload();
         await act(async () => {

@@ -10,7 +10,7 @@ import {
   sharedDesignMeshHashes,
 } from '../lib/validation.js';
 import { holdShareMeshes } from '../lib/meshIndex.js';
-import { reserveShareRevision } from '../lib/shareRevision.js';
+import { reserveShareRevision, seedShareRevision } from '../lib/shareRevision.js';
 import { resolveShareMeshFiles } from '../lib/shareMeshes.js';
 import { filterLayoutContent, filterSharedDesignsContent } from '../lib/contentFilter.js';
 import { logger } from '../lib/logger.js';
@@ -141,6 +141,23 @@ function revisionFloor(previous: string | undefined, uploadedAt: Date): number {
 }
 
 /**
+ * The ETag that a write must match. A permission-only update writes the body's
+ * layout back, so it must match that body, and a body with no ETag matches no
+ * version. A full update keeps only metadata from the body. With a counter, it
+ * matches the current blob, which spares it the CDN's stale window. Without
+ * one, its stamp rests on the body's stamp, so it must match that body too.
+ * A body with no ETag leaves it the upload time as its floor.
+ */
+function writeCondition(
+  loaded: { readonly etag: string; readonly bodyEtag: string | null },
+  fullUpdate: boolean,
+  counted: boolean
+): string | null {
+  if (!fullUpdate) return loaded.bodyEtag;
+  return counted ? loaded.etag : (loaded.bodyEtag ?? loaded.etag);
+}
+
+/**
  * PUT /api/share/[id] - Update an existing share
  *
  * Each write is conditional on the blob it read. A collab room records the
@@ -242,19 +259,12 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
     }
 
     for (let attempt = 1; ; attempt++) {
-      // A permission-only update writes the body's layout back, so it must
-      // match that body, and a body with no ETag matches no version. A full
-      // update keeps only metadata from the body, and matching the current
-      // blob spares it the CDN's stale window.
-      const ifMatch = content ? loaded.etag : loaded.bodyEtag;
+      const floor = revisionFloor(loaded.data.metadata.lastUpdatedAt, loaded.uploadedAt);
+      const reserved = await reserveShareRevision(getRedis(), id, floor);
+      const ifMatch = writeCondition(loaded, content !== null, reserved !== null);
       if (ifMatch !== null) {
-        const now = new Date(
-          await reserveShareRevision(
-            getRedis(),
-            id,
-            revisionFloor(loaded.data.metadata.lastUpdatedAt, loaded.uploadedAt)
-          )
-        ).toISOString();
+        const stampMs = reserved ?? floor;
+        const now = new Date(stampMs).toISOString();
 
         // Strip the legacy lastAccessedAt field on any rewrite — its source of
         // truth is now Redis (share:lastAccessed:{id}). Preserving the spread
@@ -272,6 +282,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
         };
 
         if (await writeShare(id, blobPath, updatedData, newPermission, ifMatch)) {
+          if (reserved === null) await seedShareRevision(getRedis(), id, stampMs);
           return respondShare(res, id, newPermission, now);
         }
       }
