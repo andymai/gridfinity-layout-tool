@@ -7,7 +7,7 @@ describe('getMiddlewareFlags', () => {
     expect(flags).toEqual({ validation: true, undo: true });
   });
 
-  it('returns domain profile for all existing 24 domain commands', () => {
+  it('returns domain profile for each listed domain command', () => {
     const domainCommands = [
       'bin.add',
       'bin.update',
