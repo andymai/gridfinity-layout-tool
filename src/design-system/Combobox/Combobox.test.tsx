@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useState } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Combobox, type ComboboxGhost, type ComboboxOption } from './Combobox';
@@ -288,6 +288,49 @@ describe('Combobox', () => {
 
       fireEvent.keyDown(input, { key: 'Escape', isComposing: true });
       expect(screen.getByRole('listbox')).toBeInTheDocument();
+    });
+
+    describe('with a window Escape listener, like a bottom sheet', () => {
+      const onWindowEscape = vi.fn();
+      const listener = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') onWindowEscape();
+      };
+
+      beforeEach(() => {
+        onWindowEscape.mockClear();
+        window.addEventListener('keydown', listener);
+      });
+
+      afterEach(() => {
+        window.removeEventListener('keydown', listener);
+      });
+
+      it.each([
+        ['open', true],
+        ['closed', false],
+      ])(
+        'keeps the Escape that cancels a composition from it, with the list %s',
+        (_, openOnFocus) => {
+          render(<Harness initial="scr" openOnFocus={openOnFocus} />);
+          const input = screen.getByRole('combobox', { name: 'Label' });
+          fireEvent.focus(input);
+
+          for (const flag of [{ isComposing: true }, { keyCode: 229 }]) {
+            const notPrevented = fireEvent.keyDown(input, { key: 'Escape', ...flag });
+            expect(notPrevented).toBe(true);
+          }
+          expect(onWindowEscape).not.toHaveBeenCalled();
+        }
+      );
+
+      it('lets a plain Escape on a closed list reach it', () => {
+        render(<Harness openOnFocus={false} />);
+        const input = screen.getByRole('combobox', { name: 'Label' });
+        fireEvent.focus(input);
+
+        fireEvent.keyDown(input, { key: 'Escape' });
+        expect(onWindowEscape).toHaveBeenCalledTimes(1);
+      });
     });
   });
 
