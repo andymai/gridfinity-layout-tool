@@ -286,12 +286,20 @@ export function getBaseUrl(): string {
  * catch turns that into a 500.
  */
 export async function loadShare(blobPath: string): Promise<ShareData | null> {
-  return (await loadShareVersion(blobPath))?.data ?? null;
+  const blobInfo = await head(blobPath).catch(() => null);
+  if (!blobInfo) return null;
+  const response = await fetch(blobInfo.url);
+  if (!response.ok) return null;
+  return (await response.json()) as ShareData;
 }
 
 /**
- * {@link loadShare}, plus the ETag that `head` reports for the stored blob. A
- * write with `ifMatch` set to it fails if another write lands first.
+ * {@link loadShare}, plus the ETag of the body that it read. A write with
+ * `ifMatch` set to it fails if the store holds anything else.
+ *
+ * The ETag comes from the body's own response, not from `head`: the CDN can
+ * serve an older body than the blob that `head` describes, and a write over
+ * the newer blob would then carry a stamp from the older one.
  */
 export async function loadShareVersion(
   blobPath: string
@@ -300,5 +308,6 @@ export async function loadShareVersion(
   if (!blobInfo) return null;
   const response = await fetch(blobInfo.url);
   if (!response.ok) return null;
-  return { data: (await response.json()) as ShareData, etag: blobInfo.etag };
+  const etag = response.headers.get('etag') ?? blobInfo.etag;
+  return { data: (await response.json()) as ShareData, etag };
 }

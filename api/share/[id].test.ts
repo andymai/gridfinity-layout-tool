@@ -102,9 +102,13 @@ function shareBlob(metadata: Record<string, unknown> = {}) {
   };
 }
 
+function blobResponse(data: unknown, etag: string) {
+  return { ok: true, headers: new Headers({ etag }), json: () => Promise.resolve(data) };
+}
+
 function primeBlobFetch(data: unknown, etag = '"etag-1"') {
   mocks.head.mockResolvedValue({ url: 'https://blob.example/shares/x.json', etag });
-  mocks.fetch.mockResolvedValue({ ok: true, json: () => Promise.resolve(data) });
+  mocks.fetch.mockResolvedValue(blobResponse(data, etag));
 }
 
 /** The blob reads as `first`, then as `second` from the next read on. */
@@ -113,8 +117,8 @@ function primeBlobChange(first: unknown, second: unknown) {
     .mockResolvedValueOnce({ url: 'https://blob.example/shares/x.json', etag: '"etag-1"' })
     .mockResolvedValue({ url: 'https://blob.example/shares/x.json', etag: '"etag-2"' });
   mocks.fetch
-    .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(first) })
-    .mockResolvedValue({ ok: true, json: () => Promise.resolve(second) });
+    .mockResolvedValueOnce(blobResponse(first, '"etag-1"'))
+    .mockResolvedValue(blobResponse(second, '"etag-2"'));
 }
 
 function writtenAt(call: number) {
@@ -367,6 +371,18 @@ describe('share/[id]', () => {
     });
 
     describe('a write that another write beats', () => {
+      it('writes over the blob whose body it read, when the CDN serves an older body', async () => {
+        primeBlobFetch(shareBlob({ lastUpdatedAt: '2026-03-01T00:00:00.000Z' }), '"etag-old"');
+        mocks.head.mockResolvedValue({
+          url: 'https://blob.example/shares/x.json',
+          etag: '"etag-new"',
+        });
+        mocks.redisGet.mockResolvedValue(correctHash);
+        await handle('PUT', { body: { deleteToken: TOKEN, layout: { name: 'Updated' } } });
+
+        expect(mocks.put.mock.calls[0][2]).toMatchObject({ ifMatch: '"etag-old"' });
+      });
+
       it('writes only over the blob it read', async () => {
         primeBlobFetch(shareBlob(), '"etag-7"');
         mocks.redisGet.mockResolvedValue(correctHash);
