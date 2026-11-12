@@ -34,7 +34,13 @@ export function roomDesignIds(
   const pairs = Object.entries(ownerToLocal ?? {});
   if (pairs.length === 0) return SAME_IDS;
   const toLocalIds = new Map(pairs);
-  const toRoomIds = new Map(pairs.map(([owner, local]) => [local, owner]));
+  // The local id is a 32-bit hash, so two owner ids can share one. Such a local
+  // id stays as it is in the room: the owner then misses that design, where a
+  // guess could give a bin the wrong design.
+  const owners = new Map<string, string | null>();
+  for (const [owner, local] of pairs) owners.set(local, owners.has(local) ? null : owner);
+  const toRoomIds = new Map<string, string>();
+  for (const [local, owner] of owners) if (owner !== null) toRoomIds.set(local, owner);
   return {
     toLocal: (roomLayout) => relink(roomLayout, toLocalIds),
     toRoom: (localLayout) => relink(localLayout, toRoomIds),

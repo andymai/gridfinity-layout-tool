@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useRef } from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { CollabProvider } from './CollabProvider';
 import { createTestBin, createTestLayout, resetAllStores } from '@/test/testUtils';
 import { useLibraryStore } from '@/core/store/library';
@@ -307,6 +307,38 @@ describe('CollabProvider', () => {
         );
         const ids = vi.mocked(useCollabSync).mock.lastCall?.[1];
         expect(ids?.toLocal(owners)).toEqual(local);
+      });
+
+      it('takes the designs that the share gained when it opens again in the same room', () => {
+        const { rerender } = render(
+          <CollabProvider shareId="visitShare01">
+            <div />
+          </CollabProvider>
+        );
+        act(() => {
+          useSharedPreviewStore
+            .getState()
+            .setSharedLayoutPreview(
+              local,
+              'Shared',
+              undefined,
+              'visitShare01',
+              'edit',
+              '2026-11-01T10:00:00.000Z',
+              { 'owner-design': 'design_shared_1', 'new-design': 'design_shared_2' }
+            );
+        });
+        rerender(
+          <CollabProvider shareId="visitShare01">
+            <div />
+          </CollabProvider>
+        );
+
+        const gained = createTestLayout({
+          bins: [createTestBin({ id: binId('new'), linkedDesignId: designId('new-design') })],
+        });
+        const ids = vi.mocked(useCollabSync).mock.lastCall?.[1];
+        expect(ids?.toLocal(gained).bins[0]?.linkedDesignId).toBe('design_shared_2');
       });
 
       it('gives the owner no id map', () => {

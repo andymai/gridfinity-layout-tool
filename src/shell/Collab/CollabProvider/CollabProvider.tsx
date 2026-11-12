@@ -159,19 +159,22 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
     [userName, userId]
   );
 
+  // Not frozen with the seed: opening the share again from "Shared with me"
+  // keeps the room but can bring designs that the share gained.
+  const visitorDesignIds =
+    cloudShare === null && sharedPreview?.cloudShareId === shareId
+      ? sharedPreview.designIds
+      : undefined;
+  const designIds = useMemo(() => roomDesignIds(visitorDesignIds), [visitorDesignIds]);
+
   // Initial storage - the layout data to sync
   // The delete token is intentionally NOT stored in shared storage.
   // Cloud sync is owner-only: the delete token stays in the owner's local library.
   // RoomProvider freezes initialStorage per room id, so this is taken once per room.
   // A seed without a known link revision stays unrecorded, so the owner
   // uploads it: it can hold edits that never reached the link.
-  const { copySave, initialStorage, designIds } = useMemo(() => {
-    const ids = roomDesignIds(
-      cloudShare === null && sharedPreview?.cloudShareId === shareId
-        ? sharedPreview.designIds
-        : undefined
-    );
-    const roomCopy = ids.toRoom(layout);
+  const { copySave, initialStorage } = useMemo(() => {
+    const roomCopy = designIds.toRoom(layout);
     const save = copySaveFor(shareId, cloudShare, sharedPreview, roomCopy);
     const revision = revisionOfCopy(roomCopy, save);
     const storage: LiveblocksStorage = {
@@ -183,7 +186,7 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
         ...(revision ? stampFor(roomCopy, revision) : {}),
       },
     };
-    return { copySave: save, initialStorage: storage, designIds: ids };
+    return { copySave: save, initialStorage: storage };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: the layout as the room is entered, not on every change
   }, [roomId]);
 

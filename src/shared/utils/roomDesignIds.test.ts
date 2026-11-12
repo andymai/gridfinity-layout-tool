@@ -54,6 +54,18 @@ describe('roomDesignIds', () => {
     expect(ids.toRoom(layout)).toBe(layout);
   });
 
+  it('gives no owner id back for a local id that two owner ids share', () => {
+    const clash = roomDesignIds({
+      'owner-a': 'local-x',
+      'owner-b': 'local-x',
+      'owner-c': 'local-c',
+    });
+    expect(linkedIds(clash.toRoom(layoutLinkedTo('local-x', 'local-c')))).toEqual([
+      'local-x',
+      'owner-c',
+    ]);
+  });
+
   it('changes nothing for the owner', () => {
     const layout = layoutLinkedTo('owner-a');
     for (const owner of [roomDesignIds(undefined), roomDesignIds({})]) {
