@@ -2,7 +2,6 @@ import { useCallback, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { batch } from '@/core/cqrs';
 import { useHalfGridModeStore, useLayoutStore, useToastStore } from '@/core/store';
-import { STAGING_ID } from '@/core/constants';
 import { binId as toBinId } from '@/core/types';
 import { isOk } from '@/core/result';
 import { useMutations } from '@/shared/contexts';
@@ -26,23 +25,24 @@ export function HalfGridModeBlockedHost() {
   // its confirm belong to the layout that blocked the turn-off.
   const isForOtherLayout = blockedViolation !== null && blockedLayoutId !== activeLayoutId;
   const addToast = useToastStore((s) => s.addToast);
-  const { updateBin } = useMutations();
+  const { moveBinsToStaging } = useMutations();
 
   const handleRemediate = useCallback(() => {
     // Read the bins again on confirm: a collaborator or an undo can change
     // them while the dialog is open, and any bin left on a half unit would
     // stay stuck there once the mode is off.
     const { violation } = validateHalfGridModeToggle(useLayoutStore.getState().layout, false);
-    let movedCount = 0;
-    batch(() => {
-      for (const id of violation?.binIds ?? []) {
-        if (isOk(updateBin(toBinId(id), { layerId: STAGING_ID }))) movedCount++;
-      }
+    // Each id is a grid bin of the layout read just above, so the batch
+    // command moves every one of them.
+    const ids = (violation?.binIds ?? []).map(toBinId);
+    const stashed = batch(() => {
+      const result = ids.length > 0 && isOk(moveBinsToStaging(ids));
       setHalfGridMode(false);
+      return result;
     });
     dismissBlockedViolation();
-    if (movedCount > 0) addToast(t('toast.movedToStash', { count: movedCount }), 'success');
-  }, [updateBin, setHalfGridMode, dismissBlockedViolation, addToast, t]);
+    if (stashed) addToast(t('toast.movedToStash', { count: ids.length }), 'success');
+  }, [moveBinsToStaging, setHalfGridMode, dismissBlockedViolation, addToast, t]);
 
   useEffect(() => {
     if (isForOtherLayout) dismissBlockedViolation();
