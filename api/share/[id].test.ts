@@ -452,7 +452,7 @@ describe('share/[id]', () => {
       });
 
       describe('with no revision counter yet', () => {
-        it('writes a full update only over the body that set its floor, and seeds the counter', async () => {
+        it('writes a full update only over the body that set its floor, and verifies the counter', async () => {
           vi.useFakeTimers({ toFake: ['Date'] });
           try {
             vi.setSystemTime(new Date('2026-03-01T10:00:06.000Z'));
