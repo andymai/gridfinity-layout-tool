@@ -1,0 +1,21 @@
+src/features/cloud-share/components/SharedLayoutBanner/SharedLayoutBanner.test.tsx
+  s_1cc363bb3cc76d::t_9072ea99372d23 268-280
+src/features/cloud-share/components/SharedLayoutBanner/SharedLayoutBanner.tsx
+  s_1cc363bb3cc76d::t_5344ce50b27be8 176
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "baf990843b4af183017ca93540d1a484083920ff",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
