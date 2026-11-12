@@ -21,7 +21,7 @@
  * stays the absolute bottom.
  */
 
-import { translate, unwrap, fuse, cut, simplify, withScope } from 'brepjs';
+import { translate, unwrap, fuse, cut, withScope } from 'brepjs';
 import type { DisposalScope, Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled } from '../../utils/abort';
@@ -68,11 +68,7 @@ export const trayBottomStage: PipelineStage = {
           checkCancelled(ctx.signal);
           skirt = scope.register(unwrap(cut(skirt as ValidSolid, tool as ValidSolid)));
         }
-        // The boss and bed floor share a plane. Merge their coplanar faces
-        // so previews and CAD exports show only the actual pocket boundary,
-        // not a second circle from the otherwise invisible boss footprint.
-        const unified = scope.register(unwrap(simplify(skirt)));
-        return translate(unified, [0, 0, ctx.dimensions.baseOffsetZ]);
+        return translate(skirt, [0, 0, ctx.dimensions.baseOffsetZ]);
       }
 
       if (hasAnyClickRail(inputs.clickRails)) {

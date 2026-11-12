@@ -1,6 +1,6 @@
 /** Close a lid-compatible base at the bed instead of bridging its whole mouth.
  * All coordinates are lid-local: the bin body begins at Z=0. */
-import { cut, fuse, intersect, translate, unwrap } from 'brepjs';
+import { cut, fuse, intersect, isOk, simplify, translate, unwrap } from 'brepjs';
 import type { DisposalScope, Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext } from './pipeline/types';
 import type { LidInputs } from '@/shared/utils/lidInputs';
@@ -32,6 +32,13 @@ export function addNestingFloor(
       .extrude(dim.baseOffsetZ + FLOOR_OVERLAP_MM)
   );
   let local = scope.register(unwrap(fuse(skirt as ValidSolid, fill as ValidSolid)));
+  // The skirt and the fill share the bed plane and the plug's lowest band, so
+  // the fuse leaves a seam in each. Merge them here, before the body joins:
+  // `simplify` keeps no face history, and the body's faces carry the colour
+  // tags (lip, label tab) that a merge after this point would erase. The merge
+  // only removes seam edges, so a failed one keeps the unmerged solid.
+  const merged = simplify(local);
+  if (isOk(merged)) local = scope.register(merged.value);
   const localBody = scope.register(translate(body, [0, 0, -dim.baseOffsetZ]));
   local = scope.register(unwrap(fuse(local, localBody as ValidSolid)));
 

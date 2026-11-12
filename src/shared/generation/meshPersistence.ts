@@ -91,6 +91,8 @@ const MESH_CACHE_VERSION = 'v29';
  * assembly-item previews (their own `item` segment) stay warm. The mirror of
  * {@link itemMeshCacheKey}'s segment.
  *
+ * `bin22`: a Nesting body keeps the colour tags of its lip, label tab and label
+ * support, so its faces group as a raised tray body's do.
  * `bin21`: a notched lip's inner face comes from one cut, not two laid over
  * each other, so it has fewer faces and a Nesting body with notches builds.
  * `bin20`: embossed label-tab text on a wall under about 1.1mm keeps its full
@@ -129,7 +131,7 @@ const MESH_CACHE_VERSION = 'v29';
  * `bin1`: a lipless bin's sliding-lid entry window no longer ramps through the
  * rim, so its entry corners keep their full wall height.
  */
-const BIN_MESH_REVISION = 'bin21';
+const BIN_MESH_REVISION = 'bin22';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for
