@@ -42,6 +42,7 @@ export interface KeyboardContext {
   zoomIn: () => void;
   zoomOut: () => void;
   setShowLayoutManager: (show: boolean) => void;
+  createNewLayout: () => Promise<unknown>;
 
   // Mutations
   batch: <T>(fn: () => T) => T;

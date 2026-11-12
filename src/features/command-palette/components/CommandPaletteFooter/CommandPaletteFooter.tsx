@@ -42,6 +42,7 @@ export function CommandPaletteFooter({ selectedCommand, matchCount }: CommandPal
           <ShortcutBadge
             keys={selectedCommand.shortcut.keys}
             modifier={selectedCommand.shortcut.modifier}
+            shift={selectedCommand.shortcut.shift}
             className="opacity-70"
           />
         ) : (

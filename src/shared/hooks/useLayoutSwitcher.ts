@@ -36,6 +36,13 @@ import { ok, err, OK, layoutLastEntity, layoutInvalidOperation, fromUnknown } fr
 import { useTranslation } from '@/i18n';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 
+type CreateLayoutResult = Result<string, StorageError | UnknownError | LayoutLibraryLimitError>;
+
+// Module scope, not a ref: the keyboard, the header, the layout manager and the
+// mobile panel each own a hook instance. Two creations that overlap each write
+// a library snapshot without the other's entry, so the later one drops it.
+let pendingCreate: Promise<CreateLayoutResult> | null = null;
+
 /**
  * Orchestration hook for layout switching and management.
  * Coordinates mutations across multiple stores without cross-store dependencies.
@@ -162,13 +169,8 @@ export function useLayoutSwitcher() {
 
   const settings = useSettingsStore((state) => state.settings);
 
-  /**
-   * Create a new layout and switch to it.
-   */
-  const createNewLayout = useCallback(
-    async (
-      name?: string
-    ): Promise<Result<string, StorageError | UnknownError | LayoutLibraryLimitError>> => {
+  const createLayout = useCallback(
+    async (name?: string): Promise<CreateLayoutResult> => {
       await saveCurrentLayout();
 
       // Create new layout with user's default settings
@@ -190,6 +192,7 @@ export function useLayoutSwitcher() {
           return result;
         }
 
+        clearSharedLayoutPreview();
         setLibrary(result.value.library);
         const newLayoutId = layoutId(result.value.layoutId);
         activateLayout(result.value.layout, newLayoutId);
@@ -209,12 +212,27 @@ export function useLayoutSwitcher() {
       saveCurrentLayout,
       // Note: library removed - we use fresh state via getState()
       setLibrary,
+      clearSharedLayoutPreview,
       activateLayout,
       addToast,
       failureMessage,
       settings,
       t,
     ]
+  );
+
+  /**
+   * Create a new layout and switch to it. A call while a creation is pending
+   * gets that creation's result instead of starting another.
+   */
+  const createNewLayout = useCallback(
+    (name?: string): Promise<CreateLayoutResult> => {
+      pendingCreate ??= createLayout(name).finally(() => {
+        pendingCreate = null;
+      });
+      return pendingCreate;
+    },
+    [createLayout]
   );
 
   const deleteLayout = useCallback(

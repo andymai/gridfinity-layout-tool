@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { CommandPaletteFooter } from './CommandPaletteFooter';
+import { COMMAND_DEFINITIONS } from '../../commands';
 import type { CommandDefinition } from '../../commands';
 
 vi.mock('@/i18n', () => ({
@@ -10,15 +11,6 @@ vi.mock('@/i18n', () => ({
     }
     return key;
   },
-}));
-
-vi.mock('../ShortcutBadge', () => ({
-  ShortcutBadge: ({ keys, modifier }: { keys: string | string[]; modifier?: boolean }) => (
-    <div data-testid="shortcut-badge">
-      {modifier && 'Mod+'}
-      {Array.isArray(keys) ? keys.join('/') : keys}
-    </div>
-  ),
 }));
 
 describe('CommandPaletteFooter', () => {
@@ -53,11 +45,24 @@ describe('CommandPaletteFooter', () => {
     expect(screen.getByText(/commandPalette.footer.commandCount/)).toBeInTheDocument();
   });
 
+  function badgeTextAround(key: string): string | null | undefined {
+    return screen.getByText(key).parentElement?.closest('div')?.textContent;
+  }
+
   it('shows shortcut badge when command has shortcut', () => {
     render(<CommandPaletteFooter selectedCommand={mockCommand} matchCount={5} />);
 
-    expect(screen.getByTestId('shortcut-badge')).toBeInTheDocument();
-    expect(screen.getByTestId('shortcut-badge')).toHaveTextContent('Mod+K');
+    expect(badgeTextAround('K')).toMatch(/^(Ctrl|⌘)\+K$/);
+  });
+
+  it('shows Shift for a command whose shortcut needs it', () => {
+    const newLayout = COMMAND_DEFINITIONS.find((command) => command.id === 'new-layout');
+    if (!newLayout) throw new Error('new-layout command is missing');
+    render(
+      <CommandPaletteFooter selectedCommand={{ ...newLayout, isAvailable: true }} matchCount={5} />
+    );
+
+    expect(badgeTextAround('N')).toBe('Shift+N');
   });
 
   it('shows command count when selected command has no shortcut', () => {

@@ -448,6 +448,46 @@ describe('useLayoutSwitcher', () => {
   });
 
   describe('createNewLayout', () => {
+    function previewShare(permission: 'view' | 'edit'): void {
+      useSharedPreviewStore.setState({
+        sharedPreview: {
+          layout: createTestLayout('Shared'),
+          originalName: 'Shared Layout',
+          authorName: null,
+          cloudShareId: 'share-1',
+          permission,
+        },
+      });
+    }
+
+    it.each(['view', 'edit'] as const)(
+      'leaves the %s shared preview when it opens the new layout',
+      async (permission) => {
+        previewShare(permission);
+        const { result } = renderHook(() => useLayoutSwitcher());
+
+        await act(async () => {
+          expectOk(await result.current.createNewLayout('New'));
+        });
+
+        expect(useSharedPreviewStore.getState().sharedPreview).toBeNull();
+      }
+    );
+
+    it('keeps the shared preview when the creation fails', async () => {
+      previewShare('edit');
+      vi.mocked(storage.createLayoutEntry).mockResolvedValueOnce(
+        err(storageNotFound('gridfinity-layout-new'))
+      );
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      await act(async () => {
+        await result.current.createNewLayout('New');
+      });
+
+      expect(useSharedPreviewStore.getState().sharedPreview?.cloudShareId).toBe('share-1');
+    });
+
     it('creates new layout and switches to it', async () => {
       const { result } = renderHook(() => useLayoutSwitcher());
 
@@ -513,6 +553,40 @@ describe('useLayoutSwitcher', () => {
 
       const toasts = useToastStore.getState().toasts;
       expect(toasts.some((t) => t.message.includes('created'))).toBe(true);
+    });
+
+    it('starts one creation while another is still pending, from any caller', async () => {
+      const keyboard = renderHook(() => useLayoutSwitcher());
+      const layoutManager = renderHook(() => useLayoutSwitcher());
+
+      let results: Awaited<ReturnType<typeof keyboard.result.current.createNewLayout>>[] = [];
+      await act(async () => {
+        results = await Promise.all([
+          keyboard.result.current.createNewLayout(),
+          layoutManager.result.current.createNewLayout(),
+          keyboard.result.current.createNewLayout(),
+        ]);
+      });
+
+      expect(storage.createLayoutEntry).toHaveBeenCalledTimes(1);
+      expect(results.map((r) => expectOk(r))).toEqual([
+        'new-layout-id',
+        'new-layout-id',
+        'new-layout-id',
+      ]);
+    });
+
+    it('starts a new creation once the pending one settles', async () => {
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      await act(async () => {
+        await result.current.createNewLayout();
+      });
+      await act(async () => {
+        await result.current.createNewLayout();
+      });
+
+      expect(storage.createLayoutEntry).toHaveBeenCalledTimes(2);
     });
 
     it('says the layout limit is reached when the library is full', async () => {

@@ -43,6 +43,7 @@ Can't remember a key? Press <kbd>?</kbd> or <kbd>/</kbd> in any tool to open the
 | Windows and Linux                         | macOS                       | Action                                                                                                        |
 | ----------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | <kbd>Ctrl</kbd>+<kbd>D</kbd>              | <kbd>Cmd</kbd>+<kbd>D</kbd> | Duplicate the selected bins                                                                                   |
+| <kbd>Ctrl</kbd>+<kbd>A</kbd>              | <kbd>Cmd</kbd>+<kbd>A</kbd> | Select all bins on the active layer                                                                           |
 | <kbd>Delete</kbd> or <kbd>Backspace</kbd> | Same                        | Delete the selected bins. A bin in a pair takes its partner with it.                                          |
 | <kbd>R</kbd>                              | Same                        | Rotate the selected bin. Select one bin only.                                                                 |
 | <kbd>L</kbd>                              | Same                        | Edit the label of the selected bin. Select one bin only.                                                      |
@@ -53,16 +54,17 @@ Can't remember a key? Press <kbd>?</kbd> or <kbd>/</kbd> in any tool to open the
 
 ### Move around the layout
 
-| Windows and Linux            | macOS                       | Action                                                                                                 |
-| ---------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------ |
-| <kbd>W</kbd>                 | Same                        | Go to the layer above                                                                                  |
-| <kbd>S</kbd>                 | Same                        | Go to the layer below                                                                                  |
-| <kbd>A</kbd>                 | Same                        | Select the previous bin on the active layer                                                            |
-| <kbd>D</kbd>                 | Same                        | Select the next bin on the active layer. The order goes from the front row to the back, left to right. |
-| Arrow keys                   | Same                        | With a bin in keyboard focus and no selection, move the focus to the nearest bin in that direction     |
-| <kbd>+</kbd> or <kbd>=</kbd> | Same                        | Zoom in                                                                                                |
-| <kbd>-</kbd>                 | Same                        | Zoom out                                                                                               |
-| <kbd>Ctrl</kbd>+<kbd>O</kbd> | <kbd>Cmd</kbd>+<kbd>O</kbd> | Open the layout manager                                                                                |
+| Windows and Linux             | macOS                       | Action                                                                                                 |
+| ----------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------ |
+| <kbd>W</kbd>                  | Same                        | Go to the layer above                                                                                  |
+| <kbd>S</kbd>                  | Same                        | Go to the layer below                                                                                  |
+| <kbd>A</kbd>                  | Same                        | Select the previous bin on the active layer                                                            |
+| <kbd>D</kbd>                  | Same                        | Select the next bin on the active layer. The order goes from the front row to the back, left to right. |
+| Arrow keys                    | Same                        | With a bin in keyboard focus and no selection, move the focus to the nearest bin in that direction     |
+| <kbd>+</kbd> or <kbd>=</kbd>  | Same                        | Zoom in                                                                                                |
+| <kbd>-</kbd>                  | Same                        | Zoom out                                                                                               |
+| <kbd>Ctrl</kbd>+<kbd>O</kbd>  | <kbd>Cmd</kbd>+<kbd>O</kbd> | Open the layout manager                                                                                |
+| <kbd>Shift</kbd>+<kbd>N</kbd> | Same                        | Make a new layout and open it                                                                          |
 
 ### 3D preview
 
