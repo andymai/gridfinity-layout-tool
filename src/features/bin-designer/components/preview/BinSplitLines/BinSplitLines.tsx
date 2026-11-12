@@ -31,20 +31,31 @@ const DASHED_LINE_SHARED = {
 } as const;
 
 export const BinSplitLines = memo(function BinSplitLines() {
-  const { width, depth, height, heightUnitMm, gridUnitMm, gridUnitMmY, overhang, cellMask, leans } =
-    useDesignerStore(
-      useShallow((s) => ({
-        leans: resolveSlant(s.params) !== null,
-        width: s.params.width,
-        depth: s.params.depth,
-        height: s.params.height,
-        heightUnitMm: s.params.heightUnitMm,
-        gridUnitMm: s.params.gridUnitMm,
-        gridUnitMmY: s.params.gridUnitMmY,
-        overhang: s.params.overhang,
-        cellMask: s.params.cellMask,
-      }))
-    );
+  const {
+    width,
+    depth,
+    height,
+    heightUnitMm,
+    gridUnitMm,
+    gridUnitMmY,
+    overhang,
+    cellMask,
+    splitToFitBed,
+    leans,
+  } = useDesignerStore(
+    useShallow((s) => ({
+      leans: resolveSlant(s.params) !== null,
+      width: s.params.width,
+      depth: s.params.depth,
+      height: s.params.height,
+      heightUnitMm: s.params.heightUnitMm,
+      gridUnitMm: s.params.gridUnitMm,
+      gridUnitMmY: s.params.gridUnitMmY,
+      overhang: s.params.overhang,
+      cellMask: s.params.cellMask,
+      splitToFitBed: s.params.splitToFitBed,
+    }))
+  );
   // Y axis uses gridUnitMmY when set (non-square grid); equals X for square.
   const gridUnitMmYEff = gridUnitMmY ?? gridUnitMm;
 
@@ -56,11 +67,21 @@ export const BinSplitLines = memo(function BinSplitLines() {
   const maxGrid = useMemo(
     () =>
       binSplitChunkUnits(
-        { width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask },
+        { width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask, splitToFitBed },
         printBedSize,
         printBedDepth
       ),
-    [width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask, printBedSize, printBedDepth]
+    [
+      width,
+      depth,
+      gridUnitMm,
+      gridUnitMmY,
+      overhang,
+      cellMask,
+      splitToFitBed,
+      printBedSize,
+      printBedDepth,
+    ]
   );
 
   const needsSplit = !leans && (width > maxGrid.width || depth > maxGrid.depth);
