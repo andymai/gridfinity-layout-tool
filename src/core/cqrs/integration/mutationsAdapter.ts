@@ -23,6 +23,7 @@ import type {
 } from '@/core/types';
 import type { Result, ValidationError, LayoutError } from '@/core/result';
 import { ok, err, isOk } from '@/core/result';
+import { queueLibraryWrite } from '@/core/store/libraryWrites';
 import { createCommand } from '../commands';
 import type { UpdateDrawerPayload } from '../commands/drawerCommands';
 import type { CommandBus } from '../bus/commandBus';
@@ -214,11 +215,15 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
     },
 
     setCloudShare(layoutId: LayoutId, share: CloudShareInfo): void {
-      bus.dispatch(createCommand('library.setCloudShare', { layoutId, shareInfo: share }));
+      void queueLibraryWrite(() => {
+        bus.dispatch(createCommand('library.setCloudShare', { layoutId, shareInfo: share }));
+      });
     },
 
     clearCloudShare(layoutId: LayoutId): void {
-      bus.dispatch(createCommand('library.clearCloudShare', { layoutId }));
+      void queueLibraryWrite(() => {
+        bus.dispatch(createCommand('library.clearCloudShare', { layoutId }));
+      });
     },
   };
 }

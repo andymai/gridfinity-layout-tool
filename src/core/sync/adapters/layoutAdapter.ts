@@ -1,5 +1,5 @@
 import { isErr } from '@/core/result';
-import { useLayoutStore, useLibraryStore } from '@/core/store';
+import { queueLibraryWrite, useLayoutStore, useLibraryStore } from '@/core/store';
 import type { Bin, Layout, LayoutEntry, LayoutId, LayoutLibrary } from '@/core/types';
 import { normalizeDrawerOutline } from '@/shared/utils/drawerOutline';
 import {
@@ -179,40 +179,41 @@ export const layoutAdapter: LayoutAdapter = {
     // For new entries we compute a fresh preview from the remote layout —
     // `LayoutEntry.preview` is required and the UI dereferences
     // `entry.preview.binCount` so leaving it undefined would crash.
-    const { library, setLibrary } = useLibraryStore.getState();
     const preview = computePreview(layout);
-    const existingIndex = library.entries.findIndex((e) => e.id === item.id);
-    const nextEntries: LayoutEntry[] =
-      existingIndex >= 0
-        ? library.entries.map((e, i) =>
-            i === existingIndex
-              ? {
-                  ...e,
-                  modifiedAt: item.modifiedAt,
-                  name: layout.name || e.name,
-                  preview,
-                  folderId: folderId ?? null,
-                }
-              : e
-          )
-        : [
-            ...library.entries,
-            {
-              id: item.id as LayoutEntry['id'],
-              name: layout.name || 'Untitled',
-              createdAt: item.modifiedAt,
-              modifiedAt: item.modifiedAt,
-              preview,
-              folderId: folderId ?? null,
-            } satisfies LayoutEntry,
-          ];
-    const nextLibrary: LayoutLibrary = { ...library, entries: nextEntries };
-    suppress(item.id);
-    setLibrary(nextLibrary);
-    const libraryResult = await saveLibrary(nextLibrary);
-    if (isErr(libraryResult)) {
-      throw syncPersistError('saveLibrary', item.id, libraryResult.error);
-    }
+    await queueLibraryWrite(async (library) => {
+      const existingIndex = library.entries.findIndex((e) => e.id === item.id);
+      const nextEntries: LayoutEntry[] =
+        existingIndex >= 0
+          ? library.entries.map((e, i) =>
+              i === existingIndex
+                ? {
+                    ...e,
+                    modifiedAt: item.modifiedAt,
+                    name: layout.name || e.name,
+                    preview,
+                    folderId: folderId ?? null,
+                  }
+                : e
+            )
+          : [
+              ...library.entries,
+              {
+                id: item.id as LayoutEntry['id'],
+                name: layout.name || 'Untitled',
+                createdAt: item.modifiedAt,
+                modifiedAt: item.modifiedAt,
+                preview,
+                folderId: folderId ?? null,
+              } satisfies LayoutEntry,
+            ];
+      const nextLibrary: LayoutLibrary = { ...library, entries: nextEntries };
+      suppress(item.id);
+      useLibraryStore.getState().setLibrary(nextLibrary);
+      const libraryResult = await saveLibrary(nextLibrary);
+      if (isErr(libraryResult)) {
+        throw syncPersistError('saveLibrary', item.id, libraryResult.error);
+      }
+    });
 
     // If the user is viewing this layout right now, replace what the
     // store has so the UI re-renders. `source: 'remote'` flags the
@@ -230,19 +231,21 @@ export const layoutAdapter: LayoutAdapter = {
     // the existing delete flow when the user navigates away. The
     // important thing is that the entry disappears from the library
     // index so the user doesn't see a phantom layout.
-    const { library, setLibrary } = useLibraryStore.getState();
-    if (!library.entries.some((e) => e.id === id)) return;
-
-    const nextLibrary: LayoutLibrary = {
-      ...library,
-      entries: library.entries.filter((e) => e.id !== id),
-    };
-    suppress(id);
-    setLibrary(nextLibrary);
-    const libraryResult = await saveLibrary(nextLibrary);
-    if (isErr(libraryResult)) {
-      throw syncPersistError('saveLibrary (remote-delete)', id, libraryResult.error);
-    }
+    const nextLibrary = await queueLibraryWrite(async (library) => {
+      if (!library.entries.some((e) => e.id === id)) return null;
+      const next: LayoutLibrary = {
+        ...library,
+        entries: library.entries.filter((e) => e.id !== id),
+      };
+      suppress(id);
+      useLibraryStore.getState().setLibrary(next);
+      const libraryResult = await saveLibrary(next);
+      if (isErr(libraryResult)) {
+        throw syncPersistError('saveLibrary (remote-delete)', id, libraryResult.error);
+      }
+      return next;
+    });
+    if (!nextLibrary) return;
 
     // If the user was viewing the deleted layout, switch them to
     // whatever's first in the (now-trimmed) library so they aren't

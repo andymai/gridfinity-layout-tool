@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useLayoutStore, useLibraryStore, useToastStore } from '@/core/store';
+import { useLayoutStore, useToastStore, writeLibrary } from '@/core/store';
 import { saveLayoutWithMetadata } from '@/core/storage';
 import type { SaveResult } from '@/core/storage';
 import { isRealLayoutId } from '@/core/constants';
@@ -48,8 +48,7 @@ async function writeLayout(
   layout: Layout
 ): Promise<Result<SaveResult, StorageError>> {
   try {
-    // Get fresh library state at save time (may have changed since the save was scheduled)
-    return await saveLayoutWithMetadata(savingLayoutId, layout, useLibraryStore.getState().library);
+    return await writeLibrary((library) => saveLayoutWithMetadata(savingLayoutId, layout, library));
   } catch (error: unknown) {
     reportSaveCrash(error);
     return err(storageUnavailable('indexedDB', error));
@@ -125,10 +124,9 @@ function createLayoutSaver(
     if (isErr(result)) {
       handleFailure(result.error, trigger);
     } else if (useLayoutStore.getState().activeLayoutId === savingLayoutId) {
-      handleSuccess(savingLayoutId, layout, result.value);
+      handleSuccess(savingLayoutId, layout);
     } else if (failureCount === 0) {
-      // The user switched layouts during the save. The data is in storage, but
-      // the returned library would overwrite the new layout's library state.
+      // The user switched layouts during the save. The status follows the open layout.
       onStatus('idle');
     }
 
@@ -137,9 +135,7 @@ function createLayoutSaver(
     if (next) start(next);
   }
 
-  function handleSuccess(savingLayoutId: LayoutId, layout: Layout, saved: SaveResult): void {
-    useLibraryStore.getState().setLibrary(saved.library);
-
+  function handleSuccess(savingLayoutId: LayoutId, layout: Layout): void {
     failureCount = 0;
     hasShownError = false;
     dismissFailureToast();

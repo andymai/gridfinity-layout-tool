@@ -82,6 +82,6 @@ import type { Result, StorageError, ValidationError, LayoutError, ApiError } fro
 2. **Coordinate system** — grid (0,0) is bottom-left, `layers[0]` is bottom; UI reverses via `getDisplayLayers()`
 3. **Staging layer** — `layerId === '__staging__'` is the off-grid stash, not a real layer
 4. **Half-bin mode** — 0.5 increments via `HALF_BIN_SCALE = 2`; use `snapToHalf()`, `isFractional()`
-5. **Atomic storage** — prefer `saveLayoutWithMetadata()` over separate save + library update
+5. **Atomic storage** — prefer `saveLayoutWithMetadata()` over separate save + library update, and call it inside `writeLibrary()`, which passes the current library
 6. **Dual-write** — async ops write to IndexedDB + localStorage backup; library index stays in localStorage for cross-tab sync
 7. **Result everywhere** — layout store mutations return `Result<T, E>`; never throw for expected failures

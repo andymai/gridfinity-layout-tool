@@ -7,7 +7,14 @@ import { useToastStore } from '@/core/store/toast';
 import { createTestLayout, resetAllStores, setupFakeTimers } from '@/test/testUtils';
 import * as storage from '@/core/storage';
 import type { SaveResult } from '@/core/storage';
-import { err, ok, storageNotFound, storageQuotaExceeded, storageUnavailable } from '@/core/result';
+import {
+  err,
+  isErr,
+  ok,
+  storageNotFound,
+  storageQuotaExceeded,
+  storageUnavailable,
+} from '@/core/result';
 import type { Result, StorageError } from '@/core/result';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
@@ -542,32 +549,28 @@ describe('useAutoSave', () => {
   });
 
   describe('race condition prevention', () => {
-    it('discards save result if layout switched during save', async () => {
-      // Make the mock change the activeLayoutId DURING the save
-      // to simulate a layout switch that happens while save is in progress
+    it('stores the saved entry but does not show saved when the layout switched during the save', async () => {
+      let saved: LayoutLibrary | null = null;
       vi.mocked(storage.saveLayoutWithMetadata).mockImplementation(async (id, _layout, library) => {
-        // Simulate layout switch happening during the save operation
         useLayoutStore.setState({ activeLayoutId: layoutId('different-layout-id') });
-
-        return saveResultFor(id, library);
+        const result = saveResultFor(id, library);
+        if (isErr(result)) return result;
+        saved = { ...library, entries: [result.value.entry] };
+        return ok({ ...result.value, library: saved });
       });
 
-      // Track setLibrary calls AFTER mock setup
-      const setLibrarySpy = vi.spyOn(useLibraryStore.getState(), 'setLibrary');
+      const { result } = renderHook(() => useAutoSave());
 
-      renderHook(() => useAutoSave());
-
-      // Trigger the save
       await act(async () => {
         timerUtils.advanceTime(SAVE_DEBOUNCE_MS);
         await Promise.resolve();
       });
 
-      // setLibrary should NOT have been called because layout switched during save
-      // The save completed, but the result was discarded
-      expect(setLibrarySpy).not.toHaveBeenCalled();
-
-      setLibrarySpy.mockRestore();
+      // The save read the library only after every earlier library write, so
+      // what it returns holds them all.
+      expect(saved).not.toBeNull();
+      expect(useLibraryStore.getState().library).toBe(saved);
+      expect(result.current).toBe('idle');
     });
 
     it('updates library if layout has not changed during save', async () => {
