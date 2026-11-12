@@ -7,8 +7,9 @@ import { createDefaultLayout, SHARED_PREVIEW_ID } from '@/core/constants';
 import * as shareApi from '@/core/api/share';
 import { ok, err, apiServerError } from '@/core/result';
 import type { LayoutLibrary, CloudShareInfo, Layout } from '@/core/types';
-import { gridUnits, heightUnits, layoutId } from '@/core/types';
+import { gridUnits, heightUnits, layoutId, mm } from '@/core/types';
 import { claimRoomSaves, readOwnCopyRevision } from '@/features/cloud-share/utils';
+import { __resetShareUploadsForTests } from '@/features/cloud-share/utils/shareUploads';
 import { stampFor } from '@/shared/utils/roomLinkStamp';
 
 // Mock the share API module
@@ -57,6 +58,7 @@ describe('useOwnedShareSync', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
+    __resetShareUploadsForTests();
 
     // Reset stores to default state
     const defaultLayout = createDefaultLayout();
@@ -80,6 +82,79 @@ describe('useOwnedShareSync', () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+  });
+
+  describe('an edit during an upload', () => {
+    const start = createDefaultLayout();
+
+    function edit(name: string): Layout {
+      const layout: Layout = { ...start, name };
+      act(() => {
+        useLayoutStore.setState({ layout, lastEditSource: 'local' });
+      });
+      return layout;
+    }
+
+    it('does not upload a local edit that the owner undid during the upload', async () => {
+      let finishFirst: (value: Awaited<ReturnType<typeof shareApi.updateShare>>) => void = () => {};
+      vi.mocked(shareApi.updateShare).mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finishFirst = resolve;
+          })
+      );
+      useLibraryStore.setState({ library: createTestLibrary(createCloudShareInfo()) });
+      const first = edit('B');
+      const { rerender } = renderHook(() => useOwnedShareSync());
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(6000);
+      });
+      edit('C');
+      rerender();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(6000);
+      });
+      edit('B');
+      rerender();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+        finishFirst(
+          ok({
+            id: TEST_SHARE_ID,
+            url: `https://example.com/l/${TEST_SHARE_ID}`,
+            permission: 'view',
+          })
+        );
+        await vi.advanceTimersByTimeAsync(6000);
+      });
+
+      expect(vi.mocked(shareApi.updateShare).mock.calls.map(([, , layout]) => layout)).toEqual([
+        first,
+      ]);
+    });
+  });
+
+  it('uploads an edit to a field that only the share stores, such as the Y grid pitch', async () => {
+    useLibraryStore.setState({ library: createTestLibrary(createCloudShareInfo()) });
+    const start = createDefaultLayout();
+    useLayoutStore.setState({ layout: start, lastEditSource: 'local' });
+    const { rerender } = renderHook(() => useOwnedShareSync());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(6000);
+    });
+    const edited: Layout = { ...start, gridUnitMmY: mm(40) };
+    act(() => {
+      useLayoutStore.setState({ layout: edited, lastEditSource: 'local' });
+    });
+    rerender();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(6000);
+    });
+
+    expect(vi.mocked(shareApi.updateShare).mock.calls.map(([, , layout]) => layout)).toEqual([
+      start,
+      edited,
+    ]);
   });
 
   describe('sync conditions', () => {

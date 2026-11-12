@@ -14,7 +14,13 @@ import { useEffect, useRef } from 'react';
 import { useMutation, useStorage, type LiveblocksStorage } from '@/liveblocks.config';
 import { updateShare } from '@/core/api/share';
 import { isOk } from '@/core/result';
-import { claimRoomSaves } from '@/features/cloud-share/utils';
+import {
+  claimRoomSaves,
+  dropWaitingUpload,
+  keepShareLayout,
+  queueShareUpload,
+  type ShareUpload,
+} from '@/features/cloud-share/utils';
 import {
   isLaterRevision,
   roomLayoutFingerprint,
@@ -45,7 +51,6 @@ export function useCloudShareAutoSync(
   const roomLayout = useStorage((root) => root.layout);
   const linkFingerprint = useStorage((root) => root.metadata?.linkFingerprint);
 
-  const isSavingRef = useRef(false);
   const mountedShareIdRef = useRef<string | null>(null);
   const pendingSaveRef = useRef<(() => void) | null>(null);
 
@@ -75,33 +80,34 @@ export function useCloudShareAutoSync(
     if (!shareId || !deleteToken || !roomLayout) return;
 
     const fingerprint = roomLayoutFingerprint(roomLayout);
+    const upload: ShareUpload = {
+      key: `room:${fingerprint}`,
+      // Silently ignore failures - this is background sync, user isn't waiting
+      send: () =>
+        updateShare(shareId, deleteToken, roomLayout).then((result) =>
+          isOk(result) ? result.value : null
+        ),
+      record: ({ lastUpdatedAt }) => {
+        // A save that lands after the owner left the room must not stamp another room.
+        if (mountedShareIdRef.current !== shareId) return;
+        recordSave({
+          linkFingerprint: fingerprint,
+          ...(lastUpdatedAt ? { linkUpdatedAt: lastUpdatedAt } : {}),
+        });
+      },
+    };
+
     // The room's record is the only "already saved" signal: another owner tab
     // can save a different layout after this one, which a per-tab memory misses.
-    if (fingerprint === linkFingerprint) return;
+    if (fingerprint === linkFingerprint) {
+      keepShareLayout(shareId, upload);
+      return;
+    }
 
+    dropWaitingUpload(shareId);
     const save = (): void => {
       pendingSaveRef.current = null;
-      if (isSavingRef.current) return;
-      isSavingRef.current = true;
-
-      updateShare(shareId, deleteToken, roomLayout)
-        .then((result) => {
-          // Silently ignore failures - this is background sync, user isn't waiting
-          if (!isOk(result)) return;
-          // A save that lands after the owner left the room must not stamp another room.
-          if (mountedShareIdRef.current !== shareId) return;
-          const { lastUpdatedAt } = result.value;
-          recordSave({
-            linkFingerprint: fingerprint,
-            ...(lastUpdatedAt ? { linkUpdatedAt: lastUpdatedAt } : {}),
-          });
-        })
-        .catch(() => {
-          // Silently ignore network errors
-        })
-        .finally(() => {
-          isSavingRef.current = false;
-        });
+      queueShareUpload(shareId, upload);
     };
     pendingSaveRef.current = save;
     const timer = setTimeout(save, CLOUD_SYNC_DEBOUNCE_MS);
@@ -112,10 +118,10 @@ export function useCloudShareAutoSync(
   }, [shareId, deleteToken, roomLayout, linkFingerprint, recordSave]);
 
   // When the owner leaves the room (a layout switch, or the link becomes
-  // view-only), this saves a change that is still in its debounce. That save
-  // lands after the room is gone and records nothing in it. The room still
-  // counts the change as unsaved, so it keeps the change over a joiner's copy
-  // until the owner's next visit records it.
+  // view-only), this saves a change that is still in its debounce, after any
+  // upload in flight. That save lands after the room is gone and records
+  // nothing in it. The room still counts the change as unsaved, so it keeps
+  // the change over a joiner's copy until the owner's next visit records it.
   useEffect(() => {
     return () => {
       pendingSaveRef.current?.();
