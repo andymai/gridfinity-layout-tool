@@ -43,6 +43,17 @@ describe('CustomPropertiesEditor', () => {
       expect(getByText('2 custom properties')).toBeInTheDocument();
     });
 
+    it('counts one property in the singular', () => {
+      const { getByText } = render(
+        <CustomPropertiesEditor
+          customProperties={{ key1: 'value1' }}
+          onChange={mockOnChange}
+          variant="desktop"
+        />
+      );
+      expect(getByText('1 custom property')).toBeInTheDocument();
+    });
+
     it('renders Add button when not at max', () => {
       const { getByLabelText } = render(
         <CustomPropertiesEditor onChange={mockOnChange} variant="desktop" />

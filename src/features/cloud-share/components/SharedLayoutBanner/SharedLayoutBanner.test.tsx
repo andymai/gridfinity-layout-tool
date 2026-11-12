@@ -341,10 +341,10 @@ describe('SharedLayoutBanner', () => {
 
       await waitFor(() => {
         expect(createLayoutEntry).toHaveBeenCalledWith(
-          expect.objectContaining({ name: 'share.banner.importedName' }),
+          expect.objectContaining({ name: 'layouts.importedName' }),
           expect.anything(),
           expect.objectContaining({
-            name: 'share.banner.importedName',
+            name: 'layouts.importedName',
             forkedFrom: { name: 'Original Name' },
           })
         );

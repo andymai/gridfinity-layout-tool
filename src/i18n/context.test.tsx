@@ -176,7 +176,7 @@ describe('interpolated values', () => {
   });
 
   it('inserts user text literally outside React', () => {
-    expect(getStaticTranslation('share.banner.importedName', { name })).toBe(`${name} (imported)`);
+    expect(getStaticTranslation('layouts.importedName', { name })).toBe(`${name} (imported)`);
     expect(getStaticTranslation('layers.confirmDelete.message', { name, count: 2 })).toBe(
       `Delete "${name}"? The 2 bins on this layer will be moved to the Stash.`
     );
@@ -189,7 +189,7 @@ describe('interpolated values', () => {
     const { result } = renderHook(() => useLocale(), { wrapper });
 
     await waitFor(() => expect(result.current.isReady).toBe(true));
-    expect(result.current.t('share.banner.importedName', { name })).toBe(`${name} (imported)`);
+    expect(result.current.t('layouts.importedName', { name })).toBe(`${name} (imported)`);
     expect(result.current.t('layers.confirmDelete.message', { name, count: 1 })).toBe(
       `Delete "${name}"? The 1 bin on this layer will be moved to the Stash.`
     );
@@ -246,6 +246,8 @@ describe('fallback strings', () => {
     'toast.drawerLinkOpened',
     'toast.drawerLinkInvalid',
     'toast.layoutCreateFailed',
+    'layouts.copyName',
+    'layouts.importedName',
   ])('resolves %s exactly as en.ts does before any locale loads', (key) => {
     _setLoadedEn(null);
     _resetActiveTranslations();
