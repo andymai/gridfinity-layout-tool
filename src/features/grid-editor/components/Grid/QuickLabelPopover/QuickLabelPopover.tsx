@@ -151,9 +151,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
         {/* Header */}
         <div className="px-3 py-2 border-b border-stroke-subtle bg-surface-secondary">
           <div className="text-xs font-medium text-content-secondary">
-            {t('grid.labelFor')}
-            {bin.width}×{bin.depth}
-            {t('grid.bin')}
+            {t('grid.labelForBin', { size: `${bin.width}×${bin.depth}` })}
           </div>
         </div>
 

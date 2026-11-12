@@ -1,14 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach, onTestFinished } from 'vitest';
+import { render, fireEvent, screen, waitFor } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
 import { QuickLabelPopover } from './QuickLabelPopover';
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { createDefaultLayout } from '@/core/constants';
 import { binId, gridUnits, heightUnits } from '@/core/types';
-
-// Mock i18n
-vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 // Mock mutations
 vi.mock('@/shared/contexts', () => ({
@@ -87,6 +84,38 @@ describe('QuickLabelPopover', () => {
     expect((input as HTMLInputElement).value).toBe('Test Label');
 
     document.body.removeChild(binElement);
+  });
+
+  it('names the bin size in one spaced phrase', () => {
+    const defaultLayout = createDefaultLayout();
+    const testBinId = binId('header-bin');
+    const binElement = document.createElement('div');
+    binElement.setAttribute('data-bin-id', testBinId);
+    document.body.appendChild(binElement);
+    onTestFinished(() => binElement.remove());
+    useLayoutStore.setState({
+      layout: {
+        ...defaultLayout,
+        bins: [
+          {
+            id: testBinId,
+            x: gridUnits(0),
+            y: gridUnits(0),
+            width: gridUnits(2),
+            depth: gridUnits(3),
+            height: heightUnits(3),
+            layerId: defaultLayout.layers[0].id,
+            category: defaultLayout.categories[0].id,
+            label: '',
+            notes: '',
+          },
+        ],
+      },
+    });
+    useSelectionStore.setState({ quickLabelBinId: testBinId });
+
+    render(<QuickLabelPopover />);
+    expect(screen.getByText('Label for 2×3 bin')).toBeInTheDocument();
   });
 
   it('focuses and selects input on mount', async () => {

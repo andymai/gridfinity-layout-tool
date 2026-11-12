@@ -4,21 +4,17 @@ import { PresenceAvatar } from './PresenceAvatar';
 import type { Participant } from '@/shared/hooks/usePresence';
 import { resetAllStores } from '@/test/testUtils';
 
-// Mock translation
+const translations = vi.hoisted((): Record<string, string> => ({}));
+
 vi.mock('@/i18n', () => ({
-  useTranslation: () => (key: string) => {
-    const translations: Record<string, string> = {
-      'collab.owner': 'Owner',
-      'collab.you': '(you)',
-    };
-    return translations[key] || key;
-  },
+  useTranslation: () => (key: string) => translations[key] || key,
 }));
 
 describe('PresenceAvatar', () => {
   beforeEach(() => {
     resetAllStores();
     vi.clearAllMocks();
+    Object.assign(translations, { 'collab.owner': 'Owner', 'collab.you': '(you)' });
   });
 
   const mockParticipant: Participant = {
@@ -120,6 +116,20 @@ describe('PresenceAvatar', () => {
   it('has correct aria-label', () => {
     render(<PresenceAvatar participant={mockParticipant} />);
     expect(screen.getByLabelText('Test User')).toBeInTheDocument();
+  });
+
+  it('exposes the avatar as an image named after the participant', () => {
+    render(<PresenceAvatar participant={mockParticipant} />);
+    expect(screen.getByRole('img', { name: 'Test User' })).toBeInTheDocument();
+  });
+
+  it('marks the self avatar in the active language', () => {
+    translations['collab.you'] = '(du)';
+    render(<PresenceAvatar participant={{ ...mockParticipant, isSelf: true }} />);
+    expect(screen.getByRole('img', { name: 'Test User (du)' })).toHaveAttribute(
+      'title',
+      'Test User (du)'
+    );
   });
 
   it('has correct aria-label for self', () => {

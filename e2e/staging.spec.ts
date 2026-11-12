@@ -22,11 +22,10 @@ import {
  * Helper to check stash bin count badge
  */
 function getStashBinCount(page: Page) {
-  // The bin count badge is a span with "N bins" text inside the stash header area
-  // Note: i18n always uses "bins" regardless of count
+  // The bin count badge is a span with "1 bin" or "N bins" text inside the stash header area
   return getStash(page)
     .locator('span.text-xs')
-    .filter({ hasText: /^\d+ bins$/ });
+    .filter({ hasText: /^\d+ bins?$/ });
 }
 
 test.describe('Staging Area (Stash)', () => {
@@ -73,7 +72,7 @@ test.describe('Staging Area (Stash)', () => {
 
     // Stash should now be visible with the bin
     await waitForStashVisible(page);
-    await expect(getStashBinCount(page)).toHaveText('1 bins');
+    await expect(getStashBinCount(page)).toHaveText('1 bin');
   });
 
   test('stash shows bin count', async ({ page }) => {
@@ -91,7 +90,7 @@ test.describe('Staging Area (Stash)', () => {
     await waitForStagingBinCount(page, 1);
 
     // Verify count shows 1 bin
-    await expect(getStashBinCount(page)).toHaveText('1 bins');
+    await expect(getStashBinCount(page)).toHaveText('1 bin');
 
     // Move second bin to stash
     await bins.first().click();
@@ -144,8 +143,7 @@ test.describe('Staging Area (Stash)', () => {
     // Confirm dialog should appear
     const dialog = getActiveDialog(page);
     await expect(dialog).toBeVisible();
-    // Note: i18n uses "bin(s)" for pluralization
-    await expect(dialog.getByText(/delete all.*stashed bin/i)).toBeVisible();
+    await expect(dialog.getByText(/delete the 1 stashed bin\?/i)).toBeVisible();
 
     // Confirm deletion
     await dialog.getByRole('button', { name: /clear all/i }).click();
@@ -176,7 +174,7 @@ test.describe('Staging Area (Stash)', () => {
 
     // Stash should still be visible with the bin
     await expect(stashContainer).toBeVisible();
-    await expect(getStashBinCount(page)).toHaveText('1 bins');
+    await expect(getStashBinCount(page)).toHaveText('1 bin');
   });
 
   test('dragging from stash starts stagingDrag interaction', async ({ page }) => {
@@ -319,7 +317,7 @@ test.describe('Staging Area (Stash)', () => {
       // Stash should now be collapsed (grid hidden, header still visible)
       await expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
       // Bin count badge should still be visible in header
-      await expect(getStashBinCount(page)).toHaveText('1 bins');
+      await expect(getStashBinCount(page)).toHaveText('1 bin');
       // The collapsible container should have opacity-0 class (visually hidden)
       const collapsibleContent = stashContainer.locator('.overflow-hidden');
       await expect(collapsibleContent).toHaveClass(/opacity-0/);
@@ -376,7 +374,7 @@ test.describe('Staging Area (Stash)', () => {
       await expect(collapsibleContent).toHaveClass(/opacity-0/);
 
       // Bin count should still be visible
-      await expect(getStashBinCount(page)).toHaveText('1 bins');
+      await expect(getStashBinCount(page)).toHaveText('1 bin');
     });
 
     test('stash auto-expands when dragging from grid', async ({ page }) => {

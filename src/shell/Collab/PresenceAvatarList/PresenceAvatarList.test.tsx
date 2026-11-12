@@ -64,6 +64,15 @@ describe('PresenceAvatarList', () => {
     expect(exposed).toHaveLength(1);
   });
 
+  it('names each person once, from the text beside a hidden avatar', () => {
+    render(<PresenceAvatarList participants={mockParticipants} />);
+    expect(screen.queryAllByRole('img')).toHaveLength(0);
+    for (const name of ['User 1', 'User 2']) {
+      const exposed = screen.getAllByText(name).filter((element) => !isInaccessible(element));
+      expect(exposed).toHaveLength(1);
+    }
+  });
+
   it('highlights self with background', () => {
     const { container } = render(<PresenceAvatarList participants={mockParticipants} />);
     const listItems = container.querySelectorAll('li');
