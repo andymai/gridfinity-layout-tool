@@ -1,0 +1,21 @@
+src/shared/utils/entity.ts
+  s_1cc363bb3cc76d::t_f645a4304b791f 21-31
+src/shared/utils/entity.test.ts
+  s_1cc363bb3cc76d::t_b8c319d1b02732 112-143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dbed9ac43dd10656a70681fa1928ce5ef444d00b",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
