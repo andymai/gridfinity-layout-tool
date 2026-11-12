@@ -1,0 +1,21 @@
+src/features/bin-designer/components/preview/BinSplitLines/BinSplitLines.test.tsx
+  s_1cc363bb3cc76d::t_72203e7b463001 76-84
+src/features/bin-designer/components/preview/BinSplitLines/BinSplitLines.tsx
+  s_1cc363bb3cc76d::t_56381c4f344ffa 34-58,70,74-84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "82f7cdc2aad566282ce1e1efbbb3b7c3ff70e9cc",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
