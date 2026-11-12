@@ -448,6 +448,46 @@ describe('useLayoutSwitcher', () => {
   });
 
   describe('createNewLayout', () => {
+    function previewShare(permission: 'view' | 'edit'): void {
+      useSharedPreviewStore.setState({
+        sharedPreview: {
+          layout: createTestLayout('Shared'),
+          originalName: 'Shared Layout',
+          authorName: null,
+          cloudShareId: 'share-1',
+          permission,
+        },
+      });
+    }
+
+    it.each(['view', 'edit'] as const)(
+      'leaves the %s shared preview when it opens the new layout',
+      async (permission) => {
+        previewShare(permission);
+        const { result } = renderHook(() => useLayoutSwitcher());
+
+        await act(async () => {
+          expectOk(await result.current.createNewLayout('New'));
+        });
+
+        expect(useSharedPreviewStore.getState().sharedPreview).toBeNull();
+      }
+    );
+
+    it('keeps the shared preview when the creation fails', async () => {
+      previewShare('edit');
+      vi.mocked(storage.createLayoutEntry).mockResolvedValueOnce(
+        err(storageNotFound('gridfinity-layout-new'))
+      );
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      await act(async () => {
+        await result.current.createNewLayout('New');
+      });
+
+      expect(useSharedPreviewStore.getState().sharedPreview?.cloudShareId).toBe('share-1');
+    });
+
     it('creates new layout and switches to it', async () => {
       const { result } = renderHook(() => useLayoutSwitcher());
 

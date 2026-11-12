@@ -192,6 +192,7 @@ export function useLayoutSwitcher() {
           return result;
         }
 
+        clearSharedLayoutPreview();
         setLibrary(result.value.library);
         const newLayoutId = layoutId(result.value.layoutId);
         activateLayout(result.value.layout, newLayoutId);
@@ -211,6 +212,7 @@ export function useLayoutSwitcher() {
       saveCurrentLayout,
       // Note: library removed - we use fresh state via getState()
       setLibrary,
+      clearSharedLayoutPreview,
       activateLayout,
       addToast,
       failureMessage,
