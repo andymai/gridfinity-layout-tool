@@ -1,0 +1,25 @@
+scripts/docs-capture/shots/baseplatesPrinting.ts
+  s_1cc363bb3cc76d::t_f44bc5579fea1c 1104
+apps/docs/media/designer-save-and-reuse-variant.json
+  s_1cc363bb3cc76d::t_bd6f0cd0498184 1-5
+apps/docs/media/layouts-organizing-history.json
+  s_1cc363bb3cc76d::t_7daab92050ef1e 3-4
+apps/docs/media/sharing-share-links-banner.json
+  s_1cc363bb3cc76d::t_eb0371b4f46d0c 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9ee74f1903d4cd6fd9f9084f61f3119ca5be6b8f",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
