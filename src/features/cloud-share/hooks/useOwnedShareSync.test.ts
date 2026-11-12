@@ -84,6 +84,56 @@ describe('useOwnedShareSync', () => {
     vi.restoreAllMocks();
   });
 
+  describe('an edit during an upload', () => {
+    const start = createDefaultLayout();
+
+    function edit(name: string): Layout {
+      const layout: Layout = { ...start, name };
+      act(() => {
+        useLayoutStore.setState({ layout, lastEditSource: 'local' });
+      });
+      return layout;
+    }
+
+    it('does not upload a local edit that the owner undid during the upload', async () => {
+      let finishFirst: (value: Awaited<ReturnType<typeof shareApi.updateShare>>) => void = () => {};
+      vi.mocked(shareApi.updateShare).mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finishFirst = resolve;
+          })
+      );
+      useLibraryStore.setState({ library: createTestLibrary(createCloudShareInfo()) });
+      const first = edit('B');
+      const { rerender } = renderHook(() => useOwnedShareSync());
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(6000);
+      });
+      edit('C');
+      rerender();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(6000);
+      });
+      edit('B');
+      rerender();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+        finishFirst(
+          ok({
+            id: TEST_SHARE_ID,
+            url: `https://example.com/l/${TEST_SHARE_ID}`,
+            permission: 'view',
+          })
+        );
+        await vi.advanceTimersByTimeAsync(6000);
+      });
+
+      expect(vi.mocked(shareApi.updateShare).mock.calls.map(([, , layout]) => layout)).toEqual([
+        first,
+      ]);
+    });
+  });
+
   describe('sync conditions', () => {
     it('does not sync when layout has no cloudShare', async () => {
       // Library has no cloudShare

@@ -5,5 +5,6 @@ export {
   dropWaitingUpload,
   keepShareLayout,
   queueShareUpload,
+  type SavedUpload,
   type ShareUpload,
 } from './shareUploads';

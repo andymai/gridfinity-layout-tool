@@ -4,28 +4,36 @@ import {
   dropWaitingUpload,
   keepShareLayout,
   queueShareUpload,
+  type SavedUpload,
   type ShareUpload,
 } from './shareUploads';
 
 const SHARE = 'share-1';
 
-/** An upload whose result the test gives; `runs` lists the keys in run order. */
+/**
+ * Uploads whose result the test gives. `runs` lists the keys in send order,
+ * and `records` the name of each request that recorded a save.
+ */
 function uploads() {
   const runs: string[] = [];
-  const finishers: ((saved: boolean) => void)[] = [];
-  const make = (key: string): ShareUpload => ({
+  const records: string[] = [];
+  const finishers: ((saved: SavedUpload | null) => void)[] = [];
+  const make = (key: string, name = key): ShareUpload => ({
     key,
-    run: () =>
-      new Promise<boolean>((resolve) => {
+    send: () =>
+      new Promise<SavedUpload | null>((resolve) => {
         runs.push(key);
         finishers.push(resolve);
       }),
+    record: () => {
+      records.push(name);
+    },
   });
   const finishNext = async (saved: boolean): Promise<void> => {
-    finishers.shift()?.(saved);
+    finishers.shift()?.(saved ? { lastUpdatedAt: '2026-11-01T10:00:00.000Z' } : null);
     for (let i = 0; i < 5; i++) await Promise.resolve();
   };
-  return { runs, make, finishNext };
+  return { runs, records, make, finishNext };
 }
 
 describe('shareUploads', () => {
@@ -51,12 +59,20 @@ describe('shareUploads', () => {
     expect(runs).toEqual(['a', 'b']);
   });
 
-  it('skips a waiting request for the layout that the link just took', async () => {
-    const { runs, make, finishNext } = uploads();
-    queueShareUpload(SHARE, make('a'));
-    queueShareUpload(SHARE, make('a'));
+  it('records, and does not send, a waiting request for the layout that the link just took', async () => {
+    const { runs, records, make, finishNext } = uploads();
+    queueShareUpload(SHARE, make('a', 'first'));
+    queueShareUpload(SHARE, make('a', 'second'));
     await finishNext(true);
     expect(runs).toEqual(['a']);
+    expect(records).toEqual(['first', 'second']);
+  });
+
+  it('records nothing for an upload that the link did not take', async () => {
+    const { records, make, finishNext } = uploads();
+    queueShareUpload(SHARE, make('a'));
+    await finishNext(false);
+    expect(records).toEqual([]);
   });
 
   it('runs a waiting request for the same layout when the upload fails', async () => {

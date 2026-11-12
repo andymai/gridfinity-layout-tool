@@ -23,10 +23,13 @@ import { isOk } from '@/core/result';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
 import {
   createLayoutFingerprint,
+  dropWaitingUpload,
+  keepShareLayout,
   queueShareUpload,
   recordOwnCopyRevision,
   roomClaimCount,
   roomSavesShare,
+  type ShareUpload,
 } from '@/features/cloud-share/utils';
 import type { CloudShareInfo } from '@/core/types';
 
@@ -79,30 +82,32 @@ export function useOwnedShareSync(): void {
 
     const layoutFingerprint = createLayoutFingerprint(layout);
     const claimCount = roomClaimCount(shareId);
+    const upload: ShareUpload = {
+      key: `local:${layoutFingerprint}`,
+      // Silently ignore failures - this is background sync
+      send: () =>
+        updateShare(shareId, deleteToken, layout).then((result) =>
+          isOk(result) ? result.value : null
+        ),
+      record: ({ lastUpdatedAt }) => {
+        lastSyncedRef.current = { shareId, fingerprint: layoutFingerprint, claimCount };
+        if (lastUpdatedAt) recordOwnCopyRevision(shareId, lastUpdatedAt, layout);
+      },
+    };
 
-    // Skip if the link still holds this layout from this hook's last save
+    // The link still holds this layout from this hook's last save, unless an
+    // upload in flight replaces it.
     const last = lastSyncedRef.current;
     if (
       last?.shareId === shareId &&
       last.fingerprint === layoutFingerprint &&
       last.claimCount === claimCount
     ) {
+      keepShareLayout(shareId, upload);
       return;
     }
 
-    queueShareUpload(shareId, {
-      key: `local:${layoutFingerprint}`,
-      run: async () => {
-        const result = await updateShare(shareId, deleteToken, layout);
-        // Silently ignore failures - this is background sync
-        if (!isOk(result)) return false;
-        lastSyncedRef.current = { shareId, fingerprint: layoutFingerprint, claimCount };
-        if (result.value.lastUpdatedAt) {
-          recordOwnCopyRevision(shareId, result.value.lastUpdatedAt, layout);
-        }
-        return true;
-      },
-    });
+    queueShareUpload(shareId, upload);
   }, [cloudShare, layout]);
 
   // Keep both refs aligned with the latest committed values. Uses
@@ -124,6 +129,8 @@ export function useOwnedShareSync(): void {
     if (!cloudShare) return;
     if (lastEditSource !== 'local') return;
     if (activeLayoutId === SHARED_PREVIEW_ID) return;
+    // A newer local layout replaces what waits, unless a room saves the share.
+    if (!roomSavesShare(cloudShare.id)) dropWaitingUpload(cloudShare.id);
 
     // Clear existing timer
     if (debounceTimerRef.current) {

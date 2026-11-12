@@ -546,6 +546,21 @@ describe('useCloudShareAutoSync', () => {
       expect(shareApi.updateShare).toHaveBeenLastCalledWith(SHARE_ID, TOKEN, first);
     });
 
+    it('records the save when the room, opened again, waits on the layout in flight', async () => {
+      const { unmount } = startFirstUpload();
+      await advance(1000);
+      unmount();
+      renderHook(() => useCloudShareAutoSync(SHARE_ID, TOKEN));
+      await advance(1000);
+      await settleFirst(savedResponse(NEXT_SAVE_AT));
+      await advance(0);
+
+      expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
+      expect(room.root?.metadata).toMatchObject(
+        stampFor(layoutWith('saved', 'first'), NEXT_SAVE_AT)
+      );
+    });
+
     it('lets the room, opened again, replace what it left waiting', async () => {
       const { rerender, unmount } = startFirstUpload();
       await advance(1000);

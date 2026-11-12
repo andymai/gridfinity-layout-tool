@@ -82,20 +82,19 @@ export function useCloudShareAutoSync(
     const fingerprint = roomLayoutFingerprint(roomLayout);
     const upload: ShareUpload = {
       key: `room:${fingerprint}`,
-      run: () =>
-        updateShare(shareId, deleteToken, roomLayout).then((result) => {
-          // Silently ignore failures - this is background sync, user isn't waiting
-          if (!isOk(result)) return false;
-          // A save that lands after the owner left the room must not stamp another room.
-          if (mountedShareIdRef.current === shareId) {
-            const { lastUpdatedAt } = result.value;
-            recordSave({
-              linkFingerprint: fingerprint,
-              ...(lastUpdatedAt ? { linkUpdatedAt: lastUpdatedAt } : {}),
-            });
-          }
-          return true;
-        }),
+      // Silently ignore failures - this is background sync, user isn't waiting
+      send: () =>
+        updateShare(shareId, deleteToken, roomLayout).then((result) =>
+          isOk(result) ? result.value : null
+        ),
+      record: ({ lastUpdatedAt }) => {
+        // A save that lands after the owner left the room must not stamp another room.
+        if (mountedShareIdRef.current !== shareId) return;
+        recordSave({
+          linkFingerprint: fingerprint,
+          ...(lastUpdatedAt ? { linkUpdatedAt: lastUpdatedAt } : {}),
+        });
+      },
     };
 
     // The room's record is the only "already saved" signal: another owner tab

@@ -5,37 +5,47 @@
  * upload runs waits, and a later request replaces it, so an older layout
  * never lands after a newer one from this tab.
  */
+
+/** The link's answer to a save that it took. */
+export interface SavedUpload {
+  readonly lastUpdatedAt?: string;
+}
+
 export interface ShareUpload {
   /** The layout that the upload saves. Equal keys save equal layouts. */
   readonly key: string;
-  /** Resolves true when the link took the layout. */
-  readonly run: () => Promise<boolean>;
+  /** Resolves with the link's answer, or null when the link did not take it. */
+  readonly send: () => Promise<SavedUpload | null>;
+  /** Records a save of this layout, whichever request sent it. */
+  readonly record: (saved: SavedUpload) => void;
 }
 
 interface ShareQueue {
-  inFlight: string;
   waiting: ShareUpload | null;
 }
 
 const queues = new Map<string, ShareQueue>();
 
 function start(shareId: string, upload: ShareUpload): void {
-  const queue: ShareQueue = { inFlight: upload.key, waiting: null };
+  const queue: ShareQueue = { waiting: null };
   queues.set(shareId, queue);
   void upload
-    .run()
-    .catch(() => false)
+    .send()
+    .catch(() => null)
     .then((saved) => {
       if (queues.get(shareId) !== queue) return;
       queues.delete(shareId);
+      if (saved) upload.record(saved);
       const next = queue.waiting;
-      // The link already holds what waits.
-      if (!next || (saved && next.key === queue.inFlight)) return;
-      start(shareId, next);
+      if (!next) return;
+      // The request that sent this layout can be gone (a room that the owner
+      // left), so the one that waits for it records the save.
+      if (saved && next.key === upload.key) next.record(saved);
+      else start(shareId, next);
     });
 }
 
-/** Run `upload` now, or after the upload in flight to the same share. */
+/** Send `upload` now, or after the upload in flight to the same share. */
 export function queueShareUpload(shareId: string, upload: ShareUpload): void {
   const queue = queues.get(shareId);
   if (queue) queue.waiting = upload;
