@@ -3,7 +3,9 @@ import { createTestBin, createTestLayout } from '@/test/testUtils';
 import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
 import type { Bin, Layout } from '@/core/types';
 import { canPlaceBin } from '@/shared/utils/validationPlacement';
-import { groupMoveLands, moveOrder } from './moveOrder';
+import { landUpdates } from '@/shared/utils/changeOrder';
+import { STAGING_ID } from '@/core/constants';
+import { groupMoveLands, moveOrder, swapLands, swapUpdates } from './moveOrder';
 
 const layout = createTestLayout({
   drawer: { width: gridUnits(10), depth: gridUnits(10), height: heightUnits(20) },
@@ -101,5 +103,67 @@ describe('groupMoveLands', () => {
     const beside = at('beside', 1, 0, { height: heightUnits(6) });
     const both = { ...layout, bins: [held, beside] };
     expect(groupMoveLands(moveOrder([held, beside], 1, 0, L1, both), 1, 0, L1, both)).toBe(false);
+  });
+});
+
+describe('swapUpdates', () => {
+  const square = (id: string, x: number, overrides: Partial<Bin> = {}): Bin =>
+    at(id, x, 0, { width: gridUnits(2), depth: gridUnits(2), ...overrides });
+
+  it('lands a swap of two bins that two plain moves cannot', () => {
+    const a = square('a', 0);
+    const b = square('b', 2);
+    const both = { ...layout, bins: [a, b] };
+    const aToB = { id: a.id, updates: { x: gridUnits(2), y: gridUnits(0) } };
+    const bToA = { id: b.id, updates: { x: gridUnits(0), y: gridUnits(0) } };
+    expect(landUpdates([aToB, bToA], both).lands).toBe(false);
+    expect(landUpdates([bToA, aToB], both).lands).toBe(false);
+
+    expect(swapLands(a, b, false, both)).toBe(true);
+  });
+
+  it('ends with each bin on the spot the other left, back on its layer', () => {
+    const a = square('a', 0);
+    const b = square('b', 4);
+    const [, toTarget, back] = swapUpdates(a, b, false);
+    expect(toTarget).toEqual({ id: b.id, updates: { x: 0, y: 0 } });
+    expect(back).toEqual({
+      id: a.id,
+      updates: { layerId: L1, x: 4, y: 0, width: 2, depth: 2 },
+    });
+  });
+
+  it('turns the dragged bin a quarter for a rotated match', () => {
+    const tall = at('tall', 0, 0, { width: gridUnits(2), depth: gridUnits(3) });
+    const wide = at('wide', 4, 0, { width: gridUnits(3), depth: gridUnits(2) });
+    const both = { ...layout, bins: [tall, wide] };
+    expect(swapUpdates(tall, wide, true)[2].updates).toMatchObject({ width: 3, depth: 2 });
+    expect(swapLands(tall, wide, true, both)).toBe(true);
+  });
+
+  // The target keeps its own size, so after a rotated swap it reaches one
+  // column past the dragged bin's old spot, onto the turned bin.
+  it('refuses a rotated swap whose bins would overlap afterwards', () => {
+    const tall = at('tall', 0, 0, { width: gridUnits(2), depth: gridUnits(3) });
+    const wide = at('wide', 2, 0, { width: gridUnits(3), depth: gridUnits(2) });
+    const both = { ...layout, bins: [tall, wide] };
+    expect(swapLands(tall, wide, true, both)).toBe(false);
+  });
+
+  it('refuses a target that is half of a pair placed on its layer', () => {
+    const a = square('a', 0);
+    const block = square('block', 4, { pairId: 'knife' });
+    const rest = square('rest', 7, { pairId: 'knife' });
+    const placed = { ...layout, bins: [a, block, rest] };
+    expect(swapLands(a, block, false, placed)).toBe(false);
+  });
+
+  it('swaps a target whose pairId has no partner on the grid', () => {
+    const a = square('a', 0);
+    const block = square('block', 4, { pairId: 'knife' });
+    expect(swapLands(a, block, false, { ...layout, bins: [a, block] })).toBe(true);
+
+    const stashed = square('rest', 0, { pairId: 'knife', layerId: STAGING_ID });
+    expect(swapLands(a, block, false, { ...layout, bins: [a, block, stashed] })).toBe(true);
   });
 });
