@@ -2,6 +2,7 @@ import { beforeAll, describe, it, expect } from 'vitest';
 import { collectRenderedClasses, readAppSources } from './renderedClasses';
 import type { RenderedClass } from './renderedClasses';
 import { findClassesWithoutCss } from './tailwindClasses';
+import { timeLimitMs } from './timeLimit';
 
 const SRC = '/app/src';
 
@@ -291,9 +292,10 @@ describe('collectRenderedClasses', () => {
 
 describe('the app source', () => {
   let rendered: RenderedClass[] = [];
+  // Coverage slows this parse of every app file past the default hook timeout.
   beforeAll(() => {
     rendered = collectRenderedClasses(readAppSources());
-  });
+  }, timeLimitMs(10_000));
 
   it('is read in full', () => {
     expect(rendered.length).toBeGreaterThan(10_000);

@@ -121,15 +121,20 @@ export default defineConfig({
         // no threshold at all, and a regression there registered as nothing.
         'src/shell/Collab/**',
         'src/shared/hooks/usePresence.ts',
+        // Playwright drivers for the docs shots and tip clips. They run only
+        // against a live app. A unit test loads them just to check the shot
+        // registry, so counting them would make each docs page lower coverage.
+        'scripts/docs-capture/**',
+        'scripts/feature-tips/**',
       ],
-      // Set just under what the suite actually achieves (84.0 / 77.3 / 80.9 /
-      // 82.5), leaving room for ordinary churn. They had drifted 6-9 points
+      // Set just under what the suite actually achieves (86.0 / 80.5 / 85.0 /
+      // 87.6), leaving room for ordinary churn. They had drifted 6-9 points
       // below reality, so a real regression could land without tripping one.
       thresholds: {
-        lines: 82,
-        branches: 75,
-        functions: 79,
-        statements: 81,
+        lines: 86,
+        branches: 78,
+        functions: 83,
+        statements: 84,
       },
     },
     projects: [
