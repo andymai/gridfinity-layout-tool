@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent, waitFor } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
 import { QuickLabelPopover } from './QuickLabelPopover';
@@ -186,6 +186,75 @@ describe('QuickLabelPopover', () => {
     expect(input.value).toBe('New Label');
 
     document.body.removeChild(binElement);
+  });
+
+  describe('placement', () => {
+    beforeEach(() => {
+      vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(120);
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    function renderOverBinAt(top: number) {
+      const defaultLayout = createDefaultLayout();
+      const testBinId = binId('test-bin-1');
+      const binElement = document.createElement('div');
+      binElement.setAttribute('data-bin-id', testBinId);
+      binElement.getBoundingClientRect = vi.fn(() => ({
+        top,
+        left: 100,
+        bottom: top + 100,
+        right: 200,
+        width: 100,
+        height: 100,
+        x: 100,
+        y: top,
+        toJSON: () => ({}),
+      }));
+      document.body.appendChild(binElement);
+      useLayoutStore.setState({
+        layout: {
+          ...defaultLayout,
+          bins: [
+            {
+              id: testBinId,
+              x: gridUnits(2),
+              y: gridUnits(2),
+              width: gridUnits(2),
+              depth: gridUnits(2),
+              height: heightUnits(3),
+              layerId: defaultLayout.layers[0].id,
+              category: defaultLayout.categories[0].id,
+              label: '',
+              notes: '',
+            },
+          ],
+        },
+      });
+      useSelectionStore.setState({ quickLabelBinId: testBinId });
+      const { getByRole } = render(<QuickLabelPopover />);
+      const popover = getByRole('textbox').closest('.animate-scale-in');
+      document.body.removeChild(binElement);
+      if (!(popover instanceof HTMLElement)) throw new Error('popover not found');
+      return popover;
+    }
+
+    it('sits above the bin without a transform that scale-in overrides', () => {
+      const popover = renderOverBinAt(300);
+      expect(popover).toHaveClass('-translate-x-1/2', '-translate-y-full');
+      expect(popover.style.transform).toBe('');
+      expect(popover.style.top).toBe('292px');
+    });
+
+    it('drops below a bin with less room above than the popover needs', () => {
+      const popover = renderOverBinAt(120);
+      expect(popover).toHaveClass('-translate-x-1/2');
+      expect(popover).not.toHaveClass('-translate-y-full');
+      expect(popover.style.transform).toBe('');
+      expect(popover.style.top).toBe('228px');
+    });
   });
 
   it('returns null when bin element not found in DOM', () => {
