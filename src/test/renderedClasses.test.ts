@@ -2,7 +2,7 @@ import { beforeAll, describe, it, expect } from 'vitest';
 import { collectRenderedClasses, readAppSources } from './renderedClasses';
 import type { RenderedClass } from './renderedClasses';
 import { findClassesWithoutCss } from './tailwindClasses';
-import { timeLimitMs } from './timeLimit';
+import { timeLimitMs } from '@/test/timeLimit';
 
 const SRC = '/app/src';
 

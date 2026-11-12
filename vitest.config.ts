@@ -127,9 +127,9 @@ export default defineConfig({
         'scripts/docs-capture/**',
         'scripts/feature-tips/**',
       ],
-      // Set just under what the suite actually achieves (86.0 / 80.5 / 85.0 /
-      // 87.6), leaving room for ordinary churn. They had drifted 6-9 points
-      // below reality, so a real regression could land without tripping one.
+      // Set just under what the suite actually achieves, leaving room for
+      // ordinary churn. Thresholds far below reality let a real regression
+      // land without tripping one.
       thresholds: {
         lines: 86,
         branches: 78,
