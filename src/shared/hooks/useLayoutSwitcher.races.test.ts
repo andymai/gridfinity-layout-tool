@@ -7,6 +7,7 @@ import { useMutations } from '@/shared/contexts/MutationsContext';
 import { connectLibraryPersistence, eventBus } from '@/core/cqrs';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
+import { useToastStore } from '@/core/store/toast';
 import { createLayoutEntry, layoutCopyName, loadLibraryAsync } from '@/core/storage';
 import { clearAllData, getAllLayoutIds } from '@/core/storage/backends/indexedDB';
 import { createDefaultLayout } from '@/core/constants';
@@ -81,13 +82,26 @@ async function untilStored(check: (library: LayoutLibrary | null) => void): Prom
 }
 
 // Each round trip to IndexedDB lets pending storage work move on, inside act.
-async function untilSaved(status: () => SaveStatus): Promise<void> {
-  for (let round = 0; status() !== 'saved'; round++) {
+async function untilStatus(
+  status: () => SaveStatus,
+  done: (current: SaveStatus) => boolean
+): Promise<void> {
+  for (let round = 0; !done(status()); round++) {
     if (round > 100) throw new Error(`autosave did not finish: ${status()}`);
     await act(async () => {
       await loadLibraryAsync();
     });
   }
+}
+
+const untilSaved = (status: () => SaveStatus): Promise<void> =>
+  untilStatus(status, (current) => current === 'saved');
+
+function errorToasts(): string[] {
+  return useToastStore
+    .getState()
+    .toasts.filter((toast) => toast.type === 'error')
+    .map((toast) => toast.message);
 }
 
 describe('useLayoutSwitcher library writes that overlap', () => {
@@ -269,5 +283,45 @@ describe('useLayoutSwitcher library writes that overlap', () => {
 
     expect(tokenOf(useLibraryStore.getState().library)).toBe('token-b');
     expect(await libraryState()).toEqual(everywhere(['A', 'B', layoutCopyName('A')]));
+  });
+
+  it('drops the autosave of the open layout when a delete removes it while the save waits', async () => {
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'requestIdleCallback', 'cancelIdleCallback'],
+    });
+    const [a, b] = await seed('A', 'B');
+    const autosave = renderHook(() => useAutoSave());
+    const layoutManager = renderHook(() => useLayoutSwitcher());
+
+    act(() => {
+      useLayoutStore.getState().importLayout(namedLayout('A edited'), a, 'local');
+    });
+    let deleted: Promise<unknown> = Promise.resolve();
+    act(() => {
+      deleted = layoutManager.result.current.deleteLayout(a);
+      // The autosave of A starts here, and waits for the delete.
+      vi.advanceTimersByTime(3000);
+    });
+    await act(async () => {
+      await deleted;
+    });
+    await untilStatus(
+      () => autosave.result.current,
+      (current) => current !== 'saving'
+    );
+
+    expect(autosave.result.current).toBe('idle');
+    expect(errorToasts()).toEqual([]);
+    expect(useLayoutStore.getState().activeLayoutId).toBe(b);
+    expect(await libraryState()).toEqual(everywhere(['B']));
+
+    act(() => {
+      useLayoutStore.getState().importLayout(namedLayout('B edited'), b, 'local');
+      vi.advanceTimersByTime(3000);
+    });
+    await untilSaved(() => autosave.result.current);
+
+    expect(errorToasts()).toEqual([]);
+    expect(await libraryState()).toEqual(everywhere(['B edited']));
   });
 });

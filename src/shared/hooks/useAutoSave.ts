@@ -1,11 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useLayoutStore, useToastStore, writeLibrary } from '@/core/store';
+import { queueLibraryWrite, useLayoutStore, useLibraryStore, useToastStore } from '@/core/store';
 import { saveLayoutWithMetadata } from '@/core/storage';
 import type { SaveResult } from '@/core/storage';
 import { isRealLayoutId } from '@/core/constants';
 import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils';
-import { err, isErr, getUserMessage, isRetryable, storageUnavailable } from '@/core/result';
+import {
+  err,
+  isErr,
+  isOk,
+  ok,
+  getUserMessage,
+  isRetryable,
+  storageUnavailable,
+} from '@/core/result';
 import type { Result, StorageError } from '@/core/result';
 import type { Layout, LayoutId } from '@/core/types';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -43,12 +51,18 @@ function reportSaveCrash(error: unknown): void {
   });
 }
 
+/** Resolves to `ok(null)` when the layout left the library before this save's turn. */
 async function writeLayout(
   savingLayoutId: LayoutId,
   layout: Layout
-): Promise<Result<SaveResult, StorageError>> {
+): Promise<Result<SaveResult | null, StorageError>> {
   try {
-    return await writeLibrary((library) => saveLayoutWithMetadata(savingLayoutId, layout, library));
+    return await queueLibraryWrite(async (library) => {
+      if (!library.entries.some((entry) => entry.id === savingLayoutId)) return ok(null);
+      const saved = await saveLayoutWithMetadata(savingLayoutId, layout, library);
+      if (isOk(saved)) useLibraryStore.getState().setLibrary(saved.value.library);
+      return saved;
+    });
   } catch (error: unknown) {
     reportSaveCrash(error);
     return err(storageUnavailable('indexedDB', error));
@@ -123,6 +137,8 @@ function createLayoutSaver(
 
     if (isErr(result)) {
       handleFailure(result.error, trigger);
+    } else if (result.value === null) {
+      handleDeleted();
     } else if (useLayoutStore.getState().activeLayoutId === savingLayoutId) {
       handleSuccess(savingLayoutId, layout);
     } else if (failureCount === 0) {
@@ -149,6 +165,15 @@ function createLayoutSaver(
     savedTimer = window.setTimeout(() => {
       onStatus('idle');
     }, SAVED_DISPLAY_MS);
+  }
+
+  // A save of a deleted layout can only fail, and a failure of a layout that
+  // is gone tells nothing about the layout that opens in its place.
+  function handleDeleted(): void {
+    failureCount = 0;
+    hasShownError = false;
+    dismissFailureToast();
+    onStatus('idle');
   }
 
   function handleFailure(error: StorageError, trigger: SaveTrigger): void {

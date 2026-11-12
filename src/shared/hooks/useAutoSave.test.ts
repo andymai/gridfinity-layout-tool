@@ -705,6 +705,31 @@ describe('useAutoSave', () => {
       }
     });
 
+    it('stops retrying, and clears the failure, once the layout is deleted', async () => {
+      save.mockResolvedValueOnce(err(storageQuotaExceeded()));
+      const { result } = renderHook(() => useAutoSave());
+      const errorToasts = (): number =>
+        useToastStore.getState().toasts.filter((toast) => toast.type === 'error').length;
+
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(result.current).toBe('error');
+      expect(errorToasts()).toBe(1);
+
+      const { library } = useLibraryStore.getState();
+      useLibraryStore.getState().setLibrary({
+        ...library,
+        entries: library.entries.filter((entry) => entry.id !== TEST_LAYOUT_ID),
+      });
+      await advance(2000);
+
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(result.current).toBe('idle');
+      expect(errorToasts()).toBe(0);
+
+      await advance(120_000);
+      expect(save).toHaveBeenCalledTimes(1);
+    });
+
     it('stops retrying once a save succeeds', async () => {
       save.mockResolvedValueOnce(err(storageQuotaExceeded()));
       const { result } = renderHook(() => useAutoSave());
