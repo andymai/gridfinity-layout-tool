@@ -1,6 +1,6 @@
 import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT, GRIDFINITY } from '@/shared/constants/bin';
-import { LIP_TIP_MM } from '@/shared/types/bin';
+import { DEFAULT_TRAY_BOTTOM, LIP_TIP_MM } from '@/shared/types/bin';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
 import { boundingBox, verticalSolidSpans } from '../__kernel-tests__/meshAssertions';
@@ -13,7 +13,6 @@ const SIZE = GRIDFINITY.GRID_SIZE;
 const HEIGHT = 3;
 const PEAK_Z = HEIGHT * GRIDFINITY.HEIGHT_UNIT + GRIDFINITY.LIP_HEIGHT;
 const WALL_TOP_Z = PEAK_Z - GRIDFINITY.LIP_HEIGHT;
-const NOTCH_TOP_Z = PEAK_Z - LIP_NOTCH_TOP_DROP_MM;
 
 /**
  * Probe depth in from the outer face: past the plain lip's deepest inset
@@ -40,23 +39,36 @@ function frontProbe(depthUnits: number, x: number): [number, number] {
   return [x, -(depthUnits * SIZE - GRIDFINITY.TOLERANCE) / 2 + PROBE_IN];
 }
 
-function expectNotchAt(mesh: MeshData, x: number, y: number): void {
-  const span = notchSpan(mesh, x, y);
+function expectNotchAt(mesh: MeshData, x: number, y: number, peakZ = PEAK_Z): void {
+  const wallTopZ = peakZ - GRIDFINITY.LIP_HEIGHT;
+  const span = notchSpan(mesh, x, y, wallTopZ);
   expect(span, `notch at (${x}, ${y})`).toBeDefined();
   if (!span) return;
   const [bottom, top] = span;
   // Stops short of the peak so the knife edge stays one loop...
-  expect(top).toBeCloseTo(NOTCH_TOP_Z, 2);
+  expect(top).toBeCloseTo(peakZ - LIP_NOTCH_TOP_DROP_MM, 2);
   // ...and hangs below the wall top on its 45 degree underside, the lip's own
   // support carried on: at PROBE_IN that face is (reach - PROBE_IN) under the
   // point where it meets the reach.
-  expect(bottom).toBeLessThan(WALL_TOP_Z);
-  expect(bottom).toBeGreaterThan(WALL_TOP_Z - (LIP_NOTCH_REACH_MM - PROBE_IN) - 0.5);
+  expect(bottom).toBeLessThan(wallTopZ);
+  expect(bottom).toBeGreaterThan(wallTopZ - (LIP_NOTCH_REACH_MM - PROBE_IN) - 0.5);
 }
 
-function expectNoNotchAt(mesh: MeshData, x: number, y: number): void {
-  expect(notchSpan(mesh, x, y), `no notch at (${x}, ${y})`).toBeUndefined();
+function expectNoNotchAt(mesh: MeshData, x: number, y: number, peakZ = PEAK_Z): void {
+  const span = notchSpan(mesh, x, y, peakZ - GRIDFINITY.LIP_HEIGHT);
+  expect(span, `no notch at (${x}, ${y})`).toBeUndefined();
 }
+
+/** A Nesting body, as switching the body type builds it. */
+const nestingBase = (attachment: 'friction' | 'magnetic'): Partial<BinParams['base']> => ({
+  style: 'lid',
+  trayBottom: {
+    ...DEFAULT_TRAY_BOTTOM,
+    floorAtBed: true,
+    attachment,
+    retentionMagnet: DEFAULT_BIN_PARAMS.lid.retentionMagnet,
+  },
+});
 
 function notched(width: number, depth: number, extra: Partial<BinParams> = {}): Partial<BinParams> {
   return {
@@ -169,6 +181,21 @@ export const lipNotches: ScenarioCase[] = [
     customAssert: (result) => {
       const yAtReach = -(2 * SIZE - GRIDFINITY.TOLERANCE) / 2 + LIP_NOTCH_REACH_MM - 0.05;
       expectNoNotchAt(result, 0, yAtReach);
+    },
+  }),
+  // A Nesting body merges the same-domain faces of the whole bin, lip included.
+  defineScenario('lip-notches #5018', 'a Nesting body previews with notches', {
+    assert: 'structural',
+    params: notched(2, 2, { base: { ...DEFAULT_BIN_PARAMS.base, ...nestingBase('friction') } }),
+  }),
+  defineScenario('lip-notches #5018', 'a magnetic Nesting body keeps its notches', {
+    assert: 'structural',
+    forExport: true,
+    params: notched(3, 2, { base: { ...DEFAULT_BIN_PARAMS.base, ...nestingBase('magnetic') } }),
+    customAssert: (result) => {
+      const peakZ = boundingBox(result.vertices).maxZ;
+      for (const x of [-21, 21]) expectNotchAt(result, ...frontProbe(2, x), peakZ);
+      expectNoNotchAt(result, ...frontProbe(2, 0), peakZ);
     },
   }),
   defineScenario('lip-notches #4783', 'a lidded bin keeps a plain lip', {

@@ -93,6 +93,8 @@ const MESH_CACHE_VERSION = 'v29';
  *
  * `bin22`: a Nesting body keeps the colour tags of its lip, label tab and label
  * support, so its faces group as a raised tray body's do.
+ * `bin21`: a notched lip's inner face comes from one cut, not two laid over
+ * each other, so it has fewer faces and a Nesting body with notches builds.
  * `bin20`: embossed label-tab text on a wall under about 1.1mm keeps its full
  * height and its Text color, where the footprint clip cut it to a sliver.
  * `bin19`: a half-socket bin's overhang feet split at the main feet's
