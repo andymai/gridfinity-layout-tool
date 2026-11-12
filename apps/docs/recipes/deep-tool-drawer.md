@@ -62,12 +62,16 @@ The two bins in a stack don't need the same height. Here's why. Each unit adds 7
 3. Under <Ui k="designLinking.inspector.linkedDesign" />, click <Ui k="designLinking.inspector.createDesign" />, then <Ui k="designLinking.createDialog.create" />. A plain bin is fine, so go back with <Ui k="toolSwitcher.layout" />.
 4. Select the bin and press <kbd>Ctrl</kbd>+<kbd>D</kbd> (<kbd>Cmd</kbd>+<kbd>D</kbd> on a Mac) three times. The copies fill the other three spots, and each one keeps the link.
 
+<Screenshot id="recipes-deep-tool-drawer-bottom-layer" alt="The plus button of Layer 1 raises its height from 3u to 14u. A drag draws a 5 by 4 bin in the front left corner. With the bin linked to a design, Ctrl D three times fills the other three spots, and each copy shows the link mark." spec="Clip. Layout editor, desktop 1440 px. Layout with a 10 x 8 grid, measured size 440 x 345 x 150 mm, one layer at 3u, no bins. In a close-up of the Layers group, click the plus button of Layer 1 eleven times. Cut to the grid and draw a 5 x 4 bin from column 1 row 1. Off camera, link it to a saved design named Tool bin. Press Ctrl+D three times with a keycap. Crop to the grid." />
+
 ## Step 4: Add the tray layer
 
 1. Click <Ui k="layers.addNewLayer" /> in the <Ui k="common.layers" /> panel. The new layer goes on top and becomes active.
 2. Set its height stepper to 6.
 3. Draw a 5 × 4 tray over the bottom-left bin. A small tag on the tray says that it rests on a 14u bin.
 4. Create a design for the tray, as in step 3.
+
+<Screenshot id="recipes-deep-tool-drawer-tray-layer" alt="The plus button in the Layers header adds Layer 2 on top, and its plus button raises it from 3u to 6u. A drag over the front left bin draws a 5 by 4 tray. A close-up shows its tag: on 14u." spec="Clip. Layout editor, desktop 1440 px. The drawer after step 3: Layer 1 at 14u with four linked 5 x 4 bins. In a close-up of the Layers group, click Add new layer, then the plus button of Layer 2 until it reads 6u. Cut to the grid and draw a 5 x 4 tray from column 1 row 1. Cut to a close-up of the tag at the top right corner of the tray." />
 
 In the bin designer, give the tray its compartments and hand holes:
 

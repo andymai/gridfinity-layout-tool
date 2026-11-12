@@ -8,7 +8,6 @@ import { useMobileStore } from '@/core/store/mobile';
 import { CONSTRAINTS } from '@/core/constants';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { DrawerDimensionsSummary } from '@/shared/components/DrawerDimensionsSummary';
 import { GridUnitInput } from '@/shared/components/GridUnitInput';
@@ -75,7 +74,6 @@ export function MobileSettingsPanel() {
     handleDrawerWidthInput,
     handleDrawerDepthInput,
     handleHalfBinToggle,
-    handleRemediate,
     handleSaveDefaults,
     handleGridUnitChange,
     setHeightUnitMm,
@@ -83,9 +81,6 @@ export function MobileSettingsPanel() {
     resetGridfinityStandard,
     showSaveDefaultsConfirm,
     setShowSaveDefaultsConfirm,
-    showHalfBinBlockedModal,
-    setShowHalfBinBlockedModal,
-    halfBinViolation,
   } = useDrawerSettings();
   const drawerCeiling = useDrawerCeiling();
 
@@ -442,15 +437,6 @@ export function MobileSettingsPanel() {
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}
       />
-
-      {halfBinViolation && (
-        <HalfGridModeBlockedModal
-          isOpen={showHalfBinBlockedModal}
-          violation={halfBinViolation}
-          onClose={() => setShowHalfBinBlockedModal(false)}
-          onRemediate={handleRemediate}
-        />
-      )}
     </div>
   );
 }

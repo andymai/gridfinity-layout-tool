@@ -54,6 +54,12 @@ function setup(props: Partial<React.ComponentProps<typeof PrintsSection>> = {}) 
   );
 }
 
+// The section renders at once with its spinner, so a wait for the section
+// itself returns before the fetch resolves.
+async function loaded(): Promise<void> {
+  await waitFor(() => expect(screen.queryByTestId('prints-section-loading')).toBeNull());
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   api.fetchPrints.mockResolvedValue(page([print('a')]));
@@ -67,7 +73,7 @@ describe('PrintsSection', () => {
 
   it('renders the summary and the list', async () => {
     setup();
-    await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+    await loaded();
     expect(screen.getByTestId('print-summary')).toBeInTheDocument();
     expect(screen.getByTestId(`print-card-${'a'.padEnd(32, 'x')}`)).toBeInTheDocument();
   });
@@ -85,7 +91,7 @@ describe('PrintsSection', () => {
     api.fetchPrints.mockResolvedValue(err({ kind: 'disabled' }));
     setup();
     // "We could not load this" is wrong when the feature is simply switched off.
-    await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+    await loaded();
     expect(screen.queryByTestId('prints-section-error')).toBeNull();
   });
 
@@ -96,7 +102,7 @@ describe('PrintsSection', () => {
 
     api.fetchPrints.mockResolvedValue(page([print('a')]));
     fireEvent.click(screen.getByText('community.prints.retry'));
-    await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+    expect(await screen.findByTestId('print-summary')).toBeInTheDocument();
   });
 
   it("marks the viewer's own print", async () => {
@@ -122,7 +128,7 @@ describe('PrintsSection', () => {
 
   it('hides load more once the cursor is exhausted', async () => {
     setup();
-    await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+    await loaded();
     expect(screen.queryByTestId('prints-load-more')).toBeNull();
   });
 
@@ -130,7 +136,7 @@ describe('PrintsSection', () => {
     const onItemsChange = vi.fn();
     setup({ onItemsChange });
 
-    await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+    await loaded();
 
     expect(onItemsChange).toHaveBeenLastCalledWith([print('a')]);
   });
@@ -151,7 +157,7 @@ describe('PrintsSection', () => {
     const onOpenPhoto = vi.fn();
     api.fetchPrints.mockResolvedValue(page([print('a', { photos: ['https://blob/x.webp'] })]));
     setup({ onOpenPhoto });
-    await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+    await loaded();
 
     fireEvent.click(screen.getByRole('button', { name: 'community.prints.photoAlt' }));
 
@@ -169,14 +175,14 @@ describe('PrintsSection', () => {
   describe('post/edit CTA', () => {
     it('is absent when no handler is supplied', async () => {
       setup();
-      await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+      await loaded();
       expect(screen.queryByTestId('community-detail-add-print')).toBeNull();
     });
 
     it('invites a first print when the viewer has none', async () => {
       const onAddPrint = vi.fn();
       setup({ onAddPrint });
-      await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+      await loaded();
 
       const cta = screen.getByTestId('community-detail-add-print');
       expect(cta).toHaveTextContent('community.print.cta');
@@ -186,7 +192,7 @@ describe('PrintsSection', () => {
 
     it('switches to editing once the viewer has a print', async () => {
       setup({ onAddPrint: vi.fn(), ownPrint: print('a') });
-      await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+      await loaded();
       expect(screen.getByTestId('community-detail-add-print')).toHaveTextContent(
         'community.print.editCta'
       );
@@ -195,7 +201,7 @@ describe('PrintsSection', () => {
     // The feature's primary conversion button, and `size="sm"` is 24px.
     it('carries a full touch target on mobile', async () => {
       setup({ onAddPrint: vi.fn(), isMobile: true });
-      await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+      await loaded();
       expect(screen.getByTestId('community-detail-add-print').className).toContain('min-h-[44px]');
     });
 
@@ -225,7 +231,7 @@ describe('PrintsSection', () => {
 
     it('offers no clear action to a non-owner', async () => {
       setup({ coverPhotoUrl: 'https://blob.example/a.webp' });
-      await waitFor(() => expect(screen.getByTestId('prints-section')).toBeInTheDocument());
+      await loaded();
       expect(screen.queryByTestId('prints-clear-cover')).toBeNull();
     });
 

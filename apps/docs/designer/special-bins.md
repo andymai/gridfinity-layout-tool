@@ -49,6 +49,8 @@ Back in the <Ui k="binDesigner.group.interior" /> group, turn on <Ui k="binDesig
 | <Ui k="binDesigner.knifeRest.style.companion" />  | A separate part with its own Gridfinity foot. It stands past the open end of the block, 21 mm away by default. |
 | <Ui k="binDesigner.knifeRest.style.integrated" /> | The rear part of the block drops to rest height, so the whole knife holder prints as one part.                 |
 
+<Screenshot id="designer-special-bins-handle-rest" alt="Turning on Handle rest shows the Style choice, and the preview shows a separate rest past the open ends of the knife slots. Picking Integrated drops the rear part of the block to rest height instead." spec="Open the Knife Block example and turn off Handle rest off camera. In close-up, turn on Handle rest, then show the block. Pick Integrated, then show the block." />
+
 <Ui k="binDesigner.knifeRest.grooveDepth" /> sets how far each handle sinks into its saddle. A deeper groove holds the knives better, but it makes the rest taller. For a companion rest, <Ui k="binDesigner.knifeRest.gap" /> sets the space to the block, and <Ui k="binDesigner.knifeRest.depth" /> sets the size of the rest.
 
 Rather not start from scratch? The gallery has a [knife block example](./save-and-reuse#start-from-an-example).
@@ -87,6 +89,8 @@ With the feature on, the <Ui k="binDesigner.group.interior" /> group shows a <Ui
 | <Ui k="binDesigner.slideTray.trayWidth" /> | Set in grid units, from 0.5 to 16. A tray wider than its bin rides across two railed bins that stand side by side.                                                                                                                          |
 | <Ui k="binDesigner.slideTray.railDrop" />  | Lowers the rail below the rim. If the tray stands above the rim, the panel tells you to increase the drop.                                                                                                                                  |
 | <Ui k="binDesigner.slideTray.clearance" /> | Sets the gap between tray and rail. It starts at 0.25 mm.                                                                                                                                                                                   |
+
+<Screenshot id="designer-special-bins-sliding-tray" alt="With the Labs feature on, turning on Sliding tray in the Interior group shows Inside bin, Over the rim, Tray width and Tray height. The preview shows the tray above the bin, with its rails inside the bin." spec="Labs flag sliding_tray on. Bin designer, bin 2 x 2 x 6. In close-up, turn on Sliding tray, then show the bin and the tray in the preview." />
 
 Not sure about the clearance? Click <Ui k="binDesigner.slideTray.fitSample.button" /> for a small test part. It has five rail stubs from 0.15 mm to 0.35 mm of clearance and one tray stub. The first rail that the stub slides in freely gives your clearance.
 

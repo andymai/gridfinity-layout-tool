@@ -23,6 +23,8 @@ Give every tool its own spot. A **cutout** is a pocket shaped like a tool, which
 
 The <Ui k="binDesigner.cutoutEditor.title" /> opens beside the 3D preview. The panel on the right has two tabs: <Ui k="binDesigner.shapeList.tabProperties" /> and <Ui k="binDesigner.shapeList.tabShapes" />. When you finish, click <Ui k="binDesigner.cutoutEditor.done" /> to close the editor.
 
+<Screenshot id="cutouts-basics-open" alt="In the Interior group, clicking Custom cutouts, then the Cut editor card. The cutout editor opens beside the 3D preview." spec="Bin designer at 1200 x 948, 3x2 bin, Shape and Lid groups folded. In close-up, click Custom cutouts, then the Cut editor card. End on the editor and the 3D preview." />
+
 ::: info
 The editor needs a desktop screen. On a phone or a tablet, you can scan a tool into the bin, but you move and change the cutouts on a computer.
 :::
@@ -32,6 +34,8 @@ The editor needs a desktop screen. On a phone or a tablet, you can scan a tool i
 ## Draw a cutout
 
 Pick a tool in the toolbar, then drag on the board. Hold <kbd>Shift</kbd> for a square or a true circle, and hold <kbd>Alt</kbd> to draw out from the center. Want a quick shape? Click without a drag, and you get a cutout of a standard size.
+
+<Screenshot id="cutouts-basics-draw" alt="Clicking the Rectangle tool and dragging a rectangle on the board. Then pressing S and clicking once adds a slot of a standard size." spec="Cut editor, 3x2 bin with one slot. In close-up on the toolbar, click Rectangle. On the board, drag a rectangle, press S and click once for a quick slot." />
 
 | Tool                                        | Key          | Use it for                                                                                                      |
 | ------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------- |
@@ -94,6 +98,8 @@ Need a ruler, a square or a tool handle to slide in from the side? Use <Ui k="bi
 
 A wall opening isn't available on a leaned cutout, in a repeated group, or on a tapered bin.
 
+<Screenshot id="cutouts-basics-wall-opening" alt="In the Shape section, clicking Right beside Open through wall. The Open top and Channel width fields appear, and the 3D preview shows the channel through the right wall." spec="Cut editor at half the window, 2x1 bin, one 64 x 24 mm rectangle near the right wall, selected. In close-up, click Right beside Open through wall. End on the 3D preview, zoomed in on the opening." />
+
 ## Cut one cutout to two depths
 
 Some tools sit deeper at one end, such as a screwdriver with a thick handle. Give that end a deeper floor:
@@ -115,6 +121,8 @@ Open <Ui k="binDesigner.cutouts.section.label" /> and type the text, up to 50 ch
 - <Ui k="binDesigner.cutoutLabelMode.socket" /> cuts a socket for a swappable label plate.
 
 <Ui k="binDesigner.cutoutTextAnchor" /> puts the label above, below, beside or on the cutout. To move it more, drag the label on the board, or use <Ui k="binDesigner.cutoutTextOffsetX" /> and <Ui k="binDesigner.cutoutTextOffsetY" />.
+
+<Screenshot id="cutouts-basics-label" alt="In the Label section, typing Hex keys in the label field. The board shows the label above the slot, and the 3D preview shows it engraved in the top." spec="Cut editor, 3x1 bin, one 100 x 16 mm slot selected. In close-up on Label, type Hex keys and press Enter. Cut to the board, then to the 3D preview zoomed in on the label." />
 
 ## When it goes wrong
 

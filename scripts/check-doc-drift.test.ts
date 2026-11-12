@@ -58,6 +58,14 @@ describe('doc drift gate', () => {
     expect(stale).toEqual([]);
   });
 
+  // Built at runtime: this file is part of the haystack, so a literal would
+  // make each name exist.
+  it('finds a name inside a longer word and flags a name found nowhere', () => {
+    expect(isDangling('useBinGeometry'.slice(3, 13))).toBe(false);
+    expect(isDangling(['zq', 'NoSuchSymbol', 'Anywhere'].join(''))).toBe(true);
+    expect(isDangling(['src/zq', 'NoSuchFile.ts'].join(''))).toBe(true);
+  });
+
   it('only treats plausible identifiers as references', () => {
     const refs = referencesIn(
       '`useBinGeometry` `a` `the quick brown` `foo/bar.ts` `MAX_LID_CUTOUTS`'

@@ -53,6 +53,8 @@ Two more things can carry a color of their own:
 
 The stacking lip can carry more than one color. Turn on <Ui k="binDesigner.colors.lip.splitZones" /> under the lip row. Then set <Ui k="binDesigner.colors.lip.cornersLabel" /> to 1, 2 or 4 and <Ui k="binDesigner.colors.lip.bandsLabel" /> to 1, 2 or 4. Corners split the lip around the bin, and bands split it from bottom to top. The panel remembers every cell color, so if you go back to more cells, your colors come back too.
 
+<Screenshot id="designer-colors-split-lip" alt="Split into color zones is turned on, and Corners is set to 4. The Front-left and Back-right rows of the lip are set to Orange. The bin then shows two orange corners on its stacking lip." spec="Bin designer, bin 2 x 2 x 3, Multi-color on. Close-up of the Exterior zones in the Color section: turn on Split into color zones, set Corners to 4, pick Orange for the Front-left row, then for the Back-right row. Cut to the bin." />
+
 ### Label tab supports
 
 The supports under a label tab print in the body color by default. Each support layer in a second color costs a filament change, so this saves print time. To print the supports in the label tab color, turn off <Ui k="binDesigner.labelSupportsBodyColor" /> in the label section.
@@ -65,6 +67,8 @@ An **accent band** recolors a strip at the top or the bottom of the bin body. Us
 2. Set the <Ui k="binDesigner.colors.accent.height" />. A new band is 2 mm high.
 3. Pick the band color.
 
+<Screenshot id="designer-colors-accent-bands" alt="Top accent is turned on, Band height is dragged up from 2 mm, and Blue is picked for the band. The bin then shows a blue band around its top." spec="Bin designer, bin 2 x 2 x 5, Multi-color on. Close-up of the Accent bands section in the Finishing group: turn on Top accent, drag Band height to about 7 mm, click the Top accent row, pick Blue. Cut to the bin." />
+
 The switch above the bands shows the height in <Ui k="binDesigner.colors.accent.unit.mm" /> or in <Ui k="binDesigner.colors.accent.unit.layers" /> at your layer height. A band covers every zone in its strip except the text. Bands color the bin body only, not the lid or separate feet.
 
 ## Set the Text color
@@ -74,6 +78,8 @@ The <Ui k="binDesigner.textColor" /> covers all lettering: label tab text, plate
 Pick a <Ui k="binDesigner.textColor" /> that stands out from the surface under the letters. Engraved and embossed letters show by their shape, even in one color. [Flat letters](./labels-and-text#pick-a-text-finish) show only by color.
 
 When flat letters have the same color as their surface, the panel warns you that they won't show. Click <Ui k="binDesigner.textColor.useContrasting" /> to pick a color that does.
+
+<Screenshot id="designer-colors-flat-text" alt="Flat captions in the label tab color show only as faint outlines on the tabs. In the Tab text fold, Use a contrasting color is clicked under the warning. The captions then show in black." spec="Bin designer, 3 x 1 bin with 3 compartments, label tabs with captions Screws, Nuts and Washers, finish Flat, Multi-color on with the Text zone in the label tab color. Start on the bin from above, then a close-up of the label section: open Tab text, click Use a contrasting color. Cut to the bin." />
 
 ## Work faster with the color tools
 
@@ -97,6 +103,8 @@ Found a color set you like? A **palette** stores one set of zone colors so you c
 3. Type a name and save.
 
 To use a palette, open the same menu and click the palette under <Ui k="binDesigner.colors.palettes" />. A palette sets the body, lip, label tab, base, scoop, divider and text colors. The Layout Tool keeps your 20 newest palettes in your settings, so they're there for every design.
+
+<Screenshot id="designer-colors-save-palette" alt="More actions is opened, and Save current colors as palette is clicked. Shop orange is typed as the name and saved with Enter. More actions then shows Shop orange under Palettes." spec="Bin designer, the colored 2 x 2 x 3 bin with an orange lip, white label tabs and black text. Close-up of the Color section: open More actions, click Save current colors as palette, type Shop orange, press Enter, open More actions again." />
 
 ## Go back to one color
 

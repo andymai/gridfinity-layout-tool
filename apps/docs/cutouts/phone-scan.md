@@ -62,6 +62,8 @@ Keep the tool inside the ring of squares, and don't let it cover a square. The s
 1. In the bin designer, click <Ui k="binDesigner.cutouts.scanImport.title" />, then <Ui k="binDesigner.cutouts.scanImport.routePhone" />.
 2. Point the phone camera at the QR code and open the link.
 
+<Screenshot id="cutouts-phone-scan-start" alt="Clicking Scan a tool, then With your phone. The dialog shows a QR code, the link and Waiting for your photo, with Print calibration sheet and Print measuring strips below." spec="Cut editor, 2x4 bin, with the scan session requests answered by fixture data. Click Scan a tool, then With your phone. Hold on the QR code." />
+
 Took longer than 10 minutes? No problem. Click <Ui k="binDesigner.cutouts.scanImport.back" />, then click <Ui k="binDesigner.cutouts.scanImport.routePhone" /> again for a new code. If phone scanning isn't available, <Ui k="binDesigner.cutouts.scanImport.upload" /> accepts an outline that you traced in another app.
 
 ## Take the photo on the phone
@@ -94,6 +96,8 @@ A soft shadow is usually fine. The phone looks at the change in color more than 
 ### What lands on the computer
 
 On the computer, each outline comes into the cutout editor as a cutout. It already has 0.4 mm of clearance and an entry chamfer, so the tool drops in. The editor then asks how thick the tool is, to set the depth. See [Set the tool thickness](./import-svg-stl#set-the-tool-thickness).
+
+<Screenshot id="cutouts-phone-scan-arrives" alt="The scan dialog waits, then shows Added 1 cutout when the outline arrives from the phone. After Done, the new cutout is on the board, and the editor asks How thick is this tool?" spec="Cut editor, 2x4 bin, scan dialog waiting on fixture data. Let the fixture outline arrive, then click Done off camera. Cut to the board with the thickness prompt." />
 
 Before you print the whole bin, [print a fit test](./print-checks#print-a-fit-test). A **fit test** is a thin print of the bin top, so you learn about the fit before the full print.
 

@@ -49,8 +49,7 @@ describe('SortOrderConfig', () => {
     it('shows active sort summary when fields are enabled', () => {
       render(<SortOrderConfig sortOrder={defaultSortOrder} onChange={() => {}} />);
 
-      expect(screen.getByText(/Sorting by/)).toBeInTheDocument();
-      expect(screen.getByText(/Category → Position/)).toBeInTheDocument();
+      expect(screen.getByText('Sorting by Category → Position')).toBeInTheDocument();
     });
 
     it('does not show summary when no fields are enabled', () => {
@@ -302,7 +301,7 @@ describe('SortOrderConfig', () => {
       ];
       render(<SortOrderConfig sortOrder={singleEnabled} onChange={() => {}} />);
 
-      expect(screen.getByText('Sorting byCategory')).toBeInTheDocument();
+      expect(screen.getByText('Sorting by Category')).toBeInTheDocument();
     });
   });
 });

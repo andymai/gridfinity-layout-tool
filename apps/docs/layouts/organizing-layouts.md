@@ -24,6 +24,8 @@ The name of the open layout is in the header. Click the name to change it, then 
 
 Next to the name, a menu lists all your layouts, grouped by folder. Click a layout to open it. The menu also has <Ui k="layouts.newLayout" /> and <Ui k="header.manageLayouts" />.
 
+<Screenshot id="layouts-organizing-switch-menu" alt="The layout menu next to the name in the header. It lists the layouts under their folders, then New layout and Manage layouts." spec="Layout editor on desktop. Library with nine layouts in the Garage, Workbench and Kitchen folders and at the top level. Click the menu button next to the layout name. Crop to the name and the menu." />
+
 ## Use the layout manager
 
 To open the layout manager, choose <Ui k="header.manageLayouts" /> in the menu, or press <kbd>Ctrl</kbd>+<kbd>O</kbd> (<kbd>Cmd</kbd>+<kbd>O</kbd> on a Mac). On a phone, open the layouts panel from the header.
@@ -70,6 +72,8 @@ Folders keep a big library tidy, for example one folder for the garage and one f
 2. Click <Ui k="layouts.folders.newFolder" />.
 3. Type a name of up to 32 characters, then click <Ui k="layouts.folders.create" />.
 
+<Screenshot id="layouts-organizing-new-folder" alt="In the folder list of the layout manager, New folder is clicked. Basement is typed as the name, and Create adds the folder to the list." spec="Clip. Layout editor on desktop. Library with folders. Press Ctrl+O and select All layouts. Close-up on New folder at the foot of the folder list: click it, type a name and click Create. Cut to the folder rows with the new folder." />
+
 To put a layout in a folder, open its more actions menu and choose <Ui k="layouts.folders.moveTo" />. Pick the folder, then click <Ui k="layouts.folders.move" />.
 
 To rename a folder, double-click its name. To delete a folder, click its delete button two times. Don't worry about what's inside: its layouts and folders move up one level, so you lose no layouts.
@@ -88,6 +92,8 @@ To go back, click <Ui k="snapshots.restore" /> on a snapshot. A dialog gives two
 
 - <Ui k="snapshots.restore" /> replaces the current layout with the snapshot and clears the undo history.
 - <Ui k="snapshots.createCopy" /> opens the snapshot as a new layout and keeps the current one. Pick this one if you're not sure.
+
+<Screenshot id="layouts-organizing-history" alt="The History tab lists three snapshots with their ages and pictures, one with a label. A click on Restore opens a dialog with two choices." spec="Clip. Layout editor on desktop. Layout with three snapshots from the last hour, the middle one labeled. Open the History tab. Click Restore on the second snapshot, then cut to the dialog. Crop to the right panel, then to the dialog." />
 
 If the browser loses the data of a layout, the Layout Tool looks for it in its backup storage when it starts. If it finds the layout, it shows <Ui k="toast.layoutRecovered" />.
 

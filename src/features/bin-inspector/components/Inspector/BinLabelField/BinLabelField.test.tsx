@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useMemo, useState } from 'react';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import { binId, gridUnits } from '@/core/types';
+import type { Bin } from '@/core/types';
 import { createTestBin } from '@/test/testUtils';
 import { BinLabelField } from './BinLabelField';
 
@@ -50,6 +52,57 @@ describe('BinLabelField', () => {
     const input = screen.getByRole('combobox', { name: 'Bin label' });
     fireEvent.change(input, { target: { value: 'scr' } });
     expect(onChange).toHaveBeenCalledWith('scr');
+  });
+
+  describe('Enter after typing', () => {
+    function TypedField({ initial }: { initial: Bin }) {
+      const [label, setLabel] = useState(initial.label);
+      const bin = useMemo(() => ({ ...initial, label }), [initial, label]);
+      const layoutBins = useMemo(() => [bin], [bin]);
+      return <BinLabelField bin={bin} bins={layoutBins} onChange={setLabel} variant="desktop" />;
+    }
+
+    function typeThenEnter(text: string) {
+      render(<TypedField initial={createTestBin({ id: binId('t'), label: '' })} />);
+      const input = screen.getByRole('combobox', { name: 'Bin label' });
+      fireEvent.focus(input);
+      fireEvent.change(input, { target: { value: text } });
+      const topRow = within(screen.getByRole('listbox')).getAllByRole('option')[0];
+      const topSuggestion = topRow.querySelector('span')?.textContent;
+      fireEvent.keyDown(input, { key: 'Enter' });
+      return { input, topSuggestion };
+    }
+
+    it('keeps "Drill bit" instead of taking an unrelated top suggestion', () => {
+      const { input, topSuggestion } = typeThenEnter('Drill bit');
+
+      expect(topSuggestion).toBe('Screw');
+      expect(input).toHaveValue('Drill bit');
+      expect(trackEvent).not.toHaveBeenCalled();
+    });
+
+    it('keeps "Drill bits" instead of taking the near-match "Drill bit"', () => {
+      const { input, topSuggestion } = typeThenEnter('Drill bits');
+
+      expect(topSuggestion).toBe('Drill bit');
+      expect(input).toHaveValue('Drill bits');
+      expect(trackEvent).not.toHaveBeenCalled();
+    });
+
+    it('takes a suggestion that the arrow keys highlight', () => {
+      render(<TypedField initial={createTestBin({ id: binId('t'), label: '' })} />);
+      const input = screen.getByRole('combobox', { name: 'Bin label' });
+      fireEvent.focus(input);
+      fireEvent.change(input, { target: { value: 'Drill bits' } });
+      fireEvent.keyDown(input, { key: 'ArrowDown' });
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      expect(input).toHaveValue('Drill bit');
+      expect(trackEvent).toHaveBeenCalledWith(
+        'label_suggestion_accepted',
+        expect.objectContaining({ rank: 0, via_ghost: false })
+      );
+    });
   });
 
   it('disables the inline ghost on mobile', () => {

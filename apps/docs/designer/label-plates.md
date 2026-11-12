@@ -24,6 +24,8 @@ The sockets follow a common click-in label standard, so plates from other makers
 2. Under <Ui k="binDesigner.tabMode" />, select <Ui k="binDesigner.tabMode.socket" />.
 3. Type the text for each plate in the <Ui k="binDesigner.labelText" /> list.
 
+<Screenshot id="designer-label-plates-sockets" alt="Label tabs is turned on, and Swappable label is selected. A plate width and an icon button then show under each caption. The bin then shows the M3 and M4 plates in the sockets of its tabs." spec="Bin designer, bin 4 x 1 x 4 with 2 compartments and the captions M3 and M4. Close-up of the Interior group: turn on Label tabs, select Swappable label. Cut to the bin from a little higher than the default view." />
+
 Each label tab then gets a socket in its top face. A socket tab must be at least 14 mm deep, so the tab can get deeper when you switch. If no standard plate fits in the bin, you can't select <Ui k="binDesigner.tabMode.socket" />, and the panel tells you that the bin is too narrow.
 
 <Screenshot id="designer-label-plates-socket-list" alt="The Label tabs section in Swappable label mode, with a plate width and an icon picker under each caption." spec="Bin designer, 4x1 bin with 2 compartments, Interior group open, Label tabs on, Swappable label, captions M3 and M4, a bolt icon on the first row. Crop to the Label style control, the caption list and the Socket style control." />
@@ -53,6 +55,8 @@ All plates are 1.2 mm thick. If the compartments are too narrow for one plate ea
 
 Next to the width menu, an icon picker adds a small picture to the plate. It holds 45 icons in three groups: <Ui k="binDesigner.plateIcon.group.fastener" />, <Ui k="binDesigner.plateIcon.group.tooling" /> and <Ui k="binDesigner.plateIcon.group.kitchen" />. Type in <Ui k="binDesigner.plateIcon.searchPlaceholder" /> to find one, or pick <Ui k="binDesigner.plateIcon.none" />. A full-width row plate carries text only.
 
+<Screenshot id="designer-label-plates-icon" alt="The icon picker of the second plate is open, with the Search icons box, No icon and the Fasteners and Tooling icons." spec="Bin designer, the 4x1 socket bin with captions M3 and M4. Click the icon button under the second caption. Crop from the panel edge to the right edge of the picker." />
+
 The plate text follows the <Ui k="binDesigner.type.heading" /> section and its finish:
 
 - An emboss finish gives raised letters.
@@ -70,6 +74,8 @@ Every printer prints a little bigger or smaller than the next. A plate that clic
 3. Print the card flat, without supports, with the nozzle, material and settings that you use for your bins.
 4. Click the plate on the card into each socket. Find the socket that holds the plate firmly and releases it cleanly.
 5. Type the value embossed on that socket into <Ui k="binDesigner.plateFitOffset" />.
+
+<Screenshot id="designer-label-plates-fit" alt="Plate fit is opened, and Print fit test is clicked. The export dialog shows How to use for the card. Back in the panel, the plus button sets Plate fit offset to 0.05." spec="Bin designer, the 4x1 socket bin. Close-up of the label section: open Plate fit, click Print fit test. Cut to How to use and the download button in the dialog. Close it and click plus beside Plate fit offset." />
 
 The card has five sockets that step the offset from −0.10 to +0.10 mm. The offset field goes from −0.20 to +0.50 mm. A negative value makes the fit tighter, and a positive value makes it looser. Each design keeps its own offset, so set it in every design that uses label plates. The cutout sockets below use the same value.
 

@@ -58,30 +58,29 @@ describe('HalfGridModeBlockedModal', () => {
     it('renders title', () => {
       render(<HalfGridModeBlockedModal {...defaultProps} />);
 
-      expect(screen.getByText('Cannot disable half-grid mode')).toBeInTheDocument();
+      expect(screen.getByText('Turn off half-grid mode?')).toBeInTheDocument();
     });
 
-    it('shows bin count (plural)', () => {
+    it('says the bins go to the stash (plural)', () => {
       render(<HalfGridModeBlockedModal {...defaultProps} />);
 
-      // The message is now in i18n: "Some bins use fractional dimensions..."
-      expect(screen.getByText(/Some bins use fractional dimensions/)).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          '3 bins have a half-unit size or position. To turn off half-grid mode, move them to the stash.'
+        )
+      ).toBeInTheDocument();
     });
 
-    it('shows bin count (singular)', () => {
+    it('says the bin goes to the stash (singular)', () => {
       render(
         <HalfGridModeBlockedModal {...defaultProps} violation={createViolation(1, ['bin-1'])} />
       );
 
-      // The message is now in i18n
-      expect(screen.getByText(/Some bins use fractional dimensions/)).toBeInTheDocument();
-    });
-
-    it('renders explanatory message', () => {
-      render(<HalfGridModeBlockedModal {...defaultProps} />);
-
-      // The full message from i18n
-      expect(screen.getByText(/Some bins use fractional dimensions/)).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          '1 bin has a half-unit size or position. To turn off half-grid mode, move it to the stash.'
+        )
+      ).toBeInTheDocument();
     });
 
     it('renders Cancel button', () => {
@@ -90,10 +89,10 @@ describe('HalfGridModeBlockedModal', () => {
       expect(screen.getByText('Cancel')).toBeInTheDocument();
     });
 
-    it('renders Move to Staging button', () => {
+    it('names the primary button for what it does', () => {
       render(<HalfGridModeBlockedModal {...defaultProps} />);
 
-      expect(screen.getByText('Got it')).toBeInTheDocument();
+      expect(screen.getByText('Move to stash and turn off')).toBeInTheDocument();
     });
   });
 
@@ -104,7 +103,7 @@ describe('HalfGridModeBlockedModal', () => {
       const dialog = screen.getByRole('dialog');
       expect(dialog).toHaveAttribute('aria-labelledby', 'half-bin-blocked-title');
 
-      const title = screen.getByText('Cannot disable half-grid mode');
+      const title = screen.getByText('Turn off half-grid mode?');
       expect(title).toHaveAttribute('id', 'half-bin-blocked-title');
     });
 
@@ -124,21 +123,11 @@ describe('HalfGridModeBlockedModal', () => {
       expect(screen.getByLabelText('Cancel and keep half-grid mode enabled')).toBeInTheDocument();
     });
 
-    it('remediate button has accessible label with bin count', () => {
+    it('gives the primary button its visible label as its accessible name', () => {
       render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       expect(
-        screen.getByLabelText('Move 3 fractional bins to stash and disable half-grid mode')
-      ).toBeInTheDocument();
-    });
-
-    it('remediate button label uses singular when 1 bin', () => {
-      render(
-        <HalfGridModeBlockedModal {...defaultProps} violation={createViolation(1, ['bin-1'])} />
-      );
-
-      expect(
-        screen.getByLabelText('Move 1 fractional bins to stash and disable half-grid mode')
+        screen.getByRole('button', { name: 'Move to stash and turn off' })
       ).toBeInTheDocument();
     });
   });
@@ -172,10 +161,10 @@ describe('HalfGridModeBlockedModal', () => {
   });
 
   describe('remediate action', () => {
-    it('calls onRemediate when Move to Staging clicked', async () => {
+    it('calls onRemediate when Move to stash and turn off clicked', async () => {
       render(<HalfGridModeBlockedModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Got it'));
+      fireEvent.click(screen.getByText('Move to stash and turn off'));
 
       await waitFor(() => {
         expect(mockOnRemediate).toHaveBeenCalledOnce();
@@ -188,7 +177,7 @@ describe('HalfGridModeBlockedModal', () => {
 
       render(<HalfGridModeBlockedModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Got it'));
+      fireEvent.click(screen.getByText('Move to stash and turn off'));
 
       await waitFor(() => {
         expect(screen.getByText('Loading...')).toBeInTheDocument();
@@ -200,7 +189,7 @@ describe('HalfGridModeBlockedModal', () => {
 
       render(<HalfGridModeBlockedModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Got it'));
+      fireEvent.click(screen.getByText('Move to stash and turn off'));
 
       await waitFor(() => {
         expect(screen.getByText('Cancel')).toBeDisabled();
@@ -213,7 +202,7 @@ describe('HalfGridModeBlockedModal', () => {
 
       render(<HalfGridModeBlockedModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Got it'));
+      fireEvent.click(screen.getByText('Move to stash and turn off'));
 
       await waitFor(() => {
         expect(screen.getByText('Loading...')).toBeInTheDocument();
@@ -231,7 +220,7 @@ describe('HalfGridModeBlockedModal', () => {
 
       render(<HalfGridModeBlockedModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Got it'));
+      fireEvent.click(screen.getByText('Move to stash and turn off'));
 
       await waitFor(() => {
         expect(screen.getByRole('alert')).toBeInTheDocument();
@@ -244,7 +233,7 @@ describe('HalfGridModeBlockedModal', () => {
 
       render(<HalfGridModeBlockedModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Got it'));
+      fireEvent.click(screen.getByText('Move to stash and turn off'));
 
       await waitFor(() => {
         expect(screen.getByText('An error occurred while moving bins')).toBeInTheDocument();
@@ -256,14 +245,14 @@ describe('HalfGridModeBlockedModal', () => {
 
       render(<HalfGridModeBlockedModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Got it'));
+      fireEvent.click(screen.getByText('Move to stash and turn off'));
 
       await waitFor(() => {
         expect(screen.getByRole('alert')).toBeInTheDocument();
       });
 
       expect(screen.getByText('Cancel')).not.toBeDisabled();
-      expect(screen.getByText('Got it')).toBeInTheDocument();
+      expect(screen.getByText('Move to stash and turn off')).toBeInTheDocument();
     });
   });
 
@@ -281,7 +270,7 @@ describe('HalfGridModeBlockedModal', () => {
 
       render(<HalfGridModeBlockedModal {...defaultProps} />);
 
-      fireEvent.click(screen.getByText('Got it'));
+      fireEvent.click(screen.getByText('Move to stash and turn off'));
 
       await waitFor(() => {
         expect(screen.getByText('Loading...')).toBeInTheDocument();

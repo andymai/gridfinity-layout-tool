@@ -106,10 +106,22 @@ export function loadBaseline(): Baseline {
     : { tolerance: `${GROWTH_TOLERANCE}`, allowedMissingRefs: [], words: {} };
 }
 
+let tokenCache: Set<string> | null = null;
+function haystackTokens(): Set<string> {
+  if (tokenCache === null) {
+    const h = haystack();
+    tokenCache = new Set([...(h.match(/\w+/g) ?? []), ...(h.match(/[\w.-]+/g) ?? [])]);
+  }
+  return tokenCache;
+}
+
 /** True when a backticked token names nothing in the repo. */
 export function isDangling(ref: string): boolean {
+  // `bare` is a substring of `ref`, so a haystack holding `ref` also holds
+  // `bare`. A whole-token hit settles it without scanning the haystack; only a
+  // name that appears inside a longer word falls through to the scan.
   const bare = ref.replace(/^@\//, '').split('/').pop() ?? ref;
-  return !haystack().includes(ref) && !haystack().includes(bare);
+  return !haystackTokens().has(bare) && !haystack().includes(bare);
 }
 
 export { GROWTH_TOLERANCE, LONG_LINE_WORDS };

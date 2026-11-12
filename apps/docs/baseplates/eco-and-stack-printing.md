@@ -23,6 +23,8 @@ In the baseplate generator, open <Ui k="baseplate.sectionBase" /> and turn on <U
 
 The Layout Tool cuts the straight joints between the corner posts down to a thin bar. A plate then uses up to a third less filament. The bins sit on the corner posts only.
 
+<Screenshot id="baseplates-eco-plate" alt="A 4 by 3 plate in the preview. Eco plate is turned on in the Base section, and the joints between the corner posts then become thin bars." spec="Baseplate generator, 4 by 3 plate, iso view. The plate, then a close-up of the Base section where Eco plate is turned on, then the plate again." />
+
 Split pieces keep the eco plate setting. With <Ui k="baseplate.stackPrint.enable" /> on, the eco plate stays only when <Ui k="baseplate.stackPrint.mixedSizes.label" /> is also on.
 
 ## Print plates in a stack
@@ -41,6 +43,8 @@ By default, pieces with the same shape stack together, up to the number that the
 ### Print more than one set
 
 Do you have several drawers of the same size? <Ui k="baseplate.stackPrint.copies.label" /> prints the whole baseplate more than once. At 1, each plate prints once. Each extra set adds one copy of every plate, up to 20 sets.
+
+<Screenshot id="baseplates-eco-stack-copies" alt="Vertical stack is on for a plate that fits the bed in one piece, and a warning says that there is nothing to stack. Complete sets is raised to 4. The message then says that 4 plates stack into 1 print file, and the preview shows a tower of four plates." spec="Baseplate generator, 4 by 3 plate on a 256 mm bed, iso view, Vertical stack on. A close-up of the stack settings: click the plus button of Complete sets three times. Then the tower in the preview." />
 
 ### Stack plates of different sizes
 

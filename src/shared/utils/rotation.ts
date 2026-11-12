@@ -1,17 +1,31 @@
 import { canPlaceBin } from '@/shared/utils/validation';
 import { findNearbyValidPosition } from '@/shared/utils/position';
 import { canHalfTurn } from '@/shared/utils/placementTurn';
-import type { Bin, GridUnits, Layout } from '@/core/types';
+import type { Bin, GridUnits, Layout, ValidationReason } from '@/core/types';
 
 /**
  * Result of rotation validation.
  * - `valid: true` with no `movedTo`: rotation works at current position
  * - `valid: true` with `movedTo`: rotation requires moving bin to new position
- * - `valid: false`: rotation not possible
+ * - `valid: false`: rotation not possible; `messageKey` is the translation key
+ *   of the reason
  */
 export type RotationResult =
   | { valid: true; movedTo?: { x: number; y: number; distance: number } }
-  | { valid: false; message: string };
+  | { valid: false; messageKey: string };
+
+const ROTATION_BLOCKED_DEFAULT_KEY = 'toast.rotateBlocked.default';
+
+const ROTATION_BLOCKED_KEY: Record<ValidationReason, string> = {
+  out_of_bounds: 'toast.rotateBlocked.bounds',
+  exceeds_width: 'toast.rotateBlocked.bounds',
+  exceeds_depth: 'toast.rotateBlocked.bounds',
+  collision: 'toast.rotateBlocked.collision',
+  blocked_zone: 'toast.rotateBlocked.clearance',
+  outside_drawer: 'toast.rotateBlocked.drawerShape',
+  exceeds_height: ROTATION_BLOCKED_DEFAULT_KEY,
+  invalid_layer: ROTATION_BLOCKED_DEFAULT_KEY,
+};
 
 /**
  * Validate whether a bin can be rotated at its current position.
@@ -19,30 +33,13 @@ export type RotationResult =
  *
  * @param bin - The bin to rotate
  * @param layout - Current layout
- * @returns Validation result with error message if invalid
+ * @returns Validation result with the reason's translation key if invalid
  */
 export function validateRotationInPlace(bin: Bin, layout: Layout): RotationResult {
   const validation = canPlaceBin(quarterTurnCandidate(bin), bin.layerId, layout, bin.id);
 
   if (!validation.valid) {
-    let message = 'Cannot rotate bin';
-    switch (validation.reason) {
-      case 'exceeds_width':
-      case 'exceeds_depth':
-      case 'out_of_bounds':
-        message = 'Cannot rotate: bin would exceed drawer bounds';
-        break;
-      case 'collision':
-        message = 'Cannot rotate: would collide with another bin';
-        break;
-      case 'blocked_zone':
-        message = 'Cannot rotate: space is blocked by a bin below';
-        break;
-      case 'outside_drawer':
-        message = 'Cannot rotate: bin would leave the drawer shape';
-        break;
-    }
-    return { valid: false, message };
+    return { valid: false, messageKey: ROTATION_BLOCKED_KEY[validation.reason] };
   }
 
   return { valid: true };
@@ -136,7 +133,7 @@ export type BinTurnPlan =
       /** The footprint stayed put, so nothing on the 2D grid shows that it turned. */
       readonly halfTurnedInPlace?: true;
     }
-  | { readonly valid: false; readonly message: string };
+  | { readonly valid: false; readonly messageKey: string };
 
 function planHalfTurn(bin: Bin, layout: Layout, requiresPlacement: boolean): BinTurnPlan {
   const halfTurned = !bin.halfTurned;
@@ -148,7 +145,7 @@ function planHalfTurn(bin: Bin, layout: Layout, requiresPlacement: boolean): Bin
       layout,
       bin.id
     );
-    if (!check.valid) return { valid: false, message: 'Cannot rotate bin' };
+    if (!check.valid) return { valid: false, messageKey: ROTATION_BLOCKED_DEFAULT_KEY };
   }
   return { valid: true, updates: { halfTurned }, halfTurnedInPlace: true };
 }

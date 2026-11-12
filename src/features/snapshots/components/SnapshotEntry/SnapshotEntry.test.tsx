@@ -38,6 +38,15 @@ describe('SnapshotEntry', () => {
     expect(screen.getByText(/2 layers/)).toBeInTheDocument();
   });
 
+  it('counts a single layer in the singular', () => {
+    const snapshot = makeSnapshot();
+    snapshot.preview.layerCount = 1;
+
+    render(<SnapshotEntry snapshot={snapshot} {...defaultProps} />);
+
+    expect(screen.getByText('1 layer')).toBeInTheDocument();
+  });
+
   it('shows auto-saved label when no user label', () => {
     const snapshot = makeSnapshot({ label: undefined });
 

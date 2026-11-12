@@ -150,6 +150,18 @@ describe('findSimilarDesigns', () => {
     }
   });
 
+  it('breaks a full tie on mixed-case ids in code-point order, as the gallery sort does', () => {
+    const tied = ['bQ3kP0aBcD12', 'CQ3kP0aBcD12', 'aQ3kP0aBcD12', '9Q3kP0aBcD12'].map((id) =>
+      card(id, { createdAt: 500 })
+    );
+    expect(findSimilarDesigns(target, tied).map((c) => c.id)).toEqual([
+      '9Q3kP0aBcD12',
+      'CQ3kP0aBcD12',
+      'aQ3kP0aBcD12',
+      'bQ3kP0aBcD12',
+    ]);
+  });
+
   it('returns at most six designs by default', () => {
     const index = Array.from({ length: 10 }, (_, i) => card(`match-${i}`, { createdAt: i }));
     const result = findSimilarDesigns(target, index);
