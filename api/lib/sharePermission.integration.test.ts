@@ -112,6 +112,22 @@ describe.skipIf(!REDIS_TEST_URL)('share permission records (real Redis)', () => 
     expect(await recordedPermissionOf(redis, 's1', '"etag-3"')).toBe('view');
   });
 
+  it('keeps the stamp order against a record that names no share', async () => {
+    await redis.hset(
+      sharePermissionVersionKey('s1'),
+      'stamp',
+      STAMP + 2,
+      'etag',
+      '"etag-2"',
+      'permission',
+      'view'
+    );
+    await recordSharePermission(redis, 's1', write(STAMP + 1, '"etag-1"', 'edit'));
+    await recordSharePermission(failingRecord(redis), 's1', write(STAMP + 1, '"etag-1"', 'edit'));
+
+    expect(await recordedPermissionOf(redis, 's1', '"etag-2"')).toBe('view');
+  });
+
   describe('when the share is deleted and created again under its id', () => {
     /** DELETE, then a POST that holds the new token hash `h2`. */
     async function replaceShare() {

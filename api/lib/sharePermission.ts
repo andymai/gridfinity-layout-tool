@@ -16,7 +16,8 @@ export const SHARE_PERMISSION_TTL_SECONDS = 120;
 // A record of an earlier share under the id must not land: DELETE removes the
 // token hash, and POST sets a new one. Within one share, a write that lands
 // over another carries a later stamp, so the record with the latest stamp
-// names the stored blob. A record of an earlier share loses whatever its stamp.
+// names the stored blob. A record of an earlier share loses whatever its stamp;
+// a record that names no share keeps the stamp order.
 const FENCE_LUA = `
 local holder = redis.call('GET', KEYS[3])
 if ARGV[1] == '' then
@@ -26,7 +27,9 @@ elseif holder ~= ARGV[1] then
 end
 local recorded = redis.call('HMGET', KEYS[2], 'stamp', 'holder')
 local last = tonumber(recorded[1])
-if last and recorded[2] == ARGV[1] and last >= tonumber(ARGV[2]) then return 0 end
+if last and (not recorded[2] or recorded[2] == ARGV[1]) and last >= tonumber(ARGV[2]) then
+  return 0
+end
 `;
 
 const RECORD_PERMISSION_LUA = `${FENCE_LUA}
