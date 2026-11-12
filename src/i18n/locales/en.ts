@@ -5276,7 +5276,8 @@ const en: Record<string, string> = {
   // Footer
   'commandPalette.footer.run': 'Run',
   'commandPalette.footer.navigate': 'Navigate',
-  'commandPalette.footer.commandCount': '{count} commands',
+  'commandPalette.footer.commandCount_one': '{count} command',
+  'commandPalette.footer.commandCount_other': '{count} commands',
 
   // Bin example gallery entry points
   'binExamples.sidebarEntry': 'Community designs',

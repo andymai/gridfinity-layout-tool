@@ -2652,7 +2652,7 @@
   "commandPalette.scanTool": "扫描工具",
   "commandPalette.fillLayer": "均匀填满层",
   "commandPalette.fitToScreen": "适配屏幕",
-  "commandPalette.footer.commandCount": "{count} 条命令",
+  "commandPalette.footer.commandCount_other": "{count} 条命令",
   "commandPalette.footer.navigate": "导航",
   "commandPalette.footer.run": "运行",
   "commandPalette.invertSelection": "反选",
