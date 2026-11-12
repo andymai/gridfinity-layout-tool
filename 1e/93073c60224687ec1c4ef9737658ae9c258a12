@@ -1,0 +1,31 @@
+src/core/store/openLayoutSaves.test.ts
+  s_1cc363bb3cc76d::t_b3b990abd0cc94 1-47
+src/core/store/openLayoutSaves.ts
+  s_1cc363bb3cc76d::t_4431f326755002 1-54
+src/core/store/index.ts
+  s_1cc363bb3cc76d::t_07a528aef933bd 5-11
+src/features/layout-library/hooks/useDrawerLinkImport.ts
+  s_1cc363bb3cc76d::t_b9f925742fe282 2-3,6,12
+src/shared/hooks/useAutoSave.ts
+  s_1cc363bb3cc76d::t_a511c7ecf913a6 3-12,16,54-59,62-63,67-74,138-139,145,152,154,181-183
+src/shared/hooks/useLayoutSwitcher.races.test.ts
+  s_1cc363bb3cc76d::t_eae7095f35b2dd 11-17,81-97,350-411
+src/shared/hooks/useLayoutSwitcher.ts
+  s_1cc363bb3cc76d::t_68c197df4901f0 5,7-8,93-94,117,119-120,125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1e93073c60224687ec1c4ef9737658ae9c258a12",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
