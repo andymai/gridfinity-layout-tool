@@ -35,12 +35,23 @@ export function captureSelectionSnapshot(): SelectionSnapshot {
   };
 }
 
+function describeEntry(commandType: CommandType | 'unknown', commandCount = 1): string {
+  return getStaticTranslation(getCommandDescriptionKey(commandType, commandCount), {
+    count: commandCount,
+  });
+}
+
 export interface HistoryEntry {
   layout: Layout;
   commandType: CommandType | 'unknown';
+  /** How many `commandType` commands a batch ran. A mixed batch counts as one. */
+  commandCount?: number;
   /** Selection captured at the same moment as `layout`. */
   selection?: SelectionSnapshot;
 }
+
+/** Entry fields that only some pushes carry. */
+export type HistoryEntryDetails = Pick<HistoryEntry, 'commandCount'>;
 
 interface HistoryState {
   past: HistoryEntry[];
@@ -52,7 +63,8 @@ interface HistoryState {
   push: (
     layout: Layout,
     commandType?: CommandType | 'unknown',
-    selection?: SelectionSnapshot
+    selection?: SelectionSnapshot,
+    details?: HistoryEntryDetails
   ) => void;
   undo: () => void;
   redo: () => void;
@@ -80,9 +92,9 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   canUndo: false,
   canRedo: false,
 
-  push: (layout, commandType = 'unknown', selection) => {
+  push: (layout, commandType = 'unknown', selection, details) => {
     set((state) => {
-      const entry: HistoryEntry = { layout, commandType, selection };
+      const entry: HistoryEntry = { layout, commandType, selection, ...details };
       const newPast = [...state.past, entry];
       if (newPast.length > CONSTRAINTS.UNDO_LIMIT) {
         newPast.shift();
@@ -103,11 +115,19 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     const current = useLayoutStore.getState().layout;
     const currentSelection = captureSelectionSnapshot();
     const previousEntry = past[past.length - 1];
-    const { layout: previous, commandType, selection: previousSelection } = previousEntry;
+    const {
+      layout: previous,
+      commandType,
+      commandCount,
+      selection: previousSelection,
+    } = previousEntry;
 
     set((state) => ({
       past: state.past.slice(0, -1),
-      future: [{ layout: current, commandType, selection: currentSelection }, ...state.future],
+      future: [
+        { layout: current, commandType, commandCount, selection: currentSelection },
+        ...state.future,
+      ],
       canUndo: state.past.length > 1,
       canRedo: true,
     }));
@@ -123,10 +143,10 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     // Show undo toast with action description
     // NOTE: getStaticTranslation uses English only. Full locale support
     // requires a locale-aware static helper or toast i18n key support.
-    const descKey = getCommandDescriptionKey(commandType);
-    const action = getStaticTranslation(descKey);
     useToastStore.getState().addToast({
-      message: getStaticTranslation('undo.undid', { action }),
+      message: getStaticTranslation('undo.undid', {
+        action: describeEntry(commandType, commandCount),
+      }),
       type: 'info',
       duration: 2000,
     });
@@ -143,10 +163,13 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     const current = useLayoutStore.getState().layout;
     const currentSelection = captureSelectionSnapshot();
     const nextEntry = future[0];
-    const { layout: next, commandType, selection: nextSelection } = nextEntry;
+    const { layout: next, commandType, commandCount, selection: nextSelection } = nextEntry;
 
     set((state) => ({
-      past: [...state.past, { layout: current, commandType, selection: currentSelection }],
+      past: [
+        ...state.past,
+        { layout: current, commandType, commandCount, selection: currentSelection },
+      ],
       future: state.future.slice(1),
       canUndo: true,
       canRedo: state.future.length > 1,
@@ -161,10 +184,10 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     );
 
     // Show redo toast with action description
-    const descKey = getCommandDescriptionKey(commandType);
-    const action = getStaticTranslation(descKey);
     useToastStore.getState().addToast({
-      message: getStaticTranslation('undo.redid', { action }),
+      message: getStaticTranslation('undo.redid', {
+        action: describeEntry(commandType, commandCount),
+      }),
       type: 'info',
       duration: 2000,
     });

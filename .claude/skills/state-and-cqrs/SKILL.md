@@ -43,7 +43,7 @@ description: 'Zustand stores (src/core/store/) and the CQRS v2 pipeline (src/cor
 ## Recipe: multi-command single undo step
 
 1. Import `batch` from `@/core/cqrs`. Wrap dispatches: `batch(() => { mutations.deleteBin(a); mutations.deleteBin(b); })`.
-2. The callback MUST be synchronous — async escapes the `isBatching` scope and later dispatches get their own undo entries. Nesting is safe; the outer batch owns the snapshot. Undo description uses the first command type dispatched inside; the snapshot is pushed even if the callback throws.
+2. The callback MUST be synchronous — async escapes the `isBatching` scope and later dispatches get their own undo entries. Nesting is safe; the outer batch owns the snapshot. The undo label is the first command that succeeds, counted when all match; the snapshot is pushed even if the callback throws.
 3. Test that `useHistoryStore.getState().past` grows by exactly 1; reset with `_resetUndoCaptureState` from `@/core/cqrs` between tests.
 
 ## Recipe: change a persisted event's payload shape
