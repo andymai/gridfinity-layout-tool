@@ -97,9 +97,13 @@ export function addLidRetentionMagnets(
   // anchored to the bed and never takes that drop; its boss stays on the nominal
   // plane, matching the skirt `trayBottomSkirtDepth` sizes off `retentionInterfaceZ`.
   const interfaceZ = inputs.floorAtBed ? retentionInterfaceZ(inputs) : retentionBossFaceZ(inputs);
+  // A Nesting floor already covers the bed under every boss. Starting the boss
+  // inside that floor keeps its footprint from splitting the bed face, so the
+  // pocket is the only edge there.
+  const bossBottomZ = inputs.floorAtBed ? interfaceZ + LID_COPLANAR_MARGIN : interfaceZ;
   // Weld up into the floor plate by a coplanar margin so the fuse is solid.
   const bossTopZ = -topThickness + LID_COPLANAR_MARGIN;
-  const bossHeight = bossTopZ - interfaceZ;
+  const bossHeight = bossTopZ - bossBottomZ;
 
   // 1. Fuse every boss onto the floor (welds along the floor plate). Four
   // corners, plus any mid-edge magnets.
@@ -107,8 +111,8 @@ export function addLidRetentionMagnets(
   for (const { x: px, y: py, anchor } of positions) {
     const boss = scope.register(
       wallSupportedCorners && anchor === 'corner'
-        ? buildRetentionMagnetBoss(scope, inputs, px, py, bossRadius, interfaceZ, bossHeight)
-        : cylinder(bossRadius, bossHeight, { at: [px, py, interfaceZ], axis: [0, 0, 1] })
+        ? buildRetentionMagnetBoss(scope, inputs, px, py, bossRadius, bossBottomZ, bossHeight)
+        : cylinder(bossRadius, bossHeight, { at: [px, py, bossBottomZ], axis: [0, 0, 1] })
     );
     if (originToTag) {
       collectOrigins(boss, FeatureTag.LID_BODY, originToTag);
