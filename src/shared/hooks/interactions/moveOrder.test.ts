@@ -4,6 +4,7 @@ import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
 import type { Bin, Layout } from '@/core/types';
 import { canPlaceBin } from '@/shared/utils/validationPlacement';
 import { landUpdates } from '@/shared/utils/changeOrder';
+import { STAGING_ID } from '@/core/constants';
 import { groupMoveLands, moveOrder, swapLands, swapUpdates } from './moveOrder';
 
 const layout = createTestLayout({
@@ -106,8 +107,8 @@ describe('groupMoveLands', () => {
 });
 
 describe('swapUpdates', () => {
-  const square = (id: string, x: number): Bin =>
-    at(id, x, 0, { width: gridUnits(2), depth: gridUnits(2) });
+  const square = (id: string, x: number, overrides: Partial<Bin> = {}): Bin =>
+    at(id, x, 0, { width: gridUnits(2), depth: gridUnits(2), ...overrides });
 
   it('lands a swap of two bins that two plain moves cannot', () => {
     const a = square('a', 0);
@@ -147,5 +148,22 @@ describe('swapUpdates', () => {
     const wide = at('wide', 2, 0, { width: gridUnits(3), depth: gridUnits(2) });
     const both = { ...layout, bins: [tall, wide] };
     expect(swapLands(tall, wide, true, both)).toBe(false);
+  });
+
+  it('refuses a target that is half of a pair placed on its layer', () => {
+    const a = square('a', 0);
+    const block = square('block', 4, { pairId: 'knife' });
+    const rest = square('rest', 7, { pairId: 'knife' });
+    const placed = { ...layout, bins: [a, block, rest] };
+    expect(swapLands(a, block, false, placed)).toBe(false);
+  });
+
+  it('swaps a target whose pairId has no partner on the grid', () => {
+    const a = square('a', 0);
+    const block = square('block', 4, { pairId: 'knife' });
+    expect(swapLands(a, block, false, { ...layout, bins: [a, block] })).toBe(true);
+
+    const stashed = square('rest', 0, { pairId: 'knife', layerId: STAGING_ID });
+    expect(swapLands(a, block, false, { ...layout, bins: [a, block, stashed] })).toBe(true);
   });
 });

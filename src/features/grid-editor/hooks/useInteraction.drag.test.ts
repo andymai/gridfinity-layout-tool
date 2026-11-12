@@ -5,6 +5,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { binId, gridUnits, heightUnits } from '@/core/types';
+import type { BinId } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useToastStore } from '@/core/store/toast';
@@ -1032,5 +1033,80 @@ describe('swap drag (Shift+drag)', () => {
       expect(interaction.binIds).toHaveLength(2);
       expect(interaction.swapMode).toBe(false);
     }
+  });
+
+  function pairBins(pairId: string, ...ids: BinId[]): void {
+    const { layout } = useLayoutStore.getState();
+    useLayoutStore.setState({
+      layout: {
+        ...layout,
+        bins: layout.bins.map((b) => (ids.includes(b.id) ? { ...b, pairId } : b)),
+      },
+    });
+  }
+
+  function hoverDuringSwapDrag(dragged: BinId, targetCellX: number): void {
+    const gridRef = createMockGridRef();
+    const { result } = renderHook(() => useInteraction(gridRef));
+    act(() => {
+      result.current.startDrag(dragged, clientXForCell(0), CELL_ROW_0_Y, POINTER_ID, false, true);
+    });
+    act(() => {
+      document.dispatchEvent(
+        new PointerEvent('pointermove', {
+          clientX: clientXForCell(targetCellX),
+          clientY: CELL_ROW_0_Y,
+          bubbles: true,
+          isPrimary: true,
+          pointerId: POINTER_ID,
+        })
+      );
+    });
+  }
+
+  it('offers no swap with one half of a pair, and the drop leaves the pair in place', () => {
+    const dragged = addTestBin(0, 2, 2, 'A');
+    const block = addTestBin(4, 2, 2, 'Block');
+    const rest = addTestBin(7, 2, 2, 'Rest');
+    pairBins('knife', block, rest);
+
+    hoverDuringSwapDrag(dragged, 4);
+
+    const interaction = useInteractionStore.getState().interaction;
+    expect(interaction?.type).toBe('drag');
+    if (interaction?.type === 'drag') {
+      expect(interaction.swapMode).toBe(true);
+      expect(interaction.swapTarget).toBeUndefined();
+    }
+
+    act(() => {
+      document.dispatchEvent(
+        new PointerEvent('pointerup', { bubbles: true, pointerId: POINTER_ID })
+      );
+    });
+
+    expect(binById(block)).toMatchObject({ x: 4, y: 0, pairId: 'knife' });
+    expect(binById(rest)).toMatchObject({ x: 7, y: 0, pairId: 'knife' });
+    expect(binById(dragged)).not.toMatchObject({ x: 0, y: 0 });
+    expect(binById(dragged)).not.toMatchObject({ x: 4, y: 0 });
+    expect(useToastStore.getState().toasts.map((toast) => toast.message)).not.toContain(
+      'Bins swapped positions'
+    );
+  });
+
+  it('swaps with a bin whose pairId has no partner on the grid', () => {
+    const dragged = addTestBin(0, 2, 2, 'A');
+    const target = addTestBin(4, 2, 2, 'Block');
+    pairBins('knife', target);
+
+    hoverDuringSwapDrag(dragged, 4);
+    act(() => {
+      document.dispatchEvent(
+        new PointerEvent('pointerup', { bubbles: true, pointerId: POINTER_ID })
+      );
+    });
+
+    expect(binById(dragged)).toMatchObject({ x: 4, y: 0 });
+    expect(binById(target)).toMatchObject({ x: 0, y: 0 });
   });
 });

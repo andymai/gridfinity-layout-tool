@@ -2,6 +2,7 @@ import type { Bin, BinId, LayerId, Layout } from '@/core/types';
 import { gridUnits } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { changeOrder, landUpdates } from '@/shared/utils/changeOrder';
+import { pairPartner } from '@/shared/utils/binPairs';
 import type { SlantLayout } from '@/shared/utils/placedSlant';
 
 /**
@@ -80,12 +81,23 @@ export function swapUpdates(
   ];
 }
 
-/** Whether every step of `swapUpdates` lands, each checked as `bin.update` checks it. */
+/**
+ * Whether the swap can run: every step of `swapUpdates` lands, each checked as
+ * `bin.update` checks it, and neither bin has a pair partner on its layer. A
+ * swap moves each bin alone, so it would split a placed pair.
+ */
 export function swapLands(
   dragged: Bin,
   target: Bin,
   requiresRotation: boolean,
   layout: Layout
 ): boolean {
+  if (hasPartnerOnLayer(dragged, layout.bins) || hasPartnerOnLayer(target, layout.bins)) {
+    return false;
+  }
   return landUpdates(swapUpdates(dragged, target, requiresRotation), layout).lands;
+}
+
+function hasPartnerOnLayer(bin: Bin, bins: readonly Bin[]): boolean {
+  return pairPartner(bin, bins)?.layerId === bin.layerId;
 }
