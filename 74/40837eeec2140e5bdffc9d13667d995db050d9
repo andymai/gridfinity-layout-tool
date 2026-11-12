@@ -1,0 +1,21 @@
+src/shared/hooks/useSelectionActions.test.ts
+  s_1cc363bb3cc76d::t_ebbbee0a3cb048 132-206
+src/shared/hooks/useSelectionActions.ts
+  s_1cc363bb3cc76d::t_a95728d935e459 109-111,114,118,121,127,166-168,171,174,177
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7440837eeec2140e5bdffc9d13667d995db050d9",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
