@@ -7,9 +7,11 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useViewStore } from '@/core/store/view';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
+import { useLibraryStore } from '@/core/store/library';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
 import { resetAllStores, getBinId } from '@/test/testUtils';
 import { gridUnits, heightUnits } from '@/core/types';
+import type { BinId, LayerId } from '@/core/types';
 
 function createKeyboardEvent(key: string, options: Partial<KeyboardEventInit> = {}): KeyboardEvent {
   return new KeyboardEvent('keydown', {
@@ -1329,6 +1331,175 @@ describe('useKeyboard', () => {
       });
 
       expect(useViewStore.getState().showLayoutManager).toBe(true);
+    });
+  });
+
+  describe('select all shortcut', () => {
+    function addBinOn(layerId: LayerId, x: number): BinId {
+      const { addBin, layout } = useLayoutStore.getState();
+      return getBinId(
+        addBin({
+          layerId,
+          x: gridUnits(x),
+          y: gridUnits(0),
+          width: gridUnits(1),
+          depth: gridUnits(1),
+          height: heightUnits(3),
+          category: layout.categories[0].id,
+          label: '',
+          notes: '',
+        })
+      );
+    }
+
+    function seedTwoLayersAndStash(): { activeIds: BinId[] } {
+      useLayoutStore.getState().addLayer();
+      const [bottom, top] = useLayoutStore.getState().layout.layers;
+      const activeIds = [addBinOn(bottom.id, 0), addBinOn(bottom.id, 2)];
+      addBinOn(top.id, 4);
+      addBinOn(STAGING_ID, 0);
+      useSelectionStore.setState({ activeLayerId: bottom.id });
+      return { activeIds };
+    }
+
+    it.each([
+      ['Ctrl+A', { ctrlKey: true }],
+      ['Cmd+A', { metaKey: true }],
+    ])('selects every bin on the active layer only with %s', (_label, modifiers) => {
+      const { activeIds } = seedTwoLayersAndStash();
+      renderHook(() => useKeyboard());
+
+      let event: KeyboardEvent | undefined;
+      act(() => {
+        event = pressKey('a', modifiers);
+      });
+
+      expect([...useSelectionStore.getState().selectedBinIds].sort()).toEqual(
+        [...activeIds].sort()
+      );
+      expect(event?.defaultPrevented).toBe(true);
+    });
+
+    it('replaces a partial selection with the whole layer', () => {
+      const { activeIds } = seedTwoLayersAndStash();
+      useSelectionStore.getState().setSelectedBins([activeIds[1]]);
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('a', { ctrlKey: true });
+      });
+
+      expect([...useSelectionStore.getState().selectedBinIds].sort()).toEqual(
+        [...activeIds].sort()
+      );
+    });
+
+    it('keeps the page text unselected on an empty layer', () => {
+      renderHook(() => useKeyboard());
+
+      let event: KeyboardEvent | undefined;
+      act(() => {
+        event = pressKey('a', { ctrlKey: true });
+      });
+
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
+      expect(event?.defaultPrevented).toBe(true);
+    });
+
+    it.each([
+      ['Ctrl+Shift+A', { ctrlKey: true, shiftKey: true }, 'A'],
+      ['Ctrl+Alt+A', { ctrlKey: true, altKey: true }, 'a'],
+    ])('leaves %s alone', (_label, modifiers, key) => {
+      seedTwoLayersAndStash();
+      renderHook(() => useKeyboard());
+
+      let event: KeyboardEvent | undefined;
+      act(() => {
+        event = pressKey(key, modifiers);
+      });
+
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
+      expect(event?.defaultPrevented).toBe(false);
+    });
+
+    it('leaves Ctrl+A to a text field that has the focus', () => {
+      seedTwoLayersAndStash();
+      renderHook(() => useKeyboard());
+
+      const input = document.createElement('input');
+      document.body.appendChild(input);
+      const event = createKeyboardEvent('a', { ctrlKey: true });
+      act(() => {
+        input.dispatchEvent(event);
+      });
+
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
+      expect(event.defaultPrevented).toBe(false);
+      document.body.removeChild(input);
+    });
+  });
+
+  describe('new layout shortcut', () => {
+    async function settle(): Promise<void> {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+    }
+
+    it.each([
+      ['Shift+N', 'N', { shiftKey: true }],
+      ['Ctrl+N', 'n', { ctrlKey: true }],
+      ['Cmd+N', 'n', { metaKey: true }],
+    ])('creates and opens a new layout on %s', async (_label, key, modifiers) => {
+      const entriesBefore = useLibraryStore.getState().library.entries.length;
+      renderHook(() => useKeyboard());
+
+      let event: KeyboardEvent | undefined;
+      act(() => {
+        event = pressKey(key, modifiers);
+      });
+      await vi.waitFor(() => {
+        expect(useLibraryStore.getState().library.entries).toHaveLength(entriesBefore + 1);
+      });
+
+      const created = useLibraryStore.getState().library.entries.at(-1);
+      expect(useLayoutStore.getState().activeLayoutId).toBe(created?.id);
+      expect(event?.defaultPrevented).toBe(true);
+    });
+
+    it.each([
+      ['N', 'n', {}],
+      ['Ctrl+Shift+N', 'N', { ctrlKey: true, shiftKey: true }],
+      ['Alt+Shift+N', 'N', { altKey: true, shiftKey: true }],
+    ])('does not create a layout on %s', async (_label, key, modifiers) => {
+      const entriesBefore = useLibraryStore.getState().library.entries.length;
+      renderHook(() => useKeyboard());
+
+      let event: KeyboardEvent | undefined;
+      act(() => {
+        event = pressKey(key, modifiers);
+      });
+      await settle();
+
+      expect(useLibraryStore.getState().library.entries).toHaveLength(entriesBefore);
+      expect(event?.defaultPrevented).toBe(false);
+    });
+
+    it('leaves Shift+N to a text field that has the focus', async () => {
+      const entriesBefore = useLibraryStore.getState().library.entries.length;
+      renderHook(() => useKeyboard());
+
+      const input = document.createElement('input');
+      document.body.appendChild(input);
+      const event = createKeyboardEvent('N', { shiftKey: true });
+      act(() => {
+        input.dispatchEvent(event);
+      });
+      await settle();
+
+      expect(useLibraryStore.getState().library.entries).toHaveLength(entriesBefore);
+      expect(event.defaultPrevented).toBe(false);
+      document.body.removeChild(input);
     });
   });
 

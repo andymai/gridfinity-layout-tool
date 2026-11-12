@@ -74,6 +74,17 @@ export function handleEscape(e: KeyboardEvent, ctx: KeyboardContext): boolean {
   return true;
 }
 
+export function handleSelectAll(e: KeyboardEvent, ctx: KeyboardContext): boolean {
+  const ctrlOrMeta = e.ctrlKey || e.metaKey;
+  if (!ctrlOrMeta || e.shiftKey || e.altKey || e.key.toLowerCase() !== SHORTCUTS.SELECT_ALL)
+    return false;
+  // Claimed on an empty layer too: the browser default selects the page's text.
+  e.preventDefault();
+  const layerBinIds = getLayerBins(ctx.layout.bins, ctx.activeLayerId).map((bin) => bin.id);
+  if (layerBinIds.length > 0) ctx.setSelectedBins(layerBinIds);
+  return true;
+}
+
 export function handleDuplicate(e: KeyboardEvent, ctx: KeyboardContext): boolean {
   const ctrlOrMeta = e.ctrlKey || e.metaKey;
   if (!ctrlOrMeta || e.key.toLowerCase() !== SHORTCUTS.DUPLICATE || ctx.selectedBinIds.length === 0)
@@ -127,6 +138,20 @@ export function handleLayoutManager(e: KeyboardEvent, ctx: KeyboardContext): boo
   if (!ctrlOrMeta || e.key.toLowerCase() !== SHORTCUTS.LAYOUT_MANAGER) return false;
   e.preventDefault();
   ctx.setShowLayoutManager(true);
+  return true;
+}
+
+export function handleNewLayout(e: KeyboardEvent, ctx: KeyboardContext): boolean {
+  if (e.altKey || e.key.toLowerCase() !== SHORTCUTS.NEW_LAYOUT) return false;
+  const ctrlOrMeta = e.ctrlKey || e.metaKey;
+  // Shift+N is the advertised key. A browser tab keeps Ctrl/Cmd+N for a new
+  // window and never sends it to the page; an installed app window and
+  // fullscreen do send it, so it binds as well.
+  const viaShift = e.shiftKey && !ctrlOrMeta;
+  const viaCtrlOrMeta = ctrlOrMeta && !e.shiftKey;
+  if (!viaShift && !viaCtrlOrMeta) return false;
+  e.preventDefault();
+  void ctx.createNewLayout();
   return true;
 }
 

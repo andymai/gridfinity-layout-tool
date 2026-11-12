@@ -10,6 +10,7 @@
  * **Selection & Editing:**
  * - Delete/Backspace: Delete selected bins
  * - Escape: Clear selection and exit paint mode
+ * - Ctrl+A: Select every bin on the active layer
  * - Ctrl+D: Duplicate selected bins
  * - Ctrl+Z: Undo
  * - Ctrl+Y / Ctrl+Shift+Z: Redo
@@ -19,6 +20,7 @@
  * - W/S: Navigate layers (up/down)
  * - A/D: Cycle through bins on current layer
  * - +/-: Zoom in/out
+ * - Shift+N (or Ctrl+N where the browser allows it): Create a new layout
  *
  * **Bin Operations:**
  * - [/]: Cycle category of selected bins, or cycle active drawing category if no bin selected
@@ -52,6 +54,7 @@ import {
 } from '@/core/store';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useMutations } from '@/shared/contexts';
+import { useLayoutSwitcher } from '@/shared/hooks';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useGridNavigation } from '@/features/grid-editor';
 import { useTranslation } from '@/i18n';
@@ -60,10 +63,12 @@ import type { KeyboardContext, KeyboardHandler } from './types';
 import {
   handleDelete,
   handleEscape,
+  handleSelectAll,
   handleDuplicate,
   handleUndo,
   handleRedo,
   handleLayoutManager,
+  handleNewLayout,
   handleRotate,
   handleZoom,
   handleLayerNavigation,
@@ -85,6 +90,8 @@ const handlers: KeyboardHandler[] = [
   handleUndo,
   handleRedo,
   handleLayoutManager,
+  handleNewLayout,
+  handleSelectAll,
   handleDuplicate,
   handleRotate,
   handleZoom,
@@ -151,6 +158,7 @@ export function useKeyboard({ disabled = false }: UseKeyboardOptions = {}) {
   const { handleNavigationKey } = useGridNavigation();
   const layout = useLayoutStore((state) => state.layout);
   const { deleteBin, duplicateBin, updateBin } = useMutations();
+  const { createNewLayout } = useLayoutSwitcher();
 
   const { undo, redo, canUndo, canRedo } = useHistoryStore(
     useShallow((state) => ({
@@ -194,6 +202,7 @@ export function useKeyboard({ disabled = false }: UseKeyboardOptions = {}) {
         zoomIn,
         zoomOut,
         setShowLayoutManager,
+        createNewLayout,
         batch,
         deleteBin,
         duplicateBin,
@@ -235,6 +244,7 @@ export function useKeyboard({ disabled = false }: UseKeyboardOptions = {}) {
       setActiveCategory,
       toggleHalfGridMode,
       setShowLayoutManager,
+      createNewLayout,
       addToast,
       navigateToDesigner,
       t,
