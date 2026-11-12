@@ -3,7 +3,9 @@ title: Workshop
 description: 'Build a tool holder out of parts on a Gridfinity base, and export a bin top as a flat shadow board.'
 sources:
   - src/features/bin-designer/components/Workshop/
+  - src/features/bin-designer/components/DesignerPage/DesignerHeader.tsx
   - src/features/bin-designer/components/DesignListDialog/DesignListHeader.tsx
+  - src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
   - src/features/bin-designer/utils/workshopTemplates.ts
   - src/shared/types/assembly.ts
   - src/features/bin-designer/components/CutoutWorkspace/ShadowBoardButton.tsx
@@ -19,8 +21,10 @@ This page also shows how to export a shadow board from the cutout editor.
 
 ## Start a Workshop build
 
-1. Open the [bin designer](https://gridfinitylayouttool.com/designer) and click <Ui k="binDesigner.designs" /> in the header.
-2. In <Ui k="binDesigner.savedDesigns" />, click <Ui k="binDesigner.newWorkshop" />.
+1. Open the [bin designer](https://gridfinitylayouttool.com/designer).
+2. In the header, click the icon button next to the design name. Its tooltip reads <Ui k="binDesigner.openDesignList" />. On a wide screen, the button also reads <Ui k="binDesigner.designs" />.
+3. In <Ui k="binDesigner.savedDesigns" />, click <Ui k="binDesigner.newWorkshop" />.
+4. If you changed the open design, a box asks you to start a new design. Click <Ui k="binDesigner.newDesign" />. Your current design stays in your saved designs.
 
 The panel on the left holds the parts, the build tree and the base settings. The 3D view on the right is where you place the parts. A build saves to your saved designs like a bin, and you can link it to a bin in a layout.
 

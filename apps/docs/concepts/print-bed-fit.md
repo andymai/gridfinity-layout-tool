@@ -5,6 +5,7 @@ sources:
   - src/core/constants.ts
   - src/core/bedFit.ts
   - src/shared/utils/binSplitFit.ts
+  - src/features/bin-inspector/components/Inspector/SplitWarning/
   - src/features/bin-designer/hooks/useLayoutPrintBed.ts
   - src/features/bin-designer/components/panel/SplitOptionsSection/
   - src/features/baseplate/components/BaseplatePanel/SplitViewStrip.tsx
@@ -47,7 +48,7 @@ An overhang counts in the check. An **overhang** makes the body larger than its 
 
 ## When a bin is too large
 
-In the layout editor, a bin that doesn't fit shows <Ui k="grid.split" /> or a warning mark on the grid. The inspector shows <Ui k="inspector.split.title" /> with the number of pieces. The print list counts each piece, so your totals stay right.
+In the layout editor, a bin that doesn't fit shows <Ui k="grid.split" /> or a warning mark on the grid. On a desktop, the inspector shows <Ui k="inspector.split.title" />, with the size of the bin and the size of the bed. On a phone, the inspector shows the number of pieces. The print list counts each piece, so your totals stay right.
 
 <Screenshot id="concepts-print-bed-layout-split" alt="A 6 by 1 bin in a layout with a 180 mm print bed shows a warning mark on the grid. A click selects it, and the inspector shows Oversized for print bed: the bin does not fit the bed, so it prints in pieces." spec="Clip. Layout editor, drawer 6 × 3, print bed 180 mm, a 6 × 1 bin in the front row. The grid, a click on the bin, then a close-up of the inspector card." />
 

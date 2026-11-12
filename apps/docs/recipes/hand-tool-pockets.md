@@ -75,11 +75,11 @@ A snug pocket holds a tool well, but you need a way to get a fingertip under it.
 
 <Screenshot id="recipes-hand-tool-pockets-finger-access" alt="In the cutout editor, the Shapes tab lists the three scanned tools by size. A click selects the pliers, Path 150×38. On the Properties tab, Add finger access cuts a round-ended scoop at the front of the pliers, and Pocket checks warns that it reaches under the stacking lip." spec="Clip. Bin designer, desktop 1440 px, cutout editor open. The 4 x 3 x 3u Custom cutouts bin after a phone scan of three tools, 18 mm thick and 3 mm proud, placed as one group with the pliers 14.6 mm from the front wall, no finger access yet. Click the Shapes tab, the Path 150×38 row, the Properties tab, then Add finger access. Crop to the board and the properties panel." />
 
-Each scoop is 20 mm wide and 40 mm long, across the middle of the long side. Half of it cuts beside the tool, and half lies over it.
+Each scoop is 20 mm wide, at the middle of a long side of the tool. It goes on the side toward the front of the bin when that side has room. The scoop reaches 20 mm out from the tool. It also reaches up to 20 mm back over the tool, but it stops before the far edge of the pocket. So a narrow part of a tool gets a shorter scoop.
 
 Drag the group to place the tools in the bin. If a tool hangs past the edge, a warning offers a button that makes the bin larger. [Arrange cutouts](../cutouts/arranging) shows how to align and pack them.
 
-Then read <Ui k="binDesigner.cutoutEditor.checks.title" /> at the top of the <Ui k="binDesigner.shapeList.tabProperties" /> tab. It flags any spot with less than 1.2 mm of plastic, for example between two pockets.
+When a pocket has a problem, a <Ui k="binDesigner.cutoutEditor.checks.title" /> box shows at the top of the <Ui k="binDesigner.shapeList.tabProperties" /> tab. The box flags any spot with less than 1.2 mm of plastic, for example between two pockets. It also tells you when a scoop reaches under the stacking lip, where a tool can catch. [Check before you print](../cutouts/print-checks#a-cutout-breaks-through-the-wall-or-sits-under-the-lip) shows how to clear that warning. No box means no problems.
 
 ## Step 5: Print a fit test first
 

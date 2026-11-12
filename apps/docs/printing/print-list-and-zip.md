@@ -61,7 +61,7 @@ A paper plan is handy to take to the drawer.
 
 ## Export the whole layout as one ZIP
 
-1. In the header, click <Ui k="header.export" />. The <Ui k="layoutExport.title" /> dialog opens.
+1. In the header, click <Ui k="header.export" />. A dialog titled <Ui k="common.export" /> opens. Its first section is <Ui k="layoutExport.title" />.
 2. Pick a format. See [File formats](./file-formats).
 3. Set the file name. It names the ZIP, and the files inside take their names from each saved design.
 4. Click <Ui k="layoutExport.download" />.

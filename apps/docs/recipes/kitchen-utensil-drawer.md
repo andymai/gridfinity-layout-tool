@@ -10,6 +10,7 @@ sources:
   - src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
   - src/features/baseplate/utils/splitPlanner.ts
   - src/features/bin-inspector/components/Inspector/ExtendToMarginToggle/
+  - src/features/bin-inspector/components/Inspector/SplitWarning/
 ---
 
 # A kitchen utensil drawer
@@ -60,7 +61,7 @@ A 220 mm bed takes 5 grid units in a straight line (5 × 42 = 210 mm). Anything 
 
 Bins on the first layer start at 3u. In the <Ui k="common.layers" /> panel, set the height stepper of the layer to 6, and then draw the plan above. Start the 2 × 8 bins at the front edge, which is the bottom of the grid.
 
-The long bins get a <Ui k="grid.split" /> tag or a warning mark on the grid, because 336 mm doesn't fit the bed. Select one, and the inspector shows <Ui k="inspector.split.title" />: it needs 2 pieces. The Gridfinity Layout Tool cuts a long bin into equal pieces, so each piece is a 2 × 4 part of 168 mm. The bin list counts both pieces.
+The long bins get a <Ui k="grid.split" /> tag or a warning mark on the grid, because 336 mm doesn't fit the bed. Select one, and the inspector shows <Ui k="inspector.split.title" />, with the size of the bin and the size of the bed. The Gridfinity Layout Tool cuts a long bin into equal pieces, so each piece is a 2 × 4 part of 168 mm. The <Ui k="rightPanel.pcsAbbrev" /> column of the <Ui k="rightPanel.binList" /> counts the pieces: 2 for each long bin.
 
 <Screenshot id="recipes-kitchen-utensil-drawer-long-bin" alt="A drag from the front edge draws a 2 by 8 bin on the half grid, and the bin shows a Split tag. The inspector then shows Oversized for print bed: the bin is 84 by 336 mm and the bed is 220 by 220 mm." spec="Clip. Layout editor, desktop 1440 px, half-grid mode on, left panel closed. Layout with a 9.5 x 11 grid, measured size 405 x 480 x 75 mm, print bed 220 x 220 mm, one layer at 6u, no bins. Drag from near the front left corner of column 1 row 1 to near the back right corner of column 2 row 8, so the half-cell snap gives 2 x 8. Crop to the grid, then cut to the warning in the inspector." />
 
