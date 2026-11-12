@@ -1748,6 +1748,10 @@ const en: Record<string, string> = {
   'pwaUpdate.reloadAria': 'Reload into the new version',
   'pwaUpdate.readyTooltip':
     'A new version is ready. It applies on its own when you pause, or reload now.',
+  'pwaInstall.title': 'Install the app',
+  'pwaInstall.description': 'Open it from its own icon, in its own window.',
+  'pwaInstall.install': 'Install',
+  'pwaInstall.notNow': 'Not now',
   'toast.sessionRestored': 'Session restored',
   'toast.rotateRepositioned_one': 'Bin rotated and moved {count} cell to fit',
   'toast.rotateRepositioned_other': 'Bin rotated and moved {count} cells to fit',
@@ -6291,8 +6295,18 @@ const en: Record<string, string> = {
   'settings.general.showUpdateSummaries': 'Show update summaries',
   'settings.search.keywords.updateSummaries':
     "what's new, changelog, updates, release notes, recent changes",
+  'settings.search.keywords.installApp':
+    'install, app, pwa, desktop, dock, taskbar, home screen, window, shortcut',
   'settings.general.showUpdateSummariesDesc':
     'After an update, show a short summary of what changed. Unseen highlights are badged in the sidebar either way.',
+  'settings.general.installApp': 'Install app',
+  'settings.general.installAppHint':
+    'Run the Layout Tool in its own window, with an icon on your dock, taskbar or home screen.',
+  'settings.general.installAppInstalled': 'You are using the installed app.',
+  'settings.general.installAppInstalledInBrowser':
+    'The app is installed in this browser. Open it from its icon.',
+  'settings.general.installAppManual':
+    'To install, use the install command in the menu of your browser. Not every browser has one.',
   'settings.spacemouse': 'SpaceMouse',
   'settings.spacemouseEnable': 'Use a SpaceMouse',
   'settings.spacemouseHint':

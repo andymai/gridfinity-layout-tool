@@ -54,6 +54,10 @@ export {
   listenForPwaInstall,
   listenForPwaInstallAvailability,
   noteCurrentDisplayMode,
+  trackPwaInstallOfferClosed,
+  trackPwaInstallPromptResult,
+  trackPwaInstallPromptShown,
+  type PwaInstallPlacement,
 } from './pwaEvents';
 
 // UTM PARAMETER TRACKING

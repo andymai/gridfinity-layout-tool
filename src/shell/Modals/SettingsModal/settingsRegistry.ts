@@ -37,6 +37,12 @@ export const SETTINGS_REGISTRY: SettingsRegistryEntry[] = [
     keywordsKey: 'settings.search.keywords.updateSummaries',
   },
   {
+    id: 'install-app',
+    tabId: 'general',
+    labelKey: 'settings.general.installApp',
+    keywordsKey: 'settings.search.keywords.installApp',
+  },
+  {
     id: 'spacemouse',
     tabId: 'general',
     labelKey: 'settings.spacemouse',

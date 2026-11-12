@@ -15,7 +15,13 @@ No Wi-Fi in the workshop? No problem. The Gridfinity Layout Tool runs in your br
 
 ## Install the app
 
-Your browser can install the Layout Tool as an app. While the Layout Tool is open, use the install command of your browser. The app has no install button of its own.
+Your browser can install the Layout Tool as an app. In Chrome, Edge and other Chromium browsers:
+
+1. Click <Ui k="sidebar.settings" /> (the gear icon) in the header.
+2. Click <Ui k="settings.tabs.general" />.
+3. In <Ui k="settings.general.installApp" />, click <Ui k="pwaInstall.install" />.
+
+After you download a file, the export window can also show <Ui k="pwaInstall.title" />. In other browsers, use the install command of your browser.
 
 The installed app has the name Gridfinity Layout Tool. It opens in its own window, without the address bar, and starts on the layout editor. It uses the same data as the browser tab, because it is the same site.
 
