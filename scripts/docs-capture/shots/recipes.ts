@@ -1501,6 +1501,41 @@ const craftPlates: Shot = {
   },
 };
 
+/** Tall enough that the bin list's last rows and its summary show without a scroll. */
+const BIN_LIST_VIEW = { width: 1440, height: 1400 };
+
+/**
+ * The last three rows share one design with a blank caption, so each takes its
+ * plate text from its bin label; the summary below them counts every plate.
+ */
+const craftBinList: Shot = {
+  id: 'recipes-electronics-craft-organizer-bin-list',
+  kind: 'still',
+  viewport: BIN_LIST_VIEW,
+  async take(s) {
+    await openLinkedLayout(s, CRAFT_DRAWER, CRAFT_DESIGNS);
+    await s.dismissToasts();
+    // The recipe promises 46 plates: the shot fails if the bin list counts otherwise.
+    const plates = s.page
+      .getByText(label('print.summary.labelPlates', { count: 46 }), { exact: true })
+      .first();
+    await s.until(plates);
+    await s.ui.preReveal(plates);
+    const wire = s.page
+      .locator('aside')
+      .last()
+      .locator('tr', { has: s.page.getByText('Wire', { exact: true }) })
+      .first();
+    const row = await s.box(wire);
+    const end = await s.box(plates);
+    await s.page.mouse.move(BIN_LIST_VIEW.width - 20, 20);
+    await s.still(
+      { x: row.x, y: row.y, width: row.width, height: end.y + end.height + 14 - row.y },
+      1.5
+    );
+  },
+};
+
 type Pt = [number, number];
 
 /** A tool's outline from its upper half, tip to end, mirrored about its centre line. */
@@ -1988,6 +2023,7 @@ export const RECIPES: readonly Shot[] = [
   craftHero,
   craftCategories,
   craftPlates,
+  craftBinList,
   toolsThickness,
   toolsFingerAccess,
   toolsFitTest,
