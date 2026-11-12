@@ -1,0 +1,77 @@
+apps/docs/designer/size-and-shape.md
+  s_1cc363bb3cc76d::t_2eddd7b3aae2ba 105-106
+  s_1cc363bb3cc76d::t_1e010c24dde499 60-61
+  s_1cc363bb3cc76d::t_73134489a87890 91-92
+scripts/docs-capture/shots/designerDetails.ts
+  s_1cc363bb3cc76d::t_4b1aff80b3a7bd 1648-1650,1653-1654,1657-1659,1661-1662,1664-1666
+  s_1cc363bb3cc76d::t_140f320a710a9d 9,406-407,450-453,719-1645,1669-1670,1672-1673
+apps/docs/designer/save-and-reuse.md
+  s_1cc363bb3cc76d::t_6482054922e79b 123-124
+  s_1cc363bb3cc76d::t_ca242c3014df17 50-51
+  s_1cc363bb3cc76d::t_d090f458cc000a 67-68
+  s_1cc363bb3cc76d::t_ed9091b4952574 100-101
+apps/docs/designer/special-bins.md
+  s_1cc363bb3cc76d::t_428c6f4f547f65 52-53
+  s_1cc363bb3cc76d::t_19ea28d294f520 93-94
+apps/docs/designer/stacking.md
+  s_1cc363bb3cc76d::t_5cf7308216f132 37-38
+  s_1cc363bb3cc76d::t_6592d6d48f1f46 78-79
+apps/docs/designer/walls.md
+  s_1cc363bb3cc76d::t_318538af4e25a0 135-136
+  s_1cc363bb3cc76d::t_ce6bc4b8d14603 91-92
+  s_1cc363bb3cc76d::t_432ccbe5929aa1 123-124
+apps/docs/designer/lids.md
+  s_1cc363bb3cc76d::t_2309e548b8b551 85-86
+  s_1cc363bb3cc76d::t_aee0660168bd95 127-128
+  s_1cc363bb3cc76d::t_662d2d2abd23bc 59-60
+apps/docs/media/designer-lids-needs-stacking-lip.json
+  s_1cc363bb3cc76d::t_ab03dd7f30912f 1-5
+apps/docs/media/designer-lids-sliding.json
+  s_1cc363bb3cc76d::t_146a3ce9f981a8 1-5
+apps/docs/media/designer-lids-top-surface.json
+  s_1cc363bb3cc76d::t_755bf90854b230 1-5
+apps/docs/media/designer-save-and-reuse-create-variant.json
+  s_1cc363bb3cc76d::t_1ec405c2646364 1-5
+apps/docs/media/designer-save-and-reuse-examples.json
+  s_1cc363bb3cc76d::t_c2340a9b8819cc 1-5
+apps/docs/media/designer-save-and-reuse-place-in-layout.json
+  s_1cc363bb3cc76d::t_cbc3563b1800ff 1-5
+apps/docs/media/designer-save-and-reuse-versions.json
+  s_1cc363bb3cc76d::t_8567f06729f4fc 1-5
+apps/docs/media/designer-size-and-shape-body-type.json
+  s_1cc363bb3cc76d::t_31899fc08e6563 1-5
+apps/docs/media/designer-size-and-shape-half-grid.json
+  s_1cc363bb3cc76d::t_135f686879adfe 1-5
+apps/docs/media/designer-size-and-shape-overhang.json
+  s_1cc363bb3cc76d::t_1ccce30022fd25 1-5
+apps/docs/media/designer-special-bins-handle-rest.json
+  s_1cc363bb3cc76d::t_8687664a58fabf 1-5
+apps/docs/media/designer-special-bins-sliding-tray.json
+  s_1cc363bb3cc76d::t_2e9cf4005b87d4 1-5
+apps/docs/media/designer-stacking-nesting.json
+  s_1cc363bb3cc76d::t_185c6ba66504c3 1-5
+apps/docs/media/designer-stacking-round-rim.json
+  s_1cc363bb3cc76d::t_03ef0fb755e89b 1-5
+apps/docs/media/designer-walls-cutouts.json
+  s_1cc363bb3cc76d::t_2c0bd85cdfac09 1-5
+apps/docs/media/designer-walls-handles.json
+  s_1cc363bb3cc76d::t_07dfff26c30e30 1-5
+apps/docs/media/designer-walls-label-slots.json
+  s_1cc363bb3cc76d::t_51a9298e93b39d 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b380d797c1c6a5b153f7b5a8f98d0038aa13e972",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
