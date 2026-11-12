@@ -92,6 +92,16 @@ describe('SnapshotEntry', () => {
     expect(await findClassesWithoutCss(actions.classList)).toEqual([]);
   });
 
+  it('keeps the details on one line and gives the full text in a title', () => {
+    render(<SnapshotEntry snapshot={makeSnapshot()} {...defaultProps} />);
+
+    const details = screen.getByText(/5 bins/).parentElement;
+    if (!details) throw new Error('details line not found');
+    expect(details).toHaveClass('truncate');
+    expect(details.title).toMatch(/^\S.* · 5 bins · 2 layers$/);
+    expect(details.title).toContain(screen.getByText(/ago|now/).textContent);
+  });
+
   it('enters edit mode when label clicked', () => {
     const snapshot = makeSnapshot({ label: 'Old Label' });
 
