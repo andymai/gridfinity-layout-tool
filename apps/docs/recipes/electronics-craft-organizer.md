@@ -112,6 +112,8 @@ The 1 × 2, 3 × 4 and 1 × 6 bins have one compartment each. Make one design fo
 
 Export the layout with <Ui k="header.export" /> and <Ui k="layoutExport.download" />. Pick 3MF to keep the plate and text colors: one project file then holds the bins and the plates. With STL or STEP, the ZIP holds the bins, and the plates in a `labels/` folder. The bin list counts the plates too.
 
+<Screenshot id="recipes-electronics-craft-organizer-bin-list" alt="The last rows of the bin list. The 1 by 2 bins Wire, Jumpers and Batteries share one design, and each row needs one label plate. The summary below counts 46 label plates." spec="Layout editor, desktop 1440 x 1400 px, the recipe layout with its 15 bins linked to their 12 designs. Crop the Bin list from the Wire row to the Label plates line of the summary." />
+
 Contents changed? Change the caption in the design, or the <Ui k="inspector.binLabel" /> in the layout. Then export the plates again, and print only the new plate.
 
 ## When it goes wrong
