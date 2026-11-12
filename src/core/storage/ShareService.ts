@@ -17,6 +17,8 @@ import { designId as toDesignId } from '@/core/types';
 import type { Result, StorageMeshMissingError, ValidationError } from '@/core/result';
 import { ok, err, validationImportFailed, isOk } from '@/core/result';
 import { getDesignStorePort } from './designStorePort';
+import type { DesignStorePort, PreparedBinParams, SavedDesignData } from './designStorePort';
+import { createLogger } from '@/core/logger';
 import type { BinParams } from '@/shared/types/bin';
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import {
@@ -26,6 +28,8 @@ import {
 } from '@/shared/types/assemblyPlacement';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { hasOversizedMeshAsset } from '@/shared/generation/meshAsset';
+
+const logger = createLogger('ShareService');
 
 /** A design travelling with a layout: bin params, or an assembly's
  *  envelope + structure. Exactly one of the two shapes is populated. */
@@ -237,6 +241,38 @@ export function importLayoutResult(json: string): Result<Layout, ValidationError
 }
 
 /**
+ * Register a bin design a restore just saved. `saveDesign` never registers,
+ * and the layout reads a linked bin's palette entry, mesh cache key, height,
+ * slant and split switch from the registry, so a design that skips it is
+ * invisible to the layout or measured as stock until the next page load.
+ *
+ * A failure here leaves a stored design the startup pass registers later, so
+ * it is logged and never fails the restore.
+ */
+async function registerRestoredBin(
+  port: DesignStorePort,
+  saved: SavedDesignData,
+  prepared: PreparedBinParams
+): Promise<void> {
+  try {
+    const edgeFields = await port.registryEdgeFields(prepared.params);
+    const placementFields = await port.registryPlacementFields(prepared.params);
+    await port.upsertRegistryEntry({
+      id: saved.id,
+      name: saved.name,
+      width: prepared.width,
+      depth: prepared.depth,
+      height: prepared.height,
+      ...edgeFields,
+      ...placementFields,
+      updatedAt: saved.updatedAt,
+    });
+  } catch (error) {
+    logger.warn('Registering a restored design failed', { id: saved.id, error });
+  }
+}
+
+/**
  * Restore embedded bin designs from layout JSON and update bin references.
  * Call this after importLayoutJSON when you need design restoration.
  *
@@ -287,8 +323,13 @@ export async function restoreEmbeddedDesigns(
     // over-budget asset would otherwise get in and be handed to the decoder
     // on every preview. (The adapter's descriptor migration is the equivalent
     // gate for an assembly structure.)
-    const isBin = 'params' in linkedDesign && !hasOversizedMeshAsset(linkedDesign.params);
-    if (!isAssembly && !isBin) continue;
+    // A design whose params cannot migrate is skipped before anything is
+    // stored; its bins keep a link to nothing, as for a design that failed to save.
+    const prepared =
+      isAssembly || hasOversizedMeshAsset(linkedDesign.params)
+        ? null
+        : await port.prepareBinParams(linkedDesign.params);
+    if (!isAssembly && !prepared) continue;
     const result = await port.saveDesign({
       name: linkedDesign.name,
       ...(isAssembly
@@ -297,13 +338,14 @@ export async function restoreEmbeddedDesigns(
             envelope: linkedDesign.envelope,
             structure: linkedDesign.structure,
           }
-        : { params: linkedDesign.params }),
+        : { params: prepared?.params }),
       thumbnail: null,
       exportFileNameConfig: null,
     });
     if (isOk(result)) {
       designIdMap.set(linkedDesign.id, result.value.id);
       importedDesignCount++;
+      if (prepared) await registerRestoredBin(port, result.value, prepared);
     }
   }
 
@@ -434,35 +476,20 @@ export async function restoreSharedDesigns(
       });
       continue;
     }
-    if (!design.params || typeof design.params !== 'object' || Array.isArray(design.params)) {
-      continue;
-    }
-    const params = design.params as BinParams;
+    const prepared = await port.prepareBinParams(design.params);
+    if (!prepared) continue;
 
     const result = await port.saveDesign({
       id: sharedDesignLocalId(shareId, design.id),
       name: design.name,
-      params,
+      params: prepared.params,
       thumbnail: null,
       exportFileNameConfig: null,
     });
     if (!isOk(result)) continue;
 
     idMap.set(design.id, result.value.id);
-    // The planner palette and the linked-bin mesh cache both key off the
-    // registry, so a design that skips it stays invisible to the layout.
-    const edgeFields = await port.registryEdgeFields(params);
-    const placementFields = await port.registryPlacementFields(params);
-    await port.upsertRegistryEntry({
-      id: result.value.id,
-      name: result.value.name,
-      width: params.width,
-      depth: params.depth,
-      height: params.height,
-      ...edgeFields,
-      ...placementFields,
-      updatedAt: result.value.updatedAt,
-    });
+    await registerRestoredBin(port, result.value, prepared);
   }
 
   if (idMap.size === 0) return { layout, designIds: {} };

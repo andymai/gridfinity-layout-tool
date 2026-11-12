@@ -22,6 +22,7 @@ import type {
   DesignRegistryPlacementFields,
   DesignStorePort,
   LoadedDesignData,
+  PreparedBinParams,
   SaveDesignInput,
   SavedDesignData,
 } from '@/core/storage/designStorePort';
@@ -82,11 +83,31 @@ export const designStoreAdapter: DesignStorePort = {
   },
 
   async registryPlacementFields(params: unknown): Promise<DesignRegistryPlacementFields> {
-    const [{ registryHeightFields, registrySlantFields }, { migrateParams }] = await Promise.all([
-      import('@/features/bin-designer/store/customBinRegistry'),
-      import('@/features/bin-designer/constants/paramMigration'),
-    ]);
+    const [{ registryHeightFields, registrySlantFields, registrySplitFields }, { migrateParams }] =
+      await Promise.all([
+        import('@/features/bin-designer/store/customBinRegistry'),
+        import('@/features/bin-designer/constants/paramMigration'),
+      ]);
     const migrated = migrateParams(params as BinParams);
-    return { ...registryHeightFields(migrated), ...registrySlantFields(migrated) };
+    return {
+      ...registryHeightFields(migrated),
+      ...registrySlantFields(migrated),
+      ...registrySplitFields(migrated),
+    };
+  },
+
+  async prepareBinParams(params: unknown): Promise<PreparedBinParams | null> {
+    if (typeof params !== 'object' || params === null || Array.isArray(params)) return null;
+    const { migrateParams } = await import('@/features/bin-designer/constants/paramMigration');
+    let migrated: BinParams;
+    try {
+      migrated = migrateParams(params);
+    } catch {
+      return null;
+    }
+    const { width, depth, height } = migrated;
+    const size = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0;
+    if (!size(width) || !size(depth) || !size(height)) return null;
+    return { params: migrated, width, depth, height };
   },
 };

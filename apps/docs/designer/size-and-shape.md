@@ -136,7 +136,7 @@ Compartments, label tabs, the finger scoop, overhang, pull tabs, label slots and
 
 ### The bin is too large for your print bed
 
-Keep <Ui k="binDesigner.splitExport.enableSplit" /> on in the export dialog. You get a ZIP file with one file for each piece. To print the bin in one piece, make it smaller.
+Keep <Ui k="binDesigner.splitExport.enableSplit" /> on in the export dialog. You get a ZIP file with one file for each piece. To print the bin in one piece, make it smaller. To cut it in your slicer instead, turn off <Ui k="binDesigner.splitToFitBed" />. See [Print a large bin in one piece](../concepts/print-bed-fit#print-a-large-bin-in-one-piece).
 
 The export dialog checks the bin against the print bed size of your layout. Is that size wrong? Change it under <Ui k="common.physicalUnits" /> in the <Ui k="binDesigner.group.finishing" /> group. If the bin fits only at an angle, the dialog tells you to turn it in your slicer. [Fitting the print bed](../concepts/print-bed-fit#when-a-bin-is-too-large) explains the check.
 

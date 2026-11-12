@@ -62,6 +62,7 @@ describe('MultiBinInspector', () => {
       maxHeight: 12,
       maxClearance: 5,
       maxGridUnits: { width: 6, depth: 6 },
+      overhangMm: { width: 0, depth: 0 },
       needsSplit: false,
       heightRange: '3-12u',
       maxHeightReason: 'remaining_space',

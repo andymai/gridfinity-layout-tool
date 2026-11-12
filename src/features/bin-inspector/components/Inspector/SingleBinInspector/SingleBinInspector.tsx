@@ -349,6 +349,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           gridUnitMm={layout.gridUnitMm}
           printBedSize={layout.printBedSize}
           printBedDepth={layout.printBedDepth ?? layout.printBedSize}
+          overhangMm={constraints.overhangMm}
           compact={isMobile}
         />
 
@@ -429,7 +430,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           depth={bin.depth}
           variant="button"
           needsSplit={
-            bin.width > constraints.maxGridUnits.width || bin.depth > constraints.maxGridUnits.depth
+            constraints.maxGridUnits.keptWhole !== undefined ||
+            bin.width > constraints.maxGridUnits.width ||
+            bin.depth > constraints.maxGridUnits.depth
           }
           className="w-full justify-center py-2 rounded-lg bg-surface-elevated/50 hover:bg-surface-hover border border-stroke-subtle"
         />

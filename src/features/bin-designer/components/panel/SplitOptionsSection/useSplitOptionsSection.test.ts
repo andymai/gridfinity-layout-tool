@@ -70,6 +70,33 @@ describe('useSplitOptionsSection', () => {
     expect(result.current.pieceCount).toBe(2);
   });
 
+  describe('with splitting turned off', () => {
+    it('keeps an oversized bin whole and says it is larger than the bed', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3, splitToFitBed: false },
+      });
+      const { result } = renderHook(() => useSplitOptionsSection());
+      expect(result.current.splitToFitBed).toBe(false);
+      expect(result.current.needsSplit).toBe(false);
+      expect(result.current.keptWhole).toBe(true);
+      expect(result.current.pieceCount).toBe(1);
+    });
+
+    it('turns splitting off and back on through the store', () => {
+      useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3 } });
+      const { result } = renderHook(() => useSplitOptionsSection());
+      expect(result.current.splitToFitBed).toBe(true);
+
+      act(() => result.current.handlers.toggleSplitToFitBed());
+      expect(useDesignerStore.getState().params.splitToFitBed).toBe(false);
+      expect(result.current.keptWhole).toBe(true);
+
+      act(() => result.current.handlers.toggleSplitToFitBed());
+      expect(useDesignerStore.getState().params.splitToFitBed).toBeUndefined();
+      expect(result.current.needsSplit).toBe(true);
+    });
+  });
+
   it("splits against the layout's bed, not the default for new layouts", () => {
     // A 6x2 bin is 252mm long: whole on the 256mm default, two 3x2 halves on a
     // 220mm bed set in the planner.

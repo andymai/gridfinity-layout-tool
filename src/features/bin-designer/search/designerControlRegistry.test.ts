@@ -12,7 +12,7 @@ const SECTION_IDS = new Set(DESIGNER_CONTROL_SEARCH.map((s) => s.controlId));
 const baseCtx: ControlAvailabilityContext = {
   style: 'standard',
   hasText: true,
-  needsSplit: true,
+  bedFitShown: true,
   viewMode: 'rail',
   slideTrayEnabled: true,
   scanAvailable: true,
@@ -59,7 +59,7 @@ describe('designerControlRegistry', () => {
       isDesignerControlAvailable('bd-dimensions', {
         style: 'solid',
         hasText: false,
-        needsSplit: false,
+        bedFitShown: false,
         viewMode: 'scroll',
         slideTrayEnabled: false,
         scanAvailable: false,
@@ -91,26 +91,26 @@ describe('designerControlRegistry', () => {
     ).toBe(false);
   });
 
-  it('shows print-fit in the rail always but in the scroll only when splitting', () => {
+  it('shows print-fit in the rail always but in the scroll only when it has something to say', () => {
     expect(
       isDesignerControlAvailable('bd-print-fit', {
         ...baseCtx,
         viewMode: 'rail',
-        needsSplit: false,
+        bedFitShown: false,
       })
     ).toBe(true);
     expect(
       isDesignerControlAvailable('bd-print-fit', {
         ...baseCtx,
         viewMode: 'scroll',
-        needsSplit: false,
+        bedFitShown: false,
       })
     ).toBe(false);
     expect(
       isDesignerControlAvailable('bd-print-fit', {
         ...baseCtx,
         viewMode: 'scroll',
-        needsSplit: true,
+        bedFitShown: true,
       })
     ).toBe(true);
   });

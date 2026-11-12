@@ -23,7 +23,8 @@ import { ICON_PATHS, WARNING_ICON } from './binConstants';
 import type { BinProps } from './binPropsAreEqual';
 import { binPropsAreEqual } from './binPropsAreEqual';
 import { useBinHighlighting } from './useBinHighlighting';
-import { useBinNeedsSplit } from './useBinNeedsSplit';
+import { useBinBedFit } from './useBinBedFit';
+import { BinOverBedChip } from './BinOverBedChip';
 import { useBinSelection } from './useBinSelection';
 import { useBinPointerInteraction } from './useBinPointerInteraction';
 
@@ -107,7 +108,7 @@ function BinComponent({
   // Hide resize handles during multi-select
   const isMultiSelect = selectedBinIds.length > 1;
 
-  const needsSplit = useBinNeedsSplit(bin);
+  const bedFit = useBinBedFit(bin);
   const riseKey = useLinkedRiseKey();
   const restingZ = useLayoutStore(
     (state) =>
@@ -458,20 +459,12 @@ function BinComponent({
           >
             {primaryText}
             {/* Split badge (only when dimensions are primary) */}
-            {!showLabel && needsSplit && (
-              <span
-                className="ml-0.5 rounded-sm"
-                title={t('grid.exceedsPrintSize')}
-                style={{
-                  fontSize: `${Math.round(secondaryFontSize * 0.9)}px`,
-                  padding: '0px 3px',
-                  backgroundColor: 'var(--overlay-medium)',
-                  color: 'var(--color-warning)',
-                  fontWeight: 500,
-                }}
-              >
-                {t('grid.split')}
-              </span>
+            {!showLabel && bedFit !== 'fits' && (
+              <BinOverBedChip
+                bedFit={bedFit}
+                fontSize={Math.round(secondaryFontSize * 0.9)}
+                className="ml-0.5"
+              />
             )}
           </div>
           {/* Secondary text (dimensions when label is primary) */}
@@ -487,15 +480,13 @@ function BinComponent({
               }}
             >
               {secondaryText}
-              {needsSplit && (
-                <span
+              {bedFit !== 'fits' && (
+                <BinOverBedChip
+                  bedFit={bedFit}
+                  fontSize={secondaryFontSize}
+                  iconOnly
                   className="ml-1"
-                  title={t('grid.exceedsPrintSize')}
-                  style={{ color: 'var(--color-warning)' }}
-                  aria-label={t('grid.exceedsPrintSize')}
-                >
-                  {WARNING_ICON}
-                </span>
+                />
               )}
             </div>
           )}

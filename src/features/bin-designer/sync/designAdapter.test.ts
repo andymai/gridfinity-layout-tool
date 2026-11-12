@@ -407,6 +407,29 @@ describe('designAdapter assembly kind', () => {
     expect(entry?.name).toBe('D');
   });
 
+  // The print list reads the switch off the registry, so a design turned to
+  // print whole on another device must stop splitting here at the pull.
+  it("applyRemote refreshes a parametric bin's split switch on its registry entry", async () => {
+    localStorage.clear();
+    upsertRegistryEntry({
+      id: designId('d1'),
+      name: 'D',
+      width: 6,
+      depth: 1,
+      height: 3,
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    });
+    loadDesignMock.mockResolvedValueOnce(ok(savedDesign('d1', '2026-01-01T00:00:00.000Z')));
+    saveDesignMock.mockResolvedValueOnce(
+      ok({
+        ...savedDesign('d1', '2026-04-01T00:00:00.000Z'),
+        params: { ...DEFAULT_BIN_PARAMS, splitToFitBed: false },
+      })
+    );
+    await designAdapter.applyRemote({ id: 'd1', payload: samplePayload(), modifiedAt: 1 });
+    expect(loadRegistry().find((r) => r.id === 'd1')?.splitToFitBed).toBe(false);
+  });
+
   it('applyRemote leaves the registry alone when the assembly save fails', async () => {
     localStorage.clear();
     loadDesignMock.mockResolvedValueOnce(err(storageNotFound('missing')));

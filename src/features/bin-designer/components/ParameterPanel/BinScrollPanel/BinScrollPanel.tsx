@@ -82,7 +82,7 @@ export function BinScrollPanel({
       hasText: binHasText(s.params),
     }))
   );
-  const { needsSplit, slantTooLarge, fitsDiagonally, printBedSize } = useSplitOptionsSection();
+  const { bedFitShown, slantTooLarge, fitsDiagonally, printBedSize } = useSplitOptionsSection();
 
   const [open, setOpen] = useState<Record<PanelGroup, boolean>>({
     shape: true,
@@ -160,25 +160,25 @@ export function BinScrollPanel({
               <WallCutoutsSection />
             </div>
           </PanelSection>
-          {/* Shown only when the bin overflows the bed; no all-clear row when it fits. */}
-          {needsSplit && (
-            <PanelSection helpTarget="bd-print-fit">
-              <SplitOptionsSection />
-            </PanelSection>
-          )}
-          {slantTooLarge && (
-            <PanelSection helpTarget="bd-print-fit">
-              <SlantTooLargeNotice width={printBedSize.width} depth={printBedSize.depth} />
-            </PanelSection>
-          )}
-          {fitsDiagonally && (
-            <PanelSection helpTarget="bd-print-fit">
-              <p className="text-label text-content-tertiary">
-                {t('binDesigner.printFit.fitsDiagonally', {
-                  width: printBedSize.width,
-                  depth: printBedSize.depth,
-                })}
-              </p>
+          {/* No all-clear row when the bin fits: shown when it overruns the bed
+              square-on, or while the design's split switch is off. */}
+          {(bedFitShown || slantTooLarge || fitsDiagonally) && (
+            <PanelSection helpTarget="bd-print-fit" className="space-y-3">
+              {slantTooLarge ? (
+                <SlantTooLargeNotice width={printBedSize.width} depth={printBedSize.depth} />
+              ) : (
+                <>
+                  {fitsDiagonally && (
+                    <p className="text-label text-content-tertiary">
+                      {t('binDesigner.printFit.fitsDiagonally', {
+                        width: printBedSize.width,
+                        depth: printBedSize.depth,
+                      })}
+                    </p>
+                  )}
+                  {bedFitShown && <SplitOptionsSection />}
+                </>
+              )}
             </PanelSection>
           )}
         </div>

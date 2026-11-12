@@ -67,6 +67,16 @@ A slanted bin can't split, because a cut would cross its body at an angle. If a 
 
 <Screenshot id="concepts-print-bed-split-bin" alt="A 6 by 2 bin that is too long for a 180 mm print bed, assembled in the bin designer preview. A click on Exploded shows its two pieces apart." spec="Clip. Bin designer, layout print bed 180 × 180, bin 6 × 2 × 3u, standard base, stacking lip on. The assembled bin, a close-up click on Exploded, then the two pieces apart." />
 
+### Print a large bin in one piece
+
+Each bin design has the switch <Ui k="binDesigner.splitToFitBed" />. It is on by default, and it shows with the split options when the bin is too large for the bed. Turn it off when you want to cut the bin in your slicer, for example with a dovetail joint of your choice. When the switch is off, the bin designer, the print list and the layout ZIP keep each bin of that design in one piece:
+
+- The export dialog of the bin designer tells you that the bin is larger than the bed, and offers no split.
+- On the grid, the bin shows <Ui k="grid.oversized" /> instead of <Ui k="grid.split" />. The inspector and the print list tell you that the bin prints in one piece.
+- The layout ZIP writes one file for the bin, and the manifest tells you to split it in your slicer.
+
+The switch is part of the design, so it applies to each bin of that design, in each layout. Baseplates still split as before. When the switch is off, it stays in the <Ui k="binDesigner.group.shape" /> group even for a bin that fits, so you can turn it on again.
+
 ## When a baseplate is too large
 
 The baseplate generator splits a large baseplate into pieces for you. It shows the number of pieces, and how many times you must fill the print bed to print them all. The split leaves room on the bed for the connector tongues.
@@ -91,9 +101,9 @@ Export it whole, and turn it diagonally on the bed in your slicer. To print it i
 
 ### You want to split a part in your slicer
 
-For one bin, clear <Ui k="binDesigner.splitExport.enableSplit" /> in the export dialog. For a baseplate, clear <Ui k="baseplate.export.enableSplit" /> in the export dialog of the baseplate generator. That box isn't there while <Ui k="baseplate.stackPrint.enable" /> is on.
+For a bin design, turn off <Ui k="binDesigner.splitToFitBed" />. Each bin of that design then prints in one piece, in the bin designer, the print list and the layout ZIP. See [Print a large bin in one piece](#print-a-large-bin-in-one-piece). For one export only, clear <Ui k="binDesigner.splitExport.enableSplit" /> in the export dialog instead.
 
-The layout ZIP splits each part that is larger than the print bed. To stop that, set the print bed to 3000 mm, the largest value. Set it back to your real bed before you need the Layout Tool to split again.
+For a baseplate, clear <Ui k="baseplate.export.enableSplit" /> in the export dialog of the baseplate generator. That box isn't there while <Ui k="baseplate.stackPrint.enable" /> is on.
 
 ### The baseplate export is gray
 

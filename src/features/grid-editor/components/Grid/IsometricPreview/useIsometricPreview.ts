@@ -5,9 +5,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { useSelectionStore } from '@/core/store/selection';
 import { useViewStore } from '@/core/store/view';
-import { calcBedCapacityForBin, type BedCapacity } from '@/core/constants';
-import type { Bin } from '@/core/types';
-import { useBinOverhangSpan } from '@/shared/hooks/useBinOverhangSpan';
+import { useBinBedCapacity } from '@/shared/hooks/useBinBedCapacity';
 import { useResponsive } from '@/shared/hooks';
 import { use3DPreviewKeyboard } from '@/shared/hooks/use3DPreviewKeyboard';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
@@ -82,31 +80,19 @@ export function useIsometricPreview({ inline = false }: IsometricPreviewProps) {
   );
 
   // Select only needed layout properties to prevent unnecessary re-renders
-  const {
-    bins,
-    layers,
-    categories,
-    drawer,
-    printBedSize,
-    printBedDepth,
-    gridUnitMm,
-    gridUnitMmY,
-    heightUnitMm,
-    layoutName,
-  } = useLayoutStore(
-    useShallow((state) => ({
-      bins: state.layout.bins,
-      layers: state.layout.layers,
-      categories: state.layout.categories,
-      drawer: state.layout.drawer,
-      printBedSize: state.layout.printBedSize,
-      printBedDepth: state.layout.printBedDepth,
-      gridUnitMm: state.layout.gridUnitMm,
-      gridUnitMmY: effectiveGridUnitMmY(state.layout),
-      heightUnitMm: state.layout.heightUnitMm,
-      layoutName: state.layout.name,
-    }))
-  );
+  const { bins, layers, categories, drawer, gridUnitMm, gridUnitMmY, heightUnitMm, layoutName } =
+    useLayoutStore(
+      useShallow((state) => ({
+        bins: state.layout.bins,
+        layers: state.layout.layers,
+        categories: state.layout.categories,
+        drawer: state.layout.drawer,
+        gridUnitMm: state.layout.gridUnitMm,
+        gridUnitMmY: effectiveGridUnitMmY(state.layout),
+        heightUnitMm: state.layout.heightUnitMm,
+        layoutName: state.layout.name,
+      }))
+    );
 
   const ceiling = useDrawerCeiling();
 
@@ -145,20 +131,7 @@ export function useIsometricPreview({ inline = false }: IsometricPreviewProps) {
   );
 
   // Bed capacity for one bin's split lines, fitted in either orientation.
-  const overhangSpanFor = useBinOverhangSpan();
-  const bedCapacityFor = useCallback(
-    (bin: Bin): BedCapacity =>
-      calcBedCapacityForBin(
-        bin.width,
-        bin.depth,
-        printBedSize,
-        gridUnitMm,
-        printBedDepth,
-        gridUnitMmY,
-        overhangSpanFor(bin)
-      ),
-    [printBedSize, printBedDepth, gridUnitMm, gridUnitMmY, overhangSpanFor]
-  );
+  const bedCapacityFor = useBinBedCapacity();
 
   // Compartment dividers for bins linked to saved designs (loaded async
   // from designer storage; bins render as plain boxes until specs arrive)

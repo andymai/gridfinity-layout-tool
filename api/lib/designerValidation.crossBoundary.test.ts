@@ -130,6 +130,8 @@ import {
 import { GRIDFINITY_SPEC } from '../../src/shared/printSettings/gridfinityGeometry.js';
 import { MAX_MASK_DIMENSION } from '../../src/shared/utils/cellMask.js';
 import { BIN_PARAMS_KEYS } from '../../src/shared/schema/binDesignKeys.js';
+import { DEFAULT_BIN_PARAMS } from '../../src/shared/constants/bin.js';
+import { migrateParams } from '../../src/features/bin-designer/constants/paramMigration.js';
 import { MAX_CUTOUT_CORNER_RADIUS } from '../../src/shared/utils/wallCutoutPosition.js';
 import { PULL_TAB_LIMITS, PULL_TAB_WALLS } from '../../src/shared/utils/pullTabPlan.js';
 import { PULL_TAB_CENTER_AXES } from '../../src/shared/utils/pullTabCenterPlan.js';
@@ -431,6 +433,29 @@ const PARAM_KEYS_NOT_PERSISTED: ReadonlyMap<string, string> = new Map([
   ['gridUnitMmY', 'community card metrics measure one pitch; see communityStore.crossBoundary'],
   ['nozzleSizeMm', 'injected from the live print setting at generation, never stored'],
 ]);
+
+// Share, sync push and design versions all pass through this validator, and
+// the client reads what comes back through `migrateParams`.
+describe('split switch round trip (cross-boundary)', () => {
+  type MigrateInput = Parameters<typeof migrateParams>[0];
+  const roundTrip = (params: MigrateInput): ReturnType<typeof migrateParams> => {
+    const payload = { type: 'designer', version: 1, params: migrateParams(params) };
+    const result = validateDesignerShare(
+      JSON.parse(JSON.stringify(payload)) as unknown,
+      Buffer.byteLength(JSON.stringify(payload), 'utf8')
+    );
+    if (!result.valid) throw new Error(result.error.message);
+    return migrateParams(JSON.parse(JSON.stringify(result.payload.params)) as MigrateInput);
+  };
+
+  it('keeps a design that turns splitting off', () => {
+    expect(roundTrip({ ...DEFAULT_BIN_PARAMS, splitToFitBed: false }).splitToFitBed).toBe(false);
+  });
+
+  it('keeps a design that splits free of the key', () => {
+    expect('splitToFitBed' in roundTrip(DEFAULT_BIN_PARAMS)).toBe(false);
+  });
+});
 
 describe('designer param allowlist covers BinParams', () => {
   it('allowlists every top-level BinParams key except the deliberate exclusions', () => {

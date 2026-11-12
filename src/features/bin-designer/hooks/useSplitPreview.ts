@@ -72,9 +72,10 @@ function toMeshEntries(result: SplitPreviewResult): SplitPieceMeshEntry[] {
 }
 
 export function useSplitPreview(): void {
-  const { generationStatus, params } = useDesignerStore(
+  const { generationStatus, epoch, params } = useDesignerStore(
     useShallow((s) => ({
       generationStatus: s.generation.status,
+      epoch: s.generation.epoch,
       params: s.params,
     }))
   );
@@ -102,6 +103,8 @@ export function useSplitPreview(): void {
   const genTokenRef = useRef(0);
   const finalizedTokenRef = useRef(0);
   const prevStatusRef = useRef(generationStatus);
+  const prevNeedsSplitRef = useRef(needsSplit);
+  const prevEpochRef = useRef(epoch);
   const previewBridgeRef = useRef<GenerationBridge | null>(null);
   // Shared with useGeneration's bin draft: returns the current skip threshold
   // (FAST_EXACT_SKIP_MS, tightened to BURST_EXACT_SKIP_MS mid-scrub). Read
@@ -205,6 +208,10 @@ export function useSplitPreview(): void {
   useEffect(() => {
     const prevStatus = prevStatusRef.current;
     prevStatusRef.current = generationStatus;
+    const neededSplit = prevNeedsSplitRef.current;
+    prevNeedsSplitRef.current = needsSplit;
+    const prevEpoch = prevEpochRef.current;
+    prevEpochRef.current = epoch;
 
     if (!needsSplit) {
       const current = useDesignerStore.getState().ui.splitPieceMeshes;
@@ -217,8 +224,12 @@ export function useSplitPreview(): void {
     // On first load, 'idle' → 'complete' counts as a valid transition.
     const justCompleted =
       generationStatus === 'complete' && (prevStatus === 'generating' || prevStatus === 'idle');
+    // Turning the design's split switch back on, or a larger print bed, leaves
+    // the body as it was: no generation completes, so the cut starts here. An
+    // edit that bumped the epoch waits for its rebuild instead.
+    const cutsCompleteBody = generationStatus === 'complete' && !neededSplit && epoch === prevEpoch;
 
-    if (!justCompleted) return;
+    if (!justCompleted && !cutsCompleteBody) return;
 
     const bridge = getActiveBridge();
     if (!bridge) return;
@@ -270,5 +281,5 @@ export function useSplitPreview(): void {
       .finally(() => {
         if (usingPool) workerPoolManager.release();
       });
-  }, [needsSplit, generationStatus, params, maxGrid, nozzleSizeMm]);
+  }, [needsSplit, generationStatus, epoch, params, maxGrid, nozzleSizeMm]);
 }

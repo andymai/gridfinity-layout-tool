@@ -29,6 +29,7 @@ describe('modifiedGroups', () => {
     ['wallThickness', 9, 'shape'],
     ['walls', { modified: true }, 'shape'],
     ['splitConnectors', { modified: true }, 'shape'],
+    ['splitToFitBed', false, 'shape'],
     ['cellMask', { modified: true }, 'shape'],
     ['overhang', { modified: true }, 'shape'],
     ['extraWallHeightMm', 5, 'shape'],

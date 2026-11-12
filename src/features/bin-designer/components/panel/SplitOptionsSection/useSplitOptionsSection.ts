@@ -13,18 +13,29 @@ import { useLayoutPrintBed } from '@/features/bin-designer/hooks/useLayoutPrintB
 export type SplitAxis = 'width' | 'depth' | 'both';
 
 export function useSplitOptionsSection() {
-  const { width, depth, base, splitConnectors, splitViewMode, setParam, setSplitViewMode } =
-    useDesignerStore(
-      useShallow((s) => ({
-        width: s.params.width,
-        depth: s.params.depth,
-        base: s.params.base,
-        splitConnectors: s.params.splitConnectors,
-        splitViewMode: s.ui.splitViewMode,
-        setParam: s.setParam,
-        setSplitViewMode: s.setSplitViewMode,
-      }))
-    );
+  const {
+    width,
+    depth,
+    base,
+    splitConnectors,
+    splitToFitBed,
+    splitViewMode,
+    setParam,
+    setSplitToFitBed,
+    setSplitViewMode,
+  } = useDesignerStore(
+    useShallow((s) => ({
+      width: s.params.width,
+      depth: s.params.depth,
+      base: s.params.base,
+      splitConnectors: s.params.splitConnectors,
+      splitToFitBed: s.params.splitToFitBed !== false,
+      splitViewMode: s.ui.splitViewMode,
+      setParam: s.setParam,
+      setSplitToFitBed: s.setSplitToFitBed,
+      setSplitViewMode: s.setSplitViewMode,
+    }))
+  );
 
   const params = useDesignerStore((s) => s.params);
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
@@ -51,6 +62,7 @@ export function useSplitOptionsSection() {
   );
 
   const needsSplit = width > maxGrid.width || depth > maxGrid.depth;
+  const keptWhole = bedFit.keptWhole;
 
   const pieceCount = useMemo(
     () => (needsSplit ? getSplitPieceCount(width, depth, maxGrid.width, maxGrid.depth) : 1),
@@ -85,13 +97,19 @@ export function useSplitOptionsSection() {
     setParam('splitConnectors', { ...config, wallConnector: next });
   }, [config, setParam]);
 
+  const toggleSplitToFitBed = useCallback(
+    () => setSplitToFitBed(!splitToFitBed),
+    [setSplitToFitBed, splitToFitBed]
+  );
+
   const handlers = useMemo(
     () => ({
       toggleEnabled,
       toggleWallConnector,
+      toggleSplitToFitBed,
       setSplitViewMode,
     }),
-    [toggleEnabled, toggleWallConnector, setSplitViewMode]
+    [toggleEnabled, toggleWallConnector, toggleSplitToFitBed, setSplitViewMode]
   );
 
   // A wider nozzle enlarges connector/wall-lock features and clearances; the
@@ -103,6 +121,11 @@ export function useSplitOptionsSection() {
 
   return {
     needsSplit,
+    keptWhole,
+    splitToFitBed,
+    // The scroll panel shows the bed-fit section only when it has something to
+    // say; a switch turned off stays in reach so it can be turned back on.
+    bedFitShown: needsSplit || keptWhole || !splitToFitBed,
     slantTooLarge,
     fitsDiagonally,
     printBedSize: {

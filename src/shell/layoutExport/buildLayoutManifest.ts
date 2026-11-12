@@ -29,6 +29,11 @@ export interface ManifestBinEntry {
   /** Whether those pieces carry printed alignment connectors. */
   readonly splitConnectors?: boolean;
   /**
+   * Larger than the print bed, and its design turns splitting off, so it ships
+   * in one piece. Absent for a bin that fits or splits.
+   */
+  readonly keptWhole?: true;
+  /**
    * Companion parts (lid, dividers) that ship at full size even though the body
    * was cut — they are not split, so an oversized design's lid may not fit the
    * bed. Absent when there is nothing to warn about.
@@ -225,6 +230,12 @@ export function buildLayoutManifest(input: LayoutManifestInput): string {
             '               splitting separately in the bin designer.'
           );
         }
+      }
+      if (b.keptWhole) {
+        lines.push(
+          '    Whole:     larger than the print bed. Its design turns splitting off,',
+          '               so split it in your slicer.'
+        );
       }
       lines.push(
         `    Estimate:  ~${b.filamentGrams.toFixed(1)} g, ~${formatTime(b.printTimeMinutes)} each`

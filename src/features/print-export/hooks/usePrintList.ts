@@ -37,6 +37,7 @@ import { categoryId as toCategoryId } from '@/core/types';
 import { useLabelPlateCounts } from '@/shared/hooks/useLabelPlateCounts';
 import { useLinkedDesignOverhangs } from '@/shared/hooks/useLinkedDesignOverhangs';
 import { useLinkedDesignKinds } from '@/shared/hooks/useLinkedDesignKinds';
+import { useLinkedDesignsKeptWhole } from '@/shared/hooks/useLinkedDesignsKeptWhole';
 import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import { useTranslation } from '@/i18n';
 
@@ -122,6 +123,7 @@ export function usePrintList(): UsePrintListReturn {
   // render would rebuild the whole list on every render.
   const designOverhangs = useLinkedDesignOverhangs();
   const designKinds = useLinkedDesignKinds();
+  const designsKeptWhole = useLinkedDesignsKeptWhole();
   const gridUnitMmY = effectiveGridUnitMmY(layout);
   const { printBedSize, printBedDepth, gridUnitMm, baseplateParams } = layout;
   const { drawer: layoutDrawer, heightUnitMm, lowProfileBase } = layout;
@@ -155,6 +157,8 @@ export function usePrintList(): UsePrintListReturn {
           heightUnitMm,
           lowProfileBase,
         })?.plan ?? null,
+      splitsFor: (bin) =>
+        bin.linkedDesignId === undefined || !designsKeptWhole.has(bin.linkedDesignId),
     }),
     [
       printBedSize,
@@ -169,6 +173,7 @@ export function usePrintList(): UsePrintListReturn {
       baseplateParams,
       designOverhangs,
       designKinds,
+      designsKeptWhole,
     ]
   );
 

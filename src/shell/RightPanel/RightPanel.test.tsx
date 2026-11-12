@@ -137,6 +137,7 @@ describe('RightPanel', () => {
       maxHeight: 12,
       maxClearance: 9,
       maxGridUnits: { width: 6, depth: 6 },
+      overhangMm: { width: 0, depth: 0 },
       needsSplit: false,
       heightRange: '2u – 12u',
       maxHeightReason: 'drawer_height',
@@ -457,6 +458,20 @@ describe('RightPanel', () => {
 
       expect(screen.getByTitle('1 custom property')).toBeInTheDocument();
       expect(screen.getByTitle('2 custom properties')).toBeInTheDocument();
+    });
+
+    it('marks a row whose design prints it in one piece past the bed', () => {
+      mockPrintListReturn = createMockPrintList({
+        rows: [{ ...printRow, size: '8×1', keptWhole: true }],
+        totalBins: 2,
+        totalPieces: 2,
+        totalFilament: 1.5,
+      });
+
+      render(<RightPanel />);
+
+      expect(screen.getByText('Exceeds print size, prints in one piece')).toBeInTheDocument();
+      expect(screen.queryByLabelText('Click to see split preview')).not.toBeInTheDocument();
     });
 
     it('shows PrintListSummary', () => {

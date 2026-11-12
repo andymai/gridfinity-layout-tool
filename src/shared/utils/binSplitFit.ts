@@ -16,7 +16,13 @@
  */
 
 import { fitsBedAtAnyAngle } from '@/core/bedFit';
-import { calcMaxGridUnitsForAxis, pickBedOrientation } from '@/core/constants';
+import {
+  calcBedCapacityForBin,
+  calcMaxGridUnitsForAxis,
+  keepWholeCapacity,
+  pickBedOrientation,
+  type BedCapacity,
+} from '@/core/constants';
 import type { BinParams } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { resolveOverhang } from '@/shared/utils/overhang';
@@ -30,7 +36,7 @@ import type { SlantInputs } from '@/shared/utils/slantPlan';
  */
 export type BinSplitFitParams = Pick<
   BinParams,
-  'width' | 'depth' | 'gridUnitMm' | 'gridUnitMmY' | 'overhang' | 'cellMask'
+  'width' | 'depth' | 'gridUnitMm' | 'gridUnitMmY' | 'overhang' | 'cellMask' | 'splitToFitBed'
 > &
   Partial<SlantInputs>;
 
@@ -77,6 +83,12 @@ export interface BinBedFit {
   readonly squareOn: ChunkUnits;
   /** The whole part overruns the bed square-on and at 90°, but fits lying at an angle. */
   readonly diagonal: boolean;
+  /**
+   * The part overruns the bed at every angle and its design turns splitting
+   * off, so it prints whole anyway. `chunk` and `squareOn` are then its own
+   * size, so nothing cuts it.
+   */
+  readonly keptWhole: boolean;
 }
 
 /**
@@ -90,7 +102,7 @@ export function binBedFit(
   printBedDepthMm?: number
 ): BinBedFit {
   const own: ChunkUnits = { width: params.width, depth: params.depth };
-  if (leansWhole(params)) return { chunk: own, squareOn: own, diagonal: false };
+  if (leansWhole(params)) return { chunk: own, squareOn: own, diagonal: false, keptWhole: false };
   const gridUnitMmX = params.gridUnitMm;
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
   const bedDepthMm = printBedDepthMm ?? printBedWidthMm;
@@ -114,7 +126,10 @@ export function binBedFit(
       printBedWidthMm,
       bedDepthMm
     );
-  return { chunk: diagonal ? own : squareOn, squareOn, diagonal };
+  if (params.splitToFitBed === false) {
+    return { chunk: own, squareOn: own, diagonal, keptWhole: cuts && !diagonal };
+  }
+  return { chunk: diagonal ? own : squareOn, squareOn, diagonal, keptWhole: false };
 }
 
 /**
@@ -140,4 +155,48 @@ export function binSplitChunkUnits(
   printBedDepthMm?: number
 ): ChunkUnits {
   return binBedFit(params, printBedWidthMm, printBedDepthMm).chunk;
+}
+
+/**
+ * The bed capacity a placed bin is drawn against (the grid badge, the 3D cut
+ * lines, the inspector card), decided by {@link binBedFit} so it cuts exactly
+ * where the print list and the layout ZIP cut.
+ *
+ * `calcBedCapacityForBin` charges the overhang only against the diagonal, so a
+ * bin whose footprint fits but whose overhang overruns the bed read as fitting.
+ * Where the fit agrees with it, its numbers stand: an axis that is not cut
+ * keeps the bed's capacity rather than the bin's own size, which is what the
+ * card states as the largest bin.
+ */
+export function placedBinBedCapacity(
+  params: BinSplitFitParams,
+  printBedWidthMm: number,
+  printBedDepthMm?: number
+): BedCapacity {
+  const { width, depth } = params;
+  const o = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
+  const nominal = calcBedCapacityForBin(
+    width,
+    depth,
+    printBedWidthMm,
+    params.gridUnitMm,
+    printBedDepthMm,
+    params.gridUnitMmY ?? params.gridUnitMm,
+    { width: o.left + o.right, depth: o.front + o.back }
+  );
+  const fit = binBedFit({ ...params, splitToFitBed: true }, printBedWidthMm, printBedDepthMm);
+  const cutWidth = width > fit.chunk.width;
+  const cutDepth = depth > fit.chunk.depth;
+  let capacity: BedCapacity;
+  if (cutWidth || cutDepth) {
+    capacity = {
+      width: cutWidth ? fit.chunk.width : Math.max(nominal.width, width),
+      depth: cutDepth ? fit.chunk.depth : Math.max(nominal.depth, depth),
+    };
+  } else if (width <= nominal.width && depth <= nominal.depth) {
+    capacity = nominal;
+  } else {
+    capacity = { width, depth, ...(fit.diagonal ? { diagonal: true } : {}) };
+  }
+  return params.splitToFitBed === false ? keepWholeCapacity(width, depth, capacity) : capacity;
 }

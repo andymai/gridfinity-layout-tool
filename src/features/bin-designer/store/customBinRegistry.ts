@@ -147,6 +147,11 @@ export interface CustomBinRef {
    * before the field.
    */
   readonly slant?: DesignSlantFacts;
+  /**
+   * `false` when the design turns splitting off, so the layout keeps a placed
+   * bin larger than the bed whole, as the export does. Absent = it splits.
+   */
+  readonly splitToFitBed?: false;
   /** ISO timestamp of last update */
   readonly updatedAt: string;
 }
@@ -269,6 +274,17 @@ export function registryOverhangFields(
 }
 
 /**
+ * Project the design's split switch out of a full `BinParams`. Spread wherever
+ * {@link registryOverhangFields} is; an explicit `undefined` clears a stale
+ * entry when a re-save turned splitting back on.
+ */
+export function registrySplitFields(
+  params: Pick<BinParams, 'splitToFitBed'>
+): Pick<CustomBinRef, 'splitToFitBed'> {
+  return { splitToFitBed: params.splitToFitBed === false ? false : undefined };
+}
+
+/**
  * Project the fields a Workshop assembly's registry entry carries out of its
  * envelope + structure — the assembly counterpart of
  * {@link registryHeightFields} + {@link registryOverhangFields}. `hasLip` is
@@ -328,6 +344,7 @@ export function registryParamsEntry(design: SavedDesign): CustomBinRef | null {
     ...registryEdgeFields(params),
     ...registryHeightFields(params),
     ...registryOverhangFields(params),
+    ...registrySplitFields(params),
     ...registrySlantFields(params),
     ...registryKnifeRestFields(params),
     updatedAt: design.updatedAt,
@@ -386,6 +403,7 @@ function parseEntry(raw: unknown): CustomBinRef | null {
     knifeRest,
     overhangMm,
     slant,
+    splitToFitBed,
   } = raw as Record<string, unknown>;
   if (
     typeof id !== 'string' ||
@@ -430,6 +448,7 @@ function parseEntry(raw: unknown): CustomBinRef | null {
       : {}),
     ...(typeof socketless === 'boolean' ? { socketless } : {}),
     ...(typeof hasLip === 'boolean' ? { hasLip } : {}),
+    ...(splitToFitBed === false ? { splitToFitBed } : {}),
     ...(() => {
       if (typeof overhangMm !== 'object' || overhangMm === null) return {};
       const o = overhangMm as Record<string, unknown>;
@@ -585,16 +604,20 @@ function withCarriedFields(next: CustomBinRef, prev: CustomBinRef): CustomBinRef
       ? { knifeRest: prev.knifeRest }
       : {}),
     ...(!('slant' in next) && prev.slant !== undefined ? { slant: prev.slant } : {}),
+    ...(!('splitToFitBed' in next) && prev.splitToFitBed !== undefined
+      ? { splitToFitBed: prev.splitToFitBed }
+      : {}),
   };
 }
 
 /**
- * Refresh one entry's slant facts, and every field that sizes its end
- * support, from its design's params, for a writer that holds the params but
- * none of the entry's other fields, such as a sync pull. The support reserves
- * layout cells, so these cannot wait for the designer to write the entry
- * again. The params may be stored ones from before a field existed. A design
- * the registry does not know stays out of it.
+ * Refresh one entry's slant facts, every field that sizes its end support,
+ * and its split switch, from its design's params, for a writer that holds the
+ * params but none of the entry's other fields, such as the startup pass. The
+ * support reserves layout cells and the switch decides what the print list
+ * cuts, so these cannot wait for the designer to write the entry again. The
+ * params may be stored ones from before a field existed. A design the registry
+ * does not know stays out of it.
  */
 export function refreshRegistrySlant(id: string, stored: BinParams): Result<void, StorageError> {
   return refreshRegistrySlants([{ id, params: stored }]);
@@ -623,7 +646,12 @@ export function refreshRegistrySlants(
 
 function withFreshSlant(ref: CustomBinRef, params: BinParams): CustomBinRef {
   const { slant } = registrySlantFields(params);
-  const { slant: _stale, lowProfileRiseDeltaMm: _staleDelta, ...rest } = ref;
+  const {
+    slant: _stale,
+    lowProfileRiseDeltaMm: _staleDelta,
+    splitToFitBed: _staleSplit,
+    ...rest
+  } = ref;
   return {
     ...rest,
     width: params.width,
@@ -632,6 +660,7 @@ function withFreshSlant(ref: CustomBinRef, params: BinParams): CustomBinRef {
     ...registryEdgeFields(params),
     ...registryHeightFields(params),
     ...(slant ? { slant } : {}),
+    ...(params.splitToFitBed === false ? { splitToFitBed: false } : {}),
   };
 }
 

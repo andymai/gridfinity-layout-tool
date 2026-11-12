@@ -73,6 +73,15 @@ describe('BinSplitLines', () => {
     expect(container.innerHTML).toBe('');
   });
 
+  it('draws no cut lines for an oversized bin whose design turns splitting off', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3, splitToFitBed: false },
+    });
+
+    const { container } = render(<BinSplitLines />);
+    expect(container.innerHTML).toBe('');
+  });
+
   it('renders split lines when bin exceeds print bed in width', () => {
     useDesignerStore.setState({
       params: {

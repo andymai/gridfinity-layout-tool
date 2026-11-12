@@ -94,6 +94,16 @@ describe('buildLayoutManifest', () => {
     expect(text).toContain('lid ship at full size');
   });
 
+  it('says a bin its design keeps in one piece is larger than the bed', () => {
+    const text = buildLayoutManifest(base({ bins: [{ ...base().bins[0], keptWhole: true }] }));
+    expect(text).toContain('  bins/box_1x1x6.stl\n');
+    expect(text).toContain(
+      'Whole:     larger than the print bed. Its design turns splitting off,\n' +
+        '               so split it in your slicer.'
+    );
+    expect(text).not.toContain('Split:');
+  });
+
   it('keeps the plain path for a bin that prints whole', () => {
     const text = buildLayoutManifest(base({ bins: [{ ...base().bins[0], splitPieces: 1 }] }));
     expect(text).toContain('bins/box_1x1x6.stl');

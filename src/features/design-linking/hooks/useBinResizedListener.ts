@@ -25,6 +25,7 @@ import {
   registryEdgeFields,
   registryHeightFields,
   registryOverhangFields,
+  registrySplitFields,
   registrySlantFields,
 } from '@/features/bin-designer';
 import { isErr, isOk } from '@/core/result';
@@ -168,6 +169,7 @@ export function useBinResizedListener(): void {
             ...registryEdgeFields(newParams),
             ...registryHeightFields(newParams),
             ...registryOverhangFields(newParams),
+            ...registrySplitFields(newParams),
             ...registrySlantFields(newParams),
             updatedAt,
           });

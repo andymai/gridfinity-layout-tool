@@ -113,7 +113,7 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
   // write — dragging a slider re-ran the tree per frame. The selector still
   // runs per write; the render only happens when a flag flips.
   const modified = useDesignerStore(useShallow((s) => modifiedCategories(s.params)));
-  const { needsSplit } = useSplitOptionsSection();
+  const { needsSplit, keptWhole, bedFitShown } = useSplitOptionsSection();
   const openExampleGallery = useBinExampleGalleryStore((s) => s.open);
   const hasUnseenDigest = useCommunityDigestStore((s) => s.hasUnseenDeltas);
   const currentDesignId = useDesignerStore((s) => s.currentDesignId);
@@ -321,7 +321,7 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
   // Search field and view toggle on one row, sharing a single divider.
   const topBar = (
     <div className="flex flex-shrink-0 items-center justify-end gap-2 border-b border-stroke-subtle px-3 py-2">
-      <DesignerSearchBar viewMode={viewMode} needsSplit={needsSplit} />
+      <DesignerSearchBar viewMode={viewMode} bedFitShown={bedFitShown} />
       {viewSwitchPill}
     </div>
   );
@@ -365,7 +365,7 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
         print: printSummary,
       }}
       modified={modified}
-      warnings={{ print: needsSplit }}
+      warnings={{ print: needsSplit || keptWhole }}
       dock={<UserDock />}
     />
   );

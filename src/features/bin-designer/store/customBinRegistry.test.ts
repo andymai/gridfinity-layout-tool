@@ -13,6 +13,7 @@ import {
   registryHeightFields,
   registryOverhangFields,
   registrySlantFields,
+  registrySplitFields,
   refreshRegistrySlant,
   refreshRegistrySlants,
   registryParamsEntry,
@@ -569,6 +570,60 @@ describe('customBinRegistry', () => {
       else expect(back).toBeUndefined();
     });
   });
+  describe('split switch', () => {
+    const OFF = { ...DEFAULT_BIN_PARAMS, splitToFitBed: false };
+
+    it('records a design that turns splitting off', () => {
+      expect(registrySplitFields(OFF)).toEqual({ splitToFitBed: false });
+    });
+
+    it('writes an explicit undefined for a design that splits', () => {
+      const fields = registrySplitFields(DEFAULT_BIN_PARAMS);
+      expect('splitToFitBed' in fields).toBe(true);
+      expect(fields.splitToFitBed).toBeUndefined();
+    });
+
+    it('keeps the switch when an update omits it, and clears it on a re-save', () => {
+      upsertRegistryEntry({ ...makeRef('d1'), ...registrySplitFields(OFF) });
+      upsertRegistryEntry({ ...makeRef('d1', 'Renamed') });
+      expect(loadRegistry()[0]?.splitToFitBed).toBe(false);
+
+      upsertRegistryEntry({ ...makeRef('d1'), ...registrySplitFields(DEFAULT_BIN_PARAMS) });
+      expect(loadRegistry()[0]?.splitToFitBed).toBeUndefined();
+    });
+
+    it.each([true, 'no', 0, null])('drops a stored %j', (stored) => {
+      localStorage.setItem(
+        'gridfinity-custom-bins-v1',
+        JSON.stringify([{ ...makeRef('d1'), splitToFitBed: stored }])
+      );
+      expect(loadRegistry()[0]).toBeDefined();
+      expect(loadRegistry()[0]?.splitToFitBed).toBeUndefined();
+    });
+
+    it('builds a parametric entry with the switch', () => {
+      const design = {
+        id: designId('d1'),
+        name: 'Long',
+        params: OFF,
+        thumbnail: null,
+        exportFileNameConfig: null,
+        createdAt: '2026-11-12T00:00:00.000Z',
+        updatedAt: '2026-11-12T00:00:00.000Z',
+      };
+      expect(registryParamsEntry(design)?.splitToFitBed).toBe(false);
+    });
+
+    // A sync pull refreshes a known entry from the pulled params alone.
+    it('refreshes the switch from a pulled design', () => {
+      upsertRegistryEntry(makeRef('d1'));
+      refreshRegistrySlant('d1', OFF);
+      expect(loadRegistry()[0]?.splitToFitBed).toBe(false);
+      refreshRegistrySlant('d1', DEFAULT_BIN_PARAMS);
+      expect(loadRegistry()[0]?.splitToFitBed).toBeUndefined();
+    });
+  });
+
   describe('design slant', () => {
     const SLANT = { angleDeg: 40, side: 'back' as const, endSupport: true };
 

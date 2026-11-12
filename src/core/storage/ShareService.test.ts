@@ -34,6 +34,7 @@ import {
 } from '@/core/storage/designStorePort';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { expectOk, expectErr, createTestLayout as baseCreateTestLayout } from '@/test/testUtils';
+import { prepareBinParamsAsIs } from '@/test/mocks/designStorePort';
 
 // Mock clipboard API
 const mockClipboard = {
@@ -57,6 +58,7 @@ const fakePort: DesignStorePort = {
   upsertRegistryEntry: (...args: unknown[]) => mockUpsertRegistryEntry(...args),
   registryEdgeFields: async () => ({}),
   registryPlacementFields: async () => ({}),
+  prepareBinParams: prepareBinParamsAsIs,
 };
 
 function expectImportError(result: Result<unknown, ValidationError>): ValidationImportError {
@@ -868,6 +870,29 @@ describe('storage-share', () => {
         thumbnail: null,
         exportFileNameConfig: null,
       });
+    });
+
+    it('finishes the restore when registering a saved design fails', async () => {
+      const layout = createTestLayout();
+      const json = JSON.stringify({
+        ...layout,
+        linkedDesigns: [
+          { id: 'a', name: 'A', params: { ...DEFAULT_BIN_PARAMS } },
+          { id: 'b', name: 'B', params: { ...DEFAULT_BIN_PARAMS } },
+        ],
+      });
+      mockSaveDesign.mockImplementation((input: { name: string }) =>
+        Promise.resolve(ok({ id: `new-${input.name}`, name: input.name, updatedAt: 'now' }))
+      );
+      registerDesignStorePort({
+        ...fakePort,
+        registryPlacementFields: () => Promise.reject(new Error('registry unavailable')),
+      });
+
+      const result = await restoreEmbeddedDesigns(json, layout);
+
+      expect(result.importedDesignCount).toBe(2);
+      expect(mockSaveDesign).toHaveBeenCalledTimes(2);
     });
 
     it('saves an embedded assembly through the port with its structure', async () => {

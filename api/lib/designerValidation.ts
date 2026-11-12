@@ -173,6 +173,7 @@ export const ALLOWED_PARAM_KEYS: ReadonlySet<string> = new Set<string>([
   'wallPattern',
   'floorPattern',
   'splitConnectors',
+  'splitToFitBed',
   'featureColors',
   'lid',
   'slide',
@@ -197,7 +198,13 @@ function pickAllowedParams(params: Record<string, unknown>): Record<string, unkn
       out[key] = params[key];
     }
   }
-  return withSanitizedSlant(withSanitizedOverhang(out));
+  return withSanitizedSplitSwitch(withSanitizedSlant(withSanitizedOverhang(out)));
+}
+
+/** Off is the only stored state, mirroring `migrateParams`; anything else reads as on. */
+function withSanitizedSplitSwitch(params: Record<string, unknown>): Record<string, unknown> {
+  const { splitToFitBed, ...rest } = params;
+  return splitToFitBed === false ? { ...rest, splitToFitBed } : rest;
 }
 
 export interface DesignerSharePayload {

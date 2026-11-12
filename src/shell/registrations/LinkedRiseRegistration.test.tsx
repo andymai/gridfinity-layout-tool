@@ -3,6 +3,11 @@ import { registerLinkedExcessResolver } from '@/shared/utils/collision';
 import { placedSlant, registerLinkedSlantResolver } from '@/shared/utils/placedSlant';
 import { getRestingStack } from '@/shared/utils/restingStack';
 import { LIP_PROTRUSION_MM } from '@/shared/utils/heightUnits';
+import { act, renderHook } from '@testing-library/react';
+import {
+  registerKeptWholeDesigns,
+  useLinkedDesignsKeptWhole,
+} from '@/shared/hooks/useLinkedDesignsKeptWhole';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
 import type { Layer } from '@/core/types';
 import { binId, designId, heightUnits, layerId } from '@/core/types';
@@ -23,6 +28,7 @@ vi.mock('@/features/bin-designer', () => ({
 afterAll(() => {
   registerLinkedExcessResolver(null);
   registerLinkedSlantResolver(null);
+  registerKeptWholeDesigns(null);
 });
 
 const layers: Layer[] = [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }];
@@ -103,6 +109,22 @@ describe('LinkedRiseRegistration', () => {
     expect(placedSlant(bin('leaning'), layout)?.support).toMatchObject({ y: 1, depth: 1 });
     expect(placedSlant({ ...bin('mesh'), slant }, layout)).toBeNull();
     expect(placedSlant({ ...bin('unknown'), slant }, layout)).not.toBeNull();
+  });
+
+  it('wires the designs that turn splitting off into the layout, and follows changes', async () => {
+    await import('@/shell/registrations/LinkedRiseRegistration');
+    registry.length = 0;
+    registry.push({ ...designRef('whole'), splitToFitBed: false }, designRef('splits'));
+    subscribers.forEach((cb) => cb());
+
+    const { result } = renderHook(() => useLinkedDesignsKeptWhole());
+    expect([...result.current]).toEqual([designId('whole')]);
+
+    act(() => {
+      registry.length = 0;
+      subscribers.forEach((cb) => cb());
+    });
+    expect(result.current.size).toBe(0);
   });
 
   it('renders nothing', async () => {

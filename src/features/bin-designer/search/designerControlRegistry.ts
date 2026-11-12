@@ -499,6 +499,12 @@ export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
   },
   // Print split
   {
+    id: 'opt-split-to-fit-bed',
+    labelKey: 'binDesigner.splitToFitBed',
+    section: 'bd-print-fit',
+    keywords: ['split', 'whole', 'one piece', 'no split', 'slicer', 'oversized', 'dovetail'],
+  },
+  {
     id: 'opt-split-connectors',
     labelKey: 'binDesigner.splitConnectors',
     section: 'bd-print-fit',
@@ -520,7 +526,8 @@ export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
 export interface ControlAvailabilityContext {
   readonly style: BinParams['style'];
   readonly hasText: boolean;
-  readonly needsSplit: boolean;
+  /** The scroll panel mounts its bed-fit section (`useSplitOptionsSection`). */
+  readonly bedFitShown: boolean;
   readonly viewMode: 'scroll' | 'rail';
   /** The `sliding_tray` labs flag — the slide-tray section only mounts when on. */
   readonly slideTrayEnabled: boolean;
@@ -533,7 +540,7 @@ export interface ControlAvailabilityContext {
  * marker. Label tabs need a standard style; typography needs text on the bin;
  * the slide tray is behind a labs flag; print-fit is view-dependent (the rail's
  * PrintPage always renders it, passive when the bin fits, the scroll panel only
- * when the bin must be split).
+ * when the bin overruns the bed or its split switch is off).
  */
 export function isDesignerControlAvailable(
   controlId: string,
@@ -547,7 +554,7 @@ export function isDesignerControlAvailable(
     case 'bd-slide-tray':
       return ctx.slideTrayEnabled;
     case 'bd-print-fit':
-      return ctx.viewMode === 'rail' || ctx.needsSplit;
+      return ctx.viewMode === 'rail' || ctx.bedFitShown;
     case SCAN_TOOL_TARGET:
       return ctx.scanAvailable;
     default:

@@ -537,6 +537,11 @@ export function RightPanel() {
                                           {t('print.row.blankLabelTabs')}
                                         </span>
                                       )}
+                                      {row.keptWhole === true && (
+                                        <span className="text-micro text-warning">
+                                          {t('grid.exceedsPrintSizeWhole')}
+                                        </span>
+                                      )}
                                     </div>
                                   </td>
                                   <td className="px-2 py-2 align-top text-content-tertiary">

@@ -88,6 +88,7 @@ export function ExportDialog() {
     downloadBin,
     needsSplit,
     fitsDiagonally,
+    keptWhole,
     splitPieceCount,
     downloadSplit,
   } = useExport();
@@ -127,7 +128,9 @@ export function ExportDialog() {
   }, [designName, params, addToast, t]);
 
   const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
-  const useSplitExport = (needsSplit || fitsDiagonally) && splitEnabled;
+  // With the design's switch off nothing is cut, so a diagonal fit is a reminder.
+  const offerSplit = params.splitToFitBed !== false && (needsSplit || fitsDiagonally);
+  const useSplitExport = offerSplit && splitEnabled;
   // A slanted bin can't be split, so this one is a reminder with no choice to offer.
   const slantFitsDiagonally = useMemo(
     () => slantedBinFitsOnlyDiagonally(params, printBedSize, printBedDepth),
@@ -371,7 +374,7 @@ export function ExportDialog() {
         visible: plates.length > 0 && engineReady,
       }}
       splitBanner={
-        needsSplit || fitsDiagonally
+        offerSplit
           ? {
               message: t(
                 fitsDiagonally
@@ -389,14 +392,21 @@ export function ExportDialog() {
       warningBanner={
         useSplitExport && isMultiColor
           ? { message: t('binDesigner.splitExport.colorLossWarning') }
-          : slantFitsDiagonally
+          : keptWhole
             ? {
-                message: t('binDesigner.printFit.fitsDiagonally', {
+                message: t('binDesigner.printFit.keptWhole', {
                   width: printBedSize,
                   depth: printBedDepth ?? printBedSize,
                 }),
               }
-            : null
+            : slantFitsDiagonally || (fitsDiagonally && !offerSplit)
+              ? {
+                  message: t('binDesigner.printFit.fitsDiagonally', {
+                    width: printBedSize,
+                    depth: printBedDepth ?? printBedSize,
+                  }),
+                }
+              : null
       }
       extras={
         showHandoff || hingePins.length > 0 ? (

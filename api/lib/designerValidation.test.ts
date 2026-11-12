@@ -104,6 +104,26 @@ describe('overhang through the share allowlist', () => {
   });
 });
 
+describe('split-to-fit-bed switch', () => {
+  const check = (splitToFitBed: unknown) => {
+    const p = validPayload();
+    const payload = { ...p, params: { ...p.params, splitToFitBed } };
+    return validateDesignerShare(payload, Buffer.byteLength(JSON.stringify(payload), 'utf8'));
+  };
+
+  it('keeps splitting turned off', () => {
+    const result = check(false);
+    expect(result.valid).toBe(true);
+    if (result.valid) expect(result.payload.params.splitToFitBed).toBe(false);
+  });
+
+  it.each([true, 'no', 0, null])('stores %j as the default, on', (value) => {
+    const result = check(value);
+    expect(result.valid).toBe(true);
+    if (result.valid) expect(result.payload.params).not.toHaveProperty('splitToFitBed');
+  });
+});
+
 describe('pull-tab validation', () => {
   const check = (pullTab: Record<string, unknown>) => {
     const p = validPayload();

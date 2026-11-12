@@ -16,7 +16,8 @@ import type { HighlightRange } from '@/features/bin-designer/search/matcher';
 
 interface DesignerSearchBarProps {
   readonly viewMode: 'scroll' | 'rail';
-  readonly needsSplit: boolean;
+  /** The scroll panel shows its bed-fit section (`useSplitOptionsSection`). */
+  readonly bedFitShown: boolean;
 }
 
 /** Renders `label` with the matched ranges emphasized. */
@@ -44,7 +45,7 @@ function highlighted(label: string, ranges: readonly HighlightRange[]): ReactNod
  * sections by category to browse. Selecting a result jumps the panel to the
  * section that holds it (the same deep-link the Help modal uses).
  */
-export function DesignerSearchBar({ viewMode, needsSplit }: DesignerSearchBarProps) {
+export function DesignerSearchBar({ viewMode, bedFitShown }: DesignerSearchBarProps) {
   const t = useTranslation();
   const { style, hasText } = useDesignerStore(
     useShallow((s) => ({ style: s.params.style, hasText: binHasText(s.params) }))
@@ -54,8 +55,8 @@ export function DesignerSearchBar({ viewMode, needsSplit }: DesignerSearchBarPro
   // Memoized so the search hook's `useMemo` isn't defeated by a fresh object
   // every render.
   const ctx = useMemo(
-    () => ({ style, hasText, needsSplit, viewMode, slideTrayEnabled, scanAvailable }),
-    [style, hasText, needsSplit, viewMode, slideTrayEnabled, scanAvailable]
+    () => ({ style, hasText, bedFitShown, viewMode, slideTrayEnabled, scanAvailable }),
+    [style, hasText, bedFitShown, viewMode, slideTrayEnabled, scanAvailable]
   );
 
   const [query, setQuery] = useState('');

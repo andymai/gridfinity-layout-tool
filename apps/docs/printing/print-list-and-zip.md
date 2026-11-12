@@ -27,7 +27,7 @@ The <Ui k="rightPanel.binList" /> in the right panel of the layout editor is you
 
 Bins share a row when they have the same size, height, label, category and linked design. A bin that extends into the drawer margin gets its own row.
 
-Click a row to select those bins on the grid. A row that needs a split shows an arrow. Click it to see how the bin divides into pieces.
+Click a row to select those bins on the grid. A row that needs a split shows an arrow. Click it to see how the bin divides into pieces. A bin whose design turns off <Ui k="binDesigner.splitToFitBed" /> counts as one piece, and its row shows <Ui k="grid.exceedsPrintSizeWhole" />.
 
 <Screenshot id="printing-print-list-split-row" alt="The bin list with the Pcs column. The 6 by 1 Screwdrivers row is open below its arrow and shows its two 3 by 1 pieces." spec="Layout editor with a 6 by 4 drawer on a 180 mm print bed and ten bins, one of them 6 by 1. Click the 6 by 1 row in the Bin list, then press Escape to clear the selection. Crop to the bin list." />
 
@@ -96,7 +96,7 @@ my-drawer.zip
 
 - **manifest.txt** lists each bin file with its design, size, quantity and estimate. It also lists the bins that the export skipped.
 - **bins/** has one file for each design, not one for each bin. Print each file as many times as the manifest says. In STL, the lid, dividers and other parts are separate files. In STEP, they are in the same file as the bin.
-- A bin that is too large for the bed gets its own folder, with one file for each piece.
+- A bin that is too large for the bed gets its own folder, with one file for each piece. A bin whose design turns off <Ui k="binDesigner.splitToFitBed" /> stays one file.
 - **labels/** has the swappable label plates, packed onto sheets of your bed size. To export the plates of one bin, see [Export the plates](../designer/label-plates#export-the-plates).
 - **baseplate/** has the plate files, the print guide and the assembly map. See [Split for your print bed](../baseplates/splitting).
 

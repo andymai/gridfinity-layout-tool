@@ -48,6 +48,7 @@ const CATEGORY_OF: Partial<Record<keyof BinParams, PageCategory>> = {
   heightUnitMm: 'print',
   nozzleSizeMm: 'print',
   splitConnectors: 'print',
+  splitToFitBed: 'print',
 };
 
 export function modifiedCategories(params: BinParams): Record<PageCategory, boolean> {

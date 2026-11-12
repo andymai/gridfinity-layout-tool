@@ -24,6 +24,7 @@ import {
   resetDesignStorePort,
   type DesignStorePort,
 } from '@/core/storage/designStorePort';
+import { prepareBinParamsAsIs } from '@/test/mocks/designStorePort';
 
 // === Mocks ===
 
@@ -55,6 +56,7 @@ const fakePort: DesignStorePort = {
   upsertRegistryEntry: () => Promise.reject(new Error('upsertRegistryEntry not used')),
   registryEdgeFields: () => Promise.resolve({}),
   registryPlacementFields: () => Promise.resolve({}),
+  prepareBinParams: prepareBinParamsAsIs,
 };
 
 // === Fixtures ===
