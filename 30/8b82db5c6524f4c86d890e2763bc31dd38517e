@@ -1,0 +1,69 @@
+.claude/skills/state-and-cqrs/SKILL.md
+  s_1cc363bb3cc76d::t_9c0e6feb744d4b 46
+src/core/cqrs/commandDescriptions.ts
+  s_1cc363bb3cc76d::t_b432eb6df7a02b 43-56,58-59
+src/core/cqrs/middleware/undoCapture.ts
+  s_1cc363bb3cc76d::t_4525d65f5d0321 14-15,18,26-60,98-100,158,164-165,171-172,176,185
+src/core/cqrs/undo/historyStore.test.ts
+  s_1cc363bb3cc76d::t_5c01c28cfa32fc 9-11,670-727
+src/core/cqrs/undo/historyStore.ts
+  s_1cc363bb3cc76d::t_8d238e6aa3fe70 38-43,47-48,53-55,66-67,95,97,118-123,127-130,147-149,166,169-172,188-190
+src/i18n/locales/cs.json
+  s_1cc363bb3cc76d::t_6c0f13c649bdab 5266-5283
+src/i18n/locales/de.json
+  s_1cc363bb3cc76d::t_d29066d1266453 5133-5144
+src/i18n/locales/en.ts
+  s_1cc363bb3cc76d::t_d5b3138a14243f 6125-6136
+src/i18n/locales/es.json
+  s_1cc363bb3cc76d::t_bbea1c8226ce09 5133-5144
+src/i18n/locales/fr.json
+  s_1cc363bb3cc76d::t_aed8d7264e75ec 5133-5144
+src/i18n/locales/it.json
+  s_1cc363bb3cc76d::t_44046a9e74cbed 5133-5144
+src/i18n/locales/ja.json
+  s_1cc363bb3cc76d::t_8c3144534b60ee 5002-5007
+src/i18n/locales/ka.json
+  s_1cc363bb3cc76d::t_7ecddecf236d4f 5046-5057
+src/i18n/locales/ko.json
+  s_1cc363bb3cc76d::t_d894b01097a20f 5002-5007
+src/i18n/locales/nb.json
+  s_1cc363bb3cc76d::t_c8c05be42935c7 5133-5144
+src/i18n/locales/nl.json
+  s_1cc363bb3cc76d::t_2e9997e5bd5354 5133-5144
+src/i18n/locales/pl.json
+  s_1cc363bb3cc76d::t_6e0d2dc7efba53 5395-5418
+src/i18n/locales/pt-BR.json
+  s_1cc363bb3cc76d::t_4b05f969b8772e 5133-5144
+src/i18n/locales/sv.json
+  s_1cc363bb3cc76d::t_e7398e24e65abc 5133-5144
+src/i18n/locales/uk.json
+  s_1cc363bb3cc76d::t_aba80ee16c9b35 5395-5418
+src/i18n/locales/zh-CN.json
+  s_1cc363bb3cc76d::t_70d5193c7ea30c 5002-5007
+src/core/cqrs/commandDescriptions.test.ts
+  s_07e54eefc43f6b::t_c1db185fe91f14 41-57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "308b82db5c6524f4c86d890e2763bc31dd38517e",
+  "prompts": {},
+  "sessions": {
+    "s_07e54eefc43f6b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a5a57519fda1396d8",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
