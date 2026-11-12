@@ -6,11 +6,13 @@
  *    hashToken/timingSafeCompare implementations (Redis hash first, blob
  *    fallback for pre-migration shares)
  *  - rewrites drop the legacy lastAccessedAt field and preserve createdAt
- *  - DELETE accepts the token from header or body and cleans up all three
+ *  - DELETE accepts the token from header or body and cleans up the share's
  *    Redis keys alongside the blob
  *  - PUT writes only over the blob it read, and takes its stamp from the
  *    shared reservation after that read, so the write that lands last
  *    carries the latest lastUpdatedAt
+ *  - a PUT that sets no permission keeps the one of the blob it replaces,
+ *    which only that blob's body or its permission record proves
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -32,6 +34,8 @@ const mocks = vi.hoisted(() => ({
   redisDel: vi.fn(),
   reserveShareRevision: vi.fn(),
   verifyShareRevision: vi.fn(),
+  recordSharePermission: vi.fn(),
+  redisHmget: vi.fn(),
   validateShareLayout: vi.fn(),
   isValidationError: vi.fn(),
   filterLayoutContent: vi.fn(),
@@ -125,6 +129,31 @@ function verify(key: string, stampMs: number): Promise<number> {
   return Promise.resolve(1);
 }
 
+/** The permission record script's semantics, as `sharePermission.integration.test.ts` runs it. */
+const permissionRecords = new Map<string, { stamp: number; etag: string; permission: string }>();
+const PERMISSION_VERSION_KEY = `share:permissionVersion:abc123DEF456`;
+function recordPermission(
+  _permissionKey: string,
+  versionKey: string,
+  stampMs: number,
+  etag: string,
+  permission: string
+): Promise<number> {
+  const last = permissionRecords.get(versionKey);
+  if (last && last.stamp >= stampMs) return Promise.resolve(0);
+  permissionRecords.set(versionKey, { stamp: stampMs, etag, permission });
+  return Promise.resolve(1);
+}
+function readRecord(key: string, ...fields: ('etag' | 'permission')[]): Promise<(string | null)[]> {
+  const record = permissionRecords.get(key);
+  return Promise.resolve(fields.map((field) => record?.[field] ?? null));
+}
+
+/** The record that the write which stored blob version `etag` left. */
+function recordedFor(etag: string, permission = 'view') {
+  permissionRecords.set(PERMISSION_VERSION_KEY, { stamp: 0, etag, permission });
+}
+
 function blobResponse(data: unknown, etag?: string) {
   return {
     ok: true,
@@ -187,14 +216,19 @@ describe('share/[id]', () => {
       del: mocks.redisDel,
       reserveShareRevision: mocks.reserveShareRevision,
       verifyShareRevision: mocks.verifyShareRevision,
+      recordSharePermission: mocks.recordSharePermission,
+      hmget: mocks.redisHmget,
     });
     revisions.clear();
+    permissionRecords.clear();
+    mocks.recordSharePermission.mockImplementation(recordPermission);
+    mocks.redisHmget.mockImplementation(readRecord);
     mocks.reserveShareRevision.mockImplementation(reserve);
     mocks.verifyShareRevision.mockImplementation(verify);
     mocks.redisGet.mockResolvedValue(null);
     mocks.redisSet.mockResolvedValue('OK');
     mocks.redisDel.mockResolvedValue(1);
-    mocks.put.mockResolvedValue({ url: 'blob://ok' });
+    mocks.put.mockResolvedValue({ url: 'blob://ok', etag: '"etag-written"' });
     mocks.del.mockResolvedValue(undefined);
     mocks.validateShareLayout.mockReturnValue({ layout: { name: 'Updated' } });
     mocks.isValidationError.mockReturnValue(false);
@@ -321,41 +355,57 @@ describe('share/[id]', () => {
       primeBlobFetch(shareBlob({ deleteTokenHash: correctHash }));
       const res = await handle('PUT', { body: { deleteToken: TOKEN, permission: 'edit' } });
       expect(res._status).toBe(200);
-      expect(mocks.redisSet).toHaveBeenCalledWith(
+      expect(mocks.recordSharePermission).toHaveBeenCalledWith(
         `share:permission:${VALID_ID}`,
+        PERMISSION_VERSION_KEY,
+        Date.parse(writtenAt(0).metadata.lastUpdatedAt),
+        '"etag-written"',
         'edit',
-        'EX',
         expect.any(Number)
       );
     });
 
     it('a layout update keeps a permission change the blob CDN still serves stale', async () => {
-      primeBlobFetch(shareBlob({ permission: 'view' }));
+      revisions.set(REVISION_KEY, {
+        stamp: Date.parse('2026-01-02T00:00:00.000Z'),
+        verified: true,
+      });
+      primeBlobFetch(shareBlob({ permission: 'view' }), '"etag-1"');
+      mocks.head.mockResolvedValue({ url: BLOB_URL, etag: '"etag-2"', uploadedAt: UPLOADED_AT });
+      permissionRecords.set(PERMISSION_VERSION_KEY, {
+        stamp: Date.parse('2026-01-02T00:00:00.000Z'),
+        etag: '"etag-2"',
+        permission: 'edit',
+      });
+      mocks.redisGet.mockResolvedValue(correctHash);
+      const res = await handle('PUT', {
+        body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+      });
+      expect(res._status).toBe(200);
+      expect(writtenAt(0).metadata.permission).toBe('edit');
+    });
+
+    it('a layout update keeps the permission of a body that is the blob it replaces', async () => {
+      primeBlobFetch(shareBlob({ permission: 'view' }), '"etag-1"');
       mocks.redisGet.mockImplementation((key: string) =>
-        Promise.resolve(
-          key === `share:permission:${VALID_ID}`
-            ? 'edit'
-            : key === `share:hash:${VALID_ID}`
-              ? correctHash
-              : null
-        )
+        Promise.resolve(key === `share:permission:${VALID_ID}` ? 'edit' : correctHash)
       );
       const res = await handle('PUT', {
         body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
       });
       expect(res._status).toBe(200);
-      const written = JSON.parse(mocks.put.mock.calls[0][1] as string) as {
-        metadata: Record<string, unknown>;
-      };
-      expect(written.metadata.permission).toBe('edit');
+      expect(writtenAt(0).metadata.permission).toBe('view');
     });
 
     it('drops the Redis permission when recording it fails, so an older value cannot outlive the blob', async () => {
       primeBlobFetch(shareBlob({ deleteTokenHash: correctHash }));
-      mocks.redisSet.mockRejectedValue(new Error('redis down'));
+      mocks.recordSharePermission.mockRejectedValue(new Error('redis down'));
       const res = await handle('PUT', { body: { deleteToken: TOKEN, permission: 'view' } });
       expect(res._status).toBe(200);
-      expect(mocks.redisDel).toHaveBeenCalledWith(`share:permission:${VALID_ID}`);
+      expect(mocks.redisDel).toHaveBeenCalledWith(
+        `share:permission:${VALID_ID}`,
+        PERMISSION_VERSION_KEY
+      );
     });
 
     it('stores a full update without the library folder placement', async () => {
@@ -436,6 +486,7 @@ describe('share/[id]', () => {
             etag: '"etag-new"',
             uploadedAt: new Date('2026-03-01T10:00:05.000Z'),
           });
+          recordedFor('"etag-new"');
           mocks.redisGet.mockResolvedValue(correctHash);
           const res = await handle('PUT', {
             body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
@@ -500,6 +551,7 @@ describe('share/[id]', () => {
             uploadedAt: UPLOADED_AT,
           });
           mocks.fetch.mockResolvedValue(blobResponse(shareBlob()));
+          recordedFor('"etag-1"');
           mocks.redisGet.mockResolvedValue(correctHash);
           const res = await handle('PUT', {
             body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
@@ -674,6 +726,7 @@ describe('share/[id]', () => {
           etag: '"etag-new"',
           uploadedAt: UPLOADED_AT,
         });
+        recordedFor('"etag-new"');
         mocks.redisGet.mockResolvedValue(correctHash);
         const res = await handle('PUT', {
           body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
@@ -721,6 +774,92 @@ describe('share/[id]', () => {
 
         expect(res._status).toBe(404);
         expect(mocks.put).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('a layout update that sets no permission', () => {
+      beforeEach(() => {
+        revisions.set(REVISION_KEY, {
+          stamp: Date.parse('2026-01-02T00:00:00.000Z'),
+          verified: true,
+        });
+        // A revoke landed as etag-2. The CDN still serves the body before it.
+        mocks.head.mockResolvedValue({ url: BLOB_URL, etag: '"etag-2"', uploadedAt: UPLOADED_AT });
+        mocks.fetch.mockResolvedValue(blobResponse(shareBlob({ permission: 'edit' }), '"etag-1"'));
+      });
+
+      it('never writes back a permission that the blob it replaces no longer has', async () => {
+        // The revoke has not recorded "view" yet, so Redis still holds the older grant.
+        mocks.redisGet.mockImplementation((key: string) =>
+          Promise.resolve(key === `share:permission:${VALID_ID}` ? 'edit' : correctHash)
+        );
+        const res = await handle('PUT', {
+          body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+        });
+
+        expect(mocks.put).not.toHaveBeenCalled();
+        expect(res._status).toBe(503);
+      });
+
+      it('writes the permission that the write it replaces recorded', async () => {
+        mocks.redisGet.mockResolvedValue(correctHash);
+        permissionRecords.set(PERMISSION_VERSION_KEY, {
+          stamp: Date.parse('2026-01-02T00:00:00.000Z'),
+          etag: '"etag-2"',
+          permission: 'view',
+        });
+        const res = await handle('PUT', {
+          body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+        });
+
+        expect(res._status).toBe(200);
+        expect(mocks.put).toHaveBeenCalledTimes(1);
+        expect(mocks.put.mock.calls[0][2]).toMatchObject({ ifMatch: '"etag-2"' });
+        expect(writtenAt(0).metadata.permission).toBe('view');
+      });
+
+      it('waits for the record of the write that it replaces', async () => {
+        mocks.redisGet.mockResolvedValue(correctHash);
+        permissionRecords.set(PERMISSION_VERSION_KEY, {
+          stamp: Date.parse('2026-01-01T00:00:00.000Z'),
+          etag: '"etag-1"',
+          permission: 'edit',
+        });
+        mocks.redisHmget.mockImplementationOnce(
+          (key: string, ...fields: ('etag' | 'permission')[]) => {
+            const read = readRecord(key, ...fields);
+            // The revoke's record lands while this attempt waits.
+            permissionRecords.set(PERMISSION_VERSION_KEY, {
+              stamp: Date.parse('2026-01-02T00:00:00.000Z'),
+              etag: '"etag-2"',
+              permission: 'view',
+            });
+            return read;
+          }
+        );
+        const res = await handle('PUT', {
+          body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+        });
+
+        expect(res._status).toBe(200);
+        expect(mocks.put).toHaveBeenCalledTimes(1);
+        expect(writtenAt(0).metadata.permission).toBe('view');
+      });
+
+      it('records the permission and the ETag of the blob that it stored', async () => {
+        mocks.redisGet.mockResolvedValue(correctHash);
+        permissionRecords.set(PERMISSION_VERSION_KEY, {
+          stamp: Date.parse('2026-01-02T00:00:00.000Z'),
+          etag: '"etag-2"',
+          permission: 'view',
+        });
+        await handle('PUT', { body: { deleteToken: TOKEN, layout: { name: 'Updated' } } });
+
+        expect(permissionRecords.get(PERMISSION_VERSION_KEY)).toEqual({
+          stamp: Date.parse(writtenAt(0).metadata.lastUpdatedAt),
+          etag: '"etag-written"',
+          permission: 'view',
+        });
       });
     });
 
@@ -867,7 +1006,8 @@ describe('share/[id]', () => {
       expect(mocks.del).toHaveBeenCalledWith(`shares/${VALID_ID}.json`);
       expect(mocks.redisDel).toHaveBeenCalledTimes(1);
       expect(mocks.redisDel.mock.calls[0]).toContain(`share:permission:${VALID_ID}`);
-      expect(mocks.redisDel.mock.calls[0]).toHaveLength(4);
+      expect(mocks.redisDel.mock.calls[0]).toContain(PERMISSION_VERSION_KEY);
+      expect(mocks.redisDel.mock.calls[0]).toHaveLength(5);
     });
 
     it('accepts the token from the body', async () => {

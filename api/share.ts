@@ -13,6 +13,7 @@ import {
 } from './lib/validation.js';
 import { holdShareMeshes } from './lib/meshIndex.js';
 import { reserveShareRevision, verifyShareRevision } from './lib/shareRevision.js';
+import { recordSharePermission } from './lib/sharePermission.js';
 import { resolveShareMeshFiles } from './lib/shareMeshes.js';
 import { validateDesignerShare } from './lib/designerValidation.js';
 import {
@@ -30,7 +31,6 @@ import {
   methodNotAllowed,
   getBaseUrl,
   shareHashKey,
-  recordSharePermission,
   type ShareData,
   rateLimited,
   serviceUnavailable,
@@ -221,13 +221,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // SECURITY: allowOverwrite MUST stay false. The MED-1 race fix depends on
     // it. Don't rely on the library default (which is currently false but
     // could change in a future major version).
+    let etag: string;
     try {
-      await put(blobPath, JSON.stringify(shareData), {
+      ({ etag } = await put(blobPath, JSON.stringify(shareData), {
         access: 'public',
         contentType: 'application/json',
         addRandomSuffix: false,
         allowOverwrite: false,
-      });
+      }));
     } catch (putErr) {
       // The blob already exists (or some other put failure). Probe with head()
       // to distinguish "lost the race" from genuine errors.
@@ -262,7 +263,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    await recordSharePermission(redis, shareId, permission);
+    await recordSharePermission(redis, shareId, { stampMs, etag, permission });
     // The new blob holds only this stamp, which the counter handed out.
     if (redis && reserved && !reserved.verified) {
       await verifyShareRevision(redis, shareId, stampMs);
