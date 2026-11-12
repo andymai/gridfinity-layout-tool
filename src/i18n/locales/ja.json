@@ -4924,6 +4924,7 @@
   "toast.repeatCreated": "{count} 個の切り欠きを 1 つの配列にまとめました",
   "toast.resizeTip": "ヒント:ハンドルをドラッグでリサイズ",
   "toast.restoredFromStaging_other": "ステージングから{count}個のビンを復元しました",
+  "toast.restoredFromStagingPartial": "ステージングから{restored}/{total}個を復元しました({skipped}個はステージングに残っています)",
   "toast.rotateAllComplete_other": "{count}個のビンを回転しました",
   "toast.rotateAllPartial": "{rotated}/{total}個のビンを回転({skipped}個は衝突のためスキップ)",
   "toast.rotateRepositioned_other": "ビンを回転して{count}セル移動して合わせました",

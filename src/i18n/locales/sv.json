@@ -5046,6 +5046,7 @@
   "toast.resizeTip": "Tips: Dra handtagen för att ändra storlek",
   "toast.restoredFromStaging_one": "Återställde {count} fack från förråd",
   "toast.restoredFromStaging_other": "Återställde {count} fack från förråd",
+  "toast.restoredFromStagingPartial": "Återställde {restored}/{total} från förråd ({skipped} kvar i förrådet)",
   "toast.rotateAllComplete_one": "Roterade {count} fack",
   "toast.rotateAllComplete_other": "Roterade {count} fack",
   "toast.rotateAllPartial": "Roterade {rotated}/{total} fack ({skipped} hoppade över på grund av kollision)",

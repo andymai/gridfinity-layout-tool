@@ -5046,6 +5046,7 @@
   "toast.resizeTip": "Astuce : Glisser les poignées pour redimensionner",
   "toast.restoredFromStaging_one": "{count} bin restauré depuis le stash",
   "toast.restoredFromStaging_other": "{count} bins restaurés depuis le stash",
+  "toast.restoredFromStagingPartial": "{restored}/{total} restaurés depuis le stash ({skipped} toujours dans le stash)",
   "toast.rotateAllComplete_one": "{count} bac pivoté",
   "toast.rotateAllComplete_other": "{count} bacs pivotés",
   "toast.rotateAllPartial": "{rotated}/{total} bacs pivotés ({skipped} ignorés — collision)",

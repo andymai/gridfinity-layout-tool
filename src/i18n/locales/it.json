@@ -5046,6 +5046,7 @@
   "toast.resizeTip": "Consiglio: trascina le maniglie per ridimensionare",
   "toast.restoredFromStaging_one": "Ripristinato {count} bin dall'area di sosta",
   "toast.restoredFromStaging_other": "Ripristinati {count} bin dall'area di sosta",
+  "toast.restoredFromStagingPartial": "Ripristinati {restored}/{total} dall'area di sosta ({skipped} ancora nell'area di sosta)",
   "toast.rotateAllComplete_one": "Ruotato {count} bin",
   "toast.rotateAllComplete_other": "Ruotati {count} bin",
   "toast.rotateAllPartial": "Ruotati {rotated}/{total} bin ({skipped} saltati per collisione)",

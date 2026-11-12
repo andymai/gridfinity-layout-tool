@@ -1549,6 +1549,7 @@
   "toast.stagingCleared_other": "დროებითი საცავიდან გასუფთავდა {count} ყუთი",
   "toast.restoredFromStaging_one": "დროებითი საცავიდან აღდგა {count} ყუთი",
   "toast.restoredFromStaging_other": "დროებითი საცავიდან აღდგა {count} ყუთი",
+  "toast.restoredFromStagingPartial": "დროებითი საცავიდან აღდგა {restored}/{total} ({skipped} ისევ დროებით საცავშია)",
   "toast.selectionInverted_one": "არჩევანი შებრუნდა ({count} ყუთი)",
   "toast.selectionInverted_other": "არჩევანი შებრუნდა ({count} ყუთი)",
   "toast.selectedByCategory_one": "არჩეულია კატეგორიის {name} {count} ყუთი",

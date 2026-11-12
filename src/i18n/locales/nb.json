@@ -5046,6 +5046,7 @@
   "toast.resizeTip": "Tips: Dra håndtakene for å endre størrelse",
   "toast.restoredFromStaging_one": "Gjenopprettet {count} bin fra stash",
   "toast.restoredFromStaging_other": "Gjenopprettet {count} bins fra stash",
+  "toast.restoredFromStagingPartial": "Gjenopprettet {restored}/{total} fra stash ({skipped} fortsatt i stash)",
   "toast.rotateAllComplete_one": "{count} beholder rotert",
   "toast.rotateAllComplete_other": "{count} beholdere rotert",
   "toast.rotateAllPartial": "{rotated}/{total} beholdere rotert ({skipped} hoppet over — kollisjon)",

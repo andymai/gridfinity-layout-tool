@@ -5046,6 +5046,7 @@
   "toast.resizeTip": "Dica: Arraste as alças para redimensionar",
   "toast.restoredFromStaging_one": "{count} bin restaurado do armazenamento",
   "toast.restoredFromStaging_other": "{count} bins restaurados do armazenamento",
+  "toast.restoredFromStagingPartial": "{restored}/{total} restaurados do armazenamento ({skipped} ainda no armazenamento)",
   "toast.rotateAllComplete_one": "{count} bin rotacionado",
   "toast.rotateAllComplete_other": "{count} bins rotacionados",
   "toast.rotateAllPartial": "{rotated}/{total} bins rotacionados ({skipped} ignorados por colisão)",

@@ -5046,6 +5046,7 @@
   "toast.resizeTip": "Consejo: Arrastra los tiradores para redimensionar",
   "toast.restoredFromStaging_one": "{count} bin restaurado del almacén",
   "toast.restoredFromStaging_other": "{count} bins restaurados del almacén",
+  "toast.restoredFromStagingPartial": "{restored}/{total} restaurados del almacén ({skipped} aún en el almacén)",
   "toast.rotateAllComplete_one": "{count} bin rotado",
   "toast.rotateAllComplete_other": "{count} bins rotados",
   "toast.rotateAllPartial": "{rotated}/{total} bins rotados ({skipped} omitidos por colisión)",

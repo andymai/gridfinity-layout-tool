@@ -5046,6 +5046,7 @@
   "toast.resizeTip": "Tipp: Ziehen Sie die Griffe zum Vergrößern/Verkleinern",
   "toast.restoredFromStaging_one": "{count} Bin aus der Ablage wiederhergestellt",
   "toast.restoredFromStaging_other": "{count} Bins aus der Ablage wiederhergestellt",
+  "toast.restoredFromStagingPartial": "{restored}/{total} aus der Ablage wiederhergestellt ({skipped} noch in der Ablage)",
   "toast.rotateAllComplete_one": "{count} Bin gedreht",
   "toast.rotateAllComplete_other": "{count} Bins gedreht",
   "toast.rotateAllPartial": "{rotated}/{total} Bins gedreht ({skipped} wegen Kollision übersprungen)",

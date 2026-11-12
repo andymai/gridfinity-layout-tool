@@ -4924,6 +4924,7 @@
   "toast.repeatCreated": "컷아웃 {count}개를 하나의 배열로 합쳤습니다",
   "toast.resizeTip": "팁: 핸들을 드래그하여 크기를 조절하세요",
   "toast.restoredFromStaging_other": "임시 보관함에서 수납통 {count}개를 복원했습니다",
+  "toast.restoredFromStagingPartial": "임시 보관함에서 {total}개 중 {restored}개를 복원했습니다({skipped}개는 임시 보관함에 남아 있음)",
   "toast.rotateAllComplete_other": "수납통 {count}개를 회전했습니다",
   "toast.rotateAllPartial": "수납통 {total}개 중 {rotated}개를 회전했습니다(충돌로 {skipped}개 건너뜀)",
   "toast.rotateRepositioned_other": "수납통을 회전하고 맞도록 {count}칸 이동했습니다",

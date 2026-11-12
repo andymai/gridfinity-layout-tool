@@ -5290,6 +5290,7 @@
   "toast.restoredFromStaging_few": "Відновлено {count} біни зі сховку",
   "toast.restoredFromStaging_many": "Відновлено {count} бінів зі сховку",
   "toast.restoredFromStaging_other": "Відновлено {count} бінів зі сховку",
+  "toast.restoredFromStagingPartial": "Відновлено {restored}/{total} зі сховку ({skipped} досі у сховку)",
   "toast.rotateAllComplete_one": "Обернуто {count} бін",
   "toast.rotateAllComplete_few": "Обернуто {count} біни",
   "toast.rotateAllComplete_many": "Обернуто {count} бінів",

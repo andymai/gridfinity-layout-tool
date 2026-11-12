@@ -5046,6 +5046,7 @@
   "toast.resizeTip": "Tip: Sleep de handvatten om te vergroten/verkleinen",
   "toast.restoredFromStaging_one": "{count} bin hersteld uit opslag",
   "toast.restoredFromStaging_other": "{count} bins hersteld uit opslag",
+  "toast.restoredFromStagingPartial": "{restored}/{total} hersteld uit opslag ({skipped} nog in opslag)",
   "toast.rotateAllComplete_one": "{count} bin gedraaid",
   "toast.rotateAllComplete_other": "{count} bins gedraaid",
   "toast.rotateAllPartial": "{rotated}/{total} bins gedraaid ({skipped} overgeslagen — botsing)",

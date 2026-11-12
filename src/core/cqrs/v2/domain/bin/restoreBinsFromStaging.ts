@@ -154,7 +154,7 @@ export const restoreBinsFromStaging = defineCommand({
     });
 
     return ok({
-      value: undefined,
+      value: moves.length,
       event: { payload: { layerId, moves } },
     });
   },

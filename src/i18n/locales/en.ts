@@ -1769,6 +1769,8 @@ const en: Record<string, string> = {
   'toast.stagingCleared_other': 'Cleared {count} bins from stash',
   'toast.restoredFromStaging_one': 'Restored {count} bin from stash',
   'toast.restoredFromStaging_other': 'Restored {count} bins from stash',
+  'toast.restoredFromStagingPartial':
+    'Restored {restored}/{total} from stash ({skipped} still in stash)',
   'toast.selectionInverted_one': 'Inverted selection ({count} bin)',
   'toast.selectionInverted_other': 'Inverted selection ({count} bins)',
   'toast.selectedByCategory_one': 'Selected {count} {name} bin',

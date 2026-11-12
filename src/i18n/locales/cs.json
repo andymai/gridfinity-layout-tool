@@ -5169,6 +5169,7 @@
   "toast.restoredFromStaging_one": "Obnoven {count} bin ze Stash",
   "toast.restoredFromStaging_few": "Obnoveny {count} biny ze Stash",
   "toast.restoredFromStaging_other": "Obnoveno {count} binů ze Stash",
+  "toast.restoredFromStagingPartial": "Obnoveno {restored}/{total} ze Stash ({skipped} stále ve Stash)",
   "toast.rotateAllComplete_one": "Otočen {count} bin",
   "toast.rotateAllComplete_few": "Otočeny {count} biny",
   "toast.rotateAllComplete_other": "Otočeno {count} binů",

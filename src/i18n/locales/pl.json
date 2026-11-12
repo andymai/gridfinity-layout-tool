@@ -5290,6 +5290,7 @@
   "toast.restoredFromStaging_few": "Przywrócono {count} biny z Stash",
   "toast.restoredFromStaging_many": "Przywrócono {count} binów z Stash",
   "toast.restoredFromStaging_other": "Przywrócono {count} binów z Stash",
+  "toast.restoredFromStagingPartial": "Przywrócono {restored}/{total} z Stash ({skipped} nadal w Stash)",
   "toast.rotateAllComplete_one": "Obrócono {count} bin",
   "toast.rotateAllComplete_few": "Obrócono {count} biny",
   "toast.rotateAllComplete_many": "Obrócono {count} binów",
