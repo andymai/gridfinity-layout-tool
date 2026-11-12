@@ -473,10 +473,6 @@ async function previewBins(s: DocsSession): Promise<Rect> {
   });
 }
 
-/**
- * Off camera: zooms and pans the layout editor's 3D preview until its bins
- * fill most of `area` and sit at its centre.
- */
 async function framePreview(s: DocsSession, area: Rect): Promise<Rect> {
   const fill = (b: Rect): number => Math.max(b.width / area.width, b.height / area.height);
   const [cx, cy] = [area.x + area.width / 2, area.y + area.height / 2];
@@ -566,14 +562,12 @@ async function waitDesigner(s: DocsSession): Promise<void> {
   await s.dismissToasts();
 }
 
-/** Steps 1 to 3 of step 7: a bin, Create, the dialog, and the designer it opens. */
 const createDesign: Shot = {
   id: 'getting-started-first-drawer-create-design',
   kind: 'clip',
   async take(s) {
     await openLayouts(s, FIRST_DRAWER);
     const bin = binOnGrid(s, 'Drill bits');
-    // Off camera, to find where the inspector puts the button.
     await selectBin(s, bin);
     const panel = await s.box(s.page.locator('aside').last());
     const area = frameAround(
@@ -661,7 +655,6 @@ const drawerExport: Shot = {
   },
 };
 
-/** The first bin of the tutorial after step 5: 3 x 2 x 4, six compartments with captions. */
 const SCREW_BIN = {
   width: 3,
   depth: 2,
@@ -748,7 +741,6 @@ const firstBinSize: Shot = {
   },
 };
 
-/** Scrolls the panel that holds `target`, off camera, until `target` sits at `y`. */
 async function scrollPanelTo(s: DocsSession, target: Locator, y: number): Promise<void> {
   await target.evaluate((el, top) => {
     let n = el.parentElement;
@@ -762,7 +754,6 @@ async function scrollPanelTo(s: DocsSession, target: Locator, y: number): Promis
   await s.ui.warm(6);
 }
 
-/** A point in the designer's 3D preview clear of the part, to grab the view by. */
 async function grip(s: DocsSession): Promise<[number, number]> {
   const c = await s.box(s.page.locator('canvas').first());
   return [c.x + c.width * 0.85, c.y + c.height * 0.5];
@@ -787,7 +778,6 @@ async function dragView(
   await s.ui.warm(150);
 }
 
-/** Zooms and pans the designer's view, off camera, until the part fills `area`. */
 async function placePart(s: DocsSession, area: Rect): Promise<Rect> {
   const fill = (b: Rect): number => Math.max(b.width / area.width, b.height / area.height);
   const wheel = async (dy: number): Promise<void> => {
@@ -865,7 +855,6 @@ const firstBinExport: Shot = {
     await openDesigner(s, 'Screw bin', SCREW_BIN);
     const icon = s.page.getByRole('button', { name: label('binDesigner.exportBinAsStl') }).first();
     const name = await s.box(s.page.getByRole('button', { name: 'Screw bin' }).first());
-    // Off camera, once, to frame the window it opens.
     await s.ui.preClick(icon);
     const dialog = s.page.getByRole('dialog').first();
     await s.until(dialog);

@@ -9,7 +9,6 @@ import { designerReady, openBaseplate, openDesigner, partBox, waitBaseplate } fr
 import { cellCenter, grid, gridArea, openLayouts } from './layoutEditor';
 
 const WINDOW: Rect = { x: 0, y: 0, ...DESKTOP };
-/** Below the app header. */
 const WORKSPACE: Rect = { x: 0, y: 48, width: DESKTOP.width, height: DESKTOP.height - 48 };
 /** Clip width (CSS px) for close-up takes: legible in the docs column. */
 const CLIP_WIDTH = 640;
@@ -96,7 +95,6 @@ async function binId(s: DocsSession, text: string | RegExp): Promise<string> {
   return id;
 }
 
-/** Off camera: links a bin on the grid to a saved design, as Create design does. */
 async function linkBin(s: DocsSession, id: string, design: string): Promise<void> {
   await s.page.evaluate(
     async ([bin, linked]) => {
@@ -632,13 +630,11 @@ const screwBlankCaption: Shot = {
   },
 };
 
-/** The drawer after step 3: the 1 x 1 and the 1 x 2 linked to their designs. */
 const SCREW_STEP_3: LinkedLayout = {
   ...SCREW_STEP_2,
   bins: SCREW_STEP_2.bins.map((b) => (b.cat === 'Bolts' ? { ...b, design: 'bolt' } : b)),
 };
 
-/** Step 4 of the recipe, items 1 and 2: seven copies along the row, then the row copied up. */
 const screwCopyRow: Shot = {
   id: 'recipes-screw-drawer-copy-row',
   kind: 'clip',
@@ -680,7 +676,6 @@ const screwCopyRow: Shot = {
 
 const M3_ROW = M3.map((_, x) => ({ x, y: 0, w: 1, d: 1, h: 3, cat: 'Screws', design: 'screw' }));
 
-/** After the copies: 16 screw bins and 8 bolt bins, the first two screw bins labeled. */
 const SCREW_COPIED: LinkedLayout = {
   ...SCREW_DRAWER,
   bins: [
@@ -692,7 +687,6 @@ const SCREW_COPIED: LinkedLayout = {
   ],
 };
 
-/** Step 4 of the recipe, the labels: the third bin's label field offers M3x10 as next in set. */
 const screwLabelSuggest: Shot = {
   id: 'recipes-screw-drawer-label-suggest',
   kind: 'clip',
@@ -733,7 +727,6 @@ const screwLabelSuggest: Shot = {
       },
       CLIP_WIDTH / row.width
     );
-    // Off camera, open the list once to frame it, then close it again.
     await s.ui.preClick(field);
     const list = s.page.getByRole('listbox').first();
     await s.until(list);
@@ -764,7 +757,6 @@ const screwLabelSuggest: Shot = {
   },
 };
 
-/** Step 2 of the recipe on the empty 8 x 6 grid: a 1 x 1, a 1 x 2 and two 4 x 2 bins. */
 const screwDrawKinds: Shot = {
   id: 'recipes-screw-drawer-draw-kinds',
   kind: 'clip',
@@ -929,7 +921,6 @@ const deepFitBins: Shot = {
 const layerStep = (s: DocsSession, layer: string, dir: 'increase' | 'decrease'): Locator =>
   s.page.getByRole('button', { name: label(`layers.${dir}Height`, { name: layer }) }).first();
 
-/** The Layers group, header to the last layer row, framed for a close-up. */
 async function layersCloseUp(s: DocsSession, rows: number): Promise<Rect> {
   const head = await s.box(
     s.page.getByRole('button', { name: label('common.layers'), exact: true }).first()
@@ -943,7 +934,6 @@ async function layersCloseUp(s: DocsSession, rows: number): Promise<Rect> {
   return frameAround(grown, 24, 4 / 3, WORKSPACE);
 }
 
-/** Step 3 of the recipe: the layer to 14u, one 5 x 4 bin, and three copies of it. */
 const deepBottomLayer: Shot = {
   id: 'recipes-deep-tool-drawer-bottom-layer',
   kind: 'clip',
@@ -989,7 +979,6 @@ const deepBottomLayer: Shot = {
   },
 };
 
-/** Step 4 of the recipe, items 1 to 3: a second layer at 6u and a tray over the first bin. */
 const deepTrayLayer: Shot = {
   id: 'recipes-deep-tool-drawer-tray-layer',
   kind: 'clip',
@@ -1166,7 +1155,6 @@ const kitchenFitCard: Shot = {
   },
 };
 
-/** Step 3 of the recipe: a 2 x 8 bin from the front edge, too long for the bed, then its inspector note. */
 const kitchenLongBin: Shot = {
   id: 'recipes-kitchen-utensil-drawer-long-bin',
   kind: 'clip',
@@ -1213,10 +1201,6 @@ const kitchenLongBin: Shot = {
   },
 };
 
-/**
- * Step 4 of the recipe: the drawer's millimetres typed under the steppers.
- * The plate keeps its grid and takes the rest as padding.
- */
 const kitchenPadding: Shot = {
   id: 'recipes-kitchen-utensil-drawer-padding',
   kind: 'clip',
@@ -1428,11 +1412,7 @@ const craftHero: Shot = {
   },
 };
 
-/**
- * Step 2 of the recipe: two default categories renamed, then rows 1 to 6
- * selected by their numbers and given Electronics. Every bin starts in the
- * first category, so the back bins are Craft once it is renamed.
- */
+/** Every bin starts in the first category, so the back bins are Craft once it is renamed. */
 const craftCategories: Shot = {
   id: 'recipes-electronics-craft-organizer-categories',
   kind: 'clip',
@@ -1881,10 +1861,6 @@ async function pocketTools(s: DocsSession, fingers = true): Promise<void> {
   await s.dismissToasts();
 }
 
-/**
- * Step 4 of the recipe, items 1 and 2: the pliers picked from the Shapes
- * list, then Add finger access, and the scoop on the board.
- */
 const toolsFingerAccess: Shot = {
   id: 'recipes-hand-tool-pockets-finger-access',
   kind: 'clip',
