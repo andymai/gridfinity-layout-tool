@@ -168,7 +168,6 @@ const binDuplicateSchema = z.object({ id: binIdSchema });
 /** bin.moveToStaging */
 const binMoveToStagingSchema = z.object({ id: binIdSchema });
 
-/** bin.moveToStagingBatch */
 const binMoveToStagingBatchSchema = z.object({
   ids: z.array(binIdSchema).min(1),
 });
