@@ -136,7 +136,7 @@ describe('binLocation utility', () => {
         const result = planBinRotation(bin, layout);
 
         // 6-wide rotated bin can NEVER fit in a 5-wide drawer, so this should fail
-        expect(expectRotationInvalid(result).message).toContain('exceed drawer bounds');
+        expect(expectRotationInvalid(result).messageKey).toBe('toast.rotateBlocked.bounds');
       });
 
       it('smart rotates with repositioning when depth would exceed drawer bounds', () => {
@@ -156,7 +156,7 @@ describe('binLocation utility', () => {
         const result = planBinRotation(bin, layout);
 
         // 6-deep rotated bin can NEVER fit in a 5-deep drawer, so this should fail
-        expect(expectRotationInvalid(result).message).toContain('exceed drawer bounds');
+        expect(expectRotationInvalid(result).messageKey).toBe('toast.rotateBlocked.bounds');
       });
 
       it('smart rotates with repositioning to avoid collision', () => {

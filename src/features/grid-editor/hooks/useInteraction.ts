@@ -185,13 +185,11 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
 
   // Start dragging bins (single or multiple)
   // Set duplicate=true for Alt+drag to duplicate bins instead of moving them
+  // Set swapMode=true for Shift+drag to swap with a same-size bin
   // Uses ref to always access current dragMode handlers
-  const startDrag = useCallback(
-    (binId: BinId, clientX: number, clientY: number, pointerId?: number, duplicate?: boolean) => {
-      dragModeRef.current.start(binId, clientX, clientY, pointerId, duplicate);
-    },
-    []
-  );
+  const startDrag = useCallback((...args: DragStartArgs) => {
+    dragModeRef.current.start(...args);
+  }, []);
 
   // Start resizing bins (single or multiple)
   // Uses ref to always access current resizeMode handlers

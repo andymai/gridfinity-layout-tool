@@ -29,6 +29,8 @@ Bins share a row when they have the same size, height, label, category and linke
 
 Click a row to select those bins on the grid. A row that needs a split shows an arrow. Click it to see how the bin divides into pieces.
 
+<Screenshot id="printing-print-list-split-row" alt="The bin list with the Pcs column. The 6 by 1 Screwdrivers row is open below its arrow and shows its two 3 by 1 pieces." spec="Layout editor with a 6 by 4 drawer on a 180 mm print bed and ten bins, one of them 6 by 1. Click the 6 by 1 row in the Bin list, then press Escape to clear the selection. Crop to the bin list." />
+
 A row can also show the number of label plates for the bins, or the warning <Ui k="print.row.blankLabelTabs" />. That warning means the label tabs will print with no text.
 
 Below the list you'll find the <Ui k="settings.nozzleSize" /> and a summary. The summary shows the print time, the cost, and the number of bins and pieces. It also shows the filament, and how much of a 1 kg spool you'll use. See [Filament and time estimates](./estimates).
@@ -43,6 +45,8 @@ Would you rather print a model that someone else made? Select a bin on the grid,
 
 By default it searches Printables and MakerWorld. To change the sites, open Settings and go to <Ui k="settings.tabs.integrations" />.
 
+<Screenshot id="printing-print-list-find-models" alt="In the bin inspector of a 4 by 2 bin, Find STL is clicked. A menu opens with Printables and MakerWorld." spec="Layout editor, Workbench sample, the Screwdrivers bin selected. Close-up of the bin inspector around Find STL: click it." />
+
 ## Print a paper copy
 
 A paper plan is handy to take to the drawer.
@@ -52,6 +56,8 @@ A paper plan is handy to take to the drawer.
 3. Under <Ui k="print.options" />, pick what each bin shows. Turn on <Ui k="print.showBinList" /> to add the list.
 4. Set <Ui k="print.orientation" />.
 5. Click <Ui k="print.printNow" />.
+
+<Screenshot id="printing-print-list-paper" alt="The Print layout dialog. On the left are the layers, the options with Bin list turned on, and the page orientation. On the right is a preview of the page with the grid and the bin list. Print now is at the bottom." spec="Layout editor, Workbench sample, desktop 1440 by 1250 px. Click Print in the header, then turn on Bin list. Crop to the dialog." />
 
 ## Export the whole layout as one ZIP
 
@@ -65,6 +71,8 @@ The download icon in the header of the <Ui k="rightPanel.binList" /> opens the s
 ::: warning
 Link each bin to a saved design before you export. Only a linked bin has a 3D shape. The export skips all other bins, and the dialog tells you how many it skips. To link a bin, select it and choose a design. See [Saved designs and linked bins](../concepts/saved-designs).
 :::
+
+<Screenshot id="printing-print-list-export" alt="The export dialog of the layout editor, under Export layout, with the format, the file name and Download ZIP. A note says that bins not linked to a saved design are skipped, 2 of 12." spec="Layout editor, Workbench sample, ten of its twelve bins linked to saved designs. Click Export in the header. Crop to the dialog." />
 
 ## What the ZIP holds
 

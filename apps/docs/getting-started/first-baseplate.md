@@ -48,6 +48,8 @@ Magnets are optional. Add them if your bins also have magnets, or if the drawer 
 
 The default holes are 6.5 mm wide and 2 mm deep, which suits the common 6 × 2 mm disc magnet. The preview shows the holes in the plate.
 
+<Screenshot id="getting-started-first-baseplate-magnets" alt="Turning on Magnet holes in the Base group, then clicking Customize under it to show Magnet diameter and Magnet depth. A close-up of the plate then shows a hole at each corner of each cell." spec="Baseplate generator, desktop 1440 px, plate 9 x 7 grid units. In close-up, turn on Magnet holes in the Base group and click Customize under it. Cut to a close-up of the front-left corner of the plate in the preview." />
+
 ## Step 4: Split the plate for your print bed
 
 A drawer is often larger than a print bed. When the plate is too large, the baseplate generator splits it into pieces for you. It only needs to know the size of your bed.
@@ -57,7 +59,7 @@ A drawer is often larger than a print bed. When the plate is too large, the base
 
 This is the same print bed size that the layout editor uses. If the plate is too large for the bed, a map of the pieces shows at the bottom of the panel. Each piece has a label, such as A1 or B2. The map also tells you how many build-plate loads the pieces need.
 
-<Screenshot id="getting-started-first-baseplate-split" alt="The map of a baseplate split into four labeled pieces, with the split plate in the 3D preview." spec="Baseplate generator, desktop 1440 px, plate 9 x 7 grid units, print bed 220 x 220 mm. Scroll the panel to the split map at the bottom. Show the panel and the preview side by side." />
+<Screenshot id="getting-started-first-baseplate-split" alt="The map of a baseplate split into six labeled pieces, with the split plate in the 3D preview." spec="Baseplate generator, desktop 1440 px, plate 9 x 7 grid units, print bed 220 x 220 mm. Scroll the panel to the split map at the bottom. Show the panel and the preview side by side." />
 
 Want the seams somewhere else? Click a line on the map to add or remove a split. To go back to the automatic split, click <Ui k="baseplate.splitResetAuto" />.
 
@@ -69,6 +71,8 @@ When the plate splits, a <Ui k="baseplate.connectors.label" /> option shows in t
 2. Under <Ui k="export.format" />, pick 3MF, STL or STEP.
 3. For a split plate, keep <Ui k="baseplate.export.enableSplit" /> on.
 4. Click the download button at the bottom of the window.
+
+<Screenshot id="getting-started-first-baseplate-export" alt="The Export window of the baseplate generator for a plate that is too large for a 220 mm bed. A note says it exports as 6 pieces in a ZIP, and Split into pieces is checked." spec="Baseplate generator, desktop 1440 px, plate 9 x 7 grid units, print bed 220 x 220 mm. Click Export in the header. Crop to the window." />
 
 A split plate comes as one ZIP file. It holds one file for each piece, named with the piece label, and a print guide. Print each piece flat on the bed, with no supports.
 

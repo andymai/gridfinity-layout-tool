@@ -11,29 +11,14 @@ import {
 } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { useGridUnitChange } from './useGridUnitChange';
-import {
-  calcMaxGridUnits,
-  CONSTRAINTS,
-  STAGING_ID,
-  snapToHalf,
-  isFractional,
-} from '@/core/constants';
+import { calcMaxGridUnits, CONSTRAINTS, snapToHalf, isFractional } from '@/core/constants';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { baseplateFloorDepth } from '@/shared/printSettings/baseplateHeight';
-import { validateHalfGridModeToggle } from '@/shared/utils/halfGridConstraints';
-import type { HalfGridConstraintViolation } from '@/shared/utils/halfGridConstraints';
 import { drawerSizeFloors } from '@/shared/utils/drawerOutline';
 import { drawerHeightDisplayMm } from '@/shared/utils/drawerFit';
 import type { STLSearchSite, UserSettings } from '@/core/store/settings';
 import type { Category, GridUnits, HeightUnits, MeasuredDrawerMm } from '@/core/types';
-import {
-  binId as toBinId,
-  effectiveGridUnitMmY,
-  gridUnits,
-  mm,
-  mmToHeightUnits,
-} from '@/core/types';
-import { isOk, isErr } from '@/core/result';
+import { effectiveGridUnitMmY, gridUnits, mm, mmToHeightUnits } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { useDrawerFitSuggestion } from './useDrawerFitSuggestion';
 import type { DrawerFitSuggestion } from './useDrawerFitSuggestion';
@@ -114,7 +99,6 @@ export interface UseDrawerSettingsReturn {
 
   // Half-bin mode handlers
   handleHalfBinToggle: () => void;
-  handleRemediate: () => void;
 
   // Save defaults handler
   handleSaveDefaults: () => void;
@@ -131,9 +115,6 @@ export interface UseDrawerSettingsReturn {
 
   showSaveDefaultsConfirm: boolean;
   setShowSaveDefaultsConfirm: (show: boolean) => void;
-  showHalfBinBlockedModal: boolean;
-  setShowHalfBinBlockedModal: (show: boolean) => void;
-  halfBinViolation: HalfGridConstraintViolation | null;
 
   // Category defaults
   currentCategories: Category[];
@@ -149,7 +130,7 @@ export interface UseDrawerSettingsReturn {
  * Consolidates duplicated logic between Sidebar and MobileSettingsPanel:
  * - Drawer dimension controls with half-bin mode awareness
  * - Fractional edge position management
- * - Half-bin mode toggle with validation and remediation
+ * - Half-bin mode toggle
  * - Physical unit settings (grid unit, height unit, print bed)
  * - Save as defaults functionality
  * - STL search site toggle
@@ -179,10 +160,6 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const t = useTranslation();
 
   const [showSaveDefaultsConfirm, setShowSaveDefaultsConfirm] = useState(false);
-  const [showHalfBinBlockedModal, setShowHalfBinBlockedModal] = useState(false);
-  const [halfBinViolation, setHalfBinViolation] = useState<HalfGridConstraintViolation | null>(
-    null
-  );
   const [showSaveCategoriesConfirm, setShowSaveCategoriesConfirm] = useState(false);
   // Layout store selectors
   const {
@@ -216,10 +193,10 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   );
 
   // Half-bin mode store selectors
-  const { halfGridMode, toggleHalfGridMode, setHalfGridMode } = useHalfGridModeStore(
+  const { halfGridMode, requestHalfGridToggle, setHalfGridMode } = useHalfGridModeStore(
     useShallow((state) => ({
       halfGridMode: state.halfGridMode,
-      toggleHalfGridMode: state.toggleHalfGridMode,
+      requestHalfGridToggle: state.requestHalfGridToggle,
       setHalfGridMode: state.setHalfGridMode,
     }))
   );
@@ -241,14 +218,8 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const addToast = useToastStore((state) => state.addToast);
 
   // Mutations (supports collaborative mode)
-  const {
-    setGridUnitMm,
-    setGridUnitMmY,
-    setHeightUnitMm,
-    setPrintBedSize,
-    updateDrawer,
-    updateBin,
-  } = useMutations();
+  const { setGridUnitMm, setGridUnitMmY, setHeightUnitMm, setPrintBedSize, updateDrawer } =
+    useMutations();
 
   const {
     drawerFitSuggestion,
@@ -401,42 +372,6 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     [updateDrawer]
   );
 
-  // Half-bin mode toggle with validation
-  const handleHalfBinToggle = useCallback(() => {
-    const result = toggleHalfGridMode();
-
-    if (!isOk(result)) {
-      // Validation failed - show blocking modal
-      const validationResult = validateHalfGridModeToggle(layout, false);
-      if (validationResult.violation) {
-        setHalfBinViolation(validationResult.violation);
-        setShowHalfBinBlockedModal(true);
-      }
-    }
-  }, [toggleHalfGridMode, layout]);
-
-  // Remediate fractional bins by moving them to staging
-  const handleRemediate = useCallback(() => {
-    if (!halfBinViolation) return;
-
-    let movedCount = 0;
-    batch(() => {
-      // Move all fractional bins to staging (skip already-deleted bins)
-      for (const id of halfBinViolation.binIds) {
-        const result = updateBin(toBinId(id), { layerId: STAGING_ID });
-        if (isErr(result)) continue;
-        movedCount++;
-      }
-    });
-
-    // Now disable half-bin mode (forced, bypassing validation)
-    setHalfGridMode(false);
-
-    // Close modal and show success message
-    setShowHalfBinBlockedModal(false);
-    addToast(t('halfBinMode.toast.movedToStaging', { count: movedCount }), 'success');
-  }, [halfBinViolation, updateBin, setHalfGridMode, addToast, t]);
-
   // Save current settings as defaults
   const handleSaveDefaults = useCallback(() => {
     saveCurrentAsDefaults(
@@ -542,8 +477,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     handleDrawerWidthInput,
     handleDrawerDepthInput,
     handleFractionalEdgeChange,
-    handleHalfBinToggle,
-    handleRemediate,
+    handleHalfBinToggle: requestHalfGridToggle,
     handleSaveDefaults,
     handleGridUnitChange,
     setHeightUnitMm,
@@ -553,9 +487,6 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
     showSaveDefaultsConfirm,
     setShowSaveDefaultsConfirm,
-    showHalfBinBlockedModal,
-    setShowHalfBinBlockedModal,
-    halfBinViolation,
 
     // Category defaults
     currentCategories,

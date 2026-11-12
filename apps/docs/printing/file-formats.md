@@ -85,6 +85,8 @@ Each export goes to your downloads by default. Want it somewhere else? In Settin
 - <Ui k="exportDestination.folder.title" /> saves each export in a folder that you pick. This needs Chrome or Edge.
 - <Ui k="exportDestination.url.title" /> downloads the file and also sends a copy to a web address, such as a NAS.
 
+<Screenshot id="printing-file-formats-destination" alt="The Exports tab of Settings, with Save to a folder and its Choose folder button, and the Send to a URL switch." spec="Layout editor. Open Settings and click the Exports tab. Crop to the top of the dialog, down to the Exports tab." />
+
 [Settings and accessibility](../settings/settings#account-and-data) lists the other tabs of Settings.
 
 ## Next steps

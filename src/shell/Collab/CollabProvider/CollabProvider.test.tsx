@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useRef } from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { CollabProvider } from './CollabProvider';
 import { createTestBin, createTestLayout, resetAllStores } from '@/test/testUtils';
 import { useLibraryStore } from '@/core/store/library';
@@ -10,7 +10,7 @@ import { useCloudShareAutoSync } from '@/features/cloud-share/hooks/useCloudShar
 import { recordOwnCopyRevision } from '@/features/cloud-share/utils';
 import { useCollabSync } from '@/shared/hooks/useCollabSync';
 import { stampFor } from '@/shared/utils/roomLinkStamp';
-import { binId, layoutId } from '@/core/types';
+import { binId, designId, layoutId } from '@/core/types';
 import type { LayoutEntry } from '@/core/types';
 import type { LiveblocksStorage } from '@/liveblocks.config';
 
@@ -202,7 +202,10 @@ describe('CollabProvider', () => {
         </CollabProvider>
       );
 
-      expect(useCollabSync).toHaveBeenLastCalledWith(stampFor(layout, '2026-11-01T10:00:00.000Z'));
+      expect(useCollabSync).toHaveBeenLastCalledWith(
+        stampFor(layout, '2026-11-01T10:00:00.000Z'),
+        expect.anything()
+      );
       expect(lastInitialStorage().metadata).toMatchObject({
         version: 2,
         ...stampFor(layout, '2026-11-01T10:00:00.000Z'),
@@ -224,7 +227,10 @@ describe('CollabProvider', () => {
         </CollabProvider>
       );
 
-      expect(useCollabSync).toHaveBeenLastCalledWith({ linkUpdatedAt: '2026-11-01T10:00:00.000Z' });
+      expect(useCollabSync).toHaveBeenLastCalledWith(
+        { linkUpdatedAt: '2026-11-01T10:00:00.000Z' },
+        expect.anything()
+      );
       expect(lastInitialStorage().metadata.linkUpdatedAt).toBeUndefined();
     });
   });
@@ -253,11 +259,109 @@ describe('CollabProvider', () => {
         </CollabProvider>
       );
 
-      expect(useCollabSync).toHaveBeenLastCalledWith(stampFor(fetched, '2026-11-01T10:00:00.000Z'));
+      expect(useCollabSync).toHaveBeenLastCalledWith(
+        stampFor(fetched, '2026-11-01T10:00:00.000Z'),
+        expect.anything()
+      );
       expect(useCloudShareAutoSync).toHaveBeenLastCalledWith('visitShare01', undefined);
       expect(lastInitialStorage().metadata).toMatchObject(
         stampFor(fetched, '2026-11-01T10:00:00.000Z')
       );
+    });
+
+    describe('with designs from the share', () => {
+      const local = createTestLayout({
+        bins: [createTestBin({ id: binId('linked'), linkedDesignId: designId('design_shared_1') })],
+      });
+      const owners = createTestLayout({
+        ...local,
+        bins: local.bins.map((bin) => ({ ...bin, linkedDesignId: designId('owner-design') })),
+      });
+
+      beforeEach(() => {
+        useLayoutStore.setState({ layout: local });
+        useSharedPreviewStore
+          .getState()
+          .setSharedLayoutPreview(
+            local,
+            'Shared',
+            undefined,
+            'visitShare01',
+            'edit',
+            '2026-11-01T10:00:00.000Z',
+            { 'owner-design': 'design_shared_1' }
+          );
+      });
+
+      it("seeds the room and stamps the copy with the owner's design ids", () => {
+        render(
+          <CollabProvider shareId="visitShare01">
+            <div />
+          </CollabProvider>
+        );
+
+        expect(lastInitialStorage().layout).toEqual(owners);
+        expect(useCollabSync).toHaveBeenLastCalledWith(
+          stampFor(owners, '2026-11-01T10:00:00.000Z'),
+          expect.anything()
+        );
+        const ids = vi.mocked(useCollabSync).mock.lastCall?.[1];
+        expect(ids?.toLocal(owners)).toEqual(local);
+      });
+
+      it('takes the designs that the share gained when it opens again in the same room', () => {
+        const { rerender } = render(
+          <CollabProvider shareId="visitShare01">
+            <div />
+          </CollabProvider>
+        );
+        act(() => {
+          useSharedPreviewStore
+            .getState()
+            .setSharedLayoutPreview(
+              local,
+              'Shared',
+              undefined,
+              'visitShare01',
+              'edit',
+              '2026-11-01T10:00:00.000Z',
+              { 'owner-design': 'design_shared_1', 'new-design': 'design_shared_2' }
+            );
+        });
+        rerender(
+          <CollabProvider shareId="visitShare01">
+            <div />
+          </CollabProvider>
+        );
+
+        const gained = createTestLayout({
+          bins: [createTestBin({ id: binId('new'), linkedDesignId: designId('new-design') })],
+        });
+        const ids = vi.mocked(useCollabSync).mock.lastCall?.[1];
+        expect(ids?.toLocal(gained).bins[0]?.linkedDesignId).toBe('design_shared_2');
+      });
+
+      it('gives the owner no id map', () => {
+        const { library } = useLibraryStore.getState();
+        const owned = {
+          id: layoutId('ownerLayout1'),
+          name: 'Mine',
+          createdAt: 0,
+          modifiedAt: 0,
+          preview: { drawerWidth: 1, drawerDepth: 1, drawerHeight: 1, binCount: 0, layerCount: 1 },
+          cloudShare: { id: 'visitShare01', deleteToken: 'token', sharedAt: 0, permission: 'edit' },
+        } as LayoutEntry;
+        useLibraryStore.setState({ library: { ...library, entries: [owned] } });
+        render(
+          <CollabProvider shareId="visitShare01">
+            <div />
+          </CollabProvider>
+        );
+
+        expect(lastInitialStorage().layout).toEqual(local);
+        const ids = vi.mocked(useCollabSync).mock.lastCall?.[1];
+        expect(ids?.toLocal(owners)).toBe(owners);
+      });
     });
 
     it('takes no revision from a copy fetched for another share', () => {
@@ -267,7 +371,7 @@ describe('CollabProvider', () => {
         </CollabProvider>
       );
 
-      expect(useCollabSync).toHaveBeenLastCalledWith(undefined);
+      expect(useCollabSync).toHaveBeenLastCalledWith(undefined, expect.anything());
       expect(lastInitialStorage().metadata.linkUpdatedAt).toBeUndefined();
       expect(lastInitialStorage().metadata.linkFingerprint).toBeUndefined();
     });

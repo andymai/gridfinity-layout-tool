@@ -37,6 +37,8 @@ Only the tallest stack must fit in the drawer. The <Ui k="layers.tallestStack" /
 - To change the order, drag a layer row up or down. The Layout Tool stops a new order that makes a stack taller than the drawer.
 - To delete a layer, click the delete button on its row (<Ui k="layers.deleteTooltip" />). Its bins move to the stash, so you keep them. A layout always keeps one layer.
 
+<Screenshot id="layouts-layers-add-rename" alt="A click on the plus button adds Layer 4 at the top of the list. A click on its name opens the name for editing, and Lid tray is typed in." spec="Clip. Layout editor on desktop, left panel open. Layout with three layers. Click Add new layer, click the name of the new layer, type a name and press Enter. Crop to the Layers group." />
+
 New layers get their height from <Ui k="settings.defaultLayerHeight" /> in <Ui k="settings.tabs.defaults" />.
 
 To empty the active layer, click the clear button under the size brush, then click <Ui k="layers.clearLayer.confirm" />. All the bins on the layer move to the stash, and one undo puts them back.
@@ -53,11 +55,15 @@ Draw or drop a bin on an upper layer, over bins on a lower layer. The bin then r
 
 A bin that rests on another bin shows a small tag on the grid, for example "on 6u". If part of its base has nothing under it, a warning icon shows next to the tag. The inspector shows the same facts: the height that the bin rests at, and <Ui k="inspector.unevenSupport" />.
 
+<Screenshot id="layouts-layers-stack" alt="A press of W makes Layer 2 the active layer, and the bins of Layer 1 show faintly under it. A new bin drawn over them rests on them, and its tag shows the height it rests at." spec="Clip. Layout editor on desktop. Layout with a 5 by 4 drawer, four bins on Layer 1 and one on Layer 2. Press W with a keycap, then draw a 2 by 2 bin over the bins of Layer 1. Crop to the toolbar and the grid, then cut to a close-up of the new bin and its tag." />
+
 ### Reserve space above a bin
 
 Some things stand taller than their bin, like scissor handles. Set <Ui k="inspector.clearanceMmLabel" /> in the inspector to keep space free above the bin. The clearance doesn't make the printed bin taller.
 
 On the layers above, striped cells mark the clearance, and no bin can rest there. Click a striped zone to jump to the bin that reserves it.
+
+<Screenshot id="layouts-layers-clearance" alt="Layer 2 is active. Striped cells cover the Scissors bin on Layer 1, which keeps space free above it, so no bin can rest there." spec="Layout editor on desktop. Layout with a 5 by 3 drawer and two layers. On Layer 1, a Scissors bin has a clearance of 4 height units. Make Layer 2 active. Crop to the grid." />
 
 ## Make short bins finish flush with spacers
 

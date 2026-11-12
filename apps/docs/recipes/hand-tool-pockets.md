@@ -73,6 +73,8 @@ A snug pocket holds a tool well, but you need a way to get a fingertip under it.
 2. In the <Ui k="binDesigner.shapeList.tabProperties" /> tab, open <Ui k="binDesigner.cutouts.section.shape" /> and click <Ui k="binDesigner.cutouts.finger.add" />.
 3. Do the same for each tool.
 
+<Screenshot id="recipes-hand-tool-pockets-finger-access" alt="In the cutout editor, the Shapes tab lists the three scanned tools by size. A click selects the pliers, Path 150×38. On the Properties tab, Add finger access cuts a round-ended scoop at the front of the pliers, and Pocket checks warns that it reaches under the stacking lip." spec="Clip. Bin designer, desktop 1440 px, cutout editor open. The 4 x 3 x 3u Custom cutouts bin after a phone scan of three tools, 18 mm thick and 3 mm proud, placed as one group with the pliers 14.6 mm from the front wall, no finger access yet. Click the Shapes tab, the Path 150×38 row, the Properties tab, then Add finger access. Crop to the board and the properties panel." />
+
 Each scoop is 20 mm wide and 40 mm long, across the middle of the long side. Half of it cuts beside the tool, and half lies over it.
 
 Drag the group to place the tools in the bin. If a tool hangs past the edge, a warning offers a button that makes the bin larger. [Arrange cutouts](../cutouts/arranging) shows how to align and pack them.

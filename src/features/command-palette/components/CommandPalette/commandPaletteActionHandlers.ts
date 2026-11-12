@@ -120,9 +120,9 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       togglePreviewExpanded: s.togglePreviewExpanded,
     }))
   );
-  const { toggleHalfGridMode, halfGridMode } = useHalfGridModeStore(
+  const { requestHalfGridToggle, halfGridMode } = useHalfGridModeStore(
     useShallow((s) => ({
-      toggleHalfGridMode: s.toggleHalfGridMode,
+      requestHalfGridToggle: s.requestHalfGridToggle,
       halfGridMode: s.halfGridMode,
     }))
   );
@@ -248,7 +248,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       return () => {
         const plan = planBinRotation(bin, layout);
         if (!plan.valid) {
-          addToast(plan.message, 'error');
+          addToast(t(plan.messageKey), 'error');
           return;
         }
         if (!batch(() => isOk(updateBin(bin.id, plan.updates)))) return;
@@ -442,12 +442,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     };
 
     const tools: Record<string, ActionHandler> = {
-      'toggle-half-bin': () => {
-        const result = toggleHalfGridMode();
-        if (!isOk(result)) {
-          addToast(t('halfBinBlocked.title'), 'error');
-        }
-      },
+      'toggle-half-bin': requestHalfGridToggle,
       'fill-gaps': () => fillLayerGaps(activeLayerId, activeCategoryId, halfGridMode),
       'toggle-paint-mode': () => {
         if (paintSize) {
@@ -523,7 +518,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     togglePreviewExpanded,
     toggleShowOtherLayers,
     showQuickLabel,
-    toggleHalfGridMode,
+    requestHalfGridToggle,
     zoomIn,
     zoomOut,
     alignBins,

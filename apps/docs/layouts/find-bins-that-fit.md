@@ -54,6 +54,8 @@ Know what goes in the bin, but not how big the bin must be? The inspector can su
 2. Type what the bin holds in the <Ui k="common.label" /> field, for example "screws".
 3. If a line with a size shows under the field, click <Ui k="inspector.sizeSuggestionApply" />. The bin changes to that size where it stands.
 
+<Screenshot id="layouts-find-bins-size-suggestion" alt="A 1 by 1 bin with no label is selected. In the inspector, screws is typed in the Label field. Escape closes the list of labels, and a line suggests a size. A click on Apply makes the bin that size on the grid." spec="Clip. Layout editor on desktop. Layout with a 6 by 4 drawer and one 1 by 1 bin with no label, with free cells around it. Click the bin. Close-up on the Label field: type screws, press Escape with a keycap, click Apply. Cut to the grid." />
+
 The suggestion gives the width, the depth and the height in units.
 
 The line shows only when the label matches a known size, and when that size is different from the current size. If the size does not fit where the bin is, the line shows <Ui k="inspector.sizeSuggestionNoFit" /> and has no apply button. A bin with a locked size cannot take the size. Click <Ui k="inspector.sizeSuggestionDismiss" /> (the X) to hide the line for that label.

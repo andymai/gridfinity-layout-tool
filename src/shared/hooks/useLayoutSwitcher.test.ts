@@ -19,7 +19,14 @@ import {
   layerId,
   layoutId as toLayoutId,
 } from '@/core/types';
-import { storageNotFound } from '@/core/result';
+import { err, layoutLibraryLimit, storageNotFound } from '@/core/result';
+
+const LIMIT_MESSAGE =
+  'Layout limit reached (500). Delete a layout you no longer need, then try again.';
+
+function toastMessages(): string[] {
+  return useToastStore.getState().toasts.map((toast) => toast.message);
+}
 
 // Mock the storage module
 vi.mock('@/core/storage', () => {
@@ -508,6 +515,30 @@ describe('useLayoutSwitcher', () => {
       expect(toasts.some((t) => t.message.includes('created'))).toBe(true);
     });
 
+    it('says the layout limit is reached when the library is full', async () => {
+      vi.mocked(storage.createLayoutEntry).mockResolvedValueOnce(err(layoutLibraryLimit(500, 500)));
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      await act(async () => {
+        await result.current.createNewLayout('New');
+      });
+
+      expect(toastMessages()).toEqual([LIMIT_MESSAGE]);
+    });
+
+    it('keeps the plain failure message for any other error', async () => {
+      vi.mocked(storage.createLayoutEntry).mockResolvedValueOnce(
+        err(storageNotFound('gridfinity-layout-new'))
+      );
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      await act(async () => {
+        await result.current.createNewLayout('New');
+      });
+
+      expect(toastMessages()).toEqual(['Failed to create layout']);
+    });
+
     it('uses default name if none provided', async () => {
       const { result } = renderHook(() => useLayoutSwitcher());
 
@@ -636,6 +667,20 @@ describe('useLayoutSwitcher', () => {
 
       const error = expectErr(dupResult!);
       expect(error.code).toBe('STORAGE_NOT_FOUND');
+      expect(toastMessages()).toEqual(['Failed to duplicate layout']);
+    });
+
+    it('says the layout limit is reached when the library is full', async () => {
+      vi.mocked(storage.duplicateLayoutEntry).mockResolvedValueOnce(
+        err(layoutLibraryLimit(500, 500))
+      );
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      await act(async () => {
+        await result.current.duplicateLayout(TEST_LAYOUT_ID);
+      });
+
+      expect(toastMessages()).toEqual([LIMIT_MESSAGE]);
     });
 
     it('saves duplicated layout with (copy) suffix', async () => {
@@ -757,6 +802,17 @@ describe('useLayoutSwitcher', () => {
         expect.any(Object),
         expect.objectContaining({ name: 'Imported' })
       );
+    });
+
+    it('says the layout limit is reached when the library is full', async () => {
+      vi.mocked(storage.createLayoutEntry).mockResolvedValueOnce(err(layoutLibraryLimit(500, 500)));
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      await act(async () => {
+        await result.current.importLayoutFromJSON(createTestLayout('Imported'));
+      });
+
+      expect(toastMessages()).toEqual([LIMIT_MESSAGE]);
     });
 
     it('adds forkedFrom metadata if provided', async () => {

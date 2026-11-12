@@ -115,6 +115,37 @@ describe('VariantSection', () => {
     );
   });
 
+  // jsdom has no layout engine, so these guard the classes. The panel is too
+  // narrow for a claimed row on one line, so the row must wrap. At
+  // `min-width: auto` the value cannot shrink below the input's intrinsic
+  // width, and it leaves its label's line.
+  it('wraps a claimed dimension row so its value and buttons stay in the panel', () => {
+    renderSection({ dimensions: { width: 4 } });
+
+    const row = screen.getByText('binDesigner.variants.field.width').parentElement;
+    const value = screen.getByTestId('num-binDesigner.variants.field.width');
+
+    expect(row?.className).toContain('flex-wrap');
+    expect(row).toContainElement(value);
+    expect(row).toContainElement(screen.getByText('binDesigner.variants.release'));
+    expect(row).toContainElement(screen.getByText('binDesigner.variants.takeParent'));
+    expect(value.parentElement?.className).toMatch(/(^|\s)min-w-\[/);
+  });
+
+  it('wraps a claimed cutout row so its value and buttons stay in the panel', () => {
+    renderSection({ cutouts: { bit: { width: 12.7 } } });
+    fireEvent.click(screen.getByText('Shank'));
+
+    const value = screen.getByTestId('num-binDesigner.variants.field.width');
+    const row = value.parentElement?.parentElement;
+
+    expect(row?.className).toContain('flex-wrap');
+    expect(row).toContainElement(screen.getAllByText('binDesigner.variants.field.width')[1]);
+    expect(row).toContainElement(screen.getByText('binDesigner.variants.release'));
+    expect(row).toContainElement(screen.getByText('binDesigner.variants.takeParent'));
+    expect(value.parentElement?.className).toMatch(/(^|\s)min-w-\[/);
+  });
+
   it('lists the parent’s cutouts by name', () => {
     renderSection();
     expect(screen.getByText('Shank')).toBeInTheDocument();

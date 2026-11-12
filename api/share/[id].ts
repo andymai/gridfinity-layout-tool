@@ -1,4 +1,4 @@
-import { put, del } from '@vercel/blob';
+import { put, del, BlobPreconditionFailedError } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import {
@@ -32,6 +32,7 @@ import {
   sendError,
   contentBlocked,
   loadShare,
+  loadShareVersion,
 } from '../lib/shared.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -118,7 +119,35 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
 }
 
 /**
+ * Tries before a PUT gives up because other writes keep landing between its
+ * read and its write.
+ */
+const MAX_PUT_ATTEMPTS = 3;
+
+const RETRY_DELAY_MS = 250;
+
+/**
+ * The stamp for a write over the stored blob: now, or 1 ms after the blob's own
+ * stamp or its upload time, whichever is later. A retry can run on a server
+ * whose clock is behind the one that wrote the blob. The CDN can serve the
+ * body, and so its stamp, from an older blob, but `head`'s upload time is
+ * current.
+ */
+function laterRevision(previous: string | undefined, uploadedAt: Date): string {
+  const floor = Math.max(
+    ...[Date.parse(previous ?? ''), uploadedAt.getTime()].filter(Number.isFinite)
+  );
+  const now = Date.now();
+  return new Date(floor >= now ? floor + 1 : now).toISOString();
+}
+
+/**
  * PUT /api/share/[id] - Update an existing share
+ *
+ * Each write is conditional on the blob it read. A collab room records the
+ * `lastUpdatedAt` of each save and keeps the latest one, so the write that
+ * lands last must also carry the latest stamp. An unconditional write lets a
+ * slow request land after a newer one with an older stamp.
  */
 async function handlePut(req: VercelRequest, res: VercelResponse, id: string, blobPath: string) {
   try {
@@ -137,12 +166,12 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Delete token required for updates');
     }
 
-    const existingData = await loadShare(blobPath);
-    if (!existingData) {
+    let loaded = await loadShareVersion(blobPath);
+    if (!loaded) {
       return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
 
-    const tokenCheck = await verifyDeleteToken(id, existingData, deleteToken);
+    const tokenCheck = await verifyDeleteToken(id, loaded.data, deleteToken);
     if (tokenCheck === 'missing') {
       return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
@@ -150,30 +179,80 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Invalid delete token');
     }
 
-    // Validate permission if provided
-    const newPermission =
-      permission ?? (await resolveSharePermission(getRedis(), id, existingData));
-    if (newPermission !== 'view' && newPermission !== 'edit') {
-      return sendError(
+    const permissionFor = async (
+      existing: ShareData
+    ): Promise<ShareData['metadata']['permission'] | null> => {
+      const value: unknown = permission ?? (await resolveSharePermission(getRedis(), id, existing));
+      return value === 'view' || value === 'edit' ? value : null;
+    };
+    const invalidPermission = () =>
+      sendError(
         res,
         400,
         ErrorCode.VALIDATION_ERROR,
         'Invalid permission. Must be "view" or "edit".'
       );
+
+    let newPermission = await permissionFor(loaded.data);
+    if (!newPermission) return invalidPermission();
+
+    // A permission-only update (no layout) keeps the stored content.
+    let content: Omit<ShareData, 'metadata'> | null = null;
+    if (layout) {
+      const layoutJson = JSON.stringify(layout);
+      const validationResult = validateShareLayout(layout, layoutJson.length);
+
+      if (isValidationError(validationResult)) {
+        return res.status(400).json({
+          error: validationResult.error.message,
+          code: validationResult.error.code,
+        });
+      }
+
+      // Content filtering
+      const contentResult = filterLayoutContent(validationResult.layout);
+      if (!contentResult.passed) return contentBlocked(res, contentResult);
+
+      const designsResult = validateSharedDesigns(linkedDesigns);
+      if (isSharedDesignsError(designsResult)) {
+        return res.status(400).json({
+          error: designsResult.error.message,
+          code: designsResult.error.code,
+        });
+      }
+
+      const designContent = filterSharedDesignsContent(designsResult.designs);
+      if (!designContent.passed) return contentBlocked(res, designContent);
+
+      const meshFiles = await resolveShareMeshFiles(
+        req,
+        res,
+        sharedDesignMeshHashes(designsResult.designs)
+      );
+      if (!meshFiles) return;
+
+      content = {
+        layout: withoutLibraryPlacement(validationResult.layout),
+        ...(designsResult.designs.length > 0 ? { linkedDesigns: designsResult.designs } : {}),
+        ...(Object.keys(meshFiles).length > 0 ? { meshFiles } : {}),
+      };
+
+      // Held before the write, so no file the share names goes unheld.
+      const redis = getRedis();
+      if (redis) await holdShareMeshes(redis, id, Object.keys(meshFiles));
     }
 
-    const now = new Date().toISOString();
+    for (let attempt = 1; ; attempt++) {
+      const now = laterRevision(loaded.data.metadata.lastUpdatedAt, loaded.uploadedAt);
 
-    // Strip the legacy lastAccessedAt field on any rewrite — its source of
-    // truth is now Redis (share:lastAccessed:{id}). Preserving the spread
-    // would carry forward the stale creation-time value indefinitely.
-    const { lastAccessedAt: _drop, ...metadataWithoutAccess } = existingData.metadata;
-    void _drop;
+      // Strip the legacy lastAccessedAt field on any rewrite — its source of
+      // truth is now Redis (share:lastAccessed:{id}). Preserving the spread
+      // would carry forward the stale creation-time value indefinitely.
+      const { lastAccessedAt: _drop, ...metadataWithoutAccess } = loaded.data.metadata;
+      void _drop;
 
-    // Permission-only update (no layout provided)
-    if (!layout) {
       const updatedData: ShareData = {
-        ...existingData,
+        ...(content ?? loaded.data),
         metadata: {
           ...metadataWithoutAccess,
           permission: newPermission,
@@ -181,61 +260,35 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
         },
       };
 
-      await writeShare(id, blobPath, updatedData, newPermission);
-      return respondShare(res, id, newPermission, now);
+      try {
+        // A permission-only update writes the body's layout back, so it must
+        // match that body. A full update keeps only metadata from the body,
+        // and matching the current blob spares it the CDN's stale window.
+        const ifMatch = content ? loaded.etag : (loaded.bodyEtag ?? loaded.etag);
+        await writeShare(id, blobPath, updatedData, newPermission, ifMatch);
+        return respondShare(res, id, newPermission, now);
+      } catch (error) {
+        if (!(error instanceof BlobPreconditionFailedError)) throw error;
+        if (attempt === MAX_PUT_ATTEMPTS) {
+          return sendError(
+            res,
+            503,
+            ErrorCode.SERVICE_UNAVAILABLE,
+            'The share changed during the update. Try again.'
+          );
+        }
+      }
+
+      // A stale CDN body needs time to clear; an ETag race does not mind.
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS * attempt));
+      const reloaded = await loadShareVersion(blobPath);
+      if (!reloaded || (await verifyDeleteToken(id, reloaded.data, deleteToken)) !== 'ok') {
+        return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
+      }
+      loaded = reloaded;
+      newPermission = await permissionFor(loaded.data);
+      if (!newPermission) return invalidPermission();
     }
-
-    // Full update with layout
-    const layoutJson = JSON.stringify(layout);
-    const validationResult = validateShareLayout(layout, layoutJson.length);
-
-    if (isValidationError(validationResult)) {
-      return res.status(400).json({
-        error: validationResult.error.message,
-        code: validationResult.error.code,
-      });
-    }
-
-    // Content filtering
-    const contentResult = filterLayoutContent(validationResult.layout);
-    if (!contentResult.passed) return contentBlocked(res, contentResult);
-
-    const designsResult = validateSharedDesigns(linkedDesigns);
-    if (isSharedDesignsError(designsResult)) {
-      return res.status(400).json({
-        error: designsResult.error.message,
-        code: designsResult.error.code,
-      });
-    }
-
-    const designContent = filterSharedDesignsContent(designsResult.designs);
-    if (!designContent.passed) return contentBlocked(res, designContent);
-
-    const meshFiles = await resolveShareMeshFiles(
-      req,
-      res,
-      sharedDesignMeshHashes(designsResult.designs)
-    );
-    if (!meshFiles) return;
-
-    // Update share data (preserve original deleteTokenHash and createdAt;
-    // drop legacy lastAccessedAt — see note above).
-    const updatedData: ShareData = {
-      layout: withoutLibraryPlacement(validationResult.layout),
-      ...(designsResult.designs.length > 0 ? { linkedDesigns: designsResult.designs } : {}),
-      ...(Object.keys(meshFiles).length > 0 ? { meshFiles } : {}),
-      metadata: {
-        ...metadataWithoutAccess,
-        permission: newPermission,
-        lastUpdatedAt: now,
-      },
-    };
-
-    // Held before the write, so no file the share names goes unheld.
-    const redis = getRedis();
-    if (redis) await holdShareMeshes(redis, id, Object.keys(meshFiles));
-    await writeShare(id, blobPath, updatedData, newPermission);
-    return respondShare(res, id, newPermission, now);
   } catch (error) {
     logger.error('Share update error', {
       error: error instanceof Error ? error.message : String(error),
@@ -334,13 +387,15 @@ async function writeShare(
   id: string,
   blobPath: string,
   data: ShareData,
-  permission: ShareData['metadata']['permission']
+  permission: ShareData['metadata']['permission'],
+  ifMatch: string
 ): Promise<void> {
   await put(blobPath, JSON.stringify(data), {
     access: 'public',
     contentType: 'application/json',
     addRandomSuffix: false,
     allowOverwrite: true,
+    ifMatch,
   });
   await recordSharePermission(getRedis(), id, permission);
 }

@@ -34,6 +34,8 @@ The bin designer saves the design in your library, and it saves each change auto
 1. Click the design name in the header.
 2. Type a new name, for example "Screw bin", and press <kbd>Enter</kbd>.
 
+<Screenshot id="getting-started-first-bin-name" alt="Clicking the design name Untitled Bin in the header, typing Screw bin and pressing Enter." spec="Bin designer, desktop 1440 px, new design with default values. Click the design name in the header, type Screw bin and press Enter. Frame the left part of the header." />
+
 ## Step 3: Set the size
 
 The size controls are at the top of the <Ui k="binDesigner.group.shape" /> group, under <Ui k="binDesigner.dimensions" />.
@@ -42,6 +44,8 @@ The size controls are at the top of the <Ui k="binDesigner.group.shape" /> group
 2. Set <Ui k="common.height" /> in height units.
 
 Below the steppers, you see the outside size of the bin in millimeters. The <Ui k="binDesigner.interiorDimensions" /> line shows the room inside. To swap the width and the depth, click the arrow button between the two steppers.
+
+<Screenshot id="getting-started-first-bin-size" alt="Clicking the plus buttons of Width and Height makes the bin 3 by 2 and 4 units tall, and the size lines change. The preview then shows the larger bin." spec="Bin designer, desktop 1440 px, new 2 x 2 x 3 design. In close-up, click the plus of Width once and the plus of Height once. Cut to the 3 x 2 x 4 bin in the preview." />
 
 ::: tip
 A 1 × 1 bin is 42 × 42 mm, and each height unit adds 7 mm. [Gridfinity in five minutes](../introduction/gridfinity-basics) explains the units.
@@ -65,6 +69,8 @@ A label tab is a small shelf at the back of each compartment. It holds the name 
 1. In the <Ui k="binDesigner.group.interior" /> group, turn on <Ui k="binDesigner.labelTabs" />.
 2. Under <Ui k="binDesigner.labelText" />, type a name in the field for each compartment, for example "M3" or "M4".
 
+<Screenshot id="getting-started-first-bin-label-tab" alt="Turning on Label tabs, then typing M3, M4, M5, M6, M8 and M10 in the label text fields. Enter moves to the next field. A close-up shows the tab with its text at the back of each compartment." spec="Bin designer, desktop 1440 px, 3 x 2 x 4 design with 3 columns and 2 rows of compartments. Turn on Label tabs, type the six captions with Enter between them, the preview beside the panel. Cut to a close-up of the bin seen from above the front." />
+
 The tab uses the <Ui k="binDesigner.tabMode.text" /> style by default, so the text prints as part of the tab. Want one label across a full row of compartments? Click <Ui k="binDesigner.labelTextPerRow" />.
 
 ## Step 6: Export the print file
@@ -73,6 +79,8 @@ The tab uses the <Ui k="binDesigner.tabMode.text" /> style by default, so the te
 2. Under <Ui k="export.format" />, pick 3MF, STL or STEP.
 3. Look at the name under <Ui k="export.fileName" />, and change it if you like.
 4. Click the download button at the bottom of the window.
+
+<Screenshot id="getting-started-first-bin-export" alt="Clicking the download icon in the header opens the Export window, with Format, File name, the print estimates and the Download STL button." spec="Bin designer, desktop 1440 px, the 3 x 2 x 4 Screw bin with six compartments and label tabs. Click the download icon in the header, then point at STL and Download STL. Frame the header and the window." />
 
 The window also shows <Ui k="binDesigner.printEstimatesPla" />: the filament, the weight, the print time and the cost of the bin.
 

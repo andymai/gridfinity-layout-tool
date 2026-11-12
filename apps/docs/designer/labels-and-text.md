@@ -106,6 +106,8 @@ Each text surface has a <Ui k="binDesigner.textMode" /> picker. Not sure? Pick E
 | <Ui k="binDesigner.textMode.through-cut" /> | Letters cut all the way through, in <Ui k="binDesigner.type.font.allerta-stencil" /> so letter centers stay attached | Tabs, walls and lid                |
 | <Ui k="binDesigner.textMode.flat" />        | Letters level with the surface, in the <Ui k="binDesigner.textColor" />                                              | Every surface, with multi-color on |
 
+<Screenshot id="designer-labels-and-text-finish" alt="In the Tab text fold, Emboss is picked, and the captions stand up from the label tabs. Then Through-cut is picked, and the captions cut through the tabs." spec="Bin designer, 3 x 1 bin with label tab captions Screws, Nuts and Washers. Close-up of the label section: open Tab text, pick Emboss. Cut to the bin from above. Close-up again: pick Through-cut. Cut to the bin." />
+
 Flat letters show only in a second filament, so the picker offers Flat only when multi-color is on. If the Text color matches the surface under flat letters, the panel warns you and offers <Ui k="binDesigner.textColor.useContrasting" />. See [Colors](./colors).
 
 ## Add wall text
@@ -124,11 +126,15 @@ Inside text reads from inside the bin, so a caption on the back wall faces you w
 
 For floor text, open the <Ui k="binDesigner.group.finishing" /> group, turn on <Ui k="binDesigner.floor.text.heading" /> and type the text. It goes on the largest clear part of the floor, away from dividers, scoops and raised floors. A floor has a base under it, so it can't take Through-cut. <Ui k="binDesigner.lid.text.rotation" /> turns the text in quarter turns.
 
+<Screenshot id="designer-labels-and-text-floor-text" alt="Floor text is turned on, and M4 x 10 is typed in its box. The bin then shows M4 X 10 on its floor, seen from the top." spec="Bin designer, bin 2 x 2 x 3. Close-up of the Finishing group: turn on Floor text, type M4 x 10. Cut to the bin in the Top view." />
+
 For lid text, turn on the lid in the <Ui k="binDesigner.group.lid" /> group, then turn on <Ui k="binDesigner.lid.section.text" />. A full stack grid covers the lid top, so lid text needs a flat top, a tray, or <Ui k="binDesigner.lid.stackLipOnly" />. See [Lids](./lids).
 
 ## Use label suggestions
 
 In the layout editor, each bin has a <Ui k="inspector.binLabel" /> box in the bin inspector. Click in it or start to type, and a list of suggestions opens. Each one tells you why it's there, for example <Ui k="inspector.labelSuggest.reason.nextInSet" />. On a computer, the top suggestion shows as gray text, and <kbd>Tab</kbd> accepts it. Your browser makes the suggestions from your layout and a built-in catalog of common labels.
+
+<Screenshot id="designer-labels-and-text-suggestions" alt="In the layout editor, a new bin in the Fasteners category is selected. A click in the Bin label box opens the suggestions, each with its reason. M is typed, and the top suggestion, M6, shows as gray text. Tab accepts it, and the bin on the grid shows M6." spec="Layout editor, the Workbench sample with a new unlabeled 1 x 1 bin in the Fasteners category, which holds M3, M4 and M5. Select it. Frame the bin and the Bin label box in the bin inspector: click in the box, type M, press Tab." />
 
 One design for many bins? If the design has only one caption, leave that caption blank. Each linked bin then prints its own <Ui k="inspector.binLabel" /> from the layout.
 
