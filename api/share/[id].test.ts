@@ -102,23 +102,23 @@ function shareBlob(metadata: Record<string, unknown> = {}) {
   };
 }
 
-function blobResponse(data: unknown, etag: string) {
-  return { ok: true, headers: new Headers({ etag }), json: () => Promise.resolve(data) };
+const BLOB_URL = 'https://blob.example/shares/x.json';
+const UPLOADED_AT = new Date('2026-01-02T00:00:00.000Z');
+
+function blobResponse(data: unknown) {
+  return { ok: true, json: () => Promise.resolve(data) };
 }
 
 function primeBlobFetch(data: unknown, etag = '"etag-1"') {
-  mocks.head.mockResolvedValue({ url: 'https://blob.example/shares/x.json', etag });
-  mocks.fetch.mockResolvedValue(blobResponse(data, etag));
+  mocks.head.mockResolvedValue({ url: BLOB_URL, etag, uploadedAt: UPLOADED_AT });
+  mocks.fetch.mockResolvedValue(blobResponse(data));
 }
 
-/** The blob reads as `first`, then as `second` from the next read on. */
 function primeBlobChange(first: unknown, second: unknown) {
   mocks.head
-    .mockResolvedValueOnce({ url: 'https://blob.example/shares/x.json', etag: '"etag-1"' })
-    .mockResolvedValue({ url: 'https://blob.example/shares/x.json', etag: '"etag-2"' });
-  mocks.fetch
-    .mockResolvedValueOnce(blobResponse(first, '"etag-1"'))
-    .mockResolvedValue(blobResponse(second, '"etag-2"'));
+    .mockResolvedValueOnce({ url: BLOB_URL, etag: '"etag-1"', uploadedAt: UPLOADED_AT })
+    .mockResolvedValue({ url: BLOB_URL, etag: '"etag-2"', uploadedAt: UPLOADED_AT });
+  mocks.fetch.mockResolvedValueOnce(blobResponse(first)).mockResolvedValue(blobResponse(second));
 }
 
 function writtenAt(call: number) {
@@ -371,16 +371,24 @@ describe('share/[id]', () => {
     });
 
     describe('a write that another write beats', () => {
-      it('writes over the blob whose body it read, when the CDN serves an older body', async () => {
-        primeBlobFetch(shareBlob({ lastUpdatedAt: '2026-03-01T00:00:00.000Z' }), '"etag-old"');
-        mocks.head.mockResolvedValue({
-          url: 'https://blob.example/shares/x.json',
-          etag: '"etag-new"',
-        });
-        mocks.redisGet.mockResolvedValue(correctHash);
-        await handle('PUT', { body: { deleteToken: TOKEN, layout: { name: 'Updated' } } });
+      it('stamps a write later than the stored blob when the CDN serves an older body', async () => {
+        vi.useFakeTimers({ toFake: ['Date'] });
+        try {
+          vi.setSystemTime(new Date('2026-03-01T00:00:05.000Z'));
+          primeBlobFetch(shareBlob({ lastUpdatedAt: '2026-03-01T00:00:00.000Z' }), '"etag-new"');
+          mocks.head.mockResolvedValue({
+            url: BLOB_URL,
+            etag: '"etag-new"',
+            uploadedAt: new Date('2026-03-01T00:00:07.000Z'),
+          });
+          mocks.redisGet.mockResolvedValue(correctHash);
+          await handle('PUT', { body: { deleteToken: TOKEN, layout: { name: 'Updated' } } });
 
-        expect(mocks.put.mock.calls[0][2]).toMatchObject({ ifMatch: '"etag-old"' });
+          expect(mocks.put.mock.calls[0][2]).toMatchObject({ ifMatch: '"etag-new"' });
+          expect(writtenAt(0).metadata.lastUpdatedAt).toBe('2026-03-01T00:00:07.001Z');
+        } finally {
+          vi.useRealTimers();
+        }
       });
 
       it('writes only over the blob it read', async () => {
@@ -474,7 +482,7 @@ describe('share/[id]', () => {
       it('404s when the share is gone by the time it reads again', async () => {
         primeBlobFetch(shareBlob());
         mocks.head
-          .mockResolvedValueOnce({ url: 'https://blob.example/shares/x.json', etag: '"etag-1"' })
+          .mockResolvedValueOnce({ url: BLOB_URL, etag: '"etag-1"', uploadedAt: UPLOADED_AT })
           .mockRejectedValue(new Error('not found'));
         mocks.redisGet.mockResolvedValue(correctHash);
         mocks.put.mockRejectedValueOnce(new BlobPreconditionFailedError());

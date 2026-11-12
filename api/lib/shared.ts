@@ -294,20 +294,25 @@ export async function loadShare(blobPath: string): Promise<ShareData | null> {
 }
 
 /**
- * {@link loadShare}, plus the ETag of the body that it read. A write with
- * `ifMatch` set to it fails if the store holds anything else.
+ * {@link loadShare}, plus what `head` reports for the stored blob: its ETag,
+ * for a write with `ifMatch`, and its upload time.
  *
- * The ETag comes from the body's own response, not from `head`: the CDN can
- * serve an older body than the blob that `head` describes, and a write over
- * the newer blob would then carry a stamp from the older one.
+ * Both come from `head`, which is current. The body comes through the CDN,
+ * which serves an older body for up to a minute after an overwrite, so the
+ * body's own ETag would fail every write in that window.
  */
-export async function loadShareVersion(
-  blobPath: string
-): Promise<{ readonly data: ShareData; readonly etag: string } | null> {
+export async function loadShareVersion(blobPath: string): Promise<{
+  readonly data: ShareData;
+  readonly etag: string;
+  readonly uploadedAt: Date;
+} | null> {
   const blobInfo = await head(blobPath).catch(() => null);
   if (!blobInfo) return null;
   const response = await fetch(blobInfo.url);
   if (!response.ok) return null;
-  const etag = response.headers.get('etag') ?? blobInfo.etag;
-  return { data: (await response.json()) as ShareData, etag };
+  return {
+    data: (await response.json()) as ShareData,
+    etag: blobInfo.etag,
+    uploadedAt: blobInfo.uploadedAt,
+  };
 }
