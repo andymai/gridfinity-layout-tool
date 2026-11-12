@@ -64,6 +64,18 @@ describe('result-exhaustion hook', () => {
     expect(blocks(dir)).toBe(true);
   });
 
+  it('blocks a compact discarded conditional expression', () => {
+    const dir = repo();
+    stage(dir, 'a.ts', 'export function f(c: boolean) {\n  c ? addLayer(): deleteLayer(id);\n}\n');
+    expect(blocks(dir)).toBe(true);
+  });
+
+  it('allows a zero-argument method signature in an inline type', () => {
+    const dir = repo();
+    stage(dir, 'a.ts', 'type Layers = { addLayer(): Result; deleteLayer(): Result };\n');
+    expect(blocks(dir)).toBe(false);
+  });
+
   it('allows a zero-argument method signature', () => {
     const dir = repo();
     stage(dir, 'a.ts', 'interface Layers {\n  addLayer(): Result;\n}\n');
