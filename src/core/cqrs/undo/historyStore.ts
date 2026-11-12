@@ -57,10 +57,8 @@ export interface HistoryEntry {
   halfGridMode?: boolean;
 }
 
-/** Entry fields that only some pushes carry. */
 export type HistoryEntryDetails = Pick<HistoryEntry, 'commandCount' | 'halfGridMode'>;
 
-/** The entry that takes the current state back the other way, for the same action. */
 function entryForCurrentState(entry: HistoryEntry): HistoryEntry {
   return {
     ...entry,
