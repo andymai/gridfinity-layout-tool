@@ -613,7 +613,7 @@ function withCarriedFields(next: CustomBinRef, prev: CustomBinRef): CustomBinRef
 /**
  * Refresh one entry's slant facts, every field that sizes its end support,
  * and its split switch, from its design's params, for a writer that holds the
- * params but none of the entry's other fields, such as a sync pull. The
+ * params but none of the entry's other fields, such as the startup pass. The
  * support reserves layout cells and the switch decides what the print list
  * cuts, so these cannot wait for the designer to write the entry again. The
  * params may be stored ones from before a field existed. A design the registry
