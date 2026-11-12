@@ -13,15 +13,24 @@ export interface OpenLayoutRead {
   readonly layout: Layout;
   /** Higher for a later read, so it orders two copies of one layout. */
   readonly readAt: number;
+  /** `Date.now()` at the read: the clock that sync's `modifiedAt` uses. */
+  readonly readTime: number;
+}
+
+interface PulledCopy {
+  readonly modifiedAt: number;
+  /** The `readAt` of the last read before the pull landed. */
+  readonly afterRead: number;
 }
 
 let reads = 0;
 const newestSavedRead = new Map<string, number>();
+const newestPull = new Map<string, PulledCopy>();
 
 export function readOpenLayout(): OpenLayoutRead {
   const { activeLayoutId, layout } = useLayoutStore.getState();
   reads += 1;
-  return { id: activeLayoutId, layout, readAt: reads };
+  return { id: activeLayoutId, layout, readAt: reads, readTime: Date.now() };
 }
 
 /**
@@ -36,8 +45,23 @@ export function noteOpenLayoutSaved(read: OpenLayoutRead): void {
   }
 }
 
+/** Records a copy that sync pulled into storage, with its `modifiedAt`. */
+export function notePulledCopy(id: string, modifiedAt: number): void {
+  newestPull.set(id, { modifiedAt, afterRead: reads });
+}
+
+/**
+ * Whether storage holds a newer copy of the layout than `read`: a later local
+ * read, or a pulled copy that is newer by sync's rule. Sync pulls only a copy
+ * whose `modifiedAt` is greater than the local one, so an equal time keeps the
+ * local copy. A read after the pull started from the pulled copy, so the pull
+ * does not count against it.
+ */
 export function savedLaterCopy(read: OpenLayoutRead): boolean {
-  return read.id !== null && (newestSavedRead.get(read.id) ?? 0) > read.readAt;
+  if (read.id === null) return false;
+  if ((newestSavedRead.get(read.id) ?? 0) > read.readAt) return true;
+  const pull = newestPull.get(read.id);
+  return pull !== undefined && read.readAt <= pull.afterRead && pull.modifiedAt > read.readTime;
 }
 
 /** Saves the open layout as it is when the queue reaches this write. */

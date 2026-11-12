@@ -4,9 +4,14 @@ import { useLayoutRouting } from './useLayoutRouting';
 import { useAutoSave } from '@/shared/hooks/useAutoSave';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
-import { createLayoutEntry, loadLibraryAsync } from '@/core/storage';
+import { queueLibraryWrite } from '@/core/store/libraryWrites';
+import { createLayoutEntry, loadLayoutAsync, loadLibraryAsync } from '@/core/storage';
 import { clearAllData } from '@/core/storage/backends/indexedDB';
 import { createDefaultLayout } from '@/core/constants';
+import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
+import type { AdapterChange } from '@/core/sync/adapters/types';
+import { LAYOUT_SCHEMA_VERSION } from '@/core/sync/payloadKey';
+import type { SaveStatus } from '@/shared/types/saveStatus';
 import { expectOk, resetAllStores } from '@/test/testUtils';
 import { layoutId as toLayoutId } from '@/core/types';
 import type { Layout, LayoutId, LayoutLibrary } from '@/core/types';
@@ -41,6 +46,29 @@ async function seed(...names: string[]): Promise<LayoutId[]> {
   return ids;
 }
 
+/** Holds the library queue until the returned function runs. */
+function holdQueue(): () => Promise<void> {
+  let release = (): void => undefined;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const held = queueLibraryWrite(() => gate);
+  return async () => {
+    release();
+    await held;
+  };
+}
+
+// Each round trip to IndexedDB lets pending storage work move on, inside act.
+async function untilNotSaving(status: () => SaveStatus): Promise<void> {
+  for (let round = 0; status() === 'saving'; round++) {
+    if (round > 100) throw new Error('autosave did not finish');
+    await act(async () => {
+      await loadLibraryAsync();
+    });
+  }
+}
+
 describe('useLayoutRouting while a library write is in flight', () => {
   beforeEach(async () => {
     resetAllStores();
@@ -68,17 +96,77 @@ describe('useLayoutRouting while a library write is in flight', () => {
       vi.advanceTimersByTime(3000);
       await routing.result.current.navigateToLayout(b);
     });
-    for (let round = 0; autosave.result.current === 'saving'; round++) {
-      if (round > 100) throw new Error('autosave did not finish');
-      await act(async () => {
-        await loadLibraryAsync();
-      });
-    }
+    await untilNotSaving(() => autosave.result.current);
 
     expect(useLayoutStore.getState().activeLayoutId).toBe(b);
     expect(useLibraryStore.getState().library.activeLayoutId).toBe(b);
     expect(useLibraryStore.getState().library.entries.find((e) => e.id === a)?.name).toBe(
       'A edited'
     );
+  });
+
+  // A pull replaces A, the URL then opens B, and an autosave that read A before
+  // both waits behind them. Newer wins, as in sync: the pull's modifiedAt
+  // against the time the autosave read A.
+  async function pullThenNavigateWithWaitingAutosave(pullOffsetMs: number): Promise<{
+    a: LayoutId;
+    pulledAt: number;
+    changes: AdapterChange[];
+  }> {
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'requestIdleCallback', 'cancelIdleCallback'],
+    });
+    const [a, b] = await seed('A', 'B');
+    const autosave = renderHook(() => useAutoSave());
+    const routing = renderHook(() => useLayoutRouting());
+    act(() => {
+      useLayoutStore.getState().importLayout(namedLayout('A edited'), a, 'local');
+    });
+    const changes: AdapterChange[] = [];
+    const unsubscribe = layoutAdapter.subscribe((change) => changes.push(change));
+
+    const release = holdQueue();
+    const pulledAt = Date.now() + pullOffsetMs;
+    let pulled: Promise<void> = Promise.resolve();
+    let navigated: Promise<boolean> = Promise.resolve(true);
+    act(() => {
+      pulled = layoutAdapter.applyRemote({
+        id: a,
+        payload: namedLayout('A remote'),
+        modifiedAt: pulledAt,
+        schemaVersion: LAYOUT_SCHEMA_VERSION,
+      });
+      navigated = routing.result.current.navigateToLayout(b);
+      vi.advanceTimersByTime(3000);
+    });
+    await act(async () => {
+      await release();
+      await Promise.all([pulled, navigated]);
+    });
+    await untilNotSaving(() => autosave.result.current);
+    unsubscribe();
+    return { a, pulledAt, changes };
+  }
+
+  it('drops the waiting autosave when the pulled copy is newer than its read', async () => {
+    const { a, pulledAt, changes } = await pullThenNavigateWithWaitingAutosave(60_000);
+
+    expect((await loadLayoutAsync(a))?.name).toBe('A remote');
+    const entry = (await loadLibraryAsync())?.entries.find((e) => e.id === a);
+    expect(entry?.name).toBe('A remote');
+    expect(entry?.modifiedAt).toBe(pulledAt);
+    expect(changes.filter((change) => change.id === a)).toEqual([]);
+  });
+
+  it('saves the waiting autosave, and sends it up, when its read is newer than the pulled copy', async () => {
+    const { a, pulledAt, changes } = await pullThenNavigateWithWaitingAutosave(-60_000);
+
+    expect((await loadLayoutAsync(a))?.name).toBe('A edited');
+    const entry = (await loadLibraryAsync())?.entries.find((e) => e.id === a);
+    expect(entry?.name).toBe('A edited');
+    expect(entry?.modifiedAt).toBeGreaterThan(pulledAt);
+    expect(changes.filter((change) => change.id === a)).toEqual([
+      { kind: 'put', id: a, modifiedAt: entry?.modifiedAt },
+    ]);
   });
 });

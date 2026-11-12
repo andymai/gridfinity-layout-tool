@@ -4,6 +4,7 @@ export { useLibraryStore, computePreview, createDefaultLibrary } from './library
 export { queueLibraryWrite, writeLibrary } from './libraryWrites';
 export {
   noteOpenLayoutSaved,
+  notePulledCopy,
   readOpenLayout,
   saveOpenLayout,
   savedLaterCopy,

@@ -1,5 +1,5 @@
 import { isErr } from '@/core/result';
-import { queueLibraryWrite, useLayoutStore, useLibraryStore } from '@/core/store';
+import { notePulledCopy, queueLibraryWrite, useLayoutStore, useLibraryStore } from '@/core/store';
 import type { Bin, Layout, LayoutEntry, LayoutId, LayoutLibrary } from '@/core/types';
 import { normalizeDrawerOutline } from '@/shared/utils/drawerOutline';
 import {
@@ -216,6 +216,7 @@ export const layoutAdapter: LayoutAdapter = {
       if (isErr(libraryResult)) {
         throw syncPersistError('saveLibrary', item.id, libraryResult.error);
       }
+      notePulledCopy(item.id, item.modifiedAt);
 
       // If the user is viewing this layout right now, replace what the
       // store has so the UI re-renders. `source: 'remote'` flags the
