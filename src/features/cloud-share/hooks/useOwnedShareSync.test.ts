@@ -9,6 +9,7 @@ import { ok, err, apiServerError } from '@/core/result';
 import type { LayoutLibrary, CloudShareInfo, Layout } from '@/core/types';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
 import { claimRoomSaves, readOwnCopyRevision } from '@/features/cloud-share/utils';
+import { __resetShareUploadsForTests } from '@/features/cloud-share/utils/shareUploads';
 import { stampFor } from '@/shared/utils/roomLinkStamp';
 
 // Mock the share API module
@@ -57,6 +58,7 @@ describe('useOwnedShareSync', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
+    __resetShareUploadsForTests();
 
     // Reset stores to default state
     const defaultLayout = createDefaultLayout();

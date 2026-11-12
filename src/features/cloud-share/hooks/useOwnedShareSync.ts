@@ -23,6 +23,7 @@ import { isOk } from '@/core/result';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
 import {
   createLayoutFingerprint,
+  queueShareUpload,
   recordOwnCopyRevision,
   roomClaimCount,
   roomSavesShare,
@@ -51,11 +52,10 @@ interface LastSave {
 export function useOwnedShareSync(): void {
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSyncedRef = useRef<LastSave | null>(null);
-  const isSyncingRef = useRef(false);
   // Track cloud share info in a ref to avoid stale closures in cleanup
   const cloudShareRef = useRef<CloudShareInfo | null>(null);
   // Track sync function in a ref to always call the latest version
-  const syncToCloudRef = useRef<() => Promise<void>>(() => Promise.resolve());
+  const syncToCloudRef = useRef<() => void>(() => {});
 
   const { layout, activeLayoutId, lastEditSource } = useLayoutStore(
     useShallow((state) => ({
@@ -70,8 +70,8 @@ export function useOwnedShareSync(): void {
   // Find cloudShare info for the active layout
   const cloudShare = entries.find((e) => e.id === activeLayoutId)?.cloudShare ?? null;
 
-  const syncToCloud = useCallback(async () => {
-    if (!cloudShare || isSyncingRef.current) return;
+  const syncToCloud = useCallback(() => {
+    if (!cloudShare) return;
 
     const { id: shareId, deleteToken } = cloudShare;
     if (!shareId || !deleteToken) return;
@@ -90,23 +90,19 @@ export function useOwnedShareSync(): void {
       return;
     }
 
-    isSyncingRef.current = true;
-
-    try {
-      const result = await updateShare(shareId, deleteToken, layout);
-
-      if (isOk(result)) {
+    queueShareUpload(shareId, {
+      key: `local:${layoutFingerprint}`,
+      run: async () => {
+        const result = await updateShare(shareId, deleteToken, layout);
+        // Silently ignore failures - this is background sync
+        if (!isOk(result)) return false;
         lastSyncedRef.current = { shareId, fingerprint: layoutFingerprint, claimCount };
         if (result.value.lastUpdatedAt) {
           recordOwnCopyRevision(shareId, result.value.lastUpdatedAt, layout);
         }
-      }
-      // Silently ignore failures - this is background sync
-    } catch {
-      // Silently ignore network errors
-    } finally {
-      isSyncingRef.current = false;
-    }
+        return true;
+      },
+    });
   }, [cloudShare, layout]);
 
   // Keep both refs aligned with the latest committed values. Uses
@@ -140,7 +136,7 @@ export function useOwnedShareSync(): void {
     // firing), which would then call `updateShare` with a stale delete token.
     // The ref always points at the latest `useCallback` result.
     debounceTimerRef.current = setTimeout(() => {
-      void syncToCloudRef.current();
+      syncToCloudRef.current();
     }, CLOUD_SYNC_DEBOUNCE_MS);
 
     return () => {
@@ -157,7 +153,7 @@ export function useOwnedShareSync(): void {
       if (cloudShareRef.current && debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
         // Fire-and-forget sync before unmount using the latest sync function
-        void syncToCloudRef.current();
+        syncToCloudRef.current();
       }
     };
   }, []); // Empty deps - refs provide current values

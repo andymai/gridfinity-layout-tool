@@ -10,11 +10,17 @@
  * shared storage where collaborators could read it.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useMutation, useStorage, type LiveblocksStorage } from '@/liveblocks.config';
 import { updateShare } from '@/core/api/share';
 import { isOk } from '@/core/result';
-import { claimRoomSaves } from '@/features/cloud-share/utils';
+import {
+  claimRoomSaves,
+  dropWaitingUpload,
+  keepShareLayout,
+  queueShareUpload,
+  type ShareUpload,
+} from '@/features/cloud-share/utils';
 import {
   isLaterRevision,
   roomLayoutFingerprint,
@@ -23,37 +29,6 @@ import {
 
 /** Debounce delay for cloud share updates (1 second) */
 const CLOUD_SYNC_DEBOUNCE_MS = 1000;
-
-interface RoomUpload {
-  /** The share and the fingerprint of the layout that the upload saves. */
-  readonly key: string;
-  readonly run: () => Promise<void>;
-}
-
-/**
- * Runs one upload at a time and keeps only the latest request that waits. A
- * request that matches the upload in flight replaces nothing: the room went
- * back to what is already on its way. The queue outlives the room, so a
- * change that waits when the owner leaves still uploads.
- */
-function createUploadQueue(): (upload: RoomUpload) => void {
-  let inFlight: string | null = null;
-  let waiting: RoomUpload | null = null;
-  const start = (upload: RoomUpload): void => {
-    if (inFlight !== null) {
-      waiting = upload.key === inFlight ? null : upload;
-      return;
-    }
-    inFlight = upload.key;
-    void upload.run().finally(() => {
-      inFlight = null;
-      const next = waiting;
-      waiting = null;
-      if (next) start(next);
-    });
-  };
-  return start;
-}
 
 /**
  * Saves the room's layout to the share whenever it differs from what the room
@@ -76,7 +51,6 @@ export function useCloudShareAutoSync(
   const roomLayout = useStorage((root) => root.layout);
   const linkFingerprint = useStorage((root) => root.metadata?.linkFingerprint);
 
-  const [enqueueUpload] = useState(createUploadQueue);
   const mountedShareIdRef = useRef<string | null>(null);
   const pendingSaveRef = useRef<(() => void) | null>(null);
 
@@ -106,31 +80,35 @@ export function useCloudShareAutoSync(
     if (!shareId || !deleteToken || !roomLayout) return;
 
     const fingerprint = roomLayoutFingerprint(roomLayout);
+    const upload: ShareUpload = {
+      key: `room:${fingerprint}`,
+      run: () =>
+        updateShare(shareId, deleteToken, roomLayout).then((result) => {
+          // Silently ignore failures - this is background sync, user isn't waiting
+          if (!isOk(result)) return false;
+          // A save that lands after the owner left the room must not stamp another room.
+          if (mountedShareIdRef.current === shareId) {
+            const { lastUpdatedAt } = result.value;
+            recordSave({
+              linkFingerprint: fingerprint,
+              ...(lastUpdatedAt ? { linkUpdatedAt: lastUpdatedAt } : {}),
+            });
+          }
+          return true;
+        }),
+    };
+
     // The room's record is the only "already saved" signal: another owner tab
     // can save a different layout after this one, which a per-tab memory misses.
-    if (fingerprint === linkFingerprint) return;
+    if (fingerprint === linkFingerprint) {
+      keepShareLayout(shareId, upload);
+      return;
+    }
 
+    dropWaitingUpload(shareId);
     const save = (): void => {
       pendingSaveRef.current = null;
-      enqueueUpload({
-        key: `${shareId}:${fingerprint}`,
-        run: () =>
-          updateShare(shareId, deleteToken, roomLayout)
-            .then((result) => {
-              // Silently ignore failures - this is background sync, user isn't waiting
-              if (!isOk(result)) return;
-              // A save that lands after the owner left the room must not stamp another room.
-              if (mountedShareIdRef.current !== shareId) return;
-              const { lastUpdatedAt } = result.value;
-              recordSave({
-                linkFingerprint: fingerprint,
-                ...(lastUpdatedAt ? { linkUpdatedAt: lastUpdatedAt } : {}),
-              });
-            })
-            .catch(() => {
-              // Silently ignore network errors
-            }),
-      });
+      queueShareUpload(shareId, upload);
     };
     pendingSaveRef.current = save;
     const timer = setTimeout(save, CLOUD_SYNC_DEBOUNCE_MS);
@@ -138,14 +116,13 @@ export function useCloudShareAutoSync(
     return () => {
       clearTimeout(timer);
     };
-  }, [shareId, deleteToken, roomLayout, linkFingerprint, recordSave, enqueueUpload]);
+  }, [shareId, deleteToken, roomLayout, linkFingerprint, recordSave]);
 
   // When the owner leaves the room (a layout switch, or the link becomes
   // view-only), this saves a change that is still in its debounce, after any
   // upload in flight. That save lands after the room is gone and records
-  // nothing in it. The room still
-  // counts the change as unsaved, so it keeps the change over a joiner's copy
-  // until the owner's next visit records it.
+  // nothing in it. The room still counts the change as unsaved, so it keeps
+  // the change over a joiner's copy until the owner's next visit records it.
   useEffect(() => {
     return () => {
       pendingSaveRef.current?.();

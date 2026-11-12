@@ -11,6 +11,7 @@ import { binId, gridUnits, layoutId } from '@/core/types';
 import { createTestBin, createTestLayout, createTestLibrary } from '@/test/testUtils';
 import { stampFor, type RoomLinkStamp } from '@/shared/utils/roomLinkStamp';
 import { roomSavesShare } from '@/features/cloud-share/utils';
+import { __resetShareUploadsForTests } from '@/features/cloud-share/utils/shareUploads';
 
 interface FakeRoot {
   layout: Layout;
@@ -95,6 +96,7 @@ describe('useCloudShareAutoSync', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
+    __resetShareUploadsForTests();
     room.root = null;
     room.canWrite = true;
     vi.mocked(shareApi.updateShare).mockResolvedValue(savedResponse(NEXT_SAVE_AT));
@@ -505,6 +507,103 @@ describe('useCloudShareAutoSync', () => {
 
       expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
       expect(shareApi.updateShare).toHaveBeenLastCalledWith(SHARE_ID, TOKEN, third);
+    });
+
+    it('uploads the saved layout again when the room goes back to it during an upload', async () => {
+      const { rerender, unmount, stamp } = startFirstUpload();
+      await advance(1000);
+      collaboratorEdits(layoutWith('saved', 'first', 'second'));
+      rerender();
+      await advance(1000);
+      const saved = layoutWith('saved');
+      collaboratorEdits(saved);
+      rerender();
+      unmount();
+      await settleFirst(savedResponse(NEXT_SAVE_AT));
+      await advance(0);
+
+      expect(vi.mocked(shareApi.updateShare).mock.calls.map(([, , layout]) => layout)).toEqual([
+        layoutWith('saved', 'first'),
+        saved,
+      ]);
+      expect(room.root?.metadata).toMatchObject(stamp);
+    });
+
+    it('uploads a layout again when its upload fails while the room waits on it', async () => {
+      const { rerender } = startFirstUpload();
+      await advance(1000);
+      collaboratorEdits(layoutWith('saved', 'first', 'second'));
+      rerender();
+      await advance(1000);
+      const first = layoutWith('saved', 'first');
+      collaboratorEdits(first);
+      rerender();
+      await advance(1000);
+      await settleFirst(err(apiServerError()));
+      await advance(0);
+
+      expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
+      expect(shareApi.updateShare).toHaveBeenLastCalledWith(SHARE_ID, TOKEN, first);
+    });
+
+    it('lets the room, opened again, replace what it left waiting', async () => {
+      const { rerender, unmount } = startFirstUpload();
+      await advance(1000);
+      collaboratorEdits(layoutWith('saved', 'first', 'second'));
+      rerender();
+      await advance(500);
+      unmount();
+      const third = layoutWith('saved', 'first', 'second', 'third');
+      collaboratorEdits(third);
+      renderHook(() => useCloudShareAutoSync(SHARE_ID, TOKEN));
+      await advance(1000);
+      await settleFirst(savedResponse(NEXT_SAVE_AT));
+      await advance(0);
+
+      expect(vi.mocked(shareApi.updateShare).mock.calls.map(([, , layout]) => layout)).toEqual([
+        layoutWith('saved', 'first'),
+        third,
+      ]);
+    });
+
+    it("lets the owner's newer local save replace what the room left waiting", async () => {
+      const owned = layoutId('owned-layout');
+      const library = createTestLibrary(owned);
+      const [entry] = library.entries;
+      if (!entry) throw new Error('test library has no entry');
+      useLibraryStore.setState({
+        isLoaded: true,
+        library: {
+          ...library,
+          entries: [
+            {
+              ...entry,
+              cloudShare: { id: SHARE_ID, deleteToken: TOKEN, sharedAt: 0, permission: 'edit' },
+            },
+          ],
+        },
+      });
+      useLayoutStore.setState({ activeLayoutId: owned });
+      const { rerender, unmount } = startFirstUpload();
+      const local = renderHook(() => useOwnedShareSync());
+      await advance(1000);
+      collaboratorEdits(layoutWith('saved', 'first', 'second'));
+      rerender();
+      await advance(500);
+      unmount();
+      const ownerEdit = layoutWith('saved', 'first', 'second', 'owner');
+      act(() => {
+        useLayoutStore.setState({ layout: ownerEdit, lastEditSource: 'local' });
+      });
+      local.rerender();
+      await advance(6000);
+      await settleFirst(savedResponse(NEXT_SAVE_AT));
+      await advance(0);
+
+      expect(vi.mocked(shareApi.updateShare).mock.calls.map(([, , layout]) => layout)).toEqual([
+        layoutWith('saved', 'first'),
+        ownerEdit,
+      ]);
     });
 
     it('drops a queued change that the room undid before the upload ended', async () => {
