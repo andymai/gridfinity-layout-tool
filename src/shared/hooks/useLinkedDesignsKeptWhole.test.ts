@@ -8,6 +8,8 @@ import {
   type CustomBinRef,
 } from '@/features/bin-designer/store/customBinRegistry';
 import { useLinkedDesignsKeptWhole } from './useLinkedDesignsKeptWhole';
+// The shell composition root feeds the registry's split switches to the layout.
+import '@/shell/registrations/LinkedRiseRegistration';
 
 function makeRef(id: string, splitToFitBed?: false): CustomBinRef {
   return {

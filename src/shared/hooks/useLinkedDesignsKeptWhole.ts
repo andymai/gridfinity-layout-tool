@@ -1,31 +1,47 @@
 /**
- * The saved designs that turn splitting off, read straight off the registry.
+ * The saved designs that turn splitting off (`splitToFitBed: false`).
  *
  * Layout surfaces ask "is this placed bin cut to fit the bed" synchronously,
- * and the switch lives in the design's params in IndexedDB; the registry
- * carries it (`CustomBinRef.splitToFitBed`) so the answer agrees with the
- * export without loading them.
+ * and the switch lives in each design's params in IndexedDB. The bin-designer
+ * registry carries it (`CustomBinRef.splitToFitBed`), and the shell registers
+ * that registry here (`LinkedRiseRegistration`), so shared code reads it without
+ * importing the feature. Unregistered, every design splits.
  */
 
+import { useSyncExternalStore } from 'react';
 import type { DesignId } from '@/core/types';
-import { useCustomBins } from '@/features/bin-designer';
-import type { CustomBinRef } from '@/features/bin-designer';
 
-// Keyed by the registry snapshot, which `useCustomBins` keeps referentially
-// stable until the registry changes: the 2D grid calls this once per bin.
-const keptWholeBySnapshot = new WeakMap<readonly CustomBinRef[], ReadonlySet<DesignId>>();
+export interface KeptWholeDesignsSource {
+  /** The same set until `subscribe` reports a change. */
+  readonly read: () => ReadonlySet<DesignId>;
+  readonly subscribe: (onChange: () => void) => () => void;
+}
 
-function keptWholeOf(registry: readonly CustomBinRef[]): ReadonlySet<DesignId> {
-  const cached = keptWholeBySnapshot.get(registry);
-  if (cached) return cached;
-  const ids = new Set<DesignId>();
-  for (const ref of registry) {
-    if (ref.splitToFitBed === false) ids.add(ref.id);
-  }
-  keptWholeBySnapshot.set(registry, ids);
-  return ids;
+const NONE: ReadonlySet<DesignId> = new Set();
+const listeners = new Set<() => void>();
+let source: KeptWholeDesignsSource | null = null;
+let stopSource: (() => void) | null = null;
+
+function notify(): void {
+  for (const listener of listeners) listener();
+}
+
+export function registerKeptWholeDesigns(next: KeptWholeDesignsSource | null): void {
+  stopSource?.();
+  source = next;
+  stopSource = next ? next.subscribe(notify) : null;
+  notify();
+}
+
+function subscribe(onChange: () => void): () => void {
+  listeners.add(onChange);
+  return () => listeners.delete(onChange);
+}
+
+function read(): ReadonlySet<DesignId> {
+  return source?.read() ?? NONE;
 }
 
 export function useLinkedDesignsKeptWhole(): ReadonlySet<DesignId> {
-  return keptWholeOf(useCustomBins());
+  return useSyncExternalStore(subscribe, read, read);
 }

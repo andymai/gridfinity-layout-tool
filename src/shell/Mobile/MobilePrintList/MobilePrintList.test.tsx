@@ -6,6 +6,8 @@ import { useLayoutStore } from '@/core/store';
 import { designId, gridUnits, mm } from '@/core/types';
 import { resetCustomBinsCache } from '@/features/bin-designer/hooks/useCustomBins';
 import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
+// The shell composition root feeds the registry's split switches to the layout.
+import '@/shell/registrations/LinkedRiseRegistration';
 
 vi.mock('@/features/print-export', () => ({
   PrintList: () => <div data-testid="print-list" />,

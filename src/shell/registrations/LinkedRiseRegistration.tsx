@@ -1,6 +1,7 @@
 import { notifyLinkedExcessChanged, registerLinkedExcessResolver } from '@/shared/utils/collision';
 import { linkedStackExcessUnits, stackJunctionMm } from '@/shared/utils/heightUnits';
 import { registerLinkedSlantResolver } from '@/shared/utils/placedSlant';
+import { registerKeptWholeDesigns } from '@/shared/hooks/useLinkedDesignsKeptWhole';
 import { loadRegistry, subscribeToRegistry } from '@/features/bin-designer';
 import type { CustomBinRef } from '@/features/bin-designer';
 import { useLayoutStore } from '@/core/store/layout';
@@ -11,7 +12,8 @@ import type { Bin, DesignId } from '@/core/types';
  * the collision module's linked-excess resolver, so blocked zones and
  * placement validation charge a linked design's real standing height without a
  * `shared/utils → feature` import. Its slant facts are wired the same way, so
- * placement can reserve a linked bin's end support.
+ * placement can reserve a linked bin's end support, and so is its split switch,
+ * so the grid and the print list keep whole the bins the export keeps whole.
  *
  * Registration runs at module load (like `DesignStoreRegistration`) so the
  * first render's blocked-zone pass already sees linked excess; the resolver
@@ -19,7 +21,9 @@ import type { Bin, DesignId } from '@/core/types';
  */
 
 let refsById: Map<DesignId, CustomBinRef> | null = null;
+let keptWhole: ReadonlySet<DesignId> | null = null;
 let registryTick = 0;
+const changeListeners = new Set<() => void>();
 
 function refs(): Map<DesignId, CustomBinRef> {
   refsById ??= new Map(loadRegistry().map((ref) => [ref.id, ref]));
@@ -28,8 +32,10 @@ function refs(): Map<DesignId, CustomBinRef> {
 
 function invalidate(): void {
   refsById = null;
+  keptWhole = null;
   registryTick += 1;
   notifyLinkedExcessChanged();
+  for (const listener of changeListeners) listener();
 }
 
 subscribeToRegistry(invalidate);
@@ -82,6 +88,17 @@ registerLinkedSlantResolver((designId) => {
     fractionalEdgeX: ref.fractionalEdgeX,
     fractionalEdgeY: ref.fractionalEdgeY,
   };
+});
+
+registerKeptWholeDesigns({
+  read: () =>
+    (keptWhole ??= new Set(
+      [...refs().values()].filter((ref) => ref.splitToFitBed === false).map((ref) => ref.id)
+    )),
+  subscribe: (onChange) => {
+    changeListeners.add(onChange);
+    return () => changeListeners.delete(onChange);
+  },
 });
 
 /**

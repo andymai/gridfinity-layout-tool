@@ -21,6 +21,8 @@ import { useLinkedDesignKinds } from '@/shared/hooks/useLinkedDesignKinds';
 import { registerLinkedSlantResolver } from '@/shared/utils/placedSlant';
 import { resetCustomBinsCache } from '@/features/bin-designer/hooks/useCustomBins';
 import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
+// The shell composition root feeds the registry's split switches to the layout.
+import '@/shell/registrations/LinkedRiseRegistration';
 
 vi.mock('@/shared/hooks/useLabelPlateCounts', () => ({
   useLabelPlateCounts: vi.fn(() => new Map()),

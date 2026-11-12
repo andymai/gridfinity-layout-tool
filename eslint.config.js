@@ -15,6 +15,50 @@ import noInitTimeImportedCall from './eslint-rules/no-init-time-imported-call.js
 // and to avoid crashing the linter on bare quantifiers like "+".
 const literal = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+// Shared files that import a feature from before the rule that bans it (see the
+// no-restricted-imports override for src/shared). Remove an entry once its file is clean.
+const SHARED_FEATURE_IMPORTERS = [
+  'src/shared/components/AppVersionButton/AppVersionButton.tsx',
+  'src/shared/constants/bin.ts',
+  'src/shared/constants/lidKeepout.ts',
+  'src/shared/constraints/rules.ts',
+  'src/shared/generation/bridge.ts',
+  'src/shared/generation/directMesh.ts',
+  'src/shared/generation/export.ts',
+  'src/shared/generation/floorPatternMetrics.ts',
+  'src/shared/generation/lowProfileBase.ts',
+  'src/shared/generation/splitUtils.ts',
+  'src/shared/generation/wallPatternMetrics.ts',
+  'src/shared/hooks/useDrawerCeiling.ts',
+  'src/shared/hooks/useLabelPlateCounts.ts',
+  'src/shared/hooks/useLinkedDesignDividers.ts',
+  'src/shared/hooks/useLinkedDesignKinds.ts',
+  'src/shared/hooks/useLinkedDesignMeshes.ts',
+  'src/shared/hooks/useLinkedDesignOverhangs.ts',
+  'src/shared/items/bin/descriptor.ts',
+  'src/shared/printSettings/assembledHeight.ts',
+  'src/shared/sync/useSignOutFlow.tsx',
+  'src/shared/types/bin.ts',
+  'src/shared/types/generation.ts',
+  'src/shared/utils/communityPrintCost.ts',
+  'src/shared/utils/cutoutArray.ts',
+  'src/shared/utils/cutoutRepeatDetect.ts',
+  'src/shared/utils/detachableFeetPlan.ts',
+  'src/shared/utils/dividerRailPlan.ts',
+  'src/shared/utils/fitTestOutlinePlan.ts',
+  'src/shared/utils/fitTestPlan.ts',
+  'src/shared/utils/floorTextHost.ts',
+  'src/shared/utils/handleCutoutClip.ts',
+  'src/shared/utils/hingeLidPlan.ts',
+  'src/shared/utils/labelTabPlan.ts',
+  'src/shared/utils/lidCutoutPlan.ts',
+  'src/shared/utils/lidInteriorRelief.ts',
+  'src/shared/utils/placedCaption.ts',
+  'src/shared/utils/scoopCalculations.ts',
+  'src/shared/utils/slideLidCatch.ts',
+  'src/shared/utils/slideLidPlan.ts',
+];
+
 export default defineConfig([
   // `.worktrees` / `.claude/worktrees` hold git worktrees — each is a full copy
   // of the repo. Both are gitignored, but flat config does not read .gitignore,
@@ -317,8 +361,9 @@ export default defineConfig([
       //      it. Shell UI that lives inside a feature's tree (the mobile grid
       //      toolbar, collab overlays) arrives through slot props instead.
       //
-      // The shared→feature edge is intentionally unrestricted today;
-      // tightening it needs a per-violator cleanup pass.
+      // The shared→feature edge is left open here: the no-restricted-imports
+      // override for src/shared below closes it, except for the files listed
+      // in SHARED_FEATURE_IMPORTERS, which predate it.
       'boundaries/dependencies': [
         'error',
         {
@@ -465,6 +510,38 @@ export default defineConfig([
             "BinaryExpression > MemberExpression[object.name='GRIDFINITY_SPEC'][property.name='HEIGHT_UNIT']",
           message:
             'Do not multiply/divide GRIDFINITY_SPEC.HEIGHT_UNIT directly — thread the per-layout heightUnitMm through instead. See src/features/bin-designer/utils/binDimensions.ts.',
+        },
+      ],
+    },
+  },
+  // Shared code never imports a feature (src/shared/.greptile/rules.md): feature
+  // state reaches it through a seam the shell registers (src/shell/registrations/)
+  // or through props. The boundaries policy above leaves shared -> feature open,
+  // so this holds the line for every shared file except the ones listed, which
+  // predate it. The list only shrinks: remove a file once it stops importing a
+  // feature. `paths` is duplicated from the global rule (overrides replace it).
+  {
+    files: ['src/shared/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}', '**/test/**/*.{ts,tsx}', ...SHARED_FEATURE_IMPORTERS],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'react',
+              importNames: ['lazy'],
+              message:
+                'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy().',
+            },
+          ],
+          patterns: [
+            {
+              group: ['@/features/*', '@/features/**'],
+              message:
+                'Shared code must not import a feature. Register the feature state through a seam in src/shell/registrations/, pass it in as props, or move the code into the feature.',
+            },
+          ],
         },
       ],
     },
