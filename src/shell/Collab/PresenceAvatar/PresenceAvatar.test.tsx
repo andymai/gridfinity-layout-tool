@@ -55,6 +55,12 @@ describe('PresenceAvatar', () => {
     expect(screen.getByLabelText('Owner')).toBeInTheDocument();
   });
 
+  it('exposes the owner crown to assistive technology', () => {
+    const ownerParticipant = { ...mockParticipant, isOwner: true };
+    render(<PresenceAvatar participant={ownerParticipant} />);
+    expect(screen.getByRole('img', { name: 'Owner' })).toBeInTheDocument();
+  });
+
   it('does not show crown badge for non-owner', () => {
     render(<PresenceAvatar participant={mockParticipant} />);
     expect(screen.queryByLabelText('Owner')).not.toBeInTheDocument();
