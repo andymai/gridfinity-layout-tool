@@ -407,6 +407,29 @@ describe('share/[id]', () => {
         }
       });
 
+      it('stamps a write later than the blob it replaces, when this clock runs behind', async () => {
+        vi.useFakeTimers({ toFake: ['Date'] });
+        try {
+          vi.setSystemTime(new Date('2026-03-01T00:00:00.000Z'));
+          for (const stored of ['2026-03-01T00:00:00.000Z', '2026-03-01T00:00:07.000Z']) {
+            vi.clearAllMocks();
+            mocks.put.mockResolvedValue({ url: 'blob://ok' });
+            primeBlobFetch(shareBlob({ lastUpdatedAt: stored }));
+            mocks.redisGet.mockResolvedValue(correctHash);
+            const res = await handle('PUT', {
+              body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+            });
+
+            expect(Date.parse(writtenAt(0).metadata.lastUpdatedAt)).toBe(Date.parse(stored) + 1);
+            expect((res._body as { lastUpdatedAt: string }).lastUpdatedAt).toBe(
+              writtenAt(0).metadata.lastUpdatedAt
+            );
+          }
+        } finally {
+          vi.useRealTimers();
+        }
+      });
+
       it('keeps the layout of the write that beat a permission-only update', async () => {
         primeBlobChange(
           { ...shareBlob({ deleteTokenHash: correctHash }), layout: { name: 'Old' } },

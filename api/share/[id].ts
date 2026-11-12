@@ -125,6 +125,17 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
 const MAX_PUT_ATTEMPTS = 3;
 
 /**
+ * The stamp for a write over a blob stamped `previous`: now, or 1 ms after
+ * `previous` when this server's clock does not run past it. A retry can run on
+ * a server whose clock is behind the one that wrote the blob.
+ */
+function laterRevision(previous: string | undefined): string {
+  const now = Date.now();
+  const last = previous ? Date.parse(previous) : Number.NaN;
+  return new Date(Number.isFinite(last) && last >= now ? last + 1 : now).toISOString();
+}
+
+/**
  * PUT /api/share/[id] - Update an existing share
  *
  * Each write is conditional on the blob it read. A collab room records the
@@ -226,7 +237,7 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
     }
 
     for (let attempt = 1; ; attempt++) {
-      const now = new Date().toISOString();
+      const now = laterRevision(loaded.data.metadata.lastUpdatedAt);
 
       // Strip the legacy lastAccessedAt field on any rewrite — its source of
       // truth is now Redis (share:lastAccessed:{id}). Preserving the spread
