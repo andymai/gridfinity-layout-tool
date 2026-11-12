@@ -1,0 +1,27 @@
+src/features/grid-editor/hooks/useInteraction.ts
+  s_1cc363bb3cc76d::t_21abd1623e8070 188,190-192
+src/features/grid-editor/hooks/useInteraction.drag.test.ts
+  s_1cc363bb3cc76d::t_281990887dc888 9-10,861-1036
+src/shared/hooks/interactions/moveOrder.test.ts
+  s_1cc363bb3cc76d::t_351a424ef27b12 6-7,107-151
+src/shared/hooks/interactions/moveOrder.ts
+  s_1cc363bb3cc76d::t_1dd1970dc3b1ad 1,3,56-91
+src/shared/hooks/interactions/useDragInteraction.ts
+  s_1cc363bb3cc76d::t_5426dfdf972da2 16,213-216,328,330,335-337,343-344
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d22165f161d19d556994bf4574c344721dbb96db",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
