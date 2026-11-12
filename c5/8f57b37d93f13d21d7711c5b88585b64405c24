@@ -1,0 +1,49 @@
+src/shell/Modals/HelpModal/HelpModalSections.test.tsx
+  s_1cc363bb3cc76d::t_e98acf7c49c4d4 1-11
+src/shell/Modals/HelpModal/HelpModalSections.tsx
+  s_1cc363bb3cc76d::t_51b88d260a23c6 176
+src/i18n/locales/cs.json
+  s_1cc363bb3cc76d::t_6d9397905e984a 1623-1624
+src/i18n/locales/de.json
+  s_1cc363bb3cc76d::t_253654d2635b42 1593-1594,3278,3314,3520,3525,3843,4004-4005,4021,4233
+src/i18n/locales/es.json
+  s_1cc363bb3cc76d::t_095faace5c85df 1593-1594,3520,3525,3843,4004-4005,4021,4233
+src/i18n/locales/fr.json
+  s_1cc363bb3cc76d::t_ac36ad8d16d81f 1593-1594,3278,3314,3520,3525,3843,4004-4005,4021,4233
+src/i18n/locales/it.json
+  s_1cc363bb3cc76d::t_ac462c8d6e15e2 1593-1594
+src/i18n/locales/ja.json
+  s_1cc363bb3cc76d::t_a0648bf47685a8 1563-1564
+src/i18n/locales/ko.json
+  s_1cc363bb3cc76d::t_d1170144a266e2 1563-1564
+src/i18n/locales/nb.json
+  s_1cc363bb3cc76d::t_e5ed796a960b24 1593-1594,3278,3314,3843
+src/i18n/locales/nl.json
+  s_1cc363bb3cc76d::t_38c802c4b7406d 1593-1594,3278,3314,3520,3525,3843,4004-4005,4021,4233
+src/i18n/locales/pl.json
+  s_1cc363bb3cc76d::t_72ef1d419aedc1 1653-1654
+src/i18n/locales/pt-BR.json
+  s_1cc363bb3cc76d::t_5fa38c85c12723 1593-1594,3278,3314,3520,3525,3843,4004-4005,4021,4233
+src/i18n/locales/sv.json
+  s_1cc363bb3cc76d::t_d4422240600e2e 1593-1594
+src/i18n/locales/uk.json
+  s_1cc363bb3cc76d::t_d054b2b0bbdbf5 1653-1654
+src/i18n/locales/zh-CN.json
+  s_1cc363bb3cc76d::t_3a8cb3c73f7437 1563-1564
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c58f57b37d93f13d21d7711c5b88585b64405c24",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
