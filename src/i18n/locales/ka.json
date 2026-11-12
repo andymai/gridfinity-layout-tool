@@ -2207,7 +2207,7 @@
   "binDesigner.lid.retentionMagnetDepth": "მაგნიტის სიღრმე",
   "binDesigner.lid.retentionMagnetDepthAria": "დამჭერი მაგნიტის სიღრმე მილიმეტრებში",
   "binDesigner.lid.retentionMagnetHint": "ყუთისა და თავსახურის თითოეულ კუთხეში ჩასვით ⌀{diameter} × {depth} mm მაგნიტი.",
-  "binDesigner.lid.retentionMagnetHintDetail": "დააწებეთ შესაბამისი პოლუსებით ერთმანეთისკენ, რათა თავსახური მხოლოდ ერთი მიმართულებით დაიხუროს.",
+  "binDesigner.lid.retentionMagnetHintDetail": "დააწებეთ ისე, რომ თავსახურის თითოეულმა მაგნიტმა მიიზიდოს მის ქვეშ მყოფი ყუთის მაგნიტი.",
   "binDesigner.lid.retentionEdgeMagnets": "კიდის მაგნიტები",
   "binDesigner.lid.retentionEdgeMagnetsAria": "დამატებითი დამჭერი მაგნიტები თითო გრძელ კიდეზე",
   "binDesigner.lid.retentionEdgeMagnetsHint": "თითოეული გრძელი კიდის კუთხეებს შორის ამატებს ამ რაოდენობის მაგნიტებს, რათა დიდი თავსახური შუაში არ ჩაიზნიქოს. ემატება მხოლოდ საკმარისად გრძელ კიდეებზე, ამიტომ პატარა თავსახურები ოთხ კუთხეს ინარჩუნებს.",

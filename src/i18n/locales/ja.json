@@ -1648,7 +1648,7 @@
   "binDesigner.lid.retentionMagnetDiameter": "マグネット直径",
   "binDesigner.lid.retentionMagnetDiameterAria": "保持マグネットの直径（ミリメートル）",
   "binDesigner.lid.retentionMagnetHint": "ビンとふたの各コーナーに ⌀{diameter} × {depth} mm のマグネットを押し込みます。",
-  "binDesigner.lid.retentionMagnetHintDetail": "ふたが一方向にのみ閉まるよう、同じ極どうしを向かい合わせて接着してください。",
+  "binDesigner.lid.retentionMagnetHintDetail": "ふたの各マグネットが、その下にあるビンのマグネットと引き合う向きで接着してください。",
   "binDesigner.lid.section.attaches": "取り付け方法",
   "binDesigner.lid.section.grip": "ふたのつまみ",
   "binDesigner.lid.section.text": "フタのテキスト",

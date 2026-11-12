@@ -2631,7 +2631,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.retentionMagnetHint':
     'Press a ⌀{diameter} × {depth} mm magnet into each corner of the bin and lid.',
   'binDesigner.lid.retentionMagnetHintDetail':
-    'Glue them in with matching poles facing so the lid only closes one way.',
+    'Glue them in so that each lid magnet pulls toward the bin magnet under it.',
   'binDesigner.lid.retentionEdgeMagnets': 'Edge magnets',
   'binDesigner.lid.retentionEdgeMagnetsAria': 'Extra retention magnets per long edge',
   'binDesigner.lid.retentionEdgeMagnetsHint':

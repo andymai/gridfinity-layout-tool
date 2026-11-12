@@ -1710,7 +1710,7 @@
   "binDesigner.lid.retentionMagnetDiameter": "Průměr magnetu",
   "binDesigner.lid.retentionMagnetDiameterAria": "Průměr přídržného magnetu v milimetrech",
   "binDesigner.lid.retentionMagnetHint": "Zamáčkni magnet ⌀{diameter} × {depth} mm do každého rohu binu a víka.",
-  "binDesigner.lid.retentionMagnetHintDetail": "Zalep je s odpovídajícími póly proti sobě, aby víko šlo zavřít jen jedním způsobem.",
+  "binDesigner.lid.retentionMagnetHintDetail": "Zalep je tak, aby každý magnet ve víku přitahoval magnet v binu pod ním.",
   "binDesigner.lid.section.attaches": "Jak se připevňuje",
   "binDesigner.lid.section.grip": "Úchop víka",
   "binDesigner.lid.section.text": "Text víka",

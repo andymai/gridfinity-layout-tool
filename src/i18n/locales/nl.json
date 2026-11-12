@@ -1679,7 +1679,7 @@
   "binDesigner.lid.retentionMagnetDiameter": "Magneetdiameter",
   "binDesigner.lid.retentionMagnetDiameterAria": "Diameter van de retentiemagneet in millimeters",
   "binDesigner.lid.retentionMagnetHint": "Druk in elke hoek van de bak en het deksel een magneet van ⌀{diameter} × {depth} mm.",
-  "binDesigner.lid.retentionMagnetHintDetail": "Lijm ze vast met gelijke polen naar elkaar toe, zodat het deksel maar op één manier sluit.",
+  "binDesigner.lid.retentionMagnetHintDetail": "Lijm ze zo vast dat elke magneet in het deksel de magneet in de bak eronder aantrekt.",
   "binDesigner.lid.section.attaches": "Bevestiging",
   "binDesigner.lid.section.grip": "Dekselgreep",
   "binDesigner.lid.section.text": "Dekseltekst",

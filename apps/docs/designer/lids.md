@@ -43,7 +43,7 @@ Not sure? Keep <Ui k="binDesigner.lid.attachment.clickRails" />, which every new
 
 A new lid starts with click rails on all four sides, each rail half as long as its wall. If the base of the bin has magnet holes, the lid also starts with a stackable top and magnet pockets. Under <Ui k="binDesigner.lid.clickRails" />, turn off a side to leave it without a rail. If a label tab, wall cutout or handle is in the way, the panel turns that side off for you.
 
-A magnetic lid takes 6 × 2 mm magnets by default. Glue the magnets in with matching poles facing, so the lid closes only one way round. <Ui k="binDesigner.lid.retentionEdgeMagnets" /> adds up to three more magnets along each long edge, so a large lid doesn't sag.
+A magnetic lid takes 6 × 2 mm magnets by default. Glue the magnets in so that each lid magnet pulls toward the bin magnet under it. <Ui k="binDesigner.lid.retentionEdgeMagnets" /> adds up to three more magnets along each long edge, so a large lid doesn't sag.
 
 ### Sliding lids
 

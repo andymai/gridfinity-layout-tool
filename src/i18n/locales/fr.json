@@ -1679,7 +1679,7 @@
   "binDesigner.lid.retentionMagnetDiameter": "Diamètre de l'aimant",
   "binDesigner.lid.retentionMagnetDiameterAria": "Diamètre de l'aimant de maintien en millimètres",
   "binDesigner.lid.retentionMagnetHint": "Insérez un aimant de ⌀{diameter} × {depth} mm dans chaque coin du bac et du couvercle.",
-  "binDesigner.lid.retentionMagnetHintDetail": "Collez-les avec les pôles identiques face à face pour que le couvercle ne se ferme que dans un sens.",
+  "binDesigner.lid.retentionMagnetHintDetail": "Collez-les de sorte que chaque aimant du couvercle attire l’aimant du bac situé en dessous.",
   "binDesigner.lid.section.attaches": "Mode de fixation",
   "binDesigner.lid.section.grip": "Prise du couvercle",
   "binDesigner.lid.section.text": "Texte du couvercle",

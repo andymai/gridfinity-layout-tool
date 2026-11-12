@@ -1679,7 +1679,7 @@
   "binDesigner.lid.retentionMagnetDiameter": "Diametro magnete",
   "binDesigner.lid.retentionMagnetDiameterAria": "Diametro del magnete di ritenzione in millimetri",
   "binDesigner.lid.retentionMagnetHint": "Inserisci a pressione un magnete da ⌀{diameter} × {depth} mm in ogni angolo del contenitore e del coperchio.",
-  "binDesigner.lid.retentionMagnetHintDetail": "Incollali con i poli uguali affacciati così il coperchio si chiude in un solo verso.",
+  "binDesigner.lid.retentionMagnetHintDetail": "Incollali in modo che ogni magnete del coperchio attragga il magnete del contenitore sotto di esso.",
   "binDesigner.lid.section.attaches": "Come si fissa",
   "binDesigner.lid.section.grip": "Presa del coperchio",
   "binDesigner.lid.section.text": "Testo del coperchio",

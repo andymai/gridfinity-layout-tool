@@ -1648,7 +1648,7 @@
   "binDesigner.lid.retentionMagnetDiameter": "자석 지름",
   "binDesigner.lid.retentionMagnetDiameterAria": "고정 자석 지름(밀리미터)",
   "binDesigner.lid.retentionMagnetHint": "⌀{diameter} × {depth} mm 자석을 수납통과 뚜껑의 각 모서리에 눌러 넣으세요.",
-  "binDesigner.lid.retentionMagnetHintDetail": "뚜껑이 한 방향으로만 닫히도록 같은 극이 마주 보게 접착하세요.",
+  "binDesigner.lid.retentionMagnetHintDetail": "뚜껑의 각 자석이 그 아래 수납통 자석을 끌어당기도록 접착하세요.",
   "binDesigner.lid.section.attaches": "부착 방식",
   "binDesigner.lid.section.grip": "뚜껑 손잡이",
   "binDesigner.lid.section.text": "뚜껑 텍스트",
