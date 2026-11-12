@@ -128,6 +128,19 @@ function fullLayer(onLayer: Bin['layerId']): Bin[] {
   return bins;
 }
 
+function knifeBlockPair(): Bin[] {
+  return [
+    createTestBin({ id: binId('block'), layerId: L1, pairId: 'p1', pairRole: 'block' }),
+    createTestBin({
+      id: binId('rest'),
+      layerId: L1,
+      x: gridUnits(3),
+      pairId: 'p1',
+      pairRole: 'rest',
+    }),
+  ];
+}
+
 function countStoreUpdates(run: () => void): number {
   let updates = 0;
   const unsubscribe = useLayoutStore.subscribe(() => {
@@ -200,6 +213,17 @@ describe('bulk bin actions', () => {
       expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
     });
 
+    it("takes a paired bin's partner along", () => {
+      seed(knifeBlockPair(), ['block']);
+
+      run('move-to-stash');
+
+      expect(placement('block')?.layerId).toBe(STAGING_ID);
+      expect(placement('rest')?.layerId).toBe(STAGING_ID);
+      expect(useToastStore.getState().toasts.at(-1)?.message).toBe('Moved 2 bins to stash');
+      expect(useHistoryStore.getState().past).toHaveLength(1);
+    });
+
     it('stashes a full layer in one store update', () => {
       const bins = fullLayer(L1);
       seed(
@@ -230,6 +254,15 @@ describe('bulk bin actions', () => {
 
       expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual([binId('kept')]);
       expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
+      expect(useHistoryStore.getState().past).toHaveLength(1);
+    });
+
+    it("takes a paired bin's partner along", () => {
+      seed(knifeBlockPair(), ['rest']);
+
+      run('delete-selected');
+
+      expect(useLayoutStore.getState().layout.bins).toEqual([]);
       expect(useHistoryStore.getState().past).toHaveLength(1);
     });
 

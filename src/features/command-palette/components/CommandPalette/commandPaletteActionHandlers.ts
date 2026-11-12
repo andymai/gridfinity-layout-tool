@@ -33,6 +33,7 @@ import { useLayoutSwitcher } from '@/shared/hooks';
 import { getStagingBins, getLayerBins } from '@/shared/utils';
 import { findBinById } from '@/shared/utils/entity';
 import { isBinLocked, planBinRotation } from '@/shared/utils/binLocation';
+import { expandPairIds } from '@/shared/utils/binPairs';
 import { useAlignBins } from '@/shared/hooks/useAlignBins';
 import { useSelectionActions } from '@/shared/hooks/useSelectionActions';
 import { useExpandToFit } from '@/shared/hooks/useExpandToFit';
@@ -157,6 +158,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     const layerBins = getLayerBins(layout.bins, activeLayerId);
     const stagingBins = getStagingBins(layout.bins);
     const categories = layout.categories;
+    const withPartners = (): BinId[] => [...expandPairIds(new Set(selectedBinIds), layout.bins)];
 
     function clearSelection(): void {
       setSelectedBins([]);
@@ -273,7 +275,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       'delete-selected': hasBinsSelected
         ? () => {
             batch(() => {
-              deleteBins(selectedBinIds);
+              deleteBins(withPartners());
             });
             // Selection cleanup handled by CQRS selectionPruning subscriber
           }
@@ -410,10 +412,11 @@ export function useActionHandlers(): Record<string, ActionHandler> {
         : null,
       'move-to-stash': hasBinsSelected
         ? () => {
+            const stashIds = withPartners();
             batch(() => {
-              moveBinsToStaging(selectedBinIds);
+              moveBinsToStaging(stashIds);
             });
-            addToast(t('toast.movedToStash', { count: selectedBinIds.length }), 'info');
+            addToast(t('toast.movedToStash', { count: stashIds.length }), 'info');
             // Pruning drops only the bins the batch moved; a selected bin
             // already in the stash would stay selected.
             setSelectedBins([]);
