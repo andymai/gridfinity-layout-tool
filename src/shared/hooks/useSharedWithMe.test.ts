@@ -8,14 +8,21 @@ import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useToastStore } from '@/core/store/toast';
 import { createDefaultLayout } from '@/core/constants';
 import type { SharedWithMeEntry, Layout } from '@/core/types';
-import { binId, categoryId, gridUnits, heightUnits, layerId } from '@/core/types';
+import { binId, categoryId, designId, gridUnits, heightUnits, layerId } from '@/core/types';
+import type * as Storage from '@/core/storage';
 
 // Mock the API module
 vi.mock('@/core/api/share', () => ({
   fetchShare: vi.fn(),
 }));
 
+vi.mock('@/core/storage', async (importOriginal) => ({
+  ...(await importOriginal<typeof Storage>()),
+  restoreSharedDesigns: vi.fn((_shareId: string, layout: Layout) => Promise.resolve(layout)),
+}));
+
 import { fetchShare } from '@/core/api/share';
+import { restoreSharedDesigns, sharedDesignIds } from '@/core/storage';
 
 const mockFetchShare = vi.mocked(fetchShare);
 
@@ -167,6 +174,37 @@ describe('useSharedWithMe', () => {
 
       expect(useSharedPreviewStore.getState().sharedPreview?.linkUpdatedAt).toBe(
         '2026-11-01T10:00:00.000Z'
+      );
+    });
+
+    it("restores the share's designs and keeps their id map, for the collab room", async () => {
+      const entry = createTestEntry({ permission: 'edit' });
+      useSharedWithMeStore.setState({ entries: [entry] });
+      const shared = createTestLayout();
+      const linkedDesigns = [{ id: 'owner-design', name: 'Tray', params: {} as never }];
+      mockFetchShare.mockResolvedValueOnce({
+        ok: true,
+        value: {
+          layout: shared,
+          linkedDesigns,
+          metadata: { createdAt: '2026-11-01T09:00:00.000Z', permission: 'edit' },
+        },
+      });
+      const restored: Layout = {
+        ...shared,
+        bins: shared.bins.map((bin) => ({ ...bin, linkedDesignId: designId('design_shared_1') })),
+      };
+      vi.mocked(restoreSharedDesigns).mockResolvedValueOnce(restored);
+      const { result } = renderHook(() => useSharedWithMe());
+
+      await act(async () => {
+        await result.current.openSharedLayout(entry);
+      });
+
+      expect(restoreSharedDesigns).toHaveBeenCalledWith('share-abc123', shared, linkedDesigns);
+      expect(useLayoutStore.getState().layout.bins[0]?.linkedDesignId).toBe('design_shared_1');
+      expect(useSharedPreviewStore.getState().sharedPreview?.designIds).toEqual(
+        sharedDesignIds('share-abc123', linkedDesigns)
       );
     });
 

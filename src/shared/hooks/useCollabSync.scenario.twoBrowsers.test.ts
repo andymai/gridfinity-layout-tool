@@ -5,8 +5,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import type { Layout } from '@/core/types';
-import { binId } from '@/core/types';
+import { binId, designId } from '@/core/types';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
+import { roomDesignIds } from '@/shared/utils/roomDesignIds';
 
 const room = vi.hoisted((): { layout: unknown; listeners: Set<() => void> } => ({
   layout: null,
@@ -147,5 +148,78 @@ describe('two browsers in one room', () => {
 
     const expected = ['a', 'y'];
     expect(layoutsOf(first, second)).toEqual([expected, expected, expected]);
+  });
+});
+
+describe('an owner and a visitor with designs from the share', () => {
+  const OWNER_ID = 'owner-design';
+  const LOCAL_ID = 'design_shared_1';
+  const visitorIds = roomDesignIds({ [OWNER_ID]: LOCAL_ID });
+
+  function layoutLinked(...bins: [string, string][]): Layout {
+    return createTestLayout({
+      bins: bins.map(([id, linked]) =>
+        createTestBin({ id: binId(id), linkedDesignId: designId(linked) })
+      ),
+    });
+  }
+
+  function linkedIn(layout: unknown): string[] {
+    return (layout as Layout).bins.map((bin) => `${bin.id}:${bin.linkedDesignId ?? ''}`);
+  }
+
+  function addLinkedBin(browser: Browser, id: string, linked: string): void {
+    const current = browser.store.useLayoutStore.getState().layout;
+    const bin = createTestBin({ id: binId(id), linkedDesignId: designId(linked) });
+    browser.store.useLayoutStore.setState({
+      layout: { ...current, bins: [...current.bins, bin] },
+      lastEditSource: 'local',
+    });
+  }
+
+  async function ownerAndVisitor(roomLayout: Layout): Promise<[Browser, Browser]> {
+    const owner = await loadBrowser();
+    const visitor = await loadBrowser();
+    room.layout = roomLayout;
+    owner.store.useLayoutStore.setState({
+      layout: layoutLinked(['a', OWNER_ID]),
+      lastEditSource: 'init',
+    });
+    renderHook(() => owner.sync.useCollabSync());
+    visitor.store.useLayoutStore.setState({
+      layout: layoutLinked(['a', LOCAL_ID]),
+      lastEditSource: 'init',
+    });
+    renderHook(() => visitor.sync.useCollabSync(undefined, visitorIds));
+    return [owner, visitor];
+  }
+
+  function linkedOf(owner: Browser, visitor: Browser): string[][] {
+    return [
+      linkedIn(room.layout),
+      linkedIn(owner.store.useLayoutStore.getState().layout),
+      linkedIn(visitor.store.useLayoutStore.getState().layout),
+    ];
+  }
+
+  it("keep the owner's ids in the room and the visitor's own ids in its copy", async () => {
+    const [owner, visitor] = await ownerAndVisitor(layoutLinked(['a', OWNER_ID]));
+
+    act(() => addLinkedBin(visitor, 'b', LOCAL_ID));
+    act(() => addLinkedBin(owner, 'c', OWNER_ID));
+
+    const inRoom = ['a:owner-design', 'b:owner-design', 'c:owner-design'];
+    const inVisitor = ['a:design_shared_1', 'b:design_shared_1', 'c:design_shared_1'];
+    expect(linkedOf(owner, visitor)).toEqual([inRoom, inRoom, inVisitor]);
+  });
+
+  it("give the owner's ids back to a room that a visitor seeded with its own", async () => {
+    const [owner, visitor] = await ownerAndVisitor(layoutLinked(['a', LOCAL_ID]));
+
+    act(() => addLinkedBin(visitor, 'b', LOCAL_ID));
+
+    const inRoom = ['a:owner-design', 'b:owner-design'];
+    const inVisitor = ['a:design_shared_1', 'b:design_shared_1'];
+    expect(linkedOf(owner, visitor)).toEqual([inRoom, inRoom, inVisitor]);
   });
 });

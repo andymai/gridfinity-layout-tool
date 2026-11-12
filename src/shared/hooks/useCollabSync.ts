@@ -13,6 +13,9 @@
  *   whatever this browser's last edit was
  * - Loop prevention: a room layout equal to the one this browser last pushed or
  *   took is its own echo, and an imported layout is never pushed back
+ * - A visitor's copy names the share's designs by its own ids; layouts cross
+ *   into the room with the owner's ids (`RoomDesignIds`), and every comparison
+ *   uses the room's ids
  *
  * @example
  * ```tsx
@@ -34,6 +37,9 @@ import {
   stampFor,
   type RoomLinkStamp,
 } from '@/shared/utils/roomLinkStamp';
+import { roomDesignIds, type RoomDesignIds } from '@/shared/utils/roomDesignIds';
+
+const OWNER_IDS = roomDesignIds(undefined);
 
 // The layout stays the active library entry, so the owner's autosave also
 // saves what collaborators change.
@@ -58,8 +64,14 @@ type SyncState = 'pending' | 'initializing' | 'ready';
  * @param copySave - The share link save that this browser's copy of the layout
  *   came from, when known: its `lastUpdatedAt` and the saved layout's
  *   fingerprint. The revision counts only if the copy is still that layout.
+ * @param designIds - Moves layouts between the room's design ids and this
+ *   browser's. The owner's ids are the room's.
  */
-export function useCollabSync(copySave?: RoomLinkStamp): void {
+export function useCollabSync(
+  copySave?: RoomLinkStamp,
+  designIds: RoomDesignIds = OWNER_IDS
+): void {
+  const { toLocal, toRoom } = designIds;
   // Sync state machine
   const syncStateRef = useRef<SyncState>('pending');
   const lastSyncedLayoutRef = useRef<Layout | null>(null);
@@ -117,10 +129,11 @@ export function useCollabSync(copySave?: RoomLinkStamp): void {
 
       // Read local layout fresh from the store, not from closure — that way
       // this branch doesn't need `localLayout` in the effect's dep array.
-      const currentLocal = useLayoutStore.getState().layout;
-      const copyRevision = revisionOfCopy(currentLocal, copySave);
+      const storeLayout = useLayoutStore.getState().layout;
+      const copy = toRoom(storeLayout);
+      const copyRevision = revisionOfCopy(copy, copySave);
       const outcome = resolveJoin({
-        copy: currentLocal,
+        copy,
         copyRevision,
         room: remoteLayout,
         stamp: {
@@ -133,12 +146,12 @@ export function useCollabSync(copySave?: RoomLinkStamp): void {
         // A copy without a known revision goes in unrecorded, so the owner
         // uploads it: it can hold edits that never reached the link.
         writeRefusedRef.current = !updateRemoteLayout(
-          currentLocal,
-          copyRevision ? stampFor(currentLocal, copyRevision) : undefined
+          copy,
+          copyRevision ? stampFor(copy, copyRevision) : undefined
         );
       }
       if (outcome === 'push-copy' && !writeRefusedRef.current) {
-        lastSyncedLayoutRef.current = currentLocal;
+        lastSyncedLayoutRef.current = copy;
         // Move to ready state after a brief delay to let the push complete
         // Store timeout ID for cleanup on unmount
         initTimeoutRef.current = setTimeout(() => {
@@ -150,8 +163,9 @@ export function useCollabSync(copySave?: RoomLinkStamp): void {
 
       // The room's layout wins, including when the room refused ours
       lastSyncedLayoutRef.current = remoteLayout;
-      if (JSON.stringify(remoteLayout) !== JSON.stringify(currentLocal)) {
-        importRoomLayout(remoteLayout);
+      const roomCopy = toLocal(remoteLayout);
+      if (JSON.stringify(roomCopy) !== JSON.stringify(storeLayout)) {
+        importRoomLayout(roomCopy);
       }
       syncStateRef.current = 'ready';
       return;
@@ -178,22 +192,23 @@ export function useCollabSync(copySave?: RoomLinkStamp): void {
     // than be dropped. The room syncs whole layouts, so this later write is
     // what every browser ends up with.
     const { layout: storeLayout, lastEditSource: storeEditSource } = useLayoutStore.getState();
+    const storeCopy = toRoom(storeLayout);
     if (
       !writeRefusedRef.current &&
       storeEditSource === 'local' &&
-      JSON.stringify(storeLayout) !== JSON.stringify(lastSyncedLayoutRef.current)
+      JSON.stringify(storeCopy) !== JSON.stringify(lastSyncedLayoutRef.current)
     ) {
-      writeRefusedRef.current = !updateRemoteLayout(storeLayout);
+      writeRefusedRef.current = !updateRemoteLayout(storeCopy);
       if (!writeRefusedRef.current) {
-        lastSyncedLayoutRef.current = storeLayout;
+        lastSyncedLayoutRef.current = storeCopy;
         return;
       }
     }
 
     // Another browser's change, whatever this browser's last edit was
     lastSyncedLayoutRef.current = remoteLayout;
-    importRoomLayout(remoteLayout);
-  }, [remoteLayout, updateRemoteLayout, copySave, linkUpdatedAt, linkFingerprint]);
+    importRoomLayout(toLocal(remoteLayout));
+  }, [remoteLayout, updateRemoteLayout, copySave, linkUpdatedAt, linkFingerprint, toLocal, toRoom]);
 
   // Effect: Local → Remote sync
   // When local layout changes, push to Liveblocks
@@ -201,7 +216,7 @@ export function useCollabSync(copySave?: RoomLinkStamp): void {
     // The remote effect runs first in a commit and can take a room change that
     // replaces this render's layout. Read the store as it is now, so a local
     // action that left the layout unchanged never pushes the replaced layout.
-    const { layout: currentLayout, lastEditSource: currentEditSource } = useLayoutStore.getState();
+    const { layout: storeLayout, lastEditSource: currentEditSource } = useLayoutStore.getState();
 
     // Only sync local edits
     if (currentEditSource !== 'local') {
@@ -214,6 +229,7 @@ export function useCollabSync(copySave?: RoomLinkStamp): void {
     }
 
     // Skip if this is the same layout we just received
+    const currentLayout = toRoom(storeLayout);
     if (
       lastSyncedLayoutRef.current &&
       JSON.stringify(currentLayout) === JSON.stringify(lastSyncedLayoutRef.current)
@@ -236,9 +252,9 @@ export function useCollabSync(copySave?: RoomLinkStamp): void {
       JSON.stringify(remote) !== JSON.stringify(lastSyncedLayoutRef.current)
     ) {
       lastSyncedLayoutRef.current = remote;
-      importRoomLayout(remote);
+      importRoomLayout(toLocal(remote));
     }
-  }, [localLayout, lastEditSource, updateRemoteLayout]);
+  }, [localLayout, lastEditSource, updateRemoteLayout, toLocal, toRoom]);
 
   // Cleanup effect: clear pending timeout on unmount only
   // Using empty deps [] ensures this only runs on unmount, not on re-renders

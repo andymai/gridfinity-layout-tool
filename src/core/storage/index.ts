@@ -66,6 +66,7 @@ export {
   importLayoutResult,
   restoreEmbeddedDesigns,
   restoreSharedDesigns,
+  sharedDesignIds,
   collectLinkedDesigns,
   type LinkedDesignExport,
   exportPrintListTSV,

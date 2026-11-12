@@ -107,8 +107,28 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
         return false;
       }
 
-      const { layout, metadata } = result.value;
+      const { metadata, linkedDesigns, meshFiles } = result.value;
       const permission = metadata.permission;
+      if (meshFiles) {
+        void import('@/shared/generation/meshCloud').then(({ fetchSharedMeshFiles }) =>
+          fetchSharedMeshFiles(meshFiles)
+        );
+      }
+
+      // The same restore as opening the link, or custom bins show no model.
+      let layout = result.value.layout;
+      let designIds: Record<string, string> | undefined;
+      if (linkedDesigns && linkedDesigns.length > 0) {
+        try {
+          const { restoreSharedDesigns, sharedDesignIds } = await import('@/core/storage');
+          layout = await restoreSharedDesigns(entry.sourceShareId, layout, linkedDesigns);
+          designIds = sharedDesignIds(entry.sourceShareId, linkedDesigns);
+        } catch (e) {
+          console.error('Failed to restore shared bin designs:', e);
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- TS keeps the check above across this await, but an unmount can clear the ref
+        if (!mountedRef.current) return false;
+      }
 
       // Update the entry with latest info
       const preview = computePreview(layout);
@@ -131,7 +151,8 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
         metadata.authorName,
         entry.sourceShareId,
         permission,
-        metadata.lastUpdatedAt
+        metadata.lastUpdatedAt,
+        designIds
       );
 
       setStatus('idle');

@@ -14,6 +14,7 @@ import {
   exportLayoutJSONWithDesigns,
   restoreEmbeddedDesigns,
   restoreSharedDesigns,
+  sharedDesignIds,
 } from '@/core/storage';
 import type { Layout } from '@/core/types';
 import { binId, categoryId, designId, gridUnits, heightUnits, layerId } from '@/core/types';
@@ -1237,6 +1238,23 @@ describe('storage-share', () => {
       await restoreSharedDesigns('zzz999ZZZ999', layoutLinkedTo('remote-design-1'), designs);
 
       expect(mockSaveDesign.mock.calls[0][0].id).not.toBe(mockSaveDesign.mock.calls[1][0].id);
+    });
+
+    it('maps each owner id to the local id that the restore saves it under', async () => {
+      mockSaveDesign.mockImplementation((input: { id: string }) =>
+        Promise.resolve(savedAs(input.id))
+      );
+      const designs = [
+        { id: 'remote-design-1', name: 'Socket Tray', params: { ...DEFAULT_BIN_PARAMS } },
+        { id: 'remote-design-2', name: 'Bit Tray', params: { ...DEFAULT_BIN_PARAMS } },
+      ];
+
+      await restoreSharedDesigns(SHARE_ID, layoutLinkedTo('remote-design-1'), designs);
+
+      expect(sharedDesignIds(SHARE_ID, designs)).toEqual({
+        'remote-design-1': mockSaveDesign.mock.calls[0][0].id,
+        'remote-design-2': mockSaveDesign.mock.calls[1][0].id,
+      });
     });
 
     it('keeps the bin unlinked when the design fails to persist', async () => {

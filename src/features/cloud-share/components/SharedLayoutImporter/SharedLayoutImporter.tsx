@@ -110,7 +110,8 @@ export function SharedLayoutImporter() {
       authorName?: string,
       cloudShareId?: string,
       permission?: 'view' | 'edit',
-      linkUpdatedAt?: string
+      linkUpdatedAt?: string,
+      designIds?: Readonly<Record<string, string>>
     ) => {
       activateLayout(layout, SHARED_PREVIEW_ID, `Viewing shared layout: ${layout.name}`);
       setSharedLayoutPreview(
@@ -119,7 +120,8 @@ export function SharedLayoutImporter() {
         authorName,
         cloudShareId,
         permission,
-        linkUpdatedAt
+        linkUpdatedAt,
+        designIds
       );
     },
     [activateLayout, setSharedLayoutPreview]
@@ -249,10 +251,12 @@ export function SharedLayoutImporter() {
       //. A storage failure degrades to the plain layout rather than
       // dropping the share.
       let layout = result.value.layout;
+      let designIds: Record<string, string> | undefined;
       if (linkedDesigns && linkedDesigns.length > 0) {
         try {
-          const { restoreSharedDesigns } = await import('@/core/storage');
+          const { restoreSharedDesigns, sharedDesignIds } = await import('@/core/storage');
           layout = await restoreSharedDesigns(initialCloudShareId, layout, linkedDesigns);
+          designIds = sharedDesignIds(initialCloudShareId, linkedDesigns);
         } catch (e) {
           console.error('Failed to restore shared bin designs:', e);
         }
@@ -275,7 +279,8 @@ export function SharedLayoutImporter() {
         metadata.authorName,
         initialCloudShareId,
         permission,
-        metadata.lastUpdatedAt
+        metadata.lastUpdatedAt,
+        designIds
       );
     };
 

@@ -345,6 +345,20 @@ function sharedDesignLocalId(shareId: string, sourceDesignId: string): DesignId 
 }
 
 /**
+ * The local id that {@link restoreSharedDesigns} gives each design of a share,
+ * keyed by the owner's id. A collab room keeps the owner's ids, so a visitor
+ * needs this map in both directions.
+ */
+export function sharedDesignIds(
+  shareId: string,
+  designs: ReadonlyArray<{ readonly id: string }>
+): Record<string, DesignId> {
+  return Object.fromEntries(
+    designs.map((design) => [design.id, sharedDesignLocalId(shareId, design.id)])
+  );
+}
+
+/**
  * Persist the designs that travelled with a cloud share and repoint the
  * layout's bins at the local copies.
  *
