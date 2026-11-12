@@ -64,6 +64,7 @@ Bins go into the stash in these ways:
 | Select bins and click <Ui k="inspector.toStash" /> in the inspector | The selected bins move to the stash               |
 | <kbd>Shift</kbd>+click a size in <Ui k="layers.sizeSelector" />     | A new bin of that size goes to the stash          |
 | Delete a layer                                                      | All bins on that layer move to the stash          |
+| Clear a layer                                                       | All bins on that layer move to the stash          |
 | Make the drawer smaller                                             | Bins that no longer fit move to the stash         |
 | Turn off half-grid mode and accept the move                         | Bins with half-unit sizes or positions move there |
 | Place a saved design when the layout has no free space              | The linked bin goes to the stash                  |
@@ -73,10 +74,6 @@ Bins go into the stash in these ways:
 To use a stashed bin, drag it from the stash onto the grid. Press <kbd>R</kbd> to turn a stashed bin before you place it. [Put bins in the stash](../layouts/placing-bins#put-bins-in-the-stash) shows the other ways to move bins in and out of the stash.
 
 <Screenshot id="concepts-layouts-stash-place" alt="A click selects the USB sticks bin in the stash, and R turns it. A drag then puts the bin on the grid." spec="Clip. Layout editor, drawer 6 × 3 with two bins on the grid and two in the stash. Click the 2 × 1 USB sticks bin in the stash, press R, then drag it into column 5." />
-
-::: warning
-Clear a layer only when you want to delete its bins. The clear button in the active layer panel shows how many bins the layer holds, and it deletes all of them. It doesn't move them to the stash. If you clear a layer by mistake, press <kbd>Ctrl</kbd>+<kbd>Z</kbd> (<kbd>Cmd</kbd>+<kbd>Z</kbd> on a Mac) to get the bins back.
-:::
 
 ::: warning
 Use <Ui k="staging.clearAll" /> only when you want to delete every bin in the stash. If you clear it by mistake, press <kbd>Ctrl</kbd>+<kbd>Z</kbd> (<kbd>Cmd</kbd>+<kbd>Z</kbd> on a Mac) to get the bins back.

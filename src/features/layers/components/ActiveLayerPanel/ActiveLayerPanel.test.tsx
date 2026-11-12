@@ -297,7 +297,7 @@ describe('ActiveLayerPanel', () => {
       expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument();
     });
 
-    it('clears bins on confirm', () => {
+    it('moves the bins to the stash on confirm', () => {
       useLayoutStore.getState().addBin({
         layerId: layerId('layer1'),
         x: gridUnits(0),
@@ -314,7 +314,9 @@ describe('ActiveLayerPanel', () => {
       fireEvent.click(screen.getByText('Clear 1 bin'));
       fireEvent.click(screen.getByText('Confirm'));
 
-      expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
+      const { bins } = useLayoutStore.getState().layout;
+      expect(bins).toHaveLength(1);
+      expect(bins[0]).toMatchObject({ layerId: STAGING_ID, x: 0, y: 0 });
     });
   });
 

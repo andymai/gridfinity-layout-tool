@@ -370,10 +370,11 @@ export function useActionHandlers(): Record<string, ActionHandler> {
         if (layerBins.length === 0) return;
         batch(() => {
           for (const b of layerBins) {
-            const result = deleteBin(b.id);
-            if (isErr(result)) break;
+            if (isErr(moveBinToStaging(b.id))) break;
           }
+          setSelectedBins([]);
         });
+        addToast(t('toast.clearComplete', { count: layerBins.length }), 'success');
       },
     };
 

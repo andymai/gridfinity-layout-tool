@@ -1,0 +1,63 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
+import { useLayerFillActions } from './useLayerFillActions';
+import { useLayoutStore } from '@/core/store';
+import { useSelectionStore } from '@/core/store/selection';
+import { useToastStore } from '@/core/store/toast';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
+import { STAGING_ID } from '@/core/constants';
+import { createTestBin, createTestLayout, resetAllStores } from '@/test/testUtils';
+import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
+
+const L1 = layerId('layer1');
+const L2 = layerId('layer2');
+
+function placement(id: string) {
+  const bin = useLayoutStore.getState().layout.bins.find((b) => b.id === binId(id));
+  return bin && { layerId: bin.layerId, x: bin.x, y: bin.y };
+}
+
+describe('Clear layer', () => {
+  beforeEach(() => {
+    resetAllStores();
+    useLayoutStore.setState({
+      layout: createTestLayout({
+        layers: [
+          { id: L1, name: 'Layer 1', height: heightUnits(3) },
+          { id: L2, name: 'Layer 2', height: heightUnits(3) },
+        ],
+        bins: [
+          createTestBin({ id: binId('a'), layerId: L1, x: gridUnits(0), y: gridUnits(0) }),
+          createTestBin({ id: binId('b'), layerId: L1, x: gridUnits(3), y: gridUnits(2) }),
+          createTestBin({ id: binId('above'), layerId: L2, x: gridUnits(0), y: gridUnits(0) }),
+        ],
+      }),
+    });
+    useSelectionStore.getState().setActiveLayer(L1);
+    useSelectionStore.getState().setSelectedBins([binId('a')]);
+    useHistoryStore.getState().clear();
+  });
+
+  it('moves the bins on the active layer to the stash, as one undo step', () => {
+    const { result } = renderHook(() => useLayerFillActions());
+
+    act(() => {
+      result.current.confirmClear();
+    });
+
+    expect(useLayoutStore.getState().layout.bins).toHaveLength(3);
+    expect(placement('a')).toEqual({ layerId: STAGING_ID, x: 0, y: 0 });
+    expect(placement('b')).toEqual({ layerId: STAGING_ID, x: 3, y: 2 });
+    expect(placement('above')).toEqual({ layerId: L2, x: 0, y: 0 });
+    expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
+    expect(useToastStore.getState().toasts.at(-1)?.message).toBe('Cleared 2 bins from layer');
+    expect(useHistoryStore.getState().past).toHaveLength(1);
+
+    act(() => {
+      useHistoryStore.getState().undo();
+    });
+
+    expect(placement('a')).toEqual({ layerId: L1, x: 0, y: 0 });
+    expect(placement('b')).toEqual({ layerId: L1, x: 3, y: 2 });
+  });
+});
