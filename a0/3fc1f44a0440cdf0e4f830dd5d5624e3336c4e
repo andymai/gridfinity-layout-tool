@@ -1,0 +1,25 @@
+src/test/reducedMotion.test.ts
+  s_1cc363bb3cc76d::t_5263cc2fd919f6 1-53
+src/design-system/docs/TOKENS.md
+  s_1cc363bb3cc76d::t_d6c309789e5390 172
+src/index.css
+  s_1cc363bb3cc76d::t_0bd669c3164339 1277-1278
+src/shell/styles/themes.css
+  s_1cc363bb3cc76d::t_455625a770b546 261-262
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a03fc1f44a0440cdf0e4f830dd5d5624e3336c4e",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
