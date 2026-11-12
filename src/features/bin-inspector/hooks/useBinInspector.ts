@@ -15,8 +15,8 @@ import { batch } from '@/core/cqrs';
 import { useSelectionStore } from '@/core/store/selection';
 import { useMobileStore } from '@/core/store/mobile';
 import { useMutations } from '@/shared/contexts';
-import { calcBedCapacityForBin, CONSTRAINTS, STAGING_ID } from '@/core/constants';
-import { useBinOverhangSpan } from '@/shared/hooks/useBinOverhangSpan';
+import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { useBinBedCapacity } from '@/shared/hooks/useBinBedCapacity';
 import { maxClearanceHeight } from '@/shared/utils/restingStack';
 import { maxPlaceableHeight } from '@/shared/utils/validationPlacement';
 import { useRestingStack } from '@/shared/hooks/useRestingStack';
@@ -31,7 +31,6 @@ import {
   layerId as toLayerId,
   categoryId as toCategoryId,
   roundHeightUnits,
-  effectiveGridUnitMmY,
   HEIGHT_UNIT_STEP,
 } from '@/core/types';
 import { useTranslation } from '@/i18n';
@@ -70,7 +69,7 @@ export function useBinInspector(): UseBinInspectorReturn {
   const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
 
   const layout = useLayoutStore((state) => state.layout);
-  const overhangSpanFor = useBinOverhangSpan();
+  const bedCapacityFor = useBinBedCapacity();
   const { updateBin, deleteBins, moveBinsToStaging } = useMutations();
 
   const selectedBins = useMemo(
@@ -82,7 +81,6 @@ export function useBinInspector(): UseBinInspectorReturn {
   const category = bin ? (layout.categories.find((c) => c.id === bin.category) ?? null) : null;
   const layer = bin ? (layout.layers.find((l) => l.id === bin.layerId) ?? null) : null;
 
-  const gridUnitMmY = effectiveGridUnitMmY(layout);
   const restingStack = useRestingStack(layout.bins, layout.layers);
   const constraints = useMemo<BinConstraints>(() => {
     if (!bin) {
@@ -97,15 +95,7 @@ export function useBinInspector(): UseBinInspectorReturn {
       };
     }
 
-    const maxGrid = calcBedCapacityForBin(
-      bin.width,
-      bin.depth,
-      layout.printBedSize,
-      layout.gridUnitMm,
-      layout.printBedDepth,
-      gridUnitMmY,
-      overhangSpanFor(bin)
-    );
+    const maxGrid = bedCapacityFor(bin);
     const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
 
     // For bins in staging, use full drawer height range
@@ -159,7 +149,7 @@ export function useBinInspector(): UseBinInspectorReturn {
       heightRange: `${minHeight}u – ${maxHeight}u`,
       maxHeightReason: limitedByStack ? 'remaining_space' : 'drawer_height',
     };
-  }, [bin, layer, layout, restingStack, gridUnitMmY, overhangSpanFor]);
+  }, [bin, layer, layout, restingStack, bedCapacityFor]);
 
   // Collect all unique custom property keys from all bins in the layout (for suggestions)
   const existingPropertyKeys = useMemo(() => {

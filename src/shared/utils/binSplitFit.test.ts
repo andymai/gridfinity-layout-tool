@@ -208,6 +208,61 @@ describe('binBedFit across the diagonal', () => {
       chunk: { width: 1.5, depth: 7 },
       squareOn: { width: 1.5, depth: 7 },
       diagonal: false,
+      keptWhole: false,
+    });
+  });
+});
+
+describe('binBedFit with splitting turned off', () => {
+  const long = params({ width: 6, depth: 1 });
+
+  it('splits a design that predates the switch, as it always did', () => {
+    const { splitToFitBed: _absent, ...legacy } = long;
+    const fit = binBedFit(legacy, BED);
+    expect(fit.chunk).toEqual({ width: 4, depth: 1 });
+    expect(fit.keptWhole).toBe(false);
+  });
+
+  it('splits with the switch on', () => {
+    const fit = binBedFit({ ...long, splitToFitBed: true }, BED);
+    expect(fit.chunk).toEqual({ width: 4, depth: 1 });
+    expect(binSplitChunkUnits({ ...long, splitToFitBed: true }, BED)).toEqual({
+      width: 4,
+      depth: 1,
+    });
+  });
+
+  it('keeps a bin larger than the bed whole and says so', () => {
+    const off = { ...long, splitToFitBed: false };
+    expect(binBedFit(off, BED)).toEqual({
+      chunk: { width: 6, depth: 1 },
+      squareOn: { width: 6, depth: 1 },
+      diagonal: false,
+      keptWhole: true,
+    });
+    expect(binSplitChunkUnits(off, BED)).toEqual({ width: 6, depth: 1 });
+  });
+
+  it('says nothing about a bin that fits', () => {
+    expect(binBedFit(params({ splitToFitBed: false }), BED).keptWhole).toBe(false);
+  });
+
+  it('counts the overhang when it decides the bin is larger than the bed', () => {
+    const fit = binBedFit(
+      params({ splitToFitBed: false, overhang: overhang({ left: 61.5, right: 42 }) }),
+      BED
+    );
+    expect(fit.chunk).toEqual({ width: 4, depth: 4 });
+    expect(fit.keptWhole).toBe(true);
+  });
+
+  it('offers no split for a bin that fits only lying diagonally', () => {
+    const fit = binBedFit(params({ width: 1.5, depth: 7, splitToFitBed: false }), 256);
+    expect(fit).toEqual({
+      chunk: { width: 1.5, depth: 7 },
+      squareOn: { width: 1.5, depth: 7 },
+      diagonal: true,
+      keptWhole: false,
     });
   });
 });

@@ -73,7 +73,7 @@ No. Magnet holes are an option, and a new baseplate has none. Add magnet holes t
 
 ### What happens when a bin is larger than my print bed?
 
-It splits into pieces that fit. The Layout Tool splits a bin or a baseplate that is too large for your print bed. A long bin that fits only from corner to corner of the bed still prints in one piece. See [Fitting the print bed](../concepts/print-bed-fit).
+It splits into pieces that fit. The Layout Tool splits a bin or a baseplate that is too large for your print bed. A long bin that fits only from corner to corner of the bed still prints in one piece. To cut a bin in your slicer, turn off <Ui k="binDesigner.splitToFitBed" /> in its design. See [Fitting the print bed](../concepts/print-bed-fit).
 
 ### Which file format do I export: STL, 3MF or STEP?
 

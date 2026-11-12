@@ -23,6 +23,7 @@ import {
   registryEdgeFields,
   registryHeightFields,
   registryOverhangFields,
+  registrySplitFields,
   registrySlantFields,
   registryKnifeRestFields,
 } from '@/features/bin-designer/store/customBinRegistry';
@@ -247,6 +248,7 @@ export function useCreateFromBin(): void {
           ...registryEdgeFields(binParams),
           ...registryHeightFields(binParams),
           ...registryOverhangFields(binParams),
+          ...registrySplitFields(binParams),
           ...registrySlantFields(binParams),
           ...registryKnifeRestFields(binParams),
           updatedAt: design.updatedAt,

@@ -251,6 +251,29 @@ describe('useLayoutExport', () => {
     expect(h.bridge.exportBin).not.toHaveBeenCalled();
   });
 
+  it('exports an oversized bin whole when its design turns splitting off', async () => {
+    h.loadDesign.mockImplementation((id: string) =>
+      Promise.resolve(design(id, 'Wide', { width: 11, splitToFitBed: false }))
+    );
+    useLayoutStore.setState({
+      layout: createTestLayout({
+        name: 'L',
+        bins: [createTestBin({ linkedDesignId: designId('d1') })],
+      }),
+    });
+    const { result } = renderHook(() => useLayoutExport());
+
+    const success = await result.current.exportLayout('stl', 'z', CONFIG);
+
+    expect(success).toBe(true);
+    expect(h.bridge.exportSplitBin).not.toHaveBeenCalled();
+    expect(h.bridge.exportBin).toHaveBeenCalledTimes(1);
+    expect(h.bridge.exportBin).toHaveBeenCalledWith(
+      expect.objectContaining({ width: 11, splitToFitBed: false }),
+      'stl'
+    );
+  });
+
   it('keeps the colors of a body-only multi-color bin in the 3MF project (#4696)', async () => {
     h.loadDesign.mockImplementation((id: string) =>
       Promise.resolve(

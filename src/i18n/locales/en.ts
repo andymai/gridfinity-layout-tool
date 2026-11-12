@@ -531,6 +531,8 @@ const en: Record<string, string> = {
   'inspector.split.title': 'Oversized for print bed',
   'inspector.split.message':
     "{widthMm}×{depthMm}mm doesn't fit your {bedSize}mm print bed, so it prints in pieces.",
+  'inspector.split.wholeMessage':
+    "{widthMm}×{depthMm}mm doesn't fit your {bedSize}mm print bed. Its design turns splitting off, so it prints in one piece.",
   'inspector.split.piecesNeeded_one': '{count} piece needed',
   'inspector.split.piecesNeeded_other': '{count} pieces needed',
   'inspector.split.limitTitle':
@@ -1826,6 +1828,7 @@ const en: Record<string, string> = {
 
   // Grid Editor
   'grid.exceedsPrintSize': 'Exceeds print size, will be split',
+  'grid.exceedsPrintSizeWhole': 'Exceeds print size, prints in one piece',
   'grid.all': 'All',
   'grid.allShowAllLayers': 'All: Show all layers',
   'grid.bananaForScale': 'Banana for scale',
@@ -1879,6 +1882,7 @@ const en: Record<string, string> = {
   'grid.side': 'Side',
   'grid.sideView': 'Side view',
   'grid.split': 'Split',
+  'grid.oversized': 'Oversized',
   'grid.stack': 'Stack',
   'grid.stackShowActiveLayerAndBelow': 'Stack: Show active layer and below',
   'grid.toggle': 'Toggle',
@@ -3183,6 +3187,8 @@ const en: Record<string, string> = {
   'binDesigner.panel.viewAsScroll': 'Single scroll',
   'binDesigner.panel.viewAsRail': 'Compact sections',
   'binDesigner.printFit.fits': 'Fits your {width} × {depth} mm print bed.',
+  'binDesigner.printFit.keptWhole':
+    'Larger than your {width} × {depth} mm print bed. It exports in one piece.',
   'binDesigner.printFit.fitsDiagonally':
     'Fits your {width} × {depth} mm print bed laid diagonally. Turn it in your slicer.',
   'binDesigner.printFit.slantTooLarge':
@@ -3324,6 +3330,9 @@ const en: Record<string, string> = {
   'binDesigner.splitAxisWidth': 'width',
   'binDesigner.splitAxisDepth': 'depth',
   'binDesigner.splitAxisBoth': 'width × depth',
+  'binDesigner.splitToFitBed': 'Split to fit the print bed',
+  'binDesigner.splitToFitBedHint':
+    'Turn off to export a large bin in one piece and split it in your slicer.',
   'binDesigner.splitConnectors': 'Alignment connectors',
   'binDesigner.splitConnectorsUnavailableLightweight':
     'Unavailable on lightweight bins: the shelled floor has no solid material for the scarf.',

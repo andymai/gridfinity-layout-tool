@@ -13,7 +13,7 @@ import type { ControlAvailabilityContext } from './designerControlRegistry';
 const ALL_AVAILABLE: ControlAvailabilityContext = {
   style: 'standard',
   hasText: true,
-  needsSplit: true,
+  bedFitShown: true,
   viewMode: 'rail',
   slideTrayEnabled: true,
   scanAvailable: true,
@@ -44,7 +44,8 @@ const GOLDEN: { query: string; expect: string[] }[] = [
   { query: 'flush', expect: ['Finish'] },
   { query: 'nozzle', expect: ['Nozzle size'] },
   { query: 'grid unit', expect: ['Grid unit'] },
-  { query: 'split', expect: ['Alignment connectors'] },
+  { query: 'split', expect: ['Alignment connectors', 'Split to fit the print bed'] },
+  { query: 'slicer', expect: ['Split to fit the print bed'] },
 ];
 
 describe('designer search coverage (golden set)', () => {

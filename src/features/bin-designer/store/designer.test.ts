@@ -372,6 +372,27 @@ describe('useDesignerStore', () => {
     });
   });
 
+  describe('setSplitToFitBed', () => {
+    it('stores splitting turned off, undoably, without regenerating the mesh', () => {
+      const epoch = useDesignerStore.getState().generation.epoch;
+      useDesignerStore.getState().setSplitToFitBed(false);
+      expect(useDesignerStore.getState().params.splitToFitBed).toBe(false);
+      expect(useDesignerStore.getState().generation.epoch).toBe(epoch);
+      expect(useDesignerStore.getState().history.past).toHaveLength(1);
+
+      useDesignerStore.getState().undo();
+      expect(useDesignerStore.getState().params.splitToFitBed).toBeUndefined();
+    });
+
+    // `params` is hashed wholesale for the community duplicate guard, so turning
+    // splitting back on must leave no key behind.
+    it('removes the key when splitting is turned back on', () => {
+      useDesignerStore.getState().setSplitToFitBed(false);
+      useDesignerStore.getState().setSplitToFitBed(true);
+      expect('splitToFitBed' in useDesignerStore.getState().params).toBe(false);
+    });
+  });
+
   describe('width/depth change auto-resizes cellMask', () => {
     it('preserves the existing mask shape when growing the bin', () => {
       useDesignerStore.getState().setParam('width', 2);

@@ -121,6 +121,12 @@ export interface BedCapacity {
    * an angle. The capacity is then the bin's own size, so it reads as fitting.
    */
   readonly diagonal?: boolean;
+  /**
+   * Set when the bin overruns the bed and its design turns splitting off: the
+   * capacity a split would have cut to. The capacity itself is then the bin's
+   * own size, so nothing cuts it. See {@link keepWholeCapacity}.
+   */
+  readonly keptWhole?: { readonly width: number; readonly depth: number };
 }
 
 /** How far a bin's body reaches past its footprint across each axis, in mm. */
@@ -192,6 +198,20 @@ export function calcBedCapacityForBin(
   )
     ? { width: binWidth, depth: binDepth, diagonal: true }
     : capacity;
+}
+
+/** `capacity` for a bin whose design turns splitting off. */
+export function keepWholeCapacity(
+  binWidth: number,
+  binDepth: number,
+  capacity: BedCapacity
+): BedCapacity {
+  if (binWidth <= capacity.width && binDepth <= capacity.depth) return capacity;
+  return {
+    width: binWidth,
+    depth: binDepth,
+    keptWhole: { width: capacity.width, depth: capacity.depth },
+  };
 }
 
 export const STAGING_ID = '__staging__' as LayerId;

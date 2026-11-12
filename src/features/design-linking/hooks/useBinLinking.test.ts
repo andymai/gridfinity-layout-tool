@@ -31,6 +31,7 @@ vi.mock('@/features/bin-designer/store/customBinRegistry', () => ({
   registryEdgeFields: vi.fn(() => ({})),
   registryHeightFields: vi.fn(() => ({})),
   registryOverhangFields: vi.fn(() => ({})),
+  registrySplitFields: vi.fn(() => ({})),
   registrySlantFields: vi.fn(() => ({})),
 }));
 

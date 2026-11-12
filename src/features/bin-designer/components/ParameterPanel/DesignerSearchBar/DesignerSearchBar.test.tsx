@@ -16,7 +16,7 @@ describe('DesignerSearchBar', () => {
   });
 
   const open = () => {
-    render(<DesignerSearchBar viewMode="rail" needsSplit={false} />);
+    render(<DesignerSearchBar viewMode="rail" bedFitShown={false} />);
     const input = screen.getByRole('combobox');
     fireEvent.focus(input);
     return input;

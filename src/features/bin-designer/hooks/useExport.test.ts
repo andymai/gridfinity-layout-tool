@@ -433,6 +433,28 @@ describe('useExport', () => {
     expect(result.current.splitPieceCount).toBe(2);
   });
 
+  it('keeps an oversized bin whole when its design turns splitting off', () => {
+    act(() => {
+      useDesignerStore.getState().setParams({ width: 8 });
+      useDesignerStore.getState().setSplitToFitBed(false);
+    });
+
+    const { result } = renderHook(() => useExport());
+    expect(result.current.needsSplit).toBe(false);
+    expect(result.current.keptWhole).toBe(true);
+    expect(result.current.splitPieceCount).toBe(1);
+  });
+
+  it('splits the same bin with the switch on', () => {
+    act(() => {
+      useDesignerStore.getState().setParams({ width: 8 });
+    });
+
+    const { result } = renderHook(() => useExport());
+    expect(result.current.keptWhole).toBe(false);
+    expect(result.current.needsSplit).toBe(true);
+  });
+
   it('provides downloadSplit function', () => {
     const { result } = renderHook(() => useExport());
     expect(result.current.downloadSplit).toBeTypeOf('function');

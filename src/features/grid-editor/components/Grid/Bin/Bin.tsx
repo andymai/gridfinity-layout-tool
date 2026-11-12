@@ -23,7 +23,7 @@ import { ICON_PATHS, WARNING_ICON } from './binConstants';
 import type { BinProps } from './binPropsAreEqual';
 import { binPropsAreEqual } from './binPropsAreEqual';
 import { useBinHighlighting } from './useBinHighlighting';
-import { useBinNeedsSplit } from './useBinNeedsSplit';
+import { useBinBedFit } from './useBinBedFit';
 import { useBinSelection } from './useBinSelection';
 import { useBinPointerInteraction } from './useBinPointerInteraction';
 
@@ -107,7 +107,11 @@ function BinComponent({
   // Hide resize handles during multi-select
   const isMultiSelect = selectedBinIds.length > 1;
 
-  const needsSplit = useBinNeedsSplit(bin);
+  const bedFit = useBinBedFit(bin);
+  const overBed = bedFit !== 'fits';
+  const overBedTitle = t(
+    bedFit === 'keptWhole' ? 'grid.exceedsPrintSizeWhole' : 'grid.exceedsPrintSize'
+  );
   const riseKey = useLinkedRiseKey();
   const restingZ = useLayoutStore(
     (state) =>
@@ -458,10 +462,10 @@ function BinComponent({
           >
             {primaryText}
             {/* Split badge (only when dimensions are primary) */}
-            {!showLabel && needsSplit && (
+            {!showLabel && overBed && (
               <span
                 className="ml-0.5 rounded-sm"
-                title={t('grid.exceedsPrintSize')}
+                title={overBedTitle}
                 style={{
                   fontSize: `${Math.round(secondaryFontSize * 0.9)}px`,
                   padding: '0px 3px',
@@ -470,7 +474,7 @@ function BinComponent({
                   fontWeight: 500,
                 }}
               >
-                {t('grid.split')}
+                {t(bedFit === 'keptWhole' ? 'grid.oversized' : 'grid.split')}
               </span>
             )}
           </div>
@@ -487,12 +491,12 @@ function BinComponent({
               }}
             >
               {secondaryText}
-              {needsSplit && (
+              {overBed && (
                 <span
                   className="ml-1"
-                  title={t('grid.exceedsPrintSize')}
+                  title={overBedTitle}
                   style={{ color: 'var(--color-warning)' }}
-                  aria-label={t('grid.exceedsPrintSize')}
+                  aria-label={overBedTitle}
                 >
                   {WARNING_ICON}
                 </span>

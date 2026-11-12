@@ -109,7 +109,8 @@ function PrintBedIndicator({
 }
 
 /**
- * Warning indicator when bin exceeds print bed size and needs splitting.
+ * Warning indicator when bin exceeds print bed size and needs splitting, or
+ * prints in one piece because its design turns splitting off.
  * Shows both a visual indicator and text explanation.
  */
 export function SplitWarning({
@@ -122,11 +123,12 @@ export function SplitWarning({
   compact = false,
 }: SplitWarningProps) {
   const t = useTranslation();
+  const { keptWhole } = maxGridUnits;
   const needsSplit = binWidth > maxGridUnits.width || binDepth > maxGridUnits.depth;
   const pieces =
     Math.ceil(binWidth / maxGridUnits.width) * Math.ceil(binDepth / maxGridUnits.depth);
 
-  if (!needsSplit) {
+  if (!needsSplit && !keptWhole) {
     // Show success state - bin fits print bed
     return (
       <div className="flex items-center gap-2 p-2 rounded-lg bg-surface-elevated">
@@ -168,7 +170,11 @@ export function SplitWarning({
             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
           />
         </svg>
-        <span className="text-sm">{t('inspector.split.piecesNeeded', { count: pieces })}</span>
+        <span className="text-sm">
+          {keptWhole
+            ? t('grid.exceedsPrintSizeWhole')
+            : t('inspector.split.piecesNeeded', { count: pieces })}
+        </span>
       </div>
     );
   }
@@ -178,7 +184,7 @@ export function SplitWarning({
       <PrintBedIndicator
         binWidth={binWidth}
         binDepth={binDepth}
-        maxUnits={maxGridUnits}
+        maxUnits={keptWhole ?? maxGridUnits}
         gridUnitMm={gridUnitMm}
         printBedWidth={printBedSize}
         printBedDepth={printBedDepth}
@@ -201,7 +207,7 @@ export function SplitWarning({
           <span className="font-medium">{t('inspector.split.title')}</span>
         </div>
         <p className="text-xs opacity-80">
-          {t('inspector.split.message', {
+          {t(keptWhole ? 'inspector.split.wholeMessage' : 'inspector.split.message', {
             widthMm: binWidth * gridUnitMm,
             depthMm: binDepth * gridUnitMm,
             bedSize: `${printBedSize}×${printBedDepth}`,

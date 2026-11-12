@@ -9,7 +9,7 @@ import {
 const allAvailable: ControlAvailabilityContext = {
   style: 'standard',
   hasText: true,
-  needsSplit: true,
+  bedFitShown: true,
   viewMode: 'rail',
   slideTrayEnabled: true,
   scanAvailable: true,
@@ -18,7 +18,7 @@ const allAvailable: ControlAvailabilityContext = {
 const restricted: ControlAvailabilityContext = {
   style: 'solid',
   hasText: false,
-  needsSplit: false,
+  bedFitShown: false,
   viewMode: 'scroll',
   slideTrayEnabled: false,
   scanAvailable: false,

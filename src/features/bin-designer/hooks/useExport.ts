@@ -101,6 +101,8 @@ interface UseExportReturn {
    * prints whole and a split is only offered.
    */
   readonly fitsDiagonally: boolean;
+  /** The bin overruns the bed and its design turns splitting off, so it exports whole. */
+  readonly keptWhole: boolean;
   /** Number of pieces the bin would be split into */
   readonly splitPieceCount: number;
   /**
@@ -176,8 +178,7 @@ export function useExport(): UseExportReturn {
   );
   const chunkLimit = bedFit.squareOn;
   const exceedsSquareOn = params.width > chunkLimit.width || params.depth > chunkLimit.depth;
-  const fitsDiagonally = bedFit.diagonal;
-  const needsSplit = exceedsSquareOn && !fitsDiagonally;
+  const needsSplit = exceedsSquareOn && !bedFit.diagonal;
 
   const splitPieceCount = useMemo(
     () =>
@@ -676,7 +677,8 @@ export function useExport(): UseExportReturn {
     estimates,
     downloadBin,
     needsSplit,
-    fitsDiagonally,
+    fitsDiagonally: bedFit.diagonal,
+    keptWhole: bedFit.keptWhole,
     splitPieceCount,
     downloadSplit,
   };

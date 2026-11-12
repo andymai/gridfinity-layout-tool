@@ -13,7 +13,7 @@ import type {
 import type { OverhangConfig } from '@/shared/types/bin';
 import { getGridBins } from '@/shared/utils';
 import { getSplitPositions } from '@/shared/utils/splitPositions';
-import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
+import { binBedFit } from '@/shared/utils/binSplitFit';
 import { overhangKey, resolveOverhang } from '@/shared/utils/overhang';
 import type { SlantPlan } from '@/shared/utils/slantPlan';
 import {
@@ -172,13 +172,23 @@ export interface PrintSplitFit {
    * design's own included. A slanted bin is never split. Omit for upright bins.
    */
   readonly slantFor?: (bin: Bin) => SlantPlan | null;
+  /**
+   * The placed bin's design split switch (`BinParams.splitToFitBed`): false
+   * keeps a bin larger than the bed whole. The switch belongs to the design,
+   * which the group key already separates by. Omit when every bin splits.
+   */
+  readonly splitsFor?: (bin: Bin) => boolean;
+}
+
+interface BinFit {
+  readonly maxWidth: number;
+  readonly maxDepth: number;
+  readonly key: string;
+  readonly keptWhole: boolean;
 }
 
 /** Chunk limit and grouping key for one bin's split. */
-function fitForBin(
-  bin: Bin,
-  fit: PrintSplitFit
-): { maxWidth: number; maxDepth: number; key: string } {
+function fitForBin(bin: Bin, fit: PrintSplitFit): BinFit {
   const overhang = fit.overhangFor?.(bin);
   const slant = fit.slantFor?.(bin);
   if (slant) {
@@ -187,23 +197,26 @@ function fitForBin(
       maxWidth: bin.width,
       maxDepth: bin.depth,
       key: `${overhangKey(resolveOverhang(overhang))}|slant:${angleDeg}:${side}:${endSupport ? 's' : ''}`,
+      keptWhole: false,
     };
   }
-  const limit = binSplitChunkUnits(
+  const bedFit = binBedFit(
     {
       width: bin.width,
       depth: bin.depth,
       gridUnitMm: fit.gridUnitMm,
       gridUnitMmY: fit.gridUnitMmY,
       overhang,
+      splitToFitBed: fit.splitsFor?.(bin),
     },
     fit.bedWidthMm,
     fit.bedDepthMm
   );
   return {
-    maxWidth: limit.width,
-    maxDepth: limit.depth,
+    maxWidth: bedFit.chunk.width,
+    maxDepth: bedFit.chunk.depth,
     key: overhangKey(resolveOverhang(overhang)),
+    keptWhole: bedFit.keptWhole,
   };
 }
 
@@ -237,6 +250,7 @@ export function generatePrintList(
       linkedDesignId?: DesignId;
       maxWidth: number;
       maxDepth: number;
+      keptWhole: boolean;
     }
   >();
 
@@ -269,6 +283,7 @@ export function generatePrintList(
         linkedDesignId: bin.linkedDesignId,
         maxWidth: binFit.maxWidth,
         maxDepth: binFit.maxDepth,
+        keptWhole: binFit.keptWhole,
       });
     }
   }
@@ -316,6 +331,7 @@ export function generatePrintList(
       binIds: group.binIds,
       customProperties: mergedCustomProps,
       linkedDesignId: group.linkedDesignId,
+      ...(group.keptWhole ? { keptWhole: true } : {}),
     });
   }
 

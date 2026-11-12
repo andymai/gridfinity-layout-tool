@@ -20,6 +20,7 @@ import {
   registryEdgeFields,
   registryHeightFields,
   registryOverhangFields,
+  registrySplitFields,
   registrySlantFields,
   registryKnifeRestFields,
 } from '../store/customBinRegistry';
@@ -201,6 +202,7 @@ export function useAutoSave(): void {
           ...registryEdgeFields(paramsToSave),
           ...registryHeightFields(paramsToSave),
           ...registryOverhangFields(paramsToSave),
+          ...registrySplitFields(paramsToSave),
           ...registrySlantFields(paramsToSave),
           ...registryKnifeRestFields(paramsToSave),
           updatedAt: result.value.updatedAt,

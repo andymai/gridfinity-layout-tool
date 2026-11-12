@@ -459,6 +459,20 @@ describe('RightPanel', () => {
       expect(screen.getByTitle('2 custom properties')).toBeInTheDocument();
     });
 
+    it('marks a row whose design prints it in one piece past the bed', () => {
+      mockPrintListReturn = createMockPrintList({
+        rows: [{ ...printRow, size: '8×1', keptWhole: true }],
+        totalBins: 2,
+        totalPieces: 2,
+        totalFilament: 1.5,
+      });
+
+      render(<RightPanel />);
+
+      expect(screen.getByText('Exceeds print size, prints in one piece')).toBeInTheDocument();
+      expect(screen.queryByLabelText('Click to see split preview')).not.toBeInTheDocument();
+    });
+
     it('shows PrintListSummary', () => {
       render(<RightPanel />);
 

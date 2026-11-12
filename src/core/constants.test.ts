@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   calcBedCapacityForBin,
+  keepWholeCapacity,
   calcMaxGridUnits,
   pickBedOrientation,
   generateId,
@@ -171,6 +172,24 @@ describe('calcBedCapacityForBin', () => {
 
   it('keeps the cut capacity for a bin too big even diagonally', () => {
     expect(calcBedCapacityForBin(1.5, 8, 256, 42)).toEqual({ width: 6, depth: 6 });
+  });
+});
+
+describe('keepWholeCapacity', () => {
+  it('reads a bin larger than the bed as its own size, keeping the cut it skips', () => {
+    const cut = calcBedCapacityForBin(8, 4, 256, 42);
+    expect(keepWholeCapacity(8, 4, cut)).toEqual({
+      width: 8,
+      depth: 4,
+      keptWhole: { width: 6, depth: 6 },
+    });
+  });
+
+  it('leaves a bin that fits as it was', () => {
+    const fits = calcBedCapacityForBin(4, 4, 256, 42);
+    expect(keepWholeCapacity(4, 4, fits)).toBe(fits);
+    const diagonal = calcBedCapacityForBin(1.5, 7, 256, 42);
+    expect(keepWholeCapacity(1.5, 7, diagonal)).toBe(diagonal);
   });
 });
 

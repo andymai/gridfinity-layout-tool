@@ -439,6 +439,11 @@
         "splitConnectors": {
           "$ref": "#/$defs/SplitConnectorConfig"
         },
+        "splitToFitBed": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether a bin larger than the print bed is cut into pieces that fit it. Omit to split. false exports the bin whole in the designer, the print list and the layout ZIP, to split in a slicer."
+        },
         "featureColors": {
           "$ref": "#/$defs/FeatureColorConfig"
         },

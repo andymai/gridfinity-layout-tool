@@ -94,12 +94,13 @@ export interface DesignRegistryEntry extends DesignRegistryEdgeFields {
     readonly back: number;
   };
   readonly slant?: DesignSlantFacts;
+  readonly splitToFitBed?: false;
   readonly updatedAt: string;
 }
 
 export type DesignRegistryPlacementFields = Pick<
   DesignRegistryEntry,
-  'assembledRiseMm' | 'lowProfileRiseDeltaMm' | 'socketless' | 'hasLip' | 'slant'
+  'assembledRiseMm' | 'lowProfileRiseDeltaMm' | 'socketless' | 'hasLip' | 'slant' | 'splitToFitBed'
 >;
 
 /**
@@ -123,7 +124,8 @@ export interface DesignStorePort {
   /**
    * How a linked bin stands and leans, from params that may predate current
    * fields. A slanted design's end support reserves layout cells, sized by its
-   * base as well as its slant, so both are written with the entry.
+   * base as well as its slant, so both are written with the entry, and so is
+   * whether the print list may cut it.
    */
   registryPlacementFields(params: unknown): Promise<DesignRegistryPlacementFields>;
 }

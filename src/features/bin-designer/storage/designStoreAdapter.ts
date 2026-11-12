@@ -82,11 +82,16 @@ export const designStoreAdapter: DesignStorePort = {
   },
 
   async registryPlacementFields(params: unknown): Promise<DesignRegistryPlacementFields> {
-    const [{ registryHeightFields, registrySlantFields }, { migrateParams }] = await Promise.all([
-      import('@/features/bin-designer/store/customBinRegistry'),
-      import('@/features/bin-designer/constants/paramMigration'),
-    ]);
+    const [{ registryHeightFields, registrySlantFields, registrySplitFields }, { migrateParams }] =
+      await Promise.all([
+        import('@/features/bin-designer/store/customBinRegistry'),
+        import('@/features/bin-designer/constants/paramMigration'),
+      ]);
     const migrated = migrateParams(params as BinParams);
-    return { ...registryHeightFields(migrated), ...registrySlantFields(migrated) };
+    return {
+      ...registryHeightFields(migrated),
+      ...registrySlantFields(migrated),
+      ...registrySplitFields(migrated),
+    };
   },
 };

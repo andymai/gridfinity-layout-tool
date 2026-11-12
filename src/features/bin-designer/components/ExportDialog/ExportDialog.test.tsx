@@ -23,7 +23,12 @@ const mockLoadDesign = vi.fn();
 let mockShouldPromptSupport = false;
 const mockRecordExport = vi.fn();
 /** Split state the mocked hook reports; reset to "fits the bed" per test. */
-let mockSplitState = { needsSplit: false, fitsDiagonally: false, splitPieceCount: 1 };
+let mockSplitState = {
+  needsSplit: false,
+  fitsDiagonally: false,
+  keptWhole: false,
+  splitPieceCount: 1,
+};
 const mockDownloadPlates = vi.fn(async () => true);
 let mockPlates: { widthU: number; text: string }[] = [];
 
@@ -92,6 +97,7 @@ vi.mock('@/features/bin-designer/hooks/useExport', () => ({
     hasDividers: false,
     needsSplit: mockSplitState.needsSplit,
     fitsDiagonally: mockSplitState.fitsDiagonally,
+    keptWhole: mockSplitState.keptWhole,
     splitPieceCount: mockSplitState.splitPieceCount,
     maxGridUnits: 6,
   }),
@@ -130,7 +136,12 @@ function setupStore(overrides: Record<string, unknown> = {}) {
 describe('ExportDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSplitState = { needsSplit: false, fitsDiagonally: false, splitPieceCount: 1 };
+    mockSplitState = {
+      needsSplit: false,
+      fitsDiagonally: false,
+      keptWhole: false,
+      splitPieceCount: 1,
+    };
     mockPlates = [];
     setupStore();
   });
@@ -736,6 +747,44 @@ describe('ExportDialog', () => {
     });
   });
 
+  describe('a design that turns splitting off', () => {
+    beforeEach(() => {
+      mockDownloadBin.mockResolvedValue(true);
+      mockDownloadSplit.mockResolvedValue(true);
+      setupStore({
+        params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3, splitToFitBed: false },
+        exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG, format: 'stl' },
+      });
+    });
+
+    it('says the bin is larger than the bed and offers no split', () => {
+      mockSplitState = { ...mockSplitState, keptWhole: true };
+      render(<ExportDialog />);
+      expect(
+        screen.getByText('Larger than your 256 × 256 mm print bed. It exports in one piece.')
+      ).toBeInTheDocument();
+      expect(screen.queryByLabelText(/split into pieces/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/exceeds your print bed/i)).not.toBeInTheDocument();
+    });
+
+    it('exports the bin in one piece', async () => {
+      mockSplitState = { ...mockSplitState, keptWhole: true };
+      render(<ExportDialog />);
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /^download stl$/i }));
+      });
+      expect(mockDownloadBin).toHaveBeenCalled();
+      expect(mockDownloadSplit).not.toHaveBeenCalled();
+    });
+
+    it('reminds about turning a bin that fits diagonally, with no split to offer', () => {
+      mockSplitState = { ...mockSplitState, fitsDiagonally: true, splitPieceCount: 2 };
+      render(<ExportDialog />);
+      expect(screen.getByText(/laid diagonally\. Turn it in your slicer/i)).toBeInTheDocument();
+      expect(screen.queryByLabelText(/split into pieces/i)).not.toBeInTheDocument();
+    });
+  });
+
   it('reminds about turning a slanted bin, with no split to offer', () => {
     setupStore({
       params: {
@@ -862,7 +911,12 @@ describe('ExportDialog', () => {
 describe('ExportDialog — design JSON', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSplitState = { needsSplit: false, fitsDiagonally: false, splitPieceCount: 1 };
+    mockSplitState = {
+      needsSplit: false,
+      fitsDiagonally: false,
+      keptWhole: false,
+      splitPieceCount: 1,
+    };
     setupStore();
   });
 

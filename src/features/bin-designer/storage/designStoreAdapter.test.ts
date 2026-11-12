@@ -140,4 +140,18 @@ describe('designStoreAdapter.registryPlacementFields', () => {
     expect(fields.socketless).toBe(true);
     expect(fields.slant?.config).toEqual({ angleDeg: 45, side: 'back', endSupport: true });
   });
+
+  // A shared layout's restored design writes its entry from these fields alone,
+  // so a design that keeps its bins whole has to say so here.
+  it('carries a design that turns splitting off, and clears one that splits', async () => {
+    const off = await designStoreAdapter.registryPlacementFields({
+      ...DEFAULT_BIN_PARAMS,
+      splitToFitBed: false,
+    });
+    expect(off.splitToFitBed).toBe(false);
+
+    const on = await designStoreAdapter.registryPlacementFields(DEFAULT_BIN_PARAMS);
+    expect('splitToFitBed' in on).toBe(true);
+    expect(on.splitToFitBed).toBeUndefined();
+  });
 });

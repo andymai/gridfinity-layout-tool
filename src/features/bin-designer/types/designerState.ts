@@ -308,6 +308,9 @@ export interface DesignerState {
   updateInsert: (id: string, updates: Partial<Insert>) => void;
   clearInserts: () => void;
 
+  /** Off keeps a bin larger than the print bed whole in every export. */
+  setSplitToFitBed: (on: boolean) => void;
+
   // Custom bin shape
   setCellMask: (mask: CellMask | undefined) => void;
 

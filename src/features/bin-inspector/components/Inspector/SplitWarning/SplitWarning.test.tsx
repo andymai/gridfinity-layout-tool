@@ -99,6 +99,42 @@ describe('SplitWarning', () => {
     });
   });
 
+  describe('when the design turns splitting off', () => {
+    const keptWholeProps = {
+      ...defaultProps,
+      binWidth: 8,
+      binDepth: 4,
+      maxGridUnits: { width: 8, depth: 4, keptWhole: { width: 6, depth: 6 } },
+    };
+
+    it('still says the bin is oversized, and that it prints in one piece', () => {
+      render(<SplitWarning {...keptWholeProps} />);
+
+      expect(screen.getByText('Oversized for print bed')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "336×168mm doesn't fit your 256×256mm print bed. Its design turns splitting off, so it prints in one piece."
+        )
+      ).toBeInTheDocument();
+      expect(screen.queryByText(/fits print bed/)).not.toBeInTheDocument();
+    });
+
+    it('draws the bed with the area a split would have cut to', () => {
+      const { container } = render(<SplitWarning {...keptWholeProps} />);
+
+      expect(container.querySelector('[title*="Print bed"]')?.getAttribute('title')).toBe(
+        'Print bed: 256×256mm. Largest bin: 6×6 units.'
+      );
+    });
+
+    it('counts no pieces in compact mode', () => {
+      render(<SplitWarning {...keptWholeProps} compact />);
+
+      expect(screen.getByText('Exceeds print size, prints in one piece')).toBeInTheDocument();
+      expect(screen.queryByText(/pieces needed/)).not.toBeInTheDocument();
+    });
+  });
+
   describe('compact mode', () => {
     const oversizedProps = {
       ...defaultProps,

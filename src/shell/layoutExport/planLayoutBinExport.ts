@@ -24,7 +24,7 @@ import { sanitizeFileName } from '@/features/bin-designer/utils/fileNaming';
 import { hasDetachableFeet } from '@/shared/types/bin';
 import { shouldGenerateKnifeRest } from '@/shared/utils/knifeRestPlan';
 import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
-import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
+import { binBedFit, type BinBedFit } from '@/shared/utils/binSplitFit';
 import { splitHasConnectors } from '@/shared/generation/splitUtils';
 import { withLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
@@ -119,18 +119,20 @@ export interface LayoutBinExportPlan {
 
 /**
  * Cut planes for `params` against the layout's print bed, or null when the bin
- * fits whole. Mirrors the bin designer's `downloadSplit` so a bin exported from
- * the layout ZIP arrives in the same pieces it would from the designer.
+ * prints whole. Mirrors the bin designer's `downloadSplit` so a bin exported
+ * from the layout ZIP arrives in the same pieces it would from the designer.
  *
- * The bin's overhang is charged against the bed by `binSplitChunkUnits`,
- * shared with the designer so a bin exported from the layout ZIP arrives in the
- * same pieces the designer offered. Layout bins routinely carry an overhang
- * (`resolveBinOverhang` grows them into the drawer margin), which is why this
- * path had its own accounting for it first.
+ * `fit` is `binBedFit` against that bed, shared with the designer: it charges
+ * the bin's overhang, which layout bins routinely carry (`resolveBinOverhang`
+ * grows them into the drawer margin), and reads the design's split switch.
  */
-function binSplitPlan(params: BinParams, printBed: PrintBedSize): LayoutSplitPlan | null {
+function binSplitPlan(
+  params: BinParams,
+  fit: BinBedFit,
+  printBed: PrintBedSize
+): LayoutSplitPlan | null {
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
-  const maxGrid = binSplitChunkUnits(params, printBed.widthMm, printBed.depthMm);
+  const maxGrid = fit.chunk;
   if (params.width <= maxGrid.width && params.depth <= maxGrid.depth) return null;
   return {
     cutPlanesX: getSplitPlanePositionsMm(params.width, maxGrid.width, params.gridUnitMm),
@@ -438,11 +440,12 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
   const meshPaths = meshFileNames.map((name) => `bins/${name}`);
   const itemPaths = itemFileNames.map((name) => `bins/${name}`);
   const companions = usable.map((u) => binCompanions(u.params));
+  const bedFits = usable.map((u) => binBedFit(u.params, printBed.widthMm, printBed.depthMm));
   const exportable = usable.map((u, i) => ({
     params: u.params,
     path: paths[i],
     companions: companions[i],
-    split: binSplitPlan(u.params, printBed),
+    split: binSplitPlan(u.params, bedFits[i], printBed),
   }));
 
   let totalGrams = 0;
@@ -480,6 +483,7 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
             ...(companions[i].length > 0 ? { oversizedCompanions: companions[i] } : {}),
           }
         : {}),
+      ...(bedFits[i].keptWhole ? { keptWhole: true } : {}),
       ...(u.extended ? { atPositions: u.positions } : {}),
     };
   });

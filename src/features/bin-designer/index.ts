@@ -20,6 +20,7 @@ export {
   registryEdgeFields,
   registryHeightFields,
   registryOverhangFields,
+  registrySplitFields,
   registrySlantFields,
   loadRegistry,
   subscribeToRegistry,

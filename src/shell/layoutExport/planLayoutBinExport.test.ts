@@ -713,6 +713,53 @@ describe('planLayoutBinExport', () => {
       expect(plan.exportable[0].split).toBeNull();
     });
 
+    it('exports a bin whole when its design turns splitting off, and says why', () => {
+      const plan = planLayoutBinExport({
+        bins: [linkedBin('big')],
+        loaded: [
+          {
+            id: designId('big'),
+            design: design('big', 'Long', { width: 11, depth: 2, height: 3, splitToFitBed: false }),
+          },
+        ],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: DRAWER,
+        baseplate: undefined,
+        printBed: PRINT_BED,
+      });
+
+      expect(plan.exportable[0].split).toBeNull();
+      expect(plan.manifestBins[0].splitPieces).toBeUndefined();
+      expect(plan.manifestBins[0].keptWhole).toBe(true);
+    });
+
+    // A placed bin's overhang can push a design that fits in the designer past
+    // the bed, so the switch has to reach the layout's own fitted params.
+    it('keeps a bin whole that only its drawer margin pushes past the bed', () => {
+      const plan = planLayoutBinExport({
+        bins: [
+          linkedBin('big', { width: gridUnits(6), depth: gridUnits(4), extendToMargin: true }),
+        ],
+        loaded: [
+          {
+            id: designId('big'),
+            design: design('big', 'Wide', { width: 6, depth: 4, height: 3, splitToFitBed: false }),
+          },
+        ],
+        format: 'stl',
+        fileNameConfig: CONFIG,
+        printSettings: DEFAULT_PRINT_SETTINGS,
+        drawer: { width: gridUnits(6), depth: gridUnits(4) },
+        baseplate: baseplate({ paddingLeft: mm(9) }),
+        printBed: PRINT_BED,
+      });
+
+      expect(plan.exportable[0].split).toBeNull();
+      expect(plan.manifestBins[0].keptWhole).toBe(true);
+    });
+
     it('leaves a bin that fits unsplit', () => {
       const plan = planLayoutBinExport({
         bins: [linkedBin('big')],
@@ -727,6 +774,7 @@ describe('planLayoutBinExport', () => {
 
       expect(plan.exportable[0].split).toBeNull();
       expect(plan.manifestBins[0].splitPieces).toBeUndefined();
+      expect(plan.manifestBins[0].keptWhole).toBeUndefined();
     });
 
     it('leaves a bin whole that fits the bed lying diagonally', () => {

@@ -30,7 +30,7 @@ import type { SlantInputs } from '@/shared/utils/slantPlan';
  */
 export type BinSplitFitParams = Pick<
   BinParams,
-  'width' | 'depth' | 'gridUnitMm' | 'gridUnitMmY' | 'overhang' | 'cellMask'
+  'width' | 'depth' | 'gridUnitMm' | 'gridUnitMmY' | 'overhang' | 'cellMask' | 'splitToFitBed'
 > &
   Partial<SlantInputs>;
 
@@ -77,6 +77,12 @@ export interface BinBedFit {
   readonly squareOn: ChunkUnits;
   /** The whole part overruns the bed square-on and at 90°, but fits lying at an angle. */
   readonly diagonal: boolean;
+  /**
+   * The part overruns the bed at every angle and its design turns splitting
+   * off, so it prints whole anyway. `chunk` and `squareOn` are then its own
+   * size, so nothing cuts it.
+   */
+  readonly keptWhole: boolean;
 }
 
 /**
@@ -90,7 +96,7 @@ export function binBedFit(
   printBedDepthMm?: number
 ): BinBedFit {
   const own: ChunkUnits = { width: params.width, depth: params.depth };
-  if (leansWhole(params)) return { chunk: own, squareOn: own, diagonal: false };
+  if (leansWhole(params)) return { chunk: own, squareOn: own, diagonal: false, keptWhole: false };
   const gridUnitMmX = params.gridUnitMm;
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
   const bedDepthMm = printBedDepthMm ?? printBedWidthMm;
@@ -114,7 +120,10 @@ export function binBedFit(
       printBedWidthMm,
       bedDepthMm
     );
-  return { chunk: diagonal ? own : squareOn, squareOn, diagonal };
+  if (params.splitToFitBed === false) {
+    return { chunk: own, squareOn: own, diagonal, keptWhole: cuts && !diagonal };
+  }
+  return { chunk: diagonal ? own : squareOn, squareOn, diagonal, keptWhole: false };
 }
 
 /**
