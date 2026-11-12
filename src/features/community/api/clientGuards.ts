@@ -92,6 +92,7 @@ export function isCommunityCard(value: unknown): value is CommunityCard {
     typeof counts.likes === 'number' &&
     typeof counts.remixes === 'number' &&
     typeof counts.exports === 'number' &&
+    isOptionalNumber(counts.prints) &&
     isOptionalNumber(counts.opens) &&
     isOptionalNumber(counts.views) &&
     typeof value.createdAt === 'number' &&
