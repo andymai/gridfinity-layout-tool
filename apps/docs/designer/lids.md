@@ -150,5 +150,6 @@ On a tall lid, the snap catch can't clear the rim as the lid opens. The bin desi
 
 - [Colors](./colors): print the lid and its stack lip in their own colors.
 - [Stacking](./stacking): learn how the stacking lip works with lids.
+- [Lidded boxes that stack](../recipes/lidded-boxes): build a set of parts boxes with magnetic lids, step by step.
 - [Special bins](./special-bins): see other bin types, such as the organizer tray.
 - [Fit and tolerances](../printing/fit-and-tolerances): tune fits for your printer.

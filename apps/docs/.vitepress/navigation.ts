@@ -35,6 +35,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'A kitchen utensil drawer', link: '/recipes/kitchen-utensil-drawer' },
       { text: 'Hand tools with custom pockets', link: '/recipes/hand-tool-pockets' },
       { text: 'An electronics and craft organizer', link: '/recipes/electronics-craft-organizer' },
+      { text: 'Lidded boxes that stack', link: '/recipes/lidded-boxes' },
     ],
   },
   {

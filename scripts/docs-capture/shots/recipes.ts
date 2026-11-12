@@ -1536,6 +1536,128 @@ const craftBinList: Shot = {
   },
 };
 
+const LIDDED_BOX: Params = {
+  width: 3,
+  depth: 2,
+  height: 6,
+  compartments: { cols: 3, rows: 2, cells: [0, 1, 2, 3, 4, 5] },
+};
+
+const LIDDED_BOX_DONE: Params = {
+  ...LIDDED_BOX,
+  lid: {
+    enabled: true,
+    attachment: 'magnetic',
+    fill: true,
+    stackableTop: true,
+    separateStackPlate: true,
+  },
+  surfaceText: { walls: { front: 'FUSES' } },
+};
+
+const liddedHero: Shot = {
+  id: 'recipes-lidded-boxes-hero',
+  kind: 'still',
+  async take(s) {
+    await openDesigner(s, 'Fuses box', LIDDED_BOX_DONE);
+    const canvas = await s.box(s.page.locator('canvas').first());
+    await s.ui.hideCursor();
+    await s.still(frameAround(await partBox(s), 40, 4 / 3, canvas));
+  },
+};
+
+const liddedStackTop: Shot = {
+  id: 'recipes-lidded-boxes-stack-top',
+  kind: 'still',
+  async take(s) {
+    await openDesigner(s, 'Fuses box', LIDDED_BOX_DONE);
+    const heading = s.page
+      .getByText(label('binDesigner.lid.section.topSurface'), { exact: true })
+      .first();
+    const plate = s.page
+      .getByRole('switch', { name: label('binDesigner.lid.separateStackPlate'), exact: true })
+      .first();
+    await s.ui.preReveal(plate);
+    const top = (await s.box(heading)).y - 14;
+    const end = await s.box(plate);
+    await s.ui.hideCursor();
+    await s.still(
+      { x: 0, y: top, width: PANEL_EDGE - 1, height: end.y + end.height + 14 - top },
+      1.5
+    );
+  },
+};
+
+/** The lid's switches sit inside the 320 px side panel. */
+const LID_PANEL: Rect = { x: 0, y: 48, width: PANEL_EDGE - 1, height: DESKTOP.height - 48 };
+
+const liddedLid: Shot = {
+  id: 'recipes-lidded-boxes-lid',
+  kind: 'clip',
+  async take(s) {
+    await openDesigner(s, 'Fuses box', LIDDED_BOX);
+    const lid = s.page
+      .getByRole('switch', { name: label('binDesigner.lid.enable'), exact: true })
+      .first();
+    const magnetic = s.page.getByRole('radio', {
+      name: label('binDesigner.lid.attachment.magnetic'),
+      exact: true,
+    });
+    const fill = s.page
+      .getByRole('switch', { name: label('binDesigner.lid.fill'), exact: true })
+      .first();
+    // The panel's full width, so each control shows with its label.
+    const closeUp = async (target: Locator): Promise<Rect> => {
+      const b = await s.box(target);
+      const height = (LID_PANEL.width * 3) / 4;
+      const y = Math.min(
+        Math.max(b.y + b.height / 2 - height / 2, LID_PANEL.y),
+        LID_PANEL.y + LID_PANEL.height - height
+      );
+      return { x: 0, y, width: LID_PANEL.width, height };
+    };
+    const restIn = (f: Rect): Promise<void> =>
+      s.ui.park(f.x + f.width * 0.5, f.y + f.height * 0.92);
+
+    await s.ui.preReveal(lid);
+    const first = await closeUp(lid);
+    await restIn(first);
+    await s.take(
+      first,
+      async () => {
+        await s.ui.hold(0.4);
+        await s.ui.click(lid);
+        await s.ui.hold(0.6);
+      },
+      640 / first.width
+    );
+    await s.ui.preReveal(magnetic);
+    const second = await closeUp(magnetic);
+    await restIn(second);
+    await s.take(second, async () => {
+      await s.ui.hold(0.3);
+      await s.ui.click(magnetic);
+      await s.ui.hold(0.6);
+    });
+    await s.until(fill);
+    await s.ui.preReveal(fill);
+    const third = await closeUp(fill);
+    await restIn(third);
+    await s.take(third, async () => {
+      await s.ui.hold(0.3);
+      await s.ui.click(fill);
+      await s.ui.hold(0.8);
+    });
+    await s.ui.hideCursor();
+    await s.ui.waitBuilt();
+    const canvas = await s.box(s.page.locator('canvas').first());
+    await s.take(frameAround(await partBox(s), 40, 4 / 3, canvas), async () => {
+      s.poster();
+      await s.ui.hold(2);
+    });
+  },
+};
+
 type Pt = [number, number];
 
 /** A tool's outline from its upper half, tip to end, mirrored about its centre line. */
@@ -2024,6 +2146,9 @@ export const RECIPES: readonly Shot[] = [
   craftCategories,
   craftPlates,
   craftBinList,
+  liddedHero,
+  liddedLid,
+  liddedStackTop,
   toolsThickness,
   toolsFingerAccess,
   toolsFitTest,
