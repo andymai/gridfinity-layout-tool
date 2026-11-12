@@ -797,8 +797,38 @@ describe('useBinInspector', () => {
 
       expect(result.current.deleteConfirmState).toEqual({
         title: 'Delete bins',
-        message: 'Delete 2 selected bins?',
+        message: 'Delete 2 bins?',
       });
+    });
+
+    it("requestDelete counts a paired bin's partner, which confirm also deletes", () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [
+        { ...createBin('block', 'layer1', 0, 0), pairId: 'p1', pairRole: 'block' },
+        { ...createBin('rest', 'layer1', 3, 0), pairId: 'p1', pairRole: 'rest' },
+        createBin('other', 'layer1', 6, 0),
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('block')] });
+
+      const { result } = renderHook(() => useBinInspector());
+      act(() => {
+        result.current.requestDelete();
+      });
+
+      expect(result.current.deleteConfirmState).toEqual({
+        title: 'Delete bins',
+        message: 'Delete 2 bins?',
+      });
+
+      act(() => {
+        useSelectionStore.setState({ selectedBinIds: [binId('rest'), binId('other')] });
+      });
+      act(() => {
+        result.current.requestDelete();
+      });
+
+      expect(result.current.deleteConfirmState?.message).toBe('Delete 3 bins?');
     });
 
     it('confirmDelete removes bins and clears selection', () => {

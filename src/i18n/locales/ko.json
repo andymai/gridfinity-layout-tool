@@ -3816,7 +3816,7 @@
   "inspector.confirmDelete.title": "수납통 삭제",
   "inspector.confirmDelete.titleMulti": "수납통 삭제",
   "inspector.confirmDelete.message": "이 {width}×{depth} 수납통을 삭제할까요?",
-  "inspector.confirmDelete.messageMulti_other": "선택한 수납통 {count}개를 삭제할까요?",
+  "inspector.confirmDelete.messageMulti_other": "수납통 {count}개를 삭제할까요?",
   "inspector.deselectAllBins": "모든 수납통 선택 해제",
   "inspector.deselectBin": "수납통 선택 해제",
   "inspector.empty.drawHint": "그리드에서 수납통을 클릭하거나 그려서 만드세요",

@@ -3816,7 +3816,7 @@
   "inspector.confirmDelete.title": "ビンを削除",
   "inspector.confirmDelete.titleMulti": "ビンを削除",
   "inspector.confirmDelete.message": "この{width}×{depth}ビンを削除しますか?",
-  "inspector.confirmDelete.messageMulti_other": "選択中の{count}個のビンを削除しますか?",
+  "inspector.confirmDelete.messageMulti_other": "{count}個のビンを削除しますか?",
   "inspector.deselectAllBins": "すべてのビンの選択を解除",
   "inspector.deselectBin": "ビンの選択を解除",
   "inspector.empty.drawHint": "グリッド上のビンをクリック、またはドラッグで新規作成",

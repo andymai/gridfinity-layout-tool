@@ -357,11 +357,15 @@ export function useBinInspector(): UseBinInspectorReturn {
     if (selectedBins.length === 0) return;
 
     const [first] = selectedBins;
+    const deleteCount = expandPairIds(
+      new Set(selectedBins.map((b) => b.id)),
+      useLayoutStore.getState().layout.bins
+    ).size;
     setDeleteConfirmState(
-      selectedBins.length > 1
+      deleteCount > 1
         ? {
             title: t('inspector.confirmDelete.titleMulti'),
-            message: t('inspector.confirmDelete.messageMulti', { count: selectedBins.length }),
+            message: t('inspector.confirmDelete.messageMulti', { count: deleteCount }),
           }
         : {
             title: t('inspector.confirmDelete.title'),

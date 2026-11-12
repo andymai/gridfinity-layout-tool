@@ -3816,7 +3816,7 @@
   "inspector.confirmDelete.title": "删除收纳盒",
   "inspector.confirmDelete.titleMulti": "删除收纳盒",
   "inspector.confirmDelete.message": "删除这个 {width}×{depth} 收纳盒？",
-  "inspector.confirmDelete.messageMulti_other": "删除 {count} 个选中的收纳盒？",
+  "inspector.confirmDelete.messageMulti_other": "删除 {count} 个收纳盒？",
   "inspector.deselectAllBins": "取消选择所有收纳盒",
   "inspector.deselectBin": "取消选择收纳盒",
   "inspector.empty.drawHint": "点击网格上的收纳盒，或绘制来创建一个",
