@@ -1,0 +1,37 @@
+src/core/api/share.test.ts
+  s_1cc363bb3cc76d::t_3c6466ce383e57 25,359,458,586,712
+src/core/storage/BulkArchiveService.test.ts
+  s_1cc363bb3cc76d::t_4f0de2fa54c402 27,59
+src/core/storage/ShareService.test.ts
+  s_1cc363bb3cc76d::t_67878f41ca1328 37,61,875-897
+src/core/storage/ShareService.ts
+  s_1cc363bb3cc76d::t_df17ac44303765 20-21,32-33,248-250,255,257-272,326-332,341,348,479-480,485,492
+src/core/storage/designStorePort.ts
+  s_1cc363bb3cc76d::t_82b71d64adabfa 34-41,139-145
+src/features/bin-designer/storage/designStoreAdapter.test.ts
+  s_1cc363bb3cc76d::t_2972bcbb607943 158-178
+src/features/bin-designer/storage/designStoreAdapter.ts
+  s_1cc363bb3cc76d::t_5cb26a2986f7a5 25,98-112
+src/shell/registrations/DesignStoreRegistration.storage.test.ts
+  s_1cc363bb3cc76d::t_1f6264db81fcb4 13-17,66-98
+src/shell/registrations/DesignStoreRegistration.test.tsx
+  s_1cc363bb3cc76d::t_d8d846266c10c5 13
+src/test/mocks/designStorePort.ts
+  s_1cc363bb3cc76d::t_0c45880036e455 1-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4ac55632a5de0e4d34d1e062aaddc526af78455e",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
