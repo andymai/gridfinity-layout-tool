@@ -1588,7 +1588,6 @@ const liddedStackTop: Shot = {
   },
 };
 
-/** The lid's switches sit inside the 320 px side panel. */
 const LID_PANEL: Rect = { x: 0, y: 48, width: PANEL_EDGE - 1, height: DESKTOP.height - 48 };
 
 const liddedLid: Shot = {
