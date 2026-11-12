@@ -58,7 +58,9 @@ export function SnapshotEntry({
         </div>
       </div>
 
-      <div className="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+      {/* sr-only keeps the actions in the tab order while they take no width.
+          Screens that cannot hover always show them. */}
+      <div className="flex-shrink-0 flex items-center gap-1 [@media(hover:hover)]:sr-only group-hover:not-sr-only focus-within:not-sr-only">
         <Button
           type="button"
           variant="ghost"
