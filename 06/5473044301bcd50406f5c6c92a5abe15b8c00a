@@ -1,0 +1,57 @@
+src/features/layout-library/components/LayoutManagerModal/LayoutActions/LayoutActions.test.tsx
+  s_1cc363bb3cc76d::t_3ff06a18ec5b76 189-192,196,203,229
+src/features/layout-library/components/LayoutManagerModal/LayoutListItem/LayoutListItem.test.tsx
+  s_1cc363bb3cc76d::t_1e2e7aee4a15ab 125-137
+src/i18n/locales/cs.json
+  s_1cc363bb3cc76d::t_3db6ad83056be5 4176-4178,4181-4183,4205-4207,4360-4362
+src/i18n/locales/de.json
+  s_1cc363bb3cc76d::t_38a1c15bf0f848 4097-4098,4101-4102,4124-4125,4269-4270
+src/i18n/locales/en.ts
+  s_1cc363bb3cc76d::t_837cefb7069f4a 916-917,927-928,931-932,1539-1540
+src/i18n/locales/es.json
+  s_1cc363bb3cc76d::t_e8bd5ef545cdbc 4097-4098,4101-4102,4124-4125,4269-4270
+src/i18n/locales/fr.json
+  s_1cc363bb3cc76d::t_c9a03f171d5d4f 4097-4098,4101-4102,4124-4125,4269-4270
+src/i18n/locales/it.json
+  s_1cc363bb3cc76d::t_f78b514c83e987 4097-4098,4101-4102,4124-4125,4269-4270
+src/i18n/locales/ja.json
+  s_1cc363bb3cc76d::t_77d3a6cc454dbf 4018,4021,4043,4178
+src/i18n/locales/ka.json
+  s_1cc363bb3cc76d::t_1e809a334d5e59 849-850,860-861,864-865,1342-1343
+src/i18n/locales/ko.json
+  s_1cc363bb3cc76d::t_38b3e538a41eaf 4018,4021,4043,4178
+src/i18n/locales/nb.json
+  s_1cc363bb3cc76d::t_76678bb88da560 4097-4098,4101-4102,4124-4125,4269-4270
+src/i18n/locales/nl.json
+  s_1cc363bb3cc76d::t_aa11d1e138abd9 4097-4098,4101-4102,4124-4125,4269-4270
+src/i18n/locales/pl.json
+  s_1cc363bb3cc76d::t_5f254a288acf1c 4255-4258,4261-4264,4286-4289,4451-4454
+src/i18n/locales/pt-BR.json
+  s_1cc363bb3cc76d::t_d70985f143ab0c 4097-4098,4101-4102,4124-4125,4269-4270
+src/i18n/locales/sv.json
+  s_1cc363bb3cc76d::t_f08de1e2ec484b 4097-4098,4101-4102,4124-4125,4269-4270
+src/i18n/locales/uk.json
+  s_1cc363bb3cc76d::t_347137db4190d0 4255-4258,4261-4264,4286-4289,4451-4454
+src/i18n/locales/zh-CN.json
+  s_1cc363bb3cc76d::t_202e2a9fdf78fd 4018,4021,4043,4178
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsListItem.test.tsx
+  s_1cc363bb3cc76d::t_0ae025a1ad6267 108-127
+src/shell/Modals/ImportModal/ImportModal.test.tsx
+  s_1cc363bb3cc76d::t_e5219890a1aa2f 446-450,454-465,471
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "065473044301bcd50406f5c6c92a5abe15b8c00a",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
