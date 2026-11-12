@@ -9,6 +9,7 @@
 import { formatPieceDisplayName } from './binDownloadNaming';
 export { formatPieceDisplayName, buildReportIssueUrl } from './binDownloadNaming';
 import { isErr, getUserMessage } from '@/core/result';
+import { getErrorCode } from '@/shared/utils/errors';
 import { export3MF, export3MFMultiObject } from '@/shared/generation/export';
 import { captureException } from '@/shared/analytics/posthog';
 import {
@@ -489,6 +490,9 @@ export async function runSplitBinExport(
     if (!bridge) throw new Error('Bridge not available');
     return await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY, options);
   } catch (poolErr) {
+    // Every pool worker builds the whole solid, so the single bridge would run
+    // out of memory on the same design.
+    if (getErrorCode(poolErr) === 'OUT_OF_MEMORY') throw poolErr;
     captureException(poolErr instanceof Error ? poolErr : new Error(String(poolErr)), {
       source: 'bin_export_pool_fallback',
       export_format: format,
