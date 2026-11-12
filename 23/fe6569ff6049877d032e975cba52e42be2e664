@@ -1,0 +1,23 @@
+src/shared/hooks/useAutoSave.test.ts
+  s_1cc363bb3cc76d::t_41bcdc8fe42627 708-732
+src/shared/hooks/useAutoSave.ts
+  s_1cc363bb3cc76d::t_11bf7dac0dd564 3,8-16,54,58,60-65,140-141,170-178
+src/shared/hooks/useLayoutSwitcher.races.test.ts
+  s_1cc363bb3cc76d::t_5370da1345dd6b 10,85-89,97-106,287-326
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "23fe6569ff6049877d032e975cba52e42be2e664",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
