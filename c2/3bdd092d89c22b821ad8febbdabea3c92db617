@@ -1,0 +1,31 @@
+src/features/grid-editor/components/Grid/Bin/useBinBedFit.test.ts
+  s_1cc363bb3cc76d::t_77889300c8a1b3 36-58
+src/shared/hooks/useBinBedCapacity.test.ts
+  s_1cc363bb3cc76d::t_d50e52fdbeedbc 62-67
+src/shared/hooks/useBinBedCapacity.ts
+  s_1cc363bb3cc76d::t_2e012e978235d9 3,7-8,27,30-39,41-43
+src/shared/hooks/useBinOverhangSpan.ts
+  s_1cc363bb3cc76d::t_9368cff4f2e06e 6,15-17,19,29,31,37-48
+src/shared/utils/binSplitFit.test.ts
+  s_1cc363bb3cc76d::t_ca9d6c24dacf80 4,269-321
+src/shared/utils/binSplitFit.ts
+  s_1cc363bb3cc76d::t_200fa0e05d7255 19-25,159-202
+src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
+  s_1cc363bb3cc76d::t_7da13bf6d82277 14,61,172-175
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c23bdd092d89c22b821ad8febbdabea3c92db617",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
