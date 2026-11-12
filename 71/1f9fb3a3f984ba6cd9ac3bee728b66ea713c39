@@ -1,0 +1,21 @@
+src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedHost.test.tsx
+  s_1cc363bb3cc76d::t_02f5f529820a18 139-165
+src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedHost.tsx
+  s_1cc363bb3cc76d::t_0087b55bb0d9af 28,35-39,41,44-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "711f9fb3a3f984ba6cd9ac3bee728b66ea713c39",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
