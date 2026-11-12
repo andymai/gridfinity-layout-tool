@@ -1,0 +1,39 @@
+.claude/skills/feature-slices/SKILL.md
+  s_1cc363bb3cc76d::t_dffdb05b473e49 17
+eslint.config.js
+  s_1cc363bb3cc76d::t_cf3182e709ab7c 18-61,364-366,517-548
+src/features/grid-editor/components/Grid/Bin/Bin.test.tsx
+  s_1cc363bb3cc76d::t_00f83c6cbf296c 11-12
+src/features/grid-editor/components/Grid/Bin/useBinBedFit.test.ts
+  s_1cc363bb3cc76d::t_19898c5b66d5c6 8-9
+src/features/print-export/hooks/usePrintList.test.ts
+  s_1cc363bb3cc76d::t_8c72963eeb7d0c 24-25
+src/shared/hooks/useBinBedCapacity.test.ts
+  s_1cc363bb3cc76d::t_342ba24aa8f9f8 8-9
+src/shared/hooks/useLinkedDesignsKeptWhole.test.ts
+  s_1cc363bb3cc76d::t_00c1f6fbfeb86d 11-12
+src/shared/hooks/useLinkedDesignsKeptWhole.ts
+  s_1cc363bb3cc76d::t_3700ef69f4898c 2,5-8,11,13-42,46
+src/shell/Mobile/MobilePrintList/MobilePrintList.test.tsx
+  s_1cc363bb3cc76d::t_93b718604b34a2 9-10
+src/shell/registrations/LinkedRiseRegistration.test.tsx
+  s_1cc363bb3cc76d::t_5d98b2131cc399 6-10,31,114-129
+src/shell/registrations/LinkedRiseRegistration.tsx
+  s_1cc363bb3cc76d::t_e72d156c04df58 4,15-16,24,26,35,38,93-103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7184802f5c9b16243500ea005a2637ce84218e27",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
