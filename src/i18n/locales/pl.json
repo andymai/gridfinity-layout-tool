@@ -1741,7 +1741,7 @@
   "binDesigner.lid.retentionMagnetDiameter": "Średnica magnesu",
   "binDesigner.lid.retentionMagnetDiameterAria": "Średnica magnesu mocującego w milimetrach",
   "binDesigner.lid.retentionMagnetHint": "Wciśnij magnes ⌀{diameter} × {depth} mm w każdy narożnik bina i pokrywy.",
-  "binDesigner.lid.retentionMagnetHintDetail": "Wklej je tak, aby każdy magnes w pokrywie przyciągał magnes w binie pod nim.",
+  "binDesigner.lid.retentionMagnetHintDetail": "Wklej tylne magnesy odwrotnie niż przednie, w binie i w pokrywie. Każdy magnes w pokrywie musi przyciągać magnes w binie pod nim, dzięki temu pokrywa zamyka się tylko w jeden sposób.",
   "binDesigner.lid.section.attaches": "Jak się mocuje",
   "binDesigner.lid.section.grip": "Uchwyt pokrywy",
   "binDesigner.lid.section.text": "Tekst pokrywy",

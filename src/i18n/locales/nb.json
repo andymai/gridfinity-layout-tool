@@ -1679,7 +1679,7 @@
   "binDesigner.lid.retentionMagnetDiameter": "Magnetdiameter",
   "binDesigner.lid.retentionMagnetDiameterAria": "Diameter på festemagnet i millimeter",
   "binDesigner.lid.retentionMagnetHint": "Trykk en ⌀{diameter} × {depth} mm magnet inn i hvert hjørne av beholderen og lokket.",
-  "binDesigner.lid.retentionMagnetHintDetail": "Lim dem fast slik at hver magnet i lokket trekkes mot magneten i beholderen under.",
+  "binDesigner.lid.retentionMagnetHintDetail": "Lim de bakre magnetene motsatt vei av de fremre, i beholderen og i lokket. Hver magnet i lokket må trekkes mot magneten i beholderen under, slik at lokket bare lukkes én vei.",
   "binDesigner.lid.section.attaches": "Festemetode",
   "binDesigner.lid.section.grip": "Lokkgrep",
   "binDesigner.lid.section.text": "Lokktekst",

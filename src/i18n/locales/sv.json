@@ -1679,7 +1679,7 @@
   "binDesigner.lid.retentionMagnetDiameter": "Magnetdiameter",
   "binDesigner.lid.retentionMagnetDiameterAria": "Fästmagnetens diameter i millimeter",
   "binDesigner.lid.retentionMagnetHint": "Tryck in en ⌀{diameter} × {depth} mm magnet i varje hörn av lådan och locket.",
-  "binDesigner.lid.retentionMagnetHintDetail": "Limma fast dem så att varje magnet i locket dras mot magneten i lådan under.",
+  "binDesigner.lid.retentionMagnetHintDetail": "Limma de bakre magneterna åt motsatt håll mot de främre, i lådan och i locket. Varje magnet i locket måste dras mot magneten i lådan under, så att locket bara stängs åt ett håll.",
   "binDesigner.lid.section.attaches": "Fästmetod",
   "binDesigner.lid.section.grip": "Lockgrepp",
   "binDesigner.lid.section.text": "Locktext",
