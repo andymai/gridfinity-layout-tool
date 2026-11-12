@@ -22,7 +22,6 @@ import { updateShare } from '@/core/api/share';
 import { isOk } from '@/core/result';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
 import {
-  createLayoutFingerprint,
   dropWaitingUpload,
   keepShareLayout,
   queueShareUpload,
@@ -31,6 +30,7 @@ import {
   roomSavesShare,
   type ShareUpload,
 } from '@/features/cloud-share/utils';
+import { roomLayoutFingerprint } from '@/shared/utils/roomLinkStamp';
 import type { CloudShareInfo } from '@/core/types';
 
 /** Debounce delay for cloud share updates (5 seconds) */
@@ -80,7 +80,8 @@ export function useOwnedShareSync(): void {
     if (!shareId || !deleteToken) return;
     if (roomSavesShare(shareId)) return;
 
-    const layoutFingerprint = createLayoutFingerprint(layout);
+    // What the link stores of the layout, so an edit to any stored field saves.
+    const layoutFingerprint = roomLayoutFingerprint(layout);
     const claimCount = roomClaimCount(shareId);
     const upload: ShareUpload = {
       key: `local:${layoutFingerprint}`,
