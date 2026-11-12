@@ -14,6 +14,7 @@ import { splitBinsByLocation } from '@/shared/utils';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { findBinsByIds } from '@/shared/utils/entity';
+import { expandPairIds } from '@/shared/utils/binPairs';
 import type { BinId, CategoryId, GridUnits, LayerId } from '@/core/types';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
@@ -51,7 +52,7 @@ export function MultiBinContextMenu({
 
   const { menuRef } = useContextMenu();
   const layout = useLayoutStore((state) => state.layout);
-  const { deleteBin, updateBin } = useMutations();
+  const { deleteBins, updateBin } = useMutations();
   const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
   const addToast = useToastStore((state) => state.addToast);
   const { expandBins } = useExpandToFit();
@@ -80,14 +81,18 @@ export function MultiBinContextMenu({
   const canMerge = gridBins.length > 1;
 
   const handleDeleteAll = () => {
+    const deleteIds = expandPairIds(new Set(bins.map((b) => b.id)), layout.bins);
     // Track deletion BEFORE executing (need bin data)
-    mlTracking.trackBinsDeletion(bins, 'bulk');
+    mlTracking.trackBinsDeletion(
+      layout.bins.filter((b) => deleteIds.has(b.id)),
+      'bulk'
+    );
 
     batch(() => {
-      bins.forEach((b) => deleteBin(b.id));
+      deleteBins([...deleteIds]);
     });
     setSelectedBins([]);
-    addToast(t('toast.binsDeleted', { count: bins.length }), 'success');
+    addToast(t('toast.binsDeleted', { count: deleteIds.size }), 'success');
     onClose();
   };
 

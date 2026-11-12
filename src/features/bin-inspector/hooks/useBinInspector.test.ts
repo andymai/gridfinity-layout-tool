@@ -816,6 +816,53 @@ describe('useBinInspector', () => {
       expect(useSelectionStore.getState().selectedBinIds).toHaveLength(0);
     });
 
+    it("confirmDelete takes a paired bin's partner along", () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [
+        { ...createBin('block', 'layer1', 0, 0), pairId: 'p1', pairRole: 'block' },
+        { ...createBin('rest', 'layer1', 3, 0), pairId: 'p1', pairRole: 'rest' },
+        createBin('kept', 'layer1', 6, 0),
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('block')] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.confirmDelete();
+      });
+
+      expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual([binId('kept')]);
+    });
+
+    it('confirmDelete removes a full layer in one store update and one undo step', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.drawer = { ...layout.drawer, width: gridUnits(10), depth: gridUnits(8) };
+      layout.bins = [];
+      for (let x = 0; x < 10; x++) {
+        for (let y = 0; y < 8; y++)
+          layout.bins.push(createBin(`f-${x}-${y}`, 'layer1', x, y, 1, 1));
+      }
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: layout.bins.map((b) => b.id) });
+      useHistoryStore.getState().clear();
+      const { result } = renderHook(() => useBinInspector());
+      let storeUpdates = 0;
+      const unsubscribe = useLayoutStore.subscribe(() => {
+        storeUpdates++;
+      });
+
+      act(() => {
+        result.current.confirmDelete();
+      });
+      unsubscribe();
+
+      expect(storeUpdates).toBe(1);
+      expect(useLayoutStore.getState().layout.bins).toEqual([]);
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
+      expect(useHistoryStore.getState().past).toHaveLength(1);
+    });
+
     it('cancelDelete clears confirmation state', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [createBin('bin1', 'layer1')];

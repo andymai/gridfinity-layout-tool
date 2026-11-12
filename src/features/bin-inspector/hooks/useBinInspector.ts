@@ -71,7 +71,7 @@ export function useBinInspector(): UseBinInspectorReturn {
 
   const layout = useLayoutStore((state) => state.layout);
   const overhangSpanFor = useBinOverhangSpan();
-  const { updateBin, deleteBin, moveBinsToStaging } = useMutations();
+  const { updateBin, deleteBins, moveBinsToStaging } = useMutations();
 
   const selectedBins = useMemo(
     () => layout.bins.filter((b) => selectedBinIds.includes(b.id)),
@@ -369,23 +369,21 @@ export function useBinInspector(): UseBinInspectorReturn {
     if (selectedBins.length === 0) return;
 
     const allBins = useLayoutStore.getState().layout.bins;
-    const deleteIds = [...expandPairIds(new Set(selectedBins.map((b) => b.id)), allBins)];
+    const deleteIds = expandPairIds(new Set(selectedBins.map((b) => b.id)), allBins);
     // Track deletion BEFORE executing (need bin data)
     mlTracking.trackBinsDeletion(
-      allBins.filter((b) => deleteIds.includes(b.id)),
+      allBins.filter((b) => deleteIds.has(b.id)),
       'inspector'
     );
 
     batch(() => {
-      for (const id of deleteIds) {
-        deleteBin(id);
-      }
+      deleteBins([...deleteIds]);
     });
 
     // Selection cleanup handled by CQRS selectionPruning subscriber
     setDeleteConfirmState(null);
     closeMobilePanel();
-  }, [selectedBins, deleteBin, closeMobilePanel]);
+  }, [selectedBins, deleteBins, closeMobilePanel]);
 
   const cancelDelete = useCallback(() => {
     setDeleteConfirmState(null);

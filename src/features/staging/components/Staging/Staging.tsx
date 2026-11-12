@@ -40,7 +40,7 @@ const DEFAULT_STASH_MAX_HEIGHT_VH = 33;
 export function Staging() {
   const t = useTranslation();
   const layout = useLayoutStore((state) => state.layout);
-  const { deleteBin, updateBin } = useMutations();
+  const { deleteBins, updateBin } = useMutations();
   const { selectedBinIds, setSelectedBin, toggleSelection } = useSelectionStore(
     useShallow((state) => ({
       selectedBinIds: state.selectedBinIds,
@@ -242,9 +242,7 @@ export function Staging() {
     mlTracking.trackBinsDeletion(stagingBins, 'bulk');
 
     batch(() => {
-      for (const bin of stagingBins) {
-        deleteBin(bin.id);
-      }
+      deleteBins(stagingBins.map((bin) => bin.id));
     });
     setShowClearConfirm(false);
     addToast(t('toast.stashCleared', { count }), 'success');

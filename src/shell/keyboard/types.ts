@@ -46,7 +46,7 @@ export interface KeyboardContext {
 
   // Mutations
   batch: <T>(fn: () => T) => T;
-  deleteBin: (id: BinId) => void;
+  deleteBins: (ids: BinId[]) => void;
   duplicateBin: (id: BinId) => Result<BinId, ValidationError | LayoutError>;
   updateBin: (id: BinId, updates: Partial<Bin>) => Result<unknown, unknown>;
 

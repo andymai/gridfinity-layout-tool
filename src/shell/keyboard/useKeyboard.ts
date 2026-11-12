@@ -157,7 +157,7 @@ export function useKeyboard({ disabled = false }: UseKeyboardOptions = {}) {
   const { navigateToDesigner } = useDesignerRouting();
   const { handleNavigationKey } = useGridNavigation();
   const layout = useLayoutStore((state) => state.layout);
-  const { deleteBin, duplicateBin, updateBin } = useMutations();
+  const { deleteBins, duplicateBin, updateBin } = useMutations();
   const { createNewLayout } = useLayoutSwitcher();
 
   const { undo, redo, canUndo, canRedo } = useHistoryStore(
@@ -204,7 +204,7 @@ export function useKeyboard({ disabled = false }: UseKeyboardOptions = {}) {
         setShowLayoutManager,
         createNewLayout,
         batch,
-        deleteBin,
+        deleteBins,
         duplicateBin,
         updateBin,
         requestHalfGridToggle,
@@ -228,7 +228,7 @@ export function useKeyboard({ disabled = false }: UseKeyboardOptions = {}) {
       redo,
       zoomIn,
       zoomOut,
-      deleteBin,
+      deleteBins,
       duplicateBin,
       updateBin,
       setSelectedBins,
