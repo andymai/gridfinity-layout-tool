@@ -10,6 +10,7 @@ export type {
   BinsDeletedEvent,
   BinDuplicatedEvent,
   BinMovedToStagingEvent,
+  BinsMovedToStagingEvent,
   BinMovedFromStagingEvent,
   LayerFilledEvent,
   BinsExpandedToFitEvent,

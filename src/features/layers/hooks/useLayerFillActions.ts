@@ -30,7 +30,7 @@ export interface LayerFillActions {
   clearConfirmOpen: boolean;
   setClearConfirmOpen: (open: boolean) => void;
   fillGaps: () => void;
-  /** Clears the layer and deselects; closes the confirm dialog. */
+  /** Moves the layer's bins to the stash and deselects; closes the confirm dialog. */
   confirmClear: () => void;
   /** Fills with the given size and exits paint mode. */
   fillWithSize: (width: number, depth: number) => void;
@@ -42,7 +42,7 @@ export function useLayerFillActions(options?: { onAfterAction?: () => void }): L
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
 
   const layout = useLayoutStore((state) => state.layout);
-  const { fillLayer, fillLayerGaps, clearLayer } = useMutations();
+  const { fillLayer, fillLayerGaps, moveBinsToStaging } = useMutations();
 
   const { activeLayerId, activeCategoryId, setSelectedBins } = useSelectionStore(
     useShallow((state) => ({
@@ -82,7 +82,7 @@ export function useLayerFillActions(options?: { onAfterAction?: () => void }): L
     if (!activeLayerId || layerBins.length === 0) return;
     const count = layerBins.length;
     batch(() => {
-      clearLayer(activeLayerId);
+      moveBinsToStaging(layerBins.map((b) => b.id));
       setSelectedBins([]);
     });
     addToast(t('toast.clearComplete', { count }), 'success');

@@ -5113,6 +5113,7 @@
   "undo.binDuplicated": "Duplicerade fack",
   "undo.binMovedFromStaging": "Flyttade fack från förråd",
   "undo.binMovedToStaging": "Flyttade fack till förråd",
+  "undo.binsMovedToStaging": "Flyttade fack till förråd",
   "undo.binUpdated": "Uppdaterade fack",
   "undo.binsDeleted": "Raderade fack",
   "undo.binsExpanded": "Expanderade fack",

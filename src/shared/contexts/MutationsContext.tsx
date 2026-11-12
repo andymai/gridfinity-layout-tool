@@ -49,6 +49,7 @@ export interface Mutations {
   deleteBins: (ids: BinId[]) => Result<void, LayoutError>;
   duplicateBin: (id: BinId) => Result<BinId, ValidationError | LayoutError>;
   moveBinToStaging: (id: BinId) => Result<void, LayoutError>;
+  moveBinsToStaging: (ids: BinId[]) => Result<void, LayoutError>;
   moveBinFromStaging: (
     id: BinId,
     layerId: LayerId,

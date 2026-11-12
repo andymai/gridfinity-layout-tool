@@ -5113,6 +5113,7 @@
   "undo.binDuplicated": "Bin gedupliceerd",
   "undo.binMovedFromStaging": "Bin verplaatst uit stash",
   "undo.binMovedToStaging": "Bin verplaatst naar stash",
+  "undo.binsMovedToStaging": "Bins verplaatst naar stash",
   "undo.binUpdated": "Bin bijgewerkt",
   "undo.binsDeleted": "Bins verwijderd",
   "undo.binsExpanded": "Bins vergroot",

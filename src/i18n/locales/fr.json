@@ -5113,6 +5113,7 @@
   "undo.binDuplicated": "Bin dupliqué",
   "undo.binMovedFromStaging": "Bin déplacé du stash",
   "undo.binMovedToStaging": "Bin déplacé vers le stash",
+  "undo.binsMovedToStaging": "Bins déplacés vers le stash",
   "undo.binUpdated": "Bin mis à jour",
   "undo.binsDeleted": "Bins supprimés",
   "undo.binsExpanded": "Bacs ajustés",

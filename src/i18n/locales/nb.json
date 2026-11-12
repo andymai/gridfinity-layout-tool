@@ -5113,6 +5113,7 @@
   "undo.binDuplicated": "Bin duplisert",
   "undo.binMovedFromStaging": "Bin flyttet fra stash",
   "undo.binMovedToStaging": "Bin flyttet til stash",
+  "undo.binsMovedToStaging": "Bins flyttet til stash",
   "undo.binUpdated": "Bin oppdatert",
   "undo.binsDeleted": "Bins slettet",
   "undo.binsExpanded": "Beholdere utvidet",

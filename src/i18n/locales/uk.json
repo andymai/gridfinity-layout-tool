@@ -5357,6 +5357,7 @@
   "undo.binDuplicated": "Дубльовано бін",
   "undo.binMovedFromStaging": "Бін переміщено зі сховку",
   "undo.binMovedToStaging": "Бін переміщено до сховку",
+  "undo.binsMovedToStaging": "Біни переміщено до сховку",
   "undo.binUpdated": "Оновлено бін",
   "undo.binsDeleted": "Видалено біни",
   "undo.binsExpanded": "Біни розширено",

@@ -4991,6 +4991,7 @@
   "undo.binDuplicated": "수납통 복제",
   "undo.binMovedFromStaging": "수납통을 임시 보관함에서 이동",
   "undo.binMovedToStaging": "수납통을 임시 보관함으로 이동",
+  "undo.binsMovedToStaging": "수납통을 임시 보관함으로 이동",
   "undo.binUpdated": "수납통 수정",
   "undo.binsDeleted": "수납통 삭제",
   "undo.binsExpanded": "수납통 확장",

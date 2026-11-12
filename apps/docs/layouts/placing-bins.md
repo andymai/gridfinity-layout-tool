@@ -99,6 +99,8 @@ The stash, below the grid, holds bins that are not in the drawer. It's a safe pl
 
 To put a bin in the stash, drag it onto the stash, or click <Ui k="inspector.toStash" /> in the inspector. In the size brush, hold <kbd>Shift</kbd> and click a size to add a new bin of that size to the stash.
 
+To move every bin on the active layer to the stash, click the clear button under the size brush in the left panel. Its label shows how many bins it moves. Then click <Ui k="layers.clearLayer.confirm" />.
+
 The Layout Tool also moves bins to the stash for you in these cases:
 
 - The drawer gets smaller.
@@ -120,8 +122,6 @@ To give a bin that is already on the grid a design, right-click it and choose <U
 Select bins and press <kbd>Delete</kbd> or <kbd>Backspace</kbd>. You can also right-click a bin and choose <Ui k="common.delete" />.
 
 Changed your mind? Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> (<kbd>Cmd</kbd>+<kbd>Z</kbd> on a Mac) to undo, and <kbd>Ctrl</kbd>+<kbd>Y</kbd> to redo. A message names each change that you undo. The Layout Tool keeps the last 100 changes.
-
-To empty the full active layer, click the clear button under the size brush in the left panel. Its label shows how many bins it clears. Clear deletes the bins. It does not put them in the stash, so undo is the only way to get them back. To keep the bins, select them and click <Ui k="selectionToolbar.moveToStash" /> instead. <Ui k="commandPalette.selectAll" /> in the command palette selects every bin on the active layer.
 
 ## When it goes wrong
 

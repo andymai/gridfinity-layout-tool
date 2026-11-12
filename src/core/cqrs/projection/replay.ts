@@ -50,6 +50,12 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
       break;
     }
 
+    case 'bin.batchMovedToStaging': {
+      const ids = new Set(event.payload.moves.map((m) => m.id));
+      next.bins = next.bins.map((b) => (ids.has(b.id) ? { ...b, layerId: STAGING_ID } : b));
+      break;
+    }
+
     case 'bin.movedFromStaging': {
       const bin = next.bins.find((b) => b.id === event.payload.id);
       if (bin) {
