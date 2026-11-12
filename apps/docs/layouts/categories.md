@@ -28,6 +28,8 @@ A new layout starts with five categories: Coral, Sky, Green, Cloud and Charcoal.
 - Select one or more bins, then click a category. The selected bins change to that category.
 - Press <kbd>[</kbd> or <kbd>]</kbd> to go to the previous or the next category. With bins selected, the keys change their category. With no bin selected, they change the category for new bins.
 
+<Screenshot id="layouts-categories-assign" alt="Two bins are selected, one with a click and one with Ctrl and a click. A click on Sky in the Categories group colors both bins blue." spec="Clip. Layout editor on desktop. Layout with the five default categories and five bins, all in Coral. Click Measuring cups and Ctrl+click Peelers. Cut to a close-up of the category list and click Sky. Cut back to the grid. Crop to the grid." />
+
 The inspector also has a <Ui k="common.category" /> field for the selected bin. To select every bin of one category, select one of them and run <Ui k="commandPalette.selectByCategory" /> from the command palette.
 
 ## Add and edit categories
@@ -36,6 +38,8 @@ The inspector also has a <Ui k="common.category" /> field for the selected bin. 
 2. Type a name of up to 24 characters.
 3. Click a color in the palette.
 4. Click outside the row to close it.
+
+<Screenshot id="layouts-categories-add" alt="A click on the plus button adds a category row with its name field open. Baking is typed as the name, and Amber is picked from the palette." spec="Clip. Layout editor on desktop, left panel open. Layout with the five default categories. Click Add category, type a name, click a color, then click outside the row. Crop to the Categories group." />
 
 To edit a category later, double-click its name or click <Ui k="categories.editCategory" />. Only want a new color? Click the color square and pick one. The palette has 14 colors.
 
@@ -67,6 +71,8 @@ The category color is for planning only. It doesn't set the filament color of th
 ### Tell categories apart without color
 
 If some colors are hard for you to tell apart, open Settings and go to <Ui k="settings.tabs.accessibility" />. Turn on <Ui k="settings.categoryPatterns" />. Each category then gets its own pattern of lines, dots or grids on the canvas.
+
+<Screenshot id="layouts-categories-patterns" alt="The grid with category patterns turned on. Each category has its own pattern of lines, dots or grids over its color." spec="Layout editor on desktop with the Workbench sample, which uses five categories. Turn on the category patterns setting. Crop to the grid." />
 
 ## When it goes wrong
 
