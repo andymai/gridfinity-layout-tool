@@ -1,0 +1,24 @@
+apps/docs/sharing/share-links.md
+  s_1cc363bb3cc76d::t_75b0a05352c994 87,110
+scripts/docs-capture/shots/sharingSettings.ts
+  s_1cc363bb3cc76d::t_35f1f1de3e52f6 54-70
+  s_1cc363bb3cc76d::t_8f0ae8e808d0ac 37-38,43-53,71-97,940-941,944-951,954,961-965,974,985,1028,1030
+apps/docs/media/sharing-share-links-popover.json
+  s_1cc363bb3cc76d::t_75d6404d399904 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c592c90a8b93fcc1a6e6269f7c9b8d35afe808aa",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
