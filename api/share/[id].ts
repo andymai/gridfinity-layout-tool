@@ -456,7 +456,6 @@ async function writeShare(
     ...write,
     etag,
     permission: data.metadata.permission,
-    creates: false,
   });
   return true;
 }

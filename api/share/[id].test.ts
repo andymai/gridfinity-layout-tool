@@ -133,36 +133,34 @@ function verify(key: string, stampMs: number): Promise<number> {
 /** The permission record scripts' semantics, as `sharePermission.integration.test.ts` runs them. */
 const permissionRecords = new Map<
   string,
-  { stamp: number; etag: string | null; permission: string | null }
+  { stamp: number; holder?: string; etag: string | null; permission: string | null }
 >();
 const PERMISSION_VERSION_KEY = `share:permissionVersion:abc123DEF456`;
 function recordPermission(
   _permissionKey: string,
   versionKey: string,
   _hashKey: string,
-  _tokenHash: string,
-  creates: number,
+  holder: string,
   stampMs: number,
   _ttlSeconds: number,
   etag: string,
   permission: string
 ): Promise<number> {
   const last = permissionRecords.get(versionKey);
-  if (!creates && last && last.stamp >= stampMs) return Promise.resolve(0);
-  permissionRecords.set(versionKey, { stamp: stampMs, etag, permission });
+  if (last && last.holder === holder && last.stamp >= stampMs) return Promise.resolve(0);
+  permissionRecords.set(versionKey, { stamp: stampMs, holder, etag, permission });
   return Promise.resolve(1);
 }
 function forgetPermission(
   _permissionKey: string,
   versionKey: string,
   _hashKey: string,
-  _tokenHash: string,
-  creates: number,
+  holder: string,
   stampMs: number
 ): Promise<number> {
   const last = permissionRecords.get(versionKey);
-  if (!creates && last && last.stamp >= stampMs) return Promise.resolve(0);
-  permissionRecords.set(versionKey, { stamp: stampMs, etag: null, permission: null });
+  if (last && last.holder === holder && last.stamp >= stampMs) return Promise.resolve(0);
+  permissionRecords.set(versionKey, { stamp: stampMs, holder, etag: null, permission: null });
   return Promise.resolve(1);
 }
 function readRecord(key: string, ...fields: ('etag' | 'permission')[]): Promise<(string | null)[]> {
@@ -384,7 +382,6 @@ describe('share/[id]', () => {
         PERMISSION_VERSION_KEY,
         `share:hash:${VALID_ID}`,
         '',
-        0,
         Date.parse(writtenAt(0).metadata.lastUpdatedAt),
         expect.any(Number),
         '"etag-written"',
@@ -401,7 +398,6 @@ describe('share/[id]', () => {
         PERMISSION_VERSION_KEY,
         `share:hash:${VALID_ID}`,
         correctHash,
-        0,
         expect.any(Number),
         expect.any(Number),
         '"etag-written"',
@@ -451,7 +447,6 @@ describe('share/[id]', () => {
         PERMISSION_VERSION_KEY,
         `share:hash:${VALID_ID}`,
         '',
-        0,
         Date.parse(writtenAt(0).metadata.lastUpdatedAt),
         expect.any(Number)
       );
@@ -906,6 +901,7 @@ describe('share/[id]', () => {
 
         expect(permissionRecords.get(PERMISSION_VERSION_KEY)).toEqual({
           stamp: Date.parse(writtenAt(0).metadata.lastUpdatedAt),
+          holder: correctHash,
           etag: '"etag-written"',
           permission: 'view',
         });

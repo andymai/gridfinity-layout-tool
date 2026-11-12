@@ -32,7 +32,7 @@ describe.skipIf(!REDIS_TEST_URL)('share permission records (real Redis)', () => 
     permission: 'view' | 'edit',
     over: Partial<SharePermissionWrite> = {}
   ): SharePermissionWrite {
-    return { stampMs, etag, permission, tokenHash: 'h1', creates: false, ...over };
+    return { stampMs, etag, permission, tokenHash: 'h1', ...over };
   }
 
   /** The record command fails, as on a timeout, while the cleanup still runs. */
@@ -141,7 +141,7 @@ describe.skipIf(!REDIS_TEST_URL)('share permission records (real Redis)', () => 
       await recordSharePermission(
         redis,
         's1',
-        write(STAMP + 1, '"etag-new"', 'view', { tokenHash: 'h2', creates: true })
+        write(STAMP + 1, '"etag-new"', 'view', { tokenHash: 'h2' })
       );
       await recordSharePermission(redis, 's1', write(STAMP + 3, '"etag-old-2"', 'edit'));
 
@@ -149,12 +149,34 @@ describe.skipIf(!REDIS_TEST_URL)('share permission records (real Redis)', () => 
       expect(await recordedPermissionOf(redis, 's1', '"etag-new"')).toBe('view');
     });
 
+    it('keeps a later record of the new share over its delayed creation record', async () => {
+      await replaceShare();
+      await recordSharePermission(
+        redis,
+        's1',
+        write(STAMP + 2, '"etag-2"', 'view', { tokenHash: 'h2' })
+      );
+      await recordSharePermission(
+        redis,
+        's1',
+        write(STAMP + 1, '"etag-1"', 'edit', { tokenHash: 'h2' })
+      );
+      await recordSharePermission(
+        failingRecord(redis),
+        's1',
+        write(STAMP + 1, '"etag-1"', 'edit', { tokenHash: 'h2' })
+      );
+
+      expect(await redis.get(sharePermissionKey('s1'))).toBe('view');
+      expect(await recordedPermissionOf(redis, 's1', '"etag-2"')).toBe('view');
+    });
+
     it('forgets only for the share that holds the token hash', async () => {
       await replaceShare();
       await recordSharePermission(
         redis,
         's1',
-        write(STAMP + 1, '"etag-new"', 'view', { tokenHash: 'h2', creates: true })
+        write(STAMP + 1, '"etag-new"', 'view', { tokenHash: 'h2' })
       );
       await recordSharePermission(
         failingRecord(redis),

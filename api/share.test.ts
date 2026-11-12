@@ -289,7 +289,6 @@ describe('share (create)', () => {
       `share:permissionVersion:${VALID_ID}`,
       `share:hash:${VALID_ID}`,
       storedHash,
-      1,
       REVISION_STAMP,
       expect.any(Number),
       '"etag-created"',

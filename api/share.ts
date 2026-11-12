@@ -268,7 +268,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       etag,
       permission,
       tokenHash: deleteTokenHash,
-      creates: true,
     });
     // The new blob holds only this stamp, which the counter handed out.
     if (redis && reserved && !reserved.verified) {

@@ -12,7 +12,6 @@ const WRITE = {
   etag: '"etag-2"',
   permission: 'view',
   tokenHash: 'h1',
-  creates: false,
 } as const;
 
 function scripted(record: unknown, forget: unknown = vi.fn().mockResolvedValue(1)) {
@@ -39,7 +38,6 @@ describe('recordSharePermission', () => {
       'share:permissionVersion:s1',
       'share:hash:s1',
       'h1',
-      0,
       STAMP,
       SHARE_PERMISSION_TTL_SECONDS,
       '"etag-2"',
@@ -47,16 +45,15 @@ describe('recordSharePermission', () => {
     );
   });
 
-  it('marks a creation, and passes no hash for a share that keeps it in the blob', async () => {
+  it('passes no hash for a share that keeps it in the blob', async () => {
     const record = vi.fn().mockResolvedValue(1);
     const { redis } = scripted(record);
-    await recordSharePermission(redis, 's1', { ...WRITE, tokenHash: null, creates: true });
+    await recordSharePermission(redis, 's1', { ...WRITE, tokenHash: null });
     expect(record).toHaveBeenCalledWith(
       'share:permission:s1',
       'share:permissionVersion:s1',
       'share:hash:s1',
       '',
-      1,
       STAMP,
       SHARE_PERMISSION_TTL_SECONDS,
       '"etag-2"',
@@ -73,7 +70,6 @@ describe('recordSharePermission', () => {
       'share:permissionVersion:s1',
       'share:hash:s1',
       'h1',
-      0,
       STAMP,
       SHARE_PERMISSION_TTL_SECONDS
     );

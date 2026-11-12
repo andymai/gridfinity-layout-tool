@@ -12,11 +12,11 @@ type Permission = ShareMetadata['permission'];
 export const SHARE_PERMISSION_TTL_SECONDS = 120;
 
 // KEYS: permission, version, token hash. ARGV: token hash ('' for a share from
-// before the hash moved to Redis), creates, stamp, TTL, then the record's own.
+// before the hash moved to Redis), stamp, TTL, then the record's own.
 // A record of an earlier share under the id must not land: DELETE removes the
 // token hash, and POST sets a new one. Within one share, a write that lands
 // over another carries a later stamp, so the record with the latest stamp
-// names the stored blob. Only the record of a new share skips that check.
+// names the stored blob. A record of an earlier share loses whatever its stamp.
 const FENCE_LUA = `
 local holder = redis.call('GET', KEYS[3])
 if ARGV[1] == '' then
@@ -24,16 +24,15 @@ if ARGV[1] == '' then
 elseif holder ~= ARGV[1] then
   return 0
 end
-if ARGV[2] ~= '1' then
-  local last = tonumber(redis.call('HGET', KEYS[2], 'stamp'))
-  if last and last >= tonumber(ARGV[3]) then return 0 end
-end
+local recorded = redis.call('HMGET', KEYS[2], 'stamp', 'holder')
+local last = tonumber(recorded[1])
+if last and recorded[2] == ARGV[1] and last >= tonumber(ARGV[2]) then return 0 end
 `;
 
 const RECORD_PERMISSION_LUA = `${FENCE_LUA}
-redis.call('HSET', KEYS[2], 'stamp', ARGV[3], 'etag', ARGV[5], 'permission', ARGV[6])
-redis.call('EXPIRE', KEYS[2], ARGV[4])
-redis.call('SET', KEYS[1], ARGV[6], 'EX', ARGV[4])
+redis.call('HSET', KEYS[2], 'stamp', ARGV[2], 'holder', ARGV[1], 'etag', ARGV[4], 'permission', ARGV[5])
+redis.call('EXPIRE', KEYS[2], ARGV[3])
+redis.call('SET', KEYS[1], ARGV[5], 'EX', ARGV[3])
 return 1
 `;
 
@@ -42,8 +41,8 @@ return 1
 // write still loses.
 const FORGET_PERMISSION_LUA = `${FENCE_LUA}
 redis.call('DEL', KEYS[1], KEYS[2])
-redis.call('HSET', KEYS[2], 'stamp', ARGV[3])
-redis.call('EXPIRE', KEYS[2], ARGV[4])
+redis.call('HSET', KEYS[2], 'stamp', ARGV[2], 'holder', ARGV[1])
+redis.call('EXPIRE', KEYS[2], ARGV[3])
 return 1
 `;
 
@@ -53,7 +52,6 @@ interface PermissionRedis extends Redis {
     versionKey: string,
     hashKey: string,
     tokenHash: string,
-    creates: number,
     stampMs: number,
     ttlSeconds: number,
     etag: string,
@@ -64,7 +62,6 @@ interface PermissionRedis extends Redis {
     versionKey: string,
     hashKey: string,
     tokenHash: string,
-    creates: number,
     stampMs: number,
     ttlSeconds: number
   ): Promise<number>;
@@ -86,8 +83,6 @@ export interface SharePermissionWrite {
   readonly permission: Permission;
   /** The Redis token hash that let the write in; null when the hash is only in the blob. */
   readonly tokenHash: string | null;
-  /** True for the write that creates the share. */
-  readonly creates: boolean;
 }
 
 /**
@@ -108,7 +103,6 @@ export async function recordSharePermission(
     sharePermissionVersionKey(shareId),
     shareHashKey(shareId),
     write.tokenHash ?? '',
-    write.creates ? 1 : 0,
     write.stampMs,
     SHARE_PERMISSION_TTL_SECONDS,
   ] as const;
