@@ -24,6 +24,7 @@ const mocks = vi.hoisted(() => ({
   redisSet: vi.fn(),
   reserveShareRevision: vi.fn(),
   verifyShareRevision: vi.fn(),
+  recordSharePermission: vi.fn(),
   validateShareLayout: vi.fn(),
   isValidationError: vi.fn(),
   validateSharedDesigns: vi.fn(),
@@ -127,11 +128,13 @@ describe('share (create)', () => {
       set: mocks.redisSet,
       reserveShareRevision: mocks.reserveShareRevision,
       verifyShareRevision: mocks.verifyShareRevision,
+      recordSharePermission: mocks.recordSharePermission,
     });
     mocks.redisSet.mockResolvedValue('OK');
+    mocks.recordSharePermission.mockResolvedValue(1);
     mocks.reserveShareRevision.mockResolvedValue([REVISION_STAMP, 0]);
     mocks.verifyShareRevision.mockResolvedValue(1);
-    mocks.put.mockResolvedValue({ url: 'blob://ok' });
+    mocks.put.mockResolvedValue({ url: 'blob://ok', etag: '"etag-created"' });
     mocks.validateShareLayout.mockReturnValue({ layout: { name: 'My Drawer' } });
     mocks.isValidationError.mockReturnValue(false);
     mocks.filterLayoutContent.mockReturnValue({ passed: true });
@@ -278,11 +281,18 @@ describe('share (create)', () => {
   it('records the new permission so a reused id cannot inherit a deleted share', async () => {
     const res = await handle(layoutBody({ permission: 'view' }));
     expect(res._status).toBe(201);
-    expect(mocks.redisSet).toHaveBeenCalledWith(
+    const [, storedHash] = mocks.redisSet.mock.calls.find(
+      ([key]) => key === `share:hash:${VALID_ID}`
+    ) as [string, string];
+    expect(mocks.recordSharePermission).toHaveBeenCalledWith(
       `share:permission:${VALID_ID}`,
-      'view',
-      'EX',
-      expect.any(Number)
+      `share:permissionVersion:${VALID_ID}`,
+      `share:hash:${VALID_ID}`,
+      storedHash,
+      REVISION_STAMP,
+      expect.any(Number),
+      '"etag-created"',
+      'view'
     );
   });
 

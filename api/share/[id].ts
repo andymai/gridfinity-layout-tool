@@ -11,6 +11,8 @@ import {
 } from '../lib/validation.js';
 import { holdShareMeshes } from '../lib/meshIndex.js';
 import { reserveShareRevision, verifyShareRevision } from '../lib/shareRevision.js';
+import { recordSharePermission, recordedPermissionOf } from '../lib/sharePermission.js';
+import { sharePermissionVersionKey } from '../lib/redisKeys.js';
 import { resolveShareMeshFiles } from '../lib/shareMeshes.js';
 import { filterLayoutContent, filterSharedDesignsContent } from '../lib/contentFilter.js';
 import { logger } from '../lib/logger.js';
@@ -27,7 +29,6 @@ import {
   sharePermissionKey,
   SHARE_LAST_ACCESSED_TTL_SECONDS,
   resolveSharePermission,
-  recordSharePermission,
   type ShareData,
   rateLimited,
   sendError,
@@ -158,6 +159,23 @@ function writeCondition(
 }
 
 /**
+ * The permission that a write which sets none must keep: the one of the blob
+ * that `ifMatch` names. A body that is that blob carries it. While the CDN
+ * serves an older body, only the record of the write that stored that blob
+ * knows it: until that record lands, Redis can still hold the permission
+ * before it. Null until one of the two proves it.
+ */
+async function keptPermission(
+  id: string,
+  version: { readonly data: ShareData; readonly bodyEtag: string | null },
+  ifMatch: string
+): Promise<unknown> {
+  const redis = getRedis();
+  if (ifMatch === version.bodyEtag || !redis) return version.data.metadata.permission;
+  return recordedPermissionOf(redis, id, ifMatch);
+}
+
+/**
  * PUT /api/share/[id] - Update an existing share
  *
  * Each write is conditional on the blob it read. A collab room records the
@@ -188,19 +206,14 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
     }
 
     const tokenCheck = await verifyDeleteToken(id, loaded.data, deleteToken);
-    if (tokenCheck === 'missing') {
+    if (tokenCheck.status === 'missing') {
       return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
-    if (tokenCheck === 'mismatch') {
+    if (tokenCheck.status === 'mismatch') {
       return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Invalid delete token');
     }
+    let { tokenHash } = tokenCheck;
 
-    const permissionFor = async (
-      existing: ShareData
-    ): Promise<ShareData['metadata']['permission'] | null> => {
-      const value: unknown = permission ?? (await resolveSharePermission(getRedis(), id, existing));
-      return value === 'view' || value === 'edit' ? value : null;
-    };
     const invalidPermission = () =>
       sendError(
         res,
@@ -208,9 +221,14 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
         ErrorCode.VALIDATION_ERROR,
         'Invalid permission. Must be "view" or "edit".'
       );
-
-    let newPermission = await permissionFor(loaded.data);
-    if (!newPermission) return invalidPermission();
+    const requestedPermission: unknown = permission ?? null;
+    if (
+      requestedPermission !== null &&
+      requestedPermission !== 'view' &&
+      requestedPermission !== 'edit'
+    ) {
+      return invalidPermission();
+    }
 
     // A permission-only update (no layout) keeps the stored content.
     let content: Omit<ShareData, 'metadata'> | null = null;
@@ -266,7 +284,12 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
         return sendError(res, 503, ErrorCode.SERVICE_UNAVAILABLE, 'Try the update again.');
       }
       const ifMatch = writeCondition(loaded, content !== null, reserved?.verified ?? false);
-      if (ifMatch !== null) {
+      const stored =
+        ifMatch === null
+          ? null
+          : (requestedPermission ?? (await keptPermission(id, loaded, ifMatch)));
+      if (stored !== null && stored !== 'view' && stored !== 'edit') return invalidPermission();
+      if (ifMatch !== null && stored !== null) {
         const stampMs = reserved?.stampMs ?? floor;
         const now = new Date(stampMs).toISOString();
 
@@ -280,16 +303,16 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
           ...(content ?? loaded.data),
           metadata: {
             ...metadataWithoutAccess,
-            permission: newPermission,
+            permission: stored,
             lastUpdatedAt: now,
           },
         };
 
-        if (await writeShare(id, blobPath, updatedData, newPermission, ifMatch)) {
+        if (await writeShare(id, blobPath, updatedData, { stampMs, tokenHash }, ifMatch)) {
           if (redis && reserved && !reserved.verified && ifMatch === loaded.bodyEtag) {
             await verifyShareRevision(redis, id, stampMs);
           }
-          return respondShare(res, id, newPermission, now);
+          return respondShare(res, id, stored, now);
         }
       }
       if (attempt === MAX_PUT_ATTEMPTS) {
@@ -304,12 +327,12 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       // A stale CDN body needs time to clear; an ETag race does not mind.
       await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS * attempt));
       const reloaded = await loadShareVersion(blobPath);
-      if (!reloaded || (await verifyDeleteToken(id, reloaded.data, deleteToken)) !== 'ok') {
+      const recheck = reloaded && (await verifyDeleteToken(id, reloaded.data, deleteToken));
+      if (!reloaded || recheck?.status !== 'ok') {
         return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
       }
       loaded = reloaded;
-      newPermission = await permissionFor(loaded.data);
-      if (!newPermission) return invalidPermission();
+      tokenHash = recheck.tokenHash;
     }
   } catch (error) {
     logger.error('Share update error', {
@@ -358,10 +381,10 @@ async function handleDelete(
     }
 
     const tokenCheck = await verifyDeleteToken(_id, existingData, deleteToken);
-    if (tokenCheck === 'missing') {
+    if (tokenCheck.status === 'missing') {
       return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');
     }
-    if (tokenCheck === 'mismatch') {
+    if (tokenCheck.status === 'mismatch') {
       return sendError(res, 401, ErrorCode.UNAUTHORIZED, 'Invalid delete token');
     }
 
@@ -375,7 +398,8 @@ async function handleDelete(
         shareHashKey(_id),
         shareReportKey(_id),
         shareLastAccessedKey(_id),
-        sharePermissionKey(_id)
+        sharePermissionKey(_id),
+        sharePermissionVersionKey(_id)
       );
     }
 
@@ -392,17 +416,19 @@ async function handleDelete(
   }
 }
 
+/** `tokenHash` is the Redis hash that matched, which fences the write's permission record. */
 async function verifyDeleteToken(
   id: string,
   existing: ShareData,
   deleteToken: string
-): Promise<'ok' | 'missing' | 'mismatch'> {
+): Promise<{ readonly status: 'ok' | 'missing' | 'mismatch'; readonly tokenHash: string | null }> {
   // New shares keep the hash in Redis; pre-migration shares carry it in the blob.
   const redis = getRedis();
-  const storedHash =
-    (redis ? await redis.get(shareHashKey(id)) : null) ?? existing.metadata.deleteTokenHash;
-  if (!storedHash) return 'missing';
-  return timingSafeCompare(await hashToken(deleteToken), storedHash) ? 'ok' : 'mismatch';
+  const tokenHash = redis ? await redis.get(shareHashKey(id)) : null;
+  const storedHash = tokenHash ?? existing.metadata.deleteTokenHash;
+  if (!storedHash) return { status: 'missing', tokenHash };
+  const matches = timingSafeCompare(await hashToken(deleteToken), storedHash);
+  return { status: matches ? 'ok' : 'mismatch', tokenHash };
 }
 
 /** False when another write replaced the blob that `ifMatch` names. */
@@ -410,22 +436,27 @@ async function writeShare(
   id: string,
   blobPath: string,
   data: ShareData,
-  permission: ShareData['metadata']['permission'],
+  write: { readonly stampMs: number; readonly tokenHash: string | null },
   ifMatch: string
 ): Promise<boolean> {
+  let etag: string;
   try {
-    await put(blobPath, JSON.stringify(data), {
+    ({ etag } = await put(blobPath, JSON.stringify(data), {
       access: 'public',
       contentType: 'application/json',
       addRandomSuffix: false,
       allowOverwrite: true,
       ifMatch,
-    });
+    }));
   } catch (error) {
     if (error instanceof BlobPreconditionFailedError) return false;
     throw error;
   }
-  await recordSharePermission(getRedis(), id, permission);
+  await recordSharePermission(getRedis(), id, {
+    ...write,
+    etag,
+    permission: data.metadata.permission,
+  });
   return true;
 }
 

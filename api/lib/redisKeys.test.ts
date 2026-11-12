@@ -4,6 +4,7 @@ import {
   shareReportKey,
   shareLastAccessedKey,
   sharePermissionKey,
+  sharePermissionVersionKey,
   shareRevisionKey,
   rateLimitKey,
   sessionKey,
@@ -45,6 +46,10 @@ describe('redisKeys', () => {
 
     it('sharePermissionKey produces share:permission:{id}', () => {
       expect(sharePermissionKey('abc123')).toBe('share:permission:abc123');
+    });
+
+    it('sharePermissionVersionKey produces share:permissionVersion:{id}', () => {
+      expect(sharePermissionVersionKey('abc123')).toBe('share:permissionVersion:abc123');
     });
 
     it('shareRevisionKey produces share:revision:{id}', () => {
@@ -182,6 +187,7 @@ describe('redisKeys', () => {
         shareReportKey('a'),
         shareLastAccessedKey('a'),
         sharePermissionKey('a'),
+        sharePermissionVersionKey('a'),
       ];
       const syncKeys = [
         sessionKey('a'),
