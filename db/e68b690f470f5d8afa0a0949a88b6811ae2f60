@@ -1,0 +1,35 @@
+src/features/bin-inspector/components/Inspector/BinLabelField/BinLabelField.test.tsx
+  s_1cc363bb3cc76d::t_7c05266ec980c9 70-71,73,79,87
+  s_1cc363bb3cc76d::t_ee9d2b3b5d54c9 2,5
+  s_1cc363bb3cc76d::t_1e412d72534892 57-69,72,74-78,80-86,88-107
+src/design-system/Combobox/Combobox.tsx
+  s_1cc363bb3cc76d::t_4c6f1188e443b5 122
+  s_1cc363bb3cc76d::t_69e6f46b7cc900 77-78
+  s_1cc363bb3cc76d::t_376a5aff7aeb79 108-110
+  s_1cc363bb3cc76d::t_893457de858933 236-238,242,252
+  s_1cc363bb3cc76d::t_aed282d3db057d 153
+  s_1cc363bb3cc76d::t_f63924aa51befa 183,192-193,197-200
+  s_1cc363bb3cc76d::t_a6468c29e98831 111
+  s_1cc363bb3cc76d::t_39b4034d8a923c 287-289
+  s_1cc363bb3cc76d::t_26ed7b9207848b 195-196
+src/design-system/Combobox/Combobox.test.tsx
+  s_1cc363bb3cc76d::t_8cb3fe282358c3 250
+  s_1cc363bb3cc76d::t_a9a476fa9f017a 203-223
+  s_1cc363bb3cc76d::t_84769c80f422e5 56-72,80,88-171
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dbe68b690f470f5d8afa0a0949a88b6811ae2f60",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
