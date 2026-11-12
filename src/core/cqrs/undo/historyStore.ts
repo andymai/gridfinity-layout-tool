@@ -153,8 +153,6 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     );
 
     // Show undo toast with action description
-    // NOTE: getStaticTranslation uses English only. Full locale support
-    // requires a locale-aware static helper or toast i18n key support.
     useToastStore.getState().addToast({
       message: getStaticTranslation('undo.undid', {
         action: describeEntry(commandType, commandCount),
