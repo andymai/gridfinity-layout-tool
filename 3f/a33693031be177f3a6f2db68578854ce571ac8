@@ -1,0 +1,23 @@
+src/core/cqrs/middleware/middlewareConfig.test.ts
+  s_1cc363bb3cc76d::t_077dc6b0d0fecd 10
+src/core/cqrs/middleware/middlewareConfig.ts
+  s_1cc363bb3cc76d::t_3f642ddbceabe3 29
+src/core/cqrs/validation/schemas.ts
+  s_1cc363bb3cc76d::t_bd3ee7d9455b83 420,434,440,445,458,470
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3fa33693031be177f3a6f2db68578854ce571ac8",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
