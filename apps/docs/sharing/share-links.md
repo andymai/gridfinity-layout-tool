@@ -33,7 +33,7 @@ Not sure? Pick view. You can change it later.
 
 After you make the link, the share button gets a check mark and turns into <Ui k="share.button.manageShare" />.
 
-<Screenshot id="sharing-share-links-popover" alt="The share popover below the header share button, with the permission menu and the create link button." spec="Layout editor, desktop, a sample layout with about 10 bins on two layers. Click the share button in the header. Show the popover before you create a link, with the permission menu set to view. Crop to the header right side and the popover." />
+<Screenshot id="sharing-share-links-popover" alt="The pointer clicks the share button in the header. The popover opens with the permission menu set to view. The pointer clicks Create share link. The popover closes, and a check mark shows on the share button." spec="Clip. Layout editor, desktop, a sample layout with about 10 bins on two layers, with the share API routed to a made-up link. Click the share button in the header, then Create share link, in a crop of the header right side and the popover. Cut to a close-up of the share button with its check mark." />
 
 Prefer the keyboard? Run <Ui k="commandPalette.copyShareLink" /> in the command palette to open the same controls.
 
@@ -84,6 +84,8 @@ Click <Ui k="share.button.manageShare" /> in the header to get the link controls
 | Change who can edit        | Pick a new value in <Ui k="share.anyoneWithLinkCan" />. A message lets you undo the change. |
 | Stop the link from working | Click <Ui k="share.deleteShareLink" />, then <Ui k="common.delete" />.                      |
 
+<Screenshot id="sharing-share-links-manage" alt="The pointer clicks Manage share in the header. The popover shows the link with a Copy button, the permission menu and Delete share link. The pointer clicks Delete share link, and the popover asks you to confirm with Delete or Cancel." spec="Clip. Layout editor, desktop, a layout with a share link routed to made-up data. Click Manage share, hold on the popover, then click Delete share link and hold on the confirm step. Do not click Delete. Crop to the header right side and the popover." />
+
 Switch an edit link to view only, and anyone who opens the link after that can only look. People already in a live session can keep editing until they leave and come back. Delete a link, and it stops working for everyone who has it.
 
 ::: info
@@ -105,6 +107,8 @@ The <Ui k="share.title" /> dialog opens with three tabs:
 | <Ui k="share.tabs.file" /> | <Ui k="share.file.download" /> saves the layout as a JSON file. The other person imports it in the layout manager.                            |
 | <Ui k="share.tabs.json" /> | <Ui k="share.json.copy" /> copies the layout data to your clipboard.                                                                          |
 
+<Screenshot id="sharing-share-links-without-server" alt="Ctrl+O opens the layout manager. The pointer opens the actions menu of the layout and clicks Copy link. The Share layout dialog opens on its Link tab, then the pointer clicks the File tab and the JSON tab." spec="Clip. Layout editor, desktop, one sample layout. Press Ctrl+O, open the actions menu on the layout card, click Copy link, then click the File and JSON tabs. Crop to the layout manager." />
+
 ## Share one bin design
 
 Want to send just one bin? Send its design file. It holds the editable design, not a printable model, and the other person imports it in the bin designer. [Save and reuse designs](../designer/save-and-reuse#download-and-import-a-design-file) shows how to download and import the file. To share a design with every maker, publish it in [the community gallery](./community).
@@ -120,6 +124,8 @@ Read the message, and do what it asks:
 | Blocked content    | Change the text that the message names, then share again.                                  |
 | A layout too large | Remove bins that you don't need, or [share without the server](#share-without-the-server). |
 | Too many bins      | Remove bins until the layout has 2,500 or fewer.                                           |
+
+<Screenshot id="sharing-share-links-blocked" alt="The share popover with a red message: a bin label has a link or other text that can't be shared. A Try again button is below it." spec="Layout editor, desktop, a layout with a web address in one bin label. Route the share request to a content-blocked answer that names the bin label field. Click Create share link, then open the popover again. Crop to the header right side and the popover." />
 
 The server reads all the text that you share. That is the layout name, the category names, each linked bin design, and the labels, notes, contents and custom properties of each bin. In the text that the message names, remove web addresses that start with `http://`, `https://` or `www.`. Type a character fewer times where it comes 11 or more times in a row. Then reword offensive words.
 

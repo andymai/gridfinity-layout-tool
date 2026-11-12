@@ -32,6 +32,8 @@ The Layout Tool can connect to the SpaceMouse in two ways, and it tries the driv
 | 3Dconnexion driver | The 3Dconnexion driver is installed and runs on the computer | Any browser           | The 3Dconnexion control panel. Settings shows <Ui k="spacemouse.driverManaged" /> |
 | Direct             | No driver answers                                            | Chrome, Edge or Opera | Settings in the Layout Tool                                                       |
 
+<Screenshot id="settings-spacemouse-driver" alt="The SpaceMouse section on the General tab with the switch on and a device connected through the 3Dconnexion driver. A note says that speed and axis direction are set in the 3Dconnexion control panel. No speed or invert controls show." spec="Settings, General tab, desktop. Turn on the SpaceMouse switch, with the driver connection set in the app state, because the capture machine has no driver. Crop to the SpaceMouse section." />
+
 If the status shows <Ui k="spacemouse.status.unsupported" />, this browser can't make a direct connection. Install the 3Dconnexion driver, or use Chrome, Edge or Opera. If the driver stops, the Layout Tool changes to the direct connection.
 
 After the first pairing, the direct connection finds the same device again by itself. If the status shows <Ui k="spacemouse.status.error" />, click <Ui k="spacemouse.connect" /> to try again.

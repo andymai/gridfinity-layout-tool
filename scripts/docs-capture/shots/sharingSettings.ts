@@ -4,10 +4,10 @@ import type { Locator, Route, WebSocketRoute } from '@playwright/test';
 import { WORKBENCH, WORKSHOP_CATEGORIES, layoutFile } from '../fixtures';
 import type { FixtureLayout } from '../fixtures';
 import { label } from '../labels';
-import { DESKTOP, pad } from '../session';
-import type { DocsSession, Shot } from '../session';
+import { DESKTOP, frameAround, pad, union } from '../session';
+import type { DocsSession, Rect, Shot } from '../session';
 import { openDesigner } from './apps';
-import { cellCenter, grid, openLayouts } from './layoutEditor';
+import { cellCenter, grid, gridArea, openLayouts } from './layoutEditor';
 
 interface Reply {
   status?: number;
@@ -306,30 +306,6 @@ const TWO_LAYERS: FixtureLayout = {
     { x: 5, y: 0, w: 2, d: 2, h: 3, label: 'Glue sticks', cat: 'Spares', layer: 1 },
   ],
   categories: WORKSHOP_CATEGORIES,
-};
-
-const sharePopover: Shot = {
-  id: 'sharing-share-links-popover',
-  kind: 'still',
-  async take(s) {
-    await openEditor(s, TWO_LAYERS);
-    const share = s.page.getByRole('button', { name: label('share.button.shareLayout') }).first();
-    await share.click({ force: true });
-    const popover = s.page.getByRole('dialog', { name: label('share.title') }).first();
-    await s.until(popover);
-    const header = await s.box(s.page.locator('header').first());
-    const p = await s.box(popover);
-    const b = await s.box(share);
-    const find = await s.box(
-      s.page.getByRole('button', { name: label('toolbar.findBins') }).first()
-    );
-    const left = find.x - 16;
-    const right = b.x + b.width + 28;
-    await s.still(
-      { x: left, y: header.y, width: right - left, height: p.y + p.height + 28 - header.y },
-      1.4
-    );
-  },
 };
 
 const reloadButton: Shot = {
@@ -825,9 +801,946 @@ const roomGrid: Shot = {
   },
 };
 
+const WINDOW: Rect = { x: 0, y: 0, ...DESKTOP };
+
+/** Steps the clock in real time, for work that lands from a routed request. */
+async function settle(s: DocsSession, tenths = 15): Promise<void> {
+  for (let i = 0; i < tenths; i++) {
+    await s.ui.warm(2);
+    await s.page.waitForTimeout(100);
+  }
+}
+
+const OWN_SHARE_ID = 'Wb3nT6qLx8Pa';
+
+const shareServer: Handler = (path, _url, method) => {
+  if (path === '/api/share' && method === 'POST') {
+    return {
+      json: {
+        id: OWN_SHARE_ID,
+        url: `/l/${OWN_SHARE_ID}/workbench`,
+        deleteToken: 'docs-delete-token',
+        permission: 'view',
+      },
+    };
+  }
+  if (path === `/api/share/${OWN_SHARE_ID}` && method === 'PUT') {
+    return { json: { id: OWN_SHARE_ID, url: `/l/${OWN_SHARE_ID}/workbench`, permission: 'view' } };
+  }
+  return undefined;
+};
+
+const shareButton = (s: DocsSession, key: 'shareLayout' | 'manageShare'): Locator =>
+  s.page.getByRole('button', { name: label(`share.button.${key}`) }).first();
+
+const sharePopoverOf = (s: DocsSession): Locator =>
+  s.page.getByRole('dialog', { name: label('share.title') }).first();
+
+/** The header from "Find bins that fit" to the share button, down to `bottom`. */
+async function headerStrip(s: DocsSession, bottom: number): Promise<Rect> {
+  const header = await s.box(s.page.locator('header').first());
+  const find = await s.box(s.page.getByRole('button', { name: label('toolbar.findBins') }).first());
+  const share = await s.box(s.page.locator('header button[aria-haspopup="true"]').first());
+  const left = find.x - 16;
+  const right = share.x + share.width + 28;
+  return { x: left, y: header.y, width: right - left, height: bottom - header.y };
+}
+
+/** Empty toolbar space right of "Find bins that fit": over the grid, the pointer lights up bins. */
+async function toolbarRest(s: DocsSession): Promise<[number, number]> {
+  const find = await s.box(s.page.getByRole('button', { name: label('toolbar.findBins') }).first());
+  return [find.x + find.width + 18, find.y + find.height / 2];
+}
+
+/** A key press leaves a focus ring on the control that held the focus. */
+async function blurFocus(s: DocsSession): Promise<void> {
+  await s.page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+  await s.ui.warm(20);
+}
+
+/** Off camera: makes the share link, so the button reads "Manage share". */
+async function makeShareLink(s: DocsSession): Promise<void> {
+  await shareButton(s, 'shareLayout').click({ force: true });
+  await s.until(sharePopoverOf(s));
+  await s.page
+    .getByRole('button', { name: label('share.createShareLink') })
+    .first()
+    .click({ force: true });
+  await s.until(shareButton(s, 'manageShare'));
+  await settle(s, 10);
+  await s.dismissToasts();
+}
+
+const shareCreate: Shot = {
+  id: 'sharing-share-links-popover',
+  kind: 'clip',
+  async take(s) {
+    await openEditor(s, TWO_LAYERS);
+    await routeApi(s, shareServer);
+    const share = shareButton(s, 'shareLayout');
+    await share.click({ force: true });
+    await s.until(sharePopoverOf(s));
+    const p = await s.box(sharePopoverOf(s));
+    await s.page.keyboard.press('Escape');
+    await blurFocus(s);
+    const area = await headerStrip(s, p.y + p.height + 28);
+    const create = s.page.getByRole('button', { name: label('share.createShareLink') }).first();
+    const header = await s.box(s.page.locator('header').first());
+    const b = await s.box(share);
+    await s.ui.park(...(await toolbarRest(s)));
+    await s.take(
+      area,
+      async () => {
+        await s.ui.hold(0.4);
+        await s.ui.click(share);
+        await s.ui.hold(0.9);
+        await s.ui.click(create);
+        await s.ui.hold(1.2);
+      },
+      1.1
+    );
+    await s.ui.hideCursor();
+    await s.until(shareButton(s, 'manageShare'));
+    await s.dismissToasts();
+    const closeUp = frameAround(b, 20, area.width / area.height, header);
+    await s.take(closeUp, async () => {
+      s.poster();
+      await s.ui.hold(2);
+    });
+  },
+};
+
+const shareManage: Shot = {
+  id: 'sharing-share-links-manage',
+  kind: 'clip',
+  async take(s) {
+    await openEditor(s, TWO_LAYERS);
+    await routeApi(s, shareServer);
+    await makeShareLink(s);
+    const manage = shareButton(s, 'manageShare');
+    const remove = s.page.getByRole('button', { name: label('share.deleteShareLink') }).first();
+    // Off camera, open it to the delete step once, for the frame.
+    await manage.click({ force: true });
+    await s.until(sharePopoverOf(s));
+    await remove.click({ force: true });
+    await s.ui.warm(20);
+    const p = await s.box(sharePopoverOf(s));
+    await s.page
+      .getByRole('button', { name: label('common.cancel') })
+      .first()
+      .click({ force: true });
+    await s.page.keyboard.press('Escape');
+    await blurFocus(s);
+    const area = await headerStrip(s, p.y + p.height + 24);
+    const rest = await toolbarRest(s);
+    await s.ui.park(...rest);
+    await s.take(
+      area,
+      async () => {
+        await s.ui.hold(0.4);
+        await s.ui.click(manage);
+        await s.ui.hold(1.4);
+        await s.ui.click(remove);
+        await s.ui.moveTo(...rest);
+        s.poster();
+        await s.ui.hold(2);
+      },
+      1.1
+    );
+  },
+};
+
+const MANAGER_VIEWPORT = { width: 1440, height: 960 };
+
+const shareWithoutServer: Shot = {
+  id: 'sharing-share-links-without-server',
+  kind: 'clip',
+  viewport: MANAGER_VIEWPORT,
+  async take(s) {
+    await openEditor(s, WORKBENCH);
+    // Loaded again from the root, so the address names the open layout, as the link tab copies it.
+    await s.open('/', grid);
+    const manager = s.page.getByRole('dialog').first();
+    const more = s.page
+      .getByRole('button', { name: label('layouts.moreActionsFor', { name: WORKBENCH.name }) })
+      .first();
+    // Off camera, open the manager and its menu once, for the frame.
+    await s.page.keyboard.press('ControlOrMeta+o');
+    await s.until(more);
+    await more.click({ force: true });
+    const copy = s.page.getByRole('menuitem', { name: label('share.copyLink') }).first();
+    await s.until(copy);
+    const area = pad(union(await s.box(manager), await s.box(copy)), 14, MANAGER_VIEWPORT);
+    await s.page.keyboard.press('Escape');
+    await s.page.keyboard.press('Escape');
+    await s.ui.warm(20);
+    await s.page.mouse.click(area.x + area.width / 2, area.y + 6);
+    await s.page.keyboard.press('Escape');
+    await s.ui.warm(30);
+    if (await manager.isVisible()) throw new Error('the layout manager did not close');
+    await s.ui.hideCursor();
+    await s.ui.park(area.x + area.width * 0.8, area.y + area.height * 0.9);
+    const tab = (key: 'link' | 'file' | 'json'): Locator =>
+      s.page.getByRole('tab', { name: label(`share.tabs.${key}`), exact: true }).first();
+    await s.take(area, async () => {
+      await s.ui.hold(0.5);
+      await s.keys('ControlOrMeta+o', 'Ctrl O');
+      await s.ui.hold(0.6);
+      await s.ui.click(more);
+      await s.ui.hold(0.4);
+      await s.ui.click(copy);
+      await s.ui.hold(0.3);
+      s.poster();
+      await s.ui.hold(1.3);
+      await s.ui.click(tab('file'));
+      await s.ui.hold(1.2);
+      await s.ui.click(tab('json'));
+      // The dialog grows and moves up under the pointer, so it moves off.
+      await s.ui.moveTo(area.x + area.width * 0.9, area.y + area.height * 0.95);
+      await s.ui.hold(1.4);
+    });
+  },
+};
+
+/** One bin label holds a web address, which the server's content filter refuses. */
+const BLOCKED_DRAWER: FixtureLayout = {
+  ...TWO_LAYERS,
+  bins: (TWO_LAYERS.bins ?? []).map((b) =>
+    b.label === 'Fuses' ? { ...b, label: 'Fuses www.example.com' } : b
+  ),
+};
+
+const blockedShare: Handler = (path, _url, method) =>
+  path === '/api/share' && method === 'POST'
+    ? {
+        status: 400,
+        json: { error: 'Content blocked', code: 'CONTENT_BLOCKED', field: 'binLabel' },
+      }
+    : undefined;
+
+const shareBlocked: Shot = {
+  id: 'sharing-share-links-blocked',
+  kind: 'still',
+  async take(s) {
+    await openEditor(s, BLOCKED_DRAWER);
+    await routeApi(s, blockedShare);
+    const share = shareButton(s, 'shareLayout');
+    await share.click({ force: true });
+    await s.until(sharePopoverOf(s));
+    await s.page
+      .getByRole('button', { name: label('share.createShareLink') })
+      .first()
+      .click({ force: true });
+    await settle(s, 10);
+    // The popover closes on the click; opened again, it holds the server's answer.
+    if (!(await sharePopoverOf(s).isVisible())) await share.click({ force: true });
+    const message = s.page.getByText(label('cloudShare.error.blockedBinLabel'));
+    await s.until(message);
+    await s.page.mouse.move(DESKTOP.width - 20, DESKTOP.height - 20);
+    await s.ui.warm(10);
+    const p = await s.box(sharePopoverOf(s));
+    await s.still(await headerStrip(s, p.y + p.height + 28), 1.4);
+  },
+};
+
+const SIGNED_IN_USER = {
+  userId: 'docs-signed-in-user',
+  provider: 'github',
+  email: 'robin@example.com',
+  displayName: 'Robin Park',
+};
+
+/** The last account on this device, so a sign-in does not ask about someone else's data. */
+const SIGNED_IN_STORAGE = { 'gflt-last-signed-in-user': SIGNED_IN_USER.userId };
+
+/** A signed-in session over an empty account: every upload lands, nothing comes down. */
+const signedIn: Handler = (path, _url, method) => {
+  if (path === '/api/auth/me') return { json: { authenticated: true, user: SIGNED_IN_USER } };
+  if (path === '/api/auth/logout') return { json: {} };
+  if (path === '/api/sync/manifest') {
+    return {
+      json: {
+        indexUpdatedAt: CLOCK - HOUR,
+        layouts: {},
+        designs: {},
+        baseplates: {},
+        designVersions: {},
+        folders: {},
+      },
+    };
+  }
+  if (path.startsWith('/api/sync/') && (method === 'PUT' || method === 'DELETE')) {
+    return { json: { ok: true } };
+  }
+  return undefined;
+};
+
+/** A Settings tab's content with the dialog's own margin around it, down to `bottom`. */
+function panelCrop(panel: Rect, bottom: number): Rect {
+  return {
+    x: panel.x - 24,
+    y: panel.y - 20,
+    width: panel.width + 48,
+    height: bottom - (panel.y - 20),
+  };
+}
+
+const signOut: Shot = {
+  id: 'sharing-accounts-sign-out',
+  kind: 'clip',
+  storage: SIGNED_IN_STORAGE,
+  async take(s) {
+    await routeApi(s, signedIn);
+    await openLayouts(s, ...LIBRARY);
+    const dock = s.page.getByRole('button', { name: label('dock.openMenu') }).first();
+    await s.until(s.page.getByText(SIGNED_IN_USER.displayName).first());
+    await settle(s, 20);
+    await s.dismissToasts();
+    // Off camera, open the menu once, for the frame.
+    await dock.click({ force: true });
+    const item = s.page.getByRole('button', { name: label('auth.signOut'), exact: true }).first();
+    await s.until(item);
+    const menu = await s.box(s.page.getByLabel(label('dock.menuLabel')).first());
+    await dock.click({ force: true });
+    await s.ui.warm(20);
+    const d = await s.box(dock);
+    const area: Rect = {
+      x: 0,
+      y: menu.y - 1,
+      width: d.x + d.width,
+      height: d.y + d.height - (menu.y - 1),
+    };
+    // On the button it clicks next: elsewhere, the pointer lights up a panel card.
+    await s.ui.park(d.x + d.width * 0.6, d.y + d.height * 0.5);
+    await s.take(
+      area,
+      async () => {
+        await s.ui.hold(0.4);
+        await s.ui.click(dock);
+        await s.ui.hold(1.2);
+        await s.ui.click(item);
+      },
+      1.4
+    );
+    await s.ui.hideCursor();
+    const dialog = s.page.getByRole('dialog', { name: label('syncDialog.signOut.title') });
+    await s.until(dialog);
+    await s.take(
+      frameAround(await s.box(dialog), 20, area.width / area.height, WINDOW),
+      async () => {
+        s.poster();
+        await s.ui.hold(2.2);
+      }
+    );
+  },
+};
+
+const accountTab: Shot = {
+  id: 'sharing-accounts-account-tab',
+  kind: 'still',
+  viewport: SETTINGS_VIEWPORT,
+  storage: SIGNED_IN_STORAGE,
+  async take(s) {
+    await routeApi(s, signedIn);
+    await openLayouts(s, WORKBENCH);
+    await s.until(s.page.getByText(SIGNED_IN_USER.displayName).first());
+    await settle(s, 20);
+    await s.dismissToasts();
+    await openSettings(s, 'settings.tabs.account');
+    await s.until(s.page.getByText(label('dock.syncStatusIdle')).first());
+    const panel = await s.box(s.page.locator('#settings-tabpanel-account'));
+    const button = await s.box(
+      s.page.getByRole('button', { name: label('account.deleteAccount.button') }).first()
+    );
+    await s.still(panelCrop(panel, button.y + button.height + 24), 1.2);
+  },
+};
+
+const SORTER_ID = 'cd0000000001';
+const SORTER_EXAMPLE = 'hero-multicolor-organizer';
+
+/** The gallery's first card as the server returns it whole, built on the matching example. */
+async function sorterDetail(s: DocsSession): Promise<object> {
+  const params = await s.page.evaluate(async (id) => {
+    const { HERO_EXAMPLES } = (await import(
+      '/src/features/bin-designer/data/examples/heroes.ts' as string
+    )) as { HERO_EXAMPLES: { id: string; params: unknown }[] };
+    return HERO_EXAMPLES.find((e) => e.id === id)?.params;
+  }, SORTER_EXAMPLE);
+  if (!params) throw new Error(`no example ${SORTER_EXAMPLE}`);
+  const card = CARDS[0];
+  if (!card) throw new Error('no gallery cards');
+  const created = CLOCK - card[7] * 24 * HOUR;
+  return {
+    design: {
+      id: SORTER_ID,
+      authorPublicId: authorId(card[2]),
+      authorName: card[2],
+      name: card[1],
+      description:
+        'Six cups for M2 to M5 screws and nuts.\nThe scoops make small parts easy to pick out.',
+      category: card[3],
+      techniques: EXAMPLES[SORTER_EXAMPLE]?.techniques ?? [],
+      params,
+      metrics: { width: 125.5, depth: 83.5, height: 28, gridUnitMm: 42 },
+      lineage: null,
+      thumbnails: [`/src/features/bin-designer/data/examples/thumbnails/${SORTER_EXAMPLE}.png`],
+      meshUrl: `/src/features/bin-designer/data/examples/meshes/${SORTER_EXAMPLE}.glb`,
+      photos: [],
+      featured: false,
+      createdAt: created,
+      updatedAt: created,
+      status: 'live',
+    },
+    isOwner: false,
+    counts: { likes: card[4], remixes: card[5], exports: card[4] * 3 },
+    likedByMe: false,
+    authorIsSupporter: false,
+    hiddenReason: null,
+    hiddenReasonCategory: null,
+  };
+}
+
+async function openSorter(s: DocsSession, ...handlers: Handler[]): Promise<Locator> {
+  let detail: object | null = null;
+  const designApi: Handler = (path, url, method) => {
+    if (path === `/api/community/${SORTER_ID}` && method === 'GET' && detail) {
+      return { json: detail };
+    }
+    if (path === '/api/community/prints' && method === 'GET') {
+      return { json: { items: [], nextCursor: null, summary: null, mine: null } };
+    }
+    return communityApi(path, url, method);
+  };
+  await routeApi(s, ...handlers, designApi);
+  await s.open('/designer', (page) => page.locator('header').first());
+  detail = await sorterDetail(s);
+  const dialog = s.page.getByRole('dialog').first();
+  await s.open(`/community/d/${SORTER_ID}`, () =>
+    s.page.getByRole('button', { name: label('community.detail.remix') })
+  );
+  await settle(s, 20);
+  await s.page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+  await s.ui.warm(10);
+  return dialog;
+}
+
+/** A form that scrolls inside its dialog, back at its top, where its steps start. */
+async function scrollToTop(s: DocsSession, dialog: Locator): Promise<void> {
+  await dialog.evaluate((root) => {
+    for (const n of root.querySelectorAll<HTMLElement>('*')) {
+      if (
+        n.scrollHeight > n.clientHeight + 4 &&
+        /(auto|scroll)/.test(getComputedStyle(n).overflowY)
+      )
+        n.scrollTop = 0;
+    }
+  });
+  await s.ui.warm(20);
+}
+
+const designPage: Shot = {
+  id: 'sharing-community-design-page',
+  kind: 'still',
+  async take(s) {
+    const dialog = await openSorter(s);
+    await s.still(pad(await s.box(dialog), DIALOG_MARGIN, DESKTOP));
+  },
+};
+
+const postPrint: Shot = {
+  id: 'sharing-community-post-print',
+  kind: 'still',
+  storage: SIGNED_IN_STORAGE,
+  async take(s) {
+    await openSorter(s, signedIn);
+    const cta = s.page.getByRole('button', { name: label('community.print.cta') }).first();
+    await s.ui.preClick(cta);
+    const form = s.page.getByRole('dialog', {
+      name: new RegExp(`^${label('community.print.addTitle')}`),
+    });
+    const note = s.page.locator('#print-note');
+    await s.until(note);
+    await s.page
+      .getByRole('radio', { name: label('community.print.fit.asDesigned') })
+      .click({ force: true });
+    await note.fill('Printed in PETG with no supports. M3 nuts drop in with room to spare.');
+    await s.page.locator('#print-material').selectOption('PETG');
+    await s.page.locator('#print-nozzle').fill('0.4');
+    await s.page.locator('#print-layer-height').fill('0.2');
+    await s.page.getByLabel(label('community.print.hoursLabel')).fill('2');
+    await s.page.getByLabel(label('community.print.minutesLabel')).fill('45');
+    await s.page.locator('#print-name').fill('robin_makes');
+    await s.page.locator('#print-name').blur();
+    await scrollToTop(s, form);
+    await s.still(pad(await s.box(form), DIALOG_MARGIN, DESKTOP));
+  },
+};
+
+const reportDesign: Shot = {
+  id: 'sharing-community-report',
+  kind: 'still',
+  storage: SIGNED_IN_STORAGE,
+  async take(s) {
+    await openSorter(s, signedIn);
+    await s.page
+      .getByRole('button', { name: label('community.detail.report'), exact: true })
+      .first()
+      .click({ force: true });
+    const reason = s.page.getByRole('radio', { name: label('community.report.reason.broken') });
+    await s.until(reason);
+    await reason.click({ force: true });
+    await s.page
+      .getByPlaceholder(label('community.report.notePlaceholder'))
+      .fill('The scoops are missing in the 3D view.');
+    await s.page.getByPlaceholder(label('community.report.notePlaceholder')).blur();
+    const dialog = s.page.getByRole('dialog', {
+      name: new RegExp(`^${label('community.report.title')}`),
+    });
+    await scrollToTop(s, dialog);
+    await s.still(pad(await s.box(dialog), DIALOG_MARGIN, DESKTOP), 1.2);
+  },
+};
+
+/** This account has published nothing yet. */
+const noDesignsOfMine: Handler = (path, url, method) =>
+  path === '/api/community' && method === 'GET' && url.searchParams.get('mine') === '1'
+    ? { json: { items: [], nextCursor: null, likedIds: [], supporterAuthorIds: [], indexSlots: 0 } }
+    : undefined;
+
+const publishChecks: Shot = {
+  id: 'sharing-community-publish-checks',
+  kind: 'still',
+  storage: SIGNED_IN_STORAGE,
+  async take(s) {
+    await routeApi(s, signedIn, noDesignsOfMine, communityApi);
+    await openDesigner(s, 'Hex key and bit organizer', {
+      width: 2,
+      depth: 3,
+      height: 6,
+      compartments: { cols: 1, rows: 3, cells: [0, 1, 2] },
+      label: { enabled: true },
+    });
+    const publish = s.page.getByRole('button', { name: label('community.publishButtonAria') });
+    for (let i = 0; !(await publish.first().isEnabled()); i++) {
+      if (i > 100) throw new Error('the publish button stayed disabled');
+      await s.ui.warm(2);
+      await s.page.waitForTimeout(100);
+    }
+    await publish.first().click({ force: true });
+    const dialog = s.page.getByRole('dialog').first();
+    const name = s.page.locator('#community-publish-name');
+    await s.until(name);
+    await name.fill('Hex key and bit organizer');
+    await s.page.locator('#community-publish-description').fill('Bits');
+    await s.page
+      .getByRole('radio', { name: label('community.category.tools') })
+      .click({ force: true });
+    await s.page.locator('#community-public-name').fill('benchtop_wren');
+    await s.page.locator('#community-public-name').blur();
+    await s.page.waitForTimeout(3000);
+    await s.ui.warm(40);
+    await s.until(s.page.getByText(label('community.publish.error.descriptionTooShort')).first());
+    await s.still(pad(await s.box(dialog), DIALOG_MARGIN, DESKTOP));
+  },
+};
+
+const galleryFromDesigner: Shot = {
+  id: 'sharing-community-open-gallery',
+  kind: 'clip',
+  async take(s) {
+    await routeApi(s, communityApi);
+    await openDesigner(s, 'Screw bin', { width: 2, depth: 2, height: 4 });
+    const entry = s.page
+      .getByRole('button', { name: new RegExp(`^${label('binExamples.sidebarEntry')}`) })
+      .first();
+    await s.ui.preReveal(entry);
+    const e = await s.box(entry);
+    const closeUp = frameAround(e, 40, 4 / 3, WINDOW);
+    await s.ui.park(closeUp.x + closeUp.width * 0.7, closeUp.y + closeUp.height * 0.85);
+    await s.take(
+      closeUp,
+      async () => {
+        await s.ui.hold(0.5);
+        await s.ui.click(entry);
+        await s.ui.hold(0.3);
+      },
+      640 / closeUp.width
+    );
+    await s.ui.hideCursor();
+    const card = s.page.getByRole('link', { name: CARDS[0]?.[1] ?? '' }).first();
+    await s.until(card);
+    await settle(s, 15);
+    const dialog = s.page.getByRole('dialog').first();
+    await s.take(frameAround(await s.box(dialog), 6, 4 / 3, WINDOW), async () => {
+      s.poster();
+      await s.ui.hold(2.2);
+    });
+  },
+};
+
+const settingsSearch: Shot = {
+  id: 'settings-settings-search',
+  kind: 'clip',
+  viewport: SETTINGS_VIEWPORT,
+  async take(s) {
+    await openEditor(s, WORKBENCH);
+    const dialog = await openSettings(s, 'settings.tabs.general');
+    const d = await s.box(dialog);
+    const search = s.page.getByPlaceholder(label('settings.search.placeholder')).first();
+    const area: Rect = { x: d.x, y: d.y, width: d.width, height: d.width * 0.62 };
+    // The dialog's empty title bar: over the language list, the pointer lights up a row.
+    await s.ui.park(area.x + area.width * 0.5, area.y + 36);
+    await s.take(area, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.click(search);
+      await s.type('dark');
+      await s.ui.hold(0.9);
+      await s.ui.click(s.page.getByRole('option').first());
+      // The tab fades in, with a ring on the setting.
+      await s.ui.hold(0.5);
+      s.poster();
+      await s.ui.hold(1.7);
+    });
+  },
+};
+
+const settingsDefaults: Shot = {
+  id: 'settings-settings-defaults',
+  kind: 'still',
+  viewport: SETTINGS_VIEWPORT,
+  async take(s) {
+    await openEditor(s, WORKBENCH);
+    await openSettings(s, 'settings.tabs.defaults');
+    const panel = await s.box(s.page.locator('#settings-tabpanel-defaults'));
+    const copy = await s.box(
+      s.page.getByRole('button', { name: label('settings.copyFromCurrentLayout') }).first()
+    );
+    await s.still(panelCrop(panel, copy.y + copy.height + 20), 1.2);
+  },
+};
+
+async function selectBins(s: DocsSession, ...names: string[]): Promise<void> {
+  const ids = await Promise.all(
+    names.map((name) =>
+      s.page.locator('[data-bin-id]', { hasText: name }).first().getAttribute('data-bin-id')
+    )
+  );
+  await s.page.evaluate(async (binIds) => {
+    const { useSelectionStore } = (await import('/src/core/store/selection.ts' as string)) as {
+      useSelectionStore: { getState(): { setSelectedBins(ids: unknown[]): void } };
+    };
+    useSelectionStore.getState().setSelectedBins(binIds);
+  }, ids);
+  await s.ui.warm(20);
+  await s.dismissToasts();
+}
+
+/** The palette's place on screen, from opening it once off camera. */
+async function paletteBox(s: DocsSession): Promise<Rect> {
+  await s.page.keyboard.press('ControlOrMeta+k');
+  const root = s.page.locator('[cmdk-root]').first();
+  await s.until(root);
+  const box = await s.box(root);
+  await s.page.keyboard.press('Escape');
+  await s.ui.warm(20);
+  return box;
+}
+
+const paletteRun: Shot = {
+  id: 'settings-keyboard-palette-run',
+  kind: 'clip',
+  async take(s) {
+    await openEditor(s, WORKBENCH);
+    await selectBins(s, 'Fuses');
+    const area = frameAround(await paletteBox(s), 28, 4 / 3, WINDOW);
+    await s.ui.hideCursor();
+    await s.take(area, async () => {
+      await s.ui.hold(0.5);
+      await s.keys('ControlOrMeta+k', 'Ctrl K');
+      await s.ui.hold(0.3);
+      await s.type('dupl');
+      await s.ui.hold(0.8);
+      // "Duplicate layout" ranks first; the arrow key skips the gray command below it.
+      await s.keys('ArrowDown', '↓');
+      await s.ui.hold(0.6);
+      const picked = await s.page.locator('[cmdk-item][data-selected="true"]').first().innerText();
+      if (!picked.includes(label('commandPalette.duplicateSelected'))) {
+        throw new Error(`the arrow key picked "${picked}"`);
+      }
+      await s.keys('Enter');
+      await s.ui.hold(0.2);
+    });
+    await s.dismissToasts();
+    const cells = await gridArea(s, WORKBENCH.width, WORKBENCH.depth);
+    await s.take(frameAround(cells, 12, 4 / 3, WINDOW), async () => {
+      s.poster();
+      await s.ui.hold(2);
+    });
+  },
+};
+
+const helpToPalette: Shot = {
+  id: 'settings-keyboard-help-search',
+  kind: 'clip',
+  async take(s) {
+    await openEditor(s, WORKBENCH);
+    await selectBins(s, 'M3', 'M4');
+    await s.page.keyboard.press('?');
+    const help = s.page.getByRole('dialog', { name: label('help.title') });
+    await s.until(help);
+    const h = await s.box(help);
+    await s.page.keyboard.press('Escape');
+    await s.ui.warm(20);
+    const area: Rect = { x: h.x, y: h.y, width: h.width, height: h.width * 0.75 };
+    const search = s.page.getByPlaceholder(label('help.searchPlaceholder')).first();
+    await s.ui.hideCursor();
+    await s.take(area, async () => {
+      await s.ui.hold(0.5);
+      await s.keys('?', '?');
+      await s.ui.hold(0.4);
+      await s.ui.click(search);
+      await s.type('align');
+      await s.ui.hold(1);
+      await s.ui.click(
+        s.page.getByRole('button', { name: label('help.openCommandPaletteWithQuery') }).first()
+      );
+      await s.ui.hold(0.2);
+    });
+    await s.ui.hideCursor();
+    const root = s.page.locator('[cmdk-root]').first();
+    await s.until(root);
+    await s.take(frameAround(await s.box(root), 28, 4 / 3, WINDOW), async () => {
+      s.poster();
+      await s.ui.hold(2.2);
+    });
+  },
+};
+
+const paletteDisabled: Shot = {
+  id: 'settings-keyboard-palette-disabled',
+  kind: 'still',
+  async take(s) {
+    await openEditor(s, WORKBENCH);
+    await s.page.keyboard.press('ControlOrMeta+k');
+    const root = s.page.locator('[cmdk-root]').first();
+    await s.until(root);
+    await s.page.keyboard.type('align');
+    await s.ui.warm(20);
+    await s.still(pad(await s.box(root), 20, DESKTOP), 1.2);
+  },
+};
+
+const spaceMouseDriver: Shot = {
+  id: 'settings-spacemouse-driver',
+  kind: 'still',
+  viewport: SETTINGS_VIEWPORT,
+  async take(s) {
+    await openEditor(s, WORKBENCH);
+    await openSettings(s, 'settings.tabs.general');
+    const section = s.page.locator('section[data-settings-section="spacemouse"]');
+    await s.ui.preClick(
+      section.getByRole('switch', { name: label('settings.spacemouseEnable') }).first()
+    );
+    // No driver answers here, so the search ends on the direct connection. The
+    // state the driver sets is then written over it.
+    const connect = (): Promise<string> =>
+      s.page.evaluate(async () => {
+        const { useSpaceMouseStore } = (await import(
+          '/src/shared/spacemouse/settingsStore.ts' as string
+        )) as {
+          useSpaceMouseStore: {
+            getState(): {
+              status: string;
+              transport: string | null;
+              setConnection(status: string, name: string): void;
+              setTransport(transport: string): void;
+            };
+          };
+        };
+        const st = useSpaceMouseStore.getState();
+        // A late answer from the search writes idle again, so this repeats until it holds.
+        if (st.transport !== null && st.status === 'idle') {
+          st.setTransport('navlib');
+          st.setConnection('connected', 'SpaceMouse Compact');
+        }
+        const now = useSpaceMouseStore.getState();
+        return `${now.transport ?? ''}:${now.status}`;
+      });
+    for (let i = 0, stable = 0; stable < 10; i++) {
+      stable = (await connect()) === 'navlib:connected' ? stable + 1 : 0;
+      if (i > 150) throw new Error('the SpaceMouse search did not settle');
+      await s.ui.warm(2);
+      await s.page.waitForTimeout(100);
+    }
+    await s.until(s.page.getByText(label('spacemouse.driverManaged')).first());
+    await section.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+    await s.ui.warm(10);
+    const sec = await s.box(section);
+    await s.still(
+      { x: sec.x - 12, y: sec.y - 8, width: sec.width + 24, height: sec.height + 16 },
+      1.25
+    );
+  },
+};
+
+const LABS_ON = {
+  'gridfinity-labs-v1': JSON.stringify({
+    enabledFeatures: { places: true },
+    lastModified: new Date(CLOCK).toISOString(),
+    version: 1,
+  }),
+};
+
+/** What each labelled bin holds, as [name, qty] pairs. */
+type Contents = Record<string, [string, number][]>;
+
+const WORKBENCH_CONTENTS: Contents = {
+  'Hex keys': [
+    ['1.5 mm hex key', 2],
+    ['2 mm hex key', 2],
+    ['2.5 mm hex key', 3],
+    ['3 mm hex key', 2],
+    ['4 mm hex key', 1],
+    ['5 mm hex key', 1],
+  ],
+  'Driver bits': [
+    ['PH2 bit', 4],
+    ['T20 bit', 2],
+    ['Hex bit set', 1],
+  ],
+};
+
+const BENCH_CONTENTS: Contents = {
+  'Hex keys': [
+    ['Ball-end hex key set', 1],
+    ['T-handle hex key', 1],
+  ],
+};
+
+function withContents(fixture: FixtureLayout, contents: Contents): object {
+  const file = layoutFile(fixture) as { bins: { label: string; items?: object[] }[] };
+  for (const bin of file.bins) {
+    const items = contents[bin.label];
+    if (!items) continue;
+    bin.items = items.map(([name, qty], i) => ({ id: `item-${i + 1}`, name, qty }));
+  }
+  return file;
+}
+
+async function openContents(s: DocsSession): Promise<void> {
+  await routeApi(s);
+  await s.open('/', grid);
+  await s.importLayouts(
+    [
+      withContents({ ...WORKBENCH, name: 'Garage bench' }, BENCH_CONTENTS),
+      withContents(WORKBENCH, WORKBENCH_CONTENTS),
+    ],
+    grid
+  );
+}
+
+const labsContents: Shot = {
+  id: 'settings-labs-bin-contents',
+  kind: 'still',
+  storage: LABS_ON,
+  async take(s) {
+    await openContents(s);
+    await s.page.locator('[data-bin-id]', { hasText: 'Hex keys' }).first().click({ force: true });
+    await s.ui.warm(20);
+    await s.dismissToasts();
+    const title = s.page
+      .locator('aside')
+      .last()
+      .getByText(label('inspector.contents.title'), { exact: true })
+      .first();
+    await s.until(title);
+    await s.ui.preReveal(title);
+    const input = s.page.getByPlaceholder(label('inspector.contents.addPlaceholder')).first();
+    const head = await s.box(title);
+    const last = await s.box(s.page.getByLabel('5 mm hex key', { exact: true }).first());
+    const add = await s.box(input);
+    const bottom = Math.max(last.y + last.height, add.y + add.height) + 16;
+    await s.page.mouse.move(DESKTOP.width / 2, DESKTOP.height - 20);
+    await s.ui.warm(10);
+    const left = head.x - 16;
+    await s.still(
+      { x: left, y: head.y - 14, width: DESKTOP.width - left, height: bottom - (head.y - 14) },
+      1.4
+    );
+  },
+};
+
+const labsFind: Shot = {
+  id: 'settings-labs-find',
+  kind: 'still',
+  storage: LABS_ON,
+  async take(s) {
+    await openContents(s);
+    await s.page.keyboard.press('ControlOrMeta+k');
+    const root = s.page.locator('[cmdk-root]').first();
+    await s.until(root);
+    await s.page.keyboard.type('hex key');
+    await settle(s, 20);
+    await s.until(s.page.getByText('Garage bench').first());
+    await s.still(pad(await s.box(root), 20, DESKTOP), 1.2);
+  },
+};
+
+const designerSearch: Shot = {
+  id: 'settings-keyboard-designer-search',
+  kind: 'clip',
+  async take(s) {
+    await routeApi(s);
+    await openDesigner(s, 'Screw bin', { width: 2, depth: 2, height: 4 });
+    const search = s.page.getByPlaceholder(label('settings.search.placeholder')).first();
+    const panel = await s.box(s.page.locator('aside').first());
+    const box = await s.box(search);
+    const area: Rect = {
+      x: panel.x,
+      y: box.y - 14,
+      width: panel.width,
+      height: Math.min(panel.width * 1.25, DESKTOP.height - (box.y - 14)),
+    };
+    await s.ui.park(area.x + area.width * 0.8, area.y + area.height * 0.95);
+    await s.take(
+      area,
+      async () => {
+        await s.ui.hold(0.4);
+        await s.ui.click(search);
+        await s.type('scoop');
+        await s.ui.hold(0.9);
+        await s.keys('Enter');
+        await s.ui.hold(0.3);
+      },
+      1.4
+    );
+    await s.ui.hideCursor();
+    await settle(s, 10);
+    // The panel scrolls the setting into view: the cut frames it at the same size.
+    const setting = await s.box(
+      s.page
+        .locator('aside')
+        .first()
+        .getByText(label('binDesigner.fingerScoop'), { exact: true })
+        .first()
+    );
+    const result = frameAround(
+      { x: panel.x, y: setting.y - 40, width: panel.width, height: setting.height + 80 },
+      0,
+      area.width / area.height,
+      { ...panel, y: box.y - 14, height: DESKTOP.height - (box.y - 14) }
+    );
+    await s.take(result, async () => {
+      s.poster();
+      await s.ui.hold(2);
+    });
+  },
+};
+
 export const SHARING_SETTINGS: readonly Shot[] = [
   signInMenu,
-  sharePopover,
+  shareCreate,
   shareBanner,
   communityGallery,
   publishDialog,
@@ -841,4 +1754,23 @@ export const SHARING_SETTINGS: readonly Shot[] = [
   designImport,
   layoutImport,
   shortcutsPanel,
+  shareManage,
+  shareWithoutServer,
+  shareBlocked,
+  signOut,
+  accountTab,
+  galleryFromDesigner,
+  designPage,
+  postPrint,
+  reportDesign,
+  publishChecks,
+  settingsSearch,
+  settingsDefaults,
+  paletteRun,
+  helpToPalette,
+  designerSearch,
+  paletteDisabled,
+  spaceMouseDriver,
+  labsContents,
+  labsFind,
 ];

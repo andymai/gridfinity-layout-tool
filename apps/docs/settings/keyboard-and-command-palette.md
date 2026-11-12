@@ -35,6 +35,8 @@ Type part of a command name in <Ui k="commandPalette.placeholder" />. The list g
 | <kbd>Enter</kbd>              | Run the selected command             |
 | <kbd>Esc</kbd>                | Close the palette                    |
 
+<Screenshot id="settings-keyboard-palette-run" alt="With the Fuses bin selected, Ctrl+K opens the command palette. The search box gets dupl. The down arrow key moves to Duplicate selected, and Enter runs it. A copy of the bin shows on the grid." spec="Clip. Layout editor, desktop, the sample layout with one bin selected. Press Ctrl+K, type dupl, press the down arrow and Enter, in a crop around the palette. Cut to the grid with the new bin." />
+
 A command that has a shortcut shows its keys on the right. Look there to learn the shortcuts of the commands that you use often.
 
 ## What the palette finds
@@ -60,6 +62,8 @@ With the Places feature from [Labs](./labs) turned on, the palette also finds bi
 
 Press <kbd>?</kbd> or <kbd>/</kbd> to open <Ui k="help.title" />. Type in <Ui k="help.searchPlaceholder" /> to find a shortcut or a feature. No match? Click <Ui k="help.openCommandPaletteWithQuery" />, and the command palette opens with the same words.
 
+<Screenshot id="settings-keyboard-help-search" alt="The question mark key opens Keyboard shortcuts. The search box gets align and finds no match. The pointer clicks Search all commands instead, and the command palette opens with align and the align commands." spec="Clip. Layout editor, desktop, the sample layout with two bins selected. Press ?, type align in the help search, and click Search all commands instead. Cut to the command palette." />
+
 ## Move through menus and panels
 
 Most controls in the Layout Tool work from the keyboard. Press <kbd>Tab</kbd> to go to the next control, and <kbd>Shift</kbd>+<kbd>Tab</kbd> to go back.
@@ -75,6 +79,8 @@ In the layout editor, a <Ui k="app.skipToGridEditor" /> link shows when it gets 
 
 In the bin designer, the search box at the top of the panel finds a setting by name. Type a word, pick a match with <kbd>↑</kbd> and <kbd>↓</kbd>, and press <kbd>Enter</kbd> to jump to that setting. <kbd>Esc</kbd> clears the search.
 
+<Screenshot id="settings-keyboard-designer-search" alt="In the bin designer, the pointer clicks the search box at the top of the panel and types scoop. The match Finger scoop shows below the box, in the Interior group. Enter jumps the panel to the Finger scoop setting." spec="Clip. Bin designer, desktop, a new 2 by 2 bin. Click the panel search box, type scoop and press Enter, in a crop of the top of the panel. Cut to the panel where the Finger scoop setting shows." />
+
 ## When it goes wrong
 
 ### The command palette doesn't open
@@ -88,6 +94,8 @@ The palette ignores <kbd>Ctrl</kbd>+<kbd>K</kbd> while a text field has the focu
 Select the bins that the command works on, then open the palette again.
 
 Most bin commands need a selection. <Ui k="commandPalette.duplicateSelected" /> needs one bin or more. The align commands and <Ui k="commandPalette.matchHeight" /> need two or more. <Ui k="commandPalette.rotateBin" /> needs exactly one bin, with no size lock.
+
+<Screenshot id="settings-keyboard-palette-disabled" alt="The command palette with align typed and no bins selected. The align commands and Match height to tallest show in gray in the Edit group." spec="Layout editor, desktop, the sample layout with no selection. Press Ctrl+K and type align. Crop to the palette." />
 
 ## Next steps
 
