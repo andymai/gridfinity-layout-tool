@@ -124,6 +124,8 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
  */
 const MAX_PUT_ATTEMPTS = 3;
 
+const RETRY_DELAY_MS = 250;
+
 /**
  * The stamp for a write over the stored blob: now, or 1 ms after the blob's own
  * stamp or its upload time, whichever is later. A retry can run on a server
@@ -259,7 +261,11 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       };
 
       try {
-        await writeShare(id, blobPath, updatedData, newPermission, loaded.etag);
+        // A permission-only update writes the body's layout back, so it must
+        // match that body. A full update keeps only metadata from the body,
+        // and matching the current blob spares it the CDN's stale window.
+        const ifMatch = content ? loaded.etag : (loaded.bodyEtag ?? loaded.etag);
+        await writeShare(id, blobPath, updatedData, newPermission, ifMatch);
         return respondShare(res, id, newPermission, now);
       } catch (error) {
         if (!(error instanceof BlobPreconditionFailedError)) throw error;
@@ -273,6 +279,8 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
         }
       }
 
+      // A stale CDN body needs time to clear; an ETag race does not mind.
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS * attempt));
       const reloaded = await loadShareVersion(blobPath);
       if (!reloaded || (await verifyDeleteToken(id, reloaded.data, deleteToken)) !== 'ok') {
         return sendError(res, 404, ErrorCode.NOT_FOUND, 'Share not found');

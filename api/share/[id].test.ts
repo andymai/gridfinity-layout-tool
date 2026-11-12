@@ -105,20 +105,26 @@ function shareBlob(metadata: Record<string, unknown> = {}) {
 const BLOB_URL = 'https://blob.example/shares/x.json';
 const UPLOADED_AT = new Date('2026-01-02T00:00:00.000Z');
 
-function blobResponse(data: unknown) {
-  return { ok: true, json: () => Promise.resolve(data) };
+function blobResponse(data: unknown, etag?: string) {
+  return {
+    ok: true,
+    headers: new Headers(etag ? { etag } : {}),
+    json: () => Promise.resolve(data),
+  };
 }
 
 function primeBlobFetch(data: unknown, etag = '"etag-1"') {
   mocks.head.mockResolvedValue({ url: BLOB_URL, etag, uploadedAt: UPLOADED_AT });
-  mocks.fetch.mockResolvedValue(blobResponse(data));
+  mocks.fetch.mockResolvedValue(blobResponse(data, etag));
 }
 
 function primeBlobChange(first: unknown, second: unknown) {
   mocks.head
     .mockResolvedValueOnce({ url: BLOB_URL, etag: '"etag-1"', uploadedAt: UPLOADED_AT })
     .mockResolvedValue({ url: BLOB_URL, etag: '"etag-2"', uploadedAt: UPLOADED_AT });
-  mocks.fetch.mockResolvedValueOnce(blobResponse(first)).mockResolvedValue(blobResponse(second));
+  mocks.fetch
+    .mockResolvedValueOnce(blobResponse(first, '"etag-1"'))
+    .mockResolvedValue(blobResponse(second, '"etag-2"'));
 }
 
 function writtenAt(call: number) {
@@ -452,6 +458,36 @@ describe('share/[id]', () => {
         } finally {
           vi.useRealTimers();
         }
+      });
+
+      it('writes a permission-only update only over the body that it read', async () => {
+        primeBlobFetch(shareBlob({ deleteTokenHash: correctHash }), '"etag-old"');
+        mocks.head.mockResolvedValue({
+          url: BLOB_URL,
+          etag: '"etag-new"',
+          uploadedAt: UPLOADED_AT,
+        });
+        mocks.put.mockRejectedValue(new BlobPreconditionFailedError());
+        const res = await handle('PUT', { body: { deleteToken: TOKEN, permission: 'edit' } });
+
+        expect(mocks.put.mock.calls[0][2]).toMatchObject({ ifMatch: '"etag-old"' });
+        expect(res._status).toBe(503);
+      });
+
+      it('writes a full update over the current blob while the CDN serves an older body', async () => {
+        primeBlobFetch(shareBlob(), '"etag-old"');
+        mocks.head.mockResolvedValue({
+          url: BLOB_URL,
+          etag: '"etag-new"',
+          uploadedAt: UPLOADED_AT,
+        });
+        mocks.redisGet.mockResolvedValue(correctHash);
+        const res = await handle('PUT', {
+          body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+        });
+
+        expect(res._status).toBe(200);
+        expect(mocks.put.mock.calls[0][2]).toMatchObject({ ifMatch: '"etag-new"' });
       });
 
       it('keeps the layout of the write that beat a permission-only update', async () => {
