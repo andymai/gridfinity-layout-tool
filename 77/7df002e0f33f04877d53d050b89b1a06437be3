@@ -1,0 +1,25 @@
+apps/docs/media/getting-started-workspace-tour-command-palette.json
+  s_1cc363bb3cc76d::t_1c0b6acbe1fc6f 3-4
+apps/docs/media/layouts-organizing-history.json
+  s_1cc363bb3cc76d::t_0f2ca98298ea55 3-4
+apps/docs/media/settings-keyboard-palette-run.json
+  s_1cc363bb3cc76d::t_b12bcc49a01973 3-4
+apps/docs/media/settings-keyboard-palette.json
+  s_1cc363bb3cc76d::t_4b6f14812b0799 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "777df002e0f33f04877d53d050b89b1a06437be3",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
