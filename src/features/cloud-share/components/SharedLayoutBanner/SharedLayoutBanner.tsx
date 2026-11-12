@@ -138,7 +138,7 @@ export function SharedLayoutBanner() {
 
   return (
     <div
-      className="flex items-center justify-between px-4 py-2 bg-primary text-on-accent"
+      className="flex items-center justify-between px-4 py-2 bg-accent text-on-accent"
       role="alert"
       aria-live="polite"
     >
@@ -172,7 +172,7 @@ export function SharedLayoutBanner() {
         <Button
           variant="ghost"
           onClick={() => setShowDiscardConfirm(true)}
-          className="px-3 bg-on-accent/15 hover:bg-on-accent/25 text-on-accent hover:text-on-accent"
+          className="px-3 bg-surface text-content hover:bg-surface-hover"
         >
           {t('share.banner.discardConfirm')}
         </Button>
