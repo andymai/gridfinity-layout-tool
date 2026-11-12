@@ -1470,6 +1470,25 @@ describe('useKeyboard', () => {
       expect(event?.defaultPrevented).toBe(true);
     });
 
+    it('cancels a draw in progress before it opens the new layout', async () => {
+      useInteractionStore.getState().setInteraction({
+        type: 'draw',
+        start: { x: gridUnits(0), y: gridUnits(0) },
+        current: { x: gridUnits(1), y: gridUnits(1) },
+      });
+      const entriesBefore = useLibraryStore.getState().library.entries.length;
+      renderHook(() => useKeyboard());
+
+      act(() => {
+        pressKey('N', { shiftKey: true });
+      });
+
+      await vi.waitFor(() => {
+        expect(useLibraryStore.getState().library.entries).toHaveLength(entriesBefore + 1);
+      });
+      expect(useInteractionStore.getState().interaction).toBeNull();
+    });
+
     it.each([
       ['N', 'n', {}],
       ['Ctrl+Shift+N', 'N', { ctrlKey: true, shiftKey: true }],

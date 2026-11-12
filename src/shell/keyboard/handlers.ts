@@ -153,7 +153,11 @@ export function handleNewLayout(e: KeyboardEvent, ctx: KeyboardContext): boolean
   // A repeat must still prevent the default, or a held Ctrl+N opens browser
   // windows in an installed app window.
   e.preventDefault();
-  if (!e.repeat) void ctx.createNewLayout();
+  if (e.repeat) return true;
+  // A draw or drag still in progress would otherwise land in the new layout
+  // when the pointer comes up.
+  ctx.setInteraction(null);
+  void ctx.createNewLayout();
   return true;
 }
 
