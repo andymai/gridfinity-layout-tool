@@ -1274,6 +1274,8 @@ input[type='range']:hover::-moz-range-thumb {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    /* A backwards fill holds a staggered card hidden through its delay. */
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
