@@ -22,7 +22,9 @@ This page also shows how to export a shadow board from the cutout editor.
 ## Start a Workshop build
 
 1. Open the [bin designer](https://gridfinitylayouttool.com/designer).
-2. In the header, click the icon button next to the design name. Its tooltip reads <Ui k="binDesigner.openDesignList" />. On a wide screen, the button also reads <Ui k="binDesigner.designs" />.
+2. Open your saved designs:
+   - On a computer, click the icon button next to the design name. Its tooltip reads <Ui k="binDesigner.openDesignList" />. On a wide screen, the button also reads <Ui k="binDesigner.designs" />.
+   - On a tablet or a phone, tap the design name in the header.
 3. In <Ui k="binDesigner.savedDesigns" />, click <Ui k="binDesigner.newWorkshop" />.
 4. If you changed the open design, a box asks you to start a new design. Click <Ui k="binDesigner.newDesign" />. Your current design stays in your saved designs.
 

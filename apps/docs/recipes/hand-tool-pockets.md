@@ -79,7 +79,9 @@ Each scoop is 20 mm wide, at the middle of a long side of the tool. It goes on t
 
 Drag the group to place the tools in the bin. If a tool hangs past the edge, a warning offers a button that makes the bin larger. [Arrange cutouts](../cutouts/arranging) shows how to align and pack them.
 
-When a pocket has a problem, a <Ui k="binDesigner.cutoutEditor.checks.title" /> box shows at the top of the <Ui k="binDesigner.shapeList.tabProperties" /> tab. The box flags any spot with less than 1.2 mm of plastic, for example between two pockets. It also tells you when a scoop reaches under the stacking lip, where a tool can catch. [Check before you print](../cutouts/print-checks#a-cutout-breaks-through-the-wall-or-sits-under-the-lip) shows how to clear that warning. No box means no problems.
+When a pocket has a problem, a <Ui k="binDesigner.cutoutEditor.checks.title" /> box shows at the top of the <Ui k="binDesigner.shapeList.tabProperties" /> tab. The box flags any spot with less than 1.2 mm of plastic, for example between two pockets. It also tells you when a scoop reaches under the stacking lip, where a tool can catch. [Check before you print](../cutouts/print-checks#a-cutout-breaks-through-the-wall-or-sits-under-the-lip) shows how to clear that warning.
+
+No box means that the checks found no problem. The checks measure at the top surface only, so two pockets that lean toward each other can still meet lower down. Turn the 3D preview to look at them before you print.
 
 ## Step 5: Print a fit test first
 
