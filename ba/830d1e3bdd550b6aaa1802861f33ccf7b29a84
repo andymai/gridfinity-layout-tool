@@ -1,0 +1,57 @@
+apps/docs/printing/print-list-and-zip.md
+  s_1cc363bb3cc76d::t_8992ff750f6faa 64
+apps/docs/getting-started/first-baseplate.md
+  s_1cc363bb3cc76d::t_5db3f056886a06 48-49
+  s_1cc363bb3cc76d::t_bb5722364bd0bf 8
+apps/docs/cutouts/workshop.md
+  s_1cc363bb3cc76d::t_3b9f8fba520513 6,8
+  s_1cc363bb3cc76d::t_85904631695216 24-27
+apps/docs/cutouts/arranging.md
+  s_1cc363bb3cc76d::t_5d2947ea0efd8d 76
+  s_1cc363bb3cc76d::t_ae565a07fed614 164
+apps/docs/concepts/print-bed-fit.md
+  s_1cc363bb3cc76d::t_32f7f1c06d79bf 51
+  s_1cc363bb3cc76d::t_68f9970de3a7ae 8
+apps/docs/layouts/find-bins-that-fit.md
+  s_1cc363bb3cc76d::t_4496de17516be5 56
+  s_1cc363bb3cc76d::t_5d4be9e30f0de5 57
+  s_f086b1a2586ea5::t_cf1325769de7ca 13
+apps/docs/cutouts/print-checks.md
+  s_1cc363bb3cc76d::t_4fc80562dc8e57 61
+apps/docs/recipes/hand-tool-pockets.md
+  s_1cc363bb3cc76d::t_7ff95fbbbdc3d9 78
+  s_1cc363bb3cc76d::t_43a4863f25d2d8 82
+apps/docs/recipes/kitchen-utensil-drawer.md
+  s_1cc363bb3cc76d::t_34420b42245068 64
+  s_1cc363bb3cc76d::t_f254b24eb92c94 13
+apps/docs/designer/getting-things-out.md
+  s_1cc363bb3cc76d::t_d8b6e88a323db0 105
+  s_1cc363bb3cc76d::t_48a7f8af49c2f0 106
+apps/docs/designer/save-and-reuse.md
+  s_1cc363bb3cc76d::t_6e0a4c6f5b049b 95,97-100
+  s_1cc363bb3cc76d::t_5d023986343033 14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ba830d1e3bdd550b6aaa1802861f33ccf7b29a84",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f086b1a2586ea5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a1c4af2b5e84db92e",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
