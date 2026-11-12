@@ -115,6 +115,7 @@ describe('useBinInspector', () => {
         maxHeight: 2,
         maxClearance: 0,
         maxGridUnits: { width: 5, depth: 5 },
+        overhangMm: { width: 0, depth: 0 },
         needsSplit: false,
         heightRange: '2u',
         maxHeightReason: 'drawer_height',

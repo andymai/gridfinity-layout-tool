@@ -135,6 +135,23 @@ describe('SplitWarning', () => {
     });
   });
 
+  // The bin's own size fits; its overhang is what overruns the bed.
+  it('states the size of the part, overhang included', () => {
+    render(
+      <SplitWarning
+        {...defaultProps}
+        binWidth={6}
+        binDepth={4}
+        overhangMm={{ width: 9, depth: 0 }}
+        maxGridUnits={{ width: 5.5, depth: 6 }}
+      />
+    );
+
+    expect(
+      screen.getByText("261×168mm doesn't fit your 256×256mm print bed, so it prints in pieces.")
+    ).toBeInTheDocument();
+  });
+
   describe('compact mode', () => {
     const oversizedProps = {
       ...defaultProps,

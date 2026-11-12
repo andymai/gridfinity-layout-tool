@@ -349,6 +349,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           gridUnitMm={layout.gridUnitMm}
           printBedSize={layout.printBedSize}
           printBedDepth={layout.printBedDepth ?? layout.printBedSize}
+          overhangMm={constraints.overhangMm}
           compact={isMobile}
         />
 

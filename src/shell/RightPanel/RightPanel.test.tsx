@@ -137,6 +137,7 @@ describe('RightPanel', () => {
       maxHeight: 12,
       maxClearance: 9,
       maxGridUnits: { width: 6, depth: 6 },
+      overhangMm: { width: 0, depth: 0 },
       needsSplit: false,
       heightRange: '2u – 12u',
       maxHeightReason: 'drawer_height',

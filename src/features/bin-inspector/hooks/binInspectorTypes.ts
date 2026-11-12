@@ -20,6 +20,8 @@ export interface BinConstraints {
   maxHeight: number;
   maxClearance: number;
   maxGridUnits: BedCapacity;
+  /** How far the body reaches past the footprint across each axis, in mm. */
+  overhangMm: { width: number; depth: number };
   needsSplit: boolean;
   heightRange: string;
   /** Why the maximum height is what it is */

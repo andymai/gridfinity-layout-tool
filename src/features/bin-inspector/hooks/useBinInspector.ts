@@ -17,6 +17,7 @@ import { useMobileStore } from '@/core/store/mobile';
 import { useMutations } from '@/shared/contexts';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
 import { useBinBedCapacity } from '@/shared/hooks/useBinBedCapacity';
+import { useBinOverhangSpan } from '@/shared/hooks/useBinOverhangSpan';
 import { maxClearanceHeight } from '@/shared/utils/restingStack';
 import { maxPlaceableHeight } from '@/shared/utils/validationPlacement';
 import { useRestingStack } from '@/shared/hooks/useRestingStack';
@@ -70,6 +71,7 @@ export function useBinInspector(): UseBinInspectorReturn {
 
   const layout = useLayoutStore((state) => state.layout);
   const bedCapacityFor = useBinBedCapacity();
+  const overhangSpanFor = useBinOverhangSpan();
   const { updateBin, deleteBins, moveBinsToStaging } = useMutations();
 
   const selectedBins = useMemo(
@@ -89,6 +91,7 @@ export function useBinInspector(): UseBinInspectorReturn {
         maxHeight: CONSTRAINTS.MIN_BIN_HEIGHT,
         maxClearance: 0,
         maxGridUnits: { width: 5, depth: 5 },
+        overhangMm: { width: 0, depth: 0 },
         needsSplit: false,
         heightRange: `${CONSTRAINTS.MIN_BIN_HEIGHT}u`,
         maxHeightReason: 'drawer_height',
@@ -96,6 +99,7 @@ export function useBinInspector(): UseBinInspectorReturn {
     }
 
     const maxGrid = bedCapacityFor(bin);
+    const overhangMm = overhangSpanFor(bin);
     const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
 
     // For bins in staging, use full drawer height range
@@ -109,6 +113,7 @@ export function useBinInspector(): UseBinInspectorReturn {
         maxHeight,
         maxClearance,
         maxGridUnits: maxGrid,
+        overhangMm,
         needsSplit,
         heightRange: `${minHeight}u – ${maxHeight}u`,
         maxHeightReason: 'drawer_height',
@@ -145,11 +150,12 @@ export function useBinInspector(): UseBinInspectorReturn {
       maxHeight,
       maxClearance,
       maxGridUnits: maxGrid,
+      overhangMm,
       needsSplit,
       heightRange: `${minHeight}u – ${maxHeight}u`,
       maxHeightReason: limitedByStack ? 'remaining_space' : 'drawer_height',
     };
-  }, [bin, layer, layout, restingStack, bedCapacityFor]);
+  }, [bin, layer, layout, restingStack, bedCapacityFor, overhangSpanFor]);
 
   // Collect all unique custom property keys from all bins in the layout (for suggestions)
   const existingPropertyKeys = useMemo(() => {
