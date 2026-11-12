@@ -76,6 +76,7 @@ export const PresenceAvatar = memo(function PresenceAvatar({
   const t = useTranslation();
   const { name, color, isOwner, isSelf } = participant;
   const config = SIZE_CONFIG[size];
+  const avatarName = isSelf ? `${name} ${t('collab.you')}` : name;
 
   return (
     <div className={`flex items-center gap-2 ${className}`} aria-hidden={decorative || undefined}>
@@ -88,8 +89,9 @@ export const PresenceAvatar = memo(function PresenceAvatar({
             flex items-center justify-center
             ${isSelf ? 'ring-2 ring-accent ring-offset-1 ring-offset-surface' : ''}
           `.trim()}
-          title={isSelf ? `${name} (you)` : name}
-          aria-label={isSelf ? `${name} (you)` : name}
+          role="img"
+          title={avatarName}
+          aria-label={avatarName}
         >
           <BinGridIdenticon seed={name} size={config.px} hueOverride={hueFromHex(color)} />
         </div>
