@@ -5,6 +5,8 @@ import { useAutoSave } from './useAutoSave';
 import { useLayoutFolders } from './useLayoutFolders';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { connectLibraryPersistence, eventBus } from '@/core/cqrs';
+import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
+import { LAYOUT_SCHEMA_VERSION } from '@/core/sync/payloadKey';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useToastStore } from '@/core/store/toast';
@@ -89,6 +91,21 @@ function holdQueue(): () => Promise<void> {
     release();
     await held;
   };
+}
+
+function pull(id: LayoutId, name: string): Promise<void> {
+  return layoutAdapter.applyRemote({
+    id,
+    payload: namedLayout(name),
+    modifiedAt: Date.now() + 60_000,
+    schemaVersion: LAYOUT_SCHEMA_VERSION,
+  });
+}
+
+// Lets storage work started outside the queue finish.
+async function settleStorage(): Promise<void> {
+  await loadLibraryAsync();
+  await loadLibraryAsync();
 }
 
 async function storedName(id: LayoutId): Promise<string | undefined> {
@@ -408,5 +425,55 @@ describe('useLayoutSwitcher library writes that overlap', () => {
     const unload = new Event('beforeunload', { cancelable: true });
     window.dispatchEvent(unload);
     expect(unload.defaultPrevented).toBe(false);
+  });
+
+  it('keeps the data of a pulled layout when a delete of it waits ahead of the pull', async () => {
+    const [, a] = await seed('B', 'A');
+    const switcher = renderHook(() => useLayoutSwitcher());
+
+    const release = holdQueue();
+    await act(async () => {
+      const deleted = switcher.result.current.deleteLayout(a);
+      const pulled = pull(a, 'A remote');
+      await settleStorage();
+      await release();
+      await Promise.all([deleted, pulled]);
+    });
+
+    expect(await storedName(a)).toBe('A remote');
+    expect(await libraryState()).toEqual(everywhere(['A remote', 'B']));
+  });
+
+  it('keeps the data of a pulled layout when a save and a switch of it wait ahead of the pull', async () => {
+    vi.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout', 'requestIdleCallback', 'cancelIdleCallback'],
+    });
+    const [a, b] = await seed('A', 'B');
+    const autosave = renderHook(() => useAutoSave());
+    const switcher = renderHook(() => useLayoutSwitcher());
+    act(() => {
+      useLayoutStore.getState().importLayout(namedLayout('A edited'), a, 'local');
+    });
+
+    const release = holdQueue();
+    let switched: Promise<unknown> = Promise.resolve();
+    let pulled: Promise<void> = Promise.resolve();
+    act(() => {
+      vi.advanceTimersByTime(3000);
+      switched = switcher.result.current.switchLayout(b);
+      pulled = pull(a, 'A remote');
+    });
+    await act(async () => {
+      await settleStorage();
+      await release();
+      await Promise.all([switched, pulled]);
+    });
+    await untilStatus(
+      () => autosave.result.current,
+      (current) => current !== 'saving'
+    );
+
+    expect(await storedName(a)).toBe('A remote');
+    expect(await libraryState()).toEqual(everywhere(['A remote', 'B']));
   });
 });

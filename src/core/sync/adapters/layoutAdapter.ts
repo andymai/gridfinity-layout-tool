@@ -158,29 +158,32 @@ export const layoutAdapter: LayoutAdapter = {
     return { id, payload: withPlacement(payload, entry), modifiedAt: entry.modifiedAt };
   },
 
-  async applyRemote(item: SyncableItem<Layout>): Promise<void> {
-    // Restored before normalizing: the outline is clipped to an extent the
-    // measured drawer widens, so clipping first would cut it to the grid.
-    let incoming = item.payload;
-    const schemaVersion = item.schemaVersion ?? 1;
-    if (schemaVersion < LAYOUT_SCHEMA_VERSION) {
-      const local = await loadLayoutAsync(item.id);
-      if (local) incoming = restoreStrippedFields(incoming, local, schemaVersion);
-    }
-    // The folder rides on the wire only; locally the entry holds it.
-    const { folderId, ...document } = normalizeIncomingLayout(incoming);
-    const layout: Layout = document;
-    const saveResult = await saveLayoutAsync(item.id, layout);
-    if (!saveResult.ok) {
-      throw syncPersistError('saveLayoutAsync', item.id, saveResult.error);
-    }
+  // One queue turn covers the read of the local copy through the store
+  // refresh. A local write in between could delete or overwrite the remote
+  // data that the entry describes.
+  applyRemote(item: SyncableItem<Layout>): Promise<void> {
+    return queueLibraryWrite(async (library) => {
+      // Restored before normalizing: the outline is clipped to an extent the
+      // measured drawer widens, so clipping first would cut it to the grid.
+      let incoming = item.payload;
+      const schemaVersion = item.schemaVersion ?? 1;
+      if (schemaVersion < LAYOUT_SCHEMA_VERSION) {
+        const local = await loadLayoutAsync(item.id);
+        if (local) incoming = restoreStrippedFields(incoming, local, schemaVersion);
+      }
+      // The folder rides on the wire only; locally the entry holds it.
+      const { folderId, ...document } = normalizeIncomingLayout(incoming);
+      const layout: Layout = document;
+      const saveResult = await saveLayoutAsync(item.id, layout);
+      if (!saveResult.ok) {
+        throw syncPersistError('saveLayoutAsync', item.id, saveResult.error);
+      }
 
-    // Upsert the library entry so the user sees the updated metadata.
-    // For new entries we compute a fresh preview from the remote layout —
-    // `LayoutEntry.preview` is required and the UI dereferences
-    // `entry.preview.binCount` so leaving it undefined would crash.
-    const preview = computePreview(layout);
-    await queueLibraryWrite(async (library) => {
+      // Upsert the library entry so the user sees the updated metadata.
+      // For new entries we compute a fresh preview from the remote layout —
+      // `LayoutEntry.preview` is required and the UI dereferences
+      // `entry.preview.binCount` so leaving it undefined would crash.
+      const preview = computePreview(layout);
       const existingIndex = library.entries.findIndex((e) => e.id === item.id);
       const nextEntries: LayoutEntry[] =
         existingIndex >= 0
@@ -213,16 +216,16 @@ export const layoutAdapter: LayoutAdapter = {
       if (isErr(libraryResult)) {
         throw syncPersistError('saveLibrary', item.id, libraryResult.error);
       }
-    });
 
-    // If the user is viewing this layout right now, replace what the
-    // store has so the UI re-renders. `source: 'remote'` flags the
-    // store's `lastEditSource` so other subscribers can distinguish
-    // remote-applied changes from user edits.
-    const { activeLayoutId, importLayout } = useLayoutStore.getState();
-    if (activeLayoutId === item.id) {
-      importLayout(layout, item.id as LayoutId, 'remote');
-    }
+      // If the user is viewing this layout right now, replace what the
+      // store has so the UI re-renders. `source: 'remote'` flags the
+      // store's `lastEditSource` so other subscribers can distinguish
+      // remote-applied changes from user edits.
+      const { activeLayoutId, importLayout } = useLayoutStore.getState();
+      if (activeLayoutId === item.id) {
+        importLayout(layout, item.id as LayoutId, 'remote');
+      }
+    });
   },
 
   async applyRemoteDelete(id: string): Promise<void> {
