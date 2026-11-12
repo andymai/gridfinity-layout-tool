@@ -1,6 +1,22 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 const heapBytesMock = vi.fn<() => number | null>(() => 128 * 1024 * 1024);
+
+/**
+ * The largest heap the linked occt-wasm build can grow to, read from its
+ * Emscripten glue: the size a kernel that ran out of memory reports.
+ */
+function occtHeapMaxBytes(): number {
+  const glue = readFileSync(
+    join(process.cwd(), 'node_modules/occt-wasm/dist/occt-wasm.js'),
+    'utf8'
+  );
+  const match = /getHeapMax=\(\)=>(\d+)/.exec(glue);
+  if (!match) throw new Error('occt-wasm glue no longer states getHeapMax as a literal');
+  return Number(match[1]);
+}
 
 vi.mock('../wasmInstantiator', () => ({
   recoverBrepkitKernel: vi.fn(() => false),
@@ -26,15 +42,15 @@ describe('classifyExportError', () => {
     );
   });
 
-  it('reports a trap at the wasm32 heap ceiling as out of memory', () => {
-    heapBytesMock.mockReturnValue(4 * 1024 * 1024 * 1024);
+  it('reports a trap with the heap at the kernel maximum as out of memory', () => {
+    heapBytesMock.mockReturnValue(occtHeapMaxBytes());
     expect(classifyExportError(new WebAssembly.RuntimeError('memory access out of bounds'))).toBe(
       'OUT_OF_MEMORY'
     );
   });
 
   it('does not read a grown heap as out of memory without a trap', () => {
-    heapBytesMock.mockReturnValue(4 * 1024 * 1024 * 1024);
+    heapBytesMock.mockReturnValue(occtHeapMaxBytes());
     expect(classifyExportError(new Error('BRep boolean operation failed'))).toBe(
       'BREP_BOOLEAN_FAILED'
     );
@@ -78,5 +94,40 @@ describe('runGeneration companion meshes', () => {
     const vertices = result.response.slantSupportVertices as Float32Array;
     expect(Array.from(vertices)).toEqual([0, 0, 0, 1, 0, 0, 0, 1, 0]);
     expect(result.transfer).toContain(vertices.buffer);
+  });
+});
+
+describe('runExport on a kernel that ran out of memory', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    heapBytesMock.mockReturnValue(128 * 1024 * 1024);
+  });
+
+  it('answers OUT_OF_MEMORY with the out-of-memory wording', async () => {
+    // A fresh module: the trap latches the kernel as crashed for the rest of
+    // the module's life.
+    vi.resetModules();
+    const ctx = await import('./workerContext');
+    const posted: Record<string, unknown>[] = [];
+    vi.stubGlobal('self', {
+      postMessage: (response: Record<string, unknown>) => {
+        posted.push(response);
+      },
+    });
+    ctx.setKernelInitialized('occt-wasm', false, 1);
+    heapBytesMock.mockReturnValue(occtHeapMaxBytes());
+
+    await ctx.runExport(
+      'oom-export',
+      'COMBINED_EXPORT_RESULT',
+      () => Promise.reject(new WebAssembly.RuntimeError('memory access out of bounds')),
+      'Combined export failed',
+      () => [],
+      ctx.classifyExportError
+    );
+
+    expect(posted).toHaveLength(1);
+    expect(posted[0]).toMatchObject({ type: 'ERROR', errorCode: 'OUT_OF_MEMORY' });
+    expect(posted[0].error).toMatch(/^Combined export failed: Geometry kernel ran out of memory/);
   });
 });
