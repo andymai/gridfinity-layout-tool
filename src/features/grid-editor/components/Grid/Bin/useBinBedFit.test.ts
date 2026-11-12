@@ -33,6 +33,29 @@ describe('useBinBedFit', () => {
     expect(bedFit({ width: gridUnits(1.5), depth: gridUnits(7), overhang })).toBe('split');
   });
 
+  // 6 x 42 = 252mm fits the 256mm bed; the overhang makes the part 261mm.
+  it('flags a bin that only its overhang pushes past the bed', () => {
+    const overhang = { left: 9, right: 0, front: 0, back: 0, enabled: true };
+    expect(bedFit({ width: gridUnits(6), depth: gridUnits(4), overhang })).toBe('split');
+  });
+
+  it('marks that bin kept whole when its design turns splitting off', () => {
+    const id = designId('wide');
+    upsertRegistryEntry({
+      id,
+      name: 'Wide',
+      width: 6,
+      depth: 4,
+      height: 3,
+      overhangMm: { left: 9, right: 0, front: 0, back: 0 },
+      splitToFitBed: false,
+      updatedAt: '2026-11-12T00:00:00.000Z',
+    });
+    expect(bedFit({ width: gridUnits(6), depth: gridUnits(4), linkedDesignId: id })).toBe(
+      'keptWhole'
+    );
+  });
+
   it('marks a bin kept whole when its design turns splitting off', () => {
     const id = designId('long');
     upsertRegistryEntry({

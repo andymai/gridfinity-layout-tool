@@ -16,7 +16,13 @@
  */
 
 import { fitsBedAtAnyAngle } from '@/core/bedFit';
-import { calcMaxGridUnitsForAxis, pickBedOrientation } from '@/core/constants';
+import {
+  calcBedCapacityForBin,
+  calcMaxGridUnitsForAxis,
+  keepWholeCapacity,
+  pickBedOrientation,
+  type BedCapacity,
+} from '@/core/constants';
 import type { BinParams } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { resolveOverhang } from '@/shared/utils/overhang';
@@ -149,4 +155,48 @@ export function binSplitChunkUnits(
   printBedDepthMm?: number
 ): ChunkUnits {
   return binBedFit(params, printBedWidthMm, printBedDepthMm).chunk;
+}
+
+/**
+ * The bed capacity a placed bin is drawn against (the grid badge, the 3D cut
+ * lines, the inspector card), decided by {@link binBedFit} so it cuts exactly
+ * where the print list and the layout ZIP cut.
+ *
+ * `calcBedCapacityForBin` charges the overhang only against the diagonal, so a
+ * bin whose footprint fits but whose overhang overruns the bed read as fitting.
+ * Where the fit agrees with it, its numbers stand: an axis that is not cut
+ * keeps the bed's capacity rather than the bin's own size, which is what the
+ * card states as the largest bin.
+ */
+export function placedBinBedCapacity(
+  params: BinSplitFitParams,
+  printBedWidthMm: number,
+  printBedDepthMm?: number
+): BedCapacity {
+  const { width, depth } = params;
+  const o = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
+  const nominal = calcBedCapacityForBin(
+    width,
+    depth,
+    printBedWidthMm,
+    params.gridUnitMm,
+    printBedDepthMm,
+    params.gridUnitMmY ?? params.gridUnitMm,
+    { width: o.left + o.right, depth: o.front + o.back }
+  );
+  const fit = binBedFit({ ...params, splitToFitBed: true }, printBedWidthMm, printBedDepthMm);
+  const cutWidth = width > fit.chunk.width;
+  const cutDepth = depth > fit.chunk.depth;
+  let capacity: BedCapacity;
+  if (cutWidth || cutDepth) {
+    capacity = {
+      width: cutWidth ? fit.chunk.width : Math.max(nominal.width, width),
+      depth: cutDepth ? fit.chunk.depth : Math.max(nominal.depth, depth),
+    };
+  } else if (width <= nominal.width && depth <= nominal.depth) {
+    capacity = nominal;
+  } else {
+    capacity = { width, depth, ...(fit.diagonal ? { diagonal: true } : {}) };
+  }
+  return params.splitToFitBed === false ? keepWholeCapacity(width, depth, capacity) : capacity;
 }

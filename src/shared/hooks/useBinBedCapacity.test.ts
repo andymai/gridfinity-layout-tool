@@ -59,6 +59,12 @@ describe('useBinBedCapacity', () => {
     });
   });
 
+  it('cuts a bin that only its own overhang pushes past the bed, as the print list does', () => {
+    const overhang = { left: 9, right: 9, front: 9, back: 9, enabled: true };
+    const square = { ...long, width: gridUnits(6), depth: gridUnits(6), overhang };
+    expect(capacityOf(square)).toEqual({ width: 5.5, depth: 5.5 });
+  });
+
   it('says nothing about a bin of that design that fits', () => {
     registerDesign(false);
     const short = { ...long, width: gridUnits(4), linkedDesignId: DESIGN };

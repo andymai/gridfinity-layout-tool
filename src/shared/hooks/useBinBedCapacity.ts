@@ -1,10 +1,11 @@
 import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { calcBedCapacityForBin, keepWholeCapacity, type BedCapacity } from '@/core/constants';
+import type { BedCapacity } from '@/core/constants';
 import { useLayoutStore } from '@/core/store/layout';
 import { effectiveGridUnitMmY, type DesignId } from '@/core/types';
 import type { OverhangSource } from '@/shared/utils/drawerMargin';
-import { useBinOverhangSpan } from './useBinOverhangSpan';
+import { placedBinBedCapacity } from '@/shared/utils/binSplitFit';
+import { useBinOverhang } from './useBinOverhangSpan';
 import { useLinkedDesignsKeptWhole } from './useLinkedDesignsKeptWhole';
 
 type PlacedBin = OverhangSource & { readonly linkedDesignId?: DesignId };
@@ -23,24 +24,22 @@ export function useBinBedCapacity(): (bin: PlacedBin) => BedCapacity {
       gridUnitMmY: effectiveGridUnitMmY(state.layout),
     }))
   );
-  const overhangSpanFor = useBinOverhangSpan();
+  const overhangFor = useBinOverhang();
   const keptWhole = useLinkedDesignsKeptWhole();
   return useCallback(
-    (bin) => {
-      const capacity = calcBedCapacityForBin(
-        bin.width,
-        bin.depth,
+    (bin) =>
+      placedBinBedCapacity(
+        {
+          width: bin.width,
+          depth: bin.depth,
+          gridUnitMm,
+          gridUnitMmY,
+          overhang: overhangFor(bin),
+          splitToFitBed: !(bin.linkedDesignId !== undefined && keptWhole.has(bin.linkedDesignId)),
+        },
         printBedSize,
-        gridUnitMm,
-        printBedDepth,
-        gridUnitMmY,
-        overhangSpanFor(bin)
-      );
-      const linkedId = bin.linkedDesignId;
-      return linkedId !== undefined && keptWhole.has(linkedId)
-        ? keepWholeCapacity(bin.width, bin.depth, capacity)
-        : capacity;
-    },
-    [printBedSize, printBedDepth, gridUnitMm, gridUnitMmY, overhangSpanFor, keptWhole]
+        printBedDepth
+      ),
+    [printBedSize, printBedDepth, gridUnitMm, gridUnitMmY, overhangFor, keptWhole]
   );
 }

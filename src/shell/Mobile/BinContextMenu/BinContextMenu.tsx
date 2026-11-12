@@ -11,8 +11,7 @@ import { useMutations } from '@/shared/contexts';
 import { useResponsive, useExpandToFit } from '@/shared/hooks';
 import { useContextMenu } from '@/shared/hooks/useContextMenu';
 import { planBinRotation, getBinLocationContext, isBinLocked } from '@/shared/utils/binLocation';
-import { calcBedCapacityForBin } from '@/core/constants';
-import { useBinOverhangSpan } from '@/shared/hooks/useBinOverhangSpan';
+import { useBinBedCapacity } from '@/shared/hooks/useBinBedCapacity';
 import {
   ContextMenuContainer,
   ContextMenuItem,
@@ -26,7 +25,6 @@ import { useTranslation } from '@/i18n';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { Button } from '@/design-system';
 import type { Bin, LayerId } from '@/core/types';
-import { effectiveGridUnitMmY } from '@/core/types';
 
 const BinContextMenuDesignSection = lazyWithRetry(() =>
   import('../BinContextMenuDesignSection').then(namedExport('BinContextMenuDesignSection'))
@@ -60,7 +58,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   const { menuRef } = useContextMenu();
 
   const layout = useLayoutStore((state) => state.layout);
-  const overhangSpanFor = useBinOverhangSpan();
+  const bedCapacityFor = useBinBedCapacity();
   const { deleteBin, moveBinToStaging, moveBinFromStaging, duplicateBin, updateBin } =
     useMutations();
   const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
@@ -171,17 +169,10 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   // On mobile, the context menu is the only way to rotate stash bins.
   const showRotate = locationContext.canRotate && !(isInStash && isDesktop);
 
-  // Check if bin needs splitting for STL search
-  const maxGrid = calcBedCapacityForBin(
-    bin.width,
-    bin.depth,
-    layout.printBedSize,
-    layout.gridUnitMm,
-    layout.printBedDepth,
-    effectiveGridUnitMmY(layout),
-    overhangSpanFor(bin)
-  );
-  const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
+  // Larger than the bed for STL search, whether or not its design splits it.
+  const maxGrid = bedCapacityFor(bin);
+  const needsSplit =
+    maxGrid.keptWhole !== undefined || bin.width > maxGrid.width || bin.depth > maxGrid.depth;
 
   return (
     <ContextMenuContainer
