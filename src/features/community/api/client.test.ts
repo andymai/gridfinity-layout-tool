@@ -973,6 +973,24 @@ describe('fetchCommunityDesign', () => {
     }
   });
 
+  it('passes a numeric prints count through to the detail counts', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(200, { design, counts: { likes: 4, remixes: 2, exports: 9, prints: 3 } })
+    );
+    const result = await fetchCommunityDesign('AbCdEf123456');
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) expect(result.value.counts?.prints).toBe(3);
+  });
+
+  it('degrades the detail counts to null when the prints count is not a number', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(200, { design, counts: { likes: 4, remixes: 2, exports: 9, prints: '3' } })
+    );
+    const result = await fetchCommunityDesign('AbCdEf123456');
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) expect(result.value.counts).toBeNull();
+  });
+
   it('degrades counts to null when absent or malformed (older server, no Redis)', async () => {
     fetchMock.mockResolvedValue(jsonResponse(200, { design, counts: { likes: 'many' } }));
     const result = await fetchCommunityDesign('AbCdEf123456');
