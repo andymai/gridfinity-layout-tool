@@ -114,7 +114,7 @@ export function FeatureToggle({
           {shortcut && <Kbd>{shortcut}</Kbd>}
           {trailing}
           {!disabledReason && comingSoon && (
-            <span className="rounded-full bg-surface-elevated px-1.5 py-0.5 text-micro font-medium text-content-tertiary">
+            <span className="rounded-full bg-surface-elevated px-1.5 py-0.5 text-micro font-medium text-content-secondary">
               {t('common.soon')}
             </span>
           )}
