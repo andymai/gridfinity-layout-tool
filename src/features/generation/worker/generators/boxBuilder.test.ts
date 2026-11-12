@@ -21,6 +21,7 @@ let buildTopShape: BuildTopShapeFn;
 
 let meshShape: (shape: unknown) => { vertices: ArrayLike<number>; triangles: ArrayLike<number> };
 let simplifies: (shape: Shape3D) => boolean;
+let solidFraction: (shape: Shape3D, at: [number, number, number]) => number;
 let shapeBounds: (shape: unknown) => {
   xMin: number;
   xMax: number;
@@ -31,7 +32,17 @@ let shapeBounds: (shape: unknown) => {
 };
 
 beforeAll(async () => {
-  const { mesh: meshFn, getBounds, simplify, isOk } = await import('brepjs');
+  const {
+    mesh: meshFn,
+    getBounds,
+    simplify,
+    isOk,
+    isErr,
+    box,
+    intersect,
+    measureVolume,
+    unwrap,
+  } = await import('brepjs');
   await initTestKernel();
 
   const mod = await import('./boxBuilder');
@@ -41,6 +52,20 @@ beforeAll(async () => {
   meshShape = (shape) => meshFn(shape as never, { tolerance: 1, angularTolerance: 30 });
   shapeBounds = (shape) => getBounds(shape as never);
   simplifies = (shape) => isOk(simplify(shape));
+  solidFraction = (shape, at) => {
+    const SIDE = 0.4;
+    const probe = box(SIDE, SIDE, SIDE, { at });
+    const hit = intersect(shape, probe);
+    probe.delete();
+    // A probe clear of the solid intersects to nothing, reported as not 3D.
+    if (isErr(hit)) {
+      if (hit.error.code === 'INTERSECT_NOT_3D') return 0;
+      throw new Error(`${hit.error.code}: ${hit.error.message}`);
+    }
+    const fraction = unwrap(measureVolume(hit.value)) / SIDE ** 3;
+    hit.value.delete();
+    return fraction;
+  };
 }, 30000);
 
 describe('buildBinBox', () => {
@@ -167,13 +192,25 @@ describe('buildTopShape', () => {
 
   // A Nesting body merges same-domain faces across the whole bin, and OCCT's
   // unifySameDomain throws on a face two of the lip's cuts both laid down.
+  // `buildTopShape` falls back to the plain lip when the notched cut throws,
+  // and the plain lip merges too, so the notch has to be found first.
   it.each<LipTipStyle>(['sharp', 'round', 'chamfer', 'flat'])(
     'a notched lip with a %s tip merges its same-domain faces',
     (lipTip) => {
       const notches = { fractionalEdgeX: 'end', fractionalEdgeY: 'end' } as const;
+      // 3mm in from the front face of a 3x2, past the plain lip's 2.6mm inset
+      // and short of the notch's reach, 1.4mm under the notch top.
+      const frontY = -(2 * 42 - 0.5) / 2 + 3;
+      const onGridLine: [number, number, number] = [-21, frontY, 2];
+      const midCell: [number, number, number] = [0, frontY, 2];
       for (const includeLip of [true, false]) {
+        const label = `support: ${includeLip}`;
+        const plain = buildTopShape(3, 2, includeLip, 42, undefined, undefined, lipTip);
+        expect(solidFraction(plain, onGridLine), `${label}, plain lip`).toBe(0);
         const lip = buildTopShape(3, 2, includeLip, 42, undefined, undefined, lipTip, notches);
-        expect(simplifies(lip), `support: ${includeLip}`).toBe(true);
+        expect(solidFraction(lip, onGridLine), `${label}, notch`).toBeGreaterThan(0.99);
+        expect(solidFraction(lip, midCell), `${label}, mid-cell`).toBe(0);
+        expect(simplifies(lip), label).toBe(true);
       }
     },
     60000
