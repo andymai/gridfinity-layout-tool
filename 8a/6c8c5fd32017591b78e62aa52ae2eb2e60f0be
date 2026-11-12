@@ -1,0 +1,21 @@
+src/core/sync/adapters/layoutAdapter.ts
+  s_1cc363bb3cc76d::t_b1edf15bad3768 161-180,182-186,220-228
+src/shared/hooks/useLayoutSwitcher.races.test.ts
+  s_1cc363bb3cc76d::t_c61368319050a2 8-9,96-110,429-478
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8a6c8c5fd32017591b78e62aa52ae2eb2e60f0be",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
