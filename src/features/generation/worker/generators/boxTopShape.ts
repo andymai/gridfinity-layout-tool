@@ -382,12 +382,17 @@ function buildNotchedTopShapeLoft(
     outlineSection(reach - noseAbovePeak, Z_PEAK + MARGIN),
   ];
 
+  // Above `zTop` a pocket's 45 degree flank lies on `topTrim`'s face, and two
+  // cuts laying down the same face leave fragments that OCCT's unifySameDomain
+  // throws on. So the flank stops at `zTop` (on it, inset equals depth) and
+  // the pocket rises straight from there, inside `topTrim`.
+  const flankTopInset = PLATE_PROFILE_HEIGHT - zTop;
   const pocketSections: readonly (readonly [z: number, inset: number])[] = [
-    [PLATE_PROFILE_HEIGHT + MARGIN, 0],
-    ...pocketProfileFor(PLATE_PROFILE_HEIGHT).map(([depth, inset]): readonly [number, number] => [
-      PLATE_PROFILE_HEIGHT - depth,
-      inset,
-    ]),
+    [PLATE_PROFILE_HEIGHT + MARGIN, flankTopInset],
+    [zTop, flankTopInset],
+    ...pocketProfileFor(PLATE_PROFILE_HEIGHT)
+      .map(([depth, inset]): readonly [number, number] => [PLATE_PROFILE_HEIGHT - depth, inset])
+      .filter(([z]) => z < zTop),
     [Z_SKIRT - MARGIN, POCKET_INSET_BOT],
   ];
 
