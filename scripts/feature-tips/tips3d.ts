@@ -280,13 +280,13 @@ const LIP_CELLS = ['frontLeft', 'frontRight', 'backRight', 'backLeft'].flatMap((
 
 function zones(
   body: string,
-  accents: { lip?: string; labelTab?: string; text?: string } = {}
+  accents: { lip?: string; labelTab?: string; text?: string; base?: string } = {}
 ): Record<string, unknown> {
   const lip = accents.lip ?? body;
   return {
     enabled: true,
     body,
-    base: body,
+    base: accents.base ?? body,
     scoop: body,
     dividers: body,
     lid: body,
@@ -377,34 +377,141 @@ const multiColor = fadeTip({
   ],
 });
 
-/** How far above its socket each label plate starts before it drops in, in mm. */
-const PLATE_DROP = 18;
-const PLATED = {
+const AMBER = '#fbbf24';
+// The preview's key light comes from behind and left of the bin. Parts with
+// no glow of their own (label plates, detachable feet) read near-black on the
+// dark card from the front, so their clips look from the lit side.
+const FACING_BACK_WALL: Camera = { ...FACING_FRONT_WALL, az: FACING_FRONT_WALL.az + 180 };
+
+interface PlateDrop {
+  id: FeatureTipId;
+  /** The tint paints the bin; the plates keep the label and text zones. */
+  params: ParamOverrides;
+  /** How far above its seat each plate starts before it drops in, in mm. */
+  drop: number;
+  camera?: Camera;
+}
+
+function plateDropTip({ id, params, drop, camera = CLIP_CAMERA }: PlateDrop): Tip {
+  return {
+    id,
+    color: CLOUD,
+    async capture({ stage }) {
+      stage.setTint(this.color);
+      await stage.setParams(params);
+      stage.setPlateLift(drop);
+      try {
+        const view = await stage.fit(camera, await stage.bounds());
+        const fall = ramp(30, drop, 0).map((plates) => ({ params, plates }));
+        return await sweepLoop(stage, view, { params, plates: drop }, fall, { params, plates: 0 });
+      } finally {
+        stage.setPlateLift(null);
+      }
+    },
+  };
+}
+
+const labelPlates = plateDropTip({
+  id: 'labelPlates',
+  params: {
+    ...BIN,
+    compartments: { ...COMPARTMENTS, compartmentTexts: ['M3', 'M4'] },
+    // 14 mm is MIN_LABEL_SOCKET_TAB_DEPTH_MM: a shallower shelf builds no socket.
+    label: { enabled: true, mode: 'socket', depth: 14 },
+    featureColors: zones(CLOUD, { labelTab: AMBER, text: '#334155' }),
+  },
+  drop: 18,
+});
+
+const labelSlots = plateDropTip({
+  id: 'labelSlots',
+  params: {
+    ...TOTE,
+    wallLabelSlots: {
+      enabled: true,
+      sides: { front: false, back: true, left: false, right: false },
+      everyCells: 1,
+    },
+    featureColors: zones(CLOUD, { labelTab: AMBER }),
+  },
+  drop: 34,
+  camera: FACING_BACK_WALL,
+});
+
+const halfSockets = fadeTip({
+  id: 'halfSockets',
+  color: CLOUD,
+  states: [SHALLOW_BIN, { ...SHALLOW_BIN, base: { halfSockets: true } }],
+  camera: FROM_BELOW,
+});
+
+const interiorFillet = sweepTip({
+  id: 'interiorFillet',
+  color: CLOUD,
+  base: { ...BIN, compartments: COMPARTMENTS },
+  at: (interiorFilletMm) => ({ ...BIN, compartments: COMPARTMENTS, interiorFilletMm }),
+  from: 1,
+  to: 12,
+  step: 0.5,
+});
+
+// The panel's flare widens the rim and keeps the base, so the stored overhang
+// is the flare itself and the taper insets the base back by the same amount.
+const taperWalls = sweepTip({
+  id: 'taperWalls',
+  color: CLOUD,
+  base: BIN,
+  at: (mm) => ({
+    ...BIN,
+    overhang: {
+      enabled: true,
+      left: mm,
+      right: mm,
+      front: mm,
+      back: mm,
+      taper: {
+        enabled: true,
+        profile: 'chamfer',
+        bandHeight: 21,
+        left: mm,
+        right: mm,
+        front: mm,
+        back: mm,
+      },
+    },
+  }),
+  from: 1,
+  to: 10,
+  step: 0.5,
+  camera: { ...FACING_BACK_WALL, el: 12 },
+});
+
+/** How far the feet drop off the bin, in mm. */
+const FEET_DROP = 24;
+const DETACHABLE = {
   ...BIN,
-  compartments: { ...COMPARTMENTS, compartmentTexts: ['M3', 'M4'] },
-  // 14 mm is MIN_LABEL_SOCKET_TAB_DEPTH_MM: a shallower shelf builds no socket.
-  label: { enabled: true, mode: 'socket', depth: 14 },
-  // The tint paints the bin; the plates keep the label and text zones.
-  featureColors: zones(CLOUD, { labelTab: '#fbbf24', text: '#334155' }),
+  base: { feet: 'detachable' },
+  // The base zone paints the separate feet part, so it stands apart from the bin.
+  featureColors: zones(CLOUD, { base: AMBER }),
 };
 
-const labelPlates: Tip = {
-  id: 'labelPlates',
+const detachableFeet: Tip = {
+  id: 'detachableFeet',
   color: CLOUD,
   async capture({ stage }) {
-    stage.setTint(this.color);
-    await stage.setParams(PLATED);
-    stage.setPlateLift(PLATE_DROP);
-    try {
-      const view = await stage.fit(CLIP_CAMERA, await stage.bounds());
-      const drop = ramp(30, PLATE_DROP, 0).map((plates) => ({ params: PLATED, plates }));
-      return await sweepLoop(stage, view, { params: PLATED, plates: PLATE_DROP }, drop, {
-        params: PLATED,
-        plates: 0,
-      });
-    } finally {
-      stage.setPlateLift(null);
-    }
+    stage.setTint(null);
+    await stage.setParams(DETACHABLE);
+    const camera: Camera = { ...CLIP_CAMERA, az: CLIP_CAMERA.az + 180, el: -24 };
+    await stage.setLidOffset(0);
+    const attached = await stage.bounds();
+    await stage.setLidOffset(FEET_DROP);
+    const dropped = await stage.bounds();
+    const view = await stage.fit(camera, { points: [...attached.points, ...dropped.points] });
+    const fall = ramp(30, 0, FEET_DROP).map((lid) => ({ params: DETACHABLE, lid }));
+    return sweepLoop(stage, view, { params: DETACHABLE, lid: 0 }, fall, {
+      params: DETACHABLE,
+      lid: FEET_DROP,
+    });
   },
 };
 
@@ -508,4 +615,9 @@ export const TIPS_3D: readonly Tip[] = [
   multiColor,
   wallText,
   lightweightFloor,
+  labelSlots,
+  detachableFeet,
+  halfSockets,
+  interiorFillet,
+  taperWalls,
 ];
