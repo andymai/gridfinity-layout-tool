@@ -938,9 +938,17 @@ const lidSliding: Shot = {
     await s.take(view, async () => {
       await s.ui.hold(0.6);
       // Closed, then back out to where it started, which is the part that `view` frames.
-      await s.ui.drag([x, thumbY], [x, track.y + track.height - 2], 20);
+      // The track maps 0 to 80 mm onto its height, so only the last 0.8 px reads 0:
+      // the close drag ends below the track (pointer capture clamps it to 0), and
+      // the return press lands inside that last strip.
+      const bottom = track.y + track.height;
+      await s.ui.drag([x, thumbY], [x, bottom + 8], 20);
+      const closed = await s.page
+        .getByRole('slider', { name: label('binDesigner.preview.lidExplodeSlider') })
+        .inputValue();
+      if (closed !== '0') throw new Error(`the lid slider stopped at ${closed}, not closed`);
       await s.ui.hold(0.5);
-      await s.ui.drag([x, track.y + track.height - 2], [x, thumbY], 20);
+      await s.ui.drag([x, bottom - 0.4], [x, thumbY], 20);
       await s.ui.moveTo(x - 60, thumbY + 40);
       s.poster();
       await s.ui.hold(1.6);
