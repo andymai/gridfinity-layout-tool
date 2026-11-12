@@ -10,7 +10,7 @@ import { Redis } from 'ioredis';
 import {
   SHARE_REVISION_TTL_SECONDS,
   reserveShareRevision,
-  seedShareRevision,
+  verifyShareRevision,
 } from './shareRevision.js';
 import { shareRevisionKey } from './redisKeys.js';
 
@@ -36,26 +36,34 @@ describe.skipIf(!REDIS_TEST_URL)('share revisions (real Redis)', () => {
     await redis.flushdb();
   });
 
-  it('reserves nothing, and creates no counter, for a share with no counter', async () => {
-    expect(await reserveShareRevision(redis, 's1', FLOOR)).toBeNull();
+  it('starts a counter unverified at the floor', async () => {
+    expect(await reserveShareRevision(redis, 's1', FLOOR)).toEqual({
+      stampMs: FLOOR,
+      verified: false,
+    });
+    expect(await reserveShareRevision(redis, 's1', FLOOR - 5000)).toEqual({
+      stampMs: FLOOR + 1,
+      verified: false,
+    });
+  });
+
+  it('stays at or past every stamp it handed out when a slower write verifies it', async () => {
+    const first = await reserveShareRevision(redis, 's1', FLOOR);
+    await reserveShareRevision(redis, 's1', FLOOR + 10_000);
+    await verifyShareRevision(redis, 's1', first?.stampMs ?? 0);
+
+    expect(await reserveShareRevision(redis, 's1', FLOOR)).toEqual({
+      stampMs: FLOOR + 10_001,
+      verified: true,
+    });
+  });
+
+  it('verifies no counter that is gone', async () => {
+    await verifyShareRevision(redis, 's1', FLOOR);
     expect(await redis.exists(shareRevisionKey('s1'))).toBe(0);
   });
 
-  it('hands out one past the last stamp while the floor is lower, else the floor', async () => {
-    await seedShareRevision(redis, 's1', FLOOR);
-    expect(await reserveShareRevision(redis, 's1', FLOOR - 5000)).toBe(FLOOR + 1);
-    expect(await reserveShareRevision(redis, 's1', FLOOR + 10_000)).toBe(FLOOR + 10_000);
-    expect(await redis.get(shareRevisionKey('s1'))).toBe(String(FLOOR + 10_000));
-  });
-
-  it('seeds only upward', async () => {
-    await seedShareRevision(redis, 's1', FLOOR + 10_000);
-    await seedShareRevision(redis, 's1', FLOOR);
-    expect(await redis.get(shareRevisionKey('s1'))).toBe(String(FLOOR + 10_000));
-  });
-
   it('keeps the counter for a day', async () => {
-    await seedShareRevision(redis, 's1', FLOOR);
     await reserveShareRevision(redis, 's1', FLOOR);
     const ttl = await redis.ttl(shareRevisionKey('s1'));
     expect(ttl).toBeGreaterThan(SHARE_REVISION_TTL_SECONDS - 5);
@@ -63,16 +71,19 @@ describe.skipIf(!REDIS_TEST_URL)('share revisions (real Redis)', () => {
   });
 
   it('gives writes at the same floor distinct stamps', async () => {
-    await seedShareRevision(redis, 's1', FLOOR - 1);
     const stamps = await Promise.all(
       Array.from({ length: 20 }, () => reserveShareRevision(redis, 's1', FLOOR))
     );
-    expect(new Set(stamps).size).toBe(20);
-    expect(Math.max(...stamps.map(Number))).toBe(FLOOR + 19);
+    const values = stamps.map((stamp) => stamp?.stampMs);
+    expect(new Set(values).size).toBe(20);
+    expect(Math.max(...values.map(Number))).toBe(FLOOR + 19);
   });
 
   it('keeps each share apart', async () => {
-    await seedShareRevision(redis, 's1', FLOOR + 10_000);
-    expect(await reserveShareRevision(redis, 's2', FLOOR)).toBeNull();
+    await reserveShareRevision(redis, 's1', FLOOR + 10_000);
+    expect(await reserveShareRevision(redis, 's2', FLOOR)).toEqual({
+      stampMs: FLOOR,
+      verified: false,
+    });
   });
 });

@@ -12,7 +12,7 @@ import {
   type SharedDesignShape,
 } from './lib/validation.js';
 import { holdShareMeshes } from './lib/meshIndex.js';
-import { reserveShareRevision, seedShareRevision } from './lib/shareRevision.js';
+import { reserveShareRevision, verifyShareRevision } from './lib/shareRevision.js';
 import { resolveShareMeshFiles } from './lib/shareMeshes.js';
 import { validateDesignerShare } from './lib/designerValidation.js';
 import {
@@ -186,8 +186,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // A deleted share with this id can still be on the CDN, so the first
     // update can read that share's older stamp instead of this one.
-    const reserved = await reserveShareRevision(redis, shareId, Date.now());
-    const stampMs = reserved ?? Date.now();
+    const reserved = redis ? await reserveShareRevision(redis, shareId, Date.now()) : null;
+    const stampMs = reserved?.stampMs ?? Date.now();
     const nowIso = new Date(stampMs).toISOString();
 
     // deleteTokenHash and reportCount are in Redis, not in the public blob,
@@ -258,7 +258,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     await recordSharePermission(redis, shareId, permission);
-    if (reserved === null) await seedShareRevision(redis, shareId, stampMs);
+    // The new blob holds only this stamp, which the counter handed out.
+    if (redis && reserved && !reserved.verified) {
+      await verifyShareRevision(redis, shareId, stampMs);
+    }
 
     // Return success response
     const shareUrl = `${getBaseUrl()}/${type === 'designer' ? 'd' : 'l'}/${shareId}`;

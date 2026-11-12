@@ -31,7 +31,7 @@ const mocks = vi.hoisted(() => ({
   redisSet: vi.fn(),
   redisDel: vi.fn(),
   reserveShareRevision: vi.fn(),
-  seedShareRevision: vi.fn(),
+  verifyShareRevision: vi.fn(),
   validateShareLayout: vi.fn(),
   isValidationError: vi.fn(),
   filterLayoutContent: vi.fn(),
@@ -109,19 +109,20 @@ const BLOB_URL = 'https://blob.example/shares/x.json';
 const UPLOADED_AT = new Date('2026-01-02T00:00:00.000Z');
 
 /** The revision scripts' semantics, as `shareRevision.integration.test.ts` runs them. */
-const revisions = new Map<string, number>();
+const revisions = new Map<string, { stamp: number; verified: boolean }>();
 const REVISION_KEY = `share:revision:abc123DEF456`;
-function reserve(key: string, floorMs: number): Promise<number | null> {
+function reserve(key: string, floorMs: number): Promise<[number, number]> {
   const last = revisions.get(key);
-  if (last === undefined) return Promise.resolve(null);
-  const stamp = Math.max(floorMs, last + 1);
-  revisions.set(key, stamp);
-  return Promise.resolve(stamp);
+  const stamp = last ? Math.max(floorMs, last.stamp + 1) : floorMs;
+  const verified = last?.verified ?? false;
+  revisions.set(key, { stamp, verified });
+  return Promise.resolve([stamp, verified ? 1 : 0]);
 }
-function seed(key: string, stampMs: number): Promise<number> {
-  const stamp = Math.max(stampMs, revisions.get(key) ?? 0);
-  revisions.set(key, stamp);
-  return Promise.resolve(stamp);
+function verify(key: string, stampMs: number): Promise<number> {
+  const last = revisions.get(key);
+  if (!last) return Promise.resolve(0);
+  revisions.set(key, { stamp: Math.max(stampMs, last.stamp), verified: true });
+  return Promise.resolve(1);
 }
 
 function blobResponse(data: unknown, etag?: string) {
@@ -185,11 +186,11 @@ describe('share/[id]', () => {
       set: mocks.redisSet,
       del: mocks.redisDel,
       reserveShareRevision: mocks.reserveShareRevision,
-      seedShareRevision: mocks.seedShareRevision,
+      verifyShareRevision: mocks.verifyShareRevision,
     });
     revisions.clear();
     mocks.reserveShareRevision.mockImplementation(reserve);
-    mocks.seedShareRevision.mockImplementation(seed);
+    mocks.verifyShareRevision.mockImplementation(verify);
     mocks.redisGet.mockResolvedValue(null);
     mocks.redisSet.mockResolvedValue('OK');
     mocks.redisDel.mockResolvedValue(1);
@@ -425,7 +426,10 @@ describe('share/[id]', () => {
         vi.useFakeTimers({ toFake: ['Date'] });
         try {
           vi.setSystemTime(new Date('2026-03-01T10:00:06.000Z'));
-          revisions.set(REVISION_KEY, Date.parse('2026-03-01T10:00:10.000Z'));
+          revisions.set(REVISION_KEY, {
+            stamp: Date.parse('2026-03-01T10:00:10.000Z'),
+            verified: true,
+          });
           primeBlobFetch(shareBlob({ lastUpdatedAt: '2026-03-01T10:00:00.000Z' }), '"etag-old"');
           mocks.head.mockResolvedValue({
             url: BLOB_URL,
@@ -480,7 +484,10 @@ describe('share/[id]', () => {
               mocks.put.mock.calls.map(([, , options]) => (options as { ifMatch: string }).ifMatch)
             ).toEqual(['"etag-old"', '"etag-new"']);
             expect(writtenAt(1).metadata.lastUpdatedAt).toBe('2026-03-01T10:00:10.001Z');
-            expect(revisions.get(REVISION_KEY)).toBe(Date.parse('2026-03-01T10:00:10.001Z'));
+            expect(revisions.get(REVISION_KEY)).toEqual({
+              stamp: Date.parse('2026-03-01T10:00:10.001Z'),
+              verified: true,
+            });
           } finally {
             vi.useRealTimers();
           }
@@ -500,6 +507,45 @@ describe('share/[id]', () => {
 
           expect(res._status).toBe(200);
           expect(mocks.put.mock.calls[0][2]).toMatchObject({ ifMatch: '"etag-1"' });
+          expect(revisions.get(REVISION_KEY)?.verified).toBe(false);
+        });
+
+        it('keeps writes on the body ETag while the counter is unverified', async () => {
+          revisions.set(REVISION_KEY, { stamp: Date.now() + 60_000, verified: false });
+          primeBlobFetch(shareBlob(), '"etag-old"');
+          mocks.head.mockResolvedValue({
+            url: BLOB_URL,
+            etag: '"etag-new"',
+            uploadedAt: UPLOADED_AT,
+          });
+          mocks.redisGet.mockResolvedValue(correctHash);
+          mocks.put.mockRejectedValue(new BlobPreconditionFailedError());
+          await handle('PUT', { body: { deleteToken: TOKEN, layout: { name: 'Updated' } } });
+
+          expect(
+            mocks.put.mock.calls.map(([, , options]) => (options as { ifMatch: string }).ifMatch)
+          ).toEqual(['"etag-old"', '"etag-old"', '"etag-old"']);
+          expect(revisions.get(REVISION_KEY)?.verified).toBe(false);
+        });
+
+        it('verifies the counter after a write that matched its body lands', async () => {
+          primeBlobFetch(shareBlob({ deleteTokenHash: correctHash }), '"etag-1"');
+          await handle('PUT', { body: { deleteToken: TOKEN, permission: 'edit' } });
+
+          expect(revisions.get(REVISION_KEY)?.verified).toBe(true);
+        });
+
+        it('writes over the body that set its floor when Redis is not configured', async () => {
+          mocks.getRedis.mockReturnValue(null);
+          primeBlobFetch(shareBlob({ deleteTokenHash: correctHash }), '"etag-old"');
+          mocks.head.mockResolvedValue({
+            url: BLOB_URL,
+            etag: '"etag-new"',
+            uploadedAt: UPLOADED_AT,
+          });
+          await handle('PUT', { body: { deleteToken: TOKEN, layout: { name: 'Updated' } } });
+
+          expect(mocks.put.mock.calls[0][2]).toMatchObject({ ifMatch: '"etag-old"' });
         });
       });
 
@@ -519,22 +565,16 @@ describe('share/[id]', () => {
         );
       });
 
-      it('falls back to its own floor when the reservation fails', async () => {
-        vi.useFakeTimers({ toFake: ['Date'] });
-        try {
-          vi.setSystemTime(new Date('2026-03-01T00:00:05.000Z'));
-          primeBlobFetch(shareBlob({ lastUpdatedAt: '2026-03-01T00:00:00.000Z' }));
-          mocks.redisGet.mockResolvedValue(correctHash);
-          mocks.reserveShareRevision.mockRejectedValue(new Error('redis down'));
-          const res = await handle('PUT', {
-            body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
-          });
+      it('answers 503, and writes nothing, when the reservation fails', async () => {
+        primeBlobFetch(shareBlob());
+        mocks.redisGet.mockResolvedValue(correctHash);
+        mocks.reserveShareRevision.mockRejectedValue(new Error('redis down'));
+        const res = await handle('PUT', {
+          body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+        });
 
-          expect(res._status).toBe(200);
-          expect(writtenAt(0).metadata.lastUpdatedAt).toBe('2026-03-01T00:00:05.000Z');
-        } finally {
-          vi.useRealTimers();
-        }
+        expect(res._status).toBe(503);
+        expect(mocks.put).not.toHaveBeenCalled();
       });
 
       it('never writes a permission-only update over a body that has no ETag', async () => {
@@ -624,7 +664,10 @@ describe('share/[id]', () => {
       });
 
       it('writes a full update over the current blob while the CDN serves an older body', async () => {
-        revisions.set(REVISION_KEY, Date.parse('2026-01-02T00:00:00.000Z'));
+        revisions.set(REVISION_KEY, {
+          stamp: Date.parse('2026-01-02T00:00:00.000Z'),
+          verified: true,
+        });
         primeBlobFetch(shareBlob(), '"etag-old"');
         mocks.head.mockResolvedValue({
           url: BLOB_URL,
