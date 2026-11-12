@@ -1,5 +1,5 @@
 import { isErr } from '@/core/result';
-import { useLayoutStore, useLibraryStore } from '@/core/store';
+import { notePulledCopy, queueLibraryWrite, useLayoutStore, useLibraryStore } from '@/core/store';
 import type { Bin, Layout, LayoutEntry, LayoutId, LayoutLibrary } from '@/core/types';
 import { normalizeDrawerOutline } from '@/shared/utils/drawerOutline';
 import {
@@ -158,70 +158,75 @@ export const layoutAdapter: LayoutAdapter = {
     return { id, payload: withPlacement(payload, entry), modifiedAt: entry.modifiedAt };
   },
 
-  async applyRemote(item: SyncableItem<Layout>): Promise<void> {
-    // Restored before normalizing: the outline is clipped to an extent the
-    // measured drawer widens, so clipping first would cut it to the grid.
-    let incoming = item.payload;
-    const schemaVersion = item.schemaVersion ?? 1;
-    if (schemaVersion < LAYOUT_SCHEMA_VERSION) {
-      const local = await loadLayoutAsync(item.id);
-      if (local) incoming = restoreStrippedFields(incoming, local, schemaVersion);
-    }
-    // The folder rides on the wire only; locally the entry holds it.
-    const { folderId, ...document } = normalizeIncomingLayout(incoming);
-    const layout: Layout = document;
-    const saveResult = await saveLayoutAsync(item.id, layout);
-    if (!saveResult.ok) {
-      throw syncPersistError('saveLayoutAsync', item.id, saveResult.error);
-    }
+  // One queue turn covers the read of the local copy through the store
+  // refresh. A local write in between could delete or overwrite the remote
+  // data that the entry describes.
+  applyRemote(item: SyncableItem<Layout>): Promise<void> {
+    return queueLibraryWrite(async (library) => {
+      // Restored before normalizing: the outline is clipped to an extent the
+      // measured drawer widens, so clipping first would cut it to the grid.
+      let incoming = item.payload;
+      const schemaVersion = item.schemaVersion ?? 1;
+      if (schemaVersion < LAYOUT_SCHEMA_VERSION) {
+        const local = await loadLayoutAsync(item.id);
+        if (local) incoming = restoreStrippedFields(incoming, local, schemaVersion);
+      }
+      // The folder rides on the wire only; locally the entry holds it.
+      const { folderId, ...document } = normalizeIncomingLayout(incoming);
+      const layout: Layout = document;
+      const saveResult = await saveLayoutAsync(item.id, layout);
+      if (!saveResult.ok) {
+        throw syncPersistError('saveLayoutAsync', item.id, saveResult.error);
+      }
 
-    // Upsert the library entry so the user sees the updated metadata.
-    // For new entries we compute a fresh preview from the remote layout —
-    // `LayoutEntry.preview` is required and the UI dereferences
-    // `entry.preview.binCount` so leaving it undefined would crash.
-    const { library, setLibrary } = useLibraryStore.getState();
-    const preview = computePreview(layout);
-    const existingIndex = library.entries.findIndex((e) => e.id === item.id);
-    const nextEntries: LayoutEntry[] =
-      existingIndex >= 0
-        ? library.entries.map((e, i) =>
-            i === existingIndex
-              ? {
-                  ...e,
-                  modifiedAt: item.modifiedAt,
-                  name: layout.name || e.name,
-                  preview,
-                  folderId: folderId ?? null,
-                }
-              : e
-          )
-        : [
-            ...library.entries,
-            {
-              id: item.id as LayoutEntry['id'],
-              name: layout.name || 'Untitled',
-              createdAt: item.modifiedAt,
-              modifiedAt: item.modifiedAt,
-              preview,
-              folderId: folderId ?? null,
-            } satisfies LayoutEntry,
-          ];
-    const nextLibrary: LayoutLibrary = { ...library, entries: nextEntries };
-    suppress(item.id);
-    setLibrary(nextLibrary);
-    const libraryResult = await saveLibrary(nextLibrary);
-    if (isErr(libraryResult)) {
-      throw syncPersistError('saveLibrary', item.id, libraryResult.error);
-    }
+      // Upsert the library entry so the user sees the updated metadata.
+      // For new entries we compute a fresh preview from the remote layout —
+      // `LayoutEntry.preview` is required and the UI dereferences
+      // `entry.preview.binCount` so leaving it undefined would crash.
+      const preview = computePreview(layout);
+      const existingIndex = library.entries.findIndex((e) => e.id === item.id);
+      const nextEntries: LayoutEntry[] =
+        existingIndex >= 0
+          ? library.entries.map((e, i) =>
+              i === existingIndex
+                ? {
+                    ...e,
+                    modifiedAt: item.modifiedAt,
+                    name: layout.name || e.name,
+                    preview,
+                    folderId: folderId ?? null,
+                  }
+                : e
+            )
+          : [
+              ...library.entries,
+              {
+                id: item.id as LayoutEntry['id'],
+                name: layout.name || 'Untitled',
+                createdAt: item.modifiedAt,
+                modifiedAt: item.modifiedAt,
+                preview,
+                folderId: folderId ?? null,
+              } satisfies LayoutEntry,
+            ];
+      const nextLibrary: LayoutLibrary = { ...library, entries: nextEntries };
+      suppress(item.id);
+      useLibraryStore.getState().setLibrary(nextLibrary);
+      const libraryResult = await saveLibrary(nextLibrary);
+      if (isErr(libraryResult)) {
+        throw syncPersistError('saveLibrary', item.id, libraryResult.error);
+      }
+      notePulledCopy(item.id, item.modifiedAt);
 
-    // If the user is viewing this layout right now, replace what the
-    // store has so the UI re-renders. `source: 'remote'` flags the
-    // store's `lastEditSource` so other subscribers can distinguish
-    // remote-applied changes from user edits.
-    const { activeLayoutId, importLayout } = useLayoutStore.getState();
-    if (activeLayoutId === item.id) {
-      importLayout(layout, item.id as LayoutId, 'remote');
-    }
+      // If the user is viewing this layout right now, replace what the
+      // store has so the UI re-renders. `source: 'remote'` flags the
+      // store's `lastEditSource` so other subscribers can distinguish
+      // remote-applied changes from user edits.
+      const { activeLayoutId, importLayout } = useLayoutStore.getState();
+      if (activeLayoutId === item.id) {
+        importLayout(layout, item.id as LayoutId, 'remote');
+      }
+    });
   },
 
   async applyRemoteDelete(id: string): Promise<void> {
@@ -230,19 +235,21 @@ export const layoutAdapter: LayoutAdapter = {
     // the existing delete flow when the user navigates away. The
     // important thing is that the entry disappears from the library
     // index so the user doesn't see a phantom layout.
-    const { library, setLibrary } = useLibraryStore.getState();
-    if (!library.entries.some((e) => e.id === id)) return;
-
-    const nextLibrary: LayoutLibrary = {
-      ...library,
-      entries: library.entries.filter((e) => e.id !== id),
-    };
-    suppress(id);
-    setLibrary(nextLibrary);
-    const libraryResult = await saveLibrary(nextLibrary);
-    if (isErr(libraryResult)) {
-      throw syncPersistError('saveLibrary (remote-delete)', id, libraryResult.error);
-    }
+    const nextLibrary = await queueLibraryWrite(async (library) => {
+      if (!library.entries.some((e) => e.id === id)) return null;
+      const next: LayoutLibrary = {
+        ...library,
+        entries: library.entries.filter((e) => e.id !== id),
+      };
+      suppress(id);
+      useLibraryStore.getState().setLibrary(next);
+      const libraryResult = await saveLibrary(next);
+      if (isErr(libraryResult)) {
+        throw syncPersistError('saveLibrary (remote-delete)', id, libraryResult.error);
+      }
+      return next;
+    });
+    if (!nextLibrary) return;
 
     // If the user was viewing the deleted layout, switch them to
     // whatever's first in the (now-trimmed) library so they aren't

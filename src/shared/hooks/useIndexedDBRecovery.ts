@@ -14,6 +14,7 @@ import { useEffect, useRef } from 'react';
 import { loadLayoutAsync } from '@/core/storage';
 import { computePreview } from '@/core/storage/LayoutManager';
 import { useLayoutStore, useLibraryStore } from '@/core/store';
+import { queueLibraryWrite } from '@/core/store/libraryWrites';
 import { useToastStore } from '@/core/store/toast';
 import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils';
 import { useTranslation } from '@/i18n';
@@ -45,14 +46,17 @@ export function useIndexedDBRecovery(needsRecovery: boolean, originalLayoutIds: 
           const recovered = await loadLayoutAsync(originalId);
 
           if (recovered) {
-            const activeLayoutId = useLibraryStore.getState().library.activeLayoutId;
-            useLayoutStore.getState().importLayout(recovered, activeLayoutId, 'init');
+            await queueLibraryWrite(() => {
+              const { library, updateEntry } = useLibraryStore.getState();
+              const activeLayoutId = library.activeLayoutId;
+              useLayoutStore.getState().importLayout(recovered, activeLayoutId, 'init');
 
-            // Update library entry metadata to match the recovered layout
-            useLibraryStore.getState().updateEntry(activeLayoutId, {
-              name: recovered.name || 'Recovered layout',
-              preview: computePreview(recovered),
-              modifiedAt: Date.now(),
+              // Update library entry metadata to match the recovered layout
+              updateEntry(activeLayoutId, {
+                name: recovered.name || 'Recovered layout',
+                preview: computePreview(recovered),
+                modifiedAt: Date.now(),
+              });
             });
 
             useToastStore.getState().addToast(t('toast.layoutRecovered'), 'success');

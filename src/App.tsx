@@ -2,7 +2,13 @@ import { useEffect, useLayoutEffect, useState, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { GlobalSettingsModal } from '@/shell/Modals/SettingsModal/GlobalSettingsModal';
 import { HalfGridModeBlockedHost } from '@/shell/Modals';
-import { useLayoutStore, useLibraryStore, useSelectionStore, useViewStore } from '@/core/store';
+import {
+  queueLibraryWrite,
+  useLayoutStore,
+  useLibraryStore,
+  useSelectionStore,
+  useViewStore,
+} from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useCommunityPublishStore } from '@/core/store/communityPublish';
@@ -155,14 +161,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const library = useLibraryStore.getState().library;
-    void reconcileLibraryAsync(library)
-      .then((cleaned) => {
-        if (cleaned) {
-          useLibraryStore.getState().setLibrary(cleaned);
-        }
-      })
-      .catch(() => {});
+    void queueLibraryWrite(async (library) => {
+      const cleaned = await reconcileLibraryAsync(library);
+      if (cleaned) useLibraryStore.getState().setLibrary(cleaned);
+    }).catch(() => {});
   }, []);
 
   const {

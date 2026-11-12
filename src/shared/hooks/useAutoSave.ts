@@ -1,11 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useLayoutStore, useLibraryStore, useToastStore } from '@/core/store';
+import {
+  noteOpenLayoutSaved,
+  queueLibraryWrite,
+  readOpenLayout,
+  savedLaterCopy,
+  useLayoutStore,
+  useLibraryStore,
+  useToastStore,
+} from '@/core/store';
+import type { OpenLayoutRead } from '@/core/store';
 import { saveLayoutWithMetadata } from '@/core/storage';
-import type { SaveResult } from '@/core/storage';
 import { isRealLayoutId } from '@/core/constants';
 import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils';
-import { err, isErr, getUserMessage, isRetryable, storageUnavailable } from '@/core/result';
+import { err, isErr, ok, getUserMessage, isRetryable, storageUnavailable } from '@/core/result';
 import type { Result, StorageError } from '@/core/result';
 import type { Layout, LayoutId } from '@/core/types';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -43,13 +51,28 @@ function reportSaveCrash(error: unknown): void {
   });
 }
 
+/**
+ * Saves the newest copy of the layout that `read` saw: the open layout as it
+ * is at this save's turn, or `read` itself when that layout is closed. Resolves
+ * to the copy it saved, or to `ok(null)` when there is nothing to save: the
+ * layout left the library, or a write ahead in the queue saved a later copy.
+ */
 async function writeLayout(
   savingLayoutId: LayoutId,
-  layout: Layout
-): Promise<Result<SaveResult, StorageError>> {
+  read: OpenLayoutRead
+): Promise<Result<Layout | null, StorageError>> {
   try {
-    // Get fresh library state at save time (may have changed since the save was scheduled)
-    return await saveLayoutWithMetadata(savingLayoutId, layout, useLibraryStore.getState().library);
+    return await queueLibraryWrite(async (library) => {
+      if (!library.entries.some((entry) => entry.id === savingLayoutId)) return ok(null);
+      const open = readOpenLayout();
+      const newest = open.id === savingLayoutId ? open : read;
+      if (savedLaterCopy(newest)) return ok(null);
+      const saved = await saveLayoutWithMetadata(savingLayoutId, newest.layout, library);
+      if (isErr(saved)) return saved;
+      noteOpenLayoutSaved(newest);
+      useLibraryStore.getState().setLibrary(saved.value.library);
+      return ok(newest.layout);
+    });
   } catch (error: unknown) {
     reportSaveCrash(error);
     return err(storageUnavailable('indexedDB', error));
@@ -112,23 +135,25 @@ function createLayoutSaver(
       return;
     }
 
-    const { layout, activeLayoutId: savingLayoutId } = useLayoutStore.getState();
+    const read = readOpenLayout();
+    const savingLayoutId = read.id;
     if (!isRealLayoutId(savingLayoutId)) return;
 
     window.clearTimeout(retryTimer);
     retryTimer = undefined;
     inFlight = true;
-    const result = await writeLayout(savingLayoutId, layout);
+    const result = await writeLayout(savingLayoutId, read);
     inFlight = false;
     if (isDisposed()) return;
 
     if (isErr(result)) {
       handleFailure(result.error, trigger);
+    } else if (result.value === null) {
+      handleNothingToSave();
     } else if (useLayoutStore.getState().activeLayoutId === savingLayoutId) {
-      handleSuccess(savingLayoutId, layout, result.value);
+      handleSuccess(savingLayoutId, result.value);
     } else if (failureCount === 0) {
-      // The user switched layouts during the save. The data is in storage, but
-      // the returned library would overwrite the new layout's library state.
+      // The user switched layouts during the save. The status follows the open layout.
       onStatus('idle');
     }
 
@@ -137,9 +162,7 @@ function createLayoutSaver(
     if (next) start(next);
   }
 
-  function handleSuccess(savingLayoutId: LayoutId, layout: Layout, saved: SaveResult): void {
-    useLibraryStore.getState().setLibrary(saved.library);
-
+  function handleSuccess(savingLayoutId: LayoutId, layout: Layout): void {
     failureCount = 0;
     hasShownError = false;
     dismissFailureToast();
@@ -153,6 +176,15 @@ function createLayoutSaver(
     savedTimer = window.setTimeout(() => {
       onStatus('idle');
     }, SAVED_DISPLAY_MS);
+  }
+
+  // The layout is deleted, or a later copy of it is in storage, so the failures
+  // of its earlier saves are over.
+  function handleNothingToSave(): void {
+    failureCount = 0;
+    hasShownError = false;
+    dismissFailureToast();
+    onStatus('idle');
   }
 
   function handleFailure(error: StorageError, trigger: SaveTrigger): void {

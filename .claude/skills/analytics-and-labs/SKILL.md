@@ -80,7 +80,7 @@ Toggling already emits `labs_feature_toggle` from the store; no extra analytics.
 ### Copy the shared-hook safety patterns
 
 - Stale closures in `[]`-dep effects: read fresh state via `useStore.getState()` at call time (`useAnalytics.ts`, `useAutoSave.ts`) or `useLatestRef` for non-React listeners.
-- Async save/mutation hooks: copy the `useAutoSave.ts` guard — capture `savingLayoutId` before the await, re-read `useLayoutStore.getState().activeLayoutId` after, discard the update on mismatch. Otherwise a quick layout switch mid-save corrupts the wrong layout's metadata.
+- Async library writes: read the library inside `queueLibraryWrite` or `writeLibrary` (`src/core/store/libraryWrites.ts`), never before an await, or an overlapping write drops entries. Layout-scoped follow-ups still copy the `useAutoSave.ts` guard: capture `savingLayoutId` before the await, and skip them when `activeLayoutId` changed.
 - Cross-tab labs sync uses the window `storage` event (`useCrossTabSync.ts`, keyed on `LABS_STORAGE_KEY`); StorageEvents fire only in OTHER tabs, so same-tab localStorage writes in tests never trigger the listener.
 
 ## Verification

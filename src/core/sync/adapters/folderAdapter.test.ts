@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useLibraryStore } from '@/core/store';
+import { queueLibraryWrite, useLibraryStore } from '@/core/store';
 import type { LayoutFolder, LayoutId, LayoutLibrary } from '@/core/types';
 import type * as Storage from '@/core/storage';
 
@@ -198,6 +198,37 @@ describe('folderAdapter.applyRemote', () => {
     await Promise.resolve();
     unsubscribe();
     expect(seen).toEqual([]);
+  });
+});
+
+describe('folderAdapter while a library write is in flight', () => {
+  it('adds a pulled folder to the library that write stores', async () => {
+    let release = (): void => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const held = queueLibraryWrite(async (library) => {
+      await gate;
+      useLibraryStore.getState().setLibrary({
+        ...library,
+        folders: [...(library.folders ?? []), folder('folder_3_local', 1500)],
+      });
+    });
+
+    const applied = folderAdapter.applyRemote({
+      id: 'folder_2_b',
+      payload: { name: 'Desk', parentId: null, createdAt: 5 },
+      modifiedAt: 2000,
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    release();
+    await Promise.all([held, applied]);
+
+    expect(useLibraryStore.getState().library.folders?.map((f) => f.id)).toEqual([
+      'folder_1_a',
+      'folder_3_local',
+      'folder_2_b',
+    ]);
   });
 });
 

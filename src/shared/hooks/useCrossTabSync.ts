@@ -1,5 +1,11 @@
 import { useEffect } from 'react';
-import { useLayoutStore, useLibraryStore, useLabsStore, LABS_STORAGE_KEY } from '@/core/store';
+import {
+  queueLibraryWrite,
+  useLayoutStore,
+  useLibraryStore,
+  useLabsStore,
+  LABS_STORAGE_KEY,
+} from '@/core/store';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useSelectionStore } from '@/core/store/selection';
 import { loadLayoutAsync, loadLibraryAsync } from '@/core/storage';
@@ -13,15 +19,14 @@ import type { LabsPreferences } from '@/core/labs';
 export function useCrossTabSync() {
   useEffect(() => {
     const cleanupLibraryChannel = listenForLibraryChanges(() => {
-      loadLibraryAsync()
-        .then((newLibrary) => {
-          if (newLibrary) {
-            useLibraryStore.getState().setLibrary(newLibrary);
-          }
-        })
-        .catch((error: unknown) => {
-          console.error('[CrossTabSync] Failed to reload library:', error);
-        });
+      queueLibraryWrite(async () => {
+        const newLibrary = await loadLibraryAsync();
+        if (newLibrary) {
+          useLibraryStore.getState().setLibrary(newLibrary);
+        }
+      }).catch((error: unknown) => {
+        console.error('[CrossTabSync] Failed to reload library:', error);
+      });
     });
 
     const handleStorageChange = (e: StorageEvent) => {

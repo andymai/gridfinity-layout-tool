@@ -1,14 +1,22 @@
 import { useCallback, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { useLibraryStore, useToastStore, useSettingsStore } from '@/core/store';
+import {
+  noteOpenLayoutSaved,
+  queueLibraryWrite,
+  readOpenLayout,
+  saveOpenLayout,
+  useLibraryStore,
+  useToastStore,
+  useSettingsStore,
+  writeLibrary,
+} from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import type { Layout, LayoutId } from '@/core/types';
 import { layoutId } from '@/core/types';
 import { useLayoutActivation } from '@/shared/hooks/useLayoutActivation';
 import { isErr, isOk } from '@/core/result';
 import {
-  saveLayoutWithMetadata,
   createLayoutEntry,
   deleteLayoutWithEntry,
   duplicateLayoutEntry as duplicateLayoutStorage,
@@ -39,8 +47,8 @@ import { useMutations } from '@/shared/contexts/MutationsContext';
 type CreateLayoutResult = Result<string, StorageError | UnknownError | LayoutLibraryLimitError>;
 
 // Module scope, not a ref: the keyboard, the header, the layout manager and the
-// mobile panel each own a hook instance. Two creations that overlap each write
-// a library snapshot without the other's entry, so the later one drops it.
+// mobile panel each own a hook instance, and a second request from any of them
+// while a creation is pending opens that same new layout.
 let pendingCreate: Promise<CreateLayoutResult> | null = null;
 
 /**
@@ -80,25 +88,10 @@ export function useLayoutSwitcher() {
 
   /**
    * Save the current layout to storage and update library entry.
-   * Uses atomic save for data consistency.
-   * Gets fresh state to avoid stale closure issues.
    */
   const saveCurrentLayout = useCallback(async () => {
-    // Get fresh state to avoid stale closures
-    const currentActiveId = useLayoutStore.getState().activeLayoutId;
-    const currentLayout = useLayoutStore.getState().layout;
-    const currentLibrary = useLibraryStore.getState().library;
-
-    if (!isRealLayoutId(currentActiveId)) return;
-
-    const result = await saveLayoutWithMetadata(currentActiveId, currentLayout, currentLibrary);
-    if (isErr(result)) {
-      addToast(t('toast.layoutSaveFailed'), 'error');
-      return;
-    }
-
-    setLibrary(result.value.library);
-  }, [setLibrary, addToast, t]);
+    if (isErr(await saveOpenLayout())) addToast(t('toast.layoutSaveFailed'), 'error');
+  }, [addToast, t]);
 
   /**
    * Switch to a different layout.
@@ -120,25 +113,26 @@ export function useLayoutSwitcher() {
       try {
         clearSharedLayoutPreview();
 
-        // Note: Get ALL fresh state to avoid stale closure issues
-        // (e.g., when called right after importLayoutFromJSON, deleteLayout, or auto-save)
-        const currentLibrary = useLibraryStore.getState().library;
-        const currentActiveId = useLayoutStore.getState().activeLayoutId;
-        const currentLayout = useLayoutStore.getState().layout;
-        const result = await switchActiveLayout(
-          currentActiveId || SHARED_PREVIEW_ID,
-          currentLayout,
-          targetId,
-          currentLibrary
-        );
+        const result = await queueLibraryWrite(async (library) => {
+          const open = readOpenLayout();
+          const switched = await switchActiveLayout(
+            open.id || SHARED_PREVIEW_ID,
+            open.layout,
+            targetId,
+            library
+          );
+          if (isOk(switched)) {
+            if (isRealLayoutId(open.id)) noteOpenLayoutSaved(open);
+            setLibrary(switched.value.library);
+            activateLayout(switched.value.targetLayout, targetId);
+          }
+          return switched;
+        });
 
         if (isErr(result)) {
           addToast(t('toast.layoutSwitchFailed'), 'error');
           return result;
         }
-
-        setLibrary(result.value.library);
-        activateLayout(result.value.targetLayout, targetId);
 
         setLayoutURL(targetId, result.value.targetLayout.name, true);
 
@@ -178,13 +172,18 @@ export function useLayoutSwitcher() {
       newLayout.name = name || DEFAULT_LAYOUT_NAME;
 
       try {
-        // Get fresh library state after saveCurrentLayout (may have updated it)
-        const currentLibrary = useLibraryStore.getState().library;
-
-        const result = await createLayoutEntry(newLayout, currentLibrary, {
-          name: newLayout.name,
-          author: currentLibrary.settings.authorName,
-          activate: true,
+        const result = await queueLibraryWrite(async (library) => {
+          const created = await createLayoutEntry(newLayout, library, {
+            name: newLayout.name,
+            author: library.settings.authorName,
+            activate: true,
+          });
+          if (isOk(created)) {
+            clearSharedLayoutPreview();
+            setLibrary(created.value.library);
+            activateLayout(created.value.layout, layoutId(created.value.layoutId));
+          }
+          return created;
         });
 
         if (isErr(result)) {
@@ -192,11 +191,7 @@ export function useLayoutSwitcher() {
           return result;
         }
 
-        clearSharedLayoutPreview();
-        setLibrary(result.value.library);
         const newLayoutId = layoutId(result.value.layoutId);
-        activateLayout(result.value.layout, newLayoutId);
-
         setLayoutURL(newLayoutId, result.value.layout.name, true);
 
         trackLayoutAction('created');
@@ -210,7 +205,6 @@ export function useLayoutSwitcher() {
     },
     [
       saveCurrentLayout,
-      // Note: library removed - we use fresh state via getState()
       setLibrary,
       clearSharedLayoutPreview,
       activateLayout,
@@ -237,22 +231,17 @@ export function useLayoutSwitcher() {
 
   const deleteLayout = useCallback(
     async (id: LayoutId): Promise<Result<Unit, LayoutError | StorageError | UnknownError>> => {
-      // Get fresh library state to avoid stale closure issues
-      const currentLibrary = useLibraryStore.getState().library;
-
-      if (currentLibrary.entries.length <= 1) {
+      if (useLibraryStore.getState().library.entries.length <= 1) {
         return err(layoutLastEntity('layout'));
       }
 
       try {
-        const result = await deleteLayoutWithEntry(id, currentLibrary);
+        const result = await writeLibrary((library) => deleteLayoutWithEntry(id, library));
 
         if (isErr(result)) {
           addToast(t('toast.layoutDeleteFailed'), 'error');
           return result;
         }
-
-        setLibrary(result.value.library);
 
         if (result.value.newActiveId) {
           const switchResult = await switchLayout(layoutId(result.value.newActiveId));
@@ -272,7 +261,7 @@ export function useLayoutSwitcher() {
         return err(fromUnknown(error));
       }
     },
-    [setLibrary, switchLayout, addToast, t]
+    [switchLayout, addToast, t]
   );
 
   const duplicateLayout = useCallback(
@@ -283,17 +272,12 @@ export function useLayoutSwitcher() {
       }
 
       try {
-        // Get fresh library state to avoid stale closure
-        const currentLibrary = useLibraryStore.getState().library;
-
-        const result = await duplicateLayoutStorage(id, currentLibrary);
+        const result = await writeLibrary((library) => duplicateLayoutStorage(id, library));
 
         if (isErr(result)) {
           addToast(failureMessage(result.error, 'toast.layoutDuplicateFailed'), 'error');
           return result;
         }
-
-        setLibrary(result.value.library);
 
         trackLayoutAction('duplicated');
         // Track quality signal (duplicated = positive signal for ML)
@@ -306,28 +290,26 @@ export function useLayoutSwitcher() {
         return err(fromUnknown(error));
       }
     },
-    [getEntry, setLibrary, addToast, failureMessage, t]
+    [getEntry, addToast, failureMessage, t]
   );
 
   const renameLayout = useCallback(
     (id: LayoutId, newName: string): void => {
-      // Get fresh library state to avoid stale closure
-      const currentLibrary = useLibraryStore.getState().library;
-      const currentActiveId = useLayoutStore.getState().activeLayoutId;
+      void queueLibraryWrite((library) => {
+        const result = renameLayoutEntry(id, newName, library);
 
-      const result = renameLayoutEntry(id, newName, currentLibrary);
+        if (isOk(result)) {
+          setLibrary(result.value);
 
-      if (isOk(result)) {
-        setLibrary(result.value);
+          if (id === useLayoutStore.getState().activeLayoutId) {
+            mutations.setName(newName);
+          }
 
-        if (id === currentActiveId) {
-          mutations.setName(newName);
+          trackLayoutAction('renamed');
+        } else {
+          addToast(t('toast.layoutRenameFailed'), 'error');
         }
-
-        trackLayoutAction('renamed');
-      } else {
-        addToast(t('toast.layoutRenameFailed'), 'error');
-      }
+      });
     },
     [setLibrary, addToast, t, mutations]
   );
@@ -341,21 +323,18 @@ export function useLayoutSwitcher() {
       forkedFrom?: { name: string; author?: string }
     ): Promise<Result<string, StorageError | UnknownError | LayoutLibraryLimitError>> => {
       try {
-        // Get fresh library state to avoid stale closure
-        const currentLibrary = useLibraryStore.getState().library;
-
-        const result = await createLayoutEntry(importedLayout, currentLibrary, {
-          name: importedLayout.name,
-          author: currentLibrary.settings.authorName,
-          forkedFrom,
-        });
+        const result = await writeLibrary((library) =>
+          createLayoutEntry(importedLayout, library, {
+            name: importedLayout.name,
+            author: library.settings.authorName,
+            forkedFrom,
+          })
+        );
 
         if (isErr(result)) {
           addToast(failureMessage(result.error, 'toast.layoutImportFailed'), 'error');
           return result;
         }
-
-        setLibrary(result.value.library);
 
         trackLayoutAction('imported', forkedFrom ? 'url' : 'json');
 
@@ -366,7 +345,7 @@ export function useLayoutSwitcher() {
         return err(fromUnknown(error));
       }
     },
-    [setLibrary, addToast, failureMessage, t]
+    [addToast, failureMessage, t]
   );
 
   return {

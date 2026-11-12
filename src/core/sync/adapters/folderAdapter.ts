@@ -1,5 +1,5 @@
 import { isErr } from '@/core/result';
-import { useLibraryStore } from '@/core/store';
+import { queueLibraryWrite, useLibraryStore } from '@/core/store';
 import { FOLDER_KINDS } from '@/core/types';
 import type { FolderKind, LayoutFolder, LayoutLibrary } from '@/core/types';
 import { liftContents, saveLibrary, wouldLoop } from '@/core/storage';
@@ -60,11 +60,18 @@ function unwrap(payload: unknown): LayoutFolderPayload | null {
   };
 }
 
-async function commit(nextLibrary: LayoutLibrary, id: string): Promise<void> {
-  suppress(id);
-  useLibraryStore.getState().setLibrary(nextLibrary);
-  const result = await saveLibrary(nextLibrary);
-  if (isErr(result)) throw syncPersistError('saveLibrary', `folder ${id}`, result.error);
+function commit(
+  id: string,
+  change: (library: LayoutLibrary) => LayoutLibrary | null
+): Promise<void> {
+  return queueLibraryWrite(async (library) => {
+    const nextLibrary = change(library);
+    if (!nextLibrary) return;
+    suppress(id);
+    useLibraryStore.getState().setLibrary(nextLibrary);
+    const result = await saveLibrary(nextLibrary);
+    if (isErr(result)) throw syncPersistError('saveLibrary', `folder ${id}`, result.error);
+  });
 }
 
 export const folderAdapter: FolderAdapter = {
@@ -80,42 +87,44 @@ export const folderAdapter: FolderAdapter = {
   async applyRemote(item: SyncableItem<LayoutFolderPayload>): Promise<void> {
     const payload = unwrap(item.payload);
     if (!payload) return;
-    const { library } = useLibraryStore.getState();
-    const folders = library.folders ?? [];
-    const existing = folders.find((f) => f.id === item.id);
-    // The server checks the parent's shape, not its place: a parent that is
-    // this folder or sits below it would close a loop and hide the subtree,
-    // so it lands at the root instead.
-    const parentId = wouldLoop(library, item.id, payload.parentId) ? null : payload.parentId;
-    // Before schema 2 the server stored folders without a kind, so an older
-    // copy's missing kind says nothing about this device's.
-    const kind =
-      payload.kind ??
-      ((item.schemaVersion ?? 1) < FOLDER_SCHEMA_VERSION ? existing?.kind : undefined);
-    const folder: LayoutFolder = {
-      id: item.id,
-      name: payload.name,
-      parentId,
-      ...(payload.color !== undefined ? { color: payload.color } : {}),
-      ...(kind !== undefined ? { kind } : {}),
-      createdAt: existing?.createdAt ?? (payload.createdAt || item.modifiedAt),
-      modifiedAt: item.modifiedAt,
-    };
-    const nextFolders = existing
-      ? folders.map((f) => (f.id === item.id ? folder : f))
-      : [...folders, folder];
-    await commit({ ...library, folders: nextFolders }, item.id);
+    await commit(item.id, (library) => {
+      const folders = library.folders ?? [];
+      const existing = folders.find((f) => f.id === item.id);
+      // The server checks the parent's shape, not its place: a parent that is
+      // this folder or sits below it would close a loop and hide the subtree,
+      // so it lands at the root instead.
+      const parentId = wouldLoop(library, item.id, payload.parentId) ? null : payload.parentId;
+      // Before schema 2 the server stored folders without a kind, so an older
+      // copy's missing kind says nothing about this device's.
+      const kind =
+        payload.kind ??
+        ((item.schemaVersion ?? 1) < FOLDER_SCHEMA_VERSION ? existing?.kind : undefined);
+      const folder: LayoutFolder = {
+        id: item.id,
+        name: payload.name,
+        parentId,
+        ...(payload.color !== undefined ? { color: payload.color } : {}),
+        ...(kind !== undefined ? { kind } : {}),
+        createdAt: existing?.createdAt ?? (payload.createdAt || item.modifiedAt),
+        modifiedAt: item.modifiedAt,
+      };
+      const nextFolders = existing
+        ? folders.map((f) => (f.id === item.id ? folder : f))
+        : [...folders, folder];
+      return { ...library, folders: nextFolders };
+    });
   },
 
   // The deleting device lifted the folder's layouts and subfolders to its
   // parent and pushed them; the same lift here, with timestamps untouched so
   // nothing echoes back, shows that result before those envelopes arrive.
   async applyRemoteDelete(id: string): Promise<void> {
-    const { library } = useLibraryStore.getState();
-    const folder = library.folders?.find((f) => f.id === id);
-    if (!folder) return;
-    const lifted = liftContents(library, folder, null).library;
-    await commit({ ...lifted, folders: lifted.folders?.filter((f) => f.id !== id) }, id);
+    await commit(id, (library) => {
+      const folder = library.folders?.find((f) => f.id === id);
+      if (!folder) return null;
+      const lifted = liftContents(library, folder, null).library;
+      return { ...lifted, folders: lifted.folders?.filter((f) => f.id !== id) };
+    });
   },
 
   subscribe(listener: AdapterChangeListener): () => void {

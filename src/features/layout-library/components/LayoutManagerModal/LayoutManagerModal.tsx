@@ -5,6 +5,7 @@ import { useInteractionStore } from '@/core/store/interaction';
 import { useSettingsStore } from '@/core/store/settings';
 import { useResponsive } from '@/shared/hooks';
 import { useLibraryStore } from '@/core/store/library';
+import { queueLibraryWrite } from '@/core/store/libraryWrites';
 import { LayoutList } from './LayoutList';
 import { ImportView } from './ImportView';
 import { FolderTree } from './FolderTree';
@@ -244,10 +245,11 @@ function LayoutManagerModalContent({
       const addToast = useToastStore.getState().addToast;
 
       try {
-        const currentLibrary = useLibraryStore.getState().library;
-        const { result, library: updatedLibrary } = await importArchive(archive, currentLibrary);
-
-        setLibrary(updatedLibrary);
+        const result = await queueLibraryWrite(async (library) => {
+          const imported = await importArchive(archive, library);
+          setLibrary(imported.library);
+          return imported.result;
+        });
 
         if (result.imported > 0) {
           addToast(
