@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { act, render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SharedLayoutBanner } from '@/features/cloud-share/components/SharedLayoutBanner';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import type * as LibraryModule from '@/core/store/library';
+import { queueLibraryWrite } from '@/core/store/libraryWrites';
 import { useToastStore } from '@/core/store/toast';
 import type { Layout } from '@/core/types';
 import { categoryId, gridUnits, heightUnits, layerId, layoutId, mm } from '@/core/types';
@@ -426,6 +427,38 @@ describe('SharedLayoutBanner', () => {
         const layoutState = useLayoutStore.getState();
         expect(layoutState.activeLayoutId).toBe('previous-layout');
       });
+    });
+
+    it('keeps the restored layout active when a library write is in flight', async () => {
+      let release = (): void => undefined;
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      // This write read the library before the discard, and adds a copy to it.
+      const held = queueLibraryWrite(async (library) => {
+        await gate;
+        useLibraryStore.getState().setLibrary({
+          ...library,
+          entries: [...library.entries, { ...library.entries[0], id: layoutId('copy') }],
+        });
+      });
+      render(<SharedLayoutBanner />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'share.banner.discardConfirm' }));
+      const dialog = screen.getByRole('dialog');
+      fireEvent.click(dialog.querySelector('.to-danger') as HTMLElement);
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        release();
+        await held;
+      });
+
+      await waitFor(() => {
+        expect(useSharedPreviewStore.getState().sharedPreview).toBeNull();
+      });
+      const { library } = useLibraryStore.getState();
+      expect(library.activeLayoutId).toBe('previous-layout');
+      expect(library.entries.map((entry) => entry.id)).toEqual(['existing-layout', 'copy']);
     });
 
     it('does not discard when clicking the translated keep-viewing button', () => {

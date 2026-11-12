@@ -107,11 +107,13 @@ export function SharedLayoutBanner() {
   const handleDiscard = async () => {
     try {
       // Restore the user's previous layout
-      const { library: restoredLibrary, activeLayout } = await initializeLayoutLibrary();
-
-      // Import the previous active layout
-      importLayout(activeLayout, restoredLibrary.activeLayoutId, 'init');
-      setActiveLayoutId(restoredLibrary.activeLayoutId);
+      const activeLayout = await queueLibraryWrite(async () => {
+        const { library: restoredLibrary, activeLayout: restored } =
+          await initializeLayoutLibrary();
+        importLayout(restored, restoredLibrary.activeLayoutId, 'init');
+        setActiveLayoutId(restoredLibrary.activeLayoutId);
+        return restored;
+      });
 
       // Reset UI state
       clearSelection();
