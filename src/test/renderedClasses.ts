@@ -20,6 +20,13 @@ type Declaration =
       readonly node: ts.FunctionLikeDeclaration;
     };
 
+interface Located<T extends ts.Node> {
+  readonly unit: SourceUnit;
+  readonly node: T;
+}
+
+type ObjectOrArray = ts.ObjectLiteralExpression | ts.ArrayLiteralExpression;
+
 const SRC_DIR = resolve(import.meta.dirname, '..');
 const CLASS_ATTRIBUTE = /(^c|C)lass(Name)?$/;
 const CLASS_FUNCTIONS = new Set(['cn', 'clsx', 'twMerge']);
@@ -62,6 +69,18 @@ function unwrap(node: ts.Expression): ts.Expression {
 function propertyName(name: ts.PropertyName): string | undefined {
   if (ts.isIdentifier(name) || ts.isStringLiteral(name) || ts.isNumericLiteral(name)) {
     return name.text;
+  }
+  return undefined;
+}
+
+function literalKey(node: ts.Expression): string | undefined {
+  const expression = unwrap(node);
+  if (
+    ts.isStringLiteral(expression) ||
+    ts.isNoSubstitutionTemplateLiteral(expression) ||
+    ts.isNumericLiteral(expression)
+  ) {
+    return expression.text;
   }
   return undefined;
 }
@@ -264,38 +283,46 @@ export function collectRenderedClasses(
     return undefined;
   };
 
-  const resolveObject = (
-    unit: SourceUnit,
-    node: ts.Expression
-  ):
-    | { unit: SourceUnit; node: ts.ObjectLiteralExpression | ts.ArrayLiteralExpression }
-    | undefined => {
+  const resolveObjects = (unit: SourceUnit, node: ts.Expression): Located<ObjectOrArray>[] => {
     const expression = unwrap(node);
     if (ts.isObjectLiteralExpression(expression) || ts.isArrayLiteralExpression(expression)) {
-      return { unit, node: expression };
+      return [{ unit, node: expression }];
     }
     if (ts.isIdentifier(expression)) {
       const declaration = resolveIdentifier(unit, expression);
-      if (declaration?.kind === 'value') return resolveObject(declaration.unit, declaration.node);
+      return declaration?.kind === 'value'
+        ? resolveObjects(declaration.unit, declaration.node)
+        : [];
     }
-    if (ts.isPropertyAccessExpression(expression)) {
-      const property = resolveProperty(unit, expression);
-      if (property !== undefined) return resolveObject(property.unit, property.node);
+    if (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression)) {
+      return resolveMembers(unit, expression).flatMap((m) => resolveObjects(m.unit, m.node));
     }
-    return undefined;
+    return [];
   };
 
-  const resolveProperty = (
+  // A key known only at runtime (`SIZES[size]`) can select any entry, so the
+  // lookup stands for all of them.
+  const resolveMembers = (
     unit: SourceUnit,
-    access: ts.PropertyAccessExpression
-  ): { unit: SourceUnit; node: ts.Expression } | undefined => {
-    const owner = resolveObject(unit, access.expression);
-    if (owner === undefined || !ts.isObjectLiteralExpression(owner.node)) return undefined;
-    const property = owner.node.properties.find(
-      (p): p is ts.PropertyAssignment =>
-        ts.isPropertyAssignment(p) && propertyName(p.name) === access.name.text
-    );
-    return property && { unit: owner.unit, node: property.initializer };
+    access: ts.PropertyAccessExpression | ts.ElementAccessExpression
+  ): Located<ts.Expression>[] => {
+    const key = ts.isPropertyAccessExpression(access)
+      ? access.name.text
+      : literalKey(access.argumentExpression);
+    return resolveObjects(unit, access.expression).flatMap((owner): Located<ts.Expression>[] => {
+      if (ts.isArrayLiteralExpression(owner.node)) {
+        if (ts.isPropertyAccessExpression(access)) return [];
+        return owner.node.elements
+          .filter((e) => !ts.isOmittedExpression(e))
+          .map((e) => ({ unit: owner.unit, node: ts.isSpreadElement(e) ? e.expression : e }));
+      }
+      return owner.node.properties
+        .filter(
+          (p): p is ts.PropertyAssignment =>
+            ts.isPropertyAssignment(p) && (key === undefined || propertyName(p.name) === key)
+        )
+        .map((p) => ({ unit: owner.unit, node: p.initializer }));
+    });
   };
 
   const scanReturns = (unit: SourceUnit, fn: ts.FunctionLikeDeclaration): void => {
@@ -321,14 +348,14 @@ export function collectRenderedClasses(
   };
 
   const scanValues = (unit: SourceUnit, node: ts.Expression): void => {
-    const container = resolveObject(unit, node);
-    if (container === undefined) return;
-    if (ts.isArrayLiteralExpression(container.node)) {
-      scanClasses(container.unit, container.node);
-      return;
-    }
-    for (const property of container.node.properties) {
-      if (ts.isPropertyAssignment(property)) scanClasses(container.unit, property.initializer);
+    for (const container of resolveObjects(unit, node)) {
+      if (ts.isArrayLiteralExpression(container.node)) {
+        scanClasses(container.unit, container.node);
+        continue;
+      }
+      for (const property of container.node.properties) {
+        if (ts.isPropertyAssignment(property)) scanClasses(container.unit, property.initializer);
+      }
     }
   };
 
@@ -367,30 +394,35 @@ export function collectRenderedClasses(
     const [base, config] = call.arguments;
     if (base !== undefined) scanClasses(unit, base);
     if (config === undefined) return;
-    const options = resolveObject(unit, config);
-    if (options === undefined || !ts.isObjectLiteralExpression(options.node)) return;
-    for (const property of options.node.properties) {
-      if (!ts.isPropertyAssignment(property)) continue;
-      const key = propertyName(property.name);
-      if (key === 'variants') {
-        const groups = resolveObject(options.unit, property.initializer);
-        if (groups === undefined || !ts.isObjectLiteralExpression(groups.node)) continue;
-        for (const group of groups.node.properties) {
-          if (ts.isPropertyAssignment(group)) scanValues(groups.unit, group.initializer);
-          else if (ts.isShorthandPropertyAssignment(group)) scanValues(groups.unit, group.name);
-        }
-      } else if (key === 'compoundVariants') {
-        const entries = resolveObject(options.unit, property.initializer);
-        if (entries === undefined || !ts.isArrayLiteralExpression(entries.node)) continue;
-        for (const entry of entries.node.elements) {
-          if (!ts.isObjectLiteralExpression(entry)) continue;
-          for (const field of entry.properties) {
-            const fieldName = ts.isPropertyAssignment(field) ? propertyName(field.name) : undefined;
-            if (
-              ts.isPropertyAssignment(field) &&
-              (fieldName === 'class' || fieldName === 'className')
-            ) {
-              scanClasses(entries.unit, field.initializer);
+    for (const options of resolveObjects(unit, config)) {
+      if (!ts.isObjectLiteralExpression(options.node)) continue;
+      for (const property of options.node.properties) {
+        if (!ts.isPropertyAssignment(property)) continue;
+        const key = propertyName(property.name);
+        if (key === 'variants') {
+          for (const groups of resolveObjects(options.unit, property.initializer)) {
+            if (!ts.isObjectLiteralExpression(groups.node)) continue;
+            for (const group of groups.node.properties) {
+              if (ts.isPropertyAssignment(group)) scanValues(groups.unit, group.initializer);
+              else if (ts.isShorthandPropertyAssignment(group)) scanValues(groups.unit, group.name);
+            }
+          }
+        } else if (key === 'compoundVariants') {
+          for (const entries of resolveObjects(options.unit, property.initializer)) {
+            if (!ts.isArrayLiteralExpression(entries.node)) continue;
+            for (const entry of entries.node.elements) {
+              if (!ts.isObjectLiteralExpression(entry)) continue;
+              for (const field of entry.properties) {
+                const fieldName = ts.isPropertyAssignment(field)
+                  ? propertyName(field.name)
+                  : undefined;
+                if (
+                  ts.isPropertyAssignment(field) &&
+                  (fieldName === 'class' || fieldName === 'className')
+                ) {
+                  scanClasses(entries.unit, field.initializer);
+                }
+              }
             }
           }
         }
@@ -451,11 +483,11 @@ export function collectRenderedClasses(
       }
     } else if (ts.isIdentifier(expression)) {
       scanDeclaration(resolveIdentifier(unit, expression));
-    } else if (ts.isPropertyAccessExpression(expression)) {
-      const property = resolveProperty(unit, expression);
-      if (property !== undefined) scanClasses(property.unit, property.node);
-    } else if (ts.isElementAccessExpression(expression)) {
-      scanValues(unit, expression.expression);
+    } else if (
+      ts.isPropertyAccessExpression(expression) ||
+      ts.isElementAccessExpression(expression)
+    ) {
+      for (const member of resolveMembers(unit, expression)) scanClasses(member.unit, member.node);
     } else if (ts.isCallExpression(expression)) {
       const name = callee(expression);
       if (name !== undefined && CLASS_FUNCTIONS.has(name)) {

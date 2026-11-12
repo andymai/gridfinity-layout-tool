@@ -14,6 +14,26 @@ function names(files: Record<string, string>): string[] {
   return collect(files).map((c) => c.name);
 }
 
+async function classesWithoutCss(rendered: readonly RenderedClass[]): Promise<string[]> {
+  const missing = new Set(await findClassesWithoutCss(rendered.map((c) => c.name)));
+  return rendered.filter((c) => missing.has(c.name)).map((c) => `${c.location} ${c.name}`);
+}
+
+const KEYED_LOOKUP = [
+  `const SIZES = {`,
+  `  sm: { box: 'w-6 h-6', px: 24, badge: 'top-0' },`,
+  `  md: { box: 'w-8 h-8x', px: 32, badge: 'top-1' },`,
+  `};`,
+  `export const Avatar = ({ size }: Props) => {`,
+  `  const config = SIZES[size];`,
+  `  return (`,
+  `    <div className={\`rounded \${config.box}\`}>`,
+  `      <span className={cn('absolute', SIZES['sm'].badge)} />`,
+  `    </div>`,
+  `  );`,
+  `};`,
+].join('\n');
+
 describe('collectRenderedClasses', () => {
   it('reads className, *ClassName and *Class attributes, and no other text', () => {
     expect(
@@ -127,6 +147,24 @@ describe('collectRenderedClasses', () => {
     ]);
   });
 
+  it('reads a property from every entry that a keyed lookup can return', () => {
+    expect(names({ 'Avatar.tsx': KEYED_LOOKUP })).toEqual([
+      'rounded',
+      'w-6',
+      'h-6',
+      'w-8',
+      'h-8x',
+      'absolute',
+      'top-0',
+    ]);
+  });
+
+  it('reports a misspelled class behind a keyed lookup where it is written', async () => {
+    expect(await classesWithoutCss(collect({ 'Avatar.tsx': KEYED_LOOKUP }))).toEqual([
+      'src/Avatar.tsx:3 h-8x',
+    ]);
+  });
+
   it('follows an import through the @/ alias, a relative path and a barrel', () => {
     expect(
       names({
@@ -226,9 +264,6 @@ describe('the app source', () => {
   });
 
   it('gives every class that it renders a CSS rule', async () => {
-    const missing = new Set(await findClassesWithoutCss(rendered.map((c) => c.name)));
-    expect(
-      rendered.filter((c) => missing.has(c.name)).map((c) => `${c.location} ${c.name}`)
-    ).toEqual([]);
+    expect(await classesWithoutCss(rendered)).toEqual([]);
   });
 });
