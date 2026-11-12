@@ -1,0 +1,27 @@
+apps/docs/media/concepts-print-bed-one-piece.json
+  s_7dc03ec4cfdd4b::t_617912ded017a8 1-5
+apps/docs/concepts/print-bed-fit.md
+  s_7dc03ec4cfdd4b::t_20f8dc484cd90d 78
+  s_7dc03ec4cfdd4b::t_582b9eaf4f71ee 79
+scripts/docs-capture/shots/concepts.ts
+  s_7dc03ec4cfdd4b::t_f8e6f8b49eb334 366,369
+  s_7dc03ec4cfdd4b::t_4818e3efc35d9a 322-365,370-382
+  s_7dc03ec4cfdd4b::t_3f19c7a7d26bc9 367-368
+  s_7dc03ec4cfdd4b::t_ba82e1a29fe45a 1404
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "641cee858199dd9bfd2ba87ac5f5dda37e9fff9c",
+  "prompts": {},
+  "sessions": {
+    "s_7dc03ec4cfdd4b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6e1971db-3144-4b89-9c8a-56a37ed47e41",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
