@@ -467,7 +467,6 @@ async function paddingFrame(s: DocsSession): Promise<Rect> {
   return { x: p.x + (p.width - width) / 2, y: top, width, height };
 }
 
-/** A millimeter size typed under the steppers, then the plate with its new margin. */
 const sizeFromMm: Shot = {
   id: 'baseplates-basics-size-mm',
   kind: 'clip',
@@ -585,14 +584,12 @@ async function panelRows(s: DocsSession): Promise<[number, number][]> {
     );
 }
 
-/** The first y at or below `from` that cuts no row in any of `states`. */
 function clearLine(states: [number, number][][], from: number): number {
   let y = from;
   while (!isClear(states, y)) y++;
   return y;
 }
 
-/** Whether a crop edge at `y` keeps `margin` px from every row in each of `states`. */
 function isClear(states: [number, number][][], y: number, margin = 4): boolean {
   return states.every((rows) =>
     rows.every(([top, bottom]) => y <= top - margin || y >= bottom + margin)
@@ -669,7 +666,6 @@ const magnetSettings: Shot = {
   },
 };
 
-/** Off camera: orbits the preview until it looks up at the plate from below. */
 async function lookFromBelow(s: DocsSession): Promise<void> {
   const c = await canvas(s);
   const [x, y] = [c.x + c.width / 2, c.y + c.height / 2];
@@ -722,7 +718,6 @@ const undersideMagnets: Shot = {
     const under = toggle(s, label('baseplate.mountMagnets.label'));
     await s.ui.preReveal(under);
     const t = await s.box(under);
-    // Down past the summary line the toggle opens below itself.
     const closeUp = await cleanCloseUp(s, under, 20, async () => {
       await under.click({ force: true });
       await s.ui.warm(10);
@@ -756,7 +751,6 @@ const bedSize: Shot = {
       await waitBaseplate(s);
       return partBox(s);
     };
-    // Off camera, split it once to frame the shot on the pieces as well.
     const apart = await setBed('180');
     const whole = await setBed('256');
     const plate = frameAround(union(apart, whole), 28, 4 / 3, await canvas(s));
@@ -785,7 +779,6 @@ const bedSize: Shot = {
   },
 };
 
-/** Off camera: wheels the preview in toward its centre, where a two-piece plate has its seam. */
 async function zoomToCentre(s: DocsSession, steps: number): Promise<Rect> {
   const c = await canvas(s);
   const [x, y] = [c.x + c.width / 2, c.y + c.height / 2];
@@ -1138,7 +1131,6 @@ const findModels: Shot = {
     await s.ui.preReveal(find);
     const right = await s.box(s.page.locator('aside').last());
     const f = await s.box(find);
-    // From just under the size tip above the button, down past the menu that opens below it.
     const area: Rect = {
       x: right.x,
       y: f.y - 8,
@@ -1182,11 +1174,7 @@ const paperPrint: Shot = {
   },
 };
 
-/**
- * Off camera: saves a bin design to the library on the open page, its params
- * merged into the defaults, and returns its id. The layout finds a design
- * through the library index, so it goes in there too.
- */
+/** The layout finds a design through the library index, so it goes in there too. */
 async function saveDesign(s: DocsSession, name: string, params: Params): Promise<string> {
   return s.page.evaluate(
     async ([n, p]) => {
@@ -1239,10 +1227,6 @@ async function saveDesign(s: DocsSession, name: string, params: Params): Promise
   );
 }
 
-/**
- * Opens the layout editor on `layout`, each bin linked to the design that
- * `linkOf` names for it, saved to the library first.
- */
 async function openLinked(
   s: DocsSession,
   layout: FixtureLayout,
@@ -1297,7 +1281,6 @@ const layoutExport: Shot = {
   },
 };
 
-/** Three unlabeled screw bins whose design has label tabs and no text. */
 const PARTS_DRAWER: FixtureLayout = {
   name: 'Parts drawer',
   width: 6,
