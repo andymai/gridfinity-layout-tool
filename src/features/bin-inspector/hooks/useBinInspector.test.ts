@@ -630,6 +630,38 @@ describe('useBinInspector', () => {
       expect(heights.get(binId('other'))).toBe(5);
     });
 
+    it.each([
+      { step: 1, atLimit: 6, other: 3, otherAfter: 4 },
+      { step: -1, atLimit: 2, other: 3, otherAfter: 2 },
+    ])(
+      'names the undo after the one bin a $step step changed, not the bin at its limit',
+      ({ step, atLimit, other, otherAfter }) => {
+        const layout = useLayoutStore.getState().layout;
+        layout.drawer.height = heightUnits(6);
+        layout.bins = [
+          { ...createBin('limit', 'layer1', 0, 0), height: heightUnits(atLimit) },
+          { ...createBin('other', 'layer1', 3, 0), height: heightUnits(other) },
+        ];
+        useLayoutStore.setState({ layout });
+        useSelectionStore.setState({ selectedBinIds: [binId('limit'), binId('other')] });
+        useHistoryStore.getState().clear();
+
+        const { result } = renderHook(() => useBinInspector());
+        act(() => {
+          result.current.updateMultiHeight(step);
+        });
+
+        const heights = useLayoutStore.getState().layout.bins.map((b) => b.height);
+        expect(heights).toEqual([atLimit, otherAfter]);
+        expect(useHistoryStore.getState().past).toHaveLength(1);
+
+        act(() => {
+          useHistoryStore.getState().undo();
+        });
+        expect(useToastStore.getState().toasts.at(-1)?.message).toBe('↩ Undid: Updated bin');
+      }
+    );
+
     it('clamps height to constraints', () => {
       const layout = useLayoutStore.getState().layout;
       layout.drawer.height = heightUnits(6);

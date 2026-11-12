@@ -45,7 +45,7 @@ function describeEntry(commandType: CommandType | 'unknown', commandCount = 1): 
 export interface HistoryEntry {
   layout: Layout;
   commandType: CommandType | 'unknown';
-  /** How many `commandType` commands a batch ran. A mixed batch counts as one. */
+  /** How many `commandType` commands in a batch changed the layout. A mixed batch counts as one. */
   commandCount?: number;
   /** Selection captured at the same moment as `layout`. */
   selection?: SelectionSnapshot;

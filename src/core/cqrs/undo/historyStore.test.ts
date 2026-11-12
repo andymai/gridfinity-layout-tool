@@ -727,6 +727,16 @@ describe('history store', () => {
       expect(useHalfGridModeStore.getState().halfGridMode).toBe(false);
     });
 
+    it('lets a command that changed nothing neither count nor name the batch', () => {
+      batch(() => {
+        mutations.updateBin(binId('a'), { label: '' });
+        mutations.moveBinToStaging(binId('b'));
+      });
+
+      useHistoryStore.getState().undo();
+      expect(lastToast()).toBe('↩ Undid: Moved bin to stash');
+    });
+
     it('names a mixed batch after its first command', () => {
       batch(() => {
         mutations.updateBin(binId('a'), { label: 'Screws' });

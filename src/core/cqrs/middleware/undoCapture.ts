@@ -95,8 +95,13 @@ export function undoCaptureMiddleware(
 
   // Skip if inside a batch — batch() handles the snapshot
   if (isBatching) {
+    // A command can succeed without a change (a height already at its
+    // limit), and that one must not count toward or name the batch.
+    const before = useLayoutStore.getState().layout;
     const batched = next(command);
-    if (isOk(batched)) recordBatchCommand(command.type);
+    if (isOk(batched) && useLayoutStore.getState().layout !== before) {
+      recordBatchCommand(command.type);
+    }
     return batched;
   }
 
