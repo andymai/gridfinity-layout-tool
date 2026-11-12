@@ -1,0 +1,36 @@
+src/shell/keyboard/useKeyboard.test.ts
+  s_1cc363bb3cc76d::t_22511486d21438 10,14
+  s_1cc363bb3cc76d::t_e9d05492a99d2a 1337-1505
+src/shell/keyboard/handlers.ts
+  s_1cc363bb3cc76d::t_5860e1fcc99e20 77-87
+  s_1cc363bb3cc76d::t_b8d584781e80ea 144-157
+src/core/constants.ts
+  s_1cc363bb3cc76d::t_6e7ae57faace5b 516
+  s_1cc363bb3cc76d::t_5adcd4b99becaf 490
+src/shell/keyboard/types.ts
+  s_1cc363bb3cc76d::t_a2a34e1d018788 45
+apps/docs/reference/shortcuts.md
+  s_1cc363bb3cc76d::t_85e991481311af 46,57-67
+src/features/command-palette/commands.ts
+  s_1cc363bb3cc76d::t_7d6b4e0038ae6a 366,392
+src/shell/Modals/HelpModal/helpModalShortcutData.tsx
+  s_1cc363bb3cc76d::t_d52db89bc1a52c 61-65
+src/shell/keyboard/useKeyboard.ts
+  s_1cc363bb3cc76d::t_4094deae0f4909 13,23,57,66,71,93-94,161,205,247
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e58d626c5770f8557147e40a16fe253b23e0b178",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
