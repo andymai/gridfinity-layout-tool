@@ -1,0 +1,71 @@
+scripts/docs-capture/shots/designerBody.ts
+  s_1cc363bb3cc76d::t_df32f5fd7f0da8 894-901,906
+  s_1cc363bb3cc76d::t_4fa65c7870411e 148-149,620-621,626,631,634,667,674,728-792,806-893,902-905,907-948
+  s_1cc363bb3cc76d::t_b595e137f604e3 793-805
+  s_1cc363bb3cc76d::t_dea0dde9c6951f 459-475,482,720
+  s_1cc363bb3cc76d::t_29ba0e18125bcb 5,8,147,150-156,618-619,622-625,627-630,632-633,635-636,658-666,668-673,675-710,718,949-1687,1690-1691,1694-1697,1699-1700,1702-1703,1705,1707-1708,1710-1711,1715,1717-1718
+apps/docs/designer/base.md
+  s_1cc363bb3cc76d::t_cfc27eb99f2b72 73-74,92-93
+apps/docs/designer/colors.md
+  s_1cc363bb3cc76d::t_80c9413768b763 56-57,70-71,82-83,107-108
+apps/docs/designer/compartments.md
+  s_1cc363bb3cc76d::t_fa50f461a9972a 66-67,83-84,104-105,118-119
+apps/docs/designer/getting-things-out.md
+  s_1cc363bb3cc76d::t_429b91f7b87c0f 63-64,107-108
+apps/docs/designer/label-plates.md
+  s_1cc363bb3cc76d::t_ce8866af0e23ad 27-28,58-59,78-79
+apps/docs/designer/labels-and-text.md
+  s_1cc363bb3cc76d::t_0b375f9923be27 109-110,129-130,137-138
+apps/docs/media/designer-base-detachable-feet.json
+  s_1cc363bb3cc76d::t_37898f1dce1942 1-5
+apps/docs/media/designer-base-half-sockets.json
+  s_1cc363bb3cc76d::t_b618616b3ca690 1-5
+apps/docs/media/designer-colors-accent-bands.json
+  s_1cc363bb3cc76d::t_bb0e2759693a73 1-5
+apps/docs/media/designer-colors-flat-text.json
+  s_1cc363bb3cc76d::t_93c5563aa8f7ed 1-5
+apps/docs/media/designer-colors-save-palette.json
+  s_1cc363bb3cc76d::t_9422f2b4bf499d 1-5
+apps/docs/media/designer-colors-split-lip.json
+  s_1cc363bb3cc76d::t_3063cf1cb92714 1-5
+apps/docs/media/designer-compartments-bento-draw.json
+  s_1cc363bb3cc76d::t_25de9cc3a5f323 1-5
+apps/docs/media/designer-compartments-diagonal.json
+  s_1cc363bb3cc76d::t_958f2470dbed28 1-5
+apps/docs/media/designer-compartments-floor-raise.json
+  s_1cc363bb3cc76d::t_cd7558a34f1c60 1-5
+apps/docs/media/designer-compartments-removable.json
+  s_1cc363bb3cc76d::t_23bc265ad716c5 1-5
+apps/docs/media/designer-getting-things-out-center-tab.json
+  s_1cc363bb3cc76d::t_6d12c74d3c659a 1-5
+apps/docs/media/designer-getting-things-out-fillet.json
+  s_1cc363bb3cc76d::t_c74bdd57c2dbea 1-5
+apps/docs/media/designer-label-plates-fit.json
+  s_1cc363bb3cc76d::t_99ac74b65a9dde 1-5
+apps/docs/media/designer-label-plates-icon.json
+  s_1cc363bb3cc76d::t_2acf8a59427ae6 1-5
+apps/docs/media/designer-label-plates-sockets.json
+  s_1cc363bb3cc76d::t_6442e3410aa99f 1-5
+apps/docs/media/designer-labels-and-text-finish.json
+  s_1cc363bb3cc76d::t_a4b9dd7f5c6e76 1-5
+apps/docs/media/designer-labels-and-text-floor-text.json
+  s_1cc363bb3cc76d::t_fc3f7cef4a99f5 1-5
+apps/docs/media/designer-labels-and-text-suggestions.json
+  s_1cc363bb3cc76d::t_18116a041a7704 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4c7f9948dabc0996ea9f1b02f8e9e356ab307726",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
