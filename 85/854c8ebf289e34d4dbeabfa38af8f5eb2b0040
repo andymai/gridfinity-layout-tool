@@ -1,0 +1,39 @@
+src/features/bin-inspector/hooks/useBinInspector.test.ts
+  s_1cc363bb3cc76d::t_a2d56d7639fbb3 819-865
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_1cc363bb3cc76d::t_21868dbdfba01d 74,372,375,380,386
+src/features/staging/components/Staging/Staging.test.tsx
+  s_1cc363bb3cc76d::t_5950a090504468 331-350
+src/features/staging/components/Staging/Staging.tsx
+  s_1cc363bb3cc76d::t_a7bf33dd44fd20 43,245
+src/shell/Mobile/MultiBinContextMenu/MultiBinContextMenu.scenario.delete.test.tsx
+  s_1cc363bb3cc76d::t_a6febd84d09229 1-90
+src/shell/Mobile/MultiBinContextMenu/MultiBinContextMenu.test.tsx
+  s_1cc363bb3cc76d::t_d664fd1728f793 20
+src/shell/Mobile/MultiBinContextMenu/MultiBinContextMenu.tsx
+  s_1cc363bb3cc76d::t_53fe241d6a75a5 17,55,84,86-89,92,95
+src/shell/keyboard/handlers.ts
+  s_1cc363bb3cc76d::t_89cdef3af805c4 55
+src/shell/keyboard/types.ts
+  s_1cc363bb3cc76d::t_c25cc9b00bf063 49
+src/shell/keyboard/useKeyboard.test.ts
+  s_1cc363bb3cc76d::t_cbcff10f2db42b 15-17,159-192
+src/shell/keyboard/useKeyboard.ts
+  s_1cc363bb3cc76d::t_2d68d1222034fa 160,207,231
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "85854c8ebf289e34d4dbeabfa38af8f5eb2b0040",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
