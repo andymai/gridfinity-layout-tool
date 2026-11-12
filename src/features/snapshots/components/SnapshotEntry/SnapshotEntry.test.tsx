@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { SnapshotEntry } from './SnapshotEntry';
 import type { Snapshot } from '@/core/types';
 import { gridUnits, heightUnits } from '@/core/types';
+import { findClassesWithoutCss } from '@/test/tailwindClasses';
 
 function makeSnapshot(overrides: Partial<Snapshot> = {}): Snapshot {
   return {
@@ -73,6 +74,32 @@ describe('SnapshotEntry', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /delete/i }));
     expect(onDelete).toHaveBeenCalledWith('layout-1-1000');
+  });
+
+  it('takes the actions out of the row width until hover or focus', async () => {
+    render(<SnapshotEntry snapshot={makeSnapshot()} {...defaultProps} />);
+
+    const restore = screen.getByRole('button', { name: /restore/i });
+    const actions = restore.parentElement;
+    if (!actions) throw new Error('actions group not found');
+    expect(actions).toHaveClass(
+      '[@media(hover:hover)]:sr-only',
+      'group-hover:not-sr-only',
+      'focus-within:not-sr-only'
+    );
+    expect(actions).not.toHaveClass('opacity-0');
+    expect(restore.tabIndex).toBe(0);
+    expect(await findClassesWithoutCss(actions.classList)).toEqual([]);
+  });
+
+  it('keeps the details on one line and gives the full text in a title', () => {
+    render(<SnapshotEntry snapshot={makeSnapshot()} {...defaultProps} />);
+
+    const details = screen.getByText(/5 bins/).parentElement;
+    if (!details) throw new Error('details line not found');
+    expect(details).toHaveClass('truncate');
+    expect(details.title).toMatch(/^\S.* · 5 bins · 2 layers$/);
+    expect(details.title).toContain(screen.getByText(/ago|now/).textContent);
   });
 
   it('enters edit mode when label clicked', () => {

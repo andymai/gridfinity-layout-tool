@@ -5,6 +5,7 @@
 
 import { Command } from 'cmdk';
 import type { CommandDefinition } from '../../commands';
+import { commandItemValue, type Translate } from './commandItemValue';
 import { ShortcutBadge } from '../ShortcutBadge';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import type { IconName } from '@/shared/constants/iconPaths';
@@ -45,16 +46,13 @@ export function CategoryIcon({ category }: { category: string }) {
 interface CommandItemProps {
   command: CommandDefinition & { action: (() => void) | null; isAvailable: boolean };
   onSelect: (id: string) => void;
-  t: (key: string, values?: Record<string, string | number>) => string;
+  t: Translate;
 }
 
 export function CommandItem({ command, onSelect, t }: CommandItemProps) {
-  // Use composite value: id::searchable_text for robust matching
-  const searchValue = `${command.id}::${t(command.labelKey)} ${command.keywords?.join(' ') ?? ''}`;
-
   return (
     <Command.Item
-      value={searchValue}
+      value={commandItemValue(command, t)}
       onSelect={() => onSelect(command.id)}
       disabled={!command.isAvailable}
       className="group flex items-center justify-between gap-3 mx-2 px-2.5 py-2 rounded-lg cursor-pointer text-body text-content transition-colors data-[selected=true]:bg-accent/10 data-[selected=true]:text-accent data-[disabled=true]:opacity-35 data-[disabled=true]:cursor-not-allowed focus-visible:outline-none"

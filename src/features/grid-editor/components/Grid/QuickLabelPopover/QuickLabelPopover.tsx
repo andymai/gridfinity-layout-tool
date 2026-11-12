@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useMutations } from '@/shared/contexts';
@@ -8,6 +8,10 @@ import { useTranslation } from '@/i18n';
 import { batch } from '@/core/cqrs';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { IconButton, Input, Kbd, XIcon } from '@/design-system';
+import { clamp } from '@/shared/utils/math';
+
+const GAP = 8;
+const VIEWPORT_MARGIN = 16;
 
 /**
  * Small popover that appears near a bin for quick label editing.
@@ -34,6 +38,12 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
 
   // Initialize value from bin label (fresh on each mount due to key)
   const [value, setValue] = useState(bin?.label || '');
+  const [popoverSize, setPopoverSize] = useState({ width: 0, height: 0 });
+
+  useLayoutEffect(() => {
+    const popover = popoverRef.current;
+    if (popover) setPopoverSize({ width: popover.offsetWidth, height: popover.offsetHeight });
+  }, []);
 
   const handleSave = useCallback(() => {
     if (bin && value !== (bin.label || '')) {
@@ -100,16 +110,23 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
 
   const binRect = binElement.getBoundingClientRect();
 
-  // Position popover above the bin, centered horizontally
-  // Adjust if too close to top of viewport
-  const spaceAbove = binRect.top;
-  const positionBelow = spaceAbove < 100;
+  const { width, height } = popoverSize;
+  const roomAbove = binRect.top - GAP - VIEWPORT_MARGIN;
+  const roomBelow = window.innerHeight - binRect.bottom - GAP - VIEWPORT_MARGIN;
+  const below = height > roomAbove && (height <= roomBelow || roomBelow > roomAbove);
 
   const popoverStyle: React.CSSProperties = {
     position: 'fixed',
-    left: Math.max(16, Math.min(binRect.left + binRect.width / 2, window.innerWidth - 16)),
-    top: positionBelow ? binRect.bottom + 8 : binRect.top - 8,
-    transform: positionBelow ? 'translateX(-50%)' : 'translate(-50%, -100%)',
+    left: clamp(
+      binRect.left + binRect.width / 2,
+      VIEWPORT_MARGIN + width / 2,
+      window.innerWidth - VIEWPORT_MARGIN - width / 2
+    ),
+    top: clamp(
+      below ? binRect.bottom + GAP : binRect.top - GAP - height,
+      VIEWPORT_MARGIN,
+      window.innerHeight - VIEWPORT_MARGIN - height
+    ),
     zIndex: 100,
   };
 
@@ -123,11 +140,13 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
         onClick={handleSave}
       />
 
-      {/* Popover */}
+      {/* Placed with `translate`, not `transform`: animate-scale-in holds transform: scale(1).
+          w-max: an auto width shrinks near the right edge, so the measured width
+          would depend on where the popover first rendered. */}
       <div
         ref={popoverRef}
         style={popoverStyle}
-        className="z-50 bg-surface-elevated border border-stroke-subtle rounded-xl shadow-xl animate-scale-in overflow-hidden"
+        className="z-50 w-max -translate-x-1/2 bg-surface-elevated border border-stroke-subtle rounded-xl shadow-xl animate-scale-in overflow-hidden"
       >
         {/* Header */}
         <div className="px-3 py-2 border-b border-stroke-subtle bg-surface-secondary">

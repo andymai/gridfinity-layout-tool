@@ -22,6 +22,8 @@ export function SnapshotEntry({
 }: SnapshotEntryProps) {
   const t = useTranslation();
   const relativeTime = useRelativeTime(snapshot.timestamp);
+  const binCount = t('snapshots.bins', { count: snapshot.preview.binCount });
+  const layerCount = t('snapshots.layers', { count: snapshot.preview.layerCount });
   return (
     <div
       className="flex items-start gap-3 pl-2 pr-4 py-3 hover:bg-surface-hover transition-colors group"
@@ -49,16 +51,23 @@ export function SnapshotEntry({
           inputClassName="w-full text-xs font-medium"
         />
 
-        <div className="text-label text-content-tertiary mt-0.5">
+        {/* One line at rest too: a line that wrapped at rest would change the row
+            height when the actions show on hover. */}
+        <div
+          className="text-label text-content-tertiary mt-0.5 truncate"
+          title={[relativeTime, binCount, layerCount].join(' · ')}
+        >
           <span>{relativeTime}</span>
           <span className="mx-1">&middot;</span>
-          <span>{t('snapshots.bins', { count: snapshot.preview.binCount })}</span>
+          <span>{binCount}</span>
           <span className="mx-1">&middot;</span>
-          <span>{t('snapshots.layers', { count: snapshot.preview.layerCount })}</span>
+          <span>{layerCount}</span>
         </div>
       </div>
 
-      <div className="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+      {/* sr-only keeps the actions in the tab order while they take no width.
+          Screens that cannot hover always show them. */}
+      <div className="flex-shrink-0 flex items-center gap-1 [@media(hover:hover)]:sr-only group-hover:not-sr-only focus-within:not-sr-only">
         <Button
           type="button"
           variant="ghost"

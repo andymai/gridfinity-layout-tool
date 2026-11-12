@@ -2657,7 +2657,7 @@
   "commandPalette.scanTool": "工具をスキャン",
   "commandPalette.fillLayer": "レイヤーを均一に埋める",
   "commandPalette.fitToScreen": "画面に合わせる",
-  "commandPalette.footer.commandCount": "{count}個のコマンド",
+  "commandPalette.footer.commandCount_other": "{count}個のコマンド",
   "commandPalette.footer.navigate": "ナビゲート",
   "commandPalette.footer.run": "実行",
   "commandPalette.invertSelection": "選択を反転",

@@ -69,6 +69,13 @@ describe('FeatureToggle', () => {
     expect(screen.getByRole('switch')).toBeDisabled();
   });
 
+  it('draws the Soon pill text in the secondary color, not the tertiary one', () => {
+    render(<FeatureToggle label="Test Feature" checked={false} onChange={vi.fn()} comingSoon />);
+    const pill = screen.getByText('common.soon');
+    expect(pill).toHaveClass('bg-surface-elevated', 'text-content-secondary');
+    expect(pill).not.toHaveClass('text-content-tertiary');
+  });
+
   it('disables switch and shows reason text when disabledReason is set', () => {
     render(
       <FeatureToggle

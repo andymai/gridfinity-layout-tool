@@ -2657,7 +2657,7 @@
   "commandPalette.scanTool": "공구 스캔",
   "commandPalette.fillLayer": "레이어를 균일하게 채우기",
   "commandPalette.fitToScreen": "화면에 맞추기",
-  "commandPalette.footer.commandCount": "명령 {count}개",
+  "commandPalette.footer.commandCount_other": "명령 {count}개",
   "commandPalette.footer.navigate": "탐색",
   "commandPalette.footer.run": "실행",
   "commandPalette.invertSelection": "선택 반전",

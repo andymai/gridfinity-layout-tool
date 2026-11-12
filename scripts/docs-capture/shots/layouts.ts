@@ -2115,6 +2115,7 @@ const organizingHistory: Shot = {
       .getByRole('button', { name: label('snapshots.restore'), exact: true })
       .nth(1);
     const entries = s.page.getByTestId('snapshot-entry');
+    const row = await s.box(entries.nth(1));
     const last = await s.box(entries.nth(2));
     const list: Rect = {
       x: panel.x,
@@ -2131,6 +2132,9 @@ const organizingHistory: Shot = {
     await s.ui.park(panel.x + 40, checkpoint.y + checkpoint.height / 2);
     await s.take(area, async () => {
       await s.ui.hold(0.6);
+      // Restore takes no room until its row is under the cursor.
+      await s.ui.moveTo(row.x + row.width - 48, row.y + row.height / 2);
+      await s.ui.hold(0.3);
       await s.ui.click(restore);
       await s.ui.hold(0.3);
     });
