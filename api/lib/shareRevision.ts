@@ -9,7 +9,6 @@ import { shareRevisionKey } from './redisKeys.js';
  */
 export const SHARE_REVISION_TTL_SECONDS = 24 * 60 * 60;
 
-/** ARGV[1] or one past the last stamp handed out, whichever is later. */
 const RESERVE_REVISION_LUA = `
 local last = tonumber(redis.call('GET', KEYS[1]) or '0') or 0
 local stamp = math.max(tonumber(ARGV[1]), last + 1)

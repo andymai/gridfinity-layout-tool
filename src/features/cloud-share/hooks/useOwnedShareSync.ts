@@ -76,6 +76,7 @@ export function useOwnedShareSync(): void {
     if (!cloudShare) return;
 
     const { id: shareId, deleteToken } = cloudShare;
+    const layoutId = activeLayoutId;
     if (!shareId || !deleteToken) return;
     if (roomSavesShare(shareId)) return;
 
@@ -88,6 +89,16 @@ export function useOwnedShareSync(): void {
       record: ({ lastUpdatedAt }) => {
         lastSyncedRef.current = { shareId, fingerprint: layoutFingerprint, claimCount };
         if (lastUpdatedAt) recordOwnCopyRevision(shareId, lastUpdatedAt, layout);
+      },
+      // A remote layout from account sync replaces this one without a local
+      // edit, so only the store can say whether it is still current.
+      current: () => {
+        const state = useLayoutStore.getState();
+        return (
+          !roomSavesShare(shareId) &&
+          state.activeLayoutId === layoutId &&
+          roomLayoutFingerprint(state.layout) === layoutFingerprint
+        );
       },
     };
 
@@ -104,7 +115,7 @@ export function useOwnedShareSync(): void {
     }
 
     queueShareUpload(shareId, upload);
-  }, [cloudShare, layout]);
+  }, [cloudShare, layout, activeLayoutId]);
 
   // Keep both refs aligned with the latest committed values. Uses
   // `useLayoutEffect` (not `useEffect`) so the refs update synchronously

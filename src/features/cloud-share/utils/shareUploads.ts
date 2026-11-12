@@ -22,6 +22,11 @@ export interface ShareUpload {
   readonly send: () => Promise<UploadAnswer>;
   /** Records a save of this layout, whichever request sent it. */
   readonly record: (saved: SavedUpload) => void;
+  /**
+   * False once a newer layout replaces this one, by any path (a local edit, a
+   * remote one, the owner leaving the room). A retry sends only a current layout.
+   */
+  readonly current: () => boolean;
 }
 
 /**
@@ -69,13 +74,14 @@ function start(shareId: string, upload: ShareUpload, attempt = 0): void {
         answer &&
         !answer.ok &&
         isRetryable(answer.error.code) &&
-        attempt < UPLOAD_RETRY_DELAYS_MS.length
+        attempt < UPLOAD_RETRY_DELAYS_MS.length &&
+        upload.current()
       ) {
         retries.set(
           shareId,
           setTimeout(() => {
             retries.delete(shareId);
-            start(shareId, upload, attempt + 1);
+            if (upload.current()) start(shareId, upload, attempt + 1);
           }, UPLOAD_RETRY_DELAYS_MS[attempt])
         );
       }

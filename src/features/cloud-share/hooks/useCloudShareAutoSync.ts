@@ -52,6 +52,7 @@ export function useCloudShareAutoSync(
 
   const mountedShareIdRef = useRef<string | null>(null);
   const pendingSaveRef = useRef<(() => void) | null>(null);
+  const latestFingerprintRef = useRef<string | null>(null);
 
   const recordSave = useMutation(({ storage, self }, saved: RoomLinkStamp): void => {
     if (!self.canWrite) return;
@@ -76,9 +77,11 @@ export function useCloudShareAutoSync(
 
   useEffect(() => {
     pendingSaveRef.current = null;
+    latestFingerprintRef.current = null;
     if (!shareId || !deleteToken || !roomLayout) return;
 
     const fingerprint = roomLayoutFingerprint(roomLayout);
+    latestFingerprintRef.current = fingerprint;
     const upload: ShareUpload = {
       key: `room:${fingerprint}`,
       send: () => updateShare(shareId, deleteToken, roomLayout),
@@ -90,6 +93,10 @@ export function useCloudShareAutoSync(
           ...(lastUpdatedAt ? { linkUpdatedAt: lastUpdatedAt } : {}),
         });
       },
+      // After the owner leaves, the room keeps the change as unsaved, and the
+      // owner's next visit saves it, so a retry would only race other tabs.
+      current: () =>
+        mountedShareIdRef.current === shareId && latestFingerprintRef.current === fingerprint,
     };
 
     // The room's record is the only "already saved" signal: another owner tab

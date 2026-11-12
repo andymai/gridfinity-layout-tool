@@ -9,7 +9,10 @@ import { ok, err, apiServerError } from '@/core/result';
 import type { LayoutLibrary, CloudShareInfo, Layout } from '@/core/types';
 import { gridUnits, heightUnits, layoutId, mm } from '@/core/types';
 import { claimRoomSaves, readOwnCopyRevision } from '@/features/cloud-share/utils';
-import { __resetShareUploadsForTests } from '@/features/cloud-share/utils/shareUploads';
+import {
+  __resetShareUploadsForTests,
+  UPLOAD_RETRY_DELAYS_MS,
+} from '@/features/cloud-share/utils/shareUploads';
 import { stampFor } from '@/shared/utils/roomLinkStamp';
 
 // Mock the share API module
@@ -518,6 +521,46 @@ describe('useOwnedShareSync', () => {
       });
 
       expect(shareApi.updateShare).toHaveBeenCalled();
+    });
+
+    describe('after a server error', () => {
+      function failFirstUpload(): void {
+        vi.mocked(shareApi.updateShare).mockResolvedValueOnce(err(apiServerError(503)));
+        useLibraryStore.setState({ library: createTestLibrary(createCloudShareInfo()) });
+        renderHook(() => useOwnedShareSync());
+      }
+
+      it('uploads the same layout again with no new edit', async () => {
+        failFirstUpload();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5000);
+        });
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(UPLOAD_RETRY_DELAYS_MS[0]);
+        });
+
+        expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
+        const [first, second] = vi.mocked(shareApi.updateShare).mock.calls;
+        expect(second?.[2]).toBe(first?.[2]);
+      });
+
+      it('does not upload it again once account sync replaced it', async () => {
+        failFirstUpload();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5000);
+        });
+        act(() => {
+          useLayoutStore.setState({
+            layout: { ...createDefaultLayout(), name: 'From another device' },
+            lastEditSource: 'remote',
+          });
+        });
+        await act(async () => {
+          await vi.runAllTimersAsync();
+        });
+
+        expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
+      });
     });
 
     it('silently handles network errors', async () => {
