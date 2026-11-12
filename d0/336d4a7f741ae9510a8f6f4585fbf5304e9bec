@@ -1,0 +1,21 @@
+src/features/snapshots/components/SnapshotEntry/SnapshotEntry.test.tsx
+  s_1cc363bb3cc76d::t_7d17ce5909a856 95-104
+src/features/snapshots/components/SnapshotEntry/SnapshotEntry.tsx
+  s_1cc363bb3cc76d::t_4eb60ed5561d2b 25-26,54-59,62,64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d0336d4a7f741ae9510a8f6f4585fbf5304e9bec",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
