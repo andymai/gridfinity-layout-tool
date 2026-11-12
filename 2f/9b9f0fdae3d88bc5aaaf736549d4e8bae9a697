@@ -1,0 +1,27 @@
+.claude/skills/state-and-cqrs/SKILL.md
+  s_1cc363bb3cc76d::t_879c141fcdb91b 46
+src/core/cqrs/middleware/undoCapture.ts
+  s_1cc363bb3cc76d::t_c9468f6ac50a77 98-100,102-104
+src/core/cqrs/undo/historyStore.test.ts
+  s_1cc363bb3cc76d::t_2d2269bb2833d5 730-739
+src/core/cqrs/undo/historyStore.ts
+  s_1cc363bb3cc76d::t_b6b7103c250501 48
+src/features/bin-inspector/hooks/useBinInspector.test.ts
+  s_1cc363bb3cc76d::t_3eb41171ad79e4 633-664
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2f9b9f0fdae3d88bc5aaaf736549d4e8bae9a697",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
