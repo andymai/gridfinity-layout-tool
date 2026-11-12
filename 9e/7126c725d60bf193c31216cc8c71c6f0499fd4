@@ -1,0 +1,118 @@
+src/features/snapshots/components/SnapshotEntry/SnapshotEntry.test.tsx
+  s_1cc363bb3cc76d::t_06c69a766ba6e9 41-49
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_1cc363bb3cc76d::t_210b6c9025d7b5 217-221,224-227
+  s_1cc363bb3cc76d::t_c4c057a65e76bd 222-223
+src/shared/constraints/rules.ts
+  s_1cc363bb3cc76d::t_ecf41649dd9788 95,97,102,104-111,115-121
+src/features/snapshots/components/RestoreDialog/RestoreDialog.test.tsx
+  s_1cc363bb3cc76d::t_4481a28971c8b4 48-60
+src/features/bin-designer/components/VersionHistory/VersionHistory.tsx
+  s_1cc363bb3cc76d::t_d94a649102cb2f 99-103
+src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
+  s_1cc363bb3cc76d::t_481874d3d883f6 392
+src/features/bin-designer/components/VersionHistory/VersionHistory.test.tsx
+  s_1cc363bb3cc76d::t_442c424501b1a2 15-16
+  s_1cc363bb3cc76d::t_93f9a565d63e37 193-251
+  s_1cc363bb3cc76d::t_12b3cb1e9c13b5 39-40
+src/features/bin-inspector/components/Inspector/SplitWarning/SplitWarning.test.tsx
+  s_1cc363bb3cc76d::t_ffb55949306626 22-34
+src/features/bin-inspector/hooks/useBinInspector.test.ts
+  s_1cc363bb3cc76d::t_9d5d1ce93be3aa 974-994
+src/shared/constraints/engine.test.ts
+  s_1cc363bb3cc76d::t_95768503f98a01 146-177
+apps/docs/concepts/saved-designs.md
+  s_1cc363bb3cc76d::t_593919277bd1ab 75
+apps/docs/designer/save-and-reuse.md
+  s_1cc363bb3cc76d::t_d9582e6220515c 52
+src/core/cqrs/v2/domain/layer/reorderLayers.test.ts
+  s_1cc363bb3cc76d::t_d7cc747b66f77e 3,41-44,48-75
+src/core/cqrs/v2/domain/layer/reorderLayers.ts
+  s_1cc363bb3cc76d::t_aca4e004ddcdde 57,59
+src/features/baseplate/components/BaseplatePage/BaseplatePage.test.tsx
+  s_1cc363bb3cc76d::t_8dae86ba2a2aa3 5-6,138-167
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_1cc363bb3cc76d::t_d206abbcf9b44f 429
+src/features/cloud-share/components/SharedLayoutBanner/SharedLayoutBanner.test.tsx
+  s_1cc363bb3cc76d::t_38bb365af9d21b 12-14,212,224,230-232,238-240,271,283,294,301,304,307-314,321,339,343,350,365,382,395,399,401,416
+src/features/cloud-share/components/SharedLayoutBanner/SharedLayoutBanner.tsx
+  s_1cc363bb3cc76d::t_a57b2401288299 79,186
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.ts
+  s_1cc363bb3cc76d::t_bea45d65bc6e21 250
+src/features/layers/hooks/useLayerListController.test.ts
+  s_1cc363bb3cc76d::t_7829f142fbeeb6 8-9,110-138
+src/features/layers/hooks/useLayerListController.ts
+  s_1cc363bb3cc76d::t_bc0a8e689b2b51 27-28,31-32,36-48,76-77,164-173
+src/features/print-export/components/SortOrderConfig/SortOrderConfig.test.tsx
+  s_1cc363bb3cc76d::t_61f56759bdda56 52,304
+src/features/print-export/components/SortOrderConfig/SortOrderConfig.tsx
+  s_1cc363bb3cc76d::t_129e1551001ab6 94-96
+src/i18n/locales/cs.json
+  s_1cc363bb3cc76d::t_06c84b491d965f 152-155,429-430,2393-2394,2609,3969,4110-4111,4446,4500-4502,4739-4740,4867-4869,5095,5137-5141
+src/i18n/locales/de.json
+  s_1cc363bb3cc76d::t_69b0f633bc2848 149-151,422-423,2362-2363,2573,3900,4035-4036,4357,4407-4408,4645-4646,4772-4773,4987,5024-5028
+src/i18n/locales/en.ts
+  s_1cc363bb3cc76d::t_1498ca82e4e4ae 470-471,489-490,583,664-665,701,817,851-852,1693-1694,1772-1776,1922-1924,4436-4437,4588-4590
+src/i18n/locales/es.json
+  s_1cc363bb3cc76d::t_e6bbcc2346fc56 149-151,422-423,2362-2363,2573,3900,4035-4036,4357,4407-4408,4645-4646,4772-4773,4987,5024-5028
+src/i18n/locales/fr.json
+  s_1cc363bb3cc76d::t_e3c90c9104d2e5 149-151,422-423,2362-2363,2573,3900,4035-4036,4357,4407-4408,4645-4646,4772-4773,4987,5024-5028
+src/i18n/locales/it.json
+  s_1cc363bb3cc76d::t_c5a98702c4f751 149-151,422-423,2362-2363,2573,3900,4035-4036,4357,4407-4408,4645-4646,4772-4773,4987,5024-5028
+src/i18n/locales/ja.json
+  s_1cc363bb3cc76d::t_3f41f96d18b0fd 146-147,415-416,2331-2332,2537,3831,3960-3961,4268,4315,4552-4553,4678,4880,4912-4916
+src/i18n/locales/ka.json
+  s_1cc363bb3cc76d::t_79d8943de15c60 434-435,450-451,540,611-612,646,757,787-788,1477,1552-1556,1678-1680,3710-3711,3836-3837
+src/i18n/locales/ko.json
+  s_1cc363bb3cc76d::t_e9b4d94a0b1cc7 146-147,415-416,2331-2332,2537,3831,3960-3961,4268,4315,4552-4553,4678,4880,4912-4916
+src/i18n/locales/nb.json
+  s_1cc363bb3cc76d::t_159fb1a7fb1597 149-151,422-423,2362-2363,2573,3900,4035-4036,4357,4407-4408,4645-4646,4772-4773,4987,5024-5028
+src/i18n/locales/nl.json
+  s_1cc363bb3cc76d::t_78c86c8f225309 149-151,422-423,2362-2363,2573,3900,4035-4036,4357,4407-4408,4645-4646,4772-4773,4987,5024-5028
+src/i18n/locales/pl.json
+  s_1cc363bb3cc76d::t_f439fb72d8c627 155-159,436-437,2424-2425,2645,4038,4185-4186,4535,4591-4594,4831-4832,4960-4963,5201,5248-5252
+src/i18n/locales/pt-BR.json
+  s_1cc363bb3cc76d::t_d148a6d058e729 149-151,422-423,2362-2363,2573,3900,4035-4036,4357,4407-4408,4645-4646,4772-4773,4987,5024-5028
+src/i18n/locales/sv.json
+  s_1cc363bb3cc76d::t_683aeebd138422 149-151,422-423,2362-2363,2573,3900,4035-4036,4357,4407-4408,4645-4646,4772-4773,4987,5024-5028
+src/i18n/locales/uk.json
+  s_1cc363bb3cc76d::t_0e234ba759104c 155-159,436-437,2424-2425,2645,4038,4185-4186,4535,4591-4594,4831-4832,4960-4963,5201,5248-5252
+src/i18n/locales/zh-CN.json
+  s_1cc363bb3cc76d::t_1a3fa0e70233e2 146-147,415-416,2331-2332,2537,3831,3960-3961,4268,4315,4552-4553,4678,4880,4912-4916
+src/shared/hooks/useLayoutSwitcher.test.ts
+  s_1cc363bb3cc76d::t_b0aa0e11372082 22-29,518-541,670-683,807-817
+src/shared/hooks/useLayoutSwitcher.ts
+  s_1cc363bb3cc76d::t_c4f09ad8295a12 66-73,189,214,274,291,336,351
+src/shared/utils/binLocation.test.ts
+  s_1cc363bb3cc76d::t_2dd4b539c3cfb8 139,159
+src/shared/utils/rotation.test.ts
+  s_1cc363bb3cc76d::t_b775a9775ef353 13,17,249,288-352,497-500
+src/shared/utils/rotation.ts
+  s_1cc363bb3cc76d::t_16f67dc16c6046 4,10-11,15-28,36,42,136,148
+src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
+  s_1cc363bb3cc76d::t_3955acab10e856 120
+src/shell/RightPanel/RightPanel.test.tsx
+  s_1cc363bb3cc76d::t_93ffaa844f1ef9 691
+src/shell/RightPanel/RightPanel.tsx
+  s_1cc363bb3cc76d::t_02f713bccc89ec 567-569
+src/shell/keyboard/handlers.ts
+  s_1cc363bb3cc76d::t_ce257c56874008 256
+src/shell/keyboard/useKeyboard.test.ts
+  s_1cc363bb3cc76d::t_9ec84421b367e7 10,896-930
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9e7126c725d60bf193c31216cc8c71c6f0499fd4",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
