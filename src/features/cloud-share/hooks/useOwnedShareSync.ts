@@ -20,6 +20,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { updateShare } from '@/core/api/share';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
+import { loadLayoutAsync } from '@/core/storage';
 import {
   dropWaitingUpload,
   keepShareLayout,
@@ -91,14 +92,15 @@ export function useOwnedShareSync(): void {
         if (lastUpdatedAt) recordOwnCopyRevision(shareId, lastUpdatedAt, layout);
       },
       // A remote layout from account sync replaces this one without a local
-      // edit, so only the store can say whether it is still current.
-      current: () => {
+      // edit, so only the stored layout can say whether it is still current.
+      // Coming back to a layout queues no upload, so a retry must outlive a
+      // switch to another layout.
+      current: async () => {
+        if (layoutId === null || roomSavesShare(shareId)) return false;
         const state = useLayoutStore.getState();
-        return (
-          !roomSavesShare(shareId) &&
-          state.activeLayoutId === layoutId &&
-          roomLayoutFingerprint(state.layout) === layoutFingerprint
-        );
+        const stored =
+          state.activeLayoutId === layoutId ? state.layout : await loadLayoutAsync(layoutId);
+        return stored !== null && roomLayoutFingerprint(stored) === layoutFingerprint;
       },
     };
 

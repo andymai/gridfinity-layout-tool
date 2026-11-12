@@ -26,7 +26,7 @@ export interface ShareUpload {
    * False once a newer layout replaces this one, by any path (a local edit, a
    * remote one, the owner leaving the room). A retry sends only a current layout.
    */
-  readonly current: () => boolean;
+  readonly current: () => boolean | Promise<boolean>;
 }
 
 /**
@@ -42,16 +42,34 @@ interface ShareQueue {
 
 const queues = new Map<string, ShareQueue>();
 const retries = new Map<string, ReturnType<typeof setTimeout>>();
+/** Moves on with each request, so a retry that awaits `current()` can see it lost. */
+const epochs = new Map<string, number>();
 
-function cancelRetry(shareId: string): void {
+function supersedeRetry(shareId: string): void {
   const timer = retries.get(shareId);
-  if (timer === undefined) return;
-  clearTimeout(timer);
+  if (timer !== undefined) clearTimeout(timer);
   retries.delete(shareId);
+  epochs.set(shareId, (epochs.get(shareId) ?? 0) + 1);
+}
+
+function scheduleRetry(shareId: string, upload: ShareUpload, attempt: number): void {
+  const epoch = epochs.get(shareId);
+  retries.set(
+    shareId,
+    setTimeout(() => {
+      retries.delete(shareId);
+      void Promise.resolve()
+        .then(upload.current)
+        .catch(() => false)
+        .then((current) => {
+          if (current && epochs.get(shareId) === epoch) start(shareId, upload, attempt + 1);
+        });
+    }, UPLOAD_RETRY_DELAYS_MS[attempt])
+  );
 }
 
 function start(shareId: string, upload: ShareUpload, attempt = 0): void {
-  cancelRetry(shareId);
+  supersedeRetry(shareId);
   const queue: ShareQueue = { waiting: null };
   queues.set(shareId, queue);
   void upload
@@ -74,16 +92,9 @@ function start(shareId: string, upload: ShareUpload, attempt = 0): void {
         answer &&
         !answer.ok &&
         isRetryable(answer.error.code) &&
-        attempt < UPLOAD_RETRY_DELAYS_MS.length &&
-        upload.current()
+        attempt < UPLOAD_RETRY_DELAYS_MS.length
       ) {
-        retries.set(
-          shareId,
-          setTimeout(() => {
-            retries.delete(shareId);
-            if (upload.current()) start(shareId, upload, attempt + 1);
-          }, UPLOAD_RETRY_DELAYS_MS[attempt])
-        );
+        scheduleRetry(shareId, upload, attempt);
       }
     });
 }
@@ -101,14 +112,14 @@ export function queueShareUpload(shareId: string, upload: ShareUpload): void {
  * waits for it, and runs if the link took another layout.
  */
 export function keepShareLayout(shareId: string, upload: ShareUpload): void {
-  cancelRetry(shareId);
+  supersedeRetry(shareId);
   const queue = queues.get(shareId);
   if (queue) queue.waiting = upload;
 }
 
 /** Drop what waits for the share: a newer layout replaces it. */
 export function dropWaitingUpload(shareId: string): void {
-  cancelRetry(shareId);
+  supersedeRetry(shareId);
   const queue = queues.get(shareId);
   if (queue) queue.waiting = null;
 }
@@ -117,4 +128,5 @@ export function __resetShareUploadsForTests(): void {
   queues.clear();
   for (const timer of retries.values()) clearTimeout(timer);
   retries.clear();
+  epochs.clear();
 }

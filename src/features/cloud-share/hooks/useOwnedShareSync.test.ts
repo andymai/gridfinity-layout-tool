@@ -5,6 +5,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { createDefaultLayout, SHARED_PREVIEW_ID } from '@/core/constants';
 import * as shareApi from '@/core/api/share';
+import * as storage from '@/core/storage';
 import { ok, err, apiServerError } from '@/core/result';
 import type { LayoutLibrary, CloudShareInfo, Layout } from '@/core/types';
 import { gridUnits, heightUnits, layoutId, mm } from '@/core/types';
@@ -19,6 +20,11 @@ import { stampFor } from '@/shared/utils/roomLinkStamp';
 vi.mock('@/core/api/share', () => ({
   updateShare: vi.fn(),
 }));
+
+vi.mock('@/core/storage', async (importOriginal) => {
+  const actual = await importOriginal<typeof storage>();
+  return { ...actual, loadLayoutAsync: vi.fn(actual.loadLayoutAsync) };
+});
 
 const TEST_LAYOUT_ID = layoutId('test-layout-id');
 const TEST_SHARE_ID = 'share-123';
@@ -542,6 +548,52 @@ describe('useOwnedShareSync', () => {
         expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
         const [first, second] = vi.mocked(shareApi.updateShare).mock.calls;
         expect(second?.[2]).toBe(first?.[2]);
+      });
+
+      it('uploads it again after the owner switches to another layout', async () => {
+        const saved = useLayoutStore.getState().layout;
+        vi.mocked(storage.loadLayoutAsync).mockResolvedValueOnce(saved);
+        failFirstUpload();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5000);
+        });
+        act(() => {
+          useLayoutStore.setState({
+            layout: { ...createDefaultLayout(), name: 'Another layout' },
+            activeLayoutId: layoutId('another-layout'),
+            lastEditSource: 'init',
+          });
+        });
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(UPLOAD_RETRY_DELAYS_MS[0]);
+        });
+
+        expect(storage.loadLayoutAsync).toHaveBeenCalledWith(TEST_LAYOUT_ID);
+        expect(shareApi.updateShare).toHaveBeenCalledTimes(2);
+        expect(vi.mocked(shareApi.updateShare).mock.calls[1]?.[2]).toBe(saved);
+      });
+
+      it('does not upload it again once the stored layout changed', async () => {
+        vi.mocked(storage.loadLayoutAsync).mockResolvedValueOnce({
+          ...createDefaultLayout(),
+          name: 'Changed on another device',
+        });
+        failFirstUpload();
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(5000);
+        });
+        act(() => {
+          useLayoutStore.setState({
+            layout: createDefaultLayout(),
+            activeLayoutId: layoutId('another-layout'),
+            lastEditSource: 'init',
+          });
+        });
+        await act(async () => {
+          await vi.runAllTimersAsync();
+        });
+
+        expect(shareApi.updateShare).toHaveBeenCalledTimes(1);
       });
 
       it('does not upload it again once account sync replaced it', async () => {

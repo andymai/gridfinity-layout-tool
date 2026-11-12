@@ -207,6 +207,33 @@ describe('shareUploads', () => {
       expect(runs).toEqual(['a']);
     });
 
+    it('waits for a current() that answers later, and loses to a newer upload in that time', async () => {
+      const { runs, make, failNext } = uploads();
+      let answer: (current: boolean) => void = () => undefined;
+      const slow: ShareUpload = {
+        ...make('a'),
+        current: () =>
+          new Promise<boolean>((resolve) => {
+            answer = resolve;
+          }),
+      };
+      queueShareUpload(SHARE, slow);
+      await failNext();
+      await vi.advanceTimersByTimeAsync(UPLOAD_RETRY_DELAYS_MS[0]);
+      queueShareUpload(SHARE, make('b'));
+      answer(true);
+      await vi.runAllTimersAsync();
+      expect(runs).toEqual(['a', 'b']);
+    });
+
+    it('runs when a current() that answers later says yes', async () => {
+      const { runs, make, failNext } = uploads();
+      queueShareUpload(SHARE, { ...make('a'), current: () => Promise.resolve(true) });
+      await failNext();
+      await vi.advanceTimersByTimeAsync(UPLOAD_RETRY_DELAYS_MS[0]);
+      expect(runs).toEqual(['a', 'a']);
+    });
+
     it('does not run when a newer layout came during the wait, with no upload of its own', async () => {
       const { runs, make, replaceLayout, failNext } = uploads();
       queueShareUpload(SHARE, make('a'));
