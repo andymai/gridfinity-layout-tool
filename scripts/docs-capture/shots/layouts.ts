@@ -1247,7 +1247,6 @@ const placingBrush: Shot = {
         depth: 1,
       }),
     });
-    // Off camera, once, to frame the popover where it opens.
     await brush.first().click({ force: true });
     await s.until(size);
     const squares = union(await s.box(brush.first()), await s.box(size));
@@ -1303,7 +1302,6 @@ const MOVE_DRAWER: FixtureLayout = {
   ],
 };
 
-/** A plain move, then an Alt copy with the key on screen while it is held. */
 const placingMoveCopy: Shot = {
   id: 'layouts-placing-bins-move-copy',
   kind: 'clip',
@@ -1419,7 +1417,6 @@ const placingExpand: Shot = {
   async take(s) {
     await openQuiet(s, EXPAND_DRAWER);
     const pliers = await middle(s, binNamed(s, 'Pliers'));
-    // Off camera, once, to frame the menu where it opens.
     await s.page.mouse.click(...pliers, { button: 'right' });
     const item = s.page.getByRole('menuitem', { name: label('mobile.binMenu.expandToFit') });
     await s.until(item);
@@ -1505,13 +1502,11 @@ async function rowNumberAt(s: DocsSession, row: number): Promise<[number, number
   return [b.x + b.width * 0.25, b.y + b.height / 2];
 }
 
-/** A row number clicked, then a second one with Shift held, which adds the rows between. */
 const multiSelectRows: Shot = {
   id: 'layouts-multi-select-rows',
   kind: 'clip',
   async take(s) {
     await openQuiet(s, FASTENER_DRAWER);
-    // Off camera, once, to frame the selection toolbar where it shows.
     await s.page.mouse.click(...(await rowNumberAt(s, 1)));
     await s.page.keyboard.down('Shift');
     await s.page.mouse.click(...(await rowNumberAt(s, 2)));
@@ -1693,7 +1688,6 @@ const STACK_DRAWER: FixtureLayout = {
   ],
 };
 
-/** W steps up to Layer 2, then a bin drawn there rests on the bins under it. */
 const layersStack: Shot = {
   id: 'layouts-layers-stack',
   kind: 'clip',
@@ -1951,7 +1945,6 @@ const categoriesPatterns: Shot = {
   },
 };
 
-/** The library of the manager shot, filed into its folders and loaded fresh. */
 async function openLibrary(s: DocsSession): Promise<void> {
   await installAppImport(s);
   await openLayouts(s, ...LIBRARY.map(({ layout }) => layout));
@@ -2055,7 +2048,6 @@ interface ClockHooks {
   __vt: { step(ms: number): void };
 }
 
-/** Three snapshots an hour apart, the middle one labeled, with fewer bins the older they are. */
 async function seedSnapshots(s: DocsSession): Promise<void> {
   const minute = 60_000;
   const steps: { bins: number; label?: string; after: number }[] = [
