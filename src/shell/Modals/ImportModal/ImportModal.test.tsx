@@ -443,35 +443,32 @@ describe('ImportModal', () => {
       expect(await findByText('Validation errors')).not.toBeNull();
     });
 
-    it('accepts layout with bins', async () => {
-      const { getByLabelText, container } = renderModal();
+    it.each([
+      [1, '1 bin'],
+      [2, '2 bins'],
+    ])('accepts a layout with %i bin(s) and counts them', async (count, label) => {
+      const { getByLabelText, findByText } = renderModal();
 
       const textarea = getByLabelText(/paste a share link/i);
       const layout = createDefaultLayout();
-      layout.bins = [
-        {
-          id: binId('bin-1'),
-          x: gridUnits(0),
-          y: gridUnits(0),
-          width: gridUnits(2),
-          depth: gridUnits(2),
-          height: heightUnits(3),
-          layerId: layout.layers[0].id,
-          category: layout.categories[0].id,
-          label: '',
-          notes: '',
-        },
-      ];
+      layout.bins = Array.from({ length: count }, (_, i) => ({
+        id: binId(`bin-${i + 1}`),
+        x: gridUnits(i * 2),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        layerId: layout.layers[0].id,
+        category: layout.categories[0].id,
+        label: '',
+        notes: '',
+      }));
 
       await act(async () => {
         fireEvent.change(textarea, { target: { value: JSON.stringify(layout) } });
       });
 
-      await waitFor(() => {
-        const previewSection = container.querySelector('.bg-success\\/10');
-        expect(previewSection).not.toBeNull();
-        expect(previewSection?.textContent).toContain('bins');
-      });
+      expect(await findByText(label)).toBeInTheDocument();
     });
   });
 
