@@ -1,0 +1,76 @@
+scripts/docs-capture/shots/sharingSettings.ts
+  s_1cc363bb3cc76d::t_f9c6d1ab287ee6 804-884,886-887,889,891-897,899-904,906-932,934,937-943,945-960,963-997,1001-1098,1100,1102,1105-1245,1247-1258,1260,1263-1283,1285,1287-1290,1701
+  s_1cc363bb3cc76d::t_7becf39c2c3d12 1291-1654,1691-1700
+  s_1cc363bb3cc76d::t_0cc6736d71f6fd 1655-1690,1702-1703
+  s_1cc363bb3cc76d::t_28ab6263fdca3d 7-8,10,885,888,890,898,905,933,935-936,944,961-962,998-1000,1099,1101,1103-1104,1246,1259,1261-1262,1284,1286,1704-1740,1743,1757-1775
+apps/docs/media/settings-keyboard-designer-search.json
+  s_1cc363bb3cc76d::t_ca0c56a8031953 1-5
+apps/docs/media/settings-keyboard-help-search.json
+  s_1cc363bb3cc76d::t_ca6fd83bb714f0 1-5
+apps/docs/media/settings-keyboard-palette-disabled.json
+  s_1cc363bb3cc76d::t_ab4dfb4b47f7ac 1-5
+apps/docs/media/settings-keyboard-palette-run.json
+  s_1cc363bb3cc76d::t_3b8fd1f0e61565 1-5
+apps/docs/media/settings-labs-bin-contents.json
+  s_1cc363bb3cc76d::t_1d08cc3511adcd 1-5
+apps/docs/media/settings-labs-find.json
+  s_1cc363bb3cc76d::t_032edfaee959b8 1-5
+apps/docs/media/settings-settings-defaults.json
+  s_1cc363bb3cc76d::t_2e2f5a9375800a 1-5
+apps/docs/media/settings-settings-search.json
+  s_1cc363bb3cc76d::t_da20d953b04e8e 1-5
+apps/docs/media/settings-spacemouse-driver.json
+  s_1cc363bb3cc76d::t_e5d81fbaa9752a 1-5
+apps/docs/media/sharing-accounts-account-tab.json
+  s_1cc363bb3cc76d::t_cd1d487628c856 1-5
+apps/docs/media/sharing-accounts-sign-out.json
+  s_1cc363bb3cc76d::t_bb2b770aba73ae 1-5
+apps/docs/media/sharing-community-design-page.json
+  s_1cc363bb3cc76d::t_f7a35206e16c14 1-5
+apps/docs/media/sharing-community-open-gallery.json
+  s_1cc363bb3cc76d::t_c7b46377e1ce3e 1-5
+apps/docs/media/sharing-community-post-print.json
+  s_1cc363bb3cc76d::t_38e459a5b785ec 1-5
+apps/docs/media/sharing-community-publish-checks.json
+  s_1cc363bb3cc76d::t_99f520250e5f1f 1-5
+apps/docs/media/sharing-community-report.json
+  s_1cc363bb3cc76d::t_e88744719289c5 1-5
+apps/docs/media/sharing-share-links-blocked.json
+  s_1cc363bb3cc76d::t_4291a4c53e6568 1-5
+apps/docs/media/sharing-share-links-manage.json
+  s_1cc363bb3cc76d::t_f3429207ff74db 1-5
+apps/docs/media/sharing-share-links-popover.json
+  s_1cc363bb3cc76d::t_ad9b17a398f8dc 2-4
+apps/docs/media/sharing-share-links-without-server.json
+  s_1cc363bb3cc76d::t_7ecd696a19b3cc 1-5
+apps/docs/settings/keyboard-and-command-palette.md
+  s_1cc363bb3cc76d::t_4ec489007fd9d0 38-39,65-66,82-83,98-99
+apps/docs/settings/labs.md
+  s_1cc363bb3cc76d::t_58375f5fe0baaa 38-39,42-43
+apps/docs/settings/settings.md
+  s_1cc363bb3cc76d::t_8ccb81aa5fa574 23-24,76-77
+apps/docs/settings/spacemouse.md
+  s_1cc363bb3cc76d::t_a198ac5977a5b9 35-36
+apps/docs/sharing/accounts-and-sync.md
+  s_1cc363bb3cc76d::t_4a85342a11f672 85-86,97-98
+apps/docs/sharing/community.md
+  s_1cc363bb3cc76d::t_b42d85151c7b33 25-26,67-68,120-121,139-140,151-152
+apps/docs/sharing/share-links.md
+  s_1cc363bb3cc76d::t_d278d92d64b56b 36,87-88,110-111,128-129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f853f9555971aff5fc3627ad5cce8d64b3229a1e",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
