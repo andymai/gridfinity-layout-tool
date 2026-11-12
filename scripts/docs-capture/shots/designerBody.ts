@@ -624,7 +624,6 @@ interface BentoRect {
 
 interface BentoDrawing {
   grid: { cols: number; rows: number };
-  /** Two compartments fused into one L. */
   fused: [BentoRect, BentoRect];
   compartments: BentoRect[];
   /** Each label is found by a cell of its compartment, since ids renumber on every draw. */
@@ -655,7 +654,6 @@ const BENTO_DRAWING: BentoDrawing = {
   raised: { col: 7, row: 0, mm: 20 },
 };
 
-/** Draws `d` through the Bento store and opens the workspace on it. */
 async function drawBento(s: DocsSession, d: BentoDrawing): Promise<void> {
   await s.page.evaluate(async (d) => {
     type Rect = { col: number; row: number; w: number; h: number };
@@ -832,7 +830,6 @@ const ACCENT_BIN: Params = {
 
 const colorPicker = (s: DocsSession): Locator => s.page.getByRole('dialog').first();
 
-/** Picks a preset in the open color picker, in a close-up cut beside the zone row. */
 async function pickColor(
   s: DocsSession,
   row: Locator,
@@ -891,7 +888,6 @@ const accentBands: Shot = {
   },
 };
 
-/** Every cell of the stacking lip in one color, as the lip row's picker sets it. */
 const lipCells = (hex: string): Record<string, string> =>
   Object.fromEntries(
     ['frontLeft', 'frontRight', 'backRight', 'backLeft'].flatMap((corner) =>
@@ -927,7 +923,6 @@ const savePalette: Shot = {
       'above'
     );
     await scrollPanel(s, heading, 150);
-    // Off camera, open the menu once to frame the take on it.
     await actions.click({ force: true });
     await s.until(menu);
     const area = union(await s.box(heading), await s.box(menu));
@@ -1061,7 +1056,6 @@ const floorRaise: Shot = {
     const tips = drawn.nth(narrowest);
     const slider = (): Locator =>
       s.page.getByRole('slider', { name: label('binDesigner.bento.floorRaise') }).first();
-    // Off camera, select it once to frame the slider it shows.
     await tips.click({ force: true });
     await s.until(slider());
     const area = union(
@@ -1214,7 +1208,6 @@ const removableDividers: Shot = {
   },
 };
 
-/** Drags a range slider's thumb from its value to `to`, on camera. */
 async function slide(s: DocsSession, slider: Locator, to: number, frames = 18): Promise<void> {
   const b = await s.box(slider);
   const [min, max, now] = await slider.evaluate((el) => {
@@ -1558,7 +1551,6 @@ const labelSuggestions: Shot = {
     const field = s.page.getByRole('combobox', { name: label('inspector.binLabel') }).first();
     await s.until(field);
     await s.ui.preReveal(field);
-    // Off camera, open the list once to frame the take on it.
     await field.focus();
     const list = s.page.getByRole('listbox').first();
     await s.until(list);
