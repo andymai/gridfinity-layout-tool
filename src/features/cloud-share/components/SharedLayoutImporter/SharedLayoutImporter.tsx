@@ -254,9 +254,10 @@ export function SharedLayoutImporter() {
       let designIds: Record<string, string> | undefined;
       if (linkedDesigns && linkedDesigns.length > 0) {
         try {
-          const { restoreSharedDesigns, sharedDesignIds } = await import('@/core/storage');
-          layout = await restoreSharedDesigns(initialCloudShareId, layout, linkedDesigns);
-          designIds = sharedDesignIds(initialCloudShareId, linkedDesigns);
+          const { restoreSharedDesigns } = await import('@/core/storage');
+          const restored = await restoreSharedDesigns(initialCloudShareId, layout, linkedDesigns);
+          layout = restored.layout;
+          designIds = restored.designIds;
         } catch (e) {
           console.error('Failed to restore shared bin designs:', e);
         }

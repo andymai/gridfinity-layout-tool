@@ -6,7 +6,7 @@ import { designId } from '@/core/types';
  *
  * The room holds the owner's design ids, because the owner's browser saves the
  * room to the share and can only collect designs that it has. A visitor holds
- * the share's designs under ids of its own (`sharedDesignIds`), so its copy
+ * the share's designs under ids of its own (`restoreSharedDesigns`), so its copy
  * uses those, or its bins show no model.
  */
 export interface RoomDesignIds {

@@ -12,8 +12,9 @@ vi.mock('@/core/storage', () => ({
   clearSharedLayoutFromURL: vi.fn(),
   getCloudShareIdFromURL: vi.fn(() => null),
   clearCloudShareFromURL: vi.fn(),
-  restoreSharedDesigns: vi.fn((_shareId: string, layout: unknown) => Promise.resolve(layout)),
-  sharedDesignIds: vi.fn(() => ({})),
+  restoreSharedDesigns: vi.fn((_shareId: string, layout: unknown) =>
+    Promise.resolve({ layout, designIds: {} })
+  ),
 }));
 
 vi.mock('@/core/api/share', () => ({
@@ -171,9 +172,9 @@ describe('SharedLayoutImporter opening a cloud share', () => {
     vi.resetModules();
     const storage = await import('@/core/storage');
     vi.mocked(storage.getCloudShareIdFromURL).mockReturnValue('abc123xyz789');
-    vi.mocked(storage.sharedDesignIds).mockReturnValue({
-      'owner-design': 'design_shared_1' as never,
-    });
+    vi.mocked(storage.restoreSharedDesigns).mockImplementation((_shareId, layout) =>
+      Promise.resolve({ layout, designIds: { 'owner-design': 'design_shared_1' as never } })
+    );
     (await import('@/core/store/library')).useLibraryStore.setState({ isLoaded: true });
     (await import('@/core/store/sharedWithMe')).useSharedWithMeStore.setState({ isLoaded: true });
     const { ok } = await import('@/core/result');
@@ -196,6 +197,10 @@ describe('SharedLayoutImporter opening a cloud share', () => {
         'owner-design': 'design_shared_1',
       })
     );
-    expect(storage.sharedDesignIds).toHaveBeenCalledWith('abc123xyz789', linkedDesigns);
+    expect(storage.restoreSharedDesigns).toHaveBeenCalledWith(
+      'abc123xyz789',
+      expect.anything(),
+      linkedDesigns
+    );
   });
 });

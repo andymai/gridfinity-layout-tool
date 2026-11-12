@@ -120,9 +120,10 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
       let designIds: Record<string, string> | undefined;
       if (linkedDesigns && linkedDesigns.length > 0) {
         try {
-          const { restoreSharedDesigns, sharedDesignIds } = await import('@/core/storage');
-          layout = await restoreSharedDesigns(entry.sourceShareId, layout, linkedDesigns);
-          designIds = sharedDesignIds(entry.sourceShareId, linkedDesigns);
+          const { restoreSharedDesigns } = await import('@/core/storage');
+          const restored = await restoreSharedDesigns(entry.sourceShareId, layout, linkedDesigns);
+          layout = restored.layout;
+          designIds = restored.designIds;
         } catch (e) {
           console.error('Failed to restore shared bin designs:', e);
         }

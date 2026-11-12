@@ -18,11 +18,13 @@ vi.mock('@/core/api/share', () => ({
 
 vi.mock('@/core/storage', async (importOriginal) => ({
   ...(await importOriginal<typeof Storage>()),
-  restoreSharedDesigns: vi.fn((_shareId: string, layout: Layout) => Promise.resolve(layout)),
+  restoreSharedDesigns: vi.fn((_shareId: string, layout: Layout) =>
+    Promise.resolve({ layout, designIds: {} })
+  ),
 }));
 
 import { fetchShare } from '@/core/api/share';
-import { restoreSharedDesigns, sharedDesignIds } from '@/core/storage';
+import { restoreSharedDesigns } from '@/core/storage';
 
 const mockFetchShare = vi.mocked(fetchShare);
 
@@ -194,7 +196,8 @@ describe('useSharedWithMe', () => {
         ...shared,
         bins: shared.bins.map((bin) => ({ ...bin, linkedDesignId: designId('design_shared_1') })),
       };
-      vi.mocked(restoreSharedDesigns).mockResolvedValueOnce(restored);
+      const designIds = { 'owner-design': designId('design_shared_1') };
+      vi.mocked(restoreSharedDesigns).mockResolvedValueOnce({ layout: restored, designIds });
       const { result } = renderHook(() => useSharedWithMe());
 
       await act(async () => {
@@ -203,9 +206,7 @@ describe('useSharedWithMe', () => {
 
       expect(restoreSharedDesigns).toHaveBeenCalledWith('share-abc123', shared, linkedDesigns);
       expect(useLayoutStore.getState().layout.bins[0]?.linkedDesignId).toBe('design_shared_1');
-      expect(useSharedPreviewStore.getState().sharedPreview?.designIds).toEqual(
-        sharedDesignIds('share-abc123', linkedDesigns)
-      );
+      expect(useSharedPreviewStore.getState().sharedPreview?.designIds).toEqual(designIds);
     });
 
     it('sets error state when offline', async () => {

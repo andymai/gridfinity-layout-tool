@@ -345,26 +345,16 @@ function sharedDesignLocalId(shareId: string, sourceDesignId: string): DesignId 
 }
 
 /**
- * The local id that {@link restoreSharedDesigns} gives each design of a share,
- * keyed by the owner's id. A collab room keeps the owner's ids, so a visitor
- * needs this map in both directions.
- */
-export function sharedDesignIds(
-  shareId: string,
-  designs: ReadonlyArray<{ readonly id: string }>
-): Record<string, DesignId> {
-  return Object.fromEntries(
-    designs.map((design) => [design.id, sharedDesignLocalId(shareId, design.id)])
-  );
-}
-
-/**
  * Persist the designs that travelled with a cloud share and repoint the
  * layout's bins at the local copies.
  *
  * Without this the recipient gets bins whose `linkedDesignId` names a design
  * that only ever existed in the sharer's browser — no 3D geometry, no
  * per-bin export, nothing to print.
+ *
+ * `designIds` maps the owner's id of each design that it saved to the local
+ * id. A collab room keeps the owner's ids, so a visitor needs this map in both
+ * directions, and only for designs that it has.
  */
 export async function restoreSharedDesigns(
   shareId: string,
@@ -377,13 +367,13 @@ export async function restoreSharedDesigns(
     envelope?: unknown;
     structure?: unknown;
   }>
-): Promise<Layout> {
-  if (designs.length === 0) return layout;
+): Promise<{ layout: Layout; designIds: Record<string, DesignId> }> {
+  if (designs.length === 0) return { layout, designIds: {} };
 
   // No registered port means the design feature is unavailable; leave the
   // layout untouched, exactly as when none of the designs resolve.
   const port = getDesignStorePort();
-  if (port === null) return layout;
+  if (port === null) return { layout, designIds: {} };
 
   // The local id is a 32-bit hash, so two designs can share one. Saving both
   // under it would keep only the last, and both bins would name it. So neither
@@ -475,14 +465,17 @@ export async function restoreSharedDesigns(
     });
   }
 
-  if (idMap.size === 0) return layout;
+  if (idMap.size === 0) return { layout, designIds: {} };
 
   return {
-    ...layout,
-    bins: layout.bins.map((bin) => {
-      const localId = bin.linkedDesignId ? idMap.get(bin.linkedDesignId) : undefined;
-      return localId ? { ...bin, linkedDesignId: localId } : bin;
-    }),
+    layout: {
+      ...layout,
+      bins: layout.bins.map((bin) => {
+        const localId = bin.linkedDesignId ? idMap.get(bin.linkedDesignId) : undefined;
+        return localId ? { ...bin, linkedDesignId: localId } : bin;
+      }),
+    },
+    designIds: Object.fromEntries(idMap),
   };
 }
 
