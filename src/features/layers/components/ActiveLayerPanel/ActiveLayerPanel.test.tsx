@@ -208,6 +208,23 @@ describe('ActiveLayerPanel', () => {
       expect(screen.getByText('Fill 80 gaps')).toBeInTheDocument();
     });
 
+    it.each([
+      ['Fill 1 gap', 1],
+      ['Fill 2 gaps', 2],
+    ])('reads "%s" for that many empty cells', (label, cells) => {
+      const { layout } = useLayoutStore.getState();
+      useLayoutStore.setState({
+        layout: {
+          ...layout,
+          drawer: { ...layout.drawer, width: gridUnits(cells), depth: gridUnits(1) },
+        },
+      });
+
+      render(<ActiveLayerPanel />);
+
+      expect(screen.getByText(label)).toBeInTheDocument();
+    });
+
     it('disables fill gaps when no empty cells', () => {
       // Fill the layer completely
       useLayoutStore.getState().fillLayer(layerId('layer1'), 2, 2, categoryId('coral'), false);

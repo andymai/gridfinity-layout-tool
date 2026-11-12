@@ -174,7 +174,7 @@ export function LayersTab() {
                   {layer.name}
                 </span>
                 <span className="text-xs text-content-tertiary">
-                  {t('mobile.layers.binCount', { count: binCount })}
+                  {t('layers.binCount', { count: binCount })}
                   {hasMultipleLayers ? ` · ${layerCoverage}%` : ''}
                 </span>
               </Button>
