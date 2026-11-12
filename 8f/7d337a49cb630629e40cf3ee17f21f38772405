@@ -1,0 +1,21 @@
+src/features/command-palette/components/CommandPaletteFooter/CommandPaletteFooter.tsx
+  s_1cc363bb3cc76d::t_36bf0d7169bc60 45
+src/features/command-palette/components/CommandPaletteFooter/CommandPaletteFooter.test.tsx
+  s_1cc363bb3cc76d::t_a77a1dcdf56163 4,48-51,55-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8f7d337a49cb630629e40cf3ee17f21f38772405",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
