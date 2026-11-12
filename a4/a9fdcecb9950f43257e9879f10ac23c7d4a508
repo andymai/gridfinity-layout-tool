@@ -1,0 +1,21 @@
+.claude/hooks/result-exhaustion-check.sh
+  s_1cc363bb3cc76d::t_4641d5269b55dd 66-69
+scripts/resultExhaustionHook.test.ts
+  s_1cc363bb3cc76d::t_4641d5269b55dd 67-78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a4a9fdcecb9950f43257e9879f10ac23c7d4a508",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
