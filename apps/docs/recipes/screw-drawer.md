@@ -53,6 +53,8 @@ New bins take the height of the active layer, and the first layer starts at 3u. 
 2. Leave the row above it empty. Draw a 1 × 2 bin (1 wide, 2 deep) in rows 3 and 4, at the left edge. The row numbers count up from the bottom.
 3. Draw a 4 × 2 bin in the top-left corner, and a second one beside it.
 
+<Screenshot id="recipes-screw-drawer-draw-kinds" alt="Four drags on the empty 8 by 6 grid. They draw a 1 by 1 bin in the front left corner, a 1 by 2 bin in rows 3 and 4, and two 4 by 2 bins along the back." spec="Clip. Layout editor, desktop 1440 px. Layout with an 8 x 6 grid, measured size 345 x 260 x 40 mm, one layer at 3u, no bins. Drag to draw a 1 x 1 bin at column 1 row 1, a 1 x 2 bin at column 1 rows 3 to 4, then 4 x 2 bins at columns 1 to 4 and 5 to 8 in rows 5 to 6. Start each drag at the corner away from the last bin, so it does not grab a resize handle. Crop to the grid." />
+
 ## Step 3: Design the screw bin once
 
 1. Select the 1 × 1 bin. In the right panel, under <Ui k="designLinking.inspector.linkedDesign" />, click <Ui k="designLinking.inspector.createDesign" />.
@@ -74,7 +76,11 @@ Copies of a linked bin keep the link, so copy the bins instead of drawing them.
 2. Click the number of that row at the edge of the grid to select all 8 bins. Press <kbd>Ctrl</kbd>+<kbd>D</kbd> once, and the row copies into the row above.
 3. Do the same with the 1 × 2 bin to fill rows 3 and 4.
 
+<Screenshot id="recipes-screw-drawer-copy-row" alt="A click selects the linked 1 by 1 bin, and Ctrl D seven times fills the front row with copies. A click on row number 1 selects the row, and Ctrl D copies it into row 2." spec="Clip. Layout editor, desktop 1440 px. The step 2 layout, with the 1 x 1 bin linked to Screw bin and the 1 x 2 bin linked to Bolt bin. Click the 1 x 1 bin, press Ctrl+D seven times with a keycap, click the row 1 number, and press Ctrl+D once. Crop to the grid." />
+
 Now name each bin. Select it, and type its size in <Ui k="inspector.binLabel" />, such as M3x6. Label the next bin M3x8. From then on, the suggestion list offers M3x10, marked <Ui k="inspector.labelSuggest.reason.nextInSet" />. Press <kbd>Tab</kbd> to accept a gray suggestion.
+
+<Screenshot id="recipes-screw-drawer-label-suggest" alt="A click selects the third bin in the front row. Its Label field opens a list that offers M3x10, marked next in set, and Tab accepts it. The bin then reads M3x10, beside M3x6 and M3x8." spec="Clip. Layout editor, desktop 1440 px. The drawer after step 4 copies: 16 linked 1 x 1 bins in rows 1 and 2, 8 linked 1 x 2 bins in rows 3 and 4, and the two 4 x 2 bins. The first two bins in row 1 have the labels M3x6 and M3x8. Click the third bin in a close-up of the row. Cut to the inspector, click the Label field so the suggestion list opens, and press Tab with a keycap. Cut back to the row." />
 
 Press <kbd>V</kbd> to open the 3D preview. Each tab shows its own label.
 
