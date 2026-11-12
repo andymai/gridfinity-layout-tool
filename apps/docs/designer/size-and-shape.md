@@ -57,6 +57,8 @@ A side that ends in .5 gets a row of half-size feet at one end. Use <Ui k="sideb
 - For the width, pick <Ui k="sidebar.left" /> or <Ui k="sidebar.right" />.
 - For the depth, pick <Ui k="sidebar.bottom" /> or <Ui k="sidebar.top" />.
 
+<Screenshot id="designer-size-and-shape-half-grid" alt="Half-grid mode turns on. The width steps down from 2 to 1.5, and the Half-unit edge position choice appears under the size readouts. Left moves the half-size feet to the left end. A view from below shows the row of smaller feet." spec="Bin designer, bin 2 x 2 x 3. In close-up, turn on Half-grid mode. Then step the width down to 1.5 and pick Left under Half-unit edge position. Then show the bin from below." />
+
 For a base made only of half-size feet, see [Half sockets](./base#use-half-size-feet).
 
 ## Make a bin that is not a rectangle
@@ -86,6 +88,8 @@ The <Ui k="binDesigner.base.bodyType" /> tiles at the top of the <Ui k="binDesig
 | <Ui k="binDesigner.tile" />                   | Feet and floor with no walls. It still locks into a baseplate.            |
 | <Ui k="binDesigner.lidBottom" />              | The underside is a lid, so the bin sits on top of another bin.            |
 
+<Screenshot id="designer-size-and-shape-body-type" alt="The six Body type tiles: Standard, Nesting, Flat base, Spacer, Base only and Lid base. Standard is selected, and the line under the tiles describes it." spec="Bin designer, default bin. Crop the Base group from the Body type heading to the description line under the tiles." />
+
 [The base](./base) explains the options of each type, and [Lids](./lids) explains the lid base. <Ui k="binDesigner.interior.slotted.title" /> and <Ui k="binDesigner.interior.solid.title" /> are interior styles, not body types: see [Compartments and dividers](./compartments).
 
 ## Fit a drawer with overhang and taper
@@ -97,6 +101,8 @@ A drawer is rarely an exact number of grid units, so a gap stays at its edges. <
 3. If the overhang is wide, turn on <Ui k="binDesigner.overhang.feet" />.
 
 The feet stay on the grid, so the bottom of the overhang needs supports when you print it. <Ui k="binDesigner.overhang.feet" /> adds feet under the overhang where it is wide enough. On a flat base, the overhang rests on the print bed.
+
+<Screenshot id="designer-size-and-shape-overhang" alt="Overhang turns on and shows a slider for each side. Typing 21 for the right side grows the wall outward on the right. Then Feet under overhang turns on, and a view from below shows feet under the overhang." spec="Bin designer, bin 2 x 2 x 3. In close-up, turn on Overhang and type 21 mm for the right side, then show the bin. Turn on Feet under overhang, then show the bin from below." />
 
 For a drawer with curved sides, <Ui k="binDesigner.overhang.taper.title" /> angles the wall outward above the base:
 

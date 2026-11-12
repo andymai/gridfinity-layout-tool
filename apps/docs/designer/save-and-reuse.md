@@ -47,6 +47,8 @@ A **version** is a named checkpoint of one design. Undo history ends when you re
 2. Click <Ui k="binDesigner.versions.save" />.
 3. Type a name, for example the clearance that you test, and click <Ui k="binDesigner.versions.confirmSave" />.
 
+<Screenshot id="designer-save-and-reuse-versions" alt="Clicking Version history in the header opens the Versions list with two versions, one of them pinned. Save version, the name 0.2 mm clearance and Save add a third version at the top of the list." spec="Bin designer, Battery caddy with two saved versions, First print pinned. Click Version history in the header. In the Versions dialog, click Save version, type a name and click Save." />
+
 To go back to a version, click <Ui k="binDesigner.versions.restore" /> on it. Nothing gets lost: the Layout Tool first saves your current state as an automatic version, and one undo reverses the restore.
 
 Each design holds up to 25 versions. When a design is full, a new version removes the oldest one. Pinned versions stay, so click <Ui k="binDesigner.versions.pin" /> on any version you want to keep for good.
@@ -61,6 +63,8 @@ A **variant** is a copy of a design that follows its parent, except for the valu
 
 1. In the library, open the menu of the parent design and click <Ui k="binDesigner.variants.create" />.
 2. In the variant, click <Ui k="binDesigner.variants.claim" /> next to each value that must differ, and set it.
+
+<Screenshot id="designer-save-and-reuse-create-variant" alt="In the Saved designs list, the menu of Drill bit holder opens and Create variant makes a variant. The variant opens with the Variant section at the top of the panel, and each bin dimension shows its value from the parent and a Claim button." spec="Bin designer, Saved designs dialog with Drill bit holder and four other designs. Open the menu of Drill bit holder and click Create variant. Then show the Variant section at the top of the panel." />
 
 | Part        | Values a variant can claim                                                                                                                                                                  |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -93,6 +97,8 @@ To use an example:
 2. Click an example to turn it around in a 3D view.
 3. Click <Ui k="binExamples.useAsNewDesign" />. The example becomes a new saved design that you can edit.
 
+<Screenshot id="designer-save-and-reuse-examples" alt="Clicking Community designs opens the gallery on its Community tab, and Examples changes to the examples. A search for honeycomb finds the Honeycomb Caddy example. Its card opens a 3D view that turns with a drag, and Use as new design opens the caddy in the bin designer." spec="Bin designer, community API left unanswered so its tab shows the loading state. Click Community designs at the top of the panel, then the Examples tab. Search for honeycomb and click the Honeycomb Caddy. Turn the 3D view, click Use as new design, then show the new bin." />
+
 ## Download and import a design file
 
 A **design file** is a small JSON file that holds every setting of a design. It isn't a printable model. Use it to keep a backup, to edit a design by hand, or to give a design to someone else.
@@ -113,6 +119,8 @@ The same drop zone takes an STL file and imports it as a bin. See [Special bins]
 In the library, open the menu of the design and click <Ui k="binDesigner.placeInLayout.action" />.
 
 The layout editor opens and adds the bin as a linked bin. The bin goes to the first free spot on the active layer, turned if it fits only that way. If the layer has no room, the bin goes to the stash (the holding area off the grid). Drag it to the place you want.
+
+<Screenshot id="designer-save-and-reuse-place-in-layout" alt="In the Saved designs list, the menu of Battery caddy opens and Place in layout is clicked. The layout editor opens with Battery caddy placed and selected in the first free spot of the drawer." spec="Bin designer, a layout named Desk drawer with free space, and a library with Battery caddy. Open the menu of Battery caddy and click Place in layout. Then show the drawer grid with the placed bin." />
 
 From then on, the bin follows the design. When you change the design, the linked bin in the layout changes too. To give a design to a bin that is already on the grid, see [Place and edit bins](../layouts/placing-bins#drop-a-saved-design-into-the-drawer).
 
