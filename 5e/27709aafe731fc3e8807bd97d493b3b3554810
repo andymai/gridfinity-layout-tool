@@ -1,0 +1,21 @@
+.claude/skills/state-and-cqrs/SKILL.md
+  s_1cc363bb3cc76d::t_aeace9880055ab 88
+scripts/doc-budget.json
+  s_1cc363bb3cc76d::t_66bc3aea5076ac 3-7,28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5e27709aafe731fc3e8807bd97d493b3b3554810",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
