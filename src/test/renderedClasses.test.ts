@@ -54,6 +54,63 @@ const DESTRUCTURING = [
   `};`,
 ].join('\n');
 
+const JSX_SPREAD = [
+  `const common = {`,
+  `  className: 'h-3.5 w-3.5 text-accentx',`,
+  `  viewBox: '0 0 14 14',`,
+  `  stroke: 'currentColor',`,
+  `} as const;`,
+  `export const Glyph = (props: Props) => {`,
+  `  const iconClass = 'text-content';`,
+  `  return (`,
+  `    <div {...props}>`,
+  `      <svg {...common} />`,
+  `      <Icon {...{ iconClass, label: 'Close the panel' }} />`,
+  `    </div>`,
+  `  );`,
+  `};`,
+].join('\n');
+
+const HELPER_RETURN = [
+  `function noticeCopy(reason: Reason): NoticeCopy {`,
+  `  switch (reason) {`,
+  `    case 'restricted':`,
+  `      return { tone: 'error', frameClass: 'border-error/30 bg-error/5' };`,
+  `    default:`,
+  `      return { tone: 'warning', frameClass: 'border-warning/30 bg-warning-mutedx' };`,
+  `  }`,
+  `}`,
+  `function loop(): Style {`,
+  `  return loop();`,
+  `}`,
+  `const rowProps = (id: string) => ({ id, className: 'flex items-center', role: 'row' });`,
+  `export const Notice = ({ reason }: Props) => {`,
+  `  const copy = noticeCopy(reason);`,
+  `  const { badgeClass } = badgeStyle();`,
+  `  return (`,
+  `    <div className={cn('rounded-lg border', copy.frameClass)} data-tone={copy.tone}>`,
+  `      <span className={badgeClass} />`,
+  `      <i className={loop().icon} {...rowProps('a')} />`,
+  `    </div>`,
+  `  );`,
+  `};`,
+].join('\n');
+
+const DOM_ASSIGNMENT = [
+  `const PULSE = 'animate-pulse';`,
+  `export function showError(root: HTMLElement, visible: boolean): void {`,
+  `  const wrap = document.createElement('div');`,
+  `  wrap.className =`,
+  `    'flex min-h-screen items-centerx';`,
+  `  wrap.title = 'Reload the page';`,
+  `  wrap.classList.add('gap-4', PULSE);`,
+  `  wrap.classList.toggle('hidden', !visible);`,
+  `  wrap.classList.replace('old-class', 'p-6');`,
+  `  wrap.classList.remove('not-rendered');`,
+  `  root.append(wrap);`,
+  `}`,
+].join('\n');
+
 describe('collectRenderedClasses', () => {
   it('reads className, *ClassName and *Class attributes, and no other text', () => {
     expect(
@@ -205,6 +262,65 @@ describe('collectRenderedClasses', () => {
   it('reports a misspelled class that destructuring takes where it is written', async () => {
     expect(await classesWithoutCss(collect({ 'Dot.tsx': DESTRUCTURING }))).toEqual([
       'src/Dot.tsx:3 bg-errorx',
+    ]);
+  });
+
+  it('reads the class props of an object that a JSX spread passes', () => {
+    expect(names({ 'Glyph.tsx': JSX_SPREAD })).toEqual([
+      'h-3.5',
+      'w-3.5',
+      'text-accentx',
+      'text-content',
+    ]);
+  });
+
+  it('reports a misspelled class behind a JSX spread where it is written', async () => {
+    expect(await classesWithoutCss(collect({ 'Glyph.tsx': JSX_SPREAD }))).toEqual([
+      'src/Glyph.tsx:2 text-accentx',
+    ]);
+  });
+
+  it('reads a property from every object that a helper returns', () => {
+    expect(
+      names({
+        'badgeStyle.ts': `export const badgeStyle = () => ({ badgeClass: 'px-2 py-0.5', label: 'New' });`,
+        'Notice.tsx': `import { badgeStyle } from './badgeStyle';\n${HELPER_RETURN}`,
+      })
+    ).toEqual([
+      'rounded-lg',
+      'border',
+      'border-error/30',
+      'bg-error/5',
+      'border-warning/30',
+      'bg-warning-mutedx',
+      'px-2',
+      'py-0.5',
+      'flex',
+      'items-center',
+    ]);
+  });
+
+  it('reports a misspelled class that a helper returns where it is written', async () => {
+    expect(await classesWithoutCss(collect({ 'Notice.tsx': HELPER_RETURN }))).toEqual([
+      'src/Notice.tsx:6 bg-warning-mutedx',
+    ]);
+  });
+
+  it('reads the classes that plain code puts on a DOM element', () => {
+    expect(names({ 'boot.ts': DOM_ASSIGNMENT })).toEqual([
+      'flex',
+      'min-h-screen',
+      'items-centerx',
+      'gap-4',
+      'animate-pulse',
+      'hidden',
+      'p-6',
+    ]);
+  });
+
+  it('reports a misspelled class on a DOM element where it is written', async () => {
+    expect(await classesWithoutCss(collect({ 'boot.ts': DOM_ASSIGNMENT }))).toEqual([
+      'src/boot.ts:5 items-centerx',
     ]);
   });
 

@@ -120,6 +120,48 @@ function bindingPath(pattern: ts.BindingName, name: string): BindingStep[] | und
   return undefined;
 }
 
+function returnedExpressions(fn: ts.FunctionLikeDeclaration): ts.Expression[] {
+  if (fn.body === undefined) return [];
+  if (!ts.isBlock(fn.body)) return [fn.body];
+  const returned: ts.Expression[] = [];
+  const visit = (node: ts.Node): void => {
+    if (ts.isFunctionLike(node)) return;
+    if (ts.isReturnStatement(node) && node.expression !== undefined) {
+      returned.push(node.expression);
+    }
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(fn.body, visit);
+  return returned;
+}
+
+function isClassNameAssignment(node: ts.Node): node is ts.BinaryExpression {
+  return (
+    ts.isBinaryExpression(node) &&
+    node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+    ts.isPropertyAccessExpression(node.left) &&
+    node.left.name.text === 'className'
+  );
+}
+
+/** The arguments of an `el.classList` call that put a class on the element. */
+function classListArguments(call: ts.CallExpression): readonly ts.Expression[] {
+  const method = call.expression;
+  if (!ts.isPropertyAccessExpression(method)) return [];
+  const owner = unwrap(method.expression);
+  if (!ts.isPropertyAccessExpression(owner) || owner.name.text !== 'classList') return [];
+  switch (method.name.text) {
+    case 'add':
+      return call.arguments;
+    case 'toggle':
+      return call.arguments.slice(0, 1);
+    case 'replace':
+      return call.arguments.slice(1, 2);
+    default:
+      return [];
+  }
+}
+
 function hasExportModifier(node: ts.Node): boolean {
   return (
     ts.canHaveModifiers(node) &&
@@ -129,11 +171,13 @@ function hasExportModifier(node: ts.Node): boolean {
 
 /**
  * Collects the class names that the given sources render: the values of
- * `className` (and `*ClassName`, `*Class`) JSX attributes, the arguments of
- * `cn`/`clsx`/`twMerge`, and the base and variant classes of `cva`. A constant,
- * object map or helper function that one of those positions names is followed,
- * in the same file or through `@/` and relative imports. Other strings are not
- * read, so prose and option values never count as classes.
+ * `className` (and `*ClassName`, `*Class`) JSX attributes and of those props in
+ * a JSX spread, the arguments of `cn`/`clsx`/`twMerge`, the base and variant
+ * classes of `cva`, and what plain code writes to `el.className` and
+ * `el.classList`. A constant, object map or helper function that one of those
+ * positions names is followed, in the same file or through `@/` and relative
+ * imports, and so is the object that a helper call returns. Other strings are
+ * not read, so prose and option values never count as classes.
  *
  * `@/` resolves against `srcDir`, and each location is relative to its parent.
  */
@@ -152,6 +196,9 @@ export function collectRenderedClasses(
 
   const found: RenderedClass[] = [];
   const seen = new Set<ts.Node>();
+  // The functions on the resolveObjects stack. A function that returns its
+  // own call stops here.
+  const calling = new Set<ts.Node>();
 
   const locate = (unit: SourceUnit, node: ts.Node): string => {
     const { line } = unit.source.getLineAndCharacterOfPosition(node.getStart(unit.source));
@@ -333,6 +380,16 @@ export function collectRenderedClasses(
     if (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression)) {
       return resolveMembers(unit, expression).flatMap((m) => resolveObjects(m.unit, m.node));
     }
+    if (ts.isCallExpression(expression) && ts.isIdentifier(expression.expression)) {
+      const declaration = resolveIdentifier(unit, expression.expression);
+      if (declaration?.kind !== 'function' || calling.has(declaration.node)) return [];
+      calling.add(declaration.node);
+      const objects = returnedExpressions(declaration.node).flatMap((node) =>
+        resolveObjects(declaration.unit, node)
+      );
+      calling.delete(declaration.node);
+      return objects;
+    }
     return [];
   };
 
@@ -367,26 +424,13 @@ export function collectRenderedClasses(
       ? readMember(unit, access.expression, access.name.text, false)
       : readMember(unit, access.expression, literalKey(access.argumentExpression), true);
 
-  const scanReturns = (unit: SourceUnit, fn: ts.FunctionLikeDeclaration): void => {
-    if (fn.body === undefined) return;
-    if (!ts.isBlock(fn.body)) {
-      scanClasses(unit, fn.body);
-      return;
-    }
-    const visit = (node: ts.Node): void => {
-      if (ts.isFunctionLike(node)) return;
-      if (ts.isReturnStatement(node) && node.expression !== undefined) {
-        scanClasses(unit, node.expression);
-      }
-      ts.forEachChild(node, visit);
-    };
-    ts.forEachChild(fn.body, visit);
-  };
-
   const scanDeclaration = (declaration: Declaration | undefined): void => {
     if (declaration === undefined) return;
-    if (declaration.kind === 'function') scanReturns(declaration.unit, declaration.node);
-    else for (const value of declaration.values) scanClasses(value.unit, value.node);
+    const values =
+      declaration.kind === 'function'
+        ? returnedExpressions(declaration.node).map((node) => ({ unit: declaration.unit, node }))
+        : declaration.values;
+    for (const value of values) scanClasses(value.unit, value.node);
   };
 
   const scanValues = (unit: SourceUnit, node: ts.Expression): void => {
@@ -397,6 +441,25 @@ export function collectRenderedClasses(
       }
       for (const property of container.node.properties) {
         if (ts.isPropertyAssignment(property)) scanClasses(container.unit, property.initializer);
+      }
+    }
+  };
+
+  const scanClassProperties = (unit: SourceUnit, node: ts.Expression): void => {
+    for (const container of resolveObjects(unit, node)) {
+      if (!ts.isObjectLiteralExpression(container.node)) continue;
+      for (const property of container.node.properties) {
+        if (ts.isPropertyAssignment(property)) {
+          const key = propertyName(property.name);
+          if (key !== undefined && CLASS_ATTRIBUTE.test(key)) {
+            scanClasses(container.unit, property.initializer);
+          }
+        } else if (
+          ts.isShorthandPropertyAssignment(property) &&
+          CLASS_ATTRIBUTE.test(property.name.text)
+        ) {
+          scanClasses(container.unit, property.name);
+        }
       }
     }
   };
@@ -563,10 +626,18 @@ export function collectRenderedClasses(
         ) {
           scanClasses(unit, node.initializer.expression);
         }
+      } else if (ts.isJsxSpreadAttribute(node)) {
+        scanClassProperties(unit, node.expression);
+      } else if (isClassNameAssignment(node)) {
+        scanClasses(unit, node.right);
       } else if (ts.isCallExpression(node)) {
         const name = callee(node);
         if (name !== undefined && (CLASS_FUNCTIONS.has(name) || name === 'cva')) {
           scanClasses(unit, node);
+        } else {
+          for (const argument of classListArguments(node)) {
+            scanClasses(unit, ts.isSpreadElement(argument) ? argument.expression : argument);
+          }
         }
       }
       ts.forEachChild(node, visit);
