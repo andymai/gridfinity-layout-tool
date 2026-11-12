@@ -76,7 +76,7 @@ export function SharedLayoutBanner() {
   const handleSave = async () => {
     const savedLayout = {
       ...layout, // Use current layout state (user may have made edits)
-      name: t('share.banner.importedName', { name: sharedLayoutOriginalName || layout.name }),
+      name: t('layouts.importedName', { name: sharedLayoutOriginalName || layout.name }),
     };
 
     // Use atomic createLayoutEntry API for storage + library entry in one operation

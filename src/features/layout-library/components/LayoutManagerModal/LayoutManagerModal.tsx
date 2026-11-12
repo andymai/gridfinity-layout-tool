@@ -226,7 +226,7 @@ function LayoutManagerModalContent({
     async (layout: Layout) => {
       const result = await importLayoutFromJSON({
         ...layout,
-        name: `${layout.name} (imported)`,
+        name: t('layouts.importedName', { name: layout.name }),
       });
 
       if (isOk(result)) {

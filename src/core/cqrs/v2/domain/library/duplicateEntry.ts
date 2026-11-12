@@ -1,14 +1,14 @@
 /**
  * Duplicate a library entry. Validates the source exists, generates a
- * new LayoutId, suffixes the name with " (copy)" (truncated to
- * NAME_MAX_LENGTH). The event carries the full new entry.
+ * new LayoutId, and names the copy with the translated "(copy)" suffix.
+ * The event carries the full new entry.
  */
 
 import { z } from 'zod';
 import type { Result, LayoutError } from '@/core/result';
 import { ok, err, layoutInvalidOperation } from '@/core/result';
-import { CONSTRAINTS } from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
+import { layoutCopyName } from '@/core/storage/layoutNames';
 import { layoutId as toLayoutId } from '@/core/types';
 import type { LayoutEntry, LayoutId } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
@@ -50,7 +50,7 @@ export const duplicateEntry = defineCommand({
     const now = Date.now();
     const entry: LayoutEntry = {
       id: newLayoutId,
-      name: `${source.name} (copy)`.slice(0, CONSTRAINTS.NAME_MAX_LENGTH),
+      name: layoutCopyName(source.name),
       createdAt: now,
       modifiedAt: now,
       author: ctx.aggregate.settings.authorName,

@@ -162,6 +162,26 @@ describe('ImportModal', () => {
       });
     });
 
+    it('counts one layer in the singular and two in the plural', async () => {
+      const { getByLabelText, findByText } = renderModal();
+      const textarea = getByLabelText(/paste a share link/i);
+      const layout = createDefaultLayout();
+
+      await act(async () => {
+        fireEvent.change(textarea, { target: { value: JSON.stringify(layout) } });
+      });
+      expect(await findByText('1 layer')).not.toBeNull();
+
+      layout.layers = [
+        ...layout.layers,
+        { id: layerId('layer-2'), name: 'Layer 2', height: heightUnits(3) },
+      ];
+      await act(async () => {
+        fireEvent.change(textarea, { target: { value: JSON.stringify(layout) } });
+      });
+      expect(await findByText('2 layers')).not.toBeNull();
+    });
+
     it('clears errors when textarea is cleared', async () => {
       const { getByLabelText, container } = renderModal();
 

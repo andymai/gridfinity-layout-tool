@@ -45,6 +45,10 @@ const fallback: Translations = {
   'toast.drawerLinkOpened': 'Layout sized to your drawer: a {width} × {depth} grid',
   'toast.drawerLinkInvalid': "That drawer link has a size the planner can't open",
   'toast.layoutCreateFailed': 'Failed to create layout',
+  // A duplicate or an import stores its name, so a failed locale load must not
+  // save the raw key in place of the layout name.
+  'layouts.copyName': '{name} (copy)',
+  'layouts.importedName': '{name} (imported)',
   'errorBoundary.heading': 'Something went wrong',
   'errorBoundary.description': 'The app encountered an unexpected error. Your layout data is safe.',
   'errorBoundary.hint':

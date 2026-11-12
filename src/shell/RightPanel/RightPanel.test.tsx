@@ -442,6 +442,23 @@ describe('RightPanel', () => {
       expect(screen.getByTitle('M3')).toBeInTheDocument();
     });
 
+    it('counts custom properties with the plural form that fits the count', () => {
+      mockPrintListReturn = createMockPrintList({
+        rows: [
+          { ...printRow, customProperties: { SKU: 'A1' } },
+          { ...printRow, size: '1×1', customProperties: { SKU: 'B2', Qty: '4' } },
+        ],
+        totalBins: 4,
+        totalPieces: 4,
+        totalFilament: 3,
+      });
+
+      render(<RightPanel />);
+
+      expect(screen.getByTitle('1 custom property')).toBeInTheDocument();
+      expect(screen.getByTitle('2 custom properties')).toBeInTheDocument();
+    });
+
     it('shows PrintListSummary', () => {
       render(<RightPanel />);
 
