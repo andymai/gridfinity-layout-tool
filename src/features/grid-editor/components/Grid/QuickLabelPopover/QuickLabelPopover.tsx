@@ -7,7 +7,11 @@ import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import { batch } from '@/core/cqrs';
 import { trackEvent } from '@/shared/analytics/posthog';
-import { cn, IconButton, Input, Kbd, XIcon } from '@/design-system';
+import { IconButton, Input, Kbd, XIcon } from '@/design-system';
+import { clamp } from '@/shared/utils/math';
+
+const GAP = 8;
+const VIEWPORT_MARGIN = 16;
 
 /**
  * Small popover that appears near a bin for quick label editing.
@@ -34,12 +38,11 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
 
   // Initialize value from bin label (fresh on each mount due to key)
   const [value, setValue] = useState(bin?.label || '');
-  const [popoverHeight, setPopoverHeight] = useState(0);
+  const [popoverSize, setPopoverSize] = useState({ width: 0, height: 0 });
 
-  // Measured before paint, so the first visible frame already sits on the side with room.
   useLayoutEffect(() => {
-    const height = popoverRef.current?.offsetHeight;
-    if (height !== undefined) setPopoverHeight(height);
+    const popover = popoverRef.current;
+    if (popover) setPopoverSize({ width: popover.offsetWidth, height: popover.offsetHeight });
   }, []);
 
   const handleSave = useCallback(() => {
@@ -107,13 +110,23 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
 
   const binRect = binElement.getBoundingClientRect();
 
-  const gap = 8;
-  const positionBelow = binRect.top - gap - popoverHeight < gap;
+  const { width, height } = popoverSize;
+  const roomAbove = binRect.top - GAP - VIEWPORT_MARGIN;
+  const roomBelow = window.innerHeight - binRect.bottom - GAP - VIEWPORT_MARGIN;
+  const below = height > roomAbove && (height <= roomBelow || roomBelow > roomAbove);
 
   const popoverStyle: React.CSSProperties = {
     position: 'fixed',
-    left: Math.max(16, Math.min(binRect.left + binRect.width / 2, window.innerWidth - 16)),
-    top: positionBelow ? binRect.bottom + gap : binRect.top - gap,
+    left: clamp(
+      binRect.left + binRect.width / 2,
+      VIEWPORT_MARGIN + width / 2,
+      window.innerWidth - VIEWPORT_MARGIN - width / 2
+    ),
+    top: clamp(
+      below ? binRect.bottom + GAP : binRect.top - GAP - height,
+      VIEWPORT_MARGIN,
+      window.innerHeight - VIEWPORT_MARGIN - height
+    ),
     zIndex: 100,
   };
 
@@ -127,14 +140,13 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
         onClick={handleSave}
       />
 
-      {/* Placed with `translate`, not `transform`: animate-scale-in holds transform: scale(1). */}
+      {/* Placed with `translate`, not `transform`: animate-scale-in holds transform: scale(1).
+          w-max: an auto width shrinks near the right edge, so the measured width
+          would depend on where the popover first rendered. */}
       <div
         ref={popoverRef}
         style={popoverStyle}
-        className={cn(
-          'z-50 -translate-x-1/2 bg-surface-elevated border border-stroke-subtle rounded-xl shadow-xl animate-scale-in overflow-hidden',
-          !positionBelow && '-translate-y-full'
-        )}
+        className="z-50 w-max -translate-x-1/2 bg-surface-elevated border border-stroke-subtle rounded-xl shadow-xl animate-scale-in overflow-hidden"
       >
         {/* Header */}
         <div className="px-3 py-2 border-b border-stroke-subtle bg-surface-secondary">

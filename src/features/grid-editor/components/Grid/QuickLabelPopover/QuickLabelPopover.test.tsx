@@ -189,28 +189,30 @@ describe('QuickLabelPopover', () => {
   });
 
   describe('placement', () => {
+    // jsdom's viewport is 1024 x 768.
+    const POPOVER_WIDTH = 226;
+    const POPOVER_HEIGHT = 120;
+
     beforeEach(() => {
-      vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(120);
+      vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(POPOVER_WIDTH);
+      vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(POPOVER_HEIGHT);
     });
 
     afterEach(() => {
       vi.restoreAllMocks();
     });
 
-    function renderOverBinAt(top: number) {
+    function renderOverBin(rect: { left: number; top: number; width: number; height: number }) {
       const defaultLayout = createDefaultLayout();
       const testBinId = binId('test-bin-1');
       const binElement = document.createElement('div');
       binElement.setAttribute('data-bin-id', testBinId);
       binElement.getBoundingClientRect = vi.fn(() => ({
-        top,
-        left: 100,
-        bottom: top + 100,
-        right: 200,
-        width: 100,
-        height: 100,
-        x: 100,
-        y: top,
+        ...rect,
+        right: rect.left + rect.width,
+        bottom: rect.top + rect.height,
+        x: rect.left,
+        y: rect.top,
         toJSON: () => ({}),
       }));
       document.body.appendChild(binElement);
@@ -238,22 +240,50 @@ describe('QuickLabelPopover', () => {
       const popover = getByRole('textbox').closest('.animate-scale-in');
       document.body.removeChild(binElement);
       if (!(popover instanceof HTMLElement)) throw new Error('popover not found');
-      return popover;
+      return {
+        centre: parseFloat(popover.style.left),
+        top: parseFloat(popover.style.top),
+        popover,
+      };
     }
 
-    it('sits above the bin without a transform that scale-in overrides', () => {
-      const popover = renderOverBinAt(300);
-      expect(popover).toHaveClass('-translate-x-1/2', '-translate-y-full');
+    it('centres above the bin without a transform that scale-in overrides', () => {
+      const { popover, centre, top } = renderOverBin({
+        left: 400,
+        top: 300,
+        width: 100,
+        height: 100,
+      });
+      expect(popover).toHaveClass('-translate-x-1/2', 'w-max');
       expect(popover.style.transform).toBe('');
-      expect(popover.style.top).toBe('292px');
+      expect(centre).toBe(450);
+      expect(top).toBe(300 - 8 - POPOVER_HEIGHT);
     });
 
     it('drops below a bin with less room above than the popover needs', () => {
-      const popover = renderOverBinAt(120);
-      expect(popover).toHaveClass('-translate-x-1/2');
-      expect(popover).not.toHaveClass('-translate-y-full');
-      expect(popover.style.transform).toBe('');
-      expect(popover.style.top).toBe('228px');
+      const { top } = renderOverBin({ left: 400, top: 120, width: 100, height: 100 });
+      expect(top).toBe(228);
+    });
+
+    it('keeps the popover inside the viewport bottom for a tall bin', () => {
+      const { top } = renderOverBin({ left: 400, top: 60, width: 100, height: 620 });
+      expect(top).toBe(768 - 16 - POPOVER_HEIGHT);
+    });
+
+    it('stays on screen when a tall bin leaves room on neither side', () => {
+      const { top } = renderOverBin({ left: 400, top: 120, width: 100, height: 580 });
+      expect(top).toBeGreaterThanOrEqual(16);
+      expect(top + POPOVER_HEIGHT).toBeLessThanOrEqual(768 - 16);
+    });
+
+    it('keeps the left edge on screen for a bin at the left edge', () => {
+      const { centre } = renderOverBin({ left: 30, top: 300, width: 100, height: 100 });
+      expect(centre - POPOVER_WIDTH / 2).toBe(16);
+    });
+
+    it('keeps the right edge on screen for a bin at the right edge', () => {
+      const { centre } = renderOverBin({ left: 960, top: 300, width: 60, height: 100 });
+      expect(centre + POPOVER_WIDTH / 2).toBe(1024 - 16);
     });
   });
 
