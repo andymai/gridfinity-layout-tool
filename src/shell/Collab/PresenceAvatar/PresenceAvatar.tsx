@@ -23,6 +23,8 @@ interface PresenceAvatarProps {
   showName?: boolean;
   /** Additional CSS classes for the container */
   className?: string;
+  /** Hides the avatar from assistive technology where visible text beside it names the participant and the owner. */
+  decorative?: boolean;
 }
 
 /** Size-specific dimensions */
@@ -69,13 +71,14 @@ export const PresenceAvatar = memo(function PresenceAvatar({
   size = 'md',
   showName = false,
   className = '',
+  decorative = false,
 }: PresenceAvatarProps) {
   const t = useTranslation();
   const { name, color, isOwner, isSelf } = participant;
   const config = SIZE_CONFIG[size];
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`flex items-center gap-2 ${className}`} aria-hidden={decorative || undefined}>
       {/* Avatar identicon */}
       <div className="relative inline-block">
         <div
