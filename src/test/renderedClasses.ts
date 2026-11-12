@@ -196,9 +196,7 @@ export function collectRenderedClasses(
 
   const found: RenderedClass[] = [];
   const seen = new Set<ts.Node>();
-  // The functions on the resolveObjects stack. A function that returns its
-  // own call stops here.
-  const calling = new Set<ts.Node>();
+  const resolving = new Set<ts.Node>();
 
   const locate = (unit: SourceUnit, node: ts.Node): string => {
     const { line } = unit.source.getLineAndCharacterOfPosition(node.getStart(unit.source));
@@ -366,8 +364,7 @@ export function collectRenderedClasses(
     return undefined;
   };
 
-  const resolveObjects = (unit: SourceUnit, node: ts.Expression): Located<ObjectOrArray>[] => {
-    const expression = unwrap(node);
+  const findObjects = (unit: SourceUnit, expression: ts.Expression): Located<ObjectOrArray>[] => {
     if (ts.isObjectLiteralExpression(expression) || ts.isArrayLiteralExpression(expression)) {
       return [{ unit, node: expression }];
     }
@@ -382,15 +379,25 @@ export function collectRenderedClasses(
     }
     if (ts.isCallExpression(expression) && ts.isIdentifier(expression.expression)) {
       const declaration = resolveIdentifier(unit, expression.expression);
-      if (declaration?.kind !== 'function' || calling.has(declaration.node)) return [];
-      calling.add(declaration.node);
-      const objects = returnedExpressions(declaration.node).flatMap((node) =>
+      if (declaration?.kind !== 'function') return [];
+      return returnedExpressions(declaration.node).flatMap((node) =>
         resolveObjects(declaration.unit, node)
       );
-      calling.delete(declaration.node);
-      return objects;
     }
     return [];
+  };
+
+  // A value can read itself: a helper that returns a member of its own call
+  // (`return { inner: props(n - 1).inner }`), or two maps that name each
+  // other. A node on the stack resolves to nothing, so the other branches
+  // (the base case) give the result.
+  const resolveObjects = (unit: SourceUnit, node: ts.Expression): Located<ObjectOrArray>[] => {
+    const expression = unwrap(node);
+    if (resolving.has(expression)) return [];
+    resolving.add(expression);
+    const objects = findObjects(unit, expression);
+    resolving.delete(expression);
+    return objects;
   };
 
   // A key known only at runtime (`SIZES[size]`) can select any entry, so the

@@ -96,6 +96,18 @@ const HELPER_RETURN = [
   `};`,
 ].join('\n');
 
+const RECURSIVE_RETURN = [
+  `function props(n: number): Props {`,
+  `  if (n === 0) return { inner: { className: 'gap-2 p-2x', cell: 'rounded-sm' } };`,
+  `  return { inner: props(n - 1).inner };`,
+  `}`,
+  `export const Grid = () => (`,
+  `  <div className={props(3).inner.cell}>`,
+  `    <i {...props(2).inner} />`,
+  `  </div>`,
+  `);`,
+].join('\n');
+
 const DOM_ASSIGNMENT = [
   `const PULSE = 'animate-pulse';`,
   `export function showError(root: HTMLElement, visible: boolean): void {`,
@@ -303,6 +315,16 @@ describe('collectRenderedClasses', () => {
   it('reports a misspelled class that a helper returns where it is written', async () => {
     expect(await classesWithoutCss(collect({ 'Notice.tsx': HELPER_RETURN }))).toEqual([
       'src/Notice.tsx:6 bg-warning-mutedx',
+    ]);
+  });
+
+  it('stops at a helper that returns a member of its own call, and keeps its base case', () => {
+    expect(names({ 'Grid.tsx': RECURSIVE_RETURN })).toEqual(['rounded-sm', 'gap-2', 'p-2x']);
+  });
+
+  it('reports a misspelled class in the base case of a recursive helper where it is written', async () => {
+    expect(await classesWithoutCss(collect({ 'Grid.tsx': RECURSIVE_RETURN }))).toEqual([
+      'src/Grid.tsx:2 p-2x',
     ]);
   });
 
