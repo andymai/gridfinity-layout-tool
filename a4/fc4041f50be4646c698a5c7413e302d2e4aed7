@@ -1,0 +1,26 @@
+src/shared/generation/meshPersistence.ts
+  s_1cc363bb3cc76d::t_93f9c777f1fad2 96-97
+src/features/generation/worker/generators/boxTopShape.ts
+  s_1cc363bb3cc76d::t_93f9c777f1fad2 385-389,391-395
+src/features/generation/worker/generators/scenarios/lipNotches.ts
+  s_1cc363bb3cc76d::t_93f9c777f1fad2 3,42-44,49,53-54,57-59,62-72,186-198,200
+  s_1cc363bb3cc76d::t_7a17f96aa51b7f 199
+src/features/generation/worker/generators/boxBuilder.test.ts
+  s_1cc363bb3cc76d::t_93f9c777f1fad2 4,7,17,23-24,35-45,54-68,192-217
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a4fc4041f50be4646c698a5c7413e302d2e4aed7",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
