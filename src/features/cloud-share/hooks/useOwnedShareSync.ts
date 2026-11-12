@@ -19,7 +19,6 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { updateShare } from '@/core/api/share';
-import { isOk } from '@/core/result';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
 import {
   dropWaitingUpload,
@@ -85,11 +84,7 @@ export function useOwnedShareSync(): void {
     const claimCount = roomClaimCount(shareId);
     const upload: ShareUpload = {
       key: `local:${layoutFingerprint}`,
-      // Silently ignore failures - this is background sync
-      send: () =>
-        updateShare(shareId, deleteToken, layout).then((result) =>
-          isOk(result) ? result.value : null
-        ),
+      send: () => updateShare(shareId, deleteToken, layout),
       record: ({ lastUpdatedAt }) => {
         lastSyncedRef.current = { shareId, fingerprint: layoutFingerprint, claimCount };
         if (lastUpdatedAt) recordOwnCopyRevision(shareId, lastUpdatedAt, layout);

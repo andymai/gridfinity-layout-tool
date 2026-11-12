@@ -12,6 +12,7 @@ import {
   type SharedDesignShape,
 } from './lib/validation.js';
 import { holdShareMeshes } from './lib/meshIndex.js';
+import { reserveShareRevision } from './lib/shareRevision.js';
 import { resolveShareMeshFiles } from './lib/shareMeshes.js';
 import { validateDesignerShare } from './lib/designerValidation.js';
 import {
@@ -183,7 +184,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const deleteToken = generateDeleteToken();
     const deleteTokenHash = await hashToken(deleteToken);
 
-    const nowIso = new Date().toISOString();
+    // A deleted share with this id can still be on the CDN, so the first
+    // update can read that share's older stamp instead of this one.
+    const nowIso = new Date(await reserveShareRevision(redis, shareId, Date.now())).toISOString();
 
     // deleteTokenHash and reportCount are in Redis, not in the public blob,
     // to prevent exposure via the CDN URL. lastAccessedAt is also in Redis

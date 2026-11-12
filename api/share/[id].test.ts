@@ -8,7 +8,8 @@
  *  - rewrites drop the legacy lastAccessedAt field and preserve createdAt
  *  - DELETE accepts the token from header or body and cleans up all three
  *    Redis keys alongside the blob
- *  - PUT writes only over the blob it read, so the write that lands last
+ *  - PUT writes only over the blob it read, and takes its stamp from the
+ *    shared reservation after that read, so the write that lands last
  *    carries the latest lastUpdatedAt
  */
 
@@ -29,6 +30,7 @@ const mocks = vi.hoisted(() => ({
   redisGet: vi.fn(),
   redisSet: vi.fn(),
   redisDel: vi.fn(),
+  reserveShareRevision: vi.fn(),
   validateShareLayout: vi.fn(),
   isValidationError: vi.fn(),
   filterLayoutContent: vi.fn(),
@@ -105,6 +107,14 @@ function shareBlob(metadata: Record<string, unknown> = {}) {
 const BLOB_URL = 'https://blob.example/shares/x.json';
 const UPLOADED_AT = new Date('2026-01-02T00:00:00.000Z');
 
+/** The reservation script's semantics, as `shareRevision.integration.test.ts` runs them. */
+const revisions = new Map<string, number>();
+function reserve(key: string, floorMs: number): Promise<number> {
+  const stamp = Math.max(floorMs, (revisions.get(key) ?? 0) + 1);
+  revisions.set(key, stamp);
+  return Promise.resolve(stamp);
+}
+
 function blobResponse(data: unknown, etag?: string) {
   return {
     ok: true,
@@ -165,7 +175,10 @@ describe('share/[id]', () => {
       get: mocks.redisGet,
       set: mocks.redisSet,
       del: mocks.redisDel,
+      reserveShareRevision: mocks.reserveShareRevision,
     });
+    revisions.clear();
+    mocks.reserveShareRevision.mockImplementation(reserve);
     mocks.redisGet.mockResolvedValue(null);
     mocks.redisSet.mockResolvedValue('OK');
     mocks.redisDel.mockResolvedValue(1);
@@ -395,6 +408,75 @@ describe('share/[id]', () => {
         } finally {
           vi.useRealTimers();
         }
+      });
+
+      it('stamps a write later than one a server with a fast clock stamped, while the CDN serves an older body', async () => {
+        vi.useFakeTimers({ toFake: ['Date'] });
+        try {
+          vi.setSystemTime(new Date('2026-03-01T10:00:06.000Z'));
+          revisions.set(`share:revision:${VALID_ID}`, Date.parse('2026-03-01T10:00:10.000Z'));
+          primeBlobFetch(shareBlob({ lastUpdatedAt: '2026-03-01T10:00:00.000Z' }), '"etag-old"');
+          mocks.head.mockResolvedValue({
+            url: BLOB_URL,
+            etag: '"etag-new"',
+            uploadedAt: new Date('2026-03-01T10:00:05.000Z'),
+          });
+          mocks.redisGet.mockResolvedValue(correctHash);
+          const res = await handle('PUT', {
+            body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+          });
+
+          expect(mocks.put.mock.calls[0][2]).toMatchObject({ ifMatch: '"etag-new"' });
+          expect(writtenAt(0).metadata.lastUpdatedAt).toBe('2026-03-01T10:00:10.001Z');
+          expect((res._body as { lastUpdatedAt: string }).lastUpdatedAt).toBe(
+            '2026-03-01T10:00:10.001Z'
+          );
+        } finally {
+          vi.useRealTimers();
+        }
+      });
+
+      it('reserves a new stamp after each read', async () => {
+        primeBlobChange(shareBlob(), shareBlob());
+        mocks.redisGet.mockResolvedValue(correctHash);
+        mocks.put.mockRejectedValueOnce(new BlobPreconditionFailedError());
+        await handle('PUT', { body: { deleteToken: TOKEN, layout: { name: 'Updated' } } });
+
+        const reads = mocks.head.mock.invocationCallOrder;
+        const reservations = mocks.reserveShareRevision.mock.invocationCallOrder;
+        expect(reservations).toHaveLength(2);
+        expect(reservations[0]).toBeGreaterThan(reads[0]);
+        expect(reservations[1]).toBeGreaterThan(reads[1]);
+        expect(Date.parse(writtenAt(1).metadata.lastUpdatedAt)).toBeGreaterThan(
+          Date.parse(writtenAt(0).metadata.lastUpdatedAt)
+        );
+      });
+
+      it('falls back to its own floor when the reservation fails', async () => {
+        vi.useFakeTimers({ toFake: ['Date'] });
+        try {
+          vi.setSystemTime(new Date('2026-03-01T00:00:05.000Z'));
+          primeBlobFetch(shareBlob({ lastUpdatedAt: '2026-03-01T00:00:00.000Z' }));
+          mocks.redisGet.mockResolvedValue(correctHash);
+          mocks.reserveShareRevision.mockRejectedValue(new Error('redis down'));
+          const res = await handle('PUT', {
+            body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+          });
+
+          expect(res._status).toBe(200);
+          expect(writtenAt(0).metadata.lastUpdatedAt).toBe('2026-03-01T00:00:05.000Z');
+        } finally {
+          vi.useRealTimers();
+        }
+      });
+
+      it('never writes a permission-only update over a body that has no ETag', async () => {
+        mocks.head.mockResolvedValue({ url: BLOB_URL, etag: '"etag-1"', uploadedAt: UPLOADED_AT });
+        mocks.fetch.mockResolvedValue(blobResponse(shareBlob({ deleteTokenHash: correctHash })));
+        const res = await handle('PUT', { body: { deleteToken: TOKEN, permission: 'edit' } });
+
+        expect(mocks.put).not.toHaveBeenCalled();
+        expect(res._status).toBe(503);
       });
 
       it('writes only over the blob it read', async () => {

@@ -207,6 +207,7 @@ against the same person signing in again.
 | `share:reports:{id}`      | Abuse-report counter (1-year TTL)                               |
 | `share:lastAccessed:{id}` | ISO timestamp of last GET (1-year TTL)                          |
 | `share:permission:{id}`   | Permission from the last update (120s TTL, covers blob CDN lag) |
+| `share:revision:{id}`     | Last `lastUpdatedAt` handed to a write, so stamps follow writes |
 | `ratelimit:{action}:{ip}` | Sliding-window rate-limit counter                               |
 
 Share creation uses `put({ allowOverwrite: false })` as an atomic CAS lock — concurrent POSTs racing on the same shareId produce exactly one winner.

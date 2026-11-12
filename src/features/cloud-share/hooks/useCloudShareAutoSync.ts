@@ -13,7 +13,6 @@
 import { useEffect, useRef } from 'react';
 import { useMutation, useStorage, type LiveblocksStorage } from '@/liveblocks.config';
 import { updateShare } from '@/core/api/share';
-import { isOk } from '@/core/result';
 import {
   claimRoomSaves,
   dropWaitingUpload,
@@ -82,11 +81,7 @@ export function useCloudShareAutoSync(
     const fingerprint = roomLayoutFingerprint(roomLayout);
     const upload: ShareUpload = {
       key: `room:${fingerprint}`,
-      // Silently ignore failures - this is background sync, user isn't waiting
-      send: () =>
-        updateShare(shareId, deleteToken, roomLayout).then((result) =>
-          isOk(result) ? result.value : null
-        ),
+      send: () => updateShare(shareId, deleteToken, roomLayout),
       record: ({ lastUpdatedAt }) => {
         // A save that lands after the owner left the room must not stamp another room.
         if (mountedShareIdRef.current !== shareId) return;

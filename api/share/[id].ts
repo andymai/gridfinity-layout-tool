@@ -10,6 +10,7 @@ import {
   sharedDesignMeshHashes,
 } from '../lib/validation.js';
 import { holdShareMeshes } from '../lib/meshIndex.js';
+import { reserveShareRevision } from '../lib/shareRevision.js';
 import { resolveShareMeshFiles } from '../lib/shareMeshes.js';
 import { filterLayoutContent, filterSharedDesignsContent } from '../lib/contentFilter.js';
 import { logger } from '../lib/logger.js';
@@ -127,18 +128,16 @@ const MAX_PUT_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 250;
 
 /**
- * The stamp for a write over the stored blob: now, or 1 ms after the blob's own
- * stamp or its upload time, whichever is later. A retry can run on a server
- * whose clock is behind the one that wrote the blob. The CDN can serve the
- * body, and so its stamp, from an older blob, but `head`'s upload time is
- * current.
+ * The lowest stamp for a write over the stored blob: now, or 1 ms after the
+ * blob's own stamp or its upload time. Alone, this is not enough: the CDN can
+ * serve an older body, and a server clock can run ahead of Blob's, so the
+ * stored stamp can be later than both. `reserveShareRevision` closes that gap.
  */
-function laterRevision(previous: string | undefined, uploadedAt: Date): string {
-  const floor = Math.max(
-    ...[Date.parse(previous ?? ''), uploadedAt.getTime()].filter(Number.isFinite)
-  );
-  const now = Date.now();
-  return new Date(floor >= now ? floor + 1 : now).toISOString();
+function revisionFloor(previous: string | undefined, uploadedAt: Date): number {
+  const after = [Date.parse(previous ?? ''), uploadedAt.getTime()]
+    .filter(Number.isFinite)
+    .map((stamp) => stamp + 1);
+  return Math.max(Date.now(), ...after);
 }
 
 /**
@@ -243,40 +242,46 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
     }
 
     for (let attempt = 1; ; attempt++) {
-      const now = laterRevision(loaded.data.metadata.lastUpdatedAt, loaded.uploadedAt);
+      // A permission-only update writes the body's layout back, so it must
+      // match that body, and a body with no ETag matches no version. A full
+      // update keeps only metadata from the body, and matching the current
+      // blob spares it the CDN's stale window.
+      const ifMatch = content ? loaded.etag : loaded.bodyEtag;
+      if (ifMatch !== null) {
+        const now = new Date(
+          await reserveShareRevision(
+            getRedis(),
+            id,
+            revisionFloor(loaded.data.metadata.lastUpdatedAt, loaded.uploadedAt)
+          )
+        ).toISOString();
 
-      // Strip the legacy lastAccessedAt field on any rewrite — its source of
-      // truth is now Redis (share:lastAccessed:{id}). Preserving the spread
-      // would carry forward the stale creation-time value indefinitely.
-      const { lastAccessedAt: _drop, ...metadataWithoutAccess } = loaded.data.metadata;
-      void _drop;
+        // Strip the legacy lastAccessedAt field on any rewrite — its source of
+        // truth is now Redis (share:lastAccessed:{id}). Preserving the spread
+        // would carry forward the stale creation-time value indefinitely.
+        const { lastAccessedAt: _drop, ...metadataWithoutAccess } = loaded.data.metadata;
+        void _drop;
 
-      const updatedData: ShareData = {
-        ...(content ?? loaded.data),
-        metadata: {
-          ...metadataWithoutAccess,
-          permission: newPermission,
-          lastUpdatedAt: now,
-        },
-      };
+        const updatedData: ShareData = {
+          ...(content ?? loaded.data),
+          metadata: {
+            ...metadataWithoutAccess,
+            permission: newPermission,
+            lastUpdatedAt: now,
+          },
+        };
 
-      try {
-        // A permission-only update writes the body's layout back, so it must
-        // match that body. A full update keeps only metadata from the body,
-        // and matching the current blob spares it the CDN's stale window.
-        const ifMatch = content ? loaded.etag : (loaded.bodyEtag ?? loaded.etag);
-        await writeShare(id, blobPath, updatedData, newPermission, ifMatch);
-        return respondShare(res, id, newPermission, now);
-      } catch (error) {
-        if (!(error instanceof BlobPreconditionFailedError)) throw error;
-        if (attempt === MAX_PUT_ATTEMPTS) {
-          return sendError(
-            res,
-            503,
-            ErrorCode.SERVICE_UNAVAILABLE,
-            'The share changed during the update. Try again.'
-          );
+        if (await writeShare(id, blobPath, updatedData, newPermission, ifMatch)) {
+          return respondShare(res, id, newPermission, now);
         }
+      }
+      if (attempt === MAX_PUT_ATTEMPTS) {
+        return sendError(
+          res,
+          503,
+          ErrorCode.SERVICE_UNAVAILABLE,
+          'The share changed during the update. Try again.'
+        );
       }
 
       // A stale CDN body needs time to clear; an ETag race does not mind.
@@ -383,21 +388,28 @@ async function verifyDeleteToken(
   return timingSafeCompare(await hashToken(deleteToken), storedHash) ? 'ok' : 'mismatch';
 }
 
+/** False when another write replaced the blob that `ifMatch` names. */
 async function writeShare(
   id: string,
   blobPath: string,
   data: ShareData,
   permission: ShareData['metadata']['permission'],
   ifMatch: string
-): Promise<void> {
-  await put(blobPath, JSON.stringify(data), {
-    access: 'public',
-    contentType: 'application/json',
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    ifMatch,
-  });
+): Promise<boolean> {
+  try {
+    await put(blobPath, JSON.stringify(data), {
+      access: 'public',
+      contentType: 'application/json',
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      ifMatch,
+    });
+  } catch (error) {
+    if (error instanceof BlobPreconditionFailedError) return false;
+    throw error;
+  }
   await recordSharePermission(getRedis(), id, permission);
+  return true;
 }
 
 function respondShare(

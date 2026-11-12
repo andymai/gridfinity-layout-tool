@@ -10,6 +10,7 @@
  *   share:reports:{id}              → abuse-report counter for a share
  *   share:lastAccessed:{id}         → ISO timestamp of last GET for a share
  *   share:permission:{id}           → permission set by the last update, short TTL (outlives blob CDN propagation)
+ *   share:revision:{id}             → last lastUpdatedAt stamp handed to a write, epoch ms, 1-day TTL
  *   ratelimit:{action}:{scope}      → sliding-window rate-limit counter
  *   session:{token}                 → user session record (sync feature)
  *   scan:session:{token}            → ephemeral phone-scan handoff (traced SVG)
@@ -84,6 +85,11 @@ export function shareMeshesKey(shareId: string): string {
 /** Permission written by the last share update, read ahead of the CDN-cached blob. */
 export function sharePermissionKey(shareId: string): string {
   return `share:permission:${shareId}`;
+}
+
+/** The last `lastUpdatedAt` handed to a share write, in epoch ms. */
+export function shareRevisionKey(shareId: string): string {
+  return `share:revision:${shareId}`;
 }
 
 /** Sliding-window rate-limit counter. `scope` is hashedIP for anonymous, userId for authed. */

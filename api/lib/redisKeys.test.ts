@@ -4,6 +4,7 @@ import {
   shareReportKey,
   shareLastAccessedKey,
   sharePermissionKey,
+  shareRevisionKey,
   rateLimitKey,
   sessionKey,
   userSessionsKey,
@@ -44,6 +45,10 @@ describe('redisKeys', () => {
 
     it('sharePermissionKey produces share:permission:{id}', () => {
       expect(sharePermissionKey('abc123')).toBe('share:permission:abc123');
+    });
+
+    it('shareRevisionKey produces share:revision:{id}', () => {
+      expect(shareRevisionKey('abc123')).toBe('share:revision:abc123');
     });
   });
 
