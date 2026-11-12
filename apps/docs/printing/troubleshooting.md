@@ -76,6 +76,8 @@ The same steps help when the plate pieces are too tight. See [Fit and tolerances
 
 **Why:** the bin list shows <Ui k="print.row.blankLabelTabs" /> on a row whose tabs will print with no text.
 
+<Screenshot id="printing-troubleshooting-blank-labels" alt="The bin list with a row of three 1 by 1 bins that have no label. Below the size, the row shows Label tabs are blank." spec="Layout editor with three unlabeled 1 by 1 bins, linked to a saved design that has label tabs and no label text, and three labeled bins. Crop to the bin list." />
+
 ### The label plates are not in the bin file
 
 **Fix:** in the export dialog of the bin designer, use the second download button to get the plates. The layout ZIP puts them in the `labels/` folder.

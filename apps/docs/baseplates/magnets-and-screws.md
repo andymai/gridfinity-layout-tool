@@ -36,6 +36,8 @@ All three are off by default. <Ui k="baseplate.stackPrint.enable" /> removes all
 
 Not sure? Keep the defaults. Gridfinity magnets are 6 by 2 mm discs.
 
+<Screenshot id="baseplates-magnets-magnet-settings" alt="Magnet holes is on and Customize is open. It shows Magnet diameter at 6.5 mm, Magnet depth at 2 mm, Crush ribs, and Chamfered mouth. Chamfered mouth is off, with a note that a lightweight plate leaves too little wall around each hole." spec="Baseplate generator, 4 by 3 plate with the default lightweight floor, Magnet holes on. Click Customize under Magnet holes. Crop to the panel from Magnet holes down to the note under Chamfered mouth." />
+
 Your bins need magnets in the same places. In the bin designer, open <Ui k="binDesigner.group.base" /> and turn on magnet holes. See [The base](../designer/base#add-magnet-holes). For a big bin, turn on <Ui k="binDesigner.base.cornerHolesOnly" /> under <Ui k="binDesigner.base.section.mounting" />. The bin then gets holes only at its outer corners, so it needs fewer magnets and lifts off the plate more easily.
 
 Magnet holes make the plate taller by the magnet depth plus 0.5 mm. That extra 0.5 mm is the floor under each hole.
@@ -73,6 +75,8 @@ Got a steel drawer or tool chest? <Ui k="baseplate.mountMagnets.label" /> cuts m
 Set the diameter to the magnet diameter plus the clearance for your printer, usually 0.2 to 0.5 mm. The depth starts at the underside, so a magnet of that height sits flush with the bottom. The Layout Tool spreads the magnets evenly over each printed piece, and a high count fills every place that it can.
 
 It skips a crossing on a split seam, on the plate edge, or where a screw goes. If a hole is too deep or too wide for the plate, a warning appears below the depth.
+
+<Screenshot id="baseplates-magnets-underside" alt="The preview looks at the plate from below. Underside magnets is turned on in the Base section, and the underside then gets four magnet holes, each where four pockets meet." spec="Baseplate generator, 4 by 3 plate. Orbit the preview to look up at the underside. The plate, then a close-up of the Base section where Underside magnets is turned on, then the plate again with its holes." />
 
 ## Screw the plate down
 
