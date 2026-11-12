@@ -1,0 +1,111 @@
+src/shared/contexts/MutationsContext.tsx
+  s_1cc363bb3cc76d::t_f8c6993d44603c 53-57
+src/core/cqrs/v2/domain/bin/restoreBinsFromStaging.ts
+  s_1cc363bb3cc76d::t_eeaa83a6b1ba30 1-33,36-45,50-51,53,69-71,87-146,150-170
+  s_1cc363bb3cc76d::t_82d281f59dc425 34-35,46-49,52,54-68,72-86,147-149
+src/core/cqrs/projection/replay.ts
+  s_1cc363bb3cc76d::t_87c25f2bad09bf 59-61,63-65
+  s_1cc363bb3cc76d::t_2c1cb445e7739f 62
+  s_1cc363bb3cc76d::t_1608453f8f20d3 66-67
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.test.ts
+  s_1cc363bb3cc76d::t_c86e6d46ac731e 7
+  s_1cc363bb3cc76d::t_66bcb5f6dab51b 114-122,124-308,311-313,318
+  s_1cc363bb3cc76d::t_79eb36c56ed893 123,309-310,314-317,319-322
+src/core/cqrs/v2/domain/bin/restoreBinsFromStaging.test.ts
+  s_1cc363bb3cc76d::t_85c74218e044cc 135-155
+  s_1cc363bb3cc76d::t_0c30b29443f7ef 1-134,170-203,205,207-208,212-219,221-232
+  s_1cc363bb3cc76d::t_993c4675307929 156-169
+  s_1cc363bb3cc76d::t_d869b54e8f926b 204
+  s_1cc363bb3cc76d::t_26a1f90fb8fcdd 206
+  s_1cc363bb3cc76d::t_397b8a543f91ff 209-211
+  s_1cc363bb3cc76d::t_4a7880f232ccc9 220
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.ts
+  s_1cc363bb3cc76d::t_23e91ea81b2ff1 141,145,499,503
+  s_1cc363bb3cc76d::t_08ae69d08eb1f8 140,142-144,146-147,276,414,417-419,426,435-438
+src/core/cqrs/commandDescriptions.ts
+  s_1cc363bb3cc76d::t_3fe7e718698e94 17
+src/core/cqrs/commands/binCommands.ts
+  s_1cc363bb3cc76d::t_80751420270b1e 33-37,82
+src/core/cqrs/commands/index.ts
+  s_1cc363bb3cc76d::t_e0f46ee36fc8b8 21
+src/core/cqrs/events/binEvents.ts
+  s_1cc363bb3cc76d::t_1f4f52bb0d7d3b 46-58,127
+src/core/cqrs/events/index.ts
+  s_1cc363bb3cc76d::t_d1d3fae60ca499 14
+src/core/cqrs/index.ts
+  s_1cc363bb3cc76d::t_299935af6a4105 51,105
+src/core/cqrs/integration/mutationsAdapter.ts
+  s_1cc363bb3cc76d::t_35194f11d66c5f 85-92
+src/core/cqrs/middleware/middlewareConfig.test.ts
+  s_1cc363bb3cc76d::t_8a8b73d827b594 19
+src/core/cqrs/middleware/middlewareConfig.ts
+  s_1cc363bb3cc76d::t_738b951c157164 37
+src/core/cqrs/projection/replay.test.ts
+  s_1cc363bb3cc76d::t_4eb7f66a800faa 113-130
+src/core/cqrs/v2/registry.ts
+  s_1cc363bb3cc76d::t_b9639408a7d432 21,80,125
+src/core/cqrs/validation/schemas.test.ts
+  s_1cc363bb3cc76d::t_bb810868156542 21,50,52,300-314
+src/core/cqrs/validation/schemas.ts
+  s_1cc363bb3cc76d::t_43b80ff0a7dd2e 175-179,433
+src/core/cqrs/versioning/eventVersions.ts
+  s_1cc363bb3cc76d::t_09422f3b44f69b 20
+src/core/cqrs/versioning/migrations.test.ts
+  s_1cc363bb3cc76d::t_5fd06d013e954d 174
+src/features/bin-inspector/hooks/useBinInspector.test.ts
+  s_1cc363bb3cc76d::t_18c184f0c81b76 7,859-904
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_1cc363bb3cc76d::t_7404389cb24f64 74,404,406-408,411
+src/i18n/locales/cs.json
+  s_1cc363bb3cc76d::t_d0fd9095d25f05 5264
+src/i18n/locales/de.json
+  s_1cc363bb3cc76d::t_8cd6f99f34760f 5133
+src/i18n/locales/en.ts
+  s_1cc363bb3cc76d::t_b5b4ff50df3606 6124
+src/i18n/locales/es.json
+  s_1cc363bb3cc76d::t_4d2ce95b69cddc 5133
+src/i18n/locales/fr.json
+  s_1cc363bb3cc76d::t_ce0adc09dbf582 5133
+src/i18n/locales/it.json
+  s_1cc363bb3cc76d::t_5e6c26a7f85a3e 5133
+src/i18n/locales/ja.json
+  s_1cc363bb3cc76d::t_60c10d20186c9a 5004
+src/i18n/locales/ka.json
+  s_1cc363bb3cc76d::t_78f86e21811bbf 5046
+src/i18n/locales/ko.json
+  s_1cc363bb3cc76d::t_b522dcf68c9189 5004
+src/i18n/locales/nb.json
+  s_1cc363bb3cc76d::t_bea04414d92892 5133
+src/i18n/locales/nl.json
+  s_1cc363bb3cc76d::t_27fbae099bc944 5133
+src/i18n/locales/pl.json
+  s_1cc363bb3cc76d::t_80f716a82ea5ba 5391
+src/i18n/locales/pt-BR.json
+  s_1cc363bb3cc76d::t_f7bcbef7c8522c 5133
+src/i18n/locales/sv.json
+  s_1cc363bb3cc76d::t_3757fc39ab0c57 5133
+src/i18n/locales/uk.json
+  s_1cc363bb3cc76d::t_85f98184e6fff2 5391
+src/i18n/locales/zh-CN.json
+  s_1cc363bb3cc76d::t_63dc39756d3f99 5004
+src/shared/hooks/useSelectionActions.test.ts
+  s_1cc363bb3cc76d::t_7cd04f97a927a8 7,10,245-273
+src/shared/hooks/useSelectionActions.ts
+  s_1cc363bb3cc76d::t_889553f483a553 8,25,33,270,279
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "57c8a35ac7db7f04b4d51c6acc4065f74050edcf",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
