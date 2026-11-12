@@ -50,15 +50,15 @@ describe('ShareLinkSection', () => {
     expect(onPermissionChange).toHaveBeenCalledWith('edit');
   });
 
-  it('renders read-only permission text instead of the select when readOnlyPermission is true', () => {
-    const { container } = render(
-      <ShareLinkSection {...baseProps} readOnlyPermission permission="edit" />
-    );
+  it('renders the read-only view permission as one translated sentence', () => {
+    render(<ShareLinkSection {...baseProps} readOnlyPermission permission="view" />);
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
-    // Adjacent JSX expressions render as separate text nodes in the same
-    // element, so getByText with a string fails (no element's textContent
-    // equals the partial). Inspect the container instead.
-    expect(container.textContent).toContain('share.anyoneWithLinkCan');
-    expect(container.textContent).toContain('edit');
+    expect(screen.getByText('share.anyoneWithLinkCanView')).toBeInTheDocument();
+  });
+
+  it('renders the read-only edit permission as one translated sentence', () => {
+    render(<ShareLinkSection {...baseProps} readOnlyPermission permission="edit" />);
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+    expect(screen.getByText('share.anyoneWithLinkCanEdit')).toBeInTheDocument();
   });
 });
