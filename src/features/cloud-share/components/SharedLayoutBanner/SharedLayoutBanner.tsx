@@ -139,7 +139,7 @@ export function SharedLayoutBanner() {
 
   return (
     <div
-      className="flex items-center justify-between px-4 py-2 bg-primary text-on-accent"
+      className="flex items-center justify-between px-4 py-2 bg-accent text-on-accent"
       role="alert"
       aria-live="polite"
     >

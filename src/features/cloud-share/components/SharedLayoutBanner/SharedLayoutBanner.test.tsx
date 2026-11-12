@@ -9,6 +9,7 @@ import { useToastStore } from '@/core/store/toast';
 import type { Layout } from '@/core/types';
 import { categoryId, gridUnits, heightUnits, layerId, layoutId, mm } from '@/core/types';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
+import { findClassesWithoutCss } from '@/test/tailwindClasses';
 
 // Hoisted mock for computePreview - used by both storage and library store re-export
 const { mockComputePreview } = vi.hoisted(() => ({
@@ -250,6 +251,28 @@ describe('SharedLayoutBanner', () => {
 
       const banner = screen.getByRole('alert');
       expect(banner).toHaveAttribute('aria-live', 'polite');
+    });
+  });
+
+  describe('styling', () => {
+    beforeEach(() => {
+      useSharedPreviewStore.getState().setSharedLayoutPreview(mockLayout, 'Shared Layout');
+    });
+
+    it('draws its on-accent text on the accent surface', () => {
+      render(<SharedLayoutBanner />);
+
+      expect(screen.getByRole('alert')).toHaveClass('bg-accent', 'text-on-accent');
+    });
+
+    it('gives every class it renders a CSS rule', async () => {
+      const { container } = render(<SharedLayoutBanner />);
+
+      const classNames = [...container.querySelectorAll('[class]')].flatMap((element) =>
+        (element.getAttribute('class') ?? '').split(/\s+/).filter(Boolean)
+      );
+      expect(classNames.length).toBeGreaterThan(0);
+      expect(await findClassesWithoutCss(classNames)).toEqual([]);
     });
   });
 
