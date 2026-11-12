@@ -1,0 +1,25 @@
+src/shared/hooks/useIndexedDBRecovery.overlap.test.ts
+  s_1cc363bb3cc76d::t_ed66061551501e 1-83
+src/features/cloud-share/components/SharedLayoutBanner/SharedLayoutBanner.test.tsx
+  s_1cc363bb3cc76d::t_62b994d13f7925 2,8,432-463
+src/features/cloud-share/components/SharedLayoutBanner/SharedLayoutBanner.tsx
+  s_1cc363bb3cc76d::t_a1efd0a6829bce 110-116
+src/shared/hooks/useIndexedDBRecovery.ts
+  s_1cc363bb3cc76d::t_4ef4ab8344c2c7 17,49-52,54-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ffe8559f3dfaa7cd115c344bfdbd19f2c16afef9",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
