@@ -30,6 +30,8 @@ You can start from either end:
 - **From the design.** In <Ui k="binDesigner.savedDesigns" />, use <Ui k="binDesigner.placeInLayout.action" />. The layout editor opens and puts a linked bin in the first free space. When there's no free space, the bin goes to the stash.
 - **From the layout.** Select a bin and look at <Ui k="designLinking.inspector.linkedDesign" /> in the inspector. <Ui k="designLinking.inspector.createDesign" /> makes a design from the bin and opens it in the bin designer. <Ui k="designLinking.inspector.linkExisting" /> lists the saved designs with the same footprint.
 
+<Screenshot id="concepts-saved-designs-link-inspector" alt="The Linked design section in the inspector for a bin with no design, with the Create and Link buttons." spec="Layout editor, WORKBENCH sample, Washers bin selected. Crop the inspector to the Linked design label and its two buttons." />
+
 A design also matches a bin that has its width and depth swapped. The layout then shows the design turned 90°.
 
 Many bins can link to one design. Ten screw bins, one design.
@@ -44,6 +46,8 @@ A link keeps only the size in step: width, depth and height. Everything else bel
 | The size of a linked bin, in the layout                  | The design takes the new size, and the other linked bins follow            |
 | Walls, compartments, labels or colors                    | Every linked bin shows the change, because the model belongs to the design |
 | The link, with <Ui k="designLinking.inspector.unlink" /> | The bin keeps its size, and the design stays in your library               |
+
+<Screenshot id="concepts-saved-designs-size-sync" alt="Three bins, Screws, Nuts and Washers, are linked to one design. In the inspector, a click sets the depth of the Screws bin to 2. The design takes the new size, and all three bins become 2 by 2." spec="Clip. Layout editor, drawer 6 × 3. One saved design, 2 × 1 × 3u, linked to three bins in the front row, Screws selected. The grid, a close-up click on Depth plus in the inspector, then the grid with three 2 × 2 bins." />
 
 Sometimes a bin can't take the new size, because it no longer fits the drawer or it hits another bin. Then <Ui k="designLinking.syncDialog.title" /> opens and tells you how many bins it must unlink. Select <Ui k="designLinking.syncDialog.sync" /> to continue.
 

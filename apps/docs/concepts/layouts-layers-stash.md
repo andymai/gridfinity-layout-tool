@@ -48,6 +48,8 @@ Layer 1 is the bottom layer. The layer list puts the top layer first and Layer 1
 
 Some items stick up above their bin, like a tall screwdriver. Set <Ui k="inspector.clearanceMmLabel" /> on that bin to keep space free above it. The grid shows the space above as a striped area, and a bin on a higher layer can't rest in it.
 
+<Screenshot id="concepts-layouts-clearance" alt="The Screwdrivers bin on Layer 1 is selected. Two clicks set Clearance (mm) to 14. On Layer 2, a striped area then covers the Screwdrivers bin, so no bin can rest on it." spec="Clip. Layout editor, drawer 6 × 4 with two layers. Close-up of the Clearance (mm) stepper of the Screwdrivers bin: two clicks on plus. A click on Layer 2 in the layer list, then the grid with the striped area." />
+
 <Screenshot id="concepts-layouts-layer-stack" alt="A layout with two layers in the 3D preview, with a small bin that rests on a larger bin below it." spec="Layout editor, desktop. Drawer 6 × 4. Layer 1: one 3 × 2 bin, 3u. Layer 2: one 2 × 1 bin placed over the Layer 1 bin. 3D preview open in All mode. Crop to the layer list and the 3D preview so the rests-on badge and both layers are visible." />
 
 ## The stash holds bins that are off the grid
@@ -66,7 +68,11 @@ Bins go into the stash in these ways:
 | Turn off half-grid mode and accept the move                         | Bins with half-unit sizes or positions move there |
 | Place a saved design when the layout has no free space              | The linked bin goes to the stash                  |
 
+<Screenshot id="concepts-layouts-smaller-drawer" alt="A drawer 7 units wide. Two clicks on the width stepper make it 5 units wide. The Chargers and USB sticks bins no longer fit, so they move to the stash under the grid." spec="Clip. Layout editor, drawer 7 × 3 with five bins, two of them in columns 6 and 7. The editor, a close-up of the Width stepper clicked twice, then the editor with the two bins in the stash." />
+
 To use a stashed bin, drag it from the stash onto the grid. Press <kbd>R</kbd> to turn a stashed bin before you place it. [Put bins in the stash](../layouts/placing-bins#put-bins-in-the-stash) shows the other ways to move bins in and out of the stash.
+
+<Screenshot id="concepts-layouts-stash-place" alt="A click selects the USB sticks bin in the stash, and R turns it. A drag then puts the bin on the grid." spec="Clip. Layout editor, drawer 6 × 3 with two bins on the grid and two in the stash. Click the 2 × 1 USB sticks bin in the stash, press R, then drag it into column 5." />
 
 ::: warning
 Clear a layer only when you want to delete its bins. The clear button in the active layer panel shows how many bins the layer holds, and it deletes all of them. It doesn't move them to the stash. If you clear a layer by mistake, press <kbd>Ctrl</kbd>+<kbd>Z</kbd> (<kbd>Cmd</kbd>+<kbd>Z</kbd> on a Mac) to get the bins back.
