@@ -319,6 +319,67 @@ const printBedSplitBin: Shot = {
   },
 };
 
+const printBedOnePiece: Shot = {
+  id: 'concepts-print-bed-one-piece',
+  kind: 'clip',
+  async take(s) {
+    await openLayouts(s, SMALL_PRINTER);
+    await openDesigner(s, 'Long tool tray', { width: 6, depth: 2, height: 3 });
+    await waitPieces(s);
+    const apart = await partBox(s);
+    const toggle = s.page
+      .getByRole('switch', { name: label('binDesigner.splitToFitBed'), exact: true })
+      .first();
+    const info = s.page
+      .getByText(
+        label('binDesigner.splitAxisInfo', {
+          axis: label('binDesigner.splitAxisWidth'),
+          count: 2,
+        }),
+        { exact: true }
+      )
+      .first();
+    const wallKeys = s.page
+      .getByRole('switch', { name: label('binDesigner.splitWallConnectors'), exact: true })
+      .first();
+    await s.ui.preReveal(toggle);
+    const section = union(await s.box(info), await s.box(wallKeys));
+    const closeUp = frameAround(
+      { ...section, x: section.x - 8, width: Math.max(section.width + 16, 300) },
+      24,
+      4 / 3,
+      WINDOW
+    );
+    const t = await s.box(toggle);
+    const view = await preview(s);
+    await s.ui.park(closeUp.x + closeUp.width * 0.85, closeUp.y + closeUp.height * 0.9);
+    await s.ui.hideCursor();
+    await s.take(frameAround(apart, 40, 4 / 3, view), async () => {
+      await s.ui.hold(1);
+    });
+    await s.ui.park(closeUp.x + closeUp.width * 0.85, closeUp.y + closeUp.height * 0.9);
+    await s.take(
+      closeUp,
+      async () => {
+        await s.ui.hold(0.5);
+        await s.ui.clickAt(t.x + t.width / 2, t.y + t.height / 2);
+        await s.ui.hold(0.3);
+        // Out of the frame to the right: inside it, every spot is a control or a label.
+        await s.ui.moveTo(closeUp.x + closeUp.width + 60, t.y + t.height / 2);
+        await s.ui.hold(1.2);
+      },
+      640 / closeUp.width
+    );
+    await s.ui.hideCursor();
+    await s.ui.warm(30);
+    const whole = await partBox(s);
+    await s.take(frameAround(union(apart, whole), 40, 4 / 3, view), async () => {
+      s.poster();
+      await s.ui.hold(2);
+    });
+  },
+};
+
 const RESTING: FixtureLayout = {
   name: 'Desk drawer',
   width: 6,
@@ -1340,6 +1401,7 @@ export const CONCEPTS: readonly Shot[] = [
   multiColorZones,
   previewDraftExact,
   printBedSplitBin,
+  printBedOnePiece,
   layerStack,
   layersExploded,
   savedDesignsLayoutLabels,
