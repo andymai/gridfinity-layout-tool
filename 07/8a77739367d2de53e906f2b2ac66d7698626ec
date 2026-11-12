@@ -1,0 +1,227 @@
+src/features/bin-designer/components/panel/SplitOptionsSection/SplitOptionsSection.tsx
+  s_1cc363bb3cc76d::t_ea1aaee9b1f357 16-18,30-81
+.claude/skills/print-export/SKILL.md
+  s_1cc363bb3cc76d::t_cbd6bbf1a076a0 35
+api/lib/designerValidation.crossBoundary.test.ts
+  s_1cc363bb3cc76d::t_e875b62c3be18e 133-134,437-459
+api/lib/designerValidation.test.ts
+  s_1cc363bb3cc76d::t_b2c09092bcfbc9 107-126
+api/lib/designerValidation.ts
+  s_1cc363bb3cc76d::t_c6425bed175d39 176,201-207
+apps/docs/concepts/print-bed-fit.md
+  s_1cc363bb3cc76d::t_22ca50c7103890 70-79,104,106
+apps/docs/designer/size-and-shape.md
+  s_1cc363bb3cc76d::t_a417b414d1ba32 139
+apps/docs/printing/print-list-and-zip.md
+  s_1cc363bb3cc76d::t_c2eae2d76c1ab8 30,99
+apps/docs/reference/faq.md
+  s_1cc363bb3cc76d::t_c3a2d5c3960fd7 76
+docs/schemas/bin-design.md
+  s_1cc363bb3cc76d::t_d3a3405d6e3e20 105
+public/schema/bin-design.schema.json
+  s_1cc363bb3cc76d::t_addca6dde833ba 442-446
+src/core/constants.test.ts
+  s_1cc363bb3cc76d::t_8f18d8a714174e 4,178-195
+src/core/constants.ts
+  s_1cc363bb3cc76d::t_764a24227cb62b 124-129,203-216
+src/core/storage/designStorePort.ts
+  s_1cc363bb3cc76d::t_90dcca1b310413 97,103,127-128
+src/core/types/printList.ts
+  s_1cc363bb3cc76d::t_aa3cdff280565f 29-31
+src/features/bin-designer/components/DesignerPage/useDesignNameEditor.ts
+  s_1cc363bb3cc76d::t_af163a9fe98392 25,111,139
+src/features/bin-designer/components/ExportDialog/ExportDialog.test.tsx
+  s_1cc363bb3cc76d::t_fdfc99a72d9777 26-31,100,139-144,750-787,914-919
+src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
+  s_1cc363bb3cc76d::t_bbce8328951f4d 91,131-133,377,395,397,402-409
+src/features/bin-designer/components/ParameterPanel/BinScrollPanel/BinScrollPanel.tsx
+  s_1cc363bb3cc76d::t_8fb81ecdb1a3a9 85,163-181
+src/features/bin-designer/components/ParameterPanel/DesignerSearchBar/DesignerSearchBar.test.tsx
+  s_1cc363bb3cc76d::t_0a97e10396401a 19
+src/features/bin-designer/components/ParameterPanel/DesignerSearchBar/DesignerSearchBar.tsx
+  s_1cc363bb3cc76d::t_a9f644e4573813 19-20,48,58-59
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_1cc363bb3cc76d::t_a743ab92191fd4 116,324,368
+src/features/bin-designer/components/ParameterPanel/categoryModified.test.ts
+  s_1cc363bb3cc76d::t_56fb309704687b 84-90
+src/features/bin-designer/components/ParameterPanel/categoryModified.ts
+  s_1cc363bb3cc76d::t_afe7ea32c56cad 51
+src/features/bin-designer/components/ParameterPanel/groupModified.test.ts
+  s_1cc363bb3cc76d::t_a1cacb72a8c0e6 32
+src/features/bin-designer/components/panel/SplitOptionsSection/SplitOptionsSection.test.tsx
+  s_1cc363bb3cc76d::t_4fb7d78ecc1e58 27-47
+src/features/bin-designer/components/panel/SplitOptionsSection/useSplitOptionsSection.test.ts
+  s_1cc363bb3cc76d::t_6113b35136b38e 73-99
+src/features/bin-designer/components/panel/SplitOptionsSection/useSplitOptionsSection.ts
+  s_1cc363bb3cc76d::t_5ebfcb4bbacefd 16-38,65,100-104,109,112,124-128
+src/features/bin-designer/components/panel/pages/PrintPage/PrintPage.test.tsx
+  s_1cc363bb3cc76d::t_fe15acde42e720 40-70
+src/features/bin-designer/components/panel/pages/PrintPage/PrintPage.tsx
+  s_1cc363bb3cc76d::t_7f90c58b4ef8b4 13-14,18-19,30,34-46,48-49
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_1cc363bb3cc76d::t_6016faeb2f8c56 2371-2396
+src/features/bin-designer/constants/paramMigration.ts
+  s_1cc363bb3cc76d::t_2b2245ad958a97 400,579
+src/features/bin-designer/hooks/useAutoSave.ts
+  s_1cc363bb3cc76d::t_7d46938fd2b371 23,205
+src/features/bin-designer/hooks/useCreateFromBin.ts
+  s_1cc363bb3cc76d::t_1f5ea52a2a1a16 26,251
+src/features/bin-designer/hooks/useDesignerInit.ts
+  s_1cc363bb3cc76d::t_f9028f4e93d59f 34,145
+src/features/bin-designer/hooks/useExport.test.ts
+  s_1cc363bb3cc76d::t_0e4ff2ab2ccb91 436-457
+src/features/bin-designer/hooks/useExport.ts
+  s_1cc363bb3cc76d::t_392a803f6b9219 104-105,181,680-681
+src/features/bin-designer/hooks/usePlaceBinInLayout.ts
+  s_1cc363bb3cc76d::t_894bd155c04bb5 34,59
+src/features/bin-designer/index.ts
+  s_1cc363bb3cc76d::t_6702afe744864a 23
+src/features/bin-designer/search/designerControlRegistry.test.ts
+  s_1cc363bb3cc76d::t_7782e1c46c080f 15,62,94,99,106,113
+src/features/bin-designer/search/designerControlRegistry.ts
+  s_1cc363bb3cc76d::t_facf6a55bcd1ad 501-506,529-530,543,557
+src/features/bin-designer/search/searchCoverage.test.tsx
+  s_1cc363bb3cc76d::t_4a72b4f9ff465a 16,47-48
+src/features/bin-designer/search/useDesignerSettingsSearch.test.tsx
+  s_1cc363bb3cc76d::t_4e673ceaaed6bd 12,21
+src/features/bin-designer/storage/designStoreAdapter.test.ts
+  s_1cc363bb3cc76d::t_d2e6073c6fd234 143-156
+src/features/bin-designer/storage/designStoreAdapter.ts
+  s_1cc363bb3cc76d::t_6c61a4125ee6a5 85-89,91-95
+src/features/bin-designer/store/customBinRegistry.test.ts
+  s_1cc363bb3cc76d::t_1c1862aa03c0e7 16,573-626
+src/features/bin-designer/store/customBinRegistry.ts
+  s_1cc363bb3cc76d::t_337bc5abfe7fb5 150-154,276-286,347,406,451,607-609,614-620,649-654,663
+src/features/bin-designer/store/designer.test.ts
+  s_1cc363bb3cc76d::t_3c68f1d0660f07 375-395
+src/features/bin-designer/store/index.ts
+  s_1cc363bb3cc76d::t_75bf32a1307220 11
+src/features/bin-designer/store/slices/paramSlice/coreParamActions.ts
+  s_1cc363bb3cc76d::t_524dc899a4c9fd 118-127
+src/features/bin-designer/sync/designAdapter.test.ts
+  s_1cc363bb3cc76d::t_d123dfc2ad7682 410-432
+src/features/bin-designer/types/binParams.ts
+  s_1cc363bb3cc76d::t_464d1b5e063ad0 116-122
+src/features/bin-designer/types/designerState.ts
+  s_1cc363bb3cc76d::t_20196f79e00ad2 311-313
+src/features/bin-designer/utils/designJson.test.ts
+  s_1cc363bb3cc76d::t_8b9d72122ba235 153-160
+src/features/bin-designer/utils/slantRowDesign.ts
+  s_1cc363bb3cc76d::t_58bff8915af093 15,109
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_1cc363bb3cc76d::t_566358787e0f14 432-434
+src/features/bin-inspector/components/Inspector/SplitWarning/SplitWarning.test.tsx
+  s_1cc363bb3cc76d::t_8b06cffbb7684d 102-137
+src/features/bin-inspector/components/Inspector/SplitWarning/SplitWarning.tsx
+  s_1cc363bb3cc76d::t_a4308cf466ce8c 112-113,126,131,173-177,187,210
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_1cc363bb3cc76d::t_a6591dde8bfa0c 18-19,72,98,152
+src/features/design-linking/hooks/useBinLinking.test.ts
+  s_1cc363bb3cc76d::t_cf87f30e801dc7 34
+src/features/design-linking/hooks/useBinLinking.ts
+  s_1cc363bb3cc76d::t_4b00bd13c219b5 23,394
+src/features/design-linking/hooks/useBinResizedListener.ts
+  s_1cc363bb3cc76d::t_d83c8b038c80c3 28,172
+src/features/grid-editor/components/Grid/Bin/Bin.test.tsx
+  s_1cc363bb3cc76d::t_c94db161fb5fa4 8-10,371-397
+src/features/grid-editor/components/Grid/Bin/Bin.tsx
+  s_1cc363bb3cc76d::t_8aa52daa027aca 26,110-114,465,468,477,494,497,499
+src/features/grid-editor/components/Grid/Bin/useBinBedFit.test.ts
+  s_1cc363bb3cc76d::t_c616a50a1b1445 5-7,9,11-12,14,16-17,24,28,33-49
+src/features/grid-editor/components/Grid/Bin/useBinBedFit.ts
+  s_1cc363bb3cc76d::t_ee1ebf961cae80 1-11
+src/features/grid-editor/components/Grid/IsometricPreview/useIsometricPreview.ts
+  s_1cc363bb3cc76d::t_30bd8463590409 8,83-95,134
+src/features/print-export/hooks/usePrintList.test.ts
+  s_1cc363bb3cc76d::t_ce23d68288d5ef 22-23,423-466
+src/features/print-export/hooks/usePrintList.ts
+  s_1cc363bb3cc76d::t_9d981085e4bd83 40,126,160-161,176
+src/features/print-export/utils/split.test.ts
+  s_1cc363bb3cc76d::t_58c97ed0490ea8 196-245
+src/features/print-export/utils/split.ts
+  s_1cc363bb3cc76d::t_6a49b38f293e1a 16,175-187,191,200,203,210,216-217,219,253,286,334
+src/i18n/locales/cs.json
+  s_1cc363bb3cc76d::t_c4d0f7e1a51284 2178-2179,3636,3677,4030,5529
+src/i18n/locales/de.json
+  s_1cc363bb3cc76d::t_920f72f285957a 2147-2148,3568,3608,3960,5394
+src/i18n/locales/en.ts
+  s_1cc363bb3cc76d::t_5b25cf61f80ded 534-535,1831,1885,3190-3191,3333-3335
+src/i18n/locales/es.json
+  s_1cc363bb3cc76d::t_b449304a1a3790 2147-2148,3568,3608,3960,5394
+src/i18n/locales/fr.json
+  s_1cc363bb3cc76d::t_d3415044e9475b 2147-2148,3568,3608,3960,5394
+src/i18n/locales/it.json
+  s_1cc363bb3cc76d::t_6655752c10c7b2 2147-2148,3568,3608,3960,5394
+src/i18n/locales/ja.json
+  s_1cc363bb3cc76d::t_a2181019ea162e 2116-2117,3500,3539,3890,5261
+src/i18n/locales/ka.json
+  s_1cc363bb3cc76d::t_4718573ace8bbf 492,1601,1651,2677,2801-2802
+src/i18n/locales/ko.json
+  s_1cc363bb3cc76d::t_b0d2cd7df1f06e 2116-2117,3500,3539,3890,5261
+src/i18n/locales/nb.json
+  s_1cc363bb3cc76d::t_174e3b4bc7ffdc 2147-2148,3568,3608,3960,5394
+src/i18n/locales/nl.json
+  s_1cc363bb3cc76d::t_7a264eb121afbf 2147-2148,3568,3608,3960,5394
+src/i18n/locales/pl.json
+  s_1cc363bb3cc76d::t_5895bbc987640f 2209-2210,3704,3746,4100,5660
+src/i18n/locales/pt-BR.json
+  s_1cc363bb3cc76d::t_e90bdf65cdb556 2147-2148,3568,3608,3960,5394
+src/i18n/locales/sv.json
+  s_1cc363bb3cc76d::t_379141c97bc076 2147-2148,3568,3608,3960,5394
+src/i18n/locales/uk.json
+  s_1cc363bb3cc76d::t_b0ce13cb12e6f7 2209-2210,3704,3746,4100,5660
+src/i18n/locales/zh-CN.json
+  s_1cc363bb3cc76d::t_7981fbd9a2958d 2116-2117,3500,3539,3890,5261
+src/shared/hooks/useBinBedCapacity.test.ts
+  s_1cc363bb3cc76d::t_8ecfb5ef6e3a71 1-67
+src/shared/hooks/useBinBedCapacity.ts
+  s_1cc363bb3cc76d::t_f1bc6f364a73b1 1,3-8,10-17,27-44
+src/shared/hooks/useLinkedDesignsKeptWhole.test.ts
+  s_1cc363bb3cc76d::t_14bc011b894362 1-45
+src/shared/hooks/useLinkedDesignsKeptWhole.ts
+  s_1cc363bb3cc76d::t_79fde9aa0caef5 1-31
+src/shared/schema/binDesignKeys.ts
+  s_1cc363bb3cc76d::t_deb60926451082 98
+src/shared/utils/binSplitFit.test.ts
+  s_1cc363bb3cc76d::t_35f9ac4a144a59 211-265
+src/shared/utils/binSplitFit.ts
+  s_1cc363bb3cc76d::t_6dc16d027e5b70 33,80-85,99,123-126
+src/shell/Mobile/MobilePrintList/MobilePrintList.test.tsx
+  s_1cc363bb3cc76d::t_1d8374609e3ed5 1-2,4-8,18-19,25-51
+src/shell/Mobile/MobilePrintList/MobilePrintList.tsx
+  s_1cc363bb3cc76d::t_d2a2e1a9d93fc4 229-233
+src/shell/Modals/DesignGalleryModal/communityDesignerBridge.test.ts
+  s_1cc363bb3cc76d::t_2958509474d5f7 52
+src/shell/Modals/DesignGalleryModal/communityDesignerBridge.ts
+  s_1cc363bb3cc76d::t_2af618ab77f319 212,234
+src/shell/RightPanel/RightPanel.test.tsx
+  s_1cc363bb3cc76d::t_dff13f58b2e87e 462-475
+src/shell/RightPanel/RightPanel.tsx
+  s_1cc363bb3cc76d::t_2f79f179b13fcc 540-544
+src/shell/layoutExport/buildLayoutManifest.test.ts
+  s_1cc363bb3cc76d::t_18cdf765e8ec5b 95-104
+src/shell/layoutExport/buildLayoutManifest.ts
+  s_1cc363bb3cc76d::t_ae94371e89d0ef 31-35,234-239
+src/shell/layoutExport/planLayoutBinExport.test.ts
+  s_1cc363bb3cc76d::t_a4f94b1c6ac691 716-762,777
+src/shell/layoutExport/planLayoutBinExport.ts
+  s_1cc363bb3cc76d::t_832260f188f58f 27,122-123,125-127,129-133,135,443,448,486
+src/shell/layoutExport/useLayoutExport.test.ts
+  s_1cc363bb3cc76d::t_6a4bc5b983605b 254-276
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "078a77739367d2de53e906f2b2ac66d7698626ec",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
