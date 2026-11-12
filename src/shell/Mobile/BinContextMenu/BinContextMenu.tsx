@@ -117,7 +117,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   const handleRotate = () => {
     const plan = planBinRotation(bin, layout);
     if (!plan.valid) {
-      addToast(plan.message, 'error');
+      addToast(t(plan.messageKey), 'error');
       onClose();
       return;
     }

@@ -247,7 +247,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       return () => {
         const plan = planBinRotation(bin, layout);
         if (!plan.valid) {
-          addToast(plan.message, 'error');
+          addToast(t(plan.messageKey), 'error');
           return;
         }
         if (!batch(() => isOk(updateBin(bin.id, plan.updates)))) return;

@@ -76,7 +76,7 @@ Each linked bin then prints its own Bin label. You see the labels in the 3D prev
 
 - <Ui k="binDesigner.versions.save" /> stores the design as it is now, with a name.
 - A restore replaces the design. First, though, the Layout Tool saves your current state as an automatic version, so you lose nothing.
-- Each design keeps up to 25 versions. When the list is full, the Layout Tool removes the oldest version and tells you. Pin a version to keep it.
+- Each design keeps up to 25 versions. When the list is full, the Layout Tool removes an automatic version first, then the oldest version without a pin. A message names it. Pin a version to keep it.
 - <Ui k="binDesigner.versions.branch" /> makes a separate design from a version. The branch doesn't follow the original.
 
 ## Variants: one design in several sizes

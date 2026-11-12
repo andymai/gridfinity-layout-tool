@@ -252,7 +252,7 @@ export function handleRotate(e: KeyboardEvent, ctx: KeyboardContext): boolean {
 
   const plan = planBinRotation(bin, ctx.layout);
   if (!plan.valid) {
-    ctx.addToast(plan.message, 'error');
+    ctx.addToast(ctx.t(plan.messageKey), 'error');
     return true;
   }
 
