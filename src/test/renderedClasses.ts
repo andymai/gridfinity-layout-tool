@@ -27,6 +27,12 @@ interface Located<T extends ts.Node> {
 
 type ObjectOrArray = ts.ObjectLiteralExpression | ts.ArrayLiteralExpression;
 
+interface ObjectEntry {
+  /** `undefined` for a computed key. */
+  readonly key: string | undefined;
+  readonly value: Located<ts.Expression>;
+}
+
 /** One level of a destructuring pattern, from the outer value in. */
 interface BindingStep {
   /** The property that the step reads; `undefined` reads every entry. */
@@ -120,6 +126,48 @@ function bindingPath(pattern: ts.BindingName, name: string): BindingStep[] | und
   return undefined;
 }
 
+function returnedExpressions(fn: ts.FunctionLikeDeclaration): ts.Expression[] {
+  if (fn.body === undefined) return [];
+  if (!ts.isBlock(fn.body)) return [fn.body];
+  const returned: ts.Expression[] = [];
+  const visit = (node: ts.Node): void => {
+    if (ts.isFunctionLike(node)) return;
+    if (ts.isReturnStatement(node) && node.expression !== undefined) {
+      returned.push(node.expression);
+    }
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(fn.body, visit);
+  return returned;
+}
+
+function isClassNameAssignment(node: ts.Node): node is ts.BinaryExpression {
+  return (
+    ts.isBinaryExpression(node) &&
+    node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+    ts.isPropertyAccessExpression(node.left) &&
+    node.left.name.text === 'className'
+  );
+}
+
+/** The arguments of an `el.classList` call that put a class on the element. */
+function classListArguments(call: ts.CallExpression): readonly ts.Expression[] {
+  const method = call.expression;
+  if (!ts.isPropertyAccessExpression(method)) return [];
+  const owner = unwrap(method.expression);
+  if (!ts.isPropertyAccessExpression(owner) || owner.name.text !== 'classList') return [];
+  switch (method.name.text) {
+    case 'add':
+      return call.arguments;
+    case 'toggle':
+      return call.arguments.slice(0, 1);
+    case 'replace':
+      return call.arguments.slice(1, 2);
+    default:
+      return [];
+  }
+}
+
 function hasExportModifier(node: ts.Node): boolean {
   return (
     ts.canHaveModifiers(node) &&
@@ -129,11 +177,13 @@ function hasExportModifier(node: ts.Node): boolean {
 
 /**
  * Collects the class names that the given sources render: the values of
- * `className` (and `*ClassName`, `*Class`) JSX attributes, the arguments of
- * `cn`/`clsx`/`twMerge`, and the base and variant classes of `cva`. A constant,
- * object map or helper function that one of those positions names is followed,
- * in the same file or through `@/` and relative imports. Other strings are not
- * read, so prose and option values never count as classes.
+ * `className` (and `*ClassName`, `*Class`) JSX attributes and of those props in
+ * a JSX spread, the arguments of `cn`/`clsx`/`twMerge`, the base and variant
+ * classes of `cva`, and what plain code writes to `el.className` and
+ * `el.classList`. A constant, object map or helper function that one of those
+ * positions names is followed, in the same file or through `@/` and relative
+ * imports, and so is the object that a helper call returns. Other strings are
+ * not read, so prose and option values never count as classes.
  *
  * `@/` resolves against `srcDir`, and each location is relative to its parent.
  */
@@ -152,6 +202,8 @@ export function collectRenderedClasses(
 
   const found: RenderedClass[] = [];
   const seen = new Set<ts.Node>();
+  const resolving = new Set<ts.Node>();
+  const expanding = new Set<ts.Node>();
 
   const locate = (unit: SourceUnit, node: ts.Node): string => {
     const { line } = unit.source.getLineAndCharacterOfPosition(node.getStart(unit.source));
@@ -319,8 +371,7 @@ export function collectRenderedClasses(
     return undefined;
   };
 
-  const resolveObjects = (unit: SourceUnit, node: ts.Expression): Located<ObjectOrArray>[] => {
-    const expression = unwrap(node);
+  const findObjects = (unit: SourceUnit, expression: ts.Expression): Located<ObjectOrArray>[] => {
     if (ts.isObjectLiteralExpression(expression) || ts.isArrayLiteralExpression(expression)) {
       return [{ unit, node: expression }];
     }
@@ -333,7 +384,52 @@ export function collectRenderedClasses(
     if (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression)) {
       return resolveMembers(unit, expression).flatMap((m) => resolveObjects(m.unit, m.node));
     }
+    if (ts.isCallExpression(expression) && ts.isIdentifier(expression.expression)) {
+      const declaration = resolveIdentifier(unit, expression.expression);
+      if (declaration?.kind !== 'function') return [];
+      return returnedExpressions(declaration.node).flatMap((node) =>
+        resolveObjects(declaration.unit, node)
+      );
+    }
     return [];
+  };
+
+  // A value can read itself: a helper that returns a member of its own call
+  // (`return { inner: props(n - 1).inner }`), or two maps that name each
+  // other. A node on the stack resolves to nothing, so the other branches
+  // (the base case) give the result.
+  const resolveObjects = (unit: SourceUnit, node: ts.Expression): Located<ObjectOrArray>[] => {
+    const expression = unwrap(node);
+    if (resolving.has(expression)) return [];
+    resolving.add(expression);
+    const objects = findObjects(unit, expression);
+    resolving.delete(expression);
+    return objects;
+  };
+
+  // A shorthand entry (`{ frameClass }`) holds the binding of that name where
+  // the object is written, and a spread entry (`{ ...base }`) holds the
+  // entries of each object that it spreads in. An object on the stack spreads
+  // in nothing, so a helper that returns `{ ...chain(), role }` stops.
+  const objectEntries = (unit: SourceUnit, object: ts.ObjectLiteralExpression): ObjectEntry[] => {
+    if (expanding.has(object)) return [];
+    expanding.add(object);
+    const entries = object.properties.flatMap((property): ObjectEntry[] => {
+      if (ts.isPropertyAssignment(property)) {
+        return [{ key: propertyName(property.name), value: { unit, node: property.initializer } }];
+      }
+      if (ts.isShorthandPropertyAssignment(property)) {
+        return [{ key: property.name.text, value: { unit, node: property.name } }];
+      }
+      if (ts.isSpreadAssignment(property)) {
+        return resolveObjects(unit, property.expression).flatMap((spread) =>
+          ts.isObjectLiteralExpression(spread.node) ? objectEntries(spread.unit, spread.node) : []
+        );
+      }
+      return [];
+    });
+    expanding.delete(object);
+    return entries;
   };
 
   // A key known only at runtime (`SIZES[size]`) can select any entry, so the
@@ -351,12 +447,9 @@ export function collectRenderedClasses(
           .filter((e) => !ts.isOmittedExpression(e))
           .map((e) => ({ unit: container.unit, node: ts.isSpreadElement(e) ? e.expression : e }));
       }
-      return container.node.properties
-        .filter(
-          (p): p is ts.PropertyAssignment =>
-            ts.isPropertyAssignment(p) && (key === undefined || propertyName(p.name) === key)
-        )
-        .map((p) => ({ unit: container.unit, node: p.initializer }));
+      return objectEntries(container.unit, container.node)
+        .filter((entry) => key === undefined || entry.key === key)
+        .map((entry) => entry.value);
     });
 
   const resolveMembers = (
@@ -367,26 +460,13 @@ export function collectRenderedClasses(
       ? readMember(unit, access.expression, access.name.text, false)
       : readMember(unit, access.expression, literalKey(access.argumentExpression), true);
 
-  const scanReturns = (unit: SourceUnit, fn: ts.FunctionLikeDeclaration): void => {
-    if (fn.body === undefined) return;
-    if (!ts.isBlock(fn.body)) {
-      scanClasses(unit, fn.body);
-      return;
-    }
-    const visit = (node: ts.Node): void => {
-      if (ts.isFunctionLike(node)) return;
-      if (ts.isReturnStatement(node) && node.expression !== undefined) {
-        scanClasses(unit, node.expression);
-      }
-      ts.forEachChild(node, visit);
-    };
-    ts.forEachChild(fn.body, visit);
-  };
-
   const scanDeclaration = (declaration: Declaration | undefined): void => {
     if (declaration === undefined) return;
-    if (declaration.kind === 'function') scanReturns(declaration.unit, declaration.node);
-    else for (const value of declaration.values) scanClasses(value.unit, value.node);
+    const values =
+      declaration.kind === 'function'
+        ? returnedExpressions(declaration.node).map((node) => ({ unit: declaration.unit, node }))
+        : declaration.values;
+    for (const value of values) scanClasses(value.unit, value.node);
   };
 
   const scanValues = (unit: SourceUnit, node: ts.Expression): void => {
@@ -395,8 +475,17 @@ export function collectRenderedClasses(
         scanClasses(container.unit, container.node);
         continue;
       }
-      for (const property of container.node.properties) {
-        if (ts.isPropertyAssignment(property)) scanClasses(container.unit, property.initializer);
+      for (const { value } of objectEntries(container.unit, container.node)) {
+        scanClasses(value.unit, value.node);
+      }
+    }
+  };
+
+  const scanClassProperties = (unit: SourceUnit, node: ts.Expression): void => {
+    for (const container of resolveObjects(unit, node)) {
+      if (!ts.isObjectLiteralExpression(container.node)) continue;
+      for (const { key, value } of objectEntries(container.unit, container.node)) {
+        if (key !== undefined && CLASS_ATTRIBUTE.test(key)) scanClasses(value.unit, value.node);
       }
     }
   };
@@ -563,10 +652,18 @@ export function collectRenderedClasses(
         ) {
           scanClasses(unit, node.initializer.expression);
         }
+      } else if (ts.isJsxSpreadAttribute(node)) {
+        scanClassProperties(unit, node.expression);
+      } else if (isClassNameAssignment(node)) {
+        scanClasses(unit, node.right);
       } else if (ts.isCallExpression(node)) {
         const name = callee(node);
         if (name !== undefined && (CLASS_FUNCTIONS.has(name) || name === 'cva')) {
           scanClasses(unit, node);
+        } else {
+          for (const argument of classListArguments(node)) {
+            scanClasses(unit, ts.isSpreadElement(argument) ? argument.expression : argument);
+          }
         }
       }
       ts.forEachChild(node, visit);
