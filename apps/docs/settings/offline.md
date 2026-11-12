@@ -25,6 +25,8 @@ After you download a file, the export window can also show <Ui k="pwaInstall.tit
 
 The installed app has the name Gridfinity Layout Tool. It opens in its own window, without the address bar, and starts on the layout editor. It uses the same data as the browser tab, because it is the same site.
 
+To open the bin designer or the baseplate generator directly, right-click the app icon in the taskbar or the dock. On Android, touch and hold the app icon.
+
 ## Get ready to work offline
 
 The first visit stores the core of the app. The other parts download the first time that you open them, so do this once while you are online:

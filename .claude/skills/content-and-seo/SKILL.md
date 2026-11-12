@@ -40,7 +40,7 @@ Both scripts drive a real browser against a **separately running dev server** (W
 ```bash
 pnpm run dev                        # terminal 1, leave running
 pnpm run gen:seo-images             # terminal 2; BASE_URL=... if not :5173
-ONLY=og pnpm run gen:seo-images     # steps: planner, renders, serp, baseplate, drawers, og
+ONLY=og pnpm run gen:seo-images     # steps: planner, renders, serp, baseplate, drawers, manifest, og
 ONLY=og OG_SLUGS=a,b pnpm run gen:seo-images   # only these cards
 ```
 
