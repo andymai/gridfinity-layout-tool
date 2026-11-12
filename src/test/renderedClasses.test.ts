@@ -34,6 +34,25 @@ const KEYED_LOOKUP = [
   `};`,
 ].join('\n');
 
+const DESTRUCTURING = [
+  `const STATUS = {`,
+  `  ok: { bg: 'bg-success', ring: 'ring-success', pulse: false },`,
+  `  bad: { bg: 'bg-errorx', ring: 'ring-error', pulse: true },`,
+  `};`,
+  `const BADGE = { tone: 'text-accent', shape: { corner: 'rounded-full' } };`,
+  `const WEIGHTS = ['font-medium', 'font-semibold'];`,
+  `export const Dot = ({ status }: Props) => {`,
+  `  const { bg, ring: outline = 'ring-accent', pulse } = STATUS[status];`,
+  `  const { tone, shape: { corner }, gap = 'gap-1' } = BADGE;`,
+  `  const [weight] = WEIGHTS;`,
+  `  return (`,
+  `    <span className={cn('inline-block', bg, outline, pulse && 'animate-pulse')}>`,
+  `      <i className={\`\${tone} \${corner} \${gap} \${weight}\`} />`,
+  `    </span>`,
+  `  );`,
+  `};`,
+].join('\n');
+
 describe('collectRenderedClasses', () => {
   it('reads className, *ClassName and *Class attributes, and no other text', () => {
     expect(
@@ -162,6 +181,29 @@ describe('collectRenderedClasses', () => {
   it('reports a misspelled class behind a keyed lookup where it is written', async () => {
     expect(await classesWithoutCss(collect({ 'Avatar.tsx': KEYED_LOOKUP }))).toEqual([
       'src/Avatar.tsx:3 h-8x',
+    ]);
+  });
+
+  it('reads the classes that destructuring takes from a map, with renames and defaults', () => {
+    expect(names({ 'Dot.tsx': DESTRUCTURING })).toEqual([
+      'inline-block',
+      'bg-success',
+      'bg-errorx',
+      'ring-success',
+      'ring-error',
+      'ring-accent',
+      'animate-pulse',
+      'text-accent',
+      'rounded-full',
+      'gap-1',
+      'font-medium',
+      'font-semibold',
+    ]);
+  });
+
+  it('reports a misspelled class that destructuring takes where it is written', async () => {
+    expect(await classesWithoutCss(collect({ 'Dot.tsx': DESTRUCTURING }))).toEqual([
+      'src/Dot.tsx:3 bg-errorx',
     ]);
   });
 

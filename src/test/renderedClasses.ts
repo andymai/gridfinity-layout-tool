@@ -13,7 +13,7 @@ interface SourceUnit {
 }
 
 type Declaration =
-  | { readonly kind: 'value'; readonly unit: SourceUnit; readonly node: ts.Expression }
+  | { readonly kind: 'value'; readonly values: readonly Located<ts.Expression>[] }
   | {
       readonly kind: 'function';
       readonly unit: SourceUnit;
@@ -26,6 +26,15 @@ interface Located<T extends ts.Node> {
 }
 
 type ObjectOrArray = ts.ObjectLiteralExpression | ts.ArrayLiteralExpression;
+
+/** One level of a destructuring pattern, from the outer value in. */
+interface BindingStep {
+  /** The property that the step reads; `undefined` reads every entry. */
+  readonly key: string | undefined;
+  readonly indexed: boolean;
+  readonly rest: boolean;
+  readonly fallback: ts.Expression | undefined;
+}
 
 const SRC_DIR = resolve(import.meta.dirname, '..');
 const CLASS_ATTRIBUTE = /(^c|C)lass(Name)?$/;
@@ -81,6 +90,32 @@ function literalKey(node: ts.Expression): string | undefined {
     ts.isNumericLiteral(expression)
   ) {
     return expression.text;
+  }
+  return undefined;
+}
+
+function bindingKey(element: ts.BindingElement): string | undefined {
+  const property = element.propertyName;
+  if (property === undefined) return ts.isIdentifier(element.name) ? element.name.text : undefined;
+  return ts.isComputedPropertyName(property)
+    ? literalKey(property.expression)
+    : propertyName(property);
+}
+
+function bindingPath(pattern: ts.BindingName, name: string): BindingStep[] | undefined {
+  if (ts.isIdentifier(pattern)) return pattern.text === name ? [] : undefined;
+  for (const element of pattern.elements) {
+    if (ts.isOmittedExpression(element)) continue;
+    const inner = bindingPath(element.name, name);
+    if (inner === undefined) continue;
+    const key = ts.isObjectBindingPattern(pattern) ? bindingKey(element) : undefined;
+    const step: BindingStep = {
+      key,
+      indexed: key === undefined,
+      rest: element.dotDotDotToken !== undefined,
+      fallback: element.initializer,
+    };
+    return [step, ...inner];
   }
   return undefined;
 }
@@ -188,23 +223,24 @@ export function collectRenderedClasses(
     return undefined;
   };
 
-  const bindingDefault = (
+  // A binding can hold what its path reads from the source and each default
+  // on the way, so it stands for all of them.
+  const bindingValues = (
     unit: SourceUnit,
     pattern: ts.BindingName,
+    source: ts.Expression | undefined,
     name: string
   ): Declaration | 'shadowed' | undefined => {
-    if (ts.isIdentifier(pattern)) return pattern.text === name ? 'shadowed' : undefined;
-    for (const element of pattern.elements) {
-      if (ts.isOmittedExpression(element)) continue;
-      if (ts.isIdentifier(element.name) && element.name.text === name) {
-        return element.initializer !== undefined
-          ? { kind: 'value', unit, node: element.initializer }
-          : 'shadowed';
+    const path = bindingPath(pattern, name);
+    if (path === undefined) return undefined;
+    let values: Located<ts.Expression>[] = source === undefined ? [] : [{ unit, node: source }];
+    for (const step of path) {
+      if (!step.rest) {
+        values = values.flatMap((v) => readMember(v.unit, v.node, step.key, step.indexed));
       }
-      const nested = bindingDefault(unit, element.name, name);
-      if (nested !== undefined) return nested;
+      if (step.fallback !== undefined) values = [...values, { unit, node: step.fallback }];
     }
-    return undefined;
+    return values.length > 0 ? { kind: 'value', values } : 'shadowed';
   };
 
   const declarationIn = (
@@ -220,9 +256,9 @@ export function collectRenderedClasses(
           const value = unwrap(declaration.initializer);
           return ts.isArrowFunction(value) || ts.isFunctionExpression(value)
             ? { kind: 'function', unit, node: value }
-            : { kind: 'value', unit, node: declaration.initializer };
+            : { kind: 'value', values: [{ unit, node: declaration.initializer }] };
         }
-        const fromPattern = bindingDefault(unit, declaration.name, name);
+        const fromPattern = bindingValues(unit, declaration.name, declaration.initializer, name);
         if (fromPattern !== undefined) return fromPattern;
       }
     }
@@ -270,7 +306,7 @@ export function collectRenderedClasses(
     for (let scope: ts.Node | undefined = identifier.parent; scope; scope = scope.parent) {
       if (ts.isFunctionLike(scope)) {
         for (const parameter of scope.parameters) {
-          const fromParameter = bindingDefault(unit, parameter.name, name);
+          const fromParameter = bindingValues(unit, parameter.name, parameter.initializer, name);
           if (fromParameter === 'shadowed') return undefined;
           if (fromParameter !== undefined) return fromParameter;
         }
@@ -291,7 +327,7 @@ export function collectRenderedClasses(
     if (ts.isIdentifier(expression)) {
       const declaration = resolveIdentifier(unit, expression);
       return declaration?.kind === 'value'
-        ? resolveObjects(declaration.unit, declaration.node)
+        ? declaration.values.flatMap((v) => resolveObjects(v.unit, v.node))
         : [];
     }
     if (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression)) {
@@ -301,29 +337,35 @@ export function collectRenderedClasses(
   };
 
   // A key known only at runtime (`SIZES[size]`) can select any entry, so the
-  // lookup stands for all of them.
-  const resolveMembers = (
+  // lookup stands for all of them. An array answers only an indexed read.
+  const readMember = (
     unit: SourceUnit,
-    access: ts.PropertyAccessExpression | ts.ElementAccessExpression
-  ): Located<ts.Expression>[] => {
-    const key = ts.isPropertyAccessExpression(access)
-      ? access.name.text
-      : literalKey(access.argumentExpression);
-    return resolveObjects(unit, access.expression).flatMap((owner): Located<ts.Expression>[] => {
-      if (ts.isArrayLiteralExpression(owner.node)) {
-        if (ts.isPropertyAccessExpression(access)) return [];
-        return owner.node.elements
+    owner: ts.Expression,
+    key: string | undefined,
+    indexed: boolean
+  ): Located<ts.Expression>[] =>
+    resolveObjects(unit, owner).flatMap((container): Located<ts.Expression>[] => {
+      if (ts.isArrayLiteralExpression(container.node)) {
+        if (!indexed) return [];
+        return container.node.elements
           .filter((e) => !ts.isOmittedExpression(e))
-          .map((e) => ({ unit: owner.unit, node: ts.isSpreadElement(e) ? e.expression : e }));
+          .map((e) => ({ unit: container.unit, node: ts.isSpreadElement(e) ? e.expression : e }));
       }
-      return owner.node.properties
+      return container.node.properties
         .filter(
           (p): p is ts.PropertyAssignment =>
             ts.isPropertyAssignment(p) && (key === undefined || propertyName(p.name) === key)
         )
-        .map((p) => ({ unit: owner.unit, node: p.initializer }));
+        .map((p) => ({ unit: container.unit, node: p.initializer }));
     });
-  };
+
+  const resolveMembers = (
+    unit: SourceUnit,
+    access: ts.PropertyAccessExpression | ts.ElementAccessExpression
+  ): Located<ts.Expression>[] =>
+    ts.isPropertyAccessExpression(access)
+      ? readMember(unit, access.expression, access.name.text, false)
+      : readMember(unit, access.expression, literalKey(access.argumentExpression), true);
 
   const scanReturns = (unit: SourceUnit, fn: ts.FunctionLikeDeclaration): void => {
     if (fn.body === undefined) return;
@@ -343,8 +385,8 @@ export function collectRenderedClasses(
 
   const scanDeclaration = (declaration: Declaration | undefined): void => {
     if (declaration === undefined) return;
-    if (declaration.kind === 'value') scanClasses(declaration.unit, declaration.node);
-    else scanReturns(declaration.unit, declaration.node);
+    if (declaration.kind === 'function') scanReturns(declaration.unit, declaration.node);
+    else for (const value of declaration.values) scanClasses(value.unit, value.node);
   };
 
   const scanValues = (unit: SourceUnit, node: ts.Expression): void => {
