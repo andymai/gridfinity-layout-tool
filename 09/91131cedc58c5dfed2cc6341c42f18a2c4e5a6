@@ -1,0 +1,27 @@
+scripts/docs-capture/shots/recipes.ts
+  s_7dc03ec4cfdd4b::t_0a91fe26a61237 2026
+  s_7dc03ec4cfdd4b::t_ea076c22769dd7 1504,1507-1510,1524-1531,1533
+  s_7dc03ec4cfdd4b::t_b674d2945d5b14 1505-1506,1511-1523,1532,1534-1538
+apps/docs/recipes/electronics-craft-organizer.md
+  s_7dc03ec4cfdd4b::t_a190bf2adc3925 116
+  s_7dc03ec4cfdd4b::t_857a84dfd30a71 115
+apps/docs/media/recipes-electronics-craft-organizer-bin-list.json
+  s_7dc03ec4cfdd4b::t_b8e15daf4d5e12 1-3,5
+  s_7dc03ec4cfdd4b::t_ea076c22769dd7 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0991131cedc58c5dfed2cc6341c42f18a2c4e5a6",
+  "prompts": {},
+  "sessions": {
+    "s_7dc03ec4cfdd4b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6e1971db-3144-4b89-9c8a-56a37ed47e41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
