@@ -1,0 +1,709 @@
+apps/docs/baseplates/odd-shaped-drawers.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 46-47
+apps/docs/cutouts/photo-trace.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 23-24,69-70,87
+  s_1cc363bb3cc76d::t_58cba1bcc4b5df 88
+apps/docs/media/baseplates-basics-margins.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/getting-started/first-bin.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 37-38,48-49,72-73,83
+  s_1cc363bb3cc76d::t_e1a846828b7769 84
+apps/docs/media/designer-colors-split-lip.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+api/share/[id].test.ts
+  s_1cc363bb3cc76d::t_7eac85147c26d9 11-12,19-20,49-50,105-134,379-531
+  s_1cc363bb3cc76d::t_ca1660487e42a6 532-533
+apps/docs/designer/labels-and-text.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 109-110,129-130,137
+  s_1cc363bb3cc76d::t_393356b06d4f14 138
+apps/docs/media/designer-getting-things-out-fillet.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/getting-started-first-drawer-create-design.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/layouts/organizing-layouts.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 27-28,75-76,96
+  s_1cc363bb3cc76d::t_7cbe623d3c1fac 97
+apps/docs/media/designer-special-bins-sliding-tray.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/designer/size-and-shape.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 60-61,91-92,105
+  s_1cc363bb3cc76d::t_364d5153f124b4 106
+apps/docs/layouts/multi-select.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 30-31,66-67,79-80,91-92,113
+  s_1cc363bb3cc76d::t_8d665771aa6ede 114
+apps/docs/baseplates/splitting.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 27-28,76-77,106
+  s_1cc363bb3cc76d::t_f15ef193a42eed 107
+apps/docs/media/baseplates-basics-size-mm.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-walls-handles.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-colors-save-palette.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/baseplates/basics.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 52-53,62-63,66
+  s_1cc363bb3cc76d::t_3790ab8701a61f 67
+apps/docs/layouts/drawer-setup.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 38-39,60-61,89-90,126
+  s_1cc363bb3cc76d::t_ae33b8572dd677 127
+apps/docs/media/baseplates-splitting-export.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-save-and-reuse-examples.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-basics-open.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-label-plates-fit.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-lids-sliding.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-size-and-shape-body-type.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-walls-label-slots.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-basics-draw.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/getting-started-first-bin-export.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+.claude/skills/share-api-collab/SKILL.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 23
+apps/docs/media/designer-compartments-floor-raise.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-workshop-shadow-board.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-save-and-reuse-create-variant.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-label-plates-icon.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-arranging-group.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/layouts/placing-bins.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 28-29,37-38,47-48,55-56,61-62,73,88-89,142
+  s_1cc363bb3cc76d::t_8898044750d137 143
+apps/docs/designer/save-and-reuse.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 50-51,54,67-68,100-101,123
+  s_1cc363bb3cc76d::t_f1cd3ba57f8e25 124
+apps/docs/media/designer-labels-and-text-floor-text.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/cutouts/import-svg-stl.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 48-49,73-74,94
+  s_1cc363bb3cc76d::t_8774bc161c77f6 95
+apps/docs/media/designer-save-and-reuse-versions.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/getting-started-first-baseplate-export.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+api/lib/shared.ts
+  s_1cc363bb3cc76d::t_7eac85147c26d9 295-322
+apps/docs/media/designer-lids-top-surface.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/getting-started-first-drawer-edit-bin.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/getting-started/first-baseplate.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 51-52,62,75
+  s_1cc363bb3cc76d::t_7059ef4df8ca9a 76
+apps/docs/media/designer-stacking-round-rim.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/getting-started-first-bin-size.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/baseplates-magnets-magnet-settings.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/getting-started/first-drawer.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 68-69,80-81,88-89,106-108,112
+  s_1cc363bb3cc76d::t_048fc9a76b5d39 113
+apps/docs/media/getting-started-workspace-tour-help-search.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-print-checks-fit-test.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/layouts/layers.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 40-41,58-59,66
+  s_1cc363bb3cc76d::t_5810f007bf6990 67
+apps/docs/media/getting-started-first-drawer-export.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/cutouts/arranging.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 68-69,87-88,108-109,123-124,135
+  s_1cc363bb3cc76d::t_846a5dd9470389 136
+apps/docs/media/designer-special-bins-handle-rest.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-import-export-svg.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/cutouts/basics.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 26-27,38-39,101-102,125
+  s_1cc363bb3cc76d::t_56b38b1b4695b3 126
+apps/docs/cutouts/workshop.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 27-28,47-48,115
+  s_1cc363bb3cc76d::t_328947f966ae56 116
+apps/docs/layouts/find-bins-that-fit.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 57-58
+apps/docs/media/getting-started-first-bin-name.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/layouts/categories.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 31-32,42-43,75
+  s_1cc363bb3cc76d::t_408b975e90fe76 76
+apps/docs/getting-started/workspace-tour.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 93-94,121-122,142
+  s_1cc363bb3cc76d::t_ba7363aeeba09d 143
+apps/docs/media/getting-started-first-drawer-grid-edits.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-compartments-removable.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/getting-started-workspace-tour-phone.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/cutouts/print-checks.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 65-66
+apps/docs/media/getting-started-first-bin-label-tab.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/designer/walls.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 91-92,123-124,135
+  s_1cc363bb3cc76d::t_4954067fda9e90 136
+apps/docs/media/getting-started-first-baseplate-magnets.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.test.ts
+  s_1cc363bb3cc76d::t_f1cc90e5595d79 4,8,112-159
+  s_1cc363bb3cc76d::t_ed582f3dcb5941 160
+apps/docs/media/baseplates-basics-fit-drawer.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-lids-needs-stacking-lip.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/getting-started-workspace-tour-designer.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-arranging-repeat-labels.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-compartments-diagonal.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-walls-cutouts.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-photo-trace-open.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/designer/stacking.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 37-38,78
+  s_1cc363bb3cc76d::t_9bf8721bddea4b 79
+apps/docs/media/baseplates-eco-plate.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-photo-trace-islands.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+api/share/[id].ts
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1,35,121-143,146-150,169-170,174,182-189,195-242,245-246,248-252,255,263-290,390-391,398
+apps/docs/media/designer-size-and-shape-overhang.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-workshop-place.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/designer/compartments.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 66-67,83-84,104-105,118
+  s_1cc363bb3cc76d::t_2da3f8259eb441 119
+apps/docs/media/cutouts-photo-trace-view.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/designer/getting-things-out.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 63-64,107
+  s_1cc363bb3cc76d::t_c4f165ddd38286 108
+apps/docs/media/designer-stacking-nesting.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-labels-and-text-suggestions.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+.claude/hooks/result-exhaustion-check.sh
+  s_1cc363bb3cc76d::t_7eac85147c26d9 22-28,36,43,64-69
+apps/docs/media/baseplates-splitting-bed-size.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/designer/colors.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 56-57,70-71,82-83,107
+  s_1cc363bb3cc76d::t_27ca78caf2be6c 108
+apps/docs/concepts/saved-designs.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 79
+apps/docs/media/baseplates-magnets-underside.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-base-detachable-feet.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-colors-flat-text.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+api/lib/communityList.ts
+  s_1cc363bb3cc76d::t_7eac85147c26d9 167-172
+apps/docs/media/designer-labels-and-text-finish.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/baseplates-splitting-connectors.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-basics-label.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-save-and-reuse-place-in-layout.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-colors-accent-bands.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-getting-things-out-center-tab.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+.claude/skills/grid-editor/SKILL.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 69-82
+apps/docs/media/cutouts-arranging-auto-arrange.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-phone-scan-start.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-basics-wall-opening.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-base-half-sockets.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/designer/base.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 73-74,92
+  s_1cc363bb3cc76d::t_6b7663b1b0900d 93
+apps/docs/media/baseplates-eco-stack-copies.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-arranging-align.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-import-svg.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/designer/special-bins.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 52-53,93
+  s_1cc363bb3cc76d::t_938dd0a80ad432 94
+apps/docs/cutouts/phone-scan.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 65-66,100
+  s_1cc363bb3cc76d::t_3a05a1877044e6 101
+apps/docs/media/designer-label-plates-sockets.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/baseplates-odd-shaped-grid-position.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/baseplates/magnets-and-screws.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 39-40,79
+  s_1cc363bb3cc76d::t_a009d2b967167d 80
+apps/docs/media/getting-started-first-drawer-3d-view.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/baseplates/eco-and-stack-printing.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 26-27,47
+  s_1cc363bb3cc76d::t_cec0f7e609a73e 48
+apps/docs/media/cutouts-phone-scan-arrives.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/designer/lids.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 59-60,85-86,127
+  s_1cc363bb3cc76d::t_da59e2e69e22ed 128
+apps/docs/media/cutouts-import-stl-result.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-workshop-start.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/designer-size-and-shape-half-grid.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-arranging-off-board.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/designer/label-plates.md
+  s_1cc363bb3cc76d::t_7eac85147c26d9 27-28,58-59,78
+  s_1cc363bb3cc76d::t_d98d40855b6b9b 79
+apps/docs/media/designer-compartments-bento-draw.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/cutouts-photo-trace-cleanup.json
+  s_1cc363bb3cc76d::t_7eac85147c26d9 1-5
+apps/docs/media/layouts-categories-add.json
+  s_1cc363bb3cc76d::t_f76f6347b288f7 1-5
+apps/docs/media/layouts-categories-assign.json
+  s_1cc363bb3cc76d::t_d24761974eeac5 1-5
+apps/docs/media/layouts-categories-patterns.json
+  s_1cc363bb3cc76d::t_4fea4468ab8f6e 1-5
+apps/docs/media/layouts-drawer-setup-drag-edge.json
+  s_1cc363bb3cc76d::t_91cebb9ff8cb40 1-5
+apps/docs/media/layouts-drawer-setup-height-check.json
+  s_1cc363bb3cc76d::t_8395da42181c17 1-5
+apps/docs/media/layouts-drawer-setup-measured.json
+  s_1cc363bb3cc76d::t_b7334c694478f5 1-5
+apps/docs/media/layouts-drawer-setup-shape.json
+  s_1cc363bb3cc76d::t_6b7a708db2d62e 1-5
+apps/docs/media/layouts-find-bins-size-suggestion.json
+  s_1cc363bb3cc76d::t_05a9d636a631c6 1-5
+apps/docs/media/layouts-layers-add-rename.json
+  s_1cc363bb3cc76d::t_68769fba580044 1-5
+apps/docs/media/layouts-layers-clearance.json
+  s_1cc363bb3cc76d::t_441cf0505f42e7 1-5
+apps/docs/media/layouts-layers-stack.json
+  s_1cc363bb3cc76d::t_ef2647c0c7e1f2 1-5
+apps/docs/media/layouts-multi-select-align.json
+  s_1cc363bb3cc76d::t_a519a1a4865c7c 1-5
+apps/docs/media/layouts-multi-select-bin-menu.json
+  s_1cc363bb3cc76d::t_c57530b79b91a7 1-5
+apps/docs/media/layouts-multi-select-inspector.json
+  s_1cc363bb3cc76d::t_70c3709128462e 1-5
+apps/docs/media/layouts-multi-select-merge-dialog.json
+  s_1cc363bb3cc76d::t_c50f075bfcfd36 1-5
+apps/docs/media/layouts-multi-select-rows.json
+  s_1cc363bb3cc76d::t_1631443d970f2f 1-5
+apps/docs/media/layouts-organizing-history.json
+  s_1cc363bb3cc76d::t_c96693688d808f 1-5
+apps/docs/media/layouts-organizing-new-folder.json
+  s_1cc363bb3cc76d::t_1af9134e40e993 1-5
+apps/docs/media/layouts-organizing-switch-menu.json
+  s_1cc363bb3cc76d::t_df9fa67a5c0386 1-5
+apps/docs/media/layouts-placing-bins-blocked.json
+  s_1cc363bb3cc76d::t_5070c63e06335a 1-5
+apps/docs/media/layouts-placing-bins-draw.json
+  s_1cc363bb3cc76d::t_03e84a208428bb 1-5
+apps/docs/media/layouts-placing-bins-expand-to-fit.json
+  s_1cc363bb3cc76d::t_9a61a9eb646d06 1-5
+apps/docs/media/layouts-placing-bins-move-copy.json
+  s_1cc363bb3cc76d::t_44e0ea0fda84f3 1-5
+apps/docs/media/layouts-placing-bins-resize.json
+  s_1cc363bb3cc76d::t_bab17c1f283282 1-5
+apps/docs/media/layouts-placing-bins-rotate.json
+  s_1cc363bb3cc76d::t_9efe547d55ee68 1-5
+apps/docs/media/layouts-placing-bins-size-brush.json
+  s_1cc363bb3cc76d::t_f47059047038b3 1-5
+apps/docs/media/printing-estimates-settings.json
+  s_1cc363bb3cc76d::t_74fe34b11605b3 1-5
+apps/docs/media/printing-file-formats-destination.json
+  s_1cc363bb3cc76d::t_197d374bbfdd2d 1-5
+apps/docs/media/printing-print-list-export.json
+  s_1cc363bb3cc76d::t_c0327845446e1a 1-5
+apps/docs/media/printing-print-list-find-models.json
+  s_1cc363bb3cc76d::t_7ca8959a7c8fcb 1-5
+apps/docs/media/printing-print-list-paper.json
+  s_1cc363bb3cc76d::t_8fdb777b9f291c 1-5
+apps/docs/media/printing-print-list-split-row.json
+  s_1cc363bb3cc76d::t_8f1ecd25d57670 1-5
+apps/docs/media/printing-troubleshooting-blank-labels.json
+  s_1cc363bb3cc76d::t_a1da3377ac173f 1-5
+apps/docs/media/recipes-deep-tool-drawer-bottom-layer.json
+  s_1cc363bb3cc76d::t_36099647bd163c 1-5
+apps/docs/media/recipes-deep-tool-drawer-tray-layer.json
+  s_1cc363bb3cc76d::t_f32d3733928dec 1-5
+apps/docs/media/recipes-electronics-craft-organizer-categories.json
+  s_1cc363bb3cc76d::t_be0041ef7e4c1e 1-5
+apps/docs/media/recipes-hand-tool-pockets-finger-access.json
+  s_1cc363bb3cc76d::t_ee4fae81413a25 1-5
+apps/docs/media/recipes-kitchen-utensil-drawer-long-bin.json
+  s_1cc363bb3cc76d::t_9a288d366fb391 1-5
+apps/docs/media/recipes-kitchen-utensil-drawer-padding.json
+  s_1cc363bb3cc76d::t_d8f8f11e6f9231 1-5
+apps/docs/media/recipes-screw-drawer-copy-row.json
+  s_1cc363bb3cc76d::t_dbb997725098b5 1-5
+apps/docs/media/recipes-screw-drawer-draw-kinds.json
+  s_1cc363bb3cc76d::t_60be2933bccf32 1-5
+apps/docs/media/recipes-screw-drawer-label-suggest.json
+  s_1cc363bb3cc76d::t_9ea6b8998e57d3 1-5
+apps/docs/media/settings-keyboard-designer-search.json
+  s_1cc363bb3cc76d::t_0346ca9801f42e 1-5
+apps/docs/media/settings-keyboard-help-search.json
+  s_1cc363bb3cc76d::t_a39eea6170aa97 1-5
+apps/docs/media/settings-keyboard-palette-disabled.json
+  s_1cc363bb3cc76d::t_77e6aa03aadd67 1-5
+apps/docs/media/settings-keyboard-palette-run.json
+  s_1cc363bb3cc76d::t_bc7b8554c6180c 1-5
+apps/docs/media/settings-labs-bin-contents.json
+  s_1cc363bb3cc76d::t_ff393ede378af7 1-5
+apps/docs/media/settings-labs-find.json
+  s_1cc363bb3cc76d::t_baef3cc2f385ee 1-5
+apps/docs/media/settings-settings-defaults.json
+  s_1cc363bb3cc76d::t_0c8197a35a3052 1-5
+apps/docs/media/settings-settings-search.json
+  s_1cc363bb3cc76d::t_25c001bebf92e7 1-5
+apps/docs/media/settings-spacemouse-driver.json
+  s_1cc363bb3cc76d::t_41f932350e2fd0 1-5
+apps/docs/media/sharing-accounts-account-tab.json
+  s_1cc363bb3cc76d::t_61ebebc6b5e147 1-5
+apps/docs/media/sharing-accounts-sign-out.json
+  s_1cc363bb3cc76d::t_bcccea6c5b8391 1-5
+apps/docs/media/sharing-community-design-page.json
+  s_1cc363bb3cc76d::t_5b9ce2fb86e9c4 1-5
+apps/docs/media/sharing-community-open-gallery.json
+  s_1cc363bb3cc76d::t_13955df5b6a2a5 1-5
+apps/docs/media/sharing-community-post-print.json
+  s_1cc363bb3cc76d::t_04fda0555b357a 1-5
+apps/docs/media/sharing-community-publish-checks.json
+  s_1cc363bb3cc76d::t_ca7ece54f7d6d5 1-5
+apps/docs/media/sharing-community-report.json
+  s_1cc363bb3cc76d::t_c2c9937acc89fb 1-5
+apps/docs/media/sharing-share-links-blocked.json
+  s_1cc363bb3cc76d::t_cc217a2b5304da 1-5
+apps/docs/media/sharing-share-links-manage.json
+  s_1cc363bb3cc76d::t_506568cd260e05 1-5
+apps/docs/media/sharing-share-links-popover.json
+  s_1cc363bb3cc76d::t_47a25d6424a476 2-4
+apps/docs/media/sharing-share-links-without-server.json
+  s_1cc363bb3cc76d::t_f5589dd15b452a 1-5
+apps/docs/printing/estimates.md
+  s_1cc363bb3cc76d::t_98069548caa954 49-50
+apps/docs/printing/file-formats.md
+  s_1cc363bb3cc76d::t_8d07fbca6baaa2 88-89
+apps/docs/printing/print-list-and-zip.md
+  s_1cc363bb3cc76d::t_180a1c0dc95586 32-33,48-49,60-61,75-76
+apps/docs/printing/troubleshooting.md
+  s_1cc363bb3cc76d::t_aec8d748a422a9 79-80
+apps/docs/recipes/deep-tool-drawer.md
+  s_1cc363bb3cc76d::t_ca507245ce8a9c 65-66,74-75
+apps/docs/recipes/electronics-craft-organizer.md
+  s_1cc363bb3cc76d::t_7f97c9cdde4335 63-64
+apps/docs/recipes/hand-tool-pockets.md
+  s_1cc363bb3cc76d::t_d818d115ad8805 76-77
+apps/docs/recipes/kitchen-utensil-drawer.md
+  s_1cc363bb3cc76d::t_cba87b1939ba8e 65-66,80-81
+apps/docs/recipes/screw-drawer.md
+  s_1cc363bb3cc76d::t_ca9a1dde651173 56-57,79-80,83-84
+apps/docs/settings/keyboard-and-command-palette.md
+  s_1cc363bb3cc76d::t_3735ec12e33e40 38-39,65-66,82-83,98-99
+apps/docs/settings/labs.md
+  s_1cc363bb3cc76d::t_ed7d7dd3d9bea4 38-39,42-43
+apps/docs/settings/settings.md
+  s_1cc363bb3cc76d::t_f93d3dc29854a0 23-24,76-77
+apps/docs/settings/spacemouse.md
+  s_1cc363bb3cc76d::t_1fe1631d845da4 35-36
+apps/docs/sharing/accounts-and-sync.md
+  s_1cc363bb3cc76d::t_47c55ee37e62df 85-86,97-98
+apps/docs/sharing/community.md
+  s_1cc363bb3cc76d::t_ac23c74dd77312 25-26,67-68,120-121,139-140,151-152
+apps/docs/sharing/share-links.md
+  s_1cc363bb3cc76d::t_5e70143e01b535 36,87-88,110-111,128-129
+scripts/check-doc-drift.test.ts
+  s_1cc363bb3cc76d::t_82e13f8d5b4be0 61-68
+scripts/check-doc-drift.ts
+  s_1cc363bb3cc76d::t_2c0a15f7e26d98 109-117,120-122,124
+scripts/check-union-exhaustiveness.sh
+  s_1cc363bb3cc76d::t_5ca80c6435937f 30
+scripts/docs-capture/shots/baseplatesPrinting.ts
+  s_1cc363bb3cc76d::t_f3049a829d6138 2-3,11,360-397,437-933,1090-1382,1390,1392-1401,1407-1413
+scripts/docs-capture/shots/cutouts.ts
+  s_1cc363bb3cc76d::t_14c7a8b4410a4b 2,5,7,863-2425,2428-2431,2433,2435-2438,2440,2442-2447,2449-2450,2452,2454-2455,2457
+scripts/docs-capture/shots/designerBody.ts
+  s_1cc363bb3cc76d::t_db59dfa9aa81ad 5,8,147-156,459-475,482,618-635,657-708,716,718,726-1679,1682-1683,1686-1689,1691-1692,1694-1695,1697,1699-1700,1702-1703,1707,1709-1710
+scripts/docs-capture/shots/designerDetails.ts
+  s_1cc363bb3cc76d::t_16b8454c9438e8 9,406-407,450-453,719-1651,1654-1656,1659-1660,1663-1665,1667-1668,1670-1672,1675-1676,1678-1679
+scripts/docs-capture/shots/gettingStarted.ts
+  s_1cc363bb3cc76d::t_f800578dfdd05a 7-8,299-1060,1072-1085
+scripts/docs-capture/shots/layouts.ts
+  s_1cc363bb3cc76d::t_fc38d2a8995f4f 2,4,872-897,903-905,914-916,957,982-2370,2373-2398
+scripts/docs-capture/shots/recipes.ts
+  s_1cc363bb3cc76d::t_0e99917b4d65c4 5,9,12-112,633-803,921-1038,1158-1243,1415-1478,1789,1801-1819,1822-1858,1864-1913,1974,1976-1977,1980-1981,1985-1986,1989,1992
+scripts/docs-capture/shots/sharingSettings.ts
+  s_1cc363bb3cc76d::t_f8dbe6df5afd42 7-8,10,37-38,43-96,859-1802,1805,1819-1837
+scripts/resultExhaustionHook.test.ts
+  s_1cc363bb3cc76d::t_a7e64d7bc04e60 1-130
+src/App.test.tsx
+  s_1cc363bb3cc76d::t_09c66f533fe295 1-43
+src/App.tsx
+  s_1cc363bb3cc76d::t_9743e9c240a32f 4,243,506-508
+src/core/cqrs/v2/domain/layer/reorderLayers.test.ts
+  s_1cc363bb3cc76d::t_a96fb5f3e1ff13 3,41-44,48-75
+src/core/cqrs/v2/domain/layer/reorderLayers.ts
+  s_1cc363bb3cc76d::t_43e9e156dba26b 58
+src/core/storage/ShareService.test.ts
+  s_1cc363bb3cc76d::t_bc7e1b0e8f48e7 1144,1159,1166-1167,1179-1180,1243-1298,1307-1308,1317,1372-1373
+src/core/storage/ShareService.ts
+  s_1cc363bb3cc76d::t_f491bb4f8b4186 354-357,370-371,376-385,389,468,471-478
+src/core/store/halfGridMode.test.ts
+  s_1cc363bb3cc76d::t_c37bbb0701c310 9,367-426
+src/core/store/halfGridMode.ts
+  s_1cc363bb3cc76d::t_42725e719cfc96 3,8,50-53,71-79,90,92-94,110-111,145-155
+src/core/store/sharedPreview.test.ts
+  s_1cc363bb3cc76d::t_0b6f4233fea135 48-65
+src/core/store/sharedPreview.ts
+  s_1cc363bb3cc76d::t_feb57a93499ae2 28-29,48-49,74-75,86
+src/design-system/Combobox/Combobox.test.tsx
+  s_1cc363bb3cc76d::t_eeeea29c6d7a63 56-72,80,88-171,203-223,250
+src/design-system/Combobox/Combobox.tsx
+  s_1cc363bb3cc76d::t_0381ca847945b4 77-78,108-111,122,153,183,192-193,195-200,236-238,242,252,287-289
+src/features/baseplate/components/BaseplatePage/BaseplatePage.test.tsx
+  s_1cc363bb3cc76d::t_41a5aae8480754 5-6,138-167
+src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
+  s_1cc363bb3cc76d::t_36db00dd39bd14 392
+src/features/bin-designer/components/ExampleGallery/ExampleGalleryContent.test.tsx
+  s_1cc363bb3cc76d::t_e475f004661de2 11-17,49
+src/features/bin-designer/components/VersionHistory/VersionHistory.test.tsx
+  s_1cc363bb3cc76d::t_477f39b30201c5 15-16,39-40,193-251
+src/features/bin-designer/components/VersionHistory/VersionHistory.tsx
+  s_1cc363bb3cc76d::t_371b876b43c2d2 99-103
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_1cc363bb3cc76d::t_84d75fbc3a9d00 217-227
+src/features/bin-designer/components/panel/VariantSection/VariantSection.test.tsx
+  s_1cc363bb3cc76d::t_ed0bcec1463aed 118-148
+src/features/bin-designer/components/panel/VariantSection/VariantSection.tsx
+  s_1cc363bb3cc76d::t_8971cb9f98c1f2 32-38,132,152,220,240
+src/features/bin-inspector/components/Inspector/BinLabelField/BinLabelField.test.tsx
+  s_1cc363bb3cc76d::t_f32a84182d391d 2,5,57-107
+src/features/bin-inspector/components/Inspector/SplitWarning/SplitWarning.test.tsx
+  s_1cc363bb3cc76d::t_f9fcd51136201d 22-34
+src/features/bin-inspector/hooks/useBinInspector.test.ts
+  s_1cc363bb3cc76d::t_22e5207608a21d 974-994
+src/features/bin-inspector/hooks/useBinInspector.ts
+  s_1cc363bb3cc76d::t_993dbe7106e056 429
+src/features/cloud-share/components/SharedLayoutBanner/SharedLayoutBanner.savedName.test.tsx
+  s_1cc363bb3cc76d::t_0175c17f7ca034 1-40
+src/features/cloud-share/components/SharedLayoutBanner/SharedLayoutBanner.test.tsx
+  s_1cc363bb3cc76d::t_e57871eea69f18 12-14,212,224,230-232,238-240,271,283,294,301,304,307-314,321,339,343,350,365,382,395,399,401,416
+src/features/cloud-share/components/SharedLayoutBanner/SharedLayoutBanner.tsx
+  s_1cc363bb3cc76d::t_64d6ddaed4f947 79,186
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.test.tsx
+  s_1cc363bb3cc76d::t_01ef51ade5aaa6 15-17,170-205
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.tsx
+  s_1cc363bb3cc76d::t_1737866759d5d6 113-114,123-124,254,258-260,283-284
+src/features/cloud-share/hooks/useCloudShare.test.ts
+  s_1cc363bb3cc76d::t_5a25076b6236d2 18,293-296,399-532
+src/features/cloud-share/hooks/useCloudShare.ts
+  s_1cc363bb3cc76d::t_3cc8ce1b9d753e 155-165,170,172,178,199,205,210,253,256,269,281,310-318
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.ts
+  s_1cc363bb3cc76d::t_de469e6cd3cd97 123,125,251,445,521
+src/features/community/api/client.test.ts
+  s_1cc363bb3cc76d::t_679b1c3697a3cc 725-748,976-993
+src/features/community/api/client.ts
+  s_1cc363bb3cc76d::t_9751a834b4e171 146
+src/features/community/api/clientGuards.ts
+  s_1cc363bb3cc76d::t_eebfaa4b4edef8 95
+src/features/community/components/PrintsSection/PrintsSection.test.tsx
+  s_1cc363bb3cc76d::t_02e2263b493008 57-62,76,94,105,131,139,160,178,185,195,204,234
+src/features/community/store/browseFilters.crossBoundary.test.ts
+  s_1cc363bb3cc76d::t_70dd50fb416f4d 1-82
+src/features/community/store/browseFilters.ts
+  s_1cc363bb3cc76d::t_d06122add9e4b6 135-137,154-158
+src/features/community/store/browseStore.test.ts
+  s_1cc363bb3cc76d::t_054c90d4533a28 358-392
+src/features/community/utils/similarDesigns.test.ts
+  s_1cc363bb3cc76d::t_347edc2f3f31c5 153-164
+src/features/community/utils/similarDesigns.ts
+  s_1cc363bb3cc76d::t_67cc19e63e697a 45-47,49
+src/features/grid-editor/components/Grid/Grid.test.tsx
+  s_1cc363bb3cc76d::t_48fbb955b463ba 256-263
+src/features/grid-editor/components/Grid/Grid.tsx
+  s_1cc363bb3cc76d::t_ac26afcfdeed06 396-400
+src/features/grid-editor/components/Grid/SelectionToolbar/SelectionToolbar.test.tsx
+  s_1cc363bb3cc76d::t_70fe49a110a6d7 91-97
+src/features/grid-editor/components/Grid/SelectionToolbar/SelectionToolbar.tsx
+  s_1cc363bb3cc76d::t_54879c9d6bd64e 91,93
+src/features/grid-editor/hooks/useInteraction.drag.test.ts
+  s_1cc363bb3cc76d::t_30810db824237e 8,10-11,862-1112
+src/features/grid-editor/hooks/useInteraction.ts
+  s_1cc363bb3cc76d::t_60ee3371e4c854 188,190-192
+src/features/layers/hooks/useLayerListController.test.ts
+  s_1cc363bb3cc76d::t_1e41031027ec14 8-9,110-138
+src/features/layers/hooks/useLayerListController.ts
+  s_1cc363bb3cc76d::t_f956d437e963da 27-28,31-32,36-47,75-76,163-172
+src/features/print-export/components/SortOrderConfig/SortOrderConfig.test.tsx
+  s_1cc363bb3cc76d::t_0b54a1149f492f 52,304
+src/features/print-export/components/SortOrderConfig/SortOrderConfig.tsx
+  s_1cc363bb3cc76d::t_80d1eb255b113a 94-96
+src/features/snapshots/components/RestoreDialog/RestoreDialog.test.tsx
+  s_1cc363bb3cc76d::t_017060239b1f38 48-60
+src/features/snapshots/components/SnapshotEntry/SnapshotEntry.test.tsx
+  s_1cc363bb3cc76d::t_757056dee46da8 41-49
+src/i18n/context.test.tsx
+  s_1cc363bb3cc76d::t_2be7020e8ccd11 171-198
+src/i18n/context.tsx
+  s_1cc363bb3cc76d::t_2b5073c74bb3b3 38,141
+src/i18n/interpolate.test.ts
+  s_1cc363bb3cc76d::t_54a0b49d5fe991 1-27
+src/i18n/interpolate.ts
+  s_1cc363bb3cc76d::t_bbd12c58596348 1-10
+src/i18n/locales/cs.json
+  s_1cc363bb3cc76d::t_a8c45afa44f351 152-155,429-430,2393-2394,2609,3685,3688-3691,3968,4109-4110,4445,4499-4501,4738-4739,4866-4868,5094,5136-5140
+src/i18n/locales/de.json
+  s_1cc363bb3cc76d::t_d9d22149886551 149-151,422-423,2362-2363,2573,3617,3620-3622,3899,4034-4035,4356,4406-4407,4644-4645,4771-4772,4986,5023-5027
+src/i18n/locales/en.ts
+  s_1cc363bb3cc76d::t_c910bea6f58c07 470-471,489-490,583,664-665,701,817,851-852,1693-1694,1772-1776,1922-1924,1935,1938-1941,1943,4438-4439,4590-4592
+src/i18n/locales/es.json
+  s_1cc363bb3cc76d::t_4420cc3ef8b405 149-151,422-423,2362-2363,2573,3617,3620-3622,3899,4034-4035,4356,4406-4407,4644-4645,4771-4772,4986,5023-5027
+src/i18n/locales/fr.json
+  s_1cc363bb3cc76d::t_01652603f0a5c7 149-151,422-423,2362-2363,2573,3617,3620-3622,3899,4034-4035,4356,4406-4407,4644-4645,4771-4772,4986,5023-5027
+src/i18n/locales/it.json
+  s_1cc363bb3cc76d::t_fcb675a2d92a0a 149-151,422-423,2362-2363,2573,3617,3620-3622,3899,4034-4035,4356,4406-4407,4644-4645,4771-4772,4986,5023-5027
+src/i18n/locales/ja.json
+  s_1cc363bb3cc76d::t_32ea7169a022c7 146-147,415-416,2331-2332,2537,3549,3552-3553,3830,3959-3960,4267,4314,4551-4552,4677,4879,4911-4915
+src/i18n/locales/ka.json
+  s_1cc363bb3cc76d::t_170281109b80a3 434-435,450-451,540,611-612,646,757,787-788,1477,1552-1556,1678-1680,1686,1688-1689,1691,3711-3712,3837-3838
+src/i18n/locales/ko.json
+  s_1cc363bb3cc76d::t_3b9db3ff37d82f 146-147,415-416,2331-2332,2537,3549,3552-3553,3830,3959-3960,4267,4314,4551-4552,4677,4879,4911-4915
+src/i18n/locales/nb.json
+  s_1cc363bb3cc76d::t_3b1a58068f93c3 149-151,422-423,2362-2363,2573,3617,3620-3622,3899,4034-4035,4356,4406-4407,4644-4645,4771-4772,4986,5023-5027
+src/i18n/locales/nl.json
+  s_1cc363bb3cc76d::t_05fce345068180 149-151,422-423,2362-2363,2573,3617,3620-3622,3899,4034-4035,4356,4406-4407,4644-4645,4771-4772,4986,5023-5027
+src/i18n/locales/pl.json
+  s_1cc363bb3cc76d::t_03adbe6e0d6ab0 155-159,436-437,2424-2425,2645,3753,3756-3760,4037,4184-4185,4534,4590-4593,4830-4831,4959-4962,5200,5247-5251
+src/i18n/locales/pt-BR.json
+  s_1cc363bb3cc76d::t_e80b4e6608bb30 149-151,422-423,2362-2363,2573,3617,3620-3622,3899,4034-4035,4356,4406-4407,4644-4645,4771-4772,4986,5023-5027
+src/i18n/locales/sv.json
+  s_1cc363bb3cc76d::t_79b57c945d8cfb 149-151,422-423,2362-2363,2573,3617,3620-3622,3899,4034-4035,4356,4406-4407,4644-4645,4771-4772,4986,5023-5027
+src/i18n/locales/uk.json
+  s_1cc363bb3cc76d::t_422ceb9d371921 155-159,436-437,2424-2425,2645,3753,3756-3760,4037,4184-4185,4534,4590-4593,4830-4831,4959-4962,5200,5247-5251
+src/i18n/locales/zh-CN.json
+  s_1cc363bb3cc76d::t_956358342bf793 146-147,415-416,2331-2332,2537,3549,3552-3553,3830,3959-3960,4267,4314,4551-4552,4677,4879,4911-4915
+src/shared/constraints/engine.test.ts
+  s_1cc363bb3cc76d::t_648437598f5b44 146-177
+src/shared/constraints/rules.ts
+  s_1cc363bb3cc76d::t_aa0f23a7fa3bb8 95,97,102,104-111,115-121
+src/shared/hooks/interactions/moveOrder.test.ts
+  s_1cc363bb3cc76d::t_f9843c4129d927 6-8,108-169
+src/shared/hooks/interactions/moveOrder.ts
+  s_1cc363bb3cc76d::t_7226125237108b 1,3,5,57-103
+src/shared/hooks/interactions/useDragInteraction.ts
+  s_1cc363bb3cc76d::t_19c5ee487f4c1f 16,213-216,328,330,335-337,343-344
+src/shared/hooks/useCollabSync.scenario.twoBrowsers.test.ts
+  s_1cc363bb3cc76d::t_0656b1959a0b59 8,10,153-225
+src/shared/hooks/useCollabSync.ts
+  s_1cc363bb3cc76d::t_5c1f1dece1aa4a 16-18,40-42,67-68,70-74,132-134,136,149-150,154,166-168,195,199,201,203,210-211,219,232,255,257
+src/shared/hooks/useDrawerSettings.test.ts
+  s_1cc363bb3cc76d::t_ca7fe4168104eb 8,169,184,192-196
+src/shared/hooks/useDrawerSettings.ts
+  s_1cc363bb3cc76d::t_70f71d64f25249 14,21,133,196,199,221-222,480
+src/shared/hooks/useLayoutSwitcher.test.ts
+  s_1cc363bb3cc76d::t_7b64bc8b1ee767 22-29,518-541,670-683,807-817
+src/shared/hooks/useLayoutSwitcher.ts
+  s_1cc363bb3cc76d::t_ee2d003d3e0869 66-73,189,214,274,291,336,351
+src/shared/hooks/useSharedWithMe.test.ts
+  s_1cc363bb3cc76d::t_4ba7c556d4e623 11-12,19-25,27,182-211
+src/shared/hooks/useSharedWithMe.ts
+  s_1cc363bb3cc76d::t_d5de501fbc3241 110,112-132,155-156
+src/shared/types/community.ts
+  s_1cc363bb3cc76d::t_5b45a763694639 148
+src/shared/utils/binLocation.test.ts
+  s_1cc363bb3cc76d::t_b427067dd4a64b 139,159
+src/shared/utils/roomDesignIds.test.ts
+  s_1cc363bb3cc76d::t_bec734d8ac6215 1-76
+src/shared/utils/roomDesignIds.ts
+  s_1cc363bb3cc76d::t_ede75350262940 1-53
+src/shared/utils/rotation.test.ts
+  s_1cc363bb3cc76d::t_76f295d4b1c430 13,17,249,288-352,497-500
+src/shared/utils/rotation.ts
+  s_1cc363bb3cc76d::t_ba9482db47afea 4,10-11,15-28,36,42,136,148
+src/shell/Collab/CollabProvider/CollabProvider.test.tsx
+  s_1cc363bb3cc76d::t_5ac3a4673edc0e 3,13,205-208,230-233,262-265,272-366,374
+src/shell/Collab/CollabProvider/CollabProvider.tsx
+  s_1cc363bb3cc76d::t_9f0925b3bcb126 41,85-86,162-169,177-179,181,186,200,212,215,217,240,381
+src/shell/Collab/PresenceDropdown/PresenceDropdown.test.tsx
+  s_1cc363bb3cc76d::t_edbe3687e586bf 2,112-180
+src/shell/Collab/PresenceDropdown/PresenceDropdown.tsx
+  s_1cc363bb3cc76d::t_ac2d8651907e8c 101-103,106-108
+src/shell/LiveRegion/LiveRegion.test.tsx
+  s_1cc363bb3cc76d::t_20fdc5ac4b0a68 12,14,18-21
+src/shell/LiveRegion/LiveRegion.tsx
+  s_1cc363bb3cc76d::t_0e5d3ac0c04f38 13-14,17
+src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
+  s_1cc363bb3cc76d::t_2ca1f6279de026 120
+src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedHost.test.tsx
+  s_1cc363bb3cc76d::t_e0772d9eddbd57 1-179
+src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedHost.tsx
+  s_1cc363bb3cc76d::t_57ab994ccbb582 1-60
+src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedModal.test.tsx
+  s_1cc363bb3cc76d::t_8294a230332177 61,64,67-71,74,79-83,92,95,106,126,130,164,167,180,192,205,223,236,248,255,273
+src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedModal.tsx
+  s_1cc363bb3cc76d::t_73e0406b4de459 127,180
+src/shell/Modals/HalfGridModeBlockedModal/index.ts
+  s_1cc363bb3cc76d::t_d646d21624173b 2
+src/shell/Modals/index.ts
+  s_1cc363bb3cc76d::t_416c31e70ab1cb 1
+src/shell/RightPanel/RightPanel.test.tsx
+  s_1cc363bb3cc76d::t_141dd847690409 691
+src/shell/RightPanel/RightPanel.tsx
+  s_1cc363bb3cc76d::t_19eac613053d0a 567-569
+src/shell/keyboard/handlers.ts
+  s_1cc363bb3cc76d::t_f6ad475d6d7370 21,255,424
+src/shell/keyboard/types.ts
+  s_1cc363bb3cc76d::t_e44fb4ad37c649 53
+src/shell/keyboard/useKeyboard.test.ts
+  s_1cc363bb3cc76d::t_27086b99637528 10,896-930,1427,1431-1443,1452-1457
+src/shell/keyboard/useKeyboard.ts
+  s_1cc363bb3cc76d::t_59fd0a9e916d7c 148,201,236
+src/test/i18nTestUtils.ts
+  s_1cc363bb3cc76d::t_ee27a3ca2797a1 10,13
+src/test/setup.ts
+  s_1cc363bb3cc76d::t_6ef658e656df63 6,99,101,105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c7264a941c774bbba5634230d213f927822bb22c",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
