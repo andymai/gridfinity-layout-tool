@@ -1,0 +1,25 @@
+src/features/grid-editor/components/Grid/Bin/Bin.tsx
+  s_1cc363bb3cc76d::t_ab73571029277c 27,462-467,483-487,489
+src/features/grid-editor/components/Grid/Bin/BinOverBedChip.tsx
+  s_1cc363bb3cc76d::t_19297b1f08e7f9 1-44
+src/features/grid-editor/components/Grid/Bin/Bin.test.tsx
+  s_1cc363bb3cc76d::t_8ec0656292b3ed 393-394,397-406
+src/features/grid-editor/components/Grid/Bin/BinOverBedChip.test.tsx
+  s_1cc363bb3cc76d::t_ce578179b405d2 1-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ff27f7a3dea3da58301a82ea3268cdfc14fe8996",
+  "prompts": {},
+  "sessions": {
+    "s_1cc363bb3cc76d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "76df731c-9399-4e68-b0d6-f1c0aef06bc9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
