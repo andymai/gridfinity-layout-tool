@@ -1377,7 +1377,6 @@ const versions: Shot = {
       exact: true,
     });
     const dialog = page.getByRole('dialog').first();
-    // Off camera, opened once in its naming state to frame the shot on it.
     await open.click({ force: true });
     await s.until(save);
     await save.click({ force: true });
