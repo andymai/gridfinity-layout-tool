@@ -4439,7 +4439,7 @@
   "scan.capture.tip.cardBeside": "¿No tienes papel? Coloca al lado una tarjeta bancaria, de transporte o de identificación sobre una superficie lisa",
   "scan.capture.tip.sheet": "Lo mejor: imprime la hoja de calibración o coloca la herramienta sobre una placa base Gridfinity",
   "scan.capture.tip.paper": "Colócala sobre una hoja lisa de papel A4 o Carta, con las cuatro esquinas dentro de la foto",
-  "scan.capture.tip.topDown": "Dispara recto desde arriba, con toda la herramienta en el encuadre",
+  "scan.capture.tip.highUp": "Dispara recto desde arriba, lo más alto que puedas, y acerca el zoom hasta llenar la foto. Así una herramienta gruesa conserva su tamaño real",
   "scan.capture.tip.several": "¿Varias herramientas? Deja un hueco entre cada una",
   "scan.cardMeasured": "Medido a escala con tu tarjeta.",
   "scan.cardSize.change": "Cambiar",

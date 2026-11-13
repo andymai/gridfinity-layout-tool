@@ -1620,7 +1620,8 @@ const en: Record<string, string> = {
     'No paper? Place a bank, transit, or ID card beside it on a plain surface',
   'scan.capture.tip.sheet':
     'Best of all: print the calibration sheet, or lay the tool on a Gridfinity baseplate',
-  'scan.capture.tip.topDown': 'Shoot straight down, with the whole tool in frame',
+  'scan.capture.tip.highUp':
+    'Shoot straight down from as high as you can, and zoom in to fill the photo. A thick tool then keeps its true size',
   'scan.capture.tip.several': 'Scanning several tools? Leave a gap between each one',
   'scan.capture.exampleAlt':
     'Example photo: a tool and a bank card laid flat on a plain surface, photographed from straight above',

@@ -78,7 +78,7 @@ export function CaptureGuide({ t }: { readonly t: ReturnType<typeof useTranslati
         <GuideTip text={t('scan.capture.tip.paper')} />
         <GuideTip text={t('scan.capture.tip.cardBeside')} />
         <GuideTip text={t('scan.capture.tip.sheet')} />
-        <GuideTip text={t('scan.capture.tip.topDown')} />
+        <GuideTip text={t('scan.capture.tip.highUp')} />
         <GuideTip text={t('scan.capture.tip.several')} />
       </ul>
       <PrivacyNote text={t('scan.capture.privacy')} />

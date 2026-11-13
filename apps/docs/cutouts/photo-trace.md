@@ -29,7 +29,7 @@ Shortcut: drop a photo straight on the board, or paste one with <kbd>Ctrl</kbd>+
 A good photo saves you cleanup later.
 
 - Lay the tools on a plain surface, with a gap between each tool.
-- Take the photo from straight above.
+- Take the photo from straight above, from as high as you can reach, and zoom in. A thick tool then looks less large.
 - Put a size reference in the photo: a plain sheet of A4 or US Letter paper under the tools, a bank card, the printed calibration sheet, a Gridfinity baseplate or a measuring strip. [Scan with your phone](./phone-scan#pick-a-size-reference) tells you how to place each one.
 
 ## Set the scale

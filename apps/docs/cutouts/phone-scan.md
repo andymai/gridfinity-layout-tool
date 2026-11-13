@@ -43,7 +43,7 @@ Not sure? Start with a sheet of plain printer paper under the tool. The phone fi
 
 No paper at hand? Use a card from your wallet. The phone reads only the card's shape, so the printing on it doesn't matter. A gift card or a hotel key card of the standard size works too. When you want the best accuracy, print the calibration sheet.
 
-For a tall tool, add a measuring strip. See [Measure a tall tool at its own height](#measure-a-tall-tool-at-its-own-height).
+For a tall tool, take the photo from high up and zoom in. For the best result, also add a measuring strip. See [Measure a tall tool at its own height](#measure-a-tall-tool-at-its-own-height).
 
 ## Print the calibration sheet
 
@@ -73,12 +73,16 @@ Took longer than 10 minutes? No problem. Click <Ui k="binDesigner.cutouts.scanIm
 
 1. Lay the tool and the reference on a plain surface with no clutter.
 2. Tap <Ui k="scan.takePhoto" />, or tap <Ui k="scan.uploadPhoto" /> to use a photo from the phone.
-3. Hold the phone level, straight above the tool. Fit the whole tool and the whole reference in the photo.
+3. Hold the phone level, straight above the tool, as high as you can comfortably reach. Zoom in until the tool and the reference fill the photo.
 4. Look at the review. If the highlighted shape isn't your tool, tap the tool in the photo.
 5. Tap <Ui k="scan.use" />.
 6. Tap <Ui k="scan.sent.another" /> to scan one more tool, or <Ui k="scan.sent.done" />.
 
 Nothing goes to the computer until you tap <Ui k="scan.use" />, so you can retake a photo as often as you like.
+
+::: tip
+Why from high up? The top of a thick tool is nearer to the camera than the table, so it looks larger than it is. From twice the height, that error is half as large. Zoom makes up for the distance.
+:::
 
 ### Read the review
 
@@ -177,6 +181,7 @@ Hold a ruler to the tool, and compare it with the size on the review screen befo
 - Plain paper and a card are less exact than the calibration sheet. Print the sheet, and use it in their place.
 - Measure the 100 mm bar on the printed sheet. A printer that scales the page changes every scan by the same amount.
 - A printed baseplate is only as exact as the printer that made it.
+- A thick tool looks larger from close up. Take the photo from higher up, and zoom in.
 - For a tall tool, add a measuring strip. See [Measure a tall tool at its own height](#measure-a-tall-tool-at-its-own-height).
 
 ## Next steps

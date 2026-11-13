@@ -41,7 +41,7 @@ Not sure of the size? Lay the tools side by side with a finger's width between t
 1. Click <Ui k="binDesigner.cutouts.scanImport.title" />, then <Ui k="binDesigner.cutouts.scanImport.routePhone" />.
 2. Point the phone camera at the QR code and open the link. The link lasts 10 minutes, so lay out the tools and the reference first.
 3. Put the tools on a plain sheet of A4 or US Letter paper with a gap between them. Use a table darker than the paper, and keep all four corners of the sheet in the photo.
-4. Tap <Ui k="scan.takePhoto" />, and hold the phone level, straight above the tools.
+4. Tap <Ui k="scan.takePhoto" />, and hold the phone level, straight above the tools. Hold it high, and zoom in until the sheet fills the photo.
 5. Check each outline in the review, and tap <Ui k="scan.use" />.
 
 The tools land in the bin as one group. Each pocket already has 0.4 mm of clearance and a chamfer at its top edge, so the tool drops in. [Scan with your phone](../cutouts/phone-scan) covers the size references and the review screen.

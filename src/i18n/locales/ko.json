@@ -4337,7 +4337,7 @@
   "scan.capture.tip.cardBeside": "용지가 없나요? 단색 표면에서 옆에 은행 카드, 교통 카드, 신분증을 놓으세요",
   "scan.capture.tip.sheet": "가장 좋은 방법: 보정 시트를 인쇄하거나 Gridfinity 베이스플레이트 위에 공구를 놓기",
   "scan.capture.tip.paper": "무늬 없는 A4 또는 레터 용지 위에 놓고, 용지의 네 모서리가 모두 사진에 들어오게 하세요",
-  "scan.capture.tip.topDown": "공구 전체가 화면에 들어오도록 바로 위에서 촬영하세요",
+  "scan.capture.tip.highUp": "가능한 한 높은 곳에서 바로 위에서 촬영하고, 사진이 꽉 차도록 확대하세요. 그러면 두꺼운 공구도 실제 크기로 측정됩니다",
   "scan.capture.tip.several": "여러 공구를 스캔하나요? 공구 사이에 간격을 두세요",
   "scan.cardMeasured": "카드를 기준으로 크기를 측정했습니다.",
   "scan.cardSize.change": "변경",

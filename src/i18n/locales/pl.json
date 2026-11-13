@@ -4643,7 +4643,7 @@
   "scan.capture.tip.cardBeside": "Nie masz papieru? Połóż obok kartę bankową, komunikacyjną lub dowód na gładkiej powierzchni",
   "scan.capture.tip.sheet": "Najlepiej: wydrukuj arkusz kalibracyjny albo połóż narzędzie na płycie bazowej Gridfinity",
   "scan.capture.tip.paper": "Połóż je na czystej kartce A4 lub Letter tak, aby wszystkie cztery rogi były na zdjęciu",
-  "scan.capture.tip.topDown": "Fotografuj prosto z góry, z całym narzędziem w kadrze",
+  "scan.capture.tip.highUp": "Fotografuj prosto z góry, z jak największej wysokości, i przybliż, aż narzędzie wypełni kadr. Dzięki temu grube narzędzie zachowa prawdziwy rozmiar",
   "scan.capture.tip.several": "Skanujesz kilka narzędzi? Zostaw odstęp między nimi",
   "scan.cardMeasured": "Zmierzono do skali na podstawie Twojej karty.",
   "scan.cardSize.change": "Zmień",
