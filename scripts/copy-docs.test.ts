@@ -1,5 +1,8 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { docsUrls, precacheUrls } from './copy-docs';
+import { docsUrls, precacheUrls, scriptsContaining } from './copy-docs';
 
 describe('precacheUrls', () => {
   it('reads the minified manifest that generateSW writes', () => {
@@ -40,5 +43,25 @@ describe('docsUrls', () => {
         'docs',
       ])
     ).toEqual(['docs/index.html', '/docs/assets/app.abc.js']);
+  });
+});
+
+describe('scriptsContaining', () => {
+  it('lists the nested scripts that hold the text, and skips other file types', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'copy-docs-'));
+    try {
+      fs.mkdirSync(path.join(dir, 'assets', 'chunks'), { recursive: true });
+      fs.writeFileSync(
+        path.join(dir, 'assets', 'chunks', 'a.js'),
+        'x="/_vercel/insights/script.js"'
+      );
+      fs.writeFileSync(path.join(dir, 'assets', 'b.js'), 'x="/other.js"');
+      fs.writeFileSync(path.join(dir, 'index.html'), '<p>_vercel/insights</p>');
+      expect(scriptsContaining(dir, '_vercel/insights')).toEqual([
+        path.join('assets', 'chunks', 'a.js'),
+      ]);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
