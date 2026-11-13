@@ -1,0 +1,43 @@
+scripts/copy-docs.ts
+  s_68cc60d3c06af8::t_0b8aac03b92371 3-4,38-64,80
+content/privacy.md
+  s_68cc60d3c06af8::t_173c027414efc6 10,17,41-50,144,167
+apps/docs/.vitepress/theme/index.ts
+  s_68cc60d3c06af8::t_25de26309ff5e6 32-41,47-50
+apps/docs/package.json
+  s_68cc60d3c06af8::t_d7a0d072ae905b 12
+scripts/copy-docs.test.ts
+  s_68cc60d3c06af8::t_0b8aac03b92371 1-3,5,48-65
+  s_68cc60d3c06af8::t_d0777ae812ee69 66-67
+public/privacy/index.html
+  s_68cc60d3c06af8::t_4d5be624f837ab 94,98,116-122,216,250
+apps/docs/introduction/your-data.md
+  s_68cc60d3c06af8::t_173c027414efc6 10-11,98-102
+  s_68cc60d3c06af8::t_2b14d144aae6b7 103
+pnpm-lock.yaml
+  s_385aefe07faf61::t_cf7c5b71499047 358-360
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9dfffdeef5eb4ed75cf1235a165d08c6748d0980",
+  "prompts": {},
+  "sessions": {
+    "s_385aefe07faf61": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7ba532a8-609c-4534-9316-9e8d54346633",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_68cc60d3c06af8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "09c094e6-b00e-4d24-b021-b56124f78109",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
