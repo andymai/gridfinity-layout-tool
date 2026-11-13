@@ -175,17 +175,40 @@ export function findPaper(image: ImageDataLike): PaperSheet | null {
   for (let i = 0; i < n; i++) mask.data[i] = white[i] >= threshold ? 1 : 0;
 
   const labeled = labelComponents(mask);
-  const largest = labeled.components.reduce((most, c) => Math.max(most, c.area), 0);
+  const largest = labeled.components.reduce<Piece | null>(
+    (most, c) => (!most || c.area > most.area ? c : most),
+    null
+  );
+  if (!largest) return null;
   // A tool lying right across the sheet cuts it in two, so every large white
-  // piece is taken as part of it.
-  const pieces = labeled.components.filter((c) => c.area >= PIECE_SHARE * largest);
+  // piece can be part of it. The largest is tried alone first: a second sheet
+  // beside the first is a piece that large too, and no part of it.
+  const pieces = labeled.components.filter((c) => c.area >= PIECE_SHARE * largest.area);
+  const tries = pieces.length > 1 ? [[largest], pieces] : [[largest]];
+  for (const candidate of tries) {
+    const sheet = sheetFrom(image, labeled.labels, candidate);
+    if (sheet) return sheet;
+  }
+  return null;
+}
+
+type Piece = ReturnType<typeof labelComponents>['components'][number];
+
+/** The sheet that the white `pieces` make up together, or null when they make none. */
+function sheetFrom(
+  image: ImageDataLike,
+  labels: Int32Array,
+  pieces: readonly Piece[]
+): PaperSheet | null {
+  const { width, height, data } = image;
+  const n = width * height;
   const area = pieces.reduce((sum, c) => sum + c.area, 0);
-  if (pieces.length === 0 || area < MIN_AREA_SHARE * n) return null;
+  if (area < MIN_AREA_SHARE * n) return null;
 
   const ofSheet = new Set(pieces.map((c) => c.label));
   let chroma = 0;
   for (let i = 0; i < n; i++) {
-    if (!ofSheet.has(labeled.labels[i])) continue;
+    if (!ofSheet.has(labels[i])) continue;
     const r = data[i * 4];
     const g = data[i * 4 + 1];
     const b = data[i * 4 + 2];
@@ -194,7 +217,7 @@ export function findPaper(image: ImageDataLike): PaperSheet | null {
   if (chroma / area > MAX_MEAN_CHROMA) return null;
 
   const contour = pieces.flatMap((c) =>
-    traceContour(maskFromLabel(labeled.labels, c.label, width, height), c.start)
+    traceContour(maskFromLabel(labels, c.label, width, height), c.start)
   );
   // Judged on the hull: a tool across an edge notches the outline, and the
   // side lines below already ask each side for an edge of its own.

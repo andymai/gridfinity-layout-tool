@@ -75,7 +75,7 @@ interface ReviewState {
   readonly image: ImageDataLike;
   readonly scene: SceneTrace;
   /** The scene before the last tap or removal, so a model that grabbed too much can be undone. */
-  readonly previous: SceneTrace | null;
+  readonly previous: { readonly scene: SceneTrace; readonly paper: PaperChoice | null } | null;
   readonly photoUrl: string;
   /** False when the model could not run, so tapping the photo does nothing. */
   readonly canRefine: boolean;
@@ -176,7 +176,12 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
             s.kind !== 'review'
               ? s
               : isOk(next)
-                ? { ...s, scene: next.value, previous: s.scene, resegmenting: false }
+                ? {
+                    ...s,
+                    scene: next.value,
+                    previous: { scene: s.scene, paper },
+                    resegmenting: false,
+                  }
                 : { ...s, resegmenting: false }
           );
         })();
@@ -193,8 +198,9 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
       setPaper(choice);
       const options = withPaperChoice(cardOptions(cardSize), choice);
       const resized = withPaperChosen(status.scene, status.image, options);
+      const previous = { scene: status.scene, paper };
       if (choice !== 'off' && was !== 'off') {
-        setStatus({ ...status, scene: resized, previous: null });
+        setStatus({ ...status, scene: resized, previous });
         return;
       }
       // The sheet bounds the search, so ruling it out or back in finds the tools again.
@@ -206,7 +212,8 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
             : {
                 ...s,
                 scene: isOk(traced) ? traced.value.scene : resized,
-                previous: null,
+                canRefine: isOk(traced) ? traced.value.canRefine : s.canRefine,
+                previous,
                 resegmenting: false,
               }
         )
@@ -228,20 +235,19 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
         return {
           ...prev,
           scene: { ...prev.scene, shapes: withoutShape(prev.scene.shapes, gone) },
-          previous: prev.scene,
+          previous: { scene: prev.scene, paper },
         };
       });
     },
-    [keepHoles, cardSize]
+    [keepHoles, cardSize, paper]
   );
 
+  // A change of the paper choice is undone with the outlines it replaced.
   const handleUndo = useCallback(() => {
-    setStatus((prev) =>
-      prev.kind === 'review' && prev.previous && !busy(prev)
-        ? { ...prev, scene: prev.previous, previous: null }
-        : prev
-    );
-  }, []);
+    if (status.kind !== 'review' || !status.previous || busy(status)) return;
+    setPaper(status.previous.paper);
+    setStatus({ ...status, scene: status.previous.scene, previous: null });
+  }, [status]);
 
   const handleCardSize = useCallback((next: CardSizeMm) => {
     setCardSize(next);

@@ -12,7 +12,6 @@ import {
 /** What the user says the sheet under the tools is: a size, or not paper at all. */
 export type PaperChoice = PaperSize | 'off';
 
-/** `options` with the user's word on the sheet, when there is one. */
 export function withPaperChoice(
   options: SceneTraceOptions,
   choice: PaperChoice | null

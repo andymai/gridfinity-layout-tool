@@ -132,6 +132,13 @@ describe('ScanCaptureFlow', () => {
       expect.objectContaining({ paper: 'off' })
     );
     expect(screen.getByRole('radio', { checked: true })).toHaveTextContent('scan.paper.notPaper');
+
+    // Undo puts back the outlines and the choice they were traced with.
+    fireEvent.click(screen.getByText('scan.review.undo'));
+    expect(screen.getByText('scan.paperMeasured')).toBeInTheDocument();
+    expect(screen.getByRole('radio', { checked: true })).toHaveTextContent(
+      'binDesigner.cutouts.traceView.paper.letter'
+    );
   });
 
   it('keeps the review open to try again when the caller throws', async () => {

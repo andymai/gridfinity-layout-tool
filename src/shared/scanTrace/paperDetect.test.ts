@@ -177,6 +177,28 @@ describe('findPaper', () => {
     expect(detectReference(image)?.kind).toBe('paper');
   });
 
+  it('reads one of two sheets lying side by side', () => {
+    const left = rect(-225, -148.5, -15, 148.5);
+    const right = rect(15, -148.5, 225, 148.5);
+    const cam = camera(0.05, 0.03, 1200);
+    const found = findPaper(
+      render(cam, [
+        [left, PAPER],
+        [right, PAPER],
+        [rect(-150, -40, -90, 40), RED],
+      ])
+    );
+    expect(found?.size).toBe('a4');
+    const sheets = [left.map(cam), right.map(cam)];
+    const miss = (truth: readonly Point[]): number =>
+      Math.max(
+        ...(found?.corners ?? []).map((corner) =>
+          Math.min(...truth.map((p) => Math.hypot(p.x - corner.x, p.y - corner.y)))
+        )
+      );
+    expect(Math.min(...sheets.map(miss))).toBeLessThan(1);
+  });
+
   it('takes no two white things apart for one sheet', () => {
     expect(
       findPaper(

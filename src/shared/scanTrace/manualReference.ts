@@ -17,7 +17,6 @@ export const PAPER_SIZES = {
 
 export type PaperSize = keyof typeof PAPER_SIZES;
 
-/** Which sheet a paper reference was sized as. */
 export function sheetSize(paper: {
   readonly widthMm: number;
   readonly heightMm: number;
