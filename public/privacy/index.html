@@ -91,10 +91,11 @@
   <!-- Main Content -->
   <main id="main-content" class="content-page content-body">
 <h1 class="content-h1">Privacy Policy</h1>
-<p><strong>Last updated:</strong> August 2026</p>
+<p><strong>Last updated:</strong> November 2026</p>
 <p>Gridfinity Layout Tool is a free, open-source web application maintained by Andy Aragon. This policy explains what data we collect and how we use it.</p>
 <h2 class="content-h2">Summary</h2>
 <ul class="content-list"><li>We collect <strong>anonymous analytics</strong> to improve the app (you can opt out)</li>
+<li>We count <strong>page views</strong> without cookies or an ID in your browser</li>
 <li>Layouts you create are stored <strong>locally in your browser</strong> unless you choose to share them or sign in</li>
 <li>When you share a layout, it&#39;s stored on our servers with a shareable link</li>
 <li><strong>Sign-in is optional.</strong> If you sign in to sync across devices, we collect your name and email from Google or GitHub</li>
@@ -112,6 +113,13 @@
 <p><strong>Analytics is optional.</strong> You can disable it in Settings &gt; Privacy &gt; &quot;Help improve this tool.&quot;</p>
 <p>When analytics is disabled, no data is sent to PostHog.</p>
 <p>We also respect your browser&#39;s privacy settings. If your browser sends a <a href="https://globalprivacycontrol.org/" target="_blank" rel="noopener">Global Privacy Control</a> (GPC) or Do Not Track signal, analytics is disabled by default. You can still enable it manually in Settings if you choose.</p>
+<h3 class="content-h3">Page View Counts</h3>
+<p>The app, the content pages and the <a href="/docs">docs</a> count page views with <a href="https://vercel.com/docs/analytics/privacy-policy" target="_blank" rel="noopener">Vercel Web Analytics</a>, a service of the company that hosts this site. Each page view records:</p>
+<ul class="content-list"><li>The page address and the page that linked to it</li>
+<li>Approximate location (country, region and city)</li>
+<li>Browser, operating system and device type</li>
+</ul>
+<p>Vercel Web Analytics sets no cookie and stores no ID in your browser. It groups one visitor&#39;s page views with a value made from the request, and discards that value after 24 hours. The analytics setting above doesn&#39;t turn these counts off. Self-hosted copies of the app don&#39;t send them.</p>
 <h3 class="content-h3">Layout Data</h3>
 <p><strong>Local storage:</strong> Your layouts are stored locally in your browser. This data never leaves your device unless you explicitly share a layout or sign in for sync.</p>
 <p><strong>Shared layouts:</strong> When you create a shareable link, your layout data is uploaded to <a href="https://vercel.com/docs/storage/vercel-blob" target="_blank" rel="noopener">Vercel Blob Storage</a>. Shared layouts include:</p>
@@ -205,7 +213,7 @@
 </tr>
 <tr>
 <td>Vercel</td>
-<td>Hosting &amp; storage</td>
+<td>Hosting, storage &amp; page view counts</td>
 <td><a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener">vercel.com/legal/privacy-policy</a></td>
 </tr>
 <tr>
@@ -239,6 +247,7 @@
 <ul class="content-list"><li><strong>Local data:</strong> Stored indefinitely until you clear it</li>
 <li><strong>Shared layouts:</strong> Stored until you delete them (or we may remove inactive shares after 12 months)</li>
 <li><strong>Analytics:</strong> Retained by PostHog per their data retention policy</li>
+<li><strong>Page view counts:</strong> Retained by Vercel per their data retention policy</li>
 <li><strong>Account session cookies:</strong> 30 days from sign-in</li>
 <li><strong>Account profile (name, email, provider account ID):</strong> 1 year, refreshed on every sign-in. Profiles for accounts that don&#39;t sign in for a year are automatically deleted</li>
 <li><strong>Synced layouts and designs:</strong> Retained until you delete them, or until you delete your account</li>

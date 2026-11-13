@@ -7,6 +7,8 @@ sources:
   - api/auth/README.md
   - api/sync/account.ts
   - src/shared/analytics/posthog/
+  - src/shared/analytics/VercelAnalytics.tsx
+  - apps/docs/.vitepress/theme/index.ts
   - src/shell/Modals/SettingsModal/tabs/PrivacyTab/
   - src/core/api/share.ts
   - api/auth/providers/github.ts
@@ -92,6 +94,12 @@ To stop the usage events:
 With the switch off, the Layout Tool doesn't start the analytics service, and it deletes the random ID from your browser.
 
 Your browser can also make this choice for you. If your browser sends a Global Privacy Control or Do Not Track signal, the switch starts off. The <Ui k="settings.tabs.privacy" /> tab then shows a note about the signal. You can still turn the switch on.
+
+### Page view counts
+
+The Layout Tool and these docs also count page views with Vercel Web Analytics, a service of the company that hosts the site. Each page view records the page address, the page that linked to it, your approximate location, and your browser and device type.
+
+The counts use no cookie and no ID in your browser. Vercel groups one visitor's page views with a value made from the request, and discards that value after 24 hours. The <Ui k="settings.helpImprove" /> switch doesn't stop these counts. A self-hosted copy of the Layout Tool doesn't send them.
 
 ## Next steps
 
