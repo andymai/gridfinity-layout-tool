@@ -17,6 +17,14 @@ export const PAPER_SIZES = {
 
 export type PaperSize = keyof typeof PAPER_SIZES;
 
+/** Which sheet a paper reference was sized as. */
+export function sheetSize(paper: {
+  readonly widthMm: number;
+  readonly heightMm: number;
+}): PaperSize {
+  return Math.max(paper.widthMm, paper.heightMm) === PAPER_SIZES.a4.longMm ? 'a4' : 'letter';
+}
+
 /** Shortest ruler taken, in image pixels: two clicks closer than this are a slip. */
 export const MIN_RULER_PX = 10;
 
@@ -42,37 +50,68 @@ const UNIT_SQUARE: [Point, Point, Point, Point] = [
 ];
 
 /**
- * Whether the marked sheet's TL→TR side is its long one, taking the principal
- * point at the photo's middle, or null when the photo cannot say.
+ * A quad's TL→TR and TL→BL sides as the camera saw them, taking the principal
+ * point at the photo's middle: their squared lengths through a lens of a
+ * given squared focal length, in one shared unit, and the focal length the
+ * quad itself implies when it has one.
  *
- * The two sides are the homography's first two columns, measured through the
- * camera. The focal length comes from their being square to each other. When
- * an edge pair stays parallel in the photo that gives no answer, and the
- * sides are compared at both ends of the lens range instead: a shot tilted
- * gently reads the same through any lens, while one tilted steeply on that
- * one axis can read either way, and guessing would stretch every tool.
+ * The two sides are the homography's first two columns. The focal length
+ * comes from their being square to each other, and an edge pair that stays
+ * parallel in the photo gives none.
  */
-function longSideFirst(
+export function sidesThroughCamera(
   corners: readonly [Point, Point, Point, Point],
   frame: { readonly width: number; readonly height: number }
-): boolean | null {
-  const [tl, tr, , bl] = corners;
-  const looks = Math.hypot(tr.x - tl.x, tr.y - tl.y) >= Math.hypot(bl.x - tl.x, bl.y - tl.y);
+): {
+  readonly focal2: number | null;
+  readonly at: (f2: number) => readonly [number, number];
+} | null {
   const h = solveHomography(UNIT_SQUARE, corners);
-  if (!h) return looks;
+  if (!h) return null;
   const cx = frame.width / 2;
   const cy = frame.height / 2;
   const long = Math.max(frame.width, frame.height);
   const u = (col: 0 | 1) => [h[col] - cx * h[6 + col], h[3 + col] - cy * h[6 + col], h[6 + col]];
   const [a, b] = [u(0), u(1)];
   const norm = (v: number[], f2: number) => (v[0] ** 2 + v[1] ** 2) / f2 + v[2] ** 2;
-  const wideAt = (f2: number) => norm(a, f2) >= norm(b, f2);
   const solved = -(a[0] * b[0] + a[1] * b[1]) / (a[2] * b[2]);
   const [lo, hi] = FOCAL_SHARE_RANGE;
-  if (Number.isFinite(solved) && solved >= (lo * long) ** 2 && solved <= (hi * long) ** 2) {
-    return wideAt(solved);
-  }
-  const [wide, tele] = LENS_SHARE_RANGE.map((share) => wideAt((share * long) ** 2));
+  const usable =
+    Number.isFinite(solved) && solved >= (lo * long) ** 2 && solved <= (hi * long) ** 2;
+  return { focal2: usable ? solved : null, at: (f2) => [norm(a, f2), norm(b, f2)] };
+}
+
+/** The lens range's two ends as squared focal lengths, for a photo this size. */
+export function lensRange(frame: {
+  readonly width: number;
+  readonly height: number;
+}): readonly [number, number] {
+  const long = Math.max(frame.width, frame.height);
+  return [(LENS_SHARE_RANGE[0] * long) ** 2, (LENS_SHARE_RANGE[1] * long) ** 2];
+}
+
+/**
+ * Whether the marked sheet's TL→TR side is its long one, or null when the
+ * photo cannot say.
+ *
+ * Without a focal length of its own the sides are compared at both ends of
+ * the lens range: a shot tilted gently reads the same through any lens, while
+ * one tilted steeply on that one axis can read either way, and guessing would
+ * stretch every tool.
+ */
+function longSideFirst(
+  corners: readonly [Point, Point, Point, Point],
+  frame: { readonly width: number; readonly height: number }
+): boolean | null {
+  const [tl, tr, , bl] = corners;
+  const view = sidesThroughCamera(corners, frame);
+  if (!view) return Math.hypot(tr.x - tl.x, tr.y - tl.y) >= Math.hypot(bl.x - tl.x, bl.y - tl.y);
+  const wideAt = (f2: number): boolean => {
+    const [top, left] = view.at(f2);
+    return top >= left;
+  };
+  if (view.focal2 !== null) return wideAt(view.focal2);
+  const [wide, tele] = lensRange(frame).map(wideAt);
   return wide === tele ? wide : null;
 }
 

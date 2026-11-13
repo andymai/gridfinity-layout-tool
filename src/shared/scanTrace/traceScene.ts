@@ -22,7 +22,7 @@
  */
 
 import type { Result } from '@/core/result';
-import { ok, err } from '@/core/result';
+import { ok, err, isOk } from '@/core/result';
 import type { ImageDataLike, Mask, Point, TraceError } from './types';
 import { polygonArea } from './traceImage';
 import { findCardAcrossChannels, cardHomography, type CardDetectOptions } from './cardDetect';
@@ -34,9 +34,11 @@ import { detectCalibrationGrid, type GridDetectOptions } from './gridDetect';
 import { detectBaseplateGrid, type BaseplateDetectOptions } from './baseplateDetect';
 import type { LatticeFit } from './latticeFit';
 import type { CellQuad } from './latticeBlobs';
-import { segmentTools } from './colorSegment';
+import { fillPolygon, segmentTools } from './colorSegment';
 import { findToolBlobs, interiorSeed, pointInPolygon } from './toolBlobs';
 import { convexHull, minAreaRect } from './minAreaRect';
+import { paperReference, type PaperSize } from './manualReference';
+import { findPaper } from './paperDetect';
 import {
   bridgeAcrossStrip,
   bridgeSoftAcrossStrip,
@@ -147,6 +149,11 @@ export interface SceneTraceOptions
   extends CardDetectOptions, GridDetectOptions, BaseplateDetectOptions {
   /** The colour segmenter's sensitivity, -127 to 128; 0 is automatic. */
   readonly sensitivity?: number;
+  /**
+   * The size of a plain sheet of paper under the tools, in place of the one
+   * its shape reads as; `off` when what was found is not paper.
+   */
+  readonly paper?: PaperSize | 'off';
   /** Where to look, in image pixels, in place of the reference's own search area. */
   readonly region?: readonly Point[];
   readonly simplifyTolerance?: number;
@@ -197,9 +204,12 @@ export function detectCard(
  *  2. **A Gridfinity baseplate** — the same kind of lattice and the same solve,
  *     but its true pitch depends on the printer that made it, so it is a
  *     convenience rather than a standard (see `baseplateDetect`).
- *  3. **A wallet card** — four coplanar points off to one side of the tool,
+ *  3. **A plain sheet of A4 or US Letter paper** under the tools — four corners
+ *     again, but they bracket the tools and span three times a card's length.
+ *     Paper is cut to about half a percent, where a card is exact.
+ *  4. **A wallet card** — four coplanar points off to one side of the tool,
  *     which is the minimum a homography admits and the reason this feature
- *     needed the other two.
+ *     needed the others.
  *
  * Each detector declines cheaply on a photo without its reference, so the
  * cheaper paths cost nothing extra when a better one is present.
@@ -220,7 +230,27 @@ export function detectReference(
   if (sheet) return { kind: 'sheet', fit: sheet };
   const baseplate = detectBaseplateGrid(image, options);
   if (baseplate) return { kind: 'baseplate', fit: baseplate };
-  const card = detectCard(image, options, excludeMask);
+  const sheetOfPaper = findPaper(image);
+  if (!sheetOfPaper) {
+    const card = detectCard(image, options, excludeMask);
+    return card ? { kind: 'card', card } : null;
+  }
+  if (options.paper !== 'off') {
+    const paper = paperReference(sheetOfPaper.corners, options.paper ?? sheetOfPaper.size, image);
+    if (isOk(paper)) return paper.value;
+  }
+  // A sheet is card-shaped within the card search's tolerance, so left in it
+  // would be taken for a card 86 mm wide.
+  const notCard = fillPolygon(sheetOfPaper.corners, image.width, image.height);
+  if (excludeMask) {
+    const n = Math.min(notCard.length, excludeMask.data.length);
+    for (let i = 0; i < n; i++) if (excludeMask.data[i]) notCard[i] = 1;
+  }
+  const card = detectCard(image, options, {
+    width: image.width,
+    height: image.height,
+    data: notCard,
+  });
   return card ? { kind: 'card', card } : null;
 }
 
