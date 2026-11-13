@@ -1,0 +1,21 @@
+src/shared/scanTrace/traceScene.ts
+  s_925c1b25c9715e::t_863b24437a2eca 32,395-396
+src/shared/scanTrace/edgeSnap.test.ts
+  s_925c1b25c9715e::t_863b24437a2eca 147-172
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9e466053853aaaa1ad9e90ebf404d8891f2dbf66",
+  "prompts": {},
+  "sessions": {
+    "s_925c1b25c9715e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "53465ea6-fbba-48bb-b515-f45942033545",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
