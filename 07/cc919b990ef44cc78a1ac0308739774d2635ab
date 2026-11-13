@@ -1,0 +1,24 @@
+apps/docs/cutouts/photo-trace.md
+  s_925c1b25c9715e::t_e2bb55c1445446 33,39
+  s_925c1b25c9715e::t_afd0aec264351a 40
+apps/docs/recipes/hand-tool-pockets.md
+  s_925c1b25c9715e::t_e2bb55c1445446 24,43,111
+apps/docs/cutouts/phone-scan.md
+  s_925c1b25c9715e::t_e2bb55c1445446 26,35-40,42-44,89-95,111-116,175-176
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "07cc919b990ef44cc78a1ac0308739774d2635ab",
+  "prompts": {},
+  "sessions": {
+    "s_925c1b25c9715e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "53465ea6-fbba-48bb-b515-f45942033545",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
