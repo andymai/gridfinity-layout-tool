@@ -1,0 +1,23 @@
+apps/docs/.vitepress/theme/components/OpenAppButton.vue
+  s_68cc60d3c06af8::t_f90613f0b668e9 6-8
+apps/docs/.vitepress/theme/custom.css
+  s_68cc60d3c06af8::t_f90613f0b668e9 256
+apps/docs/.vitepress/theme/components/AppTools.vue
+  s_68cc60d3c06af8::t_f90613f0b668e9 10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "eefeed88bfa8ee7f65cb2bd5e09db6ae667cd633",
+  "prompts": {},
+  "sessions": {
+    "s_68cc60d3c06af8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "09c094e6-b00e-4d24-b021-b56124f78109",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
