@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.543.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.542.0...gridfinity-layout-tool-v4.543.0) (2026-11-13)
+
+
+### Features
+
+* **scan:** put traced outlines on the tool's true edge ([#5032](https://github.com/andymai/gridfinity-layout-tool/issues/5032)) ([e3d47c1](https://github.com/andymai/gridfinity-layout-tool/commit/e3d47c19ca8af2bae276bc3a88aa938ecee17316))
+* **scan:** read tool sizes from a plain sheet of paper under the tools ([#5031](https://github.com/andymai/gridfinity-layout-tool/issues/5031)) ([d77a215](https://github.com/andymai/gridfinity-layout-tool/commit/d77a215cff56d8e86fa58da38fea441629276d2c))
+* **scan:** tell makers to shoot from high up and zoom in ([#5033](https://github.com/andymai/gridfinity-layout-tool/issues/5033)) ([87e326d](https://github.com/andymai/gridfinity-layout-tool/commit/87e326d3638bc75405f93ab6d06efde33d950c6c))
+
 ## [4.542.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.541.0...gridfinity-layout-tool-v4.542.0) (2026-11-13)
 
 
