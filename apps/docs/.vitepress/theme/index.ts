@@ -34,6 +34,16 @@ function reloadOnStaleChunk(): void {
   });
 }
 
+// Vercel's edge serves the analytics script; on any other host it 404s on every
+// page load. The literal comparison lets a self-hosted build drop the chunk.
+function countPageViews(): void {
+  if (!import.meta.env.PROD) return;
+  if ((import.meta.env.VITE_SELF_HOSTED as string | undefined) === '1') return;
+  void import('@vercel/analytics').then(({ inject }) => {
+    inject({ mode: 'production' });
+  });
+}
+
 const theme: Theme = {
   extends: DefaultTheme,
   Layout: () =>
@@ -46,7 +56,10 @@ const theme: Theme = {
   enhanceApp({ app }) {
     app.component('Screenshot', Screenshot);
     app.component('Ui', UnrenderedUi);
-    if (typeof window !== 'undefined') reloadOnStaleChunk();
+    if (typeof window !== 'undefined') {
+      reloadOnStaleChunk();
+      countPageViews();
+    }
   },
 };
 

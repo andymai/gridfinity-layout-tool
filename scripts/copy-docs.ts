@@ -1,6 +1,7 @@
 /**
  * Post-build step: copy the user docs build (apps/docs/.vitepress/dist) into
- * dist/docs, then fail the build if the service worker precaches any of it.
+ * dist/docs, then fail the build if the service worker precaches any of it,
+ * or if the Vercel analytics script does not match the build mode.
  *
  * It has to run after `vite build`: that build empties dist/, and the service
  * worker's precache globs whatever dist/ holds while it runs. Docs present at
@@ -34,6 +35,33 @@ export function docsUrls(urls: readonly string[]): string[] {
   return urls.filter((url) => url.replace(/^\//, '').startsWith(prefix));
 }
 
+const VERCEL_SCRIPT = '_vercel/insights';
+
+export function scriptsContaining(dir: string, needle: string): string[] {
+  return fs
+    .readdirSync(dir, { recursive: true, withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.js'))
+    .map((entry) => path.join(entry.parentPath, entry.name))
+    .filter((file) => fs.readFileSync(file, 'utf8').includes(needle))
+    .map((file) => path.relative(dir, file));
+}
+
+// Off Vercel the analytics script 404s on every page load, and on Vercel a
+// build without it counts no docs readers and nothing else reports that.
+function checkAnalyticsScript(docsDir: string): void {
+  const selfHosted = process.env.VITE_SELF_HOSTED === '1';
+  const found = scriptsContaining(docsDir, VERCEL_SCRIPT);
+  if (selfHosted && found.length > 0) {
+    throw new Error(
+      `copy-docs: a self-hosted docs build holds the Vercel analytics script: ${found.join(', ')}`
+    );
+  }
+  if (!selfHosted && found.length === 0) {
+    throw new Error('copy-docs: the docs build holds no Vercel analytics script');
+  }
+  console.log(`✓ Docs analytics script is ${selfHosted ? 'absent' : 'present'}`);
+}
+
 function main(): void {
   if (!fs.existsSync(path.join(DOCS_BUILD, 'index.html'))) {
     throw new Error(
@@ -49,6 +77,7 @@ function main(): void {
   fs.rmSync(target, { recursive: true, force: true });
   fs.cpSync(DOCS_BUILD, target, { recursive: true });
   console.log(`✓ Copied the docs build to dist${DOCS_PREFIX}`);
+  checkAnalyticsScript(target);
 
   const urls = precacheUrls(fs.readFileSync(swPath, 'utf8'));
   // index.html is always precached, so a list without it means the parser no

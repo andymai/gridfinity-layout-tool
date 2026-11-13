@@ -355,6 +355,9 @@ importers:
 
   apps/docs:
     devDependencies:
+      '@vercel/analytics':
+        specifier: 2.0.1
+        version: 2.0.1(react@19.3.1)(vue@3.5.44(typescript@6.0.3))
       vitepress:
         specifier: 2.0.0-alpha.21
         version: 2.0.0-alpha.21(@types/node@26.6.6)(esbuild@0.28.1)(jiti@2.7.0)(postcss@8.5.32)(qrcode@1.5.4)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1)
