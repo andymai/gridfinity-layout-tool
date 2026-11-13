@@ -164,9 +164,8 @@ describe('traceSceneSegmented holes', () => {
     const result = traceSceneSegmented(
       renderWithCard(),
       { width: WIDTH, height: HEIGHT, data },
-      {
-        smooth: false,
-      }
+      // The mask is not of this photo, so its outline has no edge there to move to.
+      { smooth: false, snap: false }
     );
     if (!isOk(result)) throw new Error('fixture failed');
     const hole = result.value.shapes[0].holes?.[0].imagePoints ?? [];
