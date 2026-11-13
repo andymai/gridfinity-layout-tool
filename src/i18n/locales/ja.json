@@ -4337,7 +4337,7 @@
   "scan.capture.tip.cardBeside": "用紙がない場合は、無地の面で銀行・交通・IDカードを横に置いてください",
   "scan.capture.tip.sheet": "最も正確なのは、キャリブレーションシートを印刷するか、Gridfinity のベースプレートに工具を置く方法です",
   "scan.capture.tip.paper": "無地のA4またはレター用紙の上に置き、用紙の四隅がすべて写るようにする",
-  "scan.capture.tip.highUp": "できるだけ高い位置から真上で撮影し、写真いっぱいになるようズームする。厚みのある工具も実寸どおりになります",
+  "scan.capture.tip.highUp": "できるだけ高い位置から真上で撮影し、工具と用紙またはカードがちょうど写真に収まるようズームする。厚みのある工具も実寸に近く測れます",
   "scan.capture.tip.several": "複数の工具を撮るときは、間を少し空けて並べる",
   "scan.cardMeasured": "カードを基準に正しい縮尺で測定しました。",
   "scan.cardSize.change": "変更",

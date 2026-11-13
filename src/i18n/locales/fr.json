@@ -4439,7 +4439,7 @@
   "scan.capture.tip.cardBeside": "Pas de papier ? Placez à côté une carte bancaire, de transport ou d’identité sur une surface unie",
   "scan.capture.tip.sheet": "Idéalement : imprimez la feuille d’étalonnage, ou posez l’outil sur une plaque de base Gridfinity",
   "scan.capture.tip.paper": "Posez-le sur une feuille de papier A4 ou Lettre vierge, avec les quatre coins dans la photo",
-  "scan.capture.tip.highUp": "Photographiez bien à la verticale, d’aussi haut que possible, et zoomez pour remplir la photo. Un outil épais garde ainsi sa vraie taille",
+  "scan.capture.tip.highUp": "Photographiez bien à la verticale, d’aussi haut que possible, en zoomant pour que l’outil et le papier ou la carte remplissent tout juste la photo. Un outil épais est alors mesuré plus près de sa vraie taille",
   "scan.capture.tip.several": "Plusieurs outils ? Laissez un espace entre chacun",
   "scan.cardMeasured": "Mesuré à l’échelle grâce à votre carte.",
   "scan.cardSize.change": "Modifier",

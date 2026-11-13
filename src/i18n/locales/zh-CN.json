@@ -4337,7 +4337,7 @@
   "scan.capture.tip.cardBeside": "没有纸？在纯色表面上，在旁边放一张银行卡、交通卡或身份证卡",
   "scan.capture.tip.sheet": "最准确的做法：打印校准页，或把工具放在 Gridfinity 底板上",
   "scan.capture.tip.paper": "将它放在一张空白的 A4 或信纸上，并让纸的四个角都进入照片",
-  "scan.capture.tip.highUp": "从尽量高的位置垂直向下拍摄，并放大到让工具占满画面。这样较厚的工具也能保持真实尺寸",
+  "scan.capture.tip.highUp": "从尽量高的位置垂直向下拍摄，并放大到工具和纸张或卡片刚好占满画面。这样较厚的工具测得的尺寸更接近真实尺寸",
   "scan.capture.tip.several": "要扫描多件工具？请在每件之间留出空隙",
   "scan.cardMeasured": "已根据你的卡片按比例测量。",
   "scan.cardSize.change": "修改",
