@@ -1,0 +1,57 @@
+src/i18n/locales/en.ts
+  s_925c1b25c9715e::t_d561377b13a22d 1623-1624
+src/i18n/locales/uk.json
+  s_925c1b25c9715e::t_d561377b13a22d 4646
+src/shared/scanReview/components/ScanCaptureFlow/ScanCaptureGuide.tsx
+  s_925c1b25c9715e::t_d561377b13a22d 81
+src/i18n/locales/es.json
+  s_925c1b25c9715e::t_d561377b13a22d 4442
+apps/docs/cutouts/phone-scan.md
+  s_925c1b25c9715e::t_d561377b13a22d 46,76,83-86,184
+src/i18n/locales/fr.json
+  s_925c1b25c9715e::t_d561377b13a22d 4442
+src/i18n/locales/ka.json
+  s_925c1b25c9715e::t_d561377b13a22d 1412
+src/i18n/locales/it.json
+  s_925c1b25c9715e::t_d561377b13a22d 4442
+src/i18n/locales/cs.json
+  s_925c1b25c9715e::t_d561377b13a22d 4545
+src/i18n/locales/nb.json
+  s_925c1b25c9715e::t_d561377b13a22d 4442
+src/i18n/locales/pl.json
+  s_925c1b25c9715e::t_d561377b13a22d 4646
+src/i18n/locales/nl.json
+  s_925c1b25c9715e::t_d561377b13a22d 4442
+src/i18n/locales/sv.json
+  s_925c1b25c9715e::t_d561377b13a22d 4442
+src/i18n/locales/zh-CN.json
+  s_925c1b25c9715e::t_d561377b13a22d 4340
+src/i18n/locales/ko.json
+  s_925c1b25c9715e::t_d561377b13a22d 4340
+apps/docs/recipes/hand-tool-pockets.md
+  s_925c1b25c9715e::t_d561377b13a22d 44
+src/i18n/locales/de.json
+  s_925c1b25c9715e::t_d561377b13a22d 4442
+src/i18n/locales/ja.json
+  s_925c1b25c9715e::t_d561377b13a22d 4340
+src/i18n/locales/pt-BR.json
+  s_925c1b25c9715e::t_d561377b13a22d 4442
+apps/docs/cutouts/photo-trace.md
+  s_925c1b25c9715e::t_d561377b13a22d 32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d66f248c590be81e39f6f6c83d9c35dc8854cb45",
+  "prompts": {},
+  "sessions": {
+    "s_925c1b25c9715e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "53465ea6-fbba-48bb-b515-f45942033545",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
