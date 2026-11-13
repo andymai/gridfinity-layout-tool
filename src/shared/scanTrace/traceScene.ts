@@ -29,6 +29,7 @@ import { findCardAcrossChannels, cardHomography, type CardDetectOptions } from '
 import { invertHomography, rectifyPoints, solveHomography, type Homography } from './perspective';
 import { smoothRing } from './curveFit';
 import { snapToEdges } from './edgeSnap';
+import { usesAlphaMask } from './mask';
 import { traceSoftContour, binarize, type SoftMask } from './softContour';
 import { symmetrizeIfRegular } from './symmetry';
 import { detectCalibrationGrid, type GridDetectOptions } from './gridDetect';
@@ -391,7 +392,8 @@ function finishTrace(
   /** The photo and how far its edges are looked for, when the outlines are to be moved onto them. */
   edges?: { readonly image: ImageDataLike; readonly reach: number }
 ): Result<SceneTrace, TraceError> {
-  const snapped = edges !== undefined && options.snap !== false;
+  // A cut-out is traced by its transparency, and its colours say nothing of where that ends.
+  const snapped = edges !== undefined && options.snap !== false && !usesAlphaMask(edges.image);
   const tolerance =
     options.simplifyTolerance ??
     (snapped

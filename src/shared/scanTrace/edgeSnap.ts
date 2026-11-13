@@ -24,38 +24,29 @@ import type { ImageDataLike, Point } from './types';
 import { toLab } from './colorSegment';
 
 export interface EdgeSnapOptions {
-  /** How far a point may move along its normal, in pixels. */
   readonly reach?: number;
   /** The ring is a hole: the tool is outside it and the surface inside. */
   readonly hole?: boolean;
 }
 
 const DEFAULT_REACH = 4;
-/** Spacing of the points the outline is judged at, in pixels. */
 const SPACING = 1;
-/** Spacing of the samples along each normal, in pixels. */
 const STEP = 0.25;
 /** A step smaller than this, in score levels, is noise or a tool the colour of its surface. */
 const MIN_CONTRAST = 6;
-/** Linear-light colours closer than this, squared, are one colour with no step to place. */
 const MIN_LIGHT_STEP = 1e-4;
 /**
  * How far past a step its two levels may be looked for, in pixels: far enough
  * to reach level ground either side of a soft-focus edge.
  */
 const PLATEAU = 5;
-/** The score counts as level once it changes by less than this share of the step's steepest fall. */
 const LEVEL_SHARE = 0.06;
-/** A step under this share of the ring's usual steepness is not the tool's edge. */
 const WEAK_SHARE = 0.35;
 /** Points either side that set a point's tangent, so a staircase does not tilt it. */
 const TANGENT_SPAN = 3;
-/** Points either side averaged into the line the edge is looked for from. */
 const BASE_SPAN = 2;
-/** Points either side whose edges say which of several crossings is this point's. */
 const AGREE_SPAN = 8;
 
-/** A fall in the score along a normal: where it is half way down, and how steep it is. */
 interface Step {
   readonly at: number;
   readonly steep: number;
@@ -238,7 +229,6 @@ export function snapToEdges(
         outside++;
       }
       if (smooth[inside] - smooth[outside] < MIN_CONTRAST) continue;
-      // How much of the tool's light each sample holds, 1 on the tool to 0 off it.
       // Each level is a mean round its extreme: the extreme sample alone is the
       // one noise pushed farthest, and would put the half-way point inside.
       const level = (channel: Float64Array, around: number, from: number, to: number): number => {
@@ -319,7 +309,6 @@ export function snapToEdges(
   const moved = (share: number): Point[] =>
     points.map((p, i) => {
       const [before, here, after] = [settled[(i - 1 + n) % n], settled[i], settled[(i + 1) % n]];
-      // With no edge to go by, the point stays where the mask put it.
       if (Number.isNaN(here)) return traced[i];
       const offset =
         (share *

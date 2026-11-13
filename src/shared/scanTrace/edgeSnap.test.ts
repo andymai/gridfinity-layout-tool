@@ -144,6 +144,32 @@ describe('an outline moved onto the edge it traced', () => {
   });
 });
 
+describe('a cut-out with a transparent background', () => {
+  it('keeps the outline its transparency gave, whatever its colours', () => {
+    // Opaque with a dark rim round a pale middle, on nothing: a colour edge lies inside the true one.
+    const width = 240;
+    const height = 160;
+    const data = new Uint8ClampedArray(width * height * 4);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const o = (y * width + x) * 4;
+        const inside = x >= 60 && x < 180 && y >= 50 && y < 110;
+        const rim = inside && (x < 63 || x >= 177 || y < 53 || y >= 107);
+        const level = !inside ? 255 : rim ? 30 : 235;
+        data[o] = data[o + 1] = data[o + 2] = level;
+        data[o + 3] = inside ? 255 : 0;
+      }
+    }
+    const image = { width, height, data };
+    const outline = (snap: boolean): readonly Point[] => {
+      const scene = traceScene(image, { smooth: false, snap }, RULER);
+      if (!isOk(scene)) throw new Error(scene.error.code);
+      return scene.value.shapes[0].imagePoints;
+    };
+    expect(outline(true)).toEqual(outline(false));
+  });
+});
+
 describe('a tool on a surface with a grain', () => {
   // Thin dark lines across the surface, as in wood, some passing close by the tool.
   const grain: Layer[] = Array.from({ length: 60 }, (_, i) => ({
