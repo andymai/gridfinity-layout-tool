@@ -1,0 +1,28 @@
+src/shared/scanTrace/paperDetect.ts
+  s_925c1b25c9715e::t_b940915bd587fd 26,29-30,197
+  s_925c1b25c9715e::t_022d162946225b 201-202,213-214,219
+  s_925c1b25c9715e::t_55b98c06e5c411 27-28,40-41,192-195,198-200,203-204
+src/shared/scanTrace/paperDetect.test.ts
+  s_925c1b25c9715e::t_55b98c06e5c411 203-223
+  s_925c1b25c9715e::t_3ae38fb0f7b835 224-225
+src/shared/scanTrace/traceScene.ts
+  s_925c1b25c9715e::t_b940915bd587fd 241
+apps/docs/cutouts/phone-scan.md
+  s_925c1b25c9715e::t_65d5c5d2ac0c54 39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ce12e495cc6a2dfe1c50d5a41cab8280ae9cd76d",
+  "prompts": {},
+  "sessions": {
+    "s_925c1b25c9715e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "53465ea6-fbba-48bb-b515-f45942033545",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
