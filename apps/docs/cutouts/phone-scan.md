@@ -23,7 +23,7 @@ A good scan comes down to three things: a size reference, a plain background, an
 Have these ready:
 
 - **Your phone.** The QR code opens a page in the phone's browser, so there's no app to install. The phone needs a connection to send the outline.
-- **A size reference.** A bank card works. The printed calibration sheet works best. See [Pick a size reference](#pick-a-size-reference).
+- **A size reference.** A plain sheet of A4 or US Letter paper under the tool works. So does a bank card beside it. The printed calibration sheet works best. See [Pick a size reference](#pick-a-size-reference).
 - **A plain surface that contrasts with the tool.** For example, put a dark tool on a sheet of white paper. The phone finds the tool by how its color differs from the surface.
 
 The scan link on the computer lasts 10 minutes, so set out the tool and the reference first.
@@ -32,13 +32,16 @@ The scan link on the computer lasts 10 minutes, so set out the tool and the refe
 
 The reference tells the phone the true size of the tool. It also corrects a photo taken at a small angle. The table lists the references from the most accurate to the least accurate.
 
-| Reference                 | How to place it                                                                   | Notes                                                                |
-| ------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Printed calibration sheet | Lay the tool on the sheet, inside the ring of black squares.                      | The most accurate reference. It has a 100 mm bar to check the print. |
-| Gridfinity baseplate      | Lay the tool on the baseplate.                                                    | Only as accurate as the printer that made the baseplate.             |
-| Bank, transit or ID card  | Lay the card flat beside the tool, not under it, with the full card in the photo. | Any card of the standard 85.6 × 53.98 mm size.                       |
+| Reference                   | How to place it                                                                                               | Notes                                                                      |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Printed calibration sheet   | Lay the tool on the sheet, inside the ring of black squares.                                                  | The most accurate reference. It has a 100 mm bar to check the print.       |
+| Gridfinity baseplate        | Lay the tool on the baseplate.                                                                                | Only as accurate as the printer that made the baseplate.                   |
+| Plain A4 or US Letter paper | Lay the tool on the sheet, on a table darker than the paper. Keep all four corners of the sheet in the photo. | Nothing to print. A sheet can be a millimeter or two off its nominal size. |
+| Bank, transit or ID card    | Lay the card flat beside the tool, not under it, with the full card in the photo.                             | Any card of the standard 85.6 × 53.98 mm size.                             |
 
-Not sure? Start with a card from your wallet. The phone reads only the card's shape, so the printing on it doesn't matter. A gift card or a hotel key card of the standard size works too. When you want the best accuracy, print the calibration sheet.
+Not sure? Start with a sheet of plain printer paper under the tool. The phone finds the sheet by itself and tells A4 from US Letter by its shape. The white paper is also a good background for most tools.
+
+No paper at hand? Use a card from your wallet. The phone reads only the card's shape, so the printing on it doesn't matter. A gift card or a hotel key card of the standard size works too. When you want the best accuracy, print the calibration sheet.
 
 For a tall tool, add a measuring strip. See [Measure a tall tool at its own height](#measure-a-tall-tool-at-its-own-height).
 
@@ -83,13 +86,13 @@ The box under the photo shows how the phone sized the tool. For one tool, it giv
 
 ### If something looks off
 
-| What you see                         | What to do                                                                                                             |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| The outline is wrong or ragged       | Tap the tool in the photo to redraw it. If that doesn't help, tap <Ui k="scan.retake" /> and use a plainer background. |
-| The phone can't find a clear outline | Retake the photo on a plain background with more contrast to the tool.                                                 |
-| The phone finds no card              | Lay the card flat beside the tool, with the whole card in the photo, on a plain surface.                               |
-| A warning about a steep angle        | Retake the photo from straighter above. A steep angle makes the size less accurate.                                    |
-| The phone says the link expired      | Start a new scan from your computer.                                                                                   |
+| What you see                         | What to do                                                                                                                                                                    |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The outline is wrong or ragged       | Tap the tool in the photo to redraw it. If that doesn't help, tap <Ui k="scan.retake" /> and use a plainer background.                                                        |
+| The phone can't find a clear outline | Retake the photo on a plain background with more contrast to the tool.                                                                                                        |
+| The phone finds no size reference    | Lay the tool on a sheet of A4 or US Letter paper on a darker table, with all four corners in the photo. Or lay a card flat beside the tool, with the whole card in the photo. |
+| A warning about a steep angle        | Retake the photo from straighter above. A steep angle makes the size less accurate.                                                                                           |
+| The phone says the link expired      | Start a new scan from your computer.                                                                                                                                          |
 
 A soft shadow is usually fine. The phone looks at the change in color more than the change in brightness, so a shadow does little harm.
 
@@ -104,6 +107,12 @@ Before you print the whole bin, [print a fit test](./print-checks#print-a-fit-te
 ### Use a card of a different size
 
 If your card isn't the standard size, tap <Ui k="scan.cardSize.change" /> beside <Ui k="scan.cardSize.label" /> on the review screen. Type the long side and the short side. The phone remembers these values for later scans.
+
+### Check the paper size
+
+When a plain sheet of paper sets the size, the review outlines the sheet in green and shows three choices: <Ui k="binDesigner.cutouts.traceView.paper.a4" />, <Ui k="binDesigner.cutouts.traceView.paper.letter" /> and <Ui k="scan.paper.notPaper" />. The phone picks the paper size from the shape of the sheet. If it picked the wrong size, tap the right one. If the green outline isn't around a sheet of paper, tap <Ui k="scan.paper.notPaper" />.
+
+Every size in the photo comes from the sheet, so the wrong paper size makes every tool the wrong size.
 
 ### A photo with no reference
 
@@ -163,7 +172,8 @@ The phone keeps the photo and makes the outline by itself. Only the outline goes
 
 Hold a ruler to the tool, and compare it with the size on the review screen before you tap <Ui k="scan.use" />. If the size is off, change the reference:
 
-- A card is less exact than the calibration sheet. Print the sheet, and use it in place of the card.
+- With plain paper, check that the review shows the right paper size. See [Check the paper size](#check-the-paper-size).
+- Plain paper and a card are less exact than the calibration sheet. Print the sheet, and use it in their place.
 - Measure the 100 mm bar on the printed sheet. A printer that scales the page changes every scan by the same amount.
 - A printed baseplate is only as exact as the printer that made it.
 - For a tall tool, add a measuring strip. See [Measure a tall tool at its own height](#measure-a-tall-tool-at-its-own-height).

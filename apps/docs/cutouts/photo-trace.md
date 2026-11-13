@@ -30,11 +30,13 @@ A good photo saves you cleanup later.
 
 - Lay the tools on a plain surface, with a gap between each tool.
 - Take the photo from straight above.
-- Put a size reference in the photo: a bank card, the printed calibration sheet, a Gridfinity baseplate or a measuring strip. [Scan with your phone](./phone-scan#pick-a-size-reference) tells you how to place each one.
+- Put a size reference in the photo: a plain sheet of A4 or US Letter paper under the tools, a bank card, the printed calibration sheet, a Gridfinity baseplate or a measuring strip. [Scan with your phone](./phone-scan#pick-a-size-reference) tells you how to place each one.
 
 ## Set the scale
 
 When the photo has a size reference, the Layout Tool finds it and sets the scale for you. The <Ui k="binDesigner.cutouts.traceView.scale.heading" /> section tells you which reference it used.
+
+When a plain sheet of paper sets the scale, the section also shows the paper size. Pick the other size if it is wrong, or pick <Ui k="scan.paper.notPaper" /> if the outlined shape isn't a sheet of paper.
 
 No reference in the photo? Set the scale yourself with one of these:
 
