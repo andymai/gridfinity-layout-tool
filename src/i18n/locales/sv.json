@@ -4439,7 +4439,7 @@
   "scan.capture.tip.cardBeside": "Inget papper? Lägg ett bank-, rese- eller ID-kort bredvid på ett slätt underlag",
   "scan.capture.tip.sheet": "Allra bäst: skriv ut kalibreringsarket, eller lägg verktyget på en Gridfinity-bottenplatta",
   "scan.capture.tip.paper": "Lägg det på ett tomt A4- eller Letter-ark, med alla fyra hörnen i bilden",
-  "scan.capture.tip.topDown": "Fotografera rakt uppifrån, med hela verktyget i bild",
+  "scan.capture.tip.highUp": "Fotografera rakt uppifrån, så högt du kan, och zooma in tills verktyget och papperet eller kortet precis fyller bilden. Då mäts ett tjockt verktyg närmare sin verkliga storlek",
   "scan.capture.tip.several": "Skannar du flera verktyg? Lämna ett mellanrum mellan dem",
   "scan.cardMeasured": "Uppmätt i rätt skala från ditt kort.",
   "scan.cardSize.change": "Ändra",

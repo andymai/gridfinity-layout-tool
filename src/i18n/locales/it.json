@@ -4439,7 +4439,7 @@
   "scan.capture.tip.cardBeside": "Niente carta? Metti accanto una carta bancaria, di trasporto o d'identità su una superficie semplice",
   "scan.capture.tip.sheet": "Meglio ancora: stampa il foglio di calibrazione, o appoggia l’utensile su una piastra base Gridfinity",
   "scan.capture.tip.paper": "Appoggialo su un foglio bianco A4 o Lettera, con tutti e quattro gli angoli nella foto",
-  "scan.capture.tip.topDown": "Scatta dall'alto, con tutto l'utensile nell'inquadratura",
+  "scan.capture.tip.highUp": "Scatta dall'alto, il più in alto possibile, ingrandendo finché l'utensile e il foglio o la carta riempiono appena la foto. Così un utensile spesso viene misurato più vicino alle sue dimensioni reali",
   "scan.capture.tip.several": "Più utensili? Lascia un po’ di spazio tra l’uno e l’altro",
   "scan.cardMeasured": "Dimensionato in scala dalla tua carta.",
   "scan.cardSize.change": "Modifica",

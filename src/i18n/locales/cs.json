@@ -4542,7 +4542,7 @@
   "scan.capture.tip.cardBeside": "Nemáš papír? Polož vedle něj na jednoduchý povrch bankovní, dopravní nebo ID kartu",
   "scan.capture.tip.sheet": "Nejlépe: vytiskněte kalibrační list, nebo nástroj položte na základní desku Gridfinity",
   "scan.capture.tip.paper": "Polož ho na čistý list papíru A4 nebo Letter tak, aby byly na fotce všechny čtyři rohy",
-  "scan.capture.tip.topDown": "Foť kolmo shora, s celým nástrojem v záběru",
+  "scan.capture.tip.highUp": "Foť kolmo shora z co největší výšky a přibliž záběr tak, aby nástroj a papír nebo karta právě vyplnily fotku. Tlustý nástroj pak vyjde blíž skutečné velikosti",
   "scan.capture.tip.several": "Skenuješ víc nástrojů? Nech mezi nimi mezeru",
   "scan.cardMeasured": "Změřeno v měřítku podle tvé karty.",
   "scan.cardSize.change": "Změnit",

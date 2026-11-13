@@ -4439,7 +4439,7 @@
   "scan.capture.tip.cardBeside": "Geen papier? Leg er een bank-, ov- of ID-kaart naast op een effen oppervlak",
   "scan.capture.tip.sheet": "Het beste: print het kalibratieblad, of leg het gereedschap op een Gridfinity-bodemplaat",
   "scan.capture.tip.paper": "Leg het op een blanco vel A4- of Letter-papier, met alle vier de hoeken in de foto",
-  "scan.capture.tip.topDown": "Fotografeer recht van bovenaf, met het hele gereedschap in beeld",
+  "scan.capture.tip.highUp": "Fotografeer recht van bovenaf, zo hoog als je kunt, en zoom in tot het gereedschap en het papier of de kaart het beeld net vullen. Dik gereedschap wordt dan dichter bij zijn echte maat gemeten",
   "scan.capture.tip.several": "Meerdere stuks gereedschap? Laat ruimte tussen elk stuk",
   "scan.cardMeasured": "Op schaal gemeten met je pas.",
   "scan.cardSize.change": "Wijzigen",

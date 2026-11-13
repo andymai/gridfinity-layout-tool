@@ -4439,7 +4439,7 @@
   "scan.capture.tip.cardBeside": "Kein Papier? Lege eine Bank-, Transit- oder Ausweiskarte daneben auf einen schlichten Untergrund",
   "scan.capture.tip.sheet": "Am besten: das Kalibrierblatt drucken oder das Werkzeug auf eine Gridfinity-Grundplatte legen",
   "scan.capture.tip.paper": "Lege es auf ein leeres Blatt A4- oder Letter-Papier, sodass alle vier Ecken im Foto sind",
-  "scan.capture.tip.topDown": "Fotografiere senkrecht von oben, mit dem ganzen Werkzeug im Bild",
+  "scan.capture.tip.highUp": "Fotografiere senkrecht von oben aus möglichst großer Höhe und zoome so heran, dass Werkzeug und Papier oder Karte das Bild gerade füllen. Ein dickes Werkzeug wird dann näher an seiner echten Größe gemessen",
   "scan.capture.tip.several": "Mehrere Werkzeuge? Lass zwischen ihnen etwas Abstand",
   "scan.cardMeasured": "Anhand deiner Karte maßstabsgetreu vermessen.",
   "scan.cardSize.change": "Ändern",
