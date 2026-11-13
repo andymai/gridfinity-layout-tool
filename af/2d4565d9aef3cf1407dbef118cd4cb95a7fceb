@@ -1,0 +1,121 @@
+src/shared/scanReview/components/ScanCaptureFlow/ScanCaptureFlow.tsx
+  s_925c1b25c9715e::t_391dcd96f1a64f 34,39,46-47,49,105-106,132,167-173,186-190,192,288,371
+  s_925c1b25c9715e::t_0ca4e9251e009a 53-54,367
+  s_925c1b25c9715e::t_90a0418d4d22b5 191,193-200
+  s_925c1b25c9715e::t_84e20eae657f31 343-345
+  s_925c1b25c9715e::t_c479c89913f423 289,372
+src/shared/scanTrace/paperDetect.test.ts
+  s_925c1b25c9715e::t_fed84d54213b9f 1-72,112-139,143-156,183-188,190-201,208-234,236,241-247,254-264,267-275,282-288
+  s_925c1b25c9715e::t_9a0091ed7917ee 73-79,82-111,160-179
+  s_925c1b25c9715e::t_a62e07e92e0164 80-81,140-142,157-159,180-182,202-207,276-281
+  s_925c1b25c9715e::t_8ba8af17361427 189,235,237-240,248-253,265-266
+src/shared/scanReview/index.ts
+  s_925c1b25c9715e::t_391dcd96f1a64f 28-33,35
+src/i18n/locales/cs.json
+  s_925c1b25c9715e::t_9719db8c9ae319 4541,4543,4565-4568
+src/i18n/locales/en.ts
+  s_925c1b25c9715e::t_9719db8c9ae319 1617-1620,1633-1635,1652-1653
+src/features/scan-capture/components/ScanPage/ScanPage.test.tsx
+  s_925c1b25c9715e::t_36180f5bec9722 189-190,496
+  s_925c1b25c9715e::t_0b21909dddc227 497-498
+src/features/bin-designer/components/TraceView/ScalePanel.test.tsx
+  s_925c1b25c9715e::t_0f1e0499a15472 3-5,23,37,49,58-64,68-86,146
+scripts/doc-budget.json
+  s_925c1b25c9715e::t_80c2d12b658b9d 70
+src/shared/scanReview/paperChoice.ts
+  s_925c1b25c9715e::t_391dcd96f1a64f 1-45
+src/features/bin-designer/components/TraceView/ScalePanel.tsx
+  s_925c1b25c9715e::t_90a0418d4d22b5 6-11,35-36,42,98,127,133,148,266-271
+  s_925c1b25c9715e::t_b0ce7d53106579 15
+  s_925c1b25c9715e::t_577e6099a2924a 5,272
+src/shared/scanReview/components/PaperSizeSwitch/PaperSizeSwitch.test.tsx
+  s_925c1b25c9715e::t_84e20eae657f31 16-20
+  s_925c1b25c9715e::t_391dcd96f1a64f 1-15,21-27
+src/i18n/locales/fr.json
+  s_925c1b25c9715e::t_9719db8c9ae319 4438,4440,4462-4465
+src/i18n/locales/nb.json
+  s_925c1b25c9715e::t_9719db8c9ae319 4438,4440,4462-4465
+src/i18n/locales/zh-CN.json
+  s_925c1b25c9715e::t_9719db8c9ae319 4336,4338,4360-4363
+src/shared/scanReview/components/ScanCaptureFlow/ScanCaptureGuide.tsx
+  s_925c1b25c9715e::t_391dcd96f1a64f 78-79
+src/shared/scanReview/components/PaperSizeSwitch/index.ts
+  s_925c1b25c9715e::t_391dcd96f1a64f 1-2
+src/i18n/locales/ja.json
+  s_925c1b25c9715e::t_9719db8c9ae319 4336,4338,4360-4363
+src/i18n/locales/pl.json
+  s_925c1b25c9715e::t_9719db8c9ae319 4642,4644,4666-4669
+src/features/bin-designer/components/TraceView/useTraceSession.test.ts
+  s_925c1b25c9715e::t_0f1e0499a15472 87-118
+src/shared/scanTrace/traceScene.ts
+  s_925c1b25c9715e::t_fed84d54213b9f 25,37,40-41,152-156,207-210,212,233-248
+  s_925c1b25c9715e::t_a62e07e92e0164 249-253
+src/i18n/locales/de.json
+  s_925c1b25c9715e::t_9719db8c9ae319 4438,4440,4462-4465
+src/i18n/locales/pt-BR.json
+  s_925c1b25c9715e::t_9719db8c9ae319 4438,4440,4462-4465
+src/shared/scanTrace/index.ts
+  s_925c1b25c9715e::t_fed84d54213b9f 35
+  s_925c1b25c9715e::t_391dcd96f1a64f 29
+src/i18n/locales/sv.json
+  s_925c1b25c9715e::t_9719db8c9ae319 4438,4440,4462-4465
+src/shared/scanReview/components/ScanOverlay/ScanOverlay.tsx
+  s_925c1b25c9715e::t_84e20eae657f31 16-17,28-35,66-70
+  s_925c1b25c9715e::t_fdbbd106853af9 71-73
+src/features/scan-capture/README.md
+  s_925c1b25c9715e::t_55456d6bb4989a 35-38
+  s_925c1b25c9715e::t_91093949bbc1d4 25,32
+  s_925c1b25c9715e::t_1dd85954df810b 39
+src/i18n/locales/ka.json
+  s_925c1b25c9715e::t_a40666f0f71540 1409-1410,1421-1423,1438
+src/features/bin-designer/components/TraceView/useTraceSession.ts
+  s_925c1b25c9715e::t_90a0418d4d22b5 28,31,49,68-69,84,95,124,128,171-179,196,216-217,223-224,257-268,273,290,298,308,391,395
+src/i18n/locales/nl.json
+  s_925c1b25c9715e::t_9719db8c9ae319 4438,4440,4462-4465
+src/shared/scanTrace/paperDetect.ts
+  s_925c1b25c9715e::t_703aa5517f06ca 1-196,203-207
+  s_925c1b25c9715e::t_fed84d54213b9f 197-202
+src/shared/scanReview/components/ScanOverlay/ScanOverlay.test.tsx
+  s_925c1b25c9715e::t_91093949bbc1d4 35-44
+src/shared/scanReview/components/PaperSizeSwitch/PaperSizeSwitch.tsx
+  s_925c1b25c9715e::t_84e20eae657f31 28
+  s_925c1b25c9715e::t_391dcd96f1a64f 1-27,29-31
+src/features/bin-designer/components/TraceView/TraceView.tsx
+  s_925c1b25c9715e::t_90a0418d4d22b5 200,209
+src/shared/scanReview/components/ScanCaptureFlow/ScanCaptureFlow.test.tsx
+  s_925c1b25c9715e::t_a62e07e92e0164 115-117
+  s_925c1b25c9715e::t_0f1e0499a15472 9,12,67,91-114,118-127
+  s_925c1b25c9715e::t_8de1cc714dcf8a 128-129
+src/i18n/locales/es.json
+  s_925c1b25c9715e::t_9719db8c9ae319 4438,4440,4462-4465
+src/shared/scanTrace/manualReference.ts
+  s_925c1b25c9715e::t_703aa5517f06ca 53-56,58-60,62,65-68,70,81-114
+  s_925c1b25c9715e::t_391dcd96f1a64f 20-27
+  s_925c1b25c9715e::t_a62e07e92e0164 79-80
+src/i18n/locales/uk.json
+  s_925c1b25c9715e::t_9719db8c9ae319 4642,4644,4666-4669
+src/i18n/locales/ko.json
+  s_925c1b25c9715e::t_9719db8c9ae319 4336,4338,4360-4363
+src/i18n/locales/it.json
+  s_925c1b25c9715e::t_9719db8c9ae319 4438,4440,4462-4465
+src/shared/scanReview/components/ScanCaptureFlow/ScanScaleStatus.tsx
+  s_925c1b25c9715e::t_a62e07e92e0164 1-71
+src/shared/scanReview/components/ScanCaptureFlow/ScanScaleStatus.test.tsx
+  s_925c1b25c9715e::t_a62e07e92e0164 1-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "af2d4565d9aef3cf1407dbef118cd4cb95a7fceb",
+  "prompts": {},
+  "sessions": {
+    "s_925c1b25c9715e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "53465ea6-fbba-48bb-b515-f45942033545",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
