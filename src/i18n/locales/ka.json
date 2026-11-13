@@ -3193,6 +3193,7 @@
   "binDesigner.cutouts.scanImport.stripsPlaceHint": "დადეთ ერთი ბრტყლად ხელსაწყოს ზედა მხარეზე, მარკერებით ზემოთ, და გადაუღეთ პირდაპირ ზემოდან.",
   "scan.stripMeasured": "გაზომილია მასშტაბით ზოლიდან, ხელსაწყოს სიმაღლეზე.",
   "scan.review.underStrip": "ზოლის ქვეშ კიდე შევსებულია. შეამოწმეთ.",
+  "scan.review.offSheet": "კონტური ფურცლის კიდესთან წყდება. შეეხეთ ხელსაწყოს მის ხელახლა დასახატად, ან გადაიტანეთ ის ფურცელზე.",
   "binDesigner.cutouts.scanImport.sheetPlaceHint": "მოათავსეთ ხელსაწყო მარკერის ჩარჩოში და პირდაპირ ზემოდან გადაუღეთ.",
   "binDesigner.cutouts.scanImport.scaleLabel": "რეალური ზომა (ყველაზე გრძელი მხარე, mm)",
   "binDesigner.cutouts.scanImport.scaleLabelLongest": "ყველაზე გრძელი ხელსაწყოს რეალური სიგრძე (mm)",

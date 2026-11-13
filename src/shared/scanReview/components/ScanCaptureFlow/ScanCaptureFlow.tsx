@@ -189,15 +189,30 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
   const handlePaper = useCallback(
     (choice: PaperChoice) => {
       if (status.kind !== 'review' || busy(status)) return;
+      const was = shownPaperChoice(status.scene.reference, paper);
       setPaper(choice);
       const options = withPaperChoice(cardOptions(cardSize), choice);
-      setStatus({
-        ...status,
-        scene: withPaperChosen(status.scene, status.image, options),
-        previous: null,
-      });
+      const resized = withPaperChosen(status.scene, status.image, options);
+      if (choice !== 'off' && was !== 'off') {
+        setStatus({ ...status, scene: resized, previous: null });
+        return;
+      }
+      // The sheet bounds the search, so ruling it out or back in finds the tools again.
+      setStatus({ ...status, resegmenting: true });
+      void traceAll(status.canvas, status.image, options).then((traced) =>
+        setStatus((s) =>
+          s.kind !== 'review'
+            ? s
+            : {
+                ...s,
+                scene: isOk(traced) ? traced.value.scene : resized,
+                previous: null,
+                resegmenting: false,
+              }
+        )
+      );
     },
-    [status, cardSize]
+    [status, cardSize, paper]
   );
 
   // `index` counts the tools on screen, judged as the list judges them.

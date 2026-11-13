@@ -27,6 +27,17 @@ describe('ScanToolList', () => {
     expect(screen.getAllByText('scan.review.underStrip')).toHaveLength(1);
   });
 
+  it('says so when a tool’s outline stops at the edge of the sheet', () => {
+    render(
+      <ScanToolList
+        shapes={[{ ...box(120, 30), offSheet: true }, box(40, 12)]}
+        units="mm"
+        onRemove={vi.fn()}
+      />
+    );
+    expect(screen.getAllByText('scan.review.offSheet')).toHaveLength(1);
+  });
+
   it('numbers each tool and shows its size in millimetres', () => {
     render(<ScanToolList shapes={[box(120, 30), box(40, 12.5)]} units="mm" onRemove={vi.fn()} />);
     expect(screen.getAllByText('scan.review.toolLabel')).toHaveLength(2);

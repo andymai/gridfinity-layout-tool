@@ -1118,6 +1118,7 @@
   "binDesigner.cutouts.scanImport.stripsPlaceHint": "Leg er een plat over de bovenkant van het gereedschap, markeringen naar boven, en fotografeer recht van boven.",
   "scan.stripMeasured": "Op schaal gemeten met de strook, op de hoogte van het gereedschap.",
   "scan.review.underStrip": "Rand onder de strook aangevuld. Controleer deze.",
+  "scan.review.offSheet": "De omtrek stopt bij de rand van het vel. Tik op het gereedschap om hem opnieuw te tekenen, of leg het op het vel.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — kalibratieblad voor scannen",
   "binDesigner.cutouts.scanImport.title": "Gereedschap scannen",
   "binDesigner.cutouts.scanImport.unavailable": "Scannen met je telefoon is nu niet beschikbaar. Upload in plaats daarvan een getraceerde omtrek.",

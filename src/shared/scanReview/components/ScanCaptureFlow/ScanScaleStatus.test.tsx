@@ -48,6 +48,12 @@ describe('ScanScaleStatus', () => {
     expect(screen.getByText('scan.noReferenceHint')).toBeInTheDocument();
   });
 
+  it('says so when the one tool’s outline stops at the edge of the sheet', () => {
+    const cut = { ...TOOL, offSheet: true };
+    render(<ScanScaleStatus scene={scene({ shapes: [cut] })} shown={[cut]} cardSteep={false} />);
+    expect(screen.getByText('scan.review.offSheet')).toBeInTheDocument();
+  });
+
   it('warns of a steep card', () => {
     render(<ScanScaleStatus scene={scene({})} shown={[TOOL]} cardSteep />);
     expect(screen.getByText('scan.cardSteepAngle')).toBeInTheDocument();

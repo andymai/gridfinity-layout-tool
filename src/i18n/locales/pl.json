@@ -1164,6 +1164,7 @@
   "binDesigner.cutouts.scanImport.stripsPlaceHint": "Połóż jeden płasko na górze narzędzia, znacznikami do góry, i zrób zdjęcie prosto z góry.",
   "scan.stripMeasured": "Zmierzono w skali z paska, na wysokości narzędzia.",
   "scan.review.underStrip": "Krawędź pod paskiem została uzupełniona. Sprawdź ją.",
+  "scan.review.offSheet": "Obrys kończy się na krawędzi kartki. Dotknij narzędzia, aby narysować go ponownie, albo przesuń je na kartkę.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — arkusz kalibracyjny do skanowania",
   "binDesigner.cutouts.scanImport.title": "Zeskanuj narzędzie",
   "binDesigner.cutouts.scanImport.unavailable": "Skanowanie telefonem jest teraz niedostępne. Zamiast tego prześlij odrysowany obrys.",

@@ -121,9 +121,16 @@ describe('ScanCaptureFlow', () => {
     );
     expect(screen.getByText('scan.paperMeasured')).toBeInTheDocument();
 
+    // Ruling the sheet out moves where the tools are looked for, so they are traced again.
     mockDetect.mockReturnValue(null);
+    mockTrace.mockClear();
+    mockTrace.mockReturnValue(ok(SCENE));
     fireEvent.click(screen.getByRole('radio', { name: 'scan.paper.notPaper' }));
-    expect(screen.getByText('scan.noReferenceHint')).toBeInTheDocument();
+    expect(await screen.findByText('scan.noReferenceHint')).toBeInTheDocument();
+    expect(mockTrace).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ paper: 'off' })
+    );
     expect(screen.getByRole('radio', { checked: true })).toHaveTextContent('scan.paper.notPaper');
   });
 

@@ -1141,6 +1141,7 @@
   "binDesigner.cutouts.scanImport.stripsPlaceHint": "Položte jeden naplocho přes vršek nástroje, značkami nahoru, a vyfoťte ho přímo shora.",
   "scan.stripMeasured": "Změřeno v měřítku z pásku, ve výšce nástroje.",
   "scan.review.underStrip": "Okraj pod páskem byl doplněn. Zkontrolujte ho.",
+  "scan.review.offSheet": "Obrys končí na okraji listu. Klepni na nástroj a překresli ho, nebo ho posuň na list.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — kalibrační list pro skenování",
   "binDesigner.cutouts.scanImport.title": "Naskenovat nástroj",
   "binDesigner.cutouts.scanImport.unavailable": "Skenování telefonem právě teď není dostupné. Nahraj místo toho obtažený obrys.",

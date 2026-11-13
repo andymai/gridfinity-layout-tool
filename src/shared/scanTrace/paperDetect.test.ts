@@ -160,6 +160,34 @@ describe('findPaper', () => {
     }
   });
 
+  it('reads a sheet that a tool lying right across cuts in two', () => {
+    const across = rect(-10, -125, 10, 125);
+    const image = render(tilted, [
+      [A4, PAPER],
+      [across, RED],
+    ]);
+    const found = findPaper(image);
+    expect(found?.size).toBe('a4');
+    const truth = A4.map(tilted);
+    for (const corner of found?.corners ?? []) {
+      expect(
+        Math.min(...truth.map((p) => Math.hypot(p.x - corner.x, p.y - corner.y)))
+      ).toBeLessThan(1);
+    }
+    expect(detectReference(image)?.kind).toBe('paper');
+  });
+
+  it('takes no two white things apart for one sheet', () => {
+    expect(
+      findPaper(
+        render(flat, [
+          [rect(-200, -105, -100, 105), PAPER],
+          [rect(100, -105, 200, 105), PAPER],
+        ])
+      )
+    ).toBeNull();
+  });
+
   it('reads a sheet on a pale wooden table through uneven light, blur and noise', () => {
     const found = findPaper(
       degraded(
@@ -270,6 +298,50 @@ describe('a plain sheet as the size reference', () => {
     ]);
     expect(detectReference(image)?.kind).toBe('paper');
     expect(detectReference(image, { paper: 'off' })?.kind).toBe('card');
+  });
+
+  it('still finds a card lying on a sheet turned off', () => {
+    const card = rect(40, 20, 40 + CARD_WIDTH_MM, 20 + CARD_HEIGHT_MM);
+    const image = render(
+      camera(0.05, 0.05, 700),
+      [
+        [A4, PAPER],
+        [rect(-120, -60, -40, -40), [40, 40, 40]],
+        [card, [30, 90, 200]],
+      ],
+      [60, 60, 60]
+    );
+    expect(detectReference(image)?.kind).toBe('paper');
+    const reference = detectReference(image, { paper: 'off' });
+    expect(reference?.kind).toBe('card');
+    if (reference?.kind !== 'card') return;
+    const truth = card.map(camera(0.05, 0.05, 700));
+    for (const corner of reference.card.corners) {
+      expect(
+        Math.min(...truth.map((p) => Math.hypot(p.x - corner.x, p.y - corner.y)))
+      ).toBeLessThan(3);
+    }
+  });
+
+  it('marks a tool that runs past the sheet, whose outline stops at the edge', () => {
+    const image = render(tilted, [
+      [A4, PAPER],
+      [rect(90, 40, 200, 60), RED],
+      [TOOL, RED],
+    ]);
+    const traced = traceScene(image, { smooth: false });
+    if (!isOk(traced)) throw new Error(traced.error.code);
+    const [long, short] = [...traced.value.shapes].sort(
+      (a, b) => size(b.outputPoints)[0] - size(a.outputPoints)[0]
+    );
+    expect(size(long.outputPoints)[0]).toBeGreaterThan(70);
+    expect(traced.value.shapes).toHaveLength(2);
+    const [across, within] = traced.value.shapes[0].offSheet
+      ? traced.value.shapes
+      : [traced.value.shapes[1], traced.value.shapes[0]];
+    expect(across.offSheet).toBe(true);
+    expect(within.offSheet).toBeUndefined();
+    expect(short).toBeDefined();
   });
 
   it('leaves a card on a plain table as the reference', () => {

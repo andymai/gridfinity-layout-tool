@@ -1164,6 +1164,7 @@
   "binDesigner.cutouts.scanImport.stripsPlaceHint": "Покладіть одну пласко поперек верху інструмента, маркерами вгору, і сфотографуйте строго згори.",
   "scan.stripMeasured": "Виміряно в масштабі за смужкою, на висоті інструмента.",
   "scan.review.underStrip": "Край під смужкою добудовано. Перевірте його.",
+  "scan.review.offSheet": "Контур закінчується на краю аркуша. Торкніться інструмента, щоб перемалювати його, або пересуньте його на аркуш.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — калібрувальний аркуш для сканування",
   "binDesigner.cutouts.scanImport.title": "Сканувати інструмент",
   "binDesigner.cutouts.scanImport.unavailable": "Сканування телефоном зараз недоступне. Натомість завантажте обведений контур.",

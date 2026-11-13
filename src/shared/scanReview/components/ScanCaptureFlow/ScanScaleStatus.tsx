@@ -45,6 +45,9 @@ export function ScanScaleStatus({ scene, shown, cardSteep }: ScanScaleStatusProp
           {shown.length === 1 && shown[0].underStrip && (
             <p className="text-xs text-warning">{t('scan.review.underStrip')}</p>
           )}
+          {shown.length === 1 && shown[0].offSheet && (
+            <p className="text-xs text-warning">{t('scan.review.offSheet')}</p>
+          )}
           {scene.grid && (
             <p className="text-xs text-content-secondary">
               {t(scene.grid.kind === 'sheet' ? 'scan.gridDetail' : 'scan.baseplateDetail', {

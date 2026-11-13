@@ -1,8 +1,8 @@
 /**
  * A plain sheet of office paper lying under the tools, found by itself.
  *
- * The sheet is the largest near-white region whose outline is a clean
- * quadrilateral with all four corners in frame. Which sheet it is comes from
+ * The sheet is the near-white region whose hull is a clean quadrilateral
+ * with all four corners in frame. Which sheet it is comes from
  * its shape alone: A4 and US Letter differ by 9% in aspect, so a quad that
  * reads as neither is not taken for paper at all. That also keeps a wallet
  * card (1.586) from being read as a sheet.
@@ -17,6 +17,7 @@ import { computeOtsuThreshold, usesAlphaMask } from './mask';
 import { labelComponents, maskFromLabel } from './components';
 import { traceContour } from './contour';
 import { contourToQuad } from './quad';
+import { convexHull } from './minAreaRect';
 import { lensRange, PAPER_SIZES, sidesThroughCamera, type PaperSize } from './manualReference';
 
 export interface PaperSheet {
@@ -28,6 +29,10 @@ export interface PaperSheet {
 /** A sheet smaller than this share of the frame is too small to size tools by. */
 const MIN_AREA_SHARE = 0.08;
 const MIN_QUAD_FITNESS = 0.7;
+/** White pieces this share of the largest are part of the same sheet. */
+const PIECE_SHARE = 0.15;
+/** The white pieces must fill this much of the quad, or they are not one sheet. */
+const MIN_SHEET_FILL = 0.6;
 /** Mean max−min of RGB over the sheet; above this it is coloured, not paper. */
 const MAX_MEAN_CHROMA = 40;
 /** Half the gap between A4 and Letter, less a margin: nearer than this to one is that one. */
@@ -114,6 +119,16 @@ function sideLine(
   return { ...line, x: line.x + out * line.dy, y: line.y - out * line.dx };
 }
 
+function quadArea(corners: readonly Point[]): number {
+  let area = 0;
+  for (let i = 0; i < corners.length; i++) {
+    const a = corners[i];
+    const b = corners[(i + 1) % corners.length];
+    area += a.x * b.y - b.x * a.y;
+  }
+  return Math.abs(area) / 2;
+}
+
 /** The sheet's long side over its short side, or null when the photo cannot say. */
 function sheetAspect(
   corners: readonly [Point, Point, Point, Point],
@@ -160,28 +175,32 @@ export function findPaper(image: ImageDataLike): PaperSheet | null {
   for (let i = 0; i < n; i++) mask.data[i] = white[i] >= threshold ? 1 : 0;
 
   const labeled = labelComponents(mask);
-  const sheet = labeled.components.reduce<(typeof labeled.components)[number] | null>(
-    (best, c) => (!best || c.area > best.area ? c : best),
-    null
-  );
-  if (!sheet || sheet.area < MIN_AREA_SHARE * n) return null;
+  const largest = labeled.components.reduce((most, c) => Math.max(most, c.area), 0);
+  // A tool lying right across the sheet cuts it in two, so every large white
+  // piece is taken as part of it.
+  const pieces = labeled.components.filter((c) => c.area >= PIECE_SHARE * largest);
+  const area = pieces.reduce((sum, c) => sum + c.area, 0);
+  if (pieces.length === 0 || area < MIN_AREA_SHARE * n) return null;
 
+  const ofSheet = new Set(pieces.map((c) => c.label));
   let chroma = 0;
   for (let i = 0; i < n; i++) {
-    if (labeled.labels[i] !== sheet.label) continue;
+    if (!ofSheet.has(labeled.labels[i])) continue;
     const r = data[i * 4];
     const g = data[i * 4 + 1];
     const b = data[i * 4 + 2];
     chroma += Math.max(r, g, b) - Math.min(r, g, b);
   }
-  if (chroma / sheet.area > MAX_MEAN_CHROMA) return null;
+  if (chroma / area > MAX_MEAN_CHROMA) return null;
 
-  const contour = traceContour(
-    maskFromLabel(labeled.labels, sheet.label, width, height),
-    sheet.start
+  const contour = pieces.flatMap((c) =>
+    traceContour(maskFromLabel(labeled.labels, c.label, width, height), c.start)
   );
-  const quad = contourToQuad(contour);
+  // Judged on the hull: a tool across an edge notches the outline, and the
+  // side lines below already ask each side for an edge of its own.
+  const quad = contourToQuad(convexHull(contour));
   if (!quad || quad.fitness < MIN_QUAD_FITNESS) return null;
+  if (area < MIN_SHEET_FILL * quadArea(quad.corners)) return null;
 
   const rough = quad.corners;
   const centre = {

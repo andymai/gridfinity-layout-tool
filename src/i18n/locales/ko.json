@@ -1095,6 +1095,7 @@
   "binDesigner.cutouts.scanImport.stripsPlaceHint": "마커가 위로 오게 공구 윗면에 평평하게 걸쳐 놓고 바로 위에서 촬영하세요.",
   "scan.stripMeasured": "스트립으로 공구 높이에서 실제 크기를 측정했습니다.",
   "scan.review.underStrip": "스트립 아래 가장자리를 채웠습니다. 확인하세요.",
+  "scan.review.offSheet": "윤곽선이 용지 가장자리에서 끊깁니다. 공구를 탭하여 다시 그리거나 공구를 용지 위로 옮기세요.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — 스캔용 보정 시트",
   "binDesigner.cutouts.scanImport.title": "공구 스캔",
   "binDesigner.cutouts.scanImport.unavailable": "지금은 휴대폰 스캔을 사용할 수 없습니다. 대신 딴 윤곽선을 업로드하세요.",

@@ -3804,6 +3804,8 @@ const en: Record<string, string> = {
     'Lay one flat across the top of the tool, markers up, and photograph it straight down.',
   'scan.stripMeasured': 'Measured to scale from the strip, at the tool’s height.',
   'scan.review.underStrip': 'Edge under the strip filled in. Check it.',
+  'scan.review.offSheet':
+    'Outline stops at the edge of the sheet. Tap the tool to redraw it, or move it onto the sheet.',
   'binDesigner.cutouts.scanImport.scaleLabel': 'Real-world size (longest side, mm)',
   'binDesigner.cutouts.scanImport.scaleLabelLongest': 'Real-world length of the longest tool (mm)',
   'binDesigner.cutouts.scanImport.scaleHelp':

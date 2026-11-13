@@ -1118,6 +1118,7 @@
   "binDesigner.cutouts.scanImport.stripsPlaceHint": "Lege einen flach quer über die Oberseite des Werkzeugs, Marker nach oben, und fotografiere senkrecht von oben.",
   "scan.stripMeasured": "Maßstabsgetreu vom Streifen gemessen, in Höhe des Werkzeugs.",
   "scan.review.underStrip": "Kante unter dem Streifen ergänzt. Bitte prüfen.",
+  "scan.review.offSheet": "Die Kontur endet am Blattrand. Tippe auf das Werkzeug, um sie neu zu zeichnen, oder lege es ganz auf das Blatt.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — Kalibrierblatt für Scans",
   "binDesigner.cutouts.scanImport.title": "Werkzeug scannen",
   "binDesigner.cutouts.scanImport.unavailable": "Handy-Scannen ist gerade nicht verfügbar. Lade stattdessen eine erfasste Kontur hoch.",

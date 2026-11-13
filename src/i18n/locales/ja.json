@@ -1095,6 +1095,7 @@
   "binDesigner.cutouts.scanImport.stripsPlaceHint": "工具の上面にマーカーを上にして平らに渡し、真上から撮影してください。",
   "scan.stripMeasured": "ストリップから工具の高さで実寸を測定しました。",
   "scan.review.underStrip": "ストリップの下の輪郭を補完しました。確認してください。",
+  "scan.review.offSheet": "輪郭が用紙の端で途切れています。工具をタップして描き直すか、工具を用紙の上に移動してください。",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — スキャン用キャリブレーションシート",
   "binDesigner.cutouts.scanImport.title": "工具をスキャン",
   "binDesigner.cutouts.scanImport.unavailable": "今はスマホでのスキャンを利用できません。代わりにトレース済みの輪郭をアップロードしてください。",

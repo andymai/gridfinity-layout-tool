@@ -1118,6 +1118,7 @@
   "binDesigner.cutouts.scanImport.stripsPlaceHint": "Lägg en platt över verktygets ovansida, markörerna uppåt, och fotografera rakt ovanifrån.",
   "scan.stripMeasured": "Uppmätt i skala från remsan, i verktygets höjd.",
   "scan.review.underStrip": "Kanten under remsan har fyllts i. Kontrollera den.",
+  "scan.review.offSheet": "Konturen slutar vid arkets kant. Tryck på verktyget för att rita om den, eller flytta in det på arket.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — kalibreringsark för skanning",
   "binDesigner.cutouts.scanImport.title": "Skanna ett verktyg",
   "binDesigner.cutouts.scanImport.unavailable": "Skanning med telefon är inte tillgängligt just nu. Ladda upp en spårad kontur i stället.",

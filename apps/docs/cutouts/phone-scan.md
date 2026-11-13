@@ -86,13 +86,14 @@ The box under the photo shows how the phone sized the tool. For one tool, it giv
 
 ### If something looks off
 
-| What you see                         | What to do                                                                                                                                                                    |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The outline is wrong or ragged       | Tap the tool in the photo to redraw it. If that doesn't help, tap <Ui k="scan.retake" /> and use a plainer background.                                                        |
-| The phone can't find a clear outline | Retake the photo on a plain background with more contrast to the tool.                                                                                                        |
-| The phone finds no size reference    | Lay the tool on a sheet of A4 or US Letter paper on a darker table, with all four corners in the photo. Or lay a card flat beside the tool, with the whole card in the photo. |
-| A warning about a steep angle        | Retake the photo from straighter above. A steep angle makes the size less accurate.                                                                                           |
-| The phone says the link expired      | Start a new scan from your computer.                                                                                                                                          |
+| What you see                              | What to do                                                                                                                                                                    |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The outline is wrong or ragged            | Tap the tool in the photo to redraw it. If that doesn't help, tap <Ui k="scan.retake" /> and use a plainer background.                                                        |
+| The phone can't find a clear outline      | Retake the photo on a plain background with more contrast to the tool.                                                                                                        |
+| The phone finds no size reference         | Lay the tool on a sheet of A4 or US Letter paper on a darker table, with all four corners in the photo. Or lay a card flat beside the tool, with the whole card in the photo. |
+| An outline stops at the edge of the paper | Tap the tool to redraw it. Or move the tool fully onto the sheet and retake the photo.                                                                                        |
+| A warning about a steep angle             | Retake the photo from straighter above. A steep angle makes the size less accurate.                                                                                           |
+| The phone says the link expired           | Start a new scan from your computer.                                                                                                                                          |
 
 A soft shadow is usually fine. The phone looks at the change in color more than the change in brightness, so a shadow does little harm.
 

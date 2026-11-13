@@ -1118,6 +1118,7 @@
   "binDesigner.cutouts.scanImport.stripsPlaceHint": "Appoggiane una piatta sopra l’utensile, con i marcatori in alto, e fotografala dall’alto in verticale.",
   "scan.stripMeasured": "Misurato in scala dalla striscia, all’altezza dell’utensile.",
   "scan.review.underStrip": "Bordo sotto la striscia completato. Controllalo.",
+  "scan.review.offSheet": "Il contorno si ferma al bordo del foglio. Tocca l'utensile per ridisegnarlo, oppure spostalo sul foglio.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — foglio di calibrazione per la scansione",
   "binDesigner.cutouts.scanImport.title": "Scansiona un utensile",
   "binDesigner.cutouts.scanImport.unavailable": "La scansione da telefono non è disponibile al momento. Carica invece un contorno tracciato.",

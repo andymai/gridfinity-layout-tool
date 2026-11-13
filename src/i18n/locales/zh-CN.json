@@ -1095,6 +1095,7 @@
   "binDesigner.cutouts.scanImport.stripsPlaceHint": "将一条测量条标记朝上平放在工具顶部，从正上方拍摄。",
   "scan.stripMeasured": "已按测量条在工具高度处测量实际尺寸。",
   "scan.review.underStrip": "测量条下方的边缘已补全，请检查。",
+  "scan.review.offSheet": "轮廓在纸张边缘处中断。点按工具重新描绘，或将工具移到纸上。",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — 扫描校准页",
   "binDesigner.cutouts.scanImport.title": "扫描工具",
   "binDesigner.cutouts.scanImport.unavailable": "手机扫描目前不可用。请改为上传描摹好的轮廓。",

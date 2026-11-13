@@ -1118,6 +1118,7 @@
   "binDesigner.cutouts.scanImport.stripsPlaceHint": "Coloque uma deitada sobre o topo da ferramenta, com os marcadores para cima, e fotografe bem de cima.",
   "scan.stripMeasured": "Medido em escala pela tira, na altura da ferramenta.",
   "scan.review.underStrip": "A borda sob a tira foi completada. Confira.",
+  "scan.review.offSheet": "O contorno para na borda da folha. Toque na ferramenta para redesenhá-lo ou coloque-a sobre a folha.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — folha de calibração para digitalização",
   "binDesigner.cutouts.scanImport.title": "Escanear uma ferramenta",
   "binDesigner.cutouts.scanImport.unavailable": "O escaneamento pelo celular não está disponível agora. Envie um contorno traçado em vez disso.",

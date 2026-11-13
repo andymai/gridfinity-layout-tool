@@ -1118,6 +1118,7 @@
   "binDesigner.cutouts.scanImport.stripsPlaceHint": "Legg en flatt over toppen av verktøyet, markørene opp, og fotografer rett ovenfra.",
   "scan.stripMeasured": "Målt i riktig skala fra strimmelen, i verktøyets høyde.",
   "scan.review.underStrip": "Kanten under strimmelen er fylt inn. Sjekk den.",
+  "scan.review.offSheet": "Omrisset stopper ved kanten av arket. Trykk på verktøyet for å tegne det på nytt, eller flytt det inn på arket.",
   "binDesigner.cutouts.scanImport.sheetTitle": "Gridfinity Layout Tool — kalibreringsark for skanning",
   "binDesigner.cutouts.scanImport.title": "Skann et verktøy",
   "binDesigner.cutouts.scanImport.unavailable": "Skanning med telefon er ikke tilgjengelig akkurat nå. Last opp et sporet omriss i stedet.",
