@@ -23,7 +23,11 @@ import { lensRange, PAPER_SIZES, sidesThroughCamera, type PaperSize } from './ma
 export interface PaperSheet {
   /** Ordered [TL, TR, BR, BL] in image pixels. */
   readonly corners: readonly [Point, Point, Point, Point];
-  readonly size: PaperSize;
+  /**
+   * Null when the white pieces fit two readings that differ in scale and look
+   * alike: one sheet a tool cut in half, or two sheets side by side.
+   */
+  readonly size: PaperSize | null;
   /** Each white piece's own quad, when a tool across the sheet cut it into several. */
   readonly parts: readonly (readonly Point[])[];
 }
@@ -33,6 +37,8 @@ const MIN_AREA_SHARE = 0.08;
 const MIN_QUAD_FITNESS = 0.7;
 /** White pieces this share of the largest can be part of the same sheet. */
 const PIECE_SHARE = 0.02;
+/** A second piece this share of the first's size is its twin: another sheet, or the other half. */
+const TWIN_SHARE = 0.8;
 /** The white pieces must fill this much of the quad, or they are not one sheet. */
 const MIN_SHEET_FILL = 0.6;
 /** Mean max−min of RGB over the sheet; above this it is coloured, not paper. */
@@ -183,16 +189,19 @@ export function findPaper(image: ImageDataLike): PaperSheet | null {
   );
   if (!largest) return null;
   // A tool lying right across the sheet cuts it in two, so the white pieces
-  // are tried together first: half an A4 sheet has the shape of a whole one.
-  // Pieces that make no sheet together, such as two sheets set apart, leave
-  // the largest to be tried alone.
+  // are read together first. Two sheets set apart make no sheet together,
+  // and the largest is then read alone. Two pieces of one size are the one
+  // case the shapes cannot settle: half an A4 sheet has the shape of a whole
+  // one, so two halves and two whole sheets look alike at scales 40% apart.
   const pieces = labeled.components.filter((c) => c.area >= PIECE_SHARE * largest.area);
-  const tries = pieces.length > 1 ? [pieces, [largest]] : [[largest]];
-  for (const candidate of tries) {
-    const sheet = sheetFrom(image, labeled.labels, candidate);
-    if (sheet) return sheet;
-  }
-  return null;
+  const together = pieces.length > 1 ? sheetFrom(image, labeled.labels, pieces) : null;
+  if (!together) return sheetFrom(image, labeled.labels, [largest]);
+  const [first, second] = together.parts.map(quadArea).sort((a, b) => b - a);
+  const twins = second >= TWIN_SHARE * first;
+  // Shape alone decides here: a half too small to size tools by is still a twin.
+  return twins && sheetFrom(image, labeled.labels, [largest], 0)
+    ? { ...together, size: null }
+    : together;
 }
 
 type Piece = ReturnType<typeof labelComponents>['components'][number];
@@ -201,12 +210,13 @@ type Piece = ReturnType<typeof labelComponents>['components'][number];
 function sheetFrom(
   image: ImageDataLike,
   labels: Int32Array,
-  pieces: readonly Piece[]
+  pieces: readonly Piece[],
+  minAreaShare = MIN_AREA_SHARE
 ): PaperSheet | null {
   const { width, height, data } = image;
   const n = width * height;
   const area = pieces.reduce((sum, c) => sum + c.area, 0);
-  if (area < MIN_AREA_SHARE * n) return null;
+  if (area < minAreaShare * n) return null;
 
   const ofSheet = new Set(pieces.map((c) => c.label));
   let chroma = 0;

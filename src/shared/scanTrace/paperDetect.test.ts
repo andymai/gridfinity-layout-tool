@@ -178,10 +178,6 @@ describe('findPaper', () => {
   });
 
   it.each([
-    [
-      'a thin rod down the middle, whose halves have the shape of a whole sheet',
-      rect(-2, -125, 2, 125),
-    ],
     ['a tool near one end, which leaves a sliver', rect(120, -125, 140, 125)],
     [
       'a tool off centre, whose larger piece has the shape of a Letter sheet',
@@ -202,6 +198,29 @@ describe('findPaper', () => {
     }
     // Ruled out, neither the sheet nor a piece of it is taken for a card.
     expect(detectReference(image, { paper: 'off' })).toBeNull();
+  });
+
+  it.each([
+    [
+      'a sheet cut in half by a thin rod',
+      [
+        [A4, PAPER],
+        [rect(-2, -125, 2, 125), RED],
+      ],
+    ],
+    [
+      'two sheets a few millimetres apart',
+      [
+        [rect(-212.5, -148.5, -2.5, 148.5), PAPER],
+        [rect(2.5, -148.5, 212.5, 148.5), PAPER],
+        [rect(-150, -40, -90, 40), RED],
+      ],
+    ],
+  ] as const)('takes no size from %s, which look alike at different scales', (_name, layers) => {
+    const image = render(camera(0, 0, 1200), layers);
+    expect(findPaper(image)?.size).toBeNull();
+    // Nor is either piece taken for a card.
+    expect(detectReference(image)).toBeNull();
   });
 
   it('reads one of two sheets lying side by side', () => {

@@ -238,7 +238,7 @@ export function detectReference(
     const card = detectCard(image, options, excludeMask);
     return card ? { kind: 'card', card } : null;
   }
-  if (options.paper !== 'off') {
+  if (options.paper !== 'off' && sheetOfPaper.size !== null) {
     const paper = paperReference(sheetOfPaper.corners, options.paper ?? sheetOfPaper.size, image);
     if (isOk(paper)) return paper.value;
   }

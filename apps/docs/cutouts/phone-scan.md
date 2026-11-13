@@ -36,7 +36,7 @@ The reference tells the phone the true size of the tool. It also corrects a phot
 | --------------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | Printed calibration sheet   | Lay the tool on the sheet, inside the ring of black squares.                                                  | The most accurate reference. It has a 100 mm bar to check the print.       |
 | Gridfinity baseplate        | Lay the tool on the baseplate.                                                                                | Only as accurate as the printer that made the baseplate.                   |
-| Plain A4 or US Letter paper | Lay the tool on the sheet, on a table darker than the paper. Keep all four corners of the sheet in the photo. | Nothing to print. A sheet can be a millimeter or two off its nominal size. |
+| Plain A4 or US Letter paper | Lay the tool on one sheet, on a table darker than the paper. Keep all four corners of the sheet in the photo. | Nothing to print. A sheet can be a millimeter or two off its nominal size. |
 | Bank, transit or ID card    | Lay the card flat beside the tool, not under it, with the full card in the photo.                             | Any card of the standard 85.6 × 53.98 mm size.                             |
 
 Not sure? Start with a sheet of plain printer paper under the tool. The phone finds the sheet by itself and tells A4 from US Letter by its shape. The white paper is also a good background for most tools.
