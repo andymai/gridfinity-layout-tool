@@ -1,0 +1,32 @@
+src/shared/scanTrace/edgeSnap.ts
+  s_925c1b25c9715e::t_8bc28274a5e0fb 49-50,290-300
+  s_925c1b25c9715e::t_f742308a8a0465 42-48,146,200-202,204-205,226,229-231,234-235,237-238,253-254
+  s_925c1b25c9715e::t_d275e096fc4808 242-252
+  s_925c1b25c9715e::t_ede30b2d922056 9,14-19,40-41,64-67,162-166,209,214-217,232-233,236,240-241,255-270,272
+  s_925c1b25c9715e::t_a07ec8e16a42c1 68
+src/shared/scanTrace/edgeSnap.test.ts
+  s_925c1b25c9715e::t_803dca8a423fa9 9,71,76,205,212-213
+  s_925c1b25c9715e::t_8bc28274a5e0fb 127,147-175
+  s_925c1b25c9715e::t_acd0b368fdadb6 63-70,72-75,123-126,178,180-185
+  s_925c1b25c9715e::t_dc08700fd8bd6c 128
+src/shared/scanTrace/testing/syntheticPhoto.ts
+  s_925c1b25c9715e::t_3dbfcc3c66edda 6-9,39-48,112,125,137-139
+src/features/scan-capture/README.md
+  s_925c1b25c9715e::t_7ebd8297ca0385 147-149
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "684c9c6a9c34dedfd2c99e4bfd3c0190ce50b513",
+  "prompts": {},
+  "sessions": {
+    "s_925c1b25c9715e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "53465ea6-fbba-48bb-b515-f45942033545",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
