@@ -1,0 +1,26 @@
+src/shared/scanReview/components/ScanCaptureFlow/ScanCaptureFlow.test.tsx
+  s_925c1b25c9715e::t_4055465595c8aa 135-141
+src/shared/scanReview/components/ScanCaptureFlow/ScanCaptureFlow.tsx
+  s_925c1b25c9715e::t_4055465595c8aa 78,179-184,201,203,215-216,238,242,245,247-250
+src/shared/scanTrace/paperDetect.test.ts
+  s_925c1b25c9715e::t_4055465595c8aa 180-182,184-201
+  s_925c1b25c9715e::t_94db1745f3c167 183
+src/shared/scanTrace/paperDetect.ts
+  s_925c1b25c9715e::t_4055465595c8aa 178-182,184-204,206,211,220
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "485b777b684ebc35f9af47b2b6a504d314778b45",
+  "prompts": {},
+  "sessions": {
+    "s_925c1b25c9715e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "53465ea6-fbba-48bb-b515-f45942033545",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
