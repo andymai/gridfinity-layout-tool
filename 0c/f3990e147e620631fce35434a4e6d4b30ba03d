@@ -1,0 +1,23 @@
+src/shared/scanTrace/paperDetect.ts
+  s_925c1b25c9715e::t_bc6ad9b946a25c 27-28,34-35,185-188,190,222,225,252-260
+src/shared/scanTrace/traceScene.ts
+  s_925c1b25c9715e::t_bc6ad9b946a25c 245-249
+src/shared/scanTrace/paperDetect.test.ts
+  s_925c1b25c9715e::t_bc6ad9b946a25c 180-206
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0cf3990e147e620631fce35434a4e6d4b30ba03d",
+  "prompts": {},
+  "sessions": {
+    "s_925c1b25c9715e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "53465ea6-fbba-48bb-b515-f45942033545",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
