@@ -1,0 +1,37 @@
+apps/docs/.vitepress/theme/index.ts
+  s_68cc60d3c06af8::t_e7a7da67303f77 1,4-7,39-45
+apps/docs/.vitepress/navigation.ts
+  s_68cc60d3c06af8::t_e7a7da67303f77 9-14
+apps/docs/.vitepress/theme/custom.css
+  s_68cc60d3c06af8::t_f343be8f08ce36 6-21,29-42,58-87,93-172,174-226,233-385
+  s_68cc60d3c06af8::t_84565583fc793e 88-92,173,227-232
+  s_68cc60d3c06af8::t_d1467c26fe8611 386
+apps/docs/.vitepress/config.ts
+  s_68cc60d3c06af8::t_e7a7da67303f77 132-133
+apps/docs/.vitepress/theme/components/BrandLockup.vue
+  s_68cc60d3c06af8::t_e7a7da67303f77 1-6
+apps/docs/.vitepress/theme/components/OpenAppButton.vue
+  s_68cc60d3c06af8::t_e7a7da67303f77 1-13
+apps/docs/.vitepress/theme/components/ChapterLabel.vue
+  s_68cc60d3c06af8::t_e7a7da67303f77 1-17
+apps/docs/.vitepress/theme/components/AppTools.vue
+  s_68cc60d3c06af8::t_e7a7da67303f77 1-22
+scripts/check-user-docs.ts
+  s_68cc60d3c06af8::t_e7a7da67303f77 14,326
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e78a5493e189d440f48f2abab917c057f22e9a54",
+  "prompts": {},
+  "sessions": {
+    "s_68cc60d3c06af8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "09c094e6-b00e-4d24-b021-b56124f78109",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
