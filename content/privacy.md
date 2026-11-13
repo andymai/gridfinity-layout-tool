@@ -40,7 +40,7 @@ We also respect your browser's privacy settings. If your browser sends a [Global
 
 ### Page View Counts
 
-The app, the content pages and the [docs](/docs) count page views with [Vercel Web Analytics](https://vercel.com/docs/analytics/privacy-policy), a service of the company that hosts this site. Each page view records:
+The app and the [docs](/docs) count page views with [Vercel Web Analytics](https://vercel.com/docs/analytics/privacy-policy), a service of the company that hosts this site. Each page view records:
 
 - The page address and the page that linked to it
 - Approximate location (country, region and city)
