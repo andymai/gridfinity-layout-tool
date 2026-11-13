@@ -197,6 +197,7 @@ export function TraceView({ open, onClose, onTraced, initialPhoto }: TraceViewPr
               manual={session.manual}
               hasAuto={session.hasAuto}
               paperSize={paperSize}
+              paperChoice={session.paper}
               cardSize={session.cardSize}
               disabled={busy}
               onStart={(next) => {
@@ -205,6 +206,7 @@ export function TraceView({ open, onClose, onTraced, initialPhoto }: TraceViewPr
               }}
               onCancel={leaveMode}
               onPaperSize={setPaperSize}
+              onPaperChoice={session.setPaper}
               onApply={(reference) => {
                 leaveMode();
                 session.setScale(reference);

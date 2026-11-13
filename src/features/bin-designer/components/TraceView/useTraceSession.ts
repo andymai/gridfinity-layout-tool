@@ -25,8 +25,10 @@ import {
   traceAll,
   traceTap,
   withoutShape,
+  withPaperChoice,
   type CardSizeMm,
   type CleanedTool,
+  type PaperChoice,
 } from '@/shared/scanReview';
 import { useTraceCleanup, type TraceCleanup } from './traceCleanup';
 
@@ -44,6 +46,7 @@ interface Snapshot {
   readonly manual: boolean;
   readonly region: readonly Point[] | null;
   readonly sensitivity: number;
+  readonly paper: PaperChoice | null;
 }
 
 interface Session {
@@ -62,6 +65,8 @@ interface Session {
   readonly manual: boolean;
   readonly region: readonly Point[] | null;
   readonly sensitivity: number;
+  /** The user's word on the sheet under the tools; null until they give one. */
+  readonly paper: PaperChoice | null;
 }
 
 const START: Session = {
@@ -76,6 +81,7 @@ const START: Session = {
   manual: false,
   region: null,
   sensitivity: 0,
+  paper: null,
 };
 
 const snapshot = (s: Session): Snapshot | null =>
@@ -86,6 +92,7 @@ const snapshot = (s: Session): Snapshot | null =>
         manual: s.manual,
         region: s.region,
         sensitivity: s.sensitivity,
+        paper: s.paper,
       }
     : null;
 
@@ -114,9 +121,11 @@ export interface TraceSession {
   readonly hasAuto: boolean;
   readonly region: readonly Point[] | null;
   readonly sensitivity: number;
+  readonly paper: PaperChoice | null;
   readonly keepHoles: boolean;
   readonly cardSize: CardSizeMm;
   readonly load: (file: Blob) => Promise<void>;
+  readonly setPaper: (choice: PaperChoice) => void;
   readonly setRegion: (region: readonly Point[] | null) => void;
   readonly setSensitivity: (value: number) => void;
   readonly commitSensitivity: (value: number) => void;
@@ -159,11 +168,15 @@ export function useTraceSession(): TraceSession {
   }, [photoUrl]);
 
   const options = useCallback(
-    (region: readonly Point[] | null, sensitivity: number): SceneTraceOptions => ({
-      ...cardOptions(cardSize),
-      sensitivity,
-      ...(region ? { region } : {}),
-    }),
+    (
+      region: readonly Point[] | null,
+      sensitivity: number,
+      paper: PaperChoice | null
+    ): SceneTraceOptions =>
+      withPaperChoice(
+        { ...cardOptions(cardSize), sensitivity, ...(region ? { region } : {}) },
+        paper
+      ),
     [cardSize]
   );
 
@@ -180,7 +193,7 @@ export function useTraceSession(): TraceSession {
         return;
       }
       const image = imageDataFromCanvas(canvas);
-      const opts = options(null, 0);
+      const opts = options(null, 0, null);
       const auto = detectReference(image, opts);
       const traced = await traceAll(canvas, image, opts, auto);
       if (mine !== ticket.current) return;
@@ -200,14 +213,15 @@ export function useTraceSession(): TraceSession {
       region: readonly Point[] | null,
       sensitivity: number,
       reference: SceneReference | null,
-      manual: boolean
+      manual: boolean,
+      paper: PaperChoice | null = session.paper
     ) => {
       const { photo, scene } = session;
       if (!photo || !scene) return;
       const mine = ++ticket.current;
       const before = snapshot(session);
-      setSession((s) => ({ ...s, region, sensitivity, working: true }));
-      const opts = options(region, sensitivity);
+      setSession((s) => ({ ...s, region, sensitivity, paper, working: true }));
+      const opts = options(region, sensitivity, paper);
       void traceAll(photo.canvas, photo.image, opts, reference).then((traced) => {
         if (mine !== ticket.current) return;
         setSession((s) => ({
@@ -240,11 +254,23 @@ export function useTraceSession(): TraceSession {
     [retrace, session.region, session.manual, reference]
   );
 
+  // The sheet bounds the search, so a new word on it traces the photo again.
+  const setPaper = useCallback(
+    (choice: PaperChoice) => {
+      const { photo, region, sensitivity, working } = session;
+      if (!photo || working) return;
+      const auto = detectReference(photo.image, options(region, sensitivity, choice));
+      setSession((s) => ({ ...s, auto }));
+      retrace(region, sensitivity, auto, false, choice);
+    },
+    [session, retrace, options]
+  );
+
   // A hand-set scale re-sizes the outlines in place, keeping every edit; one
   // that moves where the tools are looked for traces them again.
   const setScale = useCallback(
     (next: SceneReference | null) => {
-      const { scene, region, sensitivity } = session;
+      const { scene, region, sensitivity, paper } = session;
       if (!scene) return;
       const manual = next !== null;
       const auto = session.manual ? session.auto : scene.reference;
@@ -261,7 +287,7 @@ export function useTraceSession(): TraceSession {
         manual,
         working: false,
         previous: snapshot(session),
-        scene: withReference(scene, target, options(region, sensitivity)),
+        scene: withReference(scene, target, options(region, sensitivity, paper)),
       }));
     },
     [session, retrace, options]
@@ -269,7 +295,7 @@ export function useTraceSession(): TraceSession {
 
   const tap = useCallback(
     (seed: Point) => {
-      const { photo, scene, region, sensitivity, manual, canRefine, working } = session;
+      const { photo, scene, region, sensitivity, paper, manual, canRefine, working } = session;
       if (!photo || !scene || !canRefine || working) return;
       const mine = ++ticket.current;
       const before = snapshot(session);
@@ -279,7 +305,7 @@ export function useTraceSession(): TraceSession {
         photo.image,
         scene,
         seed,
-        options(region, sensitivity),
+        options(region, sensitivity, paper),
         manual
       ).then((next) => {
         if (mine !== ticket.current) return;
@@ -362,9 +388,11 @@ export function useTraceSession(): TraceSession {
     hasAuto: (session.manual ? session.auto : reference) !== null,
     region: session.region,
     sensitivity: dragging ?? session.sensitivity,
+    paper: session.paper,
     keepHoles,
     cardSize,
     load,
+    setPaper,
     setRegion,
     setSensitivity,
     commitSensitivity,

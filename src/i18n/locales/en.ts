@@ -1614,8 +1614,10 @@ const en: Record<string, string> = {
   'scan.step.review': 'Review',
   'scan.step.done': 'Done',
   'scan.capture.heading': 'Snap a photo of your tool',
-  'scan.capture.tip.surface': 'Lay it on a plain, uncluttered surface',
-  'scan.capture.tip.card': 'Place a bank, transit, or ID card beside it for exact sizing',
+  'scan.capture.tip.paper':
+    'Lay it on a plain sheet of A4 or Letter paper, with all four corners in the photo',
+  'scan.capture.tip.cardBeside':
+    'No paper? Place a bank, transit, or ID card beside it on a plain surface',
   'scan.capture.tip.sheet':
     'Best of all: print the calibration sheet, or lay the tool on a Gridfinity baseplate',
   'scan.capture.tip.topDown': 'Shoot straight down, with the whole tool in frame',
@@ -1628,6 +1630,9 @@ const en: Record<string, string> = {
   'scan.capture.privacy': 'Your photo stays on your phone — only the outline is sent.',
   'scan.cardMeasured': 'Measured to scale from your card.',
   'scan.gridMeasured': 'Measured to scale from the calibration sheet.',
+  'scan.paperMeasured': 'Measured to scale from the sheet of paper.',
+  'scan.paper.notPaper': 'Not paper',
+  'scan.paper.hint': 'Every size comes from this sheet. Check that the paper size is right.',
   'scan.gridDetail': '{count} markers · fit agrees within {rms} mm',
   'scan.baseplateMeasured': 'Measured to scale from your baseplate grid.',
   'scan.baseplateDetail': '{count} sockets · fit agrees within {rms} mm',
@@ -1644,9 +1649,8 @@ const en: Record<string, string> = {
   'scan.cardSize.range': 'Enter {min}–{max} mm',
   'scan.cardSize.useStandard': 'Back to a standard card',
   'scan.cardSteepAngle': 'Steep angle — shoot straighter for accurate sizing.',
-  'scan.noCardTitle': 'No card detected',
-  'scan.noCardHint':
-    'Lay a bank, transit, or ID card flat beside your tool — fully in frame, on a plain surface — for exact sizing.',
+  'scan.noReferenceHint':
+    'Lay your tool on a sheet of A4 or Letter paper on a darker table, with all four corners in the photo. Or place a bank, transit, or ID card beside it.',
   'scan.takePhoto': 'Take a photo',
   'scan.uploadPhoto': 'Upload a photo',
   'scan.export.button.export': 'Export',
@@ -3800,6 +3804,8 @@ const en: Record<string, string> = {
     'Lay one flat across the top of the tool, markers up, and photograph it straight down.',
   'scan.stripMeasured': 'Measured to scale from the strip, at the tool’s height.',
   'scan.review.underStrip': 'Edge under the strip filled in. Check it.',
+  'scan.review.offSheet':
+    'Outline stops at the edge of the sheet. Tap the tool to redraw it, or move it onto the sheet.',
   'binDesigner.cutouts.scanImport.scaleLabel': 'Real-world size (longest side, mm)',
   'binDesigner.cutouts.scanImport.scaleLabelLongest': 'Real-world length of the longest tool (mm)',
   'binDesigner.cutouts.scanImport.scaleHelp':

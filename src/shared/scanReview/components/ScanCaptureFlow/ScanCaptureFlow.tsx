@@ -29,24 +29,29 @@ import {
   type SceneTrace,
 } from '@/shared/scanTrace';
 import {
-  bounds,
   cardOptions,
   CardSizeEditor,
+  PaperSizeSwitch,
   loadCardSize,
   saveCardSize,
   ScanOverlay,
   ScanToolList,
+  shownPaperChoice,
   shownShapes,
   svgFromShapes,
   traceAll,
   traceTap,
   visibleShapes,
   withoutShape,
+  withPaperChoice,
+  withPaperChosen,
   type CardSizeMm,
+  type PaperChoice,
   TraceExportMenu,
   toolsFromShapes,
 } from '../..';
-import { ProgressSteps, CaptureGuide, CardStatusIcon, SentIcon, TapIcon } from './ScanCaptureGuide';
+import { ProgressSteps, CaptureGuide, SentIcon, TapIcon } from './ScanCaptureGuide';
+import { ScanScaleStatus } from './ScanScaleStatus';
 import type { Step } from './ScanCaptureGuide';
 
 /**
@@ -70,7 +75,7 @@ interface ReviewState {
   readonly image: ImageDataLike;
   readonly scene: SceneTrace;
   /** The scene before the last tap or removal, so a model that grabbed too much can be undone. */
-  readonly previous: SceneTrace | null;
+  readonly previous: { readonly scene: SceneTrace; readonly paper: PaperChoice | null } | null;
   readonly photoUrl: string;
   /** False when the model could not run, so tapping the photo does nothing. */
   readonly canRefine: boolean;
@@ -86,16 +91,8 @@ type Status =
   | { readonly kind: 'finished' }
   | { readonly kind: 'error'; readonly messageKey: string };
 
-const round1 = (n: number): number => Math.round(n * 10) / 10;
-
 /** A redraw or an upload is under way, so the outlines must hold still. */
 const busy = (review: ReviewState): boolean => review.resegmenting || review.sending;
-
-function measuredFromKey(scene: SceneTrace): string {
-  if (scene.reference?.kind === 'strip') return 'scan.stripMeasured';
-  if (!scene.grid) return 'scan.cardMeasured';
-  return scene.grid.kind === 'sheet' ? 'scan.gridMeasured' : 'scan.baseplateMeasured';
-}
 
 export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
   const t = useTranslation();
@@ -105,6 +102,8 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
   const [status, setStatus] = useState<Status>({ kind: 'capture' });
   const [cardSize, setCardSize] = useState<CardSizeMm>(loadCardSize);
   const [keepHoles, setKeepHoles] = useState(false);
+  // The user's word on the sheet under the tools; null until they give one.
+  const [paper, setPaper] = useState<PaperChoice | null>(null);
 
   // Warm the model while the user reads the guidance and frames the shot, so
   // the first segmentation isn't gated on the download.
@@ -130,6 +129,7 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
         return;
       }
       const image = imageDataFromCanvas(canvas);
+      setPaper(null);
       const traced = await traceAll(canvas, image, cardOptions(cardSize));
       if (!isOk(traced)) {
         setStatus({ kind: 'error', messageKey: 'scan.error.noObject' });
@@ -164,20 +164,62 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
         };
         const { canvas, image, scene: current } = prev;
         void (async () => {
-          const next = await traceTap(canvas, image, current, seed, cardOptions(cardSize));
+          const next = await traceTap(
+            canvas,
+            image,
+            current,
+            seed,
+            withPaperChoice(cardOptions(cardSize), paper)
+          );
           // Remove and Undo are locked while this runs, so `current` is still the live scene.
           setStatus((s) =>
             s.kind !== 'review'
               ? s
               : isOk(next)
-                ? { ...s, scene: next.value, previous: s.scene, resegmenting: false }
+                ? {
+                    ...s,
+                    scene: next.value,
+                    previous: { scene: s.scene, paper },
+                    resegmenting: false,
+                  }
                 : { ...s, resegmenting: false }
           );
         })();
         return { ...prev, resegmenting: true };
       });
     },
-    [cardSize]
+    [cardSize, paper]
+  );
+
+  const handlePaper = useCallback(
+    (choice: PaperChoice) => {
+      if (status.kind !== 'review' || busy(status)) return;
+      const was = shownPaperChoice(status.scene.reference, paper);
+      setPaper(choice);
+      const options = withPaperChoice(cardOptions(cardSize), choice);
+      const resized = withPaperChosen(status.scene, status.image, options);
+      const previous = { scene: status.scene, paper };
+      if (choice !== 'off' && was !== 'off') {
+        setStatus({ ...status, scene: resized, previous });
+        return;
+      }
+      // The sheet bounds the search, so ruling it out or back in finds the tools again.
+      setStatus({ ...status, resegmenting: true });
+      void traceAll(status.canvas, status.image, options).then((traced) =>
+        setStatus((s) =>
+          s.kind !== 'review'
+            ? s
+            : {
+                ...s,
+                scene: isOk(traced) ? traced.value.scene : resized,
+                canRefine: isOk(traced) ? traced.value.canRefine : s.canRefine,
+                previous,
+                resegmenting: false,
+              }
+        )
+      );
+    },
+    [status, cardSize, paper]
   );
 
   // `index` counts the tools on screen, judged as the list judges them.
@@ -193,20 +235,19 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
         return {
           ...prev,
           scene: { ...prev.scene, shapes: withoutShape(prev.scene.shapes, gone) },
-          previous: prev.scene,
+          previous: { scene: prev.scene, paper },
         };
       });
     },
-    [keepHoles, cardSize]
+    [keepHoles, cardSize, paper]
   );
 
+  // A change of the paper choice is undone with the outlines it replaced.
   const handleUndo = useCallback(() => {
-    setStatus((prev) =>
-      prev.kind === 'review' && prev.previous && !busy(prev)
-        ? { ...prev, scene: prev.previous, previous: null }
-        : prev
-    );
-  }, []);
+    if (status.kind !== 'review' || !status.previous || busy(status)) return;
+    setPaper(status.previous.paper);
+    setStatus({ ...status, scene: status.previous.scene, previous: null });
+  }, [status]);
 
   const handleCardSize = useCallback((next: CardSizeMm) => {
     setCardSize(next);
@@ -263,8 +304,9 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
     [scene, keepHoles]
   );
   const toolCount = shown.length;
-  const measured = scene && scene.units === 'mm' && shown[0] ? bounds(shown[0].outputPoints) : null;
   const holesFound = scene?.shapes.some((s) => (s.holes?.length ?? 0) > 0 || s.inHole) ?? false;
+
+  const paperShown = scene ? shownPaperChoice(scene.reference, paper) : null;
 
   const cardSteep =
     scene !== null &&
@@ -319,6 +361,9 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
                   scene={scene}
                   shapes={shown}
                   keepHoles={keepHoles}
+                  sheet={
+                    scene.reference?.kind === 'paper' ? scene.reference.paper.corners : undefined
+                  }
                 />
                 {status.resegmenting && (
                   <div className="absolute inset-0 flex items-center justify-center bg-surface/40">
@@ -340,58 +385,11 @@ export function ScanCaptureFlow({ onUse, layout }: ScanCaptureFlowProps) {
                 </Button>
               )}
 
-              <div
-                className={`flex w-full items-start gap-2.5 rounded-lg border px-3 py-2.5 ${
-                  measured ? 'border-success/40 bg-success/10' : 'border-warning bg-warning-muted'
-                }`}
-              >
-                <CardStatusIcon ok={measured !== null} />
-                {measured ? (
-                  <div className="flex flex-col gap-0.5 text-left">
-                    <p className="text-sm font-semibold text-content">
-                      {toolCount > 1
-                        ? t('scan.review.toolsFound', { count: toolCount })
-                        : t('binDesigner.cutouts.scanImport.resultSize', {
-                            width: round1(measured.w),
-                            depth: round1(measured.h),
-                          })}
-                    </p>
-                    <p className="text-xs text-success">{t(measuredFromKey(scene))}</p>
-                    {/* With one tool there is no list to carry the note. */}
-                    {toolCount === 1 && shown[0].underStrip && (
-                      <p className="text-xs text-warning">{t('scan.review.underStrip')}</p>
-                    )}
-                    {/* A lattice fit is over-constrained, so it can report how
-                        well it agrees with itself — the card's never can. */}
-                    {scene.grid && (
-                      <p className="text-xs text-content-secondary">
-                        {t(
-                          scene.grid.kind === 'sheet' ? 'scan.gridDetail' : 'scan.baseplateDetail',
-                          { count: scene.grid.cells.length, rms: round1(scene.grid.rmsMm) }
-                        )}
-                      </p>
-                    )}
-                    {/* Worth saying once, at the moment it applies: the plate
-                        was made by a printer whose calibration is the unknown
-                        this whole feature exists to work around. */}
-                    {scene.grid?.kind === 'baseplate' && (
-                      <p className="text-xs text-content-tertiary">
-                        {t('scan.baseplateAccuracyHint')}
-                      </p>
-                    )}
-                    {cardSteep && (
-                      <p className="text-xs text-warning">{t('scan.cardSteepAngle')}</p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-0.5 text-left">
-                    <p className="text-sm font-semibold text-warning">{t('scan.noCardTitle')}</p>
-                    <p className="text-xs text-content-secondary">{t('scan.noCardHint')}</p>
-                  </div>
-                )}
-              </div>
+              <ScanScaleStatus scene={scene} shown={shown} cardSteep={cardSteep} />
 
               {scene.card && <CardSizeEditor size={cardSize} onChange={handleCardSize} />}
+
+              {paperShown && <PaperSizeSwitch value={paperShown} onChange={handlePaper} />}
 
               {holesFound && (
                 <div className="w-full">

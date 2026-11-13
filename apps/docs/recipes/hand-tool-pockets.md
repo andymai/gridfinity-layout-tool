@@ -21,7 +21,7 @@ A pocket shaped like each tool shows at a glance which tool is out of the drawer
 ## What you need
 
 - The tools. This recipe uses pliers, an adjustable wrench and a screwdriver, each shorter than 160 mm.
-- A phone with a browser, and a size reference. A bank card works. The printed calibration sheet works best.
+- A phone with a browser, and a size reference. A plain sheet of A4 or US Letter paper works. The printed calibration sheet works best.
 - Calipers or a ruler, to measure the thickest part of each tool.
 - A print bed of 168 mm or more. The bin is 4 × 3 grid units, or 168 × 126 mm.
 
@@ -40,7 +40,7 @@ Not sure of the size? Lay the tools side by side with a finger's width between t
 
 1. Click <Ui k="binDesigner.cutouts.scanImport.title" />, then <Ui k="binDesigner.cutouts.scanImport.routePhone" />.
 2. Point the phone camera at the QR code and open the link. The link lasts 10 minutes, so lay out the tools and the reference first.
-3. Put the tools on a plain sheet with a gap between them, and the card flat beside them.
+3. Put the tools on a plain sheet of A4 or US Letter paper with a gap between them. Use a table darker than the paper, and keep all four corners of the sheet in the photo.
 4. Tap <Ui k="scan.takePhoto" />, and hold the phone level, straight above the tools.
 5. Check each outline in the review, and tap <Ui k="scan.use" />.
 
@@ -108,7 +108,7 @@ Add finger access to that pocket if it has none. You can also set <Ui k="binDesi
 
 ### The pocket is the wrong size
 
-A bank card measures less exactly than the printed calibration sheet. Print the sheet at 100% and check that its bar is 100 mm. For a tall tool, lay a measuring strip on top of it, because the top of a tall tool looks larger to the camera. Compare the size in the phone review with a ruler before you tap <Ui k="scan.use" />. See [Scan with your phone](../cutouts/phone-scan#pick-a-size-reference).
+Plain paper and a bank card measure less exactly than the printed calibration sheet. Print the sheet at 100% and check that its bar is 100 mm. For a tall tool, lay a measuring strip on top of it, because the top of a tall tool looks larger to the camera. Compare the size in the phone review with a ruler before you tap <Ui k="scan.use" />. See [Scan with your phone](../cutouts/phone-scan#pick-a-size-reference).
 
 ## Next steps
 

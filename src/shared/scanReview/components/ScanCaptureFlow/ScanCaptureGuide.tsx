@@ -75,8 +75,8 @@ export function CaptureGuide({ t }: { readonly t: ReturnType<typeof useTranslati
       <ScanExamplePhoto t={t} />
       <h2 className="text-center text-base font-medium">{t('scan.capture.heading')}</h2>
       <ul className="flex w-full flex-col gap-3">
-        <GuideTip text={t('scan.capture.tip.surface')} />
-        <GuideTip text={t('scan.capture.tip.card')} />
+        <GuideTip text={t('scan.capture.tip.paper')} />
+        <GuideTip text={t('scan.capture.tip.cardBeside')} />
         <GuideTip text={t('scan.capture.tip.sheet')} />
         <GuideTip text={t('scan.capture.tip.topDown')} />
         <GuideTip text={t('scan.capture.tip.several')} />

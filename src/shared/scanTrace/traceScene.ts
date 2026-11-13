@@ -22,7 +22,7 @@
  */
 
 import type { Result } from '@/core/result';
-import { ok, err } from '@/core/result';
+import { ok, err, isOk } from '@/core/result';
 import type { ImageDataLike, Mask, Point, TraceError } from './types';
 import { polygonArea } from './traceImage';
 import { findCardAcrossChannels, cardHomography, type CardDetectOptions } from './cardDetect';
@@ -37,6 +37,8 @@ import type { CellQuad } from './latticeBlobs';
 import { segmentTools } from './colorSegment';
 import { findToolBlobs, interiorSeed, pointInPolygon } from './toolBlobs';
 import { convexHull, minAreaRect } from './minAreaRect';
+import { paperReference, type PaperSize } from './manualReference';
+import { findPaper } from './paperDetect';
 import {
   bridgeAcrossStrip,
   bridgeSoftAcrossStrip,
@@ -104,6 +106,8 @@ export interface SceneShape extends SceneRing {
   readonly inHole?: boolean;
   /** Reaches the measuring strip, so its edge there was bridged and wants a look. */
   readonly underStrip?: boolean;
+  /** Runs past the sheet of paper, where the search stops, so its outline is cut at the sheet's edge. */
+  readonly offSheet?: boolean;
 }
 
 /** Narrowest hole kept, across its short axis, once the reference gives millimetres. */
@@ -131,6 +135,7 @@ interface Outline {
   readonly inHole: boolean;
   /** Bridged under a strip before, so still worth a look once the scale changes. */
   readonly underStrip?: boolean;
+  readonly offSheet?: boolean;
 }
 
 export interface SceneTrace {
@@ -147,6 +152,11 @@ export interface SceneTraceOptions
   extends CardDetectOptions, GridDetectOptions, BaseplateDetectOptions {
   /** The colour segmenter's sensitivity, -127 to 128; 0 is automatic. */
   readonly sensitivity?: number;
+  /**
+   * The size of a plain sheet of paper under the tools, in place of the one
+   * its shape reads as; `off` when what was found is not paper.
+   */
+  readonly paper?: PaperSize | 'off';
   /** Where to look, in image pixels, in place of the reference's own search area. */
   readonly region?: readonly Point[];
   readonly simplifyTolerance?: number;
@@ -197,9 +207,12 @@ export function detectCard(
  *  2. **A Gridfinity baseplate** — the same kind of lattice and the same solve,
  *     but its true pitch depends on the printer that made it, so it is a
  *     convenience rather than a standard (see `baseplateDetect`).
- *  3. **A wallet card** — four coplanar points off to one side of the tool,
+ *  3. **A plain sheet of A4 or US Letter paper** under the tools — four corners
+ *     again, but they bracket the tools and span three times a card's length.
+ *     Paper is cut to about half a percent, where a card is exact.
+ *  4. **A wallet card** — four coplanar points off to one side of the tool,
  *     which is the minimum a homography admits and the reason this feature
- *     needed the other two.
+ *     needed the others.
  *
  * Each detector declines cheaply on a photo without its reference, so the
  * cheaper paths cost nothing extra when a better one is present.
@@ -220,7 +233,20 @@ export function detectReference(
   if (sheet) return { kind: 'sheet', fit: sheet };
   const baseplate = detectBaseplateGrid(image, options);
   if (baseplate) return { kind: 'baseplate', fit: baseplate };
-  const card = detectCard(image, options, excludeMask);
+  const sheetOfPaper = findPaper(image);
+  if (!sheetOfPaper) {
+    const card = detectCard(image, options, excludeMask);
+    return card ? { kind: 'card', card } : null;
+  }
+  if (options.paper !== 'off' && sheetOfPaper.size !== null) {
+    const paper = paperReference(sheetOfPaper.corners, options.paper ?? sheetOfPaper.size, image);
+    if (isOk(paper)) return paper.value;
+  }
+  // A sheet is card-shaped within the card search's tolerance, and so is each
+  // piece of one a tool cut across: left in, either would be taken for a card
+  // 86 mm wide.
+  const notCard = [sheetOfPaper.corners, ...sheetOfPaper.parts];
+  const card = detectCard(image, { ...options, notCard }, excludeMask);
   return card ? { kind: 'card', card } : null;
 }
 
@@ -339,6 +365,7 @@ function finishTrace(
     readonly contour: readonly Point[];
     readonly holes?: readonly (readonly Point[])[];
     readonly inHole?: boolean;
+    readonly offSheet?: boolean;
   }[],
   width: number,
   height: number,
@@ -349,7 +376,7 @@ function finishTrace(
   const smooth = (ring: readonly Point[]): Point[] =>
     smoothRing(ring, tolerance, options.smooth !== false);
   const outlines: Outline[] = [];
-  for (const { contour: rawContour, holes = [], inHole = false } of raw) {
+  for (const { contour: rawContour, holes = [], inHole = false, offSheet = false } of raw) {
     // The curve fit reads the RAW contour, not the simplified one. Its error
     // metric only samples the points it is given, so fitting the RDP polygon lets
     // a cubic bow far outside a long straight edge while scoring a perfect fit at
@@ -364,7 +391,7 @@ function finishTrace(
     }
     const kept = holes.map(smooth).filter((h) => h.length >= 3 && polygonArea(h) >= 1);
     if (imagePoints.length >= 3 && polygonArea(imagePoints) >= 1) {
-      outlines.push({ imagePoints, holes: kept, inHole });
+      outlines.push({ imagePoints, holes: kept, inHole, offSheet });
     }
   }
   if (outlines.length === 0) {
@@ -385,14 +412,17 @@ function sized(
     imagePoints,
     outputPoints: toMm ? toMm(imagePoints) : imagePoints,
   });
-  const shapes = outlines.map(({ imagePoints, holes, inHole, underStrip }): SceneShape => ({
-    ...ring(imagePoints),
-    ...(holes.length > 0 ? { holes: holes.map(ring) } : {}),
-    ...(inHole ? { inHole: true } : {}),
-    ...(underStrip || (reference?.kind === 'strip' && touchesStrip(imagePoints, reference.strip))
-      ? { underStrip: true }
-      : {}),
-  }));
+  const shapes = outlines.map(
+    ({ imagePoints, holes, inHole, underStrip, offSheet }): SceneShape => ({
+      ...ring(imagePoints),
+      ...(holes.length > 0 ? { holes: holes.map(ring) } : {}),
+      ...(inHole ? { inHole: true } : {}),
+      ...(offSheet ? { offSheet: true } : {}),
+      ...(underStrip || (reference?.kind === 'strip' && touchesStrip(imagePoints, reference.strip))
+        ? { underStrip: true }
+        : {}),
+    })
+  );
   const lattice = reference?.kind === 'sheet' || reference?.kind === 'baseplate' ? reference : null;
   return {
     shapes,
@@ -442,6 +472,7 @@ export function withReference(
       holes: (shape.holes ?? []).map((h) => h.imagePoints),
       inHole: shape.inHole === true,
       underStrip: shape.underStrip === true,
+      offSheet: shape.offSheet === true,
     }));
   return sized(outlines, reference, options);
 }
@@ -476,6 +507,32 @@ export function withCardSize(scene: SceneTrace, widthMm: number, heightMm: numbe
     })),
     units: 'mm',
   };
+}
+
+/** Contour points this close to the search's edge, in pixels, lie on it. */
+const ON_EDGE_PX = 2.5;
+/** This many points on the edge make a cut, not a touch. */
+const MIN_CUT_POINTS = 6;
+
+/** True when `contour` runs along the edge of `polygon`, as an outline cut off by it does. */
+function runsAlong(contour: readonly Point[], polygon: readonly Point[]): boolean {
+  let onEdge = 0;
+  for (const p of contour) {
+    for (let i = 0; i < polygon.length; i++) {
+      const a = polygon[i];
+      const b = polygon[(i + 1) % polygon.length];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const lenSq = dx * dx + dy * dy;
+      const t =
+        lenSq > 0 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq)) : 0;
+      if (Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy)) <= ON_EDGE_PX) {
+        if (++onEdge >= MIN_CUT_POINTS) return true;
+        break;
+      }
+    }
+  }
+  return false;
 }
 
 /**
@@ -537,16 +594,24 @@ export function traceScene(
   const { width, height } = image;
   if (width <= 0 || height <= 0) return err({ code: 'NO_OBJECT', detail: 'Empty image' });
 
+  const region = options.region ?? searchRegion(reference);
   const toolMask = segmentTools(image, {
     sensitivity: options.sensitivity,
-    region: options.region ?? searchRegion(reference),
+    region,
     exclude: referenceQuads(reference),
   });
   const mask =
     reference?.kind === 'strip' ? bridgeAcrossStrip(toolMask, reference.strip) : toolMask;
   const blobs = findToolBlobs(mask, options.minToolAreaPx ?? defaultMinArea(width, height));
   if (blobs.length === 0) return err({ code: 'NO_OBJECT', detail: 'No tool found' });
-  return finishTrace(blobs, width, height, reference, options);
+  // A sheet found by itself bounds the search, so a tool lying past its edge
+  // is traced only as far as the edge. A region the user drew is their choice.
+  const sheetEdge =
+    options.region === undefined && reference?.kind === 'paper' ? region : undefined;
+  const raw = sheetEdge
+    ? blobs.map((blob) => (runsAlong(blob.contour, sheetEdge) ? { ...blob, offSheet: true } : blob))
+    : blobs;
+  return finishTrace(raw, width, height, reference, options);
 }
 
 /**

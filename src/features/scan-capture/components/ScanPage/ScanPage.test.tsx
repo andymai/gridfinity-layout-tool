@@ -186,8 +186,8 @@ describe('ScanPage', () => {
 
     selectPhoto();
 
-    expect(await screen.findByText('scan.noCardTitle')).toBeInTheDocument();
-    expect(screen.getByText('scan.noCardHint')).toBeInTheDocument();
+    expect(await screen.findByText('binDesigner.cutouts.traceView.scale.none')).toBeInTheDocument();
+    expect(screen.getByText('scan.noReferenceHint')).toBeInTheDocument();
     expect(document.querySelectorAll('polygon, path[fill-rule]')).toHaveLength(1);
   });
 
@@ -493,7 +493,9 @@ describe('ScanPage', () => {
       render(<ScanPage token={TOKEN} />);
       selectPhoto();
 
-      expect(await screen.findByText('scan.noCardTitle')).toBeInTheDocument();
+      expect(
+        await screen.findByText('binDesigner.cutouts.traceView.scale.none')
+      ).toBeInTheDocument();
       expect(screen.queryByText('scan.cardSize.label')).toBeNull();
     });
 

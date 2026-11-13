@@ -6,8 +6,10 @@ import type { SceneShape, SceneTrace } from '@/shared/scanTrace';
 import { ScanCaptureFlow } from './ScanCaptureFlow';
 
 const mockTrace = vi.fn();
+const mockDetect = vi.fn();
 vi.mock('@/shared/scanTrace', async (importOriginal) => ({
   ...(await importOriginal<typeof ScanTrace>()),
+  detectReference: (...args: unknown[]) => mockDetect(...args),
   decodeImageToCanvas: async () => document.createElement('canvas'),
   imageDataFromCanvas: () => ({
     width: 100,
@@ -62,6 +64,7 @@ function selectPhoto(): void {
 describe('ScanCaptureFlow', () => {
   beforeEach(() => {
     mockTrace.mockReturnValue(ok(SCENE));
+    mockDetect.mockReturnValue(null);
     URL.createObjectURL = vi.fn(() => 'blob:mock');
     URL.revokeObjectURL = vi.fn();
   });
@@ -83,6 +86,59 @@ describe('ScanCaptureFlow', () => {
 
     await waitFor(() => expect(onUse).toHaveBeenCalledWith(expect.stringContaining('<svg'), 1));
     expect(await screen.findByText('scan.takePhoto')).toBeInTheDocument();
+  });
+
+  it('sizes from a plain sheet and lets the user correct or rule it out', async () => {
+    const sheet = (longMm: number, shortMm: number) => ({
+      kind: 'paper' as const,
+      paper: {
+        corners: [
+          { x: 0, y: 0 },
+          { x: 100, y: 0 },
+          { x: 100, y: 80 },
+          { x: 0, y: 80 },
+        ] as const,
+        widthMm: longMm,
+        heightMm: shortMm,
+      },
+    });
+    mockTrace.mockReturnValue(ok({ ...SCENE, units: 'mm', reference: sheet(297, 210) }));
+    render(<ScanCaptureFlow layout="embedded" onUse={vi.fn()} />);
+    selectPhoto();
+
+    expect(await screen.findByText('scan.paperMeasured')).toBeInTheDocument();
+    expect(screen.getByRole('radio', { checked: true })).toHaveTextContent(
+      'binDesigner.cutouts.traceView.paper.a4'
+    );
+
+    mockDetect.mockReturnValue(sheet(279.4, 215.9));
+    fireEvent.click(
+      screen.getByRole('radio', { name: 'binDesigner.cutouts.traceView.paper.letter' })
+    );
+    expect(mockDetect).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.objectContaining({ paper: 'letter' })
+    );
+    expect(screen.getByText('scan.paperMeasured')).toBeInTheDocument();
+
+    // Ruling the sheet out moves where the tools are looked for, so they are traced again.
+    mockDetect.mockReturnValue(null);
+    mockTrace.mockClear();
+    mockTrace.mockReturnValue(ok(SCENE));
+    fireEvent.click(screen.getByRole('radio', { name: 'scan.paper.notPaper' }));
+    expect(await screen.findByText('scan.noReferenceHint')).toBeInTheDocument();
+    expect(mockTrace).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ paper: 'off' })
+    );
+    expect(screen.getByRole('radio', { checked: true })).toHaveTextContent('scan.paper.notPaper');
+
+    // Undo puts back the outlines and the choice they were traced with.
+    fireEvent.click(screen.getByText('scan.review.undo'));
+    expect(screen.getByText('scan.paperMeasured')).toBeInTheDocument();
+    expect(screen.getByRole('radio', { checked: true })).toHaveTextContent(
+      'binDesigner.cutouts.traceView.paper.letter'
+    );
   });
 
   it('keeps the review open to try again when the caller throws', async () => {

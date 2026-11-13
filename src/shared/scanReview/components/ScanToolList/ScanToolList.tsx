@@ -32,6 +32,9 @@ export function ScanToolList({ shapes, units, disabled = false, onRemove }: Scan
               {shape.underStrip && (
                 <span className="text-xs text-warning">{t('scan.review.underStrip')}</span>
               )}
+              {shape.offSheet && (
+                <span className="text-xs text-warning">{t('scan.review.offSheet')}</span>
+              )}
             </span>
             {size && (
               <span className="text-xs text-content-secondary">

@@ -25,7 +25,14 @@ export {
   saveCardSize,
   type CardSizeMm,
 } from './cardSize';
+export {
+  shownPaperChoice,
+  withPaperChoice,
+  withPaperChosen,
+  type PaperChoice,
+} from './paperChoice';
 export { CardSizeEditor, type CardSizeEditorProps } from './components/CardSizeEditor';
+export { PaperSizeSwitch, type PaperSizeSwitchProps } from './components/PaperSizeSwitch';
 export { ScanOverlay } from './components/ScanOverlay';
 export { ScanToolList } from './components/ScanToolList';
 export { TraceExportMenu, type TraceExportMenuProps } from './components/TraceExportMenu';
