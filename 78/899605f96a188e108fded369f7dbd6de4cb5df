@@ -1,0 +1,32 @@
+src/shared/scanTrace/traceScene.segmented.test.ts
+  s_925c1b25c9715e::t_1d56e05e359c14 167-168
+src/shared/scanTrace/edgeSnap.test.ts
+  s_925c1b25c9715e::t_1d56e05e359c14 1,3,7-15,31-79,81-91,93-125,127-183,186-197
+src/shared/scanTrace/edgeSnap.ts
+  s_925c1b25c9715e::t_fe88e4254087d4 8-10,12-14,34-36,44-49,177-181,188-204,206-210,212,214,217,230-235,237
+  s_925c1b25c9715e::t_1d56e05e359c14 93-94,218-221,242-243,246,250-252,254-258
+src/shared/scanTrace/testing/syntheticPhoto.ts
+  s_925c1b25c9715e::t_1d56e05e359c14 61,102-107,135-136,175-177
+src/shared/scanTrace/traceScene.ts
+  s_925c1b25c9715e::t_829ed135e08fad 31,165-169,195-199,201-205,388-390,392-401,416-418,573-575,593-598,647,668
+  s_925c1b25c9715e::t_6808e5ab7f515a 200
+  s_925c1b25c9715e::t_1d56e05e359c14 11-12
+src/shared/scanTrace/paperDetect.test.ts
+  s_925c1b25c9715e::t_1d56e05e359c14 263,265-266
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "78899605f96a188e108fded369f7dbd6de4cb5df",
+  "prompts": {},
+  "sessions": {
+    "s_925c1b25c9715e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "53465ea6-fbba-48bb-b515-f45942033545",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
