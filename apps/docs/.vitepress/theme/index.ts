@@ -1,5 +1,10 @@
+import { h } from 'vue';
 import DefaultTheme from 'vitepress/theme';
 import type { Theme } from 'vitepress';
+import AppTools from './components/AppTools.vue';
+import BrandLockup from './components/BrandLockup.vue';
+import ChapterLabel from './components/ChapterLabel.vue';
+import OpenAppButton from './components/OpenAppButton.vue';
 import Screenshot from './components/Screenshot.vue';
 import './custom.css';
 
@@ -31,6 +36,13 @@ function reloadOnStaleChunk(): void {
 
 const theme: Theme = {
   extends: DefaultTheme,
+  Layout: () =>
+    h(DefaultTheme.Layout, null, {
+      'nav-bar-title-after': () => h(BrandLockup),
+      'nav-bar-content-after': () => h(OpenAppButton),
+      'doc-before': () => h(ChapterLabel),
+      'doc-after': () => h(AppTools),
+    }),
   enhanceApp({ app }) {
     app.component('Screenshot', Screenshot);
     app.component('Ui', UnrenderedUi);

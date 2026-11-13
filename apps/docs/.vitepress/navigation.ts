@@ -6,7 +6,12 @@ export const nav: DefaultTheme.NavItem[] = [
   { text: 'Docs', link: '/' },
   { text: 'Reference', link: '/reference/shortcuts' },
   { text: 'Community', link: `${APP_URL}/community`, target: '_self' },
-  { text: 'Open the app', link: `${APP_URL}/`, target: '_self' },
+];
+
+export const appTools: { text: string; hint: string; link: string }[] = [
+  { text: 'Layout editor', hint: 'Plan a drawer', link: `${APP_URL}/` },
+  { text: 'Bin designer', hint: 'Design a bin', link: `${APP_URL}/designer` },
+  { text: 'Baseplate generator', hint: 'Make a baseplate', link: `${APP_URL}/baseplate` },
 ];
 
 export const sidebar: DefaultTheme.SidebarItem[] = [

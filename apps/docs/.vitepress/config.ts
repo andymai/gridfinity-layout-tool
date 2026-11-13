@@ -129,7 +129,8 @@ export default defineConfig({
   },
   themeConfig: {
     logo: { src: '/favicon.svg', alt: '' },
-    siteTitle: 'Gridfinity Layout Tool',
+    // The theme draws the name with a Docs line under it (BrandLockup.vue).
+    siteTitle: false,
     nav,
     sidebar,
     socialLinks: [{ icon: 'github', link: 'https://github.com/andymai/gridfinity-layout-tool' }],
