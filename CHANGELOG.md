@@ -1,5 +1,25 @@
 # Changelog
 
+## [4.542.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.541.0...gridfinity-layout-tool-v4.542.0) (2026-11-13)
+
+
+### Features
+
+* **bin-designer:** add a per-design switch to print an oversized bin in one piece ([#5019](https://github.com/andymai/gridfinity-layout-tool/issues/5019)) ([9236091](https://github.com/andymai/gridfinity-layout-tool/commit/92360915ff23477b661d0d1b7d4eec4c939cfb3e))
+* **docs:** count docs page views with Vercel Web Analytics ([#5028](https://github.com/andymai/gridfinity-layout-tool/issues/5028)) ([8603685](https://github.com/andymai/gridfinity-layout-tool/commit/860368544dc2fa852c047b657612fbc87ad76f1e))
+* **docs:** give the docs the app's look and a clear way back to the app ([#5029](https://github.com/andymai/gridfinity-layout-tool/issues/5029)) ([5e4ef84](https://github.com/andymai/gridfinity-layout-tool/commit/5e4ef844ebc56baa25e6b8e528a037f362bb9586))
+
+
+### Bug Fixes
+
+* **generation:** build notched lips that the Nesting body can simplify ([#5020](https://github.com/andymai/gridfinity-layout-tool/issues/5020)) ([f33f53a](https://github.com/andymai/gridfinity-layout-tool/commit/f33f53ab971d55a5c69677425973b685f675af4c))
+* **generation:** keep the colour tags on a Nesting body ([#5021](https://github.com/andymai/gridfinity-layout-tool/issues/5021)) ([4de57cd](https://github.com/andymai/gridfinity-layout-tool/commit/4de57cd022159976771c5c8a2a51a6dec9cd8383))
+* **generation:** report an out-of-memory export as such and stop without a rerun ([#5017](https://github.com/andymai/gridfinity-layout-tool/issues/5017)) ([4707154](https://github.com/andymai/gridfinity-layout-tool/commit/470715497e60c0c09468e039874102650ba7862a))
+* **i18n:** tell makers how to glue lid magnets so the lid closes one way round ([#5027](https://github.com/andymai/gridfinity-layout-tool/issues/5027)) ([1efbcb7](https://github.com/andymai/gridfinity-layout-tool/commit/1efbcb73b1a726c46be8247086bcd5c0dfe4d5ce))
+* **i18n:** tell makers that each lid magnet must pull toward the bin magnet ([#5025](https://github.com/andymai/gridfinity-layout-tool/issues/5025)) ([f673270](https://github.com/andymai/gridfinity-layout-tool/commit/f673270ec4d571b619438e9bebbac38eedc5f524))
+* **storage:** run layout library writes one at a time so overlaps keep every change ([#5015](https://github.com/andymai/gridfinity-layout-tool/issues/5015)) ([4897353](https://github.com/andymai/gridfinity-layout-tool/commit/4897353c54a2e532bb40b2573d60fad7628340fe))
+* **undo:** name and count what each undo and toast really did ([#5014](https://github.com/andymai/gridfinity-layout-tool/issues/5014)) ([1a7d46f](https://github.com/andymai/gridfinity-layout-tool/commit/1a7d46ffa06eaa83f7034f6750ac15f949f67c60))
+
 ## [4.541.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.540.0...gridfinity-layout-tool-v4.541.0) (2026-11-12)
 
 
