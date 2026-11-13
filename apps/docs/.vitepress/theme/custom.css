@@ -253,7 +253,7 @@
 }
 
 .vp-doc ul > li::marker {
-  color: var(--vp-c-border);
+  color: var(--vp-c-text-2);
 }
 
 .vp-doc table {

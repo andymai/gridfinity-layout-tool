@@ -7,7 +7,7 @@ import { appTools } from '../../navigation';
     <p id="docs-app-tools-title" class="docs-app-tools-title">Back to the app</p>
     <ul>
       <li v-for="tool in appTools" :key="tool.link">
-        <a :href="tool.link">
+        <a :href="tool.link" target="_self">
           <span class="docs-app-tools-hint">{{ tool.hint }}</span>
           <span class="docs-app-tools-name">
             {{ tool.text }}
