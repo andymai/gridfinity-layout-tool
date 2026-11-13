@@ -8,8 +8,8 @@
  *    segmenter; we trust it (plus the user's tap) to have isolated the object.
  *
  * Both resolve the size reference the same way (`detectReference`) and share the
- * `finishTrace` tail (simplify → curve-fit smooth → optional symmetry → optional
- * rectification). They differ in how the tool contours are obtained:
+ * `finishTrace` tail (snap to the photo's edges → curve-fit smooth → optional
+ * symmetry → optional rectification). They differ in how the tool contours are obtained:
  * `traceScene` traces every piece of a binary mask (`findToolBlobs`), while
  * `traceSceneSegmented` traces the soft confidence mask sub-pixel via marching
  * squares (`buildToolTraceSoft`).
@@ -28,6 +28,7 @@ import { polygonArea } from './traceImage';
 import { findCardAcrossChannels, cardHomography, type CardDetectOptions } from './cardDetect';
 import { invertHomography, rectifyPoints, solveHomography, type Homography } from './perspective';
 import { smoothRing } from './curveFit';
+import { snapToEdges } from './edgeSnap';
 import { traceSoftContour, binarize, type SoftMask } from './softContour';
 import { symmetrizeIfRegular } from './symmetry';
 import { detectCalibrationGrid, type GridDetectOptions } from './gridDetect';
@@ -162,6 +163,11 @@ export interface SceneTraceOptions
   readonly simplifyTolerance?: number;
   readonly minToolAreaPx?: number;
   /**
+   * Move each traced outline onto the edge in the photo, to a fraction of a
+   * pixel (default true). Pass false for the outline as the mask gave it.
+   */
+  readonly snap?: boolean;
+  /**
    * Smooth the faceted outline (default true): fit Bézier curves that keep sharp
    * corners crisp while turning curved runs into clean arcs. Pass false for the
    * raw RDP polygon (tests use this to assert exact card-scale geometry).
@@ -185,6 +191,17 @@ function defaultTolerance(width: number, height: number): number {
   // features (a tool's notches/tips) rather than rounding them off.
   return Math.max(1, Math.hypot(width, height) * 0.003);
 }
+
+/**
+ * The tolerance for an outline already moved onto its edge. It has no
+ * staircase left to straighten, only the edge's own noise of a fraction of a
+ * pixel, so it does not grow with the photo.
+ */
+const SNAPPED_TOLERANCE = 1;
+
+/** How far a point may move to its edge: a mask's outline, and the model's coarser one. */
+const MASK_REACH = 4;
+const MODEL_REACH = 6;
 
 /** Detect the reference card on the classical auto threshold (slider-independent). */
 export function detectCard(
@@ -370,11 +387,20 @@ function finishTrace(
   width: number,
   height: number,
   reference: SceneReference | null,
-  options: SceneTraceOptions
+  options: SceneTraceOptions,
+  /** The photo and how far its edges are looked for, when the outlines are to be moved onto them. */
+  edges?: { readonly image: ImageDataLike; readonly reach: number }
 ): Result<SceneTrace, TraceError> {
-  const tolerance = options.simplifyTolerance ?? defaultTolerance(width, height);
-  const smooth = (ring: readonly Point[]): Point[] =>
-    smoothRing(ring, tolerance, options.smooth !== false);
+  const snapped = edges !== undefined && options.snap !== false;
+  const tolerance =
+    options.simplifyTolerance ??
+    (snapped
+      ? Math.min(SNAPPED_TOLERANCE, defaultTolerance(width, height))
+      : defaultTolerance(width, height));
+  const onEdge = (ring: readonly Point[], hole: boolean): readonly Point[] =>
+    snapped ? snapToEdges(edges.image, ring, { reach: edges.reach, hole }) : ring;
+  const smooth = (ring: readonly Point[], hole = false): Point[] =>
+    smoothRing(onEdge(ring, hole), tolerance, options.smooth !== false);
   const outlines: Outline[] = [];
   for (const { contour: rawContour, holes = [], inHole = false, offSheet = false } of raw) {
     // The curve fit reads the RAW contour, not the simplified one. Its error
@@ -389,7 +415,9 @@ function finishTrace(
     if (options.smooth !== false && options.symmetrize !== false) {
       imagePoints = symmetrizeIfRegular(imagePoints);
     }
-    const kept = holes.map(smooth).filter((h) => h.length >= 3 && polygonArea(h) >= 1);
+    const kept = holes
+      .map((hole) => smooth(hole, true))
+      .filter((h) => h.length >= 3 && polygonArea(h) >= 1);
     if (imagePoints.length >= 3 && polygonArea(imagePoints) >= 1) {
       outlines.push({ imagePoints, holes: kept, inHole, offSheet });
     }
@@ -544,7 +572,9 @@ function runsAlong(contour: readonly Point[], polygon: readonly Point[]): boolea
 export function buildToolTraceSoft(
   toolSoft: SoftMask,
   reference: SceneReference | null,
-  options: SceneTraceOptions = {}
+  options: SceneTraceOptions = {},
+  /** The photo the mask was made from, to move the outline onto its edges. */
+  image?: ImageDataLike
 ): Result<SceneTrace, TraceError> {
   const { width, height } = toolSoft;
   const contour = traceSoftContour(toolSoft);
@@ -562,7 +592,12 @@ export function buildToolTraceSoft(
     undefined
   );
   const holes = owner?.holes ?? [];
-  return finishTrace([{ contour, holes }], width, height, reference, options);
+  // A mask of another size than the photo cannot be laid over it.
+  const edges =
+    image && image.width === width && image.height === height
+      ? { image, reach: MODEL_REACH }
+      : undefined;
+  return finishTrace([{ contour, holes }], width, height, reference, options, edges);
 }
 
 /**
@@ -611,7 +646,7 @@ export function traceScene(
   const raw = sheetEdge
     ? blobs.map((blob) => (runsAlong(blob.contour, sheetEdge) ? { ...blob, offSheet: true } : blob))
     : blobs;
-  return finishTrace(raw, width, height, reference, options);
+  return finishTrace(raw, width, height, reference, options, { image, reach: MASK_REACH });
 }
 
 /**
@@ -632,7 +667,7 @@ export function traceSceneSegmented(
   if (width <= 0 || height <= 0) return err({ code: 'NO_OBJECT', detail: 'Empty image' });
   const mask =
     reference?.kind === 'strip' ? bridgeSoftAcrossStrip(toolMask, reference.strip) : toolMask;
-  return buildToolTraceSoft(mask, reference, options);
+  return buildToolTraceSoft(mask, reference, options, image);
 }
 
 const samePoints = (a: readonly Point[], b: readonly Point[]): boolean =>

@@ -328,12 +328,10 @@ describe('a plain sheet as the size reference', () => {
     if (!isOk(traced)) throw new Error(traced.error.code);
     expect(traced.value.units).toBe('mm');
     expect(traced.value.shapes).toHaveLength(1);
-    // The binary trace runs through pixel centres, a pixel (1 mm here) inside in all.
+    // A pixel is 1 mm here, and the drawing has no finer edge than that.
     const [long, short] = size(traced.value.shapes[0].outputPoints);
-    expect(long).toBeGreaterThan(78.5);
-    expect(long).toBeLessThan(80.5);
-    expect(short).toBeGreaterThan(18.5);
-    expect(short).toBeLessThan(20.5);
+    expect(Math.abs(long - 80)).toBeLessThan(0.8);
+    expect(Math.abs(short - 20)).toBeLessThan(0.8);
   });
 
   it('sizes by the sheet the user names over the one its shape reads as', () => {
