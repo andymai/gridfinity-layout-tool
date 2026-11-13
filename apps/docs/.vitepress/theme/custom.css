@@ -3,6 +3,22 @@
   --vp-c-brand-2: #d97706;
   --vp-c-brand-3: #f59e0b;
   --vp-c-brand-soft: rgba(245, 158, 11, 0.14);
+
+  /* The app's light surfaces (src/shell/styles/themes.css). */
+  --vp-c-bg: #fefefd;
+  --vp-c-bg-alt: #f5f4f1;
+  --vp-c-bg-soft: #f0efec;
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-divider: #e8e6e1;
+  --vp-c-gutter: #e8e6e1;
+  --vp-c-border: #d6d3cc;
+  --vp-c-text-1: #1c1b18;
+  --vp-c-text-2: #5c5a54;
+  --vp-c-default-soft: rgba(92, 90, 84, 0.12);
+
+  --docs-app-button: #f59e0b;
+  --docs-app-button-hover: #fbbf24;
+  --docs-grid-line: rgba(28, 27, 24, 0.07);
 }
 
 .dark {
@@ -10,6 +26,20 @@
   --vp-c-brand-2: #f59e0b;
   --vp-c-brand-3: #d97706;
   --vp-c-brand-soft: rgba(245, 158, 11, 0.16);
+
+  /* The app's dark surfaces (src/index.css). */
+  --vp-c-bg: #0f0f12;
+  --vp-c-bg-alt: #151519;
+  --vp-c-bg-soft: #1a1a1f;
+  --vp-c-bg-elv: #252530;
+  --vp-c-divider: #2a2a35;
+  --vp-c-gutter: #08080a;
+  --vp-c-border: #3a3a45;
+  --vp-c-text-1: #f4f4f5;
+  --vp-c-text-2: #a1a1aa;
+  --vp-c-default-soft: rgba(161, 161, 170, 0.16);
+
+  --docs-grid-line: rgba(250, 250, 250, 0.06);
 }
 
 /* Black on amber, as in the app: white text on these ambers fails WCAG AA. */
@@ -23,6 +53,335 @@
 /* The theme's hover color, brand-2, is about 3.2:1 on white. */
 :root:not(.dark) .vp-doc a:hover {
   color: #92400e;
+}
+
+/* ---------- Top bar ---------- */
+
+.docs-brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 10px;
+  line-height: 1.15;
+}
+
+.docs-brand-name {
+  font-size: 14px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.docs-brand-sub {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--vp-c-brand-1);
+}
+
+.VPNavBarTitle .title .logo {
+  margin-right: 0;
+  height: 28px;
+  border-radius: 6px;
+}
+
+/* The logo tile is as dark as the dark top bar. */
+.dark .VPNavBarTitle .title .logo {
+  box-shadow: 0 0 0 1px var(--vp-c-border);
+}
+
+.docs-open-app {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  margin-left: 14px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: var(--docs-app-button);
+  color: #000;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.docs-open-app:hover {
+  background: var(--docs-app-button-hover);
+}
+
+.docs-open-app:focus-visible {
+  outline: 2px solid var(--vp-c-text-1);
+  outline-offset: 2px;
+}
+
+.docs-open-app svg,
+.docs-app-tools svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.docs-open-app-short {
+  display: none;
+}
+
+/* Below the width where the top bar shows its links, the bar has room only
+   for the short label next to the search and menu buttons. */
+@media (max-width: 767px) {
+  .docs-open-app {
+    order: 1;
+    height: 32px;
+    margin: 0 4px 0 8px;
+    padding: 0 10px;
+  }
+
+  .docs-open-app-long {
+    display: none;
+  }
+
+  .docs-open-app-short {
+    display: inline;
+  }
+
+  .VPNavBarHamburger {
+    order: 2;
+  }
+}
+
+@media (max-width: 420px) {
+  .docs-brand-name {
+    font-size: 13px;
+  }
+}
+
+/* ---------- Sidebar ---------- */
+
+.VPSidebar .VPSidebarItem.level-0 > .item .text {
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-2);
+}
+
+.VPSidebar .VPSidebarItem.level-1 > .item {
+  width: calc(100% + 20px);
+  margin: 1px -10px;
+  padding: 0 10px;
+  border-radius: 6px;
+  transition: background-color 0.15s;
+}
+
+.VPSidebar .VPSidebarItem.level-1 > .item:hover {
+  background: var(--vp-c-default-soft);
+}
+
+.VPSidebar .VPSidebarItem.level-1.is-active > .item {
+  background: var(--vp-c-brand-soft);
+}
+
+/* ---------- Page ---------- */
+
+/* A 42 px grid behind the page title: one Gridfinity unit is 42 mm. */
+.VPDoc {
+  position: relative;
+}
+
+.VPDoc::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 300px;
+  background-image:
+    linear-gradient(to right, var(--docs-grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--docs-grid-line) 1px, transparent 1px);
+  background-size: 42px 42px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.VPDoc > .container {
+  position: relative;
+}
+
+.docs-chapter {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--vp-c-brand-1);
+}
+
+.vp-doc h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.028em;
+}
+
+@media (max-width: 640px) {
+  .vp-doc h1 {
+    font-size: 1.875rem;
+  }
+}
+
+.vp-doc h1 + p {
+  font-size: 1.0625rem;
+  color: var(--vp-c-text-2);
+}
+
+.vp-doc h2 {
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.vp-doc h3 {
+  letter-spacing: -0.012em;
+}
+
+.vp-doc ol > li::marker {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--vp-c-brand-1);
+}
+
+.vp-doc ul > li::marker {
+  color: var(--vp-c-text-2);
+}
+
+.vp-doc table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.vp-doc tr,
+.vp-doc tr:nth-child(2n) {
+  background: transparent;
+}
+
+.vp-doc th,
+.vp-doc td {
+  border: 0;
+  border-bottom: 1px solid var(--vp-c-divider);
+  padding: 10px 16px 10px 0;
+  vertical-align: top;
+}
+
+.vp-doc th {
+  background: transparent;
+  border-bottom-color: var(--vp-c-border);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--vp-c-text-2);
+}
+
+.vp-doc kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 1px 6px;
+  border: 1px solid var(--vp-c-border);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--vp-c-bg-elv);
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.8em;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.VPDocFooter .pager-link {
+  border-radius: 10px;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+
+.VPDocFooter .pager-link:hover {
+  background: var(--vp-c-brand-soft);
+}
+
+/* ---------- Back to the app ---------- */
+
+.docs-app-tools {
+  margin-top: 40px;
+  padding: 20px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: var(--vp-c-bg-alt);
+}
+
+.docs-app-tools-title {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-2);
+}
+
+.docs-app-tools ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.docs-app-tools a {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  height: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: var(--vp-c-bg);
+  transition: border-color 0.2s;
+}
+
+.docs-app-tools a:hover {
+  border-color: var(--vp-c-brand-2);
+}
+
+.docs-app-tools a:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+}
+
+.docs-app-tools-hint {
+  font-size: 12px;
+  color: var(--vp-c-text-2);
+}
+
+.docs-app-tools-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+}
+
+.docs-app-tools a:hover svg {
+  color: var(--vp-c-brand-1);
+}
+
+@media (max-width: 640px) {
+  .docs-app-tools ul {
+    grid-template-columns: 1fr;
+  }
 }
 
 .ui-label {

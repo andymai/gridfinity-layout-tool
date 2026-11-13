@@ -11,7 +11,7 @@ import { execFileSync } from 'node:child_process';
 import { parseFrontmatter } from './contentFrontmatter';
 import { CONTENT_LOCALES } from './contentRoutes';
 import { MALFORMED_UI_TAG, UI_TAG, resolveUiLabel } from '../apps/docs/.vitepress/uiLabels';
-import { nav, sidebar } from '../apps/docs/.vitepress/navigation';
+import { appTools, nav, sidebar } from '../apps/docs/.vitepress/navigation';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DOCS_DIR = 'apps/docs';
@@ -323,7 +323,7 @@ export function checkDocLinks(
 // are checked as if they were one more page's frontmatter.
 const NAV_LINKS: DocPage = {
   file: `${DOCS_DIR}/.vitepress/navigation.ts`,
-  data: { nav },
+  data: { nav, appTools },
   body: '',
 };
 
