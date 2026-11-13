@@ -24,13 +24,15 @@ export interface PaperSheet {
   /** Ordered [TL, TR, BR, BL] in image pixels. */
   readonly corners: readonly [Point, Point, Point, Point];
   readonly size: PaperSize;
+  /** Each white piece's own quad, when a tool across the sheet cut it into several. */
+  readonly parts: readonly (readonly Point[])[];
 }
 
 /** A sheet smaller than this share of the frame is too small to size tools by. */
 const MIN_AREA_SHARE = 0.08;
 const MIN_QUAD_FITNESS = 0.7;
-/** White pieces this share of the largest are part of the same sheet. */
-const PIECE_SHARE = 0.15;
+/** White pieces this share of the largest can be part of the same sheet. */
+const PIECE_SHARE = 0.02;
 /** The white pieces must fill this much of the quad, or they are not one sheet. */
 const MIN_SHEET_FILL = 0.6;
 /** Mean max−min of RGB over the sheet; above this it is coloured, not paper. */
@@ -180,11 +182,12 @@ export function findPaper(image: ImageDataLike): PaperSheet | null {
     null
   );
   if (!largest) return null;
-  // A tool lying right across the sheet cuts it in two, so every large white
-  // piece can be part of it. The largest is tried alone first: a second sheet
-  // beside the first is a piece that large too, and no part of it.
+  // A tool lying right across the sheet cuts it in two, so the white pieces
+  // are tried together first: half an A4 sheet has the shape of a whole one.
+  // Pieces that make no sheet together, such as two sheets set apart, leave
+  // the largest to be tried alone.
   const pieces = labeled.components.filter((c) => c.area >= PIECE_SHARE * largest.area);
-  const tries = pieces.length > 1 ? [[largest], pieces] : [[largest]];
+  const tries = pieces.length > 1 ? [pieces, [largest]] : [[largest]];
   for (const candidate of tries) {
     const sheet = sheetFrom(image, labeled.labels, candidate);
     if (sheet) return sheet;
@@ -216,9 +219,10 @@ function sheetFrom(
   }
   if (chroma / area > MAX_MEAN_CHROMA) return null;
 
-  const contour = pieces.flatMap((c) =>
+  const contours = pieces.map((c) =>
     traceContour(maskFromLabel(labels, c.label, width, height), c.start)
   );
+  const contour = contours.flat();
   // Judged on the hull: a tool across an edge notches the outline, and the
   // side lines below already ask each side for an edge of its own.
   const quad = contourToQuad(convexHull(contour));
@@ -245,5 +249,13 @@ function sheetFrom(
 
   const aspect = sheetAspect(ordered, image);
   const size = aspect === null ? null : sizeOf(aspect);
-  return size ? { corners: ordered, size } : null;
+  if (!size) return null;
+  const parts =
+    contours.length > 1
+      ? contours.flatMap((piece) => {
+          const own = contourToQuad(piece);
+          return own ? [own.corners] : [];
+        })
+      : [];
+  return { corners: ordered, size, parts };
 }

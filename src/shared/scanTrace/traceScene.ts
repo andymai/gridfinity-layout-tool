@@ -242,9 +242,11 @@ export function detectReference(
     const paper = paperReference(sheetOfPaper.corners, options.paper ?? sheetOfPaper.size, image);
     if (isOk(paper)) return paper.value;
   }
-  // A sheet is card-shaped within the card search's tolerance, so left in it
-  // would be taken for a card 86 mm wide.
-  const card = detectCard(image, { ...options, notCard: [sheetOfPaper.corners] }, excludeMask);
+  // A sheet is card-shaped within the card search's tolerance, and so is each
+  // piece of one a tool cut across: left in, either would be taken for a card
+  // 86 mm wide.
+  const notCard = [sheetOfPaper.corners, ...sheetOfPaper.parts];
+  const card = detectCard(image, { ...options, notCard }, excludeMask);
   return card ? { kind: 'card', card } : null;
 }
 

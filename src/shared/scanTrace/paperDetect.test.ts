@@ -177,6 +177,33 @@ describe('findPaper', () => {
     expect(detectReference(image)?.kind).toBe('paper');
   });
 
+  it.each([
+    [
+      'a thin rod down the middle, whose halves have the shape of a whole sheet',
+      rect(-2, -125, 2, 125),
+    ],
+    ['a tool near one end, which leaves a sliver', rect(120, -125, 140, 125)],
+    [
+      'a tool off centre, whose larger piece has the shape of a Letter sheet',
+      rect(14, -125, 34, 125),
+    ],
+  ] as const)('reads the whole sheet cut by %s', (_name, across) => {
+    const image = render(flat, [
+      [A4, PAPER],
+      [across, RED],
+    ]);
+    const found = findPaper(image);
+    expect(found?.size).toBe('a4');
+    const truth = A4.map(flat);
+    for (const corner of found?.corners ?? []) {
+      expect(
+        Math.min(...truth.map((p) => Math.hypot(p.x - corner.x, p.y - corner.y)))
+      ).toBeLessThan(1);
+    }
+    // Ruled out, neither the sheet nor a piece of it is taken for a card.
+    expect(detectReference(image, { paper: 'off' })).toBeNull();
+  });
+
   it('reads one of two sheets lying side by side', () => {
     const left = rect(-225, -148.5, -15, 148.5);
     const right = rect(15, -148.5, 225, 148.5);
