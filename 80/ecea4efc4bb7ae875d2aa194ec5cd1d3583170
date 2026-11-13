@@ -1,0 +1,73 @@
+src/i18n/locales/sv.json
+  s_925c1b25c9715e::t_210ea369e9bbe3 1121
+src/shared/scanReview/components/ScanCaptureFlow/ScanCaptureFlow.tsx
+  s_925c1b25c9715e::t_210ea369e9bbe3 192,195-213,215
+src/i18n/locales/pt-BR.json
+  s_925c1b25c9715e::t_210ea369e9bbe3 1121
+src/i18n/locales/ja.json
+  s_925c1b25c9715e::t_210ea369e9bbe3 1098
+src/shared/scanTrace/paperDetect.ts
+  s_925c1b25c9715e::t_f9d3c9c8b0fe7a 4-5,20,32-35,122-131,178-185,188,194,196-197,199-201,203
+src/i18n/locales/ko.json
+  s_925c1b25c9715e::t_210ea369e9bbe3 1098
+src/i18n/locales/de.json
+  s_925c1b25c9715e::t_210ea369e9bbe3 1121
+src/shared/scanReview/components/ScanCaptureFlow/ScanScaleStatus.tsx
+  s_925c1b25c9715e::t_210ea369e9bbe3 48-50
+src/i18n/locales/uk.json
+  s_925c1b25c9715e::t_210ea369e9bbe3 1167
+src/shared/scanReview/components/ScanCaptureFlow/ScanScaleStatus.test.tsx
+  s_925c1b25c9715e::t_b4334f9f405cf5 51-56
+src/shared/scanTrace/paperDetect.test.ts
+  s_925c1b25c9715e::t_b4334f9f405cf5 163-190,303-345
+  s_925c1b25c9715e::t_c9182a9211ba0d 346
+src/i18n/locales/es.json
+  s_925c1b25c9715e::t_210ea369e9bbe3 1121
+src/i18n/locales/zh-CN.json
+  s_925c1b25c9715e::t_210ea369e9bbe3 1098
+src/i18n/locales/nl.json
+  s_925c1b25c9715e::t_210ea369e9bbe3 1121
+src/shared/scanReview/components/ScanToolList/ScanToolList.test.tsx
+  s_925c1b25c9715e::t_b4334f9f405cf5 30-40
+src/i18n/locales/fr.json
+  s_925c1b25c9715e::t_210ea369e9bbe3 1121
+src/i18n/locales/en.ts
+  s_925c1b25c9715e::t_210ea369e9bbe3 3807-3808
+src/i18n/locales/nb.json
+  s_925c1b25c9715e::t_210ea369e9bbe3 1121
+src/shared/scanReview/components/ScanCaptureFlow/ScanCaptureFlow.test.tsx
+  s_925c1b25c9715e::t_b4334f9f405cf5 124,126-127,129-133
+apps/docs/cutouts/phone-scan.md
+  s_925c1b25c9715e::t_daabfe2fc5efb5 89-96
+src/shared/scanTrace/cardDetect.ts
+  s_925c1b25c9715e::t_f9d3c9c8b0fe7a 49-76,195
+src/i18n/locales/ka.json
+  s_925c1b25c9715e::t_210ea369e9bbe3 3196
+src/shared/scanReview/components/ScanToolList/ScanToolList.tsx
+  s_925c1b25c9715e::t_210ea369e9bbe3 35-37
+src/i18n/locales/it.json
+  s_925c1b25c9715e::t_210ea369e9bbe3 1121
+src/i18n/locales/cs.json
+  s_925c1b25c9715e::t_210ea369e9bbe3 1144
+src/i18n/locales/pl.json
+  s_925c1b25c9715e::t_210ea369e9bbe3 1167
+src/shared/scanTrace/traceScene.ts
+  s_925c1b25c9715e::t_f9d3c9c8b0fe7a 37,247
+  s_925c1b25c9715e::t_210ea369e9bbe3 109-110,138,366,377,392,413-423,473,510-535,595,598,605-612
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "80ecea4efc4bb7ae875d2aa194ec5cd1d3583170",
+  "prompts": {},
+  "sessions": {
+    "s_925c1b25c9715e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "53465ea6-fbba-48bb-b515-f45942033545",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
