@@ -19,6 +19,7 @@ import type { ResolvedBaseplateParams, BinParams, SplitConnectorConfig } from '@
 import type { MeshData } from '@/features/generation/bridge/types';
 import type { ProgressFn } from '@/features/generation/worker/generators/generatorTypes';
 import type { PerfCollector } from '@/features/generation/worker/generators/pipeline/perfCollector';
+import type { SplitPreviewResult } from '@/features/generation/worker/generators/binGenerator';
 
 // ─── Kernel selection ────────────────────────────────────────────────────────
 
@@ -72,8 +73,6 @@ export type GenerateBaseplateFn = (
 
 // ─── Split preview ───────────────────────────────────────────────────────────
 
-// Re-use the canonical type from binGenerator
-import type { SplitPreviewResult } from '@/features/generation/worker/generators/binGenerator';
 export type { SplitPreviewResult };
 export type SplitPreviewPiece = SplitPreviewResult['pieces'][number];
 

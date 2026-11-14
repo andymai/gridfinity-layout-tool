@@ -278,7 +278,9 @@ function lidColorConfig(
  * Color for a piece printed beside the bin (lid, dividers, feet). The lid gets
  * per-triangle paint when the worker sent its face groups and some of them
  * (text, a lip grid) differ from the lid colour; everything else stays on the
- * cheaper uniform slot. Undefined for a piece with no zone of its own.
+ * cheaper uniform slot. The face groups index the lid's own triangles, so the
+ * separate stack plate, which shares the lid zone, stays uniform. Undefined
+ * for a piece with no zone of its own.
  */
 function companionColorConfig(
   label: string,
@@ -290,7 +292,7 @@ function companionColorConfig(
   if (zone === null) return undefined;
   const triangleCount = vertices.length / 9;
   return (
-    (zone === 'lid' && lidFaceGroups
+    (label === 'lid' && lidFaceGroups
       ? lidColorConfig(params.featureColors, lidFaceGroups, triangleCount, vertices)
       : null) ?? uniformColorConfig(zone, params.featureColors, triangleCount)
   );
@@ -607,7 +609,10 @@ export function buildSplit3MFObjects(parts: SplitExportParts, params: BinParams)
 
 /**
  * Write each object of {@link buildSplit3MFObjects} as its own 3MF file, so the
- * caller can ZIP them in one step. Each file keeps its piece's colors.
+ * caller can ZIP them in one step. Each file keeps its piece's colors. The
+ * multi-object writer, with one object, adds the base-extruder sidecar that
+ * BambuStudio and OrcaSlicer need to put a uniform lid or divider on its
+ * filament.
  */
 export async function buildSplit3MFPieces(
   parts: SplitExportParts,
@@ -617,9 +622,9 @@ export async function buildSplit3MFPieces(
 ): Promise<{ data: ArrayBuffer; label: string }[]> {
   const converted: { data: ArrayBuffer; label: string }[] = [];
   for (const object of buildSplit3MFObjects(parts, params)) {
-    const blob = export3MF(object.vertices, object.normals, {
-      name: `${baseName}_${object.name}`,
-      colorConfig: object.colorConfig,
+    const name = `${baseName}_${object.name}`;
+    const blob = export3MFMultiObject([{ ...object, name }], {
+      name,
       printSettings: threeMFPrintSettings,
     });
     converted.push({ data: await blob.arrayBuffer(), label: object.name });

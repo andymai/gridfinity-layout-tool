@@ -1,12 +1,13 @@
 /**
  * Split 3MF export keeps the design's colors on every piece.
  *
- * Classification runs for real here (only the STL parse and the 3MF writer
- * are stubbed), because the defect it guards is in the geometry: a piece
+ * Classification and the 3MF writer run for real here (only the STL parse is
+ * stubbed), because the defect it guards is in the geometry: a piece
  * classified on its own puts the lip center inside itself and paints corners
  * that belong to the other half of the bin.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { unzipSync, strFromU8 } from 'fflate';
 import { ok } from '@/core/result';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { lipCellZone, LIP_BANDS } from '@/features/bin-designer/types/featureColors';
@@ -14,17 +15,26 @@ import type { LipCorner } from '@/features/bin-designer/types/featureColors';
 import { FeatureTag } from '@/shared/types/generation';
 import type { FaceGroupData } from '@/shared/types/generation';
 import type { BinParams } from '@/features/bin-designer/types';
-import type { ThreeMFColorConfig, ThreeMFPrintSettings } from '@/shared/generation/export';
+import type * as Export from '@/shared/generation/export';
+import type {
+  ThreeMFColorConfig,
+  ThreeMFObject,
+  ThreeMFPrintSettings,
+} from '@/shared/generation/export';
 import { buildSplit3MFPieces } from './binDownloadHelpers';
 
-const export3MFSpy = vi.hoisted(() =>
-  vi.fn((_v: Float32Array, _n: Float32Array, _o: { colorConfig?: unknown }) => new Blob([]))
-);
+const writerSpy = vi.hoisted(() => vi.fn((_objects: readonly ThreeMFObject[]) => undefined));
 
-vi.mock('@/shared/generation/export', () => ({
-  export3MF: export3MFSpy,
-  export3MFMultiObject: () => new Blob([]),
-}));
+vi.mock('@/shared/generation/export', async (importOriginal) => {
+  const actual = await importOriginal<typeof Export>();
+  return {
+    ...actual,
+    export3MFMultiObject: (...args: Parameters<typeof actual.export3MFMultiObject>) => {
+      writerSpy(args[0]);
+      return actual.export3MFMultiObject(...args);
+    },
+  };
+});
 
 /** Fake STL buffers: the parse mock looks each one up by identity. */
 const meshes = vi.hoisted(() => new Map<ArrayBuffer, Float32Array>());
@@ -81,16 +91,23 @@ function lipPiece(xs: [number, number]): {
 
 const PRINT_SETTINGS = { layerHeight: 0.2 } as unknown as ThreeMFPrintSettings;
 
+/** The one object in the 3MF written for call `i`. */
+function written(i: number): ThreeMFObject {
+  const objects = writerSpy.mock.calls[i][0];
+  expect(objects).toHaveLength(1);
+  return objects[0];
+}
+
 /** Hex color of every triangle in the 3MF written for call `i`. */
 function triangleColors(i: number): string[] {
-  const config = export3MFSpy.mock.calls[i][2].colorConfig as ThreeMFColorConfig | undefined;
+  const config: ThreeMFColorConfig | undefined = written(i).colorConfig;
   if (!config) return [];
   return config.triangleMaterialIndices.map((m) => config.materials[m].color.toLowerCase());
 }
 
 describe('buildSplit3MFPieces colors', () => {
   beforeEach(() => {
-    export3MFSpy.mockClear();
+    writerSpy.mockClear();
     meshes.clear();
   });
 
@@ -170,7 +187,10 @@ describe('buildSplit3MFPieces colors', () => {
       PRINT_SETTINGS
     );
 
-    expect(export3MFSpy.mock.calls.map((c) => c[2].colorConfig)).toEqual([undefined, undefined]);
+    expect(writerSpy.mock.calls.map((_, i) => written(i).colorConfig)).toEqual([
+      undefined,
+      undefined,
+    ]);
   });
 
   it('writes single-color pieces when the worker sent no face groups', async () => {
@@ -183,6 +203,47 @@ describe('buildSplit3MFPieces colors', () => {
       PRINT_SETTINGS
     );
 
-    expect(export3MFSpy.mock.calls[0][2].colorConfig).toBeUndefined();
+    expect(written(0).colorConfig).toBeUndefined();
+  });
+
+  it('puts a companion lid on the lid filament for the slicer', async () => {
+    const left = lipPiece([-15, -5]);
+    const lid = { data: stl([sliver(0, 0, 0)]), label: 'lid' };
+
+    const files = await buildSplit3MFPieces(
+      { binPieces: [{ ...left, label: 'A1' }], companionPieces: [lid] },
+      params(),
+      'bin',
+      PRINT_SETTINGS
+    );
+
+    const config = written(1).colorConfig;
+    const lidSlot = config?.triangleMaterialIndices[0] ?? -1;
+    expect(config?.materials[lidSlot].color.toLowerCase()).toBe('#123456');
+    const lidFile = files.find((f) => f.label === 'lid');
+    const sidecar = unzipSync(new Uint8Array(lidFile?.data ?? new ArrayBuffer(0)))[
+      'Metadata/model_settings.config'
+    ];
+    expect(sidecar, 'base-extruder sidecar').toBeDefined();
+    expect(strFromU8(sidecar)).toContain(`key="extruder" value="${lidSlot + 1}"`);
+  });
+
+  it('keeps the separate stack plate in the lid color, without the lid text', async () => {
+    const left = lipPiece([-15, -5]);
+    const plate = { data: stl([sliver(0, 0, 0)]), label: 'lid-baseplate' };
+    const p = params();
+
+    await buildSplit3MFPieces(
+      {
+        binPieces: [{ ...left, label: 'A1' }],
+        companionPieces: [plate],
+        lidFaceGroups: [{ start: 0, count: 3, tag: FeatureTag.TEXT }],
+      },
+      { ...p, featureColors: { ...p.featureColors, text: '#ff00ff' } },
+      'bin',
+      PRINT_SETTINGS
+    );
+
+    expect(triangleColors(1)).toEqual(['#123456']);
   });
 });
