@@ -1,0 +1,24 @@
+src/features/bin-designer/utils/binDownloadHelpersSplit3MF.test.ts
+  s_38ec12440186b5::t_e132790a94670d 4-5,10,19-23,26,28,30-37,94-100,103,110,190-193,206-247
+  s_38ec12440186b5::t_a8781b3c380f4c 18,29
+src/features/bin-designer/utils/binDownloadHelpers.ts
+  s_38ec12440186b5::t_3b052c15af4dc4 281-283,295,612-615,625-627
+src/features/generation/worker/generators/__kernel-tests__/wasmInit.ts
+  s_38ec12440186b5::t_ae877fab72df8c 22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ba29bcc1051d7ef2c9485ea8b2b1faae9c45022c",
+  "prompts": {},
+  "sessions": {
+    "s_38ec12440186b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e21d9403-1858-4c6e-9314-07b7b72fe315",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
