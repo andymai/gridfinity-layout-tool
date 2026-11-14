@@ -120,11 +120,14 @@ export function buildSinglePiece3MFObject(
   return { vertices, normals, name: modelName, colorConfig };
 }
 
+/** A divider, whole or one of the `-part-N` pieces a long divider is cut into for the bed. */
+const DIVIDER_LABEL = /^divider-(horizontal|vertical)(-part-\d+)?$/;
+
 /** Map ancillary piece label → the ColorZone whose color paints the piece. */
 function pieceZone(label: string): ColorZone | null {
   // The glue-on baseplate is part of the lid assembly, so it takes the lid color.
   if (label === 'lid' || label === 'lid-baseplate') return 'lid';
-  if (label === 'divider-horizontal' || label === 'divider-vertical') return 'dividers';
+  if (DIVIDER_LABEL.test(label)) return 'dividers';
   // The feet are the bin's base, printed separately, so they take the Base
   // colour rather than falling through to the default material. The knife
   // block's handle rest has no zone of its own and stands on the same

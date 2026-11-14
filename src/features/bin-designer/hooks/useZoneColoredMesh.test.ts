@@ -6,37 +6,11 @@ import { FeatureTag } from '@/shared/types/generation';
 import { makeUniformLipCells } from '@/features/bin-designer/types/featureColors';
 import { useZoneColoredMesh } from './useZoneColoredMesh';
 
+// The hook runs outside a <Canvas>, so only the canvas context is stood in for.
+// Geometry and materials are real Three.js objects.
 vi.mock('@react-three/fiber', () => ({
   useThree: () => ({ invalidate: vi.fn() }),
 }));
-
-vi.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
-  toCreasedNormals: vi.fn((geo: unknown) => geo),
-}));
-
-vi.mock('three', () => {
-  class MockBufferGeometry {
-    setAttribute = vi.fn();
-    setIndex = vi.fn();
-    computeVertexNormals = vi.fn();
-    dispose = vi.fn();
-    addGroup = vi.fn();
-    clearGroups = vi.fn();
-  }
-  class MeshStandardMaterial {
-    emissiveIntensity = 0;
-    dispose = vi.fn();
-  }
-  return {
-    BufferGeometry: MockBufferGeometry,
-    EdgesGeometry: MockBufferGeometry,
-    BufferAttribute: vi.fn(),
-    Float32BufferAttribute: vi.fn(),
-    Color: vi.fn(),
-    MeshStandardMaterial,
-    DoubleSide: 2,
-  };
-});
 
 // A lip sliver over a body sliver.
 const INPUT = {
@@ -82,7 +56,10 @@ describe('useZoneColoredMesh', () => {
   it('builds one material per zone when the lip color differs from the body', () => {
     setColors(true, '#ff0000');
     const { result } = renderHook(() => useZoneColoredMesh(INPUT));
-    expect(result.current.materials?.length).toBeGreaterThan(1);
+    const hexes = result.current.materials?.map((m) => `#${m.color.getHexString()}`) ?? [];
+    expect(hexes).toContain('#ff0000');
+    expect(hexes).toContain('#cccccc');
+    expect(result.current.geometry?.groups.length).toBeGreaterThan(1);
     expect(result.current.singleMatProps.color).toBe('#cccccc');
   });
 

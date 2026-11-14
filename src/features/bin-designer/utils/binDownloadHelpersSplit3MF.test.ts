@@ -140,6 +140,25 @@ describe('buildSplit3MFPieces colors', () => {
     expect(triangleColors(2)).toEqual(['#123456']);
   });
 
+  it('colors each part of a divider that was cut for the bed', async () => {
+    const left = lipPiece([-15, -5]);
+    const parts = ['divider-horizontal-part-1', 'divider-horizontal-part-2'].map((label) => ({
+      data: stl([sliver(0, 0, 0)]),
+      label,
+    }));
+    const p = params();
+
+    await buildSplit3MFPieces(
+      { binPieces: [{ ...left, label: 'A1' }], companionPieces: parts },
+      { ...p, featureColors: { ...p.featureColors, dividers: '#abcdef' } },
+      'bin',
+      PRINT_SETTINGS
+    );
+
+    expect(triangleColors(1)).toEqual(['#abcdef']);
+    expect(triangleColors(2)).toEqual(['#abcdef']);
+  });
+
   it('writes single-color pieces when the design is single-color', async () => {
     const left = lipPiece([-15, -5]);
     const lid = { data: stl([sliver(0, 0, 0)]), label: 'lid' };

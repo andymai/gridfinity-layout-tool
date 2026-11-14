@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type * as Three from 'three';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -7,31 +8,19 @@ import type { SplitPieceMeshEntry } from '../../../types';
 import { FeatureTag } from '@/shared/types/generation';
 import { lipCellZone } from '@/features/bin-designer/types/featureColors';
 
-vi.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
-  toCreasedNormals: vi.fn((geo: unknown) => geo),
-}));
-
 const materialSpy = vi.hoisted(() => vi.fn());
 
-// Mock Three.js before the component is imported
-vi.mock('three', () => ({
-  BufferGeometry: vi.fn().mockImplementation(() => ({
-    setAttribute: vi.fn(),
-    setIndex: vi.fn(),
-    computeVertexNormals: vi.fn(),
-    dispose: vi.fn(),
-  })),
-  Float32BufferAttribute: vi.fn(),
-  BufferAttribute: vi.fn(),
-  Color: vi.fn(),
-  MeshStandardMaterial: class {
-    dispose = vi.fn();
-    constructor(opts: { color: string }) {
-      materialSpy(opts.color);
+// Real Three.js; the material class only records the colors it is built with.
+vi.mock('three', async (importOriginal) => {
+  const actual = await importOriginal<typeof Three>();
+  class RecordedMaterial extends actual.MeshStandardMaterial {
+    constructor(params?: ConstructorParameters<typeof actual.MeshStandardMaterial>[0]) {
+      super(params);
+      materialSpy(params?.color);
     }
-  },
-  DoubleSide: 2,
-}));
+  }
+  return { ...actual, MeshStandardMaterial: RecordedMaterial };
+});
 
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
@@ -46,14 +35,6 @@ vi.mock('@react-three/drei', () => ({
       {children}
     </div>
   ),
-}));
-
-vi.mock('@/shared/components/preview/useMeshGeometry', () => ({
-  useMeshGeometry: () => ({
-    geometry: { dispose: vi.fn() },
-    edgesGeometry: { dispose: vi.fn() },
-    hasPrecomputedNormals: true,
-  }),
 }));
 
 vi.mock('@/shared/hooks/useThemeEffect', () => ({
