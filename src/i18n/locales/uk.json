@@ -2217,7 +2217,6 @@
   "binDesigner.splitConnectors": "З’єднувачі для вирівнювання",
   "binDesigner.splitConnectorsUnavailableLightweight": "Недоступно для полегшених основ — порожнисте дно не має матеріалу для з’єднання.",
   "binDesigner.splitExploded": "Розгорнуто",
-  "binDesigner.splitExport.colorLossWarning": "Розділений експорт відкидає дані кольору — кожна частина друкується одним кольором. Вимкніть розділення, щоб зберегти зони кольорів.",
   "binDesigner.splitExport.downloadSplit": "Завантажити розділений {format} (ZIP)",
   "binDesigner.splitExport.enableSplit": "Розділити на частини",
   "binDesigner.splitExport.exceedsPrintBed": "Цей бін перевищує ваш друкарський стіл ({size}мм). Його буде розділено на {count} частин.",

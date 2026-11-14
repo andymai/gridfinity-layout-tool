@@ -340,7 +340,7 @@ export function ExportDialog() {
     downloadLabel = t('binDesigner.downloadFormat', { format: activeFormat.toUpperCase() });
   }
 
-  const showHandoff = isMultiColor && activeFormat === '3mf' && !useSplitExport;
+  const showHandoff = isMultiColor && activeFormat === '3mf';
   // Every offcut this design needs, longest first. Empty for any lid that is
   // not hinged, so the row simply does not appear.
   const hingePins = hingePinLengths(params);
@@ -390,23 +390,21 @@ export function ExportDialog() {
       }
       formatStates={formatStates}
       warningBanner={
-        useSplitExport && isMultiColor
-          ? { message: t('binDesigner.splitExport.colorLossWarning') }
-          : keptWhole
+        keptWhole
+          ? {
+              message: t('binDesigner.printFit.keptWhole', {
+                width: printBedSize,
+                depth: printBedDepth ?? printBedSize,
+              }),
+            }
+          : slantFitsDiagonally || (fitsDiagonally && !offerSplit)
             ? {
-                message: t('binDesigner.printFit.keptWhole', {
+                message: t('binDesigner.printFit.fitsDiagonally', {
                   width: printBedSize,
                   depth: printBedDepth ?? printBedSize,
                 }),
               }
-            : slantFitsDiagonally || (fitsDiagonally && !offerSplit)
-              ? {
-                  message: t('binDesigner.printFit.fitsDiagonally', {
-                    width: printBedSize,
-                    depth: printBedDepth ?? printBedSize,
-                  }),
-                }
-              : null
+            : null
       }
       extras={
         showHandoff || hingePins.length > 0 ? (

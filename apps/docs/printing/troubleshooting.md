@@ -114,7 +114,7 @@ Do you see fewer files than bins? That's normal. Each design is in the ZIP once,
 | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
 | The slicer shows only one filament.                 | Add the filaments by hand, or update Bambu Studio to 2.9.1 or later.                                                     | Bambu Studio 2.8.x on an empty plate does not add the filaments of the file. |
 | The zones have the wrong colors.                    | Use <Ui k="binDesigner.colors.slicerHandoff.show" /> in the export dialog, and assign each filament to the correct slot. | The file does not set slot colors.                                           |
-| The whole bin prints in one color.                  | Export a whole bin as 3MF.                                                                                               | STL, STEP and split exports lose the colors.                                 |
+| The whole bin prints in one color.                  | Export the bin as 3MF.                                                                                                   | STL and STEP lose the colors.                                                |
 | Two bins share a filament in a layout project file. | Nothing to fix. This is the expected result.                                                                             | Parts with the same color use the same filament.                             |
 
 See [Slicer setup](./slicers#map-multi-color-zones-to-filaments).

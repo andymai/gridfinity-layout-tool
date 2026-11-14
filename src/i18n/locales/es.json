@@ -2155,7 +2155,6 @@
   "binDesigner.splitConnectors": "Conectores de alineación",
   "binDesigner.splitConnectorsUnavailableLightweight": "No disponible en bases ligeras: el suelo ahuecado no tiene material para el bisel.",
   "binDesigner.splitExploded": "Explosionado",
-  "binDesigner.splitExport.colorLossWarning": "La exportación dividida descarta los datos de color — cada pieza se imprimirá en un solo color. Desactiva la división para conservar tus zonas de color.",
   "binDesigner.splitExport.downloadSplit": "Descargar {format} dividido (ZIP)",
   "binDesigner.splitExport.enableSplit": "Dividir en piezas",
   "binDesigner.splitExport.exceedsPrintBed": "Este bin excede el tamaño de tu cama de impresión ({size}mm). Se dividirá en {count} piezas.",

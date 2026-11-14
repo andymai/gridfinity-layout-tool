@@ -71,7 +71,6 @@ Only one filament? A design with color zones still prints fine. These rules deci
 - A colored cutout or a colored Bento compartment makes the design multi-color, whatever the <Ui k="binDesigner.group.colors" /> switch says.
 - With the switch off and nothing else colored, the preview shows one body color, and the 3MF file carries no color data.
 - With the switch on, the design is single-color only when every zone has the body color. Then the 3MF file carries no color data.
-- A split export prints each piece in one color.
 
 To get a single-color file, and to use STL or STEP again, clear every color:
 
@@ -106,4 +105,4 @@ Add the other filaments in the slicer by hand, or update Bambu Studio to 2.9.1 o
 - [Colors](../designer/colors): set zone colors, palettes and the eyedropper step by step
 - [Slicer setup](../printing/slicers): open the 3MF file and assign filaments in your slicer
 - [Swappable label plates](../designer/label-plates): print two-color labels with one filament change
-- [Fitting the print bed](./print-bed-fit): see why a split bin loses its colors
+- [Fitting the print bed](./print-bed-fit): split a bin that is too large for your bed

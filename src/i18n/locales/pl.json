@@ -2217,7 +2217,6 @@
   "binDesigner.splitConnectors": "Łączniki wyrównujące",
   "binDesigner.splitConnectorsUnavailableLightweight": "Niedostępne dla lekkich binów — wydrążona podłoga nie ma litego materiału na złącze na jaskółczy ogon.",
   "binDesigner.splitExploded": "Rozłożony",
-  "binDesigner.splitExport.colorLossWarning": "Eksport z podziałem obecnie usuwa dane o kolorze — każda część wydrukuje się jako jednokolorowa. Wyłącz podział, aby zachować strefy koloru.",
   "binDesigner.splitExport.downloadSplit": "Pobierz dzielony {format} (ZIP)",
   "binDesigner.splitExport.enableSplit": "Podziel na części",
   "binDesigner.splitExport.exceedsPrintBed": "Ten bin przekracza Twój stół roboczy ({size} mm). Zostanie podzielony na {count} części.",

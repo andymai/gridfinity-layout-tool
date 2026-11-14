@@ -2155,7 +2155,6 @@
   "binDesigner.splitConnectors": "Justeringskoblinger",
   "binDesigner.splitConnectorsUnavailableLightweight": "Ikke tilgjengelig på lette baser – det uthulte gulvet har ikke materiale til skjøten.",
   "binDesigner.splitExploded": "Eksplodert",
-  "binDesigner.splitExport.colorLossWarning": "Delt eksport mister fargedata — hver del skrives ut i én farge. Slå av deling for å beholde fargesonene.",
   "binDesigner.splitExport.downloadSplit": "Last ned delt {format} (ZIP)",
   "binDesigner.splitExport.enableSplit": "Del opp i deler",
   "binDesigner.splitExport.exceedsPrintBed": "Denne binnen overskrider printplaten din ({size}mm). Den vil bli delt i {count} deler.",

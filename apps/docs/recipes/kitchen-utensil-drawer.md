@@ -98,7 +98,7 @@ A drawer can be a little narrower at the back than at the front, and a few milli
 
 ### A long bin doesn't line up at the joint
 
-Keep <Ui k="binDesigner.splitConnectors" /> on, and glue the joint. The connector needs a solid floor, so it isn't available with a lightweight floor. A split bin also prints each piece in one color. See [Fitting the print bed](../concepts/print-bed-fit#when-a-bin-is-too-large).
+Keep <Ui k="binDesigner.splitConnectors" /> on, and glue the joint. The connector needs a solid floor, so it isn't available with a lightweight floor. See [Fitting the print bed](../concepts/print-bed-fit#when-a-bin-is-too-large).
 
 ### A ladle catches on the counter
 

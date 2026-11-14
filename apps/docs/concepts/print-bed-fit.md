@@ -59,10 +59,6 @@ In the bin designer, the split options appear in the <Ui k="binDesigner.group.sh
 
 The connectors get larger for a nozzle wider than 0.4 mm, so they stay printable. To check the fit before you print, switch the preview between <Ui k="binDesigner.splitAssembled" /> and <Ui k="binDesigner.splitExploded" />. In the export dialog, <Ui k="binDesigner.splitExport.enableSplit" /> writes one file for each piece into a ZIP file.
 
-::: warning
-Do not split a bin with color zones if you want to keep the colors. A split export prints each piece in one color.
-:::
-
 A slanted bin can't split, because a cut would cross its body at an angle. If a slanted bin is too large, use a smaller angle or make the bin smaller.
 
 <Screenshot id="concepts-print-bed-split-bin" alt="A 6 by 2 bin that is too long for a 180 mm print bed, assembled in the bin designer preview. A click on Exploded shows its two pieces apart." spec="Clip. Bin designer, layout print bed 180 × 180, bin 6 × 2 × 3u, standard base, stacking lip on. The assembled bin, a close-up click on Exploded, then the two pieces apart." />

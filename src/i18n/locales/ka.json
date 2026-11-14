@@ -3908,7 +3908,6 @@
   "binDesigner.splitExport.enableSplit": "ნაწილებად დაყოფა",
   "binDesigner.splitExport.downloadSplit": "დაყოფილი {format}-ის ჩამოტვირთვა (ZIP)",
   "binDesigner.splitExport.success": "ნაწილებად ექსპორტი დასრულდა ({count} ნაწილი)",
-  "binDesigner.splitExport.colorLossWarning": "ნაწილებად ექსპორტისას ფერის მონაცემები ამჟამად იკარგება: თითოეული ნაწილი ერთ ფერში დაიბეჭდება. ფერის ზონების შესანარჩუნებლად დაყოფა გამორთეთ.",
   "binDesigner.toggleWireframeModeKeyboardShortcut": "კარკასული რეჟიმის გადართვა, კლავიატურის მალსახმობი W",
   "binDesigner.touchGestureHints": "შეხების ჟესტების მინიშნებები",
   "binDesigner.wire": "კარკასი",
