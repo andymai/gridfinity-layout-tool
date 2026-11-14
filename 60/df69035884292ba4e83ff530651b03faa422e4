@@ -1,0 +1,19 @@
+apps/docs/baseplates/splitting.md
+  s_38ec12440186b5::t_0fcd7cb43382d3 94
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "60df69035884292ba4e83ff530651b03faa422e4",
+  "prompts": {},
+  "sessions": {
+    "s_38ec12440186b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e21d9403-1858-4c6e-9314-07b7b72fe315",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
