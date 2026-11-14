@@ -135,12 +135,6 @@ Click <Ui k="binDesigner.textColor.useContrasting" /> under the warning. It pick
 
 Flat letters sit level with the surface, so only their color shows them. When the text color matches the surface, the letters disappear.
 
-### A split bin prints in one color
-
-Turn off <Ui k="binDesigner.splitExport.enableSplit" /> in the export dialog to keep the colors. If the bin is too large for your print bed, make it smaller, or print it in one color.
-
-A split export writes each piece in one color. The export dialog warns you before it drops the colors. See [Fitting the print bed](../concepts/print-bed-fit#when-a-bin-is-too-large).
-
 ### The slicer shows only one filament
 
 Add the filaments in your slicer by hand, or update Bambu Studio to 2.9.1 or later. Then assign each filament to the correct slot.

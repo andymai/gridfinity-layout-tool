@@ -47,6 +47,7 @@ import { loadDesign } from '@/features/bin-designer';
 import {
   buildMultiObject3MFObjects,
   buildSinglePiece3MFObject,
+  buildSplit3MFObjects,
 } from '@/features/bin-designer/utils/binDownloadHelpers';
 import { buildThreeMFPrintSettings } from '@/shared/generation/stlTo3mf';
 import { getLinkedDesignIds } from '@/features/design-linking';
@@ -248,7 +249,7 @@ export function useLayoutExport(): UseLayoutExportReturn {
         // instead of one part that doesn't fit the machine.
         for (const e of splits) {
           if (!e.split) continue;
-          const pieces = await splitFiles(
+          const { files, parts } = await splitFiles(
             bridge,
             e,
             e.split,
@@ -257,9 +258,9 @@ export function useLayoutExport(): UseLayoutExportReturn {
             workerFormat
           );
           if (projectMode) {
-            for (const piece of pieces) projectParts.addStl(baseNameOf(piece.path), piece.data);
+            projectParts.addObjects(buildSplit3MFObjects(parts, e.params));
           } else {
-            binFiles.push(...pieces);
+            binFiles.push(...files);
           }
           done++;
           setExportProgress({ current: done, total: binTotal, label: binLabel(done) });

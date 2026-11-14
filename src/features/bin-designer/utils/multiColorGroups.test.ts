@@ -278,3 +278,55 @@ describe('hoveredMaterialIndices', () => {
     expect(hoveredMaterialIndices('dividers').has(zoneIndex('body'))).toBe(false);
   });
 });
+
+describe('buildMultiColorGroups with an assembly frame', () => {
+  // The left half of a bin split down X = 0: lip slivers at x = -15 and -5.
+  const { vertices, indices } = meshFromCentroids([
+    { x: -15, y: -10 },
+    { x: -5, y: -10 },
+    { x: -15, y: 10 },
+    { x: -5, y: 10 },
+  ]);
+  const faceGroups: FaceGroupData[] = [{ start: 0, count: 12, tag: FeatureTag.LIP }];
+  const fourCorners = colors({
+    enabled: true,
+    lip: lip(
+      {
+        'lip:frontLeft:0': '#ff0000',
+        'lip:frontRight:0': '#00ff00',
+        'lip:backRight:0': '#0000ff',
+        'lip:backLeft:0': '#ffff00',
+      },
+      4
+    ),
+  });
+  const frame = {
+    lipGeom: { cx: 0, cy: 0, minZ: 0, maxZ: 0, floorZ: 0 },
+    accentCuts: { topZ: null, bottomZ: null },
+  };
+
+  it('classifies the lip against the whole bin, not against the piece', () => {
+    const result = buildMultiColorGroups(
+      faceGroups,
+      vertices,
+      indices,
+      fourCorners,
+      allZones,
+      [],
+      null,
+      frame
+    );
+    expect(new Set(result?.triZones)).toEqual(new Set(['lip:frontLeft:0', 'lip:backLeft:0']));
+  });
+
+  it('measures the piece alone without a frame, which splits it into four corners', () => {
+    const result = buildMultiColorGroups(faceGroups, vertices, indices, fourCorners, allZones);
+    expect(new Set(result?.triZones).size).toBe(4);
+  });
+
+  it('gives the hit test the same zones as the render', () => {
+    expect(new Set(buildHitTestZones(faceGroups, vertices, indices, fourCorners, frame))).toEqual(
+      new Set(['lip:frontLeft:0', 'lip:backLeft:0'])
+    );
+  });
+});

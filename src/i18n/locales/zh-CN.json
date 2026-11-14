@@ -2124,7 +2124,6 @@
   "binDesigner.splitConnectors": "对齐连接件",
   "binDesigner.splitConnectorsUnavailableLightweight": "减重收纳盒不可用 — 镂空底面没有可做斜接的实心材料。",
   "binDesigner.splitExploded": "爆炸",
-  "binDesigner.splitExport.colorLossWarning": "拆分导出目前会丢弃颜色数据 — 每一块都将以单色打印。停用拆分以保留你的色彩区。",
   "binDesigner.splitExport.downloadSplit": "下载拆分的 {format}（ZIP）",
   "binDesigner.splitExport.enableSplit": "拆分成多块",
   "binDesigner.splitExport.exceedsPrintBed": "此收纳盒超出你的打印床（{size}mm）。它会被拆分成 {count} 块。",

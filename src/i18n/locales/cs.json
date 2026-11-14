@@ -2186,7 +2186,6 @@
   "binDesigner.splitConnectors": "Zarovnávací spojky",
   "binDesigner.splitConnectorsUnavailableLightweight": "Nedostupné u odlehčených binů — vyskořepené dno nemá pevný materiál pro sešikmené spojení.",
   "binDesigner.splitExploded": "Rozloženo",
-  "binDesigner.splitExport.colorLossWarning": "Dělený export nyní zahazuje data o barvách — každý díl se vytiskne jako jednobarevný. Pro zachování barevných zón dělení vypni.",
   "binDesigner.splitExport.downloadSplit": "Stáhnout dělené {format} (ZIP)",
   "binDesigner.splitExport.enableSplit": "Rozdělit na díly",
   "binDesigner.splitExport.exceedsPrintBed": "Tento bin přesahuje tvou podložku tiskárny ({size} mm). Bude rozdělen na {count} dílů.",

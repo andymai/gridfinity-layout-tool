@@ -2155,7 +2155,6 @@
   "binDesigner.splitConnectors": "Connecteurs d'alignement",
   "binDesigner.splitConnectorsUnavailableLightweight": "Indisponible sur les bases allégées — le fond évidé n’offre pas de matière pour le biseau.",
   "binDesigner.splitExploded": "Éclaté",
-  "binDesigner.splitExport.colorLossWarning": "L'export découpé supprime les données de couleur — chaque pièce sera imprimée d'une seule couleur. Désactivez la découpe pour conserver vos zones de couleur.",
   "binDesigner.splitExport.downloadSplit": "Télécharger le {format} découpé (ZIP)",
   "binDesigner.splitExport.enableSplit": "Diviser en pièces",
   "binDesigner.splitExport.exceedsPrintBed": "Ce bac dépasse la taille de votre plateau d'impression ({size}mm). Il sera divisé en {count} pièces.",

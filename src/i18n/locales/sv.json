@@ -2155,7 +2155,6 @@
   "binDesigner.splitConnectors": "Justeringskontakter",
   "binDesigner.splitConnectorsUnavailableLightweight": "Inte tillgängligt för lätta basplattor – det urholkade golvet saknar material för skarven.",
   "binDesigner.splitExploded": "Splittrad",
-  "binDesigner.splitExport.colorLossWarning": "Delad export förlorar färgdata — varje del skrivs ut i en enda färg. Stäng av delningen för att behålla dina färgzoner.",
   "binDesigner.splitExport.downloadSplit": "Ladda ner delad {format} (ZIP)",
   "binDesigner.splitExport.enableSplit": "Dela i delar",
   "binDesigner.splitExport.exceedsPrintBed": "Detta fack överskrider din utskriftsbädd ({size}mm). Det kommer att delas i {count} delar.",

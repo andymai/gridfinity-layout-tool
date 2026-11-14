@@ -2124,7 +2124,6 @@
   "binDesigner.splitConnectors": "位置合わせコネクタ",
   "binDesigner.splitConnectorsUnavailableLightweight": "軽量ベースでは使用できません（中空の床にスカーフ用の材料がありません）。",
   "binDesigner.splitExploded": "分解表示",
-  "binDesigner.splitExport.colorLossWarning": "分割エクスポートでは現在色データが失われます — 各パーツは単色で印刷されます。色ゾーンを保持するには分割を無効にしてください。",
   "binDesigner.splitExport.downloadSplit": "分割{format}をダウンロード(ZIP)",
   "binDesigner.splitExport.enableSplit": "パーツに分割",
   "binDesigner.splitExport.exceedsPrintBed": "このビンはプリントベッド({size}mm)を超えています。{count}個のパーツに分割されます。",

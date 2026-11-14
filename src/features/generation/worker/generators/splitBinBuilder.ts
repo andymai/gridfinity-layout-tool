@@ -5,13 +5,14 @@
  * intersection, with optional stacking lip separation and split connectors.
  */
 
-import { box, unwrap, fuse, cut, translate, intersect, getBounds } from 'brepjs';
+import { box, unwrap, fuse, cut, translate, intersect, getBounds, setShapeOrigin } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 import { resolveLipTip } from '@/shared/types/bin';
 import type { ExportFormat } from '../../bridge/types';
 
 import { CLEARANCE } from './generatorTypes';
+import { FeatureTag } from './featureTags';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { pitchFromParams } from './gridPitch';
 import { buildTopShape } from './boxBuilder';
@@ -258,6 +259,9 @@ function splitSolidIntoPieces(
     // rather than a shared edge (which comes out as degenerate faces).
     lipSolid = translate(lipBase, [0, 0, wallTopZ]);
     lipBase.delete();
+    // The whole bin's lip carries this tag from `shellStage`. Stamped before
+    // the cuts below so their faces keep the cutters' own tags, as there.
+    setShapeOrigin(lipSolid, FeatureTag.LIP);
 
     // For slotted bins, cut divider notches through the lip so removable
     // dividers can slide in from the top. The wall slot cuts already live in
@@ -632,7 +636,7 @@ export async function exportSplitBin(
   try {
     for (; nextIdx < splitPieces.length; nextIdx++) {
       const piece = splitPieces[nextIdx];
-      const data = await exportPiece(
+      const written = await exportPiece(
         piece,
         params,
         outerW,
@@ -641,7 +645,7 @@ export async function exportSplitBin(
         angularTolerance,
         format
       );
-      pieces.push({ data, label: piece.label, col: piece.col, row: piece.row });
+      pieces.push({ ...written, label: piece.label, col: piece.col, row: piece.row });
     }
   } finally {
     // exportPiece disposes the solid it processed (including on throw, via its
@@ -747,7 +751,7 @@ export async function exportSplitBinRange(
   try {
     for (; nextIdx < splitPieces.length; nextIdx++) {
       const piece = splitPieces[nextIdx];
-      const data = await exportPiece(
+      const written = await exportPiece(
         piece,
         params,
         outerW,
@@ -756,7 +760,7 @@ export async function exportSplitBinRange(
         angularTolerance,
         format
       );
-      pieces.push({ data, label: piece.label, col: piece.col, row: piece.row });
+      pieces.push({ ...written, label: piece.label, col: piece.col, row: piece.row });
     }
   } finally {
     // exportPiece disposes the solid it processed (including on throw).

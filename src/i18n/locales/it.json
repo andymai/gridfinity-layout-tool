@@ -2155,7 +2155,6 @@
   "binDesigner.splitConnectors": "Connettori di allineamento",
   "binDesigner.splitConnectorsUnavailableLightweight": "Non disponibile sui bin alleggeriti; il fondo a guscio non ha materiale pieno per il giunto a sbieco.",
   "binDesigner.splitExploded": "Esploso",
-  "binDesigner.splitExport.colorLossWarning": "L'esportazione divisa al momento perde i dati di colore; ogni pezzo verrà stampato in tinta unita. Disattiva la divisione per mantenere le tue zone di colore.",
   "binDesigner.splitExport.downloadSplit": "Scarica {format} diviso (ZIP)",
   "binDesigner.splitExport.enableSplit": "Dividi in pezzi",
   "binDesigner.splitExport.exceedsPrintBed": "Questo bin supera il tuo piano di stampa ({size}mm). Verrà diviso in {count} pezzi.",

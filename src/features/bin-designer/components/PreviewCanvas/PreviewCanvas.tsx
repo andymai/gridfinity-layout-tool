@@ -500,7 +500,12 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
 
               {/* Bin mesh — swap for per-piece meshes when split */}
               {showSplitPieces ? (
-                <SplitBinMeshes color={previewColor} wireframe={wireframe} xray={xray} />
+                <SplitBinMeshes
+                  color={previewColor}
+                  wireframe={wireframe}
+                  xray={xray}
+                  onZoneClick={handleZoneClick}
+                />
               ) : (
                 <BinMesh
                   wireframe={wireframe}

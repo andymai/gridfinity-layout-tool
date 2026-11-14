@@ -252,6 +252,8 @@ export interface SplitExportPiece {
   readonly label: string;
   readonly col: number;
   readonly row: number;
+  /** Feature tags for the STL triangles in `data`. Absent for STEP pieces. */
+  readonly faceGroups?: readonly FaceGroupData[];
 }
 
 export interface SplitExportResultResponse {
@@ -316,6 +318,7 @@ export interface SplitPreviewPiece {
   readonly offsetX: number;
   /** Piece Y offset in grid units from bin origin (bottom edge) */
   readonly offsetY: number;
+  readonly faceGroups?: readonly FaceGroupData[];
 }
 
 export interface SplitPreviewResultResponse {

@@ -582,6 +582,15 @@ describe('ExportDialog', () => {
       expect(screen.getByRole('radio', { name: 'STEP' })).toHaveAttribute('aria-disabled', 'true');
     });
 
+    it('keeps the filament mapping and gives no color warning for a split 3MF', () => {
+      mockSplitState = { ...mockSplitState, needsSplit: true, splitPieceCount: 2 };
+      setupMultiColorOpen({ open: true, multiColor: true, format: '3mf' });
+      render(<ExportDialog />);
+      expect(screen.getByLabelText(/split into pieces/i)).toBeChecked();
+      expect(screen.getByText('Show filament mapping')).toBeInTheDocument();
+      expect(screen.queryByText(/drops color data/i)).not.toBeInTheDocument();
+    });
+
     it('does not auto-switch when multi-color is disabled on the design with diverged colors', () => {
       // Critical case: zone colors are diverged (red lip, green labelTab) but
       // featureColors.enabled is false. The toggle alone must suppress the

@@ -36,7 +36,6 @@ import type { FaceGroupData, MeshData } from '../../bridge/types';
 import type { BinDimensions } from './pipeline/types';
 import { creaseEdges } from './utils/creaseEdges';
 import { computeCreaseNormals } from './meshImprintNormals';
-import type { NormalizedMesh } from './meshImprintNormals';
 import { getLoadedManifoldModule, getManifoldModule } from '../manifoldRuntime';
 import { decodeMeshEntry, meshEntryKey, meshRequestsInProgress } from '../meshFiles';
 import {
@@ -443,11 +442,12 @@ export function applyMeshImprints(
 export function imprintPieceArrays(
   positions: Float32Array,
   indices: Uint32Array,
+  faceGroups: readonly FaceGroupData[] | undefined,
   params: BinParams,
   dims: ImprintDims,
   pieceBounds: Bounds2D,
   frameShift?: { readonly x: number; readonly y: number }
-): NormalizedMesh | null {
+): ImprintedArrays | null {
   if (!dims.solid || !hasMeshImprints(params)) return null;
   const base = frameFromDimensions(params, dims);
   // When the piece mesh was recentered (preview), tools move into the same
@@ -455,7 +455,5 @@ export function imprintPieceArrays(
   const frame: ImprintFrame = frameShift
     ? { ...base, originX: base.originX - frameShift.x, originY: base.originY - frameShift.y }
     : base;
-  const result = imprintArrays(positions, indices, undefined, params, frame, pieceBounds);
-  if (!result) return null;
-  return { positions: result.positions, normals: result.normals, indices: result.indices };
+  return imprintArrays(positions, indices, faceGroups, params, frame, pieceBounds);
 }

@@ -2124,7 +2124,6 @@
   "binDesigner.splitConnectors": "정렬 커넥터",
   "binDesigner.splitConnectorsUnavailableLightweight": "경량 수납통에는 사용할 수 없습니다 — 껍데기 바닥에는 스카프를 위한 단단한 재료가 없습니다.",
   "binDesigner.splitExploded": "분해됨",
-  "binDesigner.splitExport.colorLossWarning": "분할 내보내기는 현재 색상 데이터를 삭제합니다 — 각 조각이 단색으로 인쇄됩니다. 색상 영역을 유지하려면 분할을 끄세요.",
   "binDesigner.splitExport.downloadSplit": "분할 {format} 내려받기 (ZIP)",
   "binDesigner.splitExport.enableSplit": "조각으로 분할",
   "binDesigner.splitExport.exceedsPrintBed": "이 수납통은 프린트 베드({size}mm)를 초과합니다. {count}개 조각으로 분할됩니다.",

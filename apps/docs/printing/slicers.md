@@ -36,7 +36,7 @@ Bambu Studio shows a notice that the file doesn't come from Bambu Lab, and that 
 <Screenshot id="printing-slicers-filament-map" alt="The filament mapping in the export dialog, with three zones and their filament numbers." spec="Bin designer with a 2 by 2 by 4 bin, multi-color on, with different body, lip and label colors. Export dialog open with 3MF selected and Show filament mapping expanded. Crop to the mapping list." />
 
 ::: warning
-Use 3MF for a multi-color bin. STL and STEP lose the colors. A split export also loses them, and each piece prints in one color.
+Use 3MF for a multi-color bin. STL and STEP lose the colors.
 :::
 
 ## Open a layout project file
