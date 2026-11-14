@@ -411,7 +411,7 @@ export type {
  * Whether an edge is exterior (outside baseplate), a join between split pieces,
  * or a seam to a detached margin rail carrying an opt-in connector.
  * `marginSeam` is exterior-like for corner/rounding purposes but carries a
- * body↔rail tongue; it must NOT be treated as `join` (no split-piece keys).
+ * body↔rail connector; it must NOT be treated as `join` (no split-piece keys).
  * Canonical edge-kind union; the baseplate feature's `EdgeKind` aliases this, so
  * extend the union here and both stay in sync.
  */
@@ -419,10 +419,10 @@ export type BaseplateEdgeKind = 'join' | 'exterior' | 'marginSeam';
 
 /**
  * True for edges on the plate's outer boundary: a plain `exterior` edge or a
- * `marginSeam` (which is exterior + a connector tongue). Corner rounding and
+ * `marginSeam` (which is exterior + a connector). Corner rounding and
  * squaring treat both identically — the body stays square there and the rail
  * owns the rounded outer corner. Do NOT use this for fingerprinting: a
- * `marginSeam` piece carries a tongue and must not dedupe with a plain
+ * `marginSeam` piece carries a connector and must not dedupe with a plain
  * exterior piece.
  */
 export function isExteriorEdge(kind: BaseplateEdgeKind): boolean {
@@ -444,44 +444,12 @@ export const BASEPLATE_CONNECTOR_STYLES = [
 
 export type BaseplateConnectorStyle = (typeof BASEPLATE_CONNECTOR_STYLES)[number];
 
-/**
- * Whether the margin-seam connector engages for a given connector
- * style. Scoped to the integral tongue/groove families — dovetail and puzzle —
- * because snapClip/dovetailKey would need a separate printed part the seam must
- * not emit. `undefined` is the stored default for dovetail (the ConnectorPicker
- * persists dovetail as absent), so it counts as a tongue/groove style.
- */
-export function isSeamConnectorStyle(style: BaseplateConnectorStyle | undefined): boolean {
-  return style === undefined || style === 'dovetail' || style === 'puzzle';
-}
-
-/**
- * Whether the margin-seam connector can be built for a given style at
- * all: the integral tongue/groove families, plus `dovetailKey`, which
- * makes both sides of the body↔rail seam female and seats the same separate key
- * the split seams use. `snapClip` stays friction-fit — its top-insert clip has no
- * seated form at a body↔rail seam.
- *
- * `undefined` counts, as in {@link isSeamConnectorStyle}: it's the stored default
- * for dovetail (the ConnectorPicker persists dovetail as absent).
- */
-export function isMarginSeamStyle(style: BaseplateConnectorStyle | undefined): boolean {
-  return isSeamConnectorStyle(style) || style === 'dovetailKey';
-}
-
-/**
- * Whether the detached-margin seam is keyed rather than tongued: both the body
- * wall and the rail get a female groove and a separate key spans them.
- * Shared so the body geometry, the rail geometry, and the key
- * count/placement can't disagree about where those grooves go.
- */
-export function hasMarginSeamKeys(params: ResolvedBaseplateParams): boolean {
-  return (
-    params.detachMargins === true &&
-    params.detachMarginConnector === true &&
-    params.connectorStyle === 'dovetailKey'
-  );
-}
+export {
+  isSeamConnectorStyle,
+  isMarginSeamStyle,
+  hasMarginSeamKeys,
+  marginSeamInverted,
+} from './marginSeam';
 
 /**
  * Whether a connector style makes BOTH sides of every seam female and ships a
@@ -608,7 +576,8 @@ export interface MarginPiece {
   /**
    * Layout of the opt-in tongue-and-groove seam connector along this rail's
    * body wall, long or short. The body grows one tongue per mating
-   * grid cell and the rail carves matching grooves; both sides recompute the same
+   * grid cell and the rail carves matching grooves, or the reverse when
+   * {@link marginSeamInverted}; both sides recompute the same
    * cell-center set from `cellUnits`/`fractionalEdge` so they can't drift, and
    * `centerOffsetMm` re-anchors them onto the body wall on a corner-owning end
    * segment (which extends over the perpendicular padding and so is no longer
@@ -843,7 +812,8 @@ export interface ResolvedBaseplateParams {
    * Opt-in body↔rail connector for detached margins. When true and
    * `detachMargins` is set, every detached exterior seam becomes a `marginSeam`
    * edge carrying a tongue (body side) that mates a groove in the rail, using
-   * the body's `connectorStyle`. Omit/false = friction-fit only.
+   * the body's `connectorStyle`; {@link marginSeamInverted} swaps the sides.
+   * Omit/false = friction-fit only.
    */
   readonly detachMarginConnector?: boolean;
   /**

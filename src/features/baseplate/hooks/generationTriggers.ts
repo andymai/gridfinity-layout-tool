@@ -216,8 +216,8 @@ export function selectGenerationTriggers(state: LayoutState) {
     // Detaching margins changes the body mesh (padding-free on detached sides)
     // and emits separate rails, so it must re-trigger generation.
     detachMargins: bp.detachMargins ?? false,
-    // The connector adds a seam tongue to the body and a groove to the rail —
-    // but only when margins detach (buildFullParams gates it), so ignore the
+    // The connector adds a tongue and groove at each body↔rail seam — but
+    // only when margins detach (buildFullParams gates it), so ignore the
     // flag otherwise to avoid regenerating when it can't change the mesh.
     detachMarginConnector: bp.detachMargins === true && bp.detachMarginConnector === true,
     // A user-drawn split changes which pieces exist and how big each one is, so

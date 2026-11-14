@@ -36,8 +36,13 @@
 
 import { translate, cutAll } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
-import type { ResolvedBaseplateParams } from '@/shared/types/bin';
-import { isMarginSeamStyle, hasAllEdgeSlots, edgeCarriesSlot } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams, MarginPiece } from '@/shared/types/bin';
+import {
+  isMarginSeamStyle,
+  marginSeamInverted,
+  hasAllEdgeSlots,
+  edgeCarriesSlot,
+} from '@/shared/types/bin';
 import { unwrap } from '@/core/result';
 import {
   TONGUE_PROTRUSION,
@@ -59,11 +64,14 @@ import {
   makePuzzleTongue,
   makePuzzleGroove,
   makeSnapPocket,
+  makeMarginSeamTongue,
+  railSeamFrame,
 } from './connectorShapes';
 export {
   makeTongue,
   makeGroove,
   buildMarginSeamGroove,
+  makeMarginSeamTongue,
   makePuzzleTongue,
   makePuzzleGroove,
   buildDovetailKey,
@@ -171,6 +179,53 @@ function relieveTongueForSockets(
   for (const c of cutters) c.delete();
   if (relieved !== tongue) tongue.delete();
   return relieved;
+}
+
+/**
+ * One tongue on a detached rail's seam face for an inverted margin seam, in the
+ * rail's origin-centered frame, trimmed so it stays out of the body sockets it
+ * reaches into. Unlike the body's tongue, which needs this only for an
+ * over-tile rail, the body always has sockets at the seam.
+ */
+export function buildMarginSeamTongue(
+  params: ResolvedBaseplateParams,
+  margin: MarginPiece,
+  railW: number,
+  railD: number,
+  totalHeight: number,
+  tongueOffsetMm: number
+): Shape3D {
+  const { seamSign, seamPos } = railSeamFrame(margin.side, railW, railD);
+  const horizontal = margin.side === 'front' || margin.side === 'back';
+  const pitchX = params.gridUnitMm;
+  const pitchY = params.gridUnitMmY ?? pitchX;
+  const runningPitch = horizontal ? pitchX : pitchY;
+  const protrudePitch = horizontal ? pitchY : pitchX;
+  const seam = margin.seamConnector;
+  const bodyCells = seam
+    ? cellSpansMm(seam.cellUnits, runningPitch, seam.fractionalEdge).map((c) => ({
+        center: c.center + seam.centerOffsetMm,
+        size: c.size,
+      }))
+    : [];
+  const tongue = makeMarginSeamTongue(
+    margin.side,
+    railW,
+    railD,
+    totalHeight,
+    params.connectorStyle,
+    tongueOffsetMm
+  );
+  return relieveTongueForSockets(
+    tongue,
+    tongueOffsetMm,
+    seamPos + seamSign * (protrudePitch / 2),
+    horizontal ? 'y' : 'x',
+    bodyCells,
+    protrudePitch,
+    params.magnetHoles,
+    plateProfileHeightMm(params.lowProfileBase)
+  );
 }
 
 export function buildConnectors(
@@ -436,7 +491,8 @@ export function buildConnectors(
   // Opt-in body↔rail connector, in one of two forms:
   //   - integral (dovetail/puzzle): one male tongue per mating grid cell along the
   //     detached exterior wall, protruding into the rail, so a rail is anchored
-  //     evenly along its length rather than at a single point;
+  //     evenly along its length rather than at a single point. Inverted, the
+  //     wall takes a groove per cell and the rail grows the tongue;
   // - keyed (dovetailKey,): a female groove per interior cell BOUNDARY,
   //     with the seated key spanning into the rail's matching groove.
   // Either way the rail carries the mating half at the same anchors
@@ -447,6 +503,7 @@ export function buildConnectors(
   // the rail's padding, so its tongue is relieved too. `hasMarginSeam` requires a
   // style that supports a seam at all, so a stray snapClip edge emits nothing.
   if (hasMarginSeam) {
+    const seamInverted = marginSeamInverted(params);
     for (const def of edgeDefs) {
       if (edges[def.side] !== 'marginSeam') continue;
       const pt = ptFor(def);
@@ -466,6 +523,10 @@ export function buildConnectors(
       }
       const positions = def.centers.length > 0 ? def.centers : [0];
       for (const bp of positions) {
+        if (seamInverted) {
+          grooves.push(mkGroove(pt, def.wallPos, bp, def.protrudeDir));
+          continue;
+        }
         const tongue = mkTongue(pt, def.wallPos, bp, def.protrudeDir);
         tongues.push(params.overTile ? relieveTongue(tongue, bp, def) : tongue);
       }

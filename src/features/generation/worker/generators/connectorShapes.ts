@@ -109,6 +109,59 @@ export function makeGroove(
   return sketch(profile, 'XY', COPLANAR_MARGIN).extrude(-(totalHeight + 2 * COPLANAR_MARGIN));
 }
 
+type MarginSide = 'left' | 'right' | 'front' | 'back';
+
+/**
+ * A rail's seam face in its own origin-centered frame. The seam runs along X for
+ * front/back rails (wall coord on Y) and along Y for left/right rails (wall
+ * coord on X); `seamSign` points from the rail toward the body.
+ */
+export function railSeamFrame(
+  side: MarginSide,
+  railW: number,
+  railD: number
+): {
+  readonly seamSign: -1 | 1;
+  readonly seamPos: number;
+  readonly pt: (wall: number, bp: number) => [number, number];
+} {
+  const horizontal = side === 'front' || side === 'back';
+  const seamSign: -1 | 1 = side === 'front' || side === 'left' ? 1 : -1;
+  return {
+    seamSign,
+    seamPos: seamSign * (horizontal ? railD / 2 : railW / 2),
+    pt: horizontal ? (wall, bp) => [bp, wall] : (wall, bp) => [wall, bp],
+  };
+}
+
+/**
+ * Tongue grown from a detached rail's seam face toward the body, for an
+ * inverted seam: the mirror of {@link buildMarginSeamGroove}, untrimmed. The
+ * body's sockets still have to be cut back out of it (`buildMarginSeamTongue`).
+ */
+export function makeMarginSeamTongue(
+  side: MarginSide,
+  railW: number,
+  railD: number,
+  totalHeight: number,
+  connectorStyle: ResolvedBaseplateParams['connectorStyle'],
+  tongueOffsetMm: number = 0
+): Shape3D {
+  const { seamSign, seamPos, pt } = railSeamFrame(side, railW, railD);
+  return connectorStyle === 'puzzle'
+    ? makePuzzleTongue(pt, seamPos, tongueOffsetMm, seamSign, totalHeight)
+    : makeTongue(
+        pt,
+        seamPos,
+        tongueOffsetMm,
+        seamSign,
+        TONGUE_PROTRUSION,
+        TONGUE_BASE_HALF,
+        TONGUE_TIP_HALF,
+        totalHeight
+      );
+}
+
 /**
  * Groove carved into a detached rail's seam face to receive one of the
  * body's margin-seam tongues. Uses the same profile/clearance the tongue
@@ -123,7 +176,7 @@ export function makeGroove(
  * but the tighter `DOVETAIL_KEY_CLEARANCE` the key's press fit is sized against.
  */
 export function buildMarginSeamGroove(
-  side: 'left' | 'right' | 'front' | 'back',
+  side: MarginSide,
   railW: number,
   railD: number,
   totalHeight: number,
@@ -132,16 +185,7 @@ export function buildMarginSeamGroove(
   nozzleSizeMm?: number,
   tongueOffsetMm: number = 0
 ): Shape3D {
-  const horizontal = side === 'front' || side === 'back';
-  const seamSign: -1 | 1 = side === 'front' || side === 'left' ? 1 : -1;
-  const seamPos = seamSign * (horizontal ? railD / 2 : railW / 2);
-  // Rail seam runs along X for front/back rails (wall coord on Y) and along Y
-  // for left/right rails (wall coord on X). `tongueOffsetMm` slides the groove
-  // along that axis onto the mating body tongue — nonzero on a corner-owning end
-  // segment whose rail center no longer sits on the body wall it joins.
-  const pt: (wall: number, bp: number) => [number, number] = horizontal
-    ? (wall, bp) => [bp, wall]
-    : (wall, bp) => [wall, bp];
+  const { seamSign, seamPos, pt } = railSeamFrame(side, railW, railD);
   const isKey = connectorStyle === 'dovetailKey';
   const cl = effectiveClearance(
     isKey ? DOVETAIL_KEY_CLEARANCE : TONGUE_CLEARANCE,
