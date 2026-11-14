@@ -9,8 +9,16 @@ import { measureVolume, translate, intersect, fuse } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import { isOk } from '@/core/result';
 import type { ResolvedBaseplateParams, MarginPiece, BaseplateEdges } from '@/shared/types/bin';
+import { TONGUE_PROTRUSION } from '@/shared/constants/connectors';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
-import { buildConnectors, buildMarginSeamGroove } from './baseplateConnectors';
+import { boundingBox } from './__kernel-tests__/meshAssertions';
+import {
+  buildConnectors,
+  buildMarginSeamGroove,
+  buildMarginSeamTongue,
+  makeMarginSeamTongue,
+} from './baseplateConnectors';
+import { getPocketTemplate } from './baseplatePockets';
 import { computeCellCentersMm } from './cellDecomposition';
 import { generateMargin } from './baseplateMargin';
 import { PLATE_PROFILE_HEIGHT } from './generatorTypes';
@@ -309,5 +317,106 @@ describe('margin-seam connector geometry (#2414)', () => {
     }
     nubs.forEach((n) => n.delete());
     grooveWorld.delete();
+  });
+});
+
+describe('inverted margin seam (#5038)', () => {
+  const inverted = (over: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams =>
+    baseParams({ connectorNubs: true, invertDovetails: true, edges: frontSeamEdges, ...over });
+
+  const bodyConnectors = (params: ResolvedBaseplateParams) =>
+    buildConnectors(params, PLATE_PROFILE_HEIGHT, WIDTH * GU, DEPTH * GU, 0, 0);
+
+  /** A front-rail tongue at `pos`, moved into the world frame. */
+  const worldTongue = (
+    params: ResolvedBaseplateParams,
+    rail: MarginPiece,
+    pos: number
+  ): Shape3D => {
+    const t = buildMarginSeamTongue(params, rail, rail.lengthMm, PF, PLATE_PROFILE_HEIGHT, pos);
+    const world = translate(t, [rail.worldOffsetMm.x, rail.worldOffsetMm.y, 0]);
+    t.delete();
+    return world;
+  };
+
+  it('cuts grooves into the body wall instead of growing tongues', () => {
+    const { nubs, holes } = bodyConnectors(inverted());
+    expect(nubs.length, 'no tongues on the body').toBe(0);
+    expect(holes.length, 'one groove per cell').toBe(WIDTH);
+    holes.forEach((h) => h.delete());
+  });
+
+  it.each([
+    ['paired pieces', { preferIdenticalPieces: true }],
+    ['split connectors off', { connectorNubs: false }],
+  ])('keeps the body tongues under %s, where the panel hides the toggle', (_, over) => {
+    const { nubs, holes } = bodyConnectors(inverted(over));
+    expect(nubs.length).toBe(WIDTH);
+    expect(holes.length).toBe(0);
+    nubs.forEach((n) => n.delete());
+  });
+
+  it.each(['dovetail', 'puzzle'] as const)(
+    'grows a %s tongue from the rail seam face instead of cutting a groove',
+    (connectorStyle) => {
+      const rail = frontRail();
+      const plain = generateMargin(baseParams({ connectorStyle }), rail, true);
+      const inv = generateMargin(inverted({ connectorStyle }), rail, true);
+      const seamFace = PF / 2;
+      expect(boundingBox(plain.vertices).maxY).toBeCloseTo(seamFace, 2);
+      expect(boundingBox(inv.vertices).maxY).toBeGreaterThan(seamFace + TONGUE_PROTRUSION - 0.05);
+    }
+  );
+
+  it.each(['dovetail', 'puzzle'] as const)(
+    'seats every %s rail tongue in a body groove in world space',
+    (connectorStyle) => {
+      const params = inverted({ connectorStyle });
+      const { holes } = bodyConnectors(params);
+      let grooves: Shape3D = holes[0];
+      for (const h of holes.slice(1)) grooves = fuseWorldPiece(grooves, h);
+      const rail = frontRail();
+      for (const pos of frontCenters(WIDTH)) {
+        const tongue = worldTongue(params, rail, pos);
+        const inter = intersect(tongue, grooves);
+        const overlap = isOk(inter) ? vol(inter.value) : 0;
+        if (isOk(inter)) inter.value.delete();
+        expect(overlap / vol(tongue), `tongue at ${pos} seated`).toBeGreaterThan(0.95);
+        tongue.delete();
+      }
+      grooves.delete();
+    }
+  );
+
+  it('trims the rail tongue out of the body socket where a bin foot seats', () => {
+    const params = inverted({ connectorStyle: 'puzzle' });
+    const rail = frontRail();
+    const pos = frontCenters(WIDTH)[0];
+    // Front-row body cell under the first tongue.
+    const pocket = getPocketTemplate(GU, GU, true, 0, PLATE_PROFILE_HEIGHT);
+    const socket = translate(pocket, [pos, -(DEPTH * GU) / 2 + GU / 2, 0]);
+    pocket.delete();
+    const toWorld = (s: Shape3D): Shape3D => {
+      const w = translate(s, [rail.worldOffsetMm.x, rail.worldOffsetMm.y, 0]);
+      s.delete();
+      return w;
+    };
+    const overlapWithSocket = (s: Shape3D): number => {
+      const inter = intersect(s, socket);
+      const v = isOk(inter) ? vol(inter.value) : 0;
+      if (isOk(inter)) inter.value.delete();
+      return v;
+    };
+    const raw = toWorld(
+      makeMarginSeamTongue('front', rail.lengthMm, PF, PLATE_PROFILE_HEIGHT, 'puzzle', pos)
+    );
+    const built = worldTongue(params, rail, pos);
+    expect(overlapWithSocket(raw), 'an untrimmed tongue pokes into the socket').toBeGreaterThan(
+      0.5
+    );
+    expect(overlapWithSocket(built), 'the built tongue stays out of it').toBeLessThan(1e-3);
+    raw.delete();
+    built.delete();
+    socket.delete();
   });
 });

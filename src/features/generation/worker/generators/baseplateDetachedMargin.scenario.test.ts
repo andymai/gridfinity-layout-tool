@@ -1,6 +1,8 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
-import { mesh } from 'brepjs';
+import { mesh, getBounds, intersect, measureVolume, translate } from 'brepjs';
+import type { Bounds3D, Shape3D } from 'brepjs';
+import { isOk } from '@/core/result';
 import type { MeshData } from '@/features/generation/bridge/types';
 import type { ResolvedBaseplateParams, MarginPiece } from '@/shared/types/bin';
 import type { StoredBaseplateParams } from '@/core/types';
@@ -14,7 +16,7 @@ import {
 import type { BaseplateTiling } from '@/features/baseplate/types/tiling';
 import { initBrepjs, getGenerateBaseplate } from './__kernel-tests__/wasmInit';
 import { boundingBox, columnCrossings } from './__kernel-tests__/meshAssertions';
-import { buildConnectors } from './baseplateConnectors';
+import { buildConnectors, buildMarginSeamTongue } from './baseplateConnectors';
 import { computeCellBoundariesMm, computeCellCentersMm } from './cellDecomposition';
 import { generateMargin } from './baseplateMargin';
 import { PLATE_PROFILE_HEIGHT, toIndexedMeshData } from './generatorTypes';
@@ -252,5 +254,94 @@ describe('every detached side is joined by connectors (#4921)', () => {
         }
       }
     }
+  });
+});
+
+describe('an inverted seam puts the tongue on the rail (#5038)', () => {
+  const vol = (shape: Shape3D): number => {
+    const r = measureVolume(shape);
+    if (!isOk(r)) throw new Error('measureVolume failed');
+    return r.value;
+  };
+  const overlaps = (a: Bounds3D, b: Bounds3D): boolean =>
+    a.xMin < b.xMax && b.xMin < a.xMax && a.yMin < b.yMax && b.yMin < a.yMax;
+
+  /** Every groove the body pieces cut, in world space. */
+  function bodyGrooves(
+    tiling: BaseplateTiling,
+    params: ResolvedBaseplateParams
+  ): Array<{ shape: Shape3D; bounds: Bounds3D }> {
+    const out: Array<{ shape: Shape3D; bounds: Bounds3D }> = [];
+    for (const body of bodyPieces(tiling, params)) {
+      const p = body.params;
+      const { nubs, holes } = buildConnectors(
+        p,
+        PLATE_PROFILE_HEIGHT,
+        p.width * GU + p.paddingLeft + p.paddingRight,
+        p.depth * GU + p.paddingFront + p.paddingBack,
+        (p.paddingRight - p.paddingLeft) / 2,
+        (p.paddingBack - p.paddingFront) / 2
+      );
+      nubs.forEach((n) => n.delete());
+      for (const h of holes) {
+        const world = translate(h, [body.centerX, body.centerY, 0]);
+        h.delete();
+        out.push({ shape: world, bounds: getBounds(world) });
+      }
+    }
+    return out;
+  }
+
+  /** The tongues a rail grows, at the positions its generator uses, in world space. */
+  function railTongues(params: ResolvedBaseplateParams, rail: MarginPiece): Shape3D[] {
+    const seam = rail.seamConnector;
+    if (!seam) return [];
+    const horizontal = rail.side === 'front' || rail.side === 'back';
+    const railW = horizontal ? rail.lengthMm : rail.bandThicknessMm;
+    const railD = horizontal ? rail.bandThicknessMm : rail.lengthMm;
+    return computeCellCentersMm(seam.cellUnits, GU, seam.fractionalEdge).map((c) => {
+      const t = buildMarginSeamTongue(
+        params,
+        rail,
+        railW,
+        railD,
+        PLATE_PROFILE_HEIGHT,
+        c + seam.centerOffsetMm
+      );
+      const world = translate(t, [rail.worldOffsetMm.x, rail.worldOffsetMm.y, 0]);
+      t.delete();
+      return world;
+    });
+  }
+
+  it.each([
+    ['split into six pieces', BED_W, BED_D],
+    ['unsplit', 500, 500],
+  ])('seats every rail tongue in a body groove (%s)', (_label, bedW, bedD) => {
+    const params = issueParams({ invertDovetails: true });
+    const tiling = computeBaseplateTiling(params, bedW, bedD);
+    for (const side of ['left', 'back'] as const) {
+      expect(seamTongues(tiling, params, side), `${side}: body tongues past the grid`).toEqual([]);
+    }
+    const grooves = bodyGrooves(tiling, params);
+    let seated = 0;
+    for (const rail of tiling.margins) {
+      for (const tongue of railTongues(params, rail)) {
+        const tb = getBounds(tongue);
+        let overlap = 0;
+        for (const g of grooves) {
+          if (!overlaps(tb, g.bounds)) continue;
+          const inter = intersect(tongue, g.shape);
+          if (!isOk(inter)) continue;
+          overlap += vol(inter.value);
+          inter.value.delete();
+        }
+        expect(overlap / vol(tongue), `${rail.id} tongue seated`).toBeGreaterThan(0.95);
+        seated++;
+        tongue.delete();
+      }
+    }
+    expect(seated, 'rail tongues checked').toBeGreaterThan(0);
+    grooves.forEach((g) => g.shape.delete());
   });
 });
