@@ -1,6 +1,6 @@
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { binHasText } from '@/features/bin-designer/utils/binText';
-import { PanelSection } from '../../PanelSection';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { TypeSection } from '../../TypeSection';
 import { ColorsSection } from '../../ColorsSection';
 import { WallSurfaceSection } from '../../WallsSection';
@@ -23,7 +23,7 @@ export function StylePage() {
       <PanelSection helpTarget="bd-wall-style">
         <WallSurfaceSection />
       </PanelSection>
-      <PanelSection helpTarget="bd-floor-pattern">
+      <PanelSection helpTarget="bd-floor-pattern" className="space-y-4">
         <FloorPatternSection />
         <FloorTextSection />
       </PanelSection>

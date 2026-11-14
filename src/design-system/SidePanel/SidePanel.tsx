@@ -311,6 +311,14 @@ function SidePanelHeader({ children, className }: SidePanelHeaderProps) {
   );
 }
 
+export interface SidePanelTitleProps {
+  children: ReactNode;
+}
+
+function SidePanelTitle({ children }: SidePanelTitleProps) {
+  return <span className="text-xs font-semibold text-content-secondary">{children}</span>;
+}
+
 export interface SidePanelBodyProps {
   children: ReactNode;
   className?: string;
@@ -338,5 +346,6 @@ function SidePanelBody({ children, className }: SidePanelBodyProps) {
 export const SidePanel = {
   Root: SidePanelRoot,
   Header: SidePanelHeader,
+  Title: SidePanelTitle,
   Body: SidePanelBody,
 };

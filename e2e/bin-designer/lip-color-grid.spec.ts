@@ -14,8 +14,6 @@
 
 import { test, expect } from '../fixtures';
 
-const LABS_KEY = 'gridfinity-labs-v1';
-const LAB_FLAG = 'multi_color_export';
 const BODY_HEX = '#00aaff';
 const BAND1_HEX = '#ff0066';
 const BAND2_HEX = '#22cc44';
@@ -34,24 +32,6 @@ const MIN_UPPER_PX = 2000;
 const MIN_LOWER_PX = 90;
 
 test.describe('Bin Designer — lip color grid', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(
-      ({ key, flag }) => {
-        const prefs = {
-          enabledFeatures: { [flag]: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        };
-        try {
-          localStorage.setItem(key, JSON.stringify(prefs));
-        } catch {
-          /* visibility assertions below fail loudly if labs init breaks */
-        }
-      },
-      { key: LABS_KEY, flag: LAB_FLAG }
-    );
-  });
-
   async function setZoneColor(
     page: import('@playwright/test').Page,
     namePattern: RegExp,

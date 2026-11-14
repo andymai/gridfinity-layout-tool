@@ -3,7 +3,7 @@ import type { Cutout } from '@/features/bin-designer/types';
 import { Alert, Button } from '@/design-system';
 import { AlertTriangleIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
-import { LabelInfo } from '../shared/panelText';
+import { LabelInfo } from '@/shared/components/InfoDot';
 import { derivedLabel } from './shapeListModel';
 import { MIN_FLOOR_MM, type PocketIssue } from './pocketChecks';
 

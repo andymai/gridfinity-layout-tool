@@ -50,6 +50,7 @@ import { findLibraryEntry, updateLibraryEntryAtIndex } from './libraryUtils';
 import { notifyLibraryChanged } from './librarySync';
 import { ACTIVE_ID_STORAGE_KEY } from './storageKeys';
 import { getLayoutStorageKey, loadLayoutResult } from './LayoutService';
+import { layoutCopyName } from './layoutNames';
 /** Options for saving a layout */
 export interface SaveLayoutOptions {
   /** Custom name (defaults to layout.name) */
@@ -403,7 +404,7 @@ export async function deleteLayoutWithEntry(
 /**
  * Duplicate a layout atomically.
  *
- * Creates a new layout entry with "(copy)" suffix.
+ * Creates a new layout entry named with the translated "(copy)" suffix.
  *
  * @param sourceId - ID of the layout to duplicate
  * @param library - Current library state
@@ -438,7 +439,7 @@ export async function duplicateLayoutEntry(
 
   const newLayout: Layout = {
     ...sourceLayout,
-    name: `${sourceLayout.name} (copy)`.slice(0, CONSTRAINTS.NAME_MAX_LENGTH),
+    name: layoutCopyName(sourceLayout.name),
   };
 
   const createResult = await createLayoutEntry(newLayout, library, {

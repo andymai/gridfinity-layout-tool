@@ -81,6 +81,13 @@ describe('modifiedCategories', () => {
     });
   });
 
+  it('attributes splitting turned off to Print', () => {
+    expect(modifiedCategories({ ...DEFAULT_BIN_PARAMS, splitToFitBed: false })).toEqual({
+      ...stock(),
+      print: true,
+    });
+  });
+
   it('ignores an undefined-valued field, matching an absent one', () => {
     expect(modifiedCategories({ ...DEFAULT_BIN_PARAMS, cellMask: undefined })).toEqual(stock());
   });

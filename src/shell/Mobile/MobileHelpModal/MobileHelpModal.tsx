@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { IconButton, Input, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { DocsLink } from '@/shared/components/DocsLink';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { getAllHelpEntries } from '@/shell/Modals/HelpModal/helpEntryAggregator';
 import { searchHelpEntries } from '@/shell/Modals/HelpModal/helpSearch';
 import { HelpSearchResultRow } from '@/shell/Modals/HelpModal/HelpSearchResultRow';
-import { getModifierKey } from '@/shell/Modals/HelpModal/helpModalStyles';
 import { useHelpRoute } from '@/shell/Modals/HelpModal/useHelpRoute';
 
 // Style constants to avoid recreating objects on each render
@@ -97,8 +97,6 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
 
   if (!isOpen) return null;
 
-  const modifierKey = getModifierKey();
-
   return (
     <div
       className="fixed inset-0 flex items-end sm:items-center justify-center z-50 animate-fade-in"
@@ -123,14 +121,17 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
             <h2 id="mobile-help-title" style={STYLES.title}>
               {t('mobile.help')}
             </h2>
-            <IconButton
-              size="lg"
-              onClick={handleClose}
-              className="w-10 h-10"
-              aria-label={t('common.close')}
-            >
-              <XIcon />
-            </IconButton>
+            <div className="flex items-center gap-1">
+              <DocsLink label={t('help.readDocs')} />
+              <IconButton
+                size="lg"
+                onClick={handleClose}
+                className="w-10 h-10"
+                aria-label={t('common.close')}
+              >
+                <XIcon />
+              </IconButton>
+            </div>
           </div>
 
           {/* Search */}
@@ -190,7 +191,6 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
           {isSearching ? (
             <MobileSearchResultsList
               results={rankedResults}
-              modifierKey={modifierKey}
               query={trimmedQuery}
               onJump={handleClose}
             />
@@ -335,17 +335,11 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
 
 interface MobileSearchResultsListProps {
   results: ReturnType<typeof searchHelpEntries>;
-  modifierKey: string;
   query: string;
   onJump: () => void;
 }
 
-function MobileSearchResultsList({
-  results,
-  modifierKey,
-  query,
-  onJump,
-}: MobileSearchResultsListProps) {
+function MobileSearchResultsList({ results, query, onJump }: MobileSearchResultsListProps) {
   const t = useTranslation();
   if (results.length === 0) {
     return (
@@ -358,12 +352,7 @@ function MobileSearchResultsList({
     <ul aria-label={t('help.searchResultsAriaLabel')} className="space-y-1">
       {results.map(({ entry }) => (
         <li key={entry.id}>
-          <HelpSearchResultRow
-            entry={entry}
-            modifierKey={modifierKey}
-            onJump={onJump}
-            showJumpButton={false}
-          />
+          <HelpSearchResultRow entry={entry} onJump={onJump} showJumpButton={false} />
         </li>
       ))}
     </ul>

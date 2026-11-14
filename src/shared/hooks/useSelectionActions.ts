@@ -5,8 +5,10 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
+import { useMutations } from '@/shared/contexts';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { isBinLocked } from '@/shared/utils/binLocation';
+import { quarterTurnCandidate, quarterTurnUpdates } from '@/shared/utils/rotation';
 import { expandPairIds } from '@/shared/utils/binPairs';
 import { STAGING_ID } from '@/core/constants';
 import type { CategoryId, LayerId, HeightUnits } from '@/core/types';
@@ -20,15 +22,13 @@ import { batch } from '@/core/cqrs';
  */
 export function useSelectionActions() {
   const t = useTranslation();
-  const { bins, layout, updateBin, deleteBins, moveBinToStaging } = useLayoutStore(
+  const { bins, layout } = useLayoutStore(
     useShallow((s) => ({
       bins: s.layout.bins,
       layout: s.layout,
-      updateBin: s.updateBin,
-      deleteBins: s.deleteBins,
-      moveBinToStaging: s.moveBinToStaging,
     }))
   );
+  const { updateBin, deleteBins, moveBinsToStaging } = useMutations();
   const { selectedBinIds, clearSelection } = useSelectionStore(
     useShallow((s) => ({
       selectedBinIds: s.selectedBinIds,
@@ -84,15 +84,7 @@ export function useSelectionActions() {
       if (bin.pairId !== undefined) return false;
 
       const validation = canPlaceBin(
-        {
-          x: bin.x,
-          y: bin.y,
-          width: bin.depth,
-          depth: bin.width,
-          height: bin.height,
-          clearanceHeight: bin.clearanceHeight,
-          linkedDesignId: bin.linkedDesignId,
-        },
+        quarterTurnCandidate(bin),
         bin.layerId,
         layout,
         bin.id,
@@ -102,7 +94,6 @@ export function useSelectionActions() {
     });
 
     const total = selected.filter((b) => b.width !== b.depth).length;
-    const skipped = total - rotatable.length;
 
     if (rotatable.length === 0) {
       if (total > 0) {
@@ -115,21 +106,25 @@ export function useSelectionActions() {
       return;
     }
 
+    // Counted, as moveToLayer counts: each bin passed the check with the
+    // others lifted out, so a turn can still land on a bin not yet turned.
+    let rotated = 0;
     batch(() => {
       for (const bin of rotatable) {
-        updateBin(bin.id, { width: bin.depth, depth: bin.width });
+        if (isOk(updateBin(bin.id, quarterTurnUpdates(bin)))) rotated += 1;
       }
     });
 
+    const skipped = total - rotated;
     if (skipped > 0) {
       addToast({
-        message: t('toast.rotateAllPartial', { rotated: rotatable.length, total, skipped }),
+        message: t('toast.rotateAllPartial', { rotated, total, skipped }),
         type: 'info',
         duration: 3000,
       });
     } else {
       addToast({
-        message: t('toast.rotateAllComplete', { rotated: rotatable.length }),
+        message: t('toast.rotateAllComplete', { count: rotated }),
         type: 'success',
         duration: 2000,
       });
@@ -168,14 +163,18 @@ export function useSelectionActions() {
 
     if (updatable.length === 0) return;
 
+    // Counted for the same reason as rotateAll: a raised bin can lift a
+    // selected bin above it past the drawer.
+    let raised = 0;
     batch(() => {
       for (const bin of updatable) {
-        updateBin(bin.id, { height: maxHeight });
+        if (isOk(updateBin(bin.id, { height: maxHeight }))) raised += 1;
       }
     });
+    if (raised === 0) return;
 
     addToast({
-      message: t('toast.matchHeightComplete', { count: updatable.length, height: maxHeight }),
+      message: t('toast.matchHeightComplete', { count: raised, height: maxHeight }),
       type: 'success',
       duration: 2000,
     });
@@ -273,9 +272,7 @@ export function useSelectionActions() {
     const count = stashIds.length;
 
     batch(() => {
-      for (const id of stashIds) {
-        moveBinToStaging(id);
-      }
+      moveBinsToStaging(stashIds);
     });
 
     clearSelection();
@@ -284,7 +281,7 @@ export function useSelectionActions() {
       type: 'success',
       duration: 2000,
     });
-  }, [selectedBinIds, moveBinToStaging, clearSelection, addToast, t]);
+  }, [selectedBinIds, moveBinsToStaging, clearSelection, addToast, t]);
 
   const deleteAll = useCallback(() => {
     if (selectedBinIds.length === 0) return;

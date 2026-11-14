@@ -21,7 +21,7 @@
 
 import { useTranslation } from '@/i18n';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
-import { PanelSection } from '../PanelSection';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { FeatureToggle } from '../FeatureToggle';
 import { StepperField } from '../shared';
 import { SegmentedControl } from '@/design-system';

@@ -2,6 +2,7 @@ import { useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/design-system';
 import { useResponsive } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { TAB_DEFINITIONS, TAB_GROUPS } from '../tabDefinitions';
 import type { SettingsTabId, TabDefinition } from '../types';
 
@@ -115,9 +116,9 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
     >
       {TAB_GROUPS.map((group) => (
         <div key={group.labelKey} className="mb-2">
-          <p className="px-4 pb-1 pt-2 text-micro font-semibold uppercase tracking-wide text-content-disabled">
+          <SubHeader as="p" className="px-4 pb-1 pt-2">
             {t(group.labelKey)}
-          </p>
+          </SubHeader>
           {group.tabs.map((tab) => renderTabButton(tab, 'desktop'))}
         </div>
       ))}

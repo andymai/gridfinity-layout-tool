@@ -239,4 +239,21 @@ describe('applyGroupOp', () => {
     const a = baseCutout({ id: 'a', width: 0 });
     expect(applyGroupOp([a], 'union')).toBeNull();
   });
+
+  it('combines a half-turned member whose edge sits on the wall with a tilted one', () => {
+    const turned = baseCutout({ id: 'a', x: 4.5, width: 27.5, depth: 9, rotation: 180, zIndex: 0 });
+    const tilted = baseCutout({ id: 'b', width: 44.5, depth: 35.5, rotation: 45, zIndex: 1 });
+    const turnedArea = 27.5 * 9;
+    const tiltedArea = 44.5 * 35.5;
+
+    const union = totalArea(applyGroupOp([turned, tilted], 'union'));
+    const overlap = totalArea(applyGroupOp([turned, tilted], 'intersect'));
+    const exclude = totalArea(applyGroupOp([turned, tilted], 'exclude'));
+    const subtract = totalArea(applyGroupOp([turned, tilted], 'subtract'));
+
+    expect(overlap).toBeGreaterThan(0);
+    expect(union + overlap).toBeCloseTo(turnedArea + tiltedArea, 3);
+    expect(exclude).toBeCloseTo(union - overlap, 3);
+    expect(subtract).toBeCloseTo(turnedArea - overlap, 3);
+  });
 });

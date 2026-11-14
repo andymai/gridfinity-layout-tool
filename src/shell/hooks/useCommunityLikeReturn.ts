@@ -9,7 +9,6 @@ import { trackEvent } from '@/shared/analytics/posthog';
 import { loadPendingLikeAction } from '@/shared/utils/communityPendingLikeAction';
 import type { PendingLikeAction } from '@/shared/utils/communityPendingLikeAction';
 import { loadCommunityReopenDesign, loadAuthReturnPath } from '@/shared/utils/communityReturnPath';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { dispatchSyntheticPopstate } from '@/shared/hooks/useDesignerRouting';
 
 type Translate = (key: string) => string;
@@ -56,16 +55,13 @@ async function applyPendingLike(pending: PendingLikeAction, t: Translate): Promi
  * the visitor in the layout planner), and consumes the one-shot pending like
  * once the session resolves.
  *
- * The route restore deliberately sits ABOVE the community flag gate. It is a
- * generic same-origin return, and /supporters has nothing to do with the
- * showcase — leaving it inside the gate would silently strand a supporter
- * whenever the flag is off. It stays in this hook rather than becoming its own
- * so there is exactly one consumer of the one-shot record; two would race and
+ * The route restore is a generic same-origin return, and /supporters has nothing
+ * to do with the showcase. It stays in this hook rather than becoming its own so
+ * there is exactly one consumer of the one-shot record; two would race and
  * whichever ran first would eat it.
  */
 export function useCommunityLikeReturn(): void {
   const t = useTranslation();
-  const enabled = useFeatureFlag('community_showcase');
   const sessionStatus = useSessionStore((s) => s.status);
 
   useEffect(() => {
@@ -77,7 +73,6 @@ export function useCommunityLikeReturn(): void {
       window.history.pushState(null, '', returnPath);
       dispatchSyntheticPopstate();
     }
-    if (!enabled) return;
     // Gallery-tab surface: no URL carries the context, so reopen the gallery
     // and the detail the action started from. This happens regardless of the
     // sign-in outcome, mirroring the route restore above, so an abandoned
@@ -99,5 +94,5 @@ export function useCommunityLikeReturn(): void {
       return;
     }
     void applyPendingLike(pending, t);
-  }, [enabled, sessionStatus, t]);
+  }, [sessionStatus, t]);
 }

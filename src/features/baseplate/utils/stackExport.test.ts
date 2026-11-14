@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { StackPrintParams } from '@/core/types';
 import { mm } from '@/core/types';
-import { buildStackExportSoup } from './stackExport';
+import { buildStackExportSoup, buildMixedStackExportSoup } from './stackExport';
 import { meshBounds } from './stackPrint';
 
 /** A single 10mm-tall plate as triangle soup: two triangles spanning Z 0..10. */
@@ -101,5 +101,97 @@ describe('buildStackExportSoup', () => {
       expect(totalTris).toBe(tris);
       expect(totalTris).toBe(PLATE_TRIS * Math.max(1, Math.floor(copies)));
     });
+  });
+});
+
+describe('buildMixedStackExportSoup', () => {
+  it('preserves the shaped-plate bottom flip when mixed mode falls back to a uniform tower', () => {
+    const plate = platePlateSoup();
+    const flip = { axis: 'x' as const, offsetMm: 3, flipBottom: true };
+    const uniform = buildStackExportSoup(plate.vertices, plate.normals, 2, airGap, flip);
+    const mixed = buildMixedStackExportSoup(
+      [
+        { ...plate, flip, dxMm: 0, dyMm: 0 },
+        { ...plate, flip, dxMm: 0, dyMm: 0 },
+      ],
+      airGap
+    );
+    expect(mixed.vertices).toEqual(uniform.vertices);
+    expect(mixed.normals).toEqual(uniform.normals);
+  });
+
+  it('turns a transposed tile to fit on the same tower in the exported mesh', () => {
+    const plate = (halfWidth: number, halfDepth: number) => ({
+      vertices: new Float32Array([
+        -halfWidth,
+        -halfDepth,
+        0,
+        halfWidth,
+        -halfDepth,
+        0,
+        -halfWidth,
+        halfDepth,
+        5,
+      ]),
+      normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+    });
+    const bottom = plate(84, 63);
+    const turned = plate(63, 84);
+    const out = buildMixedStackExportSoup(
+      [
+        { ...bottom, flip: { axis: 'x', offsetMm: 0 }, dxMm: 0, dyMm: 0 },
+        { ...turned, flip: { axis: 'x', offsetMm: 0 }, dxMm: 0, dyMm: 0, rotationDeg: 90 },
+      ],
+      airGap
+    );
+    const baseBounds = meshBounds(out.vertices.slice(0, bottom.vertices.length));
+    const topBounds = meshBounds(out.vertices.slice(bottom.vertices.length));
+    expect([topBounds.minX, topBounds.maxX, topBounds.minY, topBounds.maxY]).toEqual([
+      baseBounds.minX,
+      baseBounds.maxX,
+      baseBounds.minY,
+      baseBounds.maxY,
+    ]);
+    expect(topBounds.minZ - baseBounds.maxZ).toBeCloseTo(0.2);
+  });
+
+  it('aligns a smaller flipped tile to the bottom tile corner and keeps the air gap', () => {
+    const rectangle = (half: number) => ({
+      vertices: new Float32Array([
+        -half,
+        -half,
+        0,
+        half,
+        -half,
+        0,
+        -half,
+        half,
+        0,
+        -half,
+        -half,
+        5,
+        half,
+        -half,
+        5,
+        -half,
+        half,
+        5,
+      ]),
+      normals: new Float32Array(18),
+    });
+    const large = rectangle(84);
+    const small = rectangle(63);
+    const out = buildMixedStackExportSoup(
+      [
+        { ...large, flip: { axis: 'x', offsetMm: 0 }, dxMm: 0, dyMm: 0 },
+        { ...small, flip: { axis: 'x', offsetMm: 0 }, dxMm: -21, dyMm: -21 },
+      ],
+      airGap
+    );
+    const bottom = meshBounds(out.vertices.slice(0, large.vertices.length));
+    const top = meshBounds(out.vertices.slice(large.vertices.length));
+    expect([top.minX, top.minY]).toEqual([bottom.minX, bottom.minY]);
+    expect([top.maxX, top.maxY]).toEqual([42, 42]);
+    expect(top.minZ - bottom.maxZ).toBeCloseTo(0.2);
   });
 });

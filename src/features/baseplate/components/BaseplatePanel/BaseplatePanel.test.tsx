@@ -58,12 +58,6 @@ vi.mock('@/core/store', () => ({
     typeof selector === 'function' ? selector(mockLayoutState) : mockLayoutState,
 }));
 
-// Mock cloud_sync feature flag — these tests don't exercise the UserDock,
-// so keep it disabled to avoid pulling in session/sync store dependencies.
-vi.mock('@/shared/hooks/useFeatureFlag', () => ({
-  useFeatureFlag: () => false,
-}));
-
 // Mock half-bin mode store
 let mockHalfGridMode = false;
 const mockSetHalfGridMode = vi.fn();
@@ -277,13 +271,13 @@ describe('BaseplatePanel', () => {
 
   it('does not render view strip when tiling is null', () => {
     render(<BaseplatePanel />);
-    expect(screen.queryByText('baseplate.splitInfo.other')).not.toBeInTheDocument();
+    expect(screen.queryByText('baseplate.splitInfo_other')).not.toBeInTheDocument();
   });
 
   it('renders view strip when tiling is split', () => {
     mockTiling = splitTiling;
     render(<BaseplatePanel />);
-    expect(screen.getByText('baseplate.splitInfo.other')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.splitInfo_other')).toBeInTheDocument();
     expect(screen.getByText('baseplate.splitReason')).toBeInTheDocument();
     // Mini-map buttons exist for each piece
     const pieceButtons = screen
@@ -555,7 +549,7 @@ describe('BaseplatePanel', () => {
     it('renders sync-with-layout checkbox checked by default', () => {
       render(<BaseplatePanel />);
       expect(screen.getByText('baseplate.syncWithLayout')).toBeInTheDocument();
-      const checkbox = screen.getByRole('checkbox', { name: 'baseplate.syncWithLayout' });
+      const checkbox = screen.getByRole('switch', { name: 'baseplate.syncWithLayout' });
       expect(checkbox).toBeChecked();
     });
 
@@ -583,7 +577,7 @@ describe('BaseplatePanel', () => {
         baseplateDepth: gridUnits(10),
       };
       render(<BaseplatePanel />);
-      const checkbox = screen.getByRole('checkbox', { name: 'baseplate.syncWithLayout' });
+      const checkbox = screen.getByRole('switch', { name: 'baseplate.syncWithLayout' });
       expect(checkbox).not.toBeChecked();
       const widthStepper = screen.getByRole('spinbutton', { name: 'baseplate.gridWidth' });
       const depthStepper = screen.getByRole('spinbutton', { name: 'baseplate.gridDepth' });
@@ -595,7 +589,7 @@ describe('BaseplatePanel', () => {
 
     it('initializes custom dims from drawer when unchecking sync-with-layout', () => {
       render(<BaseplatePanel />);
-      const checkbox = screen.getByRole('checkbox', { name: 'baseplate.syncWithLayout' });
+      const checkbox = screen.getByRole('switch', { name: 'baseplate.syncWithLayout' });
       fireEvent.click(checkbox);
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -614,7 +608,7 @@ describe('BaseplatePanel', () => {
         baseplateDepth: gridUnits(10),
       };
       render(<BaseplatePanel />);
-      const checkbox = screen.getByRole('checkbox', { name: 'baseplate.syncWithLayout' });
+      const checkbox = screen.getByRole('switch', { name: 'baseplate.syncWithLayout' });
       fireEvent.click(checkbox);
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
         expect.objectContaining({ syncWithLayout: true })
@@ -918,7 +912,7 @@ describe('BaseplatePanel', () => {
     });
 
     const fillToggle = () => screen.getByRole('switch', { name: 'baseplate.overTile' });
-    const halfGridBox = () => screen.getByRole('checkbox', { name: 'baseplate.preferHalfGrid' });
+    const halfGridBox = () => screen.getByRole('switch', { name: 'baseplate.preferHalfGrid' });
     const leftoverGroup = () =>
       screen.queryByRole('radiogroup', { name: 'baseplate.leftoverLabel' });
     const leftoverSolid = () => screen.getByRole('radio', { name: 'baseplate.leftoverSolid' });
@@ -930,7 +924,7 @@ describe('BaseplatePanel', () => {
       expect(fillToggle()).not.toBeChecked();
       // The half-grid sub-option is hidden until the fill toggle is on.
       expect(
-        screen.queryByRole('checkbox', { name: 'baseplate.preferHalfGrid' })
+        screen.queryByRole('switch', { name: 'baseplate.preferHalfGrid' })
       ).not.toBeInTheDocument();
     });
 

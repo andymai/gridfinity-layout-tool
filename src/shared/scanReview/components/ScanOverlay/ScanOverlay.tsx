@@ -13,6 +13,8 @@ interface ScanOverlayProps {
   /** The tools to draw, in the order the list numbers them. */
   readonly shapes: readonly SceneShape[];
   readonly keepHoles: boolean;
+  /** The sheet of paper that sized the scan, in image pixels, where the caller draws none itself. */
+  readonly sheet?: readonly Point[];
   /** Badge size in image pixels; by default a share of the photo, so it reads the same at any resolution. */
   readonly badgeRadius?: number;
 }
@@ -23,7 +25,14 @@ const defaultBadgeRadius = (image: ImageDataLike): number =>
 const ring = (points: readonly Point[]): string =>
   `M ${points.map((p) => `${p.x} ${p.y}`).join(' L ')} Z`;
 
-export function ScanOverlay({ image, scene, shapes, keepHoles, badgeRadius }: ScanOverlayProps) {
+export function ScanOverlay({
+  image,
+  scene,
+  shapes,
+  keepHoles,
+  sheet,
+  badgeRadius,
+}: ScanOverlayProps) {
   // Each badge sits where the tool is widest, so it never lands off the tool.
   const badges = useMemo(
     () =>
@@ -51,6 +60,14 @@ export function ScanOverlay({ image, scene, shapes, keepHoles, badgeRadius }: Sc
           className="stroke-success"
           strokeWidth={2}
           strokeDasharray="6 4"
+          vectorEffect="non-scaling-stroke"
+        />
+      )}
+      {sheet && (
+        <polygon
+          points={sheet.map((p) => `${p.x},${p.y}`).join(' ')}
+          className="stroke-success"
+          strokeWidth={2}
           vectorEffect="non-scaling-stroke"
         />
       )}

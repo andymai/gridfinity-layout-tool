@@ -6,7 +6,6 @@ import {
   clearPendingPublishAction,
   peekPendingPublishAction,
 } from '@/shared/utils/communityPendingAction';
-import { useFeatureFlag } from './useFeatureFlag';
 import { dispatchSyntheticPopstate } from './useDesignerRouting';
 
 function onDesignerRoute(designId: string): boolean {
@@ -24,11 +23,9 @@ function onDesignerRoute(designId: string): boolean {
  */
 export function useCommunityPublishReturn(): void {
   const t = useTranslation();
-  const enabled = useFeatureFlag('community_showcase');
   const sessionStatus = useSessionStore((s) => s.status);
 
   useEffect(() => {
-    if (!enabled) return;
     if (sessionStatus === 'unknown') return;
     const pending = peekPendingPublishAction();
     if (pending === null) return;
@@ -47,5 +44,5 @@ export function useCommunityPublishReturn(): void {
     const url = `/designer?id=${encodeURIComponent(pending.designId)}`;
     window.history.pushState({ designId: pending.designId }, '', url);
     dispatchSyntheticPopstate();
-  }, [enabled, sessionStatus, t]);
+  }, [sessionStatus, t]);
 }

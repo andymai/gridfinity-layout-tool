@@ -247,7 +247,7 @@ export function ShapeListRow({
             A container carries no op and stays visually quiet. */}
         {isGroup && node.groupKind === 'boolean' && node.op && (
           <span
-            className="flex-shrink-0 rounded bg-surface-raised px-1 text-micro uppercase tracking-wide text-content-tertiary"
+            className="flex-shrink-0 rounded bg-surface-elevated px-1 text-micro uppercase tracking-wide text-content-tertiary"
             title={t(`binDesigner.cutouts.pathfinder.${node.op}`)}
           >
             {t(`binDesigner.cutouts.pathfinder.${node.op}`)}

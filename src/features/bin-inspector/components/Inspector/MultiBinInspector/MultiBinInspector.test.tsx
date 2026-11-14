@@ -62,6 +62,7 @@ describe('MultiBinInspector', () => {
       maxHeight: 12,
       maxClearance: 5,
       maxGridUnits: { width: 6, depth: 6 },
+      overhangMm: { width: 0, depth: 0 },
       needsSplit: false,
       heightRange: '3-12u',
       maxHeightReason: 'remaining_space',
@@ -313,7 +314,7 @@ describe('MultiBinInspector', () => {
       const inspector = createMockInspector();
       render(<MultiBinInspector inspector={inspector} variant="desktop" />);
 
-      expect(screen.getByText('To Stash')).toBeInTheDocument();
+      expect(screen.getByText('To stash')).toBeInTheDocument();
     });
 
     it('hides To Stash button when all bins in staging', () => {
@@ -321,14 +322,14 @@ describe('MultiBinInspector', () => {
       const inspector = createMockInspector({ selectedBins: stagingBins });
       render(<MultiBinInspector inspector={inspector} variant="desktop" />);
 
-      expect(screen.queryByText('To Stash')).not.toBeInTheDocument();
+      expect(screen.queryByText('To stash')).not.toBeInTheDocument();
     });
 
     it('calls moveToStaging when stash button clicked', () => {
       const inspector = createMockInspector();
       render(<MultiBinInspector inspector={inspector} variant="desktop" />);
 
-      fireEvent.click(screen.getByText('To Stash'));
+      fireEvent.click(screen.getByText('To stash'));
 
       expect(inspector.moveToStaging).toHaveBeenCalled();
     });
@@ -337,7 +338,7 @@ describe('MultiBinInspector', () => {
       const inspector = createMockInspector();
       render(<MultiBinInspector inspector={inspector} variant="desktop" />);
 
-      fireEvent.click(screen.getByText('Delete All'));
+      fireEvent.click(screen.getByText('Delete all'));
 
       expect(inspector.requestDelete).toHaveBeenCalled();
     });
@@ -358,7 +359,7 @@ describe('MultiBinInspector', () => {
       const inspector = createMockInspector();
       render(<MultiBinInspector inspector={inspector} variant="mobile" />);
 
-      expect(screen.getByText('Delete All').className).toContain('h-12');
+      expect(screen.getByText('Delete all').className).toContain('h-12');
     });
   });
 

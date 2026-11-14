@@ -22,11 +22,12 @@ import {
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { isBinDesign, isSyncableDesign } from '@/features/bin-designer/utils/designKind';
 import {
-  refreshRegistrySlant,
   registryItemEntry,
+  registryParamsEntry,
   removeRegistryEntry,
   upsertRegistryEntry,
 } from '@/features/bin-designer/store/customBinRegistry';
+import { migrateParams } from '@/features/bin-designer/constants/paramMigration';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { syncPersistError } from '@/core/sync/adapters/persistError';
 import { DESIGN_SCHEMA_VERSION } from '@/core/sync/payloadKey';
@@ -378,11 +379,16 @@ export const designAdapter: DesignAdapter = {
       void fetchMeshFiles(holderMeshHashes(result.value), session);
       // saveDesign never registers, and the startup pass that backfills
       // entries runs once per page load, so a Workshop design pulled
-      // mid-session would read as a parametric bin, and an imported mesh would
-      // be missing from the layout's palette, until the next reload.
-      const registryEntry = registryItemEntry(result.value);
+      // mid-session would read as a parametric bin, an imported mesh would be
+      // missing from the layout's palette, and a parametric bin would keep the
+      // size, slant and split switch it had before, until the next reload.
+      // Stored params can predate current fields, so they migrate first.
+      const registryEntry =
+        registryItemEntry(result.value) ??
+        (result.value.params
+          ? registryParamsEntry({ ...result.value, params: migrateParams(result.value.params) })
+          : null);
       if (registryEntry) upsertRegistryEntry(registryEntry);
-      else if (result.value.params) refreshRegistrySlant(item.id, result.value.params);
       // `saveDesign` falls back to the STORED value for both variant fields, so
       // it cannot clear them; `detachVariant` writes through the store for
       // exactly that reason. Runs after the save so it keeps what was just

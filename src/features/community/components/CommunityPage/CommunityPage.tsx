@@ -14,7 +14,7 @@
  */
 
 import { Suspense, useCallback, useEffect, useState } from 'react';
-import { Badge, Button } from '@/design-system';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useCommunityDetailStore } from '@/core/store/communityDetail';
 import { useCommunityDigestStore } from '@/core/store/communityDigest';
@@ -188,7 +188,6 @@ export function CommunityPage({
                 and a second one here made a screen reader announce the page
                 title twice. The gallery's own sections nest under this. */}
             <h2 className="text-base font-semibold">{t('community.page.title')}</h2>
-            <Badge tone="info">{t('common.experimental')}</Badge>
             {hasUnseenDigest && (
               <>
                 <span

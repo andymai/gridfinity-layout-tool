@@ -16,6 +16,7 @@
 import type { StackPrintParams } from '@/core/types';
 import {
   buildTowerLayers,
+  buildMixedTowerLayers,
   translateMesh,
   concatMeshes,
   meshBounds,
@@ -36,6 +37,13 @@ const TOWER_GAP_UNITS = 1;
 export interface StackPreviewTower {
   readonly mesh: StackMeshArrays;
   readonly copies: number;
+  readonly layers?: readonly {
+    mesh: StackMeshArrays;
+    flip: PlateFlip;
+    dxMm: number;
+    dyMm: number;
+    rotationDeg?: 90 | 180 | 270;
+  }[];
   /** How the plate's flipped copies are turned over (see `planPlateFlip`). */
   readonly flip: PlateFlip;
   /**
@@ -125,7 +133,9 @@ export function buildStackPreviewMeshes(
 
     // Build the tower (bottom upright, rest flipped, XY-aligned to the source
     // footprint, bottom at Z=0), then recenter it on its grid cell.
-    const layers = buildTowerLayers(m.tower.mesh, m.tower.copies, stride, m.tower.flip);
+    const layers = m.tower.layers
+      ? buildMixedTowerLayers(m.tower.layers, stride)
+      : buildTowerLayers(m.tower.mesh, m.tower.copies, stride, m.tower.flip);
     const midX = (m.bounds.minX + m.bounds.maxX) / 2;
     const midY = (m.bounds.minY + m.bounds.maxY) / 2;
     for (const layer of layers) {

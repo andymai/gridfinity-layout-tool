@@ -6,7 +6,6 @@ import {
   INITIAL_COMMUNITY_PUBLISH_STATE,
   useCommunityPublishStore,
 } from '@/core/store/communityPublish';
-import { useLabsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { hashBinParams } from '@/shared/utils/binParamsHash';
@@ -96,15 +95,6 @@ function setDesignerReady(): void {
   });
 }
 
-function enableFlag(enabled: boolean): void {
-  useLabsStore.setState((s) => ({
-    preferences: {
-      ...s.preferences,
-      enabledFeatures: { ...s.preferences.enabledFeatures, community_showcase: enabled },
-    },
-  }));
-}
-
 describe('useCommunityPublish', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -113,7 +103,6 @@ describe('useCommunityPublish', () => {
     useToastStore.setState({ toasts: [] });
     useSessionStore.setState({ status: 'anonymous', user: null });
     setDesignerReady();
-    enableFlag(true);
     vi.mocked(loadDesign).mockResolvedValue(ok(savedDesign()));
     vi.mocked(setDesignPublishedId).mockResolvedValue(ok(savedDesign()));
     vi.mocked(clearDesignPublishedId).mockResolvedValue(ok(savedDesign()));
@@ -444,16 +433,9 @@ describe('useCommunityPublish', () => {
   });
 
   describe('useCommunityPublishEntry', () => {
-    it('is visible with the flag on and publishable with a ready mesh', () => {
+    it('is publishable with a ready mesh', () => {
       const { result } = renderHook(() => useCommunityPublishEntry());
-      expect(result.current.publishVisible).toBe(true);
       expect(result.current.canPublish).toBe(true);
-    });
-
-    it('is hidden when the flag is off', () => {
-      enableFlag(false);
-      const { result } = renderHook(() => useCommunityPublishEntry());
-      expect(result.current.publishVisible).toBe(false);
     });
 
     it('cannot publish while the mesh is missing', () => {
@@ -537,18 +519,6 @@ describe('useCommunityPublish', () => {
 
       useDesignerStore.setState({ currentDesignId: 'design-later' });
       await waitFor(() => expect(useCommunityPublishStore.getState().isOpen).toBe(true));
-    });
-
-    it('does not consume the pending action while the flag is off', () => {
-      enableFlag(false);
-      savePendingPublishAction({ designId: 'design-1', returnSurface: 'designer' });
-      useSessionStore.setState({
-        status: 'authenticated',
-        user: { userId: 'u1', provider: 'google', email: 'a@b.c' },
-      });
-      renderHook(() => useCommunityPublishLifecycle());
-      expect(sessionStorage.getItem('gridfinity-community-pending-publish-v1')).not.toBeNull();
-      expect(useCommunityPublishStore.getState().isOpen).toBe(false);
     });
   });
 });

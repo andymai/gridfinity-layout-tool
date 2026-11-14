@@ -145,7 +145,7 @@ export interface CommunityDesignCounts {
  * detail/`meshUrl`/`photos`, which only the detail fetch needs.
  *
  * MIRROR: field-for-field the server's `CommunityListItem`
- * (`api/community.ts` `toListItem`); note `thumbnailUrl` is the first
+ * (`api/lib/communityList.ts` `toListItem`); note `thumbnailUrl` is the first
  * capture angle only, unlike the detail record's `thumbnails` array.
  */
 export interface CommunityCard {

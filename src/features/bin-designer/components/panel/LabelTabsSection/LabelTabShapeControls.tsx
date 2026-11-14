@@ -164,7 +164,7 @@ export function LabelTabShapeControls({
         {/* Label lip: raised rim to retain loose labels (#2971).
               Text-mode only — socket plates retain themselves. */}
         {state.lipAvailable && (
-          <div className="mt-3 border-t border-border-subtle pt-3">
+          <div className="mt-3 border-t border-stroke-subtle pt-3">
             <FeatureToggle
               label={t('binDesigner.tabLip')}
               checked={state.lipEnabled}

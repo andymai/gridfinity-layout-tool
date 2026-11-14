@@ -6,7 +6,7 @@ import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { copyToClipboard, exportPrintListTSV } from '@/core/storage';
 import { trackEvent } from '@/shared/analytics/posthog';
-import { Button, Collapsible, IconButton } from '@/design-system';
+import { Button, IconButton } from '@/design-system';
 import { ConfirmDialog } from '@/shared/components';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
@@ -26,6 +26,8 @@ import {
   MultiBinInspector,
   EmptyState,
 } from '@/features/bin-inspector';
+import { PanelSection } from '@/shared/components/PanelSection';
+import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 
 // Lazy load SnapshotHistory — only loaded when History tab is selected
 const SnapshotHistory = lazyWithRetry(() =>
@@ -147,7 +149,7 @@ export function RightPanel() {
               role="tab"
               aria-selected={activeTab === 'inspector'}
               aria-controls="tabpanel-inspector"
-              className={`font-semibold uppercase tracking-wider rounded hover:bg-transparent ${
+              className={`text-xs font-semibold rounded hover:bg-transparent ${
                 activeTab === 'inspector'
                   ? 'text-accent bg-accent-muted'
                   : 'text-content-tertiary hover:text-content-secondary'
@@ -163,7 +165,7 @@ export function RightPanel() {
               role="tab"
               aria-selected={activeTab === 'history'}
               aria-controls="tabpanel-history"
-              className={`font-semibold uppercase tracking-wider rounded hover:bg-transparent ${
+              className={`text-xs font-semibold rounded hover:bg-transparent ${
                 activeTab === 'history'
                   ? 'text-accent bg-accent-muted'
                   : 'text-content-tertiary hover:text-content-secondary'
@@ -198,18 +200,17 @@ export function RightPanel() {
 
         {activeTab === 'inspector' && (
           <div id="tabpanel-inspector" role="tabpanel" aria-labelledby="tab-inspector">
-            {/* Selection Panel - Collapsible */}
-            <div className="px-4 py-3 border-b border-stroke-subtle">
-              <Collapsible
-                title={
-                  isMultiSelect
-                    ? t('rightPanel.multiSelection')
-                    : bin
-                      ? t('rightPanel.binProperties')
-                      : t('rightPanel.selection')
-                }
-                size="md"
-              >
+            <StickyGroupHeader
+              variant="band"
+              title={
+                isMultiSelect
+                  ? t('rightPanel.multiSelection')
+                  : bin
+                    ? t('rightPanel.binProperties')
+                    : t('rightPanel.selection')
+              }
+            >
+              <PanelSection>
                 {isMultiSelect ? (
                   <MultiBinInspector
                     inspector={inspector}
@@ -225,22 +226,16 @@ export function RightPanel() {
                 ) : (
                   <EmptyState variant="desktop" />
                 )}
-              </Collapsible>
-            </div>
+              </PanelSection>
+            </StickyGroupHeader>
 
-            {/* Print List - Collapsible */}
-            <div data-print-list className="py-3">
-              <Collapsible
+            <div data-print-list>
+              <StickyGroupHeader
+                variant="band"
                 title={t('rightPanel.binList')}
-                size="md"
-                headerClassName="px-4"
                 expanded={printListExpanded}
                 onExpandedChange={setPrintListExpanded}
-                badge={
-                  printList.rows.length > 0 ? (
-                    <span className="badge badge-info">{printList.totalBins}</span>
-                  ) : undefined
-                }
+                badge={printList.rows.length > 0 ? String(printList.totalBins) : undefined}
                 actions={
                   printList.rows.length > 0 ? (
                     <div className="flex items-center gap-1">
@@ -334,7 +329,7 @@ export function RightPanel() {
                   ) : undefined
                 }
               >
-                <div className="flex flex-col border-t border-stroke-subtle">
+                <div className="flex flex-col">
                   <div>
                     {printList.rows.length === 0 ? (
                       <PrintListEmpty />
@@ -542,6 +537,11 @@ export function RightPanel() {
                                           {t('print.row.blankLabelTabs')}
                                         </span>
                                       )}
+                                      {row.keptWhole === true && (
+                                        <span className="text-micro text-warning">
+                                          {t('grid.exceedsPrintSizeWhole')}
+                                        </span>
+                                      )}
                                     </div>
                                   </td>
                                   <td className="px-2 py-2 align-top text-content-tertiary">
@@ -569,9 +569,9 @@ export function RightPanel() {
                                         <SplitPreview width={w} depth={d} pieces={row.pieces} />
                                         <div className="text-xs text-content-secondary">
                                           <div className="font-medium mb-1">
-                                            {t('rightPanel.splitInto')}
-                                            {row.totalPieces}
-                                            {t('rightPanel.pieces')}
+                                            {t('rightPanel.splitIntoPieces', {
+                                              count: row.totalPieces,
+                                            })}
                                           </div>
                                           {row.pieces.map((piece) => (
                                             <div
@@ -600,7 +600,7 @@ export function RightPanel() {
                       <SettingsRow
                         label={t('settings.nozzleSize')}
                         htmlFor="rightPanelNozzle"
-                        tooltip={t('rightPanel.nozzleSizeTooltip')}
+                        info={t('rightPanel.nozzleSizeTooltip')}
                         unit="mm"
                       >
                         <DeferredNumberInput
@@ -631,7 +631,7 @@ export function RightPanel() {
                     />
                   )}
                 </div>
-              </Collapsible>
+              </StickyGroupHeader>
             </div>
           </div>
         )}

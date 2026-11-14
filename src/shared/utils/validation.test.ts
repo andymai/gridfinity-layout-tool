@@ -739,6 +739,7 @@ describe('salvageImport', () => {
       overhang: { left: 0, right: 7, front: 0, back: 0 },
       locked: true,
       slant: { angleDeg: 40, side: 'back' as const, endSupport: true },
+      halfTurned: true,
     };
     const layout = createTestLayout();
     layout.bins = [

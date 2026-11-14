@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { ok, err } from '@/core/result';
-import { useLabsStore } from '@/core/store';
 import {
   INITIAL_BIN_EXAMPLE_GALLERY_STATE,
   useBinExampleGalleryStore,
@@ -61,15 +60,6 @@ function card(): CommunityCard {
   };
 }
 
-function enableFlag(enabled: boolean): void {
-  useLabsStore.setState((s) => ({
-    preferences: {
-      ...s.preferences,
-      enabledFeatures: { ...s.preferences.enabledFeatures, community_showcase: enabled },
-    },
-  }));
-}
-
 function authenticate(): void {
   useSessionStore.setState({
     status: 'authenticated',
@@ -88,7 +78,6 @@ describe('useCommunityLikeReturn', () => {
     useBrowseStore.setState({ ...INITIAL_BROWSE_STATE, items: [card()] });
     useBinExampleGalleryStore.setState({ ...INITIAL_BIN_EXAMPLE_GALLERY_STATE });
     useCommunityDetailStore.setState({ ...INITIAL_COMMUNITY_DETAIL_STATE });
-    enableFlag(true);
   });
 
   it('applies the pending like once the session resolves authenticated', async () => {
@@ -151,26 +140,6 @@ describe('useCommunityLikeReturn', () => {
       );
     });
     expect(useBrowseStore.getState().items[0].likedByMe).toBe(false);
-  });
-
-  it('resumes no like while the flag is off', () => {
-    savePendingLikeAction({ designId: 'abc123def456', liked: true });
-    authenticate();
-    enableFlag(false);
-    renderHook(() => useCommunityLikeReturn());
-    expect(likeMock).not.toHaveBeenCalled();
-    expect(loadPendingLikeAction()).not.toBeNull();
-  });
-
-  it('still restores the stashed route while the flag is off', () => {
-    // The route restore is a generic same-origin return, not a showcase
-    // feature: /supporters stashes through the same record and must not be
-    // stranded on `/` because the community flag happens to be off.
-    saveAuthReturnPath('/supporters');
-    authenticate();
-    enableFlag(false);
-    renderHook(() => useCommunityLikeReturn());
-    expect(window.location.pathname).toBe('/supporters');
   });
 
   it('restores the stashed community origin alongside the resumed like', async () => {

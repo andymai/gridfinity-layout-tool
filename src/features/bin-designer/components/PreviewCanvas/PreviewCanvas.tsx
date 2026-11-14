@@ -405,7 +405,7 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
     wasmStatus === 'unsupported' ||
     (wasmStatus !== 'ready' && !isDraft);
   // Keep the loading indicator up while a fast draft is shown and the exact
-  // geometry is still computing (manifold_preview), not just during 'generating'.
+  // geometry is still computing, not just during 'generating'.
   const showOverlay = (generationStatus === 'generating' || isDraft) && hasMesh;
 
   // Cursor swap only applies when multi-color is on too — `colorTool` is
@@ -414,7 +414,7 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
 
   return (
     <div
-      className={`relative h-full w-full touch-manipulation ${
+      className={`@container relative h-full w-full touch-manipulation ${
         toolActive ? '[&_canvas]:cursor-crosshair' : ''
       }`}
       role="img"
@@ -500,7 +500,12 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
 
               {/* Bin mesh — swap for per-piece meshes when split */}
               {showSplitPieces ? (
-                <SplitBinMeshes color={previewColor} wireframe={wireframe} xray={xray} />
+                <SplitBinMeshes
+                  color={previewColor}
+                  wireframe={wireframe}
+                  xray={xray}
+                  onZoneClick={handleZoneClick}
+                />
               ) : (
                 <BinMesh
                   wireframe={wireframe}

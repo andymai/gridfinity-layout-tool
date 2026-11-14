@@ -42,15 +42,16 @@ export interface KeyboardContext {
   zoomIn: () => void;
   zoomOut: () => void;
   setShowLayoutManager: (show: boolean) => void;
+  createNewLayout: () => Promise<unknown>;
 
   // Mutations
   batch: <T>(fn: () => T) => T;
-  deleteBin: (id: BinId) => void;
+  deleteBins: (ids: BinId[]) => void;
   duplicateBin: (id: BinId) => Result<BinId, ValidationError | LayoutError>;
-  updateBin: (id: BinId, updates: Partial<Bin>) => void;
+  updateBin: (id: BinId, updates: Partial<Bin>) => Result<unknown, unknown>;
 
   // Mode toggles
-  toggleHalfGridMode: () => Result<undefined, LayoutError>;
+  requestHalfGridToggle: () => void;
 
   handleNavigationKey: (key: string) => void;
   navigateToDesigner: () => void;

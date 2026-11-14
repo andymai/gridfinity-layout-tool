@@ -55,14 +55,7 @@ export const reorderLayers = defineCommand({
       layout.drawer.height
     );
     if (violations.length > 0) {
-      return err(
-        layoutInvalidOperation(
-          'reorderLayers',
-          violations[0].kind === 'exceeds_height'
-            ? 'Reordering would stack bins past the drawer top'
-            : "Reordering would rest a bin inside another bin's clearance"
-        )
-      );
+      return err(layoutInvalidOperation('reorderLayers', violations[0].kind));
     }
 
     return ok({ value: undefined, event: { payload: { fromIndex, toIndex } } });

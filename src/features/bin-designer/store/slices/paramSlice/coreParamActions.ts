@@ -115,6 +115,16 @@ export function createCoreParamActions(set: Set, get: Get) {
       });
     },
 
+    // The preview is the whole bin either way: the switch only decides what an
+    // export cuts, so the mesh stays.
+    setSplitToFitBed: (on: boolean) => {
+      set((state) => {
+        pushHistoryEntry(state, { affectsGeometry: false });
+        if (on) delete state.params.splitToFitBed;
+        else state.params.splitToFitBed = false;
+      });
+    },
+
     // Custom bin shape (cellMask). Setting undefined or a fully-filled mask
     // routes the generator through the rectangle fast-path. Partial masks
     // produce a polygon footprint. Rejects masks that fail structural

@@ -1,5 +1,5 @@
 import { STAGING_ID } from '@/core/constants';
-import { validateRotation, type RotationResult as ImportedRotationResult } from './rotation';
+import { planBinTurn, type BinTurnPlan } from './rotation';
 import type { Bin, Layout } from '@/core/types';
 
 /**
@@ -75,39 +75,11 @@ export function getBinLocationContext(bin: Bin): BinLocationContext {
 }
 
 /**
- * Result of rotation validation.
- * Re-exported from rotation.ts for convenience.
+ * What the next press of Rotate does to a bin. Stash bins have no spatial
+ * constraints to meet.
  */
-export type RotationResult = ImportedRotationResult;
-
-/**
- * Validate whether a bin can be rotated (swap width and depth).
- * This function handles location-aware validation:
- * - Stash bins: Always valid (no spatial constraints)
- * - Grid bins: Validates bounds and collisions using existing rotation.ts logic
- *
- * @param bin - The bin to rotate
- * @param layout - The current layout (needed for grid validation)
- * @returns Validation result with error message if invalid
- *
- * @example
- * const result = validateBinRotation(bin, layout);
- * if (!result.valid) {
- *   showError(result.message);
- *   return;
- * }
- * // Proceed with rotation
- */
-export function validateBinRotation(bin: Bin, layout: Layout): RotationResult {
-  const context = getBinLocationContext(bin);
-
-  // Stash bins can always rotate (no collision/bounds constraints)
-  if (!context.requiresPlacementValidation) {
-    return { valid: true };
-  }
-
-  // Grid bins: delegate to existing rotation validation
-  return validateRotation(bin, layout);
+export function planBinRotation(bin: Bin, layout: Layout): BinTurnPlan {
+  return planBinTurn(bin, layout, getBinLocationContext(bin).requiresPlacementValidation);
 }
 
 /**

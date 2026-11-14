@@ -60,28 +60,6 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
     ) : null,
 }));
 
-vi.mock('@/shell/Modals/HalfGridModeBlockedModal', () => ({
-  HalfGridModeBlockedModal: ({
-    isOpen,
-    onClose,
-    onRemediate,
-  }: {
-    isOpen: boolean;
-    onClose: () => void;
-    onRemediate: () => void;
-  }) =>
-    isOpen ? (
-      <div data-testid="half-bin-blocked-modal">
-        <button data-testid="close-modal" onClick={onClose}>
-          Close
-        </button>
-        <button data-testid="remediate-btn" onClick={onRemediate}>
-          Remediate
-        </button>
-      </div>
-    ) : null,
-}));
-
 vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({ isDesktop: true, isMobile: false, isTablet: false }),
 }));
@@ -169,7 +147,7 @@ describe('Sidebar', () => {
     it('renders Grid Size section', () => {
       render(<Sidebar />);
 
-      expect(screen.getByText('Grid Size')).toBeInTheDocument();
+      expect(screen.getByText('Grid size')).toBeInTheDocument();
     });
 
     it('renders width controls', () => {
@@ -389,7 +367,7 @@ describe('Sidebar', () => {
     it('renders Physical Units section', () => {
       render(<Sidebar />);
 
-      expect(screen.getByText('Physical Units')).toBeInTheDocument();
+      expect(screen.getByText('Physical units')).toBeInTheDocument();
     });
 
     it('renders grid unit input', () => {
@@ -427,6 +405,7 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       const expectedHrefs = [
+        '/docs',
         '/what-is-gridfinity',
         '/guide',
         '/gridfinity-generator',

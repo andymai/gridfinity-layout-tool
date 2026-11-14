@@ -1,5 +1,6 @@
 packages:
   - 'packages/*'
+  - 'apps/*'
 
 # Supply-chain hardening — see SECURITY.md for rationale.
 # Cooldown unit is minutes; 10080 = 7 days.

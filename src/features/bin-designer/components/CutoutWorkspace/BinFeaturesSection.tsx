@@ -15,6 +15,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { isSlideLid } from '@/features/bin-designer/types/lid';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { FeatureToggle } from '../panel/FeatureToggle';
 
 export function BinFeaturesSection() {
@@ -34,9 +35,7 @@ export function BinFeaturesSection() {
 
   return (
     <div className="space-y-2 border-b border-stroke-subtle pb-3 pt-3">
-      <span className="block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
-        {t('binDesigner.cutoutEditor.binFeatures')}
-      </span>
+      <SubHeader>{t('binDesigner.cutoutEditor.binFeatures')}</SubHeader>
 
       {/* Same key as the Base section's toggle — one noun for one lip. */}
       <FeatureToggle

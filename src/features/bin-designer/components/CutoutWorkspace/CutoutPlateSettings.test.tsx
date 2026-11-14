@@ -61,7 +61,7 @@ describe('CutoutPlateSettings', () => {
     board([cutout({ labelMode: 'socket', textAnchor: 'top' })]);
     render(<CutoutPlateSettings />);
 
-    expect(screen.getByText('binDesigner.cutoutSocket.socketCount.one')).toBeTruthy();
+    expect(screen.getByText('binDesigner.cutoutSocket.socketCount_one')).toBeTruthy();
     expect(screen.getByTestId('plate-export')).toBeTruthy();
   });
 
@@ -75,7 +75,9 @@ describe('CutoutPlateSettings', () => {
     ]);
     render(<CutoutPlateSettings />);
 
-    expect(screen.getByRole('status').textContent).toBe('binDesigner.cutoutSocket.skippedCount');
+    expect(screen.getByRole('status').textContent).toBe(
+      'binDesigner.cutoutSocket.skippedCount_one'
+    );
   });
 
   it('writes the fit offset onto the design’s one plate-fit setting', () => {

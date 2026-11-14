@@ -39,13 +39,13 @@ describe('PenControls', () => {
     unmount();
 
     renderControls({ selectedCount: 2 });
-    expect(screen.getByLabelText('drawerShape.penFilletSelected')).toBeInTheDocument();
+    expect(screen.getByLabelText('drawerShape.penFilletSelected_other')).toBeInTheDocument();
   });
 
   it('reports a mixed radius rather than showing one corner as the truth', () => {
     renderControls({ selectedCount: 2, filletValue: null });
     expect(screen.getByText('drawerShape.penFilletMixed')).toBeInTheDocument();
-    expect(screen.getByLabelText('drawerShape.penFilletSelected')).toHaveValue(0);
+    expect(screen.getByLabelText('drawerShape.penFilletSelected_other')).toHaveValue(0);
   });
 
   // Outline coords carry 0.01mm precision; the radius field must not re-round a

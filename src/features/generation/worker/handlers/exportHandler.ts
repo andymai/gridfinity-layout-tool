@@ -44,7 +44,7 @@ import {
 import { exportSlideFitSample } from '../generators/slideFitSample';
 import { exportFitTestSlice } from '../generators/fitTestSlice';
 import { exportFitTestOutline } from '../generators/fitTestOutline';
-import { ensureFontsLoaded } from '../wasmInstantiator';
+import { ensureDesignFonts, ensureFontsLoaded } from '../wasmInstantiator';
 import type { FaceGroupData } from '@/shared/types/generation';
 import { buildLid, buildStackPlate } from '../generators/lidBuilder';
 import { lidAnchorZ } from '../generators/lidConstants';
@@ -61,6 +61,7 @@ import { planSlantSupport } from '@/shared/utils/slantPlan';
 
 export async function handleExport(message: ExportMessage): Promise<void> {
   const payload = message.payload;
+  await ensureDesignFonts(payload.params);
   await runExport(
     payload.requestId,
     'EXPORT_RESULT',
@@ -172,6 +173,7 @@ export async function handleExportConnectorSample(
 
 export async function handleExportLabelPlates(message: ExportLabelPlatesMessage): Promise<void> {
   const payload = message.payload;
+  await ensureFontsLoaded([payload.options.textDefaults.font]);
   await runExport(
     payload.requestId,
     'BASEPLATE_EXPORT_RESULT',
@@ -233,6 +235,7 @@ export async function handleExportSlideFitSample(
  */
 export async function handleExportFitTest(message: ExportFitTestMessage): Promise<void> {
   const payload = message.payload;
+  await ensureDesignFonts(payload.params);
   await runExport(
     payload.requestId,
     'FIT_TEST_EXPORT_RESULT',
@@ -287,8 +290,9 @@ export async function handleExportDividers(message: ExportDividersMessage): Prom
  * - No dividers: single bin piece (same as regular export)
  */
 export async function handleExportCombined(message: ExportCombinedMessage): Promise<void> {
-  const { params, requestId, format, tolerance, angularTolerance, separatePieces } =
+  const { params, requestId, format, tolerance, angularTolerance, separatePieces, bedFit } =
     message.payload;
+  await ensureDesignFonts(params);
 
   await runExport(
     requestId,
@@ -426,7 +430,8 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
           params,
           format,
           tolerance,
-          angularTolerance
+          angularTolerance,
+          bedFit
         );
         pieces.push(...dividerPieces);
       }

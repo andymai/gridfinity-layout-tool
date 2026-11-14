@@ -72,7 +72,7 @@ describe('LabelTabTextStyleControls', () => {
       params: { ...params, textDefaults: { ...params.textDefaults, mode: 'flat' } },
     });
     render(<Harness />);
-    fireEvent.click(screen.getByRole('button', { name: 'Turn on Multi-Color' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Turn on multi-color' }));
     expect(useDesignerStore.getState().params.featureColors.enabled).toBe(true);
   });
 

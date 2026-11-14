@@ -371,6 +371,40 @@ describe('top accent cut', () => {
     expect(triZones).toEqual(['bottomAccent', 'base']);
   });
 
+  it('leaves text on the Text zone in both bands, whichever path classifies it', () => {
+    const textFG: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.TEXT }];
+    const input = {
+      triangleCount: BODY_QUAD.length,
+      faceGroups: textFG,
+      getTriangle: (i: number) => BODY_QUAD[i],
+      geom: null,
+      counts: { corners: 1, bands: 1 },
+      topAccentCutZ: 7,
+      bottomAccentCutZ: 3,
+    } as const;
+    expect(computeLipColoredMesh({ ...input, allowSplit: false }).triZones).toEqual([
+      'text',
+      'text',
+    ]);
+    expect(new Set(computeLipColoredMesh(input).triZones)).toEqual(new Set(['text']));
+  });
+
+  it('still cuts text at the plane, so its edges meet the wall it shares them with', () => {
+    // A glyph side skipping the cut would leave a T-junction on the neighbouring
+    // wall triangle, which the wall's own cut vertex lands on.
+    const textFG: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.TEXT }];
+    const cut = (faceGroups: FaceGroupData[]) =>
+      computeLipColoredMesh({
+        triangleCount: BODY_QUAD.length,
+        faceGroups,
+        getTriangle: (i) => BODY_QUAD[i],
+        geom: null,
+        counts: { corners: 1, bands: 1 },
+        topAccentCutZ: 7,
+      }).positions;
+    expect(cut(textFG)).toEqual(cut(BODY_FG));
+  });
+
   it('leaves no triangle unclaimed when the two bands tile a short wall', () => {
     // `accentCutPlanes` clamps a colliding pair onto one plane; every piece must
     // then land in exactly one band, with no body left between them.

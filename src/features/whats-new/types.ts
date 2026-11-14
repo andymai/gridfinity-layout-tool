@@ -18,7 +18,8 @@ export type WhatsNewKind = 'new' | 'improved' | 'fixed';
  */
 export type WhatsNewAction =
   | { kind: 'openTool'; tool: 'layout' | 'designer' | 'baseplate' }
-  | { kind: 'openModal'; modal: 'baseplateLibrary' | 'print' | 'designGallery' };
+  | { kind: 'openModal'; modal: 'baseplateLibrary' | 'print' | 'designGallery' }
+  | { kind: 'scanTool' };
 
 export interface WhatsNewEntry {
   /** Stable, never reused. Doubles as the seen-marker written to localStorage. */

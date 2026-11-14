@@ -454,6 +454,54 @@ describe('useSplitPreview', () => {
 
   // ── Switching between modes preserves meshes ────────────────────────────
 
+  // ── The design's split switch ──────────────────────────────────────────
+
+  it('clears the pieces when splitting is turned off', async () => {
+    setOversizedExplodedState();
+    renderHook(() => useSplitPreview());
+    completeMainGeneration();
+    await flush();
+    expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(2);
+
+    act(() => useDesignerStore.getState().setSplitToFitBed(false));
+    await flush();
+    expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(0);
+  });
+
+  // The switch leaves the body as it was, so no generation completes to start
+  // the exact split, and a bin the draft cannot cut would stay without pieces.
+  it('cuts the exact pieces again when splitting is turned back on, without a rebuild', async () => {
+    setOversizedExplodedState();
+    useDesignerStore.setState((s) => ({
+      params: { ...s.params, base: { ...s.params.base, rimFillet: true, stackingLip: false } },
+    }));
+    renderHook(() => useSplitPreview());
+    completeMainGeneration();
+    await flush();
+    act(() => useDesignerStore.getState().setSplitToFitBed(false));
+    await flush();
+    const epoch = useDesignerStore.getState().generation.epoch;
+    mockGenerateSplitPreview.mockClear();
+
+    act(() => useDesignerStore.getState().setSplitToFitBed(true));
+    await flush();
+
+    expect(mockGenerateSplitPreview).toHaveBeenCalledTimes(1);
+    expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(2);
+    expect(useDesignerStore.getState().generation.epoch).toBe(epoch);
+  });
+
+  it('waits for the rebuild when a geometry edit makes the bin oversized', async () => {
+    useDesignerStore.setState({ generation: { ...DEFAULT_GENERATION_STATE, status: 'complete' } });
+    renderHook(() => useSplitPreview());
+    await flush();
+
+    act(() => useDesignerStore.getState().setParam('width', 8));
+    await flush();
+
+    expect(mockGenerateSplitPreview).not.toHaveBeenCalled();
+  });
+
   it('preserves meshes when switching from exploded to assembled', async () => {
     setOversizedExplodedState();
 

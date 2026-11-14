@@ -1,14 +1,19 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { act, render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SharedLayoutBanner } from '@/features/cloud-share/components/SharedLayoutBanner';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import type * as LibraryModule from '@/core/store/library';
+import { queueLibraryWrite } from '@/core/store/libraryWrites';
 import { useToastStore } from '@/core/store/toast';
 import type { Layout } from '@/core/types';
 import { categoryId, gridUnits, heightUnits, layerId, layoutId, mm } from '@/core/types';
 import { SHARED_PREVIEW_ID } from '@/core/constants';
+import { createLayoutEntry } from '@/core/storage';
+import { findClassesWithoutCss } from '@/test/tailwindClasses';
+
+vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
 // Hoisted mock for computePreview - used by both storage and library store re-export
 const { mockComputePreview } = vi.hoisted(() => ({
@@ -206,7 +211,7 @@ describe('SharedLayoutBanner', () => {
 
       render(<SharedLayoutBanner />);
 
-      expect(screen.getByText(/Viewing "/)).toBeInTheDocument();
+      expect(screen.getByText('share.banner.viewingLayout')).toBeInTheDocument();
     });
   });
 
@@ -218,19 +223,23 @@ describe('SharedLayoutBanner', () => {
     it('displays the original layout name', () => {
       render(<SharedLayoutBanner />);
 
-      expect(screen.getByText(/Viewing "/)).toBeInTheDocument();
+      expect(screen.getByText('share.banner.viewingLayout')).toBeInTheDocument();
     });
 
     it('has Save to My Layouts button', () => {
       render(<SharedLayoutBanner />);
 
-      expect(screen.getByRole('button', { name: /Save to My Layouts/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'share.banner.saveToMyLayouts' })
+      ).toBeInTheDocument();
     });
 
     it('has Discard button', () => {
       render(<SharedLayoutBanner />);
 
-      expect(screen.getByRole('button', { name: /Discard/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'share.banner.discardConfirm' })
+      ).toBeInTheDocument();
     });
   });
 
@@ -253,6 +262,41 @@ describe('SharedLayoutBanner', () => {
     });
   });
 
+  describe('styling', () => {
+    beforeEach(() => {
+      useSharedPreviewStore.getState().setSharedLayoutPreview(mockLayout, 'Shared Layout');
+    });
+
+    it('draws its on-accent text on the accent surface', () => {
+      render(<SharedLayoutBanner />);
+
+      expect(screen.getByRole('alert')).toHaveClass('bg-accent', 'text-on-accent');
+    });
+
+    it('draws both buttons on the surface pair, whose contrast does not depend on the accent', () => {
+      render(<SharedLayoutBanner />);
+
+      for (const name of ['share.banner.saveToMyLayouts', 'share.banner.discardConfirm']) {
+        expect(screen.getByRole('button', { name })).toHaveClass(
+          'bg-surface',
+          'text-content',
+          'hover:bg-surface-hover',
+          'hover:text-content'
+        );
+      }
+    });
+
+    it('gives every class it renders a CSS rule', async () => {
+      const { container } = render(<SharedLayoutBanner />);
+
+      const classNames = [...container.querySelectorAll('[class]')].flatMap((element) =>
+        (element.getAttribute('class') ?? '').split(/\s+/).filter(Boolean)
+      );
+      expect(classNames.length).toBeGreaterThan(0);
+      expect(await findClassesWithoutCss(classNames)).toEqual([]);
+    });
+  });
+
   describe('save action', () => {
     beforeEach(() => {
       useSharedPreviewStore.getState().setSharedLayoutPreview(mockLayout, 'Original Name');
@@ -261,7 +305,7 @@ describe('SharedLayoutBanner', () => {
     it('clears shared preview state after saving', async () => {
       render(<SharedLayoutBanner />);
 
-      fireEvent.click(screen.getByRole('button', { name: /Save to My Layouts/i }));
+      fireEvent.click(screen.getByRole('button', { name: 'share.banner.saveToMyLayouts' }));
 
       await waitFor(() => {
         expect(useSharedPreviewStore.getState().sharedPreview).toBeNull();
@@ -273,7 +317,7 @@ describe('SharedLayoutBanner', () => {
 
       const initialCount = useLibraryStore.getState().library.entries.length;
 
-      fireEvent.click(screen.getByRole('button', { name: /Save to My Layouts/i }));
+      fireEvent.click(screen.getByRole('button', { name: 'share.banner.saveToMyLayouts' }));
 
       await waitFor(() => {
         const newCount = useLibraryStore.getState().library.entries.length;
@@ -284,30 +328,34 @@ describe('SharedLayoutBanner', () => {
     it("makes the saved layout the library's active layout", async () => {
       render(<SharedLayoutBanner />);
 
-      fireEvent.click(screen.getByRole('button', { name: /Save to My Layouts/i }));
+      fireEvent.click(screen.getByRole('button', { name: 'share.banner.saveToMyLayouts' }));
 
       await waitFor(() => {
         expect(useLibraryStore.getState().library.activeLayoutId).toBe('newid123test');
       });
     });
 
-    it('adds (imported) suffix to layout name', async () => {
+    it('names the saved copy with the translated imported suffix', async () => {
       render(<SharedLayoutBanner />);
 
-      fireEvent.click(screen.getByRole('button', { name: /Save to My Layouts/i }));
+      fireEvent.click(screen.getByRole('button', { name: 'share.banner.saveToMyLayouts' }));
 
       await waitFor(() => {
-        const entries = useLibraryStore.getState().library.entries;
-        // New layouts use generateLayoutId which returns 'newid123test'
-        const newEntry = entries.find((e) => e.id === 'newid123test');
-        expect(newEntry?.name).toBe('Original Name (imported)');
+        expect(createLayoutEntry).toHaveBeenCalledWith(
+          expect.objectContaining({ name: 'layouts.importedName' }),
+          expect.anything(),
+          expect.objectContaining({
+            name: 'layouts.importedName',
+            forkedFrom: { name: 'Original Name' },
+          })
+        );
       });
     });
 
     it('shows success toast after saving', async () => {
       render(<SharedLayoutBanner />);
 
-      fireEvent.click(screen.getByRole('button', { name: /Save to My Layouts/i }));
+      fireEvent.click(screen.getByRole('button', { name: 'share.banner.saveToMyLayouts' }));
 
       await waitFor(() => {
         const toasts = useToastStore.getState().toasts;
@@ -325,18 +373,18 @@ describe('SharedLayoutBanner', () => {
     it('shows confirmation dialog when clicking Discard', () => {
       render(<SharedLayoutBanner />);
 
-      fireEvent.click(screen.getByRole('button', { name: /Discard/i }));
+      fireEvent.click(screen.getByRole('button', { name: 'share.banner.discardConfirm' }));
 
       // Confirmation dialog should appear
       expect(screen.getByRole('dialog')).toBeInTheDocument();
-      expect(screen.getByText('Discard shared layout?')).toBeInTheDocument();
+      expect(screen.getByText('share.banner.discardTitle')).toBeInTheDocument();
     });
 
     it('clears shared preview state after confirming discard', async () => {
       render(<SharedLayoutBanner />);
 
       // Click discard to show dialog
-      fireEvent.click(screen.getByRole('button', { name: /Discard/i }));
+      fireEvent.click(screen.getByRole('button', { name: 'share.banner.discardConfirm' }));
       // Confirm in dialog (the danger-variant button inside the dialog)
       const dialog = screen.getByRole('dialog');
       const confirmButton = dialog.querySelector('.to-danger') as HTMLElement;
@@ -351,7 +399,7 @@ describe('SharedLayoutBanner', () => {
       render(<SharedLayoutBanner />);
 
       // Click discard to show dialog
-      fireEvent.click(screen.getByRole('button', { name: /Discard/i }));
+      fireEvent.click(screen.getByRole('button', { name: 'share.banner.discardConfirm' }));
       // Confirm in dialog
       const dialog = screen.getByRole('dialog');
       const confirmButton = dialog.querySelector('.to-danger') as HTMLElement;
@@ -368,7 +416,7 @@ describe('SharedLayoutBanner', () => {
       render(<SharedLayoutBanner />);
 
       // Click discard to show dialog
-      fireEvent.click(screen.getByRole('button', { name: /Discard/i }));
+      fireEvent.click(screen.getByRole('button', { name: 'share.banner.discardConfirm' }));
       // Confirm in dialog
       const dialog = screen.getByRole('dialog');
       const confirmButton = dialog.querySelector('.to-danger') as HTMLElement;
@@ -381,13 +429,45 @@ describe('SharedLayoutBanner', () => {
       });
     });
 
-    it('does not discard when clicking Keep viewing', () => {
+    it('keeps the restored layout active when a library write is in flight', async () => {
+      let release = (): void => undefined;
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      // This write read the library before the discard, and adds a copy to it.
+      const held = queueLibraryWrite(async (library) => {
+        await gate;
+        useLibraryStore.getState().setLibrary({
+          ...library,
+          entries: [...library.entries, { ...library.entries[0], id: layoutId('copy') }],
+        });
+      });
+      render(<SharedLayoutBanner />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'share.banner.discardConfirm' }));
+      const dialog = screen.getByRole('dialog');
+      fireEvent.click(dialog.querySelector('.to-danger') as HTMLElement);
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        release();
+        await held;
+      });
+
+      await waitFor(() => {
+        expect(useSharedPreviewStore.getState().sharedPreview).toBeNull();
+      });
+      const { library } = useLibraryStore.getState();
+      expect(library.activeLayoutId).toBe('previous-layout');
+      expect(library.entries.map((entry) => entry.id)).toEqual(['existing-layout', 'copy']);
+    });
+
+    it('does not discard when clicking the translated keep-viewing button', () => {
       render(<SharedLayoutBanner />);
 
       // Click discard to show dialog
-      fireEvent.click(screen.getByRole('button', { name: /Discard/i }));
+      fireEvent.click(screen.getByRole('button', { name: 'share.banner.discardConfirm' }));
       // Cancel in dialog
-      fireEvent.click(screen.getByRole('button', { name: /Keep viewing/i }));
+      fireEvent.click(screen.getByRole('button', { name: 'share.banner.keepViewing' }));
 
       // State should remain unchanged
       expect(useSharedPreviewStore.getState().sharedPreview).not.toBeNull();
@@ -402,7 +482,7 @@ describe('SharedLayoutBanner', () => {
       render(<SharedLayoutBanner />);
 
       // Should render without crashing - the translation doesn't show the name
-      expect(screen.getByText(/Viewing "/)).toBeInTheDocument();
+      expect(screen.getByText('share.banner.viewingLayout')).toBeInTheDocument();
     });
 
     it('handles empty layout name', () => {

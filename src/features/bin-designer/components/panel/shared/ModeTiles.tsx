@@ -8,8 +8,6 @@ export interface ModeTileOption<T extends string> {
   readonly icon: ReactNode;
   readonly label: string;
   readonly caption: string;
-  /** On the tile, under its label: an "Experimental" pill and the like. */
-  readonly badge?: ReactNode;
   readonly tip?: ReactNode;
   /** Why the mode cannot be chosen. Disables the tile and is its tooltip. */
   readonly disabledReason?: string;
@@ -23,11 +21,13 @@ interface ModeTilesProps<T extends string> {
   readonly columns?: 2 | 3;
   /** The chosen mode's own controls. */
   readonly children?: ReactNode;
+  /** Shown under the caption and never gated, for an action that leaves the chosen mode. */
+  readonly ungated?: ReactNode;
 }
 
 const COLUMNS = { 2: 'grid-cols-2', 3: 'grid-cols-3' } as const;
 
-const TILE_ON = 'border-accent bg-accent/10 text-content-primary';
+const TILE_ON = 'border-accent bg-accent/10 text-content';
 const TILE_OFF =
   'border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover hover:text-content';
 
@@ -38,6 +38,7 @@ export function ModeTiles<T extends string>({
   options,
   columns = 3,
   children,
+  ungated,
 }: ModeTilesProps<T>) {
   const tiles = useRef<Partial<Record<string, HTMLButtonElement | null>>>({});
   const chosen = options.find((option) => option.value === value);
@@ -103,7 +104,6 @@ export function ModeTiles<T extends string>({
             >
               {option.icon}
               <span className="text-label font-medium leading-tight">{option.label}</span>
-              {option.badge}
             </Button>
           );
         })}
@@ -116,6 +116,7 @@ export function ModeTiles<T extends string>({
           {blockedReason === undefined && chosen.tip}
         </div>
       )}
+      {ungated}
       {blockedReason === undefined ? (
         children
       ) : (

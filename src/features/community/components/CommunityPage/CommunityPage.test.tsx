@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { useLabsStore } from '@/core/store';
 import {
   INITIAL_COMMUNITY_DETAIL_STATE,
   useCommunityDetailStore,
@@ -76,15 +75,6 @@ function renderPage() {
   );
 }
 
-function setCommunityFlag(enabled: boolean): void {
-  useLabsStore.setState((s) => ({
-    preferences: {
-      ...s.preferences,
-      enabledFeatures: { ...s.preferences.enabledFeatures, community_showcase: enabled },
-    },
-  }));
-}
-
 /** Simulates the browser: back() pops to the gallery URL and fires a real popstate. */
 function mockBackToGallery() {
   return vi.spyOn(window.history, 'back').mockImplementation(() => {
@@ -99,7 +89,6 @@ beforeEach(() => {
   originalPathname = window.location.pathname;
   window.history.replaceState(null, '', '/community');
   localStorage.clear();
-  setCommunityFlag(true);
   useBrowseStore.setState({ ...INITIAL_BROWSE_STATE });
   useCommunityDetailStore.setState({ ...INITIAL_COMMUNITY_DETAIL_STATE });
   useSessionStore.setState({ status: 'anonymous', user: null });
@@ -107,7 +96,6 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.restoreAllMocks();
-  setCommunityFlag(false);
   useSessionStore.setState({ status: 'unknown', user: null });
   window.history.replaceState(null, '', originalPathname);
 });
@@ -192,11 +180,6 @@ describe('CommunityPage', () => {
       renderPage();
       expect(screen.getByTestId('tool-switcher-stub')).toBeInTheDocument();
       expect(screen.queryByText('community.page.back')).not.toBeInTheDocument();
-    });
-
-    it('labels the surface as experimental', () => {
-      renderPage();
-      expect(screen.getByText('common.experimental')).toBeInTheDocument();
     });
 
     it('puts the gallery in a main landmark and leaves the h1 to the app shell', () => {

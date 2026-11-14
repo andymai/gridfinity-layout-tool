@@ -31,6 +31,7 @@ import {
   registryEdgeFields,
   registryHeightFields,
   registryOverhangFields,
+  registrySplitFields,
   registrySlantFields,
   registryKnifeRestFields,
 } from '../store/customBinRegistry';
@@ -141,6 +142,7 @@ function syncToRegistry(design: SavedDesign & { params: BinParams }): void {
     ...registryEdgeFields(design.params),
     ...registryHeightFields(design.params),
     ...registryOverhangFields(design.params),
+    ...registrySplitFields(design.params),
     ...registrySlantFields(design.params),
     ...registryKnifeRestFields(design.params),
     updatedAt: design.updatedAt,

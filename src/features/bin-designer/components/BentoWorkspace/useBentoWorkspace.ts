@@ -20,8 +20,10 @@ import { useCutoutContextMenu } from '@/features/bin-designer/components/panel/C
 import { useBentoPan } from './useBentoPan';
 import { useBentoInteraction } from './useBentoInteraction';
 
+/** A field takes its own keys, and so does an open popover (an info dot's panel). */
 export const isEditableTarget = (target: EventTarget | null): boolean =>
-  target instanceof HTMLElement && !!target.closest('input, textarea, [contenteditable="true"]');
+  target instanceof HTMLElement &&
+  !!target.closest('input, textarea, [contenteditable="true"], [data-popover]');
 
 export function useBentoWorkspace() {
   const t = useTranslation();
@@ -97,6 +99,9 @@ export function useBentoWorkspace() {
 
   const { innerW: interiorW, innerD: interiorD } = getInteriorDims(params);
   const { cols, rows } = compartments;
+  // A 1×1 grid has nothing to draw on — the canvas shows the grid picker
+  // instead of a drag hint that cannot be followed.
+  const isPristineGrid = cols === 1 && rows === 1;
   const cellW = interiorW / cols;
   const cellH = interiorD / rows;
 
@@ -245,24 +250,14 @@ export function useBentoWorkspace() {
       }
       if (result.stashedCount > 0) {
         addToast({
-          message: t(
-            result.stashedCount === 1
-              ? 'binDesigner.bento.toastStashed.one'
-              : 'binDesigner.bento.toastStashed.other',
-            { count: result.stashedCount }
-          ),
+          message: t('binDesigner.bento.toastStashed', { count: result.stashedCount }),
           type: 'info',
           duration: 4000,
         });
       }
       if (result.droppedCount > 0) {
         addToast({
-          message: t(
-            result.droppedCount === 1
-              ? 'binDesigner.bento.toastDropped.one'
-              : 'binDesigner.bento.toastDropped.other',
-            { count: result.droppedCount }
-          ),
+          message: t('binDesigner.bento.toastDropped', { count: result.droppedCount }),
           type: 'error',
           duration: 5000,
         });
@@ -337,6 +332,9 @@ export function useBentoWorkspace() {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (isEditableTarget(e.target)) return;
+      // A key something else already handled, such as an info dot's Escape or
+      // an arrow on the dock's resize handle, is not a canvas shortcut.
+      if (e.defaultPrevented) return;
       if ((e.ctrlKey || e.metaKey) && e.key === '0') {
         e.preventDefault();
         fitToView();
@@ -348,7 +346,9 @@ export function useBentoWorkspace() {
           setSelectedBentoCompartmentId(null);
           return;
         }
-        if (quickstartSeen) setBentoWorkspaceOpen(false);
+        // The quickstart card takes the first Escape, but it waits for a grid,
+        // so on a 1×1 grid there is no card to dismiss first.
+        if (quickstartSeen || isPristineGrid) setBentoWorkspaceOpen(false);
         return;
       }
       if (selectedId === null) return;
@@ -377,6 +377,7 @@ export function useBentoWorkspace() {
     interaction,
     selectedId,
     quickstartSeen,
+    isPristineGrid,
     setBentoWorkspaceOpen,
     setSelectedBentoCompartmentId,
     removeBentoCompartment,
@@ -415,9 +416,6 @@ export function useBentoWorkspace() {
 
   const stash = compartments.stash ?? [];
   const hasDrawn = drawnIds.size > 0;
-  // A 1×1 grid has nothing to draw on — the canvas shows the grid picker
-  // instead of a drag hint that cannot be followed.
-  const isPristineGrid = cols === 1 && rows === 1;
   const movingId =
     interaction.gesture?.type === 'move' &&
     interaction.gesture.moved &&

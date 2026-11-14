@@ -1,97 +1,73 @@
 /**
- * Shadow-board color controls for the cutout inspector: a toggle, the shared
- * color picker, and a floor / floor+walls surface selector. Writes through
+ * Shadow-board color controls for the cutout inspector. Writes through
  * `setCutoutColor`, which spreads across a boolean group, auto-enables
- * multi-color, and stays cosmetic (no geometry regen). Works for one or many
- * selected cutouts; `null` inputs mean the selection is mixed.
+ * multi-color, and stays cosmetic (no geometry regen).
  */
 
 import { useTranslation } from '@/i18n';
-import { Button, CheckboxRow } from '@/design-system';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
-import type { CutoutColorScope } from '@/features/bin-designer/types';
+import { DEFAULT_CUTOUT_COLOR_SCOPE, type Cutout } from '@/features/bin-designer/types';
 import { DEFAULT_CUTOUT_COLOR } from '@/features/bin-designer/constants/defaults';
 import { ColorZoneRow } from '../panel/ColorsSection/ColorZoneRow';
+import {
+  ColorSurfacePicker,
+  type ColorSurfaceChoice,
+} from '../panel/ColorsSection/ColorSurfacePicker';
 
-const SCOPES: readonly CutoutColorScope[] = ['floor', 'floorAndWalls'];
+type ColoredFields = Pick<Cutout, 'id' | 'color' | 'colorScope'>;
 
 interface CutoutColorControlsProps {
-  readonly ids: readonly string[];
-  /** Shared color: hex when uniform, undefined when all uncolored, null when mixed. */
-  readonly color: string | null | undefined;
-  /** Shared scope: value when uniform, undefined/null when uncolored/mixed. */
-  readonly colorScope: CutoutColorScope | null | undefined;
+  readonly cutouts: readonly ColoredFields[];
   readonly disabled: boolean;
 }
 
-export function CutoutColorControls({
-  ids,
-  color,
-  colorScope,
-  disabled,
-}: CutoutColorControlsProps) {
+// A color saved without a scope paints with the default, so it reads as that.
+const surfaceOf = (c: ColoredFields): ColorSurfaceChoice =>
+  c.color === undefined ? 'off' : (c.colorScope ?? DEFAULT_CUTOUT_COLOR_SCOPE);
+
+/** The one value every cutout shares, or null when they differ. */
+function shared<T>(values: readonly T[]): T | null {
+  return values.length > 0 && values.every((v) => v === values[0]) ? values[0] : null;
+}
+
+export function CutoutColorControls({ cutouts, disabled }: CutoutColorControlsProps) {
   const t = useTranslation();
   const setCutoutColor = useDesignerStore((s) => s.setCutoutColor);
   const bodyColor = useDesignerStore((s) => s.params.featureColors.body);
 
-  // undefined = every selected cutout is uncolored; hex or null(mixed) = colored.
-  const isColored = color !== undefined;
+  const ids = cutouts.map((c) => c.id);
+  const color = shared(cutouts.map((c) => c.color));
+  const isColored = cutouts.some((c) => c.color !== undefined);
   const swatchColor = typeof color === 'string' ? color : DEFAULT_CUTOUT_COLOR;
-  const activeScope = typeof colorScope === 'string' ? colorScope : null;
 
   return (
     <div className="space-y-2">
-      <CheckboxRow
-        label={t('binDesigner.cutouts.color.enable')}
-        checked={isColored}
-        disabled={disabled}
-        onChange={(checked) =>
-          setCutoutColor(ids, checked ? { color: DEFAULT_CUTOUT_COLOR } : { color: null })
+      <ColorSurfacePicker
+        value={shared(cutouts.map(surfaceOf))}
+        onChange={(choice) =>
+          setCutoutColor(ids, choice === 'off' ? { color: null } : { colorScope: choice })
         }
+        ariaLabel={t('binDesigner.cutouts.color.surface')}
+        disabled={disabled}
       />
 
       {isColored && (
-        <>
-          {/* ColorZoneRow has no `disabled` prop; `inert` neutralizes pointer
-              AND keyboard interaction (and drops it from the a11y tree) so a
-              locked cutout can't be recolored, matching the toggle/scope. */}
-          <div inert={disabled || undefined} className={disabled ? 'opacity-60' : undefined}>
-            <ColorZoneRow
-              zone="body"
-              label={color === null ? t('binDesigner.cutouts.color.mixed') : swatchColor}
-              color={swatchColor}
-              defaultColor={DEFAULT_CUTOUT_COLOR}
-              otherColors={[]}
-              bodyColor={bodyColor}
-              recentColors={[]}
-              onChange={(hex) => setCutoutColor(ids, { color: hex })}
-              onHover={() => undefined}
-            />
-          </div>
-
-          <div
-            role="group"
-            aria-label={t('binDesigner.cutouts.color.surface')}
-            className={SEGMENT_GROUP_CLASS}
-          >
-            {SCOPES.map((scope) => (
-              <Button
-                key={scope}
-                type="button"
-                variant="ghost"
-                disabled={disabled}
-                onClick={() => setCutoutColor(ids, { colorScope: scope })}
-                aria-pressed={activeScope === scope}
-                className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(
-                  activeScope === scope
-                )}`}
-              >
-                {t(`binDesigner.cutouts.color.${scope}`)}
-              </Button>
-            ))}
-          </div>
-        </>
+        // ColorZoneRow has no `disabled` prop; `inert` neutralizes pointer AND
+        // keyboard interaction (and drops it from the a11y tree) so a locked
+        // cutout can't be recolored, matching the surface picker.
+        <div inert={disabled || undefined} className={disabled ? 'opacity-60' : undefined}>
+          <ColorZoneRow
+            zone="body"
+            label={typeof color === 'string' ? swatchColor : t('binDesigner.cutouts.color.mixed')}
+            color={swatchColor}
+            defaultColor={DEFAULT_CUTOUT_COLOR}
+            otherColors={[]}
+            bodyColor={bodyColor}
+            recentColors={[]}
+            onChange={(hex) => setCutoutColor(ids, { color: hex })}
+            onHover={() => undefined}
+          />
+        </div>
       )}
     </div>
   );

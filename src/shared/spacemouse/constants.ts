@@ -1,7 +1,5 @@
 import type { SpaceMouseSettings } from './types';
 
-export const SPACEMOUSE_FEATURE_ID = 'spacemouse' as const;
-
 export const SPACEMOUSE_SETTINGS_STORAGE_KEY = 'gridfinity-spacemouse-v1';
 
 /**

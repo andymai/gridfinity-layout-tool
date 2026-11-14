@@ -9,6 +9,7 @@ import { useCallback, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { Button } from '@/design-system';
 import { cn } from '@/design-system/cn';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import {
   IconConnectorNone,
   IconConnectorDovetail,
@@ -108,9 +109,7 @@ export function ConnectorPicker({
 
   return (
     <div className="space-y-1.5">
-      <div className="text-label font-medium uppercase tracking-wide text-content-tertiary">
-        {t('baseplate.connectors.label')}
-      </div>
+      <SubHeader>{t('baseplate.connectors.label')}</SubHeader>
       <div
         ref={groupRef}
         role="radiogroup"
@@ -157,7 +156,7 @@ export function ConnectorPicker({
                   <Icon />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h4 className="text-sm font-medium text-content-primary">{t(titleKey)}</h4>
+                  <h4 className="text-sm font-medium text-content">{t(titleKey)}</h4>
                   <p className="mt-0.5 text-xs text-content-secondary">{t(descKey)}</p>
                   {disabled && (
                     <p className="mt-0.5 text-label text-content-tertiary">{disabledReason}</p>

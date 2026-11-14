@@ -45,7 +45,7 @@ import { buildTextSolid, clipFlatPrism } from './textBuilder';
 import { LID_TEXT_ENGRAVE_FLOOR, MIN_ENGRAVE_DEPTH } from './lidTextBuilder';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
-import type { LidCutoutInputs, LidInputs } from './lidInputs';
+import type { LidCutoutInputs, LidInputs } from '@/shared/utils/lidInputs';
 
 /**
  * Vertical overshoot (mm) added above and below the plate so a through-cut

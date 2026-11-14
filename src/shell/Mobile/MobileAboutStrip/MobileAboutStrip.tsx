@@ -2,6 +2,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { Collapsible } from '@/design-system';
 import { AboutGridfinity } from '@/shared/components/AboutGridfinity';
 import { useTranslation, useLocale } from '@/i18n';
+import { DOCS_URL } from '@/shared/constants/links';
 import { learnHref } from '@/shell/Sidebar/learnLinks';
 
 /**
@@ -47,6 +48,10 @@ export function MobileAboutStrip() {
           className="underline"
         >
           {t('sidebar.learn.generator')}
+        </a>
+        {' · '}
+        <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="underline">
+          {t('header.docs')}
         </a>
       </p>
       <Collapsible

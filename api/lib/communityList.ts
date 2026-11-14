@@ -164,7 +164,12 @@ function matchesFilters(card: CommunityCardRecord, filters: ListFilters): boolea
   return true;
 }
 
-function compareCards(
+/**
+ * MIRROR: the gallery re-sorts its cached index with `compareCards` in
+ * `src/features/community/store/browseFilters.ts`, so a change here must land
+ * there too. Exported for the cross-boundary test that holds the two together.
+ */
+export function compareCards(
   a: CommunityCardRecord,
   b: CommunityCardRecord,
   sort: CommunityIndexSort

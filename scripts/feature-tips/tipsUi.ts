@@ -93,6 +93,19 @@ async function boardToScreen(page: Page): Promise<(mm: [number, number]) => [num
   return ([x, y]) => [m.x0 + ((m.x80 - m.x0) * x) / 80, m.y0 + ((m.y80 - m.y0) * y) / 80];
 }
 
+async function leftmost(targets: Locator): Promise<Locator> {
+  let best = targets.first();
+  let bestX = Infinity;
+  for (let i = 0; i < (await targets.count()); i++) {
+    const box = await targets.nth(i).boundingBox();
+    if (box && box.x < bestX) {
+      bestX = box.x;
+      best = targets.nth(i);
+    }
+  }
+  return best;
+}
+
 async function boxOf(target: Locator): Promise<Rect> {
   const b = await target.boundingBox({ timeout: 8000 });
   if (!b) throw new Error(`no box for ${String(target)}`);
@@ -448,8 +461,10 @@ async function scanTake(base: string, theme: Theme): Promise<Take> {
   const { page } = ui;
   try {
     const relay = await relayScan(page);
-    const scan = page.getByRole('button', { name: 'Scan with your phone', exact: true }).first();
-    await openCutEditor(ui, base, theme, { width: 2, depth: 5, height: 5 }, scan);
+    const scans = page.getByRole('button', { name: 'Scan a tool', exact: true });
+    await openCutEditor(ui, base, theme, { width: 2, depth: 5, height: 5 }, scans.first());
+    // The header and the empty board have their own; the shot is framed on the tool strip's.
+    const scan = await leftmost(scans);
 
     const frames: Buffer[] = [];
     const s = await boxOf(scan);
@@ -461,6 +476,7 @@ async function scanTake(base: string, theme: Theme): Promise<Take> {
     frames.push(...ui.stop());
 
     const dialog = page.getByRole('dialog').first();
+    await ui.preClick(dialog.getByRole('button', { name: /^With your phone/ }).first());
     const waiting = page.getByText('Waiting for your photo…').first();
     await untilVisible(ui, waiting, 90, 100);
     await ui.warm(20);

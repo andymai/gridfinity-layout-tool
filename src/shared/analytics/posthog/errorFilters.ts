@@ -173,6 +173,10 @@ const IGNORED_MESSAGE_PATTERNS: readonly RegExp[] = [
   // alongside its `webkit-masked-url` throw, and the rejection carries no frames
   // for the source check to match.
   /^'TimeoutError' captured as exception with message: 'operation timed out'$/,
+  // Microsoft's link-scanning browser (Outlook Safe Links) opens a shared link
+  // and rejects this from its own automation bridge, with no frames, a burst
+  // per visit. The app has no `simulateEvent` and never rejects with a string.
+  /^Non-Error promise rejection captured with value: Object Not Found Matching Id:\d+, MethodName:\w+, ParamCount:\d+$/,
 ];
 
 const IGNORED_SOURCE_PATTERNS: readonly RegExp[] = [

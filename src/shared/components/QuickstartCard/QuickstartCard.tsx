@@ -44,7 +44,7 @@ export function QuickstartCard({
 
   return (
     <div
-      className="absolute bottom-4 right-4 z-30 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-stroke-subtle bg-surface-elevated shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200"
+      className="absolute bottom-4 right-4 z-30 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-stroke-subtle bg-surface-elevated shadow-lg animate-slide-up duration-200"
       role="region"
       aria-labelledby={titleId}
     >

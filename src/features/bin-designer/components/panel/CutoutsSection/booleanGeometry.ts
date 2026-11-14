@@ -30,6 +30,21 @@ export function cutoutToPolygon(c: Cutout): Polygon | null {
   return ring ? [ring, ...cutoutHoleRings(c)] : null;
 }
 
+// A quarter turn leaves ~1e-15 mm of trig noise on edges that should be
+// exactly collinear, and polygon-clipping throws "Unable to complete output
+// ring" on such near-coincident edges. Snapping to a nanometre grid makes them
+// exact without moving anything a print could show.
+const SNAP_PER_MM = 1e6;
+
+function snapPolygon(polygon: Polygon): Polygon {
+  return polygon.map((ring) =>
+    ring.map(([x, y]): [number, number] => [
+      Math.round(x * SNAP_PER_MM) / SNAP_PER_MM,
+      Math.round(y * SNAP_PER_MM) / SNAP_PER_MM,
+    ])
+  );
+}
+
 /**
  * Apply the pathfinder boolean op across a group's members.
  *
@@ -67,7 +82,8 @@ export function combineGroupPolygons(
   if (polygons.length === 0) return null;
   if (polygons.length === 1) return [polygons[0].polygon];
 
-  const allPolys = polygons.map((e) => e.polygon);
+  const entries = polygons.map((e) => ({ cutout: e.cutout, polygon: snapPolygon(e.polygon) }));
+  const allPolys = entries.map((e) => e.polygon);
   const [first, ...rest] = allPolys;
 
   switch (op) {
@@ -98,7 +114,7 @@ export function combineGroupPolygons(
       // Top z-index is the cutter; everything else is the base. Stable tie
       // break on array order so swapping two equal-z members doesn't flip the
       // result. Matches the worker's `combineGroupSolids` ordering.
-      const indexed = polygons.map((e, i) => ({ ...e, i }));
+      const indexed = entries.map((e, i) => ({ ...e, i }));
       indexed.sort((a, b) => {
         const za = a.cutout.zIndex ?? 0;
         const zb = b.cutout.zIndex ?? 0;

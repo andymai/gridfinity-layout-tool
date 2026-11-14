@@ -356,7 +356,7 @@ describe('createLayoutEntry', () => {
   });
 
   it('creates new layout with generated ID', async () => {
-    const layout = createTestLayout('New Layout');
+    const layout = createTestLayout('New layout');
     const library = createTestLibrary([createTestEntry('existing', 'Existing')]);
 
     const result = await createLayoutEntry(layout, library);
@@ -367,14 +367,14 @@ describe('createLayoutEntry', () => {
   });
 
   it('adds entry to library', async () => {
-    const layout = createTestLayout('New Layout');
+    const layout = createTestLayout('New layout');
     const library = createTestLibrary([createTestEntry('existing', 'Existing')]);
 
     const result = await createLayoutEntry(layout, library);
 
     const value = expectOk(result);
     expect(value.library.entries.length).toBe(2);
-    expect(value.library.entries[1].name).toBe('New Layout');
+    expect(value.library.entries[1].name).toBe('New layout');
   });
 
   it('keeps the previous active layout by default', async () => {

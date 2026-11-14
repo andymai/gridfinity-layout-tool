@@ -253,7 +253,11 @@ export function BentoWorkspace() {
         />
       </div>
 
-      {!quickstartSeen && <BentoQuickstartOverlay onDismiss={markQuickstartSeen} />}
+      {/* The tips are about drawing, so they wait for the grid choice rather
+          than open beside the grid picker and over the dock. */}
+      {!quickstartSeen && !isPristineGrid && (
+        <BentoQuickstartOverlay onDismiss={markQuickstartSeen} />
+      )}
 
       {contextMenu && menuTargetId !== null && (
         <CutoutContextMenu

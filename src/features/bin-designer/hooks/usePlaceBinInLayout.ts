@@ -31,6 +31,7 @@ import {
   registryHeightFields,
   registryKnifeRestFields,
   registryOverhangFields,
+  registrySplitFields,
   registrySlantFields,
 } from '@/features/bin-designer/store/customBinRegistry';
 import { designFootprint, isBinDesign } from '@/features/bin-designer/utils/designKind';
@@ -55,6 +56,7 @@ export function navigateToPlaceInLayout(design: SavedDesign): void {
       ...registryHeightFields(design.params),
       ...registryKnifeRestFields(design.params),
       ...registryOverhangFields(design.params),
+      ...registrySplitFields(design.params),
       ...registrySlantFields(design.params),
       updatedAt: design.updatedAt,
     });

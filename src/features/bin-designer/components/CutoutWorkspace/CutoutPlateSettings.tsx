@@ -10,6 +10,7 @@
 
 import { Collapsible, InfoIcon, Stepper } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import {
   LABEL_PLATE_FIT_OFFSET_MAX,
@@ -46,22 +47,15 @@ export function CutoutPlateSettings() {
 
   return (
     <div className="space-y-3 border-t border-stroke-subtle pt-3">
-      <span className="block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
-        {t('binDesigner.cutoutSocket.boardSection')}
-      </span>
+      <SubHeader>{t('binDesigner.cutoutSocket.boardSection')}</SubHeader>
 
       <p className="text-label text-content-secondary">
-        {t(
-          plan.socketCount === 1
-            ? 'binDesigner.cutoutSocket.socketCount.one'
-            : 'binDesigner.cutoutSocket.socketCount.other',
-          { n: plan.socketCount }
-        )}
+        {t('binDesigner.cutoutSocket.socketCount', { count: plan.socketCount })}
       </p>
       {plan.skippedCount > 0 && (
         <p role="status" className="text-label text-warning">
           {t('binDesigner.cutoutSocket.skippedCount', {
-            n: plan.skippedCount,
+            count: plan.skippedCount,
             max: MAX_CUTOUT_LABEL_SOCKETS,
           })}
         </p>

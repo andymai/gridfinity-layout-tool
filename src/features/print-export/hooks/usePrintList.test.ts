@@ -19,6 +19,10 @@ import { useLabelPlateCounts } from '@/shared/hooks/useLabelPlateCounts';
 import { useLinkedDesignOverhangs } from '@/shared/hooks/useLinkedDesignOverhangs';
 import { useLinkedDesignKinds } from '@/shared/hooks/useLinkedDesignKinds';
 import { registerLinkedSlantResolver } from '@/shared/utils/placedSlant';
+import { resetCustomBinsCache } from '@/features/bin-designer/hooks/useCustomBins';
+import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
+// The shell composition root feeds the registry's split switches to the layout.
+import '@/shell/registrations/LinkedRiseRegistration';
 
 vi.mock('@/shared/hooks/useLabelPlateCounts', () => ({
   useLabelPlateCounts: vi.fn(() => new Map()),
@@ -418,6 +422,50 @@ describe('usePrintList', () => {
     });
   });
 
+  describe('a linked design that turns splitting off', () => {
+    const WHOLE = designId('d-whole');
+
+    beforeEach(() => {
+      localStorage.clear();
+      resetCustomBinsCache();
+    });
+
+    function placeLong(splitToFitBed?: false): void {
+      upsertRegistryEntry({
+        id: WHOLE,
+        name: 'Long',
+        width: 6,
+        depth: 1,
+        height: 3,
+        updatedAt: '2026-11-12T00:00:00.000Z',
+        ...(splitToFitBed === false ? { splitToFitBed } : {}),
+      });
+      const bin = createTestBin({
+        width: gridUnits(6),
+        depth: gridUnits(1),
+        linkedDesignId: WHOLE,
+      });
+      useLayoutStore.setState({ layout: { ...createTestLayout([bin]), printBedSize: mm(180) } });
+    }
+
+    it('lists its bin in one piece, larger than the bed', () => {
+      placeLong(false);
+      const { result } = renderHook(() => usePrintList());
+      expect(result.current.rows[0].needsSplit).toBe(false);
+      expect(result.current.rows[0].keptWhole).toBe(true);
+      expect(result.current.totalPieces).toBe(1);
+      expect(result.current.hasAnySplits).toBe(false);
+    });
+
+    it('splits the same bin when its design predates the switch', () => {
+      placeLong();
+      const { result } = renderHook(() => usePrintList());
+      expect(result.current.rows[0].needsSplit).toBe(true);
+      expect(result.current.rows[0].keptWhole).toBeUndefined();
+      expect(result.current.totalPieces).toBe(2);
+    });
+  });
+
   describe('categories', () => {
     it('returns categories from layout', () => {
       const { result } = renderHook(() => usePrintList());
@@ -678,13 +726,25 @@ describe('usePrintList', () => {
       };
     }
 
+    // Three deep, so the 189mm part cannot lie across the bed's diagonal
+    // instead: one deep, it would.
     it('charges the drawer margin against the bed for a parametric design', () => {
+      useLayoutStore.setState({
+        layout: withPaddedBed([{ ...linkedBin(), depth: gridUnits(3), extendToMargin: true }]),
+      });
+
+      const { result } = renderHook(() => usePrintList());
+      expect(result.current.rows[0].needsSplit).toBe(true);
+    });
+
+    it('prints a margin-extended bin whole when it fits the bed diagonally', () => {
       useLayoutStore.setState({
         layout: withPaddedBed([{ ...linkedBin(), extendToMargin: true }]),
       });
 
       const { result } = renderHook(() => usePrintList());
-      expect(result.current.rows[0].needsSplit).toBe(true);
+      expect(result.current.rows[0].needsSplit).toBe(false);
+      expect(result.current.rows[0].totalPieces).toBe(1);
     });
 
     it('does not charge the drawer margin for an imported mesh, which prints as stored', () => {

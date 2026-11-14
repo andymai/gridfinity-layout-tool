@@ -66,6 +66,7 @@ const updatesSchema = z
     pairId: z.string().min(1).nullable(),
     pairRole: z.enum(['block', 'rest']).nullable(),
     slant: slantSchema.nullable(),
+    halfTurned: z.boolean(),
   })
   .partial();
 
@@ -105,6 +106,7 @@ function brandUpdates(updates: z.infer<typeof updatesSchema>): Partial<Bin> {
   if (updates.pairId !== undefined) result.pairId = updates.pairId ?? undefined;
   if (updates.pairRole !== undefined) result.pairRole = updates.pairRole ?? undefined;
   if (updates.slant !== undefined) result.slant = updates.slant ?? undefined;
+  if (updates.halfTurned !== undefined) result.halfTurned = updates.halfTurned;
   return result;
 }
 
@@ -186,7 +188,11 @@ export const updateBin = defineCommand({
     // not: the rise it brings is derived from the design, and unlinking a
     // deleted design must never be refused.
     const restacks = changes.height !== undefined || 'clearanceHeight' in changes;
-    const reslants = 'slant' in changes || 'overhang' in changes || 'extendToMargin' in changes;
+    const reslants =
+      'slant' in changes ||
+      'overhang' in changes ||
+      'extendToMargin' in changes ||
+      'halfTurned' in changes;
 
     if ((spatial || restacks || reslants) && merged.layerId !== STAGING_ID) {
       const rect = { x: merged.x, y: merged.y, width: merged.width, depth: merged.depth };
@@ -197,6 +203,7 @@ export const updateBin = defineCommand({
           clearanceHeight: merged.clearanceHeight,
           linkedDesignId: merged.linkedDesignId,
           slant: merged.slant,
+          halfTurned: merged.halfTurned,
           extendToMargin: merged.extendToMargin,
           overhang: merged.overhang,
         },

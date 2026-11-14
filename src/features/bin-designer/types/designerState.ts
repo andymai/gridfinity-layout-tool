@@ -72,6 +72,7 @@ import type {
   DesignerCategory,
   SplitViewMode,
   CutoutTarget,
+  ScanSource,
   ColorTool,
   PickerOverlayState,
   MeasureMode,
@@ -231,7 +232,8 @@ export interface DesignerState {
   /** Shadow-box colour for one compartment; null clears it. */
   setCompartmentColor: (compartmentId: number, color: string | null) => void;
   setCompartmentFloorRaise: (compartmentId: number, raiseMm: number | null) => void;
-  /** Which surfaces that compartment's colour paints. */
+  /** Which surfaces that compartment's colour paints; colours an uncoloured
+   *  compartment with the default in the same undo step. */
   setCompartmentColorScope: (compartmentId: number, scope: CompartmentColorScope) => void;
   /** Set the global interior divider height in mm, or 'auto' for full height. */
   setCompartmentDividerHeight: (height: number | 'auto') => void;
@@ -305,6 +307,9 @@ export interface DesignerState {
   removeInsert: (id: string) => void;
   updateInsert: (id: string, updates: Partial<Insert>) => void;
   clearInserts: () => void;
+
+  /** Off keeps a bin larger than the print bed whole in every export. */
+  setSplitToFitBed: (on: boolean) => void;
 
   // Custom bin shape
   setCellMask: (mask: CellMask | undefined) => void;
@@ -403,7 +408,8 @@ export interface DesignerState {
   // Consolidated cutout property + z-order actions
   setCutoutProperty: (ids: readonly string[], partial: CutoutToggleProperties) => void;
   /** Set/clear a cutout's shadow-board color. Writes to the whole group when any
-   *  id is grouped; `color: null` clears it. Auto-enables multi-color output. */
+   *  id is grouped; `color: null` clears it, and a scope alone colors an
+   *  uncolored cutout with the default. Auto-enables multi-color output. */
   setCutoutColor: (
     ids: readonly string[],
     patch: { color?: string | null; colorScope?: CutoutColorScope }
@@ -451,6 +457,12 @@ export interface DesignerState {
    * controls can never be left pointed at the lid.
    */
   setCutoutEditorOpen: (open: boolean, target?: CutoutTarget) => void;
+  /** Open the cut editor on the bin with the "Scan a tool" dialog up. */
+  openScanDialog: (source: ScanSource, growBin?: boolean) => void;
+  closeScanDialog: () => void;
+  /** Open the phone scan flow, which packs what it scans into the bin. */
+  openPhoneScan: (source: ScanSource) => void;
+  closePhoneScan: () => void;
   setBentoWorkspaceOpen: (open: boolean) => void;
   setInteriorCard: (card: InteriorCard) => void;
   setShapeEditorOpen: (open: boolean) => void;

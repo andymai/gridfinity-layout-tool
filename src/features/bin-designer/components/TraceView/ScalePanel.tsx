@@ -2,11 +2,17 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Button, Input, SegmentedControl } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
-import { CardSizeEditor, type CardSizeMm } from '@/shared/scanReview';
+import {
+  CardSizeEditor,
+  PaperSizeSwitch,
+  shownPaperChoice,
+  type CardSizeMm,
+  type PaperChoice,
+} from '@/shared/scanReview';
 import {
   cardPerspectiveSkew,
-  PAPER_SIZES,
   paperReference,
+  sheetSize,
   rulerReference,
   STEEP_CARD_SKEW,
   type PaperSize,
@@ -26,11 +32,14 @@ interface ScalePanelProps {
   /** The photo has a reference of its own to go back to. */
   readonly hasAuto: boolean;
   readonly paperSize: PaperSize;
+  /** The user's word on a sheet the photo was sized from by itself. */
+  readonly paperChoice: PaperChoice | null;
   readonly cardSize: CardSizeMm;
   readonly disabled: boolean;
   readonly onStart: (mode: 'ruler' | 'paper') => void;
   readonly onCancel: () => void;
   readonly onPaperSize: (size: PaperSize) => void;
+  readonly onPaperChoice: (choice: PaperChoice) => void;
   readonly onApply: (reference: SceneReference) => void;
   readonly onClear: () => void;
   readonly onCardSize: (size: CardSizeMm) => void;
@@ -80,10 +89,13 @@ function Measured({ scene }: { readonly scene: SceneTrace }) {
         tone: 'text-success',
       });
       break;
+    case 'strip':
+      lines.push({ text: t('scan.stripMeasured'), tone: 'text-success' });
+      break;
     case 'paper':
       lines.push({
         text: t(
-          Math.max(reference.paper.widthMm, reference.paper.heightMm) === PAPER_SIZES.a4.longMm
+          sheetSize(reference.paper) === 'a4'
             ? 'binDesigner.cutouts.traceView.scale.paperA4'
             : 'binDesigner.cutouts.traceView.scale.paperLetter'
         ),
@@ -112,11 +124,13 @@ export function ScalePanel({
   manual,
   hasAuto,
   paperSize,
+  paperChoice,
   cardSize,
   disabled,
   onStart,
   onCancel,
   onPaperSize,
+  onPaperChoice,
   onApply,
   onClear,
   onCardSize,
@@ -131,6 +145,7 @@ export function ScalePanel({
     if (rulerDrawn) lengthField.current?.focus();
   }, [rulerDrawn]);
   const sized = scene.units === 'mm';
+  const autoPaper = manual ? null : shownPaperChoice(scene.reference, paperChoice);
 
   const ruler = marks.length === 2 ? rulerReference(marks[0], marks[1], parseMm(lengthText)) : null;
   const sheet = marks.length === 4 ? paperReference(marks, paperSize, frame) : null;
@@ -144,7 +159,7 @@ export function ScalePanel({
 
   return (
     <section className="flex flex-col gap-2" aria-labelledby={`${fieldId}-heading`}>
-      <h3 id={`${fieldId}-heading`} className="text-sm font-semibold text-content-primary">
+      <h3 id={`${fieldId}-heading`} className="text-sm font-semibold text-content">
         {t('binDesigner.cutouts.traceView.scale.heading')}
       </h3>
 
@@ -155,7 +170,7 @@ export function ScalePanel({
           </p>
           {marks.length === 2 && (
             <div className="flex flex-col gap-1">
-              <label htmlFor={fieldId} className="text-xs font-medium text-content-primary">
+              <label htmlFor={fieldId} className="text-xs font-medium text-content">
                 {t('binDesigner.cutouts.traceView.ruler.length')}
               </label>
               <Input
@@ -247,6 +262,13 @@ export function ScalePanel({
           )}
           {scene.reference?.kind === 'card' && (
             <CardSizeEditor size={cardSize} onChange={onCardSize} />
+          )}
+          {autoPaper && (
+            <PaperSizeSwitch
+              size="sm"
+              value={autoPaper}
+              onChange={(choice) => !disabled && onPaperChoice(choice)}
+            />
           )}
           <div className="flex flex-wrap gap-2">
             <Button

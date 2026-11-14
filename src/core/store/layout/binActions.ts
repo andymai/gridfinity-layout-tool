@@ -58,7 +58,8 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
           'clearanceHeight' in updates ||
           'slant' in updates ||
           'overhang' in updates ||
-          'extendToMargin' in updates)
+          'extendToMargin' in updates ||
+          'halfTurned' in updates)
       ) {
         const rect = { x: merged.x, y: merged.y, width: merged.width, depth: merged.depth };
         const validationResult = canPlaceBin(
@@ -68,6 +69,7 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
             clearanceHeight: merged.clearanceHeight,
             linkedDesignId: merged.linkedDesignId,
             slant: merged.slant,
+            halfTurned: merged.halfTurned,
             extendToMargin: merged.extendToMargin,
             overhang: merged.overhang,
           },

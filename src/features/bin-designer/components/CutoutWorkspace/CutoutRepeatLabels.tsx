@@ -105,7 +105,7 @@ export function CutoutRepeatLabels({
 
   return (
     <div className="space-y-1">
-      <span className="text-micro text-text-muted">
+      <span className="text-micro text-content-tertiary">
         {t('binDesigner.cutouts.repeat.labels.title')}
       </span>
       <Textarea

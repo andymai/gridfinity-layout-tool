@@ -174,11 +174,11 @@ describe('exportWithResilience', () => {
     expect(refreshMock).not.toHaveBeenCalled();
   });
 
-  it.each([
-    ['KERNEL_CRASHED', 'Geometry kernel crashed (table index is out of bounds)'],
-    ['OUT_OF_MEMORY', 'Geometry kernel ran out of memory at the 4096 MB WebAssembly limit'],
-  ])('skips the in-process retries and restarts the worker on %s', async (code, message) => {
-    const crash = Object.assign(new Error(message), { code });
+  it('skips the in-process retries and restarts the worker once on a kernel crash', async () => {
+    const crash = Object.assign(
+      new Error('Geometry kernel crashed (table index is out of bounds)'),
+      { code: 'KERNEL_CRASHED' }
+    );
     const op = vi.fn().mockRejectedValueOnce(crash).mockResolvedValue('ok');
 
     const promise = exportWithResilience(op);
@@ -190,6 +190,42 @@ describe('exportWithResilience', () => {
     expect(result.result).toBe('ok');
     expect(result.retryCount).toBe(0);
     expect(result.restartCount).toBe(1);
+  });
+
+  it('runs an export that ran out of memory once and surfaces that error', async () => {
+    const oom = Object.assign(
+      new Error('Geometry kernel ran out of memory at the 4096 MB WebAssembly limit'),
+      { code: 'OUT_OF_MEMORY' }
+    );
+    const op = vi.fn().mockRejectedValueOnce(oom).mockResolvedValue('ok');
+    const onAttempt = vi.fn();
+
+    const settled = exportWithResilience(op, { onAttempt }).catch((e: unknown) => e);
+    await vi.runAllTimersAsync();
+
+    expect(await settled).toBe(oom);
+    expect(op).toHaveBeenCalledTimes(1);
+    expect(refreshMock).not.toHaveBeenCalled();
+    expect(acquireMock).not.toHaveBeenCalled();
+    expect(onAttempt).not.toHaveBeenCalled();
+  });
+
+  it('stops at once when a retry runs out of memory', async () => {
+    const oom = Object.assign(new Error('Geometry kernel ran out of memory'), {
+      code: 'OUT_OF_MEMORY',
+    });
+    const op = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('boolean failure'))
+      .mockRejectedValueOnce(oom)
+      .mockResolvedValue('ok');
+
+    const settled = exportWithResilience(op).catch((e: unknown) => e);
+    await vi.runAllTimersAsync();
+
+    expect(await settled).toBe(oom);
+    expect(op).toHaveBeenCalledTimes(2);
+    expect(refreshMock).not.toHaveBeenCalled();
   });
 
   it('reports the attempts spent before each retry so a failed export can still count them', async () => {

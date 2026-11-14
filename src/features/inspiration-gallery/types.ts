@@ -39,10 +39,10 @@ export interface InspirationLayout {
 /**
  * Theme metadata for display.
  */
-export const THEME_CONFIG: Record<InspirationTheme, { label: string }> = {
-  kitchen: { label: 'Kitchen' },
-  workshop: { label: 'Workshop' },
-  office: { label: 'Office' },
-  hobby: { label: 'Hobby' },
-  personal: { label: 'Personal' },
+export const THEME_CONFIG: Record<InspirationTheme, { labelKey: string }> = {
+  kitchen: { labelKey: 'gallery.theme.kitchen' },
+  workshop: { labelKey: 'gallery.theme.workshop' },
+  office: { labelKey: 'gallery.theme.office' },
+  hobby: { labelKey: 'gallery.theme.hobby' },
+  personal: { labelKey: 'gallery.theme.personal' },
 };

@@ -243,6 +243,19 @@ describe('buildHitTestZones', () => {
     expect(zones[0]).toBe('scoop');
     expect(zones[1]).toBe('lip:frontLeft:0');
   });
+
+  it('resolves a click on raised text to Text, not the band around it', () => {
+    const wall = [0, 0, 5, 0, 0, 6, 0.2, 0, 5.5];
+    const glyph = [0, 0, 6, 0, 0, 7, 0.2, 0, 6.5];
+    const vertices = new Float32Array([...wall, ...glyph]);
+    const indices = new Uint32Array([0, 1, 2, 3, 4, 5]);
+    const faceGroups: FaceGroupData[] = [
+      { start: 0, count: 3, tag: FeatureTag.BASE },
+      { start: 3, count: 3, tag: FeatureTag.TEXT },
+    ];
+    const c = colors({ topAccent: { enabled: true, heightMm: 2, color: '#123456' } });
+    expect(buildHitTestZones(faceGroups, vertices, indices, c)).toEqual(['topAccent', 'text']);
+  });
 });
 
 describe('hoveredMaterialIndices', () => {
@@ -263,5 +276,57 @@ describe('hoveredMaterialIndices', () => {
   it('targets the hovered zone slot even if its color equals body (no bleed)', () => {
     expect([...hoveredMaterialIndices('dividers')]).toEqual([zoneIndex('dividers')]);
     expect(hoveredMaterialIndices('dividers').has(zoneIndex('body'))).toBe(false);
+  });
+});
+
+describe('buildMultiColorGroups with an assembly frame', () => {
+  // The left half of a bin split down X = 0: lip slivers at x = -15 and -5.
+  const { vertices, indices } = meshFromCentroids([
+    { x: -15, y: -10 },
+    { x: -5, y: -10 },
+    { x: -15, y: 10 },
+    { x: -5, y: 10 },
+  ]);
+  const faceGroups: FaceGroupData[] = [{ start: 0, count: 12, tag: FeatureTag.LIP }];
+  const fourCorners = colors({
+    enabled: true,
+    lip: lip(
+      {
+        'lip:frontLeft:0': '#ff0000',
+        'lip:frontRight:0': '#00ff00',
+        'lip:backRight:0': '#0000ff',
+        'lip:backLeft:0': '#ffff00',
+      },
+      4
+    ),
+  });
+  const frame = {
+    lipGeom: { cx: 0, cy: 0, minZ: 0, maxZ: 0, floorZ: 0 },
+    accentCuts: { topZ: null, bottomZ: null },
+  };
+
+  it('classifies the lip against the whole bin, not against the piece', () => {
+    const result = buildMultiColorGroups(
+      faceGroups,
+      vertices,
+      indices,
+      fourCorners,
+      allZones,
+      [],
+      null,
+      frame
+    );
+    expect(new Set(result?.triZones)).toEqual(new Set(['lip:frontLeft:0', 'lip:backLeft:0']));
+  });
+
+  it('measures the piece alone without a frame, which splits it into four corners', () => {
+    const result = buildMultiColorGroups(faceGroups, vertices, indices, fourCorners, allZones);
+    expect(new Set(result?.triZones).size).toBe(4);
+  });
+
+  it('gives the hit test the same zones as the render', () => {
+    expect(new Set(buildHitTestZones(faceGroups, vertices, indices, fourCorners, frame))).toEqual(
+      new Set(['lip:frontLeft:0', 'lip:backLeft:0'])
+    );
   });
 });

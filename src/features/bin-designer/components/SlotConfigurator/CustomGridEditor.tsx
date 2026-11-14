@@ -209,7 +209,7 @@ export function CustomGridEditor() {
                       toggleCell(index);
                     }
                   }}
-                  aria-label={`cell ${col},${row}`}
+                  aria-label={t('binDesigner.customGrid.cellAria', { col, row })}
                   className={`cursor-pointer transition-opacity ${selected ? 'ring-2 ring-accent ring-inset' : ''}`}
                   style={{
                     backgroundColor: CELL_COLORS[compartmentId % CELL_COLORS.length],

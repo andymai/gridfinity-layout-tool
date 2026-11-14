@@ -79,10 +79,10 @@ describe('library store', () => {
 
       const entry = useLibraryStore
         .getState()
-        .createEntry('New Layout', layoutId('new-layout-id'), preview, 'Test Author');
+        .createEntry('New layout', layoutId('new-layout-id'), preview, 'Test Author');
 
       expect(entry.id).toBe('new-layout-id');
-      expect(entry.name).toBe('New Layout');
+      expect(entry.name).toBe('New layout');
       expect(entry.author).toBe('Test Author');
       expect(entry.preview).toEqual(preview);
       expect(entry.createdAt).toBeGreaterThan(0);
@@ -137,7 +137,7 @@ describe('library store', () => {
     it('adds entry to the library', () => {
       const initialCount = useLibraryStore.getState().library.entries.length;
 
-      useLibraryStore.getState().createEntry('New Layout', layoutId('new-id'), {
+      useLibraryStore.getState().createEntry('New layout', layoutId('new-id'), {
         drawerWidth: gridUnits(10),
         drawerDepth: gridUnits(8),
         drawerHeight: heightUnits(12),

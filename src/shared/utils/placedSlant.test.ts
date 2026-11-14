@@ -202,3 +202,30 @@ describe('slantConflicts', () => {
     expect(slantConflicts(slanted, placedSlant(slanted, all), all, () => true)).toEqual([]);
   });
 });
+
+describe('placedSlant on a half-turned bin', () => {
+  const DESIGN = designId('leaning');
+  const linked = (overrides: Partial<Bin> = {}): Bin =>
+    bin({ x: gridUnits(4), y: gridUnits(3), linkedDesignId: DESIGN, ...overrides });
+
+  it('leans the design the other way', () => {
+    withFacts({ [DESIGN]: { config: { angleDeg: 45, side: 'back' } } });
+    expect(placedSlant(linked(), layout)?.plan.side).toBe('back');
+    expect(placedSlant(linked({ halfTurned: true }), layout)?.plan.side).toBe('front');
+  });
+
+  it('composes with a quarter turn', () => {
+    withFacts({
+      [DESIGN]: { width: 2, depth: 1, config: { angleDeg: 45, side: 'back' } },
+    });
+    const turned = { width: gridUnits(1), depth: gridUnits(2) };
+    expect(placedSlant(linked(turned), layout)?.plan.side).toBe('left');
+    expect(placedSlant(linked({ ...turned, halfTurned: true }), layout)?.plan.side).toBe('right');
+  });
+
+  it('leaves a placed slant facing the drawer, as it was set', () => {
+    withFacts({ [DESIGN]: {} });
+    const slant = { angleDeg: 45, side: 'back' as const };
+    expect(placedSlant(linked({ slant, halfTurned: true }), layout)?.plan.side).toBe('back');
+  });
+});

@@ -4,6 +4,7 @@ import { WallSurfaceSection } from './WallSurfaceSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import type { WallPatternSides } from '@/features/bin-designer/types';
+import en from '@/i18n/locales/en';
 
 /** A FeatureToggle's block: the switch row plus the reason text under it. */
 function toggleBlock(name: string): HTMLElement {
@@ -511,5 +512,19 @@ describe('WallSurfaceSection', () => {
         screen.getByText('Nothing is cut: pick a wall whose cells can hold a plate')
       ).toBeInTheDocument();
     });
+  });
+
+  it('plays a clip of the wall pattern from the dot beside its picker', () => {
+    render(<WallSurfaceSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Wall pattern' }));
+    expect(screen.getByText(en['binDesigner.featureTip.wallPattern'])).toBeInTheDocument();
+  });
+
+  it('plays a clip of wall text, with its placement note in the same card', () => {
+    render(<WallSurfaceSection />);
+    expect(screen.queryByText(en['binDesigner.walls.text.hint'])).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Wall text' }));
+    expect(screen.getByText(en['binDesigner.featureTip.wallText'])).toBeInTheDocument();
+    expect(screen.getByText(en['binDesigner.walls.text.hint'])).toBeInTheDocument();
   });
 });

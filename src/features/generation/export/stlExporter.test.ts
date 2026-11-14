@@ -348,6 +348,41 @@ describe('stlExporter', () => {
     });
   });
 
+  describe('collapsed triangles', () => {
+    const vertices = new Float32Array([
+      ...[0, 0, 0, 1, 0, 0, 0, 1, 0],
+      ...[1, 0, 0, 1, 0, 0, 0, 1, 0],
+    ]);
+    const indexed = {
+      vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0]),
+      indices: new Uint32Array([0, 1, 2, 1, 3, 2]),
+    };
+    const count = (buffer: ArrayBuffer): number => new DataView(buffer).getUint32(80, true);
+
+    it('leaves out a triangle with two coincident corners', () => {
+      expect(count(buildSTLBuffer(vertices, new Float32Array(18)))).toBe(1);
+      expect(
+        count(buildSTLBufferFromIndexed(indexed.vertices, new Float32Array(0), indexed.indices))
+      ).toBe(1);
+    });
+
+    it('keeps it for a caller that drops it alongside its face groups', () => {
+      const keep = { keepCollapsedTriangles: true };
+      expect(count(buildSTLBuffer(vertices, new Float32Array(18), 'bin', keep))).toBe(2);
+      expect(
+        count(
+          buildSTLBufferFromIndexed(
+            indexed.vertices,
+            new Float32Array(0),
+            indexed.indices,
+            'bin',
+            keep
+          )
+        )
+      ).toBe(2);
+    });
+  });
+
   describe('getSTLFileSize', () => {
     it('returns 84 for 0 triangles', () => {
       expect(getSTLFileSize(0)).toBe(84);

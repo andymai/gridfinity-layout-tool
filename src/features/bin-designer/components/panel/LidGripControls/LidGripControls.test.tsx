@@ -5,20 +5,25 @@ import { useLidSection } from '../LidSection/useLidSection';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
-import type { LidGripConfig } from '@/features/bin-designer/types';
+import type { BinParams, LidConfig, LidGripConfig } from '@/features/bin-designer/types';
 
 /**
  * Renders the controls against the REAL hook rather than a hand-built props
  * object: the clamp readouts are derived state, so a stubbed `state` would
  * assert against numbers this component never actually receives.
  */
-function renderControls(grip: Partial<LidGripConfig> = {}) {
+function renderControls(
+  grip: Partial<LidGripConfig> = {},
+  over: { readonly bin?: Partial<BinParams>; readonly lid?: Partial<LidConfig> } = {}
+) {
   useDesignerStore.setState({
     params: {
       ...DEFAULT_BIN_PARAMS,
+      ...over.bin,
       lid: {
         ...DEFAULT_BIN_PARAMS.lid,
         enabled: true,
+        ...over.lid,
         grip: { ...DEFAULT_BIN_PARAMS.lid.grip, ...grip },
       },
     },
@@ -74,6 +79,40 @@ describe('LidGripControls', () => {
         /Cuts \d+(\.\d+)?mm deep, \d+(\.\d+)?mm tall, leaving \d+(\.\d+)?mm of lid above it/
       )
     ).toBeInTheDocument();
+  });
+
+  describe('rails lost to the dip', () => {
+    const allSides = { front: true, back: true, left: true, right: true };
+    const lost = /Walls with no click rail left/;
+
+    it('names the walls a full-width grip leaves without a rail', () => {
+      renderControls(
+        { mode: 'scallop', binDip: true, coverage: 100, sides: allSides },
+        { bin: { width: 1, depth: 1 }, lid: { attachment: 'clickRails', clickRails: allSides } }
+      );
+      expect(screen.getByText(lost)).toHaveTextContent(
+        'Walls with no click rail left: Front, Back, Left, and Right.'
+      );
+    });
+
+    it('says nothing while a segment survives either side of the grip', () => {
+      renderControls(
+        { mode: 'scallop', binDip: true, coverage: 10, sides: allSides },
+        {
+          bin: { width: 4, depth: 3 },
+          lid: { attachment: 'clickRails', clickRails: allSides, clickRailCoverage: 100 },
+        }
+      );
+      expect(screen.queryByText(lost)).not.toBeInTheDocument();
+    });
+
+    it('keeps a hinged lid quiet: its snap is never split', () => {
+      renderControls(
+        { mode: 'scallop', binDip: true, coverage: 100, sides: allSides },
+        { bin: { width: 1, depth: 1 }, lid: { attachment: 'hinge' } }
+      );
+      expect(screen.queryByText(lost)).not.toBeInTheDocument();
+    });
   });
 
   describe('height', () => {

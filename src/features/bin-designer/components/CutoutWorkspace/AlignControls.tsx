@@ -18,6 +18,7 @@ import {
 } from '@/design-system/Icon';
 import { IconButton } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import type { AlignMode, DistributeAxis } from '../panel/CutoutsSection/geometryAlign';
 
 /** Distribute is meaningless until something sits between the two extremes. */
@@ -80,9 +81,7 @@ export function AlignControls({
   return (
     <div className="space-y-1.5">
       <div>
-        <span className="mb-1 block text-micro font-medium uppercase tracking-wide text-content-tertiary">
-          {t('binDesigner.cutouts.align.title')}
-        </span>
+        <SubHeader className="mb-1">{t('binDesigner.cutouts.align.title')}</SubHeader>
         <div className="flex gap-0.5">
           {alignButtons.map(({ mode, label, icon }) => (
             <IconButton
@@ -102,9 +101,7 @@ export function AlignControls({
       </div>
 
       <div>
-        <span className="mb-1 block text-micro font-medium uppercase tracking-wide text-content-tertiary">
-          {t('binDesigner.cutouts.distribute.title')}
-        </span>
+        <SubHeader className="mb-1">{t('binDesigner.cutouts.distribute.title')}</SubHeader>
         <div className="flex gap-0.5">
           <IconButton
             type="button"

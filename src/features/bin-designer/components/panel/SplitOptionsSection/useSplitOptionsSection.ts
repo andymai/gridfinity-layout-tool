@@ -5,26 +5,37 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import { getSplitPieceCount } from '@/shared/utils/splitPositions';
-import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
-import { slantedBinFitsBed } from '@/shared/utils/slantPlan';
+import { binBedFit } from '@/shared/utils/binSplitFit';
+import { slantedBinFitsBed, slantedBinFitsOnlyDiagonally } from '@/shared/utils/slantPlan';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { useLayoutPrintBed } from '@/features/bin-designer/hooks/useLayoutPrintBed';
 
 export type SplitAxis = 'width' | 'depth' | 'both';
 
 export function useSplitOptionsSection() {
-  const { width, depth, base, splitConnectors, splitViewMode, setParam, setSplitViewMode } =
-    useDesignerStore(
-      useShallow((s) => ({
-        width: s.params.width,
-        depth: s.params.depth,
-        base: s.params.base,
-        splitConnectors: s.params.splitConnectors,
-        splitViewMode: s.ui.splitViewMode,
-        setParam: s.setParam,
-        setSplitViewMode: s.setSplitViewMode,
-      }))
-    );
+  const {
+    width,
+    depth,
+    base,
+    splitConnectors,
+    splitToFitBed,
+    splitViewMode,
+    setParam,
+    setSplitToFitBed,
+    setSplitViewMode,
+  } = useDesignerStore(
+    useShallow((s) => ({
+      width: s.params.width,
+      depth: s.params.depth,
+      base: s.params.base,
+      splitConnectors: s.params.splitConnectors,
+      splitToFitBed: s.params.splitToFitBed !== false,
+      splitViewMode: s.ui.splitViewMode,
+      setParam: s.setParam,
+      setSplitToFitBed: s.setSplitToFitBed,
+      setSplitViewMode: s.setSplitViewMode,
+    }))
+  );
 
   const params = useDesignerStore((s) => s.params);
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
@@ -34,9 +45,14 @@ export function useSplitOptionsSection() {
   // and charges the bin's overhang against the bed: an overhang grows the outer
   // body in mm past its grid footprint, so a bin whose units fit can still be
   // far too wide to print.
-  const maxGrid = useMemo(
-    () => binSplitChunkUnits(params, printBedSize, printBedDepth),
+  const bedFit = useMemo(
+    () => binBedFit(params, printBedSize, printBedDepth),
     [params, printBedSize, printBedDepth]
+  );
+  const maxGrid = bedFit.chunk;
+  const fitsDiagonally = useMemo(
+    () => bedFit.diagonal || slantedBinFitsOnlyDiagonally(params, printBedSize, printBedDepth),
+    [bedFit.diagonal, params, printBedSize, printBedDepth]
   );
   // A slanted bin never splits, so a lean too long for the bed has no remedy
   // here but a smaller angle or bin.
@@ -46,6 +62,7 @@ export function useSplitOptionsSection() {
   );
 
   const needsSplit = width > maxGrid.width || depth > maxGrid.depth;
+  const keptWhole = bedFit.keptWhole;
 
   const pieceCount = useMemo(
     () => (needsSplit ? getSplitPieceCount(width, depth, maxGrid.width, maxGrid.depth) : 1),
@@ -80,13 +97,19 @@ export function useSplitOptionsSection() {
     setParam('splitConnectors', { ...config, wallConnector: next });
   }, [config, setParam]);
 
+  const toggleSplitToFitBed = useCallback(
+    () => setSplitToFitBed(!splitToFitBed),
+    [setSplitToFitBed, splitToFitBed]
+  );
+
   const handlers = useMemo(
     () => ({
       toggleEnabled,
       toggleWallConnector,
+      toggleSplitToFitBed,
       setSplitViewMode,
     }),
-    [toggleEnabled, toggleWallConnector, setSplitViewMode]
+    [toggleEnabled, toggleWallConnector, toggleSplitToFitBed, setSplitViewMode]
   );
 
   // A wider nozzle enlarges connector/wall-lock features and clearances; the
@@ -98,7 +121,13 @@ export function useSplitOptionsSection() {
 
   return {
     needsSplit,
+    keptWhole,
+    splitToFitBed,
+    // The scroll panel shows the bed-fit section only when it has something to
+    // say; a switch turned off stays in reach so it can be turned back on.
+    bedFitShown: needsSplit || keptWhole || !splitToFitBed,
     slantTooLarge,
+    fitsDiagonally,
     printBedSize: {
       width: printBedSize,
       depth: printBedDepth ?? printBedSize,

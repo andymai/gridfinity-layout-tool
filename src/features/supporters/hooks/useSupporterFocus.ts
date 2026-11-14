@@ -27,7 +27,7 @@ interface FocusOptions {
 }
 
 /**
- * Pointing at one supporter, however it happens: a clicked credit, a search,
+ * Pointing at one supporter, however it happens: a clicked credit or bin, a search,
  * the panel's "show me my bin", keyboard focus, or a shared credit link.
  * Mid-roll that means pausing with their bin seated; otherwise flying to it.
  */
@@ -80,8 +80,15 @@ export function useSupporterFocus({
     [rolling, schedule, pauseSeated, flyToBin]
   );
 
-  /** A bin clicked on the plate: show its card without stopping the roll. */
-  const selectBin = useCallback((id: string) => setFocusedId(id), []);
+  /**
+   * A bin clicked on the plate. Mid-roll it pauses like its credit; after the
+   * roll the camera is the visitor's to orbit, so it only shows the card.
+   * Never a toggle: clicking the focused bin again is a poke.
+   */
+  const selectBin = useCallback(
+    (id: string) => (rolling ? showSupporter(id, false) : setFocusedId(id)),
+    [rolling, showSupporter]
+  );
 
   const togglePause = useCallback(() => {
     const next = !clock.isPaused;

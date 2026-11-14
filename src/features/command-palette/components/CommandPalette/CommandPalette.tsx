@@ -10,7 +10,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Command } from 'cmdk';
+import { Kbd } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { COMMAND_DEFINITIONS, CATEGORY_LABELS, CATEGORY_ORDER } from '../../commands';
 import { useRecentCommandsStore } from '../../store/recentStore';
 import { CommandPaletteFooter } from '../CommandPaletteFooter';
@@ -19,6 +21,7 @@ import { commandPaletteFilter } from '@/shared/utils/commandPaletteFilter';
 import { useActionHandlers, type ActionHandler } from './commandPaletteActionHandlers';
 import { useContextBoosts } from './commandPaletteContextBoosts';
 import { CategoryIcon, CommandItem } from './commandPaletteParts';
+import { commandItemValue } from './commandItemValue';
 
 interface CommandPaletteProps {
   open: boolean;
@@ -99,11 +102,20 @@ export function CommandPalette({
     [recentCommands]
   );
 
-  // Track currently highlighted command for footer display
-  const [selectedCommandId, setSelectedCommandId] = useState<string | null>(null);
-  const selectedCommand = useMemo(
-    () => commands.find((c) => c.id === selectedCommandId) ?? null,
-    [commands, selectedCommandId]
+  // cmdk 1.1 calls onValueChange only when `value` is controlled.
+  const [highlightedValue, setHighlightedValue] = useState('');
+  const selectedCommand = useMemo(() => {
+    const commandId = highlightedValue.split('::')[0];
+    return commands.find((c) => c.id === commandId) ?? null;
+  }, [commands, highlightedValue]);
+
+  const matchCount = useMemo(
+    () =>
+      searchValue
+        ? commands.filter((cmd) => commandPaletteFilter(commandItemValue(cmd, t), searchValue) > 0)
+            .length
+        : commands.length,
+    [commands, searchValue, t]
   );
 
   // Handle command selection
@@ -146,11 +158,8 @@ export function CommandPalette({
           onClick={(e) => e.stopPropagation()}
           filter={commandPaletteFilter}
           loop
-          onValueChange={(value) => {
-            // Extract command ID from composite value (id::label keywords)
-            const commandId = value.split('::')[0];
-            setSelectedCommandId(commandId);
-          }}
+          value={highlightedValue}
+          onValueChange={setHighlightedValue}
         >
           {/* Search input with icon */}
           <div className="flex items-center gap-3 px-4 border-b border-stroke-subtle bg-surface-secondary">
@@ -173,9 +182,9 @@ export function CommandPalette({
               // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
               autoFocus
             />
-            <kbd className="hidden sm:inline-flex items-center justify-center min-w-[28px] h-[22px] px-1.5 text-label font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content-secondary shadow-[0_1px_0_1px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.05)]">
-              esc
-            </kbd>
+            <Kbd variant="keycap" className="hidden sm:inline-flex">
+              Esc
+            </Kbd>
           </div>
 
           <Command.List className="max-h-[50vh] overflow-y-auto overflow-x-hidden py-2 scrollbar-thin">
@@ -215,9 +224,7 @@ export function CommandPalette({
                         <path key={d} strokeLinecap="round" strokeLinejoin="round" d={d} />
                       ))}
                     </svg>
-                    <span className="text-micro font-semibold text-content-tertiary uppercase tracking-wider">
-                      {t('commandPalette.recent')}
-                    </span>
+                    <SubHeader>{t('commandPalette.recent')}</SubHeader>
                   </div>
                 }
                 className="mb-0.5"
@@ -246,9 +253,7 @@ export function CommandPalette({
                   heading={
                     <div className="flex items-center gap-1.5 px-3 pb-1.5 pt-2.5 first:pt-1">
                       <CategoryIcon category={category} />
-                      <span className="text-micro font-semibold text-content-tertiary uppercase tracking-wider">
-                        {t(CATEGORY_LABELS[category])}
-                      </span>
+                      <SubHeader>{t(CATEGORY_LABELS[category])}</SubHeader>
                     </div>
                   }
                   className="mb-0.5"
@@ -262,7 +267,7 @@ export function CommandPalette({
           </Command.List>
 
           {/* Footer with keyboard hints */}
-          <CommandPaletteFooter selectedCommand={selectedCommand} matchCount={commands.length} />
+          <CommandPaletteFooter selectedCommand={selectedCommand} matchCount={matchCount} />
         </Command>
       </div>
     </div>

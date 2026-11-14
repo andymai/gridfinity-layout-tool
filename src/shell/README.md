@@ -66,10 +66,9 @@ graph TB
 ## Gotchas
 
 1. **PrintModal always mounted** — rendered even when closed because `@media print` CSS needs the portal in DOM
-2. **Labs drawer always in DOM** — has `[role="dialog"]`; exclude with `:not([aria-label="Labs..."])` when querying dialogs
-3. **No single mobile/tablet component** — responsive layout is composition of conditional renders, not a master component
-4. **DropZones appear after pointermove** — prevents flicker on simple clicks; only shows trash zone during actual drag
-5. **Two-tier error boundaries** — root `ErrorBoundary` for crashes; `PanelErrorBoundary` wraps each major panel for inline recovery
-6. **Lazy loading with retry** — use `lazyWithRetry()` for PWA resilience; wrap in `<Suspense fallback={<LoadingFallback />}>`
-7. **Feature content reused, not duplicated** — Mobile panels wrap the same feature components (ActiveLayerPanel, SingleBinInspector) in mobile-specific containers
-8. **BottomSheet activeMobilePanel** — panels conditionally mount based on string ID; `toggleMobilePanel(id)` opens or closes
+2. **No single mobile/tablet component** — responsive layout is composition of conditional renders, not a master component
+3. **DropZones appear after pointermove** — prevents flicker on simple clicks; only shows trash zone during actual drag
+4. **Two-tier error boundaries** — root `ErrorBoundary` for crashes; `PanelErrorBoundary` wraps each major panel for inline recovery
+5. **Lazy loading with retry** — use `lazyWithRetry()` for PWA resilience; wrap in `<Suspense fallback={<LoadingFallback />}>`
+6. **Feature content reused, not duplicated** — Mobile panels wrap the same feature components (ActiveLayerPanel, SingleBinInspector) in mobile-specific containers
+7. **BottomSheet activeMobilePanel** — panels conditionally mount based on string ID; `toggleMobilePanel(id)` opens or closes

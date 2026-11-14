@@ -3,7 +3,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { mm } from '@gridfinity/branded-types';
 import { BaseSection } from './BaseSection';
 import { useLayoutStore } from '@/core/store/layout';
-import { useLabsStore } from '@/core/store';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import type { BaseplatePiece } from '../../types/tiling';
 import type { ScrewHeadStyle } from '@/core/types';
@@ -70,10 +69,13 @@ describe('BaseSection', () => {
     expect(useLayoutStore.getState().layout.baseplateParams?.magnetHoles).toBe(!before);
   });
 
-  it('enables eco plate in the layout settings', () => {
+  it('stores eco plate as present-or-absent, never false', () => {
     render(<BaseSection />);
-    fireEvent.click(screen.getByRole('checkbox', { name: 'baseplate.ecoPlate' }));
+    const toggle = screen.getByRole('switch', { name: 'baseplate.ecoPlate' });
+    fireEvent.click(toggle);
     expect(useLayoutStore.getState().layout.baseplateParams?.ecoPlate).toBe(true);
+    fireEvent.click(toggle);
+    expect(useLayoutStore.getState().layout.baseplateParams?.ecoPlate).toBeUndefined();
   });
 
   describe('all-edge slots (issue #2866)', () => {
@@ -140,7 +142,7 @@ describe('BaseSection', () => {
     it('writes the flag through to the layout store', () => {
       splitPlate('snapClip');
       render(<BaseSection />);
-      fireEvent.click(screen.getByRole('checkbox', { name: 'baseplate.connectorSlotsAllEdges' }));
+      fireEvent.click(screen.getByRole('switch', { name: 'baseplate.connectorSlotsAllEdges' }));
       expect(useLayoutStore.getState().layout.baseplateParams?.connectorSlotsAllEdges).toBe(true);
     });
   });
@@ -154,20 +156,6 @@ describe('BaseSection', () => {
     }
 
     it('offers the toggle', () => {
-      render(<BaseSection />);
-      expect(screen.getByText('baseplate.screwHoles.label')).toBeInTheDocument();
-    });
-
-    // The flag graduated, so a stored opt-out is dead state that
-    // `isFeatureEnabled` short-circuits past. Reverting the status to
-    // 'experimental' would hide the control again from anyone carrying this.
-    it('offers the toggle even to a user carrying a stored opt-out', () => {
-      useLabsStore.setState((s) => ({
-        preferences: {
-          ...s.preferences,
-          enabledFeatures: { ...s.preferences.enabledFeatures, baseplate_screw_holes: false },
-        },
-      }));
       render(<BaseSection />);
       expect(screen.getByText('baseplate.screwHoles.label')).toBeInTheDocument();
     });
@@ -302,7 +290,9 @@ describe('BaseSection', () => {
         mountMagnets: { enabled: true, diameter: mm(6.5), depth: mm(2.5) },
       });
       render(<BaseSection />);
-      fireEvent.click(screen.getByLabelText('baseplate.magnetChamfer'));
+      fireEvent.click(
+        screen.getByRole('switch', { name: 'baseplate.magnetChamfer', hidden: true })
+      );
       expect(useLayoutStore.getState().layout.baseplateParams?.mountMagnets?.chamfer).toBe(true);
     });
 
@@ -356,7 +346,7 @@ describe('BaseSection magnet press-fit options', () => {
   it('stores crush ribs as present-or-absent, never false', () => {
     render(<BaseSection />);
     fireEvent.click(screen.getByRole('button', { name: 'common.customize' }));
-    const ribs = screen.getByRole('checkbox', { name: 'baseplate.magnetCrushRibs' });
+    const ribs = screen.getByRole('switch', { name: 'baseplate.magnetCrushRibs' });
     fireEvent.click(ribs);
     expect(useLayoutStore.getState().layout.baseplateParams?.magnetCrushRibs).toBe(true);
     fireEvent.click(ribs);
@@ -371,7 +361,7 @@ describe('BaseSection magnet press-fit options', () => {
     });
     render(<BaseSection />);
     fireEvent.click(screen.getByRole('button', { name: 'common.customize' }));
-    expect(screen.getByRole('checkbox', { name: 'baseplate.magnetChamfer' })).toBeDisabled();
+    expect(screen.getByRole('switch', { name: 'baseplate.magnetChamfer' })).toBeDisabled();
     expect(screen.getByText('baseplate.magnetChamferLightweight')).toBeInTheDocument();
   });
 });

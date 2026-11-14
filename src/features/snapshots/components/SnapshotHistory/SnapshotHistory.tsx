@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
-import { useLibraryStore } from '@/core/store/library';
+import { writeLibrary } from '@/core/store/libraryWrites';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useSnapshotStore } from '@/core/store/snapshots';
 import { useToastStore } from '@/core/store/toast';
@@ -26,13 +26,6 @@ export function SnapshotHistory() {
     }))
   );
   const importLayout = useLayoutStore((state) => state.importLayout);
-
-  const { library, setLibrary } = useLibraryStore(
-    useShallow((state) => ({
-      library: state.library,
-      setLibrary: state.setLibrary,
-    }))
-  );
 
   const { snapshots, isLoading, loadForLayout, addSnapshot, softRemove, reinsert, updateLabel } =
     useSnapshotStore(
@@ -168,9 +161,8 @@ export function SnapshotHistory() {
       return;
     }
 
-    const result = await createLayoutEntry(restoredLayout, library);
+    const result = await writeLibrary((library) => createLayoutEntry(restoredLayout, library));
     if (isOk(result)) {
-      setLibrary(result.value.library);
       addToast(t('snapshots.createdCopy'), 'success');
     }
     setRestoreTarget(null);

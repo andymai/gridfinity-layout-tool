@@ -57,6 +57,7 @@ import { sketch } from './meshUtils';
 import { buildTextSolid, fitTextSize, type ResolvedTextStyle } from './textBuilder';
 import { buildIconSolid, measureIconBox } from './labelPlateIcons';
 import { buildBaseplateSTL } from './baseplateSTL';
+import { dropCollapsedTriangles } from '../../export/collapsedTriangles';
 import { PREVIEW_ANGULAR_TOLERANCE_RAD } from './utils/tolerances';
 
 /** One plate to build: standard width + the text it carries (may be empty). */
@@ -505,8 +506,9 @@ export async function exportLabelPlates(
       count: g.count,
       tag: g.origin === FeatureTag.TEXT ? FeatureTag.TEXT : FeatureTag.UNKNOWN,
     }));
-    const data = buildBaseplateSTL(meshResult, name);
-    return { data, fileName: `${name}.stl`, faceGroups };
+    const raw = buildBaseplateSTL(meshResult, name, { keepCollapsedTriangles: true });
+    const cleaned = dropCollapsedTriangles(raw, faceGroups);
+    return { data: cleaned.data, fileName: `${name}.stl`, faceGroups: cleaned.faceGroups };
   } finally {
     assembled.delete();
   }

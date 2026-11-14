@@ -1,0 +1,1 @@
+export { PhoneScanDialog } from './PhoneScanDialog';

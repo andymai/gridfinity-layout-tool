@@ -1,15 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { PresenceAvatarBar } from './PresenceAvatarBar';
 import type { Participant } from '@/shared/hooks/usePresence';
 import { resetAllStores } from '@/test/testUtils';
-
-// Mock child components
-vi.mock('../PresenceAvatar', () => ({
-  PresenceAvatar: ({ participant }: { participant: Participant }) => (
-    <div data-testid="presence-avatar">{participant.name}</div>
-  ),
-}));
 
 vi.mock('../ConnectionIndicator', () => ({
   ConnectionIndicator: () => <div data-testid="connection-indicator" />,
@@ -61,8 +54,16 @@ describe('PresenceAvatarBar', () => {
 
   it('displays visible avatars', () => {
     render(<PresenceAvatarBar participants={mockParticipants} status="connected" />);
-    const avatars = screen.getAllByTestId('presence-avatar');
-    expect(avatars).toHaveLength(2);
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+  });
+
+  it('names each person and the owner in the avatar stack', () => {
+    render(<PresenceAvatarBar participants={mockParticipants} status="connected" />);
+    const [owner, self] = screen.getAllByRole('listitem');
+    expect(within(owner).getByRole('img', { name: 'User 1' })).toBeInTheDocument();
+    expect(within(owner).getByRole('img', { name: 'Owner' })).toBeInTheDocument();
+    expect(within(self).getByRole('img', { name: 'User 2 (you)' })).toBeInTheDocument();
+    expect(within(self).queryByRole('img', { name: 'Owner' })).not.toBeInTheDocument();
   });
 
   it('shows overflow button when more than 5 participants', () => {

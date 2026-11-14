@@ -11,6 +11,7 @@ import { useSettingsStore } from '@/core/store/settings';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { GridUnitInput } from '@/shared/components/GridUnitInput';
@@ -97,6 +98,7 @@ export function PhysicalUnitsSection() {
 
   return (
     <StickyGroupHeader
+      variant="band"
       title={t('common.physicalUnits')}
       summary={formatPrintSettingsSummary(
         gridUnitMm,
@@ -107,7 +109,7 @@ export function PhysicalUnitsSection() {
       expanded={printSettingsExpanded}
       onExpandedChange={setPrintSettingsExpanded}
     >
-      <div className="space-y-3 px-4 py-3">
+      <PanelSection className="space-y-3">
         <div className="text-xs text-content-secondary space-y-2">
           {/* Bounds are the store's own clamp, not the component default: the
               sidebar offers the narrower layout-authoring range, and a plate
@@ -116,7 +118,7 @@ export function PhysicalUnitsSection() {
             label={t('baseplate.gridUnit')}
             htmlFor="bp-gridUnit"
             unit="mm"
-            tooltip={t('baseplate.gridUnitTooltip')}
+            info={t('baseplate.gridUnitTooltip')}
           >
             <GridUnitInput
               id="bp-gridUnit"
@@ -137,7 +139,7 @@ export function PhysicalUnitsSection() {
             <div className="space-y-1">
               <SettingsRow
                 label={t('baseplate.magnetAnchor')}
-                tooltip={t('baseplate.magnetAnchorTooltip')}
+                info={t('baseplate.magnetAnchorTooltip')}
               >
                 <SegmentedControl<'edge' | 'center'>
                   aria-label={t('baseplate.magnetAnchor')}
@@ -159,25 +161,21 @@ export function PhysicalUnitsSection() {
               </p>
             </div>
           )}
-          <div className="space-y-1">
-            <FeatureToggle
-              label={t('baseplate.lowProfileBase')}
-              checked={lowProfileBase}
-              onChange={() => mutations.setLowProfileBase(!lowProfileBase)}
-              disabledReason={
-                lowProfileBlocked ? t('baseplate.lowProfileBaseSnapClipBlocked') : undefined
-              }
-            />
-            <p className="text-label leading-relaxed text-content-tertiary">
-              {t('baseplate.lowProfileBaseHint')}
-            </p>
-          </div>
+          <FeatureToggle
+            label={t('baseplate.lowProfileBase')}
+            info={t('baseplate.lowProfileBaseDetail')}
+            checked={lowProfileBase}
+            onChange={() => mutations.setLowProfileBase(!lowProfileBase)}
+            disabledReason={
+              lowProfileBlocked ? t('baseplate.lowProfileBaseSnapClipBlocked') : undefined
+            }
+          />
           <HelpTargetMarker id="bp-print-bed-size">
             <SettingsRow
               label={t('baseplate.printBedSize')}
               htmlFor="bp-printBedSize"
               unit="mm"
-              tooltip={t('baseplate.printBedTooltip')}
+              info={t('baseplate.printBedTooltip')}
             >
               <PrintBedInput
                 id="bp-printBedSize"
@@ -191,7 +189,7 @@ export function PhysicalUnitsSection() {
           <SettingsRow
             label={t('settings.nozzleSize')}
             htmlFor="bp-nozzleSize"
-            tooltip={t('baseplate.nozzleSizeTooltip')}
+            info={t('baseplate.nozzleSizeTooltip')}
             unit="mm"
           >
             <DeferredNumberInput
@@ -209,7 +207,7 @@ export function PhysicalUnitsSection() {
             label={t('baseplate.maxPrintHeight')}
             htmlFor="bp-maxPrintHeight"
             unit="mm"
-            tooltip={t('baseplate.maxPrintHeightTooltip')}
+            info={t('baseplate.maxPrintHeightTooltip')}
           >
             <DeferredNumberInput
               id="bp-maxPrintHeight"
@@ -223,7 +221,7 @@ export function PhysicalUnitsSection() {
             />
           </SettingsRow>
         </div>
-      </div>
+      </PanelSection>
     </StickyGroupHeader>
   );
 }

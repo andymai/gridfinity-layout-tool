@@ -20,6 +20,7 @@ import type { BinId } from '@/core/types';
 import { binId as toBinId } from '@/core/types';
 import { isOk } from '@/core/result';
 import { isBinLocked } from '@/shared/utils/binLocation';
+import { quarterTurnUpdates } from '@/shared/utils/rotation';
 import { packBins } from '@/features/staging/utils/packing';
 import {
   useStagingResize,
@@ -39,7 +40,7 @@ const DEFAULT_STASH_MAX_HEIGHT_VH = 33;
 export function Staging() {
   const t = useTranslation();
   const layout = useLayoutStore((state) => state.layout);
-  const { deleteBin, updateBin } = useMutations();
+  const { deleteBins, updateBin } = useMutations();
   const { selectedBinIds, setSelectedBin, toggleSelection } = useSelectionStore(
     useShallow((state) => ({
       selectedBinIds: state.selectedBinIds,
@@ -227,9 +228,7 @@ export function Staging() {
       // The result has to leave the batch callback: returning from inside it
       // only ends the callback, so the toast used to claim success for a
       // rotation the command had rejected.
-      const rotated = batch(() =>
-        isOk(updateBin(brandedBinId, { width: bin.depth, depth: bin.width }))
-      );
+      const rotated = batch(() => isOk(updateBin(brandedBinId, quarterTurnUpdates(bin))));
       if (!rotated) return;
 
       addToast(t('toast.binRotated'), 'success');
@@ -243,9 +242,7 @@ export function Staging() {
     mlTracking.trackBinsDeletion(stagingBins, 'bulk');
 
     batch(() => {
-      for (const bin of stagingBins) {
-        deleteBin(bin.id);
-      }
+      deleteBins(stagingBins.map((bin) => bin.id));
     });
     setShowClearConfirm(false);
     addToast(t('toast.stashCleared', { count }), 'success');

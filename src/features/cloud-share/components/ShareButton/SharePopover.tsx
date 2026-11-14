@@ -93,13 +93,15 @@ export function SharePopover({ buttonRef, cloudShare }: SharePopoverProps) {
   }, [urlCopied]);
 
   // Click outside closes. Defer the listener by one frame so the click that
-  // opened the popover doesn't itself trigger a close.
+  // opened the popover doesn't itself trigger a close. Read the event path, not
+  // `contains(target)`: a click that changes the share status re-renders the
+  // popover before this listener runs, so its target is already detached. The
+  // browser sets the path when dispatch starts, so it still holds the popover.
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      const isInsidePopover = popoverRef.current?.contains(target);
-      const isInsideButton = buttonRef.current?.contains(target);
-      if (!isInsidePopover && !isInsideButton) {
+      const path = e.composedPath();
+      const isInside = (element: HTMLElement | null) => element !== null && path.includes(element);
+      if (!isInside(popoverRef.current) && !isInside(buttonRef.current)) {
         onClose();
       }
     };

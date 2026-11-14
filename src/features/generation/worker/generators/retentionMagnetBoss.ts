@@ -1,7 +1,7 @@
 /** Wall-supported corner boss for lids and Nesting bodies, in lid-local coordinates. */
 import { draw, intersect, unwrap } from 'brepjs';
 import type { DisposalScope, Shape3D } from 'brepjs';
-import type { LidInputs } from './lidInputs';
+import type { LidInputs } from '@/shared/utils/lidInputs';
 import { buildOutlineDrawing } from './lidProfile';
 import { LID_COPLANAR_MARGIN } from './lidConstants';
 

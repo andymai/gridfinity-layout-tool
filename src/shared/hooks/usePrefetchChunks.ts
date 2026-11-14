@@ -108,7 +108,6 @@ export function usePrefetchChunks(): void {
 
             // Tier 3: Low priority — rarely needed on desktop
             scheduleNext(() => {
-              prefetch(() => import('@/features/labs/components/LabsDrawer'));
               prefetch(() => import('@/shell/Collab/CollabProvider'));
             });
           });

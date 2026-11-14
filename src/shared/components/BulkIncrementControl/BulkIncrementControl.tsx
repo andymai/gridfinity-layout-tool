@@ -1,4 +1,5 @@
 import { IconButton, MinusIcon, PlusIcon } from '@/design-system';
+import { useTranslation } from '@/i18n';
 
 interface BulkIncrementControlProps {
   /** Display value (can include range like "3–5u" or single value like "4u") */
@@ -27,6 +28,7 @@ export function BulkIncrementControl({
   increaseDisabled = false,
   variant = 'desktop',
 }: BulkIncrementControlProps) {
+  const t = useTranslation();
   const isMobile = variant === 'mobile';
   const btnSize = isMobile ? 'lg' : 'md';
   const valueSize = isMobile ? 'text-xl' : 'text-lg';
@@ -40,7 +42,7 @@ export function BulkIncrementControl({
         className={isMobile ? undefined : 'h-10 w-10'}
         onClick={() => onStep(-1)}
         disabled={decreaseDisabled}
-        aria-label={`Decrease ${ariaLabelPrefix}`}
+        aria-label={t('common.decreaseAria', { what: ariaLabelPrefix })}
       >
         <MinusIcon size="sm" />
       </IconButton>
@@ -54,7 +56,7 @@ export function BulkIncrementControl({
         className={isMobile ? undefined : 'h-10 w-10'}
         onClick={() => onStep(1)}
         disabled={increaseDisabled}
-        aria-label={`Increase ${ariaLabelPrefix}`}
+        aria-label={t('common.increaseAria', { what: ariaLabelPrefix })}
       >
         <PlusIcon size="sm" />
       </IconButton>

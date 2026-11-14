@@ -28,7 +28,7 @@ describe('PrintSummary', () => {
 
   it('uses the singular count for one printer', () => {
     render(<PrintSummary summary={summary({ count: 1 })} />);
-    expect(screen.getByText('community.prints.countOne')).toBeInTheDocument();
+    expect(screen.getByText('community.prints.count_one')).toBeInTheDocument();
   });
 
   it('lists only the verdicts that actually occurred', () => {

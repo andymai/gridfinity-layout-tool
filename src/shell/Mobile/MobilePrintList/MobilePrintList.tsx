@@ -226,6 +226,11 @@ export function MobilePrintList() {
                         {t('print.row.blankLabelTabs')}
                       </div>
                     )}
+                    {row.keptWhole === true && (
+                      <div className="text-xs text-warning mt-0.5">
+                        {t('grid.exceedsPrintSizeWhole')}
+                      </div>
+                    )}
                   </div>
                 </div>
 

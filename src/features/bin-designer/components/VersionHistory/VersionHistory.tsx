@@ -96,7 +96,11 @@ export function VersionHistory({ open, onClose }: VersionHistoryProps) {
   const announceEvictions = useCallback(() => {
     const evicted = useDesignVersionStore.getState().lastEvicted;
     for (const victim of evicted) {
-      addToast(t('binDesigner.versions.evicted', { name: victim.name }), 'info');
+      const key =
+        victim.origin === 'pre-restore'
+          ? 'binDesigner.versions.evictedAutomatic'
+          : 'binDesigner.versions.evicted';
+      addToast(t(key, { name: victim.name }), 'info');
     }
     useDesignVersionStore.getState().clearEvicted();
   }, [addToast, t]);

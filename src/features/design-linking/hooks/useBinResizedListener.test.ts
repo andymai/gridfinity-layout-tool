@@ -282,7 +282,9 @@ describe('useBinResizedListener', () => {
       await vi.waitFor(() => expect(useToastStore.getState().toasts).toHaveLength(1));
       const [toast] = useToastStore.getState().toasts;
       expect(toast.type).toBe('info');
-      expect(toast.message).toContain('1 kept their old size');
+      expect(toast.message).toBe(
+        'Updated design and 2 linked bins. 1 bin kept its old size because there was no room'
+      );
       const order = updateBin.mock.calls.map(([id]) => id);
       expect(order.indexOf('behind')).toBeLessThan(order.indexOf('ahead'));
       registerLinkedSlantResolver(null);

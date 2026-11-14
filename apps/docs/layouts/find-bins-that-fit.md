@@ -1,0 +1,91 @@
+---
+title: Find bins that fit
+description: 'Find community bins that fit an empty area of your layout, and get a bin size from its label.'
+sources:
+  - src/features/grid-editor/components/Grid/GridToolbar/GridToolbar.tsx
+  - src/shell/Mobile/MobileLayersPanel/ToolsTab/ToolsTab.tsx
+  - src/shared/hooks/interactions/useDrawInteraction.ts
+  - src/core/store/gapFit.ts
+  - src/shell/Modals/DesignGalleryModal/communityDesignerBridge.ts
+  - src/features/community/components/CommunityGalleryTab/
+  - src/features/bin-recommender/
+  - src/features/bin-inspector/hooks/useBinInspector.ts
+  - src/features/bin-inspector/components/Inspector/BinLabelField/
+  - src/features/community/utils/gapFit.ts
+---
+
+# Find bins that fit
+
+You don't have to design every bin yourself. Drag across an empty spot in your drawer, and the Gridfinity Layout Tool shows community designs that fit it. Not sure how big a bin should be? Type what it holds as its label, and the Layout Tool can suggest a size.
+
+## Open the gap search
+
+The control has the same name on every screen: <Ui k="toolbar.findBins" />.
+
+- **On a computer:** click <Ui k="toolbar.findBins" /> in the toolbar above the grid. In a narrow window with two or more layers, it is in the <Ui k="common.moreOptions" /> menu of the toolbar.
+- **On a phone:** tap <Ui k="common.layers" /> in the bar at the bottom of the screen. Open the <Ui k="mobile.tabs.tools" /> tab and tap <Ui k="toolbar.findBins" />.
+
+<Screenshot id="layouts-find-bins-toolbar" alt="Find bins that fit is turned on in the grid toolbar. A drag selects an empty 2 by 2 area of the grid. The gallery then opens with the community designs that fit the gap." spec="Clip. Layout editor on desktop. Layout with a 6 by 4 drawer and bins on most cells, with a 2 by 2 empty area. Click Find bins that fit so it shows as pressed, then drag across the empty 2 by 2 area. Cut to the gallery that opens on the designs that fit, sorted by best fit. Crop to the toolbar and the grid, then to the gallery dialog. The community designs are made-up fixture cards with pictures taken in the bin designer." />
+
+## Pick an empty area
+
+1. Turn on <Ui k="toolbar.findBins" />.
+2. Drag across the empty cells that you want to fill. When you let go, the gallery opens on its community tab.
+
+Your drag can cross a bin. The Layout Tool then uses only the empty part. To stop without a search, press <kbd>Escape</kbd>. On a phone, tap the <Ui k="toolbar.findBins" /> button above the grid again.
+
+## Choose a design
+
+The gallery shows only the designs that fit the area. A design must fit the width and the depth of the area, turned or not. It must also fit the free height above the active layer. A design made for a different grid unit does not show, because it would print at the wrong size.
+
+The filters panel shows the size of the area under <Ui k="community.gallery.viewingSection" />. When that panel is collapsed, a chip above the cards shows it. The cards sort by <Ui k="community.gallery.sort.bestFit" />, so the designs that fill the area best come first.
+
+1. Click a card to open the design.
+2. Click <Ui k="community.detail.placeInLayout" />.
+
+The Layout Tool saves a copy of the design to your saved designs. Then it puts a bin that uses the copy in the area. If the design fits only when turned, the bin goes in turned. Your copy is yours to change, so you can tweak it in the bin designer.
+
+Nothing fits? The gallery tells you. Select a larger area, or click <Ui k="community.gallery.clearFitsGap" /> to see all the designs. When you close the gallery, the search ends.
+
+## Get a size from a label
+
+Know what goes in the bin, but not how big the bin must be? The inspector can suggest a size from the bin's label.
+
+1. Select a bin. On a phone, tap <Ui k="mobile.nav.bin" /> in the bar at the bottom of the screen to open the inspector.
+2. Type what the bin holds in the <Ui k="common.label" /> field, for example "screws".
+3. A list of labels opens under the field and covers the suggestion. Press <kbd>Escape</kbd> to close the list. On a phone, tap outside the field.
+4. If a line with a size shows under the field, click <Ui k="inspector.sizeSuggestionApply" />. The bin changes to that size where it stands.
+
+<Screenshot id="layouts-find-bins-size-suggestion" alt="A 1 by 1 bin with no label is selected. In the inspector, screws is typed in the Label field. Escape closes the list of labels, and a line suggests a size. A click on Apply makes the bin that size on the grid." spec="Clip. Layout editor on desktop. Layout with a 6 by 4 drawer and one 1 by 1 bin with no label, with free cells around it. Click the bin. Close-up on the Label field: type screws, press Escape with a keycap, click Apply. Cut to the grid." />
+
+The suggestion gives the width, the depth and the height in units.
+
+The line shows only when the label matches a known size, and when that size is different from the current size. If the size does not fit where the bin is, the line shows <Ui k="inspector.sizeSuggestionNoFit" /> and has no apply button. A bin with a locked size cannot take the size. Click <Ui k="inspector.sizeSuggestionDismiss" /> (the X) to hide the line for that label.
+
+The Layout Tool finds the size on your device. Your label stays in your browser for this suggestion.
+
+## When it goes wrong
+
+### The gallery says nothing fits
+
+Select a larger area, or an area with more free height above it, such as one on a lower layer. To browse every design instead, click <Ui k="community.gallery.clearFitsGap" />.
+
+A design shows only when it fits the width, the depth and the free height of your area. It must also use the grid unit of your layout.
+
+### A red message shows, and the gallery doesn't open
+
+The area has no room for even the shortest bin. Pick an area with less under it, or switch to a lower layer. The message names the cause: <Ui k="grid.exceedsDrawerHeight" />, or a bin on a lower layer that keeps the space free for its items.
+
+### The size suggestion says it won't fit here
+
+<Ui k="inspector.sizeSuggestionNoFit" /> means the suggested size has no room where the bin stands. Move the bin to an open spot, or move its neighbors, and <Ui k="inspector.sizeSuggestionApply" /> comes back. A bin with a locked size shows the same note, so click <Ui k="inspector.unlockSize" /> first.
+
+### A design shows, but it won't go into the gap
+
+Pick a different design. A message says the design doesn't fit, and the gallery stays open for you. The gallery checks only the grid unit of each design. So a design made with a different height unit, or with cells of a different depth, can still show. The Layout Tool can't place it, because it would print at the wrong size.
+
+## Next steps
+
+- [The community gallery](../sharing/community): browse, like and share designs.
+- [Saved designs and linked bins](../concepts/saved-designs): what the placed copy is and how to edit it.
+- [Place and edit bins](./placing-bins): resize or move the bin after you place it.

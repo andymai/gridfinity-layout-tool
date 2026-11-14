@@ -80,7 +80,7 @@ describe('useDesignerInit', () => {
 
     const { rerender } = renderHook(() => useDesignerInit());
 
-    // Simulate user clicking "New Design" which sets currentDesignId to null
+    // Simulate user clicking "New design" which sets currentDesignId to null
     act(() => {
       useDesignerStore.getState().newDesign();
     });

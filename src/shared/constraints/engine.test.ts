@@ -143,6 +143,38 @@ describe('resolveConstraints — base constraints', () => {
     expect(off.base.style).toBe('lid');
     expect(off.base.trayBottom?.floorAtBed).toBe(true);
   });
+  it('names the chosen lid-mating body in the half-socket and lightweight reasons', () => {
+    const lidMating = (floorAtBed: boolean) =>
+      makeParams({
+        base: {
+          ...DEFAULT_BIN_PARAMS.base,
+          style: 'lid',
+          trayBottom: { ...DEFAULT_TRAY_BOTTOM, floorAtBed },
+        },
+      });
+
+    const nesting = lidMating(true);
+    expect(getFeatureStatus(nesting, 'base.halfSockets').reason).toBe(
+      'binDesigner.base.nesting.disablesHalfSockets'
+    );
+    expect(getFeatureStatus(nesting, 'base.lightweight').reason).toBe(
+      'binDesigner.base.nesting.disablesShelling'
+    );
+    expect(getFeatureStatus(nesting, 'base.spacer').reason).toBe(
+      'binDesigner.base.nesting.disablesShelling'
+    );
+
+    const raised = lidMating(false);
+    expect(getFeatureStatus(raised, 'base.halfSockets').reason).toBe(
+      'binDesigner.lidBaseDisablesHalfSockets'
+    );
+    expect(getFeatureStatus(raised, 'base.lightweight').reason).toBe(
+      'binDesigner.lidBaseDisablesShelling'
+    );
+    expect(getFeatureStatus(raised, 'base.spacer').reason).toBe(
+      'binDesigner.lidBaseDisablesShelling'
+    );
+  });
   it('half sockets + magnet coexist (magnets use original cell layout)', () => {
     const params = makeParams({ base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' } });
     const result = resolveConstraints(params, {

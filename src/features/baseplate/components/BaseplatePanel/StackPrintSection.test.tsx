@@ -34,8 +34,10 @@ describe('StackPrintSection', () => {
     expect(onChange).toHaveBeenCalledWith(undefined);
   });
 
-  it('shows the multi-material hint when enabled', () => {
+  it('keeps the separation tips behind their info dot', () => {
     render(<StackPrintSection stackPrint={enabled} onChange={vi.fn()} />);
+    expect(screen.queryByText(/Multi-material/i)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /About Tips for separating/i }));
     expect(screen.getByText(/Multi-material/i)).toBeInTheDocument();
   });
 
@@ -43,23 +45,32 @@ describe('StackPrintSection', () => {
     // With no split tiling in the store and copies=1, the drawer is a single
     // plate → stacking has nothing to combine, so the panel surfaces the warning.
     render(<StackPrintSection stackPrint={enabled} onChange={vi.fn()} />);
-    expect(screen.getByText(/makes a single plate/i)).toBeInTheDocument();
+    expect(screen.getByText(/nothing to stack/i)).toBeInTheDocument();
   });
 
   it('shows no warning when stacking is disabled', () => {
     render(<StackPrintSection stackPrint={undefined} onChange={vi.fn()} />);
-    expect(screen.queryByText(/makes a single plate/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/nothing to stack/i)).not.toBeInTheDocument();
   });
 
   it('renders the copies stepper when enabled', () => {
     render(<StackPrintSection stackPrint={enabled} onChange={vi.fn()} />);
-    expect(screen.getByLabelText('Increase Copies')).toBeInTheDocument();
+    expect(screen.getByLabelText('Increase Complete sets')).toBeInTheDocument();
+  });
+
+  it('opts in to mixed tile sizes without changing the existing stack defaults', () => {
+    const onChange = vi.fn();
+    render(<StackPrintSection stackPrint={enabled} onChange={onChange} />);
+    fireEvent.click(screen.getByRole('switch', { name: /stack plates of different sizes/i }));
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ enabled: true, mixedSizes: true, gapMm: mm(0.2) })
+    );
   });
 
   it('increments the copy count through onChange', () => {
     const onChange = vi.fn();
     render(<StackPrintSection stackPrint={{ ...enabled, copies: 2 }} onChange={onChange} />);
-    fireEvent.click(screen.getByLabelText('Increase Copies'));
+    fireEvent.click(screen.getByLabelText('Increase Complete sets'));
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ enabled: true, copies: 3 }));
   });
 
@@ -70,7 +81,7 @@ describe('StackPrintSection', () => {
       stackPrint: { enabled: true, gapMm: mm(0.2), copies: 3 },
     });
     render(<StackPrintSection stackPrint={{ ...enabled, copies: 3 }} onChange={vi.fn()} />);
-    expect(screen.queryByText(/makes a single plate/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/nothing to stack/i)).not.toBeInTheDocument();
     expect(screen.getByText(/3 plates stacked into 1 print file/i)).toBeInTheDocument();
   });
 });

@@ -3,29 +3,55 @@
  * Uses blocklist + pattern matching on user-generated text fields.
  */
 
-// Common offensive terms blocklist (lowercase)
-// This is a minimal set - in production, use a more comprehensive list or external service
+// Matched as whole words in normalized text, so a term inside a longer word
+// ("spic" in "Spices", "retard" in "retardant") never blocks. An inflected
+// form only matches if it is listed here.
+//
+// Leave "cp" out: in maker text it is centipoise, chrome-plated or the Chicago
+// Pneumatic tool brand, and no word rule tells those apart from the slang.
 const BLOCKLIST = new Set([
   // Slurs and hate speech (abbreviated list)
-  'nigger',
   'nigga',
-  'faggot',
+  'niggas',
+  'niggaz',
   'fag',
+  'fags',
   'retard',
+  'retards',
+  'retarded',
   'spic',
+  'spics',
   'chink',
+  'chinks',
   'kike',
+  'kikes',
   'tranny',
+  'trannies',
   'dyke',
+  'dykes',
   'cunt',
+  'cunts',
   'twat',
+  'twats',
   // Violence
-  'kill yourself',
   'kys',
-  // Other harmful content
-  'cp ',
-  'child porn',
 ]);
+
+// Matched anywhere in normalized text with every separator removed, so a
+// compound ("niggerish") or a joined phrase ("killyourself") still blocks.
+//
+// A term belongs here only if no string in the app's locales or label
+// vocabulary contains it. "cunt" fails that ("Aucun trou" joins across the
+// space). "nigga" stays out because the only longer words that hold it are
+// "niggardly" and its kin. The known cost: "snigger", "faggoting" and
+// "skill yourself" block.
+const ANYWHERE_TERMS = [
+  'nigger',
+  'faggot',
+  // Phrases, written without their spaces
+  'killyourself',
+  'childporn',
+];
 
 // Patterns that suggest harmful content.
 //
@@ -38,18 +64,42 @@ const HARMFUL_PATTERNS = [
   // Potential XSS attempts (shouldn't execute but signals bad intent)
   /<script/i,
   /javascript:/i,
-  /on\w{1,20}\s{0,10}=/i,
+  // An HTML attribute name starts after whitespace, "/" or a quote, never
+  // mid-word, so the \b keeps every real handler and lets "Connector=JST"
+  // through. The shortest handlers are oncut and onend.
+  /\bon[a-z]{3,20}\s{0,10}=/i,
   // URLs (could be phishing/malicious)
   /https?:\/\/[^\s]+/i,
+  // Scheme-less links. Bare hosts stay allowed: "bracket.stl" and
+  // "README.md" have the same shape as a domain. \p{M} is there because
+  // scripts such as Devanagari write vowels as marks (".भारत").
+  /\bwww\.[\p{L}\p{M}\p{N}-]{1,63}\.\p{L}[\p{L}\p{M}\p{N}]/iu,
   // Repeated characters suggesting spam
   /(.)\1{10,}/,
   // Zalgo text (combining characters spam)
   /[\u0300-\u036f]{5,}/,
 ];
 
+/**
+ * The kind of user text a block came from, sent as the CONTENT_BLOCKED body's
+ * `field` so the client can name it.
+ *
+ * MIRROR: `BLOCKED_FIELD_KEYS` in `src/features/cloud-share/hooks/useCloudShare.ts`.
+ */
+export type ContentField =
+  | 'layoutName'
+  | 'category'
+  | 'binLabel'
+  | 'binNotes'
+  | 'binItem'
+  | 'binProperty'
+  | 'linkedDesign'
+  | 'authorName';
+
 export interface ContentFilterResult {
   passed: boolean;
   reason?: string;
+  field?: ContentField;
 }
 
 /**
@@ -67,14 +117,18 @@ export function filterLayoutContent(layout: {
 }): ContentFilterResult {
   const nameResult = checkText(layout.name);
   if (!nameResult.passed) {
-    return { passed: false, reason: `Layout name: ${nameResult.reason}` };
+    return { passed: false, reason: `Layout name: ${nameResult.reason}`, field: 'layoutName' };
   }
 
   // Check category names
   for (const category of layout.categories) {
     const catResult = checkText(category.name);
     if (!catResult.passed) {
-      return { passed: false, reason: `Category "${category.name}": ${catResult.reason}` };
+      return {
+        passed: false,
+        reason: `Category "${category.name}": ${catResult.reason}`,
+        field: 'category',
+      };
     }
   }
 
@@ -83,24 +137,32 @@ export function filterLayoutContent(layout: {
     if (bin.label) {
       const labelResult = checkText(bin.label);
       if (!labelResult.passed) {
-        return { passed: false, reason: `Bin label: ${labelResult.reason}` };
+        return { passed: false, reason: `Bin label: ${labelResult.reason}`, field: 'binLabel' };
       }
     }
     if (bin.notes) {
       const notesResult = checkText(bin.notes);
       if (!notesResult.passed) {
-        return { passed: false, reason: `Bin notes: ${notesResult.reason}` };
+        return { passed: false, reason: `Bin notes: ${notesResult.reason}`, field: 'binNotes' };
       }
     }
     if (bin.customProperties) {
       for (const [key, value] of Object.entries(bin.customProperties)) {
         const keyResult = checkText(key);
         if (!keyResult.passed) {
-          return { passed: false, reason: `Custom property key: ${keyResult.reason}` };
+          return {
+            passed: false,
+            reason: `Custom property key: ${keyResult.reason}`,
+            field: 'binProperty',
+          };
         }
         const valueResult = checkText(value);
         if (!valueResult.passed) {
-          return { passed: false, reason: `Custom property value: ${valueResult.reason}` };
+          return {
+            passed: false,
+            reason: `Custom property value: ${valueResult.reason}`,
+            field: 'binProperty',
+          };
         }
       }
     }
@@ -109,7 +171,7 @@ export function filterLayoutContent(layout: {
         if (!text) continue;
         const itemResult = checkText(text);
         if (!itemResult.passed) {
-          return { passed: false, reason: `Bin item: ${itemResult.reason}` };
+          return { passed: false, reason: `Bin item: ${itemResult.reason}`, field: 'binItem' };
         }
       }
     }
@@ -167,6 +229,8 @@ const CONFUSABLE_TO_LATIN: Record<string, string> = {
 // Unicode escapes (not literal characters) so the source stays ASCII-only.
 const INVISIBLE_AND_COMBINING = new RegExp('[\u0300-\u036f\u200B-\u200D\uFEFF]', 'g');
 
+const NOT_A_LETTER = /[^a-z]+/g;
+
 /**
  * Normalize text for blocklist matching. NFKD decomposes precomposed accents
  * AND folds compatibility forms (fullwidth, ligatures); zero-width and combining
@@ -174,6 +238,10 @@ const INVISIBLE_AND_COMBINING = new RegExp('[\u0300-\u036f\u200B-\u200D\uFEFF]',
  *
  * NFKD (not NFKC) is required: NFKC would re-compose `n` + COMBINING_ACUTE
  * back into `ń`, leaving the combining mark unreachable to the strip step.
+ *
+ * Returns the words with one space between them and one at each end, so
+ * `includes(' term ')` only hits whole words. Any character the folding left
+ * outside a-z separates words: punctuation, "_", and digits other than 0/1/3/4.
  */
 function normalizeForBlocklist(text: string): string {
   const folded = text.normalize('NFKD').toLowerCase().replace(INVISIBLE_AND_COMBINING, '');
@@ -181,7 +249,7 @@ function normalizeForBlocklist(text: string): string {
   for (const ch of folded) {
     out += CONFUSABLE_TO_LATIN[ch] ?? ch;
   }
-  return out.trim();
+  return ` ${out.replace(NOT_A_LETTER, ' ').trim()} `;
 }
 
 /**
@@ -210,7 +278,13 @@ export function checkText(text: string): ContentFilterResult {
   // Check blocklist against the normalized form so Unicode tricks
   // (homoglyphs, zero-width chars, fullwidth, combining marks) can't bypass.
   for (const term of BLOCKLIST) {
-    if (normalized.includes(term)) {
+    if (normalized.includes(` ${term} `)) {
+      return { passed: false, reason: 'contains prohibited content' };
+    }
+  }
+  const letters = normalized.replace(/ /g, '');
+  for (const term of ANYWHERE_TERMS) {
+    if (letters.includes(term)) {
       return { passed: false, reason: 'contains prohibited content' };
     }
   }
@@ -311,12 +385,16 @@ export function filterSharedDesignsContent(
   for (const design of designs) {
     const nameResult = checkText(design.name);
     if (!nameResult.passed) {
-      return { passed: false, reason: `Design name: ${nameResult.reason}` };
+      return { passed: false, reason: `Design name: ${nameResult.reason}`, field: 'linkedDesign' };
     }
 
     const result = filterDesignParamsContent(design.params);
     if (!result.passed) {
-      return { passed: false, reason: `Design "${design.name}" text: ${result.reason}` };
+      return {
+        passed: false,
+        reason: `Design "${design.name}" text: ${result.reason}`,
+        field: 'linkedDesign',
+      };
     }
   }
 

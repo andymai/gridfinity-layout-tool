@@ -7,7 +7,8 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useToastStore } from '@/core/store/toast';
 import { resetAllStores, createTestBin } from '@/test/testUtils';
-import { binId } from '@/core/types';
+import { OK } from '@/core/result';
+import { binId, layerId as toLayerId } from '@/core/types';
 import type { LayerId } from '@/core/types';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -16,6 +17,7 @@ const mutations = vi.hoisted(() => ({
   fillLayer: vi.fn(),
   fillLayerGaps: vi.fn(),
   clearLayer: vi.fn(),
+  moveBinsToStaging: vi.fn(() => OK),
 }));
 
 vi.mock('@/shared/contexts', () => ({
@@ -83,11 +85,18 @@ describe('useLayerFillActions', () => {
     expect(toasts.some((toast) => toast.message.startsWith('toast.fillComplete'))).toBe(true);
   });
 
-  it('confirmClear clears, deselects, closes the dialog, then runs onAfterAction', () => {
+  it('confirmClear stashes the layer bins, deselects, closes the dialog, then runs onAfterAction', () => {
     const layerId = activeLayerId();
     const state = useLayoutStore.getState();
     useLayoutStore.setState({
-      layout: { ...state.layout, bins: [createTestBin({ layerId })] },
+      layout: {
+        ...state.layout,
+        bins: [
+          createTestBin({ id: binId('a'), layerId }),
+          createTestBin({ id: binId('b'), layerId }),
+          createTestBin({ id: binId('elsewhere'), layerId: toLayerId('other-layer') }),
+        ],
+      },
     });
     useSelectionStore.getState().setSelectedBins([binId('some-bin')]);
 
@@ -99,7 +108,8 @@ describe('useLayerFillActions', () => {
     act(() => {
       result.current.confirmClear();
     });
-    expect(mutations.clearLayer).toHaveBeenCalledWith(layerId);
+    expect(mutations.moveBinsToStaging.mock.calls).toEqual([[[binId('a'), binId('b')]]]);
+    expect(mutations.clearLayer).not.toHaveBeenCalled();
     expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
     expect(result.current.clearConfirmOpen).toBe(false);
     expect(onAfterAction).toHaveBeenCalledTimes(1);
@@ -110,6 +120,7 @@ describe('useLayerFillActions', () => {
     act(() => {
       result.current.confirmClear();
     });
+    expect(mutations.moveBinsToStaging).not.toHaveBeenCalled();
     expect(mutations.clearLayer).not.toHaveBeenCalled();
   });
 

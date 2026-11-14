@@ -39,6 +39,13 @@ vi.mock('@/shared/components/ToolSwitcher', () => ({
 }));
 
 describe('MobileHeader', () => {
+  it('links to the docs in a new tab', () => {
+    render(<MobileHeader onMenuClick={vi.fn()} saveStatus="idle" />);
+    const docs = screen.getByText('header.docs').closest('a');
+    expect(docs).toHaveAttribute('href', '/docs');
+    expect(docs).toHaveAttribute('target', '_blank');
+  });
+
   it('renders the GitHub link', () => {
     render(<MobileHeader onMenuClick={vi.fn()} saveStatus="idle" />);
     const githubLink = screen.getByText('sidebar.github');
@@ -51,6 +58,20 @@ describe('MobileHeader', () => {
   it('renders the tip link', () => {
     render(<MobileHeader onMenuClick={vi.fn()} saveStatus="idle" />);
     expect(screen.getByText('sidebar.tip')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['saving', 'header.saving'],
+    ['saved', 'header.saved'],
+    ['error', 'header.saveFailed'],
+  ] as const)('names the %s save status for screen readers', (saveStatus, label) => {
+    render(<MobileHeader onMenuClick={vi.fn()} saveStatus={saveStatus} />);
+    expect(screen.getByRole('status')).toHaveAttribute('aria-label', label);
+  });
+
+  it('shows no save status while idle', () => {
+    render(<MobileHeader onMenuClick={vi.fn()} saveStatus="idle" />);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
   it('swaps the layout name for a text field on long press', () => {

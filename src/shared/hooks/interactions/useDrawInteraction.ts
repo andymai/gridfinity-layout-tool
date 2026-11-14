@@ -21,7 +21,7 @@ import { useTranslation } from '@/i18n';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { trackBinCreated, trackPaintMode } from '@/shared/analytics/posthog';
 import type { InteractionContext, ModeHandlers, DrawStartArgs } from './types';
-import type { BinId, Coord, FitsGapSource, GridUnits, Bin, ValidationResult } from '@/core/types';
+import type { BinId, Coord, GridUnits, Bin, ValidationResult } from '@/core/types';
 
 /**
  * Hook for draw mode interactions: creating new bins by dragging a rectangle.
@@ -71,7 +71,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
    * If paintSize is set in UI state, starts paint mode; otherwise draw mode.
    */
   const start = useCallback(
-    (coord: Coord, pointerId?: number, fitsGap?: FitsGapSource) => {
+    (coord: Coord, pointerId?: number, fitsGap?: boolean) => {
       // Capture pointer for reliable event delivery during draw
       capturePointer(pointerId, activePointerIdRef, capturedPointerRef);
 
@@ -92,7 +92,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
         type: 'draw',
         start: coord,
         current: coord,
-        ...(fitsGap !== undefined ? { fitsGap } : {}),
+        ...(fitsGap ? { fitsGap } : {}),
       });
     },
     [paintSize, paintSlant, setInteraction, activePointerIdRef, capturedPointerRef]
@@ -142,18 +142,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
 
       const layer = layout.layers.find((l) => l.id === activeLayerId);
       if (layer) {
-        if (interaction.fitsGap !== undefined) {
-          // A bare right-click is not a gap selection: without movement it
-          // must not silently open the gallery over a minimum-size gap. The
-          // armed toolbar mode keeps single-tap selection (deliberate mode
-          // entry).
-          if (
-            interaction.fitsGap === 'right-drag' &&
-            start.x === current.x &&
-            start.y === current.y
-          ) {
-            return;
-          }
+        if (interaction.fitsGap) {
           // Gap selection: hand the drawn empty region to the community
           // gallery instead of creating a bin. Clamp to the empty area first
           // so dragging across a bin still yields a usable gap. Snapped at the

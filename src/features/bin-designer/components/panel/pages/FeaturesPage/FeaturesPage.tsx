@@ -1,5 +1,5 @@
 import { PullTabSection } from '../../PullTabSection';
-import { PanelSection } from '../../PanelSection';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { LidSection } from '../../LidSection';
 import { WallCutoutsSection } from '../../WallCutoutsSection';
 import { HandleSection } from '../../HandleSection';

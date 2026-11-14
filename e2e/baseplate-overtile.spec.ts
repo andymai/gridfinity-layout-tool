@@ -62,7 +62,7 @@ test.describe('Baseplate over-tile — visual', () => {
     expect(wideTile.equals(after)).toBe(false);
 
     // Now half-grid packs a true 21mm cell + a 9mm leftover, so it must differ.
-    await page.getByRole('checkbox', { name: /Prefer half-grid cells/i }).click();
+    await page.getByRole('switch', { name: /Prefer half-grid cells/i }).click();
     const halfGrid = await settledCanvas(page);
     expect(halfGrid.equals(wideTile)).toBe(false);
     await test.info().attach('halfgrid.png', { body: halfGrid, contentType: 'image/png' });

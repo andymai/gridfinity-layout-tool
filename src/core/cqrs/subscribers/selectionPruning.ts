@@ -108,6 +108,12 @@ export function connectSelectionPruning(bus: EventBus): UnsubscribeFn {
     })
   );
 
+  unsubscribers.push(
+    bus.subscribe('bin.batchMovedToStaging', (event) => {
+      removeBinsFromSelection(event.payload.moves.map((m) => m.id));
+    })
+  );
+
   // Layer deleted — reset active layer if it was the deleted one
   unsubscribers.push(
     bus.subscribe('layer.deleted', (event) => {

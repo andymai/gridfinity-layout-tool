@@ -90,7 +90,7 @@ describe('ShareModal', () => {
 
     it('displays modal title', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
-      expect(screen.getByText('Share Layout')).toBeInTheDocument();
+      expect(screen.getByText('Share layout')).toBeInTheDocument();
     });
 
     it('displays all tab buttons', () => {
@@ -339,7 +339,7 @@ describe('ShareModal', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
 
       const content = screen
-        .getByText('Share Layout')
+        .getByText('Share layout')
         .closest('div[class*="bg-surface-elevated"]')!;
       fireEvent.click(content);
 

@@ -49,7 +49,7 @@ import {
 import type { Shape3D, DisposalScope, Drawing, ValidSolid } from 'brepjs';
 import { sketch } from './meshUtils';
 import { buildOutlineDrawing } from './lidProfile';
-import type { LidInputs } from './lidInputs';
+import type { LidInputs } from '@/shared/utils/lidInputs';
 import type { SlideLidGeometry } from '@/shared/utils/slideLidPlan';
 
 /**

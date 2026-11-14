@@ -215,11 +215,11 @@ describe('keyed margin seam (issue #2866)', () => {
     expect(keyed.vertices.length).toBeGreaterThan(plain.vertices.length);
   });
 
-  it('leaves short rails friction-fit', () => {
+  it('grooves a short rail too (#4921)', () => {
     const shortRail = frontRail({ id: 'margin-left-1', side: 'left', role: 'short' });
     const keyed = generateMargin(baseParams(), shortRail, true);
     const plain = generateMargin(baseParams({ detachMarginConnector: false }), shortRail, true);
-    expect(keyed.vertices.length).toBe(plain.vertices.length);
+    expect(keyed.vertices.length).toBeGreaterThan(plain.vertices.length);
   });
 
   it('seats a key across each body↔rail junction, engaging both halves', () => {

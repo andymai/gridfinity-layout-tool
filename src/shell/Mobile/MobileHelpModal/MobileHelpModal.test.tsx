@@ -37,6 +37,13 @@ describe('MobileHelpModal', () => {
     expect(screen.getByText('Mobile Help')).toBeInTheDocument();
   });
 
+  it('links to the docs beside the close button', () => {
+    render(<MobileHelpModal isOpen={true} onClose={vi.fn()} />);
+    const docs = screen.getByRole('link', { name: 'help.readDocs' });
+    expect(docs).toHaveAttribute('href', '/docs');
+    expect(docs).toHaveAttribute('target', '_blank');
+  });
+
   it('shows the search input', () => {
     const onClose = vi.fn();
     render(<MobileHelpModal isOpen={true} onClose={onClose} />);
@@ -50,7 +57,7 @@ describe('MobileHelpModal', () => {
     const input = screen.getByPlaceholderText('Search shortcuts and features...');
     fireEvent.change(input, { target: { value: 'bed size' } });
 
-    // The "Drawing & Selection" section is hidden when searching.
+    // The "Drawing & selection" section is hidden when searching.
     expect(screen.queryByText('mobile.help.drawingSelection')).toBeNull();
     // ...and the results list is rendered (matched by its aria-label).
     expect(screen.getByLabelText('Search results')).toBeInTheDocument();

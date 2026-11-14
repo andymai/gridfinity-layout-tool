@@ -31,6 +31,16 @@ describe('isApiErrorResponse', () => {
       false
     );
   });
+
+  it('returns true for a response naming a field', () => {
+    expect(isApiErrorResponse({ error: 'msg', code: 'CONTENT_BLOCKED', field: 'binLabel' })).toBe(
+      true
+    );
+  });
+
+  it('returns false when field is not a string', () => {
+    expect(isApiErrorResponse({ error: 'msg', code: 'CONTENT_BLOCKED', field: 3 })).toBe(false);
+  });
 });
 
 describe('mapApiErrorResponse', () => {
@@ -55,6 +65,20 @@ describe('mapApiErrorResponse', () => {
     expect(mapApiErrorResponse({ error: 'msg', code: 'CONTENT_BLOCKED' }).code).toBe(
       'API_CONTENT_BLOCKED'
     );
+  });
+
+  it('keeps the field a CONTENT_BLOCKED response names', () => {
+    const result = mapApiErrorResponse({
+      error: 'Content blocked: Bin notes: contains prohibited content',
+      code: 'CONTENT_BLOCKED',
+      field: 'binNotes',
+    });
+    expect(result).toMatchObject({ code: 'API_CONTENT_BLOCKED', blockedFields: ['binNotes'] });
+  });
+
+  it('names no blocked field when the server sends none', () => {
+    const result = mapApiErrorResponse({ error: 'msg', code: 'CONTENT_BLOCKED' });
+    expect(result).toHaveProperty('blockedFields', undefined);
   });
 
   it('maps NOT_FOUND', () => {

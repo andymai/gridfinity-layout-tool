@@ -102,12 +102,12 @@ export function LayoutPreviewOverlay({
             >
               <ArrowLeftIcon className="w-5 h-5" />
             </IconButton>
-            <h2 id="preview-title" className="text-lg md:text-xl font-bold text-content">
+            <h2 id="preview-title" className="text-page font-semibold text-content">
               {name}
             </h2>
           </div>
           <span className="text-xs uppercase tracking-wide px-2 py-1 rounded bg-surface-secondary text-content-tertiary">
-            {THEME_CONFIG[theme].label}
+            {t(THEME_CONFIG[theme].labelKey)}
           </span>
         </div>
 
@@ -186,7 +186,7 @@ export function LayoutPreviewOverlay({
             {relatedLayouts.length > 0 && onSelectRelated && (
               <div>
                 <h3 className="text-sm font-medium text-content mb-2">
-                  {t('gallery.moreInTheme', { theme: THEME_CONFIG[theme].label })}
+                  {t('gallery.moreInTheme', { theme: t(THEME_CONFIG[theme].labelKey) })}
                 </h3>
                 <div className="flex gap-2">
                   {relatedLayouts.map((related) => (

@@ -1,0 +1,141 @@
+---
+title: Scoops, fillets and pull tabs
+description: 'Add finger scoops, round the inside of each compartment, and lift a bin with pull tabs.'
+sources:
+  - src/features/bin-designer/components/panel/ScoopSection/
+  - src/features/bin-designer/components/panel/InteriorFilletSection/
+  - src/features/bin-designer/components/panel/PullTabSection/
+  - src/features/bin-designer/types/pullTab.ts
+  - src/shared/utils/pullTabPlan.ts
+  - src/shared/utils/interiorFillet.ts
+  - src/shared/constraints/rules.ts
+---
+
+# Scoops, fillets and pull tabs
+
+Ever chased the last tiny screw around the corner of a bin? Or tugged at a full bin that won't come out of the drawer? The Gridfinity Layout Tool has three fixes. A finger scoop and an interior fillet help you get the contents out, and a pull tab helps you lift the bin.
+
+The finger scoop and the interior fillet are in the <Ui k="binDesigner.group.interior" /> group of the bin designer. The pull tab is in the <Ui k="binDesigner.group.lid" /> group.
+
+## Add a finger scoop
+
+A **finger scoop** is a ramp from the floor up to a wall. Push small items up the ramp with one finger, and they come out with no fuss.
+
+1. In the <Ui k="binDesigner.group.interior" /> group, turn on <Ui k="binDesigner.fingerScoop" />.
+2. Click <Ui k="common.customize" /> to show the scoop settings.
+3. Under <Ui k="binDesigner.scoopSide" />, pick one or more walls for the ramp.
+4. Under <Ui k="binDesigner.scoopStyle" />, pick the ramp shape.
+5. Set the size.
+
+The ramp can be <Ui k="binDesigner.scoopStyleCurved" /> or <Ui k="binDesigner.scoopStyleStraight" />.
+
+Each compartment gets a ramp on every wall you pick. Ramps on two walls that meet cross each other in the corner. The front wall is the default, and at least one wall stays on.
+
+### Set the scoop size
+
+Not sure? Leave the size on auto. By default, <Ui k="binDesigner.scoopRadius" /> is <Ui k="binDesigner.scoopRadiusAutoLabel" />, so the scoop fits the size of each compartment. <Ui k="binDesigner.scoopMaxHeight" /> sets the highest it can go, from 5 mm up to the inside height of the bin. The default is 25 mm.
+
+For a custom scoop, click the <Ui k="binDesigner.scoopRadiusAutoLabel" /> button beside <Ui k="binDesigner.scoopRadius" />. Then set two values:
+
+- <Ui k="binDesigner.scoopHeight" />: how high the ramp rises up the wall.
+- <Ui k="binDesigner.scoopRun" />: how far the ramp goes across the floor.
+
+Each value is 5 mm or more. When the height is more than two times the run, the panel warns you. A scoop that steep can print with rough overhangs.
+
+### When the scoop is not available
+
+The finger scoop needs a solid floor in a rectangular bin with compartment walls. If you can't turn it on, the panel tells you why:
+
+- Removable dividers and solid bins have no place for a scoop.
+- A custom shape needs a rectangular footprint.
+- The inside mode of a lightweight floor has no solid floor for the ramp. Change the mode to underside to keep both. See [The base](./base#hollow-the-floor-from-underneath).
+- A spacer, a base-only bin and a <Ui k="binDesigner.base.bodyType.nesting" /> body have no place for a scoop.
+
+<Screenshot id="designer-getting-things-out-scoop" alt="Finger scoop is turned on, and the Back wall is added to the Front wall with the Curved style. The bin then shows three compartments with a curved ramp at the front and the back of each." spec="Bin designer, bin 3 x 2 x 6 with Grid dividers set to 3 columns and 1 row. Close-up of the Interior group: turn on Finger scoop, open Customize, add the Back wall. Curved is the default style. Cut to the bin from above, so the ramps show." />
+
+## Round the inside with an interior fillet
+
+<Ui k="binDesigner.interiorFillet.label" /> rounds the edges where the walls meet the floor, and the corners where the walls meet each other. Small parts then slide out, and the bin has no sharp inside corners to clean.
+
+1. In the <Ui k="binDesigner.group.interior" /> group, turn on <Ui k="binDesigner.interiorFillet.label" />.
+2. Set the <Ui k="binDesigner.interiorFillet.radius" />, from 0.5 to 15 mm.
+
+<Screenshot id="designer-getting-things-out-fillet" alt="Interior fillet is turned on, and Radius is dragged up from 2.5 mm. The bin then shows rounded edges and corners inside each compartment." spec="Bin designer, bin 3 x 2 x 4 with Grid dividers set to 3 columns and 1 row. Close-up of the Interior group: turn on Interior fillet, drag Radius up to about 7 mm. Cut to the bin from above." />
+
+The radius starts at the radius of the inside corners of the bin, so the fillet meets the corners without a step.
+
+### Limits of the fillet
+
+A compartment that is too small for the radius gets the largest rounding that fits. The panel tells you when this happens. On a tray of small compartments, a large radius makes each compartment a bowl.
+
+The fillet needs a solid floor. It does not work with removable dividers, because it would fill the divider slots. A solid bin, a spacer, a base-only bin and a <Ui k="binDesigner.base.bodyType.nesting" /> body cannot have it either. With a lightweight floor, use the underside mode.
+
+## Add a pull tab
+
+A **pull tab** is a raised grip that stands above the rim of a wall. Hold it to lift the bin out of a drawer.
+
+1. In the <Ui k="binDesigner.group.lid" /> group, turn on <Ui k="binDesigner.pullTab.title" />.
+2. Under <Ui k="binDesigner.pullTab.wall" />, pick one or more walls.
+3. Set <Ui k="binDesigner.pullTab.width" />, in millimeters or as a percentage of the wall.
+4. Set <Ui k="binDesigner.pullTab.height" />, from 3 to 40 mm.
+
+You can put a tab on one wall, on two opposite walls, or on all four. The tabs share the same size. Each wall with a tab gets thicker on the inside, to the value of <Ui k="binDesigner.pullTab.thickness" />. That value goes up to 4 mm. The tab is part of the <Ui k="assembledHeight.title" /> readout, so you can check that it clears the drawer above.
+
+A recess on the inside of the tab gives your finger a grip. More controls shape the tab and the recess:
+
+- <Ui k="binDesigner.pullTab.topRadius" /> and <Ui k="binDesigner.pullTab.rootRadius" /> round the shoulders of the tab.
+- <Ui k="binDesigner.pullTab.recessHeight" /> and <Ui k="binDesigner.pullTab.recessDepth" /> set the size of the recess.
+- <Ui k="binDesigner.pullTab.recessBorder" /> sets the solid margin at the top and the sides of the recess.
+- <Ui k="binDesigner.pullTab.backRecess" /> adds the same grip on the outside of the wall.
+
+::: warning
+Keep every wall of the bin plain. Wall cutouts, handles, a wall pattern, wall text or label slots on any wall block the pull tab, even on a wall with no tab.
+:::
+
+A pull tab also needs a rectangular, hollow bin with walls, no lid and no overhang. On a small bin, tabs on opposite walls can close the inside. If that happens, pick fewer walls or a thinner tab.
+
+<Screenshot id="designer-getting-things-out-pull-tab" alt="Pull tab is turned on, and the Back wall is added to the Front wall. The bin then shows a pull tab above the front wall and one above the back wall." spec="Bin designer, bin 3 x 2 x 4 with no other wall features. Close-up of the Lid group: turn on Pull tab, add the Back wall. Cut to the bin." />
+
+## Lift a divided tray from the middle
+
+A large tray full of dividers is hard to lift from one end. Put the pull tab on the center divider, and you can lift the tray with one hand.
+
+1. Make a divider that runs from wall to wall at full height. See [Compartments and dividers](./compartments).
+2. Under <Ui k="binDesigner.pullTab.wall" />, pick <Ui k="binDesigner.pullTab.side.center" />.
+3. If <Ui k="binDesigner.pullTab.side.front" /> is on, click it to turn it off. The walls that you picked before stay on when you add <Ui k="binDesigner.pullTab.side.center" />. Turn off any other wall that is still on.
+4. If the bin has dividers in both directions, pick one under <Ui k="binDesigner.pullTab.centerAxis" />.
+
+<Screenshot id="designer-getting-things-out-center-tab" alt="Pull tab is turned on, Center is picked, Front is turned off, and Left to right is picked under Center divider. The bin then shows a pull tab on the divider across its middle." spec="Bin designer, bin 4 x 3 x 4 with Grid dividers set to 2 columns and 2 rows. Close-up of the Lid group: turn on Pull tab, click Center, click Front to turn it off, pick Left to right. Cut to the bin." />
+
+The bin designer uses the divider nearest the middle of the bin, and makes it thicker on both sides. The center tab has these conditions:
+
+- The divider must be straight and at full height.
+- Label tabs must be off, because they use the tops of the dividers.
+- <Ui k="binDesigner.extraWallHeight" /> must be 0.
+
+## When it goes wrong
+
+### The panel warns that the scoop is very steep
+
+Make <Ui k="binDesigner.scoopRun" /> longer or <Ui k="binDesigner.scoopHeight" /> lower, so the height is no more than two times the run. Or click <Ui k="binDesigner.scoopRadiusAutoLabel" /> to go back to an auto scoop, which never gets that steep.
+
+A steep ramp prints with rough overhangs, and it's hard to reach into.
+
+### The fillet is smaller than the radius you set
+
+Set a smaller <Ui k="binDesigner.interiorFillet.radius" /> that fits your smallest compartment, or use fewer, larger compartments.
+
+A compartment that is too small for the radius gets the largest fillet that fits. The panel tells you when this happens.
+
+### You can't turn on the pull tab
+
+Read the note under the switch. It names what blocks the tab. Turn that feature off, then turn on the tab.
+
+A pull tab needs plain walls. Wall cutouts, handles, a wall pattern, wall text or label slots anywhere on the bin block it, even on a wall with no tab. The bin must also be rectangular and hollow, with no lid and no overhang.
+
+## Next steps
+
+- [Compartments and dividers](./compartments): set up the compartments that get the scoops.
+- [Stacking](./stacking): see how the tab adds to the height of the bin.
+- [Walls](./walls): add handles if you need a grip without a tab.
+- [The base](./base#make-the-floor-lighter): choose a lightweight floor that keeps the scoop.

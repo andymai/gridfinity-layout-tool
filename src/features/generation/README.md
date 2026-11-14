@@ -147,7 +147,7 @@ Non-bin item kinds (`toolRack`, `importedMesh`) generate via `GENERATE_ITEM` /
   `getItemDescriptor()` — the registry lookup throws at runtime, and a unit
   test that imports `@/shared/items/registerDescriptors` will mask it.
 
-## Manifold Draft Preview (`manifold_preview`, graduated)
+## Manifold Draft Preview
 
 A second `GenerationBridge('manifold')` runs the Manifold mesh-CSG kernel at pinned draft quality in its own worker, acquired via `BridgeManager.acquirePreview()` / `releasePreview()` (ref-counted, idle-kept, independent of the exact bridge; init failure is non-fatal). Consumers render a fast coarse draft on the leading edge of an edit, then the exact occt-wasm result supersedes it. `worker/wasmInstantiator.ts:loadManifold()` dynamically imports `manifold-3d` + its WASM (`?url` for the Vite worker) and registers the kernel via brepjs `initFromManifold`. `KernelName` gains `'manifold'`. A draft init failure degrades gracefully to the exact-only path; exports always use the exact kernel.
 
@@ -192,7 +192,7 @@ wall never shifts the columns on the walls that stay patterned.
 ## Lid subsystem map
 
 Resolution runs on the main thread so the panel and the worker cannot disagree.
-`resolveLidInputs` (`worker/generators/lidInputs.ts`) turns params into `LidInputs`,
+`resolveLidInputs` (`src/shared/utils/lidInputs.ts`) turns params into `LidInputs`,
 reading `resolveLidPlateThickness`, `resolveLidCavityExtraMm` and
 `retentionSeatPlanes()` for the magnet interface
 (`interfaceZ = -(LID_TOP_THICKNESS_BASE + magnetDepth) - cavityExtraMm`). `lidAnchorZ`

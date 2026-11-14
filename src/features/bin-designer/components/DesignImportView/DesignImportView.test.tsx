@@ -48,7 +48,7 @@ describe('DesignImportView', () => {
   it('Import & Load button is disabled when no valid design', () => {
     render(<DesignImportView {...defaultProps} />);
 
-    const importButton = screen.getByText('Import & Load');
+    const importButton = screen.getByText('Import & load');
     expect(importButton).toBeDisabled();
   });
 
@@ -119,7 +119,7 @@ describe('DesignImportView', () => {
     const textarea = screen.getByRole('textbox');
     fireEvent.change(textarea, { target: { value: validJSON } });
 
-    const importButton = screen.getByText('Import & Load');
+    const importButton = screen.getByText('Import & load');
     expect(importButton).not.toBeDisabled();
   });
 
@@ -131,7 +131,7 @@ describe('DesignImportView', () => {
     const textarea = screen.getByRole('textbox');
     fireEvent.change(textarea, { target: { value: validJSON } });
 
-    const importButton = screen.getByText('Import & Load');
+    const importButton = screen.getByText('Import & load');
     fireEvent.click(importButton);
 
     expect(defaultProps.onImport).toHaveBeenCalledOnce();
@@ -365,7 +365,7 @@ describe('DesignImportView', () => {
     expect(screen.getByText('Validation errors')).toBeInTheDocument();
   });
 
-  describe('STL routing (stl_bin_import)', () => {
+  describe('STL routing', () => {
     function stlFile(name = 'bin.stl'): File {
       return new File([new Uint8Array(100)], name, { type: 'model/stl' });
     }

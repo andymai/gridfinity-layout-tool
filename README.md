@@ -8,7 +8,7 @@
 [![Commit activity](https://img.shields.io/github/commit-activity/m/andymai/gridfinity-layout-tool?label=commits%2Fmonth)](https://github.com/andymai/gridfinity-layout-tool/commits/main)
 [![License: AGPL-3.0](https://img.shields.io/github/license/andymai/gridfinity-layout-tool)](./LICENSE)
 
-Plan and design [Gridfinity](https://www.youtube.com/c/ZackFreedman) drawer organizer layouts for 3D printing — right in your browser.
+Plan drawer layouts in your browser with [Gridfinity](https://www.youtube.com/c/ZackFreedman), a modular storage system that you 3D print. You can design bins and export baseplates as STL, STEP, or 3MF.
 
 ### → [**gridfinitylayouttool.com**](https://gridfinitylayouttool.com)
 
@@ -16,7 +16,7 @@ https://github.com/user-attachments/assets/eb7a7b68-07f0-45b3-9273-ecf1dfcf6a7c
 
 </div>
 
-The video plans an IKEA Alex drawer, from its measured size to a baseplate exported as 3MF. [Watch it on YouTube](https://www.youtube.com/watch?v=X85QnDIGCJc).
+The video plans an IKEA Alex drawer, from its measured size to the 3MF export of its baseplate. [Watch it on YouTube](https://www.youtube.com/watch?v=X85QnDIGCJc).
 
 <img width="1436" height="847" alt="image" src="https://github.com/user-attachments/assets/17dba424-3a01-4064-b3e9-7742687fc2d5" />
 
@@ -30,33 +30,33 @@ The video plans an IKEA Alex drawer, from its measured size to a baseplate expor
 
 ## Features
 
-- **Layout Planner** — Drag-and-drop bin placement with stacked layers and color-coded categories
-- **3D Preview** — Isometric visualization of your drawer layout
-- **Bin Designer** — Parametric 3D bin generator with STL export
-- **Baseplate Generator** — 3D-printable Gridfinity baseplates with automatic splitting and STL / STEP / 3MF export
-- **Print List** — Optimized print list with filament, time, and cost estimates
-- **Inspiration Gallery** — Browse curated example layouts across workshop, kitchen, office, hobby, and personal themes
-- **Cloud Sharing** — Share layouts via link with optional real-time collaboration
-- **Cloud Sync** — Sign in with Google or GitHub to sync your layouts and bin designs across devices
-- **PWA** — Installable, works offline
+- **Layout Planner.** Place bins with drag and drop, in stacked layers. Each category has its own color.
+- **3D Preview.** See your drawer layout in an isometric 3D view.
+- **Bin Designer.** A parametric generator makes 3D bins and exports them as STL.
+- **Baseplate Generator.** It makes Gridfinity baseplates that you can 3D print. It splits them automatically and exports them as STL, STEP, or 3MF.
+- **Print List.** Get a print list with estimates of filament, time, and cost.
+- **Inspiration Gallery.** Browse curated example layouts in five themes: workshop, kitchen, office, hobby, and personal.
+- **Cloud Sharing.** Share a layout with a link. Real-time collaboration is optional.
+- **Cloud Sync.** Sign in with Google or GitHub to sync your layouts and bin designs across devices.
+- **PWA.** You can install the app, and it works offline.
 
 ## Scope
 
 To set expectations, this tool deliberately does not:
 
-- **Slice models for printing** — export STL / STEP / 3MF and slice in Bambu Studio, PrusaSlicer, OrcaSlicer, etc.
-- **Replace general-purpose CAD** — the Bin Designer is parametric but stays within the Gridfinity spec; for arbitrary shapes use Fusion, OpenSCAD, etc.
-- **Require accounts** — layouts live in your browser by default; signing in for Cloud Sync and link-based sharing are both opt-in
-- **Support legacy browsers** — needs a modern browser with WebGL support
+- **Slice models for printing.** Export STL, STEP, or 3MF. Then slice the file in Bambu Studio, PrusaSlicer, OrcaSlicer, or a different slicer.
+- **Replace general-purpose CAD.** The Bin Designer is parametric, but it stays within the Gridfinity spec. For other shapes, use Fusion, OpenSCAD, or a different CAD tool.
+- **Require accounts.** By default, your layouts stay in your browser. The sign-in for Cloud Sync is opt-in, and Cloud Sharing is opt-in too.
+- **Support legacy browsers.** The app needs a browser with WebGL support.
 
 ## Built With
 
-- **[brepjs](https://github.com/andymai/brepjs)** — Parametric 3D geometry & STL export (OpenCascade WASM)
-- **[Three.js](https://threejs.org)** — 3D visualization
+- **[brepjs](https://github.com/andymai/brepjs)** makes the parametric 3D geometry and the STL export, with OpenCascade compiled to WebAssembly (WASM).
+- **[Three.js](https://threejs.org)** draws the 3D view.
 
 ## Local Development
 
-Requires **Node.js 26+** and **pnpm 11+**. Use `nvm use` to switch to the correct version (requires [nvm](https://github.com/nvm-sh/nvm)).
+You need **Node.js 26+** and **pnpm 11+**. Run `nvm use` to switch to the correct Node.js version. This command needs [nvm](https://github.com/nvm-sh/nvm).
 
 ```bash
 git clone https://github.com/andymai/gridfinity-layout-tool.git
@@ -75,12 +75,12 @@ pnpm run test:e2e      # Playwright end-to-end tests
 docker run -d -p 8080:8080 ghcr.io/andymai/gridfinity-layout-tool:latest
 ```
 
-The image serves the whole planner, designer and every exporter from your own machine; features that need the cloud backend (sharing by link, sign-in, community) stay off. See [docs/self-hosting.md](./docs/self-hosting.md) for Compose, reverse proxies, updating and building from source.
+The image serves the full planner, the designer, and every exporter from your own machine. The features that need the cloud backend stay off: share links, sign-in, and community. See [docs/self-hosting.md](./docs/self-hosting.md) for Compose, reverse proxies, updates, and builds from source.
 
 ## Contributing
 
-This project is open source but not open contribution — see [CONTRIBUTING.md](./CONTRIBUTING.md) for details on bug reports, feature requests, and the pull request policy.
+This project is open source but not open contribution. See [CONTRIBUTING.md](./CONTRIBUTING.md) for bug reports, feature requests, and the pull request policy.
 
 ## License
 
-[GNU Affero General Public License v3.0](./LICENSE) — see the LICENSE file for details.
+The license is the [GNU Affero General Public License v3.0](./LICENSE).

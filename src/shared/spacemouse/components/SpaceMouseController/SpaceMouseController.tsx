@@ -1,7 +1,6 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useId, useRef } from 'react';
 import type { Vector3 } from 'three';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import {
   applyFrameMotion,
   computeContentBox,
@@ -10,10 +9,9 @@ import {
   type OrbitLike,
   presetDirection,
 } from '../../cameraCommands';
-import { SPACEMOUSE_FEATURE_ID } from '../../constants';
 import { computeFrameMotion, isDeflectionIdle, toDeflection } from '../../mapping';
 import { createNavlibViewAccessors, type NavlibViewDeps } from '../../navlib/viewAccessors';
-import { useSpaceMouseSettings } from '../../settingsStore';
+import { useSpaceMouseSettings, useSpaceMouseStore } from '../../settingsStore';
 import { spaceMouseBus } from '../../spaceMouseBus';
 import type { SpaceMouseCommand } from '../../types';
 
@@ -52,7 +50,7 @@ interface SpaceMouseControllerProps {
  * `makeDefault`. Renders nothing.
  */
 export function SpaceMouseController({ modal = false }: SpaceMouseControllerProps): null {
-  const enabled = useFeatureFlag(SPACEMOUSE_FEATURE_ID);
+  const enabled = useSpaceMouseStore((s) => s.enabled);
   const controls = useThree((s) => s.controls) as OrbitLike | null;
   const camera = useThree((s) => s.camera);
   const scene = useThree((s) => s.scene);

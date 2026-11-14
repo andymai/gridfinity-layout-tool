@@ -2,7 +2,7 @@ import type { RefObject } from 'react';
 import type { LayerViewMode } from '@/core/store/view';
 import type { SceneHandle } from './Scene';
 import type { Layer } from '@/core/types';
-import { Button } from '@/design-system';
+import { Button, Kbd } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface IsometricPreviewControlsProps {
@@ -374,35 +374,20 @@ export function IsometricPreviewControls({
         >
           <div className="flex items-center gap-4 text-content-secondary">
             <span>
-              <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">
-                V
-              </kbd>{' '}
-              {t('grid.toggle')}
+              <Kbd>V</Kbd> {t('grid.toggle')}
             </span>
             <span>
-              <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">
-                Space
-              </kbd>{' '}
-              {t('grid.expand')}
+              <Kbd>Space</Kbd> {t('grid.expand')}
             </span>
             <span>
-              <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">
-                R
-              </kbd>{' '}
-              {t('common.reset')}
+              <Kbd>R</Kbd> {t('common.reset')}
             </span>
             <span>
-              <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">
-                Esc
-              </kbd>{' '}
-              {t('common.close')}
+              <Kbd>Esc</Kbd> {t('common.close')}
             </span>
             {layers.length > 1 && (
               <span>
-                <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated text-content leading-none">
-                  E
-                </kbd>{' '}
-                {t('grid.explodedView.label')}
+                <Kbd>E</Kbd> {t('grid.explodedView.label')}
               </span>
             )}
           </div>

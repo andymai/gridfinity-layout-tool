@@ -16,6 +16,8 @@
 import { mesh, exportSTL } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import { buildSTLBufferFromIndexed } from '@/features/generation/export/stlExporter';
+import type { StlWriteOptions } from '@/features/generation/export/stlExporter';
+import { dropCollapsedTriangles } from '@/features/generation/export/collapsedTriangles';
 import { unwrapExportBlob } from './exportUnwrap';
 
 /**
@@ -29,13 +31,14 @@ export function exportSolidMeshToStl(
   solid: Shape3D,
   name: string,
   tolerance: number,
-  angularTolerance: number
+  angularTolerance: number,
+  options: StlWriteOptions = {}
 ): ArrayBuffer {
   const m = mesh(solid, { tolerance, angularTolerance, cache: true });
   const vertices = m.vertices instanceof Float32Array ? m.vertices : new Float32Array(m.vertices);
   const normals = m.normals instanceof Float32Array ? m.normals : new Float32Array(m.normals);
   const indices = m.triangles instanceof Uint32Array ? m.triangles : new Uint32Array(m.triangles);
-  return buildSTLBufferFromIndexed(vertices, normals, indices, name);
+  return buildSTLBufferFromIndexed(vertices, normals, indices, name, options);
 }
 
 /**
@@ -52,17 +55,19 @@ export async function exportSolidToStl(
   solid: Shape3D,
   name: string,
   tolerance: number,
-  angularTolerance: number
+  angularTolerance: number,
+  options: StlWriteOptions = {}
 ): Promise<ArrayBuffer> {
   try {
     const blob = unwrapExportBlob(
       exportSTL(solid, { tolerance, angularTolerance, binary: true }),
       'STL'
     );
-    return await blob.arrayBuffer();
+    const data = await blob.arrayBuffer();
+    return options.keepCollapsedTriangles ? data : dropCollapsedTriangles(data).data;
   } catch (occtStlError) {
     try {
-      return exportSolidMeshToStl(solid, name, tolerance, angularTolerance);
+      return exportSolidMeshToStl(solid, name, tolerance, angularTolerance, options);
     } catch (meshFallbackError) {
       // Both writers failed — the geometry is genuinely unexportable. Rethrow
       // OCCT's error (its message carries the user-facing actionable hint, and

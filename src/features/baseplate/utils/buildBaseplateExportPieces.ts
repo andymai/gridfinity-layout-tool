@@ -24,12 +24,13 @@ import type {
 } from '@/core/types';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
 import type { GenerationBridge, WorkerPool, ExportFormat } from '@/shared/generation/bridge';
-import { buildStackExportSoup } from './stackExport';
+import { buildStackExportSoup, buildMixedStackExportSoup } from './stackExport';
 import {
   planPhysicalStacks,
   stackHeightCap,
   stackedPlateHeightMm,
   planPlateFlip,
+  planMixedPieceStacks,
   type PlateFlip,
 } from './stackPrint';
 import { buildFullParams } from './buildFullParams';
@@ -367,47 +368,86 @@ export async function buildBaseplateExportPieces(
     });
 
     const pieces: ExportPiece[] = [];
-    for (let i = 0; i < uniqueGroups.length; i++) {
-      const [fp, group] = uniqueGroups[i];
-      const name = groupNames.get(fp) ?? 'unknown';
-      const stlData = uniqueExports[i];
-
-      if (stack && stackEnabled) {
-        const source = parseStlSoup(stlData);
-        const groupFlip = planPlateFlip(group.params);
-        const towers = planPhysicalStacks(
-          [{ label: name, quantity: group.indices.length * copies }],
-          stackCap
-        );
-        for (let s = 0; s < towers.length; s++) {
-          const label = towers.length > 1 ? `${name}_${s + 1}` : name;
-          const blob = buildStackedFileBlob(
-            source,
-            `${baseNameNoExt}_${label}`,
-            towers[s].copies,
-            format,
-            stack,
-            groupFlip,
-            printSettings
-          );
-          pieces.push({ data: await blob.arrayBuffer(), label });
-        }
-        continue;
+    const mixedPlan =
+      stack && stackEnabled && stack.mixedSizes === true
+        ? planMixedPieceStacks(tiling, fullParams, copies, stackCap)
+        : undefined;
+    if (mixedPlan && stack) {
+      const sourceByLabel = new Map(
+        uniqueGroups.map(([, group], i) => [
+          tiling.pieces[group.indices[0]].label,
+          { soup: parseStlSoup(uniqueExports[i]), flip: planPlateFlip(group.params) },
+        ])
+      );
+      for (const tower of mixedPlan) {
+        const layers =
+          tower.layers?.map((layer) => {
+            const source = sourceByLabel.get(layer.sourceLabel);
+            if (!source) throw new Error(`Missing stack source: ${layer.sourceLabel}`);
+            return {
+              ...source.soup,
+              flip: layer.flipAxis ? { axis: layer.flipAxis, offsetMm: 0 } : source.flip,
+              dxMm: layer.dxMm,
+              dyMm: layer.dyMm,
+              rotationDeg: layer.rotationDeg,
+            };
+          }) ?? [];
+        const soup = buildMixedStackExportSoup(layers, stack);
+        const name = `${baseNameNoExt}_${tower.label}`;
+        const blob =
+          format === '3mf'
+            ? export3MF(soup.vertices, soup.normals, {
+                name,
+                printSettings: buildThreeMFPrintSettings(printSettings),
+              })
+            : new Blob([buildSTLBuffer(soup.vertices, soup.normals, name)], {
+                type: 'application/sla',
+              });
+        pieces.push({ data: await blob.arrayBuffer(), label: tower.label });
       }
+    } else {
+      for (let i = 0; i < uniqueGroups.length; i++) {
+        const [fp, group] = uniqueGroups[i];
+        const name = groupNames.get(fp) ?? 'unknown';
+        const stlData = uniqueExports[i];
 
-      if (format === '3mf') {
-        const soup = parseStlSoup(stlData);
-        for (const idx of group.indices) {
-          const label = tiling.pieces[idx].label;
-          const blob = export3MF(soup.vertices, soup.normals, {
-            name: `${baseNameNoExt}_${label}`,
-            printSettings: buildThreeMFPrintSettings(printSettings),
-          });
-          pieces.push({ data: await blob.arrayBuffer(), label });
+        if (stack && stackEnabled) {
+          const source = parseStlSoup(stlData);
+          const groupFlip = planPlateFlip(group.params);
+          const towers = planPhysicalStacks(
+            [{ label: name, quantity: group.indices.length * copies }],
+            stackCap
+          );
+          for (let s = 0; s < towers.length; s++) {
+            const label = towers.length > 1 ? `${name}_${s + 1}` : name;
+            const blob = buildStackedFileBlob(
+              source,
+              `${baseNameNoExt}_${label}`,
+              towers[s].copies,
+              format,
+              stack,
+              groupFlip,
+              printSettings
+            );
+            pieces.push({ data: await blob.arrayBuffer(), label });
+          }
+          continue;
         }
-      } else {
-        for (const idx of group.indices) {
-          pieces.push({ data: stlData, label: tiling.pieces[idx].label });
+
+        if (format === '3mf') {
+          const soup = parseStlSoup(stlData);
+          for (const idx of group.indices) {
+            const label = tiling.pieces[idx].label;
+            const blob = export3MF(soup.vertices, soup.normals, {
+              name: `${baseNameNoExt}_${label}`,
+              printSettings: buildThreeMFPrintSettings(printSettings),
+            });
+            pieces.push({ data: await blob.arrayBuffer(), label });
+          }
+        } else {
+          for (const idx of group.indices) {
+            pieces.push({ data: stlData, label: tiling.pieces[idx].label });
+          }
         }
       }
     }
@@ -427,6 +467,7 @@ export async function buildBaseplateExportPieces(
       stackPrint: stackEnabled ? stack : undefined,
       stackCap,
       copies: stackEnabled ? copies : 1,
+      mixedPlan,
     });
 
     // Visual assembly reference alongside the ASCII map. Failure to render

@@ -299,7 +299,7 @@ describe('LayoutManagerModal Accessibility', () => {
       const listbox = screen.getByRole('listbox', { name: /available layouts/i });
       const options = within(listbox).getAllByRole('option');
 
-      // In grid view: 1 "New Layout" card + 2 layouts = 3 options
+      // In grid view: 1 "New layout" card + 2 layouts = 3 options
       // In list view: 2 layouts = 2 options
       expect(options.length).toBeGreaterThanOrEqual(2);
 

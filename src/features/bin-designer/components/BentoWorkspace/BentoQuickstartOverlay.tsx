@@ -37,7 +37,7 @@ export function BentoQuickstartOverlay({ onDismiss }: BentoQuickstartOverlayProp
 
   return (
     <div
-      className="absolute right-3 top-14 z-40 w-80 animate-in fade-in slide-in-from-top-2 rounded-xl border border-stroke-subtle bg-surface-elevated shadow-lg duration-200"
+      className="absolute right-3 top-14 z-40 w-80 animate-slide-down rounded-xl border border-stroke-subtle bg-surface-elevated shadow-lg duration-200"
       role="dialog"
       aria-labelledby="bento-quickstart-title"
     >

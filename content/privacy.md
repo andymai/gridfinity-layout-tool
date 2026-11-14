@@ -7,13 +7,14 @@ schema: Article
 
 # Privacy Policy
 
-**Last updated:** August 2026
+**Last updated:** November 2026
 
 Gridfinity Layout Tool is a free, open-source web application maintained by Andy Aragon. This policy explains what data we collect and how we use it.
 
 ## Summary
 
 - We collect **anonymous analytics** to improve the app (you can opt out)
+- We count **page views** without cookies or an ID in your browser
 - Layouts you create are stored **locally in your browser** unless you choose to share them or sign in
 - When you share a layout, it's stored on our servers with a shareable link
 - **Sign-in is optional.** If you sign in to sync across devices, we collect your name and email from Google or GitHub
@@ -36,6 +37,16 @@ We use [PostHog](https://posthog.com) to understand how people use the app. This
 When analytics is disabled, no data is sent to PostHog.
 
 We also respect your browser's privacy settings. If your browser sends a [Global Privacy Control](https://globalprivacycontrol.org/) (GPC) or Do Not Track signal, analytics is disabled by default. You can still enable it manually in Settings if you choose.
+
+### Page View Counts
+
+The app and the [docs](/docs) count page views with [Vercel Web Analytics](https://vercel.com/docs/analytics/privacy-policy), a service of the company that hosts this site. Each page view records:
+
+- The page address and the page that linked to it
+- Approximate location (country, region and city)
+- Browser, operating system and device type
+
+Vercel Web Analytics sets no cookie and stores no ID in your browser. It groups one visitor's page views with a value made from the request, and discards that value after 24 hours. The analytics setting above doesn't turn these counts off. Self-hosted copies of the app don't send them.
 
 ### Layout Data
 
@@ -130,7 +141,7 @@ Signed-in users can report a published design, whether or not they have publishe
 | Service    | Purpose                                               | Privacy Policy                                                                                                                                                         |
 | ---------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | PostHog    | Analytics                                             | [posthog.com/privacy](https://posthog.com/privacy)                                                                                                                     |
-| Vercel     | Hosting & storage                                     | [vercel.com/legal/privacy-policy](https://vercel.com/legal/privacy-policy)                                                                                             |
+| Vercel     | Hosting, storage & page view counts                   | [vercel.com/legal/privacy-policy](https://vercel.com/legal/privacy-policy)                                                                                             |
 | Liveblocks | Real-time collaboration                               | [liveblocks.io/privacy](https://liveblocks.io/privacy)                                                                                                                 |
 | Google     | Sign-in for sync and publishing (only if you sign in) | [policies.google.com/privacy](https://policies.google.com/privacy)                                                                                                     |
 | GitHub     | Sign-in for sync and publishing (only if you sign in) | [docs.github.com/site-policy/privacy-policies/github-general-privacy-statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement) |
@@ -153,6 +164,7 @@ You can:
 - **Local data:** Stored indefinitely until you clear it
 - **Shared layouts:** Stored until you delete them (or we may remove inactive shares after 12 months)
 - **Analytics:** Retained by PostHog per their data retention policy
+- **Page view counts:** Retained by Vercel per their data retention policy
 - **Account session cookies:** 30 days from sign-in
 - **Account profile (name, email, provider account ID):** 1 year, refreshed on every sign-in. Profiles for accounts that don't sign in for a year are automatically deleted
 - **Synced layouts and designs:** Retained until you delete them, or until you delete your account

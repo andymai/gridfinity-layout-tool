@@ -223,6 +223,40 @@ describe('use3DPreviewKeyboard', () => {
       document.body.removeChild(div);
     });
 
+    it.each([
+      ['a button', () => document.createElement('button')],
+      [
+        'a switch',
+        () => {
+          const el = document.createElement('div');
+          el.setAttribute('role', 'switch');
+          return el;
+        },
+      ],
+      [
+        'an icon inside a button',
+        () => {
+          const button = document.createElement('button');
+          button.appendChild(document.createElement('span'));
+          return button;
+        },
+      ],
+    ])('leaves Space to %s so it still activates', (_name, make) => {
+      renderHook(() => use3DPreviewKeyboard(defaultProps()));
+      const control = make();
+      document.body.appendChild(control);
+      const target = control.firstElementChild ?? control;
+
+      let event: KeyboardEvent | undefined;
+      act(() => {
+        event = pressKey(' ', target);
+      });
+
+      expect(mockTogglePreviewExpanded).not.toHaveBeenCalled();
+      expect(event?.defaultPrevented).toBe(false);
+      document.body.removeChild(control);
+    });
+
     it('handles shortcuts normally when target is a regular element', () => {
       renderHook(() => use3DPreviewKeyboard(defaultProps()));
 

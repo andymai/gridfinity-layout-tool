@@ -40,7 +40,7 @@ export function PresenceAvatarList({ participants, className = '' }: PresenceAva
             ${participant.isSelf ? 'bg-surface-hover' : ''}
           `.trim()}
         >
-          <PresenceAvatar participant={participant} size="md" showName={false} />
+          <PresenceAvatar participant={participant} size="md" showName={false} decorative />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-sm text-content truncate">{participant.name}</span>

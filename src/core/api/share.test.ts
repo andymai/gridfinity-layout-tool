@@ -22,6 +22,7 @@ import {
   meshCloudSession,
 } from '@/shared/generation/meshCloud';
 import type * as MeshCloud from '@/shared/generation/meshCloud';
+import { prepareBinParamsAsIs } from '@/test/mocks/designStorePort';
 
 vi.mock('@/shared/generation/meshCloud', async (importOriginal) => ({
   ...(await importOriginal<typeof MeshCloud>()),
@@ -233,6 +234,40 @@ describe('updateShare', () => {
     expect(value.id).toBe('abc123xyz789');
   });
 
+  it('returns the lastUpdatedAt the server wrote', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          id: 'abc123xyz789',
+          url: 'https://example.com/l/abc123xyz789',
+          permission: 'edit',
+          lastUpdatedAt: '2026-11-01T10:00:00.000Z',
+        }),
+    } as Response);
+
+    const result = await updateShare('abc123xyz789', 'token123', mockLayout);
+
+    expect(expectOk(result).lastUpdatedAt).toBe('2026-11-01T10:00:00.000Z');
+  });
+
+  it('rejects a response whose lastUpdatedAt is not a string', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          id: 'abc123xyz789',
+          url: 'https://example.com/l/abc123xyz789',
+          permission: 'edit',
+          lastUpdatedAt: 1730455200000,
+        }),
+    } as Response);
+
+    const result = await updateShare('abc123xyz789', 'token123', mockLayout);
+
+    expect(expectErr(result).code).toBe('API_SERVER_ERROR');
+  });
+
   it('returns Err with ApiUnauthorizedError on unauthorized', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
@@ -321,6 +356,7 @@ describe('linked designs travelling with a share', () => {
       upsertRegistryEntry: () => Promise.reject(new Error('unused')),
       registryEdgeFields: async () => ({}),
       registryPlacementFields: async () => ({}),
+      prepareBinParams: prepareBinParamsAsIs,
     };
     registerDesignStorePort(port);
   };
@@ -419,6 +455,7 @@ describe('linked designs over the server per-design cap', () => {
       upsertRegistryEntry: () => Promise.reject(new Error('unused')),
       registryEdgeFields: async () => ({}),
       registryPlacementFields: async () => ({}),
+      prepareBinParams: prepareBinParamsAsIs,
     });
   };
 
@@ -546,6 +583,7 @@ describe('linked designs naming mesh files', () => {
       upsertRegistryEntry: () => Promise.reject(new Error('unused')),
       registryEdgeFields: async () => ({}),
       registryPlacementFields: async () => ({}),
+      prepareBinParams: prepareBinParamsAsIs,
     });
   };
 
@@ -671,6 +709,7 @@ describe('linked designs naming mesh files', () => {
       upsertRegistryEntry: () => Promise.reject(new Error('unused')),
       registryEdgeFields: async () => ({}),
       registryPlacementFields: async () => ({}),
+      prepareBinParams: prepareBinParamsAsIs,
     });
 
     expectOk(await createShare('abc123xyz789', layout, 'view'));
@@ -880,6 +919,25 @@ describe('API error mapping', () => {
     const result = await createShare('test-layout-id', mockLayout, 'view');
 
     expect(expectErr(result).code).toBe('API_CONTENT_BLOCKED');
+  });
+
+  it('carries the field the server blocked into the error', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: false,
+      json: () =>
+        Promise.resolve({
+          error: 'Content blocked: Category "Spices": contains prohibited content',
+          code: 'CONTENT_BLOCKED',
+          field: 'category',
+        }),
+    } as Response);
+
+    const result = await createShare('test-layout-id', mockLayout, 'view');
+
+    expect(expectErr(result)).toMatchObject({
+      code: 'API_CONTENT_BLOCKED',
+      blockedFields: ['category'],
+    });
   });
 
   it('maps INVALID_PERMISSION to ApiValidationError', async () => {

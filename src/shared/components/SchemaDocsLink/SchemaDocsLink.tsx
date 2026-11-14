@@ -24,7 +24,7 @@ export function SchemaDocsLink({ className }: SchemaDocsLinkProps): JSX.Element 
       href={SCHEMA_DOCS_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className={cn('text-xs text-muted underline hover:text-content', className)}
+      className={cn('text-xs text-content-tertiary underline hover:text-content', className)}
     >
       {t('common.schemaDocsLink')}
     </a>

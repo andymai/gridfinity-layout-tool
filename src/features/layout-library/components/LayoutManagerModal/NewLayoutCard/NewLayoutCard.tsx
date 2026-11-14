@@ -19,7 +19,7 @@ export function NewLayoutCard({ onCreate }: NewLayoutCardProps) {
       className="
         group block h-auto w-full text-left bg-surface-secondary rounded-lg p-2
         border-2 border-dashed border-stroke font-normal
-        hover:border-accent hover:bg-surface-tertiary
+        hover:border-accent hover:bg-surface-hover
         focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
       "
       aria-label={t('layouts.newLayout')}

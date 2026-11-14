@@ -1,12 +1,15 @@
+import type { BedCapacity } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 
 interface SplitWarningProps {
   binWidth: number;
   binDepth: number;
-  maxGridUnits: { width: number; depth: number };
+  maxGridUnits: BedCapacity;
   gridUnitMm: number;
   printBedSize: number;
   printBedDepth: number;
+  /** How far the body reaches past the footprint across each axis, in mm. */
+  overhangMm?: { width: number; depth: number };
   /** Compact mode shows less detail (for mobile) */
   compact?: boolean;
 }
@@ -17,20 +20,21 @@ interface SplitWarningProps {
  * Supports rectangular (asymmetric) print beds.
  */
 function PrintBedIndicator({
-  binWidth,
-  binDepth,
+  binWidthMm,
+  binDepthMm,
   maxUnits,
   gridUnitMm,
   printBedWidth,
   printBedDepth,
 }: {
-  binWidth: number;
-  binDepth: number;
+  binWidthMm: number;
+  binDepthMm: number;
   maxUnits: { width: number; depth: number };
   gridUnitMm: number;
   printBedWidth: number;
   printBedDepth: number;
 }) {
+  const t = useTranslation();
   const size = 64;
   const padding = 4;
   const innerSize = size - padding * 2;
@@ -43,10 +47,6 @@ function PrintBedIndicator({
   const bedW = printBedWidth * scale;
   const bedD = printBedDepth * scale;
 
-  // Bin dimensions in mm
-  const binWidthMm = binWidth * gridUnitMm;
-  const binDepthMm = binDepth * gridUnitMm;
-
   // Max printable area
   const maxWidthMm = maxUnits.width * gridUnitMm;
   const maxDepthMm = maxUnits.depth * gridUnitMm;
@@ -58,7 +58,12 @@ function PrintBedIndicator({
     <div
       className="relative flex-shrink-0"
       style={{ width: size, height: size }}
-      title={`Print bed: ${printBedWidth}×${printBedDepth}mm, Max bin: ${maxUnits.width}×${maxUnits.depth} units`}
+      title={t('inspector.split.limitTitle', {
+        bedWidth: printBedWidth,
+        bedDepth: printBedDepth,
+        maxWidth: maxUnits.width,
+        maxDepth: maxUnits.depth,
+      })}
     >
       {/* Print bed outline */}
       <div
@@ -102,7 +107,8 @@ function PrintBedIndicator({
 }
 
 /**
- * Warning indicator when bin exceeds print bed size and needs splitting.
+ * Warning indicator when bin exceeds print bed size and needs splitting, or
+ * prints in one piece because its design turns splitting off.
  * Shows both a visual indicator and text explanation.
  */
 export function SplitWarning({
@@ -112,14 +118,18 @@ export function SplitWarning({
   gridUnitMm,
   printBedSize,
   printBedDepth,
+  overhangMm,
   compact = false,
 }: SplitWarningProps) {
   const t = useTranslation();
+  const partWidthMm = binWidth * gridUnitMm + (overhangMm?.width ?? 0);
+  const partDepthMm = binDepth * gridUnitMm + (overhangMm?.depth ?? 0);
+  const { keptWhole } = maxGridUnits;
   const needsSplit = binWidth > maxGridUnits.width || binDepth > maxGridUnits.depth;
   const pieces =
     Math.ceil(binWidth / maxGridUnits.width) * Math.ceil(binDepth / maxGridUnits.depth);
 
-  if (!needsSplit) {
+  if (!needsSplit && !keptWhole) {
     // Show success state - bin fits print bed
     return (
       <div className="flex items-center gap-2 p-2 rounded-lg bg-surface-elevated">
@@ -132,11 +142,13 @@ export function SplitWarning({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
         <span className="text-xs text-content-tertiary">
-          {t('inspector.fitsPrintBedDimensions', {
-            binWidth,
-            binDepth,
-            max: `${maxGridUnits.width}×${maxGridUnits.depth}`,
-          })}
+          {maxGridUnits.diagonal
+            ? t('inspector.fitsPrintBedDiagonally', { binWidth, binDepth })
+            : t('inspector.fitsPrintBedDimensions', {
+                binWidth,
+                binDepth,
+                max: `${maxGridUnits.width}×${maxGridUnits.depth}`,
+              })}
         </span>
       </div>
     );
@@ -159,7 +171,11 @@ export function SplitWarning({
             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
           />
         </svg>
-        <span className="text-sm">{t('inspector.split.piecesNeeded', { count: pieces })}</span>
+        <span className="text-sm">
+          {keptWhole
+            ? t('grid.exceedsPrintSizeWhole')
+            : t('inspector.split.piecesNeeded', { count: pieces })}
+        </span>
       </div>
     );
   }
@@ -167,9 +183,9 @@ export function SplitWarning({
   return (
     <div className="flex items-start gap-3 p-3 rounded-lg bg-warning-muted border border-warning text-warning text-sm">
       <PrintBedIndicator
-        binWidth={binWidth}
-        binDepth={binDepth}
-        maxUnits={maxGridUnits}
+        binWidthMm={partWidthMm}
+        binDepthMm={partDepthMm}
+        maxUnits={keptWhole ?? maxGridUnits}
         gridUnitMm={gridUnitMm}
         printBedWidth={printBedSize}
         printBedDepth={printBedDepth}
@@ -192,11 +208,9 @@ export function SplitWarning({
           <span className="font-medium">{t('inspector.split.title')}</span>
         </div>
         <p className="text-xs opacity-80">
-          {t('inspector.split.message', {
-            width: binWidth,
-            depth: binDepth,
-            widthMm: binWidth * gridUnitMm,
-            depthMm: binDepth * gridUnitMm,
+          {t(keptWhole ? 'inspector.split.wholeMessage' : 'inspector.split.message', {
+            widthMm: partWidthMm,
+            depthMm: partDepthMm,
             bedSize: `${printBedSize}×${printBedDepth}`,
           })}
         </p>

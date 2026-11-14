@@ -60,6 +60,10 @@ Delete token: random secret, hashed server-side, required for mutations.
 6. **Restored design ids are derived, not generated** - hashed from (share id, source design
    id) so re-opening a link updates the same records instead of duplicating them on
    every visit.
+7. **A failed auto-sync upload retries** - `utils/shareUploads.ts` sends it again after
+   `UPLOAD_RETRY_DELAYS_MS` when `isRetryable` allows the error. A newer upload or
+   `keepShareLayout` cancels the retry, and it sends only while the upload's `current()`
+   holds, so a layout that a local or remote change replaced never goes out late.
 
 ## Limits
 

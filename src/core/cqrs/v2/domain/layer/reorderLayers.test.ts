@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { produce } from 'immer';
-import { isOk } from '@/core/result';
+import { isErr, isOk } from '@/core/result';
 import type { Bin } from '@/core/types';
 import { binId, categoryId, gridUnits, heightUnits, layerId } from '@/core/types';
 import { reorderLayers } from './reorderLayers';
@@ -38,8 +38,39 @@ describe('v2 layer.reorder', () => {
     });
 
     const result = reorderLayers.handle({ fromIndex: 2, toIndex: 1 }, { aggregate: layout });
-    expect(result.ok).toBe(false);
+    expect(isErr(result) && result.error).toMatchObject({
+      code: 'LAYOUT_INVALID_OPERATION',
+      reason: 'exceeds_height',
+    });
     expect(reorderLayers.handle({ fromIndex: 0, toIndex: 1 }, { aggregate: layout }).ok).toBe(true);
+  });
+
+  it('errors when the new order rests a bin on clearance another bin reserves', () => {
+    // A reserves 2u above itself. On top of B it reserves empty space; moved
+    // under B, B lands on that clearance (4u up, 6u total, inside the 7u drawer).
+    const bin = (id: string, layer: string, clearance?: number): Bin => ({
+      id: binId(id),
+      layerId: layerId(layer),
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+      height: heightUnits(2),
+      ...(clearance === undefined ? {} : { clearanceHeight: heightUnits(clearance) }),
+      category: categoryId('cat_1'),
+      label: '',
+      notes: '',
+    });
+    const layout = makeLayout({
+      layers: [makeLayer('b'), makeLayer('a')],
+      bins: [bin('B', 'b'), bin('A', 'a', 2)],
+    });
+
+    const result = reorderLayers.handle({ fromIndex: 1, toIndex: 0 }, { aggregate: layout });
+    expect(isErr(result) && result.error).toMatchObject({
+      code: 'LAYOUT_INVALID_OPERATION',
+      reason: 'clearance',
+    });
   });
 
   it('errors on out-of-range source index', () => {

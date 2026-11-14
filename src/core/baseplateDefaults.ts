@@ -417,6 +417,7 @@ function migrateStackPrint(value: unknown): StackPrintParams | undefined {
   if (typeof o.enabled !== 'boolean') return undefined;
   return {
     enabled: o.enabled,
+    ...(o.mixedSizes === true ? { mixedSizes: true } : {}),
     gapMm: mm(
       clampNumber(
         o.gapMm,

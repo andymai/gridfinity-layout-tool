@@ -1,15 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { isInaccessible, render, screen } from '@testing-library/react';
 import { PresenceAvatarList } from './PresenceAvatarList';
 import type { Participant } from '@/shared/hooks/usePresence';
 import { resetAllStores } from '@/test/testUtils';
-
-// Mock child component
-vi.mock('../PresenceAvatar', () => ({
-  PresenceAvatar: ({ participant }: { participant: Participant }) => (
-    <div data-testid="presence-avatar">{participant.name}</div>
-  ),
-}));
 
 // Mock translation
 vi.mock('@/i18n', () => ({
@@ -60,6 +53,24 @@ describe('PresenceAvatarList', () => {
   it('displays "Owner" badge for owner', () => {
     render(<PresenceAvatarList participants={mockParticipants} />);
     expect(screen.getByText('Owner')).toBeInTheDocument();
+  });
+
+  it('names the owner once to assistive technology', () => {
+    render(<PresenceAvatarList participants={mockParticipants} />);
+    const exposed = [
+      ...screen.queryAllByRole('img', { name: 'Owner' }),
+      ...screen.getAllByText('Owner').filter((element) => !isInaccessible(element)),
+    ];
+    expect(exposed).toHaveLength(1);
+  });
+
+  it('names each person once, from the text beside a hidden avatar', () => {
+    render(<PresenceAvatarList participants={mockParticipants} />);
+    expect(screen.queryAllByRole('img')).toHaveLength(0);
+    for (const name of ['User 1', 'User 2']) {
+      const exposed = screen.getAllByText(name).filter((element) => !isInaccessible(element));
+      expect(exposed).toHaveLength(1);
+    }
   });
 
   it('highlights self with background', () => {

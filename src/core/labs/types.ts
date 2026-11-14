@@ -1,33 +1,11 @@
-/**
- * Labs feature flag type definitions.
- *
- * These types define the structure of feature flags used throughout the application.
- * This module is part of core infrastructure, not a specific feature.
- */
-
-export type FeatureStatus =
-  | 'experimental' // Active experiment, may have bugs
-  | 'preview' // More stable, nearing graduation
-  | 'graduated'; // Now available to everyone
-
 export type RiskLevel = 'low' | 'medium' | 'high';
 
 export interface FeatureFlag {
   id: string;
   name: string;
   description: string;
-  status: FeatureStatus;
   risk: RiskLevel;
   warning?: string;
-  addedAt: string;
-  graduatedAt?: string;
-  requiresRefresh: boolean;
-  /**
-   * On for everyone who has not decided otherwise, while the feature stays
-   * listed in Labs and stays switchable off. The state a feature sits in
-   * between "opt in to try it" and `graduated`, where the toggle disappears.
-   */
-  defaultEnabled?: boolean;
 }
 
 export interface LabsPreferences {

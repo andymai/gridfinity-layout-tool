@@ -165,7 +165,7 @@ function ShareModalBody({ layout, onClose }: { layout: Layout; onClose: () => vo
         tabIndex={-1}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 id="share-modal-title" className="text-2xl font-bold text-content">
+          <h2 id="share-modal-title" className="text-page font-semibold text-content">
             {t('share.title')}
           </h2>
           <IconButton

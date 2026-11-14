@@ -103,7 +103,7 @@ export function Header({ saveStatus }: HeaderProps) {
   return (
     <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle">
       <div className="flex items-center gap-4 min-w-0">
-        <ToolSwitcher iconOnly={isTablet} />
+        <ToolSwitcher iconOnly={isTablet} labelsFromXl />
 
         {/* Divider */}
         <div className="w-px h-6 bg-stroke-subtle" />
@@ -143,7 +143,7 @@ export function Header({ saveStatus }: HeaderProps) {
             </svg>
           }
         >
-          {!isTablet && <span className="hidden sm:inline">{t('header.print')}</span>}
+          {!isTablet && <span className="hidden xl:inline">{t('header.print')}</span>}
         </Button>
 
         {/* Export Button — label stays visible at every width because the
@@ -205,7 +205,7 @@ export function Header({ saveStatus }: HeaderProps) {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
               />
             </svg>
-            <span>{t('header.saving')}</span>
+            <span className="sr-only xl:not-sr-only">{t('header.saving')}</span>
           </div>
         )}
         {saveStatus === 'saved' && (
@@ -231,7 +231,33 @@ export function Header({ saveStatus }: HeaderProps) {
                 />
               ))}
             </svg>
-            <span>{t('header.saved')}</span>
+            <span className="sr-only xl:not-sr-only">{t('header.saved')}</span>
+          </div>
+        )}
+        {saveStatus === 'error' && (
+          <div
+            className="flex items-center gap-1.5 px-2 py-1 text-micro mr-2 text-error"
+            aria-live="polite"
+            role="status"
+          >
+            <svg
+              className="w-3 h-3"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              {ICON_PATHS.close.map((d) => (
+                <path
+                  key={d}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d={d}
+                />
+              ))}
+            </svg>
+            <span className="sr-only xl:not-sr-only">{t('header.saveFailed')}</span>
           </div>
         )}
 
@@ -284,7 +310,7 @@ export function Header({ saveStatus }: HeaderProps) {
 
         <div className="w-px h-6 bg-stroke-subtle mx-2" />
 
-        <HeaderSupportLinks />
+        <HeaderSupportLinks compact={isTablet} />
       </div>
 
       {/* Lazy-loaded modals - only load chunks when modal is opened */}

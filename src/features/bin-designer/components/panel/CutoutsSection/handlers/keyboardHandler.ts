@@ -27,7 +27,7 @@ export interface KeyboardHandlerContext {
   readonly selectAll: () => void;
   readonly nudgeSelected: (dx: number, dy: number) => void;
   readonly copySelected: () => void;
-  readonly pasteFromClipboard: () => void;
+  readonly pasteFromClipboard: () => boolean;
   readonly duplicateSelected: () => void;
   /**
    * Ctrl+Shift+D. Creates a repeat from a single selected cutout, or collapses
@@ -55,6 +55,8 @@ export interface KeyboardHandlerContext {
   readonly groupContext?: readonly string[];
   /** Step out one level; Escape walks back up the way double-click walked down. */
   readonly exitGroup?: () => void;
+  readonly onImportSvg?: () => void;
+  readonly onImportStl?: () => void;
 }
 
 /**
@@ -64,13 +66,22 @@ export interface KeyboardHandlerContext {
  */
 export function focusOwnsKeys(target: EventTarget | null): boolean {
   // A key sent to the window or the document has neither.
-  const element = target as Partial<Pick<HTMLElement, 'tagName' | 'getAttribute'>> | null;
+  const element = target as Partial<
+    Pick<HTMLElement, 'tagName' | 'getAttribute' | 'closest'>
+  > | null;
   return (
     element?.tagName === 'INPUT' ||
     element?.tagName === 'TEXTAREA' ||
     element?.getAttribute?.('role') === 'switch' ||
-    element?.getAttribute?.('role') === 'radio'
+    element?.getAttribute?.('role') === 'radio' ||
+    // An open popover (an info dot's panel) scrolls and tabs with these keys.
+    (typeof element?.closest === 'function' && element.closest('[data-popover]') !== null)
   );
+}
+
+function tabMovesFocus(target: EventTarget | null): boolean {
+  const element = target as Partial<Pick<HTMLElement, 'tagName'>> | null;
+  return element?.tagName === 'BUTTON' || element?.tagName === 'A' || element?.tagName === 'SELECT';
 }
 
 /**
@@ -81,6 +92,8 @@ export function focusOwnsKeys(target: EventTarget | null): boolean {
  */
 export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContext): void {
   if (focusOwnsKeys(e.target)) return;
+  // An open popover (an info dot) captures Escape and marks it handled.
+  if (e.key === 'Escape' && e.defaultPrevented) return;
 
   // Path drawing mode: Escape to cancel, Ctrl+Z to undo last point
   if (ctx.mode.type === 'path-drawing') {
@@ -222,8 +235,9 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       break;
     case 'v':
       if (mod) {
-        e.preventDefault();
-        ctx.pasteFromClipboard();
+        // With nothing copied here the browser's paste goes ahead, so an image
+        // on the system clipboard reaches the editor as a photo to trace.
+        if (ctx.pasteFromClipboard()) e.preventDefault();
       } else {
         e.preventDefault();
         e.stopImmediatePropagation();
@@ -317,6 +331,22 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       }
       break;
 
+    case 'i':
+      if (!mod && ctx.onImportSvg) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        ctx.onImportSvg();
+      }
+      break;
+
+    case 'j':
+      if (!mod && ctx.onImportStl) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        ctx.onImportStl();
+      }
+      break;
+
     // M: switch to ruler/measure tool
     case 'm':
       if (!mod) {
@@ -326,9 +356,10 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       }
       break;
 
-    // Tab / Shift+Tab to cycle selection
+    // Tab / Shift+Tab to cycle selection, unless focus sits on a control
+    // (a button, an info dot's panel) where Tab has to move focus on.
     case 'Tab':
-      if (ctx.cutouts.length > 0) {
+      if (ctx.cutouts.length > 0 && !tabMovesFocus(e.target)) {
         e.preventDefault();
         handleTabCycle(e, ctx);
       }

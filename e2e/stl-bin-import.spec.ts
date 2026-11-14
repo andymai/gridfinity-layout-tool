@@ -1,5 +1,5 @@
 /**
- * E2E for the STL bin import feature (stl_bin_import labs flag):
+ * E2E for the STL bin import feature:
  * import a whole-bin STL as an `importedMesh` design, verify grid-footprint
  * detection and the designer panel, then link the design to a matching
  * layout bin through the Link Existing dialog.
@@ -10,10 +10,7 @@
  */
 
 import type { Page } from '@playwright/test';
-import { test, expect, drawBinOnGrid, waitForAppReady } from './fixtures';
-
-const LABS_KEY = 'gridfinity-labs-v1';
-const LAB_FLAG = 'stl_bin_import';
+import { test, expect, drawBinOnGrid, openDesignList, waitForAppReady } from './fixtures';
 
 const BOX_W = 41.5;
 const BOX_D = 41.5;
@@ -74,7 +71,7 @@ async function importFixtureStl(page: Page): Promise<void> {
   await page.goto('/designer');
   await expect(page.locator('canvas').first()).toBeVisible({ timeout: 60000 });
 
-  await page.getByRole('button', { name: 'Open design list' }).click();
+  await openDesignList(page);
   await page.getByRole('button', { name: 'Import', exact: true }).click();
 
   const fileInput = page.locator('input[type="file"][accept=".json,.stl"]');
@@ -89,24 +86,6 @@ async function importFixtureStl(page: Page): Promise<void> {
 }
 
 test.describe('STL bin import', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(
-      ({ key, flag }) => {
-        const prefs = {
-          enabledFeatures: { [flag]: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        };
-        try {
-          localStorage.setItem(key, JSON.stringify(prefs));
-        } catch {
-          /* assertions below fail loudly if labs init breaks */
-        }
-      },
-      { key: LABS_KEY, flag: LAB_FLAG }
-    );
-  });
-
   test('imports an STL as a bin design with detected footprint', async ({ page }) => {
     test.setTimeout(120000);
     await importFixtureStl(page);

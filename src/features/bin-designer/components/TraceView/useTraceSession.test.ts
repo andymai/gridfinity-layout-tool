@@ -84,6 +84,38 @@ beforeEach(() => {
 });
 
 describe('useTraceSession', () => {
+  it('traces again by the sheet the user names, and by none when it is not paper', async () => {
+    mockDetect.mockReturnValue(PAPER);
+    const { result } = await loaded();
+    expect(result.current.paper).toBeNull();
+
+    mockDetect.mockReturnValue(null);
+    act(() => result.current.setPaper('off'));
+    await waitFor(() => expect(result.current.working).toBe(false));
+
+    expect(mockDetect).toHaveBeenLastCalledWith(IMAGE, expect.objectContaining({ paper: 'off' }));
+    expect(mockTrace).toHaveBeenLastCalledWith(
+      IMAGE,
+      expect.objectContaining({ paper: 'off' }),
+      null
+    );
+    expect(result.current.paper).toBe('off');
+    expect(result.current.manual).toBe(false);
+
+    act(() => result.current.undo());
+    expect(result.current.paper).toBeNull();
+  });
+
+  it('forgets the word on the sheet when a new photo loads', async () => {
+    const { result } = await loaded();
+    act(() => result.current.setPaper('letter'));
+    await waitFor(() => expect(result.current.working).toBe(false));
+    expect(result.current.paper).toBe('letter');
+
+    await act(() => result.current.load(photo()));
+    expect(result.current.paper).toBeNull();
+  });
+
   it('traces every tool against the photo’s own reference', async () => {
     mockDetect.mockReturnValue(RULER);
     const { result } = await loaded();

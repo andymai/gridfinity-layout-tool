@@ -51,6 +51,9 @@ export async function handleExportItem(message: ExportItemMessage): Promise<void
     requestId,
     'BASEPLATE_EXPORT_RESULT',
     async () => {
+      // Same pre-pass as generation (fonts, decoded assets): an export can land
+      // on a worker that never generated this item.
+      await getItemGenerator(item.structure.kind).prepare?.(item);
       const result = await getItemGenerator(item.structure.kind).export(
         item,
         format,

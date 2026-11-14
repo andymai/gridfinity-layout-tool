@@ -34,6 +34,7 @@ import {
 } from '@/core/storage/designStorePort';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { expectOk, expectErr, createTestLayout as baseCreateTestLayout } from '@/test/testUtils';
+import { prepareBinParamsAsIs } from '@/test/mocks/designStorePort';
 
 // Mock clipboard API
 const mockClipboard = {
@@ -57,6 +58,7 @@ const fakePort: DesignStorePort = {
   upsertRegistryEntry: (...args: unknown[]) => mockUpsertRegistryEntry(...args),
   registryEdgeFields: async () => ({}),
   registryPlacementFields: async () => ({}),
+  prepareBinParams: prepareBinParamsAsIs,
 };
 
 function expectImportError(result: Result<unknown, ValidationError>): ValidationImportError {
@@ -870,6 +872,29 @@ describe('storage-share', () => {
       });
     });
 
+    it('finishes the restore when registering a saved design fails', async () => {
+      const layout = createTestLayout();
+      const json = JSON.stringify({
+        ...layout,
+        linkedDesigns: [
+          { id: 'a', name: 'A', params: { ...DEFAULT_BIN_PARAMS } },
+          { id: 'b', name: 'B', params: { ...DEFAULT_BIN_PARAMS } },
+        ],
+      });
+      mockSaveDesign.mockImplementation((input: { name: string }) =>
+        Promise.resolve(ok({ id: `new-${input.name}`, name: input.name, updatedAt: 'now' }))
+      );
+      registerDesignStorePort({
+        ...fakePort,
+        registryPlacementFields: () => Promise.reject(new Error('registry unavailable')),
+      });
+
+      const result = await restoreEmbeddedDesigns(json, layout);
+
+      expect(result.importedDesignCount).toBe(2);
+      expect(mockSaveDesign).toHaveBeenCalledTimes(2);
+    });
+
     it('saves an embedded assembly through the port with its structure', async () => {
       const layout = createTestLayout();
       layout.bins[0].linkedDesignId = designId('old-asm-id');
@@ -1141,7 +1166,7 @@ describe('storage-share', () => {
           assembledRiseMm: expect.any(Number),
         })
       );
-      expect(result.bins[0].linkedDesignId).toBe('design_shared_asm');
+      expect(result.layout.bins[0].linkedDesignId).toBe('design_shared_asm');
     });
 
     it('skips an assembly entry whose structure fails the shape guard', async () => {
@@ -1156,14 +1181,15 @@ describe('storage-share', () => {
       ]);
 
       expect(mockSaveDesign).not.toHaveBeenCalled();
-      expect(result.bins[0].linkedDesignId).toBe('remote-asm-1');
+      expect(result.layout.bins[0].linkedDesignId).toBe('remote-asm-1');
     });
 
     it('returns the layout untouched when no designs travelled with it', async () => {
       const layout = createTestLayout();
       const result = await restoreSharedDesigns(SHARE_ID, layout, []);
 
-      expect(result).toBe(layout);
+      expect(result.layout).toBe(layout);
+      expect(result.designIds).toEqual({});
       expect(mockSaveDesign).not.toHaveBeenCalled();
     });
 
@@ -1175,8 +1201,8 @@ describe('storage-share', () => {
         { id: 'remote-design-1', name: 'Socket Tray', params: { ...DEFAULT_BIN_PARAMS } },
       ]);
 
-      expect(result.bins[0].linkedDesignId).toBe('design_shared_deadbeef');
-      expect(result.bins[1]?.linkedDesignId).toBeUndefined();
+      expect(result.layout.bins[0].linkedDesignId).toBe('design_shared_deadbeef');
+      expect(result.layout.bins[1]?.linkedDesignId).toBeUndefined();
     });
 
     it('registers each design so the planner and 3D preview can resolve it', async () => {
@@ -1239,6 +1265,62 @@ describe('storage-share', () => {
       expect(mockSaveDesign.mock.calls[0][0].id).not.toBe(mockSaveDesign.mock.calls[1][0].id);
     });
 
+    it('returns the local id of each design that it saved', async () => {
+      mockSaveDesign.mockImplementation((input: { id: string }) =>
+        Promise.resolve(savedAs(input.id))
+      );
+      const designs = [
+        { id: 'remote-design-1', name: 'Socket Tray', params: { ...DEFAULT_BIN_PARAMS } },
+        { id: 'remote-design-2', name: 'Bit Tray', params: { ...DEFAULT_BIN_PARAMS } },
+      ];
+
+      const result = await restoreSharedDesigns(
+        SHARE_ID,
+        layoutLinkedTo('remote-design-1'),
+        designs
+      );
+
+      expect(result.designIds).toEqual({
+        'remote-design-1': mockSaveDesign.mock.calls[0][0].id,
+        'remote-design-2': mockSaveDesign.mock.calls[1][0].id,
+      });
+    });
+
+    it('restores neither of two designs whose local ids collide, and keeps their owner ids', async () => {
+      mockSaveDesign.mockImplementation((input: { id: string }) =>
+        Promise.resolve(savedAs(input.id))
+      );
+      // djb2 gives `design-ab` and `design-bA` one hash after any prefix.
+      const designs = ['design-ab', 'design-bA', 'remote-design-1'].map((id) => ({
+        id,
+        name: id,
+        params: { ...DEFAULT_BIN_PARAMS },
+      }));
+
+      const base = layoutLinkedTo('design-ab');
+      const [first] = base.bins;
+      if (!first) throw new Error('test layout has no bin');
+      const linked: Layout = {
+        ...base,
+        bins: designs.map((design, i) => ({
+          ...first,
+          id: binId(`bin-${i}`),
+          x: gridUnits(i),
+          linkedDesignId: designId(design.id),
+        })),
+      };
+
+      const result = await restoreSharedDesigns(SHARE_ID, linked, designs);
+
+      expect(mockSaveDesign).toHaveBeenCalledTimes(1);
+      expect(Object.keys(result.designIds)).toEqual(['remote-design-1']);
+      expect(result.layout.bins.map((bin) => bin.linkedDesignId)).toEqual([
+        'design-ab',
+        'design-bA',
+        result.designIds['remote-design-1'],
+      ]);
+    });
+
     it('keeps the bin unlinked when the design fails to persist', async () => {
       mockSaveDesign.mockResolvedValue(err(storageNotFound('nope')));
       const layout = layoutLinkedTo('remote-design-1');
@@ -1247,7 +1329,8 @@ describe('storage-share', () => {
         { id: 'remote-design-1', name: 'Socket Tray', params: { ...DEFAULT_BIN_PARAMS } },
       ]);
 
-      expect(result.bins[0].linkedDesignId).toBe('remote-design-1');
+      expect(result.layout.bins[0].linkedDesignId).toBe('remote-design-1');
+      expect(result.designIds).toEqual({});
     });
 
     it('skips entries whose params are not an object', async () => {
@@ -1256,7 +1339,7 @@ describe('storage-share', () => {
       ]);
 
       expect(mockSaveDesign).not.toHaveBeenCalled();
-      expect(result.bins[0].linkedDesignId).toBe('remote-design-1');
+      expect(result.layout.bins[0].linkedDesignId).toBe('remote-design-1');
     });
   });
 
@@ -1311,7 +1394,8 @@ describe('storage-share', () => {
         { id: 'remote-design-1', name: 'Socket Tray', params: { ...DEFAULT_BIN_PARAMS } },
       ]);
 
-      expect(result).toBe(layout);
+      expect(result.layout).toBe(layout);
+      expect(result.designIds).toEqual({});
       expect(mockSaveDesign).not.toHaveBeenCalled();
       expect(mockUpsertRegistryEntry).not.toHaveBeenCalled();
     });

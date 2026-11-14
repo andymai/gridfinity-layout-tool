@@ -35,12 +35,12 @@ describe('DrawerShapeSection', () => {
 
   it('shows the toggle unchecked for rectangular drawers', () => {
     render(<DrawerShapeSection />);
-    expect(screen.getByRole('checkbox', { name: 'drawerShape.toggle' })).not.toBeChecked();
+    expect(screen.getByRole('switch', { name: 'drawerShape.toggle' })).not.toBeChecked();
   });
 
   it('opens the editor when toggling on', () => {
     render(<DrawerShapeSection />);
-    fireEvent.click(screen.getByRole('checkbox', { name: 'drawerShape.toggle' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'drawerShape.toggle' }));
     expect(screen.getByText('drawerShape.editor.title')).toBeInTheDocument();
   });
 
@@ -98,7 +98,7 @@ describe('DrawerShapeSection', () => {
     render(<DrawerShapeSection />);
     fireEvent.click(screen.getByRole('button', { name: 'drawerShape.actions' }));
     expect(screen.queryByText('drawerShape.resetConfirmTitle')).not.toBeInTheDocument();
-    expect(screen.getByRole('checkbox', { name: 'drawerShape.toggle' })).toBeChecked();
+    expect(screen.getByRole('switch', { name: 'drawerShape.toggle' })).toBeChecked();
   });
 
   it('confirms before resetting an existing shape', () => {
@@ -106,7 +106,7 @@ describe('DrawerShapeSection', () => {
       layout: { ...s.layout, drawer: { ...s.layout.drawer, outline: L_OUTLINE } },
     }));
     render(<DrawerShapeSection />);
-    const toggle = screen.getByRole('checkbox', { name: 'drawerShape.toggle' });
+    const toggle = screen.getByRole('switch', { name: 'drawerShape.toggle' });
     expect(toggle).toBeChecked();
     fireEvent.click(toggle);
     expect(screen.getByText('drawerShape.resetConfirmTitle')).toBeInTheDocument();

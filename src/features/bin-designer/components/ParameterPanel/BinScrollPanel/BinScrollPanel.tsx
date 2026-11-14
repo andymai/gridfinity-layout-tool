@@ -19,9 +19,9 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest';
 import { binHasText } from '@/features/bin-designer/utils/binText';
 
-import { StickyGroupHeader } from '../../panel/StickyGroupHeader';
+import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { PullTabSection } from '../../panel/PullTabSection';
-import { PanelSection } from '../../panel/PanelSection';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { FeatureGate } from '../../panel/FeatureGate';
 import { DependencyHint } from '../../panel/shared';
 import { DimensionsSection } from '../../panel/DimensionsSection';
@@ -48,7 +48,7 @@ import { SetDefaultFooter } from '../../panel/SetDefaultFooter';
 import { modifiedGroups, type PanelGroup } from '../groupModified';
 import { GROUP_OF_CONTROL, HELP_SURFACES } from './groupControls';
 import { SlantTooLargeNotice } from '../../panel/shared';
-import { SlantSection, useSlantVisible } from '../../panel/SlantSection';
+import { SlantSection } from '../../panel/SlantSection';
 
 export interface BinScrollPanelProps {
   /** docked = desktop frame (resizable, collapsible); plain = fill the parent. */
@@ -82,8 +82,7 @@ export function BinScrollPanel({
       hasText: binHasText(s.params),
     }))
   );
-  const { needsSplit, slantTooLarge, printBedSize } = useSplitOptionsSection();
-  const slantVisible = useSlantVisible();
+  const { bedFitShown, slantTooLarge, fitsDiagonally, printBedSize } = useSplitOptionsSection();
 
   const [open, setOpen] = useState<Record<PanelGroup, boolean>>({
     shape: true,
@@ -132,6 +131,7 @@ export function BinScrollPanel({
   const groups = (
     <>
       <StickyGroupHeader
+        variant="band"
         title={t('binDesigner.group.shape')}
         expanded={open.shape}
         onExpandedChange={(next) => setGroup('shape', next)}
@@ -141,38 +141,51 @@ export function BinScrollPanel({
           <PanelSection helpTarget="bd-dimensions">
             <DimensionsSection />
           </PanelSection>
-          <PanelSection helpTarget="bd-overhang">
-            <OverhangSection />
-          </PanelSection>
-          <PanelSection helpTarget="bd-shape">
-            <ShapeSection />
-          </PanelSection>
-          {slantVisible && (
-            <PanelSection helpTarget="bd-slant">
+          <PanelSection className="space-y-3">
+            <div data-help-target="bd-overhang">
+              <OverhangSection />
+            </div>
+            <div data-help-target="bd-shape">
+              <ShapeSection />
+            </div>
+            <div data-help-target="bd-slant">
               <SlantSection />
-            </PanelSection>
-          )}
-          <PanelSection helpTarget="bd-walls">
-            <WallThicknessSection />
+            </div>
           </PanelSection>
-          <PanelSection helpTarget="bd-wall-cutouts">
-            <WallCutoutsSection />
+          <PanelSection className="space-y-3">
+            <div data-help-target="bd-walls">
+              <WallThicknessSection />
+            </div>
+            <div data-help-target="bd-wall-cutouts">
+              <WallCutoutsSection />
+            </div>
           </PanelSection>
-          {/* Shown only when the bin overflows the bed; no all-clear row when it fits. */}
-          {needsSplit && (
-            <PanelSection helpTarget="bd-print-fit">
-              <SplitOptionsSection />
-            </PanelSection>
-          )}
-          {slantTooLarge && (
-            <PanelSection helpTarget="bd-print-fit">
-              <SlantTooLargeNotice width={printBedSize.width} depth={printBedSize.depth} />
+          {/* No all-clear row when the bin fits: shown when it overruns the bed
+              square-on, or while the design's split switch is off. */}
+          {(bedFitShown || slantTooLarge || fitsDiagonally) && (
+            <PanelSection helpTarget="bd-print-fit" className="space-y-3">
+              {slantTooLarge ? (
+                <SlantTooLargeNotice width={printBedSize.width} depth={printBedSize.depth} />
+              ) : (
+                <>
+                  {fitsDiagonally && (
+                    <p className="text-label text-content-tertiary">
+                      {t('binDesigner.printFit.fitsDiagonally', {
+                        width: printBedSize.width,
+                        depth: printBedSize.depth,
+                      })}
+                    </p>
+                  )}
+                  {bedFitShown && <SplitOptionsSection />}
+                </>
+              )}
             </PanelSection>
           )}
         </div>
       </StickyGroupHeader>
 
       <StickyGroupHeader
+        variant="band"
         title={t('binDesigner.group.lid')}
         expanded={open.lid}
         onExpandedChange={(next) => setGroup('lid', next)}
@@ -192,6 +205,7 @@ export function BinScrollPanel({
       </StickyGroupHeader>
 
       <StickyGroupHeader
+        variant="band"
         title={t('binDesigner.group.interior')}
         expanded={open.interior}
         onExpandedChange={(next) => setGroup('interior', next)}
@@ -228,19 +242,17 @@ export function BinScrollPanel({
       </StickyGroupHeader>
 
       <StickyGroupHeader
+        variant="band"
         title={t('binDesigner.group.base')}
         expanded={open.base}
         onExpandedChange={(next) => setGroup('base', next)}
         modifiedLabel={markIf(modified.base)}
       >
-        <div className="divide-y divide-stroke-subtle/50">
-          <PanelSection helpTarget="bd-base">
-            <BaseSection />
-          </PanelSection>
-        </div>
+        <BaseSection />
       </StickyGroupHeader>
 
       <StickyGroupHeader
+        variant="band"
         title={t('binDesigner.group.finishing')}
         expanded={open.finishing}
         onExpandedChange={(next) => setGroup('finishing', next)}
@@ -258,7 +270,7 @@ export function BinScrollPanel({
           <PanelSection helpTarget="bd-wall-style">
             <WallSurfaceSection />
           </PanelSection>
-          <PanelSection helpTarget="bd-floor-pattern">
+          <PanelSection helpTarget="bd-floor-pattern" className="space-y-4">
             <FloorPatternSection />
             <FloorTextSection />
           </PanelSection>

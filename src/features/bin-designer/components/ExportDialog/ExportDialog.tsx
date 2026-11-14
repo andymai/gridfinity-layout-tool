@@ -14,6 +14,7 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { useLayoutPrintBed } from '@/features/bin-designer/hooks/useLayoutPrintBed';
+import { slantedBinFitsOnlyDiagonally } from '@/shared/utils/slantPlan';
 import { useLabelPlateExport } from '@/features/bin-designer/hooks/useLabelPlateExport';
 import { computeActiveZones, isSingleColor } from '@/features/bin-designer/types/featureColors';
 import { zoneLabel } from '@/features/bin-designer/utils/zoneLabels';
@@ -58,7 +59,7 @@ const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
 export function ExportDialog() {
   const t = useTranslation();
   const printSettings = useSettingsStore((s) => s.settings.printSettings);
-  const { printBedSize } = useLayoutPrintBed();
+  const { printBedSize, printBedDepth } = useLayoutPrintBed();
 
   const { exportDialogOpen, params, triangleCount, designName, exportFileNameConfig } =
     useDesignerStore(
@@ -72,7 +73,7 @@ export function ExportDialog() {
         exportFileNameConfig: state.exportFileNameConfig,
       }))
     );
-  const { publishVisible, canPublish, openPublish } = useCommunityPublishEntry();
+  const { canPublish, openPublish } = useCommunityPublishEntry();
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
   const setExportFileNameConfig = useDesignerStore((s) => s.setExportFileNameConfig);
 
@@ -86,13 +87,18 @@ export function ExportDialog() {
     exportProgress: exportFraction,
     downloadBin,
     needsSplit,
+    fitsDiagonally,
+    keptWhole,
     splitPieceCount,
     downloadSplit,
   } = useExport();
   // Plates print apart from the bin, so the bin's download never carries them;
   // offering them here is what keeps a design's plates from going unnoticed.
   const { plates, isExporting: isExportingPlates, downloadPlates } = useLabelPlateExport();
-  const [splitEnabled, setSplitEnabled] = useState(true);
+  // Null until the box is ticked or cleared: a bin that only fits lying
+  // diagonally prints whole unless the user asks for pieces.
+  const [splitChoice, setSplitChoice] = useState<boolean | null>(null);
+  const splitEnabled = splitChoice ?? !fitsDiagonally;
   const [justExported, setJustExported] = useState(false);
   // With plates, the dialog finishes only once both files are taken, so the
   // first download never takes away the button for the other.
@@ -122,7 +128,14 @@ export function ExportDialog() {
   }, [designName, params, addToast, t]);
 
   const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
-  const useSplitExport = needsSplit && splitEnabled;
+  // With the design's switch off nothing is cut, so a diagonal fit is a reminder.
+  const offerSplit = params.splitToFitBed !== false && (needsSplit || fitsDiagonally);
+  const useSplitExport = offerSplit && splitEnabled;
+  // A slanted bin can't be split, so this one is a reminder with no choice to offer.
+  const slantFitsDiagonally = useMemo(
+    () => slantedBinFitsOnlyDiagonally(params, printBedSize, printBedDepth),
+    [params, printBedSize, printBedDepth]
+  );
 
   // Colored cutouts and compartments are multi-color on their own; zone colors
   // count only with the toggle on and a zone that differs from the body. STL
@@ -215,7 +228,7 @@ export function ExportDialog() {
   // support prompt takes the success view — two asks on one action is one ask
   // too many — and never shown for a design that is already published.
   const offerPublish = useCallback(async () => {
-    if (!publishVisible || !canPublish || hasSeenPublishNudge()) return;
+    if (!canPublish || hasSeenPublishNudge()) return;
     const activeId = useDesignerStore.getState().currentDesignId;
     if (activeId === null) return;
     const saved = await loadDesign(designId(activeId));
@@ -228,7 +241,7 @@ export function ExportDialog() {
       duration: PUBLISH_NUDGE_DURATION_MS,
       action: { label: t('community.publishNudge.action'), onClick: openPublish },
     });
-  }, [publishVisible, canPublish, addToast, openPublish, t]);
+  }, [canPublish, addToast, openPublish, t]);
 
   // The support view is reserved for returning makers (2nd+ export), at most
   // once per cooldown; everyone else just gets the low-friction auto-close.
@@ -327,7 +340,7 @@ export function ExportDialog() {
     downloadLabel = t('binDesigner.downloadFormat', { format: activeFormat.toUpperCase() });
   }
 
-  const showHandoff = isMultiColor && activeFormat === '3mf' && !useSplitExport;
+  const showHandoff = isMultiColor && activeFormat === '3mf';
   // Every offcut this design needs, longest first. Empty for any lid that is
   // not hinged, so the row simply does not appear.
   const hingePins = hingePinLengths(params);
@@ -361,23 +374,37 @@ export function ExportDialog() {
         visible: plates.length > 0 && engineReady,
       }}
       splitBanner={
-        needsSplit
+        offerSplit
           ? {
-              message: t('binDesigner.splitExport.exceedsPrintBed', {
-                size: printBedSize,
-                count: splitPieceCount,
-              }),
+              message: t(
+                fitsDiagonally
+                  ? 'binDesigner.splitExport.fitsDiagonally'
+                  : 'binDesigner.splitExport.exceedsPrintBed',
+                { size: printBedSize, count: splitPieceCount }
+              ),
               checkboxLabel: t('binDesigner.splitExport.enableSplit'),
               checked: splitEnabled,
-              onCheckedChange: setSplitEnabled,
+              onCheckedChange: setSplitChoice,
             }
           : null
       }
       formatStates={formatStates}
       warningBanner={
-        useSplitExport && isMultiColor
-          ? { message: t('binDesigner.splitExport.colorLossWarning') }
-          : null
+        keptWhole
+          ? {
+              message: t('binDesigner.printFit.keptWhole', {
+                width: printBedSize,
+                depth: printBedDepth ?? printBedSize,
+              }),
+            }
+          : slantFitsDiagonally || (fitsDiagonally && !offerSplit)
+            ? {
+                message: t('binDesigner.printFit.fitsDiagonally', {
+                  width: printBedSize,
+                  depth: printBedDepth ?? printBedSize,
+                }),
+              }
+            : null
       }
       extras={
         showHandoff || hingePins.length > 0 ? (

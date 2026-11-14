@@ -1,9 +1,9 @@
 /**
  * The sidebar says each kind of thing one way: an on/off setting is a toggle
  * row (`FeatureToggle`), a choice of wall is the spatial cross
- * (`SideSelector`), and a fold is the label-and-summary row
- * (`MoreDisclosure`). A second idiom for either reads as a different kind of
- * control, which is how the panel drifted before.
+ * (`SideSelector`), a fold is the label-and-summary row (`MoreDisclosure`),
+ * and a small-caps heading is `SubHeader`. A second idiom for any of them
+ * reads as a different kind of thing, which is how the panels drifted before.
  */
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
@@ -16,9 +16,12 @@ const ROOTS = [
   'src/features/bin-designer/components/ParameterPanel',
   'src/features/bin-designer/components/CompartmentEditor',
   'src/features/bin-designer/components/SlotConfigurator',
+  'src/features/bin-designer/components/BentoWorkspace',
+  'src/features/bin-designer/components/TraceView',
+  'src/features/baseplate/components/BaseplatePanel',
 ];
 
-const BOOLEAN_PRIMITIVES = new Set(['Checkbox', 'CheckboxRow', 'Switch', 'ToggleRow']);
+const BOOLEAN_PRIMITIVES = new Set(['Checkbox', 'CheckboxRow', 'Switch']);
 const CHOICE_CONTROLS = new Set(['SegmentedControl', 'SegmentGrid']);
 /** Wall-name keys: a control labelled with these is picking a wall. */
 const WALL_KEY =
@@ -95,6 +98,16 @@ function violations(path: string): string[] {
       node.initializer.text === 'checkbox'
     ) {
       found.push(`${at(node)} role="checkbox": use FeatureToggle for an on/off setting`);
+    }
+    if (
+      ts.isJsxAttribute(node) &&
+      node.name.getText() === 'className' &&
+      node.initializer !== undefined &&
+      /\buppercase\b/.test(node.initializer.getText())
+    ) {
+      found.push(
+        `${at(node)} uppercase label: use SubHeader, or StickyGroupHeader / SidePanel.Title for a group or panel name`
+      );
     }
     ts.forEachChild(node, visit);
   };

@@ -18,7 +18,15 @@ export function findBinById(layout: Layout, id: BinId): Bin | undefined {
  * @returns Array of found bins (in the same order as input IDs, excluding missing)
  */
 export function findBinsByIds(layout: Layout, ids: BinId[]): Bin[] {
-  return ids
-    .map((id) => layout.bins.find((b) => b.id === id))
-    .filter((b): b is Bin => b !== undefined);
+  if (ids.length === 0) return [];
+  const byId = new Map<BinId, Bin>();
+  for (const bin of layout.bins) {
+    if (!byId.has(bin.id)) byId.set(bin.id, bin);
+  }
+  const found: Bin[] = [];
+  for (const id of ids) {
+    const bin = byId.get(id);
+    if (bin) found.push(bin);
+  }
+  return found;
 }

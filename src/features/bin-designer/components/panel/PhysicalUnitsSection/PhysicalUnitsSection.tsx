@@ -25,7 +25,7 @@ export function PhysicalUnitsSection() {
       <div className="space-y-2">
         <SettingsRow
           label={t('binDesigner.gridUnit')}
-          tooltip={t('binDesigner.gridUnitTooltip')}
+          info={t('binDesigner.gridUnitTooltip')}
           unit="mm"
         >
           <GridUnitInput
@@ -39,7 +39,7 @@ export function PhysicalUnitsSection() {
         </SettingsRow>
         <SettingsRow
           label={t('binDesigner.heightUnit')}
-          tooltip={t('binDesigner.heightUnitTooltip')}
+          info={t('binDesigner.heightUnitTooltip')}
           unit="mm"
         >
           <DeferredNumberInput
@@ -53,7 +53,7 @@ export function PhysicalUnitsSection() {
         </SettingsRow>
         <SettingsRow
           label={t('settings.printBed')}
-          tooltip={t('binDesigner.printBedTooltip')}
+          info={t('binDesigner.printBedTooltip')}
           unit="mm"
         >
           <PrintBedInput
@@ -65,7 +65,7 @@ export function PhysicalUnitsSection() {
         </SettingsRow>
         <SettingsRow
           label={t('settings.nozzleSize')}
-          tooltip={t('binDesigner.nozzleSizeTooltip')}
+          info={t('binDesigner.nozzleSizeTooltip')}
           unit="mm"
         >
           <DeferredNumberInput

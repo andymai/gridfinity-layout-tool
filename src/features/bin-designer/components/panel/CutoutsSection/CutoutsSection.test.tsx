@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { useLabsStore } from '@/core/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { CutoutsSection } from './CutoutsSection';
 
@@ -16,21 +15,11 @@ vi.mock('./CutoutEditor', () => ({
   CutoutEditor: () => <div data-testid="cutout-editor" />,
 }));
 
-function setCommunityFlag(enabled: boolean): void {
-  useLabsStore.setState((s) => ({
-    preferences: {
-      ...s.preferences,
-      enabledFeatures: { ...s.preferences.enabledFeatures, community_showcase: enabled },
-    },
-  }));
-}
-
 describe('CutoutsSection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
     useDesignerStore.setState(useDesignerStore.getInitialState());
-    setCommunityFlag(false);
   });
 
   it('renders instructions and editor', () => {

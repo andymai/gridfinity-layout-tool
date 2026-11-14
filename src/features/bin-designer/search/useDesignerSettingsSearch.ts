@@ -17,6 +17,8 @@ export interface DesignerSearchResult {
   id: string;
   /** The section marker the selection jumps to. */
   controlId: string;
+  /** A finer marker inside that section to land on once it is open. */
+  target?: string;
   label: string;
   /** Parent section title, shown as a breadcrumb on sub-option results. */
   breadcrumb?: string;
@@ -30,6 +32,7 @@ export interface DesignerSearchResult {
 interface ResultMeta {
   kind: 'section' | 'option';
   controlId: string;
+  target?: string;
   category: PageCategory;
   categoryLabel: string;
   breadcrumb?: string;
@@ -47,6 +50,7 @@ const toResult = (r: {
 }): DesignerSearchResult => ({
   id: r.id,
   controlId: r.meta.controlId,
+  target: r.meta.target,
   label: r.label,
   breadcrumb: r.meta.breadcrumb,
   category: r.meta.category,
@@ -107,8 +111,10 @@ export function useDesignerSettingsSearch(
     }
 
     // Finer sub-options join the sections only once the user is searching.
-    const options = DESIGNER_OPTION_RECORDS.filter((o) =>
-      isDesignerControlAvailable(o.section, ctx)
+    const options = DESIGNER_OPTION_RECORDS.filter(
+      (o) =>
+        isDesignerControlAvailable(o.section, ctx) &&
+        (o.target === undefined || isDesignerControlAvailable(o.target, ctx))
     ).flatMap((o): SearchableRecord<ResultMeta>[] => {
       const category = categoryForControl(o.section);
       const titleKey = TITLE_KEY_OF_SECTION.get(o.section);
@@ -121,6 +127,7 @@ export function useDesignerSettingsSearch(
           meta: {
             kind: 'option',
             controlId: o.section,
+            target: o.target,
             category,
             categoryLabel: categoryLabel(category),
             breadcrumb: titleKey ? t(titleKey) : undefined,

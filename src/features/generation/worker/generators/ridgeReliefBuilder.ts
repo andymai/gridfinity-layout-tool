@@ -30,7 +30,6 @@ import {
   CLEARANCE,
   COPLANAR_MARGIN,
   COPLANAR_OVERLAP,
-  MIN_PRINTABLE_TILE_MM,
   PLATE_PROFILE_HEIGHT,
   SOCKET_HEIGHT,
   footCornerRadius,
@@ -38,9 +37,13 @@ import {
   safeSectionRect,
 } from './generatorConstants';
 import { resolvePitch, type GridUnitInput } from './gridPitch';
-import { frameCells } from './cellDecomposition';
-import { hasOverhang, overhangBaseSides, resolveOverhang, type ResolvedOverhang } from './overhang';
-import { filledSocketCells, type FractionalEdge, type SocketCellPlan } from './socketBuilder';
+import { hasOverhang, resolveOverhang, type ResolvedOverhang } from './overhang';
+import {
+  filledSocketCells,
+  overhangFootCells,
+  type FractionalEdge,
+  type SocketCellPlan,
+} from './socketBuilder';
 
 /** How far the relief reaches above the underside, in mm. */
 export const RIDGE_RELIEF_MM = CLEARANCE / 2 + (SOCKET_HEIGHT - PLATE_PROFILE_HEIGHT);
@@ -117,16 +120,7 @@ export function buildRidgeReliefTool(
   const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
   const footCells =
     overhung && overhang.feet
-      ? [
-          ...cells,
-          ...frameCells(
-            gridW,
-            gridD,
-            overhangBaseSides(overhang),
-            gridUnitMm,
-            MIN_PRINTABLE_TILE_MM
-          ),
-        ]
+      ? [...cells, ...overhangFootCells(gridW, gridD, overhang, gridUnitMm, plan)]
       : cells;
 
   return withScope((scope: DisposalScope) => {

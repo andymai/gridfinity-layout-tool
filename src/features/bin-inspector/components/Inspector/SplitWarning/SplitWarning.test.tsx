@@ -19,12 +19,38 @@ describe('SplitWarning', () => {
       expect(screen.getByText(/fits print bed/)).toBeInTheDocument();
     });
 
+    // The limit is in grid units, the same unit as the bin size it sits beside.
+    it('states the largest bin the bed takes in grid units, not millimeters', () => {
+      render(<SplitWarning {...defaultProps} />);
+
+      expect(screen.getByText('2×2 fits print bed (max 6×6 units)')).toBeInTheDocument();
+    });
+
+    it('states each axis of the limit on a rectangular bed', () => {
+      render(<SplitWarning {...defaultProps} maxGridUnits={{ width: 6, depth: 5 }} />);
+
+      expect(screen.getByText('2×2 fits print bed (max 6×5 units)')).toBeInTheDocument();
+    });
+
     it('shows success checkmark icon', () => {
       const { container } = render(<SplitWarning {...defaultProps} />);
 
       // Check for success-colored SVG
       const svg = container.querySelector('svg.text-success');
       expect(svg).toBeInTheDocument();
+    });
+
+    it('says when the fit relies on lying the bin diagonally', () => {
+      render(
+        <SplitWarning
+          {...defaultProps}
+          binWidth={1.5}
+          binDepth={7}
+          maxGridUnits={{ width: 1.5, depth: 7, diagonal: true }}
+        />
+      );
+
+      expect(screen.getByText('1.5×7 fits print bed laid diagonally')).toBeInTheDocument();
     });
   });
 
@@ -46,7 +72,7 @@ describe('SplitWarning', () => {
 
       // 8 width / 6 max = 2 pieces wide, 4 depth / 6 max = 1 piece deep
       // Total: 2 * 1 = 2 pieces
-      expect(screen.getByText('2 piece(s) needed')).toBeInTheDocument();
+      expect(screen.getByText('2 pieces needed')).toBeInTheDocument();
     });
 
     it('calculates pieces correctly for both dimensions overflow', () => {
@@ -54,14 +80,14 @@ describe('SplitWarning', () => {
 
       // 12 width / 6 max = 2 pieces wide, 10 depth / 6 max = 2 pieces deep
       // Total: 2 * 2 = 4 pieces
-      expect(screen.getByText('4 piece(s) needed')).toBeInTheDocument();
+      expect(screen.getByText('4 pieces needed')).toBeInTheDocument();
     });
 
     it('shows max piece size info', () => {
       render(<SplitWarning {...oversizedProps} />);
 
       // The message now contains the full explanation
-      expect(screen.getByText(/exceeds your print bed/)).toBeInTheDocument();
+      expect(screen.getByText(/doesn't fit your .*print bed/)).toBeInTheDocument();
     });
 
     it('renders print bed indicator with correct title', () => {
@@ -71,6 +97,59 @@ describe('SplitWarning', () => {
       expect(indicator).toBeInTheDocument();
       expect(indicator?.getAttribute('title')).toContain('256×256mm');
     });
+  });
+
+  describe('when the design turns splitting off', () => {
+    const keptWholeProps = {
+      ...defaultProps,
+      binWidth: 8,
+      binDepth: 4,
+      maxGridUnits: { width: 8, depth: 4, keptWhole: { width: 6, depth: 6 } },
+    };
+
+    it('still says the bin is oversized, and that it prints in one piece', () => {
+      render(<SplitWarning {...keptWholeProps} />);
+
+      expect(screen.getByText('Oversized for print bed')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "336×168mm doesn't fit your 256×256mm print bed. Its design turns splitting off, so it prints in one piece."
+        )
+      ).toBeInTheDocument();
+      expect(screen.queryByText(/fits print bed/)).not.toBeInTheDocument();
+    });
+
+    it('draws the bed with the area a split would have cut to', () => {
+      const { container } = render(<SplitWarning {...keptWholeProps} />);
+
+      expect(container.querySelector('[title*="Print bed"]')?.getAttribute('title')).toBe(
+        'Print bed: 256×256mm. Largest bin: 6×6 units.'
+      );
+    });
+
+    it('counts no pieces in compact mode', () => {
+      render(<SplitWarning {...keptWholeProps} compact />);
+
+      expect(screen.getByText('Exceeds print size, prints in one piece')).toBeInTheDocument();
+      expect(screen.queryByText(/pieces needed/)).not.toBeInTheDocument();
+    });
+  });
+
+  // The bin's own size fits; its overhang is what overruns the bed.
+  it('states the size of the part, overhang included', () => {
+    render(
+      <SplitWarning
+        {...defaultProps}
+        binWidth={6}
+        binDepth={4}
+        overhangMm={{ width: 9, depth: 0 }}
+        maxGridUnits={{ width: 5.5, depth: 6 }}
+      />
+    );
+
+    expect(
+      screen.getByText("261×168mm doesn't fit your 256×256mm print bed, so it prints in pieces.")
+    ).toBeInTheDocument();
   });
 
   describe('compact mode', () => {
@@ -84,14 +163,14 @@ describe('SplitWarning', () => {
     it('shows simplified warning in compact mode', () => {
       render(<SplitWarning {...oversizedProps} />);
 
-      expect(screen.getByText(/2 piece\(s\) needed/)).toBeInTheDocument();
+      expect(screen.getByText(/2 pieces needed/)).toBeInTheDocument();
     });
 
     it('does not show detailed explanation in compact mode', () => {
       render(<SplitWarning {...oversizedProps} />);
 
       expect(screen.queryByText('Oversized for print bed')).not.toBeInTheDocument();
-      expect(screen.queryByText(/exceeds your print bed/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/doesn't fit your .*print bed/)).not.toBeInTheDocument();
     });
 
     it('does not render print bed indicator in compact mode', () => {
@@ -113,7 +192,7 @@ describe('SplitWarning', () => {
       render(<SplitWarning {...defaultProps} binWidth={7} binDepth={6} compact />);
 
       // 7 / 6 = 2 pieces wide, 6 / 6 = 1 piece deep = 2 pieces
-      expect(screen.getByText('2 piece(s) needed')).toBeInTheDocument();
+      expect(screen.getByText('2 pieces needed')).toBeInTheDocument();
     });
 
     it('handles fractional dimensions', () => {
@@ -136,7 +215,7 @@ describe('SplitWarning', () => {
       );
 
       // 6 > 5 max, so needs split
-      expect(screen.getByText('2 piece(s) needed')).toBeInTheDocument();
+      expect(screen.getByText('2 pieces needed')).toBeInTheDocument();
     });
   });
 });

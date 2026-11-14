@@ -68,8 +68,9 @@ export function ShareLinkSection({
 
       {readOnlyPermission ? (
         <div className="text-sm text-content-secondary">
-          {t('share.anyoneWithLinkCan')}
-          {permission}
+          {permission === 'edit'
+            ? t('share.anyoneWithLinkCanEdit')
+            : t('share.anyoneWithLinkCanView')}
         </div>
       ) : (
         <Select

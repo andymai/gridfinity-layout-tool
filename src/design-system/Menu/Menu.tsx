@@ -31,12 +31,15 @@ function useMenuContext() {
   return context;
 }
 // Above modal dialogs (z-50), so a menu opened inside one also catches the
-// click that dismisses it; below the command palette and Labs drawer.
+// click that dismisses it; below the command palette.
 const overlayVariants = cva(['fixed inset-0 z-[60]', 'bg-overlay-light']);
 
 const contentVariants = cva([
   'fixed z-[61]',
   'min-w-[180px]',
+  // The placement effect keeps an 8px margin on each side; a taller menu, such
+  // as a phone's header menu in landscape, scrolls inside that.
+  'max-h-[calc(100dvh-1rem)] overflow-y-auto',
   'bg-surface-elevated',
   'border border-stroke-subtle',
   'rounded-xl',

@@ -1,12 +1,13 @@
 import { useEffect, useLayoutEffect, useState, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { GlobalSettingsModal } from '@/shell/Modals/SettingsModal/GlobalSettingsModal';
+import { HalfGridModeBlockedHost } from '@/shell/Modals';
 import {
+  queueLibraryWrite,
   useLayoutStore,
   useLibraryStore,
   useSelectionStore,
   useViewStore,
-  useLabsStore,
 } from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
@@ -35,7 +36,6 @@ import {
   DesignLinkingDialogs,
   SharedLayoutImporter,
   SharedLayoutBanner,
-  LabsDrawer,
   DesignerPage,
   BaseplatePage,
   BaseplateLibraryInitMount,
@@ -85,7 +85,6 @@ import {
 } from '@/shell/Modals/DesignGalleryModal/communityDesignerBridge';
 import { usePlaceBinFromURL } from '@/features/bin-designer/hooks/usePlaceBinInLayout';
 import { useBackgroundThumbnailRegen, useMeshFileMaintenance } from '@/features/bin-designer';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useSpaceMouseDevice } from '@/shared/spacemouse/useSpaceMouseDevice';
 import { useCommunityPublishReturn } from '@/shared/hooks/useCommunityPublishReturn';
 import { useCommunityLikeReturn } from '@/shell/hooks/useCommunityLikeReturn';
@@ -103,8 +102,6 @@ export default function App() {
   const { isDesignerRoute, navigateToDesigner } = useDesignerRouting();
   const { isBaseplateRoute } = useBaseplateRouting();
   const { isSupportersRoute, navigateToSupporters } = useSupportersRouting();
-  // False while the community_showcase flag is off (gated inside the hook),
-  // so the /community URL falls through to the layout planner.
   const { isCommunityRoute, communityDesignIdFromUrl } = useCommunityRouting();
   // Dev-only thumbnail capture route. Suppresses layout/designer routing so
   // those hooks don't rewrite the URL and strip the query params we depend on.
@@ -125,7 +122,6 @@ export default function App() {
   const binExampleGalleryOpen = useBinExampleGalleryStore((s) => s.isOpen);
   const closeBinExampleGallery = useBinExampleGalleryStore((s) => s.close);
   const communityPublishOpen = useCommunityPublishStore((s) => s.isOpen);
-  const communityShowcaseEnabled = useFeatureFlag('community_showcase');
   const placesFindResults = usePlacesFindResults(!isNonLayoutRoute);
   const [commandPaletteInitialQuery, setCommandPaletteInitialQuery] = useState('');
 
@@ -145,7 +141,6 @@ export default function App() {
   const hideContextMenu = useViewStore((state) => state.hideContextMenu);
 
   const { isCollaborative, shareId } = useCollabMode();
-  const isLabsDrawerOpen = useLabsStore((state) => state.isDrawerOpen);
   const hasSharedLayoutPreview = useSharedPreviewStore((state) => state.sharedPreview !== null);
 
   const [hasShareUrl] = useState(isShareURL);
@@ -166,14 +161,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const library = useLibraryStore.getState().library;
-    void reconcileLibraryAsync(library)
-      .then((cleaned) => {
-        if (cleaned) {
-          useLibraryStore.getState().setLibrary(cleaned);
-        }
-      })
-      .catch(() => {});
+    void queueLibraryWrite(async (library) => {
+      const cleaned = await reconcileLibraryAsync(library);
+      if (cleaned) useLibraryStore.getState().setLibrary(cleaned);
+    }).catch(() => {});
   }, []);
 
   const {
@@ -208,7 +199,7 @@ export default function App() {
   }, [activeLayerId, activeCategoryId, layers, categories, setActiveLayer, setActiveCategory]);
 
   useKeyboard({ disabled: isNonLayoutRoute });
-  useSpaceMouseDevice(useFeatureFlag('spacemouse'));
+  useSpaceMouseDevice();
   const saveStatus = useAutoSave();
   useCrossTabSync();
   useLayoutRouting({ skip: isNonLayoutRoute });
@@ -251,6 +242,7 @@ export default function App() {
   const wrapWithMutations = (content: React.ReactNode) => {
     const dialogs = (
       <>
+        <HalfGridModeBlockedHost />
         <Suspense fallback={null}>
           <DesignLinkingDialogs />
         </Suspense>
@@ -474,9 +466,6 @@ export default function App() {
           return null;
         })()}
 
-        {/* ARIA live region for screen reader announcements */}
-        <LiveRegion />
-
         {/* Shared layout URL importer - only load when URL has share params */}
         {hasShareUrl && (
           <BackgroundMountBoundary mountName="SharedLayoutImporter">
@@ -516,6 +505,9 @@ export default function App() {
         </Suspense>
       </BackgroundMountBoundary>
       {routeContent}
+      {/* The only reader of liveMessage. It stays outside routeContent so that
+          every shell tree and route has exactly one. */}
+      <LiveRegion />
       <ToastContainer />
       {binExampleGalleryOpen && (
         <Suspense fallback={null}>
@@ -527,7 +519,7 @@ export default function App() {
           <WhatsNewModal />
         </Suspense>
       )}
-      {communityShowcaseEnabled && communityPublishOpen && (
+      {communityPublishOpen && (
         <Suspense fallback={null}>
           <CommunityPublishDialog />
         </Suspense>
@@ -545,11 +537,6 @@ export default function App() {
             initialQuery={commandPaletteInitialQuery}
             extraResults={placesFindResults}
           />
-        </Suspense>
-      )}
-      {isLabsDrawerOpen && (
-        <Suspense fallback={null}>
-          <LabsDrawer />
         </Suspense>
       )}
       {isHelpOpen && (

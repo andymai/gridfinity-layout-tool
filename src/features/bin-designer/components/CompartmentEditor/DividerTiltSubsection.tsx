@@ -188,9 +188,7 @@ function InspectorView({
         )}
       </div>
 
-      <p className="text-xs font-medium text-content-primary">
-        {betweenLabel(row, compartments, t)}
-      </p>
+      <p className="text-xs font-medium text-content">{betweenLabel(row, compartments, t)}</p>
 
       <div className="flex items-center justify-evenly gap-3 rounded-md border border-stroke-subtle/60 bg-surface-elevated px-2 py-2">
         <figure className="flex flex-col items-center gap-1">

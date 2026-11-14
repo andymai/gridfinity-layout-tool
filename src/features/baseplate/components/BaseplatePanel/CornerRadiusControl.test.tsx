@@ -17,7 +17,7 @@ describe('CornerRadiusControl', () => {
     );
     expect(screen.getByText('baseplate.cornerRadius')).toBeInTheDocument();
     expect(screen.queryByText('baseplate.cornerRadiusTL')).not.toBeInTheDocument();
-    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    expect(screen.getByRole('switch')).not.toBeChecked();
   });
 
   it('seeds all four corners from the uniform value when unlinking', () => {
@@ -31,7 +31,7 @@ describe('CornerRadiusControl', () => {
         onPerCornerChange={onPerCornerChange}
       />
     );
-    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('switch'));
     expect(onPerCornerChange).toHaveBeenCalledWith({ tl: 4, tr: 4, bl: 4, br: 4 });
   });
 
@@ -48,9 +48,9 @@ describe('CornerRadiusControl', () => {
     );
     expect(screen.getByText('baseplate.cornerRadiusTL')).toBeInTheDocument();
     expect(screen.getByText('baseplate.cornerRadiusBR')).toBeInTheDocument();
-    expect(screen.getByRole('checkbox')).toBeChecked();
+    expect(screen.getByRole('switch')).toBeChecked();
 
-    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('switch'));
     expect(onUniformChange).toHaveBeenCalledWith(1);
   });
 });

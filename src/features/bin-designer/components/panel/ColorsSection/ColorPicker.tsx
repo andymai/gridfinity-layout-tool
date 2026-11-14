@@ -11,6 +11,7 @@ import { Input } from '@/design-system/Input/Input';
 import { Button, IconButton } from '@/design-system';
 import { CheckIcon, PipetteIcon, RotateCcwIcon, SparklesIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import type { HoverableZone } from '@/features/bin-designer/types/featureColors';
 import { suggestMatchingColors } from '@/features/bin-designer/utils/colorSuggestions';
 
@@ -132,9 +133,9 @@ export function ColorPicker({
 
       {/* Preset grid */}
       <div>
-        <p className="text-micro font-medium uppercase tracking-wide text-content-tertiary mb-1.5">
+        <SubHeader as="p" className="mb-1.5">
           {t('binDesigner.colors.presets')}
-        </p>
+        </SubHeader>
         <div className="grid grid-cols-5 gap-1.5">
           {FILAMENT_PRESET_COLORS.map(({ color: presetColor, name }) => {
             const isSelected = color.toLowerCase() === presetColor.toLowerCase();
@@ -169,9 +170,7 @@ export function ColorPicker({
       {/* Used in this design (always rendered; empty state when no other zones differ) */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <p className="text-micro font-medium uppercase tracking-wide text-content-tertiary">
-            {t('binDesigner.colors.usedInDesign')}
-          </p>
+          <SubHeader as="p">{t('binDesigner.colors.usedInDesign')}</SubHeader>
           {bodyColor && (
             <IconButton
               variant="ghost"
@@ -227,9 +226,9 @@ export function ColorPicker({
 
       {/* Custom tools */}
       <div>
-        <p className="text-micro font-medium uppercase tracking-wide text-content-tertiary mb-1.5">
+        <SubHeader as="p" className="mb-1.5">
           {t('binDesigner.colors.customTools')}
-        </p>
+        </SubHeader>
         <div className="flex items-stretch gap-1.5">
           <div className="flex-1">
             <Input

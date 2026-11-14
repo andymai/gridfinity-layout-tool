@@ -256,7 +256,7 @@ describe('useCrossTabSync', () => {
     it('syncs labs preferences when storage key changes', () => {
       const syncFromStorageSpy = vi.spyOn(useLabsStore.getState(), 'syncFromStorage');
       const newPrefs = {
-        enabledFeatures: { collaborative_editing: true },
+        enabledFeatures: { show_generation_perf: true },
         dismissedFeatures: ['feature1'],
       };
 

@@ -6,7 +6,10 @@ import { createDefaultLayout, CONSTRAINTS } from '@/core/constants';
 import { isOk } from '@/core/result';
 import { binId, gridUnits, heightUnits } from '@/core/types';
 import type { Bin } from '@/core/types';
-import { resetAllStores } from '@/test/testUtils';
+import { createTestBin, createTestLayout, resetAllStores } from '@/test/testUtils';
+import { useToastStore } from '@/core/store/toast';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
+import { batch, commandBus, createCqrsMutations } from '@/core/cqrs';
 
 describe('history store', () => {
   beforeEach(() => {
@@ -663,6 +666,86 @@ describe('history store', () => {
       undo();
 
       expect(useLayoutStore.getState().layout.name).toBe(layout.name);
+    });
+  });
+
+  describe('toast for a batch', () => {
+    const mutations = createCqrsMutations(commandBus);
+    const lastToast = () => useToastStore.getState().toasts.at(-1)?.message;
+
+    beforeEach(() => {
+      useLayoutStore.setState({
+        layout: createTestLayout({
+          bins: [
+            createTestBin({ id: binId('a'), x: gridUnits(0) }),
+            createTestBin({ id: binId('b'), x: gridUnits(2) }),
+            createTestBin({ id: binId('c'), x: gridUnits(4) }),
+          ],
+        }),
+      });
+    });
+
+    it('counts the bins when every command in the batch is the same', () => {
+      batch(() => {
+        for (const id of ['a', 'b', 'c']) mutations.updateBin(binId(id), { label: 'Screws' });
+      });
+
+      useHistoryStore.getState().undo();
+      expect(lastToast()).toBe('↩ Undid: Updated 3 bins');
+
+      useHistoryStore.getState().redo();
+      expect(lastToast()).toBe('↪ Redid: Updated 3 bins');
+    });
+
+    it('names a batch of one command as the command alone', () => {
+      batch(() => mutations.updateBin(binId('a'), { label: 'Screws' }));
+
+      useHistoryStore.getState().undo();
+      expect(lastToast()).toBe('↩ Undid: Updated bin');
+    });
+
+    it('does not count a command that the batch refused', () => {
+      batch(() => {
+        mutations.updateBin(binId('a'), { label: 'Screws' });
+        mutations.updateBin(binId('missing'), { label: 'Screws' });
+        mutations.updateBin(binId('b'), { label: 'Screws' });
+      });
+
+      useHistoryStore.getState().undo();
+      expect(lastToast()).toBe('↩ Undid: Updated 2 bins');
+    });
+
+    it('leaves half-grid mode alone when the undone batch did not change it', () => {
+      batch(() => mutations.updateBin(binId('a'), { label: 'Screws' }));
+      useHalfGridModeStore.getState().setHalfGridMode(true);
+
+      useHistoryStore.getState().undo();
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
+
+      useHalfGridModeStore.getState().setHalfGridMode(false);
+      useHistoryStore.getState().redo();
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(false);
+    });
+
+    it('lets a command that changed nothing neither count nor name the batch', () => {
+      batch(() => {
+        mutations.updateBin(binId('a'), { label: '' });
+        mutations.moveBinToStaging(binId('b'));
+      });
+
+      useHistoryStore.getState().undo();
+      expect(lastToast()).toBe('↩ Undid: Moved bin to stash');
+    });
+
+    it('names a mixed batch after its first command', () => {
+      batch(() => {
+        mutations.updateBin(binId('a'), { label: 'Screws' });
+        mutations.updateBin(binId('b'), { label: 'Screws' });
+        mutations.moveBinToStaging(binId('c'));
+      });
+
+      useHistoryStore.getState().undo();
+      expect(lastToast()).toBe('↩ Undid: Updated bin');
     });
   });
 });

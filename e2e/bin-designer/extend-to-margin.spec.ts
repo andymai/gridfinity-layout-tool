@@ -61,7 +61,7 @@ test('extend into drawer margin renders in 2D and 3D', async ({ page }, testInfo
 
   // Select the corner bin and enable "Extend into drawer margin".
   await bin.click();
-  const toggle = page.getByRole('checkbox', { name: /extend into drawer margin/i });
+  const toggle = page.getByRole('switch', { name: /extend into drawer margin/i });
   await expect(toggle).toBeVisible({ timeout: 10_000 });
   await expect(toggle).not.toHaveAttribute('aria-disabled', 'true');
   await toggle.click();

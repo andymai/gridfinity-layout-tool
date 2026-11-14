@@ -24,6 +24,7 @@ import {
   useSharePopoverStore,
 } from '@/core/store';
 import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
+import { CONSTRAINTS } from '@/core/constants';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { batch } from '@/core/cqrs';
@@ -31,11 +32,14 @@ import { useMutations } from '@/shared/contexts';
 import { useLayoutSwitcher } from '@/shared/hooks';
 import { getStagingBins, getLayerBins } from '@/shared/utils';
 import { findBinById } from '@/shared/utils/entity';
-import { isBinLocked } from '@/shared/utils/binLocation';
+import { isBinLocked, planBinRotation } from '@/shared/utils/binLocation';
+import { expandPairIds } from '@/shared/utils/binPairs';
 import { useAlignBins } from '@/shared/hooks/useAlignBins';
 import { useSelectionActions } from '@/shared/hooks/useSelectionActions';
 import { useExpandToFit } from '@/shared/hooks/useExpandToFit';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
+import { useScanLaunch } from '@/shared/hooks/useScanLaunch';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 import { isOk, isErr } from '@/core/result';
 import type { BinId } from '@/core/types';
 import { binId } from '@/core/types';
@@ -61,6 +65,9 @@ export function useActionHandlers(): Record<string, ActionHandler> {
 
   // Gate designer-only commands (bin defaults) to the /designer route.
   const { isDesignerRoute } = useDesignerRouting();
+  const launchScan = useScanLaunch();
+  // The cut editor that scanning opens only renders on desktop.
+  const { isDesktop } = useResponsive();
 
   const layout = useLayoutStore((s) => s.layout);
   const { undo, redo, canUndo, canRedo } = useHistoryStore(
@@ -115,9 +122,9 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       togglePreviewExpanded: s.togglePreviewExpanded,
     }))
   );
-  const { toggleHalfGridMode, halfGridMode } = useHalfGridModeStore(
+  const { requestHalfGridToggle, halfGridMode } = useHalfGridModeStore(
     useShallow((s) => ({
-      toggleHalfGridMode: s.toggleHalfGridMode,
+      requestHalfGridToggle: s.requestHalfGridToggle,
       halfGridMode: s.halfGridMode,
     }))
   );
@@ -131,7 +138,14 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       fillLayer: s.fillLayer,
     }))
   );
-  const { deleteBin, duplicateBin, updateBin, moveBinToStaging, addLayer } = useMutations();
+  const {
+    deleteBins,
+    duplicateBin,
+    updateBin,
+    moveBinsToStaging,
+    restoreBinsFromStaging,
+    addLayer,
+  } = useMutations();
   const { createNewLayout, duplicateLayout, activeLayoutId } = useLayoutSwitcher();
   const { alignBins } = useAlignBins();
   const { rotateAll, matchHeight } = useSelectionActions();
@@ -144,6 +158,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     const layerBins = getLayerBins(layout.bins, activeLayerId);
     const stagingBins = getStagingBins(layout.bins);
     const categories = layout.categories;
+    const withPartners = (): BinId[] => [...expandPairIds(new Set(selectedBinIds), layout.bins)];
 
     function clearSelection(): void {
       setSelectedBins([]);
@@ -222,6 +237,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       'open-whats-new': () => {
         useViewStore.getState().setWhatsNewOpen(true);
       },
+      'scan-tool': isDesktop ? () => launchScan('palette') : null,
       'new-layout': () => {
         void createNewLayout();
       },
@@ -239,10 +255,17 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       // rather than offering a command the store would reject in silence.
       if (!bin || isBinLocked(bin)) return null;
       return () => {
-        batch(() => {
-          const result = updateBin(bin.id, { width: bin.depth, depth: bin.width });
-          if (isErr(result)) return;
-        });
+        const plan = planBinRotation(bin, layout);
+        if (!plan.valid) {
+          addToast(t(plan.messageKey), 'error');
+          return;
+        }
+        if (!batch(() => isOk(updateBin(bin.id, plan.updates)))) return;
+        if (plan.movedTo) {
+          addToast(t('toast.rotateRepositioned', { count: plan.movedTo.distance }), 'info');
+        } else if (plan.halfTurnedInPlace) {
+          addToast(t('toast.binHalfTurned'), 'info');
+        }
       };
     };
 
@@ -252,10 +275,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       'delete-selected': hasBinsSelected
         ? () => {
             batch(() => {
-              for (const id of selectedBinIds) {
-                const result = deleteBin(id);
-                if (isErr(result)) break;
-              }
+              deleteBins(withPartners());
             });
             // Selection cleanup handled by CQRS selectionPruning subscriber
           }
@@ -342,7 +362,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
         if (isOk(result)) {
           setActiveLayer(result.value);
         } else {
-          addToast(t('layers.maxLayersReached', { max: 10 }), 'error');
+          addToast(t('layers.maxLayersReached', { max: CONSTRAINTS.LAYERS_MAX }), 'error');
         }
       },
       'layer-up':
@@ -356,11 +376,10 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       'clear-layer': () => {
         if (layerBins.length === 0) return;
         batch(() => {
-          for (const b of layerBins) {
-            const result = deleteBin(b.id);
-            if (isErr(result)) break;
-          }
+          moveBinsToStaging(layerBins.map((b) => b.id));
+          setSelectedBins([]);
         });
+        addToast(t('toast.clearComplete', { count: layerBins.length }), 'success');
       },
     };
 
@@ -393,23 +412,21 @@ export function useActionHandlers(): Record<string, ActionHandler> {
         : null,
       'move-to-stash': hasBinsSelected
         ? () => {
+            const stashIds = withPartners();
             batch(() => {
-              for (const id of selectedBinIds) {
-                if (isErr(moveBinToStaging(id))) break;
-              }
+              moveBinsToStaging(stashIds);
             });
-            addToast(t('toast.movedToStash', { count: selectedBinIds.length }), 'info');
-            // Selection cleanup handled by CQRS selectionPruning subscriber
+            addToast(t('toast.movedToStash', { count: stashIds.length }), 'info');
+            // Pruning drops only the bins the batch moved; a selected bin
+            // already in the stash would stay selected.
+            setSelectedBins([]);
           }
         : null,
       'clear-staging':
         stagingBins.length > 0
           ? () => {
               batch(() => {
-                for (const bin of stagingBins) {
-                  const result = deleteBin(bin.id);
-                  if (isErr(result)) break;
-                }
+                deleteBins(stagingBins.map((bin) => bin.id));
               });
               addToast(t('toast.stagingCleared', { count: stagingBins.length }), 'success');
             }
@@ -417,24 +434,32 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       'restore-from-staging':
         stagingBins.length > 0
           ? () => {
-              batch(() => {
-                for (const bin of stagingBins) {
-                  const result = updateBin(bin.id, { layerId: activeLayerId });
-                  if (isErr(result)) break;
-                }
-              });
-              addToast(t('toast.restoredFromStaging', { count: stagingBins.length }), 'success');
+              const total = stagingBins.length;
+              const result = batch(() =>
+                restoreBinsFromStaging(
+                  stagingBins.map((bin) => bin.id),
+                  activeLayerId
+                )
+              );
+              const restored = isOk(result) ? result.value : 0;
+              if (restored < total) {
+                addToast(
+                  t('toast.restoredFromStagingPartial', {
+                    restored,
+                    total,
+                    skipped: total - restored,
+                  }),
+                  'info'
+                );
+              } else {
+                addToast(t('toast.restoredFromStaging', { count: restored }), 'success');
+              }
             }
           : null,
     };
 
     const tools: Record<string, ActionHandler> = {
-      'toggle-half-bin': () => {
-        const result = toggleHalfGridMode();
-        if (!isOk(result)) {
-          addToast(t('halfBinBlocked.title'), 'error');
-        }
-      },
+      'toggle-half-bin': requestHalfGridToggle,
       'fill-gaps': () => fillLayerGaps(activeLayerId, activeCategoryId, halfGridMode),
       'toggle-paint-mode': () => {
         if (paintSize) {
@@ -487,10 +512,11 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     showIsometricPreview,
     halfGridMode,
     paintSize,
-    deleteBin,
+    deleteBins,
     duplicateBin,
     updateBin,
-    moveBinToStaging,
+    moveBinsToStaging,
+    restoreBinsFromStaging,
     addLayer,
     fillLayerGaps,
     fillLayer,
@@ -509,7 +535,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     togglePreviewExpanded,
     toggleShowOtherLayers,
     showQuickLabel,
-    toggleHalfGridMode,
+    requestHalfGridToggle,
     zoomIn,
     zoomOut,
     alignBins,
@@ -520,5 +546,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     addToast,
     t,
     isDesignerRoute,
+    isDesktop,
+    launchScan,
   ]);
 }

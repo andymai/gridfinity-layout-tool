@@ -7,7 +7,7 @@ description: 'OAuth sign-in (api/auth/: login, callback, me, logout, Arctic prov
 
 Read `api/auth/README.md` and `api/sync/README.md` first — they document endpoints, cookies, session lifecycle, CSRF layers, LWW/tombstone rules, quotas, and the account-deletion cascade. This skill covers the client engine and operations. Shares and Liveblocks are a separate anonymous subsystem — see the **share-api-collab** skill.
 
-Sync is live in production: `cloud_sync` is `status: 'graduated'` in `src/core/labs/features.ts`, so `useFeatureFlag('cloud_sync')` is always true.
+Sync is live in production and has no Labs flag.
 
 ## When to use
 

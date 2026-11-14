@@ -22,9 +22,15 @@ import {
   classifyExportError,
 } from './workerContext';
 import { prepareMeshImprints } from '../generators/meshImprint';
+import { ensureDesignFonts } from '../wasmInstantiator';
 
-/** Best-effort mesh-imprint pre-pass; a failure degrades to pocket-less pieces. */
+/**
+ * Pre-pass before the synchronous split pipeline: register the design's fonts,
+ * then decode mesh imprints. The imprint step is best-effort; a failure there
+ * degrades to pocket-less pieces.
+ */
 async function prepareImprintsSafe(params: GenerateSplitPreviewMessage['payload']['params']) {
+  await ensureDesignFonts(params);
   try {
     await prepareMeshImprints(params);
   } catch (e) {

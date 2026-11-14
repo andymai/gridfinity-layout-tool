@@ -147,7 +147,7 @@ function MobilePanelContent({ panel }: { panel: string }) {
     layers: 'Layers',
     inspector: 'Inspector',
     categories: 'Categories',
-    print: 'Print List',
+    print: 'Print list',
     settings: 'Settings',
     layouts: 'Layouts',
     participants: 'Collaborators',

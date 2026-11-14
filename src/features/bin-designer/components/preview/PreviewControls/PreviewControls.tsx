@@ -60,11 +60,11 @@ interface PreviewControlsProps {
   onMeasureToggle?: () => void;
 }
 
-const PRESETS: Array<{ key: CameraPreset; label: string; shortcut: string }> = [
-  { key: 'front', label: 'Front', shortcut: '1' },
-  { key: 'side', label: 'Side', shortcut: '2' },
-  { key: 'top', label: 'Top', shortcut: '3' },
-  { key: 'isometric', label: 'Iso', shortcut: '4' },
+const PRESETS: Array<{ key: CameraPreset; labelKey: string; shortcut: string }> = [
+  { key: 'front', labelKey: 'workshop.view.front', shortcut: '1' },
+  { key: 'side', labelKey: 'workshop.view.side', shortcut: '2' },
+  { key: 'top', labelKey: 'workshop.view.top', shortcut: '3' },
+  { key: 'isometric', labelKey: 'workshop.view.isometric', shortcut: '4' },
 ];
 
 const VIEW_MODE_ICONS: Record<SplitViewMode, () => ReactNode> = {
@@ -101,6 +101,10 @@ export function PreviewControls({
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const desktopPickerRef = useRef<HTMLDivElement>(null);
   const t = useTranslation();
+  // Labels show only when the preview, not the window, has room for them: the
+  // side panel and the bento workspace both narrow it. Below that the bar is
+  // icons with tooltips. The split toggle widens the bar, so it needs more room.
+  const labelClass = needsSplit ? 'hidden @min-[60rem]:inline' : 'hidden @min-[48rem]:inline';
   const { isDesktop } = useResponsive();
 
   // Close picker on outside click (desktop only — mobile uses backdrop)
@@ -141,7 +145,7 @@ export function PreviewControls({
     <>
       {/* Desktop: horizontal toolbar in top-right */}
       <div
-        className="absolute right-2 top-2 hidden md:flex items-center gap-2"
+        className="absolute right-2 top-2 hidden md:flex items-center gap-2 whitespace-nowrap"
         ref={desktopPickerRef}
       >
         {/* Assembled / Exploded toggle — separate pill (only when split) */}
@@ -150,6 +154,10 @@ export function PreviewControls({
             {SPLIT_VIEW_MODES.map((mode) => {
               const Icon = VIEW_MODE_ICONS[mode];
               const isActive = splitViewMode === mode;
+              const modeLabel =
+                mode === 'assembled'
+                  ? t('binDesigner.splitAssembled')
+                  : t('binDesigner.splitExploded');
               return (
                 <Button
                   key={mode}
@@ -164,13 +172,11 @@ export function PreviewControls({
                       : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                   }`}
                   aria-pressed={isActive}
+                  aria-label={modeLabel}
+                  title={modeLabel}
                 >
                   <Icon />
-                  <span>
-                    {mode === 'assembled'
-                      ? t('binDesigner.splitAssembled')
-                      : t('binDesigner.splitExploded')}
-                  </span>
+                  <span className={labelClass}>{modeLabel}</span>
                 </Button>
               );
             })}
@@ -179,7 +185,8 @@ export function PreviewControls({
 
         <div className="flex items-center rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
           {/* Camera presets group */}
-          {PRESETS.map(({ key, label, shortcut }) => {
+          {PRESETS.map(({ key, labelKey, shortcut }) => {
+            const label = t(labelKey);
             const Icon = PRESET_ICONS[key];
             const isActive = activePreset === key;
             return (
@@ -195,22 +202,20 @@ export function PreviewControls({
                     ? 'bg-accent text-on-accent hover:bg-accent'
                     : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                 }`}
-                title={`${label} view (${shortcut})`}
-                aria-label={`${label} camera view, keyboard shortcut ${shortcut}`}
+                title={`${label} (${shortcut})`}
+                aria-label={t('binDesigner.cameraPresetAria', { view: label, key: shortcut })}
                 aria-pressed={isActive}
               >
                 <Icon />
-                <span>{label}</span>
+                <span className={labelClass}>{label}</span>
                 <kbd
-                  className={`text-micro font-normal ${isActive ? 'text-on-accent/60' : 'text-content-tertiary'}`}
+                  className={`${labelClass} text-micro font-normal ${isActive ? 'text-on-accent/60' : 'text-content-tertiary'}`}
                 >
                   {shortcut}
                 </kbd>
               </Button>
             );
           })}
-
-          {/* Divider */}
           <div className="w-px h-5 bg-stroke-subtle/50" />
 
           <Button
@@ -224,7 +229,7 @@ export function PreviewControls({
             aria-label={t('binDesigner.resetCameraViewKeyboardShortcutR')}
           >
             <IconReset />
-            <span>{t('common.reset')}</span>
+            <span className={labelClass}>{t('common.reset')}</span>
           </Button>
 
           {/* Wireframe toggle */}
@@ -244,7 +249,7 @@ export function PreviewControls({
             aria-pressed={wireframe}
           >
             <IconWireframe />
-            <span>{t('binDesigner.wire')}</span>
+            <span className={labelClass}>{t('binDesigner.wire')}</span>
           </Button>
 
           {/* X-ray toggle */}
@@ -264,7 +269,7 @@ export function PreviewControls({
             aria-pressed={xray}
           >
             <IconXray />
-            <span>{t('binDesigner.xray')}</span>
+            <span className={labelClass}>{t('binDesigner.xray')}</span>
           </Button>
 
           {/* Measure toggle */}
@@ -285,7 +290,7 @@ export function PreviewControls({
               aria-pressed={measureActive === true}
             >
               <IconMeasure />
-              <span>{t('binDesigner.measure.short')}</span>
+              <span className={labelClass}>{t('binDesigner.measure.short')}</span>
             </Button>
           )}
 
@@ -302,7 +307,7 @@ export function PreviewControls({
             aria-pressed={projection === 'orthographic'}
           >
             {projection === 'perspective' ? <IconPerspective /> : <IconOrthographic />}
-            <span>
+            <span className={labelClass}>
               {projection === 'perspective'
                 ? t('binDesigner.projectionPerspective')
                 : t('binDesigner.projectionOrthographic')}
@@ -312,7 +317,6 @@ export function PreviewControls({
           {/* Color picker (hidden in multi-color mode) */}
           {!hideColorPicker && (
             <>
-              {/* Divider */}
               <div className="w-px h-5 bg-stroke-subtle/50" />
 
               {/* Color picker button */}
@@ -331,7 +335,7 @@ export function PreviewControls({
                   className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
                   style={{ backgroundColor: previewColor }}
                 />
-                <span>{t('common.color')}</span>
+                <span className={labelClass}>{t('common.color')}</span>
               </Button>
             </>
           )}
@@ -388,7 +392,8 @@ export function PreviewControls({
         )}
         <div className="flex items-center rounded-lg bg-surface-elevated/80 shadow-sm backdrop-blur overflow-hidden">
           {/* Camera presets */}
-          {PRESETS.map(({ key, label, shortcut }) => {
+          {PRESETS.map(({ key, labelKey, shortcut }) => {
+            const label = t(labelKey);
             const Icon = PRESET_ICONS[key];
             const isActive = activePreset === key;
             return (
@@ -403,15 +408,13 @@ export function PreviewControls({
                     ? 'bg-accent text-on-accent hover:bg-accent'
                     : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                 }`}
-                title={`${label} view (${shortcut})`}
-                aria-label={`${label} camera view`}
+                title={`${label} (${shortcut})`}
+                aria-label={t('binDesigner.cameraPresetShortAria', { view: label })}
               >
                 <Icon />
               </IconButton>
             );
           })}
-
-          {/* Divider */}
           <div className="w-px h-5 bg-stroke-subtle/50" />
 
           {/* Reset */}

@@ -8,9 +8,10 @@
 import { translate, mesh, meshEdges, exportSTEP, getKernelCapabilities } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
-import type { ExportFormat } from '../../bridge/types';
+import type { ExportFormat, FaceGroupData } from '../../bridge/types';
 
 import { buildSTLBufferFromIndexed } from '@/features/generation/export/stlExporter';
+import { dropCollapsedTriangles } from '@/features/generation/export/collapsedTriangles';
 import { type GridPitch } from './gridPitch';
 import { toIndexedMeshData } from './utils/mesh';
 import { creaseEdges } from './utils';
@@ -26,6 +27,8 @@ export interface SplitExportResult {
     readonly label: string;
     readonly col: number;
     readonly row: number;
+    /** Per-triangle feature tags for the STL in `data`. Absent for STEP. */
+    readonly faceGroups?: readonly FaceGroupData[];
   }>;
 }
 
@@ -43,6 +46,7 @@ export interface SplitPreviewResult {
     readonly depthUnits: number;
     readonly offsetX: number;
     readonly offsetY: number;
+    readonly faceGroups?: readonly FaceGroupData[];
   }>;
 }
 
@@ -90,19 +94,18 @@ function tessellateAndExportPiece(
   outerD: number,
   tolerance: number,
   angularTolerance: number
-): ArrayBuffer {
+): PieceExport {
   const { solid: pieceSolid } = piece;
   try {
-    const m = mesh(pieceSolid, { tolerance, angularTolerance, cache: false });
-    let vertices = m.vertices instanceof Float32Array ? m.vertices : new Float32Array(m.vertices);
-    let normals = m.normals instanceof Float32Array ? m.normals : new Float32Array(m.normals);
-    let indices = m.triangles instanceof Uint32Array ? m.triangles : new Uint32Array(m.triangles);
+    const m = toIndexedMeshData(mesh(pieceSolid, { tolerance, angularTolerance, cache: false }));
+    let { vertices, normals, indices, faceGroups } = m;
     // Mesh imprint pockets subtract post-tessellation (they never exist on
     // the BREP solid). Export pieces stay in the bin frame, so tools place
     // directly; a pocket straddling a seam cuts every piece it touches.
     const imprinted = imprintPieceArrays(
       vertices,
       indices,
+      faceGroups,
       params,
       deriveDimensions(params, true),
       {
@@ -116,8 +119,17 @@ function tessellateAndExportPiece(
       vertices = imprinted.positions;
       normals = imprinted.normals;
       indices = imprinted.indices;
+      faceGroups = imprinted.faceGroups ? [...imprinted.faceGroups] : undefined;
     }
-    return buildSTLBufferFromIndexed(vertices, normals, indices, `gridfinity-piece-${piece.label}`);
+    const raw = buildSTLBufferFromIndexed(
+      vertices,
+      normals,
+      indices,
+      `gridfinity-piece-${piece.label}`,
+      { keepCollapsedTriangles: true }
+    );
+    const cleaned = dropCollapsedTriangles(raw, faceGroups);
+    return { data: cleaned.data, faceGroups: cleaned.faceGroups };
   } finally {
     pieceSolid.delete();
   }
@@ -134,14 +146,20 @@ function tessellateAndExportPiece(
  * The piece keeps the bin's own coordinate frame, matching the STL path, so an
  * importer that opens every piece at once sees them already aligned.
  */
-async function exportPieceAsStep(piece: SplitPieceInfo): Promise<ArrayBuffer> {
+async function exportPieceAsStep(piece: SplitPieceInfo): Promise<PieceExport> {
   const { solid: pieceSolid } = piece;
   try {
     const blob = unwrapExportBlob(exportSTEP(pieceSolid), 'STEP');
-    return await blob.arrayBuffer();
+    return { data: await blob.arrayBuffer() };
   } finally {
     pieceSolid.delete();
   }
+}
+
+/** One written split piece. `faceGroups` index the STL's triangles; STEP has none. */
+export interface PieceExport {
+  readonly data: ArrayBuffer;
+  readonly faceGroups?: readonly FaceGroupData[];
 }
 
 /**
@@ -156,7 +174,7 @@ export function exportPiece(
   tolerance: number,
   angularTolerance: number,
   format: ExportFormat
-): Promise<ArrayBuffer> {
+): Promise<PieceExport> {
   if (format === 'step') return exportPieceAsStep(piece);
   return Promise.resolve(
     tessellateAndExportPiece(piece, params, outerW, outerD, tolerance, angularTolerance)
@@ -238,6 +256,7 @@ export function tessellatePiece(
   const imprinted = imprintPieceArrays(
     meshData.vertices,
     meshData.indices,
+    meshData.faceGroups,
     params,
     deriveDimensions(params, false),
     { minX: -widthMm / 2, minY: -depthMm / 2, maxX: widthMm / 2, maxY: depthMm / 2 },
@@ -250,6 +269,7 @@ export function tessellatePiece(
       normals: imprinted.normals,
       indices: imprinted.indices,
       edgeVertices: creaseEdges({ vertices: imprinted.positions, triangles: imprinted.indices }),
+      faceGroups: imprinted.faceGroups ? [...imprinted.faceGroups] : undefined,
     };
   }
 
@@ -258,6 +278,7 @@ export function tessellatePiece(
     normals: meshData.normals,
     indices: meshData.indices,
     edgeVertices: meshData.edgeVertices,
+    ...(meshData.faceGroups ? { faceGroups: meshData.faceGroups } : {}),
     label,
     col,
     row,

@@ -98,7 +98,7 @@ export function ImportBinDialog({
       <Dialog.Header title={t('binDesigner.importBin.title')} />
       <Dialog.Body>
         <div className="flex flex-col gap-3">
-          <div className="relative h-64 rounded-lg border border-stroke-subtle bg-surface-sunken overflow-hidden">
+          <div className="relative h-64 rounded-lg border border-stroke-subtle bg-surface overflow-hidden">
             <Canvas camera={{ position: [maxDim, maxDim, maxDim], up: [0, 0, 1], fov: 40 }}>
               <ambientLight intensity={0.7} />
               <directionalLight position={[1, 2, 3]} intensity={1.2} />

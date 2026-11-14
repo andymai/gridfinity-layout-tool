@@ -14,6 +14,70 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'out-of-labs-workshop-slant-gaps',
+    date: '2026-11-06',
+    kind: 'improved',
+    featured: true,
+    title: { en: 'Workshop, slanted bins and Find bins that fit are out of Labs' },
+    body: {
+      en: "All three are now on for everyone. Workshop builds tool holders out of parts: start one with New Workshop build in your saved designs. Slanted bins lean so tall things fit a shallow drawer: find Slant on the Shape page of the designer. Find bins that fit shows community designs that fit an empty area of your layout: it's in the layout toolbar, or under Layers > Tools on a phone. Workshop and slanted bins are marked Experimental for now. SpaceMouse support moved too: it's now in Settings > General, and if you had it on, it's still on.",
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
+    id: 'bin-half-turn',
+    date: '2026-11-04',
+    kind: 'improved',
+    title: { en: 'Turn a placed bin all the way round' },
+    body: {
+      en: 'Rotate (R) now takes a bin linked to a saved design through all four directions, so a bin with an overhang can reach over the edge of the drawer instead of into its neighbour, with no redesign. A square bin, or one with no room for a quarter turn, turns 180° where it stands. The 3D preview shows which way it faces. Half-unit bins and paired bins turn as they did before.',
+    },
+    action: { kind: 'openTool', tool: 'layout' },
+  },
+  {
+    id: 'long-bins-fit-diagonally',
+    date: '2026-11-04',
+    kind: 'fixed',
+    title: { en: 'Long bins that fit your bed diagonally print whole' },
+    body: {
+      en: 'A long, narrow bin that fits your print bed only laid corner to corner, like a 1.5 × 7 bin on a 256mm bed, was split into pieces and flagged as too big. It now prints whole. The export dialog reminds you to turn it in your slicer, and you can still tick Split into pieces if a clip or purge line takes up a corner of your bed.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
+    id: 'scan-a-tool-anywhere',
+    date: '2026-11-04',
+    kind: 'improved',
+    featured: true,
+    title: { en: 'Scan a tool from more places' },
+    body: {
+      en: 'Photograph a tool and the bin designer cuts a pocket that fits it. Start from Scan a tool on the Custom Cutouts card, the link under the other Interior modes, the Cut Editor’s header, or the command palette (Ctrl/Cmd+K, then type scan). It asks first whether the photo is on your phone or already on this computer. From the command palette outside the bin designer, it starts a new bin that grows to fit what you scan.',
+    },
+    action: { kind: 'scanTool' },
+  },
+  {
+    id: 'measuring-strips',
+    date: '2026-11-03',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Measure a tall tool at its own height' },
+    body: {
+      en: 'A tool photographed from above looks bigger on top than on the table. Print the measuring strips from the scan dialog, cut one out and lay it across the top of a tall tool: the scan measures at the strip, so the tool comes out its true size. Where the strip covers an edge, the outline is filled in across it and marked for you to check.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
+    id: 'trace-export',
+    date: '2026-11-03',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Save traced tools as a file' },
+    body: {
+      en: 'In Trace a photo, Export saves the traced outlines at their true size: an SVG or DXF for a laser or vinyl cutter, or an STL to subtract from a model in your CAD app. Tick the clearance box to add the room a pocket leaves round each tool. On your phone, Download does the same from the scan review.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'island-points-magnifier',
     date: '2026-11-03',
     kind: 'new',
@@ -254,9 +318,9 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     featured: true,
     title: { en: 'Slanted bins for tall things in shallow drawers' },
     body: {
-      en: 'Pens, markers and tools too tall to stand up in a shallow drawer can now lie at an angle. Slant leans a bin toward one side while its base stays flat on the grid: set it on the Shape page of the designer, or for one bin in the inspector. In the size brush, Slanted row fills the area you drag with rows that lean against each other and end on a support, every bin linked to one design. Turn it on under Labs.',
+      en: 'Pens, markers and tools too tall to stand up in a shallow drawer can now lie at an angle. Slant leans a bin toward one side while its base stays flat on the grid: set it on the Shape page of the designer, or for one bin in the inspector. In the size brush, Slanted row fills the area you drag with rows that lean against each other and end on a support, every bin linked to one design. Slanted bins are marked Experimental while printed fit is being confirmed.',
     },
-    labs: 'slant',
+    action: { kind: 'openTool', tool: 'designer' },
   },
   {
     id: 'places-labs',
@@ -688,7 +752,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     body: {
       en: 'Drag a box across the canvas to grab a group of parts, then move, rotate or resize them together. New camera buttons frame the whole build or just what you have selected.',
     },
-    labs: 'workshop',
+    action: { kind: 'openTool', tool: 'designer' },
   },
   {
     id: 'cutout-lean-angle',
@@ -725,9 +789,9 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     kind: 'new',
     title: { en: 'Workshop: build tool holders out of parts' },
     body: {
-      en: 'Place posts, fins, tubes, cradles and racks on a Gridfinity base in 3D, stack and carve them, then export to STL, 3MF or STEP. Builds save to your library, sync when signed in, and drop into a drawer layout like any bin. Turn it on under Labs.',
+      en: 'Place posts, fins, tubes, cradles and racks on a Gridfinity base in 3D, stack and carve them, then export to STL, 3MF or STEP. Builds save to your library, sync when signed in, and drop into a drawer layout like any bin. Start one from New Workshop build in your saved designs.',
     },
-    labs: 'workshop',
+    action: { kind: 'openTool', tool: 'designer' },
   },
   {
     id: 'bento-non-rectangular',

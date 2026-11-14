@@ -25,12 +25,7 @@ export interface LabsMetrics {
 export function computeLabsMetrics(): LabsMetrics {
   const prefs = useLabsStore.getState().preferences;
   const enabledFeatures = Object.entries(prefs.enabledFeatures)
-    .filter(([id, enabled]) => {
-      if (!enabled) return false;
-      const feature = getFeature(id);
-      // Only include non-graduated features (graduated are always on)
-      return feature?.status === 'experimental' || feature?.status === 'preview';
-    })
+    .filter(([id, enabled]) => enabled && getFeature(id) !== undefined)
     .map(([id]) => id);
 
   return {

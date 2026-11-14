@@ -10,10 +10,13 @@
  */
 
 import { useLayoutStore } from '@/core/store/layout';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { useHistoryStore, captureSelectionSnapshot } from '@/core/cqrs/undo/historyStore';
+import type { SelectionSnapshot } from '@/core/cqrs/undo/historyStore';
+import type { Layout } from '@/core/types';
 import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
-import type { Command } from '../commands';
+import type { Command, CommandType } from '../commands';
 import type { DomainEvent } from '../events';
 import type { CommandResult, NextFn } from '../types';
 import { getMiddlewareFlags } from './middlewareConfig';
@@ -21,8 +24,40 @@ import { getMiddlewareFlags } from './middlewareConfig';
 /** When true, a batch is active — middleware skips individual snapshots */
 let isBatching = false;
 
-/** Tracks the first command type dispatched during a batch */
-let batchCommandType: string | null = null;
+/** The first command type that succeeded during a batch, which names its undo entry */
+let batchCommandType: CommandType | null = null;
+let batchCommandCount = 0;
+let batchMixed = false;
+let batchHalfGridMode = false;
+
+function recordBatchCommand(type: CommandType): void {
+  if (batchCommandType === null) {
+    batchCommandType = type;
+    batchCommandCount = 1;
+  } else if (type === batchCommandType) {
+    batchCommandCount += 1;
+  } else {
+    batchMixed = true;
+  }
+}
+
+function pushBatchEntry(snapshot: Layout, selectionSnapshot: SelectionSnapshot): void {
+  const counted = !batchMixed && batchCommandCount > 1;
+  const modeChanged = useHalfGridModeStore.getState().halfGridMode !== batchHalfGridMode;
+  useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown', selectionSnapshot, {
+    ...(counted ? { commandCount: batchCommandCount } : {}),
+    ...(modeChanged ? { halfGridMode: batchHalfGridMode } : {}),
+  });
+  mlTracking.recordAction();
+}
+
+function resetBatchState(): void {
+  isBatching = false;
+  batchCommandType = null;
+  batchCommandCount = 0;
+  batchMixed = false;
+  batchHalfGridMode = false;
+}
 
 export function undoCaptureMiddleware(
   command: Command,
@@ -60,11 +95,14 @@ export function undoCaptureMiddleware(
 
   // Skip if inside a batch — batch() handles the snapshot
   if (isBatching) {
-    // Track the first command type for the batch's undo description
-    if (batchCommandType === null) {
-      batchCommandType = command.type;
+    // A command can succeed without a change (a height already at its
+    // limit), and that one must not count toward or name the batch.
+    const before = useLayoutStore.getState().layout;
+    const batched = next(command);
+    if (isOk(batched) && useLayoutStore.getState().layout !== before) {
+      recordBatchCommand(command.type);
     }
-    return next(command);
+    return batched;
   }
 
   // Clone BEFORE next() — Immer produces a new state object on mutation,
@@ -101,6 +139,9 @@ export function undoCaptureMiddleware(
  * Supports nesting — inner batch() calls are no-ops (the outermost
  * batch owns the snapshot).
  *
+ * A half-grid mode change inside the callback joins the entry, so undo and
+ * redo set the mode back with the layout.
+ *
  * @returns The return value of the callback.
  *
  * @example
@@ -122,32 +163,26 @@ export function batch<T>(fn: () => T): T {
   const snapshot = structuredClone(layout);
   const selectionSnapshot = captureSelectionSnapshot();
 
+  resetBatchState();
   isBatching = true;
-  batchCommandType = null;
+  batchHalfGridMode = useHalfGridModeStore.getState().halfGridMode;
   try {
     const result = fn();
 
     // Check if layout actually changed (Immer produces new reference on mutation)
-    const currentLayout = useLayoutStore.getState().layout;
-    if (currentLayout !== layout) {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- batchCommandType is mutated by the inner middleware via fn(); TS's flow analysis can't see across that boundary so it narrows to null here
-      useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown', selectionSnapshot);
-      mlTracking.recordAction();
+    if (useLayoutStore.getState().layout !== layout) {
+      pushBatchEntry(snapshot, selectionSnapshot);
     }
 
     return result;
   } catch (e: unknown) {
     // Push undo snapshot even on error so partial mutations can be reverted
-    const currentLayout = useLayoutStore.getState().layout;
-    if (currentLayout !== layout) {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- batchCommandType is mutated by the inner middleware via fn(); TS's flow analysis can't see across that boundary so it narrows to null here
-      useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown', selectionSnapshot);
-      mlTracking.recordAction();
+    if (useLayoutStore.getState().layout !== layout) {
+      pushBatchEntry(snapshot, selectionSnapshot);
     }
     throw e;
   } finally {
-    isBatching = false;
-    batchCommandType = null;
+    resetBatchState();
   }
 }
 
@@ -156,6 +191,5 @@ export function batch<T>(fn: () => T): T {
  * Exported for testing only — not part of the public API.
  */
 export function _resetUndoCaptureState(): void {
-  isBatching = false;
-  batchCommandType = null;
+  resetBatchState();
 }

@@ -150,6 +150,14 @@ describe('parseDesignJSON', () => {
     expect(result.errors).toHaveLength(0);
   });
 
+  it('keeps a design that turns splitting off through export and import', () => {
+    const json = exportDesignJSON('Long', makeParams({ width: 8, splitToFitBed: false }));
+    const result = parseDesignJSON(json, t);
+
+    expect(result.errors).toHaveLength(0);
+    expect(result.design?.params.splitToFitBed).toBe(false);
+  });
+
   it('should return errors for invalid JSON', () => {
     const result = parseDesignJSON('invalid json', t);
 

@@ -122,10 +122,19 @@ describe('LayoutListItem', () => {
       expect(screen.getByText('10×8×12')).toBeInTheDocument();
     });
 
-    it('renders bin count', () => {
-      render(<LayoutListItem {...defaultProps} />);
+    it.each([
+      [1, '1 bin'],
+      [2, '2 bins'],
+    ])('counts %i bin(s)', (binCount, label) => {
+      const entry = createTestEntry();
+      render(
+        <LayoutListItem
+          {...defaultProps}
+          entry={{ ...entry, preview: { ...entry.preview, binCount } }}
+        />
+      );
 
-      expect(screen.getByText(/\d+ bins/)).toBeInTheDocument();
+      expect(screen.getByText(label)).toBeInTheDocument();
     });
 
     it('renders LayoutActions', () => {

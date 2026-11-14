@@ -13,6 +13,7 @@ import { SliderInput } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
 import { SegmentedControl } from '@/design-system/SegmentedControl/SegmentedControl';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import type { AccentBandUnit } from '@/core/store/settings.types';
 import type {
   AccentBandConfig,
@@ -158,9 +159,7 @@ export function AccentBandsEditor({
   return (
     <div className="border-t border-stroke-subtle pt-2">
       <div className="flex items-center justify-between gap-2 py-1">
-        <span className="text-label font-semibold uppercase tracking-wide text-content-secondary">
-          {t('binDesigner.colors.accent.title')}
-        </span>
+        <SubHeader>{t('binDesigner.colors.accent.title')}</SubHeader>
         {anyEnabled && (
           <SegmentedControl
             size="sm"

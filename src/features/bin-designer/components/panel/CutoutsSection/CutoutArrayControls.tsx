@@ -298,6 +298,22 @@ export function CutoutArrayControls({
         </div>
       )}
 
+      {/* A typed value past the max snaps back, which reads as a dead field unless
+          the rule is stated. A count cap can't be the cause: MAX_ARRAY_INSTANCES /
+          MAX_ARRAY_COUNT leaves room for 8, so a max of 1 is always lack of space. */}
+      {array.mode !== 'radial' && bounds.maxRows === 1 && (
+        <Hint
+          info={bounds.maxCols === 1 ? undefined : t('binDesigner.cutouts.repeat.noRoomDetail')}
+        >
+          {t('binDesigner.cutouts.repeat.noRoomRows')}
+        </Hint>
+      )}
+      {array.mode !== 'radial' && bounds.maxCols === 1 && (
+        <Hint info={t('binDesigner.cutouts.repeat.noRoomDetail')}>
+          {t('binDesigner.cutouts.repeat.noRoomCols')}
+        </Hint>
+      )}
+
       {/* Advisory, not a block: a deliberate overlap is how two shapes are made
           to cut into each other, so the user is told what will happen rather
           than stopped. */}

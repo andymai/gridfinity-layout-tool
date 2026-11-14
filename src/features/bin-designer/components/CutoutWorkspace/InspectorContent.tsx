@@ -5,9 +5,10 @@
  * owns width, collapse, and persistence.
  */
 
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
 import type { PocketChecksView } from '../panel/CutoutsSection/PocketIssueList';
@@ -38,7 +39,7 @@ import { fingerBottom } from '@/shared/utils/fingerAccess';
 import { BatchEntryEdgeFields } from './BatchEntryEdgeFields';
 import { CutoutColorControls } from './CutoutColorControls';
 import { CutoutBoardSettings } from './CutoutBoardSettings';
-import { BinSizeSection } from './BinSizeSection';
+import { BinSizeIssues, BinSizeSection } from './BinSizeSection';
 import { BinFeaturesSection } from './BinFeaturesSection';
 import { FitTestButton } from './FitTestButton';
 import { ShadowBoardButton } from './ShadowBoardButton';
@@ -118,24 +119,6 @@ function getSharedValue(
   const first = getEffective(cutouts[0], preview, key) as number;
   for (let i = 1; i < cutouts.length; i++) {
     if ((getEffective(cutouts[i], preview, key) as number) !== first) return null;
-  }
-  return first;
-}
-
-/**
- * Shared value of a non-numeric field. Returns the common value, or `null` when
- * the selection is mixed. The field's own `undefined` (e.g. all uncolored) is a
- * legitimate shared value and is distinct from mixed.
- */
-function getSharedField<K extends keyof Cutout>(
-  cutouts: readonly Cutout[],
-  preview: ReadonlyMap<string, Partial<Cutout>>,
-  key: K
-): Cutout[K] | null {
-  if (cutouts.length === 0) return null;
-  const first = getEffective(cutouts[0], preview, key);
-  for (let i = 1; i < cutouts.length; i++) {
-    if (getEffective(cutouts[i], preview, key) !== first) return null;
   }
   return first;
 }
@@ -248,28 +231,40 @@ export function InspectorContent({
       selectedCutouts.every((c) => isThroughCut(c, st.params) || fingerBottom(c) === 'curved')
   );
 
-  // Bin-level controls stay visible across every selection state so the user can
-  // resize the board and clear the stacking lip without leaving the editor.
+  const binIssues = {
+    offBoardCount,
+    onClampOffBoard,
+    onCenterOffBoard,
+    depthShortfallCount,
+    pocketChecks,
+    growTarget,
+    onGrowToFit,
+  };
+  // Bin-level controls stay in every selection state so the user can resize the
+  // board and clear the stacking lip without leaving the editor. With a
+  // selection they follow its sections, so the shape being edited comes first.
+  // The key keeps them mounted as they move, so the shadow board and fit test
+  // settings survive a selection change.
   const binControls = (
-    <>
-      <BinSizeSection
-        offBoardCount={offBoardCount}
-        onClampOffBoard={onClampOffBoard}
-        onCenterOffBoard={onCenterOffBoard}
-        depthShortfallCount={depthShortfallCount}
-        pocketChecks={pocketChecks}
-        growTarget={growTarget}
-        onGrowToFit={onGrowToFit}
-      />
+    <Fragment key="bin-controls">
+      <BinSizeSection />
       <BinFeaturesSection />
       <FitTestButton />
       {!throughOnly && <ShadowBoardButton />}
-    </>
+    </Fragment>
+  );
+  // The warnings lead in every state, under one key: clicking a pocket warning
+  // selects its shapes, and a remount there would collapse the list it was in.
+  const binWarnings = (
+    <div key="bin-warnings" className="space-y-3 pt-3 empty:hidden">
+      <BinSizeIssues {...binIssues} />
+    </div>
   );
 
   if (selectedCutouts.length === 0) {
     return (
       <div className="space-y-1.5">
+        {binWarnings}
         {binControls}
         {board ? (
           <CutoutBoardSettings
@@ -395,7 +390,7 @@ export function InspectorContent({
 
   return (
     <div className="space-y-1.5">
-      {binControls}
+      {binWarnings}
       {singleCutout && (
         <SingleCutoutInspector
           cutout={singleCutout}
@@ -415,9 +410,9 @@ export function InspectorContent({
 
       {!isSingle && selectedCutouts.length > 1 && (
         <>
-          <div className="text-micro font-medium uppercase tracking-wide text-content-tertiary">
+          <SubHeader>
             {t('binDesigner.cutoutEditor.selectedCount', { count: selectedCutouts.length })}
-          </div>
+          </SubHeader>
           {/* Above the align controls: if the selection is already a pattern,
               the offer to make it parametric beats aligning it by hand. */}
           {repeatSuggestion && (
@@ -567,11 +562,10 @@ export function InspectorContent({
               swatch would only flip the whole design into multi-colour mode
               for a zone nothing paints. */}
           {!throughOnly && (
-            <div className="pt-1">
+            <div className="space-y-1.5 pt-1">
+              <SubHeader>{t('binDesigner.cutouts.section.color')}</SubHeader>
               <CutoutColorControls
-                ids={selectedCutouts.map((c) => c.id)}
-                color={getSharedField(selectedCutouts, preview, 'color')}
-                colorScope={getSharedField(selectedCutouts, preview, 'colorScope')}
+                cutouts={selectedCutouts.map((c) => ({ ...c, ...preview.get(c.id) }))}
                 disabled={disabled}
               />
             </div>
@@ -586,6 +580,8 @@ export function InspectorContent({
           </span>
         </div>
       )}
+
+      {binControls}
     </div>
   );
 }

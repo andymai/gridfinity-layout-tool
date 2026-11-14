@@ -8,8 +8,8 @@
  *    segmenter; we trust it (plus the user's tap) to have isolated the object.
  *
  * Both resolve the size reference the same way (`detectReference`) and share the
- * `finishTrace` tail (simplify → curve-fit smooth → optional symmetry → optional
- * rectification). They differ in how the tool contours are obtained:
+ * `finishTrace` tail (snap to the photo's edges → curve-fit smooth → optional
+ * symmetry → optional rectification). They differ in how the tool contours are obtained:
  * `traceScene` traces every piece of a binary mask (`findToolBlobs`), while
  * `traceSceneSegmented` traces the soft confidence mask sub-pixel via marching
  * squares (`buildToolTraceSoft`).
@@ -22,13 +22,14 @@
  */
 
 import type { Result } from '@/core/result';
-import { ok, err } from '@/core/result';
+import { ok, err, isOk } from '@/core/result';
 import type { ImageDataLike, Mask, Point, TraceError } from './types';
-import { simplifyRdp } from './simplify';
 import { polygonArea } from './traceImage';
 import { findCardAcrossChannels, cardHomography, type CardDetectOptions } from './cardDetect';
 import { invertHomography, rectifyPoints, solveHomography, type Homography } from './perspective';
-import { fitSmoothPolygon } from './curveFit';
+import { smoothRing } from './curveFit';
+import { snapToEdges } from './edgeSnap';
+import { usesAlphaMask } from './mask';
 import { traceSoftContour, binarize, type SoftMask } from './softContour';
 import { symmetrizeIfRegular } from './symmetry';
 import { detectCalibrationGrid, type GridDetectOptions } from './gridDetect';
@@ -38,6 +39,15 @@ import type { CellQuad } from './latticeBlobs';
 import { segmentTools } from './colorSegment';
 import { findToolBlobs, interiorSeed, pointInPolygon } from './toolBlobs';
 import { convexHull, minAreaRect } from './minAreaRect';
+import { paperReference, type PaperSize } from './manualReference';
+import { findPaper } from './paperDetect';
+import {
+  bridgeAcrossStrip,
+  bridgeSoftAcrossStrip,
+  detectMarkerStrip,
+  touchesStrip,
+  type SceneStrip,
+} from './measuringStrip';
 
 export interface SceneCard {
   readonly corners: readonly [Point, Point, Point, Point];
@@ -76,7 +86,13 @@ export type SceneReference =
   | { readonly kind: SceneGridKind; readonly fit: LatticeFit }
   | { readonly kind: 'card'; readonly card: SceneCard }
   | { readonly kind: 'ruler'; readonly ruler: SceneRuler }
-  | { readonly kind: 'paper'; readonly paper: ScenePaper };
+  | { readonly kind: 'paper'; readonly paper: ScenePaper }
+  | {
+      readonly kind: 'strip';
+      readonly strip: SceneStrip;
+      /** A calibration sheet under the tool, which still bounds the search and its markers. */
+      readonly sheet?: LatticeFit;
+    };
 
 export interface SceneRing {
   /** In image pixels — for overlaying on the photo. */
@@ -90,6 +106,10 @@ export interface SceneShape extends SceneRing {
   readonly holes?: readonly SceneRing[];
   /** Lies in another shape's hole: a tool of its own only while holes are kept. */
   readonly inHole?: boolean;
+  /** Reaches the measuring strip, so its edge there was bridged and wants a look. */
+  readonly underStrip?: boolean;
+  /** Runs past the sheet of paper, where the search stops, so its outline is cut at the sheet's edge. */
+  readonly offSheet?: boolean;
 }
 
 /** Narrowest hole kept, across its short axis, once the reference gives millimetres. */
@@ -115,6 +135,9 @@ interface Outline {
   readonly imagePoints: readonly Point[];
   readonly holes: readonly (readonly Point[])[];
   readonly inHole: boolean;
+  /** Bridged under a strip before, so still worth a look once the scale changes. */
+  readonly underStrip?: boolean;
+  readonly offSheet?: boolean;
 }
 
 export interface SceneTrace {
@@ -131,10 +154,20 @@ export interface SceneTraceOptions
   extends CardDetectOptions, GridDetectOptions, BaseplateDetectOptions {
   /** The colour segmenter's sensitivity, -127 to 128; 0 is automatic. */
   readonly sensitivity?: number;
+  /**
+   * The size of a plain sheet of paper under the tools, in place of the one
+   * its shape reads as; `off` when what was found is not paper.
+   */
+  readonly paper?: PaperSize | 'off';
   /** Where to look, in image pixels, in place of the reference's own search area. */
   readonly region?: readonly Point[];
   readonly simplifyTolerance?: number;
   readonly minToolAreaPx?: number;
+  /**
+   * Move each traced outline onto the edge in the photo, to a fraction of a
+   * pixel (default true). Pass false for the outline as the mask gave it.
+   */
+  readonly snap?: boolean;
   /**
    * Smooth the faceted outline (default true): fit Bézier curves that keep sharp
    * corners crisp while turning curved runs into clean arcs. Pass false for the
@@ -160,6 +193,17 @@ function defaultTolerance(width: number, height: number): number {
   return Math.max(1, Math.hypot(width, height) * 0.003);
 }
 
+/**
+ * The tolerance for an outline already moved onto its edge. It has no
+ * staircase left to straighten, only the edge's own noise of a fraction of a
+ * pixel, so it does not grow with the photo.
+ */
+const SNAPPED_TOLERANCE = 1;
+
+/** How far a point may move to its edge: a mask's outline, and the model's coarser one. */
+const MASK_REACH = 4;
+const MODEL_REACH = 6;
+
 /** Detect the reference card on the classical auto threshold (slider-independent). */
 export function detectCard(
   image: ImageDataLike,
@@ -181,9 +225,12 @@ export function detectCard(
  *  2. **A Gridfinity baseplate** — the same kind of lattice and the same solve,
  *     but its true pitch depends on the printer that made it, so it is a
  *     convenience rather than a standard (see `baseplateDetect`).
- *  3. **A wallet card** — four coplanar points off to one side of the tool,
+ *  3. **A plain sheet of A4 or US Letter paper** under the tools — four corners
+ *     again, but they bracket the tools and span three times a card's length.
+ *     Paper is cut to about half a percent, where a card is exact.
+ *  4. **A wallet card** — four coplanar points off to one side of the tool,
  *     which is the minimum a homography admits and the reason this feature
- *     needed the other two.
+ *     needed the others.
  *
  * Each detector declines cheaply on a photo without its reference, so the
  * cheaper paths cost nothing extra when a better one is present.
@@ -197,10 +244,27 @@ export function detectReference(
   excludeMask?: Mask
 ): SceneReference | null {
   const sheet = detectCalibrationGrid(image, options);
+  // A strip on the tool measures it at its own height, so it wins over a sheet
+  // under it, whose rows of markers it would otherwise be read from.
+  const strip = detectMarkerStrip(image, sheet ? sheet.cells.map((cell) => cell.outline) : []);
+  if (strip) return { kind: 'strip', strip, ...(sheet ? { sheet } : {}) };
   if (sheet) return { kind: 'sheet', fit: sheet };
   const baseplate = detectBaseplateGrid(image, options);
   if (baseplate) return { kind: 'baseplate', fit: baseplate };
-  const card = detectCard(image, options, excludeMask);
+  const sheetOfPaper = findPaper(image);
+  if (!sheetOfPaper) {
+    const card = detectCard(image, options, excludeMask);
+    return card ? { kind: 'card', card } : null;
+  }
+  if (options.paper !== 'off' && sheetOfPaper.size !== null) {
+    const paper = paperReference(sheetOfPaper.corners, options.paper ?? sheetOfPaper.size, image);
+    if (isOk(paper)) return paper.value;
+  }
+  // A sheet is card-shaped within the card search's tolerance, and so is each
+  // piece of one a tool cut across: left in, either would be taken for a card
+  // 86 mm wide.
+  const notCard = [sheetOfPaper.corners, ...sheetOfPaper.parts];
+  const card = detectCard(image, { ...options, notCard }, excludeMask);
   return card ? { kind: 'card', card } : null;
 }
 
@@ -215,6 +279,8 @@ function referenceQuads(reference: SceneReference | null): readonly (readonly Po
     case 'sheet':
     case 'baseplate':
       return reference.fit.cells.map((cell) => cell.outline);
+    case 'strip':
+      return [reference.strip.paper, ...(reference.sheet?.cells.map((cell) => cell.outline) ?? [])];
     default:
       return [];
   }
@@ -235,6 +301,10 @@ function searchRegion(reference: SceneReference | null): readonly Point[] | unde
     case 'sheet':
     case 'baseplate':
       return convexHull(reference.fit.cells.flatMap((cell) => cell.outline));
+    case 'strip':
+      return reference.sheet
+        ? convexHull(reference.sheet.cells.flatMap((cell) => cell.outline))
+        : undefined;
     case 'paper': {
       const { corners } = reference.paper;
       const cx = corners.reduce((sum, p) => sum + p.x, 0) / 4;
@@ -269,8 +339,9 @@ function referenceHomography(
         { x: 0, y: h },
       ]);
     }
-    case 'ruler': {
-      const { a, b, lengthMm } = reference.ruler;
+    case 'ruler':
+    case 'strip': {
+      const { a, b, lengthMm } = reference.kind === 'ruler' ? reference.ruler : reference.strip;
       const px = Math.hypot(b.x - a.x, b.y - a.y);
       if (!(px > 0 && lengthMm > 0)) return null;
       const k = lengthMm / px;
@@ -312,19 +383,28 @@ function finishTrace(
     readonly contour: readonly Point[];
     readonly holes?: readonly (readonly Point[])[];
     readonly inHole?: boolean;
+    readonly offSheet?: boolean;
   }[],
   width: number,
   height: number,
   reference: SceneReference | null,
-  options: SceneTraceOptions
+  options: SceneTraceOptions,
+  /** The photo and how far its edges are looked for, when the outlines are to be moved onto them. */
+  edges?: { readonly image: ImageDataLike; readonly reach: number }
 ): Result<SceneTrace, TraceError> {
-  const tolerance = options.simplifyTolerance ?? defaultTolerance(width, height);
-  const smooth = (ring: readonly Point[]): Point[] =>
-    options.smooth === false
-      ? simplifyRdp(ring, tolerance)
-      : fitSmoothPolygon(ring, (tolerance * 0.5) ** 2);
+  // A cut-out is traced by its transparency, and its colours say nothing of where that ends.
+  const snapped = edges !== undefined && options.snap !== false && !usesAlphaMask(edges.image);
+  const tolerance =
+    options.simplifyTolerance ??
+    (snapped
+      ? Math.min(SNAPPED_TOLERANCE, defaultTolerance(width, height))
+      : defaultTolerance(width, height));
+  const onEdge = (ring: readonly Point[], hole: boolean): readonly Point[] =>
+    snapped ? snapToEdges(edges.image, ring, { reach: edges.reach, hole }) : ring;
+  const smooth = (ring: readonly Point[], hole = false): Point[] =>
+    smoothRing(onEdge(ring, hole), tolerance, options.smooth !== false);
   const outlines: Outline[] = [];
-  for (const { contour: rawContour, holes = [], inHole = false } of raw) {
+  for (const { contour: rawContour, holes = [], inHole = false, offSheet = false } of raw) {
     // The curve fit reads the RAW contour, not the simplified one. Its error
     // metric only samples the points it is given, so fitting the RDP polygon lets
     // a cubic bow far outside a long straight edge while scoring a perfect fit at
@@ -337,9 +417,11 @@ function finishTrace(
     if (options.smooth !== false && options.symmetrize !== false) {
       imagePoints = symmetrizeIfRegular(imagePoints);
     }
-    const kept = holes.map(smooth).filter((h) => h.length >= 3 && polygonArea(h) >= 1);
+    const kept = holes
+      .map((hole) => smooth(hole, true))
+      .filter((h) => h.length >= 3 && polygonArea(h) >= 1);
     if (imagePoints.length >= 3 && polygonArea(imagePoints) >= 1) {
-      outlines.push({ imagePoints, holes: kept, inHole });
+      outlines.push({ imagePoints, holes: kept, inHole, offSheet });
     }
   }
   if (outlines.length === 0) {
@@ -360,11 +442,17 @@ function sized(
     imagePoints,
     outputPoints: toMm ? toMm(imagePoints) : imagePoints,
   });
-  const shapes = outlines.map(({ imagePoints, holes, inHole }): SceneShape => ({
-    ...ring(imagePoints),
-    ...(holes.length > 0 ? { holes: holes.map(ring) } : {}),
-    ...(inHole ? { inHole: true } : {}),
-  }));
+  const shapes = outlines.map(
+    ({ imagePoints, holes, inHole, underStrip, offSheet }): SceneShape => ({
+      ...ring(imagePoints),
+      ...(holes.length > 0 ? { holes: holes.map(ring) } : {}),
+      ...(inHole ? { inHole: true } : {}),
+      ...(offSheet ? { offSheet: true } : {}),
+      ...(underStrip || (reference?.kind === 'strip' && touchesStrip(imagePoints, reference.strip))
+        ? { underStrip: true }
+        : {}),
+    })
+  );
   const lattice = reference?.kind === 'sheet' || reference?.kind === 'baseplate' ? reference : null;
   return {
     shapes,
@@ -392,7 +480,11 @@ export function withReference(
   reference: SceneReference | null,
   options: SceneTraceOptions = {}
 ): SceneTrace {
-  const quads = referenceQuads(reference);
+  // A strip lies on a tool, so what is under it is no reference object.
+  const quads =
+    reference?.kind === 'strip'
+      ? (reference.sheet?.cells.map((cell) => cell.outline) ?? [])
+      : referenceQuads(reference);
   const outlines = scene.shapes
     .filter(({ imagePoints, holes }) => {
       // In pixels: a 1 × 1 frame leaves the seed unnormalised. On the material,
@@ -409,6 +501,8 @@ export function withReference(
       imagePoints: shape.imagePoints,
       holes: (shape.holes ?? []).map((h) => h.imagePoints),
       inHole: shape.inHole === true,
+      underStrip: shape.underStrip === true,
+      offSheet: shape.offSheet === true,
     }));
   return sized(outlines, reference, options);
 }
@@ -445,6 +539,32 @@ export function withCardSize(scene: SceneTrace, widthMm: number, heightMm: numbe
   };
 }
 
+/** Contour points this close to the search's edge, in pixels, lie on it. */
+const ON_EDGE_PX = 2.5;
+/** This many points on the edge make a cut, not a touch. */
+const MIN_CUT_POINTS = 6;
+
+/** True when `contour` runs along the edge of `polygon`, as an outline cut off by it does. */
+function runsAlong(contour: readonly Point[], polygon: readonly Point[]): boolean {
+  let onEdge = 0;
+  for (const p of contour) {
+    for (let i = 0; i < polygon.length; i++) {
+      const a = polygon[i];
+      const b = polygon[(i + 1) % polygon.length];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const lenSq = dx * dx + dy * dy;
+      const t =
+        lenSq > 0 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq)) : 0;
+      if (Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy)) <= ON_EDGE_PX) {
+        if (++onEdge >= MIN_CUT_POINTS) return true;
+        break;
+      }
+    }
+  }
+  return false;
+}
+
 /**
  * Soft-mask tool trace: a sub-pixel marching-squares contour of the segmenter's
  * confidence field, instead of boundary-tracing a thresholded binary mask. The
@@ -454,7 +574,9 @@ export function withCardSize(scene: SceneTrace, widthMm: number, heightMm: numbe
 export function buildToolTraceSoft(
   toolSoft: SoftMask,
   reference: SceneReference | null,
-  options: SceneTraceOptions = {}
+  options: SceneTraceOptions = {},
+  /** The photo the mask was made from, to move the outline onto its edges. */
+  image?: ImageDataLike
 ): Result<SceneTrace, TraceError> {
   const { width, height } = toolSoft;
   const contour = traceSoftContour(toolSoft);
@@ -472,7 +594,12 @@ export function buildToolTraceSoft(
     undefined
   );
   const holes = owner?.holes ?? [];
-  return finishTrace([{ contour, holes }], width, height, reference, options);
+  // A mask of another size than the photo cannot be laid over it.
+  const edges =
+    image && image.width === width && image.height === height
+      ? { image, reach: MODEL_REACH }
+      : undefined;
+  return finishTrace([{ contour, holes }], width, height, reference, options, edges);
 }
 
 /**
@@ -504,14 +631,24 @@ export function traceScene(
   const { width, height } = image;
   if (width <= 0 || height <= 0) return err({ code: 'NO_OBJECT', detail: 'Empty image' });
 
+  const region = options.region ?? searchRegion(reference);
   const toolMask = segmentTools(image, {
     sensitivity: options.sensitivity,
-    region: options.region ?? searchRegion(reference),
+    region,
     exclude: referenceQuads(reference),
   });
-  const blobs = findToolBlobs(toolMask, options.minToolAreaPx ?? defaultMinArea(width, height));
+  const mask =
+    reference?.kind === 'strip' ? bridgeAcrossStrip(toolMask, reference.strip) : toolMask;
+  const blobs = findToolBlobs(mask, options.minToolAreaPx ?? defaultMinArea(width, height));
   if (blobs.length === 0) return err({ code: 'NO_OBJECT', detail: 'No tool found' });
-  return finishTrace(blobs, width, height, reference, options);
+  // A sheet found by itself bounds the search, so a tool lying past its edge
+  // is traced only as far as the edge. A region the user drew is their choice.
+  const sheetEdge =
+    options.region === undefined && reference?.kind === 'paper' ? region : undefined;
+  const raw = sheetEdge
+    ? blobs.map((blob) => (runsAlong(blob.contour, sheetEdge) ? { ...blob, offSheet: true } : blob))
+    : blobs;
+  return finishTrace(raw, width, height, reference, options, { image, reach: MASK_REACH });
 }
 
 /**
@@ -530,7 +667,9 @@ export function traceSceneSegmented(
 ): Result<SceneTrace, TraceError> {
   const { width, height } = image;
   if (width <= 0 || height <= 0) return err({ code: 'NO_OBJECT', detail: 'Empty image' });
-  return buildToolTraceSoft(toolMask, reference, options);
+  const mask =
+    reference?.kind === 'strip' ? bridgeSoftAcrossStrip(toolMask, reference.strip) : toolMask;
+  return buildToolTraceSoft(mask, reference, options, image);
 }
 
 const samePoints = (a: readonly Point[], b: readonly Point[]): boolean =>
@@ -550,6 +689,12 @@ export function sameReference(a: SceneReference | null, b: SceneReference | null
         b.kind === 'ruler' &&
         a.ruler.lengthMm === b.ruler.lengthMm &&
         samePoints([a.ruler.a, a.ruler.b], [b.ruler.a, b.ruler.b])
+      );
+    case 'strip':
+      return (
+        b.kind === 'strip' &&
+        a.strip.lengthMm === b.strip.lengthMm &&
+        samePoints([a.strip.a, a.strip.b], [b.strip.a, b.strip.b])
       );
     case 'paper':
       return (

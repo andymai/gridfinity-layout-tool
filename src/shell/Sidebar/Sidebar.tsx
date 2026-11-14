@@ -5,7 +5,7 @@ import { useDrawerCeiling } from '@/shared/hooks/useDrawerCeiling';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { DrawerShapeSection } from '@/features/drawer-shape';
 import { CONSTRAINTS } from '@/core/constants';
-import { Button, Collapsible, IconButton, Stepper } from '@/design-system';
+import { Button, IconButton, SidePanel, Stepper } from '@/design-system';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
 import { ActiveBaseplatePanel } from '@/features/baseplate/components/ActiveBaseplatePanel';
 import { LayerPanel } from '@/features/layers/components/LayerPanel';
@@ -14,10 +14,10 @@ import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { DrawerDimensionsSummary } from '@/shared/components/DrawerDimensionsSummary';
 import { GridUnitInput } from '@/shared/components/GridUnitInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
-import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { SettingsRow } from '@/shared/components/SettingsRow';
-import { ToggleRow } from '@/shared/components/ToggleRow';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
+import { MoreDisclosure } from '@/shared/components/MoreDisclosure';
 import { HeightUnitSolver } from '@/shared/components/HeightUnitSolver';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { UserDock } from '@/shared/components/UserDock';
@@ -29,7 +29,10 @@ import { useTranslation, useLocale } from '@/i18n';
 import { LEARN_LINKS, learnHref } from './learnLinks';
 import { useOnboarding } from '@/features/onboarding';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
+import { DOCS_URL } from '@/shared/constants/links';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
+import { PanelSection } from '@/shared/components/PanelSection';
+import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 
 // Lazy load modals/galleries - only loaded when opened (using lazyWithRetry for PWA resilience)
 const InspirationGallery = lazyWithRetry(() =>
@@ -93,14 +96,10 @@ export function Sidebar() {
     handleDrawerDepthInput,
     handleFractionalEdgeChange,
     handleHalfBinToggle,
-    handleRemediate,
     handleGridUnitChange,
     setHeightUnitMm,
     setPrintBedSize,
     resetGridfinityStandard,
-    showHalfBinBlockedModal,
-    setShowHalfBinBlockedModal,
-    halfBinViolation,
   } = useDrawerSettings();
   const drawerCeiling = useDrawerCeiling();
 
@@ -179,8 +178,8 @@ export function Sidebar() {
               isScrolled ? 'shadow-elevated' : ''
             }`}
           >
-            <h2 className="flex-1 text-xs leading-none font-semibold text-content-tertiary tracking-wide">
-              {t('sidebar.tools')}
+            <h2 className="flex-1 leading-none">
+              <SidePanel.Title>{t('sidebar.tools')}</SidePanel.Title>
             </h2>
             <IconButton
               size="sm"
@@ -212,23 +211,15 @@ export function Sidebar() {
               <ActiveLayerPanel />
             </div>
 
-            <div
-              data-layers-panel
-              data-help-target="layers-panel"
-              className="border-b border-stroke-subtle"
-            >
+            <div data-layers-panel data-help-target="layers-panel">
               <LayerPanel />
             </div>
-            <div
-              data-categories-panel
-              data-help-target="categories-panel"
-              className="border-b border-stroke-subtle"
-            >
+            <div data-categories-panel data-help-target="categories-panel">
               <CategoriesPanel />
             </div>
 
             {/* Inspiration Gallery - Prominent placement */}
-            <div className="px-4 py-4 border-b border-stroke-subtle">
+            <div className="border-y border-stroke-subtle p-(--space-panel)">
               <Button
                 variant="ghost"
                 fullWidth
@@ -284,19 +275,20 @@ export function Sidebar() {
             </div>
 
             <div data-grid-size-panel>
-              <Collapsible
+              <StickyGroupHeader
+                variant="band"
                 title={t('sidebar.gridSize')}
-                size="md"
+                summary={`${drawer.width} × ${drawer.depth}u`}
                 expanded={gridSizeExpanded}
                 onExpandedChange={setGridSizeExpanded}
               >
-                <div className="text-xs text-content-secondary space-y-2">
+                <PanelSection className="text-xs text-content-secondary space-y-2">
                   {/* Width / Depth / Height in compact grid */}
                   <div data-help-target="drawer-size" className="grid grid-cols-3 gap-1.5">
                     <div>
                       <label
                         className="block text-content-tertiary mb-1"
-                        title={`Width in grid units (step: ${widthStep})`}
+                        title={t('sidebar.widthStepTitle', { step: widthStep })}
                       >
                         {t('common.widthUnits')}
                       </label>
@@ -315,7 +307,7 @@ export function Sidebar() {
                     <div>
                       <label
                         className="block text-content-tertiary mb-1"
-                        title={`Depth in grid units (step: ${depthStep})`}
+                        title={t('sidebar.depthStepTitle', { step: depthStep })}
                       >
                         {t('common.depthUnits')}
                       </label>
@@ -372,15 +364,17 @@ export function Sidebar() {
                   />
 
                   {/* Half-bin mode toggle */}
-                  <ToggleRow
-                    label={t('sidebar.halfBinMode')}
-                    checked={halfGridMode}
-                    onChange={handleHalfBinToggle}
-                    tooltip={t('sidebar.halfBinTooltip')}
-                    shortcut="H"
-                    ariaLabel={t('sidebar.toggleHalfBinMode')}
-                    helpTarget="half-bin-mode"
-                  />
+                  <div className="pt-2">
+                    <FeatureToggle
+                      label={t('sidebar.halfBinMode')}
+                      checked={halfGridMode}
+                      onChange={handleHalfBinToggle}
+                      info={t('sidebar.halfBinTooltip')}
+                      shortcut="H"
+                      ariaLabel={t('sidebar.toggleHalfBinMode')}
+                      helpTarget="half-bin-mode"
+                    />
+                  </div>
 
                   {/* Fractional edge position toggles - only shown when dimensions are fractional */}
                   {(hasFractionalWidth || hasFractionalDepth) && (
@@ -417,23 +411,23 @@ export function Sidebar() {
 
                   {/* Non-rectangular drawer shape (issue #2528) */}
                   <DrawerShapeSection />
-                </div>
-              </Collapsible>
+                </PanelSection>
+              </StickyGroupHeader>
             </div>
 
-            <div data-units-panel className="border-t border-stroke-subtle">
-              <Collapsible
+            <div data-units-panel>
+              <StickyGroupHeader
+                variant="band"
                 title={t('common.physicalUnits')}
-                size="md"
                 expanded={physicalUnitsExpanded}
                 onExpandedChange={setPhysicalUnitsExpanded}
               >
-                <div className="text-xs text-content-secondary space-y-2">
+                <PanelSection className="text-xs text-content-secondary space-y-2">
                   <div data-help-target="grid-unit">
                     <SettingsRow
                       label={t('sidebar.gridUnit')}
                       htmlFor="gridUnit"
-                      tooltip={t('sidebar.gridUnitTooltip')}
+                      info={t('sidebar.gridUnitTooltip')}
                       unit="mm"
                     >
                       <GridUnitInput
@@ -449,7 +443,7 @@ export function Sidebar() {
                     <SettingsRow
                       label={t('sidebar.heightUnit')}
                       htmlFor="heightUnit"
-                      tooltip={t('sidebar.heightUnitTooltip')}
+                      info={t('sidebar.heightUnitTooltip')}
                       unit="mm"
                     >
                       <DeferredNumberInput
@@ -468,7 +462,7 @@ export function Sidebar() {
                     <SettingsRow
                       label={t('sidebar.printBed')}
                       htmlFor="printBedSize"
-                      tooltip={t('sidebar.printBedTooltip', {
+                      info={t('sidebar.printBedTooltip', {
                         maxWidth: maxGridUnits.width,
                         maxDepth: maxGridUnits.depth,
                       })}
@@ -497,34 +491,42 @@ export function Sidebar() {
                   >
                     {t('settings.resetGridfinityStandard')}
                   </Button>
-                  <div className="mt-2 pl-3 border-l-2 border-stroke-subtle">
-                    <Collapsible title={t('stackSolver.title')} size="md" defaultExpanded={false}>
-                      <HeightUnitSolver
-                        heightUnitMm={heightUnitMm}
-                        ceilingMm={measuredMm?.height}
-                        plateRiseMm={plateRiseMm}
-                        lowProfileBase={lowProfileBase}
-                      />
-                    </Collapsible>
-                  </div>
-                </div>
-              </Collapsible>
+                  <MoreDisclosure className="mt-2" label={t('stackSolver.title')}>
+                    <HeightUnitSolver
+                      heightUnitMm={heightUnitMm}
+                      ceilingMm={measuredMm?.height}
+                      plateRiseMm={plateRiseMm}
+                      lowProfileBase={lowProfileBase}
+                    />
+                  </MoreDisclosure>
+                </PanelSection>
+              </StickyGroupHeader>
             </div>
 
-            <div data-active-baseplate-panel className="border-t border-stroke-subtle">
+            <div data-active-baseplate-panel>
               <ActiveBaseplatePanel />
             </div>
 
             {/* Learn links are real <a href> so Google passes link equity from the SPA to
-                /what-is-gridfinity et al. Collapsible keeps them in the DOM (still crawlable). */}
-            <div className="border-t border-stroke-subtle">
-              <div className="px-4 pt-4 pb-4">
-                <Collapsible title={t('sidebar.learn')} size="md" defaultExpanded={false}>
+                /what-is-gridfinity et al. A collapsed group keeps them in the DOM (still crawlable). */}
+            <div>
+              <StickyGroupHeader variant="band" title={t('sidebar.learn')} defaultExpanded={false}>
+                <PanelSection>
                   <p className="text-xs text-content-tertiary leading-relaxed mb-3">
                     {t('sidebar.about')}
                   </p>
                   <AboutGridfinity className="mb-3" />
                   <ul className="text-xs leading-relaxed space-y-1">
+                    <li>
+                      <a
+                        href={DOCS_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-content-tertiary hover:text-content hover:underline"
+                      >
+                        {t('help.readDocs')}
+                      </a>
+                    </li>
                     {LEARN_LINKS.map((link) => (
                       <li key={link.slug}>
                         <a
@@ -538,8 +540,8 @@ export function Sidebar() {
                       </li>
                     ))}
                   </ul>
-                </Collapsible>
-              </div>
+                </PanelSection>
+              </StickyGroupHeader>
             </div>
 
             {/* Anchor attribution to the bottom so it never floats mid-panel on tall viewports */}
@@ -555,15 +557,6 @@ export function Sidebar() {
             }
           />
         </div>
-      )}
-
-      {halfBinViolation && (
-        <HalfGridModeBlockedModal
-          isOpen={showHalfBinBlockedModal}
-          violation={halfBinViolation}
-          onClose={() => setShowHalfBinBlockedModal(false)}
-          onRemediate={handleRemediate}
-        />
       )}
 
       {showInspirationGallery && (

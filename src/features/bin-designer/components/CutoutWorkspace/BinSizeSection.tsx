@@ -1,15 +1,8 @@
-/**
- * Always-visible bin-size block at the top of the cutout inspector, so the bin
- * can be resized without leaving the editor. Reuses the main DimensionsSection
- * (self-wired to the designer store) and, when cutouts sit past the footprint,
- * surfaces a warning offering the two ways out: grow the board to them, or
- * clamp them back in.
- */
-
 import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
 import { Alert, Button } from '@/design-system';
 import { AlertTriangleIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { DimensionsSection } from '../panel/DimensionsSection/DimensionsSection';
 import { PocketIssueList, type PocketChecksView } from '../panel/CutoutsSection/PocketIssueList';
 
@@ -20,7 +13,7 @@ import { PocketIssueList, type PocketChecksView } from '../panel/CutoutsSection/
  */
 const WRAPPING_ACTION = 'h-auto min-h-6 whitespace-normal py-1 leading-tight';
 
-interface BinSizeSectionProps {
+interface BinSizeIssuesProps {
   /** Count of cutouts stranded past the board after a resize (0 = none). */
   readonly offBoardCount: number;
   /** Clamp every off-board cutout back inside the board. */
@@ -48,7 +41,7 @@ interface BinSizeSectionProps {
   readonly pocketChecks?: PocketChecksView;
 }
 
-export function BinSizeSection({
+export function BinSizeIssues({
   offBoardCount,
   onClampOffBoard,
   onCenterOffBoard,
@@ -56,27 +49,16 @@ export function BinSizeSection({
   onGrowToFit,
   depthShortfallCount = 0,
   pocketChecks,
-}: BinSizeSectionProps) {
+}: BinSizeIssuesProps) {
   const t = useTranslation();
   return (
-    <div className="space-y-3 border-b border-stroke-subtle pb-3 pt-3">
-      <span className="block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
-        {t('binDesigner.cutoutEditor.binSize')}
-      </span>
-
-      <DimensionsSection />
-
+    <>
       {offBoardCount > 0 && (
         // Alert carries role="alert", so the warning now announces when a cutout
         // is stranded; the hand-rolled box it replaces was silent.
         <Alert intent="error" icon={<AlertTriangleIcon size="xs" className="mt-0.5" />}>
           <p className="leading-snug text-error">
-            {t(
-              offBoardCount === 1
-                ? 'binDesigner.cutoutEditor.offBoardWarning.one'
-                : 'binDesigner.cutoutEditor.offBoardWarning.other',
-              { count: offBoardCount }
-            )}
+            {t('binDesigner.cutoutEditor.offBoardWarning', { count: offBoardCount })}
           </p>
           {/* Reads as the reason the grow action is absent, so it belongs with
               the warning rather than below the buttons. */}
@@ -146,6 +128,16 @@ export function BinSizeSection({
       )}
 
       {pocketChecks && <PocketIssueList {...pocketChecks} />}
+    </>
+  );
+}
+
+export function BinSizeSection() {
+  const t = useTranslation();
+  return (
+    <div className="space-y-3 border-b border-stroke-subtle pb-3 pt-3">
+      <SubHeader>{t('binDesigner.cutoutEditor.binSize')}</SubHeader>
+      <DimensionsSection />
     </div>
   );
 }

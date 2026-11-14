@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { DEFAULT_CARD_SIZE } from '@/shared/scanReview';
-import { PAPER_SIZES, type Point, type SceneTrace } from '@/shared/scanTrace';
+import { isOk } from '@/core/result';
+import { DEFAULT_CARD_SIZE, type PaperChoice } from '@/shared/scanReview';
+import { paperReference, PAPER_SIZES, type Point, type SceneTrace } from '@/shared/scanTrace';
 import { ScalePanel } from './ScalePanel';
 import type { TraceMode } from './traceMode';
 
@@ -19,6 +20,7 @@ const handlers = {
   onStart: vi.fn(),
   onCancel: vi.fn(),
   onPaperSize: vi.fn(),
+  onPaperChoice: vi.fn(),
   onApply: vi.fn(),
   onClear: vi.fn(),
   onCardSize: vi.fn(),
@@ -32,6 +34,7 @@ function renderPanel(
     manual: boolean;
     hasAuto: boolean;
     paperSize: 'a4' | 'letter';
+    paperChoice: PaperChoice | null;
   }> = {}
 ) {
   return render(
@@ -43,6 +46,7 @@ function renderPanel(
       manual={false}
       hasAuto={false}
       paperSize="a4"
+      paperChoice={null}
       cardSize={DEFAULT_CARD_SIZE}
       disabled={false}
       {...handlers}
@@ -51,8 +55,34 @@ function renderPanel(
   );
 }
 
+const FOUND = paperReference(SHEET, 'a4', { width: 400, height: 300 });
+const ON_PAPER: SceneTrace = {
+  ...UNSIZED,
+  units: 'mm',
+  reference: isOk(FOUND) ? FOUND.value : null,
+};
+
 describe('ScalePanel', () => {
   beforeEach(() => vi.clearAllMocks());
+
+  it('lets a sheet the photo was sized from be corrected or ruled out', () => {
+    renderPanel({ scene: ON_PAPER });
+    expect(screen.getByRole('radio', { checked: true })).toHaveTextContent(
+      'binDesigner.cutouts.traceView.paper.a4'
+    );
+    fireEvent.click(screen.getByRole('radio', { name: 'scan.paper.notPaper' }));
+    expect(handlers.onPaperChoice).toHaveBeenCalledWith('off');
+  });
+
+  it('keeps the choice in view once the sheet is ruled out', () => {
+    renderPanel({ paperChoice: 'off' });
+    expect(screen.getByRole('radio', { checked: true })).toHaveTextContent('scan.paper.notPaper');
+  });
+
+  it('asks nothing about a sheet the user marked by hand', () => {
+    renderPanel({ scene: ON_PAPER, manual: true });
+    expect(screen.queryByRole('radio')).toBeNull();
+  });
 
   it('says no reference was found and offers both ways to set one', () => {
     renderPanel();
@@ -113,6 +143,7 @@ describe('ScalePanel', () => {
         manual={false}
         hasAuto={false}
         paperSize="a4"
+        paperChoice={null}
         cardSize={DEFAULT_CARD_SIZE}
         disabled={false}
         {...handlers}

@@ -88,12 +88,12 @@ export function SelectionToolbar({
 
   return (
     <>
+      {/* Centred with `translate`, not `transform`: animate-scale-in holds transform: scale(1). */}
       <div
-        className="fixed z-50 flex items-center gap-0.5 rounded-lg border border-stroke-subtle bg-surface-elevated px-1.5 py-1 shadow-lg animate-scale-in"
+        className="fixed z-50 flex -translate-x-1/2 items-center gap-0.5 rounded-lg border border-stroke-subtle bg-surface-elevated px-1.5 py-1 shadow-lg animate-scale-in"
         style={{
           top: position.top,
           left: position.left,
-          transform: 'translateX(-50%)',
         }}
         role="toolbar"
         aria-label={t('selectionToolbar.ariaLabel')}

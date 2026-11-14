@@ -20,7 +20,7 @@ describe('AttributionFooter', () => {
 
     // The version reaches GitHub Releases through the What's New footer now,
     // rather than linking straight out of the sidebar.
-    const version = screen.getByRole('button', { name: /Open What/ });
+    const version = screen.getByRole('button', { name: /See what/ });
     expect(version).toHaveTextContent(/v\d+\.\d+\.\d+/);
     expect(useViewStore.getState().whatsNewOpen).toBe(false);
     await user.click(version);
@@ -34,7 +34,7 @@ describe('AttributionFooter', () => {
     );
     reloadSeenState();
     render(<AttributionFooter />);
-    expect(screen.getByRole('button', { name: /Open What/ })).toHaveTextContent('New');
+    expect(screen.getByRole('button', { name: /See what/ })).toHaveTextContent('New');
   });
 
   it('renders attribution links', () => {

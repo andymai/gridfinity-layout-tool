@@ -18,8 +18,7 @@ import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { buildFullParams } from '../../utils/buildFullParams';
 import { pieceToBaseplateParams, bodyParamsForDetach } from '../../utils/splitPlanner';
 import {
-  stackGroupsFromTiling,
-  planPhysicalStacks,
+  planStackPrint,
   stackHeightCap,
   stackedPlateHeightMm,
   DEFAULT_PLATE_FLIP,
@@ -121,13 +120,14 @@ export function StackedBaseplateMeshes({
       gridShiftY,
       lowProfileBase
     );
-    const groups = stackGroupsFromTiling(
+    const cap = stackHeightCap(maxPrintHeightMm, stackedPlateHeightMm(lowProfileBase), stack.gapMm);
+    const plan = planStackPrint(
       tiling,
       fullParams,
-      stack.copies ?? STACK_PRINT_DEFAULT_COPIES
+      stack.copies ?? STACK_PRINT_DEFAULT_COPIES,
+      cap,
+      stack.mixedSizes === true
     );
-    const cap = stackHeightCap(maxPrintHeightMm, stackedPlateHeightMm(lowProfileBase), stack.gapMm);
-    const plan = planPhysicalStacks(groups, cap);
     const isSplit = tiling?.isSplit ?? false;
 
     // The unsplit mesh is generated from the detach-adjusted body params
@@ -145,6 +145,33 @@ export function StackedBaseplateMeshes({
     const towers: StackPreviewTower[] = [];
     const filteredPlan: typeof plan = [];
     for (const physical of plan) {
+      if (physical.layers) {
+        const layers = physical.layers.map((layer) => {
+          const source = meshByLabel.get(layer.sourceLabel);
+          const piece = pieceByLabel.get(layer.sourceLabel);
+          const mesh = source ? toMeshArrays(source) : null;
+          if (!mesh || !piece) return null;
+          return {
+            mesh,
+            flip: layer.flipAxis
+              ? { axis: layer.flipAxis, offsetMm: 0 }
+              : planPlateFlip(pieceToBaseplateParams(piece, fullParams)),
+            dxMm: layer.dxMm,
+            dyMm: layer.dyMm,
+            rotationDeg: layer.rotationDeg,
+          };
+        });
+        if (layers.every((layer) => layer !== null) && layers[0]) {
+          towers.push({
+            mesh: layers[0].mesh,
+            flip: layers[0].flip,
+            copies: physical.copies,
+            layers,
+          });
+          filteredPlan.push(physical);
+        }
+        continue;
+      }
       let source: Parameters<typeof toMeshArrays>[0] | null = singleMesh;
       let flip = singleFlip;
       if (isSplit) {
@@ -173,7 +200,9 @@ export function StackedBaseplateMeshes({
     const noStacks = isSplit && isUnstackedSplit(filteredPlan, tiling?.pieces.length ?? 0);
     const positionedTowers = noStacks
       ? towers.map((tower, i) => {
-          const piece = pieceByLabel.get(filteredPlan[i].label);
+          const piece = pieceByLabel.get(
+            filteredPlan[i].layers?.[0]?.pieceLabel ?? filteredPlan[i].label
+          );
           return piece ? { ...tower, col: piece.col, row: piece.row } : tower;
         })
       : towers;

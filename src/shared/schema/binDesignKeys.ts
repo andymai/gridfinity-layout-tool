@@ -95,6 +95,7 @@ export const BIN_PARAMS_KEYS = [
   'wallPattern',
   'floorPattern',
   'splitConnectors',
+  'splitToFitBed',
   'featureColors',
   'textDefaults',
   'surfaceText',

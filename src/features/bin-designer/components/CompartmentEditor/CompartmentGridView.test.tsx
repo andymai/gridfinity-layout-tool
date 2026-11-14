@@ -95,7 +95,7 @@ describe('CompartmentGridView', () => {
     render(<CompartmentGridView grid={makeGrid()} describedById="instructions" />);
 
     const region = screen.getByRole('application');
-    expect(region).toHaveAttribute('aria-label', 'Compartment grid, 3 columns by 2 rows');
+    expect(region).toHaveAttribute('aria-label', 'Compartment grid, 3 by 2');
     expect(region).toHaveAttribute('aria-describedby', 'instructions');
   });
 

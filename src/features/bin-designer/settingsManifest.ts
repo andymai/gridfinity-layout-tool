@@ -51,8 +51,11 @@ export function categoryForControl(
 /**
  * Jump the panel to a designer control: switches to its category (the shell
  * listens for the dispatched event), opens enclosing disclosures, then scrolls
- * and pulses the marker.
+ * and pulses the marker. A `target` inside it is then scrolled to and pulsed
+ * as well.
  */
-export function jumpToDesignerControl(controlId: string): void {
-  void jumpToHelpTarget({ surface: 'binDesigner', controlId });
+export function jumpToDesignerControl(controlId: string, target?: string): void {
+  void jumpToHelpTarget({ surface: 'binDesigner', controlId }).then((landed) => {
+    if (landed && target) void jumpToHelpTarget({ surface: 'binDesigner', controlId: target });
+  });
 }

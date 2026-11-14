@@ -27,6 +27,10 @@ import { scoopRampsFeature } from './scoopRampBuilder';
 import { insertCutsFeature } from './insertBuilder';
 import { isOk } from '@/core/result';
 import { FeatureTag } from './featureTags';
+import type { BinParams } from '@/shared/types/bin';
+import { buildSTLBufferFromIndexed } from '@/shared/generation/export';
+import { makeUniformLipCells } from '@/features/bin-designer/types/featureColors';
+import { buildSinglePiece3MFObject } from '@/features/bin-designer/utils/binDownloadHelpers';
 
 let generateBin: GenerateBinFn;
 beforeAll(async () => {
@@ -62,6 +66,49 @@ describe('nesting body', () => {
     const tags = new Set((mesh.faceGroups ?? []).map((g) => g.tag));
     expect(tags.size).toBeGreaterThan(0);
     expect(tags.has(FeatureTag.LID_BODY)).toBe(false);
+  });
+
+  it('paints its lip and label colours into a 3MF as a raised tray does', () => {
+    const lip = '#0000ff';
+    const label = '#ff0000';
+    const coloured = (floorAtBed: boolean): BinParams => {
+      const p = { ...paramsFor(2), width: 2, depth: 2, height: 4 };
+      return {
+        ...p,
+        lid: { ...p.lid, enabled: false },
+        base: { ...p.base, stackingLip: true, trayBottom: { ...p.base.trayBottom, floorAtBed } },
+        label: { ...p.label, enabled: true },
+        featureColors: {
+          ...p.featureColors,
+          enabled: true,
+          labelTab: label,
+          lip: { corners: 1, bands: 1, cells: makeUniformLipCells(lip) },
+        },
+      };
+    };
+    const paintedTriangles = (params: BinParams): Map<string, number> => {
+      const mesh = generateBin(params, undefined, true);
+      const stl = buildSTLBufferFromIndexed(mesh.vertices, mesh.normals, mesh.indices);
+      const { colorConfig } = buildSinglePiece3MFObject(
+        stl,
+        mesh.faceGroups ?? [],
+        params,
+        'nesting',
+        true
+      );
+      const counts = new Map<string, number>();
+      for (const index of colorConfig?.triangleMaterialIndices ?? []) {
+        const colour = colorConfig?.materials[index]?.color.toLowerCase() ?? 'none';
+        counts.set(colour, (counts.get(colour) ?? 0) + 1);
+      }
+      return counts;
+    };
+    const nesting = paintedTriangles(coloured(true));
+    const raised = paintedTriangles(coloured(false));
+    for (const colour of [lip, label]) {
+      expect(nesting.get(colour) ?? 0, colour).toBeGreaterThan(0);
+      expect(nesting.get(colour), colour).toBe(raised.get(colour));
+    }
   });
 
   it.each(['rectangle', 'full mask', 'partial mask'])(

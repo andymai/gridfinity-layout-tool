@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { act, render, screen, fireEvent } from '@testing-library/react';
 import { PresenceDropdown } from './PresenceDropdown';
 import type { Participant } from '@/shared/hooks/usePresence';
 import { resetAllStores } from '@/test/testUtils';
@@ -108,5 +108,74 @@ describe('PresenceDropdown', () => {
     const { container } = render(<TestWrapper onClose={onClose} />);
     const dialog = container.querySelector('[role="dialog"]');
     expect(dialog).toHaveAttribute('aria-modal', 'true');
+  });
+
+  describe('click outside', () => {
+    async function renderWithOutsideClickListener(onClose: () => void) {
+      render(<TestWrapper onClose={onClose} />);
+      await act(async () => {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+      });
+    }
+
+    function selfRemovingButton(parent: HTMLElement): HTMLButtonElement {
+      const button = document.createElement('button');
+      button.addEventListener('click', () => {
+        button.remove();
+      });
+      parent.appendChild(button);
+      return button;
+    }
+
+    it('stays open on a click inside the dropdown', async () => {
+      const onClose = vi.fn();
+      await renderWithOutsideClickListener(onClose);
+
+      fireEvent.click(screen.getByText('User 1'));
+
+      expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it('stays open on a click on the trigger', async () => {
+      const onClose = vi.fn();
+      await renderWithOutsideClickListener(onClose);
+
+      fireEvent.click(screen.getByTestId('trigger'));
+
+      expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it('stays open on a click inside whose own handler removes the clicked control', async () => {
+      const onClose = vi.fn();
+      await renderWithOutsideClickListener(onClose);
+      const control = selfRemovingButton(screen.getByRole('dialog'));
+
+      fireEvent.click(control);
+
+      expect(control.isConnected).toBe(false);
+      expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it('closes on a click outside the dropdown and the trigger', async () => {
+      const onClose = vi.fn();
+      await renderWithOutsideClickListener(onClose);
+      const outside = document.createElement('button');
+      document.body.appendChild(outside);
+
+      fireEvent.click(outside);
+
+      expect(onClose).toHaveBeenCalledTimes(1);
+      outside.remove();
+    });
+
+    it('closes on an outside click whose own handler removes the clicked element', async () => {
+      const onClose = vi.fn();
+      await renderWithOutsideClickListener(onClose);
+      const outside = selfRemovingButton(document.body);
+
+      fireEvent.click(outside);
+
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
   });
 });

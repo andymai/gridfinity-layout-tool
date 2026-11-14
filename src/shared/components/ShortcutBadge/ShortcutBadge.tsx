@@ -1,49 +1,36 @@
-/**
- * Shortcut badge component displaying keyboard keys.
- * Shows platform-appropriate modifier (⌘ on Mac, Ctrl on Windows/Linux).
- * Styled to match HelpModal keyboard keys with gradient and shadow for depth.
- */
-
-import { useMemo } from 'react';
+import { Kbd, isMacPlatform } from '@/design-system';
 
 interface ShortcutBadgeProps {
-  keys: string | string[];
+  keys: string | readonly string[];
   modifier?: boolean;
   shift?: boolean;
   className?: string;
 }
 
-const isMac = typeof navigator !== 'undefined' && /mac/i.test(navigator.userAgent);
-const modKey = isMac ? '⌘' : 'Ctrl';
-
-/** Keyboard key styling matching HelpModal */
-const keyClasses =
-  'inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 text-label font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content-secondary shadow-[0_1px_0_1px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)]';
+const SEPARATOR = '+';
 
 export function ShortcutBadge({ keys, modifier, shift, className = '' }: ShortcutBadgeProps) {
-  const keyArray = useMemo(() => {
-    if (Array.isArray(keys)) return keys;
-    return [keys];
-  }, [keys]);
+  const keyList = typeof keys === 'string' ? keys.split(' / ') : keys;
+  const modifierKey = isMacPlatform() ? '⌘' : 'Ctrl';
 
   return (
     <div className={`flex items-center gap-1 ${className}`}>
       {modifier && (
         <>
-          <kbd className={keyClasses}>{modKey}</kbd>
-          <span className="text-content-tertiary text-micro">+</span>
+          <Kbd variant="keycap">{modifierKey}</Kbd>
+          <span className="text-content-tertiary text-micro">{SEPARATOR}</span>
         </>
       )}
       {shift && (
         <>
-          <kbd className={keyClasses}>Shift</kbd>
-          <span className="text-content-tertiary text-micro">+</span>
+          <Kbd variant="keycap">Shift</Kbd>
+          <span className="text-content-tertiary text-micro">{SEPARATOR}</span>
         </>
       )}
-      {keyArray.map((key, index) => (
+      {keyList.map((key, index) => (
         <span key={`${key}-${index}`} className="flex items-center gap-1">
           {index > 0 && <span className="text-content-tertiary text-micro mx-0.5">/</span>}
-          <kbd className={keyClasses}>{key}</kbd>
+          <Kbd variant="keycap">{key}</Kbd>
         </span>
       ))}
     </div>

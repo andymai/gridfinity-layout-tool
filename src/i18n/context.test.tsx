@@ -39,7 +39,7 @@ describe('getStaticTranslation', () => {
 
   it('interpolates variables correctly', () => {
     const result = getStaticTranslation('toast.binsDeleted', { count: 5 });
-    expect(result).toBe('Deleted 5 bin(s)');
+    expect(result).toBe('Deleted 5 bins');
   });
 
   it('interpolates multiple variables', () => {
@@ -54,7 +54,7 @@ describe('getStaticTranslation', () => {
 
   it('converts non-string variable values to strings', () => {
     const result = getStaticTranslation('toast.binsDeleted', { count: 42 });
-    expect(result).toBe('Deleted 42 bin(s)');
+    expect(result).toBe('Deleted 42 bins');
   });
 });
 
@@ -108,7 +108,7 @@ describe('LocaleProvider + useTranslation', () => {
     const { result } = renderHook(() => useTranslation(), { wrapper });
 
     await waitFor(() => {
-      expect(result.current('toast.binsDeleted', { count: 7 })).toBe('Deleted 7 bin(s)');
+      expect(result.current('toast.binsDeleted', { count: 7 })).toBe('Deleted 7 bins');
     });
   });
 
@@ -122,6 +122,77 @@ describe('LocaleProvider + useTranslation', () => {
     await waitFor(() => {
       expect(result.current('common.save')).toBe('Save');
     });
+  });
+});
+
+describe('plural forms', () => {
+  afterEach(() => {
+    _resetActiveTranslations();
+  });
+
+  const wrapperFor =
+    (locale: 'en' | 'pl') =>
+    ({ children }: { children: ReactNode }) => (
+      <LocaleProvider initialLocale={locale}>{children}</LocaleProvider>
+    );
+
+  it('picks the English singular and plural from the count', async () => {
+    const { result } = renderHook(() => useTranslation(), { wrapper: wrapperFor('en') });
+
+    await waitFor(() => expect(result.current('layers.binCount', { count: 1 })).toBe('1 bin'));
+    expect(result.current('layers.binCount', { count: 0 })).toBe('0 bins');
+    expect(result.current('layers.binCount', { count: 2 })).toBe('2 bins');
+  });
+
+  it('uses every form a language has, not just one and other', async () => {
+    const { result } = renderHook(() => useTranslation(), { wrapper: wrapperFor('pl') });
+
+    await waitFor(() => expect(result.current('layers.binCount', { count: 3 })).toBe('3 biny'));
+    expect(result.current('layers.binCount', { count: 1 })).toBe('1 bin');
+    expect(result.current('layers.binCount', { count: 5 })).toBe('5 binów');
+    expect(result.current('layers.binCount', { count: 22 })).toBe('22 biny');
+  });
+
+  it('reads a numeric string count and falls back to _other without one', async () => {
+    const { result } = renderHook(() => useTranslation(), { wrapper: wrapperFor('pl') });
+
+    await waitFor(() => expect(result.current('layers.binCount', { count: '3' })).toBe('3 biny'));
+    expect(result.current('layers.binCount')).toBe('{count} binów');
+  });
+
+  it('applies the same rules outside React', async () => {
+    const { result } = renderHook(() => useTranslation(), { wrapper: wrapperFor('pl') });
+
+    await waitFor(() => expect(result.current('layers.binCount', { count: 3 })).toBe('3 biny'));
+    expect(getStaticTranslation('layers.binCount', { count: 3 })).toBe('3 biny');
+  });
+});
+
+describe('interpolated values', () => {
+  const name = "Budget $& $$ $' $` {count}";
+
+  afterEach(() => {
+    _resetActiveTranslations();
+  });
+
+  it('inserts user text literally outside React', () => {
+    expect(getStaticTranslation('layouts.importedName', { name })).toBe(`${name} (imported)`);
+    expect(getStaticTranslation('layers.confirmDelete.message', { name, count: 2 })).toBe(
+      `Delete "${name}"? The 2 bins on this layer will be moved to the Stash.`
+    );
+  });
+
+  it('inserts user text literally through the provider, on the plural path too', async () => {
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <LocaleProvider initialLocale="en">{children}</LocaleProvider>
+    );
+    const { result } = renderHook(() => useLocale(), { wrapper });
+
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    expect(result.current.t('layouts.importedName', { name })).toBe(`${name} (imported)`);
+    expect(result.current.t('layers.confirmDelete.message', { name, count: 1 })).toBe(
+      `Delete "${name}"? The 1 bin on this layer will be moved to the Stash.`
+    );
   });
 });
 
@@ -175,6 +246,8 @@ describe('fallback strings', () => {
     'toast.drawerLinkOpened',
     'toast.drawerLinkInvalid',
     'toast.layoutCreateFailed',
+    'layouts.copyName',
+    'layouts.importedName',
   ])('resolves %s exactly as en.ts does before any locale loads', (key) => {
     _setLoadedEn(null);
     _resetActiveTranslations();

@@ -13,21 +13,33 @@
  * real params, not this.
  */
 
-import { useMemo } from 'react';
 import type { DesignId } from '@/core/types';
 import type { OverhangConfig } from '@/shared/types/bin';
 import { useCustomBins } from '@/features/bin-designer';
+import type { CustomBinRef } from '@/features/bin-designer';
+
+// Keyed by the registry snapshot, which `useCustomBins` keeps referentially
+// stable until the registry changes: the 2D grid calls this once per bin, and
+// every caller should share one projection rather than each building its own.
+const overhangsBySnapshot = new WeakMap<
+  readonly CustomBinRef[],
+  ReadonlyMap<DesignId, OverhangConfig>
+>();
+
+function overhangsOf(registry: readonly CustomBinRef[]): ReadonlyMap<DesignId, OverhangConfig> {
+  const cached = overhangsBySnapshot.get(registry);
+  if (cached) return cached;
+  const byId = new Map<DesignId, OverhangConfig>();
+  for (const ref of registry) {
+    // Absent means nothing to charge — either the design has no overhang, or
+    // the entry predates the field and gains one on its next save.
+    if (!ref.overhangMm) continue;
+    byId.set(ref.id, { ...ref.overhangMm, enabled: true });
+  }
+  overhangsBySnapshot.set(registry, byId);
+  return byId;
+}
 
 export function useLinkedDesignOverhangs(): ReadonlyMap<DesignId, OverhangConfig> {
-  const registry = useCustomBins();
-  return useMemo(() => {
-    const byId = new Map<DesignId, OverhangConfig>();
-    for (const ref of registry) {
-      // Absent means nothing to charge — either the design has no overhang, or
-      // the entry predates the field and gains one on its next save.
-      if (!ref.overhangMm) continue;
-      byId.set(ref.id, { ...ref.overhangMm, enabled: true });
-    }
-    return byId;
-  }, [registry]);
+  return overhangsOf(useCustomBins());
 }

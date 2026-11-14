@@ -64,11 +64,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          # Poll GitHub deployments API for up to 5 min looking for a successful
+          # Poll GitHub deployments API for up to 10 min looking for a successful
           # Vercel preview matching this PR's head SHA. We can't use the third-party
           # wait-for-vercel-preview action because (a) it pins to a tag and (b) it
           # fails hard when Vercel's ignore step legitimately skips a deploy.
-          deadline=$(( $(date +%s) + 300 ))
+          # The preview build includes the docs site, so leave it room.
+          deadline=$(( $(date +%s) + 600 ))
           url=""
           ignored=""
           while [ "$(date +%s)" -lt "$deadline" ]; do
@@ -116,7 +117,7 @@ jobs:
             echo "::warning::Vercel build was ignored for this PR — no preview to smoke against."
           else
             echo "status=timeout" >> "$GITHUB_OUTPUT"
-            echo "::error::Timed out waiting for Vercel preview after 5 min."
+            echo "::error::Timed out waiting for Vercel preview after 10 min."
             exit 1
           fi
 

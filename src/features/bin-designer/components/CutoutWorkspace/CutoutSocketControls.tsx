@@ -106,7 +106,9 @@ export function CutoutSocketControls({
   return (
     <div className="space-y-2">
       <div className="space-y-1">
-        <span className="text-micro text-text-muted">{t('binDesigner.cutoutSocket.width')}</span>
+        <span className="text-micro text-content-tertiary">
+          {t('binDesigner.cutoutSocket.width')}
+        </span>
         <div
           role="group"
           aria-label={t('binDesigner.cutoutSocket.width')}
@@ -141,7 +143,9 @@ export function CutoutSocketControls({
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-micro text-text-muted">{t('binDesigner.cutoutSocket.icon')}</span>
+        <span className="text-micro text-content-tertiary">
+          {t('binDesigner.cutoutSocket.icon')}
+        </span>
         <LabelIconPicker
           value={cutout.labelIcon ?? null}
           onChange={(icon) => onUpdate({ labelIcon: icon ?? undefined })}

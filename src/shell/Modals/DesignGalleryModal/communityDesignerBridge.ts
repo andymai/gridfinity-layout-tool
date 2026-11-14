@@ -209,6 +209,7 @@ export async function placeCommunityDesignInLayout(
         registryEdgeFields,
         registryHeightFields,
         registryOverhangFields,
+        registrySplitFields,
       } = await import('@/features/bin-designer/store/customBinRegistry');
       // saveDesign never registers a design (only the mounted Designer page's
       // auto-save hooks do), so register explicitly or the placed bin would
@@ -230,6 +231,7 @@ export async function placeCommunityDesignInLayout(
               ...registryEdgeFields(design.params),
               ...registryHeightFields(design.params),
               ...registryOverhangFields(design.params),
+              ...registrySplitFields(design.params),
               ...slantFields,
             }),
         updatedAt: saved.value.updatedAt,

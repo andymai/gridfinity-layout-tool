@@ -25,6 +25,16 @@ export type DuplicateBinCommand = BaseCommand<'bin.duplicate', { readonly id: Bi
 
 export type MoveBinToStagingCommand = BaseCommand<'bin.moveToStaging', { readonly id: BinId }>;
 
+export type MoveBinsToStagingCommand = BaseCommand<
+  'bin.moveToStagingBatch',
+  { readonly ids: ReadonlyArray<BinId> }
+>;
+
+export type RestoreBinsFromStagingCommand = BaseCommand<
+  'bin.restoreFromStaging',
+  { readonly ids: ReadonlyArray<BinId>; readonly layerId: LayerId }
+>;
+
 export type MoveBinFromStagingCommand = BaseCommand<
   'bin.moveFromStaging',
   {
@@ -68,6 +78,8 @@ export type BinCommand =
   | DeleteBinsCommand
   | DuplicateBinCommand
   | MoveBinToStagingCommand
+  | MoveBinsToStagingCommand
+  | RestoreBinsFromStagingCommand
   | MoveBinFromStagingCommand
   | FillLayerCommand
   | FillLayerGapsCommand

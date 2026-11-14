@@ -20,6 +20,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import type { Cutout } from '@/features/bin-designer/types';
 import {
   allSelected,
@@ -342,9 +343,9 @@ export function ShapeList({
         handleDropToBottom();
       }}
     >
-      <div className="px-1 pb-1 text-micro uppercase tracking-wider text-content-tertiary">
+      <SubHeader className="px-1 pb-1">
         {t('binDesigner.shapeList.countLabel', { count: String(cutouts.length) })}
-      </div>
+      </SubHeader>
       {renderRows(nodes)}
       {/* Explicit drop zone so "send to the bottom" has a target even when the
           list fills the panel. */}

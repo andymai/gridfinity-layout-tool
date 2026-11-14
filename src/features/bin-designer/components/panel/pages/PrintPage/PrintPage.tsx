@@ -1,7 +1,7 @@
 import { useTranslation } from '@/i18n';
 import { Button } from '@/design-system';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { PanelSection } from '../../PanelSection';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { SplitOptionsSection } from '../../SplitOptionsSection';
 import { useSplitOptionsSection } from '../../SplitOptionsSection/useSplitOptionsSection';
 import { PhysicalUnitsSection } from '../../PhysicalUnitsSection';
@@ -10,12 +10,13 @@ import { SlantTooLargeNotice } from '../../shared';
 
 /**
  * Print & output: bed fit (always rendered — a passive all-clear when the bin
- * fits, the full split controls when it doesn't), physical units, the export
- * hand-off, defaults.
+ * fits, the split controls when it doesn't, and the design's split switch
+ * either way), physical units, the export hand-off, defaults.
  */
 export function PrintPage() {
   const t = useTranslation();
-  const { needsSplit, slantTooLarge, printBedSize } = useSplitOptionsSection();
+  const { needsSplit, keptWhole, slantTooLarge, fitsDiagonally, printBedSize } =
+    useSplitOptionsSection();
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
   const canExport = useDesignerStore(
     (s) =>
@@ -26,18 +27,26 @@ export function PrintPage() {
   );
   return (
     <div className="divide-y divide-stroke-subtle/50">
-      <PanelSection helpTarget="bd-print-fit">
+      <PanelSection helpTarget="bd-print-fit" className="space-y-3">
         {slantTooLarge ? (
           <SlantTooLargeNotice width={printBedSize.width} depth={printBedSize.depth} />
-        ) : needsSplit ? (
-          <SplitOptionsSection />
         ) : (
-          <p className="text-label text-content-tertiary">
-            {t('binDesigner.printFit.fits', {
-              width: printBedSize.width,
-              depth: printBedSize.depth,
-            })}
-          </p>
+          <>
+            {!needsSplit && !keptWhole && (
+              <p className="text-label text-content-tertiary">
+                {t(
+                  fitsDiagonally
+                    ? 'binDesigner.printFit.fitsDiagonally'
+                    : 'binDesigner.printFit.fits',
+                  {
+                    width: printBedSize.width,
+                    depth: printBedSize.depth,
+                  }
+                )}
+              </p>
+            )}
+            <SplitOptionsSection />
+          </>
         )}
       </PanelSection>
       <PanelSection helpTarget="bd-physical-units">

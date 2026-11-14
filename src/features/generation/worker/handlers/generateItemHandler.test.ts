@@ -11,6 +11,7 @@ import type { GenerateItemMessage } from '../../bridge/types';
 const runGeneration = vi.fn();
 const respond = vi.fn();
 const getItemGenerator = vi.fn();
+const runExport = vi.fn();
 
 vi.mock('./workerContext', () => ({
   runGeneration: (...args: unknown[]) => runGeneration(...args),
@@ -18,7 +19,7 @@ vi.mock('./workerContext', () => ({
   formatError: (e: unknown) => (e instanceof Error ? e.message : String(e)),
   reportProgress: vi.fn(),
   getActiveRequestId: () => 'req-1',
-  runExport: vi.fn(),
+  runExport: (...args: unknown[]) => runExport(...args),
   classifyExportError: vi.fn(),
 }));
 
@@ -26,7 +27,7 @@ vi.mock('../items/generatorRegistry', () => ({
   getItemGenerator: (...args: unknown[]) => getItemGenerator(...args),
 }));
 
-import { handleGenerateItem } from './generateItemHandler';
+import { handleGenerateItem, handleExportItem } from './generateItemHandler';
 
 function message(): GenerateItemMessage {
   return {
@@ -84,5 +85,35 @@ describe('handleGenerateItem', () => {
       error: 'asset failed to decode',
     });
     expect(runGeneration).not.toHaveBeenCalled();
+  });
+});
+
+describe('handleExportItem', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('runs prepare() before exporting, like generation does', async () => {
+    const order: string[] = [];
+    getItemGenerator.mockReturnValue({
+      prepare: vi.fn(async () => {
+        await new Promise((r) => setTimeout(r, 10));
+        order.push('prepare');
+      }),
+      export: vi.fn(async () => {
+        order.push('export');
+        return { data: new ArrayBuffer(0), fileName: 'x.stl' };
+      }),
+    });
+    runExport.mockImplementation(async (_id: string, _type: string, fn: () => Promise<unknown>) => {
+      await fn();
+    });
+
+    await handleExportItem({
+      type: 'EXPORT_ITEM',
+      payload: { requestId: 'req-1', item: message().payload.item, format: 'stl' },
+    });
+
+    expect(order).toEqual(['prepare', 'export']);
   });
 });

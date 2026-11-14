@@ -726,6 +726,16 @@ describe('drawer outline handling', () => {
         'end'
       ).ecoPlate
     ).toBe(false);
+    expect(
+      buildFullParams(
+        { ...stored, stackPrint: { enabled: true, gapMm: mm(0.2), mixedSizes: true } },
+        3,
+        2,
+        42,
+        'end',
+        'end'
+      ).ecoPlate
+    ).toBe(true);
   });
 
   it('ignores the outline for unsynced (custom-size) plates', () => {

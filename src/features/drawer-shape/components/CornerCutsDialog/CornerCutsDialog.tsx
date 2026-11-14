@@ -4,6 +4,7 @@ import { Dialog, Button, Select, Stepper } from '@/design-system';
 import { ConfirmDialog } from '@/shared/components';
 import { useLayoutStore, useToastStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { isOk } from '@/core/result';
 import { computeDisplacedBins } from '@/core/cqrs/v2/domain/drawer/displacement';
@@ -172,9 +173,7 @@ export function CornerCutsDialog({ open, onClose }: CornerCutsDialogProps) {
             const cut = active[key];
             return (
               <div key={key} className="space-y-2 rounded border border-stroke-subtle p-2">
-                <div className="text-label font-medium uppercase tracking-wide text-content-tertiary">
-                  {t(labelKey)}
-                </div>
+                <SubHeader>{t(labelKey)}</SubHeader>
                 <Select
                   aria-label={t(labelKey)}
                   size="sm"

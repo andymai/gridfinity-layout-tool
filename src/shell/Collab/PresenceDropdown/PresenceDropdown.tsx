@@ -98,14 +98,14 @@ export function PresenceDropdown({
     return () => window.removeEventListener('resize', handleResize);
   }, [calculatePosition]);
 
-  // Handle click outside to close
+  // Read the event path, not `contains(target)`: a control whose click removes
+  // it is already detached when this listener runs. The browser sets the path
+  // when dispatch starts, so it still holds the dropdown.
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      const isInsidePopover = popoverRef.current?.contains(target);
-      const isInsideTrigger = triggerRef.current?.contains(target);
-
-      if (!isInsidePopover && !isInsideTrigger) {
+      const path = e.composedPath();
+      const isInside = (element: HTMLElement | null) => element !== null && path.includes(element);
+      if (!isInside(popoverRef.current) && !isInside(triggerRef.current)) {
         onClose();
       }
     };
@@ -161,9 +161,7 @@ export function PresenceDropdown({
       <div className="flex items-center justify-between px-3 py-2 border-b border-stroke-subtle">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-content">
-            {participants.length === 1
-              ? t('collab.participantCountOne')
-              : t('collab.participantCount', { count: participants.length })}
+            {t('collab.participantCount', { count: participants.length })}
           </span>
           <ConnectionIndicator status={status} size="sm" />
         </div>

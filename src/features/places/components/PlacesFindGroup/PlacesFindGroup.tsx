@@ -1,5 +1,6 @@
 import { Command } from 'cmdk';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { PRE_RANKED_VALUE_PREFIX } from '@/shared/utils/commandPaletteFilter';
 import { useFindBins } from '../../hooks/useFindBins';
 import { useFocusBin } from '../../hooks/useFocusBin';
@@ -44,9 +45,7 @@ export function PlacesFindGroup({ query, onDone }: PlacesFindGroupProps) {
       className="mb-0.5"
       heading={
         <div className="px-3 pb-1.5 pt-1">
-          <span className="text-micro font-semibold text-content-tertiary uppercase tracking-wider">
-            {t('commandPalette.category.bins')}
-          </span>
+          <SubHeader>{t('commandPalette.category.bins')}</SubHeader>
         </div>
       }
     >

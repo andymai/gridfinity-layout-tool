@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
 import { useCustomBins } from '../../hooks/useCustomBins';
@@ -105,9 +106,7 @@ export function LayoutDesignSwitch() {
           aria-label={layoutName}
           className="absolute left-0 top-full z-50 mt-1 max-h-[70vh] w-72 overflow-auto rounded-lg border border-stroke bg-surface-elevated py-1 shadow-lg"
         >
-          <div className="truncate px-2.5 pb-0.5 pt-2 text-xs font-medium uppercase tracking-wider text-content-tertiary">
-            {layoutName}
-          </div>
+          <SubHeader className="truncate px-2.5 pb-0.5 pt-2">{layoutName}</SubHeader>
           {entries.map((entry) => {
             const isActive = entry.design.id === currentDesignId;
             const { width, depth, height } = entry.design;

@@ -306,7 +306,7 @@ export function TraceCanvas({
                   textAnchor="middle"
                   dominantBaseline="central"
                   fontSize={handle * 1.3}
-                  className="fill-content-primary font-semibold"
+                  className="fill-content font-semibold"
                 >
                   {i + 1}
                 </text>

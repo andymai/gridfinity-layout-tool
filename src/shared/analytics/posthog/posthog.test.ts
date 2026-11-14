@@ -616,14 +616,6 @@ describe('computeLabsMetrics', () => {
     expect(metrics.labs_enabled_count).toBe(0);
   });
 
-  it('excludes graduated features even when the old preference is still set', () => {
-    setEnabledFeatures({ collaborative_editing: true });
-
-    const metrics = computeLabsMetrics();
-    expect(metrics.labs_enabled_features).not.toContain('collaborative_editing');
-    expect(metrics.labs_enabled_count).toBe(0);
-  });
-
   it('excludes unknown feature IDs', () => {
     setEnabledFeatures({ unknown_feature: true });
 

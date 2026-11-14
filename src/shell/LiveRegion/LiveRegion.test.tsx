@@ -9,14 +9,16 @@ vi.mock('@/core/store', () => ({
 }));
 
 describe('LiveRegion', () => {
-  it('renders nothing when no message', () => {
+  it('keeps an empty region mounted when there is no message', () => {
     vi.mocked(useInteractionStore).mockImplementation((selector: unknown) => {
-      const state = { liveMessage: '' };
+      const state = { liveMessage: null };
       return (selector as (s: typeof state) => unknown)(state);
     });
 
-    const { container } = render(<LiveRegion />);
-    expect(container.firstChild).toBeNull();
+    render(<LiveRegion />);
+    const region = screen.getByRole('status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toBeEmptyDOMElement();
   });
 
   it('renders message in aria-live region', () => {

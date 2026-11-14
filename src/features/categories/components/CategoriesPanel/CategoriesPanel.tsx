@@ -9,7 +9,9 @@ import { useToastStore } from '@/core/store/toast';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import { useCategoryManager } from '../../hooks/useCategoryManager';
-import { Button, Collapsible, IconButton, Input, PlusIcon, XIcon } from '@/design-system';
+import { Button, IconButton, Input, PlusIcon, XIcon } from '@/design-system';
+import { PanelSection } from '@/shared/components/PanelSection';
+import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 
 interface ColorPaletteGridProps {
   selectedColor: string;
@@ -178,218 +180,220 @@ export function CategoriesPanel() {
 
   return (
     <div>
-      <Collapsible title={t('common.categories')} size="md" actions={actionButtons}>
-        <div className="space-y-1">
-          {categories.map((category) => {
-            const isActive = category.id === activeCategoryId;
-            const isEditing = editingId === category.id;
-            const binCount = binCounts.get(category.id) || 0;
-            const canDelete = binCount === 0 && categories.length > CONSTRAINTS.CATEGORIES_MIN;
-            const isHovered = hoveredCategoryId === category.id;
+      <StickyGroupHeader variant="band" title={t('common.categories')} actions={actionButtons}>
+        <PanelSection>
+          <div className="space-y-1">
+            {categories.map((category) => {
+              const isActive = category.id === activeCategoryId;
+              const isEditing = editingId === category.id;
+              const binCount = binCounts.get(category.id) || 0;
+              const canDelete = binCount === 0 && categories.length > CONSTRAINTS.CATEGORIES_MIN;
+              const isHovered = hoveredCategoryId === category.id;
 
-            return (
-              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- keyboard users interact with inner buttons
-              <div
-                key={category.id}
-                className={`group relative flex items-center gap-2 p-2 rounded-md cursor-pointer min-w-0 transition-colors duration-150 ${isActive ? 'bg-[var(--bg-active)]' : 'hover:bg-surface-hover'}`}
-                onClick={() => selectCategory(category.id, category.name)}
-                onMouseEnter={() => {
-                  setHoveredCategoryId(category.id);
-                  setHighlightedCategoryId(category.id);
-                }}
-                onMouseLeave={() => {
-                  setHoveredCategoryId(null);
-                  setHighlightedCategoryId(null);
-                }}
-              >
-                {isEditing ? (
-                  <div
-                    ref={editingRef}
-                    className="flex flex-col gap-2 w-full"
-                    role="presentation"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {/* Name input - auto-saves on change */}
-                    <Input
-                      size="sm"
-                      value={category.name}
-                      onChange={(e) => updateCategoryField(category.id, 'name', e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && setEditingId(null)}
-                      fullWidth
-                      // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
-                      autoFocus
-                      placeholder={t('categories.categoryNamePlaceholder')}
-                    />
-                    <ColorPaletteGrid
-                      selectedColor={category.color}
-                      onColorSelect={(color) => updateCategoryField(category.id, 'color', color)}
-                      t={t}
-                    />
-                    {/* Footer row: hint + delete link */}
-                    <div className="flex items-center justify-between text-xs text-content-tertiary mt-0.5">
-                      <span>{t('categories.clickOutsideToClose')}</span>
-                      {canDelete && (
-                        <Button
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            requestDelete(category.id, category.name);
-                          }}
-                          className="text-content-tertiary hover:text-error px-0 py-0 hover:bg-transparent"
-                          aria-label={t('categories.deleteCategory')}
-                        >
-                          {t('common.delete')}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    {/* Color swatch with checkmark overlay - click to open quick color picker */}
-                    <IconButton
-                      size="sm"
-                      touchTarget={false}
-                      className="relative w-5 h-5 rounded flex-shrink-0 shadow-sm hover:scale-110 hover:ring-2 hover:ring-accent/50 hover:bg-transparent"
-                      style={{ backgroundColor: category.color }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setColorPickerId(colorPickerId === category.id ? null : category.id);
-                      }}
-                      title={t('categories.changeColor')}
-                      aria-label={t('categories.changeColor')}
-                      aria-expanded={colorPickerId === category.id}
-                      aria-haspopup="true"
+              return (
+                // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- keyboard users interact with inner buttons
+                <div
+                  key={category.id}
+                  className={`group relative flex items-center gap-2 p-2 rounded-md cursor-pointer min-w-0 transition-colors duration-150 ${isActive ? 'bg-[var(--bg-active)]' : 'hover:bg-surface-hover'}`}
+                  onClick={() => selectCategory(category.id, category.name)}
+                  onMouseEnter={() => {
+                    setHoveredCategoryId(category.id);
+                    setHighlightedCategoryId(category.id);
+                  }}
+                  onMouseLeave={() => {
+                    setHoveredCategoryId(null);
+                    setHighlightedCategoryId(null);
+                  }}
+                >
+                  {isEditing ? (
+                    <div
+                      ref={editingRef}
+                      className="flex flex-col gap-2 w-full"
+                      role="presentation"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      {isActive && (
-                        <svg
-                          className="absolute inset-0 w-5 h-5 p-0.5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="white"
-                          style={{ filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.8))' }}
-                          aria-hidden="true"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={3}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      )}
-                    </IconButton>
-
-                    {colorPickerId === category.id && (
-                      <div
-                        ref={colorPickerRef}
-                        className="absolute left-0 top-full mt-0.5 z-50 p-2 bg-surface-elevated border border-stroke-subtle rounded-lg shadow-lg animate-scale-in w-[calc(100%-0.5rem)]"
-                        role="presentation"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <ColorPaletteGrid
-                          selectedColor={category.color}
-                          onColorSelect={(color) => {
-                            updateCategoryField(category.id, 'color', color);
-                            setColorPickerId(null);
-                          }}
-                          t={t}
-                        />
+                      {/* Name input - auto-saves on change */}
+                      <Input
+                        size="sm"
+                        value={category.name}
+                        onChange={(e) => updateCategoryField(category.id, 'name', e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && setEditingId(null)}
+                        fullWidth
+                        // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
+                        autoFocus
+                        placeholder={t('categories.categoryNamePlaceholder')}
+                      />
+                      <ColorPaletteGrid
+                        selectedColor={category.color}
+                        onColorSelect={(color) => updateCategoryField(category.id, 'color', color)}
+                        t={t}
+                      />
+                      {/* Footer row: hint + delete link */}
+                      <div className="flex items-center justify-between text-xs text-content-tertiary mt-0.5">
+                        <span>{t('categories.clickOutsideToClose')}</span>
+                        {canDelete && (
+                          <Button
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              requestDelete(category.id, category.name);
+                            }}
+                            className="text-content-tertiary hover:text-error px-0 py-0 hover:bg-transparent"
+                            aria-label={t('categories.deleteCategory')}
+                          >
+                            {t('common.delete')}
+                          </Button>
+                        )}
                       </div>
-                    )}
-                    {/* Category name - click to select, double-click to edit */}
-                    <Button
-                      variant="ghost"
-                      className="flex-1 min-w-0 text-left justify-start px-0 py-0 hover:bg-transparent"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        selectCategory(category.id, category.name);
-                      }}
-                      onDoubleClick={(e) => {
-                        e.stopPropagation();
-                        setColorPickerId(null);
-                        setEditingId(category.id);
-                      }}
-                      aria-pressed={isActive}
-                      aria-label={
-                        selectedBinIds.length > 0
-                          ? t('categories.applyToSelectedBins', {
-                              name: category.name,
-                              count: selectedBinIds.length,
-                            })
-                          : isActive
-                            ? t('categories.selectedForNewBins', { name: category.name })
-                            : t('categories.selectForNewBins', { name: category.name })
-                      }
-                      title={
-                        selectedBinIds.length > 0
-                          ? t('categories.applyToCount', { count: selectedBinIds.length })
-                          : undefined
-                      }
-                    >
-                      <span className="text-sm truncate text-content block">{category.name}</span>
-                    </Button>
-                    {/* Edit button - appears on hover */}
-                    <IconButton
-                      size="sm"
-                      touchTarget={false}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setColorPickerId(null);
-                        setEditingId(category.id);
-                      }}
-                      className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 -my-1 flex-shrink-0"
-                      title={t('categories.editCategory')}
-                      aria-label={t('categories.editCategoryAria', { name: category.name })}
-                    >
-                      <svg
-                        className="w-3.5 h-3.5 text-content-secondary"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                        />
-                      </svg>
-                    </IconButton>
-                    {/* Delete button - appears on hover for unused categories */}
-                    {canDelete && (
+                    </div>
+                  ) : (
+                    <>
+                      {/* Color swatch with checkmark overlay - click to open quick color picker */}
                       <IconButton
-                        variant="dangerGhost"
+                        size="sm"
+                        touchTarget={false}
+                        className="relative w-5 h-5 rounded flex-shrink-0 shadow-sm hover:scale-110 hover:ring-2 hover:ring-accent/50 hover:bg-transparent"
+                        style={{ backgroundColor: category.color }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setColorPickerId(colorPickerId === category.id ? null : category.id);
+                        }}
+                        title={t('categories.changeColor')}
+                        aria-label={t('categories.changeColor')}
+                        aria-expanded={colorPickerId === category.id}
+                        aria-haspopup="true"
+                      >
+                        {isActive && (
+                          <svg
+                            className="absolute inset-0 w-5 h-5 p-0.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="white"
+                            style={{ filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.8))' }}
+                            aria-hidden="true"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={3}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        )}
+                      </IconButton>
+
+                      {colorPickerId === category.id && (
+                        <div
+                          ref={colorPickerRef}
+                          className="absolute left-0 top-full mt-0.5 z-50 p-2 bg-surface-elevated border border-stroke-subtle rounded-lg shadow-lg animate-scale-in w-[calc(100%-0.5rem)]"
+                          role="presentation"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ColorPaletteGrid
+                            selectedColor={category.color}
+                            onColorSelect={(color) => {
+                              updateCategoryField(category.id, 'color', color);
+                              setColorPickerId(null);
+                            }}
+                            t={t}
+                          />
+                        </div>
+                      )}
+                      {/* Category name - click to select, double-click to edit */}
+                      <Button
+                        variant="ghost"
+                        className="flex-1 min-w-0 text-left justify-start px-0 py-0 hover:bg-transparent"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          selectCategory(category.id, category.name);
+                        }}
+                        onDoubleClick={(e) => {
+                          e.stopPropagation();
+                          setColorPickerId(null);
+                          setEditingId(category.id);
+                        }}
+                        aria-pressed={isActive}
+                        aria-label={
+                          selectedBinIds.length > 0
+                            ? t('categories.applyToSelectedBins', {
+                                name: category.name,
+                                count: selectedBinIds.length,
+                              })
+                            : isActive
+                              ? t('categories.selectedForNewBins', { name: category.name })
+                              : t('categories.selectForNewBins', { name: category.name })
+                        }
+                        title={
+                          selectedBinIds.length > 0
+                            ? t('categories.applyToCount', { count: selectedBinIds.length })
+                            : undefined
+                        }
+                      >
+                        <span className="text-sm truncate text-content block">{category.name}</span>
+                      </Button>
+                      {/* Edit button - appears on hover */}
+                      <IconButton
                         size="sm"
                         touchTarget={false}
                         onClick={(e) => {
                           e.stopPropagation();
-                          requestDelete(category.id, category.name);
+                          setColorPickerId(null);
+                          setEditingId(category.id);
                         }}
-                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 -my-1 text-content-tertiary flex-shrink-0"
-                        title={t('categories.deleteCategory')}
-                        aria-label={t('categories.deleteCategoryAria', { name: category.name })}
+                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 -my-1 flex-shrink-0"
+                        title={t('categories.editCategory')}
+                        aria-label={t('categories.editCategoryAria', { name: category.name })}
                       >
-                        <XIcon className="w-3.5 h-3.5" />
+                        <svg
+                          className="w-3.5 h-3.5 text-content-secondary"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                          />
+                        </svg>
                       </IconButton>
-                    )}
-                    {/* Bin count badge - only rendered when category has bins */}
-                    {binCount > 0 && (
-                      <span
-                        className={`text-micro min-w-[20px] text-center px-1.5 py-0.5 rounded-full flex-shrink-0 transition-colors ${
-                          isHovered ? 'bg-accent/20 text-accent' : 'text-content-tertiary'
-                        }`}
-                        title={t('categories.binsUseCategory', { count: binCount })}
-                      >
-                        {binCount}
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </Collapsible>
+                      {/* Delete button - appears on hover for unused categories */}
+                      {canDelete && (
+                        <IconButton
+                          variant="dangerGhost"
+                          size="sm"
+                          touchTarget={false}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            requestDelete(category.id, category.name);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 -my-1 text-content-tertiary flex-shrink-0"
+                          title={t('categories.deleteCategory')}
+                          aria-label={t('categories.deleteCategoryAria', { name: category.name })}
+                        >
+                          <XIcon className="w-3.5 h-3.5" />
+                        </IconButton>
+                      )}
+                      {/* Bin count badge - only rendered when category has bins */}
+                      {binCount > 0 && (
+                        <span
+                          className={`text-micro min-w-[20px] text-center px-1.5 py-0.5 rounded-full flex-shrink-0 transition-colors ${
+                            isHovered ? 'bg-accent/20 text-accent' : 'text-content-tertiary'
+                          }`}
+                          title={t('categories.binsUseCategory', { count: binCount })}
+                        >
+                          {binCount}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </PanelSection>
+      </StickyGroupHeader>
 
       <ConfirmDialog
         isOpen={deleteConfirm !== null}

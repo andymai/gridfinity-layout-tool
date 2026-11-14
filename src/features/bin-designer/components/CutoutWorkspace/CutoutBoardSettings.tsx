@@ -4,8 +4,10 @@
  * controls (snap, grid size) plus the read-only board footprint.
  */
 
-import { Button, Checkbox } from '@/design-system';
+import { Button } from '@/design-system';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { CutoutPlateSettings } from './CutoutPlateSettings';
 import { CutoutFillControls } from '@/features/bin-designer/components/controls';
 import { getSegmentClass } from '@/shared/components/segmentedControlClasses';
@@ -44,18 +46,13 @@ export function CutoutBoardSettings({
       </p>
 
       <div className="space-y-3 border-t border-stroke-subtle pt-3">
-        <span className="block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
-          {t('binDesigner.cutoutEditor.boardSettings')}
-        </span>
+        <SubHeader>{t('binDesigner.cutoutEditor.boardSettings')}</SubHeader>
 
-        <label className="flex cursor-pointer items-center gap-2 text-xs text-content-secondary">
-          <Checkbox
-            checked={snapEnabled}
-            onChange={onSnapToggle}
-            aria-label={t('binDesigner.cutouts.snapToGrid')}
-          />
-          <span>{t('binDesigner.cutouts.snapToGrid')}</span>
-        </label>
+        <FeatureToggle
+          label={t('binDesigner.cutouts.snapToGrid')}
+          checked={snapEnabled}
+          onChange={() => onSnapToggle(!snapEnabled)}
+        />
 
         {snapEnabled && (
           <div className="space-y-1">
@@ -65,7 +62,7 @@ export function CutoutBoardSettings({
             <div
               role="group"
               aria-label={t('binDesigner.gridSize')}
-              className="inline-flex gap-0.5 rounded-lg bg-surface-tertiary p-0.5"
+              className="inline-flex gap-0.5 rounded-lg bg-surface p-0.5"
             >
               {GRID_SIZES.map((size) => (
                 <Button
@@ -100,9 +97,7 @@ export function CutoutBoardSettings({
       {/* Fill level: a bin-level plane, but the cutouts are cut from it, so the
           workspace has to expose it or the only control is in the sidebar. */}
       <div className="space-y-3 border-t border-stroke-subtle pt-3">
-        <span className="block text-micro font-semibold uppercase tracking-wider text-content-tertiary">
-          {t('binDesigner.cutouts.fillLevel')}
-        </span>
+        <SubHeader>{t('binDesigner.cutouts.fillLevel')}</SubHeader>
         <CutoutFillControls />
       </div>
 

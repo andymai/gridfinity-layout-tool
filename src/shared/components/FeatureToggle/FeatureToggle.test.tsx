@@ -69,6 +69,13 @@ describe('FeatureToggle', () => {
     expect(screen.getByRole('switch')).toBeDisabled();
   });
 
+  it('draws the Soon pill text in the secondary color, not the tertiary one', () => {
+    render(<FeatureToggle label="Test Feature" checked={false} onChange={vi.fn()} comingSoon />);
+    const pill = screen.getByText('common.soon');
+    expect(pill).toHaveClass('bg-surface-elevated', 'text-content-secondary');
+    expect(pill).not.toHaveClass('text-content-tertiary');
+  });
+
   it('disables switch and shows reason text when disabledReason is set', () => {
     render(
       <FeatureToggle
@@ -136,5 +143,62 @@ describe('FeatureToggle', () => {
     render(<FeatureToggle label="Test Feature" checked={false} onChange={onChange} />);
     fireEvent.click(screen.getByText('Test Feature'));
     expect(onChange).toHaveBeenCalledOnce();
+  });
+
+  it('names the switch with ariaLabel when given', () => {
+    render(
+      <FeatureToggle
+        label="Half-grid mode"
+        checked={false}
+        onChange={vi.fn()}
+        ariaLabel="Toggle half-grid mode"
+      />
+    );
+    expect(screen.getByRole('switch', { name: 'Toggle half-grid mode' })).toBeInTheDocument();
+  });
+
+  it('shows the shortcut as a key cap only when given', () => {
+    const { rerender } = render(
+      <FeatureToggle label="Half-grid mode" checked={false} onChange={vi.fn()} shortcut="H" />
+    );
+    expect(screen.getByText('H').tagName).toBe('KBD');
+    rerender(<FeatureToggle label="Half-grid mode" checked={false} onChange={vi.fn()} />);
+    expect(screen.queryByText('H')).not.toBeInTheDocument();
+  });
+
+  it('keeps a trailing control apart from the switch', () => {
+    const onChange = vi.fn();
+    render(
+      <FeatureToggle
+        label="Custom drawer shape"
+        checked={false}
+        onChange={onChange}
+        trailing={<button type="button">Options</button>}
+      />
+    );
+    const trailing = screen.getByRole('button', { name: 'Options' });
+    expect(screen.getByRole('switch').contains(trailing)).toBe(false);
+    fireEvent.click(trailing);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('pulses the whole row on a help jump but focuses the switch', () => {
+    const { container } = render(
+      <FeatureToggle
+        label="Half-grid mode"
+        checked={false}
+        onChange={vi.fn()}
+        info="Explained."
+        helpTarget="half-bin-mode"
+      />
+    );
+    const row = container.querySelector('[data-help-target="half-bin-mode"]');
+    expect(row).toContainElement(screen.getByRole('switch'));
+    expect(screen.getByRole('switch')).toHaveAttribute('data-help-focus');
+  });
+
+  it('leaves the focus marker off when there is no help target', () => {
+    render(<FeatureToggle label="Test Feature" checked={false} onChange={vi.fn()} />);
+    expect(screen.getByRole('switch')).not.toHaveAttribute('data-help-focus');
   });
 });

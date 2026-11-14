@@ -21,3 +21,4 @@ Disallow: /l/
 
 # Sitemap location
 Sitemap: https://gridfinitylayouttool.com/sitemap.xml
+Sitemap: https://gridfinitylayouttool.com/docs/sitemap.xml

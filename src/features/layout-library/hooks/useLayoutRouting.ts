@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useLibraryStore, useToastStore } from '@/core/store';
+import { queueLibraryWrite } from '@/core/store/libraryWrites';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useSelectionStore } from '@/core/store/selection';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
@@ -108,43 +109,46 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
   /**
    * Switch to a layout by ID (used for URL navigation).
    * Returns true if successful, false if layout not found.
+   * Runs in the library queue: a library write that read the library before
+   * this switch would otherwise store its active layout over this one.
    */
   const navigateToLayout = useCallback(
-    async (rawId: string, addToHistory = false): Promise<boolean> => {
-      const entry = findEntry(rawId);
-      if (!entry) {
-        return false;
-      }
-      const layoutId: LayoutId = entry.id;
+    (rawId: string, addToHistory = false): Promise<boolean> =>
+      queueLibraryWrite(async () => {
+        const entry = findEntry(rawId);
+        if (!entry) {
+          return false;
+        }
+        const layoutId: LayoutId = entry.id;
 
-      // Load layout data from IndexedDB (with localStorage fallback)
-      const loadedLayout = await loadLayoutAsync(layoutId);
-      if (!loadedLayout) {
-        return false;
-      }
+        // Load layout data from IndexedDB (with localStorage fallback)
+        const loadedLayout = await loadLayoutAsync(layoutId);
+        if (!loadedLayout) {
+          return false;
+        }
 
-      const validation = validateLayoutIntegrity(loadedLayout);
-      if (!validation.valid) {
-        return false;
-      }
+        const validation = validateLayoutIntegrity(loadedLayout);
+        if (!validation.valid) {
+          return false;
+        }
 
-      // Switch to the layout
-      importLayout(loadedLayout, layoutId, 'init');
-      setActiveLayoutId(layoutId);
+        // Switch to the layout
+        importLayout(loadedLayout, layoutId, 'init');
+        setActiveLayoutId(layoutId);
 
-      // Reset UI state
-      clearSelection();
-      setActiveLayer(loadedLayout.layers[0]?.id ?? toLayerId(''));
-      setActiveCategory(loadedLayout.categories[0]?.id ?? toCategoryId(''));
+        // Reset UI state
+        clearSelection();
+        setActiveLayer(loadedLayout.layers[0]?.id ?? toLayerId(''));
+        setActiveCategory(loadedLayout.categories[0]?.id ?? toCategoryId(''));
 
-      // Clear undo history
-      clearHistory();
+        // Clear undo history
+        clearHistory();
 
-      // Update URL with layout name for slug
-      setLayoutURL(layoutId, loadedLayout.name, addToHistory);
+        // Update URL with layout name for slug
+        setLayoutURL(layoutId, loadedLayout.name, addToHistory);
 
-      return true;
-    },
+        return true;
+      }),
     [
       findEntry,
       importLayout,

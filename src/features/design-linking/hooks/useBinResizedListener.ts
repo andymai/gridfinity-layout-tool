@@ -25,6 +25,7 @@ import {
   registryEdgeFields,
   registryHeightFields,
   registryOverhangFields,
+  registrySplitFields,
   registrySlantFields,
 } from '@/features/bin-designer';
 import { isErr, isOk } from '@/core/result';
@@ -168,6 +169,7 @@ export function useBinResizedListener(): void {
             ...registryEdgeFields(newParams),
             ...registryHeightFields(newParams),
             ...registryOverhangFields(newParams),
+            ...registrySplitFields(newParams),
             ...registrySlantFields(newParams),
             updatedAt,
           });
@@ -233,9 +235,13 @@ export function useBinResizedListener(): void {
           addToastRef.current(
             refused > 0
               ? {
-                  message: tRef.current('designLinking.toast.cascadedResizeSomeRefused', {
-                    count: siblingBins.length - refused,
-                    refused,
+                  message: tRef.current('designLinking.toast.withExceptions', {
+                    result: tRef.current('designLinking.toast.cascadedResize', {
+                      count: siblingBins.length - refused,
+                    }),
+                    exceptions: tRef.current('designLinking.toast.refusedNoRoom', {
+                      count: refused,
+                    }),
                   }),
                   type: 'info',
                   duration: 4000,
@@ -243,9 +249,13 @@ export function useBinResizedListener(): void {
               : {
                   message:
                     lockedSiblings.length > 0
-                      ? tRef.current('designLinking.toast.cascadedResizeSomeLocked', {
-                          count: siblingBins.length,
-                          locked: lockedSiblings.length,
+                      ? tRef.current('designLinking.toast.withExceptions', {
+                          result: tRef.current('designLinking.toast.cascadedResize', {
+                            count: siblingBins.length,
+                          }),
+                          exceptions: tRef.current('designLinking.toast.syncSkippedLocked', {
+                            count: lockedSiblings.length,
+                          }),
                         })
                       : tRef.current('designLinking.toast.cascadedResize', {
                           count: siblingBins.length,

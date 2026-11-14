@@ -140,16 +140,20 @@ export function LabelTabsSection() {
           <div>
             <span className="mb-1 flex items-center gap-1.5 text-label text-content-tertiary">
               {t('binDesigner.tabMode')}
-              <LabelInfo label={t('binDesigner.tabMode')}>
-                <OptionNotes
-                  options={[
-                    {
-                      label: t('binDesigner.tabMode.socket'),
-                      note: t('binDesigner.tabMode.socketHint'),
-                    },
-                  ]}
-                />
-              </LabelInfo>
+              <FeatureTip
+                tip="labelPlates"
+                feature={t('binDesigner.tabMode.socket')}
+                detail={
+                  <OptionNotes
+                    options={[
+                      {
+                        label: t('binDesigner.tabMode.socket'),
+                        note: t('binDesigner.tabMode.socketHint'),
+                      },
+                    ]}
+                  />
+                }
+              />
             </span>
             <div role="group" aria-label={t('binDesigner.tabMode')} className={SEGMENT_GROUP_CLASS}>
               {TAB_MODE_OPTIONS.map((option) => {

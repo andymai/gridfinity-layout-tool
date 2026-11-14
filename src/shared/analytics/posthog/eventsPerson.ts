@@ -87,6 +87,7 @@ export function updatePersonProperties(): void {
       uses_cloud_share: flag('cloud_share'),
       uses_fill_operations: flag('fill'),
       uses_paint_mode: flag('paint_mode'),
+      uses_installed_app: flag('pwa_standalone'),
 
       engagement_tier: computeEngagementTier(layoutCount, data.designsCreated),
 
@@ -172,6 +173,7 @@ export function markFeatureUsed(
     | 'fill'
     | 'paint_mode'
     | 'pwa_installed'
+    | 'pwa_standalone'
 ): void {
   try {
     const data = loadAnalyticsData();

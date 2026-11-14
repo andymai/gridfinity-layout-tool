@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, OverhangConfig } from '@/shared/types/bin';
-import { binSplitChunkUnits } from './binSplitFit';
+import { binBedFit, binSplitChunkUnits, placedBinBedCapacity } from './binSplitFit';
 import { getSplitPieceCount, getSplitPositions } from './splitPositions';
 
 const BED = 180;
@@ -167,5 +167,155 @@ describe('binSplitChunkUnits on a slanted bin', () => {
     expect(
       binSplitChunkUnits({ width, depth, gridUnitMm, gridUnitMmY, overhang, cellMask }, 256)
     ).toEqual(binSplitChunkUnits(big, 256));
+  });
+});
+
+describe('binBedFit across the diagonal', () => {
+  const long = params({ width: 1.5, depth: 7 });
+
+  it('prints a 1.5 x 7 bin whole on a 256mm bed, keeping the square-on cut', () => {
+    const fit = binBedFit(long, 256);
+    expect(fit.diagonal).toBe(true);
+    expect(fit.chunk).toEqual({ width: 1.5, depth: 7 });
+    expect(binSplitChunkUnits(long, 256)).toEqual(fit.chunk);
+    expect(getSplitPieceCount(1.5, 7, fit.squareOn.width, fit.squareOn.depth)).toBe(2);
+  });
+
+  it('charges both sides of the overhang against the diagonal', () => {
+    // 63 + 294 = 357mm of sides fits 256 * sqrt(2) = 362mm; 6mm more does not.
+    expect(binBedFit({ ...long, overhang: overhang({ front: 3, back: 2 }) }, 256).diagonal).toBe(
+      true
+    );
+    expect(binBedFit({ ...long, overhang: overhang({ front: 3, back: 3 }) }, 256).diagonal).toBe(
+      false
+    );
+  });
+
+  it('is not diagonal for a bin that fits square-on or turned', () => {
+    expect(binBedFit(params({ width: 5, depth: 6 }), 256, 210).diagonal).toBe(false);
+    expect(binBedFit(params(), BED).diagonal).toBe(false);
+  });
+
+  it('never lays a slanted bin diagonally, since it never splits', () => {
+    const leaning: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 1.5,
+      depth: 7,
+      height: 6,
+      slant: { angleDeg: 30, side: 'back' },
+    };
+    expect(binBedFit(leaning, 256)).toEqual({
+      chunk: { width: 1.5, depth: 7 },
+      squareOn: { width: 1.5, depth: 7 },
+      diagonal: false,
+      keptWhole: false,
+    });
+  });
+});
+
+describe('binBedFit with splitting turned off', () => {
+  const long = params({ width: 6, depth: 1 });
+
+  it('splits a design that predates the switch, as it always did', () => {
+    const { splitToFitBed: _absent, ...legacy } = long;
+    const fit = binBedFit(legacy, BED);
+    expect(fit.chunk).toEqual({ width: 4, depth: 1 });
+    expect(fit.keptWhole).toBe(false);
+  });
+
+  it('splits with the switch on', () => {
+    const fit = binBedFit({ ...long, splitToFitBed: true }, BED);
+    expect(fit.chunk).toEqual({ width: 4, depth: 1 });
+    expect(binSplitChunkUnits({ ...long, splitToFitBed: true }, BED)).toEqual({
+      width: 4,
+      depth: 1,
+    });
+  });
+
+  it('keeps a bin larger than the bed whole and says so', () => {
+    const off = { ...long, splitToFitBed: false };
+    expect(binBedFit(off, BED)).toEqual({
+      chunk: { width: 6, depth: 1 },
+      squareOn: { width: 6, depth: 1 },
+      diagonal: false,
+      keptWhole: true,
+    });
+    expect(binSplitChunkUnits(off, BED)).toEqual({ width: 6, depth: 1 });
+  });
+
+  it('says nothing about a bin that fits', () => {
+    expect(binBedFit(params({ splitToFitBed: false }), BED).keptWhole).toBe(false);
+  });
+
+  it('counts the overhang when it decides the bin is larger than the bed', () => {
+    const fit = binBedFit(
+      params({ splitToFitBed: false, overhang: overhang({ left: 61.5, right: 42 }) }),
+      BED
+    );
+    expect(fit.chunk).toEqual({ width: 4, depth: 4 });
+    expect(fit.keptWhole).toBe(true);
+  });
+
+  it('offers no split for a bin that fits only lying diagonally', () => {
+    const fit = binBedFit(params({ width: 1.5, depth: 7, splitToFitBed: false }), 256);
+    expect(fit).toEqual({
+      chunk: { width: 1.5, depth: 7 },
+      squareOn: { width: 1.5, depth: 7 },
+      diagonal: true,
+      keptWhole: false,
+    });
+  });
+});
+
+describe('placedBinBedCapacity', () => {
+  const fit = (over: Parameters<typeof placedBinBedCapacity>[0]) => placedBinBedCapacity(over, 256);
+  const sides = (o: Partial<OverhangConfig>) => overhang(o);
+
+  it('reads the bed capacity for a bin that fits, as before', () => {
+    expect(fit({ width: 4, depth: 4, gridUnitMm: 42 })).toEqual({ width: 6, depth: 6 });
+  });
+
+  it('keeps the diagonal fit of a long bin', () => {
+    expect(fit({ width: 1.5, depth: 7, gridUnitMm: 42 })).toEqual({
+      width: 1.5,
+      depth: 7,
+      diagonal: true,
+    });
+  });
+
+  // 6 x 42 = 252mm fits a 256mm bed; 9mm a side makes the part 270mm.
+  it('cuts a bin that only its overhang pushes past the bed, as the print list does', () => {
+    const o = sides({ left: 9, right: 9, front: 9, back: 9 });
+    const cap = fit({ width: 6, depth: 6, gridUnitMm: 42, overhang: o });
+    expect(cap).toEqual(
+      binSplitChunkUnits({ ...params({ width: 6, depth: 6 }), overhang: o }, 256)
+    );
+    expect(6 > cap.width && 6 > cap.depth).toBe(true);
+  });
+
+  it('cuts only the axis the overhang overruns, and keeps the bed on the other', () => {
+    const cap = fit({ width: 6, depth: 4, gridUnitMm: 42, overhang: sides({ left: 9 }) });
+    expect(cap).toEqual({ width: 5.5, depth: 6 });
+  });
+
+  it('keeps that bin whole, with the cut it skips, when its design turns splitting off', () => {
+    const cap = fit({
+      width: 6,
+      depth: 4,
+      gridUnitMm: 42,
+      overhang: sides({ left: 9 }),
+      splitToFitBed: false,
+    });
+    expect(cap).toEqual({ width: 6, depth: 4, keptWhole: { width: 5.5, depth: 6 } });
+  });
+
+  it('cuts to the same pieces the print list lists when the overhang adds one', () => {
+    // 12 units: two pieces of 6 on paper, three of 4 once 9mm a side is charged.
+    const o = sides({ left: 9, right: 9 });
+    const cap = fit({ width: 12, depth: 1, gridUnitMm: 42, overhang: o });
+    const chunk = binSplitChunkUnits({ ...params({ width: 12, depth: 1 }), overhang: o }, 256);
+    expect(getSplitPieceCount(12, 1, cap.width, cap.depth)).toBe(
+      getSplitPieceCount(12, 1, chunk.width, chunk.depth)
+    );
   });
 });

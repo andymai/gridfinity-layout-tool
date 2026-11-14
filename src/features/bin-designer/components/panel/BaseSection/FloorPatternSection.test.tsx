@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { FloorPatternSection } from './FloorPatternSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import en from '@/i18n/locales/en';
 
 describe('FloorPatternSection', () => {
   beforeEach(() => {
@@ -53,5 +54,11 @@ describe('FloorPatternSection', () => {
     });
     render(<FloorPatternSection />);
     expect(screen.queryByRole('switch', { name: 'Drainage holes' })).not.toBeInTheDocument();
+  });
+
+  it('plays a clip of drainage holes from the dot beside its toggle', () => {
+    render(<FloorPatternSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Drainage holes' }));
+    expect(screen.getByText(en['binDesigner.featureTip.drainageHoles'])).toBeInTheDocument();
   });
 });

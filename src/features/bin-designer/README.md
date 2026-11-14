@@ -50,10 +50,10 @@ graph TB
   a docked, resizable/collapsible `InspectorDock` (width + collapsed state persisted via
   `inspectorDockStorage`), not a floating overlay. `InspectorContent` switches between
   single-select sections, multi-select shared fields (mixed values show a "—" placeholder),
-  and an empty board-settings state, above a bin-level block (`BinSizeSection`,
-  `BinFeaturesSection`) that stays put across every selection state so the board can be
-  resized and the stacking lip cleared without leaving the editor; those two are self-wired
-  to the designer store rather than prop-drilled. The design system's number-first `NumberField`
+  and an empty board-settings state. A bin-level block (`BinSizeSection`, `BinFeaturesSection`)
+  stays in every state so the bin can be resized and the lip cleared in the editor; a selection
+  comes before it, and its warnings (`BinSizeIssues`) top the panel. Both are self-wired to the
+  designer store rather than prop-drilled. The design system's number-first `NumberField`
   (drag-scrub + type) replaces sliders, and hardware-size presets surface as quick-pick chips. The multi-select
   section leads with `AlignControls` (align/distribute, backed by the pure
   `panel/CutoutsSection/geometryAlign.ts`) and batch-edits position, size, rotation, cut depth,
@@ -136,7 +136,7 @@ graph TB
 - `components/panel/HingeControls/` — which wall the hinge axis runs along, and what holds the lid SHUT (nothing / a snap rail on the opposite wall / magnet bosses on that wall). A hinge fixes one edge and says nothing about the other three, which is why the catch is its own choice. The readout is the point: the pin is a filament offcut the user cuts themselves, so the cut length is the one number nobody can measure off the model, and it is quoted again in the export dialog from the same `hingePinLengths` call, one per RUN (a cutout splitting the hinge wall leaves two barrels and needs two pins). Running fit lives under Advanced with the other millimetre knobs. Switching TO a hinge seeds a scallop grip on the opposite wall when the grip is still untouched, but never overwrites a configured one.
 - `components/panel/LidGripControls/` — the chamfer / shadow-line / scallop cut at the lid↔bin seam, plus the opt-in bin lip dip. `grip.heightMm` is a knob on the shadow line and the scallop (`null` = the mode's own request; a chamfer has none, its 45° section being its depth). The readout reports depth, height, lid left ABOVE the cut and which dimension ran out, because the requested values are bounded by the design's own tray / magnet / skirt geometry and a shortened relief otherwise reads as a defect. The shadow line is unavailable on a stackable top, since it moves the face an upper bin registers against; `lidGripModeAllowed` is the rule, mirrored server-side.
 - `components/panel/ColorsSection/` — multi-color zone editor: per-zone rows, picker, palette CRUD, eyedropper + swap entry points
-- `components/panel/ColorsSection/AccentBandsEditor.tsx` — the top and bottom accent bands. These are the only PLANE-CUT zones: every other zone paints whatever geometry carries its `FeatureTag`, while a band recolors the outermost N mm of the body at one end and overrides each zone it covers (a bottom band paints the socket, a top band paints the lip). `accentCutPlanes` in `types/featureColors.ts` is the single resolver for both planes — it also owns the rule that a colliding pair tiles rather than overlaps — because the preview, the 3MF exporter and the eyedropper all read it
+- `components/panel/ColorsSection/AccentBandsEditor.tsx` — the top and bottom accent bands. These are the only PLANE-CUT zones: every other zone paints whatever geometry carries its `FeatureTag`, while a band recolors the outermost N mm of the body at one end and overrides each zone it covers (a bottom band paints the socket, a top band paints the lip). Text is the exception: it keeps its own color and never counts toward the height. `accentCutPlanes` in `types/featureColors.ts` is the single resolver for both planes — it also owns the rule that a colliding pair tiles rather than overlaps — because the preview, the 3MF exporter and the eyedropper all read it
 - `utils/accentBandUnits.ts` — mm ↔ whole-layer conversion for the band height sliders. The design always stores absolute mm; `settings.accentBandUnit` is an authoring preference resolved against `printSettings.layerHeightMm`, so changing a printer profile never repaints a saved design
 - `utils/zoneResolver.ts` — pure raycast triangle → ColorZone mapping (reused across hit-test, preview, and 3MF export gating)
 - `utils/zoneLabels.ts` — ColorZone → i18n key + flat `updateFeatureColors` patch helpers
@@ -473,7 +473,7 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
 
 `shape: 'mesh'` cutouts carve a contoured pocket from an uploaded STL. `BinParams.meshAssets` holds a ref per mesh into the local mesh file store (files, refs, cleanup and worker delivery: the mesh-storage skill); the store GCs an entry when its last referencing cutout is deleted (see `cutoutSlice`). Import flow: `panel/CutoutsSection/stlImport/` (`useStlImport` → worker `IMPORT_MESH` → orientation dialog → `addMeshCutout`). The 2D editor renders the stored silhouette (`renderer/MeshFootprintMesh`) shape-locked: move/rotate/array yes; resize, point-edit, scoops, pathfinder groups no. Fit controls (clearance/chamfer) apply. Payload cap is 2MB only when `meshAssets` is non-empty (server mirror in `api/lib/designerValidation.ts`).
 
-### Imported bin designs (STL → design, `stl_bin_import` flag — graduated)
+### Imported bin designs (STL → design)
 
 Distinct from mesh imprints: here the uploaded STL **is** the design — a whole
 Gridfinity bin (e.g. downloaded from Printables) saved as an `importedMesh`
@@ -482,7 +482,7 @@ item kind (`kind` + `envelope` + `structure`, no `params`). The structure
 `MeshAsset`, the claimed `heightUnits`, the measured `volumeMm3` (filament
 estimates), and the source file name.
 
-- **Import flow**: `DesignImportView` accepts `.stl` when the flag is on and
+- **Import flow**: `DesignImportView` accepts `.stl` and
   routes to `components/ImportBinDialog/` (`useImportBinDesign` →
   `bridge.importMesh` → orientation preview → `detectGridFromSize` →
   eager `saveDesign` + `customBinRegistry` upsert + `loadDesign`).
@@ -667,8 +667,7 @@ estimates), and the source file name.
     local). `normalizeTags` (client) and `sanitizeTags` (server) **must** stay
     identical — same 12×32 caps **and** the same control-char stripping — or a
     tag the client keeps but the server rewrites would flicker on the next pull.
-18. **Draft preview is best-effort and supersedable** — the `manifold_preview`
-    path (graduated, always on) has `useGeneration` render a fast Manifold draft (`setDraftResult`,
+18. **Draft preview is best-effort and supersedable**: `useGeneration` renders a fast Manifold draft (`setDraftResult`,
     `generation.isDraft = true`) on each edit, then the exact occt-wasm result
     supersedes it. A monotonic token drops a draft once a newer edit starts or the
     exact for its edit has landed (covers the exact-resolves-before-draft race).

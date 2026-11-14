@@ -31,7 +31,7 @@ describe('HelpSearchResultRow', () => {
       descriptionKey: 'help.target.printBedSize.description',
       target: { surface: 'sidebar:physical-units', controlId: 'print-bed-size' },
     };
-    render(<HelpSearchResultRow entry={feature} modifierKey="⌘" onJump={onJump} />);
+    render(<HelpSearchResultRow entry={feature} onJump={onJump} />);
 
     const button = screen.getByRole('button', { name: 'help.goTo' });
     fireEvent.click(button);
@@ -50,11 +50,12 @@ describe('HelpSearchResultRow', () => {
       keys: 'Z',
       modifier: true,
     };
-    render(<HelpSearchResultRow entry={shortcut} modifierKey="⌘" onJump={vi.fn()} />);
+    render(<HelpSearchResultRow entry={shortcut} onJump={vi.fn()} />);
 
     expect(screen.queryByRole('button', { name: 'help.goTo' })).toBeNull();
     expect(screen.getByText('Z')).toBeTruthy();
-    expect(screen.getByText('⌘')).toBeTruthy();
+    // The badge picks the modifier from the platform; jsdom is not a Mac.
+    expect(screen.getByText('Ctrl')).toBeTruthy();
   });
 
   it('renders neither key caps nor Go-to button for tip entries', () => {
@@ -64,7 +65,7 @@ describe('HelpSearchResultRow', () => {
       titleKey: 'help.tip.halfBin',
       descriptionKey: 'help.tip.halfBin.description',
     };
-    render(<HelpSearchResultRow entry={tip} modifierKey="⌘" onJump={vi.fn()} />);
+    render(<HelpSearchResultRow entry={tip} onJump={vi.fn()} />);
 
     expect(screen.queryByRole('button', { name: 'help.goTo' })).toBeNull();
     expect(screen.getByText('help.tip.halfBin')).toBeTruthy();
@@ -81,7 +82,7 @@ describe('HelpSearchResultRow', () => {
     render(
       <HelpSearchResultRow
         entry={feature}
-        modifierKey="⌘"
+
         onJump={vi.fn()}
         showJumpButton={false}
       />

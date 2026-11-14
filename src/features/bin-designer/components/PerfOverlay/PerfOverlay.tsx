@@ -35,7 +35,7 @@ export function PerfOverlay() {
   const latest = perfHistory[perfHistory.length - 1];
   return (
     <div
-      className="pointer-events-auto absolute right-3 top-3 z-20 w-72 rounded-lg border border-stroke-subtle bg-surface-primary/95 p-3 text-label font-mono shadow-lg backdrop-blur-sm"
+      className="pointer-events-auto absolute right-3 top-3 z-20 w-72 rounded-lg border border-stroke-subtle bg-surface/95 p-3 text-label font-mono shadow-lg backdrop-blur-sm"
       aria-label="Generation performance overlay"
     >
       <Header
@@ -68,15 +68,15 @@ function Header({
   return (
     <div className="mb-1.5 flex items-center justify-between">
       <div className="flex items-baseline gap-1.5">
-        <span className="text-text-primary font-semibold">Gen</span>
-        <span className="text-text-primary text-sm">{fmtMs(totalMs)}</span>
-        <span className="text-text-tertiary">({sampleCount})</span>
+        <span className="text-content font-semibold">Gen</span>
+        <span className="text-content text-sm">{fmtMs(totalMs)}</span>
+        <span className="text-content-tertiary">({sampleCount})</span>
       </div>
       <Button
         variant="ghost"
         type="button"
         onClick={onClear}
-        className="text-text-tertiary hover:text-text-primary hover:bg-transparent underline underline-offset-2"
+        className="text-content-tertiary hover:text-content hover:bg-transparent underline underline-offset-2"
       >
         clear
       </Button>
@@ -125,7 +125,7 @@ function Sparkline({ history }: { history: readonly PerfSnapshot[] }) {
 function Counts({ hexCenters, patternTools }: { hexCenters: number; patternTools: number }) {
   if (hexCenters === 0 && patternTools === 0) return null;
   return (
-    <div className="mb-2 flex gap-3 text-text-tertiary">
+    <div className="mb-2 flex gap-3 text-content-tertiary">
       {hexCenters > 0 && <span>hex centers: {hexCenters}</span>}
       {patternTools > 0 && <span>pattern tools: {patternTools}</span>}
     </div>
@@ -144,10 +144,10 @@ function StageTable({
   if (entries.length === 0) return null;
   return (
     <div className="mb-2">
-      <div className="text-text-tertiary mb-0.5 uppercase tracking-wide">{label}</div>
+      <div className="text-content-tertiary mb-0.5 uppercase tracking-wide">{label}</div>
       {entries.map((e) => (
         <div key={e.name} className="flex items-center gap-1.5">
-          <span className="text-text-primary w-24 truncate">{e.name}</span>
+          <span className="text-content w-24 truncate">{e.name}</span>
           <span className="w-12 text-right tabular-nums">{fmtMs(e.ms)}</span>
           <BarFill pct={Math.min(1, e.ms / Math.max(totalMs, 1))} />
         </div>
@@ -160,10 +160,10 @@ function SubstepTable({ label, entries }: { label: string; entries: readonly Per
   const maxMs = entries.reduce((acc, e) => Math.max(acc, e.ms), 0);
   return (
     <div className="mb-2">
-      <div className="text-text-tertiary mb-0.5 uppercase tracking-wide">{label}</div>
+      <div className="text-content-tertiary mb-0.5 uppercase tracking-wide">{label}</div>
       {entries.map((e) => (
         <div key={e.name} className="flex items-center gap-1.5">
-          <span className="text-text-primary w-32 truncate">
+          <span className="text-content w-32 truncate">
             {e.name}
             {e.count !== undefined ? ` (${e.count})` : ''}
           </span>

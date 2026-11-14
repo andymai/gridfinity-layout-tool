@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { BentoWorkspace } from './BentoWorkspace';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 
@@ -49,7 +49,7 @@ describe('BentoWorkspace', () => {
     expect(screen.getByTestId('top-ruler')).toBeInTheDocument();
     expect(screen.getByTestId('left-ruler')).toBeInTheDocument();
     expect(screen.getByTestId('bento-stash-shelf')).toBeInTheDocument();
-    expect(screen.getByTestId('bento-dock')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.bento.dockTitle')).toBeInTheDocument();
     expect(screen.getByText(/binDesigner\.bento\.backgroundNote/)).toBeInTheDocument();
   });
 
@@ -119,6 +119,35 @@ describe('BentoWorkspace', () => {
     expect(useDesignerStore.getState().ui.bentoWorkspaceOpen).toBe(false);
   });
 
+  it('an Escape that closes an info dot keeps the selection and the workspace', () => {
+    const id = drawViaStore();
+    useDesignerStore.getState().setSelectedBentoCompartmentId(id);
+    render(<BentoWorkspace />);
+
+    const dot = screen.getAllByRole('button', { name: 'common.aboutLabel' })[0];
+    fireEvent.click(dot);
+    expect(dot).toHaveAttribute('aria-expanded', 'true');
+    fireEvent.keyDown(dot, { key: 'Escape' });
+
+    expect(dot).toHaveAttribute('aria-expanded', 'false');
+    expect(useDesignerStore.getState().ui.selectedBentoCompartmentId).toBe(id);
+    expect(useDesignerStore.getState().ui.bentoWorkspaceOpen).toBe(true);
+  });
+
+  it('leaves arrow keys inside an open info dot to the dot', () => {
+    const id = drawViaStore();
+    useDesignerStore.getState().setSelectedBentoCompartmentId(id);
+    render(<BentoWorkspace />);
+    const before = useDesignerStore.getState().params.compartments;
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'common.aboutLabel' })[0]);
+    const panel = screen.getByRole('dialog');
+    fireEvent.keyDown(panel, { key: 'ArrowRight' });
+
+    expect(useDesignerStore.getState().params.compartments).toBe(before);
+    expect(useDesignerStore.getState().ui.selectedBentoCompartmentId).toBe(id);
+  });
+
   it('Delete removes the selected compartment', () => {
     const id = drawViaStore();
     useDesignerStore.getState().setSelectedBentoCompartmentId(id);
@@ -146,6 +175,24 @@ describe('BentoWorkspace', () => {
     expect(state.params.compartments.cells[0]).not.toBe(selected);
   });
 
+  it('an arrow on the dock resize handle resizes without moving the selection', () => {
+    const id = drawViaStore();
+    useDesignerStore.getState().setSelectedBentoCompartmentId(id);
+    render(<BentoWorkspace />);
+    const cellsBefore = [...useDesignerStore.getState().params.compartments.cells];
+    const handle = screen.getByRole('separator');
+    const widthBefore = handle.getAttribute('aria-valuenow');
+
+    fireEvent.keyDown(handle, { key: 'ArrowLeft' });
+    const afterLeft = handle.getAttribute('aria-valuenow');
+    fireEvent.keyDown(handle, { key: 'ArrowRight' });
+    const afterRight = handle.getAttribute('aria-valuenow');
+
+    expect(new Set([widthBefore, afterLeft, afterRight]).size).toBeGreaterThan(1);
+    expect(useDesignerStore.getState().params.compartments.cells).toEqual(cellsBefore);
+    expect(useDesignerStore.getState().ui.selectedBentoCompartmentId).toBe(id);
+  });
+
   it('deleting a stash entry goes through the store', () => {
     const id = drawViaStore();
     useDesignerStore.getState().stashBentoCompartment(id);
@@ -164,6 +211,30 @@ describe('BentoWorkspace', () => {
 
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(useDesignerStore.getState().ui.bentoWorkspaceOpen).toBe(true);
+  });
+
+  it('holds the quickstart card until a grid is chosen, so one first-run card shows at a time', () => {
+    mocks.quickstartSeen = false;
+    useDesignerStore.getState().setCompartmentGrid(1, 1);
+    render(<BentoWorkspace />);
+
+    expect(screen.getByTestId('bento-grid-setup')).toBeInTheDocument();
+    expect(screen.queryByText('binDesigner.bento.quickstart.draw')).not.toBeInTheDocument();
+
+    fireEvent.click(
+      within(screen.getByTestId('bento-grid-setup')).getByRole('button', { name: /4×4/ })
+    );
+    expect(screen.queryByTestId('bento-grid-setup')).not.toBeInTheDocument();
+    expect(screen.getByText('binDesigner.bento.quickstart.draw')).toBeInTheDocument();
+  });
+
+  it('closes on Escape before a grid is chosen, when no quickstart card is up to take it', () => {
+    mocks.quickstartSeen = false;
+    useDesignerStore.getState().setCompartmentGrid(1, 1);
+    render(<BentoWorkspace />);
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(useDesignerStore.getState().ui.bentoWorkspaceOpen).toBe(false);
   });
 
   it('rounds a decimal typed into a grid stepper rather than sizing a cell array by it', () => {

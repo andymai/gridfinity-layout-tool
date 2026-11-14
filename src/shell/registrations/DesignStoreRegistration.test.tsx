@@ -10,6 +10,7 @@ const { fakeAdapter } = vi.hoisted(() => ({
     upsertRegistryEntry: vi.fn(),
     registryEdgeFields: vi.fn(),
     registryPlacementFields: vi.fn(),
+    prepareBinParams: vi.fn(),
   },
 }));
 

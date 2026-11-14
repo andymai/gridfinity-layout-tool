@@ -46,6 +46,34 @@ export interface CardDetectOptions {
   readonly aspectTolerance?: number;
   readonly widthMm?: number;
   readonly heightMm?: number;
+  /**
+   * Quads known not to be the card, such as a sheet of paper the tools lie
+   * on. A candidate that is one of them is passed over; a card lying on one
+   * is not.
+   */
+  readonly notCard?: readonly (readonly Point[])[];
+}
+
+function quadArea(corners: readonly Point[]): number {
+  let area = 0;
+  for (let i = 0; i < corners.length; i++) {
+    const a = corners[i];
+    const b = corners[(i + 1) % corners.length];
+    area += a.x * b.y - b.x * a.y;
+  }
+  return Math.abs(area) / 2;
+}
+
+/** True when `corners` and `other` are the same object: the same middle, at about the same size. */
+function sameQuad(corners: readonly Point[], other: readonly Point[]): boolean {
+  const middle = (q: readonly Point[]): Point => ({
+    x: q.reduce((sum, p) => sum + p.x, 0) / q.length,
+    y: q.reduce((sum, p) => sum + p.y, 0) / q.length,
+  });
+  const [a, b] = [middle(corners), middle(other)];
+  const size = Math.sqrt(quadArea(other));
+  const ratio = quadArea(corners) / quadArea(other);
+  return Math.hypot(a.x - b.x, a.y - b.y) < 0.25 * size && ratio > 0.5 && ratio < 2;
 }
 
 /**
@@ -164,6 +192,7 @@ export function findBestCardComponent(
       }
     }
     if (!accepted) continue;
+    if (options.notCard?.some((other) => sameQuad(corners, other))) continue;
 
     if (!best || quad.fitness > best.fitness) {
       best = { label: comp.label, corners, fitness: quad.fitness };

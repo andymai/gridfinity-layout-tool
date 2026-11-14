@@ -11,40 +11,6 @@ interface HalfGridModeBlockedModalProps {
   onRemediate: () => void | Promise<void>;
 }
 
-/**
- * Modal shown when user attempts to disable half-bin mode while fractional bins exist.
- *
- * Provides clear explanation of the constraint violation and offers a one-click
- * remediation action to move all fractional bins to the staging area.
- *
- * ## Features
- * - Loading state during remediation
- * - Error handling with user feedback
- * - Accessible (ARIA labels, focus management, keyboard navigation)
- * - Escape key to cancel
- * - Focus trap within modal
- *
- * @example
- * ```tsx
- * const [showModal, setShowModal] = useState(false);
- * const [violation, setViolation] = useState<HalfGridConstraintViolation | null>(null);
- *
- * const handleRemediate = async () => {
- *   // Move bins to staging
- *   await execute(() => {
- *     violation.binIds.forEach(id => moveBinToStaging(id));
- *   });
- *   toggleHalfGridMode();
- * };
- *
- * <HalfGridModeBlockedModal
- *   isOpen={showModal}
- *   violation={violation}
- *   onClose={() => setShowModal(false)}
- *   onRemediate={handleRemediate}
- * />
- * ```
- */
 export function HalfGridModeBlockedModal({
   isOpen,
   violation,
@@ -158,7 +124,7 @@ export function HalfGridModeBlockedModal({
 
               <div id="half-bin-blocked-message" className="space-y-3">
                 <p className="text-sm text-content-secondary leading-relaxed">
-                  {t('halfBinBlocked.message')}
+                  {t('halfBinBlocked.stashMessage', { count: violation.count })}
                 </p>
               </div>
 
@@ -192,11 +158,6 @@ export function HalfGridModeBlockedModal({
               variant="primary"
               onClick={handleRemediate}
               loading={isRemediating}
-              aria-label={
-                isRemediating
-                  ? undefined
-                  : t('halfBinMode.remediate.ariaLabel', { count: violation.count })
-              }
               rightIcon={
                 isRemediating ? undefined : (
                   <svg
@@ -216,7 +177,7 @@ export function HalfGridModeBlockedModal({
                 )
               }
             >
-              <span>{isRemediating ? t('common.loading') : t('halfBinBlocked.close')}</span>
+              <span>{isRemediating ? t('common.loading') : t('halfBinBlocked.confirm')}</span>
             </Button>
           </div>
         </div>

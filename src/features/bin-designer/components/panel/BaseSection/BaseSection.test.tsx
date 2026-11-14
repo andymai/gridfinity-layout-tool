@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { BaseSection } from './BaseSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import en from '@/i18n/locales/en';
 
 describe('BaseSection', () => {
   it('offers plain-rim rounding, stores its toggle, and limits radius for thinner walls', async () => {
@@ -71,6 +72,20 @@ describe('BaseSection', () => {
     expect(screen.getByText('Screw holes')).toBeInTheDocument();
     expect(screen.getByText('Stacking lip')).toBeInTheDocument();
     expect(screen.getByText('Lightweight floor')).toBeInTheDocument();
+  });
+
+  it('plays a clip of the magnet holes from the dot beside their toggle', async () => {
+    const user = userEvent.setup();
+    render(<BaseSection />);
+    await user.click(screen.getByRole('button', { name: 'Watch a clip: Magnet holes' }));
+    expect(screen.getByText(en['binDesigner.featureTip.magnetHoles'])).toBeInTheDocument();
+  });
+
+  it('plays a clip of the lightweight floor from the dot beside its toggle', async () => {
+    const user = userEvent.setup();
+    render(<BaseSection />);
+    await user.click(screen.getByRole('button', { name: 'Watch a clip: Lightweight floor' }));
+    expect(screen.getByText(en['binDesigner.featureTip.lightweightFloor'])).toBeInTheDocument();
   });
 
   describe('lip notches', () => {
@@ -197,6 +212,17 @@ describe('BaseSection', () => {
 
       // A spacer still stands on feet, so that family keeps its controls.
       expect(screen.getByRole('switch', { name: 'Half sockets' })).toBeInTheDocument();
+    });
+
+    it('names the Nesting body, not a lid base, where it rules out sockets and shelling', async () => {
+      const user = userEvent.setup();
+      render(<BaseSection />);
+      await user.click(screen.getByRole('radio', { name: 'Nesting' }));
+
+      expect(screen.getByText('A Nesting base has no sockets')).toBeInTheDocument();
+      expect(screen.getByText('Nothing to shell through on a Nesting base')).toBeInTheDocument();
+      expect(screen.queryByText(en['binDesigner.lidBaseDisablesHalfSockets'])).toBeNull();
+      expect(screen.queryByText(en['binDesigner.lidBaseDisablesShelling'])).toBeNull();
     });
 
     it('keeps every family on an ordinary bin', () => {

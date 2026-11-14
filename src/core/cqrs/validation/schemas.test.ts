@@ -17,6 +17,8 @@ describe('COMMAND_SCHEMAS', () => {
     'bin.deleteBatch',
     'bin.duplicate',
     'bin.moveToStaging',
+    'bin.moveToStagingBatch',
+    'bin.restoreFromStaging',
     'bin.moveFromStaging',
     'bin.fillLayer',
     'bin.fillGaps',
@@ -45,9 +47,9 @@ describe('COMMAND_SCHEMAS', () => {
     }
   });
 
-  it('has exactly 40 schemas', () => {
+  it('has exactly 42 schemas', () => {
     const registeredCount = Object.keys(COMMAND_SCHEMAS).length;
-    expect(registeredCount).toBe(40);
+    expect(registeredCount).toBe(42);
   });
 });
 
@@ -292,6 +294,21 @@ describe('bin.deleteBatch schema', () => {
   it('rejects empty array', () => {
     const result = z.safeParse(schema, { ids: [] });
     expect(result.success).toBe(false);
+  });
+});
+
+describe('bin.restoreFromStaging schema', () => {
+  const schema = getCommandSchema('bin.restoreFromStaging');
+  if (!schema) throw new Error("missing schema for 'bin.restoreFromStaging'");
+
+  it('accepts ids and a layer', () => {
+    const result = z.safeParse(schema, { ids: ['bin-1'], layerId: 'layer-1' });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects an empty id list or a missing layer', () => {
+    expect(z.safeParse(schema, { ids: [], layerId: 'layer-1' }).success).toBe(false);
+    expect(z.safeParse(schema, { ids: ['bin-1'] }).success).toBe(false);
   });
 });
 

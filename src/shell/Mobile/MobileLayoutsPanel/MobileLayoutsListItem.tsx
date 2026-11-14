@@ -66,33 +66,33 @@ export function LayoutListItem({
           onClick={() => onRename(entry.id)}
           iconPath={ICON_PATHS.rename}
           bgColor="bg-warning"
-          label={`Rename ${entry.name}`}
+          label={t('mobile.layouts.renameAria', { name: entry.name })}
         />
         <SwipeActionButton
           onClick={() => onShare(entry.id)}
           iconPath={ICON_PATHS.share}
           bgColor="bg-success"
-          label={`Share ${entry.name}`}
+          label={t('mobile.layouts.shareAria', { name: entry.name })}
         />
         <SwipeActionButton
           onClick={() => onDuplicate(entry.id)}
           iconPath={ICON_PATHS.duplicate}
           bgColor="bg-accent"
-          label={`Duplicate ${entry.name}`}
+          label={t('mobile.layouts.duplicateAria', { name: entry.name })}
         />
         {onMove && (
           <SwipeActionButton
             onClick={() => onMove(entry.id)}
             iconPath={ICON_PATHS.folder}
             bgColor="bg-info"
-            label={`Move ${entry.name}`}
+            label={t('mobile.layouts.moveAria', { name: entry.name })}
           />
         )}
         <SwipeActionButton
           onClick={() => onDelete(entry.id)}
           iconPath={ICON_PATHS.delete}
           bgColor="bg-danger"
-          label={`Delete ${entry.name}`}
+          label={t('mobile.layouts.deleteAria', { name: entry.name })}
           disabled={!canDelete}
         />
       </div>

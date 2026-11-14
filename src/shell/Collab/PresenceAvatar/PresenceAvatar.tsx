@@ -23,6 +23,8 @@ interface PresenceAvatarProps {
   showName?: boolean;
   /** Additional CSS classes for the container */
   className?: string;
+  /** Hides the avatar from assistive technology where visible text beside it names the participant and the owner. */
+  decorative?: boolean;
 }
 
 /** Size-specific dimensions */
@@ -69,13 +71,15 @@ export const PresenceAvatar = memo(function PresenceAvatar({
   size = 'md',
   showName = false,
   className = '',
+  decorative = false,
 }: PresenceAvatarProps) {
   const t = useTranslation();
   const { name, color, isOwner, isSelf } = participant;
   const config = SIZE_CONFIG[size];
+  const avatarName = isSelf ? `${name} ${t('collab.you')}` : name;
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`flex items-center gap-2 ${className}`} aria-hidden={decorative || undefined}>
       {/* Avatar identicon */}
       <div className="relative inline-block">
         <div
@@ -85,8 +89,9 @@ export const PresenceAvatar = memo(function PresenceAvatar({
             flex items-center justify-center
             ${isSelf ? 'ring-2 ring-accent ring-offset-1 ring-offset-surface' : ''}
           `.trim()}
-          title={isSelf ? `${name} (you)` : name}
-          aria-label={isSelf ? `${name} (you)` : name}
+          role="img"
+          title={avatarName}
+          aria-label={avatarName}
         >
           <BinGridIdenticon seed={name} size={config.px} hueOverride={hueFromHex(color)} />
         </div>
@@ -95,12 +100,8 @@ export const PresenceAvatar = memo(function PresenceAvatar({
         {isOwner && (
           <div
             className={`absolute ${config.crown} bg-warning rounded-full flex items-center justify-center`}
-            aria-hidden="true"
           >
-            <CrownIcon
-              className="w-2/3 h-2/3 text-warning-foreground"
-              ariaLabel={t('collab.owner')}
-            />
+            <CrownIcon className="w-2/3 h-2/3 text-on-light" ariaLabel={t('collab.owner')} />
           </div>
         )}
       </div>

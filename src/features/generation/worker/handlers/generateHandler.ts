@@ -20,8 +20,7 @@ import { generateDetachableFeetMesh } from '../generators/detachableFeetOrchestr
 import { generateKnifeRest } from '../generators/knifeRestBuilder';
 import { generateSlantSupport } from '../generators/slantSupportBuilder';
 import { generateLabelPlates } from '../generators/labelPlateGenerator';
-import { collectTextFontFamilies } from '@/shared/utils/textFonts';
-import { ensureFontsLoaded } from '../wasmInstantiator';
+import { ensureDesignFonts } from '../wasmInstantiator';
 import { planTypeStemWarning } from '../generators/typeStemGuard';
 import { planLabelTextOverflow } from '../generators/labelTextFit';
 import type { BinParams } from '@/shared/types/bin';
@@ -59,7 +58,7 @@ export async function handleGenerate(message: GenerateMessage): Promise<void> {
   // Text geometry is built synchronously and drops silently when its face is
   // missing, so every family the design references has to be registered before
   // the pipeline runs, not merely requested.
-  await ensureFontsLoaded(collectTextFontFamilies(params));
+  await ensureDesignFonts(params);
   await prepareImprintsSafe(params);
   runGeneration(
     (signal, perf): MeshData => {

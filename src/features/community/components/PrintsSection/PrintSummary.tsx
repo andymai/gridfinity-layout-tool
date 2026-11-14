@@ -74,9 +74,7 @@ export function PrintSummary({ summary }: PrintSummaryProps) {
       data-testid="print-summary"
     >
       <p className="text-sm font-medium text-content">
-        {summary.count === 1
-          ? t('community.prints.countOne')
-          : t('community.prints.countOther', { count: summary.count })}
+        {t('community.prints.count', { count: summary.count })}
       </p>
 
       {facts.length > 0 && (

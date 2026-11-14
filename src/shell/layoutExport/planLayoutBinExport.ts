@@ -24,7 +24,7 @@ import { sanitizeFileName } from '@/features/bin-designer/utils/fileNaming';
 import { hasDetachableFeet } from '@/shared/types/bin';
 import { shouldGenerateKnifeRest } from '@/shared/utils/knifeRestPlan';
 import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
-import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
+import { binBedFit, type BinBedFit } from '@/shared/utils/binSplitFit';
 import { splitHasConnectors } from '@/shared/generation/splitUtils';
 import { withLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { resolveBinOverhang } from '@/shared/utils/drawerMargin';
@@ -46,7 +46,7 @@ import {
 import { dedupeFileNames } from './dedupeFileNames';
 import type { ManifestBinEntry, ManifestSkipped } from './buildLayoutManifest';
 import { normalizeSlant, planSlantSupport } from '@/shared/utils/slantPlan';
-import { isTurnedPlacement, sideInDesign } from '@/shared/utils/placementTurn';
+import { overhangInDesign, placedSideInDesign } from '@/shared/utils/placementTurn';
 import { placementCaption, withPlacedTabCaption } from '@/shared/utils/placedCaption';
 
 /** A linked design id resolved against storage; `design` is null when it failed to load. */
@@ -60,6 +60,8 @@ export interface LayoutSplitPlan {
   readonly cutPlanesX: number[];
   readonly cutPlanesY: number[];
   readonly totalPieceCount: number;
+  /** The bed the bin is split for, so a removable divider is cut to fit too. */
+  readonly printBed: PrintBedSize;
 }
 
 export interface LayoutExportable {
@@ -117,23 +119,26 @@ export interface LayoutBinExportPlan {
 
 /**
  * Cut planes for `params` against the layout's print bed, or null when the bin
- * fits whole. Mirrors the bin designer's `downloadSplit` so a bin exported from
- * the layout ZIP arrives in the same pieces it would from the designer.
+ * prints whole. Mirrors the bin designer's `downloadSplit` so a bin exported
+ * from the layout ZIP arrives in the same pieces it would from the designer.
  *
- * The bin's overhang is charged against the bed by `binSplitChunkUnits`,
- * shared with the designer so a bin exported from the layout ZIP arrives in the
- * same pieces the designer offered. Layout bins routinely carry an overhang
- * (`resolveBinOverhang` grows them into the drawer margin), which is why this
- * path had its own accounting for it first.
+ * `fit` is `binBedFit` against that bed, shared with the designer: it charges
+ * the bin's overhang, which layout bins routinely carry (`resolveBinOverhang`
+ * grows them into the drawer margin), and reads the design's split switch.
  */
-function binSplitPlan(params: BinParams, printBed: PrintBedSize): LayoutSplitPlan | null {
+function binSplitPlan(
+  params: BinParams,
+  fit: BinBedFit,
+  printBed: PrintBedSize
+): LayoutSplitPlan | null {
   const gridUnitMmY = params.gridUnitMmY ?? params.gridUnitMm;
-  const maxGrid = binSplitChunkUnits(params, printBed.widthMm, printBed.depthMm);
+  const maxGrid = fit.chunk;
   if (params.width <= maxGrid.width && params.depth <= maxGrid.depth) return null;
   return {
     cutPlanesX: getSplitPlanePositionsMm(params.width, maxGrid.width, params.gridUnitMm),
     cutPlanesY: getSplitPlanePositionsMm(params.depth, maxGrid.depth, gridUnitMmY),
     totalPieceCount: getSplitPieceCount(params.width, params.depth, maxGrid.width, maxGrid.depth),
+    printBed,
   };
 }
 
@@ -314,7 +319,8 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
       imprintStepSkipped.add(b.linkedDesignId);
       continue;
     }
-    const overhang = resolveBinOverhang(b, drawer, baseplate);
+    const drawerOverhang = resolveBinOverhang(b, drawer, baseplate);
+    const overhang = drawerOverhang && overhangInDesign(drawerOverhang, b);
     // Inject the layout's magnet anchor and foot profile (source of truth),
     // overriding any value saved on the design, so exported bins mate with the
     // baseplate.
@@ -326,10 +332,9 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
     // carry the end support its design does not; then the lip goes, as it
     // does for any slanted design. It faces the drawer, so a design that
     // stands turned prints it turned back.
-    const placed =
-      b.slant && isTurnedPlacement(b, design.params)
-        ? { ...b.slant, side: sideInDesign(b.slant.side) }
-        : b.slant;
+    const placed = b.slant
+      ? { ...b.slant, side: placedSideInDesign(b.slant.side, b, design.params) }
+      : b.slant;
     const slanted = normalizeSlant(placed ? { ...fitted, slant: placed } : fitted);
     const params = withPlacedTabCaption(slanted, b.label);
     // Keyed only when the label reaches the mesh, so every other design still
@@ -435,11 +440,12 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
   const meshPaths = meshFileNames.map((name) => `bins/${name}`);
   const itemPaths = itemFileNames.map((name) => `bins/${name}`);
   const companions = usable.map((u) => binCompanions(u.params));
+  const bedFits = usable.map((u) => binBedFit(u.params, printBed.widthMm, printBed.depthMm));
   const exportable = usable.map((u, i) => ({
     params: u.params,
     path: paths[i],
     companions: companions[i],
-    split: binSplitPlan(u.params, printBed),
+    split: binSplitPlan(u.params, bedFits[i], printBed),
   }));
 
   let totalGrams = 0;
@@ -477,6 +483,7 @@ export function planLayoutBinExport(input: LayoutBinExportInput): LayoutBinExpor
             ...(companions[i].length > 0 ? { oversizedCompanions: companions[i] } : {}),
           }
         : {}),
+      ...(bedFits[i].keptWhole ? { keptWhole: true } : {}),
       ...(u.extended ? { atPositions: u.positions } : {}),
     };
   });

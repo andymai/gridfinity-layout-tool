@@ -27,8 +27,7 @@ interface TitleCardProps {
 export function CreditsTitleCard({ clock, count, accent }: TitleCardProps) {
   const t = useTranslation();
   const lines = [t('supporters.credits.victoryLine1'), t('supporters.credits.victoryLine2')];
-  const people =
-    count === 1 ? t('supporters.credits.people.one') : t('supporters.credits.people.other');
+  const people = t('supporters.credits.people', { count });
 
   const cardRef = useRef<HTMLDivElement>(null);
   const nameRef = useRef<HTMLParagraphElement>(null);

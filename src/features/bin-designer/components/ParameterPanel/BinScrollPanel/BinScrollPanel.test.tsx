@@ -23,6 +23,12 @@ describe('BinScrollPanel', () => {
     }
   });
 
+  it('sets every group header as a band, apart from its sub-headers', () => {
+    const { container } = render(<BinScrollPanel frame="plain" />);
+    expect(container.querySelectorAll('[data-variant="band"]')).toHaveLength(5);
+    expect(container.querySelectorAll('[data-variant="default"]')).toHaveLength(0);
+  });
+
   it('reads down the part: dimensions first, then lid, interior, base, finishing', () => {
     const { container } = render(<BinScrollPanel frame="plain" />);
     const targets = Array.from(container.querySelectorAll('[data-help-target]')).map((el) =>

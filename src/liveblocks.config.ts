@@ -10,6 +10,7 @@
 import { createClient } from '@liveblocks/client';
 import { createRoomContext } from '@liveblocks/react';
 import type { Layout, Coord, ResizeHandle } from './core/types';
+import type { RoomLinkStamp } from '@/shared/utils/roomLinkStamp';
 import { generateUUID } from '@/shared/utils/uuid';
 
 /**
@@ -54,8 +55,8 @@ export type InteractionHint =
 export interface LiveblocksStorage {
   /** The shared layout data */
   layout: Layout;
-  /** Metadata about the collaborative session */
-  metadata: {
+  /** Metadata about the collaborative session. Rooms seeded before version 2 carry no stamp. */
+  metadata: RoomLinkStamp & {
     /** Owner's browser fingerprint ID */
     ownerId: string;
     /** Current permission level for non-owner users */
@@ -249,7 +250,9 @@ export const useStorage = createSafeHook(
   safeStubHooks.useStorage
 ) as <T>(selector: (root: LiveblocksStorageRoot) => T) => T | null;
 export const useMutation = context?.useMutation ?? createUnconfiguredHook('useMutation');
-export const useRoom = context?.useRoom ?? createUnconfiguredHook('useRoom');
+export const useRoom = (context?.useRoom ?? createUnconfiguredHook('useRoom')) as () => {
+  readonly id: string;
+};
 export const useBroadcastEvent =
   context?.useBroadcastEvent ?? createUnconfiguredHook('useBroadcastEvent');
 // Explicit type annotation prevents TS2883 ("Property has or is using private name X")

@@ -6,9 +6,11 @@
 import { itemToBinParams } from '@/shared/types/itemAdapter';
 import { generateBin, exportBin } from '../generators/binGenerator';
 import type { ItemGeneratorModule } from './generatorRegistry';
+import { ensureDesignFonts } from '../wasmInstantiator';
 
 export const binGeneratorModule: ItemGeneratorModule = {
   kind: 'bin',
+  prepare: (item) => ensureDesignFonts(itemToBinParams(item)),
   generate: (item, onProgress, isExport, signal) =>
     generateBin(itemToBinParams(item), onProgress, isExport, signal),
   export: async (item, format) => {

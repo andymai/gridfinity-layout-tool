@@ -26,6 +26,9 @@ export interface PrintRow {
   binIds: BinId[]; // Original bin IDs for click-to-select
   customProperties?: Record<string, string>; // Custom properties (only for individual bins)
   linkedDesignId?: DesignId; // Shared by all bins in the row (part of the group key)
+  /** Larger than the print bed, and its design turns splitting off, so each bin
+   *  prints in one piece. Absent when the bin fits or splits. */
+  keptWhole?: true;
 }
 export interface PrintListConfig {
   filamentCostPerKg: number; // $/kg - user configurable (default 20)

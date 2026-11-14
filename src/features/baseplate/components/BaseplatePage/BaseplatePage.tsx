@@ -36,12 +36,7 @@ import { BaseplateSelector } from '../BaseplateSelector';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { generateBaseplateFileName, toNamingParams } from '../../utils/fileNaming';
 import { buildFullParams } from '../../utils/buildFullParams';
-import {
-  stackGroupsFromTiling,
-  planPhysicalStacks,
-  stackHeightCap,
-  stackedPlateHeightMm,
-} from '../../utils/stackPrint';
+import { planStackPrint, stackHeightCap, stackedPlateHeightMm } from '../../utils/stackPrint';
 import { STACK_PRINT_DEFAULT_GAP_MM, STACK_PRINT_DEFAULT_COPIES } from '@/core/types';
 import { BaseplatePanel } from '../BaseplatePanel/BaseplatePanel';
 import { BaseplatePreview } from '../BaseplatePreview/BaseplatePreview';
@@ -195,16 +190,24 @@ export function BaseplatePage() {
   const stackEnabled = baseplateParams.stackPrint?.enabled === true && activeFormat !== 'step';
   const stackGapMm = baseplateParams.stackPrint?.gapMm ?? STACK_PRINT_DEFAULT_GAP_MM;
   const stackCopies = baseplateParams.stackPrint?.copies ?? STACK_PRINT_DEFAULT_COPIES;
+  const stackMixedSizes = baseplateParams.stackPrint?.mixedSizes === true;
   const stackPlan = useMemo(() => {
     if (!stackEnabled || !tiling) return [];
-    const groups = stackGroupsFromTiling(tiling, fullParams, stackCopies);
     const cap = stackHeightCap(
       maxPrintHeightMm,
       stackedPlateHeightMm(fullParams.lowProfileBase),
       stackGapMm
     );
-    return planPhysicalStacks(groups, cap);
-  }, [stackEnabled, tiling, fullParams, maxPrintHeightMm, stackGapMm, stackCopies]);
+    return planStackPrint(tiling, fullParams, stackCopies, cap, stackMixedSizes);
+  }, [
+    stackEnabled,
+    tiling,
+    fullParams,
+    maxPrintHeightMm,
+    stackGapMm,
+    stackCopies,
+    stackMixedSizes,
+  ]);
   const stackFileCount = stackPlan.length;
   const stackPlateCount = stackPlan.reduce((sum, s) => sum + s.copies, 0);
 
@@ -325,12 +328,10 @@ export function BaseplatePage() {
           </Button>
         </div>
 
-        {isDesktop && (
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <SaveStatusIndicator status={saveStatus} />
-            <HeaderSupportLinks />
-          </div>
-        )}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {isDesktop && <SaveStatusIndicator status={saveStatus} />}
+          <HeaderSupportLinks compact={!isDesktop} />
+        </div>
       </header>
 
       {/* Main content — 4 responsive states */}
@@ -388,10 +389,7 @@ export function BaseplatePage() {
                 message: `${t('baseplate.export.splitBanner', {
                   size: defaultPrintBedSize,
                   count: tiling.pieces.length,
-                })} ${t(
-                  tiling.bedLoads === 1 ? 'baseplate.bedLoads.one' : 'baseplate.bedLoads.other',
-                  { count: tiling.bedLoads }
-                )}`,
+                })} ${t('baseplate.export.bedLoads', { count: tiling.bedLoads })}`,
                 checkboxLabel: t('baseplate.export.enableSplit'),
                 checked: splitEnabled,
                 onCheckedChange: setSplitEnabled,

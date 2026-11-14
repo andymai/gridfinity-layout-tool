@@ -132,8 +132,9 @@ function coverageScore(card: CommunityCard, bounds: BestFitBounds): number {
   return area / (bounds.widthMax * bounds.depthMax);
 }
 
-// Mirrors the server's compareCards tie-breaking (api/community.ts): count
-// sorts fall back to recency on ties, so local re-sorts match server order.
+// Must order every CommunityIndexSort exactly like compareCards in
+// api/lib/communityList.ts, ties included; browseFilters.crossBoundary.test.ts
+// fails when the two drift.
 function compareCards(
   a: CommunityCard,
   b: CommunityCard,
@@ -150,7 +151,11 @@ function compareCards(
   if (sort === 'remixes' && b.counts.remixes !== a.counts.remixes) {
     return b.counts.remixes - a.counts.remixes;
   }
-  return b.createdAt - a.createdAt;
+  if (sort === 'prints' && (b.counts.prints ?? 0) !== (a.counts.prints ?? 0)) {
+    return (b.counts.prints ?? 0) - (a.counts.prints ?? 0);
+  }
+  if (b.createdAt !== a.createdAt) return b.createdAt - a.createdAt;
+  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 }
 
 interface MatchContext {

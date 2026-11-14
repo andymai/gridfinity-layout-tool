@@ -24,9 +24,27 @@ describe('SplitOptionsSection', () => {
     useLayoutStore.getState().setPrintBedSize(256);
   });
 
-  it('returns null when bin fits on print bed', () => {
-    const { container } = render(<SplitOptionsSection />);
-    expect(container.innerHTML).toBe('');
+  it('shows only the split switch when the bin fits the print bed', () => {
+    render(<SplitOptionsSection />);
+    expect(screen.getByRole('switch', { name: 'Split to fit the print bed' })).toHaveAttribute(
+      'aria-checked',
+      'true'
+    );
+    expect(screen.queryByText('Alignment connectors')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Split along/)).not.toBeInTheDocument();
+  });
+
+  it('turns splitting off from the switch, and says the bin exports in one piece', async () => {
+    useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3 } });
+    render(<SplitOptionsSection />);
+
+    await userEvent.click(screen.getByRole('switch', { name: 'Split to fit the print bed' }));
+
+    expect(useDesignerStore.getState().params.splitToFitBed).toBe(false);
+    expect(
+      screen.getByText('Larger than your 256 × 256 mm print bed. It exports in one piece.')
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Alignment connectors')).not.toBeInTheDocument();
   });
 
   it('renders when bin exceeds print bed', () => {

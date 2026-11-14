@@ -220,6 +220,7 @@ export {
   attachmentTakesFill,
   hasAnyLidGripSide,
   hasBinLipDip,
+  binDipSplitsRails,
   lidGripModeAllowed,
 } from './lid';
 

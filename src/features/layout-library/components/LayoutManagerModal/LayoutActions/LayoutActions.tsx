@@ -97,7 +97,7 @@ export function LayoutActions({
           pressed={isMenuOpen}
           onClick={handleMenuToggle}
           className="text-content-tertiary hover:bg-surface hover:text-content"
-          aria-label={`More actions for ${entry.name}`}
+          aria-label={t('layouts.moreActionsFor', { name: entry.name })}
           aria-expanded={isMenuOpen}
           aria-haspopup="menu"
         >

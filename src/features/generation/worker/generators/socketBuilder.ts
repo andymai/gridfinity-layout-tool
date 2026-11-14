@@ -641,36 +641,54 @@ export function buildBaseSocket(
 }
 
 /**
- * Build the grid-aligned feet that sit under a bin's overhang region.
- *
- * The nominal feet (origin-centered) come from {@link buildBaseSocket}; this
- * adds the "frame" of clipped feet around them (see {@link frameCells}) — strips
- * narrower than the printable threshold are dropped, leaving a flat bottom
- * there. Returns `null` when there's no overhang or every strip is
- * sub-threshold. Caller fuses the result onto the base socket.
+ * The foot cells under a bin's overhang: the "frame" around the nominal grid
+ * (see {@link frameCells}), with strips narrower than the printable threshold
+ * dropped. Under `halfSockets` the frame is cut at the same half-unit seams as
+ * the main feet, and a strip wider than half a unit starts with a true half
+ * cell, so each foot seats in a half-grid baseplate's margin pocket.
  *
  * Framed from the overhang at the *base* ({@link overhangBaseSides}), not the
  * rim: on a tapered wall the two differ by the flare, and feet laid out to the
  * rim would jut past the wall above them into open air.
+ */
+export function overhangFootCells(
+  gridW: number,
+  gridD: number,
+  overhang: ResolvedOverhang,
+  gridUnitMm: GridUnitInput,
+  plan: SocketCellPlan
+): CellInfo[] {
+  if (!hasOverhang(overhang)) return [];
+  return frameCells(
+    gridW,
+    gridD,
+    overhangBaseSides(overhang),
+    gridUnitMm,
+    MIN_PRINTABLE_TILE_MM,
+    plan.halfSockets,
+    false,
+    { halfNominal: plan.halfSockets }
+  );
+}
+
+/**
+ * Build the feet under a bin's overhang region ({@link overhangFootCells}).
+ * The nominal feet (origin-centered) come from {@link buildBaseSocket}. Returns
+ * `null` when there's no overhang or every strip is sub-threshold. Caller fuses
+ * the result onto the base socket.
  */
 export function buildOverhangFeet(
   gridW: number,
   gridD: number,
   overhang: ResolvedOverhang,
   gridUnitMm: GridUnitInput,
+  plan: SocketCellPlan,
   forExport: boolean,
   socketHeight: number = SOCKET_HEIGHT
 ): Shape3D | null {
-  if (!hasOverhang(overhang)) return null;
-  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
-  const frame = frameCells(
-    gridW,
-    gridD,
-    overhangBaseSides(overhang),
-    gridUnitMm,
-    MIN_PRINTABLE_TILE_MM
-  );
+  const frame = overhangFootCells(gridW, gridD, overhang, gridUnitMm, plan);
   if (frame.length === 0) return null;
+  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
 
   return withScope((scope: DisposalScope) => {
     const sockets: Shape3D[] = frame.map((cell) => {

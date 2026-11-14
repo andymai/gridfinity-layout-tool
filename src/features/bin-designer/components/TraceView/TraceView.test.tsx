@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { err, ok } from '@/core/result';
 import type * as ScanTrace from '@/shared/scanTrace';
 import type { SceneShape, SceneTrace, SoftMask } from '@/shared/scanTrace';
+import { InfoDot } from '@/shared/components/InfoDot';
 import { TraceView } from './TraceView';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -79,6 +80,16 @@ describe('TraceView', () => {
     expect(screen.getByText('binDesigner.cutouts.scanImport.add')).toBeDisabled();
   });
 
+  it('opens on a photo dropped or pasted on the editor, loading it once', async () => {
+    const photo = new File(['x'], 'tools.jpg', { type: 'image/jpeg' });
+    const { rerender } = render(
+      <TraceView open onClose={vi.fn()} onTraced={vi.fn()} initialPhoto={photo} />
+    );
+    await screen.findAllByText('scan.review.toolLabel');
+    rerender(<TraceView open onClose={vi.fn()} onTraced={vi.fn()} initialPhoto={photo} />);
+    expect(mockDecode).toHaveBeenCalledTimes(1);
+  });
+
   it('traces a photo, takes a ruler and adds the tools as a millimetre SVG', async () => {
     const onTraced = vi.fn();
     const onClose = vi.fn();
@@ -145,6 +156,26 @@ describe('TraceView', () => {
 
     expect(screen.queryByText('binDesigner.cutouts.traceView.paper.hint')).toBeNull();
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('lets an open info dot take the Escape, keeping the marking mode', async () => {
+    render(
+      <>
+        <TraceView open onClose={vi.fn()} onTraced={vi.fn()} />
+        <InfoDot aria-label="About keep holes">Leaves plastic inside a ring.</InfoDot>
+      </>
+    );
+    choosePhoto();
+    await screen.findAllByText('scan.review.toolLabel');
+    fireEvent.click(screen.getByText('binDesigner.cutouts.traceView.scale.markPaper'));
+
+    const dot = screen.getByRole('button', { name: 'About keep holes' });
+    fireEvent.click(dot);
+    expect(screen.getByText('Leaves plastic inside a ring.')).toBeInTheDocument();
+    fireEvent.keyDown(dot, { key: 'Escape' });
+
+    expect(screen.queryByText('Leaves plastic inside a ring.')).toBeNull();
+    expect(screen.getByText('binDesigner.cutouts.traceView.paper.hint')).toBeInTheDocument();
   });
 
   it('takes a dropped photo, and nothing that is not one', async () => {

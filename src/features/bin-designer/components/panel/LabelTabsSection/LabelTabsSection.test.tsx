@@ -125,4 +125,12 @@ describe('LabelTabsSection', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Label tabs' }));
     expect(screen.getByText(en['binDesigner.featureTip.labelTabs'])).toBeInTheDocument();
   });
+
+  it('plays a clip of swappable plates beside the label style, with the socket note in the card', () => {
+    render(<LabelTabsSection />);
+    expect(screen.queryByText(en['binDesigner.tabMode.socketHint'])).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Watch a clip: Swappable label' }));
+    expect(screen.getByText(en['binDesigner.featureTip.labelPlates'])).toBeInTheDocument();
+    expect(screen.getByText(en['binDesigner.tabMode.socketHint'])).toBeInTheDocument();
+  });
 });

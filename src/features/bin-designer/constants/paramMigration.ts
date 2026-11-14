@@ -397,6 +397,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     handles: _handlesHandled,
     slide: _slideHandled,
     interiorFilletMm: rawInteriorFillet,
+    splitToFitBed: rawSplitToFitBed,
     ...rest
   } = params as Record<string, unknown>;
 
@@ -575,6 +576,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     ),
     // Spread rather than assigned: an absent radius must stay an absent key.
     ...optionalInteriorFillet(rawInteriorFillet),
+    ...(rawSplitToFitBed === false ? { splitToFitBed: false } : {}),
     slant: migrateSlant((rest as Record<string, unknown>).slant),
   });
   return withResolvedCutoutDepths(normalizeSlant(migrated));

@@ -7,11 +7,14 @@
  * `assertBoundingBoxMatchesParams` would read that as a fault.
  */
 
+import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { DEFAULT_LID_CONFIG, DEFAULT_TRAY_BOTTOM } from '@/shared/types/bin';
-import type { LidAttachment } from '@/shared/types/bin';
+import type { BinParams, LidAttachment } from '@/shared/types/bin';
+import type { MeshData } from '@/features/generation/bridge/types';
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
+import { FeatureTag } from '../featureTags';
 
 const attachments: Array<{ attachment: LidAttachment; label: string }> = [
   { attachment: 'clickRails', label: 'click rails' },
@@ -25,6 +28,62 @@ function trayBase(attachment: LidAttachment, extraHeightMm = 0) {
     style: 'lid' as const,
     trayBottom: { ...DEFAULT_TRAY_BOTTOM, attachment, extraHeightMm },
   };
+}
+
+/** Triangles per colour tag, without the untagged body. */
+function taggedTriangles(mesh: MeshData): Map<number, number> {
+  const counts = new Map<number, number>();
+  for (const { tag, count } of mesh.faceGroups ?? []) {
+    if (tag === FeatureTag.UNKNOWN) continue;
+    counts.set(tag, (counts.get(tag) ?? 0) + count / 3);
+  }
+  return counts;
+}
+
+/**
+ * A Nesting body and a raised tray share everything above the skirt, so the
+ * faces there must carry the same colour tags. Lip notches are in the matrix
+ * because the face merge under the body must not reach the lip.
+ */
+function nestingKeepsTags(
+  attachment: 'friction' | 'magnetic',
+  lipNotches: boolean,
+  forExport: boolean
+): ScenarioCase {
+  const params = (floorAtBed: boolean): Partial<BinParams> => ({
+    width: 2,
+    depth: 2,
+    height: 4,
+    base: {
+      ...DEFAULT_BIN_PARAMS.base,
+      style: 'lid' as const,
+      stackingLip: true,
+      lipNotches,
+      trayBottom: { ...DEFAULT_TRAY_BOTTOM, attachment, floorAtBed },
+    },
+    label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+  });
+  const notches = lipNotches ? 'with' : 'without';
+  return defineScenario(
+    'nesting body',
+    `${attachment} ${notches} lip notches keeps a raised tray's colour tags (${forExport ? 'export' : 'preview'})`,
+    {
+      assert: 'structural',
+      forExport,
+      params: params(true),
+      compareWith: {
+        params: params(false),
+        forExport,
+        assert: (nesting, raised) => {
+          const tags = taggedTriangles(nesting);
+          for (const tag of [FeatureTag.LIP, FeatureTag.LABEL_TAB, FeatureTag.LABEL_SUPPORT]) {
+            expect(tags.get(tag) ?? 0, `tag ${tag}`).toBeGreaterThan(0);
+          }
+          expect(tags).toEqual(taggedTriangles(raised));
+        },
+      },
+    }
+  );
 }
 
 export const trayBottom: ScenarioCase[] = [
@@ -110,4 +169,9 @@ export const trayBottom: ScenarioCase[] = [
       base: trayBase('clickRails'),
     },
   }),
+
+  nestingKeepsTags('friction', false, false),
+  nestingKeepsTags('magnetic', false, true),
+  nestingKeepsTags('friction', true, false),
+  nestingKeepsTags('magnetic', true, true),
 ];

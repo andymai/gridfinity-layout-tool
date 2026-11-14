@@ -113,6 +113,13 @@ export interface BinParams {
   readonly floorPattern?: FloorPatternConfig;
   /** Split connector config. If omitted/undefined, default split connector settings are applied (connectors enabled with defaults). */
   readonly splitConnectors?: SplitConnectorConfig;
+  /**
+   * Whether a bin larger than the print bed is cut into pieces that fit it.
+   * Absent means on, so every design saved before the switch keeps splitting.
+   * Off exports the bin whole everywhere (designer, print list, layout ZIP), for
+   * a maker who splits it in the slicer. Stored only as `false`.
+   */
+  readonly splitToFitBed?: boolean;
   /** Per-feature filament color assignment for multi-color 3MF export. */
   readonly featureColors: FeatureColorConfig;
   /**

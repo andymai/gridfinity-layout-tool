@@ -11,6 +11,7 @@ import { groupDepth } from '@/features/bin-designer/utils/cutoutHierarchy';
 import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
 import { Button, IconButton, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import {
   distributeHorizontally,
   distributeVertically,
@@ -303,9 +304,7 @@ export function AlignmentToolbar({
 
       {/* Pathfinder (Adobe Illustrator-style boolean ops) */}
       <div className="space-y-1">
-        <div className="text-micro uppercase tracking-wider text-content-tertiary">
-          {t('binDesigner.cutouts.pathfinder.title')}
-        </div>
+        <SubHeader>{t('binDesigner.cutouts.pathfinder.title')}</SubHeader>
         <PathfinderControls
           selectedIds={selectedIds}
           cutouts={cutouts}
@@ -316,9 +315,7 @@ export function AlignmentToolbar({
 
       {/* Transform: flip + rotate */}
       <div className="space-y-1">
-        <div className="text-micro uppercase tracking-wider text-content-tertiary">
-          {t('binDesigner.cutouts.transform.title')}
-        </div>
+        <SubHeader>{t('binDesigner.cutouts.transform.title')}</SubHeader>
         <TransformControls
           selectedIds={selectedIds}
           cutouts={cutouts}
@@ -330,9 +327,7 @@ export function AlignmentToolbar({
 
       {/* Arrange: z-order */}
       <div className="space-y-1">
-        <div className="text-micro uppercase tracking-wider text-content-tertiary">
-          {t('binDesigner.cutouts.arrange.title')}
-        </div>
+        <SubHeader>{t('binDesigner.cutouts.arrange.title')}</SubHeader>
         <ArrangeControls selectedIds={selectedIds} onReorder={onReorder} />
       </div>
 

@@ -36,6 +36,18 @@ export const SETTINGS_REGISTRY: SettingsRegistryEntry[] = [
     labelKey: 'settings.general.showUpdateSummaries',
     keywordsKey: 'settings.search.keywords.updateSummaries',
   },
+  {
+    id: 'install-app',
+    tabId: 'general',
+    labelKey: 'settings.general.installApp',
+    keywordsKey: 'settings.search.keywords.installApp',
+  },
+  {
+    id: 'spacemouse',
+    tabId: 'general',
+    labelKey: 'settings.spacemouse',
+    keywordsKey: 'settings.search.keywords.spacemouse',
+  },
   // Appearance
   {
     id: 'theme',

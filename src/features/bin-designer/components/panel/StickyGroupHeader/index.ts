@@ -1,1 +1,0 @@
-export { StickyGroupHeader } from './StickyGroupHeader';

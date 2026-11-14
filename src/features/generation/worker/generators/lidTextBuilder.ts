@@ -26,7 +26,7 @@ import { LID_MIN_CORNER_RADIUS } from './lidConstants';
 import { STACK_INSET_BOT } from './lidStackGrid';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
-import type { LidInputs } from './lidInputs';
+import type { LidInputs } from '@/shared/utils/lidInputs';
 
 /** Solid floor kept below an engraving so it can't pierce into the mating
  *  cavity (plain top) or the enclosed lid interior (tray floor). Engrave

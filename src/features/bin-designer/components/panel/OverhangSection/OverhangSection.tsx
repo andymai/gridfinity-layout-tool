@@ -67,10 +67,6 @@ export function OverhangSection() {
                       label: t('binDesigner.overhang.feet'),
                       note: t('binDesigner.overhang.feetHint'),
                     },
-                    {
-                      label: t('binDesigner.overhang.taper.title'),
-                      note: t('binDesigner.overhang.taper.hint'),
-                    },
                   ]}
                 />
               </div>
@@ -119,11 +115,18 @@ export function OverhangSection() {
               />
             </div>
 
-            <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
+            <div className="mt-3 flex flex-col gap-2 border-t border-stroke-subtle pt-3">
               <FeatureToggle
                 label={t('binDesigner.overhang.taper.title')}
                 checked={taper.enabled}
                 onChange={handlers.toggleTaper}
+                badge={
+                  <FeatureTip
+                    tip="taperWalls"
+                    feature={t('binDesigner.overhang.taper.title')}
+                    detail={t('binDesigner.overhang.taper.hint')}
+                  />
+                }
                 primaryControls={
                   <>
                     <TaperProfileCards

@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
+import { LabelInfo } from '@/shared/components/InfoDot';
 
 interface SettingsRowProps {
   /** Label text displayed on the left */
   label: string;
-  /** Optional tooltip shown on hover */
-  tooltip?: string;
+  /** Evergreen explanation behind an info dot beside the label. */
+  info?: string;
   /** Optional unit suffix shown after the input (e.g., "mm") */
   unit?: string;
   /** Input or control element */
@@ -21,7 +22,7 @@ interface SettingsRowProps {
  */
 export function SettingsRow({
   label,
-  tooltip,
+  info,
   unit,
   children,
   variant = 'desktop',
@@ -35,15 +36,16 @@ export function SettingsRow({
 
   return (
     <div className="flex items-center justify-between">
-      {htmlFor ? (
-        <label htmlFor={htmlFor} className={labelClass} title={tooltip}>
-          {label}
-        </label>
-      ) : (
-        <span className={labelClass} title={tooltip}>
-          {label}
-        </span>
-      )}
+      <div className="flex items-center gap-1.5">
+        {htmlFor ? (
+          <label htmlFor={htmlFor} className={labelClass}>
+            {label}
+          </label>
+        ) : (
+          <span className={labelClass}>{label}</span>
+        )}
+        {info !== undefined && <LabelInfo label={label}>{info}</LabelInfo>}
+      </div>
       <div className={`flex items-center ${gapClass}`}>
         {children}
         {unit && <span className="text-content-tertiary">{unit}</span>}

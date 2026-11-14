@@ -13,7 +13,8 @@ import { registerKernel, BrepkitAdapter, loadFont, initFromManifold, getKernel }
 import { DRAFT_MIN_CIRCULAR_ANGLE_DEG } from '@/shared/constants/tessellation';
 import { getManifoldModule } from './manifoldRuntime';
 import { TEXT_FONT_URLS } from '@/shared/fonts/fontAssets';
-import type { TextFontFamily } from '@/shared/types/bin';
+import type { BinParams, TextFontFamily } from '@/shared/types/bin';
+import { collectTextFontFamilies } from '@/shared/utils/textFonts';
 import type { OcctWasmModule } from 'occt-wasm';
 import { EAGER_TEXT_FONT_FAMILIES } from '@/shared/types/bin';
 import { isErr } from '@/core/result';
@@ -135,6 +136,17 @@ function loadFontFamily(family: TextFontFamily): Promise<void> {
  */
 export async function ensureFontsLoaded(families: Iterable<TextFontFamily>): Promise<void> {
   await Promise.all([...new Set(families)].map(loadFontFamily));
+}
+
+/**
+ * Register every face `params` references. Every handler that builds a bin
+ * awaits this first, not only the preview: a whole-layout export runs in pool
+ * workers that never previewed the design, so a face that only the preview
+ * would have fetched (the default `atkinson-bold` among them) was missing and
+ * all of the bin's text silently dropped out of the export.
+ */
+export function ensureDesignFonts(params: BinParams): Promise<void> {
+  return ensureFontsLoaded(collectTextFontFamilies(params));
 }
 
 async function loadEmbeddedFonts(): Promise<void> {

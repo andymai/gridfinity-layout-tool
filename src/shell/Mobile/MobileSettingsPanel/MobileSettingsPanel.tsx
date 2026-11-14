@@ -8,19 +8,19 @@ import { useMobileStore } from '@/core/store/mobile';
 import { CONSTRAINTS } from '@/core/constants';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { DrawerDimensionsSummary } from '@/shared/components/DrawerDimensionsSummary';
 import { GridUnitInput } from '@/shared/components/GridUnitInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
-import { SectionHeader } from '@/shared/components/SectionHeader';
+import { SubHeader } from '@/shared/components/PanelText';
 import { DrawerShapeSection } from '@/features/drawer-shape';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { HeightUnitSolver } from '@/shared/components/HeightUnitSolver';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
-import { Button, Checkbox, Stepper } from '@/design-system';
+import { Button, Stepper } from '@/design-system';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { UserDock } from '@/shared/components/UserDock';
 import { AppVersionButton } from '@/shared/components/AppVersionButton';
 import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
@@ -74,7 +74,6 @@ export function MobileSettingsPanel() {
     handleDrawerWidthInput,
     handleDrawerDepthInput,
     handleHalfBinToggle,
-    handleRemediate,
     handleSaveDefaults,
     handleGridUnitChange,
     setHeightUnitMm,
@@ -82,9 +81,6 @@ export function MobileSettingsPanel() {
     resetGridfinityStandard,
     showSaveDefaultsConfirm,
     setShowSaveDefaultsConfirm,
-    showHalfBinBlockedModal,
-    setShowHalfBinBlockedModal,
-    halfBinViolation,
   } = useDrawerSettings();
   const drawerCeiling = useDrawerCeiling();
 
@@ -103,7 +99,9 @@ export function MobileSettingsPanel() {
     <div className="pb-4 space-y-6">
       {/* Drawer Dimensions */}
       <section>
-        <SectionHeader title={t('settings.drawerDimensions')} />
+        <SubHeader as="h3" className="mb-3">
+          {t('settings.drawerDimensions')}
+        </SubHeader>
 
         <div className="grid grid-cols-2 gap-3 mb-3">
           {/* Width */}
@@ -184,30 +182,14 @@ export function MobileSettingsPanel() {
 
       {/* Half-bin mode */}
       <section>
-        <div
-          className="flex items-center justify-between cursor-pointer"
-          onClick={handleHalfBinToggle}
-          role="checkbox"
-          aria-checked={halfGridMode}
-          aria-label={t('sidebar.toggleHalfBinMode')}
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === ' ' || e.key === 'Enter') {
-              e.preventDefault();
-              handleHalfBinToggle();
-            }
-          }}
-        >
-          <div>
-            <span className={`text-sm ${halfGridMode ? 'text-content' : 'text-content-secondary'}`}>
-              {t('mobile.settings.halfBinMode')}
-            </span>
-            <p className="text-xs text-content-tertiary">
-              {t('mobile.settings.allow05UnitPrecision')}
-            </p>
-          </div>
-          <Checkbox checked={halfGridMode} size="lg" />
-        </div>
+        <FeatureToggle
+          label={t('mobile.settings.halfBinMode')}
+          checked={halfGridMode}
+          onChange={handleHalfBinToggle}
+          ariaLabel={t('sidebar.toggleHalfBinMode')}
+          variant="mobile"
+        />
+        <p className="text-xs text-content-tertiary">{t('mobile.settings.allow05UnitPrecision')}</p>
 
         {/* Non-rectangular drawer shape (issue #2528) */}
         <DrawerShapeSection variant="mobile" />
@@ -215,7 +197,9 @@ export function MobileSettingsPanel() {
 
       {/* Grid Settings */}
       <section>
-        <SectionHeader title={t('settings.gridSettings')} />
+        <SubHeader as="h3" className="mb-3">
+          {t('settings.gridSettings')}
+        </SubHeader>
 
         <div className="space-y-3">
           <div>
@@ -453,15 +437,6 @@ export function MobileSettingsPanel() {
         onConfirm={handleSaveDefaults}
         onCancel={() => setShowSaveDefaultsConfirm(false)}
       />
-
-      {halfBinViolation && (
-        <HalfGridModeBlockedModal
-          isOpen={showHalfBinBlockedModal}
-          violation={halfBinViolation}
-          onClose={() => setShowHalfBinBlockedModal(false)}
-          onRemediate={handleRemediate}
-        />
-      )}
     </div>
   );
 }

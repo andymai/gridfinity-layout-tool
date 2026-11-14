@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { SettingsRow } from './SettingsRow';
 
 describe('SettingsRow', () => {
@@ -51,12 +51,15 @@ describe('SettingsRow', () => {
     expect(label.tagName).toBe('SPAN');
   });
 
-  it('sets title attribute when tooltip provided', () => {
+  it('keeps the explanation behind an info dot beside the label', () => {
     render(
-      <SettingsRow label="Grid" tooltip="Size of grid">
+      <SettingsRow label="Grid" info="Size of grid">
         <input />
       </SettingsRow>
     );
-    expect(screen.getByText('Grid')).toHaveAttribute('title', 'Size of grid');
+    expect(screen.getByText('Grid')).not.toHaveAttribute('title');
+    expect(screen.queryByText('Size of grid')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /Grid/ }));
+    expect(screen.getByText('Size of grid')).toBeInTheDocument();
   });
 });

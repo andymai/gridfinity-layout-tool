@@ -55,7 +55,7 @@ export function CutoutFillControls() {
         <div
           role="group"
           aria-label={t('binDesigner.cutouts.fillMeasuredFrom')}
-          className="inline-flex gap-0.5 rounded-lg bg-surface-tertiary p-0.5"
+          className="inline-flex gap-0.5 rounded-lg bg-surface p-0.5"
         >
           {CUTOUT_FILL_REFERENCES.map((reference) => (
             <Button

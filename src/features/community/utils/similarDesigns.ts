@@ -42,10 +42,11 @@ export function findSimilarDesigns(
     .sort(
       (a, b) =>
         b.score - a.score ||
-        // Recency tie-break mirrors compareCards (browseStore.ts); the id
-        // tie-break keeps the rail deterministic for same-timestamp publishes.
+        // Ties order as compareCards does (api/lib/communityList.ts, mirrored
+        // in store/browseFilters.ts): newest first, then id by code point.
+        // Ids are mixed-case, so localeCompare would order them differently.
         b.card.createdAt - a.card.createdAt ||
-        a.card.id.localeCompare(b.card.id)
+        (a.card.id < b.card.id ? -1 : a.card.id > b.card.id ? 1 : 0)
     )
     .slice(0, max)
     .map((entry) => entry.card);

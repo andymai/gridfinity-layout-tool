@@ -12,6 +12,8 @@ import { closeDesignerDb } from '@/features/bin-designer/storage/designerDb';
 import { saveDesign } from '@/features/bin-designer/storage/DesignerStorage';
 import { createDesignVersion } from '@/features/bin-designer/storage/DesignVersionService';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { MAX_VERSIONS_PER_DESIGN } from '@/features/bin-designer/types';
+import { useToastStore } from '@/core/store/toast';
 import { expectOk } from '@/test/testUtils';
 import { designId } from '@/core/types';
 
@@ -34,7 +36,8 @@ async function seedDesign() {
 describe('VersionHistory', () => {
   beforeEach(async () => {
     useDesignerStore.setState(useDesignerStore.getInitialState());
-    useDesignVersionStore.getState().reset();
+    // A full reset, actions included: one test below swaps `saveVersion` for a stub.
+    useDesignVersionStore.setState(useDesignVersionStore.getInitialState());
     closeDesignerDb();
     await new Promise<void>((resolve, reject) => {
       const req = indexedDB.deleteDatabase('gridfinity-designer-v1');
@@ -185,6 +188,65 @@ describe('VersionHistory', () => {
     });
     expect(useDesignerStore.getState().params.width).toBe(4);
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  describe('making room for a new version', () => {
+    async function fillWithManualVersions(count: number) {
+      for (let i = 1; i <= count; i++) {
+        expectOk(
+          await createDesignVersion(
+            DESIGN,
+            `manual ${String(i)}`,
+            { name: 'Router Bit Holder' },
+            null
+          )
+        );
+      }
+    }
+
+    async function saveOneMore() {
+      useToastStore.setState({ toasts: [] });
+      render(<VersionHistory open onClose={vi.fn()} />);
+      fireEvent.click(await screen.findByText('binDesigner.versions.save'));
+      fireEvent.click(screen.getByText('binDesigner.versions.confirmSave'));
+      await waitFor(() => {
+        expect(useToastStore.getState().toasts.map((t) => t.message)).toContain(
+          'binDesigner.versions.saved'
+        );
+      });
+      return useToastStore.getState().toasts.map((t) => t.message);
+    }
+
+    // The service drops automatic captures before any named version, however
+    // new they are, so "oldest" would name the wrong thing.
+    it('names an automatic version as automatic, not as the oldest', async () => {
+      await seedDesign();
+      await fillWithManualVersions(MAX_VERSIONS_PER_DESIGN - 1);
+      expectOk(
+        await createDesignVersion(
+          DESIGN,
+          'Before restore',
+          { name: 'Router Bit Holder' },
+          null,
+          'pre-restore'
+        )
+      );
+
+      const messages = await saveOneMore();
+
+      expect(messages).toContain('binDesigner.versions.evictedAutomatic');
+      expect(messages).not.toContain('binDesigner.versions.evicted');
+    });
+
+    it('names the oldest unpinned version when no automatic one is left', async () => {
+      await seedDesign();
+      await fillWithManualVersions(MAX_VERSIONS_PER_DESIGN);
+
+      const messages = await saveOneMore();
+
+      expect(messages).toContain('binDesigner.versions.evicted');
+      expect(messages).not.toContain('binDesigner.versions.evictedAutomatic');
+    });
   });
 
   it('removes a version from the list when deleted', async () => {

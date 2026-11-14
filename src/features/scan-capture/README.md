@@ -22,14 +22,20 @@ through that. This removes keystone distortion **and** pins true millimetres in
 one step, so the shot can be taken from any angle and the desktop receives a
 correctly-sized outline (no manual scale step).
 
-`detectReference` tries three, and the order is an **accuracy** ranking rather
+`detectReference` tries four, and the order is an **accuracy** ranking rather
 than a convenience one:
 
 | Reference                 | Points                     | Verifiable?                              |
 | ------------------------- | -------------------------- | ---------------------------------------- |
 | Printed calibration sheet | ~18 markers, 72 corners    | Yes — its own 100mm bar                  |
 | Gridfinity baseplate      | Every visible socket       | No — see below                           |
+| Plain A4 or Letter sheet  | 4 corners, round the tools | Cut to about half a percent              |
 | Wallet card               | 4 corners, off to one side | Card stock is accurate to well under 1mm |
+
+A plain sheet under the tools (`paperDetect.ts`) is told apart by shape alone:
+A4 and Letter differ 9% in aspect. It is searched before the card, because a
+sheet is card-shaped within the card search's tolerance and would size every
+tool at 86mm across. `SceneTraceOptions.paper` carries the user's correction.
 
 **Why more points matter.** Four points determine a homography _exactly_: the
 fit is zero-residual by construction, so any corner-detection error is absorbed
@@ -138,7 +144,9 @@ colour outlines and turns tapping off, so the feature still works.
 Card detection, homography, and the contour/simplify tail are shared by both paths
 (`detectCard` + the `finishTrace` tail in `traceScene.ts`). The ML path traces the segmenter's
 **soft confidence mask** sub-pixel via marching squares (`softContour.ts`); the classical path
-boundary-traces each piece of a binary mask (`toolBlobs.ts`). The faceted outline is then **smoothed by Bézier curve fitting**
+boundary-traces each piece of a binary mask (`toolBlobs.ts`). Either outline is first **moved onto the photo's own edge**
+(`edgeSnap.ts`), to a fraction of a pixel: a mask's one threshold sits up to a pixel outside a
+tool that stands out strongly and inside one that stands out weakly. It is then **smoothed by Bézier curve fitting**
 (`curveFit.ts`, via `fit-curve`) into clean arcs with crisp corners, and a symmetric tool's outline
 is **auto-symmetrized** when it scores high enough (`symmetry.ts`). Both are `smooth`-gated — tests
 pass `smooth: false` to assert exact card-scale geometry.

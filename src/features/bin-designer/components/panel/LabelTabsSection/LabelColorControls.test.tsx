@@ -28,7 +28,7 @@ describe('LabelColorControls', () => {
   it('renders the Label Tab swatch, leaving Text to the tab text group', () => {
     render(<LabelColorControls />);
     expect(screen.getByText('Color')).toBeDefined();
-    expect(screen.getByRole('button', { name: /Label Tab:/ })).toBeDefined();
+    expect(screen.getByRole('button', { name: /Label tab:/ })).toBeDefined();
     expect(screen.queryByRole('button', { name: /^Text:/ })).toBeNull();
   });
 
@@ -36,7 +36,7 @@ describe('LabelColorControls', () => {
     setColors({ enabled: true });
     useDesignerStore.setState((s) => ({ ui: { ...s.ui, colorTool: 'swap-pick-first' } }));
     render(<LabelColorControls />);
-    fireEvent.click(screen.getByRole('button', { name: /Label Tab:/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Label tab:/ }));
 
     // The picker stays closed; the click registered the tab as the first swap pick.
     expect(screen.queryByText('Presets')).toBeNull();
@@ -47,7 +47,7 @@ describe('LabelColorControls', () => {
 
   it('enables multi-color and sets the tab color when a non-body color is picked', () => {
     render(<LabelColorControls />);
-    fireEvent.click(screen.getByRole('button', { name: /Label Tab:/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Label tab:/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Red' }));
 
     const { featureColors } = useDesignerStore.getState().params;
@@ -60,7 +60,7 @@ describe('LabelColorControls', () => {
     // real change (not an idempotent no-op the picker would swallow).
     setColors({ enabled: false, labelTab: RED });
     render(<LabelColorControls />);
-    fireEvent.click(screen.getByRole('button', { name: /Label Tab:/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Label tab:/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Light Grey' }));
 
     const { featureColors } = useDesignerStore.getState().params;

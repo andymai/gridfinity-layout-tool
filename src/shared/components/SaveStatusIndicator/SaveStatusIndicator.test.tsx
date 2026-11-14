@@ -23,6 +23,11 @@ describe('SaveStatusIndicator', () => {
     expect(screen.getByText(/save failed/i)).toBeInTheDocument();
   });
 
+  it('shows the text from xl and keeps it for screen readers below', () => {
+    render(<SaveStatusIndicator status="saved" />);
+    expect(screen.getByText(/saved/i)).toHaveClass('sr-only', 'xl:not-sr-only');
+  });
+
   it('omits text in compact mode', () => {
     render(<SaveStatusIndicator status="saving" compact />);
     expect(screen.queryByText(/saving/i)).not.toBeInTheDocument();

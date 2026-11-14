@@ -13,7 +13,6 @@ import { useToastStore } from '@/core/store/toast';
 import type { CommunityPublishDraft } from '@/shared/types/community';
 import { designId } from '@/core/types';
 import { useSessionStore } from '@/core/sync/session/useSession';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { hashBinParams, hashDesignContent } from '@/shared/utils/binParamsHash';
 import { withoutLowProfileBase } from '@/shared/generation/lowProfileBase';
 import { holderMeshHashes, inlineParamsMeshes } from '@/shared/generation/meshRefs';
@@ -177,7 +176,6 @@ async function binContent(
 }
 
 export interface CommunityPublishEntry {
-  publishVisible: boolean;
   canPublish: boolean;
   openPublish: () => void;
 }
@@ -190,14 +188,13 @@ export interface CommunityPublishEntry {
  * racks stay out — they have no publishable parametric content.
  */
 export function useCommunityPublishEntry(): CommunityPublishEntry {
-  const publishVisible = useFeatureFlag('community_showcase');
   const canPublish = useDesignerStore(
     (s) => (s.itemKind === 'bin' || s.itemKind === 'assembly') && isMeshReady(s)
   );
   const openPublish = useCallback(() => {
     void openCommunityPublish(null);
   }, []);
-  return { publishVisible, canPublish, openPublish };
+  return { canPublish, openPublish };
 }
 
 /**
@@ -207,7 +204,6 @@ export function useCommunityPublishEntry(): CommunityPublishEntry {
  */
 export function useCommunityPublishLifecycle(): void {
   const t = useTranslation();
-  const enabled = useFeatureFlag('community_showcase');
   const meshReady = useDesignerStore((s) => isMeshReady(s));
   const needsCapture = useCommunityPublishStore((s) => s.isOpen && s.captures === null);
   const contextDesignId = useCommunityPublishStore((s) => s.context?.designId ?? null);
@@ -219,13 +215,12 @@ export function useCommunityPublishLifecycle(): void {
   const missingProbeRef = useRef(false);
 
   useEffect(() => {
-    if (enabled && meshReady && needsCapture && currentDesignId === contextDesignId) {
+    if (meshReady && needsCapture && currentDesignId === contextDesignId) {
       void capturePublishAssets();
     }
-  }, [enabled, meshReady, needsCapture, currentDesignId, contextDesignId]);
+  }, [meshReady, needsCapture, currentDesignId, contextDesignId]);
 
   useEffect(() => {
-    if (!enabled) return;
     if (sessionStatus === 'unknown') return;
     if (pendingRef.current === undefined) {
       pendingRef.current = loadPendingPublishAction();
@@ -263,5 +258,5 @@ export function useCommunityPublishLifecycle(): void {
     }
     pendingRef.current = null;
     void openCommunityPublish(pending.draft ?? null);
-  }, [enabled, sessionStatus, currentDesignId, t]);
+  }, [sessionStatus, currentDesignId, t]);
 }

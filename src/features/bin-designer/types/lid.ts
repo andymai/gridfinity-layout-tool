@@ -1949,6 +1949,18 @@ export function hasBinLipDip(params: LidGeometrySource): boolean {
 }
 
 /**
+ * Whether the dip also interrupts the lid's rails behind the grip.
+ *
+ * Only a click-rail lid makes that trade. A hinged lid's snap runs through the
+ * same rail pass, but it is the lid's only catch and it sits centred on the
+ * free edge, exactly where a grip goes: interrupting it would leave the lid
+ * held shut by nothing.
+ */
+export function binDipSplitsRails(params: LidGeometrySource): boolean {
+  return params.lid.attachment === 'clickRails' && hasBinLipDip(params);
+}
+
+/**
  * Vertical gap (mm) between the lid boss's magnet face and the bin pad's, when
  * seated. Keeps the corner posts from bottoming out and lifting the lid off its
  * lip; the magnets pull across it. Mirrored by the worker's `lidConstants`.

@@ -42,7 +42,7 @@ describe('CutoutBoardSettings', () => {
   it('toggles snap', () => {
     const onSnapToggle = vi.fn();
     render(<CutoutBoardSettings {...baseProps} snapEnabled onSnapToggle={onSnapToggle} />);
-    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('switch', { name: 'binDesigner.cutouts.snapToGrid' }));
     expect(onSnapToggle).toHaveBeenCalledWith(false);
   });
 });

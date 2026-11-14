@@ -52,7 +52,7 @@ import type { ResolvedTaper } from './overhang';
 import { buildWallCutoutCuts, interiorDividerTopZ } from './wallCutoutBuilder';
 import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import type { BinDimensions } from './pipeline/types';
-import { planLabelSocketKeepouts } from './labelSocketKeepouts';
+import { labelTabKeepoutsKey, planLabelTabKeepouts } from './labelSocketKeepouts';
 import type { LabelSocketKeepout } from './labelSocketKeepouts';
 import { sketch } from './meshUtils';
 
@@ -189,7 +189,7 @@ export function buildInteriorFillet(input: InteriorFilletBuild): Shape3D | null 
     const holed = tapered && clearMaskHoles(scope, tapered, params, dim);
     const doorways = holed && trimDoorways(scope, holed, params, dim, plans);
     const trimmed =
-      (doorways && clearLabelSockets(scope, doorways, labelSocketKeepouts(params, dim), dim)) ??
+      (doorways && clearLabelTabKeepouts(scope, doorways, labelTabKeepouts(params, dim), dim)) ??
       fuseScoopRamps(
         scope,
         params,
@@ -337,21 +337,16 @@ function trimDoorways(
   }
 }
 
-function labelSocketKeepouts(params: BinParams, dim: BinDimensions): LabelSocketKeepout[] {
-  return planLabelSocketKeepouts(
-    params,
-    dim.innerW,
-    dim.innerD,
-    dim.interiorHeight,
-    params.wallThickness
-  );
+function labelTabKeepouts(params: BinParams, dim: BinDimensions): LabelSocketKeepout[] {
+  return planLabelTabKeepouts(params, dim.innerW, dim.innerD, dim.interiorHeight);
 }
 
 /**
- * The label tabs' sockets are cut before this fuse, so a rounded corner would
- * otherwise fill the end of a pocket that runs into it. Null when a cut fails.
+ * The label tabs are cut before this fuse, so a rounded corner would otherwise
+ * fill the end of a pocket that runs into it, or stand on a tab held below the
+ * ceiling. Null when a cut fails.
  */
-function clearLabelSockets(
+function clearLabelTabKeepouts(
   scope: DisposalScope,
   solid: Shape3D,
   keepouts: readonly LabelSocketKeepout[],
@@ -416,15 +411,7 @@ export const interiorFilletFeature: FeatureBuilder = {
         'v3',
         dim.shellKey,
         quantize(interiorFilletRadiusMm(params)),
-        stableSerialize(
-          labelSocketKeepouts(params, dim).map((k) => [
-            quantize(k.x0),
-            quantize(k.x1),
-            quantize(k.y0),
-            quantize(k.y1),
-            quantize(k.z0),
-          ])
-        ),
+        labelTabKeepoutsKey(labelTabKeepouts(params, dim)),
         quantize(dim.innerW),
         quantize(dim.innerD),
         quantize(dim.wallHeight),

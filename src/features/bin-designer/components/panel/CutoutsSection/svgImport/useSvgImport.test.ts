@@ -130,7 +130,10 @@ describe('useSvgImport', () => {
 
     expect(mockAddCutout).toHaveBeenCalledTimes(5);
     expect(mockAddToast).toHaveBeenCalledWith('toast.cutoutsClipped', 'error');
-    expect(mockAddToast).not.toHaveBeenCalledWith('toast.svgImport.success', 'success');
+    expect(mockAddToast).not.toHaveBeenCalledWith(
+      expect.stringMatching(/^toast\.svgImport\.success/),
+      'success'
+    );
     expect(mockTrackEvent).toHaveBeenCalledWith(
       'svg_import',
       expect.objectContaining({ success: true, shape_count: 5, added_count: 2 })
@@ -143,7 +146,7 @@ describe('useSvgImport', () => {
 
     await importSvg(3);
 
-    expect(mockAddToast).toHaveBeenCalledWith('toast.svgImport.success', 'success');
+    expect(mockAddToast).toHaveBeenCalledWith('toast.svgImport.success_other', 'success');
     expect(mockTrackEvent).toHaveBeenCalledWith(
       'svg_import',
       expect.objectContaining({ shape_count: 3, added_count: 3 })

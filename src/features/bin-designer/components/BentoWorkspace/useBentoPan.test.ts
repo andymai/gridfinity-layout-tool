@@ -99,6 +99,21 @@ describe('useBentoPan', () => {
     input.remove();
   });
 
+  it('leaves Space to a focused switch so it can toggle', () => {
+    const h = mount(1);
+    const toggle = document.createElement('button');
+    toggle.setAttribute('role', 'switch');
+    document.body.appendChild(toggle);
+    const event = new KeyboardEvent('keydown', { code: 'Space', bubbles: true, cancelable: true });
+    act(() => {
+      toggle.dispatchEvent(event);
+    });
+
+    expect(h.api.spaceHeld).toBe(false);
+    expect(event.defaultPrevented).toBe(false);
+    toggle.remove();
+  });
+
   it('window blur releases a held Space (missed keyup safety)', () => {
     const h = mount(1);
     fireEvent.keyDown(window, { code: 'Space' });

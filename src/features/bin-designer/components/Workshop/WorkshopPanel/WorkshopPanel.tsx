@@ -25,8 +25,8 @@ import {
 } from '@/features/bin-designer/utils/workshopTemplates';
 import { checkAssembly } from '@/features/bin-designer/utils/assemblyChecker';
 import type { AssemblyWarning } from '@/features/bin-designer/utils/assemblyChecker';
-import { StickyGroupHeader } from '../../panel/StickyGroupHeader';
-import { PanelSection } from '../../panel/PanelSection';
+import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { PartInspector } from './PartInspector';
 import { PART_LABEL_KEYS } from './partFieldConfig';
 import { PART_ICONS } from './partIcons';

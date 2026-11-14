@@ -24,6 +24,7 @@ import { COLOR_PALETTE_CONSTRAINTS } from '@/core/store/settings.types';
 import type { SavedColorPalette } from '@/core/store/settings.types';
 import { normalizePaletteLip, lipCellZone } from '@/features/bin-designer/types/featureColors';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { useMenuKeyboardNav } from '@/shared/hooks/useMenuKeyboardNav';
 import type { FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
 import { generateUUID } from '@/shared/utils/uuid';
@@ -212,9 +213,9 @@ export function ColorsActionsMenu({
 
             <div className="my-1 h-px bg-stroke-subtle/60" role="separator" />
 
-            <p className="px-2 py-1 text-micro font-medium uppercase tracking-wide text-content-tertiary">
+            <SubHeader as="p" className="px-2 py-1">
               {t('binDesigner.colors.palettes')}
-            </p>
+            </SubHeader>
             {palettes.length === 0 ? (
               <p className="px-2 py-1 text-label italic text-content-tertiary">
                 {t('binDesigner.colors.noPalettes')}

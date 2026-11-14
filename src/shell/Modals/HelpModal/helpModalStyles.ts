@@ -1,5 +1,5 @@
 /**
- * Shared style objects, key-formatting helpers, and shortcut interfaces
+ * Shared style objects and shortcut interfaces
  * used by both `HelpModal` and `HelpModalSections`.
  *
  * Extracted so the React components can stay focused on layout and the
@@ -11,20 +11,6 @@ import type { CSSProperties } from 'react';
 
 // Style constants to avoid recreating objects on each render
 export const STYLES = {
-  // Overlay and modal
-  overlay: { backgroundColor: 'var(--overlay-dark)' } as CSSProperties,
-  modal: {
-    backgroundColor: 'var(--bg-secondary)',
-    border: '1px solid var(--border-default)',
-    borderRadius: 'var(--radius-xl)',
-    boxShadow: 'var(--shadow-xl)',
-  } as CSSProperties,
-  // Typography
-  title: {
-    fontSize: 'var(--text-2xl)',
-    fontWeight: 'var(--font-bold)',
-    color: 'var(--text-primary)',
-  } as CSSProperties,
   sectionHeader: {
     fontSize: 'var(--text-sm)',
     fontWeight: 'var(--font-semibold)',
@@ -64,18 +50,3 @@ export interface ShortcutCategory {
   icon: React.ReactNode;
   shortcuts: ShortcutItem[];
 }
-
-export const KEY_SEPARATOR = '+';
-
-export const getModifierKey = (): string => {
-  if (typeof navigator === 'undefined') return 'Ctrl';
-  const isMac = /mac/i.test(navigator.userAgent);
-  return isMac ? '⌘' : 'Ctrl';
-};
-
-export const formatKey = (key: string | readonly string[]): string => {
-  if (Array.isArray(key)) {
-    return key.join(' / ');
-  }
-  return key as string;
-};

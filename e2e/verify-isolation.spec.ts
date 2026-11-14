@@ -13,7 +13,7 @@ test.describe('Test Isolation Verification', () => {
     await clearAllStorage(page);
     await resetViewport(page);
 
-    // Close any lingering dialogs (excluding Labs drawer)
+    // Close any lingering dialogs
     const dialogs = getActiveDialog(page);
     if ((await dialogs.count()) > 0) {
       await page.keyboard.press('Escape');
@@ -82,7 +82,7 @@ test.describe('Test Isolation Verification', () => {
   });
 
   test('no dialogs left open from previous tests', async ({ page }) => {
-    // Check for dialogs excluding the Labs drawer (which is always in DOM)
+    // Check for dialogs
     const dialogs = getActiveDialog(page);
     const dialogCount = await dialogs.count();
     expect(dialogCount).toBe(0);

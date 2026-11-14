@@ -31,7 +31,7 @@ import {
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { resolveLidGripSpanMm } from '@/shared/types/bin';
-import { resolveLidInputs } from './lidInputs';
+import { resolveLidInputs } from '@/shared/utils/lidInputs';
 import type { BinParams, LidGripConfig } from '@/features/bin-designer/types';
 import type { MeshData } from '@/features/generation/bridge/types';
 import type { CellMask } from '@/shared/utils/cellMask';

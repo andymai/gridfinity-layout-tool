@@ -6,13 +6,13 @@ import type { MobilePanel } from '@/core/store';
 export function getPanelTitle(panel: MobilePanel): string {
   switch (panel) {
     case 'layers':
-      return 'Layers & Bins';
+      return 'Layers & bins';
     case 'inspector':
-      return 'Bin Properties';
+      return 'Bin properties';
     case 'categories':
       return 'Categories';
     case 'print':
-      return 'Bin List';
+      return 'Bin list';
     case 'settings':
       return 'Settings';
     case 'layouts':

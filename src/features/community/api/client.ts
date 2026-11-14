@@ -143,6 +143,7 @@ function isCountsShape(value: unknown): value is CommunityDesignCounts {
     typeof value.likes === 'number' &&
     typeof value.remixes === 'number' &&
     typeof value.exports === 'number' &&
+    isOptionalNumber(value.prints) &&
     isOptionalNumber(value.opens) &&
     isOptionalNumber(value.views)
   );

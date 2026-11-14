@@ -67,6 +67,7 @@ describe('SingleBinInspector', () => {
       maxHeight: 12,
       maxClearance: 5,
       maxGridUnits: { width: 6, depth: 6 },
+      overhangMm: { width: 0, depth: 0 },
       needsSplit: false,
       heightRange: '2-12u',
       maxHeightReason: 'remaining_space',
@@ -158,21 +159,15 @@ describe('SingleBinInspector', () => {
   });
 
   describe('slant', () => {
-    it('offers a slant with the labs flag on, on desktop and mobile', () => {
-      useLabsStore.getState().enableFeature('slant');
+    it('offers a slant, marked experimental, on desktop and mobile', () => {
       for (const variant of ['desktop', 'mobile'] as const) {
         const { unmount } = render(
           <SingleBinInspector inspector={createMockInspector()} variant={variant} />
         );
-        expect(screen.getByRole('checkbox', { name: 'Slant' })).toBeInTheDocument();
+        expect(screen.getByRole('switch', { name: /^Slant/ })).toBeInTheDocument();
+        expect(screen.getByText('Experimental')).toBeInTheDocument();
         unmount();
       }
-    });
-
-    it('leaves it out with the flag off and nothing slanted', () => {
-      useLabsStore.getState().disableFeature('slant');
-      render(<SingleBinInspector inspector={createMockInspector()} variant="desktop" />);
-      expect(screen.queryByRole('checkbox', { name: 'Slant' })).toBeNull();
     });
   });
 
@@ -273,6 +268,7 @@ describe('SingleBinInspector', () => {
           maxHeight: 12,
           maxClearance: 0,
           maxGridUnits: { width: 6, depth: 6 },
+          overhangMm: { width: 0, depth: 0 },
           needsSplit: false,
           heightRange: '2-12u',
           maxHeightReason: 'remaining_space' as const,
@@ -484,7 +480,7 @@ describe('SingleBinInspector', () => {
       const inspector = createMockInspector();
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      fireEvent.click(screen.getByText('To Stash'));
+      fireEvent.click(screen.getByText('To stash'));
 
       expect(inspector.moveToStaging).toHaveBeenCalled();
     });
@@ -529,7 +525,7 @@ describe('SingleBinInspector', () => {
       });
       render(<SingleBinInspector inspector={inspector} variant="desktop" />);
 
-      expect(screen.queryByText('To Stash')).not.toBeInTheDocument();
+      expect(screen.queryByText('To stash')).not.toBeInTheDocument();
     });
 
     it('hides layer dropdown for staging bins', () => {

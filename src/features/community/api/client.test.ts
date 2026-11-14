@@ -722,6 +722,30 @@ describe('fetchCommunityIndex', () => {
     }
   });
 
+  it('passes a numeric prints count through to the card', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, {
+        items: [card('a', { counts: { likes: 0, remixes: 0, exports: 0, prints: 4 } })],
+        nextCursor: null,
+      })
+    );
+    const result = await fetchCommunityIndex();
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) expect(result.value.items[0]?.counts.prints).toBe(4);
+  });
+
+  it.each([
+    ['a string', '4'],
+    ['null', null],
+    ['an object', { total: 4 }],
+  ])('maps a page whose card carries %s as its prints count to server', async (_label, prints) => {
+    const malformed = { ...card('a'), counts: { likes: 0, remixes: 0, exports: 0, prints } };
+    fetchMock.mockResolvedValueOnce(jsonResponse(200, { items: [malformed], nextCursor: null }));
+    const result = await fetchCommunityIndex();
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) expect(result.error).toEqual({ kind: 'server' });
+  });
+
   it('maps a malformed page body to server', async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse(200, { items: [{ id: 1 }], nextCursor: null }));
     const result = await fetchCommunityIndex();
@@ -947,6 +971,24 @@ describe('fetchCommunityDesign', () => {
       expect(result.value.hiddenReason).toBeNull();
       expect(result.value.hiddenReasonCategory).toBeNull();
     }
+  });
+
+  it('passes a numeric prints count through to the detail counts', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(200, { design, counts: { likes: 4, remixes: 2, exports: 9, prints: 3 } })
+    );
+    const result = await fetchCommunityDesign('AbCdEf123456');
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) expect(result.value.counts?.prints).toBe(3);
+  });
+
+  it('degrades the detail counts to null when the prints count is not a number', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(200, { design, counts: { likes: 4, remixes: 2, exports: 9, prints: '3' } })
+    );
+    const result = await fetchCommunityDesign('AbCdEf123456');
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) expect(result.value.counts).toBeNull();
   });
 
   it('degrades counts to null when absent or malformed (older server, no Redis)', async () => {

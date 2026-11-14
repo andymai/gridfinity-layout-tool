@@ -109,4 +109,36 @@ describe('findBinsByIds', () => {
     const bins = findBinsByIds(layout, [binId('bin3'), binId('bin1'), binId('bin2')]);
     expect(bins.map((b) => b.id)).toEqual(['bin3', 'bin1', 'bin2']);
   });
+
+  it('returns a bin once for each time its ID is asked for', () => {
+    const layout = createTestLayout();
+    const bins = findBinsByIds(layout, [binId('bin2'), binId('bin1'), binId('bin2')]);
+    expect(bins.map((b) => b.id)).toEqual(['bin2', 'bin1', 'bin2']);
+  });
+
+  it('returns the first bin when two bins share an ID', () => {
+    const layout = createTestLayout();
+    const first = layout.bins[0];
+    layout.bins = [first, { ...first, label: 'second copy' }];
+    expect(findBinsByIds(layout, [first.id])).toEqual([first]);
+  });
+
+  it('reads each bin a fixed number of times, however many IDs it looks up', () => {
+    const template = createTestLayout().bins[0];
+    const bins = Array.from({ length: 500 }, (_, i) => ({ ...template, id: binId(`b${i}`) }));
+    let reads = 0;
+    const counted = new Proxy(bins, {
+      get(target, key, receiver) {
+        if (typeof key === 'string' && /^\d+$/.test(key)) reads++;
+        return Reflect.get(target, key, receiver) as unknown;
+      },
+    });
+    const layout = { ...createTestLayout(), bins: counted };
+    const ids = [...bins].reverse().map((b) => b.id);
+
+    const found = findBinsByIds(layout, ids);
+
+    expect(found.map((b) => b.id)).toEqual(ids);
+    expect(reads).toBeLessThanOrEqual(bins.length * 2);
+  });
 });

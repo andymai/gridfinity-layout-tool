@@ -28,9 +28,7 @@ function formatSpoolUsage(
     return `${percentage}%`;
   }
   const spools = Math.round(percentage / 10) / 10;
-  return spools === 1
-    ? t('print.summary.spoolCountOne')
-    : t('print.summary.spoolCount', { count: spools });
+  return t('print.summary.spoolCount', { count: spools });
 }
 
 /** Get progress bar color based on spool usage level */

@@ -1,16 +1,20 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import {
+  planBinTurn,
+  quarterTurnUpdates,
   validateRotation,
   validateRotationInPlace,
   type RotationResult,
 } from '@/shared/utils/rotation';
 import { registerLinkedExcessResolver } from '@/shared/utils/collision';
+import { registerLinkedSlantResolver } from '@/shared/utils/placedSlant';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
 import { binId, designId, gridUnits, heightUnits, layerId } from '@/core/types';
+import en from '@/i18n/locales/en';
 
 function expectRotationValid(result: RotationResult): Extract<RotationResult, { valid: true }> {
   expect(result.valid).toBe(true);
-  if (!result.valid) throw new Error(`Expected a valid rotation: ${result.message}`);
+  if (!result.valid) throw new Error(`Expected a valid rotation: ${result.messageKey}`);
   return result;
 }
 
@@ -242,10 +246,7 @@ describe('validateRotation', () => {
       const result = validateRotation(bin1, layout);
 
       // Should fail as there's no space for the rotated 2x1 bin
-      expect(result.valid).toBe(false);
-      if (!result.valid) {
-        expect(result.message).toBeDefined();
-      }
+      expect(result).toEqual({ valid: false, messageKey: 'toast.rotateBlocked.collision' });
     });
   });
 
@@ -281,6 +282,71 @@ describe('validateRotation', () => {
 
       expect(result.valid).toBe(true);
     });
+  });
+});
+
+// The reason reaches a toast as is, so it has to be a translation key, not text.
+describe('validateRotationInPlace blocked reasons', () => {
+  function expectBlockedKey(result: RotationResult): string {
+    if (result.valid) throw new Error('Expected the rotation to be blocked');
+    expect(en).toHaveProperty(result.messageKey);
+    return result.messageKey;
+  }
+
+  it('names the drawer bounds when the turned bin would stick out', () => {
+    const layout = createTestLayout({
+      drawer: { width: gridUnits(2), depth: gridUnits(4), height: heightUnits(12) },
+    });
+    const bin = createTestBin({ width: gridUnits(1), depth: gridUnits(3) });
+    layout.bins = [bin];
+
+    expect(expectBlockedKey(validateRotationInPlace(bin, layout))).toBe(
+      'toast.rotateBlocked.bounds'
+    );
+  });
+
+  it('names the other bin when the turned bin would overlap it', () => {
+    const layout = createTestLayout();
+    const bin = createTestBin({ id: binId('turning'), width: gridUnits(2), depth: gridUnits(3) });
+    const neighbour = createTestBin({
+      id: binId('neighbour'),
+      x: gridUnits(2),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+    });
+    layout.bins = [bin, neighbour];
+
+    expect(expectBlockedKey(validateRotationInPlace(bin, layout))).toBe(
+      'toast.rotateBlocked.collision'
+    );
+  });
+
+  it('names the clearance when the turned bin would rest on space a lower bin reserves', () => {
+    const layout = createTestLayout({
+      layers: [
+        { id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) },
+        { id: layerId('layer2'), name: 'Layer 2', height: heightUnits(3) },
+      ],
+    });
+    const reserving = createTestBin({
+      id: binId('reserving'),
+      x: gridUnits(1),
+      width: gridUnits(2),
+      depth: gridUnits(3),
+      clearanceHeight: heightUnits(2),
+      layerId: layerId('layer1'),
+    });
+    const bin = createTestBin({
+      id: binId('turning'),
+      width: gridUnits(1),
+      depth: gridUnits(3),
+      layerId: layerId('layer2'),
+    });
+    layout.bins = [reserving, bin];
+
+    expect(expectBlockedKey(validateRotationInPlace(bin, layout))).toBe(
+      'toast.rotateBlocked.clearance'
+    );
   });
 });
 
@@ -322,5 +388,148 @@ describe('validateRotationInPlace linked-design excess rise', () => {
 
     registerLinkedExcessResolver(null);
     expect(validateRotationInPlace(bin, layout).valid).toBe(true);
+  });
+});
+
+describe('quarterTurnUpdates', () => {
+  const DESIGN = designId('d1');
+
+  it('only swaps an unlinked bin, which looks the same either way round', () => {
+    const bin = createTestBin({ width: gridUnits(1), depth: gridUnits(2) });
+    expect(quarterTurnUpdates(bin)).toEqual({ width: gridUnits(2), depth: gridUnits(1) });
+  });
+
+  it('only swaps half of a pair and a half-unit footprint', () => {
+    const tall = { width: gridUnits(1), depth: gridUnits(2), linkedDesignId: DESIGN };
+    expect(quarterTurnUpdates({ ...tall, pairId: 'p1' })).not.toHaveProperty('halfTurned');
+    expect(quarterTurnUpdates({ ...tall, width: gridUnits(1.5) })).not.toHaveProperty('halfTurned');
+  });
+});
+
+describe('planBinTurn', () => {
+  afterEach(() => {
+    registerLinkedSlantResolver(null);
+  });
+
+  const DESIGN = designId('d1');
+  const linked = (overrides: Parameters<typeof createTestBin>[0] = {}) =>
+    createTestBin({ linkedDesignId: DESIGN, ...overrides });
+
+  it('takes the quarter turn when there is room for it', () => {
+    const layout = createTestLayout();
+    const bin = linked({ width: gridUnits(1), depth: gridUnits(2) });
+    layout.bins = [bin];
+    expect(planBinTurn(bin, layout, true)).toEqual({
+      valid: true,
+      updates: { width: gridUnits(2), depth: gridUnits(1), halfTurned: true },
+    });
+  });
+
+  it('half turns a square linked bin where it stands', () => {
+    const layout = createTestLayout();
+    const bin = linked({ width: gridUnits(2), depth: gridUnits(2) });
+    layout.bins = [bin];
+    expect(planBinTurn(bin, layout, true)).toEqual({
+      valid: true,
+      updates: { halfTurned: true },
+      halfTurnedInPlace: true,
+    });
+    expect(planBinTurn({ ...bin, halfTurned: true }, layout, true)).toMatchObject({
+      updates: { halfTurned: false },
+    });
+  });
+
+  it('half turns a linked bin with no room for a quarter turn, without moving it', () => {
+    const layout = createTestLayout();
+    const bin = linked({ width: gridUnits(1), depth: layout.drawer.depth });
+    layout.bins = [bin];
+    expect(
+      planBinTurn(bin, { ...layout, drawer: { ...layout.drawer, width: gridUnits(1) } }, true)
+    ).toEqual({ valid: true, updates: { halfTurned: true }, halfTurnedInPlace: true });
+  });
+
+  it('keeps searching nearby for an unlinked bin, which a half turn would not change', () => {
+    const layout = createTestLayout();
+    const bin = createTestBin({
+      x: gridUnits(0),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(2),
+    });
+    const blocker = createTestBin({
+      id: binId('blocker'),
+      x: gridUnits(1),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(1),
+    });
+    layout.bins = [bin, blocker];
+    const plan = planBinTurn(bin, layout, true);
+    expect(plan).toMatchObject({
+      valid: true,
+      updates: { width: gridUnits(2), depth: gridUnits(1) },
+    });
+    expect(plan).not.toHaveProperty('halfTurnedInPlace');
+    expect(plan.valid && plan.movedTo).toBeTruthy();
+  });
+
+  it('skips placement checks in the stash', () => {
+    const layout = createTestLayout();
+    const bin = linked({ width: gridUnits(1), depth: gridUnits(99) });
+    expect(planBinTurn(bin, layout, false)).toMatchObject({
+      valid: true,
+      updates: { width: gridUnits(99), depth: gridUnits(1), halfTurned: true },
+    });
+  });
+
+  it("refuses a half turn that would swing a leaning design's end support out of the drawer", () => {
+    registerLinkedSlantResolver(() => ({
+      config: { angleDeg: 40, side: 'back', endSupport: true },
+    }));
+    const layout = createTestLayout();
+    const bin = linked({
+      y: gridUnits(0),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+      height: heightUnits(6),
+    });
+    layout.bins = [bin];
+    expect(planBinTurn(bin, layout, true)).toEqual({
+      valid: false,
+      messageKey: 'toast.rotateBlocked.default',
+    });
+  });
+
+  it('checks a quarter turn with the half turn it would bring', () => {
+    // Facing front next, past the drawer edge: the old flag reads as facing back.
+    registerLinkedSlantResolver(() => ({
+      width: 2,
+      depth: 1,
+      config: { angleDeg: 40, side: 'back', endSupport: true },
+    }));
+    const layout = createTestLayout();
+    const bin = linked({
+      x: gridUnits(2),
+      y: gridUnits(0),
+      width: gridUnits(1),
+      depth: gridUnits(2),
+      height: heightUnits(6),
+    });
+    layout.bins = [bin];
+    expect(planBinTurn(bin, layout, true)).toEqual({
+      valid: true,
+      updates: { halfTurned: true },
+      halfTurnedInPlace: true,
+    });
+  });
+
+  it('leaves a half-unit footprint with its old choices', () => {
+    const layout = createTestLayout();
+    const bin = linked({ width: gridUnits(1.5), depth: gridUnits(1.5) });
+    layout.bins = [bin];
+    expect(planBinTurn(bin, layout, true)).toEqual({
+      valid: true,
+      updates: { width: gridUnits(1.5), depth: gridUnits(1.5) },
+    });
   });
 });

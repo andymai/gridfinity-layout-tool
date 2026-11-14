@@ -6,6 +6,7 @@
 import type { LabelPlateIconId } from '@/shared/constants/labelPlates';
 import { TEXT_MAX_LENGTH } from '@/features/bin-designer/types/text';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { DEFAULT_CUTOUT_COLOR } from '@/features/bin-designer/constants/defaults';
 import {
   DEFAULT_COMPARTMENT_COLOR_SCOPE,
   MAX_COMPARTMENT_FLOOR_RAISE_MM,
@@ -25,6 +26,19 @@ import {
 import { validateCompartmentSizes } from '@/features/bin-designer/utils/validation';
 import { pushHistoryEntry } from '@/features/bin-designer/store/helpers';
 import type { Set, Get } from './types';
+
+/** Undefined once every slot is null, so the field drops out of persisted JSON. */
+function withSlot<T>(
+  prev: readonly (T | null)[],
+  index: number,
+  value: T | null
+): (T | null)[] | undefined {
+  const next = prev.slice();
+  while (next.length <= index) next.push(null);
+  next[index] = value;
+  while (next.length > 0 && next[next.length - 1] === null) next.pop();
+  return next.length > 0 ? next : undefined;
+}
 
 export function createCompartmentActions(set: Set, get: Get) {
   return {
@@ -232,13 +246,9 @@ export function createCompartmentActions(set: Set, get: Get) {
         // per triangle at paint time (`resolveCompartmentTriColor`), so the mesh
         // is unchanged and re-running the generator would be pure waste.
         pushHistoryEntry(state, { affectsGeometry: false });
-        const next = prev.slice();
-        while (next.length <= compartmentId) next.push(null);
-        next[compartmentId] = color;
-        while (next.length > 0 && next[next.length - 1] === null) next.pop();
         state.params.compartments = {
           ...state.params.compartments,
-          compartmentColors: next.length > 0 ? next : undefined,
+          compartmentColors: withSlot(prev, compartmentId, color),
         };
       });
     },
@@ -268,19 +278,25 @@ export function createCompartmentActions(set: Set, get: Get) {
     setCompartmentColorScope: (compartmentId: number, scope: CompartmentColorScope) => {
       const { params } = get();
       const prev = params.compartments.compartmentColorScopes ?? [];
-      if ((prev[compartmentId] ?? DEFAULT_COMPARTMENT_COLOR_SCOPE) === scope) return;
+      const colors = params.compartments.compartmentColors ?? [];
+      // Picking a surface is how the inspector turns a compartment's colour on.
+      const uncoloured = (colors[compartmentId] ?? null) === null;
+      if (!uncoloured && (prev[compartmentId] ?? DEFAULT_COMPARTMENT_COLOR_SCOPE) === scope) return;
 
       set((state) => {
         pushHistoryEntry(state, { affectsGeometry: false });
-        const next = prev.slice();
-        while (next.length <= compartmentId) next.push(null);
-        // The default is stored as absent, so a scope set back to it collapses
-        // the array away rather than pinning a value every design would carry.
-        next[compartmentId] = scope === DEFAULT_COMPARTMENT_COLOR_SCOPE ? null : scope;
-        while (next.length > 0 && next[next.length - 1] === null) next.pop();
         state.params.compartments = {
           ...state.params.compartments,
-          compartmentColorScopes: next.length > 0 ? next : undefined,
+          // The default is stored as absent, so a scope set back to it collapses
+          // the array away rather than pinning a value every design would carry.
+          compartmentColorScopes: withSlot(
+            prev,
+            compartmentId,
+            scope === DEFAULT_COMPARTMENT_COLOR_SCOPE ? null : scope
+          ),
+          ...(uncoloured && {
+            compartmentColors: withSlot(colors, compartmentId, DEFAULT_CUTOUT_COLOR),
+          }),
         };
       });
     },

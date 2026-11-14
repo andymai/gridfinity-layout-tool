@@ -1,6 +1,7 @@
 import { SliderInput } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
+import { FeatureTip } from '../../FeatureTip';
 import { useInteriorFilletSection } from './useInteriorFilletSection';
 
 const { MIN_INTERIOR_FILLET, MAX_INTERIOR_FILLET, INTERIOR_FILLET_STEP } = DESIGNER_CONSTRAINTS;
@@ -14,6 +15,7 @@ export function InteriorFilletSection() {
       checked={state.enabled}
       onChange={handlers.toggle}
       disabledReason={meta.disabledReason}
+      badge={<FeatureTip tip="interiorFillet" feature={t('binDesigner.interiorFillet.label')} />}
       valueSummary={meta.summary}
       primaryControls={
         <div className="flex flex-col gap-2">

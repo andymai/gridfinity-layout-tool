@@ -2,20 +2,22 @@ import { useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } 
 import { useShallow } from 'zustand/react/shallow';
 import { Input, IconButton, SearchIcon, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest';
+import { selectCanStartScan } from '@/features/bin-designer/utils/startScan';
 import { binHasText } from '@/features/bin-designer/utils/binText';
 import {
   useDesignerSettingsSearch,
   type DesignerSearchResult,
 } from '@/features/bin-designer/search/useDesignerSettingsSearch';
 import type { HighlightRange } from '@/features/bin-designer/search/matcher';
-import { useSlantVisible } from '../../panel/SlantSection';
 
 interface DesignerSearchBarProps {
   readonly viewMode: 'scroll' | 'rail';
-  readonly needsSplit: boolean;
+  /** The scroll panel shows its bed-fit section (`useSplitOptionsSection`). */
+  readonly bedFitShown: boolean;
 }
 
 /** Renders `label` with the matched ranges emphasized. */
@@ -43,18 +45,18 @@ function highlighted(label: string, ranges: readonly HighlightRange[]): ReactNod
  * sections by category to browse. Selecting a result jumps the panel to the
  * section that holds it (the same deep-link the Help modal uses).
  */
-export function DesignerSearchBar({ viewMode, needsSplit }: DesignerSearchBarProps) {
+export function DesignerSearchBar({ viewMode, bedFitShown }: DesignerSearchBarProps) {
   const t = useTranslation();
   const { style, hasText } = useDesignerStore(
     useShallow((s) => ({ style: s.params.style, hasText: binHasText(s.params) }))
   );
   const slideTrayEnabled = useFeatureFlag('sliding_tray');
-  const slantVisible = useSlantVisible();
+  const scanAvailable = useDesignerStore(selectCanStartScan);
   // Memoized so the search hook's `useMemo` isn't defeated by a fresh object
   // every render.
   const ctx = useMemo(
-    () => ({ style, hasText, needsSplit, viewMode, slideTrayEnabled, slantVisible }),
-    [style, hasText, needsSplit, viewMode, slideTrayEnabled, slantVisible]
+    () => ({ style, hasText, bedFitShown, viewMode, slideTrayEnabled, scanAvailable }),
+    [style, hasText, bedFitShown, viewMode, slideTrayEnabled, scanAvailable]
   );
 
   const [query, setQuery] = useState('');
@@ -73,7 +75,7 @@ export function DesignerSearchBar({ viewMode, needsSplit }: DesignerSearchBarPro
   const choose = (index: number) => {
     const result = results.at(index);
     if (!result) return;
-    jumpToDesignerControl(result.controlId);
+    jumpToDesignerControl(result.controlId, result.target);
     setQuery('');
     setActiveIndex(0);
     inputRef.current?.blur();
@@ -214,9 +216,9 @@ function ResultRow({
           role="presentation"
           // Hold input focus so a click on the header doesn't blur-close the list.
           onMouseDown={(e) => e.preventDefault()}
-          className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-content-tertiary"
+          className="px-3 pb-1 pt-2"
         >
-          {result.categoryLabel}
+          <SubHeader>{result.categoryLabel}</SubHeader>
         </div>
       )}
       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events -- listbox option; keyboard is handled on the combobox input (Arrow/Enter), options aren't individually focusable */}

@@ -86,11 +86,17 @@ const KERNEL_CRASHED_MESSAGE = 'Geometry kernel crashed and must be restarted';
 /** occt-wasm links with MAXIMUM_MEMORY at the wasm32 ceiling. */
 const WASM32_HEAP_CEILING_BYTES = 4 * 1024 * 1024 * 1024;
 
+/**
+ * Emscripten caps a 4 GB heap one wasm page short (its `getHeapMax()`), so a
+ * kernel that ran out of memory reads 4 GB minus 64 KB, never the full 4 GB.
+ */
+const WASM_PAGE_BYTES = 64 * 1024;
+
 type KernelCrashCode = Extract<ExportErrorCode, 'KERNEL_CRASHED' | 'OUT_OF_MEMORY'>;
 
 function heapAtCeiling(): boolean {
   const heapBytes = getKernelHeapBytes();
-  return heapBytes !== null && heapBytes >= WASM32_HEAP_CEILING_BYTES;
+  return heapBytes !== null && heapBytes >= WASM32_HEAP_CEILING_BYTES - WASM_PAGE_BYTES;
 }
 
 /**

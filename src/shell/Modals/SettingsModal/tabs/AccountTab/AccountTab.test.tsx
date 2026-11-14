@@ -4,7 +4,6 @@ import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { AccountTab } from './AccountTab';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { useSyncStatusStore } from '@/core/sync/status';
-import { useLabsStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
 
 vi.mock('@/core/sync/signOut', () => ({
@@ -19,19 +18,9 @@ vi.mock('@/features/bin-designer/sync/designAdapter', () => ({ designAdapter: {}
 import { runSignOut } from '@/core/sync/signOut';
 import { runDeleteAccount } from '@/core/sync/deleteAccount';
 
-const enableCloudSync = (enabled: boolean) => {
-  useLabsStore.setState((state) => ({
-    preferences: {
-      ...state.preferences,
-      enabledFeatures: { ...state.preferences.enabledFeatures, cloud_sync: enabled },
-    },
-  }));
-};
-
 describe('AccountTab', () => {
   beforeEach(() => {
     resetAllStores();
-    enableCloudSync(true);
     useSessionStore.setState({ status: 'unknown', user: null });
     useSyncStatusStore.setState({ state: 'idle', pendingCount: 0 });
     vi.mocked(runSignOut).mockClear();

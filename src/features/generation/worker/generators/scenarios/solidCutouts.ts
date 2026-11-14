@@ -27,6 +27,23 @@ export const solidCutouts: ScenarioCase[] = [
       cutouts: [makeCutout({ shape: 'rectangle' })],
     },
   }),
+  // Equal corner and scoop radii close each corner blend to a point, where the
+  // kernel tessellates a zero-area triangle; the export must drop them (#4865).
+  defineScenario('solid cutouts', '2\u00d72 solid with corner radius equal to scoop radius', {
+    params: {
+      style: 'solid',
+      base: SOLID_BASE,
+      cutouts: [
+        makeCutout({
+          shape: 'rectangle',
+          cornerRadius: 1,
+          scoopRadiusW: 1,
+          scoopRadiusD: 1,
+          chamferWidth: 1,
+        }),
+      ],
+    },
+  }),
   defineScenario('solid cutouts', '2\u00d72 solid with circle cutout', {
     params: {
       style: 'solid',

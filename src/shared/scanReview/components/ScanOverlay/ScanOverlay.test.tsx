@@ -32,6 +32,16 @@ describe('ScanOverlay', () => {
     expect(d.match(/M/g)).toHaveLength(2);
   });
 
+  it('outlines the sheet of paper only when handed one', () => {
+    const sheet = box(2, 2, 98, 78).imagePoints;
+    const { container, rerender } = render(
+      <ScanOverlay image={IMAGE} scene={scene([ring])} shapes={[ring]} keepHoles sheet={sheet} />
+    );
+    expect(container.querySelector('polygon')?.getAttribute('points')).toBe('2,2 98,2 98,78 2,78');
+    rerender(<ScanOverlay image={IMAGE} scene={scene([ring])} shapes={[ring]} keepHoles />);
+    expect(container.querySelector('polygon')).toBeNull();
+  });
+
   it('draws the outline alone while holes are off', () => {
     const { container } = render(
       <ScanOverlay image={IMAGE} scene={scene([ring])} shapes={[ring]} keepHoles={false} />

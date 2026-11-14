@@ -12,6 +12,7 @@ import { Button, Checkbox, Input } from '@/design-system';
 import { Dialog } from '@/design-system/Dialog';
 import { ProgressBar } from '@/design-system/ProgressBar';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import type { ExportFileFormat, ExportFileNameConfig, FileNameStyle } from '@/shared/types/bin';
 import { SchemaDocsLink } from '@/shared/components/SchemaDocsLink';
 import { MobileHandoffBanner } from './MobileHandoffBanner';
@@ -353,9 +354,9 @@ export function ExportDialog({
             {estimates && estimates.length > 0 && (
               <div className="mb-5 rounded-lg border border-stroke-subtle bg-surface p-3">
                 {estimatesTitle && (
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-content-tertiary">
+                  <SubHeader as="h3" className="mb-2">
                     {estimatesTitle}
-                  </h3>
+                  </SubHeader>
                 )}
                 <div className="grid grid-cols-2 gap-y-1.5 text-sm">
                   {estimates.map((est) => (

@@ -27,7 +27,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
-import { binSplitChunkUnits } from '@/shared/utils/binSplitFit';
+import { binBedFit } from '@/shared/utils/binSplitFit';
 import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
 import { getActiveBridge, getActiveKernel, bridgeManager } from '@/shared/generation/bridge';
 import { withSocketNozzle } from '@/shared/generation/socketNozzle';
@@ -41,6 +41,7 @@ import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import type { ExportFileNameConfig, ExportFileFormat } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
+import type { FaceGroupData } from '@/shared/types/generation';
 import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibility';
 import { hasDetachableFeet } from '@/features/bin-designer/types/base';
 import { shouldGenerateKnifeRest } from '@/shared/utils/knifeRestPlan';
@@ -51,7 +52,8 @@ import {
   buildSplit3MFPieces,
   runSplitBinExport,
 } from '@/features/bin-designer/utils/binDownloadHelpers';
-import { buildThreeMFPrintSettings } from '@/shared/generation/stlTo3mf';
+import { currentThreeMFPrintSettings } from '@/features/bin-designer/utils/currentThreeMFPrintSettings';
+import type { ThreeMFPrintSettings } from '@/shared/generation/export';
 import {
   trackBinExportFailure,
   trackBinExportSucceeded,
@@ -96,6 +98,13 @@ interface UseExportReturn {
   readonly hasDividers: boolean;
   /** Whether the bin exceeds print bed and needs splitting */
   readonly needsSplit: boolean;
+  /**
+   * The bin overruns the bed square-on but fits lying at an angle, so it
+   * prints whole and a split is only offered.
+   */
+  readonly fitsDiagonally: boolean;
+  /** The bin overruns the bed and its design turns splitting off, so it exports whole. */
+  readonly keptWhole: boolean;
   /** Number of pieces the bin would be split into */
   readonly splitPieceCount: number;
   /**
@@ -163,20 +172,22 @@ export function useExport(): UseExportReturn {
 
   // Split detection — reads the bin's own grid unit rather than
   // defaultGridUnitMm from settings, which may be stale, and charges the bin's
-  // overhang against the bed.
-  const chunkLimit = useMemo(
-    () => binSplitChunkUnits(params, printBedSize, printBedDepth),
+  // overhang against the bed. A split cuts square-on even when the whole part
+  // would fit lying diagonally, since that split is the user's choice.
+  const bedFit = useMemo(
+    () => binBedFit(params, printBedSize, printBedDepth),
     [printBedSize, printBedDepth, params]
   );
-
-  const needsSplit = params.width > chunkLimit.width || params.depth > chunkLimit.depth;
+  const chunkLimit = bedFit.squareOn;
+  const exceedsSquareOn = params.width > chunkLimit.width || params.depth > chunkLimit.depth;
+  const needsSplit = exceedsSquareOn && !bedFit.diagonal;
 
   const splitPieceCount = useMemo(
     () =>
-      needsSplit
+      exceedsSquareOn
         ? getSplitPieceCount(params.width, params.depth, chunkLimit.width, chunkLimit.depth)
         : 1,
-    [params.width, params.depth, chunkLimit.width, chunkLimit.depth, needsSplit]
+    [params.width, params.depth, chunkLimit.width, chunkLimit.depth, exceedsSquareOn]
   );
 
   // Forward declarations so the queued-export effect can call the downloads.
@@ -397,15 +408,12 @@ export function useExport(): UseExportReturn {
 
         let threeMFContext: {
           modelName: string;
-          threeMFPrintSettings: ReturnType<typeof buildThreeMFPrintSettings>;
+          threeMFPrintSettings: ThreeMFPrintSettings;
         } | null = null;
         if (format === '3mf') {
-          // Read print settings at call time to avoid capturing reactive values
-          const currentPrintSettings = useSettingsStore.getState().settings.printSettings;
-          const currentEstimates = estimatePrint(params, currentPrintSettings);
           threeMFContext = {
             modelName: designName ?? `gridfinity-${params.width}x${params.depth}x${params.height}`,
-            threeMFPrintSettings: buildThreeMFPrintSettings(currentPrintSettings, currentEstimates),
+            threeMFPrintSettings: currentThreeMFPrintSettings(params),
           };
         }
 
@@ -464,9 +472,8 @@ export function useExport(): UseExportReturn {
    * When dividers are present, includes divider pieces in the ZIP.
    * Uses worker pool for parallel export when available.
    * Supports STL, 3MF, and STEP — a STEP piece carries the exact BREP solid
-   * rather than a tessellation, so the ZIP holds one .step per piece.
-   * NOTE: Multi-color data is NOT propagated to split pieces — each piece
-   * exports as single-color. Split + multi-color is a known gap.
+   * rather than a tessellation, so the ZIP holds one .step per piece. A 3MF
+   * piece keeps the design's colors (see `buildSplit3MFPieces`).
    */
   const downloadSplit = useCallback(
     async (
@@ -497,6 +504,7 @@ export function useExport(): UseExportReturn {
         // Scale a socket bin's pocket to the same nozzle the connectors use
         // (transient — never persisted). No-op for non-socket bins.
         const splitParams = withSocketNozzle(params, connectorConfig.nozzleSizeMm);
+        const printBed = { widthMm: printBedSize, depthMm: printBedDepth ?? printBedSize };
         const totalPieceCount = getSplitPieceCount(
           params.width,
           params.depth,
@@ -539,6 +547,7 @@ export function useExport(): UseExportReturn {
         // compound assembly bundles the bin in with its companions, and the
         // body is already covered by the split pieces.
         const companionPieces: { data: ArrayBuffer; label: string }[] = [];
+        let lidFaceGroups: readonly FaceGroupData[] | undefined;
         // Feet belong in this gate for the same reason dividers and the lid do.
         // Third copy of it in the codebase; the other two are the worker's
         // combined export and the layout planner, and all three dropped the
@@ -552,9 +561,10 @@ export function useExport(): UseExportReturn {
             () => {
               const bridge = getActiveBridge();
               if (!bridge) throw new Error('Bridge not available');
-              return format === 'step'
-                ? bridge.exportCombined(splitParams, 'step', { separatePieces: true })
-                : bridge.exportCombined(splitParams, 'stl');
+              return bridge.exportCombined(splitParams, format === 'step' ? 'step' : 'stl', {
+                separatePieces: format === 'step',
+                bedFit: { printBed, nozzleSizeMm: connectorConfig.nozzleSizeMm },
+              });
             },
             {
               onAttempt: (attempts) => {
@@ -570,20 +580,15 @@ export function useExport(): UseExportReturn {
               companionPieces.push({ data: piece.data, label: piece.label });
             }
           }
+          lidFaceGroups = combined.result.lidFaceGroups;
         }
 
         if (format === '3mf') {
-          const currentPrintSettings = useSettingsStore.getState().settings.printSettings;
-          const currentEstimates = estimatePrint(params, currentPrintSettings);
-          const threeMFPrintSettings = buildThreeMFPrintSettings(
-            currentPrintSettings,
-            currentEstimates
-          );
-
           const convertedPieces = await buildSplit3MFPieces(
-            [...result.pieces.map((p) => ({ data: p.data, label: p.label })), ...companionPieces],
+            { binPieces: result.pieces, companionPieces, lidFaceGroups },
+            params,
             baseName,
-            threeMFPrintSettings
+            currentThreeMFPrintSettings(params)
           );
 
           const zip = packagePiecesAsZip(convertedPieces, baseName, '.3mf');
@@ -633,6 +638,8 @@ export function useExport(): UseExportReturn {
     [
       params,
       chunkLimit,
+      printBedSize,
+      printBedDepth,
       hasDividers,
       hasLid,
       hasFeet,
@@ -664,6 +671,8 @@ export function useExport(): UseExportReturn {
     estimates,
     downloadBin,
     needsSplit,
+    fitsDiagonally: bedFit.diagonal,
+    keptWhole: bedFit.keptWhole,
     splitPieceCount,
     downloadSplit,
   };

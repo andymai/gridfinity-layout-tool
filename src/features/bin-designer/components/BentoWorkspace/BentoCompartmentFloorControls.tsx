@@ -7,6 +7,7 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '@/i18n';
 import { SliderInput } from '@/design-system';
+import { LabelInfo } from '@/shared/components/InfoDot';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { maxCompartmentFloorRaiseMm } from '@/features/bin-designer/utils/compartmentFloorRaise';
 
@@ -36,7 +37,11 @@ export function BentoCompartmentFloorControls({
       max={maxRaise}
       step={1}
       unit="mm"
-      info={t('binDesigner.bento.floorRaiseHint')}
+      labelAddon={
+        <LabelInfo label={t('binDesigner.bento.floorRaise')}>
+          {t('binDesigner.bento.floorRaiseDetail')}
+        </LabelInfo>
+      }
     />
   );
 }

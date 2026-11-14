@@ -125,7 +125,7 @@ export function PrintBin({ bin, category, drawer, cellSize, gap, settings }: Pri
     >
       {showText && (
         <div
-          className="print-bin-content"
+          data-testid="print-bin-content"
           style={{
             display: 'flex',
             flexDirection: 'column',
@@ -148,7 +148,6 @@ export function PrintBin({ bin, category, drawer, cellSize, gap, settings }: Pri
           {/* Primary text (label if fits, otherwise dimensions) */}
           {primaryText && (
             <div
-              className="print-bin-primary"
               style={{
                 color: textColors.primary,
                 fontSize: `${primaryFontSize}px`,
@@ -168,7 +167,6 @@ export function PrintBin({ bin, category, drawer, cellSize, gap, settings }: Pri
           {/* Secondary text (dimensions when label is primary) */}
           {secondaryText && (
             <div
-              className="print-bin-secondary"
               style={{
                 color: textColors.secondary,
                 fontSize: `${secondaryFontSize}px`,

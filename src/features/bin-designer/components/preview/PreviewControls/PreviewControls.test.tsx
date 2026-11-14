@@ -89,6 +89,38 @@ describe('PreviewControls', () => {
     expect(screen.queryAllByLabelText(/Change preview color/).length).toBe(0);
   });
 
+  describe('labels follow the preview width, not the window', () => {
+    it('shows the labels from a 48rem preview up', () => {
+      render(<PreviewControls {...defaultProps} />);
+      expect(screen.getByText('Wire')).toHaveClass('hidden', '@min-[48rem]:inline');
+    });
+
+    it('waits for a 60rem preview when the split toggle widens the bar', () => {
+      render(
+        <PreviewControls
+          {...defaultProps}
+          needsSplit
+          splitViewMode="assembled"
+          onSplitViewModeChange={vi.fn()}
+        />
+      );
+      expect(screen.getByText('Wire')).toHaveClass('hidden', '@min-[60rem]:inline');
+    });
+
+    it('keeps the split buttons named when their text hides', () => {
+      render(
+        <PreviewControls
+          {...defaultProps}
+          needsSplit
+          splitViewMode="assembled"
+          onSplitViewModeChange={vi.fn()}
+        />
+      );
+      const assembled = screen.getAllByRole('button', { name: 'Assembled' });
+      expect(assembled.some((b) => b.getAttribute('aria-label') === 'Assembled')).toBe(true);
+    });
+  });
+
   it('shows color picker button when hideColorPicker is false', () => {
     render(<PreviewControls {...defaultProps} hideColorPicker={false} />);
     expect(screen.getAllByLabelText(/Change preview color/).length).toBeGreaterThan(0);

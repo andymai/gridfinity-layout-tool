@@ -31,7 +31,17 @@ describe('usePhysicalUnitsSection', () => {
     expect(useLayoutStore.getState().layout.gridUnitMm).toBe(50);
   });
 
-  it('handleGridUnitChange with a Y pitch stores the designer override', () => {
+  it('reads a non-square Y pitch from the layout, not the design', () => {
+    useLayoutStore.getState().setGridUnitMmY(22);
+    useDesignerStore.setState((s) => ({ params: { ...s.params, gridUnitMmY: 30 } }));
+    const { result } = renderHook(() => usePhysicalUnitsSection());
+
+    expect(result.current.state.gridUnitMmY).toBe(22);
+    expect(result.current.state.nonSquare).toBe(true);
+    expect(result.current.meta.summary).toBe('42×22mm grid, 7mm height');
+  });
+
+  it('handleGridUnitChange with a Y pitch stores it on the layout', () => {
     const { result } = renderHook(() => usePhysicalUnitsSection());
 
     act(() => {
@@ -39,18 +49,19 @@ describe('usePhysicalUnitsSection', () => {
     });
 
     expect(useLayoutStore.getState().layout.gridUnitMm).toBe(42);
-    expect(useDesignerStore.getState().params.gridUnitMmY).toBe(40);
+    expect(useLayoutStore.getState().layout.gridUnitMmY).toBe(40);
+    expect(useDesignerStore.getState().history.past).toHaveLength(0);
   });
 
-  it('handleGridUnitChange without Y clears the override (relinked)', () => {
-    useDesignerStore.getState().setParam('gridUnitMmY', 40);
+  it('handleGridUnitChange without Y clears the layout Y pitch (relinked)', () => {
+    useLayoutStore.getState().setGridUnitMmY(40);
     const { result } = renderHook(() => usePhysicalUnitsSection());
 
     act(() => {
       result.current.handlers.handleGridUnitChange(42);
     });
 
-    expect(useDesignerStore.getState().params.gridUnitMmY).toBeUndefined();
+    expect(useLayoutStore.getState().layout.gridUnitMmY).toBeUndefined();
   });
 
   it('handleGridUnitChange clamps the Y pitch', () => {
@@ -60,7 +71,7 @@ describe('usePhysicalUnitsSection', () => {
       result.current.handlers.handleGridUnitChange(42, 999);
     });
 
-    expect(useDesignerStore.getState().params.gridUnitMmY).toBe(200);
+    expect(useLayoutStore.getState().layout.gridUnitMmY).toBe(200);
   });
 
   it('handleHeightUnitChange updates layout store', () => {

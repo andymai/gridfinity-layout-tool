@@ -1,4 +1,3 @@
-export { SPACEMOUSE_FEATURE_ID } from './constants';
 export { isWebHidSupported, requestSpaceMousePairing } from './deviceManager';
 export {
   useSpaceMouseConnection,

@@ -10,7 +10,6 @@ interface DesignListHeaderProps {
   onEnterSelect: () => void;
   onShowImport: () => void;
   onNewDesign: (kind?: ItemKind) => void;
-  showWorkshopButton: boolean;
   onOpenOptionsMenu: (e: ReactMouseEvent<HTMLButtonElement>) => void;
   onClose: () => void;
 }
@@ -23,7 +22,6 @@ export function DesignListHeader({
   onEnterSelect,
   onShowImport,
   onNewDesign,
-  showWorkshopButton,
   onOpenOptionsMenu,
   onClose,
 }: DesignListHeaderProps) {
@@ -31,7 +29,7 @@ export function DesignListHeader({
 
   return (
     <div className="flex items-center justify-between border-b border-stroke-subtle px-5 py-4">
-      <h2 className="text-lg font-semibold text-content">{t('binDesigner.savedDesigns')}</h2>
+      <h2 className="text-page font-semibold text-content">{t('binDesigner.savedDesigns')}</h2>
       <div className="flex flex-wrap items-center gap-2">
         {showSelectButton && (
           <Button
@@ -49,15 +47,13 @@ export function DesignListHeader({
         >
           {t('common.import')}
         </Button>
-        {showWorkshopButton && (
-          <Button
-            variant="secondary"
-            onClick={() => onNewDesign('assembly')}
-            className="rounded-md px-3 py-1.5 text-sm font-medium"
-          >
-            {t('binDesigner.newWorkshop')}
-          </Button>
-        )}
+        <Button
+          variant="secondary"
+          onClick={() => onNewDesign('assembly')}
+          className="rounded-md px-3 py-1.5 text-sm font-medium"
+        >
+          {t('binDesigner.newWorkshop')}
+        </Button>
         <Button
           variant="primary"
           onClick={() => onNewDesign()}

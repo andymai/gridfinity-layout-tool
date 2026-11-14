@@ -1788,8 +1788,8 @@ describe('margin-seam connector edge assignment (#2414)', () => {
     expect(frontEdges(p)).toEqual(new Set(['exterior']));
   });
 
-  it('only seams long rails — a short side stays exterior', () => {
-    // front is the long axis; left detaches too but as a short rail → no seam.
+  it('seams a short side as well as the long one (#4921)', () => {
+    // front is the long axis; left detaches too, as a short rail.
     const p = makeParams({
       detachMargins: true,
       detachMarginConnector: true,
@@ -1803,7 +1803,56 @@ describe('margin-seam connector edge assignment (#2414)', () => {
         .map((pc) => pc.edges.left)
     );
     expect(frontEdges(p)).toEqual(new Set(['marginSeam']));
-    expect(leftEdges).toEqual(new Set(['exterior']));
+    expect(leftEdges).toEqual(new Set(['marginSeam']));
+  });
+});
+
+describe('margin-seam connectors on every detached side (#4921)', () => {
+  // Back runs long, so the left rails are short. The 5mm front padding is too
+  // thin to detach, so the first left rail runs on over it to the corner.
+  const seamed = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBaseplateParams =>
+    makeParams({
+      detachMargins: true,
+      detachMarginConnector: true,
+      connectorStyle: 'puzzle',
+      paddingLeft: 12,
+      paddingBack: 12,
+      paddingFront: 5,
+      ...overrides,
+    });
+
+  it('seams the short rails as well as the long ones', () => {
+    const tiling = computeBaseplateTiling(seamed(), 256);
+    const lefts = tiling.margins.filter((m) => m.side === 'left');
+    expect(lefts.length).toBeGreaterThan(0);
+    expect(lefts.every((m) => m.role === 'short')).toBe(true);
+    for (const pc of tiling.pieces) {
+      if (pc.col === 0) expect(pc.edges.left, pc.label).toBe('marginSeam');
+      if (pc.row === tiling.rows - 1) expect(pc.edges.back, pc.label).toBe('marginSeam');
+      if (pc.row === 0) expect(pc.edges.front, pc.label).toBe('exterior');
+    }
+  });
+
+  it("lays a short rail's connectors along its own body row", () => {
+    const tiling = computeBaseplateTiling(seamed(), 256);
+    for (const m of tiling.margins.filter((r) => r.side === 'left')) {
+      expect(m.seamConnector, m.id).toEqual({
+        cellUnits: tiling.rowSizes[m.row],
+        centerOffsetMm: m.row === 0 ? 2.5 : 0,
+        fractionalEdge: 'end',
+      });
+    }
+  });
+
+  it('hands an unsplit body the same seam edges', () => {
+    const p = seamed({ width: 3, depth: 3 });
+    expect(computeBaseplateTiling(p, 256).isSplit).toBe(false);
+    expect(bodyParamsForDetach(p).edges).toEqual({
+      left: 'marginSeam',
+      right: 'exterior',
+      front: 'exterior',
+      back: 'marginSeam',
+    });
   });
 });
 

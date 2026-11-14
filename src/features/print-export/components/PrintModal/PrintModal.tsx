@@ -8,6 +8,7 @@ import {
   type BinListSortOrder,
 } from '@/core/store/settings';
 import { useTranslation } from '@/i18n';
+import { SubHeader } from '@/shared/components/PanelText';
 import type { LayerId } from '@/core/types';
 import { PrintLayout } from '../PrintLayout';
 import { SortOrderConfig } from '../SortOrderConfig';
@@ -29,8 +30,8 @@ const STYLES = {
     boxShadow: 'var(--shadow-xl)',
   } as CSSProperties,
   title: {
-    fontSize: 'var(--text-2xl)',
-    fontWeight: 'var(--font-bold)',
+    fontSize: 'var(--text-page)',
+    fontWeight: 'var(--font-semibold)',
     color: 'var(--text-primary)',
   } as CSSProperties,
   sectionHeader: {
@@ -297,9 +298,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
 
                 {/* Bin Display Options */}
                 <div className="mb-4">
-                  <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">
-                    {t('print.binDisplay')}
-                  </div>
+                  <SubHeader className="mb-2">{t('print.binDisplay')}</SubHeader>
                   <div className="space-y-2">
                     <CheckboxOption
                       label={t('common.label')}
@@ -336,9 +335,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
 
                 {/* Header Options */}
                 <div className="mb-4">
-                  <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">
-                    {t('print.headerOptions')}
-                  </div>
+                  <SubHeader className="mb-2">{t('print.headerOptions')}</SubHeader>
                   <div className="space-y-2">
                     <CheckboxOption
                       label={t('print.showHeader')}
@@ -369,9 +366,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
 
                 {/* Layout Options */}
                 <div>
-                  <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">
-                    {t('print.layoutOptions')}
-                  </div>
+                  <SubHeader className="mb-2">{t('print.layoutOptions')}</SubHeader>
                   <div className="space-y-2">
                     <CheckboxOption
                       label={t('print.showGridCoordinates')}
@@ -393,9 +388,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
 
                 {/* Page Options */}
                 <div className="mt-4">
-                  <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">
-                    {t('print.orientation')}
-                  </div>
+                  <SubHeader className="mb-2">{t('print.orientation')}</SubHeader>
                   <div className="flex gap-1">
                     {ORIENTATION_OPTIONS.map((o) => (
                       <Button

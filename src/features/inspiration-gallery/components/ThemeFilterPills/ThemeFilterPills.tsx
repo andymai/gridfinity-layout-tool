@@ -31,7 +31,7 @@ export function ThemeFilterPills({
     <div role="tablist" aria-label={t('gallery.filterByTheme')} className="flex gap-2 min-w-max">
       {themes.map((theme) => {
         const isSelected = selectedTheme === theme;
-        const label = theme === 'all' ? t('gallery.all') : THEME_CONFIG[theme].label;
+        const label = theme === 'all' ? t('gallery.all') : t(THEME_CONFIG[theme].labelKey);
         const count = themeCounts[theme];
 
         return (

@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BaseplatePage } from './BaseplatePage';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
+import { useBaseplatePageStore } from '../../store/baseplatePageStore';
+import type { BaseplatePiece, BaseplateTiling } from '../../types/tiling';
 
 // Mock i18n
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
@@ -78,7 +80,9 @@ vi.mock('@/shared/components/ToolSwitcher', () => ({
 
 // Mock HeaderSupportLinks to avoid deep dependency tree (LanguageSelector, analytics, etc.)
 vi.mock('@/shared/components/HeaderSupportLinks', () => ({
-  HeaderSupportLinks: () => <div data-testid="header-support-links" />,
+  HeaderSupportLinks: (props: { compact?: boolean }) => (
+    <div data-testid="header-support-links" data-compact={String(props.compact ?? false)} />
+  ),
 }));
 
 describe('BaseplatePage', () => {
@@ -102,15 +106,18 @@ describe('BaseplatePage', () => {
     expect(screen.getByTestId('preview')).toBeInTheDocument();
   });
 
-  it('renders header support links on desktop', () => {
+  it('renders the full header support links on desktop', () => {
     render(<BaseplatePage />);
-    expect(screen.getByTestId('header-support-links')).toBeInTheDocument();
+    expect(screen.getByTestId('header-support-links')).toHaveAttribute('data-compact', 'false');
   });
 
-  it('does not render header support links on mobile', () => {
-    mocks.responsive = { isDesktop: false, isLandscape: false, isMobile: true, isTablet: false };
+  it.each([
+    ['phone', { isDesktop: false, isLandscape: false, isMobile: true, isTablet: false }],
+    ['tablet', { isDesktop: false, isLandscape: false, isMobile: false, isTablet: true }],
+  ])('folds the support links, Settings included, into a menu on a %s', (_width, responsive) => {
+    mocks.responsive = responsive;
     render(<BaseplatePage />);
-    expect(screen.queryByTestId('header-support-links')).not.toBeInTheDocument();
+    expect(screen.getByTestId('header-support-links')).toHaveAttribute('data-compact', 'true');
   });
 
   it('passes responsive props to ToolSwitcher on mobile', () => {
@@ -127,5 +134,35 @@ describe('BaseplatePage', () => {
     const switcher = screen.getByTestId('tool-switcher');
     expect(switcher).toHaveAttribute('data-compact', 'false');
     expect(switcher).toHaveAttribute('data-icon-only', 'true');
+  });
+
+  it('gives the build-plate loads their own sentence in the split banner', () => {
+    const tiling: BaseplateTiling = {
+      isSplit: true,
+      pieces: Array.from({ length: 4 }, () => ({}) as BaseplatePiece),
+      margins: [],
+      cols: 2,
+      rows: 2,
+      colSizes: [5, 5],
+      rowSizes: [4, 4],
+      totalWidthUnits: 10,
+      totalDepthUnits: 8,
+      stackCount: 1,
+      stackSeparatorThickness: 0,
+      bedLoads: 3,
+      paddingReductionHint: null,
+      isCustomSplit: false,
+      bedOverages: [],
+    };
+    useBaseplatePageStore.setState({ tiling, exportDialogOpen: true });
+
+    try {
+      render(<BaseplatePage />);
+      expect(
+        screen.getByText('baseplate.export.splitBanner baseplate.export.bedLoads_other')
+      ).toBeInTheDocument();
+    } finally {
+      useBaseplatePageStore.setState({ tiling: null, exportDialogOpen: false });
+    }
   });
 });

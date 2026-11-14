@@ -36,7 +36,7 @@ export interface LipSplitInput {
    *  (the historic behavior); pass false when only the top-accent cut applies. */
   readonly splitLipGrid?: boolean;
   /** Horizontal cut plane: geometry with a centroid above this Z becomes the
-   *  top-accent zone, overriding every other zone. Null disables the cut. */
+   *  top-accent zone, overriding every zone but text. Null disables the cut. */
   readonly topAccentCutZ?: number | null;
   /** The mirror plane: a centroid at or below this Z becomes the bottom-accent
    *  zone. Already clamped against `topAccentCutZ` by `accentCutPlanes`, so the
@@ -221,8 +221,8 @@ function lipCutPlanes(
  * Build the split mesh. Every triangle is clipped along the seam planes and,
  * when an accent cut is active, at that Z plane.
  * Each sub-triangle is classified by its centroid: past an accent plane → that
- * accent (wins over all zones), otherwise its lip cell (lip triangles) or
- * feature-tag zone. Returns a flat position buffer + per-output triangle zones.
+ * accent (wins over every zone but text), otherwise its lip cell (lip triangles)
+ * or feature-tag zone. Returns a flat position buffer + per-output triangle zones.
  */
 export function splitLipMesh(input: LipSplitInput): LipSplitResult {
   const { triangleCount, faceGroups, getTriangle, geom, counts } = input;
@@ -300,6 +300,8 @@ function classifyPiece(
     readonly labelSupportsInLabelColor: boolean;
   }
 ): ColorZone {
+  // In the band's color a glyph disappears into the surface it sits on.
+  if (ctx.tag === FeatureTag.TEXT) return 'text';
   if (ctx.cutZ !== null && cz > ctx.cutZ) return 'topAccent';
   if (ctx.bottomCutZ !== null && cz <= ctx.bottomCutZ) return 'bottomAccent';
   if (ctx.isLip && ctx.geom !== null) {

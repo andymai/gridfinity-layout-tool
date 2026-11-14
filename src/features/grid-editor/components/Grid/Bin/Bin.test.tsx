@@ -5,7 +5,11 @@ import { useLayoutStore, useSelectionStore, useViewStore, useInteractionStore } 
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { resetAllStores } from '@/test/testUtils';
-import { binId, categoryId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
+import { binId, categoryId, designId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
+import { resetCustomBinsCache } from '@/features/bin-designer/hooks/useCustomBins';
+import { upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
+// The shell composition root feeds the registry's split switches to the layout.
+import '@/shell/registrations/LinkedRiseRegistration';
 import type { Bin as BinType, Category, Layer, Drawer } from '@/core/types';
 
 vi.mock('@/shared/hooks/useResponsive', () => ({
@@ -365,6 +369,42 @@ describe('Bin', () => {
     it('does not show split badge for small bins', () => {
       render(<Bin {...defaultProps} />);
       expect(screen.queryByText('Split')).not.toBeInTheDocument();
+    });
+
+    it('says oversized, not split, when the design prints it in one piece', () => {
+      localStorage.clear();
+      resetCustomBinsCache();
+      const id = designId('whole');
+      upsertRegistryEntry({
+        id,
+        name: 'Whole',
+        width: 7,
+        depth: 7,
+        height: 3,
+        splitToFitBed: false,
+        updatedAt: '2026-11-12T00:00:00.000Z',
+      });
+      const largeBin = {
+        ...defaultBin,
+        width: gridUnits(7),
+        depth: gridUnits(7),
+        linkedDesignId: id,
+      };
+      render(<Bin {...defaultProps} bin={largeBin} />);
+      expect(screen.queryByText('Split')).not.toBeInTheDocument();
+      expect(screen.getByTitle('Exceeds print size, prints in one piece')).toHaveTextContent(
+        'Oversized'
+      );
+    });
+
+    // The chip sits on the category colour, so it brings its own ground.
+    it('marks the bin with a chip that paints its own ground, label or not', () => {
+      const largeBin = { ...defaultBin, width: gridUnits(7), depth: gridUnits(7) };
+      const { rerender } = render(<Bin {...defaultProps} bin={largeBin} />);
+      expect(screen.getByTitle('Exceeds print size, will be split')).toHaveClass('bg-black/70');
+
+      rerender(<Bin {...defaultProps} bin={{ ...largeBin, label: 'Spatulas' }} />);
+      expect(screen.getByLabelText('Exceeds print size, will be split')).toHaveClass('bg-black/70');
     });
   });
 

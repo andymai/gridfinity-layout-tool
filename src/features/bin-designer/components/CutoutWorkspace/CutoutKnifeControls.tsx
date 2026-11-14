@@ -25,6 +25,7 @@ import { useTranslation } from '@/i18n';
 import { Button, NumberField } from '@/design-system';
 import { cn } from '@/design-system/cn';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
+import { LabelInfo } from '@/shared/components/InfoDot';
 import { KNIFE_SLOT_PRESETS } from '../panel/CutoutsSection/knifeSlotPresets';
 import { resizeKeepingCenter } from '../panel/CutoutsSection/cutoutHelpers';
 import { knifeDepthClamp } from '../panel/CutoutsSection/cutoutSectionVisibility';
@@ -251,9 +252,14 @@ export function CutoutKnifeControls({
       </div>
 
       <div className="space-y-1">
-        <span className="block text-micro text-content-tertiary">
-          {t('binDesigner.cutouts.knifeOpenEnd')}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-micro text-content-tertiary">
+            {t('binDesigner.cutouts.knifeOpenEnd')}
+          </span>
+          <LabelInfo label={t('binDesigner.cutouts.knifeOpenEnd')}>
+            {t('binDesigner.cutouts.knifeOpenEndDetail')}
+          </LabelInfo>
+        </div>
         <div
           role="group"
           aria-label={t('binDesigner.cutouts.knifeOpenEnd')}
@@ -276,9 +282,6 @@ export function CutoutKnifeControls({
             );
           })}
         </div>
-        <p className="text-micro text-content-tertiary">
-          {t('binDesigner.cutouts.knifeOpenEndHint')}
-        </p>
       </div>
 
       {clamp && (

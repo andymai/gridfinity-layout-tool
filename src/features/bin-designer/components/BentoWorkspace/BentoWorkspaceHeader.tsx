@@ -5,7 +5,7 @@
  * out. Composition mirrors the cutout workspace header.
  */
 
-import { Badge, Button, IconButton, Stepper } from '@/design-system';
+import { Button, IconButton, Stepper } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { useTranslation } from '@/i18n';
 import { BentoIcon } from '@/features/bin-designer/components/panel/InteriorSection/icons';
@@ -68,12 +68,9 @@ export function BentoWorkspaceHeader({
     <header className="flex min-h-10 flex-shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-b border-stroke-subtle bg-surface-secondary px-4 py-1">
       <div className="flex items-center gap-2">
         <BentoIcon size={18} className="text-accent" />
-        <h2 className="text-sm font-semibold text-content-primary">
+        <h2 className="text-sm font-semibold text-content">
           {t('binDesigner.interior.bento.title')}
         </h2>
-        <Badge tone="info" title={t('binDesigner.bento.experimentalHint')}>
-          {t('common.experimental')}
-        </Badge>
       </div>
 
       <div className="flex items-center gap-0.5">
@@ -134,9 +131,7 @@ export function BentoWorkspaceHeader({
 
       {drawnCount > 0 && (
         <p className="text-xs tabular-nums text-content-secondary">
-          {drawnCount === 1
-            ? t('binDesigner.bento.countDrawn.one')
-            : t('binDesigner.bento.countDrawn.other', { count: drawnCount })}
+          {t('binDesigner.bento.countDrawn', { count: drawnCount })}
         </p>
       )}
 

@@ -9,6 +9,7 @@ import {
   resolveSlant,
   slantBlocker,
   slantedBinFitsBed,
+  slantedBinFitsOnlyDiagonally,
   slantTopOffsetMm,
 } from './slantPlan';
 
@@ -187,6 +188,23 @@ describe('slant extent', () => {
     expect(slantedBinFitsBed(leaning, 256)).toBe(false);
     expect(slantedBinFitsBed(leaning, 300, 256)).toBe(true);
     expect(slantedBinFitsBed(leaning, 256, 300)).toBe(true);
+  });
+
+  it('lets a long, narrow slanted bin lie across the diagonal, since it cannot be split', () => {
+    const long = { ...DEFAULT_BIN_PARAMS, width: 1.5, depth: 6, height: 4 };
+    const leaning = { ...long, slant: { angleDeg: 30, side: 'back' as const } };
+    expect(slantTopOffsetMm(leaning)).toBeGreaterThan(4);
+
+    expect(slantedBinFitsOnlyDiagonally(long, 256)).toBe(false);
+    expect(slantedBinFitsBed(leaning, 256)).toBe(true);
+    expect(slantedBinFitsOnlyDiagonally(leaning, 256)).toBe(true);
+    expect(slantedBinFitsOnlyDiagonally(leaning, 300)).toBe(false);
+  });
+
+  it('reads a slanted bin too big for the diagonal as not fitting', () => {
+    const big = { ...DEFAULT_BIN_PARAMS, width: 6, depth: 6, height: 6 };
+    const leaning = { ...big, slant: { angleDeg: 45, side: 'right' as const } };
+    expect(slantedBinFitsOnlyDiagonally(leaning, 256)).toBe(false);
   });
 });
 

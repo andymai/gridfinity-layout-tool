@@ -88,9 +88,13 @@ export function useDesignSavedListener(): void {
         addToastRef.current(
           refused > 0
             ? {
-                message: tRef.current('designLinking.toast.autoSyncedSomeRefused', {
-                  count: binsNeedingSync.length - refused,
-                  refused,
+                message: tRef.current('designLinking.toast.withExceptions', {
+                  result: tRef.current('designLinking.toast.autoSynced', {
+                    count: binsNeedingSync.length - refused,
+                  }),
+                  exceptions: tRef.current('designLinking.toast.refusedNoRoom', {
+                    count: refused,
+                  }),
                 }),
                 type: 'info',
                 duration: 4000,
@@ -98,9 +102,13 @@ export function useDesignSavedListener(): void {
             : {
                 message:
                   lockedBins.length > 0
-                    ? tRef.current('designLinking.toast.autoSyncedSomeLocked', {
-                        count: binsNeedingSync.length,
-                        locked: lockedBins.length,
+                    ? tRef.current('designLinking.toast.withExceptions', {
+                        result: tRef.current('designLinking.toast.autoSynced', {
+                          count: binsNeedingSync.length,
+                        }),
+                        exceptions: tRef.current('designLinking.toast.syncSkippedLocked', {
+                          count: lockedBins.length,
+                        }),
                       })
                     : tRef.current('designLinking.toast.autoSynced', {
                         count: binsNeedingSync.length,

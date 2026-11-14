@@ -5,9 +5,9 @@ import { useSettingsSearch } from './useSettingsSearch';
 // Map the keys the test relies on to human strings; fall back to the key.
 const STRINGS: Record<string, string> = {
   'settings.theme': 'Theme',
-  'settings.printEstimates': 'Print Estimates',
+  'settings.printEstimates': 'Print estimates',
   'settings.search.keywords.print': 'filament, nozzle, infill',
-  'settings.tabs.print': 'Print & Material',
+  'settings.tabs.print': 'Print & material',
   'settings.tabs.appearance': 'Appearance',
 };
 
@@ -30,7 +30,7 @@ describe('useSettingsSearch', () => {
     const { result } = renderHook(() => useSettingsSearch('filament'));
     const printResult = result.current.find((r) => r.id === 'print-estimates');
     expect(printResult).toBeDefined();
-    expect(printResult?.tabLabel).toBe('Print & Material');
+    expect(printResult?.tabLabel).toBe('Print & material');
   });
 
   it('returns nothing for a non-matching query', () => {

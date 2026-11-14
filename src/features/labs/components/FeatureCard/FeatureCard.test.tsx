@@ -3,10 +3,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { FeatureCard } from './FeatureCard';
 import type { FeatureFlag } from '@/core/labs';
 
-vi.mock('../FeatureStatusBadge', () => ({
-  FeatureStatusBadge: ({ status }: { status: string }) => <div>Status: {status}</div>,
-}));
-
 vi.mock('../icons', () => ({
   SparklesIcon: ({ className }: { className?: string }) => (
     <div className={className}>Sparkles</div>
@@ -28,10 +24,7 @@ describe('FeatureCard', () => {
     id: 'test-feature',
     name: 'Test Feature',
     description: 'Test feature description',
-    status: 'experimental',
     risk: 'low',
-    addedAt: '2026-01-01',
-    requiresRefresh: false,
   };
 
   const mockToggle = vi.fn();
@@ -47,9 +40,9 @@ describe('FeatureCard', () => {
     expect(screen.getByText('Test feature description')).toBeInTheDocument();
   });
 
-  it('shows status badge', () => {
+  it('marks the feature as early access', () => {
     render(<FeatureCard feature={baseFeature} isEnabled={false} onToggle={mockToggle} />);
-    expect(screen.getByText('Status: experimental')).toBeInTheDocument();
+    expect(screen.getByText('labs.earlyAccess')).toBeInTheDocument();
   });
 
   it('renders toggle switch for experimental features', () => {
@@ -95,13 +88,5 @@ describe('FeatureCard', () => {
 
     render(<FeatureCard feature={highRiskFeature} isEnabled={false} onToggle={mockToggle} />);
     expect(screen.getByText('This is dangerous')).toBeInTheDocument();
-  });
-
-  it('shows always on indicator for graduated features', () => {
-    const graduatedFeature = { ...baseFeature, status: 'graduated' as const };
-    render(<FeatureCard feature={graduatedFeature} isEnabled={true} onToggle={mockToggle} />);
-
-    expect(screen.getByText('labs.alwaysOn')).toBeInTheDocument();
-    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
   });
 });

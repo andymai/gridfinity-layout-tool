@@ -15,22 +15,23 @@ import { batch } from '@/core/cqrs';
 import { useSelectionStore } from '@/core/store/selection';
 import { useMobileStore } from '@/core/store/mobile';
 import { useMutations } from '@/shared/contexts';
-import { calcBedCapacityForBin, CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
+import { useBinBedCapacity } from '@/shared/hooks/useBinBedCapacity';
+import { useBinOverhangSpan } from '@/shared/hooks/useBinOverhangSpan';
 import { maxClearanceHeight } from '@/shared/utils/restingStack';
 import { maxPlaceableHeight } from '@/shared/utils/validationPlacement';
 import { useRestingStack } from '@/shared/hooks/useRestingStack';
-import { isErr, getUserMessage } from '@/core/result';
+import { isErr, isOk, getUserMessage } from '@/core/result';
 import { canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
 import { clamp } from '@/shared/utils/math';
-import { isBinLocked, validateBinRotation } from '@/shared/utils/binLocation';
+import { isBinLocked, planBinRotation } from '@/shared/utils/binLocation';
 import { expandPairIds } from '@/shared/utils/binPairs';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
-import type { GridUnits, HeightUnits, Bin, BinItem, LayerId } from '@/core/types';
+import type { GridUnits, HeightUnits, BinItem, LayerId } from '@/core/types';
 import {
   layerId as toLayerId,
   categoryId as toCategoryId,
   roundHeightUnits,
-  effectiveGridUnitMmY,
   HEIGHT_UNIT_STEP,
 } from '@/core/types';
 import { useTranslation } from '@/i18n';
@@ -69,7 +70,9 @@ export function useBinInspector(): UseBinInspectorReturn {
   const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
 
   const layout = useLayoutStore((state) => state.layout);
-  const { updateBin, deleteBin, moveBinToStaging } = useMutations();
+  const bedCapacityFor = useBinBedCapacity();
+  const overhangSpanFor = useBinOverhangSpan();
+  const { updateBin, deleteBins, moveBinsToStaging } = useMutations();
 
   const selectedBins = useMemo(
     () => layout.bins.filter((b) => selectedBinIds.includes(b.id)),
@@ -80,7 +83,6 @@ export function useBinInspector(): UseBinInspectorReturn {
   const category = bin ? (layout.categories.find((c) => c.id === bin.category) ?? null) : null;
   const layer = bin ? (layout.layers.find((l) => l.id === bin.layerId) ?? null) : null;
 
-  const gridUnitMmY = effectiveGridUnitMmY(layout);
   const restingStack = useRestingStack(layout.bins, layout.layers);
   const constraints = useMemo<BinConstraints>(() => {
     if (!bin) {
@@ -89,20 +91,15 @@ export function useBinInspector(): UseBinInspectorReturn {
         maxHeight: CONSTRAINTS.MIN_BIN_HEIGHT,
         maxClearance: 0,
         maxGridUnits: { width: 5, depth: 5 },
+        overhangMm: { width: 0, depth: 0 },
         needsSplit: false,
         heightRange: `${CONSTRAINTS.MIN_BIN_HEIGHT}u`,
         maxHeightReason: 'drawer_height',
       };
     }
 
-    const maxGrid = calcBedCapacityForBin(
-      bin.width,
-      bin.depth,
-      layout.printBedSize,
-      layout.gridUnitMm,
-      layout.printBedDepth,
-      gridUnitMmY
-    );
+    const maxGrid = bedCapacityFor(bin);
+    const overhangMm = overhangSpanFor(bin);
     const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
 
     // For bins in staging, use full drawer height range
@@ -116,6 +113,7 @@ export function useBinInspector(): UseBinInspectorReturn {
         maxHeight,
         maxClearance,
         maxGridUnits: maxGrid,
+        overhangMm,
         needsSplit,
         heightRange: `${minHeight}u – ${maxHeight}u`,
         maxHeightReason: 'drawer_height',
@@ -152,11 +150,12 @@ export function useBinInspector(): UseBinInspectorReturn {
       maxHeight,
       maxClearance,
       maxGridUnits: maxGrid,
+      overhangMm,
       needsSplit,
       heightRange: `${minHeight}u – ${maxHeight}u`,
       maxHeightReason: limitedByStack ? 'remaining_space' : 'drawer_height',
     };
-  }, [bin, layer, layout, restingStack, gridUnitMmY]);
+  }, [bin, layer, layout, restingStack, bedCapacityFor, overhangSpanFor]);
 
   // Collect all unique custom property keys from all bins in the layout (for suggestions)
   const existingPropertyKeys = useMemo(() => {
@@ -353,36 +352,46 @@ export function useBinInspector(): UseBinInspectorReturn {
   const requestDelete = useCallback(() => {
     if (selectedBins.length === 0) return;
 
-    setDeleteConfirmState({
-      title: selectedBins.length > 1 ? 'Delete Bins' : 'Delete Bin',
-      message:
-        selectedBins.length > 1
-          ? `Delete ${selectedBins.length} selected bins?`
-          : `Delete this ${bin?.width}×${bin?.depth} bin?`,
-    });
-  }, [selectedBins, bin]);
+    const [first] = selectedBins;
+    const deleteCount = expandPairIds(
+      new Set(selectedBins.map((b) => b.id)),
+      useLayoutStore.getState().layout.bins
+    ).size;
+    setDeleteConfirmState(
+      deleteCount > 1
+        ? {
+            title: t('inspector.confirmDelete.titleMulti'),
+            message: t('inspector.confirmDelete.messageMulti', { count: deleteCount }),
+          }
+        : {
+            title: t('inspector.confirmDelete.title'),
+            message: t('inspector.confirmDelete.message', {
+              width: first.width,
+              depth: first.depth,
+            }),
+          }
+    );
+  }, [selectedBins, t]);
 
   const confirmDeleteAction = useCallback(() => {
     if (selectedBins.length === 0) return;
 
     const allBins = useLayoutStore.getState().layout.bins;
-    const deleteIds = [...expandPairIds(new Set(selectedBins.map((b) => b.id)), allBins)];
+    const deleteIds = expandPairIds(new Set(selectedBins.map((b) => b.id)), allBins);
     // Track deletion BEFORE executing (need bin data)
     mlTracking.trackBinsDeletion(
-      allBins.filter((b) => deleteIds.includes(b.id)),
+      allBins.filter((b) => deleteIds.has(b.id)),
       'inspector'
     );
 
     batch(() => {
-      for (const id of deleteIds) {
-        deleteBin(id);
-      }
+      deleteBins([...deleteIds]);
     });
 
     // Selection cleanup handled by CQRS selectionPruning subscriber
     setDeleteConfirmState(null);
     closeMobilePanel();
-  }, [selectedBins, deleteBin, closeMobilePanel]);
+  }, [selectedBins, deleteBins, closeMobilePanel]);
 
   const cancelDelete = useCallback(() => {
     setDeleteConfirmState(null);
@@ -398,13 +407,14 @@ export function useBinInspector(): UseBinInspectorReturn {
       ),
     ];
     batch(() => {
-      for (const id of stashIds) {
-        moveBinToStaging(id);
-      }
+      moveBinsToStaging(stashIds);
     });
+    // Pruning drops only the bins the batch moved; a selected bin already in
+    // the stash would stay selected.
+    setSelectedBins([]);
 
     closeMobilePanel();
-  }, [selectedBins, moveBinToStaging, closeMobilePanel]);
+  }, [selectedBins, moveBinsToStaging, setSelectedBins, closeMobilePanel]);
 
   const clearSelection = useCallback(() => {
     setSelectedBins([]);
@@ -421,28 +431,21 @@ export function useBinInspector(): UseBinInspectorReturn {
       return false;
     }
 
-    const result = validateBinRotation(bin, layout);
-    if (!result.valid) {
-      addToast(result.message, 'error');
+    const plan = planBinRotation(bin, layout);
+    if (!plan.valid) {
+      addToast(t(plan.messageKey), 'error');
       return false;
     }
 
     // Track rotation BEFORE executing (capture original dimensions)
     mlTracking.trackRotation(bin, 1);
 
-    batch(() => {
-      const updates: Partial<Bin> = { width: bin.depth, depth: bin.width };
-      if (result.movedTo) {
-        updates.x = result.movedTo.x as GridUnits;
-        updates.y = result.movedTo.y as GridUnits;
-      }
-      updateBin(bin.id, updates);
-    });
+    if (!batch(() => isOk(updateBin(bin.id, plan.updates)))) return false;
 
-    emitLinkedBinResize(bin, { width: bin.depth, depth: bin.width, height: bin.height });
-
-    if (result.movedTo) {
-      addToast(t('toast.rotateRepositioned', { distance: result.movedTo.distance }), 'info');
+    if (plan.movedTo) {
+      addToast(t('toast.rotateRepositioned', { count: plan.movedTo.distance }), 'info');
+    } else if (plan.halfTurnedInPlace) {
+      addToast(t('toast.binHalfTurned'), 'info');
     }
 
     return true;

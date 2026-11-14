@@ -242,6 +242,23 @@ describe('keyed margin seams (issue #2866)', () => {
     }
   });
 
+  it('keys a short rail as well as the long ones (#4921)', () => {
+    // Back runs long, so the left rail is short: one row of four cells.
+    const params = makeParams({
+      paddingLeft: 12,
+      paddingBack: 12,
+      detachMargins: true,
+      detachMarginConnector: true,
+      connectorNubs: true,
+      connectorStyle: 'dovetailKey',
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    expect(tiling.margins.find((m) => m.side === 'left')?.role).toBe('short');
+    const halfW = (tiling.totalWidthUnits * params.gridUnitMm) / 2;
+    const left = computeSeamJunctions(tiling, params).filter((j) => Math.abs(j.xMm + halfW) < 1e-6);
+    expect(left.map((j) => j.yMm)).toEqual([-42, 0, 42]);
+  });
+
   it('places split-seam keys on the depth pitch too (non-square)', () => {
     const gridUnitMmY = 22;
     const params = makeParams({

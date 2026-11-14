@@ -23,7 +23,12 @@ const mockLoadDesign = vi.fn();
 let mockShouldPromptSupport = false;
 const mockRecordExport = vi.fn();
 /** Split state the mocked hook reports; reset to "fits the bed" per test. */
-let mockSplitState = { needsSplit: false, splitPieceCount: 1 };
+let mockSplitState = {
+  needsSplit: false,
+  fitsDiagonally: false,
+  keptWhole: false,
+  splitPieceCount: 1,
+};
 const mockDownloadPlates = vi.fn(async () => true);
 let mockPlates: { widthU: number; text: string }[] = [];
 
@@ -41,7 +46,6 @@ vi.mock('@/core/store/toast', async (importOriginal) => {
 
 vi.mock('@/features/bin-designer/hooks/useCommunityPublish', () => ({
   useCommunityPublishEntry: () => ({
-    publishVisible: true,
     canPublish: true,
     openPublish: mockOpenPublish,
   }),
@@ -92,6 +96,8 @@ vi.mock('@/features/bin-designer/hooks/useExport', () => ({
     downloadSplit: mockDownloadSplit,
     hasDividers: false,
     needsSplit: mockSplitState.needsSplit,
+    fitsDiagonally: mockSplitState.fitsDiagonally,
+    keptWhole: mockSplitState.keptWhole,
     splitPieceCount: mockSplitState.splitPieceCount,
     maxGridUnits: 6,
   }),
@@ -130,7 +136,12 @@ function setupStore(overrides: Record<string, unknown> = {}) {
 describe('ExportDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSplitState = { needsSplit: false, splitPieceCount: 1 };
+    mockSplitState = {
+      needsSplit: false,
+      fitsDiagonally: false,
+      keptWhole: false,
+      splitPieceCount: 1,
+    };
     mockPlates = [];
     setupStore();
   });
@@ -431,11 +442,11 @@ describe('ExportDialog', () => {
     expect(input.tagName).toBe('INPUT');
   });
 
-  it('shows 3D Model section', () => {
+  it('shows 3D model section', () => {
     render(<ExportDialog />);
 
     // Check for section heading
-    expect(screen.getByText('3D Model')).toBeInTheDocument();
+    expect(screen.getByText('3D model')).toBeInTheDocument();
 
     // Check for description
     expect(screen.getByText(/Export a printable 3D model file/i)).toBeInTheDocument();
@@ -571,6 +582,15 @@ describe('ExportDialog', () => {
       expect(screen.getByRole('radio', { name: 'STEP' })).toHaveAttribute('aria-disabled', 'true');
     });
 
+    it('keeps the filament mapping and gives no color warning for a split 3MF', () => {
+      mockSplitState = { ...mockSplitState, needsSplit: true, splitPieceCount: 2 };
+      setupMultiColorOpen({ open: true, multiColor: true, format: '3mf' });
+      render(<ExportDialog />);
+      expect(screen.getByLabelText(/split into pieces/i)).toBeChecked();
+      expect(screen.getByText('Show filament mapping')).toBeInTheDocument();
+      expect(screen.queryByText(/drops color data/i)).not.toBeInTheDocument();
+    });
+
     it('does not auto-switch when multi-color is disabled on the design with diverged colors', () => {
       // Critical case: zone colors are diverged (red lip, green labelTab) but
       // featureColors.enabled is false. The toggle alone must suppress the
@@ -667,7 +687,7 @@ describe('ExportDialog', () => {
 
   describe('oversized bin under STEP (#3501)', () => {
     beforeEach(() => {
-      mockSplitState = { needsSplit: true, splitPieceCount: 4 };
+      mockSplitState = { ...mockSplitState, needsSplit: true, splitPieceCount: 4 };
       mockDownloadSplit.mockResolvedValue(true);
       setupStore({
         exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG, format: 'step' },
@@ -697,6 +717,96 @@ describe('ExportDialog', () => {
       render(<ExportDialog />);
       expect(screen.getByText(/\.zip$/)).toBeInTheDocument();
     });
+  });
+
+  describe('bin that fits the bed only lying diagonally', () => {
+    beforeEach(() => {
+      mockSplitState = { ...mockSplitState, fitsDiagonally: true, splitPieceCount: 2 };
+      mockDownloadBin.mockResolvedValue(true);
+      mockDownloadSplit.mockResolvedValue(true);
+      setupStore({
+        exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG, format: 'stl' },
+      });
+    });
+
+    it('says so and leaves the split unticked', () => {
+      render(<ExportDialog />);
+      expect(screen.getByText(/only when laid diagonally/i)).toBeInTheDocument();
+      expect(screen.queryByText(/exceeds your print bed/i)).not.toBeInTheDocument();
+      expect(screen.getByLabelText(/split into pieces/i)).not.toBeChecked();
+    });
+
+    it('exports the bin whole by default', async () => {
+      render(<ExportDialog />);
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /^download stl$/i }));
+      });
+      expect(mockDownloadBin).toHaveBeenCalled();
+      expect(mockDownloadSplit).not.toHaveBeenCalled();
+    });
+
+    it('splits once the box is ticked', async () => {
+      render(<ExportDialog />);
+      fireEvent.click(screen.getByLabelText(/split into pieces/i));
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /download split stl/i }));
+      });
+      expect(mockDownloadSplit).toHaveBeenCalled();
+      expect(mockDownloadBin).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('a design that turns splitting off', () => {
+    beforeEach(() => {
+      mockDownloadBin.mockResolvedValue(true);
+      mockDownloadSplit.mockResolvedValue(true);
+      setupStore({
+        params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3, splitToFitBed: false },
+        exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG, format: 'stl' },
+      });
+    });
+
+    it('says the bin is larger than the bed and offers no split', () => {
+      mockSplitState = { ...mockSplitState, keptWhole: true };
+      render(<ExportDialog />);
+      expect(
+        screen.getByText('Larger than your 256 × 256 mm print bed. It exports in one piece.')
+      ).toBeInTheDocument();
+      expect(screen.queryByLabelText(/split into pieces/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/exceeds your print bed/i)).not.toBeInTheDocument();
+    });
+
+    it('exports the bin in one piece', async () => {
+      mockSplitState = { ...mockSplitState, keptWhole: true };
+      render(<ExportDialog />);
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /^download stl$/i }));
+      });
+      expect(mockDownloadBin).toHaveBeenCalled();
+      expect(mockDownloadSplit).not.toHaveBeenCalled();
+    });
+
+    it('reminds about turning a bin that fits diagonally, with no split to offer', () => {
+      mockSplitState = { ...mockSplitState, fitsDiagonally: true, splitPieceCount: 2 };
+      render(<ExportDialog />);
+      expect(screen.getByText(/laid diagonally\. Turn it in your slicer/i)).toBeInTheDocument();
+      expect(screen.queryByLabelText(/split into pieces/i)).not.toBeInTheDocument();
+    });
+  });
+
+  it('reminds about turning a slanted bin, with no split to offer', () => {
+    setupStore({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 1.5,
+        depth: 6,
+        height: 4,
+        slant: { angleDeg: 30, side: 'back' },
+      },
+    });
+    render(<ExportDialog />);
+    expect(screen.getByText(/laid diagonally\. Turn it in your slicer/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/split into pieces/i)).not.toBeInTheDocument();
   });
 
   describe('hinge hardware', () => {
@@ -810,14 +920,19 @@ describe('ExportDialog', () => {
 describe('ExportDialog — design JSON', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSplitState = { needsSplit: false, splitPieceCount: 1 };
+    mockSplitState = {
+      needsSplit: false,
+      fitsDiagonally: false,
+      keptWhole: false,
+      splitPieceCount: 1,
+    };
     setupStore();
   });
 
   it('offers the design JSON alongside the 3D formats', async () => {
     const { downloadDesignAsFile } = await import('@/features/bin-designer/utils/designJson');
     render(<ExportDialog />);
-    const link = screen.getByRole('button', { name: 'Download Design JSON' });
+    const link = screen.getByRole('button', { name: 'Download design JSON' });
     fireEvent.click(link);
     expect(downloadDesignAsFile).toHaveBeenCalledTimes(1);
     // Still open: the source file is usually taken alongside a 3D export.

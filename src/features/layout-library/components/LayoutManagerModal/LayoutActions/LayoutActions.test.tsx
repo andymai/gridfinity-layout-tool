@@ -92,14 +92,14 @@ describe('LayoutActions', () => {
 
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
 
-      expect(screen.getByRole('menuitem', { name: /Copy Link/ })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /Copy link/ })).toBeInTheDocument();
     });
 
     it('calls onCopyLink when copy link clicked', () => {
       render(<LayoutActions {...defaultProps} />);
 
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
-      fireEvent.click(screen.getByRole('menuitem', { name: /Copy Link/ }));
+      fireEvent.click(screen.getByRole('menuitem', { name: /Copy link/ }));
 
       expect(mockOnCopyLink).toHaveBeenCalledOnce();
     });
@@ -183,35 +183,24 @@ describe('LayoutActions', () => {
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
       fireEvent.click(screen.getByRole('menuitem', { name: /Delete/ }));
 
-      expect(screen.getByText('Delete Layout')).toBeInTheDocument();
+      expect(screen.getByText('Delete layout')).toBeInTheDocument();
     });
 
-    it('shows bin count in confirmation when bins exist', () => {
+    it.each([
+      [1, '1 bin will be deleted'],
+      [2, '2 bins will be deleted'],
+    ])('names %i bin(s) in the confirmation', (binCount, message) => {
       render(
         <LayoutActions
           {...defaultProps}
-          entry={createTestEntry({ preview: { ...defaultProps.entry.preview, binCount: 5 } })}
+          entry={createTestEntry({ preview: { ...defaultProps.entry.preview, binCount } })}
         />
       );
 
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
       fireEvent.click(screen.getByRole('menuitem', { name: /Delete/ }));
 
-      expect(screen.getByText(/bins will be deleted/)).toBeInTheDocument();
-    });
-
-    it('shows singular bin message when 1 bin', () => {
-      render(
-        <LayoutActions
-          {...defaultProps}
-          entry={createTestEntry({ preview: { ...defaultProps.entry.preview, binCount: 1 } })}
-        />
-      );
-
-      fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
-      fireEvent.click(screen.getByRole('menuitem', { name: /Delete/ }));
-
-      expect(screen.getByText(/bins will be deleted/)).toBeInTheDocument();
+      expect(screen.getByText(message)).toBeInTheDocument();
     });
 
     it('calls onDelete on second delete click', () => {
@@ -221,7 +210,7 @@ describe('LayoutActions', () => {
       // First click - enters confirmation
       fireEvent.click(screen.getByRole('menuitem', { name: /Delete/ }));
       // Second click - confirms
-      fireEvent.click(screen.getByText('Delete Layout'));
+      fireEvent.click(screen.getByText('Delete layout'));
 
       expect(mockOnDelete).toHaveBeenCalledOnce();
     });
@@ -237,7 +226,7 @@ describe('LayoutActions', () => {
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
       fireEvent.click(screen.getByRole('menuitem', { name: /Delete/ }));
 
-      expect(screen.queryByText(/bins will be deleted/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/will be deleted/)).not.toBeInTheDocument();
     });
   });
 
@@ -261,7 +250,7 @@ describe('LayoutActions', () => {
 
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
       fireEvent.click(screen.getByRole('menuitem', { name: /Delete/ }));
-      expect(screen.getByText('Delete Layout')).toBeInTheDocument();
+      expect(screen.getByText('Delete layout')).toBeInTheDocument();
 
       // Click outside
       await act(async () => {
@@ -270,7 +259,7 @@ describe('LayoutActions', () => {
 
       // Reopen menu - should not be in confirmation state
       fireEvent.click(screen.getByLabelText('More actions for Test Layout'));
-      expect(screen.queryByText('Delete Layout')).not.toBeInTheDocument();
+      expect(screen.queryByText('Delete layout')).not.toBeInTheDocument();
       expect(screen.getByText('Delete')).toBeInTheDocument();
     });
   });

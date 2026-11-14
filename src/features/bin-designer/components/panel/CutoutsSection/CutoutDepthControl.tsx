@@ -138,7 +138,7 @@ export function CutoutDepthControl({
             disabled={disabled}
           />
           {depth !== null && (
-            <p className="text-micro text-text-muted">
+            <p className="text-micro text-content-tertiary">
               {t('binDesigner.cutouts.cutsDepth', { depth: depth.toFixed(1) })}
             </p>
           )}
@@ -146,7 +146,7 @@ export function CutoutDepthControl({
       )}
       {mode === 'through' &&
         (blocked === undefined ? (
-          <p className="text-micro text-text-muted">{t('binDesigner.cutouts.throughHint')}</p>
+          <p className="text-micro text-content-tertiary">{t('binDesigner.cutouts.throughHint')}</p>
         ) : (
           <p role="alert" className="text-label leading-snug text-warning">
             {t(`binDesigner.cutouts.throughBlocked.${blocked}`)}

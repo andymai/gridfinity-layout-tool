@@ -14,6 +14,9 @@ pnpm run check:component-structure
 pnpm run check:missing-tests
 pnpm run check:readme-reminders
 pnpm run check:whats-new
+# Always: a commit that moves or deletes a file a docs page names breaks that page.
+pnpm run check:user-docs
+pnpm run check:user-docs:staged
 # Docs drift two ways: refs to deleted code, and unbounded growth. Only run
 # when a doc is actually staged — it walks every tracked file.
 if git diff --cached --name-only | grep -qE '\.md$'; then

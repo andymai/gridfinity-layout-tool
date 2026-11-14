@@ -1,6 +1,7 @@
 /** Per-axis piece tiling for a split baseplate: bed capacity, partition search and the padding hint. */
 
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
+import { isMarginSeamStyle } from '@/shared/types/bin';
 // The fit checker subtracts the tongue protrusion from the bed budget on male
 // join edges — otherwise pieces that compute to exactly the bed width on paper
 // exceed it as STLs.
@@ -31,6 +32,26 @@ export function detachedSides(params: ResolvedBaseplateParams): {
     right: on && params.paddingRight >= MARGIN_MIN_DETACH_MM,
     front: on && params.paddingFront >= MARGIN_MIN_DETACH_MM,
     back: on && params.paddingBack >= MARGIN_MIN_DETACH_MM,
+  };
+}
+
+/**
+ * Detached sides whose body↔rail seam carries the opt-in connector. Every
+ * detached side does, short rails as well as long; snapClip has no seam form.
+ */
+export function marginSeamSides(params: ResolvedBaseplateParams): {
+  left: boolean;
+  right: boolean;
+  front: boolean;
+  back: boolean;
+} {
+  const det = detachedSides(params);
+  const on = params.detachMarginConnector === true && isMarginSeamStyle(params.connectorStyle);
+  return {
+    left: on && det.left,
+    right: on && det.right,
+    front: on && det.front,
+    back: on && det.back,
   };
 }
 

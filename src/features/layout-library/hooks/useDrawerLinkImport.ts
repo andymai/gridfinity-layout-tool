@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { createLayoutWithSettings, isRealLayoutId } from '@/core/constants';
-import { isErr } from '@/core/result';
-import { useLayoutStore, useLibraryStore, useSettingsStore, useToastStore } from '@/core/store';
+import { createLayoutWithSettings } from '@/core/constants';
+import { isErr, isOk } from '@/core/result';
 import {
-  createLayoutEntry,
-  saveLayoutWithMetadata,
-  wasLibrarySeededThisLoad,
-} from '@/core/storage';
+  queueLibraryWrite,
+  saveOpenLayout,
+  useLayoutStore,
+  useLibraryStore,
+  useSettingsStore,
+  useToastStore,
+} from '@/core/store';
+import { createLayoutEntry, wasLibrarySeededThisLoad } from '@/core/storage';
 import type { Layout, LayoutId } from '@/core/types';
 import { layoutId as toLayoutId } from '@/core/types';
 import { trackLayoutAction } from '@/shared/analytics/posthog';
@@ -117,35 +120,26 @@ async function openDrawerLink(
     // holds, keeps that link instead of restoring a copy taken before it.
     const id = library.activeLayoutId;
     activate(layout, id);
-    const saved = await saveLayoutWithMetadata(id, useLayoutStore.getState().layout, library);
-    if (isErr(saved)) return 'failed';
-    useLibraryStore.getState().setLibrary(saved.value.library);
+    if (isErr(await saveOpenLayout())) return 'failed';
     return { id, layout };
   }
 
   // Flush the outgoing layout first: activation would cancel an autosave still
   // inside its debounce, losing the last edit.
-  let fresh = library;
-  const outgoingId = useLayoutStore.getState().activeLayoutId;
-  if (isRealLayoutId(outgoingId)) {
-    const flushed = await saveLayoutWithMetadata(
-      outgoingId,
-      useLayoutStore.getState().layout,
-      useLibraryStore.getState().library
-    );
-    if (isErr(flushed)) return 'failed';
-    fresh = flushed.value.library;
-    useLibraryStore.getState().setLibrary(fresh);
-  }
+  if (isErr(await saveOpenLayout())) return 'failed';
 
-  const created = await createLayoutEntry(layout, fresh, {
-    name: layout.name,
-    author: fresh.settings.authorName,
-    activate: true,
+  const created = await queueLibraryWrite(async (latest) => {
+    const result = await createLayoutEntry(layout, latest, {
+      name: layout.name,
+      author: latest.settings.authorName,
+      activate: true,
+    });
+    if (isOk(result)) {
+      useLibraryStore.getState().setLibrary(result.value.library);
+      activate(result.value.layout, toLayoutId(result.value.layoutId));
+    }
+    return result;
   });
   if (isErr(created)) return 'failed';
-  useLibraryStore.getState().setLibrary(created.value.library);
-  const id = toLayoutId(created.value.layoutId);
-  activate(created.value.layout, id);
-  return { id, layout: created.value.layout };
+  return { id: toLayoutId(created.value.layoutId), layout: created.value.layout };
 }

@@ -58,6 +58,22 @@ describe('ModeTiles', () => {
     expect(screen.getByText('Chosen controls').closest('[inert]')).not.toBeNull();
   });
 
+  it('keeps the ungated slot live when the chosen mode is blocked', () => {
+    render(
+      <ModeTiles
+        ariaLabel="Body type"
+        value="spacer"
+        onChange={vi.fn()}
+        options={OPTIONS}
+        ungated={<button type="button">Leave this mode</button>}
+      >
+        <div>Chosen controls</div>
+      </ModeTiles>
+    );
+    expect(screen.getByText('Chosen controls').closest('[inert]')).not.toBeNull();
+    expect(screen.getByText('Leave this mode').closest('[inert]')).toBeNull();
+  });
+
   it('passes the tab stop on when the chosen mode is blocked', () => {
     const { onChange } = renderTiles('spacer');
     expect(screen.getByRole('radio', { name: 'Standard' })).toHaveAttribute('tabindex', '0');

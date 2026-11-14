@@ -6,6 +6,15 @@
  */
 
 import { validateMeshData } from './validation';
+import { dropCollapsedTriangles } from './collapsedTriangles';
+
+/**
+ * `keepCollapsedTriangles` is for a caller that drops them itself with
+ * `dropCollapsedTriangles`, because it also has 3MF face groups to shift.
+ */
+export interface StlWriteOptions {
+  readonly keepCollapsedTriangles?: boolean;
+}
 
 const HEADER_SIZE = 80;
 const COUNT_SIZE = 4;
@@ -23,7 +32,8 @@ export function exportSTL(
 export function buildSTLBuffer(
   vertices: Float32Array,
   normals: Float32Array,
-  name: string = 'gridfinity-bin'
+  name: string = 'gridfinity-bin',
+  options: StlWriteOptions = {}
 ): ArrayBuffer {
   validateMeshData(vertices, normals);
 
@@ -62,7 +72,7 @@ export function buildSTLBuffer(
     offset += 2;
   }
 
-  return buffer;
+  return options.keepCollapsedTriangles ? buffer : dropCollapsedTriangles(buffer).data;
 }
 
 function writeHeader(view: DataView, name: string): void {
@@ -83,7 +93,8 @@ export function buildSTLBufferFromIndexed(
   vertices: Float32Array,
   normals: Float32Array,
   indices: Uint32Array,
-  name: string = 'gridfinity-bin'
+  name: string = 'gridfinity-bin',
+  options: StlWriteOptions = {}
 ): ArrayBuffer {
   if (indices.length === 0 || indices.length % 3 !== 0) {
     throw new Error(`Indexed STL: indices length ${indices.length} must be > 0 and divisible by 3`);
@@ -159,7 +170,7 @@ export function buildSTLBufferFromIndexed(
     offset += 2;
   }
 
-  return buffer;
+  return options.keepCollapsedTriangles ? buffer : dropCollapsedTriangles(buffer).data;
 }
 
 export function getSTLFileSize(triangleCount: number): number {

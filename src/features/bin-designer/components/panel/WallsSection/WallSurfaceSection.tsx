@@ -19,6 +19,7 @@ import { jumpToDesignerControl } from '@/features/bin-designer/settingsManifest'
 import { useWallsSection } from './useWallsSection';
 import { PatternSelector } from './PatternSelector';
 import { FeatureToggle } from '../FeatureToggle';
+import { FeatureTip } from '../../FeatureTip';
 import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
 import { LabelPlatesControls } from '../LabelTabsSection/LabelPlatesControls';
 import { AnchorPicker } from '../../controls/AnchorPicker';
@@ -75,6 +76,9 @@ export function WallSurfaceSection() {
           onChange={handlers.handlePatternChange}
           disabled={state.patternDisabled}
           disabledReason={state.patternDisabledReason}
+          labelAddon={
+            <FeatureTip tip="wallPattern" feature={t('binDesigner.walls.pattern.label')} />
+          }
         />
         {state.patternPartialNote && state.patternEnabled && (
           <p className="text-label text-content-tertiary mt-1">{state.patternPartialNote}</p>
@@ -168,7 +172,13 @@ export function WallSurfaceSection() {
         checked={state.isWallTextOpen}
         onChange={handlers.toggleWallText}
         disabledReason={state.wallTextDisabledReason}
-        info={t('binDesigner.walls.text.hint')}
+        badge={
+          <FeatureTip
+            tip="wallText"
+            feature={t('binDesigner.walls.text.heading')}
+            detail={t('binDesigner.walls.text.hint')}
+          />
+        }
         primaryControls={
           <>
             <div className="grid grid-cols-2 gap-2">
@@ -268,7 +278,13 @@ export function WallSurfaceSection() {
         checked={state.labelSlotsEnabled}
         onChange={handlers.toggleLabelSlots}
         disabledReason={state.labelSlotsDisabledReason}
-        info={t('binDesigner.walls.labelSlots.hint')}
+        badge={
+          <FeatureTip
+            tip="labelSlots"
+            feature={t('binDesigner.walls.labelSlots.heading')}
+            detail={t('binDesigner.walls.labelSlots.hint')}
+          />
+        }
         primaryControls={
           <>
             <div>
@@ -294,8 +310,8 @@ export function WallSurfaceSection() {
                 max={MAX_WALL_LABEL_SLOT_PITCH_CELLS}
                 displayValue={
                   state.labelSlotEveryCells === 1
-                    ? t('binDesigner.walls.labelSlots.spacing.one')
-                    : t('binDesigner.walls.labelSlots.spacing.other', {
+                    ? t('binDesigner.walls.labelSlots.everyCell')
+                    : t('binDesigner.walls.labelSlots.everyNCells', {
                         count: state.labelSlotEveryCells,
                       })
                 }
@@ -305,9 +321,7 @@ export function WallSurfaceSection() {
             </div>
             {state.labelSlotCount > 0 && (
               <Readout>
-                {state.labelSlotCount === 1
-                  ? t('binDesigner.walls.labelSlots.count.one')
-                  : t('binDesigner.walls.labelSlots.count.other', { count: state.labelSlotCount })}
+                {t('binDesigner.walls.labelSlots.count', { count: state.labelSlotCount })}
               </Readout>
             )}
             {state.labelSlotNotes.map((note) => (

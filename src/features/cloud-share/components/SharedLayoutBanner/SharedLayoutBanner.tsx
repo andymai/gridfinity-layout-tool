@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
+import { queueLibraryWrite } from '@/core/store/libraryWrites';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useToastStore } from '@/core/store/toast';
 import { createLayoutEntry, initializeLayoutLibrary } from '@/core/storage';
-import { isErr } from '@/core/result';
+import { isErr, isOk } from '@/core/result';
 import { useResultToast } from '@/shared/hooks';
 import { layoutId as toLayoutId } from '@/core/types';
 import { ConfirmDialog } from '@/shared/components';
@@ -74,32 +75,29 @@ export function SharedLayoutBanner() {
   if (isCollaborative) return null;
 
   const handleSave = async () => {
-    // Add suffix to indicate it was imported
     const savedLayout = {
       ...layout, // Use current layout state (user may have made edits)
-      name: `${sharedLayoutOriginalName || layout.name} (imported)`,
+      name: t('layouts.importedName', { name: sharedLayoutOriginalName || layout.name }),
     };
 
-    // Use atomic createLayoutEntry API for storage + library entry in one operation
-    const result = await createLayoutEntry(savedLayout, useLibraryStore.getState().library, {
-      name: savedLayout.name,
-      forkedFrom: { name: sharedLayoutOriginalName || layout.name },
-      activate: true,
+    const result = await queueLibraryWrite(async (library) => {
+      const created = await createLayoutEntry(savedLayout, library, {
+        name: savedLayout.name,
+        forkedFrom: { name: sharedLayoutOriginalName || layout.name },
+        activate: true,
+      });
+      if (isOk(created)) {
+        importLayout(savedLayout, toLayoutId(created.value.layoutId), 'init');
+        setLibrary(created.value.library);
+        clearSharedLayoutPreview();
+      }
+      return created;
     });
 
     if (isErr(result)) {
       showErrorToast(result.error);
       return;
     }
-
-    const { layoutId: rawLayoutId, library: updatedLibrary } = result.value;
-    const brandedLayoutId = toLayoutId(rawLayoutId);
-
-    // Update the layout store with the proper ID (not SHARED_PREVIEW_ID)
-    importLayout(savedLayout, brandedLayoutId, 'init');
-    setLibrary(updatedLibrary);
-
-    clearSharedLayoutPreview();
 
     // Show feedback
     addToast(t('toast.savedToLayouts', { name: savedLayout.name }), 'success');
@@ -109,11 +107,13 @@ export function SharedLayoutBanner() {
   const handleDiscard = async () => {
     try {
       // Restore the user's previous layout
-      const { library: restoredLibrary, activeLayout } = await initializeLayoutLibrary();
-
-      // Import the previous active layout
-      importLayout(activeLayout, restoredLibrary.activeLayoutId, 'init');
-      setActiveLayoutId(restoredLibrary.activeLayoutId);
+      const activeLayout = await queueLibraryWrite(async () => {
+        const { library: restoredLibrary, activeLayout: restored } =
+          await initializeLayoutLibrary();
+        importLayout(restored, restoredLibrary.activeLayoutId, 'init');
+        setActiveLayoutId(restoredLibrary.activeLayoutId);
+        return restored;
+      });
 
       // Reset UI state
       clearSelection();
@@ -139,7 +139,7 @@ export function SharedLayoutBanner() {
 
   return (
     <div
-      className="flex items-center justify-between px-4 py-2 bg-primary text-on-accent"
+      className="flex items-center justify-between px-4 py-2 bg-accent text-on-accent"
       role="alert"
       aria-live="polite"
     >
@@ -173,7 +173,7 @@ export function SharedLayoutBanner() {
         <Button
           variant="ghost"
           onClick={() => setShowDiscardConfirm(true)}
-          className="px-3 bg-on-accent/15 hover:bg-on-accent/25 text-on-accent hover:text-on-accent"
+          className="px-3 bg-surface text-content hover:bg-surface-hover"
         >
           {t('share.banner.discardConfirm')}
         </Button>
@@ -184,7 +184,7 @@ export function SharedLayoutBanner() {
         title={t('share.banner.discardTitle')}
         message={t('share.banner.discardMessage')}
         confirmText={t('share.banner.discardConfirm')}
-        cancelText="Keep viewing"
+        cancelText={t('share.banner.keepViewing')}
         destructive
         onConfirm={handleDiscard}
         onCancel={() => setShowDiscardConfirm(false)}

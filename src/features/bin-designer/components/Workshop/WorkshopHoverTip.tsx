@@ -49,7 +49,7 @@ export function WorkshopHoverTip({ target }: WorkshopHoverTipProps) {
       className="pointer-events-none absolute z-10 max-w-[220px] rounded-md border border-stroke-subtle bg-surface-elevated/95 px-2.5 py-1.5 text-label leading-snug shadow-md backdrop-blur"
       style={{ left: target.x + 14, top: target.y + 18 }}
     >
-      <div className="font-medium text-content-primary">
+      <div className="font-medium text-content">
         {t(PART_LABEL_KEYS[node.type])}
         <span className="ml-1.5 font-mono text-content-secondary">{partSummary(node)}mm</span>
       </div>

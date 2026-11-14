@@ -63,7 +63,7 @@ export function CardSizeEditor({ size, onChange }: CardSizeEditorProps) {
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 flex-col">
           <span className="text-xs text-content-tertiary">{t('scan.cardSize.label')}</span>
-          <span className="text-sm font-medium text-content-primary">
+          <span className="text-sm font-medium text-content">
             {t('scan.cardSize.value', {
               long: roundMm(size.longMm),
               short: roundMm(size.shortMm),

@@ -324,7 +324,7 @@ describe('PenShapeDialog', () => {
       render(<PenShapeDialog open onClose={vi.fn()} />);
       selectCorner(0, 0);
 
-      setRadius('drawerShape.penFilletSelected', '20');
+      setRadius('drawerShape.penFilletSelected_one', '20');
       fireEvent.click(screen.getByText('drawerShape.editor.apply'));
 
       const applied = setDrawerOutline.mock.calls[0][0];
@@ -336,9 +336,9 @@ describe('PenShapeDialog', () => {
     it('gives each corner its own radius', () => {
       render(<PenShapeDialog open onClose={vi.fn()} />);
       selectCorner(0, 0);
-      setRadius('drawerShape.penFilletSelected', '20');
+      setRadius('drawerShape.penFilletSelected_one', '20');
       selectCorner(420, 0);
-      setRadius('drawerShape.penFilletSelected', '40');
+      setRadius('drawerShape.penFilletSelected_one', '40');
       fireEvent.click(screen.getByText('drawerShape.editor.apply'));
 
       const applied = setDrawerOutline.mock.calls[0][0];
@@ -368,7 +368,7 @@ describe('PenShapeDialog', () => {
       // Four corners again, not the eight points the stored outline has.
       expect(screen.getByLabelText('drawerShape.penFillet')).toHaveValue(25);
       selectCorner(0, 0);
-      setRadius('drawerShape.penFilletSelected', '5');
+      setRadius('drawerShape.penFilletSelected_one', '5');
       fireEvent.click(screen.getByText('drawerShape.editor.apply'));
 
       const applied = setDrawerOutline.mock.calls[0][0];
@@ -378,11 +378,11 @@ describe('PenShapeDialog', () => {
     it('reports a mixed radius rather than a wrong one', () => {
       render(<PenShapeDialog open onClose={vi.fn()} />);
       selectCorner(0, 0);
-      setRadius('drawerShape.penFilletSelected', '20');
+      setRadius('drawerShape.penFilletSelected_one', '20');
       selectCorner(420, 0, true);
 
       expect(screen.getByText('drawerShape.penFilletMixed')).toBeInTheDocument();
-      expect(screen.getByLabelText('drawerShape.penFilletSelected')).toHaveValue(0);
+      expect(screen.getByLabelText('drawerShape.penFilletSelected_other')).toHaveValue(0);
     });
 
     it('drops every radius when the sketch is reset', () => {

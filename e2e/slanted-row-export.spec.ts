@@ -27,16 +27,6 @@ test.describe('Slanted row export', () => {
   );
 
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem(
-        'gridfinity-labs-v1',
-        JSON.stringify({
-          enabledFeatures: { slant: true },
-          lastModified: new Date().toISOString(),
-          version: 1,
-        })
-      );
-    });
     await page.goto('/');
     await waitForAppReady(page);
   });
@@ -54,7 +44,7 @@ test.describe('Slanted row export', () => {
     await getSidebar(page)
       .getByRole('button', { name: /Size Brush/i })
       .click();
-    await page.getByRole('checkbox', { name: 'Slanted row' }).click();
+    await page.getByRole('switch', { name: 'Slanted row' }).click();
     await page.getByRole('button', { name: 'Select paint size: 1×1' }).click();
     await expect(page.getByText(/Slanted 1×1 rows \(45°, Back\)/)).toBeVisible();
 

@@ -193,6 +193,56 @@ describe('generatePrintList', () => {
     expect(kept[0].totalPieces).toBeGreaterThan(1);
   });
 
+  describe('a design that turns splitting off', () => {
+    const WHOLE = designId('whole');
+    const SPLITS = designId('splits');
+    const long = (id: string, x: number, linkedDesignId?: Bin['linkedDesignId']): Bin => ({
+      id: binId(id),
+      layerId: layerId('l1'),
+      x: gridUnits(x),
+      y: gridUnits(0),
+      width: gridUnits(6),
+      depth: gridUnits(1),
+      height: heightUnits(3),
+      category: categoryId('c1'),
+      label: '',
+      notes: '',
+      ...(linkedDesignId ? { linkedDesignId } : {}),
+    });
+    const fit: PrintSplitFit = { ...fitAt(4), splitsFor: (b) => b.linkedDesignId !== WHOLE };
+
+    it('lists its bins in one piece and marks them larger than the bed', () => {
+      const [row] = generatePrintList([long('1', 0, WHOLE), long('2', 0, WHOLE)], fit);
+      expect(row.needsSplit).toBe(false);
+      expect(row.keptWhole).toBe(true);
+      expect(row.pieces).toEqual([{ width: 6, depth: 1, count: 1 }]);
+      expect(row.totalPieces).toBe(2);
+    });
+
+    it('still splits bins of every other design, and bins with none', () => {
+      const rows = generatePrintList([long('1', 0, SPLITS), long('2', 0)], fit);
+      expect(rows).toHaveLength(2);
+      for (const row of rows) {
+        expect(row.needsSplit).toBe(true);
+        expect(row.totalPieces).toBe(2);
+        expect(row.keptWhole).toBeUndefined();
+      }
+    });
+
+    it('splits every bin when the fit says nothing about designs', () => {
+      const [row] = generatePrintList([long('1', 0, WHOLE)], fitAt(4));
+      expect(row.needsSplit).toBe(true);
+      expect(row.totalPieces).toBe(2);
+    });
+
+    it('marks nothing for one of its bins that fits', () => {
+      const short = { ...long('1', 0, WHOLE), width: gridUnits(2) };
+      const [row] = generatePrintList([short], fit);
+      expect(row.needsSplit).toBe(false);
+      expect(row.keptWhole).toBeUndefined();
+    });
+  });
+
   it('does not merge bins linked to different designs even with identical dims', () => {
     const base = {
       layerId: layerId('l1'),

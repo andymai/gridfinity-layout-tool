@@ -70,6 +70,11 @@ describe('sanitizeBinFitFields', () => {
     expect(sanitizeBinFitFields({ extendToMargin: false })).toEqual({ extendToMargin: false });
   });
 
+  it('keeps a half turn, and drops anything else in its place', () => {
+    expect(sanitizeBinFitFields({ halfTurned: true })).toEqual({ halfTurned: true });
+    expect(sanitizeBinFitFields({ halfTurned: 'yes' })).toEqual({});
+  });
+
   it('drops a malformed overhang taper and keeps the overhang under it', () => {
     const { taper: _taper, ...plain } = overhang;
     for (const taper of [

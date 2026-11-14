@@ -461,7 +461,7 @@ describe('PrintBin', () => {
         />
       );
 
-      const contentDiv = container.querySelector('.print-bin-content');
+      const contentDiv = container.querySelector('[data-testid="print-bin-content"]');
       expect(contentDiv?.getAttribute('style')).toContain('rotate(-90deg)');
     });
 
@@ -480,7 +480,7 @@ describe('PrintBin', () => {
         />
       );
 
-      const contentDiv = container.querySelector('.print-bin-content');
+      const contentDiv = container.querySelector('[data-testid="print-bin-content"]');
       expect(contentDiv?.getAttribute('style')).not.toContain('rotate');
     });
 

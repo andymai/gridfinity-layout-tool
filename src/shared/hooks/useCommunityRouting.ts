@@ -7,10 +7,6 @@
  * regex match, which the SPA-route guard's literal derivation cannot see, so
  * its Vercel rewrite is asserted explicitly in scripts/check-spa-routes.test.ts.
  *
- * The whole route is gated on the community_showcase Labs flag: while the
- * flag is off, isCommunityRoute stays false and the URL falls through to the
- * layout planner as if the Vercel rewrite did not exist.
- *
  * Nothing in the app navigates INTO this route: browsing from inside happens
  * in the gallery modal, and the route exists for arriving from outside on a
  * shared /community/d/<id> link. So there is no navigateToCommunity here —
@@ -20,7 +16,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { dispatchSyntheticPopstate } from './useDesignerRouting';
-import { useFeatureFlag } from './useFeatureFlag';
 
 // Kept in lockstep with the "/community/d/:id([a-zA-Z0-9]{12})" rewrite in
 // vercel.json and the 12-char ids from api/lib/communityIds.ts.
@@ -87,7 +82,6 @@ function isCommunityPath(): boolean {
 }
 
 export function useCommunityRouting() {
-  const communityEnabled = useFeatureFlag('community_showcase');
   const [isCommunityPathActive, setIsCommunityPathActive] = useState(isCommunityPath);
   const [communityDesignIdFromUrl, setCommunityDesignIdFromUrl] = useState<string | null>(
     getCommunityDesignIdFromUrl
@@ -137,8 +131,8 @@ export function useCommunityRouting() {
   }, []);
 
   return {
-    /** True on /community and /community/d/<id> while community_showcase is on. */
-    isCommunityRoute: communityEnabled && isCommunityPathActive,
+    /** True on /community and /community/d/<id>. */
+    isCommunityRoute: isCommunityPathActive,
     communityDesignIdFromUrl,
     /** The gallery's raw query string; '' off the gallery path. */
     communityGalleryQuery,

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import { Command } from 'cmdk';
 import { Button } from '@/design-system';
 import { PRE_RANKED_VALUE_PREFIX } from '@/shared/utils/commandPaletteFilter';
@@ -132,6 +132,67 @@ describe('CommandPalette', () => {
       const { container } = render(<CommandPalette open={false} onOpenChange={mockOnOpenChange} />);
 
       expect(container).toBeInTheDocument();
+    });
+  });
+
+  describe('footer', () => {
+    beforeEach(() => {
+      // cmdk scrolls the highlighted item into view, which jsdom lacks.
+      Element.prototype.scrollIntoView = vi.fn();
+    });
+
+    function footerOf(container: HTMLElement): string {
+      const footer = container.querySelector('[cmdk-root] > :last-child');
+      return footer?.lastElementChild?.textContent ?? '';
+    }
+
+    function highlighted(container: HTMLElement): Element {
+      const item = container.querySelector('[cmdk-item][data-selected="true"]');
+      if (!item) throw new Error('no highlighted item');
+      return item;
+    }
+
+    it("shows the highlighted command's shortcut", () => {
+      useHistoryStore.setState({ canUndo: true });
+      const { container } = render(
+        <CommandPalette open onOpenChange={mockOnOpenChange} initialQuery="undo" />
+      );
+      const item = highlighted(container);
+      expect(item.textContent).toMatch(/^Undo/);
+      const badge = item.lastElementChild?.textContent ?? '';
+      expect(badge).toMatch(/Z$/);
+      expect(footerOf(container)).toBe(badge);
+    });
+
+    it('follows the highlight as the arrow keys move it', () => {
+      const { container, getByRole } = render(
+        <CommandPalette open onOpenChange={mockOnOpenChange} />
+      );
+      const input = getByRole('combobox');
+      const total = container.querySelectorAll('[cmdk-item]').length;
+      const seen = new Set<string>();
+      for (let step = 0; step < 12; step++) {
+        const item = highlighted(container);
+        const badge = item.children.length > 1 ? (item.lastElementChild?.textContent ?? '') : '';
+        expect(footerOf(container)).toBe(badge || `${total} commands`);
+        seen.add(badge ? 'badge' : 'count');
+        fireEvent.keyDown(input, { key: 'ArrowDown' });
+      }
+      expect(seen).toEqual(new Set(['badge', 'count']));
+    });
+
+    it('counts the commands that match the search', () => {
+      const { container, getByRole } = render(
+        <CommandPalette open onOpenChange={mockOnOpenChange} />
+      );
+      const input = getByRole('combobox');
+
+      fireEvent.change(input, { target: { value: 'supporters' } });
+      expect(container.querySelectorAll('[cmdk-item]')).toHaveLength(1);
+      expect(footerOf(container)).toBe('1 command');
+
+      fireEvent.change(input, { target: { value: 'zzzqqq' } });
+      expect(footerOf(container)).toBe('0 commands');
     });
   });
 

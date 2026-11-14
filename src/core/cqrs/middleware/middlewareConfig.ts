@@ -26,13 +26,15 @@ const PROFILES: Readonly<Record<MiddlewareProfile, MiddlewareFlags>> = {
 };
 
 const COMMAND_PROFILES: Readonly<Record<CommandType, MiddlewareProfile>> = {
-  // Existing domain commands (23)
+  // Domain commands
   'bin.add': 'domain',
   'bin.update': 'domain',
   'bin.delete': 'domain',
   'bin.deleteBatch': 'domain',
   'bin.duplicate': 'domain',
   'bin.moveToStaging': 'domain',
+  'bin.moveToStagingBatch': 'domain',
+  'bin.restoreFromStaging': 'domain',
   'bin.moveFromStaging': 'domain',
   'bin.fillLayer': 'domain',
   'bin.fillGaps': 'domain',

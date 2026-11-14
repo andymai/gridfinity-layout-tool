@@ -1,5 +1,264 @@
 # Changelog
 
+## [4.543.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.543.0...gridfinity-layout-tool-v4.543.1) (2026-11-14)
+
+
+### Bug Fixes
+
+* **baseplate:** invert the connectors on detached margin seams ([#5039](https://github.com/andymai/gridfinity-layout-tool/issues/5039)) ([3eeb7c5](https://github.com/andymai/gridfinity-layout-tool/commit/3eeb7c598f7213b2c308b0f2cfa7cd405ceb40f0))
+* **bin-designer:** keep multi-color on split bins in the preview and 3MF export ([#5040](https://github.com/andymai/gridfinity-layout-tool/issues/5040)) ([dd04362](https://github.com/andymai/gridfinity-layout-tool/commit/dd04362acac1a77ede45c40d545c85d47828514b))
+
+## [4.543.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.542.0...gridfinity-layout-tool-v4.543.0) (2026-11-13)
+
+
+### Features
+
+* **scan:** put traced outlines on the tool's true edge ([#5032](https://github.com/andymai/gridfinity-layout-tool/issues/5032)) ([e3d47c1](https://github.com/andymai/gridfinity-layout-tool/commit/e3d47c19ca8af2bae276bc3a88aa938ecee17316))
+* **scan:** read tool sizes from a plain sheet of paper under the tools ([#5031](https://github.com/andymai/gridfinity-layout-tool/issues/5031)) ([d77a215](https://github.com/andymai/gridfinity-layout-tool/commit/d77a215cff56d8e86fa58da38fea441629276d2c))
+* **scan:** tell makers to shoot from high up and zoom in ([#5033](https://github.com/andymai/gridfinity-layout-tool/issues/5033)) ([87e326d](https://github.com/andymai/gridfinity-layout-tool/commit/87e326d3638bc75405f93ab6d06efde33d950c6c))
+
+## [4.542.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.541.0...gridfinity-layout-tool-v4.542.0) (2026-11-13)
+
+
+### Features
+
+* **bin-designer:** add a per-design switch to print an oversized bin in one piece ([#5019](https://github.com/andymai/gridfinity-layout-tool/issues/5019)) ([9236091](https://github.com/andymai/gridfinity-layout-tool/commit/92360915ff23477b661d0d1b7d4eec4c939cfb3e))
+* **docs:** count docs page views with Vercel Web Analytics ([#5028](https://github.com/andymai/gridfinity-layout-tool/issues/5028)) ([8603685](https://github.com/andymai/gridfinity-layout-tool/commit/860368544dc2fa852c047b657612fbc87ad76f1e))
+* **docs:** give the docs the app's look and a clear way back to the app ([#5029](https://github.com/andymai/gridfinity-layout-tool/issues/5029)) ([5e4ef84](https://github.com/andymai/gridfinity-layout-tool/commit/5e4ef844ebc56baa25e6b8e528a037f362bb9586))
+
+
+### Bug Fixes
+
+* **generation:** build notched lips that the Nesting body can simplify ([#5020](https://github.com/andymai/gridfinity-layout-tool/issues/5020)) ([f33f53a](https://github.com/andymai/gridfinity-layout-tool/commit/f33f53ab971d55a5c69677425973b685f675af4c))
+* **generation:** keep the colour tags on a Nesting body ([#5021](https://github.com/andymai/gridfinity-layout-tool/issues/5021)) ([4de57cd](https://github.com/andymai/gridfinity-layout-tool/commit/4de57cd022159976771c5c8a2a51a6dec9cd8383))
+* **generation:** report an out-of-memory export as such and stop without a rerun ([#5017](https://github.com/andymai/gridfinity-layout-tool/issues/5017)) ([4707154](https://github.com/andymai/gridfinity-layout-tool/commit/470715497e60c0c09468e039874102650ba7862a))
+* **i18n:** tell makers how to glue lid magnets so the lid closes one way round ([#5027](https://github.com/andymai/gridfinity-layout-tool/issues/5027)) ([1efbcb7](https://github.com/andymai/gridfinity-layout-tool/commit/1efbcb73b1a726c46be8247086bcd5c0dfe4d5ce))
+* **i18n:** tell makers that each lid magnet must pull toward the bin magnet ([#5025](https://github.com/andymai/gridfinity-layout-tool/issues/5025)) ([f673270](https://github.com/andymai/gridfinity-layout-tool/commit/f673270ec4d571b619438e9bebbac38eedc5f524))
+* **storage:** run layout library writes one at a time so overlaps keep every change ([#5015](https://github.com/andymai/gridfinity-layout-tool/issues/5015)) ([4897353](https://github.com/andymai/gridfinity-layout-tool/commit/4897353c54a2e532bb40b2573d60fad7628340fe))
+* **undo:** name and count what each undo and toast really did ([#5014](https://github.com/andymai/gridfinity-layout-tool/issues/5014)) ([1a7d46f](https://github.com/andymai/gridfinity-layout-tool/commit/1a7d46ffa06eaa83f7034f6750ac15f949f67c60))
+
+## [4.541.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.540.0...gridfinity-layout-tool-v4.541.0) (2026-11-12)
+
+
+### Features
+
+* **pwa:** offer an install button after export and in Settings ([#4954](https://github.com/andymai/gridfinity-layout-tool/issues/4954)) ([ad4334b](https://github.com/andymai/gridfinity-layout-tool/commit/ad4334bb09ad108aea730b28335d1f2a73a9a2fc))
+* **pwa:** richer install dialog and app shortcuts ([#4952](https://github.com/andymai/gridfinity-layout-tool/issues/4952)) ([ae83531](https://github.com/andymai/gridfinity-layout-tool/commit/ae835319203b3c6419aeb35e7c8aa41eacde344a))
+
+
+### Bug Fixes
+
+* **ci:** make the coverage run on main pass again ([#5007](https://github.com/andymai/gridfinity-layout-tool/issues/5007)) ([1c126cf](https://github.com/andymai/gridfinity-layout-tool/commit/1c126cf08b9178c459edcab3b204d0530a870ebd))
+* **command-palette:** keep the footer one height with a shortcut badge or the count ([#5009](https://github.com/andymai/gridfinity-layout-tool/issues/5009)) ([5792931](https://github.com/andymai/gridfinity-layout-tool/commit/57929311d6be9e19258e2b05b30de78829e41c5d))
+* **deps:** clear the OSV and toolchain advisories on main ([#5008](https://github.com/andymai/gridfinity-layout-tool/issues/5008)) ([dc26c9d](https://github.com/andymai/gridfinity-layout-tool/commit/dc26c9d4631af701ff02cca2fc00690259cf09f3))
+* **i18n:** one phrase for the quick label header, named avatars, and five plural counts ([#5011](https://github.com/andymai/gridfinity-layout-tool/issues/5011)) ([6ab1903](https://github.com/andymai/gridfinity-layout-tool/commit/6ab1903417224f3d150ac1f3af48eacd065707cc))
+* **ui:** seven small fixes to popovers, history rows, presence, the Soon pill, IME input and the palette footer ([#5006](https://github.com/andymai/gridfinity-layout-tool/issues/5006)) ([447a92a](https://github.com/andymai/gridfinity-layout-tool/commit/447a92a3a0fda23e539bc2a740409035fdfe2bd3))
+
+
+### Performance
+
+* **bins:** stash, delete and restore many bins in one command, and keep pairs together ([#5012](https://github.com/andymai/gridfinity-layout-tool/issues/5012)) ([71b1bda](https://github.com/andymai/gridfinity-layout-tool/commit/71b1bdab490f0b75b6391d99434f2eb5014f992e))
+
+## [4.540.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.539.0...gridfinity-layout-tool-v4.540.0) (2026-11-12)
+
+
+### Features
+
+* **analytics:** measure install availability and installed-app use ([#4950](https://github.com/andymai/gridfinity-layout-tool/issues/4950)) ([d4731f0](https://github.com/andymai/gridfinity-layout-tool/commit/d4731f0595190227a900a440749556059660bc78))
+* **docs:** open /docs on the first docs page, with an overview clip ([#4951](https://github.com/andymai/gridfinity-layout-tool/issues/4951)) ([88f031a](https://github.com/andymai/gridfinity-layout-tool/commit/88f031a27bb3d2875ef0eb411bc2cbbf8a045ede))
+
+
+### Bug Fixes
+
+* **analytics:** keep display_mode on events after an idle gap ([#4955](https://github.com/andymai/gridfinity-layout-tool/issues/4955)) ([4f67964](https://github.com/andymai/gridfinity-layout-tool/commit/4f679646980128bb07e95d92282064005e9631fe))
+* **bin-designer:** keep a claimed variant row inside the panel ([#4981](https://github.com/andymai/gridfinity-layout-tool/issues/4981)) ([e57c72a](https://github.com/andymai/gridfinity-layout-tool/commit/e57c72aa52e3c83f5fd512f269f864c2572b057d))
+* **bin-designer:** take the layout's units when a design opens ([#4957](https://github.com/andymai/gridfinity-layout-tool/issues/4957)) ([c7250c1](https://github.com/andymai/gridfinity-layout-tool/commit/c7250c1359529455800b506a01e8772b4e6d66da))
+* **bin-designer:** take the Y grid pitch from the layout ([#4958](https://github.com/andymai/gridfinity-layout-tool/issues/4958)) ([a0c08a4](https://github.com/andymai/gridfinity-layout-tool/commit/a0c08a4dbfad5ab99953c42bc769a389b5d8e78e))
+* **cloud-share:** upload a change that waits for an upload in flight to its share ([#4968](https://github.com/andymai/gridfinity-layout-tool/issues/4968)) ([b95681f](https://github.com/andymai/gridfinity-layout-tool/commit/b95681f311e8ff4c4960ff81fcf6f9072a983b23)), closes [#4961](https://github.com/andymai/gridfinity-layout-tool/issues/4961)
+* **collab:** import collaborators' edits after this browser's own edit ([#4962](https://github.com/andymai/gridfinity-layout-tool/issues/4962)) ([62a081f](https://github.com/andymai/gridfinity-layout-tool/commit/62a081fa45816e5ae309c10de8518c496456bc02))
+* **collab:** keep the owner's design ids in a room and a visitor's own in its copy ([#4969](https://github.com/andymai/gridfinity-layout-tool/issues/4969)) ([c056a92](https://github.com/andymai/gridfinity-layout-tool/commit/c056a92477e0983602aa0fc60d078fb501e261bb)), closes [#4961](https://github.com/andymai/gridfinity-layout-tool/issues/4961)
+* **collab:** save collaborators' edits and keep the newer room on join ([#4959](https://github.com/andymai/gridfinity-layout-tool/issues/4959)) ([fd28fe1](https://github.com/andymai/gridfinity-layout-tool/commit/fd28fe181b021c453d4b9c034b3c6e767fb32f19))
+* **community:** order similar designs like the gallery and check the prints count ([#4986](https://github.com/andymai/gridfinity-layout-tool/issues/4986)) ([4c6f84c](https://github.com/andymai/gridfinity-layout-tool/commit/4c6f84c93c9fac70c79a35681c97905600263d78))
+* **community:** sort the gallery by print count on "Most printed" ([#4974](https://github.com/andymai/gridfinity-layout-tool/issues/4974)) ([e5c7cc3](https://github.com/andymai/gridfinity-layout-tool/commit/e5c7cc3ef6585e07a7ed1e08fba2f80f06f32749))
+* **design-system:** keep the typed label when Enter is pressed ([#4984](https://github.com/andymai/gridfinity-layout-tool/issues/4984)) ([1d30b91](https://github.com/andymai/gridfinity-layout-tool/commit/1d30b913fc20f58eba03262a374834ca31e7c4c2))
+* **generation:** keep embossed tab text full height on thin walls ([#4945](https://github.com/andymai/gridfinity-layout-tool/issues/4945)) ([94a3f13](https://github.com/andymai/gridfinity-layout-tool/commit/94a3f13786d6237fe96137ef9e1b294ba9d5298b))
+* **generation:** treat Safari's refused cross-origin kernel import as a stale asset ([#4966](https://github.com/andymai/gridfinity-layout-tool/issues/4966)) ([c305517](https://github.com/andymai/gridfinity-layout-tool/commit/c305517dacadf39febaae01249daa4eb280e0619)), closes [#4940](https://github.com/andymai/gridfinity-layout-tool/issues/4940)
+* **grid-editor:** centre the selection toolbar over the selection ([#4991](https://github.com/andymai/gridfinity-layout-tool/issues/4991)) ([611858e](https://github.com/andymai/gridfinity-layout-tool/commit/611858edc3ae28d47eb42c52ef8db0cacaaeec76))
+* **grid-editor:** keep row and column numbers above hovered bins ([#4990](https://github.com/andymai/gridfinity-layout-tool/issues/4990)) ([d1e2544](https://github.com/andymai/gridfinity-layout-tool/commit/d1e25449cd7b4a8591ab94f3bf94c8e609cc427c))
+* **grid-editor:** one dialog for turning off half-grid mode, from every entry point ([#4982](https://github.com/andymai/gridfinity-layout-tool/issues/4982)) ([52b3ad3](https://github.com/andymai/gridfinity-layout-tool/commit/52b3ad35b13f69975d75ae3ae73a71b375d87e1b))
+* **i18n:** correct twelve messages and translate the hard-coded ones ([#4993](https://github.com/andymai/gridfinity-layout-tool/issues/4993)) ([1c20bc9](https://github.com/andymai/gridfinity-layout-tool/commit/1c20bc9bc8b3f218c238a7b260fefe419982ec48))
+* **scripts:** look up doc references in a token set before scanning the haystack ([#4983](https://github.com/andymai/gridfinity-layout-tool/issues/4983)) ([c1e1d95](https://github.com/andymai/gridfinity-layout-tool/commit/c1e1d95dac39817b010c6efa32856c48a9a35094))
+* **share:** keep the share popover open when a click inside it changes the status ([#4977](https://github.com/andymai/gridfinity-layout-tool/issues/4977)) ([4331154](https://github.com/andymai/gridfinity-layout-tool/commit/4331154ef5d6690e450bc6ec83fcf256bc0d6c7e))
+* **share:** match whole words in the content filter and name the blocked field ([#4964](https://github.com/andymai/gridfinity-layout-tool/issues/4964)) ([fafd7af](https://github.com/andymai/gridfinity-layout-tool/commit/fafd7af8b006a49d44dca079c9cb53f5559eb1ef))
+* **share:** write a share update only over the blob it read ([#4967](https://github.com/andymai/gridfinity-layout-tool/issues/4967)) ([bd1d75e](https://github.com/andymai/gridfinity-layout-tool/commit/bd1d75e49d6b490fc5156a0ab2d26e28ef1af811)), closes [#4961](https://github.com/andymai/gridfinity-layout-tool/issues/4961)
+* **storage:** retry a failed layout save and guard the tab while unsaved ([#4956](https://github.com/andymai/gridfinity-layout-tool/issues/4956)) ([8158db8](https://github.com/andymai/gridfinity-layout-tool/commit/8158db8f971929eb2ae2348812d6d2b9755ad47c))
+
+## [4.539.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.538.0...gridfinity-layout-tool-v4.539.0) (2026-11-11)
+
+
+### Features
+
+* **bin-designer:** video tips for seven more features ([#4943](https://github.com/andymai/gridfinity-layout-tool/issues/4943)) ([29c070a](https://github.com/andymai/gridfinity-layout-tool/commit/29c070aec2fcea5a9ac9edf8c0f468e56d30febd))
+* **docs:** capture light and dark screenshots and clips ([#4938](https://github.com/andymai/gridfinity-layout-tool/issues/4938)) ([8d915df](https://github.com/andymai/gridfinity-layout-tool/commit/8d915df3a51eb344e90fd4f0b383bd6dda9a8a3b))
+* **docs:** serve the user docs at /docs ([#4939](https://github.com/andymai/gridfinity-layout-tool/issues/4939)) ([7cc0ab0](https://github.com/andymai/gridfinity-layout-tool/commit/7cc0ab08772f8012d5ba5a1cc72667cb11348980))
+
+
+### Bug Fixes
+
+* **generation:** forward the lid face groups from a combined export ([#4946](https://github.com/andymai/gridfinity-layout-tool/issues/4946)) ([56074d7](https://github.com/andymai/gridfinity-layout-tool/commit/56074d73ae2c625dc8a4eb9e5d32407cefa7889e))
+* **header:** stop header controls overlapping below 1280px ([#4941](https://github.com/andymai/gridfinity-layout-tool/issues/4941)) ([201889e](https://github.com/andymai/gridfinity-layout-tool/commit/201889e2beb3e4f634817655b8e52f7ee356ddd1))
+
+## [4.538.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.537.1...gridfinity-layout-tool-v4.538.0) (2026-11-11)
+
+
+### Features
+
+* **baseplate:** stack mixed eco tiles vertically ([#4912](https://github.com/andymai/gridfinity-layout-tool/issues/4912)) ([f3c3832](https://github.com/andymai/gridfinity-layout-tool/commit/f3c3832b39bf77d2119dc0246f69be138a32ce30))
+
+
+### Bug Fixes
+
+* **baseplate:** correct the mixed-size stack wording and translations ([#4931](https://github.com/andymai/gridfinity-layout-tool/issues/4931)) ([3d0d17c](https://github.com/andymai/gridfinity-layout-tool/commit/3d0d17ce091d68443496b312ebb3a46b09fad227))
+* **bin-designer:** snap pathfinder rings before clipping ([#4930](https://github.com/andymai/gridfinity-layout-tool/issues/4930)) ([254e928](https://github.com/andymai/gridfinity-layout-tool/commit/254e9282f830ac4ba4776fbaa4eb688f737bef11))
+
+## [4.537.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.537.0...gridfinity-layout-tool-v4.537.1) (2026-11-10)
+
+
+### Bug Fixes
+
+* **baseplate:** key every detached margin and pocket it on the grid ([#4925](https://github.com/andymai/gridfinity-layout-tool/issues/4925)) ([5cbf7b2](https://github.com/andymai/gridfinity-layout-tool/commit/5cbf7b2a15cac6b261362536ace9a7668d387fff))
+* **bin-designer:** cut overhang feet at half-socket seams ([#4924](https://github.com/andymai/gridfinity-layout-tool/issues/4924)) ([1d9eadb](https://github.com/andymai/gridfinity-layout-tool/commit/1d9eadb0df8b979cb705025aa398cf2c6a5a04f5))
+* **supporters:** pause and muffle the credits when a bin is clicked mid-roll ([#4923](https://github.com/andymai/gridfinity-layout-tool/issues/4923)) ([10a7304](https://github.com/andymai/gridfinity-layout-tool/commit/10a73044506b4d731d1809e15409f6d9264b72a1))
+
+## [4.537.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.536.1...gridfinity-layout-tool-v4.537.0) (2026-11-09)
+
+
+### Features
+
+* **export:** cut removable dividers to fit the print bed in a split export ([#4909](https://github.com/andymai/gridfinity-layout-tool/issues/4909)) ([a215ff6](https://github.com/andymai/gridfinity-layout-tool/commit/a215ff6d0c33eb552514d0541807d4ac12f0298f))
+* **i18n:** pick plural forms by count, per language ([#4888](https://github.com/andymai/gridfinity-layout-tool/issues/4888)) ([78ecd53](https://github.com/andymai/gridfinity-layout-tool/commit/78ecd53ef3df1f92bf55eb6634731613dac0ebc4))
+* **i18n:** plural bin toasts, confirmations and link messages ([#4894](https://github.com/andymai/gridfinity-layout-tool/issues/4894)) ([26ac918](https://github.com/andymai/gridfinity-layout-tool/commit/26ac918287fb5033ed0bbb9f161efd871676a5d8))
+* **i18n:** plural families for the count === 1 pairs ([#4896](https://github.com/andymai/gridfinity-layout-tool/issues/4896)) ([b4ba85a](https://github.com/andymai/gridfinity-layout-tool/commit/b4ba85a45fc3357101fa880b3c93022d8cc99df2))
+* **i18n:** plural forms for the remaining (s) strings ([#4895](https://github.com/andymai/gridfinity-layout-tool/issues/4895)) ([32ab967](https://github.com/andymai/gridfinity-layout-tool/commit/32ab967cad883173017e67f25efc0afa2e441643))
+* **i18n:** plural library and design counts ([#4893](https://github.com/andymai/gridfinity-layout-tool/issues/4893)) ([8f748bf](https://github.com/andymai/gridfinity-layout-tool/commit/8f748bf97ff33c14b71bfd84a29f0a6a7a96b123))
+
+
+### Bug Fixes
+
+* **analytics:** drop the link scanner's simulateEvent rejections ([#4907](https://github.com/andymai/gridfinity-layout-tool/issues/4907)) ([f19484f](https://github.com/andymai/gridfinity-layout-tool/commit/f19484f65a21e0c431d4e1fe82290c9ccd80d3b1))
+* **baseplate:** give the empty Baseplate library its own New baseplate action ([#4892](https://github.com/andymai/gridfinity-layout-tool/issues/4892)) ([0585ead](https://github.com/andymai/gridfinity-layout-tool/commit/0585eada18abd7f5ec582244b5a8d30553fbe0d4))
+* **bin-designer:** fit the preview toolbar to the preview, not the window ([#4883](https://github.com/andymai/gridfinity-layout-tool/issues/4883)) ([e2110d6](https://github.com/andymai/gridfinity-layout-tool/commit/e2110d681448caae525efc1b67464868b34f591f))
+* **bin-designer:** show the bento tips after the grid choice, not beside it ([#4884](https://github.com/andymai/gridfinity-layout-tool/issues/4884)) ([86d1947](https://github.com/andymai/gridfinity-layout-tool/commit/86d1947aa40cba4e04eec407d8dbf04b105478e9))
+* **bin-designer:** space the floor text row from the drainage holes row ([#4891](https://github.com/andymai/gridfinity-layout-tool/issues/4891)) ([e452fce](https://github.com/andymai/gridfinity-layout-tool/commit/e452fcea56c665f1ac691a8afcbcae08994070b7))
+* **context-menu:** clamp again when the menu grows after opening ([#4898](https://github.com/andymai/gridfinity-layout-tool/issues/4898)) ([8d15dba](https://github.com/andymai/gridfinity-layout-tool/commit/8d15dba7e358c6f9d8a0acc5e7753324c7af52f0))
+* **copy:** finish the sentence-case sweep ([#4889](https://github.com/andymai/gridfinity-layout-tool/issues/4889)) ([bd24fd5](https://github.com/andymai/gridfinity-layout-tool/commit/bd24fd545a7b589c6a0286b771082ffe41d266b9))
+* **copy:** set the remaining Title Case labels in sentence case ([#4885](https://github.com/andymai/gridfinity-layout-tool/issues/4885)) ([faa705d](https://github.com/andymai/gridfinity-layout-tool/commit/faa705d5a41659033fea4022616b8280b4122d83))
+* **design-system:** space an Input's text from its left icon ([#4886](https://github.com/andymai/gridfinity-layout-tool/issues/4886)) ([4033433](https://github.com/andymai/gridfinity-layout-tool/commit/40334331eb91516bb67244ee8a9aa4d5c05625fe))
+* **designer:** one divided block per settings group ([#4903](https://github.com/andymai/gridfinity-layout-tool/issues/4903)) ([7acda26](https://github.com/andymai/gridfinity-layout-tool/commit/7acda26fcbdfc74c8b49307f6d92e1248b508ce3))
+* **header:** reach Settings from the bin designer and baseplate below desktop ([#4879](https://github.com/andymai/gridfinity-layout-tool/issues/4879)) ([eb7f28e](https://github.com/andymai/gridfinity-layout-tool/commit/eb7f28eaccccd01706f30736a365188d8c98eac4))
+* **help:** build the help dialog from the shared dialog parts ([#4900](https://github.com/andymai/gridfinity-layout-tool/issues/4900)) ([7533755](https://github.com/andymai/gridfinity-layout-tool/commit/7533755d5d73da48043983d6f49fd6f2fd22ec33))
+* **help:** show undo and redo keys in uppercase ([#4899](https://github.com/andymai/gridfinity-layout-tool/issues/4899)) ([96a79a9](https://github.com/andymai/gridfinity-layout-tool/commit/96a79a970ca2fbdaa2745380c5b4b05468322229))
+* **i18n:** explain what half-grid mode changes ([#4908](https://github.com/andymai/gridfinity-layout-tool/issues/4908)) ([43cd7df](https://github.com/andymai/gridfinity-layout-tool/commit/43cd7dfde833235d5b1aa7bdf04e24cd9fbb3d71))
+* **i18n:** sentence case for the 3D model export heading ([#4901](https://github.com/andymai/gridfinity-layout-tool/issues/4901)) ([3f31b58](https://github.com/andymai/gridfinity-layout-tool/commit/3f31b588b8a288d7106f7409c6eccf57b271268a))
+* **i18n:** translate labels built from English templates ([#4905](https://github.com/andymai/gridfinity-layout-tool/issues/4905)) ([b624ff1](https://github.com/andymai/gridfinity-layout-tool/commit/b624ff109512aa6116abd35eeed98d98f3f75270))
+* **ui:** inline key hints use the Kbd chip ([#4902](https://github.com/andymai/gridfinity-layout-tool/issues/4902)) ([3bfb4f4](https://github.com/andymai/gridfinity-layout-tool/commit/3bfb4f4a8d030fbad5271877c5a18aa5d12523f2))
+* **ui:** lead linked size inputs with their link toggle so fields align ([#4906](https://github.com/andymai/gridfinity-layout-tool/issues/4906)) ([777bea8](https://github.com/andymai/gridfinity-layout-tool/commit/777bea8d15aaa51b81a7b837985391caacabe14f))
+* **ui:** lead the cutout inspector with the selected shape ([#4910](https://github.com/andymai/gridfinity-layout-tool/issues/4910)) ([a337c44](https://github.com/andymai/gridfinity-layout-tool/commit/a337c4420525b5e38c6727956154dd11c671a637))
+* **ui:** one keycap style for shortcut lists ([#4904](https://github.com/andymai/gridfinity-layout-tool/issues/4904)) ([4a29c86](https://github.com/andymai/gridfinity-layout-tool/commit/4a29c86c062000fba32c4b33eba346a960668e4a))
+* **ui:** set hand-built dialog titles at the dialog title size ([#4887](https://github.com/andymai/gridfinity-layout-tool/issues/4887)) ([e7a0cbd](https://github.com/andymai/gridfinity-layout-tool/commit/e7a0cbd4a1272216c69199813cb3a3a21b100290))
+
+## [4.536.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.536.0...gridfinity-layout-tool-v4.536.1) (2026-11-08)
+
+
+### Bug Fixes
+
+* **baseplate:** finish moving the baseplate panel onto the sidebar idioms ([#4869](https://github.com/andymai/gridfinity-layout-tool/issues/4869)) ([391f62d](https://github.com/andymai/gridfinity-layout-tool/commit/391f62d48e780edde99ac08703f840bdb2e52d31))
+* **baseplate:** give the Base section the sidebar's switches and info dots ([#4868](https://github.com/andymai/gridfinity-layout-tool/issues/4868)) ([01de461](https://github.com/andymai/gridfinity-layout-tool/commit/01de4619f5c91fbd6aa44f875832cdb446174881))
+* **baseplate:** move the eco plate explanation behind an info dot ([#4867](https://github.com/andymai/gridfinity-layout-tool/issues/4867)) ([8301c92](https://github.com/andymai/gridfinity-layout-tool/commit/8301c9233cdcf6105303f663727ed48b9fd58a55))
+* **bin-designer:** bring the workspaces onto the sidebar's switches and info dots ([#4870](https://github.com/andymai/gridfinity-layout-tool/issues/4870)) ([ba1d9d5](https://github.com/andymai/gridfinity-layout-tool/commit/ba1d9d5a09dbf9333b9681952c2d5cfd969b7c49))
+* **bin-inspector:** shorten the inspector's notices ([#4873](https://github.com/andymai/gridfinity-layout-tool/issues/4873)) ([c8621c5](https://github.com/andymai/gridfinity-layout-tool/commit/c8621c56aa4faf21eddcb02d68b3ae910b5b61ae))
+* **export:** drop zero-area triangles that slicers read as non-manifold edges ([#4872](https://github.com/andymai/gridfinity-layout-tool/issues/4872)) ([49c8a21](https://github.com/andymai/gridfinity-layout-tool/commit/49c8a2188fc15493e55c475f65700e8add92ecc9))
+* **ui:** show a settings row's explanation behind an info dot ([#4871](https://github.com/andymai/gridfinity-layout-tool/issues/4871)) ([dbec1bb](https://github.com/andymai/gridfinity-layout-tool/commit/dbec1bb14f0de368fe7545521676894bb01e3068))
+
+## [4.536.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.535.1...gridfinity-layout-tool-v4.536.0) (2026-11-08)
+
+
+### Features
+
+* **bin-designer:** choose a color's surface without ticking a box first ([#4864](https://github.com/andymai/gridfinity-layout-tool/issues/4864)) ([4e0a48d](https://github.com/andymai/gridfinity-layout-tool/commit/4e0a48d88bfe4c8cba93f9e6ed7a1f8657eda31e))
+
+## [4.535.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.535.0...gridfinity-layout-tool-v4.535.1) (2026-11-08)
+
+
+### Bug Fixes
+
+* **bin-designer:** keep text out of accent bands ([#4862](https://github.com/andymai/gridfinity-layout-tool/issues/4862)) ([fb1d34d](https://github.com/andymai/gridfinity-layout-tool/commit/fb1d34dc230421b15ff51aa2456f4121e344d008))
+
+## [4.535.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.534.0...gridfinity-layout-tool-v4.535.0) (2026-11-07)
+
+
+### Features
+
+* **bin-designer:** take multi-color bins and Bento out of experimental ([#4857](https://github.com/andymai/gridfinity-layout-tool/issues/4857)) ([f522134](https://github.com/andymai/gridfinity-layout-tool/commit/f5221342333c9e1f39ffb7b7f12fba0dc29e5d95))
+* **settings:** move SpaceMouse from Labs to Settings ([#4854](https://github.com/andymai/gridfinity-layout-tool/issues/4854)) ([599b850](https://github.com/andymai/gridfinity-layout-tool/commit/599b850a735b143141f4d5111cae05ced908a1e1))
+* **whats-new:** announce Workshop, slanted bins and Find bins that fit leaving Labs ([#4856](https://github.com/andymai/gridfinity-layout-tool/issues/4856)) ([286bec5](https://github.com/andymai/gridfinity-layout-tool/commit/286bec5c39136272f36c96441c1ab15debe72ab8))
+
+
+### Bug Fixes
+
+* **generation:** keep text on label plate and fit test exports ([#4858](https://github.com/andymai/gridfinity-layout-tool/issues/4858)) ([743a436](https://github.com/andymai/gridfinity-layout-tool/commit/743a436d28401b623fdcda77f08d4221fe7d2527))
+* **generation:** load a design's fonts before exporting it ([#4848](https://github.com/andymai/gridfinity-layout-tool/issues/4848)) ([c9ba501](https://github.com/andymai/gridfinity-layout-tool/commit/c9ba5017b06b8a88ce51b3fe6325ecab688ac459)), closes [#4847](https://github.com/andymai/gridfinity-layout-tool/issues/4847)
+
+## [4.534.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.533.0...gridfinity-layout-tool-v4.534.0) (2026-11-06)
+
+
+### Features
+
+* **bin-designer:** graduate slanted bins out of Labs, marked experimental ([#4853](https://github.com/andymai/gridfinity-layout-tool/issues/4853)) ([bb14ba8](https://github.com/andymai/gridfinity-layout-tool/commit/bb14ba85f9c860da8d7f60d24b522d0a7829d1c1))
+* **bin-designer:** graduate Workshop out of Labs ([#4851](https://github.com/andymai/gridfinity-layout-tool/issues/4851)) ([1bffa99](https://github.com/andymai/gridfinity-layout-tool/commit/1bffa9981f646de2596ecb006ef93f9a8ea20f67))
+* **community:** graduate the showcase and designer search out of Labs ([#4850](https://github.com/andymai/gridfinity-layout-tool/issues/4850)) ([4f6b9e3](https://github.com/andymai/gridfinity-layout-tool/commit/4f6b9e3e3bffa340f9341033b8f52d6c6ccfe0a1))
+* **layout:** graduate Find Bins That Fit and drop its right-drag shortcut ([#4852](https://github.com/andymai/gridfinity-layout-tool/issues/4852)) ([0a0dc32](https://github.com/andymai/gridfinity-layout-tool/commit/0a0dc32cc48b95b6eb167cf56b9b4a1f204ce67a))
+
+## [4.533.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.532.0...gridfinity-layout-tool-v4.533.0) (2026-11-05)
+
+
+### Features
+
+* **bin-designer:** drop or paste a photo onto the cut editor to trace it ([#4836](https://github.com/andymai/gridfinity-layout-tool/issues/4836)) ([10e452f](https://github.com/andymai/gridfinity-layout-tool/commit/10e452f88d9c490f1aebaaadeacce2c81bc2c07d))
+* **bin-designer:** list a bin's pockets on phones and tablets ([#4839](https://github.com/andymai/gridfinity-layout-tool/issues/4839)) ([fd5815e](https://github.com/andymai/gridfinity-layout-tool/commit/fd5815ee03016b65face864d4bd3a7e7978c33ad))
+* **bin-designer:** offer Scan a tool from the panel, editor header and search ([#4834](https://github.com/andymai/gridfinity-layout-tool/issues/4834)) ([5675148](https://github.com/andymai/gridfinity-layout-tool/commit/5675148b2556c9f5e117dba287317d912a33621f))
+* **bin-designer:** open scanning on a choice of phone or this computer ([#4833](https://github.com/andymai/gridfinity-layout-tool/issues/4833)) ([8442aba](https://github.com/andymai/gridfinity-layout-tool/commit/8442aba2a7a0fc6e0150fec3e0cf775cee8e60a6))
+* **bin-designer:** scan a tool from the command palette and What's New ([#4835](https://github.com/andymai/gridfinity-layout-tool/issues/4835)) ([5c4d1dd](https://github.com/andymai/gridfinity-layout-tool/commit/5c4d1ddd310186ff7ea812b4ea7d020d73adf9eb))
+* **bin-designer:** scan a tool on phones and tablets ([#4838](https://github.com/andymai/gridfinity-layout-tool/issues/4838)) ([c051411](https://github.com/andymai/gridfinity-layout-tool/commit/c051411742257dcc945c0aee6b7a45275d4e2cfe))
+* **bin-designer:** set the panel's groups apart from their sub-headers ([#4822](https://github.com/andymai/gridfinity-layout-tool/issues/4822)) ([c4ec573](https://github.com/andymai/gridfinity-layout-tool/commit/c4ec573dd09359b3cebc513de66626167828c982))
+* **layout:** turn a placed bin through all four directions ([#4843](https://github.com/andymai/gridfinity-layout-tool/issues/4843)) ([2bf37ad](https://github.com/andymai/gridfinity-layout-tool/commit/2bf37adb3caa63a4e64e3cea452842eebb036550))
+
+
+### Bug Fixes
+
+* **bin-designer:** make I and J open the SVG and STL imports ([#4831](https://github.com/andymai/gridfinity-layout-tool/issues/4831)) ([d2f98e1](https://github.com/andymai/gridfinity-layout-tool/commit/d2f98e114cafb8d965a2dc1240960ce8c18d3784))
+* **bin-designer:** print a bin whole when it fits the bed diagonally ([#4840](https://github.com/andymai/gridfinity-layout-tool/issues/4840)) ([2b2e00a](https://github.com/andymai/gridfinity-layout-tool/commit/2b2e00a1cefd169b383658bbd4f027023b269c0b))
+* **bin-designer:** say why a repeat's rows or columns won't grow ([#4841](https://github.com/andymai/gridfinity-layout-tool/issues/4841)) ([a9d9640](https://github.com/andymai/gridfinity-layout-tool/commit/a9d9640dc7fa10d5d2d51a569682285e6ec35d2b))
+* **bin-designer:** show the scan entry when the cut editor opens ([#4830](https://github.com/andymai/gridfinity-layout-tool/issues/4830)) ([1232e6d](https://github.com/andymai/gridfinity-layout-tool/commit/1232e6d161da1cfc856e66254f8f60546d43fbb0))
+* **bin-designer:** stop an interior fillet standing proud of a label tab ([#4842](https://github.com/andymai/gridfinity-layout-tool/issues/4842)) ([fa2648c](https://github.com/andymai/gridfinity-layout-tool/commit/fa2648c5b796923b399c31e02ed0bbf827aedc64))
+
+## [4.532.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.531.0...gridfinity-layout-tool-v4.532.0) (2026-11-04)
+
+
+### Features
+
+* **bin-designer:** clean up a traced outline ([#4815](https://github.com/andymai/gridfinity-layout-tool/issues/4815)) ([343d469](https://github.com/andymai/gridfinity-layout-tool/commit/343d469829f36a57ee9355667383a10aaf373e8e))
+* **bin-designer:** edit an island's points, with a magnifier ([#4819](https://github.com/andymai/gridfinity-layout-tool/issues/4819)) ([f476172](https://github.com/andymai/gridfinity-layout-tool/commit/f4761726598f098f318e67abdb25f3990e6975dc))
+* **scan:** measure a tall tool at its own height with a strip on top ([#4825](https://github.com/andymai/gridfinity-layout-tool/issues/4825)) ([49277fd](https://github.com/andymai/gridfinity-layout-tool/commit/49277fdff2937f2fa372f0c596c0d6ee9a9bdff4))
+* **scan:** save traced tools as SVG, DXF or STL ([#4824](https://github.com/andymai/gridfinity-layout-tool/issues/4824)) ([6054eb0](https://github.com/andymai/gridfinity-layout-tool/commit/6054eb0e8f412513e9aa1de880d65fd02e21edb9))
+
+
+### Bug Fixes
+
+* **bin-designer:** keep a hinged lid's snap when the lip is dipped ([#4821](https://github.com/andymai/gridfinity-layout-tool/issues/4821)) ([603e4b8](https://github.com/andymai/gridfinity-layout-tool/commit/603e4b8d92889e0b0da57acab3dd9a3448f9483c))
+* **bin-designer:** round a funnel cutout's top shoulder onto its slope ([#4820](https://github.com/andymai/gridfinity-layout-tool/issues/4820)) ([8d460d3](https://github.com/andymai/gridfinity-layout-tool/commit/8d460d30aa46eb2b021ce49e9d8945a27fcf5c31))
+* **scan:** keep traced outlines from crossing themselves ([#4823](https://github.com/andymai/gridfinity-layout-tool/issues/4823)) ([8720879](https://github.com/andymai/gridfinity-layout-tool/commit/872087946e43cbf86a8fe33a2c8f1e37bced6886))
+
 ## [4.531.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.530.0...gridfinity-layout-tool-v4.531.0) (2026-11-03)
 
 

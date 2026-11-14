@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Alert, Button, NumberField } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import { PanelSection } from '../PanelSection';
+import { SubHeader } from '@/shared/components/PanelText';
+import { PanelSection } from '@/shared/components/PanelSection';
 import { InfoDot } from '../shared';
 import type {
   BinParams,
@@ -27,6 +28,13 @@ export interface VariantSectionProps {
   readonly onClearOrphans: () => void;
   readonly busy?: boolean;
 }
+
+// The panel is too narrow for a label, a value and two text buttons on one
+// line, so the buttons wrap under the value. The value needs an explicit
+// minimum: at `min-width: auto` it cannot shrink below the text input's
+// intrinsic width, and it drops to a line of its own.
+const ROW_CLASS = 'flex flex-wrap items-center justify-end gap-x-2 gap-y-1';
+const CLAIMED_VALUE_CLASS = 'min-w-[7rem] flex-1';
 
 /**
  * The only editable surface in a variant.
@@ -83,9 +91,9 @@ export function VariantSection({
 
   return (
     <PanelSection>
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-content">
+      <SubHeader as="h3" className="mb-2">
         {t('binDesigner.variants.label')}
-      </h3>
+      </SubHeader>
       <p className="mb-3 text-xs text-content-secondary">
         {t('binDesigner.variants.panelLocked', { name: parentName })}
         <span className="ml-1 inline-flex align-middle">
@@ -113,15 +121,15 @@ export function VariantSection({
         </p>
       )}
 
-      <h4 className="mb-1.5 text-label font-semibold uppercase tracking-wide text-content-tertiary">
+      <SubHeader as="h4" className="mb-1.5">
         {t('binDesigner.variants.dimensions')}
-      </h4>
+      </SubHeader>
       <div className="mb-4 flex flex-col gap-1.5">
         {DIMENSION_OVERRIDE_FIELDS.map((field) => {
           const claimed = overrides.dimensions?.[field];
           const inherited = parentParams[field];
           return (
-            <div key={field} className="flex items-center gap-2">
+            <div key={field} className={ROW_CLASS}>
               <span className="w-24 flex-shrink-0 text-xs text-content-secondary">
                 {t(`binDesigner.variants.field.${field}`)}
               </span>
@@ -141,7 +149,7 @@ export function VariantSection({
                 </>
               ) : (
                 <>
-                  <div className="flex-1">
+                  <div className={CLAIMED_VALUE_CLASS}>
                     <NumberField
                       label={t(`binDesigner.variants.field.${field}`)}
                       value={claimed}
@@ -180,9 +188,9 @@ export function VariantSection({
 
       {cutouts.length > 0 && (
         <>
-          <h4 className="mb-1.5 text-label font-semibold uppercase tracking-wide text-content-tertiary">
+          <SubHeader as="h4" className="mb-1.5">
             {t('binDesigner.variants.cutouts')}
-          </h4>
+          </SubHeader>
           <div className="flex flex-col gap-1">
             {cutouts.map((cutout) => {
               const claimedFields = Object.keys(overrides.cutouts?.[cutout.id] ?? {});
@@ -209,7 +217,7 @@ export function VariantSection({
                         const claimed = overrides.cutouts?.[cutout.id]?.[field];
                         const inherited = cutout[field] ?? 0;
                         return (
-                          <div key={field} className="flex items-center gap-2">
+                          <div key={field} className={ROW_CLASS}>
                             <span className="w-20 flex-shrink-0 text-label text-content-secondary">
                               {t(`binDesigner.variants.field.${field}`)}
                             </span>
@@ -229,7 +237,7 @@ export function VariantSection({
                               </>
                             ) : (
                               <>
-                                <div className="flex-1">
+                                <div className={CLAIMED_VALUE_CLASS}>
                                   <NumberField
                                     label={t(`binDesigner.variants.field.${field}`)}
                                     value={claimed}

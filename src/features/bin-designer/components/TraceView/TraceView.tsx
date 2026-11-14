@@ -8,6 +8,7 @@ import { ScalePanel } from './ScalePanel';
 import { ToolsPanel } from './ToolsPanel';
 import { OutlineCleanupControls } from '../OutlineCleanup/OutlineCleanupControls';
 import { NO_CLEANUP } from '@/shared/outlineCleanup';
+import { TraceExportMenu } from '@/shared/scanReview';
 import { useTraceSession } from './useTraceSession';
 
 export interface TraceViewProps {
@@ -15,6 +16,8 @@ export interface TraceViewProps {
   readonly onClose: () => void;
   /** The traced tools as the millimetre SVG a phone scan uploads. */
   readonly onTraced: (svg: string) => void;
+  /** A photo dropped or pasted on the editor, loaded on open. */
+  readonly initialPhoto?: File | null;
 }
 
 const isImage = (file: File): boolean => file.type.startsWith('image/');
@@ -37,7 +40,7 @@ function DropZone({ onChoose }: { readonly onChoose: () => void }) {
         <circle cx="9" cy="10" r="1.75" />
         <path d="M21 16l-5-5-9 9" />
       </svg>
-      <p className="text-base font-semibold text-content-primary">
+      <p className="text-base font-semibold text-content">
         {t('binDesigner.cutouts.traceView.drop.title')}
       </p>
       <Button type="button" variant="primary" onClick={onChoose}>
@@ -58,7 +61,7 @@ function DropZone({ onChoose }: { readonly onChoose: () => void }) {
  * from what is in frame or by hand, find and fix the tools, and add them.
  * Runs the phone's pipeline and hands back the same SVG it uploads.
  */
-export function TraceView({ open, onClose, onTraced }: TraceViewProps) {
+export function TraceView({ open, onClose, onTraced, initialPhoto }: TraceViewProps) {
   const t = useTranslation();
   const session = useTraceSession();
   const [mode, setMode] = useState<TraceMode>('tap');
@@ -77,6 +80,14 @@ export function TraceView({ open, onClose, onTraced }: TraceViewProps) {
   };
   const pick = () => fileInput.current?.click();
 
+  const { load } = session;
+  const loadedInitial = useRef<File | null>(null);
+  useEffect(() => {
+    if (!open || !initialPhoto || loadedInitial.current === initialPhoto) return;
+    loadedInitial.current = initialPhoto;
+    void load(initialPhoto);
+  }, [open, initialPhoto, load]);
+
   // Escape leaves a marking mode before it can reach the dialog. Captured on
   // the window, since the dialog stops every key that bubbles out of it.
   const marking = mode !== 'tap';
@@ -84,6 +95,9 @@ export function TraceView({ open, onClose, onTraced }: TraceViewProps) {
     if (!marking) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
+      // This capture listener runs before an open popover's own; let the popover
+      // (an info dot) take this Escape so the marks survive closing it.
+      if (document.querySelector('[data-popover]')) return;
       e.preventDefault();
       e.stopPropagation();
       setMode('tap');
@@ -183,6 +197,7 @@ export function TraceView({ open, onClose, onTraced }: TraceViewProps) {
               manual={session.manual}
               hasAuto={session.hasAuto}
               paperSize={paperSize}
+              paperChoice={session.paper}
               cardSize={session.cardSize}
               disabled={busy}
               onStart={(next) => {
@@ -191,6 +206,7 @@ export function TraceView({ open, onClose, onTraced }: TraceViewProps) {
               }}
               onCancel={leaveMode}
               onPaperSize={setPaperSize}
+              onPaperChoice={session.setPaper}
               onApply={(reference) => {
                 leaveMode();
                 session.setScale(reference);
@@ -225,7 +241,7 @@ export function TraceView({ open, onClose, onTraced }: TraceViewProps) {
           )}
           {session.cleanup.available && count > 0 && (
             <section className="flex flex-col gap-2">
-              <h3 className="text-sm font-semibold text-content-primary">
+              <h3 className="text-sm font-semibold text-content">
                 {t('binDesigner.cutouts.traceView.cleanup.heading')}
               </h3>
               {!session.cleanup.canMirror && (
@@ -260,6 +276,11 @@ export function TraceView({ open, onClose, onTraced }: TraceViewProps) {
         <Button type="button" variant="ghost" onClick={onClose}>
           {t('common.cancel')}
         </Button>
+        <TraceExportMenu
+          tools={mode === 'tap' ? session.exportTools : null}
+          source="trace_view"
+          trigger="export"
+        />
         <Button type="button" variant="primary" disabled={svg === null} onClick={add}>
           {count > 1
             ? t('binDesigner.cutouts.traceView.addMany', { count })

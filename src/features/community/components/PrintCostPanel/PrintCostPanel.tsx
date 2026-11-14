@@ -62,9 +62,7 @@ function SourceBadge({ source }: { source: PrintCostFigure['source'] }) {
   }
   return (
     <Badge size="sm" tone="success" data-testid="cost-source-observed">
-      {source.sampleSize === 1
-        ? t('community.cost.observedOne')
-        : t('community.cost.observedOther', { count: source.sampleSize })}
+      {t('community.cost.observed', { count: source.sampleSize })}
     </Badge>
   );
 }

@@ -30,7 +30,12 @@ import {
   MOUNT_MAGNETS_PER_PIECE_MIN,
   MOUNT_MAGNETS_PER_PIECE_MAX,
 } from '@/core/baseplateDefaults';
-import { STACK_PRINT_MIN_GAP_MM, STACK_PRINT_MAX_GAP_MM } from '@/core/types';
+import {
+  STACK_PRINT_MIN_GAP_MM,
+  STACK_PRINT_MAX_GAP_MM,
+  STACK_PRINT_MIN_COPIES,
+  STACK_PRINT_MAX_COPIES,
+} from '@/core/types';
 import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
 import { GRID_PITCH_MM_MAX } from '@/shared/utils/drawerOutline';
 import type { CommandType } from '../commands';
@@ -138,6 +143,7 @@ const binPartialSchema = z
     pairId: z.string().min(1).nullable(),
     pairRole: z.enum(['block', 'rest']).nullable(),
     slant: slantSchema.nullable(),
+    halfTurned: z.boolean(),
     id: binIdSchema,
   })
   .partial();
@@ -161,6 +167,15 @@ const binDuplicateSchema = z.object({ id: binIdSchema });
 
 /** bin.moveToStaging */
 const binMoveToStagingSchema = z.object({ id: binIdSchema });
+
+const binMoveToStagingBatchSchema = z.object({
+  ids: z.array(binIdSchema).min(1),
+});
+
+const binRestoreFromStagingSchema = z.object({
+  ids: z.array(binIdSchema).min(1),
+  layerId: layerIdSchema,
+});
 
 /** bin.moveFromStaging */
 const binMoveFromStagingSchema = z.object({
@@ -344,6 +359,8 @@ const baseplateParamsSchema = z.object({
     .object({
       enabled: z.boolean(),
       gapMm: z.number().min(STACK_PRINT_MIN_GAP_MM).max(STACK_PRINT_MAX_GAP_MM),
+      copies: z.number().int().min(STACK_PRINT_MIN_COPIES).max(STACK_PRINT_MAX_COPIES).optional(),
+      mixedSizes: z.boolean().optional(),
     })
     .optional(),
   splitOverride: z.object({ cols: splitChunkSizes, rows: splitChunkSizes }).optional(),
@@ -405,31 +422,33 @@ const layoutSetActiveBaseplateSchema = z.object({
  * UI and restore commands are excluded (validation=false in their middleware profiles).
  */
 export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> = {
-  // Bin commands (9)
+  // Bin commands
   'bin.add': binAddSchema,
   'bin.update': binUpdateSchema,
   'bin.delete': binDeleteSchema,
   'bin.deleteBatch': binDeleteBatchSchema,
   'bin.duplicate': binDuplicateSchema,
   'bin.moveToStaging': binMoveToStagingSchema,
+  'bin.moveToStagingBatch': binMoveToStagingBatchSchema,
+  'bin.restoreFromStaging': binRestoreFromStagingSchema,
   'bin.moveFromStaging': binMoveFromStagingSchema,
   'bin.fillLayer': binFillLayerSchema,
   'bin.fillGaps': binFillGapsSchema,
   'bin.expandToFit': binExpandToFitSchema,
   'bin.clearLayer': binClearLayerSchema,
 
-  // Layer commands (4)
+  // Layer commands
   'layer.add': layerAddSchema,
   'layer.update': layerUpdateSchema,
   'layer.delete': layerDeleteSchema,
   'layer.reorder': layerReorderSchema,
 
-  // Category commands (3)
+  // Category commands
   'category.add': categoryAddSchema,
   'category.update': categoryUpdateSchema,
   'category.delete': categoryDeleteSchema,
 
-  // Drawer/layout commands (7)
+  // Drawer/layout commands
   'drawer.update': drawerUpdateSchema,
   'drawer.setOutline': z.object({ outline: drawerOutlineSchema.nullable() }),
   'layout.setName': layoutSetNameSchema,
@@ -442,7 +461,7 @@ export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> 
   'layout.setBaseplateParams': layoutSetBaseplateParamsSchema,
   'layout.setActiveBaseplate': layoutSetActiveBaseplateSchema,
 
-  // Library commands (10)
+  // Library commands
   'library.createEntry': libraryCreateEntrySchema,
   'library.deleteEntry': libraryDeleteEntrySchema,
   'library.duplicateEntry': libraryDuplicateEntrySchema,
@@ -454,7 +473,7 @@ export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> 
   'library.renameEntry': libraryRenameEntrySchema,
   'library.importLayout': libraryImportLayoutSchema,
 
-  // Designer commands (1)
+  // Designer commands
   'designer.save': designerSaveSchema,
 };
 

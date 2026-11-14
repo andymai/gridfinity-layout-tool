@@ -10,6 +10,7 @@ import { useTranslation } from '@/i18n';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { GITHUB_ICON_PATH, ICON_PATHS, REDDIT_ICON_PATH } from '@/shared/constants/iconPaths';
 import { GITHUB_REPO_URL, KOFI_URL, REDDIT_GRIDFINITY_URL } from '@/shared/constants/links';
+import { InstallAppOffer } from './InstallAppOffer';
 
 export interface ExportSupportPromptProps {
   /** Resolved download filename, shown in the confirmation line. */
@@ -57,6 +58,8 @@ export function ExportSupportPrompt({ fileName, onDone, source }: ExportSupportP
       <p className="text-sm font-medium text-content">
         {t('export.support.downloading', { fileName })}
       </p>
+
+      <InstallAppOffer />
 
       <div className="my-4 h-px w-full bg-stroke-subtle" />
 

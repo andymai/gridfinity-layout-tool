@@ -4,6 +4,7 @@ import { useBinInspector } from '@/features/bin-inspector';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useToastStore } from '@/core/store/toast';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
 import { resetAllStores } from '@/test/testUtils';
 import { connectSelectionPruning, eventBus } from '@/core/cqrs';
@@ -114,6 +115,7 @@ describe('useBinInspector', () => {
         maxHeight: 2,
         maxClearance: 0,
         maxGridUnits: { width: 5, depth: 5 },
+        overhangMm: { width: 0, depth: 0 },
         needsSplit: false,
         heightRange: '2u',
         maxHeightReason: 'drawer_height',
@@ -256,6 +258,37 @@ describe('useBinInspector', () => {
 
       expect(result.current.constraints.needsSplit).toBe(false);
       expect(result.current.constraints.maxGridUnits).toEqual({ width: 5, depth: 6 });
+    });
+
+    describe('a long bin on a 256mm bed', () => {
+      const seed = (overhang?: Bin['overhang']): void => {
+        const bin = {
+          ...createBin('bin1', 'layer1'),
+          width: gridUnits(1.5),
+          depth: gridUnits(7),
+          overhang,
+        };
+        const layout = useLayoutStore.getState().layout;
+        layout.bins = [bin];
+        layout.printBedSize = mm(256);
+        layout.printBedDepth = undefined;
+        layout.gridUnitMm = mm(42);
+        useLayoutStore.setState({ layout });
+        useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
+      };
+
+      it('reads as fitting diagonally', () => {
+        seed();
+        const { result } = renderHook(() => useBinInspector());
+        expect(result.current.constraints.needsSplit).toBe(false);
+        expect(result.current.constraints.maxGridUnits.diagonal).toBe(true);
+      });
+
+      it('needs a split once its overhang passes the diagonal, as the layout ZIP cuts it', () => {
+        seed({ left: 0, right: 0, front: 10, back: 10, enabled: true });
+        const { result } = renderHook(() => useBinInspector());
+        expect(result.current.constraints.needsSplit).toBe(true);
+      });
     });
   });
 
@@ -598,6 +631,38 @@ describe('useBinInspector', () => {
       expect(heights.get(binId('other'))).toBe(5);
     });
 
+    it.each([
+      { step: 1, atLimit: 6, other: 3, otherAfter: 4 },
+      { step: -1, atLimit: 2, other: 3, otherAfter: 2 },
+    ])(
+      'names the undo after the one bin a $step step changed, not the bin at its limit',
+      ({ step, atLimit, other, otherAfter }) => {
+        const layout = useLayoutStore.getState().layout;
+        layout.drawer.height = heightUnits(6);
+        layout.bins = [
+          { ...createBin('limit', 'layer1', 0, 0), height: heightUnits(atLimit) },
+          { ...createBin('other', 'layer1', 3, 0), height: heightUnits(other) },
+        ];
+        useLayoutStore.setState({ layout });
+        useSelectionStore.setState({ selectedBinIds: [binId('limit'), binId('other')] });
+        useHistoryStore.getState().clear();
+
+        const { result } = renderHook(() => useBinInspector());
+        act(() => {
+          result.current.updateMultiHeight(step);
+        });
+
+        const heights = useLayoutStore.getState().layout.bins.map((b) => b.height);
+        expect(heights).toEqual([atLimit, otherAfter]);
+        expect(useHistoryStore.getState().past).toHaveLength(1);
+
+        act(() => {
+          useHistoryStore.getState().undo();
+        });
+        expect(useToastStore.getState().toasts.at(-1)?.message).toBe('↩ Undid: Updated bin');
+      }
+    );
+
     it('clamps height to constraints', () => {
       const layout = useLayoutStore.getState().layout;
       layout.drawer.height = heightUnits(6);
@@ -745,8 +810,10 @@ describe('useBinInspector', () => {
         result.current.requestDelete();
       });
 
-      expect(result.current.deleteConfirmState).not.toBeNull();
-      expect(result.current.deleteConfirmState?.title).toBe('Delete Bin');
+      expect(result.current.deleteConfirmState).toEqual({
+        title: 'Delete bin',
+        message: 'Delete this 2×2 bin?',
+      });
     });
 
     it('requestDelete shows multi-delete title for multiple bins', () => {
@@ -761,7 +828,40 @@ describe('useBinInspector', () => {
         result.current.requestDelete();
       });
 
-      expect(result.current.deleteConfirmState?.title).toBe('Delete Bins');
+      expect(result.current.deleteConfirmState).toEqual({
+        title: 'Delete bins',
+        message: 'Delete 2 bins?',
+      });
+    });
+
+    it("requestDelete counts a paired bin's partner, which confirm also deletes", () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [
+        { ...createBin('block', 'layer1', 0, 0), pairId: 'p1', pairRole: 'block' },
+        { ...createBin('rest', 'layer1', 3, 0), pairId: 'p1', pairRole: 'rest' },
+        createBin('other', 'layer1', 6, 0),
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('block')] });
+
+      const { result } = renderHook(() => useBinInspector());
+      act(() => {
+        result.current.requestDelete();
+      });
+
+      expect(result.current.deleteConfirmState).toEqual({
+        title: 'Delete bins',
+        message: 'Delete 2 bins?',
+      });
+
+      act(() => {
+        useSelectionStore.setState({ selectedBinIds: [binId('rest'), binId('other')] });
+      });
+      act(() => {
+        result.current.requestDelete();
+      });
+
+      expect(result.current.deleteConfirmState?.message).toBe('Delete 3 bins?');
     });
 
     it('confirmDelete removes bins and clears selection', () => {
@@ -782,6 +882,53 @@ describe('useBinInspector', () => {
 
       expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
       expect(useSelectionStore.getState().selectedBinIds).toHaveLength(0);
+    });
+
+    it("confirmDelete takes a paired bin's partner along", () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [
+        { ...createBin('block', 'layer1', 0, 0), pairId: 'p1', pairRole: 'block' },
+        { ...createBin('rest', 'layer1', 3, 0), pairId: 'p1', pairRole: 'rest' },
+        createBin('kept', 'layer1', 6, 0),
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('block')] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.confirmDelete();
+      });
+
+      expect(useLayoutStore.getState().layout.bins.map((b) => b.id)).toEqual([binId('kept')]);
+    });
+
+    it('confirmDelete removes a full layer in one store update and one undo step', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.drawer = { ...layout.drawer, width: gridUnits(10), depth: gridUnits(8) };
+      layout.bins = [];
+      for (let x = 0; x < 10; x++) {
+        for (let y = 0; y < 8; y++)
+          layout.bins.push(createBin(`f-${x}-${y}`, 'layer1', x, y, 1, 1));
+      }
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: layout.bins.map((b) => b.id) });
+      useHistoryStore.getState().clear();
+      const { result } = renderHook(() => useBinInspector());
+      let storeUpdates = 0;
+      const unsubscribe = useLayoutStore.subscribe(() => {
+        storeUpdates++;
+      });
+
+      act(() => {
+        result.current.confirmDelete();
+      });
+      unsubscribe();
+
+      expect(storeUpdates).toBe(1);
+      expect(useLayoutStore.getState().layout.bins).toEqual([]);
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
+      expect(useHistoryStore.getState().past).toHaveLength(1);
     });
 
     it('cancelDelete clears confirmation state', () => {
@@ -824,6 +971,52 @@ describe('useBinInspector', () => {
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins[0].layerId).toBe('__staging__');
       expect(bins[1].layerId).toBe('__staging__');
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
+    });
+
+    it('also drops a selected bin that was already in the stash from the selection', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [createBin('bin1', 'layer1', 0, 0), createBin('stashed', '__staging__')];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin1'), binId('stashed')] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.moveToStaging();
+      });
+
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
+    });
+
+    it('stashes a full layer in one store update and one undo step', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.drawer = { ...layout.drawer, width: gridUnits(10), depth: gridUnits(8) };
+      layout.bins = [];
+      for (let x = 0; x < 10; x++) {
+        for (let y = 0; y < 8; y++)
+          layout.bins.push(createBin(`f-${x}-${y}`, 'layer1', x, y, 1, 1));
+      }
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: layout.bins.map((b) => b.id) });
+      useHistoryStore.getState().clear();
+      const { result } = renderHook(() => useBinInspector());
+      let storeUpdates = 0;
+      const unsubscribe = useLayoutStore.subscribe(() => {
+        storeUpdates++;
+      });
+
+      act(() => {
+        result.current.moveToStaging();
+      });
+      unsubscribe();
+
+      expect(storeUpdates).toBe(1);
+      expect(useLayoutStore.getState().layout.bins.every((b) => b.layerId === '__staging__')).toBe(
+        true
+      );
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([]);
+      expect(useHistoryStore.getState().past).toHaveLength(1);
     });
   });
 
@@ -864,6 +1057,56 @@ describe('useBinInspector', () => {
       expect(bin.depth).toBe(2);
     });
 
+    it('turns a linked bin without resizing its design, as the R key does', () => {
+      vi.mocked(emitSyncEvent).mockClear();
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [
+        {
+          ...createBin('bin1', 'layer1'),
+          width: gridUnits(1),
+          depth: gridUnits(2),
+          linkedDesignId: toDesignId('d1'),
+        },
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.rotateBin();
+      });
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.width).toBe(2);
+      expect(bin.halfTurned).toBe(true);
+      expect(emitSyncEvent).not.toHaveBeenCalled();
+    });
+
+    it('half turns a square linked bin where it stands', () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [
+        {
+          ...createBin('bin1', 'layer1'),
+          width: gridUnits(2),
+          depth: gridUnits(2),
+          linkedDesignId: toDesignId('d1'),
+        },
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.rotateBin();
+      });
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.halfTurned).toBe(true);
+      expect(bin.width).toBe(2);
+    });
+
     it('returns true on success', () => {
       const layout = useLayoutStore.getState().layout;
       layout.bins = [{ ...createBin('bin1', 'layer1'), width: gridUnits(2), depth: gridUnits(3) }];
@@ -891,32 +1134,25 @@ describe('useBinInspector', () => {
       expect(rotateResult).toBe(false);
     });
 
-    it('emits bin-resized event when rotating a linked bin', () => {
+    it('toasts the translated reason when the turned bin cannot fit anywhere near', () => {
       const layout = useLayoutStore.getState().layout;
-      layout.bins = [
-        {
-          ...createBin('bin1', 'layer1'),
-          width: gridUnits(2),
-          depth: gridUnits(3),
-          linkedDesignId: toDesignId('design-1'),
-        },
-      ];
+      layout.drawer = { ...layout.drawer, width: gridUnits(2), depth: gridUnits(4) };
+      layout.bins = [{ ...createBin('bin1', 'layer1'), width: gridUnits(1), depth: gridUnits(3) }];
       useLayoutStore.setState({ layout });
       useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
-      vi.mocked(emitSyncEvent).mockClear();
+      useToastStore.setState({ toasts: [] });
 
       const { result } = renderHook(() => useBinInspector());
 
+      let rotateResult: boolean = true;
       act(() => {
-        result.current.rotateBin();
+        rotateResult = result.current.rotateBin();
       });
 
-      expect(emitSyncEvent).toHaveBeenCalledWith({
-        type: 'bin-resized',
-        binId: 'bin1',
-        linkedDesignId: 'design-1',
-        newDimensions: { width: 3, depth: 2, height: 3 },
-      });
+      expect(rotateResult).toBe(false);
+      expect(useToastStore.getState().toasts.map((toast) => toast.message)).toEqual([
+        'Cannot rotate: bin would exceed drawer bounds',
+      ]);
     });
   });
 

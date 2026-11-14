@@ -7,6 +7,7 @@ import {
   type RefObject,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { cn } from '../cn';
 
 type Placement = 'bottom-start' | 'bottom-end' | 'top-start' | 'top-end';
 
@@ -43,17 +44,24 @@ export function Popover({
   placement = 'bottom-start',
   offset: gap = 6,
   children,
-  className = '',
+  className,
   'aria-label': ariaLabel,
   onPointerEnter,
   onPointerLeave,
 }: PopoverProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [layer, setLayer] = useState<number | undefined>(undefined);
 
   // Position the popover relative to the anchor
   useEffect(() => {
     if (!isOpen || !anchorRef.current) return;
+
+    // Portaled to the body, the popover would sit under a modal dialog holding
+    // its anchor, so it stacks one above that dialog instead.
+    const host = anchorRef.current.closest<HTMLElement>('[aria-modal="true"]');
+    const hostLayer = host ? Number.parseInt(getComputedStyle(host).zIndex, 10) : Number.NaN;
+    setLayer(Number.isFinite(hostLayer) ? hostLayer + 1 : undefined);
 
     const updatePosition = () => {
       const anchor = anchorRef.current?.getBoundingClientRect();
@@ -128,18 +136,21 @@ export function Popover({
       }
     };
 
+    // Captured and marked handled, so an Escape that closes the popover does
+    // not also close a dialog it sits in.
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        e.preventDefault();
         onClose();
       }
     };
 
     document.addEventListener('mousedown', handleMouseDown);
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown, true);
 
     return () => {
       document.removeEventListener('mousedown', handleMouseDown);
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown, true);
     };
   }, [isOpen, anchorRef, onClose]);
 
@@ -149,11 +160,15 @@ export function Popover({
     <div
       ref={popoverRef}
       role="dialog"
+      data-popover=""
       aria-label={ariaLabel}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
-      className={`fixed z-50 bg-surface-elevated border border-stroke-subtle rounded-xl shadow-xl animate-scale-in ${className}`}
-      style={{ top: position.top, left: position.left }}
+      className={cn(
+        'fixed z-50 bg-surface-elevated border border-stroke-subtle rounded-xl shadow-xl animate-scale-in',
+        className
+      )}
+      style={{ top: position.top, left: position.left, zIndex: layer }}
     >
       {children}
     </div>,

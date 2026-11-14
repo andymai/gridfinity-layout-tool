@@ -2368,3 +2368,29 @@ describe('migrateParams slant', () => {
     expect(migrated.base.stackingLip).toBe(true);
   });
 });
+
+describe('migrateParams - split to fit the bed', () => {
+  it('keeps splitting turned off', () => {
+    expect(migrateParams({ ...DEFAULT_BIN_PARAMS, splitToFitBed: false }).splitToFitBed).toBe(
+      false
+    );
+  });
+
+  // `params` is hashed wholesale for the community duplicate guard, so a design
+  // that splits must not gain the key in either form.
+  it('stores nothing when on, absent or true', () => {
+    expect('splitToFitBed' in migrateParams({ ...DEFAULT_BIN_PARAMS })).toBe(false);
+    const explicit = migrateParams({ ...DEFAULT_BIN_PARAMS, splitToFitBed: true });
+    expect('splitToFitBed' in explicit).toBe(false);
+  });
+
+  it('reads a malformed value as on', () => {
+    const corrupt = { ...DEFAULT_BIN_PARAMS, splitToFitBed: 'no' } as unknown as BinParams;
+    expect('splitToFitBed' in migrateParams(corrupt)).toBe(false);
+  });
+
+  it('carries into the defaults for new bins', () => {
+    const style = extractStyleDefaults({ ...DEFAULT_BIN_PARAMS, splitToFitBed: false });
+    expect(migrateParams(style).splitToFitBed).toBe(false);
+  });
+});

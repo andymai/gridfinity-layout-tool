@@ -32,6 +32,12 @@ describe('ShortcutBadge', () => {
     expect(screen.getByText('P')).toBeInTheDocument();
   });
 
+  it('gives each alternative in a joined string its own keycap', () => {
+    render(<ShortcutBadge keys="Delete / Backspace" />);
+    expect(screen.getByText('Delete').tagName).toBe('KBD');
+    expect(screen.getByText('Backspace').tagName).toBe('KBD');
+  });
+
   it('shows Ctrl modifier on Windows', () => {
     Object.defineProperty(global, 'navigator', {
       value: { platform: 'Win32' },

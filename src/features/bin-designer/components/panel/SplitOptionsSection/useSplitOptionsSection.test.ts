@@ -24,6 +24,14 @@ describe('useSplitOptionsSection', () => {
     useLayoutStore.getState().setPrintBedSize(256);
   });
 
+  it('reports a long bin as fitting diagonally, not needing a split', () => {
+    useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, width: 1.5, depth: 7 } });
+    const { result } = renderHook(() => useSplitOptionsSection());
+    expect(result.current.fitsDiagonally).toBe(true);
+    expect(result.current.needsSplit).toBe(false);
+    expect(result.current.pieceCount).toBe(1);
+  });
+
   it('reports needsSplit=false for small bin', () => {
     const { result } = renderHook(() => useSplitOptionsSection());
     expect(result.current.needsSplit).toBe(false);
@@ -60,6 +68,33 @@ describe('useSplitOptionsSection', () => {
     const { result } = renderHook(() => useSplitOptionsSection());
     expect(result.current.needsSplit).toBe(true);
     expect(result.current.pieceCount).toBe(2);
+  });
+
+  describe('with splitting turned off', () => {
+    it('keeps an oversized bin whole and says it is larger than the bed', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3, splitToFitBed: false },
+      });
+      const { result } = renderHook(() => useSplitOptionsSection());
+      expect(result.current.splitToFitBed).toBe(false);
+      expect(result.current.needsSplit).toBe(false);
+      expect(result.current.keptWhole).toBe(true);
+      expect(result.current.pieceCount).toBe(1);
+    });
+
+    it('turns splitting off and back on through the store', () => {
+      useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 3 } });
+      const { result } = renderHook(() => useSplitOptionsSection());
+      expect(result.current.splitToFitBed).toBe(true);
+
+      act(() => result.current.handlers.toggleSplitToFitBed());
+      expect(useDesignerStore.getState().params.splitToFitBed).toBe(false);
+      expect(result.current.keptWhole).toBe(true);
+
+      act(() => result.current.handlers.toggleSplitToFitBed());
+      expect(useDesignerStore.getState().params.splitToFitBed).toBeUndefined();
+      expect(result.current.needsSplit).toBe(true);
+    });
   });
 
   it("splits against the layout's bed, not the default for new layouts", () => {

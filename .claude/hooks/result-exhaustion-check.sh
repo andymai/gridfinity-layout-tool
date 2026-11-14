@@ -19,6 +19,13 @@ COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
 # Skip if --no-verify flag is present
 [[ "$COMMAND" == *"--no-verify"* ]] && exit 0
 
+# A merge commit stages every line the other parent brings in. Those lines
+# passed this check in their own commits, so compare against the other parent:
+# what is left is this branch's lines and the conflict resolutions.
+BASE=()
+MERGE_HEAD=$(git rev-parse -q --verify MERGE_HEAD 2>/dev/null)
+[[ -n "$MERGE_HEAD" ]] && BASE=("$MERGE_HEAD")
+
 # Get staged TS/TSX files (excluding tests)
 TS_FILES=()
 while IFS= read -r -d '' file; do
@@ -26,14 +33,14 @@ while IFS= read -r -d '' file; do
   [[ "$file" =~ \.test\. ]] && continue
   [[ "$file" =~ /test/ ]] && continue
   TS_FILES+=("$file")
-done < <(git diff --cached --name-only -z --diff-filter=d 2>/dev/null)
+done < <(git diff --cached --name-only -z --diff-filter=d "${BASE[@]}" 2>/dev/null)
 
 # No staged files - allow
 [[ ${#TS_FILES[@]} -eq 0 ]] && exit 0
 
 # One rename-aware diff for every file: a path-limited `git diff <file>` cannot
 # pair a moved file with its old path, so a pure move read as all-new code.
-FULL_DIFF=$(git diff --cached -M 2>/dev/null)
+FULL_DIFF=$(git diff --cached -M "${BASE[@]}" 2>/dev/null)
 file_diff() {
   printf '%s\n' "$FULL_DIFF" | awk -v f="b/$1" '/^diff --git /{p=0} /^\+\+\+ /{p=(substr($0,5)==f)} p'
 }
@@ -54,7 +61,12 @@ for file in "${TS_FILES[@]}"; do
   # Pattern 1: Result-returning function called but result not stored or checked
   # e.g., addBin({ ... }); // Result ignored
   # This is tricky - look for function calls not assigned to anything
-  IGNORED_RESULTS=$(echo "$ADDED_LINES" | grep -E "^\+.*\b(${RESULT_FUNCTIONS})\s*\(" | grep -v '=' | grep -v 'isOk' | grep -v 'isErr' | grep -v 'return ' | grep -v 'export function' | head -3)
+  # A method signature in a type, `updateBin(id: string): Result` or
+  # `addLayer(): Result`, is not a call. A typed first parameter never appears
+  # in a call. A zero-argument signature starts a line or follows `{`, `;` or
+  # `,`, while a ternary's call follows `?` or `:`, so a discarded
+  # `c ? addLayer(): deleteLayer(id);` still counts.
+  IGNORED_RESULTS=$(echo "$ADDED_LINES" | grep -E "^\+.*\b(${RESULT_FUNCTIONS})\s*\(" | grep -vE "\b(${RESULT_FUNCTIONS})\s*\(\s*[A-Za-z_\$][A-Za-z0-9_\$]*\??\s*:[^()]*\)\s*:" | grep -vE "(^\+\s*|[{;,]\s*)(readonly\s+)?(${RESULT_FUNCTIONS})\s*\(\s*\)\s*:" | grep -v '=' | grep -v 'isOk' | grep -v 'isErr' | grep -v 'return ' | grep -v 'export function' | head -3)
 
   if [[ -n "$IGNORED_RESULTS" ]]; then
     ISSUES+="  $file: Result-returning function called but result ignored\n"

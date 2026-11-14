@@ -66,7 +66,7 @@ describe('MineDigestSummary', () => {
     const text = screen.getByTestId('community-mine-digest').textContent ?? '';
     expect(text).toContain('community.mine.digest.summary');
     expect(text).toContain('community.mine.digest.likes(count=4)');
-    expect(text).toContain('community.mine.digest.remixesOne');
+    expect(text).toContain('community.mine.digest.remixes(count=1)');
     expect(text).not.toContain('prints');
   });
 

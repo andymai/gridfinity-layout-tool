@@ -81,7 +81,11 @@ export function HandleSection() {
           max={C.MAX_HANDLE_WIDTH}
           step={C.HANDLE_WIDTH_STEP}
           size="md"
-          aria-label={side ? `${side} handle width` : t('binDesigner.handles.widthAria')}
+          aria-label={
+            side
+              ? t('binDesigner.handles.sideWidthAria', { side: t(`binDesigner.handles.${side}`) })
+              : t('binDesigner.handles.widthAria')
+          }
         />
         <StepperField
           label={t('binDesigner.handles.height')}
@@ -97,7 +101,11 @@ export function HandleSection() {
           max={C.MAX_HANDLE_HEIGHT}
           step={C.HANDLE_HEIGHT_STEP}
           size="md"
-          aria-label={side ? `${side} handle height` : t('binDesigner.handles.heightAria')}
+          aria-label={
+            side
+              ? t('binDesigner.handles.sideHeightAria', { side: t(`binDesigner.handles.${side}`) })
+              : t('binDesigner.handles.heightAria')
+          }
         />
       </div>
     );

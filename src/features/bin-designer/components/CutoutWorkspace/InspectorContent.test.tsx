@@ -58,30 +58,46 @@ vi.mock('../panel/CutoutsSection/geometry', () => ({
   }),
 }));
 
-vi.mock('./BinSizeSection', () => ({
-  BinSizeSection: ({
-    offBoardCount,
-    onClampOffBoard,
-  }: {
-    offBoardCount: number;
-    onClampOffBoard?: () => void;
-  }) => (
-    <div data-testid="bin-size-section" data-off-board-count={offBoardCount}>
-      {onClampOffBoard && (
-        <button type="button" onClick={onClampOffBoard}>
-          clamp
-        </button>
-      )}
-    </div>
-  ),
-}));
+// The warnings stub keeps local state, as `PocketIssueList`'s expanded list
+// does, so a test can tell a kept instance from a remounted one.
+vi.mock('./BinSizeSection', async () => {
+  const { useState } = await import('react');
+  return {
+    BinSizeIssues: ({ offBoardCount }: { offBoardCount: number }) => {
+      const [expanded, setExpanded] = useState(false);
+      return (
+        <button
+          type="button"
+          data-testid="bin-size-issues"
+          data-off-board-count={offBoardCount}
+          data-expanded={String(expanded)}
+          onClick={() => setExpanded(true)}
+        />
+      );
+    },
+    BinSizeSection: () => <div data-testid="bin-size-section" />,
+  };
+});
 
 // Stubbed for the same reason as BinSizeSection: it is self-wired to the
 // designer store, and this suite is about what InspectorContent renders in each
 // selection state, not what the store holds.
-vi.mock('./BinFeaturesSection', () => ({
-  BinFeaturesSection: () => <div data-testid="bin-features-section" />,
-}));
+vi.mock('./BinFeaturesSection', async () => {
+  const { useState } = await import('react');
+  return {
+    BinFeaturesSection: () => {
+      const [touched, setTouched] = useState(false);
+      return (
+        <button
+          type="button"
+          data-testid="bin-features-section"
+          data-touched={String(touched)}
+          onClick={() => setTouched(true)}
+        />
+      );
+    },
+  };
+});
 
 const createCutout = (overrides: Partial<Cutout> = {}): Cutout => ({
   id: 'cutout1',
@@ -171,7 +187,8 @@ describe('InspectorContent', () => {
 
   it('always renders the bin-size section and forwards the off-board count', () => {
     const { rerender } = render(<InspectorContent {...defaultProps} offBoardCount={3} />);
-    expect(screen.getByTestId('bin-size-section')).toHaveAttribute('data-off-board-count', '3');
+    expect(screen.getByTestId('bin-size-section')).toBeInTheDocument();
+    expect(screen.getByTestId('bin-size-issues')).toHaveAttribute('data-off-board-count', '3');
 
     rerender(
       <InspectorContent
@@ -182,6 +199,69 @@ describe('InspectorContent', () => {
       />
     );
     expect(screen.getByTestId('bin-size-section')).toBeInTheDocument();
+    expect(screen.getByTestId('bin-size-issues')).toHaveAttribute('data-off-board-count', '0');
+  });
+
+  it('leads with the selected shape and keeps the bin block below it', () => {
+    render(
+      <InspectorContent
+        {...defaultProps}
+        cutouts={[createCutout()]}
+        selection={new Set(['cutout1'])}
+      />
+    );
+    const shapeField = screen.getByTestId('compact-input-X');
+    const binBlock = screen.getByTestId('bin-size-section');
+    expect(shapeField.compareDocumentPosition(binBlock)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
+  it('keeps the bin warnings above the selected shape', () => {
+    render(
+      <InspectorContent
+        {...defaultProps}
+        cutouts={[createCutout()]}
+        selection={new Set(['cutout1'])}
+        offBoardCount={2}
+      />
+    );
+    const warnings = screen.getByTestId('bin-size-issues');
+    const shapeField = screen.getByTestId('compact-input-X');
+    expect(warnings.compareDocumentPosition(shapeField)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
+  // Clicking a pocket warning selects its shapes; a remount at that moment
+  // would collapse the expanded list the click came from.
+  it('keeps the warnings mounted when the selection changes', () => {
+    const cutouts = [createCutout()];
+    const { rerender } = render(
+      <InspectorContent {...defaultProps} cutouts={cutouts} offBoardCount={2} />
+    );
+    fireEvent.click(screen.getByTestId('bin-size-issues'));
+    rerender(
+      <InspectorContent
+        {...defaultProps}
+        cutouts={cutouts}
+        selection={new Set(['cutout1'])}
+        offBoardCount={2}
+      />
+    );
+    expect(screen.getByTestId('bin-size-issues')).toHaveAttribute('data-expanded', 'true');
+    rerender(<InspectorContent {...defaultProps} cutouts={cutouts} offBoardCount={2} />);
+    expect(screen.getByTestId('bin-size-issues')).toHaveAttribute('data-expanded', 'true');
+  });
+
+  // The shadow board and fit test keep their settings in local state, so the
+  // bin block must not remount when it moves below a new selection.
+  it('keeps the bin block mounted when the selection changes', () => {
+    const cutouts = [createCutout()];
+    const { rerender } = render(<InspectorContent {...defaultProps} cutouts={cutouts} />);
+    fireEvent.click(screen.getByTestId('bin-features-section'));
+    rerender(
+      <InspectorContent {...defaultProps} cutouts={cutouts} selection={new Set(['cutout1'])} />
+    );
+    expect(screen.getByTestId('bin-features-section')).toHaveAttribute('data-touched', 'true');
+    rerender(<InspectorContent {...defaultProps} cutouts={cutouts} />);
+    expect(screen.getByTestId('bin-features-section')).toHaveAttribute('data-touched', 'true');
   });
 
   // Bin-level controls are the ones you must not have to change selection to

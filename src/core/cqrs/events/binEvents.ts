@@ -36,6 +36,26 @@ export type BinMovedToStagingEvent = BaseDomainEvent<
   { readonly id: BinId; readonly previousLayerId: LayerId }
 >;
 
+export type BinsMovedToStagingEvent = BaseDomainEvent<
+  'bin.batchMovedToStaging',
+  {
+    readonly moves: ReadonlyArray<{ readonly id: BinId; readonly previousLayerId: LayerId }>;
+  }
+>;
+
+// Each bin keeps its x and y. `previousOverhang` is the explicit overhang the
+// move dropped, as `bin.update` drops it on a layer change.
+export type BinsRestoredFromStagingEvent = BaseDomainEvent<
+  'bin.restoredFromStaging',
+  {
+    readonly layerId: LayerId;
+    readonly moves: ReadonlyArray<{
+      readonly id: BinId;
+      readonly previousOverhang?: OverhangConfig;
+    }>;
+  }
+>;
+
 // `height` is optional only for back-compat with persisted events that
 // predate the field; new events always include it. apply() leaves
 // `bin.height` untouched when reading an event without it.
@@ -103,6 +123,8 @@ export type BinEvent =
   | BinsDeletedEvent
   | BinDuplicatedEvent
   | BinMovedToStagingEvent
+  | BinsMovedToStagingEvent
+  | BinsRestoredFromStagingEvent
   | BinMovedFromStagingEvent
   | LayerFilledEvent
   | BinsExpandedToFitEvent

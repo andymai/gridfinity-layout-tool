@@ -8,6 +8,7 @@ export {
   registryEdgeFields,
   registryHeightFields,
   registryOverhangFields,
+  registrySplitFields,
   registrySlantFields,
   removeRegistryEntry,
   rebuildRegistry,

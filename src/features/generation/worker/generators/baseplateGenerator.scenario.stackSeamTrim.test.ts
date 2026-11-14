@@ -67,6 +67,22 @@ function topAt(plate: MeshData): (x: number) => number {
 }
 
 describe('stack-print seam trim', () => {
+  it(
+    'keeps an Eco Plate watertight with its relieved joints and trimmed top',
+    { timeout: 120_000 },
+    () => {
+      const plate = getGenerateBaseplate()(
+        defaults({ width: 3, depth: 3, ecoPlate: true, stackSeamTrimMm: TRIM }),
+        NO_OP,
+        true
+      );
+      assertStructurallyValid(plate);
+      assertWatertight(plate);
+      const bb = boundingBox(plate.vertices);
+      expect(bb.minZ).toBeCloseTo(0, 3);
+      expect(bb.maxZ).toBeCloseTo(TRIMMED_TOP, 3);
+    }
+  );
   it('planes every ridge into a land at the trimmed height', { timeout: 120_000 }, () => {
     const plate = getGenerateBaseplate()(defaults({ stackSeamTrimMm: TRIM }), NO_OP, true);
     assertStructurallyValid(plate);

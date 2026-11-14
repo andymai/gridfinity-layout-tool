@@ -313,12 +313,19 @@ export function pieceToMesh(
 
   if (imprinted) {
     const b = getBounds(piece.solid);
-    const result = imprintPieceArrays(vertices, indices, params, deriveDimensions(params, true), {
-      minX: b.xMin,
-      minY: b.yMin,
-      maxX: b.xMax,
-      maxY: b.yMax,
-    });
+    const result = imprintPieceArrays(
+      vertices,
+      indices,
+      undefined,
+      params,
+      deriveDimensions(params, true),
+      {
+        minX: b.xMin,
+        minY: b.yMin,
+        maxX: b.xMax,
+        maxY: b.yMax,
+      }
+    );
     if (result) {
       vertices = result.positions;
       normals = result.normals;

@@ -76,6 +76,34 @@ describe('Popover', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('marks an Escape it closes on as handled, so a dialog round it stays open', () => {
+    const onClose = vi.fn();
+    render(
+      <Popover anchorRef={anchorRef} isOpen onClose={onClose}>
+        <p>Content</p>
+      </Popover>
+    );
+    const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    document.dispatchEvent(event);
+    expect(onClose).toHaveBeenCalledOnce();
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('stacks above a modal dialog that holds its anchor', () => {
+    const modal = document.createElement('div');
+    modal.setAttribute('aria-modal', 'true');
+    modal.style.zIndex = '51';
+    document.body.appendChild(modal);
+    modal.appendChild(anchorEl);
+    render(
+      <Popover anchorRef={anchorRef} isOpen onClose={vi.fn()} aria-label="Menu">
+        <p>Content</p>
+      </Popover>
+    );
+    expect(screen.getByRole('dialog', { name: 'Menu' })).toHaveStyle({ zIndex: '52' });
+    modal.remove();
+  });
+
   it('closes on click outside', () => {
     const onClose = vi.fn();
     render(
@@ -125,6 +153,19 @@ describe('Popover', () => {
     const dialog = screen.getByRole('dialog');
     expect(dialog.className).toContain('w-64');
     expect(dialog.className).toContain('p-4');
+  });
+
+  it('lets a caller class replace the base class it conflicts with', () => {
+    render(
+      <Popover anchorRef={anchorRef} isOpen onClose={vi.fn()} className="rounded-lg shadow-md">
+        <span>Content</span>
+      </Popover>
+    );
+
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveClass('rounded-lg', 'shadow-md', 'bg-surface-elevated');
+    expect(dialog).not.toHaveClass('rounded-xl');
+    expect(dialog).not.toHaveClass('shadow-xl');
   });
 
   it('names the dialog so callers need not nest one of their own', () => {

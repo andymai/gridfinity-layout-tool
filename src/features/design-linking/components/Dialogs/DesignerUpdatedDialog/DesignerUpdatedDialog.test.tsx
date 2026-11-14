@@ -24,7 +24,7 @@ describe('DesignerUpdatedDialog', () => {
 
   it('does not render when pendingDesignerUpdated is null', () => {
     render(<DesignerUpdatedDialog />);
-    expect(screen.queryByText('Designer Updated')).not.toBeInTheDocument();
+    expect(screen.queryByText('Designer updated')).not.toBeInTheDocument();
   });
 
   it('renders dialog when pendingDesignerUpdated is set', () => {
@@ -37,7 +37,7 @@ describe('DesignerUpdatedDialog', () => {
     });
 
     render(<DesignerUpdatedDialog />);
-    expect(screen.getByText('Designer Updated')).toBeInTheDocument();
+    expect(screen.getByText('Designer updated')).toBeInTheDocument();
     expect(screen.getByText(/My Custom Bin/)).toBeInTheDocument();
   });
 
@@ -56,7 +56,7 @@ describe('DesignerUpdatedDialog', () => {
     expect(useLinkingStore.getState().pendingDesignerUpdated).toBeNull();
   });
 
-  it('navigates to designer on "Edit Design" click, naming the resized bin', () => {
+  it('navigates to designer on "Edit design" click, naming the resized bin', () => {
     useLinkingStore.setState({
       pendingDesignerUpdated: {
         binId: binId('bin-1'),
@@ -66,7 +66,7 @@ describe('DesignerUpdatedDialog', () => {
     });
 
     render(<DesignerUpdatedDialog />);
-    fireEvent.click(screen.getByText('Edit Design'));
+    fireEvent.click(screen.getByText('Edit design'));
 
     expect(mockEditLinkedDesign).toHaveBeenCalledWith('design-1', 'bin-1');
     expect(useLinkingStore.getState().pendingDesignerUpdated).toBeNull();

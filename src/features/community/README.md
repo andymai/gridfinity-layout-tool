@@ -35,7 +35,7 @@ Community design showcase (issue #3050): publishing bin designs, browsing them, 
 
 Four things shape it, each replacing something that failed a real user:
 
-- **Capability probe before the form.** `community_showcase` is a per-user Labs flag over the UI, `defaultEnabled` so it is on for everyone who has not switched it off; `COMMUNITY_PUBLISH_ENABLED` is a deployment kill switch with no client-side shadow. Without `GET /api/community?capabilities=1` the only way to discover publishing is off is to POST a finished design and read the 503, after a sign-in and an OAuth redirect. A probe that _fails_ falls through to the form: an unreachable probe says nothing about the switch, and the publish attempt is still the real gate.
+- **Capability probe before the form.** `COMMUNITY_PUBLISH_ENABLED` is a deployment kill switch with no client-side shadow. Without `GET /api/community?capabilities=1` the only way to discover publishing is off is to POST a finished design and read the 503, after a sign-in and an OAuth redirect. A probe that _fails_ falls through to the form: an unreachable probe says nothing about the switch, and the publish attempt is still the real gate.
 - **Sign-in is deferred to the publish attempt**, and the fields are validated first, so an invalid name never costs an OAuth round trip. The draft rides `savePendingPublishAction`; the public name rides localStorage, which survives the redirect independently.
 - **Errors are routed, not announced.** `presentPublishError` maps each failure to a field or to the banner. The server names the field it rejected, so burying that in a dialog-level message makes the user hunt for which input is at fault. A content-filter rejection is deliberately banner-level: the filter does not say which field tripped it, and guessing points at the wrong one.
 - **The description policy never gates the entry button.** Any design can open the dialog; the requirement is stated on the form, against a preview of their design. `COMMUNITY_REQUIRE_DESCRIPTION` is the server's authority and rides the capability probe as `requireDescription`; a failed probe falls through permissive and lets the server reject.
@@ -88,7 +88,7 @@ Identity is a line on the form (`Publishing as X · Change`), not a step. As a s
 
 **Shared links carry the design's own preview.** `/community/d/<id>` rewrites to `api/community/page.ts`, which serves the app shell with that design's title, description and image injected. Without it every shared design unfurled as the generic site card and opened with the generic tab title, on the one surface whose purpose is being shared.
 
-It is deliberately not an indexing change: `robots.txt` disallows `/community/d/` until the showcase graduates from its Labs flag, and that stands. Social scrapers unfurl regardless, and the tab title is for the person who followed the link. The sitemap therefore lists `/community` and no individual designs — advertising URLs the same file forbids crawling would be a contradiction.
+Indexing is decided per design, not by the route: `robots.txt` leaves `/community/d/` crawlable, and `isIndexable` in `api/community/page.ts` sets a robots meta on each page. The sitemap lists `/community` and no individual designs, because a build-time file cannot know which ones are indexable.
 
 Three rules hold it together. The shell is **fetched from the deployment's own root**, not bundled, so the injected page stays byte-identical to the real one (CSP hashes included); `/` is not rewritten here, so there is no loop. A tag is replaced **only when the shell has exactly one of it** — a shell that changed shape should lose the injection rather than gain a second conflicting `og:title`. And **any failure serves the unmodified shell**: a design that cannot be read costs the preview, never the page, so the SPA still boots. Hidden and removed designs fall into that same path, so a moderated design stops unfurling its name and picture.
 
@@ -96,7 +96,7 @@ Swapping `og:image` also strips the shell's `og:image:width`/`height`: those des
 
 - `components/CommunityPage/`: full-page host for the `/community` route. URL-driven detail: `/community/d/<id>` is pushed on open and restored on back/forward and cold deep links. Routing lives in `@/shared/hooks/useCommunityRouting` so the SPA-route CI guard covers the rewrite. That module owns _where_ the query lives (`getCommunityGalleryQuery` / `syncCommunityGalleryQuery`); what the parameters _mean_ stays in this feature, since `shared/` cannot import from it.
 
-  **The page wears the app's chrome.** It renders `ToolSwitcher` + `HeaderSupportLinks` like every other surface, so a visitor who followed a shared link has the whole app in the header. Below it, a title row carries the page name, the `Experimental` badge and one CTA.
+  **The page wears the app's chrome.** It renders `ToolSwitcher` + `HeaderSupportLinks` like every other surface, so a visitor who followed a shared link has the whole app in the header. Below it, a title row carries the page name and one CTA.
 
   **Nothing in the app navigates into this route.** Browsing from inside happens in the gallery modal; the route exists for arriving from outside on a shared `/community/d/<id>` link. That is why the switcher shows no active segment here — you are not in an editor — and why every segment stays live, making the switcher the way out. The in-app entry point is the bin designer's Community panel card, which opens the modal on its Community tab (`open('community')` on the gallery store, honoured by `useGalleryTab`).
 
@@ -183,7 +183,7 @@ Zoom is deliberately fit-to-screen only: `printPhoto.ts` caps uploads at 1200px,
 
 `utils/gapFit.ts` answers whether a design fits the gap the viewer picked in the layout editor. It is the **single** implementation: the browse filter and the detail view both call it, because filtering a card out of the grid and telling someone "this will not fit" are the same question and must never disagree.
 
-**The gap-picking gesture has its own flag, `community_fits_gap`, opt-in.** It claims the right button on the grid and suppresses the browser context menu there, which is a layout-editor interaction change rather than a consequence of the showcase being available. `community_showcase` gates the gallery, the publish action and the Community tool; it deliberately does not reach into the grid.
+**The gap picker is a one-shot mode.** `Find bins that fit` arms it: the next drag or tap on empty cells picks the gap and opens the gallery. It lives in the desktop toolbar, in that toolbar's overflow menu when narrow with several layers, and in Layers > Tools on phones, where the toolbar shows it only while armed so it can be cancelled.
 
 It encodes three things that are easy to get wrong:
 

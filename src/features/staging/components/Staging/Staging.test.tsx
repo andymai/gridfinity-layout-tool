@@ -6,6 +6,7 @@ import { useSelectionStore } from '@/core/store/selection';
 import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useSettingsStore } from '@/core/store/settings';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { resetAllStores } from '@/test/testUtils';
 import { revealBin } from '@/shared/events/revealBin';
 import { STAGING_ID } from '@/core/constants';
@@ -142,7 +143,7 @@ describe('Staging', () => {
 
       render(<Staging />);
 
-      expect(screen.getByText('1 bins')).toBeInTheDocument();
+      expect(screen.getByText('1 bin')).toBeInTheDocument();
     });
 
     it('renders Clear All button', () => {
@@ -301,8 +302,50 @@ describe('Staging', () => {
       fireEvent.click(screen.getByText('Clear all'));
 
       expect(screen.getByTestId('confirm-message')).toHaveTextContent(
-        'Delete all 2 stashed bin(s)? This cannot be undone.'
+        'Delete all 2 stashed bins? You can undo this.'
       );
+    });
+
+    it('brings every cleared bin back on one undo, as the dialog says', () => {
+      const bins = addStagedBins([{}, {}, {}]);
+      useHistoryStore.getState().clear();
+
+      render(<Staging />);
+
+      fireEvent.click(screen.getByText('Clear all'));
+      fireEvent.click(screen.getByTestId('confirm-button'));
+      const stashedIds = () =>
+        useLayoutStore
+          .getState()
+          .layout.bins.filter((b) => b.layerId === STAGING_ID)
+          .map((b) => b.id);
+      expect(stashedIds()).toEqual([]);
+
+      act(() => {
+        useHistoryStore.getState().undo();
+      });
+
+      expect(stashedIds()).toEqual(bins.map((b) => b.id));
+    });
+
+    it('clears a full stash in one store update', () => {
+      addStagedBins(Array.from({ length: 80 }, (_, i) => ({ x: gridUnits(i % 10) })));
+      useHistoryStore.getState().clear();
+      render(<Staging />);
+      fireEvent.click(screen.getByText('Clear all'));
+      let storeUpdates = 0;
+      const unsubscribe = useLayoutStore.subscribe(() => {
+        storeUpdates++;
+      });
+
+      fireEvent.click(screen.getByTestId('confirm-button'));
+      unsubscribe();
+
+      expect(storeUpdates).toBe(1);
+      expect(useLayoutStore.getState().layout.bins.filter((b) => b.layerId === STAGING_ID)).toEqual(
+        []
+      );
+      expect(useHistoryStore.getState().past).toHaveLength(1);
     });
 
     it('deletes all staged bins when confirmed', () => {

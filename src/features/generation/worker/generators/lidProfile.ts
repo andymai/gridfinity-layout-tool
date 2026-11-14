@@ -13,7 +13,7 @@ import type { Shape3D, DisposalScope, Sketch, Drawing } from 'brepjs';
 import { LIP_BIG_TAPER, safeSectionRect } from './generatorConstants';
 import { LID_COPLANAR_MARGIN, plugInsetAtWallBottom } from './lidConstants';
 import { buildMaskDrawingAtInset } from './maskPolygon';
-import type { LidInputs } from './lidInputs';
+import type { LidInputs } from '@/shared/utils/lidInputs';
 
 /**
  * Build a 2D outline at the requested inset from the lid's outer perimeter.

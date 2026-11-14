@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { useLibraryStore } from '@/core/store';
+import { queueLibraryWrite, useLibraryStore } from '@/core/store';
 import type { LayoutEntry, LayoutId, LayoutLibrary } from '@/core/types';
 
 const loadLayoutAsyncMock = vi.fn();
@@ -529,6 +529,63 @@ describe('layoutAdapter.applyRemote — echo suppression', () => {
 
     expect(events.filter((e) => e.id === 'echo-2')).toEqual([]);
     unsubscribe();
+  });
+});
+
+describe('layoutAdapter while a library write is in flight', () => {
+  // The write in flight read the library before the pull, and adds a copy.
+  function holdLibraryWrite(): { release: () => void; done: Promise<void> } {
+    let release = (): void => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const done = queueLibraryWrite(async (library) => {
+      await gate;
+      useLibraryStore
+        .getState()
+        .setLibrary({ ...library, entries: [...library.entries, entry('local-copy', 1500)] });
+    });
+    return { release, done };
+  }
+
+  const ids = (): string[] => useLibraryStore.getState().library.entries.map((e) => e.id);
+  const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
+
+  beforeEach(() => {
+    saveLayoutAsyncMock.mockResolvedValue({ ok: true, value: undefined });
+    saveLibraryMock.mockResolvedValue({ ok: true, value: undefined });
+    computePreviewMock.mockReturnValue({ binCount: 0 });
+    loadLayoutSyncMock.mockReturnValue(null);
+  });
+
+  it('adds a pulled layout to the library that write stores, without an echo', async () => {
+    const events: AdapterChange[] = [];
+    const unsubscribe = layoutAdapter.subscribe((c) => events.push(c));
+    const held = holdLibraryWrite();
+
+    const applied = layoutAdapter.applyRemote({
+      id: 'remote-1',
+      payload: { name: 'Remote', bins: [] } as unknown as Layout,
+      modifiedAt: 5000,
+    });
+    await settle();
+    held.release();
+    await Promise.all([held.done, applied]);
+    unsubscribe();
+
+    expect(ids()).toEqual(['lay-1', 'local-copy', 'remote-1']);
+    expect(events.filter((e) => e.id === 'remote-1')).toEqual([]);
+  });
+
+  it('removes a layout deleted elsewhere from the library that write stores', async () => {
+    const held = holdLibraryWrite();
+
+    const deleted = layoutAdapter.applyRemoteDelete('lay-1');
+    await settle();
+    held.release();
+    await Promise.all([held.done, deleted]);
+
+    expect(ids()).toEqual(['local-copy']);
   });
 });
 
