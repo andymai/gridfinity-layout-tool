@@ -37,6 +37,7 @@ import { resolveCutoutTriColor, cutoutOrdinalFromTag } from '@/shared/generation
 import type { CutoutColorUnit } from '@/shared/generation/cutoutColorUnits';
 import { COMPARTMENT_PAINTABLE_ZONES, resolveCompartmentTriColor } from './compartmentColorUnits';
 import type { CompartmentColorPlan } from './compartmentColorUnits';
+import type { ColorFrame } from './colorFrame';
 
 export interface MultiColorGroupsResult {
   readonly groups: MeshFaceGroup[];
@@ -77,11 +78,15 @@ function coalesceGroups(triMaterial: readonly number[]): MeshFaceGroup[] {
   return groups;
 }
 
-/** Per-triangle centroid + flat-triangle accessors over an indexed mesh, plus lip geom. */
+/**
+ * Per-triangle centroid + flat-triangle accessors over an indexed mesh, plus lip
+ * geom (the frame's when given, so a split piece reads the whole bin's lip).
+ */
 function meshAccessors(
   faceGroups: readonly FaceGroupData[],
   vertices: Float32Array,
-  indices: Uint32Array
+  indices: Uint32Array,
+  frame: ColorFrame | null
 ): {
   triangleCount: number;
   geom: ReturnType<typeof computeLipGeom>;
@@ -105,7 +110,8 @@ function meshAccessors(
       vertices[c + 2],
     ];
   };
-  return { triangleCount, geom: computeLipGeom(faceGroups, getTriangle), getTriangle };
+  const geom = frame ? frame.lipGeom : computeLipGeom(faceGroups, getTriangle);
+  return { triangleCount, geom, getTriangle };
 }
 
 /**
@@ -120,11 +126,12 @@ export function buildHitTestZones(
   faceGroups: readonly FaceGroupData[],
   vertices: Float32Array,
   indices: Uint32Array,
-  featureColors: FeatureColorConfig
+  featureColors: FeatureColorConfig,
+  frame: ColorFrame | null = null
 ): ColorZone[] {
   const counts = { corners: featureColors.lip.corners, bands: featureColors.lip.bands };
-  const { triangleCount, geom, getTriangle } = meshAccessors(faceGroups, vertices, indices);
-  const cuts = accentCutPlanes(featureColors, vertices, faceGroups, indices);
+  const { triangleCount, geom, getTriangle } = meshAccessors(faceGroups, vertices, indices, frame);
+  const cuts = frame?.accentCuts ?? accentCutPlanes(featureColors, vertices, faceGroups, indices);
   // allowSplit:false keeps triZones 1:1 with the input triangles so a clicked
   // original-triangle index resolves to a zone. The accent cuts are applied
   // in place (centroid-quantized), which is precise enough for hit-testing.
@@ -155,7 +162,8 @@ export function buildMultiColorGroups(
   featureColors: FeatureColorConfig,
   activeZones: ReadonlySet<ColorZone>,
   cutoutUnits: readonly CutoutColorUnit[] = [],
-  compartmentPlan: CompartmentColorPlan | null = null
+  compartmentPlan: CompartmentColorPlan | null = null,
+  frame: ColorFrame | null = null
 ): MultiColorGroupsResult | null {
   const coloredOrdinals = cutoutUnits
     .map((u, i) => (u.color !== undefined ? i : -1))
@@ -166,14 +174,14 @@ export function buildMultiColorGroups(
   // set without them, which would otherwise make a band silently vanish there.
   // Union them in so isSingleColor sees the accent colors too. `accentCutPlanes`
   // skips its O(vertexCount) traversal when no band is live (the common case).
-  const cuts = accentCutPlanes(featureColors, vertices, faceGroups, indices);
+  const cuts = frame?.accentCuts ?? accentCutPlanes(featureColors, vertices, faceGroups, indices);
   const zones = withAccentZones(activeZones, cuts);
   if (isSingleColor(featureColors, zones) && coloredOrdinals.length === 0 && !compartmentPlan) {
     return null;
   }
 
   const counts = { corners: featureColors.lip.corners, bands: featureColors.lip.bands };
-  const { triangleCount, geom, getTriangle } = meshAccessors(faceGroups, vertices, indices);
+  const { triangleCount, geom, getTriangle } = meshAccessors(faceGroups, vertices, indices, frame);
 
   const { triZones, positions, normals, triTags } = computeLipColoredMesh({
     triangleCount,

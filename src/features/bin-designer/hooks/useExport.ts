@@ -41,6 +41,7 @@ import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import type { ExportFileNameConfig, ExportFileFormat } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
+import type { FaceGroupData } from '@/shared/types/generation';
 import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibility';
 import { hasDetachableFeet } from '@/features/bin-designer/types/base';
 import { shouldGenerateKnifeRest } from '@/shared/utils/knifeRestPlan';
@@ -51,7 +52,8 @@ import {
   buildSplit3MFPieces,
   runSplitBinExport,
 } from '@/features/bin-designer/utils/binDownloadHelpers';
-import { buildThreeMFPrintSettings } from '@/shared/generation/stlTo3mf';
+import { currentThreeMFPrintSettings } from '@/features/bin-designer/utils/currentThreeMFPrintSettings';
+import type { ThreeMFPrintSettings } from '@/shared/generation/export';
 import {
   trackBinExportFailure,
   trackBinExportSucceeded,
@@ -406,15 +408,12 @@ export function useExport(): UseExportReturn {
 
         let threeMFContext: {
           modelName: string;
-          threeMFPrintSettings: ReturnType<typeof buildThreeMFPrintSettings>;
+          threeMFPrintSettings: ThreeMFPrintSettings;
         } | null = null;
         if (format === '3mf') {
-          // Read print settings at call time to avoid capturing reactive values
-          const currentPrintSettings = useSettingsStore.getState().settings.printSettings;
-          const currentEstimates = estimatePrint(params, currentPrintSettings);
           threeMFContext = {
             modelName: designName ?? `gridfinity-${params.width}x${params.depth}x${params.height}`,
-            threeMFPrintSettings: buildThreeMFPrintSettings(currentPrintSettings, currentEstimates),
+            threeMFPrintSettings: currentThreeMFPrintSettings(params),
           };
         }
 
@@ -473,9 +472,8 @@ export function useExport(): UseExportReturn {
    * When dividers are present, includes divider pieces in the ZIP.
    * Uses worker pool for parallel export when available.
    * Supports STL, 3MF, and STEP — a STEP piece carries the exact BREP solid
-   * rather than a tessellation, so the ZIP holds one .step per piece.
-   * NOTE: Multi-color data is NOT propagated to split pieces — each piece
-   * exports as single-color. Split + multi-color is a known gap.
+   * rather than a tessellation, so the ZIP holds one .step per piece. A 3MF
+   * piece keeps the design's colors (see `buildSplit3MFPieces`).
    */
   const downloadSplit = useCallback(
     async (
@@ -549,6 +547,7 @@ export function useExport(): UseExportReturn {
         // compound assembly bundles the bin in with its companions, and the
         // body is already covered by the split pieces.
         const companionPieces: { data: ArrayBuffer; label: string }[] = [];
+        let lidFaceGroups: readonly FaceGroupData[] | undefined;
         // Feet belong in this gate for the same reason dividers and the lid do.
         // Third copy of it in the codebase; the other two are the worker's
         // combined export and the layout planner, and all three dropped the
@@ -581,20 +580,15 @@ export function useExport(): UseExportReturn {
               companionPieces.push({ data: piece.data, label: piece.label });
             }
           }
+          lidFaceGroups = combined.result.lidFaceGroups;
         }
 
         if (format === '3mf') {
-          const currentPrintSettings = useSettingsStore.getState().settings.printSettings;
-          const currentEstimates = estimatePrint(params, currentPrintSettings);
-          const threeMFPrintSettings = buildThreeMFPrintSettings(
-            currentPrintSettings,
-            currentEstimates
-          );
-
           const convertedPieces = await buildSplit3MFPieces(
-            [...result.pieces.map((p) => ({ data: p.data, label: p.label })), ...companionPieces],
+            { binPieces: result.pieces, companionPieces, lidFaceGroups },
+            params,
             baseName,
-            threeMFPrintSettings
+            currentThreeMFPrintSettings(params)
           );
 
           const zip = packagePiecesAsZip(convertedPieces, baseName, '.3mf');

@@ -1,21 +1,27 @@
 /**
  * Multi-piece Three.js renderer for split bin preview.
  *
- * Positions each piece at its grid offset in assembled mode, or adds
- * explode gaps between pieces in exploded mode for visual clarity.
- * Mirrors the SplitBaseplateMeshes pattern from the baseplate feature.
+ * Each piece renders in the bin's own frame, so it takes the same colors as
+ * the unsplit bin; exploded mode only adds a gap between pieces. Mirrors the
+ * SplitBaseplateMeshes pattern from the baseplate feature.
  */
 
-import { useEffect, useMemo } from 'react';
-import { useThree } from '@react-three/fiber';
+import { useMemo } from 'react';
 import { Text } from '@react-three/drei';
-import * as THREE from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 import { getAccentHex } from '@/shared/utils/color';
-import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { useZoneColoredMesh } from '@/features/bin-designer/hooks/useZoneColoredMesh';
+import type { ZoneClickHandler } from '@/features/bin-designer/hooks/useZoneColoredMesh';
+import { colorFrameOf, mergeColorFrameParts } from '@/features/bin-designer/utils/colorFrame';
+import type { ColorFrame } from '@/features/bin-designer/utils/colorFrame';
+import { isMultiColorDesign } from '@/features/bin-designer/utils/multiColorDesign';
+import {
+  splitPieceCenterMm,
+  splitPieceInBinFrame,
+} from '@/features/bin-designer/utils/splitPieceFrame';
+import type { SplitPieceBinFrameMesh } from '@/features/bin-designer/utils/splitPieceFrame';
 import type { SplitPieceMeshEntry } from '../../../types';
 
 /** Gap between pieces in exploded mode (mm) */
@@ -30,15 +36,11 @@ const LABEL_OFFSET_MM = 3;
 /** Edge line color (matches BinMesh) */
 const EDGE_COLOR = '#000000';
 
-/** Face opacity when xray mode is enabled (matches BinMesh). */
-const XRAY_OPACITY = 0.3;
-
 interface PieceMeshProps {
   readonly entry: SplitPieceMeshEntry;
-  readonly totalWidthMm: number;
-  readonly totalDepthMm: number;
-  readonly gridUnitMm: number;
-  readonly gridUnitMmY: number;
+  readonly mesh: SplitPieceBinFrameMesh;
+  readonly frame: ColorFrame | null;
+  readonly center: { readonly x: number; readonly y: number };
   readonly explodeX: number;
   readonly explodeY: number;
   readonly isExploded: boolean;
@@ -46,15 +48,15 @@ interface PieceMeshProps {
   readonly wireframe: boolean;
   readonly xray: boolean;
   readonly labelZ: number;
+  readonly onZoneClick?: ZoneClickHandler;
 }
 
 /** Renders a single split bin piece with position offset and optional label. */
 function PieceMesh({
   entry,
-  totalWidthMm,
-  totalDepthMm,
-  gridUnitMm,
-  gridUnitMmY,
+  mesh,
+  frame,
+  center,
   explodeX,
   explodeY,
   isExploded,
@@ -62,48 +64,35 @@ function PieceMesh({
   wireframe,
   xray,
   labelZ,
+  onZoneClick,
 }: PieceMeshProps) {
-  const { invalidate } = useThree();
   const colors = useThreeColors();
   const accentHex = useMemo(() => getAccentHex(), []);
 
-  const { geometry, edgesGeometry } = useMeshGeometry(entry.mesh);
-
-  useEffect(() => {
-    if (geometry) invalidate();
-  }, [geometry, invalidate]);
+  const { geometry, edgesGeometry, materials, singleMatProps, meshProps } = useZoneColoredMesh({
+    ...mesh,
+    frame,
+    wireframe,
+    xray,
+    color,
+    onZoneClick,
+  });
 
   if (!geometry) return null;
 
-  // Position: piece's grid center relative to the total bin center. The depth
-  // axis uses gridUnitMmY (non-square grid); it equals gridUnitMm for square.
-  const pieceWidthMm = entry.widthUnits * gridUnitMm;
-  const pieceDepthMm = entry.depthUnits * gridUnitMmY;
-  const pieceCenterX = entry.offsetX * gridUnitMm + pieceWidthMm / 2 - totalWidthMm / 2;
-  const pieceCenterY = entry.offsetY * gridUnitMmY + pieceDepthMm / 2 - totalDepthMm / 2;
-
-  const x = pieceCenterX + explodeX;
-  const y = pieceCenterY + explodeY;
+  // Same keyed multi↔single swap as BinMesh: reusing one <mesh> lets R3F's
+  // prop diff clobber the zone materials.
+  const pieceMesh = materials ? (
+    <mesh key="multi-color" geometry={geometry} material={materials} {...meshProps} />
+  ) : (
+    <mesh key="single-color" geometry={geometry} {...meshProps}>
+      <meshStandardMaterial {...singleMatProps} />
+    </mesh>
+  );
 
   return (
-    <group position={[x, y, PIECE_Z_OFFSET]}>
-      <mesh geometry={geometry}>
-        <meshStandardMaterial
-          color={color}
-          roughness={0.45}
-          metalness={0}
-          wireframe={wireframe}
-          side={THREE.DoubleSide}
-          emissive={color}
-          emissiveIntensity={0.08}
-          polygonOffset
-          polygonOffsetFactor={1}
-          polygonOffsetUnits={1}
-          transparent={xray}
-          opacity={xray ? XRAY_OPACITY : 1}
-          depthWrite={!xray}
-        />
-      </mesh>
+    <group position={[explodeX, explodeY, PIECE_Z_OFFSET]}>
+      {pieceMesh}
       {!wireframe && edgesGeometry && (
         <lineSegments geometry={edgesGeometry} renderOrder={1}>
           <lineBasicMaterial color={EDGE_COLOR} />
@@ -111,7 +100,7 @@ function PieceMesh({
       )}
       {isExploded && (
         <Text
-          position={[0, 0, labelZ]}
+          position={[center.x, center.y, labelZ]}
           fontSize={5}
           color={accentHex}
           anchorX="center"
@@ -132,12 +121,19 @@ interface SplitBinMeshesProps {
   readonly color: string;
   readonly wireframe: boolean;
   readonly xray?: boolean;
+  /** Same contract as BinMesh: fired on a piece click while a color tool is active. */
+  readonly onZoneClick?: ZoneClickHandler;
 }
 
 /**
  * Renders all pieces of a split bin with assembled or exploded positioning.
  */
-export function SplitBinMeshes({ color, wireframe, xray = false }: SplitBinMeshesProps) {
+export function SplitBinMeshes({
+  color,
+  wireframe,
+  xray = false,
+  onZoneClick,
+}: SplitBinMeshesProps) {
   const { splitPieceMeshes, splitViewMode, params } = useDesignerStore(
     useShallow((s) => ({
       splitPieceMeshes: s.ui.splitPieceMeshes,
@@ -146,12 +142,36 @@ export function SplitBinMeshes({ color, wireframe, xray = false }: SplitBinMeshe
     }))
   );
 
-  const gridUnitMm = params.gridUnitMm;
-  const gridUnitMmY = params.gridUnitMmY ?? gridUnitMm;
-  const totalWidthMm = params.width * gridUnitMm - GRIDFINITY.TOLERANCE;
-  const totalDepthMm = params.depth * gridUnitMmY - GRIDFINITY.TOLERANCE;
+  const { width, depth, gridUnitMm, gridUnitMmY } = params;
   const totalH = params.height * params.heightUnitMm;
   const isExploded = splitViewMode === 'exploded';
+
+  const pieces = useMemo(() => {
+    const bin = { width, depth, gridUnitMm, gridUnitMmY };
+    return splitPieceMeshes.map((entry) => ({
+      entry,
+      center: splitPieceCenterMm(entry, bin),
+      mesh: splitPieceInBinFrame(entry, bin),
+    }));
+  }, [splitPieceMeshes, width, depth, gridUnitMm, gridUnitMmY]);
+
+  // Measured over every piece at once: a piece measured alone puts the lip's
+  // center inside itself and paints all four lip corners on each piece.
+  const multiColor = isMultiColorDesign(params);
+  const { featureColors } = params;
+  const merged = useMemo(() => {
+    if (!multiColor) return null;
+    const parts = [];
+    for (const { mesh } of pieces) {
+      if (!mesh.vertices || !mesh.indices || !mesh.faceGroups) return null;
+      parts.push({ vertices: mesh.vertices, indices: mesh.indices, faceGroups: mesh.faceGroups });
+    }
+    return parts.length > 0 ? mergeColorFrameParts(parts) : null;
+  }, [multiColor, pieces]);
+  const frame = useMemo(
+    () => (merged ? colorFrameOf(merged, featureColors) : null),
+    [merged, featureColors]
+  );
 
   // Compute max col/row for centering the explosion offsets
   const maxCol = useMemo(
@@ -167,7 +187,7 @@ export function SplitBinMeshes({ color, wireframe, xray = false }: SplitBinMeshe
 
   return (
     <>
-      {splitPieceMeshes.map((entry) => {
+      {pieces.map(({ entry, center, mesh }) => {
         // Center the explosion: offset relative to midpoint so pieces spread symmetrically
         const explodeX = isExploded ? (entry.col - (maxCol + 1) / 2) * EXPLODE_GAP_MM : 0;
         const explodeY = isExploded ? (entry.row - (maxRow + 1) / 2) * EXPLODE_GAP_MM : 0;
@@ -176,10 +196,9 @@ export function SplitBinMeshes({ color, wireframe, xray = false }: SplitBinMeshe
           <PieceMesh
             key={entry.label}
             entry={entry}
-            totalWidthMm={totalWidthMm}
-            totalDepthMm={totalDepthMm}
-            gridUnitMm={gridUnitMm}
-            gridUnitMmY={gridUnitMmY}
+            mesh={mesh}
+            frame={frame}
+            center={center}
             explodeX={explodeX}
             explodeY={explodeY}
             isExploded={isExploded}
@@ -187,6 +206,7 @@ export function SplitBinMeshes({ color, wireframe, xray = false }: SplitBinMeshe
             wireframe={wireframe}
             xray={xray}
             labelZ={labelZ}
+            onZoneClick={onZoneClick}
           />
         );
       })}

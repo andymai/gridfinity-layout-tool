@@ -312,6 +312,45 @@ describe('useLayoutExport', () => {
     expect(bin?.colorConfig).toBeDefined();
   });
 
+  it('keeps the colors of every split piece of a multi-color bin in the 3MF project', async () => {
+    h.loadDesign.mockImplementation((id: string) =>
+      Promise.resolve(
+        design(id, 'Wide', {
+          width: 11,
+          featureColors: {
+            ...DEFAULT_BIN_PARAMS.featureColors,
+            enabled: true,
+            body: '#3b82f6',
+            base: '#22c55e',
+          },
+        })
+      )
+    );
+    const socket = [{ tag: 3, start: 0, count: 3 }];
+    h.bridge.exportSplitBin.mockResolvedValue({
+      pieces: [
+        { data: oneTriangleStl(), label: 'A1', col: 1, row: 1, faceGroups: socket },
+        { data: oneTriangleStl(), label: 'B1', col: 2, row: 1, faceGroups: socket },
+      ],
+    });
+    h.buildLayoutProjectFile.mockResolvedValue(null);
+    useLayoutStore.setState({
+      layout: createTestLayout({
+        name: 'L',
+        bins: [createTestBin({ linkedDesignId: designId('d1') })],
+      }),
+    });
+    const { result } = renderHook(() => useLayoutExport());
+
+    const success = await result.current.exportLayout('3mf', 'z', { ...CONFIG, format: '3mf' });
+
+    expect(success).toBe(true);
+    const parts = h.buildLayoutProjectFile.mock.calls[0][0] as ThreeMFObject[];
+    const pieces = parts.filter((p) => p.name === 'A1' || p.name === 'B1');
+    expect(pieces).toHaveLength(2);
+    for (const piece of pieces) expect(piece.colorConfig).toBeDefined();
+  });
+
   it('reports engine-not-ready and does not release when the bridge fails to acquire', async () => {
     h.bridgeAcquire.mockRejectedValue(new Error('wasm load failed'));
     const { result } = renderHook(() => useLayoutExport());

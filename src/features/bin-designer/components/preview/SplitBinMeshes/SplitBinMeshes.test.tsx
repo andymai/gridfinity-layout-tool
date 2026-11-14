@@ -4,10 +4,14 @@ import { render } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import type { SplitPieceMeshEntry } from '../../../types';
+import { FeatureTag } from '@/shared/types/generation';
+import { lipCellZone } from '@/features/bin-designer/types/featureColors';
 
 vi.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
   toCreasedNormals: vi.fn((geo: unknown) => geo),
 }));
+
+const materialSpy = vi.hoisted(() => vi.fn());
 
 // Mock Three.js before the component is imported
 vi.mock('three', () => ({
@@ -19,6 +23,13 @@ vi.mock('three', () => ({
   })),
   Float32BufferAttribute: vi.fn(),
   BufferAttribute: vi.fn(),
+  Color: vi.fn(),
+  MeshStandardMaterial: class {
+    dispose = vi.fn();
+    constructor(opts: { color: string }) {
+      materialSpy(opts.color);
+    }
+  },
   DoubleSide: 2,
 }));
 
@@ -301,5 +312,69 @@ describe('SplitBinMeshes', () => {
     });
 
     expect(() => render(<SplitBinMeshes color="#00ff00" wireframe={false} />)).not.toThrow();
+  });
+
+  it('puts an exploded label over its piece in the bin frame', () => {
+    // 8x2 bin, 4-unit pieces. The outer footprint is TOLERANCE (0.5mm) short
+    // of 8 x 42, so it spans ±167.75 and the piece centers sit at -83.75 and
+    // +84.25 when the second piece starts at exactly 4 units.
+    const pieces: SplitPieceMeshEntry[] = [
+      makePieceEntry({ label: 'A1', col: 1, row: 1, widthUnits: 4, depthUnits: 2, offsetX: 0 }),
+      makePieceEntry({ label: 'B1', col: 2, row: 1, widthUnits: 4, depthUnits: 2, offsetX: 4 }),
+    ];
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 8, depth: 2, gridUnitMm: 42 },
+      ui: { ...DEFAULT_UI_STATE, splitPieceMeshes: pieces, splitViewMode: 'exploded' },
+    });
+
+    const { getAllByTestId } = render(<SplitBinMeshes color="#ff0000" wireframe={false} />);
+    const xs = getAllByTestId('drei-text').map(
+      (el) => (JSON.parse(el.getAttribute('data-position') ?? '[]') as number[])[0]
+    );
+    expect(xs[0]).toBeCloseTo(-83.75, 5);
+    expect(xs[1]).toBeCloseTo(84.25, 5);
+  });
+
+  it('paints a split piece in its zone colors when multi-color is on', () => {
+    // One lip sliver and one body sliver, so the piece needs two materials.
+    const mesh = {
+      vertices: new Float32Array([0, 0, 10, 0.1, 0, 10, 0, 0.1, 10, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0]),
+      normals: new Float32Array(18),
+      indices: new Uint32Array([0, 1, 2, 3, 4, 5]),
+      edgeVertices: new Float32Array(0),
+      faceGroups: [
+        { start: 0, count: 3, tag: FeatureTag.LIP },
+        { start: 3, count: 3, tag: FeatureTag.UNKNOWN },
+      ],
+    };
+    const lipRed = '#ff0000';
+    const cells = Object.fromEntries(
+      (['frontLeft', 'frontRight', 'backRight', 'backLeft'] as const).flatMap((corner) =>
+        ([0, 1, 2, 3] as const).map((band) => [lipCellZone(corner, band), lipRed])
+      )
+    );
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 8,
+        depth: 2,
+        featureColors: {
+          ...DEFAULT_BIN_PARAMS.featureColors,
+          enabled: true,
+          body: '#cccccc',
+          lip: { corners: 1, bands: 1, cells },
+        },
+      },
+      ui: {
+        ...DEFAULT_UI_STATE,
+        splitPieceMeshes: [makePieceEntry({ label: 'A1', mesh })],
+        splitViewMode: 'assembled',
+      },
+    });
+
+    render(<SplitBinMeshes color="#00ff00" wireframe={false} />);
+    const colors = materialSpy.mock.calls.map(([c]) => c as string);
+    expect(colors).toContain(lipRed);
+    expect(colors).toContain('#cccccc');
   });
 });

@@ -26,6 +26,7 @@ import type {
 } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { buildTriangleMaterialIndices } from '@/features/bin-designer/utils/materialMapping';
+import { assemblyColorFrame } from '@/features/bin-designer/utils/colorFrame';
 import { enumerateCutoutColorUnits } from '@/shared/generation/cutoutColorUnits';
 import { planCompartmentColors } from '@/features/bin-designer/utils/compartmentColorUnits';
 import { isMultiColorDesign } from '@/features/bin-designer/utils/multiColorDesign';
@@ -271,6 +272,28 @@ function lidColorConfig(
 }
 
 /**
+ * Color for a piece printed beside the bin (lid, dividers, feet). The lid gets
+ * per-triangle paint when the worker sent its face groups and some of them
+ * (text, a lip grid) differ from the lid colour; everything else stays on the
+ * cheaper uniform slot. Undefined for a piece with no zone of its own.
+ */
+function companionColorConfig(
+  label: string,
+  vertices: Float32Array,
+  params: BinParams,
+  lidFaceGroups: readonly FaceGroupData[] | undefined
+): ThreeMFColorConfig | undefined {
+  const zone = pieceZone(label);
+  if (zone === null) return undefined;
+  const triangleCount = vertices.length / 9;
+  return (
+    (zone === 'lid' && lidFaceGroups
+      ? lidColorConfig(params.featureColors, lidFaceGroups, triangleCount, vertices)
+      : null) ?? uniformColorConfig(zone, params.featureColors, triangleCount)
+  );
+}
+
+/**
  * Convert a multi-piece combined export into a single 3MF Blob with named
  * objects. The first piece (bin) gets per-triangle multi-color material
  * indices; the lid and dividers ship with a uniform color slot drawn from
@@ -363,17 +386,7 @@ export function buildMultiObject3MFObjects(
       }
       binHasColorConfig = colorConfig !== undefined;
     } else if (i > 0 && multiColorEnabled && binHasColorConfig) {
-      const zone = pieceZone(piece.label);
-      if (zone !== null) {
-        const triangleCount = vertices.length / 9;
-        // The lid gets per-triangle paint when the worker sent its face groups
-        // and some of them (text, a lip grid) differ from the lid colour;
-        // everything else stays on the cheaper uniform slot.
-        colorConfig =
-          (zone === 'lid' && lidFaceGroups
-            ? lidColorConfig(params.featureColors, lidFaceGroups, triangleCount, vertices)
-            : null) ?? uniformColorConfig(zone, params.featureColors, triangleCount);
-      }
+      colorConfig = companionColorConfig(piece.label, vertices, params, lidFaceGroups);
     }
 
     objects.push({
@@ -510,29 +523,103 @@ export async function runSplitBinExport(
   }
 }
 
+/** What a split export hands the 3MF packaging: the bin's pieces plus its companions. */
+export interface SplitExportParts {
+  readonly binPieces: ReadonlyArray<{
+    readonly data: ArrayBuffer;
+    readonly label: string;
+    readonly faceGroups?: readonly FaceGroupData[];
+  }>;
+  /** Lid, dividers and other extras from a combined export, bin excluded. */
+  readonly companionPieces: ReadonlyArray<{ readonly data: ArrayBuffer; readonly label: string }>;
+  readonly lidFaceGroups?: readonly FaceGroupData[];
+}
+
 /**
- * Convert each piece of a split export (plus companion pieces) into a 3MF
- * blob. Returns ArrayBuffers paired with their labels so the caller can ZIP
- * them in one step. Multi-color is intentionally NOT propagated — split +
- * multi-color is a known gap.
+ * The colored 3MF objects for a split export, one per piece, each named by its
+ * label. A multi-color design colors every bin piece as the unsplit bin would
+ * be: the lip footprint and accent planes are measured once over all the
+ * pieces (see `assemblyColorFrame`), and the pieces stay in the bin's own
+ * frame, so compartment colors land in the right cells. Companion pieces take
+ * their zone colors as they do in a whole-bin export.
+ */
+export function buildSplit3MFObjects(parts: SplitExportParts, params: BinParams): ThreeMFObject[] {
+  const parse = (data: ArrayBuffer) => {
+    const parseResult = parseSTLBinary(data);
+    if (isErr(parseResult)) throw new Error(getUserMessage(parseResult.error));
+    return parseResult.value;
+  };
+  const bins = parts.binPieces.map((piece) => ({ ...piece, mesh: parse(piece.data) }));
+
+  const multiColor =
+    isMultiColorDesign(params) && bins.length > 0 && bins.every((b) => b.faceGroups);
+  const frame = multiColor
+    ? assemblyColorFrame(
+        bins.map((b) => ({ vertices: b.mesh.vertices, faceGroups: b.faceGroups ?? [] })),
+        params.featureColors
+      )
+    : null;
+  const activeZones = computeActiveZones(params);
+  const cutoutUnits = enumerateCutoutColorUnits(params.cutouts);
+  const compartmentPlan = planCompartmentColors(params);
+
+  const objects: ThreeMFObject[] = [];
+  let binHasColorConfig = false;
+  for (const bin of bins) {
+    let { vertices, normals } = bin.mesh;
+    let colorConfig: ThreeMFColorConfig | undefined;
+    if (frame && bin.faceGroups) {
+      const mapping = buildTriangleMaterialIndices(
+        bin.faceGroups,
+        params.featureColors,
+        vertices.length / 9,
+        vertices,
+        activeZones,
+        cutoutUnits,
+        compartmentPlan,
+        frame
+      );
+      if (mapping) {
+        colorConfig = mapping.config;
+        if (mapping.vertices && mapping.normals) {
+          vertices = mapping.vertices;
+          normals = mapping.normals;
+        }
+      }
+    }
+    binHasColorConfig ||= colorConfig !== undefined;
+    objects.push({ vertices, normals, name: bin.label, colorConfig });
+  }
+  // Lockstep with the bin, as in `buildMultiObject3MFObjects`: a single-color
+  // bin keeps its companions single-color too.
+  for (const companion of parts.companionPieces) {
+    const { vertices, normals } = parse(companion.data);
+    const colorConfig = binHasColorConfig
+      ? companionColorConfig(companion.label, vertices, params, parts.lidFaceGroups)
+      : undefined;
+    objects.push({ vertices, normals, name: companion.label, colorConfig });
+  }
+  return objects;
+}
+
+/**
+ * Write each object of {@link buildSplit3MFObjects} as its own 3MF file, so the
+ * caller can ZIP them in one step. Each file keeps its piece's colors.
  */
 export async function buildSplit3MFPieces(
-  pieces: ReadonlyArray<{ data: ArrayBuffer; label: string }>,
+  parts: SplitExportParts,
+  params: BinParams,
   baseName: string,
   threeMFPrintSettings: ThreeMFPrintSettings
 ): Promise<{ data: ArrayBuffer; label: string }[]> {
-  const convertedPieces: { data: ArrayBuffer; label: string }[] = [];
-  for (const piece of pieces) {
-    const parseResult = parseSTLBinary(piece.data);
-    if (isErr(parseResult)) {
-      throw new Error(getUserMessage(parseResult.error));
-    }
-    const { vertices, normals } = parseResult.value;
-    const blob = export3MF(vertices, normals, {
-      name: `${baseName}_${piece.label}`,
+  const converted: { data: ArrayBuffer; label: string }[] = [];
+  for (const object of buildSplit3MFObjects(parts, params)) {
+    const blob = export3MF(object.vertices, object.normals, {
+      name: `${baseName}_${object.name}`,
+      colorConfig: object.colorConfig,
       printSettings: threeMFPrintSettings,
     });
-    convertedPieces.push({ data: await blob.arrayBuffer(), label: piece.label });
+    converted.push({ data: await blob.arrayBuffer(), label: object.name });
   }
-  return convertedPieces;
+  return converted;
 }

@@ -10,6 +10,7 @@ import { withSocketNozzle } from '@/shared/generation/socketNozzle';
 // Deep imports (not the barrel): this code only runs inside the lazy
 // layout-export chunk, and the bin-designer barrel is eagerly loaded by App.
 import { buildBinDownloadPayload } from '@/features/bin-designer/utils/binDownloadHelpers';
+import type { SplitExportParts } from '@/features/bin-designer/utils/binDownloadHelpers';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import type { LayoutExportable, LayoutSplitPlan } from './planLayoutBinExport';
 
@@ -63,6 +64,9 @@ export async function combinedFiles(
  * name — and `packageFilesAsZip` keys by path, so the loser would vanish from
  * the archive silently. A folder can't collide with a sibling file name, and it
  * also groups the parts a user prints as one job.
+ *
+ * `parts` keeps the pieces' face groups for a caller that packages them as
+ * colored 3MF objects instead of files.
  */
 export async function splitFiles(
   bridge: GenerationBridge,
@@ -71,7 +75,7 @@ export async function splitFiles(
   format: ExportFileFormat,
   printSettings: { layerHeightMm: number; infillPercent: number; nozzleSizeMm: number },
   workerFormat: ExportFormat
-): Promise<ZipBinaryFile[]> {
+): Promise<{ files: ZipBinaryFile[]; parts: SplitExportParts }> {
   const params = withSocketNozzle(exportable.params, printSettings.nozzleSizeMm);
   const connectorConfig = {
     ...(exportable.params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG),
@@ -83,12 +87,8 @@ export async function splitFiles(
   });
 
   const baseNoExt = exportable.path.replace(/\.[^.]+$/, '');
-  // Split and combined pieces carry different metadata (grid col/row vs none);
-  // packaging only needs the bytes and the label.
-  const pieces: { data: ArrayBuffer; label: string }[] = result.pieces.map((p) => ({
-    data: p.data,
-    label: p.label,
-  }));
+  const companionPieces: { data: ArrayBuffer; label: string }[] = [];
+  let lidFaceGroups: SplitExportParts['lidFaceGroups'];
 
   if (exportable.companions.length > 0) {
     // `separatePieces` matters under STEP: the default compound assembly
@@ -100,12 +100,14 @@ export async function splitFiles(
     });
     // The body is already covered by the split pieces — take only the extras.
     for (const p of combined.pieces) {
-      if (p.label !== 'bin') pieces.push({ data: p.data, label: p.label });
+      if (p.label !== 'bin') companionPieces.push({ data: p.data, label: p.label });
     }
+    lidFaceGroups = combined.lidFaceGroups;
   }
 
-  return pieces.map((piece) => ({
+  const files = [...result.pieces, ...companionPieces].map((piece) => ({
     path: `${baseNoExt}/${piece.label}.${format}`,
     data: piece.data,
   }));
+  return { files, parts: { binPieces: result.pieces, companionPieces, lidFaceGroups } };
 }

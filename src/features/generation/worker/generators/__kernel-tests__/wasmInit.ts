@@ -72,23 +72,10 @@ export type GenerateBaseplateFn = (
 
 // ─── Split preview ───────────────────────────────────────────────────────────
 
-export interface SplitPreviewPiece {
-  readonly vertices: Float32Array;
-  readonly normals: Float32Array;
-  readonly indices: Uint32Array;
-  readonly edgeVertices: Float32Array;
-  readonly label: string;
-  readonly col: number;
-  readonly row: number;
-  readonly widthUnits: number;
-  readonly depthUnits: number;
-  readonly offsetX: number;
-  readonly offsetY: number;
-}
-
-export interface SplitPreviewResult {
-  readonly pieces: readonly SplitPreviewPiece[];
-}
+// Re-use the canonical type from binGenerator
+import type { SplitPreviewResult } from '@/features/generation/worker/generators/binGenerator';
+export type { SplitPreviewResult };
+export type SplitPreviewPiece = SplitPreviewResult['pieces'][number];
 
 export type GenerateSplitPreviewFn = (
   params: BinParams,

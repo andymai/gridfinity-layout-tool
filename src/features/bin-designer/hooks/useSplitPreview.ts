@@ -65,10 +65,12 @@ function computeSplitInputs(
 
 /** Convert a worker SplitPreviewResult into the store's mesh-entry shape. */
 function toMeshEntries(result: SplitPreviewResult): SplitPieceMeshEntry[] {
-  return result.pieces.map(({ vertices, normals, indices, edgeVertices, ...metadata }) => ({
-    ...metadata,
-    mesh: { vertices, normals, indices, edgeVertices },
-  }));
+  return result.pieces.map(
+    ({ vertices, normals, indices, edgeVertices, faceGroups, ...metadata }) => ({
+      ...metadata,
+      mesh: { vertices, normals, indices, edgeVertices, faceGroups },
+    })
+  );
 }
 
 export function useSplitPreview(): void {

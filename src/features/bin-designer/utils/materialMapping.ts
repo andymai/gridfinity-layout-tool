@@ -25,6 +25,7 @@ import { resolveCutoutTriColor, cutoutOrdinalFromTag } from '@/shared/generation
 import type { CutoutColorUnit } from '@/shared/generation/cutoutColorUnits';
 import { COMPARTMENT_PAINTABLE_ZONES, resolveCompartmentTriColor } from './compartmentColorUnits';
 import type { CompartmentColorPlan } from './compartmentColorUnits';
+import type { ColorFrame } from './colorFrame';
 
 /** |normal.z| of the first vertex of flat triangle `i` (9 floats/tri). */
 function absNormalZ(flat: Float32Array | ArrayLike<number>, i: number): number {
@@ -62,13 +63,14 @@ export function buildTriangleMaterialIndices(
   vertices: Float32Array,
   activeZones: ReadonlySet<ColorZone>,
   cutoutUnits: readonly CutoutColorUnit[] = [],
-  compartmentPlan: CompartmentColorPlan | null = null
+  compartmentPlan: CompartmentColorPlan | null = null,
+  frame: ColorFrame | null = null
 ): BinColorMapping | null {
   const coloredUnits = cutoutUnits.filter((u) => u.color !== undefined);
   // Derive the accent cuts from featureColors directly (see the matching note in
   // multiColorGroups.ts) so they're honored even if a caller's activeZones omits
   // them; union them in so isSingleColor accounts for the accent colors.
-  const cuts = accentCutPlanes(featureColors, vertices, faceGroups);
+  const cuts = frame?.accentCuts ?? accentCutPlanes(featureColors, vertices, faceGroups);
   const zones = withAccentZones(activeZones, cuts);
   if (isSingleColor(featureColors, zones) && coloredUnits.length === 0 && !compartmentPlan) {
     return null;
@@ -113,7 +115,7 @@ export function buildTriangleMaterialIndices(
       vertices[b + 8],
     ];
   };
-  const geom = computeLipGeom(faceGroups, getTriangle);
+  const geom = frame ? frame.lipGeom : computeLipGeom(faceGroups, getTriangle);
   const { triZones, positions, normals, triTags } = computeLipColoredMesh({
     triangleCount,
     faceGroups,

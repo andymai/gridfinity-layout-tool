@@ -145,10 +145,12 @@ export interface SplitPieceMeshEntry {
   readonly offsetX: number;
   /** Y offset in grid units from bin origin (bottom edge) */
   readonly offsetY: number;
+  /** Centred on the piece's own footprint, not on the bin. */
   readonly mesh: {
     readonly vertices: Float32Array | null;
     readonly normals: Float32Array | null;
     readonly indices: Uint32Array | null;
     readonly edgeVertices: Float32Array | null;
+    readonly faceGroups?: readonly FaceGroupData[];
   };
 }
