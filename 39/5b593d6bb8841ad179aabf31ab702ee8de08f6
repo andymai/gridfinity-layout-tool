@@ -1,0 +1,29 @@
+src/features/bin-designer/components/ExportDialog/ExportDialog.test.tsx
+  s_38ec12440186b5::t_e0a51b5b0e2086 585-593
+src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
+  s_38ec12440186b5::t_e0a51b5b0e2086 343,393-400,402,407
+apps/docs/concepts/multi-color.md
+  s_38ec12440186b5::t_35efa2b033f171 108
+apps/docs/printing/slicers.md
+  s_38ec12440186b5::t_35efa2b033f171 39
+apps/docs/printing/troubleshooting.md
+  s_38ec12440186b5::t_35efa2b033f171 117
+apps/docs/recipes/kitchen-utensil-drawer.md
+  s_38ec12440186b5::t_35efa2b033f171 101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "395b593d6bb8841ad179aabf31ab702ee8de08f6",
+  "prompts": {},
+  "sessions": {
+    "s_38ec12440186b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e21d9403-1858-4c6e-9314-07b7b72fe315",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
