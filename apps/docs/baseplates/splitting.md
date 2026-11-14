@@ -91,7 +91,7 @@ Before you print a whole drawer of pieces, print a small test. Click <Ui k="base
 
 Wide margins make big pieces. Turn on <Ui k="baseplate.detachMargins" /> in <Ui k="baseplate.sectionDimensions" /> to print each margin as a separate strip. A margin must be at least 8 mm wide to detach. A bonus: if one strip prints badly, you can print that strip again by itself.
 
-Turn on <Ui k="baseplate.detachMarginConnector" /> to join each strip to the plate with the seam connector. This needs a connector on the seams, of any style except <Ui k="baseplate.connectorStyle.snapClip" />. Without it, the strips stay in place by friction. A plate with a custom drawer shape can't detach its margins.
+Turn on <Ui k="baseplate.detachMarginConnector" /> to join each strip to the plate with the seam connector. This needs a connector on the seams, of any style except <Ui k="baseplate.connectorStyle.snapClip" />. Without it, the strips stay in place by friction. With <Ui k="baseplate.dovetails.invert" /> on, the strips get the tongues and the plate gets the grooves. A plate with a custom drawer shape can't detach its margins.
 
 ## Export a split plate
 
