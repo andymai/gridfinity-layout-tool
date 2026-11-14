@@ -1,0 +1,42 @@
+src/features/baseplate/hooks/generationTriggers.ts
+  s_38ec12440186b5::t_93f3d299727ca3 219-220
+src/features/generation/worker/generators/connectorShapes.ts
+  s_38ec12440186b5::t_694fd1b8a08950 112-164
+  s_38ec12440186b5::t_6cc19c3bf57042 179,188
+src/features/baseplate/utils/pieceFingerprint.ts
+  s_38ec12440186b5::t_93f3d299727ca3 146
+src/features/generation/worker/generators/baseplateDetachedMargin.scenario.test.ts
+  s_38ec12440186b5::t_aaf36cfd3a3221 3-5,19,259-347
+src/features/generation/worker/generators/baseplateConnectors.ts
+  s_38ec12440186b5::t_15e3eaad41063c 67-68,184-228
+  s_38ec12440186b5::t_65f895fac32443 39-45,74,506,526-529
+  s_38ec12440186b5::t_93f3d299727ca3 494-495
+  s_38ec12440186b5::t_ec2379b29928bd 229-230
+src/features/generation/worker/generators/baseplateMargin.ts
+  s_38ec12440186b5::t_06226ce19c0d78 20-29,31,43,164-165,193-201
+src/shared/types/bin.ts
+  s_38ec12440186b5::t_158fb30adae32e 447-452
+  s_38ec12440186b5::t_93f3d299727ca3 414,422,425,579-580,815-816
+src/shared/types/marginSeam.ts
+  s_38ec12440186b5::t_7ea9b5325c995b 44-47
+  s_38ec12440186b5::t_158fb30adae32e 1-43,48-56
+src/features/generation/worker/generators/baseplateMarginConnector.scenario.test.ts
+  s_38ec12440186b5::t_56ec7ec8880539 12,14-21,322-415
+  s_38ec12440186b5::t_2e87d140b67c75 416-418
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ab46ec0a7028d52331d78e408284cf1cbfbfc63e",
+  "prompts": {},
+  "sessions": {
+    "s_38ec12440186b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e21d9403-1858-4c6e-9314-07b7b72fe315",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
