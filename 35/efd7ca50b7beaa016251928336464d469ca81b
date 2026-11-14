@@ -1,0 +1,27 @@
+src/features/bin-designer/utils/binDownloadHelpers.ts
+  s_38ec12440186b5::t_f65d22704ed542 123-125,130
+src/features/bin-designer/hooks/useZoneColoredMesh.test.ts
+  s_38ec12440186b5::t_474d481e791d24 9-10
+  s_38ec12440186b5::t_81e1b0e2b5bf92 59-62
+src/features/bin-designer/components/preview/SplitBinMeshes/SplitBinMeshes.test.tsx
+  s_38ec12440186b5::t_c2a244016188cf 13-14,16-19,21-23
+  s_38ec12440186b5::t_c80be14bd1730c 2,15
+src/features/bin-designer/utils/binDownloadHelpersSplit3MF.test.ts
+  s_38ec12440186b5::t_71aedb46551cf7 143-161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "35efd7ca50b7beaa016251928336464d469ca81b",
+  "prompts": {},
+  "sessions": {
+    "s_38ec12440186b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e21d9403-1858-4c6e-9314-07b7b72fe315",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
