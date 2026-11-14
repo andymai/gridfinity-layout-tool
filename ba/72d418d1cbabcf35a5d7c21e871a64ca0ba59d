@@ -1,0 +1,96 @@
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_38ec12440186b5::t_2e0ee418e2323d 8,15,262-264,639,648,754,763
+src/features/bin-designer/utils/binDownloadHelpers.ts
+  s_38ec12440186b5::t_e072e2bbf59594 526-537,539-546,552,566,591,595-596,598,600,602-603,605-607,610-611,615-616,618,622,624
+  s_38ec12440186b5::t_3486d528adc4ae 29,274-295,389,547-551,553-565,567-590,592-594,597,599,601,604,617,619
+src/features/bin-designer/utils/currentThreeMFPrintSettings.test.ts
+  s_38ec12440186b5::t_950426b2719b14 1-26
+src/features/bin-designer/hooks/useZoneColoredMesh.test.ts
+  s_38ec12440186b5::t_31706a92cc8df7 1-99
+src/features/bin-designer/components/preview/BinMesh/BinMesh.tsx
+  s_38ec12440186b5::t_f01f230a028b4f 15,85
+  s_38ec12440186b5::t_3a895dee0ad954 14,20-22,46,52-68,74-77
+src/features/bin-designer/utils/splitPieceFrame.ts
+  s_38ec12440186b5::t_df1475916182a9 1-65
+src/features/generation/bridge/responses.ts
+  s_38ec12440186b5::t_57b987496b35c0 255-256,321
+src/features/generation/worker/generators/binGenerator.scenario.split-colors.test.ts
+  s_38ec12440186b5::t_ef784048a4c871 1-124
+  s_38ec12440186b5::t_4834584c72f683 125-126
+src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  s_38ec12440186b5::t_5050baf76c9817 503-508
+src/shell/layoutExport/useLayoutExport.ts
+  s_38ec12440186b5::t_ce8d222f56f4ad 50,252,261,263
+src/features/bin-designer/utils/splitPieceFrame.test.ts
+  s_38ec12440186b5::t_9f66afc0132251 1-65
+  s_38ec12440186b5::t_ae2194e6d1f81f 66-67
+src/features/bin-designer/utils/binDownloadHelpersSplit3MF.test.ts
+  s_38ec12440186b5::t_ee560cecc4f859 1-101,109-127,135-146,153-159,166-169
+  s_38ec12440186b5::t_c43202353c9460 148
+  s_38ec12440186b5::t_2068def6bcbdaf 160-165
+  s_38ec12440186b5::t_e072e2bbf59594 102-108,128-134,147,149-152
+src/features/bin-designer/types/generation.ts
+  s_38ec12440186b5::t_bad4e8ccb6ec75 148,154
+src/shell/layoutExport/layoutExportFiles.ts
+  s_38ec12440186b5::t_ce8d222f56f4ad 13,67-69,78,90-91,103,105,108,112
+src/features/generation/worker/generators/meshImprint.ts
+  s_38ec12440186b5::t_d12b900d257a8a 445,450,458
+src/features/bin-designer/utils/colorFrame.test.ts
+  s_38ec12440186b5::t_53d801118c98c1 1-71
+src/features/bin-designer/hooks/useSplitPreview.ts
+  s_38ec12440186b5::t_bad4e8ccb6ec75 68-73
+src/features/bin-designer/utils/materialMapping.ts
+  s_38ec12440186b5::t_41855c28bfda61 28,66-67,73,118
+src/features/bin-designer/components/preview/SplitBinMeshes/SplitBinMeshes.tsx
+  s_38ec12440186b5::t_5050baf76c9817 4-6,9,15-24,41-43,51,57-59,67,72-79,83-91,94-95,103,124-125,131-136,145,149-161,163-168,190,199-201,209
+  s_38ec12440186b5::t_f085d411c678a6 162,169-174
+  s_38ec12440186b5::t_9e6c9c235a6ec0 175
+src/features/bin-designer/store/slices/uiSlice.ts
+  s_38ec12440186b5::t_2add388c47d54c 282
+src/features/bin-designer/hooks/useZoneColoredMesh.ts
+  s_38ec12440186b5::t_e6cb9063a4efd4 1-256
+src/features/generation/worker/generators/fitTestSlice.ts
+  s_38ec12440186b5::t_f01f230a028b4f 316-328
+src/features/bin-designer/utils/multiColorGroups.ts
+  s_38ec12440186b5::t_41855c28bfda61 40,81-84,88-89,113-114,129-130,133-134,165-166,177,184
+src/features/generation/worker/generators/splitPieceExport.ts
+  s_38ec12440186b5::t_df5e8c79a9f278 149,153,159-164,177
+  s_38ec12440186b5::t_369f90d8d59376 11,14,30-31,49
+  s_38ec12440186b5::t_48c7cc32aa1213 259,272,281
+  s_38ec12440186b5::t_9fd146c4923bf2 97,100-101,108,122,124-132
+src/features/generation/worker/generators/__kernel-tests__/wasmInit.ts
+  s_38ec12440186b5::t_69a6d94a587837 75-78
+src/shell/layoutExport/useLayoutExport.test.ts
+  s_38ec12440186b5::t_42c34924167074 315-353
+src/features/bin-designer/components/preview/SplitBinMeshes/SplitBinMeshes.test.tsx
+  s_38ec12440186b5::t_bf8d535d8f28d8 7-8,14-15,26,316-317,321-333,336-379
+  s_38ec12440186b5::t_87c1f79bc39a71 27-32,318-320,334-335
+src/features/bin-designer/utils/currentThreeMFPrintSettings.ts
+  s_38ec12440186b5::t_eb6bedd0929d6e 1-15
+src/features/bin-designer/hooks/useExport.ts
+  s_38ec12440186b5::t_90b2afb776d45b 55-56,411,416
+  s_38ec12440186b5::t_13ca426a2d3d26 44,550
+  s_38ec12440186b5::t_ee07f04a3bbf40 475-476,583,589
+  s_38ec12440186b5::t_e072e2bbf59594 588,591
+src/features/bin-designer/utils/multiColorGroups.test.ts
+  s_38ec12440186b5::t_f125dd6e22a214 281-332
+src/features/bin-designer/utils/colorFrame.ts
+  s_38ec12440186b5::t_63af28b46e48fd 45-52,54,58,63-70,72-73,75-81
+  s_38ec12440186b5::t_281394fc03d070 1-44,53,55-57,59-62,71,74,82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ba72d418d1cbabcf35a5d7c21e871a64ca0ba59d",
+  "prompts": {},
+  "sessions": {
+    "s_38ec12440186b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e21d9403-1858-4c6e-9314-07b7b72fe315",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
