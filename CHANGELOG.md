@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.543.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.543.0...gridfinity-layout-tool-v4.543.1) (2026-11-14)
+
+
+### Bug Fixes
+
+* **baseplate:** invert the connectors on detached margin seams ([#5039](https://github.com/andymai/gridfinity-layout-tool/issues/5039)) ([3eeb7c5](https://github.com/andymai/gridfinity-layout-tool/commit/3eeb7c598f7213b2c308b0f2cfa7cd405ceb40f0))
+* **bin-designer:** keep multi-color on split bins in the preview and 3MF export ([#5040](https://github.com/andymai/gridfinity-layout-tool/issues/5040)) ([dd04362](https://github.com/andymai/gridfinity-layout-tool/commit/dd04362acac1a77ede45c40d545c85d47828514b))
+
 ## [4.543.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.542.0...gridfinity-layout-tool-v4.543.0) (2026-11-13)
 
 
