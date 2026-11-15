@@ -374,6 +374,7 @@ function splitSolidIntoPieces(
         innerW,
         innerD,
         wallHeight,
+        splitDims.collarHeight,
         true,
         interiorDividerTopZ(params, splitDims)
       );

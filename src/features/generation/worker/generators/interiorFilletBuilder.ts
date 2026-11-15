@@ -325,6 +325,7 @@ function trimDoorways(
       dim.innerW,
       dim.innerD,
       dim.wallHeight,
+      dim.collarHeight,
       dim.hasLip,
       interiorDividerTopZ(params, dim),
       reach

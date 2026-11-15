@@ -127,6 +127,24 @@ describe('wallPatternBuilder cache split', () => {
     expect(clipped.misses, 'a radius edit must rebuild the clipped result per wall').toBe(4);
   }, 60_000);
 
+  it('rebuilds the clipped pattern when only the collar changes', () => {
+    // The cut, and the clip that mirrors it, run up through the collar, so a
+    // taller one lifts the round-over's flare out of the pattern band.
+    const generateBin = getGenerateBin();
+    const rounded = {
+      ...HONEYCOMB_2x2x4,
+      walls: { ...HONEYCOMB_2x2x4.walls, cornerRadiusTop: 8 },
+    };
+
+    generateBin(rounded);
+    resetAllShapeCacheStats();
+    generateBin({ ...rounded, extraWallHeightMm: 6 });
+
+    const clipped = getStats('feature-wallPatternClipped');
+    expect(clipped.hits, 'a collar edit must not reuse the collarless clip').toBe(0);
+    expect(clipped.misses).toBe(4);
+  }, 60_000);
+
   it('rebuilds the clipped pattern when only a cut height in mm changes', () => {
     const generateBin = getGenerateBin();
     const withDepthMm = (depthMm: number): typeof HONEYCOMB_2x2x4 => {

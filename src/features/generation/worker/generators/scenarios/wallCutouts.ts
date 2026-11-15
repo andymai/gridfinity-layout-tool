@@ -1,6 +1,6 @@
 import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
-import type { BinParams, WallCutout } from '@/shared/types/bin';
+import type { BinParams, WallCutout, WallCutoutShape } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
@@ -56,6 +56,120 @@ function scoopEverywhere(
       },
     },
   });
+}
+
+const COLLAR_MM = 6;
+/**
+ * Where a 50% cut bottoms out on a 4u bin: the 4.75mm socket, then half of the
+ * 23.25mm wall less its 1.2mm floor. A collar does not move it.
+ */
+const COLLAR_BIN_CUT_FLOOR_Z = 4.75 + 23.25 - 0.5 * (23.25 - 1.2);
+
+/**
+ * A collar (`extraWallHeightMm`) raises the rim while the cut keeps its floor on
+ * the nominal plane, so the cut has to run up through the collar and the lip.
+ * Stopping at the nominal rim leaves a band of wall bridging the window, which
+ * is watertight, correctly sized and the right height, so only a probe through
+ * the window sees it. The wall beside the window must still carry the collar.
+ */
+function cutThroughCollar(
+  shape: WallCutoutShape,
+  stackingLip: boolean,
+  cornerRadiusTop: number | null = null
+): ScenarioCase {
+  const bin = { width: 1, depth: 3, height: 4 } as const;
+  const side: WallCutout = { ...DEFAULT_BIN_PARAMS.walls.left, cornerRadiusTop };
+  const walls: BinParams['walls'] = {
+    ...DEFAULT_BIN_PARAMS.walls,
+    enabled: true,
+    shape,
+    left: side,
+    right: side,
+  };
+  const base = { ...DEFAULT_BIN_PARAMS.base, stackingLip };
+  const finish = cornerRadiusTop === null ? '' : `, ${cornerRadiusTop}mm round-over`;
+  const name = `${shape} cut runs through a ${COLLAR_MM}mm collar, ${stackingLip ? 'lipped' : 'lipless'}${finish}`;
+  return defineScenario('wall cutouts', name, {
+    assert: 'structural',
+    params: { ...bin, base, walls, extraWallHeightMm: COLLAR_MM },
+    compareWith: {
+      params: { ...bin, base, walls },
+      assert: (collared, plain) => {
+        const bb = boundingBox(plain.vertices);
+        expect(boundingBox(collared.vertices).maxZ - bb.maxZ, 'collar').toBeCloseTo(COLLAR_MM, 1);
+        const t = DEFAULT_BIN_PARAMS.wallThickness / 2;
+        // Off the exact centre and the wall's end so no probe runs down a seam.
+        const centreY = 0.37;
+        const besideY = bb.maxY - 10;
+        for (const [wall, x] of [
+          ['left', bb.minX + t],
+          ['right', bb.maxX - t],
+        ] as const) {
+          // A scoop's floor is an arc, which tessellates a little proud of itself.
+          expect(
+            Math.abs(topAt(plain, x, centreY) - COLLAR_BIN_CUT_FLOOR_Z),
+            `${wall} window floor, no collar`
+          ).toBeLessThan(0.1);
+          expect(topAt(collared, x, centreY), `${wall} window open through the collar`).toBeCloseTo(
+            topAt(plain, x, centreY),
+            2
+          );
+          expect(
+            topAt(collared, x, besideY) - topAt(plain, x, besideY),
+            `${wall} wall beside the window`
+          ).toBeCloseTo(COLLAR_MM, 1);
+        }
+      },
+    },
+  });
+}
+
+/**
+ * A divider ending inside a funnel is trimmed by a copy of the funnel's
+ * profile, and a collar lengthens the funnel's side, which lowers its lean. A
+ * copy that leaves the collar out leans harder and notches the divider's end
+ * below the slope the wall is cut to.
+ *
+ * 3x2x4, front funnel 50% x 50%: the floor at 16.975, a 61.55mm opening that
+ * narrows to 36.93mm, its side leaning 12.31mm over the 23.425mm the profile
+ * spans (the 11.025mm drop, the 6mm collar, the 4.4mm lip and 2mm clearance).
+ * The divider at a third of the 123.1mm cavity stands on that slope.
+ */
+function funnelTrimsDividerThroughCollar(): ScenarioCase {
+  const innerW = 3 * 42 - 0.5 - 2 * 1.2;
+  const innerD = 2 * 42 - 0.5 - 2 * 1.2;
+  const x = innerW / 6 + 0.07;
+  const slopeZ = COLLAR_BIN_CUT_FLOOR_Z + (x - 0.6 * (0.25 * innerW)) / (12.31 / 23.425);
+  return defineScenario(
+    'wall cutouts',
+    `funnel through a ${COLLAR_MM}mm collar trims a divider end to the wall's slope`,
+    {
+      assert: 'structural',
+      params: {
+        width: 3,
+        depth: 2,
+        height: 4,
+        extraWallHeightMm: COLLAR_MM,
+        compartments: { cols: 3, rows: 1, cells: [0, 1, 2], thickness: 1.2 },
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          shape: 'funnel',
+          front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 50, depth: 50 },
+          left: DISABLED_WALL_CUTOUT,
+          right: DISABLED_WALL_CUTOUT,
+        },
+      },
+      customAssert: (mesh) => {
+        const wallTop = topAt(mesh, x, -innerD / 2 - 0.6);
+        expect(Math.abs(wallTop - slopeZ), 'front wall on the funnel slope').toBeLessThan(0.05);
+        expect(
+          Math.abs(topAt(mesh, x, -innerD / 2 + 0.8) - wallTop),
+          'divider end against the wall'
+        ).toBeLessThan(0.05);
+      },
+    }
+  );
 }
 
 export const wallCutouts: ScenarioCase[] = [
@@ -273,4 +387,8 @@ export const wallCutouts: ScenarioCase[] = [
   // The short walls of a 1-deep bin are narrower than the scoop is deep, so
   // their arc is a full semicircle and the long walls' is a shallow segment.
   scoopEverywhere(70, 100, { width: 2, depth: 1, height: 5 }),
+  cutThroughCollar('u-shape', true),
+  cutThroughCollar('scoop', false),
+  cutThroughCollar('funnel', true, 3),
+  funnelTrimsDividerThroughCollar(),
 ];

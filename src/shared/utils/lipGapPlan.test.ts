@@ -92,6 +92,27 @@ describe('lipGaps: wall cutouts', () => {
     expect(rounded[0].hi).toBeCloseTo(square[0].hi + r, 6);
   });
 
+  it('measures the round-over against a side the collar lengthens, as the profile does', () => {
+    // The cut runs up through the collar, so its side is a collar taller and the
+    // top round-over has more room beside the bottom fillet. A 12mm drop with a
+    // 5.99mm bottom fillet caps the round-over at 12 + 4.4 - 5.99 - 0.05 = 10.36mm
+    // under a bare lip; a 6mm collar lifts that cap past the drop's own 11.95mm.
+    const cut = {
+      ...walls().front,
+      enabled: true,
+      width: 30,
+      depthMm: 12,
+      cornerRadiusTop: 25,
+      cornerRadiusBottom: 25,
+    };
+    const widthOf = (extraWallHeightMm: number): number => {
+      const [gap] = lipGaps(bin({ extraWallHeightMm, walls: walls({ front: cut }) }));
+      return gap.hi - gap.lo;
+    };
+    expect(widthOf(0)).toBeCloseTo(INNER * 0.3 + 2 * 10.36, 6);
+    expect(widthOf(6)).toBeCloseTo(INNER * 0.3 + 2 * 11.95, 6);
+  });
+
   it('takes no extra width where the cut leaves no wall to round', () => {
     // A full-width cut has no shoulder, so the builder squares it and the gap
     // must not grow — mirroring the profile's own slack clamp gate for gate.

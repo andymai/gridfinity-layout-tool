@@ -43,6 +43,7 @@ export function GhostWallCutouts() {
     wallThickness,
     walls,
     base,
+    extraWallHeightMm,
     generationStatus,
   } = useDesignerStore(
     useShallow((s) => ({
@@ -55,6 +56,7 @@ export function GhostWallCutouts() {
       wallThickness: s.params.wallThickness,
       walls: s.params.walls,
       base: s.params.base,
+      extraWallHeightMm: s.params.extraWallHeightMm,
       generationStatus: s.generation.status,
     }))
   );
@@ -65,6 +67,8 @@ export function GhostWallCutouts() {
   const innerD = outerD - 2 * wallThickness;
   const totalH = height * heightUnitMm;
   const wallHeight = baseWallHeight(base, totalH);
+  const rawCollar = extraWallHeightMm ?? 0;
+  const collarMm = Number.isFinite(rawCollar) ? Math.max(0, rawCollar) : 0;
 
   const shouldShow = walls.enabled && generationStatus === 'generating';
 
@@ -317,7 +321,8 @@ export function GhostWallCutouts() {
       { key: 'right', wallSpan: innerD, cx: 0, cy: innerW / 2, axis: 'left-right' },
     ];
 
-    const lipRoom = base.stackingLip ? GRIDFINITY_SPEC.LIP_HEIGHT : 0;
+    // The cut runs up through the collar as well as the lip.
+    const lipRoom = collarMm + (base.stackingLip ? GRIDFINITY_SPEC.LIP_HEIGHT : 0);
     for (const side of sides) {
       const sideConfig = walls[side.key];
       if (!sideConfig.enabled) continue;
@@ -370,7 +375,17 @@ export function GhostWallCutouts() {
     // reads directly, and `wallHeight` already covers the rest. Toggling it
     // changes no other dependency, so leaving it out strands the outline on
     // the previous clamp.
-  }, [shouldShow, walls, innerW, innerD, wallHeight, wallThickness, totalH, base.stackingLip]);
+  }, [
+    shouldShow,
+    walls,
+    innerW,
+    innerD,
+    wallHeight,
+    wallThickness,
+    totalH,
+    base.stackingLip,
+    collarMm,
+  ]);
 
   const lineSegments = useGhostLineSegments(geometry, {
     color: GHOST_COLOR,

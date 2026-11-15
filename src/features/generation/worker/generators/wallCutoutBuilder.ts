@@ -48,7 +48,8 @@ export type { CornerSlack } from '@/shared/utils/wallCutoutPosition';
  * @param cutoutShape - Shape style
  * @param cutWidth - Horizontal span of the cutout in mm
  * @param userCutHeight - User-visible height (depth from wall top) in mm
- * @param overshoot - Extra height above wall top for clean boolean cuts
+ * @param overshoot - Height above the wall top: the collar and lip the cut
+ *   passes through, plus `CUT_RIM_CLEARANCE`
  * @param cornerSlack - Wall left standing at each end of the span
  * @param radii - Resolved corner radii; omit for square shoulders + auto fillet
  */
@@ -258,6 +259,7 @@ export function buildWallCutoutCuts(
   innerW: number,
   innerD: number,
   wallHeight: number,
+  collarHeight: number,
   hasLip: boolean,
   dividerTopZ: number,
   /** Extra reach either side of the wall, for trimming what stands in front of it. */
@@ -272,6 +274,7 @@ export function buildWallCutoutCuts(
       innerW,
       innerD,
       wallHeight,
+      collarHeight,
       hasLip,
       dividerTopZ,
       depthPadding
@@ -364,6 +367,7 @@ function buildWallCutoutCutsInScope(
   innerW: number,
   innerD: number,
   wallHeight: number,
+  collarHeight: number,
   hasLip: boolean,
   dividerTopZ: number,
   depthPadding: number
@@ -375,7 +379,9 @@ function buildWallCutoutCutsInScope(
   const maxThickness = Math.max(wallThickness, params.compartments.thickness);
   const lipOverhang = hasLip ? lipInnerReachMm(params) : 0;
   const extrudeDepth = (maxThickness + lipOverhang) * 2 + 1 + 2 * depthPadding;
-  const overshoot = (hasLip ? LIP_HEIGHT : 0) + CUT_RIM_CLEARANCE;
+  // The drop stays measured from the nominal wall top, but the cut has to
+  // run on up through the collar to the real rim, or the collar bridges it.
+  const overshoot = collarHeight + (hasLip ? LIP_HEIGHT : 0) + CUT_RIM_CLEARANCE;
 
   // For non-rectangular bins, map each side to the outermost polygon edge
   // facing that direction (silently skipping sides with no matching edge).
@@ -510,6 +516,7 @@ export const wallCutoutsFeature: FeatureBuilder = {
         quantize(dim.innerW),
         quantize(dim.innerD),
         quantize(dim.wallHeight),
+        quantize(dim.collarHeight),
         dim.hasLip,
         params.compartments.cols,
         params.compartments.rows,
@@ -527,6 +534,7 @@ export const wallCutoutsFeature: FeatureBuilder = {
       ctx.dimensions.innerW,
       ctx.dimensions.innerD,
       ctx.dimensions.wallHeight,
+      ctx.dimensions.collarHeight,
       ctx.dimensions.hasLip,
       interiorDividerTopZ(ctx.params, ctx.dimensions)
     );
