@@ -330,6 +330,7 @@ const baseplateParamsSchema = z.object({
   magnetHoles: z.boolean(),
   magnetDiameter: z.number().min(0.5).max(20),
   magnetDepth: z.number().min(0.5).max(10),
+  magnetPopOutHoles: z.boolean().optional(),
   paddingLeft: z.number().min(0).max(100),
   paddingRight: z.number().min(0).max(100),
   paddingFront: z.number().min(0).max(100),

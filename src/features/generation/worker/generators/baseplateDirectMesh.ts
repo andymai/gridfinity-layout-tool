@@ -83,6 +83,9 @@ export function generateBaseplateDirect(
   onProgress: ProgressFn,
   signal?: AbortSignal
 ): MeshData {
+  if (params.magnetPopOutHoles === true && params.magnetHoles) {
+    throw new Error('Magnet pop-out holes require the exact baseplate generator');
+  }
   // Guard against NaN/negative/infinite values that would produce degenerate geometry
   if (
     !Number.isFinite(params.width) ||

@@ -5498,5 +5498,7 @@
   "exportDestination.fellBack": "Impossibile salvare {file} dove hai scelto, quindi è stato scaricato.",
   "exportDestination.failed": "Impossibile salvare {file}. Riprova l'esportazione.",
   "exportDestination.fail.timeout": "Il caricamento su {host} ha impiegato troppo tempo. Il file potrebbe comunque essere arrivato.",
-  "exportDestination.fail.redirect": "Il caricamento su {host} è stato reindirizzato. Usa l'indirizzo finale nelle Impostazioni."
+  "exportDestination.fail.redirect": "Il caricamento su {host} è stato reindirizzato. Usa l'indirizzo finale nelle Impostazioni.",
+  "baseplate.magnetPopOutHoles": "Fori di espulsione dei magneti",
+  "baseplate.magnetPopOutHolesDetail": "Piccoli fori sotto ogni sede permettono di spingere fuori i magneti dal basso."
 }

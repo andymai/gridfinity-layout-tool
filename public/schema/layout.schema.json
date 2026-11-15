@@ -744,6 +744,10 @@
           "type": "boolean",
           "description": "45 degree lead-in at each magnet hole's mouth. Skipped where the surrounding wall is too thin. Absent means off."
         },
+        "magnetPopOutHoles": {
+          "type": "boolean",
+          "description": "Small through-holes behind upward-facing magnet pockets let the magnets be pushed out from the underside. Absent means off."
+        },
         "paddingLeft": {
           "type": "number",
           "minimum": 0,

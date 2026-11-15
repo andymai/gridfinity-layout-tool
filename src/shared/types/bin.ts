@@ -616,6 +616,7 @@ export interface ResolvedBaseplateParams {
   readonly magnetDepth: number;
   readonly magnetCrushRibs?: boolean;
   readonly magnetChamfer?: boolean;
+  readonly magnetPopOutHoles?: boolean;
   /**
    * Magnet hole placement anchor (default 'edge'). See `MagnetAnchor` in
    * `@/core/types`. Layout-scoped so the plate matches its bins/lids.

@@ -110,11 +110,13 @@ export function shouldDeferBrepPreview(
 
 /**
  * The draft a deferred plate keeps as its final preview. The procedural mesh
- * draws no eco reliefs, so an eco plate finishes on the Manifold draft, which
- * runs the real generator.
+ * draws no eco reliefs or open undersides, so those plates finish on the
+ * Manifold draft, which runs the real generator.
  */
 export function deferredPreviewSource(params: ResolvedBaseplateParams): 'direct' | 'manifold' {
-  return params.ecoPlate === true ? 'manifold' : 'direct';
+  return params.ecoPlate === true || (params.magnetHoles && params.magnetPopOutHoles === true)
+    ? 'manifold'
+    : 'direct';
 }
 
 /**

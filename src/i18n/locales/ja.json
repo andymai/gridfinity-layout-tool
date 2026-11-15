@@ -5359,5 +5359,7 @@
   "exportDestination.fellBack": "{file} を選んだ場所に保存できなかったため、ダウンロードしました。",
   "exportDestination.failed": "{file} を保存できませんでした。もう一度エクスポートしてください。",
   "exportDestination.fail.timeout": "{host} へのアップロードがタイムアウトしました。ファイルは届いている可能性があります。",
-  "exportDestination.fail.redirect": "{host} へのアップロードはリダイレクトされました。設定でリダイレクト先のアドレスを指定してください。"
+  "exportDestination.fail.redirect": "{host} へのアップロードはリダイレクトされました。設定でリダイレクト先のアドレスを指定してください。",
+  "baseplate.magnetPopOutHoles": "磁石押し出し穴",
+  "baseplate.magnetPopOutHolesDetail": "各磁石ポケットの底に小さな穴を開け、下から磁石を押し出せます。"
 }

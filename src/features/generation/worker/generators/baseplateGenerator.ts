@@ -43,6 +43,7 @@ import {
   isOk,
   drawRectangle,
   drawRoundedRectangle,
+  cylinder,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, BooleanPipelineStep } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
@@ -656,6 +657,19 @@ export function buildBaseplateSolid(
       buildMagnetPocketCutters(plan, magnetDiameter / 2, magnetDepth, magnetStyle, profileHeight)
     );
     baseplate = cutInBatches(baseplate, holes);
+    if (params.magnetPopOutHoles === true) {
+      const popRadius = Math.min(1, magnetDiameter * 0.2);
+      const popDepth = floorDepth - magnetDepth;
+      const popCutters = magnetPockets.flatMap((plan) =>
+        [...plan.plain, ...plan.chamfered].map(([x, y]) =>
+          cylinder(popRadius, popDepth + 0.4, {
+            at: [x, y, -totalHeight - 0.2],
+            axis: [0, 0, 1],
+          })
+        )
+      );
+      baseplate = cutInBatches(baseplate, popCutters);
+    }
     probe?.('magnetHolesCut', baseplate);
   }
 

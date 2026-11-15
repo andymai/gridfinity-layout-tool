@@ -429,6 +429,7 @@ export function buildFullParams(
     magnetDepth: stored.magnetDepth,
     ...(stored.magnetCrushRibs === true ? { magnetCrushRibs: true } : {}),
     ...(stored.magnetChamfer === true ? { magnetChamfer: true } : {}),
+    ...(stored.magnetPopOutHoles === true ? { magnetPopOutHoles: true } : {}),
     magnetAnchor,
     ...(lowProfileBase === true ? { lowProfileBase: true } : {}),
     ...(stackingOn ? { stackSeamTrimMm: STACK_SEAM_TRIM_MM } : {}),

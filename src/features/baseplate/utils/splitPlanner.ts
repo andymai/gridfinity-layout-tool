@@ -671,6 +671,7 @@ export function pieceToBaseplateParams(
     magnetDepth: parentParams.magnetDepth,
     ...(parentParams.magnetCrushRibs === true ? { magnetCrushRibs: true } : {}),
     ...(parentParams.magnetChamfer === true ? { magnetChamfer: true } : {}),
+    ...(parentParams.magnetPopOutHoles === true ? { magnetPopOutHoles: true } : {}),
     // Rotation-invariant: the anchor insets every magnet the same distance
     // from its own cell's edges.
     magnetAnchor: parentParams.magnetAnchor,

@@ -5498,5 +5498,7 @@
   "exportDestination.fellBack": "Impossible d'enregistrer {file} à l'endroit choisi, le fichier a donc été téléchargé.",
   "exportDestination.failed": "Impossible d'enregistrer {file}. Relancez l'export.",
   "exportDestination.fail.timeout": "L'envoi vers {host} a pris trop de temps. Le fichier est peut-être quand même arrivé.",
-  "exportDestination.fail.redirect": "L'envoi vers {host} a été redirigé. Indiquez l'adresse finale dans les Paramètres."
+  "exportDestination.fail.redirect": "L'envoi vers {host} a été redirigé. Indiquez l'adresse finale dans les Paramètres.",
+  "baseplate.magnetPopOutHoles": "Trous d’éjection des aimants",
+  "baseplate.magnetPopOutHolesDetail": "De petits trous sous chaque logement permettent de pousser les aimants par-dessous."
 }

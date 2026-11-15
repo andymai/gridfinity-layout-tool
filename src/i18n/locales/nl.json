@@ -5498,5 +5498,7 @@
   "exportDestination.fellBack": "{file} kon niet op de gekozen plek worden opgeslagen, dus het is gedownload.",
   "exportDestination.failed": "{file} kon niet worden opgeslagen. Probeer de export opnieuw.",
   "exportDestination.fail.timeout": "Upload naar {host} duurde te lang. Het bestand is misschien toch aangekomen.",
-  "exportDestination.fail.redirect": "Upload naar {host} werd doorgestuurd. Gebruik het uiteindelijke adres in Instellingen."
+  "exportDestination.fail.redirect": "Upload naar {host} werd doorgestuurd. Gebruik het uiteindelijke adres in Instellingen.",
+  "baseplate.magnetPopOutHoles": "Uitdrukgaten voor magneten",
+  "baseplate.magnetPopOutHolesDetail": "Kleine gaten onder elke magneetuitsparing laten je magneten van onderaf uitdrukken."
 }
