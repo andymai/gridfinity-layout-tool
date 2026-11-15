@@ -5498,5 +5498,7 @@
   "exportDestination.fellBack": "Kunne ikke lagre {file} der du valgte, så filen ble lastet ned i stedet.",
   "exportDestination.failed": "Kunne ikke lagre {file}. Prøv eksporten på nytt.",
   "exportDestination.fail.timeout": "Opplasting til {host} tok for lang tid. Filen kan likevel ha kommet fram.",
-  "exportDestination.fail.redirect": "Opplasting til {host} ble videresendt. Bruk den endelige adressen i Innstillinger."
+  "exportDestination.fail.redirect": "Opplasting til {host} ble videresendt. Bruk den endelige adressen i Innstillinger.",
+  "baseplate.mountMagnets.crushRibs": "Klemribber",
+  "baseplate.mountMagnets.crushRibsDetail": "Åtte ribber i hvert magnethull på undersiden holder en innpresset magnet uten lim."
 }

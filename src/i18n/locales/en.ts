@@ -4926,6 +4926,9 @@ const en: Record<string, string> = {
   'baseplate.screwHoles.cellCorner.outer': 'Outer',
   'baseplate.screwHoles.cellCorner.inner': 'Inner',
   'baseplate.mountMagnets.label': 'Underside magnets',
+  'baseplate.mountMagnets.crushRibs': 'Crush ribs',
+  'baseplate.mountMagnets.crushRibsDetail':
+    'Eight ribs inside each underside magnet hole grip a press-fit magnet without glue.',
   'baseplate.mountMagnets.summary': 'ø{diameter} × {depth}mm, {count} per piece',
   'baseplate.mountMagnetsDetail':
     'Magnet holes in the underside, where four pockets meet, so the plate holds to a steel drawer or tool chest without getting any taller. Crossings on a split seam, on the plate edge or holding a screw are skipped.',

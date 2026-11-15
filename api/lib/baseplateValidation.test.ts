@@ -147,6 +147,13 @@ describe('validateBaseplateShare', () => {
       if (result.valid) expect(result.payload.params.mountMagnets).toEqual(mountMagnets);
     });
 
+    it('preserves optional crush ribs through the server payload', () => {
+      const ribbed = { ...mountMagnets, crushRibs: true };
+      const result = validate({ ...validParams, mountMagnets: ribbed });
+      expect(result.valid).toBe(true);
+      if (result.valid) expect(result.payload.params.mountMagnets).toEqual(ribbed);
+    });
+
     it('drops a malformed config without rejecting the plate', () => {
       for (const bad of [
         { ...mountMagnets, diameter: 7 },
@@ -154,6 +161,7 @@ describe('validateBaseplateShare', () => {
         { ...mountMagnets, perPiece: 2.5 },
         { ...mountMagnets, perPiece: 65 },
         { ...mountMagnets, chamfer: 'yes' },
+        { ...mountMagnets, crushRibs: 'yes' },
         { ...mountMagnets, extra: 1 },
         { diameter: 6.5, depth: 2 },
         { enabled: true },

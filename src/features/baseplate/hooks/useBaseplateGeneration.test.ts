@@ -214,6 +214,7 @@ describe('selectGenerationTriggers', () => {
       ['diameter', magnets(), magnets({ diameter: mm(6) })],
       ['count', magnets({ perPiece: 4 }), magnets({ perPiece: 6 })],
       ['chamfer', magnets(), magnets({ chamfer: true })],
+      ['crush ribs', magnets(), magnets({ crushRibs: true })],
     ])('produces a different trigger selection when the %s changes', (_field, before, after) => {
       const a = makeState(undefined, { mountMagnets: before });
       const b = makeState(undefined, { mountMagnets: after });

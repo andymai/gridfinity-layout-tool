@@ -5639,5 +5639,7 @@
   "exportDestination.fellBack": "{file} se nepodařilo uložit na zvolené místo, soubor se proto stáhl.",
   "exportDestination.failed": "{file} se nepodařilo uložit. Zkus export znovu.",
   "exportDestination.fail.timeout": "Nahrávání na {host} trvalo příliš dlouho. Soubor ale možná dorazil.",
-  "exportDestination.fail.redirect": "Nahrávání na {host} bylo přesměrováno. V Nastavení zadej konečnou adresu."
+  "exportDestination.fail.redirect": "Nahrávání na {host} bylo přesměrováno. V Nastavení zadej konečnou adresu.",
+  "baseplate.mountMagnets.crushRibs": "Drticí žebra",
+  "baseplate.mountMagnets.crushRibsDetail": "Osm žeber v každém spodním otvoru drží magnet nalisovaný bez lepidla."
 }

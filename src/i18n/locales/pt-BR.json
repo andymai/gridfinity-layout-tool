@@ -5498,5 +5498,7 @@
   "exportDestination.fellBack": "Não foi possível salvar {file} no local escolhido, então o arquivo foi baixado.",
   "exportDestination.failed": "Não foi possível salvar {file}. Tente exportar de novo.",
   "exportDestination.fail.timeout": "O envio para {host} demorou demais. O arquivo pode ter chegado mesmo assim.",
-  "exportDestination.fail.redirect": "O envio para {host} foi redirecionado. Use o endereço final em Configurações."
+  "exportDestination.fail.redirect": "O envio para {host} foi redirecionado. Use o endereço final em Configurações.",
+  "baseplate.mountMagnets.crushRibs": "Nervuras de pressão",
+  "baseplate.mountMagnets.crushRibsDetail": "Oito nervuras em cada furo inferior prendem o ímã encaixado por pressão sem cola."
 }

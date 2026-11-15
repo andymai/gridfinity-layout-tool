@@ -382,7 +382,15 @@ export function generateBaseplateDirect(
         ),
       screwHoles.filter((h) => h.site === 'junction')
     )) {
-      addMountMagnetHoleAt(mb, x, y, mountMagnets.diameter / 2, mountMagnets.depth, chamfer);
+      addMountMagnetHoleAt(
+        mb,
+        x,
+        y,
+        mountMagnets.diameter / 2,
+        mountMagnets.depth,
+        chamfer,
+        mountMagnets.crushRibs === true
+      );
     }
   }
 

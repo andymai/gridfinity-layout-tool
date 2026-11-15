@@ -405,6 +405,7 @@ const baseplateParamsSchema = z.object({
         .max(MOUNT_MAGNETS_PER_PIECE_MAX)
         .optional(),
       chamfer: z.boolean().optional(),
+      crushRibs: z.boolean().optional(),
     })
     .optional(),
 });

@@ -19,7 +19,8 @@ export function buildMountMagnetCutters(
   holes: readonly MountMagnetHole[],
   diameter: number,
   depth: number,
-  totalHeight: number
+  totalHeight: number,
+  crushRibs = false
 ): Shape3D[] {
   if (holes.length === 0) return [];
   const templates = new Map<boolean, Shape3D>();
@@ -31,7 +32,7 @@ export function buildMountMagnetCutters(
         template = buildMagnetHoleCutter({
           radius: diameter / 2,
           height: depth + COPLANAR_MARGIN,
-          style: { crushRibs: false, chamfer: hole.chamfer },
+          style: { crushRibs, chamfer: hole.chamfer },
           mouth: { end: 'bottom', inset: COPLANAR_MARGIN },
         });
         templates.set(hole.chamfer, template);

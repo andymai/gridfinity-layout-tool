@@ -18,6 +18,11 @@ import { resolveScrewHoles, screwFloorCandidates } from '@/shared/generation/scr
 import type { ResolvedScrewHole } from '@/shared/generation/screwHolePlacement';
 import { initTestKernel } from '@/test/initTestKernel';
 import { columnCrossings } from './__kernel-tests__/meshAssertions';
+import {
+  expectChamferedSection,
+  expectRibbedSection,
+  sliceAround,
+} from './__kernel-tests__/boreSection';
 import type { MeshData } from '../../bridge/types';
 
 // BREP generator requires OpenCascade WASM init
@@ -958,6 +963,53 @@ describe('mount magnets in the draft', () => {
       noop
     );
     expect(chamfered.triangleCount - plain.triangleCount).toBe(4 * 2 * CIRCLE_SEGMENTS);
+  });
+
+  it('shapes the underside bore with crush ribs', () => {
+    const drafted = generateDirect(
+      defaults({ width: 3, depth: 3, mountMagnets: { ...magnets, crushRibs: true } }),
+      noop
+    );
+    expectRibbedSection(sliceAround(drafted, 21, 21, 1.5, 3.75), 3.25, 'direct mesh mount magnet');
+  });
+
+  it('keeps the mouth circular before a ribbed bore when both options are enabled', () => {
+    const drafted = generateDirect(
+      defaults({
+        width: 3,
+        depth: 3,
+        mountMagnets: { ...magnets, crushRibs: true, chamfer: true },
+      }),
+      noop
+    );
+    expectChamferedSection(
+      sliceAround(drafted, 21, 21, 0.4, 3.7),
+      3.25,
+      0.4,
+      'direct mesh ribbed mount magnet mouth'
+    );
+    expectRibbedSection(
+      sliceAround(drafted, 21, 21, 1.5, 3.75),
+      3.25,
+      'direct mesh ribbed mount magnet bore'
+    );
+    let ledgeTriangles = 0;
+    for (let i = 0; i < drafted.indices.length; i += 3) {
+      const points = [0, 1, 2].map((offset) => {
+        const v = drafted.indices[i + offset] * 3;
+        return [drafted.vertices[v], drafted.vertices[v + 1], drafted.vertices[v + 2]];
+      });
+      if (
+        !points.every(([x, y, z]) => Math.abs(z - 0.8) < 1e-4 && Math.hypot(x - 21, y - 21) < 3.3)
+      ) {
+        continue;
+      }
+      const [a, b, c] = points;
+      const crossZ = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+      expect(crossZ).toBeLessThan(-1e-6);
+      ledgeTriangles++;
+    }
+    expect(ledgeTriangles).toBeGreaterThan(0);
   });
 
   it('adds nothing on a single-cell plate, which has no interior junction', () => {

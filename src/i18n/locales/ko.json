@@ -5359,5 +5359,7 @@
   "exportDestination.fellBack": "{file}을(를) 선택한 위치에 저장하지 못해 대신 내려받았습니다.",
   "exportDestination.failed": "{file}을(를) 저장하지 못했습니다. 다시 내보내 보세요.",
   "exportDestination.fail.timeout": "{host}(으)로 업로드하는 데 시간이 너무 오래 걸렸습니다. 파일은 도착했을 수도 있습니다.",
-  "exportDestination.fail.redirect": "{host}(으)로의 업로드가 리디렉션되었습니다. 설정에 최종 주소를 입력하세요."
+  "exportDestination.fail.redirect": "{host}(으)로의 업로드가 리디렉션되었습니다. 설정에 최종 주소를 입력하세요.",
+  "baseplate.mountMagnets.crushRibs": "압입 리브",
+  "baseplate.mountMagnets.crushRibsDetail": "밑면의 각 자석 구멍에 있는 리브 8개가 접착제 없이 압입 자석을 고정합니다."
 }

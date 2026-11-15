@@ -175,6 +175,7 @@ export function selectGenerationTriggers(state: LayoutState) {
     mountMagnetDepth: mountMagnetsOn ? bp.mountMagnets.depth : undefined,
     mountMagnetsPerPiece: mountMagnetsOn ? bp.mountMagnets.perPiece : undefined,
     mountMagnetChamfer: mountMagnetsOn && bp.mountMagnets.chamfer === true,
+    mountMagnetCrushRibs: mountMagnetsOn && bp.mountMagnets.crushRibs === true,
     // Nothing in the UI writes `lightweight` today, but synced/imported params
     // can carry it, and the underside cross cutters consume it on magnet
     // plates and screw-pad cells alike — fold it out when neither can
