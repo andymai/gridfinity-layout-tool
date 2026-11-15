@@ -330,4 +330,29 @@ describe('split export: wall cutouts legitimately shorten a piece', () => {
       ).toBeGreaterThan(body * 0.8);
     }
   }, 90000);
+
+  // The cutter also takes the collar, so a strip whose two walls are cut to the
+  // floor is the collar plus the interior height shorter than the body.
+  it('exports a strip cut to the floor under an extra wall height', async () => {
+    const exportSplitBin = getExportSplitBin();
+    const fullDrop = { enabled: true, width: 70, depth: 100, widthMm: null, ...pos };
+    const collared: BinParams = {
+      ...params,
+      width: 2,
+      depth: 9,
+      height: 4,
+      extraWallHeightMm: 6,
+      walls: { ...params.walls, left: fullDrop, right: fullDrop },
+    };
+    const exported = await exportSplitBin(collared, [], cutPlanesY, 0.01, 5, connectors);
+    expect(exported.pieces).toHaveLength(3);
+
+    const middle = exported.pieces.find((p) => p.label === 'A2');
+    expect(middle, 'A2 piece should be present').toBeDefined();
+    if (!middle) return;
+    const { bb } = exportPieceBounds(middle.data);
+    expect(bb.maxZ - bb.minZ, 'A2 keeps only its floor under the cutouts').toBeLessThan(
+      SOCKET_HEIGHT + 3
+    );
+  }, 90000);
 });

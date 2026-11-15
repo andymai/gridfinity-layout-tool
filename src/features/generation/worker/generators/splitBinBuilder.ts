@@ -189,14 +189,15 @@ function splitSolidIntoPieces(
   // the exact threshold it had.
   const expectedBodyZ = Math.min(totalHeight + splitDims.collarHeight, wallTopZ);
 
-  // Wall cutouts eat down from the wall top (up to the interior height), so a
-  // split piece whose only surviving perimeter wall carries a deep cutout is
-  // legitimately shorter than the full body — the boolean did nothing wrong.
-  // Drop the loss threshold by the deepest a wall cutout can reach so those
-  // pieces export instead of tripping the coplanar-loss guard, which was built
-  // for an OCCT wall-drop that current kernels no longer produce.
+  // Wall cutouts eat down from the rim through the collar and up to the
+  // interior height, so a split piece whose only surviving perimeter wall
+  // carries a deep cutout is legitimately shorter than the full body — the
+  // boolean did nothing wrong. Drop the loss threshold by the deepest a wall
+  // cutout can reach so those pieces export instead of tripping the
+  // coplanar-loss guard, which was built for an OCCT wall-drop that current
+  // kernels no longer produce.
   const maxWallCutoutDropMm = params.walls.enabled
-    ? Math.max(0, wallHeight - params.wallThickness)
+    ? Math.max(0, wallHeight - params.wallThickness) + splitDims.collarHeight
     : 0;
   const lossFloorZ = Math.max(0, expectedBodyZ - maxWallCutoutDropMm);
 
