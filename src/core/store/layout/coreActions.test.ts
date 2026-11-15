@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useLayoutStore } from '@/core/store/layout';
 import { CONSTRAINTS } from '@/core/constants';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import type { Mm, GridUnits } from '@/core/types';
 import { layoutId } from '@/core/types';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
@@ -36,6 +37,23 @@ describe('coreActions', () => {
     it('defaults editSource to local', () => {
       useLayoutStore.getState().importLayout(createTestLayout());
       expect(useLayoutStore.getState().lastEditSource).toBe('local');
+    });
+
+    // A remounted collab room re-imports its cached Liveblocks snapshot, which
+    // the first import left frozen by Immer.
+    it('re-imports a layout object after another layout replaced it', () => {
+      const layout = createTestLayout({ baseplateParams: { ...DEFAULT_BASEPLATE_PARAMS } });
+      useLayoutStore.getState().importLayout(layout);
+      useLayoutStore.getState().importLayout(createTestLayout({ name: 'Other' }));
+      expect(() => useLayoutStore.getState().importLayout(layout)).not.toThrow();
+      expect(useLayoutStore.getState().layout.baseplateParams).toEqual(DEFAULT_BASEPLATE_PARAMS);
+    });
+
+    it('does not write the migrated params onto the caller layout', () => {
+      const baseplateParams = { ...DEFAULT_BASEPLATE_PARAMS };
+      const layout = createTestLayout({ baseplateParams });
+      useLayoutStore.getState().importLayout(layout);
+      expect(layout.baseplateParams).toBe(baseplateParams);
     });
   });
 

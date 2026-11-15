@@ -17,11 +17,11 @@ export function createCoreActions(setLocal: SetLocal, set: ImmerSet, _get: GetSt
   return {
     importLayout: (newLayout: Layout, layoutId?: LayoutId, source: EditSource = 'local'): void => {
       set((state) => {
-        state.layout = newLayout;
-        // Migrate old baseplateParams format (paddingMm → ratio-based) on load
-        if (newLayout.baseplateParams) {
-          state.layout.baseplateParams = migrateBaseplateParams(newLayout.baseplateParams);
-        }
+        // A non-draft assigned into the draft is the caller's own object, and
+        // Immer froze it if it was imported before, so migrate into a copy.
+        state.layout = newLayout.baseplateParams
+          ? { ...newLayout, baseplateParams: migrateBaseplateParams(newLayout.baseplateParams) }
+          : newLayout;
         state.activeLayoutId = layoutId ?? null;
         state.lastEditSource = source;
       });
