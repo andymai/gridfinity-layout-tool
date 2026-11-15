@@ -1,0 +1,97 @@
+src/shared/utils/lipGapPlan.ts
+  s_06a4d651167866::t_08355343070182 305
+src/features/generation/worker/generators/binGenerator.scenario.split-wall-cutout-lip.test.ts
+  s_06a4d651167866::t_1a0a095d7f9bda 92-132
+  s_06a4d651167866::t_609f4c765658a7 15-18
+src/features/generation/worker/generators/dividerBlendBuilder.cacheKey.test.ts
+  s_06a4d651167866::t_2e03496e1f1817 8,16,24-28
+src/features/generation/worker/generators/interiorFilletBuilder.ts
+  s_06a4d651167866::t_b8e1891e1231f8 328
+src/shared/generation/meshPersistence.ts
+  s_06a4d651167866::t_50b300e4a80dc7 94-95
+  s_06a4d651167866::t_e8bb22e15c7f74 136
+src/features/bin-designer/components/preview/GhostWallCutouts/GhostWallCutouts.tsx
+  s_06a4d651167866::t_6ee2645c5829a2 324
+  s_06a4d651167866::t_08355343070182 325
+  s_06a4d651167866::t_82214c3f74ffdc 378-388
+  s_06a4d651167866::t_7185450ae1f540 46,59,70-71
+src/features/generation/worker/generators/wallCutoutBuilder.test.ts
+  s_06a4d651167866::t_415573eaf62aac 320
+  s_06a4d651167866::t_249dad01aa5432 348-360,367-382,384-419
+  s_06a4d651167866::t_7b9cf516f5bb80 361-366
+  s_06a4d651167866::t_5c0a737a6c1145 3
+  s_06a4d651167866::t_51572f5ad8d62a 383
+src/features/generation/worker/generators/wallPatternBuilder.ts
+  s_06a4d651167866::t_918df630042e46 155
+  s_06a4d651167866::t_08355343070182 406
+src/features/generation/worker/generators/featureBuilder.test.ts
+  s_06a4d651167866::t_0297279d7df2a2 706
+  s_06a4d651167866::t_3e124a4c4303e2 47
+  s_06a4d651167866::t_d271c3890781db 585,604,625,644,665,685,727,748,769
+src/shared/utils/insideWallObstacles.ts
+  s_06a4d651167866::t_413e49acfa4ac6 455-457
+  s_06a4d651167866::t_08355343070182 458
+src/shared/utils/wallCutoutPosition.ts
+  s_06a4d651167866::t_53052731cd3f92 238-241
+src/features/generation/worker/generators/dividerBlendCuts.ts
+  s_06a4d651167866::t_3224f082ee7064 34,37
+  s_06a4d651167866::t_a5b75bed468618 38
+  s_06a4d651167866::t_df35f60ab5998c 20
+src/shared/utils/lipGapPlan.test.ts
+  s_06a4d651167866::t_9505e9acdd40f2 95-115
+src/features/generation/worker/generators/dividerBlendBuilder.ts
+  s_06a4d651167866::t_08355343070182 307
+  s_06a4d651167866::t_c3be9d3a7bc185 53
+  s_06a4d651167866::t_b63f1f19d44ade 322
+  s_06a4d651167866::t_830112a067ffde 84-91
+src/shared/utils/insideWallObstacles.test.ts
+  s_06a4d651167866::t_4b7947a5a8be9b 209,222-224
+src/features/bin-designer/components/preview/GhostWallCutouts/GhostWallCutouts.test.tsx
+  s_06a4d651167866::t_a769d4509a33d3 298-322
+src/features/generation/worker/generators/scenarios/wallCutouts.ts
+  s_06a4d651167866::t_26185251f35068 108-112
+  s_06a4d651167866::t_900c163940400e 3
+  s_06a4d651167866::t_48e017d3f50d42 393
+  s_06a4d651167866::t_25c01964a67144 66
+  s_06a4d651167866::t_ee81ed3db2e10d 63-64
+  s_06a4d651167866::t_5dae34ee36485b 127-174
+  s_06a4d651167866::t_2af6690426bef1 390-392
+  s_06a4d651167866::t_6a7a5bcf9ba509 61-62,65,67-107,113-126
+src/features/bin-designer/types/binParams.ts
+  s_06a4d651167866::t_e8a760c3d38f97 174-175
+src/features/generation/worker/generators/wallCutoutBuilder.cacheKey.test.ts
+  s_06a4d651167866::t_4d35622925c621 56
+  s_06a4d651167866::t_a0c6e6c4dd2524 8,17
+  s_06a4d651167866::t_e3eda5b3ee9a68 54-55,57-59
+src/features/generation/worker/generators/wallPatternBuilder.cache.test.ts
+  s_06a4d651167866::t_c8953fa5fd3d4e 130-147
+src/features/generation/worker/generators/pipeline/types.ts
+  s_06a4d651167866::t_70a94d79ef6d48 43-44
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_06a4d651167866::t_12151826b14c08 377
+src/features/generation/worker/generators/wallCutoutBuilder.ts
+  s_06a4d651167866::t_8410645c1727d6 262,277
+  s_06a4d651167866::t_cb9ad6927a5fb6 519
+  s_06a4d651167866::t_2e3cd4b80258c7 537
+  s_06a4d651167866::t_f7d4149e5c2d0c 51-52
+  s_06a4d651167866::t_29235c61065d64 384
+  s_06a4d651167866::t_a38a35859b5435 370,382-383
+src/features/generation/worker/generators/dividerBlendBuilder.test.ts
+  s_06a4d651167866::t_27605d72f68f8d 145,150,157,167
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "956269b161473779f1b98db2b8b1d028faf3b57b",
+  "prompts": {},
+  "sessions": {
+    "s_06a4d651167866": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d4ae7fc4-6703-4681-8cbb-1f49d2dd00a3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
