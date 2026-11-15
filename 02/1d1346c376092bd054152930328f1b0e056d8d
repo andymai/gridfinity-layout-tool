@@ -1,0 +1,21 @@
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_06a4d651167866::t_ce980f07ee55b5 192-198,200
+src/features/generation/worker/generators/binGenerator.scenario.split-export.test.ts
+  s_06a4d651167866::t_5ceaf7c5558eed 333-357
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "021d1346c376092bd054152930328f1b0e056d8d",
+  "prompts": {},
+  "sessions": {
+    "s_06a4d651167866": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d4ae7fc4-6703-4681-8cbb-1f49d2dd00a3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
