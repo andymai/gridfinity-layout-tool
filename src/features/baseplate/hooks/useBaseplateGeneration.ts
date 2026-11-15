@@ -191,12 +191,26 @@ export function useBaseplateGeneration(): void {
       // exact mesh. Unsupported direct meshes also need this reset: their
       // Manifold draft can otherwise display a clip from the previous height.
       setConnectorKeyMesh(null);
-      if (!canUseDirectMeshPreview(fullParams)) return tiling;
       // Margin rails are BREP-only; clear any stale rails so they don't linger on
       // the draft until BREP regenerates (or, for a deferred plate, at all).
       setMarginMeshes([]);
 
       try {
+        // The procedural direct mesh only builds rectangles — never show it
+        // for a shaped plate (a wrong-shape draft is worse than none; the
+        // Manifold draft path runs the real generator and shows the true
+        // outline, matching the canBinUseDirectMesh reject-in-the-gate rule).
+        // Clear any prior mesh so a stale rectangle can't linger while BREP
+        // runs (shouldDeferBrepPreview never defers shaped plates, so BREP
+        // always follows).
+        if (fullParams.outline !== undefined) {
+          setGenerationResult(EMPTY_MESH);
+          setPieceMeshes([]);
+          return tiling;
+        }
+        // Pop-out holes need the kernel draft, but keep the last usable plate
+        // mesh on screen while it rebuilds.
+        if (!canUseDirectMeshPreview(fullParams)) return tiling;
         if (!tiling.isSplit) {
           const mesh = generateBaseplateDirect(fullParams, NO_OP_PROGRESS);
           if (generationEpochRef.current !== epoch) return tiling;
@@ -529,12 +543,15 @@ export function useBaseplateGeneration(): void {
       });
 
       if (plan === 'none' || plan === 'manifold') {
-        // Keep the last good mesh on screen (never blank to EMPTY_MESH mid-edit)
-        // and let the exact BREP replace it. Still publish the tiling/progress so
-        // the split overlay tracks the new piece layout while the exact runs.
-        setTiling(tiling);
-        setSplitProgress(null);
-        setDedupStats(null);
+        if (fullParams.outline !== undefined) {
+          // The shaped-plate branch clears an old rectangular plate and rails.
+          runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch, tiling);
+        } else {
+          // Keep the last good rectangular mesh until the exact build lands.
+          setTiling(tiling);
+          setSplitProgress(null);
+          setDedupStats(null);
+        }
       } else {
         // `runDirectMeshPreview` publishes the tiling itself.
         runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch, tiling);
