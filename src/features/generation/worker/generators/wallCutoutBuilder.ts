@@ -48,9 +48,11 @@ export type { CornerSlack } from '@/shared/utils/wallCutoutPosition';
  * @param cutoutShape - Shape style
  * @param cutWidth - Horizontal span of the cutout in mm
  * @param userCutHeight - User-visible height (depth from wall top) in mm
- * @param overshoot - Extra height above wall top for clean boolean cuts
+ * @param overshoot - Height above the wall top: the collar and lip the cut
+ *   passes through, plus `CUT_RIM_CLEARANCE`
  * @param cornerSlack - Wall left standing at each end of the span
  * @param radii - Resolved corner radii; omit for square shoulders + auto fillet
+ * @param collarHeight - The part of `overshoot` that is collar
  */
 export function buildCutoutProfile(
   cutoutShape: WallCutoutShape,
@@ -58,7 +60,8 @@ export function buildCutoutProfile(
   userCutHeight: number,
   overshoot: number,
   cornerSlack: CornerSlack = UNBOUNDED_SLACK,
-  radii: CutoutCornerRadii = resolveCutoutCornerRadii(undefined, undefined, cutWidth)
+  radii: CutoutCornerRadii = resolveCutoutCornerRadii(undefined, undefined, cutWidth),
+  collarHeight = 0
 ): Drawing {
   const totalHeight = userCutHeight + overshoot;
   const topY = totalHeight / 2;
@@ -86,8 +89,9 @@ export function buildCutoutProfile(
       // The chord is one horizontal line, so it drops by the DEEPER of the two
       // round-overs and the shallower end keeps a short straight run down to
       // it. With no round-over this is `topY - overshoot`, the arc's original
-      // seat at the wall body's top face.
-      const chordY = Math.min(topY - overshoot, rimY - topR);
+      // seat at the wall body's top face. The drop is taken from the rim a
+      // collarless bin has, so a collar lengthens the sides, not the floor.
+      const chordY = Math.min(topY - overshoot, rimY - collarHeight - topR);
       const sagitta = Math.min(hw, chordY - bottomY);
       const right = blendOrSquare(hw, rimY, 0, safe.topRight);
       const left = blendOrSquare(hw, rimY, 0, safe.topLeft);
@@ -180,7 +184,8 @@ function buildSingleCutoutInScope(
   wallHeight: number,
   position: { x: number; y: number; rotateZ: number },
   cornerSlack: CornerSlack,
-  radii?: CutoutCornerRadii
+  radii?: CutoutCornerRadii,
+  collarHeight = 0
 ): Shape3D {
   const profile = buildCutoutProfile(
     cutoutShape,
@@ -188,7 +193,8 @@ function buildSingleCutoutInScope(
     userCutHeight,
     overshoot,
     cornerSlack,
-    radii
+    radii,
+    collarHeight
   );
 
   // Sketch on XZ plane: X = horizontal span, Z = vertical height.
@@ -226,7 +232,8 @@ export function buildSingleCutout(
   wallHeight: number,
   position: { x: number; y: number; rotateZ: number },
   cornerSlack: CornerSlack = UNBOUNDED_SLACK,
-  radii?: CutoutCornerRadii
+  radii?: CutoutCornerRadii,
+  collarHeight = 0
 ): Shape3D {
   return withScope((scope: DisposalScope) => {
     const tracked = buildSingleCutoutInScope(
@@ -239,7 +246,8 @@ export function buildSingleCutout(
       wallHeight,
       position,
       cornerSlack,
-      radii
+      radii,
+      collarHeight
     );
     // Clone so the scope-owned original can be safely disposed while the
     // caller receives a fresh, independently-owned handle.
@@ -258,6 +266,7 @@ export function buildWallCutoutCuts(
   innerW: number,
   innerD: number,
   wallHeight: number,
+  collarHeight: number,
   hasLip: boolean,
   dividerTopZ: number,
   /** Extra reach either side of the wall, for trimming what stands in front of it. */
@@ -272,6 +281,7 @@ export function buildWallCutoutCuts(
       innerW,
       innerD,
       wallHeight,
+      collarHeight,
       hasLip,
       dividerTopZ,
       depthPadding
@@ -364,6 +374,7 @@ function buildWallCutoutCutsInScope(
   innerW: number,
   innerD: number,
   wallHeight: number,
+  collarHeight: number,
   hasLip: boolean,
   dividerTopZ: number,
   depthPadding: number
@@ -375,7 +386,9 @@ function buildWallCutoutCutsInScope(
   const maxThickness = Math.max(wallThickness, params.compartments.thickness);
   const lipOverhang = hasLip ? lipInnerReachMm(params) : 0;
   const extrudeDepth = (maxThickness + lipOverhang) * 2 + 1 + 2 * depthPadding;
-  const overshoot = (hasLip ? LIP_HEIGHT : 0) + CUT_RIM_CLEARANCE;
+  // The drop stays measured from the nominal wall top, but the cut has to
+  // run on up through the collar to the real rim, or the collar bridges it.
+  const overshoot = collarHeight + (hasLip ? LIP_HEIGHT : 0) + CUT_RIM_CLEARANCE;
 
   // For non-rectangular bins, map each side to the outermost polygon edge
   // facing that direction (silently skipping sides with no matching edge).
@@ -427,7 +440,8 @@ function buildWallCutoutCutsInScope(
           rotateZ: side.rotateZ,
         },
         cornerSlackFor(side.wallSpan, cutWidth, centerOffset),
-        resolveCutoutCornerRadii(params.walls, cfg, cutWidth)
+        resolveCutoutCornerRadii(params.walls, cfg, cutWidth),
+        collarHeight
       )
     );
   }
@@ -510,6 +524,7 @@ export const wallCutoutsFeature: FeatureBuilder = {
         quantize(dim.innerW),
         quantize(dim.innerD),
         quantize(dim.wallHeight),
+        quantize(dim.collarHeight),
         dim.hasLip,
         params.compartments.cols,
         params.compartments.rows,
@@ -527,6 +542,7 @@ export const wallCutoutsFeature: FeatureBuilder = {
       ctx.dimensions.innerW,
       ctx.dimensions.innerD,
       ctx.dimensions.wallHeight,
+      ctx.dimensions.collarHeight,
       ctx.dimensions.hasLip,
       interiorDividerTopZ(ctx.params, ctx.dimensions)
     );

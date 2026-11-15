@@ -5,7 +5,7 @@ import type { BinParams } from '@/shared/types/bin';
 import { dividerBlendFeature } from './dividerBlendBuilder';
 
 // cacheKey is pure — no WASM init needed.
-function keyFor(params: BinParams): string {
+function keyFor(params: BinParams, collarHeight = 0): string {
   const ctx = {
     params,
     dimensions: {
@@ -13,6 +13,7 @@ function keyFor(params: BinParams): string {
       innerW: 80,
       innerD: 40,
       wallHeight: 42,
+      collarHeight,
       hasLip: true,
     },
   } as unknown as Parameters<typeof dividerBlendFeature.cacheKey>[0];
@@ -20,6 +21,11 @@ function keyFor(params: BinParams): string {
 }
 
 describe('dividerBlendFeature.cacheKey', () => {
+  // A collar lengthens the funnel the end trim mirrors, which changes its lean.
+  it('changes with the collar', () => {
+    expect(keyFor(DEFAULT_BIN_PARAMS, 0)).not.toBe(keyFor(DEFAULT_BIN_PARAMS, 6));
+  });
+
   // The junction clears the fillet's rounded corner, so the slider moves the cut.
   it('changes with the interior fillet radius', () => {
     const at = (interiorFilletMm: number | undefined): string =>

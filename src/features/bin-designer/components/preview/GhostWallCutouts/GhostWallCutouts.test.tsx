@@ -295,6 +295,48 @@ describe('GhostWallCutouts', () => {
     }
   });
 
+  it('runs up through a collar to the raised rim, keeping its floor', () => {
+    const sides = {
+      left: { ...DEFAULT_BIN_PARAMS.walls.left, cornerRadiusTop: 4 },
+      right: { ...DEFAULT_BIN_PARAMS.walls.right, cornerRadiusTop: 4 },
+    };
+    const outline = (extraWallHeightMm: number): { top: number; floor: number } => {
+      captured.positions = [];
+      generating(sides);
+      useDesignerStore.setState((s) => ({ params: { ...s.params, extraWallHeightMm } }));
+      render(<GhostWallCutouts />);
+      let top = -Infinity;
+      for (let i = 2; i < captured.positions.length; i += 3) {
+        top = Math.max(top, captured.positions[i]);
+      }
+      return { top, floor: lowestZ() };
+    };
+    const lipTop =
+      DEFAULT_BIN_PARAMS.height * DEFAULT_BIN_PARAMS.heightUnitMm + GRIDFINITY_SPEC.LIP_HEIGHT;
+    const plain = outline(0);
+    const collared = outline(6);
+    expect(plain.top).toBeCloseTo(lipTop, 6);
+    expect(collared.top).toBeCloseTo(lipTop + 6, 6);
+    expect(collared.floor).toBeCloseTo(plain.floor, 6);
+  });
+
+  it('keeps a narrow rounded scoop on its collarless floor under a collar', () => {
+    const narrow = {
+      ...DEFAULT_BIN_PARAMS.walls.left,
+      widthMm: 12,
+      depth: 100,
+      cornerRadiusTop: 8,
+    };
+    const floor = (extraWallHeightMm: number): number => {
+      captured.positions = [];
+      generating({ shape: 'scoop', left: narrow, right: narrow });
+      useDesignerStore.setState((s) => ({ params: { ...s.params, extraWallHeightMm } }));
+      render(<GhostWallCutouts />);
+      return lowestZ();
+    };
+    expect(floor(6)).toBeCloseTo(floor(0), 6);
+  });
+
   it("follows the solid's funnel taper, which starts above the rim", () => {
     // The profile's side runs from the cutter's top corner, CUT_RIM_CLEARANCE
     // above the rim, to 60% of the span at the floor. Drawn from the rim
