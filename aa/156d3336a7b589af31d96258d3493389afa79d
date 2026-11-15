@@ -12,6 +12,7 @@ src/features/generation/worker/generators/interiorFilletScoop.ts
 src/features/generation/worker/generators/scoopRampBuilder.ts
   s_06a4d651167866::t_f499172bfb28bb 8,26,29-31,53,64-65,80-81,103-107,118-131,133-136,158-159,171-172,233-237,305,320-321,332-333,439,442,462-465,486-487
   s_06a4d651167866::t_7514e503ca1f8f 117
+  s_06a4d651167866::t_5653322471884f 132
 src/features/generation/worker/generators/scenarios/interiorFilletScoops.ts
   s_06a4d651167866::t_b36d7ea34d329e 369-372,374-376,390-409
   s_06a4d651167866::t_5d657c050a01c0 10,12,14-15
@@ -29,6 +30,12 @@ src/features/generation/worker/generators/wallCutoutBuilder.ts
   s_06a4d651167866::t_87dc59aa31215a 371-381,384-393,400-401,403
   s_06a4d651167866::t_7f7aa575fc5bc5 443-454,456,466-477,479,481-489,491-500,502-514,517-518,528-545,547-552,584
   s_06a4d651167866::t_2072461a628947 585
+  s_06a4d651167866::t_e2753bcb27d303 382-383
+  s_06a4d651167866::t_6575a1b0b6ea43 562-583
+  s_06a4d651167866::t_ced51f5f91a8e1 490,501,515-516
+  s_06a4d651167866::t_051b0c02b42c0d 478
+  s_06a4d651167866::t_7adaa810381df9 546,553-561
+  s_06a4d651167866::t_a3f00303768089 455
 src/features/generation/worker/generators/scoopRampPlan.test.ts
   s_06a4d651167866::t_1ed1406519ca61 64-113,115-150
   s_06a4d651167866::t_9f3441bc8fb1f9 4,6,8
@@ -36,6 +43,10 @@ src/features/generation/worker/generators/scoopRampPlan.test.ts
 src/features/generation/worker/generators/wallCutoutBuilder.test.ts
   s_06a4d651167866::t_4af933ea974641 449-488,491-497,499-510,512-540,544-571,582-602,604-606
   s_8e26ce757a4a72::t_73186a0a3eedb7 603
+  s_06a4d651167866::t_15f6a82726e3ba 541-543
+  s_06a4d651167866::t_837316d9e6ceaf 9
+  s_06a4d651167866::t_2675274c692cc7 489-490,498,511,572-578
+  s_06a4d651167866::t_6575a1b0b6ea43 579-581
 src/features/generation/worker/generators/interiorFilletBuilder.ts
   s_06a4d651167866::t_19423164437cd2 412
 ---
