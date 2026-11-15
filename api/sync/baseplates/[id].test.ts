@@ -183,6 +183,28 @@ describe('PUT', () => {
     expect(storedEnvelope.baseplate.params.magnetDiameter).toBe(6.5);
   });
 
+  it('keeps magnet pop-out holes across a PUT and GET', async () => {
+    const { default: handler } = await import('./[id]');
+    const params = { ...VALID_BASEPLATE, magnetHoles: true, magnetPopOutHoles: true };
+    const putRes = makeRes();
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: { baseplate: { name: 'Pop-out Plate', params }, modifiedAt: 1000 },
+      }),
+      putRes as unknown as VercelResponse
+    );
+    expect(putRes._status).toBe(200);
+
+    const getRes = makeRes();
+    await handler(makeReq({ method: 'GET' }), getRes as unknown as VercelResponse);
+    expect(getRes._status).toBe(200);
+    const body = getRes._body as {
+      envelope: { baseplate: { params: { magnetPopOutHoles?: boolean } } };
+    };
+    expect(body.envelope.baseplate.params.magnetPopOutHoles).toBe(true);
+  });
+
   it('accepts a bare-params shape and stores it with an empty name', async () => {
     const { default: handler } = await import('./[id]');
     const res = makeRes();

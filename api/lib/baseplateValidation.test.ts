@@ -28,6 +28,18 @@ describe('validateBaseplateShare', () => {
   });
 
   describe('optional settings', () => {
+    it('preserves pop-out holes through the server payload', () => {
+      const result = validate({ ...validParams, magnetHoles: true, magnetPopOutHoles: true });
+      expect(result.valid).toBe(true);
+      if (result.valid) expect(result.payload.params.magnetPopOutHoles).toBe(true);
+    });
+
+    it('drops a malformed pop-out holes setting', () => {
+      const result = validate({ ...validParams, magnetPopOutHoles: 'yes' });
+      expect(result.valid).toBe(true);
+      if (result.valid) expect(result.payload.params).not.toHaveProperty('magnetPopOutHoles');
+    });
+
     it('keeps well-formed optional settings', () => {
       const optional = {
         syncWithLayout: true,
