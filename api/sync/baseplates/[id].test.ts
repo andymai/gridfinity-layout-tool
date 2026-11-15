@@ -183,6 +183,31 @@ describe('PUT', () => {
     expect(storedEnvelope.baseplate.params.magnetDiameter).toBe(6.5);
   });
 
+  it('keeps underside magnet crush ribs across a PUT and GET', async () => {
+    const { default: handler } = await import('./[id]');
+    const mountMagnets = { enabled: true, diameter: 6.5, depth: 2, crushRibs: true };
+    const putRes = makeRes();
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          baseplate: { name: 'Ribbed Plate', params: { ...VALID_BASEPLATE, mountMagnets } },
+          modifiedAt: 1000,
+        },
+      }),
+      putRes as unknown as VercelResponse
+    );
+    expect(putRes._status).toBe(200);
+
+    const getRes = makeRes();
+    await handler(makeReq({ method: 'GET' }), getRes as unknown as VercelResponse);
+    expect(getRes._status).toBe(200);
+    const body = getRes._body as {
+      envelope: { baseplate: { params: { mountMagnets: unknown } } };
+    };
+    expect(body.envelope.baseplate.params.mountMagnets).toEqual(mountMagnets);
+  });
+
   it('accepts a bare-params shape and stores it with an empty name', async () => {
     const { default: handler } = await import('./[id]');
     const res = makeRes();
