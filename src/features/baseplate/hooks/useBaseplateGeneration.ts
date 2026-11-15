@@ -186,11 +186,12 @@ export function useBaseplateGeneration(): void {
       setTiling(tiling);
       setSplitProgress(null);
       setDedupStats(null);
-      if (!canUseDirectMeshPreview(fullParams)) return tiling;
       // The procedural direct mesh can't build the relieved clip; clear any stale
       // one so the preview falls back to its draft clip until BREP supplies the
-      // exact mesh.
+      // exact mesh. Unsupported direct meshes also need this reset: their
+      // Manifold draft can otherwise display a clip from the previous height.
       setConnectorKeyMesh(null);
+      if (!canUseDirectMeshPreview(fullParams)) return tiling;
       // Margin rails are BREP-only; clear any stale rails so they don't linger on
       // the draft until BREP regenerates (or, for a deferred plate, at all).
       setMarginMeshes([]);
