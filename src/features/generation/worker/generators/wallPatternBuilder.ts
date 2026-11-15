@@ -263,6 +263,7 @@ export function computeWallClips(
         expandedWidth,
         expandedHeight,
         clipOvershoot,
+        collarHeight: dim.collarHeight,
         clipExtrudeDepth,
         wallHeight: dim.wallHeight,
         wallSpan,

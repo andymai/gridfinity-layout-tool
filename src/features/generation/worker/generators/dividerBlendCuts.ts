@@ -55,7 +55,10 @@ export function buildEndTrimCut(
       x: isVertical ? cutout.centerOffset : cutout.wallFaceCoord,
       y: isVertical ? cutout.wallFaceCoord : cutout.centerOffset,
       rotateZ: isVertical ? 0 : 90,
-    }
+    },
+    undefined,
+    undefined,
+    collarHeight
   );
 }
 

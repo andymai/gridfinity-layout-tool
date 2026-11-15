@@ -350,8 +350,6 @@ describe('buildWallCutoutCuts under a collar', () => {
     await initBrepjs();
   }, 120_000);
 
-  // One 70% x 50% front cut on an 84mm wall: 58.8mm wide, dropping
-  // 0.5 * (23.25 - 1.2) = 11.025mm from the nominal wall top.
   const SPAN = 84;
   const WALL = 23.25;
   const COLLAR = 6;
@@ -414,6 +412,36 @@ describe('buildWallCutoutCuts under a collar', () => {
     expect(spanAt(rim, r)).toBeCloseTo(CUT_WIDTH + 2 * r, 1);
     // The bare lip's top, which the collar has lifted 6mm into the wall.
     expect(spanAt(WALL + LIP_HEIGHT, r)).toBeCloseTo(CUT_WIDTH, 2);
+  });
+
+  // A scoop's chord drops below the rim by its round-over, so a raised rim
+  // must not lift the chord, and the floor under it, with it.
+  it('keeps a narrow rounded scoop on its collarless floor', () => {
+    const scoopFloor = (collar: number): number =>
+      withScope((scope: DisposalScope) => {
+        const params: BinParams = {
+          ...DEFAULT_BIN_PARAMS,
+          walls: {
+            ...DEFAULT_BIN_PARAMS.walls,
+            enabled: true,
+            shape: 'scoop',
+            left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: false },
+            right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: false },
+            front: {
+              ...DEFAULT_BIN_PARAMS.walls.left,
+              enabled: true,
+              widthMm: 12,
+              depth: 100,
+              cornerRadiusTop: 8,
+            },
+          },
+        };
+        const cut = buildWallCutoutCuts(params, SPAN, 42, WALL, collar, true, WALL);
+        expect(cut).not.toBeNull();
+        if (!cut) throw new Error('no cut');
+        return getBounds(scope.register(cut)).zMin;
+      });
+    expect(scoopFloor(COLLAR)).toBeCloseTo(scoopFloor(0), 3);
   });
 });
 

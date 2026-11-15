@@ -52,6 +52,7 @@ export type { CornerSlack } from '@/shared/utils/wallCutoutPosition';
  *   passes through, plus `CUT_RIM_CLEARANCE`
  * @param cornerSlack - Wall left standing at each end of the span
  * @param radii - Resolved corner radii; omit for square shoulders + auto fillet
+ * @param collarHeight - The part of `overshoot` that is collar
  */
 export function buildCutoutProfile(
   cutoutShape: WallCutoutShape,
@@ -59,7 +60,8 @@ export function buildCutoutProfile(
   userCutHeight: number,
   overshoot: number,
   cornerSlack: CornerSlack = UNBOUNDED_SLACK,
-  radii: CutoutCornerRadii = resolveCutoutCornerRadii(undefined, undefined, cutWidth)
+  radii: CutoutCornerRadii = resolveCutoutCornerRadii(undefined, undefined, cutWidth),
+  collarHeight = 0
 ): Drawing {
   const totalHeight = userCutHeight + overshoot;
   const topY = totalHeight / 2;
@@ -87,8 +89,9 @@ export function buildCutoutProfile(
       // The chord is one horizontal line, so it drops by the DEEPER of the two
       // round-overs and the shallower end keeps a short straight run down to
       // it. With no round-over this is `topY - overshoot`, the arc's original
-      // seat at the wall body's top face.
-      const chordY = Math.min(topY - overshoot, rimY - topR);
+      // seat at the wall body's top face. The drop is taken from the rim a
+      // collarless bin has, so a collar lengthens the sides, not the floor.
+      const chordY = Math.min(topY - overshoot, rimY - collarHeight - topR);
       const sagitta = Math.min(hw, chordY - bottomY);
       const right = blendOrSquare(hw, rimY, 0, safe.topRight);
       const left = blendOrSquare(hw, rimY, 0, safe.topLeft);
@@ -181,7 +184,8 @@ function buildSingleCutoutInScope(
   wallHeight: number,
   position: { x: number; y: number; rotateZ: number },
   cornerSlack: CornerSlack,
-  radii?: CutoutCornerRadii
+  radii?: CutoutCornerRadii,
+  collarHeight = 0
 ): Shape3D {
   const profile = buildCutoutProfile(
     cutoutShape,
@@ -189,7 +193,8 @@ function buildSingleCutoutInScope(
     userCutHeight,
     overshoot,
     cornerSlack,
-    radii
+    radii,
+    collarHeight
   );
 
   // Sketch on XZ plane: X = horizontal span, Z = vertical height.
@@ -227,7 +232,8 @@ export function buildSingleCutout(
   wallHeight: number,
   position: { x: number; y: number; rotateZ: number },
   cornerSlack: CornerSlack = UNBOUNDED_SLACK,
-  radii?: CutoutCornerRadii
+  radii?: CutoutCornerRadii,
+  collarHeight = 0
 ): Shape3D {
   return withScope((scope: DisposalScope) => {
     const tracked = buildSingleCutoutInScope(
@@ -240,7 +246,8 @@ export function buildSingleCutout(
       wallHeight,
       position,
       cornerSlack,
-      radii
+      radii,
+      collarHeight
     );
     // Clone so the scope-owned original can be safely disposed while the
     // caller receives a fresh, independently-owned handle.
@@ -433,7 +440,8 @@ function buildWallCutoutCutsInScope(
           rotateZ: side.rotateZ,
         },
         cornerSlackFor(side.wallSpan, cutWidth, centerOffset),
-        resolveCutoutCornerRadii(params.walls, cfg, cutWidth)
+        resolveCutoutCornerRadii(params.walls, cfg, cutWidth),
+        collarHeight
       )
     );
   }

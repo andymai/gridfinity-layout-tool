@@ -210,9 +210,10 @@ export function GhostWallCutouts() {
     ) => {
       addTopFlares(axis, cx, cy, hw, rimZ, corner);
       // The chord sits on the wall top, dropped by the deeper of the two
-      // round-overs, and each end runs straight down to it from wherever its
-      // own round-over lands — the same pen the profile draws.
-      const topZ = Math.min(wallTopZ, rimZ - Math.max(corner.topLeft, corner.topRight));
+      // round-overs below a collarless rim, and each end runs straight down to
+      // it from wherever its own round-over lands — the same pen the profile
+      // draws.
+      const topZ = Math.min(wallTopZ, rimZ - collarMm - Math.max(corner.topLeft, corner.topRight));
       for (const [x, r] of [
         [hw, corner.topRight],
         [-hw, corner.topLeft],

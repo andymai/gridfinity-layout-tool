@@ -320,6 +320,23 @@ describe('GhostWallCutouts', () => {
     expect(collared.floor).toBeCloseTo(plain.floor, 6);
   });
 
+  it('keeps a narrow rounded scoop on its collarless floor under a collar', () => {
+    const narrow = {
+      ...DEFAULT_BIN_PARAMS.walls.left,
+      widthMm: 12,
+      depth: 100,
+      cornerRadiusTop: 8,
+    };
+    const floor = (extraWallHeightMm: number): number => {
+      captured.positions = [];
+      generating({ shape: 'scoop', left: narrow, right: narrow });
+      useDesignerStore.setState((s) => ({ params: { ...s.params, extraWallHeightMm } }));
+      render(<GhostWallCutouts />);
+      return lowestZ();
+    };
+    expect(floor(6)).toBeCloseTo(floor(0), 6);
+  });
+
   it("follows the solid's funnel taper, which starts above the rim", () => {
     // The profile's side runs from the cutter's top corner, CUT_RIM_CLEARANCE
     // above the rim, to 60% of the span at the floor. Drawn from the rim

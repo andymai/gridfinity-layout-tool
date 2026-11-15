@@ -5,6 +5,8 @@ import type { MeshData } from '@/features/generation/bridge/types';
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 import { boundingBox, columnCrossings } from '../__kernel-tests__/meshAssertions';
+import { CUT_RIM_CLEARANCE, LIP_HEIGHT } from '../generatorConstants';
+import { FUNNEL_TAPER_RATIO } from '@/shared/utils/wallCutoutPosition';
 
 function topAt(mesh: MeshData, x: number, y: number): number {
   return columnCrossings(mesh, x, y).at(-1) ?? -Infinity;
@@ -59,11 +61,11 @@ function scoopEverywhere(
 }
 
 const COLLAR_MM = 6;
-/**
- * Where a 50% cut bottoms out on a 4u bin: the 4.75mm socket, then half of the
- * 23.25mm wall less its 1.2mm floor. A collar does not move it.
- */
-const COLLAR_BIN_CUT_FLOOR_Z = 4.75 + 23.25 - 0.5 * (23.25 - 1.2);
+const SOCKET_MM = 4.75;
+const WALL_4U_MM = 23.25;
+const CUT_DROP_MM = 0.5 * (WALL_4U_MM - DEFAULT_BIN_PARAMS.wallThickness);
+/** Where a 50% cut bottoms out on a 4u bin. A collar does not move it. */
+const COLLAR_BIN_CUT_FLOOR_Z = SOCKET_MM + WALL_4U_MM - CUT_DROP_MM;
 
 /**
  * A collar (`extraWallHeightMm`) raises the rim while the cut keeps its floor on
@@ -129,17 +131,18 @@ function cutThroughCollar(
  * profile, and a collar lengthens the funnel's side, which lowers its lean. A
  * copy that leaves the collar out leans harder and notches the divider's end
  * below the slope the wall is cut to.
- *
- * 3x2x4, front funnel 50% x 50%: the floor at 16.975, a 61.55mm opening that
- * narrows to 36.93mm, its side leaning 12.31mm over the 23.425mm the profile
- * spans (the 11.025mm drop, the 6mm collar, the 4.4mm lip and 2mm clearance).
- * The divider at a third of the 123.1mm cavity stands on that slope.
  */
 function funnelTrimsDividerThroughCollar(): ScenarioCase {
   const innerW = 3 * 42 - 0.5 - 2 * 1.2;
   const innerD = 2 * 42 - 0.5 - 2 * 1.2;
+  const topHalfWidth = 0.25 * innerW;
+  const bottomHalfWidth = FUNNEL_TAPER_RATIO * topHalfWidth;
+  // The profile's side spans the drop, the collar, the lip and the clearance.
+  const rise = CUT_DROP_MM + COLLAR_MM + LIP_HEIGHT + CUT_RIM_CLEARANCE;
+  const lean = topHalfWidth - bottomHalfWidth;
+  // The divider at a third of the cavity, just off its centreline.
   const x = innerW / 6 + 0.07;
-  const slopeZ = COLLAR_BIN_CUT_FLOOR_Z + (x - 0.6 * (0.25 * innerW)) / (12.31 / 23.425);
+  const slopeZ = COLLAR_BIN_CUT_FLOOR_Z + ((x - bottomHalfWidth) * rise) / lean;
   return defineScenario(
     'wall cutouts',
     `funnel through a ${COLLAR_MM}mm collar trims a divider end to the wall's slope`,

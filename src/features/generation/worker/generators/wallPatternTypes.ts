@@ -36,6 +36,8 @@ export interface CutoutClipParams {
   readonly expandedWidth: number;
   readonly expandedHeight: number;
   readonly clipOvershoot: number;
+  /** The part of `clipOvershoot` that is collar. */
+  readonly collarHeight: number;
   readonly clipExtrudeDepth: number;
   readonly wallHeight: number;
   readonly wallSpan: number;
