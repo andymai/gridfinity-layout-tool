@@ -13,7 +13,7 @@ import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 import { deriveDimensions } from '../pipeline/context';
 import { planScoopRamps } from '../scoopRampPlan';
-import { TWO_BY_TWO, cavity, filletCase, floorSurfaceAt, quarterRise } from './interiorFillet';
+import { TWO_BY_TWO, cavity, filletCase, quarterRise } from './interiorFillet';
 
 /**
  * The fillet climbing a finger scoop (#4382): where a ramp meets an unscooped
@@ -27,9 +27,8 @@ function expectRampSideRounded(mesh: MeshData, params: BinParams, wallY?: number
   const c = cavity(params);
   const r = params.interiorFilletMm ?? 0;
   const y = (wallY ?? c.front) + 3;
-  const reach = c.innerD;
-  const atSide = floorSurfaceAt(mesh, c.left + r / 4, y, c.floorTop, reach);
-  const clear = floorSurfaceAt(mesh, c.left + r + 3, y, c.floorTop, reach);
+  const atSide = surfaceOverFloor(mesh, c.left + r / 4, y, c.floorTop);
+  const clear = surfaceOverFloor(mesh, c.left + r + 3, y, c.floorTop);
   expect(atSide - clear).toBeGreaterThan(quarterRise(r, r / 4) / 3);
 }
 
