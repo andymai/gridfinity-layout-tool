@@ -1,0 +1,25 @@
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_06a4d651167866::t_842bd1352ff034 2007
+  s_06a4d651167866::t_ae609575126a63 1998
+  s_06a4d651167866::t_d50d7e701e8bcf 9
+  s_06a4d651167866::t_209f8dee342726 1985-1997,1999-2006,2008-2010
+src/features/bin-designer/constants/paramMigrationCutouts.ts
+  s_06a4d651167866::t_7f16f4089ef94a 131-135,140-163
+  s_06a4d651167866::t_bb32cdc4d35d33 164
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bdaffecc178683fb415f99f039530b3b78e47fcb",
+  "prompts": {},
+  "sessions": {
+    "s_06a4d651167866": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d4ae7fc4-6703-4681-8cbb-1f49d2dd00a3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
