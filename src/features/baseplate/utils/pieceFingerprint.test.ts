@@ -88,6 +88,7 @@ describe('computePieceFingerprint', () => {
     expect(base).not.toBe(key({ ...on, depth: mm(2.5) }));
     expect(base).not.toBe(key({ ...on, perPiece: 6 }));
     expect(base).not.toBe(key({ ...on, chamfer: true }));
+    expect(base).not.toBe(key({ ...on, crushRibs: true }));
     expect(key({ ...on, enabled: false })).toBe(key(undefined));
   });
 

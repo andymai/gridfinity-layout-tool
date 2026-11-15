@@ -5498,5 +5498,7 @@
   "exportDestination.fellBack": "{file} არჩეულ ადგილას ვერ შეინახა, ამიტომ ფაილი ჩამოიტვირთა.",
   "exportDestination.failed": "{file} ვერ შეინახა. სცადეთ ექსპორტი ხელახლა.",
   "exportDestination.fail.timeout": "{host}-ზე ატვირთვას ძალიან დიდი დრო დასჭირდა. ფაილი შესაძლოა მაინც მივიდა.",
-  "exportDestination.fail.redirect": "{host}-ზე ატვირთვა გადამისამართდა. პარამეტრებში მიუთითეთ საბოლოო მისამართი."
+  "exportDestination.fail.redirect": "{host}-ზე ატვირთვა გადამისამართდა. პარამეტრებში მიუთითეთ საბოლოო მისამართი.",
+  "baseplate.mountMagnets.crushRibs": "დამჭერი ნეკნები",
+  "baseplate.mountMagnets.crushRibsDetail": "ქვედა მხარეს თითოეულ მაგნიტის ხვრელში რვა ნეკნი წებოს გარეშე იჭერს ჩაწნეხილ მაგნიტს."
 }

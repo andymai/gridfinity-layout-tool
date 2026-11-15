@@ -5776,5 +5776,7 @@
   "exportDestination.fellBack": "Не вдалося зберегти {file} у вибране місце, тому файл завантажено.",
   "exportDestination.failed": "Не вдалося зберегти {file}. Спробуйте експортувати знову.",
   "exportDestination.fail.timeout": "Вивантаження на {host} тривало надто довго. Файл, можливо, все одно дійшов.",
-  "exportDestination.fail.redirect": "Вивантаження на {host} було переспрямовано. Вкажіть кінцеву адресу в Налаштуваннях."
+  "exportDestination.fail.redirect": "Вивантаження на {host} було переспрямовано. Вкажіть кінцеву адресу в Налаштуваннях.",
+  "baseplate.mountMagnets.crushRibs": "Притискні ребра",
+  "baseplate.mountMagnets.crushRibsDetail": "Вісім ребер у кожному отворі знизу утримують запресований магніт без клею."
 }

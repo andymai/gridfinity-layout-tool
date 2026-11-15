@@ -113,10 +113,13 @@ export function addMountMagnetHoleAt(
   my: number,
   radius: number,
   depth: number,
-  chamfer: boolean
+  chamfer: boolean,
+  crushRibs = false
 ): void {
-  const bore = circlePoints(radius, CIRCLE_SEGMENTS);
-  const mouth = chamfer ? circlePoints(radius + MAGNET_CHAMFER_MM, CIRCLE_SEGMENTS) : bore;
+  const style: MagnetHoleStyle = { crushRibs, chamfer };
+  const segments = magnetBoreSegments(style, CIRCLE_SEGMENTS);
+  const bore = magnetBoreProfile(radius, style, segments);
+  const mouth = chamfer ? circlePoints(radius + MAGNET_CHAMFER_MM, segments) : bore;
   addDisc(mb, mx, my, CANCEL_EPSILON, mouth, true);
   let boreBottomZ = 0;
   if (chamfer) {

@@ -5498,5 +5498,7 @@
   "exportDestination.fellBack": "{file} konnte nicht am gewählten Ort gespeichert werden, daher wurde die Datei heruntergeladen.",
   "exportDestination.failed": "{file} konnte nicht gespeichert werden. Versuche den Export erneut.",
   "exportDestination.fail.timeout": "Upload an {host} hat zu lange gedauert. Die Datei ist vielleicht trotzdem beim Empfänger angekommen.",
-  "exportDestination.fail.redirect": "Upload an {host} wurde umgeleitet. Trage in den Einstellungen die endgültige Adresse ein."
+  "exportDestination.fail.redirect": "Upload an {host} wurde umgeleitet. Trage in den Einstellungen die endgültige Adresse ein.",
+  "baseplate.mountMagnets.crushRibs": "Klemmrippen",
+  "baseplate.mountMagnets.crushRibsDetail": "Acht Rippen in jeder Magnetöffnung auf der Unterseite halten einen eingepressten Magneten ohne Klebstoff."
 }

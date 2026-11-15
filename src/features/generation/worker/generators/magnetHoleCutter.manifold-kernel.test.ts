@@ -10,6 +10,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { mesh } from 'brepjs';
 import type { BinParams, ResolvedBaseplateParams } from '@/shared/types/bin';
+import { mm } from '@/core/types';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import {
@@ -196,6 +197,37 @@ describe('Manifold draft: crush ribs on every part family', () => {
       );
       expectRibbedSection(holeSection(part), R, 'baseplate draft');
       expectChamferedSection(mouthSection(part, 'top'), R, MOUTH_DEPTH, 'baseplate mouth');
+    },
+    TIMEOUT
+  );
+
+  it(
+    'underside mount magnets: ribbed bore and chamfered bottom mouth',
+    () => {
+      const part = generateBaseplate(
+        plate({
+          width: 2,
+          depth: 2,
+          magnetHoles: false,
+          mountMagnets: {
+            enabled: true,
+            diameter: mm(6.5),
+            depth: mm(2.5),
+            crushRibs: true,
+            chamfer: true,
+          },
+        }),
+        () => {},
+        false
+      );
+      const section = sliceAround(part, 0, 0, 1.5, R + 0.5);
+      expectRibbedSection(section, R, 'underside mount magnet draft');
+      expectChamferedSection(
+        sliceAround(part, 0, 0, MOUTH_DEPTH, R + 0.45),
+        R,
+        MOUTH_DEPTH,
+        'underside mount magnet mouth'
+      );
     },
     TIMEOUT
   );

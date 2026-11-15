@@ -5498,5 +5498,7 @@
   "exportDestination.fellBack": "Kunde inte spara {file} där du valde, så filen laddades ner i stället.",
   "exportDestination.failed": "Kunde inte spara {file}. Försök exportera igen.",
   "exportDestination.fail.timeout": "Uppladdningen till {host} tog för lång tid. Filen kan ändå ha kommit fram.",
-  "exportDestination.fail.redirect": "Uppladdningen till {host} omdirigerades. Ange den slutliga adressen i Inställningar."
+  "exportDestination.fail.redirect": "Uppladdningen till {host} omdirigerades. Ange den slutliga adressen i Inställningar.",
+  "baseplate.mountMagnets.crushRibs": "Klämribbor",
+  "baseplate.mountMagnets.crushRibsDetail": "Åtta ribbor i varje magnethål på undersidan håller en inpressad magnet utan lim."
 }

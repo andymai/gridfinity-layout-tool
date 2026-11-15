@@ -5498,5 +5498,7 @@
   "exportDestination.fellBack": "{file} kon niet op de gekozen plek worden opgeslagen, dus het is gedownload.",
   "exportDestination.failed": "{file} kon niet worden opgeslagen. Probeer de export opnieuw.",
   "exportDestination.fail.timeout": "Upload naar {host} duurde te lang. Het bestand is misschien toch aangekomen.",
-  "exportDestination.fail.redirect": "Upload naar {host} werd doorgestuurd. Gebruik het uiteindelijke adres in Instellingen."
+  "exportDestination.fail.redirect": "Upload naar {host} werd doorgestuurd. Gebruik het uiteindelijke adres in Instellingen.",
+  "baseplate.mountMagnets.crushRibs": "Klemribben",
+  "baseplate.mountMagnets.crushRibsDetail": "Acht ribben in elk magneetgat aan de onderkant houden een ingedrukte magneet vast zonder lijm."
 }

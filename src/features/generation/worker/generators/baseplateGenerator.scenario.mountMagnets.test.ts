@@ -17,6 +17,7 @@ import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import type { MountMagnetParams } from '@/core/types/baseplate';
 import { mm } from '@/core/types';
 import { PLATE_PROFILE_HEIGHT } from './generatorTypes';
+import { expectRibbedSection, sliceAround } from './__kernel-tests__/boreSection';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -129,6 +130,17 @@ describe('baseplate mount magnets', () => {
     const px = 21 + 3.6 * Math.cos(0.7);
     const py = 21 + 3.6 * Math.sin(0.7);
     expect(columnCrossings(plate, px, py)[0]).toBeCloseTo(0.45, 1);
+  });
+
+  it('cuts crush ribs into the underside bore', () => {
+    const plate = getGenerateBaseplate()(
+      defaults({ mountMagnets: { ...MAGNETS, crushRibs: true } }),
+      NO_OP,
+      true
+    );
+    assertStructurallyValid(plate);
+    assertWatertight(plate);
+    expectRibbedSection(sliceAround(plate, 21, 21, 1.5, 3.75), 3.25, 'underside export');
   });
 
   it('cuts nothing on a low-profile plate the hole would break through', () => {

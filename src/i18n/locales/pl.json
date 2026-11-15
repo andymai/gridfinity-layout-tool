@@ -5776,5 +5776,7 @@
   "exportDestination.fellBack": "Nie udało się zapisać {file} w wybranym miejscu, więc plik został pobrany.",
   "exportDestination.failed": "Nie udało się zapisać {file}. Spróbuj wyeksportować ponownie.",
   "exportDestination.fail.timeout": "Przesyłanie do {host} trwało zbyt długo. Plik mógł jednak dotrzeć do odbiornika.",
-  "exportDestination.fail.redirect": "Przesyłanie do {host} zostało przekierowane. Wpisz w Ustawieniach adres docelowy."
+  "exportDestination.fail.redirect": "Przesyłanie do {host} zostało przekierowane. Wpisz w Ustawieniach adres docelowy.",
+  "baseplate.mountMagnets.crushRibs": "Żebra zaciskowe",
+  "baseplate.mountMagnets.crushRibsDetail": "Osiem żeber w każdym otworze od spodu utrzymuje magnes wciskany bez kleju."
 }

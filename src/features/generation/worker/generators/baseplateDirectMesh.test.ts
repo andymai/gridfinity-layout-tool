@@ -18,6 +18,7 @@ import { resolveScrewHoles, screwFloorCandidates } from '@/shared/generation/scr
 import type { ResolvedScrewHole } from '@/shared/generation/screwHolePlacement';
 import { initTestKernel } from '@/test/initTestKernel';
 import { columnCrossings } from './__kernel-tests__/meshAssertions';
+import { expectRibbedSection, sliceAround } from './__kernel-tests__/boreSection';
 import type { MeshData } from '../../bridge/types';
 
 // BREP generator requires OpenCascade WASM init
@@ -958,6 +959,14 @@ describe('mount magnets in the draft', () => {
       noop
     );
     expect(chamfered.triangleCount - plain.triangleCount).toBe(4 * 2 * CIRCLE_SEGMENTS);
+  });
+
+  it('shapes the underside bore with crush ribs', () => {
+    const drafted = generateDirect(
+      defaults({ width: 3, depth: 3, mountMagnets: { ...magnets, crushRibs: true } }),
+      noop
+    );
+    expectRibbedSection(sliceAround(drafted, 21, 21, 1.5, 3.75), 3.25, 'direct mesh mount magnet');
   });
 
   it('adds nothing on a single-cell plate, which has no interior junction', () => {

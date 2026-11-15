@@ -5359,5 +5359,7 @@
   "exportDestination.fellBack": "{file} を選んだ場所に保存できなかったため、ダウンロードしました。",
   "exportDestination.failed": "{file} を保存できませんでした。もう一度エクスポートしてください。",
   "exportDestination.fail.timeout": "{host} へのアップロードがタイムアウトしました。ファイルは届いている可能性があります。",
-  "exportDestination.fail.redirect": "{host} へのアップロードはリダイレクトされました。設定でリダイレクト先のアドレスを指定してください。"
+  "exportDestination.fail.redirect": "{host} へのアップロードはリダイレクトされました。設定でリダイレクト先のアドレスを指定してください。",
+  "baseplate.mountMagnets.crushRibs": "圧入用リブ",
+  "baseplate.mountMagnets.crushRibsDetail": "下面の各磁石穴にある8本のリブが、接着剤なしで圧入した磁石を保持します。"
 }

@@ -88,7 +88,8 @@ export function computePieceFingerprint(params: ResolvedBaseplateParams): string
     ...(params.mountMagnets?.enabled === true
       ? [
           `mm:${params.mountMagnets.diameter},${params.mountMagnets.depth},` +
-            `${params.mountMagnets.perPiece ?? ''},${params.mountMagnets.chamfer === true ? 1 : 0}`,
+            `${params.mountMagnets.perPiece ?? ''},${params.mountMagnets.chamfer === true ? 1 : 0},` +
+            `${params.mountMagnets.crushRibs === true ? 1 : 0}`,
         ]
       : []),
     `sft:${params.solidFloor ? (params.solidFloorThickness ?? '') : ''}`,

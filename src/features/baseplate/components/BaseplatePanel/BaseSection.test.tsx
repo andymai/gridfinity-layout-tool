@@ -296,6 +296,18 @@ describe('BaseSection', () => {
       expect(useLayoutStore.getState().layout.baseplateParams?.mountMagnets?.chamfer).toBe(true);
     });
 
+    it('writes underside crush ribs through on toggle', () => {
+      useLayoutStore.getState().setBaseplateParams({
+        ...DEFAULT_BASEPLATE_PARAMS,
+        mountMagnets: { enabled: true, diameter: mm(6.5), depth: mm(2.5) },
+      });
+      render(<BaseSection />);
+      fireEvent.click(
+        screen.getByRole('switch', { name: 'baseplate.mountMagnets.crushRibs', hidden: true })
+      );
+      expect(useLayoutStore.getState().layout.baseplateParams?.mountMagnets?.crushRibs).toBe(true);
+    });
+
     it('does not warn for the ø6.5 × 2.5mm cap on a standard plate', () => {
       useLayoutStore.getState().setBaseplateParams({
         ...DEFAULT_BASEPLATE_PARAMS,
