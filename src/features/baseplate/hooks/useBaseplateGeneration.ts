@@ -48,6 +48,7 @@ import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import { computeBaseplateTiling, bodyParamsForDetach } from '../utils/splitPlanner';
 import {
+  canUseDirectMeshPreview,
   deferredPreviewSource,
   planPreviewDrafts,
   shouldAwaitPreviewBridge,
@@ -162,7 +163,7 @@ export function useBaseplateGeneration(): void {
   /**
    * Phase 1: Synchronous direct-mesh preview.
    *
-   * Runs on every params change before BREP. Pure procedural generation —
+   * Runs on supported params changes before BREP. Pure procedural generation —
    * no worker, no WASM, no awaits. Populates store immediately so the
    * canvas renders something orbitable while BREP catches up.
    *
@@ -185,6 +186,7 @@ export function useBaseplateGeneration(): void {
       setTiling(tiling);
       setSplitProgress(null);
       setDedupStats(null);
+      if (!canUseDirectMeshPreview(fullParams)) return tiling;
       // The procedural direct mesh can't build the relieved clip; clear any stale
       // one so the preview falls back to its draft clip until BREP supplies the
       // exact mesh.
@@ -194,12 +196,6 @@ export function useBaseplateGeneration(): void {
       setMarginMeshes([]);
 
       try {
-        // The direct mesh has no outlines or underside openings; wait for a kernel preview.
-        if (fullParams.outline || (fullParams.magnetHoles && fullParams.magnetPopOutHoles)) {
-          setGenerationResult(EMPTY_MESH);
-          setPieceMeshes([]);
-          return tiling;
-        }
         if (!tiling.isSplit) {
           const mesh = generateBaseplateDirect(fullParams, NO_OP_PROGRESS);
           if (generationEpochRef.current !== epoch) return tiling;
@@ -471,9 +467,8 @@ export function useBaseplateGeneration(): void {
 
   /**
    * Settle a deferred plate on its final draft (see `deferredPreviewSource`).
-   * The procedural mesh is already on screen; a Manifold draft still has to
-   * land, and if it can't, the exact build runs after all rather than leaving
-   * a preview that is missing the eco reliefs.
+   * A Manifold draft still has to land; if it can't, the exact build runs
+   * rather than leaving a preview that is missing underside detail.
    */
   const finishDeferredPreview = useCallback(
     (fullParams: ResolvedBaseplateParams, tiling: BaseplateTiling, epoch: number): void => {
@@ -495,9 +490,9 @@ export function useBaseplateGeneration(): void {
   );
 
   /**
-   * Combined flow: direct-mesh always runs; BREP only if bridge is ready.
-   * If the bridge isn't ready yet, the direct-mesh preview stays on screen
-   * and BREP kicks in once `bridgeManager.acquire()` resolves (mount effect).
+   * Combined flow: run a supported draft, then BREP when the bridge is ready.
+   * For unsupported direct meshes, the last usable mesh stays while the
+   * bridge is unavailable.
    */
   const runGeneration = useCallback(
     (fullParams: ResolvedBaseplateParams, bedWidthMm: number, bedDepthMm: number) => {

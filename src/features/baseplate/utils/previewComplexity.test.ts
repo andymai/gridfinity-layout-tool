@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  canUseDirectMeshPreview,
   estimatePreviewComplexity,
   shouldDeferBrepPreview,
   shouldSkipManifoldDraft,
@@ -179,6 +180,16 @@ describe('deferredPreviewSource', () => {
   });
 });
 
+describe('canUseDirectMeshPreview', () => {
+  it('rejects an open underside while leaving ordinary plates on the fast path', () => {
+    expect(canUseDirectMeshPreview(makeParams())).toBe(true);
+    expect(canUseDirectMeshPreview(makeParams({ magnetPopOutHoles: true }))).toBe(false);
+    expect(
+      canUseDirectMeshPreview(makeParams({ magnetHoles: false, magnetPopOutHoles: true }))
+    ).toBe(true);
+  });
+});
+
 describe('shouldAwaitPreviewBridge', () => {
   const awaits = (p: ResolvedBaseplateParams, hasPreviewBridge: boolean): boolean =>
     shouldAwaitPreviewBridge(computeBaseplateTiling(p, 460), p, null, hasPreviewBridge);
@@ -246,6 +257,13 @@ describe('planPreviewDrafts', () => {
    */
   it('paints the procedural mesh without a bridge even when the exact is predicted fast', () => {
     expect(plan({ hasPreviewBridge: false, lastBrepMs: 10 })).toBe('direct');
+  });
+
+  it('keeps the previous preview until a kernel result can show pop-out holes', () => {
+    const params = makeParams({ magnetPopOutHoles: true });
+    expect(plan({ params, hasPreviewBridge: false })).toBe('none');
+    expect(plan({ params, hasPreviewBridge: true })).toBe('manifold');
+    expect(plan({ params, hasPreviewBridge: true, lastBrepMs: 100 })).toBe('none');
   });
 
   it('skips both drafts when the exact build is predicted faster than the gate', () => {

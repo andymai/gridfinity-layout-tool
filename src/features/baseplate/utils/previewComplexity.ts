@@ -88,9 +88,7 @@ export function shouldDeferBrepPreview(
   lastBrepMs: number | null,
   hasPreviewBridge: boolean
 ): boolean {
-  // Deferral keeps the procedural direct-mesh on screen — but that mesh is
-  // rectangles-only, so a shaped plate would finalize with a wrong (or no)
-  // preview. Shaped plates always run BREP.
+  // Shaped plates need the exact clip; neither deferred draft can replace it.
   if (parentParams.outline !== undefined) return false;
   // The Manifold draft builds neither detached margin rails nor the padding-free
   // body they leave, so a plate with rails can only settle on the exact build.
@@ -117,6 +115,11 @@ export function deferredPreviewSource(params: ResolvedBaseplateParams): 'direct'
   return params.ecoPlate === true || (params.magnetHoles && params.magnetPopOutHoles === true)
     ? 'manifold'
     : 'direct';
+}
+
+/** Whether the procedural preview can show this plate without omitting geometry. */
+export function canUseDirectMeshPreview(params: ResolvedBaseplateParams): boolean {
+  return params.outline === undefined && !(params.magnetHoles && params.magnetPopOutHoles === true);
 }
 
 /**
@@ -187,6 +190,11 @@ export function planPreviewDrafts(options: {
   // the wrong outline, and a Manifold draft would repeat the exact build's own
   // expensive coplanar outline clip for an indistinguishable result.
   if (shouldSkipManifoldDraft(params)) return 'none';
+
+  if (!canUseDirectMeshPreview(params)) {
+    if (!hasPreviewBridge || (lastBrepMs !== null && lastBrepMs < skipBelowMs)) return 'none';
+    return 'manifold';
+  }
 
   // No draft kernel — the procedural mesh is the only fill available, and it is
   // cheap enough to paint even when the exact is predicted fast. An eco plate
