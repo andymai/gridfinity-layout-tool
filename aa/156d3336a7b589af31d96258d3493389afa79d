@@ -1,0 +1,65 @@
+src/shared/generation/meshPersistence.ts
+  s_06a4d651167866::t_ad754fab7e13b7 138
+  s_06a4d651167866::t_d0747bb867ab25 94-95
+src/features/generation/worker/generators/scoopRampPlan.ts
+  s_06a4d651167866::t_ce4caf1aec5d4a 184-186
+  s_06a4d651167866::t_8388fc4032bae2 168-169,172-183,187-205,207
+  s_06a4d651167866::t_9b34503be351a0 170-171
+  s_06a4d651167866::t_b6d67a0a94557d 29
+  s_06a4d651167866::t_5aca6d0c8d2798 206
+src/features/generation/worker/generators/interiorFilletScoop.ts
+  s_06a4d651167866::t_f499172bfb28bb 30,68-69
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_06a4d651167866::t_f499172bfb28bb 8,26,29-31,53,64-65,80-81,103-107,118-131,133-136,158-159,171-172,233-237,305,320-321,332-333,439,442,462-465,486-487
+  s_06a4d651167866::t_7514e503ca1f8f 117
+src/features/generation/worker/generators/scenarios/interiorFilletScoops.ts
+  s_06a4d651167866::t_b36d7ea34d329e 369-372,374-376,390-409
+  s_06a4d651167866::t_5d657c050a01c0 10,12,14-15
+  s_06a4d651167866::t_4e821c8af3387e 104-106,108,112-125
+  s_06a4d651167866::t_3f68c6cc3eab72 83-90,99,101-103,107,109-111
+  s_06a4d651167866::t_b6d9f99d9c6b06 289-327,329-368
+  s_06a4d651167866::t_4a7abcde2b4879 126-134
+  s_06a4d651167866::t_c0f2aca51a554d 373
+  s_06a4d651167866::t_c44c56cd2f20cf 377-389
+  s_06a4d651167866::t_c4a8676ab0b3c5 11
+  s_06a4d651167866::t_2efd04609a0540 152-171
+  s_06a4d651167866::t_6557c08ab54148 47-82,91-98,100,135-136,139-150
+  s_06a4d651167866::t_aecdeb5ca4f55d 151
+src/features/generation/worker/generators/wallCutoutBuilder.ts
+  s_06a4d651167866::t_87dc59aa31215a 371-381,384-393,400-401,403
+  s_06a4d651167866::t_7f7aa575fc5bc5 443-454,456,466-477,479,481-489,491-500,502-514,517-518,528-545,547-552,584
+  s_06a4d651167866::t_2072461a628947 585
+src/features/generation/worker/generators/scoopRampPlan.test.ts
+  s_06a4d651167866::t_1ed1406519ca61 64-113,115-150
+  s_06a4d651167866::t_9f3441bc8fb1f9 4,6,8
+  s_06a4d651167866::t_0215b98ea20dea 114
+src/features/generation/worker/generators/wallCutoutBuilder.test.ts
+  s_06a4d651167866::t_4af933ea974641 449-488,491-497,499-510,512-540,544-571,582-602,604-606
+  s_8e26ce757a4a72::t_73186a0a3eedb7 603
+src/features/generation/worker/generators/interiorFilletBuilder.ts
+  s_06a4d651167866::t_19423164437cd2 412
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "aa156d3336a7b589af31d96258d3493389afa79d",
+  "prompts": {},
+  "sessions": {
+    "s_06a4d651167866": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d4ae7fc4-6703-4681-8cbb-1f49d2dd00a3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_8e26ce757a4a72": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0e2a2abb-96e7-41bf-9f42-70cf1b42e7a4",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
