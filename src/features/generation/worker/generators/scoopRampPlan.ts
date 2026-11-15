@@ -26,6 +26,7 @@ import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH } from './generatorConstants';
 import { taperInsetAt } from './overhang';
 import type { ResolvedTaper } from './overhang';
 import type { BinDimensions } from './pipeline/types';
+import type { WallCutoutReach } from './wallCutoutBuilder';
 
 /**
  * Whether ramps are built for this bin at all. A ramp needs solid material to
@@ -163,4 +164,44 @@ export function planScoopRamps(
     }
   }
   return plans;
+}
+
+/**
+ * How far a ramp on an upright wall stands above its floor `s` mm in from that
+ * wall: the lip filler against a lipped wall, the ledge out to the arc, then the arc.
+ */
+function rampTopAt(plan: ScoopRampPlan, s: number): number {
+  if (plan.lipOffset > 0 && s <= plan.lipOffset) return Math.max(plan.wallHeight, plan.height);
+  if (s <= plan.arcTop) return plan.height;
+  const t = Math.min(1, (s - plan.arcTop) / (plan.floorStart + plan.run - plan.arcTop));
+  return plan.style === 'curved'
+    ? plan.height * (1 - Math.sqrt(1 - (1 - t) ** 2))
+    : plan.height * (1 - t);
+}
+
+/**
+ * Whether a wall cutout's cutter, grown by `margin` on every side, takes any of
+ * a ramp on an upright wall, its lip filler included. The ramp only falls away
+ * from its wall, so inside the cutter's run its tallest point is the one nearest
+ * the wall.
+ */
+export function rampMeetsCutout(
+  plan: ScoopRampPlan,
+  reach: WallCutoutReach,
+  wallPenetration: number,
+  margin: number
+): boolean {
+  const { span, alongCenter, edge, runsAlongY, runSign } = plan.placement;
+  const [alongLo, alongHi] = runsAlongY ? [reach.xMin, reach.xMax] : [reach.yMin, reach.yMax];
+  const halfSpan = span / 2 + wallPenetration;
+  if (alongHi + margin <= alongCenter - halfSpan || alongLo - margin >= alongCenter + halfSpan) {
+    return false;
+  }
+  const [acrossLo, acrossHi] = runsAlongY ? [reach.yMin, reach.yMax] : [reach.xMin, reach.xMax];
+  const inA = runSign * (acrossLo - edge);
+  const inB = runSign * (acrossHi - edge);
+  const nearest = Math.max(Math.min(inA, inB) - margin, -wallPenetration);
+  const farthest = Math.max(inA, inB) + margin;
+  if (farthest <= -wallPenetration || nearest >= plan.floorStart + plan.run) return false;
+  return plan.floorZ + rampTopAt(plan, nearest) > reach.zMin - margin;
 }
