@@ -1,0 +1,19 @@
+scripts/vite-plugin-mediapipe-assets.ts
+  s_17ad4784fdc8f1::t_b8c445aa70da9e 15-18,20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2906307c40de5de58233bccf01f1b0ff3aa934f5",
+  "prompts": {},
+  "sessions": {
+    "s_17ad4784fdc8f1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "987fca44-0a59-46c4-9cf3-d2e9fa621cef",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
