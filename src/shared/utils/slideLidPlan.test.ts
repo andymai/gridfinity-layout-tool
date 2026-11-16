@@ -20,6 +20,7 @@ import {
   slideTravelsAlongX,
   slideWallThicknessMm,
   SLIDE_BEARING_MM,
+  SLIDE_GROOVE_OFFSET_MM,
   SLIDE_MIN_CHANNEL_WALL_MM,
   SLIDE_ROOF_TIP_MM,
   SLIDE_SAG_SPAN_MM,
@@ -884,5 +885,36 @@ describe('finger catch', () => {
     expect(
       geometryOf({ slide: { ...DEFAULT_LID_SLIDE_CONFIG, pull: 'tab' } }).plate.pullDepthMm
     ).toBe(0);
+  });
+});
+
+describe('fingernail groove', () => {
+  const grooveConfig = { ...DEFAULT_LID_SLIDE_CONFIG, pull: 'groove' as const };
+
+  it('sits 2cm in from the trailing edge', () => {
+    const g = geometryOf({ slide: grooveConfig });
+    expect(g.plate.pull).toBe('groove');
+    expect(g.plate.pullReachMm).toBe(SLIDE_GROOVE_OFFSET_MM);
+  });
+
+  it('stays on a short plate', () => {
+    const g = geometryOf({ slide: grooveConfig, innerD: 30 });
+    expect(g.plate.pullReachMm).toBeLessThanOrEqual(g.plate.lengthMm / 2);
+  });
+
+  it('cuts only part-way into the plate', () => {
+    for (const plateThicknessMm of [1.6, 2, 3]) {
+      const g = geometryOf({ slide: grooveConfig, plateThicknessMm });
+      expect(g.plate.pullDepthMm, `${plateThicknessMm}`).toBeGreaterThan(0);
+      expect(g.plate.pullDepthMm, `${plateThicknessMm}`).toBeLessThanOrEqual(
+        g.plate.thicknessMm / 2
+      );
+    }
+  });
+
+  it('leaves the entry wall’s rim in place', () => {
+    const g = geometryOf({ slide: grooveConfig });
+    expect(g.entryBreaksRim).toBe(false);
+    expect(g.plate.catchSection).toBeNull();
   });
 });

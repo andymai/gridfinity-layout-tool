@@ -1713,6 +1713,8 @@
   "binDesigner.lid.slide.pull.tabHint": "Een nok die voorbij de voorkant van de bak steekt, in het vlak van het deksel zelf. Het makkelijkst te pakken met handschoenen aan.",
   "binDesigner.lid.slide.pull.catch": "Vingergreep",
   "binDesigner.lid.slide.pull.catchHint": "Een beweegbaar deel van de stapelrand aan de buitenrand van het deksel. Gesloten maakt hij de rand compleet, open geeft hij een brede greep.",
+  "binDesigner.lid.slide.pull.groove": "Nagelgroef",
+  "binDesigner.lid.slide.pull.grooveHint": "Twee ondiepe groeven dwars over het deksel, ongeveer 2 cm van de buitenrand, om het met je nagel open en dicht te schuiven. De omtrek van het deksel blijft ongewijzigd.",
   "binDesigner.lid.slide.sagThicknessReadout": "Een plaat van {thickness} mm zou deze overspanning dragen",
   "binDesigner.lid.slide.spanReadout": "Vrije overspanning: {span} mm",
   "binDesigner.lid.stackGridHint": "Een volledig raster van vakken over de hele bovenkant. Bakjes die erop worden gestapeld, klikken in afzonderlijke cellen.",

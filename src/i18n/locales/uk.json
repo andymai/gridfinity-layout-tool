@@ -1775,6 +1775,8 @@
   "binDesigner.lid.slide.pull.tabHint": "Виступ, що виходить за передню грань контейнера, у площині самої кришки. Найлегше вхопити в рукавицях.",
   "binDesigner.lid.slide.pull.catch": "Виступ під палець",
   "binDesigner.lid.slide.pull.catchHint": "Рухома ділянка бортика для штабелювання на зовнішньому краї кришки. Закрита — доповнює бортик, відкрита — дає широкий захват.",
+  "binDesigner.lid.slide.pull.groove": "Паз для нігтя",
+  "binDesigner.lid.slide.pull.grooveHint": "Два неглибокі пази поперек кришки, приблизно за 2 см від її зовнішнього краю, щоб відсувати й засувати її нігтем. Контур кришки не змінюється.",
   "binDesigner.lid.slide.sagThicknessReadout": "Пластина товщиною {thickness} мм витримала б цей проліт",
   "binDesigner.lid.slide.spanReadout": "Вільний проліт: {span} мм",
   "binDesigner.lid.stackGridHint": "Повна сітка гнізд по всій верхній поверхні. Контейнери, поставлені згори, фіксуються в окремих осередках.",

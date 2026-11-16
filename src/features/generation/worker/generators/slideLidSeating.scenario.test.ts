@@ -31,7 +31,11 @@ import {
   travelInterferenceMm3,
   type SlidePair,
 } from './__kernel-tests__/slideLidSeating';
-import { columnCrossings, isSolidThrough } from './__kernel-tests__/meshAssertions';
+import {
+  assertWatertight,
+  columnCrossings,
+  isSolidThrough,
+} from './__kernel-tests__/meshAssertions';
 import { makeCutout } from './__kernel-tests__/scenarioTypes';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { DEFAULT_LID_SLIDE_CONFIG } from '@/features/bin-designer/types/lid';
@@ -395,6 +399,28 @@ describe('sliding lid seating', () => {
       }
     }
   }, 900000);
+
+  it('fingernail grooves are cut into the top face where the plan puts them', async () => {
+    for (const entrySide of ['front', 'right'] as const) {
+      const params = slideParams({}, { pull: 'groove', entrySide, detent: false });
+      expect(await travelOverlap(params), entrySide).toBeLessThan(CONTACT_FLOOR_MM3);
+      const { lid, geometry } = await build(params);
+      assertWatertight(lid, entrySide);
+      const { plate } = geometry;
+      const wallX = plate.trailingX - plate.pullReachMm;
+      const topAt = (cx: number): number => {
+        const [x, y] = canonicalToBin(geometry, cx, 0);
+        return Math.max(...columnCrossings(lid, x, y));
+      };
+      // On each groove's floor, just off its vertical face.
+      expect(topAt(wallX - 0.3), entrySide).toBeCloseTo(-plate.pullDepthMm, 2);
+      expect(topAt(wallX + 2.3), entrySide).toBeCloseTo(-plate.pullDepthMm, 2);
+      // The beam between them, and the plate beyond either ramp, are whole.
+      expect(topAt(wallX + 1), entrySide).toBeCloseTo(0, 2);
+      expect(topAt(wallX - 5), entrySide).toBeCloseTo(0, 2);
+      expect(topAt(wallX + 8), entrySide).toBeCloseTo(0, 2);
+    }
+  }, 600000);
 
   it('keeps the lip intact on the walls the notch does not touch', async () => {
     // The travel-envelope cutter stops at the retainer's top plane.

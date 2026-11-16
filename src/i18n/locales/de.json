@@ -1713,6 +1713,8 @@
   "binDesigner.lid.slide.pull.tabHint": "Eine Nase, die in der Deckelebene über die Boxvorderseite hinausragt. Auch mit Handschuhen gut zu greifen.",
   "binDesigner.lid.slide.pull.catch": "Fingergriff",
   "binDesigner.lid.slide.pull.catchHint": "Ein beweglicher Abschnitt des Stapelrands an der Außenkante des Deckels. Geschlossen vervollständigt er den Rand, geöffnet bietet er einen breiten Griff.",
+  "binDesigner.lid.slide.pull.groove": "Fingerrille",
+  "binDesigner.lid.slide.pull.grooveHint": "Zwei flache Rillen quer über den Deckel, etwa 2 cm von seiner Außenkante entfernt, um ihn mit dem Fingernagel auf- und zuzuschieben. Die Deckelkontur bleibt unverändert.",
   "binDesigner.lid.slide.sagThicknessReadout": "Eine Platte von {thickness} mm würde diese Spannweite tragen",
   "binDesigner.lid.slide.spanReadout": "Freie Spannweite: {span} mm",
   "binDesigner.lid.stackGridHint": "Ein vollständiges Rastermuster über die ganze Oberseite. Darauf gestapelte Boxen rasten in einzelne Zellen ein.",

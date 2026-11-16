@@ -19,7 +19,7 @@ export const VALID_LID_ATTACHMENTS_TOP = [...VALID_LID_ATTACHMENTS, 'slide', 'hi
 
 export const VALID_LID_SLIDE_PLACEMENTS = ['recessed', 'flush'] as const;
 
-export const VALID_LID_SLIDE_PULLS = ['none', 'notch', 'tab', 'catch'] as const;
+export const VALID_LID_SLIDE_PULLS = ['none', 'notch', 'tab', 'catch', 'groove'] as const;
 
 /** Wall sides `lid.slide.entrySide` may name. Mirrors `LID_RAIL_SIDES`. */
 export const VALID_LID_RAIL_SIDES = ['front', 'back', 'left', 'right'] as const;

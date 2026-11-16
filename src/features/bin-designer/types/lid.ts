@@ -284,9 +284,18 @@ export const LID_SLIDE_PLACEMENTS: readonly LidSlidePlacement[] = ['recessed', '
  *   notch removed, carried on the lid: shut, the rim reads continuous; open,
  *   the whole width is a pull. Confined to the entry wall's thickness so it
  *   passes under the lip's inward overhang and clears a stacked bin's feet.
+ * - `groove`: a mirrored pair of shallow fingernail grooves across the plate's
+ *   top face, set in from the outer edge with a beam between them — one to
+ *   pull the lid open, one to push it shut. Leaves the outline untouched.
  */
-export type LidSlidePull = 'none' | 'notch' | 'tab' | 'catch';
-export const LID_SLIDE_PULLS: readonly LidSlidePull[] = ['none', 'notch', 'tab', 'catch'] as const;
+export type LidSlidePull = 'none' | 'notch' | 'tab' | 'catch' | 'groove';
+export const LID_SLIDE_PULLS: readonly LidSlidePull[] = [
+  'none',
+  'notch',
+  'tab',
+  'catch',
+  'groove',
+] as const;
 
 /**
  * Per-side sliding clearance (mm) between the plate and its channel.

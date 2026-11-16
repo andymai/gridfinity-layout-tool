@@ -1744,6 +1744,8 @@
   "binDesigner.lid.slide.pull.tabHint": "Výstupek přesahující čelo boxu v rovině samotného víka. Nejsnáz se chytá v rukavicích.",
   "binDesigner.lid.slide.pull.catch": "Úchyt pro prst",
   "binDesigner.lid.slide.pull.catchHint": "Pohyblivý úsek stohovacího lemu na vnější hraně víka. Po zavření lem doplní a při otevírání poskytne široký úchop.",
+  "binDesigner.lid.slide.pull.groove": "Drážka pro nehet",
+  "binDesigner.lid.slide.pull.grooveHint": "Dvě mělké drážky napříč víkem, asi 2 cm od jeho vnějšího okraje, kterými víko nehtem odsunete i zasunete. Obrys víka zůstává nedotčený.",
   "binDesigner.lid.slide.sagThicknessReadout": "Deska o tloušťce {thickness} mm by toto rozpětí unesla",
   "binDesigner.lid.slide.spanReadout": "Volné rozpětí: {span} mm",
   "binDesigner.lid.stackGridHint": "Plná mřížka zásuvek přes celou horní plochu. Boxy postavené na víko zapadnou do jednotlivých buněk.",

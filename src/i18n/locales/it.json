@@ -1713,6 +1713,8 @@
   "binDesigner.lid.slide.pull.tabHint": "Un’aletta che sporge oltre la faccia del contenitore, sul piano del coperchio. La più facile da afferrare con i guanti.",
   "binDesigner.lid.slide.pull.catch": "Presa per il dito",
   "binDesigner.lid.slide.pull.catchHint": "Un tratto mobile del bordo di impilamento sul lato esterno del coperchio. Chiuso completa il bordo, aperto offre una presa ampia.",
+  "binDesigner.lid.slide.pull.groove": "Scanalatura per unghia",
+  "binDesigner.lid.slide.pull.grooveHint": "Due scanalature poco profonde lungo la larghezza del coperchio, a circa 2 cm dal bordo esterno, per aprirlo o chiuderlo con l’unghia. Il profilo del coperchio resta invariato.",
   "binDesigner.lid.slide.sagThicknessReadout": "Una piastra da {thickness} mm sosterrebbe questa campata",
   "binDesigner.lid.slide.spanReadout": "Luce libera: {span} mm",
   "binDesigner.lid.stackGridHint": "Una griglia completa di alloggiamenti su tutta la faccia superiore. I contenitori impilati sopra si incastrano nelle singole celle.",

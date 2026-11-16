@@ -2620,6 +2620,9 @@ const en: Record<string, string> = {
   'binDesigner.lid.slide.pull.catch': 'Finger catch',
   'binDesigner.lid.slide.pull.catchHint':
     'A movable section of the stacking rim on the lid’s outer edge. It completes the rim when shut, and gives you a broad pull to open it.',
+  'binDesigner.lid.slide.pull.groove': 'Finger groove',
+  'binDesigner.lid.slide.pull.grooveHint':
+    'Two shallow grooves across the lid, about 2 cm in from its outer edge, to slide it open or shut with a fingernail. The lid’s outline stays untouched.',
   'binDesigner.lid.slide.detent': 'Click shut',
   'binDesigner.lid.slide.detentHint':
     'A small ramp on each runner that the lid clicks past, so a knock or a tipped drawer can’t slide it open. You can still pull it straight out.',
