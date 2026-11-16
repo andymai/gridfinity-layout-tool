@@ -206,7 +206,7 @@ describe('insideWallObstacles, features beyond the corner', () => {
     expect(leaning.maxU).toBeGreaterThan(plain.maxU);
   });
 
-  it('places cutout shoulders where the builder cuts them, whatever the collar', () => {
+  it('places cutout shoulders at the rim the cut reaches, which a collar raises', () => {
     const walls = {
       ...DEFAULT_BIN_PARAMS.walls,
       enabled: true,
@@ -219,6 +219,8 @@ describe('insideWallObstacles, features beyond the corner', () => {
       'back',
       0
     );
-    expect(collared.minZ).toBeCloseTo(plain.minZ, 6);
+    // A 10mm round-over, a radius below the lip top: 23.25 + 4.4 - 10, then 7mm higher.
+    expect(plain.minZ).toBeCloseTo(17.65, 6);
+    expect(collared.minZ).toBeCloseTo(24.65, 6);
   });
 });

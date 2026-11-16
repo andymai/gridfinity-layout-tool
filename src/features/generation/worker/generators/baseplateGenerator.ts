@@ -772,7 +772,8 @@ export function buildBaseplateSolid(
       mountMagnetHoles,
       mountMagnets.diameter,
       mountMagnets.depth,
-      totalHeight
+      totalHeight,
+      mountMagnets.crushRibs === true
     );
     if (cutters.length > 0) {
       baseplate = cutInBatches(baseplate, cutters);

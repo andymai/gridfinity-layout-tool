@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { draw, getBounds, intersect, withScope } from 'brepjs';
-import type { DisposalScope, Shape3D } from 'brepjs';
+import type { Bounds3D, DisposalScope, Shape3D } from 'brepjs';
 import { isOk } from '@/core/result';
 import {
   autoCornerRadius,
   buildSingleCutout,
   buildWallCutoutCuts,
+  wallCutoutReaches,
   computeInteriorDividerCutouts,
   cornerSlackFor,
 } from './wallCutoutBuilder';
@@ -317,7 +318,7 @@ describe('buildWallCutoutCuts outer-wall depth', () => {
           front: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true, ...cfg },
         },
       };
-      const cut = buildWallCutoutCuts(params, OUTER_W, OUTER_D, wallHeight, false, wallHeight);
+      const cut = buildWallCutoutCuts(params, OUTER_W, OUTER_D, wallHeight, 0, false, wallHeight);
       expect(cut).not.toBeNull();
       if (!cut) return NaN;
       return wallHeight - getBounds(scope.register(cut)).zMin;
@@ -342,6 +343,264 @@ describe('buildWallCutoutCuts outer-wall depth', () => {
   it('clamps an overlong drop to the wall it is cutting', () => {
     const interiorHeight = SIX_U - DEFAULT_BIN_PARAMS.wallThickness;
     expect(dropBelowRim({ depthMm: 500 }, SIX_U)).toBeCloseTo(interiorHeight, 3);
+  });
+});
+
+describe('buildWallCutoutCuts under a collar', () => {
+  beforeAll(async () => {
+    await initBrepjs();
+  }, 120_000);
+
+  const SPAN = 84;
+  const WALL = 23.25;
+  const COLLAR = 6;
+  const CUT_WIDTH = 0.7 * SPAN;
+  const FLOOR_Z = WALL - 0.5 * (WALL - DEFAULT_BIN_PARAMS.wallThickness);
+
+  const withFrontCut = (
+    scope: DisposalScope,
+    collar: number,
+    hasLip: boolean,
+    top: number
+  ): Shape3D => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      walls: {
+        ...DEFAULT_BIN_PARAMS.walls,
+        enabled: true,
+        left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: false },
+        right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: false },
+        front: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true, cornerRadiusTop: top },
+      },
+    };
+    const cut = buildWallCutoutCuts(params, SPAN, 42, WALL, collar, hasLip, WALL);
+    expect(cut).not.toBeNull();
+    if (!cut) throw new Error('no cut');
+    return scope.register(cut);
+  };
+
+  const boundsOf = (collar: number, hasLip: boolean): Bounds3D =>
+    withScope((scope: DisposalScope) => getBounds(withFrontCut(scope, collar, hasLip, 0)));
+
+  const spanAt = (z: number, top: number): number =>
+    withScope((scope: DisposalScope) => {
+      const cut = withFrontCut(scope, COLLAR, true, top);
+      const slab = scope.register(box(-SPAN, SPAN, -SPAN, SPAN, z, z + 0.001));
+      const clipped = intersect(cut, slab);
+      expect(isOk(clipped), `slab intersection at z=${z}`).toBe(true);
+      if (!isOk(clipped)) return NaN;
+      const b = getBounds(scope.register(clipped.value));
+      return b.xMax - b.xMin;
+    });
+
+  it('runs up through the collar and the lip, past the raised rim', () => {
+    expect(boundsOf(COLLAR, true).zMax).toBeCloseTo(
+      WALL + COLLAR + LIP_HEIGHT + CUT_RIM_CLEARANCE,
+      3
+    );
+    expect(boundsOf(COLLAR, false).zMax).toBeCloseTo(WALL + COLLAR + CUT_RIM_CLEARANCE, 3);
+  });
+
+  it('keeps its floor on the nominal wall, where a collarless cut has it', () => {
+    expect(boundsOf(0, true).zMin).toBeCloseTo(FLOOR_Z, 3);
+    expect(boundsOf(COLLAR, true).zMin).toBeCloseTo(FLOOR_Z, 3);
+    expect(boundsOf(COLLAR, false).zMin).toBeCloseTo(FLOOR_Z, 3);
+  });
+
+  it('rounds the shoulder over at the raised rim, not in the collar', () => {
+    const r = 4;
+    const rim = WALL + COLLAR + LIP_HEIGHT;
+    expect(spanAt(rim, r)).toBeCloseTo(CUT_WIDTH + 2 * r, 1);
+    // The bare lip's top, which the collar has lifted 6mm into the wall.
+    expect(spanAt(WALL + LIP_HEIGHT, r)).toBeCloseTo(CUT_WIDTH, 2);
+  });
+
+  // A scoop's chord drops below the rim by its round-over, so a raised rim
+  // must not lift the chord, and the floor under it, with it.
+  it('keeps a narrow rounded scoop on its collarless floor', () => {
+    const scoopFloor = (collar: number): number =>
+      withScope((scope: DisposalScope) => {
+        const params: BinParams = {
+          ...DEFAULT_BIN_PARAMS,
+          walls: {
+            ...DEFAULT_BIN_PARAMS.walls,
+            enabled: true,
+            shape: 'scoop',
+            left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: false },
+            right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: false },
+            front: {
+              ...DEFAULT_BIN_PARAMS.walls.left,
+              enabled: true,
+              widthMm: 12,
+              depth: 100,
+              cornerRadiusTop: 8,
+            },
+          },
+        };
+        const cut = buildWallCutoutCuts(params, SPAN, 42, WALL, collar, true, WALL);
+        expect(cut).not.toBeNull();
+        if (!cut) throw new Error('no cut');
+        return getBounds(scope.register(cut)).zMin;
+      });
+    expect(scoopFloor(COLLAR)).toBeCloseTo(scoopFloor(0), 3);
+  });
+});
+
+describe('wallCutoutReaches', () => {
+  beforeAll(async () => {
+    await initBrepjs();
+  }, 120_000);
+
+  const WALL_HEIGHT = 21;
+  const OFF = { ...DEFAULT_BIN_PARAMS.walls.left, enabled: false };
+  type Side = 'front' | 'back' | 'left' | 'right' | 'interior';
+
+  function oneCutout(
+    side: Side,
+    cut: Partial<BinParams['walls']['left']>,
+    wall: Partial<BinParams['walls']> = {},
+    compartments: Partial<BinParams['compartments']> = {}
+  ): BinParams {
+    return {
+      ...DEFAULT_BIN_PARAMS,
+      compartments: { ...DEFAULT_BIN_PARAMS.compartments, ...compartments },
+      walls: {
+        ...DEFAULT_BIN_PARAMS.walls,
+        enabled: true,
+        ...wall,
+        front: OFF,
+        back: OFF,
+        left: OFF,
+        right: OFF,
+        interior: OFF,
+        [side]: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true, ...cut },
+      },
+    };
+  }
+
+  /**
+   * The reach against the cutter actually built from the same inputs: it must
+   * hold the cutter, and match it on the axes the plan states exactly.
+   */
+  function expectReachHoldsCutter(
+    params: BinParams,
+    hasLip: boolean,
+    padding: number,
+    exact: ReadonlyArray<'x' | 'y' | 'zMin'>,
+    collar = 0
+  ): void {
+    const tol = 0.02;
+    const reaches = wallCutoutReaches(
+      params,
+      INNER_W,
+      INNER_D,
+      WALL_HEIGHT,
+      collar,
+      hasLip,
+      DIVIDER_TOP_Z,
+      padding
+    );
+    expect(reaches).toHaveLength(1);
+    const [reach] = reaches;
+    withScope((scope: DisposalScope) => {
+      const built = buildWallCutoutCuts(
+        params,
+        INNER_W,
+        INNER_D,
+        WALL_HEIGHT,
+        collar,
+        hasLip,
+        DIVIDER_TOP_Z,
+        padding
+      );
+      expect(built).not.toBeNull();
+      if (!built) return;
+      const b = getBounds(scope.register(built));
+      expect(reach.xMin).toBeLessThanOrEqual(b.xMin + tol);
+      expect(reach.xMax).toBeGreaterThanOrEqual(b.xMax - tol);
+      expect(reach.yMin).toBeLessThanOrEqual(b.yMin + tol);
+      expect(reach.yMax).toBeGreaterThanOrEqual(b.yMax - tol);
+      expect(reach.zMin).toBeLessThanOrEqual(b.zMin + tol);
+      if (exact.includes('x')) {
+        expect(Math.abs(reach.xMin - b.xMin)).toBeLessThan(tol);
+        expect(Math.abs(reach.xMax - b.xMax)).toBeLessThan(tol);
+      }
+      if (exact.includes('y')) {
+        expect(Math.abs(reach.yMin - b.yMin)).toBeLessThan(tol);
+        expect(Math.abs(reach.yMax - b.yMax)).toBeLessThan(tol);
+      }
+      if (exact.includes('zMin')) expect(Math.abs(reach.zMin - b.zMin)).toBeLessThan(tol);
+    });
+  }
+
+  it('is empty when wall cutouts are off', () => {
+    const params = {
+      ...DEFAULT_BIN_PARAMS,
+      walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: false },
+    };
+    expect(
+      wallCutoutReaches(params, INNER_W, INNER_D, WALL_HEIGHT, 0, true, DIVIDER_TOP_Z)
+    ).toEqual([]);
+  });
+
+  it('matches a front u-shape cutter', () => {
+    expectReachHoldsCutter(oneCutout('front', { width: 50, depth: 40 }), false, 0, [
+      'x',
+      'y',
+      'zMin',
+    ]);
+  });
+
+  it('matches a side cutter turned along Y, through a lip and padded past the wall', () => {
+    expectReachHoldsCutter(
+      oneCutout('left', { width: 60, depth: 50, alignment: 'left', offset: 4 }),
+      true,
+      3.5,
+      ['x', 'y', 'zMin']
+    );
+  });
+
+  it('holds a rounded shoulder at its full flare', () => {
+    expectReachHoldsCutter(
+      oneCutout('back', { width: 40, depth: 50, cornerRadiusTop: 4 }),
+      true,
+      0,
+      ['x', 'y', 'zMin']
+    );
+  });
+
+  it('holds a rounded shoulder cut up through a collar', () => {
+    expectReachHoldsCutter(
+      oneCutout('back', { width: 40, depth: 50, cornerRadiusTop: 4 }),
+      true,
+      0,
+      ['x', 'y', 'zMin'],
+      6
+    );
+  });
+
+  it('holds a funnel and a scoop, which flare or dip less than their box', () => {
+    expectReachHoldsCutter(
+      oneCutout('right', { width: 50, depth: 60, cornerRadiusTop: 3 }, { shape: 'funnel' }),
+      true,
+      0,
+      ['x', 'zMin']
+    );
+    expectReachHoldsCutter(
+      oneCutout('front', { width: 30, depth: 80, cornerRadiusTop: 2 }, { shape: 'scoop' }),
+      true,
+      0,
+      ['x', 'y']
+    );
+  });
+
+  it('places a divider window from the divider top', () => {
+    expectReachHoldsCutter(
+      oneCutout('interior', { width: 70, depth: 50 }, {}, { cols: 2, rows: 1, cells: [0, 1] }),
+      true,
+      2,
+      ['x', 'y', 'zMin']
+    );
   });
 });
 

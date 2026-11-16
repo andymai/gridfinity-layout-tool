@@ -1682,6 +1682,8 @@
   "binDesigner.lid.slide.pull.tabHint": "뚜껑과 같은 평면에서 빈 앞면 밖으로 나오는 돌기입니다. 장갑을 껴도 가장 잡기 쉽습니다.",
   "binDesigner.lid.slide.pull.catch": "손가락 걸이",
   "binDesigner.lid.slide.pull.catchHint": "뚜껑 바깥쪽 가장자리에 있는 적층 립의 움직이는 구간입니다. 닫으면 립이 이어지고, 열 때는 넓은 손잡이가 됩니다.",
+  "binDesigner.lid.slide.pull.groove": "손톱 홈",
+  "binDesigner.lid.slide.pull.grooveHint": "뚜껑 바깥 가장자리에서 약 2 cm 안쪽에 뚜껑을 가로지르는 얕은 홈 두 개로, 손톱으로 열고 닫을 수 있습니다. 뚜껑 외곽선은 그대로 유지됩니다.",
   "binDesigner.lid.slide.sagThicknessReadout": "{thickness} mm 두께의 플레이트라면 이 스팬을 지탱할 수 있습니다",
   "binDesigner.lid.slide.spanReadout": "지지 없는 폭: {span} mm",
   "binDesigner.lid.stackGridHint": "윗면 전체에 소켓 그리드를 만듭니다. 위에 쌓은 빈이 각 칸에 맞물립니다.",
@@ -5361,5 +5363,7 @@
   "exportDestination.fail.timeout": "{host}(으)로 업로드하는 데 시간이 너무 오래 걸렸습니다. 파일은 도착했을 수도 있습니다.",
   "exportDestination.fail.redirect": "{host}(으)로의 업로드가 리디렉션되었습니다. 설정에 최종 주소를 입력하세요.",
   "baseplate.magnetPopOutHoles": "자석 분리 구멍",
-  "baseplate.magnetPopOutHolesDetail": "각 자석 홈 바닥의 작은 구멍으로 아래에서 자석을 밀어낼 수 있습니다."
+  "baseplate.magnetPopOutHolesDetail": "각 자석 홈 바닥의 작은 구멍으로 아래에서 자석을 밀어낼 수 있습니다.",
+  "baseplate.mountMagnets.crushRibs": "압입 리브",
+  "baseplate.mountMagnets.crushRibsDetail": "밑면의 각 자석 구멍에 있는 리브 8개가 접착제 없이 압입 자석을 고정합니다."
 }

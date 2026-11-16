@@ -1713,6 +1713,8 @@
   "binDesigner.lid.slide.pull.tabHint": "Una oreja que sobresale de la cara de la caja, en el plano de la propia tapa. La más fácil de agarrar con guantes.",
   "binDesigner.lid.slide.pull.catch": "Tope para el dedo",
   "binDesigner.lid.slide.pull.catchHint": "Un tramo móvil del borde de apilado en el canto exterior de la tapa. Cerrada, completa el borde; abierta, ofrece un agarre amplio.",
+  "binDesigner.lid.slide.pull.groove": "Ranura para la uña",
+  "binDesigner.lid.slide.pull.grooveHint": "Dos ranuras poco profundas a lo ancho de la tapa, a unos 2 cm de su borde exterior, para abrirla o cerrarla con la uña. El contorno de la tapa no cambia.",
   "binDesigner.lid.slide.sagThicknessReadout": "Una placa de {thickness} mm soportaría esta luz",
   "binDesigner.lid.slide.spanReadout": "Luz sin apoyo: {span} mm",
   "binDesigner.lid.stackGridHint": "Una rejilla completa de huecos por toda la parte superior. Las cajas apiladas encima encajan en celdas individuales.",
@@ -5500,5 +5502,7 @@
   "exportDestination.fail.timeout": "La subida a {host} tardó demasiado. Puede que el archivo haya llegado igualmente.",
   "exportDestination.fail.redirect": "La subida a {host} fue redirigida. Usa la dirección final en Configuración.",
   "baseplate.magnetPopOutHoles": "Orificios para expulsar imanes",
-  "baseplate.magnetPopOutHolesDetail": "Pequeños orificios bajo cada alojamiento permiten expulsar los imanes desde abajo."
+  "baseplate.magnetPopOutHolesDetail": "Pequeños orificios bajo cada alojamiento permiten expulsar los imanes desde abajo.",
+  "baseplate.mountMagnets.crushRibs": "Nervios de presión",
+  "baseplate.mountMagnets.crushRibsDetail": "Ocho nervios en cada orificio inferior sujetan el imán a presión sin pegamento."
 }

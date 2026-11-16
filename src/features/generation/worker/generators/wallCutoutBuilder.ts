@@ -48,9 +48,11 @@ export type { CornerSlack } from '@/shared/utils/wallCutoutPosition';
  * @param cutoutShape - Shape style
  * @param cutWidth - Horizontal span of the cutout in mm
  * @param userCutHeight - User-visible height (depth from wall top) in mm
- * @param overshoot - Extra height above wall top for clean boolean cuts
+ * @param overshoot - Height above the wall top: the collar and lip the cut
+ *   passes through, plus `CUT_RIM_CLEARANCE`
  * @param cornerSlack - Wall left standing at each end of the span
  * @param radii - Resolved corner radii; omit for square shoulders + auto fillet
+ * @param collarHeight - The part of `overshoot` that is collar
  */
 export function buildCutoutProfile(
   cutoutShape: WallCutoutShape,
@@ -58,7 +60,8 @@ export function buildCutoutProfile(
   userCutHeight: number,
   overshoot: number,
   cornerSlack: CornerSlack = UNBOUNDED_SLACK,
-  radii: CutoutCornerRadii = resolveCutoutCornerRadii(undefined, undefined, cutWidth)
+  radii: CutoutCornerRadii = resolveCutoutCornerRadii(undefined, undefined, cutWidth),
+  collarHeight = 0
 ): Drawing {
   const totalHeight = userCutHeight + overshoot;
   const topY = totalHeight / 2;
@@ -86,8 +89,9 @@ export function buildCutoutProfile(
       // The chord is one horizontal line, so it drops by the DEEPER of the two
       // round-overs and the shallower end keeps a short straight run down to
       // it. With no round-over this is `topY - overshoot`, the arc's original
-      // seat at the wall body's top face.
-      const chordY = Math.min(topY - overshoot, rimY - topR);
+      // seat at the wall body's top face. The drop is taken from the rim a
+      // collarless bin has, so a collar lengthens the sides, not the floor.
+      const chordY = Math.min(topY - overshoot, rimY - collarHeight - topR);
       const sagitta = Math.min(hw, chordY - bottomY);
       const right = blendOrSquare(hw, rimY, 0, safe.topRight);
       const left = blendOrSquare(hw, rimY, 0, safe.topLeft);
@@ -180,7 +184,8 @@ function buildSingleCutoutInScope(
   wallHeight: number,
   position: { x: number; y: number; rotateZ: number },
   cornerSlack: CornerSlack,
-  radii?: CutoutCornerRadii
+  radii?: CutoutCornerRadii,
+  collarHeight = 0
 ): Shape3D {
   const profile = buildCutoutProfile(
     cutoutShape,
@@ -188,7 +193,8 @@ function buildSingleCutoutInScope(
     userCutHeight,
     overshoot,
     cornerSlack,
-    radii
+    radii,
+    collarHeight
   );
 
   // Sketch on XZ plane: X = horizontal span, Z = vertical height.
@@ -226,7 +232,8 @@ export function buildSingleCutout(
   wallHeight: number,
   position: { x: number; y: number; rotateZ: number },
   cornerSlack: CornerSlack = UNBOUNDED_SLACK,
-  radii?: CutoutCornerRadii
+  radii?: CutoutCornerRadii,
+  collarHeight = 0
 ): Shape3D {
   return withScope((scope: DisposalScope) => {
     const tracked = buildSingleCutoutInScope(
@@ -239,7 +246,8 @@ export function buildSingleCutout(
       wallHeight,
       position,
       cornerSlack,
-      radii
+      radii,
+      collarHeight
     );
     // Clone so the scope-owned original can be safely disposed while the
     // caller receives a fresh, independently-owned handle.
@@ -258,6 +266,7 @@ export function buildWallCutoutCuts(
   innerW: number,
   innerD: number,
   wallHeight: number,
+  collarHeight: number,
   hasLip: boolean,
   dividerTopZ: number,
   /** Extra reach either side of the wall, for trimming what stands in front of it. */
@@ -272,6 +281,7 @@ export function buildWallCutoutCuts(
       innerW,
       innerD,
       wallHeight,
+      collarHeight,
       hasLip,
       dividerTopZ,
       depthPadding
@@ -358,24 +368,42 @@ export function computeInteriorDividerCutouts(
   return out;
 }
 
-function buildWallCutoutCutsInScope(
-  scope: DisposalScope,
+/** One cutter, resolved but not built. */
+interface WallCutoutTool {
+  readonly cutWidth: number;
+  /** Depth of the cut below `topZ`. */
+  readonly cutHeight: number;
+  readonly overshoot: number;
+  /** Top of the material the cut drops from. */
+  readonly topZ: number;
+  readonly position: { readonly x: number; readonly y: number; readonly rotateZ: number };
+  readonly cornerSlack: CornerSlack;
+  readonly radii: CutoutCornerRadii;
+  /** The part of `overshoot` that is collar. */
+  readonly collarHeight: number;
+}
+
+/** How far every cutter extrudes, straddling the face it is placed on. */
+function cutterDepth(params: BinParams, hasLip: boolean, depthPadding: number): number {
+  const maxThickness = Math.max(params.wallThickness, params.compartments.thickness);
+  const lipOverhang = hasLip ? lipInnerReachMm(params) : 0;
+  return (maxThickness + lipOverhang) * 2 + 1 + 2 * depthPadding;
+}
+
+function planWallCutoutTools(
   params: BinParams,
   innerW: number,
   innerD: number,
   wallHeight: number,
+  collarHeight: number,
   hasLip: boolean,
-  dividerTopZ: number,
-  depthPadding: number
-): Shape3D | null {
+  dividerTopZ: number
+): WallCutoutTool[] {
   const wallThickness = params.wallThickness;
-  const cutShapes: Shape3D[] = [];
-  const cutoutShape = params.walls.shape;
-
-  const maxThickness = Math.max(wallThickness, params.compartments.thickness);
-  const lipOverhang = hasLip ? lipInnerReachMm(params) : 0;
-  const extrudeDepth = (maxThickness + lipOverhang) * 2 + 1 + 2 * depthPadding;
-  const overshoot = (hasLip ? LIP_HEIGHT : 0) + CUT_RIM_CLEARANCE;
+  const tools: WallCutoutTool[] = [];
+  // The drop stays measured from the nominal wall top, but the cut has to
+  // run on up through the collar to the real rim, or the collar bridges it.
+  const overshoot = collarHeight + (hasLip ? LIP_HEIGHT : 0) + CUT_RIM_CLEARANCE;
 
   // For non-rectangular bins, map each side to the outermost polygon edge
   // facing that direction (silently skipping sides with no matching edge).
@@ -412,24 +440,20 @@ function buildWallCutoutCutsInScope(
       cfg.offset
     );
 
-    cutShapes.push(
-      buildSingleCutoutInScope(
-        scope,
-        cutoutShape,
-        cutWidth,
-        userCutHeight,
-        overshoot,
-        extrudeDepth,
-        wallHeight,
-        {
-          x: side.rotateZ === 0 ? side.x + centerOffset : side.x,
-          y: side.rotateZ !== 0 ? side.y + centerOffset : side.y,
-          rotateZ: side.rotateZ,
-        },
-        cornerSlackFor(side.wallSpan, cutWidth, centerOffset),
-        resolveCutoutCornerRadii(params.walls, cfg, cutWidth)
-      )
-    );
+    tools.push({
+      cutWidth,
+      cutHeight: userCutHeight,
+      overshoot,
+      topZ: wallHeight,
+      position: {
+        x: side.rotateZ === 0 ? side.x + centerOffset : side.x,
+        y: side.rotateZ !== 0 ? side.y + centerOffset : side.y,
+        rotateZ: side.rotateZ,
+      },
+      cornerSlack: cornerSlackFor(side.wallSpan, cutWidth, centerOffset),
+      radii: resolveCutoutCornerRadii(params.walls, cfg, cutWidth),
+      collarHeight,
+    });
   }
 
   // Interior divider walls — skip entirely on polygon bins, since
@@ -439,25 +463,59 @@ function buildWallCutoutCutsInScope(
   // if a cut crosses it). Placement honours tilted dividers (dividerOverrides)
   // so the window lands ON the angled wall instead of slicing it at a slant.
   for (const c of computeInteriorDividerCutouts(params, innerW, innerD, dividerTopZ)) {
-    cutShapes.push(
-      buildSingleCutoutInScope(
-        scope,
-        cutoutShape,
-        c.cutW,
-        c.cutH,
-        // A divider carries no stacking lip, so its own top face IS the rim the
-        // shoulder round-over is tangent to. Given the wall's rim instead, the
-        // blend runs its whole radius through the air above the divider and
-        // reaches it — if at all — as a sliver hundredths of a millimetre wide.
-        CUT_RIM_CLEARANCE,
-        extrudeDepth,
-        dividerTopZ,
-        c,
-        c.cornerSlack,
-        c.radii
-      )
-    );
+    tools.push({
+      cutWidth: c.cutW,
+      cutHeight: c.cutH,
+      // A divider carries no stacking lip, so its own top face IS the rim the
+      // shoulder round-over is tangent to. Given the wall's rim instead, the
+      // blend runs its whole radius through the air above the divider and
+      // reaches it — if at all — as a sliver hundredths of a millimetre wide.
+      overshoot: CUT_RIM_CLEARANCE,
+      topZ: dividerTopZ,
+      position: { x: c.x, y: c.y, rotateZ: c.rotateZ },
+      cornerSlack: c.cornerSlack,
+      radii: c.radii,
+      collarHeight: 0,
+    });
   }
+  return tools;
+}
+
+function buildWallCutoutCutsInScope(
+  scope: DisposalScope,
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  collarHeight: number,
+  hasLip: boolean,
+  dividerTopZ: number,
+  depthPadding: number
+): Shape3D | null {
+  const extrudeDepth = cutterDepth(params, hasLip, depthPadding);
+  const cutShapes = planWallCutoutTools(
+    params,
+    innerW,
+    innerD,
+    wallHeight,
+    collarHeight,
+    hasLip,
+    dividerTopZ
+  ).map((tool) =>
+    buildSingleCutoutInScope(
+      scope,
+      params.walls.shape,
+      tool.cutWidth,
+      tool.cutHeight,
+      tool.overshoot,
+      extrudeDepth,
+      tool.topZ,
+      tool.position,
+      tool.cornerSlack,
+      tool.radii,
+      tool.collarHeight
+    )
+  );
 
   // Inline fuse so the fused intermediate is registered in `scope` — the
   // shared fuseAllOrNull allocates a new WASM handle that would otherwise
@@ -465,6 +523,64 @@ function buildWallCutoutCutsInScope(
   if (cutShapes.length === 0) return null;
   if (cutShapes.length === 1) return cutShapes[0]; // already scope-registered
   return scope.register(unwrap(fuseAll(cutShapes as ValidSolid[])));
+}
+
+/** Where one cutter can remove material, in the cavity frame: everything above `zMin`. */
+export interface WallCutoutReach {
+  readonly xMin: number;
+  readonly xMax: number;
+  readonly yMin: number;
+  readonly yMax: number;
+  readonly zMin: number;
+}
+
+/**
+ * The box around each cutter `buildWallCutoutCuts` builds for the same inputs,
+ * so a feature can tell whether a cut reaches it without a boolean.
+ */
+export function wallCutoutReaches(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  collarHeight: number,
+  hasLip: boolean,
+  dividerTopZ: number,
+  depthPadding = 0
+): WallCutoutReach[] {
+  if (!params.walls.enabled) return [];
+  const across = cutterDepth(params, hasLip, depthPadding) / 2;
+  return planWallCutoutTools(
+    params,
+    innerW,
+    innerD,
+    wallHeight,
+    collarHeight,
+    hasLip,
+    dividerTopZ
+  ).map((tool) => {
+    const safe = safeCutoutCornerRadii(
+      tool.radii,
+      tool.cutWidth,
+      tool.cutHeight,
+      tool.overshoot - CUT_RIM_CLEARANCE,
+      tool.cornerSlack
+    );
+    // A top round-over flares the opening past the span by at most its radius.
+    const along = tool.cutWidth / 2 + Math.max(safe.topLeft, safe.topRight);
+    const rad = (tool.position.rotateZ * Math.PI) / 180;
+    const cos = Math.abs(Math.cos(rad));
+    const sin = Math.abs(Math.sin(rad));
+    const halfX = along * cos + across * sin;
+    const halfY = along * sin + across * cos;
+    return {
+      xMin: tool.position.x - halfX,
+      xMax: tool.position.x + halfX,
+      yMin: tool.position.y - halfY,
+      yMax: tool.position.y + halfY,
+      zMin: tool.topZ - tool.cutHeight,
+    };
+  });
 }
 
 // --- FeatureBuilder protocol ---
@@ -510,6 +626,7 @@ export const wallCutoutsFeature: FeatureBuilder = {
         quantize(dim.innerW),
         quantize(dim.innerD),
         quantize(dim.wallHeight),
+        quantize(dim.collarHeight),
         dim.hasLip,
         params.compartments.cols,
         params.compartments.rows,
@@ -527,6 +644,7 @@ export const wallCutoutsFeature: FeatureBuilder = {
       ctx.dimensions.innerW,
       ctx.dimensions.innerD,
       ctx.dimensions.wallHeight,
+      ctx.dimensions.collarHeight,
       ctx.dimensions.hasLip,
       interiorDividerTopZ(ctx.params, ctx.dimensions)
     );

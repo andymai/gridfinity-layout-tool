@@ -1775,6 +1775,8 @@
   "binDesigner.lid.slide.pull.tabHint": "Występ wystający poza czoło pojemnika, w płaszczyźnie samej pokrywy. Najłatwiejszy do chwycenia w rękawicach.",
   "binDesigner.lid.slide.pull.catch": "Zaczep na palec",
   "binDesigner.lid.slide.pull.catchHint": "Ruchomy odcinek krawędzi do układania w stos na zewnętrznej krawędzi pokrywy. Zamknięty uzupełnia krawędź, otwarty daje szeroki uchwyt.",
+  "binDesigner.lid.slide.pull.groove": "Rowek na paznokieć",
+  "binDesigner.lid.slide.pull.grooveHint": "Dwa płytkie rowki w poprzek pokrywki, około 2 cm od zewnętrznej krawędzi, by otwierać i zamykać ją paznokciem. Obrys pokrywki pozostaje bez zmian.",
   "binDesigner.lid.slide.sagThicknessReadout": "Płyta o grubości {thickness} mm udźwignęłaby tę rozpiętość",
   "binDesigner.lid.slide.spanReadout": "Rozpiętość bez podparcia: {span} mm",
   "binDesigner.lid.stackGridHint": "Pełna siatka gniazd na całej górnej ściance. Pojemniki ustawione na wierzchu wpasowują się w poszczególne komórki.",
@@ -5778,5 +5780,7 @@
   "exportDestination.fail.timeout": "Przesyłanie do {host} trwało zbyt długo. Plik mógł jednak dotrzeć do odbiornika.",
   "exportDestination.fail.redirect": "Przesyłanie do {host} zostało przekierowane. Wpisz w Ustawieniach adres docelowy.",
   "baseplate.magnetPopOutHoles": "Otwory do wypychania magnesów",
-  "baseplate.magnetPopOutHolesDetail": "Małe otwory pod każdym gniazdem pozwalają wypchnąć magnesy od spodu."
+  "baseplate.magnetPopOutHolesDetail": "Małe otwory pod każdym gniazdem pozwalają wypchnąć magnesy od spodu.",
+  "baseplate.mountMagnets.crushRibs": "Żebra zaciskowe",
+  "baseplate.mountMagnets.crushRibsDetail": "Osiem żeber w każdym otworze od spodu utrzymuje magnes wciskany bez kleju."
 }

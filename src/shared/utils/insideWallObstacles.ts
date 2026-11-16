@@ -452,7 +452,10 @@ function cutoutShoulderObstacles(
     cutout.alignment,
     cutout.offset
   );
-  const lipRoom = params.base.stackingLip ? GRIDFINITY_SPEC.LIP_HEIGHT : 0;
+  // The cut keeps its drop on the uncollared wall but runs on up through the
+  // collar, so the shoulders round over at the raised rim.
+  const lipRoom =
+    collarHeightMm(params) + (params.base.stackingLip ? GRIDFINITY_SPEC.LIP_HEIGHT : 0);
   const { topLeft, topRight } = safeCutoutCornerRadii(
     resolveCutoutCornerRadii(params.walls, cutout, cutWidth),
     cutWidth,
@@ -461,8 +464,6 @@ function cutoutShoulderObstacles(
     cornerSlackFor(wallSpan, cutWidth, centerU)
   );
   if (topLeft <= 0 && topRight <= 0) return [];
-  // The cutout builder stands on the uncollared wall height; a collar does not
-  // lift the cut.
   const rim = dims.wallHeight + lipRoom;
   return [
     {

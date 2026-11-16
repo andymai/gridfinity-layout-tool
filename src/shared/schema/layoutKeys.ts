@@ -203,7 +203,14 @@ export type _ScrewHolesKeys = Assert<
   KeysMatch<keyof ScrewHoleParams, (typeof SCREW_HOLES_KEYS)[number]>
 >;
 
-export const MOUNT_MAGNETS_KEYS = ['enabled', 'diameter', 'depth', 'perPiece', 'chamfer'] as const;
+export const MOUNT_MAGNETS_KEYS = [
+  'enabled',
+  'diameter',
+  'depth',
+  'perPiece',
+  'chamfer',
+  'crushRibs',
+] as const;
 export type _MountMagnetsKeys = Assert<
   KeysMatch<keyof MountMagnetParams, (typeof MOUNT_MAGNETS_KEYS)[number]>
 >;

@@ -142,19 +142,19 @@ describe('collectDividers', () => {
 describe('buildDividerBlends', () => {
   it('returns null for slotted bins', () => {
     const params = makeParams({ style: 'slotted' });
-    expect(buildDividerBlends(params, INNER_W, INNER_D, WALL_HEIGHT, true)).toBeNull();
+    expect(buildDividerBlends(params, INNER_W, INNER_D, WALL_HEIGHT, 0, true)).toBeNull();
   });
 
   it('returns null when walls disabled', () => {
     const params = makeParams({ walls: { ...BASE_PARAMS.walls, enabled: false } });
-    expect(buildDividerBlends(params, INNER_W, INNER_D, WALL_HEIGHT, true)).toBeNull();
+    expect(buildDividerBlends(params, INNER_W, INNER_D, WALL_HEIGHT, 0, true)).toBeNull();
   });
 
   it('returns null for single-compartment bins', () => {
     const params = makeParams({
       compartments: { rows: 1, cols: 1, thickness: 1.2, cells: [0] },
     });
-    expect(buildDividerBlends(params, INNER_W, INNER_D, WALL_HEIGHT, true)).toBeNull();
+    expect(buildDividerBlends(params, INNER_W, INNER_D, WALL_HEIGHT, 0, true)).toBeNull();
   });
 
   it('returns null when no cutouts are enabled', () => {
@@ -164,7 +164,7 @@ describe('buildDividerBlends', () => {
         front: DISABLED_WALL_CUTOUT,
       },
     });
-    expect(buildDividerBlends(params, INNER_W, INNER_D, WALL_HEIGHT, true)).toBeNull();
+    expect(buildDividerBlends(params, INNER_W, INNER_D, WALL_HEIGHT, 0, true)).toBeNull();
   });
 });
 

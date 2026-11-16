@@ -1682,6 +1682,8 @@
   "binDesigner.lid.slide.pull.tabHint": "フタと同じ平面のまま、ビンの前面より外に出る突起です。手袋をしていても最もつかみやすい形です。",
   "binDesigner.lid.slide.pull.catch": "指掛かり",
   "binDesigner.lid.slide.pull.catchHint": "蓋の外側の縁にある、積み重ね用リップの可動部分です。閉じるとリップがつながり、開けるときは幅広い持ち手になります。",
+  "binDesigner.lid.slide.pull.groove": "指かけ溝",
+  "binDesigner.lid.slide.pull.grooveHint": "フタの外側の縁から約2 cm内側に、フタを横切る浅い溝を2本設け、爪で開け閉めできます。フタの外形はそのままです。",
   "binDesigner.lid.slide.sagThicknessReadout": "{thickness} mm のプレートならこのスパンを支えられます",
   "binDesigner.lid.slide.spanReadout": "支持のない幅: {span} mm",
   "binDesigner.lid.stackGridHint": "天面全体にソケットのグリッドを配置します。上に積んだビンは各セルに固定されます。",
@@ -5361,5 +5363,7 @@
   "exportDestination.fail.timeout": "{host} へのアップロードがタイムアウトしました。ファイルは届いている可能性があります。",
   "exportDestination.fail.redirect": "{host} へのアップロードはリダイレクトされました。設定でリダイレクト先のアドレスを指定してください。",
   "baseplate.magnetPopOutHoles": "磁石押し出し穴",
-  "baseplate.magnetPopOutHolesDetail": "各磁石ポケットの底に小さな穴を開け、下から磁石を押し出せます。"
+  "baseplate.magnetPopOutHolesDetail": "各磁石ポケットの底に小さな穴を開け、下から磁石を押し出せます。",
+  "baseplate.mountMagnets.crushRibs": "圧入用リブ",
+  "baseplate.mountMagnets.crushRibsDetail": "下面の各磁石穴にある8本のリブが、接着剤なしで圧入した磁石を保持します。"
 }

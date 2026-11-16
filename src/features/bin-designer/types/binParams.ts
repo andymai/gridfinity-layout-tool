@@ -171,7 +171,8 @@ export interface BinParams {
    * anchored at the original top plane — a "collar" of dead headroom that fully
    * encloses a tall item (e.g. one half-sunk in a cutout) and lets a stacked
    * bin rest on the raised rim without crushing the contents below (issue
-   *). The bin-body mirror of {@link LidConfig.extraHeightMm}.
+   *). The bin-body mirror of {@link LidConfig.extraHeightMm}. A wall cutout
+   * keeps its depth on the original plane and cuts up through the collar.
    *
    * Omitted or `0` reproduces the standard bin exactly (byte-identical
    * geometry). Clamped to

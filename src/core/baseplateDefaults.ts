@@ -408,6 +408,7 @@ function migrateMountMagnets(value: unknown): MountMagnetParams | undefined {
         }
       : {}),
     ...(o.chamfer === true ? { chamfer: true } : {}),
+    ...(o.crushRibs === true ? { crushRibs: true } : {}),
   };
 }
 

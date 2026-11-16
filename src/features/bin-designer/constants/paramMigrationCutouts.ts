@@ -128,10 +128,39 @@ export function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
     migrateParentGroups(withArray.parentGroups) ?? []
   );
   return migrateScoopRadius(
-    withHoles(withSplit(withFinger(withOpenSides(withEntryProfile(withDepthMode(withParents)))))),
+    withHoles(
+      withSplit(
+        withFinger(withOpenSides(withEntryProfile(withDepthMode(withSchemaDefaults(withParents)))))
+      )
+    ),
     scoopRadius
   );
 }
+
+/**
+ * The published schema lets a hand-written cutout leave these out, and the
+ * editor reads every one of them as present: a missing `label` throws while
+ * the cut editor renders.
+ */
+function withSchemaDefaults(cutout: Cutout): Cutout {
+  const raw: Partial<Record<'label' | 'rotation' | 'cornerRadius' | 'groupId', unknown>> = cutout;
+  const label = typeof raw.label === 'string' ? raw.label : '';
+  const rotation = isFiniteNumber(raw.rotation) ? raw.rotation : 0;
+  const cornerRadius = isFiniteNumber(raw.cornerRadius) ? raw.cornerRadius : 0;
+  const groupId = typeof raw.groupId === 'string' ? raw.groupId : null;
+  if (
+    label === raw.label &&
+    rotation === raw.rotation &&
+    cornerRadius === raw.cornerRadius &&
+    groupId === raw.groupId
+  ) {
+    return cutout;
+  }
+  return { ...cutout, label, rotation, cornerRadius, groupId };
+}
+
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
 
 function withEntryProfile(cutout: Cutout): Cutout {
   const { entryProfile } = cutout;

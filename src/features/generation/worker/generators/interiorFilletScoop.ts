@@ -27,7 +27,7 @@ import {
 import type { DisposalScope, Edge, Face, Shape3D, ValidSolid } from 'brepjs';
 import type { ScoopSide } from '@/shared/types/bin';
 import type { CompartmentFilletPlan, FilletPt } from './interiorFilletPlan';
-import { buildScoopRampSolids } from './scoopRampBuilder';
+import { buildScoopRampSolids, filletDoorways } from './scoopRampBuilder';
 import type { ScoopRampSolid } from './scoopRampBuilder';
 import { FeatureTag } from './featureTags';
 import {
@@ -65,7 +65,8 @@ export function climbedRamps(
     params.wallThickness,
     dim.floorThickness,
     (id) => raises.get(id) ?? 0,
-    dim.overhang.taper
+    dim.overhang.taper,
+    filletDoorways(params, dim)
   )) {
     if (!ramp.climbed) continue;
     byCompartment.set(ramp.compId, [...(byCompartment.get(ramp.compId) ?? []), ramp]);

@@ -55,7 +55,8 @@ function buildCutoutClipSolid(wall: WallPatternDescriptor, clip: CutoutClipParam
       rotateZ,
     },
     undefined,
-    clip.radii
+    clip.radii,
+    clip.collarHeight
   );
 }
 

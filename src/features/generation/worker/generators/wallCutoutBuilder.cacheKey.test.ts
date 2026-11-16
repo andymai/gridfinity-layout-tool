@@ -5,7 +5,7 @@ import type { BinParams, WallCutout } from '@/shared/types/bin';
 import { wallCutoutsFeature } from './wallCutoutBuilder';
 
 // cacheKey is pure — no WASM init needed.
-function keyFor(params: BinParams): string {
+function keyFor(params: BinParams, collarHeight = 0): string {
   const ctx = {
     params,
     dimensions: {
@@ -14,6 +14,7 @@ function keyFor(params: BinParams): string {
       innerD: 40,
       wallHeight: 42,
       interiorHeight: 40,
+      collarHeight,
       hasLip: true,
       compartmentsBakedIntoShell: false,
     },
@@ -49,5 +50,11 @@ describe('wallCutoutsFeature.cacheKey', () => {
 
   it('is stable for an unchanged config', () => {
     expect(keyFor(withFront({ depthMm: 20 }))).toBe(keyFor(withFront({ depthMm: 20 })));
+  });
+
+  // The cut runs up through the collar, so a taller collar is a taller cutter.
+  // Keyed directly, not left to `shellKey`, which carries it for the shell alone.
+  it('changes with the collar', () => {
+    expect(keyFor(withFront({}), 0)).not.toBe(keyFor(withFront({}), 6));
   });
 });

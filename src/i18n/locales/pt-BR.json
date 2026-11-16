@@ -1713,6 +1713,8 @@
   "binDesigner.lid.slide.pull.tabHint": "Uma saliência que avança além da face da caixa, no plano da própria tampa. A mais fácil de segurar de luvas.",
   "binDesigner.lid.slide.pull.catch": "Pega para o dedo",
   "binDesigner.lid.slide.pull.catchHint": "Um trecho móvel da borda de empilhamento na aresta externa da tampa. Fechada, completa a borda; aberta, oferece uma pega ampla.",
+  "binDesigner.lid.slide.pull.groove": "Ranhura para unha",
+  "binDesigner.lid.slide.pull.grooveHint": "Duas ranhuras rasas atravessando a tampa, a cerca de 2 cm da borda externa, para abri-la ou fechá-la com a unha. O contorno da tampa não muda.",
   "binDesigner.lid.slide.sagThicknessReadout": "Uma placa de {thickness} mm sustentaria esse vão",
   "binDesigner.lid.slide.spanReadout": "Vão livre: {span} mm",
   "binDesigner.lid.stackGridHint": "Uma grade completa de encaixes por toda a face superior. Caixas empilhadas em cima travam em células individuais.",
@@ -5500,5 +5502,7 @@
   "exportDestination.fail.timeout": "O envio para {host} demorou demais. O arquivo pode ter chegado mesmo assim.",
   "exportDestination.fail.redirect": "O envio para {host} foi redirecionado. Use o endereço final em Configurações.",
   "baseplate.magnetPopOutHoles": "Furos para remover ímãs",
-  "baseplate.magnetPopOutHolesDetail": "Pequenos furos sob cada encaixe permitem empurrar os ímãs por baixo."
+  "baseplate.magnetPopOutHolesDetail": "Pequenos furos sob cada encaixe permitem empurrar os ímãs por baixo.",
+  "baseplate.mountMagnets.crushRibs": "Nervuras de pressão",
+  "baseplate.mountMagnets.crushRibsDetail": "Oito nervuras em cada furo inferior prendem o ímã encaixado por pressão sem cola."
 }

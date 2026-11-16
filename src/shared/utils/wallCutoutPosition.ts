@@ -235,9 +235,10 @@ export interface SafeCornerRadii {
  * - Each other. The two blends meet on the same side of the cut, so the run
  *   between them has to survive or the profile folds through itself.
  *
- * `lipRoom` is the material standing above the wall body — the stacking lip's
- * height, or zero without one. The cut's side runs from there down to its
- * floor, and that is the room the two blends share.
+ * `lipRoom` is the material standing above the nominal wall top: the
+ * `extraWallHeightMm` collar plus the stacking lip's height, or zero without
+ * either. The cut's side runs from there down to its floor, and that is the
+ * room the two blends share.
  */
 export function safeCutoutCornerRadii(
   radii: CutoutCornerRadii,

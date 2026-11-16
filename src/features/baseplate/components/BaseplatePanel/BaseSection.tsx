@@ -578,6 +578,16 @@ export function BaseSection() {
                     })
                   }
                 />
+                <FeatureToggle
+                  label={t('baseplate.mountMagnets.crushRibs')}
+                  info={t('baseplate.mountMagnets.crushRibsDetail')}
+                  checked={mountMagnets?.crushRibs === true}
+                  onChange={() =>
+                    updateMountMagnets({
+                      crushRibs: mountMagnets?.crushRibs === true ? undefined : true,
+                    })
+                  }
+                />
                 <SliderInput
                   label={t('baseplate.mountMagnets.perPiece.label')}
                   value={mountMagnetsPerPiece}

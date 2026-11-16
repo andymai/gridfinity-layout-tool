@@ -302,7 +302,7 @@ function wallGaps(
         resolveCutoutCornerRadii(params.walls, cfg, cutWidth),
         cutWidth,
         userCutHeight,
-        params.base.stackingLip ? GRIDFINITY_SPEC.LIP_HEIGHT : 0,
+        dims.collarHeight + (params.base.stackingLip ? GRIDFINITY_SPEC.LIP_HEIGHT : 0),
         cornerSlackFor(wallSpan, cutWidth, centre)
       );
       const width = cutWidth + round.topLeft + round.topRight;

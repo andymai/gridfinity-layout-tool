@@ -192,6 +192,17 @@ export const SLIDE_SAG_SPAN_MM = 90;
  */
 export const SLIDE_CATCH_MIN_DEPTH_MM = 0.8;
 
+/** How far (mm) the inner fingernail groove's vertical face sits in from the plate's outer edge. */
+export const SLIDE_GROOVE_OFFSET_MM = 20;
+
+/**
+ * Deepest (mm) a fingernail groove cuts, and the fraction of the plate it may
+ * take: enough for a nail to catch on, while leaving most of the section under
+ * it on a minimum-thickness plate.
+ */
+const GROOVE_MAX_DEPTH_MM = 0.8;
+const GROOVE_MAX_DEPTH_FRACTION = 0.4;
+
 /** Plate thickness (mm) recommended for a given free span. */
 export function slideSagSafeThicknessMm(spanMm: number): number {
   // Bending stiffness goes as thickness cubed, so the span it carries goes as
@@ -290,11 +301,15 @@ export interface SlideLidPlate {
   readonly pull: LidSlidePull;
   /** Span (mm) of the pull feature across the trailing edge. */
   readonly pullSpanMm: number;
-  /** How far the pull cuts in, or stands out — for a catch, how far it rises above the plate. */
+  /**
+   * How far the pull cuts in, or stands out — for a catch, how far it rises
+   * above the plate; for a groove, how far in from the trailing edge it sits.
+   */
   readonly pullReachMm: number;
   /**
    * Thickness (mm) of a catch along the travel axis, measured inward from the
-   * trailing edge. Zero for every other pull.
+   * trailing edge; for a groove, how deep it cuts into the top face. Zero for
+   * every other pull.
    */
   readonly pullDepthMm: number;
   /**
@@ -977,10 +992,16 @@ export function resolveSlideLidPlan(input: SlideLidPlanInput): SlideLidPlan {
       ? 6
       : slide.pull === 'notch'
         ? 5
-        : isCatch
-          ? plateTopBelowWallTop + (input.hasLip ? GRIDFINITY_SPEC.LIP_HEIGHT : 0)
-          : 0;
-  const pullDepth = isCatch ? Math.max(0, entryWallMm - c) : 0;
+        : slide.pull === 'groove'
+          ? Math.min(SLIDE_GROOVE_OFFSET_MM, plateLength / 2)
+          : isCatch
+            ? plateTopBelowWallTop + (input.hasLip ? GRIDFINITY_SPEC.LIP_HEIGHT : 0)
+            : 0;
+  const pullDepth = isCatch
+    ? Math.max(0, entryWallMm - c)
+    : slide.pull === 'groove'
+      ? Math.min(GROOVE_MAX_DEPTH_MM, t * GROOVE_MAX_DEPTH_FRACTION)
+      : 0;
 
   // The bin's lip stands on the wall top: `lipTopZ` is `wallTopZ + LIP_HEIGHT`.
   const lipBase = plateTopBelowWallTop;

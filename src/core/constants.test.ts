@@ -497,7 +497,14 @@ describe('migrateBaseplateParams', () => {
         edgeInsetCells: 1,
         cellCorner: 'inner',
       },
-      mountMagnets: { enabled: true, diameter: mm(6), depth: mm(2), perPiece: 4, chamfer: true },
+      mountMagnets: {
+        enabled: true,
+        diameter: mm(6),
+        depth: mm(2),
+        perPiece: 4,
+        chamfer: true,
+        crushRibs: true,
+      },
     };
     expect(migrateBaseplateParams(stored)).toEqual(stored);
   });
@@ -842,7 +849,14 @@ describe('migrateBaseplateParams', () => {
   });
 
   it('preserves mountMagnets across a save/load round-trip', () => {
-    const full = { enabled: true, diameter: 6, depth: 2, perPiece: 6, chamfer: true };
+    const full = {
+      enabled: true,
+      diameter: 6,
+      depth: 2,
+      perPiece: 6,
+      chamfer: true,
+      crushRibs: true,
+    };
     expect(
       migrateBaseplateParams({ ...currentShapeBase, mountMagnets: full }).mountMagnets
     ).toEqual(full);

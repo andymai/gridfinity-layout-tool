@@ -165,6 +165,8 @@ export interface MountMagnetParams {
   readonly perPiece?: number;
   /** 45° lead-in at each hole's mouth on the underside. Absent means off. */
   readonly chamfer?: boolean;
+  /** Eight crush ribs inside each underside hole. Absent means off. */
+  readonly crushRibs?: boolean;
 }
 
 /** Stored (persisted) baseplate config saved per-layout.

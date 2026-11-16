@@ -6,6 +6,7 @@ import {
   STYLE_DEFAULT_OMIT_KEYS,
 } from './paramMigration';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from './defaults';
+import { migrateCutout } from './paramMigrationCutouts';
 import type { Cutout, LidConfig } from '../types';
 import {
   FLOOR_PATTERN_TYPES,
@@ -1978,6 +1979,32 @@ describe('migrateParams - bento merged leftover (#3748)', () => {
       }),
     });
     expect(lShape.compartments.stash).toEqual([{ w: 2, h: 2, cells: [true, true, true, false] }]);
+  });
+});
+
+describe('migrateParams - cutout fields the schema leaves optional', () => {
+  const bare = { id: 'c1', shape: 'rectangle', x: 4, y: 4, width: 10, depth: 10, cutDepth: 5 };
+
+  it('backfills label, rotation, corner radius and group on bin and lid cutouts', () => {
+    const result = migrateParams({
+      cutouts: [bare],
+      lid: { ...DEFAULT_BIN_PARAMS.lid, cutouts: [bare] },
+    } as unknown as Parameters<typeof migrateParams>[0]);
+    for (const c of [result.cutouts[0], result.lid.cutouts?.[0]]) {
+      expect(c).toMatchObject({ label: '', rotation: 0, cornerRadius: 0, groupId: null });
+    }
+  });
+
+  it('keeps the values of a complete cutout', () => {
+    const complete: Cutout = {
+      ...bare,
+      shape: 'rectangle',
+      rotation: 15,
+      cornerRadius: 2,
+      label: 'M3',
+      groupId: null,
+    };
+    expect(migrateCutout(complete)).toEqual(complete);
   });
 });
 

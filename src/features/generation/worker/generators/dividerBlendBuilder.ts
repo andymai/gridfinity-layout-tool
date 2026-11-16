@@ -50,6 +50,7 @@ export function buildDividerBlends(
   innerW: number,
   innerD: number,
   wallHeight: number,
+  collarHeight: number,
   hasLip: boolean
 ): Shape3D | null {
   if (params.style !== 'standard') return null;
@@ -80,7 +81,14 @@ export function buildDividerBlends(
 
         if (insideSpan) {
           try {
-            const cut = buildEndTrimCut(divider, cutout, cutoutShape, wallHeight, hasLip);
+            const cut = buildEndTrimCut(
+              divider,
+              cutout,
+              cutoutShape,
+              wallHeight,
+              collarHeight,
+              hasLip
+            );
             if (cut) cuts.push(cut);
           } catch {
             /* graceful degradation */
@@ -296,6 +304,7 @@ export const dividerBlendFeature: FeatureBuilder = {
         quantize(dim.innerW),
         quantize(dim.innerD),
         quantize(dim.wallHeight),
+        quantize(dim.collarHeight),
         dim.hasLip,
         // Tilted dividers are excluded from blends, so a tilt change alters
         // which junctions blend and must invalidate the cached cut.
@@ -310,6 +319,7 @@ export const dividerBlendFeature: FeatureBuilder = {
       ctx.dimensions.innerW,
       ctx.dimensions.innerD,
       ctx.dimensions.wallHeight,
+      ctx.dimensions.collarHeight,
       ctx.dimensions.hasLip
     );
     return result ? [result] : null;

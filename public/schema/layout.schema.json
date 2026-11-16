@@ -1121,6 +1121,11 @@
           "type": "boolean",
           "default": false,
           "description": "45 degree lead-in at each hole's mouth on the underside. Skipped where it would leave too thin a wall or too short a bore."
+        },
+        "crushRibs": {
+          "type": "boolean",
+          "default": false,
+          "description": "Eight ribs inside each underside magnet hole grip a press-fit magnet without glue."
         }
       }
     },

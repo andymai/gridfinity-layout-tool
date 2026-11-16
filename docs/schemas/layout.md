@@ -454,13 +454,14 @@ the override is dropped and the automatic plan is used instead, silently.
 
 <!-- generated:start -->
 
-| Field      | Type      | Required | Default | Constraint     | Notes                                                                                                                      |
-| ---------- | --------- | -------- | ------- | -------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `enabled`  | `boolean` | yes      |         |                | Cut mount-magnet holes.                                                                                                    |
-| `diameter` | `number`  |          |         | >= 2, <= 6.5   | Magnet hole diameter in mm.                                                                                                |
-| `depth`    | `number`  |          |         | >= 0.5, <= 2.5 | Magnet hole depth in mm, measured up from the underside.                                                                   |
-| `perPiece` | `integer` |          |         | >= 1, <= 64    | How many magnets each split piece gets, capped by its interior junctions.                                                  |
-| `chamfer`  | `boolean` |          | `false` |                | 45 degree lead-in at each hole's mouth on the underside. Skipped where it would leave too thin a wall or too short a bore. |
+| Field       | Type      | Required | Default | Constraint     | Notes                                                                                                                      |
+| ----------- | --------- | -------- | ------- | -------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`   | `boolean` | yes      |         |                | Cut mount-magnet holes.                                                                                                    |
+| `diameter`  | `number`  |          |         | >= 2, <= 6.5   | Magnet hole diameter in mm.                                                                                                |
+| `depth`     | `number`  |          |         | >= 0.5, <= 2.5 | Magnet hole depth in mm, measured up from the underside.                                                                   |
+| `perPiece`  | `integer` |          |         | >= 1, <= 64    | How many magnets each split piece gets, capped by its interior junctions.                                                  |
+| `chamfer`   | `boolean` |          | `false` |                | 45 degree lead-in at each hole's mouth on the underside. Skipped where it would leave too thin a wall or too short a bore. |
+| `crushRibs` | `boolean` |          | `false` |                | Eight ribs inside each underside magnet hole grip a press-fit magnet without glue.                                         |
 
 <!-- generated:end -->
 

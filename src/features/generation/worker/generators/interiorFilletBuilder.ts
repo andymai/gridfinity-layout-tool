@@ -325,6 +325,7 @@ function trimDoorways(
       dim.innerW,
       dim.innerD,
       dim.wallHeight,
+      dim.collarHeight,
       dim.hasLip,
       interiorDividerTopZ(params, dim),
       reach
@@ -408,7 +409,7 @@ export const interiorFilletFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        'v3',
+        'v4',
         dim.shellKey,
         quantize(interiorFilletRadiusMm(params)),
         labelTabKeepoutsKey(labelTabKeepouts(params, dim)),

@@ -69,6 +69,7 @@ const ALLOWED_MOUNT_MAGNET_KEYS = new Set<string>([
   'depth',
   'perPiece',
   'chamfer',
+  'crushRibs',
 ]);
 
 const VALID_SCREW_HEAD_STYLES = ['countersink', 'counterbore'] as const;
@@ -210,7 +211,10 @@ function isValidMountMagnets(value: unknown): boolean {
   ) {
     return false;
   }
-  return value.chamfer === undefined || isBoolean(value.chamfer);
+  return (
+    (value.chamfer === undefined || isBoolean(value.chamfer)) &&
+    (value.crushRibs === undefined || isBoolean(value.crushRibs))
+  );
 }
 
 /**

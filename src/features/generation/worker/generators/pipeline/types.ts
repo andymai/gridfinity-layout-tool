@@ -40,7 +40,8 @@ export interface BinDimensions {
    * outer box extrusion and stacking lip rise by this amount (`wallHeight +
    * collarHeight`), while `wallHeight`/`interiorHeight` stay nominal so every
    * interior feature (cutouts, dividers, scoops, label tabs) keeps its original
-   * plane. `0` when the bin has no collar. See `shellStage`.
+   * plane. A wall cutout keeps its drop on that plane and still cuts up through
+   * the collar to the rim. `0` when the bin has no collar. See `shellStage`.
    */
   readonly collarHeight: number;
   /**

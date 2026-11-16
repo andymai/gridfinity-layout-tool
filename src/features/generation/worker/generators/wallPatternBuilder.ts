@@ -152,7 +152,7 @@ export function computeWallClipContext(
   // Clip boxes must be at least as deep as the hex prism extrusion (cutDepth)
   // so they fully envelop hex prisms at junction/cutout boundaries.
   const clipExtrudeDepth = Math.max((maxThickness + lipOverhang) * 2 + 1, cutDepth + 1);
-  const clipOvershoot = (hasLip ? LIP_HEIGHT : 0) + CUT_RIM_CLEARANCE;
+  const clipOvershoot = dim.collarHeight + (hasLip ? LIP_HEIGHT : 0) + CUT_RIM_CLEARANCE;
 
   // Build handle wall defs for clip positioning. Polygon bins use the
   // outermost edge per cardinal (matches handleBuilder), so clip boxes land
@@ -263,6 +263,7 @@ export function computeWallClips(
         expandedWidth,
         expandedHeight,
         clipOvershoot,
+        collarHeight: dim.collarHeight,
         clipExtrudeDepth,
         wallHeight: dim.wallHeight,
         wallSpan,
@@ -403,6 +404,7 @@ export function computeWallClips(
         quantize(clipRadii?.top ?? 0),
         quantize(clipRadii?.bottom ?? 0),
         hasLip,
+        quantize(dim.collarHeight),
         quantize(params.compartments.thickness),
         quantize(params.wallThickness)
       )

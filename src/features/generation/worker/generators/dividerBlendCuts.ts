@@ -17,7 +17,7 @@ import { sketch } from './meshUtils';
 // barrel so only the cutout-shape builder is pulled in — the barrel
 // otherwise re-exports every builder, inflating this module's transitive deps.
 import { buildSingleCutout } from './wallCutoutBuilder';
-import { LIP_HEIGHT, COPLANAR_MARGIN } from './generatorConstants';
+import { LIP_HEIGHT, COPLANAR_MARGIN, CUT_RIM_CLEARANCE } from './generatorConstants';
 import { type DividerInfo, type OuterWallCutoutInfo, MIN_DIM } from './dividerBlendTypes';
 
 /**
@@ -31,9 +31,11 @@ export function buildEndTrimCut(
   cutout: OuterWallCutoutInfo,
   cutoutShape: WallCutoutShape,
   wallHeight: number,
+  collarHeight: number,
   hasLip: boolean
 ): Shape3D | null {
-  const overshoot = (hasLip ? LIP_HEIGHT : 0) + 2;
+  // The overshoot sets a funnel's lean, so it must be the outer cut's own.
+  const overshoot = collarHeight + (hasLip ? LIP_HEIGHT : 0) + CUT_RIM_CLEARANCE;
   // Extrude deep enough to cut through divider thickness + margins
   const extrudeDepth = divider.thickness + 2 * COPLANAR_MARGIN;
 
@@ -53,7 +55,10 @@ export function buildEndTrimCut(
       x: isVertical ? cutout.centerOffset : cutout.wallFaceCoord,
       y: isVertical ? cutout.wallFaceCoord : cutout.centerOffset,
       rotateZ: isVertical ? 0 : 90,
-    }
+    },
+    undefined,
+    undefined,
+    collarHeight
   );
 }
 

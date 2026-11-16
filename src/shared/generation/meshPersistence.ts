@@ -91,6 +91,10 @@ const MESH_CACHE_VERSION = 'v29';
  * assembly-item previews (their own `item` segment) stay warm. The mirror of
  * {@link itemMeshCacheKey}'s segment.
  *
+ * `bin24`: on a bin with wall cutouts, the interior fillet climbs every finger
+ * scoop ramp no cutout reaches, so that ramp is one smooth arc, not chords.
+ * `bin23`: a wall cutout on a bin with extra wall height runs up through the
+ * collar to the rim, instead of leaving a band of wall across the opening.
  * `bin22`: a Nesting body keeps the colour tags of its lip, label tab and label
  * support, so its faces group as a raised tray body's do.
  * `bin21`: a notched lip's inner face comes from one cut, not two laid over
@@ -131,7 +135,7 @@ const MESH_CACHE_VERSION = 'v29';
  * `bin1`: a lipless bin's sliding-lid entry window no longer ramps through the
  * rim, so its entry corners keep their full wall height.
  */
-const BIN_MESH_REVISION = 'bin22';
+const BIN_MESH_REVISION = 'bin24';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for

@@ -73,6 +73,30 @@ function addBand(
   }
 }
 
+/** Downward-facing ledge where a round chamfer meets an inward-ribbed bore. */
+function addMouthTransition(
+  mb: MeshBuilder,
+  mx: number,
+  my: number,
+  z: number,
+  circle: Ring,
+  bore: Ring
+): void {
+  const n = circle.length;
+  const outer = circle.map(([x, y]) => mb.pushVertex(x + mx, y + my, z, 0, 0, -1));
+  const inner = bore.map(([x, y]) => mb.pushVertex(x + mx, y + my, z, 0, 0, -1));
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    // At rib peaks the two rings meet, so omit the zero-area triangle.
+    if (Math.hypot(circle[i][0] - bore[i][0], circle[i][1] - bore[i][1]) > 1e-6) {
+      mb.pushTriangle(outer[j], outer[i], inner[i]);
+    }
+    if (Math.hypot(circle[j][0] - bore[j][0], circle[j][1] - bore[j][1]) > 1e-6) {
+      mb.pushTriangle(outer[j], inner[i], inner[j]);
+    }
+  }
+}
+
 /** Emit a single blind magnet hole at absolute (mx, my). */
 export function addMagnetHoleAt(
   mb: MeshBuilder,
@@ -113,15 +137,20 @@ export function addMountMagnetHoleAt(
   my: number,
   radius: number,
   depth: number,
-  chamfer: boolean
+  chamfer: boolean,
+  crushRibs = false
 ): void {
-  const bore = circlePoints(radius, CIRCLE_SEGMENTS);
-  const mouth = chamfer ? circlePoints(radius + MAGNET_CHAMFER_MM, CIRCLE_SEGMENTS) : bore;
+  const style: MagnetHoleStyle = { crushRibs, chamfer };
+  const segments = magnetBoreSegments(style, CIRCLE_SEGMENTS);
+  const bore = magnetBoreProfile(radius, style, segments);
+  const mouth = chamfer ? circlePoints(radius + MAGNET_CHAMFER_MM, segments) : bore;
   addDisc(mb, mx, my, CANCEL_EPSILON, mouth, true);
   let boreBottomZ = 0;
   if (chamfer) {
     boreBottomZ = MAGNET_CHAMFER_MM;
-    addBand(mb, mx, my, bore, boreBottomZ, mouth, 0);
+    const roundBore = circlePoints(radius, segments);
+    addBand(mb, mx, my, roundBore, boreBottomZ, mouth, 0);
+    if (crushRibs) addMouthTransition(mb, mx, my, boreBottomZ, roundBore, bore);
   }
   addBand(mb, mx, my, bore, depth, bore, boreBottomZ);
   addDisc(mb, mx, my, depth, bore, false);
