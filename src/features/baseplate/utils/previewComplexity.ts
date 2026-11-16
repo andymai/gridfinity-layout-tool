@@ -154,11 +154,12 @@ export function shouldSkipManifoldDraft(params: ResolvedBaseplateParams): boolea
  * Which drafts to paint on the leading edge of an edit, before the exact BREP.
  *
  * - `none` — leave the last good mesh on screen.
+ * - `clear` — blank the canvas until the exact build lands.
  * - `direct` — the synchronous procedural mesh only.
  * - `manifold` — leave the last good mesh on screen until the Manifold draft lands.
  * - `direct-then-manifold` — procedural first, then refine with the Manifold draft.
  */
-export type PreviewDraftPlan = 'none' | 'direct' | 'manifold' | 'direct-then-manifold';
+export type PreviewDraftPlan = 'none' | 'clear' | 'direct' | 'manifold' | 'direct-then-manifold';
 
 /**
  * Pick the draft ladder for one edit.
@@ -178,13 +179,17 @@ export function planPreviewDrafts(options: {
   lastBrepMs: number | null;
   /** Below this predicted exact time a draft is pure flicker (see draftPolicy). */
   skipBelowMs: number;
+  /** Whether the previous edit's plate had an outline, which the mesh on screen then shares. */
+  previousHadOutline: boolean;
 }): PreviewDraftPlan {
-  const { params, hasPreviewBridge, lastBrepMs, skipBelowMs } = options;
+  const { params, hasPreviewBridge, lastBrepMs, skipBelowMs, previousHadOutline } = options;
 
   // Shaped plate: the procedural mesh draws rectangles only, so it would show
   // the wrong outline, and a Manifold draft would repeat the exact build's own
-  // expensive coplanar outline clip for an indistinguishable result.
-  if (shouldSkipManifoldDraft(params)) return 'none';
+  // expensive coplanar outline clip for an indistinguishable result. On the
+  // first edit with an outline, the last good mesh is the rectangle from before
+  // it, and a wrong-shape plate is worse than none.
+  if (shouldSkipManifoldDraft(params)) return previousHadOutline ? 'none' : 'clear';
 
   // No draft kernel — the procedural mesh is the only fill available, and it is
   // cheap enough to paint even when the exact is predicted fast. An eco plate

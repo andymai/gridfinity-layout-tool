@@ -210,6 +210,7 @@ describe('planPreviewDrafts', () => {
       hasPreviewBridge: true,
       lastBrepMs: null,
       skipBelowMs: 150,
+      previousHadOutline: false,
       ...overrides,
     });
 
@@ -251,9 +252,24 @@ describe('planPreviewDrafts', () => {
    */
   it('skips both drafts for a shaped plate, whatever the bridge or timing says', () => {
     const shaped = makeParams({ outline: rectOutline(252, 252) });
-    expect(plan({ params: shaped })).toBe('none');
-    expect(plan({ params: shaped, hasPreviewBridge: false })).toBe('none');
-    expect(plan({ params: shaped, lastBrepMs: 5000 })).toBe('none');
+    const edit = { params: shaped, previousHadOutline: true };
+    expect(plan(edit)).toBe('none');
+    expect(plan({ ...edit, hasPreviewBridge: false })).toBe('none');
+    expect(plan({ ...edit, lastBrepMs: 5000 })).toBe('none');
+  });
+
+  /**
+   * Regression: a `none` plan keeps the mesh on screen, and for the first edit
+   * with an outline that mesh is the rectangle from before it. It stayed up
+   * until the exact build landed.
+   */
+  it('clears the rectangle on screen when a plate first gets an outline', () => {
+    const shaped = makeParams({ outline: rectOutline(252, 252) });
+    expect(plan({ params: shaped, previousHadOutline: false })).toBe('clear');
+    expect(plan({ params: shaped, previousHadOutline: false, lastBrepMs: 5 })).toBe('clear');
+    expect(plan({ params: shaped, previousHadOutline: false, hasPreviewBridge: false })).toBe(
+      'clear'
+    );
   });
 
   it('drafts an eco plate on Manifold alone, so its reliefs never flash solid', () => {
