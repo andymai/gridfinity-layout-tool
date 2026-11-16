@@ -1,0 +1,29 @@
+src/features/baseplate/utils/previewComplexity.test.ts
+  s_06a4d651167866::t_1926e658f6687e 255-272
+  s_06a4d651167866::t_0d35504fd73569 213
+src/features/baseplate/utils/previewComplexity.ts
+  s_06a4d651167866::t_2908c3cb50367c 157,162,182-183,185,189-192
+src/features/baseplate/hooks/generationMeshEntries.ts
+  s_06a4d651167866::t_d9679268491a41 3,5,94-103
+  s_06a4d651167866::t_79e9919d228fe7 104-106
+src/features/baseplate/hooks/useBaseplateGeneration.ts
+  s_06a4d651167866::t_d9679268491a41 66,411
+  s_06a4d651167866::t_924d4e3ba957cc 96,515-516,545-546
+  s_06a4d651167866::t_83e64f17724ae8 534
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e19ac78de2e2da198482a1092e257da6484d5c66",
+  "prompts": {},
+  "sessions": {
+    "s_06a4d651167866": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d4ae7fc4-6703-4681-8cbb-1f49d2dd00a3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
