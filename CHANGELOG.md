@@ -1,5 +1,21 @@
 # Changelog
 
+## [4.544.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.543.1...gridfinity-layout-tool-v4.544.0) (2026-11-16)
+
+
+### Features
+
+* **baseplate:** add crush ribs to underside mounting magnets ([#5054](https://github.com/andymai/gridfinity-layout-tool/issues/5054)) ([28d89ee](https://github.com/andymai/gridfinity-layout-tool/commit/28d89eeb50326d56df5a746476597f9a3691e380))
+* **bin-designer:** add finger groove pull to sliding lids ([#5044](https://github.com/andymai/gridfinity-layout-tool/issues/5044)) ([cd9faab](https://github.com/andymai/gridfinity-layout-tool/commit/cd9faabd119c27a3e8f169e90bfb21a339582236))
+
+
+### Bug Fixes
+
+* **bin-designer:** backfill the cutout fields the design schema leaves optional ([#5057](https://github.com/andymai/gridfinity-layout-tool/issues/5057)) ([04ff6aa](https://github.com/andymai/gridfinity-layout-tool/commit/04ff6aa8c1ed22b8dbcf8f002af6bd8a7ef3a3d1))
+* **bin-designer:** cut wall cutouts up through the extra wall height ([#5051](https://github.com/andymai/gridfinity-layout-tool/issues/5051)) ([e1e9f6f](https://github.com/andymai/gridfinity-layout-tool/commit/e1e9f6f875b281deaf2244d0c8513aba5a401c90))
+* **bin-designer:** keep a finger scoop smooth beside wall cutouts that miss it ([#5056](https://github.com/andymai/gridfinity-layout-tool/issues/5056)) ([f78efa2](https://github.com/andymai/gridfinity-layout-tool/commit/f78efa21f58132ccda8d7e4538996e2a487f2eab))
+* **layout:** migrate imported baseplate params into a copy ([#5050](https://github.com/andymai/gridfinity-layout-tool/issues/5050)) ([9d227ab](https://github.com/andymai/gridfinity-layout-tool/commit/9d227ab514884e1dcae4ba282cb4192789dd9abc))
+
 ## [4.543.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.543.0...gridfinity-layout-tool-v4.543.1) (2026-11-14)
 
 
