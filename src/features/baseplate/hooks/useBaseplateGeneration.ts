@@ -543,15 +543,12 @@ export function useBaseplateGeneration(): void {
       });
 
       if (plan === 'none' || plan === 'manifold') {
-        if (fullParams.outline !== undefined) {
-          // The shaped-plate branch clears an old rectangular plate and rails.
-          runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch, tiling);
-        } else {
-          // Keep the last good rectangular mesh until the exact build lands.
-          setTiling(tiling);
-          setSplitProgress(null);
-          setDedupStats(null);
-        }
+        // Keep the last good mesh on screen (never blank to EMPTY_MESH mid-edit)
+        // and let the exact BREP replace it. Still publish the tiling/progress so
+        // the split overlay tracks the new piece layout while the exact runs.
+        setTiling(tiling);
+        setSplitProgress(null);
+        setDedupStats(null);
       } else {
         // `runDirectMeshPreview` publishes the tiling itself.
         runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch, tiling);
