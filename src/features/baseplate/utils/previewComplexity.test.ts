@@ -258,11 +258,6 @@ describe('planPreviewDrafts', () => {
     expect(plan({ ...edit, lastBrepMs: 5000 })).toBe('none');
   });
 
-  /**
-   * Regression: a `none` plan keeps the mesh on screen, and for the first edit
-   * with an outline that mesh is the rectangle from before it. It stayed up
-   * until the exact build landed.
-   */
   it('clears the rectangle on screen when a plate first gets an outline', () => {
     const shaped = makeParams({ outline: rectOutline(252, 252) });
     expect(plan({ params: shaped, previousHadOutline: false })).toBe('clear');
