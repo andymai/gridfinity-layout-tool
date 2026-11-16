@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.544.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.544.0...gridfinity-layout-tool-v4.544.1) (2026-11-16)
+
+
+### Bug Fixes
+
+* **baseplate:** clear the old rectangle when a plate gets an outline ([#5060](https://github.com/andymai/gridfinity-layout-tool/issues/5060)) ([e3967b7](https://github.com/andymai/gridfinity-layout-tool/commit/e3967b7c3d4503e579d50c81c1c84a191d343dfb))
+
 ## [4.544.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.543.1...gridfinity-layout-tool-v4.544.0) (2026-11-16)
 
 
