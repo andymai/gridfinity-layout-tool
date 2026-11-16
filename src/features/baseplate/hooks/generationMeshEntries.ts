@@ -1,7 +1,8 @@
 /** Mesh-entry bookkeeping for baseplate generation results: per-piece entries, group fill-in, single-mesh views. */
 
-import type { PieceMeshEntry } from '../store/baseplatePageStore';
+import type { MarginMeshEntry, PieceMeshEntry } from '../store/baseplatePageStore';
 import type { GenerationResult } from '@/shared/generation/bridge';
+import type { MarginPiece } from '@/shared/types/bin';
 import type { BaseplateTiling } from '../types/tiling';
 
 /** Build a PieceMeshEntry from a generation result and tiling piece metadata */
@@ -87,6 +88,19 @@ export function toSingleMesh(result: GenerationResult) {
     edgeVertices: result.mesh.edgeVertices,
     error: null,
     timingMs: result.timingMs,
+  };
+}
+
+export function toMarginMeshEntry(margin: MarginPiece, result: GenerationResult): MarginMeshEntry {
+  return {
+    id: margin.id,
+    side: margin.side,
+    mesh: toSingleMesh(result),
+    worldOffsetMm: margin.worldOffsetMm,
+    lengthMm: margin.lengthMm,
+    bandThicknessMm: margin.bandThicknessMm,
+    col: margin.col,
+    row: margin.row,
   };
 }
 
