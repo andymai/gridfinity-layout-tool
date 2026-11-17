@@ -5,6 +5,7 @@ export { queueLibraryWrite, writeLibrary } from './libraryWrites';
 export {
   isPulledCopy,
   noteOpenLayoutSaved,
+  noteOpenLayoutWrite,
   notePulledCopy,
   readOpenLayout,
   saveOpenLayout,

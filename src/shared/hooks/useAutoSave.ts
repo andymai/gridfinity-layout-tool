@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import {
   isPulledCopy,
   noteOpenLayoutSaved,
+  noteOpenLayoutWrite,
   queueLibraryWrite,
   readOpenLayout,
   savedLaterCopy,
@@ -69,6 +70,7 @@ async function writeLayout(
       const newest = open.id === savingLayoutId ? open : read;
       if (savedLaterCopy(newest)) return ok(null);
       if (isPulledCopy(newest)) return ok(newest.layout);
+      noteOpenLayoutWrite(newest);
       const saved = await saveLayoutWithMetadata(savingLayoutId, newest.layout, library);
       if (isErr(saved)) return saved;
       noteOpenLayoutSaved(newest);

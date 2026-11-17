@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   isPulledCopy,
   noteOpenLayoutSaved,
+  noteOpenLayoutWrite,
   notePulledCopy,
   readOpenLayout,
   savedLaterCopy,
@@ -108,10 +109,10 @@ describe('open layout saves', () => {
       expect(isPulledCopy(readOpenLayout())).toBe(false);
     });
 
-    it('is not the pulled copy once a save of another copy lands, even if the store returns to it', () => {
+    it('is not the pulled copy once a write of another copy starts, even if the store returns to it', () => {
       const pulled = pullInto('undone');
       useLayoutStore.getState().setName('edited');
-      noteOpenLayoutSaved(readOpenLayout());
+      noteOpenLayoutWrite(readOpenLayout());
 
       useLayoutStore.getState().importLayout(pulled, layoutId('undone'), 'local');
       expect(isPulledCopy(readOpenLayout())).toBe(false);
