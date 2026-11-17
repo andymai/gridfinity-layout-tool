@@ -239,7 +239,9 @@ export function createSyncResourceHandler<TEnvelope extends SyncEnvelope>(
       return;
     }
     await deleteBlob(blobPath(userId, id));
-    await tombstone(redis, userId, config.kind, id, Date.now());
+    // modifiedAt comes from a client clock, which can run ahead of this one.
+    // The deletion must still sort after the version it deletes.
+    await tombstone(redis, userId, config.kind, id, Math.max(Date.now(), existing.modifiedAt + 1));
     res.status(204).end();
   }
 

@@ -66,7 +66,19 @@ type SaveDesignInput = Omit<SavedDesign, 'id' | 'createdAt' | 'updatedAt'> & {
    * so a rename cannot vouch for an image that predates the params.
    */
   thumbnailState?: 'fresh' | 'outdated';
+  /** Set only by a sync pull: the remote `modifiedAt` to keep as `updatedAt`. */
+  remoteModifiedAt?: number;
 };
+
+/**
+ * `updatedAt` for a save: the `modifiedAt` of a copy that sync pulled, or the
+ * time now. Sync compares the two stamps, so a pulled copy must keep its own.
+ */
+function storedTime(remoteModifiedAt: number | undefined, now: string): string {
+  if (remoteModifiedAt === undefined) return now;
+  const time = new Date(remoteModifiedAt);
+  return Number.isNaN(time.getTime()) ? now : time.toISOString();
+}
 
 // Unversioned reads as outdated, which is what queues a regeneration.
 function thumbnailVersionFor(
@@ -166,7 +178,7 @@ async function writeDesign(design: SaveDesignInput): Promise<Result<SavedDesign,
       thumbnailVersion: thumbnailVersionFor(design, existing),
       exportFileNameConfig: design.exportFileNameConfig ?? null,
       createdAt,
-      updatedAt: now,
+      updatedAt: storedTime(design.remoteModifiedAt, now),
       ...(tags.length > 0 ? { tags } : {}),
       ...(publishedId !== undefined ? { publishedId } : {}),
       ...(lineage !== undefined ? { lineage } : {}),
@@ -618,7 +630,9 @@ export async function updateVariantOverrides(
  * family; only the live link goes.
  */
 export async function detachVariant(
-  variantId: DesignId
+  variantId: DesignId,
+  /** Set only by a sync pull: the remote `modifiedAt` to keep as `updatedAt`. */
+  remoteModifiedAt?: number
 ): Promise<Result<SavedDesign, StorageError>> {
   const loaded = await loadDesign(variantId);
   if (isErr(loaded)) return loaded;
@@ -628,7 +642,10 @@ export async function detachVariant(
     const { variantOf: _variantOf, overrides: _overrides, ...rest } = loaded.value;
     // Written through the store directly: `saveDesign` falls back to the STORED
     // value for both fields, so passing them as undefined would restore them.
-    const detached: SavedDesign = { ...rest, updatedAt: new Date().toISOString() };
+    const detached: SavedDesign = {
+      ...rest,
+      updatedAt: storedTime(remoteModifiedAt, new Date().toISOString()),
+    };
     await db.put(DESIGNS_STORE, detached);
     emitDesignerEvent({ type: 'put', id: detached.id, updatedAt: detached.updatedAt });
     return ok(detached);
