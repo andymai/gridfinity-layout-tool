@@ -1,6 +1,8 @@
 import { execFileSync } from 'node:child_process';
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 const SCRIPT = join(import.meta.dirname, 'release-window.sh');
 
@@ -68,5 +70,56 @@ describe('release-window.sh', () => {
     ['the hour before the evening window', '2026-11-17T22:59:00Z', ['2026-11-17T05:30:00Z']],
   ])('holds for %s', (_label, now, releases) => {
     expect(gate(now, releases)).toBe('go=false');
+  });
+});
+
+describe('release-window.sh GitHub lookup', () => {
+  let dir = '';
+
+  afterEach(() => {
+    if (dir) rmSync(dir, { recursive: true, force: true });
+  });
+
+  function lookup(nowIso: string, releases: string[]): { out: string; args: string } {
+    dir = mkdtempSync(join(tmpdir(), 'release-window-'));
+    const argsFile = join(dir, 'args');
+    const epochs = releases.map((iso) => String(at(iso))).join(' ');
+    writeFileSync(
+      join(dir, 'gh'),
+      `#!/usr/bin/env bash\necho "$@" > "${argsFile}"\nprintf '%s\\n' ${epochs}\n`
+    );
+    chmodSync(join(dir, 'gh'), 0o755);
+
+    const out = execFileSync('bash', [SCRIPT], {
+      env: {
+        PATH: `${dir}:${process.env.PATH ?? ''}`,
+        NOW: String(at(nowIso)),
+        GITHUB_REPOSITORY: 'owner/repo',
+      },
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+    return { out, args: readFileSync(argsFile, 'utf8') };
+  }
+
+  it.each([
+    [
+      'UTC midnight, when the window starts later that day',
+      '2026-11-17T23:23:00Z',
+      ['2026-11-17T00:23:00Z', '2026-11-17T05:23:00Z'],
+      '2026-11-17T00:00:00Z',
+    ],
+    [
+      'the window start, when the window began the day before',
+      '2026-11-18T00:23:00Z',
+      ['2026-11-17T23:30:00Z'],
+      '2026-11-17T23:00:00Z',
+    ],
+  ])('reads every page since %s, and holds', (_label, now, releases, since) => {
+    const { out, args } = lookup(now, releases);
+
+    expect(out).toBe('go=false');
+    expect(args).toContain('--paginate');
+    expect(args).toContain(`since=${since}`);
   });
 });
