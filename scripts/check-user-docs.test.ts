@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   checkAppLink,
   checkDocLinks,
+  checkFeatureCoverage,
   checkMedia,
   checkPage,
   checkScreenshotIds,
@@ -10,6 +11,7 @@ import {
   docsForStagedSources,
   headingAnchors,
   mediaFiles,
+  sliceNames,
 } from './check-user-docs';
 import type { DocPage } from './check-user-docs';
 
@@ -248,6 +250,71 @@ describe('checkMedia', () => {
       'apps/docs/media: a-clip.dark.mp4 is missing for "a-clip"',
       'apps/docs/media/gone.json: fills no <Screenshot> on any page',
       'apps/docs/media: old.png belongs to no capture',
+    ]);
+  });
+});
+
+describe('sliceNames', () => {
+  it('lists the folders under src/features, without dot-folders or files', () => {
+    const entry = (name: string, dir: boolean): { name: string; isDirectory: () => boolean } => ({
+      name,
+      isDirectory: () => dir,
+    });
+    expect(
+      sliceNames([
+        entry('walls', true),
+        entry('.greptile', true),
+        entry('README.md', false),
+        entry('labs', true),
+      ])
+    ).toEqual(['labs', 'walls']);
+  });
+});
+
+describe('checkFeatureCoverage', () => {
+  const allowlist = 'scripts/user-docs-coverage-allowlist.json';
+  const pages = [
+    page('apps/docs/walls.md', '', { sources: ['src/features/walls/'] }),
+    page('apps/docs/lids.md', '', { sources: ['src/features/lids'] }),
+    page('apps/docs/labs.md', '', { sources: ['src/a.ts', 'src/features/labs/flags.ts'] }),
+  ];
+
+  it('accepts a slice cited as a folder, with or without a slash, or by a file in it', () => {
+    expect(checkFeatureCoverage(['walls', 'lids', 'labs'], pages, {})).toEqual([]);
+  });
+
+  it('names an uncited slice and both ways to fix it', () => {
+    expect(checkFeatureCoverage(['walls', 'scan'], pages, {})).toEqual([
+      'src/features/scan: no docs page cites this feature. Add the folder, or a file in it, to the "sources" of the page that describes it, or list it in scripts/user-docs-coverage-allowlist.json with a one-line reason',
+    ]);
+  });
+
+  it('does not count a citation of another slice whose name starts the same', () => {
+    const designer = [page('apps/docs/d.md', '', { sources: ['src/features/bin-designer/'] })];
+    expect(checkFeatureCoverage(['bin'], designer, {})).toEqual([
+      expect.stringMatching(/^src\/features\/bin: no docs page cites this feature/),
+    ]);
+  });
+
+  it('accepts an allowlisted slice with a reason', () => {
+    expect(checkFeatureCoverage(['walls', 'scan'], pages, { scan: 'No UI of its own.' })).toEqual(
+      []
+    );
+  });
+
+  it('reports an allowlist entry that is cited, has no reason, or names no slice', () => {
+    expect(
+      checkFeatureCoverage(['walls', 'scan', 'tray'], pages, {
+        scan: ' ',
+        tray: 42,
+        gone: 'Removed.',
+        walls: 'Old.',
+      })
+    ).toEqual([
+      `${allowlist}: "walls" is cited by apps/docs/walls.md, so remove it from the allowlist`,
+      `${allowlist}: "scan" needs a one-line reason`,
+      `${allowlist}: "tray" needs a one-line reason`,
+      `${allowlist}: "gone" is not a folder in src/features`,
     ]);
   });
 });

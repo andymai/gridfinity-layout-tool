@@ -12,9 +12,12 @@ import { parseFrontmatter } from './contentFrontmatter';
 import { CONTENT_LOCALES } from './contentRoutes';
 import { MALFORMED_UI_TAG, UI_TAG, resolveUiLabel } from '../apps/docs/.vitepress/uiLabels';
 import { appTools, nav, sidebar } from '../apps/docs/.vitepress/navigation';
+import coverageAllowlist from './user-docs-coverage-allowlist.json' with { type: 'json' };
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DOCS_DIR = 'apps/docs';
+const FEATURES_DIR = 'src/features';
+const COVERAGE_ALLOWLIST = 'scripts/user-docs-coverage-allowlist.json';
 const APP_ORIGIN = 'https://gridfinitylayouttool.com';
 const APP_ROUTES = new Set(['/', '/designer', '/baseplate', '/community', '/supporters']);
 const LOCALES: ReadonlySet<string> = new Set(CONTENT_LOCALES);
@@ -332,6 +335,55 @@ function mediaDirFiles(): string[] {
   return fs.existsSync(dir) ? fs.readdirSync(dir) : [];
 }
 
+export function sliceNames(entries: readonly { name: string; isDirectory(): boolean }[]): string[] {
+  return entries
+    .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
+    .map((entry) => entry.name)
+    .sort();
+}
+
+function citingPage(slice: string, pages: readonly DocPage[]): string | undefined {
+  const dir = `${FEATURES_DIR}/${slice}`;
+  return pages.find((page) =>
+    pageSources(page).some((source) => source === dir || source.startsWith(`${dir}/`))
+  )?.file;
+}
+
+/**
+ * A new feature slice has no page that names it, so the source-based warnings
+ * never fire for it. Each slice needs a citing page or an allowlist reason.
+ */
+export function checkFeatureCoverage(
+  slices: readonly string[],
+  pages: readonly DocPage[],
+  allowlist: Readonly<Record<string, unknown>>
+): string[] {
+  const problems: string[] = [];
+  for (const slice of slices) {
+    const page = citingPage(slice, pages);
+    const listed = Object.hasOwn(allowlist, slice);
+    if (!page && !listed)
+      problems.push(
+        `${FEATURES_DIR}/${slice}: no docs page cites this feature. Add the folder, or a file in it, to the "sources" of the page that describes it, or list it in ${COVERAGE_ALLOWLIST} with a one-line reason`
+      );
+    if (page && listed)
+      problems.push(
+        `${COVERAGE_ALLOWLIST}: "${slice}" is cited by ${page}, so remove it from the allowlist`
+      );
+  }
+  for (const [slice, reason] of Object.entries(allowlist)) {
+    if (typeof reason !== 'string' || reason.trim() === '')
+      problems.push(`${COVERAGE_ALLOWLIST}: "${slice}" needs a one-line reason`);
+    if (!slices.includes(slice))
+      problems.push(`${COVERAGE_ALLOWLIST}: "${slice}" is not a folder in ${FEATURES_DIR}`);
+  }
+  return problems;
+}
+
+function featureSlices(): string[] {
+  return sliceNames(fs.readdirSync(path.join(ROOT, FEATURES_DIR), { withFileTypes: true }));
+}
+
 export function collectProblems(pages: readonly DocPage[] = readDocPages()): string[] {
   const exists = (rel: string): boolean => fs.existsSync(path.join(ROOT, rel));
   const navAppLinks = frontmatterLinks(NAV_LINKS.data)
@@ -350,6 +402,7 @@ export function collectProblems(pages: readonly DocPage[] = readDocPages()): str
     ...checkScreenshotIds(pages),
     ...checkDocLinks([...pages, NAV_LINKS], exists),
     ...checkMedia(pages, readManifest(), mediaDirFiles()),
+    ...checkFeatureCoverage(featureSlices(), pages, coverageAllowlist),
   ];
 }
 
