@@ -73,6 +73,13 @@ describe('parseLabelList', () => {
     });
   });
 
+  it.each(['REF-123', 'ABC#123'])('keeps a first row whose part number is %s', (part) => {
+    expect(parseLabelList(`Screws\t${part}\nNuts\tREF-456`)).toEqual([
+      { name: 'Screws', detail: part },
+      { name: 'Nuts', detail: 'REF-456' },
+    ]);
+  });
+
   it.each(['Part number', 'Digi-Key Part #', 'SKU', 'Artikelnummer', 'Référence'])(
     'skips a header row whose part column is named %s',
     (header) => {
