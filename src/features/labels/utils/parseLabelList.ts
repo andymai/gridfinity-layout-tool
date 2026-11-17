@@ -11,6 +11,10 @@
 import { looksLikePartNumber, normalizePartNumber, vendorOfPartNumber } from './partNumbers';
 import type { LabelText } from './planLabel';
 
+// Row 0 is a header only when its part cell names the column. Anything else
+// is a pasted row, and dropping it would lose a label without a word.
+const PART_COLUMN_NAME =
+  /(^|[^\p{L}])(part|p\/n|pn|sku|item|catalog|model|mfr|article|ref|reference|no|number)([^\p{L}]|$)|#|nummer|référence|referencia|número|numero|artikel/iu;
 const PRICE_OR_NUMBER = /^[$€£¥]?\s?[\d.,]+\s?[$€£¥]?$/;
 const PART_THEN_NAME = /^(?<part>\S+)\s+(?<name>.+)$/;
 const NAME_THEN_PART = /^(?<name>.+)\s+(?<part>\S+)$/;
@@ -63,9 +67,7 @@ function parseTable(rows: readonly (readonly string[])[]): LabelText[] {
   }
 
   const header = rows[0][partCol] ?? '';
-  // A header names the column, so a cell with a digit is data, even a size
-  // such as M3 that is too short to read as a part number.
-  const hasHeader = rows.length > 1 && isTextCell(header) && !/\d/.test(header);
+  const hasHeader = rows.length > 1 && PART_COLUMN_NAME.test(header);
   return (hasHeader ? rows.slice(1) : rows).flatMap((row) => {
     const detail = normalizePartNumber(row[partCol] ?? '');
     const name = row

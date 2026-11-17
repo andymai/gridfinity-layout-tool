@@ -66,6 +66,21 @@ describe('parseLabelList', () => {
     ]);
   });
 
+  it('keeps a first row whose part number cell holds other text', () => {
+    expect(parseLabelList('Spacers\tN/A\nScrews\t91290A113\nNuts\t90592A085')[0]).toEqual({
+      name: 'Spacers',
+      detail: 'N/A',
+    });
+  });
+
+  it.each(['Part number', 'Digi-Key Part #', 'SKU', 'Artikelnummer', 'Référence'])(
+    'skips a header row whose part column is named %s',
+    (header) => {
+      const rows = parseLabelList(`Description\t${header}\nScrews\t91290A113\nNuts\t90592A085`);
+      expect(rows.map((row) => row.detail)).toEqual(['91290A113', '90592A085']);
+    }
+  );
+
   it('reads a size as part of the name, not a part number', () => {
     expect(parseLabelList('Plywood 300x200')).toEqual([{ name: 'Plywood 300x200', detail: '' }]);
   });
