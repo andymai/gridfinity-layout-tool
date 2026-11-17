@@ -606,6 +606,47 @@ describe('share/[id]', () => {
           expect(revisions.get(REVISION_KEY)?.verified).toBe(false);
         });
 
+        // The CDN serves a compressed body under a weak ETag (`W/"…"`), and Blob
+        // compares an `ifMatch` strongly, so the weak form never matches.
+        describe('a body that the CDN serves under a weak ETag', () => {
+          beforeEach(() => {
+            mocks.head.mockResolvedValue({
+              url: BLOB_URL,
+              etag: '"etag-1"',
+              uploadedAt: UPLOADED_AT,
+            });
+            mocks.put.mockImplementation(
+              (_path: string, _body: string, options: { ifMatch: string }) =>
+                options.ifMatch === '"etag-1"'
+                  ? Promise.resolve({ url: 'blob://ok', etag: '"etag-2"' })
+                  : Promise.reject(new BlobPreconditionFailedError())
+            );
+          });
+
+          it('writes a layout update over the blob and verifies the counter', async () => {
+            mocks.fetch.mockResolvedValue(blobResponse(shareBlob(), 'W/"etag-1"'));
+            mocks.redisGet.mockResolvedValue(correctHash);
+            const res = await handle('PUT', {
+              body: { deleteToken: TOKEN, layout: { name: 'Updated' } },
+            });
+
+            expect(res._status).toBe(200);
+            expect(mocks.put).toHaveBeenCalledTimes(1);
+            expect(mocks.put.mock.calls[0][2]).toMatchObject({ ifMatch: '"etag-1"' });
+            expect(revisions.get(REVISION_KEY)?.verified).toBe(true);
+          });
+
+          it('writes a permission-only update over the blob', async () => {
+            mocks.fetch.mockResolvedValue(
+              blobResponse(shareBlob({ deleteTokenHash: correctHash }), 'W/"etag-1"')
+            );
+            const res = await handle('PUT', { body: { deleteToken: TOKEN, permission: 'edit' } });
+
+            expect(res._status).toBe(200);
+            expect(mocks.put.mock.calls[0][2]).toMatchObject({ ifMatch: '"etag-1"' });
+          });
+        });
+
         it('keeps writes on the body ETag while the counter is unverified', async () => {
           revisions.set(REVISION_KEY, { stamp: Date.now() + 60_000, verified: false });
           primeBlobFetch(shareBlob(), '"etag-old"');

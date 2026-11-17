@@ -296,7 +296,16 @@ export async function loadShareVersion(blobPath: string): Promise<{
   return {
     data: (await response.json()) as ShareData,
     etag: blobInfo.etag,
-    bodyEtag: response.headers.get('etag'),
+    bodyEtag: strongEtag(response.headers.get('etag')),
     uploadedAt: blobInfo.uploadedAt,
   };
+}
+
+/**
+ * The CDN marks the ETag of a body it compressed as weak (`W/"…"`), with the
+ * blob's own tag inside. Blob compares an `ifMatch` strongly, so the weak form
+ * would match no version.
+ */
+function strongEtag(etag: string | null): string | null {
+  return etag?.startsWith('W/') ? etag.slice(2) : etag;
 }
