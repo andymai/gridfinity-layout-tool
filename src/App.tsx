@@ -47,6 +47,7 @@ import {
   CollabProvider,
   WhatsNewModal,
   DesignGalleryModal,
+  LabelsDialog,
   CommunityPublishDialog,
 } from './App.lazyComponents';
 import { useRouteMeta } from '@/shared/hooks/useRouteMeta';
@@ -137,6 +138,7 @@ export default function App() {
   const { shouldShowDrawTutorial } = useOnboarding();
 
   const whatsNewOpen = useViewStore((state) => state.whatsNewOpen);
+  const labelsOpen = useViewStore((state) => state.labelsOpen);
   const contextMenu = useViewStore((state) => state.contextMenu);
   const hideContextMenu = useViewStore((state) => state.hideContextMenu);
 
@@ -517,6 +519,14 @@ export default function App() {
       {whatsNewOpen && (
         <Suspense fallback={null}>
           <WhatsNewModal />
+        </Suspense>
+      )}
+      {labelsOpen && (
+        <Suspense fallback={null}>
+          <LabelsDialog
+            open={labelsOpen}
+            onClose={() => useViewStore.getState().setLabelsOpen(false)}
+          />
         </Suspense>
       )}
       {communityPublishOpen && (

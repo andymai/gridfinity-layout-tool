@@ -752,6 +752,7 @@ const en: Record<string, string> = {
   // Print / Export
   'print.title': 'Print layout',
   'print.printNow': 'Print now',
+  'print.makeLabels': 'Labels for a label maker',
   'print.options': 'Options',
   'print.binDisplay': 'Bin display',
   'print.showCategoryColor': 'Category color',
@@ -5288,6 +5289,7 @@ const en: Record<string, string> = {
   // Export commands
   'commandPalette.exportLayout3D': 'Export layout as ZIP (3D)',
   'commandPalette.downloadLayout': 'Download layout',
+  'commandPalette.makeLabels': 'Make labels for a label maker',
   'commandPalette.copyShareLink': 'Copy share link',
 
   // Selection commands
@@ -6690,6 +6692,42 @@ const en: Record<string, string> = {
     'Upload to {host} timed out. It may still have reached the receiver.',
   'exportDestination.fail.redirect':
     'Upload to {host} was redirected. Use the final address in Settings.',
+
+  // Labels for label makers
+  'labels.title': 'Labels',
+  'labels.printer': 'Label printer',
+  'labels.printer.brother-pt': 'Brother P-touch',
+  'labels.printer.dymo-d1': 'DYMO LabelManager',
+  'labels.printer.niimbot-d': 'Niimbot D11 / D110',
+  'labels.printer.phomemo-d30': 'Phomemo D30',
+  'labels.media': 'Label size',
+  'labels.media.tape': '{width} mm tape',
+  'labels.media.dieCut': '{width} × {length} mm label',
+  'labels.length': 'Length',
+  'labels.length.fit': 'Fit text',
+  'labels.length.hint': '1U, 2U and 3U make the label as long as a bin that many units wide.',
+  'labels.howTo':
+    'Each label downloads as a PNG with one pixel for each print dot. Open it as an image in the app for your printer.',
+  'labels.paste': 'Add labels',
+  'labels.paste.placeholder':
+    'One label on each line. You can paste rows from a spreadsheet or an order page: part numbers go on a second line.',
+  'labels.paste.add': 'Add to list',
+  'labels.paste.full': 'The list holds up to {max} labels. Remove some, then add these again.',
+  'labels.row.name': 'Label text',
+  'labels.row.detail': 'Second line',
+  'labels.row.detailPlaceholder': 'Part number or size',
+  'labels.row.copies': 'Copies',
+  'labels.row.remove': 'Remove label',
+  'labels.row.preview': 'Preview of the label {name}',
+  'labels.row.tooLong': 'Too long for this label. Make the text shorter or choose a longer label.',
+  'labels.empty': 'No labels yet. Type or paste a list above.',
+  'labels.loadingFonts': 'Loading fonts…',
+  'labels.tooLongCount': 'Too long to print: {count}',
+  'labels.clear': 'Clear list',
+  'labels.clearConfirm': 'Remove every label from the list?',
+  'labels.download': 'Download PNG',
+  'labels.downloadZip': 'Download ZIP',
+  'labels.downloadFailed': 'The labels could not be made. Try again.',
 };
 
 export default en;

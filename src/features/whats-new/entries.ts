@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'labels-for-label-makers',
+    date: '2026-11-17',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Labels for your label maker' },
+    body: {
+      en: 'Make labels for a Brother P-touch, DYMO, Niimbot or Phomemo printer. Type a list, or paste rows from a spreadsheet or a parts order, and part numbers go on a second line. Each label downloads as an image sized for your printer, in the same type as your printed labels. Find it in Print > Labels for a label maker, or in the command palette (Ctrl/Cmd+K, then type labels).',
+    },
+    action: { kind: 'openModal', modal: 'labels' },
+  },
+  {
     id: 'out-of-labs-workshop-slant-gaps',
     date: '2026-11-06',
     kind: 'improved',

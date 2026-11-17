@@ -12,10 +12,11 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadFont } from 'brepjs';
 import { isErr } from '@/core/result';
+import type { TextFontFamily } from '@/shared/types/bin';
 
 const FONT_DIR = resolve(import.meta.dirname, '..', 'shared', 'fonts', 'assets');
 
-const FILES: Record<string, string> = {
+export const TEXT_FONT_FILES: Record<TextFontFamily, string> = {
   atkinson: 'AtkinsonHyperlegible-Regular.ttf',
   'atkinson-bold': 'AtkinsonHyperlegible-Bold.ttf',
   'jetbrains-mono': 'JetBrainsMono-Regular.ttf',
@@ -32,7 +33,7 @@ export async function loadTestFonts(
   families: readonly string[] = DEFAULT_TEST_FONTS
 ): Promise<void> {
   for (const family of families) {
-    const file = FILES[family];
+    const file = (TEXT_FONT_FILES as Record<string, string | undefined>)[family];
     if (!file) throw new Error(`No bundled file for font family "${family}"`);
     const buffer = readFileSync(resolve(FONT_DIR, file));
     const result = await loadFont(
