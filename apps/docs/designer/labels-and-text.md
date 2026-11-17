@@ -20,7 +20,7 @@ A label tells you what's in a bin before you open the drawer. You can print text
 
 ## Add label tabs
 
-A **label tab** is a small ledge along the top of a compartment wall. Print a caption on it, stick a paper label on it, or give it a [swappable label plate](./label-plates).
+A **label tab** is a small ledge along the top of a compartment wall. Print a caption on it, stick a paper label on it from a [label maker](../printing/label-maker), or give it a [swappable label plate](./label-plates).
 
 1. In the bin designer, open the <Ui k="binDesigner.group.interior" /> group and turn on <Ui k="binDesigner.labelTabs" />.
 2. Under <Ui k="binDesigner.tabMode" />, keep <Ui k="binDesigner.tabMode.text" />.

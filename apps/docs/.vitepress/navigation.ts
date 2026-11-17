@@ -111,6 +111,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
     items: [
       { text: 'File formats', link: '/printing/file-formats' },
       { text: 'The print list and ZIP export', link: '/printing/print-list-and-zip' },
+      { text: 'Labels for a label maker', link: '/printing/label-maker' },
       { text: 'Slicer setup', link: '/printing/slicers' },
       { text: 'Fit and tolerances', link: '/printing/fit-and-tolerances' },
       { text: 'Filament and time estimates', link: '/printing/estimates' },
