@@ -1,0 +1,166 @@
+src/App.lazyComponents.ts
+  s_0af55ea98fd445::t_1be451552b5122 66-68
+src/features/labels/store/labelListStore.test.ts
+  s_0af55ea98fd445::t_3a189ee307c1f7 1-80
+src/i18n/locales/ja.json
+  s_0af55ea98fd445::t_914f385c4b765c 5366-5400
+src/features/labels/utils/labelPng.test.ts
+  s_0af55ea98fd445::t_557a6b07cef860 1-71
+  s_0af55ea98fd445::t_5f77b7e6ebc262 72-74
+src/features/labels/components/index.ts
+  s_0af55ea98fd445::t_06320a361587e5 1
+src/features/command-palette/commands.ts
+  s_0af55ea98fd445::t_49fc07b81cc85d 351-353,355
+  s_0af55ea98fd445::t_c6e4781d79b790 354
+  s_0af55ea98fd445::t_b19c9ab7fa077b 350
+src/features/labels/components/LabelPrinterSettings/index.ts
+  s_0af55ea98fd445::t_e4d4c9f1ca7c78 1
+src/i18n/locales/en.ts
+  s_0af55ea98fd445::t_eb149df6a9fe1c 755,5292,6695-6730
+src/features/print-export/components/PrintModal/PrintModal.tsx
+  s_0af55ea98fd445::t_49fc07b81cc85d 5,180-184,455-464
+src/i18n/locales/de.json
+  s_0af55ea98fd445::t_914f385c4b765c 5505-5539
+src/features/whats-new/types.ts
+  s_0af55ea98fd445::t_1be451552b5122 21
+src/features/labels/components/LabelPrinterSettings/LabelPrinterSettings.tsx
+  s_0af55ea98fd445::t_72b55347033792 1-94
+src/i18n/locales/pt-BR.json
+  s_0af55ea98fd445::t_914f385c4b765c 5505-5539
+src/i18n/locales/ka.json
+  s_0af55ea98fd445::t_5c481b9ca843c3 5505-5539
+src/features/labels/utils/labelMedia.test.ts
+  s_0af55ea98fd445::t_58242925a44ebb 19-20
+  s_0af55ea98fd445::t_0bdbb5c539fdda 1-18,21-63
+src/features/labels/components/LabelsDialog/LabelsDialog.test.tsx
+  s_0af55ea98fd445::t_c23d47cb67b48e 87-90
+  s_0af55ea98fd445::t_3d43502ecd0d7b 83,103
+  s_0af55ea98fd445::t_53d401da1f8fe7 1-82,84-86,91-102,104-108
+src/features/command-palette/components/CommandPalette/commandPaletteActionHandlers.ts
+  s_0af55ea98fd445::t_032b289fbbd806 106,119,537
+  s_0af55ea98fd445::t_49fc07b81cc85d 487
+src/features/labels/components/LabelListEditor/index.ts
+  s_0af55ea98fd445::t_54feacd7690a51 1
+src/features/labels/utils/planLabel.ts
+  s_0af55ea98fd445::t_1c03749cee3618 1-46,49,51-79,125-135,137,155-168,170-176,178-184,186-200,202-209,211-215
+  s_0af55ea98fd445::t_2c79bc64c9b2bb 47-48,50,136,169,177,185,201,210
+  s_0af55ea98fd445::t_50852df8afca41 80-121,123-124
+  s_0af55ea98fd445::t_8fa21619926330 122
+  s_0af55ea98fd445::t_ed2dac3ac86a0b 138-154
+src/features/labels/components/LabelPreview/LabelPreview.tsx
+  s_0af55ea98fd445::t_2c79bc64c9b2bb 32,34
+  s_0af55ea98fd445::t_c6e4781d79b790 20
+  s_0af55ea98fd445::t_8215d17d9867d0 1-19,21-31,33,35-43
+src/i18n/locales/zh-CN.json
+  s_0af55ea98fd445::t_914f385c4b765c 5366-5400
+src/i18n/locales/sv.json
+  s_0af55ea98fd445::t_914f385c4b765c 5505-5539
+src/i18n/locales/it.json
+  s_0af55ea98fd445::t_914f385c4b765c 5505-5539
+src/i18n/locales/nl.json
+  s_0af55ea98fd445::t_914f385c4b765c 5505-5539
+src/features/labels/utils/partNumbers.ts
+  s_0af55ea98fd445::t_d57638f9851904 1-46
+src/features/labels/utils/labelMedia.ts
+  s_0af55ea98fd445::t_72adb85307518f 1-131
+src/features/labels/utils/parseLabelList.test.ts
+  s_0af55ea98fd445::t_380407d3833134 50-53
+  s_0af55ea98fd445::t_14c0367b13f716 1-49,54-63
+src/features/whats-new/entries.ts
+  s_0af55ea98fd445::t_5977a0bbf3783a 17-26
+  s_0af55ea98fd445::t_1f1fd9e8673471 16
+src/features/labels/components/LabelPrinterSettings/LabelPrinterSettings.test.tsx
+  s_0af55ea98fd445::t_4b652b1ab0f273 1-39
+src/i18n/locales/pl.json
+  s_0af55ea98fd445::t_914f385c4b765c 5783-5817
+src/features/whats-new/latest.ts
+  s_0af55ea98fd445::t_5977a0bbf3783a 9
+src/features/labels/utils/parseLabelList.ts
+  s_0af55ea98fd445::t_922d765d724a5f 25
+  s_0af55ea98fd445::t_92586c2d6a4b1a 1-24,26-66,75-76,78-99
+  s_0af55ea98fd445::t_11358734c869c2 67-74,77
+src/features/labels/components/LabelPreview/index.ts
+  s_0af55ea98fd445::t_cb6dab31ed1d29 1
+src/i18n/locales/cs.json
+  s_0af55ea98fd445::t_914f385c4b765c 5646-5680
+src/shell/Modals/WhatsNewModal/whatsNewShared.ts
+  s_0af55ea98fd445::t_1be451552b5122 54,91-93,115
+src/core/store/view.ts
+  s_0af55ea98fd445::t_62496b7cc2fbdf 50,91
+  s_0af55ea98fd445::t_f3054516304698 120,189
+src/features/labels/utils/planLabel.test.ts
+  s_0af55ea98fd445::t_5f659a8498431a 1,4-15,17-84,90-95,101-103,105-106
+  s_0af55ea98fd445::t_9ec86880c0c31d 2-3,16,85-89,96-100,104
+src/features/labels/hooks/useLabelPlans.ts
+  s_0af55ea98fd445::t_688e609c8ee08b 1-44
+src/features/labels/store/labelListStore.ts
+  s_0af55ea98fd445::t_99a43b5b9a3b6d 1-137
+src/features/labels/utils/labelFiles.test.ts
+  s_0af55ea98fd445::t_6fa5ce0d33b60a 1-20,26-41
+  s_0af55ea98fd445::t_e795ee90a964c9 21-25
+src/features/labels/utils/downloadLabels.ts
+  s_0af55ea98fd445::t_0808bfe10a99b5 1-39
+  s_0af55ea98fd445::t_f43c847cffb8aa 40-42
+src/features/labels/components/LabelListEditor/LabelListEditor.tsx
+  s_0af55ea98fd445::t_b2f544bdc2f9dd 1-35,44-148
+  s_0af55ea98fd445::t_02b88306579001 36-43
+src/App.tsx
+  s_0af55ea98fd445::t_1be451552b5122 50,141,524-529
+  s_0af55ea98fd445::t_8d1ffd11b06ade 530-531
+src/features/labels/utils/partNumbers.test.ts
+  s_0af55ea98fd445::t_e3869a7795cb0a 1-32
+src/features/labels/utils/labelPng.ts
+  s_0af55ea98fd445::t_63954f9cb669f0 1-130
+src/i18n/locales/ko.json
+  s_0af55ea98fd445::t_914f385c4b765c 5366-5400
+src/features/labels/components/LabelsDialog/index.ts
+  s_0af55ea98fd445::t_7491ba2d16b382 1
+scripts/i18n-values-allowlist.json
+  s_0af55ea98fd445::t_a601828bd6723b 350-353
+  s_0af55ea98fd445::t_5c481b9ca843c3 354-355
+src/features/labels/index.ts
+  s_0af55ea98fd445::t_06320a361587e5 1
+src/features/labels/components/LabelPreview/LabelPreview.test.tsx
+  s_0af55ea98fd445::t_3d36a1e0f623db 1-36
+src/features/labels/components/LabelListEditor/LabelListEditor.test.tsx
+  s_0af55ea98fd445::t_99410ba26f29b3 1-93
+  s_0af55ea98fd445::t_14d3895519bfcb 94-95
+src/i18n/locales/es.json
+  s_0af55ea98fd445::t_914f385c4b765c 5505-5539
+src/test/testTypeMeasurer.ts
+  s_0af55ea98fd445::t_0b2088787f5deb 1-29
+src/test/loadTestFonts.ts
+  s_0af55ea98fd445::t_9ec86880c0c31d 15,19,36
+src/i18n/locales/uk.json
+  s_0af55ea98fd445::t_914f385c4b765c 5783-5817
+src/i18n/locales/fr.json
+  s_0af55ea98fd445::t_914f385c4b765c 5505-5539
+src/features/labels/README.md
+  s_0af55ea98fd445::t_fa8e39c4b8b1df 1-17
+src/features/labels/components/LabelsDialog/LabelsDialog.tsx
+  s_0af55ea98fd445::t_4c81c433a9cf29 1-51,53-103
+  s_0af55ea98fd445::t_a8048b32ce5012 52
+src/features/labels/utils/labelFiles.ts
+  s_0af55ea98fd445::t_02bfc7961954b8 1-5,7,9-10,16-39
+  s_0af55ea98fd445::t_6801c983e3cba3 6,8,11-15
+src/i18n/locales/nb.json
+  s_0af55ea98fd445::t_914f385c4b765c 5505-5539
+scripts/doc-budget.json
+  s_0af55ea98fd445::t_d33432fb70b136 3-7,68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9d9d621ad4c3d6b5027caa3c08713d5e8fb86d35",
+  "prompts": {},
+  "sessions": {
+    "s_0af55ea98fd445": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b0aef1d-72f1-4eb1-af22-d6135a699f5e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
