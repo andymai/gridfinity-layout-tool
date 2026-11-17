@@ -80,29 +80,46 @@ describe('release-window.sh GitHub lookup', () => {
     if (dir) rmSync(dir, { recursive: true, force: true });
   });
 
-  it('reads every page since UTC midnight, so a busy day cannot hide a release', () => {
+  function lookup(nowIso: string, releases: string[]): { out: string; args: string } {
     dir = mkdtempSync(join(tmpdir(), 'release-window-'));
     const argsFile = join(dir, 'args');
-    const releases = [at('2026-11-17T00:23:00Z'), at('2026-11-17T05:23:00Z')].join(' ');
+    const epochs = releases.map((iso) => String(at(iso))).join(' ');
     writeFileSync(
       join(dir, 'gh'),
-      `#!/usr/bin/env bash\necho "$@" > "${argsFile}"\nprintf '%s\\n' ${releases}\n`
+      `#!/usr/bin/env bash\necho "$@" > "${argsFile}"\nprintf '%s\\n' ${epochs}\n`
     );
     chmodSync(join(dir, 'gh'), 0o755);
 
     const out = execFileSync('bash', [SCRIPT], {
       env: {
         PATH: `${dir}:${process.env.PATH ?? ''}`,
-        NOW: String(at('2026-11-17T23:23:00Z')),
+        NOW: String(at(nowIso)),
         GITHUB_REPOSITORY: 'owner/repo',
       },
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
     }).trim();
+    return { out, args: readFileSync(argsFile, 'utf8') };
+  }
+
+  it.each([
+    [
+      'UTC midnight, when the window starts later that day',
+      '2026-11-17T23:23:00Z',
+      ['2026-11-17T00:23:00Z', '2026-11-17T05:23:00Z'],
+      '2026-11-17T00:00:00Z',
+    ],
+    [
+      'the window start, when the window began the day before',
+      '2026-11-18T00:23:00Z',
+      ['2026-11-17T23:30:00Z'],
+      '2026-11-17T23:00:00Z',
+    ],
+  ])('reads every page since %s, and holds', (_label, now, releases, since) => {
+    const { out, args } = lookup(now, releases);
 
     expect(out).toBe('go=false');
-    const args = readFileSync(argsFile, 'utf8');
     expect(args).toContain('--paginate');
-    expect(args).toContain('since=2026-11-17T00:00:00Z');
+    expect(args).toContain(`since=${since}`);
   });
 });
