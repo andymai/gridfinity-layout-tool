@@ -7,7 +7,6 @@ import { LabelListEditor } from '../LabelListEditor';
 import { LabelPrinterSettings } from '../LabelPrinterSettings';
 import { LabelsFooter } from '../LabelsFooter';
 
-/** The label maker at /labels, for people who want labels without a layout. */
 export function LabelsPage() {
   const t = useTranslation();
   const { isMobile } = useResponsive();

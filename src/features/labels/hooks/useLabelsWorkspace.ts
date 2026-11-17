@@ -10,14 +10,12 @@ import type { LabelPlans } from './useLabelPlans';
 
 export interface LabelsWorkspace extends LabelPlans {
   readonly hasEntries: boolean;
-  /** Labels the download leaves out, with a reason on their row. */
   readonly skipped: number;
   readonly printable: number;
   readonly busy: boolean;
   readonly download: () => Promise<void>;
 }
 
-/** What the dialog and the /labels page share: plans, counts and the download. */
 export function useLabelsWorkspace(): LabelsWorkspace {
   const t = useTranslation();
   const entries = useLabelListStore((state) => state.entries);
