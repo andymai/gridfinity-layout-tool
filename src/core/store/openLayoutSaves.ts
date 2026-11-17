@@ -21,6 +21,8 @@ interface PulledCopy {
   readonly modifiedAt: number;
   /** The `readAt` of the last read before the pull landed. */
   readonly afterRead: number;
+  /** The open layout that the pull put in the store, while storage still holds it. */
+  readonly layout: Layout | null;
 }
 
 let reads = 0;
@@ -43,11 +45,30 @@ export function noteOpenLayoutSaved(read: OpenLayoutRead): void {
   if ((newestSavedRead.get(read.id) ?? 0) < read.readAt) {
     newestSavedRead.set(read.id, read.readAt);
   }
+  // Storage now holds this copy, so an undo back to the pulled one must save.
+  const pull = newestPull.get(read.id);
+  if (pull?.layout && pull.layout !== read.layout) {
+    newestPull.set(read.id, { ...pull, layout: null });
+  }
 }
 
-/** Records a copy that sync pulled into storage, with its `modifiedAt`. */
-export function notePulledCopy(id: string, modifiedAt: number): void {
-  newestPull.set(id, { modifiedAt, afterRead: reads });
+/**
+ * Records a copy that sync pulled into storage, with its `modifiedAt`, and the
+ * open layout that the pull put in the store when that layout is open.
+ */
+export function notePulledCopy(id: string, modifiedAt: number, layout: Layout | null = null): void {
+  newestPull.set(id, { modifiedAt, afterRead: reads, layout });
+}
+
+/**
+ * Whether `read` is the unedited copy that sync pulled into storage. A save of
+ * it would stamp this device's clock over the pulled `modifiedAt` and send the
+ * same layout back to the cloud.
+ */
+export function isPulledCopy(read: OpenLayoutRead): boolean {
+  if (read.id === null) return false;
+  const pulled = newestPull.get(read.id)?.layout;
+  return pulled !== undefined && pulled !== null && pulled === read.layout;
 }
 
 /**
