@@ -1,0 +1,35 @@
+scripts/vendor-label-fonts.test.ts
+  s_263c726ee027bb::t_2e77a33857294d 4,60-63
+  s_263c726ee027bb::t_cb091b9dbe7a31 1-3,5-59,64-72
+scripts/vendor-label-fonts.ts
+  s_263c726ee027bb::t_5a6e66481ea052 1-19,21-65,72-117
+  s_263c726ee027bb::t_c398dad146e37e 66-71
+  s_489e8e320eebde::t_32e9722c530711 20
+src/shared/webgl/labelFontData.ts
+  s_263c726ee027bb::t_ae1ee0a6834e07 1,5-6
+  s_263c726ee027bb::t_be1c4dbbd9c437 2-4,7-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c592853a504d76a2be648015868558350981c1a0",
+  "prompts": {},
+  "sessions": {
+    "s_263c726ee027bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7c462398-e953-49f2-915c-b2433c55cc91",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_489e8e320eebde": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1a2a9261-2019-4199-aa4f-06130071c8f0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
