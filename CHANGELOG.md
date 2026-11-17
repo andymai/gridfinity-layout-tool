@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.544.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.544.1...gridfinity-layout-tool-v4.544.2) (2026-11-17)
+
+
+### Bug Fixes
+
+* **bin-designer:** replace values in post-write syncs instead of writing into them ([#5075](https://github.com/andymai/gridfinity-layout-tool/issues/5075)) ([8a7c210](https://github.com/andymai/gridfinity-layout-tool/commit/8a7c210a3efd9c1af83836feb5a901a753a17fef))
+* **three-preview:** serve 3D label fonts from our own copy ([#5076](https://github.com/andymai/gridfinity-layout-tool/issues/5076)) ([91d598b](https://github.com/andymai/gridfinity-layout-tool/commit/91d598ba5f0e2626ae808435b71e6ba64e410235))
+
 ## [4.544.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.544.0...gridfinity-layout-tool-v4.544.1) (2026-11-16)
 
 
