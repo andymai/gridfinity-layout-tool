@@ -28,6 +28,12 @@ vi.mock('@/shared/hooks/useBaseplateRouting', () => ({
 
 let mockIsCommunityRoute = false;
 
+let mockIsLabelsRoute = false;
+
+vi.mock('@/shared/hooks/useLabelsRouting', () => ({
+  useLabelsRouting: () => ({ isLabelsRoute: mockIsLabelsRoute }),
+}));
+
 vi.mock('@/shared/hooks/useCommunityRouting', () => ({
   useCommunityRouting: () => ({ isCommunityRoute: mockIsCommunityRoute }),
 }));
@@ -46,6 +52,7 @@ describe('ToolSwitcher', () => {
     mockIsDesignerRoute = false;
     mockIsBaseplateRoute = false;
     mockIsCommunityRoute = false;
+    mockIsLabelsRoute = false;
     resetIntentPrefetchForTests();
   });
 
@@ -210,6 +217,14 @@ describe('ToolSwitcher', () => {
 
       expect(mockNavigateToPlanner).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it('marks nothing active on the labels page', () => {
+    mockIsLabelsRoute = true;
+    render(<ToolSwitcher />);
+    for (const tab of screen.getAllByRole('tab')) {
+      expect(tab).toHaveAttribute('aria-selected', 'false');
+    }
   });
 
   // Both editors are lazy chunks plus a geometry kernel, so the fetch has to

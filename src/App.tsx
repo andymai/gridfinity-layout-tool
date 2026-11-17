@@ -48,9 +48,10 @@ import {
   WhatsNewModal,
   DesignGalleryModal,
   LabelsDialog,
+  LabelsPage,
   CommunityPublishDialog,
 } from './App.lazyComponents';
-import { useRouteMeta } from '@/shared/hooks/useRouteMeta';
+import { routeTitleKey, useRouteMeta } from '@/shared/hooks/useRouteMeta';
 import { useAppWindowEvents } from '@/shared/hooks/useAppWindowEvents';
 import { Sidebar } from '@/shell/Sidebar';
 import { Header } from '@/shell/Header';
@@ -77,6 +78,7 @@ import { useThemeEffect } from '@/shared/hooks/useThemeEffect';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useSupportersRouting } from '@/shared/hooks/useSupportersRouting';
+import { useLabelsRouting } from '@/shared/hooks/useLabelsRouting';
 import { useCommunityRouting } from '@/shared/hooks/useCommunityRouting';
 import {
   clearLocalPublishedId,
@@ -104,6 +106,7 @@ export default function App() {
   const { isBaseplateRoute } = useBaseplateRouting();
   const { isSupportersRoute, navigateToSupporters } = useSupportersRouting();
   const { isCommunityRoute, communityDesignIdFromUrl } = useCommunityRouting();
+  const { isLabelsRoute } = useLabelsRouting();
   // Dev-only thumbnail capture route. Suppresses layout/designer routing so
   // those hooks don't rewrite the URL and strip the query params we depend on.
   const isDevThumbnailRoute =
@@ -116,6 +119,7 @@ export default function App() {
     isBaseplateRoute ||
     isSupportersRoute ||
     isCommunityRoute ||
+    isLabelsRoute ||
     isDevThumbnailRoute;
   const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } = useCommandPalette({
     disabled: isNonLayoutRoute,
@@ -126,13 +130,14 @@ export default function App() {
   const placesFindResults = usePlacesFindResults(!isNonLayoutRoute);
   const [commandPaletteInitialQuery, setCommandPaletteInitialQuery] = useState('');
 
-  useRouteMeta({
+  const routeFlags = {
     isDesignerRoute,
     isBaseplateRoute,
     isSupportersRoute,
     isCommunityRoute,
-    communityDesignIdFromUrl,
-  });
+    isLabelsRoute,
+  };
+  useRouteMeta({ ...routeFlags, communityDesignIdFromUrl });
   const { isMobile, isTablet } = useResponsive();
 
   const { shouldShowDrawTutorial } = useOnboarding();
@@ -286,26 +291,19 @@ export default function App() {
       );
     }
 
-    if (isDesignerRoute) {
+    const page = isDesignerRoute
+      ? { Page: DesignerPage, loading: t('loading.designer') }
+      : isBaseplateRoute
+        ? { Page: BaseplatePage, loading: t('loading.baseplate') }
+        : isLabelsRoute
+          ? { Page: LabelsPage, loading: t('loading.labels') }
+          : isSupportersRoute
+            ? { Page: SupportersPage, loading: t('loading.supporters') }
+            : null;
+    if (page) {
       return (
-        <Suspense fallback={<LoadingFallback label={t('loading.designer')} />}>
-          <DesignerPage />
-        </Suspense>
-      );
-    }
-
-    if (isBaseplateRoute) {
-      return (
-        <Suspense fallback={<LoadingFallback label={t('loading.baseplate')} />}>
-          <BaseplatePage />
-        </Suspense>
-      );
-    }
-
-    if (isSupportersRoute) {
-      return (
-        <Suspense fallback={<LoadingFallback label={t('loading.supporters')} />}>
-          <SupportersPage />
+        <Suspense fallback={<LoadingFallback label={page.loading} />}>
+          <page.Page />
         </Suspense>
       );
     }
@@ -485,20 +483,9 @@ export default function App() {
       {/* Visually hidden H1 so JS-rendered DOM has a top-level heading for
           crawlers and screen readers. The visible app shell doesn't carry an H1;
           the noscript fallback's H1 only renders when JS is disabled. The
-          heading must mirror the route-aware title set above so Googlebot
-          sees consistent <title> + <h1> signals and screen readers announce
-          the correct page on /designer and /baseplate. */}
-      <h1 className="sr-only">
-        {isDesignerRoute
-          ? t('seo.designer.title')
-          : isBaseplateRoute
-            ? t('seo.baseplate.title')
-            : isSupportersRoute
-              ? t('seo.supporters.title')
-              : isCommunityRoute
-                ? t('seo.community.title')
-                : t('seo.h1')}
-      </h1>
+          heading shares the route-aware title so Googlebot sees consistent
+          <title> + <h1> signals and screen readers announce the right page. */}
+      <h1 className="sr-only">{t(routeTitleKey(routeFlags) ?? 'seo.h1')}</h1>
       <DesignStoreRegistration />
       <LinkedRiseRegistration />
       <BackgroundMountBoundary mountName="SyncSessionMount">

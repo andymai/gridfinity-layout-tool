@@ -6,6 +6,7 @@ export interface RouteMetaFlags {
   readonly isBaseplateRoute: boolean;
   readonly isSupportersRoute: boolean;
   readonly isCommunityRoute: boolean;
+  readonly isLabelsRoute: boolean;
   readonly communityDesignIdFromUrl: string | null;
 }
 
@@ -18,6 +19,18 @@ export interface RouteMetaFlags {
  * (/community/d/<id>), where the document's per-design meta is authoritative and
  * left untouched. Re-applies when the locale flips mid-session (depends on `t`).
  */
+/** A page route's title, which App also renders as the page's h1; null in the layout editor. */
+export function routeTitleKey(
+  flags: Omit<RouteMetaFlags, 'communityDesignIdFromUrl'>
+): string | null {
+  if (flags.isDesignerRoute) return 'seo.designer.title';
+  if (flags.isBaseplateRoute) return 'seo.baseplate.title';
+  if (flags.isSupportersRoute) return 'seo.supporters.title';
+  if (flags.isCommunityRoute) return 'seo.community.title';
+  if (flags.isLabelsRoute) return 'seo.labels.title';
+  return null;
+}
+
 export function useRouteMeta(flags: RouteMetaFlags): void {
   const t = useTranslation();
   const {
@@ -25,6 +38,7 @@ export function useRouteMeta(flags: RouteMetaFlags): void {
     isBaseplateRoute,
     isSupportersRoute,
     isCommunityRoute,
+    isLabelsRoute,
     communityDesignIdFromUrl,
   } = flags;
   useEffect(() => {
@@ -34,15 +48,14 @@ export function useRouteMeta(flags: RouteMetaFlags): void {
     // what Google indexes, so the route could not be indexed at all. The server
     // value is authoritative here; leave it alone.
     if (communityDesignIdFromUrl !== null) return;
-    const titleKey = isDesignerRoute
-      ? 'seo.designer.title'
-      : isBaseplateRoute
-        ? 'seo.baseplate.title'
-        : isSupportersRoute
-          ? 'seo.supporters.title'
-          : isCommunityRoute
-            ? 'seo.community.title'
-            : 'seo.title';
+    const titleKey =
+      routeTitleKey({
+        isDesignerRoute,
+        isBaseplateRoute,
+        isSupportersRoute,
+        isCommunityRoute,
+        isLabelsRoute,
+      }) ?? 'seo.title';
     const descKey = isDesignerRoute
       ? 'seo.designer.description'
       : isBaseplateRoute
@@ -51,7 +64,9 @@ export function useRouteMeta(flags: RouteMetaFlags): void {
           ? 'seo.supporters.description'
           : isCommunityRoute
             ? 'seo.community.description'
-            : 'seo.description';
+            : isLabelsRoute
+              ? 'seo.labels.description'
+              : 'seo.description';
     const title = t(titleKey);
     const desc = t(descKey);
     document.title = title;
@@ -65,6 +80,7 @@ export function useRouteMeta(flags: RouteMetaFlags): void {
     isBaseplateRoute,
     isSupportersRoute,
     isCommunityRoute,
+    isLabelsRoute,
     communityDesignIdFromUrl,
     t,
   ]);

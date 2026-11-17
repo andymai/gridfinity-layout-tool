@@ -5540,5 +5540,9 @@
   "labels.row.empty": "Geben Sie einen Text für dieses Etikett ein.",
   "labels.row.unsupportedText": "Die Etikettenschrift hat für einen Teil dieses Textes keine Zeichen. Verwenden Sie lateinische Buchstaben und Ziffern.",
   "labels.fontsFailed": "Die Etikettenschriften konnten nicht geladen werden. Prüfen Sie Ihre Verbindung.",
-  "labels.skippedCount": "Nicht im Download: {count}"
+  "labels.skippedCount": "Nicht im Download: {count}",
+  "seo.labels.title": "Etiketten für Etikettendrucker | Gridfinity Layout Tool",
+  "seo.labels.description": "Erstellen Sie Etiketten für einen Brother P-touch, DYMO, Niimbot oder Phomemo aus einer getippten oder eingefügten Liste. Kostenlos, ohne Konto.",
+  "loading.labels": "Etiketten werden geladen",
+  "labels.page.intro": "Tippen oder fügen Sie eine Liste ein, wählen Sie Ihren Etikettendrucker und laden Sie ein Bild pro Etikett herunter."
 }

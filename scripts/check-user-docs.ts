@@ -16,7 +16,14 @@ import { appTools, nav, sidebar } from '../apps/docs/.vitepress/navigation';
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DOCS_DIR = 'apps/docs';
 const APP_ORIGIN = 'https://gridfinitylayouttool.com';
-const APP_ROUTES = new Set(['/', '/designer', '/baseplate', '/community', '/supporters']);
+const APP_ROUTES = new Set([
+  '/',
+  '/designer',
+  '/baseplate',
+  '/community',
+  '/supporters',
+  '/labels',
+]);
 const LOCALES: ReadonlySet<string> = new Set(CONTENT_LOCALES);
 const SCREENSHOT_TAG = /<Screenshot\s[^>]*\bid="([^"]+)"/g;
 const APP_LINK = /https:\/\/gridfinitylayouttool\.com(\/[^\s)"'#?]*)?/g;

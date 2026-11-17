@@ -4,6 +4,7 @@ description: 'Make labels for a Brother P-touch, DYMO, Niimbot or Phomemo label 
 sources:
   - src/features/labels/
   - src/features/print-export/components/PrintModal/PrintModal.tsx
+  - src/shared/hooks/useLabelsRouting.ts
 ---
 
 # Labels for a label maker
@@ -12,7 +13,7 @@ The Labels dialog turns a list into one image for each label, sized for your lab
 
 ## Make labels
 
-1. In the header, click <Ui k="header.print" />, then <Ui k="print.makeLabels" />. Or press <kbd>Ctrl</kbd>+<kbd>K</kbd> and type label.
+1. Open [the label maker](https://gridfinitylayouttool.com/labels). It needs no layout. In the layout editor, you can also click <Ui k="header.print" />, then <Ui k="print.makeLabels" />, or press <kbd>Ctrl</kbd>+<kbd>K</kbd> and type label.
 2. Pick your printer under <Ui k="labels.printer" />, and the tape or labels it holds under <Ui k="labels.media" />.
 3. Type or paste your list in <Ui k="labels.paste" />, one label on each line, and click <Ui k="labels.paste.add" />.
 4. Edit a label in its row. The preview shows it as it prints.

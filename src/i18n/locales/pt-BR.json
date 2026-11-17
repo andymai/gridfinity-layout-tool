@@ -5540,5 +5540,9 @@
   "labels.row.empty": "Adicione um texto a esta etiqueta.",
   "labels.row.unsupportedText": "A fonte da etiqueta não tem letras para parte deste texto. Use letras latinas e números.",
   "labels.fontsFailed": "Não foi possível carregar as fontes das etiquetas. Verifique sua conexão.",
-  "labels.skippedCount": "Fora do download: {count}"
+  "labels.skippedCount": "Fora do download: {count}",
+  "seo.labels.title": "Etiquetas para rotuladora | Gridfinity Layout Tool",
+  "seo.labels.description": "Crie etiquetas para uma rotuladora Brother P-touch, DYMO, Niimbot ou Phomemo a partir de uma lista digitada ou colada. Grátis, sem conta.",
+  "loading.labels": "Carregando etiquetas",
+  "labels.page.intro": "Digite ou cole uma lista, escolha sua rotuladora e baixe uma imagem para cada etiqueta."
 }

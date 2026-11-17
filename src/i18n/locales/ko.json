@@ -5401,5 +5401,9 @@
   "labels.row.empty": "이 라벨에 텍스트를 입력하세요.",
   "labels.row.unsupportedText": "라벨 글꼴에 이 텍스트 일부의 글자가 없습니다. 라틴 문자와 숫자를 사용하세요.",
   "labels.fontsFailed": "라벨 글꼴을 불러올 수 없습니다. 연결을 확인하세요.",
-  "labels.skippedCount": "다운로드에서 제외됨: {count}"
+  "labels.skippedCount": "다운로드에서 제외됨: {count}",
+  "seo.labels.title": "라벨 프린터용 라벨 | Gridfinity Layout Tool",
+  "seo.labels.description": "입력하거나 붙여 넣은 목록으로 Brother P-touch, DYMO, Niimbot, Phomemo 라벨 프린터용 라벨을 만드세요. 무료, 계정 불필요.",
+  "loading.labels": "라벨 불러오는 중",
+  "labels.page.intro": "목록을 입력하거나 붙여 넣고, 라벨 프린터를 고른 뒤, 라벨마다 이미지 한 장을 다운로드하세요."
 }
