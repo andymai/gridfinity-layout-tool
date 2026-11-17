@@ -14,7 +14,7 @@
 import { useTranslation } from '@/i18n';
 import { planTypeBlock, planToPathData, resolveEffectiveFont } from '@/shared/utils/typePlan';
 import type { TextStyleDefaults } from '@/shared/types/bin';
-import { useTypeMeasurer } from '@/features/bin-designer/hooks/useTypeMeasurer';
+import { useTypeMeasurer } from '@/shared/hooks/useTypeMeasurer';
 
 /** Nominal host the specimen is planned against: a wall band's proportions. */
 const SPECIMEN_W_MM = 64;

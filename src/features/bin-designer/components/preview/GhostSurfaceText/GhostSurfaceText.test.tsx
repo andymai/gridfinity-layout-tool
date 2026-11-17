@@ -9,7 +9,7 @@ vi.mock('@react-three/fiber', () => ({
 }));
 
 const measurer = { value: null as unknown };
-vi.mock('@/features/bin-designer/hooks/useTypeMeasurer', () => ({
+vi.mock('@/shared/hooks/useTypeMeasurer', () => ({
   useTypeMeasurer: () => measurer.value,
 }));
 

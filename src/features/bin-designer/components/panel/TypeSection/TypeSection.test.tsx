@@ -6,7 +6,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import { TEXT_PRESETS } from '@/features/bin-designer/types';
 
-vi.mock('@/features/bin-designer/hooks/useTypeMeasurer', () => ({
+vi.mock('@/shared/hooks/useTypeMeasurer', () => ({
   useTypeMeasurer: () => null,
 }));
 

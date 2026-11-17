@@ -16,7 +16,7 @@ import {
   getTypeMeasurer,
   subscribeTypeFonts,
   typeFontsVersion,
-} from '@/features/bin-designer/utils/typeMeasurer';
+} from '@/shared/fonts/typeFontRegistry';
 
 export function useTypeMeasurer(families: readonly TextFontFamily[]): TypeMeasurer | null {
   // Identity of the array changes every render; the SET of faces is what the

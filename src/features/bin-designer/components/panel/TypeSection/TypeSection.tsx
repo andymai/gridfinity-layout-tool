@@ -32,7 +32,7 @@ import type {
 } from '@/features/bin-designer/types';
 import { cn } from '@/design-system/cn';
 import { resolveEffectiveFont } from '@/shared/utils/typePlan';
-import { useTypeMeasurer } from '@/features/bin-designer/hooks/useTypeMeasurer';
+import { useTypeMeasurer } from '@/shared/hooks/useTypeMeasurer';
 import { AnchorPicker } from '../../controls/AnchorPicker';
 import { TypeSpecimen } from '../../controls/TypeSpecimen';
 import { FeatureToggle } from '../FeatureToggle';
