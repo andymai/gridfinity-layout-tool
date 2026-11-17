@@ -5519,7 +5519,7 @@
   "labels.paste": "Aggiungi etichette",
   "labels.paste.placeholder": "Un'etichetta per riga. Puoi incollare righe da un foglio di calcolo o da una pagina d'ordine: i codici articolo vanno su una seconda riga.",
   "labels.paste.add": "Aggiungi all'elenco",
-  "labels.paste.full": "L'elenco contiene al massimo {max} etichette. Rimuovine alcune, poi aggiungi di nuovo queste.",
+  "labels.paste.full": "L'elenco contiene al massimo {max} etichette. Incolla meno righe o rimuovi prima alcune etichette.",
   "labels.row.name": "Testo dell'etichetta",
   "labels.row.detail": "Seconda riga",
   "labels.row.detailPlaceholder": "Codice articolo o misura",
@@ -5529,12 +5529,16 @@
   "labels.row.tooLong": "Troppo lungo per questa etichetta. Accorcia il testo o scegli un'etichetta più lunga.",
   "labels.empty": "Ancora nessuna etichetta. Scrivi o incolla un elenco qui sopra.",
   "labels.loadingFonts": "Caricamento dei font…",
-  "labels.tooLongCount": "Troppo lunghe da stampare: {count}",
   "labels.clear": "Svuota elenco",
   "labels.clearConfirm": "Rimuovere tutte le etichette dall'elenco?",
   "labels.download": "Scarica PNG",
   "labels.downloadZip": "Scarica ZIP",
   "labels.downloadFailed": "Impossibile creare le etichette. Riprova.",
   "print.makeLabels": "Etichette per un'etichettatrice",
-  "commandPalette.makeLabels": "Crea etichette per un'etichettatrice"
+  "commandPalette.makeLabels": "Crea etichette per un'etichettatrice",
+  "whatsNew.action.openModal.labels": "Apri etichette",
+  "labels.row.empty": "Aggiungi un testo a questa etichetta.",
+  "labels.row.unsupportedText": "Il font delle etichette non ha lettere per parte di questo testo. Usa lettere latine e cifre.",
+  "labels.fontsFailed": "Impossibile caricare i font delle etichette. Controlla la connessione.",
+  "labels.skippedCount": "Escluse dal download: {count}"
 }

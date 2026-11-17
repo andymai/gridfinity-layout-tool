@@ -5380,7 +5380,7 @@
   "labels.paste": "ラベルを追加",
   "labels.paste.placeholder": "1行に1ラベル。スプレッドシートや注文ページの行を貼り付けられます。品番は2行目に入ります。",
   "labels.paste.add": "リストに追加",
-  "labels.paste.full": "リストには最大 {max} 個のラベルを入れられます。いくつか削除してから、もう一度追加してください。",
+  "labels.paste.full": "リストには最大 {max} 個のラベルを入れられます。貼り付ける行を減らすか、先にラベルをいくつか削除してください。",
   "labels.row.name": "ラベルの文字",
   "labels.row.detail": "2行目",
   "labels.row.detailPlaceholder": "品番またはサイズ",
@@ -5390,12 +5390,16 @@
   "labels.row.tooLong": "このラベルには長すぎます。文字を短くするか、長いラベルを選んでください。",
   "labels.empty": "まだラベルがありません。上にリストを入力するか貼り付けてください。",
   "labels.loadingFonts": "フォントを読み込み中…",
-  "labels.tooLongCount": "長すぎて印刷できません：{count}",
   "labels.clear": "リストを消去",
   "labels.clearConfirm": "リストのラベルをすべて削除しますか？",
   "labels.download": "PNG をダウンロード",
   "labels.downloadZip": "ZIP をダウンロード",
   "labels.downloadFailed": "ラベルを作成できませんでした。もう一度お試しください。",
   "print.makeLabels": "ラベルプリンター用ラベル",
-  "commandPalette.makeLabels": "ラベルプリンター用のラベルを作成"
+  "commandPalette.makeLabels": "ラベルプリンター用のラベルを作成",
+  "whatsNew.action.openModal.labels": "ラベルを開く",
+  "labels.row.empty": "このラベルに文字を入力してください。",
+  "labels.row.unsupportedText": "ラベルのフォントには、この文字の一部がありません。ラテン文字と数字を使ってください。",
+  "labels.fontsFailed": "ラベルのフォントを読み込めませんでした。接続を確認してください。",
+  "labels.skippedCount": "ダウンロードから除外：{count}"
 }

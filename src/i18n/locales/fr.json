@@ -5519,7 +5519,7 @@
   "labels.paste": "Ajouter des étiquettes",
   "labels.paste.placeholder": "Une étiquette par ligne. Vous pouvez coller des lignes d'un tableur ou d'une page de commande : les références passent sur une deuxième ligne.",
   "labels.paste.add": "Ajouter à la liste",
-  "labels.paste.full": "La liste contient au plus {max} étiquettes. Supprimez-en quelques-unes, puis ajoutez de nouveau celles-ci.",
+  "labels.paste.full": "La liste contient au plus {max} étiquettes. Collez moins de lignes ou supprimez d'abord quelques étiquettes.",
   "labels.row.name": "Texte de l'étiquette",
   "labels.row.detail": "Deuxième ligne",
   "labels.row.detailPlaceholder": "Référence ou taille",
@@ -5529,12 +5529,16 @@
   "labels.row.tooLong": "Trop long pour cette étiquette. Raccourcissez le texte ou choisissez une étiquette plus longue.",
   "labels.empty": "Aucune étiquette pour l'instant. Saisissez ou collez une liste ci-dessus.",
   "labels.loadingFonts": "Chargement des polices…",
-  "labels.tooLongCount": "Trop longues pour l'impression : {count}",
   "labels.clear": "Vider la liste",
   "labels.clearConfirm": "Retirer toutes les étiquettes de la liste ?",
   "labels.download": "Télécharger le PNG",
   "labels.downloadZip": "Télécharger le ZIP",
   "labels.downloadFailed": "Impossible de créer les étiquettes. Réessayez.",
   "print.makeLabels": "Étiquettes pour une étiqueteuse",
-  "commandPalette.makeLabels": "Créer des étiquettes pour une étiqueteuse"
+  "commandPalette.makeLabels": "Créer des étiquettes pour une étiqueteuse",
+  "whatsNew.action.openModal.labels": "Ouvrir les étiquettes",
+  "labels.row.empty": "Ajoutez un texte à cette étiquette.",
+  "labels.row.unsupportedText": "La police des étiquettes n'a pas de lettres pour une partie de ce texte. Utilisez des lettres latines et des chiffres.",
+  "labels.fontsFailed": "Impossible de charger les polices des étiquettes. Vérifiez votre connexion.",
+  "labels.skippedCount": "Exclues du téléchargement : {count}"
 }

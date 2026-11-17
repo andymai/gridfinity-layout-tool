@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Button, IconButton, Input, Stepper, Textarea, XIcon } from '@/design-system';
 import { FieldLabel } from '@/shared/components/PanelText';
@@ -21,7 +21,6 @@ interface LabelListEditorProps {
   readonly measurer: TypeMeasurer | null;
 }
 
-/** Paste or type labels, then edit each one beside its preview. */
 export function LabelListEditor({ plans, measurer }: LabelListEditorProps) {
   const t = useTranslation();
   const { entries, addEntries } = useLabelListStore(
@@ -91,12 +90,20 @@ interface LabelRowProps {
   readonly measurer: TypeMeasurer | null;
 }
 
-function LabelRow({ entry, plan, measurer }: LabelRowProps) {
+const PROBLEM_MESSAGES = {
+  empty: 'labels.row.empty',
+  tooLong: 'labels.row.tooLong',
+  unsupportedText: 'labels.row.unsupportedText',
+} as const;
+
+// Rows keep their props while another row or the paste box changes, so memo
+// skips their previews.
+const LabelRow = memo(function LabelRow({ entry, plan, measurer }: LabelRowProps) {
   const t = useTranslation();
   const { updateEntry, removeEntry } = useLabelListStore(
     useShallow((state) => ({ updateEntry: state.updateEntry, removeEntry: state.removeEntry }))
   );
-  const tooLong = plan?.fits === false;
+  const problem = plan?.problem ?? null;
 
   return (
     <li className="rounded-md border border-stroke-subtle p-2">
@@ -121,7 +128,7 @@ function LabelRow({ entry, plan, measurer }: LabelRowProps) {
           value={entry.name}
           maxLength={LABEL_NAME_MAX_LENGTH}
           aria-label={t('labels.row.name')}
-          error={tooLong}
+          error={problem !== null}
           onChange={(e) => updateEntry(entry.id, { name: e.target.value })}
         />
         <Input
@@ -142,7 +149,9 @@ function LabelRow({ entry, plan, measurer }: LabelRowProps) {
           onStep={(delta) => updateEntry(entry.id, { copies: entry.copies + delta })}
         />
       </div>
-      {tooLong && <p className="mt-1.5 text-xs text-warning">{t('labels.row.tooLong')}</p>}
+      {problem !== null && (
+        <p className="mt-1.5 text-xs text-warning">{t(PROBLEM_MESSAGES[problem])}</p>
+      )}
     </li>
   );
-}
+});

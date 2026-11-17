@@ -1,9 +1,6 @@
 /**
- * The user's label list and printer choice.
- *
  * A scratch list in this browser, not layout data: no sync, undo or share. A
- * layout's own labels stay on its bins; this list holds the one-off runs, such
- * as a parts order pasted in to label a drawer.
+ * layout's own labels stay on its bins.
  */
 
 import { create } from 'zustand';
@@ -32,7 +29,6 @@ interface LabelListState {
   mediaId: string;
   tapeLength: TapeLength;
 
-  /** Append rows up to the list cap; returns how many were added. */
   addEntries: (rows: readonly ParsedLabel[]) => number;
   updateEntry: (id: string, patch: Partial<Omit<LabelEntry, 'id'>>) => void;
   removeEntry: (id: string) => void;

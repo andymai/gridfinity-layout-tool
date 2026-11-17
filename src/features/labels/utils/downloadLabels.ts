@@ -8,11 +8,7 @@ import { renderLabelPng } from './labelPng';
 import { labelPaths } from './planLabel';
 import type { LabelPlan } from './planLabel';
 
-/**
- * Hand every label that fits to the user's export destination: one PNG on its
- * own, or a ZIP of them. Returns how many labels it saved, and 0 when nothing
- * was saved, which `deliverExport` has already told the user about.
- */
+/** Returns 0 when nothing was saved; `deliverExport` has already told the user why. */
 export async function downloadLabels(
   entries: readonly LabelEntry[],
   plans: ReadonlyMap<string, LabelPlan>,
@@ -20,7 +16,7 @@ export async function downloadLabels(
   printer: LabelPrinter,
   media: LabelMedia
 ): Promise<number> {
-  const printable = entries.filter((entry) => plans.get(entry.id)?.fits === true);
+  const printable = entries.filter((entry) => plans.get(entry.id)?.problem === null);
   const files: LabelFile[] = [];
   for (const [index, entry] of printable.entries()) {
     const plan = plans.get(entry.id);

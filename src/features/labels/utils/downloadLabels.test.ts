@@ -24,8 +24,8 @@ function entry(id: string, name: string, copies = 1): LabelEntry {
   return { id, name, detail: '', copies };
 }
 
-function plan(fits: boolean): LabelPlan {
-  return { widthMm: 40, heightMm: 12, blocks: [], fits };
+function plan(printable: boolean): LabelPlan {
+  return { widthMm: 40, heightMm: 12, blocks: [], problem: printable ? null : 'tooLong' };
 }
 
 beforeEach(() => {

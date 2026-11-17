@@ -2,7 +2,6 @@ import type { TypeMeasurer } from '@/shared/utils/typePlan';
 import { labelPaths } from '../../utils/planLabel';
 import type { LabelPlan } from '../../utils/planLabel';
 
-/** Screen pixels per millimetre, so labels of different sizes keep their proportions. */
 const PREVIEW_PX_PER_MM = 4;
 
 interface LabelPreviewProps {
@@ -11,10 +10,7 @@ interface LabelPreviewProps {
   readonly ariaLabel: string;
 }
 
-/**
- * The label as it prints: the outlines the PNG is filled from, black on white
- * whatever the theme, because it shows paper.
- */
+/** Black on white in both themes: the preview shows paper. */
 export function LabelPreview({ plan, measurer, ariaLabel }: LabelPreviewProps) {
   if (!plan || !measurer) {
     return <div className="h-10 w-32 animate-pulse rounded-sm bg-surface-secondary" />;
@@ -30,12 +26,7 @@ export function LabelPreview({ plan, measurer, ariaLabel }: LabelPreviewProps) {
     >
       <g transform="scale(1,-1)">
         {labelPaths(plan, measurer).map((path) => (
-          <path
-            key={path.line}
-            d={path.d}
-            transform={`translate(${path.x} ${path.y})`}
-            fill="black"
-          />
+          <path key={path.line} d={path.d} transform={`translate(0 ${path.y})`} fill="black" />
         ))}
       </g>
     </svg>

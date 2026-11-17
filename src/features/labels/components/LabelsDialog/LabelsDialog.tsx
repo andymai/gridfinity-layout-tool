@@ -15,18 +15,17 @@ interface LabelsDialogProps {
   readonly onClose: () => void;
 }
 
-/** Make paper labels for a label maker from a typed or pasted list. */
 export function LabelsDialog({ open, onClose }: LabelsDialogProps) {
   const t = useTranslation();
   const { entries, clearEntries } = useLabelListStore(
     useShallow((state) => ({ entries: state.entries, clearEntries: state.clearEntries }))
   );
-  const { printer, media, measurer, plans } = useLabelPlans();
+  const { printer, media, measurer, plans, fontsFailed, retryFonts } = useLabelPlans();
   const [busy, setBusy] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
 
-  const tooLong = entries.filter((entry) => plans.get(entry.id)?.fits === false).length;
-  const printable = measurer === null ? 0 : entries.length - tooLong;
+  const skipped = entries.filter((entry) => (plans.get(entry.id)?.problem ?? null) !== null).length;
+  const printable = measurer === null ? 0 : entries.length - skipped;
 
   const download = async (): Promise<void> => {
     if (measurer === null) return;
@@ -44,10 +43,17 @@ export function LabelsDialog({ open, onClose }: LabelsDialogProps) {
   };
 
   return (
-    <Dialog.Root open={open} onClose={onClose} size="3xl" height="fixed" fullScreen="mobile">
+    <Dialog.Root
+      open={open}
+      onClose={onClose}
+      dismissable={!busy}
+      size="3xl"
+      height="fixed"
+      fullScreen="mobile"
+    >
       <Dialog.Header title={t('labels.title')} bordered closeAriaLabel={t('common.close')} />
       <Dialog.Split>
-        <Dialog.Sidebar className="p-[var(--space-2xl)] max-md:w-full">
+        <Dialog.Sidebar className="p-[var(--space-2xl)] max-md:w-full max-md:border-r-0 max-md:border-b">
           <LabelPrinterSettings />
         </Dialog.Sidebar>
         <Dialog.Pane>
@@ -64,11 +70,21 @@ export function LabelsDialog({ open, onClose }: LabelsDialogProps) {
                 {t('labels.clear')}
               </Button>
             )}
-            {measurer === null && entries.length > 0 && (
-              <span className="text-content-tertiary">{t('labels.loadingFonts')}</span>
+            {fontsFailed ? (
+              <>
+                <span className="text-error">{t('labels.fontsFailed')}</span>
+                <Button variant="ghost" size="sm" onClick={retryFonts}>
+                  {t('error.tryAgain')}
+                </Button>
+              </>
+            ) : (
+              measurer === null &&
+              entries.length > 0 && (
+                <span className="text-content-tertiary">{t('labels.loadingFonts')}</span>
+              )
             )}
-            {tooLong > 0 && (
-              <span className="text-warning">{t('labels.tooLongCount', { count: tooLong })}</span>
+            {skipped > 0 && (
+              <span className="text-warning">{t('labels.skippedCount', { count: skipped })}</span>
             )}
           </div>
         }

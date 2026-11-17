@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useTypeMeasurer } from '@/shared/hooks/useTypeMeasurer';
+import { ensureTypeFonts } from '@/shared/fonts/typeFontRegistry';
+import { useTypeFontsFailed, useTypeMeasurer } from '@/shared/hooks/useTypeMeasurer';
 import type { TypeMeasurer } from '@/shared/utils/typePlan';
 import { useLabelListStore } from '../store/labelListStore';
+import type { LabelEntry } from '../store/labelListStore';
 import { LABEL_PRINTERS, labelBoxFor, resolveLabelMedia } from '../utils/labelMedia';
 import type { LabelMedia, LabelPrinter } from '../utils/labelMedia';
 import { LABEL_DETAIL_FONT, LABEL_NAME_FONT, planLabel } from '../utils/planLabel';
@@ -13,12 +15,12 @@ const LABEL_FONTS = [LABEL_NAME_FONT, LABEL_DETAIL_FONT] as const;
 export interface LabelPlans {
   readonly printer: LabelPrinter;
   readonly media: LabelMedia;
-  /** Null until both faces have loaded. */
   readonly measurer: TypeMeasurer | null;
   readonly plans: ReadonlyMap<string, LabelPlan>;
+  readonly fontsFailed: boolean;
+  readonly retryFonts: () => void;
 }
 
-/** Plan every label in the list for the chosen printer and media. */
 export function useLabelPlans(): LabelPlans {
   const { entries, printerId, mediaId, tapeLength } = useLabelListStore(
     useShallow((state) => ({
@@ -29,16 +31,34 @@ export function useLabelPlans(): LabelPlans {
     }))
   );
   const measurer = useTypeMeasurer(LABEL_FONTS);
+  const fontsFailed = useTypeFontsFailed(LABEL_FONTS);
+  const retryFonts = useCallback(() => ensureTypeFonts(LABEL_FONTS), []);
   const printer = LABEL_PRINTERS[printerId];
   const media = resolveLabelMedia(printer, mediaId);
 
-  const plans = useMemo(() => {
-    const planned = new Map<string, LabelPlan>();
-    if (measurer === null) return planned;
+  // An edit replaces only its own entry, so plans keyed on the entry object
+  // re-plan just that row; a keystroke would otherwise re-plan the whole list.
+  const planFor = useMemo(() => {
+    if (measurer === null) return null;
     const box = labelBoxFor(printer, media, tapeLength);
-    for (const entry of entries) planned.set(entry.id, planLabel(entry, box, measurer));
-    return planned;
-  }, [entries, measurer, printer, media, tapeLength]);
+    const cache = new WeakMap<LabelEntry, LabelPlan>();
+    return (entry: LabelEntry): LabelPlan => {
+      let plan = cache.get(entry);
+      if (!plan) {
+        plan = planLabel(entry, box, measurer);
+        cache.set(entry, plan);
+      }
+      return plan;
+    };
+  }, [measurer, printer, media, tapeLength]);
 
-  return { printer, media, measurer, plans };
+  const plans = useMemo(
+    () =>
+      new Map<string, LabelPlan>(
+        planFor === null ? [] : entries.map((entry) => [entry.id, planFor(entry)])
+      ),
+    [entries, planFor]
+  );
+
+  return { printer, media, measurer, plans, fontsFailed, retryFonts };
 }

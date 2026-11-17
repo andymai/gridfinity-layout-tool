@@ -5519,7 +5519,7 @@
   "labels.paste": "Labels toevoegen",
   "labels.paste.placeholder": "Eén label per regel. Je kunt rijen uit een spreadsheet of een bestelpagina plakken: onderdeelnummers komen op een tweede regel.",
   "labels.paste.add": "Aan lijst toevoegen",
-  "labels.paste.full": "De lijst bevat maximaal {max} labels. Verwijder er een paar en voeg deze daarna opnieuw toe.",
+  "labels.paste.full": "De lijst bevat maximaal {max} labels. Plak minder rijen of verwijder eerst een paar labels.",
   "labels.row.name": "Labeltekst",
   "labels.row.detail": "Tweede regel",
   "labels.row.detailPlaceholder": "Onderdeelnummer of maat",
@@ -5529,12 +5529,16 @@
   "labels.row.tooLong": "Te lang voor dit label. Maak de tekst korter of kies een langer label.",
   "labels.empty": "Nog geen labels. Typ of plak hierboven een lijst.",
   "labels.loadingFonts": "Lettertypen laden…",
-  "labels.tooLongCount": "Te lang om te printen: {count}",
   "labels.clear": "Lijst wissen",
   "labels.clearConfirm": "Alle labels uit de lijst verwijderen?",
   "labels.download": "PNG downloaden",
   "labels.downloadZip": "ZIP downloaden",
   "labels.downloadFailed": "De labels konden niet worden gemaakt. Probeer het opnieuw.",
   "print.makeLabels": "Labels voor een labelprinter",
-  "commandPalette.makeLabels": "Labels maken voor een labelprinter"
+  "commandPalette.makeLabels": "Labels maken voor een labelprinter",
+  "whatsNew.action.openModal.labels": "Etiketten openen",
+  "labels.row.empty": "Voeg tekst toe aan dit label.",
+  "labels.row.unsupportedText": "Het labellettertype heeft geen letters voor een deel van deze tekst. Gebruik Latijnse letters en cijfers.",
+  "labels.fontsFailed": "De labellettertypen konden niet worden geladen. Controleer je verbinding.",
+  "labels.skippedCount": "Niet in de download: {count}"
 }

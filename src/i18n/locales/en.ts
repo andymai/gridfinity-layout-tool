@@ -6326,6 +6326,7 @@ const en: Record<string, string> = {
   'whatsNew.action.openModal.baseplateLibrary': 'Open baseplate library',
   'whatsNew.action.openModal.print': 'Open print list',
   'whatsNew.action.openModal.designGallery': 'Open gallery',
+  'whatsNew.action.openModal.labels': 'Open labels',
   'whatsNew.action.scanTool': 'Scan a tool',
   'whatsNew.action.openLabs': 'Open Labs',
   'settings.general.showUpdateSummaries': 'Show update summaries',
@@ -6712,7 +6713,8 @@ const en: Record<string, string> = {
   'labels.paste.placeholder':
     'One label on each line. You can paste rows from a spreadsheet or an order page: part numbers go on a second line.',
   'labels.paste.add': 'Add to list',
-  'labels.paste.full': 'The list holds up to {max} labels. Remove some, then add these again.',
+  'labels.paste.full':
+    'The list holds up to {max} labels. Paste fewer rows, or remove some labels first.',
   'labels.row.name': 'Label text',
   'labels.row.detail': 'Second line',
   'labels.row.detailPlaceholder': 'Part number or size',
@@ -6720,9 +6722,13 @@ const en: Record<string, string> = {
   'labels.row.remove': 'Remove label',
   'labels.row.preview': 'Preview of the label {name}',
   'labels.row.tooLong': 'Too long for this label. Make the text shorter or choose a longer label.',
+  'labels.row.empty': 'Add text for this label.',
+  'labels.row.unsupportedText':
+    'The label font has no letters for some of this text. Use Latin letters and digits.',
   'labels.empty': 'No labels yet. Type or paste a list above.',
   'labels.loadingFonts': 'Loading fonts…',
-  'labels.tooLongCount': 'Too long to print: {count}',
+  'labels.fontsFailed': 'The label fonts could not load. Check your connection.',
+  'labels.skippedCount': 'Left out of the download: {count}',
   'labels.clear': 'Clear list',
   'labels.clearConfirm': 'Remove every label from the list?',
   'labels.download': 'Download PNG',

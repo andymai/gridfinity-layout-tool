@@ -5797,7 +5797,7 @@
   "labels.paste": "Dodaj etykiety",
   "labels.paste.placeholder": "Jedna etykieta w wierszu. Możesz wkleić wiersze z arkusza kalkulacyjnego lub strony zamówienia: numery części trafią do drugiego wiersza.",
   "labels.paste.add": "Dodaj do listy",
-  "labels.paste.full": "Lista mieści maksymalnie {max} etykiet. Usuń kilka, a potem dodaj te ponownie.",
+  "labels.paste.full": "Lista mieści maksymalnie {max} etykiet. Wklej mniej wierszy lub najpierw usuń kilka etykiet.",
   "labels.row.name": "Tekst etykiety",
   "labels.row.detail": "Drugi wiersz",
   "labels.row.detailPlaceholder": "Numer części lub rozmiar",
@@ -5807,12 +5807,16 @@
   "labels.row.tooLong": "Za długi tekst dla tej etykiety. Skróć tekst lub wybierz dłuższą etykietę.",
   "labels.empty": "Brak etykiet. Wpisz lub wklej listę powyżej.",
   "labels.loadingFonts": "Wczytywanie czcionek…",
-  "labels.tooLongCount": "Za długie do druku: {count}",
   "labels.clear": "Wyczyść listę",
   "labels.clearConfirm": "Usunąć wszystkie etykiety z listy?",
   "labels.download": "Pobierz PNG",
   "labels.downloadZip": "Pobierz ZIP",
   "labels.downloadFailed": "Nie udało się utworzyć etykiet. Spróbuj ponownie.",
   "print.makeLabels": "Etykiety do drukarki etykiet",
-  "commandPalette.makeLabels": "Utwórz etykiety do drukarki etykiet"
+  "commandPalette.makeLabels": "Utwórz etykiety do drukarki etykiet",
+  "whatsNew.action.openModal.labels": "Otwórz etykiety",
+  "labels.row.empty": "Dodaj tekst do tej etykiety.",
+  "labels.row.unsupportedText": "Czcionka etykiet nie ma liter dla części tego tekstu. Użyj liter łacińskich i cyfr.",
+  "labels.fontsFailed": "Nie udało się wczytać czcionek etykiet. Sprawdź połączenie.",
+  "labels.skippedCount": "Pominięte w pobieraniu: {count}"
 }

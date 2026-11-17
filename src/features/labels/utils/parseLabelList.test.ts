@@ -42,6 +42,26 @@ describe('parseLabelList', () => {
     ]);
   });
 
+  it('keeps a first row whose part number cell is empty', () => {
+    expect(parseLabelList('Spacers\t\nScrews\t91290A113\nNuts\t90592A085')).toEqual([
+      { name: 'Spacers', detail: '' },
+      { name: 'Screws', detail: '91290A113' },
+      { name: 'Nuts', detail: '90592A085' },
+    ]);
+  });
+
+  it('keeps columns in place when a row starts with an empty cell', () => {
+    const pasted = 'Bin\tPart\tDescription\n\t91290A113\tSocket head screw\nA2\t90592A085\tHex nut';
+    expect(parseLabelList(pasted)).toEqual([
+      { name: 'Socket head screw', detail: '91290A113' },
+      { name: 'Hex nut', detail: '90592A085' },
+    ]);
+  });
+
+  it('reads a size as part of the name, not a part number', () => {
+    expect(parseLabelList('Plywood 300x200')).toEqual([{ name: 'Plywood 300x200', detail: '' }]);
+  });
+
   it('prefers a supplier column over a size column', () => {
     const pasted = 'M3x8\t91290A113\tSocket head screw\nM3x10\t91290A115\tSocket head screw';
     expect(parseLabelList(pasted).map((label) => label.detail)).toEqual(['91290A113', '91290A115']);

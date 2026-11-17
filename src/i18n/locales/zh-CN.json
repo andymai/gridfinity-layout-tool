@@ -5380,7 +5380,7 @@
   "labels.paste": "添加标签",
   "labels.paste.placeholder": "每行一个标签。可以粘贴电子表格或订单页面中的行：零件编号会放在第二行。",
   "labels.paste.add": "添加到列表",
-  "labels.paste.full": "列表最多容纳 {max} 个标签。请删除一些，然后再添加这些标签。",
+  "labels.paste.full": "列表最多容纳 {max} 个标签。请少粘贴几行，或先删除一些标签。",
   "labels.row.name": "标签文字",
   "labels.row.detail": "第二行",
   "labels.row.detailPlaceholder": "零件编号或尺寸",
@@ -5390,12 +5390,16 @@
   "labels.row.tooLong": "文字对此标签来说太长。请缩短文字或选择更长的标签。",
   "labels.empty": "还没有标签。请在上方输入或粘贴列表。",
   "labels.loadingFonts": "正在加载字体…",
-  "labels.tooLongCount": "太长无法打印：{count}",
   "labels.clear": "清空列表",
   "labels.clearConfirm": "从列表中删除所有标签？",
   "labels.download": "下载 PNG",
   "labels.downloadZip": "下载 ZIP",
   "labels.downloadFailed": "无法创建标签。请重试。",
   "print.makeLabels": "用于标签打印机的标签",
-  "commandPalette.makeLabels": "为标签打印机制作标签"
+  "commandPalette.makeLabels": "为标签打印机制作标签",
+  "whatsNew.action.openModal.labels": "打开标签",
+  "labels.row.empty": "请为此标签添加文字。",
+  "labels.row.unsupportedText": "标签字体缺少这段文字中部分字符的字形。请使用拉丁字母和数字。",
+  "labels.fontsFailed": "无法加载标签字体。请检查网络连接。",
+  "labels.skippedCount": "未包含在下载中：{count}"
 }

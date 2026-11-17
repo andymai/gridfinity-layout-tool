@@ -5519,7 +5519,7 @@
   "labels.paste": "Etiketten hinzufügen",
   "labels.paste.placeholder": "Ein Etikett pro Zeile. Sie können Zeilen aus einer Tabelle oder einer Bestellseite einfügen: Teilenummern kommen in eine zweite Zeile.",
   "labels.paste.add": "Zur Liste hinzufügen",
-  "labels.paste.full": "Die Liste fasst höchstens {max} Etiketten. Entfernen Sie einige und fügen Sie diese dann erneut hinzu.",
+  "labels.paste.full": "Die Liste fasst höchstens {max} Etiketten. Fügen Sie weniger Zeilen ein oder entfernen Sie zuerst einige Etiketten.",
   "labels.row.name": "Etikettentext",
   "labels.row.detail": "Zweite Zeile",
   "labels.row.detailPlaceholder": "Teilenummer oder Größe",
@@ -5529,12 +5529,16 @@
   "labels.row.tooLong": "Zu lang für dieses Etikett. Kürzen Sie den Text oder wählen Sie ein längeres Etikett.",
   "labels.empty": "Noch keine Etiketten. Tippen oder fügen Sie oben eine Liste ein.",
   "labels.loadingFonts": "Schriften werden geladen…",
-  "labels.tooLongCount": "Zu lang zum Drucken: {count}",
   "labels.clear": "Liste leeren",
   "labels.clearConfirm": "Alle Etiketten aus der Liste entfernen?",
   "labels.download": "PNG herunterladen",
   "labels.downloadZip": "ZIP herunterladen",
   "labels.downloadFailed": "Die Etiketten konnten nicht erstellt werden. Versuchen Sie es erneut.",
   "print.makeLabels": "Etiketten für einen Etikettendrucker",
-  "commandPalette.makeLabels": "Etiketten für einen Etikettendrucker erstellen"
+  "commandPalette.makeLabels": "Etiketten für einen Etikettendrucker erstellen",
+  "whatsNew.action.openModal.labels": "Etiketten öffnen",
+  "labels.row.empty": "Geben Sie einen Text für dieses Etikett ein.",
+  "labels.row.unsupportedText": "Die Etikettenschrift hat für einen Teil dieses Textes keine Zeichen. Verwenden Sie lateinische Buchstaben und Ziffern.",
+  "labels.fontsFailed": "Die Etikettenschriften konnten nicht geladen werden. Prüfen Sie Ihre Verbindung.",
+  "labels.skippedCount": "Nicht im Download: {count}"
 }

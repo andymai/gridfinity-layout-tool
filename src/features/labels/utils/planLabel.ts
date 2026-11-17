@@ -17,11 +17,8 @@ import type { TypeBlockPlan, TypeMeasurer } from '@/shared/utils/typePlan';
 export const LABEL_NAME_FONT: TextFontFamily = 'atkinson-bold';
 export const LABEL_DETAIL_FONT: TextFontFamily = 'jetbrains-mono';
 
-/** Clear space at each end of the label, inside the printed image. */
 const END_MARGIN_MM = 1.5;
-/** Clear space above and below the text, as a share of the printable height. */
 const EDGE_SHARE = 0.05;
-/** The detail band's share of the text height, and the gap between bands. */
 const DETAIL_SHARE = 0.36;
 const GAP_SHARE = 0.06;
 /**
@@ -30,7 +27,6 @@ const GAP_SHARE = 0.06;
  */
 const NAME_MIN_EM_MM = 1.9;
 const DETAIL_MIN_EM_MM = 1.6;
-/** The longest a fit-to-text tape label grows before its text shrinks. */
 export const FIT_MAX_LENGTH_MM = 200;
 
 export interface LabelText {
@@ -49,17 +45,18 @@ export type LabelLine = 'name' | 'detail';
 export interface PlacedTypeBlock {
   readonly line: LabelLine;
   readonly plan: TypeBlockPlan;
-  /** Offset of the block's frame from the label centre. */
-  readonly x: number;
+  /** Height of the block's frame above the label centre. */
   readonly y: number;
 }
+
+/** Why a label is left out of the download. */
+export type LabelProblem = 'empty' | 'tooLong' | 'unsupportedText';
 
 export interface LabelPlan {
   readonly widthMm: number;
   readonly heightMm: number;
   readonly blocks: readonly PlacedTypeBlock[];
-  /** False when some text could not be set at a legible size. */
-  readonly fits: boolean;
+  readonly problem: LabelProblem | null;
 }
 
 function labelStyle(font: TextFontFamily, minEm: number, maxEm: number): TextStyleDefaults {
@@ -69,7 +66,8 @@ function labelStyle(font: TextFontFamily, minEm: number, maxEm: number): TextSty
     margin: 0,
     minFontSize: minEm,
     maxFontSize: maxEm,
-    lineGap: 0.15,
+    // Clears Atkinson Bold's 0.2em descender by a dot or more at the smallest size.
+    lineGap: 0.25,
   };
 }
 
@@ -77,7 +75,6 @@ function inkWidth(plan: TypeBlockPlan | null): number {
   return plan === null ? 0 : plan.maxX - plan.minX;
 }
 
-/** A name takes another line only when that sets it at least this much larger. */
 const EXTRA_LINE_GAIN = 1.1;
 
 /**
@@ -122,85 +119,89 @@ function nameLineOptions(name: string, measurer: TypeMeasurer): string[] {
   return options;
 }
 
+function planName(
+  text: string,
+  band: number,
+  hostWidth: number,
+  fitToText: boolean,
+  measurer: TypeMeasurer
+): TypeBlockPlan | null {
+  let best: TypeBlockPlan | null = null;
+  for (const option of fitToText ? [text] : nameLineOptions(text, measurer)) {
+    const plan = planTypeBlock(
+      {
+        text: option,
+        style: labelStyle(LABEL_NAME_FONT, NAME_MIN_EM_MM, band * 2),
+        host: { width: hostWidth, depth: band },
+        allowWrap: false,
+      },
+      measurer
+    );
+    if (plan && (best === null || plan.fontSize > best.fontSize * EXTRA_LINE_GAIN)) best = plan;
+  }
+  return best;
+}
+
 export function planLabel(text: LabelText, box: LabelBox, measurer: TypeMeasurer): LabelPlan {
   const name = text.name.trim();
   const detail = text.detail.trim();
   const edge = box.heightMm * EDGE_SHARE;
   const inner = box.heightMm - 2 * edge;
-  const hasDetail = detail !== '';
-  const gap = hasDetail ? inner * GAP_SHARE : 0;
-  const detailBand = hasDetail ? (inner - gap) * DETAIL_SHARE : 0;
-  const nameBand = inner - gap - detailBand;
-
+  const top = box.heightMm / 2 - edge;
   const fitToText = box.lengthMm === null;
   const hostWidth = fitToText ? FIT_MAX_LENGTH_MM : box.lengthMm - 2 * END_MARGIN_MM;
 
-  let namePlan: TypeBlockPlan | null = null;
-  if (name !== '') {
-    for (const option of fitToText ? [name] : nameLineOptions(name, measurer)) {
-      const plan = planTypeBlock(
-        {
-          text: option,
-          style: labelStyle(LABEL_NAME_FONT, NAME_MIN_EM_MM, nameBand * 2),
-          host: { width: hostWidth, depth: nameBand },
-          allowWrap: false,
-        },
-        measurer
-      );
-      if (plan && (namePlan === null || plan.fontSize > namePlan.fontSize * EXTRA_LINE_GAIN)) {
-        namePlan = plan;
-      }
-    }
-  }
-  const detailPlan = hasDetail
-    ? planTypeBlock(
-        {
-          text: detail,
-          style: labelStyle(LABEL_DETAIL_FONT, DETAIL_MIN_EM_MM, detailBand * 2),
-          host: { width: hostWidth, depth: detailBand },
-          allowWrap: false,
-        },
-        measurer
-      )
-    : null;
-
-  const widthMm = fitToText
-    ? Math.max(box.heightMm, Math.max(inkWidth(namePlan), inkWidth(detailPlan)) + 2 * END_MARGIN_MM)
-    : box.lengthMm;
-
-  const blocks: PlacedTypeBlock[] = [];
-  const top = box.heightMm / 2 - edge;
-  // Centre each block on its ink rather than its advance, so a caption with
-  // a wide trailing glyph or a part number sits optically centred.
-  if (namePlan) {
-    blocks.push({
-      line: 'name',
-      plan: namePlan,
-      x: -(namePlan.minX + namePlan.maxX) / 2,
-      y: top - nameBand / 2,
-    });
-  }
-  if (detailPlan) {
-    blocks.push({
-      line: 'detail',
-      plan: detailPlan,
-      x: -(detailPlan.minX + detailPlan.maxX) / 2,
-      y: -top + detailBand / 2,
-    });
-  }
-
-  return {
-    widthMm,
+  // Text the faces cannot draw still gets a plan, so the preview shows the
+  // boxes it would print.
+  const covered =
+    measurer.covers(name, LABEL_NAME_FONT) && measurer.covers(detail, LABEL_DETAIL_FONT);
+  const finish = (blocks: PlacedTypeBlock[]): LabelPlan => ({
+    widthMm: fitToText
+      ? Math.max(box.heightMm, ...blocks.map((block) => inkWidth(block.plan) + 2 * END_MARGIN_MM))
+      : box.lengthMm,
     heightMm: box.heightMm,
     blocks,
-    fits: name !== '' && namePlan !== null && (!hasDetail || detailPlan !== null),
-  };
+    problem: blocks.length === 0 ? 'tooLong' : covered ? null : 'unsupportedText',
+  });
+  if (name === '') return { ...finish([]), problem: 'empty' };
+
+  if (detail !== '') {
+    const gap = inner * GAP_SHARE;
+    const detailBand = (inner - gap) * DETAIL_SHARE;
+    const nameBand = inner - gap - detailBand;
+    const namePlan = planName(name, nameBand, hostWidth, fitToText, measurer);
+    const detailPlan = planTypeBlock(
+      {
+        text: detail,
+        style: labelStyle(LABEL_DETAIL_FONT, DETAIL_MIN_EM_MM, detailBand * 2),
+        host: { width: hostWidth, depth: detailBand },
+        allowWrap: false,
+      },
+      measurer
+    );
+    if (namePlan && detailPlan) {
+      return finish([
+        { line: 'name', plan: namePlan, y: top - nameBand / 2 },
+        { line: 'detail', plan: detailPlan, y: -top + detailBand / 2 },
+      ]);
+    }
+  }
+
+  // Tape too narrow for two bands (6mm) still carries the part number, after
+  // the name in one block.
+  const single = planName(
+    detail === '' ? name : `${name} · ${detail}`,
+    inner,
+    hostWidth,
+    fitToText,
+    measurer
+  );
+  return finish(single ? [{ line: 'name', plan: single, y: 0 }] : []);
 }
 
 export interface LabelPath {
   readonly line: LabelLine;
   readonly d: string;
-  readonly x: number;
   readonly y: number;
 }
 
@@ -209,7 +210,6 @@ export function labelPaths(plan: LabelPlan, measurer: TypeMeasurer): LabelPath[]
   return plan.blocks.map((block) => ({
     line: block.line,
     d: planToPathData(block.plan, measurer),
-    x: block.x,
     y: block.y,
   }));
 }

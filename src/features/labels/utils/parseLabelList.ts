@@ -34,7 +34,6 @@ function parseLine(line: string): ParsedLabel {
   return { name: line, detail: '' };
 }
 
-/** The column most rows fill with a part number, preferring a known supplier's. */
 function findPartColumn(rows: readonly (readonly string[])[]): number {
   const width = Math.max(...rows.map((row) => row.length));
   let best = -1;
@@ -60,7 +59,10 @@ function findPartColumn(rows: readonly (readonly string[])[]): number {
 function parseTable(rows: readonly (readonly string[])[]): ParsedLabel[] {
   const partCol = findPartColumn(rows);
   const body =
-    partCol >= 0 && rows.length > 1 && !looksLikePartNumber(rows[0][partCol] ?? '')
+    partCol >= 0 &&
+    rows.length > 1 &&
+    isTextCell(rows[0][partCol] ?? '') &&
+    !looksLikePartNumber(rows[0][partCol] ?? '')
       ? rows.slice(1)
       : rows;
 
@@ -86,14 +88,11 @@ function parseTable(rows: readonly (readonly string[])[]): ParsedLabel[] {
 }
 
 export function parseLabelList(text: string): ParsedLabel[] {
-  const lines = text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line !== '');
-  if (lines.length === 0) return [];
-
+  // Lines are not trimmed before the split: a leading tab is an empty first
+  // cell, and dropping it would shift every column of that row left.
+  const lines = text.split(/\r?\n/).filter((line) => line.trim() !== '');
   if (lines.some((line) => line.includes('\t'))) {
     return parseTable(lines.map((line) => line.split('\t').map((cell) => cell.trim())));
   }
-  return lines.map(parseLine);
+  return lines.map((line) => parseLine(line.trim()));
 }

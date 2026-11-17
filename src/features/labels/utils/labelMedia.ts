@@ -1,13 +1,11 @@
 /**
- * Label printers and the media they take, in printer dots.
- *
- * The printable height is the number of head dots the printer fires across the
- * tape, which is narrower than the tape: a 12mm Brother tape prints 70 dots
- * (9.9mm). An image of exactly that many pixels maps one pixel to one dot.
+ * A printer prints fewer dots across the tape than the tape is wide: 12mm
+ * Brother tape takes 70 dots (9.9mm). An image of exactly that many pixels maps
+ * one pixel to one dot.
  *
  * Sources: Brother's PT-E550W/P750W/P710BT raster command reference (the pin
  * table), and the open drivers niimbluelib (Niimbot), labelle (DYMO) and
- * phomemo-tools (Phomemo D30). Brother is the only vendor that publishes one.
+ * phomemo-tools (Phomemo D30), as no other vendor publishes one.
  */
 
 import { labelPlateWidthMm, LABEL_PLATE_WIDTHS_U } from '@/shared/constants/labelPlates';
@@ -31,7 +29,6 @@ export interface LabelMedia {
   /** Tape width or label width across the head, in mm. */
   readonly widthMm: number;
   readonly printDots: number;
-  /** Die-cut label length along the feed; tape has none. */
   readonly lengthMm?: number;
 }
 
@@ -94,7 +91,6 @@ export const LABEL_PRINTERS: Readonly<Record<LabelPrinterId, LabelPrinter>> = {
   },
 };
 
-/** How long a tape label runs: to fit its text, or the width of a bin. */
 export type TapeLength = 'fit' | LabelPlateWidthU;
 
 export const TAPE_LENGTHS: readonly TapeLength[] = ['fit', ...LABEL_PLATE_WIDTHS_U];
@@ -107,7 +103,6 @@ export function isTapeLength(value: unknown): value is TapeLength {
   return (TAPE_LENGTHS as readonly unknown[]).includes(value);
 }
 
-/** The printer's media with this id, or its default when the id is stale. */
 export function resolveLabelMedia(printer: LabelPrinter, mediaId: string): LabelMedia {
   return (
     printer.media.find((media) => media.id === mediaId) ??

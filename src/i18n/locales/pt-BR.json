@@ -5519,7 +5519,7 @@
   "labels.paste": "Adicionar etiquetas",
   "labels.paste.placeholder": "Uma etiqueta por linha. Você pode colar linhas de uma planilha ou de uma página de pedido: os números de peça vão para uma segunda linha.",
   "labels.paste.add": "Adicionar à lista",
-  "labels.paste.full": "A lista comporta até {max} etiquetas. Remova algumas e depois adicione estas de novo.",
+  "labels.paste.full": "A lista comporta até {max} etiquetas. Cole menos linhas ou remova algumas etiquetas antes.",
   "labels.row.name": "Texto da etiqueta",
   "labels.row.detail": "Segunda linha",
   "labels.row.detailPlaceholder": "Número da peça ou tamanho",
@@ -5529,12 +5529,16 @@
   "labels.row.tooLong": "Longo demais para esta etiqueta. Encurte o texto ou escolha uma etiqueta mais longa.",
   "labels.empty": "Nenhuma etiqueta ainda. Digite ou cole uma lista acima.",
   "labels.loadingFonts": "Carregando fontes…",
-  "labels.tooLongCount": "Longas demais para imprimir: {count}",
   "labels.clear": "Limpar lista",
   "labels.clearConfirm": "Remover todas as etiquetas da lista?",
   "labels.download": "Baixar PNG",
   "labels.downloadZip": "Baixar ZIP",
   "labels.downloadFailed": "Não foi possível criar as etiquetas. Tente de novo.",
   "print.makeLabels": "Etiquetas para uma rotuladora",
-  "commandPalette.makeLabels": "Criar etiquetas para uma rotuladora"
+  "commandPalette.makeLabels": "Criar etiquetas para uma rotuladora",
+  "whatsNew.action.openModal.labels": "Abrir etiquetas",
+  "labels.row.empty": "Adicione um texto a esta etiqueta.",
+  "labels.row.unsupportedText": "A fonte da etiqueta não tem letras para parte deste texto. Use letras latinas e números.",
+  "labels.fontsFailed": "Não foi possível carregar as fontes das etiquetas. Verifique sua conexão.",
+  "labels.skippedCount": "Fora do download: {count}"
 }

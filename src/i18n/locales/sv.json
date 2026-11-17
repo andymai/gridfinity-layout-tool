@@ -5519,7 +5519,7 @@
   "labels.paste": "Lägg till etiketter",
   "labels.paste.placeholder": "En etikett per rad. Du kan klistra in rader från ett kalkylark eller en ordersida: artikelnummer hamnar på en andra rad.",
   "labels.paste.add": "Lägg till i listan",
-  "labels.paste.full": "Listan rymmer högst {max} etiketter. Ta bort några och lägg sedan till dessa igen.",
+  "labels.paste.full": "Listan rymmer högst {max} etiketter. Klistra in färre rader eller ta bort några etiketter först.",
   "labels.row.name": "Etikettext",
   "labels.row.detail": "Andra raden",
   "labels.row.detailPlaceholder": "Artikelnummer eller storlek",
@@ -5529,12 +5529,16 @@
   "labels.row.tooLong": "För lång för den här etiketten. Korta texten eller välj en längre etikett.",
   "labels.empty": "Inga etiketter än. Skriv eller klistra in en lista ovan.",
   "labels.loadingFonts": "Läser in typsnitt…",
-  "labels.tooLongCount": "För långa att skriva ut: {count}",
   "labels.clear": "Töm listan",
   "labels.clearConfirm": "Ta bort alla etiketter från listan?",
   "labels.download": "Ladda ned PNG",
   "labels.downloadZip": "Ladda ned ZIP",
   "labels.downloadFailed": "Det gick inte att skapa etiketterna. Försök igen.",
   "print.makeLabels": "Etiketter för en etikettskrivare",
-  "commandPalette.makeLabels": "Skapa etiketter för en etikettskrivare"
+  "commandPalette.makeLabels": "Skapa etiketter för en etikettskrivare",
+  "whatsNew.action.openModal.labels": "Öppna etiketter",
+  "labels.row.empty": "Lägg till text på den här etiketten.",
+  "labels.row.unsupportedText": "Etikettypsnittet saknar bokstäver för en del av den här texten. Använd latinska bokstäver och siffror.",
+  "labels.fontsFailed": "Det gick inte att läsa in etikettypsnitten. Kontrollera anslutningen.",
+  "labels.skippedCount": "Utelämnade från nedladdningen: {count}"
 }

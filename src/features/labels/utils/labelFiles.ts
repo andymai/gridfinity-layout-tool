@@ -15,10 +15,7 @@ function slugify(text: string): string {
   return lastBreak > 0 ? cut.slice(0, lastBreak) : cut.slice(0, SLUG_MAX_LENGTH);
 }
 
-/**
- * `03-socket-head-screw-x4.png`: the list order first so files sort as the list
- * does, and the copy count in the name because printer apps set copies per job.
- */
+/** The copy count goes in the name because printer apps set copies per print job. */
 export function labelFileName(index: number, total: number, name: string, copies: number): string {
   const position = String(index + 1).padStart(String(total).length, '0');
   const slug = slugify(name) || 'label';

@@ -11,7 +11,6 @@ import type { LabelPath, LabelPlan } from './planLabel';
 
 const MM_PER_INCH = 25.4;
 
-/** Pixel size of a label at `dpi`. */
 export function labelPixelSize(plan: LabelPlan, dpi: number): { width: number; height: number } {
   return {
     width: Math.max(1, Math.round((plan.widthMm / MM_PER_INCH) * dpi)),
@@ -50,10 +49,6 @@ function physChunk(dpi: number): Uint8Array {
   return chunk;
 }
 
-/**
- * Set the PNG's resolution to `dpi`, replacing a `pHYs` chunk the encoder
- * wrote or adding one after `IHDR`.
- */
 export function withPngDpi(png: Uint8Array, dpi: number): Uint8Array {
   const view = new DataView(png.buffer, png.byteOffset, png.byteLength);
   const phys = physChunk(dpi);
@@ -82,7 +77,6 @@ export function withPngDpi(png: Uint8Array, dpi: number): Uint8Array {
   return out;
 }
 
-/** Push every pixel to pure black or white, in place. */
 export function thresholdToMonochrome(rgba: Uint8ClampedArray): void {
   for (let i = 0; i < rgba.length; i += 4) {
     // Ink is drawn black on white, so the red channel alone carries coverage.
@@ -94,7 +88,7 @@ export function thresholdToMonochrome(rgba: Uint8ClampedArray): void {
   }
 }
 
-/** Draw a planned label into a PNG at `dpi`. Browser only: it needs a canvas. */
+/** Browser only: it needs a canvas, so tests cover the plan and the bytes instead. */
 export async function renderLabelPng(
   plan: LabelPlan,
   paths: readonly LabelPath[],
@@ -114,7 +108,7 @@ export async function renderLabelPng(
   ctx.fillStyle = '#000000';
   for (const path of paths) {
     ctx.save();
-    ctx.translate(path.x, path.y);
+    ctx.translate(0, path.y);
     ctx.fill(new Path2D(path.d));
     ctx.restore();
   }

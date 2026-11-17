@@ -10,13 +10,17 @@ import { LabelsDialog } from './LabelsDialog';
 
 const mocks = vi.hoisted(() => ({
   measurer: null as TypeMeasurer | null,
+  fontsFailed: false,
+  ensureTypeFonts: vi.fn(),
   downloadLabels: vi.fn(),
   trackEvent: vi.fn(),
 }));
 
 vi.mock('@/shared/hooks/useTypeMeasurer', () => ({
   useTypeMeasurer: () => mocks.measurer,
+  useTypeFontsFailed: () => mocks.fontsFailed,
 }));
+vi.mock('@/shared/fonts/typeFontRegistry', () => ({ ensureTypeFonts: mocks.ensureTypeFonts }));
 vi.mock('../../utils/downloadLabels', () => ({ downloadLabels: mocks.downloadLabels }));
 vi.mock('@/shared/analytics/posthog', () => ({ trackEvent: mocks.trackEvent }));
 
@@ -30,6 +34,8 @@ beforeEach(() => {
   localStorage.clear();
   useLabelListStore.setState(initial, true);
   mocks.downloadLabels.mockReset();
+  mocks.fontsFailed = false;
+  mocks.ensureTypeFonts.mockReset();
   mocks.trackEvent.mockReset();
 });
 
@@ -51,13 +57,13 @@ describe('LabelsDialog', () => {
 
     const [entries, plans, , printer, media] = mocks.downloadLabels.mock.calls[0] as [
       unknown[],
-      Map<string, { fits: boolean }>,
+      Map<string, { problem: string | null }>,
       unknown,
       { id: string },
       { id: string },
     ];
     expect(entries).toHaveLength(2);
-    expect([...plans.values()].every((plan) => plan.fits)).toBe(true);
+    expect([...plans.values()].every((plan) => plan.problem === null)).toBe(true);
     expect(printer.id).toBe('brother-pt');
     expect(media.id).toBe('12');
     expect(mocks.trackEvent).toHaveBeenCalledWith('labels_downloaded', {
@@ -79,7 +85,7 @@ describe('LabelsDialog', () => {
     expect(mocks.trackEvent).not.toHaveBeenCalled();
   });
 
-  it('counts labels too long to print and leaves them out of the download count', () => {
+  it('counts the labels left out of the download', () => {
     useLabelListStore.getState().setPrinter('brother-pt', '6');
     useLabelListStore.getState().setTapeLength(1);
     useLabelListStore.getState().addEntries([
@@ -91,8 +97,19 @@ describe('LabelsDialog', () => {
     ]);
     render(<LabelsDialog open onClose={vi.fn()} />);
 
-    expect(screen.getByText('Too long to print: 1')).toBeInTheDocument();
+    expect(screen.getByText('Left out of the download: 1')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Download PNG' })).toBeEnabled();
+  });
+
+  it('says when the fonts failed to load and retries them', async () => {
+    mocks.fontsFailed = true;
+    render(<LabelsDialog open onClose={vi.fn()} />);
+
+    expect(
+      screen.getByText('The label fonts could not load. Check your connection.')
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(mocks.ensureTypeFonts).toHaveBeenCalledWith(['atkinson-bold', 'jetbrains-mono']);
   });
 
   it('clears the list after confirmation', async () => {

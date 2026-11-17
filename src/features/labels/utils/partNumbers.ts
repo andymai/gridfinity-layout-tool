@@ -14,11 +14,11 @@ interface VendorPattern {
 }
 
 const VENDOR_PATTERNS: readonly VendorPattern[] = [
-  // Digits, a letter group, digits: 91290A113, 6100K134, 47065T101.
-  { vendor: 'mcmaster', pattern: /^\d{3,6}[A-Z]{1,2}\d{1,5}$/i },
+  // Digits, a letter group, digits: 91290A113, 6100K134, 47065T101. A lone x
+  // is a size (300x200), not a letter group.
+  { vendor: 'mcmaster', pattern: /^\d{3,6}(?!x\d)[A-Z]{1,2}\d{1,5}$/i },
 ];
 
-/** The supplier whose part-number format `token` matches, or null. */
 export function vendorOfPartNumber(token: string): PartNumberVendor | null {
   const trimmed = token.trim();
   for (const { vendor, pattern } of VENDOR_PATTERNS) {
@@ -39,7 +39,6 @@ export function looksLikePartNumber(cell: string): boolean {
   return !/^[\d.,]+$/.test(value);
 }
 
-/** Part numbers print in upper case for a recognised supplier, as typed otherwise. */
 export function normalizePartNumber(token: string): string {
   const trimmed = token.trim();
   return vendorOfPartNumber(trimmed) === null ? trimmed : trimmed.toUpperCase();

@@ -9,9 +9,12 @@ describe('vendorOfPartNumber', () => {
     }
   );
 
-  it.each(['M3x8', '100', 'A113', '91290A113X', 'Socket head screw'])('rejects %s', (token) => {
-    expect(vendorOfPartNumber(token)).toBeNull();
-  });
+  it.each(['M3x8', '100', 'A113', '91290A113X', '300x200', '2020X500', 'Socket head screw'])(
+    'rejects %s',
+    (token) => {
+      expect(vendorOfPartNumber(token)).toBeNull();
+    }
+  );
 });
 
 describe('looksLikePartNumber', () => {

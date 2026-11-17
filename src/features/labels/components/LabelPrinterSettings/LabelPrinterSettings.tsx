@@ -16,7 +16,6 @@ function tapeLengthValue(length: TapeLength): string {
   return String(length);
 }
 
-/** Printer, label size and tape length: the settings every label shares. */
 export function LabelPrinterSettings() {
   const t = useTranslation();
   const { printerId, mediaId, tapeLength, setPrinter, setMediaId, setTapeLength } =

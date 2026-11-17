@@ -60,7 +60,7 @@ describe('withPngDpi', () => {
 
 describe('labelPixelSize', () => {
   it('maps millimetres to whole printer dots', () => {
-    const plan: LabelPlan = { widthMm: 40, heightMm: (96 / 203) * 25.4, blocks: [], fits: true };
+    const plan: LabelPlan = { widthMm: 40, heightMm: (96 / 203) * 25.4, blocks: [], problem: null };
     expect(labelPixelSize(plan, 203)).toEqual({ width: 320, height: 96 });
   });
 });

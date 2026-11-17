@@ -20,8 +20,8 @@ const DESCRIPTION = 'Black-Oxide Alloy Steel Socket Head Screw, M3 x 0.5 mm Thre
 
 function expectInkInside(plan: LabelPlan): void {
   for (const block of plan.blocks) {
-    expect(block.x + block.plan.minX).toBeGreaterThanOrEqual(-plan.widthMm / 2);
-    expect(block.x + block.plan.maxX).toBeLessThanOrEqual(plan.widthMm / 2);
+    expect(block.plan.minX).toBeGreaterThanOrEqual(-plan.widthMm / 2);
+    expect(block.plan.maxX).toBeLessThanOrEqual(plan.widthMm / 2);
     expect(block.y + block.plan.minY).toBeGreaterThanOrEqual(-plan.heightMm / 2);
     expect(block.y + block.plan.maxY).toBeLessThanOrEqual(plan.heightMm / 2);
   }
@@ -33,7 +33,7 @@ describe('planLabel', () => {
     const short = planLabel({ name: 'M3', detail: '' }, box, measurer);
     const long = planLabel({ name: 'M3 socket head screws', detail: '' }, box, measurer);
 
-    expect(short.fits && long.fits).toBe(true);
+    expect([short.problem, long.problem]).toEqual([null, null]);
     expect(long.widthMm).toBeGreaterThan(short.widthMm * 3);
     expect(long.widthMm).toBeLessThan(FIT_MAX_LENGTH_MM);
     expect(short.widthMm).toBeGreaterThanOrEqual(9);
@@ -48,7 +48,7 @@ describe('planLabel', () => {
       measurer
     );
 
-    expect(plan.fits).toBe(true);
+    expect(plan.problem).toBeNull();
     expect(plan.widthMm).toBe(40);
     const [name, detail] = plan.blocks;
     expect(name.plan.font).toBe(LABEL_NAME_FONT);
@@ -65,7 +65,7 @@ describe('planLabel', () => {
       measurer
     );
 
-    expect(plan.fits).toBe(true);
+    expect(plan.problem).toBeNull();
     expect(plan.blocks[0].plan.lines.length).toBeGreaterThan(1);
     expectInkInside(plan);
   });
@@ -77,19 +77,43 @@ describe('planLabel', () => {
       measurer
     );
 
-    expect(plan.fits).toBe(false);
+    expect(plan.problem).toBe('tooLong');
     expect(plan.blocks).toHaveLength(0);
   });
 
-  it('does not fit a label with no name', () => {
+  it('reports a label with no name as empty', () => {
     const plan = planLabel(
       { name: '  ', detail: '91290A113' },
       { heightMm: 12, lengthMm: 40 },
       measurer
     );
 
-    expect(plan.fits).toBe(false);
+    expect(plan.problem).toBe('empty');
+    expect(plan.blocks).toHaveLength(0);
+  });
+
+  it('flags text the label faces have no glyphs for, and still previews it', () => {
+    const plan = planLabel(
+      { name: 'Гвинти M3', detail: '' },
+      { heightMm: 9, lengthMm: null },
+      measurer
+    );
+
+    expect(plan.problem).toBe('unsupportedText');
     expect(plan.blocks).toHaveLength(1);
+  });
+
+  it('puts the part number after the name on tape too narrow for two lines', () => {
+    const plan = planLabel(
+      { name: 'Socket head screw', detail: '91290A113' },
+      { heightMm: (32 / 180) * 25.4, lengthMm: null },
+      measurer
+    );
+
+    expect(plan.problem).toBeNull();
+    expect(plan.blocks).toHaveLength(1);
+    expect(plan.blocks[0].plan.lines.map((line) => line.text).join(' ')).toContain('91290A113');
+    expectInkInside(plan);
   });
 
   it('gives glyph outlines for each block', () => {

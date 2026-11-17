@@ -19,6 +19,8 @@ interface GlyphPathCommand {
 
 interface GlyphRecord {
   readonly advanceWidth?: number;
+  /** 0 is `.notdef`, which a font draws for a character it has no glyph for. */
+  readonly index?: number;
 }
 
 /**
@@ -90,6 +92,7 @@ export interface TypeMeasurer {
    * thinnest feature is frequently a comma or a digit rather than an `I`.
    */
   stem(text: string, family: TextFontFamily): number | null;
+  covers(text: string, family: TextFontFamily): boolean;
 }
 
 const MEMO_MAX = 512;
@@ -266,6 +269,11 @@ export function createTypeMeasurer(getFont: GetGlyphFont): TypeMeasurer {
         ...(cmd.y2 !== undefined ? { y2: -cmd.y2 } : {}),
       }));
       return memoSet(outlines, key, commands);
+    },
+    covers(text, family) {
+      const font = getFont(family);
+      if (!font) return false;
+      return font.stringToGlyphs(text.replace(/\s/g, '')).every((glyph) => glyph.index !== 0);
     },
   };
 }
