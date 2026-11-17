@@ -1,6 +1,8 @@
 import { execFileSync } from 'node:child_process';
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 const SCRIPT = join(import.meta.dirname, 'release-window.sh');
 
@@ -68,5 +70,39 @@ describe('release-window.sh', () => {
     ['the hour before the evening window', '2026-11-17T22:59:00Z', ['2026-11-17T05:30:00Z']],
   ])('holds for %s', (_label, now, releases) => {
     expect(gate(now, releases)).toBe('go=false');
+  });
+});
+
+describe('release-window.sh GitHub lookup', () => {
+  let dir = '';
+
+  afterEach(() => {
+    if (dir) rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('reads every page since UTC midnight, so a busy day cannot hide a release', () => {
+    dir = mkdtempSync(join(tmpdir(), 'release-window-'));
+    const argsFile = join(dir, 'args');
+    const releases = [at('2026-11-17T00:23:00Z'), at('2026-11-17T05:23:00Z')].join(' ');
+    writeFileSync(
+      join(dir, 'gh'),
+      `#!/usr/bin/env bash\necho "$@" > "${argsFile}"\nprintf '%s\\n' ${releases}\n`
+    );
+    chmodSync(join(dir, 'gh'), 0o755);
+
+    const out = execFileSync('bash', [SCRIPT], {
+      env: {
+        PATH: `${dir}:${process.env.PATH ?? ''}`,
+        NOW: String(at('2026-11-17T23:23:00Z')),
+        GITHUB_REPOSITORY: 'owner/repo',
+      },
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+
+    expect(out).toBe('go=false');
+    const args = readFileSync(argsFile, 'utf8');
+    expect(args).toContain('--paginate');
+    expect(args).toContain('since=2026-11-17T00:00:00Z');
   });
 });

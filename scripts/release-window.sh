@@ -31,14 +31,19 @@ if [ -z "$window_start" ]; then
   exit 0
 fi
 
+day_start=$((now - now % 86400))
+
 # The release PR's squash merge is the deploy trigger (scripts/vercel-ignore.sh),
-# so the merge times say what already shipped.
+# so the merge times say what already shipped. `since` bounds the lookup to the
+# span the checks below need, and --paginate reads all of it: a fixed page can
+# end before an earlier release on a busy day.
 if [ -z "${RELEASE_EPOCHS+set}" ]; then
-  RELEASE_EPOCHS=$(gh api "repos/$GITHUB_REPOSITORY/commits?sha=main&per_page=100" \
+  since=$((window_start < day_start ? window_start : day_start))
+  since_iso=$(date -u -d "@$since" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -r "$since" +%Y-%m-%dT%H:%M:%SZ)
+  RELEASE_EPOCHS=$(gh api --paginate "repos/$GITHUB_REPOSITORY/commits?sha=main&since=$since_iso&per_page=100" \
     --jq '.[] | select(.commit.message | startswith("chore(main): release ")) | .commit.committer.date | fromdateiso8601')
 fi
 
-day_start=$((now - now % 86400))
 today=0
 for t in $RELEASE_EPOCHS; do
   if [ "$t" -ge "$window_start" ]; then
