@@ -1,4 +1,4 @@
-import { triggerDownload } from '@/shared/generation/exportUtils';
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import type { TypeMeasurer } from '@/shared/utils/typePlan';
 import type { LabelEntry } from '../store/labelListStore';
 import { labelFileName, zipLabelFiles } from './labelFiles';
@@ -9,8 +9,9 @@ import { labelPaths } from './planLabel';
 import type { LabelPlan } from './planLabel';
 
 /**
- * Download every label that fits: one PNG on its own, or a ZIP of them.
- * Returns how many labels it wrote.
+ * Hand every label that fits to the user's export destination: one PNG on its
+ * own, or a ZIP of them. Returns how many labels it saved, and 0 when nothing
+ * was saved, which `deliverExport` has already told the user about.
  */
 export async function downloadLabels(
   entries: readonly LabelEntry[],
@@ -30,13 +31,13 @@ export async function downloadLabels(
     });
   }
 
-  if (files.length === 1) {
-    triggerDownload(
-      new Blob([new Uint8Array(files[0].data)], { type: 'image/png' }),
-      files[0].name
-    );
-  } else if (files.length > 1) {
-    triggerDownload(zipLabelFiles(files), `labels-${printer.id}-${media.id}.zip`);
-  }
-  return files.length;
+  if (files.length === 0) return 0;
+  const saved =
+    files.length === 1
+      ? await deliverExport(
+          new Blob([new Uint8Array(files[0].data)], { type: 'image/png' }),
+          files[0].name
+        )
+      : await deliverExport(zipLabelFiles(files), `labels-${printer.id}-${media.id}.zip`);
+  return saved ? files.length : 0;
 }

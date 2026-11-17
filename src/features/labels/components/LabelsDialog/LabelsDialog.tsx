@@ -32,12 +32,10 @@ export function LabelsDialog({ open, onClose }: LabelsDialogProps) {
     if (measurer === null) return;
     setBusy(true);
     try {
-      const written = await downloadLabels(entries, plans, measurer, printer, media);
-      trackEvent('labels_downloaded', {
-        printer: printer.id,
-        media: media.id,
-        labels: written,
-      });
+      const saved = await downloadLabels(entries, plans, measurer, printer, media);
+      if (saved > 0) {
+        trackEvent('labels_downloaded', { printer: printer.id, media: media.id, labels: saved });
+      }
     } catch {
       useToastStore.getState().addToast(t('labels.downloadFailed'), 'error');
     } finally {
