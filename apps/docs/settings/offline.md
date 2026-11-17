@@ -7,6 +7,7 @@ sources:
   - src/shared/pwa/
   - src/core/store/pwaUpdate.ts
   - src/shared/components/AppVersionButton/AppVersionButton.tsx
+  - src/features/whats-new/hooks/useWhatsNewAutoOpen.ts
 ---
 
 # Install and work offline

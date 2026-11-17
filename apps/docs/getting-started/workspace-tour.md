@@ -7,6 +7,7 @@ sources:
   - src/shell/RightPanel/RightPanel.tsx
   - src/shared/components/HeaderSupportLinks/HeaderSupportLinks.tsx
   - src/features/command-palette/hooks/useCommandPalette.ts
+  - src/features/inspiration-gallery/components/InspirationGallery/InspirationGallery.tsx
   - src/shell/Modals/HelpModal/
   - src/shell/Mobile/
   - src/shell/Tablet/

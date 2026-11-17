@@ -8,6 +8,7 @@ sources:
   - docker/nginx.conf
   - .github/workflows/docker.yml
   - src/shared/hooks/usePWAUpdate.ts
+  - src/features/supporters/hooks/useSupportersData.ts
 ---
 
 # Self-hosting with Docker
