@@ -19,7 +19,8 @@ import {
   layerId,
   layoutId as toLayoutId,
 } from '@/core/types';
-import { err, layoutLibraryLimit, storageNotFound } from '@/core/result';
+import { err, layoutLibraryLimit, storageNotFound, storageUnavailable } from '@/core/result';
+import { isPulledCopy, notePulledCopy, readOpenLayout } from '@/core/store/openLayoutSaves';
 
 const LIMIT_MESSAGE =
   'Layout limit reached (500). Delete a layout you no longer need, then try again.';
@@ -326,6 +327,32 @@ describe('useLayoutSwitcher', () => {
 
       const error = expectErr(switchResult!);
       expect(error.code).toBe('STORAGE_NOT_FOUND');
+    });
+
+    // A switch writes the open layout before it can fail, so storage may then
+    // hold that copy and not the pulled one.
+    it('stops counting the open layout as a pulled copy once a switch writes it', async () => {
+      const openId = useLayoutStore.getState().activeLayoutId;
+      if (openId === null) throw new Error('no open layout');
+      const pulled = useLayoutStore.getState().layout;
+      notePulledCopy(openId, Date.now(), pulled);
+      act(() => {
+        useLayoutStore.getState().setName('edited');
+      });
+      vi.mocked(storage.switchActiveLayout).mockResolvedValueOnce(
+        err(storageUnavailable('indexedDB'))
+      );
+      const { result } = renderHook(() => useLayoutSwitcher());
+
+      await act(async () => {
+        await result.current.switchLayout(SECOND_LAYOUT_ID);
+      });
+      act(() => {
+        useLayoutStore.setState({ layout: pulled });
+      });
+
+      expect(useLayoutStore.getState().activeLayoutId).toBe(openId);
+      expect(isPulledCopy(readOpenLayout())).toBe(false);
     });
 
     it('saves current layout before switching', async () => {

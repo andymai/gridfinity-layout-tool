@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import {
   noteOpenLayoutSaved,
+  noteOpenLayoutWrite,
   queueLibraryWrite,
   readOpenLayout,
   saveOpenLayout,
@@ -115,6 +116,7 @@ export function useLayoutSwitcher() {
 
         const result = await queueLibraryWrite(async (library) => {
           const open = readOpenLayout();
+          if (isRealLayoutId(open.id)) noteOpenLayoutWrite(open);
           const switched = await switchActiveLayout(
             open.id || SHARED_PREVIEW_ID,
             open.layout,
