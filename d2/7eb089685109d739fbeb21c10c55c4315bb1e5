@@ -1,0 +1,37 @@
+src/features/bin-designer/components/preview/GhostSurfaceText/GhostSurfaceText.test.tsx
+  s_0af55ea98fd445::t_73477b16671238 12
+src/features/bin-designer/components/controls/TypeSpecimen/TypeSpecimen.test.tsx
+  s_0af55ea98fd445::t_73477b16671238 6
+src/features/bin-designer/components/controls/TypeSpecimen/TypeSpecimen.tsx
+  s_0af55ea98fd445::t_73477b16671238 17
+src/shared/fonts/typeFontRegistry.test.ts
+  s_0af55ea98fd445::t_73477b16671238 1-97
+src/shared/hooks/useTypeMeasurer.ts
+  s_0af55ea98fd445::t_73477b16671238 1-32
+src/features/bin-designer/components/panel/TypeSection/TypeSection.test.tsx
+  s_0af55ea98fd445::t_73477b16671238 9
+src/features/bin-designer/components/panel/TypeSection/TypeSection.tsx
+  s_0af55ea98fd445::t_73477b16671238 35
+src/features/bin-designer/components/preview/GhostSurfaceText/GhostSurfaceText.tsx
+  s_0af55ea98fd445::t_73477b16671238 23
+src/shared/README.md
+  s_0af55ea98fd445::t_a42733eb2e448d 28
+src/shared/hooks/useTypeMeasurer.test.ts
+  s_0af55ea98fd445::t_73477b16671238 1-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d27eb089685109d739fbeb21c10c55c4315bb1e5",
+  "prompts": {},
+  "sessions": {
+    "s_0af55ea98fd445": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b0aef1d-72f1-4eb1-af22-d6135a699f5e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
