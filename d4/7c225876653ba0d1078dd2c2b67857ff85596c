@@ -1,0 +1,22 @@
+src/shared/hooks/useLayoutSwitcher.ts
+  s_7c5533240a3abc::t_416e9764eb0495 6,119
+src/shared/hooks/useLayoutSwitcher.test.ts
+  s_7c5533240a3abc::t_c1b2e17a734c8d 22-23,332-355
+  s_7c5533240a3abc::t_115970a96fa5f2 356-357
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d47c225876653ba0d1078dd2c2b67857ff85596c",
+  "prompts": {},
+  "sessions": {
+    "s_7c5533240a3abc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "589c9ea8-937b-4272-a48e-6462e8c88755",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
