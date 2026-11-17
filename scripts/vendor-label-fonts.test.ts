@@ -59,6 +59,12 @@ describe('vendored label font data', () => {
     expect([...named].filter((id) => !existsSync(join(metaDir, `${id}.json`)))).toEqual([]);
   });
 
+  it('carries the fonts’ license with them', () => {
+    expect(readFileSync(join(VENDORED_DIR, 'font-files/LICENSE'), 'utf8')).toContain(
+      'SIL Open Font License'
+    );
+  });
+
   it('has the default font that answers Latin text', () => {
     expect(existsSync(join(VENDORED_DIR, LABEL_DEFAULT_FONT_FILE))).toBe(true);
   });

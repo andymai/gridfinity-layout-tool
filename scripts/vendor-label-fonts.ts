@@ -27,6 +27,14 @@ const REPO = 'https://github.com/lojjic/unicode-font-resolver.git';
 // Tag v1.0.1, the dataset troika-three-text 0.52 defaults to.
 const COMMIT = '4faa2778f9a5cefa04cc2295849fbd1f6fb50919';
 const DATA = 'packages/data';
+// `font-files/LICENSE` is the fonts' OFL, which has to travel with them.
+const COPIED_WHOLE = [
+  'codepoint-index',
+  'font-meta',
+  'LICENSE',
+  'font-files/LICENSE',
+  'schema-version.json',
+];
 
 export const VENDORED_DIR = join('public', LABEL_FONT_DATA_PATH);
 
@@ -50,9 +58,7 @@ function nearest(weights: readonly number[], wanted: number): number {
 }
 
 /**
- * The file the resolver client requests for `meta` at sans-serif, normal, 400:
- * the asked category and style when the font has them, else its first one, and
- * the nearest weight it carries.
+ * The file the resolver client requests for `meta` at sans-serif, normal, 400.
  */
 export function fallbackFontFile(meta: FontMeta): string {
   const category = pick(meta.typeforms, 'sans-serif');
@@ -85,10 +91,7 @@ function main(): void {
       'sparse-checkout',
       'set',
       '--no-cone',
-      `/${DATA}/codepoint-index/`,
-      `/${DATA}/font-meta/`,
-      `/${DATA}/LICENSE`,
-      `/${DATA}/schema-version.json`
+      ...COPIED_WHOLE.map((entry) => `/${DATA}/${entry}`)
     );
     git(work, 'fetch', '--quiet', '--depth=1', '--filter=blob:none', 'origin', COMMIT);
     git(work, 'checkout', '--quiet', COMMIT);
@@ -101,7 +104,8 @@ function main(): void {
 
     rmSync(VENDORED_DIR, { recursive: true, force: true });
     mkdirSync(VENDORED_DIR, { recursive: true });
-    for (const entry of ['codepoint-index', 'font-meta', 'LICENSE', 'schema-version.json']) {
+    for (const entry of COPIED_WHOLE) {
+      mkdirSync(dirname(join(VENDORED_DIR, entry)), { recursive: true });
       cpSync(join(work, DATA, entry), join(VENDORED_DIR, entry), { recursive: true });
     }
     for (const file of files) {
