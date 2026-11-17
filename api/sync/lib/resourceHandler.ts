@@ -34,6 +34,8 @@ import { unheldMeshes } from '../../lib/meshIndex.js';
 
 type RedisClient = NonNullable<ReturnType<typeof getRedis>>;
 
+const MAX_LOGGED_ERROR_LENGTH = 300;
+
 export { MESH_MISSING_STATUS };
 
 export type SyncResourceKind = 'layouts' | 'designs' | 'baseplates' | 'designVersions' | 'folders';
@@ -126,6 +128,14 @@ export function createSyncResourceHandler<TEnvelope extends SyncEnvelope>(
 
     const built = config.buildPut(body[config.payloadKey], modifiedAt, id, body);
     if (!built.ok) {
+      // The client shows only a generic toast for a rejected push. A validator
+      // message names fields and limits, never the user's own text.
+      logger.warn(`sync/${config.kind} rejected the payload`, {
+        userId,
+        status: built.status,
+        code: built.code,
+        error: built.error.slice(0, MAX_LOGGED_ERROR_LENGTH),
+      });
       res.status(built.status).json({ error: built.error, code: built.code });
       return;
     }

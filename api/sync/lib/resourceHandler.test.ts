@@ -13,6 +13,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { ErrorCode } from '../../lib/shared';
+import { logger } from '../../lib/logger';
 import { createSyncResourceHandler, type SyncResourceConfig } from './resourceHandler';
 
 let redisStore: Map<string, string>;
@@ -261,6 +262,25 @@ describe('PUT — request validation', () => {
     const body = res._body as { error: string; code: string };
     expect(body.error).toBe('value must be a string');
     expect(body.code).toBe(ErrorCode.VALIDATION_ERROR);
+  });
+
+  // The client only shows a generic toast for a rejected push, so this log is
+  // the one record of why a valid-looking local item cannot sync.
+  it('logs why it rejected the payload, without the payload', async () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => undefined);
+    await handler(
+      makeReq({ method: 'PUT', body: { thing: { value: 42 }, modifiedAt: 1000 } }),
+      makeRes() as unknown as VercelResponse
+    );
+
+    expect(warn).toHaveBeenCalledWith('sync/layouts rejected the payload', {
+      userId: 'user-1',
+      status: 400,
+      code: ErrorCode.VALIDATION_ERROR,
+      error: 'value must be a string',
+    });
+    expect(JSON.stringify(warn.mock.calls)).not.toContain('42');
+    warn.mockRestore();
   });
 });
 
