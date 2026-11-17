@@ -8,6 +8,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { userIndexKey, userMeshesKey } from '../../lib/redisKeys';
 import { MESH_MISSING_STATUS } from '../lib/resourceHandler';
+import { logger } from '../../lib/logger';
 
 let redisStore: Map<string, string>;
 let redisHashes: Map<string, Map<string, string>>;
@@ -272,6 +273,38 @@ describe('PUT', () => {
       res as unknown as VercelResponse
     );
     expect(res._status).toBe(400);
+  });
+
+  // Validators echo an unknown key from the request. The log keeps a key shaped
+  // like a field name, which is what a client and server mismatch looks like,
+  // and drops any other key, which only a hand-made request can send.
+  it.each([
+    ['private text', '<redacted>'],
+    ['private.customer@example.test', '<redacted>'],
+    ['line\nbreak', '<redacted>'],
+    ['fingerGroove', 'fingerGroove'],
+  ])('logs a rejected unknown key %j as %j', async (key, logged) => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => undefined);
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: { name: 'x', params: { ...VALID_DESIGN, featureColors: { [key]: true } } },
+          modifiedAt: 1000,
+        },
+      }),
+      res as unknown as VercelResponse
+    );
+
+    expect(res._status).toBe(400);
+    expect((res._body as { error: string }).error).toBe(`featureColors has unknown key: ${key}`);
+    expect(warn).toHaveBeenCalledWith(
+      'sync/designs rejected the payload',
+      expect.objectContaining({ error: `featureColors has unknown key: ${logged}` })
+    );
+    warn.mockRestore();
   });
 
   it('sanitizes the name: strips control chars, trims, and truncates to 100', async () => {

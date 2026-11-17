@@ -36,6 +36,25 @@ type RedisClient = NonNullable<ReturnType<typeof getRedis>>;
 
 const MAX_LOGGED_ERROR_LENGTH = 300;
 
+// The one part of a validator message that the request controls: the unknown
+// key it echoes ("has unknown key: X", "unknown corner: X", "Unknown pull tab
+// setting: X"). Every other part names a field or a limit.
+const ECHOED_KEY = /(\bunknown [a-z ]+: )([\s\S]*)$/i;
+const FIELD_NAME = /^[A-Za-z][A-Za-z0-9]{0,39}$/;
+
+/**
+ * A validator message fit for the log. An echoed key stays only when it reads
+ * as a field name, which is what a client and server mismatch sends; a
+ * hand-made request can put any text there.
+ */
+function loggableError(error: string): string {
+  return error
+    .replace(ECHOED_KEY, (_match, prefix: string, key: string) =>
+      FIELD_NAME.test(key) ? `${prefix}${key}` : `${prefix}<redacted>`
+    )
+    .slice(0, MAX_LOGGED_ERROR_LENGTH);
+}
+
 export { MESH_MISSING_STATUS };
 
 export type SyncResourceKind = 'layouts' | 'designs' | 'baseplates' | 'designVersions' | 'folders';
@@ -128,13 +147,12 @@ export function createSyncResourceHandler<TEnvelope extends SyncEnvelope>(
 
     const built = config.buildPut(body[config.payloadKey], modifiedAt, id, body);
     if (!built.ok) {
-      // The client shows only a generic toast for a rejected push. A validator
-      // message names fields and limits, never the user's own text.
+      // The client shows only a generic toast for a rejected push.
       logger.warn(`sync/${config.kind} rejected the payload`, {
         userId,
         status: built.status,
         code: built.code,
-        error: built.error.slice(0, MAX_LOGGED_ERROR_LENGTH),
+        error: loggableError(built.error),
       });
       res.status(built.status).json({ error: built.error, code: built.code });
       return;
