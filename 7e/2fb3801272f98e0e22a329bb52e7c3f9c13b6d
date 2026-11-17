@@ -1,58 +1,58 @@
-src/i18n/locales/ka.json
-  s_0af55ea98fd445::t_87d64d68351ed1 5547-5548
-src/i18n/locales/zh-CN.json
-  s_0af55ea98fd445::t_87d64d68351ed1 5408-5409
-src/i18n/locales/ko.json
-  s_0af55ea98fd445::t_87d64d68351ed1 5408-5409
-src/i18n/locales/pl.json
-  s_0af55ea98fd445::t_87d64d68351ed1 5825-5826
-docker/nginx.conf
-  s_0af55ea98fd445::t_29260429b748c6 35,42,145-146
-src/i18n/locales/cs.json
-  s_0af55ea98fd445::t_87d64d68351ed1 5688-5689
-content/gridfinity-label-maker.md
-  s_0af55ea98fd445::t_29260429b748c6 1-83
-src/i18n/locales/pt-BR.json
+src/i18n/locales/de.json
   s_0af55ea98fd445::t_87d64d68351ed1 5547-5548
 .gitignore
   s_0af55ea98fd445::t_29260429b748c6 75
-src/shell/Sidebar/learnLinks.ts
-  s_0af55ea98fd445::t_29260429b748c6 22
+src/i18n/locales/es.json
+  s_0af55ea98fd445::t_87d64d68351ed1 5547-5548
 src/i18n/locales/en.ts
   s_0af55ea98fd445::t_87d64d68351ed1 413
-src/shell/Sidebar/learnLinks.test.ts
-  s_0af55ea98fd445::t_783ff2c7a72b7d 30
-scripts/build-route-entries.ts
-  s_0af55ea98fd445::t_21fad3b2c66daa 119-147,234-240,244-256,259
-  s_0af55ea98fd445::t_71846a837879b3 241-243
-  s_0af55ea98fd445::t_5831a40bcfee19 257-258
-src/i18n/locales/it.json
+src/i18n/locales/ko.json
+  s_0af55ea98fd445::t_87d64d68351ed1 5408-5409
+src/i18n/locales/nl.json
   s_0af55ea98fd445::t_87d64d68351ed1 5547-5548
 src/i18n/locales/nb.json
   s_0af55ea98fd445::t_87d64d68351ed1 5547-5548
-src/i18n/locales/nl.json
+src/i18n/locales/cs.json
+  s_0af55ea98fd445::t_87d64d68351ed1 5688-5689
+src/i18n/locales/ka.json
   s_0af55ea98fd445::t_87d64d68351ed1 5547-5548
-src/i18n/locales/de.json
+src/i18n/locales/ja.json
+  s_0af55ea98fd445::t_87d64d68351ed1 5408-5409
+src/shell/Sidebar/learnLinks.ts
+  s_0af55ea98fd445::t_29260429b748c6 22
+src/i18n/locales/uk.json
+  s_0af55ea98fd445::t_87d64d68351ed1 5825-5826
+src/i18n/locales/it.json
   s_0af55ea98fd445::t_87d64d68351ed1 5547-5548
 src/i18n/locales/sv.json
   s_0af55ea98fd445::t_87d64d68351ed1 5547-5548
-src/i18n/locales/es.json
-  s_0af55ea98fd445::t_87d64d68351ed1 5547-5548
 scripts/build-content.ts
   s_0af55ea98fd445::t_29260429b748c6 1050,1068
-scripts/vite-plugin-content-routes.ts
-  s_0af55ea98fd445::t_29260429b748c6 22
-src/i18n/locales/ja.json
+docker/nginx.conf
+  s_0af55ea98fd445::t_29260429b748c6 35,42,145-146
+src/i18n/locales/fr.json
+  s_0af55ea98fd445::t_87d64d68351ed1 5547-5548
+src/shell/Sidebar/learnLinks.test.ts
+  s_0af55ea98fd445::t_783ff2c7a72b7d 30
+vercel.json
+  s_0af55ea98fd445::t_29260429b748c6 179-186,508
+  s_0af55ea98fd445::t_16bc5ff48533c4 178
+content/gridfinity-label-maker.md
+  s_0af55ea98fd445::t_29260429b748c6 1-83
+src/i18n/locales/zh-CN.json
   s_0af55ea98fd445::t_87d64d68351ed1 5408-5409
 scripts/contentRoutes.ts
   s_0af55ea98fd445::t_29260429b748c6 28
-vercel.json
-  s_0af55ea98fd445::t_29260429b748c6 179-186,508
-  s_0af55ea98fd445::t_944909711831dd 178
-src/i18n/locales/fr.json
-  s_0af55ea98fd445::t_87d64d68351ed1 5547-5548
-src/i18n/locales/uk.json
+scripts/build-route-entries.ts
+  s_0af55ea98fd445::t_71846a837879b3 241-243
+  s_0af55ea98fd445::t_21fad3b2c66daa 119-147,234-240,244-256,259
+  s_0af55ea98fd445::t_0ba4a751af43eb 257-258
+src/i18n/locales/pl.json
   s_0af55ea98fd445::t_87d64d68351ed1 5825-5826
+scripts/vite-plugin-content-routes.ts
+  s_0af55ea98fd445::t_29260429b748c6 22
+src/i18n/locales/pt-BR.json
+  s_0af55ea98fd445::t_87d64d68351ed1 5547-5548
 ---
 {
   "schema_version": "authorship/3.0.0",
