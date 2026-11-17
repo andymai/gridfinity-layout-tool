@@ -47,6 +47,7 @@ interface ViewState {
   printModalOpen: boolean;
   whatsNewOpen: boolean;
   layoutExportOpen: boolean;
+  labelsOpen: boolean;
   showLayoutManager: boolean;
   showBaseplateLibrary: boolean;
 
@@ -87,6 +88,7 @@ interface ViewActions {
   setPrintModalOpen: (open: boolean) => void;
   setWhatsNewOpen: (open: boolean) => void;
   setLayoutExportOpen: (open: boolean) => void;
+  setLabelsOpen: (open: boolean) => void;
   setShowLayoutManager: (show: boolean) => void;
   setShowBaseplateLibrary: (show: boolean) => void;
 
@@ -115,6 +117,7 @@ export const INITIAL_VIEW_STATE = {
   printModalOpen: false,
   whatsNewOpen: false,
   layoutExportOpen: false,
+  labelsOpen: false,
   showLayoutManager: false,
   showBaseplateLibrary: false,
   showIsometricPreview: false,
@@ -183,6 +186,7 @@ export const useViewStore = create<ViewStore>((set) => ({
   setPrintModalOpen: (open) => set({ printModalOpen: open }),
   setWhatsNewOpen: (open) => set({ whatsNewOpen: open }),
   setLayoutExportOpen: (open) => set({ layoutExportOpen: open }),
+  setLabelsOpen: (open) => set({ labelsOpen: open }),
   setShowLayoutManager: (show) => set({ showLayoutManager: show }),
   setShowBaseplateLibrary: (show) => set({ showBaseplateLibrary: show }),
 

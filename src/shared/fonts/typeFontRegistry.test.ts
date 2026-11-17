@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   areTypeFontsLoaded,
+  didTypeFontsFail,
   ensureTypeFonts,
   getTypeMeasurer,
   resetTypeFontsForTest,
@@ -76,6 +77,18 @@ describe('designer type font registry', () => {
       ensureTypeFonts(['atkinson']);
       expect(fetchMock.mock.calls.length).toBeGreaterThan(1);
     }, WAIT);
+  });
+
+  it('reports a failed family until a retry starts', async () => {
+    const fetchMock = vi.fn(() => Promise.reject(new Error('offline')));
+    vi.stubGlobal('fetch', fetchMock);
+    expect(didTypeFontsFail(['atkinson'])).toBe(false);
+    ensureTypeFonts(['atkinson']);
+    await vi.waitFor(() => expect(didTypeFontsFail(['atkinson'])).toBe(true), WAIT);
+    expect(didTypeFontsFail(['poppins'])).toBe(false);
+
+    ensureTypeFonts(['atkinson']);
+    expect(didTypeFontsFail(['atkinson'])).toBe(false);
   });
 
   it('notifies subscribers so a preview can redraw when a face lands', () => {

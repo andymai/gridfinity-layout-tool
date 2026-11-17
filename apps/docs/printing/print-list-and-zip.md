@@ -59,6 +59,8 @@ A paper plan is handy to take to the drawer.
 
 <Screenshot id="printing-print-list-paper" alt="The Print layout dialog. On the left are the layers, the options with Bin list turned on, and the page orientation. On the right is a preview of the page with the grid and the bin list. Print now is at the bottom." spec="Layout editor, Workbench sample, desktop 1440 by 1250 px. Click Print in the header, then turn on Bin list. Crop to the dialog." />
 
+To print labels for the bins on a label maker, click <Ui k="print.makeLabels" /> in the same dialog. See [Labels for a label maker](./label-maker).
+
 ## Export the whole layout as one ZIP
 
 1. In the header, click <Ui k="header.export" />. A dialog titled <Ui k="common.export" /> opens. Its first section is <Ui k="layoutExport.title" />.

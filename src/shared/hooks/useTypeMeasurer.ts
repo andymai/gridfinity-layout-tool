@@ -12,6 +12,7 @@ import type { TextFontFamily } from '@/shared/types/bin';
 import type { TypeMeasurer } from '@/shared/utils/typePlan';
 import {
   areTypeFontsLoaded,
+  didTypeFontsFail,
   ensureTypeFonts,
   getTypeMeasurer,
   subscribeTypeFonts,
@@ -29,4 +30,10 @@ export function useTypeMeasurer(families: readonly TextFontFamily[]): TypeMeasur
   }, [key]);
 
   return areTypeFontsLoaded(families) ? getTypeMeasurer() : null;
+}
+
+/** Re-renders when a load fails or a retry starts. */
+export function useTypeFontsFailed(families: readonly TextFontFamily[]): boolean {
+  useSyncExternalStore(subscribeTypeFonts, typeFontsVersion, () => 0);
+  return didTypeFontsFail(families);
 }

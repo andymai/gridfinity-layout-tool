@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { PrintModal } from '@/features/print-export/components/PrintModal';
 import { useLayoutStore } from '@/core/store/layout';
+import { useViewStore } from '@/core/store/view';
 import {
   useSettingsStore,
   DEFAULT_PRINT_VIEW_SETTINGS,
@@ -130,6 +131,16 @@ describe('PrintModal', () => {
       const dialog = screen.getByTestId('print-modal-dialog');
       expect(dialog).toHaveAttribute('aria-modal', 'true');
       expect(dialog).toHaveAttribute('aria-labelledby', 'print-modal-title');
+    });
+
+    it('hands over to the labels dialog', () => {
+      const onClose = vi.fn();
+      render(<PrintModal isOpen={true} onClose={onClose} />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Labels for a label maker' }));
+
+      expect(onClose).toHaveBeenCalled();
+      expect(useViewStore.getState().labelsOpen).toBe(true);
     });
 
     it('renders Print and Cancel buttons', () => {

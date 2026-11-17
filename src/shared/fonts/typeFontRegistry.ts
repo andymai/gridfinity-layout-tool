@@ -27,6 +27,7 @@ interface BrepText {
 let modulePromise: Promise<BrepText> | null = null;
 let measurer: TypeMeasurer | null = null;
 const loaded = new Set<TextFontFamily>();
+const failed = new Set<TextFontFamily>();
 const loads = new Map<TextFontFamily, Promise<void>>();
 const listeners = new Set<() => void>();
 let version = 0;
@@ -37,7 +38,12 @@ function notify(): void {
 }
 
 function textModule(): Promise<BrepText> {
-  modulePromise ??= import('brepjs/text');
+  // A rejected import is not cached: offline, the chunk fails once, and a
+  // retry has to fetch it again rather than await the same rejection.
+  modulePromise ??= import('brepjs/text').catch((error: unknown) => {
+    modulePromise = null;
+    throw error;
+  });
   return modulePromise;
 }
 
@@ -60,7 +66,11 @@ async function loadFamily(family: TextFontFamily): Promise<void> {
     // `loads` tracks what is IN FLIGHT, not what has been attempted: a family
     // that failed has to stay retryable, or one flaky fetch costs the preview
     // for the rest of the session. `loaded` is what records success.
-    if (!loaded.has(family)) loads.delete(family);
+    if (!loaded.has(family)) {
+      loads.delete(family);
+      failed.add(family);
+      notify();
+    }
   }
 }
 
@@ -68,6 +78,7 @@ async function loadFamily(family: TextFontFamily): Promise<void> {
 export function ensureTypeFonts(families: Iterable<TextFontFamily>): void {
   for (const family of families) {
     if (loaded.has(family) || loads.has(family)) continue;
+    if (failed.delete(family)) notify();
     loads.set(family, loadFamily(family));
   }
 }
@@ -86,6 +97,12 @@ export function getTypeMeasurer(): TypeMeasurer | null {
   return measurer;
 }
 
+/** True once a load of any of `families` failed, until `ensureTypeFonts` retries it. */
+export function didTypeFontsFail(families: Iterable<TextFontFamily>): boolean {
+  for (const family of families) if (failed.has(family)) return true;
+  return false;
+}
+
 export function areTypeFontsLoaded(families: Iterable<TextFontFamily>): boolean {
   for (const family of families) if (!loaded.has(family)) return false;
   return true;
@@ -94,6 +111,7 @@ export function areTypeFontsLoaded(families: Iterable<TextFontFamily>): boolean 
 /** Test seam: drop every registration so a suite can start from nothing. */
 export function resetTypeFontsForTest(): void {
   loaded.clear();
+  failed.clear();
   loads.clear();
   measurer = null;
   modulePromise = null;

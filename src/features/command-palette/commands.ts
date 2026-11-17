@@ -348,6 +348,12 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['zip', '3d', 'stl', 'step', 'model', 'print', 'download'],
   },
   {
+    id: 'make-labels',
+    labelKey: 'commandPalette.makeLabels',
+    category: 'export',
+    keywords: ['label maker', 'p-touch', 'dymo', 'niimbot', 'phomemo', 'mcmaster'],
+  },
+  {
     id: 'download-layout',
     labelKey: 'commandPalette.downloadLayout',
     category: 'export',

@@ -103,6 +103,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     toggleShowOtherLayers,
     setPrintModalOpen,
     setLayoutExportOpen,
+    setLabelsOpen,
     setShowLayoutManager,
     setShowBaseplateLibrary,
     showIsometricPreview,
@@ -115,6 +116,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       toggleShowOtherLayers: s.toggleShowOtherLayers,
       setPrintModalOpen: s.setPrintModalOpen,
       setLayoutExportOpen: s.setLayoutExportOpen,
+      setLabelsOpen: s.setLabelsOpen,
       setShowLayoutManager: s.setShowLayoutManager,
       setShowBaseplateLibrary: s.setShowBaseplateLibrary,
       showIsometricPreview: s.showIsometricPreview,
@@ -482,6 +484,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
         trackEvent('ui.modalOpen', { modal: 'layoutExport', source: 'commandPalette' });
         setLayoutExportOpen(true);
       },
+      'make-labels': () => setLabelsOpen(true),
       'download-layout': () => dispatchWindowEvent('download-layout'),
       'copy-share-link': () => {
         useSharePopoverStore.getState().open();
@@ -531,6 +534,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     setShowBaseplateLibrary,
     setPrintModalOpen,
     setLayoutExportOpen,
+    setLabelsOpen,
     toggleIsometricPreview,
     togglePreviewExpanded,
     toggleShowOtherLayers,
