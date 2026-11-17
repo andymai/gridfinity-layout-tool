@@ -34,6 +34,17 @@ import { unheldMeshes } from '../../lib/meshIndex.js';
 
 type RedisClient = NonNullable<ReturnType<typeof getRedis>>;
 
+/**
+ * The top-level field that a validator message starts with. The message
+ * itself stays out of the log: validators echo request keys and map ids into
+ * it, so a hand-made request could put any text there. The first segment is
+ * always a field name the server wrote.
+ */
+function rejectedField(error: string): string {
+  const first = /^[^\s.[:]*/.exec(error)?.[0] ?? '';
+  return /^[A-Za-z]{1,40}$/.test(first) ? first : '<other>';
+}
+
 export { MESH_MISSING_STATUS };
 
 export type SyncResourceKind = 'layouts' | 'designs' | 'baseplates' | 'designVersions' | 'folders';
@@ -54,7 +65,14 @@ export type BuildPutResult<TEnvelope> =
       /** Mesh files the payload names by hash, each of which the account must hold. */
       meshHashes?: readonly string[];
     }
-  | { ok: false; status: number; error: string; code: string };
+  | {
+      ok: false;
+      status: number;
+      error: string;
+      code: string;
+      /** The validator's own error code, such as `SIZE_EXCEEDED`. A constant, so safe to log. */
+      reason?: string;
+    };
 
 export interface SyncResourceConfig<TEnvelope extends SyncEnvelope> {
   kind: SyncResourceKind;
@@ -126,6 +144,14 @@ export function createSyncResourceHandler<TEnvelope extends SyncEnvelope>(
 
     const built = config.buildPut(body[config.payloadKey], modifiedAt, id, body);
     if (!built.ok) {
+      // The client shows only a generic toast for a rejected push.
+      logger.warn(`sync/${config.kind} rejected the payload`, {
+        userId,
+        status: built.status,
+        code: built.code,
+        reason: built.reason ?? null,
+        field: rejectedField(built.error),
+      });
       res.status(built.status).json({ error: built.error, code: built.code });
       return;
     }
