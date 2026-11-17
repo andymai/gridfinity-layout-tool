@@ -1,0 +1,51 @@
+src/features/bin-designer/storage/DesignerStorage.test.ts
+  s_7c5533240a3abc::t_7194f7815ba835 65-83
+src/features/baseplate/storage/BaseplateStorage.test.ts
+  s_7c5533240a3abc::t_4b104616255642 33-50
+src/core/storage/libraryFolders.test.ts
+  s_7c5533240a3abc::t_470c5b09dbb560 271-311
+src/features/baseplate/storage/BaseplateStorage.ts
+  s_7c5533240a3abc::t_4a480af38159b3 55-57,59-60,62
+  s_7c5533240a3abc::t_b458fc127f7058 104-107
+  s_7c5533240a3abc::t_2b73c07b84c6aa 12,88,90
+src/features/bin-designer/storage/DesignVersionService.test.ts
+  s_7c5533240a3abc::t_7194f7815ba835 190-210
+src/core/storage/libraryFolders.ts
+  s_7c5533240a3abc::t_2b73c07b84c6aa 12,151,175-177,204-205,246-250,254,256-260,280
+src/core/storage/LayoutManager.ts
+  s_7c5533240a3abc::t_2b73c07b84c6aa 224,571
+  s_7c5533240a3abc::t_b458fc127f7058 30
+src/shared/hooks/useAutoSave.pull.test.ts
+  s_7c5533240a3abc::t_1a2ae98d02a93d 100-125
+src/features/bin-designer/storage/DesignVersionService.ts
+  s_7c5533240a3abc::t_2b73c07b84c6aa 30,173
+src/shared/utils/editStamp.ts
+  s_7c5533240a3abc::t_b458fc127f7058 13-15
+  s_7c5533240a3abc::t_d67e4e4182311a 1-12,16
+src/features/bin-designer/storage/designVariants.test.ts
+  s_7c5533240a3abc::t_7194f7815ba835 227-239
+src/features/bin-designer/storage/DesignerStorage.ts
+  s_7c5533240a3abc::t_4a480af38159b3 75-77,79-80,82
+  s_7c5533240a3abc::t_b458fc127f7058 183-186
+  s_7c5533240a3abc::t_2b73c07b84c6aa 34,652
+src/core/storage/LayoutManager.test.ts
+  s_7c5533240a3abc::t_7194f7815ba835 897-908
+src/shared/utils/editStamp.test.ts
+  s_7c5533240a3abc::t_d67e4e4182311a 1-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2ab9b3aba3b1cda3bd7ced1cb4e8f7334dd613cf",
+  "prompts": {},
+  "sessions": {
+    "s_7c5533240a3abc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "589c9ea8-937b-4272-a48e-6462e8c88755",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
