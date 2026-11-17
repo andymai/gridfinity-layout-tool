@@ -1,0 +1,33 @@
+src/features/bin-designer/store/designer.scenario.lid.test.ts
+  s_263c726ee027bb::t_d4723121c2f39f 561-569
+src/features/bin-designer/store/designer.scenario.depthModes.test.ts
+  s_263c726ee027bb::t_65edb4570b10f2 54-62
+src/features/bin-designer/store/helpers.ts
+  s_263c726ee027bb::t_e39da9dec9b91d 83
+  s_263c726ee027bb::t_20d5c74b6e6819 32
+  s_263c726ee027bb::t_4d6dc121112af7 93-94
+  s_263c726ee027bb::t_805033f46d20f2 73
+src/features/bin-designer/components/panel/BaseSection/useBodyTypeSwitch.test.ts
+  s_263c726ee027bb::t_8bc3c7cabbafd1 1-4,7-9,11-21,23-27,29-30,35,45-47
+  s_263c726ee027bb::t_08822222cf2d41 5-6,10,22,28,31-34,36-44
+src/features/bin-designer/store/designer.test.ts
+  s_263c726ee027bb::t_2fdcbf3ad20499 496-503
+src/features/bin-designer/store/designer.ts
+  s_263c726ee027bb::t_3c9d894aebd834 32-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6be3f0b9264ddb0289aba6a2f07ba31a4b3de2bc",
+  "prompts": {},
+  "sessions": {
+    "s_263c726ee027bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7c462398-e953-49f2-915c-b2433c55cc91",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
