@@ -1,0 +1,23 @@
+scripts/vendor-label-fonts.test.ts
+  s_263c726ee027bb::t_ca54d405c7ef0a 62-67
+public/fonts/unicode-font-resolver/1.0.1/font-files/LICENSE
+  s_263c726ee027bb::t_c39c7dd28527a3 1-94
+scripts/vendor-label-fonts.ts
+  s_263c726ee027bb::t_b86dd075eba1f4 30-37,61,94,107-108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0af1689d25a55e3480621f0f68a765932b0d91cc",
+  "prompts": {},
+  "sessions": {
+    "s_263c726ee027bb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7c462398-e953-49f2-915c-b2433c55cc91",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
