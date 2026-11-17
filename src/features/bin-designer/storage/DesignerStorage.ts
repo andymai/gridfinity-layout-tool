@@ -66,7 +66,19 @@ type SaveDesignInput = Omit<SavedDesign, 'id' | 'createdAt' | 'updatedAt'> & {
    * so a rename cannot vouch for an image that predates the params.
    */
   thumbnailState?: 'fresh' | 'outdated';
+  /** Set only by a sync pull: the remote `modifiedAt` to keep as `updatedAt`. */
+  remoteModifiedAt?: number;
 };
+
+/**
+ * `updatedAt` for a save: the `modifiedAt` of a copy that sync pulled, or the
+ * time now. Sync compares the two stamps, so a pulled copy must keep its own.
+ */
+function storedTime(remoteModifiedAt: number | undefined, now: string): string {
+  if (remoteModifiedAt === undefined) return now;
+  const time = new Date(remoteModifiedAt);
+  return Number.isNaN(time.getTime()) ? now : time.toISOString();
+}
 
 // Unversioned reads as outdated, which is what queues a regeneration.
 function thumbnailVersionFor(
@@ -166,7 +178,7 @@ async function writeDesign(design: SaveDesignInput): Promise<Result<SavedDesign,
       thumbnailVersion: thumbnailVersionFor(design, existing),
       exportFileNameConfig: design.exportFileNameConfig ?? null,
       createdAt,
-      updatedAt: now,
+      updatedAt: storedTime(design.remoteModifiedAt, now),
       ...(tags.length > 0 ? { tags } : {}),
       ...(publishedId !== undefined ? { publishedId } : {}),
       ...(lineage !== undefined ? { lineage } : {}),

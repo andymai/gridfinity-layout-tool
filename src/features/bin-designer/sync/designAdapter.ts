@@ -372,6 +372,7 @@ export const designAdapter: DesignAdapter = {
         publishedId,
         lineage,
         ...branch,
+        remoteModifiedAt: item.modifiedAt,
       });
       if (!isOk(result)) {
         throw syncPersistError('saveDesign', item.id, result.error);
