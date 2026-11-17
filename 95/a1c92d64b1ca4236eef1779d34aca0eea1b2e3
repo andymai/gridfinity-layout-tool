@@ -1,0 +1,104 @@
+src/features/labels/components/LabelsPage/LabelsPage.test.tsx
+  s_0af55ea98fd445::t_fc773c2c2fa77c 1-33
+src/features/labels/components/LabelsFooter/index.ts
+  s_0af55ea98fd445::t_67d26c1e63bff0 1
+src/i18n/locales/fr.json
+  s_0af55ea98fd445::t_1f302b847f8052 5543-5547
+src/i18n/locales/pl.json
+  s_0af55ea98fd445::t_1f302b847f8052 5821-5825
+src/shared/hooks/useLabelsRouting.test.ts
+  s_0af55ea98fd445::t_1c037667442ea4 1-31
+src/i18n/locales/uk.json
+  s_0af55ea98fd445::t_1f302b847f8052 5821-5825
+src/i18n/locales/de.json
+  s_0af55ea98fd445::t_1f302b847f8052 5543-5547
+src/i18n/locales/nl.json
+  s_0af55ea98fd445::t_1f302b847f8052 5543-5547
+src/shared/hooks/useLabelsRouting.ts
+  s_0af55ea98fd445::t_5888f37b1aab41 1-22
+src/features/labels/components/LabelsFooter/LabelsFooter.tsx
+  s_0af55ea98fd445::t_7d6e2c384e7e9e 1-65
+apps/docs/printing/label-maker.md
+  s_0af55ea98fd445::t_5107932041e92e 7,16
+src/features/labels/hooks/useLabelsWorkspace.ts
+  s_0af55ea98fd445::t_ef18161d7b39fe 1-56
+src/i18n/locales/ko.json
+  s_0af55ea98fd445::t_1f302b847f8052 5404-5408
+src/i18n/locales/sv.json
+  s_0af55ea98fd445::t_1f302b847f8052 5543-5547
+src/features/labels/components/LabelsDialog/LabelsDialog.tsx
+  s_0af55ea98fd445::t_fa1e1e4aefcd4d 1,3,6,15,21,32,35-36
+src/App.tsx
+  s_0af55ea98fd445::t_bfaa5e75d67307 81
+  s_0af55ea98fd445::t_1952da755d4373 294-303,305-306
+  s_0af55ea98fd445::t_38754d98ce953c 51,109,122,138
+  s_0af55ea98fd445::t_1f09030fccb1e1 54,133,139-140,486-488
+src/i18n/locales/zh-CN.json
+  s_0af55ea98fd445::t_1f302b847f8052 5404-5408
+src/i18n/locales/en.ts
+  s_0af55ea98fd445::t_1f302b847f8052 43-45,5171,6703-6704
+src/i18n/locales/nb.json
+  s_0af55ea98fd445::t_1f302b847f8052 5543-5547
+src/features/labels/components/index.ts
+  s_0af55ea98fd445::t_38754d98ce953c 2
+src/i18n/locales/ka.json
+  s_0af55ea98fd445::t_1f302b847f8052 5543-5547
+scripts/check-user-docs.ts
+  s_0af55ea98fd445::t_cfc12ed37c195c 19
+  s_0af55ea98fd445::t_87515296df85f0 20-26
+src/i18n/locales/es.json
+  s_0af55ea98fd445::t_1f302b847f8052 5543-5547
+src/features/labels/components/LabelsPage/LabelsPage.tsx
+  s_0af55ea98fd445::t_59a568ed77ae54 1-16,18-19,23-47
+  s_0af55ea98fd445::t_08313623fbd43f 17
+  s_0af55ea98fd445::t_2c6f3a4097889f 20-22
+src/i18n/locales/cs.json
+  s_0af55ea98fd445::t_1f302b847f8052 5684-5688
+docker/nginx.conf
+  s_0af55ea98fd445::t_cfc12ed37c195c 157,162
+src/shared/components/ToolSwitcher/ToolSwitcher.test.tsx
+  s_0af55ea98fd445::t_e1d6e4a4f18c22 31-36,55,222-227
+  s_0af55ea98fd445::t_ae981a7a8e3d72 228-229
+src/i18n/locales/pt-BR.json
+  s_0af55ea98fd445::t_1f302b847f8052 5543-5547
+src/shared/hooks/useRouteMeta.test.ts
+  s_0af55ea98fd445::t_45fd4ee52e2f50 1-22
+vercel.json
+  s_0af55ea98fd445::t_cfc12ed37c195c 519-521
+  s_0af55ea98fd445::t_3f320ff4b57c28 518
+src/App.lazyComponents.ts
+  s_0af55ea98fd445::t_38754d98ce953c 69-71
+src/features/labels/components/LabelsPage/index.ts
+  s_0af55ea98fd445::t_4226cc1e15d2ff 1
+src/shared/hooks/useRouteMeta.ts
+  s_0af55ea98fd445::t_1f09030fccb1e1 22,26-33
+  s_0af55ea98fd445::t_df434e116b1db5 41,67-69
+  s_0af55ea98fd445::t_bfaa5e75d67307 9
+  s_0af55ea98fd445::t_22f07aada47273 23-25,51-58
+  s_0af55ea98fd445::t_1f3595e07b2421 83
+src/shared/components/ToolSwitcher/ToolSwitcher.tsx
+  s_0af55ea98fd445::t_bfaa5e75d67307 15,89,91-95
+  s_0af55ea98fd445::t_deb9df4fd3475a 96-101
+src/i18n/locales/ja.json
+  s_0af55ea98fd445::t_1f302b847f8052 5404-5408
+src/i18n/locales/it.json
+  s_0af55ea98fd445::t_1f302b847f8052 5543-5547
+src/features/labels/components/LabelsFooter/LabelsFooter.test.tsx
+  s_0af55ea98fd445::t_bd4e177ec36fb8 1-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "95a1c92d64b1ca4236eef1779d34aca0eea1b2e3",
+  "prompts": {},
+  "sessions": {
+    "s_0af55ea98fd445": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b0aef1d-72f1-4eb1-af22-d6135a699f5e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
