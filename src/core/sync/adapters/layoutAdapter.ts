@@ -216,16 +216,15 @@ export const layoutAdapter: LayoutAdapter = {
       if (isErr(libraryResult)) {
         throw syncPersistError('saveLibrary', item.id, libraryResult.error);
       }
-      notePulledCopy(item.id, item.modifiedAt);
 
       // If the user is viewing this layout right now, replace what the
       // store has so the UI re-renders. `source: 'remote'` flags the
       // store's `lastEditSource` so other subscribers can distinguish
       // remote-applied changes from user edits.
       const { activeLayoutId, importLayout } = useLayoutStore.getState();
-      if (activeLayoutId === item.id) {
-        importLayout(layout, item.id as LayoutId, 'remote');
-      }
+      const open = activeLayoutId === item.id;
+      if (open) importLayout(layout, item.id as LayoutId, 'remote');
+      notePulledCopy(item.id, item.modifiedAt, open ? useLayoutStore.getState().layout : null);
     });
   },
 

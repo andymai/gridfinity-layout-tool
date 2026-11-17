@@ -4,6 +4,7 @@ import { useAutoSave } from '@/shared/hooks';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useToastStore } from '@/core/store/toast';
+import { notePulledCopy } from '@/core/store/openLayoutSaves';
 import { createTestLayout, resetAllStores, setupFakeTimers } from '@/test/testUtils';
 import * as storage from '@/core/storage';
 import type { SaveResult } from '@/core/storage';
@@ -666,6 +667,28 @@ describe('useAutoSave', () => {
       save.mockImplementation((id, _layout, library) =>
         Promise.resolve(saveResultFor(id, library))
       );
+    });
+
+    // A failed save can still leave its copy in storage: the layout write lands
+    // and the library write fails. A pulled copy is then no longer known to be
+    // stored, so a return to it must be written.
+    it('writes the pulled layout after a failed save of an edit, when the store returns to it', async () => {
+      const pulled = useLayoutStore.getState().layout;
+      notePulledCopy(TEST_LAYOUT_ID, Date.now(), pulled);
+      save.mockResolvedValueOnce(err(storageUnavailable('indexedDB')));
+      renderHook(() => useAutoSave());
+
+      editLayout(12);
+      await advance(SAVE_DEBOUNCE_MS);
+      expect(save).toHaveBeenCalledTimes(1);
+
+      act(() => {
+        useLayoutStore.setState({ layout: pulled });
+      });
+      await advance(SAVE_DEBOUNCE_MS);
+
+      expect(save).toHaveBeenCalledTimes(2);
+      expect(save).toHaveBeenLastCalledWith(TEST_LAYOUT_ID, pulled, expect.anything());
     });
 
     it('saves the layout again by itself once storage recovers, with no further edit', async () => {

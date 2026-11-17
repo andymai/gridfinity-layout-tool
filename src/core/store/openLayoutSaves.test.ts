@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
+  isPulledCopy,
   noteOpenLayoutSaved,
+  noteOpenLayoutWrite,
   notePulledCopy,
   readOpenLayout,
   savedLaterCopy,
@@ -9,6 +11,7 @@ import { useLayoutStore } from './layout';
 import { createDefaultLayout } from '@/core/constants';
 import { resetAllStores } from '@/test/testUtils';
 import { layoutId } from '@/core/types';
+import type { Layout } from '@/core/types';
 
 function open(id: string): void {
   useLayoutStore.getState().importLayout(createDefaultLayout(), layoutId(id), 'init');
@@ -85,6 +88,44 @@ describe('open layout saves', () => {
       const after = readOpenLayout();
 
       expect(savedLaterCopy(after)).toBe(false);
+    });
+  });
+
+  describe('the open layout a pull put in the store', () => {
+    function pullInto(id: string): Layout {
+      open(id);
+      const pulled = createDefaultLayout();
+      useLayoutStore.getState().importLayout(pulled, layoutId(id), 'remote');
+      const inStore = useLayoutStore.getState().layout;
+      notePulledCopy(id, 1_000, inStore);
+      return inStore;
+    }
+
+    it('is the pulled copy until it is edited', () => {
+      pullInto('pulled');
+      expect(isPulledCopy(readOpenLayout())).toBe(true);
+
+      useLayoutStore.getState().setName('edited');
+      expect(isPulledCopy(readOpenLayout())).toBe(false);
+    });
+
+    it('is not the pulled copy once a write of another copy starts, even if the store returns to it', () => {
+      const pulled = pullInto('undone');
+      useLayoutStore.getState().setName('edited');
+      noteOpenLayoutWrite(readOpenLayout());
+
+      useLayoutStore.getState().importLayout(pulled, layoutId('undone'), 'local');
+      expect(isPulledCopy(readOpenLayout())).toBe(false);
+    });
+
+    it('does not count a pull that did not reach the store, or another layout', () => {
+      open('closed');
+      notePulledCopy('closed', 1_000);
+      expect(isPulledCopy(readOpenLayout())).toBe(false);
+
+      pullInto('first');
+      open('second');
+      expect(isPulledCopy(readOpenLayout())).toBe(false);
     });
   });
 });

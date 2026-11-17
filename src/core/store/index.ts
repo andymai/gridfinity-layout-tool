@@ -3,7 +3,9 @@ export { useToastStore, INITIAL_TOAST_STATE } from './toast';
 export { useLibraryStore, computePreview, createDefaultLibrary } from './library';
 export { queueLibraryWrite, writeLibrary } from './libraryWrites';
 export {
+  isPulledCopy,
   noteOpenLayoutSaved,
+  noteOpenLayoutWrite,
   notePulledCopy,
   readOpenLayout,
   saveOpenLayout,
