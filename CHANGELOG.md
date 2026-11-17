@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.545.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.544.3...gridfinity-layout-tool-v4.545.0) (2026-11-17)
+
+
+### Features
+
+* **analytics:** test the bin designer as the landing page at / ([#5085](https://github.com/andymai/gridfinity-layout-tool/issues/5085)) ([49fcc0e](https://github.com/andymai/gridfinity-layout-tool/commit/49fcc0eb713b252105dbd413f2f220340e886b70))
+
+
+### Bug Fixes
+
+* **sync:** log why the server rejects a sync payload ([#5083](https://github.com/andymai/gridfinity-layout-tool/issues/5083)) ([022e691](https://github.com/andymai/gridfinity-layout-tool/commit/022e691aa95323b63e11ba396acd7a28d2dd5ce3))
+
 ## [4.544.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.544.2...gridfinity-layout-tool-v4.544.3) (2026-11-17)
 
 
