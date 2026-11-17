@@ -275,35 +275,40 @@ describe('PUT', () => {
     expect(res._status).toBe(400);
   });
 
-  // Validators echo an unknown key from the request. The log keeps a key shaped
-  // like a field name, which is what a client and server mismatch looks like,
-  // and drops any other key, which only a hand-made request can send.
+  // Validators echo request keys and map ids into their messages, so the log
+  // carries only the validator's code and the top-level field.
   it.each([
-    ['private text', '<redacted>'],
-    ['private.customer@example.test', '<redacted>'],
-    ['line\nbreak', '<redacted>'],
-    ['fingerGroove', 'fingerGroove'],
-  ])('logs a rejected unknown key %j as %j', async (key, logged) => {
+    ['an unknown key with a space', { featureColors: { 'private text': true } }, 'featureColors'],
+    [
+      'an email-like unknown key',
+      { featureColors: { 'private.customer@example.test': true } },
+      'featureColors',
+    ],
+    ['a key with a line break', { featureColors: { 'line\nbreak': true } }, 'featureColors'],
+    ['a map id', { meshAssets: { 'private.customer@example.test': null } }, 'meshAssets'],
+  ])('logs a rejection for %s with no request text', async (_label, extra, field) => {
     const warn = vi.spyOn(logger, 'warn').mockImplementation(() => undefined);
     const { default: handler } = await import('./[id]');
     const res = makeRes();
     await handler(
       makeReq({
         method: 'PUT',
-        body: {
-          design: { name: 'x', params: { ...VALID_DESIGN, featureColors: { [key]: true } } },
-          modifiedAt: 1000,
-        },
+        body: { design: { name: 'x', params: { ...VALID_DESIGN, ...extra } }, modifiedAt: 1000 },
       }),
       res as unknown as VercelResponse
     );
 
     expect(res._status).toBe(400);
-    expect((res._body as { error: string }).error).toBe(`featureColors has unknown key: ${key}`);
-    expect(warn).toHaveBeenCalledWith(
-      'sync/designs rejected the payload',
-      expect.objectContaining({ error: `featureColors has unknown key: ${logged}` })
-    );
+    expect(warn).toHaveBeenCalledWith('sync/designs rejected the payload', {
+      userId: expect.any(String),
+      status: 400,
+      code: 'VALIDATION_ERROR',
+      reason: 'INVALID_PARAMS',
+      field,
+    });
+    const logged = JSON.stringify(warn.mock.calls);
+    expect(logged).not.toContain('private');
+    expect(logged).not.toContain('break');
     warn.mockRestore();
   });
 

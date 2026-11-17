@@ -277,7 +277,8 @@ describe('PUT — request validation', () => {
       userId: 'user-1',
       status: 400,
       code: ErrorCode.VALIDATION_ERROR,
-      error: 'value must be a string',
+      reason: null,
+      field: 'value',
     });
     expect(JSON.stringify(warn.mock.calls)).not.toContain('42');
     warn.mockRestore();

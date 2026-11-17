@@ -168,6 +168,7 @@ export default createSyncResourceHandler<DesignVersionEnvelope>({
         ok: false,
         status: 400,
         error: validation.error.message,
+        reason: validation.error.code,
         code: ErrorCode.VALIDATION_ERROR,
       };
     }

@@ -34,25 +34,15 @@ import { unheldMeshes } from '../../lib/meshIndex.js';
 
 type RedisClient = NonNullable<ReturnType<typeof getRedis>>;
 
-const MAX_LOGGED_ERROR_LENGTH = 300;
-
-// The one part of a validator message that the request controls: the unknown
-// key it echoes ("has unknown key: X", "unknown corner: X", "Unknown pull tab
-// setting: X"). Every other part names a field or a limit.
-const ECHOED_KEY = /(\bunknown [a-z ]+: )([\s\S]*)$/i;
-const FIELD_NAME = /^[A-Za-z][A-Za-z0-9]{0,39}$/;
-
 /**
- * A validator message fit for the log. An echoed key stays only when it reads
- * as a field name, which is what a client and server mismatch sends; a
- * hand-made request can put any text there.
+ * The top-level field that a validator message starts with. The message
+ * itself stays out of the log: validators echo request keys and map ids into
+ * it, so a hand-made request could put any text there. The first segment is
+ * always a field name the server wrote.
  */
-function loggableError(error: string): string {
-  return error
-    .replace(ECHOED_KEY, (_match, prefix: string, key: string) =>
-      FIELD_NAME.test(key) ? `${prefix}${key}` : `${prefix}<redacted>`
-    )
-    .slice(0, MAX_LOGGED_ERROR_LENGTH);
+function rejectedField(error: string): string {
+  const first = /^[^\s.[:]*/.exec(error)?.[0] ?? '';
+  return /^[A-Za-z]{1,40}$/.test(first) ? first : '<other>';
 }
 
 export { MESH_MISSING_STATUS };
@@ -75,7 +65,14 @@ export type BuildPutResult<TEnvelope> =
       /** Mesh files the payload names by hash, each of which the account must hold. */
       meshHashes?: readonly string[];
     }
-  | { ok: false; status: number; error: string; code: string };
+  | {
+      ok: false;
+      status: number;
+      error: string;
+      code: string;
+      /** The validator's own error code, such as `SIZE_EXCEEDED`. A constant, so safe to log. */
+      reason?: string;
+    };
 
 export interface SyncResourceConfig<TEnvelope extends SyncEnvelope> {
   kind: SyncResourceKind;
@@ -152,7 +149,8 @@ export function createSyncResourceHandler<TEnvelope extends SyncEnvelope>(
         userId,
         status: built.status,
         code: built.code,
-        error: loggableError(built.error),
+        reason: built.reason ?? null,
+        field: rejectedField(built.error),
       });
       res.status(built.status).json({ error: built.error, code: built.code });
       return;
