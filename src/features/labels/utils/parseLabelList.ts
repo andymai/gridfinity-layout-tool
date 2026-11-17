@@ -63,7 +63,9 @@ function parseTable(rows: readonly (readonly string[])[]): LabelText[] {
   }
 
   const header = rows[0][partCol] ?? '';
-  const hasHeader = rows.length > 1 && isTextCell(header) && !looksLikePartNumber(header);
+  // A header names the column, so a cell with a digit is data, even a size
+  // such as M3 that is too short to read as a part number.
+  const hasHeader = rows.length > 1 && isTextCell(header) && !/\d/.test(header);
   return (hasHeader ? rows.slice(1) : rows).flatMap((row) => {
     const detail = normalizePartNumber(row[partCol] ?? '');
     const name = row

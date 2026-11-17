@@ -4,6 +4,7 @@ import {
   LABEL_DETAIL_MAX_LENGTH,
   LABEL_LIST_MAX,
   LABEL_LIST_STORAGE_KEY,
+  LABEL_NAME_MAX_LENGTH,
   useLabelListStore,
 } from './labelListStore';
 
@@ -37,11 +38,22 @@ describe('useLabelListStore', () => {
     store.updateEntry(id, { copies: 500, detail: 'x'.repeat(100) });
     expect(useLabelListStore.getState().entries[0]).toMatchObject({
       copies: LABEL_COPIES_MAX,
-      detail: 'x'.repeat(LABEL_DETAIL_MAX_LENGTH),
+      detail: `${'x'.repeat(LABEL_DETAIL_MAX_LENGTH - 1)}…`,
       name: 'Nuts',
     });
     store.updateEntry(id, { copies: 0 });
     expect(useLabelListStore.getState().entries[0].copies).toBe(1);
+  });
+
+  it('cuts an over-long pasted name at a word and marks the cut', () => {
+    const words = 'Zinc-plated alloy steel hex drive flat head screw '.repeat(4).trim();
+    useLabelListStore.getState().addEntries([{ name: words, detail: '' }]);
+
+    const { name } = useLabelListStore.getState().entries[0];
+    expect(name.length).toBeLessThanOrEqual(LABEL_NAME_MAX_LENGTH);
+    expect(name.endsWith('…')).toBe(true);
+    expect(words.startsWith(name.slice(0, -1))).toBe(true);
+    expect(words.charAt(name.length - 1)).toBe(' ');
   });
 
   it('removes one row or clears the list', () => {

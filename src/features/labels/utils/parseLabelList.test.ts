@@ -58,6 +58,14 @@ describe('parseLabelList', () => {
     ]);
   });
 
+  it('keeps a first row whose part number cell holds a short size', () => {
+    expect(parseLabelList('Spacers\tM3\nScrews\t91290A113\nNuts\t90592A085')).toEqual([
+      { name: 'Spacers', detail: 'M3' },
+      { name: 'Screws', detail: '91290A113' },
+      { name: 'Nuts', detail: '90592A085' },
+    ]);
+  });
+
   it('reads a size as part of the name, not a part number', () => {
     expect(parseLabelList('Plywood 300x200')).toEqual([{ name: 'Plywood 300x200', detail: '' }]);
   });

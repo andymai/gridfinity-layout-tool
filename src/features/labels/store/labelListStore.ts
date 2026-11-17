@@ -41,11 +41,19 @@ function clampCopies(value: number): number {
   return Math.min(LABEL_COPIES_MAX, Math.max(1, Math.round(value)));
 }
 
+/** Marks the cut, so a pasted description is never taken for the whole text. */
+function truncate(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max - 1);
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${lastSpace > max / 2 ? cut.slice(0, lastSpace) : cut}…`;
+}
+
 function clampEntry(entry: LabelEntry): LabelEntry {
   return {
     id: entry.id,
-    name: entry.name.slice(0, LABEL_NAME_MAX_LENGTH),
-    detail: entry.detail.slice(0, LABEL_DETAIL_MAX_LENGTH),
+    name: truncate(entry.name, LABEL_NAME_MAX_LENGTH),
+    detail: truncate(entry.detail, LABEL_DETAIL_MAX_LENGTH),
     copies: clampCopies(entry.copies),
   };
 }
