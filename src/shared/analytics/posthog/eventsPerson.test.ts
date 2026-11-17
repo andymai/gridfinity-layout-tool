@@ -38,6 +38,7 @@ beforeEach(() => {
     lastSetPayload: '',
     onceTraitsSent: false,
     pwaInstallAvailableDay: '',
+    landingVariant: '',
   };
 });
 

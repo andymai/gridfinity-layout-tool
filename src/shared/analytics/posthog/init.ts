@@ -13,6 +13,7 @@ import { filterExceptionForPosthog } from './errorFilters';
 
 let posthogInstance: PostHog | null = null;
 let initPromise: Promise<void> | null = null;
+let readyPromise: Promise<PostHog | null> = Promise.resolve(null);
 let eventQueue: Array<{ name: string; properties: Record<string, unknown> }> = [];
 /**
  * Supplies layout context to natively-captured exceptions.
@@ -29,6 +30,14 @@ let getExceptionContext: (() => Record<string, unknown>) | null = null;
  */
 export function getPosthogInstance(): PostHog | null {
   return posthogInstance;
+}
+
+/**
+ * Resolves with the instance once it is initialized and identified, or with
+ * null when analytics is off or posthog-js fails to load.
+ */
+export function whenPosthogReady(): Promise<PostHog | null> {
+  return readyPromise;
 }
 
 export function initAnalytics(): void {
@@ -49,6 +58,11 @@ export function initAnalytics(): void {
   }
 
   syncAnalyticsDataAcrossWindows();
+
+  let markReady: (instance: PostHog | null) => void = () => {};
+  readyPromise = new Promise((resolve) => {
+    markReady = resolve;
+  });
 
   // Lazy load posthog-js
   initPromise = import('posthog-js')
@@ -101,9 +115,13 @@ export function initAnalytics(): void {
       // Fire a single pageview on app load
       posthog.capture('$pageview');
 
-      // Identify user with stable ID for person properties & cohorts
+      // Identify user with stable ID for person properties & cohorts.
+      // posthog-js debounces its first flag request by a few milliseconds, so
+      // identifying in the same tick as init() sends that request under the
+      // stable ID. Experiment bucketing depends on it: no await before this.
       const userId = getStableUserId();
       posthog.identify(userId);
+      markReady(posthog);
 
       // Set person properties (these persist across sessions)
       // Deferred import to avoid circular dependency: events.ts imports capture from init.ts.
@@ -129,7 +147,7 @@ export function initAnalytics(): void {
       eventQueue = [];
     })
     .catch(() => {
-      // Fail silently
+      markReady(null);
     });
 }
 
