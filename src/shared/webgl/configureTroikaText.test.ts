@@ -1,4 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { LABEL_DEFAULT_FONT_FILE, LABEL_FONT_DATA_PATH } from './labelFontData';
+
+const LABEL_FONTS = `${location.origin}${LABEL_FONT_DATA_PATH}`;
+const FONT_CONFIG = {
+  defaultFontURL: `${LABEL_FONTS}/${LABEL_DEFAULT_FONT_FILE}`,
+  unicodeFontsURL: LABEL_FONTS,
+};
 
 /**
  * Fake canvas whose WebGL1 context reports whether `ANGLE_instanced_arrays` is
@@ -35,7 +42,7 @@ describe('configureTroikaText', () => {
 
     await loadModule(configureTextBuilder);
 
-    expect(configureTextBuilder).toHaveBeenCalledWith({ useWorker: false });
+    expect(configureTextBuilder).toHaveBeenCalledWith({ ...FONT_CONFIG, useWorker: false });
   });
 
   it('keeps the default worker path when ANGLE_instanced_arrays is missing', async () => {
@@ -44,7 +51,7 @@ describe('configureTroikaText', () => {
 
     await loadModule(configureTextBuilder);
 
-    expect(configureTextBuilder).not.toHaveBeenCalled();
+    expect(configureTextBuilder).toHaveBeenCalledWith(FONT_CONFIG);
   });
 
   it('keeps the default worker path when no WebGL1 context is available', async () => {
@@ -53,6 +60,6 @@ describe('configureTroikaText', () => {
 
     await loadModule(configureTextBuilder);
 
-    expect(configureTextBuilder).not.toHaveBeenCalled();
+    expect(configureTextBuilder).toHaveBeenCalledWith(FONT_CONFIG);
   });
 });

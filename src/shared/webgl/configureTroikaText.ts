@@ -1,4 +1,5 @@
 import { configureTextBuilder } from 'troika-three-text';
+import { LABEL_DEFAULT_FONT_FILE, LABEL_FONT_DATA_PATH } from './labelFontData';
 
 /**
  * troika-three-text generates glyph SDFs in a worker by default. Some WebKit
@@ -51,6 +52,17 @@ function mainThreadSdfIsSupported(): boolean {
   return supported;
 }
 
-if (mainThreadSdfIsSupported()) {
-  configureTextBuilder({ useWorker: false });
+// Absolute, because troika's worker path fetches from a blob: URL, which
+// cannot resolve a relative one.
+function labelFontDataUrl(): string {
+  if (typeof location === 'undefined') return LABEL_FONT_DATA_PATH;
+  return new URL(LABEL_FONT_DATA_PATH, location.href).href;
 }
+
+const labelFontData = labelFontDataUrl();
+
+configureTextBuilder({
+  defaultFontURL: `${labelFontData}/${LABEL_DEFAULT_FONT_FILE}`,
+  unicodeFontsURL: labelFontData,
+  ...(mainThreadSdfIsSupported() && { useWorker: false }),
+});
