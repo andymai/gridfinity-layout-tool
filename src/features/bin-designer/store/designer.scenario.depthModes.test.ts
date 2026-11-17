@@ -51,6 +51,15 @@ describe('DesignerStore - cutout depth modes', () => {
     expect(cutout().cutDepth).toBe(16.25);
   });
 
+  it('re-derives a pocket merged back in from an earlier state', () => {
+    const { addCutout, setParams } = useDesignerStore.getState();
+    addCutout(pocket({ depthMode: 'through' }));
+    const earlier = useDesignerStore.getState().params.cutouts;
+    setParams({ cutouts: [] });
+    setParams({ height: 5, cutouts: earlier });
+    expect(cutout().cutDepth).toBe(30.25);
+  });
+
   it('makes a pocket fixed when a depth is typed for it', () => {
     const { addCutout, updateCutout } = useDesignerStore.getState();
     addCutout(pocket({ depthMode: 'floor', floorMm: 8 }));

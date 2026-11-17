@@ -558,6 +558,15 @@ describe('DesignerStore - lid actions', () => {
       expect(lidTopUnits()).toBeCloseTo(1, 6);
     });
 
+    it('re-derives a lid merged back in from an earlier state', () => {
+      const { updateLid, setParams } = useDesignerStore.getState();
+      updateLid({ enabled: true, heightUnits: 1 });
+      const earlier = useDesignerStore.getState().params.lid;
+      updateLid({ stackableTop: true });
+      setParams({ lid: earlier, heightUnitMm: 10 });
+      expect(lidTopUnits()).toBeCloseTo(1, 6);
+    });
+
     it('undoes a setting change together with the lid height it moved', () => {
       const { updateLid, undo } = useDesignerStore.getState();
       updateLid({ enabled: true, heightUnits: 1 });

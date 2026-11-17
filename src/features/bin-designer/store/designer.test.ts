@@ -493,6 +493,14 @@ describe('slant and the stacking lip', () => {
     expect(useDesignerStore.getState().params.base.stackingLip).toBe(false);
   });
 
+  it('drops the lip from a base merged back in from an earlier state', () => {
+    const { setParams, updateBase } = useDesignerStore.getState();
+    const earlier = useDesignerStore.getState().params.base;
+    updateBase({ lowProfile: true });
+    setParams({ base: earlier, slant: { angleDeg: 30, side: 'back' } });
+    expect(useDesignerStore.getState().params.base.stackingLip).toBe(false);
+  });
+
   it('keeps the lip off on a slanted bin whatever the lip switch asks', () => {
     const { setParams, updateBase } = useDesignerStore.getState();
     setParams({ slant: { angleDeg: 30, side: 'back' } });

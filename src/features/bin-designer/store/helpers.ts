@@ -29,12 +29,7 @@ import { trackToolActivated } from '@/shared/analytics/posthog/conversionEvents'
 import { findAssemblyPart } from '@/features/bin-designer/utils/assemblyTree';
 import { syncedLidHeight } from '@/features/bin-designer/utils/lidHeightUnits';
 import { resolveSlant } from '@/shared/utils/slantPlan';
-import {
-  cutoutDepthFrame,
-  followsDepthMode,
-  resolveCutoutDepth,
-  splitSideB,
-} from '@/shared/utils/cutoutDepth';
+import { withResolvedCutoutDepths } from '@/shared/utils/cutoutDepth';
 
 /**
  * The user's saved "default for new bins", or the factory defaults.
@@ -75,7 +70,7 @@ export function syncLidHeightUnits(state: Draft<DesignerState>): void {
   const synced = syncedLidHeight(state.params);
   if (!synced) return;
   if (state.params.lid.extraHeightMm !== synced.extraHeightMm) {
-    state.params.lid.extraHeightMm = synced.extraHeightMm;
+    state.params.lid = { ...state.params.lid, extraHeightMm: synced.extraHeightMm };
   }
 }
 
@@ -85,7 +80,7 @@ export function syncLidHeightUnits(state: Draft<DesignerState>): void {
  */
 export function syncSlantLip(state: Draft<DesignerState>): void {
   if (state.params.base.stackingLip && resolveSlant(state.params) !== null) {
-    state.params.base.stackingLip = false;
+    state.params.base = { ...state.params.base, stackingLip: false };
   }
 }
 
@@ -95,17 +90,8 @@ export function syncSlantLip(state: Draft<DesignerState>): void {
  * follow moves with the height, the base, the height unit and the top offset.
  */
 export function syncCutoutDepths(state: Draft<DesignerState>): void {
-  const { cutouts } = state.params;
-  if (!cutouts.some(followsDepthMode)) return;
-  const frame = cutoutDepthFrame(state.params);
-  for (const cutout of cutouts) {
-    const cutDepth = resolveCutoutDepth(cutout, frame);
-    if (cutout.cutDepth !== cutDepth) cutout.cutDepth = cutDepth;
-    if (cutout.split?.depthMode) {
-      const splitDepth = resolveCutoutDepth(splitSideB(cutout), frame);
-      if (cutout.split.cutDepth !== splitDepth) cutout.split.cutDepth = splitDepth;
-    }
-  }
+  const synced = withResolvedCutoutDepths(state.params);
+  if (synced !== state.params) state.params.cutouts = castDraft(synced.cutouts);
 }
 
 export function getPendingMeshCache(): CachedMesh | null {
