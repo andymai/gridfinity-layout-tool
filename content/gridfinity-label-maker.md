@@ -29,12 +29,12 @@ softwareApplication:
     availability: https://schema.org/InStock
   featureList:
     - Paste rows from a spreadsheet or an order page
-    - Part numbers on a second line in a monospaced font
+    - Part numbers on a second line in a monospaced font, except on 6 mm tape
     - Tape labels as long as a 1, 2 or 3 unit bin
     - One PNG per label at the printer's resolution
 faqs:
   - q: Can it look up McMaster-Carr part numbers?
-    a: No. Paste the description with each part number, for example from your order history or a spreadsheet. The label maker puts the description on the label and the part number on a second line.
+    a: No. Paste the description with each part number, for example from your order history or a spreadsheet. The label maker puts the description on the label and the part number on a second line. On 6 mm tape, the part number goes after the description, on the same line.
   - q: Which label makers does it support?
     a: Brother P-touch tape from 6 to 24 mm, DYMO LabelManager tape from 6 to 19 mm, Niimbot D11 and D110 labels, and Phomemo D30 labels. Each label downloads as an image you open in your printer's app.
   - q: Do I need to plan a layout first?
@@ -70,7 +70,7 @@ Each image has one pixel for each dot of the printer's head, in black and white,
 
 ## Paste a parts order
 
-When you paste rows, the label maker finds the column of part numbers. Each part number prints on a second line, in a font where 0 and O look different. A typed line that starts or ends with a McMaster-Carr part number, such as `91290A113 Socket head screw`, works the same way. The label maker does not look up part numbers, so paste the descriptions with them.
+When you paste rows, the label maker finds the column of part numbers. Each part number prints on a second line, in a font where 0 and O look different. On 6 mm tape, the part number prints after the description, on the same line and in the same font. A typed line that starts or ends with a McMaster-Carr part number, such as `91290A113 Socket head screw`, works the same way. The label maker does not look up part numbers, so paste the descriptions with them.
 
 ## Sized for your bins
 
