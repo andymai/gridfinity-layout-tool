@@ -5401,5 +5401,9 @@
   "labels.row.empty": "请为此标签添加文字。",
   "labels.row.unsupportedText": "标签字体缺少这段文字中部分字符的字形。请使用拉丁字母和数字。",
   "labels.fontsFailed": "无法加载标签字体。请检查网络连接。",
-  "labels.skippedCount": "未包含在下载中：{count}"
+  "labels.skippedCount": "未包含在下载中：{count}",
+  "seo.labels.title": "标签打印机用标签 | Gridfinity Layout Tool",
+  "seo.labels.description": "用输入或粘贴的列表，为 Brother P-touch、DYMO、Niimbot 或 Phomemo 标签打印机制作标签。免费，无需账号。",
+  "loading.labels": "正在加载标签",
+  "labels.page.intro": "输入或粘贴列表，选择你的标签打印机，然后为每个标签下载一张图片。"
 }

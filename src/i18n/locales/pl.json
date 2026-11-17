@@ -5818,5 +5818,9 @@
   "labels.row.empty": "Dodaj tekst do tej etykiety.",
   "labels.row.unsupportedText": "Czcionka etykiet nie ma liter dla części tego tekstu. Użyj liter łacińskich i cyfr.",
   "labels.fontsFailed": "Nie udało się wczytać czcionek etykiet. Sprawdź połączenie.",
-  "labels.skippedCount": "Pominięte w pobieraniu: {count}"
+  "labels.skippedCount": "Pominięte w pobieraniu: {count}",
+  "seo.labels.title": "Etykiety do drukarki etykiet | Gridfinity Layout Tool",
+  "seo.labels.description": "Twórz etykiety do drukarek Brother P-touch, DYMO, Niimbot lub Phomemo z wpisanej lub wklejonej listy. Za darmo, bez konta.",
+  "loading.labels": "Wczytywanie etykiet",
+  "labels.page.intro": "Wpisz lub wklej listę, wybierz drukarkę etykiet i pobierz jeden obraz dla każdej etykiety."
 }

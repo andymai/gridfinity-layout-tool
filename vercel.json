@@ -516,6 +516,10 @@
       "destination": "/"
     },
     {
+      "source": "/labels",
+      "destination": "/"
+    },
+    {
       "source": "/community",
       "destination": "/"
     },

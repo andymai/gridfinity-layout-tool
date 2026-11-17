@@ -5401,5 +5401,9 @@
   "labels.row.empty": "このラベルに文字を入力してください。",
   "labels.row.unsupportedText": "ラベルのフォントには、この文字の一部がありません。ラテン文字と数字を使ってください。",
   "labels.fontsFailed": "ラベルのフォントを読み込めませんでした。接続を確認してください。",
-  "labels.skippedCount": "ダウンロードから除外：{count}"
+  "labels.skippedCount": "ダウンロードから除外：{count}",
+  "seo.labels.title": "ラベルプリンター用ラベル | Gridfinity Layout Tool",
+  "seo.labels.description": "入力または貼り付けたリストから、Brother P-touch、DYMO、Niimbot、Phomemo のラベルプリンター用ラベルを作成。無料、アカウント不要。",
+  "loading.labels": "ラベルを読み込み中",
+  "labels.page.intro": "リストを入力または貼り付け、ラベルプリンターを選んで、ラベルごとに1枚の画像をダウンロードします。"
 }

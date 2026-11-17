@@ -5540,5 +5540,9 @@
   "labels.row.empty": "Lägg till text på den här etiketten.",
   "labels.row.unsupportedText": "Etikettypsnittet saknar bokstäver för en del av den här texten. Använd latinska bokstäver och siffror.",
   "labels.fontsFailed": "Det gick inte att läsa in etikettypsnitten. Kontrollera anslutningen.",
-  "labels.skippedCount": "Utelämnade från nedladdningen: {count}"
+  "labels.skippedCount": "Utelämnade från nedladdningen: {count}",
+  "seo.labels.title": "Etiketter för etikettskrivare | Gridfinity Layout Tool",
+  "seo.labels.description": "Skapa etiketter för en Brother P-touch, DYMO, Niimbot eller Phomemo från en skriven eller inklistrad lista. Gratis, inget konto.",
+  "loading.labels": "Läser in etiketter",
+  "labels.page.intro": "Skriv eller klistra in en lista, välj din etikettskrivare och ladda ned en bild per etikett."
 }

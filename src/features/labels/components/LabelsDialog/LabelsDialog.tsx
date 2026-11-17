@@ -1,15 +1,9 @@
-import { useState } from 'react';
-import { useShallow } from 'zustand/react/shallow';
-import { Button, ConfirmDialog, Dialog } from '@/design-system';
-import { useToastStore } from '@/core/store';
-import { trackEvent } from '@/shared/analytics/posthog';
-import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
+import { Dialog } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import { useLabelPlans } from '../../hooks/useLabelPlans';
-import { useLabelListStore } from '../../store/labelListStore';
-import { downloadLabels } from '../../utils/downloadLabels';
+import { useLabelsWorkspace } from '../../hooks/useLabelsWorkspace';
 import { LabelListEditor } from '../LabelListEditor';
 import { LabelPrinterSettings } from '../LabelPrinterSettings';
+import { LabelsFooter } from '../LabelsFooter';
 
 interface LabelsDialogProps {
   readonly open: boolean;
@@ -18,37 +12,13 @@ interface LabelsDialogProps {
 
 export function LabelsDialog({ open, onClose }: LabelsDialogProps) {
   const t = useTranslation();
-  const { entries, clearEntries } = useLabelListStore(
-    useShallow((state) => ({ entries: state.entries, clearEntries: state.clearEntries }))
-  );
-  const { printer, media, measurer, plans, fontsFailed, retryFonts } = useLabelPlans();
-  const [busy, setBusy] = useState(false);
-  const [confirmClear, setConfirmClear] = useState(false);
-
-  const skipped = entries.filter((entry) => (plans.get(entry.id)?.problem ?? null) !== null).length;
-  const printable = measurer === null ? 0 : entries.length - skipped;
-
-  const download = async (): Promise<void> => {
-    if (measurer === null) return;
-    primeExportFolder();
-    setBusy(true);
-    try {
-      const saved = await downloadLabels(entries, plans, measurer, printer, media);
-      if (saved > 0) {
-        trackEvent('labels_downloaded', { printer: printer.id, media: media.id, labels: saved });
-      }
-    } catch {
-      useToastStore.getState().addToast(t('labels.downloadFailed'), 'error');
-    } finally {
-      setBusy(false);
-    }
-  };
+  const workspace = useLabelsWorkspace();
 
   return (
     <Dialog.Root
       open={open}
       onClose={onClose}
-      dismissable={!busy}
+      dismissable={!workspace.busy}
       size="3xl"
       height="fixed"
       fullScreen="mobile"
@@ -59,61 +29,12 @@ export function LabelsDialog({ open, onClose }: LabelsDialogProps) {
           <LabelPrinterSettings />
         </Dialog.Sidebar>
         <Dialog.Pane>
-          <LabelListEditor plans={plans} measurer={measurer} />
+          <LabelListEditor plans={workspace.plans} measurer={workspace.measurer} />
         </Dialog.Pane>
       </Dialog.Split>
-      <Dialog.Footer
-        justify="between"
-        bordered
-        leading={
-          <div className="flex items-center gap-3 text-xs">
-            {entries.length > 0 && (
-              <Button variant="ghost" size="sm" onClick={() => setConfirmClear(true)}>
-                {t('labels.clear')}
-              </Button>
-            )}
-            {fontsFailed ? (
-              <>
-                <span className="text-error">{t('labels.fontsFailed')}</span>
-                <Button variant="ghost" size="sm" onClick={retryFonts}>
-                  {t('error.tryAgain')}
-                </Button>
-              </>
-            ) : (
-              measurer === null &&
-              entries.length > 0 && (
-                <span className="text-content-tertiary">{t('labels.loadingFonts')}</span>
-              )
-            )}
-            {skipped > 0 && (
-              <span className="text-warning">{t('labels.skippedCount', { count: skipped })}</span>
-            )}
-          </div>
-        }
-      >
-        <Button
-          variant="primary"
-          onClick={() => void download()}
-          disabled={printable === 0 || busy}
-          loading={busy}
-        >
-          {printable > 1 ? t('labels.downloadZip') : t('labels.download')}
-        </Button>
+      <Dialog.Footer bordered>
+        <LabelsFooter workspace={workspace} />
       </Dialog.Footer>
-
-      <ConfirmDialog
-        isOpen={confirmClear}
-        title={t('labels.clear')}
-        message={t('labels.clearConfirm')}
-        confirmText={t('labels.clear')}
-        cancelText={t('common.cancel')}
-        destructive
-        onConfirm={() => {
-          clearEntries();
-          setConfirmClear(false);
-        }}
-        onCancel={() => setConfirmClear(false)}
-      />
     </Dialog.Root>
   );
 }

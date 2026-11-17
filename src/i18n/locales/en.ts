@@ -40,6 +40,9 @@ const en: Record<string, string> = {
   'seo.community.title': 'Community Designs — Gridfinity Layout Tool',
   'seo.community.description':
     'Browse Gridfinity bin designs from other makers. Preview them in 3D, remix an editable copy, and export for printing. Free, no account.',
+  'seo.labels.title': 'Labels for a Label Maker | Gridfinity Layout Tool',
+  'seo.labels.description':
+    'Make labels for a Brother P-touch, DYMO, Niimbot or Phomemo label maker from a typed or pasted list. Free, no account.',
 
   // Supporters page
   'supporters.back': 'Back to the app',
@@ -5165,6 +5168,7 @@ const en: Record<string, string> = {
   'loading.baseplate': 'Loading baseplate generator',
   'loading.supporters': 'Loading supporters',
   'loading.community': 'Loading community designs',
+  'loading.labels': 'Loading labels',
   'loading.mobileLayout': 'Loading mobile layout',
   'loading.help': 'Loading help',
   'loading.sharedWithMe': 'Loading...',
@@ -6696,6 +6700,8 @@ const en: Record<string, string> = {
 
   // Labels for label makers
   'labels.title': 'Labels',
+  'labels.page.intro':
+    'Type or paste a list, pick your label maker, and download one image for each label.',
   'labels.printer': 'Label printer',
   'labels.printer.brother-pt': 'Brother P-touch',
   'labels.printer.dymo-d1': 'DYMO LabelManager',

@@ -1,0 +1,1 @@
+export { LabelsFooter } from './LabelsFooter';

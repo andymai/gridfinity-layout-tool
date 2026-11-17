@@ -5540,5 +5540,9 @@
   "labels.row.empty": "Voeg tekst toe aan dit label.",
   "labels.row.unsupportedText": "Het labellettertype heeft geen letters voor een deel van deze tekst. Gebruik Latijnse letters en cijfers.",
   "labels.fontsFailed": "De labellettertypen konden niet worden geladen. Controleer je verbinding.",
-  "labels.skippedCount": "Niet in de download: {count}"
+  "labels.skippedCount": "Niet in de download: {count}",
+  "seo.labels.title": "Etiketten voor een labelprinter | Gridfinity Layout Tool",
+  "seo.labels.description": "Maak labels voor een Brother P-touch, DYMO, Niimbot of Phomemo labelprinter van een getypte of geplakte lijst. Gratis, zonder account.",
+  "loading.labels": "Labels laden",
+  "labels.page.intro": "Typ of plak een lijst, kies je labelprinter en download één afbeelding per label."
 }
