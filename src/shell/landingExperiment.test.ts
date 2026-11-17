@@ -112,6 +112,34 @@ describe('applyLandingExperiment', () => {
   });
 
   it.each([
+    [
+      'turns analytics off',
+      () => {
+        settings.analyticsEnabled = false;
+        pruneAnalyticsData();
+      },
+    ],
+    [
+      'turns analytics off and on again',
+      () => {
+        pruneAnalyticsData();
+        saveAnalyticsData({ ...loadAnalyticsData(), userId: 'u2' });
+      },
+    ],
+  ])('does not enroll again a visitor who %s while the refresh waits', async (_label, optOut) => {
+    enroll('test');
+    let deliver: (result: FlagResolution) => void = () => {};
+    flag.resolve.mockReturnValue(new Promise((resolve) => (deliver = resolve)));
+
+    await applyLandingExperiment(false);
+    optOut();
+    deliver({ loaded: true, value: 'test' });
+    await Promise.resolve();
+
+    expect(loadAnalyticsData().landingVariant).toBe('');
+  });
+
+  it.each([
     ['a layout link', '/l/abc123/kitchen'],
     ['a query the app reads', '/?share=abc'],
     ['a hash', '/#import'],

@@ -60,8 +60,14 @@ function openDesigner(): void {
 // Ending the experiment turns the flag off, which unenrolls the visitor on
 // their next load instead of leaving them redirected forever.
 async function refreshVariant(): Promise<void> {
+  const enrolledAs = loadAnalyticsData().userId;
   const result = await resolveFeatureFlag(LANDING_FLAG_KEY, REFRESH_WAIT_MS);
-  if (result.loaded) storeVariant(toVariant(result.value));
+  if (!result.loaded) return;
+  // An opt-out during the wait deletes the record, and an opt-in after it
+  // starts a new identity. A write now would enroll that browser again.
+  if (!useSettingsStore.getState().settings.analyticsEnabled) return;
+  if (loadAnalyticsData().userId !== enrolledAs) return;
+  storeVariant(toVariant(result.value));
 }
 
 /**
