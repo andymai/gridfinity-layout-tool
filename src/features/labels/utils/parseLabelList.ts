@@ -9,27 +9,23 @@
  */
 
 import { looksLikePartNumber, normalizePartNumber, vendorOfPartNumber } from './partNumbers';
-
-export interface ParsedLabel {
-  readonly name: string;
-  readonly detail: string;
-}
+import type { LabelText } from './planLabel';
 
 const PRICE_OR_NUMBER = /^[$€£¥]?\s?[\d.,]+\s?[$€£¥]?$/;
+const PART_THEN_NAME = /^(?<part>\S+)\s+(?<name>.+)$/;
+const NAME_THEN_PART = /^(?<name>.+)\s+(?<part>\S+)$/;
 
 function isTextCell(cell: string): boolean {
   return /\p{L}/u.test(cell) && !PRICE_OR_NUMBER.test(cell);
 }
 
-function parseLine(line: string): ParsedLabel {
+function parseLine(line: string): LabelText {
   if (vendorOfPartNumber(line) !== null) return { name: normalizePartNumber(line), detail: '' };
-  const leading = /^(\S+)\s+(.+)$/.exec(line);
-  if (leading && vendorOfPartNumber(leading[1]) !== null) {
-    return { name: leading[2].trim(), detail: normalizePartNumber(leading[1]) };
-  }
-  const trailing = /^(.+)\s+(\S+)$/.exec(line);
-  if (trailing && vendorOfPartNumber(trailing[2]) !== null) {
-    return { name: trailing[1].trim(), detail: normalizePartNumber(trailing[2]) };
+  for (const pattern of [PART_THEN_NAME, NAME_THEN_PART]) {
+    const groups = pattern.exec(line)?.groups;
+    if (groups && vendorOfPartNumber(groups.part) !== null) {
+      return { name: groups.name.trim(), detail: normalizePartNumber(groups.part) };
+    }
   }
   return { name: line, detail: '' };
 }
@@ -56,38 +52,29 @@ function findPartColumn(rows: readonly (readonly string[])[]): number {
   return best;
 }
 
-function parseTable(rows: readonly (readonly string[])[]): ParsedLabel[] {
+function parseTable(rows: readonly (readonly string[])[]): LabelText[] {
   const partCol = findPartColumn(rows);
-  const body =
-    partCol >= 0 &&
-    rows.length > 1 &&
-    isTextCell(rows[0][partCol] ?? '') &&
-    !looksLikePartNumber(rows[0][partCol] ?? '')
-      ? rows.slice(1)
-      : rows;
-
   if (partCol < 0) {
     // Without a part number the columns are the user's own: name, then detail.
-    return body.flatMap((row) => {
+    return rows.flatMap((row) => {
       const [name = '', detail = ''] = row.filter(isTextCell);
       return name === '' ? [] : [{ name, detail }];
     });
   }
 
-  const labels: ParsedLabel[] = [];
-  for (const row of body) {
+  const header = rows[0][partCol] ?? '';
+  const hasHeader = rows.length > 1 && isTextCell(header) && !looksLikePartNumber(header);
+  return (hasHeader ? rows.slice(1) : rows).flatMap((row) => {
     const detail = normalizePartNumber(row[partCol] ?? '');
-    let name = '';
-    row.forEach((cell, col) => {
-      if (col !== partCol && isTextCell(cell) && cell.length > name.length) name = cell;
-    });
-    if (name === '' && detail === '') continue;
-    labels.push(name === '' ? { name: detail, detail: '' } : { name, detail });
-  }
-  return labels;
+    const name = row
+      .filter((cell, col) => col !== partCol && isTextCell(cell))
+      .reduce((longest, cell) => (cell.length > longest.length ? cell : longest), '');
+    if (name !== '') return [{ name, detail }];
+    return detail === '' ? [] : [{ name: detail, detail: '' }];
+  });
 }
 
-export function parseLabelList(text: string): ParsedLabel[] {
+export function parseLabelList(text: string): LabelText[] {
   // Lines are not trimmed before the split: a leading tab is an empty first
   // cell, and dropping it would shift every column of that row left.
   const lines = text.split(/\r?\n/).filter((line) => line.trim() !== '');

@@ -16,11 +16,12 @@ export async function downloadLabels(
   printer: LabelPrinter,
   media: LabelMedia
 ): Promise<number> {
-  const printable = entries.filter((entry) => plans.get(entry.id)?.problem === null);
-  const files: LabelFile[] = [];
-  for (const [index, entry] of printable.entries()) {
+  const printable = entries.flatMap((entry) => {
     const plan = plans.get(entry.id);
-    if (!plan) continue;
+    return plan?.problem === null ? [{ entry, plan }] : [];
+  });
+  const files: LabelFile[] = [];
+  for (const [index, { entry, plan }] of printable.entries()) {
     files.push({
       name: labelFileName(index, printable.length, entry.name, entry.copies),
       data: await renderLabelPng(plan, labelPaths(plan, measurer), printer.dpi),

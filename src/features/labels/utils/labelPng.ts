@@ -7,9 +7,8 @@
  * label software reads to place the image at its true size.
  */
 
+import { MM_PER_INCH } from './labelMedia';
 import type { LabelPath, LabelPlan } from './planLabel';
-
-const MM_PER_INCH = 25.4;
 
 export function labelPixelSize(plan: LabelPlan, dpi: number): { width: number; height: number } {
   return {
@@ -18,19 +17,15 @@ export function labelPixelSize(plan: LabelPlan, dpi: number): { width: number; h
   };
 }
 
-let crcTable: Uint32Array | null = null;
+const CRC_TABLE = Uint32Array.from({ length: 256 }, (_, n) => {
+  let c = n;
+  for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+  return c >>> 0;
+});
 
 function crc32(bytes: Uint8Array): number {
-  if (crcTable === null) {
-    crcTable = new Uint32Array(256);
-    for (let n = 0; n < 256; n++) {
-      let c = n;
-      for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-      crcTable[n] = c >>> 0;
-    }
-  }
   let crc = 0xffffffff;
-  for (const byte of bytes) crc = crcTable[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+  for (const byte of bytes) crc = CRC_TABLE[(crc ^ byte) & 0xff] ^ (crc >>> 8);
   return (crc ^ 0xffffffff) >>> 0;
 }
 
@@ -49,32 +44,28 @@ function physChunk(dpi: number): Uint8Array {
   return chunk;
 }
 
+function splice(bytes: Uint8Array, start: number, end: number, insert: Uint8Array): Uint8Array {
+  const out = new Uint8Array(bytes.length - (end - start) + insert.length);
+  out.set(bytes.subarray(0, start));
+  out.set(insert, start);
+  out.set(bytes.subarray(end), start + insert.length);
+  return out;
+}
+
 export function withPngDpi(png: Uint8Array, dpi: number): Uint8Array {
   const view = new DataView(png.buffer, png.byteOffset, png.byteLength);
-  const phys = physChunk(dpi);
   let offset = PNG_SIGNATURE_LENGTH;
   let afterHeader = -1;
   while (offset + 8 <= png.length) {
-    const length = view.getUint32(offset);
     const type = String.fromCharCode(...png.subarray(offset + 4, offset + 8));
-    const end = offset + 12 + length;
+    const end = offset + 12 + view.getUint32(offset);
     if (type === 'IHDR') afterHeader = end;
-    if (type === 'pHYs') {
-      const out = new Uint8Array(png.length - (end - offset) + phys.length);
-      out.set(png.subarray(0, offset));
-      out.set(phys, offset);
-      out.set(png.subarray(end), offset + phys.length);
-      return out;
-    }
+    if (type === 'pHYs') return splice(png, offset, end, physChunk(dpi));
     if (type === 'IDAT') break;
     offset = end;
   }
   if (afterHeader < 0) return png;
-  const out = new Uint8Array(png.length + phys.length);
-  out.set(png.subarray(0, afterHeader));
-  out.set(phys, afterHeader);
-  out.set(png.subarray(afterHeader), afterHeader + phys.length);
-  return out;
+  return splice(png, afterHeader, afterHeader, physChunk(dpi));
 }
 
 export function thresholdToMonochrome(rgba: Uint8ClampedArray): void {

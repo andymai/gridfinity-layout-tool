@@ -10,11 +10,6 @@ import {
   isLabelPrinterId,
   resolveLabelMedia,
 } from '../../utils/labelMedia';
-import type { TapeLength } from '../../utils/labelMedia';
-
-function tapeLengthValue(length: TapeLength): string {
-  return String(length);
-}
 
 export function LabelPrinterSettings() {
   const t = useTranslation();
@@ -71,13 +66,13 @@ export function LabelPrinterSettings() {
             fullWidth
             size="sm"
             aria-label={t('labels.length')}
-            value={tapeLengthValue(tapeLength)}
+            value={String(tapeLength)}
             onChange={(value) => {
-              const next = TAPE_LENGTHS.find((length) => tapeLengthValue(length) === value);
+              const next = TAPE_LENGTHS.find((length) => String(length) === value);
               if (next !== undefined) setTapeLength(next);
             }}
             options={TAPE_LENGTHS.map((length) => ({
-              value: tapeLengthValue(length),
+              value: String(length),
               label: length === 'fit' ? t('labels.length.fit') : `${length}U`,
             }))}
           />

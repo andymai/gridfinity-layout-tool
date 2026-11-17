@@ -29,8 +29,7 @@ export interface LabelFile {
 
 /** PNGs are already compressed, so the archive only stores them. */
 export function zipLabelFiles(files: readonly LabelFile[]): Blob {
-  const entries: Record<string, Uint8Array> = {};
-  for (const file of files) entries[file.name] = file.data;
+  const entries = Object.fromEntries(files.map((file) => [file.name, file.data]));
   const zipped = zipSync(entries, { level: 0 });
   return new Blob([new Uint8Array(zipped)], { type: 'application/zip' });
 }

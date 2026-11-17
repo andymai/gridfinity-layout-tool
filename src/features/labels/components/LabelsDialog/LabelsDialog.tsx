@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { Button, ConfirmDialog, Dialog } from '@/design-system';
 import { useToastStore } from '@/core/store';
 import { trackEvent } from '@/shared/analytics/posthog';
+import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { useTranslation } from '@/i18n';
 import { useLabelPlans } from '../../hooks/useLabelPlans';
 import { useLabelListStore } from '../../store/labelListStore';
@@ -29,6 +30,7 @@ export function LabelsDialog({ open, onClose }: LabelsDialogProps) {
 
   const download = async (): Promise<void> => {
     if (measurer === null) return;
+    primeExportFolder();
     setBusy(true);
     try {
       const saved = await downloadLabels(entries, plans, measurer, printer, media);

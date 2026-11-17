@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { ensureTypeFonts } from '@/shared/fonts/typeFontRegistry';
 import { useTypeFontsFailed, useTypeMeasurer } from '@/shared/hooks/useTypeMeasurer';
@@ -11,6 +11,10 @@ import { LABEL_DETAIL_FONT, LABEL_NAME_FONT, planLabel } from '../utils/planLabe
 import type { LabelPlan } from '../utils/planLabel';
 
 const LABEL_FONTS = [LABEL_NAME_FONT, LABEL_DETAIL_FONT] as const;
+
+function retryFonts(): void {
+  ensureTypeFonts(LABEL_FONTS);
+}
 
 export interface LabelPlans {
   readonly printer: LabelPrinter;
@@ -32,7 +36,6 @@ export function useLabelPlans(): LabelPlans {
   );
   const measurer = useTypeMeasurer(LABEL_FONTS);
   const fontsFailed = useTypeFontsFailed(LABEL_FONTS);
-  const retryFonts = useCallback(() => ensureTypeFonts(LABEL_FONTS), []);
   const printer = LABEL_PRINTERS[printerId];
   const media = resolveLabelMedia(printer, mediaId);
 

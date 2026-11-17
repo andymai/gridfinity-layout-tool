@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   measurer: null as TypeMeasurer | null,
   fontsFailed: false,
   ensureTypeFonts: vi.fn(),
+  primeExportFolder: vi.fn(),
   downloadLabels: vi.fn(),
   trackEvent: vi.fn(),
 }));
@@ -21,6 +22,9 @@ vi.mock('@/shared/hooks/useTypeMeasurer', () => ({
   useTypeFontsFailed: () => mocks.fontsFailed,
 }));
 vi.mock('@/shared/fonts/typeFontRegistry', () => ({ ensureTypeFonts: mocks.ensureTypeFonts }));
+vi.mock('@/shared/exportDestination/exportFolder', () => ({
+  primeExportFolder: mocks.primeExportFolder,
+}));
 vi.mock('../../utils/downloadLabels', () => ({ downloadLabels: mocks.downloadLabels }));
 vi.mock('@/shared/analytics/posthog', () => ({ trackEvent: mocks.trackEvent }));
 
@@ -62,6 +66,7 @@ describe('LabelsDialog', () => {
       { id: string },
       { id: string },
     ];
+    expect(mocks.primeExportFolder).toHaveBeenCalled();
     expect(entries).toHaveLength(2);
     expect([...plans.values()].every((plan) => plan.problem === null)).toBe(true);
     expect(printer.id).toBe('brother-pt');

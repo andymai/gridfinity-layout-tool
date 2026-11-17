@@ -12,7 +12,7 @@ import { labelPlateWidthMm, LABEL_PLATE_WIDTHS_U } from '@/shared/constants/labe
 import type { LabelPlateWidthU } from '@/shared/constants/labelPlates';
 import type { LabelBox } from './planLabel';
 
-const MM_PER_INCH = 25.4;
+export const MM_PER_INCH = 25.4;
 
 export type LabelPrinterId = 'brother-pt' | 'dymo-d1' | 'niimbot-d' | 'phomemo-d30';
 

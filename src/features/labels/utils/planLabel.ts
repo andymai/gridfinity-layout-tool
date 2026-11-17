@@ -10,9 +10,9 @@
  */
 
 import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/shared/types/bin';
-import type { TextFontFamily, TextStyleDefaults } from '@/shared/types/bin';
+import type { TextFontFamily } from '@/shared/types/bin';
 import { planToPathData, planTypeBlock } from '@/shared/utils/typePlan';
-import type { TypeBlockPlan, TypeMeasurer } from '@/shared/utils/typePlan';
+import type { TypeBlockPlan, TypeHostBox, TypeMeasurer } from '@/shared/utils/typePlan';
 
 export const LABEL_NAME_FONT: TextFontFamily = 'atkinson-bold';
 export const LABEL_DETAIL_FONT: TextFontFamily = 'jetbrains-mono';
@@ -27,6 +27,7 @@ const GAP_SHARE = 0.06;
  */
 const NAME_MIN_EM_MM = 1.9;
 const DETAIL_MIN_EM_MM = 1.6;
+const EXTRA_LINE_GAIN = 1.1;
 export const FIT_MAX_LENGTH_MM = 200;
 
 export interface LabelText {
@@ -59,23 +60,31 @@ export interface LabelPlan {
   readonly problem: LabelProblem | null;
 }
 
-function labelStyle(font: TextFontFamily, minEm: number, maxEm: number): TextStyleDefaults {
-  return {
-    ...DEFAULT_TEXT_STYLE_DEFAULTS,
-    font,
-    margin: 0,
-    minFontSize: minEm,
-    maxFontSize: maxEm,
-    // Clears Atkinson Bold's 0.2em descender by a dot or more at the smallest size.
-    lineGap: 0.25,
-  };
+function planBlock(
+  text: string,
+  font: TextFontFamily,
+  minEm: number,
+  host: TypeHostBox,
+  measurer: TypeMeasurer
+): TypeBlockPlan | null {
+  return planTypeBlock(
+    {
+      text,
+      style: {
+        ...DEFAULT_TEXT_STYLE_DEFAULTS,
+        font,
+        margin: 0,
+        minFontSize: minEm,
+        maxFontSize: host.depth * 2,
+        // Clears Atkinson Bold's 0.2em descender by a dot or more at the smallest size.
+        lineGap: 0.25,
+      },
+      host,
+      allowWrap: false,
+    },
+    measurer
+  );
 }
-
-function inkWidth(plan: TypeBlockPlan | null): number {
-  return plan === null ? 0 : plan.maxX - plan.minX;
-}
-
-const EXTRA_LINE_GAIN = 1.1;
 
 /**
  * The name broken at word boundaries into one, two and three lines, each split
@@ -96,107 +105,116 @@ function nameLineOptions(name: string, measurer: TypeMeasurer): string[] {
     for (let i = from; i < to; i++) sum += wordWidths[i];
     return sum;
   };
-  const join = (from: number, to: number): string => words.slice(from, to).join(' ');
+  const lines = (edges: readonly number[]): string =>
+    edges
+      .slice(1)
+      .map((to, k) => words.slice(edges[k], to).join(' '))
+      .join('\n');
 
-  const options = [name];
-  let best2: number[] | null = null;
-  let best3: number[] | null = null;
+  const end = words.length;
+  let best2: readonly number[] | null = null;
+  let best3: readonly number[] | null = null;
   let widest2 = Infinity;
   let widest3 = Infinity;
-  for (let i = 1; i < words.length; i++) {
-    const two = Math.max(width(0, i), width(i, words.length));
-    if (two < widest2) [best2, widest2] = [[i], two];
-    for (let j = i + 1; j < words.length; j++) {
-      const three = Math.max(width(0, i), width(i, j), width(j, words.length));
-      if (three < widest3) [best3, widest3] = [[i, j], three];
+  for (let i = 1; i < end; i++) {
+    const two = Math.max(width(0, i), width(i, end));
+    if (two < widest2) {
+      best2 = [0, i, end];
+      widest2 = two;
+    }
+    for (let j = i + 1; j < end; j++) {
+      const three = Math.max(width(0, i), width(i, j), width(j, end));
+      if (three < widest3) {
+        best3 = [0, i, j, end];
+        widest3 = three;
+      }
     }
   }
-  if (best2) options.push([join(0, best2[0]), join(best2[0], words.length)].join('\n'));
-  if (best3) {
-    const [i, j] = best3;
-    options.push([join(0, i), join(i, j), join(j, words.length)].join('\n'));
-  }
+  const options = [name];
+  for (const edges of [best2, best3]) if (edges) options.push(lines(edges));
   return options;
 }
 
 function planName(
   text: string,
-  band: number,
-  hostWidth: number,
+  host: TypeHostBox,
   fitToText: boolean,
   measurer: TypeMeasurer
 ): TypeBlockPlan | null {
   let best: TypeBlockPlan | null = null;
   for (const option of fitToText ? [text] : nameLineOptions(text, measurer)) {
-    const plan = planTypeBlock(
-      {
-        text: option,
-        style: labelStyle(LABEL_NAME_FONT, NAME_MIN_EM_MM, band * 2),
-        host: { width: hostWidth, depth: band },
-        allowWrap: false,
-      },
-      measurer
-    );
+    const plan = planBlock(option, LABEL_NAME_FONT, NAME_MIN_EM_MM, host, measurer);
     if (plan && (best === null || plan.fontSize > best.fontSize * EXTRA_LINE_GAIN)) best = plan;
   }
   return best;
 }
 
-export function planLabel(text: LabelText, box: LabelBox, measurer: TypeMeasurer): LabelPlan {
-  const name = text.name.trim();
-  const detail = text.detail.trim();
+function placeBlocks(
+  name: string,
+  detail: string,
+  box: LabelBox,
+  measurer: TypeMeasurer
+): PlacedTypeBlock[] {
   const edge = box.heightMm * EDGE_SHARE;
   const inner = box.heightMm - 2 * edge;
-  const top = box.heightMm / 2 - edge;
   const fitToText = box.lengthMm === null;
-  const hostWidth = fitToText ? FIT_MAX_LENGTH_MM : box.lengthMm - 2 * END_MARGIN_MM;
-
-  // Text the faces cannot draw still gets a plan, so the preview shows the
-  // boxes it would print.
-  const covered =
-    measurer.covers(name, LABEL_NAME_FONT) && measurer.covers(detail, LABEL_DETAIL_FONT);
-  const finish = (blocks: PlacedTypeBlock[]): LabelPlan => ({
-    widthMm: fitToText
-      ? Math.max(box.heightMm, ...blocks.map((block) => inkWidth(block.plan) + 2 * END_MARGIN_MM))
-      : box.lengthMm,
-    heightMm: box.heightMm,
-    blocks,
-    problem: blocks.length === 0 ? 'tooLong' : covered ? null : 'unsupportedText',
-  });
-  if (name === '') return { ...finish([]), problem: 'empty' };
+  const width = fitToText ? FIT_MAX_LENGTH_MM : box.lengthMm - 2 * END_MARGIN_MM;
 
   if (detail !== '') {
+    const top = box.heightMm / 2 - edge;
     const gap = inner * GAP_SHARE;
     const detailBand = (inner - gap) * DETAIL_SHARE;
     const nameBand = inner - gap - detailBand;
-    const namePlan = planName(name, nameBand, hostWidth, fitToText, measurer);
-    const detailPlan = planTypeBlock(
-      {
-        text: detail,
-        style: labelStyle(LABEL_DETAIL_FONT, DETAIL_MIN_EM_MM, detailBand * 2),
-        host: { width: hostWidth, depth: detailBand },
-        allowWrap: false,
-      },
+    const namePlan = planName(name, { width, depth: nameBand }, fitToText, measurer);
+    const detailPlan = planBlock(
+      detail,
+      LABEL_DETAIL_FONT,
+      DETAIL_MIN_EM_MM,
+      { width, depth: detailBand },
       measurer
     );
     if (namePlan && detailPlan) {
-      return finish([
+      return [
         { line: 'name', plan: namePlan, y: top - nameBand / 2 },
         { line: 'detail', plan: detailPlan, y: -top + detailBand / 2 },
-      ]);
+      ];
     }
   }
 
   // Tape too narrow for two bands (6mm) still carries the part number, after
   // the name in one block.
-  const single = planName(
-    detail === '' ? name : `${name} · ${detail}`,
-    inner,
-    hostWidth,
-    fitToText,
-    measurer
-  );
-  return finish(single ? [{ line: 'name', plan: single, y: 0 }] : []);
+  const singleText = detail === '' ? name : `${name} · ${detail}`;
+  const single = planName(singleText, { width, depth: inner }, fitToText, measurer);
+  return single ? [{ line: 'name', plan: single, y: 0 }] : [];
+}
+
+function labelProblem(
+  name: string,
+  detail: string,
+  blocks: readonly PlacedTypeBlock[],
+  measurer: TypeMeasurer
+): LabelProblem | null {
+  if (name === '') return 'empty';
+  if (blocks.length === 0) return 'tooLong';
+  // Text the faces cannot draw still gets a plan, so the preview shows the
+  // boxes it would print.
+  const covered =
+    measurer.covers(name, LABEL_NAME_FONT) && measurer.covers(detail, LABEL_DETAIL_FONT);
+  return covered ? null : 'unsupportedText';
+}
+
+export function planLabel(text: LabelText, box: LabelBox, measurer: TypeMeasurer): LabelPlan {
+  const name = text.name.trim();
+  const detail = text.detail.trim();
+  const blocks = name === '' ? [] : placeBlocks(name, detail, box, measurer);
+  const inkLength = (block: PlacedTypeBlock): number =>
+    block.plan.maxX - block.plan.minX + 2 * END_MARGIN_MM;
+  return {
+    widthMm: box.lengthMm ?? Math.max(box.heightMm, ...blocks.map(inkLength)),
+    heightMm: box.heightMm,
+    blocks,
+    problem: labelProblem(name, detail, blocks, measurer),
+  };
 }
 
 export interface LabelPath {
