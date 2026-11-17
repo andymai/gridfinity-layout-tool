@@ -19,6 +19,7 @@ export const LEARN_LINKS: ReadonlyArray<{ slug: string; labelKey: string; locali
     localized: false,
   },
   { slug: 'gridfinity-calculator', labelKey: 'sidebar.learn.calculator', localized: false },
+  { slug: 'gridfinity-label-maker', labelKey: 'sidebar.learn.labelMaker', localized: false },
   { slug: 'gridfinity-sizes', labelKey: 'sidebar.learn.sizes', localized: true },
   { slug: 'gridfinity-tool-drawer', labelKey: 'sidebar.learn.toolDrawer', localized: false },
   { slug: 'gridfinity-kitchen-drawer', labelKey: 'sidebar.learn.kitchenDrawer', localized: false },

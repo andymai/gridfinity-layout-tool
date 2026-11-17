@@ -5544,5 +5544,6 @@
   "seo.labels.title": "Étiquettes pour étiqueteuse | Gridfinity Layout Tool",
   "seo.labels.description": "Créez des étiquettes pour une étiqueteuse Brother P-touch, DYMO, Niimbot ou Phomemo à partir d'une liste saisie ou collée. Gratuit, sans compte.",
   "loading.labels": "Chargement des étiquettes",
-  "labels.page.intro": "Saisissez ou collez une liste, choisissez votre étiqueteuse et téléchargez une image par étiquette."
+  "labels.page.intro": "Saisissez ou collez une liste, choisissez votre étiqueteuse et téléchargez une image par étiquette.",
+  "sidebar.learn.labelMaker": "Étiqueteuse"
 }

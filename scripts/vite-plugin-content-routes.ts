@@ -19,6 +19,7 @@ const SLUGS = [
   'gridfinity-bin-generator',
   'gridfinity-baseplate-generator',
   'gridfinity-calculator',
+  'gridfinity-label-maker',
   'gridfinity-sizes',
   'gridfinity-tool-drawer',
   'gridfinity-kitchen-drawer',

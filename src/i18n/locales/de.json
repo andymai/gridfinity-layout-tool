@@ -5544,5 +5544,6 @@
   "seo.labels.title": "Etiketten für Etikettendrucker | Gridfinity Layout Tool",
   "seo.labels.description": "Erstellen Sie Etiketten für einen Brother P-touch, DYMO, Niimbot oder Phomemo aus einer getippten oder eingefügten Liste. Kostenlos, ohne Konto.",
   "loading.labels": "Etiketten werden geladen",
-  "labels.page.intro": "Tippen oder fügen Sie eine Liste ein, wählen Sie Ihren Etikettendrucker und laden Sie ein Bild pro Etikett herunter."
+  "labels.page.intro": "Tippen oder fügen Sie eine Liste ein, wählen Sie Ihren Etikettendrucker und laden Sie ein Bild pro Etikett herunter.",
+  "sidebar.learn.labelMaker": "Etikettendrucker"
 }

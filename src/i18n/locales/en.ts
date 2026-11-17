@@ -410,6 +410,7 @@ const en: Record<string, string> = {
   'sidebar.learn.binGenerator': 'Bin generator',
   'sidebar.learn.baseplateGenerator': 'Baseplate generator',
   'sidebar.learn.calculator': 'Calculator',
+  'sidebar.learn.labelMaker': 'Label maker',
   'sidebar.learn.community': 'Community designs',
   'sidebar.learn.cutoutGenerator': 'Cutout generator',
   'sidebar.learn.sizes': 'Sizes reference',

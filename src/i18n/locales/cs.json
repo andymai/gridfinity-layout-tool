@@ -5685,5 +5685,6 @@
   "seo.labels.title": "Štítky pro tiskárnu štítků | Gridfinity Layout Tool",
   "seo.labels.description": "Vytvořte štítky pro tiskárnu Brother P-touch, DYMO, Niimbot nebo Phomemo z napsaného či vloženého seznamu. Zdarma, bez účtu.",
   "loading.labels": "Načítání štítků",
-  "labels.page.intro": "Napište nebo vložte seznam, zvolte tiskárnu štítků a stáhněte jeden obrázek pro každý štítek."
+  "labels.page.intro": "Napište nebo vložte seznam, zvolte tiskárnu štítků a stáhněte jeden obrázek pro každý štítek.",
+  "sidebar.learn.labelMaker": "Tiskárna štítků"
 }

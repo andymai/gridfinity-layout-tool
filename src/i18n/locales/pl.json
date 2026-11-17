@@ -5822,5 +5822,6 @@
   "seo.labels.title": "Etykiety do drukarki etykiet | Gridfinity Layout Tool",
   "seo.labels.description": "Twórz etykiety do drukarek Brother P-touch, DYMO, Niimbot lub Phomemo z wpisanej lub wklejonej listy. Za darmo, bez konta.",
   "loading.labels": "Wczytywanie etykiet",
-  "labels.page.intro": "Wpisz lub wklej listę, wybierz drukarkę etykiet i pobierz jeden obraz dla każdej etykiety."
+  "labels.page.intro": "Wpisz lub wklej listę, wybierz drukarkę etykiet i pobierz jeden obraz dla każdej etykiety.",
+  "sidebar.learn.labelMaker": "Drukarka etykiet"
 }

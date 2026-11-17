@@ -5544,5 +5544,6 @@
   "seo.labels.title": "Etiquetas para rotuladora | Gridfinity Layout Tool",
   "seo.labels.description": "Crie etiquetas para uma rotuladora Brother P-touch, DYMO, Niimbot ou Phomemo a partir de uma lista digitada ou colada. Grátis, sem conta.",
   "loading.labels": "Carregando etiquetas",
-  "labels.page.intro": "Digite ou cole uma lista, escolha sua rotuladora e baixe uma imagem para cada etiqueta."
+  "labels.page.intro": "Digite ou cole uma lista, escolha sua rotuladora e baixe uma imagem para cada etiqueta.",
+  "sidebar.learn.labelMaker": "Rotuladora"
 }
