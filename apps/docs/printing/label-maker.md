@@ -1,6 +1,6 @@
 ---
 title: Labels for a label maker
-description: 'Turn a list into paper labels for a Brother P-touch, DYMO, Niimbot or Phomemo label maker, with part numbers on a second line.'
+description: 'Make labels for a Brother P-touch, DYMO, Niimbot or Phomemo label maker from a typed or pasted list.'
 sources:
   - src/features/labels/
   - src/features/print-export/components/PrintModal/PrintModal.tsx
@@ -8,42 +8,52 @@ sources:
 
 # Labels for a label maker
 
-A paper label tells you what's in a bin, and a label maker prints one in seconds. The Gridfinity Layout Tool turns a list into labels for your label maker. Each label downloads as an image made for your printer, in the same type as the labels you print on bins.
+The Labels dialog turns a list into one image for each label, sized for your label maker. You print the images from your printer's app. It works with Brother P-touch and DYMO LabelManager tape, and with Niimbot D11, D110 and Phomemo D30 labels.
 
-## Make labels from a list
+## Make labels
 
-1. In the header, click <Ui k="header.print" />, then click <Ui k="print.makeLabels" />. Or press <kbd>Ctrl</kbd>+<kbd>K</kbd> and type labels.
-2. Under <Ui k="labels.printer" />, pick your printer. Under <Ui k="labels.media" />, pick the tape or the labels in it.
-3. Type or paste your list in <Ui k="labels.paste" />, one label on each line, then click <Ui k="labels.paste.add" />.
-4. Look at the preview of each label. Change its text, its second line or its number of <Ui k="labels.row.copies" /> in its row.
-5. Click <Ui k="labels.download" />. With more than one label, the button says <Ui k="labels.downloadZip" /> and you get one ZIP.
+1. In the header, click <Ui k="header.print" />, then <Ui k="print.makeLabels" />. Or press <kbd>Ctrl</kbd>+<kbd>K</kbd> and type label.
+2. Pick your printer under <Ui k="labels.printer" />, and the tape or labels it holds under <Ui k="labels.media" />.
+3. Type or paste your list in <Ui k="labels.paste" />, one label on each line, and click <Ui k="labels.paste.add" />.
+4. Edit a label in its row. The preview shows it as it prints.
+5. Click <Ui k="labels.download" />. More than one label downloads as a ZIP.
+
+<Screenshot id="printing-label-maker-dialog" alt="The Labels dialog with Niimbot D11 / D110 and 12 × 40 mm labels. Four McMaster-Carr parts each show a preview with the description above the part number." spec="Layout editor, desktop 1440 by 900 px. The list holds four McMaster-Carr parts, the printer is Niimbot D11 / D110 with 12 × 40 mm labels. Click Print in the header, then Labels for a label maker. Crop to the dialog." />
+
+Open each image in your printer's app and print it at full size. If you set an export folder in Settings, the files go there.
 
 ## Paste a parts order
 
-Copy the rows of a spreadsheet or of a supplier's order page, and paste them. The Layout Tool finds the column of part numbers and puts each part number on a second line. It sets them in a font where 0 and O look different, so you reorder the right part. The longest text in each row becomes the label.
+Paste rows copied from a spreadsheet or an order page. The part numbers go on a second line, in a font where 0 and O look different. The longest text in each row becomes the label.
 
-A typed line works too. When a line starts or ends with a McMaster-Carr part number, such as `91290A113 Socket head screw`, the part number goes on the second line.
+<Screenshot id="printing-label-maker-paste" alt="Four rows of a parts order are pasted into Add labels and added to the list. Each row gets a preview with the part number under the description. Then 1U makes each label 36 mm long, and the descriptions wrap." spec="Clip. The Labels dialog with an empty list and Brother P-touch 12 mm tape. Paste four tab-separated McMaster-Carr rows, click Add to list, then click 1U. Crop to the dialog." />
 
-The Layout Tool does not look up part numbers. Paste each description with its part number.
+In a typed line, a McMaster-Carr part number at the start or end goes on the second line: `91290A113 Socket head screw`.
+
+The dialog does not look up part numbers, so paste the descriptions with them. Text longer than 120 characters, or a second line longer than 40, is cut at a word and ends with an ellipsis (…).
 
 ## Choose the length
 
-Label-maker tape has no fixed length, so you choose one under <Ui k="labels.length" />:
+Tape has no fixed length. Under <Ui k="labels.length" />:
 
-- <Ui k="labels.length.fit" /> makes each label as long as its text.
-- 1U, 2U and 3U make each label 36, 78 or 120 mm long, to fit a bin that many grid units wide. Long text breaks onto two or three lines.
+- <Ui k="labels.length.fit" />: each label is as long as its text.
+- 1U, 2U or 3U: each label is 36, 78 or 120 mm long, to fit a bin that many grid units wide. Long text wraps.
 
-Die-cut labels, such as the 12 × 40 mm labels of a Niimbot D11, have a fixed size, so this setting does not show.
+Die-cut labels have a fixed size, so this setting does not show. On 6 mm tape the part number goes after the name, on the same line.
 
-When text does not fit at a size you can read, its row shows a warning, and the download leaves that label out. Make the text shorter, or pick a longer label.
+## Labels left out of the download
 
-## Print the labels
+A row shows a warning, and the download skips that label, when:
 
-Each image has one pixel for each dot of your printer's head, in pure black and white, so small text stays sharp. Open it as an image in the app for your printer, and print it at full size.
+- the label has no text
+- the text does not fit at a size you can read: shorten it, or pick a longer label
+- the font has no letters for some of the text, such as Cyrillic or Chinese
 
-## Your list stays in this browser
+If the label fonts do not load, for example offline, the dialog says so. Click <Ui k="error.tryAgain" /> when you are back online.
 
-The list stays in this browser until you clear it. It is not part of a layout, so it does not sync to your other devices and is not in a share link.
+## Where the list is kept
+
+The list stays in this browser until you clear it. It is not part of a layout, so it does not sync to your other devices or go into share links.
 
 ## Next steps
 
