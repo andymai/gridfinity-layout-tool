@@ -395,7 +395,7 @@ export const designAdapter: DesignAdapter = {
       // exactly that reason. Runs after the save so it keeps what was just
       // written.
       if (!variantOf && base?.variantOf) {
-        await detachVariant(designId(item.id));
+        await detachVariant(designId(item.id), item.modifiedAt);
       }
     } finally {
       suppressed.delete(item.id);
