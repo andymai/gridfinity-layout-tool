@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useTypeMeasurer } from './useTypeMeasurer';
-import * as registry from '@/features/bin-designer/utils/typeMeasurer';
+import * as registry from '@/shared/fonts/typeFontRegistry';
 
 describe('useTypeMeasurer', () => {
   beforeEach(() => {

@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { TypeSpecimen } from './TypeSpecimen';
 import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/shared/types/bin';
 
-vi.mock('@/features/bin-designer/hooks/useTypeMeasurer', () => ({
+vi.mock('@/shared/hooks/useTypeMeasurer', () => ({
   useTypeMeasurer: () => null,
 }));
 

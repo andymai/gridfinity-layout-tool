@@ -6,7 +6,7 @@ import {
   resetTypeFontsForTest,
   subscribeTypeFonts,
   typeFontsVersion,
-} from './typeMeasurer';
+} from './typeFontRegistry';
 
 /**
  * The registry's contract is about ABSENCE: a preview drawn from a face that
