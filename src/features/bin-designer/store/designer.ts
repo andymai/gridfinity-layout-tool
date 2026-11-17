@@ -29,6 +29,9 @@ import { syncCutoutDepths, syncLidHeightUnits, syncSlantLip } from './helpers';
 
 export const useDesignerStore = create<DesignerState>()(
   immer((rawSet, get) => {
+    // The syncs replace each value they change and never write into it: an
+    // action can merge in a value held from an earlier state (settings a
+    // body-type switch gives back), and immer leaves that value frozen.
     const set: Set = (fn) =>
       rawSet((state) => {
         fn(state);
