@@ -27,6 +27,7 @@ import { generateLayoutId } from '@/shared/utils';
 import { CONSTRAINTS, SHARED_PREVIEW_ID } from '@/core/constants';
 import { computePreview } from './preview';
 import { layoutId } from '@/core/types';
+import { stampAfter } from '@/shared/utils/editStamp';
 import type {
   Layout,
   LayoutEntry,
@@ -220,7 +221,7 @@ export async function saveLayoutWithMetadata(
 
   const updatedLibrary = updateLibraryEntryAtIndex(library, found.index, {
     name: (options.name ?? layout.name).slice(0, CONSTRAINTS.NAME_MAX_LENGTH),
-    modifiedAt: now,
+    modifiedAt: stampAfter(found.entry.modifiedAt, now),
     preview,
   });
   const updatedEntry = updatedLibrary.entries[found.index];
@@ -567,7 +568,7 @@ export function renameLayoutEntry(
 
   const updatedLibrary = updateLibraryEntryAtIndex(library, found.index, {
     name: newName.slice(0, CONSTRAINTS.NAME_MAX_LENGTH),
-    modifiedAt: Date.now(),
+    modifiedAt: stampAfter(found.entry.modifiedAt),
   });
 
   saveLibraryFireAndForget(updatedLibrary);

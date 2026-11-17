@@ -27,6 +27,7 @@ import { MAX_VERSIONS_PER_DESIGN } from '@/features/bin-designer/types';
 import { getDb, DESIGN_VERSIONS_STORE } from './designerDb';
 import { emit as announce } from '@/features/bin-designer/sync/designVersionEvents';
 import { generateUUID } from '@/shared/utils/uuid';
+import { isoStampAfter } from '@/shared/utils/editStamp';
 import { storeHolderMeshes } from '@/shared/generation/meshRefs';
 
 /** Strip the compressed body so the history list never holds every design in memory. */
@@ -169,7 +170,7 @@ async function patch(
     // `updatedAt` is what the adapter reports as the mtime. Stamping it here is
     // what lets a rename win last-write-wins against the copy already synced;
     // `createdAt` is when the state was captured and never moves.
-    const updatedAt = new Date().toISOString();
+    const updatedAt = isoStampAfter(existing.updatedAt ?? existing.createdAt);
     const updated: DesignVersion = { ...existing, ...fields, updatedAt };
     await db.put(DESIGN_VERSIONS_STORE, updated);
     announce({ type: 'put', id: updated.id, modifiedAt: Date.parse(updatedAt) });
