@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
-# Prints go=true when a scheduled release run may release now, else go=false.
-#
 # GitHub starts scheduled runs hours late, so a fixed cron slot drifts out of
 # its activity trough. release.yml fires every hour instead, and this gate
-# admits one run per low-activity window. It does arithmetic on epoch seconds
-# only, because GNU and BSD `date` parse date strings differently.
+# admits one run per low-activity window, and at most two per UTC date: the
+# evening window crosses midnight, so one release per window alone can put
+# three on one date. It does arithmetic on epoch seconds only, because GNU and
+# BSD `date` parse date strings differently.
 set -euo pipefail
 
 # start_hour:hours, in UTC.
 WINDOWS="5:3 23:2"
+MAX_PER_DAY=2
 
 now=${NOW:-$(date -u +%s)}
 hour=$((now % 86400 / 3600))
@@ -31,15 +32,28 @@ if [ -z "$window_start" ]; then
 fi
 
 # The release PR's squash merge is the deploy trigger (scripts/vercel-ignore.sh),
-# so its merge time says whether this window already shipped.
-if [ -z "${LAST_RELEASE_EPOCH+set}" ]; then
-  LAST_RELEASE_EPOCH=$(gh api "repos/$GITHUB_REPOSITORY/commits?sha=main&per_page=100" \
-    --jq '[.[] | select(.commit.message | startswith("chore(main): release "))][0].commit.committer.date | if . then fromdateiso8601 else "" end')
+# so the merge times say what already shipped.
+if [ -z "${RELEASE_EPOCHS+set}" ]; then
+  RELEASE_EPOCHS=$(gh api "repos/$GITHUB_REPOSITORY/commits?sha=main&per_page=100" \
+    --jq '.[] | select(.commit.message | startswith("chore(main): release ")) | .commit.committer.date | fromdateiso8601')
 fi
 
-if [ -n "$LAST_RELEASE_EPOCH" ] && [ "$LAST_RELEASE_EPOCH" -ge "$window_start" ]; then
+day_start=$((now - now % 86400))
+today=0
+for t in $RELEASE_EPOCHS; do
+  if [ "$t" -ge "$window_start" ]; then
+    echo "go=false"
+    echo "A release already merged in this window." >&2
+    exit 0
+  fi
+  if [ "$t" -ge "$day_start" ]; then
+    today=$((today + 1))
+  fi
+done
+
+if [ "$today" -ge "$MAX_PER_DAY" ]; then
   echo "go=false"
-  echo "A release already merged in this window." >&2
+  echo "$today releases already merged on this UTC date." >&2
   exit 0
 fi
 

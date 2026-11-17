@@ -64,7 +64,6 @@ jobs:
 
   release-please:
     needs: window
-    # A manual run skips the window job and always releases.
     if: ${{ !cancelled() && (github.event_name != 'schedule' || needs.window.outputs.go == 'true') }}
     runs-on: ubuntu-latest
     steps:
