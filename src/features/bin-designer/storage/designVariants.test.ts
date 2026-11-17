@@ -224,6 +224,19 @@ describe('design variants', () => {
   });
 
   describe('detachVariant', () => {
+    // A device whose clock runs fast can stamp a copy ahead of this clock. Sync
+    // keeps the later stamp, so an edit here must still sort after it.
+    it('stamps a detach 1 ms after a variant stamped ahead of this clock', async () => {
+      await seedParent();
+      const variant = expectOk(await createVariant(PARENT, 'ahead', {}));
+      const ahead = Date.now() + 5 * 60 * 60 * 1000;
+      expectOk(await saveDesign({ ...variant, remoteModifiedAt: ahead }));
+
+      const detached = expectOk(await detachVariant(variant.id));
+
+      expect(detached.updatedAt).toBe(new Date(ahead + 1).toISOString());
+    });
+
     it('keeps the params it had and stops tracking the parent', async () => {
       await seedParent();
       const variant = expectOk(

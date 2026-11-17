@@ -62,6 +62,25 @@ describe('DesignerStorage', () => {
   });
 
   describe('saveDesign', () => {
+    // A device whose clock runs fast can stamp a copy ahead of this clock. Sync
+    // keeps the later stamp, so an edit here must still sort after it.
+    it('stamps a save 1 ms after a stored copy that is ahead of this clock', async () => {
+      const ahead = Date.now() + 5 * 60 * 60 * 1000;
+      const pulled = expectOk(
+        await saveDesign({
+          name: 'Pulled',
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+          remoteModifiedAt: ahead,
+        })
+      );
+
+      const edited = expectOk(await updateDesignName(pulled.id, 'Edited'));
+
+      expect(edited.updatedAt).toBe(new Date(ahead + 1).toISOString());
+    });
+
     it('should save a new design with generated ID', async () => {
       const result = await saveDesign({
         name: 'Test Bin',

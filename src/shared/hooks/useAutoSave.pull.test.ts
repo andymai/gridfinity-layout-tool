@@ -97,6 +97,32 @@ describe('useAutoSave after sync pulls the open layout', () => {
     }
   );
 
+  it('stamps an edit after a pulled copy that is ahead of this clock', async () => {
+    const id = await openSeeded('A');
+    const autosave = renderHook(() => useAutoSave());
+    await settle(() => autosave.result.current);
+    const pulledAt = Date.now() + 5 * 60 * 60 * 1000;
+    await act(async () => {
+      await layoutAdapter.applyRemote({
+        id,
+        payload: namedLayout('A remote'),
+        modifiedAt: pulledAt,
+        schemaVersion: LAYOUT_SCHEMA_VERSION,
+      });
+    });
+    await settle(() => autosave.result.current);
+    const changes: AdapterChange[] = [];
+    const unsubscribe = layoutAdapter.subscribe((change) => changes.push(change));
+
+    act(() => {
+      useLayoutStore.getState().setName('A edited');
+    });
+    await settle(() => autosave.result.current);
+    unsubscribe();
+
+    expect(changes).toEqual([{ kind: 'put', id, modifiedAt: pulledAt + 1 }]);
+  });
+
   it('saves and sends an edit made after the pull', async () => {
     const id = await openSeeded('A');
     const autosave = renderHook(() => useAutoSave());

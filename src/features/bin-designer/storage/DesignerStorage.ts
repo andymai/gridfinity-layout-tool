@@ -31,6 +31,7 @@ import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/f
 import { emit as emitDesignerEvent } from '@/features/bin-designer/sync/designerEvents';
 import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { applyOverrides } from '@/shared/utils/applyOverrides';
+import { isoStampAfter } from '@/shared/utils/editStamp';
 import { trackDesignCreated } from '@/shared/analytics/posthog';
 import { storeHolderMeshes } from '@/shared/generation/meshRefs';
 import { getDb, DESIGNS_STORE } from './designerDb';
@@ -71,13 +72,14 @@ type SaveDesignInput = Omit<SavedDesign, 'id' | 'createdAt' | 'updatedAt'> & {
 };
 
 /**
- * `updatedAt` for a save: the `modifiedAt` of a copy that sync pulled, or the
- * time now. Sync compares the two stamps, so a pulled copy must keep its own.
+ * `updatedAt` for a save: the `modifiedAt` of a copy that sync pulled, or
+ * `edited`, the stamp of a local edit. Sync compares the two stamps, so a
+ * pulled copy must keep its own.
  */
-function storedTime(remoteModifiedAt: number | undefined, now: string): string {
-  if (remoteModifiedAt === undefined) return now;
+function storedTime(remoteModifiedAt: number | undefined, edited: string): string {
+  if (remoteModifiedAt === undefined) return edited;
   const time = new Date(remoteModifiedAt);
-  return Number.isNaN(time.getTime()) ? now : time.toISOString();
+  return Number.isNaN(time.getTime()) ? edited : time.toISOString();
 }
 
 // Unversioned reads as outdated, which is what queues a regeneration.
@@ -178,7 +180,10 @@ async function writeDesign(design: SaveDesignInput): Promise<Result<SavedDesign,
       thumbnailVersion: thumbnailVersionFor(design, existing),
       exportFileNameConfig: design.exportFileNameConfig ?? null,
       createdAt,
-      updatedAt: storedTime(design.remoteModifiedAt, now),
+      updatedAt: storedTime(
+        design.remoteModifiedAt,
+        isoStampAfter(existing?.updatedAt, Date.parse(now))
+      ),
       ...(tags.length > 0 ? { tags } : {}),
       ...(publishedId !== undefined ? { publishedId } : {}),
       ...(lineage !== undefined ? { lineage } : {}),
@@ -644,7 +649,7 @@ export async function detachVariant(
     // value for both fields, so passing them as undefined would restore them.
     const detached: SavedDesign = {
       ...rest,
-      updatedAt: storedTime(remoteModifiedAt, new Date().toISOString()),
+      updatedAt: storedTime(remoteModifiedAt, isoStampAfter(loaded.value.updatedAt)),
     };
     await db.put(DESIGNS_STORE, detached);
     emitDesignerEvent({ type: 'put', id: detached.id, updatedAt: detached.updatedAt });

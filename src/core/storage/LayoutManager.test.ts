@@ -894,6 +894,18 @@ describe('renameLayoutEntry', () => {
     expect(value.entries[0].name).toBe('New Name');
   });
 
+  // A device whose clock runs fast can stamp a layout ahead of this clock. Sync
+  // keeps the later stamp, so a rename here must still sort after it.
+  it('stamps a rename 1 ms after an entry stamped ahead of this clock', () => {
+    const library = createTestLibrary([createTestEntry('layout-1', 'Test')]);
+    const ahead = Date.now() + 5 * 60 * 60 * 1000;
+    library.entries[0].modifiedAt = ahead;
+
+    const value = expectOk(renameLayoutEntry('layout-1', 'New', library));
+
+    expect(value.entries[0].modifiedAt).toBe(ahead + 1);
+  });
+
   it('updates modifiedAt timestamp', () => {
     const library = createTestLibrary([createTestEntry('layout-1', 'Test')]);
     library.entries[0].modifiedAt = 1000;
