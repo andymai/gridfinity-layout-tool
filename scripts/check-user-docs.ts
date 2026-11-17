@@ -4,6 +4,8 @@
  *   tsx scripts/check-user-docs.ts            fail on any problem (pre-commit, CI test)
  *   tsx scripts/check-user-docs.ts --staged   warn about docs whose sources are staged
  *   tsx scripts/check-user-docs.ts --stale    list docs whose sources changed after them
+ *   tsx scripts/check-user-docs.ts --pr       fail a feat PR that changes no docs (CI; reads
+ *                                             PR_TITLE, PR_BODY, PR_BASE, PR_HEAD_REF)
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -351,7 +353,7 @@ function citingPage(slice: string, pages: readonly DocPage[]): string | undefine
 
 /**
  * A new feature slice has no page that names it, so the source-based warnings
- * never fire for it. Each slice needs a citing page or an allowlist reason.
+ * never fire for it.
  */
 export function checkFeatureCoverage(
   slices: readonly string[],
@@ -425,6 +427,63 @@ export function docsForStagedSources(
   return hits;
 }
 
+const RELEASE_BRANCH_PREFIX = 'release-please--';
+const TITLE_TYPE = /^(\w+)(?:\([^)]*\))?!?:/;
+const DOCS_NONE = /^Docs: none\b(.*)$/;
+
+export interface PullRequest {
+  readonly title: string;
+  readonly body: string;
+  readonly headRef: string;
+  readonly changed: readonly string[];
+}
+
+type PrDocsVerdict =
+  | { readonly pass: true; readonly reason: string }
+  | { readonly pass: false; readonly pages: readonly StagedSource[] };
+
+export function prTitleType(title: string): string | null {
+  return TITLE_TYPE.exec(title)?.[1] ?? null;
+}
+
+export function docsNoneReason(body: string): string | null {
+  for (const line of body.split(/\r?\n/)) {
+    const reason = DOCS_NONE.exec(line)?.[1]
+      .replace(/^[^\p{L}\p{N}]+/u, '')
+      .trim();
+    if (reason) return reason;
+  }
+  return null;
+}
+
+export function checkPrDocs(pr: PullRequest, pages: readonly DocPage[]): PrDocsVerdict {
+  if (pr.headRef.startsWith(RELEASE_BRANCH_PREFIX)) return { pass: true, reason: 'release PR' };
+  const type = prTitleType(pr.title);
+  if (type !== 'feat') return { pass: true, reason: `title type "${type ?? 'none'}" is not feat` };
+  if (pr.changed.some((file) => file.startsWith(`${DOCS_DIR}/`)))
+    return { pass: true, reason: `changes ${DOCS_DIR}/` };
+  const reason = docsNoneReason(pr.body);
+  if (reason) return { pass: true, reason: `Docs: none, ${reason}` };
+  return { pass: false, pages: docsForStagedSources(pages, pr.changed) };
+}
+
+export function prDocsFailure(hits: readonly StagedSource[]): string[] {
+  const lines = [`\x1b[1;31m✗ user docs:\x1b[0m a feat PR must change a file under ${DOCS_DIR}/.`];
+  if (hits.length > 0) {
+    lines.push('  These pages describe files that this PR changes:');
+    for (const hit of hits) lines.push(`    ${hit.page}  (source: ${hit.source})`);
+  } else {
+    lines.push(
+      `  No docs page cites the files that this PR changes. Add or update a page under ${DOCS_DIR}/.`
+    );
+  }
+  lines.push(
+    '  If no page needs a change, add this line to the PR body, with the reason:',
+    '    Docs: none, <the reason>'
+  );
+  return lines;
+}
+
 function git(args: string[]): string {
   return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' }).trim();
 }
@@ -451,6 +510,29 @@ function main(): void {
       console.warn('  Update them in this commit if the change is visible to users.\n');
     }
     return;
+  }
+
+  if (mode === '--pr') {
+    const { PR_TITLE, PR_BODY = '', PR_BASE, PR_HEAD_REF = '' } = process.env;
+    if (!PR_TITLE || !PR_BASE) {
+      console.error('--pr needs PR_TITLE and PR_BASE, and reads PR_BODY and PR_HEAD_REF');
+      process.exit(1);
+    }
+    // --no-renames for the same reason as --staged: a page that names the old
+    // path of a moved file still shows up.
+    const changed = git(['diff', '--name-only', '--no-renames', `${PR_BASE}...HEAD`])
+      .split('\n')
+      .filter(Boolean);
+    const verdict = checkPrDocs(
+      { title: PR_TITLE, body: PR_BODY, headRef: PR_HEAD_REF, changed },
+      pages
+    );
+    if (verdict.pass) {
+      console.warn(`✓ user docs: ${verdict.reason}`);
+      return;
+    }
+    for (const line of prDocsFailure(verdict.pages)) console.error(line);
+    process.exit(1);
   }
 
   if (mode === '--stale') {

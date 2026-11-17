@@ -80,6 +80,7 @@
     "check:doc-drift": "tsx scripts/check-doc-drift.ts",
     "check:user-docs": "tsx scripts/check-user-docs.ts",
     "check:user-docs:staged": "tsx scripts/check-user-docs.ts --staged",
+    "check:user-docs:pr": "tsx scripts/check-user-docs.ts --pr",
     "docs:stale": "tsx scripts/check-user-docs.ts --stale",
     "docs:dev": "pnpm --filter gridfinity-docs dev",
     "docs:build": "pnpm --filter gridfinity-docs build",
