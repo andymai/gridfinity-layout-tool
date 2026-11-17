@@ -417,6 +417,27 @@ describe('DELETE and tombstone protection', () => {
     expect(getRes._status).toBe(410);
   });
 
+  // A client stamps modifiedAt with its own clock, and the tombstone takes the
+  // server's. A device whose clock runs fast must not leave its copy newer than
+  // the deletion of that copy.
+  it('tombstones after the deleted version when that version is stamped ahead of the server clock', async () => {
+    const ahead = Date.now() + 5 * 60 * 60 * 1000;
+    await handler(
+      putReq({ value: 'v1', modifiedAt: ahead }),
+      makeRes() as unknown as VercelResponse
+    );
+    await handler(makeReq({ method: 'DELETE' }), makeRes() as unknown as VercelResponse);
+
+    const getRes = makeRes();
+    await handler(makeReq({ method: 'GET' }), getRes as unknown as VercelResponse);
+    const body = getRes._body as { indexEntry: { deletedAt?: number } };
+    expect(body.indexEntry.deletedAt).toBeGreaterThan(ahead);
+
+    const res = makeRes();
+    await handler(putReq({ value: 'v1', modifiedAt: ahead }), res as unknown as VercelResponse);
+    expect(res._status).toBe(410);
+  });
+
   it('allows a PUT newer than the tombstone to resurrect the entry', async () => {
     await handler(
       putReq({ value: 'v1', modifiedAt: 1000 }),
