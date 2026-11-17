@@ -1,0 +1,30 @@
+.claude/skills/quality-gates/SKILL.md
+  s_0af55ea98fd445::t_c35f01b13d522c 61-62
+package.json
+  s_0af55ea98fd445::t_4011ce07dc5906 83
+.github/workflows/user-docs.yml
+  s_0af55ea98fd445::t_bdfdcd8957c4ea 1-43
+scripts/check-user-docs.test.ts
+  s_0af55ea98fd445::t_4cf653a645b4a6 1-2,10,15,18-19,22,327-442
+.github/pull_request_template.md
+  s_0af55ea98fd445::t_5c25da9594030c 11-12
+scripts/check-user-docs.ts
+  s_0af55ea98fd445::t_4cf653a645b4a6 7-8,430-486,515-536
+  s_0af55ea98fd445::t_1bfa530575e3be 537
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "478a6521210defe4580affc406238aa9957b61e1",
+  "prompts": {},
+  "sessions": {
+    "s_0af55ea98fd445": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b0aef1d-72f1-4eb1-af22-d6135a699f5e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
