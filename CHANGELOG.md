@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.544.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.544.2...gridfinity-layout-tool-v4.544.3) (2026-11-17)
+
+
+### Bug Fixes
+
+* **share:** match a share update against the blob's strong ETag ([#5082](https://github.com/andymai/gridfinity-layout-tool/issues/5082)) ([2320940](https://github.com/andymai/gridfinity-layout-tool/commit/2320940614dbbd16f544c570ee837c0e4befa050))
+* **sync:** do not save a pulled layout again or send it back ([#5078](https://github.com/andymai/gridfinity-layout-tool/issues/5078)) ([3e6bcf8](https://github.com/andymai/gridfinity-layout-tool/commit/3e6bcf860f9110800b5b2b9f20b8188f9c3aa8aa))
+* **sync:** keep the pulled modifiedAt on baseplates and bin designs ([#5079](https://github.com/andymai/gridfinity-layout-tool/issues/5079)) ([3e62a25](https://github.com/andymai/gridfinity-layout-tool/commit/3e62a25b7aa89a9c87311834c00ad075810274df))
+* **sync:** stamp an edit after the copy it changes ([#5081](https://github.com/andymai/gridfinity-layout-tool/issues/5081)) ([4b0854e](https://github.com/andymai/gridfinity-layout-tool/commit/4b0854e08bc167512aee1cb2877f9093029a5747))
+
 ## [4.544.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.544.1...gridfinity-layout-tool-v4.544.2) (2026-11-17)
 
 
