@@ -27,6 +27,7 @@ describe('LEARN_LINKS', () => {
     expect(englishOnly).toEqual([
       'gridfinity-cutout-generator',
       'gridfinity-calculator',
+      'gridfinity-label-maker',
       'gridfinity-tool-drawer',
       'gridfinity-kitchen-drawer',
       'gridfinity-software',

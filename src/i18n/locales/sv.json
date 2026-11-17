@@ -5544,5 +5544,6 @@
   "seo.labels.title": "Etiketter för etikettskrivare | Gridfinity Layout Tool",
   "seo.labels.description": "Skapa etiketter för en Brother P-touch, DYMO, Niimbot eller Phomemo från en skriven eller inklistrad lista. Gratis, inget konto.",
   "loading.labels": "Läser in etiketter",
-  "labels.page.intro": "Skriv eller klistra in en lista, välj din etikettskrivare och ladda ned en bild per etikett."
+  "labels.page.intro": "Skriv eller klistra in en lista, välj din etikettskrivare och ladda ned en bild per etikett.",
+  "sidebar.learn.labelMaker": "Etikettskrivare"
 }

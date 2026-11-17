@@ -1047,6 +1047,7 @@ const CONTENT_LASTMOD = '2026-10-15';
 const APP_ROUTES: Record<string, SitemapPage> = {
   designer: { basePriority: 0.9, changefreq: 'monthly' },
   baseplate: { basePriority: 0.9, changefreq: 'monthly' },
+  labels: { basePriority: 0.7, changefreq: 'monthly' },
   // The gallery index only. Individual designs are crawlable now, but stay out of
   // the sitemap: whether one is indexable is decided per design at request time
   // (isIndexable in api/community/page.ts) and a build-time file cannot know it.
@@ -1064,6 +1065,7 @@ const SITEMAP_PAGES: Record<string, SitemapPage> = {
   'gridfinity-tool-drawer': { basePriority: 0.8, changefreq: 'monthly' },
   'gridfinity-kitchen-drawer': { basePriority: 0.8, changefreq: 'monthly' },
   'gridfinity-calculator': { basePriority: 0.8, changefreq: 'monthly' },
+  'gridfinity-label-maker': { basePriority: 0.8, changefreq: 'monthly' },
   'gridfinity-cutout-generator': { basePriority: 0.8, changefreq: 'monthly' },
   'gridfinity-software': { basePriority: 0.7, changefreq: 'monthly' },
   'gridfinity-drawers': { basePriority: 0.8, changefreq: 'monthly' },

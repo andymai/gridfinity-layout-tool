@@ -5405,5 +5405,6 @@
   "seo.labels.title": "ラベルプリンター用ラベル | Gridfinity Layout Tool",
   "seo.labels.description": "入力または貼り付けたリストから、Brother P-touch、DYMO、Niimbot、Phomemo のラベルプリンター用ラベルを作成。無料、アカウント不要。",
   "loading.labels": "ラベルを読み込み中",
-  "labels.page.intro": "リストを入力または貼り付け、ラベルプリンターを選んで、ラベルごとに1枚の画像をダウンロードします。"
+  "labels.page.intro": "リストを入力または貼り付け、ラベルプリンターを選んで、ラベルごとに1枚の画像をダウンロードします。",
+  "sidebar.learn.labelMaker": "ラベルメーカー"
 }

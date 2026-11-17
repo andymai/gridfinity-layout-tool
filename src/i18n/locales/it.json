@@ -5544,5 +5544,6 @@
   "seo.labels.title": "Etichette per etichettatrice | Gridfinity Layout Tool",
   "seo.labels.description": "Crea etichette per un'etichettatrice Brother P-touch, DYMO, Niimbot o Phomemo da un elenco scritto o incollato. Gratis, senza account.",
   "loading.labels": "Caricamento delle etichette",
-  "labels.page.intro": "Scrivi o incolla un elenco, scegli la tua etichettatrice e scarica un'immagine per ogni etichetta."
+  "labels.page.intro": "Scrivi o incolla un elenco, scegli la tua etichettatrice e scarica un'immagine per ogni etichetta.",
+  "sidebar.learn.labelMaker": "Etichettatrice"
 }
