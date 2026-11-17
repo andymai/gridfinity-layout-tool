@@ -1,21 +1,23 @@
 name: Release
 # Scheduled, not per-push: each release merge is also the production deploy
-# trigger (scripts/vercel-ignore.sh). Three a day keeps a release a readable
-# unit for the CHANGELOG and for What's New, which per-merge releases would
-# reduce to one trivial item each.
+# trigger (scripts/vercel-ignore.sh). At most two a day caps deploys, which set
+# the Vercel edge-request bill, and keeps a release a readable unit for the
+# CHANGELOG and for What's New.
 #
-# This is NOT a user-protection measure. A deploy does not interrupt anyone
-# using the app: the service worker registers with skipWaiting and clientsClaim
-# both false, so a live tab keeps its bundle until `usePWAUpdate` offers the
-# update on its own hourly check, and Vercel Skew Protection pins a client
-# mid-session to the deployment it loaded. The hours are activity troughs as a
-# tiebreaker only (06:00 UTC is the daily minimum, 13:00 the last dip before
-# the ramp into the 16:00-21:00 peak plateau, 23:00 the descent), and the
-# choice is insensitive: they land within 2% of the best available triple in
-# either DST offset, so a DST boundary needs no revisit.
+# A deploy does not interrupt anyone using the app: the service worker
+# registers with skipWaiting and clientsClaim both false, so a live tab keeps
+# its bundle until `usePWAUpdate` offers the update on its own hourly check, and
+# Vercel Skew Protection pins a client mid-session to the deployment it loaded.
+# Releases still go out in activity troughs, which scripts/release-window.sh
+# defines.
+#
+# The cron fires every hour, not at the trough hours, because GitHub starts
+# scheduled runs hours late and a fixed slot drifts into the peak. The window
+# job admits one run per trough. Minute 23 avoids the top-of-hour load that
+# GitHub names as a cause of late and dropped runs.
 on:
   schedule:
-    - cron: '0 6,13,23 * * *'
+    - cron: '23 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -45,7 +47,25 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  window:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    outputs:
+      go: ${{ steps.gate.outputs.go }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: scripts/release-window.sh
+          sparse-checkout-cone-mode: false
+      - id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/release-window.sh >> "$GITHUB_OUTPUT"
+
   release-please:
+    needs: window
+    # A manual run skips the window job and always releases.
+    if: ${{ !cancelled() && (github.event_name != 'schedule' || needs.window.outputs.go == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - name: Generate App Token
