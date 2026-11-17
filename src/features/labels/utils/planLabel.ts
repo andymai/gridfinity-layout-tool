@@ -179,10 +179,19 @@ function placeBlocks(
         { line: 'detail', plan: detailPlan, y: -top + detailBand / 2 },
       ];
     }
+    // Only a band too short for the detail face at any width (6mm tape) earns
+    // the one-block fallback; a detail that is merely too wide is too long.
+    const detailBandTooShort =
+      planBlock(
+        detail,
+        LABEL_DETAIL_FONT,
+        DETAIL_MIN_EM_MM,
+        { width: FIT_MAX_LENGTH_MM, depth: detailBand },
+        measurer
+      ) === null;
+    if (!detailBandTooShort) return [];
   }
 
-  // Tape too narrow for two bands (6mm) still carries the part number, after
-  // the name in one block.
   const singleText = detail === '' ? name : `${name} · ${detail}`;
   const single = planName(singleText, { width, depth: inner }, fitToText, measurer);
   return single ? [{ line: 'name', plan: single, y: 0 }] : [];
@@ -190,16 +199,16 @@ function placeBlocks(
 
 function labelProblem(
   name: string,
-  detail: string,
   blocks: readonly PlacedTypeBlock[],
   measurer: TypeMeasurer
 ): LabelProblem | null {
   if (name === '') return 'empty';
   if (blocks.length === 0) return 'tooLong';
-  // Text the faces cannot draw still gets a plan, so the preview shows the
-  // boxes it would print.
-  const covered =
-    measurer.covers(name, LABEL_NAME_FONT) && measurer.covers(detail, LABEL_DETAIL_FONT);
+  // Checked per drawn line, in the face that draws it: the one-block fallback
+  // sets the detail in the name face.
+  const covered = blocks.every(({ plan }) =>
+    plan.lines.every((line) => measurer.covers(line.text, plan.font))
+  );
   return covered ? null : 'unsupportedText';
 }
 
@@ -213,7 +222,7 @@ export function planLabel(text: LabelText, box: LabelBox, measurer: TypeMeasurer
     widthMm: box.lengthMm ?? Math.max(box.heightMm, ...blocks.map(inkLength)),
     heightMm: box.heightMm,
     blocks,
-    problem: labelProblem(name, detail, blocks, measurer),
+    problem: labelProblem(name, blocks, measurer),
   };
 }
 

@@ -92,6 +92,27 @@ describe('planLabel', () => {
     expect(plan.blocks).toHaveLength(0);
   });
 
+  it('checks glyphs in the face that draws them on 6mm tape', () => {
+    const plan = planLabel(
+      { name: 'Bolt', detail: 'М4' },
+      { heightMm: (32 / 180) * 25.4, lengthMm: null },
+      measurer
+    );
+
+    expect(plan.blocks).toHaveLength(1);
+    expect(plan.problem).toBe('unsupportedText');
+  });
+
+  it('reports a part number too long for its line instead of folding it into the name', () => {
+    const plan = planLabel(
+      { name: 'Hex nut', detail: 'Stainless Steel 18-8 M3 x 0.5 mm DIN 934' },
+      { heightMm: (70 / 180) * 25.4, lengthMm: 36 },
+      measurer
+    );
+
+    expect(plan.problem).toBe('tooLong');
+  });
+
   it('flags text the label faces have no glyphs for, and still previews it', () => {
     const plan = planLabel(
       { name: 'Гвинти M3', detail: '' },

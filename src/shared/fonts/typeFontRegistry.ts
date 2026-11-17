@@ -38,7 +38,12 @@ function notify(): void {
 }
 
 function textModule(): Promise<BrepText> {
-  modulePromise ??= import('brepjs/text');
+  // A rejected import is not cached: offline, the chunk fails once, and a
+  // retry has to fetch it again rather than await the same rejection.
+  modulePromise ??= import('brepjs/text').catch((error: unknown) => {
+    modulePromise = null;
+    throw error;
+  });
   return modulePromise;
 }
 
