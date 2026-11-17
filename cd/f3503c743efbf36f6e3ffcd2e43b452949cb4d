@@ -1,0 +1,21 @@
+src/features/labels/utils/parseLabelList.ts
+  s_0af55ea98fd445::t_9bb1df79b2ae3d 14-17,70
+src/features/labels/utils/parseLabelList.test.ts
+  s_0af55ea98fd445::t_8a3b0c95738cad 69-83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cdf3503c743efbf36f6e3ffcd2e43b452949cb4d",
+  "prompts": {},
+  "sessions": {
+    "s_0af55ea98fd445": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b0aef1d-72f1-4eb1-af22-d6135a699f5e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
