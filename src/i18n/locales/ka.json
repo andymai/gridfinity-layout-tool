@@ -1986,7 +1986,7 @@
   "binDesigner.labelWarningJump": "გახსენით {group}",
   "binDesigner.labelTextFilled": "შევსებულია {filled} / {total}",
   "binDesigner.labelTextLayout": "ეტიკეტის ტექსტის განლაგება",
-  "binDesigner.labelTextLayoutLabelPlaceholder": "ცარიელის შემთხვევაში დაკავშირებული ყუთები განლაგების ეტიკეტს ბეჭდავენ",
+  "binDesigner.labelTextLayoutLabelPlaceholder": "ცარიელი: ბმული ყუთები განლაგების ეტიკეტს ბეჭდავენ",
   "binDesigner.labelTextPerCompartment": "თითო განყოფილებაზე",
   "binDesigner.labelTextPerRow": "თითო რიგზე",
   "binDesigner.labelTextBlankCount_one": "{count} ჩანართი ცარიელი დაიბეჭდება",
