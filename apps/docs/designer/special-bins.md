@@ -16,6 +16,7 @@ sources:
   - src/features/bin-designer/hooks/usePlaceBinInLayout.ts
   - src/features/bin-designer/utils/designKind.ts
   - src/features/design-linking/components/Dialogs/LinkDesignDialog/LinkDesignDialog.tsx
+  - src/features/design-linking/hooks/importedFootprint.ts
   - src/shared/hooks/useLinkedDesignMeshes.ts
   - src/shared/items/importedMesh/descriptor.ts
   - src/shell/layoutExport/planLayoutBinExport.ts
@@ -123,6 +124,8 @@ An imported bin goes into a drawer like any other saved design. Its width, depth
 2. Open the menu of the imported bin, and click <Ui k="binDesigner.placeInLayout.action" />.
 
 The layout editor opens and puts a linked bin in the first free spot. If the layer has no room, the bin goes to the stash.
+
+To change the space that an imported bin takes, resize it on the grid like any linked bin. The new size becomes the size of the imported design, and its other linked bins take it too. The mesh keeps its size.
 
 To link a bin that is already on the grid, select it. Under <Ui k="designLinking.inspector.linkedDesign" />, click <Ui k="designLinking.inspector.linkExisting" />. The list marks an imported bin with <Ui k="binDesigner.itemKind.importedMesh" />.
 

@@ -34,6 +34,7 @@ import { getPlacementErrorMessage } from '@/shared/utils/validation';
 import { onSyncEvent } from '../events';
 import type { BinResizedEvent } from '../events';
 import { useLinkingStore } from '../store';
+import { saveImportedFootprint } from './importedFootprint';
 import {
   hasComplexGeometry,
   getComplexityReasons,
@@ -77,6 +78,30 @@ export function useBinResizedListener(): void {
 
       // Skip if already processing this design (prevents concurrent IDB writes)
       if (inFlightDesigns.current.has(linkedDesignId)) return;
+
+      const ref = registryRef.current.find((r) => r.id === linkedDesignId);
+      if (ref?.kind === 'importedMesh') {
+        inFlightDesigns.current.add(linkedDesignId);
+        try {
+          const outcome = await saveImportedFootprint(linkedDesignId, newDimensions);
+          addToastRef.current(
+            outcome === 'saved'
+              ? {
+                  message: tRef.current('designLinking.toast.designUpdated', { name: ref.name }),
+                  type: 'success',
+                  duration: 2000,
+                }
+              : {
+                  message: tRef.current('designLinking.toast.designUpdateFailed'),
+                  type: 'error',
+                  duration: 3000,
+                }
+          );
+        } finally {
+          inFlightDesigns.current.delete(linkedDesignId);
+        }
+        return;
+      }
 
       const refusedBySupport = (): boolean => {
         const blocker = resizeBlockedBySupport(layoutRef.current, linkedDesignId, newDimensions);
