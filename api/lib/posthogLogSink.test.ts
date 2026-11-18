@@ -118,15 +118,21 @@ describe('sendLogToPostHog', () => {
       entry({
         level: 'warn',
         message: 'Community design reported',
-        context: { id: 'd1', reason: 'spam', note: 'mail me at maker@example.com' },
+        context: {
+          id: 'd1',
+          reason: 'spam',
+          note: 'mail me at maker@example.com',
+          reasonText: 'Jane Doe, jane@example.com',
+        },
       })
     );
 
-    expect(sentBody()).not.toContain('maker@example.com');
+    expect(sentBody()).not.toContain('@example.com');
+    expect(sentBody()).not.toContain('Jane Doe');
     expect(sentRecord().attributes).toEqual([
       { key: 'id', value: { stringValue: 'd1' } },
       { key: 'reason', value: { stringValue: 'spam' } },
-      { key: 'dropped_keys', value: { stringValue: 'note' } },
+      { key: 'dropped_keys', value: { stringValue: 'note,reasonText' } },
     ]);
   });
 
