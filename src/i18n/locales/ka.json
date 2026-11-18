@@ -158,6 +158,7 @@
   "common.decreaseAria": "შემცირება: {what}",
   "common.increaseAria": "გაზრდა: {what}",
   "common.close": "დახურვა",
+  "common.openSectionDocs": "დოკუმენტაციის გახსნა: {section}",
   "common.physicalUnits": "ფიზიკური ერთეულები",
   "common.loading": "იტვირთება...",
   "errorBoundary.heading": "რაღაც შეფერხდა",

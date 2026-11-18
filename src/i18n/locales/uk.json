@@ -2860,6 +2860,7 @@
   "common.loading": "Завантаження...",
   "common.moreOptions": "Більше опцій",
   "common.notes": "Нотатки",
+  "common.openSectionDocs": "Відкрити документацію: {section}",
   "common.physicalUnits": "Фізичні одиниці",
   "common.quantity": "Кількість",
   "common.redditCommunity": "r/gridfinity",

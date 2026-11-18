@@ -2737,6 +2737,7 @@
   "common.loading": "加载中…",
   "common.moreOptions": "更多选项",
   "common.notes": "备注",
+  "common.openSectionDocs": "打开「{section}」的文档",
   "common.physicalUnits": "物理单位",
   "common.quantity": "数量",
   "common.redditCommunity": "r/gridfinity",

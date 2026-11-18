@@ -2778,6 +2778,7 @@
   "common.loading": "Cargando...",
   "common.moreOptions": "Más opciones",
   "common.notes": "Notas",
+  "common.openSectionDocs": "Abrir la documentación de {section}",
   "common.physicalUnits": "Unidades físicas",
   "common.quantity": "Cantidad",
   "common.redditCommunity": "r/gridfinity",

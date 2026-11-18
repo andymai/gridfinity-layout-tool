@@ -2819,6 +2819,7 @@
   "common.loading": "Načítání…",
   "common.moreOptions": "Další možnosti",
   "common.notes": "Poznámky",
+  "common.openSectionDocs": "Otevřít dokumentaci: {section}",
   "common.physicalUnits": "Fyzické jednotky",
   "common.quantity": "Množství",
   "common.redditCommunity": "r/gridfinity",

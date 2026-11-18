@@ -149,6 +149,7 @@ const en: Record<string, string> = {
   'common.increaseAria': 'Increase {what}',
   'common.close': 'Close',
   'common.physicalUnits': 'Physical units',
+  'common.openSectionDocs': 'Open the docs for {section}',
   'common.loading': 'Loading...',
 
   // Error boundary (used via getStaticTranslation, not hooks)

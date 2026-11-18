@@ -128,6 +128,29 @@ describe('StickyGroupHeader', () => {
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
   });
 
+  it('links to its docs section in a new tab, outside the toggle', () => {
+    render(
+      <StickyGroupHeader title="Layers" docsSection="layoutLayers">
+        <div>content</div>
+      </StickyGroupHeader>
+    );
+
+    const link = screen.getByRole('link', { name: 'Open the docs for Layers' });
+    expect(link).toHaveAttribute('href', '/docs/layouts/layers');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link.closest('button')).toBeNull();
+  });
+
+  it('shows no docs link without a section', () => {
+    render(
+      <StickyGroupHeader title="Layers">
+        <div>content</div>
+      </StickyGroupHeader>
+    );
+
+    expect(screen.queryByRole('link')).toBeNull();
+  });
+
   it('marks which variant it renders', () => {
     const { container } = render(
       <>

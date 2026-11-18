@@ -321,7 +321,11 @@ export function DimensionsSection() {
   );
 
   return (
-    <StickyGroupHeader variant="band" title={t('baseplate.sectionDimensions')}>
+    <StickyGroupHeader
+      variant="band"
+      title={t('baseplate.sectionDimensions')}
+      docsSection="baseplateDimensions"
+    >
       <PanelSection className="space-y-3">
         <FeatureToggle
           label={t('baseplate.syncWithLayout')}

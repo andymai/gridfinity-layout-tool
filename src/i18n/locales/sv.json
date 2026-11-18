@@ -2778,6 +2778,7 @@
   "common.loading": "Laddar...",
   "common.moreOptions": "Fler alternativ",
   "common.notes": "Anteckningar",
+  "common.openSectionDocs": "Öppna dokumentationen för {section}",
   "common.physicalUnits": "Fysiska enheter",
   "common.quantity": "Antal",
   "common.redditCommunity": "r/gridfinity",
