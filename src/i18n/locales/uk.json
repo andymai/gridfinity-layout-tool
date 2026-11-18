@@ -1709,7 +1709,7 @@
   "binDesigner.lid.hinge.catch.noneHint": "Кришка лежить закритою під власною вагою. Від пилу достатньо, і це правильний вибір, якщо ти постійно лізеш у цей контейнер.",
   "binDesigner.lid.hinge.fitClearance": "Посадка завіси",
   "binDesigner.lid.hinge.fitClearanceAria": "Робочий зазор завіси на сторону, у міліметрах",
-  "binDesigner.lid.hinge.fitClearanceHint": "Зазор між вушками завіси та штифтом. Збільш його, якщо завіса заїдає, зменш, якщо кришка бовтається. Сам філамент має розкид, тож тестовий друк вартий того.",
+  "binDesigner.lid.hinge.fitClearanceHint": "Зазор навколо кожного вушка завіси, де воно обертається поруч із сусідніми. Збільш його, якщо завіса заїдає, зменш, якщо кришка бовтається. Отвори для штифта не змінюються.",
   "binDesigner.lid.hinge.pinMany_one": "Потрібно {count} обрізок філаменту {diameter} мм: {lengths} мм",
   "binDesigner.lid.hinge.pinMany_few": "Потрібно {count} обрізки філаменту {diameter} мм: {lengths} мм",
   "binDesigner.lid.hinge.pinMany_many": "Потрібно {count} обрізків філаменту {diameter} мм: {lengths} мм",

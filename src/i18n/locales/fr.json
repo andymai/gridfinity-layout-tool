@@ -1649,7 +1649,7 @@
   "binDesigner.lid.hinge.catch.noneHint": "Le couvercle repose fermé sous son propre poids. Suffisant contre la poussière, et le bon choix si vous puisez sans cesse dans ce bac.",
   "binDesigner.lid.hinge.fitClearance": "Ajustement de charnière",
   "binDesigner.lid.hinge.fitClearanceAria": "Jeu de fonctionnement de la charnière par côté, en millimètres",
-  "binDesigner.lid.hinge.fitClearanceHint": "Jeu entre les nœuds et l’axe. Augmentez-le si la charnière coince, réduisez-le si le couvercle a du jeu. Le filament varie lui-même : un test d’impression en vaut la peine.",
+  "binDesigner.lid.hinge.fitClearanceHint": "Jeu autour de chaque nœud, là où il tourne contre ses voisins. Augmentez-le si la charnière coince, réduisez-le si le couvercle a du jeu. Les trous de l’axe ne changent pas.",
   "binDesigner.lid.hinge.pinMany_one": "Nécessite {count} chutes de filament de {diameter} mm : {lengths} mm",
   "binDesigner.lid.hinge.pinMany_other": "Nécessite {count} chutes de filament de {diameter} mm : {lengths} mm",
   "binDesigner.lid.hinge.pinOne": "Nécessite une chute de filament de {diameter} mm, coupée à {length} mm",

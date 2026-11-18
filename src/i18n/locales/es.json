@@ -1649,7 +1649,7 @@
   "binDesigner.lid.hinge.catch.noneHint": "La tapa queda cerrada por su propio peso. Suficiente contra el polvo, y la opción correcta si metes la mano en este cajetín constantemente.",
   "binDesigner.lid.hinge.fitClearance": "Ajuste de bisagra",
   "binDesigner.lid.hinge.fitClearanceAria": "Holgura de giro de la bisagra por lado, en milímetros",
-  "binDesigner.lid.hinge.fitClearanceHint": "Holgura entre los nudillos y el pasador. Auméntala si la bisagra se agarrota, redúcela si la tapa baila. El propio filamento varía, así que merece la pena una impresión de prueba.",
+  "binDesigner.lid.hinge.fitClearanceHint": "Holgura alrededor de cada nudillo, donde gira junto a sus vecinos. Auméntala si la bisagra se agarrota, redúcela si la tapa baila. Los agujeros del pasador no cambian.",
   "binDesigner.lid.hinge.pinMany_one": "Necesita {count} recortes de filamento de {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinMany_other": "Necesita {count} recortes de filamento de {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinOne": "Necesita un recorte de filamento de {diameter} mm, cortado a {length} mm",

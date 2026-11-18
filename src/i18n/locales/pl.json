@@ -1709,7 +1709,7 @@
   "binDesigner.lid.hinge.catch.noneHint": "Pokrywa leży zamknięta własnym ciężarem. Wystarczy przeciw kurzowi i jest właściwym wyborem, jeśli ciągle sięgasz do tego pojemnika.",
   "binDesigner.lid.hinge.fitClearance": "Pasowanie zawiasu",
   "binDesigner.lid.hinge.fitClearanceAria": "Luz roboczy zawiasu na stronę, w milimetrach",
-  "binDesigner.lid.hinge.fitClearanceHint": "Luz między oczkami zawiasu a sworzniem. Zwiększ go, jeśli zawias się zakleszcza, zmniejsz, jeśli pokrywa się chwieje. Sam filament ma rozrzut, więc wydruk próbny się opłaca.",
+  "binDesigner.lid.hinge.fitClearanceHint": "Luz wokół każdego oczka zawiasu, w miejscu, gdzie obraca się przy sąsiednich. Zwiększ go, jeśli zawias się zakleszcza, zmniejsz, jeśli pokrywa się chwieje. Otwory na sworzeń się nie zmieniają.",
   "binDesigner.lid.hinge.pinMany_one": "Wymaga {count} kawałka filamentu {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinMany_few": "Wymaga {count} kawałków filamentu {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinMany_many": "Wymaga {count} kawałków filamentu {diameter} mm: {lengths} mm",

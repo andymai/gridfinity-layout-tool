@@ -2181,7 +2181,7 @@
   "binDesigner.lid.hinge.pinMany_other": "საჭიროა {count} ცალი {diameter} mm ფილამენტის ნარჩენი: {lengths} mm",
   "binDesigner.lid.hinge.fitClearance": "ანჯამის მორგება",
   "binDesigner.lid.hinge.fitClearanceAria": "ანჯამის სამუშაო დაშორება თითოეულ მხარეს, მილიმეტრებში",
-  "binDesigner.lid.hinge.fitClearanceHint": "ღრეჩო ანჯამის რგოლებსა და ღერძს შორის. გაზარდეთ, თუ ანჯამა იჭედება; შეამცირეთ, თუ თავსახური ყანყალებს. ფილამენტიც განსხვავდება, ამიტომ სატესტო ბეჭდვა სასარგებლოა.",
+  "binDesigner.lid.hinge.fitClearanceHint": "ღრეჩო ანჯამის თითოეული რგოლის გარშემო, სადაც ის მეზობლებთან ერთად ბრუნავს. გაზარდეთ, თუ ანჯამა იჭედება; შეამცირეთ, თუ თავსახური ყანყალებს. ღერძის ხვრელები არ იცვლება.",
   "binDesigner.lid.slide.placement": "არხის მდებარეობა",
   "binDesigner.lid.slide.placement.recessed": "კიდის ქვეშ",
   "binDesigner.lid.slide.placement.flush": "ნაპირთან",

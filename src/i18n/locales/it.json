@@ -1649,7 +1649,7 @@
   "binDesigner.lid.hinge.catch.noneHint": "Il coperchio resta chiuso per il proprio peso. Basta contro la polvere ed è la scelta giusta se peschi da questo contenitore di continuo.",
   "binDesigner.lid.hinge.fitClearance": "Accoppiamento cerniera",
   "binDesigner.lid.hinge.fitClearanceAria": "Gioco di scorrimento della cerniera per lato, in millimetri",
-  "binDesigner.lid.hinge.fitClearanceHint": "Gioco tra le maglie e il perno. Aumentalo se la cerniera si blocca, riducilo se il coperchio balla. Il filamento stesso varia, quindi vale una stampa di prova.",
+  "binDesigner.lid.hinge.fitClearanceHint": "Gioco intorno a ogni maglia, dove gira accanto alle vicine. Aumentalo se la cerniera si blocca, riducilo se il coperchio balla. I fori del perno non cambiano.",
   "binDesigner.lid.hinge.pinMany_one": "Richiede {count} spezzoni di filamento da {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinMany_other": "Richiede {count} spezzoni di filamento da {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinOne": "Richiede uno spezzone di filamento da {diameter} mm, tagliato a {length} mm",

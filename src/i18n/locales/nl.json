@@ -1649,7 +1649,7 @@
   "binDesigner.lid.hinge.catch.noneHint": "Het deksel ligt dicht op zijn eigen gewicht. Genoeg tegen stof, en de juiste keuze als je voortdurend in deze bak grijpt.",
   "binDesigner.lid.hinge.fitClearance": "Scharnierpassing",
   "binDesigner.lid.hinge.fitClearanceAria": "Loopspeling van het scharnier per zijde, in millimeters",
-  "binDesigner.lid.hinge.fitClearanceHint": "Speling tussen de scharnieroren en de pen. Verhoog hem als het scharnier klemt, verlaag hem als het deksel rammelt. Filament varieert zelf, dus een testprint loont.",
+  "binDesigner.lid.hinge.fitClearanceHint": "Speling rond elk scharnieroog, waar het naast zijn buren draait. Verhoog hem als het scharnier klemt, verlaag hem als het deksel rammelt. De gaten voor de pen blijven gelijk.",
   "binDesigner.lid.hinge.pinMany_one": "Vraagt {count} stukjes filament van {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinMany_other": "Vraagt {count} stukjes filament van {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinOne": "Vraagt één stukje filament van {diameter} mm, afgeknipt op {length} mm",

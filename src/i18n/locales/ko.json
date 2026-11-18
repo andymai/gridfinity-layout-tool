@@ -1619,7 +1619,7 @@
   "binDesigner.lid.hinge.catch.noneHint": "뚜껑이 자체 무게로만 닫혀 있습니다. 먼지를 막기에는 충분하고, 이 통에 계속 손을 넣는다면 이쪽이 맞습니다.",
   "binDesigner.lid.hinge.fitClearance": "경첩 끼움새",
   "binDesigner.lid.hinge.fitClearanceAria": "한쪽당 경첩 운동 여유, 밀리미터",
-  "binDesigner.lid.hinge.fitClearanceHint": "너클과 핀 사이 간격입니다. 경첩이 뻑뻑하면 늘리고 뚜껑이 헐거우면 줄이세요. 필라멘트 자체에 편차가 있으니 테스트 출력이 도움이 됩니다.",
+  "binDesigner.lid.hinge.fitClearanceHint": "각 너클 둘레의 간격으로, 옆 너클과 맞닿아 도는 부분입니다. 경첩이 뻑뻑하면 늘리고 뚜껑이 헐거우면 줄이세요. 핀 구멍 크기는 바뀌지 않습니다.",
   "binDesigner.lid.hinge.pinMany_other": "{diameter} mm 필라멘트 자투리 {count}개가 필요합니다: {lengths} mm",
   "binDesigner.lid.hinge.pinOne": "{diameter} mm 필라멘트 자투리 1개를 {length} mm로 잘라 씁니다",
   "binDesigner.lid.hinge.side": "경첩 위치",

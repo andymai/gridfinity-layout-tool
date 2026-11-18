@@ -1619,7 +1619,7 @@
   "binDesigner.lid.hinge.catch.noneHint": "フタは自重だけで閉じた状態を保ちます。ホコリよけには十分で、頻繁に出し入れするビンにはこれが最適です。",
   "binDesigner.lid.hinge.fitClearance": "ヒンジのはめあい",
   "binDesigner.lid.hinge.fitClearanceAria": "ヒンジの片側あたりの可動クリアランス（ミリメートル）",
-  "binDesigner.lid.hinge.fitClearanceHint": "ナックルとピンのすき間。ヒンジが渋いときは増やし、フタががたつくときは減らします。フィラメント自体にばらつきがあるので、テスト印刷の価値があります。",
+  "binDesigner.lid.hinge.fitClearanceHint": "各ナックルの周りのすき間で、隣のナックルと擦れて回る部分です。ヒンジが渋いときは増やし、フタががたつくときは減らします。ピン穴の大きさは変わりません。",
   "binDesigner.lid.hinge.pinMany_other": "{diameter} mm のフィラメント端材が {count} 本必要です: {lengths} mm",
   "binDesigner.lid.hinge.pinOne": "{diameter} mm のフィラメント端材を 1 本、{length} mm に切って使います",
   "binDesigner.lid.hinge.side": "ヒンジの位置",

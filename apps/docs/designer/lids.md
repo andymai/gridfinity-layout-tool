@@ -72,7 +72,7 @@ A **hinged lid** has knuckles on one wall. A short piece of 1.75 mm filament goe
 
 - <Ui k="binDesigner.lid.hinge.side" />: the wall the lid swings up from. It starts on the <Ui k="binDesigner.lid.side.back" /> wall, so the open lid falls away from your hand.
 - <Ui k="binDesigner.lid.hinge.catch" />: <Ui k="binDesigner.lid.hinge.catch.none" />, <Ui k="binDesigner.lid.hinge.catch.detent" /> (the default) or <Ui k="binDesigner.lid.hinge.catch.magnets" />. Magnets give the strongest hold, and they still work with a cutout in the wall opposite the hinge.
-- <Ui k="binDesigner.lid.hinge.fitClearance" />, under <Ui k="binDesigner.lid.advanced" />: the gap between the knuckles and the pin. If the hinge binds, raise it. If the lid rattles, lower it.
+- <Ui k="binDesigner.lid.hinge.fitClearance" />, under <Ui k="binDesigner.lid.advanced" />: the gap around each knuckle, where it turns next to the other knuckles. If the hinge binds, raise it. If the lid rattles, lower it. The pin holes stay the same size: 2 mm, with a 1.85 mm hole at the entry knuckle that holds the pin tight so it can’t walk out.
 
 When you first pick <Ui k="binDesigner.lid.attachment.hinge" />, the lid also gets a scallop grip on the wall opposite the hinge, so your thumb can lift it. A hinged lid can't carry a stackable top.
 
