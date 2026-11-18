@@ -1,0 +1,59 @@
+src/i18n/locales/nb.json
+  s_144305aaade9d6::t_90abafb80f1805 4040-4041
+src/i18n/locales/ko.json
+  s_144305aaade9d6::t_90abafb80f1805 3963
+src/shared/utils/fill.ts
+  s_144305aaade9d6::t_311b355d5b4e40 350-371
+src/shared/utils/fill.test.ts
+  s_144305aaade9d6::t_35c07c7908eebb 2,671-715
+  s_144305aaade9d6::t_a358ff5e4e7432 716
+src/i18n/locales/it.json
+  s_144305aaade9d6::t_90abafb80f1805 4040-4041
+src/i18n/locales/nl.json
+  s_144305aaade9d6::t_90abafb80f1805 4040-4041
+src/i18n/locales/de.json
+  s_144305aaade9d6::t_90abafb80f1805 4040-4041
+src/i18n/locales/ja.json
+  s_144305aaade9d6::t_90abafb80f1805 3963
+src/i18n/locales/pt-BR.json
+  s_144305aaade9d6::t_90abafb80f1805 4040-4041
+src/i18n/locales/ka.json
+  s_144305aaade9d6::t_90abafb80f1805 615-616
+src/i18n/locales/cs.json
+  s_144305aaade9d6::t_90abafb80f1805 4117-4119
+src/i18n/locales/sv.json
+  s_144305aaade9d6::t_90abafb80f1805 4040-4041
+src/i18n/locales/en.ts
+  s_144305aaade9d6::t_90abafb80f1805 673-674
+src/i18n/locales/zh-CN.json
+  s_144305aaade9d6::t_90abafb80f1805 3963
+src/i18n/locales/pl.json
+  s_144305aaade9d6::t_90abafb80f1805 4194-4197
+src/i18n/locales/fr.json
+  s_144305aaade9d6::t_90abafb80f1805 4040-4041
+src/features/layers/components/ActiveLayerPanel/ActiveLayerPanel.test.tsx
+  s_144305aaade9d6::t_cdec405e086acd 212-213
+src/features/layers/hooks/useLayerFillActions.ts
+  s_144305aaade9d6::t_74cada272da180 30
+  s_144305aaade9d6::t_311b355d5b4e40 12,21,64-67
+src/i18n/locales/es.json
+  s_144305aaade9d6::t_90abafb80f1805 4040-4041
+src/i18n/locales/uk.json
+  s_144305aaade9d6::t_90abafb80f1805 4194-4197
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3cab96fb54dc59102984756117d8f08bc289ef6f",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
