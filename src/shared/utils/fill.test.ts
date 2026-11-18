@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fillAllWithSize, fillGaps } from '@/shared/utils/fill';
+import { countFillableCells, fillAllWithSize, fillGaps } from '@/shared/utils/fill';
 import { createTestLayout as baseCreateTestLayout } from '@/test/testUtils';
 import type { Layout } from '@/core/types';
 import { binId, categoryId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
@@ -666,5 +666,51 @@ describe('fill around slanted bins', () => {
     const covered = result.bins.reduce((sum, b) => sum + b.width * b.depth, 0);
     expect(result.bins.every((b) => b.y >= 2)).toBe(true);
     expect(covered).toBe(8);
+  });
+});
+
+describe('countFillableCells', () => {
+  const layout = (width: number, height = 9): Layout =>
+    baseCreateTestLayout({
+      drawer: { width: gridUnits(width), depth: gridUnits(2), height: heightUnits(height) },
+      printBedSize: mm(168),
+    });
+
+  it('counts the empty cells of a layer', () => {
+    const l = layout(6);
+    l.bins = [
+      {
+        id: binId('a'),
+        layerId: layerId('layer1'),
+        x: gridUnits(0),
+        y: gridUnits(0),
+        width: gridUnits(2),
+        depth: gridUnits(2),
+        height: heightUnits(3),
+        category: categoryId('cat1'),
+        label: '',
+        notes: '',
+      },
+    ];
+    expect(countFillableCells(l, layerId('layer1'), false)).toBe(8);
+  });
+
+  it('leaves out a half column that whole-unit fill cannot use', () => {
+    expect(countFillableCells(layout(9.5), layerId('layer1'), false)).toBe(18);
+  });
+
+  it('counts a half column as whole cells in half-grid mode', () => {
+    expect(countFillableCells(layout(9.5), layerId('layer1'), true)).toBe(20);
+  });
+
+  it('is zero when no bin of the layer height can stand under the drawer top', () => {
+    expect(countFillableCells(layout(6, 2), layerId('layer1'), false)).toBe(0);
+  });
+
+  it('agrees with fillGaps on what it can fill', () => {
+    const l = layout(6);
+    const { bins } = fillGaps(l, layerId('layer1'), categoryId('cat1'), 4);
+    const filled = bins.reduce((sum, b) => sum + b.width * b.depth, 0);
+    expect(countFillableCells(l, layerId('layer1'), false)).toBe(filled);
   });
 });

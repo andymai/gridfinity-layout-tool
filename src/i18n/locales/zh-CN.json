@@ -3961,7 +3961,7 @@
   "layers.deleteTooltip": "删除此层",
   "layers.deselect": "取消选择",
   "layers.fillGaps_other": "填补 {count} 处空缺",
-  "layers.fillGapsTitle_other": "用 1×1 收纳盒填补 {count} 个空单元",
+  "layers.fillGapsTitle_other": "用能放下的最大收纳盒填补 {count} 个空单元",
   "layers.fillTitle": "用 {width}×{depth} 收纳盒填满空白空间",
   "layers.fillWith": "填充为 ",
   "layers.heightTooltip": "放在此层上的新收纳盒的高度",

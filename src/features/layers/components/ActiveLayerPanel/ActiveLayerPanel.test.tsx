@@ -209,8 +209,8 @@ describe('ActiveLayerPanel', () => {
     });
 
     it.each([
-      ['Fill 1 gap', 'Fill 1 empty cell with a 1×1 bin', 1],
-      ['Fill 2 gaps', 'Fill 2 empty cells with 1×1 bins', 2],
+      ['Fill 1 gap', 'Fill 1 empty cell with the largest bins that fit', 1],
+      ['Fill 2 gaps', 'Fill 2 empty cells with the largest bins that fit', 2],
     ])('reads "%s" for that many empty cells', (label, title, cells) => {
       const { layout } = useLayoutStore.getState();
       useLayoutStore.setState({
