@@ -105,8 +105,7 @@ export function planDrawer(size: DrawerSize): DrawerPlan | null {
   if (measurable(size.heightMm)) {
     for (const count of STACK_COUNTS) {
       const units = solveUnitsUnderCeiling(size.heightMm - PLATE_RISE_MM, HEIGHT_UNIT_MM, count);
-      // The layout editor makes no bin shorter than this.
-      if (units === null || units < CONSTRAINTS.MIN_BIN_HEIGHT) continue;
+      if (units === null) continue;
       stacks.push({ count, units, totalMm: stackedTotalMm(units, HEIGHT_UNIT_MM, count) });
     }
   }
