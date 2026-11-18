@@ -1,0 +1,44 @@
+package.json
+  s_144305aaade9d6::t_43073c273c2b51 150
+api/lib/logger.ts
+  s_144305aaade9d6::t_f6cfaaf2fefe4f 1-2
+  s_144305aaade9d6::t_46b28045de8875 27-31
+api/lib/posthogLogSink.test.ts
+  s_144305aaade9d6::t_1d7d41d1541e57 30-35,37
+  s_144305aaade9d6::t_16b38b591950bd 105
+  s_144305aaade9d6::t_be31c4f99d0b66 1-29,36,38-104,106-149
+api/lib/posthogLogSink.ts
+  s_144305aaade9d6::t_14c9b58898643d 34,36
+  s_144305aaade9d6::t_4149d1012311d8 1-33,35,37-93
+content/privacy.md
+  s_144305aaade9d6::t_96ca6f6c673f2f 18
+  s_144305aaade9d6::t_35746ffdabf10b 38
+  s_144305aaade9d6::t_5244bafb9b72a9 173
+  s_144305aaade9d6::t_caee683e3209ae 52-55
+  s_144305aaade9d6::t_e118c19c62d857 148
+api/lib/logger.test.ts
+  s_144305aaade9d6::t_6f80daba273995 88-104
+apps/docs/introduction/your-data.md
+  s_144305aaade9d6::t_eb3627dbde4e80 15
+  s_144305aaade9d6::t_b87dd5d19fca0b 107-112
+pnpm-lock.yaml
+  s_144305aaade9d6::t_1cc794084b3a79 102-104,3058-3060,3068-3079,3094-3097,6242-6245,8775-8779,8786-8789,8846-8851,12244-12247
+public/privacy/index.html
+  s_144305aaade9d6::t_b1eadea145047c 99,115,124-125,214,254
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b56ef3f688693222de4c4a6cb31103c44a1ff9a1",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
