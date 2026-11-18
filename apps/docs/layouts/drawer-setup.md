@@ -72,8 +72,9 @@ A drawer link opens the layout editor with a new layout at the size of a drawer.
 When you open a drawer link, the Layout Tool does these things:
 
 - It makes a new layout and opens it. Your other layouts don't change. On your first visit, it resizes the empty layout instead.
-- It fits the largest grid of whole grid units into the drawer, and keeps the measurement under the steppers. When half units fit tighter, the box above shows that fit. To get it, enter the size as in [Fit the grid to a measured drawer](#fit-the-grid-to-a-measured-drawer).
+- It fits the largest grid of whole grid units into the drawer, and keeps the measurement under the steppers.
 - It puts half of the free space on each side of the baseplate.
+- When half units fit tighter, it shows the card from [Fit the grid to a measured drawer](#fit-the-grid-to-a-measured-drawer). <Ui k="drawerDims.suggestionUse" /> applies the half-unit grid and makes the baseplate padding smaller, so the plate still fits the drawer.
 - It names the layout from the link. A link without a name gives a name such as "Drawer 345 × 260 mm".
 
 **Make its baseplate** opens the same drawer in the baseplate generator.

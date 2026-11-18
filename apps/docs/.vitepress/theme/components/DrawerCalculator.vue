@@ -146,8 +146,8 @@ const measuredFitPage = withBase('/layouts/drawer-setup#fit-the-grid-to-a-measur
           <dd>
             {{ plan.half.width }} × {{ plan.half.depth }} grid units fit tighter, with
             {{ formatMm(plan.half.freeWidthMm) }} mm across and
-            {{ formatMm(plan.half.freeDepthMm) }} mm front to back. The link opens whole units, so
-            for this fit, <a :href="measuredFitPage">enter the size in the layout editor</a>.
+            {{ formatMm(plan.half.freeDepthMm) }} mm front to back. The link opens whole units, then
+            <a :href="measuredFitPage">a card offers this fit</a>.
           </dd>
         </div>
         <div v-if="plan.stacks.length > 0">

@@ -3,7 +3,7 @@ import type { StoredBaseplateParams } from '@/core/types';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { formatMm } from '@/shared/utils/format';
-import { fitPaddingToDrawer, plateDrawerOverflow } from '../../utils/fitPaddingToDrawer';
+import { fitPaddingToDrawer, plateDrawerOverflow } from '@/shared/utils/fitPaddingToDrawer';
 import { updateBaseplateParams } from './panelState';
 
 interface MeasuredDrawerOverflowProps {

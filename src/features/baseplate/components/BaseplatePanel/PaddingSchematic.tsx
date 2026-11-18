@@ -4,7 +4,7 @@ import { PaddingStepper } from '../PaddingStepper';
 import { PaddingAnchor } from '../PaddingAnchor';
 import type { StoredBaseplateParams, PaddingAnchor as PaddingAnchorValue } from '@/core/types';
 import { mm } from '@/core/types';
-import { computeAnchoredPaddings } from '@/features/baseplate/utils/computeAnchoredPaddings';
+import { computeAnchoredPaddings } from '@/shared/utils/computeAnchoredPaddings';
 
 type PaddingKey = 'paddingLeft' | 'paddingRight' | 'paddingFront' | 'paddingBack';
 

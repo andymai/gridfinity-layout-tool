@@ -2,6 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as i18n from '@/i18n';
 import { useLayoutStore, useLibraryStore, useToastStore } from '@/core/store';
+import { useDrawerFitOfferStore } from '@/core/store/drawerFitOffer';
 import { loadLayoutAsync } from '@/core/storage';
 import type * as Storage from '@/core/storage';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
@@ -78,6 +79,12 @@ describe('useDrawerLinkImport', () => {
       measuredMm: { width: 297, depth: 525, height: 60 },
     });
     expect(layout.baseplateParams).toMatchObject({ paddingLeft: 1.5, paddingFront: 10.5 });
+    // The sidebar offers a tighter half-unit fit from this, when one exists.
+    expect(useDrawerFitOfferStore.getState().offer).toMatchObject({
+      layoutId: activeLayoutId,
+      width: 7,
+      depth: 12,
+    });
 
     const stored = await loadLayoutAsync(activeLayoutId ?? EXISTING);
     expect(stored?.drawer.measuredMm).toEqual({ width: 297, depth: 525, height: 60 });

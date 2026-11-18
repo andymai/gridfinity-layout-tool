@@ -2,11 +2,18 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { useLayoutStore } from '@/core/store/layout';
-import { useSelectionStore, useToastStore, useHalfGridModeStore } from '@/core/store';
+import {
+  useSelectionStore,
+  useToastStore,
+  useHalfGridModeStore,
+  useLibraryStore,
+} from '@/core/store';
 import { useSettingsStore } from '@/core/store/settings';
 import { resetAllStores } from '@/test/testUtils';
 import { CONSTRAINTS } from '@/core/constants';
-import { gridUnits, heightUnits } from '@/core/types';
+import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
+import { useDrawerFitOfferStore } from '@/core/store/drawerFitOffer';
+import { gridUnits, heightUnits, mm } from '@/core/types';
 
 describe('useDrawerSettings', () => {
   beforeEach(() => {
@@ -561,6 +568,96 @@ describe('useDrawerSettings', () => {
 
       // The fit's unit counts were computed at 42mm; a new pitch invalidates them.
       act(() => result.current.handleGridUnitChange(40));
+      expect(result.current.drawerFitSuggestion).toBeNull();
+    });
+
+    it('leaves baseplate padding alone when the fitted plate still fits the drawer', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+      const before = useLayoutStore.getState().layout.baseplateParams;
+
+      act(() => result.current.handleMeasuredCommit(400, 300));
+      act(() => result.current.acceptDrawerFitSuggestion());
+
+      expect(result.current.drawer.width).toBe(9.5);
+      expect(useLayoutStore.getState().layout.baseplateParams).toEqual(before);
+    });
+  });
+
+  // A drawer link opens a whole-unit grid with its slack split into baseplate
+  // padding: 405 × 480mm is 9 × 11 units with 13.5mm and 9mm a side.
+  describe('drawer link fit', () => {
+    function openLinkedDrawer(): void {
+      const { layout, activeLayoutId } = useLayoutStore.getState();
+      useLayoutStore.getState().importLayout(
+        {
+          ...layout,
+          drawer: {
+            ...layout.drawer,
+            width: gridUnits(9),
+            depth: gridUnits(11),
+            measuredMm: { width: 405, depth: 480 },
+          },
+          baseplateParams: {
+            ...DEFAULT_BASEPLATE_PARAMS,
+            syncWithLayout: true,
+            paddingLeft: mm(13.5),
+            paddingRight: mm(13.5),
+            paddingFront: mm(9),
+            paddingBack: mm(9),
+          },
+        },
+        activeLayoutId ?? undefined,
+        'init'
+      );
+      useDrawerFitOfferStore
+        .getState()
+        .offerFor(
+          useLibraryStore.getState().library.activeLayoutId,
+          useLayoutStore.getState().layout
+        );
+    }
+
+    it('offers the tighter half-unit fit the link could not apply', () => {
+      openLinkedDrawer();
+      const { result } = renderHook(() => useDrawerSettings());
+
+      expect(result.current.drawerFitSuggestion).toEqual(
+        expect.objectContaining({ width: 9.5, depth: 11, isHalf: true })
+      );
+    });
+
+    it('refits the padding that would push the fitted plate past the drawer', () => {
+      openLinkedDrawer();
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => result.current.acceptDrawerFitSuggestion());
+
+      expect(result.current.drawer.width).toBe(9.5);
+      // 9.5 units are 399mm, so 6mm of the 405mm drawer is left for padding.
+      expect(useLayoutStore.getState().layout.baseplateParams).toMatchObject({
+        paddingLeft: 3,
+        paddingRight: 3,
+        paddingFront: 9,
+        paddingBack: 9,
+      });
+      expect(result.current.drawerFitSuggestion).toBeNull();
+    });
+
+    it('stops offering once dismissed', () => {
+      openLinkedDrawer();
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => result.current.dismissDrawerFitSuggestion());
+
+      expect(result.current.drawerFitSuggestion).toBeNull();
+    });
+
+    it('stops offering once the grid is resized by hand', () => {
+      openLinkedDrawer();
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => result.current.handleDrawerWidthInput(8));
+
       expect(result.current.drawerFitSuggestion).toBeNull();
     });
   });

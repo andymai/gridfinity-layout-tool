@@ -1,12 +1,3 @@
-export const PADDING_BUTTON_STEP = 0.25;
-export const PADDING_MIN = 0;
-export const PADDING_MAX = 100;
+export { PADDING_MIN, PADDING_MAX, roundMm } from '@/shared/utils/computeAnchoredPaddings';
 
-/**
- * Round to 2-decimal mm precision, eliminating IEEE-754 float noise that
- * can accumulate from repeated +0.25 button clicks or `* 0.01` snapping.
- * E.g. roundMm(0.1 + 0.2) === 0.3 and roundMm(5.5600000000000005) === 5.56.
- */
-export function roundMm(v: number): number {
-  return Math.round(v * 100) / 100;
-}
+export const PADDING_BUTTON_STEP = 0.25;

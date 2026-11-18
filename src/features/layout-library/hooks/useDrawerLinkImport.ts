@@ -9,6 +9,7 @@ import {
   useSettingsStore,
   useToastStore,
 } from '@/core/store';
+import { useDrawerFitOfferStore } from '@/core/store/drawerFitOffer';
 import { createLayoutEntry, wasLibrarySeededThisLoad } from '@/core/storage';
 import type { Layout, LayoutId } from '@/core/types';
 import { layoutId as toLayoutId } from '@/core/types';
@@ -86,6 +87,7 @@ export function useDrawerLinkImport({ disabled, syncLayoutUrl }: DrawerLinkImpor
         return;
       }
       if (syncLayoutUrlNow.current) setLayoutURL(opened.id, opened.layout.name, false);
+      useDrawerFitOfferStore.getState().offerFor(opened.id, opened.layout);
       trackLayoutAction('created', 'drawer_link');
       addToast(
         t('toast.drawerLinkOpened', {
