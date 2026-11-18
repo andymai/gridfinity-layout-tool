@@ -147,6 +147,18 @@ export default defineConfig({
   },
   // Inline, so a label at the start of a paragraph or list item stays inside it.
   markdown: { component: { inlineTags: ['Ui'] }, config: docsMarkdown },
+  // The drawer calculator runs the app's own fit and height code, so its
+  // numbers are the ones the app shows.
+  vite: {
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('../../../src', import.meta.url)),
+        '@gridfinity/branded-types': fileURLToPath(
+          new URL('../../../packages/branded-types/src/index.ts', import.meta.url)
+        ),
+      },
+    },
+  },
   sitemap: {
     hostname: `${siteUrl}/`,
     transformItems: (items) =>

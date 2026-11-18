@@ -110,3 +110,7 @@ Long handles can stand above the rim. Select that bin and type how far they stan
 - [Units and sizes](../concepts/units): half units and how heights add up
 - [Compartments and dividers](../designer/compartments#tilt-and-lean-dividers): angled dividers for a cutlery bin
 - [Kitchen drawer organizer](https://gridfinitylayouttool.com/gridfinity-kitchen-drawer): ideas for cutlery, spice and junk drawers
+
+## More recipes
+
+<RecipeCards />

@@ -35,11 +35,15 @@ Each tray has the same footprint as the bin under it. Its feet drop into the sta
 
 ## Step 1: Fit the grid to the drawer
 
+<PlanDrawerButton width="440" depth="345" height="150" name="Deep tool drawer" />
+
+The button opens a new layout at the size of the example drawer. To use your own drawer instead:
+
 1. In the [layout editor](https://gridfinitylayouttool.com/), click <Ui k="drawerDims.addMeasured" /> in the <Ui k="sidebar.gridSize" /> group.
-2. Type 440, 345 and 150, and press <kbd>Enter</kbd>.
+2. Type your width, depth and height, and press <kbd>Enter</kbd>.
 3. If a card shows, click <Ui k="drawerDims.suggestionUse" />.
 
-The grid that fits is 10 × 8 grid units, or 420 × 336 mm. That leaves 20 mm across and 9 mm front to back. A new layout is 10 × 8 already, so you may see no card. That only means the grid fits.
+For the example drawer, the grid that fits is 10 × 8 grid units, or 420 × 336 mm. That leaves 20 mm across and 9 mm front to back. A new layout is 10 × 8 already, so you may see no card. That only means the grid fits.
 
 ## Step 2: Find two heights that fit
 
@@ -121,3 +125,7 @@ A tray smaller than the bin under it has nothing to hold it in place. In the des
 - [Stacking](../designer/stacking): the stacking lip and the assembled height
 - [Walls](../designer/walls#add-handles): every handle shape and size
 - [Tool drawer organizer](https://gridfinitylayouttool.com/gridfinity-tool-drawer): ideas for bits, sockets and wrenches
+
+## More recipes
+
+<RecipeCards />
