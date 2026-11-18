@@ -19,6 +19,7 @@ import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { useToastStore } from '@/core/store/toast';
 import { getLayerBins } from '@/shared/utils';
 import { countFillableCells } from '@/shared/utils/fill';
+import { useLinkedRiseKey } from '@/shared/hooks/useLinkedRiseKey';
 import { useTranslation } from '@/i18n';
 import { batch } from '@/core/cqrs';
 import type { Bin, Layer } from '@/core/types';
@@ -61,9 +62,12 @@ export function useLayerFillActions(options?: { onAfterAction?: () => void }): L
   const layerBins = getLayerBins(layout.bins, activeLayerId);
 
   const totalCells = layout.drawer.width * layout.drawer.depth;
+  // A saved linked design can change how high bins rest without a new layout.
+  const riseKey = useLinkedRiseKey();
   const emptyCells = useMemo(
     () => (activeLayerId ? countFillableCells(layout, activeLayerId, halfGridMode) : 0),
-    [layout, activeLayerId, halfGridMode]
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- riseKey only invalidates
+    [layout, activeLayerId, halfGridMode, riseKey]
   );
 
   const fillGaps = () => {
