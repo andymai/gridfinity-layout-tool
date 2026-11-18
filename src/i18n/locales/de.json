@@ -4539,7 +4539,7 @@
   "settings.accentColor.sky": "Himmelblau",
   "settings.accentColor.violet": "Violett",
   "settings.autoDetect": "Auto (Browser-Standard)",
-  "settings.binDefaults.hint": "Die Startwerte für neue Bins im Bin-Designer. Lege sie im Designer oder über die Befehlspalette fest.",
+  "settings.binDefaults.hint": "Die Startwerte für neue Bins im Bin-Designer. Lege sie im Designer mit „Aktuelle Einstellungen als Standard für neue Bins festlegen“ fest.",
   "settings.binDefaults.title": "Standards für neue Bins",
   "settings.binDefaults.usingFactory": "Werkseinstellungen werden verwendet",
   "settings.browserPrivacySignal": "Analyse deaktiviert basierend auf der Datenschutzeinstellung Ihres Browsers. Sie können dies unten ändern.",

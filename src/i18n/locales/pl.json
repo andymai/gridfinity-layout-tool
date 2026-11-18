@@ -4743,7 +4743,7 @@
   "settings.accentColor.sky": "Błękitny",
   "settings.accentColor.violet": "Fioletowy",
   "settings.autoDetect": "Automatycznie (domyślny w przeglądarce)",
-  "settings.binDefaults.hint": "Ustawienia startowe dla nowych binów w Kreatorze binów. Ustaw je z poziomu kreatora lub palety poleceń.",
+  "settings.binDefaults.hint": "Ustawienia startowe dla nowych binów w Kreatorze binów. Ustaw je w kreatorze przyciskiem „Ustaw jako domyślny dla nowych binów”.",
   "settings.binDefaults.title": "Domyślne nowego bina",
   "settings.binDefaults.usingFactory": "Używam ustawień fabrycznych",
   "settings.browserPrivacySignal": "Analityka wyłączona zgodnie z ustawieniem prywatności przeglądarki. Możesz to zmienić poniżej.",

@@ -4539,7 +4539,7 @@
   "settings.accentColor.sky": "Cielo",
   "settings.accentColor.violet": "Violeta",
   "settings.autoDetect": "Auto (predeterminado del navegador)",
-  "settings.binDefaults.hint": "Los ajustes iniciales de los nuevos bins en el Diseñador de bins. Configúralos desde el diseñador o la paleta de comandos.",
+  "settings.binDefaults.hint": "Los ajustes iniciales de los nuevos bins en el Diseñador de bins. Configúralos en el diseñador con «Establecer los ajustes actuales como predeterminados para nuevos bins».",
   "settings.binDefaults.title": "Valores predeterminados de nuevos bins",
   "settings.binDefaults.usingFactory": "Usando los valores de fábrica",
   "settings.browserPrivacySignal": "Análisis desactivado según la configuración de privacidad de tu navegador. Puedes cambiarlo a continuación.",

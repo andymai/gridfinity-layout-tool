@@ -4437,7 +4437,7 @@
   "settings.accentColor.sky": "스카이",
   "settings.accentColor.violet": "바이올렛",
   "settings.autoDetect": "자동(브라우저 기본값)",
-  "settings.binDefaults.hint": "수납통 디자이너에서 새 수납통의 시작 설정입니다. 디자이너나 명령 팔레트에서 지정하세요.",
+  "settings.binDefaults.hint": "수납통 디자이너에서 새 수납통의 시작 설정입니다. 디자이너의 「새 수납통의 기본값으로 설정」으로 지정하세요.",
   "settings.binDefaults.title": "새 수납통 기본값",
   "settings.binDefaults.usingFactory": "공장 기본값 사용 중",
   "settings.browserPrivacySignal": "브라우저 개인정보 설정에 따라 분석이 비활성화되었습니다. 아래에서 재정의할 수 있습니다.",
