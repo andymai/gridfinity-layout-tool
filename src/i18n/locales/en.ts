@@ -2602,7 +2602,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.hinge.fitClearance': 'Hinge fit',
   'binDesigner.lid.hinge.fitClearanceAria': 'Hinge running clearance per side in millimeters',
   'binDesigner.lid.hinge.fitClearanceHint':
-    'Gap between the knuckles and the pin. Raise it if the hinge binds, lower it if the lid rattles. Filament itself varies, so this is worth a test print.',
+    'Gap around each knuckle, where it turns next to its neighbors. Raise it if the hinge binds, lower it if the lid rattles. It doesn’t change the pin holes.',
   'binDesigner.lid.slide.placement': 'Channel position',
   'binDesigner.lid.slide.placement.recessed': 'Under the lip',
   'binDesigner.lid.slide.placement.flush': 'At the rim',

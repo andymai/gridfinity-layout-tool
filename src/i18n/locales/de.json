@@ -1649,7 +1649,7 @@
   "binDesigner.lid.hinge.catch.noneHint": "Der Deckel liegt nur durch sein Eigengewicht auf. Reicht gegen Staub und ist die richtige Wahl, wenn du ständig in diese Box greifst.",
   "binDesigner.lid.hinge.fitClearance": "Scharnierpassung",
   "binDesigner.lid.hinge.fitClearanceAria": "Laufspiel des Scharniers pro Seite in Millimetern",
-  "binDesigner.lid.hinge.fitClearanceHint": "Spalt zwischen Scharnierhülsen und Stift. Erhöhe ihn, wenn das Scharnier klemmt, verringere ihn, wenn der Deckel wackelt. Filament schwankt selbst, ein Testdruck lohnt sich.",
+  "binDesigner.lid.hinge.fitClearanceHint": "Spalt um jede Scharnierhülse, wo sie neben ihren Nachbarn dreht. Erhöhe ihn, wenn das Scharnier klemmt, verringere ihn, wenn der Deckel wackelt. Die Stiftlöcher bleiben gleich.",
   "binDesigner.lid.hinge.pinMany_one": "Benötigt {count} Filamentstücke mit {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinMany_other": "Benötigt {count} Filamentstücke mit {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinOne": "Benötigt ein {diameter} mm Filamentstück, auf {length} mm abgelängt",

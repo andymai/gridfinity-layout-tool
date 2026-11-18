@@ -1619,7 +1619,7 @@
   "binDesigner.lid.hinge.catch.noneHint": "盖子仅靠自重合上。防尘足够，如果你经常伸手取放，这就是正确选择。",
   "binDesigner.lid.hinge.fitClearance": "合页配合",
   "binDesigner.lid.hinge.fitClearanceAria": "合页每侧的运动间隙，单位毫米",
-  "binDesigner.lid.hinge.fitClearanceHint": "合页节与销之间的间隙。合页发涩就调大，盖子松动就调小。耗材本身就有偏差，值得先打个测试件。",
+  "binDesigner.lid.hinge.fitClearanceHint": "每个合页节周围的间隙，即它在相邻节之间转动的位置。合页发涩就调大，盖子松动就调小。销孔大小不变。",
   "binDesigner.lid.hinge.pinMany_other": "需要 {count} 段 {diameter} mm 耗材：{lengths} mm",
   "binDesigner.lid.hinge.pinOne": "需要一段 {diameter} mm 耗材，剪成 {length} mm",
   "binDesigner.lid.hinge.side": "合页位于",

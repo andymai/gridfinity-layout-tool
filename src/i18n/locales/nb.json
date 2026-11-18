@@ -1649,7 +1649,7 @@
   "binDesigner.lid.hinge.catch.noneHint": "Lokket ligger lukket av sin egen vekt. Nok mot støv, og riktig valg hvis du stadig griper ned i denne boksen.",
   "binDesigner.lid.hinge.fitClearance": "Hengselpasning",
   "binDesigner.lid.hinge.fitClearanceAria": "Hengselets klaring per side i millimeter",
-  "binDesigner.lid.hinge.fitClearanceHint": "Klaring mellom hengseløyene og stiften. Øk den hvis hengselet kiler seg, senk den hvis lokket slingrer. Filament varierer i seg selv, så en testutskrift lønner seg.",
+  "binDesigner.lid.hinge.fitClearanceHint": "Klaring rundt hvert hengseløye, der det dreier mot naboene. Øk den hvis hengselet kiler seg, senk den hvis lokket slingrer. Hullene til stiften endres ikke.",
   "binDesigner.lid.hinge.pinMany_one": "Trenger {count} filamentbiter på {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinMany_other": "Trenger {count} filamentbiter på {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinOne": "Trenger én filamentbit på {diameter} mm, kappet til {length} mm",

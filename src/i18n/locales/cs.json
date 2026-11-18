@@ -1679,7 +1679,7 @@
   "binDesigner.lid.hinge.catch.noneHint": "Víko drží zavřené vlastní vahou. Proti prachu to stačí a je to správná volba, když do téhle přihrádky saháš pořád.",
   "binDesigner.lid.hinge.fitClearance": "Vůle pantu",
   "binDesigner.lid.hinge.fitClearanceAria": "Provozní vůle pantu na stranu, v milimetrech",
-  "binDesigner.lid.hinge.fitClearanceHint": "Mezera mezi oky pantu a čepem. Zvyš ji, když se pant zadírá, sniž ji, když víko chrastí. Samotný filament kolísá, takže se vyplatí zkušební tisk.",
+  "binDesigner.lid.hinge.fitClearanceHint": "Mezera kolem každého oka pantu, kde se otáčí vedle sousedních. Zvyš ji, když se pant zadírá, sniž ji, když víko chrastí. Otvory pro čep se nemění.",
   "binDesigner.lid.hinge.pinMany_one": "Potřebuje {count} odřezek filamentu {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinMany_few": "Potřebuje {count} odřezky filamentu {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinMany_other": "Potřebuje {count} odřezků filamentu {diameter} mm: {lengths} mm",

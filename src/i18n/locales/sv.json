@@ -1649,7 +1649,7 @@
   "binDesigner.lid.hinge.catch.noneHint": "Locket ligger stängt av sin egen vikt. Räcker mot damm och är rätt val om du hela tiden greppar ner i den här lådan.",
   "binDesigner.lid.hinge.fitClearance": "Gångjärnspassning",
   "binDesigner.lid.hinge.fitClearanceAria": "Gångjärnets glappmån per sida i millimeter",
-  "binDesigner.lid.hinge.fitClearanceHint": "Spelrum mellan gångjärnsöglorna och tappen. Öka det om gångjärnet kärvar, minska det om locket glappar. Filament varierar i sig, så en testutskrift lönar sig.",
+  "binDesigner.lid.hinge.fitClearanceHint": "Spelrum runt varje gångjärnsögla, där den vrider sig mot grannarna. Öka det om gångjärnet kärvar, minska det om locket glappar. Hålen för tappen ändras inte.",
   "binDesigner.lid.hinge.pinMany_one": "Behöver {count} filamentbitar på {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinMany_other": "Behöver {count} filamentbitar på {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinOne": "Behöver en filamentbit på {diameter} mm, kapad till {length} mm",

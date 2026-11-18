@@ -1649,7 +1649,7 @@
   "binDesigner.lid.hinge.catch.noneHint": "A tampa fica fechada pelo próprio peso. Basta contra poeira e é a escolha certa se você mexe nesta caixa o tempo todo.",
   "binDesigner.lid.hinge.fitClearance": "Ajuste da dobradiça",
   "binDesigner.lid.hinge.fitClearanceAria": "Folga de giro da dobradiça por lado, em milímetros",
-  "binDesigner.lid.hinge.fitClearanceHint": "Folga entre os elos e o pino. Aumente se a dobradiça travar, diminua se a tampa folgar. O próprio filamento varia, então vale uma impressão de teste.",
+  "binDesigner.lid.hinge.fitClearanceHint": "Folga em volta de cada elo, onde ele gira junto aos vizinhos. Aumente se a dobradiça travar, diminua se a tampa folgar. Os furos do pino não mudam.",
   "binDesigner.lid.hinge.pinMany_one": "Precisa de {count} pedaços de filamento de {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinMany_other": "Precisa de {count} pedaços de filamento de {diameter} mm: {lengths} mm",
   "binDesigner.lid.hinge.pinOne": "Precisa de um pedaço de filamento de {diameter} mm, cortado em {length} mm",
