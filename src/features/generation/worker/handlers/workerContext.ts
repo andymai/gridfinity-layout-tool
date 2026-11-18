@@ -379,6 +379,7 @@ export function runGeneration(
         : {}),
       ...(labelPlates ? { labelPlates } : {}),
       ...(meshData.labelTextOverflow ? { labelTextOverflow: meshData.labelTextOverflow } : {}),
+      ...(meshData.typeStem ? { typeStem: meshData.typeStem } : {}),
     };
 
     const transfer = [verts.buffer, norms.buffer, idxs.buffer, edges.buffer];
