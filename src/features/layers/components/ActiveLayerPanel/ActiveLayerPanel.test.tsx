@@ -199,10 +199,9 @@ describe('ActiveLayerPanel', () => {
       render(<ActiveLayerPanel />);
       const fill = screen.getByText('Fill with 2×2').closest('button');
       expect(fill).toBeDisabled();
-      expect(fill).toHaveAttribute(
-        'title',
-        'Fill places upright bins. Drag on the grid to paint slanted rows.'
-      );
+      expect(
+        screen.getByText('Fill places upright bins. Drag on the grid to paint slanted rows.')
+      ).toBeVisible();
       if (fill) fireEvent.click(fill);
 
       expect(useLayoutStore.getState().layout.bins).toHaveLength(0);

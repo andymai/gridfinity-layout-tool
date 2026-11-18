@@ -144,7 +144,7 @@ export function ToolsTab() {
               {t('mobile.tools.fillWithSize', { width: paintSize.width, depth: paintSize.depth })}
             </Button>
             {slantedRowOn && (
-              <p className="mt-1 px-2 text-micro leading-snug text-content-disabled">
+              <p className="mt-1 px-2 text-micro leading-snug text-content-tertiary">
                 {t('layers.fillWithSlantedRow')}
               </p>
             )}
