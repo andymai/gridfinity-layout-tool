@@ -24,6 +24,7 @@ import { PenCanvas } from './PenCanvas';
 import { usePenSketch } from './usePenSketch';
 import { usePenView, VIEW_PAD_MM } from './usePenView';
 import { useOutlineImport } from './useOutlineImport';
+import { applyGrowUnits, useImportGrow } from './useImportGrow';
 import { PenImportNotice } from './PenImportNotice';
 import { PenControls } from './PenControls';
 import { loopBounds, unitsFor } from '../../utils/outlineImport';
@@ -465,18 +466,14 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   }, [widthMm, depthMm, sketch]);
 
   /** Imported geometry replaces the sketch through the history, so Undo works. */
+  const importGrow = useImportGrow();
   const handleImported = useCallback(
     (vertices: OutlineVertex[]) => {
-      sketch.commit({ verts: vertices, radii: vertices.map(() => 0) });
+      sketch.commit({ verts: vertices, radii: vertices.map(() => 0), grow: importGrow.take() });
       setSelected([]);
       view.reset();
     },
-    [sketch, setSelected, view]
-  );
-
-  const handleGrowDrawer = useCallback(
-    (w: number, d: number) => mutations.updateDrawer({ width: gridUnits(w), depth: gridUnits(d) }),
-    [mutations]
+    [sketch, setSelected, view, importGrow]
   );
 
   const importer = useOutlineImport({
@@ -487,11 +484,14 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     gridUnitMm: layout.gridUnitMm,
     gridUnitMmY,
     onImported: handleImported,
-    onGrowDrawer: handleGrowDrawer,
+    onGrowDrawer: importGrow.onGrowDrawer,
   });
 
   const handleApply = useCallback(() => {
     if (outline === null || error !== null) return;
+    const standing = sketch.grow;
+    const axisX = { bbox: bboxMaxXMm, bound: boundWidthMm, grid: gridWidthMm, pitch: pitchX };
+    const axisY = { bbox: bboxMaxYMm, bound: boundDepthMm, grid: gridDepthMm, pitch: pitchY };
     const displaced = computeDisplacedBins(
       layout.bins,
       { ...layout.drawer, outline },
@@ -503,12 +503,8 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     // bus is synchronous, so growing first lets setDrawerOutline validate
     // against the enlarged aggregate; batch() collapses the pair to one undo
     // step. When the sketch already fits, the single commit is kept.
-    const growW = growsX
-      ? Math.max(layout.drawer.width, unitsFor(bboxMaxXMm, pitchX))
-      : layout.drawer.width;
-    const growD = growsY
-      ? Math.max(layout.drawer.depth, unitsFor(bboxMaxYMm, pitchY))
-      : layout.drawer.depth;
+    const growW = applyGrowUnits(layout.drawer.width, axisX, standing?.width);
+    const growD = applyGrowUnits(layout.drawer.depth, axisY, standing?.depth);
     const applied =
       growW > layout.drawer.width || growD > layout.drawer.depth
         ? batch(() => {
@@ -541,10 +537,13 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     onClose,
     bboxMaxXMm,
     bboxMaxYMm,
-    growsX,
-    growsY,
+    boundWidthMm,
+    boundDepthMm,
+    gridWidthMm,
+    gridDepthMm,
     pitchX,
     pitchY,
+    sketch.grow,
   ]);
 
   if (!open) return null;
