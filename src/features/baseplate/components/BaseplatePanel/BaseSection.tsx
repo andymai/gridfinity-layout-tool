@@ -118,6 +118,17 @@ export function BaseSection() {
     diameter: screwDiameter,
     count: screwsPerPiece,
   });
+  const chamferBlocker = magnetChamferBlocker({
+    lightweight: baseplateParams.lightweight !== false,
+    solidFloor: baseplateParams.solidFloor,
+    magnetDepth: baseplateParams.magnetDepth,
+  });
+  const chamferReason =
+    chamferBlocker === 'hollowFloor'
+      ? t('baseplate.magnetChamferLightweight')
+      : chamferBlocker === 'shallowHole'
+        ? t('baseplate.magnetChamferShallow')
+        : undefined;
 
   // Only a config created here is given a head width. A saved one without it
   // resolves to ø8, the width it was built with, and must keep resolving there.
@@ -353,18 +364,7 @@ export function BaseSection() {
                   label={t('baseplate.magnetChamfer')}
                   info={t('baseplate.magnetChamferDetail')}
                   checked={baseplateParams.magnetChamfer === true}
-                  disabledReason={
-                    {
-                      hollowFloor: t('baseplate.magnetChamferLightweight'),
-                      shallowHole: t('baseplate.magnetChamferShallow'),
-                    }[
-                      magnetChamferBlocker({
-                        lightweight: baseplateParams.lightweight !== false,
-                        solidFloor: baseplateParams.solidFloor,
-                        magnetDepth: baseplateParams.magnetDepth,
-                      }) ?? ''
-                    ]
-                  }
+                  disabledReason={chamferReason}
                   onChange={() =>
                     updateParam(
                       'magnetChamfer',
