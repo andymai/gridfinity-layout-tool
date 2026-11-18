@@ -147,6 +147,7 @@
     "@react-three/fiber": "^9.8.2",
     "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.9.0",
+    "@vercel/functions": "^3.11.3",
     "arctic": "^3.7.0",
     "brepjs": "20.5.0",
     "brepkit-wasm": "4.2.10",

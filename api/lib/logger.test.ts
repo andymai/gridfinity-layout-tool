@@ -85,4 +85,21 @@ describe('logger', () => {
     expect(output.message).toBe('circular ref');
     expect(output.context).toBeUndefined();
   });
+
+  it('also sends each entry to PostHog Logs in production', () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(null));
+    vi.stubGlobal('fetch', fetchMock);
+    vi.stubEnv('VERCEL_ENV', 'production');
+    vi.stubEnv('VITE_PUBLIC_POSTHOG_KEY', 'phc_test');
+    try {
+      logger.warn('rejected', { status: 409 });
+
+      expect(console.warn).toHaveBeenCalledOnce();
+      expect(fetchMock).toHaveBeenCalledOnce();
+      expect(fetchMock.mock.calls[0][0]).toBe('https://us.i.posthog.com/i/v1/logs');
+    } finally {
+      vi.unstubAllGlobals();
+      vi.unstubAllEnvs();
+    }
+  });
 });

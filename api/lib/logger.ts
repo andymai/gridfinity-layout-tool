@@ -1,11 +1,5 @@
-type LogLevel = 'info' | 'warn' | 'error';
-
-interface LogEntry {
-  level: LogLevel;
-  message: string;
-  context?: Record<string, unknown>;
-  timestamp: string;
-}
+import { sendLogToPostHog } from './posthogLogSink.js';
+import type { LogEntry, LogLevel } from './posthogLogSink.js';
 
 function log(level: LogLevel, message: string, context?: Record<string, unknown>): void {
   const entry: LogEntry = {
@@ -29,6 +23,11 @@ function log(level: LogLevel, message: string, context?: Record<string, unknown>
     // console.log is not in the ESLint allow-list (warn/error are); disable for logger internals only
     // eslint-disable-next-line no-console
     console.log(output);
+  }
+  try {
+    sendLogToPostHog(entry);
+  } catch {
+    // A log call must never fail the request that made it.
   }
 }
 

@@ -12,6 +12,7 @@ sources:
   - src/shell/Modals/SettingsModal/tabs/PrivacyTab/
   - src/core/api/share.ts
   - api/auth/providers/github.ts
+  - api/lib/posthogLogSink.ts
 ---
 
 # Your data and privacy
@@ -102,6 +103,12 @@ Your browser can also make this choice for you. If your browser sends a Global P
 The Layout Tool and these docs also count page views with Vercel Web Analytics, a service of the company that hosts the site. Each page view records the page address, the page that linked to it, your approximate location, and your browser and device type.
 
 The counts use no cookie and no ID in your browser. Vercel groups one visitor's page views with a value made from the request, and discards that value after 24 hours. The <Ui k="settings.helpImprove" /> switch doesn't stop these counts. A self-hosted copy of the Layout Tool doesn't send them.
+
+### Server error logs
+
+The Layout Tool's server sends its warning and error logs to PostHog. A log holds the error message and details such as a status code or a design ID. It doesn't hold your account ID, your name or your email address. PostHog keeps these logs for 14 days.
+
+The <Ui k="settings.helpImprove" /> switch doesn't stop these logs, because the server can't see the switch. The self-hosted Docker image has no server, so it sends no logs.
 
 ## Next steps
 
