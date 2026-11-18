@@ -474,19 +474,12 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     [sketch, setSelected, view]
   );
 
-  // An import that outgrows the drawer promises a size; Apply lands it with the
-  // outline, so Cancel leaves the drawer as it was. Tied to the open session,
-  // so a grow from an earlier session never carries over.
-  const [importGrow, setImportGrow] = useState<{
-    width: number;
-    depth: number;
-    session: typeof seeded;
-  } | null>(null);
+  // An import's grow waits for Apply, so Cancel keeps the drawer (one per open session).
+  const importGrow = useRef<{ width: number; depth: number; session: unknown } | null>(null);
   const handleGrowDrawer = useCallback(
-    (w: number, d: number) => setImportGrow({ width: w, depth: d, session: seeded }),
+    (w: number, d: number) => (importGrow.current = { width: w, depth: d, session: seeded }),
     [seeded]
   );
-  const pendingGrow = importGrow?.session === seeded ? importGrow : null;
 
   const importer = useOutlineImport({
     // Grid extent, not the traced drawer: the oversize prompt converts back to
@@ -501,6 +494,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
 
   const handleApply = useCallback(() => {
     if (outline === null || error !== null) return;
+    const pendingGrow = importGrow.current?.session === seeded ? importGrow.current : null;
     const displaced = computeDisplacedBins(
       layout.bins,
       { ...layout.drawer, outline },
@@ -554,7 +548,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     growsY,
     pitchX,
     pitchY,
-    pendingGrow,
+    seeded,
   ]);
 
   if (!open) return null;
