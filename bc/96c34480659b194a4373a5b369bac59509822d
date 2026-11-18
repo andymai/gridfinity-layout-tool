@@ -1,71 +1,67 @@
-apps/docs/cutouts/arranging.md
-  s_144305aaade9d6::t_4cb2404af16428 139
 apps/docs/reference/shortcuts.md
   s_144305aaade9d6::t_4cb2404af16428 108-119
-apps/docs/layouts/layers.md
-  s_144305aaade9d6::t_0ba51a248f7077 44
-apps/docs/designer/special-bins.md
-  s_144305aaade9d6::t_fa7a0db68bfc32 15-24
-  s_144305aaade9d6::t_3a5ac2c172b067 115,118-128,135-142
-  s_144305aaade9d6::t_b0315cddaf0618 132
-  s_144305aaade9d6::t_4fef496044e15b 129-131,133-134
-  s_144305aaade9d6::t_f9afcb4665b3ce 143
-apps/docs/concepts/preview-and-export.md
-  s_144305aaade9d6::t_b2f25cf86cc4a0 3,5-15
-  s_144305aaade9d6::t_54dbf8c0e08b53 97
-  s_144305aaade9d6::t_8d0c52b08ffef4 150
-  s_144305aaade9d6::t_6189c72de6b42a 64-68,70-96,98-106
-  s_144305aaade9d6::t_18a881e230971d 69
-apps/docs/printing/file-formats.md
-  s_144305aaade9d6::t_8ee243d7922a54 90,96-132,138,140-141
-  s_144305aaade9d6::t_33d9ade5e5bc77 12-15
-  s_144305aaade9d6::t_2c541f76631ff6 133-137
-  s_144305aaade9d6::t_be1521b742dd07 139
-  s_144305aaade9d6::t_e17d4f034c27bb 142-143
-apps/docs/designer/lids.md
-  s_144305aaade9d6::t_fc19b8508b9b39 65-66
-  s_144305aaade9d6::t_0745d0a017e487 58
-  s_144305aaade9d6::t_e7ff93244fc8f4 8-9
-  s_144305aaade9d6::t_e600caefc169f8 55-57
-  s_144305aaade9d6::t_c3d257292a70a6 59
-apps/docs/printing/label-maker.md
-  s_144305aaade9d6::t_c282e48c2db26a 36-41
+apps/docs/reference/faq.md
+  s_144305aaade9d6::t_4fef496044e15b 91
+  s_144305aaade9d6::t_bbf65c58cdccf0 84
+  s_144305aaade9d6::t_977c4be365adbf 82-83,85-86,88-90,92-101
+  s_144305aaade9d6::t_72ca2711555293 14-23
+  s_144305aaade9d6::t_78d3d1b82bf4c3 87
+apps/docs/baseplates/magnets-and-screws.md
+  s_144305aaade9d6::t_94178db6d75df0 132-137
+  s_144305aaade9d6::t_773fdf77590f42 12-14
+  s_144305aaade9d6::t_348e2b936b0fba 84
+  s_144305aaade9d6::t_64109369682e73 50,55-57
+  s_144305aaade9d6::t_824ecbf754cea0 85
 apps/docs/layouts/drawer-setup.md
-  s_144305aaade9d6::t_7f60f233a7a9e6 212-215,223-227,234
   s_144305aaade9d6::t_1a44c0f1b1031b 117,121-122,124-137,139-142,144-150,152,154-166
   s_144305aaade9d6::t_fc8b06b5065fa4 138,143,228-229,231-233
+  s_144305aaade9d6::t_7f60f233a7a9e6 212-215,223-227,234
   s_144305aaade9d6::t_68d2545508b9ff 123,151,153,216-222,230
-  s_144305aaade9d6::t_a6e2ef2fca2093 167
+  s_144305aaade9d6::t_9dba45db5eb2e2 167
+apps/docs/designer/lids.md
+  s_144305aaade9d6::t_0745d0a017e487 58
+  s_144305aaade9d6::t_fc19b8508b9b39 65-66
+  s_144305aaade9d6::t_e7ff93244fc8f4 8-9
+  s_144305aaade9d6::t_db8945fc9a3316 54-57,59
+apps/docs/layouts/placing-bins.md
+  s_144305aaade9d6::t_87c0eeb87f9549 50-64
+  s_144305aaade9d6::t_825369ec0a089e 118-126,128-132,134,136-156
+  s_144305aaade9d6::t_3a721727928708 230-245,247-251,253-254,256-264,266
+  s_144305aaade9d6::t_0f170bff25c0c3 265,272
+  s_144305aaade9d6::t_963c4dbf8db25b 3,7-17
+  s_144305aaade9d6::t_68d2545508b9ff 135
+  s_144305aaade9d6::t_4bc76b6c9206f3 127
+  s_144305aaade9d6::t_69755d7e32af6a 252
+  s_144305aaade9d6::t_b8607493088c33 133
+  s_144305aaade9d6::t_ff3d07fcc0d807 246,255
+apps/docs/cutouts/arranging.md
+  s_144305aaade9d6::t_4cb2404af16428 139
+apps/docs/concepts/preview-and-export.md
+  s_144305aaade9d6::t_b2f25cf86cc4a0 3,5-15
+  s_144305aaade9d6::t_8d0c52b08ffef4 150
+  s_144305aaade9d6::t_6189c72de6b42a 64-68,70-96,98-106
+  s_144305aaade9d6::t_54dbf8c0e08b53 97
+  s_144305aaade9d6::t_92d4157a029f06 69
+apps/docs/printing/file-formats.md
+  s_144305aaade9d6::t_33d9ade5e5bc77 12-15
+  s_144305aaade9d6::t_8ee243d7922a54 90,96-132,138,140-141
+  s_144305aaade9d6::t_d139d46dbe2a11 133-137,139,142-143
+apps/docs/layouts/layers.md
+  s_144305aaade9d6::t_0ba51a248f7077 44
+apps/docs/printing/label-maker.md
+  s_144305aaade9d6::t_c282e48c2db26a 36-41
 apps/docs/designer/save-and-reuse.md
+  s_144305aaade9d6::t_79b59d3c27ec66 135
+  s_144305aaade9d6::t_4a3cdb30777c40 189-194
   s_144305aaade9d6::t_ec5821f18123da 3
   s_144305aaade9d6::t_c23d5cee6b2081 16-22
   s_144305aaade9d6::t_c80fe8a8b9188d 111-134,136-143
-  s_144305aaade9d6::t_79b59d3c27ec66 135
-  s_144305aaade9d6::t_4a3cdb30777c40 189-194
-apps/docs/layouts/placing-bins.md
-  s_144305aaade9d6::t_87c0eeb87f9549 50-64
-  s_144305aaade9d6::t_68d2545508b9ff 135
-  s_144305aaade9d6::t_825369ec0a089e 118-126,128-132,134,136-156
-  s_144305aaade9d6::t_b8607493088c33 133
-  s_144305aaade9d6::t_963c4dbf8db25b 3,7-17
-  s_144305aaade9d6::t_0f170bff25c0c3 265,272
-  s_144305aaade9d6::t_4bc76b6c9206f3 127
-  s_144305aaade9d6::t_3a721727928708 230-245,247-251,253-254,256-264,266
-  s_144305aaade9d6::t_69755d7e32af6a 252
-  s_144305aaade9d6::t_cd2d2892f78d9a 246
-  s_144305aaade9d6::t_1b166c332e84ed 255
-apps/docs/baseplates/magnets-and-screws.md
-  s_144305aaade9d6::t_64109369682e73 50,55-57
-  s_144305aaade9d6::t_94178db6d75df0 132-137
-  s_144305aaade9d6::t_824ecbf754cea0 85
-  s_144305aaade9d6::t_348e2b936b0fba 84
-  s_144305aaade9d6::t_773fdf77590f42 12-14
-apps/docs/reference/faq.md
-  s_144305aaade9d6::t_72ca2711555293 14-23
-  s_144305aaade9d6::t_4fef496044e15b 91
-  s_144305aaade9d6::t_977c4be365adbf 82-83,85-86,88-90,92-101
-  s_144305aaade9d6::t_bbf65c58cdccf0 84
-  s_144305aaade9d6::t_7e03d2f820a96b 87
+apps/docs/designer/special-bins.md
+  s_144305aaade9d6::t_3a5ac2c172b067 115,118-128,135-142
+  s_144305aaade9d6::t_b0315cddaf0618 132
+  s_144305aaade9d6::t_4fef496044e15b 129-131,133-134
+  s_144305aaade9d6::t_fa7a0db68bfc32 15-24
+  s_144305aaade9d6::t_0dfc398d970b8e 143
 ---
 {
   "schema_version": "authorship/3.0.0",
