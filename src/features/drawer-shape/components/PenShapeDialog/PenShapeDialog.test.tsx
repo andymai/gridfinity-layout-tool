@@ -200,6 +200,52 @@ describe('PenShapeDialog', () => {
       expect(onClose).toHaveBeenCalledTimes(1);
     });
 
+    it('honours an import grow inside a larger measured drawer', () => {
+      const { d } = extent(); // 420 x 336 = 10 x 8 units
+      setMeasured(504, d);
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      act(() => {
+        importer.deps?.onGrowDrawer(12, 8);
+        importer.deps?.onImported([
+          { x: 0, y: 0 },
+          { x: 500, y: 0 },
+          { x: 500, y: d },
+          { x: 0, y: d },
+        ]);
+      });
+
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      // The outline fits the 504mm drawer but passes the 420mm grid.
+      expect(updateDrawer).toHaveBeenCalledWith({ width: 12, depth: 8 });
+    });
+
+    it('drops an import grow once Undo takes the import back', () => {
+      const { d } = extent();
+      // The sketch before the import reaches 441mm, so it needs 10.5 units.
+      setOutline([
+        { x: 0, y: 0 },
+        { x: 441, y: 0 },
+        { x: 420, y: d },
+        { x: 0, y: d },
+      ]);
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      act(() => {
+        importer.deps?.onGrowDrawer(12, 8);
+        importer.deps?.onImported([
+          { x: 42, y: 0 },
+          { x: 462, y: 0 },
+          { x: 462, y: d },
+          { x: 42, y: d },
+        ]);
+      });
+
+      fireEvent.click(screen.getByText('common.undo'));
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      expect(updateDrawer).toHaveBeenCalledWith({ width: 10.5, depth: 8 });
+    });
+
     it('drops an import grow when the dialog closes', () => {
       const { d } = extent();
       const { rerender } = render(<PenShapeDialog open onClose={vi.fn()} />);

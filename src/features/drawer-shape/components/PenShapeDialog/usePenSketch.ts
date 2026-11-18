@@ -44,6 +44,8 @@ export interface PenSketch extends Sketch {
   toggleSelected: (index: number) => void;
   /** Replace the sketch and push the previous state onto the undo stack. */
   commit: (next: Sketch) => void;
+  /** Whether this exact sketch is the current one or on the undo stack. */
+  holds: (sketch: Sketch) => boolean;
   /**
    * Replace the sketch without a history entry. For the continuous part of a
    * drag: one pointer gesture should undo as one step, not fifty.
@@ -236,6 +238,8 @@ export function usePenSketch(seeded: Sketch | null): PenSketch {
     [active, commit]
   );
 
+  const holds = useCallback((s: Sketch) => s === active || history.includes(s), [active, history]);
+
   return {
     verts: active.verts,
     radii: active.radii,
@@ -244,6 +248,7 @@ export function usePenSketch(seeded: Sketch | null): PenSketch {
     setSelected,
     toggleSelected,
     commit,
+    holds,
     preview,
     beginGesture,
     endGesture,

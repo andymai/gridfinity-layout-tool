@@ -24,6 +24,7 @@ import { PenCanvas } from './PenCanvas';
 import { usePenSketch } from './usePenSketch';
 import { usePenView, VIEW_PAD_MM } from './usePenView';
 import { useOutlineImport } from './useOutlineImport';
+import { applyGrowUnits, useImportGrow } from './useImportGrow';
 import { PenImportNotice } from './PenImportNotice';
 import { PenControls } from './PenControls';
 import { loopBounds, unitsFor } from '../../utils/outlineImport';
@@ -465,20 +466,16 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   }, [widthMm, depthMm, sketch]);
 
   /** Imported geometry replaces the sketch through the history, so Undo works. */
+  const importGrow = useImportGrow(seeded, sketch.holds);
   const handleImported = useCallback(
     (vertices: OutlineVertex[]) => {
-      sketch.commit({ verts: vertices, radii: vertices.map(() => 0) });
+      const next = { verts: vertices, radii: vertices.map(() => 0) };
+      sketch.commit(next);
+      importGrow.onImported(next);
       setSelected([]);
       view.reset();
     },
-    [sketch, setSelected, view]
-  );
-
-  // An import's grow waits for Apply, so Cancel keeps the drawer (one per open session).
-  const importGrow = useRef<{ width: number; depth: number; session: unknown } | null>(null);
-  const handleGrowDrawer = useCallback(
-    (w: number, d: number) => (importGrow.current = { width: w, depth: d, session: seeded }),
-    [seeded]
+    [sketch, setSelected, view, importGrow]
   );
 
   const importer = useOutlineImport({
@@ -489,12 +486,14 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     gridUnitMm: layout.gridUnitMm,
     gridUnitMmY,
     onImported: handleImported,
-    onGrowDrawer: handleGrowDrawer,
+    onGrowDrawer: importGrow.onGrowDrawer,
   });
 
   const handleApply = useCallback(() => {
     if (outline === null || error !== null) return;
-    const pendingGrow = importGrow.current?.session === seeded ? importGrow.current : null;
+    const standing = importGrow.standing();
+    const axisX = { bbox: bboxMaxXMm, bound: boundWidthMm, grid: gridWidthMm, pitch: pitchX };
+    const axisY = { bbox: bboxMaxYMm, bound: boundDepthMm, grid: gridDepthMm, pitch: pitchY };
     const displaced = computeDisplacedBins(
       layout.bins,
       { ...layout.drawer, outline },
@@ -506,12 +505,8 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     // bus is synchronous, so growing first lets setDrawerOutline validate
     // against the enlarged aggregate; batch() collapses the pair to one undo
     // step. When the sketch already fits, the single commit is kept.
-    const growW = growsX
-      ? Math.max(layout.drawer.width, unitsFor(bboxMaxXMm, pitchX), pendingGrow?.width ?? 0)
-      : layout.drawer.width;
-    const growD = growsY
-      ? Math.max(layout.drawer.depth, unitsFor(bboxMaxYMm, pitchY), pendingGrow?.depth ?? 0)
-      : layout.drawer.depth;
+    const growW = applyGrowUnits(layout.drawer.width, axisX, standing?.width);
+    const growD = applyGrowUnits(layout.drawer.depth, axisY, standing?.depth);
     const applied =
       growW > layout.drawer.width || growD > layout.drawer.depth
         ? batch(() => {
@@ -544,11 +539,13 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     onClose,
     bboxMaxXMm,
     bboxMaxYMm,
-    growsX,
-    growsY,
+    boundWidthMm,
+    boundDepthMm,
+    gridWidthMm,
+    gridDepthMm,
     pitchX,
     pitchY,
-    seeded,
+    importGrow,
   ]);
 
   if (!open) return null;
