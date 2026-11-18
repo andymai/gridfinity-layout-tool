@@ -846,3 +846,8 @@ html:not(.dark) .docs-only-dark {
     gap: 10px;
   }
 }
+
+.vp-doc .docs-calc-units-note {
+  margin-top: 12px;
+  font-size: 12px;
+}

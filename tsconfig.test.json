@@ -19,6 +19,7 @@
     "src/**/__kernel-tests__/**/*.ts",
     "api/**/*.test.ts",
     "scripts/**/*.test.ts",
+    "apps/docs/.vitepress/**/*.test.ts",
     "vitest.config.ts"
   ],
   "exclude": []

@@ -47,7 +47,7 @@ const drawerMm = computed(() =>
     </a>
     <span class="docs-plan-drawer-hint">
       Opens the layout editor with a new layout for a {{ drawerMm }} mm drawer: a grid of
-      {{ plan.grid.width }} × {{ plan.grid.depth }} grid units.
+      {{ plan.grid.width }} × {{ plan.grid.depth }} grid units of 42 mm.
     </span>
   </div>
 </template>

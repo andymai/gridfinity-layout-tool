@@ -159,6 +159,10 @@ const measuredFitPage = withBase('/layouts/drawer-setup#fit-the-grid-to-a-measur
           </dd>
         </div>
       </dl>
+      <p v-if="plan !== null" class="docs-calc-note docs-calc-units-note">
+        For the standard 42 mm grid and 7 mm height unit. A new layout uses the units in your
+        settings.
+      </p>
     </div>
 
     <div v-if="size !== null && plan !== null" class="docs-calc-actions">

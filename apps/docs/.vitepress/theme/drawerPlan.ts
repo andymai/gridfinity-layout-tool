@@ -9,8 +9,9 @@ import { APP_URL } from '../navigation';
 
 export const MM_PER_INCH = 25.4;
 
-// A drawer link opens a new layout, so it gets the new layout's pitch and its
-// default baseplate. The app's height readout charges that plate's floor too.
+// A drawer link opens a new layout with the reader's saved default units, so
+// these numbers hold for the standard units the pages state. The default
+// baseplate's floor counts against the height, as in the app's readout.
 const GRID_MM = GRIDFINITY_SPEC.GRID_SIZE;
 const HEIGHT_UNIT_MM = GRIDFINITY_SPEC.HEIGHT_UNIT;
 const PLATE_RISE_MM = baseplateFloorDepth(DEFAULT_BASEPLATE_PARAMS);
@@ -104,7 +105,8 @@ export function planDrawer(size: DrawerSize): DrawerPlan | null {
   if (measurable(size.heightMm)) {
     for (const count of STACK_COUNTS) {
       const units = solveUnitsUnderCeiling(size.heightMm - PLATE_RISE_MM, HEIGHT_UNIT_MM, count);
-      if (units === null) continue;
+      // The layout editor makes no bin shorter than this.
+      if (units === null || units < CONSTRAINTS.MIN_BIN_HEIGHT) continue;
       stacks.push({ count, units, totalMm: stackedTotalMm(units, HEIGHT_UNIT_MM, count) });
     }
   }

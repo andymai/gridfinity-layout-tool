@@ -59,10 +59,12 @@ describe('planDrawer', () => {
     ]);
   });
 
-  it('skips the stacks without a height and drops a stack that cannot fit', () => {
+  it('skips the stacks without a height and any bin under the shortest the editor makes', () => {
     expect(planDrawer({ widthMm: 345, depthMm: 260 })?.stacks).toEqual([]);
-    expect(planDrawer({ widthMm: 345, depthMm: 260, heightMm: 18 })?.stacks).toEqual([
-      { count: 1, units: 1, totalMm: 11.4 },
+    expect(planDrawer({ widthMm: 345, depthMm: 260, heightMm: 18 })?.stacks).toEqual([]);
+    expect(planDrawer({ widthMm: 345, depthMm: 260, heightMm: 40 })?.stacks).toEqual([
+      { count: 1, units: 5, totalMm: 39.4 },
+      { count: 2, units: 2, totalMm: 32.05 },
     ]);
   });
 
