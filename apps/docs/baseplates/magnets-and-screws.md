@@ -39,7 +39,7 @@ All three are off by default. <Ui k="baseplate.stackPrint.enable" /> removes all
 
 Not sure? Keep the defaults. Gridfinity magnets are 6 by 2 mm discs.
 
-<Screenshot id="baseplates-magnets-magnet-settings" alt="Magnet holes is on and Customize is open. It shows Magnet diameter at 6.5 mm, Magnet depth at 2 mm, Crush ribs, and Chamfered mouth. Chamfered mouth is off, with a note that a lightweight plate leaves too little wall around each hole." spec="Baseplate generator, 4 by 3 plate with the default lightweight floor, Magnet holes on. Click Customize under Magnet holes. Crop to the panel from Magnet holes down to the note under Chamfered mouth." />
+<Screenshot id="baseplates-magnets-magnet-settings" alt="Magnet holes is on and Customize is open. It shows Magnet diameter at 6.5 mm, Magnet depth at 2 mm, Crush ribs, and Chamfered mouth. Chamfered mouth is off, with a note to turn on Solid floor for a lead-in." spec="Baseplate generator, 4 by 3 plate with the default lightweight floor, Magnet holes on. Click Customize under Magnet holes. Crop to the panel from Magnet holes down to the note under Chamfered mouth." />
 
 Your bins need magnets in the same places. In the bin designer, open <Ui k="binDesigner.group.base" /> and turn on magnet holes. See [The base](../designer/base#add-magnet-holes). For a big bin, turn on <Ui k="binDesigner.base.cornerHolesOnly" /> under <Ui k="binDesigner.base.section.mounting" />. The bin then gets holes only at its outer corners, so it needs fewer magnets and lifts off the plate more easily.
 
@@ -54,7 +54,7 @@ Want the magnets to stay in without glue? Two options under <Ui k="common.custom
 
 Each ridge stands 0.3 mm into the hole, so a hole that prints a little too large still grips the magnet. The bin designer has the same <Ui k="binDesigner.base.magnetCrushRibs" /> option for the magnet holes of a bin. See [Hold magnets without glue](../designer/base#hold-magnets-without-glue).
 
-If you can't turn on <Ui k="baseplate.magnetChamfer" />, the plate has too little wall around each hole for a lead-in. <Ui k="baseplate.magnetCrushRibs" /> still works on that plate.
+<Ui k="baseplate.magnetChamfer" /> needs <Ui k="baseplate.solidFloor" />. A plate without it has a hollow floor, which leaves too little wall around each hole for a lead-in. <Ui k="baseplate.magnetCrushRibs" /> works on either floor.
 
 ### Magnet position on large grids
 
