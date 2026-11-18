@@ -9,6 +9,9 @@ sources:
   - src/shared/printSettings/baseplateHeight.ts
   - src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.tsx
   - src/shared/generation/screwHolePlacement.ts
+  - src/shared/generation/magnetHoleStyle.ts
+  - src/shared/generation/mountMagnetPlan.ts
+  - src/features/generation/worker/generators/baseplateGenerator.ts
   - content/what-is-gridfinity.md
 ---
 
@@ -44,12 +47,14 @@ Magnet holes make the plate taller by the magnet depth plus 0.5 mm. That extra 0
 
 ### Fit settings for magnets
 
-Want the magnets to stay in without glue? Two options help:
+Want the magnets to stay in without glue? Two options under <Ui k="common.customize" /> help, and you can use both together:
 
 - <Ui k="baseplate.magnetCrushRibs" /> adds eight ridges inside each hole. The ridges crush as you push the magnet in.
 - <Ui k="baseplate.magnetChamfer" /> adds a 45° lead-in at the top of each hole, so the magnet goes in straight.
 
-If you can't turn on <Ui k="baseplate.magnetChamfer" />, the plate has too little wall around each hole for a lead-in.
+Each ridge stands 0.3 mm into the hole, so a hole that prints a little too large still grips the magnet. The bin designer has the same <Ui k="binDesigner.base.magnetCrushRibs" /> option for the magnet holes of a bin. See [Hold magnets without glue](../designer/base#hold-magnets-without-glue).
+
+If you can't turn on <Ui k="baseplate.magnetChamfer" />, the plate has too little wall around each hole for a lead-in. <Ui k="baseplate.magnetCrushRibs" /> still works on that plate.
 
 ### Magnet position on large grids
 
@@ -75,6 +80,8 @@ Got a steel drawer or tool chest? <Ui k="baseplate.mountMagnets.label" /> cuts m
 Set the diameter to the magnet diameter plus the clearance for your printer, usually 0.2 to 0.5 mm. The depth starts at the underside, so a magnet of that height sits flush with the bottom. The Layout Tool spreads the magnets evenly over each printed piece, and a high count fills every place that it can.
 
 It skips a crossing on a split seam, on the plate edge, or where a screw goes. If a hole is too deep or too wide for the plate, a warning appears below the depth.
+
+Under <Ui k="common.customize" />, the underside holes also have <Ui k="baseplate.mountMagnets.crushRibs" /> and <Ui k="baseplate.magnetChamfer" />. They work the same as for <Ui k="baseplate.magnetHoles" />. A hole gets the lead-in only where the wall around it has room for it.
 
 <Screenshot id="baseplates-magnets-underside" alt="The preview looks at the plate from below. Underside magnets is turned on in the Base section, and the underside then gets four magnet holes, each where four pockets meet." spec="Baseplate generator, 4 by 3 plate. Orbit the preview to look up at the underside. The plate, then a close-up of the Base section where Underside magnets is turned on, then the plate again with its holes." />
 
@@ -121,6 +128,12 @@ To keep the standard plate height, use a <Ui k="baseplate.screwHoles.headStyle.c
 Turn off <Ui k="baseplate.stackPrint.enable" />. The settings come back with the values that you set.
 
 A stack prints most plates upside down, and the holes can't print that way without supports. So while the stack is on, <Ui k="baseplate.sectionBase" /> hides all three options. See [What a stack changes](./eco-and-stack-printing#what-a-stack-changes).
+
+### Magnets fall out of the plate
+
+Turn on <Ui k="baseplate.magnetCrushRibs" /> in the <Ui k="common.customize" /> fold of <Ui k="baseplate.magnetHoles" />. For underside magnets, turn on <Ui k="baseplate.mountMagnets.crushRibs" /> in the fold of <Ui k="baseplate.mountMagnets.label" />. Print the plate again, and press the magnets in.
+
+A plain round hole holds a magnet only when its size suits your printer exactly. The ribs crush as the magnet goes in, so it holds without glue. See [Fit and tolerances](../printing/fit-and-tolerances).
 
 ### Some underside magnet holes are missing
 

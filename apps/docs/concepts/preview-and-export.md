@@ -1,7 +1,18 @@
 ---
 title: Preview and export
-description: 'See why the 3D preview shows a quick draft before the exact model, and why an export takes longer.'
+description: 'Use the 3D preview toolbar to turn, see through and measure a model, and see why the preview shows a quick draft and an export takes longer.'
 sources:
+  - src/features/bin-designer/components/preview/PreviewControls/PreviewControls.tsx
+  - src/features/baseplate/components/BaseplatePreview/BaseplatePreviewControls.tsx
+  - src/features/baseplate/components/BaseplatePreview/BaseplatePreview.tsx
+  - src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
+  - src/features/bin-designer/components/PreviewCanvas/MeasureOverlay.tsx
+  - src/features/bin-designer/components/preview/MeasureTool/MeasureTool.tsx
+  - src/features/bin-designer/utils/measure3d.ts
+  - src/features/bin-designer/store/slices/uiSlice.ts
+  - src/features/bin-designer/hooks/useZoneColoredMesh.ts
+  - src/features/bin-designer/hooks/useDesignerKeyboard.ts
+  - src/features/baseplate/hooks/useBaseplateKeyboard.ts
   - src/features/bin-designer/hooks/useGeneration.ts
   - src/features/generation/README.md
   - src/features/generation/worker/generators/pipeline/stages/shellStage.ts
@@ -50,6 +61,49 @@ When you open a saved design again, the preview shows the exact model from your 
 
 <Screenshot id="concepts-preview-draft-exact" alt="A click makes the bin one height unit taller. The preview shows a one-color draft first, then the exact model with its orange stacking lip." spec="Clip. Bin designer, bin 2 × 2, standard base, stacking lip on, Multi-color on with body grey and stacking lip orange. Close-up: the height stepper goes from 3 to 4. Cut to the preview: the one-color draft, then the exact model with its color zones." />
 
+## Look at the 3D preview
+
+The bin designer and the baseplate generator have a toolbar at the top of the 3D preview. Use it to turn the camera, to see through the model and to measure it.
+
+| Tool                                                                                                                            | What it does                                                                                                           | Key in the bin designer      |
+| ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| <Ui k="workshop.view.front" />, <Ui k="workshop.view.side" />, <Ui k="workshop.view.top" />, <Ui k="workshop.view.isometric" /> | Turns the camera to the front, the side or the top of the model, or to a corner view from above.                       | <kbd>1</kbd> to <kbd>4</kbd> |
+| <Ui k="common.reset" />                                                                                                         | Turns the camera back to the <Ui k="workshop.view.isometric" /> view. On a phone or tablet, tap the preview two times. | <kbd>R</kbd>                 |
+| <Ui k="binDesigner.wire" />                                                                                                     | Shows the model as a mesh of triangles.                                                                                | <kbd>W</kbd>                 |
+| <Ui k="binDesigner.xray" />                                                                                                     | Makes the faces of the model see-through, so you can see the holes and pockets behind them.                            | <kbd>X</kbd>                 |
+| <Ui k="binDesigner.measure.short" />                                                                                            | Measures the model. See [Measure the model](#measure-the-model).                                                       | None                         |
+| <Ui k="binDesigner.projectionPerspective" /> or <Ui k="binDesigner.projectionOrthographic" />                                   | Changes between a perspective view and an orthographic view. The button shows the current view.                        | <kbd>P</kbd>                 |
+| <Ui k="common.color" />                                                                                                         | Changes the color of the preview. The bin designer hides it while <Ui k="binDesigner.group.colors" /> is on.           | None                         |
+| <Ui k="binDesigner.splitAssembled" />, <Ui k="binDesigner.splitExploded" />                                                     | Shows the pieces of a split bin or plate together, or apart. These buttons show only for a model in pieces.            | None                         |
+
+On a narrow preview, the toolbar shows icons only. Put the pointer on an icon to see its name and its key.
+
+The baseplate generator has the same toolbar without <Ui k="binDesigner.wire" /> and <Ui k="binDesigner.measure.short" />. There, <Ui k="common.reset" /> turns the camera to the <Ui k="baseplate.topView" /> view. Only two keys work: <kbd>X</kbd> for <Ui k="baseplate.xray" />, and <kbd>P</kbd> for perspective or orthographic.
+
+### Measure the model
+
+<Ui k="binDesigner.measure.short" /> gives the size of a part of the 3D model in the bin designer. It has two modes:
+
+- <Ui k="binDesigner.measure.modePoints" /> gives the distance between two points that you click.
+- <Ui k="binDesigner.measure.modeThickness" /> gives the thickness of the material where you click, for example a wall or the floor.
+
+To measure:
+
+1. Click <Ui k="binDesigner.measure.short" /> in the toolbar. A bar opens at the top of the preview.
+2. In the bar, click <Ui k="binDesigner.measure.modePoints" /> or <Ui k="binDesigner.measure.modeThickness" />.
+3. Click a point on the model. For <Ui k="binDesigner.measure.modePoints" />, click a second point. You can drag to turn the model between the two clicks.
+4. Read the result in the bar, in millimeters.
+
+A point that you click snaps to a nearby corner or edge of the model. For two points, the preview also shows the distance along X, Y and Z. A third click starts a new measurement.
+
+To remove the measurement, click <Ui k="binDesigner.measure.clear" /> or press <kbd>Escape</kbd>. To close the tool, press <kbd>Escape</kbd> again, or click the X at the end of the bar.
+
+With a mouse, you can also measure while the tool is closed. Hold <kbd>Shift</kbd> and drag from one point on the model to another. Press <kbd>Escape</kbd> to remove that measurement.
+
+<Ui k="binDesigner.measure.short" /> and the color tools of [Colors](../designer/colors) both use clicks on the model. When you open one, the other closes.
+
+<Screenshot id="concepts-preview-measure" alt="A click on Measure in the preview toolbar opens a bar with Two points and Thickness. Two clicks on the rim of the bin show the distance between them. Then Thickness and a click on the front wall show how thick the wall is." spec="Clip. Bin designer, desktop, bin 2 × 2 × 3 with two compartments. Click Measure in the preview toolbar. Click the top of the front wall, then the top of the back wall, so the distance shows. Click Thickness in the bar, then click the front wall. End on the thickness value." />
+
 ## What the export does differently
 
 An export doesn't use the draft. It builds the exact model again, with three differences:
@@ -93,3 +147,4 @@ The export builds the finest model of the three steps, so a very complex design 
 - [Multi-color printing](./multi-color): see what the 3MF file carries for each color zone
 - [Saved designs and linked bins](./saved-designs): see how a layout shows the model of a saved design
 - [SpaceMouse](../settings/spacemouse): move the 3D preview with a 3Dconnexion SpaceMouse
+- [Keyboard shortcuts](../reference/shortcuts): see every key of the 3D preview

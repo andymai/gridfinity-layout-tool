@@ -1,6 +1,6 @@
 ---
 title: Save and reuse designs
-description: 'Keep designs in your library, save versions, make variants in other sizes, and place a design in a layout.'
+description: 'Keep designs in your library, save versions, make variants in other sizes, start new bins from your own settings, and place a design in a layout.'
 sources:
   - src/features/bin-designer/types/savedDesign.ts
   - src/features/bin-designer/types/designVersion.ts
@@ -13,6 +13,13 @@ sources:
   - src/features/bin-designer/components/DesignImportView/
   - src/shell/Modals/DesignGalleryModal/useGalleryTab.ts
   - src/features/bin-designer/storage/DesignVersionService.ts
+  - src/features/bin-designer/components/panel/SetDefaultFooter/
+  - src/features/bin-designer/hooks/useBinDefaults.ts
+  - src/features/bin-designer/storage/defaultParamsStorage.ts
+  - src/features/bin-designer/constants/paramMigration.ts
+  - src/features/bin-designer/store/helpers.ts
+  - src/features/bin-designer/hooks/useCreateFromBin.ts
+  - src/shell/Modals/SettingsModal/tabs/CategoriesTab/CategoriesTab.tsx
 ---
 
 # Save and reuse designs
@@ -101,6 +108,39 @@ The gallery opens on the <Ui k="binExamples.gallery.tabs.community" /> tab. To u
 
 <Screenshot id="designer-save-and-reuse-examples" alt="Clicking Community designs opens the gallery on its Community tab, and Examples changes to the examples. A search for honeycomb finds the Honeycomb Caddy example. Its card opens a 3D view that turns with a drag, and Use as new design opens the caddy in the bin designer." spec="Bin designer, community API left unanswered so its tab shows the loading state. Click Community designs at the top of the panel, then the Examples tab. Search for honeycomb and click the Honeycomb Caddy. Turn the 3D view, click Use as new design, then show the new bin." />
 
+## Start new bins from your own settings
+
+Do most of your bins use the same base, lip or lid? Save those settings as your **default for new bins**. Each new bin then starts with them.
+
+1. Set up a bin with the settings that you want.
+2. Scroll to the bottom of the bin designer panel, below the <Ui k="binDesigner.group.finishing" /> group.
+3. Click <Ui k="binDesigner.setAsDefault" />.
+
+<Ui k="binDesigner.customDefaultActive" /> then shows below the button. In the <Ui k="binDesigner.panel.viewAsRail" /> view, the button is at the bottom of the <Ui k="binDesigner.category.print" /> page. The <Ui k="binDesigner.moreOptions" /> menu of <Ui k="binDesigner.savedDesigns" /> has the same command. It saves the settings of the design that is open.
+
+<Screenshot id="designer-save-and-reuse-set-default" alt="The bottom of the bin designer panel. Below the closed Finishing group is the Set as default for new bins button, with the note Custom default active under it." spec="Bin designer, desktop, Single scroll view, bin 2 × 2 × 3 with magnet holes. Close the Finishing group, click Set as default for new bins, and scroll the panel to the bottom. Crop to the Finishing heading, the button and the Custom default active note." />
+
+The default keeps the size and almost all the settings of the bin. It doesn't keep the parts that belong to one design. A new bin gets the factory value for each of them:
+
+- <Ui k="binDesigner.shape.customShape" />
+- Compartments and cutouts
+- Wall cutouts and <Ui k="binDesigner.handles" />
+- Text on the floor and the lid
+- The overhang
+- The <Ui k="binDesigner.knifeRest.title" />
+
+Your default applies to two kinds of new bins:
+
+- A design that you start with <Ui k="binDesigner.newDesign" />.
+- A design that you make from a layout bin with <Ui k="designLinking.inspector.createDesign" />. The design takes its size from the layout bin and its <Ui k="common.physicalUnits" /> from the layout. All other settings come from your default.
+
+A plain bin that you draw in a layout has no design, so the default doesn't apply to it. The default also doesn't change the designs that you have. It stays in this browser, so each browser has its own default.
+
+To change the default, click <Ui k="binDesigner.setAsDefault" /> again on a different bin. The new default replaces the old one. To go back to the factory settings, do one of these:
+
+- In <Ui k="binDesigner.savedDesigns" />, open the <Ui k="binDesigner.moreOptions" /> menu and click <Ui k="binDesigner.resetFactoryDefaults" />.
+- In Settings, open the <Ui k="settings.tabs.categories" /> tab. Next to <Ui k="settings.binDefaults.title" />, click <Ui k="settings.section.reset" />.
+
 ## Download and import a design file
 
 A **design file** is a small JSON file that holds every setting of a design. It isn't a printable model. Use it to keep a backup, to edit a design by hand, or to give a design to someone else.
@@ -145,6 +185,12 @@ A variant takes all its other values from its parent. It can claim only the valu
 Read the error under the box. Is the file a layout file? Import it in the layout manager instead: see [Import a layout file](../reference/layout-file#import-a-layout-file).
 
 The import checks the file type and the main fields before it shows a preview. For a file that you edited by hand, see [Avoid the traps](../reference/design-file#avoid-the-traps).
+
+### A new bin starts with settings that you don't expect
+
+Look for <Ui k="binDesigner.customDefaultActive" /> at the bottom of the panel. If it shows, open the <Ui k="binDesigner.moreOptions" /> menu of <Ui k="binDesigner.savedDesigns" /> and click <Ui k="binDesigner.resetFactoryDefaults" />.
+
+A saved default sets the start settings of each new bin. See [Start new bins from your own settings](#start-new-bins-from-your-own-settings).
 
 ## Next steps
 

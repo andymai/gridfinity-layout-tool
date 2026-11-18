@@ -5,6 +5,8 @@ sources:
   - src/features/bin-designer/types/lid.ts
   - src/features/bin-designer/components/panel/LidSection/
   - src/features/bin-designer/components/panel/SlideControls/
+  - src/shared/utils/slideLidPlan.ts
+  - src/features/generation/worker/generators/slideLidPlate.ts
   - src/features/bin-designer/components/panel/HingeControls/
   - src/features/bin-designer/components/panel/LidGripControls/
   - src/features/bin-designer/utils/lidCompatibility.ts
@@ -49,16 +51,18 @@ A magnetic lid takes 6 × 2 mm magnets by default. Glue the back magnets the oth
 
 A **sliding lid** is a flat plate that slides in and out of a channel. It doesn't need the stacking lip.
 
-| Setting                                    | What it does                                                                                                                                                                                                                          |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <Ui k="binDesigner.lid.slide.placement" /> | <Ui k="binDesigner.lid.slide.placement.recessed" /> keeps the stacking lip, so other bins still stack on this one. <Ui k="binDesigner.lid.slide.placement.flush" /> gives the deepest inside, but you must turn the stacking lip off. |
-| <Ui k="binDesigner.lid.slide.entrySide" /> | The wall the lid slides out of. The two walls on each side of it carry the runners.                                                                                                                                                   |
-| <Ui k="binDesigner.lid.slide.pull" />      | What your finger pulls on: <Ui k="binDesigner.lid.slide.pull.none" />, <Ui k="binDesigner.lid.slide.pull.notch" />, <Ui k="binDesigner.lid.slide.pull.tab" /> or <Ui k="binDesigner.lid.slide.pull.catch" />.                         |
-| <Ui k="binDesigner.lid.slide.detent" />    | Adds a small ramp on each runner. The lid clicks past it, so a knock can't slide the lid open.                                                                                                                                        |
+| Setting                                    | What it does                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <Ui k="binDesigner.lid.slide.placement" /> | <Ui k="binDesigner.lid.slide.placement.recessed" /> keeps the stacking lip, so other bins still stack on this one. <Ui k="binDesigner.lid.slide.placement.flush" /> gives the deepest inside, but you must turn the stacking lip off.                                                                                              |
+| <Ui k="binDesigner.lid.slide.entrySide" /> | The wall the lid slides out of. The two walls on each side of it carry the runners.                                                                                                                                                                                                                                                |
+| <Ui k="binDesigner.lid.slide.pull" />      | What your finger pulls on: <Ui k="binDesigner.lid.slide.pull.none" />, <Ui k="binDesigner.lid.slide.pull.notch" />, <Ui k="binDesigner.lid.slide.pull.tab" />, <Ui k="binDesigner.lid.slide.pull.catch" /> or <Ui k="binDesigner.lid.slide.pull.groove" />. A sliding lid starts with <Ui k="binDesigner.lid.slide.pull.notch" />. |
+| <Ui k="binDesigner.lid.slide.detent" />    | Adds a small ramp on each runner. The lid clicks past it, so a knock can't slide the lid open.                                                                                                                                                                                                                                     |
 
 <Screenshot id="designer-lids-sliding" alt="Picking Sliding under How it attaches shows Channel position, Opens toward, Pull and Click shut. Then the Open and Closed slider beside the preview slides the lid into its channel and back out." spec="Bin designer, 2 x 2 x 3 bin with a lid. In close-up, pick Sliding and show its settings. Then drag the lid slider at the side of the preview to Closed and back." />
 
 The finger catch is a part of the stacking rim that moves with the lid, so the whole width becomes a pull. It keeps the [lip peak](./stacking#make-the-lip-print-cleanly) shape of the rest of the rim.
+
+The finger groove is two shallow grooves across the top of the lid, about 20 mm in from its outer edge. Put a fingernail in the inner groove to pull the lid open. Put it in the outer groove to push the lid shut. The grooves are up to 0.8 mm deep, and the outline of the lid stays the same.
 
 <Ui k="binDesigner.lid.slide.clearance" />, under <Ui k="binDesigner.lid.advanced" />, sets the gap between the lid and its channel, from 0.1 to 0.6 mm. If the lid binds, raise it. If the lid rattles, lower it.
 
