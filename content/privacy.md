@@ -15,6 +15,7 @@ Gridfinity Layout Tool is a free, open-source web application maintained by Andy
 
 - We collect **anonymous analytics** to improve the app (you can opt out)
 - We count **page views** without cookies or an ID in your browser
+- Our server sends its **error logs** to PostHog, without your account ID
 - Layouts you create are stored **locally in your browser** unless you choose to share them or sign in
 - When you share a layout, it's stored on our servers with a shareable link
 - **Sign-in is optional.** If you sign in to sync across devices, we collect your name and email from Google or GitHub
@@ -34,7 +35,7 @@ We use [PostHog](https://posthog.com) to understand how people use the app. This
 
 **Analytics is optional.** You can disable it in Settings > Privacy > "Help improve this tool."
 
-When analytics is disabled, no data is sent to PostHog.
+When analytics is disabled, the app sends no data to PostHog.
 
 We also respect your browser's privacy settings. If your browser sends a [Global Privacy Control](https://globalprivacycontrol.org/) (GPC) or Do Not Track signal, analytics is disabled by default. You can still enable it manually in Settings if you choose.
 
@@ -47,6 +48,10 @@ The app and the [docs](/docs) count page views with [Vercel Web Analytics](https
 - Browser, operating system and device type
 
 Vercel Web Analytics sets no cookie and stores no ID in your browser. It groups one visitor's page views with a value made from the request, and discards that value after 24 hours. The analytics setting above doesn't turn these counts off. Self-hosted copies of the app don't send them.
+
+### Server Error Logs
+
+Our server sends its warning and error logs to [PostHog Logs](https://posthog.com/docs/logs). A log holds the error message and details such as a status code or a design ID. It doesn't hold your account ID, your name or your email address. PostHog keeps these logs for 14 days. The analytics setting doesn't turn them off, because the server can't see that setting. The self-hosted Docker image has no server, so it sends no logs.
 
 ### Layout Data
 
@@ -140,7 +145,7 @@ Signed-in users can report a published design, whether or not they have publishe
 
 | Service    | Purpose                                               | Privacy Policy                                                                                                                                                         |
 | ---------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PostHog    | Analytics                                             | [posthog.com/privacy](https://posthog.com/privacy)                                                                                                                     |
+| PostHog    | Analytics & server error logs                         | [posthog.com/privacy](https://posthog.com/privacy)                                                                                                                     |
 | Vercel     | Hosting, storage & page view counts                   | [vercel.com/legal/privacy-policy](https://vercel.com/legal/privacy-policy)                                                                                             |
 | Liveblocks | Real-time collaboration                               | [liveblocks.io/privacy](https://liveblocks.io/privacy)                                                                                                                 |
 | Google     | Sign-in for sync and publishing (only if you sign in) | [policies.google.com/privacy](https://policies.google.com/privacy)                                                                                                     |
@@ -165,6 +170,7 @@ You can:
 - **Shared layouts:** Stored until you delete them (or we may remove inactive shares after 12 months)
 - **Analytics:** Retained by PostHog per their data retention policy
 - **Page view counts:** Retained by Vercel per their data retention policy
+- **Server error logs:** 14 days, then PostHog deletes them
 - **Account session cookies:** 30 days from sign-in
 - **Account profile (name, email, provider account ID):** 1 year, refreshed on every sign-in. Profiles for accounts that don't sign in for a year are automatically deleted
 - **Synced layouts and designs:** Retained until you delete them, or until you delete your account
