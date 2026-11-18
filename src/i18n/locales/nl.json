@@ -4539,7 +4539,7 @@
   "settings.accentColor.sky": "Hemelsblauw",
   "settings.accentColor.violet": "Violet",
   "settings.autoDetect": "Automatisch (browserstandaard)",
-  "settings.binDefaults.hint": "De startinstellingen voor nieuwe bins in de Bin Designer. Stel ze in onderaan het designerpaneel.",
+  "settings.binDefaults.hint": "De startinstellingen voor nieuwe bins in de Bin Designer. Stel ze in de designer in met ‘Huidige instellingen instellen als standaard voor nieuwe bins’.",
   "settings.binDefaults.title": "Standaarden voor nieuwe bins",
   "settings.binDefaults.usingFactory": "Fabrieksinstellingen in gebruik",
   "settings.browserPrivacySignal": "Analyse uitgeschakeld op basis van de privacyinstelling van uw browser. U kunt dit hieronder wijzigen.",

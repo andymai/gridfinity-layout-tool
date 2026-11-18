@@ -4539,7 +4539,7 @@
   "settings.accentColor.sky": "Himmelblå",
   "settings.accentColor.violet": "Fiolett",
   "settings.autoDetect": "Auto (nettleserstandard)",
-  "settings.binDefaults.hint": "Startinnstillingene for nye bins i Bin-designeren. Angi dem nederst i designerpanelet.",
+  "settings.binDefaults.hint": "Startinnstillingene for nye bins i Bin-designeren. Angi dem i designeren med «Angi gjeldende innstillinger som standard for nye bins».",
   "settings.binDefaults.title": "Standarder for nye bins",
   "settings.binDefaults.usingFactory": "Bruker fabrikkinnstillinger",
   "settings.browserPrivacySignal": "Analyse deaktivert basert på nettleserens personverninnstilling. Du kan endre dette nedenfor.",

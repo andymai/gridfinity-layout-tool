@@ -88,7 +88,7 @@ See [Estimates](../printing/estimates).
 **<Ui k="settings.tabs.categories" />** has two sections:
 
 - <Ui k="settings.defaultCategories" /> sets the categories of a new layout. Click <Ui k="settings.saveCategoriesAsDefaults" /> to use the categories of the open layout.
-- <Ui k="settings.binDefaults.title" /> shows if new bins in the bin designer start from your own defaults. To set them, click <Ui k="binDesigner.setAsDefault" /> at the bottom of the bin designer panel. See [Start new bins from your own settings](../designer/save-and-reuse#start-new-bins-from-your-own-settings).
+- <Ui k="settings.binDefaults.title" /> shows if new bins in the bin designer start from your own defaults. To set them, click <Ui k="binDesigner.setAsDefault" /> in the bin designer. See [Start new bins from your own settings](../designer/save-and-reuse#start-new-bins-from-your-own-settings).
 
 ## Account and data
 

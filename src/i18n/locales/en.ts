@@ -1048,7 +1048,7 @@ const en: Record<string, string> = {
   'settings.defaultCategoriesHint': 'Categories used when creating new layouts:',
   'settings.binDefaults.title': 'New bin defaults',
   'settings.binDefaults.hint':
-    'The starting settings for new bins in the Bin Designer. Set them at the bottom of the designer panel.',
+    'The starting settings for new bins in the Bin Designer. Set them with “Set as default for new bins” in the designer.',
   'settings.binDefaults.usingFactory': 'Using factory defaults',
   'settings.usingBuiltInCategories': 'Using built-in defaults ({count})',
   'settings.usingCustomCategories': 'Using custom defaults ({count})',
