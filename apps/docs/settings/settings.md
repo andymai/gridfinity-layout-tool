@@ -81,7 +81,7 @@ Not sure about the grid unit? Keep 42 mm, unless your other parts use a size tha
 - <Ui k="settings.filamentCostPerKg" />
 - <Ui k="settings.printLayerHeight" />
 - <Ui k="settings.infillPercent" />
-- <Ui k="settings.nozzleSize" />: connectors, wall locks and baseplate clips scale to it, so they still print on wider nozzles.
+- <Ui k="settings.nozzleSize" />: connectors, wall locks and baseplate clips scale to it, so they still print on wider nozzles. The bin designer also uses it to warn about letters too thin to print.
 
 See [Estimates](../printing/estimates).
 

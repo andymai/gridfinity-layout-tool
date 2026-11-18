@@ -6,7 +6,7 @@ import type {
   SlideTrayMeshData,
   LabelPlatesMeshData,
   LabelTextOverflow,
-  TypeStemWarning,
+  TypeStem,
 } from '@/shared/types/generation';
 import type { BinParams } from './binParams';
 import type { BodyTypeMemory } from './bodyTypeMemory';
@@ -75,7 +75,7 @@ export interface GenerationResult {
   /** Captions the build dropped because they overflow their host. Reported by
    *  the worker because the drop leaves no trace in the mesh to observe. */
   readonly labelTextOverflow?: LabelTextOverflow[];
-  readonly typeStemWarning?: TypeStemWarning;
+  readonly typeStem?: TypeStem;
 }
 
 /** Generation state tracked in the store */

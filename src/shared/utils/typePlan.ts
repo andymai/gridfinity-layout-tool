@@ -589,7 +589,7 @@ export function planTypeBlock(
 
 /**
  * Narrowest printed stem across a plan, in mm. `null` when the font is
- * unavailable. Compared against {@link MIN_PRINTABLE_STEM_MM} by the guard;
+ * unavailable. Compared against {@link minPrintableStemMm} by the panel;
  * kept here so the panel warning and the worker report the same number.
  */
 export function planMinStemMm(plan: TypeBlockPlan, measurer: TypeMeasurer): number | null {
@@ -604,7 +604,8 @@ export function planMinStemMm(plan: TypeBlockPlan, measurer: TypeMeasurer): numb
 
 /**
  * Stem width below which an FDM slicer stops resolving the wall between two
- * glyph edges and the letterform prints as a blob. Two nominal extrusion widths
- * at a 0.4mm nozzle.
+ * glyph edges and the letterform prints as a blob: two nominal extrusion widths.
  */
-export const MIN_PRINTABLE_STEM_MM = 0.8;
+export function minPrintableStemMm(nozzleSizeMm: number): number {
+  return 2 * nozzleSizeMm;
+}

@@ -57,8 +57,8 @@ export interface MeshData {
    * the designer store's Immer drafts reject readonly arrays.
    */
   readonly labelTextOverflow?: LabelTextOverflow[];
-  /** Set when the design's finest stem is below the printable floor. */
-  readonly typeStemWarning?: TypeStemWarning;
+  /** Set when the design renders any caption. */
+  readonly typeStem?: TypeStem;
 }
 
 /**
@@ -69,18 +69,17 @@ export interface MeshData {
  * bin-spanning tab. `scope` says which, so the UI can name the right thing.
  */
 /**
- * A design whose finest glyph stem is below what an FDM nozzle resolves, with
- * the measurement that says so. Reported alongside the mesh because nothing in
- * the geometry records it: the solid is watertight and correctly shaped, it
- * simply will not print as letters.
+ * The design's finest glyph stem. Reported alongside the mesh because nothing
+ * in the geometry records it: a solid whose stems are finer than the nozzle is
+ * watertight and correctly shaped, and simply will not print as letters. The
+ * panel compares it with the live nozzle setting, which never reaches the
+ * worker for an unsocketed design (see `withSocketNozzle`).
  */
-export interface TypeStemWarning {
+export interface TypeStem {
   /** Narrowest measured stem across every caption the design renders, in mm. */
   readonly minStemMm: number;
   /** The rendered size that produced it, so the panel can say how far to go. */
   readonly fontSizeMm: number;
-  /** The threshold it fell under, so the panel never restates the constant. */
-  readonly minPrintableStemMm: number;
 }
 
 export interface LabelTextOverflow {
