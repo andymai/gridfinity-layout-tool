@@ -826,12 +826,12 @@
           "type": "number",
           "minimum": 0,
           "maximum": 5,
-          "default": 0.2,
+          "default": 0.4,
           "x-constant": {
             "maximum": "MAX_CUTOUT_CLEARANCE",
             "default": "DEFAULT_CUTOUT_CLEARANCE"
           },
-          "description": "Extra clearance in mm around the cut."
+          "description": "Extra clearance in mm around the cut. A circle, polygon or slot grows by this in total; a path or mesh grows by this on each side."
         },
         "chamferWidth": {
           "type": "number",

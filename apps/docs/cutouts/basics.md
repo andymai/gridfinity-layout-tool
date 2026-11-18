@@ -78,10 +78,12 @@ A standard base counts toward the floor, so a <Ui k="binDesigner.cutouts.depthMo
 
 Open <Ui k="binDesigner.cutouts.section.fit" />:
 
-- <Ui k="binDesigner.cutouts.clearance" /> adds room on each side so a part drops in. It goes from 0 to 5 mm.
+- <Ui k="binDesigner.cutouts.clearance" /> makes the cutout larger so a part drops in. It goes from 0 to 5 mm. A circle, polygon or slot gets the value in total, half on each side. A pen shape grows by the value on each side.
 - <Ui k="binDesigner.cutouts.entryProfile" /> sets the shape of the top edge. <Ui k="binDesigner.cutouts.entryProfile.chamfer" /> is a 45° bevel that guides bits and sockets in. <Ui k="binDesigner.cutouts.entryProfile.round" /> is a smooth curve for tools that you lift out by hand.
 
-New circles, polygons, slots and pen shapes start with 0.2 mm of clearance and a small chamfer. Not sure? Keep that start, and [print a fit test](./print-checks#print-a-fit-test) before the whole bin. A rectangle has no clearance setting: it cuts to the size that you set. To find the clearance that suits your printer, see [Fit and tolerances](../printing/fit-and-tolerances).
+New circles, polygons, slots and pen shapes start with 0.4 mm of clearance and a small chamfer. For a 1/4 inch hex bit (6.35 mm), the hole is 6.75 mm across the flats. That leaves room for a printed hole that comes out a little small. For a bit that must not move, lower the clearance to 0.2 mm.
+
+Not sure? Keep the start, and [print a fit test](./print-checks#print-a-fit-test) before the whole bin. A rectangle has no clearance setting: it cuts to the size that you set. To find the clearance that suits your printer, see [Fit and tolerances](../printing/fit-and-tolerances).
 
 To round the floor edges, set <Ui k="binDesigner.cutouts.scoopRadius" /> in <Ui k="binDesigner.cutouts.section.shape" />. On a rectangle, select <Ui k="binDesigner.cutouts.scoopSplit" /> to set each direction, and pick the edges that get the curve.
 
