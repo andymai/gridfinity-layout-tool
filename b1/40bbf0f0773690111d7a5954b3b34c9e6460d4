@@ -1,0 +1,19 @@
+.claude/settings.json
+  s_1fddabfb21c0bc::t_53974236337522 9,14,19,24,36,41,46,51,56,61,66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b140bbf0f0773690111d7a5954b3b34c9e6460d4",
+  "prompts": {},
+  "sessions": {
+    "s_1fddabfb21c0bc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dc934660-c1a4-477d-a5cc-0a2c32f50d10",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
