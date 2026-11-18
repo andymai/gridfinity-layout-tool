@@ -1,0 +1,20 @@
+src/features/drawer-shape/components/PenShapeDialog/PenShapeDialog.tsx
+  s_144305aaade9d6::t_42dc23f161e3b1 477
+  s_144305aaade9d6::t_d14e40b5b8f356 478,480,497,551
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0688aed31dcab19b9be3c633a5a3fbe0c6f874fe",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
