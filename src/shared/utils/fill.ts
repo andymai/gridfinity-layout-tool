@@ -347,6 +347,28 @@ export function fillAllWithSize(
  * Tries to use bins that don't require splitting.
  * @param halfGridMode - When true, uses 0.5 step for iteration and collision detection
  */
+/**
+ * Whole grid cells where `fillGaps` can still place a bin: a cell counts when
+ * any part of it at the fill's step is free and inside the drawer. It skips
+ * what the fill skips (the drawer shape, end supports, cells a bin can't rest
+ * on), so the gap count on the fill button never offers space the fill leaves.
+ */
+export function countFillableCells(
+  layout: Layout,
+  layerId: LayerId,
+  halfGridMode: boolean
+): number {
+  const step: 0.5 | 1 = halfGridMode ? 0.5 : 1;
+  const occupied = createOccupiedCellSet(layout.bins, layerId, layout, step);
+  const cells = new Set<string>();
+  for (let y = 0; y + step <= layout.drawer.depth; y += step) {
+    for (let x = 0; x + step <= layout.drawer.width; x += step) {
+      if (!occupied.has(`${x},${y}`)) cells.add(`${Math.floor(x)},${Math.floor(y)}`);
+    }
+  }
+  return cells.size;
+}
+
 export function fillGaps(
   layout: Layout,
   layerId: LayerId,

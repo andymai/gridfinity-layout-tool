@@ -25,20 +25,20 @@ describe('plural families', () => {
     [
       'cs',
       'layers.fillGapsTitle',
-      'Vyplnit 2 prázdné buňky biny 1×1',
-      'Vyplnit 5 prázdných buněk biny 1×1',
+      'Vyplnit 2 prázdné buňky co největšími biny',
+      'Vyplnit 5 prázdných buněk co největšími biny',
     ],
     [
       'pl',
       'layers.fillGapsTitle',
-      'Wypełnij 2 puste komórki binami 1×1',
-      'Wypełnij 5 pustych komórek binami 1×1',
+      'Wypełnij 2 puste komórki największymi pasującymi binami',
+      'Wypełnij 5 pustych komórek największymi pasującymi binami',
     ],
     [
       'uk',
       'layers.fillGapsTitle',
-      'Заповнити 2 порожні клітинки бінами 1×1',
-      'Заповнити 5 порожніх клітинок бінами 1×1',
+      'Заповнити 2 порожні клітинки найбільшими бінами, що вміщаються',
+      'Заповнити 5 порожніх клітинок найбільшими бінами, що вміщаються',
     ],
   ])('%s words %s for 2 apart from 5', (code, key, two, five) => {
     const strings = Object.fromEntries(locales)[`${code}.json`];

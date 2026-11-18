@@ -52,13 +52,13 @@ Need a lot of bins of one size? Use the size brush:
 Want a bin in every empty spot of a layer? The Layout Tool can fill them for you.
 
 1. In the <Ui k="common.layers" /> panel, click the layer that you want to fill.
-2. Under <Ui k="layers.sizeSelector" /> in the left panel, click the fill button. Its label shows the number of empty cells on the layer.
+2. Under <Ui k="layers.sizeSelector" /> in the left panel, click the fill button. Its label shows the number of cells that it can fill.
 
 The Layout Tool starts at the front-left corner. In each empty spot, it puts the largest bin that fits, up to the largest size for your print bed. With half-grid mode on, the bins can also have half-unit sizes. The new bins get the height of the layer and the active category.
 
 A message tells you how many bins it added. One undo removes all of them. You can also run <Ui k="commandPalette.fillGaps" /> from the command palette.
 
-<Screenshot id="layouts-placing-bins-fill-gaps" alt="The fill button under Size brush shows the number of empty cells on the layer. A click fills each gap with the largest bin that fits, and a message says how many bins it added." spec="Clip. Layout editor on desktop, left panel open. Layout with a 6 by 4 drawer, four bins on the left half and empty cells of different sizes on the right half. Click the fill button under Size brush. Hold on the filled grid and the message. Crop to the left panel and the grid." />
+<Screenshot id="layouts-placing-bins-fill-gaps" alt="The fill button under Size brush shows the number of cells that it can fill. A click fills each gap with the largest bin that fits, and a message says how many bins it added." spec="Clip. Layout editor on desktop, left panel open. Layout with a 6 by 4 drawer, four bins on the left half and empty cells of different sizes on the right half. Click the fill button under Size brush. Hold on the filled grid and the message. Crop to the left panel and the grid." />
 
 With a size picked in the size brush, the same button fills the layer with bins of that size. When the layer has no empty cells, the button shows <Ui k="layers.noGaps" />.
 
@@ -236,7 +236,7 @@ Look at what is in or under those cells. The fill button doesn't put a bin on th
 - Cells over or under a slanted bin or its end support on a different layer.
 - Cells where a bin of the layer height would stand above the drawer top, or rest on the clearance of a lower bin.
 
-It also doesn't add a bin that would lift a bin on a higher layer above the drawer top. The number on the button counts every cell with no bin on the layer, so it can include these cells too.
+It also doesn't add a bin that would lift a bin on a higher layer above the drawer top. The number on the button leaves out the cells in this list.
 
 ### Slant is gray in the inspector
 
