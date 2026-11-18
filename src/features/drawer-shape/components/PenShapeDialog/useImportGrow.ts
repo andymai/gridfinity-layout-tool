@@ -31,30 +31,35 @@ interface ImportGrow {
 }
 
 /**
- * The drawer size an oversize import asks for, held until Apply so Cancel
- * keeps the drawer. It lapses with the open session, and once Undo takes the
- * imported sketch out of the history.
+ * The drawer sizes that oversize imports ask for, held until Apply so Cancel
+ * keeps the drawer. The newest request whose import Undo has not taken back
+ * stands; every request lapses with the open session.
  */
 export function useImportGrow(session: unknown, holds: (sketch: Sketch) => boolean) {
-  const ref = useRef<ImportGrow | null>(null);
+  const ref = useRef<ImportGrow[]>([]);
   const onGrowDrawer = useCallback(
     (width: number, depth: number) => {
-      ref.current = { width, depth, session, sketch: null };
+      const kept = ref.current.filter((grow) => grow.session === session);
+      ref.current = [...kept, { width, depth, session, sketch: null }];
     },
     [session]
   );
   const onImported = useCallback(
     (sketch: Sketch) => {
-      const grow = ref.current;
-      if (grow !== null && grow.session === session && grow.sketch === null) grow.sketch = sketch;
+      const last = ref.current.at(-1);
+      if (last !== undefined && last.session === session && last.sketch === null) {
+        last.sketch = sketch;
+      }
     },
     [session]
   );
-  const standing = useCallback((): { width: number; depth: number } | null => {
-    const grow = ref.current;
-    return grow !== null && grow.session === session && grow.sketch !== null && holds(grow.sketch)
-      ? grow
-      : null;
-  }, [session, holds]);
+  const standing = useCallback(
+    (): ImportGrow | null =>
+      [...ref.current]
+        .reverse()
+        .find((grow) => grow.session === session && grow.sketch !== null && holds(grow.sketch)) ??
+      null,
+    [session, holds]
+  );
   return { onGrowDrawer, onImported, standing };
 }

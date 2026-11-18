@@ -25,8 +25,6 @@ vi.mock('@/core/cqrs', async (importOriginal) => {
   return { ...actual, batch };
 });
 
-// Captures the callbacks the dialog hands the importer, so a test can play an
-// import without reading a file.
 const importer = vi.hoisted(() => ({
   deps: null as null | {
     onImported: (vertices: Array<{ x: number; y: number }>) => void;
@@ -174,8 +172,6 @@ describe('PenShapeDialog', () => {
       expect(onClose).toHaveBeenCalledTimes(1);
     });
 
-    // An import that grows the drawer waits for Apply, so Cancel keeps the
-    // drawer as it was.
     it('grows the drawer for an import only on Apply', () => {
       const { d } = extent(); // 420 x 336 = 10 x 8 units
       const onClose = vi.fn();
@@ -217,6 +213,31 @@ describe('PenShapeDialog', () => {
       fireEvent.click(screen.getByText('drawerShape.editor.apply'));
 
       // The outline fits the 504mm drawer but passes the 420mm grid.
+      expect(updateDrawer).toHaveBeenCalledWith({ width: 12, depth: 8 });
+    });
+
+    it('falls back to the earlier import grow when Undo takes the later one back', () => {
+      const { d } = extent();
+      setMeasured(504, d);
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      const loop = (x: number) => [
+        { x: 0, y: 0 },
+        { x, y: 0 },
+        { x, y: d },
+        { x: 0, y: d },
+      ];
+      act(() => {
+        importer.deps?.onGrowDrawer(12, 8);
+        importer.deps?.onImported(loop(500));
+      });
+      act(() => {
+        importer.deps?.onGrowDrawer(21.5, 8);
+        importer.deps?.onImported(loop(900));
+      });
+
+      fireEvent.click(screen.getByText('common.undo'));
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
       expect(updateDrawer).toHaveBeenCalledWith({ width: 12, depth: 8 });
     });
 
