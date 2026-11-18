@@ -1,10 +1,17 @@
 import { mm, type Mm, type PaddingAnchor } from '@/core/types';
-import { clamp } from '@/shared/utils/math';
-import {
-  PADDING_MAX,
-  PADDING_MIN,
-  roundMm,
-} from '@/features/baseplate/components/PaddingStepper/constants';
+import { clamp } from './math';
+
+export const PADDING_MIN = 0;
+export const PADDING_MAX = 100;
+
+/**
+ * Round to 2-decimal mm precision, eliminating IEEE-754 float noise that
+ * can accumulate from repeated +0.25 button clicks or `* 0.01` snapping.
+ * E.g. roundMm(0.1 + 0.2) === 0.3 and roundMm(5.5600000000000005) === 5.56.
+ */
+export function roundMm(v: number): number {
+  return Math.round(v * 100) / 100;
+}
 
 export interface AnchoredPaddings {
   readonly paddingLeft: Mm;

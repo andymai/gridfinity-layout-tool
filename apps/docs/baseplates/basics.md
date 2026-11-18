@@ -10,7 +10,7 @@ sources:
   - src/features/baseplate/utils/designOwnership.ts
   - src/core/baseplateDefaults.ts
   - src/features/baseplate/components/BaseplatePanel/MeasuredDrawerOverflow.tsx
-  - src/features/baseplate/utils/fitPaddingToDrawer.ts
+  - src/shared/utils/fitPaddingToDrawer.ts
   - src/features/baseplate/components/BaseplatePreview/BaseplatePreview.tsx
 ---
 
