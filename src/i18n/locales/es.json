@@ -215,7 +215,7 @@
   "baseplate.magnetCrushRibsDetail": "Ocho nervios dentro de cada agujero se aplastan al presionar el imán, así que sujeta sin pegamento ni una tolerancia ajustada.",
   "baseplate.magnetChamfer": "Boca achaflanada",
   "baseplate.magnetChamferDetail": "Un chaflán a 45° en la boca de cada agujero guía el imán recto hacia dentro.",
-  "baseplate.magnetChamferLightweight": "Una placa aligerada deja muy poca pared alrededor de cada agujero para un chaflán.",
+  "baseplate.magnetChamferLightweight": "Activa Base sólida para añadir una entrada achaflanada. Una base hueca deja muy poca pared alrededor de cada agujero.",
   "baseplate.magnetDiameter": "Diámetro del imán",
   "baseplate.magnetDiameterInfo": "6mm es estándar para Gridfinity",
   "baseplate.magnetHoles": "Agujeros de imán",

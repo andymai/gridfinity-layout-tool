@@ -250,6 +250,19 @@ describe('magnet hole press-fit options', () => {
     expect(p.mouthAbove, 'lightweight pad keeps its plain mouth').toBeLessThan(R + 0.1);
   }, 120_000);
 
+  it('baseplate: a solid floor keeps the chamfer on a lightweight plate', () => {
+    const p = holeProfile(
+      generateBrepPlate(
+        plate({ magnetChamfer: true, lightweight: true, solidFloor: true }),
+        () => {},
+        true
+      ),
+      MAGNET,
+      MAGNET
+    );
+    expectChamferAt(p.mouthAbove, 'solid floor chamfer mouth');
+  }, 120_000);
+
   it('baseplate: a piece of a plate split for the bed keeps the ribs a 1x1 plate has', () => {
     // Built the way the app builds both: stored panel settings, resolved
     // against the drawer, then tiled for a 256mm bed and grouped into pieces.

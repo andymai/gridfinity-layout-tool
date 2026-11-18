@@ -215,7 +215,7 @@
   "baseplate.magnetCrushRibsDetail": "Huit nervures dans chaque trou s’écrasent quand l’aimant est enfoncé, il tient donc sans colle ni tolérance serrée.",
   "baseplate.magnetChamfer": "Entrée chanfreinée",
   "baseplate.magnetChamferDetail": "Un chanfrein à 45° à l’entrée de chaque trou guide l’aimant bien droit.",
-  "baseplate.magnetChamferLightweight": "Une plaque allégée laisse trop peu de paroi autour de chaque trou pour un chanfrein.",
+  "baseplate.magnetChamferLightweight": "Activez Fond plein pour ajouter un chanfrein d'entrée. Un fond creux laisse trop peu de paroi autour de chaque trou.",
   "baseplate.magnetDiameter": "Diamètre de l'aimant",
   "baseplate.magnetDiameterInfo": "6mm est le standard pour Gridfinity",
   "baseplate.magnetHoles": "Trous d'aimant",

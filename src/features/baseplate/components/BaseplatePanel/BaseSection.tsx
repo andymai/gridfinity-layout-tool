@@ -72,6 +72,7 @@ import {
   CONNECTOR_FIT_OFFSET_STEP,
 } from '@/shared/constants/connectors';
 import { mm } from '@/core/types';
+import { baseplateTakesMagnetChamfer } from '@/shared/generation/magnetHoleStyle';
 import {
   updateBaseplateParam as updateParam,
   updateBaseplateParams as updateParams,
@@ -353,9 +354,13 @@ export function BaseSection() {
                   info={t('baseplate.magnetChamferDetail')}
                   checked={baseplateParams.magnetChamfer === true}
                   disabledReason={
-                    baseplateParams.lightweight === true
-                      ? t('baseplate.magnetChamferLightweight')
-                      : undefined
+                    baseplateTakesMagnetChamfer({
+                      magnetChamfer: true,
+                      lightweight: baseplateParams.lightweight !== false,
+                      solidFloor: baseplateParams.solidFloor,
+                    })
+                      ? undefined
+                      : t('baseplate.magnetChamferLightweight')
                   }
                   onChange={() =>
                     updateParam(

@@ -37,6 +37,19 @@ export function magnetHoleStyleFrom(source: {
   return { crushRibs: source.magnetCrushRibs === true, chamfer: source.magnetChamfer === true };
 }
 
+/**
+ * Whether a baseplate's magnet holes take the chamfer. The cross cutters of a
+ * hollowed floor leave a thin pad around each bore, which the widened mouth
+ * would breach; a solid floor skips those cutters, so its holes take it.
+ */
+export function baseplateTakesMagnetChamfer(params: {
+  readonly magnetChamfer?: boolean;
+  readonly lightweight?: boolean;
+  readonly solidFloor?: boolean;
+}): boolean {
+  return params.magnetChamfer === true && (!params.lightweight || params.solidFloor === true);
+}
+
 /** The style an item envelope's attachment summary carries. */
 export function attachmentHoleStyle(attachment: {
   readonly magnetCrushRibs?: boolean;

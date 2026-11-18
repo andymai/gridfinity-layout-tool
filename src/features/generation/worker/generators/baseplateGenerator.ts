@@ -74,6 +74,7 @@ import {
   planPartialCellMagnetPockets,
   type MagnetPocketPlan,
 } from './baseplateMagnets';
+import { baseplateTakesMagnetChamfer } from '@/shared/generation/magnetHoleStyle';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { buildScrewCutters } from './baseplateScrews';
 import {
@@ -284,7 +285,6 @@ export function buildBaseplateSolid(
     magnetDepth,
     magnetAnchor,
     magnetCrushRibs,
-    magnetChamfer,
     paddingLeft,
     paddingRight,
     paddingFront,
@@ -564,11 +564,9 @@ export function buildBaseplateSolid(
     outline !== undefined
       ? (cell: CellInfo): boolean => classifyCell(cell) === 'inside'
       : undefined;
-  // A lightweight plate keeps only a thin pad around each bore, too thin for
-  // the chamfer to open into; the ribs still apply there.
   const magnetStyle: MagnetHoleStyle = {
     crushRibs: magnetCrushRibs === true,
-    chamfer: magnetChamfer === true && !params.lightweight,
+    chamfer: baseplateTakesMagnetChamfer(params),
   };
   // Over-tile margin tiles get magnets too — the corner magnets that fit, or a
   // spread/centered magnet for tiles too small for any corner — so the clipped

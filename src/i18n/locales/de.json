@@ -215,7 +215,7 @@
   "baseplate.magnetCrushRibsDetail": "Acht Rippen in jedem Loch werden beim Eindrücken des Magneten gequetscht, sodass er ohne Kleber und ohne enge Toleranz hält.",
   "baseplate.magnetChamfer": "Angefaste Öffnung",
   "baseplate.magnetChamferDetail": "Eine 45°-Fase an der Öffnung jedes Lochs führt den Magneten gerade hinein.",
-  "baseplate.magnetChamferLightweight": "Eine Leichtbau-Platte lässt um jedes Loch zu wenig Wand für eine Fase.",
+  "baseplate.magnetChamferLightweight": "Schalte Massiver Boden ein, um eine Einführschräge zu erhalten. Ein hohler Boden lässt um jedes Loch zu wenig Wand.",
   "baseplate.magnetDiameter": "Magnetdurchmesser",
   "baseplate.magnetDiameterInfo": "6mm ist Standard für Gridfinity",
   "baseplate.magnetHoles": "Magnetlöcher",

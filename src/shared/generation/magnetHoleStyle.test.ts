@@ -6,6 +6,7 @@ import {
   MAGNET_CRUSH_RIB_DEPTH_MM,
   PLAIN_MAGNET_HOLE,
   attachmentHoleStyle,
+  baseplateTakesMagnetChamfer,
   isPlainMagnetHole,
   magnetBoreProfile,
   magnetBoreRadiusAt,
@@ -91,5 +92,22 @@ describe('chamfer', () => {
     // lid retention bosses (1.0) and detachable feet (1.2) all keep the plain mouth.
     expect(magnetChamferFits(1.2)).toBe(false);
     expect(magnetChamferFits(1.0)).toBe(false);
+  });
+});
+
+describe('baseplateTakesMagnetChamfer', () => {
+  it('skips the chamfer on the thin pads of a hollowed floor', () => {
+    expect(baseplateTakesMagnetChamfer({ magnetChamfer: true, lightweight: true })).toBe(false);
+  });
+
+  it('keeps the chamfer when a solid floor replaces the hollowing', () => {
+    expect(
+      baseplateTakesMagnetChamfer({ magnetChamfer: true, lightweight: true, solidFloor: true })
+    ).toBe(true);
+    expect(baseplateTakesMagnetChamfer({ magnetChamfer: true, lightweight: false })).toBe(true);
+  });
+
+  it('is off unless asked for', () => {
+    expect(baseplateTakesMagnetChamfer({ lightweight: false, solidFloor: true })).toBe(false);
   });
 });

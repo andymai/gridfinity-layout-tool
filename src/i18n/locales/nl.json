@@ -215,7 +215,7 @@
   "baseplate.magnetCrushRibsDetail": "Acht ribbels in elk gat worden platgedrukt als de magneet erin wordt geduwd, zodat hij zonder lijm of krappe tolerantie vastzit.",
   "baseplate.magnetChamfer": "Afgeschuinde opening",
   "baseplate.magnetChamferDetail": "Een afschuining van 45° aan de opening van elk gat leidt de magneet recht naar binnen.",
-  "baseplate.magnetChamferLightweight": "Een lichtgewicht plaat laat te weinig wand rond elk gat over voor een afschuining.",
+  "baseplate.magnetChamferLightweight": "Zet Massieve bodem aan voor een invoerschuinte. Een holle bodem laat te weinig wand rond elk gat over.",
   "baseplate.magnetDiameter": "Magneetdiameter",
   "baseplate.magnetDiameterInfo": "6mm is standaard voor Gridfinity",
   "baseplate.magnetHoles": "Magneetgaten",

@@ -225,7 +225,7 @@
   "baseplate.magnetCrushRibsDetail": "Вісім ребер усередині кожного отвору зминаються, коли магніт вдавлюють, тож він тримається без клею та без жорсткого допуску.",
   "baseplate.magnetChamfer": "Фаска на вході",
   "baseplate.magnetChamferDetail": "Фаска 45° на вході кожного отвору спрямовує магніт рівно.",
-  "baseplate.magnetChamferLightweight": "Полегшена плита залишає надто мало стінки навколо кожного отвору для фаски.",
+  "baseplate.magnetChamferLightweight": "Увімкніть Суцільне дно, щоб додати вхідну фаску. Порожнисте дно лишає надто тонку стінку навколо кожного отвору.",
   "baseplate.magnetDiameter": "Діаметр магніта",
   "baseplate.magnetDiameterInfo": "6мм — стандарт для Gridfinity",
   "baseplate.magnetHoles": "Отвори для магнітів",

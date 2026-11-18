@@ -215,7 +215,7 @@
   "baseplate.magnetCrushRibsDetail": "Otto nervature in ogni foro si schiacciano quando il magnete viene premuto, così tiene senza colla né tolleranze strette.",
   "baseplate.magnetChamfer": "Imbocco smussato",
   "baseplate.magnetChamferDetail": "Uno smusso a 45° all’imbocco di ogni foro guida il magnete dritto.",
-  "baseplate.magnetChamferLightweight": "Una piastra alleggerita lascia troppo poca parete attorno a ogni foro per uno smusso.",
+  "baseplate.magnetChamferLightweight": "Attiva Fondo pieno per aggiungere un invito. Un fondo cavo lascia troppo poca parete attorno a ogni foro.",
   "baseplate.magnetDiameter": "Diametro magnete",
   "baseplate.magnetDiameterInfo": "6mm è lo standard per Gridfinity",
   "baseplate.magnetHoles": "Fori magnete",

@@ -220,7 +220,7 @@
   "baseplate.magnetCrushRibsDetail": "Osm žeber uvnitř každého otvoru se při zatlačení magnetu rozdrtí, takže drží bez lepidla i bez přesné tolerance.",
   "baseplate.magnetChamfer": "Zkosené ústí",
   "baseplate.magnetChamferDetail": "Zkosení 45° u ústí každého otvoru navede magnet rovně dovnitř.",
-  "baseplate.magnetChamferLightweight": "Odlehčená deska nechává kolem otvoru příliš málo stěny pro zkosení.",
+  "baseplate.magnetChamferLightweight": "Pro náběh zapněte Plné dno. Duté dno nechává kolem každého otvoru příliš tenkou stěnu.",
   "baseplate.magnetDiameter": "Průměr magnetu",
   "baseplate.magnetDiameterInfo": "6 mm je standard pro Gridfinity",
   "baseplate.magnetHoles": "Otvory na magnety",
