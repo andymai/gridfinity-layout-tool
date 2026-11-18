@@ -4437,7 +4437,7 @@
   "settings.accentColor.sky": "天蓝色",
   "settings.accentColor.violet": "紫罗兰色",
   "settings.autoDetect": "自动（浏览器默认）",
-  "settings.binDefaults.hint": "收纳盒设计器中新收纳盒的起始设置。可从设计器或命令面板进行设置。",
+  "settings.binDefaults.hint": "收纳盒设计器中新收纳盒的起始设置。可在设计器面板底部进行设置。",
   "settings.binDefaults.title": "新收纳盒默认值",
   "settings.binDefaults.usingFactory": "正在使用出厂默认值",
   "settings.browserPrivacySignal": "已根据你的浏览器隐私设置停用分析。你可以在下方覆盖此设置。",

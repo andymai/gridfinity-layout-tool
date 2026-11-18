@@ -4437,7 +4437,7 @@
   "settings.accentColor.sky": "スカイ",
   "settings.accentColor.violet": "バイオレット",
   "settings.autoDetect": "自動(ブラウザのデフォルト)",
-  "settings.binDefaults.hint": "ビンデザイナーでの新しいビンの初期設定。デザイナーまたはコマンドパレットから設定できます。",
+  "settings.binDefaults.hint": "ビンデザイナーでの新しいビンの初期設定。デザイナーのパネル下部で設定できます。",
   "settings.binDefaults.title": "新しいビンのデフォルト",
   "settings.binDefaults.usingFactory": "工場出荷時設定を使用中",
   "settings.browserPrivacySignal": "ブラウザのプライバシー設定に基づいて分析を無効化しています。下記で上書きできます。",

@@ -4539,7 +4539,7 @@
   "settings.accentColor.sky": "Himmelsblå",
   "settings.accentColor.violet": "Violett",
   "settings.autoDetect": "Auto (webbläsarens standard)",
-  "settings.binDefaults.hint": "Startinställningarna för nya fack i Fackdesignern. Ange dem från designern eller kommandopaletten.",
+  "settings.binDefaults.hint": "Startinställningarna för nya fack i Fackdesignern. Ange dem längst ned i designerpanelen.",
   "settings.binDefaults.title": "Standarder för nya fack",
   "settings.binDefaults.usingFactory": "Använder fabriksinställningar",
   "settings.browserPrivacySignal": "Analys inaktiverad baserat på din webbläsares sekretessinställning. Du kan åsidosätta detta nedan.",

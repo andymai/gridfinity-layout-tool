@@ -964,7 +964,7 @@
   "settings.defaultCategories": "ნაგულისხმევი კატეგორიები",
   "settings.defaultCategoriesHint": "ახალი განლაგებების შექმნისას გამოყენებული კატეგორიები:",
   "settings.binDefaults.title": "ახალი ყუთის ნაგულისხმევი პარამეტრები",
-  "settings.binDefaults.hint": "ყუთის დიზაინერში ახალი ყუთებისთვის საწყისი პარამეტრები. დააყენეთ ისინი დიზაინერიდან ან ბრძანებების პალიტრიდან.",
+  "settings.binDefaults.hint": "ყუთის დიზაინერში ახალი ყუთებისთვის საწყისი პარამეტრები. დააყენეთ ისინი დიზაინერის პანელის ბოლოში.",
   "settings.binDefaults.usingFactory": "გამოიყენება ქარხნული ნაგულისხმევი პარამეტრები",
   "settings.usingBuiltInCategories": "გამოიყენება ჩაშენებული ნაგულისხმევი კატეგორიები ({count})",
   "settings.usingCustomCategories": "გამოიყენება მორგებული ნაგულისხმევი კატეგორიები ({count})",

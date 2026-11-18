@@ -4642,7 +4642,7 @@
   "settings.accentColor.sky": "Nebeská",
   "settings.accentColor.violet": "Fialová",
   "settings.autoDetect": "Automaticky (výchozí prohlížeče)",
-  "settings.binDefaults.hint": "Počáteční nastavení pro nové biny v Návrháři binů. Nastav je z návrháře nebo příkazové palety.",
+  "settings.binDefaults.hint": "Počáteční nastavení pro nové biny v Návrháři binů. Nastav je dole v panelu návrháře.",
   "settings.binDefaults.title": "Výchozí nastavení nových binů",
   "settings.binDefaults.usingFactory": "Používají se tovární výchozí hodnoty",
   "settings.browserPrivacySignal": "Analytika zakázána na základě nastavení soukromí tvého prohlížeče. Níže to můžeš přepsat.",
