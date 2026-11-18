@@ -1,0 +1,21 @@
+apps/docs/getting-started/first-drawer.md
+  s_144305aaade9d6::t_67b1e9dc12c50c 29
+src/core/store/drawerFitOffer.test.ts
+  s_144305aaade9d6::t_d8542bd9a8275e 1-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "38e104ed808c0e40cb0fa48ae09987c0d47c00c1",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
