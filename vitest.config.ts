@@ -149,6 +149,7 @@ export default defineConfig({
             'api/**/*.test.ts',
             'scripts/**/*.test.ts',
             'packages/**/*.test.ts',
+            'apps/docs/.vitepress/**/*.test.ts',
           ],
           exclude: [...sharedExclude, ...domIncludes, ...generatorIncludes, ...integrationIncludes],
         },

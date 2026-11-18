@@ -5,6 +5,8 @@ sources:
   - src/shell/Sidebar/Sidebar.tsx
   - src/shared/hooks/useDrawerSettings.ts
   - src/shared/hooks/useDrawerFitSuggestion.ts
+  - src/shared/utils/drawerLink.ts
+  - src/features/layout-library/hooks/useDrawerLinkImport.ts
   - src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.tsx
   - src/shared/utils/drawerCeiling.ts
   - src/features/drawer-shape/
@@ -60,6 +62,27 @@ Your measurement doesn't resize the grid on its own. Instead, when a different g
 <Screenshot id="layouts-drawer-setup-measured" alt="Add your drawer's measured size is clicked, and 430, 310 and 80 are typed. The line under the steppers warns that the 11 by 8 grid is larger than the drawer. A card suggests 10 by 7 units, and Fit grid applies it." spec="Clip. Layout editor on desktop, left panel open. Layout with an 11 by 8 grid and no measured size. In the Grid size group, click Add your drawer's measured size, type 430, 310 and 80 with Tab between them, and press Enter. Hold on the warning and the card, then click Fit grid. Crop to the Grid size group." />
 
 Happy with your own grid? Close the card with its X button. It stays closed until you enter a different measurement. To remove the measurement, click <Ui k="drawerDims.clear" />, the small X next to the size.
+
+## Open a layout from a drawer link
+
+A drawer link opens the layout editor with a new layout at the size of a drawer. To make one, type the size of your drawer here, then click **Plan this drawer**:
+
+<DrawerCalculator />
+
+When you open a drawer link, the Layout Tool does these things:
+
+- It makes a new layout and opens it. Your other layouts don't change. On your first visit, it resizes the empty layout instead.
+- It fits the largest grid of whole grid units into the drawer, and keeps the measurement under the steppers. When half units fit tighter, the box above shows that fit. To get it, enter the size as in [Fit the grid to a measured drawer](#fit-the-grid-to-a-measured-drawer).
+- It puts half of the free space on each side of the baseplate.
+- It names the layout from the link. A link without a name gives a name such as "Drawer 345 × 260 mm".
+
+**Make its baseplate** opens the same drawer in the baseplate generator.
+
+To send a drawer size to a friend, give them a link in this form. The height and the name are optional:
+
+```text
+https://gridfinitylayouttool.com/?drawer=345x260x40&name=Screw%20drawer
+```
 
 ## Use the margin around the grid
 

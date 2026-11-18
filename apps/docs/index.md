@@ -9,6 +9,7 @@ sources:
   - src/shell/RightPanel/RightPanel.tsx
   - src/shared/components/ExportDialog/ExportDialog.tsx
   - vite.config.ts
+  - src/features/labels/
 ---
 
 # What the Layout Tool does
@@ -36,6 +37,18 @@ Each tool also has its own address, so you can bookmark the one you use most:
 - Baseplate generator: [gridfinitylayouttool.com/baseplate](https://gridfinitylayouttool.com/baseplate)
 
 To jump between the layout editor and the bin designer from the keyboard, press <kbd>Shift</kbd>+<kbd>D</kbd>.
+
+The app has more than the three tools:
+
+- **The label maker** at [gridfinitylayouttool.com/labels](https://gridfinitylayouttool.com/labels) makes labels for a Brother P-touch, DYMO, Niimbot or Phomemo label maker. See [Labels for a label maker](/printing/label-maker).
+- **The community gallery** at [gridfinitylayouttool.com/community](https://gridfinitylayouttool.com/community) holds bin designs that other makers publish. See [The community gallery](/sharing/community).
+- **Phone scan** turns a photo of a tool into a pocket of its true size in the bin designer. See [Scan with your phone](/cutouts/phone-scan).
+
+## Start from a recipe
+
+Each recipe takes one real drawer or box from the tape measure to the print files. It gives every size and every setting, so you can copy it or change it for your own drawer.
+
+<RecipeCards />
 
 ## How the tools work together
 
@@ -73,5 +86,6 @@ Your work saves in your browser as you go, so you can close the tab and pick up 
 
 - [Gridfinity in five minutes](/introduction/gridfinity-basics): the grid, the height units and the parts, if you are new to Gridfinity
 - [Plan your first drawer](/getting-started/first-drawer): a step-by-step tutorial in the layout editor
+- [A screw and small-parts drawer](/recipes/screw-drawer): a first recipe, from the drawer size to the print list
 - [A tour of the workspace](/getting-started/workspace-tour): where each panel and control is
 - [Install and work offline](/settings/offline): how the offline copy works

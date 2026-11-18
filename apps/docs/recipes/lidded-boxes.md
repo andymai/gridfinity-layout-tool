@@ -116,3 +116,7 @@ Make sure that the stack plate sits with the grid up, and that the glue holds it
 - [Stacking](../designer/stacking): the stacking lip, and boxes that nest on each other with no lid
 - [Labels and text](../designer/labels-and-text#add-wall-text): wall text styles and finishes
 - [File formats](../printing/file-formats): pick STL, 3MF or STEP
+
+## More recipes
+
+<RecipeCards />

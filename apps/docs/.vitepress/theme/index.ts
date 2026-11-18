@@ -4,7 +4,10 @@ import type { Theme } from 'vitepress';
 import AppTools from './components/AppTools.vue';
 import BrandLockup from './components/BrandLockup.vue';
 import ChapterLabel from './components/ChapterLabel.vue';
+import DrawerCalculator from './components/DrawerCalculator.vue';
 import OpenAppButton from './components/OpenAppButton.vue';
+import PlanDrawerButton from './components/PlanDrawerButton.vue';
+import RecipeCards from './components/RecipeCards.vue';
 import Screenshot from './components/Screenshot.vue';
 import './custom.css';
 
@@ -54,6 +57,9 @@ const theme: Theme = {
       'doc-after': () => h(AppTools),
     }),
   enhanceApp({ app }) {
+    app.component('DrawerCalculator', DrawerCalculator);
+    app.component('PlanDrawerButton', PlanDrawerButton);
+    app.component('RecipeCards', RecipeCards);
     app.component('Screenshot', Screenshot);
     app.component('Ui', UnrenderedUi);
     if (typeof window !== 'undefined') {

@@ -34,6 +34,10 @@ A **height unit** is 7 mm of height. The count starts at the bottom of the feet,
 
 For example, a 3-unit bin has a body of 21 mm. The stacking lip adds 4.4 mm, so the bin prints 25.4 mm tall. Items up to 14 mm tall fit below the wall top.
 
+To turn your own drawer into grid units, type its size here:
+
+<DrawerCalculator />
+
 The outer walls of a bin are 0.5 mm smaller than its cells, so a 1 × 1 bin measures 41.5 mm. That small gap lets the bin drop into a baseplate without force. The bin designer shows the room inside the walls as <Ui k="binDesigner.interiorDimensions" />, before dividers, scoops and label tabs.
 
 ## Where you set the units
