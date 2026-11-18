@@ -1,0 +1,73 @@
+apps/docs/.vitepress/theme/custom.css
+  s_144305aaade9d6::t_05123da56179ed 512-809,812-815,817-838,840-848
+  s_144305aaade9d6::t_69f220fc2165a3 810-811,816,839
+apps/docs/.vitepress/theme/components/PlanDrawerButton.vue
+  s_144305aaade9d6::t_979953faa08d51 1-20,23-53
+  s_144305aaade9d6::t_6f8fad9fc1b08c 21-22
+apps/docs/.vitepress/theme/components/RecipeCards.vue
+  s_144305aaade9d6::t_69f220fc2165a3 21-25
+  s_144305aaade9d6::t_172b6b9ea7cd8e 1-20,26-41
+apps/docs/recipes/screw-drawer.md
+  s_144305aaade9d6::t_c1048a708e1c82 40-43,45,48,138-141
+apps/docs/getting-started/first-drawer.md
+  s_144305aaade9d6::t_30c012b0472e71 25-30,33,35
+apps/docs/.vitepress/theme/index.ts
+  s_144305aaade9d6::t_b3bf9ec2075038 7,9-10,60-62
+apps/docs/.vitepress/config.ts
+  s_144305aaade9d6::t_eba34a8124ca68 150-161
+apps/docs/.vitepress/theme/recipes.data.ts
+  s_144305aaade9d6::t_69f220fc2165a3 9-10,13-18,31,39
+  s_144305aaade9d6::t_a8e5a3ba519aa1 1,3-8,11-12,19-30,32-38,40-48
+  s_144305aaade9d6::t_e65e659ebba51a 2
+apps/docs/layouts/drawer-setup.md
+  s_144305aaade9d6::t_30c012b0472e71 8-9,66-74,76-85
+  s_144305aaade9d6::t_c4ad21a8202287 75
+  s_144305aaade9d6::t_c1f60628be068f 86
+apps/docs/.vitepress/theme/drawerPlan.ts
+  s_144305aaade9d6::t_ad2c0c554d5690 6,31-32,37-47,94,98,101
+  s_144305aaade9d6::t_f3c2f08813eeb5 1-5,7-30,33-36,48-62,64-93,95-97,99-100,102-129
+  s_144305aaade9d6::t_6f8fad9fc1b08c 63
+apps/docs/index.md
+  s_144305aaade9d6::t_9b93103d454d2a 41-52,89
+  s_144305aaade9d6::t_36ae58f36a6e02 12
+vitest.config.ts
+  s_144305aaade9d6::t_bb9319cd0b6950 152
+apps/docs/.vitepress/theme/components/DrawerCalculator.vue
+  s_144305aaade9d6::t_bf64a691d8332f 1-12,14-15,17-34,37-38,40-43,45-77,84-89,103-124,162-186
+  s_144305aaade9d6::t_fe4664a1f261c4 35-36,39
+  s_144305aaade9d6::t_c4ad21a8202287 83,149-150
+  s_144305aaade9d6::t_ff2eabbd87e759 13,16,44,78-82,90-102,125-148,151-161
+apps/docs/recipes/deep-tool-drawer.md
+  s_144305aaade9d6::t_c1048a708e1c82 38-41,43,46,128-131
+apps/docs/concepts/units.md
+  s_144305aaade9d6::t_30c012b0472e71 37-40
+apps/docs/recipes/kitchen-utensil-drawer.md
+  s_144305aaade9d6::t_c1048a708e1c82 113-116
+apps/docs/recipes/electronics-craft-organizer.md
+  s_144305aaade9d6::t_c1048a708e1c82 45-47,141-144
+apps/docs/recipes/hand-tool-pockets.md
+  s_144305aaade9d6::t_69f220fc2165a3 13-15
+  s_144305aaade9d6::t_c1048a708e1c82 122-125
+apps/docs/recipes/lidded-boxes.md
+  s_144305aaade9d6::t_c1048a708e1c82 119-122
+apps/docs/.vitepress/theme/drawerPlan.test.ts
+  s_144305aaade9d6::t_c93522d5c7b22a 1-33,36-44,47-63,66-99
+  s_144305aaade9d6::t_38a823d5addaf0 64-65
+  s_144305aaade9d6::t_ad2c0c554d5690 34-35,45-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "68084df4c382130a1e8474729695460a146cb36e",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
