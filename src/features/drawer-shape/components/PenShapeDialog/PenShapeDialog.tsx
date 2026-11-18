@@ -474,10 +474,19 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     [sketch, setSelected, view]
   );
 
+  // An import that outgrows the drawer promises a size; Apply lands it with the
+  // outline, so Cancel leaves the drawer as it was. Tied to the open session,
+  // so a grow from an earlier session never carries over.
+  const [importGrow, setImportGrow] = useState<{
+    width: number;
+    depth: number;
+    session: typeof seeded;
+  } | null>(null);
   const handleGrowDrawer = useCallback(
-    (w: number, d: number) => mutations.updateDrawer({ width: gridUnits(w), depth: gridUnits(d) }),
-    [mutations]
+    (w: number, d: number) => setImportGrow({ width: w, depth: d, session: seeded }),
+    [seeded]
   );
+  const pendingGrow = importGrow?.session === seeded ? importGrow : null;
 
   const importer = useOutlineImport({
     // Grid extent, not the traced drawer: the oversize prompt converts back to
@@ -504,10 +513,10 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     // against the enlarged aggregate; batch() collapses the pair to one undo
     // step. When the sketch already fits, the single commit is kept.
     const growW = growsX
-      ? Math.max(layout.drawer.width, unitsFor(bboxMaxXMm, pitchX))
+      ? Math.max(layout.drawer.width, unitsFor(bboxMaxXMm, pitchX), pendingGrow?.width ?? 0)
       : layout.drawer.width;
     const growD = growsY
-      ? Math.max(layout.drawer.depth, unitsFor(bboxMaxYMm, pitchY))
+      ? Math.max(layout.drawer.depth, unitsFor(bboxMaxYMm, pitchY), pendingGrow?.depth ?? 0)
       : layout.drawer.depth;
     const applied =
       growW > layout.drawer.width || growD > layout.drawer.depth
@@ -545,6 +554,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     growsY,
     pitchX,
     pitchY,
+    pendingGrow,
   ]);
 
   if (!open) return null;

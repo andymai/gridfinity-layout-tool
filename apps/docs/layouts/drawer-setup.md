@@ -160,7 +160,7 @@ Do you have the drawer outline in a CAD file? Import it into the <Ui k="drawerSh
 
 The file needs a closed outline. If it has more than one, the Layout Tool keeps the largest and tells you how many it ignored. The outline keeps its real size. When it is larger than the drawer, a notice gives you a choice:
 
-- The grow button makes the drawer larger, in grid units, so that the outline fits. The drawer grows at once, before you apply the shape. The button shows only when the drawer can grow to 50 grid units or less.
+- The grow button makes the drawer larger, in grid units, so that the outline fits. The drawer grows when you apply the shape. The button shows only when the drawer can grow to 50 grid units or less.
 - <Ui k="drawerShape.penImportScale" /> makes the outline smaller, so that it fits the drawer.
 - <Ui k="common.cancel" /> stops the import.
 
