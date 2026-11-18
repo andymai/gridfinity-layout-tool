@@ -1,0 +1,21 @@
+src/features/generation/worker/handlers/workerContext.ts
+  s_144305aaade9d6::t_7bfccd3b40173d 382
+src/features/generation/worker/handlers/workerContext.test.ts
+  s_144305aaade9d6::t_858f111562e9d0 98-123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "02f2fce6c3ad6a91b43b0b7f3743c92ecfbe88a7",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
