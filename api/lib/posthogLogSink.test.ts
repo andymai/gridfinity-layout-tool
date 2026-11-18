@@ -62,7 +62,7 @@ describe('sendLogToPostHog', () => {
       entry({
         level: 'warn',
         message: 'sync/layouts rejected the payload',
-        context: { status: 409, retried: true, kind: 'layouts', stack: undefined },
+        context: { status: 409, resolved: true, code: 'CONFLICT', stack: undefined },
       })
     );
 
@@ -80,8 +80,8 @@ describe('sendLogToPostHog', () => {
       body: { stringValue: 'sync/layouts rejected the payload' },
       attributes: [
         { key: 'status', value: { doubleValue: 409 } },
-        { key: 'retried', value: { boolValue: true } },
-        { key: 'kind', value: { stringValue: 'layouts' } },
+        { key: 'resolved', value: { boolValue: true } },
+        { key: 'code', value: { stringValue: 'CONFLICT' } },
       ],
     });
     expect(sentRequest().resourceLogs[0].resource.attributes).toContainEqual({
@@ -109,6 +109,24 @@ describe('sendLogToPostHog', () => {
         key: 'error',
         value: { stringValue: 'blobStore.getJson failed: 403 users/[account]/designs/b.json' },
       },
+      { key: 'dropped_keys', value: { stringValue: 'userId' } },
+    ]);
+  });
+
+  it('keeps text that users type out of the request', () => {
+    sendLogToPostHog(
+      entry({
+        level: 'warn',
+        message: 'Community design reported',
+        context: { id: 'd1', reason: 'spam', note: 'mail me at maker@example.com' },
+      })
+    );
+
+    expect(sentBody()).not.toContain('maker@example.com');
+    expect(sentRecord().attributes).toEqual([
+      { key: 'id', value: { stringValue: 'd1' } },
+      { key: 'reason', value: { stringValue: 'spam' } },
+      { key: 'dropped_keys', value: { stringValue: 'note' } },
     ]);
   });
 
@@ -138,12 +156,12 @@ describe('sendLogToPostHog', () => {
   it('sends values without a JSON form as strings', () => {
     const circular: Record<string, unknown> = {};
     circular.self = circular;
-    sendLogToPostHog(entry({ context: { nested: { a: 1 }, big: 10n, circular } }));
+    sendLogToPostHog(entry({ context: { error: { a: 1 }, indexed: 10n, field: circular } }));
 
     expect(sentRecord().attributes).toEqual([
-      { key: 'nested', value: { stringValue: '{"a":1}' } },
-      { key: 'big', value: { stringValue: '10' } },
-      { key: 'circular', value: { stringValue: '[object Object]' } },
+      { key: 'error', value: { stringValue: '{"a":1}' } },
+      { key: 'indexed', value: { stringValue: '10' } },
+      { key: 'field', value: { stringValue: '[object Object]' } },
     ]);
   });
 });

@@ -21,9 +21,25 @@ const LOGS_URL = 'https://us.i.posthog.com/i/v1/logs';
 const SEND_TIMEOUT_MS = 2000;
 const SEVERITY_NUMBER: Record<LogLevel, number> = { info: 9, warn: 13, error: 17 };
 
-// The privacy policy keeps account IDs out of PostHog logs. The server cannot
-// see a user's analytics switch, so nothing it sends may name an account.
-const DROPPED_KEYS = new Set(['userId']);
+// The privacy policy keeps account IDs and text that users type out of PostHog
+// logs, because the server cannot see a user's analytics switch. Only these
+// keys, whose values the server makes, leave the function console.
+const SENT_KEYS = new Set([
+  'code',
+  'contentType',
+  'designId',
+  'error',
+  'field',
+  'id',
+  'indexed',
+  'method',
+  'provider',
+  'reason',
+  'reportCount',
+  'resolved',
+  'stack',
+  'status',
+]);
 const ACCOUNT_PATH = /\busers\/[^/\s"'`]+/g;
 
 function redact(text: string): string {
@@ -49,9 +65,16 @@ export function sendLogToPostHog(entry: LogEntry): void {
   const token = process.env.VITE_PUBLIC_POSTHOG_KEY;
   if (process.env.VERCEL_ENV !== 'production' || !token) return;
 
-  const attributes: OtlpAttribute[] = Object.entries(entry.context ?? {})
-    .filter(([key, value]) => !DROPPED_KEYS.has(key) && value !== undefined)
-    .map(([key, value]) => ({ key, value: otlpValue(value) }));
+  const attributes: OtlpAttribute[] = [];
+  const dropped: string[] = [];
+  for (const [key, value] of Object.entries(entry.context ?? {})) {
+    if (value === undefined) continue;
+    if (SENT_KEYS.has(key)) attributes.push({ key, value: otlpValue(value) });
+    else dropped.push(key);
+  }
+  if (dropped.length > 0) {
+    attributes.push({ key: 'dropped_keys', value: { stringValue: dropped.join(',') } });
+  }
   const resource: OtlpAttribute[] = [
     { key: 'service.name', value: { stringValue: 'gridfinity-api' } },
   ];
