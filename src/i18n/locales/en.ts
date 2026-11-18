@@ -675,6 +675,7 @@ const en: Record<string, string> = {
   'layers.fillGapsTitle_other': 'Fill {count} empty cells with the largest bins that fit',
   'layers.fillTitle': 'Fill empty space with {width}×{depth} bins',
   'layers.fillWith': 'Fill with ',
+  'layers.fillWithSlantedRow': 'Fill places upright bins. Drag on the grid to paint slanted rows.',
   'layers.maxLayersReached': 'Maximum {max} layers reached',
   'layers.reorderBlocked.exceedsHeight': 'Reordering would stack bins past the drawer top',
   'layers.reorderBlocked.clearance': "Reordering would rest a bin inside another bin's clearance",

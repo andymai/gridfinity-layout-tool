@@ -4043,6 +4043,7 @@
   "layers.fillGapsTitle_other": "Fyll {count} tomme celler med de største bins som passer",
   "layers.fillTitle": "Fyll tomt område med {width}×{depth} bins",
   "layers.fillWith": "Fyll med ",
+  "layers.fillWithSlantedRow": "Fyll setter inn rette bins. Dra på rutenettet for å male skrå rader.",
   "layers.heightTooltip": "Høyde for nye bins plassert på dette laget",
   "layers.heightTotal": "{used}/{total}u",
   "layers.binCount_one": "{count} bin",

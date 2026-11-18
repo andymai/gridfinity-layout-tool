@@ -60,7 +60,7 @@ A message tells you how many bins it added. One undo removes all of them. You ca
 
 <Screenshot id="layouts-placing-bins-fill-gaps" alt="The fill button under Size brush shows the number of cells that it can fill. A click fills each gap with the largest bin that fits, and a message says how many bins it added." spec="Clip. Layout editor on desktop, left panel open. Layout with a 6 by 4 drawer, four bins on the left half and empty cells of different sizes on the right half. Click the fill button under Size brush. Hold on the filled grid and the message. Crop to the left panel and the grid." />
 
-With a size picked in the size brush, the same button fills the layer with bins of that size. When the layer has no empty cells, the button shows <Ui k="layers.noGaps" />.
+With a size picked in the size brush, the same button fills the layer with upright bins of that size. While <Ui k="layers.slantedRow.title" /> is on, that button is off: drag on the grid to paint the rows. When the layer has no empty cells, the button shows <Ui k="layers.noGaps" />.
 
 ## Move and copy bins
 
@@ -152,7 +152,7 @@ To fill an area with slanted rows in one step, use the size brush:
 
 Each row ends on an end support. Each bin is as tall as the drawer height allows. All the bins link to one saved design, which the Layout Tool saves for you, or it uses a saved design that matches. One undo removes the bins, and the design stays in your saved designs.
 
-<Ui k="layers.slantedRow.title" /> stays on until you turn it off. To make a slanted design in the bin designer, see [Make a slanted bin](../designer/special-bins#make-a-slanted-bin).
+<Ui k="layers.slantedRow.title" /> stays on until you turn it off. The fill button under the size brush places only upright bins, so it is off while slanted rows are on. A row that other bins cut in two loses its end support. To make a slanted design in the bin designer, see [Make a slanted bin](../designer/special-bins#make-a-slanted-bin).
 
 ## Merge bins into one
 

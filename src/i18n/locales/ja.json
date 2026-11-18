@@ -3965,6 +3965,7 @@
   "layers.fillGapsTitle_other": "{count}個の空セルを、入る最大のビンで埋める",
   "layers.fillTitle": "{width}×{depth}ビンで空きスペースを埋める",
   "layers.fillWith": "使用して埋める ",
+  "layers.fillWithSlantedRow": "塗りつぶしはまっすぐなビンだけを置きます。傾斜列はグリッド上をドラッグして描きます。",
   "layers.heightTooltip": "このレイヤーに配置する新規ビンの高さ",
   "layers.heightTotal": "{used}/{total}u",
   "layers.binCount_other": "{count}個のビン",

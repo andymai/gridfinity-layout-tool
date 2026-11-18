@@ -190,6 +190,24 @@ describe('ActiveLayerPanel', () => {
       expect(useLayoutStore.getState().layout.bins.length).toBeGreaterThan(0);
     });
 
+    it('places no upright bins while Slanted row is on, and says to drag', () => {
+      useInteractionStore.setState({
+        paintSize: { width: 2, depth: 2 },
+        paintSlant: { angleDeg: 45, side: 'back' },
+      });
+
+      render(<ActiveLayerPanel />);
+      const fill = screen.getByText('Fill with 2×2').closest('button');
+      expect(fill).toBeDisabled();
+      expect(fill).toHaveAttribute(
+        'title',
+        'Fill places upright bins. Drag on the grid to paint slanted rows.'
+      );
+      if (fill) fireEvent.click(fill);
+
+      expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
+    });
+
     it('clears paint size after filling', () => {
       useInteractionStore.setState({ paintSize: { width: 2, depth: 2 } });
 

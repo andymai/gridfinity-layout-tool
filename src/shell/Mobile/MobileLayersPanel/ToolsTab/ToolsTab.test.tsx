@@ -68,6 +68,18 @@ describe('ToolsTab', () => {
     });
   });
 
+  it('turns off Fill with a size while Slanted row is on, and says to drag', () => {
+    useSelectionStore.getState().setActiveLayer(useLayoutStore.getState().layout.layers[0].id);
+    useInteractionStore.setState({
+      paintSize: { width: 2, depth: 2 },
+      paintSlant: { angleDeg: 45, side: 'back' },
+    });
+    render(<ToolsTab />);
+
+    expect(screen.getByRole('button', { name: 'mobile.tools.fillWithSize' })).toBeDisabled();
+    expect(screen.getByText('layers.fillWithSlantedRow')).toBeInTheDocument();
+  });
+
   it('arms the gap picker and closes the sheet so the grid is reachable', () => {
     useSelectionStore.getState().setActiveLayer(useLayoutStore.getState().layout.layers[0].id);
     useMobileStore.getState().setActiveMobilePanel('layers');

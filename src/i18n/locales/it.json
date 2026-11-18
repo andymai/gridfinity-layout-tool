@@ -4043,6 +4043,7 @@
   "layers.fillGapsTitle_other": "Riempi {count} celle vuote con i bin più grandi che entrano",
   "layers.fillTitle": "Riempi lo spazio vuoto con bin {width}×{depth}",
   "layers.fillWith": "Riempi con ",
+  "layers.fillWithSlantedRow": "Riempi posiziona bin dritti. Trascina sulla griglia per dipingere file oblique.",
   "layers.heightTooltip": "Altezza per i nuovi bin posizionati su questo livello",
   "layers.heightTotal": "{used}/{total}u",
   "layers.binCount_one": "{count} bin",

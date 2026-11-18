@@ -41,6 +41,7 @@ export function ActiveLayerPanel() {
     fillGaps,
     confirmClear,
     fillWithSize,
+    slantedRowOn,
   } = useLayerFillActions();
   const hasBins = layerBins.length > 0;
 
@@ -156,8 +157,13 @@ export function ActiveLayerPanel() {
             variant="primary"
             fullWidth
             onClick={handleFill}
+            disabled={slantedRowOn}
             className="text-sm h-8"
-            title={t('layers.fillTitle', { width: paintSize.width, depth: paintSize.depth })}
+            title={
+              slantedRowOn
+                ? t('layers.fillWithSlantedRow')
+                : t('layers.fillTitle', { width: paintSize.width, depth: paintSize.depth })
+            }
           >
             {t('layers.fillWith')}
             {paintSize.width}×{paintSize.depth}

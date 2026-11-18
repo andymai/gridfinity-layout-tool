@@ -4043,6 +4043,7 @@
   "layers.fillGapsTitle_other": "Remplir {count} cellules vides avec les plus grands bins qui tiennent",
   "layers.fillTitle": "Remplir l'espace vide avec des bins {width}×{depth}",
   "layers.fillWith": "Remplir avec",
+  "layers.fillWithSlantedRow": "Remplir place des bins droits. Faites glisser sur la grille pour peindre des rangées penchées.",
   "layers.heightTooltip": "Hauteur pour les nouveaux bins placés sur ce layer",
   "layers.heightTotal": "{used}/{total}u",
   "layers.binCount_one": "{count} bac",
