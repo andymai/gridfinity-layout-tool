@@ -17,14 +17,14 @@ sources:
 
 Something went wrong with a print or an export? Find what you see below. Each problem starts with the fix, then tells you why it happens.
 
-| Where            | What you see                                                                                                                                                             |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| In the plate     | [A bin is too tight](#a-bin-is-too-tight-in-the-plate), [sits high](#a-bin-sits-high-on-one-spot), or [is hard to lift out](#a-big-bin-with-magnets-is-hard-to-lift-out) |
-| Baseplate pieces | [Connector keys are too tight](#the-connector-keys-are-too-tight), or [stacked plates stick together](#stacked-plates-stick-together)                                    |
-| Labels           | [Labels are blank or missing](#the-labels-are-blank-or-missing)                                                                                                          |
-| The layout ZIP   | [Bins are missing](#bins-are-missing-from-the-layout-zip), or [the baseplate is missing](#the-baseplate-is-missing-from-the-layout-zip)                                  |
-| The slicer       | [Bambu Studio rejects the file](#bambu-studio-rejects-the-3mf-file), or [the colors are wrong](#the-colors-are-wrong)                                                    |
-| The export       | [The export stops with an error](#the-export-stops-with-an-error)                                                                                                        |
+| Where            | What you see                                                                                                                                                                                                                        |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| In the plate     | [A bin is too tight](#a-bin-is-too-tight-in-the-plate) or [flares at the bottom](#still-tight-with-the-same-grid), [sits high](#a-bin-sits-high-on-one-spot), or [is hard to lift out](#a-big-bin-with-magnets-is-hard-to-lift-out) |
+| Baseplate pieces | [Connector keys are too tight](#the-connector-keys-are-too-tight), or [stacked plates stick together](#stacked-plates-stick-together)                                                                                               |
+| Labels           | [Labels are blank or missing](#the-labels-are-blank-or-missing)                                                                                                                                                                     |
+| The layout ZIP   | [Bins are missing](#bins-are-missing-from-the-layout-zip), or [the baseplate is missing](#the-baseplate-is-missing-from-the-layout-zip)                                                                                             |
+| The slicer       | [Bambu Studio rejects the file](#bambu-studio-rejects-the-3mf-file), or [the colors are wrong](#the-colors-are-wrong)                                                                                                               |
+| The export       | [The export stops with an error](#the-export-stops-with-an-error)                                                                                                                                                                   |
 
 ## A bin is too tight in the plate
 
@@ -35,6 +35,20 @@ Something went wrong with a print or an export? Find what you see below. Each pr
 3. Did you change the <Ui k="baseplate.gridUnit" /> after you printed the plate? Then export and print the plate again too.
 
 **Why:** the gap between a bin foot and a plate pocket comes from the Gridfinity standard, and no setting changes it. The cause that you can fix in the Layout Tool is a bin with a different grid from the plate. The bin designer takes the grid unit, the height unit, the magnet anchor and the low-profile base from the active layout.
+
+### Still tight with the same grid?
+
+**Fix:** look at the bottom edge of a foot. If it flares out, the first layer printed too wide. This is called elephant's foot. Turn on the setting for it in your slicer, then print the bin again:
+
+| Slicer                   | Setting                                                                            |
+| ------------------------ | ---------------------------------------------------------------------------------- |
+| PrusaSlicer              | Print Settings > Advanced > Elephant foot compensation, in Advanced or Expert mode |
+| Bambu Studio, OrcaSlicer | Quality > Elephant foot compensation                                               |
+| Cura                     | Initial Layer Horizontal Expansion, as a value below zero                          |
+
+For a 0.4 mm nozzle, a value near 0.2 mm usually works, or −0.2 mm in Cura. If the bin is still tight, go up a little at a time.
+
+**Why:** the nozzle presses the first layer onto the hot bed, so that layer spreads out. The bottom of each foot is then wider than its pocket. A first layer that prints too close to the bed makes this worse, so check the first-layer height of your printer too.
 
 ## A bin sits high on one spot
 

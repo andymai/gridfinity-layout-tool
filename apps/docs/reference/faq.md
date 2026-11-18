@@ -39,6 +39,24 @@ In your browser, on this device. It saves while you work. Sign in to sync your l
 
 Sign in on both computers, and your layouts sync. Use <Ui k="auth.signIn" /> on each one. No account? Use <Ui k="layouts.exportAll" /> in the layout manager, then import that file on the other computer. See [Accounts and sync](../sharing/accounts-and-sync).
 
+### How do I back up my layouts?
+
+1. Open the layout manager with <kbd>Ctrl</kbd>+<kbd>O</kbd> (<kbd>Cmd</kbd>+<kbd>O</kbd> on a Mac).
+2. Click <Ui k="layouts.exportAll" />. You get one archive file with every layout and the bin designs that the layouts link to.
+
+To bring the layouts back, open the layout manager, click <Ui k="common.import" /> and drop the archive file. A bin design that no layout uses doesn't go into the archive. Export it as a design file from <Ui k="binDesigner.savedDesigns" />.
+
+### How do I start over?
+
+Pick the smallest step that does the job:
+
+| To do this                        | Do this                                                                                                                                                      |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Take back your last changes       | Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> (<kbd>Cmd</kbd>+<kbd>Z</kbd> on a Mac). See [Undo a change](../layouts/organizing-layouts#undo-a-change).                 |
+| Start one drawer again            | Click <Ui k="layouts.newLayout" /> in the menu next to the layout name. Your other layouts stay.                                                             |
+| Remove all layouts in the browser | Back up first. Then use <Ui k="settings.storage.clearAllData" /> in <Ui k="settings.tabs.storage" />. See [Settings](../settings/settings#account-and-data). |
+| Remove everything                 | Back up first. Then clear the site data for gridfinitylayouttool.com in your browser settings.                                                               |
+
 ### Can I use the Layout Tool offline?
 
 Yes. Open each tool once while you are online, so that your browser stores it. After that, the Layout Tool opens without a network connection, in a browser tab or as an installed app. Your changes still save on your device. See [Install and work offline](../settings/offline).
@@ -51,7 +69,11 @@ Yes. A layout file is plain JSON text with a published schema. Point the file at
 
 ### How do I convert my drawer to grid units?
 
-Measure the inside width and depth of the drawer in millimeters. Divide each value by 42 and round down. For example, a drawer of 380 mm × 260 mm takes a grid of 9 × 6. See [Set up the drawer](../layouts/drawer-setup).
+Measure the inside width and depth of the drawer in millimeters. Divide each value by 42 and round down. For example, a drawer of 380 mm × 260 mm takes a grid of 9 × 6. The box in [Units and sizes](../concepts/units#grid-units-and-height-units) does the math for you, and its link opens a layout at that size. See [Set up the drawer](../layouts/drawer-setup).
+
+### My drawer is in inches. What do I do?
+
+Multiply each size by 25.4 to get millimeters. For example, a drawer of 15.5 × 21 inches is 393.7 × 533.4 mm, and it takes a grid of 9 × 12. The Layout Tool takes sizes in millimeters only. The box in [Units and sizes](../concepts/units#grid-units-and-height-units) takes inches too: pick **in** above the fields.
 
 ### What do I do with the gap at the edge of the drawer?
 
