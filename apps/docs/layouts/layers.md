@@ -41,7 +41,7 @@ Only the tallest stack must fit in the drawer. The <Ui k="layers.tallestStack" /
 
 New layers get their height from <Ui k="settings.defaultLayerHeight" /> in <Ui k="settings.tabs.defaults" />.
 
-To empty the active layer, click the clear button under the size brush, then click <Ui k="layers.clearLayer.confirm" />. All the bins on the layer move to the stash, and one undo puts them back.
+To empty the active layer, click the clear button under the size brush, then click <Ui k="layers.clearLayer.confirm" />. All the bins on the layer move to the stash, and one undo puts them back. To put bins in all the empty cells of the active layer, see [Fill the gaps with bins](./placing-bins#fill-the-gaps-with-bins).
 
 ## Change the active layer
 

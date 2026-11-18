@@ -105,16 +105,18 @@ These keys work in the <Ui k="drawerShape.penTitle" /> dialog, where you draw a 
 
 ### 3D preview
 
-| Windows and Linux | macOS | Action                                      |
-| ----------------- | ----- | ------------------------------------------- |
-| <kbd>1</kbd>      | Same  | Front view                                  |
-| <kbd>2</kbd>      | Same  | Side view                                   |
-| <kbd>3</kbd>      | Same  | Top view                                    |
-| <kbd>4</kbd>      | Same  | Isometric view                              |
-| <kbd>R</kbd>      | Same  | Reset the view                              |
-| <kbd>W</kbd>      | Same  | Turn the wireframe view on or off           |
-| <kbd>X</kbd>      | Same  | Turn the X-ray view on or off               |
-| <kbd>P</kbd>      | Same  | Change between perspective and orthographic |
+| Windows and Linux                  | macOS | Action                                                                                                       |
+| ---------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------ |
+| <kbd>1</kbd>                       | Same  | Front view                                                                                                   |
+| <kbd>2</kbd>                       | Same  | Side view                                                                                                    |
+| <kbd>3</kbd>                       | Same  | Top view                                                                                                     |
+| <kbd>4</kbd>                       | Same  | Isometric view                                                                                               |
+| <kbd>R</kbd>                       | Same  | Reset the view                                                                                               |
+| <kbd>W</kbd>                       | Same  | Turn the wireframe view on or off                                                                            |
+| <kbd>X</kbd>                       | Same  | Turn the X-ray view on or off                                                                                |
+| <kbd>P</kbd>                       | Same  | Change between perspective and orthographic                                                                  |
+| <kbd>Shift</kbd>+drag on the model | Same  | Measure between two points, with a mouse                                                                     |
+| <kbd>Escape</kbd>                  | Same  | Remove the measurement. Press it again to close [Measure](../concepts/preview-and-export#measure-the-model). |
 
 ### Cutout editor tools
 

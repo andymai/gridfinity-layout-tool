@@ -33,6 +33,12 @@ In a typed line, a McMaster-Carr part number at the start or end goes on the sec
 
 The dialog does not look up part numbers, so paste the descriptions with them. Text longer than 120 characters, or a second line longer than 40, is cut at a word and ends with an ellipsis (…).
 
+## Print more than one copy
+
+Need the same label on more than one bin? Set <Ui k="labels.row.copies" /> in the row of that label. Each row starts at 1, and the highest count is 99.
+
+The download still holds one image for each label, not one for each copy. A count above 1 goes into the file name, for example `03-m3-screws-x4.png`. Print that number of copies from your printer's app.
+
 ## Choose the length
 
 Tape has no fixed length. Under <Ui k="labels.length" />:
