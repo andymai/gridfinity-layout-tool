@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyGrowUnits } from './useImportGrow';
 
-// A 10-unit grid at 42mm in a 504mm measured drawer.
 const axis = (bbox: number) => ({ bbox, bound: 504, grid: 420, pitch: 42 });
 
 describe('applyGrowUnits', () => {
