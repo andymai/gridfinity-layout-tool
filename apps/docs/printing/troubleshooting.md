@@ -46,7 +46,7 @@ Something went wrong with a print or an export? Find what you see below. Each pr
 | Bambu Studio, OrcaSlicer | Quality > Elephant foot compensation                                               |
 | Cura                     | Initial Layer Horizontal Expansion, as a value below zero                          |
 
-For a 0.4 mm nozzle, a value near 0.2 mm usually works, or −0.2 mm in Cura. If the bin is still tight, go up a little at a time.
+For a 0.4 mm nozzle, a value near 0.2 mm usually works, or −0.2 mm in Cura. If the bin is still tight, raise the value a little at a time. In Cura, make it a little more negative.
 
 **Why:** the nozzle presses the first layer onto the hot bed, so that layer spreads out. The bottom of each foot is then wider than its pocket. A first layer that prints too close to the bed makes this worse, so check the first-layer height of your printer too.
 

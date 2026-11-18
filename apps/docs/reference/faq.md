@@ -9,6 +9,8 @@ sources:
   - src/core/bedFit.ts
   - docs/self-hosting.md
   - src/App.tsx
+  - src/features/layout-library/components/LayoutManagerModal/
+  - src/core/storage/clearAppData.ts
 ---
 
 # FAQ
@@ -44,7 +46,7 @@ Sign in on both computers, and your layouts sync. Use <Ui k="auth.signIn" /> on 
 1. Open the layout manager with <kbd>Ctrl</kbd>+<kbd>O</kbd> (<kbd>Cmd</kbd>+<kbd>O</kbd> on a Mac).
 2. Click <Ui k="layouts.exportAll" />. You get one archive file with every layout and the bin designs that the layouts link to.
 
-To bring the layouts back, open the layout manager, click <Ui k="common.import" /> and drop the archive file. A bin design that no layout uses doesn't go into the archive. Export it as a design file from <Ui k="binDesigner.savedDesigns" />.
+To bring the layouts back, open the layout manager, click <Ui k="common.import" /> and drop the archive file. The layout manager shows what the archive holds. Then click the **Import All** button. A bin design that no layout uses doesn't go into the archive. Export it as a design file from <Ui k="binDesigner.savedDesigns" />.
 
 ### How do I start over?
 
@@ -56,6 +58,8 @@ Pick the smallest step that does the job:
 | Start one drawer again            | Click <Ui k="layouts.newLayout" /> in the menu next to the layout name. Your other layouts stay.                                                             |
 | Remove all layouts in the browser | Back up first. Then use <Ui k="settings.storage.clearAllData" /> in <Ui k="settings.tabs.storage" />. See [Settings](../settings/settings#account-and-data). |
 | Remove everything                 | Back up first. Then clear the site data for gridfinitylayouttool.com in your browser settings.                                                               |
+
+Signed in? <Ui k="settings.storage.clearAllData" /> doesn't sign you out, so your synced layouts come back from your account. To start over on this device, click <Ui k="auth.signOut" /> and pick <Ui k="syncDialog.signOut.wipe" />. The copies in your account stay until you [delete your account](../sharing/accounts-and-sync#delete-your-account).
 
 ### Can I use the Layout Tool offline?
 
