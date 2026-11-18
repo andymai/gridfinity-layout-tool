@@ -221,6 +221,7 @@
   "baseplate.magnetChamfer": "Zkosené ústí",
   "baseplate.magnetChamferDetail": "Zkosení 45° u ústí každého otvoru navede magnet rovně dovnitř.",
   "baseplate.magnetChamferLightweight": "Pro náběh zapněte Plné dno. Duté dno nechává kolem každého otvoru příliš tenkou stěnu.",
+  "baseplate.magnetChamferShallow": "Pro náběh musí být otvor hlubší než 0,8 mm.",
   "baseplate.magnetDiameter": "Průměr magnetu",
   "baseplate.magnetDiameterInfo": "6 mm je standard pro Gridfinity",
   "baseplate.magnetHoles": "Otvory na magnety",

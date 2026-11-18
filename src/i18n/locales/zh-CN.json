@@ -211,6 +211,7 @@
   "baseplate.magnetChamfer": "倒角孔口",
   "baseplate.magnetChamferDetail": "每个孔口的 45° 倒角引导磁铁笔直压入。",
   "baseplate.magnetChamferLightweight": "开启“实心底面”即可添加倒角入口。镂空底面在每个孔周围留下的壁太薄。",
+  "baseplate.magnetChamferShallow": "孔深需大于 0.8 mm 才能添加倒角入口。",
   "baseplate.magnetDiameter": "磁铁直径",
   "baseplate.magnetDiameterInfo": "Gridfinity 标准为 6mm",
   "baseplate.magnetHoles": "磁铁孔",

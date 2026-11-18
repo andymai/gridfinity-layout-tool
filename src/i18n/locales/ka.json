@@ -4085,6 +4085,7 @@
   "baseplate.magnetChamfer": "ჩამოჭრილი შესასვლელი",
   "baseplate.magnetChamferDetail": "45°-იანი ჩამოჭრა თითოეული ნახვრეტის შესასვლელთან მაგნიტს სწორად მიმართავს.",
   "baseplate.magnetChamferLightweight": "შესასვლელი ფასკის დასამატებლად ჩართეთ „მთლიანი ძირი“. ღრუ ძირი თითოეული ხვრელის გარშემო ძალიან თხელ კედელს ტოვებს.",
+  "baseplate.magnetChamferShallow": "შესასვლელი ფასკისთვის ხვრელი 0,8 მმ-ზე ღრმა უნდა იყოს.",
   "baseplate.solidFloor": "მთლიანი ძირი",
   "baseplate.ecoPlate": "ეკო ფირფიტა",
   "baseplate.ecoPlateDetail": "ზოგავს ფილამენტის მესამედამდე. ყუთებს მხოლოდ კუთხის საყრდენები იჭერს.",

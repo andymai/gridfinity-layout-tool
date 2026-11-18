@@ -4897,6 +4897,7 @@ const en: Record<string, string> = {
     'A 45\u00b0 lead-in at the opening of each hole guides the magnet in straight.',
   'baseplate.magnetChamferLightweight':
     'Turn on Solid floor for a lead-in. A hollow floor is too thin around each hole.',
+  'baseplate.magnetChamferShallow': 'Make the hole deeper than 0.8 mm for a lead-in.',
   'baseplate.solidFloor': 'Solid floor',
   'baseplate.ecoPlate': 'Eco plate',
   'baseplate.ecoPlateDetail':

@@ -37,22 +37,32 @@ export function magnetHoleStyleFrom(source: {
   return { crushRibs: source.magnetCrushRibs === true, chamfer: source.magnetChamfer === true };
 }
 
-/**
- * Whether a baseplate's magnet holes take the chamfer. The cross cutters of a
- * hollowed floor (on unless `lightweight` is false) leave a thin pad around
- * each bore, which the widened mouth would breach; a solid floor skips those
- * cutters. The fixed-depth lead-in also needs a hole deeper than itself, or the
- * magnet would sit below its seat.
- */
-export function baseplateTakesMagnetChamfer(params: {
+interface BaseplateChamferParams {
   readonly magnetChamfer?: boolean;
   readonly lightweight?: boolean;
   readonly solidFloor?: boolean;
   readonly magnetDepth?: number;
-}): boolean {
-  const floorHasRoom = params.lightweight === false || params.solidFloor === true;
-  const holeHasRoom = params.magnetDepth === undefined || params.magnetDepth > MAGNET_CHAMFER_MM;
-  return params.magnetChamfer === true && floorHasRoom && holeHasRoom;
+}
+
+/**
+ * What keeps a baseplate's magnet holes from taking the chamfer, or null. The
+ * cross cutters of a hollow floor (on unless `lightweight` is false) leave a
+ * thin pad around each bore, which the widened mouth would breach; a solid
+ * floor skips those cutters. The fixed-depth lead-in also needs a hole deeper
+ * than itself, or the magnet would sit below its seat.
+ */
+export function magnetChamferBlocker(
+  params: BaseplateChamferParams
+): 'hollowFloor' | 'shallowHole' | null {
+  if (params.lightweight !== false && params.solidFloor !== true) return 'hollowFloor';
+  if (params.magnetDepth !== undefined && params.magnetDepth <= MAGNET_CHAMFER_MM) {
+    return 'shallowHole';
+  }
+  return null;
+}
+
+export function baseplateTakesMagnetChamfer(params: BaseplateChamferParams): boolean {
+  return params.magnetChamfer === true && magnetChamferBlocker(params) === null;
 }
 
 /** The style an item envelope's attachment summary carries. */

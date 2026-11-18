@@ -216,6 +216,7 @@
   "baseplate.magnetChamfer": "Imbocco smussato",
   "baseplate.magnetChamferDetail": "Uno smusso a 45° all’imbocco di ogni foro guida il magnete dritto.",
   "baseplate.magnetChamferLightweight": "Attiva Fondo pieno per aggiungere un invito. Un fondo cavo lascia troppo poca parete attorno a ogni foro.",
+  "baseplate.magnetChamferShallow": "Rendi il foro più profondo di 0,8 mm per aggiungere un invito.",
   "baseplate.magnetDiameter": "Diametro magnete",
   "baseplate.magnetDiameterInfo": "6mm è lo standard per Gridfinity",
   "baseplate.magnetHoles": "Fori magnete",

@@ -216,6 +216,7 @@
   "baseplate.magnetChamfer": "Boca chanfrada",
   "baseplate.magnetChamferDetail": "Um chanfro de 45° na boca de cada furo guia o ímã reto para dentro.",
   "baseplate.magnetChamferLightweight": "Ative Base sólida para adicionar um chanfro de entrada. Uma base oca deixa parede de menos em volta de cada furo.",
+  "baseplate.magnetChamferShallow": "Deixe o furo mais fundo que 0,8 mm para adicionar um chanfro de entrada.",
   "baseplate.magnetDiameter": "Diâmetro do ímã",
   "baseplate.magnetDiameterInfo": "6mm é padrão para Gridfinity",
   "baseplate.magnetHoles": "Furos de ímã",

@@ -216,6 +216,7 @@
   "baseplate.magnetChamfer": "Angefaste Öffnung",
   "baseplate.magnetChamferDetail": "Eine 45°-Fase an der Öffnung jedes Lochs führt den Magneten gerade hinein.",
   "baseplate.magnetChamferLightweight": "Schalte Massiver Boden ein, um eine Einführschräge zu erhalten. Ein hohler Boden lässt um jedes Loch zu wenig Wand.",
+  "baseplate.magnetChamferShallow": "Mach das Loch tiefer als 0,8 mm, um eine Einführschräge zu erhalten.",
   "baseplate.magnetDiameter": "Magnetdurchmesser",
   "baseplate.magnetDiameterInfo": "6mm ist Standard für Gridfinity",
   "baseplate.magnetHoles": "Magnetlöcher",

@@ -216,6 +216,7 @@
   "baseplate.magnetChamfer": "Fasad öppning",
   "baseplate.magnetChamferDetail": "En 45°-fas vid öppningen av varje hål styr magneten rakt in.",
   "baseplate.magnetChamferLightweight": "Slå på Massiv botten för att lägga till en infasning. En ihålig botten lämnar för lite vägg runt varje hål.",
+  "baseplate.magnetChamferShallow": "Gör hålet djupare än 0,8 mm för att få en infasning.",
   "baseplate.magnetDiameter": "Magnetdiameter",
   "baseplate.magnetDiameterInfo": "6mm är standard för Gridfinity",
   "baseplate.magnetHoles": "Magnethål",

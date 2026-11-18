@@ -226,6 +226,7 @@
   "baseplate.magnetChamfer": "Фаска на вході",
   "baseplate.magnetChamferDetail": "Фаска 45° на вході кожного отвору спрямовує магніт рівно.",
   "baseplate.magnetChamferLightweight": "Увімкніть Суцільне дно, щоб додати вхідну фаску. Порожнисте дно лишає надто тонку стінку навколо кожного отвору.",
+  "baseplate.magnetChamferShallow": "Щоб додати вхідну фаску, зробіть отвір глибшим за 0,8 мм.",
   "baseplate.magnetDiameter": "Діаметр магніта",
   "baseplate.magnetDiameterInfo": "6мм — стандарт для Gridfinity",
   "baseplate.magnetHoles": "Отвори для магнітів",

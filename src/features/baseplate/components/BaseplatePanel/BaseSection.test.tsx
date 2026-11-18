@@ -376,4 +376,17 @@ describe('BaseSection magnet press-fit options', () => {
     expect(screen.getByRole('switch', { name: 'baseplate.magnetChamfer' })).toBeDisabled();
     expect(screen.getByText('baseplate.magnetChamferLightweight')).toBeInTheDocument();
   });
+
+  it('disables the chamfer on a hole no deeper than the lead-in and says why', () => {
+    useLayoutStore.getState().setBaseplateParams({
+      ...DEFAULT_BASEPLATE_PARAMS,
+      magnetHoles: true,
+      solidFloor: true,
+      magnetDepth: mm(0.5),
+    });
+    render(<BaseSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'common.customize' }));
+    expect(screen.getByRole('switch', { name: 'baseplate.magnetChamfer' })).toBeDisabled();
+    expect(screen.getByText('baseplate.magnetChamferShallow')).toBeInTheDocument();
+  });
 });
