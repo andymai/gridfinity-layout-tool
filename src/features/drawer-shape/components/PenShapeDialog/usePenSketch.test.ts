@@ -105,3 +105,33 @@ describe('usePenSketch radius alignment', () => {
     expect(result.current.verts).toHaveLength(4);
   });
 });
+
+describe('import grow', () => {
+  const GROW = { width: 12, depth: 8 };
+
+  it('carries an import grow through later edits, past the undo limit', () => {
+    const { result } = setup();
+    act(() => result.current.commit({ ...SQUARE, grow: GROW }));
+    for (let i = 0; i < 60; i++) {
+      act(() => result.current.setRadii([0], i % 5));
+    }
+    expect(result.current.grow).toEqual(GROW);
+  });
+
+  it('drops the grow on Reset, and Undo brings it back', () => {
+    const { result } = setup();
+    act(() => result.current.commit({ ...SQUARE, grow: GROW }));
+    act(() => result.current.reset(100, 100));
+    expect(result.current.grow).toBeUndefined();
+
+    act(() => result.current.undo());
+    expect(result.current.grow).toEqual(GROW);
+  });
+
+  it('lets an import without a grow replace one with a grow', () => {
+    const { result } = setup();
+    act(() => result.current.commit({ ...SQUARE, grow: GROW }));
+    act(() => result.current.commit({ ...SQUARE, grow: undefined }));
+    expect(result.current.grow).toBeUndefined();
+  });
+});

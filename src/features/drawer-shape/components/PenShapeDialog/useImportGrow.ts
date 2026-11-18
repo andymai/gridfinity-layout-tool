@@ -12,8 +12,9 @@ export interface SketchAxis {
 }
 
 /**
- * Grid units one axis grows to on Apply. `importUnits`, from an import still in
- * the sketch, counts while the sketch passes the grid, the test its prompt made.
+ * Grid units one axis grows to on Apply. `importUnits`, from the import the
+ * sketch came from, counts while the sketch passes the grid, the test its
+ * prompt made.
  */
 export function applyGrowUnits(current: number, axis: SketchAxis, importUnits?: number): number {
   return Math.max(
@@ -23,43 +24,19 @@ export function applyGrowUnits(current: number, axis: SketchAxis, importUnits?: 
   );
 }
 
-interface ImportGrow {
-  readonly width: number;
-  readonly depth: number;
-  readonly session: unknown;
-  sketch: Sketch | null;
-}
-
 /**
- * The drawer sizes that oversize imports ask for, held until Apply so Cancel
- * keeps the drawer. The newest request whose import Undo has not taken back
- * stands; every request lapses with the open session.
+ * Holds the drawer size an oversize import asks for until the import commits
+ * its sketch, which then carries it to Apply. Cancel keeps the drawer.
  */
-export function useImportGrow(session: unknown, holds: (sketch: Sketch) => boolean) {
-  const ref = useRef<ImportGrow[]>([]);
-  const onGrowDrawer = useCallback(
-    (width: number, depth: number) => {
-      const kept = ref.current.filter((grow) => grow.session === session);
-      ref.current = [...kept, { width, depth, session, sketch: null }];
-    },
-    [session]
-  );
-  const onImported = useCallback(
-    (sketch: Sketch) => {
-      const last = ref.current.at(-1);
-      if (last !== undefined && last.session === session && last.sketch === null) {
-        last.sketch = sketch;
-      }
-    },
-    [session]
-  );
-  const standing = useCallback(
-    (): ImportGrow | null =>
-      [...ref.current]
-        .reverse()
-        .find((grow) => grow.session === session && grow.sketch !== null && holds(grow.sketch)) ??
-      null,
-    [session, holds]
-  );
-  return { onGrowDrawer, onImported, standing };
+export function useImportGrow() {
+  const pending = useRef<Sketch['grow']>(undefined);
+  const onGrowDrawer = useCallback((width: number, depth: number) => {
+    pending.current = { width, depth };
+  }, []);
+  const take = useCallback((): Sketch['grow'] => {
+    const grow = pending.current;
+    pending.current = undefined;
+    return grow;
+  }, []);
+  return { onGrowDrawer, take };
 }

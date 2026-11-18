@@ -466,12 +466,10 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
   }, [widthMm, depthMm, sketch]);
 
   /** Imported geometry replaces the sketch through the history, so Undo works. */
-  const importGrow = useImportGrow(seeded, sketch.holds);
+  const importGrow = useImportGrow();
   const handleImported = useCallback(
     (vertices: OutlineVertex[]) => {
-      const next = { verts: vertices, radii: vertices.map(() => 0) };
-      sketch.commit(next);
-      importGrow.onImported(next);
+      sketch.commit({ verts: vertices, radii: vertices.map(() => 0), grow: importGrow.take() });
       setSelected([]);
       view.reset();
     },
@@ -491,7 +489,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
 
   const handleApply = useCallback(() => {
     if (outline === null || error !== null) return;
-    const standing = importGrow.standing();
+    const standing = sketch.grow;
     const axisX = { bbox: bboxMaxXMm, bound: boundWidthMm, grid: gridWidthMm, pitch: pitchX };
     const axisY = { bbox: bboxMaxYMm, bound: boundDepthMm, grid: gridDepthMm, pitch: pitchY };
     const displaced = computeDisplacedBins(
@@ -545,7 +543,7 @@ export function PenShapeDialog({ open, onClose }: PenShapeDialogProps) {
     gridDepthMm,
     pitchX,
     pitchY,
-    importGrow,
+    sketch.grow,
   ]);
 
   if (!open) return null;
