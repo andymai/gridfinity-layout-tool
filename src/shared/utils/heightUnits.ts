@@ -72,7 +72,8 @@ export function stackedTotalMm(
  * The inverse of {@link stackedTotalMm} for the question users actually
  * ask: not "what unit fills this exactly" — which yields a non-standard unit
  * and breaks compatibility with stock bins — but "how tall can my bins be and
- * still let the lid close". Returns null when even a 1u bin overflows.
+ * still let the lid close". Returns null when no bin of at least
+ * `MIN_BIN_HEIGHT` fits, since the editor makes nothing shorter.
  */
 export function solveUnitsUnderCeiling(
   ceilingMm: number,
@@ -86,7 +87,7 @@ export function solveUnitsUnderCeiling(
   // reports 4u rather than 3u.
   const bodyMm = (ceilingMm - junctionMm) / count - LIP_PROTRUSION_MM + junctionMm;
   const units = Math.floor(bodyMm / heightUnitMm + 1e-9);
-  return units >= 1 ? units : null;
+  return units >= CONSTRAINTS.MIN_BIN_HEIGHT ? units : null;
 }
 
 /**
