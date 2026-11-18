@@ -107,6 +107,16 @@ describe('baseplateTakesMagnetChamfer', () => {
     expect(baseplateTakesMagnetChamfer({ magnetChamfer: true, lightweight: false })).toBe(true);
   });
 
+  it('treats a plate with no lightweight field as hollow, as the floor cutters do', () => {
+    expect(baseplateTakesMagnetChamfer({ magnetChamfer: true })).toBe(false);
+  });
+
+  it('skips the chamfer on a hole no deeper than the lead-in', () => {
+    const solid = { magnetChamfer: true, solidFloor: true };
+    expect(baseplateTakesMagnetChamfer({ ...solid, magnetDepth: MAGNET_CHAMFER_MM })).toBe(false);
+    expect(baseplateTakesMagnetChamfer({ ...solid, magnetDepth: 2 })).toBe(true);
+  });
+
   it('is off unless asked for', () => {
     expect(baseplateTakesMagnetChamfer({ lightweight: false, solidFloor: true })).toBe(false);
   });

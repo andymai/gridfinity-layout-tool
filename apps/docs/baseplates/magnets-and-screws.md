@@ -54,7 +54,7 @@ Want the magnets to stay in without glue? Two options under <Ui k="common.custom
 
 Each ridge stands 0.3 mm into the hole, so a hole that prints a little too large still grips the magnet. The bin designer has the same <Ui k="binDesigner.base.magnetCrushRibs" /> option for the magnet holes of a bin. See [Hold magnets without glue](../designer/base#hold-magnets-without-glue).
 
-<Ui k="baseplate.magnetChamfer" /> needs <Ui k="baseplate.solidFloor" />. A plate without it has a hollow floor, which leaves too little wall around each hole for a lead-in. <Ui k="baseplate.magnetCrushRibs" /> works on either floor.
+<Ui k="baseplate.magnetChamfer" /> needs <Ui k="baseplate.solidFloor" />. A plate without it has a hollow floor, which leaves too little wall around each hole for a lead-in. The lead-in is 0.8 mm deep, so a hole must be deeper than that to get it. <Ui k="baseplate.magnetCrushRibs" /> works on either floor.
 
 ### Magnet position on large grids
 
