@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.546.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.545.0...gridfinity-layout-tool-v4.546.0) (2026-11-18)
+
+
+### Features
+
+* **api:** send server warning and error logs to PostHog Logs ([#5095](https://github.com/andymai/gridfinity-layout-tool/issues/5095)) ([e5d6b58](https://github.com/andymai/gridfinity-layout-tool/commit/e5d6b58fb63008f61bb57c6e347e1dbdec22c5c1))
+* **content:** add a Gridfinity label maker landing page ([#5094](https://github.com/andymai/gridfinity-layout-tool/issues/5094)) ([712d905](https://github.com/andymai/gridfinity-layout-tool/commit/712d905332406e12885a5cc8d60f8fc6e89bb321))
+* **labels:** make label-maker labels from a pasted list ([#5090](https://github.com/andymai/gridfinity-layout-tool/issues/5090)) ([1e6e8e4](https://github.com/andymai/gridfinity-layout-tool/commit/1e6e8e4f2e6b4429421cde92c51bcf01614e3e6c))
+* **labels:** open the label maker on its own page at /labels ([#5093](https://github.com/andymai/gridfinity-layout-tool/issues/5093)) ([df0b413](https://github.com/andymai/gridfinity-layout-tool/commit/df0b41361226dd96d08db593deecbf5adaddee97))
+
 ## [4.545.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.544.3...gridfinity-layout-tool-v4.545.0) (2026-11-17)
 
 
