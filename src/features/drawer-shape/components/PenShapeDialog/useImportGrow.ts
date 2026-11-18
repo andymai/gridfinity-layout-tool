@@ -45,15 +45,16 @@ export function useImportGrow(session: unknown, holds: (sketch: Sketch) => boole
   );
   const onImported = useCallback(
     (sketch: Sketch) => {
-      if (ref.current?.session === session && ref.current.sketch === null) {
-        ref.current.sketch = sketch;
-      }
+      const grow = ref.current;
+      if (grow !== null && grow.session === session && grow.sketch === null) grow.sketch = sketch;
     },
     [session]
   );
   const standing = useCallback((): { width: number; depth: number } | null => {
     const grow = ref.current;
-    return grow?.session === session && grow.sketch !== null && holds(grow.sketch) ? grow : null;
+    return grow !== null && grow.session === session && grow.sketch !== null && holds(grow.sketch)
+      ? grow
+      : null;
   }, [session, holds]);
   return { onGrowDrawer, onImported, standing };
 }
