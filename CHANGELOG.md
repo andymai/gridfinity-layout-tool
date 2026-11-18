@@ -1,5 +1,25 @@
 # Changelog
 
+## [4.547.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.546.0...gridfinity-layout-tool-v4.547.0) (2026-11-18)
+
+
+### Features
+
+* **help:** link panel group headers to their docs sections ([#5116](https://github.com/andymai/gridfinity-layout-tool/issues/5116)) ([31f2023](https://github.com/andymai/gridfinity-layout-tool/commit/31f2023e0b51d9369d24a6bac852d6949ad115d0))
+
+
+### Bug Fixes
+
+* **baseplate:** let a solid-floor plate take the magnet-hole chamfer ([#5111](https://github.com/andymai/gridfinity-layout-tool/issues/5111)) ([9285bea](https://github.com/andymai/gridfinity-layout-tool/commit/9285beae6253be90da45c1d76447395caf7aed5f))
+* **bin-designer:** start new cutouts with 0.4 mm of clearance ([#5107](https://github.com/andymai/gridfinity-layout-tool/issues/5107)) ([f5c130d](https://github.com/andymai/gridfinity-layout-tool/commit/f5c130daf398c1595741ce20725a8f18d8ec8603))
+* **drawer-shape:** grow the drawer for an imported outline on Apply, not before ([#5114](https://github.com/andymai/gridfinity-layout-tool/issues/5114)) ([3853c6a](https://github.com/andymai/gridfinity-layout-tool/commit/3853c6a75b56e402d2abd3c91aa88df8c8f013c0))
+* **hooks:** run each Claude Code hook from the repo root ([#5104](https://github.com/andymai/gridfinity-layout-tool/issues/5104)) ([81126b6](https://github.com/andymai/gridfinity-layout-tool/commit/81126b680605fffb7fcb277653febe127c4c2a3e))
+* **layers:** count only the cells Fill gaps can use, and describe what it places ([#5112](https://github.com/andymai/gridfinity-layout-tool/issues/5112)) ([55fc575](https://github.com/andymai/gridfinity-layout-tool/commit/55fc5757983a42ac6564a857ace80b2aaa50e005))
+* **layout:** count an imported bin as one piece, as the ZIP exports it ([#5113](https://github.com/andymai/gridfinity-layout-tool/issues/5113)) ([5cedf13](https://github.com/andymai/gridfinity-layout-tool/commit/5cedf130e224e1a4267724f5c60864a3ac4a3ec8))
+* **layout:** list only bin heights the editor can make in Fit bins to your drawer ([#5108](https://github.com/andymai/gridfinity-layout-tool/issues/5108)) ([0bee317](https://github.com/andymai/gridfinity-layout-tool/commit/0bee317184aff2b3c28e36152827bd45186ea8d3))
+* **layout:** offer the half-unit fit after a drawer link and refit its padding ([#5109](https://github.com/andymai/gridfinity-layout-tool/issues/5109)) ([7620433](https://github.com/andymai/gridfinity-layout-tool/commit/7620433745581bb0d561ae0b735c2a526d38b8a7))
+* **settings:** point the bin defaults hint at the designer button, not the palette ([#5115](https://github.com/andymai/gridfinity-layout-tool/issues/5115)) ([b002920](https://github.com/andymai/gridfinity-layout-tool/commit/b002920cd1288940248c1617b5ce9ba19e9f8a76))
+
 ## [4.546.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.545.0...gridfinity-layout-tool-v4.546.0) (2026-11-18)
 
 
