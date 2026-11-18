@@ -278,6 +278,7 @@ export function Sidebar() {
               <StickyGroupHeader
                 variant="band"
                 title={t('sidebar.gridSize')}
+                docsSection="layoutGridSize"
                 summary={`${drawer.width} × ${drawer.depth}u`}
                 expanded={gridSizeExpanded}
                 onExpandedChange={setGridSizeExpanded}
@@ -419,6 +420,7 @@ export function Sidebar() {
               <StickyGroupHeader
                 variant="band"
                 title={t('common.physicalUnits')}
+                docsSection="layoutPhysicalUnits"
                 expanded={physicalUnitsExpanded}
                 onExpandedChange={setPhysicalUnitsExpanded}
               >

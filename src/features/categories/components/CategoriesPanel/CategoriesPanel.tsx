@@ -180,7 +180,12 @@ export function CategoriesPanel() {
 
   return (
     <div>
-      <StickyGroupHeader variant="band" title={t('common.categories')} actions={actionButtons}>
+      <StickyGroupHeader
+        variant="band"
+        title={t('common.categories')}
+        docsSection="layoutCategories"
+        actions={actionButtons}
+      >
         <PanelSection>
           <div className="space-y-1">
             {categories.map((category) => {

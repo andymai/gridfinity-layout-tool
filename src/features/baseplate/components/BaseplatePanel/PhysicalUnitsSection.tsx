@@ -100,6 +100,7 @@ export function PhysicalUnitsSection() {
     <StickyGroupHeader
       variant="band"
       title={t('common.physicalUnits')}
+      docsSection="baseplatePhysicalUnits"
       summary={formatPrintSettingsSummary(
         gridUnitMm,
         gridUnitMmY,

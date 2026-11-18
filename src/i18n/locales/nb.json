@@ -2778,6 +2778,7 @@
   "common.loading": "Laster...",
   "common.moreOptions": "Flere alternativer",
   "common.notes": "Notater",
+  "common.openSectionDocs": "Åpne dokumentasjonen for {section}",
   "common.physicalUnits": "Fysiske enheter",
   "common.quantity": "Antall",
   "common.redditCommunity": "r/gridfinity",

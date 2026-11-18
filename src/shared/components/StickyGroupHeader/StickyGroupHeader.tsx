@@ -9,9 +9,13 @@
  */
 
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { Button } from '@/design-system';
+import { Button, focusRing, interactiveTransition } from '@/design-system';
 import { cn } from '@/design-system/cn';
 import { ChevronDownIcon } from '@/design-system/Icon';
+import { useTranslation } from '@/i18n';
+import { docsSectionHref } from '@/shared/constants/docsSections';
+import type { DocsSection } from '@/shared/constants/docsSections';
+import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
 /**
  * `band` is for a panel whose groups hold their own small-caps sub-headers:
@@ -95,6 +99,8 @@ interface StickyGroupHeaderBaseProps {
   variant?: StickyGroupHeaderVariant;
   /** Buttons for the group (add, sort, manage), beside the header rather than inside its toggle. */
   actions?: ReactNode;
+  /** Adds a link to this group's docs section, beside the actions. */
+  docsSection?: DocsSection;
   children: ReactNode;
 }
 
@@ -116,8 +122,10 @@ export function StickyGroupHeader({
   modifiedLabel,
   variant = 'default',
   actions,
+  docsSection,
   children,
 }: StickyGroupHeaderProps) {
+  const t = useTranslation();
   const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
   const isControlled = controlledExpanded !== undefined;
   const expanded = isControlled ? controlledExpanded : internalExpanded;
@@ -166,7 +174,7 @@ export function StickyGroupHeader({
               )}
               size={variant === 'band' ? 'sm' : 'xs'}
             />
-            <span className={TITLE_CLASS[variant]}>{title}</span>
+            <span className={cn('whitespace-nowrap', TITLE_CLASS[variant])}>{title}</span>
             {modifiedLabel && (
               <>
                 {/* `title` as well as the sr-only text: a bare dot is unexplained
@@ -197,8 +205,40 @@ export function StickyGroupHeader({
             )}
           </Button>
         </h2>
-        {actions && (
+        {(actions || docsSection) && (
           <div className="flex shrink-0 items-center gap-0.5 pr-[calc(var(--space-panel)-0.25rem)]">
+            {docsSection && (
+              <a
+                href={docsSectionHref(docsSection)}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={t('common.openSectionDocs', { section: title })}
+                aria-label={t('common.openSectionDocs', { section: title })}
+                className={cn(
+                  'inline-flex h-6 w-6 items-center justify-center rounded text-content-tertiary hover:bg-surface-hover hover:text-content',
+                  interactiveTransition,
+                  ...focusRing
+                )}
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  {ICON_PATHS.questionCircle.map((d) => (
+                    <path
+                      key={d}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d={d}
+                    />
+                  ))}
+                </svg>
+              </a>
+            )}
             {actions}
           </div>
         )}

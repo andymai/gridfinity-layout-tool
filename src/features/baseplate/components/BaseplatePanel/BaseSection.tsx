@@ -186,6 +186,7 @@ export function BaseSection() {
     <StickyGroupHeader
       variant="band"
       title={t('baseplate.sectionBase')}
+      docsSection="baseplateBase"
       summary={summaryParts.length > 0 ? summaryParts.join(' · ') : undefined}
     >
       <PanelSection className="space-y-3">

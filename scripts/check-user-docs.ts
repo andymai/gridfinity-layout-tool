@@ -14,6 +14,7 @@ import { parseFrontmatter } from './contentFrontmatter';
 import { CONTENT_LOCALES } from './contentRoutes';
 import { MALFORMED_UI_TAG, UI_TAG, resolveUiLabel } from '../apps/docs/.vitepress/uiLabels';
 import { appTools, nav, sidebar } from '../apps/docs/.vitepress/navigation';
+import { DOCS_SECTIONS } from '../src/shared/constants/docsSections';
 import coverageAllowlist from './user-docs-coverage-allowlist.json' with { type: 'json' };
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -339,6 +340,14 @@ const NAV_LINKS: DocPage = {
   body: '',
 };
 
+// The app's panel headers link into the docs, so their targets are checked as
+// one more page's links. Every link is absolute, so the file only names the map.
+const APP_HELP_LINKS: DocPage = {
+  file: 'src/shared/constants/docsSections.ts',
+  data: { sections: Object.values(DOCS_SECTIONS).map((link) => ({ link })) },
+  body: '',
+};
+
 function mediaDirFiles(): string[] {
   const dir = path.join(ROOT, MEDIA_DIR);
   return fs.existsSync(dir) ? fs.readdirSync(dir) : [];
@@ -409,7 +418,7 @@ export function collectProblems(pages: readonly DocPage[] = readDocPages()): str
       sidebarLinks()
     ),
     ...checkScreenshotIds(pages),
-    ...checkDocLinks([...pages, NAV_LINKS], exists),
+    ...checkDocLinks([...pages, NAV_LINKS, APP_HELP_LINKS], exists),
     ...checkMedia(pages, readManifest(), mediaDirFiles()),
     ...checkFeatureCoverage(featureSlices(), pages, coverageAllowlist),
   ];

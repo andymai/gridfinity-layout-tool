@@ -90,7 +90,12 @@ export function LayerPanel() {
 
   return (
     <div>
-      <StickyGroupHeader variant="band" title={t('common.layers')} actions={addLayerButton}>
+      <StickyGroupHeader
+        variant="band"
+        title={t('common.layers')}
+        docsSection="layoutLayers"
+        actions={addLayerButton}
+      >
         <PanelSection>
           <div className="mb-3">
             <LayerRows

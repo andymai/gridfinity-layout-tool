@@ -2737,6 +2737,7 @@
   "common.loading": "로딩 중...",
   "common.moreOptions": "추가 옵션",
   "common.notes": "메모",
+  "common.openSectionDocs": "{section} 문서 열기",
   "common.physicalUnits": "실제 단위",
   "common.quantity": "수량",
   "common.redditCommunity": "r/gridfinity",

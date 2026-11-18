@@ -2860,6 +2860,7 @@
   "common.loading": "Ładowanie...",
   "common.moreOptions": "Więcej opcji",
   "common.notes": "Notatki",
+  "common.openSectionDocs": "Otwórz dokumentację: {section}",
   "common.physicalUnits": "Jednostki fizyczne",
   "common.quantity": "Ilość",
   "common.redditCommunity": "r/gridfinity",
