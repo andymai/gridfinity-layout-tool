@@ -1,0 +1,31 @@
+docs/schemas/constraints.md
+  s_144305aaade9d6::t_b6ff5dd2f583a2 121
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.test.ts
+  s_144305aaade9d6::t_bf794f84b93d7a 14-15
+  s_144305aaade9d6::t_b6b6c2f8e05f46 31-37
+public/schema/bin-design.schema.json
+  s_144305aaade9d6::t_758f559c823071 829,834
+apps/docs/cutouts/basics.md
+  s_144305aaade9d6::t_3623ac88ffcb31 84-86
+  s_144305aaade9d6::t_37085420256ef9 81
+src/features/bin-designer/types/cutout.ts
+  s_144305aaade9d6::t_b6359a3e51caed 132-135,137
+docs/schemas/bin-design.md
+  s_144305aaade9d6::t_b6ff5dd2f583a2 525
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fc177ccd1746af0614affede0fcabba31bf38950",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
