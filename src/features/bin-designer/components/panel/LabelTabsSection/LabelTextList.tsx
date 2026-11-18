@@ -234,6 +234,7 @@ export function LabelTextList({
                   <CompartmentTextInput
                     multiline
                     minRows={1}
+                    placeholderRows={layoutLabelFillsBlank && row.index === rows[0]?.index ? 2 : 1}
                     committedValue={row.value}
                     compartmentId={row.index}
                     onCommit={onCommit}
