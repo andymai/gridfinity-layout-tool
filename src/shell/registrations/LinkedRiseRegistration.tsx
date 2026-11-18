@@ -90,10 +90,14 @@ registerLinkedSlantResolver((designId) => {
   };
 });
 
+// The layout export writes an imported mesh as stored, never cut, so the bed
+// fit chips and the print list count it as one piece too.
 registerKeptWholeDesigns({
   read: () =>
     (keptWhole ??= new Set(
-      [...refs().values()].filter((ref) => ref.splitToFitBed === false).map((ref) => ref.id)
+      [...refs().values()]
+        .filter((ref) => ref.splitToFitBed === false || ref.kind === 'importedMesh')
+        .map((ref) => ref.id)
     )),
   subscribe: (onChange) => {
     changeListeners.add(onChange);
