@@ -63,6 +63,7 @@ import {
   floorReliefReachesCorners,
   magnetPositionsForCell,
 } from '@/shared/generation/magnetPositions';
+import { baseplateTakesMagnetChamfer } from '@/shared/generation/magnetHoleStyle';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import {
   cellHoldsFloorScrew,
@@ -110,7 +111,6 @@ export function generateBaseplateDirect(
     magnetDepth,
     magnetAnchor,
     magnetCrushRibs,
-    magnetChamfer,
     paddingLeft,
     paddingRight,
     paddingFront,
@@ -295,11 +295,11 @@ export function generateBaseplateDirect(
 
   if (magnetHoles) {
     const magnetRadius = magnetDiameter / 2;
-    // Same fit rule as the BREP plate: no chamfer on a lightweight pad, and none
-    // in a cell whose edge the widened mouth would breach.
+    // Same fit rule as the BREP plate, and no chamfer in a cell whose edge the
+    // widened mouth would breach.
     const magnetStyle: MagnetHoleStyle = {
       crushRibs: magnetCrushRibs === true,
-      chamfer: magnetChamfer === true && !params.lightweight,
+      chamfer: baseplateTakesMagnetChamfer(params),
     };
     const addCellHoles = (cell: CellInfo): void => {
       const positions = magnetPositionsForCell(

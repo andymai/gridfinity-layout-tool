@@ -214,7 +214,7 @@ describe('magnet hole press-fit options', () => {
   });
 
   it('baseplate: ribs and chamfer in the exact plate and its direct-mesh draft alike', () => {
-    const params = plate({ magnetCrushRibs: true, magnetChamfer: true });
+    const params = plate({ magnetCrushRibs: true, magnetChamfer: true, lightweight: false });
     const brep = holeProfile(
       generateBrepPlate(params, () => {}, true),
       MAGNET,
@@ -248,6 +248,32 @@ describe('magnet hole press-fit options', () => {
     );
     expectRibbed(p, 'lightweight plate ribs');
     expect(p.mouthAbove, 'lightweight pad keeps its plain mouth').toBeLessThan(R + 0.1);
+  }, 120_000);
+
+  it('baseplate: a solid floor keeps the chamfer on a lightweight plate', () => {
+    const p = holeProfile(
+      generateBrepPlate(
+        plate({ magnetChamfer: true, lightweight: true, solidFloor: true }),
+        () => {},
+        true
+      ),
+      MAGNET,
+      MAGNET
+    );
+    expectChamferAt(p.mouthAbove, 'solid floor chamfer mouth');
+  }, 120_000);
+
+  it('baseplate: a hole shallower than the lead-in keeps its plain mouth', () => {
+    const p = holeProfile(
+      generateBrepPlate(
+        plate({ magnetChamfer: true, solidFloor: true, magnetDepth: 0.5 }),
+        () => {},
+        true
+      ),
+      MAGNET,
+      MAGNET
+    );
+    expect(p.mouthAbove, 'shallow hole mouth').toBeLessThan(R + 0.1);
   }, 120_000);
 
   it('baseplate: a piece of a plate split for the bed keeps the ribs a 1x1 plate has', () => {
