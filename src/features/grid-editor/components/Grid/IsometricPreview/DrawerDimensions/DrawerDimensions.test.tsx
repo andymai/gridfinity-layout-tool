@@ -145,6 +145,36 @@ describe('DrawerDimensions', () => {
     expect(textElements[2].textContent).toBe('147mm');
   });
 
+  it('labels a measured drawer with its measured height, not the floored units', () => {
+    const { getAllByTestId } = render(
+      <DrawerDimensions
+        width={10}
+        depth={8}
+        height={5.71}
+        gridUnitMm={42}
+        gridUnitMmY={42}
+        heightUnitMm={7}
+        measuredHeightMm={40}
+      />
+    );
+    expect(getAllByTestId('r3f-text')[2].textContent).toBe('40mm');
+  });
+
+  it('labels the grid height once it moves off the measured one', () => {
+    const { getAllByTestId } = render(
+      <DrawerDimensions
+        width={10}
+        depth={8}
+        height={3.3}
+        gridUnitMm={42}
+        gridUnitMmY={42}
+        heightUnitMm={7}
+        measuredHeightMm={40}
+      />
+    );
+    expect(getAllByTestId('r3f-text')[2].textContent).toBe('23.1mm');
+  });
+
   it('renders with fractional dimensions', () => {
     const { container } = render(
       <DrawerDimensions

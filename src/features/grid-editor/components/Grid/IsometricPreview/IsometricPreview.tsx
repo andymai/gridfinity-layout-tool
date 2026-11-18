@@ -112,6 +112,7 @@ export function IsometricPreview(props: IsometricPreviewProps) {
           gridUnitMm={gridUnitMm}
           gridUnitMmY={gridUnitMmY}
           heightUnitMm={heightUnitMm}
+          measuredHeightMm={drawer.measuredMm?.height}
           layoutName={layoutName}
           isExpanded={isPreviewExpanded}
           fractionalEdgeX={drawer.fractionalEdgeX}
