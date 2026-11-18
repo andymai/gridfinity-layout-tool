@@ -62,7 +62,7 @@ function toMeshPayload(result: BridgeResult): GenerationResult {
     slantSupportMesh: result.mesh.slantSupportMesh,
     labelPlates: result.mesh.labelPlates,
     labelTextOverflow: result.mesh.labelTextOverflow,
-    typeStemWarning: result.mesh.typeStemWarning,
+    typeStem: result.mesh.typeStem,
     error: null,
     timingMs: result.timingMs,
   };
@@ -94,7 +94,7 @@ function meshDataToPayload(mesh: MeshData): GenerationResult {
     slantSupportMesh: mesh.slantSupportMesh,
     labelPlates: mesh.labelPlates,
     labelTextOverflow: mesh.labelTextOverflow,
-    typeStemWarning: mesh.typeStemWarning,
+    typeStem: mesh.typeStem,
     error: null,
     timingMs: 0,
   };

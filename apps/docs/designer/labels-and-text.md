@@ -156,7 +156,7 @@ A tab hangs from the compartment walls. Removable dividers, solid bins and custo
 
 Click the button under the warning in <Ui k="binDesigner.type.heading" />. It applies the fix that suits your font: a bold cut, more space between letters, or a larger size.
 
-The panel warns when the thinnest stroke of a letter is under 0.8 mm, about two lines of a 0.4 mm nozzle. Thinner strokes run together when they print.
+The panel warns when the thinnest stroke of a letter is under two widths of your nozzle: 0.8 mm for a 0.4 mm nozzle, 1.2 mm for a 0.6 mm nozzle. Thinner strokes run together when they print. The panel reads <Ui k="settings.nozzleSize" /> from your print settings, so set it before you judge the warning. See [Fit and tolerances](../printing/fit-and-tolerances).
 
 ### The tabs print blank
 

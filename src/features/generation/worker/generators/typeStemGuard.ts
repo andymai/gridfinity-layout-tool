@@ -20,16 +20,16 @@
 
 import type { BinParams } from '@/shared/types/bin';
 import { resolveTextStyle } from '@/shared/types/bin';
-import { MIN_PRINTABLE_STEM_MM, planMinStemMm } from '@/shared/utils/typePlan';
+import { planMinStemMm } from '@/shared/utils/typePlan';
 import type { TypeBlockPlan } from '@/shared/utils/typePlan';
-import type { TypeStemWarning } from '../../bridge/types';
+import type { TypeStem } from '../../bridge/types';
 import { computeWallTextLayouts } from './wallTextLayout';
 import { resolveUniformTabTextSize } from './labelTabBuilder';
 import { planLabelTabLayout } from '@/shared/utils/labelTabPlan';
 import { getTypeMeasurer, planTextForHost } from './textBuilder';
 import { deriveDimensions } from './pipeline/context';
 
-export function planTypeStemWarning(params: BinParams): TypeStemWarning | undefined {
+export function planTypeStem(params: BinParams): TypeStem | undefined {
   const dim = deriveDimensions(params, false);
   const plans: TypeBlockPlan[] = [];
 
@@ -70,11 +70,7 @@ export function planTypeStemWarning(params: BinParams): TypeStemWarning | undefi
     if (stem === null) continue;
     if (!worst || stem < worst.stem) worst = { stem, plan };
   }
-  if (!worst || worst.stem >= MIN_PRINTABLE_STEM_MM) return undefined;
+  if (!worst) return undefined;
 
-  return {
-    minStemMm: worst.stem,
-    fontSizeMm: worst.plan.fontSize,
-    minPrintableStemMm: MIN_PRINTABLE_STEM_MM,
-  };
+  return { minStemMm: worst.stem, fontSizeMm: worst.plan.fontSize };
 }

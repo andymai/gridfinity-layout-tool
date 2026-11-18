@@ -279,7 +279,7 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
               slantSupportMesh,
               labelPlates: response.labelPlates,
               labelTextOverflow: response.labelTextOverflow,
-              typeStemWarning: response.typeStemWarning,
+              typeStem: response.typeStem,
             },
             timingMs: response.timingMs,
             perfSnapshot: response.perfSnapshot,

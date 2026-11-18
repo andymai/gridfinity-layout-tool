@@ -21,7 +21,7 @@ import { generateKnifeRest } from '../generators/knifeRestBuilder';
 import { generateSlantSupport } from '../generators/slantSupportBuilder';
 import { generateLabelPlates } from '../generators/labelPlateGenerator';
 import { ensureDesignFonts } from '../wasmInstantiator';
-import { planTypeStemWarning } from '../generators/typeStemGuard';
+import { planTypeStem } from '../generators/typeStemGuard';
 import { planLabelTextOverflow } from '../generators/labelTextFit';
 import type { BinParams } from '@/shared/types/bin';
 import { isAbortError } from '../generators/utils/abort';
@@ -151,7 +151,7 @@ export async function handleGenerate(message: GenerateMessage): Promise<void> {
           console.warn('[BinGen] Stack-plate generation failed; skipping baseplate:', e);
         }
       }
-      return withTypeStemWarning(
+      return withTypeStem(
         withLabelTextOverflow(
           wantPlates ? withLabelPlates(result, params, signal) : result,
           params
@@ -204,19 +204,19 @@ function withLabelTextOverflow(result: MeshData, params: BinParams): MeshData {
 }
 
 /**
- * Attach the stem-width warning. Separate from the overflow report because the
- * two answer different questions about the same captions: whether they render
- * at all, and whether what renders will resolve on a nozzle. Best-effort for
- * the same reason: a reporting failure must never cost the user their mesh.
+ * Attach the finest stem. Separate from the overflow report because the two
+ * answer different questions about the same captions: whether they render at
+ * all, and whether what renders will resolve on a nozzle. Best-effort for the
+ * same reason: a reporting failure must never cost the user their mesh.
  */
-function withTypeStemWarning(result: MeshData, params: BinParams): MeshData {
+function withTypeStem(result: MeshData, params: BinParams): MeshData {
   try {
-    const typeStemWarning = planTypeStemWarning(params);
-    return typeStemWarning ? { ...result, typeStemWarning } : result;
+    const typeStem = planTypeStem(params);
+    return typeStem ? { ...result, typeStem } : result;
   } catch (e) {
     if (isAbortError(e)) throw e;
 
-    console.warn('[BinGen] Type stem check failed; skipping the warning:', e);
+    console.warn('[BinGen] Type stem check failed; skipping the report:', e);
     return result;
   }
 }
