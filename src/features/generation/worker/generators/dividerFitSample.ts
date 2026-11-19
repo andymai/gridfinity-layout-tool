@@ -24,9 +24,9 @@ import {
   dividerGrooveDepth,
   dividerSeatZ,
   getDividerLockPlan,
-  MIN_WALL_FOR_SLOTS,
   tabEngagement,
 } from '@/shared/utils/slotMath';
+import { binHasWallSlots } from '@/shared/utils/wallSlots';
 import type { ExportFormat } from '../../bridge/types';
 import { deriveDimensions } from './pipeline/context';
 import { buildSlotSectionCutters, getEffectiveSlotDimensions } from './slotBuilder';
@@ -136,7 +136,7 @@ export function buildDividerFitPiece(params: BinParams): Shape3D {
 /** Both parts laid out on the plate: the wall section, and the piece in front of it. */
 export function buildDividerFitSample(params: BinParams): Shape3D[] {
   // The bin cuts no slot here, so a sample of one would test a fit it never has.
-  if (params.style !== 'slotted' || params.wallThickness < MIN_WALL_FOR_SLOTS) {
+  if (!binHasWallSlots(params)) {
     throw new Error('This bin has no divider slots to test');
   }
   const { pieceHeight } = planDividerFitSection(params);

@@ -11,15 +11,13 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { downloadWorkerSample, useSampleExport } from '@/shared/hooks/useSampleExport';
 import type { SampleExportContext, UseSampleExportReturn } from '@/shared/hooks/useSampleExport';
-import { MIN_WALL_FOR_SLOTS, slottedHasDividers } from '@/shared/utils/slotMath';
+import { binHasWallSlots } from '@/shared/utils/wallSlots';
 
 export const DIVIDER_FIT_SAMPLE_BASE_NAME = 'divider-fit-sample';
 
 export function useDividerFitSampleExport(): UseSampleExportReturn {
   const t = useTranslation();
-  const hasSlot = useDesignerStore(
-    (s) => s.params.wallThickness >= MIN_WALL_FOR_SLOTS && slottedHasDividers(s.params.slotConfig)
-  );
+  const hasSlot = useDesignerStore((s) => binHasWallSlots(s.params));
 
   const download = useCallback(
     (context: SampleExportContext) =>

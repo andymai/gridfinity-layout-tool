@@ -124,6 +124,21 @@ describe('useDividerFitSampleExport', () => {
     });
     expect(renderHook(() => useDividerFitSampleExport()).result.current.canExport).toBe(false);
 
+    // An enabled axis whose spacing places no divider has no slot either.
+    useDesignerStore.setState({
+      params: {
+        ...SLOTTED,
+        width: 1,
+        depth: 1,
+        slotConfig: {
+          ...SLOTTED.slotConfig,
+          x: { enabled: true, pitch: 40 },
+          y: { enabled: false, pitch: 40 },
+        },
+      },
+    });
+    expect(renderHook(() => useDividerFitSampleExport()).result.current.canExport).toBe(false);
+
     useDesignerStore.setState({ params: SLOTTED });
     expect(renderHook(() => useDividerFitSampleExport()).result.current.canExport).toBe(true);
   });

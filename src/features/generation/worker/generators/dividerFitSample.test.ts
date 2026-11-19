@@ -262,6 +262,18 @@ describe('divider fit sample through the real kernel', () => {
     expect(() => buildDividerFitSample(design({}, { style: 'standard' }))).toThrow(
       /no divider slots/
     );
+    // An enabled axis whose spacing places no divider cuts no slot either.
+    const noDivider = design({}, { width: 1, depth: 1 });
+    expect(() =>
+      buildDividerFitSample({
+        ...noDivider,
+        slotConfig: {
+          ...noDivider.slotConfig,
+          x: { enabled: true, pitch: 40 },
+          y: { enabled: false, pitch: 40 },
+        },
+      })
+    ).toThrow(/no divider slots/);
   });
 
   it('exports both parts in one file', async () => {
