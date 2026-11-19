@@ -68,12 +68,10 @@ export interface WallCutoutTool {
   readonly collarHeight: number;
 }
 
-/** An outer wall's cutter, with the wall it belongs to. */
 export interface OuterCutoutTool extends WallCutoutTool {
   readonly side: OuterSide;
 }
 
-/** The body the cutters work on: the cavity and the wall they drop from. */
 export interface CutoutFrame {
   readonly innerW: number;
   readonly innerD: number;
@@ -108,7 +106,6 @@ export function interiorDividerTopZ(
     : resolveCompartmentDividerHeight(params.compartments.dividerHeight, dim.interiorHeight);
 }
 
-/** The frame a bin's cutters work in. */
 export function cutoutFrame(params: BinParams, dim: BinDimensions, depthPadding = 0): CutoutFrame {
   return {
     innerW: dim.innerW,
