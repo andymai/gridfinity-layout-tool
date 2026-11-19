@@ -1,0 +1,39 @@
+src/features/generation/worker/generators/wallCutoutPaths.geometry.test.ts
+  s_144305aaade9d6::t_47ce6d19a93ad6 155-161
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.test.tsx
+  s_144305aaade9d6::t_436f3a3a2b51e6 47,54,78-85
+src/features/bin-designer/components/panel/WallCutoutsSection/useWallCutoutsSection.ts
+  s_144305aaade9d6::t_1cee716e43e09d 9,17,43-48,271
+src/features/generation/worker/generators/__kernel-tests__/wallCutoutSweep.test.ts
+  s_144305aaade9d6::t_b5eb23dd52ef6d 94-95
+src/features/generation/worker/generators/dividerBlendBuilder.ts
+  s_144305aaade9d6::t_a4ffb58abb15af 67,239
+src/features/generation/worker/generators/dividerPatterns.ts
+  s_144305aaade9d6::t_668d3e91b511a3 340
+src/features/generation/worker/generators/wallCutoutBuilder.ts
+  s_144305aaade9d6::t_28f39ef492cc77 336-337,342,415,629
+src/features/generation/worker/generators/wallCutoutPaths.test.ts
+  s_144305aaade9d6::t_6c186d4295c42f 77-78,81-84,89-99
+src/features/generation/worker/generators/wallCutoutPaths.ts
+  s_144305aaade9d6::t_d3017c95b2ad43 25,142,339
+src/shared/utils/wallCutoutPosition.ts
+  s_144305aaade9d6::t_e4cdd7dfffcd3f 64-78,356-362,366-368,371-372,375-380,382-385
+src/features/generation/worker/generators/wallCutoutBuilder.test.ts
+  s_144305aaade9d6::t_e5e7cec01a2157 38-39,72-74,83-102,111-113,118-124,138-144,158-164,177-183,203-209,223-229,255-256,262-263,269-270,288-289,295-296,318-319,332-333,344-345,352-365
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b633d26a0d2bae8b0d1cd6170429582e2e5e13c2",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
