@@ -35,7 +35,7 @@ import {
   MIN_WALL_FOR_SLOTS,
   tabEngagement,
 } from '@/shared/utils/slotMath';
-import { clearOfNotches, planPieceWindow } from '@/shared/utils/dividerPieceWindow';
+import { clearOfNotches, keepBottomBand, planPieceWindow } from '@/shared/utils/dividerPieceWindow';
 import { referencePieceGeometry } from './referencePieceOutline';
 
 const GHOST_COLOR = '#22d3ee';
@@ -461,7 +461,7 @@ export function GhostDividerPieces() {
           0,
           dividerHeight - grooveDepth
         );
-        const window =
+        const clear =
           planned &&
           clearOfNotches(
             planned,
@@ -469,6 +469,7 @@ export function GhostDividerPieces() {
             dividerHeight,
             notchDepth
           );
+        const window = clear && keepBottomBand(clear, dividerHeight);
         pieces.push({
           key,
           geometry: window

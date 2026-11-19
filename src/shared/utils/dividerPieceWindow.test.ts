@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { WallConfig, WallCutout } from '@/shared/types/bin';
-import { clearOfNotches, planPieceWindow, WINDOW_NOTCH_BRIDGE_MM } from './dividerPieceWindow';
+import {
+  clearOfNotches,
+  keepBottomBand,
+  planPieceWindow,
+  WINDOW_BOTTOM_BAND_MM,
+  WINDOW_NOTCH_BRIDGE_MM,
+} from './dividerPieceWindow';
 
 const side = (over: Partial<WallCutout> = {}): WallCutout => ({
   enabled: false,
@@ -98,5 +104,20 @@ describe('windowReach against a notch', () => {
       10.25
     );
     expect(kept?.depth).toBe(16);
+  });
+});
+
+describe('keepBottomBand', () => {
+  it('keeps solid under a window that drops the whole height', () => {
+    const full = planPieceWindow(walls({ depth: 100 }), 1.2, 100, 0, 40);
+    if (!full) throw new Error('no window');
+    expect(keepBottomBand(full, 40)?.depth).toBeCloseTo(40 - WINDOW_BOTTOM_BAND_MM, 6);
+    expect(keepBottomBand(full, 40, 9)?.depth).toBeCloseTo(31, 6);
+  });
+
+  it('leaves a shallower window as it is', () => {
+    const half = planPieceWindow(walls({}), 1.2, 100, 0, 40);
+    if (!half) throw new Error('no window');
+    expect(keepBottomBand(half, 40)).toBe(half);
   });
 });

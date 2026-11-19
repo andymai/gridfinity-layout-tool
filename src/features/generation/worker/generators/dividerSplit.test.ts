@@ -91,7 +91,10 @@ describe('splitDividerPieceAtSeams', () => {
     await initBrepjs();
   }, 60_000);
 
-  it('moves a seam beside a window too deep to leave a tongue under it', () => {
+  it.each([
+    ['a narrow', { width: 0, widthMm: 8 }],
+    ['a wide', { width: 60, widthMm: null }],
+  ])('keeps a tongue band under %s window that drops nearly to the floor', (_name, size) => {
     const walls = DEFAULT_BIN_PARAMS.walls;
     const params = slottedParams({
       width: 7,
@@ -107,7 +110,7 @@ describe('splitDividerPieceAtSeams', () => {
         shape: 'u-shape',
         cornerRadiusTop: 0,
         cornerRadiusBottom: 0,
-        interior: { ...walls.interior, enabled: true, width: 0, depth: 95, widthMm: 8 },
+        interior: { ...walls.interior, enabled: true, depth: 95, ...size },
       },
     });
     const pieces = splitPieces(params);

@@ -217,6 +217,29 @@ describe('a window over a cross-lap crossing', () => {
   });
 });
 
+describe('a window that drops the whole height', () => {
+  it('keeps a solid band under it, so a piece without a floor groove stays whole', () => {
+    const base = slotted({ depth: 100 });
+    const params: BinParams = {
+      ...base,
+      dividerPieces: { ...base.dividerPieces, floorGroove: false },
+    };
+    const pieces = buildUniqueDividerPieces(
+      params,
+      INNER_W,
+      INNER_D,
+      WALL_HEIGHT,
+      DEFAULT_BIN_PARAMS.base.stackingLip
+    );
+    try {
+      expect(pieces).toHaveLength(1);
+      expect(getSolids(pieces[0].shape)).toHaveLength(1);
+    } finally {
+      for (const piece of pieces) piece.shape.delete();
+    }
+  });
+});
+
 describe('the window the wall pattern keeps clear of', () => {
   it('covers the opening at the top edge, round-overs included', () => {
     const params = slotted({ widthMm: 30, depth: 50 });

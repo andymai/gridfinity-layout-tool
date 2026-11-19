@@ -1,16 +1,26 @@
 import { cut, translate, unwrap } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
-import { clearOfNotches, planPieceWindow, windowReach } from '@/shared/utils/dividerPieceWindow';
+import {
+  clearOfNotches,
+  keepBottomBand,
+  planPieceWindow,
+  windowReach,
+  WINDOW_BOTTOM_BAND_MM,
+} from '@/shared/utils/dividerPieceWindow';
 import type { PieceWindow } from '@/shared/utils/dividerPieceWindow';
 import { dividerGrooveDepth } from '@/shared/utils/slotMath';
 import type { PieceGeometry } from './dividerPiecePatternBuilder';
+import { dividerJointClearance, partLengthBudget, tongueBandHalf } from './dividerSeamPlan';
+import type { DividerBedFit } from './dividerSeamPlan';
 import { CUT_RIM_CLEARANCE } from './generatorConstants';
 import { sketch } from './meshUtils';
 import { buildCutoutProfile } from './wallCutoutBuilder';
 
 /** Reach of the cutter past each face of the flat piece. */
 const FACE_OVERSHOOT = 1;
+/** Room over a seam's tongue band, so the band clears the window's floor. */
+const JOINT_BAND_MARGIN = 0.5;
 
 /**
  * Cut the interior wall cutout into one flat divider piece: length along X,
@@ -63,21 +73,28 @@ export interface ExposedSpan {
  * its geometry, so the pattern and the bed seams plan around it.
  *
  * The window sits on the part of the piece between its seats, `exposed` when
- * the caller knows it, else the length less `tabEngagement` at each end. A piece in a floor groove is measured from the
- * floor, the way a fixed divider is. Over a cross-lap notch, `notchDepth` deep,
- * the window stops short of it.
+ * the caller knows it, else the length less `tabEngagement` at each end. A
+ * piece in a floor groove is measured from the floor, the way a fixed divider
+ * is. Over a cross-lap notch, `notchDepth` deep, the window stops short of it.
+ * Under it a solid band stays: on a piece the bed will split, a band that a
+ * seam's tongue fits in, so the seam can go anywhere along it.
  */
 export function pieceWindowCutter(
   params: BinParams,
   height: number,
   thickness: number,
-  notchDepth: number
+  notchDepth: number,
+  fit?: DividerBedFit
 ): (
   piece: Shape3D,
   geometry: PieceGeometry,
   exposed?: ExposedSpan
 ) => { cutPiece: Shape3D; geometry: PieceGeometry } {
   const standing = height - dividerGrooveDepth(params);
+  const budget = fit ? partLengthBudget(height, fit.printBed) : null;
+  const jointBand = fit
+    ? 2 * tongueBandHalf(dividerJointClearance(fit.nozzleSizeMm)) + JOINT_BAND_MARGIN
+    : 0;
   return (piece, geometry, exposed) => {
     const half = geometry.length / 2;
     const { from, to } = exposed ?? {
@@ -91,7 +108,10 @@ export function pieceWindowCutter(
       (from + to) / 2,
       standing
     );
-    const window = planned && clearOfNotches(planned, geometry.notches ?? [], height, notchDepth);
+    const splits = budget !== null && geometry.length > budget;
+    const band = splits ? Math.max(WINDOW_BOTTOM_BAND_MM, jointBand) : WINDOW_BOTTOM_BAND_MM;
+    const clear = planned && clearOfNotches(planned, geometry.notches ?? [], height, notchDepth);
+    const window = clear && keepBottomBand(clear, height, band);
     if (!window) return { cutPiece: piece, geometry };
     // The keep-out covers the whole opening, round-overs included.
     const opening = { offset: window.offset, width: 2 * windowReach(window), depth: window.depth };

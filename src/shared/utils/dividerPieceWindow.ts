@@ -89,3 +89,21 @@ export function clearOfNotches(
   const depth = Math.min(window.depth, height - notchDepth - WINDOW_NOTCH_BRIDGE_MM);
   return depth >= 0.1 ? { ...window, depth } : null;
 }
+
+/** Solid kept under every window, so a piece stays one part. */
+export const WINDOW_BOTTOM_BAND_MM = 2;
+
+/**
+ * Hold `band` of solid under a window on a piece `height` tall. A 100% drop on
+ * a piece without a floor groove would otherwise cut it through. Null when no
+ * window is left.
+ */
+export function keepBottomBand(
+  window: PieceWindow,
+  height: number,
+  band: number = WINDOW_BOTTOM_BAND_MM
+): PieceWindow | null {
+  const depth = Math.min(window.depth, height - band);
+  if (depth < 0.1) return null;
+  return depth === window.depth ? window : { ...window, depth };
+}
