@@ -93,5 +93,6 @@ export function emitLinkedBinResize(
     binId: bin.id,
     linkedDesignId: bin.linkedDesignId,
     newDimensions,
+    previousDimensions: { width: bin.width, depth: bin.depth, height: bin.height },
   });
 }

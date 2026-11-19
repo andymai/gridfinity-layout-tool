@@ -31,6 +31,8 @@ export interface BinResizedEvent {
   readonly binId: BinId;
   readonly linkedDesignId: DesignId;
   readonly newDimensions: SyncEventDimensions;
+  /** The bin before the resize, so a listener can tell a turned placement. */
+  readonly previousDimensions: SyncEventDimensions;
 }
 
 export type SyncEvent = DesignSavedEvent | BinResizedEvent;

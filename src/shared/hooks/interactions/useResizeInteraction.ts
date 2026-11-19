@@ -313,6 +313,11 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
               depth: currentRect.depth,
               height: bin.height,
             },
+            previousDimensions: {
+              width: startRect.width,
+              depth: startRect.depth,
+              height: bin.height,
+            },
           });
         }
       }

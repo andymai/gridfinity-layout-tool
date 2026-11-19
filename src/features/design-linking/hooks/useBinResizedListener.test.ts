@@ -4,7 +4,8 @@ import { useBinResizedListener } from './useBinResizedListener';
 import { useLinkingStore } from '../store';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
-import { emitSyncEvent } from '@/shared/events/syncEventBus';
+import { emitSyncEvent, onSyncEvent } from '@/shared/events/syncEventBus';
+import type { DesignSavedEvent } from '@/shared/events/syncEventBus';
 import * as MutationsContext from '@/shared/contexts/MutationsContext';
 import * as UseCustomBins from '@/features/bin-designer/hooks/useCustomBins';
 import { binId, designId, gridUnits, heightUnits } from '@/core/types';
@@ -12,7 +13,7 @@ import { ok } from '@/core/result';
 import { useLayoutStore, useToastStore } from '@/core/store';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
 import { registerLinkedSlantResolver } from '@/shared/utils/placedSlant';
-import { loadDesign, updateDesignParams } from '@/features/bin-designer/storage';
+import { loadDesign, saveDesign, updateDesignParams } from '@/features/bin-designer/storage';
 import { err } from '@/core/result';
 import { loadRegistry, upsertRegistryEntry } from '@/features/bin-designer/store/customBinRegistry';
 import type * as StorageModule from '@/features/bin-designer/storage';
@@ -27,6 +28,7 @@ vi.mock('@/shared/contexts/MutationsContext', () => ({
 vi.mock('@/features/bin-designer/storage', async (importOriginal) => ({
   ...(await importOriginal<typeof StorageModule>()),
   loadDesign: vi.fn(),
+  saveDesign: vi.fn(),
   updateDesignParams: vi.fn(),
 }));
 
@@ -55,6 +57,7 @@ describe('useBinResizedListener', () => {
       binId: binId('bin-7'),
       linkedDesignId: DESIGN,
       newDimensions: { width: 3, depth: 2, height: 4 },
+      previousDimensions: { width: 2, depth: 2, height: 4 },
     });
 
     expect(useLinkingStore.getState().pendingDesignerUpdated).toEqual({
@@ -112,6 +115,7 @@ describe('useBinResizedListener', () => {
         binId: binId('bin-7'),
         linkedDesignId: DESIGN,
         newDimensions: { width: 2, depth: 1, height: 12 },
+        previousDimensions: { width: 2, depth: 2, height: 4 },
       });
 
       await vi.waitFor(() => expect(useToastStore.getState().toasts).toHaveLength(1));
@@ -175,6 +179,7 @@ describe('useBinResizedListener', () => {
         binId: binId('bin-7'),
         linkedDesignId: DESIGN,
         newDimensions: { width: 2, depth: 1, height: 12 },
+        previousDimensions: { width: 2, depth: 2, height: 4 },
       });
 
       await vi.waitFor(() => expect(updateDesignParams).toHaveBeenCalledTimes(1));
@@ -252,6 +257,7 @@ describe('useBinResizedListener', () => {
         binId: binId('resized'),
         linkedDesignId: DESIGN,
         newDimensions: { width: 1, depth: 3, height: 6 },
+        previousDimensions: { width: 2, depth: 2, height: 4 },
       });
 
     it('resizes every sibling, in an order where none waits on another', async () => {
@@ -288,6 +294,342 @@ describe('useBinResizedListener', () => {
       const order = updateBin.mock.calls.map(([id]) => id);
       expect(order.indexOf('behind')).toBeLessThan(order.indexOf('ahead'));
       registerLinkedSlantResolver(null);
+      unmount();
+    });
+  });
+
+  describe('an imported model', () => {
+    const IMPORTED = designId('imported-1');
+    const envelope = { width: 2, depth: 2, gridUnitMm: 42 };
+    const structure = { kind: 'importedMesh' as const, heightUnits: 4 };
+
+    beforeEach(() => {
+      useDesignerStore.setState({ currentDesignId: null });
+      useToastStore.setState({ toasts: [] });
+      localStorage.clear();
+      vi.mocked(UseCustomBins.useCustomBins).mockReturnValue([
+        {
+          id: IMPORTED,
+          name: 'Scanned tray',
+          width: 2,
+          depth: 2,
+          height: 4,
+          kind: 'importedMesh',
+          updatedAt: '',
+        },
+      ]);
+      vi.mocked(loadDesign).mockResolvedValue(
+        ok({
+          id: IMPORTED,
+          name: 'Scanned tray',
+          updatedAt: 'then',
+          kind: 'importedMesh',
+          envelope,
+          structure,
+        }) as never
+      );
+      vi.mocked(saveDesign).mockImplementation(
+        async (design) => ok({ ...design, updatedAt: 'now' }) as never
+      );
+    });
+
+    it('keeps the new size as the design footprint, so the layout does not size it back', async () => {
+      const saved: DesignSavedEvent[] = [];
+      const off = onSyncEvent<DesignSavedEvent>('design-saved', (e) => saved.push(e));
+      const { unmount } = renderHook(() => useBinResizedListener());
+
+      emitSyncEvent({
+        type: 'bin-resized',
+        binId: binId('bin-1'),
+        linkedDesignId: IMPORTED,
+        newDimensions: { width: 3, depth: 2, height: 5 },
+        previousDimensions: { width: 2, depth: 2, height: 4 },
+      });
+
+      await vi.waitFor(() => expect(saved).toHaveLength(1));
+      expect(vi.mocked(saveDesign).mock.calls[0][0]).toMatchObject({
+        envelope: { ...envelope, width: 3, depth: 2 },
+        structure: { ...structure, heightUnits: 5 },
+      });
+      expect(updateDesignParams).not.toHaveBeenCalled();
+      expect(loadRegistry().find((r) => r.id === IMPORTED)).toMatchObject({
+        width: 3,
+        depth: 2,
+        height: 5,
+        kind: 'importedMesh',
+      });
+      expect(saved[0]).toMatchObject({
+        designId: IMPORTED,
+        dimensions: { width: 3, depth: 2, height: 5 },
+      });
+      off();
+      unmount();
+    });
+
+    const savedEvents = (): { events: DesignSavedEvent[]; off: () => void } => {
+      const events: DesignSavedEvent[] = [];
+      const off = onSyncEvent<DesignSavedEvent>('design-saved', (e) => events.push(e));
+      return { events, off };
+    };
+
+    it('keeps a quarter-turned placement turned, in the design axes', async () => {
+      vi.mocked(loadDesign).mockResolvedValue(
+        ok({
+          id: IMPORTED,
+          name: 'Scanned tray',
+          updatedAt: 'then',
+          kind: 'importedMesh',
+          envelope: { ...envelope, width: 2, depth: 3 },
+          structure,
+        }) as never
+      );
+      const { events, off } = savedEvents();
+      const { unmount } = renderHook(() => useBinResizedListener());
+
+      emitSyncEvent({
+        type: 'bin-resized',
+        binId: binId('bin-1'),
+        linkedDesignId: IMPORTED,
+        newDimensions: { width: 3, depth: 2, height: 6 },
+        previousDimensions: { width: 3, depth: 2, height: 4 },
+      });
+
+      await vi.waitFor(() => expect(events).toHaveLength(1));
+      expect(vi.mocked(saveDesign).mock.calls[0][0]).toMatchObject({
+        envelope: { width: 2, depth: 3 },
+        structure: { heightUnits: 6 },
+      });
+      expect(events[0].dimensions).toEqual({ width: 2, depth: 3, height: 6 });
+      off();
+      unmount();
+    });
+
+    it('keeps the footprint within the limits that sync accepts', async () => {
+      const { events, off } = savedEvents();
+      const { unmount } = renderHook(() => useBinResizedListener());
+
+      emitSyncEvent({
+        type: 'bin-resized',
+        binId: binId('bin-1'),
+        linkedDesignId: IMPORTED,
+        newDimensions: { width: 20, depth: 2, height: 4 },
+        previousDimensions: { width: 2, depth: 2, height: 4 },
+      });
+
+      await vi.waitFor(() => expect(events).toHaveLength(1));
+      expect(events[0].dimensions).toEqual({ width: 16, depth: 2, height: 4 });
+      off();
+      unmount();
+    });
+
+    it('saves a resize that lands during a save, and announces only the newest', async () => {
+      let release: () => void = () => undefined;
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      vi.mocked(saveDesign).mockImplementationOnce(async (design) => {
+        await gate;
+        return ok({ ...design, updatedAt: 'now' }) as never;
+      });
+      const { events, off } = savedEvents();
+      const { unmount } = renderHook(() => useBinResizedListener());
+      const resize = (width: number, from: number): void =>
+        emitSyncEvent({
+          type: 'bin-resized',
+          binId: binId('bin-1'),
+          linkedDesignId: IMPORTED,
+          newDimensions: { width, depth: 2, height: 4 },
+          previousDimensions: { width: from, depth: 2, height: 4 },
+        });
+
+      resize(3, 2);
+      await vi.waitFor(() => expect(saveDesign).toHaveBeenCalledTimes(1));
+      resize(4, 3);
+      release();
+
+      await vi.waitFor(() => expect(events).toHaveLength(1));
+      expect(saveDesign).toHaveBeenCalledTimes(2);
+      expect(events[0].dimensions).toEqual({ width: 4, depth: 2, height: 4 });
+      expect(loadRegistry().find((r) => r.id === IMPORTED)?.width).toBe(4);
+      off();
+      unmount();
+    });
+
+    it('keeps a turned placement turned across resizes that wait for a save', async () => {
+      // Storage that remembers each write, so every load sees the one before.
+      let stored = {
+        id: IMPORTED,
+        name: 'Scanned tray',
+        updatedAt: 'then',
+        kind: 'importedMesh',
+        envelope: { ...envelope, width: 2, depth: 3 },
+        structure,
+      };
+      vi.mocked(loadDesign).mockImplementation(async () => ok(stored) as never);
+      let release: () => void = () => undefined;
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      let first = true;
+      vi.mocked(saveDesign).mockImplementation(async (design) => {
+        if (first) {
+          first = false;
+          await gate;
+        }
+        stored = { ...(design as unknown as typeof stored), updatedAt: 'now' };
+        return ok(stored) as never;
+      });
+      const { events, off } = savedEvents();
+      const { unmount } = renderHook(() => useBinResizedListener());
+      const resize = (width: number, from: number): void =>
+        emitSyncEvent({
+          type: 'bin-resized',
+          binId: binId('bin-1'),
+          linkedDesignId: IMPORTED,
+          newDimensions: { width, depth: 2, height: 4 },
+          previousDimensions: { width: from, depth: 2, height: 4 },
+        });
+
+      resize(4, 3);
+      await vi.waitFor(() => expect(saveDesign).toHaveBeenCalledTimes(1));
+      resize(5, 4);
+      resize(6, 5);
+      release();
+
+      await vi.waitFor(() => expect(events).toHaveLength(1));
+      expect(stored.envelope).toMatchObject({ width: 2, depth: 6 });
+      expect(events[0].dimensions).toEqual({ width: 2, depth: 6, height: 4 });
+      off();
+      unmount();
+    });
+
+    it('decides the turn for each bin when two placements wait for one save', async () => {
+      let stored = {
+        id: IMPORTED,
+        name: 'Scanned tray',
+        updatedAt: 'then',
+        kind: 'importedMesh',
+        envelope: { ...envelope, width: 2, depth: 3 },
+        structure,
+      };
+      vi.mocked(loadDesign).mockImplementation(async () => ok(stored) as never);
+      let release: () => void = () => undefined;
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      let first = true;
+      vi.mocked(saveDesign).mockImplementation(async (design) => {
+        if (first) {
+          first = false;
+          await gate;
+        }
+        stored = { ...(design as unknown as typeof stored), updatedAt: 'now' };
+        return ok(stored) as never;
+      });
+      const { events, off } = savedEvents();
+      const { unmount } = renderHook(() => useBinResizedListener());
+
+      emitSyncEvent({
+        type: 'bin-resized',
+        binId: binId('bin-upright'),
+        linkedDesignId: IMPORTED,
+        newDimensions: { width: 2, depth: 3, height: 5 },
+        previousDimensions: { width: 2, depth: 3, height: 4 },
+      });
+      await vi.waitFor(() => expect(saveDesign).toHaveBeenCalledTimes(1));
+      emitSyncEvent({
+        type: 'bin-resized',
+        binId: binId('bin-turned'),
+        linkedDesignId: IMPORTED,
+        newDimensions: { width: 3, depth: 2, height: 6 },
+        previousDimensions: { width: 3, depth: 2, height: 4 },
+      });
+      release();
+
+      await vi.waitFor(() => expect(events).toHaveLength(1));
+      expect(stored.envelope).toMatchObject({ width: 2, depth: 3 });
+      expect(events[0].dimensions).toEqual({ width: 2, depth: 3, height: 6 });
+      off();
+      unmount();
+    });
+
+    it("decides a waiting sibling's turn against the design as the run found it", async () => {
+      let stored = {
+        id: IMPORTED,
+        name: 'Scanned tray',
+        updatedAt: 'then',
+        kind: 'importedMesh',
+        envelope: { ...envelope, width: 2, depth: 3 },
+        structure,
+      };
+      vi.mocked(loadDesign).mockImplementation(async () => ok(stored) as never);
+      let release: () => void = () => undefined;
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      const envelopes: { width: number; depth: number }[] = [];
+      let first = true;
+      vi.mocked(saveDesign).mockImplementation(async (design) => {
+        if (first) {
+          first = false;
+          await gate;
+        }
+        stored = { ...(design as unknown as typeof stored), updatedAt: 'now' };
+        envelopes.push({ width: stored.envelope.width, depth: stored.envelope.depth });
+        return ok(stored) as never;
+      });
+      const { events, off } = savedEvents();
+      const { unmount } = renderHook(() => useBinResizedListener());
+
+      emitSyncEvent({
+        type: 'bin-resized',
+        binId: binId('bin-upright'),
+        linkedDesignId: IMPORTED,
+        newDimensions: { width: 4, depth: 3, height: 4 },
+        previousDimensions: { width: 2, depth: 3, height: 4 },
+      });
+      await vi.waitFor(() => expect(saveDesign).toHaveBeenCalledTimes(1));
+      emitSyncEvent({
+        type: 'bin-resized',
+        binId: binId('bin-turned'),
+        linkedDesignId: IMPORTED,
+        newDimensions: { width: 3, depth: 2, height: 6 },
+        previousDimensions: { width: 3, depth: 2, height: 4 },
+      });
+      release();
+
+      await vi.waitFor(() => expect(events).toHaveLength(1));
+      expect(envelopes).toEqual([
+        { width: 4, depth: 3 },
+        { width: 2, depth: 3 },
+      ]);
+      off();
+      unmount();
+    });
+
+    it('updates the footprint in the designer too, when the designer holds that model', async () => {
+      useDesignerStore.setState({
+        currentDesignId: IMPORTED,
+        itemKind: 'importedMesh',
+        envelope: { ...envelope } as never,
+        structure: { ...structure } as never,
+      });
+      const { unmount } = renderHook(() => useBinResizedListener());
+
+      emitSyncEvent({
+        type: 'bin-resized',
+        binId: binId('bin-1'),
+        linkedDesignId: IMPORTED,
+        newDimensions: { width: 3, depth: 3, height: 6 },
+        previousDimensions: { width: 2, depth: 2, height: 4 },
+      });
+
+      await vi.waitFor(() => expect(useToastStore.getState().toasts).toHaveLength(1));
+      const designer = useDesignerStore.getState();
+      expect(designer.envelope).toMatchObject({ width: 3, depth: 3 });
+      expect(designer.structure).toMatchObject({ heightUnits: 6 });
+      expect(useLinkingStore.getState().pendingDesignerUpdated).toBeNull();
+      useDesignerStore.setState({ itemKind: 'bin', envelope: null, structure: null });
       unmount();
     });
   });
