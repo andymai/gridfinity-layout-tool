@@ -52,12 +52,18 @@ export function cutPieceWindow(
   }
 }
 
+/** The part of a piece that stands in the cavity, from the piece's centre. */
+export interface ExposedSpan {
+  readonly from: number;
+  readonly to: number;
+}
+
 /**
  * The window step for a bin's pieces: cuts each piece and adds the window to
  * its geometry, so the pattern and the bed seams plan around it.
  *
- * The window sits on the part of the piece between its seats: the length less
- * the engagement at each end. A piece in a floor groove is measured from the
+ * The window sits on the part of the piece between its seats, `exposed` when
+ * the caller knows it, else the length less `tabEngagement` at each end. A piece in a floor groove is measured from the
  * floor, the way a fixed divider is. Over a cross-lap notch, `notchDepth` deep,
  * the window stops short of it.
  */
@@ -66,11 +72,25 @@ export function pieceWindowCutter(
   height: number,
   thickness: number,
   notchDepth: number
-): (piece: Shape3D, geometry: PieceGeometry) => { cutPiece: Shape3D; geometry: PieceGeometry } {
+): (
+  piece: Shape3D,
+  geometry: PieceGeometry,
+  exposed?: ExposedSpan
+) => { cutPiece: Shape3D; geometry: PieceGeometry } {
   const standing = height - dividerGrooveDepth(params);
-  return (piece, geometry) => {
-    const span = geometry.length - 2 * geometry.tabEngagement;
-    const planned = planPieceWindow(params.walls, params.wallThickness, span, 0, standing);
+  return (piece, geometry, exposed) => {
+    const half = geometry.length / 2;
+    const { from, to } = exposed ?? {
+      from: -half + geometry.tabEngagement,
+      to: half - geometry.tabEngagement,
+    };
+    const planned = planPieceWindow(
+      params.walls,
+      params.wallThickness,
+      to - from,
+      (from + to) / 2,
+      standing
+    );
     const window = planned && clearOfNotches(planned, geometry.notches ?? [], height, notchDepth);
     if (!window) return { cutPiece: piece, geometry };
     // The keep-out covers the whole opening, round-overs included.

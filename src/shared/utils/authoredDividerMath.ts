@@ -135,3 +135,18 @@ export function computeAuthoredDividers(
     };
   });
 }
+
+/**
+ * The part of an authored piece that stands in the cavity, from the piece's
+ * centre. Run coordinates go from 0 to the interior's length; a wall tab
+ * reaches past them into its slot, and an abutting end stops inside them.
+ */
+export function authoredExposedSpan(
+  piece: Pick<AuthoredDividerPiece, 'orientation' | 'start' | 'end'>,
+  innerW: number,
+  innerD: number
+): { from: number; to: number } {
+  const runMax = piece.orientation === 'vertical' ? innerD : innerW;
+  const centre = (piece.start + piece.end) / 2;
+  return { from: Math.max(piece.start, 0) - centre, to: Math.min(piece.end, runMax) - centre };
+}

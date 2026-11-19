@@ -37,13 +37,14 @@ import {
   tabEngagement,
 } from '@/shared/utils/slotMath';
 import type { DividerLockPlan } from '@/shared/utils/slotMath';
-import { computeAuthoredDividers } from '@/shared/utils/authoredDividerMath';
+import { authoredExposedSpan, computeAuthoredDividers } from '@/shared/utils/authoredDividerMath';
 import { deriveWallSegments } from '@/shared/utils/compartmentGeometry';
 import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
 import { lidKeepoutRing } from '@/shared/constants/lidKeepout';
 import { getEffectiveSlotDimensions } from './slotBuilder';
 import { cutPiecePattern, resolvePiecePatternContext } from './dividerPiecePatternBuilder';
 import { pieceWindowCutter } from './dividerPieceWindowCut';
+import type { ExposedSpan } from './dividerPieceWindowCut';
 import type { PieceGeometry } from './dividerPiecePatternBuilder';
 import type { PieceObstruction } from './dividerPiecePatterns';
 import {
@@ -430,8 +431,8 @@ export function buildUniqueDividerPieces(
   const columns = (positions: readonly number[], width: number): PieceObstruction[] =>
     positions.map((offset) => ({ offset, width }));
   const windowed = pieceWindowCutter(params, dividerHeight, thickness, notchDepth);
-  const pattern = (piece: Shape3D, geometry: PieceGeometry): Shape3D => {
-    const { cutPiece, geometry: withWindow } = windowed(piece, geometry);
+  const pattern = (piece: Shape3D, geometry: PieceGeometry, exposed?: ExposedSpan): Shape3D => {
+    const { cutPiece, geometry: withWindow } = windowed(piece, geometry, exposed);
     const planned = planPieceSeams(withWindow, dividerHeight, fit);
     pendingSeams = planned.seams;
     return patternCtx ? cutPiecePattern(cutPiece, patternCtx, planned.geometry) : cutPiece;
@@ -584,7 +585,8 @@ export function buildUniqueDividerPieces(
               length: seg.length,
               tabEngagement: tabDepth,
               notches: columns(seg.notchOffsets, slotWidth),
-            }
+            },
+            seg.exposed
           ),
           seg.length
         );
@@ -679,11 +681,15 @@ export function buildAuthoredDividerPieces(
       thickness,
       spec.fromTop
     );
-    const { cutPiece, geometry } = windowed(shape, {
-      length: spec.length,
-      tabEngagement: tabDepth,
-      notches: spec.notchOffsets.map((offset) => ({ offset, width: slotWidth })),
-    });
+    const { cutPiece, geometry } = windowed(
+      shape,
+      {
+        length: spec.length,
+        tabEngagement: tabDepth,
+        notches: spec.notchOffsets.map((offset) => ({ offset, width: slotWidth })),
+      },
+      authoredExposedSpan(spec, innerW, innerD)
+    );
     shape = cutPiece;
     const planned = planPieceSeams(geometry, dividerHeight, fit);
     if (patternCtx) shape = cutPiecePattern(shape, patternCtx, planned.geometry);

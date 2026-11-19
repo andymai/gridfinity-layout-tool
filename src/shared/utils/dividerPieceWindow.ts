@@ -5,6 +5,7 @@ import {
   resolveCutoutCornerRadii,
   resolveCutoutDrop,
   resolveCutoutSpan,
+  safeCutoutCornerRadii,
   type CornerSlack,
   type CutoutCornerRadii,
 } from './wallCutoutPosition';
@@ -54,9 +55,19 @@ export function planPieceWindow(
 /** Solid kept between a window and a cross-lap notch, so a piece stays one part. */
 export const WINDOW_NOTCH_BRIDGE_MM = 2;
 
-/** Half the opening at the top edge: the shoulder round-over widens it by up to its radius. */
+/**
+ * Half the opening at the top edge. The shoulder round-over widens it by up to
+ * its radius, clamped the way the cutter's profile clamps it.
+ */
 export function windowReach(window: PieceWindow): number {
-  return window.width / 2 + window.radii.top;
+  const safe = safeCutoutCornerRadii(
+    window.radii,
+    window.width,
+    window.depth,
+    0,
+    window.cornerSlack
+  );
+  return window.width / 2 + Math.max(safe.topLeft, safe.topRight);
 }
 
 /**

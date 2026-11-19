@@ -76,3 +76,27 @@ describe('clearOfNotches', () => {
     expect(clearOfNotches(deep(), [{ offset: 0, width: 2 }], 20, 19)).toBeNull();
   });
 });
+
+describe('windowReach against a notch', () => {
+  it('reads the round-over as the cutter draws it, clamped to the opening', () => {
+    // A 25 mm radius on a 10 x 16 mm window is clamped well short of 25, so
+    // notches 27 mm off stay clear and the window keeps its depth.
+    const window = {
+      offset: 0,
+      width: 10,
+      depth: 16,
+      cornerSlack: { left: Infinity, right: Infinity },
+      radii: { top: 25, bottom: 0 },
+    };
+    const kept = clearOfNotches(
+      window,
+      [
+        { offset: 27, width: 2 },
+        { offset: -27, width: 2 },
+      ],
+      20,
+      10.25
+    );
+    expect(kept?.depth).toBe(16);
+  });
+});
