@@ -242,4 +242,25 @@ describe('MeasureTool', () => {
 
     expect(measure().points).toHaveLength(0);
   });
+
+  it('measures thickness from the clicked face, not from a crease edge behind it', () => {
+    // A crease 0.5mm under the top face, inside the snap reach: on a 1.2mm
+    // wall, the inner face's edges sit this close to a click on the outer face.
+    useDesignerStore.setState((s) => ({
+      generation: {
+        ...s.generation,
+        mesh: { ...cubeMesh(), edgeVertices: new Float32Array([-5, 0, 19.5, 5, 0, 19.5]) },
+      },
+    }));
+    useDesignerStore.getState().setMeasureActive(true);
+    useDesignerStore.getState().setMeasureMode('thickness');
+    render(<MeasureTool />);
+
+    pointer('pointerdown', 400, 300);
+    pointer('pointerup', 400, 300);
+
+    const [from, to] = measure().points;
+    expect(from.z).toBeCloseTo(20);
+    expect(to.z).toBeCloseTo(0);
+  });
 });
