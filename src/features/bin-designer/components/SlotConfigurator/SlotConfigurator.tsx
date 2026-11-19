@@ -372,6 +372,7 @@ export function SlotConfigurator() {
             min={DESIGNER_CONSTRAINTS.MIN_DIVIDER_CLEARANCE}
             max={DESIGNER_CONSTRAINTS.MAX_DIVIDER_CLEARANCE}
             step={DESIGNER_CONSTRAINTS.DIVIDER_CLEARANCE_STEP}
+            inputDecimals={2}
             size="md"
             aria-label={t('binDesigner.dividerClearance')}
           />
