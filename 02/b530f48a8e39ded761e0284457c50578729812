@@ -1,0 +1,142 @@
+src/shared/utils/wallCutoutPosition.ts
+  s_144305aaade9d6::t_cb2c33742ab2fe 399-400,404
+  s_144305aaade9d6::t_07d7d849ea61d6 359,361-398,401-403,405-414
+  s_144305aaade9d6::t_28321bc232a512 11-12,341-358
+  s_144305aaade9d6::t_ab6fb5234fefba 360
+src/shared/generation/meshPersistence.ts
+  s_144305aaade9d6::t_edc9a38ab1fdae 96-97,142
+src/features/generation/worker/generators/wallCutoutPaths.ts
+  s_144305aaade9d6::t_5d215e709567c9 222-224,451-455
+  s_144305aaade9d6::t_28321bc232a512 25,47-48
+  s_144305aaade9d6::t_e6703da199beec 199-204,399-400,582-583
+  s_144305aaade9d6::t_be0e01a4375397 18,45,84-90,92-100
+  s_144305aaade9d6::t_4f201d0f453b62 266-268,275
+  s_144305aaade9d6::t_6c4484a5da4334 357-360
+  s_144305aaade9d6::t_86b9e20e7c0826 1-17,19-24,26-36,38-44,46,49-83,101-198,205-221,225-265,269-274,276-356,361-398,401-450,456-469,508-551,553-581,584-594,600,603,605,609-611,613,615,617-619,649-650
+  s_144305aaade9d6::t_b9aa474d43d9de 552
+  s_144305aaade9d6::t_846b74b2b05638 595-596,601-602,604,606-608,612,614,616,620-648
+  s_144305aaade9d6::t_ea3be40aef82d4 37
+  s_144305aaade9d6::t_d23e08265e764b 597
+  s_144305aaade9d6::t_441aea20971512 598-599,651-652
+  s_144305aaade9d6::t_bb66868b329491 91,470-507
+src/features/generation/README.md
+  s_144305aaade9d6::t_558436610d17ad 278
+src/i18n/locales/fr.json
+  s_144305aaade9d6::t_1927cb34379652 2408
+src/features/generation/worker/generators/wallCutoutBuilder.ts
+  s_144305aaade9d6::t_09f3530aa6d1e4 490-491,571-572
+  s_144305aaade9d6::t_01a5203b4cb51b 477-489,492,499-502
+  s_144305aaade9d6::t_3759f4893444f9 12,18-26,340-341,399-406,468-476,530-539,570,573-595,616-630,633-634,648-649
+  s_144305aaade9d6::t_be0e01a4375397 17,50
+  s_144305aaade9d6::t_3e23d2b5a1c647 603
+  s_144305aaade9d6::t_3ed671cb9de633 16
+src/i18n/locales/es.json
+  s_144305aaade9d6::t_1927cb34379652 2408
+src/features/generation/worker/generators/wallCutoutPathBuilder.ts
+  s_144305aaade9d6::t_e5127c7014723a 37
+  s_144305aaade9d6::t_84b3743b21f2cb 1-36,38-50,52-57,60,63,68-72,74-76,78-81,83-89,92-101,104-106,111-112,115-172,175-210
+  s_144305aaade9d6::t_583a9eab017e84 51,58-59,61-62,64-67,73,77,82,90-91,102-103,107-110,113-114,173-174
+src/features/generation/worker/generators/dividerPatterns.ts
+  s_144305aaade9d6::t_0e1875d7297b49 252-254,342
+  s_144305aaade9d6::t_04b321a525f4f8 31,250-251,255-256,340,343-353,382-390
+  s_144305aaade9d6::t_940b031ac29167 391-393
+src/features/generation/worker/generators/wallCutoutBuilder.test.ts
+  s_144305aaade9d6::t_4908effebb4287 1008-1009
+  s_144305aaade9d6::t_8af14df522e222 81,941-1007,1010-1016
+  s_144305aaade9d6::t_53263f51bb3bc0 14-19
+  s_144305aaade9d6::t_e1fb1050a8d7c7 39-43,48,54-56,73-80
+  s_144305aaade9d6::t_3c20c3486e43c1 82
+src/features/generation/worker/generators/wallCutoutPaths.test.ts
+  s_144305aaade9d6::t_35d44f190298c5 1-71,73-121,123,126-142,144-148,153-194
+  s_144305aaade9d6::t_71f0258023b433 72,122,124-125,143,149-152
+src/i18n/locales/it.json
+  s_144305aaade9d6::t_1927cb34379652 2408
+src/features/generation/worker/generators/dividerBlendBuilder.ts
+  s_144305aaade9d6::t_41340b435c47ae 35,67,74-82,160-170,175-185,238-239,250,262,336-337,340
+  s_144305aaade9d6::t_0e1875d7297b49 171-174
+src/i18n/locales/ja.json
+  s_144305aaade9d6::t_1927cb34379652 2377
+src/features/generation/worker/generators/binGenerator.scenario.wallCutoutPaths.test.ts
+  s_144305aaade9d6::t_9d27d39e605ea5 1-5
+src/i18n/locales/ko.json
+  s_144305aaade9d6::t_1927cb34379652 2377
+src/features/generation/worker/generators/scenarios/wallCutoutPaths.ts
+  s_144305aaade9d6::t_478376ecc520b7 1-119
+  s_144305aaade9d6::t_47113086023430 120-122
+  s_3f50f4c4fd5383::t_53f3281a854b8c 123-131
+src/i18n/locales/zh-CN.json
+  s_144305aaade9d6::t_1927cb34379652 2377
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.tsx
+  s_144305aaade9d6::t_479f54735b5179 342,483
+  s_144305aaade9d6::t_f4bc8c8cc57f67 481-482,484-485
+src/features/generation/worker/generators/wallCutoutPaths.geometry.test.ts
+  s_144305aaade9d6::t_878b697295694c 162-163
+  s_144305aaade9d6::t_c6db42669147b3 160-161,164-166,168,179-207,213-218
+  s_144305aaade9d6::t_7f45e987ee5f64 1-61,64-86,88-159
+  s_144305aaade9d6::t_609ec6dbd23e61 62-63,87,167,169-178,208-212
+src/i18n/locales/cs.json
+  s_144305aaade9d6::t_1927cb34379652 2439
+src/i18n/locales/nb.json
+  s_144305aaade9d6::t_1927cb34379652 2408
+src/i18n/locales/en.ts
+  s_144305aaade9d6::t_0e1875d7297b49 4242-4243
+src/i18n/locales/pl.json
+  s_144305aaade9d6::t_1927cb34379652 2470
+src/i18n/locales/de.json
+  s_144305aaade9d6::t_1927cb34379652 2408
+src/i18n/locales/pt-BR.json
+  s_144305aaade9d6::t_1927cb34379652 2408
+apps/docs/designer/walls.md
+  s_144305aaade9d6::t_66d2c3c3a00124 102
+src/features/generation/worker/generators/binGenerator.export.wallCutoutPaths.test.ts
+  s_144305aaade9d6::t_31a088f934d1b3 1-5
+src/i18n/locales/nl.json
+  s_144305aaade9d6::t_1927cb34379652 2408
+src/i18n/locales/sv.json
+  s_144305aaade9d6::t_1927cb34379652 2408
+src/features/generation/worker/generators/pipeline/featureCacheKeyDiscipline.test.ts
+  s_144305aaade9d6::t_82e0221ae77324 113-118
+src/i18n/locales/ka.json
+  s_144305aaade9d6::t_1927cb34379652 3536
+src/features/generation/worker/generators/wallCutoutBuilder.cacheKey.test.ts
+  s_144305aaade9d6::t_886956342aea92 60-95
+src/i18n/locales/uk.json
+  s_144305aaade9d6::t_1927cb34379652 2470
+src/features/generation/worker/generators/scenarios/index.ts
+  s_144305aaade9d6::t_5f2a9a5f718882 35,110
+src/features/bin-designer/components/panel/WallCutoutsSection/useWallCutoutsSection.ts
+  s_144305aaade9d6::t_479f54735b5179 15,257-264
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.test.tsx
+  s_144305aaade9d6::t_03faa57612f34f 43-46
+  s_144305aaade9d6::t_94387d3d96e690 5
+  s_144305aaade9d6::t_c686f8322b6d35 41-42,47-79
+  s_144305aaade9d6::t_2e5689ebce0c42 1
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.honeycombJunction.test.ts.snap
+  s_144305aaade9d6::t_7d64bcb472c42b 3
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.wallCutoutPaths.test.ts.snap
+  s_144305aaade9d6::t_6fba81f953fd59 1-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "02b530f48a8e39ded761e0284457c50578729812",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_3f50f4c4fd5383": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a3f7379b7033bcc33",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
