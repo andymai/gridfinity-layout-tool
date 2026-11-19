@@ -42,11 +42,13 @@ import { SLIDE_BEARING_MM, SLIDE_SHELF_TIP_MM } from '@/shared/utils/slideLidPla
 import { resolveBinFloorMm, resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { interiorFilletBuilt } from '@/shared/utils/insideWallFloor';
 import {
+  builtCavity,
   cavityCornerRadiusMm,
   scoopRampsApply,
   type InsideWallDims,
 } from '@/shared/utils/insideWallObstacles';
 import type { WallRect } from '@/shared/utils/maximalClearRects';
+import { withBuiltFilletRequest } from '@/shared/utils/slottedFillet';
 
 const LIP_TAPER_WIDTH = GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_BIG_TAPER;
 
@@ -119,10 +121,11 @@ function lidBandBelowWallTopMm(params: BinParams, side: WallTextSide): number {
 
 /** The band an inside caption may occupy, before obstacles. */
 export function insideWallBounds(
-  params: BinParams,
+  design: BinParams,
   dims: InsideWallDims,
   side: WallTextSide
 ): WallRect | null {
+  const params = withBuiltFilletRequest(design, builtCavity(design, dims));
   const wallSpan = side === 'front' || side === 'back' ? dims.innerW : dims.innerD;
   const uLimit = wallSpan / 2 - cavityCornerRadiusMm(params);
 

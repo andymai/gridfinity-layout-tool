@@ -53,6 +53,7 @@ import { wallLabelSlots } from './wallLabelSlots';
 import { floorRaise } from './floorRaise';
 import { interiorFillet } from './interiorFillet';
 import { interiorFilletScoops } from './interiorFilletScoops';
+import { slottedFillet } from './slottedFillet';
 import { tile } from './tile';
 import { trayBottom } from './trayBottom';
 import { slideTray } from './slideTray';
@@ -145,6 +146,7 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...floorRaise,
   ...interiorFillet,
   ...interiorFilletScoops,
+  ...slottedFillet,
   ...lowProfile,
   ...nestedChamfers,
   ...pullTab,

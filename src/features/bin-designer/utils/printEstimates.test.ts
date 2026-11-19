@@ -274,13 +274,19 @@ describe('printEstimates', () => {
       const rounded = estimatePrint({ ...DEFAULT_BIN_PARAMS, interiorFilletMm: 3 });
       expect(rounded.volumeMm3).toBeGreaterThan(plain.volumeMm3);
 
+      // Removable dividers keep the fillet on the outer walls.
       const slotted = estimatePrint({ ...DEFAULT_BIN_PARAMS, style: 'slotted' });
       const slottedRounded = estimatePrint({
         ...DEFAULT_BIN_PARAMS,
         style: 'slotted',
         interiorFilletMm: 3,
       });
-      expect(slottedRounded.volumeMm3).toBe(slotted.volumeMm3);
+      expect(slottedRounded.volumeMm3).toBeGreaterThan(slotted.volumeMm3);
+
+      const lite = { ...DEFAULT_BIN_PARAMS.base, lightweight: true };
+      const liteFloor = estimatePrint({ ...DEFAULT_BIN_PARAMS, base: lite });
+      const liteRounded = estimatePrint({ ...DEFAULT_BIN_PARAMS, base: lite, interiorFilletMm: 3 });
+      expect(liteRounded.volumeMm3).toBe(liteFloor.volumeMm3);
     });
 
     it('a straight scoop adds more material than a curved one of the same size', () => {

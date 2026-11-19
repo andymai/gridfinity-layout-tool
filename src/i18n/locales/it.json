@@ -1346,7 +1346,6 @@
   "binDesigner.interiorFillet.help": "Arrotonda gli spigoli dove le pareti incontrano il fondo e gli angoli dove si incontrano tra loro.",
   "binDesigner.interiorFillet.radius": "Raggio",
   "binDesigner.interiorFillet.clamped": "Gli scomparti troppo piccoli per questo raggio si arrotondano quanto possono.",
-  "binDesigner.interiorFilletUnavailableSlotted": "Non disponibile per i bin a fessure: il raccordo riempirebbe le fessure dei divisori",
   "binDesigner.fingerScoopUnavailableSlotted": "Non disponibile per i bin a fessure o pieni",
   "binDesigner.finishing.summary.units": "griglia {grid} mm · altezza {height} mm",
   "binDesigner.fitSample.button": "Stampa test di accoppiamento",

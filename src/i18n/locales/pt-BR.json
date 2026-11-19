@@ -1346,7 +1346,6 @@
   "binDesigner.interiorFillet.help": "Arredonda as bordas onde as paredes encontram o piso e os cantos onde elas se encontram.",
   "binDesigner.interiorFillet.radius": "Raio",
   "binDesigner.interiorFillet.clamped": "Compartimentos pequenos demais para este raio são arredondados o quanto couber.",
-  "binDesigner.interiorFilletUnavailableSlotted": "Não disponível para compartimentos com ranhuras: o arredondamento preencheria as ranhuras dos divisores",
   "binDesigner.fingerScoopUnavailableSlotted": "Não disponível para compartimentos com ranhuras ou sólidos",
   "binDesigner.finishing.summary.units": "grade {grid} mm · altura {height} mm",
   "binDesigner.fitSample.button": "Imprimir teste de encaixe",

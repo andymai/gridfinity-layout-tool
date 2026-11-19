@@ -5,6 +5,22 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/features/bin-designer/constants';
 import { calculateSlotPositions, dividerInterior } from '@/shared/utils/slotMath';
 import { GhostDividerPieces } from './GhostDividerPieces';
+import { referencePieceGeometry } from './referencePieceOutline';
+import { resolveDividerFilletSeat } from '@/shared/utils/slottedFillet';
+import { baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
+
+vi.mock('./referencePieceOutline', () => ({
+  referencePieceGeometry: vi.fn(() => ({
+    getAttribute: vi.fn(() => ({
+      count: 3,
+      getX: vi.fn(() => 0),
+      getY: vi.fn(() => 0),
+      getZ: vi.fn(() => 0),
+    })),
+    getIndex: vi.fn(() => null),
+    dispose: vi.fn(),
+  })),
+}));
 
 const { boxArgs } = vi.hoisted(() => ({ boxArgs: [] as number[][] }));
 
@@ -80,6 +96,8 @@ vi.mock('three', () => {
 
   class Matrix4 {
     makeTranslation = vi.fn().mockReturnThis();
+    makeRotationZ = vi.fn().mockReturnThis();
+    multiply = vi.fn().mockReturnThis();
     identity = vi.fn().mockReturnThis();
   }
   return {
@@ -236,5 +254,84 @@ describe('GhostDividerPieces', () => {
       // Same shape as lap mode: ghosts + one reference per axis
       expect(container.querySelectorAll('mesh')).toHaveLength(3);
     });
+  });
+});
+
+describe('pieces over an interior fillet', () => {
+  const filleted = (slotOverrides: Record<string, unknown> = {}) => ({
+    ...DEFAULT_BIN_PARAMS,
+    style: 'slotted' as const,
+    width: 2,
+    depth: 2,
+    interiorFilletMm: 2.5,
+    slotConfig: {
+      ...DEFAULT_BIN_PARAMS.slotConfig,
+      x: { enabled: true, pitch: 20 },
+      y: { enabled: false, pitch: 20 },
+      ...slotOverrides,
+    },
+  });
+
+  const cornerRadius = (params: ReturnType<typeof filleted>): number => {
+    const { innerW, innerD } = dividerInterior(params);
+    const wallHeight = baseWallHeight(params.base, params.height * params.heightUnitMm);
+    const seat = resolveDividerFilletSeat(params, {
+      innerW,
+      innerD,
+      wallHeight,
+      hasLip: params.base.stackingLip,
+    });
+    if (!seat) throw new Error('no seat');
+    return seat.cornerRadius;
+  };
+
+  beforeEach(() => {
+    vi.mocked(referencePieceGeometry).mockClear();
+  });
+
+  it('rounds both ends of the reference piece and of every in-bin ghost', () => {
+    const params = filleted();
+    useDesignerStore.setState({ params });
+    render(<GhostDividerPieces />);
+    const corners = vi.mocked(referencePieceGeometry).mock.calls.map((call) => call[6]);
+    // One outline per in-bin ghost, then the reference piece's last.
+    const { innerD } = dividerInterior(params);
+    const lipOverhang = 2.6 - params.wallThickness;
+    expect(corners).toHaveLength(calculateSlotPositions(innerD, 20, lipOverhang).length + 1);
+    for (const c of corners) {
+      expect(c?.low).toBe(true);
+      expect(c?.high).toBe(true);
+      expect(c?.radius).toBeCloseTo(cornerRadius(params), 9);
+    }
+  });
+
+  it('rounds only the wall end of an insert edge piece and neither end of an interior one', () => {
+    const params = filleted({
+      y: { enabled: true, pitch: 20 },
+      crossStyle: 'insert',
+      longAxis: 'y',
+    });
+    useDesignerStore.setState({ params });
+    render(<GhostDividerPieces />);
+    const calls = vi.mocked(referencePieceGeometry).mock.calls;
+    const ends = calls.map((call) => [call[6]?.low ?? false, call[6]?.high ?? false]);
+    // The in-bin ghosts come first: long pieces take both ends, and a short
+    // segment at either wall takes that end.
+    expect(ends).toContainEqual([true, true]);
+    expect(ends).toContainEqual([false, true]);
+    // Then the reference pieces: the short edge piece rounds its wall end
+    // only, and the long piece both.
+    expect(ends.slice(-2)).toEqual([
+      [true, false],
+      [true, true],
+    ]);
+    // An interior short piece has no wall end, so it never takes an outline.
+    expect(ends).not.toContainEqual([false, false]);
+  });
+
+  it('keeps square pieces without a fillet', () => {
+    useDesignerStore.setState({ params: { ...filleted(), interiorFilletMm: undefined } });
+    render(<GhostDividerPieces />);
+    expect(referencePieceGeometry).not.toHaveBeenCalled();
   });
 });

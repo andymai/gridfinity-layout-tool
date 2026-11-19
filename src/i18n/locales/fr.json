@@ -1346,7 +1346,6 @@
   "binDesigner.interiorFillet.help": "Arrondit les arêtes où les parois rejoignent le fond, et les coins où elles se rejoignent.",
   "binDesigner.interiorFillet.radius": "Rayon",
   "binDesigner.interiorFillet.clamped": "Les compartiments trop petits pour ce rayon sont arrondis autant qu’ils le permettent.",
-  "binDesigner.interiorFilletUnavailableSlotted": "Non disponible pour les bacs à fentes : le congé remplirait les fentes des séparateurs",
   "binDesigner.fingerScoopUnavailableSlotted": "Non disponible pour les bacs à fentes ou pleins",
   "binDesigner.finishing.summary.units": "grille {grid} mm · hauteur {height} mm",
   "binDesigner.fitSample.button": "Imprimer le test d'ajustement",

@@ -28,6 +28,8 @@ import type { DisposalScope, Edge, Shape3D, ValidSolid } from 'brepjs';
 import { isNestingBase } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
+import { slottedFilletApplies, slottedFilletRequestMm } from '@/shared/utils/slottedFillet';
+import type { SlottedCavity } from '@/shared/utils/slottedFillet';
 import { effectiveRimFilletRadius } from '@/shared/utils/rimFillet';
 import type { BinParams } from '@/shared/types/bin';
 import { COPLANAR_MARGIN } from './generatorConstants';
@@ -62,14 +64,42 @@ export interface InteriorFilletBuild {
   readonly radius: number;
 }
 
-/** Each compartment's clamped fillet, in the cavity frame. */
-export function planBinInteriorFillets(input: InteriorFilletBuild): CompartmentFilletPlan[] {
+/**
+ * A slotted bin is one cavity whatever grid it still carries, and its fillet is
+ * held to what the removable pieces leave room for.
+ */
+function slottedFilletInput(input: InteriorFilletBuild): InteriorFilletBuild {
   const { params, dimensions: dim } = input;
-  // Floor raises are not built on a custom shape, so its fillet stays on the
-  // shell's floor whatever raises the design still carries.
-  const raises = isPartialMask(params.cellMask)
-    ? new Map<number, number>()
-    : resolveFloorRaises(params, dim.floorThickness, dim.interiorHeight);
+  if (params.style !== 'slotted') return input;
+  return {
+    params: {
+      ...params,
+      compartments: { ...params.compartments, cols: 1, rows: 1, cells: [0], dividerOverrides: [] },
+    },
+    dimensions: dim,
+    radius: Math.min(input.radius, slottedFilletRequestMm(params, slottedCavity(dim))),
+  };
+}
+
+export function slottedCavity(dim: BinDimensions): SlottedCavity {
+  return {
+    innerW: dim.innerW,
+    innerD: dim.innerD,
+    wallHeight: dim.wallHeight,
+    hasLip: dim.hasLip,
+  };
+}
+
+/** Each compartment's clamped fillet, in the cavity frame. */
+export function planBinInteriorFillets(build: InteriorFilletBuild): CompartmentFilletPlan[] {
+  const input = slottedFilletInput(build);
+  const { params, dimensions: dim } = input;
+  // Floor raises are not built on a custom shape or under removable dividers,
+  // so the fillet stays on the shell's floor whatever raises the design carries.
+  const raises =
+    isPartialMask(params.cellMask) || dim.isSlotted
+      ? new Map<number, number>()
+      : resolveFloorRaises(params, dim.floorThickness, dim.interiorHeight);
   return planInteriorFillets({
     params,
     innerW: dim.innerW,
@@ -379,10 +409,11 @@ import { FeatureTag } from './featureTags';
 import { buildCacheKey, compactKey, quantize, stableSerialize } from './cacheKeyUtils';
 
 /**
- * Same floor-dependence as the scoop: a slotted bin's grooves and a floor
- * opened by lite or a spacer have no junction to round.
+ * Same floor-dependence as the scoop: a floor opened by lite or a spacer has no
+ * junction to round. A slotted bin rounds its outer walls, never its pieces.
  */
 export function interiorFilletApplies(params: BinParams, dim: BinDimensions): boolean {
+  if (params.style === 'slotted') return slottedFilletApplies(params) && !dim.liteFloorOpen;
   return (
     interiorFilletRadiusMm(params) > 0 &&
     params.style === 'standard' &&
@@ -412,6 +443,10 @@ export const interiorFilletFeature: FeatureBuilder = {
         'v4',
         dim.shellKey,
         quantize(interiorFilletRadiusMm(params)),
+        // The pieces of a slotted bin hold the radius down.
+        ...(params.style === 'slotted'
+          ? [quantize(slottedFilletRequestMm(params, slottedCavity(dim)))]
+          : []),
         labelTabKeepoutsKey(labelTabKeepouts(params, dim)),
         quantize(dim.innerW),
         quantize(dim.innerD),

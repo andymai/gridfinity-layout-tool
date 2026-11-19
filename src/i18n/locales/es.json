@@ -1346,7 +1346,6 @@
   "binDesigner.interiorFillet.help": "Redondea los bordes donde las paredes tocan el suelo y las esquinas donde se tocan entre sí.",
   "binDesigner.interiorFillet.radius": "Radio",
   "binDesigner.interiorFillet.clamped": "Los compartimentos demasiado pequeños para este radio se redondean todo lo que caben.",
-  "binDesigner.interiorFilletUnavailableSlotted": "No disponible para compartimentos ranurados: el redondeo llenaría las ranuras de los divisores",
   "binDesigner.fingerScoopUnavailableSlotted": "No disponible para compartimentos ranurados o sólidos",
   "binDesigner.finishing.summary.units": "rejilla {grid} mm · altura {height} mm",
   "binDesigner.fitSample.button": "Imprimir prueba de ajuste",

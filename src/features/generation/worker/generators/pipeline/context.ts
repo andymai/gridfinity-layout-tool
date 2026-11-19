@@ -27,6 +27,7 @@ import { dividerGrooveDepth, resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { isSlottedBody } from '@/shared/utils/slotFreeWalls';
 import { effectiveRimFilletRadius } from '@/shared/utils/rimFillet';
 import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
+import { slottedFilletRequestMm } from '@/shared/utils/slottedFillet';
 import { isFractional } from '@/core/constants';
 import { resolveDetachableFeet } from '@/shared/utils/detachableFeetPlan';
 import { resolveLipNotches } from '@/shared/utils/lipNotchPlan';
@@ -381,6 +382,13 @@ export function deriveDimensions(
               ? [
                   quantize(interiorFilletRadiusMm(params)),
                   params.style,
+                  ...(params.style === 'slotted'
+                    ? [
+                        quantize(
+                          slottedFilletRequestMm(params, { innerW, innerD, wallHeight, hasLip })
+                        ),
+                      ]
+                    : []),
                   stableSerialize(params.compartments),
                   stableSerialize(params.scoop),
                   stableSerialize(params.walls),
