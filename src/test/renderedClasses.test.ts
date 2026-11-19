@@ -498,10 +498,11 @@ describe('collectRenderedClasses', () => {
 
 describe('the app source', () => {
   let rendered: RenderedClass[] = [];
-  // Coverage slows this parse of every app file past the default hook timeout.
+  // Coverage, or a busy shared CI runner, slows this parse of every app file
+  // past the default hook timeout.
   beforeAll(() => {
     rendered = collectRenderedClasses(readAppSources());
-  }, timeLimitMs(10_000));
+  }, timeLimitMs(30_000));
 
   it('is read in full', () => {
     expect(rendered.length).toBeGreaterThan(10_000);
