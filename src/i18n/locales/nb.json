@@ -3948,7 +3948,7 @@
   "inspector.newPropertyValue": "Ny egenskapsverdi",
   "inspector.noCustomProperties": "Ingen tilpassede egenskaper",
   "inspector.nonStandardStackWarning": "Kan ikke stables med standardbeholdere",
-  "inspector.notesPlaceholder": "f.eks. 2 skillevegger, STL-lenke, innhold",
+  "inspector.notesPlaceholder": "f.eks. 2 skillevegger, PLA, innhold",
   "inspector.printedAndStackHint": "Skriver ut {printed}mm · stables +{pitch}mm hver",
   "inspector.propertyValue": "Egenskapsverdi",
   "inspector.quickAddFromOtherBins": "Hurtigtillegg fra andre bins",

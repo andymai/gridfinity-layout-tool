@@ -3877,7 +3877,7 @@
   "inspector.newPropertyValue": "新規プロパティ値",
   "inspector.noCustomProperties": "カスタムプロパティはありません",
   "inspector.nonStandardStackWarning": "標準ビンと積み重ねできません",
-  "inspector.notesPlaceholder": "例:仕切り板2枚、STLリンク、内容物",
+  "inspector.notesPlaceholder": "例:仕切り板2枚、PLA、内容物",
   "inspector.printedAndStackHint": "印刷 {printed}mm・積み重ねごとに +{pitch}mm",
   "inspector.propertyValue": "プロパティ値",
   "inspector.quickAddFromOtherBins": "他のビンからクイック追加",

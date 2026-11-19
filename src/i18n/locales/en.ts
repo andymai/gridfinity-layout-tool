@@ -527,7 +527,7 @@ const en: Record<string, string> = {
   'inspector.sizeSuggestionApply': 'Apply',
   'inspector.sizeSuggestionNoFit': "Won't fit here",
   'inspector.sizeSuggestionDismiss': 'Dismiss suggestion',
-  'inspector.notesPlaceholder': 'e.g., 2 dividers, STL link, contents',
+  'inspector.notesPlaceholder': 'e.g., 2 dividers, PLA, contents',
   'inspector.toStash': 'To stash',
   'inspector.multi.title': '{count} Bins Selected',
   'inspector.multi.layer': 'Layer',

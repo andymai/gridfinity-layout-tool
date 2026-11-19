@@ -3948,7 +3948,7 @@
   "inspector.newPropertyValue": "Nuevo valor de propiedad",
   "inspector.noCustomProperties": "Sin propiedades personalizadas",
   "inspector.nonStandardStackWarning": "No se apila con bins estándar",
-  "inspector.notesPlaceholder": "ej. 2 divisores, enlace STL, contenido",
+  "inspector.notesPlaceholder": "ej. 2 divisores, PLA, contenido",
   "inspector.printedAndStackHint": "Imprime {printed}mm · apila +{pitch}mm cada uno",
   "inspector.propertyValue": "Valor de propiedad",
   "inspector.quickAddFromOtherBins": "Agregar rápidamente desde otros bins",

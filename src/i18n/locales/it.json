@@ -3948,7 +3948,7 @@
   "inspector.newPropertyValue": "Valore nuova proprietà",
   "inspector.noCustomProperties": "Nessuna proprietà personalizzata",
   "inspector.nonStandardStackWarning": "Non si impila con i bin standard",
-  "inspector.notesPlaceholder": "es. 2 divisori, link STL, contenuto",
+  "inspector.notesPlaceholder": "es. 2 divisori, PLA, contenuto",
   "inspector.printedAndStackHint": "Si stampa {printed}mm · impila +{pitch}mm ciascuno",
   "inspector.propertyValue": "Valore proprietà",
   "inspector.quickAddFromOtherBins": "Aggiunta rapida da altri bin",

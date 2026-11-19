@@ -3948,7 +3948,7 @@
   "inspector.newPropertyValue": "Valor da nova propriedade",
   "inspector.noCustomProperties": "Nenhuma propriedade personalizada",
   "inspector.nonStandardStackWarning": "Não empilha com bins padrão",
-  "inspector.notesPlaceholder": "ex. 2 divisórias, link STL, conteúdo",
+  "inspector.notesPlaceholder": "ex. 2 divisórias, PLA, conteúdo",
   "inspector.printedAndStackHint": "Imprime {printed}mm · empilha +{pitch}mm cada",
   "inspector.propertyValue": "Valor da propriedade",
   "inspector.quickAddFromOtherBins": "Adicionar rapidamente de outros bins",
