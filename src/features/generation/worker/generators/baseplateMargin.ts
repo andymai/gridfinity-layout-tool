@@ -14,7 +14,8 @@
  * grid-aligned tiles line up exactly with the body. Owned corners (see
  * `MarginPiece.ownedCorners`) are rounded with the body-scale radius so the
  * assembled plate's outer corner matches the integral plate; the seam edges
- * stay square. Rails carry no magnet holes or lightweight floor.
+ * stay square. Rails carry no magnet holes or lightweight floor. An eco plate
+ * cuts each rail with the reliefs the integral plate cuts in its footprint.
  */
 
 import {
@@ -38,10 +39,16 @@ import {
   MIN_PRINTABLE_TILE_MM,
   resolveCornerRadii,
 } from './generatorTypes';
-import type { SideMargins } from './generatorTypes';
-import { buildSlabProfile, cutAboveZ } from './baseplateSlab';
+import type { CellInfo, SideMargins } from './generatorTypes';
+import { buildEcoReliefCutters, buildSlabProfile, cutAboveZ } from './baseplateSlab';
 import { buildMarginSeamGroove, buildMarginSeamTongue } from './baseplateConnectors';
+import { railSeamFrame } from './connectorShapes';
 import { computeCellBoundariesMm, computeCellCentersMm } from './cellDecomposition';
+import {
+  ecoJointCutouts,
+  ecoSeamKeepOuts,
+  type EcoJointCutout,
+} from '@/shared/generation/ecoPlate';
 import { cutInBatches } from './baseplateBatchOps';
 import { getPocketTemplate } from './baseplatePockets';
 import { buildBaseplateSTL } from './baseplateSTL';
@@ -102,6 +109,73 @@ function railCornerRadii(
   };
 }
 
+/**
+ * Rail-local positions of the seam connectors along the running axis, or none
+ * when the seam has no connector. Recomputed from the same `cellUnits`/
+ * `fractionalEdge` the body used, then shifted by `centerOffsetMm` onto the
+ * corner-extended rail.
+ */
+function marginSeamPositions(params: ResolvedBaseplateParams, margin: MarginPiece): number[] {
+  if (params.detachMarginConnector !== true || !isMarginSeamStyle(params.connectorStyle)) {
+    return [];
+  }
+  const seam = margin.seamConnector;
+  // Keyed seams sit on cell BOUNDARIES (a two-cell junction, which is the foot
+  // layout the seated key is relieved for); tongued seams sit on cell CENTERS.
+  // Mirrors the body side in `buildConnectors`, including the empty case: a
+  // 1-cell body piece has no boundary, so a keyed rail stays flat rather than
+  // growing a lone groove at its center with nothing to mate.
+  const keyed = params.connectorStyle === 'dovetailKey';
+  // `cellUnits` counts cells along the RAIL's running axis, so it must be
+  // converted with that axis's pitch: X for a front/back rail, Y for a
+  // left/right one. Using the X pitch for both put a left/right rail's grooves
+  // at the wrong spots on a non-square grid, where they no longer met the body's
+  // (which uses the real Y pitch).
+  const runningPitch =
+    margin.side === 'front' || margin.side === 'back'
+      ? params.gridUnitMm
+      : (params.gridUnitMmY ?? params.gridUnitMm);
+  const anchors = !seam
+    ? []
+    : keyed
+      ? computeCellBoundariesMm(seam.cellUnits, runningPitch, seam.fractionalEdge)
+      : computeCellCentersMm(seam.cellUnits, runningPitch, seam.fractionalEdge);
+  const centerOffset = seam?.centerOffsetMm ?? 0;
+  const fallback = keyed ? [] : [0];
+  return (anchors.length > 0 ? anchors : fallback).map((b) => b + centerOffset);
+}
+
+/**
+ * The eco reliefs the integral plate cuts inside this rail's footprint, in the
+ * rail's frame. Planned over the whole plate, so a relief on an edge the rail
+ * shares with the body, a neighbouring rail or another segment has the size the
+ * integral plate gives it, and each piece cuts its own part of it. A rail
+ * carries no holes, so only its seam connectors keep reliefs out.
+ */
+function railEcoSlots(
+  params: ResolvedBaseplateParams,
+  margin: MarginPiece,
+  frame: readonly CellInfo[],
+  seamPositions: readonly number[],
+  railW: number,
+  railD: number
+): EcoJointCutout[] {
+  const { x: ox, y: oy } = margin.worldOffsetMm;
+  const { seamPos } = railSeamFrame(margin.side, railW, railD);
+  const horizontal = margin.side === 'front' || margin.side === 'back';
+  const sites = seamPositions.map((pos) =>
+    horizontal ? { x: ox + pos, y: oy + seamPos } : { x: ox + seamPos, y: oy + pos }
+  );
+  // A relief that only meets a rail face would leave a coplanar sliver cut.
+  const overlaps = (center: number, size: number, half: number): boolean =>
+    Math.min(center + size / 2, half) - Math.max(center - size / 2, -half) > 1e-3;
+  return ecoJointCutouts(params, frame, ecoSeamKeepOuts(sites))
+    .map((slot) => ({ ...slot, x: slot.x - ox, y: slot.y - oy }))
+    .filter(
+      (slot) => overlaps(slot.x, slot.width, railW / 2) && overlaps(slot.y, slot.depth, railD / 2)
+    );
+}
+
 /** Build a detached margin rail BREP solid, centered at the origin. */
 function buildMarginSolid(params: ResolvedBaseplateParams, margin: MarginPiece): Shape3D {
   const { railW, railD, totalHeight } = railDims(params, margin);
@@ -116,28 +190,34 @@ function buildMarginSolid(params: ResolvedBaseplateParams, margin: MarginPiece):
     profile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }
   ).extrude(-totalHeight);
 
-  if (params.overTile) {
-    const margins: SideMargins = {
-      left: params.paddingLeft,
-      right: params.paddingRight,
-      front: params.paddingFront,
-      back: params.paddingBack,
-    };
+  const { x: ox, y: oy } = margin.worldOffsetMm;
+  const margins: SideMargins = {
+    left: params.paddingLeft,
+    right: params.paddingRight,
+    front: params.paddingFront,
+    back: params.paddingBack,
+  };
+  // Every margin cell of the plate, not only this rail's: the eco plan sizes a
+  // relief on an edge two cells share from both of them.
+  const frame: CellInfo[] = params.overTile
+    ? frameCells(
+        params.width,
+        params.depth,
+        margins,
+        params.gridUnitMm,
+        MIN_PRINTABLE_TILE_MM,
+        params.overTileHalfGrid,
+        params.overTileHalfGridSolidLeftover,
+        params
+      )
+    : [];
+
+  if (frame.length > 0) {
     const throughCut = floorDepth === 0;
     const halfW = railW / 2;
     const halfD = railD / 2;
-    const { x: ox, y: oy } = margin.worldOffsetMm;
     const pockets: Shape3D[] = [];
-    for (const cell of frameCells(
-      params.width,
-      params.depth,
-      margins,
-      params.gridUnitMm,
-      MIN_PRINTABLE_TILE_MM,
-      params.overTileHalfGrid,
-      params.overTileHalfGridSolidLeftover,
-      params
-    )) {
+    for (const cell of frame) {
       // Keep only the frame cells whose center lands inside this rail's
       // footprint. Corner cells fall inside the long rail that spans them.
       const lx = cell.centerX - ox;
@@ -158,61 +238,40 @@ function buildMarginSolid(params: ResolvedBaseplateParams, margin: MarginPiece):
     if (pockets.length > 0) rail = cutInBatches(rail, pockets);
   }
 
+  const seamPositions = marginSeamPositions(params, margin);
+
+  if (params.ecoPlate === true) {
+    const slots = railEcoSlots(params, margin, frame, seamPositions, railW, railD);
+    rail = cutInBatches(rail, buildEcoReliefCutters(slots, totalHeight));
+  }
+
   // Opt-in connector: carve seam grooves into the rail's inner face to receive
   // the body's tongues — or, under `dovetailKey`, one lobe of the seated key that
   // also engages the body's own groove (splitPlanner marks the matching body edge
   // `marginSeam`). An inverted seam grows the tongues here instead, into grooves
-  // the body cuts. Positions are recomputed from the same `cellUnits`/
-  // `fractionalEdge` the body used, then shifted by `centerOffsetMm` onto the
-  // corner-extended rail.
-  if (params.detachMarginConnector === true && isMarginSeamStyle(params.connectorStyle)) {
-    const seam = margin.seamConnector;
-    // Keyed seams sit on cell BOUNDARIES (a two-cell junction, which is the foot
-    // layout the seated key is relieved for); tongued seams sit on cell CENTERS
-    //. Mirrors the body side in `buildConnectors`, including the empty
-    // case: a 1-cell body piece has no boundary, so a keyed rail stays flat rather
-    // than growing a lone groove at its center with nothing to mate.
-    const keyed = params.connectorStyle === 'dovetailKey';
-    // `cellUnits` counts cells along the RAIL's running axis, so it must be
-    // converted with that axis's pitch: X for a front/back rail, Y for a
-    // left/right one. Using the X pitch for both put a left/right rail's grooves
-    // at the wrong spots on a non-square grid, where they no longer met the body's
-    // (which uses the real Y pitch).
-    const runningPitch =
-      margin.side === 'front' || margin.side === 'back'
-        ? params.gridUnitMm
-        : (params.gridUnitMmY ?? params.gridUnitMm);
-    const anchors = !seam
-      ? []
-      : keyed
-        ? computeCellBoundariesMm(seam.cellUnits, runningPitch, seam.fractionalEdge)
-        : computeCellCentersMm(seam.cellUnits, runningPitch, seam.fractionalEdge);
-    const centerOffset = seam?.centerOffsetMm ?? 0;
-    const fallback = keyed ? [] : [0];
-    const positions = (anchors.length > 0 ? anchors : fallback).map((b) => b + centerOffset);
-    if (positions.length > 0 && marginSeamInverted(params)) {
-      const tongues = positions.map((pos) =>
-        buildMarginSeamTongue(params, margin, railW, railD, totalHeight, pos)
-      );
-      const fused = unwrap(fuseAll([rail, ...tongues] as ValidSolid[]));
-      rail.delete();
-      for (const t of tongues) t.delete();
-      rail = fused;
-    } else if (positions.length > 0) {
-      const grooves = positions.map((pos) =>
-        buildMarginSeamGroove(
-          margin.side,
-          railW,
-          railD,
-          totalHeight,
-          params.connectorStyle,
-          params.connectorFitOffset ?? 0,
-          params.nozzleSizeMm,
-          pos
-        )
-      );
-      rail = cutInBatches(rail, grooves);
-    }
+  // the body cuts.
+  if (seamPositions.length > 0 && marginSeamInverted(params)) {
+    const tongues = seamPositions.map((pos) =>
+      buildMarginSeamTongue(params, margin, railW, railD, totalHeight, pos)
+    );
+    const fused = unwrap(fuseAll([rail, ...tongues] as ValidSolid[]));
+    rail.delete();
+    for (const t of tongues) t.delete();
+    rail = fused;
+  } else if (seamPositions.length > 0) {
+    const grooves = seamPositions.map((pos) =>
+      buildMarginSeamGroove(
+        margin.side,
+        railW,
+        railD,
+        totalHeight,
+        params.connectorStyle,
+        params.connectorFitOffset ?? 0,
+        params.nozzleSizeMm,
+        pos
+      )
+    );
+    rail = cutInBatches(rail, grooves);
   }
 
   // A rail never stacks, but it butts against plates that did, so it takes

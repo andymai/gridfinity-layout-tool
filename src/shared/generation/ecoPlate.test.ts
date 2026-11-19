@@ -8,6 +8,8 @@ import {
   ecoKeepOuts,
   ecoMagnetKeepOuts,
   ecoScrewKeepOuts,
+  ecoSeamKeepOuts,
+  marginSeamConnectorSites,
   type EcoJointCutout,
   type EcoKeepOut,
 } from './ecoPlate';
@@ -240,5 +242,51 @@ describe('ecoJointCutouts', () => {
     const atEnd = ecoJointCutouts(plate({ width: 1.5, depth: 1, fractionalEdgeX: 'end' }));
     expect(atStart.some((slot) => slot.x === -10.5 && slot.width === 7)).toBe(true);
     expect(atEnd.some((slot) => slot.x === 10.5 && slot.width === 7)).toBe(true);
+  });
+});
+
+describe('marginSeamConnectorSites', () => {
+  const seamBack = {
+    left: 'exterior',
+    right: 'exterior',
+    front: 'exterior',
+    back: 'marginSeam',
+  } as const;
+
+  it('puts one tongue site on each cell center of a seam wall', () => {
+    const sites = marginSeamConnectorSites(
+      plate({ width: 2.5, connectorStyle: 'puzzle', edges: seamBack })
+    );
+    expect(sites).toEqual([
+      { x: -31.5, y: 42 },
+      { x: 10.5, y: 42 },
+      { x: 42, y: 42 },
+    ]);
+  });
+
+  it('puts keyed sites on the interior cell boundaries', () => {
+    const sites = marginSeamConnectorSites(
+      plate({ width: 2.5, connectorStyle: 'dovetailKey', edges: seamBack })
+    );
+    expect(sites).toEqual([
+      { x: -10.5, y: 42 },
+      { x: 31.5, y: 42 },
+    ]);
+  });
+
+  it('has none without a seam edge or for a style with no seam form', () => {
+    expect(marginSeamConnectorSites(plate({ connectorStyle: 'puzzle' }))).toEqual([]);
+    expect(
+      marginSeamConnectorSites(plate({ connectorStyle: 'snapClip', edges: seamBack }))
+    ).toEqual([]);
+  });
+
+  it('drops the seam relief at a tongue on the cell center', () => {
+    const params = plate({ width: 2.5, connectorStyle: 'puzzle', edges: seamBack });
+    const onSeam = (slots: readonly EcoJointCutout[]): EcoJointCutout[] =>
+      slots.filter((slot) => slot.y === 42);
+    expect(onSeam(ecoJointCutouts(params))).toHaveLength(3);
+    const kept = ecoJointCutouts(params, [], ecoSeamKeepOuts(marginSeamConnectorSites(params)));
+    expect(onSeam(kept)).toEqual([]);
   });
 });
