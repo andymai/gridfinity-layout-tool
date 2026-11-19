@@ -308,6 +308,41 @@ describe('BaseSection', () => {
       expect(useLayoutStore.getState().layout.baseplateParams?.mountMagnets?.crushRibs).toBe(true);
     });
 
+    it('keeps a typed underside magnet diameter of 6.45mm', () => {
+      useLayoutStore.getState().setBaseplateParams({
+        ...DEFAULT_BASEPLATE_PARAMS,
+        mountMagnets: { enabled: true, diameter: mm(6.5), depth: mm(2) },
+      });
+      render(<BaseSection />);
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: 'baseplate.mountMagnets.diameter.label: 6.5 mm',
+          hidden: true,
+        })
+      );
+      const input = screen.getByRole('textbox', {
+        name: 'baseplate.mountMagnets.diameter.label',
+        hidden: true,
+      });
+      fireEvent.change(input, { target: { value: '6.45' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(useLayoutStore.getState().layout.baseplateParams?.mountMagnets?.diameter).toBe(6.45);
+    });
+
+    it('steps the underside magnet diameter slider by 0.05mm', () => {
+      useLayoutStore.getState().setBaseplateParams({
+        ...DEFAULT_BASEPLATE_PARAMS,
+        mountMagnets: { enabled: true, diameter: mm(6), depth: mm(2) },
+      });
+      render(<BaseSection />);
+      const slider = screen.getByRole('slider', {
+        name: 'baseplate.mountMagnets.diameter.label',
+        hidden: true,
+      });
+      fireEvent.keyDown(slider, { key: 'ArrowRight' });
+      expect(useLayoutStore.getState().layout.baseplateParams?.mountMagnets?.diameter).toBe(6.05);
+    });
+
     it('does not warn for the ø6.5 × 2.5mm cap on a standard plate', () => {
       useLayoutStore.getState().setBaseplateParams({
         ...DEFAULT_BASEPLATE_PARAMS,
@@ -375,6 +410,25 @@ describe('BaseSection magnet press-fit options', () => {
     fireEvent.click(screen.getByRole('button', { name: 'common.customize' }));
     expect(screen.getByRole('switch', { name: 'baseplate.magnetChamfer' })).toBeDisabled();
     expect(screen.getByText('baseplate.magnetChamferLightweight')).toBeInTheDocument();
+  });
+
+  it('keeps a typed bin magnet diameter of 6.45mm', () => {
+    render(<BaseSection />);
+    fireEvent.click(
+      screen.getByRole('button', { name: 'baseplate.magnetDiameter: 6.5 mm', hidden: true })
+    );
+    const input = screen.getByRole('textbox', { name: 'baseplate.magnetDiameter', hidden: true });
+    fireEvent.change(input, { target: { value: '6.45' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(useLayoutStore.getState().layout.baseplateParams?.magnetDiameter).toBe(6.45);
+    expect(screen.getAllByText('ø6.45mm × 2mm').length).toBeGreaterThan(0);
+  });
+
+  it('steps the bin magnet diameter slider by 0.05mm', () => {
+    render(<BaseSection />);
+    const slider = screen.getByRole('slider', { name: 'baseplate.magnetDiameter', hidden: true });
+    fireEvent.keyDown(slider, { key: 'ArrowLeft' });
+    expect(useLayoutStore.getState().layout.baseplateParams?.magnetDiameter).toBe(6.45);
   });
 
   it('disables the chamfer on a hole no deeper than the lead-in and says why', () => {

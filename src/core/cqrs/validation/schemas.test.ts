@@ -567,6 +567,27 @@ describe('layout.setBaseplateParams schema', () => {
     expect(result.success).toBe(true);
   });
 
+  it('keeps two-decimal magnet diameters', () => {
+    const result = z.safeParse(schema, {
+      params: {
+        magnetHoles: true,
+        magnetDiameter: 6.45,
+        magnetDepth: 2,
+        paddingLeft: 0,
+        paddingRight: 0,
+        paddingFront: 0,
+        paddingBack: 0,
+        mountMagnets: { enabled: true, diameter: 6.45, depth: 2 },
+      },
+    });
+    expect(result.success).toBe(true);
+    const parsed = result.data as {
+      params: { magnetDiameter: number; mountMagnets: { diameter: number } };
+    };
+    expect(parsed.params.magnetDiameter).toBe(6.45);
+    expect(parsed.params.mountMagnets.diameter).toBe(6.45);
+  });
+
   it('rejects magnetDiameter below 0.5', () => {
     const result = z.safeParse(schema, {
       params: {

@@ -13,6 +13,7 @@ sources:
   - src/shared/generation/mountMagnetPlan.ts
   - src/features/generation/worker/generators/baseplateGenerator.ts
   - content/what-is-gridfinity.md
+  - src/shared/utils/magnetDiameter.ts
 ---
 
 # Magnets and screws
@@ -38,6 +39,8 @@ All three are off by default. <Ui k="baseplate.stackPrint.enable" /> removes all
 3. Set <Ui k="baseplate.magnetDepth" />. The default of 2 mm suits a 6 by 2 mm magnet.
 
 Not sure? Keep the defaults. Gridfinity magnets are 6 by 2 mm discs.
+
+The diameter changes in steps of 0.05 mm, so you can type a value such as 6.45 mm to make the fit tighter or looser.
 
 <Screenshot id="baseplates-magnets-magnet-settings" alt="Magnet holes is on and Customize is open. It shows Magnet diameter at 6.5 mm, Magnet depth at 2 mm, Crush ribs, and Chamfered mouth. Chamfered mouth is off, with a note to turn on Solid floor for a lead-in." spec="Baseplate generator, 4 by 3 plate with the default lightweight floor, Magnet holes on. Click Customize under Magnet holes. Crop to the panel from Magnet holes down to the note under Chamfered mouth." />
 
@@ -83,7 +86,7 @@ Got a steel drawer or tool chest? <Ui k="baseplate.mountMagnets.label" /> cuts m
 | <Ui k="baseplate.mountMagnets.depth.label" />    | 2 mm    | 0.5 to 2.5 mm |
 | <Ui k="baseplate.mountMagnets.perPiece.label" /> | 4       | 1 to 64       |
 
-Set the diameter to the magnet diameter plus the clearance for your printer, usually 0.2 to 0.5 mm. The depth starts at the underside, so a magnet of that height sits flush with the bottom. The Layout Tool spreads the magnets evenly over each printed piece, and a high count fills every place that it can.
+Set the diameter to the magnet diameter plus the clearance for your printer, usually 0.2 to 0.5 mm. The diameter changes in steps of 0.05 mm. The depth starts at the underside, so a magnet of that height sits flush with the bottom. The Layout Tool spreads the magnets evenly over each printed piece, and a high count fills every place that it can.
 
 It skips a crossing on a split seam, on the plate edge, or where a screw goes. If a hole is too deep or too wide for the plate, a warning appears below the depth.
 

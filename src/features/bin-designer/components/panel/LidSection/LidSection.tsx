@@ -42,6 +42,7 @@ import {
 import { LID_RAIL_SIDES, LID_ATTACHMENTS } from '@/features/bin-designer/types';
 import type { TextMode } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
+import { formatMagnetDiameter } from '@/shared/utils/magnetDiameter';
 import { CompartmentTextInput } from '../LabelTabsSection/CompartmentTextInput';
 import { FeatureToggle } from '../FeatureToggle';
 import { FeatureTip } from '../../FeatureTip';
@@ -234,7 +235,7 @@ export function LidSection() {
                 }
               >
                 {t('binDesigner.lid.retentionMagnetHint', {
-                  diameter: state.retentionMagnetDiameter.toFixed(1),
+                  diameter: formatMagnetDiameter(state.retentionMagnetDiameter),
                   depth: state.retentionMagnetDepth.toFixed(1),
                 })}
               </Hint>
@@ -299,7 +300,7 @@ export function LidSection() {
                 {state.magnetHoles && (
                   <Hint>
                     {t('binDesigner.lid.magnetSpec', {
-                      diameter: state.magnetDiameter.toFixed(1),
+                      diameter: formatMagnetDiameter(state.magnetDiameter),
                       depth: state.magnetDepth.toFixed(1),
                     })}
                   </Hint>

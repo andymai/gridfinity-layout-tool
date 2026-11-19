@@ -20,7 +20,7 @@ import {
   LID_MAGNET_DIAMETER_MAX_MM,
   LID_MAGNET_DEPTH_MIN_MM,
   LID_MAGNET_DEPTH_MAX_MM,
-  LID_MAGNET_DIMENSION_STEP_MM,
+  LID_MAGNET_DEPTH_STEP_MM,
   LID_MAGNET_EDGE_COUNT_MIN,
   LID_MAGNET_EDGE_COUNT_MAX,
   LID_MAGNET_EDGE_COUNT_STEP,
@@ -58,6 +58,7 @@ import { resolveOverhang, overhangExpansion, hasOverhang } from '@/shared/utils/
 import { matchingTrayParams } from '@/features/bin-designer/utils/matchingTray';
 import { lidWallBottomZ } from '@/features/bin-designer/components/preview/LidMesh/lidAnchorZ';
 import { lidCutoutsAllowed } from '@/shared/utils/lidCutoutPlan';
+import { MAGNET_DIAMETER_STEP_MM, snapMagnetDiameter } from '@/shared/utils/magnetDiameter';
 import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
 import {
   checkLidCompatibility,
@@ -363,7 +364,7 @@ export function useLidSection() {
     (diameter: number) => {
       const clamped = Math.min(
         LID_MAGNET_DIAMETER_MAX_MM,
-        Math.max(LID_MAGNET_DIAMETER_MIN_MM, diameter)
+        Math.max(LID_MAGNET_DIAMETER_MIN_MM, snapMagnetDiameter(diameter))
       );
       updateLid({ retentionMagnet: { ...lid.retentionMagnet, diameter: clamped } });
     },
@@ -900,7 +901,8 @@ export function useLidSection() {
       retentionMagnetDiameterMax: LID_MAGNET_DIAMETER_MAX_MM,
       retentionMagnetDepthMin: LID_MAGNET_DEPTH_MIN_MM,
       retentionMagnetDepthMax: LID_MAGNET_DEPTH_MAX_MM,
-      retentionMagnetStep: LID_MAGNET_DIMENSION_STEP_MM,
+      retentionMagnetDiameterStep: MAGNET_DIAMETER_STEP_MM,
+      retentionMagnetDepthStep: LID_MAGNET_DEPTH_STEP_MM,
       // Edge magnets per long edge — anti-sag reinforcement for big lids.
       retentionMagnetEdgeMagnets: lid.retentionMagnet.edgeMagnets,
       retentionMagnetEdgeMin: LID_MAGNET_EDGE_COUNT_MIN,

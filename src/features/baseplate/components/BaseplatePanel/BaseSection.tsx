@@ -73,6 +73,7 @@ import {
 } from '@/shared/constants/connectors';
 import { mm } from '@/core/types';
 import { magnetChamferBlocker } from '@/shared/generation/magnetHoleStyle';
+import { MAGNET_DIAMETER_STEP_MM, snapMagnetDiameter } from '@/shared/utils/magnetDiameter';
 import {
   updateBaseplateParam as updateParam,
   updateBaseplateParams as updateParams,
@@ -333,10 +334,10 @@ export function BaseSection() {
                 <SliderInput
                   label={t('baseplate.magnetDiameter')}
                   value={baseplateParams.magnetDiameter}
-                  onChange={(v) => updateParam('magnetDiameter', mm(v))}
+                  onChange={(v) => updateParam('magnetDiameter', mm(snapMagnetDiameter(v)))}
                   min={1}
                   max={20}
-                  step={0.1}
+                  step={MAGNET_DIAMETER_STEP_MM}
                   unit="mm"
                   info={t('baseplate.magnetDiameterInfo')}
                 />
@@ -546,10 +547,10 @@ export function BaseSection() {
                 <SliderInput
                   label={t('baseplate.mountMagnets.diameter.label')}
                   value={mountMagnetDiameter}
-                  onChange={(v) => updateMountMagnets({ diameter: mm(v) })}
+                  onChange={(v) => updateMountMagnets({ diameter: mm(snapMagnetDiameter(v)) })}
                   min={MOUNT_MAGNET_MIN_DIAMETER_MM}
                   max={MOUNT_MAGNET_MAX_DIAMETER_MM}
-                  step={0.1}
+                  step={MAGNET_DIAMETER_STEP_MM}
                   unit="mm"
                   labelAddon={
                     <LabelInfo label={t('baseplate.mountMagnets.diameter.label')}>

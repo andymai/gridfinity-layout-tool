@@ -1367,6 +1367,29 @@ describe('migrateParams', () => {
     expect(noRails.lid.attachment).toBe('friction');
   });
 
+  it('keeps two-decimal magnet diameters on the base, the lid and the tray bottom', () => {
+    const saved: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'lid',
+        magnetDiameter: 6.45,
+        trayBottom: {
+          ...DEFAULT_TRAY_BOTTOM,
+          retentionMagnet: { ...DEFAULT_TRAY_BOTTOM.retentionMagnet, diameter: 6.45 },
+        },
+      },
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        retentionMagnet: { ...DEFAULT_BIN_PARAMS.lid.retentionMagnet, diameter: 6.45 },
+      },
+    };
+    const result = migrateParams(JSON.parse(JSON.stringify(saved)) as BinParams);
+    expect(result.base.magnetDiameter).toBe(6.45);
+    expect(result.base.trayBottom?.retentionMagnet.diameter).toBe(6.45);
+    expect(result.lid.retentionMagnet.diameter).toBe(6.45);
+  });
+
   it('clamps out-of-range retention magnet and tray dimensions', () => {
     const result = migrateParams({
       lid: {

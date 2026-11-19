@@ -16,6 +16,7 @@ import { clearedProfile, entryChamferWidth, MIN_LOFTED_CHAMFER } from '@/shared/
 import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
 import { planNestedOpenings, type NestedOpening } from '@/shared/utils/nestedCutoutOpenings';
 import { hasTaper, resolveOverhang } from '@/shared/utils/overhang';
+import { formatMagnetDiameter } from '@/shared/utils/magnetDiameter';
 import type { useTranslation } from '@/i18n';
 import {
   railSegmentsClearOfBlocks,
@@ -58,7 +59,7 @@ export function lidValueSummary(lid: LidConfig, t: ReturnType<typeof useTranslat
   if (isSlideLid(lid)) return t('binDesigner.lid.summarySlide');
   if (lid.attachment === 'magnetic') {
     return t('binDesigner.lid.summaryMagnetic', {
-      diameter: lid.retentionMagnet.diameter.toFixed(1),
+      diameter: formatMagnetDiameter(lid.retentionMagnet.diameter),
       depth: lid.retentionMagnet.depth.toFixed(1),
     });
   }

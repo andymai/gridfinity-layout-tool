@@ -21,6 +21,12 @@ describe('validateBaseplateShare', () => {
     expect(result.valid).toBe(true);
   });
 
+  it('keeps a two-decimal magnet diameter as sent', () => {
+    const result = validate({ ...validParams, magnetHoles: true, magnetDiameter: 6.45 });
+    expect(result.valid).toBe(true);
+    if (result.valid) expect(result.payload.params.magnetDiameter).toBe(6.45);
+  });
+
   it('drops keys outside the allowlist', () => {
     const result = validate({ ...validParams, __proto__: {}, evil: 1 });
     expect(result.valid).toBe(true);
@@ -157,6 +163,17 @@ describe('validateBaseplateShare', () => {
       const result = validate({ ...validParams, mountMagnets });
       expect(result.valid).toBe(true);
       if (result.valid) expect(result.payload.params.mountMagnets).toEqual(mountMagnets);
+    });
+
+    it('keeps a two-decimal diameter as sent', () => {
+      const result = validate({
+        ...validParams,
+        mountMagnets: { ...mountMagnets, diameter: 6.45 },
+      });
+      expect(result.valid).toBe(true);
+      if (result.valid) {
+        expect(result.payload.params.mountMagnets).toEqual({ ...mountMagnets, diameter: 6.45 });
+      }
     });
 
     it('preserves optional crush ribs through the server payload', () => {

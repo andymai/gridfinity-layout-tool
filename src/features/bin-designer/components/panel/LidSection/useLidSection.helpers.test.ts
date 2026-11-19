@@ -135,6 +135,19 @@ describe('lidValueSummary', () => {
     );
   });
 
+  it('gives a 6.45mm magnetic lid its two decimals', () => {
+    const withParams: ReturnType<typeof useTranslation> = (key: string, params) =>
+      `${key} ${JSON.stringify(params)}`;
+    const lid = {
+      ...DEFAULT_LID_CONFIG,
+      attachment: 'magnetic' as const,
+      retentionMagnet: { ...DEFAULT_LID_CONFIG.retentionMagnet, diameter: 6.45 },
+    };
+    expect(lidValueSummary(lid, withParams)).toBe(
+      'binDesigner.lid.summaryMagnetic {"diameter":"6.45","depth":"2.0"}'
+    );
+  });
+
   it('reports no rails when a click-rail lid has every side off', () => {
     const lid = {
       ...DEFAULT_LID_CONFIG,

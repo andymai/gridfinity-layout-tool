@@ -163,12 +163,13 @@ export function LidAdvancedFields({
               onChange={handlers.setRetentionMagnetDiameter}
               onStep={(delta) =>
                 handlers.setRetentionMagnetDiameter(
-                  state.retentionMagnetDiameter + delta * state.retentionMagnetStep
+                  state.retentionMagnetDiameter + delta * state.retentionMagnetDiameterStep
                 )
               }
               min={state.retentionMagnetDiameterMin}
               max={state.retentionMagnetDiameterMax}
-              step={state.retentionMagnetStep}
+              step={state.retentionMagnetDiameterStep}
+              inputDecimals={2}
               size="md"
               aria-label={t('binDesigner.lid.retentionMagnetDiameterAria')}
               commitMode="deferred"
@@ -180,12 +181,12 @@ export function LidAdvancedFields({
               onChange={handlers.setRetentionMagnetDepth}
               onStep={(delta) =>
                 handlers.setRetentionMagnetDepth(
-                  state.retentionMagnetDepth + delta * state.retentionMagnetStep
+                  state.retentionMagnetDepth + delta * state.retentionMagnetDepthStep
                 )
               }
               min={state.retentionMagnetDepthMin}
               max={state.retentionMagnetDepthMax}
-              step={state.retentionMagnetStep}
+              step={state.retentionMagnetDepthStep}
               size="md"
               aria-label={t('binDesigner.lid.retentionMagnetDepthAria')}
               commitMode="deferred"

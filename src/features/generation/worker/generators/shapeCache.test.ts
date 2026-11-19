@@ -71,6 +71,13 @@ describe('socketCacheKey', () => {
     expect(a).not.toBe(b);
   });
 
+  it('gives each 0.05mm magnet diameter step its own key', () => {
+    const keys = [6.35, 6.4, 6.45, 6.5, 6.55].map((diameter) =>
+      socketCacheKey(1, 1, true, false, diameter / 2, 2.0, 1.5, false, false, '')
+    );
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
   it('differs when gridUnitMm changes', () => {
     const a = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, false, false, '', 42);
     const b = socketCacheKey(2, 2, false, false, 3.1, 2.0, 1.5, false, false, '', 50);

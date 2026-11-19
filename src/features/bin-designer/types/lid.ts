@@ -680,7 +680,8 @@ export function hingeOppositeSide(side: LidRailSide): LidRailSide {
 /**
  * Bounds for the dedicated lid-retention magnet. Separate from
  * the bin's `base` magnet so a design can hold its lid with a different magnet
- * than it uses in its feet. Defaults to the common 6mm × 2mm disc.
+ * than it uses in its feet. Defaults to the common 6mm × 2mm disc. The diameter
+ * steps on the shared `MAGNET_DIAMETER_STEP_MM` grid, the depth on its own.
  */
 export const LID_MAGNET_DIAMETER_MIN_MM = 3;
 export const LID_MAGNET_DIAMETER_MAX_MM = 15;
@@ -688,7 +689,7 @@ export const LID_MAGNET_DIAMETER_DEFAULT_MM = 6;
 export const LID_MAGNET_DEPTH_MIN_MM = 1;
 export const LID_MAGNET_DEPTH_MAX_MM = 6;
 export const LID_MAGNET_DEPTH_DEFAULT_MM = 2;
-export const LID_MAGNET_DIMENSION_STEP_MM = 0.5;
+export const LID_MAGNET_DEPTH_STEP_MM = 0.5;
 
 /**
  * Bounds for the optional edge-retention magnets. Four corner

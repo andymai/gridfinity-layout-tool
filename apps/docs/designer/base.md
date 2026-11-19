@@ -10,6 +10,7 @@ sources:
   - src/shared/generation/lowProfileBase.ts
   - src/features/generation/worker/generators/socketBuilder.ts
   - src/features/bin-designer/components/DesignerPage/useFractionalEdgeMismatch.ts
+  - src/shared/utils/magnetDiameter.ts
 ---
 
 # The base
@@ -31,7 +32,7 @@ When a body type cannot have a section, the section shows one line that tells yo
 3. Set <Ui k="binDesigner.base.magnetDiameter" /> to the diameter of your magnets.
 4. Set <Ui k="binDesigner.base.magnetDepth" /> to the thickness of your magnets.
 
-The diameter goes from 4 to 10 mm, with a default of 6.5 mm. The depth goes from 1 to 4 mm, with a default of 2 mm. Not sure? Keep the defaults. They suit a standard 6 by 2 mm magnet.
+The diameter goes from 4 to 10 mm in steps of 0.05 mm, with a default of 6.5 mm. The depth goes from 1 to 4 mm, with a default of 2 mm. Not sure? Keep the defaults. They suit a standard 6 by 2 mm magnet.
 
 ### Hold magnets without glue
 

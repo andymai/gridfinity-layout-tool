@@ -44,6 +44,17 @@ describe('computePieceFingerprint', () => {
     expect(computePieceFingerprint(a)).not.toBe(computePieceFingerprint(b));
   });
 
+  it('produces different keys for magnet diameters 0.05mm apart', () => {
+    const bin = (magnetDiameter: number) =>
+      computePieceFingerprint(makeParams({ magnetHoles: true, magnetDiameter }));
+    expect(bin(6.45)).not.toBe(bin(6.4));
+    const underside = (diameter: number) =>
+      computePieceFingerprint(
+        makeParams({ mountMagnets: { enabled: true, diameter: mm(diameter), depth: mm(2) } })
+      );
+    expect(underside(6.45)).not.toBe(underside(6.4));
+  });
+
   it('produces different keys when padding differs', () => {
     const a = makeParams({ width: 3, depth: 3, paddingLeft: 2 });
     const b = makeParams({ width: 3, depth: 3, paddingLeft: 0 });

@@ -102,10 +102,10 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_WALL_THICKNESS: 0.4, // mm (1-wall for 0.4mm nozzle)
   MAX_WALL_THICKNESS: 2.4, // mm (3-wall for 0.8mm nozzle)
   WALL_THICKNESS_STEP: 0.1, // mm (legacy — use WALL_THICKNESS_OPTIONS)
-  // Magnet holes (diameter in UI and store)
+  // Magnet holes (diameter in UI and store). The diameter step is the shared
+  // MAGNET_DIAMETER_STEP_MM, which the baseplate and the lid also use.
   MIN_MAGNET_DIAMETER: 4.0, // mm
   MAX_MAGNET_DIAMETER: 10.0, // mm
-  MAGNET_DIAMETER_STEP: 0.1, // mm
   MIN_MAGNET_HEIGHT: 1.0, // mm
   MAX_MAGNET_HEIGHT: 4.0, // mm
   MAGNET_HEIGHT_STEP: 0.1, // mm

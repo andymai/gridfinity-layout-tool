@@ -387,6 +387,18 @@ describe('BaseSection magnet press-fit options', () => {
     expect(useDesignerStore.getState().params.base).not.toHaveProperty('magnetCrushRibs');
   });
 
+  it('keeps a typed magnet diameter of 6.45mm', async () => {
+    const user = userEvent.setup();
+    render(<BaseSection />);
+    await user.click(customizeNextTo('ø6.5mm × 2mm deep'));
+    await user.click(screen.getByRole('button', { name: 'Magnet diameter: 6.5 mm' }));
+    const input = screen.getByRole('textbox', { name: 'Magnet diameter' });
+    await user.clear(input);
+    await user.type(input, '6.45{Enter}');
+    expect(useDesignerStore.getState().params.base.magnetDiameter).toBe(6.45);
+    expect(screen.getByRole('button', { name: 'Magnet diameter: 6.45 mm' })).toBeInTheDocument();
+  });
+
   it('offers the chamfer, and explains why a lightweight base cannot take it', async () => {
     const user = userEvent.setup();
     render(<BaseSection />);
