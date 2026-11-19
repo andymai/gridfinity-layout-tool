@@ -90,3 +90,27 @@ describe('computeInteriorFilletVolume on a custom shape', () => {
     expect(l).toBeCloseTo(CROSS_SECTION * 4 * 4 * 4 * 84 + columns, 6);
   });
 });
+
+describe('a slotted bin', () => {
+  it('counts the fillet the pieces leave room for, not the one asked for', () => {
+    // Slots every 10 mm hold the fillet well under the 15 mm asked for.
+    const params = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 2,
+      depth: 2,
+      height: 6,
+      interiorFilletMm: 15,
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 10 },
+        y: { enabled: false, pitch: 10 },
+      },
+    };
+    const outer = 2 * 42 - 0.5;
+    const asked = computeInteriorFilletVolume({ ...params, style: 'standard' }, outer, outer);
+    const held = computeInteriorFilletVolume({ ...params, style: 'slotted' }, outer, outer);
+    expect(held).toBeGreaterThan(0);
+    expect(held).toBeLessThan(asked * 0.5);
+    // Fully unclamped, the two would match.
+  });
+});
