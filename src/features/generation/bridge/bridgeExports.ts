@@ -480,7 +480,9 @@ export function exportDividerFitSample(
     CONNECTOR_SAMPLE_TIMEOUT_MS,
     (requestId) => ({
       type: 'EXPORT_DIVIDER_FIT_SAMPLE',
-      payload: { requestId, format, params },
+      // The sample is a wall section and a piece, so a mesh file the design
+      // uses, even one not on this device yet, must not hold it back.
+      payload: { requestId, format, params: { ...params, meshAssets: undefined, cutouts: [] } },
     })
   );
 }

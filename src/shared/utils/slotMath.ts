@@ -124,7 +124,6 @@ export function maxPieceFit(thickness: number): number {
   );
 }
 
-/** The piece fit a design gets, in mm per side. */
 export function resolvePieceFit(
   pieces: Pick<DividerPieceConfig, 'thickness' | 'pieceFit'>
 ): number {
