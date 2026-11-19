@@ -34,7 +34,7 @@ import {
 import { collectDividers, resolveOuterCutouts } from './dividerBlendResolvers';
 import {
   cutoutFrame,
-  planDividerPathCuts,
+  planEveryPathCut,
   wallCutoutPathsActive,
   type CutoutFrame,
   type DividerPathCut,
@@ -66,7 +66,7 @@ export function buildDividerBlends(params: BinParams, frame: CutoutFrame): Shape
 
   const cutoutShape = params.walls.shape;
   const paths = wallCutoutPathsActive(params, frame);
-  const lowered = paths ? pathLoweredEnds(planDividerPathCuts(params, frame)) : [];
+  const lowered = paths ? pathLoweredEnds(planEveryPathCut(params, frame)) : [];
   const cuts: Shape3D[] = [];
 
   for (const divider of dividers) {
@@ -247,7 +247,7 @@ export function computeWallPatternInputs(params: BinParams, frame: CutoutFrame):
     dividers: collectDividers(params, innerW, innerD),
     cutouts: resolveOuterCutouts(params, innerW, innerD, wallHeight),
     pathLowered: wallCutoutPathsActive(params, frame)
-      ? pathLoweredEnds(planDividerPathCuts(params, frame))
+      ? pathLoweredEnds(planEveryPathCut(params, frame))
       : [],
   };
 }
@@ -396,7 +396,7 @@ export const dividerBlendFeature: FeatureBuilder = {
         // Keyed on the solved answer: raised floors, the divider height and
         // the lip all decide which dividers a path lowers.
         wallCutoutPathsActive(params, dim)
-          ? stableSerialize(pathLoweredEnds(planDividerPathCuts(params, cutoutFrame(params, dim))))
+          ? stableSerialize(pathLoweredEnds(planEveryPathCut(params, cutoutFrame(params, dim))))
           : 'none'
       )
     );

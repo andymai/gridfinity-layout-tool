@@ -275,6 +275,13 @@ describe('computeRampZones', () => {
     // Without the path, both dividers keep the ramp that blends them into the opening.
     expect(computeRampZones('front', withInterior(false), frame)).toHaveLength(2);
     expect(computeRampZones('front', withInterior(true), frame)).toEqual([]);
+
+    // A matching back opening carries the same path, and the planner keeps one
+    // of the two coincident cuts: the back end still must not ramp.
+    const both = withInterior(true);
+    const bothWalls: BinParams = { ...both, walls: { ...both.walls, back: front } };
+    expect(computeRampZones('front', bothWalls, frame)).toEqual([]);
+    expect(computeRampZones('back', bothWalls, frame)).toEqual([]);
   });
 });
 

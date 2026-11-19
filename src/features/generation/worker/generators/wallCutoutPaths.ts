@@ -320,6 +320,15 @@ function dividerWallsAreBuilt(params: BinParams, innerW: number, innerD: number)
  * are off. `depthPadding` widens every cut across its divider.
  */
 export function planDividerPathCuts(params: BinParams, frame: CutoutFrame): DividerPathCut[] {
+  return withoutRepeats(planEveryPathCut(params, frame));
+}
+
+/**
+ * Every cut the paths lay, before `withoutRepeats` merges coincident ones.
+ * Matching openings on opposite walls lower a divider toward both walls, and
+ * only this list still names each of them.
+ */
+export function planEveryPathCut(params: BinParams, frame: CutoutFrame): DividerPathCut[] {
   if (!wallCutoutPathsActive(params, frame)) return [];
   const { innerW, innerD, dividerTopZ } = frame;
   if (!frame.dividersBaked && !dividerWallsAreBuilt(params, innerW, innerD)) return [];
@@ -417,7 +426,7 @@ export function planDividerPathCuts(params: BinParams, frame: CutoutFrame): Divi
       }
     }
   }
-  return withoutRepeats(out);
+  return out;
 }
 
 function stretchCut(
