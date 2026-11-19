@@ -107,6 +107,19 @@ export function interiorDividerTopZ(
     : resolveCompartmentDividerHeight(params.compartments.dividerHeight, dim.interiorHeight);
 }
 
+/** The frame a bin's cutters work in. */
+export function cutoutFrame(params: BinParams, dim: BinDimensions, depthPadding = 0): CutoutFrame {
+  return {
+    innerW: dim.innerW,
+    innerD: dim.innerD,
+    wallHeight: dim.wallHeight,
+    collarHeight: dim.collarHeight,
+    hasLip: dim.hasLip,
+    dividerTopZ: interiorDividerTopZ(params, dim),
+    depthPadding,
+  };
+}
+
 /** Room the cut runs up through above the nominal wall top: collar and lip. */
 export function cutoutOvershoot(collarHeight: number, hasLip: boolean): number {
   return collarHeight + (hasLip ? LIP_HEIGHT : 0) + CUT_RIM_CLEARANCE;
