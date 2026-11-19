@@ -82,6 +82,7 @@ import {
   exportLabelPlates as exportLabelPlatesImpl,
   exportLabelFitSample as exportLabelFitSampleImpl,
   exportSlideFitSample as exportSlideFitSampleImpl,
+  exportDividerFitSample as exportDividerFitSampleImpl,
   exportFitTest as exportFitTestImpl,
 } from './bridgeExports';
 import type { KernelName } from './types';
@@ -647,6 +648,10 @@ export class GenerationBridge {
 
   exportSlideFitSample(format: ExportFormat, slide: SlideConfig): Promise<BaseplateExportResult> {
     return exportSlideFitSampleImpl(this, format, slide);
+  }
+
+  exportDividerFitSample(format: ExportFormat, params: BinParams): Promise<BaseplateExportResult> {
+    return exportDividerFitSampleImpl(this, format, params);
   }
 
   exportFitTest(

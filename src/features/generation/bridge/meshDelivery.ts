@@ -36,6 +36,7 @@ const BIN_PARAMS_MESSAGES: Record<BinParamsMessage['type'], true> = {
   EXPORT_SPLIT: true,
   EXPORT_SPLIT_RANGE: true,
   EXPORT_FIT_TEST: true,
+  EXPORT_DIVIDER_FIT_SAMPLE: true,
 };
 
 const ITEM_MESSAGES: Record<ItemMessage['type'], true> = {

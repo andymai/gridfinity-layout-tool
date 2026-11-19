@@ -63,6 +63,7 @@ import {
   VALID_HANDLE_SHAPES,
 } from './defaults';
 import { clampNumber } from './paramMigrationHelpers';
+import { DESIGNER_CONSTRAINTS } from './gridfinity';
 import {
   migrateWalls,
   migrateClickRails,
@@ -254,9 +255,21 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     },
   };
 
+  const { pieceFit, ...savedPieces } =
+    (params.dividerPieces as Partial<DividerPieceConfig> | undefined) ?? {};
   const dividerPieces: DividerPieceConfig = {
     ...DEFAULT_DIVIDER_PIECE_CONFIG,
-    ...((params.dividerPieces as Partial<DividerPieceConfig> | undefined) ?? {}),
+    ...savedPieces,
+    // Never backfilled: a design saved without it keeps its params, and so its mesh cache key.
+    ...(typeof pieceFit === 'number' &&
+      Number.isFinite(pieceFit) && {
+        pieceFit: clampNumber(
+          pieceFit,
+          DESIGNER_CONSTRAINTS.MIN_DIVIDER_PIECE_FIT,
+          DESIGNER_CONSTRAINTS.MAX_DIVIDER_PIECE_FIT,
+          0
+        ),
+      }),
   };
 
   // Migrate wallPattern config, handling 3 cases:

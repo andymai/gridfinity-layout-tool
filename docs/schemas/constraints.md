@@ -49,6 +49,7 @@ bounded at 0 and 100, fractions at 0 and 1, and counts at 1.
 | `MAX_COMPARTMENT_THICKNESS`    | `2.4` | `CompartmentConfig.thickness` (maximum)                                                                                                                                 |
 | `MAX_DIMENSION`                | `16`  | `BinParams.depth` (maximum), `BinParams.width` (maximum)                                                                                                                |
 | `MAX_DIVIDER_CLEARANCE`        | `0.3` | `DividerPieceConfig.clearance` (maximum)                                                                                                                                |
+| `MAX_DIVIDER_PIECE_FIT`        | `0.3` | `DividerPieceConfig.pieceFit` (maximum)                                                                                                                                 |
 | `MAX_DIVIDER_THICKNESS`        | `2.4` | `DividerPieceConfig.thickness` (maximum)                                                                                                                                |
 | `MAX_EXTRA_WALL_HEIGHT`        | `100` | `BinParams.extraWallHeightMm` (maximum)                                                                                                                                 |
 | `MAX_HANDLE_CORNER_RADIUS`     | `10`  | `HandleConfig.cornerRadius` (maximum), `HandleSide.cornerRadius` (maximum)                                                                                              |
@@ -79,6 +80,7 @@ bounded at 0 and 100, fractions at 0 and 1, and counts at 1.
 | `MIN_COMPARTMENT_THICKNESS`    | `0.4` | `CompartmentConfig.thickness` (minimum)                                                                                                                                 |
 | `MIN_DIMENSION`                | `0.5` | `BinParams.depth` (minimum), `BinParams.width` (minimum)                                                                                                                |
 | `MIN_DIVIDER_CLEARANCE`        | `0`   | `DividerPieceConfig.clearance` (minimum)                                                                                                                                |
+| `MIN_DIVIDER_PIECE_FIT`        | `0`   | `DividerPieceConfig.pieceFit` (minimum)                                                                                                                                 |
 | `MIN_DIVIDER_THICKNESS`        | `0.8` | `DividerPieceConfig.thickness` (minimum)                                                                                                                                |
 | `MIN_EXTRA_WALL_HEIGHT`        | `0`   | `BinParams.extraWallHeightMm` (minimum)                                                                                                                                 |
 | `MIN_HANDLE_CORNER_RADIUS`     | `0`   | `HandleConfig.cornerRadius` (minimum), `HandleSide.cornerRadius` (minimum)                                                                                              |

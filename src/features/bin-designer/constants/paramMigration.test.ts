@@ -61,6 +61,32 @@ describe('Nesting body migration', () => {
 const migrate = (raw: Parameters<typeof migrateWalls>[0]): ReturnType<typeof migrateWalls> =>
   migrateWalls(raw, defaults, DISABLED_WALL_CUTOUT);
 
+describe('divider piece fit migration', () => {
+  const pieces = (pieceFit: unknown) =>
+    migrateParams({
+      dividerPieces: {
+        ...DEFAULT_BIN_PARAMS.dividerPieces,
+        pieceFit,
+      } as BinParams['dividerPieces'],
+    }).dividerPieces;
+
+  it('adds no piece fit to a design saved without one, so it builds as before', () => {
+    expect('pieceFit' in migrateParams({}).dividerPieces).toBe(false);
+    expect('pieceFit' in migrateParams(DEFAULT_BIN_PARAMS).dividerPieces).toBe(false);
+  });
+
+  it('keeps a saved piece fit and clamps one outside the range', () => {
+    expect(pieces(0.15).pieceFit).toBe(0.15);
+    expect(pieces(2).pieceFit).toBe(DESIGNER_CONSTRAINTS.MAX_DIVIDER_PIECE_FIT);
+    expect(pieces(-1).pieceFit).toBe(DESIGNER_CONSTRAINTS.MIN_DIVIDER_PIECE_FIT);
+  });
+
+  it('drops a piece fit that is not a number', () => {
+    expect('pieceFit' in pieces('0.2')).toBe(false);
+    expect('pieceFit' in pieces(Number.NaN)).toBe(false);
+  });
+});
+
 describe('migrateWalls', () => {
   it('returns the defaults when input is undefined', () => {
     expect(migrate(undefined)).toBe(defaults);
