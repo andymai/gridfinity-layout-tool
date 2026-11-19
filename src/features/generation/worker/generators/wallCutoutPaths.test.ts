@@ -5,7 +5,9 @@ import type { BinParams, WallCutout } from '@/features/bin-designer/types';
 import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { LIP_SMALL_TAPER } from './generatorConstants';
 import { planInteriorFillets } from './interiorFilletPlan';
+import { deriveDimensions } from './pipeline/context';
 import {
+  cutoutFrame,
   planDividerPathCuts,
   wallCutoutPathsActive,
   type CutoutFrame,
@@ -23,6 +25,7 @@ const FRAME: CutoutFrame = {
   collarHeight: 0,
   hasLip: true,
   dividerTopZ: 37.25,
+  dividersBaked: false,
   depthPadding: 0,
 };
 
@@ -333,6 +336,44 @@ describe('planDividerPathCuts', () => {
 
   it('is empty with no outer side cut', () => {
     expect(planDividerPathCuts(bin({}), FRAME)).toEqual([]);
+  });
+});
+
+describe('planDividerPathCuts with narrow grid cells', () => {
+  // A 2u bin, 2.6 mm dividers and 11 columns: each cell is 5.01 mm across
+  // between dividers, under the 5.2 mm the divider-wall builder needs. Each
+  // row is one compartment, so only the row divider stands.
+  const narrow = (over: Partial<BinParams['compartments']> = {}): BinParams =>
+    bin(
+      { front: cut(true) },
+      {
+        width: 2,
+        depth: 2,
+        compartments: {
+          ...DEFAULT_BIN_PARAMS.compartments,
+          cols: 11,
+          rows: 2,
+          cells: [...Array<number>(11).fill(0), ...Array<number>(11).fill(1)],
+          thickness: 2.6,
+          ...over,
+        },
+      }
+    );
+
+  it('cuts the divider the shell leaves between merged cavities', () => {
+    const params = narrow();
+    const dim = deriveDimensions(params, false);
+    expect(dim.compartmentsBakedIntoShell).toBe(true);
+    const cuts = planDividerPathCuts(params, cutoutFrame(params, dim));
+    expect(cutAt(cuts, 'front', 0, 0)?.kind).toBe('window');
+  });
+
+  it('cuts nothing where the divider-wall builder builds no dividers', () => {
+    // A short divider height takes the divider-wall builder, which skips cells this narrow.
+    const params = narrow({ dividerHeight: 10 });
+    const dim = deriveDimensions(params, false);
+    expect(dim.compartmentsBakedIntoShell).toBe(false);
+    expect(planDividerPathCuts(params, cutoutFrame(params, dim))).toEqual([]);
   });
 });
 

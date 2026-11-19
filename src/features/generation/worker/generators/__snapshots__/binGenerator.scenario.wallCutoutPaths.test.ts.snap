@@ -24,6 +24,8 @@ exports[`wall cutout paths > label tabs on the dividers it lowers 1`] = `5544`;
 
 exports[`wall cutout paths > leaning divider 1`] = `5470`;
 
+exports[`wall cutout paths > merged rows of cells too narrow for divider walls 1`] = `3484`;
+
 exports[`wall cutout paths > no stacking lip 1`] = `3580`;
 
 exports[`wall cutout paths > notched lip 1`] = `7516`;

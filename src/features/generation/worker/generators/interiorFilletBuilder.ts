@@ -358,7 +358,8 @@ function trimDoorways(
       dim.collarHeight,
       dim.hasLip,
       interiorDividerTopZ(params, dim),
-      reach
+      reach,
+      dim.compartmentsBakedIntoShell
     );
     if (!tools) return solid;
     scope.register(tools);

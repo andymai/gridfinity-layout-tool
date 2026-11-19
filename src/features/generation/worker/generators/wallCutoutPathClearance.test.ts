@@ -15,6 +15,7 @@ const FRAME: CutoutFrame = {
   collarHeight: 0,
   hasLip: true,
   dividerTopZ: 37.25,
+  dividersBaked: false,
   depthPadding: 0,
 };
 

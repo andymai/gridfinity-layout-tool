@@ -357,6 +357,37 @@ describe('wall cutout path on a bin shorter than its lip support', () => {
   }, 120_000);
 });
 
+describe('wall cutout path through a divider the shell leaves', () => {
+  beforeAll(async () => {
+    await initBrepjs();
+  }, 180_000);
+
+  it('cuts the divider between two merged rows of narrow cells', () => {
+    // 11 columns of 2.6 mm dividers leave 5.01 mm cells, under the 5.2 mm the
+    // divider-wall builder needs. Each row is one compartment, so the shell
+    // cuts two cavities and the row divider stands between them.
+    const defaults = buildParams({});
+    const mesh = gen({ front: cut(true) }, true, {
+      width: 2,
+      depth: 2,
+      compartments: {
+        ...defaults.compartments,
+        cols: 11,
+        rows: 2,
+        cells: [...Array<number>(11).fill(0), ...Array<number>(11).fill(1)],
+        thickness: 2.6,
+      },
+    });
+    assertStructurallyValid(mesh, 'narrow cells');
+    assertWatertight(mesh, 'narrow cells');
+    const outerD = 2 * GRID_SIZE - TOLERANCE;
+    const floor = topAt(mesh, N, -outerD / 2 + WALL / 2);
+    // The row divider at y = 0: in the opening's span, then past it.
+    expect(topAt(mesh, N, N)).toBeCloseTo(floor, 1);
+    expect(topAt(mesh, -30 + N, N) - floor).toBeGreaterThan(10);
+  }, 120_000);
+});
+
 describe('wall cutout path with a fillet wider than its compartments', () => {
   beforeAll(async () => {
     await initBrepjs();

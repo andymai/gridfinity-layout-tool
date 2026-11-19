@@ -134,4 +134,15 @@ export const wallCutoutPaths: ScenarioCase[] = [
     compartments: { cols: 3, rows: 1, cells: [0, 1, 2], thickness: 1.2 },
     walls: walls(['front'], {}, { ...ON, width: 60, depth: 100 }),
   }),
+  path('merged rows of cells too narrow for divider walls', {
+    width: 2,
+    depth: 2,
+    compartments: {
+      cols: 11,
+      rows: 2,
+      cells: [...Array<number>(11).fill(0), ...Array<number>(11).fill(1)],
+      thickness: 2.6,
+    },
+    walls: walls(['front']),
+  }),
 ];

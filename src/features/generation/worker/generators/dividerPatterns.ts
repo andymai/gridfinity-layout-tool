@@ -28,7 +28,7 @@ import { BOTTOM_SOLID_SKIRT, CUTOUT_BORDER_WIDTH, TOP_KEEP_OUT } from './wallPat
 import { interiorFilletCornerMm, interiorFilletRiseMm } from '@/shared/utils/interiorFillet';
 import { resolveFloorRaises } from './floorRaisePlan';
 import { planScoopRamps, scoopRampsApply } from './scoopRampPlan';
-import { interiorDividerTopZ, planDividerPathCuts, wallCutoutPathsActive } from './wallCutoutPaths';
+import { cutoutFrame, planDividerPathCuts, wallCutoutPathsActive } from './wallCutoutPaths';
 import type { BinDimensions } from './pipeline/types';
 
 /**
@@ -340,17 +340,7 @@ export function planDividerPatterns(
   const paths = wallCutoutPathsActive(params, dim);
   const interiorCutout =
     params.walls.enabled && params.walls.interior.enabled && !paths ? params.walls.interior : null;
-  const pathCuts = paths
-    ? planDividerPathCuts(params, {
-        innerW,
-        innerD,
-        wallHeight: dim.wallHeight,
-        collarHeight: dim.collarHeight,
-        hasLip: dim.hasLip,
-        dividerTopZ: interiorDividerTopZ(params, dim),
-        depthPadding: 0,
-      })
-    : [];
+  const pathCuts = paths ? planDividerPathCuts(params, cutoutFrame(params, dim)) : [];
   const interiorCutHeight = dim.wallHeight - params.wallThickness;
 
   // A rounded vertical corner at each junction widens it along the divider.

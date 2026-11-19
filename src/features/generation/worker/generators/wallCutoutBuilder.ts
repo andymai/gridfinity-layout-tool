@@ -15,6 +15,7 @@ import { interiorDividerSegments } from './compartmentBuilder';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { pathWallClearance } from './wallCutoutPathClearance';
 import {
+  cutoutFrame,
   interiorDividerTopZ,
   planDividerPathCuts,
   planOuterCutoutTools,
@@ -280,22 +281,23 @@ export function buildWallCutoutCuts(
   hasLip: boolean,
   dividerTopZ: number,
   /** Extra reach either side of the wall, for trimming what stands in front of it. */
-  depthPadding = 0
+  depthPadding = 0,
+  /** See {@link CutoutFrame.dividersBaked}. */
+  dividersBaked = false
 ): Shape3D | null {
   if (!params.walls.enabled) return null;
 
   return withScope((scope: DisposalScope): Shape3D | null => {
-    const result = buildWallCutoutCutsInScope(
-      scope,
-      params,
+    const result = buildWallCutoutCutsInScope(scope, params, {
       innerW,
       innerD,
       wallHeight,
       collarHeight,
       hasLip,
       dividerTopZ,
-      depthPadding
-    );
+      dividersBaked,
+      depthPadding,
+    });
     // The fused/returned shape is registered in `scope` (directly or via
     // fuseAllOrNull's single-element passthrough). Clone it so the original
     // can be safely disposed when the scope exits, while the caller receives
@@ -434,14 +436,9 @@ function planWallCutoutTools(
 function buildWallCutoutCutsInScope(
   scope: DisposalScope,
   params: BinParams,
-  innerW: number,
-  innerD: number,
-  wallHeight: number,
-  collarHeight: number,
-  hasLip: boolean,
-  dividerTopZ: number,
-  depthPadding: number
+  frame: CutoutFrame
 ): Shape3D | null {
+  const { innerW, innerD, wallHeight, collarHeight, hasLip, dividerTopZ, depthPadding } = frame;
   const extrudeDepth = cutterDepth(params, hasLip, depthPadding);
   const cutShapes = planWallCutoutTools(
     params,
@@ -466,15 +463,6 @@ function buildWallCutoutCutsInScope(
       tool.collarHeight
     )
   );
-  const frame: CutoutFrame = {
-    innerW,
-    innerD,
-    wallHeight,
-    collarHeight,
-    hasLip,
-    dividerTopZ,
-    depthPadding,
-  };
   const pathCuts = buildDividerPathCutsInScope(scope, params, frame, (tool, depth, position) =>
     buildSingleCutoutInScope(
       scope,
@@ -524,7 +512,9 @@ export function wallCutoutReaches(
   collarHeight: number,
   hasLip: boolean,
   dividerTopZ: number,
-  depthPadding = 0
+  depthPadding = 0,
+  /** See {@link CutoutFrame.dividersBaked}. */
+  dividersBaked = false
 ): WallCutoutReach[] {
   if (!params.walls.enabled) return [];
   const across = cutterDepth(params, hasLip, depthPadding) / 2;
@@ -535,6 +525,7 @@ export function wallCutoutReaches(
     collarHeight,
     hasLip,
     dividerTopZ,
+    dividersBaked,
     depthPadding,
   }).map(pathCutReach);
   const walls = planWallCutoutTools(
@@ -614,16 +605,8 @@ export const wallCutoutsFeature: FeatureBuilder = {
     // cellMask presence + shape affect the polygon-edge resolution, so
     // include the mask hash (via context's derived maskKey) to prevent
     // rect-bin cache bleed into polygon bins with identical wall config.
-    const dividerTopZ = interiorDividerTopZ(params, dim);
-    const frame: CutoutFrame = {
-      innerW: dim.innerW,
-      innerD: dim.innerD,
-      wallHeight: dim.wallHeight,
-      collarHeight: dim.collarHeight,
-      hasLip: dim.hasLip,
-      dividerTopZ,
-      depthPadding: 0,
-    };
+    const frame = cutoutFrame(params, dim);
+    const { dividerTopZ } = frame;
     // Keyed on the solved paths rather than their inputs: label tabs, raised
     // floors, the lip and the fillet all move them, and no list stays complete.
     const pathKey = wallCutoutPathsActive(params, frame)
@@ -659,7 +642,9 @@ export const wallCutoutsFeature: FeatureBuilder = {
       ctx.dimensions.wallHeight,
       ctx.dimensions.collarHeight,
       ctx.dimensions.hasLip,
-      interiorDividerTopZ(ctx.params, ctx.dimensions)
+      interiorDividerTopZ(ctx.params, ctx.dimensions),
+      0,
+      ctx.dimensions.compartmentsBakedIntoShell
     );
     return result ? [result] : null;
   },

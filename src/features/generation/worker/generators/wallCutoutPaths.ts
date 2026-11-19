@@ -82,6 +82,11 @@ export interface CutoutFrame {
   readonly hasLip: boolean;
   /** Where the fixed dividers end, in the body frame. */
   readonly dividerTopZ: number;
+  /**
+   * The shell leaves the dividers between its compartment cavities. Otherwise
+   * the divider-wall builder adds them, and skips cells too narrow for them.
+   */
+  readonly dividersBaked: boolean;
   /** Extra reach either side of what a cut trims, for clearing what stands against it. */
   readonly depthPadding: number;
 }
@@ -112,6 +117,7 @@ export function cutoutFrame(params: BinParams, dim: BinDimensions, depthPadding 
     collarHeight: dim.collarHeight,
     hasLip: dim.hasLip,
     dividerTopZ: interiorDividerTopZ(params, dim),
+    dividersBaked: dim.compartmentsBakedIntoShell,
     depthPadding,
   };
 }
@@ -300,8 +306,8 @@ function onWall(x: number, y: number, innerW: number, innerD: number): boolean {
   );
 }
 
-/** Mirror of the compartment builder's guard: too-small cells get no dividers. */
-function dividersAreBuilt(params: BinParams, innerW: number, innerD: number): boolean {
+/** Mirror of the divider-wall builder's guard: too-small cells get no dividers. */
+function dividerWallsAreBuilt(params: BinParams, innerW: number, innerD: number): boolean {
   const { cols, rows, thickness } = params.compartments;
   if (cols <= 1 && rows <= 1) return false;
   const effW = (innerW - (cols - 1) * thickness) / cols;
@@ -316,7 +322,7 @@ function dividersAreBuilt(params: BinParams, innerW: number, innerD: number): bo
 export function planDividerPathCuts(params: BinParams, frame: CutoutFrame): DividerPathCut[] {
   if (!wallCutoutPathsActive(params, frame)) return [];
   const { innerW, innerD, dividerTopZ } = frame;
-  if (!dividersAreBuilt(params, innerW, innerD)) return [];
+  if (!frame.dividersBaked && !dividerWallsAreBuilt(params, innerW, innerD)) return [];
 
   const outers = planOuterCutoutTools(
     params,

@@ -54,6 +54,7 @@ const FRAME: CutoutFrame = {
   collarHeight: 0,
   hasLip: true,
   dividerTopZ: WALL_HEIGHT - LIP_SMALL_TAPER,
+  dividersBaked: false,
   depthPadding: 0,
 };
 
@@ -253,6 +254,7 @@ describe('computeRampZones', () => {
       collarHeight: 0,
       hasLip: false,
       dividerTopZ: 37.25,
+      dividersBaked: false,
       depthPadding: 0,
     };
     const front = { ...DISABLED_WALL_CUTOUT, enabled: true, widthMm: 39, depthMm: 18 };
