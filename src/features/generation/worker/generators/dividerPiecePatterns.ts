@@ -36,6 +36,8 @@ export interface PiecePatternInput {
   readonly notches: readonly PieceObstruction[];
   /** Full-height face grooves (receptacles / snap score lines). */
   readonly grooves: readonly PieceObstruction[];
+  /** The interior wall cutout, opening `depth` down from the top edge. */
+  readonly window?: PieceObstruction & { readonly depth: number };
   /** Solid margin held around every obstruction and at both ends. */
   readonly border: number;
 }
@@ -83,6 +85,18 @@ export function planPiecePattern(input: PiecePatternInput): PiecePatternPlan | n
       uMin: obstruction.offset - half,
       uMax: obstruction.offset + half,
       zMin: 0,
+      zMax: bandTop,
+    });
+  }
+
+  // Only the window and its border, as on a fixed divider: below it the piece
+  // is whole, so the pattern carries on underneath.
+  if (input.window) {
+    const half = input.window.width / 2 + border;
+    keepOuts.push({
+      uMin: input.window.offset - half,
+      uMax: input.window.offset + half,
+      zMin: height - input.window.depth - border,
       zMax: bandTop,
     });
   }

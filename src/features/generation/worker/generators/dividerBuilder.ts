@@ -43,6 +43,7 @@ import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
 import { lidKeepoutRing } from '@/shared/constants/lidKeepout';
 import { getEffectiveSlotDimensions } from './slotBuilder';
 import { cutPiecePattern, resolvePiecePatternContext } from './dividerPiecePatternBuilder';
+import { pieceWindowCutter } from './dividerPieceWindowCut';
 import type { PieceGeometry } from './dividerPiecePatternBuilder';
 import type { PieceObstruction } from './dividerPiecePatterns';
 import {
@@ -420,10 +421,12 @@ export function buildUniqueDividerPieces(
   const tabDepth = tabEngagement(slotDepth, clearance);
   const columns = (positions: readonly number[], width: number): PieceObstruction[] =>
     positions.map((offset) => ({ offset, width }));
+  const windowed = pieceWindowCutter(params, dividerHeight, thickness);
   const pattern = (piece: Shape3D, geometry: PieceGeometry): Shape3D => {
-    const planned = planPieceSeams(geometry, dividerHeight, fit);
+    const { cutPiece, geometry: withWindow } = windowed(piece, geometry);
+    const planned = planPieceSeams(withWindow, dividerHeight, fit);
     pendingSeams = planned.seams;
-    return patternCtx ? cutPiecePattern(piece, patternCtx, planned.geometry) : piece;
+    return patternCtx ? cutPiecePattern(cutPiece, patternCtx, planned.geometry) : cutPiece;
   };
   // Every wall tab seats past a retention throat, so relieve every piece's tab
   // neck (inert at receptacle/free ends). Length varies per piece. The lid
@@ -639,6 +642,7 @@ export function buildAuthoredDividerPieces(
   const specs = computeAuthoredDividers(segments, innerW, innerD, thickness, slotDepth, clearance);
 
   const patternCtx = resolvePiecePatternContext(params, innerW, innerD, dividerHeight, thickness);
+  const windowed = pieceWindowCutter(params, dividerHeight, thickness);
   // Authored pieces shorten their length at abutting ends rather than carrying
   // a tab there, so holding the full tab depth at both ends is conservative —
   // a little extra solid margin, never a perforated tab.
@@ -667,15 +671,13 @@ export function buildAuthoredDividerPieces(
       thickness,
       spec.fromTop
     );
-    const planned = planPieceSeams(
-      {
-        length: spec.length,
-        tabEngagement: tabDepth,
-        notches: spec.notchOffsets.map((offset) => ({ offset, width: slotWidth })),
-      },
-      dividerHeight,
-      fit
-    );
+    const { cutPiece, geometry } = windowed(shape, {
+      length: spec.length,
+      tabEngagement: tabDepth,
+      notches: spec.notchOffsets.map((offset) => ({ offset, width: slotWidth })),
+    });
+    shape = cutPiece;
+    const planned = planPieceSeams(geometry, dividerHeight, fit);
     if (patternCtx) shape = cutPiecePattern(shape, patternCtx, planned.geometry);
     // Relieve the tab neck so a wall-anchored end's throat catches; inert at
     // abutting/T-junction ends that carry no tab.
