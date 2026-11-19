@@ -1,0 +1,68 @@
+src/features/bin-designer/components/preview/GhostDividerPieces/useDividerBedFit.test.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 1-38
+src/features/generation/worker/generators/dividerSeamPlan.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 8,10-18
+src/shared/utils/authoredDividerMath.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 138-152
+src/features/bin-designer/components/preview/GhostDividerPieces/useDividerBedFit.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 1-24
+src/shared/utils/dividerJoint.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 1-42
+src/features/bin-designer/components/preview/GhostDividerPieces/referencePieceOutline.test.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 1-88
+src/features/bin-designer/hooks/useExport.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 30,183
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 40,46-47,82-83,427-430,432,582-583,649,678-679,685,687-688
+src/shared/utils/slotMath.test.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 420-434
+src/features/generation/worker/generators/dividerPiecePatternBuilder.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 20,44,95
+src/features/generation/worker/generators/dividerSplit.test.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 94-125
+src/features/bin-designer/components/preview/GhostDividerPieces/GhostDividerPieces.tsx
+  s_144305aaade9d6::t_e5a32fcb49f0d0 36,38-45,138,159,163-164,179-182,184-194,458-482,485-499,513,516,519-520,528,549-551
+src/shared/utils/binSplitFit.test.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 4,322-351
+  s_144305aaade9d6::t_223e8ea7c8faec 352
+src/features/bin-designer/components/preview/GhostDividerPieces/referencePieceOutline.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 1-155
+src/shared/utils/binSplitFit.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 203-214
+src/shared/utils/authoredDividerMath.test.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 3,85-99
+  s_144305aaade9d6::t_3088c4fd599085 100
+src/shared/utils/dividerPieceWindow.test.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 1-140
+src/shared/utils/dividerPieceWindow.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 1-127
+src/features/generation/worker/generators/dividerPiecePatterns.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 39-40,92-99
+  s_144305aaade9d6::t_a43406c7248d23 100-103
+src/features/generation/worker/generators/dividerPiecePatterns.test.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 59-66
+src/features/generation/worker/generators/dividerPieceWindow.kernel.test.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 1-258
+src/features/generation/worker/generators/dividerPieceWindowCut.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 1-115
+src/shared/utils/slotMath.ts
+  s_144305aaade9d6::t_e5a32fcb49f0d0 535-536,577-586,590,599-601,613-615
+apps/docs/designer/walls.md
+  s_144305aaade9d6::t_e5a32fcb49f0d0 12,103
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "94592eea3d253eda0a05ad42f714e88649ccd4ad",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
