@@ -41,6 +41,7 @@ export type WorkerMessage =
   | ExportLabelPlatesMessage
   | ExportLabelFitSampleMessage
   | ExportSlideFitSampleMessage
+  | ExportDividerFitSampleMessage
   | ExportFitTestMessage
   | ExportDividersMessage
   | ExportCombinedMessage
@@ -300,6 +301,23 @@ export interface ExportSlideFitSamplePayload {
   readonly requestId: string;
   readonly format: ExportFormat;
   readonly slide: SlideConfig;
+}
+
+/**
+ * Export the divider fit sample: a short wall section with one slot cut as the
+ * bin cuts it, plus a short divider piece end with the design's piece fit.
+ * Carries the whole `BinParams` because the slot and the piece follow the
+ * design. Reuses the BASEPLATE_EXPORT_RESULT response shape.
+ */
+export interface ExportDividerFitSampleMessage {
+  readonly type: 'EXPORT_DIVIDER_FIT_SAMPLE';
+  readonly payload: ExportDividerFitSamplePayload;
+}
+
+export interface ExportDividerFitSamplePayload {
+  readonly requestId: string;
+  readonly format: ExportFormat;
+  readonly params: BinParams;
 }
 
 export interface ExportLabelFitSampleMessage {

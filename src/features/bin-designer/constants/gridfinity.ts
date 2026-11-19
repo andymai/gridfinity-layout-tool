@@ -130,6 +130,9 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_DIVIDER_CLEARANCE: 0.0, // mm
   MAX_DIVIDER_CLEARANCE: 0.3, // mm
   DIVIDER_CLEARANCE_STEP: 0.05, // mm
+  MIN_DIVIDER_PIECE_FIT: 0.0, // mm per side
+  MAX_DIVIDER_PIECE_FIT: 0.3, // mm per side
+  DIVIDER_PIECE_FIT_STEP: 0.05, // mm
   // Finger scoop
   MIN_SCOOP_RADIUS: 5, // mm — floor for both the height (rise) and run inputs
   MAX_SCOOP_RADIUS: 25, // mm — default auto-height ceiling; also the legacy manual cap

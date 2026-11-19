@@ -11,7 +11,10 @@ import {
   getEffectiveSlotDimensions,
   getDividerLockPlan,
   getReceptacleDepth,
+  lapNotchWidth,
+  maxPieceFit,
   resolveCompartmentDividerHeight,
+  resolvePieceFit,
   resolveCrossDividerMode,
   resolvePartialStyle,
   slottedHasDividers,
@@ -581,5 +584,33 @@ describe('resolveBinFloorMm on a flat slotted bin', () => {
       1.2 + DIVIDER_FLOOR_GROOVE_DEPTH,
       9
     );
+  });
+});
+
+describe('piece fit', () => {
+  it('reads an absent or unusable fit as 0, the piece the slot was cut for', () => {
+    for (const pieceFit of [undefined, 0, -0.1, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(resolvePieceFit({ thickness: 1.6, pieceFit })).toBe(0);
+    }
+  });
+
+  it('keeps a fit inside the range', () => {
+    expect(resolvePieceFit({ thickness: 1.6, pieceFit: 0.15 })).toBe(0.15);
+  });
+
+  it('caps the fit at the range, and where a seat would drop below 0.6mm', () => {
+    expect(maxPieceFit(1.6)).toBe(0.3);
+    expect(resolvePieceFit({ thickness: 1.6, pieceFit: 1 })).toBe(0.3);
+    expect(maxPieceFit(0.8)).toBeCloseTo(0.1, 9);
+    expect(resolvePieceFit({ thickness: 0.8, pieceFit: 0.3 })).toBeCloseTo(0.1, 9);
+    expect(0.8 - 2 * maxPieceFit(0.8)).toBeCloseTo(0.6, 9);
+  });
+
+  it('opens a cross-lap notch to the slot width, plus the fit on each side', () => {
+    const pieces = { thickness: 1.6, clearance: 0.25 };
+    const { slotWidth } = getEffectiveSlotDimensions(1.2, pieces.thickness, pieces.clearance);
+    expect(lapNotchWidth(pieces)).toBe(slotWidth);
+    expect(lapNotchWidth({ ...pieces, pieceFit: 0 })).toBe(slotWidth);
+    expect(lapNotchWidth({ ...pieces, pieceFit: 0.1 })).toBeCloseTo(slotWidth + 0.2, 9);
   });
 });

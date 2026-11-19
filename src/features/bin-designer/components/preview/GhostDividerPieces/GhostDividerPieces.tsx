@@ -30,6 +30,7 @@ import {
   dividerSeatZ,
   getEffectiveSlotDimensions,
   getReceptacleDepth,
+  lapNotchWidth,
   resolveCrossDividerMode,
   dividerInterior,
   MIN_WALL_FOR_SLOTS,
@@ -338,11 +339,12 @@ export function GhostDividerPieces() {
   const ghostVisible = shouldShow && geometry !== null && geometry !== hiddenGeometry;
 
   // ── Reference dividers: one piece per enabled axis, offset from the bin ──
-  // Tab thickness simplifies to exactly `thickness` (slotWidth - 2*clearance
-  // = thickness + 2*clearance - 2*clearance), so a single-direction divider
-  // is a plain rectangular wall. With both directions enabled, each piece
-  // carries cross-lap notches (X pieces notched from the top, Y from the
-  // bottom) — modeled here as merged box segments to match the export.
+  // A single-direction divider is a plain rectangular wall. With both
+  // directions enabled, each piece carries cross-lap notches (X pieces notched
+  // from the top, Y from the bottom), modeled here as merged box segments to
+  // match the export. The neck relief and the piece fit's thinning take at most
+  // 0.6mm off the faces and leave the outline alone, too little to read at
+  // preview scale, so the piece shows its full thickness.
   const dividerHeight = useMemo(() => {
     if (!shouldShow) return 0;
     return calculateDividerPieceHeight(dividerPieces, wallHeight, hasLip, seatZ);
@@ -352,11 +354,8 @@ export function GhostDividerPieces() {
     if (!shouldShow) return [];
 
     const { thickness, clearance } = dividerPieces;
-    const { slotWidth, slotDepth } = getEffectiveSlotDimensions(
-      wallThickness,
-      thickness,
-      clearance
-    );
+    const { slotDepth } = getEffectiveSlotDimensions(wallThickness, thickness, clearance);
+    const notchWidth = lapNotchWidth(dividerPieces);
     if (dividerHeight <= 0) return [];
 
     const bothAxes = slotConfig.x.enabled && slotConfig.y.enabled;
@@ -391,7 +390,7 @@ export function GhostDividerPieces() {
         },
       ];
 
-      for (const seg of slotSegments(notchPositions, length, slotWidth)) {
+      for (const seg of slotSegments(notchPositions, length, notchWidth)) {
         boxes.push({
           w: seg.len,
           d: thickness,
@@ -473,7 +472,7 @@ export function GhostDividerPieces() {
           planned &&
           clearOfNotches(
             planned,
-            notches.map((offset) => ({ offset, width: slotWidth })),
+            notches.map((offset) => ({ offset, width: notchWidth })),
             dividerHeight,
             notchDepth
           );
@@ -489,7 +488,7 @@ export function GhostDividerPieces() {
                 thickness,
                 notches.map((offset) => ({
                   offset,
-                  width: slotWidth,
+                  width: notchWidth,
                   depth: notchDepth,
                   fromTop: notchFromTop,
                 })),

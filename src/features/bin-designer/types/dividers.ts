@@ -82,6 +82,12 @@ export interface DividerPieceConfig {
   /** Fit clearance in mm (subtracted from each side) */
   readonly clearance: number;
   /**
+   * Piece-side fit in mm per side. Thins each piece where it seats in the bin
+   * and widens its cross-lap notches, so a tight fit is fixed by reprinting the
+   * dividers, not the bin. Absent means 0, the piece as the slot was cut for.
+   */
+  readonly pieceFit?: number;
+  /**
    * Cut a channel into the floor under each divider so its bottom edge is
    * seated. Off prints dividers for a bin made before the groove existed.
    */

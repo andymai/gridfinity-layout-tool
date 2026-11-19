@@ -12,6 +12,7 @@ import type {
   ExportLabelPlatesMessage,
   ExportLabelFitSampleMessage,
   ExportSlideFitSampleMessage,
+  ExportDividerFitSampleMessage,
   ExportFitTestMessage,
   ExportDividersMessage,
   ExportCombinedMessage,
@@ -42,6 +43,7 @@ import {
   shouldGenerateKnifeRest,
 } from '@/shared/utils/knifeRestPlan';
 import { exportSlideFitSample } from '../generators/slideFitSample';
+import { exportDividerFitSample } from '../generators/dividerFitSample';
 import { exportFitTestSlice } from '../generators/fitTestSlice';
 import { exportFitTestOutline } from '../generators/fitTestOutline';
 import { ensureDesignFonts, ensureFontsLoaded } from '../wasmInstantiator';
@@ -223,6 +225,23 @@ export async function handleExportSlideFitSample(
       return { data: result.data, format: payload.format, fileName: result.fileName };
     },
     'Slide fit sample export failed',
+    (p) => [p.data],
+    classifyExportError
+  );
+}
+
+export async function handleExportDividerFitSample(
+  message: ExportDividerFitSampleMessage
+): Promise<void> {
+  const payload = message.payload;
+  await runExport(
+    payload.requestId,
+    'BASEPLATE_EXPORT_RESULT',
+    async () => {
+      const result = await exportDividerFitSample(payload.params, payload.format);
+      return { data: result.data, format: payload.format, fileName: result.fileName };
+    },
+    'Divider fit sample export failed',
     (p) => [p.data],
     classifyExportError
   );
