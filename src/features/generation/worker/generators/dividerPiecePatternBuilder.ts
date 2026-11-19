@@ -17,7 +17,7 @@ import type { BinParams } from '@/shared/types/bin';
 import { resolvePanelFactory } from './dividerPatternBuilder';
 import type { PanelFactory } from './dividerPatternBuilder';
 import { planPiecePattern } from './dividerPiecePatterns';
-import type { PieceObstruction } from './dividerPiecePatterns';
+import type { PieceObstruction, PiecePatternInput } from './dividerPiecePatterns';
 
 /**
  * Overshoot past each face of a flat piece, per side (mm). A removable piece
@@ -41,6 +41,7 @@ export interface PieceGeometry {
   readonly tabEngagement: number;
   readonly notches?: readonly PieceObstruction[];
   readonly grooves?: readonly PieceObstruction[];
+  readonly window?: PiecePatternInput['window'];
 }
 
 /**
@@ -91,6 +92,7 @@ export function cutPiecePattern(
     tabEngagement: geometry.tabEngagement,
     notches: geometry.notches ?? [],
     grooves: geometry.grooves ?? [],
+    ...(geometry.window ? { window: geometry.window } : {}),
     border: ctx.factory.border,
   });
   if (!plan) return piece;

@@ -33,7 +33,16 @@ import {
   resolveCrossDividerMode,
   dividerInterior,
   MIN_WALL_FOR_SLOTS,
+  tabEngagement,
 } from '@/shared/utils/slotMath';
+import {
+  clearOfNotches,
+  keepBottomBand,
+  planPieceWindow,
+  windowBottomBand,
+} from '@/shared/utils/dividerPieceWindow';
+import { useDividerBedFit } from './useDividerBedFit';
+import { referencePieceGeometry } from './referencePieceOutline';
 
 const GHOST_COLOR = '#22d3ee';
 const GHOST_OPACITY = 0.3;
@@ -126,6 +135,7 @@ export function GhostDividerPieces() {
     fractionalEdgeX,
     fractionalEdgeY,
     magnetAnchor,
+    walls,
   } = useDesignerStore(
     useShallow((s) => ({
       width: s.params.width,
@@ -146,8 +156,11 @@ export function GhostDividerPieces() {
       fractionalEdgeX: s.params.fractionalEdgeX,
       fractionalEdgeY: s.params.fractionalEdgeY,
       magnetAnchor: s.params.magnetAnchor,
+      walls: s.params.walls,
     }))
   );
+
+  const bedFit = useDividerBedFit();
 
   const { outerW, outerD, innerW, innerD, offsetX, offsetY } = dividerInterior({
     width,
@@ -163,25 +176,22 @@ export function GhostDividerPieces() {
   // Socketed bases are translated up by SOCKET_HEIGHT in preview. The pieces
   // seat on the interior floor top, or the groove floor below it, never on the
   // body's Z=0. Flat bases have no offset.
-  const seatZ = dividerSeatZ(
+  const grooveDepth = dividerGrooveDepth({
+    style,
+    dividerPieces,
+    base,
     wallThickness,
-    base.style,
-    dividerGrooveDepth({
-      style,
-      dividerPieces,
-      base,
-      wallThickness,
-      slotConfig,
-      width,
-      depth,
-      gridUnitMm,
-      gridUnitMmY,
-      fractionalEdgeX,
-      fractionalEdgeY,
-      magnetAnchor,
-      cellMask,
-    })
-  );
+    slotConfig,
+    width,
+    depth,
+    gridUnitMm,
+    gridUnitMmY,
+    fractionalEdgeX,
+    fractionalEdgeY,
+    magnetAnchor,
+    cellMask,
+  });
+  const seatZ = dividerSeatZ(wallThickness, base.style, grooveDepth);
   const floorZ = baseFloorZ(base, heightUnitMm, lid, cellMask) + seatZ;
 
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
@@ -445,10 +455,48 @@ export function GhostDividerPieces() {
       const rotation: [number, number, number] = axis === 'x' ? [0, 0, 0] : [0, 0, Math.PI / 2];
       const notchFromTop = axis === 'x';
 
-      const push = (key: string, length: number, notches: number[], index: number): void => {
+      const push = (
+        key: string,
+        length: number,
+        notches: number[],
+        index: number,
+        engagement: number
+      ): void => {
+        const planned = planPieceWindow(
+          walls,
+          wallThickness,
+          length - 2 * engagement,
+          0,
+          dividerHeight - grooveDepth
+        );
+        const clear =
+          planned &&
+          clearOfNotches(
+            planned,
+            notches.map((offset) => ({ offset, width: slotWidth })),
+            dividerHeight,
+            notchDepth
+          );
+        const window =
+          clear &&
+          keepBottomBand(clear, dividerHeight, windowBottomBand(dividerHeight, length, bedFit));
         pieces.push({
           key,
-          geometry: buildPieceGeometry(length, notches, notchFromTop),
+          geometry: window
+            ? referencePieceGeometry(
+                length,
+                dividerHeight,
+                thickness,
+                notches.map((offset) => ({
+                  offset,
+                  width: slotWidth,
+                  depth: notchDepth,
+                  fromTop: notchFromTop,
+                })),
+                window,
+                walls.shape
+              )
+            : buildPieceGeometry(length, notches, notchFromTop),
           position: [
             basePosition[0] + index * stackStep[0],
             basePosition[1] + index * stackStep[1],
@@ -462,12 +510,14 @@ export function GhostDividerPieces() {
       if (isShortAxis) {
         if (rows.length === 0) return;
         const lengths = shortLengths(spanDim);
+        const receptacle = tabEngagement(getReceptacleDepth(thickness), clearance);
         let index = 0;
         if (lengths.interior !== null && lengths.interior > 0) {
-          push(`${axis}-interior`, lengths.interior, [], index++);
+          push(`${axis}-interior`, lengths.interior, [], index++, receptacle);
         }
         if (lengths.edge !== null && lengths.edge > 0) {
-          push(`${axis}-edge`, lengths.edge, [], index);
+          const wallTab = tabEngagement(slotDepth, clearance);
+          push(`${axis}-edge`, lengths.edge, [], index, Math.min(wallTab, receptacle));
         }
         return;
       }
@@ -475,7 +525,7 @@ export function GhostDividerPieces() {
       const length = calculateDividerLength(spanDim, slotDepth, clearance);
       const notches =
         bothAxes && !insertActive ? calculateSlotPositions(spanDim, crossPitch, lipOverhang) : [];
-      if (length > 0) push(axis, length, notches, 0);
+      if (length > 0) push(axis, length, notches, 0, tabEngagement(slotDepth, clearance));
     };
 
     if (slotConfig.x.enabled) addAxisPieces('x');
@@ -496,6 +546,9 @@ export function GhostDividerPieces() {
     dividerHeight,
     floorZ,
     lipOverhang,
+    walls,
+    grooveDepth,
+    bedFit,
   ]);
 
   const material = useMemo(() => {

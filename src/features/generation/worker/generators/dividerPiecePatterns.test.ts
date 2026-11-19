@@ -56,6 +56,14 @@ describe('planPiecePattern', () => {
     }
   });
 
+  it('clears the interior cutout window and its border, and the band below it stays', () => {
+    const plan = planPiecePattern(input({ window: { offset: 4, width: 20, depth: 10 } }));
+    const bandTop = (plan?.bandZ0 ?? 0) + (plan?.bandHeight ?? 0);
+    expect(plan?.keepOuts).toEqual([
+      { uMin: 4 - 11.5, uMax: 4 + 11.5, zMin: 30 - 10 - 1.5, zMax: bandTop },
+    ]);
+  });
+
   it('clears a full-height column at each face groove', () => {
     const plan = planPiecePattern(input({ grooves: [{ offset: 0, width: 1 }] }));
     expect(plan?.keepOuts).toHaveLength(1);

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { deriveWallSegments, type CompartmentGrid } from './compartmentGeometry';
-import { computeAuthoredDividers } from './authoredDividerMath';
+import { authoredExposedSpan, computeAuthoredDividers } from './authoredDividerMath';
 
 // tab = tabEngagement(1.0, 0.25) = max(0.3, 1.0 - 0.25 - 0.3) = 0.45; half = 0.8
 const THK = 1.6;
@@ -80,5 +80,21 @@ describe('computeAuthoredDividers', () => {
     expect(
       computeAuthoredDividers(deriveWallSegments(grid, 42, 42), 42, 42, THK, SLOT_DEPTH, CLEAR)
     ).toEqual([]);
+  });
+});
+
+describe('authoredExposedSpan', () => {
+  it('drops the wall tab and keeps an abutting end, so the span sits off centre', () => {
+    // A horizontal piece from the left wall (tab 0.45 into the slot) to an
+    // abutting face at 40 mm.
+    const span = authoredExposedSpan({ orientation: 'horizontal', start: -0.45, end: 40 }, 80, 60);
+    const centre = (40 - 0.45) / 2;
+    expect(span.from).toBeCloseTo(0 - centre, 6);
+    expect(span.to).toBeCloseTo(40 - centre, 6);
+  });
+
+  it('measures a vertical piece against the interior depth', () => {
+    const span = authoredExposedSpan({ orientation: 'vertical', start: 10, end: 60.45 }, 80, 60);
+    expect(span.to - span.from).toBeCloseTo(50, 6);
   });
 });

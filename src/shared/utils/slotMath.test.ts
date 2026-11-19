@@ -417,6 +417,21 @@ describe('calculateLapPartialSegments', () => {
     expect(oneMid?.notchOffsets).toEqual([]);
   });
 
+  it('marks the part of each piece that stands in the cavity, between its seats', () => {
+    const { segments } = calculateLapPartialSegments(crossings, 80, 1.6, 1.0, 0.25);
+    const by = (suffix: string) => segments.find((s) => s.labelSuffix === suffix);
+    // Full piece: wall tabs (0.45) at both ends, so exactly the interior.
+    expect(by('')?.exposed.from).toBeCloseTo(-40, 5);
+    expect(by('')?.exposed.to).toBeCloseTo(40, 5);
+    // Edge piece: a wall tab on the left only.
+    const oneU = by('1u');
+    expect(oneU?.exposed.from).toBeCloseTo(-(oneU?.length ?? 0) / 2 + 0.45, 5);
+    expect(oneU?.exposed.to).toBeCloseTo((oneU?.length ?? 0) / 2, 5);
+    // Mid piece: abuts dividers at both ends, all of it stands.
+    const mid = by('1u-mid');
+    expect((mid?.exposed.to ?? 0) - (mid?.exposed.from ?? 0)).toBeCloseTo(mid?.length ?? 0, 5);
+  });
+
   it('honors the per-axis cap and reports dropped survivors', () => {
     const { segments, dropped } = calculateLapPartialSegments(crossings, 80, 1.6, 1.0, 0.25, 3);
     expect(segments.map((s) => s.labelSuffix)).toEqual(['', '1u', '2u']);
