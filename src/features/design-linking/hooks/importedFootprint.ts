@@ -1,8 +1,8 @@
 import { err, isErr, ok, storageCorrupted } from '@/core/result';
 import type { Result, StorageError } from '@/core/result';
 import type { DesignId } from '@/core/types';
-import type { SavedDesign } from '@/features/bin-designer';
 import {
+  DESIGNER_CONSTRAINTS,
   loadDesign,
   saveDesign,
   upsertRegistryEntry,
@@ -10,7 +10,6 @@ import {
   useDesignerStore,
 } from '@/features/bin-designer';
 import { MAX_IMPORTED_MESH_HEIGHT_UNITS } from '@/shared/items/importedMesh/descriptor';
-import { emitSyncEvent } from '../events';
 
 interface Footprint {
   readonly width: number;
@@ -18,18 +17,24 @@ interface Footprint {
   readonly height: number;
 }
 
+const EPSILON = 1e-6;
+
+const clamp = (value: number, min: number, max: number): number =>
+  Math.min(max, Math.max(min, value));
+
 /**
  * Keep a layout resize of a linked imported model as the design's footprint,
  * the same field the designer's footprint steppers edit; the mesh keeps its
  * size. Without it, the next mount reconciliation sizes the bin back.
  *
- * The `design-saved` event lets `useDesignSavedListener` move the siblings,
- * so this path needs no cascade of its own.
+ * Returns the footprint as stored, in the design's own axes. The caller
+ * announces it with `design-saved`, which moves the sibling bins.
  */
 export async function saveImportedFootprint(
   id: DesignId,
-  size: Footprint
-): Promise<Result<SavedDesign, StorageError>> {
+  size: Footprint,
+  previous: Footprint
+): Promise<Result<Footprint, StorageError>> {
   const loaded = await loadDesign(id);
   if (isErr(loaded)) return loaded;
   const design = loaded.value;
@@ -37,20 +42,32 @@ export async function saveImportedFootprint(
     return err(storageCorrupted(id, ['not an imported model']));
   }
 
-  const heightUnits = Math.min(
-    MAX_IMPORTED_MESH_HEIGHT_UNITS,
-    Math.max(1, Math.round(size.height))
-  );
-  const envelope = { ...design.envelope, width: size.width, depth: size.depth };
-  const structure = { ...design.structure, heightUnits };
-  const saved = await saveDesign({ ...design, envelope, structure });
+  // The layout shows a mesh turned a quarter when the bin's footprint is the
+  // design's transposed, so a turned bin's size goes back across the axes;
+  // saved as placed, the model would stop turning.
+  const { width: designW, depth: designD } = design.envelope;
+  const turned =
+    Math.abs(designW - designD) > EPSILON &&
+    Math.abs(previous.width - designD) < EPSILON &&
+    Math.abs(previous.depth - designW) < EPSILON;
+  const { MIN_DIMENSION, MAX_DIMENSION } = DESIGNER_CONSTRAINTS;
+  // Sync refuses an imported footprint outside these (api/lib/importedMeshValidation.ts).
+  const width = clamp(turned ? size.depth : size.width, MIN_DIMENSION, MAX_DIMENSION);
+  const depth = clamp(turned ? size.width : size.depth, MIN_DIMENSION, MAX_DIMENSION);
+  const heightUnits = clamp(Math.round(size.height), 1, MAX_IMPORTED_MESH_HEIGHT_UNITS);
+
+  const saved = await saveDesign({
+    ...design,
+    envelope: { ...design.envelope, width, depth },
+    structure: { ...design.structure, heightUnits },
+  });
   if (isErr(saved)) return saved;
 
   upsertRegistryEntry({
     id: saved.value.id,
     name: saved.value.name,
-    width: size.width,
-    depth: size.depth,
+    width,
+    depth,
     height: heightUnits,
     kind: 'importedMesh',
     ...registryEdgeFields({}),
@@ -61,14 +78,9 @@ export async function saveImportedFootprint(
   // would otherwise save the old size back.
   const designer = useDesignerStore.getState();
   if (designer.currentDesignId === id && designer.itemKind === 'importedMesh') {
-    designer.updateEnvelope({ width: size.width, depth: size.depth });
+    designer.updateEnvelope({ width, depth });
     designer.updateStructure({ heightUnits });
   }
 
-  emitSyncEvent({
-    type: 'design-saved',
-    designId: id,
-    dimensions: { width: size.width, depth: size.depth, height: heightUnits },
-  });
-  return ok(saved.value);
+  return ok({ width, depth, height: heightUnits });
 }

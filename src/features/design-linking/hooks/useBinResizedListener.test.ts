@@ -57,6 +57,7 @@ describe('useBinResizedListener', () => {
       binId: binId('bin-7'),
       linkedDesignId: DESIGN,
       newDimensions: { width: 3, depth: 2, height: 4 },
+      previousDimensions: { width: 2, depth: 2, height: 4 },
     });
 
     expect(useLinkingStore.getState().pendingDesignerUpdated).toEqual({
@@ -114,6 +115,7 @@ describe('useBinResizedListener', () => {
         binId: binId('bin-7'),
         linkedDesignId: DESIGN,
         newDimensions: { width: 2, depth: 1, height: 12 },
+        previousDimensions: { width: 2, depth: 2, height: 4 },
       });
 
       await vi.waitFor(() => expect(useToastStore.getState().toasts).toHaveLength(1));
@@ -177,6 +179,7 @@ describe('useBinResizedListener', () => {
         binId: binId('bin-7'),
         linkedDesignId: DESIGN,
         newDimensions: { width: 2, depth: 1, height: 12 },
+        previousDimensions: { width: 2, depth: 2, height: 4 },
       });
 
       await vi.waitFor(() => expect(updateDesignParams).toHaveBeenCalledTimes(1));
@@ -254,6 +257,7 @@ describe('useBinResizedListener', () => {
         binId: binId('resized'),
         linkedDesignId: DESIGN,
         newDimensions: { width: 1, depth: 3, height: 6 },
+        previousDimensions: { width: 2, depth: 2, height: 4 },
       });
 
     it('resizes every sibling, in an order where none waits on another', async () => {
@@ -339,6 +343,7 @@ describe('useBinResizedListener', () => {
         binId: binId('bin-1'),
         linkedDesignId: IMPORTED,
         newDimensions: { width: 3, depth: 2, height: 5 },
+        previousDimensions: { width: 2, depth: 2, height: 4 },
       });
 
       await vi.waitFor(() => expect(saved).toHaveLength(1));
@@ -361,6 +366,95 @@ describe('useBinResizedListener', () => {
       unmount();
     });
 
+    const savedEvents = (): { events: DesignSavedEvent[]; off: () => void } => {
+      const events: DesignSavedEvent[] = [];
+      const off = onSyncEvent<DesignSavedEvent>('design-saved', (e) => events.push(e));
+      return { events, off };
+    };
+
+    it('keeps a quarter-turned placement turned, in the design axes', async () => {
+      vi.mocked(loadDesign).mockResolvedValue(
+        ok({
+          id: IMPORTED,
+          name: 'Scanned tray',
+          updatedAt: 'then',
+          kind: 'importedMesh',
+          envelope: { ...envelope, width: 2, depth: 3 },
+          structure,
+        }) as never
+      );
+      const { events, off } = savedEvents();
+      const { unmount } = renderHook(() => useBinResizedListener());
+
+      emitSyncEvent({
+        type: 'bin-resized',
+        binId: binId('bin-1'),
+        linkedDesignId: IMPORTED,
+        newDimensions: { width: 3, depth: 2, height: 6 },
+        previousDimensions: { width: 3, depth: 2, height: 4 },
+      });
+
+      await vi.waitFor(() => expect(events).toHaveLength(1));
+      expect(vi.mocked(saveDesign).mock.calls[0][0]).toMatchObject({
+        envelope: { width: 2, depth: 3 },
+        structure: { heightUnits: 6 },
+      });
+      expect(events[0].dimensions).toEqual({ width: 2, depth: 3, height: 6 });
+      off();
+      unmount();
+    });
+
+    it('keeps the footprint within the limits that sync accepts', async () => {
+      const { events, off } = savedEvents();
+      const { unmount } = renderHook(() => useBinResizedListener());
+
+      emitSyncEvent({
+        type: 'bin-resized',
+        binId: binId('bin-1'),
+        linkedDesignId: IMPORTED,
+        newDimensions: { width: 20, depth: 2, height: 4 },
+        previousDimensions: { width: 2, depth: 2, height: 4 },
+      });
+
+      await vi.waitFor(() => expect(events).toHaveLength(1));
+      expect(events[0].dimensions).toEqual({ width: 16, depth: 2, height: 4 });
+      off();
+      unmount();
+    });
+
+    it('saves a resize that lands during a save, and announces only the newest', async () => {
+      let release: () => void = () => undefined;
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      vi.mocked(saveDesign).mockImplementationOnce(async (design) => {
+        await gate;
+        return ok({ ...design, updatedAt: 'now' }) as never;
+      });
+      const { events, off } = savedEvents();
+      const { unmount } = renderHook(() => useBinResizedListener());
+      const resize = (width: number, from: number): void =>
+        emitSyncEvent({
+          type: 'bin-resized',
+          binId: binId('bin-1'),
+          linkedDesignId: IMPORTED,
+          newDimensions: { width, depth: 2, height: 4 },
+          previousDimensions: { width: from, depth: 2, height: 4 },
+        });
+
+      resize(3, 2);
+      await vi.waitFor(() => expect(saveDesign).toHaveBeenCalledTimes(1));
+      resize(4, 3);
+      release();
+
+      await vi.waitFor(() => expect(events).toHaveLength(1));
+      expect(saveDesign).toHaveBeenCalledTimes(2);
+      expect(events[0].dimensions).toEqual({ width: 4, depth: 2, height: 4 });
+      expect(loadRegistry().find((r) => r.id === IMPORTED)?.width).toBe(4);
+      off();
+      unmount();
+    });
+
     it('updates the footprint in the designer too, when the designer holds that model', async () => {
       useDesignerStore.setState({
         currentDesignId: IMPORTED,
@@ -375,6 +469,7 @@ describe('useBinResizedListener', () => {
         binId: binId('bin-1'),
         linkedDesignId: IMPORTED,
         newDimensions: { width: 3, depth: 3, height: 6 },
+        previousDimensions: { width: 2, depth: 2, height: 4 },
       });
 
       await vi.waitFor(() => expect(useToastStore.getState().toasts).toHaveLength(1));

@@ -31,7 +31,7 @@ import {
 import { isErr, isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
 import { getPlacementErrorMessage } from '@/shared/utils/validation';
-import { onSyncEvent } from '../events';
+import { emitSyncEvent, onSyncEvent } from '../events';
 import type { BinResizedEvent } from '../events';
 import { useLinkingStore } from '../store';
 import { saveImportedFootprint } from './importedFootprint';
@@ -67,41 +67,61 @@ export function useBinResizedListener(): void {
 
   // Guard against concurrent processing of the same design
   const inFlightDesigns = useRef(new Set<string>());
+  const pendingImported = useRef(new Map<string, BinResizedEvent>());
 
   useEffect(() => {
     return onSyncEvent<BinResizedEvent>('bin-resized', (event) => {
       void handleBinResized(event);
     });
 
+    // A resize that lands while its design saves is kept, newest only, and
+    // saved after it; announcing each save in turn would size the bin back to
+    // the older footprint before the newer one lands.
+    async function resizeImported(event: BinResizedEvent, name: string): Promise<void> {
+      const id = event.linkedDesignId;
+      if (inFlightDesigns.current.has(id)) {
+        pendingImported.current.set(id, event);
+        return;
+      }
+      inFlightDesigns.current.add(id);
+      let saved: Awaited<ReturnType<typeof saveImportedFootprint>> | undefined;
+      try {
+        for (let next: BinResizedEvent | undefined = event; next;) {
+          pendingImported.current.delete(id);
+          saved = await saveImportedFootprint(id, next.newDimensions, next.previousDimensions);
+          next = pendingImported.current.get(id);
+        }
+      } finally {
+        inFlightDesigns.current.delete(id);
+        pendingImported.current.delete(id);
+      }
+      if (saved && isOk(saved)) {
+        emitSyncEvent({ type: 'design-saved', designId: id, dimensions: saved.value });
+        addToastRef.current({
+          message: tRef.current('designLinking.toast.designUpdated', { name }),
+          type: 'success',
+          duration: 2000,
+        });
+        return;
+      }
+      addToastRef.current({
+        message: tRef.current('designLinking.toast.designUpdateFailed'),
+        type: 'error',
+        duration: 3000,
+      });
+    }
+
     async function handleBinResized(event: BinResizedEvent): Promise<void> {
       const { binId, linkedDesignId, newDimensions } = event;
 
-      // Skip if already processing this design (prevents concurrent IDB writes)
-      if (inFlightDesigns.current.has(linkedDesignId)) return;
-
       const ref = registryRef.current.find((r) => r.id === linkedDesignId);
       if (ref?.kind === 'importedMesh') {
-        inFlightDesigns.current.add(linkedDesignId);
-        try {
-          const saved = await saveImportedFootprint(linkedDesignId, newDimensions);
-          addToastRef.current(
-            isOk(saved)
-              ? {
-                  message: tRef.current('designLinking.toast.designUpdated', { name: ref.name }),
-                  type: 'success',
-                  duration: 2000,
-                }
-              : {
-                  message: tRef.current('designLinking.toast.designUpdateFailed'),
-                  type: 'error',
-                  duration: 3000,
-                }
-          );
-        } finally {
-          inFlightDesigns.current.delete(linkedDesignId);
-        }
+        await resizeImported(event, ref.name);
         return;
       }
+
+      // Skip if already processing this design (prevents concurrent IDB writes)
+      if (inFlightDesigns.current.has(linkedDesignId)) return;
 
       const refusedBySupport = (): boolean => {
         const blocker = resizeBlockedBySupport(layoutRef.current, linkedDesignId, newDimensions);
