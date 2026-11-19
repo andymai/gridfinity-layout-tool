@@ -1,0 +1,34 @@
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_144305aaade9d6::t_ff779c8c1ad5c9 54,82-89,432,653
+src/features/bin-designer/components/preview/GhostDividerPieces/GhostDividerPieces.tsx
+  s_144305aaade9d6::t_6c697956bb61c2 38,457,464-471
+src/features/generation/worker/generators/dividerPieceWindow.kernel.test.ts
+  s_144305aaade9d6::t_f6a39dbf261cc7 9,186-215,233-235
+  s_144305aaade9d6::t_fa45d40af08464 12
+  s_144305aaade9d6::t_3d86741ad73fd8 14,216-232
+src/features/generation/worker/generators/dividerSplit.test.ts
+  s_144305aaade9d6::t_6012f6e3a8eed6 94-115,118-122
+  s_144305aaade9d6::t_2f0288ac6e11a1 116-117
+src/shared/utils/dividerPieceWindow.test.ts
+  s_144305aaade9d6::t_f25acdf9ccabc2 3,50-78
+src/features/generation/worker/generators/dividerPieceWindowCut.ts
+  s_144305aaade9d6::t_ff779c8c1ad5c9 4,61-62,67-68,73-74,76-77,80
+src/shared/utils/dividerPieceWindow.ts
+  s_144305aaade9d6::t_f25acdf9ccabc2 53-80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a9c064f7607057d720348373abd7ad2b8a993f20",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
