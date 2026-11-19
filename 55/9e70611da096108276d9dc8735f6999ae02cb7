@@ -1,0 +1,101 @@
+src/features/bin-designer/components/panel/LidSection/LidAdvancedFields.test.tsx
+  s_144305aaade9d6::t_774efd9c0604a0 116-118,129-131
+  s_144305aaade9d6::t_e8a14f8ccdef96 103-111
+  s_144305aaade9d6::t_3365ed19ca372e 1-2
+  s_144305aaade9d6::t_741434e6b8342c 76-102,112-115,119,121-128,132,134-142
+  s_144305aaade9d6::t_8fb57d8bf986c7 120,133
+src/shared/utils/magnetDiameter.ts
+  s_144305aaade9d6::t_efe76051a447f0 1-20,22-25
+  s_144305aaade9d6::t_f16a5058deede5 21
+src/features/baseplate/components/BaseplatePanel/BaseSection.test.tsx
+  s_144305aaade9d6::t_8abe5e1612d8e5 311-345
+  s_144305aaade9d6::t_60314c5a07bf0b 415-433
+api/lib/baseplateValidation.test.ts
+  s_144305aaade9d6::t_471d67ebd69d5e 174-176
+  s_144305aaade9d6::t_60d7e4db5bbe90 168-170,172-173,177-178
+  s_144305aaade9d6::t_29496c3d18ee68 24-29
+  s_144305aaade9d6::t_c366a576a52411 171
+src/features/bin-designer/components/panel/LidSection/useLidSection.ts
+  s_144305aaade9d6::t_10e840ef24ff41 23,61,367,904-905
+src/features/baseplate/utils/pieceFingerprint.test.ts
+  s_144305aaade9d6::t_ec5f1e60fe86ce 47-57
+src/features/generation/worker/generators/pipeline/context.test.ts
+  s_144305aaade9d6::t_ba7b3d059d2eaa 183-193
+src/core/constants.test.ts
+  s_144305aaade9d6::t_48dcbd7eeb1661 865-875
+apps/docs/baseplates/magnets-and-screws.md
+  s_144305aaade9d6::t_76e611a0e7094b 43-44
+  s_144305aaade9d6::t_432c2214560edf 89
+  s_144305aaade9d6::t_427b4f456f36f8 16
+src/features/bin-designer/constants/defaults.test.ts
+  s_144305aaade9d6::t_246a89aaa0188d 114-121
+apps/docs/designer/base.md
+  s_144305aaade9d6::t_427b4f456f36f8 13
+  s_144305aaade9d6::t_5a41f29bfa9e52 35
+apps/docs/designer/lids.md
+  s_144305aaade9d6::t_363ffbf04b1a8d 51-52
+  s_144305aaade9d6::t_427b4f456f36f8 16
+src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
+  s_144305aaade9d6::t_c465c8cc1166a9 76,337,340,550,553
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.test.ts
+  s_144305aaade9d6::t_a4782f14683adb 138-150
+src/features/bin-designer/components/panel/LidSection/LidSection.test.tsx
+  s_144305aaade9d6::t_3c990defaaca1a 374-397
+src/features/bin-designer/components/panel/LidSection/useLidSection.helpers.ts
+  s_144305aaade9d6::t_28a3f2fe73bd37 19,62
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.ts
+  s_144305aaade9d6::t_c42fe58ba9e29f 491-493
+  s_144305aaade9d6::t_c312d7dd3667ae 43,58,565
+  s_144305aaade9d6::t_774efd9c0604a0 567
+src/shared/utils/magnetDiameter.test.ts
+  s_144305aaade9d6::t_a991dacebf9f0b 28-30
+  s_144305aaade9d6::t_bfedec59c942a7 1-27,31-59
+src/features/bin-designer/components/panel/LidSection/LidAdvancedFields.tsx
+  s_144305aaade9d6::t_24bb51a8ecc408 166,171-172
+  s_144305aaade9d6::t_780d91b5d1020f 184,189
+src/features/bin-designer/components/panel/BaseSection/useBaseSection.test.ts
+  s_144305aaade9d6::t_7fe6b024eaad8a 62-86
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_144305aaade9d6::t_0fbc0e84ff6d3f 1370-1392
+src/features/generation/worker/generators/baseplateCacheKeys.test.ts
+  s_144305aaade9d6::t_b29e036e0b7bf6 37-52
+  s_144305aaade9d6::t_4c5d0afc40a3eb 2
+src/features/bin-designer/types/lid.ts
+  s_144305aaade9d6::t_5b5af0155ca184 683-684,692
+src/core/cqrs/validation/schemas.test.ts
+  s_144305aaade9d6::t_2620c8140a6d14 570-583,589-590
+  s_144305aaade9d6::t_816e66745edc17 584-588
+src/features/bin-designer/components/panel/BaseSection/BaseSection.test.tsx
+  s_144305aaade9d6::t_8917badad38767 390-398,400-401
+  s_144305aaade9d6::t_9d8eb3cb5e02c8 399
+src/features/bin-designer/types/index.ts
+  s_144305aaade9d6::t_702225849d0e63 178
+api/lib/designerValidation.test.ts
+  s_144305aaade9d6::t_40f86aa8562653 656-665
+  s_144305aaade9d6::t_1cb1c2529a942d 2440-2450
+  s_144305aaade9d6::t_2efdaa0023575e 2543-2552
+src/shared/utils/binParamsHash.test.ts
+  s_144305aaade9d6::t_beff2a4ddb7f8e 30-36
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+  s_144305aaade9d6::t_28a3f2fe73bd37 45,238,303
+src/features/generation/worker/generators/shapeCache.test.ts
+  s_144305aaade9d6::t_f44c31f4067a6a 74-80
+src/features/bin-designer/constants/gridfinity.ts
+  s_144305aaade9d6::t_86fe7261a259a7 105-106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "559e70611da096108276d9dc8735f6999ae02cb7",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
