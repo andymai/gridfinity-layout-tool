@@ -9,6 +9,7 @@
 import { createDbAccessor } from '@/core/storage/backends/openSingleton';
 import type { BaseplateDesignId, StoredBaseplateParams } from '@/core/types';
 import { baseplateDesignId } from '@/core/types';
+import { isoStampAfter } from '@/shared/utils/editStamp';
 import { DEFAULT_BASEPLATE_PARAMS, migrateBaseplateParams } from '@/core/baseplateDefaults';
 import type { Result, StorageError } from '@/core/result';
 import {
@@ -51,11 +52,24 @@ function generateBaseplateDesignId(): BaseplateDesignId {
 }
 
 /**
+ * `updatedAt` for a save: the `modifiedAt` of a copy that sync pulled, or
+ * `edited`, the stamp of a local edit. Sync compares the two stamps, so a
+ * pulled copy must keep its own.
+ */
+function storedTime(remoteModifiedAt: number | undefined, edited: string): string {
+  if (remoteModifiedAt === undefined) return edited;
+  const time = new Date(remoteModifiedAt);
+  return Number.isNaN(time.getTime()) ? edited : time.toISOString();
+}
+
+/**
  * Save a baseplate design to IndexedDB.
  */
 export async function saveDesign(
   design: Omit<SavedBaseplateDesign, 'id' | 'createdAt' | 'updatedAt' | 'thumbnailVersion'> & {
     id?: BaseplateDesignId;
+    /** Set only by a sync pull: the remote `modifiedAt` to keep as `updatedAt`. */
+    remoteModifiedAt?: number;
   }
 ): Promise<Result<SavedBaseplateDesign, StorageError>> {
   try {
@@ -71,8 +85,9 @@ export async function saveDesign(
 
     // Only check for existing record when updating (id provided): preserves createdAt.
     let createdAt = now;
+    let existing: SavedBaseplateDesign | undefined;
     if (design.id) {
-      const existing = (await db.get(DESIGNS_STORE, design.id)) as SavedBaseplateDesign | undefined;
+      existing = (await db.get(DESIGNS_STORE, design.id)) as SavedBaseplateDesign | undefined;
       if (existing) {
         createdAt = existing.createdAt;
       }
@@ -86,7 +101,10 @@ export async function saveDesign(
       // Set thumbnail version when saving a thumbnail
       thumbnailVersion: design.thumbnail ? THUMBNAIL_VERSION : undefined,
       createdAt,
-      updatedAt: now,
+      updatedAt: storedTime(
+        design.remoteModifiedAt,
+        isoStampAfter(existing?.updatedAt, Date.parse(now))
+      ),
     };
 
     await db.put(DESIGNS_STORE, savedDesign);

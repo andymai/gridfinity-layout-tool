@@ -23,6 +23,7 @@ interface SceneProps {
   gridUnitMm: number;
   gridUnitMmY: number;
   heightUnitMm: number;
+  measuredHeightMm?: number;
   layoutName: string;
   isExpanded?: boolean;
   fractionalEdgeX?: FractionalEdge;
@@ -79,6 +80,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
       gridUnitMm,
       gridUnitMmY,
       heightUnitMm,
+      measuredHeightMm,
       layoutName,
       isExpanded,
       fractionalEdgeX = 'end',
@@ -363,6 +365,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
           gridUnitMmY={gridUnitMmY}
           depthScale={depthToGridScale}
           heightUnitMm={heightUnitMm}
+          measuredHeightMm={measuredHeightMm}
         />
         <ScaleIndicator gridUnitMm={gridUnitMm} drawerDepth={scaledDepth} />
         {showBananaScale && <BananaScale drawerDepth={scaledDepth} gridUnitMm={gridUnitMm} />}

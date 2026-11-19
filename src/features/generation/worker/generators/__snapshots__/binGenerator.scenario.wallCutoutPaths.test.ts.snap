@@ -1,0 +1,43 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`wall cutout paths > a bin shorter than its lip support 1`] = `4654`;
+
+exports[`wall cutout paths > a raised floor beside a lowered divider 1`] = `5600`;
+
+exports[`wall cutout paths > angled divider across the edge of the path 1`] = `5602`;
+
+exports[`wall cutout paths > asymmetric overhang 1`] = `5250`;
+
+exports[`wall cutout paths > bento, front and left (#5100) 1`] = `6974`;
+
+exports[`wall cutout paths > every wall 1`] = `6224`;
+
+exports[`wall cutout paths > funnel profile with rounded shoulders 1`] = `5812`;
+
+exports[`wall cutout paths > grid, front and back 1`] = `6216`;
+
+exports[`wall cutout paths > half-grid width 1`] = `6132`;
+
+exports[`wall cutout paths > label tabs on the dividers it crosses 1`] = `6206`;
+
+exports[`wall cutout paths > label tabs on the dividers it lowers 1`] = `5544`;
+
+exports[`wall cutout paths > leaning divider 1`] = `5470`;
+
+exports[`wall cutout paths > merged rows of cells too narrow for divider walls 1`] = `3484`;
+
+exports[`wall cutout paths > no stacking lip 1`] = `3580`;
+
+exports[`wall cutout paths > notched lip 1`] = `7516`;
+
+exports[`wall cutout paths > patterned dividers 1`] = `6840`;
+
+exports[`wall cutout paths > scoop profile through a bento 1`] = `5292`;
+
+exports[`wall cutout paths > scoop ramps and an interior fillet 1`] = `16448`;
+
+exports[`wall cutout paths > tapered overhang 1`] = `5300`;
+
+exports[`wall cutout paths > thin walls, whose lip leaves a ledge 1`] = `5954`;
+
+exports[`wall cutout paths > under a collar 1`] = `5548`;

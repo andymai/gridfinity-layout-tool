@@ -826,12 +826,12 @@
           "type": "number",
           "minimum": 0,
           "maximum": 5,
-          "default": 0.2,
+          "default": 0.4,
           "x-constant": {
             "maximum": "MAX_CUTOUT_CLEARANCE",
             "default": "DEFAULT_CUTOUT_CLEARANCE"
           },
-          "description": "Extra clearance in mm around the cut."
+          "description": "Extra clearance in mm around the cut. A circle, polygon or slot grows by this in total; a path or mesh grows by this on each side."
         },
         "chamferWidth": {
           "type": "number",
@@ -1211,6 +1211,16 @@
             "maximum": "DESIGNER_CONSTRAINTS.MAX_DIVIDER_CLEARANCE"
           },
           "description": "Fit clearance in mm between divider and slot."
+        },
+        "pieceFit": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.3,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_DIVIDER_PIECE_FIT",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_DIVIDER_PIECE_FIT"
+          },
+          "description": "Piece-side fit in mm per side. Thins each divider piece where it sits in a wall slot or the floor groove, and widens its cross-lap notches. The bin does not change. Omitted means 0. The generator also caps it so a thinned seat keeps 0.6mm of material."
         },
         "floorGroove": {
           "type": "boolean",

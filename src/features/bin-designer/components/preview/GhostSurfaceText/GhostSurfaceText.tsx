@@ -20,7 +20,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { resolveEffectiveFont } from '@/shared/utils/typePlan';
 import { resolveWallTextStyle, WALL_TEXT_SIDES } from '@/shared/types/bin';
 import { buildWallTextOutline } from './wallTextOutline';
-import { useTypeMeasurer } from '@/features/bin-designer/hooks/useTypeMeasurer';
+import { useTypeMeasurer } from '@/shared/hooks/useTypeMeasurer';
 
 const GHOST_COLOR = '#22d3ee';
 const GHOST_OPACITY = 0.75;

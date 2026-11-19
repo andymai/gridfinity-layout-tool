@@ -40,6 +40,9 @@ const en: Record<string, string> = {
   'seo.community.title': 'Community Designs — Gridfinity Layout Tool',
   'seo.community.description':
     'Browse Gridfinity bin designs from other makers. Preview them in 3D, remix an editable copy, and export for printing. Free, no account.',
+  'seo.labels.title': 'Labels for a Label Maker | Gridfinity Layout Tool',
+  'seo.labels.description':
+    'Make labels for a Brother P-touch, DYMO, Niimbot or Phomemo label maker from a typed or pasted list. Free, no account.',
 
   // Supporters page
   'supporters.back': 'Back to the app',
@@ -146,6 +149,7 @@ const en: Record<string, string> = {
   'common.increaseAria': 'Increase {what}',
   'common.close': 'Close',
   'common.physicalUnits': 'Physical units',
+  'common.openSectionDocs': 'Open the docs for {section}',
   'common.loading': 'Loading...',
 
   // Error boundary (used via getStaticTranslation, not hooks)
@@ -407,6 +411,7 @@ const en: Record<string, string> = {
   'sidebar.learn.binGenerator': 'Bin generator',
   'sidebar.learn.baseplateGenerator': 'Baseplate generator',
   'sidebar.learn.calculator': 'Calculator',
+  'sidebar.learn.labelMaker': 'Label maker',
   'sidebar.learn.community': 'Community designs',
   'sidebar.learn.cutoutGenerator': 'Cutout generator',
   'sidebar.learn.sizes': 'Sizes reference',
@@ -522,7 +527,7 @@ const en: Record<string, string> = {
   'inspector.sizeSuggestionApply': 'Apply',
   'inspector.sizeSuggestionNoFit': "Won't fit here",
   'inspector.sizeSuggestionDismiss': 'Dismiss suggestion',
-  'inspector.notesPlaceholder': 'e.g., 2 dividers, STL link, contents',
+  'inspector.notesPlaceholder': 'e.g., 2 dividers, PLA, contents',
   'inspector.toStash': 'To stash',
   'inspector.multi.title': '{count} Bins Selected',
   'inspector.multi.layer': 'Layer',
@@ -666,10 +671,11 @@ const en: Record<string, string> = {
   'layers.deselect': 'Deselect',
   'layers.fillGaps_one': 'Fill {count} gap',
   'layers.fillGaps_other': 'Fill {count} gaps',
-  'layers.fillGapsTitle_one': 'Fill {count} empty cell with a 1×1 bin',
-  'layers.fillGapsTitle_other': 'Fill {count} empty cells with 1×1 bins',
+  'layers.fillGapsTitle_one': 'Fill {count} empty cell with the largest bins that fit',
+  'layers.fillGapsTitle_other': 'Fill {count} empty cells with the largest bins that fit',
   'layers.fillTitle': 'Fill empty space with {width}×{depth} bins',
   'layers.fillWith': 'Fill with ',
+  'layers.fillWithSlantedRow': 'Fill places upright bins. Drag on the grid to paint slanted rows.',
   'layers.maxLayersReached': 'Maximum {max} layers reached',
   'layers.reorderBlocked.exceedsHeight': 'Reordering would stack bins past the drawer top',
   'layers.reorderBlocked.clearance': "Reordering would rest a bin inside another bin's clearance",
@@ -752,6 +758,7 @@ const en: Record<string, string> = {
   // Print / Export
   'print.title': 'Print layout',
   'print.printNow': 'Print now',
+  'print.makeLabels': 'Labels for a label maker',
   'print.options': 'Options',
   'print.binDisplay': 'Bin display',
   'print.showCategoryColor': 'Category color',
@@ -917,19 +924,8 @@ const en: Record<string, string> = {
   'layouts.confirmDelete.title': 'Delete layout',
   'layouts.confirmDelete.message': 'Delete "{name}"? This cannot be undone.',
   'layouts.confirmDelete.confirm': 'Delete layout',
-  'layouts.import.title': 'Import layout',
-  'layouts.import.browseFiles': 'Browse files',
-  'layouts.import.pasteLink': 'Or paste a share link:',
-  'layouts.import.placeholder':
-    '{"version": "1.0", "name": "My Layout", ...} or https://...#share=...',
-  'layouts.import.bins_one': '{count} bin',
-  'layouts.import.bins_other': '{count} bins',
-  'layouts.import.closeImportDialog': 'Close import dialog',
-  'layouts.import.drawerSize': 'Drawer: {size}',
   'layouts.import.layers_one': '{count} layer',
   'layouts.import.layers_other': '{count} layers',
-  'layouts.import.preview': 'Preview',
-  'layouts.import.selectJsonFileToImport': 'Select JSON file to import',
   'layouts.accessed': 'Accessed',
   'layouts.active': 'Active',
   'layouts.availableLayouts': 'Available layouts',
@@ -1043,7 +1039,7 @@ const en: Record<string, string> = {
   'settings.defaultCategoriesHint': 'Categories used when creating new layouts:',
   'settings.binDefaults.title': 'New bin defaults',
   'settings.binDefaults.hint':
-    'The starting settings for new bins in the Bin Designer. Set them from the designer or command palette.',
+    'The starting settings for new bins in the Bin Designer. Set them with “Set as default for new bins” in the designer.',
   'settings.binDefaults.usingFactory': 'Using factory defaults',
   'settings.usingBuiltInCategories': 'Using built-in defaults ({count})',
   'settings.usingCustomCategories': 'Using custom defaults ({count})',
@@ -2157,6 +2153,24 @@ const en: Record<string, string> = {
   'binDesigner.dividerHeight': 'Divider height',
   'binDesigner.dividerThickness': 'Divider thickness',
   'binDesigner.dividerClearance': 'Fit tolerance',
+  'binDesigner.dividerClearanceDetail':
+    "Widens the bin's wall slots and floor groove. Set it before you print the bin. To fix the fit of a printed bin, use Piece fit.",
+  'binDesigner.dividerPieceFit': 'Piece fit',
+  'binDesigner.dividerPieceFitDetail':
+    'Makes each divider thinner where it sits in a slot or the floor groove, and widens the notches where dividers cross. The bin does not change, so a tight fit costs only a new divider. Print the fit test to find your value.',
+  'binDesigner.dividerFitSample.button': 'Print fit test',
+  'binDesigner.dividerFitSample.dialogTitle': 'Divider fit test',
+  'binDesigner.dividerFitSample.dialogDescription':
+    "A short part of this bin's wall with one slot, cut the same as the bin, and a short divider with your piece fit.",
+  'binDesigner.dividerFitSample.tipsTitle': 'How to use it',
+  'binDesigner.dividerFitSample.tip1':
+    'Print both parts. Push the divider down the slot until it clicks under the catch near the floor.',
+  'binDesigner.dividerFitSample.tip2':
+    'Too tight? Raise Piece fit. No click? Lower it. Then export again and print only the divider.',
+  'binDesigner.dividerFitSample.tip3':
+    'The divider prints flat, so it changes in whole layers: at a 0.2mm layer height, use steps of 0.1mm.',
+  'binDesigner.dividerFitSample.exportComplete': 'Fit test downloaded',
+  'binDesigner.dividerFitSample.exportFailed': 'Could not export the fit test',
   'binDesigner.dividerFloorGroove': 'Floor groove',
   'binDesigner.dividerFloorGrooveHint':
     "A {depth}mm channel in the floor seats each divider's bottom edge. Turn off to print dividers for a bin made without one.",
@@ -2596,7 +2610,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.hinge.fitClearance': 'Hinge fit',
   'binDesigner.lid.hinge.fitClearanceAria': 'Hinge running clearance per side in millimeters',
   'binDesigner.lid.hinge.fitClearanceHint':
-    'Gap between the knuckles and the pin. Raise it if the hinge binds, lower it if the lid rattles. Filament itself varies, so this is worth a test print.',
+    'Gap around each knuckle, where it turns next to its neighbors. Raise it if the hinge binds, lower it if the lid rattles. It doesn’t change the pin holes.',
   'binDesigner.lid.slide.placement': 'Channel position',
   'binDesigner.lid.slide.placement.recessed': 'Under the lip',
   'binDesigner.lid.slide.placement.flush': 'At the rim',
@@ -3009,8 +3023,6 @@ const en: Record<string, string> = {
   'binDesigner.interiorFillet.radius': 'Radius',
   'binDesigner.interiorFillet.clamped':
     'Compartments too small for this radius round as far as they fit.',
-  'binDesigner.interiorFilletUnavailableSlotted':
-    'Not available for slotted bins: the fillet would fill the divider slots',
   'binDesigner.fingerScoopUnavailableSlotted': 'Not available for slotted or solid bins',
   'binDesigner.scoopRadius': 'Radius',
   'binDesigner.scoopRadiusAutoLabel': 'Auto',
@@ -4243,6 +4255,8 @@ const en: Record<string, string> = {
   'binDesigner.wallCutouts.left': 'Left',
   'binDesigner.wallCutouts.right': 'Right',
   'binDesigner.wallCutouts.interior': 'Interior walls',
+  'binDesigner.wallCutouts.interiorPathHint':
+    'Each opening carries straight through the dividers in its path.',
   'binDesigner.wallCutouts.linked': 'Linked',
   'binDesigner.wallCutouts.independent': 'Independent',
   'binDesigner.wallCutouts.summary': '{sides}: {span} × {height}',
@@ -4894,7 +4908,8 @@ const en: Record<string, string> = {
   'baseplate.magnetChamferDetail':
     'A 45\u00b0 lead-in at the opening of each hole guides the magnet in straight.',
   'baseplate.magnetChamferLightweight':
-    'A lightweight plate leaves too little wall around each hole for a lead-in.',
+    'Turn on Solid floor for a lead-in. A hollow floor is too thin around each hole.',
+  'baseplate.magnetChamferShallow': 'Make the hole deeper than 0.8 mm for a lead-in.',
   'baseplate.solidFloor': 'Solid floor',
   'baseplate.ecoPlate': 'Eco plate',
   'baseplate.ecoPlateDetail':
@@ -5167,6 +5182,7 @@ const en: Record<string, string> = {
   'loading.baseplate': 'Loading baseplate generator',
   'loading.supporters': 'Loading supporters',
   'loading.community': 'Loading community designs',
+  'loading.labels': 'Loading labels',
   'loading.mobileLayout': 'Loading mobile layout',
   'loading.help': 'Loading help',
   'loading.sharedWithMe': 'Loading...',
@@ -5291,6 +5307,7 @@ const en: Record<string, string> = {
   // Export commands
   'commandPalette.exportLayout3D': 'Export layout as ZIP (3D)',
   'commandPalette.downloadLayout': 'Download layout',
+  'commandPalette.makeLabels': 'Make labels for a label maker',
   'commandPalette.copyShareLink': 'Copy share link',
 
   // Selection commands
@@ -6327,6 +6344,7 @@ const en: Record<string, string> = {
   'whatsNew.action.openModal.baseplateLibrary': 'Open baseplate library',
   'whatsNew.action.openModal.print': 'Open print list',
   'whatsNew.action.openModal.designGallery': 'Open gallery',
+  'whatsNew.action.openModal.labels': 'Open labels',
   'whatsNew.action.scanTool': 'Scan a tool',
   'whatsNew.action.openLabs': 'Open Labs',
   'settings.general.showUpdateSummaries': 'Show update summaries',
@@ -6509,7 +6527,6 @@ const en: Record<string, string> = {
 
   // Import modal inline errors
   'layouts.import.error.invalidJsonFormat': 'Invalid JSON format',
-  'layouts.import.error.noJsonProvided': 'No JSON provided',
   'layouts.import.error.fileTooLarge': 'File too large ({sizeMb} MB). Maximum is {maxMb} MB.',
 
   // Shared layout
@@ -6693,6 +6710,49 @@ const en: Record<string, string> = {
     'Upload to {host} timed out. It may still have reached the receiver.',
   'exportDestination.fail.redirect':
     'Upload to {host} was redirected. Use the final address in Settings.',
+
+  // Labels for label makers
+  'labels.title': 'Labels',
+  'labels.page.intro':
+    'Type or paste a list, pick your label maker, and download one image for each label.',
+  'labels.printer': 'Label printer',
+  'labels.printer.brother-pt': 'Brother P-touch',
+  'labels.printer.dymo-d1': 'DYMO LabelManager',
+  'labels.printer.niimbot-d': 'Niimbot D11 / D110',
+  'labels.printer.phomemo-d30': 'Phomemo D30',
+  'labels.media': 'Label size',
+  'labels.media.tape': '{width} mm tape',
+  'labels.media.dieCut': '{width} × {length} mm label',
+  'labels.length': 'Length',
+  'labels.length.fit': 'Fit text',
+  'labels.length.hint': '1U, 2U and 3U make the label as long as a bin that many units wide.',
+  'labels.howTo':
+    'Each label downloads as a PNG with one pixel for each print dot. Open it as an image in the app for your printer.',
+  'labels.paste': 'Add labels',
+  'labels.paste.placeholder':
+    'One label on each line. You can paste rows from a spreadsheet or an order page: part numbers go on a second line.',
+  'labels.paste.add': 'Add to list',
+  'labels.paste.full':
+    'The list holds up to {max} labels. Paste fewer rows, or remove some labels first.',
+  'labels.row.name': 'Label text',
+  'labels.row.detail': 'Second line',
+  'labels.row.detailPlaceholder': 'Part number or size',
+  'labels.row.copies': 'Copies',
+  'labels.row.remove': 'Remove label',
+  'labels.row.preview': 'Preview of the label {name}',
+  'labels.row.tooLong': 'Too long for this label. Make the text shorter or choose a longer label.',
+  'labels.row.empty': 'Add text for this label.',
+  'labels.row.unsupportedText':
+    'The label font has no letters for some of this text. Use Latin letters and digits.',
+  'labels.empty': 'No labels yet. Type or paste a list above.',
+  'labels.loadingFonts': 'Loading fonts…',
+  'labels.fontsFailed': 'The label fonts could not load. Check your connection.',
+  'labels.skippedCount': 'Left out of the download: {count}',
+  'labels.clear': 'Clear list',
+  'labels.clearConfirm': 'Remove every label from the list?',
+  'labels.download': 'Download PNG',
+  'labels.downloadZip': 'Download ZIP',
+  'labels.downloadFailed': 'The labels could not be made. Try again.',
 };
 
 export default en;

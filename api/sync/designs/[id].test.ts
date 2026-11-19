@@ -8,6 +8,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { userIndexKey, userMeshesKey } from '../../lib/redisKeys';
 import { MESH_MISSING_STATUS } from '../lib/resourceHandler';
+import { logger } from '../../lib/logger';
 
 let redisStore: Map<string, string>;
 let redisHashes: Map<string, Map<string, string>>;
@@ -272,6 +273,43 @@ describe('PUT', () => {
       res as unknown as VercelResponse
     );
     expect(res._status).toBe(400);
+  });
+
+  // Validators echo request keys and map ids into their messages, so the log
+  // carries only the validator's code and the top-level field.
+  it.each([
+    ['an unknown key with a space', { featureColors: { 'private text': true } }, 'featureColors'],
+    [
+      'an email-like unknown key',
+      { featureColors: { 'private.customer@example.test': true } },
+      'featureColors',
+    ],
+    ['a key with a line break', { featureColors: { 'line\nbreak': true } }, 'featureColors'],
+    ['a map id', { meshAssets: { 'private.customer@example.test': null } }, 'meshAssets'],
+  ])('logs a rejection for %s with no request text', async (_label, extra, field) => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => undefined);
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: { design: { name: 'x', params: { ...VALID_DESIGN, ...extra } }, modifiedAt: 1000 },
+      }),
+      res as unknown as VercelResponse
+    );
+
+    expect(res._status).toBe(400);
+    expect(warn).toHaveBeenCalledWith('sync/designs rejected the payload', {
+      userId: expect.any(String),
+      status: 400,
+      code: 'VALIDATION_ERROR',
+      reason: 'INVALID_PARAMS',
+      field,
+    });
+    const logged = JSON.stringify(warn.mock.calls);
+    expect(logged).not.toContain('private');
+    expect(logged).not.toContain('break');
+    warn.mockRestore();
   });
 
   it('sanitizes the name: strips control chars, trims, and truncates to 100', async () => {

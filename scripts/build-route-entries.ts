@@ -116,6 +116,35 @@ const communityApp = {
   isPartOf: { '@type': 'WebSite', name: 'Gridfinity Layout Tool', url: SITE_URL },
 };
 
+const labelsApp = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Gridfinity Label Maker',
+  alternateName: ['Gridfinity Bin Label Maker'],
+  url: `${SITE_URL}/labels`,
+  description:
+    'Turn a typed or pasted parts list into label images for Brother P-touch, DYMO, Niimbot and Phomemo label makers, sized in printer dots.',
+  applicationCategory: 'UtilitiesApplication',
+  applicationSubCategory: '3D Printing Tools',
+  operatingSystem: 'Any',
+  browserRequirements: 'Requires JavaScript. Requires HTML5.',
+  permissions: 'none',
+  isAccessibleForFree: true,
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'USD',
+    availability: 'https://schema.org/InStock',
+  },
+  author: { '@type': 'Person', name: 'Andy Aragon' },
+  featureList: [
+    'Paste rows from a spreadsheet or an order page',
+    'Part numbers on a second line in a monospaced font',
+    'Tape labels as long as a 1, 2 or 3 unit bin',
+    "One PNG per label at the printer's resolution",
+  ],
+};
+
 const ROUTES: RouteEntry[] = [
   {
     slug: 'designer',
@@ -199,6 +228,32 @@ const ROUTES: RouteEntry[] = [
           <a href="/designer">Bin Designer</a> ·
           <a href="/gridfinity-bin-generator">Bin Generator Guide</a> ·
           <a href="/what-is-gridfinity">What is Gridfinity?</a> ·
+          <a href="/">Layout Planner</a>
+        </p>`,
+  },
+  {
+    slug: 'labels',
+    title: 'Labels for a Label Maker | Gridfinity Layout Tool',
+    description:
+      'Make labels for a Brother P-touch, DYMO, Niimbot or Phomemo label maker from a typed or pasted list. Free, no account.',
+    keywords:
+      'gridfinity label maker, gridfinity labels, gridfinity bin labels, label maker gridfinity, p-touch labels, niimbot labels, dymo labels',
+    ogImage: `${SITE_URL}/og/home.png`,
+    ogImageAlt:
+      'Gridfinity Layout Tool: a drawer planner showing a tool drawer with labeled, color-coded bins',
+    structuredData: [labelsApp, breadcrumbs('labels', 'Label Maker')],
+    fallbackHtml: `
+        <h1>Labels for a Label Maker</h1>
+        <p>Turn a parts list into labels for your Gridfinity bins. Paste rows from a spreadsheet or an order page, pick your label maker, and download one image for each label.</p>
+        <ul>
+          <li>Brother P-touch and DYMO LabelManager tape</li>
+          <li>Niimbot D11, D110 and Phomemo D30 labels</li>
+          <li>Part numbers on a second line</li>
+        </ul>
+        <p>
+          Learn more:
+          <a href="/gridfinity-label-maker">Gridfinity Label Maker</a> ·
+          <a href="/docs/printing/label-maker">Label maker docs</a> ·
           <a href="/">Layout Planner</a>
         </p>`,
   },

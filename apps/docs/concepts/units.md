@@ -12,6 +12,8 @@ sources:
   - src/shared/generation/gridPitch.ts
   - src/shared/utils/drawerCeiling.ts
   - src/features/bin-designer/hooks/useSyncPhysicalUnits.ts
+  - src/features/bin-designer/types/base.ts
+  - src/features/bin-designer/components/DesignerPage/FractionalEdgeMismatchBanner.tsx
 ---
 
 # Units and sizes
@@ -33,6 +35,10 @@ A **height unit** is 7 mm of height. The count starts at the bottom of the feet,
 | Stacking lip on top of the body        | 4.4                            |
 
 For example, a 3-unit bin has a body of 21 mm. The stacking lip adds 4.4 mm, so the bin prints 25.4 mm tall. Items up to 14 mm tall fit below the wall top.
+
+To turn your own drawer into grid units, type its size here:
+
+<DrawerCalculator />
 
 The outer walls of a bin are 0.5 mm smaller than its cells, so a 1 × 1 bin measures 41.5 mm. That small gap lets the bin drop into a baseplate without force. The bin designer shows the room inside the walls as <Ui k="binDesigner.interiorDimensions" />, before dividers, scoops and label tabs.
 
@@ -72,7 +78,21 @@ On a grid larger than 42 mm, the baseplate generator shows <Ui k="baseplate.magn
 
 <Screenshot id="concepts-units-half-grid" alt="A press on H turns on Half-grid mode. A drag on the grid then draws a bin 1.5 units wide and 2 units deep." spec="Clip. Layout editor, drawer 6 × 4 with three 2 × 2 bins. Close-up of the Half-grid mode switch while H is pressed, then a drag in the empty columns draws a 1.5 × 2 bin." />
 
-Half-grid mode doesn't change the feet of a bin. A 1.5 × 2 bin still has whole-cell feet, with a half-width foot at one edge. For a denser grid of feet, turn on <Ui k="binDesigner.halfSockets" /> under <Ui k="binDesigner.base.section.feet" /> in the bin designer.
+Half-grid mode doesn't change the feet of a bin. A 1.5 × 2 bin still has whole-cell feet, with a half-width foot at one edge.
+
+### Half units in the layout and in the feet
+
+A foot drops in only when it lands inside one pocket of the baseplate. So a bin that sits half a unit off the grid needs feet for that position. Three settings use half units:
+
+|                       | <Ui k="sidebar.halfBinMode" />                                           | <Ui k="binDesigner.halfSockets" />                     | <Ui k="binDesigner.footLattice" />: <Ui k="binDesigner.footLattice.half" /> |
+| --------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------ | --------------------------------------------------------------------------- |
+| Where                 | Layout editor, left panel, or press <kbd>H</kbd>                         | Bin designer, <Ui k="binDesigner.base.section.feet" /> | Bin designer, <Ui k="binDesigner.base.section.feet" />, for each axis       |
+| What it changes       | The sizes and the positions of bins, in steps of 0.5 grid units (21 mm)  | Each foot splits into four feet, half a grid unit wide | A half-wide foot at each edge of that axis, with whole feet between         |
+| Where the bin seats   | Its feet decide this. Whole-cell feet seat only on whole-unit positions. | On whole-unit and half-unit positions                  | Half a unit off the grid on that axis                                       |
+| Use it for            | A drawer a little too wide for whole units, or a bin between two sizes   | A bin that you move between whole and half positions   | A bin that always sits half a unit off the grid                             |
+| Number of feet, 3 × 3 | 9, as without it                                                         | 36                                                     | 16, with both axes set to half                                              |
+
+When a bin sits half a unit off the grid but its feet are for the grid, the bin designer shows a warning. Pick one of the two foot settings for that bin. [The base](../designer/base#use-half-size-feet) shows both.
 
 When the drawer width or depth ends in a half unit, <Ui k="sidebar.halfUnitEdgePosition" /> appears. Use it to pick the side that gets the half column: <Ui k="sidebar.left" /> or <Ui k="sidebar.right" />. For the half row, pick <Ui k="sidebar.bottom" /> or <Ui k="sidebar.top" />.
 

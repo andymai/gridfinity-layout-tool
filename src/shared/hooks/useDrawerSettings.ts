@@ -218,8 +218,14 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const addToast = useToastStore((state) => state.addToast);
 
   // Mutations (supports collaborative mode)
-  const { setGridUnitMm, setGridUnitMmY, setHeightUnitMm, setPrintBedSize, updateDrawer } =
-    useMutations();
+  const {
+    setGridUnitMm,
+    setGridUnitMmY,
+    setHeightUnitMm,
+    setPrintBedSize,
+    updateDrawer,
+    setBaseplateParams,
+  } = useMutations();
 
   const {
     drawerFitSuggestion,
@@ -229,6 +235,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     clearMeasurement,
   } = useDrawerFitSuggestion({
     updateDrawer,
+    setBaseplateParams,
     halfGridMode,
     setHalfGridMode,
     gridUnitMm,

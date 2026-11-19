@@ -110,6 +110,12 @@ const PERTURBATIONS: Record<string, unknown> = {
     if (list.length < 2) return list;
     return list.map((cell, i) => (i === list.length - 1 ? list[0] : cell));
   },
+  // An override's ids name an adjacent pair, so only its angle may move.
+  'compartments.dividerOverrides': (list: unknown) => {
+    const [first, ...rest] = list as Array<Record<string, unknown>>;
+    if (!first) return [];
+    return [{ ...first, offsetEnd: Number(first.offsetEnd ?? 0) + 3 }, ...rest];
+  },
   inserts: bumpEveryNumber,
   cutouts: bumpEveryNumber,
   fractionalEdgeX: 'start',

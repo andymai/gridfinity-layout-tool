@@ -10,6 +10,9 @@ sources:
   - src/features/bin-designer/components/panel/CutoutsSection/pocketChecks.ts
   - src/shared/utils/fitTestPlan.ts
   - src/features/scan-capture/
+card:
+  zoom: 1.4
+  focus: 75% 60%
 ---
 
 # Hand tools with custom pockets
@@ -116,3 +119,7 @@ Plain paper and a bank card measure less exactly than the printed calibration sh
 - [Cutout basics](../cutouts/basics): depth modes, two-depth pockets and wall openings
 - [Arrange cutouts](../cutouts/arranging): repeats, groups and labels for each pocket
 - [Swappable label plates](../designer/label-plates#add-sockets-on-cutout-bins): a label plate beside each tool
+
+## More recipes
+
+<RecipeCards />

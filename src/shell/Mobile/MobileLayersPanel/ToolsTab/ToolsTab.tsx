@@ -36,6 +36,7 @@ export function ToolsTab() {
     fillGaps,
     confirmClear,
     fillWithSize,
+    slantedRowOn,
   } = useLayerFillActions({ onAfterAction: closeMobilePanel });
 
   const isPaintActive = (w: number, d: number) => paintSize?.width === w && paintSize.depth === d;
@@ -132,14 +133,22 @@ export function ToolsTab() {
       <div className="mt-6 space-y-2">
         {/* Fill with selected size (conditional) */}
         {paintSize && (
-          <Button
-            variant="primary"
-            fullWidth
-            onClick={() => fillWithSize(paintSize.width, paintSize.depth)}
-            className="h-11 justify-center"
-          >
-            {t('mobile.tools.fillWithSize', { width: paintSize.width, depth: paintSize.depth })}
-          </Button>
+          <div>
+            <Button
+              variant="primary"
+              fullWidth
+              onClick={() => fillWithSize(paintSize.width, paintSize.depth)}
+              disabled={slantedRowOn}
+              className="h-11 justify-center"
+            >
+              {t('mobile.tools.fillWithSize', { width: paintSize.width, depth: paintSize.depth })}
+            </Button>
+            {slantedRowOn && (
+              <p className="mt-1 px-2 text-micro leading-snug text-content-tertiary">
+                {t('layers.fillWithSlantedRow')}
+              </p>
+            )}
+          </div>
         )}
 
         {/* Fill Gaps */}

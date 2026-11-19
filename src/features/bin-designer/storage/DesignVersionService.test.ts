@@ -187,6 +187,27 @@ describe('DesignVersionService', () => {
       expect(expectOk(await setDesignVersionPinned(version.id, false)).pinned).toBe(false);
     });
 
+    // A device whose clock runs fast can stamp a copy ahead of this clock. Sync
+    // keeps the later stamp, so an edit here must still sort after it.
+    it('stamps a rename 1 ms after a version stamped ahead of this clock', async () => {
+      const { version } = await save('v');
+      const ahead = Date.now() + 5 * 60 * 60 * 1000;
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(ahead);
+      try {
+        expectOk(await renameDesignVersion(version.id, 'pulled'));
+      } finally {
+        vi.useRealTimers();
+      }
+
+      const before = expectOk(await listDesignVersions(DESIGN)).find((v) => v.id === version.id);
+      expectOk(await setDesignVersionPinned(version.id, true));
+      const after = expectOk(await listDesignVersions(DESIGN)).find((v) => v.id === version.id);
+
+      expect(before?.updatedAt).toBe(new Date(ahead).toISOString());
+      expect(after?.updatedAt).toBe(new Date(ahead + 1).toISOString());
+    });
+
     it('reports a missing version on rename', async () => {
       expect(expectErr(await renameDesignVersion('nope', 'x')).code).toBe('STORAGE_NOT_FOUND');
     });

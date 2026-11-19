@@ -16,6 +16,8 @@ import {
   retentionMagnetInset,
 } from '@/shared/types/bin';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { withBuiltFilletRequest } from '@/shared/utils/slottedFillet';
+import type { SlottedCavity } from '@/shared/utils/slottedFillet';
 import { effectiveLabelSocketClearance } from '@/shared/constants/labelPlates';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import {
@@ -92,6 +94,16 @@ export function cavityCornerRadiusMm(params: BinParams): number {
     GRIDFINITY_SPEC.BOX_CORNER_RADIUS - params.wallThickness,
     interiorFilletBuilt(params) ? interiorFilletCornerMm(params) : 0
   );
+}
+
+/** The cavity a slotted bin's fillet is held to, as the generator measures it. */
+export function builtCavity(params: BinParams, dims: InsideWallDims): SlottedCavity {
+  return {
+    innerW: dims.innerW,
+    innerD: dims.innerD,
+    wallHeight: dims.wallHeight,
+    hasLip: params.base.stackingLip,
+  };
 }
 
 /** Half the span of `side` along its own u axis. */
@@ -480,11 +492,12 @@ function cutoutShoulderObstacles(
  * `reachMm` is how far the caption itself stands into the cavity.
  */
 export function insideWallObstacles(
-  params: BinParams,
+  design: BinParams,
   dims: InsideWallDims,
   side: WallTextSide,
   reachMm: number
 ): WallRect[] {
+  const params = withBuiltFilletRequest(design, builtCavity(design, dims));
   return [
     ...floorObstacles(params, dims, side),
     ...labelTabObstacles(params, dims, side, reachMm),

@@ -347,7 +347,12 @@
     "workshop.view.top",
     "binDesigner.cutouts.openSideForm",
     "binDesigner.cutouts.openSideForm.tunnel",
-    "supporters.credits.gag.cateringValue"
+    "supporters.credits.gag.cateringValue",
+    "labels.printer.brother-pt",
+    "labels.printer.dymo-d1",
+    "labels.printer.niimbot-d",
+    "labels.printer.phomemo-d30",
+    "labels.row.copies"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

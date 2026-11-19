@@ -21,6 +21,8 @@ interface PulledCopy {
   readonly modifiedAt: number;
   /** The `readAt` of the last read before the pull landed. */
   readonly afterRead: number;
+  /** The open layout that the pull put in the store, while storage still holds it. */
+  readonly layout: Layout | null;
 }
 
 let reads = 0;
@@ -45,9 +47,36 @@ export function noteOpenLayoutSaved(read: OpenLayoutRead): void {
   }
 }
 
-/** Records a copy that sync pulled into storage, with its `modifiedAt`. */
-export function notePulledCopy(id: string, modifiedAt: number): void {
-  newestPull.set(id, { modifiedAt, afterRead: reads });
+/**
+ * Call before a write of `read`. A save that fails can still leave its copy in
+ * storage, so from here on storage may not hold the pulled copy, and a return
+ * to it (an undo) must be written.
+ */
+export function noteOpenLayoutWrite(read: OpenLayoutRead): void {
+  if (read.id === null) return;
+  const pull = newestPull.get(read.id);
+  if (pull?.layout && pull.layout !== read.layout) {
+    newestPull.set(read.id, { ...pull, layout: null });
+  }
+}
+
+/**
+ * Records a copy that sync pulled into storage, with its `modifiedAt`, and the
+ * open layout that the pull put in the store when that layout is open.
+ */
+export function notePulledCopy(id: string, modifiedAt: number, layout: Layout | null = null): void {
+  newestPull.set(id, { modifiedAt, afterRead: reads, layout });
+}
+
+/**
+ * Whether `read` is the unedited copy that sync pulled into storage. A save of
+ * it would stamp this device's clock over the pulled `modifiedAt` and send the
+ * same layout back to the cloud.
+ */
+export function isPulledCopy(read: OpenLayoutRead): boolean {
+  if (read.id === null) return false;
+  const pulled = newestPull.get(read.id)?.layout;
+  return pulled !== undefined && pulled !== null && pulled === read.layout;
 }
 
 /**
@@ -69,6 +98,7 @@ export function saveOpenLayout(): Promise<Result<Unit, StorageError>> {
   return queueLibraryWrite(async (library) => {
     const open = readOpenLayout();
     if (!isRealLayoutId(open.id)) return OK;
+    noteOpenLayoutWrite(open);
     const saved = await saveLayoutWithMetadata(open.id, open.layout, library);
     if (isErr(saved)) return saved;
     noteOpenLayoutSaved(open);

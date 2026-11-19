@@ -63,6 +63,12 @@ export const WhatsNewModal = lazyWithRetry(() =>
 export const DesignGalleryModal = lazyWithRetry(() =>
   import('@/shell/Modals/DesignGalleryModal').then(namedExport('DesignGalleryModal'))
 );
+export const LabelsDialog = lazyWithRetry(() =>
+  import('@/features/labels/components/LabelsDialog').then(namedExport('LabelsDialog'))
+);
+export const LabelsPage = lazyWithRetry(() =>
+  import('@/features/labels/components/LabelsPage').then(namedExport('LabelsPage'))
+);
 export const CommunityPublishDialog = lazyWithRetry(() =>
   import('@/features/community/components/PublishDialog').then(namedExport('PublishDialog'))
 );

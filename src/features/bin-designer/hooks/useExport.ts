@@ -27,7 +27,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
-import { binBedFit } from '@/shared/utils/binSplitFit';
+import { binBedFit, binNeedsSplit } from '@/shared/utils/binSplitFit';
 import { DEFAULT_PATTERN_SCALE } from '@/features/bin-designer/types';
 import { getActiveBridge, getActiveKernel, bridgeManager } from '@/shared/generation/bridge';
 import { withSocketNozzle } from '@/shared/generation/socketNozzle';
@@ -180,7 +180,7 @@ export function useExport(): UseExportReturn {
   );
   const chunkLimit = bedFit.squareOn;
   const exceedsSquareOn = params.width > chunkLimit.width || params.depth > chunkLimit.depth;
-  const needsSplit = exceedsSquareOn && !bedFit.diagonal;
+  const needsSplit = binNeedsSplit(params, bedFit);
 
   const splitPieceCount = useMemo(
     () =>

@@ -32,6 +32,7 @@ import { integration } from './integration';
 import { edgeCases } from './edgeCases';
 import { solidMode } from './solidMode';
 import { wallCutouts } from './wallCutouts';
+import { wallCutoutPaths } from './wallCutoutPaths';
 import { cutoutLabelSockets } from './cutoutLabelSockets';
 import { cutoutOffset } from './cutoutOffset';
 import { groupedScoop } from './groupedScoop';
@@ -52,6 +53,7 @@ import { wallLabelSlots } from './wallLabelSlots';
 import { floorRaise } from './floorRaise';
 import { interiorFillet } from './interiorFillet';
 import { interiorFilletScoops } from './interiorFilletScoops';
+import { slottedFillet } from './slottedFillet';
 import { tile } from './tile';
 import { trayBottom } from './trayBottom';
 import { slideTray } from './slideTray';
@@ -106,6 +108,7 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...edgeCases,
   ...solidMode,
   ...wallCutouts,
+  ...wallCutoutPaths,
   ...cutoutLabelSockets,
   ...cutoutOffset,
   ...groupedScoop,
@@ -143,6 +146,7 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...floorRaise,
   ...interiorFillet,
   ...interiorFilletScoops,
+  ...slottedFillet,
   ...lowProfile,
   ...nestedChamfers,
   ...pullTab,

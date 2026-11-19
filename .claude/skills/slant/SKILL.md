@@ -20,7 +20,7 @@ description: Slanted bins end to end. The shear stage, the upright socket, what 
 - **Rows come from adjacency, never stored ids** (share import mints new bin ids). `slantRowOf` walks edge-to-edge bins with the same cross extent.
 - **`slantIssue`**: `mismatch` (the top leans over a bin that does not lean alike), `unsupported`, `pastDrawer`, `blocked`. Drives the 2D badge and the inspector line.
 - **Match row** (`matchRowSlants`): the row takes the bin's angle and side, the leading bin the end support, retried without it when there is no room. One `batch`.
-- **Slanted row tool**: `paintSlant` in the interaction store, `planSlantedRows` for the area, `paintSlantedRows` to commit. Rows link to one design from `ensureSlantRowDesign`, a shared seam the shell registers in `DesignStoreRegistration`. The design is saved before the batch, so undo removes the bins and keeps the design.
+- **Slanted row tool**: `paintSlant` in the interaction store, `planSlantedRows` for the area, `paintSlantedRows` to commit. Rows link to one design from `ensureSlantRowDesign`, a shared seam the shell registers in `DesignStoreRegistration`. The design is saved before the batch, so undo removes the bins and keeps the design. Fill with W×H stays upright and is off while `paintSlant` is set (`slantedRowOn` in `useLayerFillActions`): a row that other bins cut in two loses its end support.
 
 ## Previews
 

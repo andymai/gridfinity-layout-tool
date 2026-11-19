@@ -1166,6 +1166,17 @@ describe('GenerationBridge', () => {
       expect(ofType('EXPORT')).toEqual([]);
     });
 
+    it("sends the divider fit sample without the design's mesh files, even a missing one", async () => {
+      const params = { ...DEFAULT_BIN_PARAMS, cutouts: [cutout], meshAssets: { m1: missing } };
+      const sample = bridge.exportDividerFitSample('stl', params);
+      sample.catch(() => {});
+      await vi.waitFor(() => expect(ofType('EXPORT_DIVIDER_FIT_SAMPLE')).toHaveLength(1));
+      const sent = ofType('EXPORT_DIVIDER_FIT_SAMPLE')[0].payload?.params;
+      expect(sent?.meshAssets).toBeUndefined();
+      expect(sent?.cutouts).toEqual([]);
+      expect(ofType('PUT_MESH')).toEqual([]);
+    });
+
     it('keeps the latest export when an older one finishes gathering its meshes last', async () => {
       const prepare = bridge.prepareMeshes.bind(bridge);
       let releaseOlder: () => void = () => {};

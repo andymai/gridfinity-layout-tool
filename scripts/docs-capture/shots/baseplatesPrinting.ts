@@ -6,7 +6,7 @@ import { cornerCutVertices } from '../../../src/shared/utils/cornerCutOutline';
 import { FPS } from '../../feature-tips/encode';
 import { DESKTOP, frameAround, pad, union } from '../session';
 import type { DocsSession, Rect, Shot } from '../session';
-import { baseplateReady, openDesigner, partBox, waitBaseplate } from './apps';
+import { baseplateReady, openDesigner, partBox, saveLibraryDesign, waitBaseplate } from './apps';
 import type { Params } from './apps';
 import { grid, openLayouts } from './layoutEditor';
 
@@ -1174,58 +1174,78 @@ const paperPrint: Shot = {
   },
 };
 
-/** The layout finds a design through the library index, so it goes in there too. */
-async function saveDesign(s: DocsSession, name: string, params: Params): Promise<string> {
-  return s.page.evaluate(
-    async ([n, p]) => {
-      type Saved = { ok: boolean; value?: { id: string; name: string; updatedAt: string } };
-      const { getDesignStorePort } = (await import(
-        '/src/core/storage/designStorePort.ts' as string
-      )) as {
-        getDesignStorePort(): {
-          saveDesign(input: object): Promise<Saved>;
-          registryEdgeFields(params: unknown): Promise<object>;
-          registryPlacementFields(params: unknown): Promise<object>;
-          upsertRegistryEntry(entry: object): Promise<{ ok: boolean }>;
-        } | null;
-      };
-      const { DEFAULT_BIN_PARAMS } = (await import(
-        '/src/features/bin-designer/constants/defaults.ts' as string
-      )) as { DEFAULT_BIN_PARAMS: Params };
-      const isRecord = (x: unknown): x is Params =>
-        typeof x === 'object' && x !== null && !Array.isArray(x);
-      const deepMerge = (d: unknown, v: unknown): unknown => {
-        if (!isRecord(d) || !isRecord(v)) return v;
-        const out: Params = { ...d };
-        for (const [k, x] of Object.entries(v)) out[k] = deepMerge(d[k], x);
-        return out;
-      };
-      const port = getDesignStorePort();
-      if (!port) throw new Error('no design store on this page');
-      const params = deepMerge(DEFAULT_BIN_PARAMS, p) as Params;
-      const res = await port.saveDesign({
-        name: n,
-        params,
-        thumbnail: null,
-        exportFileNameConfig: null,
-      });
-      if (!res.ok || !res.value) throw new Error(`could not save design ${n}`);
-      const indexed = await port.upsertRegistryEntry({
-        id: res.value.id,
-        name: res.value.name,
-        width: params.width,
-        depth: params.depth,
-        height: params.height,
-        ...(await port.registryEdgeFields(params)),
-        ...(await port.registryPlacementFields(params)),
-        updatedAt: res.value.updatedAt,
-      });
-      if (!indexed.ok) throw new Error(`could not index design ${n}`);
-      return res.value.id;
-    },
-    [name, params] as const
-  );
+const LABEL_ORDER = [
+  ['91290A113', 'Black-Oxide Alloy Steel Socket Head Screw, M3 x 0.5 mm Thread, 8 mm Long'],
+  ['90592A085', 'Steel Hex Nut, Medium-Strength, M3 x 0.5 mm Thread'],
+  ['93475A210', 'Washer for M3 Screw Size, 3.2 mm ID, 7 mm OD'],
+  ['94180A331', 'Heat-Set Insert for Plastic, M3 x 0.5 mm Thread'],
+] as const;
+
+async function openLabels(s: DocsSession): Promise<Locator> {
+  await s.open('/', grid);
+  await s.ui.preClick(s.page.getByRole('button', { name: label('header.printLayout') }).first());
+  await s.ui.preClick(s.page.getByRole('button', { name: label('print.makeLabels') }));
+  const dialog = s.page.getByRole('dialog', { name: label('labels.title') });
+  await s.until(dialog.getByRole('button', { name: label('labels.paste.add') }));
+  await s.dismissToasts();
+  return dialog;
 }
+
+const labelMakerPaste: Shot = {
+  id: 'printing-label-maker-paste',
+  kind: 'clip',
+  async take(s) {
+    const dialog = await openLabels(s);
+    const paste = dialog.getByRole('textbox', { name: label('labels.paste') });
+    const add = dialog.getByRole('button', { name: label('labels.paste.add') });
+    const area = frameAround(await s.box(dialog), 0, 4 / 3, {
+      x: 0,
+      y: 0,
+      width: DESKTOP.width,
+      height: DESKTOP.height,
+    });
+    await s.ui.park(area.x + area.width * 0.8, area.y + area.height * 0.3);
+    await s.take(
+      area,
+      async () => {
+        await s.ui.hold(0.5);
+        await s.ui.click(paste);
+        await paste.fill(LABEL_ORDER.map((row) => row.join('\t')).join('\n'));
+        await s.ui.hold(0.8);
+        await s.ui.click(add);
+        await s.until(dialog.getByRole('img').last());
+        await s.ui.hold(0.6);
+        s.poster();
+        await s.ui.hold(1.2);
+        await s.ui.click(dialog.getByRole('radio', { name: '1U' }));
+        await s.ui.hold(2);
+      },
+      CLIP_WIDTH / area.width
+    );
+  },
+};
+
+const labelMakerDialog: Shot = {
+  id: 'printing-label-maker-dialog',
+  kind: 'still',
+  storage: {
+    'gridfinity-labels-v1': JSON.stringify({
+      state: {
+        entries: LABEL_ORDER.map(([detail, name], i) => ({ id: `l${i}`, name, detail, copies: 1 })),
+        printerId: 'niimbot-d',
+        mediaId: '12x40',
+        tapeLength: 'fit',
+      },
+      version: 0,
+    }),
+  },
+  async take(s) {
+    const dialog = await openLabels(s);
+    await s.until(dialog.getByRole('img').nth(LABEL_ORDER.length - 1));
+    await s.ui.park(6, DESKTOP.height - 6);
+    await s.still(await s.box(dialog));
+  },
+};
 
 async function openLinked(
   s: DocsSession,
@@ -1235,7 +1255,8 @@ async function openLinked(
 ): Promise<void> {
   await s.open('/', grid);
   const ids: Record<string, string> = {};
-  for (const [key, d] of Object.entries(designs)) ids[key] = await saveDesign(s, d.name, d.params);
+  for (const [key, d] of Object.entries(designs))
+    ids[key] = await saveLibraryDesign(s, d.name, d.params);
   const file = layoutFile(layout) as { bins: object[] };
   const bins = layout.bins ?? [];
   await s.importLayouts(
@@ -1374,6 +1395,49 @@ const exportDestination: Shot = {
   take: (s) => openSettingsTab(s, 'settings.tabs.exports'),
 };
 
+const sendToUrl: Shot = {
+  id: 'printing-file-formats-send-to-url',
+  kind: 'still',
+  async take(s) {
+    await openLayouts(s, WORKBENCH);
+    await s.ui.preClick(
+      s.page.getByRole('button', { name: label('sidebar.openSettings') }).first()
+    );
+    const dialog = s.page.getByRole('dialog').first();
+    await s.until(dialog);
+    await s.ui.preClick(
+      dialog.getByRole('tab', { name: label('settings.tabs.exports'), exact: true })
+    );
+    const toggle = dialog.getByRole('switch', { name: label('exportDestination.url.title') });
+    await s.ui.preClick(toggle);
+    const address = dialog.getByLabel(label('exportDestination.url.address'), { exact: true });
+    await s.until(address);
+    await address.fill('https://nas.local/upload', { force: true });
+    await s.page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await s.page.waitForTimeout(400);
+    await s.ui.warm(20);
+    await s.dismissToasts();
+    await s.ui.park(6, DESKTOP.height - 6);
+    const panel = await s.box(dialog.getByRole('tabpanel').first());
+    const heading = await s.box(
+      dialog.getByText(label('exportDestination.url.title'), { exact: true })
+    );
+    const test = await s.box(
+      dialog.getByRole('button', { name: label('exportDestination.url.test'), exact: true })
+    );
+    const top = heading.y - 16;
+    await s.still(
+      {
+        x: panel.x - 16,
+        y: top,
+        width: panel.width + 32,
+        height: test.y + test.height + 16 - top,
+      },
+      1.25
+    );
+  },
+};
+
 const estimateSettings: Shot = {
   id: 'printing-estimates-settings',
   kind: 'still',
@@ -1407,8 +1471,11 @@ export const BASEPLATES_PRINTING: readonly Shot[] = [
   splitRow,
   findModels,
   paperPrint,
+  labelMakerPaste,
+  labelMakerDialog,
   layoutExport,
   blankLabels,
   exportDestination,
+  sendToUrl,
   estimateSettings,
 ];

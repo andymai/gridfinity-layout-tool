@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useActionHandlers } from './commandPaletteActionHandlers';
 import { useHalfGridModeStore, useLayoutStore, useToastStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
+import { useViewStore } from '@/core/store/view';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { connectSelectionPruning, eventBus } from '@/core/cqrs';
 import { CONSTRAINTS, STAGING_ID } from '@/core/constants';
@@ -457,5 +458,21 @@ describe('useActionHandlers', () => {
 
       expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
     });
+  });
+});
+
+describe('make-labels', () => {
+  beforeEach(() => {
+    resetAllStores();
+  });
+
+  it('opens the labels dialog', () => {
+    const { result } = renderHook(() => useActionHandlers());
+
+    act(() => {
+      result.current['make-labels']?.();
+    });
+
+    expect(useViewStore.getState().labelsOpen).toBe(true);
   });
 });

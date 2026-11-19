@@ -41,9 +41,15 @@ A 2 × 8 bin has 81.1 × 333.1 mm of room inside: 8 × 42 mm, less 0.5 mm of fit
 
 ## Step 1: Fit a half-grid to the drawer
 
+<PlanDrawerButton width="405" depth="480" height="75" name="Kitchen utensil drawer" />
+
+The button opens a new layout at the size of the example drawer, with a card that offers a half-unit grid. Click <Ui k="drawerDims.suggestionUse" /> on the card. It also turns on <Ui k="sidebar.halfBinMode" />.
+
+To use your own drawer instead:
+
 1. In the [layout editor](https://gridfinitylayouttool.com/), click <Ui k="drawerDims.addMeasured" /> in the <Ui k="sidebar.gridSize" /> group.
-2. Type 405, 480 and 75, and press <kbd>Enter</kbd>.
-3. Click <Ui k="drawerDims.suggestionUse" /> on the card. It also turns on <Ui k="sidebar.halfBinMode" />.
+2. Type your width, depth and height, and press <kbd>Enter</kbd>.
+3. Click <Ui k="drawerDims.suggestionUse" /> on the card.
 
 <Screenshot id="recipes-kitchen-utensil-drawer-fit-card" alt="The Grid size group with a measured drawer of 405 by 480 mm and a card that suggests a 9.5 by 11 grid in half units." spec="Layout editor, desktop 1440 px, left panel. New layout at the default 10 x 8 grid. Click Add your drawer's measured size, type 405 x 480 x 75 and press Enter, so the suggestion card shows the half-unit fit. Crop to the Grid size group with the card." />
 
@@ -110,3 +116,7 @@ Long handles can stand above the rim. Select that bin and type how far they stan
 - [Units and sizes](../concepts/units): half units and how heights add up
 - [Compartments and dividers](../designer/compartments#tilt-and-lean-dividers): angled dividers for a cutlery bin
 - [Kitchen drawer organizer](https://gridfinitylayouttool.com/gridfinity-kitchen-drawer): ideas for cutlery, spice and junk drawers
+
+## More recipes
+
+<RecipeCards />

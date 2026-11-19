@@ -339,7 +339,7 @@ function PositionDisclosure({
 
 export function WallCutoutsSection() {
   const { state, handlers, meta, t, STEP, CORNER_STEP, CORNER_SEED } = useWallCutoutsSection();
-  const { walls, activeSides, linked, blocksLid, showDensityHint } = state;
+  const { walls, activeSides, linked, blocksLid, showDensityHint, interiorFollowsPaths } = state;
 
   const sharedSide = activeSides.length > 0 ? activeSides[0] : undefined;
 
@@ -478,7 +478,11 @@ export function WallCutoutsSection() {
               checked={walls.interior.enabled}
               onChange={() => handlers.toggleSide('interior')}
               primaryControls={
-                linked ? undefined : (
+                // An outer opening carries its own profile through the
+                // dividers, so the interior size no longer applies.
+                interiorFollowsPaths ? (
+                  <Hint>{t('binDesigner.wallCutouts.interiorPathHint')}</Hint>
+                ) : linked ? undefined : (
                   <>
                     <SizeControls
                       side="interior"

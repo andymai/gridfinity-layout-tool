@@ -1,0 +1,43 @@
+name: User Docs
+
+# A `feat` PR must change apps/docs/, or give the reason in a body line that
+# starts with `Docs: none`. `edited` is in the types so that adding that line
+# runs the check again.
+#
+# pull_request, not pull_request_target: this job runs the PR's own code, so it
+# must get no secrets and no write token.
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  feature-docs:
+    name: Feature Docs
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # `base...HEAD` needs both histories back to their merge base. A list
+          # of changed names needs only commits and trees, so no blobs.
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Setup pnpm + Node and install dependencies
+        uses: ./.github/actions/setup-pnpm
+
+      - name: Check that a feature PR changes the user docs
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_REF: ${{ github.head_ref }}
+        run: pnpm run check:user-docs:pr

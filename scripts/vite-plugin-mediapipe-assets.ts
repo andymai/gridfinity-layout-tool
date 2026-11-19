@@ -12,13 +12,12 @@ import type { Plugin } from 'vite';
  * `public/models/tasks-vision/` at build start — version-locked to the dep,
  * gitignored, served normally in dev and emitted into dist on build. The
  * `magic_touch.tflite` model is committed (it isn't published to npm).
+ *
+ * The package exports only the SIMD runtime, and `forVisionTasks()` requests no
+ * other, so a browser without WASM SIMD fails to create the segmenter and the
+ * caller falls back to the classical tracer.
  */
-const WASM_FILES = [
-  'vision_wasm_internal.js',
-  'vision_wasm_internal.wasm',
-  'vision_wasm_nosimd_internal.js',
-  'vision_wasm_nosimd_internal.wasm',
-] as const;
+const WASM_FILES = ['vision_wasm_internal.js', 'vision_wasm_internal.wasm'] as const;
 
 export function mediapipeAssetsPlugin(): Plugin {
   return {

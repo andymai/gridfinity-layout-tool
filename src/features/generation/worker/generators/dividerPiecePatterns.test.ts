@@ -28,6 +28,14 @@ describe('planPiecePattern', () => {
     expect(plan?.bandHeight).toBeCloseTo(30 - 1.5 - 1.5, 6);
   });
 
+  it('keeps the pattern off a rounded corner, at the rounded end only', () => {
+    const plan = planPiecePattern(input({ corners: { radius: 3.4, low: true, high: false } }));
+    expect(plan?.keepOuts).toEqual([
+      { uMin: -40, uMax: -40 + 3.4 + 1.5, zMin: 0, zMax: 3.4 + 1.5 },
+    ]);
+    expect(planPiecePattern(input())?.keepOuts).toEqual([]);
+  });
+
   it('returns null when the piece is too short to hold a band', () => {
     expect(planPiecePattern(input({ height: 3 }))).toBeNull();
   });
@@ -54,6 +62,14 @@ describe('planPiecePattern', () => {
       expect(k.zMax).toBeGreaterThanOrEqual(bandTop);
       expect(k.uMax - k.uMin).toBeCloseTo(2 + 2 * 1.5, 6);
     }
+  });
+
+  it('clears the interior cutout window and its border, and the band below it stays', () => {
+    const plan = planPiecePattern(input({ window: { offset: 4, width: 20, depth: 10 } }));
+    const bandTop = (plan?.bandZ0 ?? 0) + (plan?.bandHeight ?? 0);
+    expect(plan?.keepOuts).toEqual([
+      { uMin: 4 - 11.5, uMax: 4 + 11.5, zMin: 30 - 10 - 1.5, zMax: bandTop },
+    ]);
   });
 
   it('clears a full-height column at each face groove', () => {

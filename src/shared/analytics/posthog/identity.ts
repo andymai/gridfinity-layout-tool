@@ -25,6 +25,9 @@ export interface AnalyticsData {
   onceTraitsSent: boolean;
   /** UTC day (YYYY-MM-DD) of the last `pwa_install_available` event. */
   pwaInstallAvailableDay: string;
+  /** Default-landing experiment arm, empty when not enrolled. Lives in this
+   *  record so an analytics opt-out, which prunes it, also ends enrollment. */
+  landingVariant: '' | 'control' | 'test';
 }
 
 let analyticsCache: AnalyticsData | null = null;
@@ -52,6 +55,7 @@ export function createEmptyAnalyticsData(): AnalyticsData {
     lastSetPayload: '',
     onceTraitsSent: false,
     pwaInstallAvailableDay: '',
+    landingVariant: '',
   };
 }
 

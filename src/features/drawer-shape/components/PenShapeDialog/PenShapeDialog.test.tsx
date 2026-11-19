@@ -25,6 +25,19 @@ vi.mock('@/core/cqrs', async (importOriginal) => {
   return { ...actual, batch };
 });
 
+const importer = vi.hoisted(() => ({
+  deps: null as null | {
+    onImported: (vertices: Array<{ x: number; y: number }>) => void;
+    onGrowDrawer: (width: number, depth: number) => void;
+  },
+}));
+vi.mock('./useOutlineImport', () => ({
+  useOutlineImport: (deps: typeof importer.deps) => {
+    importer.deps = deps;
+    return { triggerImport: vi.fn(), oversize: null, resolveOversize: vi.fn() };
+  },
+}));
+
 /** Drawer-local mm extent of the default test drawer. */
 function extent(): { w: number; d: number } {
   const { layout } = useLayoutStore.getState();
@@ -157,6 +170,119 @@ describe('PenShapeDialog', () => {
         setDrawerOutline.mock.invocationCallOrder[0]
       );
       expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('grows the drawer for an import only on Apply', () => {
+      const { d } = extent(); // 420 x 336 = 10 x 8 units
+      const onClose = vi.fn();
+      render(<PenShapeDialog open onClose={onClose} />);
+
+      act(() => {
+        importer.deps?.onGrowDrawer(12, 8);
+        importer.deps?.onImported([
+          { x: 42, y: 0 },
+          { x: 462, y: 0 },
+          { x: 462, y: d },
+          { x: 42, y: d },
+        ]);
+      });
+      expect(updateDrawer).not.toHaveBeenCalled();
+
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      // The import's promised 12 units, not the 11 that the loop alone needs.
+      expect(updateDrawer).toHaveBeenCalledWith({ width: 12, depth: 8 });
+      expect(batch).toHaveBeenCalledTimes(1);
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('honours an import grow inside a larger measured drawer', () => {
+      const { d } = extent(); // 420 x 336 = 10 x 8 units
+      setMeasured(504, d);
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      act(() => {
+        importer.deps?.onGrowDrawer(12, 8);
+        importer.deps?.onImported([
+          { x: 0, y: 0 },
+          { x: 500, y: 0 },
+          { x: 500, y: d },
+          { x: 0, y: d },
+        ]);
+      });
+
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      // The outline fits the 504mm drawer but passes the 420mm grid.
+      expect(updateDrawer).toHaveBeenCalledWith({ width: 12, depth: 8 });
+    });
+
+    it('falls back to the earlier import grow when Undo takes the later one back', () => {
+      const { d } = extent();
+      setMeasured(504, d);
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      const loop = (x: number) => [
+        { x: 0, y: 0 },
+        { x, y: 0 },
+        { x, y: d },
+        { x: 0, y: d },
+      ];
+      act(() => {
+        importer.deps?.onGrowDrawer(12, 8);
+        importer.deps?.onImported(loop(500));
+      });
+      act(() => {
+        importer.deps?.onGrowDrawer(21.5, 8);
+        importer.deps?.onImported(loop(900));
+      });
+
+      fireEvent.click(screen.getByText('common.undo'));
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      expect(updateDrawer).toHaveBeenCalledWith({ width: 12, depth: 8 });
+    });
+
+    it('drops an import grow once Undo takes the import back', () => {
+      const { d } = extent();
+      // The sketch before the import reaches 441mm, so it needs 10.5 units.
+      setOutline([
+        { x: 0, y: 0 },
+        { x: 441, y: 0 },
+        { x: 420, y: d },
+        { x: 0, y: d },
+      ]);
+      render(<PenShapeDialog open onClose={vi.fn()} />);
+      act(() => {
+        importer.deps?.onGrowDrawer(12, 8);
+        importer.deps?.onImported([
+          { x: 42, y: 0 },
+          { x: 462, y: 0 },
+          { x: 462, y: d },
+          { x: 42, y: d },
+        ]);
+      });
+
+      fireEvent.click(screen.getByText('common.undo'));
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      expect(updateDrawer).toHaveBeenCalledWith({ width: 10.5, depth: 8 });
+    });
+
+    it('drops an import grow when the dialog closes', () => {
+      const { d } = extent();
+      const { rerender } = render(<PenShapeDialog open onClose={vi.fn()} />);
+      act(() => importer.deps?.onGrowDrawer(12, 8));
+
+      rerender(<PenShapeDialog open={false} onClose={vi.fn()} />);
+      setOutline([
+        { x: 0, y: 0 },
+        { x: 441, y: 0 },
+        { x: 420, y: d },
+        { x: 0, y: d },
+      ]);
+      rerender(<PenShapeDialog open onClose={vi.fn()} />);
+      fireEvent.click(screen.getByText('drawerShape.editor.apply'));
+
+      expect(updateDrawer).toHaveBeenCalledWith({ width: 10.5, depth: 8 });
     });
 
     it('leaves the drawer untouched when the sketch fits the current grid', () => {

@@ -13,6 +13,8 @@
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '@/i18n';
+import { useSettingsStore } from '@/core/store/settings';
+import { minPrintableStemMm } from '@/shared/utils/typePlan';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import {
   matchTextPreset,
@@ -57,7 +59,7 @@ export const TYPE_BOUNDS = {
 
 export function useTypeSection() {
   const t = useTranslation();
-  const { textDefaults, setTextDefaults, stemWarning, surfaceText, compartmentTexts } =
+  const { textDefaults, setTextDefaults, typeStem, surfaceText, compartmentTexts } =
     useDesignerStore(
       useShallow((s) => ({
         textDefaults: s.params.textDefaults,
@@ -67,9 +69,17 @@ export function useTypeSection() {
         // Measured by the worker against the sizes it actually rendered; the
         // panel cannot compute it, because the binding size depends on host
         // boxes only the generator knows.
-        stemWarning: s.generation.mesh?.typeStemWarning ?? null,
+        typeStem: s.generation.mesh?.typeStem,
       }))
     );
+  const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+  const stemWarning = useMemo(() => {
+    if (typeStem === undefined) return null;
+    const minPrintable = minPrintableStemMm(nozzleSizeMm);
+    return typeStem.minStemMm < minPrintable
+      ? { ...typeStem, minPrintableStemMm: minPrintable }
+      : null;
+  }, [typeStem, nozzleSizeMm]);
 
   /**
    * The design's own words, when it has any.

@@ -9,6 +9,10 @@ sources:
   - src/features/bin-designer/utils/fileNaming.ts
   - src/features/baseplate/utils/fileNaming.ts
   - src/shell/layoutExport/useLayoutExport.ts
+  - src/shared/exportDestination/sendToUrl.ts
+  - src/shared/exportDestination/deliverExport.ts
+  - src/shell/Modals/SettingsModal/tabs/ExportsTab/ExportsTab.tsx
+  - src/core/store/settings.types.ts
 ---
 
 # File formats
@@ -83,11 +87,59 @@ A bin that is bigger than your print bed splits into pieces in all three formats
 Each export goes to your downloads by default. Want it somewhere else? In Settings, the <Ui k="settings.tabs.exports" /> tab has two other choices:
 
 - <Ui k="exportDestination.folder.title" /> saves each export in a folder that you pick. This needs Chrome or Edge.
-- <Ui k="exportDestination.url.title" /> downloads the file and also sends a copy to a web address, such as a NAS.
+- <Ui k="exportDestination.url.title" /> also sends a copy of each export to a web address, such as a NAS. See [Send each export to a URL](#send-each-export-to-a-url).
 
 <Screenshot id="printing-file-formats-destination" alt="The Exports tab of Settings, with Save to a folder and its Choose folder button, and the Send to a URL switch." spec="Layout editor. Open Settings and click the Exports tab. Crop to the top of the dialog, down to the Exports tab." />
 
 [Settings and accessibility](../settings/settings#account-and-data) lists the other tabs of Settings.
+
+### Send each export to a URL
+
+You need a **receiver**: a program at a web address that takes the files, for example on your NAS.
+
+1. Open Settings, and click the <Ui k="settings.tabs.exports" /> tab.
+2. Turn on <Ui k="exportDestination.url.title" />.
+3. In <Ui k="exportDestination.url.address" />, type the full address of the receiver, such as `https://nas.local/upload`.
+4. If the receiver needs a key, fill in the header:
+   - <Ui k="exportDestination.url.headerName" />: the name of the header, such as `X-API-Key`.
+   - <Ui k="exportDestination.url.headerValue" />: the key.
+5. Click <Ui k="exportDestination.url.test" />. The result shows next to the button.
+
+<Screenshot id="printing-file-formats-send-to-url" alt="The Exports tab of Settings with Send to a URL turned on. Below the switch are the Address field, the Header (optional) and Header value fields, and the Send test file button." spec="Layout editor. Open Settings, click the Exports tab, and turn on Send to a URL. Type https://nas.local/upload in Address. Crop to the Send to a URL part of the tab." />
+
+After that, every file that the Layout Tool saves also goes to the receiver. This includes bin, baseplate and layout exports, layout files, backups, design files, label images and SVG files. Each file still downloads, or goes to your export folder.
+
+The address and the header stay in this browser. They don't sync to your other devices.
+
+### What the receiver gets
+
+Each upload is an HTTP `POST` with a `multipart/form-data` body. The body has four fields:
+
+| Field      | Value                                                                  |
+| ---------- | ---------------------------------------------------------------------- |
+| `file`     | The exported file                                                      |
+| `filename` | The name of the file, such as `gf_2x3x6.stl`                           |
+| `format`   | The file extension in lowercase, such as `stl`, `3mf`, `zip` or `json` |
+| `source`   | `gridfinity-layout-tool`                                               |
+
+The receiver must answer with a 2xx status code. The upload sends no cookies, so put a key or a token in the header. The test file is `gridfinity-test.txt`, a short text file.
+
+The receiver must also allow requests from the Layout Tool site (CORS). If it doesn't, the browser blocks the upload.
+
+### When an upload fails
+
+The file still downloads, or goes to your export folder. A message tells you the cause. Its <Ui k="settings.title" /> button opens the <Ui k="settings.tabs.exports" /> tab. The Layout Tool doesn't send the file again, so export it again after you fix the cause.
+
+| Cause                                                      | What to do                                                                                                            |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| The receiver doesn't allow this site (CORS)                | Set the receiver to accept requests from the Layout Tool site.                                                        |
+| The page uses HTTPS, and the address starts with `http://` | Use an `https://` address. The browser accepts `http://` only for this computer: `localhost`, `127.0.0.1` or `[::1]`. |
+| The receiver answers 401 or 403                            | Check the header name and the key.                                                                                    |
+| The receiver answers with a redirect                       | Type the final address. The upload doesn't follow a redirect.                                                         |
+| No answer after 2 minutes                                  | Look at the receiver first. The file can still arrive there.                                                          |
+| The Layout Tool can't reach the receiver                   | Check the address, and make sure that the receiver runs.                                                              |
+
+The <Ui k="settings.tabs.exports" /> tab shows a note when you type an `http://` address on an HTTPS page.
 
 ## Next steps
 

@@ -431,6 +431,7 @@ describe('useBinInspector', () => {
         binId: 'bin1',
         linkedDesignId: 'design-1',
         newDimensions: { width: 2, depth: 2, height: 5 },
+        previousDimensions: { width: 2, depth: 2, height: 3 },
       });
     });
 
@@ -492,6 +493,7 @@ describe('useBinInspector', () => {
         binId: 'bin1',
         linkedDesignId: 'design-1',
         newDimensions: { width: 4, depth: 2, height: 3 },
+        previousDimensions: { width: 2, depth: 2, height: 3 },
       });
     });
 
@@ -513,6 +515,7 @@ describe('useBinInspector', () => {
         binId: 'bin1',
         linkedDesignId: 'design-1',
         newDimensions: { width: 2, depth: 5, height: 3 },
+        previousDimensions: { width: 2, depth: 2, height: 3 },
       });
     });
   });
@@ -707,6 +710,7 @@ describe('useBinInspector', () => {
         binId: 'bin1',
         linkedDesignId: 'design-1',
         newDimensions: { width: 2, depth: 2, height: 5 },
+        previousDimensions: { width: 2, depth: 2, height: 3 },
       });
     });
 

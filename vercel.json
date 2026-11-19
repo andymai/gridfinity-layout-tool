@@ -176,6 +176,15 @@
       ]
     },
     {
+      "source": "/gridfinity-label-maker",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
       "source": "/gridfinity-cutout-generator",
       "headers": [
         {
@@ -496,7 +505,7 @@
   ],
   "rewrites": [
     {
-      "source": "/:slug(what-is-gridfinity|guide|privacy|terms|gridfinity-generator|gridfinity-bin-generator|gridfinity-baseplate-generator|gridfinity-calculator|gridfinity-sizes|gridfinity-tool-drawer|gridfinity-kitchen-drawer|gridfinity-software|gridfinity-cutout-generator|gridfinity-drawers|gridfinity-ikea-alex|gridfinity-milwaukee-packout|gridfinity-ikea-kallax|gridfinity-ikea-malm|gridfinity-ikea-helmer)",
+      "source": "/:slug(what-is-gridfinity|guide|privacy|terms|gridfinity-generator|gridfinity-bin-generator|gridfinity-baseplate-generator|gridfinity-calculator|gridfinity-label-maker|gridfinity-sizes|gridfinity-tool-drawer|gridfinity-kitchen-drawer|gridfinity-software|gridfinity-cutout-generator|gridfinity-drawers|gridfinity-ikea-alex|gridfinity-milwaukee-packout|gridfinity-ikea-kallax|gridfinity-ikea-malm|gridfinity-ikea-helmer)",
       "destination": "/:slug/index.html"
     },
     {
@@ -513,6 +522,10 @@
     },
     {
       "source": "/supporters",
+      "destination": "/"
+    },
+    {
+      "source": "/labels",
       "destination": "/"
     },
     {

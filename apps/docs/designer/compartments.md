@@ -12,6 +12,7 @@ sources:
   - src/features/bin-designer/constants/gridfinity.ts
   - src/features/bin-designer/utils/validation.ts
   - src/features/bin-designer/store/slices/paramSlice/compartmentActions.ts
+  - src/shared/utils/slottedFillet.ts
   - src/shared/utils/slotMath.ts
 ---
 
@@ -121,18 +122,34 @@ For pieces in one direction only, pick <Ui k="binDesigner.slotVertical" /> or <U
 
 The divider pieces have these controls:
 
-| Control                                   | Range or default                                                        |
-| ----------------------------------------- | ----------------------------------------------------------------------- |
-| <Ui k="binDesigner.dividerHeight" />      | <Ui k="binDesigner.dividerAutoHeight" />, or 5 mm up to the auto height |
-| <Ui k="binDesigner.dividerThickness" />   | 0.8 to 2.4 mm, default 1.6 mm                                           |
-| <Ui k="binDesigner.dividerClearance" />   | 0 to 0.3 mm, default 0.25 mm. Use more for a looser fit.                |
-| <Ui k="binDesigner.dividerFloorGroove" /> | On by default: a 0.8 mm channel in the floor holds the bottom edge.     |
-
-Pieces too tight or too loose? Keep the default <Ui k="binDesigner.dividerClearance" /> for a first print, then adjust it.
+| Control                                   | Range or default                                                                                                             |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| <Ui k="binDesigner.dividerHeight" />      | <Ui k="binDesigner.dividerAutoHeight" />, or 5 mm up to the auto height                                                      |
+| <Ui k="binDesigner.dividerThickness" />   | 0.8 to 2.4 mm, default 1.6 mm                                                                                                |
+| <Ui k="binDesigner.dividerClearance" />   | 0 to 0.3 mm, default 0.25 mm. Changes the bin: wider slots and floor groove.                                                 |
+| <Ui k="binDesigner.dividerPieceFit" />    | 0 to 0.3 mm, default 0 mm. Changes only the pieces: thinner where they sit in a slot or the floor groove, and wider notches. |
+| <Ui k="binDesigner.dividerFloorGroove" /> | On by default: a 0.8 mm channel in the floor holds the bottom edge.                                                          |
 
 To draw your own grid, pick <Ui k="binDesigner.slotLayoutCustom" />. Its <Ui k="binDesigner.customMerge" /> and <Ui k="binDesigner.customSplit" /> controls shape the grid. The bin designer then makes pieces that match the grid you drew.
 
-The walls must be 0.8 mm or thicker for slots. Removable dividers turn off the compartment grid, label tabs, the finger scoop and the interior fillet. You cannot use them with tilted dividers or a <Ui k="binDesigner.base.bodyType.nesting" /> body.
+The walls must be 0.8 mm or thicker for slots. Removable dividers turn off the compartment grid, label tabs and the finger scoop. You cannot use them with tilted dividers or a <Ui k="binDesigner.base.bodyType.nesting" /> body.
+
+An [interior fillet](./getting-things-out#round-the-inside-with-an-interior-fillet) works with removable dividers. It rounds the outer walls, and each wall slot follows the curve down into the floor. The end of a piece that goes into a wall slot gets a round bottom corner to fit the curve. When a piece has one round end, put that end into the wall slot.
+
+### Fix the fit of the pieces
+
+<Ui k="binDesigner.dividerClearance" /> changes the bin, so set it before you print the bin. <Ui k="binDesigner.dividerPieceFit" /> changes only the pieces. If the pieces are too tight in a bin that you printed, raise <Ui k="binDesigner.dividerPieceFit" /> and print the pieces again. You do not print the bin again.
+
+To find the value before you print all the pieces, print the fit test:
+
+1. Under the divider controls, click <Ui k="binDesigner.dividerFitSample.button" />.
+2. Print the file. It has a short part of the bin wall with one slot, cut the same as in the bin, and a short piece with your <Ui k="binDesigner.dividerPieceFit" />.
+3. Push the piece down the slot. Near the floor, it must click under the catch.
+4. If the piece is too tight, raise <Ui k="binDesigner.dividerPieceFit" />. If it does not click, lower it. Then export the test again and print only the piece.
+
+The pieces print flat, so <Ui k="binDesigner.dividerPieceFit" /> changes them in whole layers. At a 0.2 mm layer height, change the value in steps of 0.1 mm. The test does not show if a piece is too long for the bin.
+
+<Ui k="binDesigner.dividerPieceFit" /> cannot make a piece thicker. If the pieces are loose at 0 mm, lower <Ui k="binDesigner.dividerClearance" /> and print the bin again.
 
 ### Interlock cross dividers
 

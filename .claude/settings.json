@@ -6,22 +6,22 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/use-shallow-check.sh",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && .claude/hooks/use-shallow-check.sh",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": ".claude/hooks/effect-cleanup-check.sh",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && .claude/hooks/effect-cleanup-check.sh",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": ".claude/hooks/auto-format.sh",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && .claude/hooks/auto-format.sh",
             "timeout": 15
           },
           {
             "type": "command",
-            "command": ".claude/hooks/geometry-sanity-check.sh",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && .claude/hooks/geometry-sanity-check.sh",
             "timeout": 10
           }
         ]
@@ -33,37 +33,37 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/a11y-check.sh",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && .claude/hooks/a11y-check.sh",
             "timeout": 30
           },
           {
             "type": "command",
-            "command": ".claude/hooks/coverage-check.sh",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && .claude/hooks/coverage-check.sh",
             "timeout": 30
           },
           {
             "type": "command",
-            "command": ".claude/hooks/suppression-guard.sh",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && .claude/hooks/suppression-guard.sh",
             "timeout": 30
           },
           {
             "type": "command",
-            "command": ".claude/hooks/dangerous-patterns.sh",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && .claude/hooks/dangerous-patterns.sh",
             "timeout": 30
           },
           {
             "type": "command",
-            "command": ".claude/hooks/result-exhaustion-check.sh",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && .claude/hooks/result-exhaustion-check.sh",
             "timeout": 30
           },
           {
             "type": "command",
-            "command": ".claude/hooks/union-exhaustiveness-check.sh",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && .claude/hooks/union-exhaustiveness-check.sh",
             "timeout": 30
           },
           {
             "type": "command",
-            "command": ".claude/hooks/pre-pr-review.sh",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && .claude/hooks/pre-pr-review.sh",
             "timeout": 60
           }
         ]

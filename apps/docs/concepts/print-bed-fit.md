@@ -57,6 +57,8 @@ In the bin designer, the split options appear in the <Ui k="binDesigner.group.sh
 - <Ui k="binDesigner.splitConnectors" /> adds a joint with a 45° slope in the floor, so the pieces line up. A bin with a lightweight floor has no solid floor for it.
 - <Ui k="binDesigner.splitWallConnectors" /> adds keys in the walls.
 
+After you print, put the pieces together on a flat surface. The floor joint lines up the pieces. If you turned on <Ui k="binDesigner.splitWallConnectors" />, the wall keys press together too. Glue the joint with a glue for plastic, such as superglue. Then let it set before you put the bin in the plate.
+
 The connectors get larger for a nozzle wider than 0.4 mm, so they stay printable. To check the fit before you print, switch the preview between <Ui k="binDesigner.splitAssembled" /> and <Ui k="binDesigner.splitExploded" />. In the export dialog, <Ui k="binDesigner.splitExport.enableSplit" /> writes one file for each piece into a ZIP file.
 
 A slanted bin can't split, because a cut would cross its body at an angle. If a slanted bin is too large, use a smaller angle or make the bin smaller.

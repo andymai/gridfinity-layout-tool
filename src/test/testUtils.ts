@@ -25,6 +25,10 @@ import { useSharedWithMeStore, INITIAL_SHARED_WITH_ME_STATE } from '@/core/store
 import { useSnapshotStore, INITIAL_SNAPSHOT_STATE } from '@/core/store/snapshots';
 import { useGapFitStore, INITIAL_GAP_FIT_STATE } from '@/core/store/gapFit';
 import {
+  useDrawerFitOfferStore,
+  INITIAL_DRAWER_FIT_OFFER_STATE,
+} from '@/core/store/drawerFitOffer';
+import {
   useBinExampleGalleryStore,
   INITIAL_BIN_EXAMPLE_GALLERY_STATE,
 } from '@/core/store/binExampleGallery';
@@ -124,6 +128,8 @@ export function resetAllStores(): void {
   useSnapshotStore.setState(INITIAL_SNAPSHOT_STATE);
 
   useGapFitStore.setState(INITIAL_GAP_FIT_STATE);
+
+  useDrawerFitOfferStore.setState(INITIAL_DRAWER_FIT_OFFER_STATE);
 
   useBinExampleGalleryStore.setState(INITIAL_BIN_EXAMPLE_GALLERY_STATE);
 }

@@ -8,6 +8,8 @@ import {
 } from './dividerBlendBuilder';
 import type { BinParams } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
+import { LIP_SMALL_TAPER } from './generatorConstants';
+import type { CutoutFrame } from './wallCutoutPaths';
 
 const BASE_PARAMS: BinParams = {
   ...DEFAULT_BIN_PARAMS,
@@ -45,6 +47,16 @@ function makeParams(overrides: Partial<BinParams> = {}): BinParams {
 const INNER_W = 2 * 42 - 2 * 1.2;
 const INNER_D = 2 * 42 - 2 * 1.2;
 const WALL_HEIGHT = 3 * 7; // 21mm
+const FRAME: CutoutFrame = {
+  innerW: INNER_W,
+  innerD: INNER_D,
+  wallHeight: WALL_HEIGHT,
+  collarHeight: 0,
+  hasLip: true,
+  dividerTopZ: WALL_HEIGHT - LIP_SMALL_TAPER,
+  dividersBaked: false,
+  depthPadding: 0,
+};
 
 describe('resolveOuterCutouts', () => {
   it('returns empty when walls disabled', () => {
@@ -142,19 +154,19 @@ describe('collectDividers', () => {
 describe('buildDividerBlends', () => {
   it('returns null for slotted bins', () => {
     const params = makeParams({ style: 'slotted' });
-    expect(buildDividerBlends(params, INNER_W, INNER_D, WALL_HEIGHT, 0, true)).toBeNull();
+    expect(buildDividerBlends(params, FRAME)).toBeNull();
   });
 
   it('returns null when walls disabled', () => {
     const params = makeParams({ walls: { ...BASE_PARAMS.walls, enabled: false } });
-    expect(buildDividerBlends(params, INNER_W, INNER_D, WALL_HEIGHT, 0, true)).toBeNull();
+    expect(buildDividerBlends(params, FRAME)).toBeNull();
   });
 
   it('returns null for single-compartment bins', () => {
     const params = makeParams({
       compartments: { rows: 1, cols: 1, thickness: 1.2, cells: [0] },
     });
-    expect(buildDividerBlends(params, INNER_W, INNER_D, WALL_HEIGHT, 0, true)).toBeNull();
+    expect(buildDividerBlends(params, FRAME)).toBeNull();
   });
 
   it('returns null when no cutouts are enabled', () => {
@@ -164,30 +176,30 @@ describe('buildDividerBlends', () => {
         front: DISABLED_WALL_CUTOUT,
       },
     });
-    expect(buildDividerBlends(params, INNER_W, INNER_D, WALL_HEIGHT, 0, true)).toBeNull();
+    expect(buildDividerBlends(params, FRAME)).toBeNull();
   });
 });
 
 describe('computeRampZones', () => {
   it('returns empty when walls disabled', () => {
     const params = makeParams({ walls: { ...BASE_PARAMS.walls, enabled: false } });
-    expect(computeRampZones('front', params, INNER_W, INNER_D, WALL_HEIGHT)).toEqual([]);
+    expect(computeRampZones('front', params, FRAME)).toEqual([]);
   });
 
   it('returns empty for slotted bins', () => {
     const params = makeParams({ style: 'slotted' });
-    expect(computeRampZones('front', params, INNER_W, INNER_D, WALL_HEIGHT)).toEqual([]);
+    expect(computeRampZones('front', params, FRAME)).toEqual([]);
   });
 
   it('returns empty when no dividers exist', () => {
     const params = makeParams({
       compartments: { rows: 1, cols: 1, thickness: 1.2, cells: [0] },
     });
-    expect(computeRampZones('front', params, INNER_W, INNER_D, WALL_HEIGHT)).toEqual([]);
+    expect(computeRampZones('front', params, FRAME)).toEqual([]);
   });
 
   it('returns empty for walls without cutouts', () => {
-    expect(computeRampZones('back', BASE_PARAMS, INNER_W, INNER_D, WALL_HEIGHT)).toEqual([]);
+    expect(computeRampZones('back', BASE_PARAMS, FRAME)).toEqual([]);
   });
 
   it('returns ramp zones only for dividers genuinely at a cutout edge', () => {
@@ -202,7 +214,7 @@ describe('computeRampZones', () => {
         front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 30, depth: 80 },
       },
     });
-    const zones = computeRampZones('front', params, INNER_W, INNER_D, WALL_HEIGHT);
+    const zones = computeRampZones('front', params, FRAME);
     expect(zones.length).toBeGreaterThan(0);
     for (const zone of zones) {
       expect(zone).toEqual(
@@ -228,7 +240,48 @@ describe('computeRampZones', () => {
         front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 15, depth: 80 },
       },
     });
-    expect(computeRampZones('front', params, INNER_W, INNER_D, WALL_HEIGHT)).toEqual([]);
+    expect(computeRampZones('front', params, FRAME)).toEqual([]);
+  });
+
+  it('leaves no ramp on a divider that a rounded shoulder lowers along the path', () => {
+    // A 3u lipless bin: the 1.2 mm dividers at x = +-20.52 sit 1 mm outside a
+    // 39 mm opening, under its 5 mm shoulder.
+    const innerW = 3 * 42 - 0.5 - 2.4;
+    const frame: CutoutFrame = {
+      innerW,
+      innerD: innerW,
+      wallHeight: 37.25,
+      collarHeight: 0,
+      hasLip: false,
+      dividerTopZ: 37.25,
+      dividersBaked: false,
+      depthPadding: 0,
+    };
+    const front = { ...DISABLED_WALL_CUTOUT, enabled: true, widthMm: 39, depthMm: 18 };
+    const withInterior = (enabled: boolean): BinParams =>
+      makeParams({
+        width: 3,
+        depth: 3,
+        height: 6,
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+        compartments: { rows: 1, cols: 3, thickness: 1.2, cells: [0, 1, 2] },
+        walls: {
+          ...BASE_PARAMS.walls,
+          cornerRadiusTop: 5,
+          front,
+          interior: { ...DISABLED_WALL_CUTOUT, enabled, width: 40, depth: 50 },
+        },
+      });
+    // Without the path, both dividers keep the ramp that blends them into the opening.
+    expect(computeRampZones('front', withInterior(false), frame)).toHaveLength(2);
+    expect(computeRampZones('front', withInterior(true), frame)).toEqual([]);
+
+    // A matching back opening carries the same path, and the planner keeps one
+    // of the two coincident cuts: the back end still must not ramp.
+    const both = withInterior(true);
+    const bothWalls: BinParams = { ...both, walls: { ...both.walls, back: front } };
+    expect(computeRampZones('front', bothWalls, frame)).toEqual([]);
+    expect(computeRampZones('back', bothWalls, frame)).toEqual([]);
   });
 });
 

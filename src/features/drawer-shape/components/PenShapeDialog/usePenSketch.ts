@@ -32,6 +32,16 @@ export interface Sketch {
   readonly verts: readonly OutlineVertex[];
   /** Fillet radius (mm) per corner; 0 leaves it sharp. */
   readonly radii: readonly number[];
+  /**
+   * The drawer size, in grid units, an oversize import asked for. Each edit
+   * carries it on, Reset drops it, and Undo brings back the state that had it.
+   */
+  readonly grow?: { readonly width: number; readonly depth: number };
+}
+
+/** A sketch that names no `grow` of its own keeps the one it replaces. */
+function carryGrow(next: Sketch, prev: Sketch): Sketch {
+  return 'grow' in next || prev.grow === undefined ? next : { ...next, grow: prev.grow };
 }
 
 export interface PenSketch extends Sketch {
@@ -116,7 +126,7 @@ export function usePenSketch(seeded: Sketch | null): PenSketch {
       // flag set, and the next drag would spend a second entry on it.
       gestureRef.current = false;
       push(active);
-      setSketch(next);
+      setSketch(carryGrow(next, active));
     },
     [active, push]
   );
@@ -127,7 +137,7 @@ export function usePenSketch(seeded: Sketch | null): PenSketch {
         gestureRef.current = false;
         push(active);
       }
-      setSketch(next);
+      setSketch(carryGrow(next, active));
     },
     [active, push]
   );
@@ -239,6 +249,7 @@ export function usePenSketch(seeded: Sketch | null): PenSketch {
   return {
     verts: active.verts,
     radii: active.radii,
+    grow: active.grow,
     selected,
     canUndo: history.length > 0,
     setSelected,

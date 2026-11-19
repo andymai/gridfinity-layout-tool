@@ -191,7 +191,7 @@ describe('Manifold draft: crush ribs on every part family', () => {
     'baseplate: ribbed bore, chamfered mouth at the pocket floor',
     () => {
       const part = generateBaseplate(
-        plate({ magnetCrushRibs: true, magnetChamfer: true }),
+        plate({ magnetCrushRibs: true, magnetChamfer: true, lightweight: false }),
         () => {},
         false
       );

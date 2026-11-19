@@ -58,6 +58,8 @@ ESLint flat config **replaces** per-rule values instead of merging: the React.la
 
 **i18n check fails** — see the i18n-changes skill for the four checks and their exact unblocks. One layering fact belongs here: `check:i18n:unused` runs only when `src/i18n/` files changed (both pre-commit and CI gate on that), so a deleted `t()` call can leave an orphan key that only fails some later i18n PR. Also, `src/i18n/locales/` has more locale JSONs on disk than CLAUDE.md lists — iterate the directory, not the doc.
 
+**"no docs page cites this feature" / "a feat PR must change a file under apps/docs/"**: `scripts/check-user-docs.ts`. Each folder in `src/features/` needs a docs page whose `sources` cites the folder or a file in it. If no page describes it, add the folder name and a one-line reason to `scripts/user-docs-coverage-allowlist.json`. Pre-commit and the CI unit test enforce this. On pull requests, `.github/workflows/user-docs.yml` runs the `--pr` mode: a `feat` PR must change a file under `apps/docs/`, or its body needs a line `Docs: none, <reason>`. A body edit runs the check again.
+
 ## Recipe: add a member to a tracked union type
 
 1. Add the member to the union type definition.

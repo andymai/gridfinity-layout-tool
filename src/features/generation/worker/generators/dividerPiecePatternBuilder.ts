@@ -14,10 +14,11 @@
 import { cut, rotate, translate, unwrap } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
+import type { PieceCorners } from '@/shared/utils/slottedFillet';
 import { resolvePanelFactory } from './dividerPatternBuilder';
 import type { PanelFactory } from './dividerPatternBuilder';
 import { planPiecePattern } from './dividerPiecePatterns';
-import type { PieceObstruction } from './dividerPiecePatterns';
+import type { PieceObstruction, PiecePatternInput } from './dividerPiecePatterns';
 
 /**
  * Overshoot past each face of a flat piece, per side (mm). A removable piece
@@ -41,6 +42,9 @@ export interface PieceGeometry {
   readonly tabEngagement: number;
   readonly notches?: readonly PieceObstruction[];
   readonly grooves?: readonly PieceObstruction[];
+  readonly window?: PiecePatternInput['window'];
+  /** Rounded bottom corners at the ends that seat over an interior fillet. */
+  readonly corners?: PieceCorners | null;
 }
 
 /**
@@ -91,6 +95,8 @@ export function cutPiecePattern(
     tabEngagement: geometry.tabEngagement,
     notches: geometry.notches ?? [],
     grooves: geometry.grooves ?? [],
+    ...(geometry.window ? { window: geometry.window } : {}),
+    ...(geometry.corners ? { corners: geometry.corners } : {}),
     border: ctx.factory.border,
   });
   if (!plan) return piece;

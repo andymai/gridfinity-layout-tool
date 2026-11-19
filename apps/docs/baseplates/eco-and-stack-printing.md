@@ -25,7 +25,7 @@ The Layout Tool cuts the straight joints between the corner posts down to a thin
 
 <Screenshot id="baseplates-eco-plate" alt="A 4 by 3 plate in the preview. Eco plate is turned on in the Base section, and the joints between the corner posts then become thin bars." spec="Baseplate generator, 4 by 3 plate, iso view. The plate, then a close-up of the Base section where Eco plate is turned on, then the plate again." />
 
-Split pieces keep the eco plate setting. With <Ui k="baseplate.stackPrint.enable" /> on, the eco plate stays only when <Ui k="baseplate.stackPrint.mixedSizes.label" /> is also on.
+Split pieces and detached margins keep the eco plate setting. With <Ui k="baseplate.stackPrint.enable" /> on, the eco plate stays only when <Ui k="baseplate.stackPrint.mixedSizes.label" /> is also on.
 
 ## Print plates in a stack
 

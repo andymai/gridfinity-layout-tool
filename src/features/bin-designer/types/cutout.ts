@@ -129,11 +129,12 @@ export const MAX_POLYGON_SIDES = 12;
 export const DEFAULT_POLYGON_SIDES = 6;
 
 /**
- * Default insertion clearance (mm) added to an insert-style cutout's nominal
- * size so a part cut to spec (e.g. a 6.35mm hex bit) actually drops in. Applied
- * to circle/polygon/slot only; freeform paths and rectangles cut to exact size.
+ * Default insertion clearance (mm) for a new cutout. Circles, polygons and
+ * slots grow by it in total, so a 6.35mm hex bit gets 0.2mm per flat: printed
+ * holes come out undersize, and a deep bit hole needs that much to pull out by
+ * hand. Paths grow by it on each side, the same as scans and STL imprints.
  */
-export const DEFAULT_CUTOUT_CLEARANCE = 0.2;
+export const DEFAULT_CUTOUT_CLEARANCE = 0.4;
 
 /**
  * Shapes that accept an insertion {@link Cutout.clearance} offset. Parametric

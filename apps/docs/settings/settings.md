@@ -81,14 +81,14 @@ Not sure about the grid unit? Keep 42 mm, unless your other parts use a size tha
 - <Ui k="settings.filamentCostPerKg" />
 - <Ui k="settings.printLayerHeight" />
 - <Ui k="settings.infillPercent" />
-- <Ui k="settings.nozzleSize" />: connectors, wall locks and baseplate clips scale to it, so they still print on wider nozzles.
+- <Ui k="settings.nozzleSize" />: connectors, wall locks and baseplate clips scale to it, so they still print on wider nozzles. The bin designer also uses it to warn about letters too thin to print.
 
 See [Estimates](../printing/estimates).
 
 **<Ui k="settings.tabs.categories" />** has two sections:
 
 - <Ui k="settings.defaultCategories" /> sets the categories of a new layout. Click <Ui k="settings.saveCategoriesAsDefaults" /> to use the categories of the open layout.
-- <Ui k="settings.binDefaults.title" /> shows if new bins in the bin designer start from your own defaults. To set them, run <Ui k="commandPalette.setBinDefault" /> in the command palette.
+- <Ui k="settings.binDefaults.title" /> shows if new bins in the bin designer start from your own defaults. To set them, click <Ui k="binDesigner.setAsDefault" /> in the bin designer. See [Start new bins from your own settings](../designer/save-and-reuse#start-new-bins-from-your-own-settings).
 
 ## Account and data
 

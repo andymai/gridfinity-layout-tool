@@ -123,6 +123,25 @@ describe('CompartmentTextInput multiline', () => {
     expect((field as HTMLTextAreaElement).value).toBe('M3 HEX NUTS\nDIN 934');
   });
 
+  it('opens to the placeholder rows while empty, and back to the caption once typed', () => {
+    render(
+      <CompartmentTextInput
+        multiline
+        minRows={1}
+        placeholderRows={2}
+        committedValue=""
+        compartmentId={0}
+        placeholder="Left blank, linked bins print their layout labels"
+        ariaLabel="caption"
+        onCommit={vi.fn()}
+      />
+    );
+    const field = screen.getByRole('textbox', { name: 'caption' });
+    expect(field).toHaveAttribute('rows', '2');
+    fireEvent.change(field, { target: { value: 'M3' } });
+    expect(field).toHaveAttribute('rows', '1');
+  });
+
   it('swallows Enter at the line cap rather than letting the tail be truncated later', () => {
     render(
       <CompartmentTextInput

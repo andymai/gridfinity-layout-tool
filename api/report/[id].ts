@@ -83,7 +83,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     logger.warn('Share reported', {
       id,
       reportCount: newReportCount,
-      reason: reportReason,
+      reasonText: reportReason,
     });
 
     // Check if threshold exceeded

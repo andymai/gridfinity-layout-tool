@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useTypeSection } from './useTypeSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import { DEFAULT_TEXT_STYLE_DEFAULTS, TEXT_PRESETS } from '@/features/bin-designer/types';
 
@@ -82,15 +83,29 @@ describe('useTypeSection stem fix', () => {
     expect(after.minFontSize).toBe(after.fixedSize);
   });
 
-  it('surfaces the worker measurement rather than recomputing it', () => {
+  const measured = (minStemMm: number, nozzleSizeMm: number) => {
     useDesignerStore.setState({
       generation: {
         ...useDesignerStore.getState().generation,
-        mesh: { typeStemWarning: { minStemMm: 0.4, fontSizeMm: 3, minPrintableStemMm: 0.8 } },
+        mesh: { typeStem: { minStemMm, fontSizeMm: 3 } },
       },
     } as never);
-    const { result } = renderHook(() => useTypeSection());
-    expect(result.current.state.stemWarning?.minStemMm).toBe(0.4);
+    const settings = useSettingsStore.getState().settings;
+    useSettingsStore.setState({
+      settings: { ...settings, printSettings: { ...settings.printSettings, nozzleSizeMm } },
+    });
+    return renderHook(() => useTypeSection()).result.current.state.stemWarning;
+  };
+
+  it('surfaces the worker measurement rather than recomputing it', () => {
+    expect(measured(0.4, 0.4)?.minStemMm).toBe(0.4);
+  });
+
+  it('warns under two widths of the nozzle in the print settings', () => {
+    expect(measured(0.9, 0.4)).toBeNull();
+    expect(measured(0.9, 0.6)?.minPrintableStemMm).toBeCloseTo(1.2);
+    expect(measured(0.5, 0.2)).toBeNull();
+    expect(measured(0.3, 0.2)?.minPrintableStemMm).toBeCloseTo(0.4);
   });
 });
 

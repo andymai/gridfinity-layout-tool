@@ -12,6 +12,7 @@ import { Button } from '@/design-system';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useCommunityRouting } from '@/shared/hooks/useCommunityRouting';
+import { useLabelsRouting } from '@/shared/hooks/useLabelsRouting';
 import { useIntentPrefetch } from '@/shared/hooks/useIntentPrefetch';
 import type { IntentPrefetchHandlers } from '@/shared/hooks/useIntentPrefetch';
 import { warmBaseplate, warmDesigner } from '@/shared/hooks/usePrefetchChunks';
@@ -85,17 +86,19 @@ export function ToolSwitcher({
   const { isDesignerRoute, navigateToDesigner, navigateToPlanner } = useDesignerRouting();
   const { isBaseplateRoute, navigateToBaseplate } = useBaseplateRouting();
   const { isCommunityRoute } = useCommunityRouting();
+  const { isLabelsRoute } = useLabelsRouting();
 
-  // Null on /community: you are not in an editor, and highlighting the one
-  // you last used would claim otherwise. Every segment stays live, so the
-  // switcher is also the way out of that route.
-  const activeTool: Tool | null = isCommunityRoute
-    ? null
-    : isBaseplateRoute
-      ? 'baseplate'
-      : isDesignerRoute
-        ? 'designer'
-        : 'planner';
+  // Null on /community and /labels: you are not in an editor, and highlighting
+  // the one you last used would claim otherwise. Every segment stays live, so
+  // the switcher is also the way out of those routes.
+  const activeTool: Tool | null =
+    isCommunityRoute || isLabelsRoute
+      ? null
+      : isBaseplateRoute
+        ? 'baseplate'
+        : isDesignerRoute
+          ? 'designer'
+          : 'planner';
 
   const handleSwitch = (tool: Tool) => {
     if (tool === activeTool) return;

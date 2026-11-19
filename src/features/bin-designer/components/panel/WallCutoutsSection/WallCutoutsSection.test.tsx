@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { WallCutoutsSection } from './WallCutoutsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import en from '@/i18n/locales/en';
 
@@ -35,6 +36,53 @@ describe('WallCutoutsSection', () => {
     fireEvent.click(screen.getByRole('switch', { name: 'Interior walls' }));
 
     expect(useDesignerStore.getState().params.walls.interior.enabled).toBe(true);
+  });
+
+  describe('interior walls', () => {
+    const OFF = { ...DEFAULT_BIN_PARAMS.walls.left, enabled: false };
+    const linkedBefore = useSettingsStore.getState().settings.wallCutoutsLinked;
+    afterEach(() => {
+      useSettingsStore.getState().updateSetting('wallCutoutsLinked', linkedBefore);
+    });
+    const withInterior = (outerOn: boolean, left = DEFAULT_BIN_PARAMS.walls.left): void => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          walls: {
+            ...DEFAULT_BIN_PARAMS.walls,
+            enabled: true,
+            left: outerOn ? left : OFF,
+            right: OFF,
+            interior: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true },
+          },
+        },
+      });
+      // Independent, so the interior shows its own size when it has one.
+      useSettingsStore.getState().updateSetting('wallCutoutsLinked', false);
+    };
+
+    it('replaces its size with a hint once an outer wall is cut', () => {
+      withInterior(true);
+      render(<WallCutoutsSection />);
+      expect(screen.getByText(en['binDesigner.wallCutouts.interiorPathHint'])).toBeDefined();
+      // Only the left wall's own span stepper is left.
+      expect(screen.getAllByLabelText('Span (%)')).toHaveLength(1);
+    });
+
+    it('keeps its size controls with no outer wall cut', () => {
+      withInterior(false);
+      render(<WallCutoutsSection />);
+      expect(screen.queryByText(en['binDesigner.wallCutouts.interiorPathHint'])).toBeNull();
+      expect(screen.getAllByLabelText('Span (%)')).toHaveLength(1);
+    });
+
+    it('keeps its size controls while the outer cut spans nothing', () => {
+      withInterior(true, { ...DEFAULT_BIN_PARAMS.walls.left, width: 0 });
+      render(<WallCutoutsSection />);
+      expect(screen.queryByText(en['binDesigner.wallCutouts.interiorPathHint'])).toBeNull();
+      // The left wall's span stepper, and the interior's own.
+      expect(screen.getAllByLabelText('Span (%)')).toHaveLength(2);
+    });
   });
 
   it('shows side chips and controls when enabled', () => {

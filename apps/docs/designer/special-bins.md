@@ -12,6 +12,17 @@ sources:
   - src/features/bin-designer/components/panel/BaseSection/bodyType.ts
   - src/features/bin-designer/components/CutoutWorkspace/CutoutKnifeControls.tsx
   - src/features/bin-designer/components/panel/shared/SlantTooLargeNotice.tsx
+  - src/features/bin-designer/components/ImportBinDialog/
+  - src/features/bin-designer/hooks/usePlaceBinInLayout.ts
+  - src/features/bin-designer/utils/designKind.ts
+  - src/features/design-linking/components/Dialogs/LinkDesignDialog/LinkDesignDialog.tsx
+  - src/features/design-linking/hooks/importedFootprint.ts
+  - src/shared/hooks/useLinkedDesignMeshes.ts
+  - src/shared/items/importedMesh/descriptor.ts
+  - src/shell/layoutExport/planLayoutBinExport.ts
+  - src/shell/layoutExport/useLayoutExport.ts
+  - src/shared/utils/drawerMargin.ts
+  - src/features/print-export/utils/split.ts
 ---
 
 # Special bins
@@ -102,8 +113,36 @@ The <Ui k="binDesigner.base.bodyType" /> picker in the <Ui k="binDesigner.group.
 
 Two more kinds of design live in the design library:
 
-- **Imported bin.** Already have an STL of a bin? In the library, click <Ui k="common.import" /> and drop the STL file. Set the width, depth and height in units, then click <Ui k="binDesigner.importBin.save" />. The units set the space that the bin takes in a layout. The Layout Tool never resizes the mesh.
+- **Imported bin.** Already have an STL of a bin? In the library, click <Ui k="common.import" /> and drop the STL file. Set the width, depth and height in units, then click <Ui k="binDesigner.importBin.save" />. The units set the space that the bin takes in a layout. The Layout Tool never resizes the mesh. See [Use an imported bin in a layout](#use-an-imported-bin-in-a-layout).
 - **Workshop build.** <Ui k="binDesigner.newWorkshop" /> starts a tool holder built from parts on a Gridfinity base. See [Workshop](../cutouts/workshop).
+
+## Use an imported bin in a layout
+
+An imported bin goes into a drawer like any other saved design. Its width, depth and height in units set the space that it takes on the grid.
+
+1. In the bin designer, open <Ui k="binDesigner.savedDesigns" />.
+2. Open the menu of the imported bin, and click <Ui k="binDesigner.placeInLayout.action" />.
+
+The layout editor opens and puts a linked bin in the first free spot. If the layer has no room, the bin goes to the stash.
+
+To change the space that an imported bin takes, resize it on the grid like any linked bin. The new size becomes the size of the imported design, and its other linked bins take it too. The mesh keeps its size.
+
+To link a bin that is already on the grid, select it. Under <Ui k="designLinking.inspector.linkedDesign" />, click <Ui k="designLinking.inspector.linkExisting" />. The list marks an imported bin with <Ui k="binDesigner.itemKind.importedMesh" />.
+
+| Where                         | What you get                                                                                                                                              |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <Ui k="toolbar.3dView" />     | The mesh from your STL file, not a plain box                                                                                                              |
+| <Ui k="layoutExport.title" /> | One file for each imported design, in the `bins/` folder. Its name comes from the name of the STL file. In 3MF, the mesh is one part of the project file. |
+| `manifest.txt` in the ZIP     | The number of copies to print, and a filament estimate from the volume of the mesh                                                                        |
+| <Ui k="rightPanel.binList" /> | A filament estimate for a standard bin of the same size. This estimate can differ from the manifest.                                                      |
+
+The export uses the mesh as you imported it. The layout settings that change other linked bins don't change an imported bin:
+
+- The export never splits it to fit the print bed. If the bin is too large for your bed, cut it in your slicer.
+- It can't extend into the drawer margin, so <Ui k="inspector.extendToMargin" /> stays off.
+- It doesn't print the layout label of the bin.
+- The export doesn't change its feet to match the baseplate of the layout.
+- A STEP export skips it, because STEP can't hold a mesh. The manifest tells you how many designs it skipped.
 
 ## When it goes wrong
 

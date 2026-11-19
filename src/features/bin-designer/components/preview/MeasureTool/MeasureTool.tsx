@@ -91,7 +91,10 @@ export function MeasureTool() {
 
   /** Resolve a screen position to a snapped point on the model, or null. */
   const pick = useCallback(
-    (screen: Screen, touch: boolean): { point: MeasurePoint; normal: Vec3; view: Vec3 } | null => {
+    (
+      screen: Screen,
+      touch: boolean
+    ): { point: MeasurePoint; surface: Vec3; normal: Vec3; view: Vec3 } | null => {
       // Read imperatively rather than from a captured render value: the DOM
       // listeners outlive any single render, and depending on the mesh here
       // would re-register every one of them on each generation tick.
@@ -116,6 +119,7 @@ export function MeasureTool() {
       const tolerance = worldPerPixel(hit.point) * radiusPx;
       return {
         point: snapToCreaseEdges(hit.point, live?.edgeVertices ?? null, tolerance),
+        surface: hit.point,
         normal: hit.normal,
         view: direction,
       };
@@ -129,8 +133,11 @@ export function MeasureTool() {
       if (!result) return;
       const live = useDesignerStore.getState();
       if (live.ui.measure.mode === 'thickness') {
+        // From the face hit, unsnapped: the snap reach is wider than a thin
+        // wall on screen, so it can land on the hidden inner face's edge, and
+        // the probe then crosses the whole bin.
         const probe = probeThickness(
-          result.point,
+          result.surface,
           result.normal,
           result.view,
           live.generation.mesh?.vertices ?? null,

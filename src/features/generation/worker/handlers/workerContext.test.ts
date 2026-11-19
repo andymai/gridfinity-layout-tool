@@ -95,6 +95,32 @@ describe('runGeneration companion meshes', () => {
     expect(Array.from(vertices)).toEqual([0, 0, 0, 1, 0, 0, 0, 1, 0]);
     expect(result.transfer).toContain(vertices.buffer);
   });
+
+  it('posts the finest type stem with the mesh, for the Type panel', () => {
+    const posted: Record<string, unknown>[] = [];
+    vi.stubGlobal('self', {
+      postMessage: (response: Record<string, unknown>) => {
+        posted.push(response);
+      },
+    });
+    setKernelInitialized('occt-wasm', false, 1);
+    runGeneration(
+      () => ({
+        vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+        normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        indices: new Uint32Array([0, 1, 2]),
+        edgeVertices: new Float32Array([0, 0, 0, 1, 0, 0]),
+        triangleCount: 1,
+        typeStem: { minStemMm: 0.5, fontSizeMm: 3 },
+      }),
+      'type-stem',
+      'test',
+      false
+    );
+
+    const result = posted.find((r) => r.type === 'MESH_RESULT');
+    expect(result?.typeStem).toEqual({ minStemMm: 0.5, fontSizeMm: 3 });
+  });
 });
 
 describe('runExport on a kernel that ran out of memory', () => {

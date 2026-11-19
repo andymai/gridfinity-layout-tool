@@ -509,3 +509,345 @@ html:not(.dark) .docs-only-dark {
   color: var(--vp-c-text-2);
   font-size: 0.9rem;
 }
+
+/* ---------- Drawer links into the app ---------- */
+
+/* `:root` matches the specificity of the light-theme link hover rule above. */
+:root .vp-doc a.docs-plan-drawer-button,
+:root .vp-doc a.docs-plan-drawer-button:hover {
+  color: #000;
+  text-decoration: none;
+}
+
+.docs-plan-drawer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 16px 0;
+}
+
+.docs-plan-drawer-button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: var(--docs-app-button);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.docs-plan-drawer-button:hover {
+  background: var(--docs-app-button-hover);
+}
+
+.docs-plan-drawer-button:focus-visible,
+.docs-calc-secondary:focus-visible {
+  outline: 2px solid var(--vp-c-text-1);
+  outline-offset: 2px;
+}
+
+.docs-plan-drawer-button svg,
+.docs-calc-secondary svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.docs-plan-drawer-hint {
+  flex: 1 1 240px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--vp-c-text-2);
+}
+
+/* ---------- Drawer calculator ---------- */
+
+.docs-calc {
+  margin: 20px 0;
+  padding: 18px 20px 20px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: var(--vp-c-bg-alt);
+}
+
+.docs-calc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.vp-doc .docs-calc-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-2);
+}
+
+.docs-calc-units {
+  display: inline-flex;
+  margin: 0;
+  padding: 2px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: var(--vp-c-bg);
+}
+
+.docs-calc-units label {
+  position: relative;
+  display: block;
+}
+
+.docs-calc-units input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.docs-calc-units span {
+  display: block;
+  min-width: 38px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--vp-c-text-2);
+}
+
+.docs-calc-units input:checked + span {
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-text-1);
+}
+
+.docs-calc-units input:focus-visible + span {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 1px;
+}
+
+.docs-calc-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.docs-calc-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+}
+
+.docs-calc-fields small {
+  font-weight: 400;
+  color: var(--vp-c-text-2);
+}
+
+.docs-calc-fields input {
+  width: 100%;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 8px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.docs-calc-fields input:focus {
+  border-color: var(--vp-c-brand-1);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--vp-c-brand-soft);
+}
+
+.docs-calc-result {
+  margin-top: 16px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.vp-doc .docs-calc-note {
+  margin: 0;
+  color: var(--vp-c-text-2);
+}
+
+.docs-calc-result dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.docs-calc-result dl > div {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.docs-calc-result dt {
+  color: var(--vp-c-text-2);
+}
+
+.docs-calc-result dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.vp-doc .docs-calc-result ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vp-doc .docs-calc-result li + li {
+  margin-top: 2px;
+}
+
+.docs-calc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+:root .vp-doc a.docs-calc-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+@media (max-width: 640px) {
+  .docs-calc {
+    padding: 16px;
+  }
+
+  .docs-calc-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .docs-calc-fields label:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .docs-calc-result dl > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+}
+
+/* ---------- Recipe cards ---------- */
+
+.vp-doc .docs-recipes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vp-doc .docs-recipes li {
+  margin: 0;
+}
+
+:root .vp-doc .docs-recipes a {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font-weight: 400;
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+
+:root .vp-doc .docs-recipes a:hover {
+  border-color: var(--vp-c-brand-2);
+  color: var(--vp-c-text-1);
+}
+
+.vp-doc .docs-recipes a:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+}
+
+.docs-recipes-image {
+  display: block;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-bottom: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg-soft);
+}
+
+.docs-recipes-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(var(--card-zoom, 1));
+  transform-origin: var(--card-focus, 50% 50%);
+  transition: transform 0.3s;
+}
+
+.docs-recipes a:hover .docs-recipes-image img {
+  transform: scale(calc(var(--card-zoom, 1) * 1.03));
+}
+
+.docs-recipes-title {
+  padding: 10px 12px 2px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.docs-recipes-text {
+  padding: 0 12px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--vp-c-text-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-recipes-image img {
+    transition: none;
+  }
+
+  .docs-recipes a:hover .docs-recipes-image img {
+    transform: scale(var(--card-zoom, 1));
+  }
+}
+
+@media (max-width: 640px) {
+  .vp-doc .docs-recipes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+.vp-doc .docs-calc-units-note {
+  margin-top: 12px;
+  font-size: 12px;
+}

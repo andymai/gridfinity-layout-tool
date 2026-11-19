@@ -60,6 +60,8 @@ interface CompartmentTextInputProps {
   readonly multiline?: boolean;
   /** Rows to show before the caption has grown into them. */
   readonly minRows?: number;
+  /** Rows while the field is empty, for a placeholder that wraps. */
+  readonly placeholderRows?: number;
 }
 
 export function CompartmentTextInput({
@@ -74,6 +76,7 @@ export function CompartmentTextInput({
   describedBy,
   multiline = false,
   minRows = 2,
+  placeholderRows = minRows,
 }: CompartmentTextInputProps) {
   const [draft, setDraft] = useState(committedValue);
   const focusedRef = useRef(false);
@@ -208,7 +211,10 @@ export function CompartmentTextInput({
         ref={areaRef}
         // Grows with the caption so a list of one-line labels keeps the height
         // it had as a single-line field.
-        rows={Math.min(TEXT_MAX_LINES, Math.max(minRows, draft.split('\n').length))}
+        rows={Math.min(
+          TEXT_MAX_LINES,
+          Math.max(draft === '' ? placeholderRows : minRows, draft.split('\n').length)
+        )}
         resize="none"
         value={draft}
         maxLength={TEXT_MAX_TOTAL_LENGTH}

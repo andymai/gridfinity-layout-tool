@@ -5,7 +5,14 @@ import { label } from '../labels';
 import { DESKTOP, frameAround, pad, union } from '../session';
 import type { DocsSession, Rect, Shot } from '../session';
 import type { Params } from './apps';
-import { designerReady, openBaseplate, openDesigner, partBox, waitBaseplate } from './apps';
+import {
+  designerReady,
+  openBaseplate,
+  openDesigner,
+  partBox,
+  saveLibraryDesign,
+  waitBaseplate,
+} from './apps';
 import { cellCenter, grid, gridArea, openLayouts } from './layoutEditor';
 
 const WINDOW: Rect = { x: 0, y: 0, ...DESKTOP };
@@ -111,65 +118,6 @@ async function linkBin(s: DocsSession, id: string, design: string): Promise<void
   await s.ui.warm(20);
 }
 
-/**
- * Off camera: saves a bin design to the library on the open page, its params
- * merged into the defaults, and returns its id. The layout finds a design
- * through the library index, so it goes in there too, as a shared layout's
- * designs do.
- */
-async function saveDesign(s: DocsSession, name: string, params: Params): Promise<string> {
-  return s.page.evaluate(
-    async ([n, p]) => {
-      const { getDesignStorePort } = (await import(
-        '/src/core/storage/designStorePort.ts' as string
-      )) as {
-        getDesignStorePort(): {
-          saveDesign(
-            input: object
-          ): Promise<{ ok: boolean; value?: { id: string; name: string; updatedAt: string } }>;
-          registryEdgeFields(params: unknown): Promise<object>;
-          registryPlacementFields(params: unknown): Promise<object>;
-          upsertRegistryEntry(entry: object): Promise<{ ok: boolean }>;
-        } | null;
-      };
-      const { DEFAULT_BIN_PARAMS } = (await import(
-        '/src/features/bin-designer/constants/defaults.ts' as string
-      )) as { DEFAULT_BIN_PARAMS: Params };
-      const isRecord = (x: unknown): x is Params =>
-        typeof x === 'object' && x !== null && !Array.isArray(x);
-      const deepMerge = (d: unknown, v: unknown): unknown => {
-        if (!isRecord(d) || !isRecord(v)) return v;
-        const out: Params = { ...d };
-        for (const [k, x] of Object.entries(v)) out[k] = deepMerge(d[k], x);
-        return out;
-      };
-      const port = getDesignStorePort();
-      if (!port) throw new Error('no design store on this page');
-      const params = deepMerge(DEFAULT_BIN_PARAMS, p) as Params;
-      const res = await port.saveDesign({
-        name: n,
-        params,
-        thumbnail: null,
-        exportFileNameConfig: null,
-      });
-      if (!res.ok || !res.value) throw new Error(`could not save design ${n}`);
-      const indexed = await port.upsertRegistryEntry({
-        id: res.value.id,
-        name: res.value.name,
-        width: params.width,
-        depth: params.depth,
-        height: params.height,
-        ...(await port.registryEdgeFields(params)),
-        ...(await port.registryPlacementFields(params)),
-        updatedAt: res.value.updatedAt,
-      });
-      if (!indexed.ok) throw new Error(`could not index design ${n}`);
-      return res.value.id;
-    },
-    [name, params] as const
-  );
-}
-
 interface LinkedBin extends FixtureBin {
   design?: string;
 }
@@ -190,7 +138,8 @@ async function openLinkedLayout(
 ): Promise<Record<string, string>> {
   await s.open('/', grid);
   const ids: Record<string, string> = {};
-  for (const [key, d] of Object.entries(designs)) ids[key] = await saveDesign(s, d.name, d.params);
+  for (const [key, d] of Object.entries(designs))
+    ids[key] = await saveLibraryDesign(s, d.name, d.params);
   const file = layoutFile(layout) as { bins: object[] };
   await s.importLayouts(
     [
@@ -960,7 +909,7 @@ const deepBottomLayer: Shot = {
       await s.ui.hold(0.4);
     });
     // Step 3's Create design, as a cut: the bin comes back linked.
-    const id = await saveDesign(s, DEEP_DESIGNS.bin.name, DEEP_DESIGNS.bin.params);
+    const id = await saveLibraryDesign(s, DEEP_DESIGNS.bin.name, DEEP_DESIGNS.bin.params);
     await linkBin(s, await binId(s, /./), id);
     await s.dismissToasts();
     const below = await s.box(

@@ -48,15 +48,16 @@ describe('useInteriorFilletSection', () => {
     expect(useDesignerStore.getState().params.interiorFilletMm).toBe(0.5);
   });
 
-  it('is unavailable on a slotted bin', () => {
+  it('turns on for a slotted bin and keeps its removable dividers', () => {
     useDesignerStore.setState({ params: { ...DEFAULT_BIN_PARAMS, style: 'slotted' } });
     const { result } = renderHook(() => useInteriorFilletSection());
 
-    expect(result.current.meta.disabledReason).toBeDefined();
+    expect(result.current.meta.disabledReason).toBeUndefined();
     act(() => {
       result.current.handlers.toggle();
     });
-    expect(useDesignerStore.getState().params.interiorFilletMm).toBeUndefined();
+    expect(useDesignerStore.getState().params.interiorFilletMm).toBe(2.5);
+    expect(useDesignerStore.getState().params.style).toBe('slotted');
   });
 
   it('flags a radius larger than the narrowest compartment can hold', () => {

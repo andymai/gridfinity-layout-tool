@@ -44,6 +44,7 @@ import {
   computeWallPatternInputs,
 } from './dividerBlendBuilder';
 import type { WallPatternInputs } from './dividerBlendBuilder';
+import { cutoutFrame } from './wallCutoutPaths';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
 import {
@@ -166,7 +167,7 @@ export function computeWallClipContext(
   // for polygon bins since ramp/junction zones are unused on that path.
   const wallPatternInputs = isPolygon
     ? undefined
-    : computeWallPatternInputs(params, innerW, innerD, dim.wallHeight);
+    : computeWallPatternInputs(params, cutoutFrame(params, dim));
   const handleWallDefs: readonly HandleWallDef[] = !params.handles.enabled
     ? []
     : isPolygon
@@ -426,14 +427,7 @@ export function computeWallClips(
   // on custom shapes so there's nothing to blend against or block.
   const rampZones = isPolygon
     ? []
-    : computeRampZones(
-        wall.side,
-        params,
-        innerW,
-        innerD,
-        dim.wallHeight,
-        clipCtx.wallPatternInputs
-      );
+    : computeRampZones(wall.side, params, cutoutFrame(params, dim), clipCtx.wallPatternInputs);
   const junctionZones = isPolygon
     ? []
     : computeDividerJunctionZones(

@@ -69,4 +69,40 @@ describe('designAdapter.applyRemote with real storage', () => {
 
     expect(loadRegistry().find((r) => r.id === 'remote-long')?.splitToFitBed).toBeUndefined();
   });
+
+  // Sync pulls a design only when its modifiedAt is newer than the local one,
+  // so a local copy that took this device's clock would be pulled at every
+  // poll while the remote stamp is ahead of that clock.
+  it('keeps the modifiedAt it pulled', async () => {
+    const pulledAt = Date.now() + 5 * 60 * 60 * 1000;
+    await designAdapter.applyRemote({
+      id: 'remote-ahead',
+      payload: { name: 'Ahead', params: DEFAULT_BIN_PARAMS },
+      modifiedAt: pulledAt,
+    });
+
+    expect((await designAdapter.get('remote-ahead'))?.modifiedAt).toBe(pulledAt);
+    expect((await designAdapter.list()).find((d) => d.id === 'remote-ahead')?.modifiedAt).toBe(
+      pulledAt
+    );
+  });
+
+  it('keeps the modifiedAt it pulled when the pull detaches a variant', async () => {
+    await designAdapter.applyRemote({
+      id: 'remote-variant',
+      payload: { name: 'Variant', params: DEFAULT_BIN_PARAMS, variantOf: 'parent', overrides: {} },
+      modifiedAt: Date.now() - 60_000,
+    });
+    const pulledAt = Date.now() + 5 * 60 * 60 * 1000;
+
+    await designAdapter.applyRemote({
+      id: 'remote-variant',
+      payload: { name: 'Variant', params: DEFAULT_BIN_PARAMS },
+      modifiedAt: pulledAt,
+    });
+
+    const stored = await loadDesign(designId('remote-variant'));
+    expect(isOk(stored) && stored.value.variantOf).toBeUndefined();
+    expect((await designAdapter.get('remote-variant'))?.modifiedAt).toBe(pulledAt);
+  });
 });

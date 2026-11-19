@@ -1,0 +1,40 @@
+import { deliverExport } from '@/shared/exportDestination/deliverExport';
+import type { TypeMeasurer } from '@/shared/utils/typePlan';
+import type { LabelEntry } from '../store/labelListStore';
+import { labelFileName, zipLabelFiles } from './labelFiles';
+import type { LabelFile } from './labelFiles';
+import type { LabelMedia, LabelPrinter } from './labelMedia';
+import { renderLabelPng } from './labelPng';
+import { labelPaths } from './planLabel';
+import type { LabelPlan } from './planLabel';
+
+/** Returns 0 when nothing was saved; `deliverExport` has already told the user why. */
+export async function downloadLabels(
+  entries: readonly LabelEntry[],
+  plans: ReadonlyMap<string, LabelPlan>,
+  measurer: TypeMeasurer,
+  printer: LabelPrinter,
+  media: LabelMedia
+): Promise<number> {
+  const printable = entries.flatMap((entry) => {
+    const plan = plans.get(entry.id);
+    return plan?.problem === null ? [{ entry, plan }] : [];
+  });
+  const files: LabelFile[] = [];
+  for (const [index, { entry, plan }] of printable.entries()) {
+    files.push({
+      name: labelFileName(index, printable.length, entry.name, entry.copies),
+      data: await renderLabelPng(plan, labelPaths(plan, measurer), printer.dpi),
+    });
+  }
+
+  if (files.length === 0) return 0;
+  const saved =
+    files.length === 1
+      ? await deliverExport(
+          new Blob([new Uint8Array(files[0].data)], { type: 'image/png' }),
+          files[0].name
+        )
+      : await deliverExport(zipLabelFiles(files), `labels-${printer.id}-${media.id}.zip`);
+  return saved ? files.length : 0;
+}

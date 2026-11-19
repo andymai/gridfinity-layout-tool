@@ -1,9 +1,20 @@
 ---
 title: Place and edit bins
-description: 'Draw, move, resize and rotate bins, use half units and the stash, and undo a change.'
+description: 'Draw, move, resize and rotate bins, fill the gaps, slant bins, use half units and the stash, and undo a change.'
 sources:
   - src/shared/hooks/interactions/
   - src/features/grid-editor/components/Grid/Bin/useBinPointerInteraction.ts
+  - src/features/layers/components/ActiveLayerPanel/ActiveLayerPanel.tsx
+  - src/features/layers/hooks/useLayerFillActions.ts
+  - src/shared/utils/fill.ts
+  - src/core/cqrs/v2/domain/bin/fillGaps.ts
+  - src/features/bin-inspector/components/Inspector/BinSlantSection/
+  - src/features/layers/components/SlantedRowControls/SlantedRowControls.tsx
+  - src/features/grid-editor/components/Grid/Bin/BinSlantBadge.tsx
+  - src/shared/utils/placedSlant.ts
+  - src/shared/utils/slantRow.ts
+  - src/shared/utils/slantRowFill.ts
+  - src/shared/utils/validationPlacement.ts
   - src/shell/keyboard/handlers.ts
   - src/shared/utils/rotation.ts
   - src/shared/utils/expandToFit.ts
@@ -35,6 +46,21 @@ Need a lot of bins of one size? Use the size brush:
 4. Press <kbd>Escape</kbd> to stop.
 
 <Screenshot id="layouts-placing-bins-size-brush" alt="Size brush opens its sizes, and 1×1 is picked. Back on the grid, a click places one bin, and a drag fills a block of cells with 1 by 1 bins. Escape stops the brush." spec="Clip. Layout editor on desktop. Layout with a 6 by 4 drawer and an empty area at the back. Close-up: click Size brush, then the 1×1 square. Cut to the grid: click one cell, drag across a block of cells, and press Escape with a keycap. Crop to the grid." />
+
+## Fill the gaps with bins
+
+Want a bin in every empty spot of a layer? The Layout Tool can fill them for you.
+
+1. In the <Ui k="common.layers" /> panel, click the layer that you want to fill.
+2. Under <Ui k="layers.sizeSelector" /> in the left panel, click the fill button. Its label shows the number of cells that it can fill.
+
+The Layout Tool starts at the front-left corner. In each empty spot, it puts the largest bin that fits, up to the largest size for your print bed. With half-grid mode on, the bins can also have half-unit sizes. The new bins get the height of the layer and the active category.
+
+A message tells you how many bins it added. One undo removes all of them. You can also run <Ui k="commandPalette.fillGaps" /> from the command palette.
+
+<Screenshot id="layouts-placing-bins-fill-gaps" alt="The fill button under Size brush shows the number of cells that it can fill. A click fills each gap with the largest bin that fits, and a message says how many bins it added." spec="Clip. Layout editor on desktop, left panel open. Layout with a 6 by 4 drawer, four bins on the left half and empty cells of different sizes on the right half. Click the fill button under Size brush. Hold on the filled grid and the message. Crop to the left panel and the grid." />
+
+With a size picked in the size brush, the same button fills the layer with upright bins of that size. While <Ui k="layers.slantedRow.title" /> is on, that button is off: drag on the grid to paint the rows. When the layer has no empty cells, the button shows <Ui k="layers.noGaps" />.
 
 ## Move and copy bins
 
@@ -88,6 +114,45 @@ Small gaps left between bins? Right-click a bin and choose <Ui k="mobile.binMenu
 <Screenshot id="layouts-placing-bins-expand-to-fit" alt="A right-click on the Pliers bin opens its menu, and Expand to fit is chosen. The walls of Pliers grow into the empty column beside it, and a dashed line shows where its feet stay." spec="Clip. Layout editor on desktop. Layout with a 7 by 3 drawer: three 2 by 3 bins with one empty column between the first and the second. Right-click the first bin and choose Expand to fit. Crop to the grid and the menu." />
 
 To expand a row, a column or a full grid of bins on one layer in one step, select them all first. To undo an expansion later, select the bin. Then click <Ui k="common.reset" /> under <Ui k="inspector.expandedFootprint" /> in the inspector.
+
+## Slant a bin
+
+A **slanted bin** leans toward one side, and its base stays flat on the grid. Tall items such as pens then fit in a shallow drawer. <Ui k="binDesigner.slant.title" /> has the <Ui k="settings.experimental" /> label: it is on for everyone, but it can still change.
+
+1. Select one bin.
+2. In the inspector, turn on <Ui k="binDesigner.slant.title" />. The bin leans 45° toward the back.
+3. Set the <Ui k="binDesigner.slant.angle" />, from 1° to 60°. Each click on the stepper changes it by 5°.
+4. Pick the side that the bin leans toward: <Ui k="binDesigner.overhang.side.back" />, <Ui k="binDesigner.overhang.side.front" />, <Ui k="binDesigner.overhang.side.left" /> or <Ui k="binDesigner.overhang.side.right" />.
+
+Above 45°, the inspector shows a warning: <Ui k="binDesigner.slant.steep" /> On the grid, a small badge on the bin points the way that it leans. The grid also marks the strip that its top leans over, and the 3D preview shows the lean.
+
+A slanted bin has no stacking lip. No bin on a different layer can go over or under a slanted bin or its end support.
+
+### Rows and the end support
+
+Slanted bins in a row lean on each other. A row is a line of bins on one layer. The bins touch edge to edge in the direction of the lean, and their sides line up.
+
+The last bin at the end that the row leans toward has nothing to lean on. Select it and turn on <Ui k="binDesigner.slant.endSupport" />. The support is a wedge on the cells past the bin, and no other bin can go on those cells. The support exports as a second part.
+
+### Slant a bin that uses a saved design
+
+A bin that uses a saved design gets the slant of that design. The inspector shows the angle and the side of the design. When you change the angle, the side or the end support, this bin gets its own slant, and the design stays the same. Click <Ui k="inspector.slant.useDesign" /> to use the slant of the design again.
+
+### Paint slanted rows
+
+To fill an area with slanted rows in one step, use the size brush:
+
+1. In the left panel, click <Ui k="layers.sizeSelector" />.
+2. Turn on <Ui k="layers.slantedRow.title" />, then set the angle and the side.
+3. Pick a size.
+4. Drag across the area on the grid. A click places one bin.
+5. Press <kbd>Escape</kbd> to stop.
+
+<Screenshot id="layouts-placing-bins-slanted-row" alt="Size brush opens, Slanted row is turned on at 45 degrees toward the back, and a 1 by 2 size is picked. A drag across the back of the grid fills it with rows of bins that lean toward the back, and the last bin of each row stands on an end support." spec="Clip. Layout editor on desktop, left panel open. Layout with a 6 by 5 drawer, drawer height 4u, bins at the front and an empty area at the back. Click Size brush, turn on Slanted row and leave it at 45° and Back, then click the 1×2 size. Drag across the empty area. Hold on the new rows with their slant badges and supports. Crop to the left panel and the grid." />
+
+Each row ends on an end support. Each bin is as tall as the drawer height allows. All the bins link to one saved design, which the Layout Tool saves for you, or it uses a saved design that matches. One undo removes the bins, and the design stays in your saved designs.
+
+<Ui k="layers.slantedRow.title" /> stays on until you turn it off. The fill button under the size brush places only upright bins, so it is off while slanted rows are on. A row that other bins cut in two loses its end support. To make a slanted design in the bin designer, see [Make a slanted bin](../designer/special-bins#make-a-slanted-bin).
 
 ## Merge bins into one
 
@@ -162,9 +227,47 @@ The message tells you what stopped it:
 | Bins with a locked size    | Unlock their sizes in the inspector, then try again.                         |
 | A bin stacked on top       | The wider walls would lift a stack above the drawer. Lower that stack first. |
 
+### Fill gaps leaves empty cells
+
+Look at what is in or under those cells. The fill button doesn't put a bin on these cells:
+
+- Cells that the drawer shape removes.
+- Cells of an end support on the same layer.
+- Cells over or under a slanted bin or its end support on a different layer.
+- Cells where a bin of the layer height would stand above the drawer top, or rest on the clearance of a lower bin.
+
+It also doesn't add a bin that would lift a bin on a higher layer above the drawer top. The number on the button leaves out the cells in this list.
+
+### Slant is gray in the inspector
+
+Read the line under the toggle:
+
+| The line says                              | What to do                                                                                                                             |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| <Ui k="inspector.slant.heldBy.design" />   | The saved design has a feature that can't slant. [Make a slanted bin](../designer/special-bins#make-a-slanted-bin) names some of them. |
+| <Ui k="inspector.slant.heldBy.overhang" /> | Click <Ui k="common.reset" /> under <Ui k="inspector.expandedFootprint" />, or turn off <Ui k="inspector.extendToMargin" />.           |
+
+### A slanted bin shows a warning
+
+The badge of a slanted bin changes to a warning (<Ui k="grid.bin.slantIssue" />) when the slant has a problem. Select the bin, and read the line under <Ui k="binDesigner.slant.title" /> in the inspector:
+
+| The inspector says                           | What to do                                                                                                          |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| <Ui k="inspector.slant.issue.mismatch" />    | Click <Ui k="inspector.slant.matchRow" />. The row gets this angle and side, and the last bin gets the end support. |
+| <Ui k="inspector.slant.issue.unsupported" /> | Turn on <Ui k="binDesigner.slant.endSupport" /> for this bin.                                                       |
+| <Ui k="inspector.slant.issue.pastDrawer" />  | Lower the angle, or move the row away from that edge. Then turn on the end support.                                 |
+| <Ui k="inspector.slant.issue.blocked" />     | Move the bin that stands on the end support, or the bin over or under this bin on a different layer.                |
+
+If <Ui k="inspector.slant.matchRow" /> doesn't show, a bin in the row can't slant, or the top leans over a bin outside the row.
+
+### A slant change doesn't apply
+
+If the inspector says <Ui k="inspector.slant.noRoom" />, the change needs cells that are not free. An end support needs free cells past the bin, inside the drawer. The cells of the bin and its support must also be free on the other layers. Move the bins in the way, or pick a different side.
+
 ## Next steps
 
 - [Work with several bins](./multi-select): align, edit and merge many bins at once.
 - [Work in layers](./layers): stack bins on top of other bins.
 - [Saved designs and linked bins](../concepts/saved-designs): what changes when a bin uses a design.
+- [Special bins](../designer/special-bins#make-a-slanted-bin): make a slanted design in the bin designer.
 - [Keyboard shortcuts](../reference/shortcuts): all the keys of the layout editor.

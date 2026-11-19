@@ -334,6 +334,25 @@ export default defineConfig({
             },
           },
           {
+            // The 3D labels' fallback fonts (LABEL_FONT_DATA_PATH): a few index
+            // and meta files plus one font per script a label shows, each
+            // fetched on first use. Not precached (json and woff are absent
+            // from globPatterns), and CacheFirst is safe because the data
+            // version is part of the path.
+            urlPattern: /\/fonts\/unicode-font-resolver\//,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'label-fonts',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
+              cacheableResponse: {
+                statuses: [200],
+              },
+            },
+          },
+          {
             // Cache WASM binaries (content-hashed, immutable) after first use.
             // CacheFirst is safe because new deploys produce new hashes.
             //

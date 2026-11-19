@@ -32,6 +32,14 @@ import {
   type OuterWallCutoutInfo,
 } from './dividerBlendTypes';
 import { collectDividers, resolveOuterCutouts } from './dividerBlendResolvers';
+import {
+  cutoutFrame,
+  planEveryPathCut,
+  wallCutoutPathsActive,
+  type CutoutFrame,
+  type DividerPathCut,
+  type OuterSide,
+} from './wallCutoutPaths';
 import { buildEndTrimCut, buildParallelTrimCut, buildRampCut } from './dividerBlendCuts';
 import type { FeatureBuilder } from './pipeline/featureBuilder';
 import { FeatureTag } from './featureTags';
@@ -45,17 +53,11 @@ export { resolveOuterCutouts, collectDividers } from './dividerBlendResolvers';
  *
  * Returns a single fused cut solid (or null if no blending is needed).
  */
-export function buildDividerBlends(
-  params: BinParams,
-  innerW: number,
-  innerD: number,
-  wallHeight: number,
-  collarHeight: number,
-  hasLip: boolean
-): Shape3D | null {
+export function buildDividerBlends(params: BinParams, frame: CutoutFrame): Shape3D | null {
   if (params.style !== 'standard') return null;
   if (!params.walls.enabled) return null;
 
+  const { innerW, innerD, wallHeight, collarHeight, hasLip } = frame;
   const cutouts = resolveOuterCutouts(params, innerW, innerD, wallHeight);
   if (cutouts.length === 0) return null;
 
@@ -63,11 +65,26 @@ export function buildDividerBlends(
   if (dividers.length === 0) return null;
 
   const cutoutShape = params.walls.shape;
+  const paths = wallCutoutPathsActive(params, frame);
+  const lowered = paths ? pathLoweredEnds(planEveryPathCut(params, frame)) : [];
   const cuts: Shape3D[] = [];
 
   for (const divider of dividers) {
     for (const cutout of cutouts) {
       const perp = isPerpendicular(divider, cutout);
+
+      if (paths) {
+        // The path cuts every divider inside the span along its whole run.
+        // Only a ramp beside the opening is left for the blend to make.
+        if (
+          perp &&
+          dividerTouchesWall(divider, cutout) &&
+          !loweredByPath(divider, cutout, lowered)
+        ) {
+          for (const cut of rampsBesidePath(divider, cutout, wallHeight)) cuts.push(cut);
+        }
+        continue;
+      }
 
       if (perp && dividerTouchesWall(divider, cutout)) {
         // Divider's wall-local position along the cutout's span axis
@@ -146,6 +163,69 @@ export function buildDividerBlends(
   return fused;
 }
 
+/** A straight divider that a path lowers up to the path's own wall. */
+export interface PathLoweredEnd {
+  readonly side: OuterSide;
+  /** Across the path: x for front and back, y for left and right. */
+  readonly pos: number;
+}
+
+/**
+ * The dividers each path lowers where they meet its wall. A ramp there would
+ * cut below the lowered top, down to the opening's floor.
+ */
+export function pathLoweredEnds(cuts: readonly DividerPathCut[]): PathLoweredEnd[] {
+  const out: PathLoweredEnd[] = [];
+  for (const cut of cuts) {
+    if (cut.kind !== 'lowered') continue;
+    const { side } = cut.outer;
+    const acrossX = side === 'front' || side === 'back';
+    const rad = (cut.segment.rotateZ * Math.PI) / 180;
+    const towardPlus = (acrossX ? Math.sin(rad) : Math.cos(rad)) > 0;
+    const minEndOnWall = (side === 'front' || side === 'left') === towardPlus;
+    if (!(minEndOnWall ? cut.wallAtMin : cut.wallAtMax)) continue;
+    out.push({ side, pos: acrossX ? cut.segment.x : cut.segment.y });
+  }
+  return out;
+}
+
+/** Whether a path lowers this divider all the way to the cutout's wall. */
+function loweredByPath(
+  divider: DividerInfo,
+  cutout: OuterWallCutoutInfo,
+  lowered: readonly PathLoweredEnd[]
+): boolean {
+  return lowered.some(
+    (end) => end.side === cutout.side && Math.abs(end.pos - divider.posAlongPerp) < 1e-6
+  );
+}
+
+/**
+ * Ramps for a divider that ends beside an opening carried through the bin.
+ * A divider centred inside the span is in the path and drops along its whole
+ * run, so only one centred outside it keeps its full height and its ramp.
+ */
+function rampsBesidePath(
+  divider: DividerInfo,
+  cutout: OuterWallCutoutInfo,
+  wallHeight: number
+): Shape3D[] {
+  const out: Shape3D[] = [];
+  for (const dist of [
+    cutout.cutLeft - divider.posAlongPerp,
+    divider.posAlongPerp - cutout.cutRight,
+  ]) {
+    if (dist < 0 || !isRampAdjacent(dist, divider.thickness)) continue;
+    try {
+      const cut = buildRampCut(divider, cutout, wallHeight);
+      if (cut) out.push(cut);
+    } catch {
+      /* graceful degradation */
+    }
+  }
+  return out;
+}
+
 // --- Ramp zone data for wall pattern clipping ---
 
 /**
@@ -157,17 +237,18 @@ export function buildDividerBlends(
 export interface WallPatternInputs {
   readonly dividers: readonly DividerInfo[];
   readonly cutouts: readonly OuterWallCutoutInfo[];
+  /** Dividers a path lowers to their wall, which take no ramp. */
+  readonly pathLowered: readonly PathLoweredEnd[];
 }
 
-export function computeWallPatternInputs(
-  params: BinParams,
-  innerW: number,
-  innerD: number,
-  wallHeight: number
-): WallPatternInputs {
+export function computeWallPatternInputs(params: BinParams, frame: CutoutFrame): WallPatternInputs {
+  const { innerW, innerD, wallHeight } = frame;
   return {
     dividers: collectDividers(params, innerW, innerD),
     cutouts: resolveOuterCutouts(params, innerW, innerD, wallHeight),
+    pathLowered: wallCutoutPathsActive(params, frame)
+      ? pathLoweredEnds(planEveryPathCut(params, frame))
+      : [],
   };
 }
 
@@ -183,32 +264,32 @@ export function computeWallPatternInputs(
 export function computeRampZones(
   wallSide: 'front' | 'back' | 'left' | 'right',
   params: BinParams,
-  innerW: number,
-  innerD: number,
-  wallHeight: number,
-  inputs?: WallPatternInputs
+  frame: CutoutFrame,
+  inputs: WallPatternInputs = computeWallPatternInputs(params, frame)
 ): RampZone[] {
   if (!params.walls.enabled || params.style !== 'standard') return [];
 
-  const dividers = inputs?.dividers ?? collectDividers(params, innerW, innerD);
+  const { dividers, cutouts, pathLowered } = inputs;
   if (dividers.length === 0) return [];
 
-  const cutouts = inputs?.cutouts ?? resolveOuterCutouts(params, innerW, innerD, wallHeight);
   const wallCutout = cutouts.find((c) => c.side === wallSide);
   if (!wallCutout) return [];
 
   const zones: RampZone[] = [];
+  // Mirrors `buildDividerBlends`: a divider in the path has no ramp.
+  const minDist = wallCutoutPathsActive(params, frame) ? 0 : -Infinity;
 
   for (const divider of dividers) {
     if (!isPerpendicular(divider, wallCutout)) continue;
     if (!dividerTouchesWall(divider, wallCutout)) continue;
+    if (loweredByPath(divider, wallCutout, pathLowered)) continue;
 
     const dividerPos = divider.posAlongPerp;
     const distToLeft = wallCutout.cutLeft - dividerPos;
     const distToRight = dividerPos - wallCutout.cutRight;
 
     // Left-adjacent ramp
-    if (isRampAdjacent(distToLeft, divider.thickness)) {
+    if (distToLeft >= minDist && isRampAdjacent(distToLeft, divider.thickness)) {
       const rampLen = Math.min(wallCutout.userCutHeight, (divider.spanEnd - divider.spanStart) / 2);
       if (rampLen >= MIN_DIM) {
         zones.push({
@@ -220,7 +301,7 @@ export function computeRampZones(
     }
 
     // Right-adjacent ramp
-    if (isRampAdjacent(distToRight, divider.thickness)) {
+    if (distToRight >= minDist && isRampAdjacent(distToRight, divider.thickness)) {
       const rampLen = Math.min(wallCutout.userCutHeight, (divider.spanEnd - divider.spanStart) / 2);
       if (rampLen >= MIN_DIM) {
         zones.push({
@@ -294,9 +375,11 @@ export const dividerBlendFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        'v1',
+        // `v2`: with the paths on, the path cuts the dividers in the span.
+        'v2',
         dim.shellKey,
         stableSerialize(params.walls),
+        params.style,
         params.compartments.cols,
         params.compartments.rows,
         quantize(params.compartments.thickness),
@@ -309,19 +392,17 @@ export const dividerBlendFeature: FeatureBuilder = {
         // Tilted dividers are excluded from blends, so a tilt change alters
         // which junctions blend and must invalidate the cached cut.
         stableSerialize(params.compartments.dividerOverrides ?? []),
-        quantize(interiorFilletCornerMm(params))
+        quantize(interiorFilletCornerMm(params)),
+        // Keyed on the solved answer: raised floors, the divider height and
+        // the lip all decide which dividers a path lowers.
+        wallCutoutPathsActive(params, dim)
+          ? stableSerialize(pathLoweredEnds(planEveryPathCut(params, cutoutFrame(params, dim))))
+          : 'none'
       )
     );
   },
   build: (ctx) => {
-    const result = buildDividerBlends(
-      ctx.params,
-      ctx.dimensions.innerW,
-      ctx.dimensions.innerD,
-      ctx.dimensions.wallHeight,
-      ctx.dimensions.collarHeight,
-      ctx.dimensions.hasLip
-    );
+    const result = buildDividerBlends(ctx.params, cutoutFrame(ctx.params, ctx.dimensions));
     return result ? [result] : null;
   },
 };

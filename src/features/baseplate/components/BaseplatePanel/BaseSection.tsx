@@ -72,6 +72,7 @@ import {
   CONNECTOR_FIT_OFFSET_STEP,
 } from '@/shared/constants/connectors';
 import { mm } from '@/core/types';
+import { magnetChamferBlocker } from '@/shared/generation/magnetHoleStyle';
 import {
   updateBaseplateParam as updateParam,
   updateBaseplateParams as updateParams,
@@ -117,6 +118,17 @@ export function BaseSection() {
     diameter: screwDiameter,
     count: screwsPerPiece,
   });
+  const chamferBlocker = magnetChamferBlocker({
+    lightweight: baseplateParams.lightweight !== false,
+    solidFloor: baseplateParams.solidFloor,
+    magnetDepth: baseplateParams.magnetDepth,
+  });
+  const chamferReason =
+    chamferBlocker === 'hollowFloor'
+      ? t('baseplate.magnetChamferLightweight')
+      : chamferBlocker === 'shallowHole'
+        ? t('baseplate.magnetChamferShallow')
+        : undefined;
 
   // Only a config created here is given a head width. A saved one without it
   // resolves to ø8, the width it was built with, and must keep resolving there.
@@ -174,6 +186,7 @@ export function BaseSection() {
     <StickyGroupHeader
       variant="band"
       title={t('baseplate.sectionBase')}
+      docsSection="baseplateBase"
       summary={summaryParts.length > 0 ? summaryParts.join(' · ') : undefined}
     >
       <PanelSection className="space-y-3">
@@ -352,11 +365,7 @@ export function BaseSection() {
                   label={t('baseplate.magnetChamfer')}
                   info={t('baseplate.magnetChamferDetail')}
                   checked={baseplateParams.magnetChamfer === true}
-                  disabledReason={
-                    baseplateParams.lightweight === true
-                      ? t('baseplate.magnetChamferLightweight')
-                      : undefined
-                  }
+                  disabledReason={chamferReason}
                   onChange={() =>
                     updateParam(
                       'magnetChamfer',

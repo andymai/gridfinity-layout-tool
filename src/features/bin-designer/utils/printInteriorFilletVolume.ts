@@ -20,6 +20,7 @@ import {
   interiorFilletRadiusMm,
   narrowestCavitySpansMm,
 } from '@/shared/utils/interiorFillet';
+import { withBuiltFilletRequest } from '@/shared/utils/slottedFillet';
 
 const CROSS_SECTION = 1 - Math.PI / 4;
 
@@ -28,17 +29,25 @@ export function computeInteriorFilletVolume(
   outerW: number,
   outerD: number
 ): number {
-  const radius = interiorFilletRadiusMm(params);
-  if (radius === 0) return 0;
   const wall = params.wallThickness;
   const totalH = params.height * params.heightUnitMm;
   const boxWallHeight = baseWallHeight(params.base, totalH);
+  // A slotted bin builds only the fillet its pieces leave room for, at the
+  // floor and in the corners alike.
+  const sized = withBuiltFilletRequest(params, {
+    innerW: outerW - 2 * wall,
+    innerD: outerD - 2 * wall,
+    wallHeight: boxWallHeight,
+    hasLip: params.base.stackingLip,
+  });
+  const radius = interiorFilletRadiusMm(sized);
+  if (radius === 0) return 0;
   const height =
     computeInteriorHeight(boxWallHeight, params.base.stackingLip, GRIDFINITY.LIP_SMALL_TAPER) -
     resolveBinFloorMm(params);
   if (height <= 0) return 0;
 
-  const corner = interiorFilletCornerMm(params);
+  const corner = interiorFilletCornerMm(sized);
   const shellCorner = Math.max(GRIDFINITY.BOX_CORNER_RADIUS - wall, 0);
   const spans = narrowestCavitySpansMm(params);
   const column = (span: number, alreadyRounded: boolean): number => {

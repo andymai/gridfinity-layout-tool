@@ -6,6 +6,8 @@ import {
   MAGNET_CRUSH_RIB_DEPTH_MM,
   PLAIN_MAGNET_HOLE,
   attachmentHoleStyle,
+  baseplateTakesMagnetChamfer,
+  magnetChamferBlocker,
   isPlainMagnetHole,
   magnetBoreProfile,
   magnetBoreRadiusAt,
@@ -91,5 +93,40 @@ describe('chamfer', () => {
     // lid retention bosses (1.0) and detachable feet (1.2) all keep the plain mouth.
     expect(magnetChamferFits(1.2)).toBe(false);
     expect(magnetChamferFits(1.0)).toBe(false);
+  });
+});
+
+describe('magnetChamferBlocker', () => {
+  it('names the hollow floor first, then a shallow hole', () => {
+    expect(magnetChamferBlocker({ lightweight: true, magnetDepth: 0.5 })).toBe('hollowFloor');
+    expect(magnetChamferBlocker({ solidFloor: true, magnetDepth: 0.5 })).toBe('shallowHole');
+    expect(magnetChamferBlocker({ solidFloor: true, magnetDepth: 2 })).toBeNull();
+  });
+});
+
+describe('baseplateTakesMagnetChamfer', () => {
+  it('skips the chamfer on the thin pads of a hollowed floor', () => {
+    expect(baseplateTakesMagnetChamfer({ magnetChamfer: true, lightweight: true })).toBe(false);
+  });
+
+  it('keeps the chamfer when a solid floor replaces the hollowing', () => {
+    expect(
+      baseplateTakesMagnetChamfer({ magnetChamfer: true, lightweight: true, solidFloor: true })
+    ).toBe(true);
+    expect(baseplateTakesMagnetChamfer({ magnetChamfer: true, lightweight: false })).toBe(true);
+  });
+
+  it('treats a plate with no lightweight field as hollow, as the floor cutters do', () => {
+    expect(baseplateTakesMagnetChamfer({ magnetChamfer: true })).toBe(false);
+  });
+
+  it('skips the chamfer on a hole no deeper than the lead-in', () => {
+    const solid = { magnetChamfer: true, solidFloor: true };
+    expect(baseplateTakesMagnetChamfer({ ...solid, magnetDepth: MAGNET_CHAMFER_MM })).toBe(false);
+    expect(baseplateTakesMagnetChamfer({ ...solid, magnetDepth: 2 })).toBe(true);
+  });
+
+  it('is off unless asked for', () => {
+    expect(baseplateTakesMagnetChamfer({ lightweight: false, solidFloor: true })).toBe(false);
   });
 });

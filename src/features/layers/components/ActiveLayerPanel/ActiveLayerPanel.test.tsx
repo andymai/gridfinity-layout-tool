@@ -190,6 +190,23 @@ describe('ActiveLayerPanel', () => {
       expect(useLayoutStore.getState().layout.bins.length).toBeGreaterThan(0);
     });
 
+    it('places no upright bins while Slanted row is on, and says to drag', () => {
+      useInteractionStore.setState({
+        paintSize: { width: 2, depth: 2 },
+        paintSlant: { angleDeg: 45, side: 'back' },
+      });
+
+      render(<ActiveLayerPanel />);
+      const fill = screen.getByText('Fill with 2×2').closest('button');
+      expect(fill).toBeDisabled();
+      expect(
+        screen.getByText('Fill places upright bins. Drag on the grid to paint slanted rows.')
+      ).toBeVisible();
+      if (fill) fireEvent.click(fill);
+
+      expect(useLayoutStore.getState().layout.bins).toHaveLength(0);
+    });
+
     it('clears paint size after filling', () => {
       useInteractionStore.setState({ paintSize: { width: 2, depth: 2 } });
 
@@ -209,8 +226,8 @@ describe('ActiveLayerPanel', () => {
     });
 
     it.each([
-      ['Fill 1 gap', 'Fill 1 empty cell with a 1×1 bin', 1],
-      ['Fill 2 gaps', 'Fill 2 empty cells with 1×1 bins', 2],
+      ['Fill 1 gap', 'Fill 1 empty cell with the largest bins that fit', 1],
+      ['Fill 2 gaps', 'Fill 2 empty cells with the largest bins that fit', 2],
     ])('reads "%s" for that many empty cells', (label, title, cells) => {
       const { layout } = useLayoutStore.getState();
       useLayoutStore.setState({

@@ -37,11 +37,15 @@ A 3u bin has a 21 mm body (3 × 7 mm) and a 4.4 mm stacking lip, so it stands 25
 
 ## Step 1: Fit the grid to the drawer
 
+<PlanDrawerButton width="345" depth="260" height="40" name="Screw drawer" />
+
+The button opens a new layout at the size of the example drawer. To use your own drawer instead:
+
 1. In the [layout editor](https://gridfinitylayouttool.com/), click <Ui k="drawerDims.addMeasured" /> in the <Ui k="sidebar.gridSize" /> group.
-2. Type 345, 260 and 40, and press <kbd>Enter</kbd>.
+2. Type your width, depth and height, and press <kbd>Enter</kbd>.
 3. Click <Ui k="drawerDims.suggestionUse" /> on the card.
 
-The grid becomes 8 × 6 grid units, or 336 × 252 mm. Here's the math: 345 ÷ 42 = 8.2, so 8 whole units fit and 9 mm stays free. Front to back, 260 ÷ 42 = 6.2, so 6 units fit and 8 mm stays free.
+For the example drawer, the grid is 8 × 6 grid units, or 336 × 252 mm. Here's the math: 345 ÷ 42 = 8.2, so 8 whole units fit and 9 mm stays free. Front to back, 260 ÷ 42 = 6.2, so 6 units fit and 8 mm stays free.
 
 Want to know how tall a bin can be? Open <Ui k="stackSolver.title" /> under <Ui k="common.physicalUnits" />. For a 40 mm drawer, one bin can be 5u (39.4 mm tall). Our 3u bins leave 14.6 mm free above them. [Plan your first drawer](../getting-started/first-drawer) shows these controls in more detail.
 
@@ -131,3 +135,7 @@ A plate with magnet holes keeps 0.5 mm of floor under each 2 mm magnet, so every
 - [Magnets and screws](../baseplates/magnets-and-screws): magnet sizes and crush ribs for the plate
 - [An electronics and craft organizer](./electronics-craft-organizer): labels that you can swap when the contents change
 - [A deep tool drawer in two layers](./deep-tool-drawer): stack bins in a deeper drawer
+
+## More recipes
+
+<RecipeCards />

@@ -1,6 +1,13 @@
 import type { ScrewHoleParams } from '@/core/types/baseplate';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
-import { computeCellBoundariesMm, decomposeCells, type CellInfo } from './cellDecomposition';
+import { isMarginSeamStyle } from '@/shared/types/marginSeam';
+import { PUZZLE_HEAD_HALF, TONGUE_CLEARANCE } from '@/shared/constants/connectors';
+import {
+  computeCellBoundariesMm,
+  computeCellCentersMm,
+  decomposeCells,
+  type CellInfo,
+} from './cellDecomposition';
 import { MAGNET_CHAMFER_MM } from './magnetHoleStyle';
 import { SCREW_MARGIN_MIN_WALL_MM, resolveScrewHeadDiameter } from './screwHolePlan';
 
@@ -57,6 +64,51 @@ export function ecoMagnetKeepOuts(
     ...ecoKeepOuts(pockets.plain.map(at), magnetDiameterMm),
     ...ecoKeepOuts(pockets.chamfered.map(at), magnetDiameterMm + 2 * MAGNET_CHAMFER_MM),
   ];
+}
+
+/**
+ * A seam tongue needs the wall it grows from, and a seam groove the walls it is
+ * cut into, at full height. Tongued seams sit on cell centers, where the seam
+ * reliefs are centered, so those reliefs drop out on both sides of the seam.
+ */
+export function ecoSeamKeepOuts(
+  sites: ReadonlyArray<{ readonly x: number; readonly y: number }>
+): EcoKeepOut[] {
+  return ecoKeepOuts(sites, 2 * (PUZZLE_HEAD_HALF + TONGUE_CLEARANCE));
+}
+
+/**
+ * Where a plate's own margin seam connectors sit, in the cutout frame. The same
+ * anchors `buildConnectors` uses: one per cell center on a tongued seam, one per
+ * interior cell boundary on a keyed seam.
+ */
+export function marginSeamConnectorSites(
+  params: ResolvedBaseplateParams
+): Array<{ x: number; y: number }> {
+  const { edges } = params;
+  if (edges === undefined || !isMarginSeamStyle(params.connectorStyle)) return [];
+  const pitchX = params.gridUnitMm;
+  const pitchY = params.gridUnitMmY ?? pitchX;
+  const anchors =
+    params.connectorStyle === 'dovetailKey' ? computeCellBoundariesMm : computeCellCentersMm;
+  const alongX = anchors(params.width, pitchX, params.fractionalEdgeX);
+  const alongY = anchors(params.depth, pitchY, params.fractionalEdgeY);
+  const halfW = (params.width * pitchX) / 2;
+  const halfD = (params.depth * pitchY) / 2;
+  const sites: Array<{ x: number; y: number }> = [];
+  if (edges.left === 'marginSeam') {
+    for (const y of alongY) sites.push({ x: -halfW - params.paddingLeft, y });
+  }
+  if (edges.right === 'marginSeam') {
+    for (const y of alongY) sites.push({ x: halfW + params.paddingRight, y });
+  }
+  if (edges.front === 'marginSeam') {
+    for (const x of alongX) sites.push({ x, y: -halfD - params.paddingFront });
+  }
+  if (edges.back === 'marginSeam') {
+    for (const x of alongX) sites.push({ x, y: halfD + params.paddingBack });
+  }
+  return sites;
 }
 
 /** The untouched ends of each straight joint form solid corner posts. */

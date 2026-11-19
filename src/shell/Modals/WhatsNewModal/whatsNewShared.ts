@@ -51,6 +51,7 @@ export function useDestinationLabel(entry: WhatsNewEntry): string | null {
  */
 export function useEntryActivation(onNavigate: () => void): Activate {
   const setPrintModalOpen = useViewStore((state) => state.setPrintModalOpen);
+  const setLabelsOpen = useViewStore((state) => state.setLabelsOpen);
   const setShowBaseplateLibrary = useViewStore((state) => state.setShowBaseplateLibrary);
   const openGallery = useBinExampleGalleryStore((state) => state.open);
   const { navigateToDesigner, navigateToPlanner } = useDesignerRouting();
@@ -87,6 +88,9 @@ export function useEntryActivation(onNavigate: () => void): Activate {
             case 'designGallery':
               openGallery();
               return;
+            case 'labels':
+              setLabelsOpen(true);
+              return;
             default: {
               const _exhaustive: never = action.modal;
               throw new Error(`whats-new: unknown modal ${_exhaustive as string}`);
@@ -108,6 +112,7 @@ export function useEntryActivation(onNavigate: () => void): Activate {
       navigateToPlanner,
       openGallery,
       setPrintModalOpen,
+      setLabelsOpen,
       setShowBaseplateLibrary,
     ]
   );

@@ -268,3 +268,44 @@ describe('liftContents', () => {
     });
   });
 });
+
+// A device whose clock runs fast can stamp a folder or a layout ahead of this
+// clock. Sync keeps the later stamp, so an edit here must still sort after it.
+describe('an edit of a copy stamped ahead of this clock', () => {
+  const AHEAD = 100;
+
+  function aheadLibrary(): LayoutLibrary {
+    const lib = library();
+    return {
+      ...lib,
+      entries: lib.entries.map((e) => ({ ...e, modifiedAt: AHEAD })),
+      folders: lib.folders?.map((f) => ({ ...f, modifiedAt: AHEAD })),
+    };
+  }
+
+  function folderStamp(lib: LayoutLibrary, id: string): number | undefined {
+    return lib.folders?.find((f) => f.id === id)?.modifiedAt;
+  }
+
+  it('stamps a folder rename, move and kind change 1 ms after the folder', () => {
+    expect(folderStamp(expectOk(renameFolder(aheadLibrary(), 'desk', 'X', 9)), 'desk')).toBe(
+      AHEAD + 1
+    );
+    expect(folderStamp(expectOk(moveFolder(aheadLibrary(), 'top', 'desk', 9)), 'top')).toBe(
+      AHEAD + 1
+    );
+    expect(
+      folderStamp(expectOk(setFolderKind(aheadLibrary(), 'cupboard', 'unit', 9)), 'cupboard')
+    ).toBe(AHEAD + 1);
+  });
+
+  it('stamps a layout move and a folder lift 1 ms after each moved item', () => {
+    const moved = expectOk(setEntryFolder(aheadLibrary(), layoutId('a'), 'desk', 9));
+    expect(moved.entries.find((e) => e.id === 'a')?.modifiedAt).toBe(AHEAD + 1);
+
+    const { library: lifted } = expectOk(deleteFolder(aheadLibrary(), 'cupboard', 9));
+    expect(folderStamp(lifted, 'top')).toBe(AHEAD + 1);
+    const { library: liftedEntry } = expectOk(deleteFolder(aheadLibrary(), 'desk', 9));
+    expect(liftedEntry.entries.find((e) => e.id === 'b')?.modifiedAt).toBe(AHEAD + 1);
+  });
+});

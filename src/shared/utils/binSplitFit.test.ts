@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, OverhangConfig } from '@/shared/types/bin';
-import { binBedFit, binSplitChunkUnits, placedBinBedCapacity } from './binSplitFit';
+import { binBedFit, binNeedsSplit, binSplitChunkUnits, placedBinBedCapacity } from './binSplitFit';
 import { getSplitPieceCount, getSplitPositions } from './splitPositions';
 
 const BED = 180;
@@ -317,5 +317,36 @@ describe('placedBinBedCapacity', () => {
     expect(getSplitPieceCount(12, 1, cap.width, cap.depth)).toBe(
       getSplitPieceCount(12, 1, chunk.width, chunk.depth)
     );
+  });
+});
+
+describe('binNeedsSplit', () => {
+  const bin = (width: number, depth: number): BinParams => ({
+    ...DEFAULT_BIN_PARAMS,
+    width,
+    depth,
+  });
+
+  it('splits a bin that overruns the bed square-on and diagonally', () => {
+    const params = bin(7, 1);
+    expect(binNeedsSplit(params, binBedFit(params, 200))).toBe(true);
+  });
+
+  it('keeps a bin whole when it fits the bed', () => {
+    const params = bin(4, 4);
+    expect(binNeedsSplit(params, binBedFit(params, 200))).toBe(false);
+  });
+
+  it('keeps a bin whole when it fits lying diagonally', () => {
+    // 5 x 1 units is 210 x 42 mm: over a 200 mm side, inside the diagonal.
+    const params = bin(5, 1);
+    const fit = binBedFit(params, 200);
+    expect(fit.diagonal).toBe(true);
+    expect(binNeedsSplit(params, fit)).toBe(false);
+  });
+
+  it('keeps a bin whole when the design turns splitting off', () => {
+    const params = { ...bin(7, 1), splitToFitBed: false };
+    expect(binNeedsSplit(params, binBedFit(params, 200))).toBe(false);
   });
 });

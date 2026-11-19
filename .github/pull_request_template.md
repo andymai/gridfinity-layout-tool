@@ -8,6 +8,8 @@ What problem, and why this approach? Link the issue.
 
 -
 
+Docs: for a `feat` PR, name the `apps/docs` page that you changed, or write `Docs: none` and the reason.
+
 ## Risk
 
 What could this break, and where should a reviewer look hardest? Note any

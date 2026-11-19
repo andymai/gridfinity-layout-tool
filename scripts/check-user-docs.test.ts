@@ -1,17 +1,25 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import {
   checkAppLink,
   checkDocLinks,
+  checkFeatureCoverage,
   checkMedia,
   checkPage,
+  checkPrDocs,
   checkScreenshotIds,
   checkSidebar,
   collectProblems,
   docsForStagedSources,
+  docsNoneReason,
   headingAnchors,
   mediaFiles,
+  prDocsFailure,
+  prTitleType,
+  sliceNames,
 } from './check-user-docs';
-import type { DocPage } from './check-user-docs';
+import type { DocPage, PullRequest } from './check-user-docs';
 
 function page(file: string, body: string, data: Record<string, unknown> = {}): DocPage {
   return {
@@ -249,5 +257,186 @@ describe('checkMedia', () => {
       'apps/docs/media/gone.json: fills no <Screenshot> on any page',
       'apps/docs/media: old.png belongs to no capture',
     ]);
+  });
+});
+
+describe('sliceNames', () => {
+  it('lists the folders under src/features, without dot-folders or files', () => {
+    const entry = (name: string, dir: boolean): { name: string; isDirectory: () => boolean } => ({
+      name,
+      isDirectory: () => dir,
+    });
+    expect(
+      sliceNames([
+        entry('walls', true),
+        entry('.greptile', true),
+        entry('README.md', false),
+        entry('labs', true),
+      ])
+    ).toEqual(['labs', 'walls']);
+  });
+});
+
+describe('checkFeatureCoverage', () => {
+  const allowlist = 'scripts/user-docs-coverage-allowlist.json';
+  const pages = [
+    page('apps/docs/walls.md', '', { sources: ['src/features/walls/'] }),
+    page('apps/docs/lids.md', '', { sources: ['src/features/lids'] }),
+    page('apps/docs/labs.md', '', { sources: ['src/a.ts', 'src/features/labs/flags.ts'] }),
+  ];
+
+  it('accepts a slice cited as a folder, with or without a slash, or by a file in it', () => {
+    expect(checkFeatureCoverage(['walls', 'lids', 'labs'], pages, {})).toEqual([]);
+  });
+
+  it('names an uncited slice and both ways to fix it', () => {
+    expect(checkFeatureCoverage(['walls', 'scan'], pages, {})).toEqual([
+      'src/features/scan: no docs page cites this feature. Add the folder, or a file in it, to the "sources" of the page that describes it, or list it in scripts/user-docs-coverage-allowlist.json with a one-line reason',
+    ]);
+  });
+
+  it('does not count a citation of another slice whose name starts the same', () => {
+    const designer = [page('apps/docs/d.md', '', { sources: ['src/features/bin-designer/'] })];
+    expect(checkFeatureCoverage(['bin'], designer, {})).toEqual([
+      expect.stringMatching(/^src\/features\/bin: no docs page cites this feature/),
+    ]);
+  });
+
+  it('accepts an allowlisted slice with a reason', () => {
+    expect(checkFeatureCoverage(['walls', 'scan'], pages, { scan: 'No UI of its own.' })).toEqual(
+      []
+    );
+  });
+
+  it('reports an allowlist entry that is cited, has no reason, or names no slice', () => {
+    expect(
+      checkFeatureCoverage(['walls', 'scan', 'tray'], pages, {
+        scan: ' ',
+        tray: 42,
+        gone: 'Removed.',
+        walls: 'Old.',
+      })
+    ).toEqual([
+      `${allowlist}: "walls" is cited by apps/docs/walls.md, so remove it from the allowlist`,
+      `${allowlist}: "scan" needs a one-line reason`,
+      `${allowlist}: "tray" needs a one-line reason`,
+      `${allowlist}: "gone" is not a folder in src/features`,
+    ]);
+  });
+});
+
+describe('prTitleType', () => {
+  it('reads the conventional-commit type, with a scope or a breaking mark', () => {
+    expect(prTitleType('feat: add lids')).toBe('feat');
+    expect(prTitleType('feat(designer): add lids')).toBe('feat');
+    expect(prTitleType('feat!: drop v1 files')).toBe('feat');
+    expect(prTitleType('feat(api)!: drop v1 files')).toBe('feat');
+    expect(prTitleType('fix(grid): snap to half cells')).toBe('fix');
+    expect(prTitleType('featured: x')).toBe('featured');
+    expect(prTitleType('Add lids')).toBeNull();
+  });
+});
+
+describe('docsNoneReason', () => {
+  it('reads the reason from a line that starts with "Docs: none"', () => {
+    expect(docsNoneReason('## Summary\n\nDocs: none, the change does not show in the app')).toBe(
+      'the change does not show in the app'
+    );
+    expect(docsNoneReason('Text\r\nDocs: none - internal refactor\r\nMore')).toBe(
+      'internal refactor'
+    );
+    expect(docsNoneReason('Docs: none: telemetry only')).toBe('telemetry only');
+  });
+
+  it('needs a reason, at the start of a line', () => {
+    expect(docsNoneReason('Docs: none')).toBeNull();
+    expect(docsNoneReason('Docs: none.\r\nDocs: none -')).toBeNull();
+    expect(docsNoneReason('We wrote Docs: none, internal')).toBeNull();
+    expect(docsNoneReason('Docs: nonexistent page')).toBeNull();
+    expect(docsNoneReason('')).toBeNull();
+  });
+
+  it('does not read the line in the PR template as an escape', () => {
+    const template = readFileSync(
+      join(import.meta.dirname, '../.github/pull_request_template.md'),
+      'utf8'
+    );
+    expect(template).toContain('`Docs: none`');
+    expect(docsNoneReason(template)).toBeNull();
+  });
+});
+
+describe('checkPrDocs', () => {
+  const pages = [page('apps/docs/walls.md', '', { sources: ['src/features/walls/'] })];
+  const pr = (over: Partial<PullRequest>): PullRequest => ({
+    title: 'feat(walls): add label slots',
+    body: '',
+    headRef: 'feat/label-slots',
+    changed: ['src/features/walls/Wall.tsx'],
+    ...over,
+  });
+
+  it('fails a feat PR that changes no docs, and names the pages its files touch', () => {
+    expect(checkPrDocs(pr({}), pages)).toEqual({
+      pass: false,
+      pages: [{ page: 'apps/docs/walls.md', source: 'src/features/walls/Wall.tsx' }],
+    });
+    expect(
+      checkPrDocs(pr({ title: 'feat!: drop old walls', changed: ['src/x.ts'] }), pages)
+    ).toEqual({ pass: false, pages: [] });
+  });
+
+  it('passes a feat PR that changes any file under apps/docs', () => {
+    expect(
+      checkPrDocs(pr({ changed: ['src/features/walls/Wall.tsx', 'apps/docs/walls.md'] }), pages)
+    ).toEqual({ pass: true, reason: 'changes apps/docs/' });
+    expect(checkPrDocs(pr({ changed: ['apps/docs/media/walls.json'] }), pages).pass).toBe(true);
+  });
+
+  it('does not count a path that only looks like the docs', () => {
+    expect(checkPrDocs(pr({ changed: ['apps/docs-old/x.md', 'docs/walls.md'] }), pages).pass).toBe(
+      false
+    );
+  });
+
+  it('passes a feat PR whose body has "Docs: none" and a reason, and only then', () => {
+    expect(
+      checkPrDocs(pr({ body: 'Summary\r\nDocs: none, slots are behind a Labs flag' }), pages)
+    ).toEqual({ pass: true, reason: 'Docs: none, slots are behind a Labs flag' });
+    expect(checkPrDocs(pr({ body: 'Docs: none' }), pages).pass).toBe(false);
+  });
+
+  it('passes a PR of any other type without a docs change', () => {
+    expect(checkPrDocs(pr({ title: 'fix(walls): keep slots' }), pages)).toEqual({
+      pass: true,
+      reason: 'title type "fix" is not feat',
+    });
+    expect(checkPrDocs(pr({ title: 'Add label slots' }), pages)).toEqual({
+      pass: true,
+      reason: 'title type "none" is not feat',
+    });
+    for (const title of ['refactor: x', 'chore: x', 'docs: x', 'perf: x', 'revert: feat: x'])
+      expect(checkPrDocs(pr({ title }), pages).pass).toBe(true);
+  });
+
+  it('passes a release-please PR', () => {
+    expect(checkPrDocs(pr({ headRef: 'release-please--branches--main' }), pages)).toEqual({
+      pass: true,
+      reason: 'release PR',
+    });
+  });
+});
+
+describe('prDocsFailure', () => {
+  it('names the pages to update and the escape line', () => {
+    const lines = prDocsFailure([
+      { page: 'apps/docs/walls.md', source: 'src/features/walls/Wall.tsx' },
+    ]);
+    expect(lines).toContain('    apps/docs/walls.md  (source: src/features/walls/Wall.tsx)');
+    expect(lines).toContain('    Docs: none, <the reason>');
+  });
+
+  it('says so when no page cites the changed files', () => {
+    expect(prDocsFailure([]).join('\n')).toContain('No docs page cites the files');
   });
 });

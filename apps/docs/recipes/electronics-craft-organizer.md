@@ -42,7 +42,9 @@ That's 46 plates: 40 of size 1U (36 × 11 mm) and 6 of size 3U (120 × 11 mm).
 
 ## Step 1: Size the drawer
 
-The [IKEA Alex page](https://gridfinitylayouttool.com/gridfinity-ikea-alex) has a link that opens a layout sized to this drawer. To use your own size instead:
+<PlanDrawerButton width="295" depth="522" name="Electronics and craft" />
+
+The button opens a new layout at the size of an IKEA Alex drawer. To use your own size instead:
 
 1. In the [layout editor](https://gridfinitylayouttool.com/), click <Ui k="drawerDims.addMeasured" />, type your width, depth and height, and press <kbd>Enter</kbd>.
 2. Click <Ui k="drawerDims.suggestionUse" /> on the card.
@@ -136,3 +138,7 @@ The plates are separate prints, so the bin file never holds them. Use <Ui k="bin
 - [Colors](../designer/colors): every color zone, accent bands and palettes
 - [Slicer setup](../printing/slicers): map the colors of a 3MF file to your filaments
 - [IKEA Alex drawers](https://gridfinitylayouttool.com/gridfinity-ikea-alex): the grids that fit the other Alex units
+
+## More recipes
+
+<RecipeCards />

@@ -8,6 +8,7 @@ sources:
   - src/features/bin-designer/types/pullTab.ts
   - src/shared/utils/pullTabPlan.ts
   - src/shared/utils/interiorFillet.ts
+  - src/shared/utils/slottedFillet.ts
   - src/shared/constraints/rules.ts
 ---
 
@@ -68,7 +69,9 @@ The radius starts at the radius of the inside corners of the bin, so the fillet 
 
 A compartment that is too small for the radius gets the largest rounding that fits. The panel tells you when this happens. On a tray of small compartments, a large radius makes each compartment a bowl.
 
-The fillet needs a solid floor. It does not work with removable dividers, because it would fill the divider slots. A solid bin, a spacer, a base-only bin and a <Ui k="binDesigner.base.bodyType.nesting" /> body cannot have it either. With a lightweight floor, use the underside mode.
+With [removable dividers](./compartments#use-removable-dividers), the fillet rounds the outer walls only. Each wall slot follows the curve down into the floor, and the divider pieces get round bottom corners to fit it.
+
+The fillet needs a solid floor. A solid bin, a spacer, a base-only bin and a <Ui k="binDesigner.base.bodyType.nesting" /> body cannot have it. With a lightweight floor, use the underside mode.
 
 ## Add a pull tab
 
@@ -126,6 +129,8 @@ A steep ramp prints with rough overhangs, and it's hard to reach into.
 Set a smaller <Ui k="binDesigner.interiorFillet.radius" /> that fits your smallest compartment, or use fewer, larger compartments.
 
 A compartment that is too small for the radius gets the largest fillet that fits. The panel tells you when this happens.
+
+With removable dividers, the fillet stops before the divider nearest to a wall. Set a larger <Ui k="binDesigner.slotSpacing" />, or set a smaller radius.
 
 ### You can't turn on the pull tab
 

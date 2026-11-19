@@ -9,7 +9,7 @@ description: Push the current main to production outside the normal batched cade
 
 Vercel builds `main` only when the commit message is `chore(main): release …`
 or contains `[deploy]` (`scripts/vercel-ignore.sh`). Ordinary feature merges are
-skipped and ride the next scheduled release (≤3×/day) to keep edge-request cost
+skipped and ride the next scheduled release (≤2×/day) to keep edge-request cost
 down and CHANGELOG / What's New coherent — so a just-merged change is NOT live
 until a release deploy. Its Vercel deployment shows **Canceled (~5s)**, which is
 the ignore step working, not a failure. Full pipeline, smoke gates, and skew

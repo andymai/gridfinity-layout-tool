@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useCallback, useRef, type CSSProperties }
 import { createPortal } from 'react-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
+import { useViewStore } from '@/core/store/view';
 import {
   useSettingsStore,
   type PrintViewSettings,
@@ -175,6 +176,11 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
   const selectAllLayers = useCallback(() => {
     setSelectedLayerIds(layout.layers.map((l) => l.id));
   }, [layout.layers]);
+
+  const openLabels = useCallback(() => {
+    onClose();
+    useViewStore.getState().setLabelsOpen(true);
+  }, [onClose]);
 
   const printViewSettings = settings.printViewSettings;
   const allLayersSelected = selectedLayerIds.length === layout.layers.length;
@@ -446,11 +452,16 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
           </div>
 
           <div className="flex items-center justify-end gap-3 p-4 pb-[var(--space-2xl)] border-t border-stroke-subtle print-modal-footer">
-            {noLayersSelected && (
-              <span className="text-xs text-warning mr-auto">
-                {t('print.selectAtLeastOneLayerToPrint')}
-              </span>
-            )}
+            <div className="mr-auto flex items-center gap-3">
+              <Button variant="ghost" onClick={openLabels}>
+                {t('print.makeLabels')}
+              </Button>
+              {noLayersSelected && (
+                <span className="text-xs text-warning">
+                  {t('print.selectAtLeastOneLayerToPrint')}
+                </span>
+              )}
+            </div>
             <Button variant="secondary" onClick={onClose}>
               {t('common.cancel')}
             </Button>

@@ -60,6 +60,7 @@ export default createSyncResourceHandler<LayoutEnvelope>({
         ok: false,
         status: 400,
         error: validation.error.message,
+        reason: validation.error.code,
         code: validation.error.code,
       };
     }

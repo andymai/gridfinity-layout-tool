@@ -11,6 +11,8 @@ import {
   cloneCutoutsWithGroups,
 } from './cutoutHelpers';
 import type { Cutout, CutoutArrayConfig } from '@/features/bin-designer/types';
+import { clearedProfile } from '@/shared/utils/cutoutFit';
+import { polygonBoxFromAcrossFlats } from '@/shared/utils/cutoutPolygon';
 
 describe('createDefaultCutout', () => {
   it('seeds a default hexagon side count for polygons', () => {
@@ -24,6 +26,13 @@ describe('createDefaultCutout', () => {
     expect(createDefaultCutout('id', 'slot', 0, 0, 30, 12).clearance).toBeGreaterThan(0);
     expect(createDefaultCutout('id', 'rectangle', 0, 0, 20, 20).clearance).toBeUndefined();
     expect(createDefaultCutout('id', 'rectangle', 0, 0, 20, 20).sides).toBeUndefined();
+  });
+
+  it('leaves a 1/4" hex bit 0.2 mm on each flat', () => {
+    const box = polygonBoxFromAcrossFlats(6, 6.35);
+    const hex = createDefaultCutout('id', 'polygon', 0, 0, box.width, box.depth);
+    const acrossFlats = clearedProfile(hex).d;
+    expect((acrossFlats - 6.35) / 2).toBeCloseTo(0.2);
   });
 
   it('seeds a tasteful entry chamfer for insert shapes, scaled and clamped', () => {

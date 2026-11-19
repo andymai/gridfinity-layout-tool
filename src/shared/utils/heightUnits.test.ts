@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { CONSTRAINTS } from '@/core/constants';
 import {
   formatHeightUnits,
   isStandardStackHeight,
@@ -130,7 +131,7 @@ describe('solveUnitsUnderCeiling', () => {
     for (const ceiling of [40, 55, 63.5, 84, 100.2]) {
       for (const count of [1, 2, 3, 4]) {
         const units = solveUnitsUnderCeiling(ceiling, 7, count);
-        const next = (units ?? 0) + 1;
+        const next = units === null ? CONSTRAINTS.MIN_BIN_HEIGHT : units + 1;
         expect(stackedTotalMm(next, 7, count)).toBeGreaterThan(ceiling);
       }
     }
@@ -145,6 +146,12 @@ describe('solveUnitsUnderCeiling', () => {
   it('returns null when even a single unit overflows', () => {
     expect(solveUnitsUnderCeiling(5, 7, 1)).toBeNull();
     expect(solveUnitsUnderCeiling(40, 7, 6)).toBeNull();
+  });
+
+  it('returns null when only a bin shorter than the editor allows fits', () => {
+    const oneUnitOnly = stackedTotalMm(1, 7, 1);
+    expect(solveUnitsUnderCeiling(oneUnitOnly, 7, 1)).toBeNull();
+    expect(solveUnitsUnderCeiling(stackedTotalMm(2, 7, 1), 7, 1)).toBe(2);
   });
 
   it('rejects degenerate inputs', () => {

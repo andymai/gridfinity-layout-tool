@@ -14,6 +14,7 @@
  * dividers').
  */
 
+import type { PieceCorners } from '@/shared/utils/slottedFillet';
 import type { DividerKeepOut } from './dividerPatterns';
 import { BOTTOM_SOLID_SKIRT, TOP_KEEP_OUT } from './wallPatterns';
 
@@ -36,6 +37,10 @@ export interface PiecePatternInput {
   readonly notches: readonly PieceObstruction[];
   /** Full-height face grooves (receptacles / snap score lines). */
   readonly grooves: readonly PieceObstruction[];
+  /** The interior wall cutout, opening `depth` down from the top edge. */
+  readonly window?: PieceObstruction & { readonly depth: number };
+  /** Rounded bottom corners, which a hole beside the curve would thin to a sliver. */
+  readonly corners?: PieceCorners;
   /** Solid margin held around every obstruction and at both ends. */
   readonly border: number;
 }
@@ -85,6 +90,26 @@ export function planPiecePattern(input: PiecePatternInput): PiecePatternPlan | n
       zMin: 0,
       zMax: bandTop,
     });
+  }
+
+  // Only the window and its border, as on a fixed divider: below it the piece
+  // is whole, so the pattern carries on underneath.
+  if (input.window) {
+    const half = input.window.width / 2 + border;
+    keepOuts.push({
+      uMin: input.window.offset - half,
+      uMax: input.window.offset + half,
+      zMin: height - input.window.depth - border,
+      zMax: bandTop,
+    });
+  }
+
+  const corners = input.corners;
+  if (corners) {
+    const reach = corners.radius + border;
+    const half = length / 2;
+    if (corners.low) keepOuts.push({ uMin: -half, uMax: -half + reach, zMin: 0, zMax: reach });
+    if (corners.high) keepOuts.push({ uMin: half - reach, uMax: half, zMin: 0, zMax: reach });
   }
 
   return { patternSpan, keepOuts, bandZ0, bandHeight };

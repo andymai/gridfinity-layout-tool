@@ -2,11 +2,13 @@
 title: A tour of the workspace
 description: 'Find the header, the sidebar, the right panel, the 3D preview, the command palette and help search.'
 sources:
+  - src/shared/constants/docsSections.ts
   - src/shell/Header/Header.tsx
   - src/shell/Sidebar/Sidebar.tsx
   - src/shell/RightPanel/RightPanel.tsx
   - src/shared/components/HeaderSupportLinks/HeaderSupportLinks.tsx
   - src/features/command-palette/hooks/useCommandPalette.ts
+  - src/features/inspiration-gallery/components/InspirationGallery/InspirationGallery.tsx
   - src/shell/Modals/HelpModal/
   - src/shell/Mobile/
   - src/shell/Tablet/
@@ -87,6 +89,8 @@ Prefer the keyboard? The command palette finds and runs any command in the layou
 ## Help and search
 
 Click <Ui k="header.help" /> in the header, or press <kbd>?</kbd> or <kbd>/</kbd>. The help window has two tabs: <Ui k="help.shortcuts" /> and <Ui k="help.tipsInfo" />. <Ui k="help.readDocs" />, at the right of the search field, opens these docs in a new tab.
+
+Many group headings in the side panels also have a question mark button. It opens the docs page for that group in a new tab.
 
 Can't find a control? Type in the search field at the top of the window. The search finds shortcuts and features for the tool that you have open. A result for a control has a <Ui k="help.goTo" /> button, which takes you straight to it. In the layout editor, if no result matches, click <Ui k="help.openCommandPaletteWithQuery" />.
 

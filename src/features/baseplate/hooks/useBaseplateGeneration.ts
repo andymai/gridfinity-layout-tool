@@ -64,6 +64,7 @@ import {
   EMPTY_MESH,
   fillGroupMeshEntries,
   toSingleMesh,
+  toMarginMeshEntry,
   hasMeshOnScreen,
 } from './generationMeshEntries';
 import { selectGenerationTriggers } from './generationTriggers';
@@ -93,6 +94,7 @@ export function useBaseplateGeneration(): void {
   const generationEpochRef = useRef(0);
   /** Last successful BREP wall-clock — predicts whether a draft is worth showing. */
   const lastBrepMsRef = useRef<number | null>(null);
+  const previousHadOutlineRef = useRef(false);
   const draftSkipGate = useRef(createDraftSkipGate()).current;
   const previewBridgeReady = useCallback((): boolean => {
     const preview = previewBridgeRef.current;
@@ -411,16 +413,7 @@ export function useBaseplateGeneration(): void {
             if (bridge.isDestroyed || generationEpochRef.current !== epoch) return;
             const railResult = await bridge.generateMargin(fullParams, margin);
             if (generationEpochRef.current !== epoch) return;
-            railEntries.push({
-              id: margin.id,
-              side: margin.side,
-              mesh: toSingleMesh(railResult),
-              worldOffsetMm: margin.worldOffsetMm,
-              lengthMm: margin.lengthMm,
-              bandThicknessMm: margin.bandThicknessMm,
-              col: margin.col,
-              row: margin.row,
-            });
+            railEntries.push(toMarginMeshEntry(margin, railResult));
           }
           setMarginMeshes(railEntries);
         } else {
@@ -523,6 +516,8 @@ export function useBaseplateGeneration(): void {
 
       const tiling = computeBaseplateTiling(fullParams, bedWidthMm, bedDepthMm);
       const hasPreviewBridge = previewBridgeReady();
+      const previousHadOutline = previousHadOutlineRef.current;
+      previousHadOutlineRef.current = fullParams.outline !== undefined;
 
       // Large magnet plates can exceed the per-piece BREP budget on slower
       // hardware — the user would wait out the whole timeout only to fall back
@@ -540,6 +535,7 @@ export function useBaseplateGeneration(): void {
         hasPreviewBridge,
         lastBrepMs: lastBrepMsRef.current,
         skipBelowMs,
+        previousHadOutline,
       });
 
       if (plan === 'none' || plan === 'manifold') {
@@ -550,7 +546,8 @@ export function useBaseplateGeneration(): void {
         setSplitProgress(null);
         setDedupStats(null);
       } else {
-        // `runDirectMeshPreview` publishes the tiling itself.
+        // `runDirectMeshPreview` publishes the tiling itself. On a `clear` plan
+        // its outline branch blanks the old rectangle and margin rails.
         runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch, tiling);
       }
       if (plan === 'manifold' || plan === 'direct-then-manifold') {

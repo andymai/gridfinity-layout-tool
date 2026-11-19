@@ -136,7 +136,7 @@ When a cutout goes past the edge of the bin, a warning shows how many cutouts th
 
 ## Measure on the board
 
-Click <Ui k="binDesigner.cutouts.rulerTool" /> (<kbd>M</kbd>) and drag between two points. For a quick measurement with the select tool, hold <kbd>Shift</kbd> and drag. The ruler snaps to corners, edge midpoints, centers and edges, and to the grid when snap is on. The rulers on the top and left edges of the board show millimeters. To measure the 3D model, use <Ui k="binDesigner.measure.short" /> in the preview.
+Click <Ui k="binDesigner.cutouts.rulerTool" /> (<kbd>M</kbd>) and drag between two points. For a quick measurement with the select tool, hold <kbd>Shift</kbd> and drag. The ruler snaps to corners, edge midpoints, centers and edges, and to the grid when snap is on. The rulers on the top and left edges of the board show millimeters. To measure the 3D model, use [<Ui k="binDesigner.measure.short" /> in the preview](../concepts/preview-and-export#measure-the-model).
 
 <Screenshot id="cutouts-arranging-ruler" alt="Pressing M for the ruler tool, then dragging from the edge of one cutout to the edge of the next. The ruler snaps to both edges and reads 8.0 mm." spec="Cut editor with two rectangles 8 mm apart, zoomed in on the gap. Press M and drag from the right edge of one rectangle to the left edge of the other so the snap ticks and the distance label show. Crop to the board with the top and left rulers." />
 

@@ -8,6 +8,7 @@ sources:
   - docker/nginx.conf
   - .github/workflows/docker.yml
   - src/shared/hooks/usePWAUpdate.ts
+  - src/features/supporters/hooks/useSupportersData.ts
 ---
 
 # Self-hosting with Docker
@@ -61,20 +62,20 @@ Pick one address and always open the app there. Your browser keeps layouts and d
 
 ## What works in your copy
 
-| Feature                                                     | In your copy | Notes                                          |
-| ----------------------------------------------------------- | ------------ | ---------------------------------------------- |
-| Layout editor, layers, print list, inspiration gallery      | Yes          |                                                |
-| Bin designer, baseplate generator, STL, STEP and 3MF export | Yes          |                                                |
-| JSON import and export, layout archives                     | Yes          |                                                |
-| Install the app and work offline                            | HTTPS only   | Also works on `localhost`                      |
-| SpaceMouse                                                  | HTTPS only   | Also works on `localhost`                      |
-| Share a layout by link, open a shared link                  | No           | The app shows an error                         |
-| Sign in and sync across devices                             | No           | The sign-in buttons open a short notice page   |
-| Community gallery and publish                               | No           | The gallery shows an error, and publish is off |
-| Live collaboration                                          | No           | The app does not offer it                      |
-| Phone scan for cutouts                                      | No           | The dialog offers an SVG upload instead        |
-| Supporters page                                             | Partly       | It shows the list from the day of the build    |
-| Analytics and error reports                                 | No           | Your copy sends nothing                        |
+| Feature                                                     | In your copy | Notes                                                       |
+| ----------------------------------------------------------- | ------------ | ----------------------------------------------------------- |
+| Layout editor, layers, print list, inspiration gallery      | Yes          |                                                             |
+| Bin designer, baseplate generator, STL, STEP and 3MF export | Yes          |                                                             |
+| JSON import and export, layout archives                     | Yes          |                                                             |
+| Install the app and work offline                            | HTTPS only   | Also works on `localhost`                                   |
+| SpaceMouse                                                  | HTTPS only   | Also works on `localhost`                                   |
+| Share a layout by link, open a shared link                  | No           | The app shows an error                                      |
+| Sign in and sync across devices                             | No           | The sign-in buttons open a short notice page                |
+| Community gallery and publish                               | No           | The gallery shows an error, and publish is off              |
+| Live collaboration                                          | No           | The app does not offer it                                   |
+| Phone scan for cutouts                                      | No           | The dialog offers an SVG upload instead                     |
+| Supporters page                                             | Partly       | It shows the list saved in the app's code, not the live one |
+| Analytics and error reports                                 | No           | Your copy sends nothing                                     |
 
 The container answers every request to `/api/` with a "service unavailable" status. The app reads that answer as "this feature is not available here".
 

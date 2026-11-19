@@ -30,6 +30,7 @@ import { InitErrorFallback } from '@/shell/InitErrorFallback';
 import { isSmokeMode } from '@/shared/utils/smokeMode';
 import { installTranslationDomGuard } from '@/shared/utils/translationDomGuard';
 import { isScanPath } from '@/features/scan-capture';
+import { applyLandingExperiment, isFirstVisit } from '@/shell/landingExperiment';
 
 // Browser page-translation rewraps text nodes under React, which otherwise
 // crashes the reconciler with insertBefore/removeChild NotFoundError. Install
@@ -63,8 +64,10 @@ if (isSmokeMode()) {
   // pulls the editor, the 3D bundle, or the layout/library store hydration.
   void bootScanPage();
 } else {
+  const firstVisit = isFirstVisit();
   // Initialize Posthog analytics (no-op in dev)
   initAnalytics();
+  const landing = applyLandingExperiment(firstVisit);
   listenForPwaInstallAvailability();
   captureInstallPrompt();
 
@@ -122,7 +125,7 @@ if (isSmokeMode()) {
   // renders the real app layout — no Suspense spinner, no CLS.
   let initError: Error | undefined;
 
-  void initializeLayoutLibrary()
+  const hydrated = initializeLayoutLibrary()
     .then(({ library, activeLayout }) => {
       useLibraryStore.getState().initLibrary(library);
       useLayoutStore.getState().importLayout(activeLayout, library.activeLayoutId, 'init');
@@ -153,17 +156,18 @@ if (isSmokeMode()) {
     })
     .catch((e: unknown) => {
       initError = e instanceof Error ? e : new Error(String(e));
-    })
-    .finally(() => {
-      // Note: StrictMode disabled due to react-three-fiber WebGL context issues
-      // R3F's Canvas doesn't handle StrictMode's double-mount cycle well
-      createRoot(rootElement).render(
-        <ErrorBoundary>
-          <LocaleProvider initialLocale={initialLocale} onLocaleChange={handleLocaleChange}>
-            {initError ? <InitErrorFallback error={initError} /> : <App />}
-          </LocaleProvider>
-          <VercelAnalytics />
-        </ErrorBoundary>
-      );
     });
+
+  void Promise.allSettled([hydrated, landing]).then(() => {
+    // Note: StrictMode disabled due to react-three-fiber WebGL context issues
+    // R3F's Canvas doesn't handle StrictMode's double-mount cycle well
+    createRoot(rootElement).render(
+      <ErrorBoundary>
+        <LocaleProvider initialLocale={initialLocale} onLocaleChange={handleLocaleChange}>
+          {initError ? <InitErrorFallback error={initError} /> : <App />}
+        </LocaleProvider>
+        <VercelAnalytics />
+      </ErrorBoundary>
+    );
+  });
 } // end else — www migration check

@@ -20,7 +20,7 @@ A label tells you what's in a bin before you open the drawer. You can print text
 
 ## Add label tabs
 
-A **label tab** is a small ledge along the top of a compartment wall. Print a caption on it, stick a paper label on it, or give it a [swappable label plate](./label-plates).
+A **label tab** is a small ledge along the top of a compartment wall. Print a caption on it, stick a paper label on it from a [label maker](../printing/label-maker), or give it a [swappable label plate](./label-plates).
 
 1. In the bin designer, open the <Ui k="binDesigner.group.interior" /> group and turn on <Ui k="binDesigner.labelTabs" />.
 2. Under <Ui k="binDesigner.tabMode" />, keep <Ui k="binDesigner.tabMode.text" />.
@@ -156,7 +156,7 @@ A tab hangs from the compartment walls. Removable dividers, solid bins and custo
 
 Click the button under the warning in <Ui k="binDesigner.type.heading" />. It applies the fix that suits your font: a bold cut, more space between letters, or a larger size.
 
-The panel warns when the thinnest stroke of a letter is under 0.8 mm, about two lines of a 0.4 mm nozzle. Thinner strokes run together when they print.
+The panel warns when the thinnest stroke of a letter is under two widths of your nozzle: 0.8 mm for a 0.4 mm nozzle, 1.2 mm for a 0.6 mm nozzle. Thinner strokes run together when they print. The panel reads <Ui k="settings.nozzleSize" /> from your print settings, so set it before you judge the warning. See [Fit and tolerances](../printing/fit-and-tolerances).
 
 ### The tabs print blank
 

@@ -13,6 +13,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { ErrorCode } from '../../lib/shared';
+import { logger } from '../../lib/logger';
 import { createSyncResourceHandler, type SyncResourceConfig } from './resourceHandler';
 
 let redisStore: Map<string, string>;
@@ -262,6 +263,26 @@ describe('PUT — request validation', () => {
     expect(body.error).toBe('value must be a string');
     expect(body.code).toBe(ErrorCode.VALIDATION_ERROR);
   });
+
+  // The client only shows a generic toast for a rejected push, so this log is
+  // the one record of why a valid-looking local item cannot sync.
+  it('logs why it rejected the payload, without the payload', async () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => undefined);
+    await handler(
+      makeReq({ method: 'PUT', body: { thing: { value: 42 }, modifiedAt: 1000 } }),
+      makeRes() as unknown as VercelResponse
+    );
+
+    expect(warn).toHaveBeenCalledWith('sync/layouts rejected the payload', {
+      userId: 'user-1',
+      status: 400,
+      code: ErrorCode.VALIDATION_ERROR,
+      reason: null,
+      field: 'value',
+    });
+    expect(JSON.stringify(warn.mock.calls)).not.toContain('42');
+    warn.mockRestore();
+  });
 });
 
 describe('PUT — LWW conflict', () => {
@@ -415,6 +436,27 @@ describe('DELETE and tombstone protection', () => {
     const getRes = makeRes();
     await handler(makeReq({ method: 'GET' }), getRes as unknown as VercelResponse);
     expect(getRes._status).toBe(410);
+  });
+
+  // A client stamps modifiedAt with its own clock, and the tombstone takes the
+  // server's. A device whose clock runs fast must not leave its copy newer than
+  // the deletion of that copy.
+  it('tombstones after the deleted version when that version is stamped ahead of the server clock', async () => {
+    const ahead = Date.now() + 5 * 60 * 60 * 1000;
+    await handler(
+      putReq({ value: 'v1', modifiedAt: ahead }),
+      makeRes() as unknown as VercelResponse
+    );
+    await handler(makeReq({ method: 'DELETE' }), makeRes() as unknown as VercelResponse);
+
+    const getRes = makeRes();
+    await handler(makeReq({ method: 'GET' }), getRes as unknown as VercelResponse);
+    const body = getRes._body as { indexEntry: { deletedAt?: number } };
+    expect(body.indexEntry.deletedAt).toBeGreaterThan(ahead);
+
+    const res = makeRes();
+    await handler(putReq({ value: 'v1', modifiedAt: ahead }), res as unknown as VercelResponse);
+    expect(res._status).toBe(410);
   });
 
   it('allows a PUT newer than the tombstone to resurrect the entry', async () => {

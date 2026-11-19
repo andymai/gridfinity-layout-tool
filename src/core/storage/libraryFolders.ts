@@ -9,6 +9,7 @@
  */
 
 import type { FolderKind, LayoutEntry, LayoutFolder, LayoutId, LayoutLibrary } from '@/core/types';
+import { stampAfter } from '@/shared/utils/editStamp';
 import { CONSTRAINTS } from '@/core/constants';
 import type { LayoutError, Result } from '@/core/result';
 import { err, layoutInvalidOperation, ok } from '@/core/result';
@@ -147,7 +148,7 @@ export function renameFolder(
   return ok({
     ...library,
     folders: folders(library).map((f) =>
-      f.id === id ? { ...f, name: clean, modifiedAt: now } : f
+      f.id === id ? { ...f, name: clean, modifiedAt: stampAfter(f.modifiedAt, now) } : f
     ),
   });
 }
@@ -171,7 +172,9 @@ export function moveFolder(
   }
   return ok({
     ...library,
-    folders: folders(library).map((f) => (f.id === id ? { ...f, parentId, modifiedAt: now } : f)),
+    folders: folders(library).map((f) =>
+      f.id === id ? { ...f, parentId, modifiedAt: stampAfter(f.modifiedAt, now) } : f
+    ),
   });
 }
 
@@ -198,8 +201,8 @@ export function setFolderKind(
       // A parent that has not synced yet reads as the root; a place must stay
       // there once it lands, so the dangling reference goes.
       return kind === 'place'
-        ? { ...f, kind, parentId: null, modifiedAt: now }
-        : { ...f, kind, modifiedAt: now };
+        ? { ...f, kind, parentId: null, modifiedAt: stampAfter(f.modifiedAt, now) }
+        : { ...f, kind, modifiedAt: stampAfter(f.modifiedAt, now) };
     }),
   });
 }
@@ -240,13 +243,21 @@ export function liftContents(
   const entries = library.entries.map((e) => {
     if ((e.folderId ?? null) !== folder.id) return e;
     movedLayoutIds.push(e.id);
-    return { ...e, folderId: parentId, ...(now !== null ? { modifiedAt: now } : {}) };
+    return {
+      ...e,
+      folderId: parentId,
+      ...(now !== null ? { modifiedAt: stampAfter(e.modifiedAt, now) } : {}),
+    };
   });
   const next = folders(library).map((f) =>
     parentOf(f) === folder.id && f.id !== parentId
-      ? { ...f, parentId, ...(now !== null ? { modifiedAt: now } : {}) }
+      ? { ...f, parentId, ...(now !== null ? { modifiedAt: stampAfter(f.modifiedAt, now) } : {}) }
       : parentOf(f) === folder.id
-        ? { ...f, parentId: null, ...(now !== null ? { modifiedAt: now } : {}) }
+        ? {
+            ...f,
+            parentId: null,
+            ...(now !== null ? { modifiedAt: stampAfter(f.modifiedAt, now) } : {}),
+          }
         : f
   );
   return { library: { ...library, entries, folders: next }, movedLayoutIds };
@@ -266,7 +277,7 @@ export function setEntryFolder(
   return ok({
     ...library,
     entries: library.entries.map((e) =>
-      e.id === layoutId ? { ...e, folderId, modifiedAt: now } : e
+      e.id === layoutId ? { ...e, folderId, modifiedAt: stampAfter(e.modifiedAt, now) } : e
     ),
   });
 }

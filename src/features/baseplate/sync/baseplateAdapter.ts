@@ -131,6 +131,7 @@ export const baseplateAdapter: BaseplateAdapter = {
         name,
         params,
         thumbnail: base?.thumbnail ?? null,
+        remoteModifiedAt: item.modifiedAt,
       });
       if (!isOk(result)) {
         throw syncPersistError('saveDesign', item.id, result.error);

@@ -22,11 +22,17 @@ This page teaches the clicks in the layout editor. For advice on which bin sizes
 
 Grab a tape measure and measure the inside of your drawer in millimeters: the width, the depth, and the height under the closed drawer. Use the smallest value on each side.
 
+Type your sizes here to see the grid that fits your drawer, and how tall your bins can be. Is your tape measure in inches? Pick **in**, and the sizes change to millimeters for you.
+
+<DrawerCalculator />
+
+**Plan this drawer** opens the layout editor in a new tab, with a new layout at your size. If a card offers a tighter grid in half units, click <Ui k="drawerDims.suggestionUse" /> on it. After that, go to [Step 3](#step-3-draw-your-first-bin). To learn how to set the size in the layout editor, start at Step 1.
+
 ## Step 1: Open the layout editor
 
-Open the [layout editor](https://gridfinitylayouttool.com/) in your browser.
+Open the [layout editor](https://gridfinitylayouttool.com/) in your browser. If the bin designer opens instead, click <Ui k="toolSwitcher.layout" /> in the tool switcher at the top left.
 
-On your first visit, you get an empty layout. On a desktop screen, the grid is 10 grid units wide and 8 grid units deep. An animated hint on the grid says <Ui k="onboarding.drawTutorial.hint" />, and it stays until you draw your first bin.
+When you have no layouts of your own yet, you get an empty layout. On a desktop screen, the grid is 10 grid units wide and 8 grid units deep. An animated hint on the grid says <Ui k="onboarding.drawTutorial.hint" />, and it stays until you draw your first bin.
 
 ## Step 2: Set the drawer size
 

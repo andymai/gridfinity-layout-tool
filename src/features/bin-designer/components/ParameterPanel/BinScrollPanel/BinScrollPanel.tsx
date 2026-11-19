@@ -133,6 +133,7 @@ export function BinScrollPanel({
       <StickyGroupHeader
         variant="band"
         title={t('binDesigner.group.shape')}
+        docsSection="binShape"
         expanded={open.shape}
         onExpandedChange={(next) => setGroup('shape', next)}
         modifiedLabel={markIf(modified.shape)}
@@ -187,6 +188,7 @@ export function BinScrollPanel({
       <StickyGroupHeader
         variant="band"
         title={t('binDesigner.group.lid')}
+        docsSection="binLid"
         expanded={open.lid}
         onExpandedChange={(next) => setGroup('lid', next)}
         modifiedLabel={markIf(modified.lid)}
@@ -207,6 +209,7 @@ export function BinScrollPanel({
       <StickyGroupHeader
         variant="band"
         title={t('binDesigner.group.interior')}
+        docsSection="binInterior"
         expanded={open.interior}
         onExpandedChange={(next) => setGroup('interior', next)}
         modifiedLabel={markIf(modified.interior)}
@@ -244,6 +247,7 @@ export function BinScrollPanel({
       <StickyGroupHeader
         variant="band"
         title={t('binDesigner.group.base')}
+        docsSection="binBase"
         expanded={open.base}
         onExpandedChange={(next) => setGroup('base', next)}
         modifiedLabel={markIf(modified.base)}

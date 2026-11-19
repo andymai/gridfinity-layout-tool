@@ -68,6 +68,11 @@ describe('useEntryActivation', () => {
     expect(useBinExampleGalleryStore.getState().isOpen).toBe(true);
   });
 
+  it('opens the labels dialog', () => {
+    activateWith(entry({ action: { kind: 'openModal', modal: 'labels' } }));
+    expect(useViewStore.getState().labelsOpen).toBe(true);
+  });
+
   it('sends a Labs entry to the Labs settings tab, ignoring its own action', () => {
     // The feature the entry describes is unreachable until the flag is on, so
     // the switch outranks whatever destination the entry names.
@@ -96,6 +101,13 @@ describe('useDestinationLabel', () => {
       useDestinationLabel(entry({ action: { kind: 'scanTool' } }))
     );
     expect(result.current).toBe('Scan a tool');
+  });
+
+  it('labels the labels entry with its own text, not a key', () => {
+    const { result } = renderHook(() =>
+      useDestinationLabel(entry({ action: { kind: 'openModal', modal: 'labels' } }))
+    );
+    expect(result.current).toBe('Open labels');
   });
 
   it('labels a Labs entry for Labs, not for its action', () => {

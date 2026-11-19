@@ -54,3 +54,16 @@ describe('initAnalytics before_send', () => {
     expect(sent?.properties?.display_mode).toBe('standalone');
   });
 });
+
+describe('whenPosthogReady', () => {
+  it('resolves only after identify, so a flag read buckets the stable ID', async () => {
+    vi.resetModules();
+    localStorage.setItem('gridfinity-analytics-v1', JSON.stringify({ userId: 'stable-user' }));
+    const fresh = await import('./init');
+
+    fresh.initAnalytics();
+
+    await expect(fresh.whenPosthogReady()).resolves.toBe(posthog);
+    expect(posthog.identify).toHaveBeenCalledWith('stable-user');
+  });
+});

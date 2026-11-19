@@ -225,6 +225,34 @@ describe('retryQueue', () => {
     expect(appendMock).toHaveBeenCalledTimes(2);
   });
 
+  it('keeps one pass at a time when an event fails during a pass', async () => {
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const appended: string[] = [];
+    const store = createMockStore(async (events) => {
+      appended.push(...events.map((e) => e.meta.id));
+      await gate;
+    });
+    setRetryEventStore(store);
+
+    enqueueForRetry(makeEvent('bin.added', 'evt_a'));
+    enqueueForRetry(makeEvent('bin.added', 'evt_b'));
+    makeAllReady();
+
+    const pass = _processRetries();
+    // A failed append while the pass waits schedules the queue again.
+    enqueueForRetry(makeEvent('bin.added', 'evt_c'));
+    await vi.advanceTimersByTimeAsync(0);
+    release();
+    await pass;
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(appended.sort()).toEqual(['evt_a', 'evt_b']);
+    expect(_getPendingEntries().map((e) => e.event.meta.id)).toEqual(['evt_c']);
+  });
+
   it('clearRetryQueue removes all entries and cancels timer', () => {
     const store = createMockStore();
     setRetryEventStore(store);

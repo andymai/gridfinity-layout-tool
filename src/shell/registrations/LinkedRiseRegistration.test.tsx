@@ -127,6 +127,16 @@ describe('LinkedRiseRegistration', () => {
     expect(result.current.size).toBe(0);
   });
 
+  it('keeps an imported mesh whole, as its export does', async () => {
+    await import('@/shell/registrations/LinkedRiseRegistration');
+    registry.length = 0;
+    registry.push({ ...designRef('mesh'), kind: 'importedMesh' }, designRef('splits'));
+    subscribers.forEach((cb) => cb());
+
+    const { result } = renderHook(() => useLinkedDesignsKeptWhole());
+    expect([...result.current]).toEqual([designId('mesh')]);
+  });
+
   it('renders nothing', async () => {
     const { LinkedRiseRegistration } = await import('@/shell/registrations/LinkedRiseRegistration');
     expect(LinkedRiseRegistration()).toBeNull();

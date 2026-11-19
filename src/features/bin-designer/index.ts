@@ -26,6 +26,10 @@ export {
   subscribeToRegistry,
 } from './store';
 
+// --- Constants ---
+// The client copy of the dimension limits that api/lib/designerValidationConstants.ts enforces.
+export { DESIGNER_CONSTRAINTS } from './constants';
+
 // --- Storage ---
 // `saveDesign` is exposed for design-linking's layout→single-bin merge, which
 // must persist a full BinParams (compartment cells, texts) before navigating.

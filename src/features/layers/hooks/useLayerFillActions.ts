@@ -9,7 +9,7 @@
  * (mobile closes its panel there); the toast still fires afterwards.
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
@@ -18,6 +18,8 @@ import { useInteractionStore } from '@/core/store/interaction';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { useToastStore } from '@/core/store/toast';
 import { getLayerBins } from '@/shared/utils';
+import { countFillableCells } from '@/shared/utils/fill';
+import { useLinkedRiseKey } from '@/shared/hooks/useLinkedRiseKey';
 import { useTranslation } from '@/i18n';
 import { batch } from '@/core/cqrs';
 import type { Bin, Layer } from '@/core/types';
@@ -26,6 +28,7 @@ export interface LayerFillActions {
   activeLayer: Layer | undefined;
   layerBins: Bin[];
   totalCells: number;
+  /** Whole cells that the gap fill can still use. */
   emptyCells: number;
   clearConfirmOpen: boolean;
   setClearConfirmOpen: (open: boolean) => void;
@@ -34,6 +37,11 @@ export interface LayerFillActions {
   confirmClear: () => void;
   /** Fills with the given size and exits paint mode. */
   fillWithSize: (width: number, depth: number) => void;
+  /**
+   * The fill places upright bins only. Slanted rows need a drag, because a
+   * row cut by other bins loses its end support.
+   */
+  slantedRowOn: boolean;
 }
 
 export function useLayerFillActions(options?: { onAfterAction?: () => void }): LayerFillActions {
@@ -51,7 +59,12 @@ export function useLayerFillActions(options?: { onAfterAction?: () => void }): L
       setSelectedBins: state.setSelectedBins,
     }))
   );
-  const setPaintSize = useInteractionStore((state) => state.setPaintSize);
+  const { setPaintSize, slantedRowOn } = useInteractionStore(
+    useShallow((state) => ({
+      setPaintSize: state.setPaintSize,
+      slantedRowOn: state.paintSlant !== null,
+    }))
+  );
   const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
   const addToast = useToastStore((state) => state.addToast);
 
@@ -59,8 +72,13 @@ export function useLayerFillActions(options?: { onAfterAction?: () => void }): L
   const layerBins = getLayerBins(layout.bins, activeLayerId);
 
   const totalCells = layout.drawer.width * layout.drawer.depth;
-  const coveredCells = layerBins.reduce((sum, b) => sum + b.width * b.depth, 0);
-  const emptyCells = totalCells - coveredCells;
+  // A saved linked design can change how high bins rest without a new layout.
+  const riseKey = useLinkedRiseKey();
+  const emptyCells = useMemo(
+    () => (activeLayerId ? countFillableCells(layout, activeLayerId, halfGridMode) : 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- riseKey only invalidates
+    [layout, activeLayerId, halfGridMode, riseKey]
+  );
 
   const fillGaps = () => {
     if (!activeLayerId) return;
@@ -91,7 +109,7 @@ export function useLayerFillActions(options?: { onAfterAction?: () => void }): L
   };
 
   const fillWithSize = (width: number, depth: number) => {
-    if (!activeLayerId) return;
+    if (!activeLayerId || slantedRowOn) return;
     const beforeCount = layerBins.length;
     batch(() => {
       fillLayer(activeLayerId, width, depth, activeCategoryId, halfGridMode);
@@ -118,5 +136,6 @@ export function useLayerFillActions(options?: { onAfterAction?: () => void }): L
     fillGaps,
     confirmClear,
     fillWithSize,
+    slantedRowOn,
   };
 }
