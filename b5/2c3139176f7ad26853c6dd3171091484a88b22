@@ -1,0 +1,157 @@
+src/i18n/locales/pt-BR.json
+  s_144305aaade9d6::t_605f12e17c1e19 1293-1304
+src/features/bin-designer/constants/paramMigration.test.ts
+  s_144305aaade9d6::t_30c737e4f21b0d 64-89
+src/i18n/locales/cs.json
+  s_144305aaade9d6::t_605f12e17c1e19 1319-1330
+src/features/bin-designer/types/dividers.ts
+  s_144305aaade9d6::t_2fee3f03ebe6b2 85-89
+  s_144305aaade9d6::t_8f61e960fa6d95 84
+src/shared/utils/slotMath.test.ts
+  s_144305aaade9d6::t_912c56d969821d 14-15,17,589-608,615
+  s_144305aaade9d6::t_209a1506665bb6 609-614
+  s_144305aaade9d6::t_e2145b63425194 616
+src/i18n/locales/it.json
+  s_144305aaade9d6::t_605f12e17c1e19 1293-1304
+src/i18n/locales/fr.json
+  s_144305aaade9d6::t_605f12e17c1e19 1293-1304
+src/features/generation/worker/generators/dividerFitSample.test.ts
+  s_144305aaade9d6::t_4f1f9c4062e14f 1-126,128-138,143-160,165-257,267-284
+  s_144305aaade9d6::t_b56e707d18d8b1 258-266
+  s_144305aaade9d6::t_c34341118d3175 127,139-142,161-164
+src/features/generation/bridge/GenerationBridge.ts
+  s_144305aaade9d6::t_5797e62cc3683a 85,653-654
+  s_144305aaade9d6::t_a415e06d5d4ff6 655-656
+src/shared/schema/binDesignKeys.ts
+  s_144305aaade9d6::t_30e0a611419b6b 326-332
+src/i18n/locales/pl.json
+  s_144305aaade9d6::t_605f12e17c1e19 1345-1356
+src/features/generation/bridge/meshDelivery.ts
+  s_144305aaade9d6::t_af3c531eeafc42 39
+docs/schemas/constraints.md
+  s_144305aaade9d6::t_22e773ab2c67fc 52,83
+apps/docs/designer/compartments.md
+  s_144305aaade9d6::t_d93d35bf7d115e 124-130,136-149
+  s_144305aaade9d6::t_6fbad9d6b6a7a6 150
+apps/docs/printing/fit-and-tolerances.md
+  s_144305aaade9d6::t_d93d35bf7d115e 12,53-65,73-79
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.test.tsx
+  s_144305aaade9d6::t_3ec43c54db71f2 146
+  s_144305aaade9d6::t_8887cad6d52071 114-145,147-148,158-162
+  s_144305aaade9d6::t_65d0692604e5b4 149-157
+src/features/generation/worker/generation.worker.ts
+  s_144305aaade9d6::t_5797e62cc3683a 50,188-189
+  s_144305aaade9d6::t_3d48c88889ec23 190-191
+src/features/generation/worker/generators/slotBuilder.ts
+  s_144305aaade9d6::t_0d7cf23096e5ea 169-227
+  s_144305aaade9d6::t_b16b99233a2b01 165-167
+  s_144305aaade9d6::t_ff62392a944199 168
+src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
+  s_144305aaade9d6::t_2c9a3e03be49e2 21,37-39,350-352,387-399,401-406,417
+  s_144305aaade9d6::t_30cf2609c375f5 400
+  s_144305aaade9d6::t_b9e529d504e90d 418
+src/i18n/locales/uk.json
+  s_144305aaade9d6::t_605f12e17c1e19 1345-1356
+src/features/bin-designer/hooks/useDividerFitSampleExport.ts
+  s_144305aaade9d6::t_87e8cbe4072ea1 1-39
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_144305aaade9d6::t_16d90a91dc006c 216-219
+  s_144305aaade9d6::t_b51b49c19e4b6d 34,48-49,226-227,229,231-233,257,263-277,461,473,532-536,538,589,612,626,640,687,705,716,725
+  s_144305aaade9d6::t_3fa577f4ecf987 214-215
+  s_144305aaade9d6::t_209a1506665bb6 406,531,539-543,545,547,675
+  s_144305aaade9d6::t_5143de2016b459 530,537,544,670
+  s_144305aaade9d6::t_61d0533345b047 278-279
+api/lib/designerValidation.crossBoundary.test.ts
+  s_144305aaade9d6::t_8facc2d485c565 439
+  s_144305aaade9d6::t_d124df9bde8873 458-467
+src/features/bin-designer/hooks/useDividerFitSampleExport.test.ts
+  s_144305aaade9d6::t_0c53a17a19e4f4 1-130
+src/features/bin-designer/components/SlotConfigurator/useSlotConfigurator.ts
+  s_144305aaade9d6::t_2c9a3e03be49e2 19,22,137-151,381-383
+src/i18n/locales/de.json
+  s_144305aaade9d6::t_605f12e17c1e19 1293-1304
+src/features/generation/bridge/bridgeExports.ts
+  s_144305aaade9d6::t_5797e62cc3683a 469-487
+  s_144305aaade9d6::t_a2ced017de003f 468
+src/i18n/locales/en.ts
+  s_144305aaade9d6::t_605f12e17c1e19 2156-2167
+  s_144305aaade9d6::t_2c9627f5ad3c17 2168-2173
+src/i18n/locales/zh-CN.json
+  s_144305aaade9d6::t_605f12e17c1e19 1267-1278
+public/schema/bin-design.schema.json
+  s_144305aaade9d6::t_30e0a611419b6b 1215-1223
+  s_144305aaade9d6::t_314e8c81b432ed 1224
+src/i18n/locales/ja.json
+  s_144305aaade9d6::t_605f12e17c1e19 1267-1278
+src/features/bin-designer/components/preview/GhostDividerPieces/GhostDividerPieces.test.tsx
+  s_144305aaade9d6::t_c73c8fb81797e0 3,5-6,9-10,30-32,197-220
+  s_144305aaade9d6::t_b0107cbd3d83e0 221-222
+docs/schemas/bin-design.md
+  s_144305aaade9d6::t_0382369e6cfd8b 461
+src/features/bin-designer/components/preview/GhostDividerPieces/GhostDividerPieces.tsx
+  s_144305aaade9d6::t_d0169a73ea690a 345-346
+  s_144305aaade9d6::t_209a1506665bb6 357-358
+  s_144305aaade9d6::t_cb2e119da5969f 33,342-344,347,393,475,491
+src/i18n/locales/sv.json
+  s_144305aaade9d6::t_605f12e17c1e19 1293-1304
+src/i18n/locales/ko.json
+  s_144305aaade9d6::t_605f12e17c1e19 1267-1278
+src/features/bin-designer/constants/gridfinity.ts
+  s_144305aaade9d6::t_2fee3f03ebe6b2 133-135
+src/i18n/locales/ka.json
+  s_144305aaade9d6::t_847cac2035a5fa 1813-1824
+src/features/generation/worker/handlers/exportHandler.ts
+  s_144305aaade9d6::t_5797e62cc3683a 15,46,233-244
+  s_144305aaade9d6::t_fdbffb62e70222 245-249
+src/i18n/locales/nl.json
+  s_144305aaade9d6::t_605f12e17c1e19 1293-1304
+src/shared/utils/slotMath.ts
+  s_144305aaade9d6::t_b51b49c19e4b6d 128-130
+  s_144305aaade9d6::t_209a1506665bb6 137-139,141-144
+  s_144305aaade9d6::t_5c8caf5019515e 117-118,120-127,133
+  s_144305aaade9d6::t_a5c823a5f8a50a 8,13,116,119,131-132,134-136,140,145
+  s_144305aaade9d6::t_2d7ac75c03d605 146
+src/i18n/locales/es.json
+  s_144305aaade9d6::t_605f12e17c1e19 1293-1304
+src/features/bin-designer/constants/paramMigration.ts
+  s_144305aaade9d6::t_c5bc0ce0c6bcc2 66,258-259,262-272
+src/features/generation/worker/generators/dividerPieceFit.test.ts
+  s_144305aaade9d6::t_af3c531eeafc42 397,400-403
+  s_144305aaade9d6::t_ec8fd698f81057 13,16,379-396,398-399,404-412
+  s_144305aaade9d6::t_d1040bb273c37e 241-244,258-260,331-334,336,342-348,361-363,375-377,450
+  s_144305aaade9d6::t_e70e34e937bef5 1-12,14-15,17-240,245-257,261-330,335,337-341,349-360,364-374,378,413-449
+src/features/bin-designer/components/SlotConfigurator/DividerFitSampleButton.test.tsx
+  s_144305aaade9d6::t_bb235aa88ce869 1-50
+src/features/generation/bridge/messages.ts
+  s_144305aaade9d6::t_5797e62cc3683a 44,306-321
+  s_144305aaade9d6::t_1891bba955c280 322
+src/features/generation/worker/generators/dividerPieceSeat.ts
+  s_144305aaade9d6::t_b7486bd2fb05c5 100,105
+  s_144305aaade9d6::t_3316c8d6664913 1-76,98-99,101-104,106-108
+  s_144305aaade9d6::t_33cd64357a1800 77-78,80-88
+  s_144305aaade9d6::t_ef02ab131f2da9 79,89-97
+src/features/bin-designer/components/SlotConfigurator/DividerFitSampleButton.tsx
+  s_144305aaade9d6::t_85a59ac8f4c05b 1-29
+src/features/generation/worker/generators/dividerFitSample.ts
+  s_144305aaade9d6::t_c38577be16d302 1-26,28-39,42,44-61,67-72,79-137,142-181
+  s_144305aaade9d6::t_b56e707d18d8b1 27,40,43,138-141
+  s_144305aaade9d6::t_2bd778bf38f1f1 41,62-66,73-78
+src/i18n/locales/nb.json
+  s_144305aaade9d6::t_605f12e17c1e19 1293-1304
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b52c3139176f7ad26853c6dd3171091484a88b22",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
