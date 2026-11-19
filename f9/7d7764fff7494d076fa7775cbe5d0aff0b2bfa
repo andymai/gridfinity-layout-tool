@@ -1,0 +1,42 @@
+src/features/generation/worker/generators/wallCutoutPaths.geometry.test.ts
+  s_144305aaade9d6::t_20c7868eaf4591 360-388
+  s_144305aaade9d6::t_935c0d665637c5 358-359
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.wallCutoutPaths.test.ts.snap
+  s_144305aaade9d6::t_855a9e2d81ceda 27-28
+src/features/generation/worker/generators/dividerBlendBuilder.test.ts
+  s_144305aaade9d6::t_22775f77bbb276 57,257
+src/features/generation/worker/generators/dividerPatterns.ts
+  s_144305aaade9d6::t_a39a13f94932c9 31,343
+src/features/generation/worker/generators/interiorFilletBuilder.ts
+  s_144305aaade9d6::t_3cb128e56c67c1 361-362
+src/features/generation/worker/generators/scenarios/wallCutoutPaths.ts
+  s_144305aaade9d6::t_a5a20234428675 137-147
+src/features/generation/worker/generators/scoopRampBuilder.ts
+  s_144305aaade9d6::t_116b3b69dae4c7 135-136
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_144305aaade9d6::t_2afb3e502451d0 380-382
+src/features/generation/worker/generators/wallCutoutBuilder.ts
+  s_144305aaade9d6::t_c513d7af6a823c 18,284-286,291,298-300,439,441,515-517,528,608-609,645-647
+src/features/generation/worker/generators/wallCutoutPathClearance.test.ts
+  s_144305aaade9d6::t_2fc879ea27a8fd 18
+src/features/generation/worker/generators/wallCutoutPaths.test.ts
+  s_144305aaade9d6::t_b37646f19c9061 8,10,28,342-379
+src/features/generation/worker/generators/wallCutoutPaths.ts
+  s_144305aaade9d6::t_01dc158200d32a 85-89,120,309-310,325
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f97d7764fff7494d076fa7775cbe5d0aff0b2bfa",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
