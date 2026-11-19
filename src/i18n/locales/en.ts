@@ -3023,8 +3023,6 @@ const en: Record<string, string> = {
   'binDesigner.interiorFillet.radius': 'Radius',
   'binDesigner.interiorFillet.clamped':
     'Compartments too small for this radius round as far as they fit.',
-  'binDesigner.interiorFilletUnavailableSlotted':
-    'Not available for slotted bins: the fillet would fill the divider slots',
   'binDesigner.fingerScoopUnavailableSlotted': 'Not available for slotted or solid bins',
   'binDesigner.scoopRadius': 'Radius',
   'binDesigner.scoopRadiusAutoLabel': 'Auto',

@@ -86,3 +86,49 @@ describe('referencePieceGeometry', () => {
     notched.dispose();
   });
 });
+
+describe('rounded corners over an interior fillet', () => {
+  const points = (geometry: ReturnType<typeof referencePieceGeometry>): [number, number][] => {
+    const pos = geometry.getAttribute('position');
+    const out: [number, number][] = [];
+    for (let i = 0; i < pos.count; i++) out.push([pos.getX(i), pos.getZ(i)]);
+    return out;
+  };
+  const near = (list: [number, number][], px: number, pz: number): boolean =>
+    list.some(([x, z]) => Math.abs(x - px) < 1e-4 && Math.abs(z - pz) < 1e-4);
+
+  it('rounds only the named ends, tangent to the end and the bottom edge', () => {
+    const r = 3.4;
+    const geometry = referencePieceGeometry(100, 40, 1.6, [], null, 'u-shape', {
+      radius: r,
+      low: true,
+      high: false,
+    });
+    const list = points(geometry);
+    // Nothing stands in the low end's square corner, outside the arc. The
+    // positions are single precision.
+    const cx = -50 + r;
+    const cz = -20 + r;
+    expect(list.some(([x, z]) => x < cx && z < cz && Math.hypot(x - cx, z - cz) > r + 1e-4)).toBe(
+      false
+    );
+    // The arc meets the end and the bottom edge where it is tangent to them.
+    expect(near(list, -50, -20 + r)).toBe(true);
+    expect(near(list, -50 + r, -20)).toBe(true);
+    // The high end keeps its square corner.
+    expect(near(list, 50, -20)).toBe(true);
+    geometry.dispose();
+  });
+
+  it('keeps a window and rounded corners together', () => {
+    const geometry = referencePieceGeometry(100, 40, 1.6, [], window(), 'u-shape', {
+      radius: 3.4,
+      low: true,
+      high: true,
+    });
+    const list = points(geometry);
+    expect(near(list, 50, -20)).toBe(false);
+    expect(near(list, 5 - 15, 20 - 12)).toBe(true);
+    geometry.dispose();
+  });
+});

@@ -1372,7 +1372,6 @@
   "binDesigner.interiorFillet.help": "Zaoblí hrany, kde se stěny stýkají se dnem, i rohy, kde se stýkají navzájem.",
   "binDesigner.interiorFillet.radius": "Poloměr",
   "binDesigner.interiorFillet.clamped": "Přihrádky příliš malé pro tento poloměr se zaoblí, jak nejvíc to jde.",
-  "binDesigner.interiorFilletUnavailableSlotted": "Není dostupné pro drážkované biny: zaoblení by zaplnilo drážky pro příčky",
   "binDesigner.fingerScoopUnavailableSlotted": "Není dostupné pro drážkované nebo plné biny",
   "binDesigner.finishing.summary.units": "mřížka {grid} mm · výška {height} mm",
   "binDesigner.fitSample.button": "Vytisknout test uložení",

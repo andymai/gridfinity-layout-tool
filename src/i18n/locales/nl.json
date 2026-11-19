@@ -1346,7 +1346,6 @@
   "binDesigner.interiorFillet.help": "Rondt de randen af waar de wanden de vloer raken, en de hoeken waar ze elkaar raken.",
   "binDesigner.interiorFillet.radius": "Radius",
   "binDesigner.interiorFillet.clamped": "Vakken die te klein zijn voor deze radius worden zo ver afgerond als ze toelaten.",
-  "binDesigner.interiorFilletUnavailableSlotted": "Niet beschikbaar voor sleufbakken: de afronding zou de sleuven van de tussenwanden vullen",
   "binDesigner.fingerScoopUnavailableSlotted": "Niet beschikbaar voor sleuf- of massieve bakken",
   "binDesigner.finishing.summary.units": "raster {grid} mm · hoogte {height} mm",
   "binDesigner.fitSample.button": "Pastest printen",

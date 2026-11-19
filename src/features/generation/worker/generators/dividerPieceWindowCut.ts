@@ -6,6 +6,7 @@ import {
   keepBottomBand,
   planPieceWindow,
   windowBottomBand,
+  windowCornerBand,
   windowReach,
 } from '@/shared/utils/dividerPieceWindow';
 import type { PieceWindow } from '@/shared/utils/dividerPieceWindow';
@@ -103,7 +104,13 @@ export function pieceWindowCutter(
     );
     const band = windowBottomBand(height, geometry.length, fit);
     const clear = planned && clearOfNotches(planned, geometry.notches ?? [], height, notchDepth);
-    const window = clear && keepBottomBand(clear, height, band);
+    const window =
+      clear &&
+      keepBottomBand(
+        clear,
+        height,
+        windowCornerBand(clear, geometry.length, geometry.corners, band)
+      );
     if (!window) return { cutPiece: piece, geometry };
     // The keep-out covers the whole opening, round-overs included.
     const opening = { offset: window.offset, width: 2 * windowReach(window), depth: window.depth };

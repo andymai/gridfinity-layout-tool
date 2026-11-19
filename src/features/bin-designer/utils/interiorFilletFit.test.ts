@@ -30,6 +30,28 @@ describe('interiorFilletFitMm', () => {
     expect(raised).toBeCloseTo(flat - 6, 6);
   });
 
+  it('stops short of a removable divider standing near a wall', () => {
+    const slotted = (pitch: number): BinParams =>
+      bin({
+        height: 6,
+        width: 2,
+        depth: 2,
+        style: 'slotted',
+        slotConfig: {
+          ...DEFAULT_BIN_PARAMS.slotConfig,
+          x: { enabled: true, pitch },
+          y: { enabled: false, pitch },
+        },
+      });
+    const roomy = interiorFilletFitMm(slotted(40));
+    const dense = interiorFilletFitMm(slotted(10));
+    expect(dense).toBeLessThan(roomy);
+    // The first divider stands about 11mm in from the wall, which leaves room
+    // for a fillet near 9mm once the piece's corner and its reserve are taken.
+    expect(dense).toBeLessThan(10);
+    expect(dense).toBeGreaterThan(8);
+  });
+
   it('stops at the top of short dividers', () => {
     const compartments = { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 };
     const full = interiorFilletFitMm(bin({ height: 3, compartments }));

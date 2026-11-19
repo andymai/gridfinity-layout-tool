@@ -12,6 +12,7 @@ sources:
   - src/features/bin-designer/constants/gridfinity.ts
   - src/features/bin-designer/utils/validation.ts
   - src/features/bin-designer/store/slices/paramSlice/compartmentActions.ts
+  - src/shared/utils/slottedFillet.ts
   - src/shared/utils/slotMath.ts
 ---
 
@@ -131,7 +132,9 @@ The divider pieces have these controls:
 
 To draw your own grid, pick <Ui k="binDesigner.slotLayoutCustom" />. Its <Ui k="binDesigner.customMerge" /> and <Ui k="binDesigner.customSplit" /> controls shape the grid. The bin designer then makes pieces that match the grid you drew.
 
-The walls must be 0.8 mm or thicker for slots. Removable dividers turn off the compartment grid, label tabs, the finger scoop and the interior fillet. You cannot use them with tilted dividers or a <Ui k="binDesigner.base.bodyType.nesting" /> body.
+The walls must be 0.8 mm or thicker for slots. Removable dividers turn off the compartment grid, label tabs and the finger scoop. You cannot use them with tilted dividers or a <Ui k="binDesigner.base.bodyType.nesting" /> body.
+
+An [interior fillet](./getting-things-out#round-the-inside-with-an-interior-fillet) works with removable dividers. It rounds the outer walls, and each wall slot follows the curve down into the floor. The end of a piece that goes into a wall slot gets a round bottom corner to fit the curve. When a piece has one round end, put that end into the wall slot.
 
 ### Fix the fit of the pieces
 

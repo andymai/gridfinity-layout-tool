@@ -1398,7 +1398,6 @@
   "binDesigner.interiorFillet.help": "Zaokrągla krawędzie, gdzie ścianki stykają się z dnem, i narożniki, gdzie stykają się ze sobą.",
   "binDesigner.interiorFillet.radius": "Promień",
   "binDesigner.interiorFillet.clamped": "Przegrody zbyt małe na ten promień zaokrąglają się tak bardzo, jak się da.",
-  "binDesigner.interiorFilletUnavailableSlotted": "Niedostępne dla binów na wsuwane przegródki: zaokrąglenie wypełniłoby rowki przegródek",
   "binDesigner.fingerScoopUnavailableSlotted": "Niedostępne dla binów na wsuwane przegródki lub pełnych",
   "binDesigner.finishing.summary.units": "siatka {grid} mm · wysokość {height} mm",
   "binDesigner.fitSample.button": "Wydrukuj test dopasowania",

@@ -13,7 +13,7 @@
  * boolean cut operation on the bin — critical for performance.
  */
 
-import { box, unwrap, fuseAll, withScope, clone } from 'brepjs';
+import { box, clone, fuseAll, unwrap, withScope } from 'brepjs';
 import type { DisposalScope } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
@@ -26,7 +26,10 @@ import {
   MIN_WALL_FOR_SLOTS,
 } from '@/shared/utils/slotMath';
 import { COPLANAR_OVERLAP } from './generatorConstants';
+import { SLOT_EXTENSION, createMirroredCutters, filletLineCutters } from './slotCutterShapes';
+import type { FilletSlotSizes } from './slotCutterShapes';
 import { deriveWallSegments } from '@/shared/utils/compartmentGeometry';
+import type { DividerFilletSeat } from '@/shared/utils/slottedFillet';
 
 // Re-export shared math for generation-internal consumers
 export { calculateSlotPositions };
@@ -51,6 +54,8 @@ export interface DividerSeat {
   readonly floorZ: number;
   /** Floor channel depth under each divider; 0 when there is none */
   readonly grooveDepth: number;
+  /** How the slots meet the interior fillet; absent when the walls carry none. */
+  readonly fillet?: DividerFilletSeat | null;
 }
 
 /**
@@ -75,61 +80,6 @@ export interface LipCutInfo {
 /** Depth the lip cutters clear past the inner wall face. */
 function lipCutReach(lipInfo: LipCutInfo, wallThickness: number): number {
   return Math.max(0, (lipInfo.inwardReach ?? lipInfo.lipTaperWidth) - wallThickness);
-}
-
-/**
- * Slight extension past the inner wall surface into the (hollow) bin interior.
- * Uses the shared COPLANAR_OVERLAP — avoids coplanar faces between the cutter
- * and the bin's inner wall, which cause OCCT to produce non-manifold topology
- * (slicers then drop one side on repair). The extension cuts into empty space
- * so geometry is unchanged.
- */
-const SLOT_EXTENSION = COPLANAR_OVERLAP;
-
-/**
- * Create a mirrored pair of extruded rectangular cutters along one axis.
- *
- * Produces two boxes at +/- offset along the primary axis, both centered
- * on `crossPos` along the cross axis. The primary-axis dimension is extended
- * by SLOT_EXTENSION; the offset is adjusted so the extension reaches into
- * the bin interior (avoiding coplanar faces).
- *
- * @param primaryDim  Cutter size along the primary axis (before extension)
- * @param crossDim    Cutter size along the cross axis
- * @param height      Extrusion height (Z)
- * @param halfSpan    Half of the interior dimension along the primary axis
- * @param crossPos    Position along the cross axis
- * @param z           Z origin of the extrusion
- * @param axis        'x' places cutters along X (left/right), 'y' along Y (front/back)
- */
-function createMirroredCutters(
-  primaryDim: number,
-  crossDim: number,
-  height: number,
-  halfSpan: number,
-  crossPos: number,
-  z: number,
-  axis: 'x' | 'y'
-): [Shape3D, Shape3D] {
-  const extDim = primaryDim + SLOT_EXTENSION;
-  const centerOffset = halfSpan + primaryDim / 2;
-
-  // Rectangle dimensions: axis='x' → (extDim, crossDim), axis='y' → (crossDim, extDim)
-  const rectW = axis === 'x' ? extDim : crossDim;
-  const rectD = axis === 'x' ? crossDim : extDim;
-
-  // Negative side: outer edge at -halfSpan - primaryDim, extended inward by SLOT_EXTENSION
-  const negCenter = -(centerOffset - SLOT_EXTENSION / 2);
-  // Positive side: outer edge at +halfSpan + primaryDim, extended inward by SLOT_EXTENSION
-  const posCenter = centerOffset - SLOT_EXTENSION / 2;
-
-  const zCenter = z + height / 2;
-  const pos = (primary: number): [number, number, number] =>
-    axis === 'x' ? [primary, crossPos, zCenter] : [crossPos, primary, zCenter];
-  return [
-    box(rectW, rectD, height, { at: pos(negCenter) }),
-    box(rectW, rectD, height, { at: pos(posCenter) }),
-  ];
 }
 
 function createMirroredLockingCutters(
@@ -429,6 +379,31 @@ function buildSlotCutsInScope(
   // The groove runs on into each wall slot's pocket, stopping short of the
   // pocket's outer face so the two cutters overlap instead of sharing it.
   const grooveReach = slotDepth - SLOT_EXTENSION;
+  const wallCutters = (halfSpan: number, crossPos: number, axis: 'x' | 'y'): Shape3D[] =>
+    createMirroredLockingCutters(
+      slotDepth,
+      slotWidth,
+      params.dividerPieces.thickness,
+      params.dividerPieces.clearance,
+      slotHeight,
+      halfSpan,
+      crossPos,
+      slotStartZ,
+      axis
+    );
+  // Over an interior fillet each divider line is cut whole, its channels and
+  // groove together; the lip cutters below are the same either way.
+  const fillet = seat.fillet ?? null;
+  const filletSizes: FilletSlotSizes | null = fillet && {
+    fillet,
+    slotDepth,
+    slotWidth,
+    thickness: params.dividerPieces.thickness,
+    clearance: params.dividerPieces.clearance,
+    slotHeight,
+    seatZ: slotStartZ,
+    floorTop: seat.floorZ,
+  };
 
   // Lip overhang: the lip taper extends inward past the inner wall surface.
   // Only cut the interior overhang — leave the outer rim intact.
@@ -450,21 +425,25 @@ function buildSlotCutsInScope(
     const halfSpan = innerCross / 2;
 
     for (const crossPos of positions) {
-      // Wall slots (narrow, for tab engagement) — start at floor surface
-      const wallCutters = createMirroredLockingCutters(
-        slotDepth,
-        slotWidth,
-        params.dividerPieces.thickness,
-        params.dividerPieces.clearance,
-        slotHeight,
-        halfSpan,
-        crossPos,
-        slotStartZ,
-        axis
-      );
-      for (const c of wallCutters) slots.push(scope.register(c));
+      if (filletSizes) {
+        const line = {
+          axis,
+          halfSpan,
+          crossPos,
+          from: -halfSpan,
+          to: halfSpan,
+          lowWall: true,
+          highWall: true,
+        };
+        for (const c of filletLineCutters(scope, filletSizes, line, seat.grooveDepth)) {
+          slots.push(scope.register(c));
+        }
+      } else {
+        // Wall slots (narrow, for tab engagement), from the floor surface up
+        for (const c of wallCutters(halfSpan, crossPos, axis)) slots.push(scope.register(c));
+      }
 
-      if (seat.grooveDepth > 0) {
+      if (!filletSizes && seat.grooveDepth > 0) {
         const reach = halfSpan + grooveReach;
         slots.push(
           scope.register(
@@ -520,23 +499,44 @@ function buildSlotCutsInScope(
       const lowTouch = low <= EPS;
       const highTouch = low + seg.length >= runMax - EPS;
 
-      const wallCutters = createMirroredLockingCutters(
-        slotDepth,
-        slotWidth,
-        params.dividerPieces.thickness,
-        params.dividerPieces.clearance,
-        slotHeight,
-        halfSpan,
-        crossPos,
-        slotStartZ,
-        axis
-      );
-      for (let i = 0; i < wallCutters.length; i += 2) {
-        keepSide(lowTouch, wallCutters[i]);
-        keepSide(highTouch, wallCutters[i + 1]);
+      if (filletSizes) {
+        const line = {
+          axis,
+          halfSpan,
+          crossPos,
+          from: low - halfSpan,
+          to: low + seg.length - halfSpan,
+          lowWall: lowTouch,
+          highWall: highTouch,
+        } as const;
+        if (lowTouch || highTouch) {
+          for (const c of filletLineCutters(scope, filletSizes, line, seat.grooveDepth)) {
+            slots.push(scope.register(c));
+          }
+        } else if (seat.grooveDepth > 0) {
+          slots.push(
+            scope.register(
+              createGrooveCutter(
+                axis,
+                line.from,
+                line.to,
+                crossPos,
+                slotWidth,
+                seat.grooveDepth,
+                slotStartZ
+              )
+            )
+          );
+        }
+      } else {
+        const sides = wallCutters(halfSpan, crossPos, axis);
+        for (let i = 0; i < sides.length; i += 2) {
+          keepSide(lowTouch, sides[i]);
+          keepSide(highTouch, sides[i + 1]);
+        }
       }
 
-      if (seat.grooveDepth > 0) {
+      if (!filletSizes && seat.grooveDepth > 0) {
         // A wall-anchored end reaches into its slot pocket; an abutting end
         // stops at the crossing divider, whose own groove runs through the
         // junction.
@@ -598,6 +598,16 @@ import { FeatureTag } from './featureTags';
 import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKeyUtils';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { LIP_NOTCH_REACH_MM } from '@/shared/utils/lipNotchPlan';
+import { resolveDividerFilletSeat } from '@/shared/utils/slottedFillet';
+import type { PipelineContext } from './pipeline/types';
+import { interiorFilletApplies, slottedCavity } from './interiorFilletBuilder';
+
+/** How the slots meet the interior fillet, or null when the walls carry none. */
+function filletSeatFor(ctx: PipelineContext): DividerFilletSeat | null {
+  const { params, dimensions: dim } = ctx;
+  if (!interiorFilletApplies(params, dim)) return null;
+  return resolveDividerFilletSeat(params, slottedCavity(dim));
+}
 
 export const slotCutsFeature: FeatureBuilder = {
   name: 'slotCuts',
@@ -628,6 +638,7 @@ export const slotCutsFeature: FeatureBuilder = {
       params.dividerPieces.thickness,
       params.dividerPieces.clearance
     );
+    const fillet = filletSeatFor(ctx);
     return compactKey(
       buildCacheKey(
         'v5',
@@ -649,7 +660,10 @@ export const slotCutsFeature: FeatureBuilder = {
               quantize(lipInfo.lipTaperWidth),
               ...(lipInfo.inwardReach !== undefined ? [quantize(lipInfo.inwardReach)] : [])
             )
-          : 'none'
+          : 'none',
+        ...(fillet
+          ? [buildCacheKey('fillet', quantize(fillet.channelRadius), quantize(fillet.lockLift))]
+          : [])
       )
     );
   },
@@ -666,6 +680,7 @@ export const slotCutsFeature: FeatureBuilder = {
     const result = buildSlotCuts(params, dim.innerW, dim.innerD, dim.interiorHeight, lipInfo, {
       floorZ: dim.floorThickness,
       grooveDepth: dim.dividerGrooveDepth,
+      fillet: filletSeatFor(ctx),
     });
     return result ? [result] : null;
   },

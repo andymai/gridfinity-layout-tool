@@ -906,19 +906,21 @@ describe('resolveConstraints — interior fillet', () => {
     expect(JSON.stringify(result.params)).not.toContain('interiorFilletMm');
   });
 
-  it('switching to slotted clears it', () => {
+  it('switching to slotted keeps it, on the outer walls', () => {
     const result = resolveConstraints(makeParams({ interiorFilletMm: 3 }), {
       feature: 'style.slotted',
       enabled: true,
     });
-    expect(result.autoDisabled).toContain('interiorFillet');
-    expect(result.params.interiorFilletMm).toBeUndefined();
+    expect(result.autoDisabled).not.toContain('interiorFillet');
+    expect(result.params.interiorFilletMm).toBe(3);
   });
 
-  it('is unavailable on a slotted bin', () => {
-    const status = getFeatureStatus(makeParams({ style: 'slotted' }), 'interiorFillet');
-    expect(status.available).toBe(false);
-    expect(status.reason).toBe('binDesigner.interiorFilletUnavailableSlotted');
+  it('is available on a slotted bin, and turning it on keeps the slots', () => {
+    const slotted = makeParams({ style: 'slotted' });
+    expect(getFeatureStatus(slotted, 'interiorFillet').available).toBe(true);
+    const result = resolveConstraints(slotted, { feature: 'interiorFillet', enabled: true });
+    expect(result.params.style).toBe('slotted');
+    expect(result.params.interiorFilletMm).toBe(2.5);
   });
 
   it('an interior lightweight floor clears it, and it blocks that floor in turn', () => {

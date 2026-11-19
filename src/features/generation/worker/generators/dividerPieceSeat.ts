@@ -15,6 +15,7 @@ import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { dividerGrooveDepth, resolvePieceFit } from '@/shared/utils/slotMath';
 import { lipInnerReachMm } from '@/shared/utils/lipNotchPlan';
+import type { PieceCorners } from '@/shared/utils/slottedFillet';
 import { COPLANAR_OVERLAP } from './generatorConstants';
 
 /**
@@ -56,7 +57,9 @@ export function seatTopZ(thickness: number, seat: PieceSeatFit): number {
 
 /**
  * Thin both ends over their full height, and the floor edge over the full
- * length. Consumes `piece`; passes it through when the fit is 0.
+ * length. A rounded end seats in a channel that curves along the fillet, so
+ * its corner is thinned too, past the straight end band. Consumes `piece`;
+ * passes it through when the fit is 0.
  */
 export function cutPieceSeatFit(
   piece: Shape3D,
@@ -64,7 +67,8 @@ export function cutPieceSeatFit(
   height: number,
   thickness: number,
   tabDepth: number,
-  seat: PieceSeatFit
+  seat: PieceSeatFit,
+  corners: PieceCorners | null = null
 ): Shape3D {
   if (seat.thinning <= 0) return piece;
 
@@ -85,6 +89,25 @@ export function cutPieceSeatFit(
       cutters.push(
         box(Math.abs(outer - inner), ySize, zSize, { at: [(outer + inner) / 2, 0, zCenter] })
       );
+    }
+    if (corners) {
+      const reach = tabDepth + corners.radius + END_MARGIN;
+      const rise = corners.radius + END_MARGIN;
+      for (const [sign, rounded] of [
+        [-1, corners.low],
+        [1, corners.high],
+      ] as const) {
+        if (!rounded) continue;
+        const outer = sign * (length / 2 + COPLANAR_OVERLAP);
+        const inner = sign * (length / 2 - reach);
+        const yLow = -height / 2 - COPLANAR_OVERLAP;
+        const yHigh = -height / 2 + rise;
+        cutters.push(
+          box(Math.abs(outer - inner), yHigh - yLow, zSize, {
+            at: [(outer + inner) / 2, (yLow + yHigh) / 2, zCenter],
+          })
+        );
+      }
     }
     if (seat.bandHeight > 0) {
       const yLow = -height / 2 - COPLANAR_OVERLAP;

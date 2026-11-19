@@ -1398,7 +1398,6 @@
   "binDesigner.interiorFillet.help": "Заокруглює краї, де стінки сходяться з дном, і кути, де вони сходяться між собою.",
   "binDesigner.interiorFillet.radius": "Радіус",
   "binDesigner.interiorFillet.clamped": "Відділення, замалі для цього радіуса, заокруглюються настільки, наскільки вміщаються.",
-  "binDesigner.interiorFilletUnavailableSlotted": "Недоступно для бінів зі слотами: заокруглення заповнило б пази перегородок",
   "binDesigner.fingerScoopUnavailableSlotted": "Недоступно для бінів зі слотами або суцільних",
   "binDesigner.finishing.summary.units": "сітка {grid} мм · висота {height} мм",
   "binDesigner.fitSample.button": "Надрукувати тест посадки",

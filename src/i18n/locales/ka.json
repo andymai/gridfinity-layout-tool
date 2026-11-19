@@ -2526,7 +2526,6 @@
   "binDesigner.interiorFillet.help": "ამრგვალებს წიბოებს, სადაც კედლები ძირს ხვდება, და კუთხეებს, სადაც ისინი ერთმანეთს ხვდებიან.",
   "binDesigner.interiorFillet.radius": "რადიუსი",
   "binDesigner.interiorFillet.clamped": "ამ რადიუსისთვის ზედმეტად პატარა განყოფილებები იმდენად მრგვალდება, რამდენადაც ეტევა.",
-  "binDesigner.interiorFilletUnavailableSlotted": "ჭრილიანი ყუთებისთვის მიუწვდომელია: მომრგვალება გამყოფების ჭრილებს შეავსებდა",
   "binDesigner.fingerScoopUnavailableSlotted": "ჭრილიანი ან მყარი ყუთებისთვის მიუწვდომელია",
   "binDesigner.scoopRadius": "რადიუსი",
   "binDesigner.scoopRadiusAutoLabel": "ავტომატური",

@@ -1346,7 +1346,6 @@
   "binDesigner.interiorFillet.help": "Rundet die Kanten, an denen die Wände auf den Boden treffen, und die Ecken, an denen sie aufeinandertreffen.",
   "binDesigner.interiorFillet.radius": "Radius",
   "binDesigner.interiorFillet.clamped": "Fächer, die für diesen Radius zu klein sind, werden so weit gerundet, wie sie es zulassen.",
-  "binDesigner.interiorFilletUnavailableSlotted": "Nicht verfügbar für Schlitz-Bins: Die Rundung würde die Trennwandschlitze füllen",
   "binDesigner.fingerScoopUnavailableSlotted": "Nicht verfügbar für Schlitz- oder Massiv-Bins",
   "binDesigner.finishing.summary.units": "Raster {grid} mm · Höhe {height} mm",
   "binDesigner.fitSample.button": "Passtest drucken",
