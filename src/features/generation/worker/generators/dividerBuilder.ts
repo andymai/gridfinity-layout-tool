@@ -40,6 +40,7 @@ import type { DividerLockPlan } from '@/shared/utils/slotMath';
 import { authoredExposedSpan, computeAuthoredDividers } from '@/shared/utils/authoredDividerMath';
 import { deriveWallSegments } from '@/shared/utils/compartmentGeometry';
 import { pieceCorners, resolveDividerFilletSeat } from '@/shared/utils/slottedFillet';
+import type { PieceCorners } from '@/shared/utils/slottedFillet';
 import { getEffectiveSlotDimensions } from './slotBuilder';
 import {
   applyCuts,
@@ -118,8 +119,9 @@ function planPieceSeams(
  * build plate at Z=0 (`tabTop` is the thickness less any piece fit), so the two faces
  * recessed here sit at Z=0 and Z=tabTop. Both faces are relieved at both ends; a
  * relief near a free end seats in empty space and is inert, so pieces need not track
- * which ends land in a wall slot. Skips pieces shorter than the lock stack, matching
- * the slot builder's own fall-back to a plain slot.
+ * which ends land in a wall slot. Skips a piece whose top stays below the throat: the
+ * bin builds its throat from its own wall height, so a short piece whose top reaches
+ * into the band still needs the relief.
  */
 function cutDividerNeckRelief(
   piece: Shape3D,
@@ -134,7 +136,7 @@ function cutDividerNeckRelief(
   const lockHeight = lock.headHeight + lock.throatHeight;
   // A tab the piece fit already thinned to the neck needs no relief, and one a
   // hair wider would leave a sliver face.
-  if (depthPerFace < COPLANAR_OVERLAP || height <= lift + lockHeight) return piece;
+  if (depthPerFace < COPLANAR_OVERLAP || height <= lift + lock.headHeight) return piece;
 
   // Relieve a hair beyond the throat band (headHeight..headHeight+throatHeight
   // above the floor-resting bottom edge, or above `lift` over a fillet) so a
@@ -166,8 +168,9 @@ function cutDividerNeckRelief(
 }
 
 /**
- * Fit a piece's seats, then relieve each tab's neck against the thinned tab,
- * `lift` above the bottom edge over a fillet. Consumes `piece`.
+ * Fit a piece's seats, its rounded `corners` included, then relieve each tab's
+ * neck against the thinned tab, `lift` above the bottom edge over a fillet.
+ * Consumes `piece`.
  */
 export function relieveTabSeats(
   piece: Shape3D,
@@ -177,9 +180,10 @@ export function relieveTabSeats(
   tabDepth: number,
   lock: DividerLockPlan,
   seat: PieceSeatFit,
-  lift = 0
+  lift = 0,
+  corners: PieceCorners | null = null
 ): Shape3D {
-  const seated = cutPieceSeatFit(piece, length, height, thickness, tabDepth, seat);
+  const seated = cutPieceSeatFit(piece, length, height, thickness, tabDepth, seat, corners);
   return cutDividerNeckRelief(
     seated,
     length,
@@ -305,7 +309,11 @@ export function buildUniqueDividerPieces(
     dividerHeight,
     tabDepth
   );
-  const relief = (piece: Shape3D, length: number): Shape3D => {
+  const relief = (
+    piece: Shape3D,
+    length: number,
+    corners: PieceCorners | null = bothEnds
+  ): Shape3D => {
     const necked = relieveTabSeats(
       piece,
       length,
@@ -314,7 +322,8 @@ export function buildUniqueDividerPieces(
       tabDepth,
       lock,
       seatFit,
-      seat?.lockLift ?? 0
+      seat?.lockLift ?? 0,
+      corners
     );
     return cutLidKeepoutRelief(necked, length, dividerHeight, thickness, keepout);
   };
@@ -417,7 +426,8 @@ export function buildUniqueDividerPieces(
               tabEngagement: Math.min(tabDepth, tabEngagement(grooveDepth, clearance)),
               corners: wallEnd,
             }),
-            lengths.edge
+            lengths.edge,
+            wallEnd
           ),
           `${axisLabel(shortAxis)}-compartment-edge`
         );
@@ -481,7 +491,8 @@ export function buildUniqueDividerPieces(
             },
             seg.exposed
           ),
-          seg.length
+          seg.length,
+          corners
         );
         const label = seg.labelSuffix ? `${axisLabel(axis)}-${seg.labelSuffix}` : axisLabel(axis);
         addPiece(piece, label);
@@ -604,7 +615,8 @@ export function buildAuthoredDividerPieces(
       tabDepth,
       lock,
       seatFit,
-      seat?.lockLift ?? 0
+      seat?.lockLift ?? 0,
+      corners
     );
     // Give up the lid's seating band (end-only under a capping lid, full-span
     // under a sliding plate).

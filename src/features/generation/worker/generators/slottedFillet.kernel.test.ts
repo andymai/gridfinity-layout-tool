@@ -277,6 +277,84 @@ describe('a removable piece seats over the interior fillet', () => {
   }
 });
 
+describe('a short piece over a lifted throat', () => {
+  it('relieves its neck when its top reaches into the throat band', async () => {
+    const { buildUniqueDividerPieces } = await import('./dividerBuilder');
+    const { getBounds } = await import('brepjs');
+    const params = slottedFillet({
+      interiorFilletMm: 4,
+      dividerPieces: { ...DEFAULT_BIN_PARAMS.dividerPieces, height: 6 },
+    });
+    const { bin, dim } = await buildBody(params);
+    const pieces = buildUniqueDividerPieces(
+      params,
+      dim.innerW,
+      dim.innerD,
+      dim.wallHeight,
+      dim.hasLip
+    );
+    try {
+      const piece = pieces[0].shape;
+      const b = getBounds(piece);
+      const { crossY } = firstSlot(params, dim);
+      const seatZ = dim.floorThickness - dim.dividerGrooveDepth;
+      const seated = await seatX(
+        piece,
+        b.yMax - b.yMin,
+        params.dividerPieces.thickness,
+        crossY,
+        seatZ
+      );
+      try {
+        expect(await overlap(bin, seated)).toBeLessThan(0.01);
+      } finally {
+        seated.delete();
+      }
+    } finally {
+      bin.delete();
+      for (const p of pieces) p.shape.delete();
+    }
+  }, 120_000);
+});
+
+describe('the piece fit over a rounded corner', () => {
+  it('thins the curved seat as well as the straight ones', async () => {
+    const { buildUniqueDividerPieces } = await import('./dividerBuilder');
+    const { box, getBounds, intersect, unwrap } = await import('brepjs');
+    const pieceFit = 0.15;
+    const params = slottedFillet({
+      interiorFilletMm: 6,
+      dividerPieces: { ...DEFAULT_BIN_PARAMS.dividerPieces, pieceFit },
+    });
+    const { bin, dim, seat } = await buildBody(params);
+    bin.delete();
+    const pieces = buildUniqueDividerPieces(
+      params,
+      dim.innerW,
+      dim.innerD,
+      dim.wallHeight,
+      dim.hasLip
+    );
+    try {
+      const piece = pieces[0].shape;
+      const b = getBounds(piece);
+      const r = seat.cornerRadius;
+      // Inside the rounded corner, past the straight end band and above the groove band.
+      const probe = box(0.4, 0.4, 10, { at: [b.xMax - r / 2, b.yMin + r / 2, 0] });
+      const hit = unwrap(intersect(piece as ValidSolid, probe));
+      try {
+        const thickness = params.dividerPieces.thickness;
+        expect(getBounds(hit).zMax).toBeCloseTo(thickness - 2 * pieceFit, 3);
+      } finally {
+        hit.delete();
+        probe.delete();
+      }
+    } finally {
+      for (const p of pieces) p.shape.delete();
+    }
+  }, 120_000);
+});
+
 /**
  * Stand a flat piece up along Y: its length runs along the depth, its
  * thickness along X, centred on the line at `crossX`.
