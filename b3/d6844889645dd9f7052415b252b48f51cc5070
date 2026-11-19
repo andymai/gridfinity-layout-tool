@@ -1,0 +1,35 @@
+src/features/design-linking/hooks/useBinResizedListener.test.ts
+  s_144305aaade9d6::t_f7da3bc8f9955c 369-457
+  s_144305aaade9d6::t_ad9b89e038a33c 60,118,182,260,346,472
+src/shared/hooks/interactions/useResizeInteraction.ts
+  s_144305aaade9d6::t_dcb0c7e7e92478 316-320
+src/features/design-linking/hooks/useBinResizedListener.ts
+  s_144305aaade9d6::t_578b94e924b9dd 34,70,77-113,119,123-124
+  s_144305aaade9d6::t_c90b478dd1329b 125
+src/features/bin-inspector/hooks/useBinInspector.test.ts
+  s_144305aaade9d6::t_ad9b89e038a33c 434,496,518,713
+src/features/bin-inspector/hooks/binInspectorTypes.ts
+  s_144305aaade9d6::t_dcb0c7e7e92478 96
+src/shared/events/syncEventBus.ts
+  s_144305aaade9d6::t_dcb0c7e7e92478 34-35
+src/features/design-linking/hooks/importedFootprint.ts
+  s_144305aaade9d6::t_57e72c93972852 5,20-24,30-31,35-37,45-63,69-70,81,85
+src/features/bin-designer/index.ts
+  s_144305aaade9d6::t_dcb0c7e7e92478 29-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b3d6844889645dd9f7052415b252b48f51cc5070",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
