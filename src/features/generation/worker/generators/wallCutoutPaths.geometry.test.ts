@@ -260,6 +260,40 @@ describe('wall cutout path beside a shifted divider', () => {
   }, 120_000);
 });
 
+describe('wall cutout path ending on a divider before a raised floor', () => {
+  beforeAll(async () => {
+    await initBrepjs();
+  }, 180_000);
+
+  it('leaves the raised slab past the junction whole', () => {
+    // The column divider 0|1 ends on the row divider at y = 0, which spans
+    // y = +-0.6. Compartment 2, the back row, is raised; its slab starts at
+    // y = 0.4, inside that divider.
+    const defaults = buildParams({});
+    const mesh = gen({ front: cut(true, { depth: 90 }) }, true, {
+      depth: 3,
+      compartments: {
+        ...defaults.compartments,
+        cols: 2,
+        rows: 2,
+        cells: [0, 1, 2, 2],
+        thickness: 1.2,
+        floorRaises: [0, 0, 12],
+      },
+    });
+    assertStructurallyValid(mesh, 'junction before a raised floor');
+    assertWatertight(mesh, 'junction before a raised floor');
+    const outerD = 3 * GRID_SIZE - TOLERANCE;
+    const floor = topAt(mesh, N, -outerD / 2 + WALL / 2);
+    const raised = topAt(mesh, 20 + N, 30 + N);
+    expect(raised - floor).toBeGreaterThan(5);
+    // The lowered column divider, then the row divider and the slab past it.
+    expect(topAt(mesh, N, -20 + N)).toBeCloseTo(floor, 1);
+    expect(topAt(mesh, N, 0.3)).toBeGreaterThanOrEqual(raised - 0.05);
+    expect(topAt(mesh, N, 0.7)).toBeCloseTo(raised, 1);
+  }, 120_000);
+});
+
 describe('wall cutout path with a fillet wider than its compartments', () => {
   beforeAll(async () => {
     await initBrepjs();

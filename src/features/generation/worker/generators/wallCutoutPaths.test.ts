@@ -249,6 +249,36 @@ describe('planDividerPathCuts', () => {
     );
   });
 
+  it('stops a lowered run short of a raised compartment past its junction end', () => {
+    // The column divider 0|1 ends on the row divider at y = 0. Compartment 2,
+    // the whole back row, is raised; its slab reaches into that divider.
+    const at = (floorRaises?: number[]): DividerPathCut[] => {
+      const params = bin(
+        { front: cut(true, { depth: 100 }) },
+        {
+          compartments: {
+            ...DEFAULT_BIN_PARAMS.compartments,
+            cols: 2,
+            rows: 2,
+            cells: [0, 1, 2, 2],
+            thickness: 1.2,
+            floorRaises,
+          },
+        }
+      );
+      return cutsAt(planDividerPathCuts(params, FRAME), 'front', 0, -INNER_D / 4);
+    };
+    const reachY = (c: DividerPathCut): number => c.segment.y + c.uMax;
+    const [plain] = at();
+    expect(reachY(plain)).toBeGreaterThan(0.6);
+    const [raised] = at([0, 0, 12]);
+    expect(raised.kind).toBe('lowered');
+    // Past the row divider's near face, short of its centre line.
+    expect(reachY(raised)).toBeGreaterThan(-0.6);
+    expect(reachY(raised)).toBeLessThan(0);
+    expect(raised.loweredTopZ).toBeCloseTo(plain.loweredTopZ ?? NaN, 6);
+  });
+
   it('opens a window down to the path floor where no raised floor stands beside it', () => {
     // A 25% opening crosses the row divider in the middle column only. The
     // raised compartment is the front-left one, outside that span.

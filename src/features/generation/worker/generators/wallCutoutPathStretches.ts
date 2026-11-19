@@ -166,8 +166,14 @@ export function runStretches(
 
   if (cells.length === 0) return [];
   const half = seg.wallLen / 2;
-  const uMin = -half - (wallAtMin ? 0 : cells[0].across);
-  const uMax = half + (wallAtMax ? 0 : cells[cells.length - 1].across);
+  const past = floorsPastEnds(sizing, seg, raiseOf);
+  // A junction end reaches across the divider it meets, unless the floor past
+  // that divider stands higher: then it stops inside the divider, as a cut
+  // stops at a step in the floor beside it.
+  const reachPast = (onWall: boolean, cell: (typeof cells)[number], floorZ: number): number =>
+    onWall ? 0 : floorZ > cell.floorZ ? -FLOOR_STEP_OFFSET_MM : cell.across;
+  const uMin = -half - reachPast(wallAtMin, cells[0], sign > 0 ? past.lo : past.hi);
+  const uMax = half + reachPast(wallAtMax, cells[cells.length - 1], sign > 0 ? past.hi : past.lo);
 
   const merged = [cells[0]];
   for (const cell of cells.slice(1)) {
@@ -190,6 +196,33 @@ export function runStretches(
     vMin: cell.vMin,
     vMax: cell.vMax,
   }));
+}
+
+/**
+ * The floor of the compartments past each end of a straight run, toward the
+ * lower world coordinate (`lo`) and the higher (`hi`). An end on a wall has no
+ * compartment past it and reads the bare floor.
+ */
+function floorsPastEnds(
+  sizing: CutSizing,
+  seg: InteriorDividerSegment,
+  raiseOf: (id: number | undefined) => number
+): { lo: number; hi: number } {
+  const { cols, rows, cells } = sizing.params.compartments;
+  const { between, boundary, start, end } = seg.grid;
+  const at = (col: number, row: number): number | undefined =>
+    col >= 0 && col < cols && row >= 0 && row < rows ? cells[row * cols + col] : undefined;
+  const floor = (a: number | undefined, b: number | undefined): number =>
+    sizing.binFloorZ + Math.max(raiseOf(a), raiseOf(b)) + COPLANAR_OVERLAP;
+  return between === 'columns'
+    ? {
+        lo: floor(at(boundary - 1, start - 1), at(boundary, start - 1)),
+        hi: floor(at(boundary - 1, end), at(boundary, end)),
+      }
+    : {
+        lo: floor(at(start - 1, boundary - 1), at(start - 1, boundary)),
+        hi: floor(at(end, boundary - 1), at(end, boundary)),
+      };
 }
 
 /**
