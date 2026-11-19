@@ -41,6 +41,7 @@ export function ActiveLayerPanel() {
     fillGaps,
     confirmClear,
     fillWithSize,
+    slantedRowOn,
   } = useLayerFillActions();
   const hasBins = layerBins.length > 0;
 
@@ -152,16 +153,25 @@ export function ActiveLayerPanel() {
 
         {/* Row 2: Fill — shows "Fill with NxN" when size selected, "Fill gaps" otherwise */}
         {paintSize ? (
-          <Button
-            variant="primary"
-            fullWidth
-            onClick={handleFill}
-            className="text-sm h-8"
-            title={t('layers.fillTitle', { width: paintSize.width, depth: paintSize.depth })}
-          >
-            {t('layers.fillWith')}
-            {paintSize.width}×{paintSize.depth}
-          </Button>
+          <div>
+            <Button
+              variant="primary"
+              fullWidth
+              onClick={handleFill}
+              disabled={slantedRowOn}
+              className="text-sm h-8"
+              title={t('layers.fillTitle', { width: paintSize.width, depth: paintSize.depth })}
+            >
+              {t('layers.fillWith')}
+              {paintSize.width}×{paintSize.depth}
+            </Button>
+            {/* Visible text, not a title: a disabled Button takes no pointer events. */}
+            {slantedRowOn && (
+              <p className="mt-1 px-1 text-micro leading-snug text-content-tertiary">
+                {t('layers.fillWithSlantedRow')}
+              </p>
+            )}
+          </div>
         ) : (
           <Button
             variant="secondary"
