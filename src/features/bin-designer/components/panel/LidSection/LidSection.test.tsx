@@ -371,6 +371,30 @@ describe('LidSection', () => {
     });
   });
 
+  describe('magnet diameters between the 0.1mm steps', () => {
+    it('names a 6.45mm retention magnet with both decimals', () => {
+      resetStore({
+        lid: {
+          ...DEFAULT_BIN_PARAMS.lid,
+          enabled: true,
+          attachment: 'magnetic',
+          retentionMagnet: { ...DEFAULT_BIN_PARAMS.lid.retentionMagnet, diameter: 6.45 },
+        },
+      });
+      render(<LidSection />);
+      expect(screen.getByText(/Press a ⌀6\.45 × 2\.0 mm magnet/)).toBeInTheDocument();
+    });
+
+    it('names a 6.45mm bin magnet in the stack pocket spec', () => {
+      resetStore({
+        base: { ...DEFAULT_BIN_PARAMS.base, magnetDiameter: 6.45 },
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true, magnetHoles: true },
+      });
+      render(<LidSection />);
+      expect(screen.getByText(/Pocket: ⌀6\.45mm × 2\.0mm deep/)).toBeInTheDocument();
+    });
+  });
+
   describe('top surface picker', () => {
     it('selecting Stackable turns on stackableTop', () => {
       resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });

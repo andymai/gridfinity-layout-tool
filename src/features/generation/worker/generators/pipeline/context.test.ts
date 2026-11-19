@@ -180,6 +180,17 @@ describe('createInitialContext', () => {
     expect(ctxDefault.dimensions.shellKey).not.toBe(ctxCustom.dimensions.shellKey);
   });
 
+  it('keys a 6.45mm magnet apart from a 6.4mm one', () => {
+    const key = (magnetDiameter: number): string =>
+      createInitialContext(
+        createTestParams({
+          base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false, style: 'magnet', magnetDiameter },
+        })
+      ).dimensions.shellKey;
+    expect(key(6.45)).not.toBe(key(6.4));
+    expect(key(6.45)).not.toBe(key(6.5));
+  });
+
   // The notches are cut into the lip before it is fused, so they are part of
   // the shell: sharing a key with the plain lip would reuse it forever.
   it('keys a notched lip apart from a plain one, and a blocked request with it', () => {

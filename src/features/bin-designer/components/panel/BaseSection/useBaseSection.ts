@@ -40,7 +40,7 @@ import {
   LID_MAGNET_EDGE_COUNT_MIN,
   LID_MAGNET_EDGE_COUNT_MAX,
   LID_MAGNET_EDGE_COUNT_STEP,
-  LID_MAGNET_DIMENSION_STEP_MM,
+  LID_MAGNET_DEPTH_STEP_MM,
 } from '@/features/bin-designer/types';
 import { assessFloorPatternFit } from '@/features/bin-designer/utils/floorPatternFit';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
@@ -55,6 +55,7 @@ import { useBodyTypeSwitch } from './useBodyTypeSwitch';
 import { finalizeBaseParams } from './finalizeBaseParams';
 import { useHoleOptions } from './useHoleOptions';
 import { resolveSlant } from '@/shared/utils/slantPlan';
+import { MAGNET_DIAMETER_STEP_MM, snapMagnetDiameter } from '@/shared/utils/magnetDiameter';
 
 /**
  * Strip the detachable-feet fields entirely.
@@ -487,8 +488,9 @@ export function useBaseSection() {
 
   const setMagnetDiameter = useCallback(
     (diameter: number) => {
-      if (nestingBase) setNestingMagnet('diameter', diameter);
-      else updateBase({ magnetDiameter: diameter });
+      const snapped = snapMagnetDiameter(diameter);
+      if (nestingBase) setNestingMagnet('diameter', snapped);
+      else updateBase({ magnetDiameter: snapped });
     },
     [nestingBase, setNestingMagnet, updateBase]
   );
@@ -560,11 +562,9 @@ export function useBaseSection() {
       magnetDepthMax: nestingBase
         ? LID_MAGNET_DEPTH_MAX_MM
         : DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT,
-      magnetDiameterStep: nestingBase
-        ? LID_MAGNET_DIMENSION_STEP_MM
-        : DESIGNER_CONSTRAINTS.MAGNET_DIAMETER_STEP,
+      magnetDiameterStep: MAGNET_DIAMETER_STEP_MM,
       magnetDepthStep: nestingBase
-        ? LID_MAGNET_DIMENSION_STEP_MM
+        ? LID_MAGNET_DEPTH_STEP_MM
         : DESIGNER_CONSTRAINTS.MAGNET_HEIGHT_STEP,
       magnetEdgeCount: trayBottom.retentionMagnet.edgeMagnets,
       magnetEdgeMin: LID_MAGNET_EDGE_COUNT_MIN,

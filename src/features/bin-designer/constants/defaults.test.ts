@@ -111,4 +111,12 @@ describe('DESIGNER_CONSTRAINTS magnet depth step', () => {
     };
     expectOk(validateBinParams(params));
   });
+
+  it('validateBinParams accepts a magnet diameter on the 0.05mm grid', () => {
+    const params = {
+      ...DEFAULT_BIN_PARAMS,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' as const, magnetDiameter: 6.45 },
+    };
+    expect(expectOk(validateBinParams(params)).base.magnetDiameter).toBe(6.45);
+  });
 });

@@ -59,7 +59,31 @@ describe('useBaseSection', () => {
       depth: 1,
       edgeMagnets: 3,
     });
-    expect(result.current.state.magnetDiameterStep).toBe(0.5);
+    expect(result.current.state.magnetDiameterStep).toBe(0.05);
+    expect(result.current.state.magnetDepthStep).toBe(0.5);
+  });
+
+  it('steps a standard base magnet diameter by 0.05mm and leaves the depth step', () => {
+    const { result } = renderHook(() => useBaseSection());
+    expect(result.current.state.magnetDiameterStep).toBe(0.05);
+    expect(result.current.state.magnetDepthStep).toBe(DESIGNER_CONSTRAINTS.MAGNET_HEIGHT_STEP);
+  });
+
+  it('stores a two-decimal base magnet diameter without float noise', () => {
+    const { result } = renderHook(() => useBaseSection());
+    act(() => result.current.handlers.setMagnetDiameter(6.45));
+    expect(useDesignerStore.getState().params.base.magnetDiameter).toBe(6.45);
+    act(() => result.current.handlers.setMagnetDiameter(6.1 + 0.05));
+    expect(useDesignerStore.getState().params.base.magnetDiameter).toBe(6.15);
+  });
+
+  it('stores a two-decimal Nesting magnet diameter on the lid and the tray bottom', () => {
+    const { result } = renderHook(() => useBaseSection());
+    act(() => result.current.handlers.setBodyType('nesting'));
+    act(() => result.current.handlers.setMagnetDiameter(6.1 + 0.05));
+    const params = useDesignerStore.getState().params;
+    expect(params.lid.retentionMagnet.diameter).toBe(6.15);
+    expect(params.base.trayBottom?.retentionMagnet.diameter).toBe(6.15);
   });
 
   it('derives hasMagnet and hasScrew from base style', () => {

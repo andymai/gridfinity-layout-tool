@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { LidAdvancedFields } from './LidAdvancedFields';
 import { useLidSection } from './useLidSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -72,5 +72,82 @@ describe('LidAdvancedFields', () => {
     render(<Harness />);
     fireEvent.click(screen.getByRole('button', { name: /fine tuning/i }));
     expect(screen.getByLabelText('Retention magnet diameter in millimeters')).toBeInTheDocument();
+  });
+
+  describe('retention magnet diameter', () => {
+    const magnet = (diameter: number) => ({
+      ...DEFAULT_BIN_PARAMS.lid.retentionMagnet,
+      diameter,
+    });
+
+    afterEach(() => {
+      vi.clearAllTimers();
+      vi.useRealTimers();
+    });
+
+    function openMagnetFields(): void {
+      render(<Harness />);
+      fireEvent.click(screen.getByRole('button', { name: /fine tuning/i }));
+    }
+
+    it('keeps a typed 6.45mm and shows it with both decimals', () => {
+      seed({ attachment: 'magnetic' });
+      openMagnetFields();
+      const field = screen.getByLabelText('Retention magnet diameter in millimeters');
+      fireEvent.change(field, { target: { value: '6.45' } });
+      fireEvent.blur(field);
+      expect(useDesignerStore.getState().params.lid.retentionMagnet.diameter).toBe(6.45);
+      expect(field).toHaveValue(6.45);
+    });
+
+    it('snaps a typed diameter between the 0.05mm steps, as the slider controls do', () => {
+      seed({ attachment: 'magnetic' });
+      openMagnetFields();
+      const field = screen.getByLabelText('Retention magnet diameter in millimeters');
+      fireEvent.change(field, { target: { value: '6.43' } });
+      fireEvent.blur(field);
+      expect(useDesignerStore.getState().params.lid.retentionMagnet.diameter).toBe(6.45);
+    });
+
+    it('shows the snapped diameter when it equals the stored one', () => {
+      seed({ attachment: 'magnetic', retentionMagnet: magnet(6.45) });
+      openMagnetFields();
+      const field = screen.getByLabelText('Retention magnet diameter in millimeters');
+      fireEvent.change(field, { target: { value: '6.43' } });
+      fireEvent.blur(field);
+      expect(useDesignerStore.getState().params.lid.retentionMagnet.diameter).toBe(6.45);
+      expect(field).toHaveValue(6.45);
+    });
+
+    it('steps the diameter by 0.05mm without float noise', () => {
+      vi.useFakeTimers();
+      seed({ attachment: 'magnetic', retentionMagnet: magnet(6.1) });
+      openMagnetFields();
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Increase Retention magnet diameter in millimeters' })
+      );
+      act(() => {
+        vi.runOnlyPendingTimers();
+      });
+      expect(useDesignerStore.getState().params.lid.retentionMagnet.diameter).toBe(6.15);
+    });
+
+    it('keeps the 0.5mm step on the depth', () => {
+      vi.useFakeTimers();
+      seed({ attachment: 'magnetic' });
+      openMagnetFields();
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Increase Retention magnet depth in millimeters' })
+      );
+      act(() => {
+        vi.runOnlyPendingTimers();
+      });
+      expect(useDesignerStore.getState().params.lid.retentionMagnet.depth).toBe(
+        DEFAULT_BIN_PARAMS.lid.retentionMagnet.depth + 0.5
+      );
+      expect(useDesignerStore.getState().params.lid.retentionMagnet.diameter).toBe(
+        DEFAULT_BIN_PARAMS.lid.retentionMagnet.diameter
+      );
+    });
   });
 });

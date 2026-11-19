@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { mm } from '@gridfinity/branded-types';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { slabPocketsCacheKey } from './baseplateCacheKeys';
 
@@ -31,5 +32,21 @@ describe('slabPocketsCacheKey — pocket mask vs outline (issue #2528)', () => {
     // Outlines that pocket the same cells hash to the same mask and share the
     // slab entry by design — the outline intersect runs post-cache.
     expect(slabPocketsCacheKey(base(), true, 'abc123')).toBe(maskAKey);
+  });
+});
+
+describe('slabPocketsCacheKey magnet diameter under screws', () => {
+  it('keys magnet diameters 0.05mm apart separately while screws are on', () => {
+    const key = (magnetDiameter: number) =>
+      slabPocketsCacheKey(
+        base({
+          magnetHoles: true,
+          magnetDiameter,
+          screwHoles: { enabled: true, diameter: mm(3.4), headStyle: 'countersink' },
+        }),
+        true
+      );
+    expect(key(6.45)).not.toBe(key(6.4));
+    expect(key(6.45)).not.toBe(key(6.5));
   });
 });

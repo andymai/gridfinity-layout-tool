@@ -653,6 +653,16 @@ describe('validateDesignerShare', () => {
       }
     });
 
+    it('keeps a two-decimal magnet diameter as sent', () => {
+      const payload = validPayload();
+      payload.params.base.magnetDiameter = 6.45;
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(true);
+      if (result.valid) {
+        expect(result.payload.params.base).toMatchObject({ magnetDiameter: 6.45 });
+      }
+    });
+
     it('rejects non-boolean stackingLip', () => {
       const payload = validPayload();
       (payload.params.base as Record<string, unknown>).stackingLip = 'yes';
@@ -2427,6 +2437,17 @@ describe('validateDesignerShare', () => {
       });
     });
 
+    it('keeps a two-decimal retention magnet diameter as sent', () => {
+      const res = validateDesignerShare(
+        withLid({ retentionMagnet: { diameter: 6.45, depth: 2, edgeMagnets: 0 } }),
+        1000
+      );
+      expect(res.valid).toBe(true);
+      if (res.valid) {
+        expect(res.payload.params.lid).toMatchObject({ retentionMagnet: { diameter: 6.45 } });
+      }
+    });
+
     it('rejects an out-of-range retention magnet diameter', () => {
       const res = validateDesignerShare(
         withLid({ retentionMagnet: { diameter: 999, depth: 2 } }),
@@ -2517,6 +2538,16 @@ describe('base.trayBottom (#3036)', () => {
 
   it('accepts a well-formed tray bottom', () => {
     expect(withTray(tray()).valid).toBe(true);
+  });
+
+  it('keeps a two-decimal tray magnet diameter as sent', () => {
+    const res = withTray(tray({ retentionMagnet: { diameter: 6.45, depth: 2, edgeMagnets: 0 } }));
+    expect(res.valid).toBe(true);
+    if (res.valid) {
+      expect(res.payload.params.base).toMatchObject({
+        trayBottom: { retentionMagnet: { diameter: 6.45 } },
+      });
+    }
   });
 
   it('preserves the optional Nesting floor flag and rejects non-booleans', () => {

@@ -862,6 +862,17 @@ describe('migrateBaseplateParams', () => {
     ).toEqual(full);
   });
 
+  it('keeps two-decimal magnet diameters through a reload', () => {
+    const migrated = migrateBaseplateParams({
+      ...currentShapeBase,
+      magnetDiameter: 6.45,
+      mountMagnets: { enabled: true, diameter: 6.45, depth: 2 },
+    });
+    expect(migrated.magnetDiameter).toBe(6.45);
+    expect(migrated.mountMagnets?.diameter).toBe(6.45);
+    expect(migrateBaseplateParams({ magnetDiameter: 6.45 }).magnetDiameter).toBe(6.45);
+  });
+
   it('clamps mountMagnets, fills a missing depth and drops an invalid object', () => {
     const clamped = migrateBaseplateParams({
       ...currentShapeBase,

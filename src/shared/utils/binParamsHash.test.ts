@@ -27,6 +27,13 @@ describe('hashBinParams', () => {
     expect(hashBinParams(a)).not.toBe(hashBinParams(b));
   });
 
+  it('changes when a magnet diameter moves by 0.05mm', () => {
+    const base = (magnetDiameter: number) => params({ base: { style: 'magnet', magnetDiameter } });
+    expect(hashBinParams(base(6.45))).not.toBe(hashBinParams(base(6.4)));
+    const lid = (diameter: number) => params({ lid: { retentionMagnet: { diameter, depth: 2 } } });
+    expect(hashBinParams(lid(6.45))).not.toBe(hashBinParams(lid(6.4)));
+  });
+
   it('distinguishes arrays from objects with numeric keys', () => {
     const a = params({ cells: [0, 1] });
     const b = params({ cells: { 0: 0, 1: 1 } });
