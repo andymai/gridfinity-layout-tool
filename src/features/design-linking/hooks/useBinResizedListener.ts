@@ -83,9 +83,9 @@ export function useBinResizedListener(): void {
       if (ref?.kind === 'importedMesh') {
         inFlightDesigns.current.add(linkedDesignId);
         try {
-          const outcome = await saveImportedFootprint(linkedDesignId, newDimensions);
+          const saved = await saveImportedFootprint(linkedDesignId, newDimensions);
           addToastRef.current(
-            outcome === 'saved'
+            isOk(saved)
               ? {
                   message: tRef.current('designLinking.toast.designUpdated', { name: ref.name }),
                   type: 'success',

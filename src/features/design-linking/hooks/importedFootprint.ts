@@ -1,5 +1,7 @@
-import { isErr } from '@/core/result';
+import { err, isErr, ok, storageCorrupted } from '@/core/result';
+import type { Result, StorageError } from '@/core/result';
 import type { DesignId } from '@/core/types';
+import type { SavedDesign } from '@/features/bin-designer';
 import {
   loadDesign,
   saveDesign,
@@ -27,11 +29,13 @@ interface Footprint {
 export async function saveImportedFootprint(
   id: DesignId,
   size: Footprint
-): Promise<'saved' | 'failed'> {
+): Promise<Result<SavedDesign, StorageError>> {
   const loaded = await loadDesign(id);
-  if (isErr(loaded)) return 'failed';
+  if (isErr(loaded)) return loaded;
   const design = loaded.value;
-  if (!design.envelope || design.structure?.kind !== 'importedMesh') return 'failed';
+  if (!design.envelope || design.structure?.kind !== 'importedMesh') {
+    return err(storageCorrupted(id, ['not an imported model']));
+  }
 
   const heightUnits = Math.min(
     MAX_IMPORTED_MESH_HEIGHT_UNITS,
@@ -40,7 +44,7 @@ export async function saveImportedFootprint(
   const envelope = { ...design.envelope, width: size.width, depth: size.depth };
   const structure = { ...design.structure, heightUnits };
   const saved = await saveDesign({ ...design, envelope, structure });
-  if (isErr(saved)) return 'failed';
+  if (isErr(saved)) return saved;
 
   upsertRegistryEntry({
     id: saved.value.id,
@@ -66,5 +70,5 @@ export async function saveImportedFootprint(
     designId: id,
     dimensions: { width: size.width, depth: size.depth, height: heightUnits },
   });
-  return 'saved';
+  return ok(saved.value);
 }
