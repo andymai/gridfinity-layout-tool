@@ -20,8 +20,7 @@ import {
   interiorFilletRadiusMm,
   narrowestCavitySpansMm,
 } from '@/shared/utils/interiorFillet';
-import { slottedFilletRequestMm } from '@/shared/utils/slottedFillet';
-import { isSlottedBody } from '@/shared/utils/slotFreeWalls';
+import { withBuiltFilletRequest } from '@/shared/utils/slottedFillet';
 
 const CROSS_SECTION = 1 - Math.PI / 4;
 
@@ -35,17 +34,12 @@ export function computeInteriorFilletVolume(
   const boxWallHeight = baseWallHeight(params.base, totalH);
   // A slotted bin builds only the fillet its pieces leave room for, at the
   // floor and in the corners alike.
-  const sized = isSlottedBody(params)
-    ? {
-        ...params,
-        interiorFilletMm: slottedFilletRequestMm(params, {
-          innerW: outerW - 2 * wall,
-          innerD: outerD - 2 * wall,
-          wallHeight: boxWallHeight,
-          hasLip: params.base.stackingLip,
-        }),
-      }
-    : params;
+  const sized = withBuiltFilletRequest(params, {
+    innerW: outerW - 2 * wall,
+    innerD: outerD - 2 * wall,
+    wallHeight: boxWallHeight,
+    hasLip: params.base.stackingLip,
+  });
   const radius = interiorFilletRadiusMm(sized);
   if (radius === 0) return 0;
   const height =

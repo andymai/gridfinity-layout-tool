@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect } from 'vitest';
 import { insideWallBounds, insideWallSegments, insideWallTextBlock } from './insideWallTextPlan';
+import { insideWallObstacles } from './insideWallObstacles';
 import type { InsideWallDims } from './insideWallObstacles';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
@@ -207,5 +208,42 @@ describe('insideWallSegments', () => {
       return right.minU - left.maxU;
     };
     expect(gap(1.5) - gap(0)).toBeCloseTo((1.5 * 40) / DIMS.innerD, 6);
+  });
+});
+
+describe('a slotted bin with an interior fillet', () => {
+  it('bounds captions by the fillet it builds, not the one asked for', () => {
+    // Slots every 10 mm hold the fillet far under the 15 mm asked for, so a
+    // slot-free wall keeps nearly its whole span.
+    const slotted = params({
+      style: 'slotted',
+      interiorFilletMm: 15,
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 10 },
+        y: { enabled: false, pitch: 10 },
+      },
+    });
+    const asked = insideWallBounds({ ...slotted, style: 'standard' }, DIMS, 'back');
+    const built = insideWallBounds(slotted, DIMS, 'back');
+    expect(asked).not.toBeNull();
+    expect(built).not.toBeNull();
+    if (!asked || !built) return;
+    expect(built.maxU - built.minU).toBeGreaterThan(asked.maxU - asked.minU + 10);
+  });
+
+  it('raises the floor fillet obstacle only as high as the built fillet', () => {
+    const slotted = params({
+      style: 'slotted',
+      interiorFilletMm: 15,
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 10 },
+        y: { enabled: false, pitch: 10 },
+      },
+    });
+    const top = (p: BinParams): number =>
+      Math.max(0, ...insideWallObstacles(p, DIMS, 'back', 0.6).map((r) => r.maxZ));
+    expect(top(slotted)).toBeLessThan(top({ ...slotted, style: 'standard' }) - 3);
   });
 });

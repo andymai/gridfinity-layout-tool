@@ -154,6 +154,19 @@ export function slottedFilletRequestMm(params: SlottedFilletParams, cavity: Slot
 }
 
 /**
+ * The design with its fillet held to what a slotted bin builds, so a reader
+ * that sizes by `interiorFilletMm` (text bounds, the filament estimate) sees
+ * the built fillet. Any other bin passes through.
+ */
+export function withBuiltFilletRequest<P extends SlottedFilletParams>(
+  params: P,
+  cavity: SlottedCavity
+): P {
+  if (!isSlottedBody(params)) return params;
+  return { ...params, interiorFilletMm: slottedFilletRequestMm(params, cavity) };
+}
+
+/**
  * The floor radius the fillet plan builds for a slotted bin's one rectangular
  * cavity, or 0 when it builds none. Mirrors `finishPlan` clamp for clamp; a
  * parity test pins the two together.
@@ -236,7 +249,6 @@ export interface PieceCorners {
   readonly high: boolean;
 }
 
-/** Corners for a piece from its seat, or null when neither end is rounded. */
 export function pieceCorners(
   seat: DividerFilletSeat | null,
   low: boolean,
