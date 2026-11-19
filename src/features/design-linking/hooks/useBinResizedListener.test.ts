@@ -503,6 +503,56 @@ describe('useBinResizedListener', () => {
       unmount();
     });
 
+    it('decides the turn for each bin when two placements wait for one save', async () => {
+      let stored = {
+        id: IMPORTED,
+        name: 'Scanned tray',
+        updatedAt: 'then',
+        kind: 'importedMesh',
+        envelope: { ...envelope, width: 2, depth: 3 },
+        structure,
+      };
+      vi.mocked(loadDesign).mockImplementation(async () => ok(stored) as never);
+      let release: () => void = () => undefined;
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      let first = true;
+      vi.mocked(saveDesign).mockImplementation(async (design) => {
+        if (first) {
+          first = false;
+          await gate;
+        }
+        stored = { ...(design as unknown as typeof stored), updatedAt: 'now' };
+        return ok(stored) as never;
+      });
+      const { events, off } = savedEvents();
+      const { unmount } = renderHook(() => useBinResizedListener());
+
+      emitSyncEvent({
+        type: 'bin-resized',
+        binId: binId('bin-upright'),
+        linkedDesignId: IMPORTED,
+        newDimensions: { width: 2, depth: 3, height: 5 },
+        previousDimensions: { width: 2, depth: 3, height: 4 },
+      });
+      await vi.waitFor(() => expect(saveDesign).toHaveBeenCalledTimes(1));
+      emitSyncEvent({
+        type: 'bin-resized',
+        binId: binId('bin-turned'),
+        linkedDesignId: IMPORTED,
+        newDimensions: { width: 3, depth: 2, height: 6 },
+        previousDimensions: { width: 3, depth: 2, height: 4 },
+      });
+      release();
+
+      await vi.waitFor(() => expect(events).toHaveLength(1));
+      expect(stored.envelope).toMatchObject({ width: 2, depth: 3 });
+      expect(events[0].dimensions).toEqual({ width: 2, depth: 3, height: 6 });
+      off();
+      unmount();
+    });
+
     it('updates the footprint in the designer too, when the designer holds that model', async () => {
       useDesignerStore.setState({
         currentDesignId: IMPORTED,
