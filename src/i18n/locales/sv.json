@@ -4043,6 +4043,7 @@
   "layers.fillGapsTitle_other": "Fyll {count} tomma celler med de största facken som får plats",
   "layers.fillTitle": "Fyll tomt utrymme med {width}×{depth}-fack",
   "layers.fillWith": "Fyll med ",
+  "layers.fillWithSlantedRow": "Fyll placerar raka fack. Dra på rutnätet för att måla sneda rader.",
   "layers.heightTooltip": "Höjd för nya fack som placeras på detta lager",
   "layers.heightTotal": "{used}/{total}u",
   "layers.binCount_one": "{count} fack",

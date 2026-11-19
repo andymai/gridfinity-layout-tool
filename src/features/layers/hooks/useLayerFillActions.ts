@@ -37,6 +37,11 @@ export interface LayerFillActions {
   confirmClear: () => void;
   /** Fills with the given size and exits paint mode. */
   fillWithSize: (width: number, depth: number) => void;
+  /**
+   * The fill places upright bins only. Slanted rows need a drag, because a
+   * row cut by other bins loses its end support.
+   */
+  slantedRowOn: boolean;
 }
 
 export function useLayerFillActions(options?: { onAfterAction?: () => void }): LayerFillActions {
@@ -54,7 +59,12 @@ export function useLayerFillActions(options?: { onAfterAction?: () => void }): L
       setSelectedBins: state.setSelectedBins,
     }))
   );
-  const setPaintSize = useInteractionStore((state) => state.setPaintSize);
+  const { setPaintSize, slantedRowOn } = useInteractionStore(
+    useShallow((state) => ({
+      setPaintSize: state.setPaintSize,
+      slantedRowOn: state.paintSlant !== null,
+    }))
+  );
   const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
   const addToast = useToastStore((state) => state.addToast);
 
@@ -99,7 +109,7 @@ export function useLayerFillActions(options?: { onAfterAction?: () => void }): L
   };
 
   const fillWithSize = (width: number, depth: number) => {
-    if (!activeLayerId) return;
+    if (!activeLayerId || slantedRowOn) return;
     const beforeCount = layerBins.length;
     batch(() => {
       fillLayer(activeLayerId, width, depth, activeCategoryId, halfGridMode);
@@ -126,5 +136,6 @@ export function useLayerFillActions(options?: { onAfterAction?: () => void }): L
     fillGaps,
     confirmClear,
     fillWithSize,
+    slantedRowOn,
   };
 }

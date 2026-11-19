@@ -4121,6 +4121,7 @@
   "layers.fillGapsTitle_other": "Vyplnit {count} prázdných buněk co největšími biny",
   "layers.fillTitle": "Vyplnit prázdný prostor biny {width}×{depth}",
   "layers.fillWith": "Vyplnit ",
+  "layers.fillWithSlantedRow": "Vyplnění vkládá svislé biny. Šikmé řady nakresli tažením po mřížce.",
   "layers.heightTooltip": "Výška pro nové biny umístěné na této vrstvě",
   "layers.heightTotal": "{used}/{total} u",
   "layers.binCount_one": "{count} bin",

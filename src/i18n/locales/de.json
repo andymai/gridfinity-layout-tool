@@ -4043,6 +4043,7 @@
   "layers.fillGapsTitle_other": "{count} leere Zellen mit den größten passenden Bins füllen",
   "layers.fillTitle": "Leeren Bereich mit {width}×{depth} Bins füllen",
   "layers.fillWith": "Füllen mit",
+  "layers.fillWithSlantedRow": "Füllen setzt aufrechte Bins. Ziehe auf dem Raster, um schräge Reihen zu malen.",
   "layers.heightTooltip": "Höhe für neue Bins auf diesem Layer",
   "layers.heightTotal": "{used}/{total}u",
   "layers.binCount_one": "{count} Bin",

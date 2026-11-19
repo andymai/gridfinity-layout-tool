@@ -4199,6 +4199,7 @@
   "layers.fillGapsTitle_other": "Заповнити {count} порожніх клітинок найбільшими бінами, що вміщаються",
   "layers.fillTitle": "Заповнити порожній простір бінами {width}×{depth}",
   "layers.fillWith": "Заповнити ",
+  "layers.fillWithSlantedRow": "Заповнення ставить рівні біни. Скісні ряди малюй перетягуванням по сітці.",
   "layers.heightTooltip": "Висота для нових бінів на цьому шарі",
   "layers.heightTotal": "{used}/{total}u",
   "layers.binCount_one": "{count} бін",

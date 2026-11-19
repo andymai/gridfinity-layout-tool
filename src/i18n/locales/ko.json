@@ -3965,6 +3965,7 @@
   "layers.fillGapsTitle_other": "빈 셀 {count}개를 들어가는 가장 큰 수납통으로 채우기",
   "layers.fillTitle": "빈 공간을 {width}×{depth} 수납통으로 채우기",
   "layers.fillWith": "채우기: ",
+  "layers.fillWithSlantedRow": "채우기는 똑바른 수납통만 놓습니다. 경사 줄은 그리드에서 드래그해 칠하세요.",
   "layers.heightTooltip": "이 레이어에 배치되는 새 수납통의 높이",
   "layers.heightTotal": "{used}/{total}u",
   "layers.binCount_other": "수납통 {count}개",

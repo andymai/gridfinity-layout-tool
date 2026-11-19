@@ -3965,6 +3965,7 @@
   "layers.fillGapsTitle_other": "用能放下的最大收纳盒填补 {count} 个空单元",
   "layers.fillTitle": "用 {width}×{depth} 收纳盒填满空白空间",
   "layers.fillWith": "填充为 ",
+  "layers.fillWithSlantedRow": "填充只放置直立的收纳盒。要绘制斜置排，请在网格上拖动。",
   "layers.heightTooltip": "放在此层上的新收纳盒的高度",
   "layers.heightTotal": "{used}/{total}u",
   "layers.binCount_other": "{count} 个收纳盒",

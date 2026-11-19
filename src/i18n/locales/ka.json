@@ -617,6 +617,7 @@
   "layers.fillGapsTitle_other": "{count} ცარიელი უჯრედის შევსება ყველაზე დიდი ყუთებით, რომლებიც ეტევა",
   "layers.fillTitle": "ცარიელი სივრცის {width}×{depth} ყუთებით შევსება",
   "layers.fillWith": "შევსება: ",
+  "layers.fillWithSlantedRow": "შევსება მხოლოდ სწორ ყუთებს ათავსებს. დახრილი რიგებისთვის გადაათრიეთ ბადეზე.",
   "layers.maxLayersReached": "მიღწეულია ფენების მაქსიმუმი: {max}",
   "layers.reorderBlocked.exceedsHeight": "გადალაგება ყუთებს უჯრის ზედა კიდეზე მაღლა დააწყობდა",
   "layers.reorderBlocked.clearance": "გადალაგება ყუთს სხვა ყუთის თავისუფალ სივრცეში დადებდა",

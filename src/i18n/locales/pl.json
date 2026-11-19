@@ -4199,6 +4199,7 @@
   "layers.fillGapsTitle_other": "Wypełnij {count} pustych komórek największymi pasującymi binami",
   "layers.fillTitle": "Wypełnij pustą przestrzeń binami {width}×{depth}",
   "layers.fillWith": "Wypełnij ",
+  "layers.fillWithSlantedRow": "Wypełnianie wstawia proste biny. Przeciągnij po siatce, aby namalować skośne rzędy.",
   "layers.heightTooltip": "Wysokość dla nowych binów umieszczanych na tej warstwie",
   "layers.heightTotal": "{used}/{total}u",
   "layers.binCount_one": "{count} bin",
