@@ -1,0 +1,27 @@
+src/features/generation/worker/generators/wallCutoutPaths.geometry.test.ts
+  s_144305aaade9d6::t_0437c6302c73ee 192-227
+src/features/generation/worker/generators/wallCutoutPathStretches.ts
+  s_144305aaade9d6::t_7ee325a0987b6e 7,14-46,153-156,203-207,210,212,218-220
+src/features/generation/worker/generators/wallCutoutPaths.test.ts
+  s_144305aaade9d6::t_1c0920d1b48545 6-8,219-235,254-325
+src/features/generation/worker/generators/wallCutoutPaths.ts
+  s_144305aaade9d6::t_172545d7b2b270 44,335
+src/shared/utils/interiorFillet.ts
+  s_144305aaade9d6::t_12554fa8e0136e 70-72,86-87,106-111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d9ff115292addcb3ff2122fc9d429dd5f4bf8cab",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
