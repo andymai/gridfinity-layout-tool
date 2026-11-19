@@ -85,9 +85,11 @@ export function useBinResizedListener(): void {
       }
       inFlightDesigns.current.add(id);
       let saved: Awaited<ReturnType<typeof saveImportedFootprint>> | undefined;
-      // Decided once per bin and run: a kept event's previous size was never
-      // stored, so it can't be compared with the design.
+      // Each bin's turn is decided once per run, against the design as the
+      // run found it: siblings move only when the run ends, so their previous
+      // sizes still match it, and a bin's own later sizes were never stored.
       const turns = new Map<string, boolean>();
+      let designBefore: { width: number; depth: number } | undefined;
       try {
         for (let next: BinResizedEvent | undefined = event; next;) {
           pendingImported.current.delete(id);
@@ -95,9 +97,12 @@ export function useBinResizedListener(): void {
           saved = await saveImportedFootprint(
             id,
             next.newDimensions,
-            turned === undefined ? { previous: next.previousDimensions } : { turned }
+            turned === undefined ? { previous: next.previousDimensions, designBefore } : { turned }
           );
-          if (isOk(saved)) turns.set(next.binId, saved.value.turned);
+          if (isOk(saved)) {
+            turns.set(next.binId, saved.value.turned);
+            designBefore ??= saved.value.before;
+          }
           next = pendingImported.current.get(id);
         }
       } finally {

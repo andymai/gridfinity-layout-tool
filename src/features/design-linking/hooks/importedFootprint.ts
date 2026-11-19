@@ -11,9 +11,12 @@ import {
 } from '@/features/bin-designer';
 import { MAX_IMPORTED_MESH_HEIGHT_UNITS } from '@/shared/items/importedMesh/descriptor';
 
-interface Footprint {
+interface Area {
   readonly width: number;
   readonly depth: number;
+}
+
+interface Footprint extends Area {
   readonly height: number;
 }
 
@@ -22,13 +25,19 @@ const EPSILON = 1e-6;
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
 
+const isTransposed = (bin: Area, design: Area): boolean =>
+  Math.abs(design.width - design.depth) > EPSILON &&
+  Math.abs(bin.width - design.depth) < EPSILON &&
+  Math.abs(bin.depth - design.width) < EPSILON;
+
 /**
  * Whether the placement is turned a quarter: given as `previous`, the bin
- * before the resize, which is compared with the stored design; or as the
- * `turned` answer of an earlier save in the same run of resizes, whose
- * `previous` sizes were never stored.
+ * before the resize, which is compared with `designBefore` (the stored design
+ * when left out); or as the `turned` answer of an earlier save for the same
+ * bin, whose `previous` size was never stored.
  */
-export type Orientation = { readonly previous: Footprint } | { readonly turned: boolean };
+export type Orientation =
+  { readonly previous: Footprint; readonly designBefore?: Area } | { readonly turned: boolean };
 
 /**
  * Keep a layout resize of a linked imported model as the design's footprint,
@@ -42,7 +51,7 @@ export async function saveImportedFootprint(
   id: DesignId,
   size: Footprint,
   orientation: Orientation
-): Promise<Result<{ footprint: Footprint; turned: boolean }, StorageError>> {
+): Promise<Result<{ footprint: Footprint; turned: boolean; before: Area }, StorageError>> {
   const loaded = await loadDesign(id);
   if (isErr(loaded)) return loaded;
   const design = loaded.value;
@@ -53,13 +62,11 @@ export async function saveImportedFootprint(
   // The layout shows a mesh turned a quarter when the bin's footprint is the
   // design's transposed, so a turned bin's size goes back across the axes;
   // saved as placed, the model would stop turning.
-  const { width: designW, depth: designD } = design.envelope;
+  const before = { width: design.envelope.width, depth: design.envelope.depth };
   const turned =
     'turned' in orientation
       ? orientation.turned
-      : Math.abs(designW - designD) > EPSILON &&
-        Math.abs(orientation.previous.width - designD) < EPSILON &&
-        Math.abs(orientation.previous.depth - designW) < EPSILON;
+      : isTransposed(orientation.previous, orientation.designBefore ?? before);
   const { MIN_DIMENSION, MAX_DIMENSION } = DESIGNER_CONSTRAINTS;
   // Sync refuses an imported footprint outside these (api/lib/importedMeshValidation.ts).
   const width = clamp(turned ? size.depth : size.width, MIN_DIMENSION, MAX_DIMENSION);
@@ -92,5 +99,5 @@ export async function saveImportedFootprint(
     designer.updateStructure({ heightUnits });
   }
 
-  return ok({ footprint: { width, depth, height: heightUnits }, turned });
+  return ok({ footprint: { width, depth, height: heightUnits }, turned, before });
 }
