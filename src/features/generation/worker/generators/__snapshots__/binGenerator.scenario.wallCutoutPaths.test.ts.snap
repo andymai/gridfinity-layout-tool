@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`wall cutout paths > a raised floor beside a lowered divider 1`] = `5492`;
+exports[`wall cutout paths > a raised floor beside a lowered divider 1`] = `5600`;
 
 exports[`wall cutout paths > angled divider across the edge of the path 1`] = `5602`;
 

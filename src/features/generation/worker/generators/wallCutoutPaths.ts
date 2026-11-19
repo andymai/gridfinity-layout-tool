@@ -40,6 +40,12 @@ import {
   LIP_TAPER_WIDTH,
 } from './generatorConstants';
 import { interiorDividerSegments, type InteriorDividerSegment } from './compartmentDividerSegments';
+import {
+  cellsAlong,
+  runStretches,
+  type CutSizing,
+  type RunStretch,
+} from './wallCutoutPathStretches';
 import { resolveFloorRaises } from './floorRaisePlan';
 import { resolvePolygonSideGeometry, type PolygonSideGeometry } from './maskPolygonEdges';
 import { pitchFromParams } from './gridPitch';
@@ -197,8 +203,9 @@ export interface DividerPathCut {
   readonly vMin: number;
   readonly vMax: number;
   /**
-   * The run the cut may reach along, in `u`: out to a wall's face, or across
-   * the divider met at a junction.
+   * The stretch of the run the cut may reach along, in `u`: out to a wall's
+   * face, across the divider met at a junction, or to where the floor beside
+   * the run steps.
    */
   readonly runMin: number;
   readonly runMax: number;
@@ -290,38 +297,6 @@ function onWall(x: number, y: number, innerW: number, innerD: number): boolean {
   );
 }
 
-/** Compartment ids on either side of a straight divider run. */
-function compartmentsBeside(
-  params: BinParams,
-  seg: InteriorDividerSegment,
-  innerW: number,
-  innerD: number
-): number[] {
-  const { cols, rows, cells } = params.compartments;
-  const cellW = innerW / cols;
-  const cellD = innerD / rows;
-  const ids: number[] = [];
-  const along = Math.abs(Math.sin(seg.rotateZ * DEG)) > 0.5 ? 'y' : 'x';
-  if (along === 'y') {
-    const boundary = Math.round((seg.x + innerW / 2) / cellW);
-    const r0 = Math.round((seg.y - seg.segLen / 2 + innerD / 2) / cellD);
-    const r1 = Math.round((seg.y + seg.segLen / 2 + innerD / 2) / cellD);
-    for (let row = Math.max(0, r0); row < Math.min(rows, r1); row++) {
-      if (boundary > 0) ids.push(cells[row * cols + boundary - 1]);
-      if (boundary < cols) ids.push(cells[row * cols + boundary]);
-    }
-  } else {
-    const boundary = Math.round((seg.y + innerD / 2) / cellD);
-    const c0 = Math.round((seg.x - seg.segLen / 2 + innerW / 2) / cellW);
-    const c1 = Math.round((seg.x + seg.segLen / 2 + innerW / 2) / cellW);
-    for (let col = Math.max(0, c0); col < Math.min(cols, c1); col++) {
-      if (boundary > 0) ids.push(cells[(boundary - 1) * cols + col]);
-      if (boundary < rows) ids.push(cells[boundary * cols + col]);
-    }
-  }
-  return ids;
-}
-
 /** Mirror of the compartment builder's guard: too-small cells get no dividers. */
 function dividersAreBuilt(params: BinParams, innerW: number, innerD: number): boolean {
   const { cols, rows, thickness } = params.compartments;
@@ -352,13 +327,20 @@ export function planDividerPathCuts(params: BinParams, frame: CutoutFrame): Divi
 
   const thickness = params.compartments.thickness;
   const margin = DIVIDER_FACE_CLEARANCE + interiorFilletCornerMm(params) + frame.depthPadding;
-  const halfV = thickness / 2 + margin;
   const binFloorZ = resolveBinFloorMm(params);
   // Mirrors `deriveDimensions`: the interior stops the lip's small taper short.
   const interiorHeight = frame.hasLip ? frame.wallHeight - LIP_SMALL_TAPER : frame.wallHeight;
-  const raises = resolveFloorRaises(params, binFloorZ, interiorHeight);
-  const tabs = labelTabFootprints(params, innerW, innerD, interiorHeight, params.wallThickness);
-  const tabInset = params.label.inset ?? 0;
+  const sizing: CutSizing = {
+    params,
+    innerW,
+    innerD,
+    thickness,
+    binFloorZ,
+    raises: resolveFloorRaises(params, binFloorZ, interiorHeight),
+    tabs: labelTabFootprints(params, innerW, innerD, interiorHeight, params.wallThickness),
+    tabInset: params.label.inset ?? 0,
+    reachInto: () => margin,
+  };
   const profiles = outers.map((o) => pathProfile(params, o));
 
   const out: DividerPathCut[] = [];
@@ -370,79 +352,39 @@ export function planDividerPathCuts(params: BinParams, frame: CutoutFrame): Divi
     const endMax = { x: seg.x + dir.x * half, y: seg.y + dir.y * half };
     const wallAtMin = onWall(endMin.x, endMin.y, innerW, innerD);
     const wallAtMax = onWall(endMax.x, endMax.y, innerW, innerD);
-    // A junction end reaches across the divider it meets. That divider is
-    // square to the run's grid line, so an angled run needs further to
-    // clear it.
-    const square = Math.max(
-      0.3,
-      Math.abs(dir.y) >= Math.abs(dir.x) ? Math.abs(dir.y) : Math.abs(dir.x)
-    );
-    const junctionReach = halfV / square;
-    const uMin = -half - (wallAtMin ? 0 : junctionReach);
-    const uMax = half + (wallAtMax ? 0 : junctionReach);
     const straightX = Math.abs(dir.y) < 1e-9;
     const straightY = Math.abs(dir.x) < 1e-9;
     const straight = (straightX || straightY) && seg.leanDeg === 0;
 
-    let floorZ = binFloorZ;
-    if (straight) {
-      for (const id of compartmentsBeside(params, seg, innerW, innerD)) {
-        floorZ = Math.max(floorZ, binFloorZ + (raises.get(id) ?? 0));
-      }
+    if (!straight) {
+      out.push(...obliqueCuts(sizing, seg, dir, wallAtMin, wallAtMax, profiles, dividerTopZ));
+      continue;
     }
-    floorZ += COPLANAR_OVERLAP;
+
+    // `u` runs along X for a divider at 0 deg and along Y at 90 deg.
+    const runsAlongX = straightX;
+    const stretches = runStretches(sizing, seg, runsAlongX, dir, wallAtMin, wallAtMax);
+    const along = runsAlongX ? seg.x : seg.y;
+    const acrossCentre = runsAlongX ? seg.y : seg.x;
 
     for (const profile of profiles) {
-      const base = {
-        outer: profile.outer,
-        segment: seg,
-        runMin: uMin,
-        runMax: uMax,
-        wallAtMin,
-        wallAtMax,
-        floorZ,
-      };
-      if (!straight) {
-        const hit = obliqueSpan(profile, seg, dir, uMin, uMax);
-        if (!hit || profile.floorZ >= dividerTopZ - MIN_LOWERING_MM) continue;
-        out.push({
-          ...base,
-          kind: 'oblique',
-          uMin: hit.uMin,
-          uMax: hit.uMax,
-          vMin: -halfV,
-          vMax: halfV,
-          loweredTopZ: null,
-          zMin: Math.max(profile.floorZ, floorZ),
-        });
-        continue;
-      }
-      // `u` runs along X for a divider at 0 deg and along Y at 90 deg.
-      const runsAlongX = straightX;
       const crossesPath = runsAlongX === (profile.spanAxis === 'x');
-      const along = runsAlongX ? seg.x : seg.y;
-      const acrossCentre = runsAlongX ? seg.y : seg.x;
-      // `v` is +Y for a divider along X, and -X for one along Y.
-      const vSign = runsAlongX ? 1 : -1;
-      const tabReach = tabReachAcross(tabs, seg, runsAlongX, thickness, tabInset, margin);
-      const vMin = Math.min(-halfV, vSign > 0 ? tabReach.lo : -tabReach.hi);
-      const vMax = Math.max(halfV, vSign > 0 ? tabReach.hi : -tabReach.lo);
-
       if (crossesPath) {
-        const lo = Math.max(uMin, profile.centre - profile.halfReach - along);
-        const hi = Math.min(uMax, profile.centre + profile.halfReach - along);
-        if (hi - lo < 0.1) continue;
-        if (Math.max(profile.floorZ, floorZ) >= dividerTopZ - MIN_LOWERING_MM) continue;
-        out.push({
-          ...base,
-          kind: 'window',
-          uMin: lo,
-          uMax: hi,
-          vMin,
-          vMax,
-          loweredTopZ: null,
-          zMin: Math.max(profile.floorZ, floorZ),
-        });
+        for (const stretch of stretches) {
+          const lo = Math.max(stretch.uMin, profile.centre - profile.halfReach - along);
+          const hi = Math.min(stretch.uMax, profile.centre + profile.halfReach - along);
+          if (hi - lo < 0.1) continue;
+          const zMin = Math.max(profile.floorZ, stretch.floorZ);
+          if (zMin >= dividerTopZ - MIN_LOWERING_MM) continue;
+          out.push(
+            stretchCut(profile.outer, seg, stretch, 'window', {
+              uMin: lo,
+              uMax: hi,
+              zMin,
+              top: null,
+            })
+          );
+        }
         continue;
       }
 
@@ -453,36 +395,119 @@ export function planDividerPathCuts(params: BinParams, frame: CutoutFrame): Divi
       // Taken down to it, it meets the dividers crossing it level instead of
       // leaving a step too small to print and plain to see in the preview.
       const rise = rawRise < FLOOR_SNAP_MM ? 0 : rawRise;
-      const top = Math.max(profile.floorZ + rise, floorZ);
-      if (top >= dividerTopZ - MIN_LOWERING_MM) continue;
-      out.push({
-        ...base,
-        kind: 'lowered',
-        uMin,
-        uMax,
-        vMin,
-        vMax,
-        loweredTopZ: top,
-        zMin: top,
-      });
+      for (const stretch of stretches) {
+        const top = Math.max(profile.floorZ + rise, stretch.floorZ);
+        if (top >= dividerTopZ - MIN_LOWERING_MM) continue;
+        out.push(
+          stretchCut(profile.outer, seg, stretch, 'lowered', {
+            uMin: stretch.uMin,
+            uMax: stretch.uMax,
+            zMin: top,
+            top,
+          })
+        );
+      }
     }
   }
   return withoutRepeats(out);
 }
 
+function stretchCut(
+  outer: OuterCutoutTool,
+  segment: InteriorDividerSegment,
+  stretch: RunStretch,
+  kind: 'window' | 'lowered',
+  at: { uMin: number; uMax: number; zMin: number; top: number | null }
+): DividerPathCut {
+  return {
+    kind,
+    outer,
+    segment,
+    uMin: at.uMin,
+    uMax: at.uMax,
+    vMin: stretch.vMin,
+    vMax: stretch.vMax,
+    runMin: stretch.uMin,
+    runMax: stretch.uMax,
+    wallAtMin: stretch.wallAtMin,
+    wallAtMax: stretch.wallAtMax,
+    floorZ: stretch.floorZ,
+    loweredTopZ: at.top,
+    zMin: at.zMin,
+  };
+}
+
+/** Cuts in an angled or leaning divider, where each path's profile passes through it. */
+function obliqueCuts(
+  sizing: CutSizing,
+  seg: InteriorDividerSegment,
+  dir: { readonly x: number; readonly y: number },
+  wallAtMin: boolean,
+  wallAtMax: boolean,
+  profiles: readonly PathProfile[],
+  dividerTopZ: number
+): DividerPathCut[] {
+  const ids = cellsAlong(sizing.params, seg, sizing.innerW, sizing.innerD).flatMap((c) => [
+    c.below,
+    c.above,
+  ]);
+  const reach =
+    ids.length > 0 ? Math.min(...ids.map(sizing.reachInto)) : sizing.reachInto(undefined);
+  const halfV = sizing.thickness / 2 + reach;
+  // A junction end reaches across the divider it meets. That divider is
+  // square to the run's grid line, so an angled run needs further to clear it.
+  const square = Math.max(
+    0.3,
+    Math.abs(dir.y) >= Math.abs(dir.x) ? Math.abs(dir.y) : Math.abs(dir.x)
+  );
+  const half = seg.wallLen / 2;
+  const runMin = -half - (wallAtMin ? 0 : halfV / square);
+  const runMax = half + (wallAtMax ? 0 : halfV / square);
+  const floorZ = sizing.binFloorZ + COPLANAR_OVERLAP;
+  const out: DividerPathCut[] = [];
+  for (const profile of profiles) {
+    const hit = obliqueSpan(profile, seg, dir, runMin, runMax);
+    if (!hit || profile.floorZ >= dividerTopZ - MIN_LOWERING_MM) continue;
+    out.push({
+      kind: 'oblique',
+      outer: profile.outer,
+      segment: seg,
+      uMin: hit.uMin,
+      uMax: hit.uMax,
+      vMin: -halfV,
+      vMax: halfV,
+      runMin,
+      runMax,
+      wallAtMin,
+      wallAtMax,
+      floorZ,
+      loweredTopZ: null,
+      zMin: Math.max(profile.floorZ, floorZ),
+    });
+  }
+  return out;
+}
+
 /**
  * Drop cuts another one already holds: opposite walls cut alike lay the same
- * window twice, and the lower of two drops along a run covers the higher.
+ * window twice, and the lower of two drops along a stretch covers the higher.
  * Two coincident solids are the worst case for the fuse that joins them.
  */
 function withoutRepeats(cuts: readonly DividerPathCut[]): DividerPathCut[] {
-  const lowest = new Map<InteriorDividerSegment, DividerPathCut>();
+  const lowest = new Map<InteriorDividerSegment, Map<number, DividerPathCut>>();
   const windows = new Set<string>();
   const out: DividerPathCut[] = [];
   for (const cut of cuts) {
     if (cut.kind === 'lowered') {
-      const held = lowest.get(cut.segment);
-      if (!held || (cut.loweredTopZ ?? 0) < (held.loweredTopZ ?? 0)) lowest.set(cut.segment, cut);
+      let stretches = lowest.get(cut.segment);
+      if (!stretches) {
+        stretches = new Map();
+        lowest.set(cut.segment, stretches);
+      }
+      const held = stretches.get(cut.runMin);
+      if (!held || (cut.loweredTopZ ?? 0) < (held.loweredTopZ ?? 0)) {
+        stretches.set(cut.runMin, cut);
+      }
       continue;
     }
     if (cut.kind === 'window') {
@@ -491,6 +516,8 @@ function withoutRepeats(cuts: readonly DividerPathCut[]): DividerPathCut[] {
       const key = JSON.stringify([
         cut.segment.x,
         cut.segment.y,
+        cut.runMin,
+        cut.runMax,
         along,
         outer.position.rotateZ,
         outer.cutWidth,
@@ -504,7 +531,7 @@ function withoutRepeats(cuts: readonly DividerPathCut[]): DividerPathCut[] {
     }
     out.push(cut);
   }
-  return [...out, ...lowest.values()];
+  return [...out, ...[...lowest.values()].flatMap((stretches) => [...stretches.values()])];
 }
 
 /** The stretch of an angled divider the path's band crosses, in its `u`. */
@@ -530,38 +557,6 @@ function obliqueSpan(
   const from = Math.max(uMin, Math.min(a, b));
   const to = Math.min(uMax, Math.max(a, b));
   return to - from >= 0.1 ? { uMin: from, uMax: to } : null;
-}
-
-/**
- * How far either side of a straight divider its label tabs reach, in world
- * terms across the run (`lo` toward -Y or -X), with `margin` beyond the tab.
- * A tab hangs from the divider's top, so a cut that takes the divider must
- * take the tab with it or leave the tab floating.
- */
-function tabReachAcross(
-  tabs: ReturnType<typeof labelTabFootprints>,
-  seg: InteriorDividerSegment,
-  runsAlongX: boolean,
-  thickness: number,
-  inset: number,
-  margin: number
-): { lo: number; hi: number } {
-  let lo = 0;
-  let hi = 0;
-  // Tabs hang from row boundaries only, so a divider along Y carries none.
-  if (!runsAlongX) return { lo, hi };
-  const reach = thickness / 2 + inset + 0.5;
-  const x0 = seg.x - seg.segLen / 2;
-  const x1 = seg.x + seg.segLen / 2;
-  for (const tab of tabs) {
-    if (tab.xMax <= x0 || tab.xMin >= x1) continue;
-    if (Math.abs(tab.yMax - seg.y) <= reach && tab.yMin < seg.y) {
-      lo = Math.min(lo, tab.yMin - seg.y - margin);
-    } else if (Math.abs(tab.yMin - seg.y) <= reach && tab.yMax > seg.y) {
-      hi = Math.max(hi, tab.yMax - seg.y + margin);
-    }
-  }
-  return { lo, hi };
 }
 
 /** One level of the clearance a path keeps from the outer walls, in mm in from each inner face. */

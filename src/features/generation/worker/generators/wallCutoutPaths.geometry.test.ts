@@ -234,6 +234,31 @@ describe('wall cutout path on a square 3x3 grid', () => {
     expect(topAt(mesh, ...on(0.8)) - floor).toBeGreaterThan(10);
   }, 120_000);
 
+  describe('with only the front-left floor raised', () => {
+    const raisedFrontLeft = (): Partial<BinParams> => ({
+      compartments: { ...buildParams({}).compartments, ...GRID, floorRaises: [12] },
+    });
+    const frontLeftFloor = (mesh: MeshData): number => topAt(mesh, -45 + N, -SQUARE_D / 2 + 10);
+
+    it('opens a window to the path floor where neither compartment beside it is raised', () => {
+      const mesh = square(raisedFrontLeft(), cut(true, { width: 25, depth: 90 }));
+      const floor = topAt(mesh, N, -OUTER_D_SQUARE / 2 + WALL / 2);
+      expect(frontLeftFloor(mesh) - floor).toBeGreaterThan(5);
+      // The row divider in the middle column, inside a window clear of the raise.
+      expect(topAt(mesh, N, ROW1 + N)).toBeCloseTo(floor, 1);
+    }, 120_000);
+
+    it('holds a lowered divider up only beside the raised floor', () => {
+      const mesh = square(raisedFrontLeft(), cut(true, { depth: 90 }));
+      const floor = topAt(mesh, N, -OUTER_D_SQUARE / 2 + WALL / 2);
+      const raised = frontLeftFloor(mesh);
+      expect(raised - floor).toBeGreaterThan(5);
+      // The column divider beside the raised compartment, then past it.
+      expect(topAt(mesh, X1 + N, -SQUARE_D / 2 + 10)).toBeCloseTo(raised, 1);
+      expect(topAt(mesh, X1 + N, SQUARE_D / 2 - 10)).toBeCloseTo(floor, 1);
+    }, 120_000);
+  });
+
   it('takes a label tab on a divider in the path, and keeps the ones beside it', () => {
     const defaults = buildParams({});
     const label = { label: { ...defaults.label, enabled: true } };
