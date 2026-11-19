@@ -40,9 +40,13 @@ import {
   keepBottomBand,
   planPieceWindow,
   windowBottomBand,
+  windowCornerBand,
 } from '@/shared/utils/dividerPieceWindow';
+import { pieceCorners, resolveDividerFilletSeat } from '@/shared/utils/slottedFillet';
+import type { PieceCorners } from '@/shared/utils/slottedFillet';
 import { useDividerBedFit } from './useDividerBedFit';
 import { referencePieceGeometry } from './referencePieceOutline';
+import { inBinGhostGeometry, mergeBoxes, slotSegments } from './inBinGhost';
 
 const GHOST_COLOR = '#22d3ee';
 const GHOST_OPACITY = 0.3;
@@ -53,65 +57,6 @@ const GHOST_LINGER_MS = 1500;
 /** localStorage key matching PreviewCanvas — used to sync reference divider color */
 const PREVIEW_COLOR_KEY = 'gridfinity-designer-preview-color';
 const DEFAULT_COLOR = '#d4d8dc';
-
-/**
- * Split a span into the gaps left between crossing dividers, each `gapWidth`
- * wide. Returns the center and length of every positive-length gap (from the
- * span edge to the first divider, between dividers, and to the far edge).
- */
-function slotSegments(
-  positions: number[],
-  span: number,
-  gapWidth: number
-): { center: number; len: number }[] {
-  const sorted = [...positions].sort((a, b) => a - b);
-  const edges = [
-    -span / 2,
-    ...sorted.flatMap((p) => [p - gapWidth / 2, p + gapWidth / 2]),
-    span / 2,
-  ];
-  const segments: { center: number; len: number }[] = [];
-  for (let i = 0; i < edges.length; i += 2) {
-    const len = edges[i + 1] - edges[i];
-    if (len > 0) segments.push({ center: (edges[i] + edges[i + 1]) / 2, len });
-  }
-  return segments;
-}
-
-/** Merge translated boxes into one BufferGeometry, remapping vertex indices. */
-function mergeBoxes(
-  boxes: { w: number; d: number; h: number; matrix: THREE.Matrix4 }[],
-  computeNormals: boolean
-): THREE.BufferGeometry {
-  const positions: number[] = [];
-  const indices: number[] = [];
-  const vec = new THREE.Vector3();
-
-  for (const { w, d, h, matrix } of boxes) {
-    const box = new THREE.BoxGeometry(w, d, h);
-    const pos = box.getAttribute('position');
-    const index = box.getIndex();
-    if (!index) {
-      box.dispose();
-      continue;
-    }
-    const offset = positions.length / 3;
-    for (let v = 0; v < pos.count; v++) {
-      vec.set(pos.getX(v), pos.getY(v), pos.getZ(v)).applyMatrix4(matrix);
-      positions.push(vec.x, vec.y, vec.z);
-    }
-    for (let j = 0; j < index.count; j++) {
-      indices.push(index.array[j] + offset);
-    }
-    box.dispose();
-  }
-
-  const merged = new THREE.BufferGeometry();
-  merged.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  merged.setIndex(indices);
-  if (computeNormals) merged.computeVertexNormals();
-  return merged;
-}
 
 export function GhostDividerPieces() {
   const { invalidate } = useThree();
@@ -136,6 +81,7 @@ export function GhostDividerPieces() {
     fractionalEdgeY,
     magnetAnchor,
     walls,
+    interiorFilletMm,
   } = useDesignerStore(
     useShallow((s) => ({
       width: s.params.width,
@@ -157,6 +103,7 @@ export function GhostDividerPieces() {
       fractionalEdgeY: s.params.fractionalEdgeY,
       magnetAnchor: s.params.magnetAnchor,
       walls: s.params.walls,
+      interiorFilletMm: s.params.interiorFilletMm,
     }))
   );
 
@@ -193,6 +140,49 @@ export function GhostDividerPieces() {
   });
   const seatZ = dividerSeatZ(wallThickness, base.style, grooveDepth);
   const floorZ = baseFloorZ(base, heightUnitMm, lid, cellMask) + seatZ;
+  // Over an interior fillet, each end that seats in a wall slot is rounded.
+  const filletSeat = useMemo(
+    () =>
+      resolveDividerFilletSeat(
+        {
+          interiorFilletMm,
+          style,
+          base,
+          cellMask,
+          wallThickness,
+          dividerPieces,
+          slotConfig,
+          width,
+          depth,
+          gridUnitMm,
+          gridUnitMmY,
+          fractionalEdgeX,
+          fractionalEdgeY,
+          magnetAnchor,
+        },
+        { innerW, innerD, wallHeight, hasLip }
+      ),
+    [
+      interiorFilletMm,
+      style,
+      base,
+      cellMask,
+      wallThickness,
+      dividerPieces,
+      slotConfig,
+      width,
+      depth,
+      gridUnitMm,
+      gridUnitMmY,
+      fractionalEdgeX,
+      fractionalEdgeY,
+      magnetAnchor,
+      innerW,
+      innerD,
+      wallHeight,
+      hasLip,
+    ]
+  );
 
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
   const lipOverhang = hasLip ? Math.max(0, lipTaperWidth - wallThickness) : 0;
@@ -230,85 +220,20 @@ export function GhostDividerPieces() {
 
   const geometry = useMemo(() => {
     if (!shouldShow) return null;
-
-    const dividerHeight = calculateDividerPieceHeight(dividerPieces, wallHeight, hasLip, seatZ);
-    const { thickness, clearance } = dividerPieces;
-    const crossMode = resolveCrossDividerMode(slotConfig, thickness);
-    const { slotDepth } = getEffectiveSlotDimensions(wallThickness, thickness, clearance);
-    const boxZ = floorZ + dividerHeight / 2;
-    // Slot positions are relative to the cavity center; an asymmetric overhang
-    // moves that center off scene origin, which stays the nominal footprint's.
-    const at = (x: number, y: number): THREE.Matrix4 =>
-      new THREE.Matrix4().makeTranslation(x + offsetX, y + offsetY, boxZ);
-
-    const boxes: { w: number; d: number; h: number; matrix: THREE.Matrix4 }[] = [];
-
-    // In insert mode the short-axis ghosts are segmented per compartment:
-    // one box per gap between long dividers (and between wall and divider).
-    // Sub-0.5mm slivers are dropped.
-    const compartmentSegments = (
-      longPositions: number[],
-      innerDim: number
-    ): { center: number; len: number }[] =>
-      slotSegments(longPositions, innerDim, thickness).filter((s) => s.len > 0.5);
-
-    const xPositions = slotConfig.y.enabled
-      ? calculateSlotPositions(innerW, slotConfig.y.pitch, lipOverhang)
-      : [];
-    const yPositions = slotConfig.x.enabled
-      ? calculateSlotPositions(innerD, slotConfig.x.pitch, lipOverhang)
-      : [];
-    const insertActive =
-      slotConfig.x.enabled &&
-      slotConfig.y.enabled &&
-      crossMode.style === 'insert' &&
-      (crossMode.longAxis === 'y' ? xPositions : yPositions).length > 0;
-
-    // X-axis dividers: span width (X), positioned along depth (Y)
-    if (slotConfig.x.enabled) {
-      const divLength = calculateDividerLength(innerW, slotDepth, clearance);
-      const segmented = insertActive && crossMode.longAxis === 'y';
-
-      for (const yPos of yPositions) {
-        if (segmented) {
-          for (const seg of compartmentSegments(xPositions, innerW)) {
-            boxes.push({
-              w: seg.len,
-              d: thickness,
-              h: dividerHeight,
-              matrix: at(seg.center, yPos),
-            });
-          }
-        } else {
-          boxes.push({ w: divLength, d: thickness, h: dividerHeight, matrix: at(0, yPos) });
-        }
-      }
-    }
-
-    // Y-axis dividers: span depth (Y), positioned along width (X)
-    if (slotConfig.y.enabled) {
-      const divLength = calculateDividerLength(innerD, slotDepth, clearance);
-      const segmented = insertActive && crossMode.longAxis === 'x';
-
-      for (const xPos of xPositions) {
-        if (segmented) {
-          for (const seg of compartmentSegments(yPositions, innerD)) {
-            boxes.push({
-              w: thickness,
-              d: seg.len,
-              h: dividerHeight,
-              matrix: at(xPos, seg.center),
-            });
-          }
-        } else {
-          boxes.push({ w: thickness, d: divLength, h: dividerHeight, matrix: at(xPos, 0) });
-        }
-      }
-    }
-
-    if (boxes.length === 0) return null;
-
-    return mergeBoxes(boxes, false);
+    return inBinGhostGeometry({
+      slotConfig,
+      dividerPieces,
+      dividerHeight: calculateDividerPieceHeight(dividerPieces, wallHeight, hasLip, seatZ),
+      wallThickness,
+      innerW,
+      innerD,
+      offsetX,
+      offsetY,
+      floorZ,
+      lipOverhang,
+      filletSeat,
+      shape: walls.shape,
+    });
   }, [
     shouldShow,
     slotConfig,
@@ -323,6 +248,8 @@ export function GhostDividerPieces() {
     floorZ,
     seatZ,
     lipOverhang,
+    filletSeat,
+    walls.shape,
   ]);
 
   // When geometry changes (new ref), it's a fresh param update — show ghosts.
@@ -460,7 +387,8 @@ export function GhostDividerPieces() {
         length: number,
         notches: number[],
         index: number,
-        engagement: number
+        engagement: number,
+        corners: PieceCorners | null
       ): void => {
         const planned = planPieceWindow(
           walls,
@@ -479,24 +407,35 @@ export function GhostDividerPieces() {
           );
         const window =
           clear &&
-          keepBottomBand(clear, dividerHeight, windowBottomBand(dividerHeight, length, bedFit));
+          keepBottomBand(
+            clear,
+            dividerHeight,
+            windowCornerBand(
+              clear,
+              length,
+              corners,
+              windowBottomBand(dividerHeight, length, bedFit)
+            )
+          );
         pieces.push({
           key,
-          geometry: window
-            ? referencePieceGeometry(
-                length,
-                dividerHeight,
-                thickness,
-                notches.map((offset) => ({
-                  offset,
-                  width: slotWidth,
-                  depth: notchDepth,
-                  fromTop: notchFromTop,
-                })),
-                window,
-                walls.shape
-              )
-            : buildPieceGeometry(length, notches, notchFromTop),
+          geometry:
+            window || corners
+              ? referencePieceGeometry(
+                  length,
+                  dividerHeight,
+                  thickness,
+                  notches.map((offset) => ({
+                    offset,
+                    width: slotWidth,
+                    depth: notchDepth,
+                    fromTop: notchFromTop,
+                  })),
+                  window || null,
+                  walls.shape,
+                  corners
+                )
+              : buildPieceGeometry(length, notches, notchFromTop),
           position: [
             basePosition[0] + index * stackStep[0],
             basePosition[1] + index * stackStep[1],
@@ -513,11 +452,18 @@ export function GhostDividerPieces() {
         const receptacle = tabEngagement(getReceptacleDepth(thickness), clearance);
         let index = 0;
         if (lengths.interior !== null && lengths.interior > 0) {
-          push(`${axis}-interior`, lengths.interior, [], index++, receptacle);
+          push(`${axis}-interior`, lengths.interior, [], index++, receptacle, null);
         }
         if (lengths.edge !== null && lengths.edge > 0) {
           const wallTab = tabEngagement(slotDepth, clearance);
-          push(`${axis}-edge`, lengths.edge, [], index, Math.min(wallTab, receptacle));
+          push(
+            `${axis}-edge`,
+            lengths.edge,
+            [],
+            index,
+            Math.min(wallTab, receptacle),
+            pieceCorners(filletSeat, true, false)
+          );
         }
         return;
       }
@@ -525,7 +471,16 @@ export function GhostDividerPieces() {
       const length = calculateDividerLength(spanDim, slotDepth, clearance);
       const notches =
         bothAxes && !insertActive ? calculateSlotPositions(spanDim, crossPitch, lipOverhang) : [];
-      if (length > 0) push(axis, length, notches, 0, tabEngagement(slotDepth, clearance));
+      if (length > 0) {
+        push(
+          axis,
+          length,
+          notches,
+          0,
+          tabEngagement(slotDepth, clearance),
+          pieceCorners(filletSeat, true, true)
+        );
+      }
     };
 
     if (slotConfig.x.enabled) addAxisPieces('x');
@@ -549,6 +504,7 @@ export function GhostDividerPieces() {
     walls,
     grooveDepth,
     bedFit,
+    filletSeat,
   ]);
 
   const material = useMemo(() => {

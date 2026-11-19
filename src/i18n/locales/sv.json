@@ -1334,7 +1334,6 @@
   "binDesigner.interiorFillet.help": "Rundar kanterna där väggarna möter golvet, och hörnen där de möter varandra.",
   "binDesigner.interiorFillet.radius": "Radie",
   "binDesigner.interiorFillet.clamped": "Fack som är för små för den här radien rundas så långt de räcker.",
-  "binDesigner.interiorFilletUnavailableSlotted": "Inte tillgängligt för fack med slitsar: rundningen skulle fylla skiljeväggarnas slitsar",
   "binDesigner.fingerScoopUnavailableSlotted": "Inte tillgängligt för fack med slitsar eller massiva fack",
   "binDesigner.finishing.summary.units": "rutnät {grid} mm · höjd {height} mm",
   "binDesigner.fitSample.button": "Skriv ut passformstest",

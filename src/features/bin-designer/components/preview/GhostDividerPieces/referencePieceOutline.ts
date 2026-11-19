@@ -2,6 +2,7 @@ import polygonClipping, { type Pair, type Ring } from 'polygon-clipping';
 import * as THREE from 'three';
 import type { WallCutoutShape } from '@/shared/types/bin';
 import type { PieceWindow } from '@/shared/utils/dividerPieceWindow';
+import type { PieceCorners } from '@/shared/utils/slottedFillet';
 import {
   cutoutSide,
   safeCutoutCornerRadii,
@@ -11,6 +12,8 @@ import {
 import { CUT_RIM_CLEARANCE } from '@/shared/generation/generatorConstants';
 
 const ARC_STEPS = 8;
+/** A piece's rounded corner is large and seen side on, so it takes more steps. */
+const CORNER_STEPS = 16;
 /** How far a cut ring reaches past the edge it opens, so the difference is clean. */
 const PAST_EDGE = 1;
 
@@ -22,10 +25,16 @@ export interface ReferenceNotch {
   readonly fromTop: boolean;
 }
 
-function arc(centre: readonly [number, number], radius: number, from: number, to: number): Pair[] {
+function arc(
+  centre: readonly [number, number],
+  radius: number,
+  from: number,
+  to: number,
+  steps = ARC_STEPS
+): Pair[] {
   const out: Pair[] = [];
-  for (let i = 0; i <= ARC_STEPS; i++) {
-    const a = from + ((to - from) * i) / ARC_STEPS;
+  for (let i = 0; i <= steps; i++) {
+    const a = from + ((to - from) * i) / steps;
     out.push([centre[0] + radius * Math.cos(a), centre[1] + radius * Math.sin(a)]);
   }
   return out;
@@ -110,17 +119,36 @@ function rect(u0: number, v0: number, u1: number, v1: number): Ring {
 }
 
 /**
- * A reference divider piece with its notches and interior cutout window, in
- * the mesh's local space: X along the length, Y through the thickness, Z up
- * the installed height, all centred.
+ * The piece's side, counter-clockwise from its top-left corner, with each
+ * rounded bottom corner as an arc tangent to its end and to the bottom edge.
+ */
+function pieceSide(length: number, top: number, corners: PieceCorners | null): Ring {
+  const x = length / 2;
+  if (!corners) return rect(-x, -top, x, top);
+  const r = corners.radius;
+  return [
+    [-x, top],
+    ...(corners.low ? arc([-x + r, -top + r], r, Math.PI, 1.5 * Math.PI, CORNER_STEPS) : []),
+    ...(corners.low ? [] : [[-x, -top] as Pair]),
+    ...(corners.high ? arc([x - r, -top + r], r, 1.5 * Math.PI, 2 * Math.PI, CORNER_STEPS) : []),
+    ...(corners.high ? [] : [[x, -top] as Pair]),
+    [x, top],
+  ];
+}
+
+/**
+ * A reference divider piece with its notches, interior cutout window and
+ * rounded bottom corners, in the mesh's local space: X along the length, Y
+ * through the thickness, Z up the installed height, all centred.
  */
 export function referencePieceGeometry(
   length: number,
   height: number,
   thickness: number,
   notches: readonly ReferenceNotch[],
-  window: PieceWindow,
-  shape: WallCutoutShape
+  window: PieceWindow | null,
+  shape: WallCutoutShape,
+  corners: PieceCorners | null = null
 ): THREE.BufferGeometry {
   const top = height / 2;
   const cuts: Ring[] = notches.map((n) =>
@@ -128,9 +156,9 @@ export function referencePieceGeometry(
       ? rect(n.offset - n.width / 2, top - n.depth, n.offset + n.width / 2, top + PAST_EDGE)
       : rect(n.offset - n.width / 2, -top - PAST_EDGE, n.offset + n.width / 2, -top + n.depth)
   );
-  cuts.push(windowOutline(shape, window, top));
+  if (window) cuts.push(windowOutline(shape, window, top));
   const outline = polygonClipping.difference(
-    [rect(-length / 2, -top, length / 2, top)],
+    [pieceSide(length, top, corners)],
     ...cuts.map((ring) => [ring])
   );
 

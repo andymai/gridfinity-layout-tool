@@ -1,4 +1,6 @@
 import type { WallConfig } from '@/shared/types/bin';
+import { cornerRiseMm } from './slottedFillet';
+import type { PieceCorners } from './slottedFillet';
 import { dividerJointClearance, partLengthBudget, tongueBandHalf } from './dividerJoint';
 import type { DividerBedFit } from './dividerJoint';
 import {
@@ -108,6 +110,28 @@ export function keepBottomBand(
   const depth = Math.min(window.depth, height - band);
   if (depth < 0.1) return null;
   return depth === window.depth ? window : { ...window, depth };
+}
+
+/**
+ * The band a window keeps over a piece `length` long whose bottom corners are
+ * rounded: `band` above the corner's curve where the opening reaches over it,
+ * so the end of the piece stays tied to the rest.
+ */
+export function windowCornerBand(
+  window: PieceWindow,
+  length: number,
+  corners: PieceCorners | null | undefined,
+  band: number
+): number {
+  if (!corners) return band;
+  const reach = windowReach(window);
+  const fromLow = window.offset - reach + length / 2;
+  const fromHigh = length / 2 - (window.offset + reach);
+  const rise = Math.max(
+    corners.low ? cornerRiseMm(corners.radius, fromLow) : 0,
+    corners.high ? cornerRiseMm(corners.radius, fromHigh) : 0
+  );
+  return band + rise;
 }
 
 /** Room over a seam's tongue band, so the band clears the window's floor. */

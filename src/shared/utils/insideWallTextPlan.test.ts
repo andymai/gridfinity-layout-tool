@@ -98,7 +98,10 @@ describe('insideWallBounds', () => {
   });
 
   it('ignores a saved fillet radius on a body that builds no fillet', () => {
-    const p = params({ style: 'slotted', interiorFilletMm: 15 });
+    const p = params({
+      interiorFilletMm: 15,
+      base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true },
+    });
     const bounds = insideWallBounds(p, DIMS, 'back');
     expect(bounds?.maxU).toBeCloseTo(DIMS.innerW / 2 - (3.75 - 1.2), 6);
   });

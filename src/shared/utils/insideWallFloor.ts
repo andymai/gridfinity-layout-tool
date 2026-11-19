@@ -24,6 +24,7 @@ import {
   resolveCompartmentDividerHeight,
 } from '@/shared/utils/slotMath';
 import type { WallRect } from '@/shared/utils/maximalClearRects';
+import { slottedFilletApplies } from '@/shared/utils/slottedFillet';
 
 /** What the floor collector reads beyond params. */
 interface FloorDims {
@@ -81,6 +82,7 @@ function hasShiftedDivider(params: BinParams): boolean {
  */
 /** Mirrors the worker's `interiorFilletApplies`: whether any fillet is built. */
 export function interiorFilletBuilt(params: BinParams): boolean {
+  if (params.style === 'slotted') return slottedFilletApplies(params);
   return (
     interiorFilletRadiusMm(params) > 0 &&
     params.style === 'standard' &&

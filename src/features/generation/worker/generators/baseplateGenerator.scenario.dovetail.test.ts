@@ -11,7 +11,7 @@
  *
  * Fix: extend the tongue's base edge a small overlap INTO the slab so the
  * fuse has shared volume rather than a degenerate coplanar face. Mirrors
- * the SLOT_EXTENSION pattern in slotBuilder.ts.
+ * the SLOT_EXTENSION pattern in slotCutterShapes.ts.
  *
  * These tests verify the exported STL is watertight (no boundary edges,
  * every edge shared by exactly 2 triangles) for the tile configurations

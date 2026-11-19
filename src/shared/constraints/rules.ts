@@ -264,13 +264,6 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     disables: ['scoop'],
     reason: 'binDesigner.fingerScoopUnavailableSlotted',
   },
-  {
-    description: 'Slotted style disables the interior fillet (it would fill the divider slots)',
-    source: 'style.slotted',
-    when: (p) => p.style === 'slotted',
-    disables: ['interiorFillet'],
-    reason: 'binDesigner.interiorFilletUnavailableSlotted',
-  },
 
   // ── Base: spacer ─────────────────────────────────────────────────
   // A spacer is a floorless riser: the floor is punched through every cell so

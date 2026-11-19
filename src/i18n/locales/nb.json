@@ -1334,7 +1334,6 @@
   "binDesigner.interiorFillet.help": "Runder av kantene der veggene møter gulvet, og hjørnene der de møter hverandre.",
   "binDesigner.interiorFillet.radius": "Radius",
   "binDesigner.interiorFillet.clamped": "Rom som er for små for denne radiusen, rundes av så langt de rekker.",
-  "binDesigner.interiorFilletUnavailableSlotted": "Ikke tilgjengelig for sporbokser: avrundingen ville fylt skillesporene",
   "binDesigner.fingerScoopUnavailableSlotted": "Ikke tilgjengelig for spor- eller solide bokser",
   "binDesigner.finishing.summary.units": "rutenett {grid} mm · høyde {height} mm",
   "binDesigner.fitSample.button": "Skriv ut passformtest",

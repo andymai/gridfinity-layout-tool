@@ -1308,7 +1308,6 @@
   "binDesigner.interiorFillet.help": "벽이 바닥과 만나는 모서리와 벽끼리 만나는 모서리를 둥글게 만듭니다.",
   "binDesigner.interiorFillet.radius": "반지름",
   "binDesigner.interiorFillet.clamped": "이 반지름보다 작은 칸은 들어가는 만큼만 둥글게 만듭니다.",
-  "binDesigner.interiorFilletUnavailableSlotted": "슬롯형 수납통에는 사용할 수 없습니다: 필렛이 칸막이 슬롯을 메웁니다",
   "binDesigner.fingerScoopUnavailableSlotted": "슬롯형 또는 솔리드 수납통에는 사용할 수 없습니다",
   "binDesigner.finishing.summary.units": "그리드 {grid}mm · 높이 {height}mm",
   "binDesigner.fitSample.button": "맞춤 테스트 인쇄",

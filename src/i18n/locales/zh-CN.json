@@ -1308,7 +1308,6 @@
   "binDesigner.interiorFillet.help": "将墙壁与底面相接的边缘，以及墙壁彼此相接的角落倒成圆角。",
   "binDesigner.interiorFillet.radius": "半径",
   "binDesigner.interiorFillet.clamped": "对于此半径过小的隔层，会在容许范围内尽量倒圆。",
-  "binDesigner.interiorFilletUnavailableSlotted": "开槽收纳盒不可用：圆角会填满隔板插槽",
   "binDesigner.fingerScoopUnavailableSlotted": "开槽或实心收纳盒不可用",
   "binDesigner.finishing.summary.units": "网格 {grid}mm · 高度 {height}mm",
   "binDesigner.fitSample.button": "打印贴合测试",

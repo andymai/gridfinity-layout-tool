@@ -5,10 +5,12 @@ import {
   keepBottomBand,
   planPieceWindow,
   windowBottomBand,
+  windowCornerBand,
   WINDOW_BOTTOM_BAND_MM,
   WINDOW_NOTCH_BRIDGE_MM,
 } from './dividerPieceWindow';
 import { dividerJointClearance, tongueBandHalf } from './dividerJoint';
+import { cornerRiseMm } from './slottedFillet';
 
 const side = (over: Partial<WallCutout> = {}): WallCutout => ({
   enabled: false,
@@ -136,5 +138,31 @@ describe('windowBottomBand', () => {
     const joint = 2 * tongueBandHalf(dividerJointClearance(0.4)) + 0.5;
     expect(windowBottomBand(30, 290, fit)).toBeCloseTo(joint, 6);
     expect(joint).toBeGreaterThan(WINDOW_BOTTOM_BAND_MM);
+  });
+});
+
+describe('windowCornerBand', () => {
+  // A 100mm piece with 0.3mm tabs: its window spans the 99.4mm between them.
+  const full = planPieceWindow(walls({ width: 100 }), 1.2, 99.4, 0, 40);
+  const narrow = planPieceWindow(walls({ width: 40 }), 1.2, 99.4, 0, 40);
+  const corners = { radius: 3.4, low: true, high: false };
+
+  it('raises the band over a rounded corner the window reaches', () => {
+    if (!full) throw new Error('no window');
+    const band = windowCornerBand(full, 100, corners, WINDOW_BOTTOM_BAND_MM);
+    // The opening's side stands 0.3mm in from the end, over the corner's curve.
+    expect(band).toBeCloseTo(WINDOW_BOTTOM_BAND_MM + cornerRiseMm(3.4, 0.3), 6);
+    expect(band).toBeGreaterThan(WINDOW_BOTTOM_BAND_MM + 1.5);
+  });
+
+  it('leaves the band alone clear of the corner, or with no corner', () => {
+    if (!full || !narrow) throw new Error('no window');
+    expect(windowCornerBand(narrow, 100, corners, WINDOW_BOTTOM_BAND_MM)).toBe(
+      WINDOW_BOTTOM_BAND_MM
+    );
+    expect(windowCornerBand(full, 100, null, WINDOW_BOTTOM_BAND_MM)).toBe(WINDOW_BOTTOM_BAND_MM);
+    expect(windowCornerBand(full, 100, { ...corners, low: false }, WINDOW_BOTTOM_BAND_MM)).toBe(
+      WINDOW_BOTTOM_BAND_MM
+    );
   });
 });

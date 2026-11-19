@@ -1,8 +1,13 @@
 import type { BinParams } from '../types';
 import { GRIDFINITY } from '../constants/gridfinity';
 import { computeInteriorHeight } from '@/shared/utils/scoopCalculations';
-import { resolveBinFloorMm, resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
+import {
+  dividerInterior,
+  resolveBinFloorMm,
+  resolveCompartmentDividerHeight,
+} from '@/shared/utils/slotMath';
 import { INTERIOR_FILLET_HEADROOM_MM, narrowestCavitySpansMm } from '@/shared/utils/interiorFillet';
+import { slottedFilletLimitMm } from '@/shared/utils/slottedFillet';
 import { binDimensions } from './binDimensions';
 import { builtCompartmentFloorRaiseMm } from './compartmentFloorRaise';
 
@@ -28,6 +33,18 @@ export function interiorFilletFitMm(params: BinParams): number {
     const height =
       top - floor - builtCompartmentFloorRaiseMm(params, id) - INTERIOR_FILLET_HEADROOM_MM;
     fit = Math.min(fit, span / 2, height);
+  }
+  if (params.style === 'slotted') {
+    const { innerW, innerD } = dividerInterior(params);
+    fit = Math.min(
+      fit,
+      slottedFilletLimitMm(params, {
+        innerW,
+        innerD,
+        wallHeight,
+        hasLip: params.base.stackingLip,
+      })
+    );
   }
   return fit;
 }

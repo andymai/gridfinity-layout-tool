@@ -28,6 +28,14 @@ describe('planPiecePattern', () => {
     expect(plan?.bandHeight).toBeCloseTo(30 - 1.5 - 1.5, 6);
   });
 
+  it('keeps the pattern off a rounded corner, at the rounded end only', () => {
+    const plan = planPiecePattern(input({ corners: { radius: 3.4, low: true, high: false } }));
+    expect(plan?.keepOuts).toEqual([
+      { uMin: -40, uMax: -40 + 3.4 + 1.5, zMin: 0, zMax: 3.4 + 1.5 },
+    ]);
+    expect(planPiecePattern(input())?.keepOuts).toEqual([]);
+  });
+
   it('returns null when the piece is too short to hold a band', () => {
     expect(planPiecePattern(input({ height: 3 }))).toBeNull();
   });

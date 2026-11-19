@@ -1308,7 +1308,6 @@
   "binDesigner.interiorFillet.help": "壁と床が接する縁と、壁同士が接する角を丸めます。",
   "binDesigner.interiorFillet.radius": "半径",
   "binDesigner.interiorFillet.clamped": "この半径に対して小さすぎる区画は、収まる範囲で丸めます。",
-  "binDesigner.interiorFilletUnavailableSlotted": "スロット式ビンでは利用できません。フィレットが仕切り用スロットを埋めてしまいます",
   "binDesigner.fingerScoopUnavailableSlotted": "スロット式または無垢ビンでは利用できません",
   "binDesigner.finishing.summary.units": "グリッド {grid}mm・高さ {height}mm",
   "binDesigner.fitSample.button": "フィットテストを印刷",
