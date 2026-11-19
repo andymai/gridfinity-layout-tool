@@ -6,8 +6,7 @@ import { FPS } from '../../feature-tips/encode';
 import { label } from '../labels';
 import { DESKTOP, frameAround, pad, union } from '../session';
 import type { DocsSession, Rect, Shot } from '../session';
-import { openBaseplate, openDesigner, partBox, waitBaseplate } from './apps';
-import type { Params } from './apps';
+import { openBaseplate, openDesigner, partBox, saveLibraryDesign, waitBaseplate } from './apps';
 import { cellCenter, grid, gridArea, openLayouts } from './layoutEditor';
 
 const WINDOW: Rect = { x: 0, y: 0, ...DESKTOP };
@@ -497,42 +496,6 @@ const layersExploded: Shot = {
   },
 };
 
-async function saveDesign(s: DocsSession, name: string, params: Params): Promise<string> {
-  return s.page.evaluate(
-    async ([n, p]) => {
-      const { getDesignStorePort } = (await import(
-        '/src/core/storage/designStorePort.ts' as string
-      )) as {
-        getDesignStorePort(): {
-          saveDesign(input: object): Promise<{ ok: boolean; value?: { id: string } }>;
-        } | null;
-      };
-      const { DEFAULT_BIN_PARAMS } = (await import(
-        '/src/features/bin-designer/constants/defaults.ts' as string
-      )) as { DEFAULT_BIN_PARAMS: Params };
-      const isRecord = (x: unknown): x is Params =>
-        typeof x === 'object' && x !== null && !Array.isArray(x);
-      const deepMerge = (d: unknown, v: unknown): unknown => {
-        if (!isRecord(d) || !isRecord(v)) return v;
-        const out: Params = { ...d };
-        for (const [k, x] of Object.entries(v)) out[k] = deepMerge(d[k], x);
-        return out;
-      };
-      const port = getDesignStorePort();
-      if (!port) throw new Error('no design store on this page');
-      const res = await port.saveDesign({
-        name: n,
-        params: deepMerge(DEFAULT_BIN_PARAMS, p),
-        thumbnail: null,
-        exportFileNameConfig: null,
-      });
-      if (!res.ok || !res.value) throw new Error(`could not save design ${n}`);
-      return res.value.id;
-    },
-    [name, params] as const
-  );
-}
-
 /** Each bin prints its own Bin label on the shared tab of the design. */
 const LINKED_LABELS: FixtureLayout = {
   name: 'Fastener drawer',
@@ -552,7 +515,7 @@ const savedDesignsLayoutLabels: Shot = {
   kind: 'still',
   async take(s) {
     await s.open('/', grid);
-    const design = await saveDesign(s, 'Small parts bin', {
+    const design = await saveLibraryDesign(s, 'Small parts bin', {
       width: 2,
       depth: 1,
       height: 3,
@@ -1109,7 +1072,7 @@ const previewLayoutModels: Shot = {
   kind: 'still',
   async take(s) {
     await s.open('/', grid);
-    const design = await saveDesign(s, 'Small parts bin', {
+    const design = await saveLibraryDesign(s, 'Small parts bin', {
       width: 2,
       depth: 2,
       height: 3,
@@ -1201,7 +1164,7 @@ const savedDesignsSizeSync: Shot = {
   kind: 'clip',
   async take(s) {
     await s.open('/', grid);
-    const design = await saveDesign(s, 'Small parts bin', { width: 2, depth: 1, height: 3 });
+    const design = await saveLibraryDesign(s, 'Small parts bin', { width: 2, depth: 1, height: 3 });
     const file = layoutFile(LINKED_ROW) as { bins: object[] };
     await s.importLayouts(
       [{ ...file, bins: file.bins.map((b) => ({ ...b, linkedDesignId: design })) }],

@@ -183,3 +183,65 @@ export async function partBox(s: DocsSession): Promise<Rect> {
     return { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
   });
 }
+
+/**
+ * Off camera: saves a bin design to the library on the open page, its params
+ * merged into the defaults, and returns its id. The layout finds a design
+ * through the library index, so it goes in there too; without it, a linked
+ * bin waits on the thumbnail pass to index the design.
+ */
+export async function saveLibraryDesign(
+  s: DocsSession,
+  name: string,
+  params: Params
+): Promise<string> {
+  return s.page.evaluate(
+    async ([n, p]) => {
+      type Saved = { ok: boolean; value?: { id: string; name: string; updatedAt: string } };
+      const { getDesignStorePort } = (await import(
+        '/src/core/storage/designStorePort.ts' as string
+      )) as {
+        getDesignStorePort(): {
+          saveDesign(input: object): Promise<Saved>;
+          registryEdgeFields(params: unknown): Promise<object>;
+          registryPlacementFields(params: unknown): Promise<object>;
+          upsertRegistryEntry(entry: object): Promise<{ ok: boolean }>;
+        } | null;
+      };
+      const { DEFAULT_BIN_PARAMS } = (await import(
+        '/src/features/bin-designer/constants/defaults.ts' as string
+      )) as { DEFAULT_BIN_PARAMS: Params };
+      const isRecord = (x: unknown): x is Params =>
+        typeof x === 'object' && x !== null && !Array.isArray(x);
+      const deepMerge = (d: unknown, v: unknown): unknown => {
+        if (!isRecord(d) || !isRecord(v)) return v;
+        const out: Params = { ...d };
+        for (const [k, x] of Object.entries(v)) out[k] = deepMerge(d[k], x);
+        return out;
+      };
+      const port = getDesignStorePort();
+      if (!port) throw new Error('no design store on this page');
+      const params = deepMerge(DEFAULT_BIN_PARAMS, p) as Params;
+      const res = await port.saveDesign({
+        name: n,
+        params,
+        thumbnail: null,
+        exportFileNameConfig: null,
+      });
+      if (!res.ok || !res.value) throw new Error(`could not save design ${n}`);
+      const indexed = await port.upsertRegistryEntry({
+        id: res.value.id,
+        name: res.value.name,
+        width: params.width,
+        depth: params.depth,
+        height: params.height,
+        ...(await port.registryEdgeFields(params)),
+        ...(await port.registryPlacementFields(params)),
+        updatedAt: res.value.updatedAt,
+      });
+      if (!indexed.ok) throw new Error(`could not index design ${n}`);
+      return res.value.id;
+    },
+    [name, params] as const
+  );
+}

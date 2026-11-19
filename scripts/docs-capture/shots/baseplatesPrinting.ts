@@ -6,7 +6,7 @@ import { cornerCutVertices } from '../../../src/shared/utils/cornerCutOutline';
 import { FPS } from '../../feature-tips/encode';
 import { DESKTOP, frameAround, pad, union } from '../session';
 import type { DocsSession, Rect, Shot } from '../session';
-import { baseplateReady, openDesigner, partBox, waitBaseplate } from './apps';
+import { baseplateReady, openDesigner, partBox, saveLibraryDesign, waitBaseplate } from './apps';
 import type { Params } from './apps';
 import { grid, openLayouts } from './layoutEditor';
 
@@ -1247,59 +1247,6 @@ const labelMakerDialog: Shot = {
   },
 };
 
-/** The layout finds a design through the library index, so it goes in there too. */
-async function saveDesign(s: DocsSession, name: string, params: Params): Promise<string> {
-  return s.page.evaluate(
-    async ([n, p]) => {
-      type Saved = { ok: boolean; value?: { id: string; name: string; updatedAt: string } };
-      const { getDesignStorePort } = (await import(
-        '/src/core/storage/designStorePort.ts' as string
-      )) as {
-        getDesignStorePort(): {
-          saveDesign(input: object): Promise<Saved>;
-          registryEdgeFields(params: unknown): Promise<object>;
-          registryPlacementFields(params: unknown): Promise<object>;
-          upsertRegistryEntry(entry: object): Promise<{ ok: boolean }>;
-        } | null;
-      };
-      const { DEFAULT_BIN_PARAMS } = (await import(
-        '/src/features/bin-designer/constants/defaults.ts' as string
-      )) as { DEFAULT_BIN_PARAMS: Params };
-      const isRecord = (x: unknown): x is Params =>
-        typeof x === 'object' && x !== null && !Array.isArray(x);
-      const deepMerge = (d: unknown, v: unknown): unknown => {
-        if (!isRecord(d) || !isRecord(v)) return v;
-        const out: Params = { ...d };
-        for (const [k, x] of Object.entries(v)) out[k] = deepMerge(d[k], x);
-        return out;
-      };
-      const port = getDesignStorePort();
-      if (!port) throw new Error('no design store on this page');
-      const params = deepMerge(DEFAULT_BIN_PARAMS, p) as Params;
-      const res = await port.saveDesign({
-        name: n,
-        params,
-        thumbnail: null,
-        exportFileNameConfig: null,
-      });
-      if (!res.ok || !res.value) throw new Error(`could not save design ${n}`);
-      const indexed = await port.upsertRegistryEntry({
-        id: res.value.id,
-        name: res.value.name,
-        width: params.width,
-        depth: params.depth,
-        height: params.height,
-        ...(await port.registryEdgeFields(params)),
-        ...(await port.registryPlacementFields(params)),
-        updatedAt: res.value.updatedAt,
-      });
-      if (!indexed.ok) throw new Error(`could not index design ${n}`);
-      return res.value.id;
-    },
-    [name, params] as const
-  );
-}
-
 async function openLinked(
   s: DocsSession,
   layout: FixtureLayout,
@@ -1308,7 +1255,8 @@ async function openLinked(
 ): Promise<void> {
   await s.open('/', grid);
   const ids: Record<string, string> = {};
-  for (const [key, d] of Object.entries(designs)) ids[key] = await saveDesign(s, d.name, d.params);
+  for (const [key, d] of Object.entries(designs))
+    ids[key] = await saveLibraryDesign(s, d.name, d.params);
   const file = layoutFile(layout) as { bins: object[] };
   const bins = layout.bins ?? [];
   await s.importLayouts(
