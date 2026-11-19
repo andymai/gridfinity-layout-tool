@@ -532,6 +532,8 @@ export interface LapDividerSegment {
   readonly length: number;
   readonly notchOffsets: number[];
   readonly labelSuffix: string;
+  /** The part that stands in the cavity, between its seats, from the piece's centre. */
+  readonly exposed: { readonly from: number; readonly to: number };
 }
 
 /**
@@ -572,12 +574,20 @@ export function calculateLapPartialSegments(
   const leftEnd = -innerDim / 2 - wallTab;
 
   const all: LapDividerSegment[] = [];
-  const add = (length: number, notchOffsets: number[], labelSuffix: string): void => {
-    if (length >= MIN_LAP_PARTIAL_LENGTH) all.push({ length, notchOffsets, labelSuffix });
+  const add = (
+    length: number,
+    notchOffsets: number[],
+    labelSuffix: string,
+    leftTab: number,
+    rightTab: number
+  ): void => {
+    if (length < MIN_LAP_PARTIAL_LENGTH) return;
+    const exposed = { from: -length / 2 + leftTab, to: length / 2 - rightTab };
+    all.push({ length, notchOffsets, labelSuffix, exposed });
   };
 
   // 1. Full wall-to-wall piece, centered at 0.
-  add(innerDim + 2 * wallTab, sorted.slice(), '');
+  add(innerDim + 2 * wallTab, sorted.slice(), '', wallTab, wallTab);
 
   // 2. Wall-anchored edge pieces: left wall → near face of the j-th divider.
   for (let j = 1; j <= count; j++) {
@@ -586,7 +596,9 @@ export function calculateLapPartialSegments(
     add(
       rightEnd - leftEnd,
       sorted.slice(0, j - 1).map((x) => x - center),
-      `${j}u`
+      `${j}u`,
+      wallTab,
+      0
     );
   }
 
@@ -598,7 +610,9 @@ export function calculateLapPartialSegments(
     add(
       rightFace - leftFace,
       sorted.slice(1, k).map((x) => x - center),
-      `${k}u-mid`
+      `${k}u-mid`,
+      0,
+      0
     );
   }
 

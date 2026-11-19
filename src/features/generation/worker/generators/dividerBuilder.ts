@@ -37,12 +37,14 @@ import {
   tabEngagement,
 } from '@/shared/utils/slotMath';
 import type { DividerLockPlan } from '@/shared/utils/slotMath';
-import { computeAuthoredDividers } from '@/shared/utils/authoredDividerMath';
+import { authoredExposedSpan, computeAuthoredDividers } from '@/shared/utils/authoredDividerMath';
 import { deriveWallSegments } from '@/shared/utils/compartmentGeometry';
 import { labelShelfKeepoutMm } from '@/shared/utils/lidInteriorRelief';
 import { lidKeepoutRing } from '@/shared/constants/lidKeepout';
 import { getEffectiveSlotDimensions } from './slotBuilder';
 import { cutPiecePattern, resolvePiecePatternContext } from './dividerPiecePatternBuilder';
+import { pieceWindowCutter } from './dividerPieceWindowCut';
+import type { ExposedSpan } from './dividerPieceWindowCut';
 import type { PieceGeometry } from './dividerPiecePatternBuilder';
 import type { PieceObstruction } from './dividerPiecePatterns';
 import {
@@ -77,6 +79,8 @@ function planPieceSeams(
   const budget = fit ? partLengthBudget(dividerHeight, fit.printBed) : null;
   if (!fit || budget === null) return { seams: [], geometry };
   const cl = dividerJointClearance(fit.nozzleSizeMm);
+  // A window needs no place here: on a piece the bed splits, it leaves a
+  // tongue band under it (`pieceWindowCutter`).
   const obstructions = [...(geometry.notches ?? []), ...(geometry.grooves ?? [])];
   const seams = planDividerSeams(geometry.length, budget, obstructions, cl);
   if (seams.length === 0) return { seams, geometry };
@@ -420,10 +424,12 @@ export function buildUniqueDividerPieces(
   const tabDepth = tabEngagement(slotDepth, clearance);
   const columns = (positions: readonly number[], width: number): PieceObstruction[] =>
     positions.map((offset) => ({ offset, width }));
-  const pattern = (piece: Shape3D, geometry: PieceGeometry): Shape3D => {
-    const planned = planPieceSeams(geometry, dividerHeight, fit);
+  const windowed = pieceWindowCutter(params, dividerHeight, thickness, notchDepth, fit);
+  const pattern = (piece: Shape3D, geometry: PieceGeometry, exposed?: ExposedSpan): Shape3D => {
+    const { cutPiece, geometry: withWindow } = windowed(piece, geometry, exposed);
+    const planned = planPieceSeams(withWindow, dividerHeight, fit);
     pendingSeams = planned.seams;
-    return patternCtx ? cutPiecePattern(piece, patternCtx, planned.geometry) : piece;
+    return patternCtx ? cutPiecePattern(cutPiece, patternCtx, planned.geometry) : cutPiece;
   };
   // Every wall tab seats past a retention throat, so relieve every piece's tab
   // neck (inert at receptacle/free ends). Length varies per piece. The lid
@@ -573,7 +579,8 @@ export function buildUniqueDividerPieces(
               length: seg.length,
               tabEngagement: tabDepth,
               notches: columns(seg.notchOffsets, slotWidth),
-            }
+            },
+            seg.exposed
           ),
           seg.length
         );
@@ -639,6 +646,7 @@ export function buildAuthoredDividerPieces(
   const specs = computeAuthoredDividers(segments, innerW, innerD, thickness, slotDepth, clearance);
 
   const patternCtx = resolvePiecePatternContext(params, innerW, innerD, dividerHeight, thickness);
+  const windowed = pieceWindowCutter(params, dividerHeight, thickness, notchDepth, fit);
   // Authored pieces shorten their length at abutting ends rather than carrying
   // a tab there, so holding the full tab depth at both ends is conservative —
   // a little extra solid margin, never a perforated tab.
@@ -667,15 +675,17 @@ export function buildAuthoredDividerPieces(
       thickness,
       spec.fromTop
     );
-    const planned = planPieceSeams(
+    const { cutPiece, geometry } = windowed(
+      shape,
       {
         length: spec.length,
         tabEngagement: tabDepth,
         notches: spec.notchOffsets.map((offset) => ({ offset, width: slotWidth })),
       },
-      dividerHeight,
-      fit
+      authoredExposedSpan(spec, innerW, innerD)
     );
+    shape = cutPiece;
+    const planned = planPieceSeams(geometry, dividerHeight, fit);
     if (patternCtx) shape = cutPiecePattern(shape, patternCtx, planned.geometry);
     // Relieve the tab neck so a wall-anchored end's throat catches; inert at
     // abutting/T-junction ends that carry no tab.
