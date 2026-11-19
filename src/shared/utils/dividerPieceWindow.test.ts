@@ -4,9 +4,11 @@ import {
   clearOfNotches,
   keepBottomBand,
   planPieceWindow,
+  windowBottomBand,
   WINDOW_BOTTOM_BAND_MM,
   WINDOW_NOTCH_BRIDGE_MM,
 } from './dividerPieceWindow';
+import { dividerJointClearance, tongueBandHalf } from './dividerJoint';
 
 const side = (over: Partial<WallCutout> = {}): WallCutout => ({
   enabled: false,
@@ -119,5 +121,20 @@ describe('keepBottomBand', () => {
     const half = planPieceWindow(walls({}), 1.2, 100, 0, 40);
     if (!half) throw new Error('no window');
     expect(keepBottomBand(half, 40)).toBe(half);
+  });
+});
+
+describe('windowBottomBand', () => {
+  const fit = { printBed: { widthMm: 200, depthMm: 200 }, nozzleSizeMm: 0.4 };
+
+  it('keeps the plain band on a piece the export ships whole', () => {
+    expect(windowBottomBand(30, 290)).toBe(WINDOW_BOTTOM_BAND_MM);
+    expect(windowBottomBand(30, 150, fit)).toBe(WINDOW_BOTTOM_BAND_MM);
+  });
+
+  it('keeps room for a seam tongue on a piece the bed splits', () => {
+    const joint = 2 * tongueBandHalf(dividerJointClearance(0.4)) + 0.5;
+    expect(windowBottomBand(30, 290, fit)).toBeCloseTo(joint, 6);
+    expect(joint).toBeGreaterThan(WINDOW_BOTTOM_BAND_MM);
   });
 });

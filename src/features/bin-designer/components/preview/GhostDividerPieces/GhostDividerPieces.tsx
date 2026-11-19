@@ -35,7 +35,13 @@ import {
   MIN_WALL_FOR_SLOTS,
   tabEngagement,
 } from '@/shared/utils/slotMath';
-import { clearOfNotches, keepBottomBand, planPieceWindow } from '@/shared/utils/dividerPieceWindow';
+import {
+  clearOfNotches,
+  keepBottomBand,
+  planPieceWindow,
+  windowBottomBand,
+} from '@/shared/utils/dividerPieceWindow';
+import { useDividerBedFit } from './useDividerBedFit';
 import { referencePieceGeometry } from './referencePieceOutline';
 
 const GHOST_COLOR = '#22d3ee';
@@ -153,6 +159,8 @@ export function GhostDividerPieces() {
       walls: s.params.walls,
     }))
   );
+
+  const bedFit = useDividerBedFit();
 
   const { outerW, outerD, innerW, innerD, offsetX, offsetY } = dividerInterior({
     width,
@@ -469,7 +477,9 @@ export function GhostDividerPieces() {
             dividerHeight,
             notchDepth
           );
-        const window = clear && keepBottomBand(clear, dividerHeight);
+        const window =
+          clear &&
+          keepBottomBand(clear, dividerHeight, windowBottomBand(dividerHeight, length, bedFit));
         pieces.push({
           key,
           geometry: window
@@ -538,6 +548,7 @@ export function GhostDividerPieces() {
     lipOverhang,
     walls,
     grooveDepth,
+    bedFit,
   ]);
 
   const material = useMemo(() => {

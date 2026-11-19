@@ -1,4 +1,6 @@
 import type { WallConfig } from '@/shared/types/bin';
+import { dividerJointClearance, partLengthBudget, tongueBandHalf } from './dividerJoint';
+import type { DividerBedFit } from './dividerJoint';
 import {
   computeCutoutCenter,
   cornerSlackFor,
@@ -106,4 +108,20 @@ export function keepBottomBand(
   const depth = Math.min(window.depth, height - band);
   if (depth < 0.1) return null;
   return depth === window.depth ? window : { ...window, depth };
+}
+
+/** Room over a seam's tongue band, so the band clears the window's floor. */
+const JOINT_BAND_MARGIN_MM = 0.5;
+
+/**
+ * The solid band a piece `length` long keeps under its window. A piece the bed
+ * splits (`fit`, and longer than the bed allows) keeps a band a seam's tongue
+ * fits in, so a seam can go anywhere along it; any other keeps
+ * `WINDOW_BOTTOM_BAND_MM`.
+ */
+export function windowBottomBand(height: number, length: number, fit?: DividerBedFit): number {
+  const budget = fit ? partLengthBudget(height, fit.printBed) : null;
+  if (!fit || budget === null || length <= budget) return WINDOW_BOTTOM_BAND_MM;
+  const joint = 2 * tongueBandHalf(dividerJointClearance(fit.nozzleSizeMm)) + JOINT_BAND_MARGIN_MM;
+  return Math.max(WINDOW_BOTTOM_BAND_MM, joint);
 }

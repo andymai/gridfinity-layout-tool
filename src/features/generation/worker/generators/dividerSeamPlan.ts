@@ -5,24 +5,18 @@
  * does. The left part of every seam carries the tongue, protruding +X.
  */
 
+import { PUZZLE_PROTRUSION } from '@/shared/constants/connectors';
 import {
-  PUZZLE_HEAD_HALF,
-  PUZZLE_PROTRUSION,
-  TONGUE_CLEARANCE,
-  effectiveClearance,
-} from '@/shared/constants/connectors';
+  dividerJointClearance,
+  partLengthBudget,
+  tongueBandHalf,
+} from '@/shared/utils/dividerJoint';
+import type { DividerBedFit, PrintBedMm } from '@/shared/utils/dividerJoint';
+
+// The bed and band math is shared so the designer preview reads the same plan.
+export { dividerJointClearance, partLengthBudget, tongueBandHalf };
+export type { DividerBedFit, PrintBedMm };
 import type { PieceObstruction } from './dividerPiecePatterns';
-
-export interface PrintBedMm {
-  readonly widthMm: number;
-  readonly depthMm: number;
-}
-
-/** The bed a split export cuts dividers for, and the nozzle their joints suit. */
-export interface DividerBedFit {
-  readonly printBed: PrintBedMm;
-  readonly nozzleSizeMm?: number;
-}
 
 /**
  * How far a seam may move from its evenly spaced position to clear a notch or
@@ -43,15 +37,7 @@ const SEAM_SEARCH_STEP_MM = 0.5;
 /** Below this plate height a second tongue would crowd the first. */
 const TWO_TONGUE_MIN_HEIGHT_MM = 16;
 
-/** Plate kept between a groove's head and the plate's edge or a notch. */
-const JOINT_EDGE_MARGIN_MM = 1;
-
 const ROW_SEARCH_STEP_MM = 0.5;
-
-/** Groove clearance per side, grown for a wider nozzle as the baseplate's is. */
-export function dividerJointClearance(nozzleSizeMm?: number): number {
-  return effectiveClearance(TONGUE_CLEARANCE, 0, nozzleSizeMm);
-}
 
 /** The plate a joint at seam `x` needs solid: `[x - behind, x + ahead]`. */
 export interface JointSpan {
@@ -69,19 +55,6 @@ export function dividerJointSpan(clearanceMm: number): JointSpan {
     behind: DIVIDER_JOINT_MARGIN_MM,
     ahead: dividerJointReach(clearanceMm) + DIVIDER_JOINT_MARGIN_MM,
   };
-}
-
-/**
- * The longest part a flat divider of `heightMm` can be on this bed: the long
- * side while the height fits the short one, the short side while it only fits
- * the long one, and null when it fits neither way.
- */
-export function partLengthBudget(heightMm: number, bed: PrintBedMm): number | null {
-  const long = Math.max(bed.widthMm, bed.depthMm);
-  const short = Math.min(bed.widthMm, bed.depthMm);
-  if (heightMm <= short) return long;
-  if (heightMm <= long) return short;
-  return null;
 }
 
 /** Gap between the joint at `x` and the nearest obstruction; negative on overlap. */
@@ -141,11 +114,6 @@ export function planDividerSeams(
 export function seamKeepOut(seam: number, clearanceMm: number): PieceObstruction {
   const span = dividerJointSpan(clearanceMm);
   return { offset: seam + (span.ahead - span.behind) / 2, width: span.ahead + span.behind };
-}
-
-/** Half the height of the band a tongue and its groove need solid. */
-export function tongueBandHalf(clearanceMm: number): number {
-  return PUZZLE_HEAD_HALF + clearanceMm + JOINT_EDGE_MARGIN_MM;
 }
 
 /**

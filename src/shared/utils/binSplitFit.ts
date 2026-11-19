@@ -200,3 +200,16 @@ export function placedBinBedCapacity(
   }
   return params.splitToFitBed === false ? keepWholeCapacity(width, depth, capacity) : capacity;
 }
+
+/**
+ * Whether the export cuts a bin to fit the bed: it overruns the bed square-on
+ * and does not fit lying diagonally. A split cuts square-on even when the
+ * whole part would fit diagonally, since that split is the user's choice.
+ */
+export function binNeedsSplit(
+  size: { readonly width: number; readonly depth: number },
+  fit: BinBedFit
+): boolean {
+  const overruns = size.width > fit.squareOn.width || size.depth > fit.squareOn.depth;
+  return overruns && !fit.diagonal;
+}

@@ -5,22 +5,19 @@ import {
   clearOfNotches,
   keepBottomBand,
   planPieceWindow,
+  windowBottomBand,
   windowReach,
-  WINDOW_BOTTOM_BAND_MM,
 } from '@/shared/utils/dividerPieceWindow';
 import type { PieceWindow } from '@/shared/utils/dividerPieceWindow';
 import { dividerGrooveDepth } from '@/shared/utils/slotMath';
 import type { PieceGeometry } from './dividerPiecePatternBuilder';
-import { dividerJointClearance, partLengthBudget, tongueBandHalf } from './dividerSeamPlan';
-import type { DividerBedFit } from './dividerSeamPlan';
+import type { DividerBedFit } from '@/shared/utils/dividerJoint';
 import { CUT_RIM_CLEARANCE } from './generatorConstants';
 import { sketch } from './meshUtils';
 import { buildCutoutProfile } from './wallCutoutBuilder';
 
 /** Reach of the cutter past each face of the flat piece. */
 const FACE_OVERSHOOT = 1;
-/** Room over a seam's tongue band, so the band clears the window's floor. */
-const JOINT_BAND_MARGIN = 0.5;
 
 /**
  * Cut the interior wall cutout into one flat divider piece: length along X,
@@ -91,10 +88,6 @@ export function pieceWindowCutter(
   exposed?: ExposedSpan
 ) => { cutPiece: Shape3D; geometry: PieceGeometry } {
   const standing = height - dividerGrooveDepth(params);
-  const budget = fit ? partLengthBudget(height, fit.printBed) : null;
-  const jointBand = fit
-    ? 2 * tongueBandHalf(dividerJointClearance(fit.nozzleSizeMm)) + JOINT_BAND_MARGIN
-    : 0;
   return (piece, geometry, exposed) => {
     const half = geometry.length / 2;
     const { from, to } = exposed ?? {
@@ -108,8 +101,7 @@ export function pieceWindowCutter(
       (from + to) / 2,
       standing
     );
-    const splits = budget !== null && geometry.length > budget;
-    const band = splits ? Math.max(WINDOW_BOTTOM_BAND_MM, jointBand) : WINDOW_BOTTOM_BAND_MM;
+    const band = windowBottomBand(height, geometry.length, fit);
     const clear = planned && clearOfNotches(planned, geometry.notches ?? [], height, notchDepth);
     const window = clear && keepBottomBand(clear, height, band);
     if (!window) return { cutPiece: piece, geometry };
