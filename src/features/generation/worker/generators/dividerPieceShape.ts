@@ -16,7 +16,6 @@ import type { PieceCorners } from '@/shared/utils/slottedFillet';
 import type { PieceObstruction } from './dividerPiecePatterns';
 import { COPLANAR_OVERLAP } from './generatorConstants';
 
-/** The length a rounded bottom corner takes at each end that has one. */
 export function cornerColumns(
   length: number,
   corners: PieceCorners | null | undefined
