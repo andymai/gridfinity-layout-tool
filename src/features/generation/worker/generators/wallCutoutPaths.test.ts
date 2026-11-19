@@ -220,6 +220,35 @@ describe('planDividerPathCuts', () => {
     expect(rest.uMax).toBeCloseTo(INNER_D / 2, 6);
   });
 
+  it('reads the floor beside a shifted divider from its own compartments', () => {
+    // Divider 0|1 moved 22 mm right stands at x = 1.48, nearer grid line 2
+    // than its own grid line 1. Only compartment 2 is raised.
+    const params = bin(
+      { front: cut(true, { depth: 100 }) },
+      {
+        compartments: {
+          ...DEFAULT_BIN_PARAMS.compartments,
+          cols: 3,
+          rows: 1,
+          cells: [0, 1, 2],
+          floorRaises: [0, 0, 12],
+          dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 22, offsetEnd: 22 }],
+        },
+      }
+    );
+    const plain = planDividerPathCuts(
+      { ...params, compartments: { ...params.compartments, floorRaises: undefined } },
+      FRAME
+    );
+    const shifted = colX + 22;
+    const lowered = cutsAt(planDividerPathCuts(params, FRAME), 'front', shifted, 0);
+    expect(lowered).toHaveLength(1);
+    expect(lowered[0].loweredTopZ).toBeCloseTo(
+      cutAt(plain, 'front', shifted, 0)?.loweredTopZ ?? NaN,
+      6
+    );
+  });
+
   it('opens a window down to the path floor where no raised floor stands beside it', () => {
     // A 25% opening crosses the row divider in the middle column only. The
     // raised compartment is the front-left one, outside that span.

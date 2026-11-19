@@ -9,8 +9,6 @@ import type { labelTabFootprints } from '@/shared/utils/labelTabPlan';
 import type { InteriorDividerSegment } from './compartmentDividerSegments';
 import { COPLANAR_OVERLAP } from './generatorConstants';
 
-const DEG = Math.PI / 180;
-
 /**
  * Margin either side of a divider's faces, so a cut box never shares a plane
  * with them. Small, because whatever is fused to the face loses this much.
@@ -65,11 +63,9 @@ export function cellsAlong(
   const cellW = innerW / cols;
   const cellD = innerD / rows;
   const out: RunCell[] = [];
-  if (Math.abs(Math.sin(seg.rotateZ * DEG)) > 0.5) {
-    const boundary = Math.round((seg.x + innerW / 2) / cellW);
-    const r0 = Math.round((seg.y - seg.segLen / 2 + innerD / 2) / cellD);
-    const r1 = Math.round((seg.y + seg.segLen / 2 + innerD / 2) / cellD);
-    for (let row = Math.max(0, r0); row < Math.min(rows, r1); row++) {
+  const { boundary, start, end } = seg.grid;
+  if (seg.grid.between === 'columns') {
+    for (let row = Math.max(0, start); row < Math.min(rows, end); row++) {
       out.push({
         from: -innerD / 2 + row * cellD,
         to: -innerD / 2 + (row + 1) * cellD,
@@ -78,10 +74,7 @@ export function cellsAlong(
       });
     }
   } else {
-    const boundary = Math.round((seg.y + innerD / 2) / cellD);
-    const c0 = Math.round((seg.x - seg.segLen / 2 + innerW / 2) / cellW);
-    const c1 = Math.round((seg.x + seg.segLen / 2 + innerW / 2) / cellW);
-    for (let col = Math.max(0, c0); col < Math.min(cols, c1); col++) {
+    for (let col = Math.max(0, start); col < Math.min(cols, end); col++) {
       out.push({
         from: -innerW / 2 + col * cellW,
         to: -innerW / 2 + (col + 1) * cellW,

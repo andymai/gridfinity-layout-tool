@@ -231,6 +231,35 @@ describe('wall cutout path reaching only part of a divider', () => {
   }, 120_000);
 });
 
+describe('wall cutout path beside a shifted divider', () => {
+  beforeAll(async () => {
+    await initBrepjs();
+  }, 180_000);
+
+  it('holds a shifted divider up only for a raised floor beside it', () => {
+    // Divider 0|1 moved 22 mm right stands at x = 1.48, nearer grid line 2.
+    // Only compartment 2, past the other divider, is raised.
+    const defaults = buildParams({});
+    const mesh = gen({ front: cut(true, { depth: 90 }) }, true, {
+      depth: 3,
+      compartments: {
+        ...defaults.compartments,
+        cols: 3,
+        rows: 1,
+        cells: [0, 1, 2],
+        floorRaises: [0, 0, 12],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 22, offsetEnd: 22 }],
+      },
+    });
+    assertWatertight(mesh, 'shifted divider');
+    const outerD = 3 * GRID_SIZE - TOLERANCE;
+    const floor = topAt(mesh, N, -outerD / 2 + WALL / 2);
+    const raised = topAt(mesh, 40 + N, N);
+    expect(raised - floor).toBeGreaterThan(5);
+    expect(topAt(mesh, X1 + 22 + N, 10 + N)).toBeCloseTo(floor, 1);
+  }, 120_000);
+});
+
 describe('wall cutout path with a fillet wider than its compartments', () => {
   beforeAll(async () => {
     await initBrepjs();
