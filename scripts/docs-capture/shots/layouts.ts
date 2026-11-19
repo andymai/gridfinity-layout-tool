@@ -1290,6 +1290,169 @@ const placingBrush: Shot = {
   },
 };
 
+/** A ragged edge, so the fill puts bins of four sizes in the gaps. */
+const FILL_DRAWER: FixtureLayout = {
+  ...SHOP,
+  name: 'Tool drawer',
+  width: 6,
+  depth: 4,
+  bins: [
+    { x: 0, y: 0, w: 2, d: 2, h: 6, label: 'Hex keys', cat: 'Hand tools' },
+    { x: 2, y: 0, w: 1, d: 1, h: 6, label: 'M3', cat: 'Fasteners' },
+    { x: 0, y: 2, w: 4, d: 1, h: 6, label: 'Screwdrivers', cat: 'Hand tools' },
+    { x: 0, y: 3, w: 3, d: 1, h: 6, label: 'Tape measure', cat: 'Hand tools' },
+  ],
+};
+
+/**
+ * A toast closes on a real-time timer, which runs out while the take steps
+ * the page clock frame by frame; a longer one stays for the hold.
+ */
+async function slowToasts(s: DocsSession): Promise<void> {
+  await s.page.evaluate(async () => {
+    type Add = (m: unknown, type?: string, duration?: number) => void;
+    const { useToastStore } = (await (window as unknown as AppImport).__appImport(
+      '/src/core/store/toast.ts'
+    )) as { useToastStore: { getState(): { addToast: Add }; setState(p: object): void } };
+    const add = useToastStore.getState().addToast;
+    const addToast: Add = (m, type, duration) =>
+      typeof m === 'string'
+        ? add(m, type, Math.max(duration ?? 5000, 20000))
+        : add({ ...(m as object), duration: 20000 });
+    useToastStore.setState({ addToast });
+  });
+}
+
+const placingFillGaps: Shot = {
+  id: 'layouts-placing-bins-fill-gaps',
+  kind: 'clip',
+  async take(s) {
+    await openQuiet(s, FILL_DRAWER);
+    await slowToasts(s);
+    const fill = s.page.getByRole('button', {
+      name: label('layers.fillGaps_other', { count: 12 }),
+      exact: true,
+    });
+    const brush = s.page.getByRole('button', { name: label('layers.sizeSelector'), exact: true });
+    const panel = await s.box(s.page.locator('aside').first());
+    const cells = await gridArea(s, FILL_DRAWER.width, FILL_DRAWER.depth);
+    const top = (await s.box(brush.first())).y - 16;
+    const area = frameAround(
+      union({ x: panel.x, y: top, width: panel.width, height: 1 }, await s.box(fill), cells),
+      16,
+      4 / 3,
+      WORKSPACE
+    );
+    await parkBelow(s, FILL_DRAWER, 0.75);
+    await s.take(area, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.click(fill);
+      await parkAway(s, FILL_DRAWER, 0.75);
+      await s.ui.hold(0.6);
+    });
+    // The message shows at the bottom right of the window, past the panel crop.
+    const toast = s.page.getByRole('status').filter({
+      hasText: label('toast.fillComplete_other', { count: 4 }),
+    });
+    await s.until(toast);
+    await payoff(s, frameAround(union(cells, await s.box(toast)), 16, 4 / 3, WINDOW), 2.2);
+  },
+};
+
+/** Three free rows at the back: a 1×2 bin and the one-cell support behind it. */
+const SLANT_DRAWER: FixtureLayout = {
+  name: 'Desk drawer',
+  width: 6,
+  depth: 5,
+  height: 4,
+  categories: WORKSHOP_CATEGORIES,
+  layers: [{ name: 'Layer 1', height: 4 }],
+  bins: [
+    { x: 0, y: 0, w: 2, d: 2, h: 4, label: 'Hex keys', cat: 'Hand tools' },
+    { x: 2, y: 0, w: 1, d: 1, h: 4, label: 'M3', cat: 'Fasteners' },
+    { x: 3, y: 0, w: 1, d: 1, h: 4, label: 'M4', cat: 'Fasteners' },
+    { x: 2, y: 1, w: 2, d: 1, h: 4, label: 'Washers', cat: 'Fasteners' },
+    { x: 4, y: 0, w: 2, d: 2, h: 4, label: 'Fuses', cat: 'Spares' },
+  ],
+};
+
+const placingSlantedRow: Shot = {
+  id: 'layouts-placing-bins-slanted-row',
+  kind: 'clip',
+  async take(s) {
+    await openQuiet(s, SLANT_DRAWER);
+    const brush = s.page
+      .getByRole('button', { name: label('layers.sizeSelector'), exact: true })
+      .first();
+    const slanted = s.page.getByRole('switch', { name: label('layers.slantedRow.title') });
+    const size = s.page.getByRole('button', {
+      name: label('layers.paintSizeAriaLabel', {
+        action: label('layers.select'),
+        width: 1,
+        depth: 2,
+      }),
+    });
+    // Off camera, opened with the row controls showing, to frame the popover at its tallest.
+    await brush.click({ force: true });
+    await s.until(slanted);
+    await slanted.click({ force: true });
+    await s.ui.warm(10);
+    const popover = await s.box(s.page.getByTestId('slanted-row-controls').locator('xpath=../..'));
+    await slanted.click({ force: true });
+    await s.page.keyboard.press('Escape');
+    await s.page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await s.ui.warm(20);
+    const panel = await s.box(s.page.locator('aside').first());
+    const cells = await gridArea(s, SLANT_DRAWER.width, SLANT_DRAWER.depth);
+    const top = (await s.box(brush)).y - 16;
+    const area = frameAround(
+      union({ x: panel.x, y: top, width: panel.width, height: 1 }, popover, cells),
+      16,
+      4 / 3,
+      WORKSPACE
+    );
+    const brushBox = await s.box(brush);
+    const rest = stripRest(panel, brushBox.y + brushBox.height / 2);
+    await s.ui.park(...rest);
+    // Clicks by position: `click` first swings the cursor to the middle of the
+    // panel to scroll, and on the way it lights up a category and its bins.
+    await s.take(area, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.clickAt(...(await middle(s, brush)));
+      await s.ui.hold(0.4);
+      await s.ui.clickAt(...(await middle(s, slanted)));
+      await s.ui.hold(0.6);
+      await s.ui.clickAt(...(await middle(s, size)));
+      await s.ui.moveTo(...rest);
+      await s.ui.hold(0.3);
+      // A quick move to the back, then across: an area with no room for the
+      // supports shows no rows, so a slow or diagonal drag blanks the preview.
+      const [from, back, to] = [
+        await cellCenter(s, 1, 3),
+        await cellCenter(s, 1, 5),
+        await cellCenter(s, 6, 5),
+      ];
+      await heldMove(s, from, from, 1);
+      await heldNudgeFrames(s, from, back, 3);
+      await heldNudgeFrames(s, back, to, 22);
+      await drop(s, to);
+      await parkAway(s, SLANT_DRAWER, 0.75);
+    });
+    // The row design saves before the bins land, on a real-time clock.
+    await s.until(s.page.locator('[data-bin-id]').nth(SLANT_DRAWER.bins?.length ?? 0));
+    await s.page.waitForTimeout(800);
+    await s.ui.warm(30);
+    await s.dismissToasts();
+    // Escape ends the brush and drops the selection of the new bins, whose toolbar hides the supports.
+    await s.take(area, async () => {
+      await s.ui.hold(0.6);
+      await s.keys('Escape', 'Esc');
+      s.poster();
+      await s.ui.hold(2.2);
+    });
+  },
+};
+
 const MOVE_DRAWER: FixtureLayout = {
   ...SHOP,
   name: 'Tool drawer',
@@ -2355,6 +2518,143 @@ const drawerShape: Shot = {
   },
 };
 
+/** The front row stays empty: the new outline cuts into every cell of it. */
+const PEN_DRAWER: FixtureLayout = {
+  ...SHOP,
+  name: 'Tool drawer',
+  width: 6,
+  depth: 4,
+  bins: [
+    { x: 0, y: 1, w: 2, d: 2, h: 6, label: 'Hex keys', cat: 'Hand tools' },
+    { x: 2, y: 1, w: 2, d: 1, h: 6, label: 'Drill bits', cat: 'Bits' },
+    { x: 4, y: 1, w: 1, d: 1, h: 6, label: 'M3', cat: 'Fasteners' },
+    { x: 5, y: 1, w: 1, d: 1, h: 6, label: 'M4', cat: 'Fasteners' },
+    { x: 3, y: 2, w: 2, d: 2, h: 6, label: 'Washers', cat: 'Fasteners' },
+    { x: 0, y: 3, w: 3, d: 1, h: 6, label: 'Tape measure', cat: 'Hand tools' },
+  ],
+};
+
+/** Screen point (CSS px) of a point in the pen canvas, in drawer mm with Y up from the front. */
+async function penPoint(canvas: Locator, x: number, y: number): Promise<[number, number]> {
+  return canvas.evaluate(
+    (svg, [px, py]) => {
+      const g = svg.querySelector('g');
+      const m = g?.getScreenCTM();
+      if (!m) throw new Error('the pen canvas has no drawing group');
+      const p = new DOMPoint(px, py).matrixTransform(m);
+      return [p.x, p.y] as [number, number];
+    },
+    [x, y] as const
+  );
+}
+
+/**
+ * A drag between two drawer points (mm) in the pen canvas. A press changes
+ * the selection, which resizes and moves the dialog, so each frame maps its
+ * point to the screen again.
+ */
+async function penDrag(
+  s: DocsSession,
+  canvas: Locator,
+  from: [number, number],
+  to: [number, number],
+  frames: number
+): Promise<void> {
+  const start = await penPoint(canvas, ...from);
+  await heldMove(s, start, start, 1);
+  let at = start;
+  for (let i = 1; i <= frames; i++) {
+    const e = easeInOut(i / frames);
+    at = await penPoint(canvas, from[0] + (to[0] - from[0]) * e, from[1] + (to[1] - from[1]) * e);
+    await s.page.mouse.move(...at);
+    await s.page.evaluate(([px, py]) => (window as unknown as CursorHooks).__cursor.at(px, py), at);
+    await s.ui.hold(1 / FPS);
+  }
+  await drop(s, at);
+}
+
+const drawerPen: Shot = {
+  id: 'layouts-drawer-setup-pen',
+  kind: 'clip',
+  async take(s) {
+    await openQuiet(s, PEN_DRAWER);
+    const toggle = s.page.getByRole('switch', { name: label('drawerShape.toggle') }).first();
+    const options = s.page
+      .getByRole('button', { name: label('drawerShape.actions'), exact: true })
+      .first();
+    await s.ui.preReveal(toggle);
+    const head = await s.box(
+      s.page.getByRole('button', { name: new RegExp(`^${label('sidebar.gridSize')}`) }).first()
+    );
+    const item = s.page.getByRole('menuitem', { name: label('drawerShape.penOpen') });
+    // Off camera, to frame the menu, which opens past the panel's right edge.
+    await options.click({ force: true });
+    await s.until(item);
+    const menu = await s.box(s.page.getByRole('menu').first());
+    await s.page.keyboard.press('Escape');
+    await s.page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await s.ui.warm(20);
+    const closeUp = frameAround(
+      union(head, await s.box(toggle), await s.box(options), menu),
+      12,
+      4 / 3,
+      WORKSPACE
+    );
+    // In the empty margin right of the grid's millimetre line: lower down, the
+    // cursor sits on the Grid unit field.
+    const toggleBox = await s.box(toggle);
+    await s.ui.park(head.x + head.width - 12, (head.y + head.height + toggleBox.y) / 2 - 10);
+    await s.take(closeUp, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.clickAt(...(await middle(s, options)));
+      await s.ui.hold(0.4);
+      await s.ui.clickAt(...(await middle(s, item)));
+      await s.ui.hold(0.2);
+    });
+    const dialog = s.page.getByRole('dialog', { name: label('drawerShape.penTitle') });
+    await s.until(dialog);
+    const canvas = dialog.getByRole('application', { name: label('drawerShape.penCanvas') });
+    const apply = dialog.getByRole('button', {
+      name: label('drawerShape.editor.apply'),
+      exact: true,
+    });
+    const width = PEN_DRAWER.width * 42;
+    const pitch = 42;
+    // In by one unit along the right wall, so the front runs at a slant; a bow
+    // toward the front then stays inside the drawer. The front-left corner pins
+    // the arc, and a deeper bow would dip past the front there.
+    const chord = Math.hypot(width, pitch);
+    const bow = 8;
+    // Selecting a corner adds a row of fields, and the dialog grows about its centre.
+    const frame = frameAround(await s.box(dialog), 32, 4 / 3, WINDOW);
+    await s.ui.park(frame.x + frame.width * 0.5, frame.y + frame.height * 0.97);
+    await s.take(frame, async () => {
+      await s.ui.hold(0.5);
+      await penDrag(s, canvas, [width, 0], [width, pitch], 16);
+      await s.ui.hold(0.5);
+      await penDrag(
+        s,
+        canvas,
+        [width / 2, pitch / 2],
+        [width / 2 + (pitch / chord) * bow, pitch / 2 - (width / chord) * bow],
+        16
+      );
+      await s.ui.hold(0.6);
+      // The take ends on the press: once the dialog closes, this crop shows only canvas.
+      await s.ui.moveTo(...(await middle(s, apply)));
+      await s.ui.hold(0.1);
+    });
+    if (await apply.isDisabled()) throw new Error('the drawn outline is not valid');
+    await s.page.evaluate(() => (window as unknown as CursorHooks).__cursor.press());
+    await s.page.mouse.click(...(await middle(s, apply)));
+    await s.page.mouse.move(DESKTOP.width / 2, DESKTOP.height - 20);
+    await s.ui.hideCursor();
+    await s.ui.warm(60);
+    await s.dismissToasts();
+    await payoff(s, await gridFrame(s, PEN_DRAWER), 1.8);
+  },
+};
+
 const drawerHeightCheck: Shot = {
   id: 'layouts-drawer-setup-height-check',
   kind: 'still',
@@ -2376,6 +2676,8 @@ export const LAYOUTS: readonly Shot[] = [
   placingStash,
   placingDraw,
   placingBrush,
+  placingFillGaps,
+  placingSlantedRow,
   placingMoveCopy,
   placingResize,
   placingRotate,
@@ -2399,6 +2701,7 @@ export const LAYOUTS: readonly Shot[] = [
   drawerDragEdge,
   drawerMeasured,
   drawerShape,
+  drawerPen,
   drawerHeightCheck,
   findBinsToolbar,
   multiSelectToolbar,

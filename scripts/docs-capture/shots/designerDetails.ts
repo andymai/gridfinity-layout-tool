@@ -1649,6 +1649,54 @@ const createVariant: Shot = {
   },
 };
 
+const setDefault: Shot = {
+  id: 'designer-save-and-reuse-set-default',
+  kind: 'still',
+  async take(s) {
+    await openDesigner(s, 'Screw bin', {
+      width: 2,
+      depth: 2,
+      height: 3,
+      base: { style: 'magnet' },
+    });
+    const finishing = (expanded: boolean): Locator =>
+      s.page
+        .getByRole('button', {
+          name: new RegExp(`^${label('binDesigner.group.finishing')}`),
+          expanded,
+        })
+        .first();
+    await s.ui.preClick(finishing(true));
+    await s.until(finishing(false));
+    const button = s.page.getByRole('button', { name: label('binDesigner.setAsDefault') });
+    await s.ui.preClick(button);
+    const note = s.page.getByText(label('binDesigner.customDefaultActive'), { exact: true });
+    await s.until(note);
+    await note.evaluate((el) => {
+      let n = el.parentElement;
+      while (
+        n &&
+        !(
+          n.scrollHeight > n.clientHeight + 4 && /(auto|scroll)/.test(getComputedStyle(n).overflowY)
+        )
+      )
+        n = n.parentElement;
+      if (n) n.scrollTop = n.scrollHeight;
+    });
+    // Off the panel, so the button shows no hover.
+    await s.page.mouse.move(DESKTOP.width - 20, DESKTOP.height - 20);
+    await s.page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await s.ui.warm(20);
+    await s.dismissToasts();
+    const top = (await s.box(finishing(false))).y - 10;
+    const bottom = await s.box(note);
+    await s.still(
+      { x: 0, y: top, width: PANEL.width, height: bottom.y + bottom.height + 10 - top },
+      1.5
+    );
+  },
+};
+
 export const DESIGNER_DETAILS: readonly Shot[] = [
   dimensions,
   halfGrid,
@@ -1676,6 +1724,7 @@ export const DESIGNER_DETAILS: readonly Shot[] = [
   createVariant,
   variant,
   examples,
+  setDefault,
   placeInLayout,
   knifeBlock,
 ];
