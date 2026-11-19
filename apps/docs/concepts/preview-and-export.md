@@ -94,7 +94,7 @@ To measure:
 3. Click a point on the model. For <Ui k="binDesigner.measure.modePoints" />, click a second point. You can drag to turn the model between the two clicks.
 4. Read the result in the bar, in millimeters.
 
-A point that you click snaps to a nearby corner or edge of the model. For two points, the preview also shows the distance along X, Y and Z. A third click starts a new measurement.
+In <Ui k="binDesigner.measure.modePoints" />, a point that you click snaps to a nearby corner or edge of the model. <Ui k="binDesigner.measure.modeThickness" /> measures from the exact spot that you click. For two points, the preview also shows the distance along X, Y and Z. A third click starts a new measurement.
 
 To remove the measurement, click <Ui k="binDesigner.measure.clear" /> or press <kbd>Escape</kbd>. To close the tool, press <kbd>Escape</kbd> again, or click the X at the end of the bar.
 
