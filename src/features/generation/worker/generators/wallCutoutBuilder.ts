@@ -333,12 +333,13 @@ export function computeInteriorDividerCutouts(
   params: BinParams,
   innerW: number,
   innerD: number,
-  dividerTopZ: number
+  dividerTopZ: number,
+  wallHeight: number
 ): InteriorDividerCutout[] {
   const cfg = params.walls.interior;
   if (!cfg.enabled || isPartialMask(params.cellMask)) return [];
   // An outer opening carries through the dividers instead, along its path.
-  if (wallCutoutPathsActive(params)) return [];
+  if (wallCutoutPathsActive(params, { innerW, innerD, wallHeight })) return [];
 
   // The divider standing above the cavity floor, which is thicker than the wall
   // on a spec base. Measured against the wall, a cut at 100% carries on past
@@ -411,7 +412,7 @@ function planWallCutoutTools(
   // material would be wasted boolean work (and risks carving the shell
   // if a cut crosses it). Placement honours tilted dividers (dividerOverrides)
   // so the window lands ON the angled wall instead of slicing it at a slant.
-  for (const c of computeInteriorDividerCutouts(params, innerW, innerD, dividerTopZ)) {
+  for (const c of computeInteriorDividerCutouts(params, innerW, innerD, dividerTopZ, wallHeight)) {
     tools.push({
       cutWidth: c.cutW,
       cutHeight: c.cutH,
@@ -625,7 +626,7 @@ export const wallCutoutsFeature: FeatureBuilder = {
     };
     // Keyed on the solved paths rather than their inputs: label tabs, raised
     // floors, the lip and the fillet all move them, and no list stays complete.
-    const pathKey = wallCutoutPathsActive(params)
+    const pathKey = wallCutoutPathsActive(params, frame)
       ? stableSerialize([planDividerPathCuts(params, frame), pathWallClearance(params, frame)])
       : 'none';
     return compactKey(

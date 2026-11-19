@@ -152,6 +152,13 @@ describe('wall cutout carried through the dividers', () => {
     expect(end - mid).toBeGreaterThan(10);
   }, 120_000);
 
+  it('keeps the per-divider window when the only outer cut spans nothing', () => {
+    const zeroSpan = gen({ front: cut(true, { width: 0 }) }, true);
+    const mid = topAt(zeroSpan, X2 + N, N);
+    const end = topAt(zeroSpan, X2 + N, INNER_D / 2 - 8);
+    expect(end - mid).toBeGreaterThan(10);
+  }, 120_000);
+
   it('cuts no divider while the interior toggle is off', () => {
     const off = gen({ front: cut(true) }, false);
     expect(topAt(off, X2 + N, 50 + N)).toBeCloseTo(dividerTop, 1);

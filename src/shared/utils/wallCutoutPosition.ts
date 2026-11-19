@@ -61,6 +61,21 @@ export function resolveCutoutDrop(cfg: CutoutDropSource, wallRun: number): numbe
   return resolveOverride(cfg.depthMm, cfg.depth, wallRun);
 }
 
+/** A span or drop under this cuts nothing, so the builders skip the cutout. */
+export const MIN_CUTOUT_SIZE_MM = 0.1;
+
+/** Whether a cutout spans and drops far enough to be cut at all. */
+export function cutoutOpens(
+  cfg: CutoutSpanSource & CutoutDropSource,
+  wallSpan: number,
+  wallRun: number
+): boolean {
+  return (
+    resolveCutoutSpan(cfg, wallSpan) >= MIN_CUTOUT_SIZE_MM &&
+    resolveCutoutDrop(cfg, wallRun) >= MIN_CUTOUT_SIZE_MM
+  );
+}
+
 /**
  * Compute the horizontal center of a wall cutout accounting for alignment and offset.
  *
@@ -338,23 +353,36 @@ export function shoulderBlend(
   };
 }
 
+/** The cavity an outer wall cutout is sized against. */
+export interface CutoutCavity {
+  readonly innerW: number;
+  readonly innerD: number;
+  readonly wallHeight: number;
+}
+
 /**
  * Whether the outer wall cutouts carry straight through the fixed dividers.
  *
- * Needs the interior toggle and at least one outer side. Interior-only designs
- * keep a window centred on each divider run: with no outer opening there is
- * no path to follow.
+ * Needs the interior toggle and at least one outer side that opens. Without
+ * one, each divider run keeps its own centred window: there is no path to
+ * follow, and an enabled side sized to nothing is no opening.
  */
 export function wallCutoutPathsActive(
-  params: Pick<BinParams, 'walls' | 'style' | 'cellMask'>
+  params: Pick<BinParams, 'walls' | 'style' | 'cellMask' | 'wallThickness'>,
+  cavity: CutoutCavity
 ): boolean {
   const { walls } = params;
+  if (!walls.enabled || !walls.interior.enabled) return false;
+  if (params.style !== 'standard' || isPartialMask(params.cellMask)) return false;
+  // The run `planOuterCutoutTools` measures a side's drop against.
+  const run = cavity.wallHeight - params.wallThickness;
+  const opens = (cfg: BinParams['walls']['front'], span: number): boolean =>
+    cfg.enabled && cutoutOpens(cfg, span, run);
   return (
-    walls.enabled &&
-    walls.interior.enabled &&
-    params.style === 'standard' &&
-    !isPartialMask(params.cellMask) &&
-    (walls.front.enabled || walls.back.enabled || walls.left.enabled || walls.right.enabled)
+    opens(walls.front, cavity.innerW) ||
+    opens(walls.back, cavity.innerW) ||
+    opens(walls.left, cavity.innerD) ||
+    opens(walls.right, cavity.innerD)
   );
 }
 

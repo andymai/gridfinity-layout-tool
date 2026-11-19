@@ -22,6 +22,7 @@ import {
   computeCutoutCenter,
   cornerSlackFor,
   cutoutFloorRise,
+  cutoutOpens,
   wallCutoutPathsActive,
   resolveCutoutCornerRadii,
   resolveCutoutDrop,
@@ -138,11 +139,10 @@ export function planOuterCutoutTools(
 
   for (const side of sides) {
     const cfg = params.walls[side.key];
-    if (!cfg.enabled) continue;
+    if (!cfg.enabled || !cutoutOpens(cfg, side.wallSpan, wallHeight - wallThickness)) continue;
 
     const cutWidth = resolveCutoutSpan(cfg, side.wallSpan);
     const userCutHeight = resolveCutoutDrop(cfg, wallHeight - wallThickness);
-    if (cutWidth < 0.1 || userCutHeight < 0.1) continue;
 
     const centerOffset = computeCutoutCenter(
       side.wallSpan,
@@ -336,7 +336,7 @@ function dividersAreBuilt(params: BinParams, innerW: number, innerD: number): bo
  * are off. `depthPadding` widens every cut across its divider.
  */
 export function planDividerPathCuts(params: BinParams, frame: CutoutFrame): DividerPathCut[] {
-  if (!wallCutoutPathsActive(params)) return [];
+  if (!wallCutoutPathsActive(params, frame)) return [];
   const { innerW, innerD, dividerTopZ } = frame;
   if (!dividersAreBuilt(params, innerW, innerD)) return [];
 

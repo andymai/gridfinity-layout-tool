@@ -91,7 +91,8 @@ function probeColumns(params: BinParams): Record<string, [number, number]> {
     params,
     innerW,
     innerD,
-    interiorDividerTopZ(params, dim)
+    interiorDividerTopZ(params, dim),
+    dim.wallHeight
   );
   windows.forEach((w, i) => {
     const rad = (w.rotateZ * Math.PI) / 180;

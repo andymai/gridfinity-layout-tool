@@ -64,7 +64,7 @@ export function buildDividerBlends(
   if (dividers.length === 0) return null;
 
   const cutoutShape = params.walls.shape;
-  const paths = wallCutoutPathsActive(params);
+  const paths = wallCutoutPathsActive(params, { innerW, innerD, wallHeight });
   const cuts: Shape3D[] = [];
 
   for (const divider of dividers) {
@@ -236,7 +236,7 @@ export function computeRampZones(
 
   const zones: RampZone[] = [];
   // Mirrors `rampsBesidePath`: a divider in the path has no ramp.
-  const minDist = wallCutoutPathsActive(params) ? 0 : -Infinity;
+  const minDist = wallCutoutPathsActive(params, { innerW, innerD, wallHeight }) ? 0 : -Infinity;
 
   for (const divider of dividers) {
     if (!isPerpendicular(divider, wallCutout)) continue;

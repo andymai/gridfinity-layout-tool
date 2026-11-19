@@ -74,19 +74,29 @@ const cutAt = (
 
 describe('wallCutoutPathsActive', () => {
   it('needs the interior toggle and an outer side', () => {
-    expect(wallCutoutPathsActive(bin({ front: cut(true) }))).toBe(true);
-    expect(wallCutoutPathsActive(bin({}))).toBe(false);
+    expect(wallCutoutPathsActive(bin({ front: cut(true) }), FRAME)).toBe(true);
+    expect(wallCutoutPathsActive(bin({}), FRAME)).toBe(false);
     const noInterior = bin({ front: cut(true) });
     expect(
-      wallCutoutPathsActive({
-        ...noInterior,
-        walls: { ...noInterior.walls, interior: cut(false) },
-      })
+      wallCutoutPathsActive(
+        { ...noInterior, walls: { ...noInterior.walls, interior: cut(false) } },
+        FRAME
+      )
     ).toBe(false);
   });
 
   it('leaves removable divider pieces to their own window', () => {
-    expect(wallCutoutPathsActive(bin({ front: cut(true) }, { style: 'slotted' }))).toBe(false);
+    expect(wallCutoutPathsActive(bin({ front: cut(true) }, { style: 'slotted' }), FRAME)).toBe(
+      false
+    );
+  });
+
+  it('needs an outer side that opens, not one set to nothing', () => {
+    expect(wallCutoutPathsActive(bin({ front: cut(true, { width: 0 }) }), FRAME)).toBe(false);
+    expect(wallCutoutPathsActive(bin({ front: cut(true, { depth: 0 }) }), FRAME)).toBe(false);
+    expect(wallCutoutPathsActive(bin({ front: cut(true, { widthMm: 0 }) }), FRAME)).toBe(false);
+    const oneOpens = bin({ front: cut(true, { width: 0 }), left: cut(true) });
+    expect(wallCutoutPathsActive(oneOpens, FRAME)).toBe(true);
   });
 });
 

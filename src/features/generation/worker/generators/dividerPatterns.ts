@@ -337,7 +337,7 @@ export function planDividerPatterns(
   if (segments.length === 0) return null;
 
   const worldKeepOuts = [...scoopKeepOuts(params, dim), ...labelTabKeepOuts(params, dim)];
-  const paths = wallCutoutPathsActive(params);
+  const paths = wallCutoutPathsActive(params, dim);
   const interiorCutout =
     params.walls.enabled && params.walls.interior.enabled && !paths ? params.walls.interior : null;
   const pathCuts = paths

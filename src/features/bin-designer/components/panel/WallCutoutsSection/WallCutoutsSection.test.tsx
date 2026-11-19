@@ -44,14 +44,14 @@ describe('WallCutoutsSection', () => {
     afterEach(() => {
       useSettingsStore.getState().updateSetting('wallCutoutsLinked', linkedBefore);
     });
-    const withInterior = (outerOn: boolean): void => {
+    const withInterior = (outerOn: boolean, left = DEFAULT_BIN_PARAMS.walls.left): void => {
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
           walls: {
             ...DEFAULT_BIN_PARAMS.walls,
             enabled: true,
-            left: outerOn ? DEFAULT_BIN_PARAMS.walls.left : OFF,
+            left: outerOn ? left : OFF,
             right: OFF,
             interior: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true },
           },
@@ -74,6 +74,14 @@ describe('WallCutoutsSection', () => {
       render(<WallCutoutsSection />);
       expect(screen.queryByText(en['binDesigner.wallCutouts.interiorPathHint'])).toBeNull();
       expect(screen.getAllByLabelText('Span (%)')).toHaveLength(1);
+    });
+
+    it('keeps its size controls while the outer cut spans nothing', () => {
+      withInterior(true, { ...DEFAULT_BIN_PARAMS.walls.left, width: 0 });
+      render(<WallCutoutsSection />);
+      expect(screen.queryByText(en['binDesigner.wallCutouts.interiorPathHint'])).toBeNull();
+      // The left wall's span stepper, and the interior's own.
+      expect(screen.getAllByLabelText('Span (%)')).toHaveLength(2);
     });
   });
 
