@@ -1,0 +1,127 @@
+src/features/bin-designer/utils/printEstimates.test.ts
+  s_144305aaade9d6::t_678cb3e1805b85 277,284-289
+apps/docs/designer/getting-things-out.md
+  s_144305aaade9d6::t_8d6676766bfe65 11,72-74,133
+  s_144305aaade9d6::t_67037642795275 134
+src/features/generation/worker/generators/binGenerator.scenario.slottedFillet.test.ts
+  s_144305aaade9d6::t_8c2c82c6082f31 1-5
+src/features/generation/worker/generators/slotBuilder.ts
+  s_144305aaade9d6::t_2abde705da8171 538-547,578,600-603,620
+  s_144305aaade9d6::t_2bc2fd057918d5 32,57-58,319
+  s_144305aaade9d6::t_076c10097e8c49 379
+  s_144305aaade9d6::t_5c8254c699dc11 320-343,365-378,380-383,439-473,476
+  s_144305aaade9d6::t_a015a274f98f31 16,29-30
+src/features/bin-designer/components/preview/GhostDividerPieces/referencePieceOutline.ts
+  s_144305aaade9d6::t_92763eebaaee54 5,15-16,28-34,36-37,122-142,149-151,159,161
+src/features/generation/worker/generators/slottedFillet.kernel.test.ts
+  s_144305aaade9d6::t_0b10efb03eafe0 132-140,144,150
+  s_144305aaade9d6::t_90c57e11a24773 1-21,23,25-131,141-143,145-149,151-278
+  s_144305aaade9d6::t_5297f3fa6a8831 22,24,493-550
+  s_144305aaade9d6::t_69f7da89143544 279-303,307-366,394,398-492,551-554
+  s_144305aaade9d6::t_615bc40fb6453d 304-306,367-393,395-397
+src/features/generation/worker/generators/dividerPiecePatternBuilder.ts
+  s_144305aaade9d6::t_37ae1545b7aeb8 17,46-47,99
+src/features/bin-designer/utils/interiorFilletFit.test.ts
+  s_144305aaade9d6::t_dea4368f6be4e2 49-52
+  s_144305aaade9d6::t_0ca9907f5b3697 33-48,53-54
+src/features/generation/worker/generators/interiorFilletBuilder.ts
+  s_144305aaade9d6::t_835c8c2838f7b1 31,67-83,85-92,94-95,97-102,412-413,416
+  s_144305aaade9d6::t_d208add8d3ffd5 32,84,446-449
+src/features/generation/worker/generators/dividerPieceWindowCut.ts
+  s_144305aaade9d6::t_37ae1545b7aeb8 9,107-113
+src/features/bin-designer/components/preview/GhostDividerPieces/GhostDividerPieces.tsx
+  s_144305aaade9d6::t_d108017b0735df 43,45-46,84,106,143-185,251-252,390-391,410-412,419,422-438,455,459-466,474-483,507
+  s_144305aaade9d6::t_25ca000123499e 49,223-236
+  s_144305aaade9d6::t_615bc40fb6453d 413-418
+src/features/bin-designer/components/panel/InteriorFilletSection/useInteriorFilletSection.test.ts
+  s_144305aaade9d6::t_e9fc26f035bd0d 51,55,59-60
+src/shared/utils/insideWallFloor.ts
+  s_144305aaade9d6::t_3c4e18ed685109 27,85
+src/features/generation/worker/generators/interiorFilletBuilder.plan.test.ts
+  s_144305aaade9d6::t_458ec56421893c 6-8,28-81
+  s_144305aaade9d6::t_c56a992cb3318a 82
+src/features/generation/worker/generators/binGenerator.export.slottedFillet.test.ts
+  s_144305aaade9d6::t_c8b1a5935e96c1 1-5
+src/features/generation/worker/generators/slotCutterShapes.ts
+  s_144305aaade9d6::t_076c10097e8c49 15
+  s_144305aaade9d6::t_a015a274f98f31 1-14,16-245
+src/shared/utils/dividerPieceWindow.test.ts
+  s_144305aaade9d6::t_615bc40fb6453d 164-166
+  s_144305aaade9d6::t_61bae5e99f050f 8,13,143-163,167
+  s_144305aaade9d6::t_84f1627ea72fa5 168
+src/features/generation/worker/generators/scenarios/slottedFillet.ts
+  s_144305aaade9d6::t_154070b5e34a7d 1-105
+src/features/generation/worker/generators/pipeline/context.ts
+  s_144305aaade9d6::t_2cc1add5ba77a0 30,385-391
+src/features/bin-designer/components/preview/GhostDividerPieces/GhostDividerPieces.test.tsx
+  s_144305aaade9d6::t_90cb235a681bf9 7-8,10-23,94-95,228-265,270-286,289-290,297-305
+  s_144305aaade9d6::t_c3ac40ca573747 9,266-269,287-288,291-296
+  s_144305aaade9d6::t_963af61ea98255 306
+src/features/generation/worker/generators/slottedFillet.cacheKey.test.ts
+  s_144305aaade9d6::t_78036cd1b31d4e 1-88
+src/features/generation/worker/generators/dividerBuilder.ts
+  s_144305aaade9d6::t_9286a7f8e6b729 16
+  s_144305aaade9d6::t_02471be8b91fd7 43,45-51
+  s_144305aaade9d6::t_34bd8eec41b35c 41,91-95
+  s_144305aaade9d6::t_8897be89e239ac 236-239,243,276-284,292-296,304-308,340,365-368,371,377,423-428,431-434,439,469,524,529-531,533,547,556-564
+  s_144305aaade9d6::t_97a8a445ed1ffa 44,127-128,132,135-137,139-140
+  s_144305aaade9d6::t_97236788feb0fe 67
+  s_144305aaade9d6::t_2c3f3bed5f8ca5 17
+src/features/bin-designer/components/preview/GhostDividerPieces/inBinGhost.ts
+  s_144305aaade9d6::t_58cb6d59cd666f 1-216
+src/features/generation/worker/generators/baseplateGenerator.scenario.dovetail.test.ts
+  s_144305aaade9d6::t_1915f4d37d651c 14
+apps/docs/designer/compartments.md
+  s_144305aaade9d6::t_8d6676766bfe65 15,136-138
+src/shared/utils/slottedFillet.ts
+  s_144305aaade9d6::t_5f870cb6c891f8 1-14,16-39,53-62,64-72,74-86,88-119,121-131,133-150,152-160,162-217,219-254
+  s_144305aaade9d6::t_ab01ee400d001d 15,40-52,63,73,87,120,132,151,161,218
+src/features/bin-designer/components/preview/GhostDividerPieces/referencePieceOutline.test.ts
+  s_144305aaade9d6::t_5ab13f687906e8 98,108-109,112
+  s_144305aaade9d6::t_a32b8455d8a6e4 89-97,99-107,110-111,113-134
+src/features/generation/worker/generators/dividerPiecePatterns.test.ts
+  s_144305aaade9d6::t_810c093c3b142f 31-32,36-38
+  s_144305aaade9d6::t_615bc40fb6453d 33-35
+src/features/bin-designer/components/preview/GhostDividerPieces/inBinGhost.test.ts
+  s_144305aaade9d6::t_24c86fd6ffad49 1-73
+src/shared/utils/insideWallTextPlan.test.ts
+  s_144305aaade9d6::t_3c4e18ed685109 101-104
+src/features/generation/worker/generators/scenarios/index.ts
+  s_144305aaade9d6::t_e93143d15a95a3 55,147
+src/features/bin-designer/utils/interiorFilletFit.ts
+  s_144305aaade9d6::t_9c4dc5017fd4eb 4-8
+  s_144305aaade9d6::t_dea4368f6be4e2 10,37-47
+  s_144305aaade9d6::t_145dacd705fe5d 48
+src/shared/utils/slottedFillet.test.ts
+  s_144305aaade9d6::t_a0352495a37ec2 1-63,65-69,71-73,75-77,84-108,110-178,183-194
+  s_144305aaade9d6::t_b056f9f550241d 64,70,74,78-83
+  s_144305aaade9d6::t_e2b1ee9eb662bb 109,179-182
+src/shared/constraints/engine.test.ts
+  s_144305aaade9d6::t_e9fc26f035bd0d 909,914-915,918-923
+src/features/generation/worker/generators/dividerPieceShape.ts
+  s_144305aaade9d6::t_02471be8b91fd7 1-2,6-36,38-89,91-129,131-215,217-241
+  s_144305aaade9d6::t_97a8a445ed1ffa 3-5
+  s_144305aaade9d6::t_076c10097e8c49 37,90,130,216
+src/shared/utils/dividerPieceWindow.ts
+  s_144305aaade9d6::t_37ae1545b7aeb8 2-3,115-134
+  s_144305aaade9d6::t_ab28a27d010327 135-136
+src/features/generation/worker/generators/dividerPiecePatterns.ts
+  s_144305aaade9d6::t_37ae1545b7aeb8 17,42-43,107-112
+  s_144305aaade9d6::t_56d5d5b98517d4 113-114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b5ac3a1dc3cea179c21fa38de4c7ccac99c7d606",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
