@@ -13,9 +13,9 @@ import { CUT_RIM_CLEARANCE } from './generatorConstants';
 import { lipInnerReachMm } from '@/shared/utils/lipNotchPlan';
 import { interiorDividerSegments } from './compartmentBuilder';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { pathWallClearance } from './wallCutoutPathClearance';
 import {
   interiorDividerTopZ,
-  pathWallClearance,
   planDividerPathCuts,
   planOuterCutoutTools,
   wallCutoutPathsActive,

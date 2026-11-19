@@ -4,9 +4,9 @@ import { box, draw, intersect, rotate, translate, unwrap } from 'brepjs';
 import type { DisposalScope, Shape3D, Sketch, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { buildTiltedWallSegment } from './compartmentDividerSegments';
+import { pathWallClearance } from './wallCutoutPathClearance';
 import {
   cutoutOvershoot,
-  pathWallClearance,
   planDividerPathCuts,
   type CutoutFrame,
   type DividerPathCut,
@@ -193,7 +193,7 @@ function obliqueSlab(
  * stacking lip's jut, and above the floor. Lofted through rectangles, so
  * each wall is held off by its own clearance at every level.
  */
-function buildWallClearance(params: BinParams, frame: CutoutFrame): Shape3D {
+export function buildWallClearance(params: BinParams, frame: CutoutFrame): Shape3D {
   const { innerW, innerD } = frame;
   const sections = pathWallClearance(params, frame);
   const sketches = sections.map(

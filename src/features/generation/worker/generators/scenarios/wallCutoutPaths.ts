@@ -128,4 +128,10 @@ export const wallCutoutPaths: ScenarioCase[] = [
     walls: walls(['front', 'left'], {}, { ...ON, depth: 90 }),
   }),
   path('half-grid width', { width: 2.5, walls: walls(['front', 'left']) }),
+  path('a bin shorter than its lip support', {
+    height: 2,
+    heightUnitMm: 4,
+    compartments: { cols: 3, rows: 1, cells: [0, 1, 2], thickness: 1.2 },
+    walls: walls(['front'], {}, { ...ON, width: 60, depth: 100 }),
+  }),
 ];

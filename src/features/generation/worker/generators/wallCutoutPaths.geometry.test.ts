@@ -9,6 +9,7 @@
  * one cut down to it.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
+import { measureVolume, unwrap } from 'brepjs';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import {
   assertStructurallyValid,
@@ -19,6 +20,10 @@ import { buildParams } from './__kernel-tests__/scenarioTypes';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import type { BinParams, WallCutout } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
+import { deriveDimensions } from './pipeline/context';
+import { buildWallClearance } from './wallCutoutPathBuilder';
+import { pathWallClearance } from './wallCutoutPathClearance';
+import { cutoutFrame } from './wallCutoutPaths';
 
 const { GRID_SIZE, TOLERANCE } = GRIDFINITY;
 
@@ -56,36 +61,40 @@ function cut(enabled: boolean, over: Partial<WallCutout> = {}): WallCutout {
   };
 }
 
+function binParams(
+  sides: Partial<Record<'front' | 'back' | 'left' | 'right', WallCutout>>,
+  interior: boolean,
+  over: Partial<BinParams> = {}
+): BinParams {
+  const defaults = buildParams({});
+  return buildParams({
+    width: WIDTH,
+    depth: DEPTH,
+    height: 6,
+    wallThickness: WALL,
+    compartments: { ...defaults.compartments, ...BENTO },
+    walls: {
+      ...defaults.walls,
+      enabled: true,
+      shape: 'u-shape',
+      front: cut(false),
+      back: cut(false),
+      left: cut(false),
+      right: cut(false),
+      ...sides,
+      interior: cut(interior),
+    },
+    ...over,
+  });
+}
+
 function gen(
   sides: Partial<Record<'front' | 'back' | 'left' | 'right', WallCutout>>,
   interior: boolean,
   over: Partial<BinParams> = {},
   forExport = true
 ): MeshData {
-  const defaults = buildParams({});
-  return getGenerateBin()(
-    buildParams({
-      width: WIDTH,
-      depth: DEPTH,
-      height: 6,
-      wallThickness: WALL,
-      compartments: { ...defaults.compartments, ...BENTO },
-      walls: {
-        ...defaults.walls,
-        enabled: true,
-        shape: 'u-shape',
-        front: cut(false),
-        back: cut(false),
-        left: cut(false),
-        right: cut(false),
-        ...sides,
-        interior: cut(interior),
-      },
-      ...over,
-    }),
-    undefined,
-    forExport
-  );
+  return getGenerateBin()(binParams(sides, interior, over), undefined, forExport);
 }
 
 /** Highest surface over a column. */
@@ -291,6 +300,60 @@ describe('wall cutout path ending on a divider before a raised floor', () => {
     expect(topAt(mesh, N, -20 + N)).toBeCloseTo(floor, 1);
     expect(topAt(mesh, N, 0.3)).toBeGreaterThanOrEqual(raised - 0.05);
     expect(topAt(mesh, N, 0.7)).toBeCloseTo(raised, 1);
+  }, 120_000);
+});
+
+describe('wall cutout path on a bin shorter than its lip support', () => {
+  // 2u at 4 mm per unit: the lip's support reaches down past the floor slab.
+  const short = (): BinParams =>
+    binParams({ front: cut(true, { width: 60, depth: 100 }) }, true, {
+      depth: 3,
+      height: 2,
+      heightUnitMm: 4,
+      compartments: { ...buildParams({}).compartments, cols: 3, rows: 1, cells: [0, 1, 2] },
+    });
+
+  beforeAll(async () => {
+    await initBrepjs();
+  }, 180_000);
+
+  it('cuts inside a clearance that rises from the floor and never folds back', () => {
+    const params = short();
+    const frame = cutoutFrame(params, deriveDimensions(params, false));
+    const sections = pathWallClearance(params, frame);
+    const [bottom, top] = [sections[0], sections[sections.length - 1]];
+    // Above the floor the support is at its full jut, so the clearance is a
+    // plain box from the floor up.
+    const box =
+      (frame.innerW - top.left - top.right) *
+      (frame.innerD - top.front - top.back) *
+      (top.z - bottom.z);
+    const solid = buildWallClearance(params, frame);
+    const volume = unwrap(measureVolume(solid));
+    solid.delete();
+    expect(Math.abs(volume - box) / box).toBeLessThan(1e-4);
+  });
+
+  it('cuts the dividers to the floor and keeps the far wall and lip whole', () => {
+    const mesh = getGenerateBin()(short(), undefined, true);
+    assertStructurallyValid(mesh, 'short bin');
+    assertWatertight(mesh, 'short bin');
+    const outerD = 3 * GRID_SIZE - TOLERANCE;
+    const innerD = outerD - 2 * WALL;
+    // A full-depth opening reaches below the floor slab, which the path keeps.
+    const floor = topAt(mesh, -40 + N, N);
+    expect(topAt(mesh, N, -outerD / 2 + WALL / 2)).toBeLessThan(floor);
+    const rim = topAt(mesh, -50 + N, outerD / 2 - WALL / 2);
+    expect(rim - floor).toBeGreaterThan(3);
+    for (const y of [-20, 10]) {
+      expect(topAt(mesh, X1 - N, y + N)).toBeCloseTo(floor, 1);
+      expect(topAt(mesh, X2 + N, y + N)).toBeCloseTo(floor, 1);
+    }
+    expect(topAt(mesh, X2 + N, outerD / 2 - WALL / 2)).toBeCloseTo(rim, 2);
+    // Inside the far wall, the lip's support over the junction is the support beside it.
+    const atJunction = columnCrossings(mesh, X2 + N, innerD / 2 - 0.3);
+    const beside = columnCrossings(mesh, X2 + 5 + N, innerD / 2 - 0.3);
+    expect(atJunction.slice(-1)[0]).toBeCloseTo(beside.slice(-1)[0], 2);
   }, 120_000);
 });
 

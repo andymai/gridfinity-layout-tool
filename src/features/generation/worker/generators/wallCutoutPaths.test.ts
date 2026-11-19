@@ -2,12 +2,10 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, WallCutout } from '@/features/bin-designer/types';
-import { lipInnerReachMm } from '@/shared/utils/lipNotchPlan';
 import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 import { LIP_SMALL_TAPER } from './generatorConstants';
 import { planInteriorFillets } from './interiorFilletPlan';
 import {
-  pathWallClearance,
   planDividerPathCuts,
   wallCutoutPathsActive,
   type CutoutFrame,
@@ -407,23 +405,5 @@ describe('planDividerPathCuts with a fillet wider than its compartments', () => 
       expect(padded[i].vMax).toBeGreaterThan(c.vMax);
       expect(padded[i].vMin).toBeLessThan(c.vMin);
     }
-  });
-});
-
-describe('pathWallClearance', () => {
-  it('stays a hair off the walls without a lip', () => {
-    const sections = pathWallClearance(bin({ front: cut(true) }), { ...FRAME, hasLip: false });
-    expect(sections.every((s) => s.front === sections[0].front && s.front < 0.05)).toBe(true);
-  });
-
-  it('steps clear of the lip where it stands', () => {
-    const params = bin({ front: cut(true) });
-    const sections = pathWallClearance(params, FRAME);
-    const top = sections[sections.length - 1];
-    expect(top.back).toBeGreaterThan(lipInnerReachMm(params) - params.wallThickness);
-    expect(sections[0].back).toBeLessThan(0.05);
-    // The step starts no higher than the lip's foot.
-    const stepped = sections.find((s) => s.back > 0.05);
-    expect(stepped?.z ?? Infinity).toBeLessThanOrEqual(FRAME.wallHeight);
   });
 });
