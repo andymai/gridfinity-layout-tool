@@ -42,7 +42,6 @@ import {
   booleanPipeline,
   isOk,
   drawRectangle,
-  drawRoundedRectangle,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, BooleanPipelineStep } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
@@ -65,7 +64,13 @@ import {
 import { floorReliefReachesCorners } from '@/shared/generation/magnetPositions';
 import { slabWithPocketsCache } from './baseplateCaches';
 import { slabPocketsCacheKey } from './baseplateCacheKeys';
-import { sanitizeParams, tagOp, buildSlabProfile, cutAboveZ } from './baseplateSlab';
+import {
+  sanitizeParams,
+  tagOp,
+  buildSlabProfile,
+  buildEcoReliefCutters,
+  cutAboveZ,
+} from './baseplateSlab';
 import { cutInBatches } from './baseplateBatchOps';
 import { getPocketTemplate } from './baseplatePockets';
 import {
@@ -104,6 +109,8 @@ import {
   ecoKeepOuts,
   ecoMagnetKeepOuts,
   ecoScrewKeepOuts,
+  ecoSeamKeepOuts,
+  marginSeamConnectorSites,
 } from '@/shared/generation/ecoPlate';
 
 /**
@@ -621,29 +628,16 @@ export function buildBaseplateSolid(
       : [];
 
   if (params.ecoPlate === true) {
-    // Keep a bottom band so every corner post remains connected, with no
-    // unsupported bridge to print across the relieved straight joints.
-    const bridgeHeight = Math.min(1.6, totalHeight / 2);
-    const cutHeight = totalHeight - bridgeHeight + 0.2;
     const keepOuts = [
       ...(screwParams === undefined ? [] : ecoScrewKeepOuts(screwHoles, screwParams)),
       ...(mountMagnets?.enabled === true
         ? ecoKeepOuts(mountMagnetHoles, mountMagnets.diameter)
         : []),
       ...magnetPockets.flatMap((plan) => ecoMagnetKeepOuts(plan, magnetDiameter)),
+      ...ecoSeamKeepOuts(marginSeamConnectorSites(params)),
     ];
-    const cutters = ecoJointCutouts(params, overTileFrame, keepOuts).map((slot) => {
-      // Round the four inside corners of each relief so the surviving posts
-      // transition into the thin connecting bridge without sharp notches.
-      const radius = Math.min(2, Math.min(slot.width, slot.depth) / 2 - 0.05);
-      const cutter = drawRoundedRectangle(slot.width, slot.depth, radius)
-        .sketchOnPlane('XY', 0.2)
-        .extrude(-cutHeight);
-      const positioned = translate(cutter, [slot.x, slot.y, 0]);
-      cutter.delete();
-      return positioned;
-    });
-    baseplate = cutInBatches(baseplate, cutters);
+    const slots = ecoJointCutouts(params, overTileFrame, keepOuts);
+    baseplate = cutInBatches(baseplate, buildEcoReliefCutters(slots, totalHeight));
     probe?.('ecoJointsCut', baseplate);
   }
 

@@ -1,13 +1,24 @@
 /**
- * Slab profile + parameter sanitation + boolean op tagging for baseplate gen.
+ * Slab profile, eco relief cutters, parameter sanitation and boolean op
+ * tagging for baseplate gen.
  */
 
-import { drawRectangle, drawRoundedRectangle, draw, box, cut, getBounds, unwrap } from 'brepjs';
+import {
+  drawRectangle,
+  drawRoundedRectangle,
+  draw,
+  box,
+  cut,
+  getBounds,
+  translate,
+  unwrap,
+} from 'brepjs';
 import type { Drawing, Shape3D, ValidSolid } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { CONSTRAINTS } from '@/core/constants';
 import { clamp } from '@/shared/utils/math';
 import { exteriorCorners } from '@/shared/generation/baseplateCorners';
+import type { EcoJointCutout } from '@/shared/generation/ecoPlate';
 
 /**
  * Build the 2D slab outline, rounding only exterior corners.
@@ -59,6 +70,28 @@ export function buildSlabProfile(
   pen = pen.lineTo([-hw, -hd]);
   if (rBL > 0) pen = pen.customCorner(rBL);
   return pen.close();
+}
+
+/** Eco relief cutters for a slab `totalHeight` tall whose top face is Z = 0. */
+export function buildEcoReliefCutters(
+  slots: readonly EcoJointCutout[],
+  totalHeight: number
+): Shape3D[] {
+  // Keep a bottom band so every corner post remains connected, with no
+  // unsupported bridge to print across the relieved straight joints.
+  const bridgeHeight = Math.min(1.6, totalHeight / 2);
+  const cutHeight = totalHeight - bridgeHeight + 0.2;
+  return slots.map((slot) => {
+    // Round the four inside corners of each relief so the surviving posts
+    // transition into the thin connecting bridge without sharp notches.
+    const radius = Math.min(2, Math.min(slot.width, slot.depth) / 2 - 0.05);
+    const cutter = drawRoundedRectangle(slot.width, slot.depth, radius)
+      .sketchOnPlane('XY', 0.2)
+      .extrude(-cutHeight);
+    const positioned = translate(cutter, [slot.x, slot.y, 0]);
+    cutter.delete();
+    return positioned;
+  });
 }
 
 /** Everything of `shape` below the plane Z = `planeZ`, as a new solid. */
