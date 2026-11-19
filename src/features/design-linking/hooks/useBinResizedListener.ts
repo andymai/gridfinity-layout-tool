@@ -85,10 +85,18 @@ export function useBinResizedListener(): void {
       }
       inFlightDesigns.current.add(id);
       let saved: Awaited<ReturnType<typeof saveImportedFootprint>> | undefined;
+      // Decided once per run: a kept event's previous size was never stored,
+      // so it can't be compared with the design.
+      let turned: boolean | undefined;
       try {
         for (let next: BinResizedEvent | undefined = event; next;) {
           pendingImported.current.delete(id);
-          saved = await saveImportedFootprint(id, next.newDimensions, next.previousDimensions);
+          saved = await saveImportedFootprint(
+            id,
+            next.newDimensions,
+            turned === undefined ? { previous: next.previousDimensions } : { turned }
+          );
+          if (isOk(saved)) turned = saved.value.turned;
           next = pendingImported.current.get(id);
         }
       } finally {
@@ -96,7 +104,7 @@ export function useBinResizedListener(): void {
         pendingImported.current.delete(id);
       }
       if (saved && isOk(saved)) {
-        emitSyncEvent({ type: 'design-saved', designId: id, dimensions: saved.value });
+        emitSyncEvent({ type: 'design-saved', designId: id, dimensions: saved.value.footprint });
         addToastRef.current({
           message: tRef.current('designLinking.toast.designUpdated', { name }),
           type: 'success',

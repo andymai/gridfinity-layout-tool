@@ -455,6 +455,54 @@ describe('useBinResizedListener', () => {
       unmount();
     });
 
+    it('keeps a turned placement turned across resizes that wait for a save', async () => {
+      // Storage that remembers each write, so every load sees the one before.
+      let stored = {
+        id: IMPORTED,
+        name: 'Scanned tray',
+        updatedAt: 'then',
+        kind: 'importedMesh',
+        envelope: { ...envelope, width: 2, depth: 3 },
+        structure,
+      };
+      vi.mocked(loadDesign).mockImplementation(async () => ok(stored) as never);
+      let release: () => void = () => undefined;
+      const gate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      let first = true;
+      vi.mocked(saveDesign).mockImplementation(async (design) => {
+        if (first) {
+          first = false;
+          await gate;
+        }
+        stored = { ...(design as unknown as typeof stored), updatedAt: 'now' };
+        return ok(stored) as never;
+      });
+      const { events, off } = savedEvents();
+      const { unmount } = renderHook(() => useBinResizedListener());
+      const resize = (width: number, from: number): void =>
+        emitSyncEvent({
+          type: 'bin-resized',
+          binId: binId('bin-1'),
+          linkedDesignId: IMPORTED,
+          newDimensions: { width, depth: 2, height: 4 },
+          previousDimensions: { width: from, depth: 2, height: 4 },
+        });
+
+      resize(4, 3);
+      await vi.waitFor(() => expect(saveDesign).toHaveBeenCalledTimes(1));
+      resize(5, 4);
+      resize(6, 5);
+      release();
+
+      await vi.waitFor(() => expect(events).toHaveLength(1));
+      expect(stored.envelope).toMatchObject({ width: 2, depth: 6 });
+      expect(events[0].dimensions).toEqual({ width: 2, depth: 6, height: 4 });
+      off();
+      unmount();
+    });
+
     it('updates the footprint in the designer too, when the designer holds that model', async () => {
       useDesignerStore.setState({
         currentDesignId: IMPORTED,
