@@ -112,6 +112,69 @@ function createMirroredLockingCutters(
   return segments;
 }
 
+/** How far a section's slot cutters run past its top, so they share no face with it. */
+const SECTION_OVERRUN = 1;
+
+/**
+ * The cutters for ONE wall slot and its floor groove, built by the same
+ * functions and from the same inputs as the bin's own slots, so the divider
+ * fit sample is cut exactly as the bin is.
+ *
+ * Frame: the wall's inner face is the plane X = 0 with the wall at +X, the slot
+ * is centred on Y = 0, and Z is the bin body's (floor top at `seat.floorZ`).
+ * `binSlotHeight` is the slot height in the real bin, which decides whether it
+ * carries the retention lock; the cutters run `sectionHeight` plus an overrun,
+ * so they cut clean through the top of a section that stands `sectionHeight`
+ * above the seat. The groove runs in from `grooveFromX`.
+ */
+export function buildSlotSectionCutters(
+  params: BinParams,
+  seat: DividerSeat,
+  binSlotHeight: number,
+  sectionHeight: number,
+  grooveFromX: number
+): Shape3D[] {
+  const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
+  const { thickness, clearance } = params.dividerPieces;
+  const slotStartZ = seat.floorZ - seat.grooveDepth;
+  const lock = getDividerLockPlan(thickness, clearance);
+  const cutterHeight = sectionHeight + SECTION_OVERRUN;
+  const mirrored =
+    binSlotHeight > lock.headHeight + lock.throatHeight
+      ? createMirroredLockingCutters(
+          slotDepth,
+          slotWidth,
+          thickness,
+          clearance,
+          cutterHeight,
+          0,
+          0,
+          slotStartZ,
+          'x'
+        )
+      : createMirroredCutters(slotDepth, slotWidth, cutterHeight, 0, 0, slotStartZ, 'x');
+  // Mirrored pairs come back [negative wall, positive wall]; only +X is built.
+  const cutters = mirrored.filter((cutter, i) => {
+    if (i % 2 === 1) return true;
+    cutter.delete();
+    return false;
+  });
+  if (seat.grooveDepth > 0) {
+    cutters.push(
+      createGrooveCutter(
+        'x',
+        grooveFromX,
+        slotDepth - SLOT_EXTENSION,
+        0,
+        slotWidth,
+        seat.grooveDepth,
+        slotStartZ
+      )
+    );
+  }
+  return cutters;
+}
+
 /**
  * Channel in the floor under one divider line. `alongStart`/`alongEnd` are
  * relative to the interior center and already carry any reach into the wall

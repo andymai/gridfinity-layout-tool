@@ -436,7 +436,7 @@ const PARAM_KEYS_NOT_PERSISTED: ReadonlyMap<string, string> = new Map([
 
 // Share, sync push and design versions all pass through this validator, and
 // the client reads what comes back through `migrateParams`.
-describe('split switch round trip (cross-boundary)', () => {
+describe('optional fields round trip (cross-boundary)', () => {
   type MigrateInput = Parameters<typeof migrateParams>[0];
   const roundTrip = (params: MigrateInput): ReturnType<typeof migrateParams> => {
     const payload = { type: 'designer', version: 1, params: migrateParams(params) };
@@ -454,6 +454,16 @@ describe('split switch round trip (cross-boundary)', () => {
 
   it('keeps a design that splits free of the key', () => {
     expect('splitToFitBed' in roundTrip(DEFAULT_BIN_PARAMS)).toBe(false);
+  });
+
+  // `dividerPieces` passes through unvalidated, so its fields ride along whole.
+  it('keeps a divider piece fit, and adds none to a design without one', () => {
+    const fitted = {
+      ...DEFAULT_BIN_PARAMS,
+      dividerPieces: { ...DEFAULT_BIN_PARAMS.dividerPieces, pieceFit: 0.15 },
+    };
+    expect(roundTrip(fitted).dividerPieces.pieceFit).toBe(0.15);
+    expect('pieceFit' in roundTrip(DEFAULT_BIN_PARAMS).dividerPieces).toBe(false);
   });
 });
 

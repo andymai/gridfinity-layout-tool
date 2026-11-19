@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render } from '@testing-library/react';
+import { cleanup, render } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/features/bin-designer/constants';
+import { calculateSlotPositions, dividerInterior } from '@/shared/utils/slotMath';
 import { GhostDividerPieces } from './GhostDividerPieces';
 import { referencePieceGeometry } from './referencePieceOutline';
 import { resolveDividerFilletSeat } from '@/shared/utils/slottedFillet';
-import { calculateSlotPositions, dividerInterior } from '@/shared/utils/slotMath';
 import { baseWallHeight } from '@/features/bin-designer/utils/binDimensions';
 
 vi.mock('./referencePieceOutline', () => ({
@@ -21,6 +21,8 @@ vi.mock('./referencePieceOutline', () => ({
     dispose: vi.fn(),
   })),
 }));
+
+const { boxArgs } = vi.hoisted(() => ({ boxArgs: [] as number[][] }));
 
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
@@ -41,6 +43,9 @@ vi.mock('@react-three/fiber', () => ({
 
 vi.mock('three', () => {
   class MockBoxGeometry {
+    constructor(...args: number[]) {
+      boxArgs.push(args);
+    }
     getAttribute = vi.fn(() => ({
       count: 8,
       getX: vi.fn(() => 0),
@@ -205,6 +210,32 @@ describe('GhostDividerPieces', () => {
       });
       const { container } = render(<GhostDividerPieces />);
       expect(container.querySelectorAll('mesh')).toHaveLength(2);
+    });
+
+    it('widens the reference notches by the piece fit, as the export does', () => {
+      // Every box the reference pieces and in-bin ghosts are drawn from is
+      // `thickness` deep along its second axis or its first; only the notch
+      // segments change length with the fit, each notch losing 2 × fit of plate.
+      const params = bothAxesParams({ crossStyle: 'lap' });
+      const plateLength = (pieceFit: number): number => {
+        boxArgs.length = 0;
+        useDesignerStore.setState({
+          params: { ...params, dividerPieces: { ...params.dividerPieces, pieceFit } },
+        });
+        render(<GhostDividerPieces />);
+        cleanup();
+        return boxArgs.filter(([, d]) => d === 1.6).reduce((sum, [w]) => sum + w, 0);
+      };
+      const { innerW, innerD } = dividerInterior(params);
+      const lipOverhang = Math.max(
+        0,
+        GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER - params.wallThickness
+      );
+      const notches =
+        calculateSlotPositions(innerW, 20, lipOverhang).length +
+        calculateSlotPositions(innerD, 20, lipOverhang).length;
+      expect(notches).toBeGreaterThan(0);
+      expect(plateLength(0.1) - plateLength(0)).toBeCloseTo(-0.2 * notches, 6);
     });
 
     it('insert mode degrades to lap rendering when the divider is too thin', () => {

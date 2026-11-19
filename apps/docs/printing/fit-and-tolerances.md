@@ -9,6 +9,7 @@ sources:
   - src/features/bin-designer/hooks/useSyncPhysicalUnits.ts
   - src/features/baseplate/utils/printGuide.ts
   - src/features/bin-designer/components/CutoutWorkspace/FitTestButton.tsx
+  - src/features/bin-designer/components/SlotConfigurator/DividerFitSampleButton.tsx
   - src/features/bin-designer/components/ParameterPanel/BinScrollPanel/BinScrollPanel.tsx
 ---
 
@@ -49,18 +50,19 @@ At 0.4 mm, these parts keep their standard shape. The nozzle size doesn't change
 
 ## Fit settings
 
-| Setting                                          | Where                                                                                                                      | What it changes                                                                           |
-| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| <Ui k="baseplate.connectorFit.label" />          | Baseplate generator, connectors                                                                                            | The gap of the connectors that join plate pieces, from −0.3 to +0.3 mm. Higher is looser. |
-| <Ui k="baseplate.stackPrint.gap.label" />        | Baseplate generator, stack                                                                                                 | The air gap between stacked plates                                                        |
-| <Ui k="baseplate.mountMagnets.diameter.label" /> | Baseplate generator, underside magnets                                                                                     | The hole size. Add 0.2 to 0.5 mm to the magnet diameter.                                  |
-| <Ui k="baseplate.magnetCrushRibs" />             | Baseplate generator, magnet holes. Bin designer, <Ui k="binDesigner.group.base" />                                         | Ridges that grip a magnet with no glue                                                    |
-| <Ui k="binDesigner.cutouts.clearance" />         | Bin designer, cutout editor, each cutout                                                                                   | The extra size of a cutout, so that the part drops in                                     |
-| <Ui k="binDesigner.dividerClearance" />          | Bin designer, <Ui k="binDesigner.group.interior" />, [removable dividers](../designer/compartments#use-removable-dividers) | The fit of the dividers in their slots                                                    |
-| <Ui k="binDesigner.detachableFeet.pinSize" />    | Bin designer, <Ui k="binDesigner.group.base" />, [detachable feet](../designer/base#print-detachable-feet)                 | The fit of each foot on its pin. A smaller pin gives a looser fit.                        |
-| <Ui k="binDesigner.plateFitOffset" />            | Bin designer, <Ui k="binDesigner.group.interior" />, label tab sockets                                                     | The fit of a label plate in its socket. Negative is tighter.                              |
-| <Ui k="binDesigner.lid.hinge.fitClearance" />    | Bin designer, <Ui k="binDesigner.group.lid" />, hinged lid                                                                 | The gap between the hinge and the pin                                                     |
-| <Ui k="binDesigner.lid.slide.clearance" />       | Bin designer, <Ui k="binDesigner.group.lid" />, sliding lid                                                                | The gap between the lid and its channel                                                   |
+| Setting                                          | Where                                                                                                                         | What it changes                                                                           |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| <Ui k="baseplate.connectorFit.label" />          | Baseplate generator, connectors                                                                                               | The gap of the connectors that join plate pieces, from −0.3 to +0.3 mm. Higher is looser. |
+| <Ui k="baseplate.stackPrint.gap.label" />        | Baseplate generator, stack                                                                                                    | The air gap between stacked plates                                                        |
+| <Ui k="baseplate.mountMagnets.diameter.label" /> | Baseplate generator, underside magnets                                                                                        | The hole size. Add 0.2 to 0.5 mm to the magnet diameter.                                  |
+| <Ui k="baseplate.magnetCrushRibs" />             | Baseplate generator, magnet holes. Bin designer, <Ui k="binDesigner.group.base" />                                            | Ridges that grip a magnet with no glue                                                    |
+| <Ui k="binDesigner.cutouts.clearance" />         | Bin designer, cutout editor, each cutout                                                                                      | The extra size of a cutout, so that the part drops in                                     |
+| <Ui k="binDesigner.dividerClearance" />          | Bin designer, <Ui k="binDesigner.group.interior" />, [removable dividers](../designer/compartments#use-removable-dividers)    | The width of the slots and the floor groove in the bin. Set it before you print the bin.  |
+| <Ui k="binDesigner.dividerPieceFit" />           | Bin designer, <Ui k="binDesigner.group.interior" />, [removable dividers](../designer/compartments#fix-the-fit-of-the-pieces) | The fit of the dividers in a bin that you printed. It changes only the dividers.          |
+| <Ui k="binDesigner.detachableFeet.pinSize" />    | Bin designer, <Ui k="binDesigner.group.base" />, [detachable feet](../designer/base#print-detachable-feet)                    | The fit of each foot on its pin. A smaller pin gives a looser fit.                        |
+| <Ui k="binDesigner.plateFitOffset" />            | Bin designer, <Ui k="binDesigner.group.interior" />, label tab sockets                                                        | The fit of a label plate in its socket. Negative is tighter.                              |
+| <Ui k="binDesigner.lid.hinge.fitClearance" />    | Bin designer, <Ui k="binDesigner.group.lid" />, hinged lid                                                                    | The gap between the hinge and the pin                                                     |
+| <Ui k="binDesigner.lid.slide.clearance" />       | Bin designer, <Ui k="binDesigner.group.lid" />, sliding lid                                                                   | The gap between the lid and its channel                                                   |
 
 For a hinge or a sliding lid, raise the value if the part binds, and lower it if the part rattles.
 
@@ -68,12 +70,13 @@ For a hinge or a sliding lid, raise the value if the part binds, and lower it if
 
 A test print is small and cheap, so print one before you guess at a value.
 
-| Test            | Where to find it                                                                                            | What you get                                                                     |
-| --------------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Connector fit   | <Ui k="baseplate.connectorSample.button" /> under the connector settings                                    | One coupon for each fit value, with the value on the surface                     |
-| Stack fit       | <Ui k="baseplate.stackPrint.sampleButton" /> in the stack settings                                          | A stack of two 1 by 1 plates, to tune the gap                                    |
-| Cutout fit      | <Ui k="binDesigner.cutouts.fitTest.button" /> in the cutout editor                                          | A thin slice of the bin top with every cutout, or a thin ring around each cutout |
-| Label plate fit | <Ui k="binDesigner.fitSample.button" /> in the label tab settings, in <Ui k="binDesigner.group.interior" /> | Five sockets from −0.10 to +0.10 mm, and one blank plate                         |
+| Test            | Where to find it                                                                                                           | What you get                                                                                                     |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Connector fit   | <Ui k="baseplate.connectorSample.button" /> under the connector settings                                                   | One coupon for each fit value, with the value on the surface                                                     |
+| Stack fit       | <Ui k="baseplate.stackPrint.sampleButton" /> in the stack settings                                                         | A stack of two 1 by 1 plates, to tune the gap                                                                    |
+| Cutout fit      | <Ui k="binDesigner.cutouts.fitTest.button" /> in the cutout editor                                                         | A thin slice of the bin top with every cutout, or a thin ring around each cutout                                 |
+| Label plate fit | <Ui k="binDesigner.fitSample.button" /> in the label tab settings, in <Ui k="binDesigner.group.interior" />                | Five sockets from −0.10 to +0.10 mm, and one blank plate                                                         |
+| Divider fit     | <Ui k="binDesigner.dividerFitSample.button" /> in the removable divider settings, in <Ui k="binDesigner.group.interior" /> | A short part of the bin wall with one slot, and a short divider with your <Ui k="binDesigner.dividerPieceFit" /> |
 
 Print each test with the same printer, filament, nozzle and settings as the real part. Print it flat, with no supports. Then set the fit setting to the value of the test part that fits best. [Print a fit test](../cutouts/print-checks#print-a-fit-test) shows the cutout test step by step.
 

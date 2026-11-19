@@ -16,8 +16,10 @@ import {
   dividerSeatZ,
   getEffectiveSlotDimensions,
   getReceptacleDepth,
+  maxPieceFit,
   resolveCrossDividerMode,
   resolvePartialStyle,
+  resolvePieceFit,
   MIN_DIVIDER_FOR_RECEPTACLES,
   MIN_DIVIDER_FOR_SNAP,
   MIN_WALL_FOR_SLOTS,
@@ -130,6 +132,21 @@ export function useSlotConfigurator() {
       setParam('dividerPieces', { ...dividerPieces, ...updates });
     },
     [dividerPieces, setParam]
+  );
+
+  // A thinner piece can take less fit than it once had, so show what it gets.
+  const pieceFit = resolvePieceFit(dividerPieces);
+  const pieceFitMax = maxPieceFit(dividerPieces.thickness);
+  const setPieceFit = useCallback(
+    (value: number) =>
+      updateDividerPieces({
+        pieceFit: clamp(
+          Math.round(value * 100) / 100,
+          DESIGNER_CONSTRAINTS.MIN_DIVIDER_PIECE_FIT,
+          pieceFitMax
+        ),
+      }),
+    [updateDividerPieces, pieceFitMax]
   );
 
   const dividerHeight = useMemo(
@@ -361,6 +378,9 @@ export function useSlotConfigurator() {
     updateAxisPitch,
     clampPitch,
     updateDividerPieces,
+    pieceFit,
+    pieceFitMax,
+    setPieceFit,
     dividerHeight,
     maxDividerHeight,
     maxHeightRounded,

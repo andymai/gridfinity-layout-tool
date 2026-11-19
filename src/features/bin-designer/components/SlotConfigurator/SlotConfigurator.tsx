@@ -18,6 +18,7 @@ import {
   MIN_WALL_FOR_SLOTS,
 } from '@/shared/utils/slotMath';
 import { CustomGridEditor } from './CustomGridEditor';
+import { DividerFitSampleButton } from './DividerFitSampleButton';
 import { useSlotConfigurator } from './useSlotConfigurator';
 import type { SlotAxis } from './useSlotConfigurator';
 
@@ -33,6 +34,9 @@ export function SlotConfigurator() {
     updateAxisPitch,
     clampPitch,
     updateDividerPieces,
+    pieceFit,
+    pieceFitMax,
+    setPieceFit,
     dividerHeight,
     maxDividerHeight,
     maxHeightRounded,
@@ -343,7 +347,9 @@ export function SlotConfigurator() {
           />
         </div>
         <div className="flex-1 min-w-0">
-          <FieldLabel>{t('binDesigner.dividerClearance')}</FieldLabel>
+          <FieldLabel info={t('binDesigner.dividerClearanceDetail')}>
+            {t('binDesigner.dividerClearance')}
+          </FieldLabel>
           <Stepper
             value={dividerPieces.clearance}
             onChange={(v) =>
@@ -372,10 +378,31 @@ export function SlotConfigurator() {
             min={DESIGNER_CONSTRAINTS.MIN_DIVIDER_CLEARANCE}
             max={DESIGNER_CONSTRAINTS.MAX_DIVIDER_CLEARANCE}
             step={DESIGNER_CONSTRAINTS.DIVIDER_CLEARANCE_STEP}
+            inputDecimals={2}
             size="md"
             aria-label={t('binDesigner.dividerClearance')}
           />
         </div>
+      </div>
+
+      <div>
+        <FieldLabel info={t('binDesigner.dividerPieceFitDetail')}>
+          {t('binDesigner.dividerPieceFit')}
+        </FieldLabel>
+        <Stepper
+          value={pieceFit}
+          onChange={setPieceFit}
+          onStep={(delta) =>
+            setPieceFit(pieceFit + delta * DESIGNER_CONSTRAINTS.DIVIDER_PIECE_FIT_STEP)
+          }
+          min={DESIGNER_CONSTRAINTS.MIN_DIVIDER_PIECE_FIT}
+          max={pieceFitMax}
+          step={DESIGNER_CONSTRAINTS.DIVIDER_PIECE_FIT_STEP}
+          inputDecimals={2}
+          size="md"
+          fullWidth
+          aria-label={t('binDesigner.dividerPieceFit')}
+        />
       </div>
 
       {/* Floor groove */}
@@ -387,6 +414,8 @@ export function SlotConfigurator() {
           depth: String(DIVIDER_FLOOR_GROOVE_DEPTH),
         })}
       />
+
+      <DividerFitSampleButton />
 
       {/* Calculated divider dimensions (parametric readout; custom shows its own) */}
       {layout === 'even' && (
