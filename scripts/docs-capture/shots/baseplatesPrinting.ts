@@ -1447,6 +1447,49 @@ const exportDestination: Shot = {
   take: (s) => openSettingsTab(s, 'settings.tabs.exports'),
 };
 
+const sendToUrl: Shot = {
+  id: 'printing-file-formats-send-to-url',
+  kind: 'still',
+  async take(s) {
+    await openLayouts(s, WORKBENCH);
+    await s.ui.preClick(
+      s.page.getByRole('button', { name: label('sidebar.openSettings') }).first()
+    );
+    const dialog = s.page.getByRole('dialog').first();
+    await s.until(dialog);
+    await s.ui.preClick(
+      dialog.getByRole('tab', { name: label('settings.tabs.exports'), exact: true })
+    );
+    const toggle = dialog.getByRole('switch', { name: label('exportDestination.url.title') });
+    await s.ui.preClick(toggle);
+    const address = dialog.getByLabel(label('exportDestination.url.address'), { exact: true });
+    await s.until(address);
+    await address.fill('https://nas.local/upload', { force: true });
+    await s.page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await s.page.waitForTimeout(400);
+    await s.ui.warm(20);
+    await s.dismissToasts();
+    await s.ui.park(6, DESKTOP.height - 6);
+    const panel = await s.box(dialog.getByRole('tabpanel').first());
+    const heading = await s.box(
+      dialog.getByText(label('exportDestination.url.title'), { exact: true })
+    );
+    const test = await s.box(
+      dialog.getByRole('button', { name: label('exportDestination.url.test'), exact: true })
+    );
+    const top = heading.y - 16;
+    await s.still(
+      {
+        x: panel.x - 16,
+        y: top,
+        width: panel.width + 32,
+        height: test.y + test.height + 16 - top,
+      },
+      1.25
+    );
+  },
+};
+
 const estimateSettings: Shot = {
   id: 'printing-estimates-settings',
   kind: 'still',
@@ -1485,5 +1528,6 @@ export const BASEPLATES_PRINTING: readonly Shot[] = [
   layoutExport,
   blankLabels,
   exportDestination,
+  sendToUrl,
   estimateSettings,
 ];

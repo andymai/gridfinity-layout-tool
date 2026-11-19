@@ -1395,6 +1395,112 @@ const basicsMagnetHoles: Shot = {
   },
 };
 
+interface MeasureTargets {
+  frontTop: [number, number];
+  backTop: [number, number];
+  frontWall: [number, number];
+}
+
+/**
+ * Screen points (CSS px) on the built bin, Z up and front at -Y: the rim over
+ * the front and the back wall, and the front wall's outer face. The tool picks
+ * on the raw mesh arrays, so these are projected from the same arrays. A pick
+ * snaps to any crease within 10 px in 3D, one behind the wall too: near the
+ * floor or the middle of a compartment, the wall point snaps to the inner face
+ * and Thickness measures across the bin.
+ */
+async function measureTargets(s: DocsSession): Promise<MeasureTargets> {
+  return s.page.evaluate(async () => {
+    type V = { set(x: number, y: number, z: number): V; project(c: unknown): V; clone(): V };
+    type P = { x: number; y: number };
+    const w = window as unknown as { __docsCamera?: { position: V } };
+    const camera = w.__docsCamera;
+    if (!camera) throw new Error('the preview never rendered');
+    const { useDesignerStore } = (await import(
+      '/src/features/bin-designer/store/designer.ts' as string
+    )) as {
+      useDesignerStore: { getState(): { generation: { mesh: { vertices: Float32Array } | null } } };
+    };
+    const v = useDesignerStore.getState().generation.mesh?.vertices;
+    if (!v) throw new Error('no built mesh');
+    let [x0, y0, z0, x1, y1, z1] = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
+    for (let i = 0; i < v.length; i += 3) {
+      const [x, y, z] = [v[i] ?? 0, v[i + 1] ?? 0, v[i + 2] ?? 0];
+      [x0, y0, z0] = [Math.min(x0, x), Math.min(y0, y), Math.min(z0, z)];
+      [x1, y1, z1] = [Math.max(x1, x), Math.max(y1, y), Math.max(z1, z)];
+    }
+    let [front, back] = [Infinity, -Infinity];
+    for (let i = 0; i < v.length; i += 3) {
+      if ((v[i + 2] ?? 0) < z1 - 0.01) continue;
+      front = Math.min(front, v[i + 1] ?? 0);
+      back = Math.max(back, v[i + 1] ?? 0);
+    }
+    const canvas = document.querySelector('canvas');
+    if (!canvas) throw new Error('no canvas');
+    const r = canvas.getBoundingClientRect();
+    const at = (x: number, y: number, z: number): [number, number] => {
+      const p = camera.position.clone().set(x, y, z).project(camera) as unknown as P;
+      return [r.left + ((p.x + 1) / 2) * r.width, r.top + ((1 - p.y) / 2) * r.height];
+    };
+    const x = x0 + (x1 - x0) * 0.25;
+    // The back rim's outer edge is the outline from the front, where a ray can
+    // miss; on the lip's slope just inside, the pick snaps to the same edge.
+    return {
+      frontTop: at(x, front, z1),
+      backTop: at(x, back - 1, z1 - 0.5),
+      frontWall: at(x0 + (x1 - x0) * 0.35, y0, z0 + (z1 - z0) * 0.5),
+    };
+  });
+}
+
+const previewMeasure: Shot = {
+  id: 'concepts-preview-measure',
+  kind: 'clip',
+  async take(s) {
+    await openDesigner(s, 'Screw bin', {
+      width: 2,
+      depth: 2,
+      height: 3,
+      compartments: { cols: 2, rows: 1, cells: [0, 1] },
+    });
+    const toggle = s.page
+      .getByRole('button', { name: label('binDesigner.measure.toggleAria') })
+      .filter({ visible: true })
+      .first();
+    const thickness = s.page.getByRole('button', {
+      name: label('binDesigner.measure.modeThickness'),
+      exact: true,
+    });
+    const view = await preview(s);
+    // Closer, so the bin fills the frame under the toolbar.
+    const first = await partBox(s);
+    await wheelView(s, [first.x + first.width / 2, first.y + first.height / 2], -2);
+    await s.ui.warm(120);
+    const targets = await measureTargets(s);
+    const bin = await partBox(s);
+    // The whole toolbar, and the bar that opens over its middle.
+    const bar = await s.box(toggle.locator('xpath=..'));
+    const area = frameAround(union(bin, bar), 16, 4 / 3, view);
+    const rest: [number, number] = [area.x + area.width * 0.85, area.y + area.height * 0.85];
+    await s.ui.park(...rest);
+    await s.take(area, async () => {
+      await s.ui.hold(0.4);
+      await s.ui.click(toggle);
+      await s.ui.hold(0.5);
+      await s.ui.clickAt(...targets.frontTop);
+      await s.ui.hold(0.4);
+      await s.ui.clickAt(...targets.backTop);
+      await s.ui.hold(1.4);
+      await s.ui.click(thickness);
+      await s.ui.hold(0.5);
+      await s.ui.clickAt(...targets.frontWall);
+      await s.ui.moveTo(...rest);
+      s.poster();
+      await s.ui.hold(1.8);
+    });
+  },
+};
+
 export const CONCEPTS: readonly Shot[] = [
   basicsParts,
   binAnatomy,
@@ -1423,4 +1529,5 @@ export const CONCEPTS: readonly Shot[] = [
   printBedDiagonal,
   multiColorExport,
   basicsMagnetHoles,
+  previewMeasure,
 ];
