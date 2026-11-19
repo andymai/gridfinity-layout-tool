@@ -160,6 +160,7 @@ export function LidAdvancedFields({
               label={t('binDesigner.lid.retentionMagnetDiameter')}
               unit="mm"
               value={state.retentionMagnetDiameter}
+              syncKey={state.retentionMagnetDiameterSyncKey}
               onChange={handlers.setRetentionMagnetDiameter}
               onStep={(delta) =>
                 handlers.setRetentionMagnetDiameter(

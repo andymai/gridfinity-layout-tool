@@ -109,6 +109,16 @@ describe('LidAdvancedFields', () => {
       expect(useDesignerStore.getState().params.lid.retentionMagnet.diameter).toBe(6.45);
     });
 
+    it('shows the snapped diameter when it equals the stored one', () => {
+      seed({ attachment: 'magnetic', retentionMagnet: magnet(6.45) });
+      openMagnetFields();
+      const field = screen.getByLabelText('Retention magnet diameter in millimeters');
+      fireEvent.change(field, { target: { value: '6.43' } });
+      fireEvent.blur(field);
+      expect(useDesignerStore.getState().params.lid.retentionMagnet.diameter).toBe(6.45);
+      expect(field).toHaveValue(6.45);
+    });
+
     it('steps the diameter by 0.05mm without float noise', () => {
       vi.useFakeTimers();
       seed({ attachment: 'magnetic', retentionMagnet: magnet(6.1) });

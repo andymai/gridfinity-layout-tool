@@ -360,12 +360,16 @@ export function useLidSection() {
     [lid.stackableTop, lid.stackLipOnly, lid.tray, lid.grip, updateLid]
   );
 
+  // The field keeps typed text until its value changes, so a snap back to the
+  // stored diameter needs a new syncKey before the field shows it.
+  const [diameterResyncs, setDiameterResyncs] = useState(0);
   const setRetentionMagnetDiameter = useCallback(
     (diameter: number) => {
       const clamped = Math.min(
         LID_MAGNET_DIAMETER_MAX_MM,
         Math.max(LID_MAGNET_DIAMETER_MIN_MM, snapMagnetDiameter(diameter))
       );
+      if (clamped !== diameter) setDiameterResyncs((n) => n + 1);
       updateLid({ retentionMagnet: { ...lid.retentionMagnet, diameter: clamped } });
     },
     [lid.retentionMagnet, updateLid]
@@ -902,6 +906,7 @@ export function useLidSection() {
       retentionMagnetDepthMin: LID_MAGNET_DEPTH_MIN_MM,
       retentionMagnetDepthMax: LID_MAGNET_DEPTH_MAX_MM,
       retentionMagnetDiameterStep: MAGNET_DIAMETER_STEP_MM,
+      retentionMagnetDiameterSyncKey: diameterResyncs,
       retentionMagnetDepthStep: LID_MAGNET_DEPTH_STEP_MM,
       // Edge magnets per long edge — anti-sag reinforcement for big lids.
       retentionMagnetEdgeMagnets: lid.retentionMagnet.edgeMagnets,
