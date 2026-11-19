@@ -56,6 +56,12 @@ Each ridge stands 0.3 mm into the hole, so a hole that prints a little too large
 
 <Ui k="baseplate.magnetChamfer" /> needs <Ui k="baseplate.solidFloor" />. A plate without it has a hollow floor, which leaves too little wall around each hole for a lead-in. The lead-in is 0.8 mm deep, so a hole must be deeper than that to get it. <Ui k="baseplate.magnetCrushRibs" /> works on either floor.
 
+### Push magnets out from below
+
+A magnet held by crush ribs or glue is hard to get out again. Turn on <Ui k="baseplate.magnetPopOutHoles" /> under <Ui k="common.customize" />. Each magnet hole then gets a small hole through the floor under it. Push the magnet out from the underside with a pin.
+
+The small hole is 2 mm wide at most, so the floor still holds the magnet. The <Ui k="baseplate.mountMagnets.label" /> holes don't get one.
+
 ### Magnet position on large grids
 
 When the <Ui k="baseplate.gridUnit" /> is more than 42 mm, <Ui k="common.physicalUnits" /> shows <Ui k="baseplate.magnetAnchor" />. This one setting applies to the plate, the bins and the lids together, so their magnets stay lined up.
