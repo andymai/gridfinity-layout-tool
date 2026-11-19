@@ -158,6 +158,30 @@ describe('wall cutout carried through the dividers', () => {
   }, 120_000);
 });
 
+describe('wall cutout path under a rounded shoulder', () => {
+  beforeAll(async () => {
+    await initBrepjs();
+  }, 180_000);
+
+  it('lowers a divider the shoulder reaches past the opening, with no lip', () => {
+    // A 39 mm opening ends 0.4 mm short of the column divider's near face, and
+    // its 5 mm shoulder carries on over the divider about 3 mm below the rim.
+    const defaults = buildParams({});
+    const mesh = gen({ front: cut(true, { widthMm: 39, depthMm: 18, cornerRadiusTop: 5 }) }, true, {
+      depth: 3,
+      base: { ...defaults.base, stackingLip: false },
+      compartments: { ...defaults.compartments, cols: 3, rows: 1, cells: [0, 1, 2] },
+    });
+    assertWatertight(mesh, 'rounded shoulder');
+    const outerD = 3 * GRID_SIZE - TOLERANCE;
+    const rim = topAt(mesh, -45 + N, outerD / 2 - WALL / 2);
+    // The front wall's top over the divider's near face: the shoulder's height there.
+    const shoulder = topAt(mesh, X2 - 0.6 + 0.01, -outerD / 2 + WALL / 2);
+    expect(rim - shoulder).toBeGreaterThan(2);
+    expect(topAt(mesh, X2 + N, 10 + N)).toBeCloseTo(shoulder, 1);
+  }, 120_000);
+});
+
 describe('wall cutout path on a square 3x3 grid', () => {
   const OUTER_D_SQUARE = 3 * GRID_SIZE - TOLERANCE;
   const SQUARE_D = OUTER_D_SQUARE - 2 * WALL;

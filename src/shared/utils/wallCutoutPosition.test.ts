@@ -6,9 +6,11 @@ import {
   resolveCutoutCornerRadii,
   resolveCutoutDrop,
   resolveCutoutSpan,
+  cutoutFloorRise,
   cutoutSide,
   safeCutoutCornerRadii,
   shoulderBlend,
+  type CutoutFloorProfile,
 } from './wallCutoutPosition';
 
 describe('computeCutoutCenter', () => {
@@ -296,5 +298,52 @@ describe('cutoutSide', () => {
     expect(halfWidthAt(CLEARANCE)).toBeCloseTo(CUT / 2, 12);
     expect(halfWidthAt(-DROP)).toBeCloseTo(CUT * 0.3, 12);
     expect(side.bottomHalfWidth).toBeCloseTo(CUT * 0.3, 12);
+  });
+});
+
+describe('cutoutFloorRise', () => {
+  const CUT = 39;
+  const DROP = 18;
+  const R = 5;
+  /** A lipless u-shape: its rim is the wall top, `DROP` above the cut's floor. */
+  const profile = (shape: CutoutFloorProfile['shape'], top = R): CutoutFloorProfile => ({
+    shape,
+    cutWidth: CUT,
+    drop: DROP,
+    lipRoom: 0,
+    collarHeight: 0,
+    rimClearance: 2,
+    safe: safeCutoutCornerRadii({ top, bottom: 0 }, CUT, DROP, 0),
+  });
+
+  it('follows a rounded shoulder down from the rim', () => {
+    const p = profile('u-shape');
+    const half = CUT / 2;
+    expect(cutoutFloorRise(p, half - 1)).toBe(0);
+    // A quarter arc, tangent to the side `R` below the rim and to the rim `R` out.
+    expect(cutoutFloorRise(p, half + R / 2)).toBeCloseTo(DROP - R + (R * Math.sqrt(3)) / 2, 9);
+    expect(cutoutFloorRise(p, -(half + R / 2))).toBeCloseTo(DROP - R + (R * Math.sqrt(3)) / 2, 9);
+    expect(cutoutFloorRise(p, half + R)).toBeCloseTo(DROP, 9);
+    expect(cutoutFloorRise(p, half + R + 0.01)).toBe(Infinity);
+  });
+
+  it('leaves a square shoulder where it was', () => {
+    expect(cutoutFloorRise(profile('u-shape', 0), CUT / 2 + 1)).toBe(Infinity);
+  });
+
+  it('rounds a scoop shoulder too', () => {
+    const rise = cutoutFloorRise(profile('scoop'), CUT / 2 + R / 2);
+    expect(rise).toBeCloseTo(DROP - R + (R * Math.sqrt(3)) / 2, 9);
+  });
+
+  it('climbs a funnel side onto its shoulder without a step', () => {
+    const p = profile('funnel');
+    const side = cutoutSide('funnel', CUT, DROP, 2);
+    const blend = shoulderBlend(side.halfWidthAtRim, DROP, side.lean, R);
+    const at = blend.side[0];
+    expect(cutoutFloorRise(p, at - 1e-6)).toBeCloseTo(blend.side[1], 4);
+    expect(cutoutFloorRise(p, at + 1e-6)).toBeCloseTo(blend.side[1], 4);
+    expect(cutoutFloorRise(p, blend.rim[0])).toBeCloseTo(DROP, 9);
+    expect(cutoutFloorRise(p, blend.rim[0] + 0.01)).toBe(Infinity);
   });
 });

@@ -376,14 +376,16 @@ export interface CutoutFloorProfile {
  * Height of the cut's bottom edge above its lowest point, at `x` across the
  * span from the cut's centre, or Infinity where the cut does not reach down at
  * all. Traces the same lines `buildCutoutProfile` draws: the bottom fillets and
- * a funnel's leaning sides, or a scoop's arc. The top round-over is left out,
- * because it only flares the opening above the wall top.
+ * a funnel's leaning sides, or a scoop's arc, then the top round-over out to
+ * the rim. A short lip, or none, leaves that round-over below a divider's top.
  */
 export function cutoutFloorRise(p: CutoutFloorProfile, x: number): number {
   const ax = Math.abs(x);
+  const rim = p.drop + p.lipRoom;
+  const shoulderR = x >= 0 ? p.safe.topRight : p.safe.topLeft;
   if (p.shape === 'scoop') {
     const hw = p.cutWidth / 2;
-    if (ax > hw) return Infinity;
+    if (ax > hw) return shoulderRise(roundOver(hw, rim, 0, shoulderR), ax);
     const topR = Math.max(p.safe.topLeft, p.safe.topRight);
     const chord = Math.min(p.drop, p.drop + (p.lipRoom - p.collarHeight) - topR);
     const sagitta = Math.min(hw, chord);
@@ -392,9 +394,11 @@ export function cutoutFloorRise(p: CutoutFloorProfile, x: number): number {
     const centreY = chord - sagitta + radius;
     return Math.max(0, centreY - Math.sqrt(Math.max(0, radius * radius - ax * ax)));
   }
-  const side = cutoutSide(p.shape, p.cutWidth, p.drop + p.lipRoom, p.rimClearance);
+  const side = cutoutSide(p.shape, p.cutWidth, rim, p.rimClearance);
   const r = x >= 0 ? p.safe.bottomRight : p.safe.bottomLeft;
   const { bottomHalfWidth: bhw, lean } = side;
+  const shoulder = roundOver(side.halfWidthAtRim, rim, lean, shoulderR);
+  if (shoulder && ax > shoulder.side[0]) return shoulderRise(shoulder, ax);
   if (r > MIN_CUTOUT_CORNER_RADIUS) {
     // The fillet is tangent to the floor and to the side, so its centre
     // stands one radius off each.
@@ -410,6 +414,23 @@ export function cutoutFloorRise(p: CutoutFloorProfile, x: number): number {
   }
   if (lean <= 0) return Infinity;
   return (ax - bhw) / lean;
+}
+
+/** The top round-over `buildCutoutProfile` draws, or null for a square shoulder. */
+function roundOver(
+  sideAtRim: number,
+  rim: number,
+  lean: number,
+  radius: number
+): ShoulderBlend | null {
+  return radius > MIN_CUTOUT_CORNER_RADIUS ? shoulderBlend(sideAtRim, rim, lean, radius) : null;
+}
+
+/** Height of a round-over above the cut's floor, out to where it meets the rim. */
+function shoulderRise(blend: ShoulderBlend | null, ax: number): number {
+  if (!blend || ax > blend.rim[0]) return Infinity;
+  const dx = ax - blend.centre[0];
+  return blend.centre[1] + Math.sqrt(Math.max(0, blend.radius * blend.radius - dx * dx));
 }
 
 /** Zero out a radius too small to be worth a curve. */
