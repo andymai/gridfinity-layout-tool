@@ -3948,7 +3948,7 @@
   "inspector.newPropertyValue": "Neuer Eigenschaftswert",
   "inspector.noCustomProperties": "Keine benutzerdefinierten Eigenschaften",
   "inspector.nonStandardStackWarning": "Lässt sich nicht mit Standard-Bins stapeln",
-  "inspector.notesPlaceholder": "z.B. 2 Trennwände, STL-Link, Inhalt",
+  "inspector.notesPlaceholder": "z.B. 2 Trennwände, PLA, Inhalt",
   "inspector.printedAndStackHint": "Druckt {printed}mm · stapelt je +{pitch}mm",
   "inspector.propertyValue": "Eigenschaftswert",
   "inspector.quickAddFromOtherBins": "Schnell von anderen Bins hinzufügen",

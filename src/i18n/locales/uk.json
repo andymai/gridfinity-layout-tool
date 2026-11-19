@@ -4090,7 +4090,7 @@
   "inspector.newPropertyValue": "Значення нової властивості",
   "inspector.noCustomProperties": "Користувацьких властивостей немає",
   "inspector.nonStandardStackWarning": "Не стикується зі стандартними контейнерами",
-  "inspector.notesPlaceholder": "напр., 2 розділювачі, посилання на STL, вміст",
+  "inspector.notesPlaceholder": "напр., 2 розділювачі, PLA, вміст",
   "inspector.printedAndStackHint": "Друкує {printed}mm · стос +{pitch}mm кожен",
   "inspector.propertyValue": "Значення властивості",
   "inspector.quickAddFromOtherBins": "Швидко додати з інших бінів",

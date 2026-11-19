@@ -3877,7 +3877,7 @@
   "inspector.newPropertyValue": "새 속성 값",
   "inspector.noCustomProperties": "맞춤 속성 없음",
   "inspector.nonStandardStackWarning": "표준 수납통과 적층되지 않습니다",
-  "inspector.notesPlaceholder": "예: 칸막이 2개, STL 링크, 내용물",
+  "inspector.notesPlaceholder": "예: 칸막이 2개, PLA, 내용물",
   "inspector.printedAndStackHint": "{printed}mm로 인쇄 · 적층 시 각 +{pitch}mm",
   "inspector.propertyValue": "속성 값",
   "inspector.quickAddFromOtherBins": "다른 수납통에서 빠르게 추가",

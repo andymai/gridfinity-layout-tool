@@ -482,7 +482,7 @@
   "inspector.sizeSuggestionApply": "გამოყენება",
   "inspector.sizeSuggestionNoFit": "აქ არ ჩაეტევა",
   "inspector.sizeSuggestionDismiss": "შემოთავაზების უგულებელყოფა",
-  "inspector.notesPlaceholder": "მაგ., 2 გამყოფი, STL ბმული, შიგთავსი",
+  "inspector.notesPlaceholder": "მაგ., 2 გამყოფი, PLA, შიგთავსი",
   "inspector.toStash": "დროებით საცავში გადატანა",
   "inspector.multi.title": "არჩეულია {count} ყუთი",
   "inspector.multi.layer": "ფენა",

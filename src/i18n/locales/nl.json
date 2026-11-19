@@ -3948,7 +3948,7 @@
   "inspector.newPropertyValue": "Nieuwe eigenschapwaarde",
   "inspector.noCustomProperties": "Geen aangepaste eigenschappen",
   "inspector.nonStandardStackWarning": "Niet stapelbaar met standaard bakjes",
-  "inspector.notesPlaceholder": "bijv. 2 scheidingswanden, STL-link, inhoud",
+  "inspector.notesPlaceholder": "bijv. 2 scheidingswanden, PLA, inhoud",
   "inspector.printedAndStackHint": "Print {printed}mm · stapelt +{pitch}mm elk",
   "inspector.propertyValue": "Eigenschapwaarde",
   "inspector.quickAddFromOtherBins": "Snel toevoegen van andere bins",

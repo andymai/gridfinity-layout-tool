@@ -3948,7 +3948,7 @@
   "inspector.newPropertyValue": "Nouvelle valeur de propriété",
   "inspector.noCustomProperties": "Aucune propriété personnalisée",
   "inspector.nonStandardStackWarning": "Ne s'empile pas avec les bacs standard",
-  "inspector.notesPlaceholder": "ex. 2 séparateurs, lien STL, contenu",
+  "inspector.notesPlaceholder": "ex. 2 séparateurs, PLA, contenu",
   "inspector.printedAndStackHint": "Imprime {printed}mm · empile +{pitch}mm chacun",
   "inspector.propertyValue": "Valeur de propriété",
   "inspector.quickAddFromOtherBins": "Ajout rapide depuis d'autres bins",

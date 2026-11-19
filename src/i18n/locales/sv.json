@@ -3948,7 +3948,7 @@
   "inspector.newPropertyValue": "Nytt egenskapsvärde",
   "inspector.noCustomProperties": "Inga anpassade egenskaper",
   "inspector.nonStandardStackWarning": "Kan inte staplas med standardlådor",
-  "inspector.notesPlaceholder": "t.ex. 2 avdelare, STL-länk, innehåll",
+  "inspector.notesPlaceholder": "t.ex. 2 avdelare, PLA, innehåll",
   "inspector.printedAndStackHint": "Skriver ut {printed}mm · staplar +{pitch}mm styck",
   "inspector.propertyValue": "Egenskapsvärde",
   "inspector.quickAddFromOtherBins": "Snabblägg till från andra fack",

@@ -3877,7 +3877,7 @@
   "inspector.newPropertyValue": "新属性值",
   "inspector.noCustomProperties": "没有自定义属性",
   "inspector.nonStandardStackWarning": "无法与标准收纳盒堆叠",
-  "inspector.notesPlaceholder": "例如：2 个隔板、STL 链接、内容物",
+  "inspector.notesPlaceholder": "例如：2 个隔板、PLA、内容物",
   "inspector.printedAndStackHint": "打印为 {printed}mm · 每层堆叠 +{pitch}mm",
   "inspector.propertyValue": "属性值",
   "inspector.quickAddFromOtherBins": "从其他收纳盒快速添加",

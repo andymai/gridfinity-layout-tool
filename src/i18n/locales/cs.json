@@ -4019,7 +4019,7 @@
   "inspector.newPropertyValue": "Hodnota nové vlastnosti",
   "inspector.noCustomProperties": "Žádné vlastní vlastnosti",
   "inspector.nonStandardStackWarning": "Nebude se stohovat se standardními biny",
-  "inspector.notesPlaceholder": "např. 2 přepážky, odkaz na STL, obsah",
+  "inspector.notesPlaceholder": "např. 2 přepážky, PLA, obsah",
   "inspector.printedAndStackHint": "Tiskne se {printed} mm · stohuje +{pitch} mm každý",
   "inspector.propertyValue": "Hodnota vlastnosti",
   "inspector.quickAddFromOtherBins": "Rychlé přidání z jiných binů",
