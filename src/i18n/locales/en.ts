@@ -924,19 +924,8 @@ const en: Record<string, string> = {
   'layouts.confirmDelete.title': 'Delete layout',
   'layouts.confirmDelete.message': 'Delete "{name}"? This cannot be undone.',
   'layouts.confirmDelete.confirm': 'Delete layout',
-  'layouts.import.title': 'Import layout',
-  'layouts.import.browseFiles': 'Browse files',
-  'layouts.import.pasteLink': 'Or paste a share link:',
-  'layouts.import.placeholder':
-    '{"version": "1.0", "name": "My Layout", ...} or https://...#share=...',
-  'layouts.import.bins_one': '{count} bin',
-  'layouts.import.bins_other': '{count} bins',
-  'layouts.import.closeImportDialog': 'Close import dialog',
-  'layouts.import.drawerSize': 'Drawer: {size}',
   'layouts.import.layers_one': '{count} layer',
   'layouts.import.layers_other': '{count} layers',
-  'layouts.import.preview': 'Preview',
-  'layouts.import.selectJsonFileToImport': 'Select JSON file to import',
   'layouts.accessed': 'Accessed',
   'layouts.active': 'Active',
   'layouts.availableLayouts': 'Available layouts',
@@ -6517,7 +6506,6 @@ const en: Record<string, string> = {
 
   // Import modal inline errors
   'layouts.import.error.invalidJsonFormat': 'Invalid JSON format',
-  'layouts.import.error.noJsonProvided': 'No JSON provided',
   'layouts.import.error.fileTooLarge': 'File too large ({sizeMb} MB). Maximum is {maxMb} MB.',
 
   // Shared layout

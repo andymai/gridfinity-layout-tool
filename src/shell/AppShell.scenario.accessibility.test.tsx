@@ -14,7 +14,6 @@ import { Sidebar } from '@/shell/Sidebar';
 import { RightPanel } from '@/shell/RightPanel';
 import { Staging } from '@/features/staging/components/Staging';
 import { HelpModal } from '@/shell/Modals/HelpModal';
-import { ImportModal } from '@/shell/Modals/ImportModal';
 import { CommandPalette } from '@/features/command-palette';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
@@ -145,13 +144,6 @@ describe('Accessibility - Overlays', () => {
   it('HelpModal (open) has no critical accessibility violations', async () => {
     const { container } = render(<HelpModal isOpen={true} onClose={vi.fn()} />);
     await expectNoCriticalViolations(container, 'HelpModal');
-  }, 15_000);
-
-  it('ImportModal (open) has no critical accessibility violations', async () => {
-    const { container } = render(
-      <ImportModal isOpen={true} onClose={vi.fn()} onImport={vi.fn()} />
-    );
-    await expectNoCriticalViolations(container, 'ImportModal');
   }, 15_000);
 
   it('CommandPalette (open) has no critical accessibility violations', async () => {
