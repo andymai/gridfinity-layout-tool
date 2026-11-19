@@ -199,12 +199,15 @@ function buildMarginSolid(params: ResolvedBaseplateParams, margin: MarginPiece):
   };
   // Every margin cell of the plate, not only this rail's: the eco plan sizes a
   // relief on an edge two cells share from both of them.
+  // Both pitches, as the body frames them: the eco plan sizes cell depths with
+  // the Y pitch, so a frame built on X alone misplaces a non-square grid.
+  const pitch = { x: params.gridUnitMm, y: params.gridUnitMmY ?? params.gridUnitMm };
   const frame: CellInfo[] = params.overTile
     ? frameCells(
         params.width,
         params.depth,
         margins,
-        params.gridUnitMm,
+        pitch,
         MIN_PRINTABLE_TILE_MM,
         params.overTileHalfGrid,
         params.overTileHalfGridSolidLeftover,
@@ -223,8 +226,8 @@ function buildMarginSolid(params: ResolvedBaseplateParams, margin: MarginPiece):
       const lx = cell.centerX - ox;
       const ly = cell.centerY - oy;
       if (Math.abs(lx) > halfW + 1e-6 || Math.abs(ly) > halfD + 1e-6) continue;
-      const cellW = cell.widthUnits * params.gridUnitMm;
-      const cellD = cell.depthUnits * params.gridUnitMm;
+      const cellW = cell.widthUnits * pitch.x;
+      const cellD = cell.depthUnits * pitch.y;
       const pocket = getPocketTemplate(
         cellW,
         cellD,

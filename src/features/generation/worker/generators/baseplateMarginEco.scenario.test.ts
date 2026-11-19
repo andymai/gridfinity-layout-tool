@@ -33,7 +33,7 @@ const WIDTH_UNITS = 2.5;
 const DEPTH_UNITS = 2;
 const ECO_BRIDGE_MM = 1.6;
 
-function plate(over: Partial<StoredBaseplateParams> = {}): ResolvedBaseplateParams {
+function plate(over: Partial<StoredBaseplateParams> = {}, gridY = GU): ResolvedBaseplateParams {
   const stored: StoredBaseplateParams = {
     ...DEFAULT_BASEPLATE_PARAMS,
     paddingLeft: mm(9),
@@ -45,7 +45,18 @@ function plate(over: Partial<StoredBaseplateParams> = {}): ResolvedBaseplatePara
     ecoPlate: true,
     ...over,
   };
-  return buildFullParams(stored, WIDTH_UNITS, DEPTH_UNITS, GU, 'end', 'end', 0.4);
+  return buildFullParams(
+    stored,
+    WIDTH_UNITS,
+    DEPTH_UNITS,
+    GU,
+    'end',
+    'end',
+    0.4,
+    undefined,
+    undefined,
+    gridY
+  );
 }
 
 function railsOf(params: ResolvedBaseplateParams, bedMm = 500): readonly MarginPiece[] {
@@ -87,7 +98,7 @@ function topAt(m: MeshData, x: number, y: number): number {
 }
 
 describe('an eco plate relieves its detached margins', () => {
-  const cases: Array<[string, Partial<StoredBaseplateParams>, number]> = [
+  const cases: Array<[string, Partial<StoredBaseplateParams>, number, number?]> = [
     ['grid margins', {}, 500],
     ['half-grid margins', { overTileHalfGrid: true, paddingBack: mm(30) }, 500],
     ['solid margins', { overTile: false }, 500],
@@ -95,18 +106,20 @@ describe('an eco plate relieves its detached margins', () => {
     // and wide enough to reach the relief beside it.
     ['grid margins with a rounded corner', { cornerRadius: mm(5) }, 500],
     ['grid margins on a split plate', {}, 90],
+    // Cells 42 x 50 mm: rails must frame them with both pitches, as the body does.
+    ['grid margins on a non-square grid', {}, 500, 50],
   ];
   it.each(cases)(
     'cuts each rail as the integral plate cuts the same band (%s)',
-    (_label, over, bedMm) => {
-      const eco = plate(over);
-      const plain = plate({ ...over, ecoPlate: false });
+    (_label, over, bedMm, gridY = GU) => {
+      const eco = plate(over, gridY);
+      const plain = plate({ ...over, ecoPlate: false }, gridY);
       const integralEco = buildBaseplateSolid(
-        sanitizeParams(plate({ ...over, detachMargins: false })),
+        sanitizeParams(plate({ ...over, detachMargins: false }, gridY)),
         true
       );
       const integralPlain = buildBaseplateSolid(
-        sanitizeParams(plate({ ...over, detachMargins: false, ecoPlate: false })),
+        sanitizeParams(plate({ ...over, detachMargins: false, ecoPlate: false }, gridY)),
         true
       );
       try {
@@ -129,6 +142,22 @@ describe('an eco plate relieves its detached margins', () => {
     },
     120_000
   );
+
+  it('pockets a rail on a non-square grid as the plate pockets the same band', () => {
+    const plain = plate({ ecoPlate: false }, 50);
+    const integral = buildBaseplateSolid(
+      sanitizeParams(plate({ detachMargins: false, ecoPlate: false }, 50)),
+      true
+    );
+    try {
+      for (const rail of railsOf(plain)) {
+        const railVolume = meshVolume(generateMargin(plain, rail, true));
+        expect(railVolume, rail.id).toBeCloseTo(volumeUnder(integral, rail), -1);
+      }
+    } finally {
+      integral.delete();
+    }
+  }, 120_000);
 
   it('drops a grid margin wall to the bottom bridge', () => {
     const eco = plate();
