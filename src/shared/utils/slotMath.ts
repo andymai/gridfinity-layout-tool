@@ -5,11 +5,12 @@
  * No dependencies on brepjs or Three.js.
  */
 
-import { GRIDFINITY } from '@/shared/constants/bin';
+import { DESIGNER_CONSTRAINTS, GRIDFINITY } from '@/shared/constants/bin';
 import type {
   BaseStyle,
   BinParams,
   CrossDividerStyle,
+  DividerPieceConfig,
   PartialDividerStyle,
   SlotConfig,
 } from '@/shared/types/bin';
@@ -110,6 +111,36 @@ export function getDividerLockPlan(
     headHeight: DIVIDER_LOCK_HEAD_HEIGHT,
     throatHeight: DIVIDER_LOCK_THROAT_HEIGHT,
   };
+}
+
+/**
+ * Largest piece fit a piece of this thickness takes, in mm per side: a seat
+ * thinned by twice it keeps the printable web the neck relief stops at.
+ */
+export function maxPieceFit(thickness: number): number {
+  return Math.max(
+    0,
+    Math.min(DESIGNER_CONSTRAINTS.MAX_DIVIDER_PIECE_FIT, (thickness - MIN_NECK_WIDTH) / 2)
+  );
+}
+
+export function resolvePieceFit(
+  pieces: Pick<DividerPieceConfig, 'thickness' | 'pieceFit'>
+): number {
+  const requested = pieces.pieceFit;
+  if (requested === undefined || !Number.isFinite(requested) || requested <= 0) return 0;
+  return Math.min(requested, maxPieceFit(pieces.thickness));
+}
+
+/**
+ * Opening of a cross-lap notch: the slot width, plus the piece fit on each
+ * side. A notch holds another piece's full-thickness body rather than a thinned
+ * seat, so the piece fit reaches it by widening it.
+ */
+export function lapNotchWidth(
+  pieces: Pick<DividerPieceConfig, 'thickness' | 'clearance' | 'pieceFit'>
+): number {
+  return pieces.thickness + 2 * (pieces.clearance + resolvePieceFit(pieces));
 }
 
 /**

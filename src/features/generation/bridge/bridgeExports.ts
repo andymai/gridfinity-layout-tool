@@ -466,6 +466,28 @@ export function exportSlideFitSample(
 }
 
 /**
+ * Export the divider fit sample. A wall section and one short piece, a fixed
+ * small workload whatever the bin's size, so it shares the fixed export ceiling.
+ */
+export function exportDividerFitSample(
+  ctx: BridgeExportContext,
+  format: ExportFormat,
+  params: BinParams
+): Promise<BaseplateExportResult> {
+  return runExport<BaseplateExportResult>(
+    ctx,
+    'export',
+    CONNECTOR_SAMPLE_TIMEOUT_MS,
+    (requestId) => ({
+      type: 'EXPORT_DIVIDER_FIT_SAMPLE',
+      // The sample is a wall section and a piece, so a mesh file the design
+      // uses, even one not on this device yet, must not hold it back.
+      payload: { requestId, format, params: { ...params, meshAssets: undefined, cutouts: [] } },
+    })
+  );
+}
+
+/**
  * Export the cutout fit-test card. The card is a slice of the real bin solid,
  * so it costs a full export-quality generation and takes the bin's own
  * params-derived timeout rather than the fixed coupon ceiling.

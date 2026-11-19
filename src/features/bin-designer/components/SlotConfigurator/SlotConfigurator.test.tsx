@@ -111,6 +111,55 @@ describe('SlotConfigurator', () => {
     expect(screen.getByText(/fit tolerance/i)).toBeInTheDocument();
   });
 
+  it('offers a piece fit beside the fit tolerance', () => {
+    render(<SlotConfigurator />);
+    expect(screen.getByRole('spinbutton', { name: /^piece fit$/i })).toBeInTheDocument();
+  });
+
+  it('writes the piece fit to the divider piece config, clamped to its range', () => {
+    const setParam = vi.fn();
+    useDesignerStore.setState({ setParam });
+
+    render(<SlotConfigurator />);
+    const control = screen.getByRole('spinbutton', { name: /^piece fit$/i });
+    fireEvent.change(control, { target: { value: '0.5' } });
+    fireEvent.blur(control);
+
+    expect(setParam).toHaveBeenCalledWith(
+      'dividerPieces',
+      expect.objectContaining({
+        pieceFit: 0.3,
+        clearance: DEFAULT_BIN_PARAMS.dividerPieces.clearance,
+      })
+    );
+  });
+
+  it('caps the piece fit where a thin piece would lose its printable seat', () => {
+    const { params } = useDesignerStore.getState();
+    useDesignerStore.setState({
+      params: {
+        ...params,
+        dividerPieces: { ...params.dividerPieces, thickness: 0.8, pieceFit: 0.3 },
+      },
+    });
+    render(<SlotConfigurator />);
+    expect(screen.getByRole('spinbutton', { name: /^piece fit$/i })).toHaveValue(0.1);
+  });
+
+  it('shows a piece fit off the 0.1mm grid as entered', () => {
+    const { params } = useDesignerStore.getState();
+    useDesignerStore.setState({
+      params: { ...params, dividerPieces: { ...params.dividerPieces, pieceFit: 0.15 } },
+    });
+    render(<SlotConfigurator />);
+    expect(screen.getByRole('spinbutton', { name: /^piece fit$/i })).toHaveValue(0.15);
+  });
+
+  it('offers the divider fit test', () => {
+    render(<SlotConfigurator />);
+    expect(screen.getByRole('button', { name: /^print fit test$/i })).toBeInTheDocument();
+  });
+
   it('shows the default fit tolerance as 0.25, not rounded to 0.3', () => {
     render(<SlotConfigurator />);
     expect(screen.getByRole('spinbutton', { name: /^fit tolerance$/i })).toHaveValue(0.25);

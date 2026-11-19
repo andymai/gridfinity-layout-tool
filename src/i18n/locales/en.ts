@@ -2153,6 +2153,24 @@ const en: Record<string, string> = {
   'binDesigner.dividerHeight': 'Divider height',
   'binDesigner.dividerThickness': 'Divider thickness',
   'binDesigner.dividerClearance': 'Fit tolerance',
+  'binDesigner.dividerClearanceDetail':
+    "Widens the bin's wall slots and floor groove. Set it before you print the bin. To fix the fit of a printed bin, use Piece fit.",
+  'binDesigner.dividerPieceFit': 'Piece fit',
+  'binDesigner.dividerPieceFitDetail':
+    'Makes each divider thinner where it sits in a slot or the floor groove, and widens the notches where dividers cross. The bin does not change, so a tight fit costs only a new divider. Print the fit test to find your value.',
+  'binDesigner.dividerFitSample.button': 'Print fit test',
+  'binDesigner.dividerFitSample.dialogTitle': 'Divider fit test',
+  'binDesigner.dividerFitSample.dialogDescription':
+    "A short part of this bin's wall with one slot, cut the same as the bin, and a short divider with your piece fit.",
+  'binDesigner.dividerFitSample.tipsTitle': 'How to use it',
+  'binDesigner.dividerFitSample.tip1':
+    'Print both parts. Push the divider down the slot until it clicks under the catch near the floor.',
+  'binDesigner.dividerFitSample.tip2':
+    'Too tight? Raise Piece fit. No click? Lower it. Then export again and print only the divider.',
+  'binDesigner.dividerFitSample.tip3':
+    'The divider prints flat, so it changes in whole layers: at a 0.2mm layer height, use steps of 0.1mm.',
+  'binDesigner.dividerFitSample.exportComplete': 'Fit test downloaded',
+  'binDesigner.dividerFitSample.exportFailed': 'Could not export the fit test',
   'binDesigner.dividerFloorGroove': 'Floor groove',
   'binDesigner.dividerFloorGrooveHint':
     "A {depth}mm channel in the floor seats each divider's bottom edge. Turn off to print dividers for a bin made without one.",

@@ -31,6 +31,7 @@ import {
   getDividerLockPlan,
   getReceptacleDepth,
   getSnapScoreDepth,
+  lapNotchWidth,
   resolveCrossDividerMode,
   resolvePartialStyle,
   SNAP_SCORE_WIDTH,
@@ -44,6 +45,8 @@ import { lidKeepoutRing } from '@/shared/constants/lidKeepout';
 import { getEffectiveSlotDimensions } from './slotBuilder';
 import { cutPiecePattern, resolvePiecePatternContext } from './dividerPiecePatternBuilder';
 import { pieceWindowCutter } from './dividerPieceWindowCut';
+import { cutPieceSeatFit, resolvePieceSeatFit, seatTopZ } from './dividerPieceSeat';
+import type { PieceSeatFit } from './dividerPieceSeat';
 import type { ExposedSpan } from './dividerPieceWindowCut';
 import type { PieceGeometry } from './dividerPiecePatternBuilder';
 import type { PieceObstruction } from './dividerPiecePatterns';
@@ -208,24 +211,26 @@ function cutFaceGrooves(
  * friction).
  *
  * In flat orientation the piece is centered in X (length) and Y (installed height,
- * −Y = installed bottom, resting on the floor); Z (thickness) spans [0, thickness]
- * with the build plate at Z=0, so the two faces recessed here sit at Z=0 and
- * Z=thickness. Both faces are relieved at both ends; a relief near a free end seats
- * in empty space and is inert, so pieces need not track which ends land in a wall
- * slot. Skips pieces shorter than the lock stack, matching the slot builder's own
- * fall-back to a plain slot.
+ * −Y = installed bottom, resting on the floor); the tab spans Z [0, tabTop] with the
+ * build plate at Z=0 (`tabTop` is the thickness less any piece fit), so the two faces
+ * recessed here sit at Z=0 and Z=tabTop. Both faces are relieved at both ends; a
+ * relief near a free end seats in empty space and is inert, so pieces need not track
+ * which ends land in a wall slot. Skips pieces shorter than the lock stack, matching
+ * the slot builder's own fall-back to a plain slot.
  */
 function cutDividerNeckRelief(
   piece: Shape3D,
   length: number,
   height: number,
-  thickness: number,
   tabDepth: number,
-  lock: DividerLockPlan
+  lock: DividerLockPlan,
+  tabTop: number
 ): Shape3D {
-  const depthPerFace = (thickness - lock.neckWidth) / 2;
+  const depthPerFace = (tabTop - lock.neckWidth) / 2;
   const lockHeight = lock.headHeight + lock.throatHeight;
-  if (depthPerFace <= 0 || height <= lockHeight) return piece;
+  // A tab the piece fit already thinned to the neck needs no relief, and one a
+  // hair wider would leave a sliver face.
+  if (depthPerFace < COPLANAR_OVERLAP || height <= lockHeight) return piece;
 
   // Relieve a hair beyond the throat band (headHeight..headHeight+throatHeight
   // above the floor-resting bottom edge) so a piece seated slightly high or low
@@ -249,10 +254,27 @@ function cutDividerNeckRelief(
     const clen = Math.abs(outer - inner);
     cutters.push(
       box(clen, bandHeight, cutZ, { at: [cx, bandCenterY, faceZ] }),
-      box(clen, bandHeight, cutZ, { at: [cx, bandCenterY, thickness - faceZ] })
+      box(clen, bandHeight, cutZ, { at: [cx, bandCenterY, tabTop - faceZ] })
     );
   }
   return applyCuts(piece, cutters);
+}
+
+/**
+ * Fit a piece's seats, then relieve each tab's neck against the thinned tab.
+ * Consumes `piece`.
+ */
+export function relieveTabSeats(
+  piece: Shape3D,
+  length: number,
+  height: number,
+  thickness: number,
+  tabDepth: number,
+  lock: DividerLockPlan,
+  seat: PieceSeatFit
+): Shape3D {
+  const seated = cutPieceSeatFit(piece, length, height, thickness, tabDepth, seat);
+  return cutDividerNeckRelief(seated, length, height, tabDepth, lock, seatTopZ(thickness, seat));
 }
 
 /**
@@ -381,6 +403,7 @@ export function buildUniqueDividerPieces(
   // Half height per side leaves the crossing flush; add the fit clearance so
   // over-extrusion can't hold the upper divider proud of the rim.
   const notchDepth = dividerHeight / 2 + clearance;
+  const notchWidth = lapNotchWidth(dividerPieces);
 
   // Positions of the perpendicular dividers along each piece's length.
   // An X-spanning piece is crossed by Y-axis dividers (positions along
@@ -435,6 +458,7 @@ export function buildUniqueDividerPieces(
   // neck (inert at receptacle/free ends). Length varies per piece. The lid
   // keep-out notch rides on the same call, inert at an end that seats mid-cavity.
   const lock = getDividerLockPlan(thickness, clearance);
+  const seat = resolvePieceSeatFit(params, hasLip);
   const keepout = resolveKeepoutRelief(
     params,
     innerW,
@@ -446,7 +470,7 @@ export function buildUniqueDividerPieces(
     tabDepth
   );
   const relief = (piece: Shape3D, length: number): Shape3D => {
-    const necked = cutDividerNeckRelief(piece, length, dividerHeight, thickness, tabDepth, lock);
+    const necked = relieveTabSeats(piece, length, dividerHeight, thickness, tabDepth, lock, seat);
     return cutLidKeepoutRelief(necked, length, dividerHeight, thickness, keepout);
   };
 
@@ -503,17 +527,24 @@ export function buildUniqueDividerPieces(
       const spans = calculateShortDividerSpans(longPositions, shortSpanDim, thickness);
       const lengths = calculateShortDividerLengths(spans, slotDepth, grooveDepth, clearance);
       if (lengths.interior !== null && lengths.interior > 0) {
-        addPiece(
-          pattern(buildDividerPiece(lengths.interior, thickness, dividerHeight), {
-            length: lengths.interior,
-            // Both ends slide into a face receptacle rather than a wall slot.
-            // Must be the ENGAGEMENT, not the groove depth — `lengths.interior`
-            // is `span + 2 * tabEngagement(grooveDepth, ...)`, so using the raw
-            // depth would hold more clear than the tab actually occupies.
-            tabEngagement: tabEngagement(grooveDepth, clearance),
-          }),
-          `${axisLabel(shortAxis)}-compartment`
+        const tab = tabEngagement(grooveDepth, clearance);
+        const piece = pattern(buildDividerPiece(lengths.interior, thickness, dividerHeight), {
+          length: lengths.interior,
+          // Both ends slide into a face receptacle rather than a wall slot.
+          // Must be the ENGAGEMENT, not the groove depth — `lengths.interior`
+          // is `span + 2 * tabEngagement(grooveDepth, ...)`, so using the raw
+          // depth would hold more clear than the tab actually occupies.
+          tabEngagement: tab,
+        });
+        const seated = cutPieceSeatFit(
+          piece,
+          lengths.interior,
+          dividerHeight,
+          thickness,
+          tab,
+          seat
         );
+        addPiece(seated, `${axisLabel(shortAxis)}-compartment`);
       }
       if (lengths.edge !== null && lengths.edge > 0) {
         // One end seats in a wall slot (relieve so its throat catches); the
@@ -555,7 +586,7 @@ export function buildUniqueDividerPieces(
       cutCrossLapNotches(
         piece,
         positions,
-        slotWidth,
+        notchWidth,
         notchDepth,
         dividerHeight,
         thickness,
@@ -578,7 +609,7 @@ export function buildUniqueDividerPieces(
             {
               length: seg.length,
               tabEngagement: tabDepth,
-              notches: columns(seg.notchOffsets, slotWidth),
+              notches: columns(seg.notchOffsets, notchWidth),
             },
             seg.exposed
           ),
@@ -592,7 +623,7 @@ export function buildUniqueDividerPieces(
 
     let piece = notch(buildFullPiece(axis), crossings);
     const snapPositions =
-      partialStyle === 'snappable' ? calculateLapSnapPositions(crossings, slotWidth) : [];
+      partialStyle === 'snappable' ? calculateLapSnapPositions(crossings, notchWidth) : [];
     if (partialStyle === 'snappable') {
       piece = cutFaceGrooves(
         piece,
@@ -606,7 +637,7 @@ export function buildUniqueDividerPieces(
     piece = pattern(piece, {
       length: fullLength(axis),
       tabEngagement: tabDepth,
-      notches: columns(crossings, slotWidth),
+      notches: columns(crossings, notchWidth),
       grooves: columns(snapPositions, SNAP_SCORE_WIDTH),
     });
     addPiece(relief(piece, fullLength(axis)), axisLabel(axis));
@@ -636,11 +667,12 @@ export function buildAuthoredDividerPieces(
   const grid = slotConfig.customGrid;
   if (!grid) return [];
 
-  const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
+  const { slotDepth } = getEffectiveSlotDimensions(params);
   const { thickness, clearance } = dividerPieces;
   const seatZ = dividerSeatZ(params.wallThickness, params.base.style, dividerGrooveDepth(params));
   const dividerHeight = calculateDividerPieceHeight(dividerPieces, wallHeight, hasLip, seatZ);
   const notchDepth = dividerHeight / 2 + clearance;
+  const notchWidth = lapNotchWidth(dividerPieces);
 
   const segments = deriveWallSegments(grid, innerW, innerD);
   const specs = computeAuthoredDividers(segments, innerW, innerD, thickness, slotDepth, clearance);
@@ -652,6 +684,7 @@ export function buildAuthoredDividerPieces(
   // a little extra solid margin, never a perforated tab.
   const tabDepth = tabEngagement(slotDepth, clearance);
   const lock = getDividerLockPlan(thickness, clearance);
+  const seat = resolvePieceSeatFit(params, hasLip);
   const keepout = resolveKeepoutRelief(
     params,
     innerW,
@@ -669,7 +702,7 @@ export function buildAuthoredDividerPieces(
     let shape = cutCrossLapNotches(
       buildDividerPiece(spec.length, thickness, dividerHeight),
       spec.notchOffsets,
-      slotWidth,
+      notchWidth,
       notchDepth,
       dividerHeight,
       thickness,
@@ -680,7 +713,7 @@ export function buildAuthoredDividerPieces(
       {
         length: spec.length,
         tabEngagement: tabDepth,
-        notches: spec.notchOffsets.map((offset) => ({ offset, width: slotWidth })),
+        notches: spec.notchOffsets.map((offset) => ({ offset, width: notchWidth })),
       },
       authoredExposedSpan(spec, innerW, innerD)
     );
@@ -689,7 +722,7 @@ export function buildAuthoredDividerPieces(
     if (patternCtx) shape = cutPiecePattern(shape, patternCtx, planned.geometry);
     // Relieve the tab neck so a wall-anchored end's throat catches; inert at
     // abutting/T-junction ends that carry no tab.
-    shape = cutDividerNeckRelief(shape, spec.length, dividerHeight, thickness, tabDepth, lock);
+    shape = relieveTabSeats(shape, spec.length, dividerHeight, thickness, tabDepth, lock, seat);
     // Give up the lid's seating band (end-only under a capping lid, full-span
     // under a sliding plate).
     shape = cutLidKeepoutRelief(shape, spec.length, dividerHeight, thickness, keepout);
