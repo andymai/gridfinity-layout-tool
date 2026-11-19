@@ -1,5 +1,23 @@
 # Changelog
 
+## [4.547.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.547.0...gridfinity-layout-tool-v4.547.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* **baseplate:** cut eco reliefs into detached margin rails, and keep seam tongues on full walls ([#5131](https://github.com/andymai/gridfinity-layout-tool/issues/5131)) ([1e0a0a2](https://github.com/andymai/gridfinity-layout-tool/commit/1e0a0a21e151efdffa98c1b0d389564db3754fb0))
+* **bin-designer:** show the whole blank-caption placeholder in its field ([#5122](https://github.com/andymai/gridfinity-layout-tool/issues/5122)) ([6afb89b](https://github.com/andymai/gridfinity-layout-tool/commit/6afb89b13e845c1a9c9355ae531b969d213e70a5))
+* **cqrs:** run one retry pass at a time, and track entries by identity ([#5129](https://github.com/andymai/gridfinity-layout-tool/issues/5129)) ([f7add5f](https://github.com/andymai/gridfinity-layout-tool/commit/f7add5f966212b84e15cb5aeb7f9ce176cdf52b7))
+* **design-linking:** keep a layout resize of a linked imported bin ([#5124](https://github.com/andymai/gridfinity-layout-tool/issues/5124)) ([6235c8b](https://github.com/andymai/gridfinity-layout-tool/commit/6235c8bae414683502365433752f4ec348e06914))
+* **dividers:** cut the interior wall cutout into removable divider pieces ([#5130](https://github.com/andymai/gridfinity-layout-tool/issues/5130)) ([aaca6b5](https://github.com/andymai/gridfinity-layout-tool/commit/aaca6b508541d273d2d9af37446829469c26c966))
+* **dividers:** show the fit tolerance to two decimals ([#5132](https://github.com/andymai/gridfinity-layout-tool/issues/5132)) ([6cf72d4](https://github.com/andymai/gridfinity-layout-tool/commit/6cf72d4a403d199519906d1e37c23a7661e6afbd))
+* **inspector:** stop suggesting an STL link in bin notes ([#5125](https://github.com/andymai/gridfinity-layout-tool/issues/5125)) ([9a70369](https://github.com/andymai/gridfinity-layout-tool/commit/9a703699e799dbc98dc55646c942d82cca76ed83))
+* **layers:** turn off Fill with a size while Slanted row is on ([#5121](https://github.com/andymai/gridfinity-layout-tool/issues/5121)) ([593614c](https://github.com/andymai/gridfinity-layout-tool/commit/593614ceefda3789aebd8f70834a953d8bbdb751))
+* **lid:** say what the hinge fit sets: the gap around each knuckle ([#5118](https://github.com/andymai/gridfinity-layout-tool/issues/5118)) ([7bf2255](https://github.com/andymai/gridfinity-layout-tool/commit/7bf2255527841d0a2c2e30a9d0bafc378dba229d))
+* **measure:** probe wall thickness from the clicked face, not a snapped edge ([#5127](https://github.com/andymai/gridfinity-layout-tool/issues/5127)) ([e2212be](https://github.com/andymai/gridfinity-layout-tool/commit/e2212be39e59a13a37f48b819f8ed04fccbced3a))
+* **preview:** label a measured drawer's height as measured in the 3D preview ([#5117](https://github.com/andymai/gridfinity-layout-tool/issues/5117)) ([b7db7c2](https://github.com/andymai/gridfinity-layout-tool/commit/b7db7c20f07d505d397430dc74b3570bca50e841))
+* **type:** show the thin-letter warning, judged against the print nozzle ([#5120](https://github.com/andymai/gridfinity-layout-tool/issues/5120)) ([9cf9172](https://github.com/andymai/gridfinity-layout-tool/commit/9cf9172bc6690230dac130d7add65f3d61faca80))
+
 ## [4.547.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.546.0...gridfinity-layout-tool-v4.547.0) (2026-11-18)
 
 
