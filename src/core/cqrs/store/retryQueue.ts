@@ -62,6 +62,7 @@ const pendingRetries: RetryEntry[] = [];
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
 /** The target time the current timer is scheduled for */
 let retryTimerTarget: number | null = null;
+let activePass: symbol | null = null;
 
 /**
  * The event store instance used for retries.
@@ -149,7 +150,11 @@ function scheduleProcessing(): void {
  * with exponential backoff or dropped after MAX_ATTEMPTS.
  */
 async function processRetries(): Promise<void> {
-  if (!retryTarget) {
+  // An append that fails during a pass schedules the queue again while this
+  // pass still holds due entries; a second pass would append them twice.
+  if (activePass !== null) return;
+  const target = retryTarget;
+  if (!target) {
     log.warn('No event store configured for retry queue — dropping all entries', {
       count: pendingRetries.length,
     });
@@ -157,25 +162,33 @@ async function processRetries(): Promise<void> {
     return;
   }
 
-  const now = Date.now();
-  // Collect indices of entries ready to process (iterate backwards for safe splice)
-  const readyIndices: number[] = [];
-  for (let i = 0; i < pendingRetries.length; i++) {
-    if (pendingRetries[i].nextRetryAt <= now) {
-      readyIndices.push(i);
-    }
+  const pass = Symbol('retry-pass');
+  activePass = pass;
+  try {
+    await retryDue(target);
+  } finally {
+    if (activePass === pass) activePass = null;
   }
 
-  // Process ready entries (splice backwards to preserve indices)
-  for (let i = readyIndices.length - 1; i >= 0; i--) {
-    const index = readyIndices[i];
-    const entry = pendingRetries[index];
+  scheduleProcessing();
+}
+
+function removeEntry(entry: RetryEntry): void {
+  const index = pendingRetries.indexOf(entry);
+  if (index !== -1) pendingRetries.splice(index, 1);
+}
+
+async function retryDue(target: EventStore): Promise<void> {
+  const now = Date.now();
+  const due = pendingRetries.filter((entry) => entry.nextRetryAt <= now);
+
+  for (const entry of due) {
+    if (!pendingRetries.includes(entry)) continue;
     entry.attempts += 1;
 
     try {
-      await retryTarget.append([entry.event]);
-      // Success — remove from queue
-      pendingRetries.splice(index, 1);
+      await target.append([entry.event]);
+      removeEntry(entry);
       log.debug('Retry succeeded', {
         eventType: entry.event.type,
         eventId: entry.event.meta.id,
@@ -185,7 +198,7 @@ async function processRetries(): Promise<void> {
       if (isStorageQuotaError(error)) {
         // Permanent failure surfaced mid-retry — stop retrying, tell the user,
         // and drop. Hammering a full disk can't succeed.
-        pendingRetries.splice(index, 1);
+        removeEntry(entry);
         notifyPersistenceFailed(true);
         log.warn('Event dropped — storage permanently full', {
           eventType: entry.event.type,
@@ -195,7 +208,7 @@ async function processRetries(): Promise<void> {
       } else if (entry.attempts >= MAX_ATTEMPTS) {
         // Max attempts reached — drop the event, but signal the loss instead of
         // failing silently.
-        pendingRetries.splice(index, 1);
+        removeEntry(entry);
         notifyPersistenceFailed(false);
         log.warn('Event dropped after max retry attempts', {
           eventType: entry.event.type,
@@ -216,10 +229,8 @@ async function processRetries(): Promise<void> {
       }
     }
   }
-
-  // Schedule next pass if there are still entries
-  scheduleProcessing();
 }
+
 /** Get the number of events awaiting retry. */
 export function getPendingRetryCount(): number {
   return pendingRetries.length;
@@ -234,6 +245,7 @@ export function clearRetryQueue(): void {
   }
   retryTimerTarget = null;
   retryTarget = null;
+  activePass = null;
   lastPersistToastAt = 0;
 }
 
