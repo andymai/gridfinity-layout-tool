@@ -2436,6 +2436,7 @@
   "binDesigner.wallCutouts.heightUnitAria": "Výšková jednotka",
   "binDesigner.wallCutouts.independent": "Nezávisle",
   "binDesigner.wallCutouts.interior": "Vnitřní stěny",
+  "binDesigner.wallCutouts.interiorPathHint": "Každý otvor prochází rovně přepážkami, které mu stojí v cestě.",
   "binDesigner.wallCutouts.left": "Levá",
   "binDesigner.wallCutouts.linked": "Propojeno",
   "binDesigner.wallCutouts.offset": "Odsazení",

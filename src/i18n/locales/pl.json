@@ -2467,6 +2467,7 @@
   "binDesigner.wallCutouts.heightUnitAria": "Jednostka wysokości",
   "binDesigner.wallCutouts.independent": "Niezależne",
   "binDesigner.wallCutouts.interior": "Ścianki wewnętrzne",
+  "binDesigner.wallCutouts.interiorPathHint": "Każdy otwór przechodzi prosto przez przegródki na swojej drodze.",
   "binDesigner.wallCutouts.left": "Lewo",
   "binDesigner.wallCutouts.linked": "Powiązane",
   "binDesigner.wallCutouts.offset": "Przesunięcie",

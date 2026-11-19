@@ -28,6 +28,7 @@ import { BOTTOM_SOLID_SKIRT, CUTOUT_BORDER_WIDTH, TOP_KEEP_OUT } from './wallPat
 import { interiorFilletCornerMm, interiorFilletRiseMm } from '@/shared/utils/interiorFillet';
 import { resolveFloorRaises } from './floorRaisePlan';
 import { planScoopRamps, scoopRampsApply } from './scoopRampPlan';
+import { interiorDividerTopZ, planDividerPathCuts, wallCutoutPathsActive } from './wallCutoutPaths';
 import type { BinDimensions } from './pipeline/types';
 
 /**
@@ -246,6 +247,13 @@ function labelTabKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut[]
   return out;
 }
 
+function sameSegment(a: InteriorDividerSegment, b: InteriorDividerSegment): boolean {
+  const near = (p: number, q: number): boolean => Math.abs(p - q) < 1e-6;
+  return (
+    near(a.x, b.x) && near(a.y, b.y) && near(a.rotateZ, b.rotateZ) && near(a.wallLen, b.wallLen)
+  );
+}
+
 /** Where a divider crosses another divider, expanded by the solid border. */
 function crossingKeepOuts(
   seg: InteriorDividerSegment,
@@ -329,8 +337,20 @@ export function planDividerPatterns(
   if (segments.length === 0) return null;
 
   const worldKeepOuts = [...scoopKeepOuts(params, dim), ...labelTabKeepOuts(params, dim)];
+  const paths = wallCutoutPathsActive(params);
   const interiorCutout =
-    params.walls.enabled && params.walls.interior.enabled ? params.walls.interior : null;
+    params.walls.enabled && params.walls.interior.enabled && !paths ? params.walls.interior : null;
+  const pathCuts = paths
+    ? planDividerPathCuts(params, {
+        innerW,
+        innerD,
+        wallHeight: dim.wallHeight,
+        collarHeight: dim.collarHeight,
+        hasLip: dim.hasLip,
+        dividerTopZ: interiorDividerTopZ(params, dim),
+        depthPadding: 0,
+      })
+    : [];
   const interiorCutHeight = dim.wallHeight - params.wallThickness;
 
   // A rounded vertical corner at each junction widens it along the divider.
@@ -356,6 +376,18 @@ export function planDividerPatterns(
         uMax: hit.uMax + border,
         zMin: box.zMin - border,
         zMax: box.zMax + border,
+      });
+    }
+
+    // An outer opening carried through this divider clears its whole cut,
+    // down to the lowest point the path reaches here.
+    for (const cut of pathCuts) {
+      if (!sameSegment(cut.segment, seg)) continue;
+      keepOuts.push({
+        uMin: cut.uMin - border,
+        uMax: cut.uMax + border,
+        zMin: cut.zMin - border,
+        zMax: bandTop,
       });
     }
 

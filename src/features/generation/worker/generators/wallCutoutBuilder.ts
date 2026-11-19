@@ -9,12 +9,21 @@ import { draw, translate, rotate, clone, unwrap, withScope, fuseAll } from 'brep
 import type { Shape3D, Drawing, DisposalScope, ValidSolid } from 'brepjs';
 import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
-import { LIP_HEIGHT, CUT_RIM_CLEARANCE } from './generatorConstants';
+import { CUT_RIM_CLEARANCE } from './generatorConstants';
 import { lipInnerReachMm } from '@/shared/utils/lipNotchPlan';
 import { interiorDividerSegments } from './compartmentBuilder';
-import { resolvePolygonSideGeometry, type PolygonSideGeometry } from './maskPolygonEdges';
-import { pitchFromParams } from './gridPitch';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import {
+  interiorDividerTopZ,
+  pathWallClearance,
+  planDividerPathCuts,
+  planOuterCutoutTools,
+  wallCutoutPathsActive,
+  type CutoutFrame,
+  type DividerPathCut,
+  type WallCutoutTool,
+} from './wallCutoutPaths';
+import { buildDividerPathCutsInScope } from './wallCutoutPathBuilder';
 import {
   MIN_CUTOUT_CORNER_RADIUS,
   UNBOUNDED_SLACK,
@@ -38,6 +47,7 @@ export {
   cornerSlackFor,
 } from '@/shared/utils/wallCutoutPosition';
 export type { CornerSlack } from '@/shared/utils/wallCutoutPosition';
+export { interiorDividerTopZ } from './wallCutoutPaths';
 
 /**
  * Build a 2D cutout profile (Drawing) for the given shape.
@@ -327,6 +337,8 @@ export function computeInteriorDividerCutouts(
 ): InteriorDividerCutout[] {
   const cfg = params.walls.interior;
   if (!cfg.enabled || isPartialMask(params.cellMask)) return [];
+  // An outer opening carries through the dividers instead, along its path.
+  if (wallCutoutPathsActive(params)) return [];
 
   // The divider standing above the cavity floor, which is thicker than the wall
   // on a spec base. Measured against the wall, a cut at 100% carries on past
@@ -368,21 +380,6 @@ export function computeInteriorDividerCutouts(
   return out;
 }
 
-/** One cutter, resolved but not built. */
-interface WallCutoutTool {
-  readonly cutWidth: number;
-  /** Depth of the cut below `topZ`. */
-  readonly cutHeight: number;
-  readonly overshoot: number;
-  /** Top of the material the cut drops from. */
-  readonly topZ: number;
-  readonly position: { readonly x: number; readonly y: number; readonly rotateZ: number };
-  readonly cornerSlack: CornerSlack;
-  readonly radii: CutoutCornerRadii;
-  /** The part of `overshoot` that is collar. */
-  readonly collarHeight: number;
-}
-
 /** How far every cutter extrudes, straddling the face it is placed on. */
 function cutterDepth(params: BinParams, hasLip: boolean, depthPadding: number): number {
   const maxThickness = Math.max(params.wallThickness, params.compartments.thickness);
@@ -399,62 +396,14 @@ function planWallCutoutTools(
   hasLip: boolean,
   dividerTopZ: number
 ): WallCutoutTool[] {
-  const wallThickness = params.wallThickness;
-  const tools: WallCutoutTool[] = [];
-  // The drop stays measured from the nominal wall top, but the cut has to
-  // run on up through the collar to the real rim, or the collar bridges it.
-  const overshoot = collarHeight + (hasLip ? LIP_HEIGHT : 0) + CUT_RIM_CLEARANCE;
-
-  // For non-rectangular bins, map each side to the outermost polygon edge
-  // facing that direction (silently skipping sides with no matching edge).
-  // Rectangular fallback uses the bin AABB.
-  const cellMask = params.cellMask;
-  const sides: PolygonSideGeometry[] = isPartialMask(cellMask)
-    ? (['front', 'back', 'left', 'right'] as const)
-        .map((key) =>
-          resolvePolygonSideGeometry(cellMask, pitchFromParams(params), wallThickness, key)
-        )
-        .filter((g): g is PolygonSideGeometry => g !== null)
-    : [
-        { key: 'front', wallSpan: innerW, x: 0, y: -innerD / 2, rotateZ: 0 },
-        { key: 'back', wallSpan: innerW, x: 0, y: innerD / 2, rotateZ: 0 },
-        { key: 'left', wallSpan: innerD, x: -innerW / 2, y: 0, rotateZ: 90 },
-        { key: 'right', wallSpan: innerD, x: innerW / 2, y: 0, rotateZ: 90 },
-      ];
-
-  for (const side of sides) {
-    const cfg = params.walls[side.key];
-    if (!cfg.enabled) continue;
-
-    const cutWidth = resolveCutoutSpan(cfg, side.wallSpan);
-    const interiorHeight = wallHeight - wallThickness;
-    const userCutHeight = resolveCutoutDrop(cfg, interiorHeight);
-    if (cutWidth < 0.1 || userCutHeight < 0.1) continue;
-
-    // Resolve horizontal position from alignment + offset
-    const centerOffset = computeCutoutCenter(
-      side.wallSpan,
-      cutWidth,
-      wallThickness,
-      cfg.alignment,
-      cfg.offset
-    );
-
-    tools.push({
-      cutWidth,
-      cutHeight: userCutHeight,
-      overshoot,
-      topZ: wallHeight,
-      position: {
-        x: side.rotateZ === 0 ? side.x + centerOffset : side.x,
-        y: side.rotateZ !== 0 ? side.y + centerOffset : side.y,
-        rotateZ: side.rotateZ,
-      },
-      cornerSlack: cornerSlackFor(side.wallSpan, cutWidth, centerOffset),
-      radii: resolveCutoutCornerRadii(params.walls, cfg, cutWidth),
-      collarHeight,
-    });
-  }
+  const tools: WallCutoutTool[] = planOuterCutoutTools(
+    params,
+    innerW,
+    innerD,
+    wallHeight,
+    collarHeight,
+    hasLip
+  );
 
   // Interior divider walls — skip entirely on polygon bins, since
   // compartmentWallsFeature is filtered out for custom shapes and the
@@ -516,13 +465,41 @@ function buildWallCutoutCutsInScope(
       tool.collarHeight
     )
   );
+  const frame: CutoutFrame = {
+    innerW,
+    innerD,
+    wallHeight,
+    collarHeight,
+    hasLip,
+    dividerTopZ,
+    depthPadding,
+  };
+  const pathCuts = buildDividerPathCutsInScope(scope, params, frame, (tool, depth, position) =>
+    buildSingleCutoutInScope(
+      scope,
+      params.walls.shape,
+      tool.cutWidth,
+      tool.cutHeight,
+      tool.overshoot,
+      depth,
+      tool.topZ,
+      position,
+      tool.cornerSlack,
+      tool.radii,
+      tool.collarHeight
+    )
+  );
+  cutShapes.push(...pathCuts);
 
   // Inline fuse so the fused intermediate is registered in `scope` — the
   // shared fuseAllOrNull allocates a new WASM handle that would otherwise
   // escape the scope and leak.
   if (cutShapes.length === 0) return null;
   if (cutShapes.length === 1) return cutShapes[0]; // already scope-registered
-  return scope.register(unwrap(fuseAll(cutShapes as ValidSolid[])));
+  // Path cuts overlap where dividers cross and share their floor plane. Left
+  // split, every piece of that plane lands on the divider tops as a seam.
+  const opts = pathCuts.length > 0 ? { simplify: true } : undefined;
+  return scope.register(unwrap(fuseAll(cutShapes as ValidSolid[], opts)));
 }
 
 /** Where one cutter can remove material, in the cavity frame: everything above `zMin`. */
@@ -550,7 +527,16 @@ export function wallCutoutReaches(
 ): WallCutoutReach[] {
   if (!params.walls.enabled) return [];
   const across = cutterDepth(params, hasLip, depthPadding) / 2;
-  return planWallCutoutTools(
+  const paths = planDividerPathCuts(params, {
+    innerW,
+    innerD,
+    wallHeight,
+    collarHeight,
+    hasLip,
+    dividerTopZ,
+    depthPadding,
+  }).map(pathCutReach);
+  const walls = planWallCutoutTools(
     params,
     innerW,
     innerD,
@@ -581,29 +567,40 @@ export function wallCutoutReaches(
       zMin: tool.topZ - tool.cutHeight,
     };
   });
+  return [...walls, ...paths];
+}
+
+/** The box around one path cut, its divider's lean included. */
+function pathCutReach(cut: DividerPathCut): WallCutoutReach {
+  const { segment: seg } = cut;
+  const rad = (seg.rotateZ * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+  const xs: number[] = [];
+  const ys: number[] = [];
+  for (const u of [cut.uMin, cut.uMax]) {
+    for (const v of [cut.vMin, cut.vMax]) {
+      xs.push(seg.x + u * cos - v * sin);
+      ys.push(seg.y + u * sin + v * cos);
+    }
+  }
+  const driftX = Math.abs(seg.footX - seg.x);
+  const driftY = Math.abs(seg.footY - seg.y);
+  return {
+    xMin: Math.min(...xs) - driftX,
+    xMax: Math.max(...xs) + driftX,
+    yMin: Math.min(...ys) - driftY,
+    yMax: Math.max(...ys) + driftY,
+    zMin: cut.zMin,
+  };
 }
 
 // --- FeatureBuilder protocol ---
 
 import type { FeatureBuilder } from './pipeline/featureBuilder';
-import type { BinDimensions } from './pipeline/types';
 import { FeatureTag } from './featureTags';
 import { buildCacheKey, quantize, stableSerialize, compactKey } from './cacheKeyUtils';
-import { resolveBinFloorMm, resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
-
-/**
- * Where the interior dividers actually end, in the body frame.
- *
- * The two divider paths do not agree: the multi-cavity cut leaves pockets that
- * reach the rim, so those dividers stand to the wall top, while divider-wall
- * boxes stop at the interior height — a lip taper short of it — or lower still
- * when a design shortens them.
- */
-export function interiorDividerTopZ(params: BinParams, dim: BinDimensions): number {
-  return dim.compartmentsBakedIntoShell
-    ? dim.wallHeight
-    : resolveCompartmentDividerHeight(params.compartments.dividerHeight, dim.interiorHeight);
-}
+import { resolveBinFloorMm } from '@/shared/utils/slotMath';
 
 export const wallCutoutsFeature: FeatureBuilder = {
   name: 'wallCutoutCuts',
@@ -616,11 +613,25 @@ export const wallCutoutsFeature: FeatureBuilder = {
     // cellMask presence + shape affect the polygon-edge resolution, so
     // include the mask hash (via context's derived maskKey) to prevent
     // rect-bin cache bleed into polygon bins with identical wall config.
+    const dividerTopZ = interiorDividerTopZ(params, dim);
+    const frame: CutoutFrame = {
+      innerW: dim.innerW,
+      innerD: dim.innerD,
+      wallHeight: dim.wallHeight,
+      collarHeight: dim.collarHeight,
+      hasLip: dim.hasLip,
+      dividerTopZ,
+      depthPadding: 0,
+    };
+    // Keyed on the solved paths rather than their inputs: label tabs, raised
+    // floors, the lip and the fillet all move them, and no list stays complete.
+    const pathKey = wallCutoutPathsActive(params)
+      ? stableSerialize([planDividerPathCuts(params, frame), pathWallClearance(params, frame)])
+      : 'none';
     return compactKey(
       buildCacheKey(
-        // `v2`: interior cutouts are cut from the divider's own top rather than
-        // the wall's rim, so the same wall config yields a different cut.
-        'v2',
+        // `v3`: an outer opening carries through the dividers in its path.
+        'v3',
         dim.shellKey,
         stableSerialize(params.walls),
         quantize(dim.innerW),
@@ -634,7 +645,8 @@ export const wallCutoutsFeature: FeatureBuilder = {
         // Tilted dividers move interior cutouts off the grid line; omitting this
         // would reuse the stale grid-aligned cut.
         stableSerialize(params.compartments.dividerOverrides ?? []),
-        quantize(interiorDividerTopZ(params, dim))
+        quantize(dividerTopZ),
+        pathKey
       )
     );
   },

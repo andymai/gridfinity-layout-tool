@@ -4239,6 +4239,8 @@ const en: Record<string, string> = {
   'binDesigner.wallCutouts.left': 'Left',
   'binDesigner.wallCutouts.right': 'Right',
   'binDesigner.wallCutouts.interior': 'Interior walls',
+  'binDesigner.wallCutouts.interiorPathHint':
+    'Each opening carries straight through the dividers in its path.',
   'binDesigner.wallCutouts.linked': 'Linked',
   'binDesigner.wallCutouts.independent': 'Independent',
   'binDesigner.wallCutouts.summary': '{sides}: {span} × {height}',

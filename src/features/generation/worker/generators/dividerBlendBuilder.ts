@@ -32,6 +32,7 @@ import {
   type OuterWallCutoutInfo,
 } from './dividerBlendTypes';
 import { collectDividers, resolveOuterCutouts } from './dividerBlendResolvers';
+import { wallCutoutPathsActive } from './wallCutoutPaths';
 import { buildEndTrimCut, buildParallelTrimCut, buildRampCut } from './dividerBlendCuts';
 import type { FeatureBuilder } from './pipeline/featureBuilder';
 import { FeatureTag } from './featureTags';
@@ -63,11 +64,21 @@ export function buildDividerBlends(
   if (dividers.length === 0) return null;
 
   const cutoutShape = params.walls.shape;
+  const paths = wallCutoutPathsActive(params);
   const cuts: Shape3D[] = [];
 
   for (const divider of dividers) {
     for (const cutout of cutouts) {
       const perp = isPerpendicular(divider, cutout);
+
+      if (paths) {
+        // The path cuts every divider inside the span along its whole run.
+        // Only a ramp beside the opening is left for the blend to make.
+        if (perp && dividerTouchesWall(divider, cutout)) {
+          for (const cut of rampsBesidePath(divider, cutout, wallHeight)) cuts.push(cut);
+        }
+        continue;
+      }
 
       if (perp && dividerTouchesWall(divider, cutout)) {
         // Divider's wall-local position along the cutout's span axis
@@ -146,6 +157,32 @@ export function buildDividerBlends(
   return fused;
 }
 
+/**
+ * Ramps for a divider that ends beside an opening carried through the bin.
+ * A divider centred inside the span is in the path and drops along its whole
+ * run, so only one centred outside it keeps its full height and its ramp.
+ */
+function rampsBesidePath(
+  divider: DividerInfo,
+  cutout: OuterWallCutoutInfo,
+  wallHeight: number
+): Shape3D[] {
+  const out: Shape3D[] = [];
+  for (const dist of [
+    cutout.cutLeft - divider.posAlongPerp,
+    divider.posAlongPerp - cutout.cutRight,
+  ]) {
+    if (dist < 0 || !isRampAdjacent(dist, divider.thickness)) continue;
+    try {
+      const cut = buildRampCut(divider, cutout, wallHeight);
+      if (cut) out.push(cut);
+    } catch {
+      /* graceful degradation */
+    }
+  }
+  return out;
+}
+
 // --- Ramp zone data for wall pattern clipping ---
 
 /**
@@ -198,6 +235,8 @@ export function computeRampZones(
   if (!wallCutout) return [];
 
   const zones: RampZone[] = [];
+  // Mirrors `rampsBesidePath`: a divider in the path has no ramp.
+  const minDist = wallCutoutPathsActive(params) ? 0 : -Infinity;
 
   for (const divider of dividers) {
     if (!isPerpendicular(divider, wallCutout)) continue;
@@ -208,7 +247,7 @@ export function computeRampZones(
     const distToRight = dividerPos - wallCutout.cutRight;
 
     // Left-adjacent ramp
-    if (isRampAdjacent(distToLeft, divider.thickness)) {
+    if (distToLeft >= minDist && isRampAdjacent(distToLeft, divider.thickness)) {
       const rampLen = Math.min(wallCutout.userCutHeight, (divider.spanEnd - divider.spanStart) / 2);
       if (rampLen >= MIN_DIM) {
         zones.push({
@@ -220,7 +259,7 @@ export function computeRampZones(
     }
 
     // Right-adjacent ramp
-    if (isRampAdjacent(distToRight, divider.thickness)) {
+    if (distToRight >= minDist && isRampAdjacent(distToRight, divider.thickness)) {
       const rampLen = Math.min(wallCutout.userCutHeight, (divider.spanEnd - divider.spanStart) / 2);
       if (rampLen >= MIN_DIM) {
         zones.push({
@@ -294,9 +333,11 @@ export const dividerBlendFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        'v1',
+        // `v2`: with the paths on, the path cuts the dividers in the span.
+        'v2',
         dim.shellKey,
         stableSerialize(params.walls),
+        params.style,
         params.compartments.cols,
         params.compartments.rows,
         quantize(params.compartments.thickness),

@@ -12,7 +12,7 @@ import type {
   LabelTabAlignment,
 } from '@/features/bin-designer/types';
 import { DISABLED_WALL_CUTOUT } from '@/features/bin-designer/constants/defaults';
-import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
+import { MAX_CUTOUT_CORNER_RADIUS, wallCutoutPathsActive } from '@/shared/utils/wallCutoutPosition';
 import type { SectionMeta } from '../types';
 
 const ALL_SIDES: readonly WallSide[] = ['front', 'back', 'left', 'right', 'interior'];
@@ -254,7 +254,14 @@ export function useWallCutoutsSection() {
   );
 
   return {
-    state: { walls, activeSides, linked, blocksLid, showDensityHint },
+    state: {
+      walls,
+      activeSides,
+      linked,
+      blocksLid,
+      showDensityHint,
+      interiorFollowsPaths: wallCutoutPathsActive(params),
+    },
     handlers: {
       toggleEnabled,
       toggleSide,

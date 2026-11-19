@@ -2374,6 +2374,7 @@
   "binDesigner.wallCutouts.heightUnitAria": "높이 단위",
   "binDesigner.wallCutouts.independent": "독립",
   "binDesigner.wallCutouts.interior": "내부 벽",
+  "binDesigner.wallCutouts.interiorPathHint": "각 개구부가 경로에 있는 칸막이를 곧게 관통합니다.",
   "binDesigner.wallCutouts.left": "왼쪽",
   "binDesigner.wallCutouts.linked": "연결됨",
   "binDesigner.wallCutouts.offset": "오프셋",

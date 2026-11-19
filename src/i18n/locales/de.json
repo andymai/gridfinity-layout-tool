@@ -2405,6 +2405,7 @@
   "binDesigner.wallCutouts.heightUnitAria": "Höheneinheit",
   "binDesigner.wallCutouts.independent": "Unabhängig",
   "binDesigner.wallCutouts.interior": "Innenwände",
+  "binDesigner.wallCutouts.interiorPathHint": "Jede Öffnung läuft gerade durch die Trennwände in ihrem Weg.",
   "binDesigner.wallCutouts.left": "Links",
   "binDesigner.wallCutouts.linked": "Verknüpft",
   "binDesigner.wallCutouts.offset": "Versatz",

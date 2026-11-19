@@ -8,7 +8,8 @@
  * wide the opening is AT THE LIP before it can say what rail a lid keeps.
  */
 
-import type { WallCutoutShape } from '@/shared/types/bin';
+import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
+import { isPartialMask } from '@/shared/utils/cellMask';
 
 /** A cutout's stored span: an absolute mm override, or null to use the %. */
 export interface CutoutSpanSource {
@@ -335,6 +336,80 @@ export function shoulderBlend(
     mid: [centre[0] - radius * Math.sin(sweep / 2), centre[1] + radius * Math.cos(sweep / 2)],
     sweep,
   };
+}
+
+/**
+ * Whether the outer wall cutouts carry straight through the fixed dividers.
+ *
+ * Needs the interior toggle and at least one outer side. Interior-only designs
+ * keep a window centred on each divider run: with no outer opening there is
+ * no path to follow.
+ */
+export function wallCutoutPathsActive(
+  params: Pick<BinParams, 'walls' | 'style' | 'cellMask'>
+): boolean {
+  const { walls } = params;
+  return (
+    walls.enabled &&
+    walls.interior.enabled &&
+    params.style === 'standard' &&
+    !isPartialMask(params.cellMask) &&
+    (walls.front.enabled || walls.back.enabled || walls.left.enabled || walls.right.enabled)
+  );
+}
+
+/** What {@link cutoutFloorRise} needs to trace the bottom edge of one cut. */
+export interface CutoutFloorProfile {
+  readonly shape: WallCutoutShape;
+  readonly cutWidth: number;
+  /** How far the cut reaches below the nominal wall top. */
+  readonly drop: number;
+  /** Collar plus stacking lip standing above the nominal wall top. */
+  readonly lipRoom: number;
+  readonly collarHeight: number;
+  /** The run between the profile's top edge and the rim it rounds over. */
+  readonly rimClearance: number;
+  readonly safe: SafeCornerRadii;
+}
+
+/**
+ * Height of the cut's bottom edge above its lowest point, at `x` across the
+ * span from the cut's centre, or Infinity where the cut does not reach down at
+ * all. Traces the same lines `buildCutoutProfile` draws: the bottom fillets and
+ * a funnel's leaning sides, or a scoop's arc. The top round-over is left out,
+ * because it only flares the opening above the wall top.
+ */
+export function cutoutFloorRise(p: CutoutFloorProfile, x: number): number {
+  const ax = Math.abs(x);
+  if (p.shape === 'scoop') {
+    const hw = p.cutWidth / 2;
+    if (ax > hw) return Infinity;
+    const topR = Math.max(p.safe.topLeft, p.safe.topRight);
+    const chord = Math.min(p.drop, p.drop + (p.lipRoom - p.collarHeight) - topR);
+    const sagitta = Math.min(hw, chord);
+    if (sagitta <= 0) return Math.max(0, chord);
+    const radius = (hw * hw + sagitta * sagitta) / (2 * sagitta);
+    const centreY = chord - sagitta + radius;
+    return Math.max(0, centreY - Math.sqrt(Math.max(0, radius * radius - ax * ax)));
+  }
+  const side = cutoutSide(p.shape, p.cutWidth, p.drop + p.lipRoom, p.rimClearance);
+  const r = x >= 0 ? p.safe.bottomRight : p.safe.bottomLeft;
+  const { bottomHalfWidth: bhw, lean } = side;
+  if (r > MIN_CUTOUT_CORNER_RADIUS) {
+    // The fillet is tangent to the floor and to the side, so its centre
+    // stands one radius off each.
+    const k = Math.hypot(1, lean);
+    const centreX = bhw + lean * r - r * k;
+    if (ax <= centreX) return 0;
+    if (ax <= centreX + r / k) {
+      const dx = ax - centreX;
+      return r - Math.sqrt(Math.max(0, r * r - dx * dx));
+    }
+  } else if (ax <= bhw) {
+    return 0;
+  }
+  if (lean <= 0) return Infinity;
+  return (ax - bhw) / lean;
 }
 
 /** Zero out a radius too small to be worth a curve. */

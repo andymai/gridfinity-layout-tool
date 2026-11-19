@@ -2405,6 +2405,7 @@
   "binDesigner.wallCutouts.heightUnitAria": "Höjdenhet",
   "binDesigner.wallCutouts.independent": "Oberoende",
   "binDesigner.wallCutouts.interior": "Interiörväggar",
+  "binDesigner.wallCutouts.interiorPathHint": "Varje öppning går rakt genom mellanväggarna i dess väg.",
   "binDesigner.wallCutouts.left": "Vänster",
   "binDesigner.wallCutouts.linked": "Länkade",
   "binDesigner.wallCutouts.offset": "Förskjutning",

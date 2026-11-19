@@ -2467,6 +2467,7 @@
   "binDesigner.wallCutouts.heightUnitAria": "Одиниця висоти",
   "binDesigner.wallCutouts.independent": "Незалежні",
   "binDesigner.wallCutouts.interior": "Внутрішні стіни",
+  "binDesigner.wallCutouts.interiorPathHint": "Кожен отвір проходить прямо крізь перегородки на своєму шляху.",
   "binDesigner.wallCutouts.left": "Ліворуч",
   "binDesigner.wallCutouts.linked": "Зв’язані",
   "binDesigner.wallCutouts.offset": "Зсув",

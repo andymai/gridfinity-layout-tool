@@ -2405,6 +2405,7 @@
   "binDesigner.wallCutouts.heightUnitAria": "Unidad de altura",
   "binDesigner.wallCutouts.independent": "Independiente",
   "binDesigner.wallCutouts.interior": "Paredes interiores",
+  "binDesigner.wallCutouts.interiorPathHint": "Cada abertura atraviesa en línea recta los divisores que encuentra a su paso.",
   "binDesigner.wallCutouts.left": "Izquierda",
   "binDesigner.wallCutouts.linked": "Vinculado",
   "binDesigner.wallCutouts.offset": "Desplazamiento",

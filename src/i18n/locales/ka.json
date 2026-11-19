@@ -3533,6 +3533,7 @@
   "binDesigner.wallCutouts.left": "მარცხენა",
   "binDesigner.wallCutouts.right": "მარჯვენა",
   "binDesigner.wallCutouts.interior": "შიდა კედლები",
+  "binDesigner.wallCutouts.interiorPathHint": "თითოეული ღიობი პირდაპირ გადის გზაზე მდგარ გამყოფებში.",
   "binDesigner.wallCutouts.linked": "დაკავშირებული",
   "binDesigner.wallCutouts.independent": "დამოუკიდებელი",
   "binDesigner.wallCutouts.summary": "{sides}: {span} × {height}",
