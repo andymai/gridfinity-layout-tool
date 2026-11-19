@@ -100,7 +100,7 @@ The button beside each value changes it between a percentage of the wall and mil
 | <Ui k="binDesigner.wallCutouts.position" /> | Where the cut sits: <Ui k="binDesigner.alignment.left" />, <Ui k="binDesigner.alignment.center" /> or <Ui k="binDesigner.alignment.right" />, with an <Ui k="binDesigner.wallCutouts.offset" /> of up to 50 mm |
 | <Ui k="binDesigner.wallCutouts.corners" />  | A round on the top corners. The bottom fillet takes a value, or you leave it on <Ui k="binDesigner.wallCutouts.cornerAuto" />                                                                                  |
 
-<Ui k="binDesigner.wallCutouts.interior" /> carries the opening through each divider, and through each removable divider piece. When you turn on wall cutouts on a bin with compartments, the bin designer turns this on for you.
+<Ui k="binDesigner.wallCutouts.interior" /> carries each wall opening straight across the bin. Every divider in its path drops to the same shape and height, and the wall on the far side stays whole. A label tab on a divider in the path is cut with it. If no outer wall has an opening, each divider gets an opening of its own, with its own size. Each removable divider piece also gets an opening of its own, with its own size. When you turn on wall cutouts on a bin with compartments, the bin designer turns this on for you.
 
 ## Add handles
 

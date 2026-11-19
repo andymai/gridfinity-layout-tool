@@ -132,7 +132,8 @@ export function filletDoorways(params: BinParams, dim: BinDimensions): WallCutou
     dim.collarHeight,
     dim.hasLip,
     interiorDividerTopZ(params, dim),
-    interiorFilletCornerMm(params) + COPLANAR_MARGIN
+    interiorFilletCornerMm(params) + COPLANAR_MARGIN,
+    dim.compartmentsBakedIntoShell
   );
 }
 

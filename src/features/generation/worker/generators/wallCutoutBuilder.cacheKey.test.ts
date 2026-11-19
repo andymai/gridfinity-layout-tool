@@ -57,4 +57,40 @@ describe('wallCutoutsFeature.cacheKey', () => {
   it('changes with the collar', () => {
     expect(keyFor(withFront({}), 0)).not.toBe(keyFor(withFront({}), 6));
   });
+
+  describe('with the opening carried through the dividers', () => {
+    const throughGrid = (over: Partial<BinParams> = {}): BinParams => {
+      const base = withFront({});
+      return {
+        ...base,
+        compartments: { ...base.compartments, cols: 2, rows: 2, cells: [0, 1, 2, 3] },
+        walls: { ...base.walls, interior: { ...base.walls.left, enabled: true } },
+        ...over,
+      };
+    };
+
+    // Label tabs, raised floors and the fillet all move the path's cuts while
+    // living outside `walls` and the grid, so the key carries the solved cuts.
+    it('changes with label tabs on the dividers it cuts', () => {
+      const tabs = { label: { ...DEFAULT_BIN_PARAMS.label, enabled: true } };
+      expect(keyFor(throughGrid())).not.toBe(keyFor(throughGrid(tabs)));
+    });
+
+    it('changes with a raised floor beside a cut divider', () => {
+      const plain = throughGrid();
+      const raised = {
+        compartments: { ...plain.compartments, floorRaises: [0, 0, 10] },
+        walls: {
+          ...plain.walls,
+          front: { ...plain.walls.front, depth: 100 },
+        },
+      };
+      const deep = { walls: raised.walls };
+      expect(keyFor(throughGrid(deep))).not.toBe(keyFor(throughGrid(raised)));
+    });
+
+    it('changes with the interior fillet', () => {
+      expect(keyFor(throughGrid())).not.toBe(keyFor(throughGrid({ interiorFilletMm: 2 })));
+    });
+  });
 });

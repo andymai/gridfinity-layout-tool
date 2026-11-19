@@ -377,7 +377,9 @@ function splitSolidIntoPieces(
         wallHeight,
         splitDims.collarHeight,
         true,
-        interiorDividerTopZ(params, splitDims)
+        interiorDividerTopZ(params, splitDims),
+        0,
+        splitDims.compartmentsBakedIntoShell
       );
       if (wallCuts) {
         const positioned = shiftToInterior(wallCuts, floorZ);

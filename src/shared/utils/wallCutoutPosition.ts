@@ -8,7 +8,8 @@
  * wide the opening is AT THE LIP before it can say what rail a lid keeps.
  */
 
-import type { WallCutoutShape } from '@/shared/types/bin';
+import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
+import { isPartialMask } from '@/shared/utils/cellMask';
 
 /** A cutout's stored span: an absolute mm override, or null to use the %. */
 export interface CutoutSpanSource {
@@ -58,6 +59,21 @@ export function resolveCutoutSpan(cfg: CutoutSpanSource, wallSpan: number): numb
  */
 export function resolveCutoutDrop(cfg: CutoutDropSource, wallRun: number): number {
   return resolveOverride(cfg.depthMm, cfg.depth, wallRun);
+}
+
+/** A span or drop under this cuts nothing, so the builders skip the cutout. */
+export const MIN_CUTOUT_SIZE_MM = 0.1;
+
+/** Whether a cutout spans and drops far enough to be cut at all. */
+export function cutoutOpens(
+  cfg: CutoutSpanSource & CutoutDropSource,
+  wallSpan: number,
+  wallRun: number
+): boolean {
+  return (
+    resolveCutoutSpan(cfg, wallSpan) >= MIN_CUTOUT_SIZE_MM &&
+    resolveCutoutDrop(cfg, wallRun) >= MIN_CUTOUT_SIZE_MM
+  );
 }
 
 /**
@@ -335,6 +351,114 @@ export function shoulderBlend(
     mid: [centre[0] - radius * Math.sin(sweep / 2), centre[1] + radius * Math.cos(sweep / 2)],
     sweep,
   };
+}
+
+/** The cavity an outer wall cutout is sized against. */
+export interface CutoutCavity {
+  readonly innerW: number;
+  readonly innerD: number;
+  readonly wallHeight: number;
+}
+
+/**
+ * Whether the outer wall cutouts carry straight through the fixed dividers.
+ *
+ * Needs the interior toggle and at least one outer side that opens. Without
+ * one, each divider run keeps its own centred window: there is no path to
+ * follow, and an enabled side sized to nothing is no opening.
+ */
+export function wallCutoutPathsActive(
+  params: Pick<BinParams, 'walls' | 'style' | 'cellMask' | 'wallThickness'>,
+  cavity: CutoutCavity
+): boolean {
+  const { walls } = params;
+  if (!walls.enabled || !walls.interior.enabled) return false;
+  if (params.style !== 'standard' || isPartialMask(params.cellMask)) return false;
+  // The run `planOuterCutoutTools` measures a side's drop against.
+  const run = cavity.wallHeight - params.wallThickness;
+  const opens = (cfg: BinParams['walls']['front'], span: number): boolean =>
+    cfg.enabled && cutoutOpens(cfg, span, run);
+  return (
+    opens(walls.front, cavity.innerW) ||
+    opens(walls.back, cavity.innerW) ||
+    opens(walls.left, cavity.innerD) ||
+    opens(walls.right, cavity.innerD)
+  );
+}
+
+/** What {@link cutoutFloorRise} needs to trace the bottom edge of one cut. */
+export interface CutoutFloorProfile {
+  readonly shape: WallCutoutShape;
+  readonly cutWidth: number;
+  /** How far the cut reaches below the nominal wall top. */
+  readonly drop: number;
+  /** Collar plus stacking lip standing above the nominal wall top. */
+  readonly lipRoom: number;
+  readonly collarHeight: number;
+  /** The run between the profile's top edge and the rim it rounds over. */
+  readonly rimClearance: number;
+  readonly safe: SafeCornerRadii;
+}
+
+/**
+ * Height of the cut's bottom edge above its lowest point, at `x` across the
+ * span from the cut's centre, or Infinity where the cut does not reach down at
+ * all. Traces the same lines `buildCutoutProfile` draws: the bottom fillets and
+ * a funnel's leaning sides, or a scoop's arc, then the top round-over out to
+ * the rim. A short lip, or none, leaves that round-over below a divider's top.
+ */
+export function cutoutFloorRise(p: CutoutFloorProfile, x: number): number {
+  const ax = Math.abs(x);
+  const rim = p.drop + p.lipRoom;
+  const shoulderR = x >= 0 ? p.safe.topRight : p.safe.topLeft;
+  if (p.shape === 'scoop') {
+    const hw = p.cutWidth / 2;
+    if (ax > hw) return shoulderRise(roundOver(hw, rim, 0, shoulderR), ax);
+    const topR = Math.max(p.safe.topLeft, p.safe.topRight);
+    const chord = Math.min(p.drop, p.drop + (p.lipRoom - p.collarHeight) - topR);
+    const sagitta = Math.min(hw, chord);
+    if (sagitta <= 0) return Math.max(0, chord);
+    const radius = (hw * hw + sagitta * sagitta) / (2 * sagitta);
+    const centreY = chord - sagitta + radius;
+    return Math.max(0, centreY - Math.sqrt(Math.max(0, radius * radius - ax * ax)));
+  }
+  const side = cutoutSide(p.shape, p.cutWidth, rim, p.rimClearance);
+  const r = x >= 0 ? p.safe.bottomRight : p.safe.bottomLeft;
+  const { bottomHalfWidth: bhw, lean } = side;
+  const shoulder = roundOver(side.halfWidthAtRim, rim, lean, shoulderR);
+  if (shoulder && ax > shoulder.side[0]) return shoulderRise(shoulder, ax);
+  if (r > MIN_CUTOUT_CORNER_RADIUS) {
+    // The fillet is tangent to the floor and to the side, so its centre
+    // stands one radius off each.
+    const k = Math.hypot(1, lean);
+    const centreX = bhw + lean * r - r * k;
+    if (ax <= centreX) return 0;
+    if (ax <= centreX + r / k) {
+      const dx = ax - centreX;
+      return r - Math.sqrt(Math.max(0, r * r - dx * dx));
+    }
+  } else if (ax <= bhw) {
+    return 0;
+  }
+  if (lean <= 0) return Infinity;
+  return (ax - bhw) / lean;
+}
+
+/** The top round-over `buildCutoutProfile` draws, or null for a square shoulder. */
+function roundOver(
+  sideAtRim: number,
+  rim: number,
+  lean: number,
+  radius: number
+): ShoulderBlend | null {
+  return radius > MIN_CUTOUT_CORNER_RADIUS ? shoulderBlend(sideAtRim, rim, lean, radius) : null;
+}
+
+/** Height of a round-over above the cut's floor, out to where it meets the rim. */
+function shoulderRise(blend: ShoulderBlend | null, ax: number): number {
+  if (!blend || ax > blend.rim[0]) return Infinity;
+  const dx = ax - blend.centre[0];
+  return blend.centre[1] + Math.sqrt(Math.max(0, blend.radius * blend.radius - dx * dx));
 }
 
 /** Zero out a radius too small to be worth a curve. */

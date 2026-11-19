@@ -1,0 +1,450 @@
+// @vitest-environment node
+import { describe, it, expect } from 'vitest';
+import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import type { BinParams, WallCutout } from '@/features/bin-designer/types';
+import { resolveBinFloorMm } from '@/shared/utils/slotMath';
+import { LIP_SMALL_TAPER } from './generatorConstants';
+import { planInteriorFillets } from './interiorFilletPlan';
+import { deriveDimensions } from './pipeline/context';
+import {
+  cutoutFrame,
+  planDividerPathCuts,
+  wallCutoutPathsActive,
+  type CutoutFrame,
+  type DividerPathCut,
+} from './wallCutoutPaths';
+
+const INNER_W = 123.1;
+const INNER_D = 207.1;
+const CELL_W = INNER_W / 3;
+const CELL_D = INNER_D / 3;
+const FRAME: CutoutFrame = {
+  innerW: INNER_W,
+  innerD: INNER_D,
+  wallHeight: 37.25,
+  collarHeight: 0,
+  hasLip: true,
+  dividerTopZ: 37.25,
+  dividersBaked: false,
+  depthPadding: 0,
+};
+
+const cut = (enabled: boolean, over: Partial<WallCutout> = {}): WallCutout => ({
+  enabled,
+  width: 40,
+  depth: 50,
+  alignment: 'center',
+  offset: 0,
+  widthMm: null,
+  ...over,
+});
+
+function bin(
+  sides: Partial<Record<'front' | 'back' | 'left' | 'right', WallCutout>>,
+  over: Partial<BinParams> = {},
+  cells = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+): BinParams {
+  return {
+    ...DEFAULT_BIN_PARAMS,
+    width: 3,
+    depth: 5,
+    walls: {
+      ...DEFAULT_BIN_PARAMS.walls,
+      enabled: true,
+      shape: 'u-shape',
+      front: cut(false),
+      back: cut(false),
+      left: cut(false),
+      right: cut(false),
+      ...sides,
+      interior: cut(true),
+    },
+    compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 3, rows: 3, cells },
+    ...over,
+  };
+}
+
+/** The cut a side makes in the divider whose midpoint is at (x, y). */
+const cutAt = (
+  cuts: readonly DividerPathCut[],
+  side: string,
+  x: number,
+  y: number
+): DividerPathCut | undefined =>
+  cuts.find(
+    (c) =>
+      c.outer.side === side && Math.abs(c.segment.x - x) < 1e-6 && Math.abs(c.segment.y - y) < 1e-6
+  );
+
+describe('wallCutoutPathsActive', () => {
+  it('needs the interior toggle and an outer side', () => {
+    expect(wallCutoutPathsActive(bin({ front: cut(true) }), FRAME)).toBe(true);
+    expect(wallCutoutPathsActive(bin({}), FRAME)).toBe(false);
+    const noInterior = bin({ front: cut(true) });
+    expect(
+      wallCutoutPathsActive(
+        { ...noInterior, walls: { ...noInterior.walls, interior: cut(false) } },
+        FRAME
+      )
+    ).toBe(false);
+  });
+
+  it('leaves removable divider pieces to their own window', () => {
+    expect(wallCutoutPathsActive(bin({ front: cut(true) }, { style: 'slotted' }), FRAME)).toBe(
+      false
+    );
+  });
+
+  it('needs an outer side that opens, not one set to nothing', () => {
+    expect(wallCutoutPathsActive(bin({ front: cut(true, { width: 0 }) }), FRAME)).toBe(false);
+    expect(wallCutoutPathsActive(bin({ front: cut(true, { depth: 0 }) }), FRAME)).toBe(false);
+    expect(wallCutoutPathsActive(bin({ front: cut(true, { widthMm: 0 }) }), FRAME)).toBe(false);
+    const oneOpens = bin({ front: cut(true, { width: 0 }), left: cut(true) });
+    expect(wallCutoutPathsActive(oneOpens, FRAME)).toBe(true);
+  });
+});
+
+describe('planDividerPathCuts', () => {
+  const colX = -INNER_W / 2 + CELL_W;
+  const rowY = -INNER_D / 2 + CELL_D;
+
+  it('lowers a divider along the path and opens a window in one across it', () => {
+    const params = bin({ front: cut(true) });
+    const cuts = planDividerPathCuts(params, FRAME);
+    const along = cutAt(cuts, 'front', colX, 0);
+    const across = cutAt(cuts, 'front', 0, rowY);
+    expect(along?.kind).toBe('lowered');
+    expect(across?.kind).toBe('window');
+    // The window's profile floor is the outer opening's own.
+    const floor = FRAME.wallHeight - 0.5 * (FRAME.wallHeight - params.wallThickness);
+    expect(across?.zMin).toBeCloseTo(floor, 6);
+    // A fillet barely lifts a divider standing just inside its corner.
+    expect(along?.loweredTopZ).toBeGreaterThanOrEqual(floor);
+    expect(along?.loweredTopZ).toBeLessThan(floor + 0.1);
+  });
+
+  it('runs the lowered divider from wall to wall', () => {
+    const cuts = planDividerPathCuts(bin({ front: cut(true) }), FRAME);
+    const along = cutAt(cuts, 'front', colX, 0);
+    expect(along?.wallAtMin && along.wallAtMax).toBe(true);
+    expect(along?.uMin).toBeCloseTo(-INNER_D / 2, 6);
+    expect(along?.uMax).toBeCloseTo(INNER_D / 2, 6);
+  });
+
+  it('keeps the window inside the opening span', () => {
+    const cuts = planDividerPathCuts(bin({ front: cut(true) }), FRAME);
+    const across = cutAt(cuts, 'front', 0, rowY);
+    const half = (0.4 * INNER_W) / 2;
+    expect(across?.uMin).toBeCloseTo(-half, 6);
+    expect(across?.uMax).toBeCloseTo(half, 6);
+  });
+
+  it('lowers a divider whose face the opening reaches, though its centre stands outside', () => {
+    // 2.4 mm dividers at x = +-20.52 put their near faces at +-19.32, inside a
+    // 40 mm square-shouldered opening that ends at +-20.
+    const thickness = 2.4;
+    const params = bin(
+      { front: cut(true, { widthMm: 40 }) },
+      {
+        compartments: {
+          ...DEFAULT_BIN_PARAMS.compartments,
+          cols: 3,
+          rows: 1,
+          cells: [0, 1, 2],
+          thickness,
+        },
+      }
+    );
+    const cuts = planDividerPathCuts(params, FRAME);
+    const floor = FRAME.wallHeight - 0.5 * (FRAME.wallHeight - params.wallThickness);
+    for (const x of [colX, -colX]) {
+      const along = cutAt(cuts, 'front', x, 0);
+      expect(along?.kind).toBe('lowered');
+      // The 5 mm bottom fillet lifts the floor at the near face, not the 20 mm
+      // the divider would otherwise stand above it.
+      expect(along?.loweredTopZ ?? Infinity).toBeGreaterThan(floor);
+      expect(along?.loweredTopZ ?? Infinity).toBeLessThan(floor + 5);
+    }
+  });
+
+  it('leaves a divider centred outside the span standing', () => {
+    // A 25% opening ends inside the middle column, short of both dividers.
+    const cuts = planDividerPathCuts(bin({ front: cut(true, { width: 25 }) }), FRAME);
+    expect(cutAt(cuts, 'front', colX, 0)).toBeUndefined();
+    expect(cutAt(cuts, 'front', -colX, 0)).toBeUndefined();
+    expect(cutAt(cuts, 'front', 0, rowY)?.kind).toBe('window');
+  });
+
+  /** Every cut a side makes in the divider whose midpoint is at (x, y), along its run. */
+  const cutsAt = (
+    cuts: readonly DividerPathCut[],
+    side: string,
+    x: number,
+    y: number
+  ): DividerPathCut[] =>
+    cuts
+      .filter(
+        (c) =>
+          c.outer.side === side &&
+          Math.abs(c.segment.x - x) < 1e-6 &&
+          Math.abs(c.segment.y - y) < 1e-6
+      )
+      .sort((a, b) => a.uMin - b.uMin);
+
+  const raise = (params: BinParams, floorRaises: number[]): BinParams => ({
+    ...params,
+    compartments: { ...params.compartments, floorRaises },
+  });
+
+  it('never cuts below a raised floor beside the divider', () => {
+    const params = bin({ front: cut(true, { depth: 100 }) });
+    const cuts = planDividerPathCuts(raise(params, [0, 12]), FRAME);
+    // Compartment 1 is the front cell of the middle column.
+    const [besideRaised] = cutsAt(cuts, 'front', colX, 0);
+    const plain = cutAt(planDividerPathCuts(params, FRAME), 'front', colX, 0);
+    expect(besideRaised.loweredTopZ ?? 0).toBeGreaterThan((plain?.loweredTopZ ?? 0) + 11);
+  });
+
+  it('holds a lowered divider up only beside the raised floor', () => {
+    const params = bin({ front: cut(true, { depth: 100 }) });
+    const plain = cutAt(planDividerPathCuts(params, FRAME), 'front', colX, 0);
+    const runs = cutsAt(planDividerPathCuts(raise(params, [12]), FRAME), 'front', colX, 0);
+    expect(runs).toHaveLength(2);
+    const [front, rest] = runs;
+    expect(front.loweredTopZ ?? 0).toBeGreaterThan((plain?.loweredTopZ ?? 0) + 11);
+    expect(rest.loweredTopZ).toBeCloseTo(plain?.loweredTopZ ?? NaN, 6);
+    // The two runs meet inside the row divider, a little into the lower one,
+    // so the lower cut stays off the raised slab's edge.
+    expect(front.uMax).toBeCloseTo(rest.uMin, 9);
+    expect(front.uMax).toBeGreaterThan(rowY);
+    expect(front.uMax - rowY).toBeLessThan(params.compartments.thickness / 2);
+    expect(rest.uMax).toBeCloseTo(INNER_D / 2, 6);
+  });
+
+  it('reads the floor beside a shifted divider from its own compartments', () => {
+    // Divider 0|1 moved 22 mm right stands at x = 1.48, nearer grid line 2
+    // than its own grid line 1. Only compartment 2 is raised.
+    const params = bin(
+      { front: cut(true, { depth: 100 }) },
+      {
+        compartments: {
+          ...DEFAULT_BIN_PARAMS.compartments,
+          cols: 3,
+          rows: 1,
+          cells: [0, 1, 2],
+          floorRaises: [0, 0, 12],
+          dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 22, offsetEnd: 22 }],
+        },
+      }
+    );
+    const plain = planDividerPathCuts(
+      { ...params, compartments: { ...params.compartments, floorRaises: undefined } },
+      FRAME
+    );
+    const shifted = colX + 22;
+    const lowered = cutsAt(planDividerPathCuts(params, FRAME), 'front', shifted, 0);
+    expect(lowered).toHaveLength(1);
+    expect(lowered[0].loweredTopZ).toBeCloseTo(
+      cutAt(plain, 'front', shifted, 0)?.loweredTopZ ?? NaN,
+      6
+    );
+  });
+
+  it('stops a lowered run short of a raised compartment past its junction end', () => {
+    // The column divider 0|1 ends on the row divider at y = 0. Compartment 2,
+    // the whole back row, is raised; its slab reaches into that divider.
+    const at = (floorRaises?: number[]): DividerPathCut[] => {
+      const params = bin(
+        { front: cut(true, { depth: 100 }) },
+        {
+          compartments: {
+            ...DEFAULT_BIN_PARAMS.compartments,
+            cols: 2,
+            rows: 2,
+            cells: [0, 1, 2, 2],
+            thickness: 1.2,
+            floorRaises,
+          },
+        }
+      );
+      return cutsAt(planDividerPathCuts(params, FRAME), 'front', 0, -INNER_D / 4);
+    };
+    const reachY = (c: DividerPathCut): number => c.segment.y + c.uMax;
+    const [plain] = at();
+    expect(reachY(plain)).toBeGreaterThan(0.6);
+    const [raised] = at([0, 0, 12]);
+    expect(raised.kind).toBe('lowered');
+    // Past the row divider's near face, short of its centre line.
+    expect(reachY(raised)).toBeGreaterThan(-0.6);
+    expect(reachY(raised)).toBeLessThan(0);
+    expect(raised.loweredTopZ).toBeCloseTo(plain.loweredTopZ ?? NaN, 6);
+  });
+
+  it('opens a window down to the path floor where no raised floor stands beside it', () => {
+    // A 25% opening crosses the row divider in the middle column only. The
+    // raised compartment is the front-left one, outside that span.
+    const params = bin({ front: cut(true, { width: 25, depth: 90 }) });
+    const plain = cutAt(planDividerPathCuts(params, FRAME), 'front', 0, rowY);
+    const windows = cutsAt(planDividerPathCuts(raise(params, [12]), FRAME), 'front', 0, rowY);
+    expect(windows).toHaveLength(1);
+    expect(windows[0].kind).toBe('window');
+    expect(windows[0].floorZ).toBeCloseTo(plain?.floorZ ?? NaN, 6);
+    expect(windows[0].zMin).toBeCloseTo(plain?.zMin ?? NaN, 6);
+  });
+
+  it('takes a label tab hanging on a cut divider with it', () => {
+    const tabs = bin(
+      { front: cut(true) },
+      { label: { ...DEFAULT_BIN_PARAMS.label, enabled: true } }
+    );
+    const across = cutAt(planDividerPathCuts(tabs, FRAME), 'front', 0, rowY);
+    const bare = cutAt(planDividerPathCuts(bin({ front: cut(true) }), FRAME), 'front', 0, rowY);
+    // The tab hangs into the compartment in front of its back wall: -Y.
+    expect(across?.vMin ?? 0).toBeLessThan((bare?.vMin ?? 0) - tabs.label.depth + 1);
+    expect(across?.vMax).toBeCloseTo(bare?.vMax ?? NaN, 6);
+  });
+
+  it('widens a lowered divider for a label tab only where the tab hangs', () => {
+    // The front-left compartment spans two columns, and a 40% tab covers only
+    // the first of them.
+    const params = bin(
+      { left: cut(true) },
+      { label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, width: 40 } },
+      [0, 0, 1, 2, 3, 4, 5, 6, 7]
+    );
+    const runs = cutsAt(planDividerPathCuts(params, FRAME), 'left', 0, rowY);
+    expect(runs.map((c) => c.kind)).toEqual(['lowered', 'lowered', 'lowered']);
+    const [withTab, bare, nextTab] = runs;
+    const tabDepth = params.label.depth;
+    expect(withTab.vMin).toBeLessThan(-tabDepth);
+    expect(nextTab.vMin).toBeLessThan(-tabDepth);
+    expect(bare.vMin).toBeGreaterThan(-params.compartments.thickness);
+  });
+
+  it('cuts an angled divider where the path crosses it', () => {
+    const params = bin({ front: cut(true) });
+    const angled: BinParams = {
+      ...params,
+      compartments: {
+        ...params.compartments,
+        dividerOverrides: [{ compartmentA: 3, compartmentB: 4, offsetStart: -8, offsetEnd: 8 }],
+      },
+    };
+    const cuts = planDividerPathCuts(angled, FRAME);
+    expect(cuts.some((c) => c.kind === 'oblique')).toBe(true);
+  });
+
+  it('is empty with no outer side cut', () => {
+    expect(planDividerPathCuts(bin({}), FRAME)).toEqual([]);
+  });
+});
+
+describe('planDividerPathCuts with narrow grid cells', () => {
+  // A 2u bin, 2.6 mm dividers and 11 columns: each cell is 5.01 mm across
+  // between dividers, under the 5.2 mm the divider-wall builder needs. Each
+  // row is one compartment, so only the row divider stands.
+  const narrow = (over: Partial<BinParams['compartments']> = {}): BinParams =>
+    bin(
+      { front: cut(true) },
+      {
+        width: 2,
+        depth: 2,
+        compartments: {
+          ...DEFAULT_BIN_PARAMS.compartments,
+          cols: 11,
+          rows: 2,
+          cells: [...Array<number>(11).fill(0), ...Array<number>(11).fill(1)],
+          thickness: 2.6,
+          ...over,
+        },
+      }
+    );
+
+  it('cuts the divider the shell leaves between merged cavities', () => {
+    const params = narrow();
+    const dim = deriveDimensions(params, false);
+    expect(dim.compartmentsBakedIntoShell).toBe(true);
+    const cuts = planDividerPathCuts(params, cutoutFrame(params, dim));
+    expect(cutAt(cuts, 'front', 0, 0)?.kind).toBe('window');
+  });
+
+  it('cuts nothing where the divider-wall builder builds no dividers', () => {
+    // A short divider height takes the divider-wall builder, which skips cells this narrow.
+    const params = narrow({ dividerHeight: 10 });
+    const dim = deriveDimensions(params, false);
+    expect(dim.compartmentsBakedIntoShell).toBe(false);
+    expect(planDividerPathCuts(params, cutoutFrame(params, dim))).toEqual([]);
+  });
+});
+
+describe('planDividerPathCuts with a fillet wider than its compartments', () => {
+  // Nine 13.7 mm columns under a centred 40% front opening: the dividers at
+  // x = +-6.8 and +-20.5 are in its path, the ones at +-34.2 and +-47.9 are not.
+  const COLS = 9;
+  const THICKNESS = 1.2;
+  const cellW = INNER_W / COLS;
+  const dividerXs = Array.from({ length: COLS - 1 }, (_, i) => -INNER_W / 2 + (i + 1) * cellW);
+  const params: BinParams = {
+    ...bin({ front: cut(true) }),
+    interiorFilletMm: 15,
+    compartments: {
+      ...DEFAULT_BIN_PARAMS.compartments,
+      cols: COLS,
+      rows: 1,
+      cells: Array.from({ length: COLS }, (_, i) => i),
+      thickness: THICKNESS,
+    },
+  };
+  /** World X a cut on a divider along Y spans: its `v` runs toward -X. */
+  const spanX = (c: DividerPathCut): [number, number] => [
+    c.segment.x - c.vMax,
+    c.segment.x - c.vMin,
+  ];
+  /** The corner radius the fillet builds in each compartment. */
+  const builtCorner = new Map(
+    planInteriorFillets({
+      params,
+      innerW: INNER_W,
+      innerD: INNER_D,
+      floorZ: resolveBinFloorMm(params),
+      interiorHeight: FRAME.wallHeight - LIP_SMALL_TAPER,
+      dividerHeight: FRAME.dividerTopZ,
+      bakedCavities: false,
+      floorRaise: () => 0,
+      radius: 15,
+      pitch: { x: 42, y: 42 },
+    }).map((plan) => [plan.id, plan.cornerRadius])
+  );
+  const widest = Math.max(...builtCorner.values());
+
+  it('keeps every cut off the dividers beside the one it lowers', () => {
+    for (const frame of [FRAME, { ...FRAME, depthPadding: widest + 1 }]) {
+      const cuts = planDividerPathCuts(params, frame);
+      expect(cuts.length).toBeGreaterThan(0);
+      for (const c of cuts) {
+        const [x0, x1] = spanX(c);
+        for (const x of dividerXs) {
+          if (Math.abs(x - c.segment.x) < 1e-6) continue;
+          expect(x1 < x - THICKNESS / 2 || x0 > x + THICKNESS / 2).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('still takes the rounding the fillet builds in the corners beside it', () => {
+    const plain = planDividerPathCuts(params, FRAME);
+    const padded = planDividerPathCuts(params, { ...FRAME, depthPadding: widest + 1 });
+    for (const [i, c] of plain.entries()) {
+      // Column `k` lies on the -X side of the divider, which is `v`'s positive side.
+      const k = Math.round((c.segment.x + INNER_W / 2) / cellW) - 1;
+      const cornerMinusX = builtCorner.get(k) ?? NaN;
+      const cornerPlusX = builtCorner.get(k + 1) ?? NaN;
+      expect(Math.min(cornerMinusX, cornerPlusX)).toBeGreaterThan(5);
+      expect(c.vMax - THICKNESS / 2).toBeGreaterThan(cornerMinusX);
+      expect(-c.vMin - THICKNESS / 2).toBeGreaterThan(cornerPlusX);
+      // The fillet's own trim reaches further, so the two cuts share no plane.
+      expect(padded[i].vMax).toBeGreaterThan(c.vMax);
+      expect(padded[i].vMin).toBeLessThan(c.vMin);
+    }
+  });
+});

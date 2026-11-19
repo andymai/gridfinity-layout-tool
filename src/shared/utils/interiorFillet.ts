@@ -67,6 +67,9 @@ export function interiorFilletCornerMm(
  * id: the span a fillet cannot grow past half of. A merged L is as narrow as
  * its thinner arm, not its bounding box. A custom shape is one cavity, keyed by
  * its compartment id, measured across the mask's own cells.
+ *
+ * `cavity` is the worker's own cavity size, when the caller has it: overhang
+ * and pull-tab insets move it off the nominal one these params give.
  */
 export function narrowestCavitySpansMm(
   params: Pick<
@@ -80,7 +83,8 @@ export function narrowestCavitySpansMm(
     | 'wallThickness'
     | 'cellMask'
     | 'compartments'
-  >
+  >,
+  cavity?: { readonly innerW: number; readonly innerD: number }
 ): Map<number, number> {
   const pitchX = params.gridUnitMm;
   const pitchY = params.gridUnitMmY ?? params.gridUnitMm;
@@ -99,8 +103,12 @@ export function narrowestCavitySpansMm(
   }
 
   const { cols, rows, cells, thickness } = params.compartments;
-  const cellW = (params.width * pitchX - GRIDFINITY.TOLERANCE - 2 * params.wallThickness) / cols;
-  const cellD = (params.depth * pitchY - GRIDFINITY.TOLERANCE - 2 * params.wallThickness) / rows;
+  const innerW =
+    cavity?.innerW ?? params.width * pitchX - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
+  const innerD =
+    cavity?.innerD ?? params.depth * pitchY - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
+  const cellW = innerW / cols;
+  const cellD = innerD / rows;
   const at = (c: number, r: number): number =>
     c < 0 || c >= cols || r < 0 || r >= rows ? -1 : cells[r * cols + c];
   const out = new Map<number, number>();

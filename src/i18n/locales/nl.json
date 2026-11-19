@@ -2416,6 +2416,7 @@
   "binDesigner.wallCutouts.heightUnitAria": "Hoogte-eenheid",
   "binDesigner.wallCutouts.independent": "Onafhankelijk",
   "binDesigner.wallCutouts.interior": "Binnenwanden",
+  "binDesigner.wallCutouts.interiorPathHint": "Elke opening loopt recht door de scheidingswanden op haar pad.",
   "binDesigner.wallCutouts.left": "Links",
   "binDesigner.wallCutouts.linked": "Gekoppeld",
   "binDesigner.wallCutouts.offset": "Verschuiving",

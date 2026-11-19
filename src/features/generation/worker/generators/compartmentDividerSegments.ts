@@ -171,6 +171,23 @@ export interface InteriorDividerSegment {
   /** Where the wall meets the FLOOR. Equals `x`/`y` when it stands upright. */
   readonly footX: number;
   readonly footY: number;
+  /**
+   * The grid line the run belongs to and the cells it spans along it. An
+   * offset moves the wall off that line, so its compartments are read here,
+   * never from where the wall stands.
+   */
+  readonly grid: DividerGridLine;
+}
+
+/** A divider run's place in the compartment grid. */
+export interface DividerGridLine {
+  /** `columns`: a boundary between columns, so the run goes along Y. */
+  readonly between: 'columns' | 'rows';
+  /** Column or row index the boundary sits before. */
+  readonly boundary: number;
+  /** Cells the run spans along its line, as `[start, end)`. */
+  readonly start: number;
+  readonly end: number;
 }
 
 /**
@@ -222,6 +239,7 @@ export function interiorDividerSegments(
       const segLen = (end - start) * cellD;
       const midY = -innerD / 2 + (start + (end - start) / 2) * cellD;
       const ov = lookup.get(pairKey);
+      const grid: DividerGridLine = { between: 'columns', boundary, start, end };
       out.push(
         ov
           ? (() => {
@@ -235,6 +253,7 @@ export function interiorDividerSegments(
                 leanDeg: ov.rakeDeg ?? 0,
                 footX: x + dividerFootDrift(ov, dividerHeight),
                 footY: midY,
+                grid,
               };
             })()
           : {
@@ -246,6 +265,7 @@ export function interiorDividerSegments(
               leanDeg: 0,
               footX: xPos,
               footY: midY,
+              grid,
             }
       );
     }
@@ -263,6 +283,7 @@ export function interiorDividerSegments(
       const segLen = (end - start) * cellW;
       const midX = -innerW / 2 + (start + (end - start) / 2) * cellW;
       const ov = lookup.get(pairKey);
+      const grid: DividerGridLine = { between: 'rows', boundary, start, end };
       out.push(
         ov
           ? (() => {
@@ -276,6 +297,7 @@ export function interiorDividerSegments(
                 leanDeg: ov.rakeDeg ?? 0,
                 footX: midX,
                 footY: y + dividerFootDrift(ov, dividerHeight),
+                grid,
               };
             })()
           : {
@@ -287,6 +309,7 @@ export function interiorDividerSegments(
               leanDeg: 0,
               footX: midX,
               footY: yPos,
+              grid,
             }
       );
     }

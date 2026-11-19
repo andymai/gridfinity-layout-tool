@@ -2416,6 +2416,7 @@
   "binDesigner.wallCutouts.heightUnitAria": "Unité de hauteur",
   "binDesigner.wallCutouts.independent": "Indépendant",
   "binDesigner.wallCutouts.interior": "Parois intérieures",
+  "binDesigner.wallCutouts.interiorPathHint": "Chaque ouverture traverse en ligne droite les séparations sur son passage.",
   "binDesigner.wallCutouts.left": "Gauche",
   "binDesigner.wallCutouts.linked": "Lié",
   "binDesigner.wallCutouts.offset": "Décalage",

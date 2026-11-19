@@ -6,13 +6,15 @@ import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
 import { isLidBlockedBySection } from '@/features/bin-designer/utils/lidCompatibility';
 import type {
+  BinParams,
   WallSide,
   WallCutout,
   WallCutoutShape,
   LabelTabAlignment,
 } from '@/features/bin-designer/types';
 import { DISABLED_WALL_CUTOUT } from '@/features/bin-designer/constants/defaults';
-import { MAX_CUTOUT_CORNER_RADIUS } from '@/shared/utils/wallCutoutPosition';
+import { MAX_CUTOUT_CORNER_RADIUS, wallCutoutPathsActive } from '@/shared/utils/wallCutoutPosition';
+import { labelTabInteriorDims } from '@/shared/utils/labelTabPlan';
 import type { SectionMeta } from '../types';
 
 const ALL_SIDES: readonly WallSide[] = ['front', 'back', 'left', 'right', 'interior'];
@@ -37,6 +39,12 @@ const CORNER_SEED = 2;
  * Drives the expectation hint rather than any geometry change.
  */
 const DENSITY_HINT_THRESHOLD = 5;
+
+/** The worker's own rule, sized against the cavity it derives. */
+function interiorFollowsPaths(params: BinParams): boolean {
+  const cavity = labelTabInteriorDims(params);
+  return cavity !== null && wallCutoutPathsActive(params, cavity);
+}
 
 export function useWallCutoutsSection() {
   const { walls, updateWalls, updateWallSide, params } = useDesignerStore(
@@ -254,7 +262,14 @@ export function useWallCutoutsSection() {
   );
 
   return {
-    state: { walls, activeSides, linked, blocksLid, showDensityHint },
+    state: {
+      walls,
+      activeSides,
+      linked,
+      blocksLid,
+      showDensityHint,
+      interiorFollowsPaths: interiorFollowsPaths(params),
+    },
     handlers: {
       toggleEnabled,
       toggleSide,
