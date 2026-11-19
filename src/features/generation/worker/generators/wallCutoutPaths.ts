@@ -14,7 +14,6 @@
 import type { BinParams } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { lipInnerReachMm } from '@/shared/utils/lipNotchPlan';
-import { interiorFilletCornerMm } from '@/shared/utils/interiorFillet';
 import { resolveBinFloorMm, resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { labelTabFootprints } from '@/shared/utils/labelTabPlan';
 import { resolveOverhang } from '@/shared/utils/overhang';
@@ -42,6 +41,7 @@ import {
 import { interiorDividerSegments, type InteriorDividerSegment } from './compartmentDividerSegments';
 import {
   cellsAlong,
+  cutReachInto,
   runStretches,
   type CutSizing,
   type RunStretch,
@@ -220,12 +220,6 @@ export interface DividerPathCut {
   readonly zMin: number;
 }
 
-/**
- * Margin either side of a divider's faces, so a cut box never shares a plane
- * with them. Small, because whatever is fused to the face loses this much.
- */
-const DIVIDER_FACE_CLEARANCE = 0.2;
-
 /** A lowered top within this of the opening's floor is taken down onto it. */
 const FLOOR_SNAP_MM = 0.05;
 
@@ -326,7 +320,6 @@ export function planDividerPathCuts(params: BinParams, frame: CutoutFrame): Divi
   if (outers.length === 0) return [];
 
   const thickness = params.compartments.thickness;
-  const margin = DIVIDER_FACE_CLEARANCE + interiorFilletCornerMm(params) + frame.depthPadding;
   const binFloorZ = resolveBinFloorMm(params);
   // Mirrors `deriveDimensions`: the interior stops the lip's small taper short.
   const interiorHeight = frame.hasLip ? frame.wallHeight - LIP_SMALL_TAPER : frame.wallHeight;
@@ -339,7 +332,7 @@ export function planDividerPathCuts(params: BinParams, frame: CutoutFrame): Divi
     raises: resolveFloorRaises(params, binFloorZ, interiorHeight),
     tabs: labelTabFootprints(params, innerW, innerD, interiorHeight, params.wallThickness),
     tabInset: params.label.inset ?? 0,
-    reachInto: () => margin,
+    reachInto: cutReachInto(params, frame),
   };
   const profiles = outers.map((o) => pathProfile(params, o));
 

@@ -3,6 +3,9 @@ import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, WallCutout } from '@/features/bin-designer/types';
 import { lipInnerReachMm } from '@/shared/utils/lipNotchPlan';
+import { resolveBinFloorMm } from '@/shared/utils/slotMath';
+import { LIP_SMALL_TAPER } from './generatorConstants';
+import { planInteriorFillets } from './interiorFilletPlan';
 import {
   pathWallClearance,
   planDividerPathCuts,
@@ -213,6 +216,23 @@ describe('planDividerPathCuts', () => {
     expect(across?.vMax).toBeCloseTo(bare?.vMax ?? NaN, 6);
   });
 
+  it('widens a lowered divider for a label tab only where the tab hangs', () => {
+    // The front-left compartment spans two columns, and a 40% tab covers only
+    // the first of them.
+    const params = bin(
+      { left: cut(true) },
+      { label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, width: 40 } },
+      [0, 0, 1, 2, 3, 4, 5, 6, 7]
+    );
+    const runs = cutsAt(planDividerPathCuts(params, FRAME), 'left', 0, rowY);
+    expect(runs.map((c) => c.kind)).toEqual(['lowered', 'lowered', 'lowered']);
+    const [withTab, bare, nextTab] = runs;
+    const tabDepth = params.label.depth;
+    expect(withTab.vMin).toBeLessThan(-tabDepth);
+    expect(nextTab.vMin).toBeLessThan(-tabDepth);
+    expect(bare.vMin).toBeGreaterThan(-params.compartments.thickness);
+  });
+
   it('cuts an angled divider where the path crosses it', () => {
     const params = bin({ front: cut(true) });
     const angled: BinParams = {
@@ -228,6 +248,78 @@ describe('planDividerPathCuts', () => {
 
   it('is empty with no outer side cut', () => {
     expect(planDividerPathCuts(bin({}), FRAME)).toEqual([]);
+  });
+});
+
+describe('planDividerPathCuts with a fillet wider than its compartments', () => {
+  // Nine 13.7 mm columns under a centred 40% front opening: the dividers at
+  // x = +-6.8 and +-20.5 are in its path, the ones at +-34.2 and +-47.9 are not.
+  const COLS = 9;
+  const THICKNESS = 1.2;
+  const cellW = INNER_W / COLS;
+  const dividerXs = Array.from({ length: COLS - 1 }, (_, i) => -INNER_W / 2 + (i + 1) * cellW);
+  const params: BinParams = {
+    ...bin({ front: cut(true) }),
+    interiorFilletMm: 15,
+    compartments: {
+      ...DEFAULT_BIN_PARAMS.compartments,
+      cols: COLS,
+      rows: 1,
+      cells: Array.from({ length: COLS }, (_, i) => i),
+      thickness: THICKNESS,
+    },
+  };
+  /** World X a cut on a divider along Y spans: its `v` runs toward -X. */
+  const spanX = (c: DividerPathCut): [number, number] => [
+    c.segment.x - c.vMax,
+    c.segment.x - c.vMin,
+  ];
+  /** The corner radius the fillet builds in each compartment. */
+  const builtCorner = new Map(
+    planInteriorFillets({
+      params,
+      innerW: INNER_W,
+      innerD: INNER_D,
+      floorZ: resolveBinFloorMm(params),
+      interiorHeight: FRAME.wallHeight - LIP_SMALL_TAPER,
+      dividerHeight: FRAME.dividerTopZ,
+      bakedCavities: false,
+      floorRaise: () => 0,
+      radius: 15,
+      pitch: { x: 42, y: 42 },
+    }).map((plan) => [plan.id, plan.cornerRadius])
+  );
+  const widest = Math.max(...builtCorner.values());
+
+  it('keeps every cut off the dividers beside the one it lowers', () => {
+    for (const frame of [FRAME, { ...FRAME, depthPadding: widest + 1 }]) {
+      const cuts = planDividerPathCuts(params, frame);
+      expect(cuts.length).toBeGreaterThan(0);
+      for (const c of cuts) {
+        const [x0, x1] = spanX(c);
+        for (const x of dividerXs) {
+          if (Math.abs(x - c.segment.x) < 1e-6) continue;
+          expect(x1 < x - THICKNESS / 2 || x0 > x + THICKNESS / 2).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('still takes the rounding the fillet builds in the corners beside it', () => {
+    const plain = planDividerPathCuts(params, FRAME);
+    const padded = planDividerPathCuts(params, { ...FRAME, depthPadding: widest + 1 });
+    for (const [i, c] of plain.entries()) {
+      // Column `k` lies on the -X side of the divider, which is `v`'s positive side.
+      const k = Math.round((c.segment.x + INNER_W / 2) / cellW) - 1;
+      const cornerMinusX = builtCorner.get(k) ?? NaN;
+      const cornerPlusX = builtCorner.get(k + 1) ?? NaN;
+      expect(Math.min(cornerMinusX, cornerPlusX)).toBeGreaterThan(5);
+      expect(c.vMax - THICKNESS / 2).toBeGreaterThan(cornerMinusX);
+      expect(-c.vMin - THICKNESS / 2).toBeGreaterThan(cornerPlusX);
+      // The fillet's own trim reaches further, so the two cuts share no plane.
+      expect(padded[i].vMax).toBeGreaterThan(c.vMax);
+      expect(padded[i].vMin).toBeLessThan(c.vMin);
+    }
   });
 });
 

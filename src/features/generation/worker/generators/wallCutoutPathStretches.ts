@@ -4,11 +4,45 @@
  */
 
 import type { BinParams } from '@/shared/types/bin';
+import { interiorFilletCornerMm, narrowestCavitySpansMm } from '@/shared/utils/interiorFillet';
 import type { labelTabFootprints } from '@/shared/utils/labelTabPlan';
 import type { InteriorDividerSegment } from './compartmentDividerSegments';
 import { COPLANAR_OVERLAP } from './generatorConstants';
 
 const DEG = Math.PI / 180;
+
+/**
+ * Margin either side of a divider's faces, so a cut box never shares a plane
+ * with them. Small, because whatever is fused to the face loses this much.
+ */
+const DIVIDER_FACE_CLEARANCE = 0.2;
+
+/** How far a cut reaching for a compartment's middle stops short of it, or past it when padded. */
+const MIDDLE_GAP_MM = 0.05;
+
+/**
+ * How far a cut reaches across from a divider's face into compartment `id`:
+ * past the fillet rounding the corners on that face, but never past the
+ * compartment's middle, where the next divider's own rounding starts. The
+ * fillet planner keeps every corner at least 0.1 mm short of half the
+ * compartment's narrowest span. A padded cut, which trims the fillet itself,
+ * stops just past the middle and an unpadded one just short, so the two
+ * share no plane.
+ */
+export function cutReachInto(
+  params: BinParams,
+  frame: { readonly innerW: number; readonly innerD: number; readonly depthPadding: number }
+): (id: number | undefined) => number {
+  const own = DIVIDER_FACE_CLEARANCE + interiorFilletCornerMm(params);
+  const spans = narrowestCavitySpansMm(params, frame);
+  return (id) => {
+    const span = id === undefined ? undefined : spans.get(id);
+    if (span === undefined) return own + frame.depthPadding;
+    const middle = Math.max(DIVIDER_FACE_CLEARANCE, span / 2);
+    const reach = Math.min(own, middle - MIDDLE_GAP_MM);
+    return Math.min(reach + frame.depthPadding, Math.max(reach, middle + MIDDLE_GAP_MM));
+  };
+}
 
 /** One grid cell's share of a straight divider run, and the compartment on each side. */
 export interface RunCell {
@@ -112,24 +146,14 @@ export function runStretches(
   const aboveIsPlusV = runsAlongX === sign > 0;
   const raiseOf = (id: number | undefined): number =>
     id === undefined ? 0 : (sizing.raises.get(id) ?? 0);
-  // Label tabs hang from row dividers only.
-  const tab = runsAlongX
-    ? tabReachAcross(
-        sizing.tabs,
-        seg.y,
-        seg.x - seg.segLen / 2,
-        seg.x + seg.segLen / 2,
-        thickness,
-        sizing.tabInset,
-        sizing.reachInto(undefined),
-        sizing.reachInto(undefined)
-      )
-    : { lo: 0, hi: 0 };
-
   const cells = cellsAlong(sizing.params, seg, sizing.innerW, sizing.innerD)
     .map((cell) => {
       const reachBelow = sizing.reachInto(cell.below);
       const reachAbove = sizing.reachInto(cell.above);
+      // Label tabs hang from row dividers only.
+      const tab = runsAlongX
+        ? tabReachAcross(sizing, seg.y, cell, reachBelow, reachAbove)
+        : { lo: 0, hi: 0 };
       const lo = Math.min(-(thickness / 2 + reachBelow), tab.lo);
       const hi = Math.max(thickness / 2 + reachAbove, tab.hi);
       const u0 = sign * (cell.from - centre);
@@ -176,27 +200,24 @@ export function runStretches(
 }
 
 /**
- * How far either side of a divider along X its label tabs reach over
- * `[x0, x1]`, in world terms across the run (`lo` toward -Y), with the reach
- * past each tab that a cut takes into that side. A tab hangs from the
- * divider's top, so a cut that takes the divider must take the tab with it or
- * leave the tab floating.
+ * How far either side of a divider along X its label tabs reach over one
+ * cell, in world terms across the run (`lo` toward -Y), with the reach past
+ * each tab that a cut takes into that side. A tab hangs from the divider's
+ * top, so a cut that takes the divider must take the tab with it or leave the
+ * tab floating.
  */
 function tabReachAcross(
-  tabs: ReturnType<typeof labelTabFootprints>,
+  sizing: CutSizing,
   y: number,
-  x0: number,
-  x1: number,
-  thickness: number,
-  inset: number,
+  cell: RunCell,
   reachBelow: number,
   reachAbove: number
 ): { lo: number; hi: number } {
   let lo = 0;
   let hi = 0;
-  const reach = thickness / 2 + inset + 0.5;
-  for (const tab of tabs) {
-    if (tab.xMax <= x0 || tab.xMin >= x1) continue;
+  const reach = sizing.thickness / 2 + sizing.tabInset + 0.5;
+  for (const tab of sizing.tabs) {
+    if (tab.xMax <= cell.from || tab.xMin >= cell.to) continue;
     if (Math.abs(tab.yMax - y) <= reach && tab.yMin < y) {
       lo = Math.min(lo, tab.yMin - y - reachBelow);
     } else if (Math.abs(tab.yMin - y) <= reach && tab.yMax > y) {

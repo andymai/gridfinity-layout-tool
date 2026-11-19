@@ -189,6 +189,42 @@ describe('wall cutout path under a rounded shoulder', () => {
   }, 120_000);
 });
 
+describe('wall cutout path with a fillet wider than its compartments', () => {
+  beforeAll(async () => {
+    await initBrepjs();
+  }, 180_000);
+
+  it('lowers the dividers in the path and only those', () => {
+    // Nine 13.7 mm columns under a centred 40% opening, which ends at x = 24.6.
+    const defaults = buildParams({});
+    const cols = 9;
+    const mesh = gen({ front: cut(true) }, true, {
+      depth: 3,
+      interiorFilletMm: 15,
+      compartments: {
+        ...defaults.compartments,
+        cols,
+        rows: 1,
+        cells: Array.from({ length: cols }, (_, i) => i),
+      },
+    });
+    assertWatertight(mesh, 'wide fillet');
+    const outerD = 3 * GRID_SIZE - TOLERANCE;
+    const innerD = outerD - 2 * WALL;
+    const dividerX = (k: number): number => -INNER_W / 2 + (k * INNER_W) / cols;
+    const floor = topAt(mesh, N, -outerD / 2 + WALL / 2);
+    const fullHeight = topAt(mesh, dividerX(8) + N, N);
+    expect(fullHeight - floor).toBeGreaterThan(10);
+    // In the path, at x = 20.5.
+    expect(topAt(mesh, dividerX(6) + N, N)).toBeCloseTo(floor, 1);
+    // Beside it and outside the path, at x = 34.2.
+    expect(topAt(mesh, dividerX(7) + N, N)).toBeCloseTo(fullHeight, 1);
+    // The fillet rounding the corner between the lowered divider and the far
+    // wall goes with the divider.
+    expect(topAt(mesh, dividerX(6) + 0.6 + 1, innerD / 2 - 2)).toBeCloseTo(floor, 1);
+  }, 120_000);
+});
+
 describe('wall cutout path on a square 3x3 grid', () => {
   const OUTER_D_SQUARE = 3 * GRID_SIZE - TOLERANCE;
   const SQUARE_D = OUTER_D_SQUARE - 2 * WALL;
