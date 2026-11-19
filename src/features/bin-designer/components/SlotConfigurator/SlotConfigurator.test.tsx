@@ -160,6 +160,11 @@ describe('SlotConfigurator', () => {
     expect(screen.getByRole('button', { name: /^print fit test$/i })).toBeInTheDocument();
   });
 
+  it('shows the default fit tolerance as 0.25, not rounded to 0.3', () => {
+    render(<SlotConfigurator />);
+    expect(screen.getByRole('spinbutton', { name: /^fit tolerance$/i })).toHaveValue(0.25);
+  });
+
   it('shows calculated divider dimensions', () => {
     render(<SlotConfigurator />);
     // The component shows dimensions at the bottom
