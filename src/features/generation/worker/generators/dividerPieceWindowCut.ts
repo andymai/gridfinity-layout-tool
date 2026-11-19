@@ -1,7 +1,7 @@
 import { cut, translate, unwrap } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
-import { planPieceWindow } from '@/shared/utils/dividerPieceWindow';
+import { clearOfNotches, planPieceWindow, windowReach } from '@/shared/utils/dividerPieceWindow';
 import type { PieceWindow } from '@/shared/utils/dividerPieceWindow';
 import { dividerGrooveDepth } from '@/shared/utils/slotMath';
 import type { PieceGeometry } from './dividerPiecePatternBuilder';
@@ -58,22 +58,26 @@ export function cutPieceWindow(
  *
  * The window sits on the part of the piece between its seats: the length less
  * the engagement at each end. A piece in a floor groove is measured from the
- * floor, the way a fixed divider is.
+ * floor, the way a fixed divider is. Over a cross-lap notch, `notchDepth` deep,
+ * the window stops short of it.
  */
 export function pieceWindowCutter(
   params: BinParams,
   height: number,
-  thickness: number
+  thickness: number,
+  notchDepth: number
 ): (piece: Shape3D, geometry: PieceGeometry) => { cutPiece: Shape3D; geometry: PieceGeometry } {
   const standing = height - dividerGrooveDepth(params);
   return (piece, geometry) => {
     const span = geometry.length - 2 * geometry.tabEngagement;
-    const window = planPieceWindow(params.walls, params.wallThickness, span, 0, standing);
+    const planned = planPieceWindow(params.walls, params.wallThickness, span, 0, standing);
+    const window = planned && clearOfNotches(planned, geometry.notches ?? [], height, notchDepth);
     if (!window) return { cutPiece: piece, geometry };
-    const { offset, width, depth } = window;
+    // The keep-out covers the whole opening, round-overs included.
+    const opening = { offset: window.offset, width: 2 * windowReach(window), depth: window.depth };
     return {
       cutPiece: cutPieceWindow(piece, window, params.walls.shape, height, thickness),
-      geometry: { ...geometry, window: { offset, width, depth } },
+      geometry: { ...geometry, window: opening },
     };
   };
 }

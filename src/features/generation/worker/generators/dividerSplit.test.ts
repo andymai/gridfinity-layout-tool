@@ -91,6 +91,35 @@ describe('splitDividerPieceAtSeams', () => {
     await initBrepjs();
   }, 60_000);
 
+  it('moves a seam beside a window too deep to leave a tongue under it', () => {
+    const walls = DEFAULT_BIN_PARAMS.walls;
+    const params = slottedParams({
+      width: 7,
+      depth: 1,
+      slotConfig: {
+        ...DEFAULT_BIN_PARAMS.slotConfig,
+        x: { enabled: true, pitch: 20 },
+        y: { enabled: false, pitch: 20 },
+      },
+      walls: {
+        ...walls,
+        enabled: true,
+        shape: 'u-shape',
+        cornerRadiusTop: 0,
+        cornerRadiusBottom: 0,
+        interior: { ...walls.interior, enabled: true, width: 0, depth: 95, widthMm: 8 },
+      },
+    });
+    const pieces = splitPieces(params);
+    try {
+      expect(pieces).toHaveLength(1);
+      const part = getBounds(pieces[0].parts[0]);
+      expectLockingParts(pieces[0].parts, partLengthBudget(part.yMax - part.yMin, BED) ?? 0);
+    } finally {
+      for (const p of pieces) for (const part of p.parts) part.delete();
+    }
+  });
+
   it('returns a piece with no seams untouched', () => {
     const plate = buildDividerPiece(150, 2, 30);
     const split = splitDividerPieceAtSeams(plate, []);

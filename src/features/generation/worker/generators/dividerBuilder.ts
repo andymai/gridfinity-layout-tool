@@ -51,6 +51,7 @@ import {
   partLengthBudget,
   planDividerSeams,
   seamKeepOut,
+  tongueBandHalf,
 } from './dividerSeamPlan';
 import type { DividerBedFit } from './dividerSeamPlan';
 import { COPLANAR_OVERLAP, LIP_TAPER_WIDTH } from './generatorConstants';
@@ -78,7 +79,14 @@ function planPieceSeams(
   const budget = fit ? partLengthBudget(dividerHeight, fit.printBed) : null;
   if (!fit || budget === null) return { seams: [], geometry };
   const cl = dividerJointClearance(fit.nozzleSizeMm);
-  const obstructions = [...(geometry.notches ?? []), ...(geometry.grooves ?? [])];
+  // A window that leaves no room under it for a tongue keeps the seam aside.
+  const window = geometry.window;
+  const blocks = window !== undefined && dividerHeight - window.depth < 2 * tongueBandHalf(cl);
+  const obstructions = [
+    ...(geometry.notches ?? []),
+    ...(geometry.grooves ?? []),
+    ...(blocks ? [window] : []),
+  ];
   const seams = planDividerSeams(geometry.length, budget, obstructions, cl);
   if (seams.length === 0) return { seams, geometry };
   const grooves = [...(geometry.grooves ?? []), ...seams.map((s) => seamKeepOut(s, cl))];
@@ -421,7 +429,7 @@ export function buildUniqueDividerPieces(
   const tabDepth = tabEngagement(slotDepth, clearance);
   const columns = (positions: readonly number[], width: number): PieceObstruction[] =>
     positions.map((offset) => ({ offset, width }));
-  const windowed = pieceWindowCutter(params, dividerHeight, thickness);
+  const windowed = pieceWindowCutter(params, dividerHeight, thickness, notchDepth);
   const pattern = (piece: Shape3D, geometry: PieceGeometry): Shape3D => {
     const { cutPiece, geometry: withWindow } = windowed(piece, geometry);
     const planned = planPieceSeams(withWindow, dividerHeight, fit);
@@ -642,7 +650,7 @@ export function buildAuthoredDividerPieces(
   const specs = computeAuthoredDividers(segments, innerW, innerD, thickness, slotDepth, clearance);
 
   const patternCtx = resolvePiecePatternContext(params, innerW, innerD, dividerHeight, thickness);
-  const windowed = pieceWindowCutter(params, dividerHeight, thickness);
+  const windowed = pieceWindowCutter(params, dividerHeight, thickness, notchDepth);
   // Authored pieces shorten their length at abutting ends rather than carrying
   // a tab there, so holding the full tab depth at both ends is conservative —
   // a little extra solid margin, never a perforated tab.

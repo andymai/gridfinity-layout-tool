@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { WallConfig, WallCutout } from '@/shared/types/bin';
-import { planPieceWindow } from './dividerPieceWindow';
+import { clearOfNotches, planPieceWindow, WINDOW_NOTCH_BRIDGE_MM } from './dividerPieceWindow';
 
 const side = (over: Partial<WallCutout> = {}): WallCutout => ({
   enabled: false,
@@ -45,5 +45,34 @@ describe('planPieceWindow', () => {
   it('cuts nothing when the interior cutout or all wall cutouts are off', () => {
     expect(planPieceWindow(walls({ enabled: false }), 1.2, 100, 0, 40)).toBeNull();
     expect(planPieceWindow(walls({}, false), 1.2, 100, 0, 40)).toBeNull();
+  });
+});
+
+describe('clearOfNotches', () => {
+  const deep = (): NonNullable<ReturnType<typeof planPieceWindow>> => {
+    const window = planPieceWindow(walls({ depth: 80 }), 1.2, 100, 0, 40);
+    if (!window) throw new Error('no window');
+    return window;
+  };
+
+  it('stops a window over a notch short of it, by the bridge', () => {
+    const window = clearOfNotches(deep(), [{ offset: 0, width: 2 }], 40, 20.25);
+    expect(window?.depth).toBeCloseTo(40 - 20.25 - WINDOW_NOTCH_BRIDGE_MM, 6);
+  });
+
+  it('leaves a window alone when no notch is under it', () => {
+    expect(clearOfNotches(deep(), [{ offset: 45, width: 2 }], 40, 20.25)).toEqual(deep());
+  });
+
+  it('counts the shoulder round-over as part of the opening', () => {
+    const window = { ...deep(), radii: { top: 6, bottom: 0 } };
+    // 20 + 6 + 1 reaches a notch centred 26 mm off.
+    expect(clearOfNotches(window, [{ offset: 26, width: 2 }], 40, 20.25)?.depth).toBeLessThan(
+      window.depth
+    );
+  });
+
+  it('drops a window that no room is left for', () => {
+    expect(clearOfNotches(deep(), [{ offset: 0, width: 2 }], 20, 19)).toBeNull();
   });
 });

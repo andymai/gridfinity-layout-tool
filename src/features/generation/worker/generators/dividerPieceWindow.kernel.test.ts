@@ -6,11 +6,12 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { BinParams, WallCutout } from '@/shared/types/bin';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { box, intersect, measureVolume, mesh, unwrap } from 'brepjs';
+import { box, getSolids, intersect, measureVolume, mesh, unwrap } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
-import { buildUniqueDividerPieces } from './dividerBuilder';
+import { buildDividerPiece, buildUniqueDividerPieces } from './dividerBuilder';
 import { dividerGrooveDepth } from '@/shared/utils/slotMath';
+import { pieceWindowCutter } from './dividerPieceWindowCut';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -180,5 +181,55 @@ describe('every removable piece takes the interior cutout', () => {
     expect(both.count).toBe(pattern.count);
     expect(both.volume).toBeGreaterThan(0);
     expect(both.volume).not.toBeCloseTo(pattern.volume, 0);
+  });
+});
+
+describe('a window over a cross-lap crossing', () => {
+  it('keeps every interlocking piece in one part, however deep the window', () => {
+    const base = slotted({ depth: 60 });
+    const params: BinParams = {
+      ...base,
+      width: 2,
+      depth: 2,
+      slotConfig: {
+        ...base.slotConfig,
+        x: { enabled: true, pitch: 40 },
+        y: { enabled: true, pitch: 40 },
+        crossStyle: 'lap',
+      },
+    };
+    const inner = 2 * 42 - 0.5 - 2 * 1.2;
+    const pieces = buildUniqueDividerPieces(
+      params,
+      inner,
+      inner,
+      WALL_HEIGHT,
+      DEFAULT_BIN_PARAMS.base.stackingLip
+    );
+    try {
+      expect(pieces.length).toBeGreaterThan(1);
+      for (const piece of pieces) {
+        expect(getSolids(piece.shape), `${piece.label} came apart`).toHaveLength(1);
+      }
+    } finally {
+      for (const piece of pieces) piece.shape.delete();
+    }
+  });
+});
+
+describe('the window the wall pattern keeps clear of', () => {
+  it('covers the opening at the top edge, round-overs included', () => {
+    const params = slotted({ widthMm: 30, depth: 50 });
+    const rounded: BinParams = { ...params, walls: { ...params.walls, cornerRadiusTop: 5 } };
+    const cutter = pieceWindowCutter(rounded, 40, 1.6, 20.25);
+    const { cutPiece, geometry } = cutter(buildDividerPiece(104, 1.6, 40), {
+      length: 104,
+      tabEngagement: 2,
+    });
+    try {
+      expect(geometry.window?.width).toBeCloseTo(30 + 2 * 5, 6);
+    } finally {
+      cutPiece.delete();
+    }
   });
 });

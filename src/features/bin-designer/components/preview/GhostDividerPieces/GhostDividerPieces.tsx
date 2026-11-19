@@ -35,7 +35,7 @@ import {
   MIN_WALL_FOR_SLOTS,
   tabEngagement,
 } from '@/shared/utils/slotMath';
-import { planPieceWindow } from '@/shared/utils/dividerPieceWindow';
+import { clearOfNotches, planPieceWindow } from '@/shared/utils/dividerPieceWindow';
 import { referencePieceGeometry } from './referencePieceOutline';
 
 const GHOST_COLOR = '#22d3ee';
@@ -454,13 +454,21 @@ export function GhostDividerPieces() {
         index: number,
         engagement: number
       ): void => {
-        const window = planPieceWindow(
+        const planned = planPieceWindow(
           walls,
           wallThickness,
           length - 2 * engagement,
           0,
           dividerHeight - grooveDepth
         );
+        const window =
+          planned &&
+          clearOfNotches(
+            planned,
+            notches.map((offset) => ({ offset, width: slotWidth })),
+            dividerHeight,
+            notchDepth
+          );
         pieces.push({
           key,
           geometry: window

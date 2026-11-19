@@ -50,3 +50,31 @@ export function planPieceWindow(
     radii: resolveCutoutCornerRadii(walls, cfg, width),
   };
 }
+
+/** Solid kept between a window and a cross-lap notch, so a piece stays one part. */
+export const WINDOW_NOTCH_BRIDGE_MM = 2;
+
+/** Half the opening at the top edge: the shoulder round-over widens it by up to its radius. */
+export function windowReach(window: PieceWindow): number {
+  return window.width / 2 + window.radii.top;
+}
+
+/**
+ * Hold a window clear of the cross-lap notches it spans. A notch from the
+ * bottom edge and a window from the top would meet and cut the piece in two,
+ * so the window stops `WINDOW_NOTCH_BRIDGE_MM` above the notch's reach. Both
+ * pieces of a crossing take the same cap, so their windows meet at one height.
+ * Null when no window is left.
+ */
+export function clearOfNotches(
+  window: PieceWindow,
+  notches: readonly { readonly offset: number; readonly width: number }[],
+  height: number,
+  notchDepth: number
+): PieceWindow | null {
+  const reach = windowReach(window);
+  const spans = notches.some((n) => Math.abs(n.offset - window.offset) < reach + n.width / 2);
+  if (!spans) return window;
+  const depth = Math.min(window.depth, height - notchDepth - WINDOW_NOTCH_BRIDGE_MM);
+  return depth >= 0.1 ? { ...window, depth } : null;
+}
