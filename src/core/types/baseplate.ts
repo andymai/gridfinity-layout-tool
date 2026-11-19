@@ -185,6 +185,8 @@ export interface StoredBaseplateParams {
    * plate, whose magnet pads are too thin to open. Absent means off.
    */
   readonly magnetChamfer?: boolean;
+  /** Small through-holes behind upward-opening magnet pockets for pushing magnets out. */
+  readonly magnetPopOutHoles?: boolean;
   readonly paddingLeft: Mm;
   readonly paddingRight: Mm;
   readonly paddingFront: Mm;

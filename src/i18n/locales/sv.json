@@ -5505,6 +5505,8 @@
   "exportDestination.failed": "Kunde inte spara {file}. Försök exportera igen.",
   "exportDestination.fail.timeout": "Uppladdningen till {host} tog för lång tid. Filen kan ändå ha kommit fram.",
   "exportDestination.fail.redirect": "Uppladdningen till {host} omdirigerades. Ange den slutliga adressen i Inställningar.",
+  "baseplate.magnetPopOutHoles": "Utskjutningshål för magneter",
+  "baseplate.magnetPopOutHolesDetail": "Små hål under varje magnetficka gör att magneterna kan tryckas ut underifrån.",
   "baseplate.mountMagnets.crushRibs": "Klämribbor",
   "baseplate.mountMagnets.crushRibsDetail": "Åtta ribbor i varje magnethål på undersidan håller en inpressad magnet utan lim.",
   "labels.printer.brother-pt": "Brother P-touch",

@@ -104,6 +104,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'magnetDepth',
   'magnetCrushRibs',
   'magnetChamfer',
+  'magnetPopOutHoles',
   'paddingLeft',
   'paddingRight',
   'paddingFront',
@@ -139,6 +140,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
 ]);
 
 const BOOLEAN_PARAM_KEYS = new Set<string>([
+  'magnetPopOutHoles',
   'overTile',
   'overTileHalfGrid',
   'overTileHalfGridSolidLeftover',

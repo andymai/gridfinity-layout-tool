@@ -5367,6 +5367,8 @@
   "exportDestination.failed": "无法保存 {file}。请重新导出。",
   "exportDestination.fail.timeout": "上传到 {host} 超时。文件可能已经送达。",
   "exportDestination.fail.redirect": "上传到 {host} 被重定向。请在设置中使用最终地址。",
+  "baseplate.magnetPopOutHoles": "磁铁顶出孔",
+  "baseplate.magnetPopOutHolesDetail": "每个磁铁槽底部的小孔可让您从下方顶出磁铁。",
   "baseplate.mountMagnets.crushRibs": "压紧筋",
   "baseplate.mountMagnets.crushRibsDetail": "底面的每个磁铁孔内有八条压紧筋，无需胶水即可固定压入的磁铁。",
   "labels.printer.brother-pt": "Brother P-touch",

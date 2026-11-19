@@ -18,6 +18,11 @@ import { resolveScrewHoles, screwFloorCandidates } from '@/shared/generation/scr
 import type { ResolvedScrewHole } from '@/shared/generation/screwHolePlacement';
 import { initTestKernel } from '@/test/initTestKernel';
 import { columnCrossings } from './__kernel-tests__/meshAssertions';
+import { forEachCell } from '@/shared/generation/cellDecomposition';
+import {
+  cellHostsAttachmentHoles,
+  magnetPositionsForCell,
+} from '@/shared/generation/magnetPositions';
 import {
   expectChamferedSection,
   expectRibbedSection,
@@ -36,6 +41,7 @@ type BrepGenerateFn = (
   normals: Float32Array;
   indices: Uint32Array;
   triangleCount: number;
+  edgeVertices: Float32Array;
 };
 
 // Direct mesh generator — pure TypeScript, no WASM
@@ -80,6 +86,43 @@ const defaults = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBas
 });
 
 const noop = (): void => {};
+
+describe('magnet pop-out holes', () => {
+  it.each([1, 1.5])('opens the retaining floor in exported geometry at %s units', (width) => {
+    const closed = defaults({ width, depth: 1, magnetHoles: true });
+    const open = { ...closed, magnetPopOutHoles: true };
+    const plain = generateBrep(closed, noop, true);
+    const popped = generateBrep(open, noop, true);
+    expect(horizontalFaceArea(popped, 1, MAGNET_FLOOR)).toBeLessThan(
+      horizontalFaceArea(plain, 1, MAGNET_FLOOR)
+    );
+    expect(popped.triangleCount).toBeGreaterThan(0);
+    expect(() => generateDirect(open, noop)).toThrow(/require the exact baseplate generator/);
+
+    const positions: Array<readonly [number, number]> = [];
+    forEachCell(
+      width,
+      1,
+      (cell) => {
+        if (!cellHostsAttachmentHoles(cell, closed.magnetDiameter / 2, 42, 42)) return;
+        positions.push(...magnetPositionsForCell(cell, closed.magnetDiameter / 2, 42, 42));
+      },
+      { fractionalEdgeX: 'end', fractionalEdgeY: 'end', gridUnitMm: 42 }
+    );
+    expect(positions.length).toBeGreaterThan(0);
+    if (width === 1.5) expect(positions.length).toBeGreaterThan(4);
+    for (const [x, y] of positions) {
+      const through = columnCrossings(popped, x + 0.17, y + 0.23);
+      expect(through, `underside access at (${x}, ${y})`).toEqual([]);
+
+      // The opening radius is capped at 1 mm; outside it, the retaining floor
+      // still spans from the underside to the bottom of the magnet pocket.
+      const retained = columnCrossings(popped, x + 1.05, y + 0.11);
+      expect(retained[0], `floor underside at (${x}, ${y})`).toBeCloseTo(0, 2);
+      expect(retained.at(-1), `floor top at (${x}, ${y})`).toBeCloseTo(MAGNET_FLOOR, 2);
+    }
+  });
+});
 
 // ─── Mesh Analysis Utilities ────────────────────────────────────────────────
 

@@ -1113,6 +1113,7 @@ describe('pieceToBaseplateParams', () => {
       magnetHoles: true,
       magnetCrushRibs: true,
       magnetChamfer: true,
+      magnetPopOutHoles: true,
       magnetAnchor: 'center',
       lightweight: true,
       connectorNubs: true,
@@ -1123,6 +1124,7 @@ describe('pieceToBaseplateParams', () => {
       const result = pieceToBaseplateParams(piece, parent);
       expect(result.magnetCrushRibs, piece.label).toBe(true);
       expect(result.magnetChamfer, piece.label).toBe(true);
+      expect(result.magnetPopOutHoles, piece.label).toBe(true);
       expect(result.magnetAnchor, piece.label).toBe('center');
     }
   });
@@ -1148,6 +1150,7 @@ describe('pieceToBaseplateParams', () => {
       magnetDepth: 2,
       magnetCrushRibs: true,
       magnetChamfer: true,
+      magnetPopOutHoles: true,
       magnetAnchor: 'center',
       lowProfileBase: true,
       stackSeamTrimMm: 0.4,

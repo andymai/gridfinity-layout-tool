@@ -5367,6 +5367,8 @@
   "exportDestination.failed": "{file} を保存できませんでした。もう一度エクスポートしてください。",
   "exportDestination.fail.timeout": "{host} へのアップロードがタイムアウトしました。ファイルは届いている可能性があります。",
   "exportDestination.fail.redirect": "{host} へのアップロードはリダイレクトされました。設定でリダイレクト先のアドレスを指定してください。",
+  "baseplate.magnetPopOutHoles": "磁石押し出し穴",
+  "baseplate.magnetPopOutHolesDetail": "各磁石ポケットの底に小さな穴を開け、下から磁石を押し出せます。",
   "baseplate.mountMagnets.crushRibs": "圧入用リブ",
   "baseplate.mountMagnets.crushRibsDetail": "下面の各磁石穴にある8本のリブが、接着剤なしで圧入した磁石を保持します。",
   "labels.printer.brother-pt": "Brother P-touch",

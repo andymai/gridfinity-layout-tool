@@ -4902,6 +4902,9 @@ const en: Record<string, string> = {
   'baseplate.magnetCrushRibsDetail':
     'Eight ridges inside each hole crush as the magnet presses in, so it holds without glue or a tight tolerance.',
   'baseplate.magnetChamfer': 'Chamfered mouth',
+  'baseplate.magnetPopOutHoles': 'Magnet pop-out holes',
+  'baseplate.magnetPopOutHolesDetail':
+    'Small holes through the back of each magnet pocket let you push magnets out from underneath.',
   'baseplate.magnetChamferDetail':
     'A 45\u00b0 lead-in at the opening of each hole guides the magnet in straight.',
   'baseplate.magnetChamferLightweight':

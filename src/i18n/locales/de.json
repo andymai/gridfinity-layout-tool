@@ -5505,6 +5505,8 @@
   "exportDestination.failed": "{file} konnte nicht gespeichert werden. Versuche den Export erneut.",
   "exportDestination.fail.timeout": "Upload an {host} hat zu lange gedauert. Die Datei ist vielleicht trotzdem beim Empfänger angekommen.",
   "exportDestination.fail.redirect": "Upload an {host} wurde umgeleitet. Trage in den Einstellungen die endgültige Adresse ein.",
+  "baseplate.magnetPopOutHoles": "Magnet-Ausdrücklöcher",
+  "baseplate.magnetPopOutHolesDetail": "Kleine Löcher durch den Boden jeder Magnettasche ermöglichen das Herausdrücken von unten.",
   "baseplate.mountMagnets.crushRibs": "Klemmrippen",
   "baseplate.mountMagnets.crushRibsDetail": "Acht Rippen in jeder Magnetöffnung auf der Unterseite halten einen eingepressten Magneten ohne Klebstoff.",
   "labels.printer.brother-pt": "Brother P-touch",

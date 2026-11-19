@@ -5505,6 +5505,8 @@
   "exportDestination.failed": "No se pudo guardar {file}. Vuelve a intentar la exportación.",
   "exportDestination.fail.timeout": "La subida a {host} tardó demasiado. Puede que el archivo haya llegado igualmente.",
   "exportDestination.fail.redirect": "La subida a {host} fue redirigida. Usa la dirección final en Configuración.",
+  "baseplate.magnetPopOutHoles": "Orificios para expulsar imanes",
+  "baseplate.magnetPopOutHolesDetail": "Pequeños orificios bajo cada alojamiento permiten expulsar los imanes desde abajo.",
   "baseplate.mountMagnets.crushRibs": "Nervios de presión",
   "baseplate.mountMagnets.crushRibsDetail": "Ocho nervios en cada orificio inferior sujetan el imán a presión sin pegamento.",
   "labels.printer.brother-pt": "Brother P-touch",

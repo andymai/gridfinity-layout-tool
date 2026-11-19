@@ -5781,6 +5781,8 @@
   "exportDestination.failed": "Nie udało się zapisać {file}. Spróbuj wyeksportować ponownie.",
   "exportDestination.fail.timeout": "Przesyłanie do {host} trwało zbyt długo. Plik mógł jednak dotrzeć do odbiornika.",
   "exportDestination.fail.redirect": "Przesyłanie do {host} zostało przekierowane. Wpisz w Ustawieniach adres docelowy.",
+  "baseplate.magnetPopOutHoles": "Otwory do wypychania magnesów",
+  "baseplate.magnetPopOutHolesDetail": "Małe otwory pod każdym gniazdem pozwalają wypchnąć magnesy od spodu.",
   "baseplate.mountMagnets.crushRibs": "Żebra zaciskowe",
   "baseplate.mountMagnets.crushRibsDetail": "Osiem żeber w każdym otworze od spodu utrzymuje magnes wciskany bez kleju.",
   "labels.printer.brother-pt": "Brother P-touch",

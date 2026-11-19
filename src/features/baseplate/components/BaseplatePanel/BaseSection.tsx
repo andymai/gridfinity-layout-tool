@@ -373,6 +373,17 @@ export function BaseSection() {
                     )
                   }
                 />
+                <FeatureToggle
+                  label={t('baseplate.magnetPopOutHoles')}
+                  info={t('baseplate.magnetPopOutHolesDetail')}
+                  checked={baseplateParams.magnetPopOutHoles === true}
+                  onChange={() =>
+                    updateParam(
+                      'magnetPopOutHoles',
+                      baseplateParams.magnetPopOutHoles === true ? undefined : true
+                    )
+                  }
+                />
               </FeatureToggle>
             </div>
             <div className="border-t border-stroke-subtle pt-3">

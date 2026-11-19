@@ -88,9 +88,7 @@ export function shouldDeferBrepPreview(
   lastBrepMs: number | null,
   hasPreviewBridge: boolean
 ): boolean {
-  // Deferral keeps the procedural direct-mesh on screen — but that mesh is
-  // rectangles-only, so a shaped plate would finalize with a wrong (or no)
-  // preview. Shaped plates always run BREP.
+  // Shaped plates need the exact clip; neither deferred draft can replace it.
   if (parentParams.outline !== undefined) return false;
   // The Manifold draft builds neither detached margin rails nor the padding-free
   // body they leave, so a plate with rails can only settle on the exact build.
@@ -110,11 +108,18 @@ export function shouldDeferBrepPreview(
 
 /**
  * The draft a deferred plate keeps as its final preview. The procedural mesh
- * draws no eco reliefs, so an eco plate finishes on the Manifold draft, which
- * runs the real generator.
+ * draws no eco reliefs or open undersides, so those plates finish on the
+ * Manifold draft, which runs the real generator.
  */
 export function deferredPreviewSource(params: ResolvedBaseplateParams): 'direct' | 'manifold' {
-  return params.ecoPlate === true ? 'manifold' : 'direct';
+  return params.ecoPlate === true || (params.magnetHoles && params.magnetPopOutHoles === true)
+    ? 'manifold'
+    : 'direct';
+}
+
+/** Whether the procedural preview can show this plate without omitting geometry. */
+export function canUseDirectMeshPreview(params: ResolvedBaseplateParams): boolean {
+  return params.outline === undefined && !(params.magnetHoles && params.magnetPopOutHoles === true);
 }
 
 /**
@@ -190,6 +195,11 @@ export function planPreviewDrafts(options: {
   // first edit with an outline, the last good mesh is the rectangle from before
   // it, and a wrong-shape plate is worse than none.
   if (shouldSkipManifoldDraft(params)) return previousHadOutline ? 'none' : 'clear';
+
+  if (!canUseDirectMeshPreview(params)) {
+    if (!hasPreviewBridge || (lastBrepMs !== null && lastBrepMs < skipBelowMs)) return 'none';
+    return 'manifold';
+  }
 
   // No draft kernel — the procedural mesh is the only fill available, and it is
   // cheap enough to paint even when the exact is predicted fast. An eco plate

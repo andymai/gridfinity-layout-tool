@@ -456,6 +456,7 @@ describe('migrateBaseplateParams', () => {
       magnetDepth: mm(2),
       magnetCrushRibs: true,
       magnetChamfer: true,
+      magnetPopOutHoles: true,
       paddingLeft: mm(1),
       paddingRight: mm(2),
       paddingFront: mm(3),

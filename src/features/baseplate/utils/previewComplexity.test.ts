@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  canUseDirectMeshPreview,
   estimatePreviewComplexity,
   shouldDeferBrepPreview,
   shouldSkipManifoldDraft,
@@ -169,7 +170,23 @@ describe('shouldDeferBrepPreview', () => {
 describe('deferredPreviewSource', () => {
   it('settles an eco plate on the Manifold draft, which draws its reliefs', () => {
     expect(deferredPreviewSource(makeParams({ ecoPlate: true }))).toBe('manifold');
+    expect(deferredPreviewSource(makeParams({ magnetHoles: true, magnetPopOutHoles: true }))).toBe(
+      'manifold'
+    );
+    expect(deferredPreviewSource(makeParams({ magnetHoles: false, magnetPopOutHoles: true }))).toBe(
+      'direct'
+    );
     expect(deferredPreviewSource(makeParams())).toBe('direct');
+  });
+});
+
+describe('canUseDirectMeshPreview', () => {
+  it('rejects an open underside while leaving ordinary plates on the fast path', () => {
+    expect(canUseDirectMeshPreview(makeParams())).toBe(true);
+    expect(canUseDirectMeshPreview(makeParams({ magnetPopOutHoles: true }))).toBe(false);
+    expect(
+      canUseDirectMeshPreview(makeParams({ magnetHoles: false, magnetPopOutHoles: true }))
+    ).toBe(true);
   });
 });
 
@@ -179,6 +196,12 @@ describe('shouldAwaitPreviewBridge', () => {
 
   it('waits for the draft kernel before deciding a large eco magnet plate', () => {
     expect(awaits(makeParams({ width: 10, depth: 10, ecoPlate: true }), false)).toBe(true);
+  });
+
+  it('waits for the draft kernel when pop-out holes rule out the direct mesh', () => {
+    const plate = makeParams({ width: 10, depth: 10, magnetPopOutHoles: true });
+    expect(awaits(plate, false)).toBe(true);
+    expect(awaits(plate, true)).toBe(false);
   });
 
   it('decides at once when the kernel is up, the plate is small, or it is not eco', () => {
@@ -235,6 +258,13 @@ describe('planPreviewDrafts', () => {
    */
   it('paints the procedural mesh without a bridge even when the exact is predicted fast', () => {
     expect(plan({ hasPreviewBridge: false, lastBrepMs: 10 })).toBe('direct');
+  });
+
+  it('keeps the previous preview until a kernel result can show pop-out holes', () => {
+    const params = makeParams({ magnetPopOutHoles: true });
+    expect(plan({ params, hasPreviewBridge: false })).toBe('none');
+    expect(plan({ params, hasPreviewBridge: true })).toBe('manifold');
+    expect(plan({ params, hasPreviewBridge: true, lastBrepMs: 100 })).toBe('none');
   });
 
   it('skips both drafts when the exact build is predicted faster than the gate', () => {

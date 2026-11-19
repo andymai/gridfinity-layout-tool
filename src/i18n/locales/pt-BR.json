@@ -5505,6 +5505,8 @@
   "exportDestination.failed": "Não foi possível salvar {file}. Tente exportar de novo.",
   "exportDestination.fail.timeout": "O envio para {host} demorou demais. O arquivo pode ter chegado mesmo assim.",
   "exportDestination.fail.redirect": "O envio para {host} foi redirecionado. Use o endereço final em Configurações.",
+  "baseplate.magnetPopOutHoles": "Furos para remover ímãs",
+  "baseplate.magnetPopOutHolesDetail": "Pequenos furos sob cada encaixe permitem empurrar os ímãs por baixo.",
   "baseplate.mountMagnets.crushRibs": "Nervuras de pressão",
   "baseplate.mountMagnets.crushRibsDetail": "Oito nervuras em cada furo inferior prendem o ímã encaixado por pressão sem cola.",
   "labels.printer.brother-pt": "Brother P-touch",

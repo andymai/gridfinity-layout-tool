@@ -79,6 +79,13 @@ describe('computePieceFingerprint', () => {
     expect(computePieceFingerprint(a)).not.toBe(computePieceFingerprint(b));
   });
 
+  it('distinguishes pieces with magnet pop-out holes', () => {
+    const plate = makeParams({ magnetHoles: true });
+    expect(computePieceFingerprint({ ...plate, magnetPopOutHoles: true })).not.toBe(
+      computePieceFingerprint(plate)
+    );
+  });
+
   it('produces different keys when mount magnets differ, and ignores them while off', () => {
     const on: MountMagnetParams = { enabled: true, diameter: mm(6.5), depth: mm(2) };
     const key = (mountMagnets: MountMagnetParams | undefined) =>

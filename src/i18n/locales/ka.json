@@ -5505,6 +5505,8 @@
   "exportDestination.failed": "{file} ვერ შეინახა. სცადეთ ექსპორტი ხელახლა.",
   "exportDestination.fail.timeout": "{host}-ზე ატვირთვას ძალიან დიდი დრო დასჭირდა. ფაილი შესაძლოა მაინც მივიდა.",
   "exportDestination.fail.redirect": "{host}-ზე ატვირთვა გადამისამართდა. პარამეტრებში მიუთითეთ საბოლოო მისამართი.",
+  "baseplate.magnetPopOutHoles": "მაგნიტის ამოსაწევი ხვრელები",
+  "baseplate.magnetPopOutHolesDetail": "თითოეული მაგნიტის ბუდის ძირში პატარა ხვრელი საშუალებას გაძლევთ მაგნიტი ქვემოდან ამოაწიოთ.",
   "baseplate.mountMagnets.crushRibs": "დამჭერი ნეკნები",
   "baseplate.mountMagnets.crushRibsDetail": "ქვედა მხარეს თითოეულ მაგნიტის ხვრელში რვა ნეკნი წებოს გარეშე იჭერს ჩაწნეხილ მაგნიტს.",
   "labels.printer.brother-pt": "Brother P-touch",
