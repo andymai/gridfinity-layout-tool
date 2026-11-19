@@ -138,6 +138,34 @@ describe('planDividerPathCuts', () => {
     expect(across?.uMax).toBeCloseTo(half, 6);
   });
 
+  it('lowers a divider whose face the opening reaches, though its centre stands outside', () => {
+    // 2.4 mm dividers at x = +-20.52 put their near faces at +-19.32, inside a
+    // 40 mm square-shouldered opening that ends at +-20.
+    const thickness = 2.4;
+    const params = bin(
+      { front: cut(true, { widthMm: 40 }) },
+      {
+        compartments: {
+          ...DEFAULT_BIN_PARAMS.compartments,
+          cols: 3,
+          rows: 1,
+          cells: [0, 1, 2],
+          thickness,
+        },
+      }
+    );
+    const cuts = planDividerPathCuts(params, FRAME);
+    const floor = FRAME.wallHeight - 0.5 * (FRAME.wallHeight - params.wallThickness);
+    for (const x of [colX, -colX]) {
+      const along = cutAt(cuts, 'front', x, 0);
+      expect(along?.kind).toBe('lowered');
+      // The 5 mm bottom fillet lifts the floor at the near face, not the 20 mm
+      // the divider would otherwise stand above it.
+      expect(along?.loweredTopZ ?? Infinity).toBeGreaterThan(floor);
+      expect(along?.loweredTopZ ?? Infinity).toBeLessThan(floor + 5);
+    }
+  });
+
   it('leaves a divider centred outside the span standing', () => {
     // A 25% opening ends inside the middle column, short of both dividers.
     const cuts = planDividerPathCuts(bin({ front: cut(true, { width: 25 }) }), FRAME);

@@ -382,8 +382,8 @@ export function planDividerPathCuts(params: BinParams, frame: CutoutFrame): Divi
       }
 
       const offset = acrossCentre - profile.centre;
-      if (!Number.isFinite(profile.riseAt(offset))) continue;
       const rawRise = lowestRise(profile, offset - thickness / 2, offset + thickness / 2);
+      if (!Number.isFinite(rawRise)) continue;
       // A divider just inside a bottom fillet sits microns above the floor.
       // Taken down to it, it meets the dividers crossing it level instead of
       // leaving a step too small to print and plain to see in the preview.

@@ -189,6 +189,35 @@ describe('wall cutout path under a rounded shoulder', () => {
   }, 120_000);
 });
 
+describe('wall cutout path reaching only part of a divider', () => {
+  beforeAll(async () => {
+    await initBrepjs();
+  }, 180_000);
+
+  it('lowers a divider whose near face is inside the opening and its centre outside', () => {
+    // A 40 mm square-shouldered opening ends at x = 20. The 2.4 mm column
+    // divider centred at x = 20.52 has its near face at x = 19.32.
+    const defaults = buildParams({});
+    const thickness = 2.4;
+    const mesh = gen({ front: cut(true, { widthMm: 40 }) }, true, {
+      depth: 3,
+      compartments: { ...defaults.compartments, cols: 3, rows: 1, cells: [0, 1, 2], thickness },
+    });
+    assertStructurallyValid(mesh, 'partial reach');
+    assertWatertight(mesh, 'partial reach');
+    const outerD = 3 * GRID_SIZE - TOLERANCE;
+    const frontWall = -outerD / 2 + WALL / 2;
+    const rim = topAt(mesh, -45 + N, frontWall);
+    // The opening's bottom edge over the divider's near face.
+    const atFace = topAt(mesh, X2 - thickness / 2 + 0.01, frontWall);
+    expect(rim - atFace).toBeGreaterThan(10);
+    for (const y of [-20, 10, 40]) {
+      expect(topAt(mesh, X2 + N, y + N)).toBeCloseTo(atFace, 1);
+      expect(topAt(mesh, X1 - N, y + N)).toBeCloseTo(atFace, 1);
+    }
+  }, 120_000);
+});
+
 describe('wall cutout path with a fillet wider than its compartments', () => {
   beforeAll(async () => {
     await initBrepjs();
