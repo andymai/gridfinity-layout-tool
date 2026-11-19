@@ -1,0 +1,29 @@
+src/features/design-linking/hooks/importedFootprint.ts
+  s_144305aaade9d6::t_b9c6a020fe86c1 1-70
+src/features/design-linking/hooks/useBinResizedListener.ts
+  s_144305aaade9d6::t_305af42a8f1522 37,82-104
+  s_144305aaade9d6::t_928e2d0bf0bab2 105
+src/features/design-linking/hooks/useBinResizedListener.test.ts
+  s_144305aaade9d6::t_ab1ef2e49efb6b 7-8,16,31,296-360
+  s_144305aaade9d6::t_6ba5eec7eb78e3 361-387
+  s_144305aaade9d6::t_3b6105c8fcd2ad 388
+apps/docs/designer/special-bins.md
+  s_144305aaade9d6::t_4bc78f4b0e0b28 128-129
+  s_144305aaade9d6::t_995d70d65b272b 19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7fece73430f0cbb598ae356a0aae1d97a68e535a",
+  "prompts": {},
+  "sessions": {
+    "s_144305aaade9d6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04f0ff4e-8701-4c33-b723-fd21085e80e2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
