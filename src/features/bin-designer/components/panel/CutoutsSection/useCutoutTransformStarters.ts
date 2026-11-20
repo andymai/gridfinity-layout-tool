@@ -109,6 +109,8 @@ export function useCutoutTransformStarters({
       for (const [cloneId, originId] of cloneOriginMap ?? []) {
         if (originId === id) anchorId = cloneId;
       }
+      // A lid at its cap can refuse the pressed cutout's copy and keep others.
+      if (!offsets.has(anchorId)) anchorId = offsets.keys().next().value ?? id;
 
       pastDeadZoneRef.current = false;
       setMode({ type: 'dragging', startX: mmX, startY: mmY, anchorId, offsets });
