@@ -102,10 +102,19 @@ const STEEP_SLOT = makeCutout({
   leanDeg: 80,
 });
 
-/**
- * An 80° pocket opens 6 / cos 80° ≈ 34.6mm long at the surface and runs about
- * 44mm under it. Each probe sits where a pocket held at 45° would leave solid.
- */
+const corner = (x: number, y: number) =>
+  ({ x, y, handleIn: null, handleOut: null, symmetric: false }) as const;
+
+/** Its offset grows each side by the full clearance, past the cleared box. */
+const STEEP_PATH = makeCutout({
+  ...STEEP_SLOT,
+  shape: 'path',
+  y: 40,
+  clearance: 2,
+  path: [corner(20, 40), corner(32, 40), corner(32, 46), corner(20, 46)],
+});
+
+/** Each probe sits where a pocket held at 45° would leave solid. */
 function assertSteepLean(result: MeshData, params: BinParams): void {
   const { cx, cy, topZ } = mouthCenter(result, params, STEEP_SLOT);
   for (const off of [-14, 14]) {
@@ -252,6 +261,14 @@ export const cutoutLean: ScenarioCase[] = [
     customAssert: (result, params) => {
       const { cx, cy, topZ } = mouthCenter(result, params, STEEP_SLOT);
       expect(isSolidThrough(result, cx, cy - 20, topZ - 1, topZ), 'rim roofed over').toBe(false);
+    },
+  }),
+  defineScenario('cutout lean', '2×2 solid, an 80° path with clearance opens at its offset', {
+    params: { ...HOST, cutouts: [STEEP_PATH] },
+    compareWith: mustCut,
+    customAssert: (result, params) => {
+      const { cx, cy, topZ } = mouthCenter(result, params, STEEP_PATH);
+      expect(isSolidThrough(result, cx, cy - 26, topZ - 1, topZ), 'offset roofed over').toBe(false);
     },
   }),
   defineScenario('cutout lean', '2×2 solid, max lean at full depth clips at the floor', {

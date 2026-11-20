@@ -1,5 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`cutout lean > 2×2 solid, an 80° path with clearance opens at its offset 1`] = `140`;
+
 exports[`cutout lean > 2×2 solid, an 80° slot runs long and shallow 1`] = `140`;
 
 exports[`cutout lean > 2×2 solid, an 80° slot with an entry edge opens at its rim 1`] = `266`;
