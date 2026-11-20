@@ -1,0 +1,34 @@
+src/shared/utils/leanedOpening.test.ts
+  s_7a475c5ec9aea6::t_592edeac6a1ac5 21-22,84-113
+src/features/bin-designer/components/panel/CutoutsSection/leanOpening.ts
+  s_7a475c5ec9aea6::t_a7cf39b1de683b 57
+src/shared/generation/meshPersistence.ts
+  s_7a475c5ec9aea6::t_feb358851356fc 96-97,147
+src/features/bin-designer/components/panel/CutoutsSection/booleanGeometry.ts
+  s_7a475c5ec9aea6::t_a7cf39b1de683b 48-54,83-84,87,91-94,96
+src/features/generation/worker/generators/cutoutBuilder.ts
+  s_7a475c5ec9aea6::t_5d76c018bcd17a 217-235,371-376
+  s_7a475c5ec9aea6::t_6fb1feba3725f9 216
+src/features/generation/worker/generators/scenarios/cutoutLean.ts
+  s_7a475c5ec9aea6::t_a7c964070baea5 249-256
+src/shared/utils/leanedOpening.ts
+  s_7a475c5ec9aea6::t_a7cf39b1de683b 75,86,111-114
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.cutoutLean.test.ts.snap
+  s_7a475c5ec9aea6::t_6811e49779f0a8 5-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "53fc17155f5015a6fe2206818c8c96283f7755df",
+  "prompts": {},
+  "sessions": {
+    "s_7a475c5ec9aea6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cb5eebab-0488-498c-a66e-4727c1092aa4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
