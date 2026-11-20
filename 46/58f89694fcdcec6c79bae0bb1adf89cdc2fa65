@@ -1,0 +1,24 @@
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.test.ts
+  s_7a475c5ec9aea6::t_7f3701cf81eb67 469-473
+src/features/bin-designer/components/panel/CutoutsSection/geometryCore.ts
+  s_7a475c5ec9aea6::t_b40a298e0846ea 77-79
+  s_7a475c5ec9aea6::t_937b76fc702910 54-56
+src/features/bin-designer/components/panel/CutoutsSection/geometry.test.ts
+  s_7a475c5ec9aea6::t_4689581690a706 676-691
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4658f89694fcdcec6c79bae0bb1adf89cdc2fa65",
+  "prompts": {},
+  "sessions": {
+    "s_7a475c5ec9aea6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cb5eebab-0488-498c-a66e-4727c1092aa4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
