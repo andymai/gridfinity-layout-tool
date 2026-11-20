@@ -26,7 +26,6 @@ export interface ViewBounds {
   readonly maxY: number;
 }
 
-/** The edge facing further down, or on a tie the one facing left. */
 const lower = (a: Normal, b: Normal): Normal =>
   Math.abs(a.y - b.y) > TIE ? (a.y < b.y ? a : b) : a.x <= b.x ? a : b;
 

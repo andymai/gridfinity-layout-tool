@@ -409,7 +409,7 @@ export function SceneContent({
           cutouts={cutouts}
           selection={selection}
           preview={preview}
-          zoom={camera.zoom}
+          zoom={externalZoom ?? camera.zoom}
           viewCenter={externalCameraCenter}
         />
       )}
