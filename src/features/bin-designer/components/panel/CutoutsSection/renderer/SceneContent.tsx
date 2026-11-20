@@ -409,7 +409,8 @@ export function SceneContent({
           cutouts={cutouts}
           selection={selection}
           preview={preview}
-          zoom={camera.zoom}
+          zoom={externalZoom ?? camera.zoom}
+          viewCenter={externalCameraCenter}
         />
       )}
 
@@ -426,7 +427,11 @@ export function SceneContent({
           selectedCutout.shape !== 'text' &&
           selectedCutout.shape !== 'knifeSlot' &&
           !isInteracting && (
-            <CutoutHandles3D cutout={selectedCutout} onResizeStart={onResizeStart} />
+            <CutoutHandles3D
+              cutout={selectedCutout}
+              onResizeStart={onResizeStart}
+              zoom={externalZoom}
+            />
           )}
 
         {/* Rotation handle (not during interactions) */}

@@ -1,21 +1,25 @@
 /**
  * WebGL dimension annotations for selected cutouts.
  *
- * Shows width and depth measurements as crisp HTML text overlays
- * positioned below and to the left of shapes. Only visible at high zoom levels
- * to avoid clutter.
+ * Shows width and depth measurements as crisp HTML text overlays beside the
+ * edges they measure. Only visible at high zoom levels to avoid clutter.
  */
 
+import { useMemo } from 'react';
 import { Html } from '@react-three/drei';
+import { useThree } from '@react-three/fiber';
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { HTML_OVERLAY_Z_INDEX_RANGE } from './constants';
+import { dimensionLabelPositions, type ViewBounds } from './dimensionLabels';
 
 interface DimensionAnnotations3DProps {
   readonly cutouts: readonly Cutout[];
   readonly selection: ReadonlySet<string>;
   readonly preview: ReadonlyMap<string, Partial<Cutout>>;
   readonly zoom: number;
+  /** The camera's centre, when the workspace pans it; labels then stay in view. */
+  readonly viewCenter?: { readonly x: number; readonly y: number };
 }
 
 const MIN_ZOOM_TO_SHOW = 4;
@@ -25,51 +29,46 @@ export function DimensionAnnotations3D({
   selection,
   preview,
   zoom,
+  viewCenter,
 }: DimensionAnnotations3DProps) {
+  const size = useThree((s) => s.size);
+  const remPx = useMemo(
+    () => Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16,
+    []
+  );
   // Only show annotations at high zoom levels
   if (zoom < MIN_ZOOM_TO_SHOW || selection.size === 0) return null;
 
   const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
-  // Offset in screen-space (16px converted to world mm)
-  const offset = 16 / zoom;
+  const view: ViewBounds | undefined = viewCenter && {
+    minX: viewCenter.x - size.width / 2 / zoom,
+    maxX: viewCenter.x + size.width / 2 / zoom,
+    minY: viewCenter.y - size.height / 2 / zoom,
+    maxY: viewCenter.y + size.height / 2 / zoom,
+  };
 
   return (
     <>
       {selectedCutouts.map((cutout) => {
         const updates = preview.get(cutout.id);
         const effective = updates ? { ...cutout, ...updates } : cutout;
-
-        const widthX = effective.x + effective.width / 2;
-        const widthY = effective.y - offset;
-
-        const depthX = effective.x - offset;
-        const depthY = effective.y + effective.depth / 2;
+        const { width, depth } = dimensionLabelPositions(effective, zoom, remPx, view);
 
         return (
           <group key={cutout.id}>
-            {/* Width annotation below shape */}
-            <Html
-              position={[widthX, widthY, 0.1]}
-              center
-              style={{ pointerEvents: 'none' }}
-              zIndexRange={HTML_OVERLAY_Z_INDEX_RANGE}
-            >
-              <div className="rounded bg-surface-elevated/80 px-1 text-micro font-mono text-content-secondary whitespace-nowrap">
-                {effective.width.toFixed(1)}mm
-              </div>
-            </Html>
-
-            {/* Depth annotation left of shape */}
-            <Html
-              position={[depthX, depthY, 0.1]}
-              center
-              style={{ pointerEvents: 'none' }}
-              zIndexRange={HTML_OVERLAY_Z_INDEX_RANGE}
-            >
-              <div className="rounded bg-surface-elevated/80 px-1 text-micro font-mono text-content-secondary whitespace-nowrap">
-                {effective.depth.toFixed(1)}mm
-              </div>
-            </Html>
+            {[width, depth].map((label, i) => (
+              <Html
+                key={i}
+                position={[label.at[0], label.at[1], 0.1]}
+                center
+                style={{ pointerEvents: 'none' }}
+                zIndexRange={HTML_OVERLAY_Z_INDEX_RANGE}
+              >
+                <div className="rounded bg-surface-elevated/80 px-1 text-micro font-mono text-content-secondary whitespace-nowrap">
+                  {label.text}
+                </div>
+              </Html>
+            ))}
           </group>
         );
       })}

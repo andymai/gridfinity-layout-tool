@@ -11,6 +11,7 @@ import { useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
 import type { ResizeHandle } from '../useCutoutInteraction';
+import { smallCutoutHandleOffsetPx } from './handleOffset';
 import {
   RENDER_ORDER,
   CORNER_HANDLE_SIZE,
@@ -23,6 +24,11 @@ import {
 interface CutoutHandles3DProps {
   readonly cutout: Cutout;
   readonly onResizeStart: (id: string, handle: ResizeHandle, mmX: number, mmY: number) => void;
+  /**
+   * The zoom the workspace is about to give the camera. It reaches the camera
+   * in an effect after this render, so `camera.zoom` is one step behind.
+   */
+  readonly zoom?: number;
 }
 
 interface HandleDef {
@@ -54,16 +60,13 @@ function getHandleDefs(width: number, depth: number): HandleDef[] {
 const handleFillColor = new THREE.Color(ACCENT_COLOR_HEX); // Amber fill
 const handleBorderColor = new THREE.Color('#b45309'); // Darker amber border
 
-export function CutoutHandles3D({ cutout, onResizeStart }: CutoutHandles3DProps) {
+export function CutoutHandles3D({ cutout, onResizeStart, zoom: nextZoom }: CutoutHandles3DProps) {
   const { camera } = useThree();
-  const zoom = camera.zoom;
+  const zoom = nextZoom ?? camera.zoom;
   const [hoveredHandle, setHoveredHandle] = useState<ResizeHandle | null>(null);
 
-  // Offset handles outward when cutout is too small
-  const smallThresholdW = (CORNER_HANDLE_SIZE * 3) / zoom;
-  const smallThresholdD = (CORNER_HANDLE_SIZE * 3) / zoom;
-  const isSmall = cutout.width < smallThresholdW || cutout.depth < smallThresholdD;
-  const handleOffset = isSmall ? CORNER_HANDLE_SIZE / zoom : 0;
+  const handleOffset = smallCutoutHandleOffsetPx(cutout.width, cutout.depth, zoom) / zoom;
+  const isSmall = handleOffset > 0;
 
   const handles = useMemo(
     () => getHandleDefs(cutout.width, cutout.depth),
