@@ -246,6 +246,14 @@ export const cutoutLean: ScenarioCase[] = [
     compareWith: mustCut,
     customAssert: assertSteepLean,
   }),
+  defineScenario('cutout lean', '2×2 solid, an 80° slot with an entry edge opens at its rim', {
+    params: { ...HOST, cutouts: [{ ...STEEP_SLOT, chamferWidth: 1 }] },
+    compareWith: mustCut,
+    customAssert: (result, params) => {
+      const { cx, cy, topZ } = mouthCenter(result, params, STEEP_SLOT);
+      expect(isSolidThrough(result, cx, cy - 20, topZ - 1, topZ), 'rim roofed over').toBe(false);
+    },
+  }),
   defineScenario('cutout lean', '2×2 solid, max lean at full depth clips at the floor', {
     // cutDepth past solidSurfaceZ clamps, and the 45° floor corner would dip
     // below z=0 — the interior clip must truncate it instead of breaching.

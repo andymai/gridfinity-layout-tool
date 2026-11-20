@@ -214,6 +214,26 @@ function leanTopExtension(leanDeg: number, localDepth: number): number {
 }
 
 /**
+ * How far a tool's rim reaches along local Y from its centre: the cleared
+ * outline grown by the entry edge. A path's offset can reach past its box at a
+ * sharp corner, so it is measured from the rim the path cut builds.
+ */
+function rimReach(
+  cutout: Parameters<typeof pathCutoutCut>[0] & { readonly shape: string },
+  clearance: number,
+  chamfer: number,
+  clearedDepth: number
+): number {
+  const flare = chamfer > MIN_LOFTED_CHAMFER ? chamfer : 0;
+  if (flare === 0) return clearedDepth / 2;
+  if (cutout.shape === 'path') {
+    const rim = pathCutoutCut(cutout, clearance, flare)?.rim;
+    if (rim && rim.length > 0) return Math.max(...rim.map((p) => Math.abs(p.y)));
+  }
+  return clearedDepth / 2 + flare;
+}
+
+/**
  * Tilt a finished tool about its own mouth: rotate about the local X axis
  * through (0, 0, mouthZ), so the opening stays put and the floor travels along
  * local +Y for positive angles. Applied after the scoop fillet (the scooped
@@ -348,9 +368,12 @@ function buildUnrotatedCutoutShape(
   const chamfer = entryChamferWidth(cutout);
 
   // Leaned tools carry extra length past the mouth so the tilted top still
-  // clears the whole opening; the interior clip trims the excess. `d` (with
-  // clearance) is the local extent the tilt sweeps, whatever the shape.
-  const topExt = leanTopExtension(resolveCutoutLeanDeg(cutout), d);
+  // clears the whole opening; the interior clip trims the excess. Above the
+  // mouth the tool is its rim, so the tilt sweeps the rim's local extent.
+  const topExt = leanTopExtension(
+    resolveCutoutLeanDeg(cutout),
+    2 * rimReach(cutout, clearance, chamfer, d)
+  );
   const fullDepth = cutout.cutDepth + topExt;
 
   if (chamfer > MIN_LOFTED_CHAMFER) {

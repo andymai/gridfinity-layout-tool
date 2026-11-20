@@ -70,19 +70,9 @@ const band = (y0: number, y1: number): Polygon => [
   ],
 ];
 
-const area = (ring: Ring): number => {
-  let sum = 0;
-  for (let i = 0; i < ring.length; i++) {
-    const [x0, y0] = ring[i];
-    const [x1, y1] = ring[(i + 1) % ring.length];
-    sum += x0 * y1 - x1 * y0;
-  }
-  return Math.abs(sum) / 2;
-};
-
 /**
  * The hole a cutout leaves in the surface it opens on, in the interior frame:
- * an outer ring, then any islands, or null when nothing reaches the surface.
+ * one polygon per separate hole, or null when nothing reaches the surface.
  *
  * The worker turns the cutter about its mouth by the lean. On the side the
  * floor tips away from, the surface meets the cutter above the mouth, where the
@@ -93,7 +83,7 @@ const area = (ring: Ring): number => {
  *
  * `depth` is the depth the worker cuts, measured along the lean.
  */
-export function surfaceOpening(cutout: Cutout, depth: number): Polygon | null {
+export function surfaceOpening(cutout: Cutout, depth: number): MultiPolygon | null {
   const s = sections(cutout, depth);
   if (!s) return null;
 
@@ -115,12 +105,12 @@ export function surfaceOpening(cutout: Cutout, depth: number): Polygon | null {
   }
   if (region.length === 0) return null;
 
-  // An island can split the opening; the largest piece then stands for it.
-  const [piece] = [...region].sort((a, b) => area(b[0]) - area(a[0]));
   const stretch = 1 / Math.cos(lean);
   const cx = cutout.x + cutout.width / 2;
   const cy = cutout.y + cutout.depth / 2;
-  return piece.map((ring) =>
-    ring.map(([x, y]) => rotateAbout(cx + x, cy + y * stretch, cx, cy, cutout.rotation))
+  return region.map((polygon) =>
+    polygon.map((ring) =>
+      ring.map(([x, y]) => rotateAbout(cx + x, cy + y * stretch, cx, cy, cutout.rotation))
+    )
   );
 }

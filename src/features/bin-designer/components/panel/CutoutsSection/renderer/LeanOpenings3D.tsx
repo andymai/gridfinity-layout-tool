@@ -12,7 +12,6 @@ interface LeanOpenings3DProps {
   readonly frame: CutoutDepthFrame;
 }
 
-/** A dashed outline of the hole each leaned pocket leaves in the surface. */
 export function LeanOpenings3D({ cutouts, preview, frame }: LeanOpenings3DProps) {
   const openings = useMemo(
     () => placeLeanOpenings(cutouts, preview, frame),

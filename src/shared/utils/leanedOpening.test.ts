@@ -18,8 +18,8 @@ const rect = (overrides: Partial<Cutout> = {}): Cutout => ({
 });
 
 const bounds = (c: Cutout, depth = c.cutDepth) => {
-  const polygon = surfaceOpening(c, depth);
-  const pts = (polygon ?? [[]])[0];
+  const region = surfaceOpening(c, depth);
+  const pts = (region ?? [[[]]])[0][0];
   return {
     minX: Math.min(...pts.map((p) => p[0])),
     maxX: Math.max(...pts.map((p) => p[0])),
@@ -81,9 +81,36 @@ describe('surfaceOpening', () => {
       path: [corner(0, 0), corner(20, 0), corner(20, 20), corner(0, 20)],
       holes: [[corner(8, 8), corner(12, 8), corner(12, 12), corner(8, 12)]],
     });
-    const polygon = surfaceOpening(path, path.cutDepth);
-    expect(polygon).not.toBeNull();
-    expect(polygon?.length).toBe(2);
+    const region = surfaceOpening(path, path.cutDepth);
+    expect(region).toHaveLength(1);
+    expect(region?.[0]).toHaveLength(2);
+  });
+
+  it('keeps every hole when the floor cuts a shape in two', () => {
+    const corner = (x: number, y: number) => ({
+      x,
+      y,
+      handleIn: null,
+      handleOut: null,
+      symmetric: false,
+    });
+    const arch = rect({
+      shape: 'path',
+      width: 20,
+      depth: 20,
+      leanDeg: 60,
+      path: [
+        corner(0, 0),
+        corner(4, 0),
+        corner(4, 14),
+        corner(16, 14),
+        corner(16, 0),
+        corner(20, 0),
+        corner(20, 20),
+        corner(0, 20),
+      ],
+    });
+    expect(surfaceOpening(arch, 3)).toHaveLength(2);
   });
 
   it('turns the opening with the shape', () => {

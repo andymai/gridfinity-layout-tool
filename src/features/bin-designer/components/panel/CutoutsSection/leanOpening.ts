@@ -54,8 +54,7 @@ export function placeLeanOpenings(
     }
     if (!leans(c)) continue;
     for (const copy of c.array ? expandCutoutArray(c) : [c]) {
-      const polygon = surfaceOpening(copy, depthOf(copy));
-      if (polygon) add(copy.id, [polygon]);
+      add(copy.id, surfaceOpening(copy, depthOf(copy)));
     }
   }
   for (const [groupId, members] of groups) {
