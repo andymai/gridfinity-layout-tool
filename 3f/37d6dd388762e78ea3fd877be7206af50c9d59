@@ -1,29 +1,29 @@
 src/features/bin-designer/components/panel/CutoutsSection/geometryCore.ts
   s_7a475c5ec9aea6::t_491af73bb704de 175-215
-src/features/bin-designer/components/panel/CutoutsSection/geometry.ts
-  s_7a475c5ec9aea6::t_362078f3ddf2ac 24-25
-src/features/bin-designer/components/panel/CutoutsSection/handlers/dragHandler.test.ts
-  s_7a475c5ec9aea6::t_66967dec960aab 95-122,124-131,133-148
-  s_7a475c5ec9aea6::t_215634b9d7b295 132
-  s_7a475c5ec9aea6::t_79a0533d510282 123
+src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.ts
+  s_7a475c5ec9aea6::t_38b97654e83ea4 25,103,105-106
 src/features/bin-designer/components/panel/CutoutsSection/useCutoutInteraction.ts
   s_7a475c5ec9aea6::t_38b97654e83ea4 21,237,239-240
 src/features/bin-designer/components/panel/CutoutsSection/geometry.test.ts
   s_7a475c5ec9aea6::t_ec51f706471d5c 371-378
+src/features/bin-designer/components/panel/CutoutsSection/geometryResize.ts
+  s_7a475c5ec9aea6::t_362078f3ddf2ac 15
+  s_7a475c5ec9aea6::t_8e3431805fc96f 16-18
 src/features/bin-designer/components/panel/CutoutsSection/handlers/dragHandler.ts
   s_7a475c5ec9aea6::t_1e5e635e3011bb 10,13
   s_7a475c5ec9aea6::t_1fdb0feeb6d912 75,77-78
   s_7a475c5ec9aea6::t_98e59617cfe840 113
-src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.ts
-  s_7a475c5ec9aea6::t_38b97654e83ea4 25,103,105-106
 src/features/bin-designer/components/panel/CutoutsSection/geometryAlignment.ts
-  s_7a475c5ec9aea6::t_570bc73184cf6c 11
   s_7a475c5ec9aea6::t_b23fb084612be6 52
-src/features/bin-designer/components/panel/CutoutsSection/geometryResize.ts
-  s_7a475c5ec9aea6::t_362078f3ddf2ac 15
-  s_7a475c5ec9aea6::t_834bb9f8cf741a 16-20,176
+  s_7a475c5ec9aea6::t_570bc73184cf6c 11
+src/features/bin-designer/components/panel/CutoutsSection/geometry.ts
+  s_7a475c5ec9aea6::t_362078f3ddf2ac 24-25
+src/features/bin-designer/components/panel/CutoutsSection/handlers/dragHandler.test.ts
+  s_7a475c5ec9aea6::t_215634b9d7b295 132
+  s_7a475c5ec9aea6::t_66967dec960aab 95-122,124-131,133-148
+  s_7a475c5ec9aea6::t_79a0533d510282 123
 src/features/bin-designer/components/panel/CutoutsSection/cutoutHelpers.test.ts
-  s_7a475c5ec9aea6::t_9896b04d54e57f 12,461-474
+  s_7a475c5ec9aea6::t_faa32cc373e5d1 12,461-474
 ---
 {
   "schema_version": "authorship/3.0.0",
