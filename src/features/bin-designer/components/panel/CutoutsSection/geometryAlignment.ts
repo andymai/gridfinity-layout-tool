@@ -8,7 +8,7 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import { type Bounds, getEffectiveBounds } from './geometryCore';
+import { type Bounds, getRotatedBounds } from './geometryCore';
 import {
   expandSelectionToGroups,
   toArrangeUnits,
@@ -49,7 +49,7 @@ export function findAlignmentGuides(
   const movingYPositions = [movingBounds.minY, movingCenterY, movingBounds.maxY];
 
   for (const cutout of stationaryCutouts) {
-    const b = getEffectiveBounds(cutout);
+    const b = getRotatedBounds(cutout);
     const cx = (b.minX + b.maxX) / 2;
     const cy = (b.minY + b.maxY) / 2;
     const xPositions = [b.minX, cx, b.maxX];

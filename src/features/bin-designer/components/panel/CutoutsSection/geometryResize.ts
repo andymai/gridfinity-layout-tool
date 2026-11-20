@@ -12,7 +12,12 @@
 
 import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
 import type { ResizeHandle } from './useCutoutInteraction';
-import { clampToBoardAxis, computeBounds, getRotatedBounds, rotatePoint } from './geometryCore';
+import {
+  clampToBoardAxis,
+  computeRotatedBounds,
+  getRotatedBounds,
+  rotatePoint,
+} from './geometryCore';
 
 /** Minimum cutout dimension in mm */
 export const MIN_CUTOUT_SIZE = 2;
@@ -168,7 +173,7 @@ export function constrainGroupDrag(
   binWidth: number,
   binDepth: number
 ): { dx: number; dy: number } {
-  const bounds = computeBounds(cutouts);
+  const bounds = computeRotatedBounds(cutouts);
   return {
     dx: clampToBoardAxis(dx, -bounds.minX, binWidth - bounds.maxX),
     dy: clampToBoardAxis(dy, -bounds.minY, binDepth - bounds.maxY),

@@ -51,8 +51,9 @@ export function rotatePoint(
 /**
  * Get the axis-aligned bounding box of a rotated cutout.
  *
- * For rectangles: projects the four corners after rotation.
- * For ellipses/circles: uses the rotated ellipse AABB formula.
+ * Circles are ellipses, so they get the exact ellipse box. Every other shape
+ * gets the box of its turned corners, which encloses it but can be loose off a
+ * quarter turn (a slot's round ends, a polygon's cut corners).
  */
 export function getRotatedBounds(cutout: Cutout): Bounds {
   const cx = cutout.x + cutout.width / 2;
@@ -73,9 +74,9 @@ export function getRotatedBounds(cutout: Cutout): Bounds {
   const cosA = Math.abs(Math.cos(rad));
   const sinA = Math.abs(Math.sin(rad));
 
-  // Works for both rectangles and ellipses: half-extents after rotation
-  const halfW_aa = hw * cosA + hd * sinA;
-  const halfD_aa = hw * sinA + hd * cosA;
+  const ellipse = cutout.shape === 'circle';
+  const halfW_aa = ellipse ? Math.hypot(hw * cosA, hd * sinA) : hw * cosA + hd * sinA;
+  const halfD_aa = ellipse ? Math.hypot(hw * sinA, hd * cosA) : hw * sinA + hd * cosA;
 
   return {
     minX: cx - halfW_aa,
@@ -170,6 +171,46 @@ export function computeBounds(cutouts: readonly Cutout[]): Bounds {
   }
 
   return { minX, minY, maxX, maxY };
+}
+
+export function computeRotatedBounds(cutouts: readonly Cutout[]): Bounds {
+  if (cutouts.length === 0) {
+    return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+  }
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (const cutout of cutouts) {
+    const b = getRotatedBounds(cutout);
+    minX = Math.min(minX, b.minX);
+    minY = Math.min(minY, b.minY);
+    maxX = Math.max(maxX, b.maxX);
+    maxY = Math.max(maxY, b.maxY);
+  }
+
+  return { minX, minY, maxX, maxY };
+}
+
+/**
+ * The `x`/`y` range that keeps a cutout's turned outline on the board.
+ *
+ * `x`/`y` place the unturned box, and a turn grows or shrinks the outline
+ * around the same center. A long shape turned 90° is narrower than its box on
+ * one axis, so its range there reaches past the board edge.
+ */
+export function boardPositionRange(cutout: Cutout, binWidth: number, binDepth: number): Bounds {
+  const rb = getRotatedBounds(cutout);
+  const overhangX = (rb.maxX - rb.minX - cutout.width) / 2;
+  const overhangY = (rb.maxY - rb.minY - cutout.depth) / 2;
+  return {
+    minX: overhangX,
+    minY: overhangY,
+    maxX: binWidth - cutout.width - overhangX,
+    maxY: binDepth - cutout.depth - overhangY,
+  };
 }
 
 /**

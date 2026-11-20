@@ -92,6 +92,56 @@ describe('handleDragMove rotation-aware clamping', () => {
     expect(x + cutout.width + overhangX).toBeLessThanOrEqual(bounds.binWidth + 1e-9);
   });
 
+  it('lets a long shape turned 90° reach the wall its long edge faces', () => {
+    const cutout = makeCutout({ x: 45, y: 20, width: 10, depth: 60, rotation: 90 });
+    const bounds: BinBounds = {
+      binWidth: 100,
+      binDepth: 100,
+      cellMask: undefined,
+      maskCellSize: undefined,
+    };
+    const mode = makeMode(50, 50, [['c-1', -5, -30]]);
+    const setters = makeSetters();
+
+    handleDragMove(
+      mode,
+      { mmX: 50, mmY: -200, shiftKey: false, altKey: false },
+      [cutout],
+      bounds,
+      noopSnap,
+      NO_DEAD_ZONE,
+      setters as unknown as PreviewSetters
+    );
+
+    const moved = { ...cutout, ...setters.preview?.get('c-1') };
+    expect(getRotatedBounds(moved).minY).toBeCloseTo(0, 9);
+  });
+
+  it('draws alignment guides from the turned outline', () => {
+    const stationary = makeCutout({ id: 'still', x: 85, y: 80, width: 10, depth: 20 });
+    const cutout = makeCutout({ x: 45, y: 20, width: 10, depth: 60, rotation: 90 });
+    const bounds: BinBounds = {
+      binWidth: 100,
+      binDepth: 100,
+      cellMask: undefined,
+      maskCellSize: undefined,
+    };
+    const mode = makeMode(50, 50, [['c-1', -5, -30]]);
+    const setters = makeSetters();
+
+    handleDragMove(
+      mode,
+      { mmX: 50, mmY: 75, shiftKey: false, altKey: false },
+      [cutout, stationary],
+      bounds,
+      noopSnap,
+      NO_DEAD_ZONE,
+      setters as unknown as PreviewSetters
+    );
+
+    expect(setters.setActiveGuides).toHaveBeenCalledWith([{ axis: 'y', position: 80 }]);
+  });
+
   it('unrotated cutouts still clamp to the full bin width', () => {
     const cutout = makeCutout({ x: 0, y: 0, width: 30, depth: 30, rotation: 0 });
     const bounds: BinBounds = {
