@@ -30,40 +30,29 @@ export function DimensionAnnotations3D({
   if (zoom < MIN_ZOOM_TO_SHOW || selection.size === 0) return null;
 
   const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
-  // Offset in screen-space (16px converted to world mm)
-  const offset = 16 / zoom;
 
   return (
     <>
       {selectedCutouts.map((cutout) => {
         const updates = preview.get(cutout.id);
         const effective = updates ? { ...cutout, ...updates } : cutout;
-
-        const labels = dimensionLabelPositions(effective, offset);
+        const { width, depth } = dimensionLabelPositions(effective, zoom);
 
         return (
           <group key={cutout.id}>
-            <Html
-              position={[labels.width[0], labels.width[1], 0.1]}
-              center
-              style={{ pointerEvents: 'none' }}
-              zIndexRange={HTML_OVERLAY_Z_INDEX_RANGE}
-            >
-              <div className="rounded bg-surface-elevated/80 px-1 text-micro font-mono text-content-secondary whitespace-nowrap">
-                {effective.width.toFixed(1)}mm
-              </div>
-            </Html>
-
-            <Html
-              position={[labels.depth[0], labels.depth[1], 0.1]}
-              center
-              style={{ pointerEvents: 'none' }}
-              zIndexRange={HTML_OVERLAY_Z_INDEX_RANGE}
-            >
-              <div className="rounded bg-surface-elevated/80 px-1 text-micro font-mono text-content-secondary whitespace-nowrap">
-                {effective.depth.toFixed(1)}mm
-              </div>
-            </Html>
+            {[width, depth].map((label, i) => (
+              <Html
+                key={i}
+                position={[label.at[0], label.at[1], 0.1]}
+                center
+                style={{ pointerEvents: 'none' }}
+                zIndexRange={HTML_OVERLAY_Z_INDEX_RANGE}
+              >
+                <div className="rounded bg-surface-elevated/80 px-1 text-micro font-mono text-content-secondary whitespace-nowrap">
+                  {label.text}
+                </div>
+              </Html>
+            ))}
           </group>
         );
       })}
