@@ -1,15 +1,15 @@
 /**
  * WebGL dimension annotations for selected cutouts.
  *
- * Shows width and depth measurements as crisp HTML text overlays
- * positioned below and to the left of shapes. Only visible at high zoom levels
- * to avoid clutter.
+ * Shows width and depth measurements as crisp HTML text overlays beside the
+ * edges they measure. Only visible at high zoom levels to avoid clutter.
  */
 
 import { Html } from '@react-three/drei';
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { HTML_OVERLAY_Z_INDEX_RANGE } from './constants';
+import { dimensionLabelPositions } from './dimensionLabels';
 
 interface DimensionAnnotations3DProps {
   readonly cutouts: readonly Cutout[];
@@ -39,17 +39,12 @@ export function DimensionAnnotations3D({
         const updates = preview.get(cutout.id);
         const effective = updates ? { ...cutout, ...updates } : cutout;
 
-        const widthX = effective.x + effective.width / 2;
-        const widthY = effective.y - offset;
-
-        const depthX = effective.x - offset;
-        const depthY = effective.y + effective.depth / 2;
+        const labels = dimensionLabelPositions(effective, offset);
 
         return (
           <group key={cutout.id}>
-            {/* Width annotation below shape */}
             <Html
-              position={[widthX, widthY, 0.1]}
+              position={[labels.width[0], labels.width[1], 0.1]}
               center
               style={{ pointerEvents: 'none' }}
               zIndexRange={HTML_OVERLAY_Z_INDEX_RANGE}
@@ -59,9 +54,8 @@ export function DimensionAnnotations3D({
               </div>
             </Html>
 
-            {/* Depth annotation left of shape */}
             <Html
-              position={[depthX, depthY, 0.1]}
+              position={[labels.depth[0], labels.depth[1], 0.1]}
               center
               style={{ pointerEvents: 'none' }}
               zIndexRange={HTML_OVERLAY_Z_INDEX_RANGE}
