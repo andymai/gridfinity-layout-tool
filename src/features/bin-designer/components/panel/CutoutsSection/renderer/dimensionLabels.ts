@@ -8,10 +8,7 @@ interface DimensionLabel {
   readonly at: Point;
 }
 
-/**
- * The chip is `text-micro` mono with `px-1`: about 6.2px per character, 8px of
- * padding and a 14px line. The gap keeps it clear of the edge's handles.
- */
+/** Keep in sync with the chip's `text-micro font-mono px-1` in DimensionAnnotations3D. */
 const CHAR_PX = 6.2;
 const PAD_PX = 8;
 const HALF_HEIGHT_PX = 7;
