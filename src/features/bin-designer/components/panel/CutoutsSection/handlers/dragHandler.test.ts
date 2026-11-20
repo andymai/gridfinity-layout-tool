@@ -27,12 +27,14 @@ function makeCutout(overrides: Partial<Cutout> = {}): Cutout {
 function makeMode(
   startX: number,
   startY: number,
-  offsets: Array<[string, number, number]>
+  offsets: Array<[string, number, number]>,
+  anchorId: string = offsets[0][0]
 ): DraggingMode {
   return {
     type: 'dragging',
     startX,
     startY,
+    anchorId,
     offsets: new Map(offsets.map(([id, dx, dy]) => [id, { dx, dy }])),
   };
 }
@@ -166,6 +168,64 @@ describe('handleDragMove rotation-aware clamping', () => {
 
     const patch = setters.preview?.get('c-1');
     expect(patch?.x).toBe(bounds.binWidth - cutout.width);
+  });
+});
+
+describe('handleDragMove with snapping on', () => {
+  const halfMm = (n: number): number => Math.round(n * 2) / 2;
+  const board: BinBounds = {
+    binWidth: 100,
+    binDepth: 100,
+    cellMask: undefined,
+    maskCellSize: undefined,
+  };
+  const drag = (
+    cutouts: Cutout[],
+    mode: DraggingMode,
+    to: { mmX: number; mmY: number }
+  ): Map<string, Partial<Cutout>> => {
+    const setters = makeSetters();
+    handleDragMove(
+      mode,
+      { ...to, shiftKey: false, altKey: false },
+      cutouts,
+      board,
+      halfMm,
+      NO_DEAD_ZONE,
+      setters as unknown as PreviewSetters
+    );
+    return setters.preview ?? new Map();
+  };
+
+  it('lands the pressed shape on the grid and moves the rest by the same amount', () => {
+    const a = makeCutout({ id: 'a', x: 10.2, y: 10, width: 10, depth: 10 });
+    const b = makeCutout({ id: 'b', x: 30, y: 10, width: 10, depth: 10 });
+    const mode = makeMode(
+      35,
+      15,
+      [
+        ['a', -24.8, -5],
+        ['b', -5, -5],
+      ],
+      'b'
+    );
+    const preview = drag([a, b], mode, { mmX: 40.3, mmY: 15 });
+    expect(preview.get('b')?.x).toBeCloseTo(35.5, 9);
+    expect(preview.get('a')?.x).toBeCloseTo(15.7, 9);
+  });
+
+  it('keeps the spacing of a selection stopped by a wall', () => {
+    const a = makeCutout({ id: 'a', x: 40, y: 20, width: 10, depth: 60.5, rotation: 90 });
+    const b = makeCutout({ id: 'b', x: 70, y: 40, width: 10, depth: 10.5, rotation: 90 });
+    const mode = makeMode(50, 50, [
+      ['a', -10, -30],
+      ['b', 20, -10],
+    ]);
+    const preview = drag([a, b], mode, { mmX: 50, mmY: 300 });
+    const ay = preview.get('a')?.y as number;
+    const by = preview.get('b')?.y as number;
+    expect(by - ay).toBeCloseTo(20, 9);
+    expect(getRotatedBounds({ ...a, y: ay }).maxY).toBeCloseTo(100, 9);
   });
 });
 

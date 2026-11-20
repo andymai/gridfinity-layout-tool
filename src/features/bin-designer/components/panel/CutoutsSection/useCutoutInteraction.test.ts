@@ -306,7 +306,39 @@ describe('useCutoutInteraction', () => {
         expect(result.current.mode.startX).toBe(15);
         expect(result.current.mode.startY).toBe(15);
         expect(result.current.mode.offsets.has('a')).toBe(true);
+        expect(result.current.mode.anchorId).toBe('a');
       }
+    });
+
+    it('anchors an Alt-drag on the copy of the pressed cutout', () => {
+      const cutouts = [createCutout('a', { x: 10 }), createCutout('b', { x: 50 })];
+      const { result } = renderHook(() =>
+        useCutoutInteraction({ ...defaultOpts, cutouts, onAdd: vi.fn(() => true) })
+      );
+      act(() => result.current.selectCutout('a', false));
+      act(() => result.current.selectCutout('b', true));
+      act(() => result.current.startDrag('b', 55, 15, true));
+
+      const mode = result.current.mode;
+      expect(mode.type).toBe('dragging');
+      if (mode.type !== 'dragging') return;
+      expect(['a', 'b']).not.toContain(mode.anchorId);
+      expect(mode.offsets.get(mode.anchorId)?.dx).toBe(-5);
+    });
+
+    it('anchors on a kept copy when the pressed cutout cannot be copied', () => {
+      const cutouts = [createCutout('a', { x: 10 }), createCutout('b', { x: 50 })];
+      const onAdd = vi.fn().mockReturnValueOnce(true).mockReturnValue(false);
+      const { result } = renderHook(() => useCutoutInteraction({ ...defaultOpts, cutouts, onAdd }));
+      act(() => result.current.selectCutout('a', false));
+      act(() => result.current.selectCutout('b', true));
+      act(() => result.current.startDrag('b', 55, 15, true));
+
+      const mode = result.current.mode;
+      expect(mode.type).toBe('dragging');
+      if (mode.type !== 'dragging') return;
+      expect(mode.offsets.size).toBe(1);
+      expect(mode.offsets.has(mode.anchorId)).toBe(true);
     });
 
     it('selects cutout if not already selected when starting drag', () => {

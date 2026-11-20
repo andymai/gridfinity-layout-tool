@@ -58,12 +58,17 @@ export function handleDragMove(
     }
   }
 
-  // Get selected cutouts for clamping
+  // Snap where the pressed cutout lands and move every member by that same
+  // amount. Snapping each member on its own shifts members whose positions sit
+  // off the grid differently, so the selection would change shape.
+  const anchor = mode.offsets.get(mode.anchorId) ?? { dx: 0, dy: 0 };
+  const anchorX = mode.startX + anchor.dx;
+  const anchorY = mode.startY + anchor.dy;
   const selectedCutouts = cutouts.filter((c) => mode.offsets.has(c.id));
   const { dx, dy } = constrainGroupDrag(
     selectedCutouts,
-    constrainedDx,
-    constrainedDy,
+    snap(anchorX + constrainedDx) - anchorX,
+    snap(anchorY + constrainedDy) - anchorY,
     bounds.binWidth,
     bounds.binDepth
   );
@@ -74,8 +79,8 @@ export function handleDragMove(
     if (!cutout) continue;
     const range = boardPositionRange(cutout, bounds.binWidth, bounds.binDepth);
     nextPreview.set(id, {
-      x: clampToBoardAxis(snap(mode.startX + dx + offset.dx), range.minX, range.maxX),
-      y: clampToBoardAxis(snap(mode.startY + dy + offset.dy), range.minY, range.maxY),
+      x: clampToBoardAxis(mode.startX + dx + offset.dx, range.minX, range.maxX),
+      y: clampToBoardAxis(mode.startY + dy + offset.dy, range.minY, range.maxY),
     });
   }
 
