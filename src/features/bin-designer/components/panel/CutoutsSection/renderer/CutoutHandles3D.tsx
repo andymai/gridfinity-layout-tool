@@ -24,6 +24,11 @@ import {
 interface CutoutHandles3DProps {
   readonly cutout: Cutout;
   readonly onResizeStart: (id: string, handle: ResizeHandle, mmX: number, mmY: number) => void;
+  /**
+   * The zoom the workspace is about to give the camera. It reaches the camera
+   * in an effect after this render, so `camera.zoom` is one step behind.
+   */
+  readonly zoom?: number;
 }
 
 interface HandleDef {
@@ -55,9 +60,9 @@ function getHandleDefs(width: number, depth: number): HandleDef[] {
 const handleFillColor = new THREE.Color(ACCENT_COLOR_HEX); // Amber fill
 const handleBorderColor = new THREE.Color('#b45309'); // Darker amber border
 
-export function CutoutHandles3D({ cutout, onResizeStart }: CutoutHandles3DProps) {
+export function CutoutHandles3D({ cutout, onResizeStart, zoom: nextZoom }: CutoutHandles3DProps) {
   const { camera } = useThree();
-  const zoom = camera.zoom;
+  const zoom = nextZoom ?? camera.zoom;
   const [hoveredHandle, setHoveredHandle] = useState<ResizeHandle | null>(null);
 
   const handleOffset = smallCutoutHandleOffsetPx(cutout.width, cutout.depth, zoom) / zoom;
