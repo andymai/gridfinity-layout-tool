@@ -93,6 +93,8 @@ const MESH_CACHE_VERSION = 'v30';
  * assembly-item previews (their own `item` segment) stay warm. The mirror of
  * {@link itemMeshCacheKey}'s segment.
  *
+ * `bin27`: a leaned pocket with an entry edge carries its rim far enough past
+ * the mouth to clear the whole opening, instead of roofing over its high side.
  * `bin26`: overhang feet split at the main feet's seams when the half cell
  * sits on the left or front, under a half-foot lattice, and beside an exact
  * fractional edge foot.
@@ -142,7 +144,7 @@ const MESH_CACHE_VERSION = 'v30';
  * `bin1`: a lipless bin's sliding-lid entry window no longer ramps through the
  * rim, so its entry corners keep their full wall height.
  */
-const BIN_MESH_REVISION = 'bin26';
+const BIN_MESH_REVISION = 'bin27';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for

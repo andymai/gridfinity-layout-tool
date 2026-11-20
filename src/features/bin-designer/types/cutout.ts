@@ -217,8 +217,12 @@ export const CHAMFER_SHAPES: readonly CutoutShape[] = [
   'knifeSlot',
 ];
 
-/** Steepest {@link Cutout.leanDeg} the editor allows, per direction. */
-export const MAX_CUTOUT_LEAN_DEG = 45;
+/**
+ * Steepest {@link Cutout.leanDeg} the editor allows, per direction. It must
+ * stay well short of 90°: the opening grows by 1/cos and the tool extension by
+ * tan, and both blow up there.
+ */
+export const MAX_CUTOUT_LEAN_DEG = 80;
 
 /**
  * Shapes that accept a {@link Cutout.leanDeg} tilt. Mesh imprints are cut in

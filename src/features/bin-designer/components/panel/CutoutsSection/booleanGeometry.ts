@@ -45,6 +45,13 @@ function snapPolygon(polygon: Polygon): Polygon {
   );
 }
 
+const isMultiPolygon = (shape: Polygon | MultiPolygon): shape is MultiPolygon =>
+  typeof shape[0]?.[0]?.[0] !== 'number';
+
+function snapShape(shape: Polygon | MultiPolygon): Polygon | MultiPolygon {
+  return isMultiPolygon(shape) ? shape.map(snapPolygon) : snapPolygon(shape);
+}
+
 /**
  * Apply the pathfinder boolean op across a group's members.
  *
@@ -73,16 +80,20 @@ export function applyGroupOp(
 /**
  * {@link applyGroupOp} over outlines the caller has already drawn, each with
  * the member it stands for (its z-order picks a subtract's cutter): what lets
- * a caller grow every member by its clearance before the op.
+ * a caller grow every member by its clearance before the op. A member may be
+ * several separate pieces.
  */
 export function combineGroupPolygons(
-  polygons: readonly { readonly cutout: Cutout; readonly polygon: Polygon }[],
+  polygons: readonly { readonly cutout: Cutout; readonly polygon: Polygon | MultiPolygon }[],
   op: GroupOp = DEFAULT_GROUP_OP
 ): MultiPolygon | null {
   if (polygons.length === 0) return null;
-  if (polygons.length === 1) return [polygons[0].polygon];
+  if (polygons.length === 1) {
+    const only = polygons[0].polygon;
+    return isMultiPolygon(only) ? only : [only];
+  }
 
-  const entries = polygons.map((e) => ({ cutout: e.cutout, polygon: snapPolygon(e.polygon) }));
+  const entries = polygons.map((e) => ({ cutout: e.cutout, polygon: snapShape(e.polygon) }));
   const allPolys = entries.map((e) => e.polygon);
   const [first, ...rest] = allPolys;
 

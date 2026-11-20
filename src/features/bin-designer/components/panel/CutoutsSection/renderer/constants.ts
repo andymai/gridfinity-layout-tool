@@ -15,6 +15,8 @@ export const RENDER_ORDER = {
   SHAPES: 10,
   GROUP_FILL: 11,
   GROUP_STROKE: 12,
+  /** Over the shapes: a leaned pocket's opening reaches past the drawn shape. */
+  LEAN_OPENING: 13,
   OFF_BOARD: 15,
   SMART_GUIDES: 20,
   DRAWING_PREVIEW: 25,
@@ -84,6 +86,8 @@ export const TAPER_BAND_COLOR = '#94a3b8';
  * background rather than as anything enclosing the shapes.
  */
 export const REFERENCE_OUTLINE_COLOR = '#94a3b8';
+/** Mid slate, so the dashes read on a light or a dark bin colour. */
+export const LEAN_OPENING_COLOR = '#64748b';
 
 /** Handle sizes in screen pixels */
 export const CORNER_HANDLE_SIZE = 10;
