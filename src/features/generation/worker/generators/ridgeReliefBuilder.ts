@@ -120,7 +120,7 @@ export function buildRidgeReliefTool(
   const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
   const footCells =
     overhung && overhang.feet
-      ? [...cells, ...overhangFootCells(gridW, gridD, overhang, gridUnitMm, plan)]
+      ? [...cells, ...overhangFootCells(gridW, gridD, overhang, gridUnitMm, plan, fractionalEdge)]
       : cells;
 
   return withScope((scope: DisposalScope) => {

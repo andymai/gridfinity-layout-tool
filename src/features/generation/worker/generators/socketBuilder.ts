@@ -34,6 +34,7 @@ import {
   forEachCell,
   frameCells,
   type CellInfo,
+  type ForEachCellOptions,
 } from './generatorTypes';
 import { hasOverhang, overhangBaseSides, type ResolvedOverhang } from './overhang';
 import {
@@ -105,6 +106,29 @@ export function socketCellPlanKey(plan: SocketCellPlan): string {
 }
 
 /**
+ * How the unmasked socket walk splits each axis. The overhang frame reads the
+ * same options, so its strips meet the main feet at the same seams.
+ */
+function socketWalkOptions(
+  gridUnitMm: GridUnitInput,
+  plan: SocketCellPlan,
+  fractionalEdge: FractionalEdge
+): ForEachCellOptions {
+  if (plan.halfSockets) return { halfSockets: true, gridUnitMm };
+  const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
+  return {
+    gridUnitMm,
+    fractional: true,
+    edgeBandX: plan.latticeX === 'half',
+    edgeBandY: plan.latticeY === 'half',
+    minFractionUnitsX: MIN_FOOT_TILE_MM / unitX,
+    minFractionUnitsY: MIN_FOOT_TILE_MM / unitY,
+    fractionalEdgeX: fractionalEdge.x,
+    fractionalEdgeY: fractionalEdge.y,
+  };
+}
+
+/**
  * Walk the grid the same way `forEachCell` does, emitting the cells the base
  * grows a foot on.
  *
@@ -149,16 +173,7 @@ export function forEachSocketCell(
     // slivers are dropped (flat bottom), mirroring the over-tile baseplate. The
     // physical drop threshold (MIN_FOOT_TILE_MM) maps to a different grid-unit
     // count per axis under a non-square pitch.
-    forEachCell(gridW, gridD, callback, {
-      gridUnitMm,
-      fractional: true,
-      edgeBandX: plan.latticeX === 'half',
-      edgeBandY: plan.latticeY === 'half',
-      minFractionUnitsX: MIN_FOOT_TILE_MM / unitX,
-      minFractionUnitsY: MIN_FOOT_TILE_MM / unitY,
-      fractionalEdgeX: fractionalEdge.x,
-      fractionalEdgeY: fractionalEdge.y,
-    });
+    forEachCell(gridW, gridD, callback, socketWalkOptions(gridUnitMm, plan, fractionalEdge));
     return;
   }
 
@@ -656,9 +671,11 @@ export function overhangFootCells(
   gridD: number,
   overhang: ResolvedOverhang,
   gridUnitMm: GridUnitInput,
-  plan: SocketCellPlan
+  plan: SocketCellPlan,
+  fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
 ): CellInfo[] {
   if (!hasOverhang(overhang)) return [];
+  const walk = socketWalkOptions(gridUnitMm, plan, fractionalEdge);
   return frameCells(
     gridW,
     gridD,
@@ -667,7 +684,7 @@ export function overhangFootCells(
     MIN_PRINTABLE_TILE_MM,
     plan.halfSockets,
     false,
-    { halfNominal: plan.halfSockets }
+    { ...walk, halfNominal: plan.halfSockets }
   );
 }
 
@@ -684,9 +701,10 @@ export function buildOverhangFeet(
   gridUnitMm: GridUnitInput,
   plan: SocketCellPlan,
   forExport: boolean,
-  socketHeight: number = SOCKET_HEIGHT
+  socketHeight: number = SOCKET_HEIGHT,
+  fractionalEdge: FractionalEdge = DEFAULT_FRACTIONAL_EDGE
 ): Shape3D | null {
-  const frame = overhangFootCells(gridW, gridD, overhang, gridUnitMm, plan);
+  const frame = overhangFootCells(gridW, gridD, overhang, gridUnitMm, plan, fractionalEdge);
   if (frame.length === 0) return null;
   const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
 

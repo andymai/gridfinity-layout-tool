@@ -552,8 +552,6 @@ export const shellStage: PipelineStage = {
     let feetFused = false;
     try {
       if (dim.overhang.feet && hasOverhang(dim.overhang)) {
-        // The overhang frame keeps the default 'end' decomposition regardless
-        // of fractionalEdge: only the seam tiling at a fractional edge differs.
         feet = buildOverhangFeet(
           params.width,
           params.depth,
@@ -561,7 +559,8 @@ export const shellStage: PipelineStage = {
           pitch,
           dim.socketCellPlan,
           true,
-          dim.socketHeight
+          dim.socketHeight,
+          { x: params.fractionalEdgeX, y: params.fractionalEdgeY }
         );
         if (feet) {
           const withFeet = unwrap(fuse(socket, feet));

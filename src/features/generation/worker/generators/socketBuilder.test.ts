@@ -330,6 +330,46 @@ describe('overhangFootCells', () => {
     ]);
   });
 
+  describe('lines each strip up with the main feet beside it', () => {
+    type Edge = { x: 'start' | 'end'; y: 'start' | 'end' };
+    const spans = (cells: CellInfoLike[], axis: 'x' | 'y'): string[] => {
+      const key = (c: CellInfoLike): string => {
+        const center = axis === 'x' ? c.centerX : c.centerY;
+        const half = ((axis === 'x' ? c.widthUnits : c.depthUnits) * 42) / 2;
+        return `${(center - half).toFixed(6)}..${(center + half).toFixed(6)}`;
+      };
+      return [...new Set(cells.map(key))].sort();
+    };
+    const check = (
+      gridW: number,
+      gridD: number,
+      socketPlan: SocketBuilder.SocketCellPlan,
+      edge?: Edge
+    ): void => {
+      const main: CellInfoLike[] = [];
+      forEachSocketCell(gridW, gridD, undefined, 42, socketPlan, (c) => main.push(c), edge);
+      const frame = overhangFootCells(gridW, gridD, overhang(), 42, socketPlan, edge);
+      const halfW = (gridW * 42) / 2;
+      const halfD = (gridD * 42) / 2;
+      const back = frame.filter((c) => c.centerY > halfD && Math.abs(c.centerX) < halfW);
+      const right = frame.filter((c) => c.centerX > halfW && Math.abs(c.centerY) < halfD);
+      expect(spans(back, 'x')).toEqual(spans(main, 'x'));
+      expect(spans(right, 'y')).toEqual(spans(main, 'y'));
+    };
+
+    it('with the half cell on the left and the front', () => {
+      check(4.5, 4.5, GRID_PLAN, { x: 'start', y: 'start' });
+    });
+
+    it('with a half foot at both rims', () => {
+      check(3, 2, plan('half', 'half'));
+    });
+
+    it('with a fractional edge foot', () => {
+      check(1.7, 2.3, GRID_PLAN);
+    });
+  });
+
   it('keeps whole-unit strips without half sockets', () => {
     const frame = overhangFootCells(2, 1, overhang(), 42, GRID_PLAN);
     const back = frame.filter((c) => c.centerY > 21 && c.centerX < 42);
