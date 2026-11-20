@@ -1,0 +1,30 @@
+src/features/bin-designer/components/panel/CutoutsSection/handlers/dragHandler.test.ts
+  s_7a475c5ec9aea6::t_6097f1ebf0e103 30-31,37,174-229
+  s_7a475c5ec9aea6::t_c55f1e1eb737db 230-231
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutTransformStarters.ts
+  s_7a475c5ec9aea6::t_d4a8765d6e231e 108-112,114
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutInteraction.test.ts
+  s_7a475c5ec9aea6::t_047d3db5e90e6b 309,313-317,320-326
+  s_7a475c5ec9aea6::t_d2604dc497e2f9 318-319
+  s_7a475c5ec9aea6::t_8861cd03ad2512 327-328
+src/features/bin-designer/components/panel/CutoutsSection/cutoutInteractionTypes.ts
+  s_7a475c5ec9aea6::t_d4a8765d6e231e 50-51
+src/features/bin-designer/components/panel/CutoutsSection/handlers/dragHandler.ts
+  s_7a475c5ec9aea6::t_d4a8765d6e231e 61-66,70-71,82-83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "52d6af23941adfae2f5c97f22b7cd473b032e291",
+  "prompts": {},
+  "sessions": {
+    "s_7a475c5ec9aea6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cb5eebab-0488-498c-a66e-4727c1092aa4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
