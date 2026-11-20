@@ -105,8 +105,13 @@ export function useCutoutTransformStarters({
         }
       }
 
+      let anchorId = id;
+      for (const [cloneId, originId] of cloneOriginMap ?? []) {
+        if (originId === id) anchorId = cloneId;
+      }
+
       pastDeadZoneRef.current = false;
-      setMode({ type: 'dragging', startX: mmX, startY: mmY, offsets });
+      setMode({ type: 'dragging', startX: mmX, startY: mmY, anchorId, offsets });
     },
     [selection, cutouts, onAdd, setSelection, setMode, pastDeadZoneRef, reportClipped]
   );

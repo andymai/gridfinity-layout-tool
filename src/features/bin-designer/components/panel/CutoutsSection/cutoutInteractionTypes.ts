@@ -47,6 +47,8 @@ export type InteractionMode =
       readonly type: 'dragging';
       readonly startX: number;
       readonly startY: number;
+      /** The pressed cutout, or its Alt-drag clone: the one the drag snaps to the grid. */
+      readonly anchorId: string;
       readonly offsets: ReadonlyMap<string, { readonly dx: number; readonly dy: number }>;
     }
   | {
