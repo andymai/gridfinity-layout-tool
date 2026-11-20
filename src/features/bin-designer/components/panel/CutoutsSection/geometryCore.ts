@@ -51,8 +51,9 @@ export function rotatePoint(
 /**
  * Get the axis-aligned bounding box of a rotated cutout.
  *
- * For rectangles: projects the four corners after rotation.
- * For ellipses/circles: uses the rotated ellipse AABB formula.
+ * Circles are ellipses, so they get the exact ellipse box. Every other shape
+ * gets the box of its turned corners, which encloses it but can be loose off a
+ * quarter turn (a slot's round ends, a polygon's cut corners).
  */
 export function getRotatedBounds(cutout: Cutout): Bounds {
   const cx = cutout.x + cutout.width / 2;
@@ -73,9 +74,9 @@ export function getRotatedBounds(cutout: Cutout): Bounds {
   const cosA = Math.abs(Math.cos(rad));
   const sinA = Math.abs(Math.sin(rad));
 
-  // Works for both rectangles and ellipses: half-extents after rotation
-  const halfW_aa = hw * cosA + hd * sinA;
-  const halfD_aa = hw * sinA + hd * cosA;
+  const ellipse = cutout.shape === 'circle';
+  const halfW_aa = ellipse ? Math.hypot(hw * cosA, hd * sinA) : hw * cosA + hd * sinA;
+  const halfD_aa = ellipse ? Math.hypot(hw * sinA, hd * cosA) : hw * sinA + hd * cosA;
 
   return {
     minX: cx - halfW_aa,
@@ -172,7 +173,6 @@ export function computeBounds(cutouts: readonly Cutout[]): Bounds {
   return { minX, minY, maxX, maxY };
 }
 
-/** The combined box of the cutouts as drawn, each one turned by its rotation. */
 export function computeRotatedBounds(cutouts: readonly Cutout[]): Bounds {
   if (cutouts.length === 0) {
     return { minX: 0, minY: 0, maxX: 0, maxY: 0 };

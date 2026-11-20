@@ -93,8 +93,6 @@ describe('handleDragMove rotation-aware clamping', () => {
   });
 
   it('lets a long shape turned 90° reach the wall its long edge faces', () => {
-    // 10 wide × 60 deep, turned a quarter: on screen it spans y 45..55. The
-    // unturned box (y 20..80) would stop the drag 25mm short of the wall.
     const cutout = makeCutout({ x: 45, y: 20, width: 10, depth: 60, rotation: 90 });
     const bounds: BinBounds = {
       binWidth: 100,
@@ -128,8 +126,6 @@ describe('handleDragMove rotation-aware clamping', () => {
       cellMask: undefined,
       maskCellSize: undefined,
     };
-    // Move the turned shape up 25mm, so its on-screen top (y 80) meets the
-    // stationary shape's bottom edge. The unturned box would put its top at 105.
     const mode = makeMode(50, 50, [['c-1', -5, -30]]);
     const setters = makeSetters();
 

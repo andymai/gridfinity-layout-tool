@@ -461,10 +461,14 @@ describe('createDefaultCutout — text element', () => {
 
 describe('clampedOffset', () => {
   it('keeps the offset of a turned copy that sits against the wall', () => {
-    // 10 wide × 60 deep, turned a quarter, with its on-screen bottom on the wall.
     const original = createDefaultCutout('id', 'rectangle', 45, -25, 10, 60);
     const turned = { ...original, rotation: 90 };
     expect(clampedOffset(turned, 5, 100, 100)).toEqual({ x: 50, y: -20 });
+  });
+
+  it('lets a turned circle copy reach the wall', () => {
+    const circle = { ...createDefaultCutout('id', 'circle', 75, 40, 20, 20), rotation: 45 };
+    expect(clampedOffset(circle, 2, 100, 100).x).toBeCloseTo(77, 9);
   });
 
   it('still stops an unturned copy at the far wall', () => {

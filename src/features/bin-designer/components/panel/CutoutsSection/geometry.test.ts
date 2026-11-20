@@ -369,7 +369,6 @@ describe('geometry', () => {
     });
 
     it('reads a turned stationary cutout by its outline on screen', () => {
-      // 10 wide × 60 deep turned a quarter spans x 20..80 on screen.
       const stationary = [createCutout({ x: 45, y: 20, width: 10, depth: 60, rotation: 90 })];
       const movingBounds = { minX: 80, minY: 0, maxX: 90, maxY: 5 };
       const guides = findAlignmentGuides(movingBounds, stationary);
@@ -674,6 +673,22 @@ describe('geometry', () => {
   });
 
   describe('getRotatedBounds', () => {
+    it('keeps a turned circle inside its own box', () => {
+      const circle = createCutout({ shape: 'circle', x: 10, y: 10, width: 20, depth: 20 });
+      const b = getRotatedBounds({ ...circle, rotation: 45 });
+      expect(b.minX).toBeCloseTo(10, 9);
+      expect(b.maxX).toBeCloseTo(30, 9);
+      expect(b.minY).toBeCloseTo(10, 9);
+      expect(b.maxY).toBeCloseTo(30, 9);
+    });
+
+    it('measures a turned ellipse by its outline', () => {
+      const ellipse = createCutout({ shape: 'circle', x: 0, y: 0, width: 40, depth: 20 });
+      const b = getRotatedBounds({ ...ellipse, rotation: 45 });
+      expect(b.maxX - b.minX).toBeCloseTo(2 * Math.sqrt(250), 9);
+      expect(b.maxY - b.minY).toBeCloseTo(2 * Math.sqrt(250), 9);
+    });
+
     it('returns unrotated bounds for 0° rotation', () => {
       const cutout = createCutout({ x: 10, y: 10, width: 20, depth: 10, rotation: 0 });
       const bounds = getRotatedBounds(cutout);
