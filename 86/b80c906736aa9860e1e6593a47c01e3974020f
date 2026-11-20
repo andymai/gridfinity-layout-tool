@@ -1,0 +1,36 @@
+src/features/bin-designer/components/panel/CutoutsSection/renderer/dimensionLabels.ts
+  s_7a475c5ec9aea6::t_1f3e8219089e4e 3,29,37-40,46,50-51
+  s_7a475c5ec9aea6::t_1a7ee39ff18e19 21-28,41-42,47-48,56-76,79
+  s_7a475c5ec9aea6::t_690464952fc633 80
+src/features/bin-designer/components/panel/CutoutsSection/renderer/DimensionAnnotations3D.tsx
+  s_7a475c5ec9aea6::t_fa0976f14914c0 8,35-38
+  s_7a475c5ec9aea6::t_bdd36d0b2d8457 10,14,21-22,32,34,43-48,55
+src/features/bin-designer/components/panel/CutoutsSection/renderer/SceneContent.tsx
+  s_7a475c5ec9aea6::t_bdd36d0b2d8457 413
+src/features/bin-designer/components/panel/CutoutsSection/renderer/handleOffset.test.ts
+  s_7a475c5ec9aea6::t_2ce1cf511a8315 1-13
+src/features/bin-designer/components/panel/CutoutsSection/renderer/handleOffset.ts
+  s_7a475c5ec9aea6::t_2ce1cf511a8315 1-9
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutHandles3D.tsx
+  s_7a475c5ec9aea6::t_0d9cbf5d1c078d 14
+  s_7a475c5ec9aea6::t_2ce1cf511a8315 63-64
+src/features/bin-designer/components/panel/CutoutsSection/renderer/dimensionLabels.test.ts
+  s_7a475c5ec9aea6::t_38ff0e3585dbf0 76-89
+  s_7a475c5ec9aea6::t_0d9cbf5d1c078d 55-75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "86b80c906736aa9860e1e6593a47c01e3974020f",
+  "prompts": {},
+  "sessions": {
+    "s_7a475c5ec9aea6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cb5eebab-0488-498c-a66e-4727c1092aa4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
