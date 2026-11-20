@@ -28,8 +28,9 @@ export function InteractionPlane({
     <mesh
       position={[binWidth / 2, binDepth / 2, -0.01]}
       onPointerDown={(e) => {
-        // Only respond to left-click on the plane itself
-        if (e.button !== 0) return;
+        // Left draws, selects and marquees; middle pans. Right stays with the
+        // context menu.
+        if (e.button !== 0 && e.button !== 1) return;
         e.stopPropagation();
         onPointerDown(e.point.x, e.point.y, e);
       }}
