@@ -11,6 +11,7 @@ import { useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
 import type { ResizeHandle } from '../useCutoutInteraction';
+import { smallCutoutHandleOffsetPx } from './handleOffset';
 import {
   RENDER_ORDER,
   CORNER_HANDLE_SIZE,
@@ -59,11 +60,8 @@ export function CutoutHandles3D({ cutout, onResizeStart }: CutoutHandles3DProps)
   const zoom = camera.zoom;
   const [hoveredHandle, setHoveredHandle] = useState<ResizeHandle | null>(null);
 
-  // Offset handles outward when cutout is too small
-  const smallThresholdW = (CORNER_HANDLE_SIZE * 3) / zoom;
-  const smallThresholdD = (CORNER_HANDLE_SIZE * 3) / zoom;
-  const isSmall = cutout.width < smallThresholdW || cutout.depth < smallThresholdD;
-  const handleOffset = isSmall ? CORNER_HANDLE_SIZE / zoom : 0;
+  const handleOffset = smallCutoutHandleOffsetPx(cutout.width, cutout.depth, zoom) / zoom;
+  const isSmall = handleOffset > 0;
 
   const handles = useMemo(
     () => getHandleDefs(cutout.width, cutout.depth),

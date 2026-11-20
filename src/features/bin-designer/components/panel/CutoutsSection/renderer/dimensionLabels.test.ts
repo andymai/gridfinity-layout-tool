@@ -52,6 +52,41 @@ describe('dimensionLabelPositions', () => {
     expect(flipped.width.at[1]).toBeLessThan(10);
   });
 
+  it('keeps both labels below the centre at every angle', () => {
+    for (let rotation = 0; rotation < 360; rotation += 5) {
+      const { width, depth } = dimensionLabelPositions(cutout({ rotation }), ZOOM);
+      expect(width.at[1], `width at ${rotation}°`).toBeLessThanOrEqual(40 + 1e-9);
+      expect(depth.at[1], `depth at ${rotation}°`).toBeLessThanOrEqual(40 + 1e-9);
+    }
+  });
+
+  it('clears the handles that a small cutout moves out', () => {
+    const small = cutout({ width: 2, depth: 10, rotation: 90 });
+    const { width } = dimensionLabelPositions(small, ZOOM);
+    const chipRight = width.at[0] + (width.text.length * 6.2 + 8) / 2 / ZOOM;
+    expect((26 - chipRight) * ZOOM).toBeGreaterThanOrEqual(15);
+  });
+
+  it('grows the chips with the root font size', () => {
+    const at16 = dimensionLabelPositions(cutout({ rotation: 90 }), ZOOM).width.at[0];
+    const at32 = dimensionLabelPositions(cutout({ rotation: 90 }), ZOOM, 32).width.at[0];
+    expect(at32).toBeLessThan(at16);
+  });
+
+  it('moves a label to the other edge when its chip would leave the view', () => {
+    const atWall = cutout({ x: 0, y: 30, width: 10, depth: 20 });
+    const view = { minX: -5, maxX: 100, minY: -50, maxY: 100 };
+    const { depth } = dimensionLabelPositions(atWall, ZOOM, 16, view);
+    expect(depth.at[0]).toBeGreaterThan(10);
+  });
+
+  it('never moves a label up to the rotation handle to stay in view', () => {
+    const atFloor = cutout({ x: 30, y: 0, width: 10, depth: 20 });
+    const view = { minX: -50, maxX: 100, minY: 0, maxY: 100 };
+    const { width } = dimensionLabelPositions(atFloor, ZOOM, 16, view);
+    expect(width.at[1]).toBeLessThan(0);
+  });
+
   it('clears a vertical edge by half a chip width, not half its height', () => {
     const { width } = dimensionLabelPositions(cutout({ rotation: 90 }), ZOOM);
     const gapPx = (5 - width.at[0]) * ZOOM;

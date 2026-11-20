@@ -5,17 +5,21 @@
  * edges they measure. Only visible at high zoom levels to avoid clutter.
  */
 
+import { useMemo } from 'react';
 import { Html } from '@react-three/drei';
+import { useThree } from '@react-three/fiber';
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { HTML_OVERLAY_Z_INDEX_RANGE } from './constants';
-import { dimensionLabelPositions } from './dimensionLabels';
+import { dimensionLabelPositions, type ViewBounds } from './dimensionLabels';
 
 interface DimensionAnnotations3DProps {
   readonly cutouts: readonly Cutout[];
   readonly selection: ReadonlySet<string>;
   readonly preview: ReadonlyMap<string, Partial<Cutout>>;
   readonly zoom: number;
+  /** The camera's centre, when the workspace pans it; labels then stay in view. */
+  readonly viewCenter?: { readonly x: number; readonly y: number };
 }
 
 const MIN_ZOOM_TO_SHOW = 4;
@@ -25,18 +29,30 @@ export function DimensionAnnotations3D({
   selection,
   preview,
   zoom,
+  viewCenter,
 }: DimensionAnnotations3DProps) {
+  const size = useThree((s) => s.size);
+  const remPx = useMemo(
+    () => Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16,
+    []
+  );
   // Only show annotations at high zoom levels
   if (zoom < MIN_ZOOM_TO_SHOW || selection.size === 0) return null;
 
   const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
+  const view: ViewBounds | undefined = viewCenter && {
+    minX: viewCenter.x - size.width / 2 / zoom,
+    maxX: viewCenter.x + size.width / 2 / zoom,
+    minY: viewCenter.y - size.height / 2 / zoom,
+    maxY: viewCenter.y + size.height / 2 / zoom,
+  };
 
   return (
     <>
       {selectedCutouts.map((cutout) => {
         const updates = preview.get(cutout.id);
         const effective = updates ? { ...cutout, ...updates } : cutout;
-        const { width, depth } = dimensionLabelPositions(effective, zoom);
+        const { width, depth } = dimensionLabelPositions(effective, zoom, remPx, view);
 
         return (
           <group key={cutout.id}>

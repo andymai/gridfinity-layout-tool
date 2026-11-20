@@ -410,6 +410,7 @@ export function SceneContent({
           selection={selection}
           preview={preview}
           zoom={camera.zoom}
+          viewCenter={externalCameraCenter}
         />
       )}
 
