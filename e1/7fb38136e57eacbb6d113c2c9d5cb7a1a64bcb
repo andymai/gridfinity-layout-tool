@@ -1,0 +1,65 @@
+src/features/bin-designer/components/panel/CutoutsSection/renderer/SceneContent.tsx
+  s_7a475c5ec9aea6::t_d014412a73ba7b 23,385
+src/features/bin-designer/types/cutout.test.ts
+  s_7a475c5ec9aea6::t_b3f3a533307ad1 8
+public/schema/bin-design.schema.json
+  s_7a475c5ec9aea6::t_6b5215165e9531 862-863
+src/features/bin-designer/components/panel/CutoutsSection/renderer/LeanOpenings3D.tsx
+  s_7a475c5ec9aea6::t_d014412a73ba7b 1-54
+src/features/bin-designer/types/cutout.ts
+  s_7a475c5ec9aea6::t_6b5215165e9531 220-225
+apps/docs/cutouts/basics.md
+  s_7a475c5ec9aea6::t_ba518165ea159b 92-94
+docs/schemas/constraints.md
+  s_7a475c5ec9aea6::t_6b5215165e9531 160
+src/features/bin-designer/components/panel/CutoutsSection/leanOpening.test.ts
+  s_7a475c5ec9aea6::t_7e00acb0eb67a2 73-83
+  s_7a475c5ec9aea6::t_1f5c0fa28c5c0d 1-2,4-57,86-87
+  s_7a475c5ec9aea6::t_3777da995a0ca3 3,58-72,84-85
+src/features/bin-designer/components/panel/CutoutsSection/leanOpening.ts
+  s_7a475c5ec9aea6::t_aa0df221558d1f 24,27
+  s_7a475c5ec9aea6::t_7fd5ca54462842 1-2,5,7,9-23,25-26,28-35,57
+  s_7a475c5ec9aea6::t_9566a86ab872ab 8,36-56
+  s_7a475c5ec9aea6::t_3777da995a0ca3 3-4
+  s_7a475c5ec9aea6::t_15d2fe7966bab2 6
+src/features/bin-designer/components/panel/CutoutsSection/renderer/constants.ts
+  s_7a475c5ec9aea6::t_d014412a73ba7b 18-19,89-90
+src/features/bin-designer/components/panel/CutoutsSection/renderer/LeanOpenings3D.test.tsx
+  s_7a475c5ec9aea6::t_d014412a73ba7b 1-14
+api/lib/designerValidationConstants.ts
+  s_7a475c5ec9aea6::t_6b5215165e9531 34
+src/features/generation/worker/generators/scenarios/cutoutLean.ts
+  s_7a475c5ec9aea6::t_8a4ec6bfd5791a 119
+  s_7a475c5ec9aea6::t_043cad7270389d 95-118,120-124,244-246
+  s_818ba978b6fbab::t_14f1ba08c45061 247-248
+docs/schemas/bin-design.md
+  s_7a475c5ec9aea6::t_6b5215165e9531 530
+api/lib/designerValidation.test.ts
+  s_7a475c5ec9aea6::t_b3f3a533307ad1 1840-1841,1845
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.cutoutLean.test.ts.snap
+  s_7a475c5ec9aea6::t_0fbd9a48f161e5 3-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e17fb38136e57eacbb6d113c2c9d5cb7a1a64bcb",
+  "prompts": {},
+  "sessions": {
+    "s_7a475c5ec9aea6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cb5eebab-0488-498c-a66e-4727c1092aa4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_818ba978b6fbab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1f4dcb2a-3783-4472-81b5-a5da4249c66c",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
