@@ -89,7 +89,9 @@ To round the floor edges, set <Ui k="binDesigner.cutouts.scoopRadius" /> in <Ui 
 
 ## Lean a cutout off vertical
 
-<Ui k="binDesigner.cutouts.lean" /> tilts the cutout up to 45° in each direction, so an item slides in at a slope. The <Ui k="binDesigner.cutouts.rotation" /> sets the direction of the tilt. The Layout Tool measures the depth along the tilt. Lean works on rectangles, circles, polygons, slots and pen shapes.
+<Ui k="binDesigner.cutouts.lean" /> tilts the cutout up to 80° in each direction, so an item slides in at a slope. The <Ui k="binDesigner.cutouts.rotation" /> sets the direction of the tilt. The Layout Tool measures the depth along the tilt. Lean works on rectangles, circles, polygons, slots and pen shapes.
+
+A steep lean lets a long tool lie in a shallow bin. The hole in the top gets longer as the lean gets steeper: at 80°, it is almost 6 times the length of the shape you draw. A dashed outline on the board shows the real hole.
 
 ## Open a cutout through a wall
 

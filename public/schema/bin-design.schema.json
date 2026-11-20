@@ -859,8 +859,8 @@
         },
         "leanDeg": {
           "type": "number",
-          "minimum": -45,
-          "maximum": 45,
+          "minimum": -80,
+          "maximum": 80,
           "x-constant": {
             "maximum": "MAX_CUTOUT_LEAN_DEG"
           },

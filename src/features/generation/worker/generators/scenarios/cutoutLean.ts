@@ -92,6 +92,36 @@ const LEANED_RECT = makeCutout({
   leanDeg: 30,
 });
 
+const STEEP_SLOT = makeCutout({
+  shape: 'rectangle',
+  x: 20,
+  y: 22,
+  width: 12,
+  depth: 6,
+  cutDepth: 45,
+  leanDeg: 80,
+});
+
+/**
+ * An 80° pocket opens 6 / cos 80° ≈ 34.6mm long at the surface and runs about
+ * 44mm under it. Each probe sits where a pocket held at 45° would leave solid.
+ */
+function assertSteepLean(result: MeshData, params: BinParams): void {
+  const { cx, cy, topZ } = mouthCenter(result, params, STEEP_SLOT);
+  for (const off of [-14, 14]) {
+    expect(isSolidThrough(result, cx, cy + off, topZ - 1, topZ), `mouth open at ${off}`).toBe(
+      false
+    );
+  }
+  expect(
+    isSolidThrough(result, cx, cy + 35, topZ - 8, topZ - 4.5),
+    'pocket under the far end'
+  ).toBe(false);
+  expect(isSolidThrough(result, cx, cy - 20, topZ - 8, topZ - 4.5), 'solid behind the mouth').toBe(
+    true
+  );
+}
+
 export const cutoutLean: ScenarioCase[] = [
   defineScenario('cutout lean', '2×2 solid, leaned rectangle pocket travels with the lean', {
     params: { ...HOST, cutouts: [LEANED_RECT] },
@@ -210,6 +240,11 @@ export const cutoutLean: ScenarioCase[] = [
       ],
     },
     compareWith: mustCut,
+  }),
+  defineScenario('cutout lean', '2×2 solid, an 80° slot runs long and shallow', {
+    params: { ...HOST, cutouts: [STEEP_SLOT] },
+    compareWith: mustCut,
+    customAssert: assertSteepLean,
   }),
   defineScenario('cutout lean', '2×2 solid, max lean at full depth clips at the floor', {
     // cutDepth past solidSurfaceZ clamps, and the 45° floor corner would dip

@@ -5,6 +5,7 @@ describe('resolveCutoutLeanDeg', () => {
   it('passes an in-range lean through, either sign', () => {
     expect(resolveCutoutLeanDeg({ shape: 'rectangle', leanDeg: 30 })).toBe(30);
     expect(resolveCutoutLeanDeg({ shape: 'path', leanDeg: -15 })).toBe(-15);
+    expect(resolveCutoutLeanDeg({ shape: 'slot', leanDeg: 80 })).toBe(80);
   });
 
   it('treats absent and non-finite values as vertical', () => {

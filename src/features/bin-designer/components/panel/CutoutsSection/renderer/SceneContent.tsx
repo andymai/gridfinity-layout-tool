@@ -20,6 +20,7 @@ import { isWithin } from '@/features/bin-designer/utils/cutoutHierarchy';
 import { OffBoardFrames3D } from './OffBoardFrames3D';
 import { IssueFrames3D } from './IssueFrames3D';
 import { SplitLines3D } from './SplitLines3D';
+import { LeanOpenings3D } from './LeanOpenings3D';
 import { KeepoutCircles3D } from './KeepoutCircles3D';
 import { CutoutLabel3D } from './CutoutLabel3D';
 import { CutoutHandles3D } from './CutoutHandles3D';
@@ -381,6 +382,7 @@ export function SceneContent({
       />
       <IssueFrames3D cutouts={cutouts} instanceIds={issueInstanceIds} preview={preview} />
       <SplitLines3D cutouts={cutouts} preview={preview} selection={selection} />
+      <LeanOpenings3D cutouts={cutouts} preview={preview} />
 
       {/* Smart guides during drag */}
       {isDragging && (
