@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import type { Cutout } from '@/features/bin-designer/types';
-import { leanedOpeningRing, placeLeanOpenings } from './leanOpening';
+import type { CutoutDepthFrame } from '@/shared/utils/cutoutDepth';
+import { placeLeanOpenings } from './leanOpening';
+
+const FRAME: CutoutDepthFrame = { fillDepthMm: 30, baseMm: 0 };
 
 const rect = (overrides: Partial<Cutout> = {}): Cutout => ({
   id: 'r',
@@ -14,62 +17,27 @@ const rect = (overrides: Partial<Cutout> = {}): Cutout => ({
   cornerRadius: 0,
   label: '',
   groupId: null,
+  leanDeg: 60,
   ...overrides,
 });
 
-const bounds = (ring: readonly { x: number; y: number }[]) => ({
-  minX: Math.min(...ring.map((p) => p.x)),
-  maxX: Math.max(...ring.map((p) => p.x)),
-  minY: Math.min(...ring.map((p) => p.y)),
-  maxY: Math.max(...ring.map((p) => p.y)),
-});
-
-describe('leanedOpeningRing', () => {
-  it('has no opening to draw for an upright pocket', () => {
-    expect(leanedOpeningRing(rect())).toBeNull();
-  });
-
-  it('stretches the opening across the lean by 1 / cos', () => {
-    const ring = leanedOpeningRing(rect({ leanDeg: 60 }));
-    expect(ring).not.toBeNull();
-    const b = bounds(ring ?? []);
-    expect(b.minX).toBeCloseTo(0, 9);
-    expect(b.maxX).toBeCloseTo(10, 9);
-    expect(b.minY).toBeCloseTo(-10, 9);
-    expect(b.maxY).toBeCloseTo(30, 9);
-  });
-
-  it('stretches the same way for either lean direction', () => {
-    const forward = bounds(leanedOpeningRing(rect({ leanDeg: 60 })) ?? []);
-    const back = bounds(leanedOpeningRing(rect({ leanDeg: -60 })) ?? []);
-    expect(back).toEqual(forward);
-  });
-
-  it('turns the opening with the shape', () => {
-    const b = bounds(leanedOpeningRing(rect({ leanDeg: 60, rotation: 90 })) ?? []);
-    expect(b.minX).toBeCloseTo(-15, 9);
-    expect(b.maxX).toBeCloseTo(25, 9);
-    expect(b.minY).toBeCloseTo(5, 9);
-    expect(b.maxY).toBeCloseTo(15, 9);
-  });
-
-  it('has no opening for a shape that cannot lean', () => {
-    expect(leanedOpeningRing(rect({ shape: 'knifeSlot', leanDeg: 60 }))).toBeNull();
-  });
-});
+const minX = (ring: readonly { x: number }[]): number => Math.min(...ring.map((p) => p.x));
 
 describe('placeLeanOpenings', () => {
+  it('has nothing to draw for upright pockets', () => {
+    expect(placeLeanOpenings([rect({ leanDeg: undefined })], new Map(), FRAME)).toEqual([]);
+  });
+
   it('follows a live drag and skips hidden pockets', () => {
-    const moving = rect({ id: 'm', leanDeg: 60 });
-    const hidden = rect({ id: 'h', leanDeg: 60, hidden: true });
-    const placed = placeLeanOpenings([moving, hidden], new Map([['m', { x: 50 }]]));
-    expect(placed.map((p) => p.key)).toEqual(['m']);
-    expect(bounds(placed[0].ring).minX).toBeCloseTo(50, 9);
+    const moving = rect({ id: 'm' });
+    const hidden = rect({ id: 'h', hidden: true });
+    const placed = placeLeanOpenings([moving, hidden], new Map([['m', { x: 50 }]]), FRAME);
+    expect(placed).toHaveLength(1);
+    expect(minX(placed[0].ring)).toBeCloseTo(50, 6);
   });
 
   it('draws one opening per repeat copy', () => {
     const repeated = rect({
-      leanDeg: 60,
       array: {
         mode: 'grid',
         cols: 3,
@@ -82,6 +50,23 @@ describe('placeLeanOpenings', () => {
         rotateToCenter: false,
       },
     });
-    expect(placeLeanOpenings([repeated], new Map())).toHaveLength(3);
+    expect(placeLeanOpenings([repeated], new Map(), FRAME)).toHaveLength(3);
+  });
+
+  it('shows no hole for an intersect group whose members never meet', () => {
+    const a = rect({ id: 'a', groupId: 'g', groupOp: 'intersect' });
+    const b = rect({ id: 'b', x: 60, groupId: 'g', groupOp: 'intersect' });
+    expect(placeLeanOpenings([a, b], new Map(), FRAME)).toEqual([]);
+  });
+
+  it('shows one hole for a union group that overlaps', () => {
+    const a = rect({ id: 'a', groupId: 'g' });
+    const b = rect({ id: 'b', x: 5, groupId: 'g', leanDeg: undefined });
+    expect(placeLeanOpenings([a, b], new Map(), FRAME)).toHaveLength(1);
+  });
+
+  it('cuts no deeper than the fill', () => {
+    const ring = (c: Cutout) => placeLeanOpenings([c], new Map(), FRAME)[0].ring;
+    expect(ring(rect({ cutDepth: 200 }))).toEqual(ring(rect({ cutDepth: FRAME.fillDepthMm })));
   });
 });

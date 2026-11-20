@@ -37,6 +37,7 @@ import {
 } from '../panel/CutoutsSection/offBoardCutouts';
 import { computeGrowToFit } from '../panel/CutoutsSection/growBinToFit';
 import { cutoutDepthShortfall } from '../panel/CutoutsSection/cutoutDepthShortfall';
+import { cutoutDepthFrame } from '@/shared/utils/cutoutDepth';
 import { CutoutCanvas3D } from '../panel/CutoutsSection/renderer';
 import { WorkspaceHeader } from './WorkspaceHeader';
 import { CutoutShapeToolbar } from '../panel/CutoutsSection/CutoutShapeToolbar';
@@ -167,6 +168,7 @@ export function CutoutWorkspace() {
   // there is no tapered wall to clip against, and a polygon lid never reaches the
   // editor because `lidCutoutsAllowed` refuses one.
   const taperBand = isLid ? null : cutoutTaperBand(params);
+  const leanFrame = useMemo(() => (isLid ? undefined : cutoutDepthFrame(params)), [isLid, params]);
   const boardMask = isLid ? undefined : params.cellMask;
   // On the lid, put the bin's interior on screen as a dashed underlay. The two
   // frames are deliberately separate (a shared origin would be one more
@@ -838,6 +840,7 @@ export function CutoutWorkspace() {
                 binDepth={binDepth}
                 cellMask={boardMask}
                 taperBand={taperBand}
+                leanFrame={leanFrame}
                 referenceOutline={binInteriorReference}
                 lidWindow={lidWindow}
                 canvasWidth={canvasWidth}

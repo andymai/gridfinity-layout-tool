@@ -53,6 +53,7 @@ export function SceneContent({
   binDepth,
   cellMask,
   taperBand,
+  leanFrame,
   referenceOutline,
   lidWindow,
   binColor,
@@ -382,7 +383,7 @@ export function SceneContent({
       />
       <IssueFrames3D cutouts={cutouts} instanceIds={issueInstanceIds} preview={preview} />
       <SplitLines3D cutouts={cutouts} preview={preview} selection={selection} />
-      <LeanOpenings3D cutouts={cutouts} preview={preview} />
+      {leanFrame && <LeanOpenings3D cutouts={cutouts} preview={preview} frame={leanFrame} />}
 
       {/* Smart guides during drag */}
       {isDragging && (

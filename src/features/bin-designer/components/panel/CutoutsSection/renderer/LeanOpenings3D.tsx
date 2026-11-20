@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import type { Cutout } from '@/features/bin-designer/types';
+import type { CutoutDepthFrame } from '@/shared/utils/cutoutDepth';
 import type { PreviewMap } from '../cutoutInteractionTypes';
 import { placeLeanOpenings } from '../leanOpening';
 import { LEAN_OPENING_COLOR, RENDER_ORDER } from './constants';
@@ -8,11 +9,15 @@ import { LEAN_OPENING_COLOR, RENDER_ORDER } from './constants';
 interface LeanOpenings3DProps {
   readonly cutouts: readonly Cutout[];
   readonly preview: PreviewMap;
+  readonly frame: CutoutDepthFrame;
 }
 
 /** A dashed outline of the hole each leaned pocket leaves in the surface. */
-export function LeanOpenings3D({ cutouts, preview }: LeanOpenings3DProps) {
-  const openings = useMemo(() => placeLeanOpenings(cutouts, preview), [cutouts, preview]);
+export function LeanOpenings3D({ cutouts, preview, frame }: LeanOpenings3DProps) {
+  const openings = useMemo(
+    () => placeLeanOpenings(cutouts, preview, frame),
+    [cutouts, preview, frame]
+  );
   return (
     <>
       {openings.map((o) => (

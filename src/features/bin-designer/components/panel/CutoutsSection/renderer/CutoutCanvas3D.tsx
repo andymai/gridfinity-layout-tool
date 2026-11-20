@@ -21,6 +21,7 @@ import type {
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { LidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import type { TaperBandSides } from '@/features/bin-designer/utils/binDimensions';
+import type { CutoutDepthFrame } from '@/shared/utils/cutoutDepth';
 import type { ResizeHandle, InteractionMode, PreviewMap } from '../useCutoutInteraction';
 import type { FitCue } from '../cutoutSectionVisibility';
 import type { SegmentHoverInfo } from '../handlers';
@@ -68,6 +69,8 @@ export interface CutoutCanvas3DProps {
   readonly cellMask?: CellMask;
   /** Per-side strip a full-depth cutout is trimmed out of; null when untapered. */
   readonly taperBand?: TaperBandSides | null;
+  /** The bin's fill, which sets how deep a leaned pocket cuts; absent on the lid. */
+  readonly leanFrame?: CutoutDepthFrame;
   /**
    * Another part's footprint, drawn faintly under the board purely so the user can
    * line shapes up with it. Set when the editor is on the LID, whose window is a
@@ -139,6 +142,7 @@ export function CutoutCanvas3D({
   binDepth,
   cellMask,
   taperBand,
+  leanFrame,
   referenceOutline,
   lidWindow,
   canvasWidth,
@@ -328,6 +332,7 @@ export function CutoutCanvas3D({
         binDepth={binDepth}
         cellMask={cellMask}
         taperBand={taperBand}
+        leanFrame={leanFrame}
         referenceOutline={referenceOutline}
         lidWindow={lidWindow}
         binColor={binColor}
