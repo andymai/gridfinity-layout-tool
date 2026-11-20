@@ -296,6 +296,16 @@ describe('frameCells', () => {
     expect(cells).toHaveLength(2);
     expect(cells.every((c) => c.centerY > 42)).toBe(true);
   });
+
+  it('splits a strip the way forEachCell splits the grid beside it', () => {
+    const BACK = { left: 0, right: 0, front: 0, back: 12 };
+    const nominal = { edgeBandX: true, fractionalEdgeX: 'start' as const };
+    const columns: number[] = [];
+    forEachCell(2.5, 1, (c) => columns.push(c.widthUnits), nominal);
+    const strip = frameCells(2.5, 1, BACK, 42, 8, false, false, nominal);
+    expect(strip.map((c) => c.widthUnits)).toEqual(columns);
+    expect(strip.map((c) => c.widthUnits)).toEqual([0.5, 0.5, 1, 0.5]);
+  });
 });
 
 describe('frameCells half-grid', () => {

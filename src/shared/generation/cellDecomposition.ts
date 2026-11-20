@@ -225,6 +225,43 @@ export interface ForEachCellOptions {
   readonly minFractionUnitsY?: number;
 }
 
+/** One axis's share of {@link ForEachCellOptions}. */
+export interface AxisSplit {
+  readonly halfSockets?: boolean;
+  readonly edgeBand?: boolean;
+  readonly fractional?: boolean;
+  readonly minFractionUnits?: number;
+  readonly fractionalEdge?: 'start' | 'end';
+}
+
+function axisSplit(opts: ForEachCellOptions, axis: 'x' | 'y'): AxisSplit {
+  const x = axis === 'x';
+  return {
+    halfSockets: opts.halfSockets,
+    edgeBand: x ? opts.edgeBandX : opts.edgeBandY,
+    fractional: opts.fractional,
+    minFractionUnits:
+      (x ? opts.minFractionUnitsX : opts.minFractionUnitsY) ?? opts.minFractionUnits,
+    fractionalEdge: x ? opts.fractionalEdgeX : opts.fractionalEdgeY,
+  };
+}
+
+/**
+ * The cell sizes along one axis, in order from the negative edge, exactly as
+ * {@link forEachCell} walks them. A `'start'` fractional edge reverses the run
+ * so the odd cell leads.
+ */
+export function decomposeAxis(units: number, split: AxisSplit): number[] {
+  const decomposeOpts = { fractional: split.fractional, minFractionUnits: split.minFractionUnits };
+  const cells = split.halfSockets
+    ? decomposeHalfCells(units)
+    : split.edgeBand
+      ? decomposeEdgeBandCells(units, decomposeOpts)
+      : decomposeCells(units, decomposeOpts);
+  if (split.fractionalEdge === 'start') cells.reverse();
+  return cells;
+}
+
 /**
  * Iterate over all cells in a grid, calling the callback with cell info.
  * Encapsulates the common pattern of nested cell iteration with position tracking.
@@ -247,23 +284,8 @@ export function forEachCell(
       ? { halfSockets: optionsOrHalfSockets }
       : optionsOrHalfSockets;
 
-  const decompose = (
-    units: number,
-    minFractionUnits: number | undefined,
-    edgeBand: boolean | undefined
-  ): number[] => {
-    if (opts.halfSockets) return decomposeHalfCells(units);
-    const decomposeOpts = { fractional: opts.fractional, minFractionUnits };
-    return edgeBand
-      ? decomposeEdgeBandCells(units, decomposeOpts)
-      : decomposeCells(units, decomposeOpts);
-  };
-  const cellsW = decompose(gridW, opts.minFractionUnitsX ?? opts.minFractionUnits, opts.edgeBandX);
-  const cellsD = decompose(gridD, opts.minFractionUnitsY ?? opts.minFractionUnits, opts.edgeBandY);
-
-  // When fractionalEdge is 'start', reverse so the half cell is first (negative side)
-  if (opts.fractionalEdgeX === 'start') cellsW.reverse();
-  if (opts.fractionalEdgeY === 'start') cellsD.reverse();
+  const cellsW = decomposeAxis(gridW, axisSplit(opts, 'x'));
+  const cellsD = decomposeAxis(gridD, axisSplit(opts, 'y'));
 
   // Width/columns scale by unitX, depth/rows by unitY. A scalar pitch makes
   // unitX === unitY, reproducing the original square iteration exactly.
@@ -355,18 +377,15 @@ function marginAxisEntries(
   minMm: number,
   halfGrid: boolean,
   solidLeftover: boolean,
-  halfNominal: boolean,
-  fractionalEdge: 'start' | 'end' | undefined
+  nominalSplit: AxisSplit
 ): MarginAxisEntry[] {
   const totalNom = grid * unit;
   const entries: MarginAxisEntry[] = [];
   entries.push(
     ...marginStripEntries(-totalNom / 2, startMm, -1, unit, minMm, halfGrid, solidLeftover)
   );
-  const nominal = halfNominal ? decomposeHalfCells(grid) : decomposeCells(grid);
-  if (fractionalEdge === 'start') nominal.reverse();
   let offset = 0;
-  for (const s of nominal) {
+  for (const s of decomposeAxis(grid, nominalSplit)) {
     entries.push({ units: s, center: offset + (s * unit) / 2 - totalNom / 2, margin: false });
     offset += s * unit;
   }
@@ -376,7 +395,14 @@ function marginAxisEntries(
 
 export type FrameNominalOptions = Pick<
   ForEachCellOptions,
-  'fractionalEdgeX' | 'fractionalEdgeY'
+  | 'fractionalEdgeX'
+  | 'fractionalEdgeY'
+  | 'edgeBandX'
+  | 'edgeBandY'
+  | 'fractional'
+  | 'minFractionUnits'
+  | 'minFractionUnitsX'
+  | 'minFractionUnitsY'
 > & {
   readonly halfNominal?: boolean;
 };
@@ -397,10 +423,10 @@ export type FrameNominalOptions = Pick<
  * strip — so a wide margin reads as a half-grid border rather than one big clip.
  * `solidLeftover` (half-grid only) drops that leftover strip so it stays solid.
  *
- * `nominal` must carry the grid's fractional edges, as {@link forEachCell}
- * takes them, or a strip is cut half a unit off the cells it borders. Its
- * `halfNominal` subdivides the strips along the nominal axis into 0.5-unit
- * cells instead of whole ones, matching {@link forEachCell}'s `halfSockets`.
+ * `nominal` must split each axis the way {@link forEachCell} splits the grid it
+ * frames (fractional edges, edge bands, exact fractional cells), or a strip is
+ * cut off the seams of the cells it borders. Its `halfNominal` is
+ * {@link forEachCell}'s `halfSockets`.
  */
 export function frameCells(
   gridW: number,
@@ -414,6 +440,7 @@ export function frameCells(
 ): CellInfo[] {
   // Left/right margins live on the X axis (unitX), front/back on Y (unitY).
   const { x: unitX, y: unitY } = resolvePitch(gridUnitMm);
+  const nominalOpts: ForEachCellOptions = { ...nominal, halfSockets: nominal.halfNominal };
   const xs = marginAxisEntries(
     gridW,
     margins.left,
@@ -422,8 +449,7 @@ export function frameCells(
     minStripMm,
     halfGrid,
     solidLeftover,
-    nominal.halfNominal ?? false,
-    nominal.fractionalEdgeX
+    axisSplit(nominalOpts, 'x')
   );
   const ys = marginAxisEntries(
     gridD,
@@ -433,8 +459,7 @@ export function frameCells(
     minStripMm,
     halfGrid,
     solidLeftover,
-    nominal.halfNominal ?? false,
-    nominal.fractionalEdgeY
+    axisSplit(nominalOpts, 'y')
   );
   const cells: CellInfo[] = [];
   for (const x of xs) {

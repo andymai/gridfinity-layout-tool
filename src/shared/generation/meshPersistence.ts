@@ -93,6 +93,9 @@ const MESH_CACHE_VERSION = 'v30';
  * assembly-item previews (their own `item` segment) stay warm. The mirror of
  * {@link itemMeshCacheKey}'s segment.
  *
+ * `bin26`: overhang feet split at the main feet's seams when the half cell
+ * sits on the left or front, under a half-foot lattice, and beside an exact
+ * fractional edge foot.
  * `bin25`: with interior walls on, an outer wall cutout carries through the
  * dividers in its path instead of a window centred on each divider.
  * `bin24`: on a bin with wall cutouts, the interior fillet climbs every finger
@@ -139,7 +142,7 @@ const MESH_CACHE_VERSION = 'v30';
  * `bin1`: a lipless bin's sliding-lid entry window no longer ramps through the
  * rim, so its entry corners keep their full wall height.
  */
-const BIN_MESH_REVISION = 'bin25';
+const BIN_MESH_REVISION = 'bin26';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for
