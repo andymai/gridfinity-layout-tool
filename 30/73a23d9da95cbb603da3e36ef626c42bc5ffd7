@@ -1,0 +1,19 @@
+src/features/bin-designer/components/panel/CutoutsSection/renderer/dimensionLabels.ts
+  s_7a475c5ec9aea6::t_f106988ded272b 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3073a23d9da95cbb603da3e36ef626c42bc5ffd7",
+  "prompts": {},
+  "sessions": {
+    "s_7a475c5ec9aea6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cb5eebab-0488-498c-a66e-4727c1092aa4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
