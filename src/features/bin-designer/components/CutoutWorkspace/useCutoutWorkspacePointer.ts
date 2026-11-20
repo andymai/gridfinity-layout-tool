@@ -19,6 +19,9 @@ import type { Cutout } from '@/features/bin-designer/types';
 import type { InteractionMode } from '../panel/CutoutsSection/cutoutInteractionTypes';
 import { focusOwnsKeys } from '../panel/CutoutsSection/handlers';
 
+/** `PointerEvent.buttons` bit for the middle button. */
+const MIDDLE_BUTTON_HELD = 4;
+
 interface UseCutoutWorkspacePointerArgs {
   mode: InteractionMode;
   setMode: (mode: InteractionMode) => void;
@@ -163,7 +166,12 @@ export function useCutoutWorkspacePointer({
       // Track cursor world position for coordinate display
       setCursorWorldPos({ x: worldX, y: worldY });
 
-      // Handle middle-click or space pan
+      // The canvas never sees a middle release outside it, so a move with the
+      // button already up is where that pan ends.
+      if (isPanningRef.current && (nativeEvent.buttons & MIDDLE_BUTTON_HELD) === 0) {
+        isPanningRef.current = false;
+      }
+
       if (isPanningRef.current || spacePanRef.current) {
         const dx = nativeEvent.clientX - panStartRef.current.x;
         const dy = nativeEvent.clientY - panStartRef.current.y;

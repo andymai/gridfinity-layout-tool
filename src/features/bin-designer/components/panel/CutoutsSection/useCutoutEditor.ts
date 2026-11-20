@@ -205,6 +205,8 @@ export function useCutoutEditor() {
   // Background click — receives mm world coords from R3F
   const handleBackgroundPointerDown = useCallback(
     (worldX: number, worldY: number, nativeEvent: PointerEvent) => {
+      // This editor has no pan, so a middle press must not start a marquee.
+      if (nativeEvent.button !== 0) return;
       // Ruler tool: sticky mode (toolbar) or Shift+drag quick measurement
       if (mode.type === 'ruler-ready' || (nativeEvent.shiftKey && mode.type === 'idle')) {
         const sticky = mode.type === 'ruler-ready';
