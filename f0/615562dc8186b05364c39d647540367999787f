@@ -1,0 +1,46 @@
+src/shared/utils/leanedOpening.test.ts
+  s_7a475c5ec9aea6::t_ff87edd3b7a9fd 1-96
+src/features/bin-designer/components/panel/CutoutsSection/renderer/CutoutCanvas3D.tsx
+  s_7a475c5ec9aea6::t_fbe60ba8bc4741 72-73,145,335
+  s_7a475c5ec9aea6::t_46d2f5b99245f6 24
+src/shared/utils/leanedOpening.ts
+  s_7a475c5ec9aea6::t_9de5b0dd5b5e8b 1-126
+src/features/bin-designer/components/panel/CutoutsSection/renderer/sceneContentTypes.ts
+  s_7a475c5ec9aea6::t_46d2f5b99245f6 12
+  s_7a475c5ec9aea6::t_fbe60ba8bc4741 61-62
+src/features/bin-designer/components/panel/CutoutsSection/leanOpening.test.ts
+  s_7a475c5ec9aea6::t_72879f53d69b48 3-6,20,24,26-28,32-36,53-70
+src/features/bin-designer/components/panel/CutoutsSection/leanOpening.ts
+  s_7a475c5ec9aea6::t_46d2f5b99245f6 2,4-7,20-24,27-28,30-71
+  s_818ba978b6fbab::t_e7af0070d6e3b3 73-74
+src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx
+  s_7a475c5ec9aea6::t_fbe60ba8bc4741 40,171,843
+src/features/bin-designer/components/panel/CutoutsSection/renderer/SceneContent.tsx
+  s_7a475c5ec9aea6::t_fbe60ba8bc4741 56,386
+src/features/bin-designer/components/panel/CutoutsSection/renderer/LeanOpenings3D.tsx
+  s_7a475c5ec9aea6::t_46d2f5b99245f6 4,12,16-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f0615562dc8186b05364c39d647540367999787f",
+  "prompts": {},
+  "sessions": {
+    "s_7a475c5ec9aea6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cb5eebab-0488-498c-a66e-4727c1092aa4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_818ba978b6fbab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1f4dcb2a-3783-4472-81b5-a5da4249c66c",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
