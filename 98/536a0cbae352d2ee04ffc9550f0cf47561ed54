@@ -1,0 +1,19 @@
+src/features/bin-designer/components/panel/CutoutsSection/renderer/SceneContent.tsx
+  s_7a475c5ec9aea6::t_78e18fbd8436a4 412
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "98536a0cbae352d2ee04ffc9550f0cf47561ed54",
+  "prompts": {},
+  "sessions": {
+    "s_7a475c5ec9aea6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cb5eebab-0488-498c-a66e-4727c1092aa4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
