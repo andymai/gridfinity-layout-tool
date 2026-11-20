@@ -18,7 +18,7 @@ import {
   isWithin,
   unitSelectionIds,
 } from '@/features/bin-designer/utils/cutoutHierarchy';
-import { clampToBoardAxis, snapToGrid, getRotatedBounds, type AlignmentGuide } from './geometry';
+import { boardPositionRange, clampToBoardAxis, snapToGrid, type AlignmentGuide } from './geometry';
 import { cutoutFitsInMask } from './maskFit';
 import type { PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
 import { buildSnapModel } from './handlers/rulerHandler';
@@ -234,18 +234,10 @@ export function useCutoutInteraction({
       for (const id of selection) {
         const cutout = cutouts.find((c) => c.id === id);
         if (!cutout) continue;
-        // Use rotation-aware AABB for clamping — rotated shapes extend
-        // beyond their unrotated box, so x must stay further from edges
-        const rb = getRotatedBounds(cutout);
-        const overhangX = (rb.maxX - rb.minX - cutout.width) / 2;
-        const overhangY = (rb.maxY - rb.minY - cutout.depth) / 2;
-        const minX = overhangX;
-        const minY = overhangY;
-        const maxX = binWidth - cutout.width - overhangX;
-        const maxY = binDepth - cutout.depth - overhangY;
+        const range = boardPositionRange(cutout, binWidth, binDepth);
         updates.set(id, {
-          x: clampToBoardAxis(cutout.x + dx, minX, maxX),
-          y: clampToBoardAxis(cutout.y + dy, minY, maxY),
+          x: clampToBoardAxis(cutout.x + dx, range.minX, range.maxX),
+          y: clampToBoardAxis(cutout.y + dy, range.minY, range.maxY),
         });
       }
 

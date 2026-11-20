@@ -9,6 +9,7 @@ import {
   flattenCutoutGroupArray,
   translateCutoutPreview,
   cloneCutoutsWithGroups,
+  clampedOffset,
 } from './cutoutHelpers';
 import type { Cutout, CutoutArrayConfig } from '@/features/bin-designer/types';
 import { clearedProfile } from '@/shared/utils/cutoutFit';
@@ -455,5 +456,19 @@ describe('createDefaultCutout — text element', () => {
     // Caption only: no fit fields for a shape that cuts nothing.
     expect(c.clearance).toBeUndefined();
     expect(c.chamferWidth).toBeUndefined();
+  });
+});
+
+describe('clampedOffset', () => {
+  it('keeps the offset of a turned copy that sits against the wall', () => {
+    // 10 wide × 60 deep, turned a quarter, with its on-screen bottom on the wall.
+    const original = createDefaultCutout('id', 'rectangle', 45, -25, 10, 60);
+    const turned = { ...original, rotation: 90 };
+    expect(clampedOffset(turned, 5, 100, 100)).toEqual({ x: 50, y: -20 });
+  });
+
+  it('still stops an unturned copy at the far wall', () => {
+    const original = createDefaultCutout('id', 'rectangle', 85, 85, 10, 10);
+    expect(clampedOffset(original, 10, 100, 100)).toEqual({ x: 90, y: 90 });
   });
 });

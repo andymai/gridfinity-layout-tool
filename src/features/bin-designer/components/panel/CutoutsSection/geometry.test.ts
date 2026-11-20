@@ -368,6 +368,14 @@ describe('geometry', () => {
       expect(guides).toEqual([]);
     });
 
+    it('reads a turned stationary cutout by its outline on screen', () => {
+      // 10 wide × 60 deep turned a quarter spans x 20..80 on screen.
+      const stationary = [createCutout({ x: 45, y: 20, width: 10, depth: 60, rotation: 90 })];
+      const movingBounds = { minX: 80, minY: 0, maxX: 90, maxY: 5 };
+      const guides = findAlignmentGuides(movingBounds, stationary);
+      expect(guides).toEqual([{ axis: 'x', position: 80 }]);
+    });
+
     it('finds X guide when left edges align', () => {
       const movingBounds = { minX: 10, minY: 10, maxX: 30, maxY: 25 };
       const stationary = [createCutout({ x: 10, y: 40, width: 15, depth: 10 })];

@@ -172,6 +172,47 @@ export function computeBounds(cutouts: readonly Cutout[]): Bounds {
   return { minX, minY, maxX, maxY };
 }
 
+/** The combined box of the cutouts as drawn, each one turned by its rotation. */
+export function computeRotatedBounds(cutouts: readonly Cutout[]): Bounds {
+  if (cutouts.length === 0) {
+    return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+  }
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (const cutout of cutouts) {
+    const b = getRotatedBounds(cutout);
+    minX = Math.min(minX, b.minX);
+    minY = Math.min(minY, b.minY);
+    maxX = Math.max(maxX, b.maxX);
+    maxY = Math.max(maxY, b.maxY);
+  }
+
+  return { minX, minY, maxX, maxY };
+}
+
+/**
+ * The `x`/`y` range that keeps a cutout's turned outline on the board.
+ *
+ * `x`/`y` place the unturned box, and a turn grows or shrinks the outline
+ * around the same center. A long shape turned 90° is narrower than its box on
+ * one axis, so its range there reaches past the board edge.
+ */
+export function boardPositionRange(cutout: Cutout, binWidth: number, binDepth: number): Bounds {
+  const rb = getRotatedBounds(cutout);
+  const overhangX = (rb.maxX - rb.minX - cutout.width) / 2;
+  const overhangY = (rb.maxY - rb.minY - cutout.depth) / 2;
+  return {
+    minX: overhangX,
+    minY: overhangY,
+    maxX: binWidth - cutout.width - overhangX,
+    maxY: binDepth - cutout.depth - overhangY,
+  };
+}
+
 /**
  * Clamp one axis to `[min, max]`, or pass the value through when that range is
  * empty.

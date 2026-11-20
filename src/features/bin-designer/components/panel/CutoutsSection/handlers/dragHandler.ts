@@ -7,11 +7,11 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import {
+  boardPositionRange,
   clampToBoardAxis,
   constrainGroupDrag,
-  computeBounds,
+  computeRotatedBounds,
   findAlignmentGuides,
-  getRotatedBounds,
 } from '../geometry';
 import { translateCutoutPreview } from '../cutoutHelpers';
 import { cutoutFitsInMask } from '../maskFit';
@@ -72,17 +72,10 @@ export function handleDragMove(
   for (const [id, offset] of mode.offsets) {
     const cutout = cutouts.find((c) => c.id === id);
     if (!cutout) continue;
-    // Rotation-aware clamp — a rotated AABB extends past the unrotated
-    // (width × depth) box, so plain `binWidth - cutout.width` lets the corner
-    // drag past the bin edge. Mirrors `nudgeSelected` in useCutoutInteraction.
-    const rb = getRotatedBounds(cutout);
-    const overhangX = (rb.maxX - rb.minX - cutout.width) / 2;
-    const overhangY = (rb.maxY - rb.minY - cutout.depth) / 2;
-    const maxX = bounds.binWidth - cutout.width - overhangX;
-    const maxY = bounds.binDepth - cutout.depth - overhangY;
+    const range = boardPositionRange(cutout, bounds.binWidth, bounds.binDepth);
     nextPreview.set(id, {
-      x: clampToBoardAxis(snap(mode.startX + dx + offset.dx), overhangX, maxX),
-      y: clampToBoardAxis(snap(mode.startY + dy + offset.dy), overhangY, maxY),
+      x: clampToBoardAxis(snap(mode.startX + dx + offset.dx), range.minX, range.maxX),
+      y: clampToBoardAxis(snap(mode.startY + dy + offset.dy), range.minY, range.maxY),
     });
   }
 
@@ -117,7 +110,7 @@ export function handleDragMove(
     })
     .filter((c): c is Cutout => c !== null);
 
-  const movingBounds = computeBounds(movingCutouts);
+  const movingBounds = computeRotatedBounds(movingCutouts);
   const guides = findAlignmentGuides(movingBounds, stationary);
   setters.setActiveGuides(guides);
 }
