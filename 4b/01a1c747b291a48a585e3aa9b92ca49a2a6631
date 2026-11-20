@@ -1,0 +1,23 @@
+src/features/bin-designer/components/panel/CutoutsSection/renderer/dimensionLabels.test.ts
+  s_7a475c5ec9aea6::t_d28e7ee1462bcf 1-37
+src/features/bin-designer/components/panel/CutoutsSection/renderer/dimensionLabels.ts
+  s_7a475c5ec9aea6::t_cb1c94f7dda862 1-25
+src/features/bin-designer/components/panel/CutoutsSection/renderer/DimensionAnnotations3D.tsx
+  s_7a475c5ec9aea6::t_abec26e361d406 4-5,12,42,47,58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4b01a1c747b291a48a585e3aa9b92ca49a2a6631",
+  "prompts": {},
+  "sessions": {
+    "s_7a475c5ec9aea6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cb5eebab-0488-498c-a66e-4727c1092aa4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
