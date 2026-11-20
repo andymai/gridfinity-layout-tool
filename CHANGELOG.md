@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.548.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.547.1...gridfinity-layout-tool-v4.548.0) (2026-11-20)
+
+
+### Features
+
+* **baseplate:** add magnet pop-out holes ([#5053](https://github.com/andymai/gridfinity-layout-tool/issues/5053)) ([5ceb0e8](https://github.com/andymai/gridfinity-layout-tool/commit/5ceb0e8afc11c294a75eb5d732986cb92eb05179))
+* **dividers:** add a piece fit and a divider fit test ([#5133](https://github.com/andymai/gridfinity-layout-tool/issues/5133)) ([e3d0176](https://github.com/andymai/gridfinity-layout-tool/commit/e3d01766b57cbab65519bc431d0773f03a238456))
+* **dividers:** let the interior fillet work with removable dividers ([#5136](https://github.com/andymai/gridfinity-layout-tool/issues/5136)) ([857b4ca](https://github.com/andymai/gridfinity-layout-tool/commit/857b4ca60e6b7cde046599ac3f7febb32f7b84ef))
+* **magnets:** set magnet diameters in 0.05 mm steps ([#5139](https://github.com/andymai/gridfinity-layout-tool/issues/5139)) ([b07ec0d](https://github.com/andymai/gridfinity-layout-tool/commit/b07ec0d2a54944e880484c1bebb3c0bf95eee30b))
+
+
+### Bug Fixes
+
+* **wall-cutouts:** carry each outer cutout through the dividers in its path ([#5134](https://github.com/andymai/gridfinity-layout-tool/issues/5134)) ([7fdef30](https://github.com/andymai/gridfinity-layout-tool/commit/7fdef303aadcc473445e0e0b9851ffc0d4086413))
+
 ## [4.547.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.547.0...gridfinity-layout-tool-v4.547.1) (2026-11-19)
 
 
