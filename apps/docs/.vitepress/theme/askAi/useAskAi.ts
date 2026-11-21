@@ -3,6 +3,7 @@ import { readerSettings } from './consent';
 import {
   answerText,
   loadConversation,
+  messageText,
   newConversation,
   saveConversation,
   withTurn,
@@ -101,9 +102,17 @@ function exchange(question: string): Exchange {
 }
 
 export async function checkAvailability(search: string): Promise<void> {
-  const session = store('session');
-  if (new URLSearchParams(search).get('ask') === '1') session?.setItem(PREVIEW_KEY, '1');
-  if (!ASK_AI_PUBLIC && session?.getItem(PREVIEW_KEY) !== '1') return;
+  const fromUrl = new URLSearchParams(search).get('ask') === '1';
+  let remembered = false;
+  // A full or blocked store must not undo the opt-in that the URL just gave.
+  try {
+    const session = store('session');
+    if (fromUrl) session?.setItem(PREVIEW_KEY, '1');
+    remembered = session?.getItem(PREVIEW_KEY) === '1';
+  } catch {
+    remembered = false;
+  }
+  if (!ASK_AI_PUBLIC && !fromUrl && !remembered) return;
   try {
     const response = await fetch(ENDPOINT, { headers: { Accept: 'application/json' } });
     if (!response.ok) return;
@@ -187,6 +196,10 @@ export async function ask(question: string, page: string): Promise<void> {
         current.notice = errorNotice(500, payload.code);
       } else if (event === 'done') {
         current.status = 'done';
+        // Text written before a tool call is not part of the answer; a reload
+        // shows only the last message, so the live view does too.
+        const answer = messageText(messages.at(-1));
+        if (answer) current.text = answer;
         const turn = payload.turn as Record<string, unknown> | undefined;
         if (turn && typeof turn.signature === 'string') {
           keep(

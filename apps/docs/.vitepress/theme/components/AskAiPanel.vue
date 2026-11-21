@@ -40,14 +40,20 @@ function close(): void {
 }
 
 function onGlobalKey(event: KeyboardEvent): void {
-  if (event.key.toLowerCase() === 'i' && (event.metaKey || event.ctrlKey) && !event.altKey) {
-    event.preventDefault();
-    if (askAi.open) close();
-    else setOpen(true);
-  } else if (event.key === 'Escape' && askAi.open) {
-    close();
-  }
+  if (event.key === 'Escape' && askAi.open) close();
 }
+
+// On a phone the sheet covers the page, so the page behind it must not take
+// focus. The panel is teleported to <body>, outside VitePress's #app.
+const phone = ref(false);
+let phoneQuery: MediaQueryList | null = null;
+const onPhoneChange = (): void => {
+  phone.value = phoneQuery?.matches ?? false;
+};
+watch(
+  () => askAi.open && phone.value,
+  (modal) => document.getElementById('app')?.toggleAttribute('inert', modal)
+);
 
 // A docs link opens in the site, so the chat stays where it is.
 function onClick(event: MouseEvent): void {
@@ -94,8 +100,17 @@ watch(draft, async () => {
   el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
 });
 
-onMounted(() => window.addEventListener('keydown', onGlobalKey));
-onBeforeUnmount(() => window.removeEventListener('keydown', onGlobalKey));
+onMounted(() => {
+  window.addEventListener('keydown', onGlobalKey);
+  phoneQuery = window.matchMedia('(max-width: 767px)');
+  onPhoneChange();
+  phoneQuery.addEventListener('change', onPhoneChange);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onGlobalKey);
+  phoneQuery?.removeEventListener('change', onPhoneChange);
+  document.getElementById('app')?.removeAttribute('inert');
+});
 </script>
 
 <template>
@@ -105,6 +120,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onGlobalKey));
       id="ask-ai-panel"
       class="ask-ai-panel"
       role="dialog"
+      :aria-modal="phone"
       aria-labelledby="ask-ai-title"
     >
       <header class="panel-header">

@@ -1,10 +1,20 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onBeforeUnmount, onMounted } from 'vue';
 import { askAi, checkAvailability, setOpen } from '../askAi/useAskAi';
+
+// Here and not in the panel: the panel mounts only on the first open.
+function onKey(event: KeyboardEvent): void {
+  if (!askAi.available || event.altKey || !(event.metaKey || event.ctrlKey)) return;
+  if (event.key.toLowerCase() !== 'i') return;
+  event.preventDefault();
+  setOpen(!askAi.open);
+}
 
 onMounted(() => {
   void checkAvailability(window.location.search);
+  window.addEventListener('keydown', onKey);
 });
+onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 </script>
 
 <template>

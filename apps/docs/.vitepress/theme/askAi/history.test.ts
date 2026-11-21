@@ -3,6 +3,7 @@ import {
   MAX_TURNS,
   answerText,
   loadConversation,
+  messageText,
   saveConversation,
   withTurn,
   withoutLastTurn,
@@ -62,5 +63,12 @@ describe('the conversation store', () => {
 
   it('reads the answer text from the last message', () => {
     expect(answerText(turn('A?'))).toBe('Yes. Two.');
+  });
+
+  it('reads the text blocks of one message, and nothing from other shapes', () => {
+    expect(
+      messageText([{ type: 'text', text: 'A' }, { type: 'tool_use' }, { type: 'text', text: 'B' }])
+    ).toBe('AB');
+    expect(messageText('nope')).toBe('');
   });
 });

@@ -68,11 +68,10 @@ export function withoutLastTurn(conversation: Conversation): Conversation {
   return { ...conversation, turns: conversation.turns.slice(0, -1) };
 }
 
-/** The text of a stored turn's answer: its last message's text blocks. */
-export function answerText(turn: StoredTurn): string {
-  const last = turn.messages.at(-1);
-  if (!Array.isArray(last)) return '';
-  return last
+/** The text blocks of one assistant message, as the API returned its content. */
+export function messageText(content: unknown): string {
+  if (!Array.isArray(content)) return '';
+  return content
     .flatMap((block: unknown) =>
       typeof block === 'object' &&
       block !== null &&
@@ -82,4 +81,9 @@ export function answerText(turn: StoredTurn): string {
         : []
     )
     .join('');
+}
+
+/** The text of a stored turn's answer: its last message's text blocks. */
+export function answerText(turn: StoredTurn): string {
+  return messageText(turn.messages.at(-1));
 }
