@@ -116,7 +116,9 @@ describe('pageMarkdown', () => {
   });
 
   it('fails on a component that has no Markdown form', () => {
-    expect(() => convert('# A\n\n<NewWidget />')).toThrow(/no Markdown form for <NewWidget>/);
+    for (const tag of ['NewWidget', 'Step2', 'recipe-cards'])
+      expect(() => convert(`# A\n\n<${tag} />`)).toThrow(`no Markdown form for <${tag}>`);
+    expect(convert('# A\n\nPress <kbd>Ctrl</kbd>.')).toBe('# A\n\nPress <kbd>Ctrl</kbd>.\n');
   });
 
   it('adds the title as a heading when the page has none', () => {

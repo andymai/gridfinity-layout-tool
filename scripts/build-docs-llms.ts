@@ -70,7 +70,8 @@ function pageEntry(link: string, ctx: DocsContext, url: (link: string) => string
 const SCREENSHOT_TAG = /<Screenshot\s[^>]*\/>/g;
 const PLAN_DRAWER_TAG = /<PlanDrawerButton\s[^>]*\/>/g;
 const BLOCK_COMPONENT = /^\s*<(RecipeCards|DrawerCalculator)\s*\/>\s*$/;
-const ANY_COMPONENT = /<([A-Z][A-Za-z]*)\b/;
+// PascalCase, or kebab-case: an HTML tag such as <kbd> never has a hyphen.
+const ANY_COMPONENT = /<([A-Z][\w-]*|[a-z][a-z0-9]*-[\w-]*)/;
 const ATTRIBUTE = /\b([a-z]+)="([^"]*)"/g;
 const FENCE = /^\s*(`{3,}|~{3,})(.*)$/;
 const CONTAINER_OPEN = /^:::\s*(tip|info|warning|danger|details)\b\s*(.*)$/;
