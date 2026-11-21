@@ -142,7 +142,6 @@ export function checkPage(page: DocPage, exists: (rel: string) => boolean): stri
 // A starter question shows as a button, so it stays short.
 export const MAX_QUESTION_LENGTH = 70;
 
-/** Each page offers three questions that it answers, and no two pages share one. */
 export function checkStarterQuestions(pages: readonly DocPage[]): string[] {
   const problems: string[] = [];
   const firstPage = new Map<string, string>();
