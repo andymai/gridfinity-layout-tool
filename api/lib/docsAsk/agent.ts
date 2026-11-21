@@ -113,6 +113,23 @@ export function requestParams(
   };
 }
 
+type PartialUsage = Anthropic.Beta.BetaUsage & { model: string };
+
+// A delta's counts are running totals, input and cache included.
+function withDelta(
+  partial: PartialUsage | null,
+  delta: Anthropic.Beta.BetaMessageDeltaUsage
+): PartialUsage | null {
+  if (!partial) return null;
+  return {
+    ...partial,
+    input_tokens: delta.input_tokens ?? partial.input_tokens,
+    cache_read_input_tokens: delta.cache_read_input_tokens ?? partial.cache_read_input_tokens,
+    cache_creation_input_tokens:
+      delta.cache_creation_input_tokens ?? partial.cache_creation_input_tokens,
+  };
+}
+
 async function streamRound(
   options: AgentOptions,
   messages: MessageParam[],
@@ -128,7 +145,7 @@ async function streamRound(
   let firstToken: number | null = null;
   // A round that fails or that the reader stops is billed too, so the spend
   // counter takes what the stream reported before it ended.
-  let partial: (Anthropic.Beta.BetaUsage & { model: string }) | null = null;
+  let partial: PartialUsage | null = null;
   let outputTokens = 0;
   let charged = false;
   const send = (event: AgentEvent): void => {
@@ -145,6 +162,7 @@ async function streamRound(
         partial = { ...event.message.usage, model: event.message.model };
       } else if (event.type === 'message_delta') {
         outputTokens = event.usage.output_tokens;
+        partial = withDelta(partial, event.usage);
       } else if (event.type === 'content_block_start' && event.content_block.type === 'tool_use') {
         const kind = kindOf(event.content_block.name);
         send({

@@ -119,6 +119,9 @@ function describeFit(name: string, fit: GridFit): string {
 
 function drawerFit(input: z.infer<typeof drawerInput>): Omit<ToolRun, 'label'> {
   const scale = input.unit === 'in' ? MM_PER_INCH : 1;
+  // Rounded to 0.1 mm before the fit, as the docs calculator's toMm does: the
+  // drawer link carries the rounded size, so the app then plans the same grid
+  // that the answer names.
   const toMm = (value: number): number => Math.round(value * scale * 10) / 10;
   const size = {
     widthMm: toMm(input.widthMm),

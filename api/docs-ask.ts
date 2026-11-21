@@ -119,7 +119,7 @@ async function handleFeedback(req: VercelRequest, res: VercelResponse): Promise<
   if (!limit.allowed) return rateLimited(res, limit.retryAfterSeconds);
   const body = feedbackRequestSchema.safeParse(req.body);
   if (!body.success) return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid feedback');
-  sendAskFeedback(body.data.sessionId, body.data.traceId, body.data.value);
+  if (body.data.analytics) sendAskFeedback(body.data.sessionId, body.data.traceId, body.data.value);
   return res.status(204).end();
 }
 
@@ -160,7 +160,10 @@ async function handleAsk(
   const traceId = randomUUID();
   const started = performance.now();
   const abort = new AbortController();
-  req.on('close', () => abort.abort());
+  // The request ended when its body was read; only the response closes when the reader leaves.
+  res.on('close', () => {
+    if (!res.writableEnded) abort.abort();
+  });
   res.writeHead(200, {
     'Content-Type': 'text/event-stream; charset=utf-8',
     'Cache-Control': 'no-store',
@@ -210,6 +213,7 @@ async function handleAsk(
   } finally {
     res.end();
   }
+  if (!body.data.analytics) return undefined;
   sendAskTrace({
     traceId,
     sessionId,

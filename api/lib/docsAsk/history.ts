@@ -54,6 +54,8 @@ export const askRequestSchema = z.object({
   page: clean(z.string().max(200)),
   locale: clean(z.string().max(10)),
   turns: z.array(turnSchema).max(MAX_TURNS),
+  /** The reader's analytics switch, as the app keeps it. Absent means no trace. */
+  analytics: z.boolean().default(false),
 });
 export type AskRequest = z.infer<typeof askRequestSchema>;
 
@@ -62,6 +64,7 @@ export const feedbackRequestSchema = z.object({
   sessionId: z.string().regex(/^[A-Za-z0-9-]{8,64}$/),
   traceId: z.uuid(),
   value: z.union([z.literal(1), z.literal(-1)]),
+  analytics: z.boolean().default(false),
 });
 
 type Runner = (name: string, input: unknown, locale: string) => ToolRun;

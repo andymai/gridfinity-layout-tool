@@ -189,3 +189,16 @@ it('takes control bytes out of a question and keeps its lines', () => {
   expect(parsed.question).toBe('One line\nand two');
   expect(parsed.page).toBe('/layouts/layers');
 });
+
+it('treats a request without the analytics switch as no consent', () => {
+  const base = {
+    op: 'ask',
+    sessionId: 'abc12345-tab',
+    question: 'Q?',
+    page: '',
+    locale: 'en',
+    turns: [],
+  };
+  expect(askRequestSchema.parse(base).analytics).toBe(false);
+  expect(askRequestSchema.parse({ ...base, analytics: true }).analytics).toBe(true);
+});

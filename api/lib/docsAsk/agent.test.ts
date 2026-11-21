@@ -244,7 +244,11 @@ describe('runAgent', () => {
       type: 'message_start',
       message: { model: MODEL, usage: { ...usage, output_tokens: 0 } },
     };
-    const delta = { type: 'message_delta', delta: {}, usage: { output_tokens: 40 } };
+    const delta = {
+      type: 'message_delta',
+      delta: {},
+      usage: { output_tokens: 40, input_tokens: 1500, cache_read_input_tokens: null },
+    };
     const client = {
       beta: {
         messages: {
@@ -261,7 +265,7 @@ describe('runAgent', () => {
     const held = budget();
     await expect(runAgent(options(client, [], held))).rejects.toThrow('reset');
     expect(held.charge).toHaveBeenCalledTimes(1);
-    expect(held.charge.mock.calls[0]?.[0]).toBeCloseTo((1000 * 4 + 40 * 20) / 1_000_000);
+    expect(held.charge.mock.calls[0]?.[0]).toBeCloseTo((1500 * 4 + 40 * 20) / 1_000_000);
     expect(held.release).toHaveBeenCalledTimes(1);
   });
 

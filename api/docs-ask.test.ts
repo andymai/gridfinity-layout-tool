@@ -126,14 +126,17 @@ describe('docs-ask', () => {
     expect((await handle('POST', question, { origin: 'http://localhost:5173' }))._status).toBe(403);
   });
 
-  it('sends a thumb on the trace', async () => {
-    const res = await handle('POST', {
+  it('sends a thumb on the trace only when the reader allows analytics', async () => {
+    const thumb = {
       op: 'feedback',
       sessionId: 'abc12345-tab',
       traceId: '3f2b8c1e-5d4a-4c3b-9a2e-1f0e9d8c7b6a',
       value: -1,
-    });
-    expect(res._status).toBe(204);
+    };
+    expect((await handle('POST', thumb))._status).toBe(204);
+    expect((await handle('POST', { ...thumb, analytics: false }))._status).toBe(204);
+    expect(mocks.sendAskFeedback).not.toHaveBeenCalled();
+    expect((await handle('POST', { ...thumb, analytics: true }))._status).toBe(204);
     expect(mocks.sendAskFeedback).toHaveBeenCalledWith(
       'abc12345-tab',
       '3f2b8c1e-5d4a-4c3b-9a2e-1f0e9d8c7b6a',
