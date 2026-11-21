@@ -36,10 +36,28 @@ export interface AgentOptions {
   readonly locale: string;
   readonly run: (name: string, input: unknown, locale: string) => ToolRun;
   readonly send: (event: AgentEvent) => void;
-  readonly onCost: (usd: number) => Promise<void>;
-  /** False once the day's spend reaches the cap; asked before each round. */
-  readonly canContinue: () => Promise<boolean>;
+  readonly budget: RoundBudget;
+  /** Filled as rounds finish, so a failed answer still reports what it spent. */
+  readonly progress: AgentProgress;
   readonly signal: AbortSignal;
+}
+
+/**
+ * The daily cap, held round by round. reserve() sets money aside before a
+ * round and answers false at the cap, so concurrent questions cannot all
+ * start paid rounds on one reading of the spend. charge() takes each model
+ * call's cost, and release() returns the reservation when the round ends.
+ */
+export interface RoundBudget {
+  reserve(): Promise<boolean>;
+  charge(usd: number): Promise<void>;
+  release(): Promise<void>;
+}
+
+export interface AgentProgress {
+  readonly generations: Generation[];
+  readonly steps: string[];
+  readonly links: string[];
 }
 
 export interface AgentResult {
@@ -98,7 +116,8 @@ export function requestParams(
 async function streamRound(
   options: AgentOptions,
   messages: MessageParam[],
-  lastRound: boolean
+  lastRound: boolean,
+  shown: { visible: boolean }
 ): Promise<{
   message: Anthropic.Beta.BetaMessage;
   costUsd: number;
@@ -112,6 +131,10 @@ async function streamRound(
   let partial: (Anthropic.Beta.BetaUsage & { model: string }) | null = null;
   let outputTokens = 0;
   let charged = false;
+  const send = (event: AgentEvent): void => {
+    shown.visible = true;
+    options.send(event);
+  };
   const stream = options.client.beta.messages.stream(
     requestParams(options.corpus, options.tools, messages, lastRound),
     { signal: options.signal }
@@ -124,7 +147,7 @@ async function streamRound(
         outputTokens = event.usage.output_tokens;
       } else if (event.type === 'content_block_start' && event.content_block.type === 'tool_use') {
         const kind = kindOf(event.content_block.name);
-        options.send({
+        send({
           type: 'step',
           id: event.content_block.id,
           kind,
@@ -133,17 +156,17 @@ async function streamRound(
         });
       } else if (event.type === 'content_block_delta') {
         if (event.delta.type === 'thinking_delta') {
-          options.send({ type: 'thinking', text: event.delta.thinking });
+          send({ type: 'thinking', text: event.delta.thinking });
         } else if (event.delta.type === 'text_delta') {
           firstToken ??= performance.now();
-          options.send({ type: 'text', text: event.delta.text });
+          send({ type: 'text', text: event.delta.text });
         }
       }
     }
     const message = await stream.finalMessage();
     const cost = costUsd(message.model, message.usage);
     charged = true;
-    await options.onCost(cost);
+    await options.budget.charge(cost);
     return {
       message,
       costUsd: cost,
@@ -153,35 +176,53 @@ async function streamRound(
   } finally {
     if (!charged && partial) {
       const usage = { ...partial, output_tokens: Math.max(outputTokens, partial.output_tokens) };
-      await options.onCost(costUsd(partial.model, usage)).catch(() => undefined);
+      await options.budget.charge(costUsd(partial.model, usage)).catch(() => undefined);
+    }
+  }
+}
+
+async function roundWithRetries(
+  options: AgentOptions,
+  messages: MessageParam[],
+  lastRound: boolean
+): Promise<Awaited<ReturnType<typeof streamRound>>> {
+  const shown = { visible: false };
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await streamRound(options, messages, lastRound, shown);
+    } catch (error) {
+      // A tool input that will not parse, or a dropped connection, is worth
+      // another try, but only while the reader has seen nothing of the round:
+      // a second answer would run on from the first. An API error or the
+      // reader's own abort is not worth one.
+      if (
+        error instanceof Anthropic.APIError ||
+        options.signal.aborted ||
+        shown.visible ||
+        attempt >= MAX_RETRIES
+      )
+        throw error;
     }
   }
 }
 
 export async function runAgent(options: AgentOptions): Promise<AgentResult> {
   const messages = [...options.messages];
-  const generations: Generation[] = [];
-  const steps: string[] = [];
-  const links: string[] = [];
+  const { generations, steps, links } = options.progress;
   let answer = '';
   let stopReason: string | null = null;
 
   for (let round = 0; round < MAX_ROUNDS; round++) {
-    if (!(await options.canContinue())) {
+    if (!(await options.budget.reserve())) {
       options.send({ type: 'notice', code: 'resting' });
       break;
     }
     const lastRound = round === MAX_ROUNDS - 1;
-    let result: Awaited<ReturnType<typeof streamRound>> | undefined;
-    for (let attempt = 0; !result; attempt++) {
-      try {
-        result = await streamRound(options, messages, lastRound);
-      } catch (error) {
-        // A tool input that will not parse, or a dropped connection, is worth
-        // another try. An API error or the reader's own abort is not.
-        if (error instanceof Anthropic.APIError || options.signal.aborted || attempt >= MAX_RETRIES)
-          throw error;
-      }
+    let result: Awaited<ReturnType<typeof streamRound>>;
+    try {
+      result = await roundWithRetries(options, messages, lastRound);
+    } finally {
+      await options.budget.release();
     }
     const { message, costUsd: cost } = result;
     const calls = message.content.filter(

@@ -176,3 +176,16 @@ describe('turn signatures', () => {
     expect(turnSigned(KEY, JSON.parse(JSON.stringify(original)) as StoredTurn)).toBe(true);
   });
 });
+
+it('takes control bytes out of a question and keeps its lines', () => {
+  const parsed = askRequestSchema.parse({
+    op: 'ask',
+    sessionId: 'abc12345-tab',
+    question: 'One\u0000 line\nand two\u0007',
+    page: '/layouts/layers\u0000',
+    locale: 'en',
+    turns: [],
+  });
+  expect(parsed.question).toBe('One line\nand two');
+  expect(parsed.page).toBe('/layouts/layers');
+});

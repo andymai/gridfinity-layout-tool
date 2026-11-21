@@ -48,7 +48,8 @@ function createResponse() {
 async function handle(method: string, body?: unknown, headers: Record<string, string> = {}) {
   const res = createResponse();
   const mod = await import('./docs-ask.js');
-  await mod.default({ method, headers, body, on: vi.fn() } as unknown as VercelRequest, res);
+  const sent = method === 'POST' ? { 'content-type': 'application/json', ...headers } : headers;
+  await mod.default({ method, headers: sent, body, on: vi.fn() } as unknown as VercelRequest, res);
   return res;
 }
 
@@ -106,11 +107,23 @@ describe('docs-ask', () => {
     expect((await handle('POST', { ...question, turns: 'nope' }))._status).toBe(400);
   });
 
-  it('limits each IP', async () => {
+  it('limits each IP, a malformed question too', async () => {
     mocks.checkRateLimit.mockResolvedValue({ allowed: false, retryAfterSeconds: 60 });
     const res = await handle('POST', question);
     expect(res._status).toBe(429);
     expect(mocks.checkRateLimit).toHaveBeenCalledWith('203.0.113.1', 'docs.ask');
+    expect((await handle('POST', { ...question, question: '' }))._status).toBe(429);
+  });
+
+  it('takes JSON only', async () => {
+    expect((await handle('POST', question, { 'content-type': 'text/plain' }))._status).toBe(415);
+  });
+
+  it('lets a local docs site call it outside production only', async () => {
+    mocks.checkRateLimit.mockResolvedValue({ allowed: false, retryAfterSeconds: 60 });
+    expect((await handle('POST', question, { origin: 'http://localhost:5173' }))._status).toBe(429);
+    vi.stubEnv('VERCEL_ENV', 'production');
+    expect((await handle('POST', question, { origin: 'http://localhost:5173' }))._status).toBe(403);
   });
 
   it('sends a thumb on the trace', async () => {

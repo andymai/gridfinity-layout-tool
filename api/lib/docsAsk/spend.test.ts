@@ -1,5 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_DAILY_CAP_USD, costUsd, dailyCapUsd, spendDay } from './spend.js';
+import type { Redis } from 'ioredis';
+import {
+  DEFAULT_DAILY_CAP_USD,
+  costUsd,
+  dailyCapUsd,
+  releaseSpend,
+  reserveSpend,
+  spendDay,
+} from './spend.js';
 
 describe('costUsd', () => {
   it('prices each kind of token at the Opus 5.5 rate', () => {
@@ -35,4 +43,37 @@ describe('dailyCapUsd', () => {
 
 it('counts the day in UTC', () => {
   expect(spendDay(new Date('2026-11-21T23:59:59-08:00'))).toBe('2026-11-22');
+});
+
+describe('reserveSpend', () => {
+  function counter(start: number) {
+    let value = start;
+    const redis = {
+      multi: () => {
+        const ops: number[] = [];
+        const chain = {
+          incrbyfloat: (_key: string, by: number) => (ops.push(by), chain),
+          expire: () => chain,
+          exec: async () => ops.map((by) => [null, String((value += by))]),
+        };
+        return chain;
+      },
+      incrbyfloat: async (_key: string, by: number) => String((value += by)),
+    };
+    return { redis: redis as unknown as Redis, total: () => value };
+  }
+
+  it('holds money while the spend before it is under the cap', async () => {
+    const day = counter(4.9);
+    expect(await reserveSpend(day.redis, 0.15, 5, '2026-11-21')).toBe(true);
+    expect(day.total()).toBeCloseTo(5.05);
+    await releaseSpend(day.redis, 0.15, '2026-11-21');
+    expect(day.total()).toBeCloseTo(4.9);
+  });
+
+  it('refuses at the cap and gives the money back', async () => {
+    const day = counter(5);
+    expect(await reserveSpend(day.redis, 0.15, 5, '2026-11-21')).toBe(false);
+    expect(day.total()).toBeCloseTo(5);
+  });
 });

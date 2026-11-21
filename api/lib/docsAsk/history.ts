@@ -14,6 +14,12 @@ export const MAX_QUESTION_CHARS = 1000;
 const MAX_MESSAGES_PER_TURN = 8;
 const MAX_BLOCK_CHARS = 200_000;
 
+// Control bytes have no meaning in a question; a newline or a tab can.
+// eslint-disable-next-line no-control-regex -- stripping control bytes is the point
+const CONTROL = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
+const clean = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((value) => (typeof value === 'string' ? value.replace(CONTROL, '') : value), schema);
+
 const storedBlock = z.discriminatedUnion('type', [
   z.object({ type: z.literal('text'), text: z.string().max(MAX_BLOCK_CHARS) }),
   z.object({
@@ -32,9 +38,9 @@ const storedBlock = z.discriminatedUnion('type', [
 type StoredBlock = z.infer<typeof storedBlock>;
 
 const turnSchema = z.object({
-  question: z.string().min(1).max(MAX_QUESTION_CHARS),
-  page: z.string().max(200),
-  locale: z.string().max(10),
+  question: clean(z.string().min(1).max(MAX_QUESTION_CHARS)),
+  page: clean(z.string().max(200)),
+  locale: clean(z.string().max(10)),
   /** Each assistant message of the turn, in order, as the API returned its content. */
   messages: z.array(z.array(z.unknown()).max(64)).max(MAX_MESSAGES_PER_TURN),
   signature: z.string().regex(/^[0-9a-f]{64}$/),
@@ -44,9 +50,9 @@ export type StoredTurn = z.infer<typeof turnSchema>;
 export const askRequestSchema = z.object({
   op: z.literal('ask'),
   sessionId: z.string().regex(/^[A-Za-z0-9-]{8,64}$/),
-  question: z.string().trim().min(1).max(MAX_QUESTION_CHARS),
-  page: z.string().max(200),
-  locale: z.string().max(10),
+  question: clean(z.string().trim().min(1).max(MAX_QUESTION_CHARS)),
+  page: clean(z.string().max(200)),
+  locale: clean(z.string().max(10)),
   turns: z.array(turnSchema).max(MAX_TURNS),
 });
 export type AskRequest = z.infer<typeof askRequestSchema>;

@@ -2,7 +2,15 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
 import { pageAt } from './corpus.js';
 import type { AskCorpus, AskLabels } from './corpus.js';
-import { MAX_DRAWER_MM, MIN_DRAWER_MM, drawerLink, formatMm, planDrawer } from './drawerPlan.js';
+import {
+  MAX_DRAWER_MM,
+  MEASURED_MM_MAX,
+  MEASURED_MM_MIN,
+  MIN_DRAWER_MM,
+  drawerLink,
+  formatMm,
+  planDrawer,
+} from './drawerPlan.js';
 import type { GridFit } from './drawerPlan.js';
 import { localeName } from './prompt.js';
 import { createSearch, pageSections } from './search.js';
@@ -117,6 +125,15 @@ function drawerFit(input: z.infer<typeof drawerInput>): Omit<ToolRun, 'label'> {
     depthMm: toMm(input.depthMm),
     ...(input.heightMm === undefined ? {} : { heightMm: toMm(input.heightMm) }),
   };
+  if (
+    size.heightMm !== undefined &&
+    !(size.heightMm >= MEASURED_MM_MIN && size.heightMm <= MEASURED_MM_MAX)
+  ) {
+    return {
+      isError: true,
+      content: `The app takes a drawer height from ${MEASURED_MM_MIN} mm to ${MEASURED_MM_MAX} mm. Leave the height out, or give one in that range.`,
+    };
+  }
   const plan = planDrawer(size);
   if (!plan) {
     return {
@@ -166,7 +183,6 @@ function searchFor(corpus: AskCorpus): ReturnType<typeof createSearch> {
   return search;
 }
 
-/** Runs the tools against one corpus, with the label table of each call's locale. */
 export function createToolRunner(
   corpus: AskCorpus,
   labelsFor: (locale: string) => AskLabels,

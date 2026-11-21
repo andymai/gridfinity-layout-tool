@@ -18,6 +18,8 @@ const PRICES: Readonly<Record<string, Prices>> = {
 const UNLISTED: Prices = { input: 5, output: 25, cacheRead: 0.5, cacheWrite: 6.25 };
 
 export const DEFAULT_DAILY_CAP_USD = 5;
+/** Set aside before each round; a cold first round costs about $0.10. */
+export const ROUND_RESERVE_USD = 0.15;
 const SPEND_TTL_SECONDS = 2 * 24 * 60 * 60;
 
 export interface Usage {
@@ -56,4 +58,23 @@ export async function addSpend(redis: Redis, usd: number, day: string = spendDay
   if (!(usd > 0)) return;
   const key = docsAskSpendKey(day);
   await redis.multi().incrbyfloat(key, usd).expire(key, SPEND_TTL_SECONDS).exec();
+}
+
+/** True, with the money held, when the spend before it was under the cap. */
+export async function reserveSpend(
+  redis: Redis,
+  usd: number,
+  capUsd: number,
+  day: string = spendDay()
+): Promise<boolean> {
+  const key = docsAskSpendKey(day);
+  const results = await redis.multi().incrbyfloat(key, usd).expire(key, SPEND_TTL_SECONDS).exec();
+  const total = Number(results?.[0]?.[1]);
+  if (Number.isFinite(total) && total - usd < capUsd) return true;
+  await redis.incrbyfloat(key, -usd);
+  return false;
+}
+
+export async function releaseSpend(redis: Redis, usd: number, day: string): Promise<void> {
+  await redis.incrbyfloat(docsAskSpendKey(day), -usd);
 }

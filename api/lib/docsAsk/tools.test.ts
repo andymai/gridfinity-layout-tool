@@ -94,6 +94,12 @@ describe('drawer_fit', () => {
     expect(result.content).toContain('from 42 mm to 2100 mm');
   });
 
+  it('refuses a height that the app does not take, rather than claim nothing fits', () => {
+    const result = run('drawer_fit', { widthMm: 400, depthMm: 300, heightMm: 5001 }, 'en');
+    expect(result.isError).toBe(true);
+    expect(result.content).toContain('from 1 mm to 5000 mm');
+  });
+
   it('refuses input that is not numbers', () => {
     expect(run('drawer_fit', { widthMm: '400', depthMm: 300 }, 'en').isError).toBe(true);
   });

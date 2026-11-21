@@ -6,7 +6,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { describe, expect, it, vi } from 'vitest';
 import { MODEL, runAgent } from './agent.js';
-import type { AgentEvent, AgentOptions } from './agent.js';
+import type { AgentEvent, AgentOptions, AgentProgress, RoundBudget } from './agent.js';
 import type { AskCorpus } from './corpus.js';
 import { createToolRunner, toolDefinitions } from './tools.js';
 
@@ -98,11 +98,19 @@ function scripted(rounds: (Round | Error)[]) {
   return { client, calls };
 }
 
+function budget(open: () => boolean = () => true) {
+  return {
+    reserve: vi.fn(async () => open()),
+    charge: vi.fn(async (_usd: number) => {}),
+    release: vi.fn(async () => {}),
+  } satisfies RoundBudget;
+}
+
 function options(
   client: Anthropic,
   events: AgentEvent[],
-  onCost = vi.fn(async (_usd: number) => {}),
-  canContinue = async () => true
+  roundBudget: RoundBudget = budget(),
+  progress: AgentProgress = { generations: [], steps: [], links: [] }
 ): AgentOptions {
   return {
     client,
@@ -112,8 +120,8 @@ function options(
     locale: 'en',
     run: createToolRunner(corpus, () => ({}), {}),
     send: (event) => events.push(event),
-    onCost,
-    canContinue,
+    budget: roundBudget,
+    progress,
     signal: new AbortController().signal,
   };
 }
@@ -122,8 +130,8 @@ describe('runAgent', () => {
   it('runs a tool, sends the steps, and answers in the next round', async () => {
     const { client, calls } = scripted([toolRound, answerRound]);
     const events: AgentEvent[] = [];
-    const onCost = vi.fn(async () => {});
-    const result = await runAgent(options(client, events, onCost));
+    const held = budget();
+    const result = await runAgent(options(client, events, held));
 
     expect(events.map((e) => (e.type === 'step' ? `step:${e.state}:${e.label}` : e.type))).toEqual([
       'step:running:Opening a page',
@@ -140,7 +148,9 @@ describe('runAgent', () => {
       stopReason: 'end_turn',
     });
     expect(result.generations).toHaveLength(2);
-    expect(onCost).toHaveBeenCalledTimes(2);
+    expect(held.charge).toHaveBeenCalledTimes(2);
+    expect(held.reserve).toHaveBeenCalledTimes(2);
+    expect(held.release).toHaveBeenCalledTimes(2);
     expect(calls[1]?.messages.at(-1)).toEqual({
       role: 'user',
       content: [
@@ -218,7 +228,13 @@ describe('runAgent', () => {
     const { client, calls } = scripted([toolRound, answerRound]);
     const events: AgentEvent[] = [];
     let rounds = 0;
-    await runAgent(options(client, events, undefined, async () => rounds++ < 1));
+    await runAgent(
+      options(
+        client,
+        events,
+        budget(() => rounds++ < 1)
+      )
+    );
     expect(calls).toHaveLength(1);
     expect(events.at(-1)).toEqual({ type: 'notice', code: 'resting' });
   });
@@ -242,9 +258,38 @@ describe('runAgent', () => {
         },
       },
     } as unknown as Anthropic;
-    const onCost = vi.fn(async (_usd: number) => {});
-    await expect(runAgent(options(client, [], onCost))).rejects.toThrow('reset');
-    expect(onCost).toHaveBeenCalledTimes(1);
-    expect(onCost.mock.calls[0]?.[0]).toBeCloseTo((1000 * 4 + 40 * 20) / 1_000_000);
+    const held = budget();
+    await expect(runAgent(options(client, [], held))).rejects.toThrow('reset');
+    expect(held.charge).toHaveBeenCalledTimes(1);
+    expect(held.charge.mock.calls[0]?.[0]).toBeCloseTo((1000 * 4 + 40 * 20) / 1_000_000);
+    expect(held.release).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not try a round again once the reader has seen part of it', async () => {
+    const partly: Round = { ...answerRound, events: answerRound.events.slice(1) };
+    const { client, calls } = scripted([partly, answerRound]);
+    const stream = client.beta.messages.stream as unknown as ReturnType<typeof vi.fn>;
+    stream.mockImplementationOnce(() => ({
+      async *[Symbol.asyncIterator]() {
+        yield* partly.events;
+        throw new Error('socket hang up');
+      },
+      finalMessage: () => Promise.reject(new Error('never')),
+    }));
+    await expect(runAgent(options(client, []))).rejects.toThrow('socket hang up');
+    expect(calls).toHaveLength(0);
+  });
+
+  it('keeps the finished rounds of an answer that fails later', async () => {
+    const { client } = scripted([
+      toolRound,
+      new Error('first'),
+      new Error('second'),
+      new Error('third'),
+    ]);
+    const progress: AgentProgress = { generations: [], steps: [], links: [] };
+    await expect(runAgent(options(client, [], budget(), progress))).rejects.toThrow('third');
+    expect(progress.generations).toHaveLength(1);
+    expect(progress.steps).toEqual(['Reading Layouts › Work in layers']);
   });
 });

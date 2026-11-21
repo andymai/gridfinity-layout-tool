@@ -73,7 +73,6 @@ export function askCorpus(ctx: DocsContext): AskCorpus {
   return { version, ...content };
 }
 
-/** Each app locale's text for the labels the docs use, English included. */
 export function askLabels(corpus: AskCorpus, localesDir: string): Record<string, AskLabels> {
   const keys = [...new Set(Object.values(corpus.pages).flatMap((page) => page.labels))].sort();
   const english: AskLabels = {};

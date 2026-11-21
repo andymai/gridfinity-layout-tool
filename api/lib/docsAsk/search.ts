@@ -112,7 +112,6 @@ export function createSearch(
 
 const HEADING = /^(#{1,3})\s+(.*?)\s+\{#([^}]+)\}$/;
 
-/** Text with the panel markers taken out: a chip keeps its label, a picture goes. */
 export function plainText(markdown: string): string {
   return markdown
     .replace(/\[\[ui:([^\]]+)\]\]/g, '$1')
@@ -120,7 +119,6 @@ export function plainText(markdown: string): string {
     .trim();
 }
 
-/** A page's ask-flavor Markdown, cut at its H2 and H3 headings. */
 export function pageSections(link: string, title: string, markdown: string): SearchSection[] {
   const sections: SearchSection[] = [];
   let heading = '';

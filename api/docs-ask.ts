@@ -2,7 +2,7 @@ import { createHmac, randomUUID } from 'crypto';
 import Anthropic from '@anthropic-ai/sdk';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { runAgent } from './lib/docsAsk/agent.js';
-import type { AgentEvent } from './lib/docsAsk/agent.js';
+import type { AgentEvent, AgentProgress, RoundBudget } from './lib/docsAsk/agent.js';
 import {
   askRequestSchema,
   feedbackRequestSchema,
@@ -13,7 +13,15 @@ import {
 } from './lib/docsAsk/history.js';
 import { DISCUSSIONS_URL } from './lib/docsAsk/prompt.js';
 import { docsSource } from './lib/docsAsk/source.js';
-import { addSpend, dailyCapUsd, readSpend } from './lib/docsAsk/spend.js';
+import {
+  ROUND_RESERVE_USD,
+  addSpend,
+  dailyCapUsd,
+  readSpend,
+  releaseSpend,
+  reserveSpend,
+  spendDay,
+} from './lib/docsAsk/spend.js';
 import { createToolRunner, toolDefinitions } from './lib/docsAsk/tools.js';
 import { sendAskFeedback, sendAskTrace } from './lib/docsAsk/traces.js';
 import { logger } from './lib/logger.js';
@@ -39,6 +47,8 @@ function originAllowed(req: VercelRequest): boolean {
   const origin = req.headers.origin;
   if (origin === undefined) return true;
   const vercelUrl = process.env.VERCEL_URL;
+  if (process.env.VERCEL_ENV !== 'production' && /^http:\/\/localhost(:\d+)?$/.test(origin))
+    return true;
   return (
     origin === PRODUCTION_ORIGIN || (vercelUrl !== undefined && origin === `https://${vercelUrl}`)
   );
@@ -48,6 +58,39 @@ async function resting(): Promise<boolean> {
   const redis = getRedis();
   if (!redis) return process.env.VERCEL_ENV === 'production';
   return (await readSpend(redis)) >= dailyCapUsd();
+}
+
+function logSpendError(caught: unknown): void {
+  logger.error('Docs ask spend write failed', { error: String(caught) });
+}
+
+// A failed spend write must not fail the round: the retry would ask the model again.
+function roundBudget(): RoundBudget {
+  const redis = getRedis();
+  let held: string | null = null;
+  return {
+    async reserve() {
+      if (!redis) return process.env.VERCEL_ENV !== 'production';
+      const day = spendDay();
+      const ok = await reserveSpend(redis, ROUND_RESERVE_USD, dailyCapUsd(), day).catch(
+        (caught: unknown) => {
+          logSpendError(caught);
+          return false;
+        }
+      );
+      if (ok) held = day;
+      return ok;
+    },
+    async charge(usd) {
+      if (redis) await addSpend(redis, usd).catch(logSpendError);
+    },
+    async release() {
+      if (!redis || held === null) return;
+      const day = held;
+      held = null;
+      await releaseSpend(redis, ROUND_RESERVE_USD, day).catch(logSpendError);
+    },
+  };
 }
 
 /** Null without TOKEN_SALT: then no turn is signed, and each question stands alone. */
@@ -72,10 +115,10 @@ async function handleStatus(res: VercelResponse): Promise<VercelResponse> {
 }
 
 async function handleFeedback(req: VercelRequest, res: VercelResponse): Promise<VercelResponse> {
-  const body = feedbackRequestSchema.safeParse(req.body);
-  if (!body.success) return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid feedback');
   const limit = await checkRateLimit(getClientIP(req), 'docs.feedback');
   if (!limit.allowed) return rateLimited(res, limit.retryAfterSeconds);
+  const body = feedbackRequestSchema.safeParse(req.body);
+  if (!body.success) return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid feedback');
   sendAskFeedback(body.data.sessionId, body.data.traceId, body.data.value);
   return res.status(204).end();
 }
@@ -84,11 +127,11 @@ async function handleAsk(
   req: VercelRequest,
   res: VercelResponse
 ): Promise<VercelResponse | undefined> {
-  const body = askRequestSchema.safeParse(req.body);
-  if (!body.success) return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid question');
   const limit = await checkRateLimit(getClientIP(req), 'docs.ask');
   if (!limit.allowed)
     return rateLimited(res, limit.retryAfterSeconds, 'Too many questions. Try again later.');
+  const body = askRequestSchema.safeParse(req.body);
+  if (!body.success) return sendError(res, 400, ErrorCode.VALIDATION_ERROR, 'Invalid question');
   if (await resting()) {
     return res.status(429).json({ error: 'Ask AI is off until tomorrow', code: 'RESTING' });
   }
@@ -125,7 +168,7 @@ async function handleAsk(
   });
   writeEvent(res, 'start', { traceId, corpus: source.corpus.version });
 
-  const redis = getRedis();
+  const progress: AgentProgress = { generations: [], steps: [], links: [] };
   let error: string | null = null;
   let result: Awaited<ReturnType<typeof runAgent>> | null = null;
   try {
@@ -140,14 +183,8 @@ async function handleAsk(
         if (event.type === 'message') sent.push(event.content);
         writeEvent(res, event.type, event);
       },
-      // A failed spend write must not fail the round: the retry would ask the model again.
-      onCost: async (usd) => {
-        if (!redis) return;
-        await addSpend(redis, usd).catch((caught: unknown) => {
-          logger.error('Docs ask spend write failed', { error: String(caught) });
-        });
-      },
-      canContinue: async () => !(await resting()),
+      budget: roundBudget(),
+      progress,
       signal: abort.signal,
     });
     const turn = { question, page, locale };
@@ -181,11 +218,11 @@ async function handleAsk(
     locale,
     corpusVersion: source.corpus.version,
     answer: result?.answer ?? '',
-    steps: result?.steps ?? [],
+    steps: progress.steps,
     docGap: (result?.answer ?? '').includes(DISCUSSIONS_URL),
     latencySeconds: (performance.now() - started) / 1000,
     error: abort.signal.aborted ? 'aborted by the reader' : error,
-    generations: result?.generations ?? [],
+    generations: progress.generations,
   });
 }
 
@@ -203,6 +240,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ErrorCode.SIZE_LIMIT,
         'The conversation is too long. Start a new chat.'
       );
+    }
+    if (!(req.headers['content-type'] ?? '').startsWith('application/json')) {
+      return sendError(res, 415, ErrorCode.VALIDATION_ERROR, 'Send JSON');
     }
     const op = (req.body as { op?: unknown } | undefined)?.op;
     if (op === 'feedback') return await handleFeedback(req, res);

@@ -52,7 +52,6 @@ async function load(): Promise<DocsSource> {
 
 let loading: Promise<DocsSource> | null = null;
 
-/** The docs for this deployment, loaded once for each function instance. */
 export function docsSource(): Promise<DocsSource> {
   if (!loading) {
     loading = load();
