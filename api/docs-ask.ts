@@ -123,7 +123,7 @@ async function handleAsk(
     'Cache-Control': 'no-store',
     'X-Accel-Buffering': 'no',
   });
-  writeEvent(res, 'start', { traceId, corpus: source.corpus.version, via: source.via });
+  writeEvent(res, 'start', { traceId, corpus: source.corpus.version });
 
   const redis = getRedis();
   let error: string | null = null;

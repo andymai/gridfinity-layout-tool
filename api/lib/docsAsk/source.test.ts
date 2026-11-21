@@ -20,7 +20,6 @@ describe('docsSource', () => {
       JSON.stringify({ a: 'Raster anpassen' })
     );
     vi.stubEnv('DOCS_ASK_CORPUS_DIR', dir);
-    vi.stubEnv('VERCEL_URL', '');
   });
 
   afterEach(() => {
@@ -31,7 +30,6 @@ describe('docsSource', () => {
   it('reads the corpus from its files, and each locale once', async () => {
     const { docsSource } = await import('./source.js');
     const source = await docsSource();
-    expect(source.via).toBe('file');
     expect(source.corpus.version).toBe('v1');
     expect(await source.labels('de')).toEqual({ a: 'Raster anpassen' });
     fs.rmSync(path.join(dir, 'ask', 'labels', 'de.json'));
@@ -46,10 +44,10 @@ describe('docsSource', () => {
     expect(await source.labels('xx')).toEqual({ a: 'Fit grid' });
   });
 
-  it('fails without the files and without a deployment to fetch from, then tries again', async () => {
+  it('fails without the files, then tries again on the next call', async () => {
     fs.rmSync(path.join(dir, 'ask', 'corpus.json'));
     const { docsSource } = await import('./source.js');
-    await expect(docsSource()).rejects.toThrow(/VERCEL_URL is unset/);
+    await expect(docsSource()).rejects.toThrow(/ENOENT/);
     fs.writeFileSync(path.join(dir, 'ask', 'corpus.json'), JSON.stringify(corpus));
     expect((await docsSource()).corpus.version).toBe('v1');
   });
