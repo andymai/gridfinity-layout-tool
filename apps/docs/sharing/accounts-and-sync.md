@@ -1,6 +1,10 @@
 ---
 title: Accounts and sync
 description: 'Sign in with Google or GitHub to keep your layouts and designs on all your devices.'
+questions:
+  - 'Do I need an account?'
+  - 'How do I sync my layouts across devices?'
+  - 'How do I delete my account?'
 sources:
   - src/core/sync/
   - src/shell/sync/

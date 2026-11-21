@@ -1,6 +1,10 @@
 ---
 title: Hand tools with custom pockets
 description: 'Scan hand tools with a phone, cut a pocket for each one, and test the fit first.'
+questions:
+  - 'How do I make custom pockets for my hand tools?'
+  - 'How do I set the depth of each tool pocket?'
+  - 'How do I test the pocket fit before a full print?'
 sources:
   - src/features/bin-designer/utils/startScan.ts
   - src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.ts

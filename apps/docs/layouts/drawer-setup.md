@@ -1,6 +1,10 @@
 ---
 title: Set up the drawer
 description: 'Set the drawer size, fit a measured drawer, shape the drawer and check the height of your stacks.'
+questions:
+  - 'How do I set my drawer size?'
+  - 'How do I plan a drawer that is not a rectangle?'
+  - 'How do I check that my bins fit the drawer height?'
 sources:
   - src/shell/Sidebar/Sidebar.tsx
   - src/shared/hooks/useDrawerSettings.ts

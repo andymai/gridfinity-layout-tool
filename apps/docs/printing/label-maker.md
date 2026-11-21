@@ -1,6 +1,10 @@
 ---
 title: Labels for a label maker
 description: 'Make labels for a Brother P-touch, DYMO, Niimbot or Phomemo label maker from a typed or pasted list.'
+questions:
+  - 'How do I make labels for a P-touch or DYMO?'
+  - 'Can I paste a parts order to make labels?'
+  - 'Which label makers work with the app?'
 sources:
   - src/features/labels/
   - src/features/print-export/components/PrintModal/PrintModal.tsx

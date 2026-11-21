@@ -1,6 +1,10 @@
 ---
 title: Units and sizes
 description: 'Learn how grid units, height units and millimeters relate, and how bins, lips and baseplates add up in height.'
+questions:
+  - 'What is the difference between grid units and height units?'
+  - 'Can I use a grid that is not 42 mm?'
+  - 'How tall is a bin with a lip and a baseplate?'
 sources:
   - src/core/constants.ts
   - src/shared/printSettings/gridfinityGeometry.ts

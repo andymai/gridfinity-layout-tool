@@ -1,6 +1,10 @@
 ---
 title: Import SVG and STL shapes
 description: 'Make cutouts from an SVG or STL file, and save cutouts as an SVG at real size.'
+questions:
+  - 'How do I make a cutout from an SVG file?'
+  - 'Can I cut an STL shape into a bin?'
+  - 'How do I export a cutout as an SVG?'
 sources:
   - src/features/bin-designer/components/panel/CutoutsSection/svgImport/
   - src/features/bin-designer/components/panel/CutoutsSection/stlImport/

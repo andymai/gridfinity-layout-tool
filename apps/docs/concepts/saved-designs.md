@@ -1,6 +1,10 @@
 ---
 title: Saved designs and linked bins
 description: 'Learn how a saved design connects to bins in a layout, and how versions and variants work.'
+questions:
+  - 'How does a saved design connect to bins in a layout?'
+  - 'What is the difference between a version and a variant?'
+  - 'Can each linked bin have its own label?'
 sources:
   - src/features/design-linking/
   - src/features/bin-designer/hooks/usePlaceBinInLayout.ts

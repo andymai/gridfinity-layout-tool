@@ -1,6 +1,10 @@
 ---
 title: Share a layout
 description: 'Make a link so other people can view a layout or edit it with you.'
+questions:
+  - 'How do I share a layout?'
+  - 'Can someone edit my layout with a link?'
+  - 'How do I delete a share link?'
 sources:
   - src/features/cloud-share/
   - src/shared/hooks/useCollabMode.ts

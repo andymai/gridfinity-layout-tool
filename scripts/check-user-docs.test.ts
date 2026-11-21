@@ -10,10 +10,12 @@ import {
   checkPrDocs,
   checkScreenshotIds,
   checkSidebar,
+  checkStarterQuestions,
   collectProblems,
   docsForStagedSources,
   docsNoneReason,
   headingAnchors,
+  MAX_QUESTION_LENGTH,
   mediaFiles,
   prDocsFailure,
   prTitleType,
@@ -70,6 +72,44 @@ describe('checkPage', () => {
       'apps/docs/index.md: frontmatter needs a "description"',
       'apps/docs/index.md: frontmatter needs "sources": the code paths this page describes',
     ]);
+  });
+});
+
+describe('checkStarterQuestions', () => {
+  const asked = (file: string, questions: unknown): DocPage => page(file, '', { questions });
+  const three = ['How do I a?', 'How do I b?', 'How do I c?'];
+
+  it('accepts three short questions on each page', () => {
+    expect(checkStarterQuestions([asked('apps/docs/x.md', three)])).toEqual([]);
+  });
+
+  it('asks for exactly three questions as text', () => {
+    for (const questions of [
+      undefined,
+      three.slice(0, 2),
+      [...three, 'How do I d?'],
+      [1, 2, 3],
+      ['', 'b?', 'c?'],
+    ])
+      expect(checkStarterQuestions([asked('apps/docs/x.md', questions)])).toEqual([
+        'apps/docs/x.md: frontmatter needs "questions": three starter questions that the page answers',
+      ]);
+  });
+
+  it('rejects a question without a question mark or over the length limit', () => {
+    const long = `How ${'x'.repeat(MAX_QUESTION_LENGTH)}?`;
+    const problems = checkStarterQuestions([asked('apps/docs/x.md', ['No mark', long, 'Fine?'])]);
+    expect(problems).toHaveLength(2);
+    expect(problems[0]).toContain('"No mark" must end with "?"');
+  });
+
+  it('rejects a question that another page has', () => {
+    expect(
+      checkStarterQuestions([
+        asked('apps/docs/x.md', three),
+        asked('apps/docs/y.md', ['Other?', 'Two?', 'How do I a?']),
+      ])
+    ).toEqual(['apps/docs/y.md: "How do I a?" is also a question on apps/docs/x.md']);
   });
 });
 

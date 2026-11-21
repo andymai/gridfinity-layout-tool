@@ -1,6 +1,10 @@
 ---
 title: SpaceMouse
 description: 'Turn on a 3Dconnexion SpaceMouse and use it to pan, zoom and orbit the 3D previews.'
+questions:
+  - 'Can I use a SpaceMouse with the app?'
+  - 'How do I turn on SpaceMouse support?'
+  - 'What do the SpaceMouse buttons do?'
 sources:
   - src/shared/spacemouse/
   - src/shell/Modals/SettingsModal/tabs/GeneralTab/GeneralTab.tsx

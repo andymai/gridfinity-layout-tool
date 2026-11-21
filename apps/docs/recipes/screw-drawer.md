@@ -1,6 +1,10 @@
 ---
 title: A screw and small-parts drawer
 description: 'Turn a shallow drawer into labeled screw bins, with one design for many sizes and optional magnets.'
+questions:
+  - 'How do I organize a drawer of screws?'
+  - 'How do I use one bin design for many screw sizes?'
+  - 'Should I add magnets to small screw bins?'
 sources:
   - src/shared/hooks/useDrawerFitSuggestion.ts
   - src/shared/utils/heightUnits.ts

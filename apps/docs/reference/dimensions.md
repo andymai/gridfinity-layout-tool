@@ -1,6 +1,10 @@
 ---
 title: Gridfinity dimensions
 description: 'Look up the measurements of the grid, the height unit, the base and lip profiles, magnets, screws and clearances.'
+questions:
+  - 'What are the Gridfinity dimensions?'
+  - 'What size magnets does Gridfinity use?'
+  - 'What clearance do bins have in the plate?'
 sources:
   - src/shared/printSettings/gridfinityGeometry.ts
   - src/shared/generation/generatorConstants.ts

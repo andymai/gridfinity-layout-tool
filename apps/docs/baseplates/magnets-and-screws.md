@@ -1,6 +1,10 @@
 ---
 title: Magnets and screws
 description: 'Add magnet holes that hold your bins, and fasten the plate to a drawer with underside magnets or screws.'
+questions:
+  - 'How do I add magnets to a baseplate?'
+  - 'How do I hold a baseplate to a steel drawer?'
+  - 'Can I screw the baseplate down?'
 sources:
   - src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
   - src/core/baseplateDefaults.ts

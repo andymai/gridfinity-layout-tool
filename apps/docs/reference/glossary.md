@@ -1,6 +1,10 @@
 ---
 title: Glossary
 description: 'Look up the terms that you meet in the Layout Tool and in these docs, from baseplate to Workshop, in alphabetical order.'
+questions:
+  - 'What do the Gridfinity terms mean?'
+  - 'What is a baseplate?'
+  - 'What is a stacking lip?'
 sources:
   - src/i18n/locales/en.ts
   - src/shared/printSettings/gridfinityGeometry.ts

@@ -1,6 +1,10 @@
 ---
 title: Scoops, fillets and pull tabs
 description: 'Add finger scoops, round the inside of each compartment, and lift a bin with pull tabs.'
+questions:
+  - 'How do I add a finger scoop?'
+  - 'How do I make small parts easy to get out?'
+  - 'What is a pull tab for?'
 sources:
   - src/features/bin-designer/components/panel/ScoopSection/
   - src/features/bin-designer/components/panel/InteriorFilletSection/

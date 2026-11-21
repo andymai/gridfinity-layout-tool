@@ -1,6 +1,10 @@
 ---
 title: Size and shape
 description: 'Set the size, outline and body type of a custom bin, and fit it to your drawer.'
+questions:
+  - 'How do I set the size of a bin?'
+  - 'Can I make a bin that is not a rectangle?'
+  - 'How do I make a bin that fits a drawer with overhang?'
 sources:
   - src/features/bin-designer/components/panel/DimensionsSection/
   - src/features/bin-designer/components/panel/ShapeSection/

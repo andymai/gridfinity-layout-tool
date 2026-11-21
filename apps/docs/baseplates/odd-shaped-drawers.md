@@ -1,6 +1,10 @@
 ---
 title: Drawers that are not rectangles
 description: 'Make a baseplate for a drawer with cut corners, curves or a notch, and move its grid.'
+questions:
+  - 'How do I make a baseplate for a drawer with curves?'
+  - 'Can I move the grid inside a shaped plate?'
+  - 'Which settings does a drawer shape turn off?'
 sources:
   - src/features/baseplate/utils/buildFullParams.ts
   - src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx

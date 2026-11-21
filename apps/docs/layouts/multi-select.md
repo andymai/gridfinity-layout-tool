@@ -1,6 +1,10 @@
 ---
 title: Work with several bins
 description: 'Select several bins, align them, edit them together, merge them into one bin, and use the bin menus.'
+questions:
+  - 'How do I select several bins at once?'
+  - 'How do I align a group of bins?'
+  - 'How do I merge several bins into one?'
 sources:
   - src/features/grid-editor/components/Grid/SelectionToolbar/SelectionToolbar.tsx
   - src/features/grid-editor/hooks/useGridRowColumnSelection.ts

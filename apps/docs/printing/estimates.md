@@ -1,6 +1,10 @@
 ---
 title: Filament and time estimates
 description: 'Find the filament, time and cost estimates, learn what they assume, and know how far to trust them.'
+questions:
+  - 'How much filament will my drawer take?'
+  - 'How long will my bins take to print?'
+  - 'How accurate are the print estimates?'
 sources:
   - src/shared/printSettings/printSettings.ts
   - src/shared/printSettings/standardBinVolume.ts

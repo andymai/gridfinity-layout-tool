@@ -1,6 +1,10 @@
 ---
 title: Work together live
 description: 'Edit one layout with other people at the same time, and see their cursors and selections.'
+questions:
+  - 'Can I edit a layout with other people at once?'
+  - 'How do I start a live session?'
+  - 'What does a live room share?'
 sources:
   - src/shell/Collab/
   - src/shared/hooks/useCollabSync.ts

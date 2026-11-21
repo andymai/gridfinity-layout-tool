@@ -1,6 +1,10 @@
 ---
 title: Labels and text
 description: 'Add label tabs and wall, floor and lid text, then set the font, size and finish of the letters.'
+questions:
+  - 'How do I add a label to a bin?'
+  - 'How do I change the font of a label?'
+  - 'Can I put text on the floor or the lid?'
 sources:
   - src/features/bin-designer/components/panel/LabelTabsSection/
   - src/features/bin-designer/components/panel/TypeSection/

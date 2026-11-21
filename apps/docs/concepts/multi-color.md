@@ -1,6 +1,10 @@
 ---
 title: Multi-color printing
 description: 'Learn how color zones become filaments in a 3MF file, and what happens when you print a bin in one color.'
+questions:
+  - 'How do I print a bin in more than one color?'
+  - 'How does a 3MF file carry the colors?'
+  - 'Can I print a multi-color bin in one color?'
 sources:
   - src/features/bin-designer/types/featureColors.ts
   - src/features/bin-designer/utils/materialMapping.ts

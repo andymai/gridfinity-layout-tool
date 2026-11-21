@@ -1,6 +1,10 @@
 ---
 title: The print list and ZIP export
 description: 'Count the bins of a layout, find ready-made models, and export all files in one ZIP.'
+questions:
+  - 'How do I see how many bins I need to print?'
+  - 'How do I export a whole layout at once?'
+  - 'What is in the layout ZIP?'
 sources:
   - src/shell/RightPanel/RightPanel.tsx
   - src/features/print-export/

@@ -1,6 +1,10 @@
 ---
 title: File formats
 description: 'Pick STL, 3MF or STEP for each export, and learn what each file holds and which tools write it.'
+questions:
+  - 'Should I export STL, 3MF or STEP?'
+  - 'Which tools export which file formats?'
+  - 'Can I save files straight to a folder?'
 sources:
   - src/shared/components/ExportDialog/ExportDialog.tsx
   - src/features/generation/export/

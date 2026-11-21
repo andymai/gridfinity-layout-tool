@@ -1,6 +1,10 @@
 ---
 title: Self-hosting with Docker
 description: 'Run the Layout Tool on your own server with Docker, see what works without the hosted service, and update it.'
+questions:
+  - 'Can I run the Layout Tool on my own server?'
+  - 'What works in a self-hosted copy?'
+  - 'How do I update my self-hosted copy?'
 sources:
   - docs/self-hosting.md
   - Dockerfile

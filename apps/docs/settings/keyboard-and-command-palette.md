@@ -1,6 +1,10 @@
 ---
 title: Keyboard and command palette
 description: 'Run any layout command from the command palette, and move through menus, tabs and dialogs with the keyboard.'
+questions:
+  - 'How do I open the command palette?'
+  - 'Can I use the app with only a keyboard?'
+  - 'How do I search for a command?'
 sources:
   - src/features/command-palette/
   - src/shell/Modals/HelpModal/HelpModal.tsx

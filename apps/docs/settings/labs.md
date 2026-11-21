@@ -1,6 +1,10 @@
 ---
 title: Labs
 description: 'Try early features in Settings > Labs: bin contents search, a sliding tray, a second 3D engine and a speed overlay.'
+questions:
+  - 'What features are in Labs?'
+  - 'How do I turn on a Labs feature?'
+  - 'What is the alternative 3D engine?'
 sources:
   - src/core/labs/features.ts
   - src/shell/Modals/SettingsModal/tabs/LabsTab/LabsTab.tsx

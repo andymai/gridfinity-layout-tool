@@ -1,6 +1,10 @@
 ---
 title: A tour of the workspace
 description: 'Find the header, the sidebar, the right panel, the 3D preview, the command palette and help search.'
+questions:
+  - 'Where is the 3D preview?'
+  - 'What is the command palette?'
+  - 'How do I use the app on a phone or tablet?'
 sources:
   - src/shared/constants/docsSections.ts
   - src/shell/Header/Header.tsx

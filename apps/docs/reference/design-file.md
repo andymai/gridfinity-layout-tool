@@ -1,6 +1,10 @@
 ---
 title: Bin design file format
 description: 'Export a bin design as a JSON file, import it again, and read or write the file by hand.'
+questions:
+  - 'How do I export a bin design as a file?'
+  - 'How do I import a design file?'
+  - 'Can I write a bin design file by hand?'
 sources:
   - docs/schemas/bin-design.md
   - public/schema/bin-design.schema.json

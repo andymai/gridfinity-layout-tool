@@ -1,6 +1,10 @@
 ---
 title: Special bins
 description: 'Make a knife block, a slanted bin, a bin with a sliding tray, or another special bin type.'
+questions:
+  - 'How do I make a knife block?'
+  - 'How do I make a slanted bin?'
+  - 'What special bin types are there?'
 sources:
   - src/features/bin-designer/types/knifeBlock.ts
   - src/features/bin-designer/components/panel/KnifeRestSection/

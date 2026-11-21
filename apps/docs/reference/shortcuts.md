@@ -1,6 +1,10 @@
 ---
 title: Keyboard shortcuts
 description: 'Look up every keyboard shortcut in the layout editor, bin designer and baseplate generator, with the macOS keys.'
+questions:
+  - 'What are the keyboard shortcuts?'
+  - 'What are the shortcuts in the bin designer?'
+  - 'Which keys do I use on a Mac?'
 sources:
   - src/core/constants.ts
   - src/shell/keyboard/handlers.ts

@@ -1,6 +1,10 @@
 ---
 title: Plan your first drawer
 description: 'Set the drawer size, draw bins on the grid, and read the print list in the layout editor.'
+questions:
+  - 'How do I start to plan a drawer?'
+  - 'How do I measure my drawer for a layout?'
+  - 'How do I get the print files for my drawer?'
 sources:
   - src/features/onboarding/hooks/useOnboarding.ts
   - src/shell/Sidebar/Sidebar.tsx

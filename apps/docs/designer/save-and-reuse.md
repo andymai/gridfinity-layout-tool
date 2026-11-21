@@ -1,6 +1,10 @@
 ---
 title: Save and reuse designs
 description: 'Keep designs in your library, save versions, make variants in other sizes, start new bins from your own settings, and place a design in a layout.'
+questions:
+  - 'How do I save a bin design?'
+  - 'How do I make one design in several sizes?'
+  - 'How do I put a saved design in my layout?'
 sources:
   - src/features/bin-designer/types/savedDesign.ts
   - src/features/bin-designer/types/designVersion.ts
