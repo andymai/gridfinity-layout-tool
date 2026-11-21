@@ -70,6 +70,12 @@ describe('pageMarkdown', () => {
     expect(out).toBe('# A\n\n*Picture: A grid.*\n\n*Video: Drawing a bin.*\n\nEnd.\n');
   });
 
+  it('escapes asterisks and backslashes in alt text', () => {
+    expect(convert('# A\n\n<Screenshot id="shot" alt="a*b\\c" spec="s" />')).toBe(
+      '# A\n\n*Picture: a\\*b\\\\c*\n'
+    );
+  });
+
   it('makes every docs link absolute and keeps its heading', () => {
     const out = convert(
       '# A\n\n[a](./other) [b](../printing/x#step-1) [c](#here) [d](/reference/shortcuts) ' +

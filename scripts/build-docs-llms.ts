@@ -83,6 +83,10 @@ const CONTAINER_TITLES: Readonly<Record<string, string>> = {
   details: 'Details',
 };
 
+function escapeMarkdown(text: string): string {
+  return text.replace(/[\\*]/g, '\\$&');
+}
+
 function attributes(tag: string): Map<string, string> {
   return new Map([...tag.matchAll(ATTRIBUTE)].map(([, key, value]) => [key, value]));
 }
@@ -92,7 +96,7 @@ function attributes(tag: string): Map<string, string> {
 function uiLabel(key: string, line: string, offset: number, where: string): string {
   const result = resolveUiLabel(key);
   if (!result.ok) throw new Error(`${where}: ${result.reason}`);
-  const text = result.text.replace(/\*/g, '\\*');
+  const text = escapeMarkdown(result.text);
   const insideBold = (line.slice(0, offset).match(/\*\*/g) ?? []).length % 2 === 1;
   return insideBold ? text : `**${text}**`;
 }
@@ -118,7 +122,7 @@ function screenshotText(tag: string, ctx: DocsContext, where: string): string {
   const entry = ctx.media[id];
   // The site leaves out a picture that is not captured yet, so this does too.
   if (!entry) return '';
-  return `*${entry.kind === 'clip' ? 'Video' : 'Picture'}: ${alt.replace(/\*/g, '\\*')}*`;
+  return `*${entry.kind === 'clip' ? 'Video' : 'Picture'}: ${escapeMarkdown(alt)}*`;
 }
 
 function planDrawerText(tag: string, where: string): string {
@@ -195,7 +199,6 @@ export function pageMarkdown(page: DocPage, ctx: DocsContext): string {
       continue;
     }
     const text = inlineText(raw, self, ctx, page.file);
-    // A line that held only an uncaptured picture goes, as on the site.
     if (raw.trim() && !text.trim()) continue;
     push(text);
   }
