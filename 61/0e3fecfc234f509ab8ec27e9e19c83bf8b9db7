@@ -1,0 +1,19 @@
+apps/docs/.vitepress/theme/components/AskAiPanel.vue
+  s_f8efc8defc13ab::t_8f3d857cd16674 113-117
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "610e3fecfc234f509ab8ec27e9e19c83bf8b9db7",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
