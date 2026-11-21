@@ -110,7 +110,11 @@ watch(draft, async () => {
   el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
 });
 
-onMounted(() => window.addEventListener('keydown', onGlobalKey));
+onMounted(() => {
+  // A panel that first showed docked stays mounted when the window narrows.
+  askAi.opened = true;
+  window.addEventListener('keydown', onGlobalKey);
+});
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', onGlobalKey);
   document.getElementById('app')?.removeAttribute('inert');
