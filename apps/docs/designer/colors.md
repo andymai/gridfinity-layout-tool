@@ -1,6 +1,10 @@
 ---
 title: Colors
 description: 'Give each part of a bin its own filament color, add accent bands, and save color sets as palettes.'
+questions:
+  - 'How do I give each part of a bin its own color?'
+  - 'What is an accent band?'
+  - 'How do I save a set of colors?'
 sources:
   - src/features/bin-designer/types/featureColors.ts
   - src/features/bin-designer/components/panel/ColorsSection/

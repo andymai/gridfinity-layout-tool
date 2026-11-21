@@ -1,6 +1,10 @@
 ---
 title: Work in layers
 description: 'Add and order layers, stack bins on bins, use spacers, and view the layers in 3D.'
+questions:
+  - 'How do I stack bins on top of other bins?'
+  - 'How do I add a layer?'
+  - 'What are spacers for?'
 sources:
   - src/features/layers/
   - src/shared/utils/restingStack.ts

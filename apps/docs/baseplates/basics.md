@@ -1,6 +1,10 @@
 ---
 title: Baseplate basics
 description: 'Size a baseplate from your layout, add margins, set the grid pitch, and keep one plate design for each layout.'
+questions:
+  - 'How do I size a baseplate from my layout?'
+  - 'How do I add margins around the baseplate?'
+  - 'Does each layout keep its own baseplate?'
 sources:
   - src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
   - src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.tsx

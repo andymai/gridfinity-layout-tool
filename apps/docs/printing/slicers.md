@@ -1,6 +1,10 @@
 ---
 title: Slicer setup
 description: 'Open exported files in Bambu Studio, OrcaSlicer or PrusaSlicer, map multi-color zones to filaments, and slice stacked plates.'
+questions:
+  - 'How do I open an exported file in Bambu Studio?'
+  - 'How do I map color zones to filaments?'
+  - 'How do I slice stack-printed plates?'
 sources:
   - src/features/generation/export/threemfXml.ts
   - src/features/generation/export/threemfColor.ts

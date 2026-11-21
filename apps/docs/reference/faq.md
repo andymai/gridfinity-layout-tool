@@ -1,6 +1,10 @@
 ---
 title: FAQ
 description: 'Short answers to common questions about the Layout Tool: cost, your data, drawer sizes, print beds, file formats and shortcuts.'
+questions:
+  - 'How do I back up my layouts?'
+  - 'Can I enter my drawer size in inches?'
+  - 'Do my bins fit baseplates from other models?'
 sources:
   - src/i18n/locales/en.ts
   - content/guide.md

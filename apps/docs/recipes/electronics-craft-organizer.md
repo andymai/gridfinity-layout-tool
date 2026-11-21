@@ -1,6 +1,10 @@
 ---
 title: An electronics and craft organizer
 description: 'Sort small parts into compartments with swappable label plates, printed in two colors.'
+questions:
+  - 'How do I organize small electronic parts?'
+  - 'How do I make labels that I can swap later?'
+  - 'How do I print the labels in two colors?'
 sources:
   - src/shared/utils/labelSocketPlan.ts
   - src/shared/constants/labelPlates.ts

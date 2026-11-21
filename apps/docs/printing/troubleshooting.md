@@ -1,6 +1,10 @@
 ---
 title: Troubleshooting prints
 description: 'Solve common problems with exported files: tight bins, missing labels or bins, rejected 3MF files and wrong colors.'
+questions:
+  - 'Why is my bin too tight in the baseplate?'
+  - 'Why does Bambu Studio reject my 3MF file?'
+  - 'Why are the labels missing from my export?'
 sources:
   - src/features/bin-designer/hooks/useSyncPhysicalUnits.ts
   - src/shell/layoutExport/planLayoutBinExport.ts

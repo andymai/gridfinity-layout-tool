@@ -1,6 +1,10 @@
 ---
 title: Gridfinity in five minutes
 description: 'Learn the 42 mm grid, the 7 mm height unit, and the parts of a Gridfinity drawer.'
+questions:
+  - 'What is Gridfinity?'
+  - 'How big are a grid unit and a height unit?'
+  - 'Do I need magnets or screws for Gridfinity?'
 sources:
   - src/shared/printSettings/gridfinityGeometry.ts
   - src/core/constants.ts

@@ -1,6 +1,10 @@
 ---
 title: The community gallery
 description: 'Browse, remix and publish bin designs, post your prints, and report a problem design.'
+questions:
+  - 'How do I publish a bin design?'
+  - 'How do I find designs in the community gallery?'
+  - 'How do I post a photo of my print?'
 sources:
   - src/features/community/
   - src/shared/utils/communityLowEffort.ts

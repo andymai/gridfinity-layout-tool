@@ -1,6 +1,10 @@
 ---
 title: Scan with your phone
 description: 'Photograph a tool with your phone and get a cutout at its true size on your computer.'
+questions:
+  - 'How do I scan a tool with my phone?'
+  - 'What size reference do I need for a phone scan?'
+  - 'Can I scan several tools in one photo?'
 sources:
   - src/features/scan-capture/
   - src/shell/scanBoot.tsx

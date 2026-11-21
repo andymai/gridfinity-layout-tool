@@ -1,6 +1,10 @@
 ---
 title: Swappable label plates
 description: 'Add label sockets to a bin, print label plates on their own, and change a label without a new bin.'
+questions:
+  - 'How do I make label plates that I can swap?'
+  - 'How do I tune the label plate fit for my printer?'
+  - 'How do I export the label plates?'
 sources:
   - src/shared/constants/labelPlates.ts
   - src/features/bin-designer/components/panel/LabelTabsSection/

@@ -1,6 +1,10 @@
 ---
 title: Lids
 description: 'Add a lid that presses on, clicks, holds with magnets, slides or swings on a hinge, and shape its top and grip.'
+questions:
+  - 'How do I add a lid to a bin?'
+  - 'What kinds of lids can I make?'
+  - 'Can a lid hold with magnets?'
 sources:
   - src/features/bin-designer/types/lid.ts
   - src/features/bin-designer/components/panel/LidSection/

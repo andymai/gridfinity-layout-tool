@@ -1,6 +1,10 @@
 ---
 title: Arrange cutouts
 description: 'Repeat, group, align, pack and measure cutouts in the cutout editor, and give each copy of a repeat its own label.'
+questions:
+  - 'How do I repeat a cutout across a bin?'
+  - 'How do I give each copy of a cutout its own label?'
+  - 'Can the app arrange my cutouts for me?'
 sources:
   - src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.tsx
   - src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx

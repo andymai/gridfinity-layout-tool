@@ -139,6 +139,35 @@ export function checkPage(page: DocPage, exists: (rel: string) => boolean): stri
   return problems;
 }
 
+// A starter question shows as a button, so it stays short.
+export const MAX_QUESTION_LENGTH = 70;
+
+/** Each page offers three questions that it answers, and no two pages share one. */
+export function checkStarterQuestions(pages: readonly DocPage[]): string[] {
+  const problems: string[] = [];
+  const firstPage = new Map<string, string>();
+  for (const page of pages) {
+    const value: unknown = page.data.questions;
+    const questions: unknown[] = Array.isArray(value) ? value : [];
+    if (questions.length !== 3 || !questions.every((q) => typeof q === 'string' && q.trim())) {
+      problems.push(
+        `${page.file}: frontmatter needs "questions": three starter questions that the page answers`
+      );
+      continue;
+    }
+    for (const question of questions as string[]) {
+      if (!question.endsWith('?') || question.length > MAX_QUESTION_LENGTH)
+        problems.push(
+          `${page.file}: "${question}" must end with "?" and have ${MAX_QUESTION_LENGTH} characters or fewer`
+        );
+      const other = firstPage.get(question);
+      if (other) problems.push(`${page.file}: "${question}" is also a question on ${other}`);
+      else firstPage.set(question, page.file);
+    }
+  }
+  return problems;
+}
+
 export function checkSidebar(files: readonly string[], links: readonly string[]): string[] {
   const problems: string[] = [];
   const pages = new Set(files.map(pageLink));
@@ -414,6 +443,7 @@ export function collectProblems(pages: readonly DocPage[] = readDocPages()): str
   return [
     ...navAppLinks,
     ...pages.flatMap((p) => checkPage(p, exists)),
+    ...checkStarterQuestions(pages),
     ...checkSidebar(
       pages.map((p) => p.file),
       sidebarLinks()

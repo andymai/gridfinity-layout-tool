@@ -1,6 +1,10 @@
 ---
 title: Layout file format
 description: 'Edit or write a layout JSON file by hand, avoid the unit and orientation traps, and validate it before import.'
+questions:
+  - 'Can I write a layout file by hand?'
+  - 'How do I validate a layout file?'
+  - 'What is in a layout JSON file?'
 sources:
   - docs/schemas/layout.md
   - docs/schemas/README.md

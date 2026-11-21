@@ -1,6 +1,10 @@
 ---
 title: Check before you print
 description: 'Find cutouts that print badly, print a fit test, and add finger access to lift a snug tool out.'
+questions:
+  - 'How do I find cutouts that will print badly?'
+  - 'How do I print a fit test for a pocket?'
+  - 'How do I make a snug tool easy to lift out?'
 sources:
   - src/features/bin-designer/components/panel/CutoutsSection/pocketChecks.ts
   - src/features/bin-designer/components/panel/CutoutsSection/PocketIssueList.tsx

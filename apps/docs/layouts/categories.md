@@ -1,6 +1,10 @@
 ---
 title: Categories and colors
 description: 'Group bins by what they hold, give each group a color, and see where the categories show up.'
+questions:
+  - 'How do I color bins by what they hold?'
+  - 'How do I add a new category?'
+  - 'Can I use the same categories in every layout?'
 sources:
   - src/features/categories/
   - src/core/constants.ts

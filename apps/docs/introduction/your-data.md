@@ -1,6 +1,10 @@
 ---
 title: Your data and privacy
 description: 'Learn what stays in your browser, what goes to the server, and how to control it.'
+questions:
+  - 'Where are my layouts stored?'
+  - 'What does a share link make public?'
+  - 'Can I turn off usage analytics?'
 sources:
   - src/core/storage/
   - src/core/sync/

@@ -1,6 +1,10 @@
 ---
 title: A deep tool drawer in two layers
 description: 'Stack lift-out trays on tall bins, and keep the whole stack under the drawer top.'
+questions:
+  - 'How do I fill a deep drawer with two layers of bins?'
+  - 'How do I add lift-out trays on top of tall bins?'
+  - 'How do I make sure the stack fits under the drawer top?'
 sources:
   - src/shared/utils/heightUnits.ts
   - src/shared/components/HeightUnitSolver/HeightUnitSolver.tsx

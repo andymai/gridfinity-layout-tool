@@ -1,6 +1,10 @@
 ---
 title: Workshop
 description: 'Build a tool holder out of parts on a Gridfinity base, and export a bin top as a flat shadow board.'
+questions:
+  - 'What is Workshop?'
+  - 'How do I build a tool holder from parts?'
+  - 'How do I export a shadow board?'
 sources:
   - src/features/bin-designer/components/Workshop/
   - src/features/bin-designer/components/DesignerPage/DesignerHeader.tsx

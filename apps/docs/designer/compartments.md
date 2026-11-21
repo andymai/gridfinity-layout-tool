@@ -1,6 +1,10 @@
 ---
 title: Compartments and dividers
 description: 'Divide a bin into compartments with fixed, diagonal, leaning or removable dividers, and raise the floor of a compartment.'
+questions:
+  - 'How do I divide a bin into compartments?'
+  - 'Can I make removable dividers?'
+  - 'What is Bento?'
 sources:
   - src/features/bin-designer/components/panel/InteriorSection/
   - src/features/bin-designer/components/CompartmentEditor/

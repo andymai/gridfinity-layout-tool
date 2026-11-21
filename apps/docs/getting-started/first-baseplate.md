@@ -1,6 +1,10 @@
 ---
 title: Make your first baseplate
 description: 'Size a baseplate from your layout, add magnet holes, split it for your print bed, and export it.'
+questions:
+  - 'How do I make a baseplate for my layout?'
+  - 'How do I add magnet holes to a baseplate?'
+  - 'How do I split a baseplate for my print bed?'
 sources:
   - src/features/baseplate/hooks/useBaseplateFirstRun.ts
   - src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx

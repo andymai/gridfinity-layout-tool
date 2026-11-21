@@ -1,6 +1,10 @@
 ---
 title: Fit and tolerances
 description: 'Make bins, plates and connectors fit on your printer with the nozzle size, fit settings and test prints.'
+questions:
+  - 'How do I make bins fit well on my printer?'
+  - 'Where do I set my nozzle size?'
+  - 'Which test prints should I make first?'
 sources:
   - src/shared/printSettings/gridfinityGeometry.ts
   - src/shared/printSettings/printSettings.ts

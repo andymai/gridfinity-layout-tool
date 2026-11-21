@@ -1,6 +1,10 @@
 ---
 title: Trace a photo
 description: 'Trace tools from a photo on your computer, keep their holes, tidy the outlines, and save them as a file.'
+questions:
+  - 'How do I trace a tool from a photo?'
+  - 'How do I take a photo that traces well?'
+  - 'How do I keep the holes in a traced tool?'
 sources:
   - src/features/bin-designer/components/TraceView/
   - src/features/bin-designer/components/OutlineCleanup/

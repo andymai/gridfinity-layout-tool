@@ -1,6 +1,10 @@
 ---
 title: Find bins that fit
 description: 'Find community bins that fit an empty area of your layout, and get a bin size from its label.'
+questions:
+  - 'How do I find a bin that fits an empty space?'
+  - 'Can I use community bins in my layout?'
+  - 'How do I get a bin size from a label?'
 sources:
   - src/features/grid-editor/components/Grid/GridToolbar/GridToolbar.tsx
   - src/shell/Mobile/MobileLayersPanel/ToolsTab/ToolsTab.tsx

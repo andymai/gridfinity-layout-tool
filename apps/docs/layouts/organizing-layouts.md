@@ -1,6 +1,10 @@
 ---
 title: Organize your layouts
 description: 'Open, rename, copy and sort your layouts in folders, restore an earlier version, and undo changes.'
+questions:
+  - 'How do I sort my layouts into folders?'
+  - 'How do I go back to an earlier version of a layout?'
+  - 'How do I copy a layout?'
 sources:
   - src/features/layout-library/
   - src/features/snapshots/

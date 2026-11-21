@@ -1,6 +1,10 @@
 ---
 title: Settings and accessibility
 description: 'Find each tab of the Settings dialog: language, theme, accessibility, layout defaults, print values, data and exports.'
+questions:
+  - 'How do I change the language or the theme?'
+  - 'Where are the accessibility settings?'
+  - 'How do I set defaults for new layouts?'
 sources:
   - src/shell/Modals/SettingsModal/
   - src/core/store/settings.types.ts
