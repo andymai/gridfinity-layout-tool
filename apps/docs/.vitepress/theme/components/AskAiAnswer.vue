@@ -76,7 +76,10 @@ async function copy(): Promise<void> {
       </details>
 
       <div class="answer-body">
-        <template v-for="(segment, i) in segments" :key="i">
+        <template
+          v-for="(segment, i) in segments"
+          :key="segment.kind === 'capture' ? `${i}-${segment.id}` : i"
+        >
           <!-- render.ts escapes all raw HTML in the answer except <kbd>. -->
           <div v-if="segment.kind === 'html'" class="answer-html" v-html="segment.html" />
           <Screenshot v-else :id="segment.id" :alt="captures[segment.id]?.alt ?? ''" />

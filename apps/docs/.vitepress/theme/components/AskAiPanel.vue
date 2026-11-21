@@ -34,13 +34,18 @@ function onKeydown(event: KeyboardEvent): void {
   }
 }
 
-function close(): void {
+async function close(): Promise<void> {
   setOpen(false);
+  // On a phone the page stays inert until the watcher below runs, and an inert
+  // button takes no focus.
+  await nextTick();
   document.getElementById('ask-ai-button')?.focus();
 }
 
 function onGlobalKey(event: KeyboardEvent): void {
-  if (event.key === 'Escape' && askAi.open) close();
+  // Escape in a capture's zoom dialog closes the dialog, not the chat.
+  if (event.key !== 'Escape' || !askAi.open || document.querySelector('dialog[open]')) return;
+  void close();
 }
 
 // On a phone the sheet covers the page, so the page behind it must not take
@@ -66,7 +71,7 @@ function onClick(event: MouseEvent): void {
 }
 
 function openSearch(): void {
-  close();
+  void close();
   window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, metaKey: true }));
 }
 
