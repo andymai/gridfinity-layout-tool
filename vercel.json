@@ -26,6 +26,12 @@
       "permanent": true
     }
   ],
+  "functions": {
+    "api/docs-ask.ts": {
+      "maxDuration": 120,
+      "includeFiles": "dist/docs/ask/**"
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",

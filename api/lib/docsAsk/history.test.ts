@@ -1,0 +1,138 @@
+import { describe, expect, it, vi } from 'vitest';
+import type { AskCorpus } from './corpus.js';
+import { MAX_TURNS, askRequestSchema, rebuildMessages, userTurn } from './history.js';
+import type { StoredTurn } from './history.js';
+import type { ToolRun } from './tools.js';
+
+const corpus: AskCorpus = {
+  version: 'test',
+  map: 'map',
+  pages: {
+    '/layouts/layers': {
+      group: 'Layouts',
+      title: 'Work in layers',
+      url: 'https://gridfinitylayouttool.com/docs/layouts/layers',
+      markdown: '# Work in layers {#layers}',
+      labels: [],
+    },
+  },
+};
+
+const run = vi.fn((name: string, input: unknown, locale: string): ToolRun => ({
+  isError: false,
+  label: name,
+  content: `${name} ${JSON.stringify(input)} ${locale}`,
+}));
+const localeOf = (locale: string): string => (locale === 'de' ? 'de' : 'en');
+
+function turn(messages: unknown[][], locale = 'en'): StoredTurn {
+  return { question: 'How do layers work?', page: '/layouts/layers', locale, messages };
+}
+
+const thinking = { type: 'thinking', thinking: 'plan', signature: 'sig' };
+const call = {
+  type: 'tool_use',
+  id: 'toolu_1',
+  name: 'read_page',
+  input: { link: '/layouts/layers' },
+};
+const answer = { type: 'text', text: 'Layers stack bins.', citations: null };
+
+describe('rebuildMessages', () => {
+  it('puts the context after each question and runs each tool call again', () => {
+    const messages = rebuildMessages(
+      corpus,
+      [turn([[thinking, call], [answer]], 'de')],
+      run,
+      localeOf
+    );
+    expect(messages).toEqual([
+      { role: 'user', content: 'How do layers work?' },
+      {
+        role: 'system',
+        content:
+          'Reader context: The reader is on the docs page "Work in layers" (https://gridfinitylayouttool.com/docs/layouts/layers). Their language is German (de).',
+      },
+      {
+        role: 'assistant',
+        content: [
+          { type: 'thinking', thinking: 'plan', signature: 'sig' },
+          {
+            type: 'tool_use',
+            id: 'toolu_1',
+            name: 'read_page',
+            input: { link: '/layouts/layers' },
+          },
+        ],
+      },
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'tool_result',
+            tool_use_id: 'toolu_1',
+            content: 'read_page {"link":"/layouts/layers"} de',
+          },
+        ],
+      },
+      { role: 'assistant', content: [{ type: 'text', text: 'Layers stack bins.' }] },
+    ]);
+  });
+
+  it('keeps only the answer text of a turn with a block it does not know', () => {
+    const fallback = { type: 'fallback', from: { model: 'a' }, to: { model: 'b' } };
+    const messages = rebuildMessages(corpus, [turn([[thinking, fallback, answer]])], run, localeOf);
+    expect(messages.at(-1)).toEqual({
+      role: 'assistant',
+      content: [{ type: 'text', text: 'Layers stack bins.' }],
+    });
+  });
+
+  it('drops a turn that stopped at a tool call with no answer', () => {
+    expect(rebuildMessages(corpus, [turn([[thinking, call]])], run, localeOf)).toEqual([]);
+  });
+
+  it('drops a tool call to a tool that does not exist', () => {
+    const bad = { ...call, name: 'delete_everything' };
+    const messages = rebuildMessages(corpus, [turn([[bad], [answer]])], run, localeOf);
+    expect(messages.filter((m) => m.role === 'assistant')).toHaveLength(1);
+  });
+
+  it('builds the same bytes on every request', () => {
+    const turns = [turn([[thinking, call], [answer]])];
+    expect(JSON.stringify(rebuildMessages(corpus, turns, run, localeOf))).toBe(
+      JSON.stringify(rebuildMessages(corpus, turns, run, localeOf))
+    );
+  });
+});
+
+describe('userTurn', () => {
+  it('says so when the reader is not on a docs page', () => {
+    expect(userTurn(corpus, 'Hi?', '', 'en')[1]).toEqual({
+      role: 'system',
+      content: 'Reader context: The reader is not on a docs page. Their language is English (en).',
+    });
+  });
+});
+
+describe('askRequestSchema', () => {
+  const valid = {
+    op: 'ask',
+    sessionId: 'abc12345-tab',
+    question: 'How do layers work?',
+    page: '/layouts/layers',
+    locale: 'en',
+    turns: [],
+  };
+
+  it('accepts a question', () => {
+    expect(askRequestSchema.safeParse(valid).success).toBe(true);
+  });
+
+  it('refuses an empty question, a bad session id and too many turns', () => {
+    expect(askRequestSchema.safeParse({ ...valid, question: '   ' }).success).toBe(false);
+    expect(askRequestSchema.safeParse({ ...valid, sessionId: 'x' }).success).toBe(false);
+    const turns = Array.from({ length: MAX_TURNS + 1 }, () => turn([[answer]]));
+    expect(askRequestSchema.safeParse({ ...valid, turns }).success).toBe(false);
+  });
+});

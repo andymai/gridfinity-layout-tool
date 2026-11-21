@@ -15,6 +15,7 @@
  *   ratelimit:{action}:{scope}      → sliding-window rate-limit counter
  *   session:{token}                 → user session record (sync feature)
  *   scan:session:{token}            → ephemeral phone-scan handoff (traced SVG)
+ *   docsAsk:spend:{YYYY-MM-DD}      → USD that Ask AI spent on one UTC day, 2-day TTL
  *   identity:{saltedHash}           → OAuth identity → user id (see userIdentityKey)
  *   users:{uid}:sessions            → SET of session tokens owned by a user
  *   users:{uid}:profile             → user profile (email, provider, etc.)
@@ -111,6 +112,10 @@ export function sessionKey(token: string): string {
 /** Ephemeral phone-scan handoff record (traced SVG awaiting desktop pickup). */
 export function scanSessionKey(token: string): string {
   return `scan:session:${token}`;
+}
+
+export function docsAskSpendKey(day: string): string {
+  return `docsAsk:spend:${day}`;
 }
 
 /**
