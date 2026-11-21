@@ -57,9 +57,28 @@ const marked = new Marked({
   },
 });
 
+// A chip is a token of its own, so a marker can only become one in text,
+// never inside a link target or another attribute.
+marked.use({
+  extensions: [
+    {
+      name: 'uiChip',
+      level: 'inline',
+      start: (src: string) => {
+        const at = src.indexOf('[[ui:');
+        return at < 0 ? undefined : at;
+      },
+      tokenizer: (src: string) => {
+        const match = /^\[\[ui:([^\]]+)\]\]/.exec(src);
+        return match ? { type: 'uiChip', raw: match[0], label: match[1] } : undefined;
+      },
+      renderer: (token) => `<span class="ui-label">${escapeHtml(String(token.label))}</span>`,
+    },
+  ],
+});
+
 function renderMarkdown(text: string): string {
-  const html = marked.parse(text, { async: false });
-  return html.replace(CHIP, (_marker, label: string) => `<span class="ui-label">${label}</span>`);
+  return marked.parse(text, { async: false });
 }
 
 /**

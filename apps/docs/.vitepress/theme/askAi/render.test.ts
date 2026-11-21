@@ -14,6 +14,15 @@ describe('answerSegments', () => {
     );
   });
 
+  it('leaves a marker inside a link target alone', () => {
+    const out = html(
+      '[Fit](https://gridfinitylayouttool.com/docs/x?q=[[ui:Fit]]) and [[ui:Grid <b>]]'
+    );
+    expect(out).toContain('data-docs-link');
+    expect(out).not.toMatch(/href="[^"]*<span/);
+    expect(out).toContain('<span class="ui-label">Grid &lt;b&gt;</span>');
+  });
+
   it('escapes every other tag in the answer', () => {
     const out = html('Hi <script>alert(1)</script> <img src=x onerror=alert(1)> <b>bold</b>');
     expect(out).not.toMatch(/<script|<img|<b>/);

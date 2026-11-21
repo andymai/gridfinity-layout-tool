@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted } from 'vue';
 import { askAi, checkAvailability, setOpen } from '../askAi/useAskAi';
 
 // Here and not in the panel: the panel mounts only on the first open.
@@ -7,7 +7,11 @@ function onKey(event: KeyboardEvent): void {
   if (!askAi.available || event.altKey || !(event.metaKey || event.ctrlKey)) return;
   if (event.key.toLowerCase() !== 'i') return;
   event.preventDefault();
-  setOpen(!askAi.open);
+  const closing = askAi.open;
+  setOpen(!closing);
+  // Focus may sit in the panel that just hid; on a phone the page is inert
+  // until the panel's watcher runs.
+  if (closing) void nextTick(() => document.getElementById('ask-ai-button')?.focus());
 }
 
 onMounted(() => {
