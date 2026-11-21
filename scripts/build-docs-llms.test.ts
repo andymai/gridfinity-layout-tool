@@ -103,6 +103,11 @@ describe('pageMarkdown', () => {
     expect(convert(`# A\n\n${fence}`)).toBe(`# A\n\n${fence}\n`);
   });
 
+  it('closes a fence only on a matching delimiter', () => {
+    for (const fence of ['~~~\n```\n<NewWidget />\n~~~', '````md\n```\n<NewWidget />\n````'])
+      expect(convert(`# A\n\n${fence}\n\nAfter`)).toBe(`# A\n\n${fence}\n\nAfter\n`);
+  });
+
   it('links Plan this drawer to the same URL as the button on the page', () => {
     const url = drawerLink({ widthMm: 345, depthMm: 260, heightMm: 40 }, { name: 'Screw drawer' });
     expect(

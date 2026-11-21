@@ -72,7 +72,7 @@ const PLAN_DRAWER_TAG = /<PlanDrawerButton\s[^>]*\/>/g;
 const BLOCK_COMPONENT = /^\s*<(RecipeCards|DrawerCalculator)\s*\/>\s*$/;
 const ANY_COMPONENT = /<([A-Z][A-Za-z]*)\b/;
 const ATTRIBUTE = /\b([a-z]+)="([^"]*)"/g;
-const FENCE = /^\s*(```|~~~)/;
+const FENCE = /^\s*(`{3,}|~{3,})(.*)$/;
 const CONTAINER_OPEN = /^:::\s*(tip|info|warning|danger|details)\b\s*(.*)$/;
 const CONTAINER_CLOSE = /^:::\s*$/;
 const CONTAINER_TITLES: Readonly<Record<string, string>> = {
@@ -169,7 +169,7 @@ function inlineText(line: string, self: string, ctx: DocsContext, where: string)
 export function pageMarkdown(page: DocPage, ctx: DocsContext): string {
   const self = pageLink(page.file);
   const out: string[] = [];
-  let inFence = false;
+  let fence: string | null = null;
   let inContainer = false;
   const push = (line: string): void => {
     out.push(inContainer ? (line ? `> ${line}` : '>') : line);
@@ -180,9 +180,16 @@ export function pageMarkdown(page: DocPage, ctx: DocsContext): string {
   };
 
   for (const raw of page.body.split('\n')) {
-    const fence = FENCE.test(raw);
-    if (fence) inFence = !inFence;
-    if (fence || inFence) {
+    const [, run = '', rest = ''] = FENCE.exec(raw) ?? [];
+    if (fence !== null) {
+      // Only a run of the same character, at least as long and with nothing
+      // after it, closes a fence, so a fence can show another fence.
+      if (run[0] === fence[0] && run.length >= fence.length && !rest.trim()) fence = null;
+      push(raw);
+      continue;
+    }
+    if (run) {
+      fence = run;
       push(raw);
       continue;
     }
@@ -207,7 +214,8 @@ export function pageMarkdown(page: DocPage, ctx: DocsContext): string {
     if (!text.trim() && afterBlank()) continue;
     push(text);
   }
-  if (inFence || inContainer) throw new Error(`${page.file}: a fence or a ::: block is not closed`);
+  if (fence !== null || inContainer)
+    throw new Error(`${page.file}: a fence or a ::: block is not closed`);
 
   let markdown = out.join('\n').trim();
   if (!/^#\s/.test(markdown)) {
