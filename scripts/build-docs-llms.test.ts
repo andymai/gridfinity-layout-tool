@@ -99,7 +99,7 @@ describe('pageMarkdown', () => {
   });
 
   it('leaves code fences as they are', () => {
-    const fence = '```\n<Ui k="no.such.key" />\n:::\n```';
+    const fence = '```\n<Ui k="no.such.key" />\n\n\n:::\n```';
     expect(convert(`# A\n\n${fence}`)).toBe(`# A\n\n${fence}\n`);
   });
 

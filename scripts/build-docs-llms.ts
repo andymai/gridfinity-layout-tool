@@ -174,6 +174,10 @@ export function pageMarkdown(page: DocPage, ctx: DocsContext): string {
   const push = (line: string): void => {
     out.push(inContainer ? (line ? `> ${line}` : '>') : line);
   };
+  const afterBlank = (): boolean => {
+    const last = out.at(-1);
+    return last === undefined || last === '' || last === '>';
+  };
 
   for (const raw of page.body.split('\n')) {
     const fence = FENCE.test(raw);
@@ -200,6 +204,7 @@ export function pageMarkdown(page: DocPage, ctx: DocsContext): string {
     }
     const text = inlineText(raw, self, ctx, page.file);
     if (raw.trim() && !text.trim()) continue;
+    if (!text.trim() && afterBlank()) continue;
     push(text);
   }
   if (inFence || inContainer) throw new Error(`${page.file}: a fence or a ::: block is not closed`);
@@ -208,7 +213,7 @@ export function pageMarkdown(page: DocPage, ctx: DocsContext): string {
   if (!/^#\s/.test(markdown)) {
     markdown = `# ${textField(page.data, 'title') ?? TITLE}\n\n${markdown}`;
   }
-  return `${markdown.replace(/\n{3,}/g, '\n\n')}\n`;
+  return `${markdown}\n`;
 }
 
 function orderedLinks(ctx: DocsContext): string[] {

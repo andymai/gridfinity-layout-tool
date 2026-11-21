@@ -14,14 +14,13 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { DOCS_PREFIX } from './contentRoutes';
+import { DOCS_PREFIX, ROOT_LLMS_FILES } from './contentRoutes';
 
 const ROOT = process.cwd();
 const DIST = path.join(ROOT, 'dist');
 const DOCS_BUILD = path.join(ROOT, 'apps', 'docs', '.vitepress', 'dist');
 
 const MANIFEST_START = 'precacheAndRoute([';
-const LLMS_FILES = ['llms.txt', 'llms-full.txt'];
 
 export function precacheUrls(serviceWorker: string): string[] {
   const start = serviceWorker.indexOf(MANIFEST_START);
@@ -75,7 +74,7 @@ function main(): void {
   if (!fs.existsSync(swPath)) {
     throw new Error('copy-docs: dist/sw.js not found. Run vite build first.');
   }
-  for (const file of LLMS_FILES) {
+  for (const file of ROOT_LLMS_FILES) {
     if (!fs.existsSync(path.join(DOCS_BUILD, file))) {
       throw new Error(
         `copy-docs: apps/docs/.vitepress/dist/${file} not found. Run docs:llms first.`
@@ -87,9 +86,9 @@ function main(): void {
   fs.rmSync(target, { recursive: true, force: true });
   fs.cpSync(DOCS_BUILD, target, { recursive: true });
   console.log(`✓ Copied the docs build to dist${DOCS_PREFIX}`);
-  for (const file of LLMS_FILES)
+  for (const file of ROOT_LLMS_FILES)
     fs.copyFileSync(path.join(DOCS_BUILD, file), path.join(DIST, file));
-  console.log(`✓ Copied ${LLMS_FILES.join(' and ')} to the site root`);
+  console.log(`✓ Copied ${ROOT_LLMS_FILES.join(' and ')} to the site root`);
   checkAnalyticsScript(target);
 
   const urls = precacheUrls(fs.readFileSync(swPath, 'utf8'));

@@ -48,3 +48,8 @@ export const DOCS_PREFIX = '/docs';
 // Workbox's NavigationRoute tests its denylist against pathname + search, so a
 // query or hash may follow the prefix: /docs?utm_source=help is a docs page too.
 export const DOCS_NAVIGATION = new RegExp(`^${DOCS_PREFIX}(?:[/?#]|$)`);
+
+// The docs build's llms.txt indexes, which copy-docs also puts at the site root.
+// The service worker must not answer them with the app shell.
+export const ROOT_LLMS_FILES = ['llms.txt', 'llms-full.txt'] as const;
+export const LLMS_NAVIGATION = /^\/llms(?:-full)?\.txt(?:[?#]|$)/;

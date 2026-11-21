@@ -9,7 +9,12 @@ import { versionPlugin } from './scripts/vite-plugin-version';
 import { contentRoutesPlugin } from './scripts/vite-plugin-content-routes';
 import { mediapipeAssetsPlugin } from './scripts/vite-plugin-mediapipe-assets';
 import { minifyJsonAssets } from './scripts/vite-plugin-minify-json-assets';
-import { CONTENT_LOCALES, CONTENT_SLUGS, DOCS_NAVIGATION } from './scripts/contentRoutes';
+import {
+  CONTENT_LOCALES,
+  CONTENT_SLUGS,
+  DOCS_NAVIGATION,
+  LLMS_NAVIGATION,
+} from './scripts/contentRoutes';
 import { manifestScreenshotEntries } from './scripts/manifestScreenshots';
 
 // The prerendered content pages, mirroring the rewrites in vercel.json. They are
@@ -229,6 +234,7 @@ export default defineConfig({
           CONTENT_ROUTE,
           // The docs are a separate static site that the service worker never holds.
           DOCS_NAVIGATION,
+          LLMS_NAVIGATION,
           /^\/storage-bridge\.html$/,
         ],
         runtimeCaching: [
