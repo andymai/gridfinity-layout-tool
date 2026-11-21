@@ -1,0 +1,23 @@
+api/lib/docsAsk/source.ts
+  s_f8efc8defc13ab::t_5b4934b704b7e2 14-18,23-24,28-30,43
+api/docs-ask.ts
+  s_f8efc8defc13ab::t_646007682115c6 126
+api/lib/docsAsk/source.test.ts
+  s_f8efc8defc13ab::t_646007682115c6 47,50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "055105469321f921b3272580ce0b298d635ede28",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
