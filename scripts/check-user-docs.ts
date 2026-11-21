@@ -34,7 +34,8 @@ const LOCALES: ReadonlySet<string> = new Set(CONTENT_LOCALES);
 const SCREENSHOT_TAG = /<Screenshot\s[^>]*\bid="([^"]+)"/g;
 const APP_LINK = /https:\/\/gridfinitylayouttool\.com(\/[^\s)"'#?]*)?/g;
 const URL_SCHEME = /^[a-zA-Z][\w+.-]*:/;
-const DOC_LINK = /\]\(((?:\.{1,2}\/|\/(?!\/)|(?![a-zA-Z][\w+.-]*:)[\w-])[^)\s]*|#[^)\s]+)\)/g;
+export const DOC_LINK =
+  /\]\(((?:\.{1,2}\/|\/(?!\/)|(?![a-zA-Z][\w+.-]*:)[\w-])[^)\s]*|#[^)\s]+)\)/g;
 
 export interface DocPage {
   readonly file: string;
@@ -47,7 +48,7 @@ interface StagedSource {
   readonly source: string;
 }
 
-function readDocPages(): DocPage[] {
+export function readDocPages(): DocPage[] {
   const files: string[] = [];
   const walk = (dir: string): void => {
     for (const entry of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {
@@ -65,7 +66,7 @@ function readDocPages(): DocPage[] {
   });
 }
 
-function pageLink(file: string): string {
+export function pageLink(file: string): string {
   return `/${file.slice(DOCS_DIR.length + 1).replace(/\.md$/, '')}`;
 }
 
@@ -175,7 +176,7 @@ export interface MediaEntry {
 }
 
 /** Each capture's `<id>.json`, by id. */
-function readManifest(): Record<string, MediaEntry> {
+export function readManifest(): Record<string, MediaEntry> {
   return Object.fromEntries(
     mediaDirFiles()
       .filter((f) => f.endsWith('.json'))
@@ -282,7 +283,7 @@ export function headingAnchors(body: string): Set<string> {
   return anchors;
 }
 
-function resolveDocLink(fromLink: string, target: string): string {
+export function resolveDocLink(fromLink: string, target: string): string {
   if (!target) return fromLink;
   const joined = target.startsWith('/')
     ? target

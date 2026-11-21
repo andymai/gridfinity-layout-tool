@@ -91,6 +91,9 @@ expect_status "/$MAIN" 200 -H 'Accept-Encoding: gzip'; expect_ct application/jav
 expect_status "/$MAIN" 304 -H 'If-None-Match: *'; expect_header Cache-Control "public, max-age=31536000, immutable"
 expect_status /sw.js 200; expect_ct application/javascript; expect_header Cache-Control "public, max-age=0, must-revalidate"
 expect_status /manifest.webmanifest 200; expect_ct application/manifest+json
+expect_status /llms.txt 200; expect_ct "text/plain; charset=utf-8"
+expect_status /docs/llms-full.txt 200; expect_ct "text/plain; charset=utf-8"
+expect_status /docs/getting-started/first-drawer.md 200; expect_ct "text/markdown; charset=utf-8"
 expect_status /draco/draco_decoder.wasm 200; expect_ct application/wasm
 expect_status /storage-bridge.html 200; expect_header Cross-Origin-Resource-Policy cross-origin
 expect_status /version.json 200; expect_ct application/json; expect_header Cache-Control "no-store, max-age=0"

@@ -1,18 +1,20 @@
 /**
  * Post-build step: copy the user docs build (apps/docs/.vitepress/dist) into
- * dist/docs, then fail the build if the service worker precaches any of it,
+ * dist/docs, and its llms.txt files to the site root, where AI tools look
+ * for them. Then fail the build if the service worker precaches any of it,
  * or if the Vercel analytics script does not match the build mode.
  *
  * It has to run after `vite build`: that build empties dist/, and the service
  * worker's precache globs whatever dist/ holds while it runs. Docs present at
  * that point would download to every installed app.
  *
- * Usage: runs after `vite build` and `pnpm run docs:build` (see package.json "build").
+ * Usage: runs after `vite build`, `pnpm run docs:build` and `pnpm run docs:llms`
+ * (see package.json "build").
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { DOCS_PREFIX } from './contentRoutes';
+import { DOCS_PREFIX, ROOT_LLMS_FILES } from './contentRoutes';
 
 const ROOT = process.cwd();
 const DIST = path.join(ROOT, 'dist');
@@ -72,11 +74,21 @@ function main(): void {
   if (!fs.existsSync(swPath)) {
     throw new Error('copy-docs: dist/sw.js not found. Run vite build first.');
   }
+  for (const file of ROOT_LLMS_FILES) {
+    if (!fs.existsSync(path.join(DOCS_BUILD, file))) {
+      throw new Error(
+        `copy-docs: apps/docs/.vitepress/dist/${file} not found. Run docs:llms first.`
+      );
+    }
+  }
 
   const target = path.join(DIST, DOCS_PREFIX.slice(1));
   fs.rmSync(target, { recursive: true, force: true });
   fs.cpSync(DOCS_BUILD, target, { recursive: true });
   console.log(`✓ Copied the docs build to dist${DOCS_PREFIX}`);
+  for (const file of ROOT_LLMS_FILES)
+    fs.copyFileSync(path.join(DOCS_BUILD, file), path.join(DIST, file));
+  console.log(`✓ Copied ${ROOT_LLMS_FILES.join(' and ')} to the site root`);
   checkAnalyticsScript(target);
 
   const urls = precacheUrls(fs.readFileSync(swPath, 'utf8'));
