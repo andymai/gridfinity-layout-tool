@@ -1,0 +1,66 @@
+apps/docs/.vitepress/theme/askAi/render.ts
+  s_f8efc8defc13ab::t_e650107304933f 1-104
+  s_b2743fdc0522dd::t_dff95054015508 105-107
+apps/docs/.vitepress/theme/components/AskAiButton.vue
+  s_f8efc8defc13ab::t_4a2dbb958c6fbe 1-56
+apps/docs/.vitepress/theme/components/AskAiAnswer.vue
+  s_f8efc8defc13ab::t_51970b2cf878ba 14-16,33,90-92
+  s_f8efc8defc13ab::t_6efb362ee0aef4 102-106,115-119,262-277
+  s_f8efc8defc13ab::t_86f755aa550ad7 1-13,17-32,34-89,93-101,107-114,120-261,278-295
+apps/docs/.vitepress/theme/askAi/render.test.ts
+  s_f8efc8defc13ab::t_c724110967eed5 1-27,31-36,39-47,49-66
+  s_f8efc8defc13ab::t_dd411b978f972f 28-30,37-38,48
+apps/docs/.vitepress/theme/askAi/consent.test.ts
+  s_f8efc8defc13ab::t_79ed44a45365bc 1-29
+  s_b2743fdc0522dd::t_b6c654682f6725 30-47
+apps/docs/.vitepress/theme/components/AskAiPanel.vue
+  s_f8efc8defc13ab::t_d2f8f7baab6955 1-15,19,23-53,57-133,136-326,328-332
+  s_f8efc8defc13ab::t_51970b2cf878ba 16-18,20-22,54-56,134-135,327
+apps/docs/.vitepress/theme/askAi/stream.ts
+  s_f8efc8defc13ab::t_b4c825084ad8bd 8-9,14
+  s_f8efc8defc13ab::t_49158c9ec779e5 1-7,10-13,15-35
+apps/docs/.vitepress/theme/askAi/history.test.ts
+  s_f8efc8defc13ab::t_4a04852dc84e43 1-57
+  s_b2743fdc0522dd::t_c8eb9a085b6804 58-66
+apps/docs/.vitepress/theme/askAi/captures.data.ts
+  s_f8efc8defc13ab::t_28891150c6466e 1-28
+apps/docs/.vitepress/theme/askAi/useAskAi.ts
+  s_f8efc8defc13ab::t_5e057782b1ab53 1-250
+apps/docs/.vitepress/theme/askAi/consent.ts
+  s_f8efc8defc13ab::t_c062af70263982 1-34
+apps/docs/.vitepress/theme/index.ts
+  s_f8efc8defc13ab::t_51970b2cf878ba 1,5,13,16-18,60,63
+apps/docs/.vitepress/theme/askAi/stream.test.ts
+  s_f8efc8defc13ab::t_b4c825084ad8bd 22-36,47-49
+  s_f8efc8defc13ab::t_302c1e0c88f8ed 1-21,37-46,50-51
+apps/docs/package.json
+  s_f8efc8defc13ab::t_56b7699a4dede6 15-17
+apps/docs/.vitepress/theme/askAi/history.ts
+  s_f8efc8defc13ab::t_3a31fa734fa0be 1-85
+pnpm-lock.yaml
+  s_f8efc8defc13ab::t_939db636229350 363-366
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f5c6112ff37ed71b75b67a5767a9dc0f367146b5",
+  "prompts": {},
+  "sessions": {
+    "s_b2743fdc0522dd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c2755cce-c964-4000-9098-e9db8bc12e42",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
