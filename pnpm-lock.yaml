@@ -360,6 +360,10 @@ importers:
         version: 7.4.1
 
   apps/docs:
+    dependencies:
+      marked:
+        specifier: 18.1.3
+        version: 18.1.3
     devDependencies:
       '@vercel/analytics':
         specifier: 2.0.1
