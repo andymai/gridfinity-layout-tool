@@ -1,0 +1,112 @@
+api/lib/docsAsk/history.ts
+  s_f8efc8defc13ab::t_3a2bf807fdb157 55,82-84,102-107
+  s_f8efc8defc13ab::t_f88144a67ae0b1 1-54,56-81,85-101,108-151
+scripts/check-user-docs.ts
+  s_f8efc8defc13ab::t_ddb0e029237bc8 287-296,299,302,304-307,311,319-325
+api/lib/docsAsk/search.test.ts
+  s_f8efc8defc13ab::t_6d8bbbbd1e374b 1-14,16-66
+  s_f8efc8defc13ab::t_f8befdbf3572fc 15
+api/lib/docsAsk/drawerPlan.ts
+  s_f8efc8defc13ab::t_8ae4736c93a9a6 1-157
+package.json
+  s_f8efc8defc13ab::t_d7e46492b64d5a 141
+api/lib/docsAsk/prompt.ts
+  s_f8efc8defc13ab::t_a63149ff5579a8 27
+  s_f8efc8defc13ab::t_3a2bf807fdb157 1,26,28-29,58,62
+  s_f8efc8defc13ab::t_f6951cf0117138 2-25,30-57,59-61,63
+api/lib/docsAsk/spend.ts
+  s_f8efc8defc13ab::t_bbb9f21f8d49e1 1-59
+api/lib/docsAsk/corpus.ts
+  s_f8efc8defc13ab::t_1577c68d999d84 1-11,13-29
+  s_f8efc8defc13ab::t_5e37987d713383 12
+  s_f8efc8defc13ab::t_3a2bf807fdb157 30-33
+scripts/build-docs-llms.ts
+  s_f8efc8defc13ab::t_cee0b4e59c24d7 8,28,32,311-313,322-323
+  s_f8efc8defc13ab::t_2c8928d4e471c7 19-26,39-45,49,54-55,57,116-122,125,152-153,189,210-214,244-245
+api/lib/redisKeys.ts
+  s_f8efc8defc13ab::t_c7c6b70c4bb75a 18,117-118
+  s_f8efc8defc13ab::t_f803c3855c4b60 119-120
+api/lib/docsAsk/traces.ts
+  s_f8efc8defc13ab::t_4cffdcb84aedbe 1-100
+  s_f8efc8defc13ab::t_44e4deb0a79d5b 101-103
+  s_f8efc8defc13ab::t_8e853efefa7d06 104
+api/lib/docsAsk/spend.test.ts
+  s_f8efc8defc13ab::t_dd38a1d45c79c4 1-36
+  s_f8efc8defc13ab::t_d0f03f7f27bdd1 37-38
+api/lib/docsAsk/search.ts
+  s_f8efc8defc13ab::t_8f732ce251dcf7 1-35,39-81,84-110,147
+  s_f8efc8defc13ab::t_3caaae5d03715f 36-38,82-83,111-146
+api/lib/rateLimit.ts
+  s_f8efc8defc13ab::t_c7c6b70c4bb75a 35-37
+  s_f8efc8defc13ab::t_70ed65c17d8f3e 134-135
+scripts/docsAskCorpus.ts
+  s_f8efc8defc13ab::t_a3616b00e2cd45 1-7,9-13,16-43,45-60,70,72-115
+  s_f8efc8defc13ab::t_f2bdd5391eae9d 44,71
+  s_f8efc8defc13ab::t_3caaae5d03715f 8,14-15
+  s_f8efc8defc13ab::t_5e37987d713383 61-69
+api/lib/docsAsk/tools.test.ts
+  s_f8efc8defc13ab::t_657bdfced9039d 1-78,80-104
+  s_f8efc8defc13ab::t_169875042ef914 79
+api/lib/docsAsk/history.test.ts
+  s_f8efc8defc13ab::t_bfff8fce28d26f 1-121
+  s_f8efc8defc13ab::t_11e5d509bf8596 122-124
+  s_f8efc8defc13ab::t_a1bbeacf29f981 125-138
+api/lib/docsAsk/agent.test.ts
+  s_f8efc8defc13ab::t_a38e64b6c2c7ee 1-36,38-42,44-54,56-59,61-92,94-147,150-163,165-167,169-172,174-200,202-214
+  s_f8efc8defc13ab::t_80b090d3f848c4 37
+  s_f8efc8defc13ab::t_5a0c8f40944b29 43
+  s_f8efc8defc13ab::t_9cbf5e4b21206e 55
+  s_f8efc8defc13ab::t_ffa78d5df3d3fe 60
+  s_f8efc8defc13ab::t_063426136c06b3 93
+  s_f8efc8defc13ab::t_97531cff511294 148-149
+  s_f8efc8defc13ab::t_4d28827501ec5b 164
+  s_f8efc8defc13ab::t_436b3f75f9ed4f 168
+  s_f8efc8defc13ab::t_fe31df24f58f40 173
+  s_f8efc8defc13ab::t_6f246484b9e355 201
+api/lib/docsAsk/source.ts
+  s_f8efc8defc13ab::t_9cd834f8804395 1-13,16-53,55-57,61-81
+  s_f8efc8defc13ab::t_3a2bf807fdb157 14-15,54,58-60
+api/docs-ask.test.ts
+  s_f8efc8defc13ab::t_e9c6f3f7502254 1-131
+vercel.json
+  s_f8efc8defc13ab::t_f7e77ad597d1c6 29-34
+api/lib/docsAsk/source.test.ts
+  s_f8efc8defc13ab::t_6b059084869f0e 1-56
+api/lib/docsAsk/tools.ts
+  s_f8efc8defc13ab::t_f69ca5304957a0 128-131,154-169,172,175,181-185,191,196-201,218-223
+  s_f8efc8defc13ab::t_3a2bf807fdb157 3,7,36-38,97,101,179,210
+  s_f8efc8defc13ab::t_169875042ef914 141-144
+  s_f8efc8defc13ab::t_1d7720c25c70d1 1-2,4-6,8-35,39-96,98-100,102-127,132-140,145-153,170-171,173-174,176-178,180,186-190,192-195,202-209,211-217,224-231
+api/README.md
+  s_f8efc8defc13ab::t_b7bc82320df958 50-52,85-89
+  s_f8efc8defc13ab::t_99b7d9545f5370 90
+api/lib/docsAsk/agent.ts
+  s_f8efc8defc13ab::t_0cc94f4995407e 1-57,59-99,105-113,121-154,157-219
+  s_f8efc8defc13ab::t_3a2bf807fdb157 58,100-104,114-120,155-156
+scripts/docsAskCorpus.test.ts
+  s_f8efc8defc13ab::t_4f6480fdbd8de1 1-99
+api/docs-ask.ts
+  s_f8efc8defc13ab::t_a63149ff5579a8 70-73
+  s_f8efc8defc13ab::t_91bec98078622f 1-5,12-18,26-39,43-69,74-76,79-85,95,97-131,139-166,173-177,181-184
+  s_f8efc8defc13ab::t_f69ca5304957a0 6-11,19-25,40-42,77-78,86-94,96,132-138,167-172,178-180
+pnpm-lock.yaml
+  s_f8efc8defc13ab::t_012526c6b00583 72-74,354,381,391-399,1602-1605,4584-4587,5537-5539,5758-5760,6389-6396,7666-7667,8436,8931,8962,10449-10453,11462-11466,11698-11699,12033,12035,12053
+api/lib/docsAsk/drawerPlan.crossBoundary.test.ts
+  s_f8efc8defc13ab::t_c8951349e5fbb6 1-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d35db633517d75e2aba77c8f422f80efb0f967f4",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
