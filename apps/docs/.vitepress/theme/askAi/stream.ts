@@ -3,7 +3,6 @@ export interface StreamEvent {
   readonly data: unknown;
 }
 
-/** Splits a server-sent event stream into its events, each with its data parsed as JSON. */
 export async function* readEvents(body: ReadableStream<Uint8Array>): AsyncGenerator<StreamEvent> {
   const reader = body.getReader();
   const decoder = new TextDecoder();

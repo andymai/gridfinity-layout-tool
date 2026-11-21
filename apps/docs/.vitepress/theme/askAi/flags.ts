@@ -3,7 +3,6 @@
 /** Until launch, Ask AI shows only after a visit with ?ask=1 in the URL. */
 export const ASK_AI_PUBLIC = false;
 export const PREVIEW_KEY = 'gridfinity-docs:ask-ai-preview';
-/** From this width the panel docks beside the page; below it, it opens full screen. */
 export const DOCK_QUERY = '(min-width: 80rem)';
 export const DOCKED_CLASS = 'ask-ai-docked';
 

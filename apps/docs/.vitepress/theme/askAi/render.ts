@@ -7,7 +7,6 @@ const SITE = 'https://gridfinitylayouttool.com';
 const MAX_CAPTURES = 2;
 const CAPTURE_LINE = /^\s*\[\[capture:([A-Za-z0-9._-]+)\]\]\s*$/;
 const CHIP = /\[\[ui:([^\]]+)\]\]/g;
-// A marker that the stream has not finished yet, at the very end of the text.
 const OPEN_MARKER = /\[\[[^\]]*\]?$/;
 
 function escapeHtml(text: string): string {
