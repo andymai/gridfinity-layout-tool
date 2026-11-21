@@ -1,0 +1,31 @@
+api/lib/docsAsk/history.test.ts
+  s_f8efc8defc13ab::t_d2106941640816 192-204
+api/lib/docsAsk/agent.ts
+  s_f8efc8defc13ab::t_24bd45ec9ec3ac 116-132,148,165
+api/lib/docsAsk/history.ts
+  s_f8efc8defc13ab::t_f502ec6cdc0078 57-58,67
+api/docs-ask.ts
+  s_f8efc8defc13ab::t_f502ec6cdc0078 122,163-166,216
+api/lib/docsAsk/agent.test.ts
+  s_f8efc8defc13ab::t_d2106941640816 247-251,268
+api/docs-ask.test.ts
+  s_f8efc8defc13ab::t_d2106941640816 129-130,135-139
+api/lib/docsAsk/tools.ts
+  s_f8efc8defc13ab::t_f502ec6cdc0078 122-124
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8831f39e86eaabee4fd887b2d422d5c88cbbdab1",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
