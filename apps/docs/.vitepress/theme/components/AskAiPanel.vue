@@ -18,6 +18,7 @@ const router = useRouter();
 const draft = ref('');
 const input = ref<HTMLTextAreaElement | null>(null);
 const scroller = ref<HTMLElement | null>(null);
+const panel = ref<HTMLElement | null>(null);
 
 const pageLink = computed(() => `/${page.value.relativePath.replace(/\.md$/, '')}`);
 const starters = computed<string[]>(() => {
@@ -45,10 +46,35 @@ function onKeydown(event: KeyboardEvent): void {
   }
 }
 
+const FOCUSABLE =
+  'a[href], button:not([disabled]), textarea, summary, [tabindex]:not([tabindex="-1"])';
+
+// Inert keeps Tab out of the page, not out of the panel into the browser's
+// own controls. Focus on <body>, after a click on plain text, counts as
+// outside the panel.
+function wrapTab(event: KeyboardEvent): void {
+  const items = [...(panel.value?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])].filter(
+    (el) => el.getClientRects().length > 0
+  );
+  const first = items[0];
+  const last = items.at(-1);
+  if (!first || !last) return;
+  const at = document.activeElement;
+  const outside = !panel.value?.contains(at);
+  if (event.shiftKey && (at === first || outside)) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && (at === last || outside)) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
 function onGlobalKey(event: KeyboardEvent): void {
-  // Escape in a capture's zoom dialog closes the dialog, not the chat.
-  if (event.key !== 'Escape' || !covering.value || document.querySelector('dialog[open]')) return;
-  void closeAskAi();
+  // A capture's zoom dialog handles its own Escape and Tab.
+  if (!covering.value || document.querySelector('dialog[open]')) return;
+  if (event.key === 'Escape') void closeAskAi();
+  else if (event.key === 'Tab') wrapTab(event);
 }
 
 // The panel is teleported to <body>, outside VitePress's #app, so the page
@@ -127,6 +153,7 @@ onBeforeUnmount(() => {
     <aside
       v-show="askAi.docked || askAi.open"
       id="ask-ai-panel"
+      ref="panel"
       class="ask-ai-panel"
       :class="{ docked: askAi.docked }"
       :role="covering ? 'dialog' : undefined"

@@ -147,7 +147,6 @@ export function setOpen(open: boolean): void {
   if (askAi.open) askAi.opened = true;
 }
 
-/** Closes the full-screen view and gives focus back to the button that opened it. */
 export async function closeAskAi(): Promise<void> {
   setOpen(false);
   // The page stays inert until the panel's watcher runs, and an inert button
@@ -169,7 +168,6 @@ function onShortcut(event: KeyboardEvent): void {
   }
 }
 
-/** The page-wide parts of Ask AI: the availability check, the dock and the shortcut. */
 export function useAskAiHost(): void {
   let dock: MediaQueryList | null = null;
   const onDockChange = (): void => {

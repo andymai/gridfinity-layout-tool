@@ -19,7 +19,6 @@ function escapeHtml(text: string): string {
     .replace(/'/g, '&#39;');
 }
 
-/** A docs page on this site as a path that the router can open, or null. */
 export function docsPath(href: string): string | null {
   const local = href.startsWith(SITE) ? href.slice(SITE.length) : href;
   return /^\/docs(?:[/?#]|$)/.test(local) ? local : null;
@@ -114,7 +113,6 @@ export function answerSegments(
   return segments;
 }
 
-/** The answer as plain text for the clipboard. */
 export function plainAnswer(text: string): string {
   return text
     .split('\n')
