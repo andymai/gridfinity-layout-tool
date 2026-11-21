@@ -14,6 +14,7 @@ import { cutoutDepthShortfall } from '../panel/CutoutsSection/cutoutDepthShortfa
 import { CutoutScoopControls } from './CutoutScoopControls';
 import { FingerAccessControls } from './FingerAccessControls';
 import { CutoutSplitControls, type SplitTool } from './CutoutSplitControls';
+import { CutoutPointControls, type PointTool } from './CutoutPointControls';
 import { fingerBottom } from '@/shared/utils/fingerAccess';
 import { CutoutDepthControl } from '../panel/CutoutsSection/CutoutDepthControl';
 import { isThroughCut } from '@/shared/utils/cutoutDepth';
@@ -78,6 +79,7 @@ interface SingleCutoutInspectorProps {
   readonly onAddFingerAccess?: (id: string) => void;
   /** Absent where pockets cannot be split, as on a lid. */
   readonly splitTool?: SplitTool;
+  readonly pointTool?: PointTool;
   readonly disabled: boolean;
 }
 
@@ -93,6 +95,7 @@ export function SingleCutoutInspector({
   onFlattenArray,
   onAddFingerAccess,
   splitTool,
+  pointTool,
   disabled,
 }: SingleCutoutInspectorProps) {
   const t = useTranslation();
@@ -330,7 +333,10 @@ export function SingleCutoutInspector({
       )}
 
       {cutout.shape === 'path' && (
-        <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
+        <div className="-mx-4 space-y-2 border-b border-stroke-subtle px-4 pt-2 pb-3">
+          {pointTool && (
+            <CutoutPointControls cutoutId={cutout.id} tool={pointTool} disabled={disabled} />
+          )}
           <CutoutOutlineSection
             key={cutout.id}
             cutout={cutout}

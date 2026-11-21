@@ -127,7 +127,7 @@ export function useCutoutEditor() {
     setMode,
     selection,
     selectCutout,
-    selectIndividual,
+    openCutout,
     selectIds,
     deselectAll,
     selectAll,
@@ -149,6 +149,7 @@ export function useCutoutEditor() {
     enterVertexEditing,
     handleVertexPointDown,
     handleVertexHandleDown,
+    handleVertexTransformDown,
     handleVertexBackgroundDown,
     snapEnabled,
     setSnapEnabled,
@@ -221,9 +222,10 @@ export function useCutoutEditor() {
         return;
       }
 
-      // Vertex editing: try segment hit-test for point insertion, deselect on miss
+      // Vertex editing: an edge press adds a point or pulls the edge, a miss
+      // draws a marquee over the points
       if (mode.type === 'vertex-editing') {
-        handleVertexBackgroundDown(worldX, worldY);
+        handleVertexBackgroundDown(worldX, worldY, nativeEvent.shiftKey);
         return;
       }
 
@@ -325,19 +327,6 @@ export function useCutoutEditor() {
     mode.type === 'group-rotating' ||
     mode.type === 'group-scaling';
 
-  /** Double-click handler: enter vertex editing for path shapes, otherwise select individual. */
-  const handleDoubleClick = useCallback(
-    (id: string) => {
-      const cutout = cutouts.find((c) => c.id === id);
-      if (cutout?.shape === 'path') {
-        enterVertexEditing(id);
-      } else {
-        selectIndividual(id);
-      }
-    },
-    [cutouts, enterVertexEditing, selectIndividual]
-  );
-
   const selectedCutout =
     selection.size === 1 ? (cutouts.find((c) => selection.has(c.id)) ?? null) : null;
   const selectedIds = [...selection];
@@ -383,6 +372,13 @@ export function useCutoutEditor() {
 
     if (hasSelection && selection.size === 1) {
       const cutout = cutouts.find((c) => selection.has(c.id));
+      if (cutout?.shape === 'path') {
+        actions.push({
+          label: t('binDesigner.cutouts.points.edit'),
+          onClick: () => enterVertexEditing(cutout.id),
+          shortcut: { keys: 'Enter' },
+        });
+      }
       if (cutout) {
         actions.push({
           label: t('binDesigner.cutouts.rotate90'),
@@ -486,6 +482,7 @@ export function useCutoutEditor() {
     binDepth,
     lockCutouts,
     unlockCutouts,
+    enterVertexEditing,
     t,
   ]);
 
@@ -530,6 +527,7 @@ export function useCutoutEditor() {
     segmentHover,
     handleVertexPointDown,
     handleVertexHandleDown,
+    handleVertexTransformDown,
     snapEnabled,
     setSnapEnabled,
     activeGuides,
@@ -547,7 +545,7 @@ export function useCutoutEditor() {
     handleCanvasPointerUp,
     handleContextMenu,
     isInteracting,
-    handleDoubleClick,
+    handleDoubleClick: openCutout,
     selectedCutout,
     selectedIds,
     contextMenuActions,

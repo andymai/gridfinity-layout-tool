@@ -46,6 +46,7 @@ import { ShadowBoardButton } from './ShadowBoardButton';
 import { AlignControls } from './AlignControls';
 import { RepeatSuggestion } from './RepeatSuggestion';
 import type { SplitTool } from './CutoutSplitControls';
+import type { PointTool } from './CutoutPointControls';
 import { useRepeatSuggestion } from '@/features/bin-designer/hooks/useRepeatSuggestion';
 
 /** Matches the per-cutout minimum the single-cutout inspector enforces. */
@@ -80,6 +81,8 @@ interface InspectorContentProps {
   readonly onFlattenArray?: (id: string) => void;
   readonly onAddFingerAccess?: (id: string) => void;
   readonly splitTool?: SplitTool;
+  /** Opens a path's points on the board; absent where the board has no point editing. */
+  readonly pointTool?: PointTool;
   /** Bakes a repeated group into one independent group per copy. */
   readonly onFlattenGroupArray?: (id: string) => void;
   readonly board?: BoardSettings;
@@ -191,6 +194,7 @@ export function InspectorContent({
   onFlattenArray,
   onAddFingerAccess,
   splitTool,
+  pointTool,
   onFlattenGroupArray,
   board,
   offBoardCount = 0,
@@ -404,6 +408,7 @@ export function InspectorContent({
           onFlattenArray={onFlattenArray}
           onAddFingerAccess={onAddFingerAccess}
           splitTool={splitTool}
+          pointTool={pointTool}
           disabled={disabled}
         />
       )}

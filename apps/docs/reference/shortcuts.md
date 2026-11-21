@@ -164,19 +164,25 @@ The <Ui k="binDesigner.cutoutEditor.title" /> has its own keys. Some letters do 
 
 ### Cutout editor: paths and the mouse
 
-| Windows and Linux                                   | macOS                                 | Action                                 |
-| --------------------------------------------------- | ------------------------------------- | -------------------------------------- |
-| <kbd>Ctrl</kbd>+<kbd>Z</kbd> while you draw a path  | <kbd>Cmd</kbd>+<kbd>Z</kbd>           | Remove the last point                  |
-| <kbd>Escape</kbd> while you draw a path             | Same                                  | Cancel the path                        |
-| <kbd>Delete</kbd> while you edit points             | Same                                  | Delete the selected point              |
-| <kbd>Escape</kbd> while you edit points             | Same                                  | Stop the point edit                    |
-| <kbd>Alt</kbd>+drag a curve handle                  | <kbd>Option</kbd>+drag a curve handle | Move one handle without the other      |
-| <kbd>Shift</kbd>+drag on an empty part of the board | Same                                  | Measure a distance                     |
-| Hold <kbd>Shift</kbd> while you draw a shape        | Same                                  | Keep the width and the depth equal     |
-| Hold <kbd>Alt</kbd> while you draw a shape          | Hold <kbd>Option</kbd>                | Draw out from the center               |
-| Hold <kbd>Shift</kbd> while you drag                | Same                                  | Move along one axis only               |
-| Hold <kbd>Shift</kbd> while you rotate              | Same                                  | Turn in 15 degree steps                |
-| <kbd>Alt</kbd>+drag a cutout                        | <kbd>Option</kbd>+drag a cutout       | Duplicate the cutout and move the copy |
+| Windows and Linux                                    | macOS                                 | Action                                           |
+| ---------------------------------------------------- | ------------------------------------- | ------------------------------------------------ |
+| <kbd>Ctrl</kbd>+<kbd>Z</kbd> while you draw a path   | <kbd>Cmd</kbd>+<kbd>Z</kbd>           | Remove the last point                            |
+| <kbd>Escape</kbd> while you draw a path              | Same                                  | Cancel the path                                  |
+| <kbd>Enter</kbd> with one path selected              | Same                                  | Edit its points                                  |
+| <kbd>Delete</kbd> while you edit points              | Same                                  | Delete the selected points                       |
+| <kbd>Escape</kbd> while you edit points              | Same                                  | Stop the point edit                              |
+| <kbd>Shift</kbd>+click a point while you edit points | Same                                  | Add it to the selection, or take it out          |
+| Drag on an empty part while you edit points          | Same                                  | Select the points in the box                     |
+| Arrow keys while you edit points                     | Same                                  | Move the selected points 0.5 mm                  |
+| <kbd>Shift</kbd>+arrow keys while you edit points    | Same                                  | Move the selected points 5 mm                    |
+| <kbd>[</kbd> or <kbd>]</kbd> while you edit points   | Same                                  | Make the reach of an edge pull smaller or larger |
+| <kbd>Alt</kbd>+drag a curve handle                   | <kbd>Option</kbd>+drag a curve handle | Move one handle without the other                |
+| <kbd>Shift</kbd>+drag on an empty part of the board  | Same                                  | Measure a distance                               |
+| Hold <kbd>Shift</kbd> while you draw a shape         | Same                                  | Keep the width and the depth equal               |
+| Hold <kbd>Alt</kbd> while you draw a shape           | Hold <kbd>Option</kbd>                | Draw out from the center                         |
+| Hold <kbd>Shift</kbd> while you drag                 | Same                                  | Move along one axis only                         |
+| Hold <kbd>Shift</kbd> while you rotate               | Same                                  | Turn in 15 degree steps                          |
+| <kbd>Alt</kbd>+drag a cutout                         | <kbd>Option</kbd>+drag a cutout       | Duplicate the cutout and move the copy           |
 
 ### Bento canvas
 

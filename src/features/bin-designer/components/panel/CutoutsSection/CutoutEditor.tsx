@@ -63,6 +63,7 @@ export function CutoutEditor() {
     segmentHover,
     handleVertexPointDown,
     handleVertexHandleDown,
+    handleVertexTransformDown,
     snapEnabled,
     setSnapEnabled,
     activeGuides,
@@ -170,6 +171,7 @@ export function CutoutEditor() {
           onPathDrawingVertexDown={onPathDrawingVertexDown}
           onVertexPointDown={handleVertexPointDown}
           onVertexHandleDown={handleVertexHandleDown}
+          onVertexTransformDown={handleVertexTransformDown}
           rulerMeasurement={rulerMeasurement}
           rulerZoomRef={rulerZoomRef}
         />

@@ -17,8 +17,7 @@ import type { Cutout } from '@/features/bin-designer/types';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { unitTag, unitTagShapeId } from '@/features/bin-designer/utils/cutoutHierarchy';
 import { toArrangeUnits, type ArrangeUnit } from './cutoutGroups';
-import type { Bounds } from './geometryCore';
-import { getCutoutBounds } from './maskFit';
+import { getRotatedBounds, type Bounds } from './geometryCore';
 import { minAreaTurn } from './minAreaTurn';
 
 export interface AutoArrangeOptions {
@@ -65,7 +64,7 @@ function packed(
   if (!turn) {
     return {
       unit,
-      bounds: expandCutoutArray(only).length === 1 ? getCutoutBounds(only) : unit.bounds,
+      bounds: expandCutoutArray(only).length === 1 ? getRotatedBounds(only) : unit.bounds,
     };
   }
   const best = minAreaTurn(only);
@@ -76,7 +75,7 @@ function packed(
   for (const rotation of [best, best + 90]) {
     // Measured the way the board measures it, so the packed shape never reads
     // as off it, and arranging again finds the same room.
-    const bounds = getCutoutBounds({ ...only, rotation });
+    const bounds = getRotatedBounds({ ...only, rotation });
     if (bounds.maxX - bounds.minX > room.w + 1e-6 || bounds.maxY - bounds.minY > room.d + 1e-6) {
       continue;
     }
@@ -84,7 +83,7 @@ function packed(
     // stays; a path turns about its own centre, so the box is measured again
     // where the kept angle puts it.
     const gap180 = Math.abs(storedAngle(rotation - only.rotation) % 180);
-    if (Math.min(gap180, 180 - gap180) < 1e-3) return { unit, bounds: getCutoutBounds(only) };
+    if (Math.min(gap180, 180 - gap180) < 1e-3) return { unit, bounds: getRotatedBounds(only) };
     return { unit, bounds, rotation: storedAngle(rotation) };
   }
   return { unit, bounds: unit.bounds };

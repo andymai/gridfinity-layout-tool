@@ -20,12 +20,16 @@ import {
   rotatePoint,
   getRotatedBounds,
   clampRotationToBounds,
+  boardPositionRange,
   flipCutoutHorizontal,
   flipCutoutVertical,
   flipSelectionHorizontal,
   flipSelectionVertical,
 } from './geometry';
-import { rectFitsInMask, cutoutFitsInMask, getCutoutBounds } from './maskFit';
+import { rectFitsInMask, cutoutFitsInMask } from './maskFit';
+import { translateCutoutPreview } from './cutoutHelpers';
+import { getCutoutOutline } from './cutoutOutline';
+import { pointsBounds } from '@/shared/utils/pointsBounds';
 import type { CellMask } from '@/shared/utils/cellMask';
 
 const createCutout = (overrides: Partial<Cutout> = {}): Cutout => ({
@@ -43,7 +47,53 @@ const createCutout = (overrides: Partial<Cutout> = {}): Cutout => ({
   ...overrides,
 });
 
+/** The outline's own box, measured independently of `getRotatedBounds`. */
+function outlineBounds(cutout: Cutout) {
+  return pointsBounds((getCutoutOutline(cutout) ?? []).flat());
+}
+
+/** A corner-only path cutout whose stored box is the points' own box. */
+function pathCutout(points: readonly (readonly number[])[], rotation = 0): Cutout {
+  const path: PathPoint[] = points.map(([x, y]) => ({
+    x,
+    y,
+    handleIn: null,
+    handleOut: null,
+    symmetric: false,
+  }));
+  const xs = path.map((p) => p.x);
+  const ys = path.map((p) => p.y);
+  return createCutout({
+    shape: 'path',
+    path,
+    rotation,
+    x: Math.min(...xs),
+    y: Math.min(...ys),
+    width: Math.max(...xs) - Math.min(...xs),
+    depth: Math.max(...ys) - Math.min(...ys),
+  });
+}
+
 describe('geometry', () => {
+  describe('boardPositionRange', () => {
+    it('puts a turned path whose outline sits off its box centre flush on each wall', () => {
+      const tri = pathCutout(
+        [
+          [10, 10],
+          [40, 10],
+          [10, 20],
+        ],
+        30
+      );
+      const range = boardPositionRange(tri, 100, 80);
+      const at = (x: number, y: number) => outlineBounds(translateCutoutPreview(tri, { x, y }));
+      expect(at(range.minX, range.minY).minX).toBeCloseTo(0, 9);
+      expect(at(range.minX, range.minY).minY).toBeCloseTo(0, 9);
+      expect(at(range.maxX, range.maxY).maxX).toBeCloseTo(100, 9);
+      expect(at(range.maxX, range.maxY).maxY).toBeCloseTo(80, 9);
+    });
+  });
+
   describe('getEffectiveBounds', () => {
     it('returns correct bounds for rectangle', () => {
       const cutout = createCutout({ x: 5, y: 10, width: 20, depth: 15 });
@@ -747,6 +797,23 @@ describe('geometry', () => {
       expect(result).toBeGreaterThanOrEqual(0);
     });
 
+    it('lets a diagonal trace turn straight when the straight tool fits', () => {
+      // A 100 × 10 bar traced at 45°: its stored box is a 77.8 mm square, and
+      // that square turned 45° is 110 mm tall, taller than the 80 mm board.
+      const bar = pathCutout(
+        [
+          [-50, -5],
+          [50, -5],
+          [50, 5],
+          [-50, 5],
+        ].map(([along, across]) => [
+          60 + (along - across) * Math.SQRT1_2,
+          40 + (along + across) * Math.SQRT1_2,
+        ])
+      );
+      expect(clampRotationToBounds(bar, 45, 120, 80)).toBe(45);
+    });
+
     it('returns current rotation when no rotation fits', () => {
       // Cutout that barely fits at 0° — any rotation would overflow
       const cutout = createCutout({ x: 0, y: 0, width: 100, depth: 50, rotation: 0 });
@@ -1181,7 +1248,7 @@ describe('geometry', () => {
     });
   });
 
-  describe('getCutoutBounds', () => {
+  describe('getRotatedBounds of a path', () => {
     it('measures a rotated path clockwise, matching the renderer', () => {
       // Asymmetric right triangle, vertex bounds [0..20]x[0..10], center (10,5).
       // Stored rotation is clockwise-positive, so at 45° the wide leg swings
@@ -1196,7 +1263,7 @@ describe('geometry', () => {
           { x: 0, y: 10, handleIn: null, handleOut: null, symmetric: false },
         ],
       });
-      const b = getCutoutBounds(tri);
+      const b = getRotatedBounds(tri);
       const s = Math.SQRT1_2;
       expect(b.maxX).toBeCloseTo(10 + 5 * s, 4);
       expect(b.maxY).toBeCloseTo(5 + 15 * s, 4);

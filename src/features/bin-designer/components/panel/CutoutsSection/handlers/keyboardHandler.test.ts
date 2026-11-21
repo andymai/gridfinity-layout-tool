@@ -644,3 +644,28 @@ describe('handleCutoutKeyDown — import shortcuts', () => {
     expect(onImportStl).not.toHaveBeenCalled();
   });
 });
+
+describe('handleCutoutKeyDown — Enter', () => {
+  const enter = () =>
+    ({ key: 'Enter', preventDefault: vi.fn(), target: document.body }) as unknown as KeyboardEvent;
+
+  it('opens the points of the one selected path', () => {
+    const path = makeCutout({ id: 'p', shape: 'path' });
+    const ctx = makeCtx({ selection: new Set(['p']), cutouts: [path] });
+    handleCutoutKeyDown(enter(), ctx);
+    expect(ctx.setMode).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'vertex-editing', cutoutId: 'p', selectedPointIndex: null })
+    );
+  });
+
+  it('does nothing for a shape with no points, or for several shapes', () => {
+    const path = makeCutout({ id: 'p', shape: 'path' });
+    const rect = makeCutout({ id: 'r' });
+    const single = makeCtx({ selection: new Set(['r']), cutouts: [rect] });
+    handleCutoutKeyDown(enter(), single);
+    const both = makeCtx({ selection: new Set(['p', 'r']), cutouts: [path, rect] });
+    handleCutoutKeyDown(enter(), both);
+    expect(single.setMode).not.toHaveBeenCalled();
+    expect(both.setMode).not.toHaveBeenCalled();
+  });
+});

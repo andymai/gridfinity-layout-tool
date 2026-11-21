@@ -299,7 +299,13 @@ describe('distributeSelection', () => {
   });
 
   it('translates path points when distributing', () => {
-    const path = [{ x: 10, y: 0, handleIn: null, handleOut: null, symmetric: false }];
+    // A square path filling its 10 mm box, as every stored path does.
+    const path = [
+      [10, 0],
+      [20, 0],
+      [20, 10],
+      [10, 10],
+    ].map(([x, y]) => ({ x, y, handleIn: null, handleOut: null, symmetric: false }));
     const cutouts = [
       cutout({ id: 'a', x: 0 }),
       cutout({ id: 'b', shape: 'path', x: 10, path }),

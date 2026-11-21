@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Cutout, PathPoint } from '@/features/bin-designer/types';
-import { getCutoutBounds } from './maskFit';
+import { getRotatedBounds } from './geometryCore';
 import { convexHull, minAreaTurn } from './minAreaTurn';
 
 const corner = (x: number, y: number): PathPoint => ({
@@ -53,7 +53,7 @@ function tiltedBar(): Cutout {
 }
 
 const size = (c: Cutout, rotation: number) => {
-  const b = getCutoutBounds({ ...c, rotation });
+  const b = getRotatedBounds({ ...c, rotation });
   return { w: b.maxX - b.minX, d: b.maxY - b.minY };
 };
 

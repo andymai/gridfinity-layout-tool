@@ -31,10 +31,10 @@ import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { translateCutout } from './cutoutHelpers';
 import { translatePathPoints } from './pathGeometry';
 import { mapPathRings } from '@/features/bin-designer/utils/pathTransforms';
-import { getCutoutBounds, cutoutFitsInMask, type MaskCellSize } from './maskFit';
+import { cutoutFitsInMask, type MaskCellSize } from './maskFit';
 import { cutoutFitsInLidWindow, lidWindowOffset } from './lidWindowFit';
 import { MIN_CUTOUT_SIZE } from './geometryResize';
-import type { Bounds } from './geometryCore';
+import { getRotatedBounds, type Bounds } from './geometryCore';
 
 /**
  * The area a cutout may occupy.
@@ -91,7 +91,7 @@ function instanceFits(inst: Cutout, board: CutoutBoard): boolean {
   if (board.mask && board.cellSize) {
     return cutoutFitsInMask(inst, board.mask, board.cellSize, board.meshAssets);
   }
-  return !boundsOutsideRect(getCutoutBounds(inst), board.width, board.depth);
+  return !boundsOutsideRect(getRotatedBounds(inst), board.width, board.depth);
 }
 
 /** True when any instance of the cutout falls outside the board. */
@@ -136,14 +136,14 @@ function shrinkToFitRect(
   binDepth: number
 ): Pick<Cutout, 'width' | 'depth'> | null {
   if (cutout.shape === 'path' || cutout.shape === 'mesh' || cutout.shape === 'text') return null;
-  const own = getCutoutBounds(cutout);
+  const own = getRotatedBounds(cutout);
   const ownW = own.maxX - own.minX;
   const ownD = own.maxY - own.minY;
   let availX = binWidth;
   let availY = binDepth;
   const instances = expandCutoutArray(cutout);
   if (instances.length > 1) {
-    const u = unionBounds(instances.map(getCutoutBounds));
+    const u = unionBounds(instances.map(getRotatedBounds));
     availX -= u.maxX - u.minX - ownW;
     availY -= u.maxY - u.minY - ownD;
   }
@@ -166,7 +166,7 @@ function shrinkToFitRect(
   }
   width = Math.max(MIN_CUTOUT_SIZE, width);
   depth = Math.max(MIN_CUTOUT_SIZE, depth);
-  const shrunk = getCutoutBounds({ ...cutout, width, depth });
+  const shrunk = getRotatedBounds({ ...cutout, width, depth });
   if (
     shrunk.maxX - shrunk.minX > availX + EPSILON ||
     shrunk.maxY - shrunk.minY > availY + EPSILON
@@ -198,7 +198,7 @@ function maskOffset(
   cellSize: MaskCellSize,
   meshAssets: Readonly<Record<string, MeshAssetEntry>> | undefined
 ): { dx: number; dy: number } | null {
-  const u = unionBounds(instances.map(getCutoutBounds));
+  const u = unionBounds(instances.map(getRotatedBounds));
   let best: { dx: number; dy: number } | null = null;
   let bestDist = Infinity;
   // Min-corner candidates only need cells [0, cols)×[0, rows): aligning the
@@ -242,7 +242,7 @@ export function clampCutoutToBoard(cutout: Cutout, board: CutoutBoard): Partial<
   } else if (board.mask && board.cellSize) {
     offset = maskOffset(instances, board.mask, board.cellSize, board.meshAssets);
   } else {
-    offset = rectOffset(instances.map(getCutoutBounds), board.width, board.depth);
+    offset = rectOffset(instances.map(getRotatedBounds), board.width, board.depth);
   }
   if (!offset) return resized;
   const { dx, dy } = offset;
@@ -285,7 +285,7 @@ export function centerOffBoardCutouts(
   let group: Bounds | null = null;
   for (const c of strays) {
     for (const inst of expandCutoutArray(c)) {
-      const b = getCutoutBounds(inst);
+      const b = getRotatedBounds(inst);
       group = group
         ? {
             minX: Math.min(group.minX, b.minX),

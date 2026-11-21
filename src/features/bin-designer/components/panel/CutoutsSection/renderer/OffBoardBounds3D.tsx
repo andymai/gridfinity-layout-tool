@@ -1,7 +1,7 @@
 /**
  * Red frame around an off-board cutout footprint (e.g. after the bin was
  * shrunk). Pure presentational — the caller supplies the bounds (computed with
- * the same getCutoutBounds detection uses), so this stays free of shape, array,
+ * the same getRotatedBounds detection uses), so this stays free of shape, array,
  * and mask logic. World coordinates: mm, Y-up.
  */
 

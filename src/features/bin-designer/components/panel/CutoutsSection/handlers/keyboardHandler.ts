@@ -10,8 +10,10 @@ import { rotatePoint, flipSelectionHorizontal, flipSelectionVertical } from '../
 import { selectionVisualBounds } from '../cutoutGroups';
 import { unitTag } from '@/features/bin-designer/utils/cutoutHierarchy';
 import type { InteractionMode } from '../useCutoutInteraction';
-import { handleVertexEditKeyDown } from './pathEditHandler';
+import { handleVertexEditKeyDown } from './vertexEditKeys';
+import { vertexEditingMode } from './pathEditHandler';
 import type { VertexEditMode, SegmentHoverInfo } from './pathEditHandler';
+import { loadFalloffMm } from './falloffRadiusStorage';
 import type { PathDrawingPreviewState } from './pathDrawingHandler';
 
 const NUDGE_AMOUNT = 0.5;
@@ -163,6 +165,17 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
         ctx.deleteSelected();
       }
       break;
+
+    case 'Enter': {
+      // Enter opens a selected path's points, as in vector editors.
+      const only =
+        ctx.selection.size === 1 ? ctx.cutouts.find((c) => ctx.selection.has(c.id)) : undefined;
+      if (!mod && ctx.mode.type === 'idle' && only?.shape === 'path') {
+        e.preventDefault();
+        ctx.setMode(vertexEditingMode(only.id, loadFalloffMm()));
+      }
+      break;
+    }
 
     case 'Escape':
       e.preventDefault();

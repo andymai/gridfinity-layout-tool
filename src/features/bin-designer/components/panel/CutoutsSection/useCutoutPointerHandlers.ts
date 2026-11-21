@@ -202,6 +202,7 @@ export function useCutoutPointerHandlers(
             handleVertexEditPointerMove(mode, event, editCutout, bounds, snap, {
               setPreview,
               setSegmentHover,
+              setMode,
             });
           }
           break;

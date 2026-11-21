@@ -375,7 +375,17 @@ export function fitRing(ring: readonly Pt[], options: FitOptions): PathPoint[] {
   return toPathPoints(at[0], steps);
 }
 
-function toPathPoints(start: Pt, steps: readonly Step[]): PathPoint[] {
+/**
+ * An open run fitted as curves from its first point to its last, which stay
+ * where they are. The first point carries the run's outgoing handle and the
+ * last its incoming one, for a caller that splices the run into a ring.
+ */
+export function fitRun(run: readonly Pt[], tolerance: number): PathPoint[] {
+  if (run.length < 2) return [];
+  return toPathPoints(run[0], fitSteps(run, tolerance, true), false);
+}
+
+function toPathPoints(start: Pt, steps: readonly Step[], closed = true): PathPoint[] {
   const points: { x: number; y: number; in: Pt | null; out: Pt | null }[] = [
     { x: start.x, y: start.y, in: null, out: null },
   ];
@@ -389,9 +399,12 @@ function toPathPoints(start: Pt, steps: readonly Step[]): PathPoint[] {
       out: null,
     });
   }
-  // The last step comes back to the start: its handle belongs to the first point.
-  const last = points.pop();
-  if (last && points.length > 0) points[0].in = last.in;
+  // The last step of a ring comes back to the start: its handle belongs to the
+  // first point.
+  if (closed) {
+    const last = points.pop();
+    if (last && points.length > 0) points[0].in = last.in;
+  }
   const handle = (v: Pt | null) => (v && (v.x !== 0 || v.y !== 0) ? { dx: v.x, dy: v.y } : null);
   return points.map((p) => ({
     x: p.x,

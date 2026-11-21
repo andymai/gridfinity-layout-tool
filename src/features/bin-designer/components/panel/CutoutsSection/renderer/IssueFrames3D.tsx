@@ -1,6 +1,6 @@
 import type { Cutout } from '@/features/bin-designer/types';
 import type { PreviewMap } from '../useCutoutInteraction';
-import { getCutoutBounds } from '../maskFit';
+import { getRotatedBounds } from '../geometryCore';
 import { placedCopies } from '../pocketChecks';
 import { ISSUE_COLOR } from './constants';
 import { OffBoardBounds3D } from './OffBoardBounds3D';
@@ -24,7 +24,7 @@ export function IssueFrames3D({ cutouts, instanceIds, preview }: IssueFrames3DPr
         .map(({ cutout }) => (
           <OffBoardBounds3D
             key={`issue-${cutout.id}`}
-            bounds={getCutoutBounds(cutout)}
+            bounds={getRotatedBounds(cutout)}
             color={ISSUE_COLOR}
             dashed
           />

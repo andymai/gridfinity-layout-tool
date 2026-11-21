@@ -25,9 +25,8 @@ import type { Cutout } from '@/features/bin-designer/types';
 import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 import type { LidCutoutKeepout, LidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import { getCutoutOutline } from './cutoutOutline';
-import { getCutoutBounds } from './maskFit';
 import { translateCutout } from './cutoutHelpers';
-import type { Bounds } from './geometryCore';
+import { getRotatedBounds, type Bounds } from './geometryCore';
 
 /** Tolerance (mm) for a flush edge, matching `OFF_BOARD_EPSILON`. */
 const EPSILON = 0.01;
@@ -136,7 +135,7 @@ export function cutoutFitsInLidWindow(
   window: LidCutoutWindow,
   meshAssets?: Readonly<Record<string, MeshAssetEntry>>
 ): boolean {
-  const bounds = getCutoutBounds(cutout);
+  const bounds = getRotatedBounds(cutout);
   if (!boundsInSpan(bounds, window)) return false;
   // Inside the span, clear of every boss box, and no corner to round into: the
   // box has proven it without a clip.
@@ -274,7 +273,7 @@ export function lidWindowOffset(
   meshAssets?: Readonly<Record<string, MeshAssetEntry>>
 ): { dx: number; dy: number } | null {
   if (instances.length === 0) return null;
-  const union = instances.map(getCutoutBounds).reduce((acc, b) => ({
+  const union = instances.map(getRotatedBounds).reduce((acc, b) => ({
     minX: Math.min(acc.minX, b.minX),
     minY: Math.min(acc.minY, b.minY),
     maxX: Math.max(acc.maxX, b.maxX),

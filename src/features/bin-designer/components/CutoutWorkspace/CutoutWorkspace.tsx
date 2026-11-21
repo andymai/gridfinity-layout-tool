@@ -75,6 +75,10 @@ import { useCutoutWorkspacePointer } from './useCutoutWorkspacePointer';
 import { usePhotoDropAndPaste, type PhotoArrival } from './usePhotoDropAndPaste';
 import { ScanToolIcon } from '@/design-system/Icon';
 import { buildCutoutContextActions } from './cutoutWorkspaceContextActions';
+import type { PointTool } from './CutoutPointControls';
+import { countPointEdit, pointKindUpdate } from '../panel/CutoutsSection/handlers';
+import { ringsOf, selectedIndices } from '../panel/CutoutsSection/handlers/pathEditHandler';
+import { normalizeSelection } from '../panel/CutoutsSection/handlers/pointEdits';
 
 export function CutoutWorkspace() {
   const {
@@ -471,7 +475,7 @@ export function CutoutWorkspace() {
     selection,
     selectCutout,
     selectIds,
-    selectIndividual,
+    openCutout,
     deselectAll,
     selectAll,
     deleteSelected,
@@ -492,6 +496,7 @@ export function CutoutWorkspace() {
     enterVertexEditing,
     handleVertexPointDown,
     handleVertexHandleDown,
+    handleVertexTransformDown,
     handleVertexBackgroundDown,
     snapEnabled,
     setSnapEnabled,
@@ -558,6 +563,25 @@ export function CutoutWorkspace() {
           },
     [isLid, splitDrawingId, setMode, setCutoutSplit]
   );
+
+  const pointTool = useMemo((): PointTool => {
+    const editing = mode.type === 'vertex-editing' ? mode : null;
+    const editCutout = editing ? cutouts.find((c) => c.id === editing.cutoutId) : undefined;
+    const length = editing && editCutout ? (ringsOf(editCutout).at(editing.ring)?.length ?? 0) : 0;
+    return {
+      editingId: editing?.cutoutId ?? null,
+      selectedCount: editing ? normalizeSelection(selectedIndices(editing), length).length : 0,
+      onEdit: enterVertexEditing,
+      onDone: () => setMode({ type: 'idle' }),
+      onKind: (kind) => {
+        if (!editing || !editCutout) return;
+        const update = pointKindUpdate(editing, editCutout, kind);
+        if (!update) return;
+        updateCutout(editCutout.id, update);
+        countPointEdit('kind');
+      },
+    };
+  }, [mode, cutouts, enterVertexEditing, setMode, updateCutout]);
 
   const handleAddFingerAccess = useAddFingerAccess(cutouts, cutoutBoard, maxCutDepth, selectIds);
   const pocketChecks = usePocketChecks(
@@ -692,6 +716,7 @@ export function CutoutWorkspace() {
         reorderCutouts,
         flattenArray: handleFlattenArray,
         mergeIntoRepeat: handleMergeIntoRepeat,
+        editPoints: enterVertexEditing,
         t,
       }),
     [
@@ -717,6 +742,7 @@ export function CutoutWorkspace() {
       setGroupOp,
       reorderCutouts,
       handleFlattenArray,
+      enterVertexEditing,
       t,
     ]
   );
@@ -859,14 +885,7 @@ export function CutoutWorkspace() {
                 onPointerMove={handleCanvasPointerMove}
                 onPointerUp={handleCanvasPointerUp}
                 onSelectCutout={selectCutout}
-                onDoubleClickCutout={(id: string) => {
-                  const cutout = cutouts.find((c) => c.id === id);
-                  if (cutout?.shape === 'path') {
-                    enterVertexEditing(id);
-                  } else {
-                    selectIndividual(id);
-                  }
-                }}
+                onDoubleClickCutout={openCutout}
                 onDragStart={startDrag}
                 onLabelDragStart={startLabelDrag}
                 onResizeStart={startResize}
@@ -877,6 +896,7 @@ export function CutoutWorkspace() {
                 onPathDrawingVertexDown={onPathDrawingVertexDown}
                 onVertexPointDown={handleVertexPointDown}
                 onVertexHandleDown={handleVertexHandleDown}
+                onVertexTransformDown={handleVertexTransformDown}
                 externalZoom={zoom}
                 externalCameraCenter={cameraCenter}
                 rulerMeasurement={rulerMeasurement}
@@ -915,6 +935,7 @@ export function CutoutWorkspace() {
           onFlattenArray={handleFlattenArray}
           onAddFingerAccess={isLid ? undefined : handleAddFingerAccess}
           splitTool={splitTool}
+          pointTool={pointTool}
           onFlattenGroupArray={handleFlattenGroupArray}
           offBoardCount={offBoardIds.size}
           onClampOffBoard={offBoardUpdates.size > 0 ? handleClampOffBoard : undefined}

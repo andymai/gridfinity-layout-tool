@@ -6,7 +6,7 @@ import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { ParsedCutoutSpec } from '../svgImport/types';
-import { getCutoutBounds } from '../maskFit';
+import { getRotatedBounds } from '../geometryCore';
 import { translateCutoutPreview } from '../cutoutHelpers';
 
 // Mirrors the store contract: `addCutout` reports whether the cutout landed,
@@ -191,6 +191,46 @@ describe('useScanImport', () => {
     expect(inner.y - outer.y).toBeCloseTo(30);
   });
 
+  it('lays the tools of one scan flat and clear of each other', () => {
+    // Two 80 × 8 bars traced side by side at 45°: their boxes overlap.
+    const bar = (cx: number): ParsedCutoutSpec => {
+      const s = Math.SQRT1_2;
+      const path = [
+        [-40, -4],
+        [40, -4],
+        [40, 4],
+        [-40, 4],
+      ].map(([u, v]) => ({
+        x: cx + (u - v) * s,
+        y: 40 + (u + v) * s,
+        handleIn: null,
+        handleOut: null,
+        symmetric: false,
+      }));
+      const xs = path.map((p) => p.x);
+      const ys = path.map((p) => p.y);
+      return spec({
+        shape: 'path',
+        path,
+        x: Math.min(...xs),
+        y: Math.min(...ys),
+        width: Math.max(...xs) - Math.min(...xs),
+        depth: Math.max(...ys) - Math.min(...ys),
+      });
+    };
+    const { result } = renderHook(() => useScanImport());
+    result.current.addScanCutouts([bar(40), bar(60)]);
+
+    const [a, b] = mockAddCutout.mock.calls.map(([c]) => c);
+    expect(a.rotation).toBe(0);
+    expect(a.width).toBeCloseTo(80, 0);
+    expect(a.depth).toBeCloseTo(8, 0);
+    const p = getRotatedBounds(a);
+    const q = getRotatedBounds(b);
+    const overlap = p.minX < q.maxX && q.minX < p.maxX && p.minY < q.maxY && q.minY < p.maxY;
+    expect(overlap).toBe(false);
+  });
+
   it('leaves a scan larger than the bin where it landed', () => {
     mockParams = { ...DEFAULT_BIN_PARAMS, width: 1, depth: 1 };
     const { result } = renderHook(() => useScanImport());
@@ -265,7 +305,7 @@ describe('useScanImport', () => {
       const { innerW, innerD } = cutoutInterior(mockParams);
       expect(mockParams.width).toBeGreaterThan(2);
       const placed = added.map((c) =>
-        getCutoutBounds(translateCutoutPreview(c, batch.get(c.id) ?? {}))
+        getRotatedBounds(translateCutoutPreview(c, batch.get(c.id) ?? {}))
       );
       for (const b of placed) {
         expect(b.minX).toBeGreaterThanOrEqual(0);

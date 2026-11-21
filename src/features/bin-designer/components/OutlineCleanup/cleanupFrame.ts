@@ -27,10 +27,14 @@ function middle(path: readonly PathPoint[]): Pt {
   return { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 };
 }
 
-/** The cutout's outline and islands, densely, as drawn. Null for a cutout with no path. */
-export function drawnRegion(cutout: Cutout): Region | null {
+/**
+ * The cutout's outline and islands, densely, as drawn. Null for a cutout with
+ * no path. `pivot` turns it about another point than its own middle, so shapes
+ * that belong together turn as one.
+ */
+export function drawnRegion(cutout: Cutout, pivot?: Pt): Region | null {
   if (!cutout.path) return null;
-  const c = middle(cutout.path);
+  const c = pivot ?? middle(cutout.path);
   const drawn = (ring: readonly PathPoint[]): Pt[] =>
     flattenPath(ring, BASELINE_STEP_MM).map((p) => {
       const q = turn({ x: p.x - c.x, y: p.y - c.y }, cutout.rotation);

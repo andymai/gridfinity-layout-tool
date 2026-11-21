@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useCutoutInteraction } from './useCutoutInteraction';
+import { useCutoutSelection } from '@/features/bin-designer/store';
 import { showsEmptyBoardHint } from './cutoutSectionVisibility';
 
 const createCutout = (id: string, overrides: Partial<Cutout> = {}): Cutout => ({
@@ -98,6 +99,51 @@ describe('useCutoutInteraction', () => {
       act(() => result.current.selectCutout('a', false));
       act(() => result.current.selectCutout('a', true));
       expect(result.current.selection.has('a')).toBe(false);
+    });
+  });
+
+  describe('openCutout (double-click)', () => {
+    const square = [
+      { x: 0, y: 0, handleIn: null, handleOut: null, symmetric: false },
+      { x: 10, y: 0, handleIn: null, handleOut: null, symmetric: false },
+      { x: 10, y: 10, handleIn: null, handleOut: null, symmetric: false },
+    ];
+    const tool = (id: string) =>
+      createCutout(id, { shape: 'path', path: square, parentGroups: ['scan'] });
+
+    beforeEach(() => useCutoutSelection.getState().setGroupContext([]));
+
+    it('opens the points of a loose path at once', () => {
+      const loose = createCutout('p', { shape: 'path', path: square });
+      const { result } = renderHook(() =>
+        useCutoutInteraction({ ...defaultOpts, cutouts: [loose] })
+      );
+      act(() => result.current.openCutout('p'));
+      expect(result.current.mode).toMatchObject({ type: 'vertex-editing', cutoutId: 'p' });
+    });
+
+    it('picks one tool out of a scan first, and opens its points on the next', () => {
+      const { result } = renderHook(() =>
+        useCutoutInteraction({ ...defaultOpts, cutouts: [tool('t1'), tool('t2')] })
+      );
+      act(() => result.current.openCutout('t1'));
+      expect(result.current.mode.type).toBe('idle');
+      expect([...result.current.selection]).toEqual(['t1']);
+
+      act(() => result.current.openCutout('t1'));
+      expect(result.current.mode).toMatchObject({ type: 'vertex-editing', cutoutId: 't1' });
+    });
+
+    it('steps into the group of a shape with no points', () => {
+      const rects = [
+        createCutout('r1', { parentGroups: ['g'] }),
+        createCutout('r2', { parentGroups: ['g'] }),
+      ];
+      const { result } = renderHook(() => useCutoutInteraction({ ...defaultOpts, cutouts: rects }));
+      act(() => result.current.openCutout('r1'));
+      act(() => result.current.openCutout('r1'));
+      expect(result.current.mode.type).toBe('idle');
+      expect([...result.current.selection]).toEqual(['r1']);
     });
   });
 

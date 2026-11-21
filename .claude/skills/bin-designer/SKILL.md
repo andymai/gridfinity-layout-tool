@@ -214,6 +214,22 @@ steps in `@/shared/outlineCleanup` from the path as it stood when the section
 opened, so settings never compound, and on the outline as drawn:
 `cleanupFrame.ts` turns a rotated path out and back.
 
+`prepareScanCutouts` (`components/panel/CutoutsSection/scanImport/scanOutline.ts`) turns each scanned tool to
+its smallest box and fits it at `EDIT_FIT_MM` before it lands. A shape traced
+in another's island turns and packs with that host.
+
+## Point editing
+
+`getRotatedBounds` is the one footprint function: it reads a path by its
+outline, so `boardPositionRange` takes the outline's offsets, never its width.
+Vertex mode state lives in
+`components/panel/CutoutsSection/handlers/vertexEditMode.ts`. A selection stays on
+one ring, and every commit passes `keepsShape` in `pathRings.ts` beside it. A
+press on an edge is a `segment` target until it moves: a release adds a point,
+a drag becomes a `falloff` pull. `falloffCommit` fits only the part that
+moved, so points placed by hand elsewhere stay as they were. Double-click goes
+through `openCutout`, which drills into a group before it opens points.
+
 ## Compartment geometry and the size lock
 
 ### A `dividerOverride` moves the compartment wall

@@ -11,6 +11,9 @@ sources:
   - src/shared/scanReview/
   - src/shared/outlineCleanup/
   - src/features/bin-designer/components/panel/CutoutsSection/handlers/pathEditHandler.ts
+  - src/features/bin-designer/components/panel/CutoutsSection/handlers/falloffDrag.ts
+  - src/features/bin-designer/components/panel/CutoutsSection/handlers/pointTransform.ts
+  - src/features/bin-designer/components/panel/CutoutsSection/scanImport/scanOutline.ts
   - src/features/bin-designer/components/panel/CutoutsSection/scanImport/useScanImport.ts
 ---
 
@@ -64,6 +67,11 @@ The <Ui k="binDesigner.cutouts.traceView.tools.heading" /> section lists each to
 
 When the outlines look right, click the add button to put the tools in the bin. For one tool, it reads <Ui k="binDesigner.cutouts.scanImport.add" />. Several tools come in as one group, so you can move them as a block. The editor then asks how thick each tool is. See [Set the tool thickness](./import-svg-stl#set-the-tool-thickness).
 
+On the way in, each tool gets two changes:
+
+- It turns square to its smallest box, so its selection box fits it closely. A tool that lay at a slant in the photo does not get a large square box. Several tools are laid out side by side so that none overlaps another.
+- Its outline is fitted with smooth curves that stay within 0.1 mm of the trace. A traced edge then has few points to edit, not hundreds.
+
 <Screenshot id="cutouts-photo-trace-view" alt="Trace a photo shows three tools on a calibration sheet, each with a traced outline." spec="Bin designer, Cut editor, Scan a tool, From a photo on this computer. Load a photo of a wrench, a screwdriver and pliers on the printed calibration sheet. Show the photo with the three outlines, the Scale section with the sheet message, the Tools list and the footer buttons. Crop to the full Trace a photo window." />
 
 ## Keep holes as islands
@@ -96,11 +104,17 @@ Feel free to experiment. Each change starts from the outline that you had when y
 
 For a precise fix, move the points yourself:
 
-1. Double-click a traced or drawn outline.
-2. Drag a point or a curve handle to move it. Click an edge to add a point. To remove a point, select it and press <kbd>Delete</kbd>.
-3. Press <kbd>Esc</kbd> when you finish.
+1. Select a traced or drawn outline and click <Ui k="binDesigner.cutouts.points.edit" />. You can also double-click the outline, or press <kbd>Enter</kbd>. For a tool in a group, the first double-click selects the tool and the next one opens its points.
+2. Make the fix:
+   - Drag a point or a curve handle to move it. Click an edge to add a point.
+   - Drag an edge to pull it. The outline near the edge follows, less and less out to the ring that shows the reach. Press <kbd>[</kbd> or <kbd>]</kbd> to make the reach smaller or larger. The pulled part gets few points again when you let go, and the rest of the outline does not change.
+   - Shift-click points, or drag a box around them, to select several. Drag one of them, or press the arrow keys, to move them all.
+   - Drag a corner of the box around the selected points to scale them. Drag the dot above the box to turn them. Hold <kbd>Shift</kbd> to keep the proportions, or to turn in 15 degree steps.
+   - Click <Ui k="binDesigner.cutouts.points.smooth" /> or <Ui k="binDesigner.cutouts.points.corner" /> to make the selected points curve through, or make a sharp corner.
+   - Press <kbd>Delete</kbd> to remove the selected points.
+3. Click <Ui k="binDesigner.cutouts.points.done" />, or press <kbd>Esc</kbd>, when you finish.
 
-The points of the islands are editable too. While you drag a point, a magnifier in the corner shows it close up, so it lands right on the edge.
+The points of the islands are editable too. One selection holds the points of one ring: the outline or one island. While you drag a point, a magnifier in the corner shows it close up, so it lands right on the edge.
 
 ## Save traced tools as a file
 

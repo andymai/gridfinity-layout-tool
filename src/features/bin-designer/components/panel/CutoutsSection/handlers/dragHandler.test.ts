@@ -2,6 +2,9 @@ import { describe, it, expect, vi } from 'vitest';
 import type { Cutout } from '@/features/bin-designer/types';
 import { handleDragMove } from './dragHandler';
 import { getRotatedBounds } from '../geometry';
+import { translateCutoutPreview } from '../cutoutHelpers';
+import { getCutoutOutline } from '../cutoutOutline';
+import { pointsBounds } from '@/shared/utils/pointsBounds';
 import type { InteractionMode } from '../useCutoutInteraction';
 import type { BinBounds, PointerMoveEvent, PreviewSetters, DeadZoneRef } from './types';
 
@@ -22,6 +25,29 @@ function makeCutout(overrides: Partial<Cutout> = {}): Cutout {
     groupId: null,
     ...overrides,
   };
+}
+
+/** A 100 × 10 mm bar traced lying at 45°, centred on (cx, cy). */
+function diagonalBar(cx: number, cy: number): Cutout {
+  const s = Math.SQRT1_2;
+  const corner = (along: number, across: number) => ({
+    x: cx + along * s - across * s,
+    y: cy + along * s + across * s,
+    handleIn: null,
+    handleOut: null,
+    symmetric: false,
+  });
+  const path = [corner(-50, -5), corner(50, -5), corner(50, 5), corner(-50, 5)];
+  const xs = path.map((p) => p.x);
+  const ys = path.map((p) => p.y);
+  return makeCutout({
+    shape: 'path',
+    path,
+    x: Math.min(...xs),
+    y: Math.min(...ys),
+    width: Math.max(...xs) - Math.min(...xs),
+    depth: Math.max(...ys) - Math.min(...ys),
+  });
 }
 
 function makeMode(
@@ -117,6 +143,35 @@ describe('handleDragMove rotation-aware clamping', () => {
 
     const moved = { ...cutout, ...setters.preview?.get('c-1') };
     expect(getRotatedBounds(moved).minY).toBeCloseTo(0, 9);
+  });
+
+  it('lets a straightened diagonal trace reach the wall, not its turned box', () => {
+    // Turned 45° the bar lies flat (100 × 10), but its stored box is a 77.8 mm
+    // square whose turned corners span 110 mm: measured by that box, the drag
+    // stopped 50 mm above the wall.
+    const cutout = { ...diagonalBar(100, 100), rotation: 45 };
+    const bounds: BinBounds = {
+      binWidth: 200,
+      binDepth: 200,
+      cellMask: undefined,
+      maskCellSize: undefined,
+    };
+    const mode = makeMode(100, 100, [['c-1', cutout.x - 100, cutout.y - 100]]);
+    const setters = makeSetters();
+
+    handleDragMove(
+      mode,
+      { mmX: 100, mmY: -300, shiftKey: false, altKey: false },
+      [cutout],
+      bounds,
+      noopSnap,
+      NO_DEAD_ZONE,
+      setters as unknown as PreviewSetters
+    );
+
+    const moved = translateCutoutPreview(cutout, setters.preview?.get('c-1') ?? {});
+    const outline = pointsBounds((getCutoutOutline(moved) ?? []).flat());
+    expect(outline.minY).toBeCloseTo(0, 6);
   });
 
   it('draws alignment guides from the turned outline', () => {

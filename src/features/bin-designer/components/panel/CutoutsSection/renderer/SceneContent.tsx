@@ -88,6 +88,7 @@ export function SceneContent({
   onPathDrawingVertexDown,
   onVertexPointDown,
   onVertexHandleDown,
+  onVertexTransformDown,
   externalZoom,
   externalCameraCenter,
   rulerMeasurement,
@@ -423,25 +424,29 @@ export function SceneContent({
           elements likewise: their box follows the caption and its set size. A
           knife slot's box is derived from its blade measurements, so it is
           sized in the Knife panel, never dragged out of true here. */}
-      {/* Left out of the point magnifier, where a corner handle would sit on the point. */}
-      <group name={UNMAGNIFIED}>
-        {selectedCutout &&
-          selectedCutout.shape !== 'mesh' &&
-          selectedCutout.shape !== 'text' &&
-          selectedCutout.shape !== 'knifeSlot' &&
-          !isInteracting && (
-            <CutoutHandles3D
-              cutout={selectedCutout}
-              onResizeStart={onResizeStart}
-              zoom={externalZoom}
-            />
-          )}
+      {/* Hidden while points are open: a press near the box would resize the
+          shape and close point editing, where it should start a marquee or
+          grab the box around the selected points. */}
+      {mode.type !== 'vertex-editing' && (
+        <group name={UNMAGNIFIED}>
+          {selectedCutout &&
+            selectedCutout.shape !== 'mesh' &&
+            selectedCutout.shape !== 'text' &&
+            selectedCutout.shape !== 'knifeSlot' &&
+            !isInteracting && (
+              <CutoutHandles3D
+                cutout={selectedCutout}
+                onResizeStart={onResizeStart}
+                zoom={externalZoom}
+              />
+            )}
 
-        {/* Rotation handle (not during interactions) */}
-        {selectedCutout && !isInteracting && (
-          <RotationHandle3D cutout={selectedCutout} onRotateStart={onRotateStart} />
-        )}
-      </group>
+          {/* Rotation handle (not during interactions) */}
+          {selectedCutout && !isInteracting && (
+            <RotationHandle3D cutout={selectedCutout} onRotateStart={onRotateStart} />
+          )}
+        </group>
+      )}
 
       {/* Group bounding box + handles for multi-selection */}
       {groupBounds && (
@@ -518,10 +523,15 @@ export function SceneContent({
               cutout={editCutout}
               selectedRing={mode.ring}
               selectedPointIndex={mode.selectedPointIndex}
+              selectedPoints={mode.selectedPoints}
+              falloffMm={mode.falloffMm}
               previewOverrides={preview.get(editCutout.id)}
               segmentHover={segmentHover}
               dragTarget={mode.dragTarget}
-              onPointDown={(index, mmX, mmY, ring) => onVertexPointDown?.(index, mmX, mmY, ring)}
+              onPointDown={(index, mmX, mmY, ring, shiftKey) =>
+                onVertexPointDown?.(index, mmX, mmY, ring, shiftKey)
+              }
+              onTransformDown={onVertexTransformDown}
               onHandleDown={(index, handleType, mmX, mmY, ring) =>
                 onVertexHandleDown?.(index, handleType, mmX, mmY, ring)
               }

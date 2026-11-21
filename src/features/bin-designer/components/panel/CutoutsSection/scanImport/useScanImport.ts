@@ -18,9 +18,10 @@ import { centerOffBoardCutouts } from '../offBoardCutouts';
 import { generateLayoutId, generateUUID } from '@/shared/utils/uuid';
 import { SCAN_CLEARANCE_MM } from '@/shared/scanReview/traceExport';
 import { computeGrowToFit } from '../growBinToFit';
-import { getCutoutBounds } from '../maskFit';
+import { getRotatedBounds } from '../geometryCore';
 import { translateCutout } from '../cutoutHelpers';
 import { binBoard, packIntoBin } from '../packIntoBin';
+import { prepareScanCutouts } from './scanOutline';
 
 export interface UseScanImportReturn {
   /**
@@ -57,7 +58,7 @@ function atOrigin(cutouts: readonly Cutout[]): Cutout[] {
   let minX = 0;
   let minY = 0;
   for (const cutout of cutouts) {
-    const b = getCutoutBounds(cutout);
+    const b = getRotatedBounds(cutout);
     minX = Math.min(minX, b.minX);
     minY = Math.min(minY, b.minY);
   }
@@ -99,14 +100,18 @@ export function useScanImport(): UseScanImportReturn {
 
       // Same stacking rule as the SVG path: a scan can trace an
       // outer silhouette around smaller detail.
-      const hydrated = byDescendingArea(specs).map((spec) =>
-        withScanFit(specToCutout(spec, hydrationOptions), cutDepth)
+      const traced = byDescendingArea(specs).map((spec) => specToCutout(spec, hydrationOptions));
+      // Several tools from one photo arrive packed in rows the bin's width,
+      // since each was turned in place, and in one arrange-only container, so
+      // the batch moves as a block. A container leaves every cut as it was.
+      // Packed tools are laid out one by one, so they get none.
+      const batch = !pack && traced.length > 1;
+      const finish = (cutout: Cutout) => withScanFit(cutout, cutDepth);
+      const hydrated = prepareScanCutouts(
+        traced,
+        batch ? { packWidth: binBoard(params).width, finish } : { finish }
       );
-      // Several tools from one photo arrive in one arrange-only container,
-      // so the batch moves as a block and Auto-arrange inside it packs the
-      // tools. A container leaves every cut as it was. Packed tools are laid
-      // out one by one, so they get none.
-      const containerId = !pack && hydrated.length > 1 ? generateLayoutId() : null;
+      const containerId = batch ? generateLayoutId() : null;
       const cutouts = containerId
         ? hydrated.map((c) => ({ ...c, parentGroups: [containerId] }))
         : hydrated;
