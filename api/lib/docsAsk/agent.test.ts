@@ -3,7 +3,7 @@
  * a test must not spend credits. Each round is the event stream and the final
  * message that the SDK's stream would give.
  */
-import type Anthropic from '@anthropic-ai/sdk';
+import Anthropic from '@anthropic-ai/sdk';
 import { describe, expect, it, vi } from 'vitest';
 import { MODEL, runAgent } from './agent.js';
 import type { AgentEvent, AgentOptions } from './agent.js';
@@ -101,7 +101,8 @@ function scripted(rounds: (Round | Error)[]) {
 function options(
   client: Anthropic,
   events: AgentEvent[],
-  onCost = vi.fn(async () => {})
+  onCost = vi.fn(async (_usd: number) => {}),
+  canContinue = async () => true
 ): AgentOptions {
   return {
     client,
@@ -112,6 +113,7 @@ function options(
     run: createToolRunner(corpus, () => ({}), {}),
     send: (event) => events.push(event),
     onCost,
+    canContinue,
     signal: new AbortController().signal,
   };
 }
@@ -210,5 +212,39 @@ describe('runAgent', () => {
     const { client, calls } = scripted([new Error('socket hang up'), answerRound]);
     expect((await runAgent(options(client, []))).answer).toBe('Layers stack bins.');
     expect(calls).toHaveLength(2);
+  });
+
+  it('stops between rounds once the day reaches the cap', async () => {
+    const { client, calls } = scripted([toolRound, answerRound]);
+    const events: AgentEvent[] = [];
+    let rounds = 0;
+    await runAgent(options(client, events, undefined, async () => rounds++ < 1));
+    expect(calls).toHaveLength(1);
+    expect(events.at(-1)).toEqual({ type: 'notice', code: 'resting' });
+  });
+
+  it('charges a round that fails after the stream started', async () => {
+    const started = {
+      type: 'message_start',
+      message: { model: MODEL, usage: { ...usage, output_tokens: 0 } },
+    };
+    const delta = { type: 'message_delta', delta: {}, usage: { output_tokens: 40 } };
+    const client = {
+      beta: {
+        messages: {
+          stream: () => ({
+            async *[Symbol.asyncIterator]() {
+              yield* [started, delta];
+              throw new Anthropic.APIConnectionError({ message: 'reset' });
+            },
+            finalMessage: () => Promise.reject(new Error('never')),
+          }),
+        },
+      },
+    } as unknown as Anthropic;
+    const onCost = vi.fn(async (_usd: number) => {});
+    await expect(runAgent(options(client, [], onCost))).rejects.toThrow('reset');
+    expect(onCost).toHaveBeenCalledTimes(1);
+    expect(onCost.mock.calls[0]?.[0]).toBeCloseTo((1000 * 4 + 40 * 20) / 1_000_000);
   });
 });

@@ -99,6 +99,9 @@ describe('docs-ask', () => {
     expect((await handle('POST', question, { 'content-length': String(600 * 1024) }))._status).toBe(
       413
     );
+    expect((await handle('POST', { ...question, padding: 'x'.repeat(600 * 1024) }))._status).toBe(
+      413
+    );
     expect((await handle('POST', { ...question, question: '' }))._status).toBe(400);
     expect((await handle('POST', { ...question, turns: 'nope' }))._status).toBe(400);
   });

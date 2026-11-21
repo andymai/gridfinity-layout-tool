@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { createHmac, randomUUID } from 'crypto';
 import Anthropic from '@anthropic-ai/sdk';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { runAgent } from './lib/docsAsk/agent.js';
@@ -7,6 +7,8 @@ import {
   askRequestSchema,
   feedbackRequestSchema,
   rebuildMessages,
+  turnSignature,
+  turnSigned,
   userTurn,
 } from './lib/docsAsk/history.js';
 import { DISCUSSIONS_URL } from './lib/docsAsk/prompt.js';
@@ -46,6 +48,17 @@ async function resting(): Promise<boolean> {
   const redis = getRedis();
   if (!redis) return process.env.VERCEL_ENV === 'production';
   return (await readSpend(redis)) >= dailyCapUsd();
+}
+
+/** Null without TOKEN_SALT: then no turn is signed, and each question stands alone. */
+function turnKey(): string | null {
+  const salt = process.env.TOKEN_SALT;
+  return salt ? createHmac('sha256', salt).update('docs-ask turn signature').digest('hex') : null;
+}
+
+function bodyBytes(req: VercelRequest): number {
+  const declared = Number(req.headers['content-length'] ?? 0);
+  return Math.max(declared, Buffer.byteLength(JSON.stringify(req.body ?? null)));
 }
 
 function writeEvent(res: VercelResponse, event: string, data: unknown): void {
@@ -92,10 +105,14 @@ async function handleAsk(
     (code) => tables.get(code) ?? source.english,
     source.english
   );
+  const key = turnKey();
   const messages = [
-    ...rebuildMessages(source.corpus, turns, run, source.locale),
+    ...rebuildMessages(source.corpus, turns, run, source.locale, (turn) =>
+      key === null ? false : turnSigned(key, turn)
+    ),
     ...userTurn(source.corpus, question, page, locale),
   ];
+  const sent: unknown[] = [];
 
   const traceId = randomUUID();
   const started = performance.now();
@@ -119,13 +136,29 @@ async function handleAsk(
       messages,
       locale,
       run,
-      send: (event: AgentEvent) => writeEvent(res, event.type, event),
-      onCost: async (usd) => {
-        if (redis) await addSpend(redis, usd);
+      send: (event: AgentEvent) => {
+        if (event.type === 'message') sent.push(event.content);
+        writeEvent(res, event.type, event);
       },
+      // A failed spend write must not fail the round: the retry would ask the model again.
+      onCost: async (usd) => {
+        if (!redis) return;
+        await addSpend(redis, usd).catch((caught: unknown) => {
+          logger.error('Docs ask spend write failed', { error: String(caught) });
+        });
+      },
+      canContinue: async () => !(await resting()),
       signal: abort.signal,
     });
-    writeEvent(res, 'done', { traceId, stopReason: result.stopReason });
+    const turn = { question, page, locale };
+    writeEvent(res, 'done', {
+      traceId,
+      stopReason: result.stopReason,
+      turn: {
+        ...turn,
+        signature: key === null ? null : turnSignature(key, { ...turn, messages: sent }),
+      },
+    });
   } catch (caught) {
     error = caught instanceof Error ? caught.message : String(caught);
     if (!abort.signal.aborted) {
@@ -163,7 +196,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'GET') return await handleStatus(res);
     if (!enabled()) return serviceUnavailable(res, 'Ask AI is not available.');
     if (!originAllowed(req)) return sendError(res, 403, ErrorCode.UNAUTHORIZED, 'Wrong origin');
-    if (Number(req.headers['content-length'] ?? 0) > MAX_BODY_BYTES) {
+    if (bodyBytes(req) > MAX_BODY_BYTES) {
       return sendError(
         res,
         413,

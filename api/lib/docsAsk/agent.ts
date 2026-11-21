@@ -26,7 +26,7 @@ export type AgentEvent =
   | { type: 'text'; text: string }
   /** One assistant message as the API returned it, for the panel to send back next turn. */
   | { type: 'message'; content: ContentBlock[] }
-  | { type: 'notice'; code: 'refusal' | 'truncated' | 'round_limit' };
+  | { type: 'notice'; code: 'refusal' | 'truncated' | 'round_limit' | 'resting' };
 
 export interface AgentOptions {
   readonly client: Anthropic;
@@ -37,6 +37,8 @@ export interface AgentOptions {
   readonly run: (name: string, input: unknown, locale: string) => ToolRun;
   readonly send: (event: AgentEvent) => void;
   readonly onCost: (usd: number) => Promise<void>;
+  /** False once the day's spend reaches the cap; asked before each round. */
+  readonly canContinue: () => Promise<boolean>;
   readonly signal: AbortSignal;
 }
 
@@ -99,40 +101,61 @@ async function streamRound(
   lastRound: boolean
 ): Promise<{
   message: Anthropic.Beta.BetaMessage;
+  costUsd: number;
   firstTokenSeconds: number | null;
   latencySeconds: number;
 }> {
   const started = performance.now();
   let firstToken: number | null = null;
+  // A round that fails or that the reader stops is billed too, so the spend
+  // counter takes what the stream reported before it ended.
+  let partial: (Anthropic.Beta.BetaUsage & { model: string }) | null = null;
+  let outputTokens = 0;
+  let charged = false;
   const stream = options.client.beta.messages.stream(
     requestParams(options.corpus, options.tools, messages, lastRound),
     { signal: options.signal }
   );
-  for await (const event of stream) {
-    if (event.type === 'content_block_start' && event.content_block.type === 'tool_use') {
-      const kind = kindOf(event.content_block.name);
-      options.send({
-        type: 'step',
-        id: event.content_block.id,
-        kind,
-        state: 'running',
-        label: PLACEHOLDER_LABELS[kind],
-      });
-    } else if (event.type === 'content_block_delta') {
-      if (event.delta.type === 'thinking_delta') {
-        options.send({ type: 'thinking', text: event.delta.thinking });
-      } else if (event.delta.type === 'text_delta') {
-        firstToken ??= performance.now();
-        options.send({ type: 'text', text: event.delta.text });
+  try {
+    for await (const event of stream) {
+      if (event.type === 'message_start') {
+        partial = { ...event.message.usage, model: event.message.model };
+      } else if (event.type === 'message_delta') {
+        outputTokens = event.usage.output_tokens;
+      } else if (event.type === 'content_block_start' && event.content_block.type === 'tool_use') {
+        const kind = kindOf(event.content_block.name);
+        options.send({
+          type: 'step',
+          id: event.content_block.id,
+          kind,
+          state: 'running',
+          label: PLACEHOLDER_LABELS[kind],
+        });
+      } else if (event.type === 'content_block_delta') {
+        if (event.delta.type === 'thinking_delta') {
+          options.send({ type: 'thinking', text: event.delta.thinking });
+        } else if (event.delta.type === 'text_delta') {
+          firstToken ??= performance.now();
+          options.send({ type: 'text', text: event.delta.text });
+        }
       }
     }
+    const message = await stream.finalMessage();
+    const cost = costUsd(message.model, message.usage);
+    charged = true;
+    await options.onCost(cost);
+    return {
+      message,
+      costUsd: cost,
+      firstTokenSeconds: firstToken === null ? null : (firstToken - started) / 1000,
+      latencySeconds: (performance.now() - started) / 1000,
+    };
+  } finally {
+    if (!charged && partial) {
+      const usage = { ...partial, output_tokens: Math.max(outputTokens, partial.output_tokens) };
+      await options.onCost(costUsd(partial.model, usage)).catch(() => undefined);
+    }
   }
-  const message = await stream.finalMessage();
-  return {
-    message,
-    firstTokenSeconds: firstToken === null ? null : (firstToken - started) / 1000,
-    latencySeconds: (performance.now() - started) / 1000,
-  };
 }
 
 export async function runAgent(options: AgentOptions): Promise<AgentResult> {
@@ -144,6 +167,10 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
   let stopReason: string | null = null;
 
   for (let round = 0; round < MAX_ROUNDS; round++) {
+    if (!(await options.canContinue())) {
+      options.send({ type: 'notice', code: 'resting' });
+      break;
+    }
     const lastRound = round === MAX_ROUNDS - 1;
     let result: Awaited<ReturnType<typeof streamRound>> | undefined;
     for (let attempt = 0; !result; attempt++) {
@@ -156,9 +183,7 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
           throw error;
       }
     }
-    const { message } = result;
-    const cost = costUsd(message.model, message.usage);
-    await options.onCost(cost);
+    const { message, costUsd: cost } = result;
     const calls = message.content.filter(
       (block): block is Anthropic.Beta.BetaToolUseBlock => block.type === 'tool_use'
     );

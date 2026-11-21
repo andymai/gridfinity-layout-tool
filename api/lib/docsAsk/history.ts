@@ -1,3 +1,4 @@
+import { createHmac, timingSafeEqual } from 'crypto';
 import type Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
 import type { AskCorpus } from './corpus.js';
@@ -36,6 +37,7 @@ const turnSchema = z.object({
   locale: z.string().max(10),
   /** Each assistant message of the turn, in order, as the API returned its content. */
   messages: z.array(z.array(z.unknown()).max(64)).max(MAX_MESSAGES_PER_TURN),
+  signature: z.string().regex(/^[0-9a-f]{64}$/),
 });
 export type StoredTurn = z.infer<typeof turnSchema>;
 
@@ -57,6 +59,31 @@ export const feedbackRequestSchema = z.object({
 });
 
 type Runner = (name: string, input: unknown, locale: string) => ToolRun;
+
+export interface TurnFields {
+  readonly question: string;
+  readonly page: string;
+  readonly locale: string;
+  readonly messages: readonly unknown[];
+}
+
+/**
+ * The server signs each finished turn, so a client can send back only the
+ * turns it was given: an edited answer could talk the model out of its scope
+ * at this site's cost. JSON keeps its key order through a round trip, so the
+ * client's copy hashes the same.
+ */
+export function turnSignature(key: string, turn: TurnFields): string {
+  return createHmac('sha256', key)
+    .update(JSON.stringify([turn.question, turn.page, turn.locale, turn.messages]))
+    .digest('hex');
+}
+
+export function turnSigned(key: string, turn: StoredTurn): boolean {
+  const expected = Buffer.from(turnSignature(key, turn), 'hex');
+  const given = Buffer.from(turn.signature, 'hex');
+  return given.length === expected.length && timingSafeEqual(given, expected);
+}
 
 function toParam(block: StoredBlock): ContentBlockParam {
   switch (block.type) {
@@ -121,10 +148,12 @@ export function rebuildMessages(
   corpus: AskCorpus,
   turns: readonly StoredTurn[],
   run: Runner,
-  localeOf: (locale: string) => string
+  localeOf: (locale: string) => string,
+  signed: (turn: StoredTurn) => boolean
 ): MessageParam[] {
   const messages: MessageParam[] = [];
   for (const turn of turns) {
+    if (!signed(turn)) continue;
     const answer = turnMessages(turn);
     if (answer.length === 0) continue;
     const locale = localeOf(turn.locale);
