@@ -1,5 +1,21 @@
 # Changelog
 
+## [4.549.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.548.0...gridfinity-layout-tool-v4.549.0) (2026-11-21)
+
+
+### Features
+
+* **cutouts:** lean a pocket up to 80° and show its opening ([#5150](https://github.com/andymai/gridfinity-layout-tool/issues/5150)) ([7887d55](https://github.com/andymai/gridfinity-layout-tool/commit/7887d55f6e78d93a7978bccb7be974a43e4352c1))
+
+
+### Bug Fixes
+
+* **bin-designer:** split overhang feet at the main feet's seams ([#5147](https://github.com/andymai/gridfinity-layout-tool/issues/5147)) ([51b9dbf](https://github.com/andymai/gridfinity-layout-tool/commit/51b9dbf264d7dcd80442dddfdfbb1345324e2942)), closes [#5140](https://github.com/andymai/gridfinity-layout-tool/issues/5140)
+* **cutouts:** keep a dragged selection's spacing with snapping on ([#5148](https://github.com/andymai/gridfinity-layout-tool/issues/5148)) ([30fd826](https://github.com/andymai/gridfinity-layout-tool/commit/30fd8267c356908fd0fc977d54efb762383f31b3))
+* **cutouts:** measure a turned cutout by its outline when it moves ([#5146](https://github.com/andymai/gridfinity-layout-tool/issues/5146)) ([5e10a92](https://github.com/andymai/gridfinity-layout-tool/commit/5e10a926d2545076e1df1028a4a53d080d81cc86))
+* **cutouts:** pan the cut editor with a middle-drag ([#5145](https://github.com/andymai/gridfinity-layout-tool/issues/5145)) ([4cb54a6](https://github.com/andymai/gridfinity-layout-tool/commit/4cb54a64e04edd172ffe63db52b6772093c84629)), closes [#5141](https://github.com/andymai/gridfinity-layout-tool/issues/5141)
+* **cutouts:** put a turned cutout's size labels beside its edges ([#5149](https://github.com/andymai/gridfinity-layout-tool/issues/5149)) ([a1689a5](https://github.com/andymai/gridfinity-layout-tool/commit/a1689a5e24e2ae60ac1fc11010ae776e97808a51))
+
 ## [4.548.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.547.1...gridfinity-layout-tool-v4.548.0) (2026-11-20)
 
 
