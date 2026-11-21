@@ -1,0 +1,33 @@
+apps/docs/.vitepress/config.ts
+  s_f8efc8defc13ab::t_11805c4c19b497 7,86-87
+apps/docs/.vitepress/theme/askAi/useAskAi.ts
+  s_f8efc8defc13ab::t_9d52ee61c3a024 1,3,55,60-62,107-114,150-194
+  s_f8efc8defc13ab::t_6fd864cadea2a3 195
+apps/docs/.vitepress/theme/askAi/flags.ts
+  s_f8efc8defc13ab::t_894bbaf14cb858 1-15
+apps/docs/.vitepress/theme/askAi/dock.css
+  s_f8efc8defc13ab::t_3afaf82e725f9a 1-90
+apps/docs/.vitepress/theme/components/AskAiButton.vue
+  s_f8efc8defc13ab::t_2852e9472de1df 2,4-6,12,19
+apps/docs/.vitepress/theme/index.ts
+  s_f8efc8defc13ab::t_11805c4c19b497 13,15,17,64-65,67-69
+apps/docs/.vitepress/theme/components/AskAiPanel.vue
+  s_f8efc8defc13ab::t_8ad3e79fe20349 4-13,32-33,50-51,54,66,74,78,94,96,113,117,124,127-129,148-157,210-211,213,215-216,220-225,229,232-233,247,261-264,277-287,290,293,321-322,339,350-355,357
+  s_f8efc8defc13ab::t_78b61edabb697b 55-56,58-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "397479322122e892205d142a9ff1137a7bceb197",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
