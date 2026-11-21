@@ -130,6 +130,12 @@ describe('setPointKind', () => {
   });
 });
 
+describe('allSmooth', () => {
+  it('is false for an index the ring no longer has', () => {
+    expect(allSmooth(setPointKind(SQUARE, [0, 1, 2, 3], 'smooth'), [0, 9])).toBe(false);
+  });
+});
+
 describe('drawnBox', () => {
   it('is the box of the chosen points as drawn', () => {
     expect(drawnBox(path(SQUARE), 0, [0, 2])).toEqual({ minX: 0, minY: 0, maxX: 10, maxY: 10 });

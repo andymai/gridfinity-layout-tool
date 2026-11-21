@@ -658,6 +658,13 @@ describe('handleCutoutKeyDown — Enter', () => {
     );
   });
 
+  it('leaves Enter to a focused button, which clicks itself', () => {
+    const path = makeCutout({ id: 'p', shape: 'path' });
+    const ctx = makeCtx({ selection: new Set(['p']), cutouts: [path] });
+    handleCutoutKeyDown(press('Enter', { tagName: 'BUTTON' }), ctx);
+    expect(ctx.setMode).not.toHaveBeenCalled();
+  });
+
   it('does nothing for a shape with no points, or for several shapes', () => {
     const path = makeCutout({ id: 'p', shape: 'path' });
     const rect = makeCutout({ id: 'r' });

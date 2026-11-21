@@ -136,6 +136,9 @@ export function PathEditOverlay3D({
   const cx = (shown.minX + shown.maxX) / 2;
   const cy = (shown.minY + shown.maxY) / 2;
   const turn = (-cutout.rotation * Math.PI) / 180;
+  // Drawn outside the turned groups: each nested group restarts the sort order
+  // at its own renderOrder, 0, which would put the ring under the shapes.
+  const pullAt = pull ? rotateAbout(pull.x, pull.y, cx, cy, cutout.rotation) : null;
   const [mx, my] = dragged
     ? rotateAbout(
         dragged.x + (handle?.dx ?? 0),
@@ -173,9 +176,17 @@ export function PathEditOverlay3D({
           }
         />
       )}
+      {pullAt && (
+        <FalloffRing3D
+          x={pullAt[0]}
+          y={pullAt[1]}
+          radius={falloffMm}
+          zoom={zoom}
+          active={pull?.active ?? false}
+        />
+      )}
       <group position={[cx, cy, 0]} rotation={[0, 0, turn]}>
         <group position={[-cx, -cy, 0]}>
-          {pull && <FalloffRing3D x={pull.x} y={pull.y} radius={falloffMm} active={pull.active} />}
           {dots &&
             rings.flatMap((path, ring) =>
               path.map((pt, i) => {

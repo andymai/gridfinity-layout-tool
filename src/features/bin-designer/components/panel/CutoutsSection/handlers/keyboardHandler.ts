@@ -81,7 +81,8 @@ export function focusOwnsKeys(target: EventTarget | null): boolean {
   );
 }
 
-function tabMovesFocus(target: EventTarget | null): boolean {
+/** A focused button, link or select acts on Tab and Enter itself. */
+function controlOwnsKey(target: EventTarget | null): boolean {
   const element = target as Partial<Pick<HTMLElement, 'tagName'>> | null;
   return element?.tagName === 'BUTTON' || element?.tagName === 'A' || element?.tagName === 'SELECT';
 }
@@ -170,7 +171,7 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       // Enter opens a selected path's points, as in vector editors.
       const only =
         ctx.selection.size === 1 ? ctx.cutouts.find((c) => ctx.selection.has(c.id)) : undefined;
-      if (!mod && ctx.mode.type === 'idle' && only?.shape === 'path') {
+      if (!mod && !controlOwnsKey(e.target) && ctx.mode.type === 'idle' && only?.shape === 'path') {
         e.preventDefault();
         ctx.setMode(vertexEditingMode(only.id, loadFalloffMm()));
       }
@@ -372,7 +373,7 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
     // Tab / Shift+Tab to cycle selection, unless focus sits on a control
     // (a button, an info dot's panel) where Tab has to move focus on.
     case 'Tab':
-      if (ctx.cutouts.length > 0 && !tabMovesFocus(e.target)) {
+      if (ctx.cutouts.length > 0 && !controlOwnsKey(e.target)) {
         e.preventDefault();
         handleTabCycle(e, ctx);
       }

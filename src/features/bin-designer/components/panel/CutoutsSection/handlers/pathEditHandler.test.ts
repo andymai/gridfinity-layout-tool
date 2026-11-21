@@ -936,6 +936,17 @@ describe('editing several points', () => {
     expect(last(setters)).toMatchObject({ selectedPointIndex: null, dragTarget: null });
   });
 
+  it('stores nothing for a pull brought back to where it began', () => {
+    const wide = [point(0, 0), point(100, 0), point(100, 40), point(0, 40)];
+    const cutout = { ...makeCutout(wide), width: 100, depth: 40 };
+    const setters = makeSetters();
+    handleVertexEditPointerDown(makeMode({ falloffMm: 20 }), at(50, 0), cutout, 1, setters);
+    handleVertexEditPointerMove(last(setters), at(50, -4), cutout, BOUNDS, noSnap, setters);
+    handleVertexEditPointerMove(last(setters), at(50, 0), cutout, BOUNDS, noSnap, setters);
+    handleVertexEditPointerUp(last(setters), cutout, new Map(), setters);
+    expect(setters.onUpdate).not.toHaveBeenCalled();
+  });
+
   it('adds a point, not a pull, when a press on an edge does not move', () => {
     const setters = makeSetters();
     click(makeMode(), at(5, 0), makeCutout(), 1, setters);

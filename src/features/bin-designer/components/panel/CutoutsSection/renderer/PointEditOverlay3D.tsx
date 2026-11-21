@@ -138,20 +138,37 @@ interface FalloffRing3DProps {
   readonly x: number;
   readonly y: number;
   readonly radius: number;
+  readonly zoom: number;
   /** Fainter while only hovering, so it reads as a hint and not as a shape. */
   readonly active: boolean;
 }
 
-/** How far a grabbed edge pulls the outline: everything inside the ring follows. */
-export function FalloffRing3D({ x, y, radius, active }: FalloffRing3DProps) {
-  const points = useMemo(
-    () =>
-      Array.from({ length: RING_SEGMENTS + 1 }, (_, k) => {
-        const a = (2 * Math.PI * k) / RING_SEGMENTS;
-        return { x: x + radius * Math.cos(a), y: y + radius * Math.sin(a) };
-      }),
-    [x, y, radius]
+/** Stroke of the pull ring, in screen pixels. */
+const RING_STROKE_PX = 1.5;
+
+/**
+ * How far a grabbed edge pulls the outline: everything inside the ring
+ * follows. A thin annulus rather than a line, so it draws over the shapes the
+ * way the point dots do.
+ */
+export function FalloffRing3D({ x, y, radius, zoom, active }: FalloffRing3DProps) {
+  const half = RING_STROKE_PX / zoom / 2;
+  const geometry = useMemo(
+    () => new THREE.RingGeometry(Math.max(0, radius - half), radius + half, RING_SEGMENTS),
+    [radius, half]
   );
-  const ring = useLine(points, active ? 0.8 : 0.35);
-  return <primitive object={ring} />;
+  useEffect(() => () => geometry.dispose(), [geometry]);
+  return (
+    <group renderOrder={ORDER}>
+      <mesh geometry={geometry} position={[x, y, Z]} renderOrder={ORDER}>
+        <meshBasicMaterial
+          color={ACCENT}
+          transparent
+          opacity={active ? 0.9 : 0.45}
+          depthTest={false}
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
+  );
 }

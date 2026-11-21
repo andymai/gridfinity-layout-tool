@@ -79,7 +79,10 @@ export type PointKind = 'smooth' | 'corner';
 
 /** Whether every point at `indices` already has both handles. */
 export function allSmooth(points: readonly PathPoint[], indices: readonly number[]): boolean {
-  return indices.every((i) => points[i]?.handleIn !== null && points[i]?.handleOut !== null);
+  return indices.every((i) => {
+    const p = points.at(i);
+    return p !== undefined && p.handleIn !== null && p.handleOut !== null;
+  });
 }
 
 /**

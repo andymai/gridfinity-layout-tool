@@ -524,8 +524,11 @@ export function handleVertexEditPointerUp(
   let holes: PathPoint[][] | undefined;
   if (target && !changedSince(cutout, mode.dragFrom)) {
     if (target.type === 'falloff') {
+      // A pull brought back to where it began changes nothing, so it stores
+      // nothing rather than an undo step that refits the stretch.
       const path = ringsOf(cutout).at(target.ring);
-      const fitted = path ? falloffCommit(path, target.grab, target.dx, target.dy) : null;
+      const moved = target.dx !== 0 || target.dy !== 0;
+      const fitted = path && moved ? falloffCommit(path, target.grab, target.dx, target.dy) : null;
       if (fitted) {
         const update = ringUpdate(cutout, target.ring, fitted);
         after = ringsOf({ ...cutout, ...update });
