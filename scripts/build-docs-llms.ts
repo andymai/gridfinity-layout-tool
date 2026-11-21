@@ -5,6 +5,7 @@
  *   <page>.md        each page, with labels, pictures and widgets as plain text
  *   llms.txt         the pages in sidebar order, in the llmstxt.org format
  *   llms-full.txt    every page in one file
+ *   ask/             the corpus and label tables that Ask AI reads (docsAskCorpus.ts)
  *
  * Usage: `pnpm run docs:llms`, after docs:build and before copy-docs.ts. It runs
  * with tsconfig.app.json, because the drawer link imports app code through `@`.
@@ -15,27 +16,45 @@ import path from 'node:path';
 import { APP_URL, sidebar } from '../apps/docs/.vitepress/navigation';
 import { drawerLink } from '../apps/docs/.vitepress/theme/drawerPlan';
 import { UI_TAG, resolveUiLabel } from '../apps/docs/.vitepress/uiLabels';
-import { DOC_LINK, pageLink, readDocPages, readManifest, resolveDocLink } from './check-user-docs';
+import {
+  DOC_LINK,
+  headingList,
+  pageLink,
+  readDocPages,
+  readManifest,
+  resolveDocLink,
+} from './check-user-docs';
 import type { DocPage, MediaEntry } from './check-user-docs';
+import { writeAskFiles } from './docsAskCorpus';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DOCS_BUILD = path.join(ROOT, 'apps', 'docs', '.vitepress', 'dist');
+const LOCALES_DIR = path.join(ROOT, 'src', 'i18n', 'locales');
 export const DOCS_URL = `${APP_URL}/docs`;
 const TITLE = 'Gridfinity Layout Tool Docs';
 const HOME = '/index';
 
 type SidebarItem = (typeof sidebar)[number];
 
+/**
+ * `llms` writes plain Markdown for any reader. `ask` writes the markers that
+ * Ask AI's panel renders: `[[ui:Label]]` chips, `[[capture:id]]` pictures, and
+ * `{#anchor}` on each heading so that an answer can link a section.
+ */
+export type DocsFlavor = 'llms' | 'ask';
+
 export interface DocsContext {
   readonly pages: ReadonlyMap<string, DocPage>;
   readonly media: Readonly<Record<string, MediaEntry>>;
+  readonly flavor: DocsFlavor;
 }
 
 export function docsContext(
   pages: readonly DocPage[],
-  media: Readonly<Record<string, MediaEntry>>
+  media: Readonly<Record<string, MediaEntry>>,
+  flavor: DocsFlavor = 'llms'
 ): DocsContext {
-  return { pages: new Map(pages.map((page) => [pageLink(page.file), page])), media };
+  return { pages: new Map(pages.map((page) => [pageLink(page.file), page])), media, flavor };
 }
 
 export function pageUrl(link: string): string {
@@ -94,9 +113,16 @@ function attributes(tag: string): Map<string, string> {
 
 // A label inside bold text, such as `**<Ui k="x" />.**`, stays plain, or the
 // bold markers would pile up.
-function uiLabel(key: string, line: string, offset: number, where: string): string {
+function uiLabel(
+  key: string,
+  line: string,
+  offset: number,
+  ctx: DocsContext,
+  where: string
+): string {
   const result = resolveUiLabel(key);
   if (!result.ok) throw new Error(`${where}: ${result.reason}`);
+  if (ctx.flavor === 'ask') return `[[ui:${result.text}]]`;
   const text = escapeMarkdown(result.text);
   const insideBold = (line.slice(0, offset).match(/\*\*/g) ?? []).length % 2 === 1;
   return insideBold ? text : `**${text}**`;
@@ -123,7 +149,8 @@ function screenshotText(tag: string, ctx: DocsContext, where: string): string {
   const entry = ctx.media[id];
   // The site leaves out a picture that is not captured yet, so this does too.
   if (!entry) return '';
-  return `*${entry.kind === 'clip' ? 'Video' : 'Picture'}: ${escapeMarkdown(alt)}*`;
+  const text = `*${entry.kind === 'clip' ? 'Video' : 'Picture'}: ${escapeMarkdown(alt)}*`;
+  return ctx.flavor === 'ask' ? `[[capture:${id}]] ${text}` : text;
 }
 
 function planDrawerText(tag: string, where: string): string {
@@ -159,7 +186,7 @@ function inlineText(line: string, self: string, ctx: DocsContext, where: string)
     .replace(SCREENSHOT_TAG, (tag) => screenshotText(tag, ctx, where))
     .replace(PLAN_DRAWER_TAG, (tag) => planDrawerText(tag, where))
     .replace(UI_TAG, (_tag, key: string, offset: number, all: string) =>
-      uiLabel(key, all, offset, where)
+      uiLabel(key, all, offset, ctx, where)
     )
     .replace(DOC_LINK, (_link, target: string) => `](${absoluteLink(self, target)})`);
   const left = ANY_COMPONENT.exec(text);
@@ -180,7 +207,11 @@ export function pageMarkdown(page: DocPage, ctx: DocsContext): string {
     return last === undefined || last === '' || last === '>';
   };
 
-  for (const raw of page.body.split('\n')) {
+  const anchors = new Map(
+    ctx.flavor === 'ask' ? headingList(page.body).map((h) => [h.line, h.anchor]) : []
+  );
+
+  for (const [index, raw] of page.body.split('\n').entries()) {
     const [, run = '', rest = ''] = FENCE.exec(raw) ?? [];
     if (fence !== null) {
       // Only a run of the same character, at least as long and with nothing
@@ -210,7 +241,8 @@ export function pageMarkdown(page: DocPage, ctx: DocsContext): string {
       for (const line of blockComponent(block[1], self, ctx)) push(line);
       continue;
     }
-    const text = inlineText(raw, self, ctx, page.file);
+    const anchor = anchors.get(index);
+    const text = `${inlineText(raw, self, ctx, page.file)}${anchor ? ` {#${anchor}}` : ''}`;
     if (raw.trim() && !text.trim()) continue;
     if (!text.trim() && afterBlank()) continue;
     push(text);
@@ -276,7 +308,9 @@ function main(): void {
       'build-docs-llms: apps/docs/.vitepress/dist/index.html not found. Run docs:build first.'
     );
   }
-  const ctx = docsContext(readDocPages(), readManifest());
+  const pages = readDocPages();
+  const media = readManifest();
+  const ctx = docsContext(pages, media);
   for (const [link, page] of ctx.pages) {
     const file = path.join(DOCS_BUILD, `${link.slice(1)}.md`);
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -285,6 +319,8 @@ function main(): void {
   fs.writeFileSync(path.join(DOCS_BUILD, 'llms.txt'), llmsIndex(ctx));
   fs.writeFileSync(path.join(DOCS_BUILD, 'llms-full.txt'), llmsFull(ctx));
   console.log(`✓ Wrote ${ctx.pages.size} Markdown pages, llms.txt and llms-full.txt`);
+  const corpus = writeAskFiles(docsContext(pages, media, 'ask'), LOCALES_DIR, DOCS_BUILD);
+  console.log(`✓ Wrote the Ask AI corpus ${corpus.version} and its label tables`);
 }
 
 if (process.argv[1]?.endsWith('build-docs-llms.ts')) main();

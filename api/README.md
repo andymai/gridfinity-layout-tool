@@ -47,6 +47,9 @@ graph TB
 | `/api/report/[id]`              | POST           | 10/hr      | Report inappropriate share                                       |
 | `/api/liveblocks-auth`          | POST           | 100/min    | Collaborative editing session auth                               |
 | `/api/ml-telemetry`             | POST           | 100/min    | Aggregated ML training data                                      |
+| `/api/docs-ask`                 | GET            | none       | Ask AI status: `{ enabled, resting }`                            |
+| `/api/docs-ask`                 | POST           | 20/hour    | `{ op: 'ask' }` streams an answer as server-sent events          |
+| `/api/docs-ask`                 | POST           | 60/hour    | `{ op: 'feedback' }` sends a thumb on an answer's trace          |
 | `/api/auth/login/[provider]`    | GET            | 30/min     | Begin OAuth flow (Google / GitHub)                               |
 | `/api/auth/callback/[provider]` | GET            | 30/min     | OAuth code exchange + session mint                               |
 | `/api/auth/logout`              | POST           | 100/min    | Clear session cookie + KV row                                    |
@@ -78,6 +81,12 @@ See [`auth/README.md`](./auth/README.md) for the OAuth setup and [`sync/README.m
 ## Mesh store
 
 Each imported mesh is one Blob file at `meshes/{hash}`, the SHA-256 of its bytes (layout in `src/shared/generation/meshFile.ts`, mirrored by `lib/meshFile.ts`). Public and write-once: the URL needs the hash, and the hash needs the content. Clients read it from the CDN. `users:{uid}:meshes` holds an account's hashes and sizes, with totals in `users:{uid}:meshUsage` checked against `MESH_QUOTA_BYTES` and `MESH_QUOTA_COUNT` in the same Lua step that records a hold; `mesh:holders:{hash}` is the refcount set. Off unless `MESH_STORE_ENABLED=true`, which also gates synced designs naming files by hash (`sync/README.md`).
+
+## Ask AI (`docs-ask.ts`, `lib/docsAsk/`)
+
+The docs assistant on `/docs`. It answers on `claude-opus-5-5` from the corpus that `scripts/build-docs-llms.ts` writes to `dist/docs/ask/`: a page map in the system prompt, and the `read_page`, `search_docs` and `drawer_fit` tools. The client keeps the history. Each request rebuilds it to the same bytes, with the reader context as a system message after each question and each tool result run again, so the prompt cache and the thinking blocks stay valid. `lib/docsAsk/drawerPlan.ts` mirrors the docs drawer calculator, and `drawerPlan.crossBoundary.test.ts` holds the two together.
+
+Off unless `DOCS_ASSISTANT_ENABLED=true` and `ANTHROPIC_API_KEY` is set. Each answer adds its cost to `docsAsk:spend:{day}`. At `DOCS_ASSISTANT_DAILY_CAP_USD` (default 5) the endpoint answers 429 `RESTING` until the next UTC day. In production it sends `$ai_*` traces with the question and answer text to PostHog.
 
 ## Ko-fi supporter ingest
 

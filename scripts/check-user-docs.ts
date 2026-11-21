@@ -284,22 +284,31 @@ function stripTags(text: string): string {
   return out;
 }
 
-export function headingAnchors(body: string): Set<string> {
+export interface DocHeading {
+  /** The heading's line in the body, from 0. */
+  readonly line: number;
+  readonly depth: number;
+  readonly text: string;
+  readonly anchor: string;
+}
+
+export function headingList(body: string): DocHeading[] {
+  const headings: DocHeading[] = [];
   const anchors = new Set<string>();
   let inFence = false;
-  for (const line of body.split('\n')) {
+  body.split('\n').forEach((line, index) => {
     if (/^\s*(```|~~~)/.test(line)) {
       inFence = !inFence;
-      continue;
+      return;
     }
-    if (inFence) continue;
-    const heading = /^#{1,6}\s+(.*?)\s*$/.exec(line);
-    if (!heading) continue;
-    const custom = /\{#([^}]+)\}$/.exec(heading[1]);
+    if (inFence) return;
+    const heading = /^(#{1,6})\s+(.*?)\s*$/.exec(line);
+    if (!heading) return;
+    const custom = /\{#([^}]+)\}$/.exec(heading[2]);
     const base = custom
       ? custom[1]
       : slugify(
-          stripTags(heading[1])
+          stripTags(heading[2])
             .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
             .replace(/[*_]{1,2}([^*_]+)[*_]{1,2}/g, '$1')
             .replace(/`/g, '')
@@ -307,8 +316,13 @@ export function headingAnchors(body: string): Set<string> {
     let slug = base;
     for (let i = 1; anchors.has(slug); i++) slug = `${base}-${i}`;
     anchors.add(slug);
-  }
-  return anchors;
+    headings.push({ line: index, depth: heading[1].length, text: heading[2], anchor: slug });
+  });
+  return headings;
+}
+
+export function headingAnchors(body: string): Set<string> {
+  return new Set(headingList(body).map((heading) => heading.anchor));
 }
 
 export function resolveDocLink(fromLink: string, target: string): string {

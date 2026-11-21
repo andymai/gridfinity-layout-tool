@@ -32,7 +32,9 @@ export type RateLimitAction =
   | 'community.like'
   | 'community.action'
   | 'community.report'
-  | 'community.print';
+  | 'community.print'
+  | 'docs.ask'
+  | 'docs.feedback';
 
 /**
  * Parse Redis URL using WHATWG URL API to avoid deprecated url.parse().
@@ -129,6 +131,8 @@ const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
   // both carry photo uploads. Deliberately matched to the publish budget:
   // posting a print is the same order of deliberate act as publishing a design.
   'community.print': { limit: 10, windowSeconds: 24 * 60 * 60 }, // 10/day per user
+  'docs.ask': { limit: 20, windowSeconds: 60 * 60 }, // 20/hour per IP; the daily spend cap backs it
+  'docs.feedback': { limit: 60, windowSeconds: 60 * 60 }, // 60/hour per IP
 };
 
 interface RateLimitResult {
