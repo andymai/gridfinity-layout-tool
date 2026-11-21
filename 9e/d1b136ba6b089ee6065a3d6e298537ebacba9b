@@ -1,0 +1,21 @@
+scripts/build-docs-llms.test.ts
+  s_f8efc8defc13ab::t_974a01b82edb43 73-78
+scripts/build-docs-llms.ts
+  s_f8efc8defc13ab::t_2ad0dcb773e75a 86-89,99,125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9ed1b136ba6b089ee6065a3d6e298537ebacba9b",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
