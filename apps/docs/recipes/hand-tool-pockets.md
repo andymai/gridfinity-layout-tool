@@ -51,7 +51,7 @@ Not sure of the size? Lay the tools side by side with a finger's width between t
 4. Tap <Ui k="scan.takePhoto" />, and hold the phone level, straight above the tools. Hold it high, and zoom in until the sheet fills the photo.
 5. Check each outline in the review, and tap <Ui k="scan.use" />.
 
-The tools land in the bin as one group. Each pocket already has 0.4 mm of clearance and a chamfer at its top edge, so the tool drops in. [Scan with your phone](../cutouts/phone-scan) covers the size references and the review screen.
+The tools land in the bin as one group, each turned square to its own box and laid side by side. Each pocket already has 0.4 mm of clearance and a chamfer at its top edge, so the tool drops in. [Scan with your phone](../cutouts/phone-scan) covers the size references and the review screen.
 
 ::: tip
 No phone? Click <Ui k="binDesigner.cutouts.scanImport.title" /> and trace a photo from your computer instead, as in [Trace a photo](../cutouts/photo-trace). Or draw the pockets yourself with the <Ui k="binDesigner.cutouts.addSlot" /> and <Ui k="binDesigner.cutouts.penTool" /> tools.
@@ -76,7 +76,7 @@ Then click <Ui k="binDesigner.cutouts.depthPrompt.apply" />. To give each tool i
 
 A snug pocket holds a tool well, but you need a way to get a fingertip under it.
 
-1. A click on the board selects the whole group. To select one tool, click its row in the <Ui k="binDesigner.shapeList.tabShapes" /> tab.
+1. A click on the board selects the whole group. To select one tool, double-click it, or click its row in the <Ui k="binDesigner.shapeList.tabShapes" /> tab.
 2. In the <Ui k="binDesigner.shapeList.tabProperties" /> tab, open <Ui k="binDesigner.cutouts.section.shape" /> and click <Ui k="binDesigner.cutouts.finger.add" />.
 3. Do the same for each tool.
 
