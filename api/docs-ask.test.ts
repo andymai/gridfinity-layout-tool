@@ -92,8 +92,20 @@ describe('docs-ask', () => {
   });
 
   it('refuses another site', async () => {
-    const res = await handle('POST', question, { origin: 'https://example.com' });
+    const res = await handle('POST', question, {
+      origin: 'https://example.com',
+      host: 'gridfinitylayouttool.com',
+    });
     expect(res._status).toBe(403);
+    expect((await handle('POST', question, { origin: 'not a url' }))._status).toBe(403);
+  });
+
+  it('takes a request from the host that served the page, a branch alias too', async () => {
+    mocks.checkRateLimit.mockResolvedValue({ allowed: false, retryAfterSeconds: 60 });
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    const alias = 'gridfinity-layout-tool-git-feat-docs-764d1f-collective-context.vercel.app';
+    const res = await handle('POST', question, { origin: `https://${alias}`, host: alias });
+    expect(res._status).toBe(429);
   });
 
   it('refuses a body that is too large or malformed', async () => {

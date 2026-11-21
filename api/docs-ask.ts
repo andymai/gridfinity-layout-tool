@@ -35,23 +35,24 @@ import {
 } from './lib/shared.js';
 
 const MAX_BODY_BYTES = 512 * 1024;
-const PRODUCTION_ORIGIN = 'https://gridfinitylayouttool.com';
 
 function enabled(): boolean {
   return process.env.DOCS_ASSISTANT_ENABLED === 'true' && Boolean(process.env.ANTHROPIC_API_KEY);
 }
 
 // The browser panel is same-origin, so a request from another site is a
-// script spending this site's budget.
+// script spending this site's budget. Comparing with Host and not with a
+// fixed list lets every domain of one deployment in, branch aliases too.
 function originAllowed(req: VercelRequest): boolean {
   const origin = req.headers.origin;
   if (origin === undefined) return true;
-  const vercelUrl = process.env.VERCEL_URL;
   if (process.env.VERCEL_ENV !== 'production' && /^http:\/\/localhost(:\d+)?$/.test(origin))
     return true;
-  return (
-    origin === PRODUCTION_ORIGIN || (vercelUrl !== undefined && origin === `https://${vercelUrl}`)
-  );
+  try {
+    return new URL(origin).host === req.headers.host;
+  } catch {
+    return false;
+  }
 }
 
 async function resting(): Promise<boolean> {
