@@ -1,0 +1,30 @@
+scripts/contentRoutes.test.ts
+  s_f8efc8defc13ab::t_d561adaf9e1145 2,21-32
+  s_f8efc8defc13ab::t_0ed3be6c0549df 33
+scripts/build-docs-llms.test.ts
+  s_f8efc8defc13ab::t_7bc36fa14477b1 102
+vite.config.ts
+  s_f8efc8defc13ab::t_d561adaf9e1145 12-17,237
+scripts/copy-docs.ts
+  s_f8efc8defc13ab::t_d561adaf9e1145 17,77,89,91
+scripts/build-docs-llms.ts
+  s_f8efc8defc13ab::t_d561adaf9e1145 177-180,207,216
+scripts/contentRoutes.ts
+  s_f8efc8defc13ab::t_d561adaf9e1145 51-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bf35236fce22be8c1d815f29784f17c43426c429",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
