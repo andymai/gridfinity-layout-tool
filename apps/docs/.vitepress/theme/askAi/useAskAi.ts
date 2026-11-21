@@ -1,5 +1,6 @@
-import { reactive } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, reactive, watchEffect } from 'vue';
 import { readerSettings } from './consent';
+import { ASK_AI_PUBLIC, DOCKED_CLASS, DOCK_QUERY, PREVIEW_KEY } from './flags';
 import {
   answerText,
   loadConversation,
@@ -35,9 +36,6 @@ export interface Exchange {
 }
 
 const ENDPOINT = '/api/docs-ask';
-const PREVIEW_KEY = 'gridfinity-docs:ask-ai-preview';
-/** Until launch, Ask AI shows only after a visit with ?ask=1 in the URL. */
-export const ASK_AI_PUBLIC = false;
 
 const NOTICES: Readonly<Record<string, string>> = {
   refusal: 'Ask AI cannot answer this question. Ask it in another way, or search the docs.',
@@ -54,10 +52,14 @@ function errorNotice(status: number, code: unknown): string {
 }
 
 export const askAi = reactive({
+  /** Below the dock width only: the full-screen view is showing. */
   open: false,
   /** True after the first open, so the panel stays mounted and keeps its scroll. */
   opened: false,
   available: false,
+  /** The availability check is done, so the dock class can follow `available`. */
+  checked: false,
+  docked: false,
   resting: false,
   exchanges: [] as Exchange[],
 });
@@ -102,6 +104,14 @@ function exchange(question: string): Exchange {
 }
 
 export async function checkAvailability(search: string): Promise<void> {
+  try {
+    await loadAvailability(search);
+  } finally {
+    askAi.checked = true;
+  }
+}
+
+async function loadAvailability(search: string): Promise<void> {
   const fromUrl = new URLSearchParams(search).get('ask') === '1';
   let remembered = false;
   // A full or blocked store must not undo the opt-in that the URL just gave.
@@ -135,6 +145,52 @@ export async function checkAvailability(search: string): Promise<void> {
 export function setOpen(open: boolean): void {
   askAi.open = open && askAi.available;
   if (askAi.open) askAi.opened = true;
+}
+
+/** Closes the full-screen view and gives focus back to the button that opened it. */
+export async function closeAskAi(): Promise<void> {
+  setOpen(false);
+  // The page stays inert until the panel's watcher runs, and an inert button
+  // takes no focus.
+  await nextTick();
+  document.getElementById('ask-ai-button')?.focus();
+}
+
+function onShortcut(event: KeyboardEvent): void {
+  if (!askAi.available || event.altKey || !(event.metaKey || event.ctrlKey)) return;
+  if (event.key.toLowerCase() !== 'i') return;
+  event.preventDefault();
+  if (askAi.docked) {
+    document.querySelector<HTMLTextAreaElement>('#ask-ai-panel textarea')?.focus();
+  } else if (askAi.open) {
+    void closeAskAi();
+  } else {
+    setOpen(true);
+  }
+}
+
+/** The page-wide parts of Ask AI: the availability check, the dock and the shortcut. */
+export function useAskAiHost(): void {
+  let dock: MediaQueryList | null = null;
+  const onDockChange = (): void => {
+    askAi.docked = dock?.matches ?? false;
+  };
+  onMounted(() => {
+    dock = window.matchMedia(DOCK_QUERY);
+    onDockChange();
+    dock.addEventListener('change', onDockChange);
+    window.addEventListener('keydown', onShortcut);
+    // Until the check is done, the class stays as the head script set it.
+    watchEffect(() => {
+      if (!askAi.checked) return;
+      document.documentElement.classList.toggle(DOCKED_CLASS, askAi.available && askAi.docked);
+    });
+    void checkAvailability(window.location.search);
+  });
+  onBeforeUnmount(() => {
+    dock?.removeEventListener('change', onDockChange);
+    window.removeEventListener('keydown', onShortcut);
+  });
 }
 
 export const busy = (): boolean => controller !== null;

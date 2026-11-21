@@ -1,0 +1,90 @@
+/*
+ * The docked Ask AI panel takes a column at the right of the window. The
+ * default theme sizes its fixed nav and sidebar, and its 90rem centering, from
+ * the window width, so each rule below restates one of those for the docs
+ * column that is left. The selectors outrank the theme's scoped ones by the
+ * html element, so the theme's own media queries stay as they are.
+ */
+:root {
+  /* 20rem at the 80rem dock breakpoint, then wider while the docs keep 60rem. */
+  --ask-ai-dock: clamp(20rem, 100vw - 60rem, 26rem);
+}
+
+@media (min-width: 80rem) {
+  html.ask-ai-docked .Layout {
+    margin-inline-end: var(--ask-ai-dock);
+  }
+
+  html.ask-ai-docked .VPNav,
+  html.ask-ai-docked .VPLocalNav.fixed {
+    width: calc(100% - var(--ask-ai-dock));
+  }
+
+  /* Holds the column from first paint until the panel mounts over it. */
+  html.ask-ai-docked body::after {
+    content: '';
+    position: fixed;
+    inset-block: 0;
+    inset-inline-end: 0;
+    z-index: calc(var(--vp-z-index-nav) - 1);
+    width: var(--ask-ai-dock);
+    border-inline-start: 1px solid var(--vp-c-divider);
+    background: var(--vp-c-bg);
+  }
+}
+
+/* Until the docs column reaches 80rem, the outline moves from the aside to the
+   bar under the nav, as it does on a narrow window. */
+@media (min-width: 80rem) and (max-width: 105.99rem) {
+  html.ask-ai-docked .VPDoc .aside {
+    display: none;
+  }
+
+  html.ask-ai-docked .VPDoc .content {
+    min-width: 0;
+  }
+
+  html.ask-ai-docked .VPLocalNav:not(.empty) {
+    display: block;
+  }
+
+  /* From 80rem the nav paints its own surface, so the bar must not paint a
+     second one behind it. */
+  html.ask-ai-docked .VPLocalNav::before {
+    top: 0;
+  }
+}
+
+@media (min-width: 90rem) {
+  html.ask-ai-docked .VPSidebar {
+    padding-inline-start: max(
+      2rem,
+      calc((100% - var(--ask-ai-dock) - (var(--vp-layout-max-width) - 4rem)) / 2)
+    );
+    width: max(
+      var(--vp-sidebar-width),
+      calc(
+        (100% - var(--ask-ai-dock) - (var(--vp-layout-max-width) - 4rem)) / 2 +
+          var(--vp-sidebar-width) - 2rem
+      )
+    );
+  }
+
+  html.ask-ai-docked .VPContent.has-sidebar {
+    padding-inline-end: max(0px, calc((100% - var(--vp-layout-max-width)) / 2));
+    padding-inline-start: calc(
+      max(0px, (100% - var(--vp-layout-max-width)) / 2) + var(--vp-sidebar-width)
+    );
+  }
+
+  html.ask-ai-docked .VPNavBar.has-sidebar {
+    --vp-nav-col-offset: calc(
+      max(0px, (100% - var(--vp-layout-max-width)) / 2) + var(--vp-sidebar-width)
+    );
+  }
+}
+
+/* The full-screen view below the dock width: the page behind must not scroll. */
+html.ask-ai-covering {
+  overflow: hidden;
+}

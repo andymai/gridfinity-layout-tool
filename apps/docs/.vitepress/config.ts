@@ -4,6 +4,7 @@ import { defineConfig } from 'vitepress';
 import type { MarkdownRenderer } from 'vitepress';
 import { APP_URL, nav, sidebar } from './navigation.ts';
 import { renderUiTags } from './uiLabels.ts';
+import { DOCK_SCRIPT } from './theme/askAi/flags.ts';
 
 const SCREENSHOT_TAG = /<Screenshot\s[^>]*\bid="([^"]+)"[^>]*\/>/g;
 const captured = new Set(
@@ -82,6 +83,8 @@ export default defineConfig({
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'Gridfinity Layout Tool' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    // A self-hosted build has no API, so it has no panel to dock.
+    ...(process.env.VITE_SELF_HOSTED === '1' ? [] : [['script', {}, DOCK_SCRIPT] as const]),
   ],
   transformPageData(pageData) {
     const description =

@@ -1,7 +1,16 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useData, useRouter } from 'vitepress';
-import { askAi, ask, busy, newChat, retry, sendFeedback, setOpen, stop } from '../askAi/useAskAi';
+import {
+  askAi,
+  ask,
+  busy,
+  closeAskAi,
+  newChat,
+  retry,
+  sendFeedback,
+  stop,
+} from '../askAi/useAskAi';
 import AskAiAnswer from './AskAiAnswer.vue';
 
 const { page, frontmatter } = useData();
@@ -20,6 +29,8 @@ const starters = computed<string[]>(() => {
 const working = computed(() =>
   askAi.exchanges.some((e) => e.status === 'waiting' || e.status === 'streaming')
 );
+// Below the dock width the panel covers the page, so it acts as a modal view.
+const covering = computed(() => !askAi.docked && askAi.open);
 
 async function submit(question: string = draft.value): Promise<void> {
   if (!question.trim() || busy()) return;
@@ -34,33 +45,25 @@ function onKeydown(event: KeyboardEvent): void {
   }
 }
 
-async function close(): Promise<void> {
-  setOpen(false);
-  // On a phone the page stays inert until the watcher below runs, and an inert
-  // button takes no focus.
-  await nextTick();
-  document.getElementById('ask-ai-button')?.focus();
-}
-
 function onGlobalKey(event: KeyboardEvent): void {
   // Escape in a capture's zoom dialog closes the dialog, not the chat.
-  if (event.key !== 'Escape' || !askAi.open || document.querySelector('dialog[open]')) return;
-  void close();
+  if (event.key !== 'Escape' || !covering.value || document.querySelector('dialog[open]')) return;
+  void closeAskAi();
 }
 
-// On a phone the sheet covers the page, so the page behind it must not take
-// focus. The panel is teleported to <body>, outside VitePress's #app.
-const phone = ref(false);
-let phoneQuery: MediaQueryList | null = null;
-const onPhoneChange = (): void => {
-  phone.value = phoneQuery?.matches ?? false;
-};
+// The panel is teleported to <body>, outside VitePress's #app, so the page
+// behind a covering panel can be made inert without the panel. The first open
+// mounts the panel already covering, so the watcher runs at once.
 watch(
-  () => askAi.open && phone.value,
-  (modal) => document.getElementById('app')?.toggleAttribute('inert', modal)
+  covering,
+  (modal) => {
+    document.getElementById('app')?.toggleAttribute('inert', modal);
+    document.documentElement.classList.toggle('ask-ai-covering', modal);
+  },
+  { immediate: true }
 );
 
-// A docs link opens in the site, so the chat stays where it is.
+// A docs link opens in the site. A covering panel steps aside to show it.
 function onClick(event: MouseEvent): void {
   const link = (event.target as HTMLElement | null)?.closest<HTMLAnchorElement>(
     'a[data-docs-link]'
@@ -68,10 +71,11 @@ function onClick(event: MouseEvent): void {
   if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
   event.preventDefault();
   void router.go(link.getAttribute('href') ?? '/docs');
+  if (covering.value) void closeAskAi();
 }
 
 function openSearch(): void {
-  void close();
+  if (covering.value) void closeAskAi();
   window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, metaKey: true }));
 }
 
@@ -87,8 +91,9 @@ watch(
   }
 );
 
+// Only an explicit open takes focus; a docked panel never steals it from the page.
 watch(
-  () => askAi.open,
+  covering,
   async (open) => {
     if (!open) return;
     await nextTick();
@@ -105,27 +110,23 @@ watch(draft, async () => {
   el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
 });
 
-onMounted(() => {
-  window.addEventListener('keydown', onGlobalKey);
-  phoneQuery = window.matchMedia('(max-width: 767px)');
-  onPhoneChange();
-  phoneQuery.addEventListener('change', onPhoneChange);
-});
+onMounted(() => window.addEventListener('keydown', onGlobalKey));
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', onGlobalKey);
-  phoneQuery?.removeEventListener('change', onPhoneChange);
   document.getElementById('app')?.removeAttribute('inert');
+  document.documentElement.classList.remove('ask-ai-covering');
 });
 </script>
 
 <template>
   <Teleport to="body">
     <aside
-      v-show="askAi.open"
+      v-show="askAi.docked || askAi.open"
       id="ask-ai-panel"
       class="ask-ai-panel"
-      role="dialog"
-      :aria-modal="phone"
+      :class="{ docked: askAi.docked }"
+      :role="covering ? 'dialog' : undefined"
+      :aria-modal="covering ? 'true' : undefined"
       aria-labelledby="ask-ai-title"
     >
       <header class="panel-header">
@@ -144,8 +145,16 @@ onBeforeUnmount(() => {
         >
           New chat
         </button>
-        <button class="header-button close" type="button" aria-label="Close Ask AI" @click="close">
-          ✕
+        <button
+          v-if="!askAi.docked"
+          class="header-button close"
+          type="button"
+          aria-label="Close Ask AI"
+          @click="closeAskAi"
+        >
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M4 4l8 8M12 4l-8 8" />
+          </svg>
         </button>
       </header>
 
@@ -198,24 +207,30 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+/* Full screen below the dock width. The padding keeps one reading column in
+   the middle of a wide tablet, and is plain 16px on a phone. */
 .ask-ai-panel {
+  --column-pad: max(16px, calc((100% - 46rem) / 2));
   position: fixed;
-  top: var(--vp-nav-height);
-  right: 0;
-  bottom: 0;
-  z-index: calc(var(--vp-z-index-nav) - 1);
+  inset: 0;
+  z-index: calc(var(--vp-z-index-sidebar) + 10);
   display: flex;
   flex-direction: column;
-  width: min(420px, 100vw);
-  border-left: 1px solid var(--vp-c-divider);
   background: var(--vp-c-bg);
-  box-shadow: var(--vp-shadow-3);
+}
+.ask-ai-panel.docked {
+  inset: 0 0 0 auto;
+  z-index: var(--vp-z-index-nav);
+  width: var(--ask-ai-dock);
+  border-inline-start: 1px solid var(--vp-c-divider);
 }
 .panel-header {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 8px;
-  padding: 12px 16px;
+  height: var(--vp-nav-height, 64px);
+  padding-inline: var(--column-pad);
   border-bottom: 1px solid var(--vp-c-divider);
 }
 .panel-header h2 {
@@ -229,7 +244,7 @@ onBeforeUnmount(() => {
   font-weight: 600;
   line-height: 1.4;
 }
-.panel-header svg {
+.panel-header h2 svg {
   width: 15px;
   height: 15px;
   fill: var(--vp-c-brand-1);
@@ -243,6 +258,10 @@ onBeforeUnmount(() => {
   font-weight: 500;
 }
 .header-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
   padding: 4px 8px;
   border-radius: 6px;
   color: var(--vp-c-text-2);
@@ -255,11 +274,23 @@ onBeforeUnmount(() => {
 .header-button:disabled {
   opacity: 0.5;
 }
+.close {
+  min-width: 32px;
+}
+.close svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+}
 .panel-scroll {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 16px;
+  padding: 16px var(--column-pad);
   font-size: 14px;
 }
 .intro {
@@ -287,7 +318,8 @@ onBeforeUnmount(() => {
   border-color: var(--vp-c-brand-1);
 }
 .panel-footer {
-  padding: 12px 16px 10px;
+  flex-shrink: 0;
+  padding: 12px var(--column-pad) max(10px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--vp-c-divider);
 }
 .composer {
@@ -304,6 +336,7 @@ onBeforeUnmount(() => {
 }
 .composer textarea {
   flex: 1;
+  min-width: 0;
   resize: none;
   padding: 6px 0;
   border: 0;
@@ -314,7 +347,14 @@ onBeforeUnmount(() => {
   font-size: 14px;
   line-height: 1.5;
 }
+/* Under 16px, iOS Safari zooms the page when the field takes focus. */
+@media (pointer: coarse) {
+  .composer textarea {
+    font-size: 16px;
+  }
+}
 .send {
+  min-height: 32px;
   padding: 6px 12px;
   border-radius: 8px;
   background: var(--vp-c-brand-3);
@@ -341,13 +381,5 @@ onBeforeUnmount(() => {
   margin: 6px 0 0;
   font-size: 12px;
   color: var(--vp-c-text-3);
-}
-@media (max-width: 767px) {
-  .ask-ai-panel {
-    top: 0;
-    z-index: calc(var(--vp-z-index-nav) + 10);
-    width: 100vw;
-    border-left: 0;
-  }
 }
 </style>

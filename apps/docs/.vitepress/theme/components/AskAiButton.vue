@@ -1,36 +1,22 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted } from 'vue';
-import { askAi, checkAvailability, setOpen } from '../askAi/useAskAi';
+import { askAi, closeAskAi, setOpen } from '../askAi/useAskAi';
 
-// Here and not in the panel: the panel mounts only on the first open.
-function onKey(event: KeyboardEvent): void {
-  if (!askAi.available || event.altKey || !(event.metaKey || event.ctrlKey)) return;
-  if (event.key.toLowerCase() !== 'i') return;
-  event.preventDefault();
-  const closing = askAi.open;
-  setOpen(!closing);
-  // Focus may sit in the panel that just hid; on a phone the page is inert
-  // until the panel's watcher runs.
-  if (closing) void nextTick(() => document.getElementById('ask-ai-button')?.focus());
+function toggle(): void {
+  if (askAi.open) void closeAskAi();
+  else setOpen(true);
 }
-
-onMounted(() => {
-  void checkAvailability(window.location.search);
-  window.addEventListener('keydown', onKey);
-});
-onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
 </script>
 
 <template>
   <button
-    v-if="askAi.available"
+    v-if="askAi.available && !askAi.docked"
     id="ask-ai-button"
     class="ask-ai-button"
     type="button"
     aria-controls="ask-ai-panel"
     :aria-expanded="askAi.open"
     title="Ask AI (Ctrl+I)"
-    @click="setOpen(!askAi.open)"
+    @click="toggle"
   >
     <svg viewBox="0 0 16 16" aria-hidden="true">
       <path d="M8 1.5l1.6 4.2 4.4 1.3-4.4 1.3L8 12.5 6.4 8.3 2 7l4.4-1.3z" />

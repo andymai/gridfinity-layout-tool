@@ -10,10 +10,11 @@ import OpenAppButton from './components/OpenAppButton.vue';
 import PlanDrawerButton from './components/PlanDrawerButton.vue';
 import RecipeCards from './components/RecipeCards.vue';
 import Screenshot from './components/Screenshot.vue';
-import { askAi } from './askAi/useAskAi';
+import { askAi, useAskAiHost } from './askAi/useAskAi';
 import './custom.css';
+import './askAi/dock.css';
 
-// The panel and its Markdown parser load on the first open, not with every page.
+// The panel and its Markdown parser load when the panel first shows, not with every page.
 const AskAiPanel = defineAsyncComponent(() => import('./components/AskAiPanel.vue'));
 
 // The markdown rule replaces every <Ui> tag before Vue sees a page. A tag that
@@ -60,8 +61,12 @@ const theme: Theme = {
       'nav-bar-content-after': () => [h(AskAiButton), h(OpenAppButton)],
       'doc-before': () => h(ChapterLabel),
       'doc-after': () => h(AppTools),
-      'layout-bottom': () => (askAi.opened ? h(AskAiPanel) : null),
+      'layout-bottom': () =>
+        askAi.available && (askAi.docked || askAi.opened) ? h(AskAiPanel) : null,
     }),
+  setup() {
+    useAskAiHost();
+  },
   enhanceApp({ app }) {
     app.component('DrawerCalculator', DrawerCalculator);
     app.component('PlanDrawerButton', PlanDrawerButton);
