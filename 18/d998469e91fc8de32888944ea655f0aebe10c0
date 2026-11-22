@@ -1,0 +1,23 @@
+src/shell/layoutExport/LayoutExportDialog.tsx
+  s_f3decd9961964a::t_5d8bdb87302d6d 7,11-15,57-63,66-74,79-87,117-123
+  s_f3decd9961964a::t_b20ba80a235ef2 124
+src/shell/layoutExport/LayoutExportDialog.test.tsx
+  s_f3decd9961964a::t_1d5e8460811b7c 2,11,17-18,21,26,38-39,80-129
+  s_f3decd9961964a::t_2966ec6e93cf3a 130
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "18d998469e91fc8de32888944ea655f0aebe10c0",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
