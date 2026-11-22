@@ -4,7 +4,7 @@ import { meshRefHashes } from '../../lib/designerCutoutValidation.js';
 import { validateAssemblyContent } from '../../lib/assemblyValidation.js';
 import { validateImportedMeshContent } from '../../lib/importedMeshValidation.js';
 import { sanitizeString } from '../../lib/validation.js';
-import { createSyncResourceHandler } from '../lib/resourceHandler.js';
+import { createSyncResourceHandler, type SyncResourceConfig } from '../lib/resourceHandler.js';
 
 /**
  * A version-1 envelope predates the server keeping `params.overhang`, so a
@@ -271,7 +271,7 @@ function unwrapDesignPayload(design: unknown): {
  *
  * Mirrors the layouts endpoint's LWW + tombstone semantics.
  */
-export default createSyncResourceHandler<DesignEnvelope>({
+export const resource: SyncResourceConfig<DesignEnvelope> = {
   kind: 'designs',
   payloadKey: PAYLOAD_KEY,
   // Locally-minted design ids plus the share formats (UUID, base36
@@ -442,4 +442,6 @@ export default createSyncResourceHandler<DesignEnvelope>({
     };
   },
   storedComparable: (stored) => stored.design,
-});
+};
+
+export default createSyncResourceHandler(resource);

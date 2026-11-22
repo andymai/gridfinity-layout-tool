@@ -4,7 +4,7 @@ import {
   validateLibraryItem,
   type StoredLibraryItem,
 } from '../../lib/cutoutLibraryValidation.js';
-import { createSyncResourceHandler } from '../lib/resourceHandler.js';
+import { createSyncResourceHandler, type SyncResourceConfig } from '../lib/resourceHandler.js';
 
 export const SCHEMA_VERSION = 1 as const;
 
@@ -25,7 +25,7 @@ interface CutoutItemEnvelope {
  * One cutout library item. Its meshes travel as refs to the account's mesh
  * files, like a design's. Off, with a 503, unless CUTOUT_LIBRARY_SYNC_ENABLED is `true`.
  */
-export default createSyncResourceHandler<CutoutItemEnvelope>({
+export const resource: SyncResourceConfig<CutoutItemEnvelope> = {
   kind: 'cutoutItems',
   payloadKey: PAYLOAD_KEY,
   isValidId: (id) => LIBRARY_ITEM_ID_PATTERN.test(id),
@@ -44,4 +44,6 @@ export default createSyncResourceHandler<CutoutItemEnvelope>({
     };
   },
   storedComparable: (stored) => stored.cutoutItem,
-});
+};
+
+export default createSyncResourceHandler(resource);

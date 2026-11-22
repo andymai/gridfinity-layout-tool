@@ -1,6 +1,6 @@
 import { ErrorCode } from '../../lib/shared.js';
 import { sanitizeString } from '../../lib/validation.js';
-import { createSyncResourceHandler } from '../lib/resourceHandler.js';
+import { createSyncResourceHandler, type SyncResourceConfig } from '../lib/resourceHandler.js';
 
 /**
  * A version-1 envelope predates `kind`, so a missing kind there is unknown, not
@@ -49,7 +49,7 @@ interface FolderEnvelope {
  * its place in the tree; a parent that does not exist on the reading device
  * reads as the root there, which is why the parent is not checked here.
  */
-export default createSyncResourceHandler<FolderEnvelope>({
+export const resource: SyncResourceConfig<FolderEnvelope> = {
   kind: 'folders',
   payloadKey: PAYLOAD_KEY,
   isValidId: (id) => FOLDER_ID_PATTERN.test(id),
@@ -124,4 +124,6 @@ export default createSyncResourceHandler<FolderEnvelope>({
     };
   },
   storedComparable: (stored) => stored.folder,
-});
+};
+
+export default createSyncResourceHandler(resource);

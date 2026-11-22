@@ -1,7 +1,7 @@
 import { ErrorCode, MAX_NAME_LENGTH } from '../../lib/shared.js';
 import { isValidBaseplateId, validateBaseplateShare } from '../../lib/baseplateValidation.js';
 import { sanitizeString } from '../../lib/validation.js';
-import { createSyncResourceHandler } from '../lib/resourceHandler.js';
+import { createSyncResourceHandler, type SyncResourceConfig } from '../lib/resourceHandler.js';
 
 export const SCHEMA_VERSION = 1 as const;
 
@@ -42,7 +42,7 @@ function unwrapBaseplatePayload(
  *
  * Mirrors the designs endpoint's LWW + tombstone semantics.
  */
-export default createSyncResourceHandler<BaseplateEnvelope>({
+export const resource: SyncResourceConfig<BaseplateEnvelope> = {
   kind: 'baseplates',
   payloadKey: PAYLOAD_KEY,
   isValidId: isValidBaseplateId,
@@ -104,4 +104,6 @@ export default createSyncResourceHandler<BaseplateEnvelope>({
     };
   },
   storedComparable: (stored) => stored.baseplate,
-});
+};
+
+export default createSyncResourceHandler(resource);

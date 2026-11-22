@@ -1,10 +1,8 @@
-import { validateShareLayout, isValidationError } from '../../../api/lib/validation.js';
-import { validateDesignerShare } from '../../../api/lib/designerValidation.js';
-import { validateBaseplateShare } from '../../../api/lib/baseplateValidation.js';
 import { TOMBSTONE_RETENTION_MS } from '../../../api/lib/userIndex.js';
 import { pMap } from './concurrency.js';
 import { expectedEnvelopeDelta } from './delta.js';
 import { isMalformedRow, itemKey } from './inventory.js';
+import { KIND_SPECS } from './kinds.js';
 import { createProgress, type Progress } from './progress.js';
 import { reverify } from './reverify.js';
 import type Redis from 'ioredis';
@@ -245,14 +243,21 @@ async function validateBlob(
     return out;
   }
   const env = body as Record<string, unknown>;
-  if (env.schemaVersion !== 1) {
+  const spec = KIND_SPECS[blob.kind];
+  const version = env.schemaVersion;
+  if (
+    typeof version !== 'number' ||
+    !Number.isInteger(version) ||
+    version < 1 ||
+    version > spec.schemaVersion
+  ) {
     out.push({
       kind: 'envelope_invalid',
       uid: blob.uid,
       itemKind: blob.kind,
       id: blob.id,
       severity: 'error',
-      detail: `schemaVersion=${String(env.schemaVersion)} (expected 1)`,
+      detail: `schemaVersion=${String(version)} (expected 1 to ${spec.schemaVersion})`,
     });
   }
   if (typeof env.modifiedAt !== 'number' || !Number.isFinite(env.modifiedAt)) {
@@ -279,73 +284,18 @@ async function validateBlob(
     }
   }
 
-  if (blob.kind === 'layouts') {
-    const inner = JSON.stringify({ layout: env.layout });
-    const v = validateShareLayout(env.layout, Buffer.byteLength(inner, 'utf8'));
-    if (isValidationError(v)) {
-      out.push({
-        kind: 'payload_invalid',
-        uid: blob.uid,
-        itemKind: blob.kind,
-        id: blob.id,
-        severity: 'error',
-        detail: `${v.error.code}: ${v.error.message}`,
-      });
-    }
-  } else if (blob.kind === 'baseplates') {
-    const u = unwrapWrapper(env.baseplate);
-    if (!u) {
-      out.push({
-        kind: 'payload_invalid',
-        uid: blob.uid,
-        itemKind: blob.kind,
-        id: blob.id,
-        severity: 'error',
-        detail: 'baseplate payload not unwrappable',
-      });
-    } else {
-      const wrapped = { type: 'baseplate' as const, version: 1 as const, params: u.params };
-      const inner = JSON.stringify(wrapped);
-      const v = validateBaseplateShare(wrapped, Buffer.byteLength(inner, 'utf8'));
-      if (!v.valid) {
-        out.push({
-          kind: 'payload_invalid',
-          uid: blob.uid,
-          itemKind: blob.kind,
-          id: blob.id,
-          severity: 'error',
-          detail: `${v.error.code}: ${v.error.message}`,
-        });
-      }
-    }
-  } else {
-    const u = unwrapWrapper(env.design);
-    if (!u) {
-      out.push({
-        kind: 'payload_invalid',
-        uid: blob.uid,
-        itemKind: blob.kind,
-        id: blob.id,
-        severity: 'error',
-        detail: 'design payload not unwrappable',
-      });
-    } else {
-      const wrapped = { type: 'designer' as const, version: 1 as const, params: u.params };
-      const inner = JSON.stringify(wrapped);
-      const v = validateDesignerShare(wrapped, Buffer.byteLength(inner, 'utf8'), {
-        meshRefs: true,
-      });
-      if (!v.valid) {
-        out.push({
-          kind: 'payload_invalid',
-          uid: blob.uid,
-          itemKind: blob.kind,
-          id: blob.id,
-          severity: 'error',
-          detail: `${v.error.code}: ${v.error.message}`,
-        });
-      }
-    }
+  // The stored envelope stands in for the PUT body: it carries the payload
+  // under the same key and the schemaVersion that the write declared.
+  const built = spec.buildPut(env[spec.payloadKey], Number(env.modifiedAt), blob.id, env);
+  if (!built.ok) {
+    out.push({
+      kind: 'payload_invalid',
+      uid: blob.uid,
+      itemKind: blob.kind,
+      id: blob.id,
+      severity: 'error',
+      detail: `${built.reason ?? built.code}: ${built.error}`,
+    });
   }
 
   if (fetchedBytes !== blob.size) {
@@ -361,14 +311,4 @@ async function validateBlob(
   }
 
   return out;
-}
-
-function unwrapWrapper(wrapper: unknown): { name: string | null; params: unknown } | null {
-  if (wrapper === null || typeof wrapper !== 'object') return null;
-  const { name, params } = wrapper as { name?: unknown; params?: unknown };
-  if (typeof params === 'object' && params !== null) {
-    if (name !== undefined && typeof name !== 'string') return null;
-    return { name: (name as string) ?? null, params };
-  }
-  return { name: null, params: wrapper };
 }
