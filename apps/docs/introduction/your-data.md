@@ -30,6 +30,7 @@ When you don't sign in, all of your work stays in your browser on this device:
 - your layouts, and the history of each layout
 - your saved bin designs
 - your saved baseplates
+- your [cutout library](../cutouts/library)
 - your settings
 
 Each change saves automatically. Most data goes into the database in your browser. If your browser has no database, the Layout Tool falls back to the smaller local storage of about 5 MB. To see which one your browser uses, click <Ui k="sidebar.settings" /> (the gear icon in the header), then click <Ui k="settings.tabs.storage" />.
@@ -42,7 +43,7 @@ To delete the data in this browser:
 2. Click <Ui k="settings.tabs.storage" />.
 3. Click <Ui k="settings.storage.clearAllData" />, then confirm.
 
-This deletes your layouts, their history, the usage data, and the cached data. It keeps your settings, your saved bin designs and your saved baseplates. To remove everything, also clear the site data for gridfinitylayouttool.com in your browser settings.
+This deletes your layouts, their history, the usage data, and the cached data. It keeps your settings, your saved bin designs, your saved baseplates and your cutout library. To remove everything, also clear the site data for gridfinitylayouttool.com in your browser settings.
 
 ## Sign-in and sync
 
@@ -57,7 +58,7 @@ From your Google or GitHub account, the Layout Tool keeps these things:
 
 With GitHub, the Layout Tool also reads the list of email addresses that GitHub verified for you. It uses them only to recognize Ko-fi supporters, and it keeps one-way codes made from them, not the addresses.
 
-When you sign in, the Layout Tool copies your work to your account on the server. That covers your layouts, saved bin designs, saved baseplates, layout folders, and the version history of your designs. Only your signed-in session can read them. Each account holds up to 100 layouts, 100 bin designs and 100 baseplates.
+When you sign in, the Layout Tool copies your work to your account on the server. That covers your layouts, saved bin designs, saved baseplates, layout folders, your cutout library, and the version history of your designs. Only your signed-in session can read them. Each account holds up to 100 layouts, 100 bin designs and 100 baseplates.
 
 When you delete your account, the server deletes all of your synced data and the designs that you published to the community gallery. It also removes your likes and your reports. The local copies on this device stay. See [Delete your account](../sharing/accounts-and-sync#delete-your-account).
 

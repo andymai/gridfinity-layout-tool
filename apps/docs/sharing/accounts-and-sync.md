@@ -48,6 +48,8 @@ After you sign in, these items sync, up to a limit for each account:
 | Saved baseplate designs                              | 100 baseplates, 10 MB  |
 | <Ui k="binDesigner.versions.title" /> of bin designs | 500 versions, 25 MB    |
 | Folders in the layout manager                        | 200 folders            |
+| Items in the [cutout library](../cutouts/library)    | 1000 items, 25 MB      |
+| Folders in the cutout library                        | 200 folders            |
 
 Your settings, your Labs choices and your share links don't sync. Each device keeps its own.
 
