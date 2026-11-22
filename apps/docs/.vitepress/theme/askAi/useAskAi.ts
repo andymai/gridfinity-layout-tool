@@ -1,8 +1,10 @@
 import { nextTick, onBeforeUnmount, onMounted, reactive, watchEffect } from 'vue';
 import { readerSettings } from './consent';
-import { ASK_AI_PUBLIC, DOCKED_CLASS, DOCK_QUERY, PREVIEW_KEY } from './flags';
+import { ASK_AI_PUBLIC, DOCKED_CLASS, DOCK_QUERY, OFF_KEY, PREVIEW_KEY } from './flags';
 import {
+  MAX_TURNS,
   answerText,
+  hasToolCall,
   loadConversation,
   messageText,
   newConversation,
@@ -40,7 +42,6 @@ const ENDPOINT = '/api/docs-ask';
 const NOTICES: Readonly<Record<string, string>> = {
   refusal: 'Ask AI cannot answer this question. Ask it in another way, or search the docs.',
   truncated: 'The answer stopped before its end. Ask again for a shorter answer.',
-  round_limit: 'Ask AI read many pages and stopped. Ask a narrower question.',
   resting: 'Ask AI is off until tomorrow. You can still search the docs.',
 };
 
@@ -48,6 +49,7 @@ function errorNotice(status: number, code: unknown): string {
   if (code === 'RESTING') return NOTICES.resting;
   if (status === 429) return 'You asked many questions in the last hour. Try again later.';
   if (status === 413) return 'This chat is too long. Start a new chat.';
+  if (code === 'busy') return 'Ask AI is busy. Try again in a minute.';
   return 'Ask AI did not answer. Try again.';
 }
 
@@ -61,6 +63,8 @@ export const askAi = reactive({
   checked: false,
   docked: false,
   resting: false,
+  /** The chat holds MAX_TURNS turns, the most that the server takes back. */
+  full: false,
   exchanges: [] as Exchange[],
 });
 
@@ -85,7 +89,23 @@ function chat(): Conversation {
 
 function keep(next: Conversation): void {
   conversation = next;
+  askAi.full = next.turns.length >= MAX_TURNS;
   saveConversation(store('session'), next);
+}
+
+function rememberOff(off: boolean): void {
+  try {
+    if (off) store('local')?.setItem(OFF_KEY, '1');
+    else store('local')?.removeItem(OFF_KEY);
+  } catch {
+    // Without the flag, a page only shifts once more while Ask AI is off.
+  }
+}
+
+function settleSteps(current: Exchange): void {
+  current.steps = current.steps.map((step) =>
+    step.state === 'running' ? { ...step, state: 'error' } : step
+  );
 }
 
 function exchange(question: string): Exchange {
@@ -112,6 +132,7 @@ export async function checkAvailability(search: string): Promise<void> {
 }
 
 async function loadAvailability(search: string): Promise<void> {
+  if ((import.meta.env.VITE_SELF_HOSTED as string | undefined) === '1') return;
   const fromUrl = new URLSearchParams(search).get('ask') === '1';
   let remembered = false;
   // A full or blocked store must not undo the opt-in that the URL just gave.
@@ -129,13 +150,17 @@ async function loadAvailability(search: string): Promise<void> {
     const status = (await response.json()) as { enabled?: unknown; resting?: unknown };
     askAi.available = status.enabled === true;
     askAi.resting = status.resting === true;
+    rememberOff(!askAi.available);
   } catch {
     return;
   }
   if (askAi.exchanges.length === 0) {
-    askAi.exchanges = chat().turns.map((turn) => ({
+    const restored = chat();
+    askAi.full = restored.turns.length >= MAX_TURNS;
+    askAi.exchanges = restored.turns.map((turn) => ({
       ...exchange(turn.question),
       text: answerText(turn),
+      traceId: turn.traceId ?? null,
       status: 'done' as const,
       stored: true,
     }));
@@ -160,7 +185,9 @@ function onShortcut(event: KeyboardEvent): void {
   if (event.key.toLowerCase() !== 'i') return;
   event.preventDefault();
   if (askAi.docked) {
-    document.querySelector<HTMLTextAreaElement>('#ask-ai-panel textarea')?.focus();
+    document
+      .querySelector<HTMLElement>('#ask-ai-panel textarea, #ask-ai-panel .panel-footer button')
+      ?.focus();
   } else if (askAi.open) {
     void closeAskAi();
   } else {
@@ -214,7 +241,7 @@ export async function ask(question: string, page: string): Promise<void> {
         question: text,
         page,
         locale,
-        turns: before.turns,
+        turns: before.turns.map(({ traceId: _local, ...turn }) => turn),
         analytics,
       }),
       signal: abort.signal,
@@ -227,6 +254,7 @@ export async function ask(question: string, page: string): Promise<void> {
       return;
     }
     current.status = 'streaming';
+    let roundEnded = false;
     for await (const { event, data } of readEvents(response.body)) {
       const payload = data as Record<string, unknown>;
       if (event === 'start') {
@@ -237,11 +265,16 @@ export async function ask(question: string, page: string): Promise<void> {
         if (at < 0) current.steps.push(step);
         else current.steps.splice(at, 1, step);
       } else if (event === 'thinking' && typeof payload.text === 'string') {
+        if (roundEnded && current.thinking) current.thinking += '\n\n';
+        roundEnded = false;
         current.thinking += payload.text;
       } else if (event === 'text' && typeof payload.text === 'string') {
         current.text += payload.text;
       } else if (event === 'message') {
         messages.push(payload.content);
+        roundEnded = true;
+        // Text before a tool call is not the answer; the next round writes it.
+        if (hasToolCall(payload.content)) current.text = '';
       } else if (event === 'notice' && typeof payload.code === 'string') {
         current.notice = NOTICES[payload.code] ?? null;
         if (payload.code === 'resting') askAi.resting = true;
@@ -250,8 +283,7 @@ export async function ask(question: string, page: string): Promise<void> {
         current.notice = errorNotice(500, payload.code);
       } else if (event === 'done') {
         current.status = 'done';
-        // Text written before a tool call is not part of the answer; a reload
-        // shows only the last message, so the live view does too.
+        // A reload shows only the last message, so the live view does too.
         if (messages.length > 0) current.text = messageText(messages.at(-1));
         const turn = payload.turn as Record<string, unknown> | undefined;
         if (turn && typeof turn.signature === 'string') {
@@ -262,6 +294,7 @@ export async function ask(question: string, page: string): Promise<void> {
               locale: String(turn.locale),
               signature: turn.signature,
               messages,
+              ...(current.traceId ? { traceId: current.traceId } : {}),
             })
           );
           current.stored = true;
@@ -276,6 +309,7 @@ export async function ask(question: string, page: string): Promise<void> {
     current.status = abort.signal.aborted ? 'stopped' : 'error';
     if (current.status === 'error') current.notice = errorNotice(0, null);
   } finally {
+    settleSteps(current);
     controller = null;
   }
 }

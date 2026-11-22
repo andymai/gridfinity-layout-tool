@@ -23,6 +23,12 @@ describe('answerSegments', () => {
     expect(out).toContain('<span class="ui-label">Grid &lt;b&gt;</span>');
   });
 
+  it('puts a copy button on a code block, and escapes the code', () => {
+    const out = html('```\ndocker run <image>\n```');
+    expect(out).toContain('data-copy-code');
+    expect(out).toContain('<pre><code>docker run &lt;image&gt;</code></pre>');
+  });
+
   it('escapes every other tag in the answer', () => {
     const out = html('Hi <script>alert(1)</script> <img src=x onerror=alert(1)> <b>bold</b>');
     expect(out).not.toMatch(/<script|<img|<b>/);
