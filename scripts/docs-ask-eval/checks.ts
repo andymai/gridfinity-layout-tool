@@ -35,6 +35,10 @@ export function anchorsOf(markdown: string): Set<string> {
   return new Set([...markdown.matchAll(ANCHOR)].map((m) => m[1] as string));
 }
 
+export function chipLabels(answer: string): string[] {
+  return [...answer.matchAll(CHIP)].map((m) => (m[1] as string).trim());
+}
+
 export function checkAnswer(
   answer: string,
   corpus: AskCorpus,
@@ -58,9 +62,7 @@ export function checkAnswer(
     citedPages.add(target.page);
   }
   const known = new Set([...Object.values(labels), ...Object.values(english)]);
-  const unknownLabels = [...answer.matchAll(CHIP)]
-    .map((m) => (m[1] as string).trim())
-    .filter((label) => !known.has(label));
+  const unknownLabels = chipLabels(answer).filter((label) => !known.has(label));
   const captures = new Set(
     Object.values(corpus.pages).flatMap((page) =>
       [...page.markdown.matchAll(CAPTURE)].map((m) => m[1] as string)

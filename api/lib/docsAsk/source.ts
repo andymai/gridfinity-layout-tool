@@ -24,10 +24,14 @@ async function readJson(rel: string): Promise<unknown> {
   return JSON.parse(await fs.readFile(path.join(docsDir(), rel), 'utf8'));
 }
 
+async function readLabels(locale: string): Promise<AskLabels> {
+  return labelsSchema.parse(await readJson(labelsPath(locale)));
+}
+
 async function load(): Promise<DocsSource> {
   const [corpus, english] = await Promise.all([
     readJson(CORPUS_PATH).then((data) => corpusSchema.parse(data)),
-    readJson(labelsPath('en')).then((data) => labelsSchema.parse(data)),
+    readLabels('en'),
   ]);
   const tables = new Map<string, Promise<AskLabels>>([['en', Promise.resolve(english)]]);
   const locale = (requested: string): string =>
@@ -40,7 +44,7 @@ async function load(): Promise<DocsSource> {
       const code = locale(requested);
       let table = tables.get(code);
       if (!table) {
-        table = readJson(labelsPath(code)).then((data) => labelsSchema.parse(data));
+        table = readLabels(code);
         table.catch(() => tables.delete(code));
         tables.set(code, table);
       }

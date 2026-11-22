@@ -2,8 +2,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { AskCorpus } from './corpus.js';
 import { SYSTEM_PROMPT } from './prompt.js';
 import { costUsd } from './spend.js';
-import { STEP_KINDS } from './tools.js';
-import type { StepKind, ToolName, ToolRun } from './tools.js';
+import { PLACEHOLDER_LABELS, STEP_KINDS, toolResult } from './tools.js';
+import type { StepKind, ToolName, ToolRunner } from './tools.js';
 import type { Generation } from './traces.js';
 
 type MessageParam = Anthropic.Beta.BetaMessageParam;
@@ -28,6 +28,7 @@ export type AgentEvent =
   /** One assistant message as the API returned it, for the panel to send back next turn. */
   | { type: 'message'; content: ContentBlock[] }
   | { type: 'notice'; code: 'refusal' | 'truncated' | 'resting' };
+type StepEvent = Extract<AgentEvent, { type: 'step' }>;
 
 export interface AgentOptions {
   readonly client: Anthropic;
@@ -35,7 +36,7 @@ export interface AgentOptions {
   readonly tools: ToolUnion[];
   readonly messages: MessageParam[];
   readonly locale: string;
-  readonly run: (name: string, input: unknown, locale: string) => ToolRun;
+  readonly run: ToolRunner;
   readonly send: (event: AgentEvent) => void;
   readonly budget: RoundBudget;
   /** Filled as rounds finish, so a failed answer still reports what it spent. */
@@ -72,14 +73,23 @@ export interface AgentResult {
   readonly stopReason: string | null;
 }
 
-const PLACEHOLDER_LABELS: Readonly<Record<StepKind, string>> = {
-  read: 'Opening a page',
-  search: 'Searching the docs',
-  check: 'Checking a drawer',
-};
+interface RoundResult {
+  readonly message: Anthropic.Beta.BetaMessage;
+  readonly costUsd: number;
+  readonly firstTokenSeconds: number | null;
+  readonly latencySeconds: number;
+}
 
 function kindOf(name: string): StepKind {
   return Object.hasOwn(STEP_KINDS, name) ? STEP_KINDS[name as ToolName] : 'read';
+}
+
+function placeholderStep(
+  call: { readonly id: string; readonly name: string },
+  state: StepEvent['state']
+): StepEvent {
+  const kind = kindOf(call.name);
+  return { type: 'step', id: call.id, kind, state, label: PLACEHOLDER_LABELS[kind] };
 }
 
 function textOf(content: readonly ContentBlock[]): string {
@@ -141,12 +151,7 @@ async function streamRound(
   messages: MessageParam[],
   lastRound: boolean,
   shown: { visible: boolean }
-): Promise<{
-  message: Anthropic.Beta.BetaMessage;
-  costUsd: number;
-  firstTokenSeconds: number | null;
-  latencySeconds: number;
-}> {
+): Promise<RoundResult> {
   const started = performance.now();
   let firstToken: number | null = null;
   // A round that fails or that the reader stops is billed too, so the spend
@@ -177,14 +182,7 @@ async function streamRound(
         outputTokens = event.usage.output_tokens;
         partial = withDelta(partial, event.usage);
       } else if (event.type === 'content_block_start' && event.content_block.type === 'tool_use') {
-        const kind = kindOf(event.content_block.name);
-        send({
-          type: 'step',
-          id: event.content_block.id,
-          kind,
-          state: 'running',
-          label: PLACEHOLDER_LABELS[kind],
-        });
+        send(placeholderStep(event.content_block, 'running'));
       } else if (event.type === 'content_block_delta') {
         if (event.delta.type === 'thinking_delta') {
           send({ type: 'thinking', text: event.delta.thinking });
@@ -216,7 +214,7 @@ async function roundWithRetries(
   options: AgentOptions,
   messages: MessageParam[],
   lastRound: boolean
-): Promise<Awaited<ReturnType<typeof streamRound>>> {
+): Promise<RoundResult> {
   const shown = { visible: false };
   for (let attempt = 0; ; attempt++) {
     try {
@@ -266,13 +264,13 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
       break;
     }
     const lastRound = round === MAX_ROUNDS - 1;
-    let result: Awaited<ReturnType<typeof streamRound>>;
+    let result: RoundResult;
     try {
       result = await roundWithRetries(options, messages, lastRound);
     } finally {
       await options.budget.release();
     }
-    const { message, costUsd: cost } = result;
+    const { message } = result;
     const content = echoContent(message.content);
     const calls = content.filter(
       (block): block is Anthropic.Beta.BetaToolUseBlock => block.type === 'tool_use'
@@ -280,16 +278,12 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
     // A call dropped at a fallback never runs, but its step already showed.
     const kept = new Set(calls.map((call) => call.id));
     for (const block of message.content) {
-      if (block.type !== 'tool_use' || kept.has(block.id)) continue;
-      const kind = kindOf(block.name);
-      options.send({
-        type: 'step',
-        id: block.id,
-        kind,
-        state: 'error',
-        label: PLACEHOLDER_LABELS[kind],
-      });
+      if (block.type === 'tool_use' && !kept.has(block.id)) {
+        options.send(placeholderStep(block, 'error'));
+      }
     }
+    answer = textOf(message.content);
+    stopReason = message.stop_reason;
     generations.push({
       spanId: message.id,
       model: message.model,
@@ -297,16 +291,14 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
       outputTokens: message.usage.output_tokens,
       cacheReadTokens: message.usage.cache_read_input_tokens ?? 0,
       cacheWriteTokens: message.usage.cache_creation_input_tokens ?? 0,
-      costUsd: cost,
+      costUsd: result.costUsd,
       latencySeconds: result.latencySeconds,
       firstTokenSeconds: result.firstTokenSeconds,
-      stopReason: message.stop_reason,
-      text: textOf(message.content),
+      stopReason,
+      text: answer,
       toolCalls: calls.map((call) => call.name),
     });
     options.send({ type: 'message', content: message.content });
-    stopReason = message.stop_reason;
-    answer = textOf(message.content);
 
     if (message.stop_reason === 'refusal') {
       options.send({ type: 'notice', code: 'refusal' });
@@ -333,12 +325,7 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
           state: run.isError ? 'error' : 'done',
           label: run.label,
         });
-        return {
-          type: 'tool_result' as const,
-          tool_use_id: call.id,
-          content: run.content,
-          ...(run.isError ? { is_error: true } : {}),
-        };
+        return toolResult(call.id, run);
       }),
     });
   }

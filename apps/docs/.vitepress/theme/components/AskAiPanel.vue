@@ -6,6 +6,7 @@ import {
   ask,
   busy,
   closeAskAi,
+  isLive,
   newChat,
   retry,
   sendFeedback,
@@ -27,22 +28,18 @@ const starters = computed<string[]>(() => {
     ? questions.filter((q): q is string => typeof q === 'string')
     : [];
 });
-const working = computed(() =>
-  askAi.exchanges.some((e) => e.status === 'waiting' || e.status === 'streaming')
-);
+const working = computed(() => askAi.exchanges.some(isLive));
 // A live region over the chat would read each streamed chunk out again, and a
 // status element that mounts with its text is often not read at all. This one
 // line, always mounted, says when an answer starts and ends, and why it failed.
 const ANNOUNCEMENTS: Readonly<Record<string, string>> = {
-  waiting: 'Ask AI is answering.',
-  streaming: 'Ask AI is answering.',
   done: 'Ask AI answered.',
   stopped: 'Ask AI stopped.',
 };
 const announcement = computed(() => {
   const last = askAi.exchanges.at(-1);
   if (!last) return '';
-  if (last.status === 'waiting' || last.status === 'streaming') return ANNOUNCEMENTS.streaming;
+  if (isLive(last)) return 'Ask AI is answering.';
   return last.notice ?? ANNOUNCEMENTS[last.status] ?? '';
 });
 
@@ -106,13 +103,23 @@ function onGlobalKey(event: KeyboardEvent): void {
 }
 
 // The panel is teleported to <body>, outside VitePress's #app, so the page
-// behind a covering panel can be made inert without the panel. The first open
-// mounts the panel already covering, so the watcher runs at once.
+// behind a covering panel can be made inert without the panel.
+function setCovering(modal: boolean): void {
+  document.getElementById('app')?.toggleAttribute('inert', modal);
+  document.documentElement.classList.toggle('ask-ai-covering', modal);
+}
+
+// The first open mounts the panel already covering, so the watcher runs at
+// once. Only an explicit open takes focus; a docked panel never steals it
+// from the page.
 watch(
   covering,
-  (modal) => {
-    document.getElementById('app')?.toggleAttribute('inert', modal);
-    document.documentElement.classList.toggle('ask-ai-covering', modal);
+  async (modal) => {
+    setCovering(modal);
+    if (!modal) return;
+    await nextTick();
+    // A resting panel has no question field, and focus must still enter the dialog.
+    (input.value ?? panel.value?.querySelector<HTMLElement>(FOCUSABLE))?.focus();
   },
   { immediate: true }
 );
@@ -158,18 +165,6 @@ watch(
   }
 );
 
-// Only an explicit open takes focus; a docked panel never steals it from the page.
-watch(
-  covering,
-  async (open) => {
-    if (!open) return;
-    await nextTick();
-    // A resting panel has no question field, and focus must still enter the dialog.
-    (input.value ?? panel.value?.querySelector<HTMLElement>(FOCUSABLE))?.focus();
-  },
-  { immediate: true }
-);
-
 watch(draft, async () => {
   await nextTick();
   const el = input.value;
@@ -185,8 +180,7 @@ onMounted(() => {
 });
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', onGlobalKey);
-  document.getElementById('app')?.removeAttribute('inert');
-  document.documentElement.classList.remove('ask-ai-covering');
+  setCovering(false);
 });
 </script>
 

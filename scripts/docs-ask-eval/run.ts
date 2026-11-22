@@ -17,7 +17,8 @@ import type { StoredTurn } from '../../api/lib/docsAsk/history.js';
 import { docsSource } from '../../api/lib/docsAsk/source.js';
 import { ROUND_RESERVE_USD } from '../../api/lib/docsAsk/spend.js';
 import { createToolRunner, toolDefinitions } from '../../api/lib/docsAsk/tools.js';
-import { checkAnswer } from './checks';
+import type { ToolRunner } from '../../api/lib/docsAsk/tools.js';
+import { checkAnswer, chipLabels } from './checks';
 import type { AnswerChecks } from './checks';
 import { GOLDEN } from './golden';
 import type { GoldenCase } from './golden';
@@ -109,6 +110,12 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
   const runner = createToolRunner(corpus, labelsFor, source.english);
   const stored: StoredTurn[] = [];
   const results: TurnResult[] = [];
+  const caseResult = (outcome: Omit<CaseResult, 'id' | 'group' | 'turns'>): CaseResult => ({
+    id: golden.id,
+    group: golden.group,
+    turns: results,
+    ...outcome,
+  });
   // A failed answer can still have paid for rounds; its cost belongs in the totals.
   let pending: { question: string; started: number; usd: () => number } | null = null;
   try {
@@ -116,7 +123,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
       const tools: string[] = [];
       const checks: string[] = [];
       const reads: string[] = [];
-      const run = (name: string, input: unknown, code: string) => {
+      const run: ToolRunner = (name, input, code) => {
         const result = runner(name, input, code);
         tools.push(`${name} ${JSON.stringify(input)}`);
         if (name === 'drawer_fit') checks.push(result.content);
@@ -181,11 +188,12 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
       pending = null;
     }
     const last = results.at(-1) as TurnResult;
-    const checks = checkAnswer(last.answer, corpus, labelsFor(locale), source.english);
+    const local = labelsFor(locale);
+    const checks = checkAnswer(last.answer, corpus, local, source.english);
     // Citations count on the last answer, but every turn must link and label correctly.
     const earlier = results
       .slice(0, -1)
-      .map((t) => checkAnswer(t.answer, corpus, labelsFor(locale), source.english));
+      .map((t) => checkAnswer(t.answer, corpus, local, source.english));
     const allChecks: AnswerChecks = {
       ...checks,
       brokenLinks: [...earlier.flatMap((c) => c.brokenLinks), ...checks.brokenLinks],
@@ -199,16 +207,13 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
         ? null
         : checks.citedPages.some((p) => golden.sources.includes(p));
     if (!hold(JUDGE_RESERVE_USD)) {
-      return {
-        id: golden.id,
-        group: golden.group,
-        turns: results,
+      return caseResult({
         checks: allChecks,
         citesSource,
         verdict: null,
         judgeUsd: 0,
         error: 'cap reached before the judge',
-      };
+      });
     }
     // The judge grades against the pages the answer used too, not only the
     // ones the case was written against. The cut keeps its prompt bounded, so
@@ -221,14 +226,9 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
         ...results.flatMap((t) => t.reads),
       ]),
     ].slice(0, Math.max(8, checks.citedPages.length));
-    const local = labelsFor(locale);
-    const keptEnglish = [...last.answer.matchAll(/\[\[ui:([^\]]+)\]\]/g)]
-      .map((m) => (m[1] as string).trim())
-      .filter((label) =>
-        Object.entries(source.english).some(
-          ([key, value]) => value === label && local[key] === label
-        )
-      );
+    const keptEnglish = chipLabels(last.answer).filter((label) =>
+      Object.entries(source.english).some(([key, value]) => value === label && local[key] === label)
+    );
     let graded: Awaited<ReturnType<typeof judge>>;
     try {
       graded = await judge(
@@ -244,16 +244,13 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
       held -= JUDGE_RESERVE_USD;
     }
     spent += graded.costUsd;
-    return {
-      id: golden.id,
-      group: golden.group,
-      turns: results,
+    return caseResult({
       checks: allChecks,
       citesSource,
       verdict: graded.verdict,
       judgeUsd: graded.costUsd,
       error: null,
-    };
+    });
   } catch (caught) {
     if (pending) {
       results.push({
@@ -268,16 +265,13 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
         stopReason: null,
       });
     }
-    return {
-      id: golden.id,
-      group: golden.group,
-      turns: results,
+    return caseResult({
       checks: null,
       citesSource: null,
       verdict: null,
       judgeUsd: 0,
       error: caught instanceof Error ? caught.message : String(caught),
-    };
+    });
   }
 }
 

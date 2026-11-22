@@ -7,6 +7,7 @@
     { "path": "./tsconfig.scripts.json" },
     { "path": "./scripts/feature-tips/tsconfig.json" },
     { "path": "./scripts/docs-capture/tsconfig.json" },
+    { "path": "./tsconfig.docs.json" },
     { "path": "./tsconfig.test.json" }
   ]
 }
