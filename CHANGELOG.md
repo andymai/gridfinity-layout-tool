@@ -1,5 +1,30 @@
 # Changelog
 
+## [4.551.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.550.0...gridfinity-layout-tool-v4.551.0) (2026-11-22)
+
+
+### Features
+
+* **cutouts:** drag a library item from the tab onto the board ([#5172](https://github.com/andymai/gridfinity-layout-tool/issues/5172)) ([ad0956b](https://github.com/andymai/gridfinity-layout-tool/commit/ad0956b0b851e749494a47b22a7b558069c16454))
+* **cutouts:** export and import a whole library folder as one file ([#5177](https://github.com/andymai/gridfinity-layout-tool/issues/5177)) ([09a2a94](https://github.com/andymai/gridfinity-layout-tool/commit/09a2a94196c0fc30a70e0a63191f958529f866b4))
+* **sync:** audit every synced kind in sync-admin, cutout library included ([#5174](https://github.com/andymai/gridfinity-layout-tool/issues/5174)) ([6420343](https://github.com/andymai/gridfinity-layout-tool/commit/64203431a88e1826f3b52fede3835f6955b690bc))
+
+
+### Bug Fixes
+
+* **content:** commit the regenerated privacy page with the Ask AI section ([#5173](https://github.com/andymai/gridfinity-layout-tool/issues/5173)) ([c9cf70d](https://github.com/andymai/gridfinity-layout-tool/commit/c9cf70dcb437f72bc1f7f8603532e03e77725788))
+* **generation:** emboss the offset on each label fit test coupon ([#5184](https://github.com/andymai/gridfinity-layout-tool/issues/5184)) ([d513a7b](https://github.com/andymai/gridfinity-layout-tool/commit/d513a7be294976bb62bce2cec5430fc23720c023))
+* **pwa:** serve the root icons that browsers ask for, and cache icons for a week ([#5179](https://github.com/andymai/gridfinity-layout-tool/issues/5179)) ([a6912ba](https://github.com/andymai/gridfinity-layout-tool/commit/a6912baca63849738e289b495f3d1db4118fc310))
+* **sync:** log which compartments rule rejects a design push ([#5178](https://github.com/andymai/gridfinity-layout-tool/issues/5178)) ([46fff56](https://github.com/andymai/gridfinity-layout-tool/commit/46fff56e5d6a7405f2bed4bb823f1049d4f9f446))
+* **sync:** make sync-admin's blob deletes run with the current Vercel CLI ([#5181](https://github.com/andymai/gridfinity-layout-tool/issues/5181)) ([70d1a51](https://github.com/andymai/gridfinity-layout-tool/commit/70d1a5189c24a8db55dca455ec8b74ca2a4ee4cc))
+* **sync:** stop retrying after a firewall challenge, and offer a reload ([#5180](https://github.com/andymai/gridfinity-layout-tool/issues/5180)) ([31bf674](https://github.com/andymai/gridfinity-layout-tool/commit/31bf674b11ae0b815445481bb6557b8a918de8e6))
+
+
+### Performance
+
+* **build:** load the startup code as six files, and cap startup files in CI ([#5175](https://github.com/andymai/gridfinity-layout-tool/issues/5175)) ([f828161](https://github.com/andymai/gridfinity-layout-tool/commit/f82816145948e0c18fe55bcb4fc0003a5115ece4))
+* **pwa:** precache only the images that startup code imports ([#5176](https://github.com/andymai/gridfinity-layout-tool/issues/5176)) ([2303cf5](https://github.com/andymai/gridfinity-layout-tool/commit/2303cf5604c8d8fbdc44247f243fea024e9843ec))
+
 ## [4.550.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.549.0...gridfinity-layout-tool-v4.550.0) (2026-11-22)
 
 
