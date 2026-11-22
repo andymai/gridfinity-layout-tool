@@ -233,6 +233,8 @@ describe('design sizes', () => {
   it.each([
     ['an assembly', assembly],
     ['a variant with branch fields', variant],
+    // Sanitizing trims, then truncates to 100: this name keeps a trailing space.
+    ['a name that ends in a space at the length cap', { ...variant, name: `${'a'.repeat(99)} b` }],
   ])('takes %s from its handler, so a consistent pair gives no findings', async (_, design) => {
     const { built, text, bytes } = storedDesign(design);
     // Neither fits the plain bin formula, which is why analyze asks the handler.

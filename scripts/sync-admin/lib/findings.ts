@@ -1,4 +1,5 @@
 import { TOMBSTONE_RETENTION_MS } from '../../../api/lib/userIndex.js';
+import { storedDesignBytes } from '../../../api/sync/designs/[id].js';
 import { pMap } from './concurrency.js';
 import { expectedEnvelopeDelta } from './delta.js';
 import { isMalformedRow, itemKey } from './inventory.js';
@@ -301,12 +302,11 @@ async function validateBlob(
     });
   }
 
-  // The designs handler measures each shape differently, and leaves a
-  // variant's branch fields out of the measure, so its own figure for this
-  // payload is the only exact one.
   const indexed = inv.indexMap.get(itemKey(blob.uid, blob.kind, blob.id));
-  if (blob.kind === 'designs' && indexed && built.ok) {
-    const size = sizeFinding(indexed, blob.size, fetchedBytes - built.sizeBytes);
+  const design = env[spec.payloadKey];
+  if (blob.kind === 'designs' && indexed && typeof design === 'object' && design !== null) {
+    const expected = fetchedBytes - storedDesignBytes(design as Record<string, unknown>);
+    const size = sizeFinding(indexed, blob.size, expected);
     if (size) out.push(size);
   }
 

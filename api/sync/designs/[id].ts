@@ -180,6 +180,23 @@ function sanitizeBranch(
   };
 }
 
+/**
+ * The bytes the index records for a stored design: a bin design counts its
+ * share payload without a variant's branch fields, and an assembly or an
+ * imported mesh counts the whole stored design. `scripts/sync-admin` measures
+ * stored blobs with it, because sanitizing a stored name again can shorten it.
+ */
+export function storedDesignBytes(stored: Record<string, unknown>): number {
+  if (stored.kind === 'assembly' || stored.kind === 'importedMesh') {
+    return Buffer.byteLength(JSON.stringify(stored), 'utf8');
+  }
+  const { name, tags, publishedId, lineage, params } = stored;
+  return Buffer.byteLength(
+    JSON.stringify({ name, tags, publishedId, lineage, type: 'designer', version: 1, params }),
+    'utf8'
+  );
+}
+
 function unwrapDesignPayload(design: unknown): {
   name: string | null;
   params: unknown;
@@ -353,7 +370,7 @@ export const resource: SyncResourceConfig<DesignEnvelope> = {
       return {
         ok: true,
         envelope: { design: stored, modifiedAt, schemaVersion: declaredSchemaVersion(body) },
-        sizeBytes: Buffer.byteLength(JSON.stringify(stored), 'utf8'),
+        sizeBytes: storedDesignBytes(stored),
         tiebreakerCandidate: stored,
       };
     }
@@ -378,7 +395,7 @@ export const resource: SyncResourceConfig<DesignEnvelope> = {
       return {
         ok: true,
         envelope: { design: stored, modifiedAt, schemaVersion: declaredSchemaVersion(body) },
-        sizeBytes: Buffer.byteLength(JSON.stringify(stored), 'utf8'),
+        sizeBytes: storedDesignBytes(stored),
         tiebreakerCandidate: stored,
         meshHashes: mesh.meshHashes,
       };
@@ -405,18 +422,6 @@ export const resource: SyncResourceConfig<DesignEnvelope> = {
         code: ErrorCode.VALIDATION_ERROR,
       };
     }
-    const sizeBytes = Buffer.byteLength(
-      JSON.stringify({
-        name,
-        tags,
-        publishedId,
-        lineage,
-        type: 'designer',
-        version: 1,
-        params: validation.payload.params,
-      }),
-      'utf8'
-    );
 
     // Always emit the new wrapper shape. Legacy posts become `name = ''`;
     // readers fall back from there. `tags` is always an array (possibly
@@ -436,7 +441,7 @@ export const resource: SyncResourceConfig<DesignEnvelope> = {
     return {
       ok: true,
       envelope: { design: stored, modifiedAt, schemaVersion: declaredSchemaVersion(body) },
-      sizeBytes,
+      sizeBytes: storedDesignBytes(stored),
       tiebreakerCandidate: stored,
       meshHashes: meshRefHashes(validation.payload.params.meshAssets),
     };
