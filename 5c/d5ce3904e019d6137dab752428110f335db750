@@ -1,0 +1,105 @@
+api/lib/docsAsk/tools.ts
+  s_f8efc8defc13ab::t_549e620f3e656e 43-51
+  s_f8efc8defc13ab::t_695d335fea620e 4
+  s_f8efc8defc13ab::t_729d678e0d426d 256
+  s_f8efc8defc13ab::t_4b65428bbe998d 209,218,226,234
+  s_f8efc8defc13ab::t_472a70f2bd88aa 119,121
+  s_f8efc8defc13ab::t_5309ed988940f6 28-33
+  s_50176789fd4794::t_f5d573a6ea6edd 52-53
+api/lib/docsAsk/source.ts
+  s_f8efc8defc13ab::t_65792d8b560ed3 27-30,34
+  s_f8efc8defc13ab::t_f770f6b7214874 47
+apps/docs/.vitepress/theme/askAi/history.ts
+  s_f8efc8defc13ab::t_f920cd5f78ba1f 78-81,83
+  s_f8efc8defc13ab::t_39d5cc58fe3a36 21-24,27-33,41-48,53-56
+  s_50176789fd4794::t_505e5be39065ae 84-85,95
+apps/docs/.vitepress/theme/components/AskAiAnswer.vue
+  s_f8efc8defc13ab::t_9f84b47b6fe0ce 97
+  s_f8efc8defc13ab::t_f51af29e144879 5,15
+apps/docs/.vitepress/theme/components/PageMenu.vue
+  s_f8efc8defc13ab::t_4b125e022add56 9-15,17,23
+api/lib/docsAsk/history.ts
+  s_f8efc8defc13ab::t_2f8fab9692540c 13
+  s_f8efc8defc13ab::t_2701900a6d0317 178
+  s_f8efc8defc13ab::t_bb2229c0e34df0 23-26
+  s_f8efc8defc13ab::t_aac5ba79ebeaa9 122,126,132-134
+  s_f8efc8defc13ab::t_393fa309b8cd76 56,58-59,67
+  s_f8efc8defc13ab::t_7321b209e71c1e 6-7
+  s_f8efc8defc13ab::t_a99c546560552c 161
+  s_f8efc8defc13ab::t_4864569676c6c3 46-47
+apps/docs/.vitepress/theme/askAi/consent.ts
+  s_f8efc8defc13ab::t_b1bcfe814478c1 31
+  s_f8efc8defc13ab::t_08d30acef819e3 11-19
+scripts/docs-ask-eval/checks.ts
+  s_f8efc8defc13ab::t_6138561335df6b 65
+  s_f8efc8defc13ab::t_02f1640e383223 38-41
+scripts/docsAskCorpus.ts
+  s_f8efc8defc13ab::t_547162d23fd905 85,88-89
+  s_f8efc8defc13ab::t_1d33fa7341c882 8
+api/lib/docsAsk/agent.ts
+  s_f8efc8defc13ab::t_25371bc3422b57 76-81,87-93
+  s_f8efc8defc13ab::t_eeb302691225cd 39
+  s_f8efc8defc13ab::t_b2ed6bf6842f36 217
+  s_f8efc8defc13ab::t_34a51a008b3b85 154
+  s_f8efc8defc13ab::t_51026edbf6675d 5-6
+  s_f8efc8defc13ab::t_369bc814fe297a 328
+  s_f8efc8defc13ab::t_95f69189868aa5 267,273,281-283,285-286,294,297-298
+  s_f8efc8defc13ab::t_edb18f4978a2c9 31
+  s_f8efc8defc13ab::t_196bcc48715b16 185
+  s_50176789fd4794::t_8b225958d805e6 94
+api/docs-ask.ts
+  s_f8efc8defc13ab::t_6655b6173116db 5
+  s_f8efc8defc13ab::t_7463de8fbb1a3c 216,224,227
+  s_f8efc8defc13ab::t_144795b4369f10 172
+api/lib/docsAsk/search.ts
+  s_f8efc8defc13ab::t_b381827e8235c5 113
+scripts/docs-ask-eval/run.ts
+  s_f8efc8defc13ab::t_99f27148f1b0c5 229-231
+  s_f8efc8defc13ab::t_3b262277653631 20
+  s_f8efc8defc13ab::t_aff050f7a2b92e 210,216
+  s_f8efc8defc13ab::t_1105d8da1d9cf5 191-192,196
+  s_f8efc8defc13ab::t_461d3052303914 247,253
+  s_f8efc8defc13ab::t_0e00365daf626d 268,274
+  s_f8efc8defc13ab::t_279394e6170edf 126
+  s_f8efc8defc13ab::t_6810bc987535df 113-118
+  s_f8efc8defc13ab::t_68be2730a7b0ed 21
+apps/docs/.vitepress/theme/askAi/useAskAi.ts
+  s_f8efc8defc13ab::t_2b484a41499e21 353-358
+  s_f8efc8defc13ab::t_3d42e2f5386a1a 89-96
+  s_f8efc8defc13ab::t_038330f10afadb 40-43
+  s_f8efc8defc13ab::t_619c27937c832b 147,151,153,155-161
+  s_f8efc8defc13ab::t_239ffe51eec24d 251-252,260-262
+  s_f8efc8defc13ab::t_ac8bebbc985858 97
+apps/docs/.vitepress/theme/askAi/render.ts
+  s_f8efc8defc13ab::t_9c6434d4d1a9e8 39-42
+apps/docs/.vitepress/theme/components/AskAiPanel.vue
+  s_f8efc8defc13ab::t_a894594ca84b84 31,42
+  s_f8efc8defc13ab::t_dce976bfcec704 9
+  s_f8efc8defc13ab::t_a8abab0f156ccb 183
+  s_f8efc8defc13ab::t_7c0525d4d4bfdf 113-114
+  s_f8efc8defc13ab::t_a9ccd70b6dddcb 106-112,117-122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5cd5ce3904e019d6137dab752428110f335db750",
+  "prompts": {},
+  "sessions": {
+    "s_50176789fd4794": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5f010690-c6bb-4905-bb27-930216b5f3d6",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
