@@ -6,8 +6,7 @@
  * bin, migrated, then validated, so one set of rules reads both files.
  */
 
-import type { BinParams, CutoutShape } from '@/features/bin-designer/types';
-import { MIN_PATH_POINTS } from '@/features/bin-designer/types';
+import type { BinParams } from '@/features/bin-designer/types';
 import { MAX_MESH_TRIANGLES_PER_DESIGN, meshTrianglesTotal } from '@/shared/generation/meshAsset';
 import type { TFunction } from '@/i18n';
 import type { Result, StorageMeshMissingError, StorageNotSavedError } from '@/core/result';
@@ -19,6 +18,7 @@ import { sanitizeFileName } from '@/features/bin-designer/utils/fileNaming';
 import { inlineHolderMeshes } from '@/shared/generation/meshRefs';
 import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
+import { isPlaceableCutout } from './libraryCutoutCheck';
 import {
   MAX_LIBRARY_NAME_LENGTH,
   type CutoutLibraryContent,
@@ -74,39 +74,6 @@ export interface ParsedLibraryFile {
 
 const isObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
-
-const SHAPES: Record<CutoutShape, true> = {
-  rectangle: true,
-  circle: true,
-  path: true,
-  polygon: true,
-  slot: true,
-  mesh: true,
-  knifeSlot: true,
-  text: true,
-};
-
-const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
-
-/**
- * Whether a hand-written cutout has the geometry the editor reads. The design
- * check reads the bin around the cutouts, not each cutout, and a cutout with
- * no size would reach the bounds and the render as NaN.
- */
-function isPlaceableCutout(c: unknown, meshAssets: unknown): boolean {
-  if (!isObject(c) || typeof c.shape !== 'string' || !(c.shape in SHAPES)) return false;
-  if (![c.x, c.y, c.width, c.depth, c.cutDepth].every(finite)) return false;
-  if ((c.width as number) <= 0 || (c.depth as number) <= 0) return false;
-  if (c.shape === 'path') {
-    const path = c.path;
-    if (!Array.isArray(path) || path.length < MIN_PATH_POINTS) return false;
-    if (!path.every((pt) => isObject(pt) && finite(pt.x) && finite(pt.y))) return false;
-  }
-  if (c.shape === 'mesh') {
-    return typeof c.meshId === 'string' && isObject(meshAssets) && isObject(meshAssets[c.meshId]);
-  }
-  return true;
-}
 
 /** The item in `json`, or null when it is not a library file with at least one valid cutout. */
 export function parseLibraryItemJSON(json: string, t: TFunction): ParsedLibraryFile | null {

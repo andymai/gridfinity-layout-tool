@@ -46,6 +46,8 @@ interface UseCutoutLibraryWorkspaceArgs {
   readonly selectIds: (ids: readonly string[], additive: boolean) => void;
   /** Space is held for a pan: a press then pans the board, not drops the item. */
   readonly panHeld: boolean;
+  /** The board's press handler, which pans for a middle or Space press. */
+  readonly onBoardPress: (x: number, y: number, event: PointerEvent) => void;
 }
 
 interface Placing {
@@ -86,6 +88,7 @@ export function useCutoutLibraryWorkspace({
   grid,
   selectIds,
   panHeld,
+  onBoardPress,
 }: UseCutoutLibraryWorkspaceArgs): CutoutLibraryWorkspace {
   const t = useTranslation();
   const addToast = useToastStore((s) => s.addToast);
@@ -254,9 +257,10 @@ export function useCutoutLibraryWorkspace({
           grid={grid}
           panHeld={panHeld}
           onDrop={drop}
+          onBoardPress={onBoardPress}
         />
       ) : null,
-    [placingGhost, binWidth, binDepth, grid, panHeld, drop]
+    [placingGhost, binWidth, binDepth, grid, panHeld, drop, onBoardPress]
   );
 
   const hint = placing ? (

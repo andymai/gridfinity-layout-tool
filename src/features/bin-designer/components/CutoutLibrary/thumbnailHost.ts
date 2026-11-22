@@ -26,7 +26,9 @@ export function thumbnailHost(content: CutoutLibraryContent): BinParams | null {
       1,
       Math.ceil((mm + 2 * MARGIN_MM + WALL_ALLOWANCE_MM) / DEFAULT_BIN_PARAMS.gridUnitMm)
     );
-  const deepest = Math.max(...content.params.cutouts.map((c) => c.cutDepth));
+  const deepest = Math.max(
+    ...content.params.cutouts.map((c) => Math.max(c.cutDepth, c.split?.cutDepth ?? 0))
+  );
   const sized: BinParams = {
     ...DEFAULT_BIN_PARAMS,
     style: 'solid',

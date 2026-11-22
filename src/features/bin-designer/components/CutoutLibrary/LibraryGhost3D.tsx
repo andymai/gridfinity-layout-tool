@@ -24,6 +24,8 @@ interface LibraryGhost3DProps {
   /** Space is held for a pan: presses go to the board's pan, not to a drop. */
   readonly panHeld: boolean;
   readonly onDrop: (at: { x: number; y: number }) => void;
+  /** The board's own press handler, which starts a pan for these presses. */
+  readonly onBoardPress: (x: number, y: number, event: PointerEvent) => void;
 }
 
 export function LibraryGhost3D({
@@ -33,6 +35,7 @@ export function LibraryGhost3D({
   grid,
   panHeld,
   onDrop,
+  onBoardPress,
 }: LibraryGhost3DProps) {
   const [at, setAt] = useState(() => ({ x: binWidth / 2, y: binDepth / 2 }));
 
@@ -80,7 +83,14 @@ export function LibraryGhost3D({
         // Moves pass through, so the board's cursor readout keeps counting.
         onPointerMove={(e) => follow(e.point.x, e.point.y)}
         onPointerDown={(e) => {
-          if (e.button !== 0 || panHeld) return;
+          // A pan goes to the board directly: let through, the press would reach
+          // the shape under it and move that shape.
+          if (e.button === 1 || (e.button === 0 && panHeld)) {
+            e.stopPropagation();
+            onBoardPress(e.point.x, e.point.y, e.nativeEvent);
+            return;
+          }
+          if (e.button !== 0) return;
           e.stopPropagation();
           onDrop(placementCentre(e.point, ghost, { width: binWidth, depth: binDepth }, grid));
         }}

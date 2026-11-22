@@ -39,6 +39,7 @@ import type {
   CutoutLibraryFolder,
   CutoutLibraryItem,
 } from '@/features/bin-designer/library/libraryTypes';
+import { isPlaceableCutout } from '@/features/bin-designer/library/libraryCutoutCheck';
 import { createMissingMeshPushes } from './missingMeshPushes';
 import { planMeshPush } from './meshPushPlan';
 
@@ -49,13 +50,16 @@ const toMs = (iso: string): number => {
   return Number.isFinite(ms) ? ms : 0;
 };
 
+/** Pulled content the library can draw: the server checks the same rules on push. */
 function isContent(value: unknown): value is CutoutLibraryContent {
   if (typeof value !== 'object' || value === null) return false;
   const params = (value as { params?: unknown }).params;
+  if (typeof params !== 'object' || params === null) return false;
+  const { cutouts, meshAssets } = params as { cutouts?: unknown; meshAssets?: unknown };
   return (
-    typeof params === 'object' &&
-    params !== null &&
-    Array.isArray((params as { cutouts?: unknown }).cutouts)
+    Array.isArray(cutouts) &&
+    cutouts.length > 0 &&
+    cutouts.every((c) => isPlaceableCutout(c, meshAssets))
   );
 }
 

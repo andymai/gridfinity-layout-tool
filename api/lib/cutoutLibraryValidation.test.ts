@@ -44,6 +44,12 @@ describe('validateLibraryItem', () => {
     ).toBe(false);
   });
 
+  it('refuses a cutout without geometry, and a path without points', () => {
+    expect(validateLibraryItem(item({ cutouts: [{}] })).ok).toBe(false);
+    const path = { ...cutout, shape: 'path', meshId: undefined, path: [null] };
+    expect(validateLibraryItem(item({ cutouts: [path] })).ok).toBe(false);
+  });
+
   it('caps an item without inline meshes at the share budget', () => {
     const label = 'x'.repeat(40);
     const many = Array.from({ length: Math.ceil(CONSTRAINTS.MAX_PAYLOAD_BYTES / 150) }, (_, i) => ({

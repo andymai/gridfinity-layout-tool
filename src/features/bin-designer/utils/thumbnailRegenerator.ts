@@ -47,9 +47,23 @@ interface RegenerateOptions {
  * @param options - Optional abort signal and preview color override
  * @returns WebP data URL string, or null on failure
  */
-export async function regenerateThumbnail(
+export function regenerateThumbnail(
   params: BinParams,
   options: RegenerateOptions = {}
+): Promise<string | null> {
+  // One render at a time across every caller: a new bridge request cancels the
+  // one before it, so the saved-design pass and the cutout library would
+  // otherwise cancel each other's pictures.
+  const run = renderTail.then(() => renderThumbnail(params, options));
+  renderTail = run.catch(() => undefined);
+  return run;
+}
+
+let renderTail: Promise<unknown> = Promise.resolve();
+
+async function renderThumbnail(
+  params: BinParams,
+  options: RegenerateOptions
 ): Promise<string | null> {
   const { signal, color = DEFAULT_COLOR } = options;
   // three is loaded on demand: this offscreen renderer only runs during background

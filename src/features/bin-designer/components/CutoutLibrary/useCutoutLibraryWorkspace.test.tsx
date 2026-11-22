@@ -57,6 +57,7 @@ function Harness({
     grid: null,
     selectIds,
     panHeld: false,
+    onBoardPress: () => {},
   });
   useEffect(() => {
     latest = lib;

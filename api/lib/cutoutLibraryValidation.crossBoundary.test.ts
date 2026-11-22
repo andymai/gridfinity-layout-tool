@@ -9,7 +9,9 @@ import {
   LIBRARY_FOLDER_ID_PATTERN,
   LIBRARY_ITEM_ID_PATTERN,
   LIBRARY_NAME_MAX_LENGTH,
+  MIN_PATH_POINTS as SERVER_MIN_PATH_POINTS,
 } from './cutoutLibraryValidation.js';
+import { MIN_PATH_POINTS } from '@/features/bin-designer/types';
 import { getQuotaCaps } from './quota.js';
 import {
   LIBRARY_FOLDER_ID_PREFIX,
@@ -30,6 +32,10 @@ describe('cutout library limits mirror the client', () => {
     expect(LIBRARY_FOLDER_ID_PATTERN.test(`${LIBRARY_FOLDER_ID_PREFIX}${generateUUID()}`)).toBe(
       true
     );
+  });
+
+  it('fewest path points', () => {
+    expect(SERVER_MIN_PATH_POINTS).toBe(MIN_PATH_POINTS);
   });
 
   it('counts', () => {

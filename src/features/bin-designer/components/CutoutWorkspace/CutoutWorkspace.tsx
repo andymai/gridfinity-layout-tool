@@ -645,6 +645,7 @@ export function CutoutWorkspace() {
     grid: snapEnabled ? gridSize : null,
     selectIds,
     panHeld: spaceHeld,
+    onBoardPress: handleBackgroundPointerDown,
   });
 
   const handleContextMenu = useCallback(

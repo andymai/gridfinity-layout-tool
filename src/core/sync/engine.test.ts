@@ -224,6 +224,16 @@ describe('push: a gated kind', () => {
     expect(entry).toMatchObject({ kind: 'cutoutItems', id: 'clib_1', attempts: 0 });
   });
 
+  it('leaves the sync status idle while it holds the entry', async () => {
+    engine.start(adapters);
+    cutoutItemsAdapter.triggerChange({ kind: 'put', id: 'clib_1', modifiedAt: 1000 });
+    await flush();
+
+    const status = useSyncStatusStore.getState();
+    expect(status.pendingCount).toBe(0);
+    expect(status.state).not.toBe('syncing');
+  });
+
   it('sends it once a manifest lists the kind', async () => {
     noteServedKinds({ cutoutItems: {}, cutoutFolders: {} });
     engine.start(adapters);

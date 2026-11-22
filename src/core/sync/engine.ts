@@ -169,9 +169,17 @@ async function rehydrate(s: EngineState): Promise<void> {
 async function drain(s: EngineState): Promise<void> {
   if (s.stopping) return;
   const due = await outboxGetDue();
-  if (due.length > 0) {
+  // Held entries of a switched-off kind are not work in progress: they wait
+  // without a request, and the status must still settle to idle.
+  const served = due.filter((entry) => isKindServed(entry.kind));
+  for (const entry of due) {
+    if (!isKindServed(entry.kind)) {
+      await outboxRescheduleWithoutAttempt(entry.kind, entry.id, UNSERVED_HOLD_MS);
+    }
+  }
+  if (served.length > 0) {
     useSyncStatusStore.getState().beginSync();
-    await Promise.all(due.map((entry) => pushOne(s, entry)));
+    await Promise.all(served.map((entry) => pushOne(s, entry)));
   }
   await syncStatusFromOutbox();
   await wakeForNextDue(s);
@@ -484,7 +492,9 @@ function emitEngineEvent(s: EngineState, event: EngineEvent): void {
 
 async function syncStatusFromOutbox(): Promise<void> {
   const all = await outboxGetAll();
-  useSyncStatusStore.getState().setPendingCount(all.length);
+  useSyncStatusStore
+    .getState()
+    .setPendingCount(all.filter((entry) => isKindServed(entry.kind)).length);
 }
 
 // Test-only: peek at internal state.

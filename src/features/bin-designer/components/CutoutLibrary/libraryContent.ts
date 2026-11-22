@@ -164,6 +164,12 @@ export function placeLibraryContent(
       ...(moved.parentGroups ? { parentGroups: moved.parentGroups.map(group) } : {}),
       ...(moved.meshId !== undefined ? { meshId: meshes.get(moved.meshId) } : {}),
       ...(cap !== undefined ? { cutDepth: Math.min(moved.cutDepth, cap) } : {}),
+      ...(moved.split &&
+      moved.split.depthMode === undefined &&
+      maxCutDepth !== undefined &&
+      maxCutDepth > 0
+        ? { split: { ...moved.split, cutDepth: Math.min(moved.split.cutDepth, maxCutDepth) } }
+        : {}),
       libraryItemId: itemId,
     };
   });

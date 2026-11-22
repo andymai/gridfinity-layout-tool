@@ -71,6 +71,39 @@ function isoTimestamp(value: unknown): string | null {
   return Number.isNaN(ms) ? null : new Date(ms).toISOString();
 }
 
+const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+
+/**
+ * The geometry a library row draws from. `validateCutouts` checks the fields a
+ * cutout carries, not that it carries them, which a design gets from its own
+ * editor and an item cannot. Mirrors `isPlaceableCutout` in
+ * src/features/bin-designer/library/libraryCutoutCheck.ts.
+ */
+function geometryError(cutouts: readonly unknown[]): string | null {
+  for (let i = 0; i < cutouts.length; i++) {
+    const c = cutouts[i];
+    if (!isObject(c) || typeof c.shape !== 'string') return `cutouts[${i}].shape is required`;
+    if (![c.x, c.y, c.width, c.depth, c.cutDepth].every(finite)) {
+      return `cutouts[${i}] needs finite x, y, width, depth and cutDepth`;
+    }
+    if ((c.width as number) <= 0 || (c.depth as number) <= 0) {
+      return `cutouts[${i}].width and depth must be greater than 0`;
+    }
+    if (c.shape === 'path') {
+      const path = c.path;
+      const ok =
+        Array.isArray(path) &&
+        path.length >= MIN_PATH_POINTS &&
+        path.every((pt) => isObject(pt) && finite(pt.x) && finite(pt.y));
+      if (!ok) return `cutouts[${i}].path needs ${MIN_PATH_POINTS} or more finite points`;
+    }
+  }
+  return null;
+}
+
+/** Mirrors `MIN_PATH_POINTS` on the client. */
+export const MIN_PATH_POINTS = 2;
+
 function cleanName(value: unknown): string {
   return sanitizeString(typeof value === 'string' ? value : '', LIBRARY_NAME_MAX_LENGTH);
 }
@@ -97,7 +130,7 @@ export function validateLibraryItem(payload: unknown): Validated<StoredLibraryIt
   if (!Array.isArray(cutouts) || cutouts.length === 0) {
     return invalid('cutoutItem.content.params.cutouts must be a non-empty array');
   }
-  const cutoutsErr = validateCutouts(cutouts);
+  const cutoutsErr = validateCutouts(cutouts) ?? geometryError(cutouts);
   if (cutoutsErr) return invalid(cutoutsErr, 'INVALID_PARAMS');
   const namesErr = validateCutoutGroupNames(cutoutGroupNames);
   if (namesErr) return invalid(namesErr, 'INVALID_PARAMS');

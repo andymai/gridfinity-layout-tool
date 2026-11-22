@@ -73,6 +73,17 @@ describe('cutout library sync adapters', () => {
       payload: { name: 'Bad', folderId: null, createdAt: '2026-11-20T00:00:00.000Z', content: {} },
     });
     expect(await getItem('clib_bad')).toBeNull();
+    await cutoutItemAdapter.applyRemote({
+      id: 'clib_sizeless',
+      modifiedAt: 1,
+      payload: {
+        name: 'Sizeless',
+        folderId: null,
+        createdAt: '2026-11-20T00:00:00.000Z',
+        content: { params: { cutouts: [{ shape: 'rectangle' }] } },
+      },
+    });
+    expect(await getItem('clib_sizeless')).toBeNull();
   });
 
   it('forwards item writes to the item adapter only', async () => {

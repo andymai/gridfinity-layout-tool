@@ -142,6 +142,15 @@ describe('placeLibraryContent', () => {
     expect(a.cutDepth).toBe(12);
     expect(b.cutDepth).toBe(30);
   });
+
+  it('holds the fixed side of a split pocket to the same depth', () => {
+    const split = { a: { x: 0, y: 0 }, b: { x: 10, y: 0 }, cutDepth: 40 };
+    const [a] = placeLibraryContent(
+      { params: { cutouts: [cutout('a', { cutDepth: 10, split })] } },
+      { itemId: 'clib_1', at: { x: 0, y: 0 }, newCutoutId: ids, newGroupId: ids, maxCutDepth: 12 }
+    ).cutouts;
+    expect(a.split?.cutDepth).toBe(12);
+  });
 });
 
 describe('itemsOnBoard', () => {
