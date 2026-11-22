@@ -62,14 +62,26 @@ interface CaseResult {
   readonly error: string | null;
 }
 
+const JUDGE_RESERVE_USD = 0.1;
+// Workers run at once, so a call must hold its share before it starts, or
+// several calls could start on the same remaining money.
 let spent = 0;
+let held = 0;
+function hold(usd: number): boolean {
+  if (spent + held + usd > maxUsd) return false;
+  held += usd;
+  return true;
+}
 const budget: RoundBudget = {
-  reserve: () => Promise.resolve(spent + ROUND_RESERVE_USD <= maxUsd),
+  reserve: () => Promise.resolve(hold(ROUND_RESERVE_USD)),
   charge: (usd) => {
     spent += usd;
     return Promise.resolve();
   },
-  release: () => Promise.resolve(),
+  release: () => {
+    held -= ROUND_RESERVE_USD;
+    return Promise.resolve();
+  },
 };
 
 const client = new Anthropic();
@@ -94,6 +106,8 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
   const runner = createToolRunner(corpus, labelsFor, source.english);
   const stored: StoredTurn[] = [];
   const results: TurnResult[] = [];
+  // A failed answer can still have paid for rounds; its cost belongs in the totals.
+  let pending: { question: string; progress: AgentProgress; started: number } | null = null;
   try {
     for (const question of golden.turns) {
       const tools: string[] = [];
@@ -114,6 +128,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
       const notices: string[] = [];
       const progress: AgentProgress = { generations: [], steps: [], links: [] };
       const started = performance.now();
+      pending = { question, progress, started };
       const result = await runAgent({
         client,
         corpus,
@@ -149,6 +164,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
         notices,
         stopReason: result.stopReason,
       });
+      pending = null;
     }
     const last = results.at(-1) as TurnResult;
     const checks = checkAnswer(last.answer, corpus, labelsFor(locale), source.english);
@@ -168,7 +184,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
       golden.sources.length === 0
         ? null
         : checks.citedPages.some((p) => golden.sources.includes(p));
-    if (spent >= maxUsd) {
+    if (!hold(JUDGE_RESERVE_USD)) {
       return {
         id: golden.id,
         group: golden.group,
@@ -181,10 +197,16 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
       };
     }
     // The judge grades against the pages the answer used too, not only the
-    // ones the case was written against. Six pages keep its prompt bounded.
+    // ones the case was written against. The cut keeps its prompt bounded, so
+    // the graded answer's own citations come first and are never cut.
     const pages = [
-      ...new Set([...golden.sources, ...results.flatMap((t) => t.reads), ...checks.citedPages]),
-    ].slice(0, 6);
+      ...new Set([
+        ...checks.citedPages,
+        ...golden.sources,
+        ...last.reads,
+        ...results.flatMap((t) => t.reads),
+      ]),
+    ].slice(0, Math.max(8, checks.citedPages.length));
     const local = labelsFor(locale);
     const keptEnglish = [...last.answer.matchAll(/\[\[ui:([^\]]+)\]\]/g)]
       .map((m) => (m[1] as string).trim())
@@ -193,15 +215,20 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
           ([key, value]) => value === label && local[key] === label
         )
       );
-    const graded = await judge(
-      client,
-      corpus,
-      golden,
-      results,
-      pages,
-      locale === 'en' ? [] : [...new Set(keptEnglish)],
-      args['judge-model']
-    );
+    let graded: Awaited<ReturnType<typeof judge>>;
+    try {
+      graded = await judge(
+        client,
+        corpus,
+        golden,
+        results,
+        pages,
+        locale === 'en' ? [] : [...new Set(keptEnglish)],
+        args['judge-model']
+      );
+    } finally {
+      held -= JUDGE_RESERVE_USD;
+    }
     spent += graded.costUsd;
     return {
       id: golden.id,
@@ -214,6 +241,19 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
       error: null,
     };
   } catch (caught) {
+    if (pending) {
+      results.push({
+        question: pending.question,
+        answer: '',
+        checks: [],
+        reads: [],
+        costUsd: pending.progress.generations.reduce((sum, g) => sum + g.costUsd, 0),
+        seconds: (performance.now() - pending.started) / 1000,
+        tools: [],
+        notices: [],
+        stopReason: null,
+      });
+    }
     return {
       id: golden.id,
       group: golden.group,
@@ -250,6 +290,9 @@ const judged = results.filter((r) => r.verdict);
 const passed = judged.filter((r) => r.verdict?.verdict === 'pass');
 const broken = results.flatMap((r) => (r.checks?.brokenLinks ?? []).map((l) => `${r.id} ${l}`));
 const invented = results.flatMap((r) => (r.checks?.unknownLabels ?? []).map((l) => `${r.id} ${l}`));
+const missingCaptures = results.flatMap((r) =>
+  (r.checks?.unknownCaptures ?? []).map((id) => `${r.id} ${id}`)
+);
 const invalidTraps = results
   .filter((r) => r.group === 'gap' && r.verdict?.sourcesAnswer)
   .map((r) => r.id);
@@ -276,6 +319,7 @@ const summary = {
   ),
   brokenLinks: broken,
   inventedLabels: invented,
+  unknownCaptures: missingCaptures,
   gapTrapsPassed: `${gapsPassed.length}/${gaps.length}`,
   invalidTraps,
   missedSourceCitations: results.filter((r) => r.citesSource === false).map((r) => r.id),
@@ -289,6 +333,7 @@ const summary = {
     passed.length / judged.length >= 0.9 &&
     broken.length === 0 &&
     invented.length === 0 &&
+    missingCaptures.length === 0 &&
     gapsPassed.length === gaps.length,
 };
 

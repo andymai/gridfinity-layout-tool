@@ -74,6 +74,19 @@ describe('checkAnswer', () => {
   });
 });
 
+describe('bare docs URLs', () => {
+  it('checks a bare URL like a link, and counts an inline link once', () => {
+    const english = { 'binDesigner.lid': 'Lid' };
+    const answer = [
+      'See https://gridfinitylayouttool.com/docs/designer/nothing.',
+      '[Turn on a lid](https://gridfinitylayouttool.com/docs/designer/lids#turn-on-a-lid)',
+    ].join('\n');
+    const checks = checkAnswer(answer, corpus, english, english);
+    expect(checks.brokenLinks).toEqual(['https://gridfinitylayouttool.com/docs/designer/nothing']);
+    expect(checks.citedPages).toEqual(['/designer/lids']);
+  });
+});
+
 describe('the golden set', () => {
   it('has unique ids, a question in every case, and two turns for a follow-up', () => {
     expect(new Set(GOLDEN.map((c) => c.id)).size).toBe(GOLDEN.length);

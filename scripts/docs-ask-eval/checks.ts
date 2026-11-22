@@ -3,6 +3,8 @@ import { DISCUSSIONS_URL } from '../../api/lib/docsAsk/prompt.js';
 
 const DOCS_ORIGIN = 'https://gridfinitylayouttool.com';
 const LINK = /\]\(([^)\s]+)\)/g;
+// The panel's Markdown turns a bare URL into a link too.
+const BARE_DOCS_URL = /https:\/\/gridfinitylayouttool\.com\/docs[^\s)\]>"'`]*/g;
 const CHIP = /\[\[ui:([^\]]+)\]\]/g;
 const CAPTURE = /\[\[capture:([A-Za-z0-9._-]+)\]\]/g;
 const ANCHOR = /\{#([^}]+)\}/g;
@@ -41,12 +43,16 @@ export function checkAnswer(
 ): AnswerChecks {
   const brokenLinks: string[] = [];
   const citedPages = new Set<string>();
-  for (const [, href] of answer.matchAll(LINK)) {
-    const target = docsPage(href as string);
+  const hrefs = new Set([
+    ...[...answer.matchAll(LINK)].map((m) => m[1] as string),
+    ...[...answer.matchAll(BARE_DOCS_URL)].map((m) => m[0].replace(/[.,;:!?]+$/, '')),
+  ]);
+  for (const href of hrefs) {
+    const target = docsPage(href);
     if (!target) continue;
     const page = corpus.pages[target.page];
     if (!page || (target.anchor !== null && !anchorsOf(page.markdown).has(target.anchor))) {
-      brokenLinks.push(href as string);
+      brokenLinks.push(href);
       continue;
     }
     citedPages.add(target.page);
