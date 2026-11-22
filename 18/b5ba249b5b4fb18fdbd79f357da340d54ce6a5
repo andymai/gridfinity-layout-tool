@@ -1,0 +1,24 @@
+src/features/generation/worker/generators/slotBuilder.ts
+  s_f8efc8defc13ab::t_66a0f1fde3b12b 78-82,90-95,331,424-429,633,671,688
+src/features/generation/worker/generators/splitBinBuilder.ts
+  s_f8efc8defc13ab::t_66a0f1fde3b12b 281
+src/features/generation/worker/generators/slottedLipPocket.kernel.test.ts
+  s_f8efc8defc13ab::t_0352fceade9228 31,133-168
+  s_f8efc8defc13ab::t_775d32e981f52b 169-170
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "18b5ba249b5b4fb18fdbd79f357da340d54ce6a5",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
