@@ -24,6 +24,7 @@ import { LibraryGhost3D } from './LibraryGhost3D';
 import { LibraryPanel } from './LibraryPanel';
 import { ManageLibraryDialog } from './ManageLibraryDialog';
 import { SaveToLibraryDialog, type SaveChoice } from './SaveToLibraryDialog';
+import { useLibraryRowDrag } from './useLibraryRowDrag';
 
 const REFUSALS: Record<Exclude<LibraryInsertOutcome, 'added'>, string> = {
   noRoom: 'binDesigner.cutouts.library.noRoom',
@@ -53,6 +54,14 @@ interface UseCutoutLibraryWorkspaceArgs {
 interface Placing {
   readonly item: CutoutLibraryItem;
   readonly ghost: LibraryGhost;
+  /** Dragged from the tab: a release drops it, and no hint is needed. */
+  readonly dragged: boolean;
+}
+
+interface Placement {
+  readonly id: string;
+  /** The pointer that drags the item from the tab, or null for click to place. */
+  readonly dragPointer: number | null;
 }
 
 interface SaveDraft {
@@ -93,16 +102,18 @@ export function useCutoutLibraryWorkspace({
   const t = useTranslation();
   const addToast = useToastStore((s) => s.addToast);
   const { items, folders } = useCutoutLibrary();
-  const [placingId, setPlacingId] = useState<string | null>(null);
+  const [placement, setPlacement] = useState<Placement | null>(null);
   // Read from the library each render, so an item deleted or edited elsewhere
   // ends or redraws its ghost.
-  const placingItem = placingId === null ? null : (items.find((i) => i.id === placingId) ?? null);
+  const placingItem = placement ? (items.find((i) => i.id === placement.id) ?? null) : null;
   const placingGhost = useMemo(
     () => (placingItem ? ghostOf(placingItem.content) : null),
     [placingItem]
   );
+  const dragPointer = placement?.dragPointer ?? null;
+  const dragged = dragPointer !== null;
   const placing: Placing | null =
-    placingItem && placingGhost ? { item: placingItem, ghost: placingGhost } : null;
+    placingItem && placingGhost ? { item: placingItem, ghost: placingGhost, dragged } : null;
   const [draft, setDraft] = useState<SaveDraft | null>(null);
   const [saving, setSaving] = useState(false);
   const [managing, setManaging] = useState(false);
@@ -169,9 +180,20 @@ export function useCutoutLibraryWorkspace({
     setDraft(null);
   };
 
-  const startPlacing = useCallback((item: CutoutLibraryItem) => {
-    setPlacingId((current) => (current === item.id ? null : item.id));
-  }, []);
+  const rowDrag = useLibraryRowDrag(
+    (item, pointerId) => setPlacement({ id: item.id, dragPointer: pointerId }),
+    () => setPlacement((current) => (current && current.dragPointer !== null ? null : current))
+  );
+  const { takeClick } = rowDrag;
+  const startPlacing = useCallback(
+    (item: CutoutLibraryItem) => {
+      if (takeClick()) return;
+      setPlacement((current) =>
+        current?.id === item.id ? null : { id: item.id, dragPointer: null }
+      );
+    },
+    [takeClick]
+  );
 
   const placingRef = useLatestRef(placing);
   const drop = useCallback(
@@ -200,7 +222,7 @@ export function useCutoutLibraryWorkspace({
         shapes: placed.cutouts.length,
         target: isLid ? 'lid' : 'bin',
       });
-      setPlacingId(null);
+      setPlacement(null);
     },
     [placingRef, maxCutDepth, addToast, t, selectIds, isLid]
   );
@@ -214,7 +236,7 @@ export function useCutoutLibraryWorkspace({
       if (e.key !== 'Escape') return;
       e.preventDefault();
       e.stopImmediatePropagation();
-      setPlacingId(null);
+      setPlacement(null);
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
@@ -227,6 +249,7 @@ export function useCutoutLibraryWorkspace({
       placingId={placing?.item.id ?? null}
       onSave={openSave}
       onPlace={startPlacing}
+      onPress={rowDrag.press}
       onManage={() => setManaging(true)}
     />
   );
@@ -247,11 +270,14 @@ export function useCutoutLibraryWorkspace({
     </>
   );
 
+  const placingKey = placement ? `${placement.id}:${placement.dragPointer}` : null;
   const sceneOverlay = useMemo(
     () =>
       placingGhost ? (
         <LibraryGhost3D
+          key={placingKey}
           ghost={placingGhost}
+          dragPointer={dragPointer}
           binWidth={binWidth}
           binDepth={binDepth}
           grid={grid}
@@ -260,17 +286,18 @@ export function useCutoutLibraryWorkspace({
           onBoardPress={onBoardPress}
         />
       ) : null,
-    [placingGhost, binWidth, binDepth, grid, panHeld, drop, onBoardPress]
+    [placingGhost, placingKey, dragPointer, binWidth, binDepth, grid, panHeld, drop, onBoardPress]
   );
 
-  const hint = placing ? (
-    <div
-      role="status"
-      className="pointer-events-none absolute left-1/2 top-3 z-10 -translate-x-1/2 rounded-md border border-stroke-subtle bg-surface-elevated px-3 py-1.5 text-xs text-content-secondary shadow-md"
-    >
-      {t('binDesigner.cutouts.library.placeHint', { name: placing.item.name })}
-    </div>
-  ) : null;
+  const hint =
+    placing && !placing.dragged ? (
+      <div
+        role="status"
+        className="pointer-events-none absolute left-1/2 top-3 z-10 -translate-x-1/2 rounded-md border border-stroke-subtle bg-surface-elevated px-3 py-1.5 text-xs text-content-secondary shadow-md"
+      >
+        {t('binDesigner.cutouts.library.placeHint', { name: placing.item.name })}
+      </div>
+    ) : null;
 
   return { canSave, placing: active, openSave, panel, dialogs, sceneOverlay, hint };
 }

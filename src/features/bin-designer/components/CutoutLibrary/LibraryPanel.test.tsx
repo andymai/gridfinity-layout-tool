@@ -28,6 +28,7 @@ const content = { params: { cutouts: [shape()] } };
 
 function renderPanel(props: Partial<Parameters<typeof LibraryPanel>[0]> = {}) {
   const onPlace = vi.fn();
+  const onPress = vi.fn();
   render(
     <LibraryPanel
       cutouts={[]}
@@ -35,11 +36,12 @@ function renderPanel(props: Partial<Parameters<typeof LibraryPanel>[0]> = {}) {
       placingId={null}
       onSave={() => {}}
       onPlace={onPlace}
+      onPress={onPress}
       onManage={() => {}}
       {...props}
     />
   );
-  return { onPlace };
+  return { onPlace, onPress };
 }
 
 describe('LibraryPanel', () => {
@@ -71,6 +73,16 @@ describe('LibraryPanel', () => {
     expect(screen.getAllByText('20 × 10 mm · 1 shape').length).toBeGreaterThan(0);
     fireEvent.click(screen.getByText('Allen keys'));
     expect(onPlace).toHaveBeenCalledWith(expect.objectContaining({ name: 'Allen keys' }));
+  });
+
+  it('hands a press on an item to the drag', async () => {
+    expectOk(await createItem({ name: 'Wrench', folderId: null, content }));
+    const { onPress } = renderPanel();
+    fireEvent.pointerDown(await screen.findByRole('button', { name: /Wrench/ }));
+    expect(onPress).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Wrench' }),
+      expect.objectContaining({ type: 'pointerdown' })
+    );
   });
 
   it('leaves out the used-here list when the bin uses every item', async () => {

@@ -20,7 +20,7 @@ export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
     featured: true,
     title: { en: 'Save cutouts to a library and use them in any bin' },
     body: {
-      en: 'Select shapes in the cutout editor, right-click them and click Save to library. To use them again, open the Library tab and click an item: its outline follows the pointer until you click the board. The shapes keep their size, depth, fit and imprint, and fit their new bin or lid. Keep items in folders, find them by name, and share one as a file. Your library syncs to your other devices when you sign in.',
+      en: 'Select shapes in the cutout editor, right-click them and click Save to library. To use them again, open the Library tab and drag an item onto the board, or click the item and then click the board. The shapes keep their size, depth, fit and imprint, and fit their new bin or lid. Keep items in folders, find them by name, and share one as a file. Your library syncs to your other devices when you sign in.',
     },
     action: { kind: 'openTool', tool: 'designer' },
   },
