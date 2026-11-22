@@ -41,7 +41,6 @@ async function load(): Promise<DocsSource> {
       let table = tables.get(code);
       if (!table) {
         table = readJson(labelsPath(code)).then((data) => labelsSchema.parse(data));
-        // A failed read retries on the next request, not never.
         table.catch(() => tables.delete(code));
         tables.set(code, table);
       }

@@ -53,12 +53,12 @@ export const SYSTEM_PROMPT = `You are Ask AI, the docs assistant for the Gridfin
 
 # Language
 
-The reader context after each question gives the reader's language. Reply in that language. The docs pages are in English. In another language, write each control as its label in the reader's language and then the English label in parentheses, for example [[ui:Raster anpassen]] (Fit grid). read_page lists both labels for the controls on its page.`;
+Reply in the language of the reader's question. The docs pages are in English. The reader context after each question gives the language of the reader's app. Write each control as it reads in that app: when the app language is not English, write its label in that language and then the English label in parentheses, for example [[ui:Raster anpassen]] (Fit grid). read_page lists both labels for the controls on its page. Write search_docs queries in English.`;
 
 export function contextMessage(corpus: AskCorpus, page: string, locale: string): string {
   const docsPage = pageAt(corpus, page);
   const where = docsPage
     ? `The reader is on the docs page "${docsPage.title}" (${docsPage.url}).`
     : 'The reader is not on a docs page.';
-  return `Reader context: ${where} Their language is ${localeName(locale)} (${locale}).`;
+  return `Reader context: ${where} Their app is in ${localeName(locale)} (${locale}).`;
 }

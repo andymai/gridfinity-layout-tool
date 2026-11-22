@@ -123,7 +123,12 @@ function turnMessages(turn: StoredTurn): StoredBlock[][] {
     message.flatMap((result) => (result.success ? [result.data] : []))
   );
   const last = messages.at(-1);
-  const answered = last !== undefined && !last.some((block) => block.type === 'tool_use');
+  // A refusal can end on thinking alone or on nothing, and an empty assistant
+  // message would fail every later request of the chat.
+  const answered =
+    last !== undefined &&
+    !last.some((block) => block.type === 'tool_use') &&
+    last.some((block) => block.type === 'text' && block.text.trim() !== '');
   if (clean && answered) return messages;
   const text = (turn.messages.at(-1) ?? [])
     .flatMap((block) => {

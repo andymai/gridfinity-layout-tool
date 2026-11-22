@@ -163,6 +163,39 @@ describe('runAgent', () => {
     });
   });
 
+  it('sends back no call from before a fallback, and runs only the calls after it', async () => {
+    const declined = { ...readCall, id: 'toolu_0' };
+    const fallbackRound: Round = {
+      events: [
+        { type: 'content_block_start', index: 1, content_block: declined },
+        { type: 'content_block_start', index: 3, content_block: readCall },
+      ],
+      content: [
+        { type: 'thinking', thinking: 'first model', signature: 'sig' },
+        declined,
+        { type: 'fallback', from: { model: MODEL }, to: { model: 'claude-opus-4-8' } },
+        readCall,
+      ],
+      stopReason: 'tool_use',
+    };
+    const { client, calls } = scripted([fallbackRound, answerRound]);
+    const events: AgentEvent[] = [];
+    await runAgent(options(client, events));
+    const finalStep = (id: string) =>
+      events.filter((e) => e.type === 'step' && e.id === id).at(-1) as { state: string };
+    expect(finalStep('toolu_0').state).toBe('error');
+    expect(finalStep('toolu_1').state).toBe('done');
+    const sentBack = calls[1]?.messages.at(-2);
+    expect(sentBack?.role).toBe('assistant');
+    expect((sentBack?.content as { type: string }[]).map((block) => block.type)).toEqual([
+      'fallback',
+      'tool_use',
+    ]);
+    expect(calls[1]?.messages.at(-1)).toMatchObject({
+      content: [{ type: 'tool_result', tool_use_id: 'toolu_1' }],
+    });
+  });
+
   it('asks with the cache, the fallback and the thinking binding', async () => {
     const { client, calls } = scripted([answerRound]);
     await runAgent(options(client, []));

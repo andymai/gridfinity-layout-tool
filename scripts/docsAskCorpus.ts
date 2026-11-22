@@ -81,9 +81,11 @@ export function askLabels(corpus: AskCorpus, localesDir: string): Record<string,
     if (label.ok) english[key] = label.text;
   }
   const byLocale: Record<string, AskLabels> = { en: english };
+  // en.json is generated from en.ts and can be stale; the English table above
+  // reads en.ts itself.
   for (const file of fs
     .readdirSync(localesDir)
-    .filter((f) => f.endsWith('.json'))
+    .filter((f) => f.endsWith('.json') && f !== 'en.json')
     .sort()) {
     const strings = JSON.parse(fs.readFileSync(path.join(localesDir, file), 'utf8')) as Record<
       string,
