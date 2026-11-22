@@ -1,0 +1,29 @@
+apps/docs/introduction/your-data.md
+  s_f8efc8defc13ab::t_dc5062dea84932 20-21,119-125
+  s_f8efc8defc13ab::t_d79453b72a8af2 126
+apps/docs/.vitepress/theme/askAi/flags.ts
+  s_f8efc8defc13ab::t_fb3f9886ebe066 3-4
+api/README.md
+  s_f8efc8defc13ab::t_fb3f9886ebe066 89
+apps/docs/reference/faq.md
+  s_f8efc8defc13ab::t_dc5062dea84932 48-51
+content/privacy.md
+  s_f8efc8defc13ab::t_dc5062dea84932 42-47,181
+  s_f8efc8defc13ab::t_d4c1253e535802 155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6ea6a5c085f115a2132bd19d39762c82334e4b7e",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
