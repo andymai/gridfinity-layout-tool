@@ -238,7 +238,6 @@ export function handleVertexEditPointerDown(
   });
 }
 
-/** Start dragging the selection's transform box by one of its handles. */
 export function handleTransformDown(
   mode: VertexEditMode,
   cutout: Cutout,
@@ -319,7 +318,6 @@ function snappedInPath(
   );
 }
 
-/** How far the pointer has moved since (startX, startY), in the path's frame. */
 function pathDelta(cutout: Cutout, startX: number, startY: number, event: PointerMoveEvent) {
   const from = toPathFrame(cutout, startX, startY);
   const to = toPathFrame(cutout, event.mmX, event.mmY);
@@ -458,7 +456,6 @@ export function handleVertexEditPointerMove(
 
 // ── Pointer Up ───────────────────────────────────────────────────────────────
 
-/** The tool each committed drag counts as. */
 const DRAG_TOOL: Record<Exclude<VertexDragTarget['type'], 'marquee' | 'segment'>, PointEditTool> = {
   vertex: 'move',
   handle: 'handle',
@@ -467,7 +464,6 @@ const DRAG_TOOL: Record<Exclude<VertexDragTarget['type'], 'marquee' | 'segment'>
   falloff: 'pull',
 };
 
-/** Select what a marquee holds, added to the selection when it was drawn with Shift. */
 function finishMarquee(
   mode: VertexEditMode,
   cutout: Cutout,

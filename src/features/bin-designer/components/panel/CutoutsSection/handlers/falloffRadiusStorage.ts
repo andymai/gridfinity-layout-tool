@@ -1,5 +1,3 @@
-/** Persist and load the pull radius for grabbing an edge, so it outlives one editing session. */
-
 import { DEFAULT_FALLOFF_MM, FALLOFF_MAX_MM, FALLOFF_MIN_MM } from './falloffDrag';
 
 const STORAGE_KEY = 'gridfinity-cutout-falloff-mm';

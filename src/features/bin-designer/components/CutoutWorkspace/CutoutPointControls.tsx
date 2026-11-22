@@ -1,19 +1,12 @@
-/**
- * Point editing for a path cutout: open its points on the board, and while
- * they are open, make the selected ones smooth or sharp. Double-click and
- * Enter open them too; this is the route a user can see.
- */
+/** The visible route to a path's points; double-click and Enter are the hidden ones. */
 
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { FieldLabel } from '@/shared/components/PanelText';
 import type { PointKind } from '../panel/CutoutsSection/handlers/pointEdits';
 
-/** What the inspector needs from the board's point editing. */
 export interface PointTool {
-  /** The path whose points are open on the board, if any. */
   readonly editingId: string | null;
-  /** How many points are selected while they are open. */
   readonly selectedCount: number;
   readonly onEdit: (id: string) => void;
   readonly onDone: () => void;

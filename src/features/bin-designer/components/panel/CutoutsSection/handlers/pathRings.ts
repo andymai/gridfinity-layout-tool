@@ -126,6 +126,21 @@ function apart(a: readonly PathPoint[], b: readonly PathPoint[]): boolean {
 }
 
 /**
+ * Whether rings cut as drawn on their own: the outline and every island are
+ * cut, each island sits inside the outline, and no two islands meet or hold
+ * one another.
+ */
+export function cutsAsDrawn(rings: readonly (readonly PathPoint[])[]): boolean {
+  const outline = rings.at(0);
+  if (!outline || !laid(outline)) return false;
+  const islands = rings.slice(1);
+  return islands.every(
+    (island, i) =>
+      inside(outline, island) && islands.every((other, j) => j <= i || apart(island, other))
+  );
+}
+
+/**
  * Whether an edit to ring `ring` leaves a cutout the generator cuts as drawn:
  * the ring is one it keeps, and no island that was inside the outline, or
  * apart from another island, stops being so. An island already out can still

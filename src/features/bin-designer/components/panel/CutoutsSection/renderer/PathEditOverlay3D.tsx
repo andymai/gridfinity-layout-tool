@@ -13,6 +13,7 @@ import { useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout, PathPoint } from '@/features/bin-designer/types';
 import { ringsOf, type SegmentHoverInfo, type VertexDragTarget } from '../handlers/pathEditHandler';
+import { toDrawnFrame } from '../handlers/pathRings';
 import { drawnBox, normalizeSelection, type Rect } from '../handlers/pointEdits';
 import type { TransformHandle } from '../handlers/pointTransform';
 import { DEFAULT_FALLOFF_MM } from '../handlers/falloffDrag';
@@ -137,8 +138,10 @@ export function PathEditOverlay3D({
   const cy = (shown.minY + shown.maxY) / 2;
   const turn = (-cutout.rotation * Math.PI) / 180;
   // Drawn outside the turned groups: each nested group restarts the sort order
-  // at its own renderOrder, 0, which would put the ring under the shapes.
-  const pullAt = pull ? rotateAbout(pull.x, pull.y, cx, cy, cutout.rotation) : null;
+  // at its own renderOrder, 0, which would put the ring under the shapes. The
+  // grab is in the stored frame, so it turns about the stored pivot: the
+  // preview's outline is shifted to keep unmoved points in place.
+  const pullAt = pull ? toDrawnFrame(cutout, pull.x, pull.y) : null;
   const [mx, my] = dragged
     ? rotateAbout(
         dragged.x + (handle?.dx ?? 0),
@@ -178,8 +181,8 @@ export function PathEditOverlay3D({
       )}
       {pullAt && (
         <FalloffRing3D
-          x={pullAt[0]}
-          y={pullAt[1]}
+          x={pullAt.x}
+          y={pullAt.y}
           radius={falloffMm}
           zoom={zoom}
           active={pull?.active ?? false}

@@ -18,7 +18,6 @@ export const FALLOFF_MIN_MM = 1;
 export const FALLOFF_MAX_MM = 100;
 export const DEFAULT_FALLOFF_MM = 10;
 
-/** Each `[` or `]` changes the radius by this factor. */
 const FALLOFF_STEP = 1.25;
 
 /** Spacing of the samples a moving stretch is drawn with, in mm. */
@@ -28,7 +27,6 @@ const SAMPLE_MM = 0.25;
 const LOOSEN = 1.5;
 const MAX_LOOSENINGS = 12;
 
-/** The radius one `[` (smaller) or `]` (larger) press away. */
 export function nextFalloff(mm: number, grow: boolean): number {
   const next = grow ? mm * FALLOFF_STEP : mm / FALLOFF_STEP;
   return Math.round(Math.min(FALLOFF_MAX_MM, Math.max(FALLOFF_MIN_MM, next)) * 10) / 10;
@@ -38,7 +36,6 @@ export interface FalloffGrab {
   /** Where the edge was grabbed, in the path's frame. */
   readonly grab: Pt;
   readonly radius: number;
-  /** The anchor the moving stretch starts at. */
   readonly from: number;
   /** How many segments the stretch spans; the whole ring when `closed`. */
   readonly segments: number;
@@ -53,7 +50,6 @@ export interface FalloffGrab {
   readonly corners: readonly number[];
 }
 
-/** 1 at the grab, easing to 0 at the radius and beyond. */
 function weight(distance: number, radius: number): number {
   const u = distance / radius;
   return u >= 1 ? 0 : (1 - u * u) ** 2;
@@ -70,10 +66,6 @@ function segmentLength(ring: readonly PathPoint[], index: number): number {
   return sum;
 }
 
-/**
- * The stretch a grab on segment `segment` at `t` moves, or null for a ring too
- * small to have one.
- */
 export function startFalloff(
   ring: readonly PathPoint[],
   segment: number,

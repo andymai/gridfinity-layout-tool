@@ -15,7 +15,6 @@ export function countPointEdit(tool: PointEditTool): void {
   counts.set(tool, (counts.get(tool) ?? 0) + 1);
 }
 
-/** Send what this session edited, if anything, and start the next one from zero. */
 export function reportPointEdits(): void {
   if (counts.size === 0) return;
   const props: Record<string, number> = {};

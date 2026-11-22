@@ -13,13 +13,11 @@ import type { Rect } from './pointEdits';
 
 export type TransformHandle = 'nw' | 'ne' | 'sw' | 'se' | 'rotate';
 
-/** The step a turn snaps to with Shift held, in degrees. */
 const TURN_SNAP_DEG = 15;
 
 /** Box sides shorter than this, in mm, are not scaled along: a line of points has no width. */
 const MIN_SPAN_MM = 1e-6;
 
-/** Where the corner a handle names sits on `box`. */
 export function cornerOf(
   box: Rect,
   handle: Exclude<TransformHandle, 'rotate'>
@@ -50,12 +48,7 @@ function scaleFor(span: number, from: number, to: number): number {
   return Math.abs(span) > MIN_SPAN_MM ? to / from : 1;
 }
 
-/**
- * The transform the pointer has made, moved from `start` to `to` with
- * `handle` held: a corner scales about the opposite corner (`uniform` keeps
- * the proportions), the rotate handle turns about the middle (`uniform`
- * snaps it to 15° steps).
- */
+/** `uniform` keeps a corner's proportions, or snaps a turn to whole steps. */
 function affineFor(
   box: Rect,
   handle: TransformHandle,
@@ -87,10 +80,6 @@ function affineFor(
   return { a: sx, b: 0, c: 0, d: sy, ox: o.x, oy: o.y };
 }
 
-/**
- * The ring with the points at `indices` scaled or turned, as the pointer has
- * moved from `start` to `to` on the canvas with `handle` held.
- */
 export function transformPoints(
   cutout: Cutout,
   points: readonly PathPoint[],

@@ -35,7 +35,6 @@ const ARROWS: Readonly<Partial<Record<string, readonly [number, number]>>> = {
   ArrowDown: [0, -1],
 };
 
-/** The update that ring `ring` becomes, or null when the ring would no longer cut as drawn. */
 function checked(
   cutout: Cutout,
   ring: number,

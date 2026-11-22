@@ -199,6 +199,37 @@ describe('handleDragMove rotation-aware clamping', () => {
     expect(setters.setActiveGuides).toHaveBeenCalledWith([{ axis: 'y', position: 80 }]);
   });
 
+  it('draws alignment guides from where a dragged path is, not where it began', () => {
+    const stationary = makeCutout({ id: 'still', x: 85, y: 80, width: 10, depth: 20 });
+    const square = [
+      [45, 20],
+      [55, 20],
+      [55, 30],
+      [45, 30],
+    ].map(([x, y]) => ({ x, y, handleIn: null, handleOut: null, symmetric: false }));
+    const cutout = makeCutout({ shape: 'path', path: square, x: 45, y: 20, width: 10, depth: 10 });
+    const bounds: BinBounds = {
+      binWidth: 100,
+      binDepth: 100,
+      cellMask: undefined,
+      maskCellSize: undefined,
+    };
+    const mode = makeMode(50, 25, [['c-1', -5, -5]]);
+    const setters = makeSetters();
+
+    handleDragMove(
+      mode,
+      { mmX: 50, mmY: 75, shiftKey: false, altKey: false },
+      [cutout, stationary],
+      bounds,
+      noopSnap,
+      NO_DEAD_ZONE,
+      setters as unknown as PreviewSetters
+    );
+
+    expect(setters.setActiveGuides).toHaveBeenCalledWith([{ axis: 'y', position: 80 }]);
+  });
+
   it('unrotated cutouts still clamp to the full bin width', () => {
     const cutout = makeCutout({ x: 0, y: 0, width: 30, depth: 30, rotation: 0 });
     const bounds: BinBounds = {

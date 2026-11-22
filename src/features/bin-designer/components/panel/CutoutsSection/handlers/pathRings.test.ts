@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Cutout } from '@/features/bin-designer/types';
-import { pathBoundsUpdate, ringsOf, toDrawnFrame, toPathFrame } from './pathRings';
+import { cutsAsDrawn, pathBoundsUpdate, ringsOf, toDrawnFrame, toPathFrame } from './pathRings';
 
 const corner = (x: number, y: number) => ({
   x,
@@ -54,5 +54,30 @@ describe('pathRings', () => {
       width: 7,
       depth: 3,
     });
+  });
+});
+
+describe('cutsAsDrawn', () => {
+  const box = (x: number, y: number, size: number) => [
+    corner(x, y),
+    corner(x + size, y),
+    corner(x + size, y + size),
+    corner(x, y + size),
+  ];
+
+  it('holds for an outline with islands well inside it and apart', () => {
+    expect(cutsAsDrawn([box(0, 0, 40), box(5, 5, 10), box(25, 25, 10)])).toBe(true);
+  });
+
+  it('fails when an island reaches out of the outline', () => {
+    expect(cutsAsDrawn([box(0, 0, 40), box(35, 5, 10)])).toBe(false);
+  });
+
+  it('fails when two islands overlap', () => {
+    expect(cutsAsDrawn([box(0, 0, 40), box(5, 5, 10), box(10, 10, 10)])).toBe(false);
+  });
+
+  it('fails when the outline crosses itself', () => {
+    expect(cutsAsDrawn([[corner(0, 0), corner(40, 40), corner(40, 0), corner(0, 40)]])).toBe(false);
   });
 });

@@ -18,14 +18,12 @@ export interface Rect {
   readonly maxY: number;
 }
 
-/** Indices on a ring of `length` points, sorted, in range and without repeats. */
 export function normalizeSelection(indices: Iterable<number>, length: number): number[] {
   return [...new Set(indices)]
     .filter((i) => Number.isInteger(i) && i >= 0 && i < length)
     .sort((a, b) => a - b);
 }
 
-/** `selection` with `index` added, or taken out when it was in it. */
 export function toggleIndex(selection: readonly number[], index: number): number[] {
   return selection.includes(index)
     ? selection.filter((i) => i !== index)
@@ -54,7 +52,7 @@ export function pointsInRect(
   return best;
 }
 
-/** The ring with the points at `indices` moved. Handles are relative, so they ride along. */
+/** Handles are relative to their point, so they ride along. */
 export function movePoints(
   points: readonly PathPoint[],
   indices: readonly number[],
@@ -65,7 +63,6 @@ export function movePoints(
   return points.map((p, i) => (moved.has(i) ? { ...p, x: p.x + dx, y: p.y + dy } : p));
 }
 
-/** The ring without the points at `indices`, or null when too few would be left to close it. */
 export function removePoints(
   points: readonly PathPoint[],
   indices: readonly number[]
@@ -77,7 +74,6 @@ export function removePoints(
 
 export type PointKind = 'smooth' | 'corner';
 
-/** Whether every point at `indices` already has both handles. */
 export function allSmooth(points: readonly PathPoint[], indices: readonly number[]): boolean {
   return indices.every((i) => {
     const p = points.at(i);
@@ -119,7 +115,7 @@ export function setPointKind(
   });
 }
 
-/** The box, as drawn on the canvas, around the anchors at `indices` of ring `ring`. */
+/** In the drawn frame, so it lines up with what the user sees on a turned path. */
 export function drawnBox(cutout: Cutout, ring: number, indices: readonly number[]): Rect | null {
   const points = ringsOf(cutout).at(ring);
   if (!points) return null;

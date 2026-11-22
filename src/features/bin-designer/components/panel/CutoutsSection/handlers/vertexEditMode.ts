@@ -104,7 +104,6 @@ export interface VertexEditSetters {
   readonly setSegmentHover: (hover: SegmentHoverInfo | null) => void;
 }
 
-/** The mode a path's point editing opens in. */
 export function vertexEditingMode(cutoutId: string, falloffMm?: number): VertexEditMode {
   return {
     type: 'vertex-editing',
@@ -116,13 +115,11 @@ export function vertexEditingMode(cutoutId: string, falloffMm?: number): VertexE
   };
 }
 
-/** The selected points, as indices on `mode.ring`. */
 export function selectedIndices(mode: VertexEditMode): number[] {
   if (mode.selectedPoints && mode.selectedPoints.length > 0) return [...mode.selectedPoints];
   return mode.selectedPointIndex === null ? [] : [mode.selectedPointIndex];
 }
 
-/** `mode` with `indices` on `ring` selected, `primary` (or the last) showing its handles. */
 export function withSelection(
   mode: VertexEditMode,
   ring: number,

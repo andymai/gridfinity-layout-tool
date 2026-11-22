@@ -3,9 +3,9 @@
  * the smallest one, and fitted with curves so that it has few points.
  *
  * A trace keeps the angle the tool had in the photo, so a tool that lay at a
- * slant gets a large square box, and its outline arrives as hundreds of
- * corners. Both make the editor hard to use: the box is what the handles
- * show, and every corner is a point to drag.
+ * slant gets a large square box, and its outline arrives as many corners.
+ * Both make the editor hard to use: the box is what the handles show, and
+ * every corner is a point to drag.
  *
  * A shape traced inside another's island (a nut in a wrench's ring) turns and
  * moves with that host, so the two keep their places relative to each other.
@@ -31,6 +31,7 @@ import { getPathBounds } from '../pathGeometry';
 import { minAreaTurn } from '../minAreaTurn';
 import { translateCutoutPreview } from '../cutoutHelpers';
 import { getCutoutOutline } from '../cutoutOutline';
+import { cutsAsDrawn } from '../handlers/pathRings';
 import { MIN_MATERIAL_MM } from '../pocketChecks';
 
 /** Space between packed tools, at least: the editor's Arrange default. */
@@ -93,7 +94,14 @@ function straightened(cluster: readonly Cutout[]): Cutout[] {
     if (member.shape !== 'path') return [...cluster];
     const region = drawnRegion({ ...member, rotation: member.rotation + turn }, pivot);
     const cleaned = region ? cleanOutline(region, SCAN_FIT) : null;
-    if (!cleaned) return [...cluster];
+    // A gap narrower than the fit tolerance can close in the fit, and the fit
+    // drops an island it cannot fit, so the trace stays unless the fit cuts
+    // the same way.
+    const kept =
+      cleaned !== null &&
+      cleaned.holes.length === region?.holes.length &&
+      cutsAsDrawn([cleaned.path, ...cleaned.holes]);
+    if (!cleaned || !kept) return [...cluster];
     out.push({ ...member, ...storedPatch(cleaned, 0), rotation: 0 });
   }
   return out;
