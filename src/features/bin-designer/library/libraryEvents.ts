@@ -76,11 +76,18 @@ export function notifyChanged(): void {
 }
 
 export function announce(event: LibraryEvent): void {
-  for (const listener of listeners) {
-    try {
-      listener(event);
-    } catch {
-      /* one bad subscriber must not block the others or the writer */
+  announceAll([event]);
+}
+
+/** Several writes at once: each reaches sync, and the views reload one time. */
+export function announceAll(events: readonly LibraryEvent[]): void {
+  for (const event of events) {
+    for (const listener of listeners) {
+      try {
+        listener(event);
+      } catch {
+        /* one bad subscriber must not block the others or the writer */
+      }
     }
   }
   notifyChanged();

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://gridfinitylayouttool.com/schema/cutout-library.schema.json",
+  "type": "gridfinity-cutout-library-folder",
+  "version": "1.0",
+  "name": "Hand tools",
+  "folders": [{ "id": "drivers", "name": "Drivers", "parentId": null }],
+  "items": [
+    {
+      "name": "10 mm wrench",
+      "folderId": null,
+      "params": {
+        "cutouts": [
+          {
+            "id": "wrench",
+            "shape": "slot",
+            "x": 0,
+            "y": 0,
+            "width": 140,
+            "depth": 24,
+            "cutDepth": 8,
+            "rotation": 0,
+            "cornerRadius": 0,
+            "label": "10 mm"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Stubby screwdriver",
+      "folderId": "drivers",
+      "params": {
+        "cutouts": [
+          {
+            "id": "driver",
+            "shape": "slot",
+            "x": 0,
+            "y": 0,
+            "width": 90,
+            "depth": 26,
+            "cutDepth": 20,
+            "rotation": 0,
+            "cornerRadius": 0,
+            "label": ""
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -95,6 +95,7 @@ import {
   TEXT_OFFSET_KEYS,
   TEXT_STYLE_KEYS,
   TEXT_STYLE_OVERRIDE_KEYS,
+  LIBRARY_PARAMS_KEYS,
 } from './binContentKeys';
 
 /**
@@ -115,12 +116,17 @@ export const BIN_DESIGN_DOCUMENT_KEYS = [
   '$schema',
 ] as const;
 
-/** The cutout library item FILE: a name and the library's part of `BinParams`. */
+/**
+ * The cutout library FILE: one item (a name and `params`), or a folder (a name,
+ * its `folders` and its `items`). Both forms share one root.
+ */
 export const CUTOUT_LIBRARY_DOCUMENT_KEYS = [
   'type',
   'version',
   'name',
   'params',
+  'folders',
+  'items',
   '_meta',
   '$schema',
 ] as const;
@@ -257,6 +263,7 @@ export const SCHEMA_KEYS = {
   LidMagnetConfig: LID_MAGNET_KEYS,
   LidSlideConfig: LID_SLIDE_KEYS,
   LidTrayConfig: LID_TRAY_KEYS,
+  LibraryParams: LIBRARY_PARAMS_KEYS,
   LinkedDesign: LINKED_DESIGN_KEYS,
   MarginTaper: MARGIN_TAPER_KEYS,
   MeasuredDrawerMm: MEASURED_DRAWER_KEYS,

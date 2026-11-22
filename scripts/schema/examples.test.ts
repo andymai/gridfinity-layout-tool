@@ -16,7 +16,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { validateImport } from '@/shared/utils/validation';
 import { validateImportedBinParams } from '@/features/bin-designer/utils/designJson';
-import { parseLibraryItemJSON } from '@/features/bin-designer/library/libraryFile';
+import { parseLibraryFileJSON } from '@/features/bin-designer/library/libraryFile';
 import { createValidators, detectFormat, formatErrors } from './loadSchemas';
 
 const EXAMPLES_DIR = join(process.cwd(), 'docs/schemas/examples');
@@ -67,8 +67,9 @@ function checkImporter(_file: string, parsed: unknown): { ok: boolean; errors: s
     return { ok: result.valid, errors: result.valid ? [] : [...result.errors] };
   }
   if (detectFormat(parsed) === 'cutout-library') {
-    const ok = parseLibraryItemJSON(JSON.stringify(parsed), t) !== null;
-    return { ok, errors: ok ? [] : ['the importer refuses this cutout library item'] };
+    const file = parseLibraryFileJSON(JSON.stringify(parsed), t);
+    const ok = file !== null && file.kind !== 'tooLarge';
+    return { ok, errors: ok ? [] : ['the importer refuses this cutout library file'] };
   }
   const params = (parsed as { params?: unknown }).params;
   const result = validateImportedBinParams(params, t);

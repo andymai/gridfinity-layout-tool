@@ -16,6 +16,7 @@ sources:
   - src/features/bin-designer/components/CutoutLibrary/libraryPlacement.ts
   - src/features/bin-designer/library/CutoutLibraryService.ts
   - src/features/bin-designer/library/libraryFile.ts
+  - src/features/bin-designer/library/libraryTreeImport.ts
 ---
 
 # Save cutouts to a library
@@ -62,11 +63,13 @@ The <Ui k="binDesigner.cutouts.library.usedInBin" /> list at the top of the tab 
 
 The library holds 1000 items.
 
-## Share an item as a file
+## Share items and folders as files
 
 1. Click <Ui k="binDesigner.cutouts.library.manage" />.
-2. Click <Ui k="common.export" /> next to an item. The app saves a `.cutouts.json` file that holds the item and its meshes.
-3. To add a file to your library, click <Ui k="binDesigner.cutouts.library.importItem" /> and pick the file.
+2. Click <Ui k="common.export" /> next to an item or a folder. The app saves a `.cutouts.json` file that holds it and its meshes. A folder file also holds the folders and items inside the folder.
+3. To add a file to your library, click <Ui k="binDesigner.cutouts.library.importFile" /> and pick the file.
+
+An imported folder goes at the top level of your library, with all the folders and items that it held. If the file does not fit the library's limits, the app adds nothing from it.
 
 ## Sync
 

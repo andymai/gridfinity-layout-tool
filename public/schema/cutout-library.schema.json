@@ -1,18 +1,28 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://gridfinitylayouttool.com/schema/cutout-library.schema.json",
-  "title": "Gridfinity cutout library item",
-  "description": "One cutout library item exported from the bin designer: shapes saved apart from any bin, with their groups and meshes, to place in another bin. Each cutout has the same shape as in a bin design. Unknown properties are allowed so newer files still validate. See https://gridfinitylayouttool.com/schema",
+  "title": "Gridfinity cutout library file",
+  "description": "A cutout library item, or a library folder with everything in it, exported from the bin designer: shapes saved apart from any bin, with their groups and meshes, to place in another bin. Each cutout has the same shape as in a bin design. Unknown properties are allowed so newer files still validate. See https://gridfinitylayouttool.com/schema",
   "type": "object",
-  "required": ["type", "version", "params"],
+  "required": ["type", "version"],
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "gridfinity-cutout-library-item" } } },
+      "then": { "properties": { "params": true }, "required": ["params"] }
+    },
+    {
+      "if": { "properties": { "type": { "const": "gridfinity-cutout-library-folder" } } },
+      "then": { "properties": { "items": true }, "required": ["items"] }
+    }
+  ],
   "properties": {
     "$schema": {
       "type": "string",
       "description": "Optional pointer to this schema. Ignored by the importer; present only so editors offer completion."
     },
     "type": {
-      "const": "gridfinity-cutout-library-item",
-      "description": "Document discriminator. The importer rejects any other value."
+      "enum": ["gridfinity-cutout-library-item", "gridfinity-cutout-library-folder"],
+      "description": "Document discriminator: one item, or a folder with its subfolders and items. The importer rejects any other value."
     },
     "version": {
       "type": "string",
@@ -25,11 +35,76 @@
       "x-constant": {
         "maxLength": "MAX_LIBRARY_NAME_LENGTH"
       },
-      "description": "Item name. An empty or missing name imports under a default one."
+      "description": "Item name, or the exported folder's name. An empty or missing name imports under a default one."
     },
     "params": {
+      "$ref": "#/$defs/LibraryParams",
+      "description": "Item files only: the saved shapes."
+    },
+    "folders": {
+      "type": "array",
+      "description": "Folder files only: the folders inside the exported folder, at any depth. A folder file imports whole or not at all, so one bad entry refuses the file.",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Unique within the file. Import gives every folder a new id."
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 80,
+            "x-constant": {
+              "maxLength": "MAX_LIBRARY_NAME_LENGTH"
+            },
+            "description": "Folder name. An empty or missing name imports under a default one."
+          },
+          "parentId": {
+            "type": ["string", "null"],
+            "description": "The id of another folder in this file, or null (or missing) for a folder directly inside the exported folder. The parents must not form a loop."
+          }
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "maxItems": 1000,
+      "x-constant": {
+        "maxItems": "MAX_LIBRARY_ITEMS"
+      },
+      "description": "Folder files only: every item in the exported folder and its subfolders.",
+      "items": {
+        "type": "object",
+        "required": ["params"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80,
+            "x-constant": {
+              "maxLength": "MAX_LIBRARY_NAME_LENGTH"
+            },
+            "description": "Item name. An empty or missing name imports under a default one."
+          },
+          "folderId": {
+            "type": ["string", "null"],
+            "description": "The id of a folder in this file, or null (or missing) for an item directly inside the exported folder."
+          },
+          "params": {
+            "$ref": "#/$defs/LibraryParams"
+          }
+        }
+      }
+    },
+    "_meta": {
+      "$ref": "https://gridfinitylayouttool.com/schema/bin-design.schema.json#/$defs/ExportMeta"
+    }
+  },
+  "$defs": {
+    "LibraryParams": {
       "type": "object",
-      "description": "The saved shapes, as the matching part of a bin design's params. Coordinates are mm with the origin at the bottom-left of the item's box; placing the item moves it to the drop point.",
+      "description": "The saved shapes of one item, as the matching part of a bin design's params. Coordinates are mm with the origin at the bottom-left of the item's box; placing the item moves it to the drop point.",
       "required": ["cutouts"],
       "properties": {
         "cutouts": {
@@ -38,7 +113,7 @@
           "items": {
             "$ref": "https://gridfinitylayouttool.com/schema/bin-design.schema.json#/$defs/Cutout"
           },
-          "description": "The saved shapes. Ids only need to be unique within the file; placing the item gives each shape, group and mesh a new id."
+          "description": "The saved shapes. Ids only need to be unique within the item; placing the item gives each shape, group and mesh a new id."
         },
         "cutoutGroupNames": {
           "type": "object",
@@ -59,9 +134,6 @@
           "description": "Imported STL imprint meshes, written inline, keyed by the id that a shape 'mesh' cutout's meshId references."
         }
       }
-    },
-    "_meta": {
-      "$ref": "https://gridfinitylayouttool.com/schema/bin-design.schema.json#/$defs/ExportMeta"
     }
   }
 }

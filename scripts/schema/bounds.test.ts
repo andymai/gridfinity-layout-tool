@@ -133,7 +133,10 @@ import {
   WALL_PATTERN_TYPES,
 } from '@/features/bin-designer/types/walls';
 import { MAX_COMPARTMENT_FLOOR_RAISE_MM } from '@/features/bin-designer/types/compartments';
-import { MAX_LIBRARY_NAME_LENGTH } from '@/features/bin-designer/library/libraryTypes';
+import {
+  MAX_LIBRARY_ITEMS,
+  MAX_LIBRARY_NAME_LENGTH,
+} from '@/features/bin-designer/library/libraryTypes';
 import { isRecord, loadSchemas, walkSubschemas } from './loadSchemas';
 
 /**
@@ -211,6 +214,7 @@ const SOURCES: Record<string, unknown> = {
   MAX_ARRAY_INSTANCES,
   MAX_GROUP_NAME_LENGTH,
   MAX_LIBRARY_ITEM_ID_LENGTH,
+  MAX_LIBRARY_ITEMS,
   MAX_LIBRARY_NAME_LENGTH,
   MAX_PARENT_GROUPS,
   MAX_CUTOUT_CHAMFER,
@@ -289,7 +293,7 @@ const annotations = collectAnnotations();
  * a drop means someone deleted provenance rather than a bound legitimately
  * becoming hand-picked, which is the erosion this guards against.
  */
-const MIN_ANNOTATED_BOUNDS = 231;
+const MIN_ANNOTATED_BOUNDS = 234;
 
 describe('x-constant annotations', () => {
   it('finds annotations to check', () => {
