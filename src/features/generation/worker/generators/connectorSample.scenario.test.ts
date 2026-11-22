@@ -134,6 +134,9 @@ const vol = (s: Parameters<typeof measureVolume>[0]): number => {
   return r.value;
 };
 
+/** Five fit offsets, each a front and back coupon. */
+const COUPONS_PER_TRAY = 10;
+
 describe('connectorSample — fit-sample tray', () => {
   const TEST_TIMEOUT_MS = 120_000;
 
@@ -190,10 +193,12 @@ describe('connectorSample — fit-sample tray', () => {
           connectorStyle: style as ResolvedBaseplateParams['connectorStyle'],
         })
       );
-      const coupons = pieces.filter((p) => getBounds(p).zMax > LABEL_DEPTH / 2);
+      // Two coupons per offset come first; a key or clip tray adds its loose part after them.
+      const coupons = pieces.slice(0, COUPONS_PER_TRAY);
+      const labeled = coupons.filter((p) => getBounds(p).zMax > LABEL_DEPTH / 2).length;
       const missing = coupons.map((p) => unsupportedLabelMm3(p));
       for (const p of pieces) p.delete();
-      expect(coupons.length).toBeGreaterThan(0);
+      expect(labeled).toBe(COUPONS_PER_TRAY);
       for (const v of missing) expect(v).toBeLessThan(0.01);
     },
     TEST_TIMEOUT_MS
