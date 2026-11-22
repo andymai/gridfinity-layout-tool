@@ -3,7 +3,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import type { Shape3D } from 'brepjs';
 import type { LipTipStyle } from '@/shared/types/bin';
 import { initTestKernel } from '@/test/initTestKernel';
-import { LIP_TAPER_WIDTH, LIP_OVERLAP } from './generatorConstants';
+import { LIP_TAPER_WIDTH, LIP_OVERLAP, lipSupportDepthMm } from './generatorConstants';
 import type * as BoxBuilder from './boxBuilder';
 
 type BuildBinBoxFn = (
@@ -215,4 +215,21 @@ describe('buildTopShape', () => {
     },
     60000
   );
+
+  it('runs a notched lip’s support down to a thin wall, and keeps the notch', () => {
+    const notches = { fractionalEdgeX: 'end', fractionalEdgeY: 'end' } as const;
+    const depth = lipSupportDepthMm(0.4);
+    const frontFace = -(2 * 42 - 0.5) / 2;
+    // Under the support's foot on a 1.2mm wall, inside it on a 0.4mm one.
+    const underFoot: [number, number, number] = [0, frontFace + 0.4, -2.9];
+    const onGridLine: [number, number, number] = [-21, frontFace + 3, 2];
+    for (const grid of [undefined, notches]) {
+      const label = grid ? 'notched' : 'plain';
+      const lip = buildTopShape(3, 2, true, 42, undefined, undefined, 'sharp', grid, depth);
+      expect(solidFraction(lip, underFoot), label).toBeGreaterThan(0.99);
+      expect(shapeBounds(lip).zMin, label).toBeCloseTo(-depth, 3);
+    }
+    const notched = buildTopShape(3, 2, true, 42, undefined, undefined, 'sharp', notches, depth);
+    expect(solidFraction(notched, onGridLine)).toBeGreaterThan(0.99);
+  }, 60000);
 });

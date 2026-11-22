@@ -22,6 +22,10 @@ import { MASK_CELLS_PER_UNIT, type CellMask } from '@/shared/utils/cellMask';
 import { initManifoldKernel } from './__kernel-tests__/kernelInit';
 import { generateBin } from './binGenerator';
 import { clearAllCaches } from './shapeCache';
+import { buildBinBoxWithLip } from './integratedLipBuilder';
+import { deriveDimensions } from './pipeline/context';
+import { columnCrossings } from './__kernel-tests__/meshAssertions';
+import type { MeshData } from '@/features/generation/bridge/types';
 
 beforeAll(async () => {
   await initManifoldKernel();
@@ -141,5 +145,58 @@ describe('Manifold draft — lipped bins are coincidence-free (no fuse z-fightin
       expectLipAddsNoCoincidence({ ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, cellMask }, 4);
     },
     TIMEOUT
+  );
+});
+
+describe('Manifold draft — a support that reaches the cavity floor', () => {
+  // A thin wall carries the lip's support deeper below the wall top, and on a
+  // short body that is at or under the cavity floor. The draft's cavity loft
+  // rises from the floor, so a section below it folds the loft back on itself.
+  it.each([0.4, 0.8])(
+    'builds a watertight body and lip on a 2u bin at 5mm height units (%smm wall)',
+    async (wallThickness) => {
+      const { mesh } = await import('brepjs');
+      const params: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 2,
+        height: 2,
+        heightUnitMm: 5,
+        wallThickness,
+        base: { ...DEFAULT_BIN_PARAMS.base, style: 'standard', stackingLip: true },
+      };
+      const dim = deriveDimensions(params, false);
+      const shape = buildBinBoxWithLip(
+        params.width,
+        params.depth,
+        dim.wallHeight + dim.collarHeight,
+        params.wallThickness,
+        params.gridUnitMm,
+        params.cellMask,
+        dim.overhang,
+        dim.floorThickness,
+        dim.lipSupportDepth
+      );
+      try {
+        const m = mesh(shape, { tolerance: 0.05, angularTolerance: 10 });
+        const stats = analyzeMesh(new Float32Array(m.vertices), new Uint32Array(m.triangles));
+        expect(stats.triangleCount).toBeGreaterThan(0);
+        expect(stats.boundaryEdges).toBe(0);
+        expect(stats.nonManifoldEdges).toBe(0);
+        // The cavity floor stays at the floor top: a folded loft cuts it lower.
+        const crossings = columnCrossings(
+          {
+            vertices: new Float32Array(m.vertices),
+            indices: new Uint32Array(m.triangles),
+          } as unknown as MeshData,
+          0.37,
+          0.37
+        );
+        expect(Math.max(...crossings)).toBeCloseTo(dim.floorThickness, 2);
+      } finally {
+        shape.delete();
+      }
+    },
+    60_000
   );
 });

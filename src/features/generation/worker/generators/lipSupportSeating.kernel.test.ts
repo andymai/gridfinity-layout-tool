@@ -120,6 +120,14 @@ describe('stacking lip support vs. the socket taper', () => {
     expect(lipSeatCost({ height: 2, heightUnitMm: 3 })).toBeLessThan(SEAT_TOLERANCE_MM);
   }, 240_000);
 
+  it('costs a short thin-walled bin nothing', () => {
+    // A 0.4mm wall runs the support 3.4mm down to meet its face, past the
+    // 2.85mm wall of a 2u bin at a 3.8mm height unit.
+    expect(lipSeatCost({ height: 2, heightUnitMm: 3.8, wallThickness: 0.4 })).toBeLessThan(
+      SEAT_TOLERANCE_MM
+    );
+  }, 240_000);
+
   it('costs an ordinary bin nothing either', () => {
     // Control: a 21mm wall carries the support with room to spare. Catches a
     // change that dropped the support everywhere, and proves the delta reads ~0

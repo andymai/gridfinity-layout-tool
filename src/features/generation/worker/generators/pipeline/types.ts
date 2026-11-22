@@ -200,8 +200,8 @@ export interface BinDimensions {
    * Whether the stacking lip gets its angled 45° support — the wedge that blends
    * the lip's inward jut down into the wall it sits on.
    *
-   * `buildTopShapeLoft` builds that support hanging `LIP_TAPER_WIDTH` BELOW the
-   * lip's own base plane, and that plane is `boxWallHeight`, so
+   * `buildTopShapeLoft` builds that support hanging at least `LIP_TAPER_WIDTH`
+   * BELOW the lip's own base plane, and that plane is `boxWallHeight`, so
    * on a wall shorter than `LIP_TAPER_WIDTH` the support reaches
    * past the wall bottom and lands inside the socket's upper taper, back-filling
    * it to full width. The foot then stops seating in a baseplate (CLAUDE.md
@@ -214,6 +214,14 @@ export interface BinDimensions {
    * (it mirrors the support and has no way to omit it).
    */
   readonly lipHasSupport: boolean;
+  /**
+   * How far below the lip's base plane that support reaches, from
+   * `lipSupportDepthMm`: deeper than `LIP_TAPER_WIDTH` on a wall thinner than
+   * `LIP_SUPPORT_DROP`, so the 45° face meets the wall instead of leaving a
+   * ledge. Every lip builder and every plan that steers clear of the support
+   * reads this one number.
+   */
+  readonly lipSupportDepth: number;
   /**
    * The lip carries a notch at every internal grid line. Resolved once so the
    * shell key and every lip builder (`shellStage`, `splitBinBuilder`) agree.

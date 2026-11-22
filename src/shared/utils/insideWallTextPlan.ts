@@ -30,6 +30,7 @@ import {
   slideLidPlanForParams,
 } from '@/shared/types/bin';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { lipSupportDepthMm } from '@/shared/generation/generatorConstants';
 import { CUTOUT_BORDER_WIDTH, TOP_KEEP_OUT } from '@/shared/constants/wallBands';
 import { LID_KEEPOUT_CLEARANCE } from '@/shared/constants/lidKeepout';
 import { isPartialMask } from '@/shared/utils/cellMask';
@@ -49,8 +50,6 @@ import {
 } from '@/shared/utils/insideWallObstacles';
 import type { WallRect } from '@/shared/utils/maximalClearRects';
 import { withBuiltFilletRequest } from '@/shared/utils/slottedFillet';
-
-const LIP_TAPER_WIDTH = GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_BIG_TAPER;
 
 /** Why a wall's inner face cannot carry a caption at all. */
 export type InsideWallTextBlock = 'solid' | 'scoop';
@@ -132,7 +131,9 @@ export function insideWallBounds(
   // Raised floors and the fillet are obstacles along their own cells.
   const minZ = Math.max(resolveBinFloorMm(params), taperBandTop(params, side, dims.wallHeight));
 
-  const lipKeepOut = params.base.stackingLip ? LIP_TAPER_WIDTH : TOP_KEEP_OUT;
+  const lipKeepOut = params.base.stackingLip
+    ? lipSupportDepthMm(params.wallThickness)
+    : TOP_KEEP_OUT;
   const maxZ = dims.wallHeight - Math.max(lipKeepOut, lidBandBelowWallTopMm(params, side));
 
   const bounds: WallRect = { minU: -uLimit, maxU: uLimit, minZ, maxZ };

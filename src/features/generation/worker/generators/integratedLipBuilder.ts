@@ -22,6 +22,7 @@ import {
   LIP_BIG_TAPER,
   LIP_HEIGHT,
   LIP_TAPER_WIDTH,
+  LIP_SUPPORT_DROP,
   sketch,
 } from './generatorTypes';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
@@ -60,7 +61,9 @@ export function buildBinBoxWithLip(
   cellMask?: CellMask,
   overhang?: ResolvedOverhang,
   /** Interior floor thickness (mm); defaults to `wallThickness`. */
-  floorThickness?: number
+  floorThickness?: number,
+  /** How far below the wall top the lip's angled support reaches (mm). */
+  supportDepth: number = LIP_TAPER_WIDTH
 ): Shape3D {
   const polygon = isPartialMask(cellMask);
   const ov = polygon ? undefined : overhang;
@@ -74,17 +77,24 @@ export function buildBinBoxWithLip(
   const wt = wallThickness;
 
   // Lip inner-profile insets (mirror buildTopShapeLoft's INNER_* values).
-  const LIP_EXTENSION = 1.2; // overhang depth = angled-support inset at its base
-  const INNER_ANGLE = LIP_EXTENSION;
   const INNER_BASE = LIP_TAPER_WIDTH; // 2.6
   const INNER_MID = LIP_BIG_TAPER; // 1.9
+  // Distinct-Z gap between the vertical-wall top and the overhang foot so the
+  // corner is sharp without two sections sharing a Z (which degenerates the loft).
+  const FOOT = 0.05;
+  // The cavity loft rises from the floor, so on a short body the support's foot
+  // stops a FOOT above it. The export's support carries on into the floor slab.
+  const floorZ = floorThickness ?? wallThickness;
+  const depth = Math.min(supportDepth, wallHeight - floorZ - FOOT);
+  // The support's foot, on the 45° line through the throat's bottom corner.
+  const INNER_ANGLE = LIP_SUPPORT_DROP + LIP_TAPER_WIDTH - depth;
 
   // Lip profile breakpoints in GLOBAL Z. The lip base sits ON the wall top; the
-  // angled support runs LIP_TAPER_WIDTH below it, alongside the upper wall
+  // angled support runs `supportDepth` below it, alongside the upper wall
   // (this is the coincident region the fuse z-fights on).
   const lipBaseZ = wallHeight;
-  const zAngleBottom = lipBaseZ - LIP_TAPER_WIDTH;
-  const zExt = lipBaseZ - LIP_EXTENSION;
+  const zAngleBottom = lipBaseZ - depth;
+  const zExt = lipBaseZ - LIP_SUPPORT_DROP;
   const zTaper1 = lipBaseZ + LIP_SMALL_TAPER;
   const zVert = lipBaseZ + LIP_SMALL_TAPER + LIP_VERTICAL_PART;
   const zPeak = lipBaseZ + LIP_HEIGHT;
@@ -138,9 +148,6 @@ export function buildBinBoxWithLip(
   // prism top instead of capping flush with it (a flush cap would itself leave a
   // coincident horizontal face). The residual top rim is sub-printable-layer thin.
   const OVERSHOOT = 0.1;
-  // Distinct-Z gap between the vertical-wall top and the overhang foot so the
-  // corner is sharp without two sections sharing a Z (which degenerates the loft).
-  const FOOT = 0.05;
 
   return withScope((scope: DisposalScope) => {
     // Single outer prism: footprint extruded from the floor up to the lip peak.
@@ -152,7 +159,7 @@ export function buildBinBoxWithLip(
     // taper, as a single ruled loft. A single tool means there is no
     // second-tool junction plane to leave a coincident face.
     const innerSections: Sketch[] = [
-      sectionAt(floorThickness ?? wallThickness, wt),
+      sectionAt(floorZ, wt),
       sectionAt(zAngleBottom, wt),
       sectionAt(zAngleBottom + FOOT, clampedInset(zAngleBottom + FOOT, INNER_ANGLE)),
       sectionAt(zExt, clampedInset(zExt, INNER_BASE)),

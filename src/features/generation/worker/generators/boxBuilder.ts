@@ -659,8 +659,8 @@ export function buildBinBox(
  * Outer frustum is a rectangular tube flush with the bin wall (inset=0).
  * Inner frustum traces the lip profile's inner contour, including the
  * angled support face that the sweep version produces by sweeping the
- * lip-extension polygon: from INNER_BASE (2.6mm) at Z_EXT down to a
- * narrower inset (LIP_EXTENSION, 1.2mm) at Z_ANGLE_BOTTOM (-2.6mm).
+ * lip-extension polygon: from INNER_BASE (2.6mm) at Z_EXT down at 45° to
+ * the wall's inner face at Z_ANGLE_BOTTOM (`lipSupportDepthMm`).
  * After the loft is cut from the outer and fused with the bin wall, the
  * portion of the ring that overlaps the wall thickness is absorbed; what
  * remains is the visible lip overhang plus an angled support that goes

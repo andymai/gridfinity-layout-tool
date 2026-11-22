@@ -50,6 +50,28 @@ export const LIP_OVERLAP = GRIDFINITY.LIP_OVERLAP;
 export const LIP_SUPPORT_DROP = GRIDFINITY.LIP_SUPPORT_DROP; // 1.2mm to the support's top
 
 /**
+ * How far below the lip's base plane its angled support reaches.
+ *
+ * The support is one 45° face, from the bottom of the throat (`LIP_TAPER_WIDTH`
+ * in, `LIP_SUPPORT_DROP` down) running down and out until it meets the wall's
+ * inner face. Stopped any higher, the jut's underside between the face and the
+ * wall is a flat ledge over the cavity. A wall at least `LIP_SUPPORT_DROP`
+ * thick takes the face at or above `LIP_TAPER_WIDTH` down, so the foot stays
+ * there, buried in the wall.
+ *
+ * `wallUnderLipMm` bounds the reach: past the body's bottom the support lands
+ * in the socket's taper and back-fills it. Held a `LIP_OVERLAP` above that
+ * plane, the foot ends inside the floor slab, where the floor's own top face
+ * already closes the chamfer.
+ */
+export function lipSupportDepthMm(wallThickness: number, wallUnderLipMm = Infinity): number {
+  if (!Number.isFinite(wallThickness) || Number.isNaN(wallUnderLipMm)) return LIP_TAPER_WIDTH;
+  const footInset = clamp(wallThickness, 0, LIP_SUPPORT_DROP);
+  const toWall = LIP_SUPPORT_DROP + LIP_TAPER_WIDTH - footInset;
+  return Math.max(LIP_TAPER_WIDTH, Math.min(toWall, wallUnderLipMm - LIP_OVERLAP));
+}
+
+/**
  * Air left between a wall cutout's profile top and the highest material it
  * passes through.
  *

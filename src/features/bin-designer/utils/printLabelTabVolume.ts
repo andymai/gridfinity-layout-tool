@@ -2,6 +2,7 @@
 
 import type { BinParams, LabelTabSupport } from '@/features/bin-designer/types';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { lipSupportDepthMm } from '@/shared/generation/generatorConstants';
 import {
   compartmentHasTiltedBackWall,
   compartmentHasTiltedFrontWall,
@@ -214,17 +215,20 @@ function findCollidingFrontIds(
 
 /**
  * Cross-section (mm²) of the stacking lip's angled support below the wall top:
- * the integrated lip's inner loft steps in from the wall face 2.65mm under the
- * top to the full overhang inset 1.2mm under it, then runs vertical. A lipped
- * outer ramp's strip climbs that same band flush with the lip base, so the
- * support's area is material the shell already prices. Mirrors
- * `integratedLipBuilder` (LIP_EXTENSION, FOOT: cross-feature import not allowed).
+ * the integrated lip's inner loft steps in from the wall face at the support's
+ * foot (`lipSupportDepthMm` under the top, plus FOOT) to the full overhang
+ * inset `LIP_SUPPORT_DROP` under it, then runs vertical. A lipped outer ramp's
+ * strip climbs that same band flush with the lip base, so the support's area is
+ * material the shell already prices. Mirrors `integratedLipBuilder` (FOOT:
+ * cross-feature import not allowed).
  */
 export function lipSupportArea(wallThickness: number): number {
-  const LIP_EXTENSION = 1.2;
+  const LIP_EXTENSION = GRIDFINITY.LIP_SUPPORT_DROP;
   const FOOT = 0.05;
-  const top = Math.max(0, GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER - wallThickness);
-  const foot = Math.max(0, LIP_EXTENSION - wallThickness);
-  const rampHeight = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER - LIP_EXTENSION - FOOT;
+  const taperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
+  const depth = lipSupportDepthMm(wallThickness);
+  const top = Math.max(0, taperWidth - wallThickness);
+  const foot = Math.max(0, LIP_EXTENSION + taperWidth - depth - wallThickness);
+  const rampHeight = depth - LIP_EXTENSION - FOOT;
   return ((foot + top) / 2) * rampHeight + top * LIP_EXTENSION;
 }

@@ -59,6 +59,15 @@ export function translateDrawing(d: Drawing, offX: number, offY: number): Drawin
 }
 
 /**
+ * Inset from the outer face of the angled support's 45° face at `depth` below
+ * the lip's base plane. The face passes through the throat's bottom corner,
+ * `LIP_TAPER_WIDTH` in and `LIP_SUPPORT_DROP` down.
+ */
+function supportFootInset(depth: number): number {
+  return LIP_SUPPORT_DROP + LIP_TAPER_WIDTH - depth;
+}
+
+/**
  * Plane the top {@link LIP_TIP_FLAT_MM} off the lip, leaving a flat band.
  *
  * The cutter spans the solid's own footprint with a margin, so it reaches every
@@ -151,7 +160,8 @@ function buildTopShapeLoft(
   gridUnitMm: GridUnitInput = SIZE,
   offX: number = 0,
   offY: number = 0,
-  lipTip: LipTipStyle = DEFAULT_LIP_TIP
+  lipTip: LipTipStyle = DEFAULT_LIP_TIP,
+  supportDepth: number = LIP_TAPER_WIDTH
 ): Shape3D {
   const LIP_EXTENSION = includeLip ? LIP_SUPPORT_DROP : 0;
   const polygon = isPartialMask(cellMask);
@@ -159,18 +169,17 @@ function buildTopShapeLoft(
   const INNER_BASE = LIP_TAPER_WIDTH; // 2.6mm
   const INNER_MID = LIP_BIG_TAPER; // 1.9mm
   const INNER_TOP = 0;
-  // Inset at the bottom of the angled support: matches the sweep profile,
-  // where the support's inner edge sits at X = -LIP_EXTENSION (1.2mm).
-  const INNER_ANGLE = LIP_EXTENSION;
+  // The angled support's foot, `supportDepth` below the base plane on its 45°
+  // line. The sweep profile cuts its support at the same inset.
+  const INNER_ANGLE = supportFootInset(supportDepth);
 
-  // Z_ANGLE_BOTTOM matches the sweep profile's deepest Y (-LIP_TAPER_WIDTH);
-  // the angled support spans Z = [Z_ANGLE_BOTTOM, Z_EXT] = [-2.6, -1.2].
-  const Z_ANGLE_BOTTOM = includeLip ? -LIP_TAPER_WIDTH : 0;
+  // The angled support spans Z = [Z_ANGLE_BOTTOM, Z_EXT].
+  const Z_ANGLE_BOTTOM = includeLip ? -supportDepth : 0;
   const Z_EXT = -LIP_EXTENSION;
   const Z_BASE = 0;
   // Material below the base plane, so the caller can seat that plane ON the
   // wall top and still hand the fuse a volume to work with rather than two
-  // touching faces. With a support there is already LIP_TAPER_WIDTH of it; the
+  // touching faces. With a support there is already `supportDepth` of it; the
   // supportless profile bottoms out at the base plane and needs the skirt.
   // Buried inside the wall either way, so it never reaches the silhouette.
   const Z_SKIRT = includeLip ? Z_ANGLE_BOTTOM : -LIP_OVERLAP;
@@ -346,11 +355,12 @@ function buildNotchedTopShapeLoft(
   includeLip: boolean,
   gridUnitMm: GridUnitInput,
   notches: LipNotchGrid,
-  lipTip: LipTipStyle
+  lipTip: LipTipStyle,
+  supportDepth: number
 ): Shape3D {
   const pitch = resolvePitch(gridUnitMm);
-  const INNER_ANGLE = includeLip ? LIP_SUPPORT_DROP : 0;
-  const Z_ANGLE_BOTTOM = includeLip ? -LIP_TAPER_WIDTH : 0;
+  const INNER_ANGLE = includeLip ? supportFootInset(supportDepth) : 0;
+  const Z_ANGLE_BOTTOM = includeLip ? -supportDepth : 0;
   const Z_SKIRT = includeLip ? Z_ANGLE_BOTTOM : -LIP_OVERLAP;
   const Z_PEAK = LIP_HEIGHT;
   const MARGIN = 0.5;
@@ -475,7 +485,8 @@ function buildTopShapeSweep(
   gridUnitMm: GridUnitInput = SIZE,
   offX: number = 0,
   offY: number = 0,
-  lipTip: LipTipStyle = DEFAULT_LIP_TIP
+  lipTip: LipTipStyle = DEFAULT_LIP_TIP,
+  supportDepth: number = LIP_TAPER_WIDTH
 ): Shape3D {
   const polygon = isPartialMask(cellMask);
   const topProfile = (plane: Plane, _origin: Vec3): Sketch => {
@@ -503,9 +514,9 @@ function buildTopShapeSweep(
     );
 
     if (includeLip) {
-      const LIP_EXTENSION = LIP_SUPPORT_DROP;
+      const footInset = supportFootInset(supportDepth);
       topProfileShape = topProfileShape.cut(
-        drawRectangle(LIP_EXTENSION, 10).translate(-LIP_EXTENSION / 2, -5)
+        drawRectangle(footInset, 10).translate(-footInset / 2, -5)
       );
     }
 
@@ -550,6 +561,9 @@ function buildTopShapeSweep(
  * so the peak lands exactly `LIP_HEIGHT` above it. Material hangs BELOW Z=0
  * (the angled support, or `LIP_OVERLAP` of skirt without one) to give the fuse
  * a volume; it is buried in the wall and never reaches the silhouette.
+ *
+ * `supportDepth` is how far below Z=0 the support reaches, which
+ * `lipSupportDepthMm` sets from the wall it lands on.
  */
 export function buildTopShape(
   gridW: number,
@@ -559,7 +573,8 @@ export function buildTopShape(
   cellMask?: CellMask,
   overhang?: ResolvedOverhang,
   lipTip: LipTipStyle = DEFAULT_LIP_TIP,
-  notches?: LipNotchGrid
+  notches?: LipNotchGrid,
+  supportDepth: number = LIP_TAPER_WIDTH
 ): Shape3D {
   const polygon = isPartialMask(cellMask);
   // Overhang is suppressed for polygon masks (the mask defines the footprint).
@@ -579,7 +594,8 @@ export function buildTopShape(
     polygon ? hashMask(cellMask) : 'rect',
     ov ? overhangKey(ov) : '0',
     lipTip,
-    ...(notchGrid ? [`notch:${notchGrid.fractionalEdgeX}:${notchGrid.fractionalEdgeY}`] : [])
+    ...(notchGrid ? [`notch:${notchGrid.fractionalEdgeX}:${notchGrid.fractionalEdgeY}`] : []),
+    ...(includeLip && supportDepth !== LIP_TAPER_WIDTH ? [`support${quantize(supportDepth)}`] : [])
   );
   const cached = getLipCache(lipKey);
   if (cached) {
@@ -608,7 +624,8 @@ export function buildTopShape(
           includeLip,
           gridUnitMm,
           notchGrid,
-          lipTip
+          lipTip,
+          supportDepth
         )
       );
     } catch (e: unknown) {
@@ -627,7 +644,8 @@ export function buildTopShape(
       gridUnitMm,
       offX,
       offY,
-      lipTip
+      lipTip,
+      supportDepth
     );
   } catch {
     // Loft failed — fall back to sweep path (kernel regression).
@@ -640,7 +658,8 @@ export function buildTopShape(
       gridUnitMm,
       offX,
       offY,
-      lipTip
+      lipTip,
+      supportDepth
     );
   }
 

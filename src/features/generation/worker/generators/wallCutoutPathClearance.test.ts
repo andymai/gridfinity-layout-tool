@@ -58,4 +58,18 @@ describe('pathWallClearance', () => {
     const stepped = sections.find((s) => s.back > 0.05);
     expect(stepped?.z ?? Infinity).toBeLessThanOrEqual(FRAME.wallHeight);
   });
+
+  it('follows the support at 45 degrees down to a thin wall, with no ledge', () => {
+    const params = bin({ wallThickness: 0.8 });
+    const sections = pathWallClearance(params, FRAME);
+    const at = (z: number): number | undefined =>
+      sections.find((s) => Math.abs(s.z - z) < 1e-9)?.back;
+    // The support meets the 0.8mm wall's inner face 3mm under the lip's base.
+    const foot = at(FRAME.wallHeight - 3);
+    const throat = at(FRAME.wallHeight - 1.2);
+    if (foot === undefined || throat === undefined) throw new Error('missing a level');
+    expect(foot).toBeLessThan(0.05);
+    expect(throat - foot).toBeCloseTo(1.8, 9);
+    expect(sections.filter((s) => s.z < FRAME.wallHeight - 1.2 && s.back > 0.05)).toEqual([]);
+  });
 });

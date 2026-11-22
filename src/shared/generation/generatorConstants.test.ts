@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { safeSectionRect, capSectionRadius, MIN_ARC_RADIUS } from './generatorConstants';
+import {
+  safeSectionRect,
+  capSectionRadius,
+  MIN_ARC_RADIUS,
+  LIP_OVERLAP,
+  LIP_SUPPORT_DROP,
+  LIP_TAPER_WIDTH,
+  lipSupportDepthMm,
+} from './generatorConstants';
 
 /**
  * The invariant both helpers exist for: brepjs sketches each corner arc tangent
@@ -74,5 +82,30 @@ describe('capSectionRadius', () => {
   it('caps a fixed radius against a footprint smaller than twice it', () => {
     // A 5.5mm body against the fixed 3.75mm box radius.
     expectBuildable(5.5, 5.5, capSectionRadius(5.5, 5.5, 3.75));
+  });
+});
+
+describe('lipSupportDepthMm', () => {
+  it.each([1.2, 1.6, 2.6])('keeps the support at LIP_TAPER_WIDTH on a %smm wall', (wall) => {
+    expect(lipSupportDepthMm(wall, 20)).toBe(LIP_TAPER_WIDTH);
+  });
+
+  it.each([
+    [0.8, 3.0],
+    [0.6, 3.2],
+    [0.4, 3.4],
+  ])('runs the 45° face down to a %smm wall, %smm under the base', (wall, depth) => {
+    expect(lipSupportDepthMm(wall, 20)).toBeCloseTo(depth, 9);
+    // On the wall's inner face: as far in as the face is from the throat's corner.
+    expect(LIP_SUPPORT_DROP + LIP_TAPER_WIDTH - lipSupportDepthMm(wall, 20)).toBeCloseTo(wall, 9);
+  });
+
+  it('stops the support inside a body too short to reach the wall', () => {
+    expect(lipSupportDepthMm(0.4, 3)).toBeCloseTo(3 - LIP_OVERLAP, 9);
+  });
+
+  it('never reaches less deep than LIP_TAPER_WIDTH', () => {
+    expect(lipSupportDepthMm(0.4, 2.6)).toBe(LIP_TAPER_WIDTH);
+    expect(lipSupportDepthMm(Number.NaN, 20)).toBe(LIP_TAPER_WIDTH);
   });
 });
