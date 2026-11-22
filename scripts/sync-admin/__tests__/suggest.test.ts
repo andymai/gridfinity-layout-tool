@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { suggestFor, categoryOf, SUGGEST_CATEGORIES } from '../lib/suggest';
+import { suggestFor, categoryOf, SCRIPT_PREAMBLE, SUGGEST_CATEGORIES } from '../lib/suggest';
 import { expectedEnvelopeDelta } from '../lib/delta';
 import type { Finding } from '../lib/types';
 
@@ -86,7 +86,9 @@ describe('suggestFor', () => {
       detail: '',
     };
     const out = suggestFor(finding).join('\n');
-    expect(out).toContain('vercel blob rm');
+    expect(out).toContain(
+      "vercel blob delete 'users/u1/designs/d1.json' --confirm-name 'users/u1/designs/d1.json'"
+    );
     expect(out).toContain('users/u1/designs/d1.json');
     // Preflight guard against an item that got re-uploaded between audit and remediation.
     expect(out).toContain('redis-cli');
@@ -145,5 +147,14 @@ describe('categoryOf', () => {
 
   it('SUGGEST_CATEGORIES enumerates the public list', () => {
     expect(SUGGEST_CATEGORIES).toEqual(['drift', 'orphans', 'stale-tombstones', 'malformed']);
+  });
+
+  it('clears the OIDC token a pulled env file holds, which blocks vercel blob', () => {
+    const preamble = SCRIPT_PREAMBLE.join('\n');
+    expect(preamble).toContain('. ./.env.production.local');
+    expect(preamble).toContain('unset VERCEL_OIDC_TOKEN BLOB_STORE_ID');
+    expect(preamble.indexOf('unset VERCEL_OIDC_TOKEN BLOB_STORE_ID')).toBeGreaterThan(
+      preamble.indexOf('. ./.env.production.local')
+    );
   });
 });

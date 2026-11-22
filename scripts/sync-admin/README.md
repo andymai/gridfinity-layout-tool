@@ -105,7 +105,7 @@ designed to be reviewed and pasted; nothing runs automatically.
 | Category           | Emits                                                                                                              |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------ |
 | `drift`            | `redis-cli EVAL` that rewrites `sizeBytes` to match the blob (fetches design payloads unless `--no-payload-fetch`) |
-| `orphans`          | `vercel blob rm` (orphan blob) or `HDEL` (missing blob)                                                            |
+| `orphans`          | `vercel blob delete` (orphan blob) or `HDEL` (missing blob)                                                        |
 | `stale-tombstones` | `redis-cli HDEL` for tombstones older than the threshold                                                           |
 | `malformed`        | `HGET` (inspect) then commented `HDEL` (uncomment to apply)                                                        |
 
