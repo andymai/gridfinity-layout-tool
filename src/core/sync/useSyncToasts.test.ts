@@ -5,6 +5,11 @@ import type { EngineEvent } from './engine';
 import { useToastStore } from '@/core/store';
 import { useSyncStatusStore } from './status';
 import { useSyncToasts } from './useSyncToasts';
+import { useSessionStore } from './session/useSession';
+import {
+  __resetForTests as resetFirewallChallenge,
+  noteFirewallChallenge,
+} from './firewallChallenge';
 
 const onEngineEventListeners = new Set<(e: EngineEvent) => void>();
 const offMock = vi.fn();
@@ -30,6 +35,8 @@ beforeEach(() => {
   useToastStore.setState({ toasts: [] });
   useSyncStatusStore.getState().reset();
   offMock.mockReset();
+  resetFirewallChallenge();
+  useSessionStore.setState({ status: 'anonymous', user: null });
 });
 
 describe('useSyncToasts: engine events', () => {
@@ -103,5 +110,33 @@ describe('useSyncToasts: cleanup', () => {
     const { unmount } = renderHook(() => useSyncToasts());
     unmount();
     expect(offMock).toHaveBeenCalled();
+  });
+});
+
+describe('useSyncToasts: firewall challenge', () => {
+  const challenge = (): Response =>
+    new Response('<html>', { status: 429, headers: { 'x-vercel-mitigated': 'challenge' } });
+
+  it('offers a reload instead of the offline toast', () => {
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u', email: 'u@example.com', provider: 'google' },
+    });
+    renderHook(() => useSyncToasts());
+    act(() => {
+      noteFirewallChallenge(challenge());
+      useSyncStatusStore.getState().reportOffline('Firewall challenge');
+    });
+    const toasts = useToastStore.getState().toasts;
+    expect(toasts).toHaveLength(1);
+    expect(toasts[0].message).toBe('sync.firewallChallenge');
+    expect(toasts[0].duration).toBe(0);
+    expect(toasts[0].action?.label).toBe('pwaUpdate.reload');
+  });
+
+  it('stays quiet in a signed-out tab, which has no sync to pause', () => {
+    renderHook(() => useSyncToasts());
+    act(() => noteFirewallChallenge(challenge()));
+    expect(useToastStore.getState().toasts).toEqual([]);
   });
 });

@@ -6,6 +6,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useSyncStatusStore } from './status';
+import { __resetForTests as resetFirewallChallenge } from './firewallChallenge';
 import { noteServedKinds, resetServedKinds } from './servedKinds';
 import {
   __resetForTests as resetOutbox,
@@ -29,9 +30,17 @@ import type {
 
 const fetchMock = vi.fn();
 
-vi.mock('./apiFetch', () => ({
-  apiFetch: (url: string, init?: RequestInit) => fetchMock(url, init),
-}));
+vi.mock('./apiFetch', async () => {
+  const { noteFirewallChallenge } = await import('./firewallChallenge');
+  return {
+    // Records a firewall challenge, as the real apiFetch does.
+    apiFetch: async (url: string, init?: RequestInit) => {
+      const res: unknown = await fetchMock(url, init);
+      if (res instanceof Response) noteFirewallChallenge(res);
+      return res;
+    },
+  };
+});
 
 import * as engine from './engine';
 import { DESIGN_SCHEMA_VERSION, LAYOUT_SCHEMA_VERSION } from './payloadKey';
@@ -78,6 +87,7 @@ let adapters: SyncAdapters;
 
 beforeEach(async () => {
   resetOutbox();
+  resetFirewallChallenge();
   try {
     await clearOutbox();
   } catch {
@@ -362,6 +372,26 @@ describe('push: uncaught rejections in fire-and-forget paths', () => {
 
     await expect(engine.flushNow()).resolves.toBeUndefined();
     expect(useSyncStatusStore.getState().lastError).toContain('Failed to fetch');
+  });
+});
+
+describe('push: firewall challenge', () => {
+  it('stops pushing until the page reloads, and keeps every entry queued', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response('<html>', { status: 429, headers: { 'x-vercel-mitigated': 'challenge' } })
+    );
+
+    engine.start(adapters);
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 1000 });
+    await flush();
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-2', modifiedAt: 1001 });
+    await flush();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const entries = await outboxGetAll();
+    expect(entries.map((e) => e.id).sort()).toEqual(['lay-1', 'lay-2']);
+    expect(entries.every((e) => e.attempts === 0)).toBe(true);
+    expect(useSyncStatusStore.getState().state).toBe('offline');
   });
 });
 

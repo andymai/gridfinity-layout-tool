@@ -4940,6 +4940,7 @@
   "supporters.thisMonth": "{count} entraram este mês",
   "sync.conflictPulled": "Layout atualizado de outro dispositivo.",
   "sync.deletedElsewhere": "Este layout foi excluído em outro dispositivo. Salve novamente para restaurá-lo.",
+  "sync.firewallChallenge": "Sincronização pausada: sua rede precisa de uma verificação de segurança rápida. Recarregue a página para continuar.",
   "sync.pushFailed": "Não foi possível sincronizar suas alterações. Tente novamente mais tarde.",
   "sync.quotaExceeded": "Sincronização pausada — seu armazenamento na nuvem está cheio.",
   "sync.workingOffline": "Sem conexão — as alterações serão sincronizadas quando você estiver online novamente.",

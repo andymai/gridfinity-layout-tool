@@ -4833,6 +4833,7 @@
   "supporters.thisMonth": "本月新增 {count} 位",
   "sync.conflictPulled": "布局已从另一台设备更新。",
   "sync.deletedElsewhere": "此布局已在另一台设备上删除。再次保存即可恢复。",
+  "sync.firewallChallenge": "同步已暂停：你的网络需要进行快速安全验证。请重新加载页面以继续。",
   "sync.pushFailed": "无法同步你的更改。请稍后重试。",
   "sync.quotaExceeded": "同步已暂停 — 你的云存储空间已满。",
   "sync.workingOffline": "离线工作中 — 重新联网后更改会同步。",

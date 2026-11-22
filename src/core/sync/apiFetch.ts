@@ -14,6 +14,7 @@
  */
 
 import { accountGeneration } from './accountGeneration';
+import { noteFirewallChallenge } from './firewallChallenge';
 
 export const FORCED_SIGN_OUT_EVENT = 'gflt:forced-sign-out';
 
@@ -63,6 +64,8 @@ export async function apiFetch(input: string, init: ApiFetchOptions = {}): Promi
       forcedSignOutDispatched = false;
     });
   }
+
+  noteFirewallChallenge(response);
 
   return response;
 }

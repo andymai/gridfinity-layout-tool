@@ -4940,6 +4940,7 @@
   "supporters.thisMonth": "{count} gick med den här månaden",
   "sync.conflictPulled": "Layout uppdaterad från en annan enhet.",
   "sync.deletedElsewhere": "Den här layouten togs bort på en annan enhet. Spara igen för att återställa.",
+  "sync.firewallChallenge": "Synkronisering pausad: ditt nätverk behöver en snabb säkerhetskontroll. Ladda om sidan för att fortsätta.",
   "sync.pushFailed": "Det gick inte att synkronisera ändringarna. Försök igen senare.",
   "sync.quotaExceeded": "Synkronisering pausad — din molnlagring är full.",
   "sync.workingOffline": "Offline — ändringar synkroniseras när du är ansluten igen.",

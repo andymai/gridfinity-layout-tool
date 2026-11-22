@@ -4940,6 +4940,7 @@
   "supporters.thisMonth": "{count} in diesem Monat dazugekommen",
   "sync.conflictPulled": "Layout von anderem Gerät aktualisiert.",
   "sync.deletedElsewhere": "Dieses Layout wurde auf einem anderen Gerät gelöscht. Erneut speichern, um es wiederherzustellen.",
+  "sync.firewallChallenge": "Synchronisierung pausiert: dein Netzwerk braucht eine kurze Sicherheitsprüfung. Lade die Seite neu, um fortzufahren.",
   "sync.pushFailed": "Änderungen konnten nicht synchronisiert werden. Später erneut versuchen.",
   "sync.quotaExceeded": "Synchronisierung pausiert — dein Cloud-Speicher ist voll.",
   "sync.workingOffline": "Offline — Änderungen werden synchronisiert, sobald du wieder online bist.",

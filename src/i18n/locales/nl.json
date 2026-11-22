@@ -4940,6 +4940,7 @@
   "supporters.thisMonth": "{count} deze maand toegevoegd",
   "sync.conflictPulled": "Lay-out bijgewerkt vanaf een ander apparaat.",
   "sync.deletedElsewhere": "Deze lay-out is op een ander apparaat verwijderd. Sla opnieuw op om te herstellen.",
+  "sync.firewallChallenge": "Synchronisatie gepauzeerd: je netwerk heeft een korte beveiligingscontrole nodig. Laad de pagina opnieuw om verder te gaan.",
   "sync.pushFailed": "Wijzigingen konden niet worden gesynchroniseerd. Probeer het later opnieuw.",
   "sync.quotaExceeded": "Synchronisatie gepauzeerd — je cloudopslag is vol.",
   "sync.workingOffline": "Offline — wijzigingen worden gesynchroniseerd zodra je weer online bent.",

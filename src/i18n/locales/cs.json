@@ -5048,6 +5048,7 @@
   "supporters.thisMonth": "{count} se přidalo tento měsíc",
   "sync.conflictPulled": "Rozvržení aktualizováno z jiného zařízení.",
   "sync.deletedElsewhere": "Toto rozvržení bylo smazáno na jiném zařízení. Ulož ho znovu pro obnovení.",
+  "sync.firewallChallenge": "Synchronizace pozastavena: tvá síť potřebuje rychlou bezpečnostní kontrolu. Pro pokračování znovu načti stránku.",
   "sync.pushFailed": "Tvé změny se nepodařilo synchronizovat. Zkus to později.",
   "sync.quotaExceeded": "Synchronizace pozastavena — tvé cloudové úložiště je plné.",
   "sync.workingOffline": "Pracuješ offline — změny se synchronizují po připojení.",

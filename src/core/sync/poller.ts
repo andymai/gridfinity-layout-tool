@@ -1,6 +1,7 @@
 import { pullState, resetPullState } from './pullState';
 import { PAYLOAD_KEY } from './payloadKey';
 import { apiFetch } from './apiFetch';
+import { firewallChallenged, isFirewallChallenge } from './firewallChallenge';
 import { useSessionStore } from './session/useSession';
 import { useSyncStatusStore } from './status';
 import { isKindServed, noteServedKinds, servedGatedKinds } from './servedKinds';
@@ -87,6 +88,8 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   if (useSessionStore.getState().status !== 'authenticated') {
     return { status: 'unauthorized' };
   }
+  // Every poll would meet the same challenge until the page reloads.
+  if (firewallChallenged()) return { status: 'offline' };
 
   useSyncStatusStore.getState().beginSync();
 
@@ -116,6 +119,10 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   }
   if (manifestRes.status === 401) {
     return { status: 'unauthorized' };
+  }
+  if (isFirewallChallenge(manifestRes)) {
+    useSyncStatusStore.getState().reportOffline('Firewall challenge');
+    return { status: 'offline' };
   }
   if (manifestRes.status === 429) {
     // Server throttling, not a real error. Treat as transient offline so

@@ -4940,6 +4940,7 @@
   "supporters.thisMonth": "{count} ble med denne måneden",
   "sync.conflictPulled": "Oppsett oppdatert fra en annen enhet.",
   "sync.deletedElsewhere": "Dette oppsettet ble slettet på en annen enhet. Lagre igjen for å gjenopprette det.",
+  "sync.firewallChallenge": "Synkronisering pauset: nettverket ditt trenger en rask sikkerhetssjekk. Last inn siden på nytt for å fortsette.",
   "sync.pushFailed": "Kunne ikke synkronisere endringene. Prøv igjen senere.",
   "sync.quotaExceeded": "Synkronisering pauset — skylagringen din er full.",
   "sync.workingOffline": "Frakoblet — endringene synkroniseres når du er tilkoblet igjen.",

@@ -1,4 +1,5 @@
 import { apiFetch } from './apiFetch';
+import { firewallChallenged, isFirewallChallenge } from './firewallChallenge';
 import {
   enqueue as outboxEnqueue,
   getDue as outboxGetDue,
@@ -167,7 +168,9 @@ async function rehydrate(s: EngineState): Promise<void> {
 }
 
 async function drain(s: EngineState): Promise<void> {
-  if (s.stopping) return;
+  // Every push would meet the same challenge. The entries stay queued and
+  // drain after the page reloads.
+  if (s.stopping || firewallChallenged()) return;
   const due = await outboxGetDue();
   // Held entries of a switched-off kind are not work in progress: they wait
   // without a request, and the status must still settle to idle.
@@ -382,6 +385,10 @@ async function handleFailure(
   // escalating delay across consecutive 429s, so track that in a separate
   // per-(kind, id) counter on the engine state. `Retry-After` overrides
   // the counter entirely (server knows best).
+  if (isFirewallChallenge(res)) {
+    useSyncStatusStore.getState().reportOffline('Firewall challenge');
+    return;
+  }
   if (res.status === 429) {
     await waitOutThrottle(entry, s, parseRetryAfter(res.headers.get('Retry-After')));
     return;

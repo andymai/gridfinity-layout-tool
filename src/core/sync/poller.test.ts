@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { __resetForTests, endPulls, holdPulls, pullNow } from './poller';
 import { useSessionStore } from './session/useSession';
 import { useSyncStatusStore } from './status';
+import { __resetForTests as resetFirewallChallenge } from './firewallChallenge';
 import type {
   SyncAdapter,
   SyncAdapters,
@@ -23,9 +24,17 @@ vi.mock('./outbox', () => ({
   getAll: vi.fn(async () => outboxEntries.list),
 }));
 
-vi.mock('./apiFetch', () => ({
-  apiFetch: (url: string, init?: RequestInit) => fetchMock(url, init),
-}));
+vi.mock('./apiFetch', async () => {
+  const { noteFirewallChallenge } = await import('./firewallChallenge');
+  return {
+    // Records a firewall challenge, as the real apiFetch does.
+    apiFetch: async (url: string, init?: RequestInit) => {
+      const res: unknown = await fetchMock(url, init);
+      if (res instanceof Response) noteFirewallChallenge(res);
+      return res;
+    },
+  };
+});
 
 interface MockAdapter extends SyncAdapter {
   items: Map<string, SyncableItem>;
@@ -55,6 +64,7 @@ let adapters: SyncAdapters;
 
 beforeEach(() => {
   __resetForTests();
+  resetFirewallChallenge();
   vi.clearAllMocks();
   useSyncStatusStore.getState().reset();
   useSessionStore.setState({
@@ -147,6 +157,16 @@ describe('pullNow — single-flight + 304 path', () => {
     );
     const result = await pullNow(adapters);
     expect(result.status).toBe('offline');
+    expect(useSyncStatusStore.getState().state).toBe('offline');
+  });
+
+  it('stops polling after a firewall challenge', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response('<html>', { status: 429, headers: { 'x-vercel-mitigated': 'challenge' } })
+    );
+    expect((await pullNow(adapters)).status).toBe('offline');
+    expect((await pullNow(adapters)).status).toBe('offline');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(useSyncStatusStore.getState().state).toBe('offline');
   });
 });

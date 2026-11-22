@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store';
+import { FIREWALL_CHALLENGE_EVENT, firewallChallenged } from './firewallChallenge';
 import { onEngineEvent, type EngineEvent } from './engine';
+import { useSessionStore } from './session/useSession';
 import { useSyncStatusStore } from './status';
 
 const OFFLINE_DEBOUNCE_MS = 4_000;
@@ -33,10 +35,27 @@ export function useSyncToasts(): void {
     return useSyncStatusStore.subscribe((state, prev) => {
       // Only fire on the transition INTO offline, not while it stays.
       if (state.state !== 'offline' || prev.state === 'offline') return;
+      // The challenge toast below says what to do instead.
+      if (firewallChallenged()) return;
       const now = Date.now();
       if (now - offlineToastFiredAt.current < OFFLINE_DEBOUNCE_MS) return;
       offlineToastFiredAt.current = now;
       addToast(t('sync.workingOffline'), 'info');
     });
+  }, [addToast, t]);
+
+  useEffect(() => {
+    const onChallenge = () => {
+      if (useSessionStore.getState().status !== 'authenticated') return;
+      addToast({
+        message: t('sync.firewallChallenge'),
+        type: 'info',
+        duration: 0,
+        key: 'sync-firewall-challenge',
+        action: { label: t('pwaUpdate.reload'), onClick: () => window.location.reload() },
+      });
+    };
+    window.addEventListener(FIREWALL_CHALLENGE_EVENT, onChallenge);
+    return () => window.removeEventListener(FIREWALL_CHALLENGE_EVENT, onChallenge);
   }, [addToast, t]);
 }
