@@ -1,5 +1,26 @@
 # Changelog
 
+## [4.550.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.549.0...gridfinity-layout-tool-v4.550.0) (2026-11-22)
+
+
+### Features
+
+* **cutouts:** save cutouts to a library and place them in any bin ([#5167](https://github.com/andymai/gridfinity-layout-tool/issues/5167)) ([5bac6e7](https://github.com/andymai/gridfinity-layout-tool/commit/5bac6e74c792ae42cfce5459726da1bcc27a7cec))
+* **cutouts:** straighten scans on import and make their edges easy to fix ([#5159](https://github.com/andymai/gridfinity-layout-tool/issues/5159)) ([ae8ecb0](https://github.com/andymai/gridfinity-layout-tool/commit/ae8ecb02584c6dc37ef76fbbb4b3b8050d335848))
+* **docs:** add a page menu to copy a docs page or open it in Claude or ChatGPT ([#5161](https://github.com/andymai/gridfinity-layout-tool/issues/5161)) ([77e2d7f](https://github.com/andymai/gridfinity-layout-tool/commit/77e2d7f2bbdbce703b7208da57c9952b2e69db44))
+* **docs:** add the Ask AI endpoint behind a kill switch ([#5156](https://github.com/andymai/gridfinity-layout-tool/issues/5156)) ([42b3f8c](https://github.com/andymai/gridfinity-layout-tool/commit/42b3f8cc0170aec122b9aac3296e0918d7faddac))
+* **docs:** add the Ask AI golden-set eval, and tune the prompt from its misses ([#5166](https://github.com/andymai/gridfinity-layout-tool/issues/5166)) ([2f74b05](https://github.com/andymai/gridfinity-layout-tool/commit/2f74b05fe63afca2f5552d293021fd45c1f080da))
+* **docs:** add the Ask AI panel, hidden until launch ([#5157](https://github.com/andymai/gridfinity-layout-tool/issues/5157)) ([b5dcd10](https://github.com/andymai/gridfinity-layout-tool/commit/b5dcd108277e3fe8f8297d122e223b073c8ca4f8))
+* **docs:** publish llms.txt and a Markdown copy of each docs page ([#5154](https://github.com/andymai/gridfinity-layout-tool/issues/5154)) ([b8319b1](https://github.com/andymai/gridfinity-layout-tool/commit/b8319b1f7d4ba032f8278f2221540f091ad8169d))
+* **docs:** show Ask AI to every reader, and say what a question sends ([#5163](https://github.com/andymai/gridfinity-layout-tool/issues/5163)) ([3f84e41](https://github.com/andymai/gridfinity-layout-tool/commit/3f84e41c66b13d60568514b74b0be83e431320ce))
+
+
+### Bug Fixes
+
+* **api:** answer in the question's language, skip person profiles, and drop refused turns from Ask AI ([#5168](https://github.com/andymai/gridfinity-layout-tool/issues/5168)) ([f8b12b5](https://github.com/andymai/gridfinity-layout-tool/commit/f8b12b574661d5346023b7880cbcdba1adb18ce0))
+* **api:** let Ask AI take requests from every domain of a deployment ([#5158](https://github.com/andymai/gridfinity-layout-tool/issues/5158)) ([5dc327a](https://github.com/andymai/gridfinity-layout-tool/commit/5dc327ae23bd71df973040c10d582e8be010d2d2))
+* **docs:** add code copy, stop the kill-switch flash, and tame the Ask AI live region ([#5169](https://github.com/andymai/gridfinity-layout-tool/issues/5169)) ([d2f37d8](https://github.com/andymai/gridfinity-layout-tool/commit/d2f37d84564ce6b06e1576862b915e7378b81a84))
+
 ## [4.549.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.548.0...gridfinity-layout-tool-v4.549.0) (2026-11-21)
 
 
