@@ -1,0 +1,42 @@
+vite.config.ts
+  s_f8efc8defc13ab::t_183684083c6070 63-87
+  s_f8efc8defc13ab::t_1810e29b9c7e6e 540-553
+  s_f8efc8defc13ab::t_b51b18d891667f 484
+  s_f8efc8defc13ab::t_c5712c1f327b71 1
+scripts/check-startup-budget.test.ts
+  s_f8efc8defc13ab::t_5e3b06502f10d2 1-45
+.claude/skills/quality-gates/SKILL.md
+  s_f8efc8defc13ab::t_14c4e536537924 74
+package.json
+  s_f8efc8defc13ab::t_1ca86ac6cd9480 48-49,92-95
+.claude/skills/release-and-ci/SKILL.md
+  s_f8efc8defc13ab::t_37305f3e624441 49-50
+  s_f8efc8defc13ab::t_53385e130761bf 47
+scripts/check-startup-budget.ts
+  s_f8efc8defc13ab::t_ebbb36f9116802 1-88
+  s_50176789fd4794::t_c7e8e9f09f9773 89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "55b2d333141b45e024b0bb46efc30d69d5554a36",
+  "prompts": {},
+  "sessions": {
+    "s_50176789fd4794": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5f010690-c6bb-4905-bb27-930216b5f3d6",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
