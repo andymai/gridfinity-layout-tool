@@ -1,5 +1,6 @@
 /**
- * A library item following the cursor over the board until a click drops it.
+ * A library item following the cursor over the board until a click drops it,
+ * or, when it is dragged from the tab, until the press ends over the board.
  *
  * The catch plane sits above every shape (they stack under 50 mm, the camera
  * at 100), so the click that drops the item never selects what lies under it.
@@ -17,6 +18,11 @@ const ACCENT_COLOR = new THREE.Color(ACCENT_COLOR_HEX);
 
 interface LibraryGhost3DProps {
   readonly ghost: LibraryGhost;
+  /**
+   * Dragged from the tab: hidden until the pointer is over the board, and
+   * dropped on release. Otherwise shown from the start and dropped on a press.
+   */
+  readonly dragged: boolean;
   readonly binWidth: number;
   readonly binDepth: number;
   /** The snap step in mm, or null when snapping is off. */
@@ -30,6 +36,7 @@ interface LibraryGhost3DProps {
 
 export function LibraryGhost3D({
   ghost,
+  dragged,
   binWidth,
   binDepth,
   grid,
@@ -38,6 +45,7 @@ export function LibraryGhost3D({
   onBoardPress,
 }: LibraryGhost3DProps) {
   const [at, setAt] = useState(() => ({ x: binWidth / 2, y: binDepth / 2 }));
+  const [shown, setShown] = useState(!dragged);
 
   const { lines, fill } = useMemo(() => {
     const rings = ghost.cutouts.flatMap((c) =>
@@ -73,8 +81,11 @@ export function LibraryGhost3D({
     [lines, fill]
   );
 
-  const follow = (x: number, y: number) =>
-    setAt(placementCentre({ x, y }, ghost, { width: binWidth, depth: binDepth }, grid));
+  const board = { width: binWidth, depth: binDepth };
+  const follow = (x: number, y: number) => {
+    setAt(placementCentre({ x, y }, ghost, board, grid));
+    setShown(true);
+  };
 
   return (
     <>
@@ -82,6 +93,15 @@ export function LibraryGhost3D({
         position={[binWidth / 2, binDepth / 2, CATCH_Z]}
         // Moves pass through, so the board's cursor readout keeps counting.
         onPointerMove={(e) => follow(e.point.x, e.point.y)}
+        // A drag released off the board drops nothing, so it shows nothing there.
+        onPointerOut={() => {
+          if (dragged) setShown(false);
+        }}
+        onPointerUp={(e) => {
+          if (!dragged || e.button !== 0) return;
+          e.stopPropagation();
+          onDrop(placementCentre(e.point, ghost, board, grid));
+        }}
         onPointerDown={(e) => {
           // A pan goes to the board directly: let through, the press would reach
           // the shape under it and move that shape.
@@ -92,13 +112,13 @@ export function LibraryGhost3D({
           }
           if (e.button !== 0) return;
           e.stopPropagation();
-          onDrop(placementCentre(e.point, ghost, { width: binWidth, depth: binDepth }, grid));
+          onDrop(placementCentre(e.point, ghost, board, grid));
         }}
       >
         <planeGeometry args={[binWidth * 3, binDepth * 3]} />
         <meshBasicMaterial visible={false} />
       </mesh>
-      <group position={[at.x, at.y, 0]} renderOrder={RENDER_ORDER.DRAWING_PREVIEW}>
+      <group position={[at.x, at.y, 0]} visible={shown} renderOrder={RENDER_ORDER.DRAWING_PREVIEW}>
         <mesh geometry={fill} position={[0, 0, 0.03]} renderOrder={RENDER_ORDER.DRAWING_PREVIEW}>
           <meshBasicMaterial
             color={ACCENT_COLOR}

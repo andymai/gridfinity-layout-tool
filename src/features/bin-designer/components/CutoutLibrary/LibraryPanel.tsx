@@ -3,7 +3,7 @@
  * the ones this bin already uses first. A click on an item starts placing it.
  */
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { Button, Collapsible, EmptyState, NavRow, SearchInput } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { Cutout } from '@/features/bin-designer/types';
@@ -26,8 +26,12 @@ interface LibraryPanelProps {
   readonly placingId: string | null;
   readonly onSave: () => void;
   readonly onPlace: (item: CutoutLibraryItem) => void;
+  /** A press on an item, which becomes a drag to the board when it moves. */
+  readonly onPress: (item: CutoutLibraryItem, event: ReactPointerEvent<HTMLElement>) => void;
   readonly onManage: () => void;
 }
+
+type RowActions = Pick<LibraryPanelProps, 'onPlace' | 'onPress'>;
 
 const mm = (value: number) => String(Math.round(value * 10) / 10);
 
@@ -35,10 +39,10 @@ function LibraryRow({
   item,
   placing,
   onPlace,
-}: {
+  onPress,
+}: RowActions & {
   readonly item: CutoutLibraryItem;
   readonly placing: boolean;
-  readonly onPlace: (item: CutoutLibraryItem) => void;
 }) {
   const t = useTranslation();
   const subtitle = useMemo(() => {
@@ -59,8 +63,9 @@ function LibraryRow({
       subtitle={subtitle}
       trailing={null}
       aria-pressed={placing}
-      className={placing ? 'border-accent' : undefined}
+      className={placing ? 'select-none border-accent' : 'select-none'}
       onClick={() => onPlace(item)}
+      onPointerDown={(e) => onPress(item, e)}
     />
   );
 }
@@ -71,12 +76,12 @@ function FolderSection({
   items,
   placingId,
   onPlace,
-}: {
+  onPress,
+}: RowActions & {
   readonly folder: CutoutLibraryFolder;
   readonly folders: readonly CutoutLibraryFolder[];
   readonly items: readonly CutoutLibraryItem[];
   readonly placingId: string | null;
-  readonly onPlace: (item: CutoutLibraryItem) => void;
 }) {
   const t = useTranslation();
   const children = folders.filter((f) => f.parentId === folder.id);
@@ -92,10 +97,17 @@ function FolderSection({
             items={items}
             placingId={placingId}
             onPlace={onPlace}
+            onPress={onPress}
           />
         ))}
         {held.map((item) => (
-          <LibraryRow key={item.id} item={item} placing={item.id === placingId} onPlace={onPlace} />
+          <LibraryRow
+            key={item.id}
+            item={item}
+            placing={item.id === placingId}
+            onPlace={onPlace}
+            onPress={onPress}
+          />
         ))}
         {children.length === 0 && held.length === 0 && (
           <p className="text-xs text-content-tertiary">
@@ -113,6 +125,7 @@ export function LibraryPanel({
   placingId,
   onSave,
   onPlace,
+  onPress,
   onManage,
 }: LibraryPanelProps) {
   const t = useTranslation();
@@ -129,7 +142,13 @@ export function LibraryPanel({
   const matches = searching ? items.filter((item) => matchesQuery(item, query)) : [];
 
   const row = (item: CutoutLibraryItem) => (
-    <LibraryRow key={item.id} item={item} placing={item.id === placingId} onPlace={onPlace} />
+    <LibraryRow
+      key={item.id}
+      item={item}
+      placing={item.id === placingId}
+      onPlace={onPlace}
+      onPress={onPress}
+    />
   );
 
   return (
@@ -189,6 +208,7 @@ export function LibraryPanel({
                   items={items}
                   placingId={placingId}
                   onPlace={onPlace}
+                  onPress={onPress}
                 />
               ))}
               {itemsIn(items, null, folders).map(row)}

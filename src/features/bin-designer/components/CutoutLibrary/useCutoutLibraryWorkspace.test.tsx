@@ -150,6 +150,57 @@ describe('useCutoutLibraryWorkspace', () => {
     expect(latest?.sceneOverlay).toBeNull();
   });
 
+  it('places an item dragged from the tab, with no hint, and ends the drag on release', async () => {
+    const item = expectOk(
+      await createItem({
+        name: 'Wrench',
+        folderId: null,
+        content: { params: { cutouts: [shape('w')] } },
+      })
+    );
+    render(<Harness selection={new Set()} />);
+    const row = await screen.findByRole('button', { name: /Wrench/ });
+
+    fireEvent.pointerDown(row, { button: 0, pointerId: 1, pointerType: 'mouse', clientX: 0 });
+    act(() => {
+      window.dispatchEvent(new PointerEvent('pointermove', { pointerId: 1, clientX: 40 }));
+    });
+    expect(row).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    const ghost = latest?.sceneOverlay as ReactElement<{ dragged: boolean }> | null;
+    expect(ghost?.props.dragged).toBe(true);
+
+    dropAt({ x: 40, y: 40 });
+    act(() => {
+      window.dispatchEvent(new PointerEvent('pointerup', { pointerId: 1, clientX: 40 }));
+    });
+    expect(useDesignerStore.getState().params.cutouts[0]).toMatchObject({ libraryItemId: item.id });
+    expect(latest?.sceneOverlay).toBeNull();
+  });
+
+  it('drops nothing when a drag ends off the board, and its click starts no placement', async () => {
+    expectOk(
+      await createItem({
+        name: 'Wrench',
+        folderId: null,
+        content: { params: { cutouts: [shape('w')] } },
+      })
+    );
+    render(<Harness selection={new Set()} />);
+    const row = await screen.findByRole('button', { name: /Wrench/ });
+
+    fireEvent.pointerDown(row, { button: 0, pointerId: 1, pointerType: 'mouse', clientX: 0 });
+    act(() => {
+      window.dispatchEvent(new PointerEvent('pointermove', { pointerId: 1, clientX: 40 }));
+      window.dispatchEvent(new PointerEvent('pointerup', { pointerId: 1, clientX: 2 }));
+    });
+    fireEvent.click(row);
+
+    expect(useDesignerStore.getState().params.cutouts).toHaveLength(0);
+    expect(latest?.sceneOverlay).toBeNull();
+    expect(row).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('says why an imprint cannot go on the lid', async () => {
     const ref: MeshAssetRef = {
       name: 'tool',

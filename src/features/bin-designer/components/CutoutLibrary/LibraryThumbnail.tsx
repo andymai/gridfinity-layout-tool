@@ -60,7 +60,17 @@ export function LibraryThumbnail({ item, size }: LibraryThumbnailProps) {
   );
   const url = ready?.version === version ? ready.url : null;
   if (url) {
-    return <img src={url} alt="" width={size} height={size} className="object-contain" />;
+    // Not draggable: the browser's own image drag would take the press from the row's drag.
+    return (
+      <img
+        src={url}
+        alt=""
+        width={size}
+        height={size}
+        draggable={false}
+        className="object-contain"
+      />
+    );
   }
   return <LibraryOutline item={item} size={size} />;
 }

@@ -10,6 +10,8 @@ sources:
   - src/features/bin-designer/components/CutoutLibrary/SaveToLibraryDialog.tsx
   - src/features/bin-designer/components/CutoutLibrary/ManageLibraryDialog.tsx
   - src/features/bin-designer/components/CutoutLibrary/useCutoutLibraryWorkspace.tsx
+  - src/features/bin-designer/components/CutoutLibrary/useLibraryRowDrag.ts
+  - src/features/bin-designer/components/CutoutLibrary/LibraryGhost3D.tsx
   - src/features/bin-designer/components/CutoutLibrary/libraryContent.ts
   - src/features/bin-designer/components/CutoutLibrary/libraryPlacement.ts
   - src/features/bin-designer/library/CutoutLibraryService.ts
@@ -31,8 +33,10 @@ The item keeps the size, depth, fit, label and STL imprint of each shape. Saving
 ## Place a saved item
 
 1. Open the <Ui k="binDesigner.cutouts.library.tab" /> tab in the cutout editor.
-2. Click an item. Its outline follows the pointer over the board.
-3. Click the board to drop it. Press <kbd>Esc</kbd> to stop.
+2. Drag an item onto the board. Its outline shows where the item goes.
+3. Release the item where you want it. To stop, release it off the board, or press <kbd>Esc</kbd>.
+
+You can also click an item instead. Its outline then follows the pointer until you click the board. On a touch screen, tap the item, then tap the board.
 
 The item lands as new shapes, and they are selected. If you edit them, the item does not change. If you edit the item later, bins that hold it do not change. While snap is on, the corner of the item snaps to the grid.
 
