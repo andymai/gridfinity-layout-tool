@@ -49,7 +49,9 @@ function rejectedField(error: string): string {
   if (!/^[A-Za-z]{1,40}$/.test(first)) return '<other>';
   if (first !== 'compartments') return first;
   const rule = error.replace(/\d+/g, '#');
-  return /^[\w .,:'|()<>×#[\]-]{1,200}$/.test(rule) ? rule : first;
+  // Check every character first: a list of allowed values can run long, and
+  // the rule that names it comes before the list.
+  return /^[\w .,:'|()<>×#[\]-]+$/.test(rule) ? rule.slice(0, 160) : first;
 }
 
 export { MESH_MISSING_STATUS };

@@ -297,6 +297,13 @@ describe('PUT', () => {
       { compartments: { cols: 2, rows: 1, thickness: 1.2, cells: [0, 1], drawnUnitCells: [1, 1] } },
       'compartments.drawnUnitCells has duplicate ID #',
     ],
+    [
+      'a compartment rule that lists its allowed values',
+      { compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0], labelIcons: ['nope'] } },
+      expect.stringMatching(
+        /^(?=.{160}$)compartments\.labelIcons\[#\] must be null or one of: bolt, /
+      ),
+    ],
   ])('logs a rejection for %s with no request text', async (_label, extra, field) => {
     const warn = vi.spyOn(logger, 'warn').mockImplementation(() => undefined);
     const { default: handler } = await import('./[id]');
