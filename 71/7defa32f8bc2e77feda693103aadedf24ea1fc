@@ -1,0 +1,19 @@
+public/privacy/index.html
+  s_f8efc8defc13ab::t_c354b6c10360b5 117-119,221-225,263
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "717defa32f8bc2e77feda693103aadedf24ea1fc",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
