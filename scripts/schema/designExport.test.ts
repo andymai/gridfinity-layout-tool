@@ -22,6 +22,7 @@ import {
 import { migrateParams } from '@/features/bin-designer/constants/paramMigration';
 import { EXAMPLE_DESIGNS } from '@/features/bin-designer/data/examples';
 import { LIP_CELL_ZONES } from '@/features/bin-designer/types/featureColors';
+import { DEFAULT_FLOOR_PATTERN_CONFIG } from '@/features/bin-designer/types/floor';
 import { DEFAULT_LID_CONFIG } from '@/features/bin-designer/types/lid';
 import { exportDesignJSON } from '@/features/bin-designer/utils/designJson';
 import type { BinParams, Cutout } from '@/shared/types/bin';
@@ -105,7 +106,7 @@ const AUTO_AND_NULL_PARAMS: BinParams = migrateParams({
   dividerPieces: { ...DEFAULT_DIVIDER_PIECE_CONFIG, height: 'auto' },
   // The scale sliders run 0-100%, and 0 is the finest pattern.
   wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true, scale: 0 },
-  floorPattern: { ...DEFAULT_BIN_PARAMS.floorPattern, enabled: true, scale: 0 },
+  floorPattern: { ...DEFAULT_FLOOR_PATTERN_CONFIG, enabled: true, scale: 0 },
   cutouts: CUTOUTS,
   featureColors: {
     ...DEFAULT_FEATURE_COLOR_CONFIG,
@@ -132,7 +133,7 @@ describe('designs exported by the app validate against the schema', () => {
     expect(p.slotConfig.customGrid?.cols).toBe(2);
     expect(p.dividerPieces.height).toBe('auto');
     expect(p.wallPattern.scale).toBe(0);
-    expect(p.floorPattern.scale).toBe(0);
+    expect(p.floorPattern?.scale).toBe(0);
     expect(p.cutouts.map((c) => [c.shape, c.groupId, c.labelPlateWidthU, c.labelIcon])).toEqual([
       ['rectangle', null, 2, 'screw'],
       ['text', null, undefined, undefined],
