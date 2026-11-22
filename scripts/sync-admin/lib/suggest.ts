@@ -36,6 +36,9 @@ export const SCRIPT_PREAMBLE = [
   'fi',
   ': "${REDIS_URL:?REDIS_URL not set; run \\`vercel env pull .env.production.local\\` first}"',
   ': "${BLOB_READ_WRITE_TOKEN:?BLOB_READ_WRITE_TOKEN not set; run \\`vercel env pull .env.production.local\\` first}"',
+  '# A pulled file also holds VERCEL_OIDC_TOKEN, and `vercel blob` refuses to run',
+  '# with it and no BLOB_STORE_ID. These commands use the read-write token.',
+  'unset VERCEL_OIDC_TOKEN BLOB_STORE_ID',
   '',
 ];
 
@@ -110,11 +113,16 @@ function orphanBlobSuggestion(f: Finding): string[] {
     `# ${f.detail} — preflight checks index is still absent before deleting blob`,
     `# Inspect: pnpm sync-admin user ${shq(f.uid)} --kind=${f.itemKind} --json | jq --arg id ${shq(f.id)} '.blobs[] | select(.id == $id)'`,
     `if [ "$(redis-cli -u "$REDIS_URL" --no-auth-warning HGET ${shq(indexKey)} ${shq(f.id)})" = "" ]; then`,
-    `  vercel blob rm ${shq(blobPath)} --yes`,
+    `  ${blobDelete(blobPath)}`,
     `else`,
     `  echo "skip: ${blobPath} — index entry now present, item likely re-uploaded"`,
     `fi`,
   ];
+}
+
+/** `--yes` is deprecated, and refused for an agent: naming the blob approves its delete. */
+function blobDelete(blobPath: string): string {
+  return `vercel blob delete ${shq(blobPath)} --confirm-name ${shq(blobPath)}`;
 }
 
 function tombstoneWithBlobSuggestion(f: Finding): string[] {
@@ -124,7 +132,7 @@ function tombstoneWithBlobSuggestion(f: Finding): string[] {
   return [
     `# ${f.detail} — preflight checks index is still tombstoned before deleting blob`,
     `if redis-cli -u "$REDIS_URL" --no-auth-warning HGET ${shq(indexKey)} ${shq(f.id)} | grep -q '"deletedAt"'; then`,
-    `  vercel blob rm ${shq(blobPath)} --yes`,
+    `  ${blobDelete(blobPath)}`,
     `else`,
     `  echo "skip: ${blobPath} — index entry no longer tombstoned (item restored)"`,
     `fi`,
