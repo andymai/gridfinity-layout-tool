@@ -13,7 +13,6 @@ export function isFirewallChallenge(response: Response): boolean {
   return response.status === 429 && response.headers.get('x-vercel-mitigated') === 'challenge';
 }
 
-/** Latch the first challenge of this page and announce it once. */
 export function noteFirewallChallenge(response: Response): void {
   if (challenged || !isFirewallChallenge(response)) return;
   challenged = true;
@@ -22,7 +21,6 @@ export function noteFirewallChallenge(response: Response): void {
   }
 }
 
-/** True once an API call in this page met a firewall challenge. */
 export function firewallChallenged(): boolean {
   return challenged;
 }

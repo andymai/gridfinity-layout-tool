@@ -175,6 +175,24 @@ describe('useSyncToasts: firewall challenge', () => {
     ]);
   });
 
+  it('shows the toast once, so a dismissed one stays dismissed', () => {
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u', email: 'u@example.com', provider: 'google' },
+    });
+    renderHook(() => useSyncToasts());
+    act(() => noteFirewallChallenge(challenge()));
+    act(() => useToastStore.setState({ toasts: [] }));
+    act(() => useSessionStore.setState({ status: 'anonymous', user: null }));
+    act(() =>
+      useSessionStore.setState({
+        status: 'authenticated',
+        user: { userId: 'u', email: 'u@example.com', provider: 'google' },
+      })
+    );
+    expect(useToastStore.getState().toasts).toEqual([]);
+  });
+
   it('stays quiet in a signed-out tab, which has no sync to pause', () => {
     renderHook(() => useSyncToasts());
     act(() => noteFirewallChallenge(challenge()));

@@ -19,6 +19,7 @@ export function useSyncToasts(): void {
   const t = useTranslation();
   const addToast = useToastStore((s) => s.addToast);
   const offlineToastFiredAt = useRef<number>(0);
+  const challengeToastShown = useRef(false);
 
   useEffect(() => {
     return onEngineEvent((event: EngineEvent) => {
@@ -49,8 +50,9 @@ export function useSyncToasts(): void {
     // The challenge can come before this hook mounts or before sign-in
     // settles, so the latch is read again at each of those points.
     const show = () => {
-      if (!firewallChallenged()) return;
+      if (challengeToastShown.current || !firewallChallenged()) return;
       if (useSessionStore.getState().status !== 'authenticated') return;
+      challengeToastShown.current = true;
       addToast({
         message: t('sync.firewallChallenge'),
         type: 'info',
