@@ -89,7 +89,11 @@ export interface SyncResourceConfig<TEnvelope extends SyncEnvelope> {
   invalidIdError: string;
   /** 410 message when a stale edit hits a newer tombstone. */
   deletedError: string;
-  /** Validate the payload and shape the envelope; everything per-resource. */
+  /**
+   * Validate the payload and shape the envelope; everything per-resource.
+   * Must stay pure: `scripts/sync-admin` re-runs it on stored payloads
+   * through each handler's `resource` export.
+   */
   buildPut: (
     payload: unknown,
     modifiedAt: number,

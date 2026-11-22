@@ -23,9 +23,9 @@ the operator can sanity-check what they're about to scan.
 
 ### `audit`
 
-Full integrity scan: blob ↔ index reconciliation, envelope validation, payload
-validation (via the same `validateShareLayout` / `validateDesignerShare` the
-PUT endpoints use), and sanitization-drift detection.
+Full integrity scan of every synced kind: blob ↔ index reconciliation, envelope
+validation, payload validation (each kind's PUT `buildPut`, re-run on the
+stored payload), and sanitization-drift detection.
 
 ```bash
 pnpm sync-admin audit                       # human-readable report
@@ -78,8 +78,8 @@ pnpm sync-admin user 589314dfbe7f... --kind=designs
 
 ### `users`
 
-Table of all users sorted by total blob bytes desc. Use to spot capacity
-outliers.
+Table of all users sorted by total blob bytes desc, with a count and size per
+kind (`byKind` in `--json`). Use to spot capacity outliers.
 
 ```bash
 pnpm sync-admin users
@@ -102,12 +102,12 @@ pnpm sync-admin tombstones --older-than=180d
 Emit shell commands that would remediate findings of one category. Output is
 designed to be reviewed and pasted; nothing runs automatically.
 
-| Category           | Emits                                                        |
-| ------------------ | ------------------------------------------------------------ |
-| `drift`            | `redis-cli EVAL` that rewrites `sizeBytes` to match the blob |
-| `orphans`          | `vercel blob rm` (orphan blob) or `HDEL` (missing blob)      |
-| `stale-tombstones` | `redis-cli HDEL` for tombstones older than the threshold     |
-| `malformed`        | `HGET` (inspect) then commented `HDEL` (uncomment to apply)  |
+| Category           | Emits                                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| `drift`            | `redis-cli EVAL` that rewrites `sizeBytes` to match the blob (fetches design payloads unless `--no-payload-fetch`) |
+| `orphans`          | `vercel blob rm` (orphan blob) or `HDEL` (missing blob)                                                            |
+| `stale-tombstones` | `redis-cli HDEL` for tombstones older than the threshold                                                           |
+| `malformed`        | `HGET` (inspect) then commented `HDEL` (uncomment to apply)                                                        |
 
 ```bash
 pnpm sync-admin suggest drift > drift-fixes.sh
@@ -117,34 +117,34 @@ bash drift-fixes.sh
 
 ## Shared flags
 
-| Flag                                  | Applies to                 | Effect                                                        |
-| ------------------------------------- | -------------------------- | ------------------------------------------------------------- |
-| `--json`                              | all                        | Machine-readable output (use with `pnpm --silent`)            |
-| `--strict`                            | audit, user                | Exit 1 on any error or warning finding; info does not fail    |
-| `--strict`                            | tombstones                 | Exit 1 if any tombstone is stale (that command's whole point) |
-| `--kind=layouts\|designs\|baseplates` | most                       | Restrict to one item kind                                     |
-| `--user=<uid>`                        | audit, suggest, tombstones | Restrict to one user                                          |
-| `--no-payload-fetch`                  | audit, user, suggest       | Skip per-blob HTTP fetch (skips envelope checks)              |
-| `--no-reverify`                       | audit, user, suggest       | Report raw findings without re-reading flagged items          |
-| `--suggest`                           | audit                      | Inline fix commands beneath each finding                      |
-| `--older-than=Nd`                     | tombstones, suggest        | Stale-tombstone age threshold (default 90d)                   |
+| Flag                 | Applies to                 | Effect                                                           |
+| -------------------- | -------------------------- | ---------------------------------------------------------------- |
+| `--json`             | all                        | Machine-readable output (use with `pnpm --silent`)               |
+| `--strict`           | audit, user                | Exit 1 on any error or warning finding; info does not fail       |
+| `--strict`           | tombstones                 | Exit 1 if any tombstone is stale (that command's whole point)    |
+| `--kind=<kind>`      | most                       | Restrict to one item kind (`--help` lists them)                  |
+| `--user=<uid>`       | audit, suggest, tombstones | Restrict to one user                                             |
+| `--no-payload-fetch` | audit, user, suggest       | Skip per-blob HTTP fetch (skips envelope and design size checks) |
+| `--no-reverify`      | audit, user, suggest       | Report raw findings without re-reading flagged items             |
+| `--suggest`          | audit                      | Inline fix commands beneath each finding                         |
+| `--older-than=Nd`    | tombstones, suggest        | Stale-tombstone age threshold (default 90d)                      |
 
 ## Finding kinds
 
-| Kind                    | Severity | Means                                                        |
-| ----------------------- | -------- | ------------------------------------------------------------ |
-| `orphan_blob`           | error    | Blob exists, no live index entry                             |
-| `missing_blob`          | error    | Live index entry exists, no blob                             |
-| `tombstone_with_blob`   | error    | Index says deleted, blob survives                            |
-| `malformed_index_entry` | error    | Index hash value isn't parseable JSON                        |
-| `modifiedAt_mismatch`   | error    | Envelope's `modifiedAt` differs from index entry's           |
-| `envelope_invalid`      | error    | Envelope shape wrong: bad `schemaVersion` / `modifiedAt`     |
-| `payload_invalid`       | error    | `validateShareLayout` / `validateDesignerShare` rejected     |
-| `index_size_undercount` | error    | Index `sizeBytes` under-counts the blob; hides quota usage   |
-| `fetch_timeout`         | error    | Blob fetch exceeded the per-fetch deadline (default 15s)     |
-| `sanitization_drift`    | warn     | Index `sizeBytes` over-counts (quota leak in system's favor) |
-| `listing_size_mismatch` | warn     | Vercel Blob listing's `size` differs from fetched byte count |
-| `stale_tombstone`       | info     | Tombstone older than retention; safe to sweep                |
+| Kind                    | Severity | Means                                                           |
+| ----------------------- | -------- | --------------------------------------------------------------- |
+| `orphan_blob`           | error    | Blob exists, no live index entry                                |
+| `missing_blob`          | error    | Live index entry exists, no blob                                |
+| `tombstone_with_blob`   | error    | Index says deleted, blob survives                               |
+| `malformed_index_entry` | error    | Index hash value isn't parseable JSON                           |
+| `modifiedAt_mismatch`   | error    | Envelope's `modifiedAt` differs from index entry's              |
+| `envelope_invalid`      | error    | `schemaVersion` outside 1 to the handler's, or bad `modifiedAt` |
+| `payload_invalid`       | error    | The kind's PUT `buildPut` rejects the stored payload            |
+| `index_size_undercount` | error    | Index `sizeBytes` under-counts the blob; hides quota usage      |
+| `fetch_timeout`         | error    | Blob fetch exceeded the per-fetch deadline (default 15s)        |
+| `sanitization_drift`    | warn     | Index `sizeBytes` over-counts (quota leak in system's favor)    |
+| `listing_size_mismatch` | warn     | Vercel Blob listing's `size` differs from fetched byte count    |
+| `stale_tombstone`       | info     | Tombstone older than retention; safe to sweep                   |
 
 ## Scripted / scheduled usage
 
@@ -158,9 +158,10 @@ CI runs it. Run it by hand, or on a schedule with the credentials available.
 
 ## Implementation notes
 
-- Imports `validateShareLayout`, `validateDesignerShare`, `userIndexKey`,
-  `TOMBSTONE_RETENTION_MS` directly from `api/lib/` so production validation
-  changes are reflected automatically.
+- `lib/kinds.ts` imports each handler's `resource` and `SCHEMA_VERSION` from
+  `api/sync/<kind>/[id].ts`, so production validation changes are reflected
+  automatically. It is keyed by `SyncItemKind`: a new kind fails the type check
+  until it is listed there and in `lib/delta.ts`.
 - Bounded concurrency of 16 in-flight blob fetches via `lib/concurrency.ts`.
 - Index reads are pipelined in chunks of 200 (`lib/redis.ts`). One `HGETALL`
   per user serially cost `users × RTT`, which dominated the run against a

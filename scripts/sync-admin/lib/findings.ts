@@ -1,14 +1,13 @@
-import { validateShareLayout, isValidationError } from '../../../api/lib/validation.js';
-import { validateDesignerShare } from '../../../api/lib/designerValidation.js';
-import { validateBaseplateShare } from '../../../api/lib/baseplateValidation.js';
 import { TOMBSTONE_RETENTION_MS } from '../../../api/lib/userIndex.js';
+import { storedDesignBytes } from '../../../api/sync/designs/[id].js';
 import { pMap } from './concurrency.js';
 import { expectedEnvelopeDelta } from './delta.js';
 import { isMalformedRow, itemKey } from './inventory.js';
+import { KIND_SPECS, isSchemaVersionOf } from './kinds.js';
 import { createProgress, type Progress } from './progress.js';
 import { reverify } from './reverify.js';
 import type Redis from 'ioredis';
-import type { Finding, Inventory, Kind } from './types.js';
+import type { Finding, Inventory, IndexRow, Kind } from './types.js';
 
 interface AnalyzeOpts {
   fetchPayloads: boolean;
@@ -29,6 +28,9 @@ export interface AnalyzeResult {
 }
 
 const DEFAULT_FETCH_TIMEOUT_MS = 15_000;
+
+/** A parsed JSON value for a detail line. `String()` throws on `{"toString":1}`. */
+const shown = (value: unknown): string => JSON.stringify(value) ?? 'undefined';
 
 export async function analyzeWithReverify(
   inv: Inventory,
@@ -113,43 +115,10 @@ export async function analyze(
       continue;
     }
 
-    const expected = expectedEnvelopeDelta(row.kind, row.entry.modifiedAt);
-    const delta = blob.size - row.entry.sizeBytes;
-    if (delta < expected) {
-      // index > what's stored: user is over-charged. Fix is safe (lowers sizeBytes).
-      findings.push({
-        kind: 'sanitization_drift',
-        uid: row.uid,
-        itemKind: row.kind,
-        id: row.id,
-        severity: 'warn',
-        detail: `index sizeBytes over-counts by ${expected - delta}B (quota leak)`,
-        data: {
-          indexSize: row.entry.sizeBytes,
-          blobSize: blob.size,
-          drift: delta - expected,
-          modifiedAt: row.entry.modifiedAt,
-        },
-      });
-    } else if (delta > expected) {
-      // index < what's stored: index under-counts the blob. Suggests the blob
-      // was rewritten without a matching index update, or some other atomicity
-      // gap. Severity bumped to error since it can hide quota usage.
-      findings.push({
-        kind: 'index_size_undercount',
-        uid: row.uid,
-        itemKind: row.kind,
-        id: row.id,
-        severity: 'error',
-        detail: `index sizeBytes under-counts by ${delta - expected}B`,
-        data: {
-          indexSize: row.entry.sizeBytes,
-          blobSize: blob.size,
-          drift: delta - expected,
-          modifiedAt: row.entry.modifiedAt,
-        },
-      });
-    }
+    // A design's measure depends on its payload, so the payload pass checks it.
+    if (row.kind === 'designs') continue;
+    const size = sizeFinding(row, blob.size, expectedEnvelopeDelta(row.kind, row.entry.modifiedAt));
+    if (size) findings.push(size);
   }
 
   for (const blob of inv.blobs) {
@@ -188,6 +157,42 @@ export async function analyze(
   }
 
   return findings;
+}
+
+/**
+ * A size finding when the index's `sizeBytes` and the blob disagree by more
+ * than the envelope adds. `expectedDelta` rides along so `suggest drift`
+ * writes back the same figure.
+ */
+function sizeFinding(row: IndexRow, blobSize: number, expected: number): Finding | null {
+  const delta = blobSize - row.entry.sizeBytes;
+  if (delta === expected) return null;
+  const data = {
+    indexSize: row.entry.sizeBytes,
+    blobSize,
+    drift: delta - expected,
+    expectedDelta: expected,
+    modifiedAt: row.entry.modifiedAt,
+  };
+  const base = { uid: row.uid, itemKind: row.kind, id: row.id, data };
+  // index > what's stored: user is over-charged. Fix is safe (lowers sizeBytes).
+  if (delta < expected) {
+    return {
+      ...base,
+      kind: 'sanitization_drift',
+      severity: 'warn',
+      detail: `index sizeBytes over-counts by ${expected - delta}B (quota leak)`,
+    };
+  }
+  // index < what's stored: index under-counts the blob. Suggests the blob
+  // was rewritten without a matching index update, or some other atomicity
+  // gap. Severity bumped to error since it can hide quota usage.
+  return {
+    ...base,
+    kind: 'index_size_undercount',
+    severity: 'error',
+    detail: `index sizeBytes under-counts by ${delta - expected}B`,
+  };
 }
 
 async function validateBlob(
@@ -245,14 +250,16 @@ async function validateBlob(
     return out;
   }
   const env = body as Record<string, unknown>;
-  if (env.schemaVersion !== 1) {
+  const spec = KIND_SPECS[blob.kind];
+  const version = env.schemaVersion;
+  if (!isSchemaVersionOf(blob.kind, version)) {
     out.push({
       kind: 'envelope_invalid',
       uid: blob.uid,
       itemKind: blob.kind,
       id: blob.id,
       severity: 'error',
-      detail: `schemaVersion=${String(env.schemaVersion)} (expected 1)`,
+      detail: `schemaVersion=${shown(version)} (expected 1 to ${spec.schemaVersion})`,
     });
   }
   if (typeof env.modifiedAt !== 'number' || !Number.isFinite(env.modifiedAt)) {
@@ -262,7 +269,7 @@ async function validateBlob(
       itemKind: blob.kind,
       id: blob.id,
       severity: 'error',
-      detail: `modifiedAt=${String(env.modifiedAt)}`,
+      detail: `modifiedAt=${shown(env.modifiedAt)}`,
     });
   } else {
     const row = inv.indexMap.get(itemKey(blob.uid, blob.kind, blob.id));
@@ -279,73 +286,28 @@ async function validateBlob(
     }
   }
 
-  if (blob.kind === 'layouts') {
-    const inner = JSON.stringify({ layout: env.layout });
-    const v = validateShareLayout(env.layout, Buffer.byteLength(inner, 'utf8'));
-    if (isValidationError(v)) {
-      out.push({
-        kind: 'payload_invalid',
-        uid: blob.uid,
-        itemKind: blob.kind,
-        id: blob.id,
-        severity: 'error',
-        detail: `${v.error.code}: ${v.error.message}`,
-      });
-    }
-  } else if (blob.kind === 'baseplates') {
-    const u = unwrapWrapper(env.baseplate);
-    if (!u) {
-      out.push({
-        kind: 'payload_invalid',
-        uid: blob.uid,
-        itemKind: blob.kind,
-        id: blob.id,
-        severity: 'error',
-        detail: 'baseplate payload not unwrappable',
-      });
-    } else {
-      const wrapped = { type: 'baseplate' as const, version: 1 as const, params: u.params };
-      const inner = JSON.stringify(wrapped);
-      const v = validateBaseplateShare(wrapped, Buffer.byteLength(inner, 'utf8'));
-      if (!v.valid) {
-        out.push({
-          kind: 'payload_invalid',
-          uid: blob.uid,
-          itemKind: blob.kind,
-          id: blob.id,
-          severity: 'error',
-          detail: `${v.error.code}: ${v.error.message}`,
-        });
-      }
-    }
-  } else {
-    const u = unwrapWrapper(env.design);
-    if (!u) {
-      out.push({
-        kind: 'payload_invalid',
-        uid: blob.uid,
-        itemKind: blob.kind,
-        id: blob.id,
-        severity: 'error',
-        detail: 'design payload not unwrappable',
-      });
-    } else {
-      const wrapped = { type: 'designer' as const, version: 1 as const, params: u.params };
-      const inner = JSON.stringify(wrapped);
-      const v = validateDesignerShare(wrapped, Buffer.byteLength(inner, 'utf8'), {
-        meshRefs: true,
-      });
-      if (!v.valid) {
-        out.push({
-          kind: 'payload_invalid',
-          uid: blob.uid,
-          itemKind: blob.kind,
-          id: blob.id,
-          severity: 'error',
-          detail: `${v.error.code}: ${v.error.message}`,
-        });
-      }
-    }
+  // The stored envelope stands in for the PUT body: it carries the payload
+  // under the same key and the schemaVersion that the write declared. The
+  // timestamp only stamps the rebuilt envelope, so a bad one still checks the payload.
+  const stamp = typeof env.modifiedAt === 'number' ? env.modifiedAt : 0;
+  const built = spec.buildPut(env[spec.payloadKey], stamp, blob.id, env);
+  if (!built.ok) {
+    out.push({
+      kind: 'payload_invalid',
+      uid: blob.uid,
+      itemKind: blob.kind,
+      id: blob.id,
+      severity: 'error',
+      detail: `${built.reason ?? built.code}: ${built.error}`,
+    });
+  }
+
+  const indexed = inv.indexMap.get(itemKey(blob.uid, blob.kind, blob.id));
+  const design = env[spec.payloadKey];
+  if (blob.kind === 'designs' && indexed && typeof design === 'object' && design !== null) {
+    const expected = fetchedBytes - storedDesignBytes(design as Record<string, unknown>);
+    const size = sizeFinding(indexed, blob.size, expected);
+    if (size) out.push(size);
   }
 
   if (fetchedBytes !== blob.size) {
@@ -361,14 +323,4 @@ async function validateBlob(
   }
 
   return out;
-}
-
-function unwrapWrapper(wrapper: unknown): { name: string | null; params: unknown } | null {
-  if (wrapper === null || typeof wrapper !== 'object') return null;
-  const { name, params } = wrapper as { name?: unknown; params?: unknown };
-  if (typeof params === 'object' && params !== null) {
-    if (name !== undefined && typeof name !== 'string') return null;
-    return { name: (name as string) ?? null, params };
-  }
-  return { name: null, params: wrapper };
 }

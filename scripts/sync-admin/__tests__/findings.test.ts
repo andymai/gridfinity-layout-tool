@@ -3,11 +3,15 @@ import { analyze } from '../lib/findings';
 import { expectedEnvelopeDelta } from '../lib/delta';
 import type { Inventory, BlobRow, IndexRow } from '../lib/types';
 import { itemKey } from '../lib/inventory';
+import { SCHEMA_VERSION as LAYOUT_SCHEMA_VERSION } from '../../../api/sync/layouts/[id]';
 
 const fetchMock = vi.fn();
 vi.stubGlobal('fetch', fetchMock);
 
 beforeEach(() => fetchMock.mockReset());
+
+const isSizeFinding = (f: { kind: string }) =>
+  f.kind === 'sanitization_drift' || f.kind === 'index_size_undercount';
 
 function makeInventory(blobs: BlobRow[], indexRows: IndexRow[]): Inventory {
   const blobMap = new Map<string, BlobRow>();
@@ -139,16 +143,26 @@ describe('analyze', () => {
     // Tags cancel in delta = blob.size - index.sizeBytes, so the delta must
     // equal the structural envelope overhead exactly.
     expect(blob.size - entry.entry.sizeBytes).toBe(expectedEnvelopeDelta('designs', T));
-    const findings = await analyze(makeInventory([blob], [entry]), { fetchPayloads: false });
-    expect(findings).toEqual([]);
+    mockPayload({
+      design: { name: 'Bin', params: designParams, tags },
+      modifiedAt: T,
+      schemaVersion: 1,
+    });
+    const findings = await analyze(makeInventory([blob], [entry]));
+    expect(findings.filter(isSizeFinding)).toEqual([]);
   });
 
   it('an untagged design (tags=[]) is also drift-free', async () => {
     const blob = designBlob('u1', 'd2', []);
     const entry = designEntry('u1', 'd2', []);
     expect(blob.size - entry.entry.sizeBytes).toBe(expectedEnvelopeDelta('designs', T));
-    const findings = await analyze(makeInventory([blob], [entry]), { fetchPayloads: false });
-    expect(findings).toEqual([]);
+    mockPayload({
+      design: { name: 'Bin', params: designParams, tags: [] },
+      modifiedAt: T,
+      schemaVersion: 1,
+    });
+    const findings = await analyze(makeInventory([blob], [entry]));
+    expect(findings.filter(isSizeFinding)).toEqual([]);
   });
 
   it('flags orphan blob (blob without index entry)', async () => {
@@ -270,12 +284,18 @@ describe('analyze', () => {
     expect(findings.find((f) => f.kind === 'modifiedAt_mismatch')).toBeDefined();
   });
 
-  it('flags invalid schemaVersion in envelope', async () => {
+  it('passes every schemaVersion the handler wrote, and flags any other', async () => {
     const blob = layoutBlob('u1', 'sv');
     const entry = layoutEntry('u1', 'sv');
-    mockPayload({ layout: layoutPayload, modifiedAt: T, schemaVersion: 2 });
-    const findings = await analyze(makeInventory([blob], [entry]));
-    expect(findings.find((f) => f.kind === 'envelope_invalid')).toBeDefined();
+    const envelopeError = async (schemaVersion: unknown) => {
+      mockPayload({ layout: layoutPayload, modifiedAt: T, schemaVersion });
+      const findings = await analyze(makeInventory([blob], [entry]));
+      return findings.find((f) => f.kind === 'envelope_invalid');
+    };
+    for (const v of [1, LAYOUT_SCHEMA_VERSION]) expect(await envelopeError(v)).toBeUndefined();
+    for (const v of [0, 1.5, '1', LAYOUT_SCHEMA_VERSION + 1]) {
+      expect(await envelopeError(v)).toBeDefined();
+    }
   });
 
   it('flags listing_size_mismatch when fetched bytes diverge from listing.size', async () => {

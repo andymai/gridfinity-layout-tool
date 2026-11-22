@@ -14,7 +14,12 @@ describe('suggestFor', () => {
       id: 'l1',
       severity: 'warn',
       detail: '',
-      data: { indexSize: 1500, blobSize, modifiedAt },
+      data: {
+        indexSize: 1500,
+        blobSize,
+        modifiedAt,
+        expectedDelta: expectedEnvelopeDelta('layouts', modifiedAt),
+      },
     };
     const out = suggestFor(finding).join('\n');
     const expected = blobSize - expectedEnvelopeDelta('layouts', modifiedAt);
@@ -33,9 +38,28 @@ describe('suggestFor', () => {
       id: 'l1',
       severity: 'warn',
       detail: '',
-      data: { blobSize: 10, modifiedAt: 1_780_000_000_000 },
+      data: { blobSize: 10, modifiedAt: 1_780_000_000_000, expectedDelta: 45 },
     };
     expect(suggestFor(finding)).toEqual([]);
+  });
+
+  it('drift suggestion writes back the figure the finding was measured with', () => {
+    const modifiedAt = 1_780_000_000_000;
+    const finding: Finding = {
+      kind: 'index_size_undercount',
+      uid: 'u1',
+      itemKind: 'designs',
+      id: 'd1',
+      severity: 'error',
+      detail: '',
+      data: {
+        blobSize: 1000,
+        modifiedAt,
+        expectedDelta: 56,
+      },
+    };
+    expect(suggestFor(finding).join('\n')).toContain(' 944 ');
+    expect(suggestFor({ ...finding, data: { blobSize: 1000, modifiedAt } })).toEqual([]);
   });
 
   it('drift suggestion handles modifiedAt === 0', () => {
@@ -46,7 +70,7 @@ describe('suggestFor', () => {
       id: 'l1',
       severity: 'warn',
       detail: '',
-      data: { blobSize: 1000, modifiedAt: 0 },
+      data: { blobSize: 1000, modifiedAt: 0, expectedDelta: expectedEnvelopeDelta('layouts', 0) },
     };
     // Should not silently treat 0 as missing — should compute against expected envelope.
     expect(suggestFor(finding)).not.toEqual([]);

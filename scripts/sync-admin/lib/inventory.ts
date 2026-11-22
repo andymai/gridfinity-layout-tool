@@ -3,6 +3,7 @@ import type Redis from 'ioredis';
 import { userIndexKey } from '../../../api/lib/redisKeys.js';
 import type { IndexEntry } from '../../../api/lib/userIndex.js';
 import { createProgress, type Progress } from './progress.js';
+import { ALL_KINDS, isKind } from './kinds.js';
 import { hgetallMany, scanKeys } from './redis.js';
 import type { BlobRow, Inventory, IndexRow, Kind } from './types.js';
 
@@ -56,14 +57,14 @@ async function listBlobs(opts: BuildOpts, progress: Progress): Promise<BlobRow[]
     const page = await list({ prefix, cursor, limit: 1000 });
     for (const b of page.blobs) {
       const parts = b.pathname.split('/');
-      if (parts[0] !== 'users' || !parts[1]) continue;
-      if (parts[2] !== 'layouts' && parts[2] !== 'designs' && parts[2] !== 'baseplates') continue;
-      if (opts.kind && parts[2] !== opts.kind) continue;
+      const kind = parts[2];
+      if (parts[0] !== 'users' || !parts[1] || !isKind(kind)) continue;
+      if (opts.kind && kind !== opts.kind) continue;
       const file = parts[3] ?? '';
-      if (!file.endsWith('.json')) continue;
+      if (parts.length !== 4 || !file.endsWith('.json')) continue;
       out.push({
         uid: parts[1],
-        kind: parts[2],
+        kind,
         id: file.slice(0, -5),
         size: b.size,
         url: b.url,
@@ -77,8 +78,6 @@ async function listBlobs(opts: BuildOpts, progress: Progress): Promise<BlobRow[]
   return out;
 }
 
-const ALL_KINDS: readonly Kind[] = ['layouts', 'designs', 'baseplates'];
-
 /**
  * `users:{uid}:index:{kind}` → its parts, or null for anything else the glob
  * happens to reach. Sibling keys (`indexUpdatedAt`, `tombstoneSweptAt`) can't
@@ -87,8 +86,8 @@ const ALL_KINDS: readonly Kind[] = ['layouts', 'designs', 'baseplates'];
 export function parseIndexKey(key: string): { uid: string; kind: Kind } | null {
   const parts = key.split(':');
   if (parts.length !== 4 || parts[0] !== 'users' || parts[2] !== 'index') return null;
-  const kind = parts[3] as Kind;
-  if (!ALL_KINDS.includes(kind) || !parts[1]) return null;
+  const kind = parts[3];
+  if (!isKind(kind) || !parts[1]) return null;
   return { uid: parts[1], kind };
 }
 
@@ -103,7 +102,7 @@ async function readIndexes(redis: Redis, opts: BuildOpts, progress: Progress): P
     for (const kind of kinds) targets.push({ key: userIndexKey(user, kind), uid: user, kind });
   } else {
     // One cursor pass covers every kind. MATCH filters server-side but SCAN
-    // still walks the whole keyspace, so a scan per kind paid that walk thrice.
+    // still walks the whole keyspace, so a scan per kind paid that walk again each time.
     const keys = await scanKeys(redis, `users:*:index:${opts.kind ?? '*'}`);
     const wanted = new Set<Kind>(kinds);
     for (const key of keys) {

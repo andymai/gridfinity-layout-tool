@@ -49,7 +49,7 @@ pnpm sync-admin user <uid>             # one user's blobs/entries/tombstones
 pnpm sync-admin suggest drift          # emits reviewed-then-pasted fixes
 ```
 
-`scripts/sync-admin/` is read-only against production; mutations only ever print as shell commands. The finding-kind table and shared flags are in `scripts/sync-admin/README.md`. It imports the real validators from `api/lib/`, so validator changes retroactively reclassify stored payloads — run `audit` after tightening validation.
+`scripts/sync-admin/` is read-only against production; mutations only ever print as shell commands. The finding-kind table and shared flags are in `scripts/sync-admin/README.md`. It re-runs each handler's `buildPut` (its `resource` export) on stored payloads, so validator changes retroactively reclassify them: run `audit` after tightening validation.
 
 ## Verification
 

@@ -4,6 +4,7 @@ import { tombstones } from './commands/tombstones.js';
 import { user } from './commands/user.js';
 import { users } from './commands/users.js';
 import { parseArgs, type Args } from './lib/args.js';
+import { ALL_KINDS } from './lib/kinds.js';
 import { printBanner } from './lib/banner.js';
 import { loadEnv, requireEnv } from './lib/env.js';
 
@@ -30,10 +31,9 @@ Commands:
 Flags:
   --json                          Machine-readable output
   --strict                        Exit non-zero if any error/warning finding present
-  --kind=layouts|designs|baseplates
-                                  Restrict to one item kind
+  --kind=<kind>                   Restrict to one item kind: ${ALL_KINDS.join(', ')}
   --user=<uid>                    Restrict to one user (audit/tombstones/suggest)
-  --no-payload-fetch              Skip per-blob HTTP fetch (faster; envelope checks skipped)
+  --no-payload-fetch              Skip per-blob HTTP fetch (faster; envelope and design size checks skipped)
   --no-reverify                   Report raw findings without re-reading flagged items
   --suggest                       For \`audit\`: inline fix commands beneath each finding
   --older-than=Nd                 For \`tombstones\` / \`suggest stale-tombstones\`: age threshold (default 90d)

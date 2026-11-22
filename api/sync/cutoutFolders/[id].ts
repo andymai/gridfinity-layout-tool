@@ -4,7 +4,7 @@ import {
   validateLibraryFolder,
   type StoredLibraryFolder,
 } from '../../lib/cutoutLibraryValidation.js';
-import { createSyncResourceHandler } from '../lib/resourceHandler.js';
+import { createSyncResourceHandler, type SyncResourceConfig } from '../lib/resourceHandler.js';
 
 export const SCHEMA_VERSION = 1 as const;
 
@@ -26,7 +26,7 @@ interface CutoutFolderEnvelope {
  * Which items sit in it travels on each item. Off, with a 503, unless
  * CUTOUT_LIBRARY_SYNC_ENABLED is `true`.
  */
-export default createSyncResourceHandler<CutoutFolderEnvelope>({
+export const resource: SyncResourceConfig<CutoutFolderEnvelope> = {
   kind: 'cutoutFolders',
   payloadKey: PAYLOAD_KEY,
   isValidId: (id) => LIBRARY_FOLDER_ID_PATTERN.test(id),
@@ -44,4 +44,6 @@ export default createSyncResourceHandler<CutoutFolderEnvelope>({
     };
   },
   storedComparable: (stored) => stored.cutoutFolder,
-});
+};
+
+export default createSyncResourceHandler(resource);

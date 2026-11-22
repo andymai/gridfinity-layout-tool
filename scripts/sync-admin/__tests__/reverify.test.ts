@@ -327,6 +327,27 @@ describe('reverify — payload-dependent kinds', () => {
     expect(confirmed).toHaveLength(1);
   });
 
+  it('clears a fetch_timeout when the retry returns a supported version above 1', async () => {
+    stableRead();
+    fetchMock.mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({ modifiedAt: T, schemaVersion: 5 }),
+    });
+    const redis = redisStub(JSON.stringify({ modifiedAt: T, sizeBytes: 100 }));
+
+    const finding: Finding = {
+      kind: 'fetch_timeout',
+      uid: UID,
+      itemKind: 'layouts',
+      id: 'a1',
+      severity: 'error',
+      detail: 'blob fetch exceeded 15000ms',
+    };
+    const { suppressed } = await reverify(redis, stableInv(), [finding], 1000);
+
+    expect(suppressed).toHaveLength(1);
+  });
+
   it('confirms envelope_invalid when the envelope is still wrong', async () => {
     stableRead();
     fetchMock.mockResolvedValue({

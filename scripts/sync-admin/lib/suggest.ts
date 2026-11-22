@@ -1,5 +1,4 @@
 import { userIndexKey, userIndexUpdatedAtKey } from '../../../api/lib/redisKeys.js';
-import { expectedEnvelopeDelta } from './delta.js';
 import type { Finding } from './types.js';
 
 export type SuggestCategory = 'drift' | 'orphans' | 'stale-tombstones' | 'malformed';
@@ -66,9 +65,19 @@ export function categoryOf(f: Finding): SuggestCategory | undefined {
 
 function driftSuggestion(f: Finding): string[] {
   if (!f.id || !f.itemKind) return [];
-  const data = (f.data ?? {}) as { blobSize?: number; modifiedAt?: number };
-  if (typeof data.blobSize !== 'number' || typeof data.modifiedAt !== 'number') return [];
-  const newSize = data.blobSize - expectedEnvelopeDelta(f.itemKind, data.modifiedAt);
+  const data = (f.data ?? {}) as {
+    blobSize?: number;
+    modifiedAt?: number;
+    expectedDelta?: number;
+  };
+  if (
+    typeof data.blobSize !== 'number' ||
+    typeof data.modifiedAt !== 'number' ||
+    typeof data.expectedDelta !== 'number'
+  ) {
+    return [];
+  }
+  const newSize = data.blobSize - data.expectedDelta;
   if (!Number.isFinite(newSize) || newSize < 0) return [];
   const indexKey = userIndexKey(f.uid, f.itemKind);
   const updatedAtKey = userIndexUpdatedAtKey(f.uid);

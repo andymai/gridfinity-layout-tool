@@ -40,9 +40,9 @@ export async function suggest(args: Args): Promise<number> {
     // entries, and a finding produced by a write landing mid-scan is not a
     // defect to remediate.
     const { findings, suppressed } = await analyzeWithReverify(inv, {
-      // Payload fetching only contributes envelope/payload findings, none of
-      // which feed into `suggest`'s categories. Skip the fetch pass entirely.
-      fetchPayloads: false,
+      // The fetch pass adds envelope and payload findings, which no category
+      // uses, and the design size findings, which `drift` needs.
+      fetchPayloads: cat === 'drift' && !args.noPayloadFetch,
       staleTombstoneMs: args.olderThanMs,
       reverifyWith: args.noReverify ? undefined : redis,
       progress,

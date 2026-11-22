@@ -4,7 +4,7 @@ import { meshRefHashes } from '../../lib/designerCutoutValidation.js';
 import { validateAssemblyContent } from '../../lib/assemblyValidation.js';
 import { validateImportedMeshContent } from '../../lib/importedMeshValidation.js';
 import { sanitizeString } from '../../lib/validation.js';
-import { createSyncResourceHandler } from '../lib/resourceHandler.js';
+import { createSyncResourceHandler, type SyncResourceConfig } from '../lib/resourceHandler.js';
 
 /**
  * A version-1 envelope predates the server keeping `params.overhang`, so a
@@ -180,6 +180,23 @@ function sanitizeBranch(
   };
 }
 
+/**
+ * The bytes the index records for a stored design: a bin design counts its
+ * share payload without a variant's branch fields, and an assembly or an
+ * imported mesh counts the whole stored design. `scripts/sync-admin` measures
+ * stored blobs with it, because sanitizing a stored name again can shorten it.
+ */
+export function storedDesignBytes(stored: Record<string, unknown>): number {
+  if (stored.kind === 'assembly' || stored.kind === 'importedMesh') {
+    return Buffer.byteLength(JSON.stringify(stored), 'utf8');
+  }
+  const { name, tags, publishedId, lineage, params } = stored;
+  return Buffer.byteLength(
+    JSON.stringify({ name, tags, publishedId, lineage, type: 'designer', version: 1, params }),
+    'utf8'
+  );
+}
+
 function unwrapDesignPayload(design: unknown): {
   name: string | null;
   params: unknown;
@@ -271,7 +288,7 @@ function unwrapDesignPayload(design: unknown): {
  *
  * Mirrors the layouts endpoint's LWW + tombstone semantics.
  */
-export default createSyncResourceHandler<DesignEnvelope>({
+export const resource: SyncResourceConfig<DesignEnvelope> = {
   kind: 'designs',
   payloadKey: PAYLOAD_KEY,
   // Locally-minted design ids plus the share formats (UUID, base36
@@ -353,7 +370,7 @@ export default createSyncResourceHandler<DesignEnvelope>({
       return {
         ok: true,
         envelope: { design: stored, modifiedAt, schemaVersion: declaredSchemaVersion(body) },
-        sizeBytes: Buffer.byteLength(JSON.stringify(stored), 'utf8'),
+        sizeBytes: storedDesignBytes(stored),
         tiebreakerCandidate: stored,
       };
     }
@@ -378,7 +395,7 @@ export default createSyncResourceHandler<DesignEnvelope>({
       return {
         ok: true,
         envelope: { design: stored, modifiedAt, schemaVersion: declaredSchemaVersion(body) },
-        sizeBytes: Buffer.byteLength(JSON.stringify(stored), 'utf8'),
+        sizeBytes: storedDesignBytes(stored),
         tiebreakerCandidate: stored,
         meshHashes: mesh.meshHashes,
       };
@@ -405,18 +422,6 @@ export default createSyncResourceHandler<DesignEnvelope>({
         code: ErrorCode.VALIDATION_ERROR,
       };
     }
-    const sizeBytes = Buffer.byteLength(
-      JSON.stringify({
-        name,
-        tags,
-        publishedId,
-        lineage,
-        type: 'designer',
-        version: 1,
-        params: validation.payload.params,
-      }),
-      'utf8'
-    );
 
     // Always emit the new wrapper shape. Legacy posts become `name = ''`;
     // readers fall back from there. `tags` is always an array (possibly
@@ -436,10 +441,12 @@ export default createSyncResourceHandler<DesignEnvelope>({
     return {
       ok: true,
       envelope: { design: stored, modifiedAt, schemaVersion: declaredSchemaVersion(body) },
-      sizeBytes,
+      sizeBytes: storedDesignBytes(stored),
       tiebreakerCandidate: stored,
       meshHashes: meshRefHashes(validation.payload.params.meshAssets),
     };
   },
   storedComparable: (stored) => stored.design,
-});
+};
+
+export default createSyncResourceHandler(resource);

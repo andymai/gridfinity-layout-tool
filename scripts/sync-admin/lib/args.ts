@@ -1,3 +1,4 @@
+import { ALL_KINDS, isKind } from './kinds.js';
 import type { Kind } from './types.js';
 
 export interface Args {
@@ -13,8 +14,6 @@ export interface Args {
   olderThanMs?: number;
   help: boolean;
 }
-
-const KINDS: Kind[] = ['layouts', 'designs', 'baseplates'];
 
 function parseOlderThan(v: string): number {
   const m = v.match(/^(\d+)d$/);
@@ -43,8 +42,8 @@ export function parseArgs(argv: readonly string[]): Args {
     else if (arg === '--help' || arg === '-h') a.help = true;
     else if (arg.startsWith('--kind=')) {
       const v = arg.slice('--kind='.length);
-      if (!KINDS.includes(v as Kind)) throw new Error(`--kind must be one of ${KINDS.join('|')}`);
-      a.kind = v as Kind;
+      if (!isKind(v)) throw new Error(`--kind must be one of ${ALL_KINDS.join('|')}`);
+      a.kind = v;
     } else if (arg.startsWith('--user=')) {
       const v = arg.slice('--user='.length);
       if (!v) throw new Error('--user= cannot be empty — omit the flag to scan all users');

@@ -4,7 +4,7 @@ import { meshRefHashes } from '../../lib/designerCutoutValidation.js';
 import { validateAssemblyContent } from '../../lib/assemblyValidation.js';
 import { validateImportedMeshContent } from '../../lib/importedMeshValidation.js';
 import { sanitizeString } from '../../lib/validation.js';
-import { createSyncResourceHandler } from '../lib/resourceHandler.js';
+import { createSyncResourceHandler, type SyncResourceConfig } from '../lib/resourceHandler.js';
 
 export const SCHEMA_VERSION = 1 as const;
 
@@ -34,7 +34,7 @@ interface DesignVersionEnvelope {
  * data URL that would consume most of `MAX_PAYLOAD_BYTES` on its own, and it
  * regenerates locally from the params.
  */
-export default createSyncResourceHandler<DesignVersionEnvelope>({
+export const resource: SyncResourceConfig<DesignVersionEnvelope> = {
   kind: 'designVersions',
   payloadKey: PAYLOAD_KEY,
   isValidId: (id) => isValidShareId(id),
@@ -190,4 +190,6 @@ export default createSyncResourceHandler<DesignVersionEnvelope>({
     };
   },
   storedComparable: (stored) => stored.designVersion,
-});
+};
+
+export default createSyncResourceHandler(resource);

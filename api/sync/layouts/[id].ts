@@ -1,6 +1,6 @@
 import { isValidShareId } from '../../lib/shared.js';
 import { isValidationError, validateShareLayout } from '../../lib/validation.js';
-import { createSyncResourceHandler } from '../lib/resourceHandler.js';
+import { createSyncResourceHandler, type SyncResourceConfig } from '../lib/resourceHandler.js';
 
 /**
  * A field the server kept only from version N on is unknown, not cleared, in an
@@ -36,7 +36,7 @@ interface LayoutEnvelope {
  *                                    tombstone newer than the edit.
  * DELETE /api/sync/layouts/{id}   — tombstone + blob delete (204)
  */
-export default createSyncResourceHandler<LayoutEnvelope>({
+export const resource: SyncResourceConfig<LayoutEnvelope> = {
   kind: 'layouts',
   payloadKey: PAYLOAD_KEY,
   // Layouts the client may sync share three id formats with the existing
@@ -77,4 +77,6 @@ export default createSyncResourceHandler<LayoutEnvelope>({
     };
   },
   storedComparable: (stored) => stored.layout,
-});
+};
+
+export default createSyncResourceHandler(resource);
