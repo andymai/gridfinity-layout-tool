@@ -1,0 +1,24 @@
+scripts/docs-ask-eval/checks.ts
+  s_f8efc8defc13ab::t_9fe0575c44f1a2 20-27,29
+scripts/docs-ask-eval/run.ts
+  s_f8efc8defc13ab::t_9fe0575c44f1a2 155-161,165-166
+  s_f8efc8defc13ab::t_04aea8b7aba0e2 162-164,176,210
+scripts/docs-ask-eval/checks.test.ts
+  s_f8efc8defc13ab::t_908971244f9257 40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0b26fe30a8eac6813b68e6ae9afd9b61e5ca732c",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
