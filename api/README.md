@@ -86,7 +86,7 @@ Each imported mesh is one Blob file at `meshes/{hash}`, the SHA-256 of its bytes
 
 The docs assistant on `/docs`. It answers on `claude-opus-5-5` from the corpus that `scripts/build-docs-llms.ts` writes to `dist/docs/ask/`: a page map in the system prompt, and the `read_page`, `search_docs` and `drawer_fit` tools. The client keeps the history. Each request rebuilds it to the same bytes, with the reader context as a system message after each question and each tool result run again, so the prompt cache and the thinking blocks stay valid. `lib/docsAsk/drawerPlan.ts` mirrors the docs drawer calculator, and `drawerPlan.crossBoundary.test.ts` holds the two together.
 
-Off unless `DOCS_ASSISTANT_ENABLED=true` and `ANTHROPIC_API_KEY` is set. Each answer adds its cost to `docsAsk:spend:{day}`. At `DOCS_ASSISTANT_DAILY_CAP_USD` (default 5) the endpoint answers 429 `RESTING` until the next UTC day. When the reader's analytics switch is on, it sends `$ai_*` traces with the question and answer text to PostHog.
+Off unless `DOCS_ASSISTANT_ENABLED=true` and `ANTHROPIC_API_KEY` is set. Each answer adds its cost to `docsAsk:spend:{day}`. At `DOCS_ASSISTANT_DAILY_CAP_USD` (default 5) the endpoint answers 429 `RESTING` until the next UTC day. In production, and only when the reader's analytics switch is on, it sends `$ai_*` traces with the question and answer text to PostHog.
 
 ## Ko-fi supporter ingest
 
