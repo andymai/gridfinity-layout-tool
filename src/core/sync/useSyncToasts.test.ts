@@ -193,6 +193,21 @@ describe('useSyncToasts: firewall challenge', () => {
     expect(useToastStore.getState().toasts).toEqual([]);
   });
 
+  it('brings the prompt back when newer toasts push it out of the queue', () => {
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u', email: 'u@example.com', provider: 'google' },
+    });
+    renderHook(() => useSyncToasts());
+    act(() => noteFirewallChallenge(challenge()));
+    act(() => {
+      for (const message of ['a', 'b', 'c']) useToastStore.getState().addToast(message, 'info');
+    });
+    expect(useToastStore.getState().toasts.map((x) => x.message)).toContain(
+      'sync.firewallChallenge'
+    );
+  });
+
   it('stays quiet in a signed-out tab, which has no sync to pause', () => {
     renderHook(() => useSyncToasts());
     act(() => noteFirewallChallenge(challenge()));

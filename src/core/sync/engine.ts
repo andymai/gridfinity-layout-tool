@@ -225,7 +225,10 @@ async function sendOne(
   const url = `/api/sync/${kind}/${entry.id}`;
   // A drain starts its entries together, so one may meet the challenge while
   // another is still planning. Unsent entries stay queued.
-  if (firewallChallenged()) return;
+  if (firewallChallenged()) {
+    reportChallenged();
+    return;
+  }
 
   // Held unsent, with no attempt spent, while the server's switch for this
   // kind is off. The first manifest that lists it again queues what it lacks.
@@ -257,7 +260,12 @@ async function sendOne(
     if (stopped(s)) return null;
     throw error;
   });
-  if (stopped(s) || plan === null || firewallChallenged()) return;
+  if (stopped(s) || plan === null) return;
+  // Planning uploads meshes, and one of those uploads can meet the challenge.
+  if (firewallChallenged()) {
+    reportChallenged();
+    return;
+  }
   if (plan.status === 'skip') {
     await outboxMarkSuccess(entry, entry.modifiedAt);
     return;
@@ -389,7 +397,7 @@ async function handleFailure(
   // per-(kind, id) counter on the engine state. `Retry-After` overrides
   // the counter entirely (server knows best).
   if (isFirewallChallenge(res)) {
-    useSyncStatusStore.getState().reportOffline('Firewall challenge');
+    reportChallenged();
     return;
   }
   if (res.status === 429) {
@@ -419,6 +427,10 @@ async function handleFailure(
     return;
   }
   await backOff(kind, entry, s, `HTTP ${res.status}`);
+}
+
+function reportChallenged(): void {
+  useSyncStatusStore.getState().reportOffline('Firewall challenge');
 }
 
 async function waitOutThrottle(

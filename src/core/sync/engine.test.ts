@@ -6,7 +6,10 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useSyncStatusStore } from './status';
-import { __resetForTests as resetFirewallChallenge } from './firewallChallenge';
+import {
+  __resetForTests as resetFirewallChallenge,
+  noteFirewallChallenge,
+} from './firewallChallenge';
 import { noteServedKinds, resetServedKinds } from './servedKinds';
 import {
   __resetForTests as resetOutbox,
@@ -391,6 +394,23 @@ describe('push: firewall challenge', () => {
     const entries = await outboxGetAll();
     expect(entries.map((e) => e.id).sort()).toEqual(['lay-1', 'lay-2']);
     expect(entries.every((e) => e.attempts === 0)).toBe(true);
+    expect(useSyncStatusStore.getState().state).toBe('offline');
+  });
+
+  it('reports offline when the challenge comes during planning', async () => {
+    layoutsAdapter.preparePush = vi.fn(async (id: string) => {
+      noteFirewallChallenge(
+        new Response('<html>', { status: 429, headers: { 'x-vercel-mitigated': 'challenge' } })
+      );
+      return { status: 'send' as const, item: { id, payload: { v: 1 }, modifiedAt: 1000 } };
+    });
+
+    engine.start(adapters);
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 1000 });
+    await flush();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(await outboxGetAll()).toHaveLength(1);
     expect(useSyncStatusStore.getState().state).toBe('offline');
   });
 });
