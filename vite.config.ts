@@ -41,17 +41,20 @@ const CONTENT_ROUTE_HREF = new RegExp(CONTENT_ROUTE_SOURCE);
 // them on install, including the designer, community and baseplate code that a
 // given visitor may never open, which is the code splitting paid for twice.
 const eagerChunks = new Set<string>();
+const eagerAssets = new Set<string>();
 
 const collectEagerChunks = (): PluginOption => ({
   name: 'collect-eager-chunks',
   generateBundle(_options, bundle) {
     eagerChunks.clear();
+    eagerAssets.clear();
     const walk = (fileName: string): void => {
       if (eagerChunks.has(fileName)) return;
       if (!Object.hasOwn(bundle, fileName)) return;
       const chunk = bundle[fileName];
       if (chunk.type !== 'chunk') return;
       eagerChunks.add(fileName);
+      for (const asset of chunk.viteMetadata?.importedAssets ?? []) eagerAssets.add(asset);
       for (const imported of chunk.imports) walk(imported);
     };
     for (const chunk of Object.values(bundle)) {
@@ -227,12 +230,16 @@ export default defineConfig({
         // not known until the bundle exists, so the filtering happens here, against
         // the graph collected in generateBundle. A lazy chunk left out is fetched
         // and runtime-cached the first time its route is opened; the tradeoff is
-        // that a route never visited online is not available offline.
+        // that a route never visited online is not available offline. Images
+        // that code imports (under assets/) follow the same rule, so a lazy
+        // view's pictures load when that view opens.
         manifestTransforms: [
           (entries) => {
-            const manifest = entries.filter(
-              (entry) => !/^assets\/.*\.js$/.test(entry.url) || eagerChunks.has(entry.url)
-            );
+            const manifest = entries.filter((entry) => {
+              if (/^assets\/.*\.js$/.test(entry.url)) return eagerChunks.has(entry.url);
+              if (/^assets\/.*\.(?:png|svg)$/.test(entry.url)) return eagerAssets.has(entry.url);
+              return true;
+            });
             return { manifest, warnings: [] };
           },
         ],
