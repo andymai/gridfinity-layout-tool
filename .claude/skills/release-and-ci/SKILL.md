@@ -44,10 +44,10 @@ The workflow files themselves (`ci.yml`, `release.yml`, `smoke-*.yml`, `vite.con
 ## Recipe: fix a bundle-size failure
 
 1. Reproduce: `pnpm run build && pnpm run size:check`.
-2. Budgets live in the `size-limit` array in `package.json`: Main bundle 190 kB gzip, Eager initial JS 260 kB (main + react-vendor + state + core-foundation), Total JS 2000 kB.
+2. Budgets live in `package.json`: `startupBudget` (gzip and file count of the JS that `dist/index.html` loads, checked by `scripts/check-startup-budget.ts`) and the `size-limit` array (Total JS, fetched JSON).
 3. Open `bundle-analysis.html` (repo root, emitted by the build) to see what grew.
-4. Preferred fix: keep the weight out of eager chunks — dynamic-import it, or check the `advancedChunks` rules in `vite.config.ts` (~lines 246–290) still route it to a lazy chunk. Raising a limit in `package.json` is a last resort and needs justification in the PR.
-5. If you rename/add a chunk in `vite.config.ts`, update the matching `size-limit` path glob in `package.json` in the same PR — the globs match chunk file names and drift silently otherwise.
+4. Preferred fix: keep the weight out of eager chunks — dynamic-import it, or check the `advancedChunks` rules in `vite.config.ts` still route it to a lazy chunk. Raising a limit in `package.json` is a last resort and needs justification in the PR.
+5. A startup file-count failure means startup code left the startup groups (`startupModules` in `vite.config.ts`). Each startup file is one billed CDN request on every first visit.
 
 ## Recipe: ship end-to-end
 

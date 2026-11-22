@@ -45,8 +45,8 @@
     "test:visual": "playwright test -c playwright-ct.config.ts",
     "test:visual:update": "playwright test -c playwright-ct.config.ts --update-snapshots",
     "prepare": "husky",
-    "size": "size-limit",
-    "size:check": "size-limit --limit",
+    "size": "size-limit && tsx scripts/check-startup-budget.ts",
+    "size:check": "size-limit --limit && tsx scripts/check-startup-budget.ts",
     "check:boundaries": "./scripts/check-module-boundaries.sh",
     "check:boundaries:staged": "./scripts/check-module-boundaries.sh --staged",
     "check:i18n": "tsx scripts/check-i18n-keys.ts",
@@ -89,24 +89,11 @@
     "validate:json": "tsx --tsconfig tsconfig.app.json scripts/validate-schema-json.ts",
     "gen:schema-docs": "tsx --tsconfig tsconfig.app.json scripts/gen-schema-docs.ts"
   },
+  "startupBudget": {
+    "gzipKb": 640,
+    "files": 8
+  },
   "size-limit": [
-    {
-      "name": "Main bundle (gzip)",
-      "path": "dist/assets/main-*.js",
-      "gzip": true,
-      "limit": "190 kB"
-    },
-    {
-      "name": "Eager initial JS (gzip)",
-      "path": [
-        "dist/assets/main-*.js",
-        "dist/assets/react-vendor-*.js",
-        "dist/assets/state-*.js",
-        "dist/assets/core-foundation-*.js"
-      ],
-      "gzip": true,
-      "limit": "260 kB"
-    },
     {
       "name": "Total JS (gzip, one locale)",
       "path": [
