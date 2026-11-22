@@ -3,9 +3,6 @@
  * key, the newest envelope version, and the `buildPut` that validated and
  * measured the stored payload. Re-running that `buildPut` on a stored payload
  * checks it exactly as production would accept it today.
- *
- * Keyed by the server's `SyncItemKind`, so a kind added there fails the type
- * check here until it has an entry.
  */
 
 import type { BuildPutResult, SyncEnvelope } from '../../../api/sync/lib/resourceHandler.js';
