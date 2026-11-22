@@ -10,6 +10,9 @@ vi.stubGlobal('fetch', fetchMock);
 
 beforeEach(() => fetchMock.mockReset());
 
+const isSizeFinding = (f: { kind: string }) =>
+  f.kind === 'sanitization_drift' || f.kind === 'index_size_undercount';
+
 function makeInventory(blobs: BlobRow[], indexRows: IndexRow[]): Inventory {
   const blobMap = new Map<string, BlobRow>();
   const blobUsers = new Set<string>();
@@ -140,16 +143,42 @@ describe('analyze', () => {
     // Tags cancel in delta = blob.size - index.sizeBytes, so the delta must
     // equal the structural envelope overhead exactly.
     expect(blob.size - entry.entry.sizeBytes).toBe(expectedEnvelopeDelta('designs', T));
-    const findings = await analyze(makeInventory([blob], [entry]), { fetchPayloads: false });
-    expect(findings).toEqual([]);
+    mockPayload({
+      design: { name: 'Bin', params: designParams, tags },
+      modifiedAt: T,
+      schemaVersion: 1,
+    });
+    const findings = await analyze(makeInventory([blob], [entry]));
+    expect(findings.filter(isSizeFinding)).toEqual([]);
   });
 
   it('an untagged design (tags=[]) is also drift-free', async () => {
     const blob = designBlob('u1', 'd2', []);
     const entry = designEntry('u1', 'd2', []);
     expect(blob.size - entry.entry.sizeBytes).toBe(expectedEnvelopeDelta('designs', T));
-    const findings = await analyze(makeInventory([blob], [entry]), { fetchPayloads: false });
-    expect(findings).toEqual([]);
+    mockPayload({
+      design: { name: 'Bin', params: designParams, tags: [] },
+      modifiedAt: T,
+      schemaVersion: 1,
+    });
+    const findings = await analyze(makeInventory([blob], [entry]));
+    expect(findings.filter(isSizeFinding)).toEqual([]);
+  });
+
+  it('leaves design sizes to the payload pass, which knows how the design was measured', async () => {
+    const blob = designBlob('u1', 'd3', []);
+    const entry = designEntry('u1', 'd3', []);
+    const off = { ...entry, entry: { ...entry.entry, sizeBytes: entry.entry.sizeBytes - 30 } };
+    const unfetched = await analyze(makeInventory([blob], [off]), { fetchPayloads: false });
+    expect(unfetched.filter(isSizeFinding)).toEqual([]);
+
+    mockPayload({
+      design: { name: 'Bin', params: designParams, tags: [] },
+      modifiedAt: T,
+      schemaVersion: 1,
+    });
+    const fetched = await analyze(makeInventory([blob], [off]));
+    expect(fetched.filter(isSizeFinding).map((f) => f.kind)).toEqual(['index_size_undercount']);
   });
 
   it('flags orphan blob (blob without index entry)', async () => {

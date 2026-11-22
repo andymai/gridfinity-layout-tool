@@ -3,6 +3,7 @@ import type Redis from 'ioredis';
 import { userIndexKey } from '../../../api/lib/redisKeys.js';
 import { pMap } from './concurrency.js';
 import { parseRow } from './inventory.js';
+import { isSchemaVersionOf } from './kinds.js';
 import type { Finding, Inventory, IndexRow, Kind } from './types.js';
 
 export interface ReverifyResult {
@@ -147,7 +148,9 @@ async function isReal(
   // Moved between the two reads — the item is being written right now.
   if (stateKey(before, inv.blobsListed) !== stateKey(after, inv.blobsListed)) return false;
 
-  if (NEEDS_PAYLOAD.has(f.kind)) return await payloadStillInconsistent(f, after, fetchTimeoutMs);
+  if (NEEDS_PAYLOAD.has(f.kind)) {
+    return await payloadStillInconsistent(f, f.itemKind, after, fetchTimeoutMs);
+  }
   return membershipStillInconsistent(f, after, inv.blobsListed);
 }
 
@@ -173,6 +176,7 @@ function membershipStillInconsistent(f: Finding, s: ItemState, blobsListed: bool
 
 async function payloadStillInconsistent(
   f: Finding,
+  kind: Kind,
   s: ItemState,
   fetchTimeoutMs: number
 ): Promise<boolean> {
@@ -194,7 +198,9 @@ async function payloadStillInconsistent(
     // It fetched cleanly this time; only a still-broken envelope is real.
     try {
       const body = JSON.parse(text) as Record<string, unknown>;
-      return body.schemaVersion !== 1 || !Number.isFinite(body.modifiedAt as number);
+      return (
+        !isSchemaVersionOf(kind, body.schemaVersion) || !Number.isFinite(body.modifiedAt as number)
+      );
     } catch {
       return true;
     }

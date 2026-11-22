@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ALL_KINDS, KIND_SPECS, isKind } from '../lib/kinds';
-import { expectedEnvelopeDelta } from '../lib/delta';
+import { designShape, expectedEnvelopeDelta } from '../lib/delta';
 import { analyze } from '../lib/findings';
 import { itemKey, parseIndexKey } from '../lib/inventory';
 import type { BlobRow, IndexRow, Inventory, Kind } from '../lib/types';
@@ -186,6 +186,49 @@ describe('KIND_SPECS', () => {
   });
 });
 
+describe('assembly and imported-mesh designs', () => {
+  const assembly = {
+    name: 'Kit',
+    kind: 'assembly',
+    envelope: {
+      width: 2,
+      depth: 1.5,
+      gridUnitMm: 42,
+      heightUnitMm: 7,
+      attachment: {
+        magnetHoles: true,
+        magnetDiameter: 6.5,
+        magnetDepth: 2.4,
+        magnetCrushRibs: true,
+        screwHoles: false,
+        screwDiameter: 3,
+      },
+      featureColors: { enabled: false },
+    },
+    structure: {
+      kind: 'assembly',
+      schemaVersion: 1,
+      base: { floorThickness: 2 },
+      mirrorAxis: 'x',
+      parts: [],
+    },
+  };
+
+  it('are measured whole, and a consistent pair gives no findings', async () => {
+    const spec = KIND_SPECS.designs;
+    const built = spec.buildPut(assembly, T, 'design-2', { design: assembly });
+    if (!built.ok) throw new Error(built.error);
+    const text = JSON.stringify(built.envelope);
+    const bytes = Buffer.byteLength(text, 'utf8');
+    expect(bytes - built.sizeBytes).toBe(expectedEnvelopeDelta('designs', T, 'stored'));
+    expect(designShape((built.envelope as unknown as { design: unknown }).design)).toBe('stored');
+
+    fetchMock.mockResolvedValue({ ok: true, status: 200, text: async () => text });
+    const inv = inventoryOf('designs', bytes, built.sizeBytes);
+    expect(await analyze(inv)).toEqual([]);
+  });
+});
+
 describe('analyze on library kinds', () => {
   it('reports a stored cutout item that its handler now refuses', async () => {
     const { built } = stored('cutoutItems');
@@ -203,6 +246,19 @@ describe('analyze on library kinds', () => {
     const invalid = findings.find((f) => f.kind === 'payload_invalid');
     expect(invalid?.itemKind).toBe('cutoutItems');
     expect(invalid?.detail).toMatch(/^INVALID_PARAMS: /);
+  });
+
+  it('still checks the payload when the timestamp is not a number', async () => {
+    const { built } = stored('cutoutFolders');
+    const text = JSON.stringify({ ...built.envelope, modifiedAt: { toString: 'broken' } });
+    fetchMock.mockResolvedValue({ ok: true, status: 200, text: async () => text });
+
+    const findings = await analyze(
+      inventoryOf('cutoutFolders', Buffer.byteLength(text, 'utf8'), built.sizeBytes)
+    );
+
+    expect(findings.map((f) => f.kind)).toContain('envelope_invalid');
+    expect(findings.map((f) => f.kind)).not.toContain('payload_invalid');
   });
 
   it('flags a schemaVersion newer than the handler writes', async () => {

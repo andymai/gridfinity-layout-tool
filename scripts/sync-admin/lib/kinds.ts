@@ -54,3 +54,13 @@ export const ALL_KINDS = Object.keys(KIND_SPECS) as readonly Kind[];
 export function isKind(value: string | undefined): value is Kind {
   return value !== undefined && Object.hasOwn(KIND_SPECS, value);
 }
+
+/** A version some handler of this kind wrote: 1 up to the current one. */
+export function isSchemaVersionOf(kind: Kind, version: unknown): boolean {
+  return (
+    typeof version === 'number' &&
+    Number.isInteger(version) &&
+    version >= 1 &&
+    version <= KIND_SPECS[kind].schemaVersion
+  );
+}
