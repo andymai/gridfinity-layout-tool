@@ -38,10 +38,12 @@ The <Ui k="binDesigner.dimensions" /> section holds three steppers. A new design
 
 A spacer can go down to 1 height unit. Built it the wrong way round? The arrow button between the width and depth fields swaps the two values.
 
+The bin designer takes the height in height units. In the layout editor, the inspector also takes a bin's height in millimeters. See [Resize a bin](../layouts/placing-bins#resize-a-bin).
+
 Three readouts show what you get:
 
 - The line under the width and depth gives the printed body in millimeters, without the stacking lip.
-- <Ui k="binDesigner.interiorDimensions" /> gives the space from the floor to the top of the wall, before dividers, scoops and label tabs.
+- <Ui k="binDesigner.interiorDimensions" /> gives the room inside the walls in millimeters: the width, the depth, and the height from the floor to the top of the wall. It counts no dividers, scoops or label tabs.
 - <Ui k="assembledHeight.title" /> gives the height of the bin on its baseplate. See [Stacking](./stacking#read-the-assembled-height).
 
 Some contents stand taller than the bin, like brushes or pens. <Ui k="binDesigner.extraWallHeight" /> raises the outer walls and the stacking lip up to 100 mm above the bin height. The interior doesn't change, so tall contents stay inside the rim.
