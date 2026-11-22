@@ -63,7 +63,7 @@ const collectEagerChunks = (): PluginOption => ({
 // Every module that the entry imports statically runs on first paint, so
 // splitting those modules apart saves no bytes. It only adds requests, and
 // Vercel bills each request, a CDN cache hit too. Left to automatic chunking,
-// they split into ~140 files, one for each set of lazy routes that share them.
+// they split into one file for each set of lazy routes that share them.
 // The set is cached on the entry's ModuleInfo, which the chunking context
 // reuses for one chunking pass only.
 const APP_ENTRY = fileURLToPath(new URL('./index.html', import.meta.url));
