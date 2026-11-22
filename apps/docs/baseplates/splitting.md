@@ -23,7 +23,7 @@ Most drawers are bigger than a print bed. That's fine. The baseplate generator c
 ## Set your print bed size
 
 1. In the baseplate generator, open <Ui k="common.physicalUnits" />.
-2. Type your bed size in <Ui k="baseplate.printBedSize" />. The default is 256 mm.
+2. Pick your printer in <Ui k="printBedInput.printerLabel" />, or type your bed size in <Ui k="baseplate.printBedSize" />. The default is 256 mm.
 3. Is your bed not square? Click the link button and type the width and the depth.
 
 Any plate that is bigger than the bed splits automatically. The print bed size belongs to the layout, so the bins of the layout use the same value.

@@ -61,7 +61,7 @@ The default holes are 6.5 mm wide and 2 mm deep, which suits the common 6 × 2 m
 A drawer is often larger than a print bed. When the plate is too large, the baseplate generator splits it into pieces for you. It only needs to know the size of your bed.
 
 1. Open the <Ui k="common.physicalUnits" /> group.
-2. Set <Ui k="baseplate.printBedSize" /> to the width and depth of your print bed in millimeters. The default is 256 × 256 mm.
+2. Pick your printer in <Ui k="printBedInput.printerLabel" />, and <Ui k="baseplate.printBedSize" /> fills in. If your printer isn't in the list, type the width and depth of your print bed in millimeters. The default is 256 × 256 mm.
 
 This is the same print bed size that the layout editor uses. If the plate is too large for the bed, a map of the pieces shows at the bottom of the panel. Each piece has a label, such as A1 or B2. The map also tells you how many build-plate loads the pieces need.
 

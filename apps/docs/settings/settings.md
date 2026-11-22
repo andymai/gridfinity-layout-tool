@@ -69,12 +69,13 @@ These tabs set the values that a new layout or a new bin starts with. Your exist
 
 **<Ui k="settings.tabs.defaults" />** has these settings:
 
-| Setting                                 | Unit                                                    |
-| --------------------------------------- | ------------------------------------------------------- |
-| Drawer width, depth and height          | Grid units for width and depth, height units for height |
-| <Ui k="settings.defaultLayerHeight" />  | Height units                                            |
-| <Ui k="settings.defaultPrintBedSize" /> | Millimeters                                             |
-| <Ui k="settings.defaultGridUnit" />     | Millimeters, from 20 to 60. Standard Gridfinity is 42.  |
+| Setting                                 | Unit                                                     |
+| --------------------------------------- | -------------------------------------------------------- |
+| Drawer width, depth and height          | Grid units for width and depth, height units for height  |
+| <Ui k="settings.defaultLayerHeight" />  | Height units                                             |
+| <Ui k="printBedInput.printerLabel" />   | A printer name. It fills in the print bed size below it. |
+| <Ui k="settings.defaultPrintBedSize" /> | Millimeters                                              |
+| <Ui k="settings.defaultGridUnit" />     | Millimeters, from 20 to 60. Standard Gridfinity is 42.   |
 
 Not sure about the grid unit? Keep 42 mm, unless your other parts use a size that is not standard. After you set up one drawer the way you like, <Ui k="settings.copyFromCurrentLayout" /> copies these values from the open layout. See [Units](../concepts/units).
 

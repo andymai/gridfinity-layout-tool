@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'printer-bed-presets',
+    date: '2026-11-22',
+    kind: 'improved',
+    featured: false,
+    title: { en: 'Pick your printer to set the print bed size' },
+    body: {
+      en: "Choose your printer in the Printer list, and the print bed size fills in, so a baseplate splits into pieces that fit. The list is on the baseplate page, in the layout's Physical units and in Settings > Defaults. It has 21 printers from Bambu Lab, Prusa, Creality, Elegoo, Anycubic and Qidi. You can still type any size.",
+    },
+    action: { kind: 'openTool', tool: 'baseplate' },
+  },
+  {
     id: 'cutout-library',
     date: '2026-11-21',
     kind: 'new',
