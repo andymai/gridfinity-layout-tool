@@ -173,7 +173,23 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
     const pages = [
       ...new Set([...golden.sources, ...results.flatMap((t) => t.reads), ...checks.citedPages]),
     ].slice(0, 6);
-    const graded = await judge(client, corpus, golden, results, pages, args['judge-model']);
+    const local = labelsFor(locale);
+    const keptEnglish = [...last.answer.matchAll(/\[\[ui:([^\]]+)\]\]/g)]
+      .map((m) => (m[1] as string).trim())
+      .filter((label) =>
+        Object.entries(source.english).some(
+          ([key, value]) => value === label && local[key] === label
+        )
+      );
+    const graded = await judge(
+      client,
+      corpus,
+      golden,
+      results,
+      pages,
+      locale === 'en' ? [] : [...new Set(keptEnglish)],
+      args['judge-model']
+    );
     spent += graded.costUsd;
     return {
       id: golden.id,

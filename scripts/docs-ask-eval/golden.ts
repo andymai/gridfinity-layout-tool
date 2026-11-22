@@ -386,7 +386,8 @@ export const GOLDEN: readonly GoldenCase[] = [
     page: '/printing/file-formats',
     turns: ['Can I send a bin straight to my printer from the app?'],
     sources: ['/printing/file-formats', '/printing/slicers'],
-    expect: 'No: export a file and open it in the slicer.',
+    expect:
+      'No: the app exports a file to open in the slicer. The nearest is Send to a URL, which sends each export to a receiver at a web address, such as a NAS.',
   },
   {
     id: 'N03',
@@ -417,10 +418,10 @@ export const GOLDEN: readonly GoldenCase[] = [
   {
     id: 'N06',
     group: 'no',
-    page: '/printing/print-list-and-zip',
-    turns: ['Can I export my layout as a PDF drawing with dimensions?'],
-    sources: ['/printing/file-formats', '/printing/print-list-and-zip'],
-    expect: 'No PDF export; the nearest are the export formats or the print list.',
+    page: '/settings/keyboard-and-command-palette',
+    turns: ['Can I undo more than 100 steps?'],
+    sources: ['/reference/faq'],
+    expect: 'No: the layout editor and the bin designer each keep the last 100 changes.',
   },
   {
     id: 'N07',

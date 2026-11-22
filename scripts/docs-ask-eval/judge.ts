@@ -43,6 +43,7 @@ export async function judge(
   golden: GoldenCase,
   turns: readonly JudgedTurn[],
   pages: readonly string[],
+  keptEnglish: readonly string[],
   model = JUDGE_MODEL
 ): Promise<{ verdict: Verdict; costUsd: number }> {
   const sources = pages
@@ -57,7 +58,11 @@ export async function judge(
       return `<turn n="${i + 1}">\n<question>${turn.question}</question>${checks}\n<answer>\n${turn.answer}\n</answer>\n</turn>`;
     })
     .join('\n');
-  const reader = golden.locale ? ` The reader's language is ${golden.locale}.` : '';
+  const kept =
+    keptEnglish.length > 0
+      ? ` In this language the app keeps these labels in English: ${keptEnglish.join(', ')}.`
+      : '';
+  const reader = golden.locale ? ` The reader's language is ${golden.locale}.${kept}` : '';
   const response = await client.messages.parse({
     model,
     max_tokens: 4000,
