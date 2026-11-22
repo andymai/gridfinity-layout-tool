@@ -43,8 +43,7 @@
       "side": "front",
       "radius": 12,
       "run": 20,
-      "style": "curved",
-      "autoMaxHeight": false
+      "style": "curved"
     },
     "label": {
       "enabled": true,
@@ -175,8 +174,7 @@
       "draftAngleDeg": 5
     },
     "surfaceText": {
-      "walls": { "front": "PARTS" },
-      "wallAlign": { "front": "center" }
+      "walls": { "front": "PARTS" }
     },
     "lid": {
       "enabled": true,

@@ -42,7 +42,11 @@ import {
 } from '@/core/types';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
 import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
-import { LABEL_SOCKET_STYLES } from '@/shared/constants/labelPlates';
+import {
+  LABEL_PLATE_ICONS,
+  LABEL_PLATE_WIDTHS_U,
+  LABEL_SOCKET_STYLES,
+} from '@/shared/constants/labelPlates';
 import {
   DEFAULT_DETACHABLE_PIN_DIAMETER_MM,
   DETACHABLE_PIN_DIAMETERS_MM,
@@ -91,6 +95,8 @@ import {
 import {
   ACCENT_BAND_DEFAULT_MM,
   ACCENT_BAND_MIN_MM,
+  LIP_AXIS_COUNTS,
+  LIP_CELL_ZONES,
 } from '@/features/bin-designer/types/featureColors';
 import {
   LID_GRIP_MODES,
@@ -103,6 +109,12 @@ import {
   LID_EXTRA_HEIGHT_MIN_MM,
   LID_HEIGHT_UNITS_MAX,
   LID_HEIGHT_UNITS_MIN,
+  LID_MAGNET_DEPTH_MAX_MM,
+  LID_MAGNET_DEPTH_MIN_MM,
+  LID_MAGNET_DIAMETER_MAX_MM,
+  LID_MAGNET_DIAMETER_MIN_MM,
+  LID_MAGNET_EDGE_COUNT_MAX,
+  LID_MAGNET_EDGE_COUNT_MIN,
   LID_TOP_THICKNESS_MAX_MM,
   LID_TOP_THICKNESS_MIN_MM,
   MAX_LID_CUTOUTS,
@@ -123,6 +135,7 @@ import {
   TEXT_FONT_FAMILIES,
   TEXT_MAX_LENGTH,
   TEXT_QUARTER_TURNS,
+  WALL_TEXT_ALIGNS,
   WALL_TEXT_FACES,
 } from '@/features/bin-designer/types/text';
 import {
@@ -161,12 +174,16 @@ const SOURCES: Record<string, unknown> = {
   FLOOR_PATTERN_TYPES,
   FOOT_LATTICES,
   GROUP_OPS,
+  LABEL_PLATE_ICONS,
+  LABEL_PLATE_WIDTHS_U,
   LABEL_SOCKET_STYLES,
   LID_GRIP_MODES,
   LID_HINGE_CATCHES,
   LID_SLIDE_PLACEMENTS,
   LID_SLIDE_PULLS,
   LIGHTWEIGHT_MODES,
+  LIP_AXIS_COUNTS,
+  LIP_CELL_ZONES,
   LIP_TIP_STYLES,
   SCOOP_SIDES,
   PULL_TAB_WALLS,
@@ -182,6 +199,7 @@ const SOURCES: Record<string, unknown> = {
   TEXT_FONT_FAMILIES,
   TEXT_MAX_LENGTH,
   TEXT_QUARTER_TURNS,
+  WALL_TEXT_ALIGNS,
   WALL_TEXT_FACES,
   WALL_PATTERN_TYPES,
   ACCENT_BAND_DEFAULT_MM,
@@ -208,6 +226,12 @@ const SOURCES: Record<string, unknown> = {
   LID_EXTRA_HEIGHT_MIN_MM,
   LID_HEIGHT_UNITS_MAX,
   LID_HEIGHT_UNITS_MIN,
+  LID_MAGNET_DEPTH_MAX_MM,
+  LID_MAGNET_DEPTH_MIN_MM,
+  LID_MAGNET_DIAMETER_MAX_MM,
+  LID_MAGNET_DIAMETER_MIN_MM,
+  LID_MAGNET_EDGE_COUNT_MAX,
+  LID_MAGNET_EDGE_COUNT_MIN,
   LID_TOP_THICKNESS_MAX_MM,
   LID_TOP_THICKNESS_MIN_MM,
   MAX_ARRAY_COUNT,
@@ -293,7 +317,7 @@ const annotations = collectAnnotations();
  * a drop means someone deleted provenance rather than a bound legitimately
  * becoming hand-picked, which is the erosion this guards against.
  */
-const MIN_ANNOTATED_BOUNDS = 234;
+const MIN_ANNOTATED_BOUNDS = 279;
 
 describe('x-constant annotations', () => {
   it('finds annotations to check', () => {
