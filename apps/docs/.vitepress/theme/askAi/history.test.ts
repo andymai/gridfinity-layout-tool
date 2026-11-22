@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   MAX_TURNS,
   answerText,
+  hasToolCall,
   loadConversation,
   messageText,
   saveConversation,
@@ -59,6 +60,21 @@ describe('the conversation store', () => {
     expect(chat.turns).toHaveLength(MAX_TURNS);
     expect(chat.turns[0]?.question).toBe('Q2?');
     expect(withoutLastTurn(chat).turns.at(-1)?.question).toBe(`Q${MAX_TURNS}?`);
+  });
+
+  it('keeps a trace id through a reload, and drops one that is not a string', () => {
+    const storage = memory();
+    saveConversation(storage, {
+      sessionId: 'id-1',
+      turns: [{ ...turn('A?'), traceId: 'trace-1' }, { ...turn('B?'), traceId: 7 } as never],
+    });
+    expect(loadConversation(storage, () => 'new').turns.map((t) => t.traceId)).toEqual(['trace-1']);
+  });
+
+  it('tells a message with a tool call from an answer', () => {
+    expect(hasToolCall([{ type: 'text', text: 'Let me look.' }, { type: 'tool_use' }])).toBe(true);
+    expect(hasToolCall([{ type: 'text', text: 'Yes.' }])).toBe(false);
+    expect(hasToolCall('nope')).toBe(false);
   });
 
   it('reads the answer text from the last message', () => {

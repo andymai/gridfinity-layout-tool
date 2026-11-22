@@ -242,6 +242,47 @@ async function copy(): Promise<void> {
   border-radius: 4px;
   background: var(--vp-c-default-soft);
 }
+.answer-body :deep(.code-block) {
+  position: relative;
+  margin: 8px 0;
+}
+.answer-body :deep(pre) {
+  margin: 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  border-radius: 8px;
+  background: var(--vp-c-bg-soft);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.answer-body :deep(pre code) {
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+.answer-body :deep(.copy-code) {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 8px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-2);
+  font-size: 12px;
+}
+.answer-body :deep(.copy-code:hover) {
+  color: var(--vp-c-text-1);
+}
+.answer-body :deep(kbd) {
+  padding: 0 5px;
+  border: 1px solid var(--vp-c-divider);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--vp-c-bg-soft);
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.85em;
+}
 .answer-body :deep(figure) {
   margin: 12px 0;
 }
