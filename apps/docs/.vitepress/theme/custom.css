@@ -210,8 +210,15 @@
   position: relative;
 }
 
-.docs-chapter {
+.docs-page-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin: 0 0 10px;
+}
+
+.docs-chapter {
+  margin: 0;
   font-size: 12px;
   font-weight: 650;
   letter-spacing: 0.09em;

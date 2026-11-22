@@ -13,6 +13,7 @@ sources:
   - src/shared/utils/fill.ts
   - src/core/cqrs/v2/domain/bin/fillGaps.ts
   - src/features/bin-inspector/components/Inspector/BinSlantSection/
+  - src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
   - src/features/layers/components/SlantedRowControls/SlantedRowControls.tsx
   - src/features/grid-editor/components/Grid/Bin/BinSlantBadge.tsx
   - src/shared/utils/placedSlant.ts
@@ -81,6 +82,8 @@ A duplicate goes to the first free spot to the right, below, to the left or abov
 ## Resize a bin
 
 Select one bin, and handles show on its edges and corners. Drag a handle to change the width, the depth or both. Prefer exact numbers? Type a <Ui k="common.width" /> and a <Ui k="common.depth" /> in the inspector on the right.
+
+To change the height, type it in millimeters in <Ui k="common.heightMm" />. Below the field, the inspector shows the same height in height units, and the lowest and the highest height that the bin can have.
 
 <Screenshot id="layouts-placing-bins-resize" alt="A click on the Screwdrivers bin shows its handles. The right edge handle makes it one unit wider. Then the top-right corner handle makes it wider and deeper." spec="Clip. Layout editor on desktop. Layout with a 6 by 3 drawer and a 2 by 1 Screwdrivers bin at the front left, with free cells to its right and behind it. Click the bin, drag the right edge handle out by one cell, then drag the top-right corner handle out by one cell each way. Crop to the grid." />
 

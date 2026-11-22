@@ -44,7 +44,7 @@ To turn your own drawer into grid units, type its size here:
 
 <DrawerCalculator />
 
-The outer walls of a bin are 0.5 mm smaller than its cells, so a 1 × 1 bin measures 41.5 mm. That small gap lets the bin drop into a baseplate without force. The bin designer shows the room inside the walls as <Ui k="binDesigner.interiorDimensions" />, before dividers, scoops and label tabs.
+The outer walls of a bin are 0.5 mm smaller than its cells, so a 1 × 1 bin measures 41.5 mm. That small gap lets the bin drop into a baseplate without force. The bin designer shows the room inside the walls on its <Ui k="binDesigner.interiorDimensions" /> line, as the width, the depth and the height in millimeters. The line counts no dividers, scoops or label tabs.
 
 ## Where you set the units
 
