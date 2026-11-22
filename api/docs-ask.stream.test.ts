@@ -5,7 +5,10 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createHmac } from 'crypto';
 import type { AgentOptions, AgentResult } from './lib/docsAsk/agent.js';
+import { turnSigned } from './lib/docsAsk/history.js';
+import type { StoredTurn } from './lib/docsAsk/history.js';
 import type * as Spend from './lib/docsAsk/spend.js';
 
 const mocks = vi.hoisted(() => ({
@@ -121,12 +124,20 @@ describe('docs-ask streaming', () => {
   });
   afterEach(() => vi.unstubAllEnvs());
 
-  it('signs a turn with an answer, and not one without', async () => {
-    mocks.runAgent.mockResolvedValueOnce(result('Layers stack bins.'));
-    const answered = (await ask()).find((e) => e.event === 'done');
-    expect(answered?.data.turn).toMatchObject({
-      signature: expect.stringMatching(/^[0-9a-f]{64}$/),
+  it('signs a turn over the messages that it streamed, and not a turn without an answer', async () => {
+    const content = [{ type: 'text', text: 'Layers stack bins.' }];
+    mocks.runAgent.mockImplementationOnce((options: AgentOptions) => {
+      options.send({ type: 'message', content } as never);
+      return Promise.resolve(result('Layers stack bins.'));
     });
+    const events = await ask();
+    expect(events.find((e) => e.event === 'message')?.data).toMatchObject({ content });
+    const turn = events.find((e) => e.event === 'done')?.data.turn as StoredTurn;
+    const key = createHmac('sha256', 'salt').update('docs-ask turn signature').digest('hex');
+    expect(turnSigned(key, { ...turn, messages: [content] })).toBe(true);
+    expect(turnSigned(key, { ...turn, messages: [[{ type: 'text', text: 'Changed.' }]] })).toBe(
+      false
+    );
 
     mocks.runAgent.mockResolvedValueOnce(result(''));
     const empty = (await ask()).find((e) => e.event === 'done');
