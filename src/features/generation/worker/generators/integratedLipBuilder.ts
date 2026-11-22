@@ -22,6 +22,7 @@ import {
   LIP_BIG_TAPER,
   LIP_HEIGHT,
   LIP_TAPER_WIDTH,
+  LIP_SUPPORT_DROP,
   sketch,
 } from './generatorTypes';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
@@ -60,7 +61,9 @@ export function buildBinBoxWithLip(
   cellMask?: CellMask,
   overhang?: ResolvedOverhang,
   /** Interior floor thickness (mm); defaults to `wallThickness`. */
-  floorThickness?: number
+  floorThickness?: number,
+  /** How far below the wall top the lip's angled support reaches (mm). */
+  supportDepth: number = LIP_TAPER_WIDTH
 ): Shape3D {
   const polygon = isPartialMask(cellMask);
   const ov = polygon ? undefined : overhang;
@@ -74,17 +77,17 @@ export function buildBinBoxWithLip(
   const wt = wallThickness;
 
   // Lip inner-profile insets (mirror buildTopShapeLoft's INNER_* values).
-  const LIP_EXTENSION = 1.2; // overhang depth = angled-support inset at its base
-  const INNER_ANGLE = LIP_EXTENSION;
   const INNER_BASE = LIP_TAPER_WIDTH; // 2.6
   const INNER_MID = LIP_BIG_TAPER; // 1.9
+  // The support's foot, on the 45° line through the throat's bottom corner.
+  const INNER_ANGLE = LIP_SUPPORT_DROP + LIP_TAPER_WIDTH - supportDepth;
 
   // Lip profile breakpoints in GLOBAL Z. The lip base sits ON the wall top; the
-  // angled support runs LIP_TAPER_WIDTH below it, alongside the upper wall
+  // angled support runs `supportDepth` below it, alongside the upper wall
   // (this is the coincident region the fuse z-fights on).
   const lipBaseZ = wallHeight;
-  const zAngleBottom = lipBaseZ - LIP_TAPER_WIDTH;
-  const zExt = lipBaseZ - LIP_EXTENSION;
+  const zAngleBottom = lipBaseZ - supportDepth;
+  const zExt = lipBaseZ - LIP_SUPPORT_DROP;
   const zTaper1 = lipBaseZ + LIP_SMALL_TAPER;
   const zVert = lipBaseZ + LIP_SMALL_TAPER + LIP_VERTICAL_PART;
   const zPeak = lipBaseZ + LIP_HEIGHT;

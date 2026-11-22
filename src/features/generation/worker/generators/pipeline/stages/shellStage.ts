@@ -262,7 +262,8 @@ export const shellStage: PipelineStage = {
               params.cellMask,
               dim.overhang,
               resolveLipTip(params.base),
-              notchGrid
+              notchGrid,
+              dim.lipSupportDepth
             )
           );
           // Seated ON the slab top: `buildTopShape` hangs its own material
@@ -284,7 +285,8 @@ export const shellStage: PipelineStage = {
               pitch,
               params.cellMask,
               dim.overhang,
-              dim.floorThickness
+              dim.floorThickness,
+              dim.lipSupportDepth
             );
             // One solid: the lip is not a separable origin here, so the whole
             // body carries the BASE tag (the exact path preserves the LIP tag).
@@ -331,7 +333,8 @@ export const shellStage: PipelineStage = {
                 params.cellMask,
                 dim.overhang,
                 resolveLipTip(params.base),
-                notchGrid
+                notchGrid,
+                dim.lipSupportDepth
               )
             );
             const top = scope.register(translate(lipBase, [0, 0, boxWallHeight]));

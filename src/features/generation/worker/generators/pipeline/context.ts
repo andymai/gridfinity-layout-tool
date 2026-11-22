@@ -39,6 +39,7 @@ import {
   LIP_SMALL_TAPER,
   LIP_TAPER_WIDTH,
   MIN_BODY_WALL_MM,
+  lipSupportDepthMm,
 } from '../generatorConstants';
 import {
   buildCompartmentsCacheKey,
@@ -253,6 +254,7 @@ export function deriveDimensions(
   // the box is extruded to. See `lipHasSupport` for what the number decides.
   const wallUnderLipMm = isTile ? tileFloorHeight : wallHeight + collarHeight;
   const lipHasSupport = hasLip && wallUnderLipMm >= LIP_TAPER_WIDTH;
+  const lipSupportDepth = lipSupportDepthMm(params.wallThickness, wallUnderLipMm);
   // The lip's base plane is the wall top, so subtracting any positive amount
   // leaves the interior below it.
   // Floored at 0 for base-only, whose wallHeight is 0: the subtraction would
@@ -526,6 +528,7 @@ export function deriveDimensions(
     isSlotted,
     hasLip,
     lipHasSupport,
+    lipSupportDepth,
     lipNotches,
     interiorHeight,
     maxDimension,

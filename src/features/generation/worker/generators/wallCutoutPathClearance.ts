@@ -8,7 +8,12 @@ import { isPartialMask } from '@/shared/utils/cellMask';
 import { lipInnerReachMm } from '@/shared/utils/lipNotchPlan';
 import { resolveOverhang } from '@/shared/utils/overhang';
 import { resolveBinFloorMm } from '@/shared/utils/slotMath';
-import { COPLANAR_OVERLAP, LIP_SUPPORT_DROP, LIP_TAPER_WIDTH } from './generatorConstants';
+import {
+  COPLANAR_OVERLAP,
+  LIP_SUPPORT_DROP,
+  LIP_TAPER_WIDTH,
+  lipSupportDepthMm,
+} from './generatorConstants';
 import { cutoutOvershoot, type CutoutFrame } from './wallCutoutPaths';
 
 /** One level of the clearance a path keeps from the outer walls, in mm in from each inner face. */
@@ -84,7 +89,8 @@ function lipLevels(params: BinParams, frame: CutoutFrame): Level[] {
   if (!frame.hasLip || reachIn <= 0) return [];
   // `buildTopShape` seats the lip's base plane on the wall top.
   const lipBase = frame.wallHeight + frame.collarHeight;
-  const lipFoot = lipBase - LIP_TAPER_WIDTH;
+  const depth = lipSupportDepthMm(wallT, lipBase);
+  const lipFoot = lipBase - depth;
   if (reach !== LIP_TAPER_WIDTH) {
     // Notches reach further in than the support below them: step clear.
     return [
@@ -92,12 +98,13 @@ function lipLevels(params: BinParams, frame: CutoutFrame): Level[] {
       { z: lipFoot, inset: reachIn + LIP_FACE_CLEARANCE },
     ];
   }
-  // The support climbs at 45 deg, from `LIP_SUPPORT_DROP` in from the outer
-  // face at its foot to the full taper width, which `boxTopShape` builds; a
-  // thin wall leaves a ledge under the foot.
-  const footReach = LIP_SUPPORT_DROP - wallT;
+  // The support climbs at 45 deg from its foot to the full taper width, which
+  // `boxTopShape` builds. The foot is on or inside the wall's inner face,
+  // except on a wall too short for the support to reach it, where the foot
+  // stands off the face inside the floor slab.
+  const footReach = LIP_SUPPORT_DROP + LIP_TAPER_WIDTH - depth - wallT;
   const full = { z: lipBase - LIP_SUPPORT_DROP, inset: reachIn + LIP_FACE_CLEARANCE };
-  return footReach > 0
+  return footReach > 1e-9
     ? [
         { z: lipFoot - 0.02, inset: COPLANAR_OVERLAP },
         { z: lipFoot, inset: footReach + LIP_FACE_CLEARANCE },

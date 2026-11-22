@@ -95,7 +95,10 @@ export const wallCutoutPaths: ScenarioCase[] = [
     walls: walls(['front']),
   }),
   path('under a collar', { extraWallHeightMm: 6, walls: walls(['front', 'left']) }),
-  path('thin walls, whose lip leaves a ledge', { wallThickness: 0.8, walls: walls(['front']) }),
+  path('thin walls, whose lip support reaches deeper', {
+    wallThickness: 0.8,
+    walls: walls(['front']),
+  }),
   path('notched lip', {
     base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true, lipNotches: true },
     walls: walls(['front']),

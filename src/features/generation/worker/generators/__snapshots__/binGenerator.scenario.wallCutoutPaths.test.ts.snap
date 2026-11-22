@@ -38,6 +38,6 @@ exports[`wall cutout paths > scoop ramps and an interior fillet 1`] = `16448`;
 
 exports[`wall cutout paths > tapered overhang 1`] = `5300`;
 
-exports[`wall cutout paths > thin walls, whose lip leaves a ledge 1`] = `5954`;
+exports[`wall cutout paths > thin walls, whose lip support reaches deeper 1`] = `5842`;
 
 exports[`wall cutout paths > under a collar 1`] = `5548`;

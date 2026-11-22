@@ -252,7 +252,8 @@ function splitSolidIntoPieces(
       // the unsplit bin's do.
       splitDims.lipNotches
         ? { fractionalEdgeX: params.fractionalEdgeX, fractionalEdgeY: params.fractionalEdgeY }
-        : undefined
+        : undefined,
+      splitDims.lipSupportDepth
     );
     // The same plane `shellStage` seats an unsplit bin's lip on, so the
     // piece's rim lands where the whole bin's does. `buildTopShape` carries its
@@ -300,9 +301,9 @@ function splitSolidIntoPieces(
 
     // Wall patterns cut the lip for the same reason, and it is easy to miss
     // why: a hex sits well below the rim, so it looks like it could not reach
-    // the lip at all. The lip's angled support hangs `LIP_TAPER_WIDTH` BELOW
-    // its own base plane, down to `wallHeight - LIP_TAPER_WIDTH`,
-    // and the pattern band's top always clears that by ~0.5mm. Whether any
+    // the lip at all. The lip's angled support hangs `lipSupportDepth` BELOW
+    // its own base plane, and the pattern band's top clears that by ~0.5mm at
+    // most, less on a thin wall, where the support reaches deeper. Whether any
     // element actually lands in the overlap is down to how the stamp calculator
     // laid the rows out, so a bin at one scale is untouched and the same bin one
     // notch bolder has the top row of holes plugged flat by material fused on
@@ -322,7 +323,7 @@ function splitSolidIntoPieces(
       // that converts to it) rather than restated from `wallHeight`, which is
       // one term short of the rim on a bin carrying an `extraWallHeightMm`
       // collar or a tray's floor.
-      const lipReach = wallTopZ - floorZ - LIP_TAPER_WIDTH;
+      const lipReach = wallTopZ - floorZ - splitDims.lipSupportDepth;
       // Asked of the built solids rather than recomputed from the layout, so it
       // cannot drift from where the stamps actually ended up. A bin whose top
       // row stops short of the wedge (the default scale does) skips the fuse and
