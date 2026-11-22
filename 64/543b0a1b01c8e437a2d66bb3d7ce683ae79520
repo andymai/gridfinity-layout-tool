@@ -1,0 +1,23 @@
+api/sync/designs/[id].test.ts
+  s_f8efc8defc13ab::t_5de2ca9651ff65 300-302,304
+  s_f8efc8defc13ab::t_d5c731efaecf47 303
+  s_f8efc8defc13ab::t_e565237d73a49c 305-306
+api/sync/lib/resourceHandler.ts
+  s_f8efc8defc13ab::t_5de2ca9651ff65 52-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "64543b0a1b01c8e437a2d66bb3d7ce683ae79520",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
