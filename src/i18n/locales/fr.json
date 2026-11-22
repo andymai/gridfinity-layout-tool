@@ -5600,5 +5600,7 @@
   "binDesigner.cutouts.library.rename": "Renommer {name}",
   "binDesigner.cutouts.library.moveTo": "Déplacer {name} dans un dossier",
   "binDesigner.cutouts.library.emptyFolder": "Ce dossier est vide",
-  "binDesigner.cutouts.library.size": "{width} × {depth} mm"
+  "binDesigner.cutouts.library.size": "{width} × {depth} mm",
+  "binDesigner.cutouts.library.foldersFull": "La bibliothèque contient au plus {max} dossiers. Supprimez-en pour en créer d’autres.",
+  "binDesigner.cutouts.library.tooDeep": "Les dossiers s’imbriquent sur {max} niveaux au plus. Choisissez un dossier plus haut."
 }

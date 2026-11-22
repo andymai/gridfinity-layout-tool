@@ -5600,5 +5600,7 @@
   "binDesigner.cutouts.library.rename": "Gi nytt navn til {name}",
   "binDesigner.cutouts.library.moveTo": "Flytt {name} til en mappe",
   "binDesigner.cutouts.library.emptyFolder": "Mappen er tom",
-  "binDesigner.cutouts.library.size": "{width} × {depth} mm"
+  "binDesigner.cutouts.library.size": "{width} × {depth} mm",
+  "binDesigner.cutouts.library.foldersFull": "Biblioteket rommer {max} mapper. Slett noen for å lage flere.",
+  "binDesigner.cutouts.library.tooDeep": "Mapper kan ligge maks {max} nivåer dypt. Velg en mappe høyere opp."
 }

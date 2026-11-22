@@ -55,4 +55,12 @@ describe('library item file', () => {
     ) as unknown;
     expect(parseLibraryItemJSON(JSON.stringify(empty), t)).toBeNull();
   });
+
+  it('refuses a malformed cutout without throwing', () => {
+    const type = 'gridfinity-cutout-library-item';
+    const nulls = { type, params: { cutouts: [null] } };
+    expect(parseLibraryItemJSON(JSON.stringify(nulls), t)).toBeNull();
+    const odd = { type, params: { cutouts: [{ shape: 'path', path: 5 }] } };
+    expect(() => parseLibraryItemJSON(JSON.stringify(odd), t)).not.toThrow();
+  });
 });

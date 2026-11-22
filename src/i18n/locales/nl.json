@@ -5600,5 +5600,7 @@
   "binDesigner.cutouts.library.rename": "{name} hernoemen",
   "binDesigner.cutouts.library.moveTo": "{name} naar een map verplaatsen",
   "binDesigner.cutouts.library.emptyFolder": "Deze map is leeg",
-  "binDesigner.cutouts.library.size": "{width} × {depth} mm"
+  "binDesigner.cutouts.library.size": "{width} × {depth} mm",
+  "binDesigner.cutouts.library.foldersFull": "De bibliotheek bevat maximaal {max} mappen. Verwijder er een paar om nieuwe te maken.",
+  "binDesigner.cutouts.library.tooDeep": "Mappen gaan maximaal {max} niveaus diep. Kies een map hoger in de lijst."
 }

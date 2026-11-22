@@ -33,6 +33,14 @@ export function noteServedKinds(manifest: Partial<Record<SyncKind, unknown>>): S
   return newly;
 }
 
+/**
+ * The gated kinds this client reads as served, for the manifest's
+ * `X-Sync-Served` header: the server skips its 304 when they differ from its own.
+ */
+export function servedGatedKinds(): SyncKind[] {
+  return GATED_KINDS.filter((kind) => served.has(kind));
+}
+
 export function resetServedKinds(): void {
   served.clear();
 }

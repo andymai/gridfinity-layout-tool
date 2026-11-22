@@ -21,8 +21,13 @@ export const useCutoutLibraryStore = create<CutoutLibraryState>((set) => ({
   folders: [],
   loaded: false,
   reload: async () => {
-    const [items, folders] = await Promise.all([listItems(), listFolders()]);
-    set({ items, folders, loaded: true });
+    try {
+      const [items, folders] = await Promise.all([listItems(), listFolders()]);
+      set({ items, folders, loaded: true });
+    } catch {
+      // A failed read keeps what is shown; the next change tries again.
+      set({ loaded: true });
+    }
   },
 }));
 

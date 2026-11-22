@@ -5460,5 +5460,7 @@
   "binDesigner.cutouts.library.rename": "重命名 {name}",
   "binDesigner.cutouts.library.moveTo": "将 {name} 移到文件夹",
   "binDesigner.cutouts.library.emptyFolder": "此文件夹为空",
-  "binDesigner.cutouts.library.size": "{width} × {depth} mm"
+  "binDesigner.cutouts.library.size": "{width} × {depth} mm",
+  "binDesigner.cutouts.library.foldersFull": "库最多可容纳 {max} 个文件夹。请删除一些后再新建。",
+  "binDesigner.cutouts.library.tooDeep": "文件夹最多嵌套 {max} 层。请选择更上层的文件夹。"
 }

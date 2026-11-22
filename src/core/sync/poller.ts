@@ -3,7 +3,7 @@ import { PAYLOAD_KEY } from './payloadKey';
 import { apiFetch } from './apiFetch';
 import { useSessionStore } from './session/useSession';
 import { useSyncStatusStore } from './status';
-import { isKindServed, noteServedKinds } from './servedKinds';
+import { isKindServed, noteServedKinds, servedGatedKinds } from './servedKinds';
 import { enqueue as outboxEnqueue } from './outbox';
 import type { SyncAdapter, SyncAdapters, SyncKind } from './adapters/types';
 
@@ -95,7 +95,10 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
     manifestRes = await apiFetch('/api/sync/manifest', {
       headers:
         pullState.lastIndexUpdatedAt > 0
-          ? { 'If-Modified-Since': String(pullState.lastIndexUpdatedAt) }
+          ? {
+              'If-Modified-Since': String(pullState.lastIndexUpdatedAt),
+              'X-Sync-Served': servedGatedKinds().join(','),
+            }
           : {},
     });
   } catch {

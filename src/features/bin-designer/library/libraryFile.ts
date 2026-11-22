@@ -83,8 +83,9 @@ export function parseLibraryItemJSON(json: string, t: TFunction): ParsedLibraryF
   }
   if (!isObject(data) || data.type !== LIBRARY_FILE_TYPE || !isObject(data.params)) return null;
   const { cutouts, cutoutGroupNames, meshAssets } = data.params;
-  if (!Array.isArray(cutouts) || cutouts.length === 0) return null;
-  const wrapped = {
+  // The design check reads the bin around the cutouts, not each cutout.
+  if (!Array.isArray(cutouts) || cutouts.length === 0 || !cutouts.every(isObject)) return null;
+  const wrapped: Record<string, unknown> = {
     ...DEFAULT_BIN_PARAMS,
     style: 'solid',
     cutouts,
@@ -92,7 +93,13 @@ export function parseLibraryItemJSON(json: string, t: TFunction): ParsedLibraryF
     ...(meshAssets === undefined ? {} : { meshAssets }),
   };
   if (!validateImportedBinParams(wrapped, t).valid) return null;
-  const migrated: BinParams = migrateParams(wrapped as Partial<BinParams>);
+  let migrated: BinParams;
+  try {
+    migrated = migrateParams(wrapped);
+  } catch {
+    // A hand-written cutout can still be the wrong shape inside.
+    return null;
+  }
   if (migrated.cutouts.length === 0) return null;
   const name =
     typeof data.name === 'string' ? data.name.trim().slice(0, MAX_LIBRARY_NAME_LENGTH) : '';

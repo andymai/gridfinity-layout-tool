@@ -5600,5 +5600,7 @@
   "binDesigner.cutouts.library.rename": "Renombrar {name}",
   "binDesigner.cutouts.library.moveTo": "Mover {name} a una carpeta",
   "binDesigner.cutouts.library.emptyFolder": "Esta carpeta está vacía",
-  "binDesigner.cutouts.library.size": "{width} × {depth} mm"
+  "binDesigner.cutouts.library.size": "{width} × {depth} mm",
+  "binDesigner.cutouts.library.foldersFull": "La biblioteca admite {max} carpetas. Elimina algunas para crear más.",
+  "binDesigner.cutouts.library.tooDeep": "Las carpetas se anidan como máximo {max} niveles. Elige una carpeta más arriba."
 }

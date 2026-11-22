@@ -5600,5 +5600,7 @@
   "binDesigner.cutouts.library.rename": "Rinomina {name}",
   "binDesigner.cutouts.library.moveTo": "Sposta {name} in una cartella",
   "binDesigner.cutouts.library.emptyFolder": "Questa cartella è vuota",
-  "binDesigner.cutouts.library.size": "{width} × {depth} mm"
+  "binDesigner.cutouts.library.size": "{width} × {depth} mm",
+  "binDesigner.cutouts.library.foldersFull": "La libreria contiene al massimo {max} cartelle. Eliminane alcune per crearne altre.",
+  "binDesigner.cutouts.library.tooDeep": "Le cartelle si annidano al massimo per {max} livelli. Scegli una cartella più in alto."
 }

@@ -129,10 +129,14 @@ export function useCutoutLibraryWorkspace({
     setSaving(true);
     const target = choice.mode === 'update' ? draft.source : null;
     const updating = target !== null;
-    const result = target
-      ? await updateItem(target.id, { name: choice.name, folderId: choice.folderId, content })
-      : await createItem({ name: choice.name, folderId: choice.folderId, content });
-    setSaving(false);
+    let result: Awaited<ReturnType<typeof createItem>>;
+    try {
+      result = target
+        ? await updateItem(target.id, { name: choice.name, folderId: choice.folderId, content })
+        : await createItem({ name: choice.name, folderId: choice.folderId, content });
+    } finally {
+      setSaving(false);
+    }
     if (isErr(result)) {
       const full = result.error.code === 'STORAGE_QUOTA_EXCEEDED';
       addToast(

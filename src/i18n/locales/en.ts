@@ -3798,6 +3798,10 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.library.overBudget':
     'This item would put the design over its mesh triangle limit.',
   'binDesigner.cutouts.library.newFolder': 'New folder',
+  'binDesigner.cutouts.library.foldersFull':
+    'The library holds {max} folders. Delete some to make more.',
+  'binDesigner.cutouts.library.tooDeep':
+    'Folders nest at most {max} levels deep. Pick a folder nearer the top.',
   'binDesigner.cutouts.library.deleteFolder': 'Delete folder {name}',
   'binDesigner.cutouts.library.deleteItem': 'Delete {name}',
   'binDesigner.cutouts.library.confirmDelete': 'Delete {name}? This cannot be undone.',

@@ -5600,5 +5600,7 @@
   "binDesigner.cutouts.library.rename": "{name} umbenennen",
   "binDesigner.cutouts.library.moveTo": "{name} in einen Ordner verschieben",
   "binDesigner.cutouts.library.emptyFolder": "Dieser Ordner ist leer",
-  "binDesigner.cutouts.library.size": "{width} × {depth} mm"
+  "binDesigner.cutouts.library.size": "{width} × {depth} mm",
+  "binDesigner.cutouts.library.foldersFull": "Die Bibliothek fasst {max} Ordner. Lösche einige, um neue anzulegen.",
+  "binDesigner.cutouts.library.tooDeep": "Ordner lassen sich höchstens {max} Ebenen tief verschachteln. Wähle einen Ordner weiter oben."
 }

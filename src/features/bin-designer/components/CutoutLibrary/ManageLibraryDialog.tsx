@@ -16,12 +16,15 @@ import {
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { isErr } from '@/core/result';
+import type { Result, StorageError } from '@/core/result';
 import { trackEvent } from '@/shared/analytics/posthog';
 import type {
   CutoutLibraryFolder,
   CutoutLibraryItem,
 } from '@/features/bin-designer/library/libraryTypes';
 import {
+  MAX_LIBRARY_FOLDERS,
+  MAX_LIBRARY_FOLDER_DEPTH,
   MAX_LIBRARY_ITEMS,
   MAX_LIBRARY_NAME_LENGTH,
 } from '@/features/bin-designer/library/libraryTypes';
@@ -96,10 +99,28 @@ export function ManageLibraryDialog({ onClose }: ManageLibraryDialogProps) {
     trackEvent('cutout_library_item_exported', { shapes: item.content.params.cutouts.length });
   };
 
+  /** Toast a failed write, with `limit`'s message when it hit that limit. */
+  const report = async (
+    write: Promise<Result<unknown, StorageError>>,
+    limit?: { readonly key: string; readonly max: number }
+  ) => {
+    const result = await write;
+    if (!isErr(result)) return;
+    addToast(
+      limit && result.error.code === 'STORAGE_QUOTA_EXCEEDED'
+        ? t(limit.key, { max: limit.max })
+        : t('binDesigner.cutouts.library.saveFailed'),
+      'error'
+    );
+  };
+
   const confirmDelete = () => {
     if (!pendingDelete) return;
-    if (pendingDelete.kind === 'item') void deleteItem(pendingDelete.item.id);
-    else void deleteFolder(pendingDelete.folder.id);
+    void report(
+      pendingDelete.kind === 'item'
+        ? deleteItem(pendingDelete.item.id)
+        : deleteFolder(pendingDelete.folder.id)
+    );
     setPendingDelete(null);
   };
 
@@ -113,7 +134,12 @@ export function ManageLibraryDialog({ onClose }: ManageLibraryDialogProps) {
               <Button
                 size="sm"
                 variant="secondary"
-                onClick={() => void createFolder(t('binDesigner.cutouts.library.newFolder'), null)}
+                onClick={() =>
+                  void report(createFolder(t('binDesigner.cutouts.library.newFolder'), null), {
+                    key: 'binDesigner.cutouts.library.foldersFull',
+                    max: MAX_LIBRARY_FOLDERS,
+                  })
+                }
               >
                 <PlusIcon size="sm" aria-hidden="true" />
                 {t('binDesigner.cutouts.library.newFolder')}
@@ -148,7 +174,7 @@ export function ManageLibraryDialog({ onClose }: ManageLibraryDialogProps) {
                         value={folder.name}
                         maxLength={MAX_LIBRARY_NAME_LENGTH}
                         aria-label={t('binDesigner.cutouts.library.rename', { name: folder.name })}
-                        onCommit={(name) => void updateFolder(folder.id, { name })}
+                        onCommit={(name) => void report(updateFolder(folder.id, { name }))}
                       />
                     </div>
                     <Select
@@ -163,9 +189,15 @@ export function ManageLibraryDialog({ onClose }: ManageLibraryDialogProps) {
                         noFolder
                       )}
                       onValueChange={(value) =>
-                        void updateFolder(folder.id, {
-                          parentId: value === NO_FOLDER ? null : value,
-                        })
+                        void report(
+                          updateFolder(folder.id, {
+                            parentId: value === NO_FOLDER ? null : value,
+                          }),
+                          {
+                            key: 'binDesigner.cutouts.library.tooDeep',
+                            max: MAX_LIBRARY_FOLDER_DEPTH,
+                          }
+                        )
                       }
                     />
                     <IconButton
@@ -191,7 +223,7 @@ export function ManageLibraryDialog({ onClose }: ManageLibraryDialogProps) {
                       value={item.name}
                       maxLength={MAX_LIBRARY_NAME_LENGTH}
                       aria-label={t('binDesigner.cutouts.library.rename', { name: item.name })}
-                      onCommit={(name) => void updateItem(item.id, { name })}
+                      onCommit={(name) => void report(updateItem(item.id, { name }))}
                     />
                   </div>
                   <Select
@@ -205,7 +237,9 @@ export function ManageLibraryDialog({ onClose }: ManageLibraryDialogProps) {
                     }
                     options={folderOptions(folders, noFolder)}
                     onValueChange={(value) =>
-                      void updateItem(item.id, { folderId: value === NO_FOLDER ? null : value })
+                      void report(
+                        updateItem(item.id, { folderId: value === NO_FOLDER ? null : value })
+                      )
                     }
                   />
                   <Button

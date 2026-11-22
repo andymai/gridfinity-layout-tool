@@ -5600,5 +5600,7 @@
   "binDesigner.cutouts.library.rename": "Byt namn på {name}",
   "binDesigner.cutouts.library.moveTo": "Flytta {name} till en mapp",
   "binDesigner.cutouts.library.emptyFolder": "Mappen är tom",
-  "binDesigner.cutouts.library.size": "{width} × {depth} mm"
+  "binDesigner.cutouts.library.size": "{width} × {depth} mm",
+  "binDesigner.cutouts.library.foldersFull": "Biblioteket rymmer {max} mappar. Ta bort några för att skapa fler.",
+  "binDesigner.cutouts.library.tooDeep": "Mappar kan ligga högst {max} nivåer djupt. Välj en mapp högre upp."
 }

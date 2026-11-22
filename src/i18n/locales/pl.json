@@ -5880,5 +5880,7 @@
   "binDesigner.cutouts.library.rename": "Zmień nazwę {name}",
   "binDesigner.cutouts.library.moveTo": "Przenieś {name} do folderu",
   "binDesigner.cutouts.library.emptyFolder": "Ten folder jest pusty",
-  "binDesigner.cutouts.library.size": "{width} × {depth} mm"
+  "binDesigner.cutouts.library.size": "{width} × {depth} mm",
+  "binDesigner.cutouts.library.foldersFull": "Biblioteka mieści {max} folderów. Usuń kilka, aby utworzyć nowe.",
+  "binDesigner.cutouts.library.tooDeep": "Foldery można zagnieździć najwyżej na {max} poziomów. Wybierz folder wyżej."
 }

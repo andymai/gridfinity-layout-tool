@@ -28,13 +28,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   try {
     const indexUpdatedAt = await getIndexUpdatedAt(redis, session.userId);
 
+    const library = cutoutLibrarySyncEnabled();
     const ifModifiedSince = parseIfModifiedSinceHeader(req);
-    if (ifModifiedSince !== null && indexUpdatedAt > 0 && ifModifiedSince >= indexUpdatedAt) {
+    if (
+      ifModifiedSince !== null &&
+      indexUpdatedAt > 0 &&
+      ifModifiedSince >= indexUpdatedAt &&
+      sameGatedKinds(req, library ? CUTOUT_LIBRARY_KINDS : [])
+    ) {
       res.status(304).end();
       return;
     }
 
-    const library = cutoutLibrarySyncEnabled();
     const [layouts, designs, baseplates, designVersions, folders, cutoutItems, cutoutFolders] =
       await Promise.all([
         getIndex(redis, session.userId, 'layouts'),
@@ -63,6 +68,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     });
     serverError(res);
   }
+}
+
+const CUTOUT_LIBRARY_KINDS = ['cutoutItems', 'cutoutFolders'] as const;
+
+/**
+ * Whether the client reads the same gated kinds as served (`X-Sync-Served`,
+ * mirroring `servedGatedKinds` in src/core/sync/servedKinds.ts). Flipping a
+ * kill switch changes no index, so without this a client would get 304s and
+ * never see a kind appear or go. A client that sends no header predates gated
+ * kinds and keeps the plain timestamp check.
+ */
+function sameGatedKinds(req: VercelRequest, served: readonly string[]): boolean {
+  const raw: unknown = req.headers['x-sync-served'];
+  if (typeof raw !== 'string') return true;
+  const seen = new Set(raw.split(',').filter(Boolean));
+  return seen.size === served.length && served.every((kind) => seen.has(kind));
 }
 
 /**

@@ -91,9 +91,10 @@ function makeRes(): MockRes {
   };
 }
 
-function makeReq(opts: { ifModifiedSince?: string } = {}): VercelRequest {
+function makeReq(opts: { ifModifiedSince?: string; served?: string } = {}): VercelRequest {
   const headers: Record<string, string> = {};
   if (opts.ifModifiedSince) headers['if-modified-since'] = opts.ifModifiedSince;
+  if (opts.served !== undefined) headers['x-sync-served'] = opts.served;
   return {
     method: 'GET',
     query: {},
@@ -151,6 +152,31 @@ describe('GET /api/sync/manifest', () => {
       cutoutItems: { clib_1: { modifiedAt: 3000 } },
       cutoutFolders: {},
     });
+    vi.unstubAllEnvs();
+  });
+
+  it('skips its 304 when the client reads a different set of gated kinds', async () => {
+    await seedEntry('layouts', 'lay-1', 1000);
+    const { default: handler } = await import('./manifest');
+    const first = makeRes();
+    await handler(makeReq(), first as unknown as VercelResponse);
+    const since = String((first._body as { indexUpdatedAt: number }).indexUpdatedAt);
+
+    vi.stubEnv('CUTOUT_LIBRARY_SYNC_ENABLED', 'true');
+    const switched = makeRes();
+    await handler(
+      makeReq({ ifModifiedSince: since, served: '' }),
+      switched as unknown as VercelResponse
+    );
+    expect(switched._status).toBe(200);
+    expect(switched._body).toHaveProperty('cutoutItems');
+
+    const current = makeRes();
+    await handler(
+      makeReq({ ifModifiedSince: since, served: 'cutoutItems,cutoutFolders' }),
+      current as unknown as VercelResponse
+    );
+    expect(current._status).toBe(304);
     vi.unstubAllEnvs();
   });
 

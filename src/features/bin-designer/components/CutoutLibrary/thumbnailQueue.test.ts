@@ -4,6 +4,18 @@ import type { CutoutLibraryItem } from '@/features/bin-designer/library/libraryT
 const mocks = vi.hoisted(() => ({
   stored: new Map<string, string>(),
   renders: [] as Array<{ resolve: (url: string) => void; id: string }>,
+  files: new Set<string>(),
+  arrive: null as null | ((hash: string) => void),
+}));
+
+vi.mock('@/shared/generation/meshStore', () => ({
+  hasMeshFile: async (hash: string) => mocks.files.has(hash),
+  subscribeMeshFileArrivals: (listener: (hash: string) => void) => {
+    mocks.arrive = listener;
+    return () => {
+      mocks.arrive = null;
+    };
+  },
 }));
 
 vi.mock('@/features/bin-designer/library/CutoutLibraryService', () => ({
@@ -51,6 +63,8 @@ describe('requestThumbnail', () => {
     vi.resetModules();
     mocks.stored.clear();
     mocks.renders.length = 0;
+    mocks.files.clear();
+    mocks.arrive = null;
   });
 
   it('answers from the store without a render when this version has a picture', async () => {
@@ -94,5 +108,32 @@ describe('requestThumbnail', () => {
     await settle();
     await settle();
     expect(mocks.renders.map((r) => r.id)).toEqual(['a']);
+  });
+
+  it('waits for the mesh file of an imprint, and renders once it arrives', async () => {
+    const { requestThumbnail } = await import('./thumbnailQueue');
+    const hash = 'd'.repeat(64);
+    const withMesh: CutoutLibraryItem = {
+      ...item('m'),
+      content: {
+        params: {
+          cutouts: [{ ...item('m').content.params.cutouts[0], shape: 'mesh', meshId: 'm1' }],
+          meshAssets: {
+            m1: { name: 'tool', hash, triangleCount: 4, sizeMm: { x: 1, y: 1, z: 1 }, bytes: 10 },
+          },
+        },
+      },
+    };
+    const onReady = vi.fn();
+    requestThumbnail(withMesh, onReady);
+    await settle();
+    await settle();
+    expect(mocks.renders).toHaveLength(0);
+
+    mocks.files.add(hash);
+    mocks.arrive?.(hash);
+    await settle();
+    await settle();
+    expect(mocks.renders.map((r) => r.id)).toEqual(['m']);
   });
 });

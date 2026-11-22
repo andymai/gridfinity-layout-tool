@@ -8,7 +8,14 @@
  */
 
 import type { Result, StorageError } from '@/core/result';
-import { err, ok, storageNotFound, storageQuotaExceeded, storageUnavailable } from '@/core/result';
+import {
+  err,
+  isErr,
+  ok,
+  storageNotFound,
+  storageQuotaExceeded,
+  storageUnavailable,
+} from '@/core/result';
 import { generateUUID } from '@/shared/utils/uuid';
 import { isoStampAfter } from '@/shared/utils/editStamp';
 import { storeHolderMeshes } from '@/shared/generation/meshRefs';
@@ -34,8 +41,8 @@ export function cleanLibraryName(name: string, fallback: string): string {
 const byName = (a: { name: string }, b: { name: string }) =>
   a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true });
 
-function unavailable() {
-  return err(storageUnavailable('indexedDB'));
+function unavailable(cause?: unknown) {
+  return err(storageUnavailable('indexedDB', cause));
 }
 
 export async function listItems(): Promise<CutoutLibraryItem[]> {
@@ -67,12 +74,21 @@ async function writeItem(
 ): Promise<Result<CutoutLibraryItem, StorageError>> {
   const db = await getLibraryDb();
   if (!db) return unavailable();
-  // Mesh files hold the meshes, so an item stays small and shares the file a
-  // design already stored.
-  const stored = { ...item, content: await storeHolderMeshes(item.content) };
-  await db.put(ITEMS_STORE, stored);
-  announce({ kind: 'item', type: 'put', id: stored.id, modifiedAt: Date.parse(stored.updatedAt) });
-  return ok(stored);
+  try {
+    // Mesh files hold the meshes, so an item stays small and shares the file a
+    // design already stored.
+    const stored = { ...item, content: await storeHolderMeshes(item.content) };
+    await db.put(ITEMS_STORE, stored);
+    announce({
+      kind: 'item',
+      type: 'put',
+      id: stored.id,
+      modifiedAt: Date.parse(stored.updatedAt),
+    });
+    return ok(stored);
+  } catch (error) {
+    return unavailable(error);
+  }
 }
 
 export async function createItem(input: {
@@ -82,8 +98,13 @@ export async function createItem(input: {
 }): Promise<Result<CutoutLibraryItem, StorageError>> {
   const db = await getLibraryDb();
   if (!db) return unavailable();
-  const count = await db.count(ITEMS_STORE);
-  if (count >= MAX_LIBRARY_ITEMS) return err(storageQuotaExceeded(count, MAX_LIBRARY_ITEMS));
+  let count: number;
+  try {
+    count = await db.count(ITEMS_STORE);
+  } catch (error) {
+    return unavailable(error);
+  }
+  if (count >= MAX_LIBRARY_ITEMS) return err(storageQuotaExceeded());
   const now = new Date().toISOString();
   return writeItem({
     id: `${LIBRARY_ITEM_ID_PREFIX}${generateUUID()}`,
@@ -95,26 +116,52 @@ export async function createItem(input: {
   });
 }
 
+/**
+ * Patch an item. The read and the write share one transaction, so an edit
+ * from another tab between them cannot be lost.
+ */
 export async function updateItem(
   id: string,
   patch: Partial<Pick<CutoutLibraryItem, 'name' | 'folderId' | 'content'>>
 ): Promise<Result<CutoutLibraryItem, StorageError>> {
-  const current = await getItem(id);
-  if (!current) return err(storageNotFound(id));
-  return writeItem({
-    ...current,
-    ...patch,
-    name: patch.name === undefined ? current.name : cleanLibraryName(patch.name, current.name),
-    updatedAt: isoStampAfter(current.updatedAt),
-  });
+  const db = await getLibraryDb();
+  if (!db) return unavailable();
+  try {
+    // Before the transaction: it closes at the first await that is not on it.
+    const content = patch.content ? await storeHolderMeshes(patch.content) : undefined;
+    const tx = db.transaction(ITEMS_STORE, 'readwrite');
+    const current = (await tx.store.get(id)) as CutoutLibraryItem | undefined;
+    if (!current) {
+      await tx.done;
+      return err(storageNotFound(id));
+    }
+    const next: CutoutLibraryItem = {
+      ...current,
+      ...patch,
+      ...(content ? { content } : {}),
+      name: patch.name === undefined ? current.name : cleanLibraryName(patch.name, current.name),
+      updatedAt: isoStampAfter(current.updatedAt),
+    };
+    await tx.store.put(next);
+    await tx.done;
+    announce({ kind: 'item', type: 'put', id, modifiedAt: Date.parse(next.updatedAt) });
+    return ok(next);
+  } catch (error) {
+    return unavailable(error);
+  }
 }
 
-export async function deleteItem(id: string): Promise<void> {
+export async function deleteItem(id: string): Promise<Result<void, StorageError>> {
   const db = await getLibraryDb();
-  if (!db) return;
-  await db.delete(ITEMS_STORE, id);
-  await db.delete(THUMBNAILS_STORE, id);
+  if (!db) return unavailable();
+  try {
+    await db.delete(ITEMS_STORE, id);
+    await db.delete(THUMBNAILS_STORE, id);
+  } catch (error) {
+    return unavailable(error);
+  }
   announce({ kind: 'item', type: 'delete', id, deletedAt: Date.now() });
+  return ok(undefined);
 }
 
 function depthOf(id: string | null, folders: ReadonlyMap<string, CutoutLibraryFolder>): number {
@@ -148,7 +195,11 @@ async function writeFolder(
 ): Promise<Result<CutoutLibraryFolder, StorageError>> {
   const db = await getLibraryDb();
   if (!db) return unavailable();
-  await db.put(FOLDERS_STORE, folder);
+  try {
+    await db.put(FOLDERS_STORE, folder);
+  } catch (error) {
+    return unavailable(error);
+  }
   announce({
     kind: 'folder',
     type: 'put',
@@ -158,18 +209,40 @@ async function writeFolder(
   return ok(folder);
 }
 
+/** Levels from `id` down to its deepest folder, `id` included. */
+function heightOf(id: string, folders: ReadonlyMap<string, CutoutLibraryFolder>): number {
+  const children = new Map<string, string[]>();
+  for (const folder of folders.values()) {
+    if (folder.parentId !== null) {
+      children.set(folder.parentId, [...(children.get(folder.parentId) ?? []), folder.id]);
+    }
+  }
+  const seen = new Set<string>();
+  const walk = (at: string): number => {
+    if (seen.has(at)) return 0;
+    seen.add(at);
+    return 1 + Math.max(0, ...(children.get(at) ?? []).map(walk));
+  };
+  return walk(id);
+}
+
 export async function createFolder(
   name: string,
   parentId: string | null
 ): Promise<Result<CutoutLibraryFolder, StorageError>> {
-  const folders = await folderMap();
+  let folders: Map<string, CutoutLibraryFolder>;
+  try {
+    folders = await folderMap();
+  } catch (error) {
+    return unavailable(error);
+  }
   if (folders.size >= MAX_LIBRARY_FOLDERS) {
-    return err(storageQuotaExceeded(folders.size, MAX_LIBRARY_FOLDERS));
+    return err(storageQuotaExceeded());
   }
   const parent = parentId !== null && folders.has(parentId) ? parentId : null;
   const depth = depthOf(parent, folders);
   if (depth >= MAX_LIBRARY_FOLDER_DEPTH) {
-    return err(storageQuotaExceeded(depth, MAX_LIBRARY_FOLDER_DEPTH));
+    return err(storageQuotaExceeded());
   }
   const now = new Date().toISOString();
   return writeFolder({
@@ -181,38 +254,76 @@ export async function createFolder(
   });
 }
 
+/**
+ * Rename or move a folder, in one transaction. A move that would make a loop
+ * changes nothing; one that would nest past MAX_LIBRARY_FOLDER_DEPTH is refused.
+ */
 export async function updateFolder(
   id: string,
   patch: Partial<Pick<CutoutLibraryFolder, 'name' | 'parentId'>>
 ): Promise<Result<CutoutLibraryFolder, StorageError>> {
-  const folders = await folderMap();
-  const current = folders.get(id);
-  if (!current) return err(storageNotFound(id));
-  const parentId = patch.parentId === undefined ? current.parentId : patch.parentId;
-  if (wouldLoop(id, parentId, folders)) return ok(current);
-  return writeFolder({
-    ...current,
-    name: patch.name === undefined ? current.name : cleanLibraryName(patch.name, current.name),
-    parentId,
-    updatedAt: isoStampAfter(current.updatedAt),
-  });
+  const db = await getLibraryDb();
+  if (!db) return unavailable();
+  let next: CutoutLibraryFolder;
+  try {
+    const tx = db.transaction(FOLDERS_STORE, 'readwrite');
+    const folders = new Map(
+      ((await tx.store.getAll()) as CutoutLibraryFolder[]).map((f) => [f.id, f])
+    );
+    const current = folders.get(id);
+    if (!current) {
+      await tx.done;
+      return err(storageNotFound(id));
+    }
+    const parentId = patch.parentId === undefined ? current.parentId : patch.parentId;
+    if (wouldLoop(id, parentId, folders)) {
+      await tx.done;
+      return ok(current);
+    }
+    const depth = depthOf(parentId, folders) + heightOf(id, folders);
+    if (parentId !== current.parentId && depth > MAX_LIBRARY_FOLDER_DEPTH) {
+      await tx.done;
+      return err(storageQuotaExceeded());
+    }
+    next = {
+      ...current,
+      name: patch.name === undefined ? current.name : cleanLibraryName(patch.name, current.name),
+      parentId,
+      updatedAt: isoStampAfter(current.updatedAt),
+    };
+    await tx.store.put(next);
+    await tx.done;
+  } catch (error) {
+    return unavailable(error);
+  }
+  announce({ kind: 'folder', type: 'put', id, modifiedAt: Date.parse(next.updatedAt) });
+  return ok(next);
 }
 
 /** Delete a folder. What it held moves up to its parent, so nothing is lost. */
-export async function deleteFolder(id: string): Promise<void> {
+export async function deleteFolder(id: string): Promise<Result<void, StorageError>> {
   const db = await getLibraryDb();
-  if (!db) return;
-  const folders = await folderMap();
-  const folder = folders.get(id);
-  if (!folder) return;
-  for (const item of await listItems()) {
-    if (item.folderId === id) await updateItem(item.id, { folderId: folder.parentId });
+  if (!db) return unavailable();
+  try {
+    const folders = await folderMap();
+    const folder = folders.get(id);
+    if (!folder) return ok(undefined);
+    for (const item of await listItems()) {
+      if (item.folderId !== id) continue;
+      const moved = await updateItem(item.id, { folderId: folder.parentId });
+      if (isErr(moved)) return moved;
+    }
+    for (const child of folders.values()) {
+      if (child.parentId !== id) continue;
+      const moved = await updateFolder(child.id, { parentId: folder.parentId });
+      if (isErr(moved)) return moved;
+    }
+    await db.delete(FOLDERS_STORE, id);
+  } catch (error) {
+    return unavailable(error);
   }
-  for (const child of folders.values()) {
-    if (child.parentId === id) await updateFolder(child.id, { parentId: folder.parentId });
-  }
-  await db.delete(FOLDERS_STORE, id);
   announce({ kind: 'folder', type: 'delete', id, deletedAt: Date.now() });
+  return ok(undefined);
 }
 
 // ── Writes pulled from the cloud: silent ───────────────────────────────────

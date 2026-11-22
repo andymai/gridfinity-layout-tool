@@ -5742,5 +5742,7 @@
   "binDesigner.cutouts.library.rename": "Přejmenovat {name}",
   "binDesigner.cutouts.library.moveTo": "Přesunout {name} do složky",
   "binDesigner.cutouts.library.emptyFolder": "Tato složka je prázdná",
-  "binDesigner.cutouts.library.size": "{width} × {depth} mm"
+  "binDesigner.cutouts.library.size": "{width} × {depth} mm",
+  "binDesigner.cutouts.library.foldersFull": "Knihovna pojme {max} složek. Smaž některé, abys mohl vytvořit další.",
+  "binDesigner.cutouts.library.tooDeep": "Složky lze vnořit nejvýše do {max} úrovní. Vyber složku výše."
 }

@@ -5460,5 +5460,7 @@
   "binDesigner.cutouts.library.rename": "{name}の名前を変更",
   "binDesigner.cutouts.library.moveTo": "{name}をフォルダに移動",
   "binDesigner.cutouts.library.emptyFolder": "このフォルダは空です",
-  "binDesigner.cutouts.library.size": "{width} × {depth} mm"
+  "binDesigner.cutouts.library.size": "{width} × {depth} mm",
+  "binDesigner.cutouts.library.foldersFull": "ライブラリに作成できるフォルダは最大{max}個です。いくつか削除してから作成してください。",
+  "binDesigner.cutouts.library.tooDeep": "フォルダの階層は最大{max}段までです。もっと上のフォルダを選んでください。"
 }

@@ -2,6 +2,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { Cutout } from '@/features/bin-designer/types';
 import { expectOk } from '@/test/testUtils';
+import { isErr } from '@/core/result';
+import { MAX_LIBRARY_FOLDER_DEPTH } from './libraryTypes';
 import { closeLibraryDb } from './cutoutLibraryDb';
 import {
   createFolder,
@@ -97,6 +99,25 @@ describe('CutoutLibraryService', () => {
     const inner = expectOk(await createFolder('Sockets', outer.id));
     const moved = expectOk(await updateFolder(outer.id, { parentId: inner.id }));
     expect(moved.parentId).toBeNull();
+  });
+
+  it('returns an error, and does not throw, when the database refuses a write', async () => {
+    const unclonable = {
+      params: { cutouts: [{ ...cutout, label: (() => 'x') as unknown as string }] },
+    };
+    const result = await createItem({ name: 'Bad', folderId: null, content: unclonable });
+    expect(isErr(result)).toBe(true);
+    expect(await listItems()).toEqual([]);
+  });
+
+  it('refuses a move that would nest folders past the depth limit', async () => {
+    let parent: string | null = null;
+    for (let i = 0; i < MAX_LIBRARY_FOLDER_DEPTH; i++) {
+      parent = expectOk(await createFolder(`Level ${i}`, parent)).id;
+    }
+    const loose = expectOk(await createFolder('Loose', null));
+    const moved = await updateFolder(loose.id, { parentId: parent });
+    expect(isErr(moved) && moved.error.code).toBe('STORAGE_QUOTA_EXCEEDED');
   });
 
   it('writes pulled changes without announcing them, and still tells views', async () => {

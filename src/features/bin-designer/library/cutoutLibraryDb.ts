@@ -4,7 +4,7 @@
  */
 
 import type { IDBPDatabase } from 'idb';
-import { createDbAccessor } from '@/core/storage/backends/openSingleton';
+import { createDbAccessor } from '@/core/storage';
 
 const DB_NAME = 'gridfinity-cutout-library-v1';
 const DB_VERSION = 1;
