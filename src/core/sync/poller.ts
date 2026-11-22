@@ -208,6 +208,12 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   // prior user's high-water mark or applying writes that belong to a session
   // that's been torn down.
   if (capturedGeneration !== pullState.generation) return { status: 'offline' };
+  // Downloads stopped at the challenge, so the pull is incomplete: no
+  // success, and no new watermark.
+  if (firewallChallenged()) {
+    useSyncStatusStore.getState().reportOffline('Firewall challenge');
+    return { status: 'offline' };
+  }
 
   // A skipped entry is read again on the next pull: if its held push gets a
   // 410, only a fresh manifest carries the delete, and a saved timestamp would
@@ -239,7 +245,7 @@ async function diffKind(
 
   let applied = 0;
   for (const [id, entry] of Object.entries(remote)) {
-    if (generation !== pullState.generation) break;
+    if (generation !== pullState.generation || firewallChallenged()) break;
     if (skip.has(id)) continue;
     const localMtime = localByMtime.get(id);
 

@@ -223,6 +223,9 @@ async function sendOne(
   s: EngineState
 ): Promise<void> {
   const url = `/api/sync/${kind}/${entry.id}`;
+  // A drain starts its entries together, so one may meet the challenge while
+  // another is still planning. Unsent entries stay queued.
+  if (firewallChallenged()) return;
 
   // Held unsent, with no attempt spent, while the server's switch for this
   // kind is off. The first manifest that lists it again queues what it lacks.
@@ -254,7 +257,7 @@ async function sendOne(
     if (stopped(s)) return null;
     throw error;
   });
-  if (stopped(s) || plan === null) return;
+  if (stopped(s) || plan === null || firewallChallenged()) return;
   if (plan.status === 'skip') {
     await outboxMarkSuccess(entry, entry.modifiedAt);
     return;

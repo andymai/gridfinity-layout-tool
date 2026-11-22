@@ -26,6 +26,9 @@ vi.mock('./engine', () => ({
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
+const recoverMock = vi.hoisted(() => vi.fn(async () => true));
+vi.mock('@/shared/pwa/staleRecovery', () => ({ recoverStaleBundle: recoverMock }));
+
 function emitEngineEvent(event: EngineEvent): void {
   for (const cb of onEngineEventListeners) cb(event);
 }
@@ -132,6 +135,44 @@ describe('useSyncToasts: firewall challenge', () => {
     expect(toasts[0].message).toBe('sync.firewallChallenge');
     expect(toasts[0].duration).toBe(0);
     expect(toasts[0].action?.label).toBe('pwaUpdate.reload');
+  });
+
+  it('reloads through the network, past the service worker', () => {
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u', email: 'u@example.com', provider: 'google' },
+    });
+    renderHook(() => useSyncToasts());
+    act(() => noteFirewallChallenge(challenge()));
+    void useToastStore.getState().toasts[0].action?.onClick();
+    expect(recoverMock).toHaveBeenCalledWith('firewall_challenge', { force: true });
+  });
+
+  it('shows the toast on mount when the challenge came first', () => {
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u', email: 'u@example.com', provider: 'google' },
+    });
+    noteFirewallChallenge(challenge());
+    renderHook(() => useSyncToasts());
+    expect(useToastStore.getState().toasts.map((x) => x.message)).toEqual([
+      'sync.firewallChallenge',
+    ]);
+  });
+
+  it('shows the toast when sign-in finishes after the challenge', () => {
+    renderHook(() => useSyncToasts());
+    act(() => noteFirewallChallenge(challenge()));
+    expect(useToastStore.getState().toasts).toEqual([]);
+    act(() =>
+      useSessionStore.setState({
+        status: 'authenticated',
+        user: { userId: 'u', email: 'u@example.com', provider: 'google' },
+      })
+    );
+    expect(useToastStore.getState().toasts.map((x) => x.message)).toEqual([
+      'sync.firewallChallenge',
+    ]);
   });
 
   it('stays quiet in a signed-out tab, which has no sync to pause', () => {

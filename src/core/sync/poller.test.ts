@@ -160,6 +160,27 @@ describe('pullNow — single-flight + 304 path', () => {
     expect(useSyncStatusStore.getState().state).toBe('offline');
   });
 
+  it('stops item downloads at a challenge and reports no success', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        manifestResponse({
+          layouts: {
+            'lay-1': { modifiedAt: 5000, sizeBytes: 100 },
+            'lay-2': { modifiedAt: 5000, sizeBytes: 100 },
+          },
+          designs: {},
+          baseplates: {},
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response('<html>', { status: 429, headers: { 'x-vercel-mitigated': 'challenge' } })
+      );
+    expect((await pullNow(adapters)).status).toBe('offline');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(layouts.applyRemote).not.toHaveBeenCalled();
+    expect(useSyncStatusStore.getState().state).toBe('offline');
+  });
+
   it('stops polling after a firewall challenge', async () => {
     fetchMock.mockResolvedValueOnce(
       new Response('<html>', { status: 429, headers: { 'x-vercel-mitigated': 'challenge' } })

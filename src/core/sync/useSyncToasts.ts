@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store';
+import { recoverStaleBundle } from '@/shared/pwa/staleRecovery';
 import { FIREWALL_CHALLENGE_EVENT, firewallChallenged } from './firewallChallenge';
 import { onEngineEvent, type EngineEvent } from './engine';
 import { useSessionStore } from './session/useSession';
@@ -45,17 +46,33 @@ export function useSyncToasts(): void {
   }, [addToast, t]);
 
   useEffect(() => {
-    const onChallenge = () => {
+    // The challenge can come before this hook mounts or before sign-in
+    // settles, so the latch is read again at each of those points.
+    const show = () => {
+      if (!firewallChallenged()) return;
       if (useSessionStore.getState().status !== 'authenticated') return;
       addToast({
         message: t('sync.firewallChallenge'),
         type: 'info',
         duration: 0,
         key: 'sync-firewall-challenge',
-        action: { label: t('pwaUpdate.reload'), onClick: () => window.location.reload() },
+        action: {
+          label: t('pwaUpdate.reload'),
+          // A plain reload gets index.html from the service worker and never
+          // reaches the firewall. Only a network navigation can pass the
+          // challenge, so the worker goes first.
+          onClick: () => void recoverStaleBundle('firewall_challenge', { force: true }),
+        },
       });
     };
-    window.addEventListener(FIREWALL_CHALLENGE_EVENT, onChallenge);
-    return () => window.removeEventListener(FIREWALL_CHALLENGE_EVENT, onChallenge);
+    show();
+    window.addEventListener(FIREWALL_CHALLENGE_EVENT, show);
+    const unsubscribe = useSessionStore.subscribe((state, prev) => {
+      if (state.status === 'authenticated' && prev.status !== 'authenticated') show();
+    });
+    return () => {
+      window.removeEventListener(FIREWALL_CHALLENGE_EVENT, show);
+      unsubscribe();
+    };
   }, [addToast, t]);
 }
