@@ -1,0 +1,25 @@
+src/features/generation/worker/generators/labelFitSample.ts
+  s_f8efc8defc13ab::t_ba3ff6bddaac81 120-124,127,141-149,151-154
+  s_f8efc8defc13ab::t_99b476fcd40247 150
+  s_f8efc8defc13ab::t_e46859b81e8128 68
+  s_f8efc8defc13ab::t_e4cd9978ae1108 43-44
+src/features/generation/worker/generators/labelFitSample.scenario.test.ts
+  s_f8efc8defc13ab::t_15562861377512 11-13,16,19-26,36-39
+  s_f8efc8defc13ab::t_81cda4a0480d61 145-179
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e523e2e4ba93a955fc3b21d7d1e1aac11495c66b",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
