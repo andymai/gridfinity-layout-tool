@@ -252,8 +252,7 @@ export async function ask(question: string, page: string): Promise<void> {
         current.status = 'done';
         // Text written before a tool call is not part of the answer; a reload
         // shows only the last message, so the live view does too.
-        const answer = messageText(messages.at(-1));
-        if (answer) current.text = answer;
+        if (messages.length > 0) current.text = messageText(messages.at(-1));
         const turn = payload.turn as Record<string, unknown> | undefined;
         if (turn && typeof turn.signature === 'string') {
           keep(

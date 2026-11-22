@@ -391,10 +391,14 @@ onBeforeUnmount(() => {
   min-height: 32px;
   padding: 6px 12px;
   border-radius: 8px;
-  background: var(--vp-c-brand-3);
-  color: var(--vp-c-white);
+  background: var(--vp-button-brand-bg);
+  color: var(--vp-button-brand-text);
   font-size: 13px;
   font-weight: 600;
+}
+.send:hover:not(:disabled) {
+  background: var(--vp-button-brand-hover-bg);
+  color: var(--vp-button-brand-hover-text);
 }
 .send:disabled {
   opacity: 0.4;
