@@ -1,0 +1,49 @@
+api/lib/docsAsk/history.ts
+  s_f8efc8defc13ab::t_bd6d765ab2a454 126-131
+api/lib/docsAsk/agent.ts
+  s_f8efc8defc13ab::t_bd6d765ab2a454 30,225-227,239-256,276-277,309
+api/lib/docsAsk/spend.ts
+  s_f8efc8defc13ab::t_bd6d765ab2a454 21-25
+api/lib/docsAsk/traces.test.ts
+  s_f8efc8defc13ab::t_4b92f8908688dc 1-46,48-77
+  s_f8efc8defc13ab::t_a5aac4d571395a 47
+api/README.md
+  s_f8efc8defc13ab::t_ce3672437ee84e 87,89
+api/lib/docsAsk/prompt.ts
+  s_f8efc8defc13ab::t_9f27dcb3e3462a 56
+  s_f8efc8defc13ab::t_ba99b13f0bf05e 63
+api/lib/docsAsk/history.test.ts
+  s_f8efc8defc13ab::t_05c1d2870a6d28 66,136
+  s_f8efc8defc13ab::t_4b92f8908688dc 113-117
+scripts/docs-ask-eval/golden.ts
+  s_f8efc8defc13ab::t_33c9caf346a23d 564-584
+api/lib/docsAsk/prompt.crossBoundary.test.ts
+  s_f8efc8defc13ab::t_4b92f8908688dc 1-14
+api/lib/docsAsk/tools.ts
+  s_f8efc8defc13ab::t_bd6d765ab2a454 33,71,76
+  s_f8efc8defc13ab::t_4b92f8908688dc 72-75
+scripts/docsAskCorpus.ts
+  s_f8efc8defc13ab::t_a5aac4d571395a 84-85,88
+api/docs-ask.ts
+  s_f8efc8defc13ab::t_bd6d765ab2a454 68-69,77,190-191,197-198,225
+api/lib/docsAsk/traces.ts
+  s_f8efc8defc13ab::t_bd6d765ab2a454 30,49-50,94
+api/lib/docsAsk/agent.test.ts
+  s_f8efc8defc13ab::t_05316198121dae 166-190
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3af529999c7a569c2ab69d295f2695530d7d134f",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
