@@ -7,6 +7,7 @@ import BrandLockup from './components/BrandLockup.vue';
 import ChapterLabel from './components/ChapterLabel.vue';
 import DrawerCalculator from './components/DrawerCalculator.vue';
 import OpenAppButton from './components/OpenAppButton.vue';
+import PageMenu from './components/PageMenu.vue';
 import PlanDrawerButton from './components/PlanDrawerButton.vue';
 import RecipeCards from './components/RecipeCards.vue';
 import Screenshot from './components/Screenshot.vue';
@@ -59,7 +60,7 @@ const theme: Theme = {
     h(DefaultTheme.Layout, null, {
       'nav-bar-title-after': () => h(BrandLockup),
       'nav-bar-content-after': () => [h(AskAiButton), h(OpenAppButton)],
-      'doc-before': () => h(ChapterLabel),
+      'doc-before': () => h('div', { class: 'docs-page-head' }, [h(ChapterLabel), h(PageMenu)]),
       'doc-after': () => h(AppTools),
       'layout-bottom': () =>
         askAi.available && (askAi.docked || askAi.opened) ? h(AskAiPanel) : null,
