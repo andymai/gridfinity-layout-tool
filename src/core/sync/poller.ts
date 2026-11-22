@@ -229,9 +229,11 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   // A skipped entry is read again on the next pull: if its held push gets a
   // 410, only a fresh manifest carries the delete, and a saved timestamp would
   // answer every later pull with a 304. A download that failed for a reason
-  // that passes keeps the old timestamp for the same reason: the next pull
-  // reads the manifest again and fetches it.
-  if (!skippedHeld && !retry.pending) pullState.lastIndexUpdatedAt = manifest.indexUpdatedAt;
+  // that passes clears the timestamp: a manifest can answer 200 at an unchanged
+  // timestamp (a newly served kind), so keeping the old one is not enough to
+  // make the next pull read the manifest again and fetch the item.
+  if (retry.pending) pullState.lastIndexUpdatedAt = 0;
+  else if (!skippedHeld) pullState.lastIndexUpdatedAt = manifest.indexUpdatedAt;
   useSyncStatusStore.getState().succeed();
   return { status: 'applied', applied, indexUpdatedAt: manifest.indexUpdatedAt };
 }

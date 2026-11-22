@@ -634,7 +634,7 @@ describe('envelope fetch failure', () => {
         ),
     ],
   ])(
-    'keeps the watermark after %s, so the next pull fetches the item again',
+    'reads the manifest again after %s, so the next pull fetches the item',
     async (_label, fail) => {
       fetchMock
         .mockResolvedValueOnce(oneLayout())
@@ -655,6 +655,29 @@ describe('envelope fetch failure', () => {
       expect(layouts.applyRemote).toHaveBeenCalledTimes(1);
     }
   );
+
+  it('reads the whole manifest again after a retry, even at an unchanged timestamp', async () => {
+    fetchMock
+      .mockResolvedValueOnce(manifestResponse({ layouts: {}, designs: {}, indexUpdatedAt: 1000 }))
+      // A 200 at the same timestamp, as when a newly served kind changes the answer.
+      .mockResolvedValueOnce(oneLayout())
+      .mockResolvedValueOnce(new Response(null, { status: 503 }))
+      .mockResolvedValueOnce(oneLayout())
+      .mockResolvedValueOnce(
+        envelopeResponse(
+          { layout: { v: 1 }, modifiedAt: 1000, schemaVersion: 1 },
+          { modifiedAt: 1000, sizeBytes: 100 }
+        )
+      );
+
+    await pullNow(adapters);
+    await pullNow(adapters);
+    const third = await pullNow(adapters);
+
+    expect(manifestHeaders(1)['If-Modified-Since']).toBe('1000');
+    expect(manifestHeaders(3)['If-Modified-Since']).toBeUndefined();
+    expect(third.applied).toBe(1);
+  });
 
   it('moves past a 404, so a blob the index lists but storage lacks is not fetched every poll', async () => {
     fetchMock
