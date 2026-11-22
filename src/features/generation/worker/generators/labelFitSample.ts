@@ -40,7 +40,8 @@ import type { TextStyleDefaults } from '@/shared/types/bin';
 import type { ExportFormat } from '../../bridge/types';
 import { sketch } from './meshUtils';
 import { roundedRect, minPrintableLabelFontMm, JBM_DIGIT_INK_PER_FONT } from './couponHelpers';
-import { buildTextSolid } from './textBuilder';
+import { buildTextSolid, planTextForHost } from './textBuilder';
+import type { TextHostOptions } from './textBuilder';
 import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/shared/types/bin';
 import { buildBaseplateSTL } from './baseplateSTL';
 import { cutLabelSocket } from './labelTabBuilder';
@@ -64,7 +65,7 @@ const LABEL_DEPTH = 0.6;
  *  bigger printable font still fits between the front wall and the socket. */
 const LABEL_ZONE_D_MIN = 4.4;
 const LABEL_MARGIN_X = 2;
-/** Band headroom past the glyph ink so the pinned font clears the fit epsilon (mm). */
+/** Band headroom past the glyph ink (mm). */
 const LABEL_FIT_SLACK = 0.4;
 
 /** The reference plate carries no text; the defaults only satisfy the type. */
@@ -116,13 +117,14 @@ function buildCoupon(cy: number, offset: number, nozzleSizeMm: number | undefine
       clearanceMm,
     });
 
-    // Size the label so its stems clear the nozzle bead, pinned to
-    // that size (min == max) and measured against glyph ink (`inkBox`) — the
-    // digits have no descenders, so the full line box would waste the band and
-    // shrink the font. The front strip grows with the font to hold it.
+    // Pinned (min == max) at the size whose stems clear the nozzle bead. The
+    // type plan reserves the font's descender below the baseline, which these
+    // signed digits never ink, so a band sized to their ink cannot hold that
+    // size and the plan drops the label. Fit it on the whole coupon, then
+    // centre its ink in the band in front of the socket.
     const fontMm = minPrintableLabelFontMm(nozzleSizeMm);
     const bandD = Math.max(LABEL_ZONE_D_MIN, JBM_DIGIT_INK_PER_FONT * fontMm + LABEL_FIT_SLACK);
-    const text = buildTextSolid(scope, {
+    const label: TextHostOptions = {
       text: formatOffset(offset),
       style: {
         ...DEFAULT_TEXT_STYLE_DEFAULTS,
@@ -136,13 +138,26 @@ function buildCoupon(cy: number, offset: number, nozzleSizeMm: number | undefine
         maxFontSize: fontMm,
       },
       availW: COUPON_W - 2 * LABEL_MARGIN_X,
-      availD: bandD,
-      centerX: 0,
-      centerY: cy - COUPON_D / 2 + 1 + bandD / 2,
-      topZ: t,
-      depth: LABEL_DEPTH,
-      hostThickness: t,
-    });
+      availD: COUPON_D,
+    };
+    const plan = planTextForHost(label);
+    const bandCenterY = cy - COUPON_D / 2 + 1 + bandD / 2;
+    // Raised text over the socket mouth would stop the plate from seating, so a
+    // nozzle whose label reaches the socket gets a coupon with no label.
+    const clearsSocket =
+      plan !== null && bandCenterY + (plan.maxY - plan.minY) / 2 < socketCenterY - pocketD / 2;
+    const text =
+      plan &&
+      clearsSocket &&
+      buildTextSolid(scope, {
+        ...label,
+        plan,
+        centerX: 0,
+        centerY: bandCenterY - (plan.minY + plan.maxY) / 2,
+        topZ: t,
+        depth: LABEL_DEPTH,
+        hostThickness: t,
+      });
     if (text) {
       try {
         solid = scope.register(unwrap(fuse(solid as ValidSolid, text.solid as ValidSolid)));
