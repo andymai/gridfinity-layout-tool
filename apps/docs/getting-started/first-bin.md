@@ -47,7 +47,7 @@ The size controls are at the top of the <Ui k="binDesigner.group.shape" /> group
 1. Set <Ui k="common.width" /> and <Ui k="common.depth" /> in grid units.
 2. Set <Ui k="common.height" /> in height units.
 
-Below the steppers, you see the outside size of the bin in millimeters. The <Ui k="binDesigner.interiorDimensions" /> line shows the room inside. To swap the width and the depth, click the arrow button between the two steppers.
+Below the steppers, you see the outside size of the bin in millimeters. The <Ui k="binDesigner.interiorDimensions" /> line shows the room inside the walls: the width, the depth and the height, in millimeters. To swap the width and the depth, click the arrow button between the two steppers.
 
 <Screenshot id="getting-started-first-bin-size" alt="Clicking the plus buttons of Width and Height makes the bin 3 by 2 and 4 units tall, and the size lines change. The preview then shows the larger bin." spec="Bin designer, desktop 1440 px, new 2 x 2 x 3 design. In close-up, click the plus of Width once and the plus of Height once. Cut to the 3 x 2 x 4 bin in the preview." />
 
