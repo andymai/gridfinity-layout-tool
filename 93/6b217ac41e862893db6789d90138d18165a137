@@ -1,0 +1,21 @@
+public/schema/bin-design.schema.json
+  s_f8efc8defc13ab::t_3a74a6b9948c4d 1444-1446,3137-3138
+scripts/schema/designExport.test.ts
+  s_f8efc8defc13ab::t_45790056004237 106-108,134-135
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "936b217ac41e862893db6789d90138d18165a137",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
