@@ -11,7 +11,17 @@
  *   3. the piece count matches the selected style (5 pairs, +1 loose for key/clip).
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { measureVolume } from 'brepjs';
+import {
+  box,
+  getBounds,
+  intersect,
+  measureVolume,
+  mesh,
+  translate,
+  unwrap,
+  type Shape3D,
+  type ValidSolid,
+} from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
@@ -43,6 +53,40 @@ const defaults = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBas
   fractionalEdgeY: 'end',
   ...overrides,
 });
+
+/**
+ * Volume of raised label that has no coupon material under it (mm³): the label
+ * layer, lowered 0.3mm, must still lie inside the coupon. Text over a groove or
+ * a pocket opening at the seam would block the mating part.
+ */
+function unsupportedLabelMm3(piece: Shape3D): number {
+  const b = getBounds(piece);
+  const slab = box(b.xMax - b.xMin + 2, b.yMax - b.yMin + 2, LABEL_DEPTH, {
+    at: [(b.xMin + b.xMax) / 2, (b.yMin + b.yMax) / 2, 0.02 + LABEL_DEPTH / 2],
+  });
+  const layer = unwrap(intersect(piece as ValidSolid, slab));
+  const lowered = translate(layer, [0, 0, -0.3]);
+  const kept = intersect(piece as ValidSolid, lowered);
+  const missing = vol(layer) - (kept.ok ? vol(kept.value) : 0);
+  for (const s of [slab, layer, lowered, ...(kept.ok ? [kept.value] : [])]) s.delete();
+  return missing;
+}
+
+/** Smallest XY gap between a coupon's raised label and the edge of its body (mm). */
+function labelInsetMm(piece: Shape3D): number {
+  const m = mesh(piece, { tolerance: 0.05, angularTolerance: 10 });
+  const body = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity };
+  const label = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity };
+  for (let i = 0; i < m.vertices.length; i += 3) {
+    const [x, y, z] = [m.vertices[i], m.vertices[i + 1], m.vertices[i + 2]];
+    const box = z > 0.01 ? label : body;
+    box.x0 = Math.min(box.x0, x);
+    box.x1 = Math.max(box.x1, x);
+    box.y0 = Math.min(box.y0, y);
+    box.y1 = Math.max(box.y1, y);
+  }
+  return Math.min(label.x0 - body.x0, body.x1 - label.x1, label.y0 - body.y0, body.y1 - label.y1);
+}
 
 function analyze(stl: ArrayBuffer) {
   const parsed = parseSTLBinary(stl);
@@ -90,6 +134,9 @@ const vol = (s: Parameters<typeof measureVolume>[0]): number => {
   return r.value;
 };
 
+/** Five fit offsets, each a front and back coupon. */
+const COUPONS_PER_TRAY = 10;
+
 describe('connectorSample — fit-sample tray', () => {
   const TEST_TIMEOUT_MS = 120_000;
 
@@ -128,6 +175,49 @@ describe('connectorSample — fit-sample tray', () => {
           for (const p of pieces) p.delete();
         }
       }
+    },
+    TEST_TIMEOUT_MS
+  );
+
+  it.each(
+    // The default nozzle, and the largest, where the openings reach furthest in.
+    [undefined, 'puzzle', 'dovetailKey', 'snapClip'].flatMap((style) =>
+      [0.4, 1.0].map((nozzle) => [style, nozzle] as const)
+    )
+  )(
+    'keeps every label off the seam openings (%s, %s mm nozzle)',
+    (style, nozzleSizeMm) => {
+      const pieces = buildConnectorSampleTray(
+        defaults({
+          nozzleSizeMm,
+          connectorStyle: style as ResolvedBaseplateParams['connectorStyle'],
+        })
+      );
+      // Two coupons per offset come first; a key or clip tray adds its loose part after them.
+      const coupons = pieces.slice(0, COUPONS_PER_TRAY);
+      const labeled = coupons.filter((p) => getBounds(p).zMax > LABEL_DEPTH / 2).length;
+      const missing = coupons.map((p) => unsupportedLabelMm3(p));
+      for (const p of pieces) p.delete();
+      expect(labeled).toBe(COUPONS_PER_TRAY);
+      for (const v of missing) expect(v).toBeLessThan(0.01);
+    },
+    TEST_TIMEOUT_MS
+  );
+
+  it.each([0.2, 0.4, 0.6, 0.8, 1.0])(
+    'embosses the offset on every coupon (%s mm nozzle)',
+    (nozzleSizeMm) => {
+      const pieces = buildConnectorSampleTray(defaults({ nozzleSizeMm }));
+      // A coupon's top face is at z=0 before the tray's lift; its emboss rises
+      // LABEL_DEPTH above that, so a textless coupon tops out at 0.
+      const labeled = pieces.filter((p) => getBounds(p).zMax > LABEL_DEPTH / 2).length;
+      // The coupon is sized to the digits' ink, so the label must also stay
+      // inside it, clear of the edge, rather than hang over it.
+      const inset = pieces.map((p) => labelInsetMm(p));
+      for (const p of pieces) p.delete();
+      expect(pieces.length).toBeGreaterThan(0);
+      expect(labeled).toBe(pieces.length);
+      for (const d of inset) expect(d).toBeGreaterThan(1);
     },
     TEST_TIMEOUT_MS
   );
