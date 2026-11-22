@@ -107,11 +107,11 @@ export function handleDragMove(
   for (const id of mode.offsets.keys()) stationaryIds.delete(id);
   const stationary = cutouts.filter((c) => stationaryIds.has(c.id));
 
-  // Compute bounds of moving cutouts using preview positions
+  // A path is measured by its points, so they move with the preview's box.
   const movingCutouts = [...nextPreview.entries()]
     .map(([id, updates]) => {
       const orig = cutouts.find((c) => c.id === id);
-      return orig ? { ...orig, ...updates } : null;
+      return orig ? translateCutoutPreview(orig, updates) : null;
     })
     .filter((c): c is Cutout => c !== null);
 

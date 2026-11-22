@@ -4,7 +4,8 @@ import type { BinParams, Cutout } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import { offFloorIds, packIntoBin } from './packIntoBin';
-import { getCutoutBounds, rectFitsInMask } from './maskFit';
+import { rectFitsInMask } from './maskFit';
+import { getRotatedBounds } from './geometryCore';
 import { translateCutoutPreview } from './cutoutHelpers';
 
 const rect = (id: string, width: number, depth: number): Cutout => ({
@@ -34,7 +35,7 @@ function landsInside(params: BinParams, halfGrid = false): boolean {
   const sized = size ? { ...params, ...size } : params;
   const { innerW, innerD } = cutoutInterior(sized);
   return params.cutouts.every((c) => {
-    const b = getCutoutBounds(translateCutoutPreview(c, placements[c.id] ?? {}));
+    const b = getRotatedBounds(translateCutoutPreview(c, placements[c.id] ?? {}));
     return b.minX >= -1e-6 && b.minY >= -1e-6 && b.maxX <= innerW + 1e-6 && b.maxY <= innerD + 1e-6;
   });
 }
@@ -57,8 +58,8 @@ describe('packIntoBin', () => {
     const pinned = { ...rect('pinned', 30, 30), x: 2, y: 2, locked: true };
     const params = bin([pinned, rect('a', 20, 20)]);
     const { placements } = packIntoBin(params, false);
-    const a = getCutoutBounds(translateCutoutPreview(rect('a', 20, 20), placements.a));
-    const p = getCutoutBounds(pinned);
+    const a = getRotatedBounds(translateCutoutPreview(rect('a', 20, 20), placements.a));
+    const p = getRotatedBounds(pinned);
     expect(placements.pinned).toBeUndefined();
     expect(a.minX >= p.maxX || a.minY >= p.maxY).toBe(true);
   });
@@ -74,7 +75,7 @@ describe('packIntoBin', () => {
     const params: BinParams = { ...bin([rect('a', 20, 20)]), cellMask: mask };
     const { innerW, innerD } = cutoutInterior(params);
     const { placements } = packIntoBin(params, false);
-    const b = getCutoutBounds(translateCutoutPreview(rect('a', 20, 20), placements.a));
+    const b = getRotatedBounds(translateCutoutPreview(rect('a', 20, 20), placements.a));
     const cell = { cellMmX: innerW / 4, cellMmY: innerD / 4 };
     expect(rectFitsInMask(mask, b.minX, b.minY, 20, 20, cell)).toBe(true);
   });

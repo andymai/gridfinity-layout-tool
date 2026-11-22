@@ -17,7 +17,7 @@ import type { BinParams, Cutout } from '@/features/bin-designer/types';
 import { cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
-import { getCutoutBounds } from './maskFit';
+import { getRotatedBounds } from './geometryCore';
 import { OFF_BOARD_EPSILON } from './offBoardCutouts';
 
 /** The detector's own tolerance, so a flush edge can't grow the bin. */
@@ -73,7 +73,7 @@ export function computeGrowToFit(
   let requiredD = innerD;
   for (const cutout of cutouts) {
     for (const instance of expandCutoutArray(cutout)) {
-      const b = getCutoutBounds(instance);
+      const b = getRotatedBounds(instance);
       if (b.minX < -EPSILON || b.minY < -EPSILON) return null;
       if (b.maxX > requiredW) requiredW = b.maxX;
       if (b.maxY > requiredD) requiredD = b.maxY;

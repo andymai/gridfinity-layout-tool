@@ -43,6 +43,7 @@ function build(cutout: Cutout, overrides: Record<string, unknown> = {}) {
     reorderCutouts: vi.fn(),
     flattenArray: vi.fn(),
     mergeIntoRepeat: vi.fn(),
+    editPoints: vi.fn(),
     t: (k: string) => k,
     ...overrides,
   });
@@ -237,5 +238,22 @@ describe('SVG export context action', () => {
   it('is withheld when nothing is selected', () => {
     const actions = build(makeCutout(), { selection: new Set<string>() });
     expect(labels(actions)).not.toContain('binDesigner.cutouts.exportSvg');
+  });
+});
+
+describe('Edit points context action', () => {
+  it('opens the points of a selected path', () => {
+    const editPoints = vi.fn();
+    const path = makeCutout({ id: 'p', shape: 'path' });
+    const action = build(path, { editPoints }).find(
+      (a) => a.label === 'binDesigner.cutouts.points.edit'
+    );
+    action?.onClick();
+    expect(editPoints).toHaveBeenCalledWith('p');
+    expect(action?.shortcut).toEqual({ keys: 'Enter' });
+  });
+
+  it('is not offered for a shape with no points', () => {
+    expect(labels(build(makeCutout()))).not.toContain('binDesigner.cutouts.points.edit');
   });
 });

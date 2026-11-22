@@ -29,10 +29,15 @@ export {
   handleVertexEditPointerDown,
   handleVertexEditPointerMove,
   handleVertexEditPointerUp,
-  handleVertexEditKeyDown,
+  handleTransformDown,
+  handleVertexDotDown,
   dragSource,
   nearestPoint,
+  vertexEditingMode,
 } from './pathEditHandler';
+export { handleVertexEditKeyDown, pointKindUpdate } from './vertexEditKeys';
+export { loadFalloffMm } from './falloffRadiusStorage';
+export { countPointEdit, reportPointEdits } from './pointEditStats';
 export type { VertexEditMode, VertexEditSetters, SegmentHoverInfo } from './pathEditHandler';
 
 export type {

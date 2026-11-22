@@ -15,6 +15,8 @@ import type { SegmentHoverInfo } from '../handlers';
 import type { AlignmentGuide } from '../geometry';
 import type { FitCue } from '../cutoutSectionVisibility';
 import type { RulerMeasurement } from '../handlers/rulerHandler';
+import type { Rect } from '../handlers/pointEdits';
+import type { TransformHandle } from '../handlers/pointTransform';
 
 interface DrawingPreview {
   readonly x: number;
@@ -110,7 +112,21 @@ export interface SceneContentProps {
   readonly onGroupScaleStart: (mmX: number, mmY: number) => void;
   readonly segmentHover?: SegmentHoverInfo | null;
   readonly onPathDrawingVertexDown?: (index: number, mmX: number, mmY: number) => void;
-  readonly onVertexPointDown?: (index: number, mmX: number, mmY: number, ring?: number) => void;
+  readonly onVertexPointDown?: (
+    index: number,
+    mmX: number,
+    mmY: number,
+    ring?: number,
+    shiftKey?: boolean
+  ) => void;
+  /** A press on a corner or the turn dot of the box around several selected points. */
+  readonly onVertexTransformDown?: (
+    handle: TransformHandle,
+    box: Rect,
+    mmX: number,
+    mmY: number,
+    shiftKey: boolean
+  ) => void;
   readonly onVertexHandleDown?: (
     index: number,
     handleType: 'in' | 'out',

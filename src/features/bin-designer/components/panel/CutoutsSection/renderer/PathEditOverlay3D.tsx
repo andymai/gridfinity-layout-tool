@@ -13,9 +13,15 @@ import { useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout, PathPoint } from '@/features/bin-designer/types';
 import { ringsOf, type SegmentHoverInfo, type VertexDragTarget } from '../handlers/pathEditHandler';
+import { toDrawnFrame } from '../handlers/pathRings';
+import { drawnBox, normalizeSelection, type Rect } from '../handlers/pointEdits';
+import type { TransformHandle } from '../handlers/pointTransform';
+import { DEFAULT_FALLOFF_MM } from '../handlers/falloffDrag';
 import { flattenSegment, getPathBounds } from '../pathGeometry';
 import { rotateAbout } from '@/shared/utils/cutoutOutline';
 import { UNMAGNIFIED, VertexMagnifier3D } from './VertexMagnifier3D';
+import { MarqueeBox3D } from './MarqueeBox3D';
+import { FalloffRing3D, TransformBox3D } from './PointEditOverlay3D';
 import { RENDER_ORDER } from './constants';
 
 interface PathEditOverlay3DProps {
@@ -23,17 +29,34 @@ interface PathEditOverlay3DProps {
   /** The ring the selection is on: 0 for the outline, k for island k - 1. */
   readonly selectedRing: number;
   readonly selectedPointIndex: number | null;
+  /** Every selected point on the selected ring, when more than one is. */
+  readonly selectedPoints?: readonly number[];
+  /** How far a grabbed edge pulls the outline, in mm, drawn as a ring. */
+  readonly falloffMm?: number;
   readonly previewOverrides?: Partial<Cutout>;
   readonly segmentHover?: SegmentHoverInfo | null;
   /** The point or handle being dragged, magnified while it moves. */
   readonly dragTarget?: VertexDragTarget | null;
-  readonly onPointDown: (index: number, mmX: number, mmY: number, ring: number) => void;
+  readonly onPointDown: (
+    index: number,
+    mmX: number,
+    mmY: number,
+    ring: number,
+    shiftKey: boolean
+  ) => void;
   readonly onHandleDown: (
     index: number,
     handleType: 'in' | 'out',
     mmX: number,
     mmY: number,
     ring: number
+  ) => void;
+  readonly onTransformDown?: (
+    handle: TransformHandle,
+    box: Rect,
+    mmX: number,
+    mmY: number,
+    shiftKey: boolean
   ) => void;
 }
 
@@ -59,11 +82,14 @@ export function PathEditOverlay3D({
   cutout,
   selectedRing,
   selectedPointIndex,
+  selectedPoints,
+  falloffMm = DEFAULT_FALLOFF_MM,
   previewOverrides,
   segmentHover,
   dragTarget,
   onPointDown,
   onHandleDown,
+  onTransformDown,
 }: PathEditOverlay3DProps) {
   const { camera } = useThree();
   const zoom = camera.zoom;
@@ -77,7 +103,28 @@ export function PathEditOverlay3D({
   const rings = ringsOf(effective);
   if (rings[0].length === 0) return null;
   const hovered = segmentHover ? rings.at(segmentHover.ring) : undefined;
-  const dragged = dragTarget ? rings.at(dragTarget.ring)?.at(dragTarget.index) : undefined;
+  const dragged =
+    dragTarget?.type === 'vertex' || dragTarget?.type === 'handle' || dragTarget?.type === 'points'
+      ? rings.at(dragTarget.ring)?.at(dragTarget.index)
+      : undefined;
+  const selected = new Set(
+    selectedPoints ?? (selectedPointIndex === null ? [] : [selectedPointIndex])
+  );
+  // A pulled edge is drawn as a dense stretch until it is fitted on release:
+  // a dot for each sample would bury the outline.
+  const dots = dragTarget?.type !== 'falloff';
+  const many = normalizeSelection(selected, rings.at(selectedRing)?.length ?? 0);
+  const box = many.length > 1 && !dragTarget ? drawnBox(cutout, selectedRing, many) : null;
+  const pull =
+    dragTarget?.type === 'falloff'
+      ? {
+          x: dragTarget.grab.grab.x + dragTarget.dx,
+          y: dragTarget.grab.grab.y + dragTarget.dy,
+          active: true,
+        }
+      : !dragTarget && segmentHover
+        ? { x: segmentHover.x, y: segmentHover.y, active: false }
+        : null;
   const handle =
     dragTarget?.type === 'handle'
       ? dragTarget.handleType === 'in'
@@ -90,6 +137,11 @@ export function PathEditOverlay3D({
   const cx = (shown.minX + shown.maxX) / 2;
   const cy = (shown.minY + shown.maxY) / 2;
   const turn = (-cutout.rotation * Math.PI) / 180;
+  // Drawn outside the turned groups: each nested group restarts the sort order
+  // at its own renderOrder, 0, which would put the ring under the shapes. The
+  // grab is in the stored frame, so it turns about the stored pivot: the
+  // preview's outline is shifted to keep unmoved points in place.
+  const pullAt = pull ? toDrawnFrame(cutout, pull.x, pull.y) : null;
   const [mx, my] = dragged
     ? rotateAbout(
         dragged.x + (handle?.dx ?? 0),
@@ -110,64 +162,91 @@ export function PathEditOverlay3D({
   return (
     <group renderOrder={OVERLAY_RENDER_ORDER} name={UNMAGNIFIED}>
       {magnified && <VertexMagnifier3D at={magnified} />}
+      {dragTarget?.type === 'marquee' && (
+        <MarqueeBox3D
+          x={dragTarget.startX}
+          y={dragTarget.startY}
+          width={dragTarget.x - dragTarget.startX}
+          depth={dragTarget.y - dragTarget.startY}
+        />
+      )}
+      {box && onTransformDown && (
+        <TransformBox3D
+          box={box}
+          zoom={zoom}
+          onHandleDown={(handle, mmX, mmY, shiftKey) =>
+            onTransformDown(handle, box, mmX, mmY, shiftKey)
+          }
+        />
+      )}
+      {pullAt && (
+        <FalloffRing3D
+          x={pullAt.x}
+          y={pullAt.y}
+          radius={falloffMm}
+          zoom={zoom}
+          active={pull?.active ?? false}
+        />
+      )}
       <group position={[cx, cy, 0]} rotation={[0, 0, turn]}>
         <group position={[-cx, -cy, 0]}>
-          {rings.flatMap((path, ring) =>
-            path.map((pt, i) => {
-              const isSelected = selectedRing === ring && selectedPointIndex === i;
-              // All handles visible in edit mode (Figma behavior)
+          {dots &&
+            rings.flatMap((path, ring) =>
+              path.map((pt, i) => {
+                const isSelected = selectedRing === ring && selected.has(i);
+                // All handles visible in edit mode (Figma behavior)
 
-              return (
-                <group key={`${ring}-${i}`}>
-                  {/* Handle lines and dots (visible for selected vertex) */}
-                  {pt.handleIn && (
-                    <HandleLine
-                      pointX={pt.x}
-                      pointY={pt.y}
-                      handleDx={pt.handleIn.dx}
-                      handleDy={pt.handleIn.dy}
-                      outerRadius={hOuter}
-                      innerRadius={hInner}
+                return (
+                  <group key={`${ring}-${i}`}>
+                    {/* Handle lines and dots (visible for selected vertex) */}
+                    {pt.handleIn && (
+                      <HandleLine
+                        pointX={pt.x}
+                        pointY={pt.y}
+                        handleDx={pt.handleIn.dx}
+                        handleDy={pt.handleIn.dy}
+                        outerRadius={hOuter}
+                        innerRadius={hInner}
+                        onPointerDown={(e: ThreeEvent<PointerEvent>) => {
+                          if (e.nativeEvent.button !== 0) return;
+                          e.stopPropagation();
+                          onHandleDown(i, 'in', e.point.x, e.point.y, ring);
+                        }}
+                      />
+                    )}
+                    {pt.handleOut && (
+                      <HandleLine
+                        pointX={pt.x}
+                        pointY={pt.y}
+                        handleDx={pt.handleOut.dx}
+                        handleDy={pt.handleOut.dy}
+                        outerRadius={hOuter}
+                        innerRadius={hInner}
+                        onPointerDown={(e: ThreeEvent<PointerEvent>) => {
+                          if (e.nativeEvent.button !== 0) return;
+                          e.stopPropagation();
+                          onHandleDown(i, 'out', e.point.x, e.point.y, ring);
+                        }}
+                      />
+                    )}
+
+                    {/* Vertex anchor — white fill with colored border, Figma-style */}
+                    <VertexHandle
+                      x={pt.x}
+                      y={pt.y}
+                      outerRadius={vOuter}
+                      innerRadius={vInner}
+                      isSelected={isSelected}
                       onPointerDown={(e: ThreeEvent<PointerEvent>) => {
                         if (e.nativeEvent.button !== 0) return;
                         e.stopPropagation();
-                        onHandleDown(i, 'in', e.point.x, e.point.y, ring);
+                        onPointDown(i, e.point.x, e.point.y, ring, e.nativeEvent.shiftKey);
                       }}
                     />
-                  )}
-                  {pt.handleOut && (
-                    <HandleLine
-                      pointX={pt.x}
-                      pointY={pt.y}
-                      handleDx={pt.handleOut.dx}
-                      handleDy={pt.handleOut.dy}
-                      outerRadius={hOuter}
-                      innerRadius={hInner}
-                      onPointerDown={(e: ThreeEvent<PointerEvent>) => {
-                        if (e.nativeEvent.button !== 0) return;
-                        e.stopPropagation();
-                        onHandleDown(i, 'out', e.point.x, e.point.y, ring);
-                      }}
-                    />
-                  )}
-
-                  {/* Vertex anchor — white fill with colored border, Figma-style */}
-                  <VertexHandle
-                    x={pt.x}
-                    y={pt.y}
-                    outerRadius={vOuter}
-                    innerRadius={vInner}
-                    isSelected={isSelected}
-                    onPointerDown={(e: ThreeEvent<PointerEvent>) => {
-                      if (e.nativeEvent.button !== 0) return;
-                      e.stopPropagation();
-                      onPointDown(i, e.point.x, e.point.y, ring);
-                    }}
-                  />
-                </group>
-              );
-            })
-          )}
+                  </group>
+                );
+              })
+            )}
 
           {/* Segment hover: highlighted segment + ghost dot. The hover only clears
           on pointer events, so a vertex deleted or undone from the keyboard can

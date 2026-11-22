@@ -20,6 +20,7 @@ import {
 } from '@/features/bin-designer/utils/cutoutHierarchy';
 import { boardPositionRange, clampToBoardAxis, snapToGrid, type AlignmentGuide } from './geometry';
 import { cutoutFitsInMask } from './maskFit';
+import { reportPointEdits } from './handlers';
 import type { PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
 import { buildSnapModel } from './handlers/rulerHandler';
 import type { RulerMeasurement } from './handlers/rulerHandler';
@@ -305,6 +306,7 @@ export function useCutoutInteraction({
     enterVertexEditing,
     handleVertexPointDown,
     handleVertexHandleDown,
+    handleVertexTransformDown,
     handleVertexBackgroundDown,
   } = useCutoutPathTool({
     mode,
@@ -338,6 +340,27 @@ export function useCutoutInteraction({
     setMode,
     pastDeadZoneRef,
   });
+
+  /**
+   * Double-click: drill in toward the shape, and once nothing is left to
+   * enter, edit a path's points. Opening the points straight away would leave
+   * a path in a group, such as one tool of a scan, no pointer route to be
+   * picked out on its own.
+   */
+  const openCutout = useCallback(
+    (id: string) => {
+      const cutout = cutouts.find((c) => c.id === id);
+      if (!cutout) return;
+      const { groupContext } = useCutoutSelection.getState();
+      const base = isWithin(cutout, groupContext) ? groupContext : [];
+      if (cutout.shape === 'path' && groupChain(cutout).length <= base.length) {
+        enterVertexEditing(id);
+      } else {
+        selectIndividual(id);
+      }
+    },
+    [cutouts, enterVertexEditing, selectIndividual]
+  );
 
   // ── Sub-hook: pointer move/up dispatcher ──────────────────────────
 
@@ -445,6 +468,14 @@ export function useCutoutInteraction({
     useCutoutSelection.getState().setPreviewOverrides(preview);
   }, [preview]);
 
+  // One analytics event for each time a path's points are open, sent as they
+  // close, and on unmount for a session the editor closes under.
+  const editingPoints = mode.type === 'vertex-editing';
+  useEffect(() => {
+    if (!editingPoints) return;
+    return () => reportPointEdits();
+  }, [editingPoints]);
+
   // Clear shared selection on unmount (e.g. switching away from solid mode)
   useEffect(() => {
     return () => {
@@ -459,6 +490,7 @@ export function useCutoutInteraction({
     selection: effectiveSelection,
     selectCutout,
     selectIndividual,
+    openCutout,
     selectIds,
     deselectAll,
     selectAll,
@@ -481,6 +513,7 @@ export function useCutoutInteraction({
     enterVertexEditing,
     handleVertexPointDown,
     handleVertexHandleDown,
+    handleVertexTransformDown,
     handleVertexBackgroundDown,
     snapEnabled,
     setSnapEnabled,

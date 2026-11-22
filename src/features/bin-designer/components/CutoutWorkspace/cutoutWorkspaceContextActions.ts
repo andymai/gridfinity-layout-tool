@@ -53,6 +53,7 @@ interface BuildContextActionsArgs {
   reorderCutouts: (ids: readonly string[], direction: ReorderDirection) => void;
   flattenArray: (id: string) => void;
   mergeIntoRepeat: (detection: RepeatDetection) => void;
+  editPoints: (id: string) => void;
   t: TFunction;
 }
 
@@ -80,6 +81,7 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
     reorderCutouts,
     flattenArray,
     mergeIntoRepeat,
+    editPoints,
     t,
   } = args;
 
@@ -127,6 +129,13 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
 
   if (hasSelection && selection.size === 1) {
     const cutout = cutouts.find((c) => selection.has(c.id));
+    if (cutout?.shape === 'path') {
+      actions.push({
+        label: t('binDesigner.cutouts.points.edit'),
+        onClick: () => editPoints(cutout.id),
+        shortcut: { keys: 'Enter' },
+      });
+    }
     if (cutout) {
       actions.push({
         label: t('binDesigner.cutouts.rotate90'),

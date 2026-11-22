@@ -51,7 +51,7 @@ export function convexHull(points: readonly Pt[]): Pt[] {
 }
 
 /**
- * What the board measures a cutout by (`getCutoutBounds`): a path by its
+ * What the board measures a cutout by (`getRotatedBounds`): a path by its
  * outline, anything else by its turned box. Fitting the same thing keeps a
  * packed shape from reading as off the board.
  */

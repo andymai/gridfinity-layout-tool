@@ -19,6 +19,7 @@ import type { GrowTarget } from '../panel/CutoutsSection/growBinToFit';
 import type { PocketChecksView } from '../panel/CutoutsSection/PocketIssueList';
 import { InspectorContent, type BoardSettings } from './InspectorContent';
 import type { SplitTool } from './CutoutSplitControls';
+import type { PointTool } from './CutoutPointControls';
 import { INSPECTOR_MAX_WIDTH, INSPECTOR_MIN_WIDTH } from './inspectorDockStorage';
 
 interface InspectorDockProps {
@@ -37,6 +38,7 @@ interface InspectorDockProps {
   readonly onFlattenArray?: (id: string) => void;
   readonly onAddFingerAccess?: (id: string) => void;
   readonly splitTool?: SplitTool;
+  readonly pointTool?: PointTool;
   readonly onFlattenGroupArray?: (id: string) => void;
   /** Count of cutouts stranded past the board after a resize (0 = none). */
   readonly offBoardCount?: number;

@@ -17,7 +17,8 @@ import type { LidCutoutWindow } from '@/shared/utils/lidCutoutPlan';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import type { PreviewMap } from '../useCutoutInteraction';
 import { isCutoutOffBoard } from '../offBoardCutouts';
-import { getCutoutBounds } from '../maskFit';
+import { getRotatedBounds } from '../geometryCore';
+import { translateCutoutPreview } from '../cutoutHelpers';
 import { OffBoardBounds3D } from './OffBoardBounds3D';
 
 interface OffBoardFrames3DProps {
@@ -61,10 +62,10 @@ export function OffBoardFrames3D({
       {cutouts
         .filter((c) => offBoardIds.has(c.id) && !c.hidden)
         .flatMap((c) =>
-          expandCutoutArray({ ...c, ...preview.get(c.id) })
+          expandCutoutArray(translateCutoutPreview(c, preview.get(c.id) ?? {}))
             .filter((inst) => isCutoutOffBoard(inst, board))
             .map((inst) => (
-              <OffBoardBounds3D key={`offboard-${inst.id}`} bounds={getCutoutBounds(inst)} />
+              <OffBoardBounds3D key={`offboard-${inst.id}`} bounds={getRotatedBounds(inst)} />
             ))
         )}
     </>

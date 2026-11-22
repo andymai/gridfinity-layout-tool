@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Cutout } from '@/features/bin-designer/types';
 import { autoArrangeCutouts } from './autoArrange';
-import { getCutoutBounds } from './maskFit';
+import { getRotatedBounds } from './geometryCore';
 
 const createCutout = (id: string, width: number, depth: number): Cutout => ({
   id,
@@ -341,7 +341,7 @@ describe('autoArrangeCutouts', () => {
       const bar = { ...createCutout('a', 80, 10), x: 0, y: 0, rotation: 45 };
       const result = autoArrangeCutouts([bar], { binWidth: 70, binDepth: 70, gap: 2, turn: true });
       expect(result.a.rotation).toBeUndefined();
-      const b = getCutoutBounds({ ...bar, ...result.a });
+      const b = getRotatedBounds({ ...bar, ...result.a });
       expect(b.minX).toBeCloseTo(2, 6);
       expect(b.minY).toBeCloseTo(2, 6);
     });
@@ -381,7 +381,7 @@ describe('autoArrangeCutouts', () => {
         ...result.a,
         path: (trapezoid.path ?? []).map((q) => ({ ...q, x: q.x + dx, y: q.y + dy })),
       };
-      const b = getCutoutBounds(placed);
+      const b = getRotatedBounds(placed);
       expect(b.minX).toBeCloseTo(2, 6);
       expect(b.minY).toBeCloseTo(2, 6);
     });

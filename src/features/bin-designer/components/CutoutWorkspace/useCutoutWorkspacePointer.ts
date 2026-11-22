@@ -31,7 +31,7 @@ interface UseCutoutWorkspacePointerArgs {
   handlePointerMove: (worldX: number, worldY: number, shift: boolean, alt: boolean) => void;
   handlePointerUp: () => void;
   handlePathBackgroundDown: (worldX: number, worldY: number, shift: boolean) => void;
-  handleVertexBackgroundDown: (worldX: number, worldY: number) => void;
+  handleVertexBackgroundDown: (worldX: number, worldY: number, shift: boolean) => void;
   zoom: number;
   setCameraCenter: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
   fitToView: () => void;
@@ -141,9 +141,10 @@ export function useCutoutWorkspacePointer({
         return;
       }
 
-      // Vertex editing: try segment hit-test for point insertion, deselect on miss
+      // Vertex editing: an edge press adds a point or pulls the edge, a miss
+      // draws a marquee over the points
       if (mode.type === 'vertex-editing') {
-        handleVertexBackgroundDown(worldX, worldY);
+        handleVertexBackgroundDown(worldX, worldY, nativeEvent.shiftKey);
         return;
       }
 

@@ -19,41 +19,7 @@ import type { Cutout } from '@/features/bin-designer/types';
 import type { MeshAssetEntry } from '@/shared/generation/meshAsset';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { getCutoutOutline } from './cutoutOutline';
-import { getRotatedBounds, rotatePoint, type Bounds } from './geometry';
-import { getPathBounds, flattenPath } from './pathGeometry';
-
-/**
- * Effective axis-aligned footprint of a cutout: true vertex bounds for path
- * shapes (whose `width`/`depth` metadata can lag the actual points) and the
- * rotated bounds for everything else.
- *
- * Path shapes render rotated about their geometric center, so a non-zero
- * rotation is applied to the flattened outline before taking the AABB —
- * otherwise a rotated path whose unrotated bounds fit could overhang the board.
- */
-export function getCutoutBounds(cutout: Cutout): Bounds {
-  if (cutout.shape !== 'path' || !cutout.path) return getRotatedBounds(cutout);
-  const base = getPathBounds(cutout.path);
-  if (!cutout.rotation) return base;
-  const cx = (base.minX + base.maxX) / 2;
-  const cy = (base.minY + base.maxY) / 2;
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-  for (const p of flattenPath(cutout.path)) {
-    // Stored rotation is clockwise-positive and `rotatePoint` is CCW — the
-    // negated angle matches the renderer (`PathShapeMesh` at `-rotation`) and
-    // the worker's `rotate(shape, -rotation)`; the un-negated angle measures a
-    // mirror image of where the path actually sits.
-    const r = rotatePoint(p.x, p.y, cx, cy, -cutout.rotation);
-    if (r.x < minX) minX = r.x;
-    if (r.y < minY) minY = r.y;
-    if (r.x > maxX) maxX = r.x;
-    if (r.y > maxY) maxY = r.y;
-  }
-  return Number.isFinite(minX) ? { minX, minY, maxX, maxY } : base;
-}
+import { getRotatedBounds } from './geometry';
 
 /** Tolerance for mask-cell boundary rounding (mm). */
 const MASK_FIT_EPSILON = 0.01;
@@ -204,8 +170,8 @@ function outlineFitsInMask(
 /**
  * Check whether a cutout fits within the mask polygon.
  *
- * The bounding box (`getRotatedBounds()` for parametric shapes, true vertex
- * bounds for paths) is tried first: a box inside the filled region proves the
+ * The bounding box (`getRotatedBounds()`, which reads a path by its outline)
+ * is tried first: a box inside the filled region proves the
  * shape inside it is too, give or take the sub-epsilon slack both checks grant.
  * Only when that fails does the real silhouette get clipped against the region,
  * so concave boards accept the concave shapes that genuinely nest into them.
@@ -219,7 +185,7 @@ export function cutoutFitsInMask(
   cellSize: MaskCellSize,
   meshAssets?: Readonly<Record<string, MeshAssetEntry>>
 ): boolean {
-  const { minX, minY, maxX, maxY } = getCutoutBounds(cutout);
+  const { minX, minY, maxX, maxY } = getRotatedBounds(cutout);
   if (rectFitsInMask(mask, minX, minY, maxX - minX, maxY - minY, cellSize)) return true;
   return outlineFitsInMask(cutout, mask, cellSize, meshAssets);
 }

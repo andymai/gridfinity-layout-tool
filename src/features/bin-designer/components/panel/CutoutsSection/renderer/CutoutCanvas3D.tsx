@@ -26,6 +26,8 @@ import type { ResizeHandle, InteractionMode, PreviewMap } from '../useCutoutInte
 import type { FitCue } from '../cutoutSectionVisibility';
 import type { SegmentHoverInfo } from '../handlers';
 import type { RulerMeasurement } from '../handlers/rulerHandler';
+import type { Rect } from '../handlers/pointEdits';
+import type { TransformHandle } from '../handlers/pointTransform';
 import type { AlignmentGuide } from '../geometry';
 import { selectionVisualBounds } from '../cutoutGroups';
 import { SceneContent } from './SceneContent';
@@ -116,7 +118,21 @@ export interface CutoutCanvas3DProps {
   readonly onGroupScaleStart: (mmX: number, mmY: number) => void;
   readonly segmentHover?: SegmentHoverInfo | null;
   readonly onPathDrawingVertexDown?: (index: number, mmX: number, mmY: number) => void;
-  readonly onVertexPointDown?: (index: number, mmX: number, mmY: number, ring?: number) => void;
+  readonly onVertexPointDown?: (
+    index: number,
+    mmX: number,
+    mmY: number,
+    ring?: number,
+    shiftKey?: boolean
+  ) => void;
+  /** A press on a corner or the turn dot of the box around several selected points. */
+  readonly onVertexTransformDown?: (
+    handle: TransformHandle,
+    box: Rect,
+    mmX: number,
+    mmY: number,
+    shiftKey: boolean
+  ) => void;
   readonly onVertexHandleDown?: (
     index: number,
     handleType: 'in' | 'out',
@@ -172,6 +188,7 @@ export function CutoutCanvas3D({
   onPathDrawingVertexDown,
   onVertexPointDown,
   onVertexHandleDown,
+  onVertexTransformDown,
   externalZoom,
   externalCameraCenter,
   rulerMeasurement,
@@ -367,6 +384,7 @@ export function CutoutCanvas3D({
         onPathDrawingVertexDown={onPathDrawingVertexDown}
         onVertexPointDown={onVertexPointDown}
         onVertexHandleDown={onVertexHandleDown}
+        onVertexTransformDown={onVertexTransformDown}
         externalZoom={externalZoom}
         externalCameraCenter={externalCameraCenter}
         rulerMeasurement={rulerMeasurement}

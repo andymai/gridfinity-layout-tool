@@ -1,14 +1,10 @@
 {
   "tolerance": "1.1",
-  "allowedMissingRefs": [
-    "b17779575",
-    "components/Foo.tsx",
-    "diffProps"
-  ],
+  "allowedMissingRefs": ["b17779575", "components/Foo.tsx", "diffProps"],
   "words": {
     ".claude/skills/analytics-and-labs/SKILL.md": 1244,
     ".claude/skills/auth-and-sync/SKILL.md": 1320,
-    ".claude/skills/bin-designer/SKILL.md": 2406,
+    ".claude/skills/bin-designer/SKILL.md": 2754,
     ".claude/skills/content-and-seo/SKILL.md": 1263,
     ".claude/skills/debugging-playbook/SKILL.md": 1032,
     ".claude/skills/feature-slices/SKILL.md": 1331,

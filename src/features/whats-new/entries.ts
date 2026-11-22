@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'scan-edit-points',
+    date: '2026-11-21',
+    kind: 'improved',
+    featured: true,
+    title: { en: 'Fix a scanned edge, and put a scan where you want it' },
+    body: {
+      en: 'A scanned tool now comes in square to its own box and fitted with smooth curves, so its selection box fits it and its outline has few points. To fix an edge, select the tool and click Edit points, double-click it, or press Enter. Drag the edge to pull it into place, with [ and ] to set how far the pull reaches. Shift-click points, or drag a box around them, to move, scale, turn, smooth or delete several at once. A turned outline now moves and turns right up to the wall.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'labels-for-label-makers',
     date: '2026-11-17',
     kind: 'new',

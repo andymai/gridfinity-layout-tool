@@ -11,7 +11,9 @@
  * surfaces, so external callers still import from `./geometry`.
  */
 
-import type { Cutout } from '@/features/bin-designer/types';
+import type { Cutout, PathPoint } from '@/features/bin-designer/types';
+import { flattenPath } from '@/shared/utils/pathGeometryBezier';
+import { pointsBounds } from '@/shared/utils/pointsBounds';
 
 /** Axis-aligned bounding box */
 export interface Bounds {
@@ -49,13 +51,35 @@ export function rotatePoint(
 }
 
 /**
- * Get the axis-aligned bounding box of a rotated cutout.
+ * A path's outline turned about the centre of its points, the pivot the
+ * renderer and the worker turn it about. Stored rotation is clockwise-positive
+ * and `rotatePoint` is counter-clockwise, so the angle is negated: the
+ * un-negated angle measures a mirror image of where the path sits.
+ */
+function pathOutlineBounds(path: readonly PathPoint[], rotation: number): Bounds {
+  const points = flattenPath(path);
+  const base = pointsBounds(points);
+  if (!rotation) return base;
+  const cx = (base.minX + base.maxX) / 2;
+  const cy = (base.minY + base.maxY) / 2;
+  return pointsBounds(points.map((p) => rotatePoint(p.x, p.y, cx, cy, -rotation)));
+}
+
+/**
+ * Get the axis-aligned bounding box of a rotated cutout: what the board
+ * measures it by.
  *
- * Circles are ellipses, so they get the exact ellipse box. Every other shape
+ * A path is measured by its outline, because its stored box can be far larger
+ * than the shape once turned: a tool traced at an angle has a square box. A
+ * circle is an ellipse, so it gets the exact ellipse box. Every other shape
  * gets the box of its turned corners, which encloses it but can be loose off a
  * quarter turn (a slot's round ends, a polygon's cut corners).
  */
 export function getRotatedBounds(cutout: Cutout): Bounds {
+  if (cutout.shape === 'path' && cutout.path && cutout.path.length > 0) {
+    const outline = pathOutlineBounds(cutout.path, cutout.rotation);
+    if (Number.isFinite(outline.minX)) return outline;
+  }
   const cx = cutout.x + cutout.width / 2;
   const cy = cutout.y + cutout.depth / 2;
   const hw = cutout.width / 2;
@@ -197,19 +221,18 @@ export function computeRotatedBounds(cutouts: readonly Cutout[]): Bounds {
 /**
  * The `x`/`y` range that keeps a cutout's turned outline on the board.
  *
- * `x`/`y` place the unturned box, and a turn grows or shrinks the outline
- * around the same center. A long shape turned 90° is narrower than its box on
- * one axis, so its range there reaches past the board edge.
+ * `x`/`y` place the unturned box, and the outline moves with it. A long shape
+ * turned 90° is narrower than its box on one axis, so its range there reaches
+ * past the board edge. A turned path's outline need not be centred on its box,
+ * so the range is read from where the outline sits, not from its width.
  */
 export function boardPositionRange(cutout: Cutout, binWidth: number, binDepth: number): Bounds {
   const rb = getRotatedBounds(cutout);
-  const overhangX = (rb.maxX - rb.minX - cutout.width) / 2;
-  const overhangY = (rb.maxY - rb.minY - cutout.depth) / 2;
   return {
-    minX: overhangX,
-    minY: overhangY,
-    maxX: binWidth - cutout.width - overhangX,
-    maxY: binDepth - cutout.depth - overhangY,
+    minX: cutout.x - rb.minX,
+    minY: cutout.y - rb.minY,
+    maxX: cutout.x + binWidth - rb.maxX,
+    maxY: cutout.y + binDepth - rb.maxY,
   };
 }
 

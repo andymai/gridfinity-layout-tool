@@ -43,6 +43,13 @@ export interface CleanedOutline {
   readonly holes: PathPoint[][];
 }
 
+/**
+ * How far, in mm, an outline fitted for editing may stray from the dense one it
+ * replaces: a scan on import, a stretch of edge after a drag. Well inside the
+ * 0.4 mm scan clearance, so the fit never decides whether a tool fits.
+ */
+export const EDIT_FIT_MM = 0.1;
+
 /** Finest fit, in mm, once any step has reshaped the outline. */
 const FLOOR_MM = 0.02;
 /** Each retry for a ring over the point limit loosens the fit by this much. */

@@ -1,5 +1,6 @@
 export {
   cleanOutline,
+  EDIT_FIT_MM,
   isNoCleanup,
   NO_CLEANUP,
   type CleanupSettings,
@@ -15,5 +16,5 @@ export {
   type MirrorKeep,
   type Region,
 } from './mirror';
-export { findCorners, fitRing, type Pt } from './runs';
+export { findCorners, fitRing, fitRun, type Pt } from './runs';
 export { closeRegion, type ClosedRegion } from './closeRegion';

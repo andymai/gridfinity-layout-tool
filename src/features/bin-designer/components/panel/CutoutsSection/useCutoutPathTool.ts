@@ -15,10 +15,17 @@ import type { CellMask } from '@/shared/utils/cellMask';
 import {
   handlePathDrawingPointerDown,
   handlePathDrawingVertexDown,
-  handleVertexEditPointerDown,
   dragSource,
+  handleTransformDown,
+  handleVertexDotDown,
+  handleVertexEditPointerDown,
+  loadFalloffMm,
   nearestPoint,
+  vertexEditingMode,
 } from './handlers';
+import { withSelection } from './handlers/pathEditHandler';
+import type { Rect } from './handlers/pointEdits';
+import type { TransformHandle } from './handlers/pointTransform';
 import type { PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
 import {
   CLOSE_SNAP_THRESHOLD,
@@ -56,7 +63,20 @@ export interface CutoutPathTool {
   readonly onPathDrawingVertexDown: (index: number, mmX: number, mmY: number) => void;
   readonly enterVertexEditing: (cutoutId: string) => void;
   /** `ring` is 0 for the outline, k for island k - 1. */
-  readonly handleVertexPointDown: (index: number, mmX: number, mmY: number, ring?: number) => void;
+  readonly handleVertexPointDown: (
+    index: number,
+    mmX: number,
+    mmY: number,
+    ring?: number,
+    shiftKey?: boolean
+  ) => void;
+  readonly handleVertexTransformDown: (
+    handle: TransformHandle,
+    box: Rect,
+    mmX: number,
+    mmY: number,
+    shiftKey: boolean
+  ) => void;
   readonly handleVertexHandleDown: (
     index: number,
     handleType: 'in' | 'out',
@@ -64,7 +84,7 @@ export interface CutoutPathTool {
     mmY: number,
     ring?: number
   ) => void;
-  readonly handleVertexBackgroundDown: (mmX: number, mmY: number) => void;
+  readonly handleVertexBackgroundDown: (mmX: number, mmY: number, shiftKey?: boolean) => void;
 }
 
 export function useCutoutPathTool({
@@ -182,33 +202,34 @@ export function useCutoutPathTool({
       const cutout = cutouts.find((c) => c.id === cutoutId);
       if (!cutout || cutout.shape !== 'path') return;
       setSelection(new Set([cutoutId]));
-      setMode({
-        type: 'vertex-editing',
-        cutoutId,
-        ring: 0,
-        selectedPointIndex: null,
-        dragTarget: null,
-      });
+      setMode(vertexEditingMode(cutoutId, loadFalloffMm()));
     },
     [cutouts, setSelection, setMode]
   );
 
   /** Handle vertex point down from PathEditOverlay3D. */
   const handleVertexPointDown = useCallback(
-    (hitIndex: number, mmX: number, mmY: number, hitRing = 0) => {
+    (hitIndex: number, mmX: number, mmY: number, hitRing = 0, shiftKey = false) => {
       if (mode.type !== 'vertex-editing') return;
       const cutout = cutouts.find((c) => c.id === mode.cutoutId);
-      const { ring, index } = (cutout && nearestPoint(cutout, mmX, mmY)) ?? {
-        ring: hitRing,
-        index: hitIndex,
-      };
-      setMode({
-        ...mode,
-        ring,
-        selectedPointIndex: index,
-        dragTarget: { type: 'vertex', ring, index },
-        dragFrom: cutout ? dragSource(cutout) : null,
+      if (!cutout) return;
+      const hit = nearestPoint(cutout, mmX, mmY) ?? { ring: hitRing, index: hitIndex };
+      handleVertexDotDown(mode, cutout, hit, shiftKey, {
+        setMode,
+        setPreview,
+        onUpdate,
+        setSegmentHover,
       });
+    },
+    [mode, cutouts, setMode, setPreview, onUpdate, setSegmentHover]
+  );
+
+  /** Start scaling or turning the selected points by a handle of their box. */
+  const handleVertexTransformDown = useCallback(
+    (handle: TransformHandle, box: Rect, mmX: number, mmY: number, shiftKey: boolean) => {
+      if (mode.type !== 'vertex-editing') return;
+      const cutout = cutouts.find((c) => c.id === mode.cutoutId);
+      if (cutout) handleTransformDown(mode, cutout, handle, box, { mmX, mmY, shiftKey }, setMode);
     },
     [mode, cutouts, setMode]
   );
@@ -221,9 +242,7 @@ export function useCutoutPathTool({
       // The handle's anchor becomes the selection, so Delete never takes a
       // point on whichever ring was selected before.
       setMode({
-        ...mode,
-        ring,
-        selectedPointIndex: index,
+        ...withSelection(mode, ring, [index]),
         dragTarget: { type: 'handle', ring, index, handleType },
         dragFrom: cutout ? dragSource(cutout) : null,
       });
@@ -233,14 +252,14 @@ export function useCutoutPathTool({
 
   /** Handle background click during vertex editing (segment insertion or exit). */
   const handleVertexBackgroundDown = useCallback(
-    (mmX: number, mmY: number) => {
+    (mmX: number, mmY: number, shiftKey = false) => {
       if (mode.type !== 'vertex-editing') return;
       const cutout = cutouts.find((c) => c.id === mode.cutoutId);
       if (!cutout) {
         setMode({ type: 'idle' });
         return;
       }
-      handleVertexEditPointerDown(mode, { mmX, mmY, altKey: false }, cutout, CLOSE_SNAP_THRESHOLD, {
+      handleVertexEditPointerDown(mode, { mmX, mmY, shiftKey }, cutout, CLOSE_SNAP_THRESHOLD, {
         setMode,
         setPreview,
         onUpdate,
@@ -257,6 +276,7 @@ export function useCutoutPathTool({
     enterVertexEditing,
     handleVertexPointDown,
     handleVertexHandleDown,
+    handleVertexTransformDown,
     handleVertexBackgroundDown,
   };
 }

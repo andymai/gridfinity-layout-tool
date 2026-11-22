@@ -724,7 +724,7 @@ estimates), and the source file name.
     silently clips the overhang (`cutoutBuilder.clipToInterior`). `offBoardCutouts`
     treats a cutout as its set of **expanded array instances** (`expandCutoutArray`,
     just the cutout itself when there's no array) and flags it if **any** instance
-    falls outside, measuring each footprint with `getCutoutBounds` from `maskFit`
+    falls outside, measuring each footprint with `getRotatedBounds` from `geometryCore`
     (true vertex bounds, rotation-aware for paths — the same primitive placement
     validation uses). A **masked** (custom-shape) bin defers to `cutoutFitsInMask`
     so an instance over an unfilled cell is caught, not just rectangle overhang.

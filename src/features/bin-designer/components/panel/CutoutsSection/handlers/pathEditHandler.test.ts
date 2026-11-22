@@ -3,11 +3,13 @@ import { MIN_PATH_POINTS } from '@/features/bin-designer/types';
 import type { Cutout, PathPoint } from '@/features/bin-designer/types';
 import {
   dragSource,
-  handleVertexEditKeyDown,
   handleVertexEditPointerDown,
   handleVertexEditPointerMove,
   handleVertexEditPointerUp,
+  handleTransformDown,
 } from './pathEditHandler';
+import { flattenPath } from '@/shared/utils/pathGeometryBezier';
+import { handleVertexEditKeyDown } from './vertexEditKeys';
 import type { VertexEditMode } from './pathEditHandler';
 import type { BinBounds, PointerMoveEvent } from './types';
 import { rotateAbout } from '@/shared/utils/cutoutOutline';
@@ -70,6 +72,22 @@ const at = (mmX: number, mmY: number, extra: Partial<PointerMoveEvent> = {}): Po
   mmY,
   ...extra,
 });
+
+/**
+ * A press and a release in place. An edge press waits for the release to add
+ * its point, since a drag pulls the edge instead.
+ */
+function click(
+  mode: VertexEditMode,
+  event: PointerMoveEvent,
+  cutout: Cutout,
+  threshold: number,
+  setters: ReturnType<typeof makeSetters>
+): void {
+  handleVertexEditPointerDown(mode, event, cutout, threshold, setters);
+  const pressed = (setters.setMode.mock.calls.at(-1)?.[0] as VertexEditMode | undefined) ?? mode;
+  handleVertexEditPointerUp(pressed, cutout, new Map(), setters);
+}
 
 describe('handleVertexEditPointerDown', () => {
   it('selects and starts dragging the vertex under the cursor', () => {
@@ -135,7 +153,7 @@ describe('handleVertexEditPointerDown', () => {
 
   it('inserts a point when the cursor is over a segment', () => {
     const setters = makeSetters();
-    handleVertexEditPointerDown(makeMode(), at(5, 0), makeCutout(), 1, setters);
+    click(makeMode(), at(5, 0), makeCutout(), 1, setters);
 
     const update = setters.onUpdate.mock.calls[0][1] as Partial<Cutout>;
     expect(update.path).toHaveLength(5);
@@ -150,7 +168,7 @@ describe('handleVertexEditPointerDown', () => {
     // The wrap-around segment is the one where the "next" index is 0, so an
     // off-by-one here rewrites the wrong point.
     const setters = makeSetters();
-    handleVertexEditPointerDown(makeMode(), at(0, 5), makeCutout(), 1, setters);
+    click(makeMode(), at(0, 5), makeCutout(), 1, setters);
 
     const update = setters.onUpdate.mock.calls[0][1] as Partial<Cutout>;
     expect(update.path).toHaveLength(5);
@@ -167,20 +185,14 @@ describe('handleVertexEditPointerDown', () => {
 
   it('recomputes the cutout bounds from the new path', () => {
     const setters = makeSetters();
-    handleVertexEditPointerDown(makeMode(), at(5, 0), makeCutout(), 1, setters);
+    click(makeMode(), at(5, 0), makeCutout(), 1, setters);
     const update = setters.onUpdate.mock.calls[0][1] as Partial<Cutout>;
     expect(update).toMatchObject({ x: 0, y: 0, width: 10, depth: 10 });
   });
 
   it('deselects when the cursor hits nothing', () => {
     const setters = makeSetters();
-    handleVertexEditPointerDown(
-      makeMode({ selectedPointIndex: 2 }),
-      at(50, 50),
-      makeCutout(),
-      1,
-      setters
-    );
+    click(makeMode({ selectedPointIndex: 2 }), at(50, 50), makeCutout(), 1, setters);
     expect(setters.setMode).toHaveBeenCalledWith(
       expect.objectContaining({ selectedPointIndex: null, dragTarget: null })
     );
@@ -212,7 +224,7 @@ describe('handleVertexEditPointerDown', () => {
 
 describe('handleVertexEditPointerMove', () => {
   it('reports the hovered segment when not dragging', () => {
-    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
+    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn(), setMode: vi.fn() };
     handleVertexEditPointerMove(makeMode(), at(5, 0.2), makeCutout(), BOUNDS, noSnap, setters);
     expect(setters.setSegmentHover).toHaveBeenCalledWith(
       expect.objectContaining({ segmentIndex: 0 })
@@ -220,13 +232,13 @@ describe('handleVertexEditPointerMove', () => {
   });
 
   it('clears the hover when the cursor leaves every segment', () => {
-    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
+    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn(), setMode: vi.fn() };
     handleVertexEditPointerMove(makeMode(), at(50, 50), makeCutout(), BOUNDS, noSnap, setters);
     expect(setters.setSegmentHover).toHaveBeenCalledWith(null);
   });
 
   it('drags a vertex through the snap function', () => {
-    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
+    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn(), setMode: vi.fn() };
     const snap = (v: number): number => Math.round(v);
     handleVertexEditPointerMove(
       makeMode({ dragTarget: { type: 'vertex', ring: 0, index: 0 } }),
@@ -241,7 +253,7 @@ describe('handleVertexEditPointerMove', () => {
   });
 
   it('clamps a dragged vertex inside the bin', () => {
-    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
+    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn(), setMode: vi.fn() };
     handleVertexEditPointerMove(
       makeMode({ dragTarget: { type: 'vertex', ring: 0, index: 0 } }),
       at(-40, 500),
@@ -255,7 +267,7 @@ describe('handleVertexEditPointerMove', () => {
   });
 
   it('stores a dragged handle as an offset from its point', () => {
-    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
+    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn(), setMode: vi.fn() };
     handleVertexEditPointerMove(
       makeMode({ dragTarget: { type: 'handle', ring: 0, index: 1, handleType: 'out' } }),
       at(14, 3),
@@ -276,7 +288,7 @@ describe('handleVertexEditPointerMove', () => {
       point(10, 10),
       point(0, 10),
     ];
-    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
+    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn(), setMode: vi.fn() };
     handleVertexEditPointerMove(
       makeMode({ dragTarget: { type: 'handle', ring: 0, index: 1, handleType: 'out' } }),
       at(14, 3, { altKey: true }),
@@ -299,7 +311,7 @@ describe('handleVertexEditPointerMove', () => {
       point(10, 10),
       point(0, 10),
     ];
-    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
+    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn(), setMode: vi.fn() };
     handleVertexEditPointerMove(
       makeMode({ dragTarget: { type: 'handle', ring: 0, index: 1, handleType: 'out' } }),
       at(14, 3),
@@ -319,7 +331,7 @@ describe('handleVertexEditPointerMove', () => {
     // computed against the longer path stays in the map, and pointer-up
     // commits whatever it finds there — putting the removed points back and
     // overwriting whatever shrank the path in the first place.
-    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
+    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn(), setMode: vi.fn() };
     handleVertexEditPointerMove(
       makeMode({ dragTarget: { type: 'handle', ring: 0, index: 9, handleType: 'in' } }),
       at(5, 5),
@@ -332,7 +344,7 @@ describe('handleVertexEditPointerMove', () => {
   });
 
   it('survives a drag target left behind by a shorter path', () => {
-    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn() };
+    const setters = { setPreview: vi.fn(), setSegmentHover: vi.fn(), setMode: vi.fn() };
     expect(() =>
       handleVertexEditPointerMove(
         makeMode({ dragTarget: { type: 'handle', ring: 0, index: 9, handleType: 'in' } }),
@@ -546,14 +558,14 @@ describe('editing an island', () => {
 
   it('adds a point on a straight edge where it was clicked, keeping the edge straight', () => {
     const setters = makeSetters();
-    handleVertexEditPointerDown(makeMode(), at(18, 15.1), islanded(), 1, setters);
+    click(makeMode(), at(18, 15.1), islanded(), 1, setters);
     const committed = setters.onUpdate.mock.calls[0][1] as Partial<Cutout>;
     expect(committed.holes?.[0][1]).toEqual(point(18, 15));
   });
 
   it('adds a point on an island’s edge', () => {
     const setters = makeSetters();
-    handleVertexEditPointerDown(makeMode(), at(20, 15.2), islanded(), 1, setters);
+    click(makeMode(), at(20, 15.2), islanded(), 1, setters);
     const committed = setters.onUpdate.mock.calls[0][1] as Partial<Cutout>;
     expect(committed.holes?.[0]).toHaveLength(5);
     expect(setters.setMode).toHaveBeenCalledWith(
@@ -608,13 +620,7 @@ describe('picking among rings', () => {
     // past the 2 mm a point is taken within.
     const short = [point(15, 15), point(20, 15), point(20, 25), point(15, 25)];
     const setters = makeSetters();
-    handleVertexEditPointerDown(
-      makeMode(),
-      at(17.5, 15.1),
-      { ...cutout(), holes: [short] },
-      4,
-      setters
-    );
+    click(makeMode(), at(17.5, 15.1), { ...cutout(), holes: [short] }, 4, setters);
     const committed = setters.onUpdate.mock.calls[0][1] as Partial<Cutout>;
     expect(committed.holes?.[0]).toHaveLength(5);
   });
@@ -847,5 +853,135 @@ describe('the cost of a release', () => {
     handleVertexEditPointerUp(mode, cutout, preview, setters);
     expect(setters.onUpdate).toHaveBeenCalled();
     expect(outlinesTouch).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('editing several points', () => {
+  /** The mode the last setMode call left, for the next event in a gesture. */
+  const last = (setters: ReturnType<typeof makeSetters>): VertexEditMode =>
+    setters.setMode.mock.calls.at(-1)?.[0] as VertexEditMode;
+
+  it('adds a point to the selection with Shift, and takes it out again', () => {
+    const setters = makeSetters();
+    const one = makeMode({ selectedPointIndex: 0 });
+    handleVertexEditPointerDown(one, at(10, 0, { shiftKey: true }), makeCutout(), 1, setters);
+    expect(last(setters)).toMatchObject({ selectedPoints: [0, 1], dragTarget: null });
+
+    handleVertexEditPointerDown(
+      last(setters),
+      at(10, 0, { shiftKey: true }),
+      makeCutout(),
+      1,
+      setters
+    );
+    expect(last(setters)).toMatchObject({ selectedPointIndex: 0, selectedPoints: undefined });
+  });
+
+  it('selects the points a marquee holds', () => {
+    const setters = makeSetters();
+    handleVertexEditPointerDown(makeMode(), at(5, -5), makeCutout(), 1, setters);
+    expect(last(setters).dragTarget).toMatchObject({ type: 'marquee' });
+    handleVertexEditPointerMove(last(setters), at(15, 15), makeCutout(), BOUNDS, noSnap, setters);
+    handleVertexEditPointerUp(last(setters), makeCutout(), new Map(), setters);
+    expect(last(setters)).toMatchObject({ ring: 0, selectedPoints: [1, 2], dragTarget: null });
+  });
+
+  it('adds a Shift marquee to the selection already made', () => {
+    const setters = makeSetters();
+    const mode = makeMode({ selectedPointIndex: 0 });
+    handleVertexEditPointerDown(mode, at(5, 5, { shiftKey: true }), makeCutout(), 1, setters);
+    handleVertexEditPointerMove(last(setters), at(15, 15), makeCutout(), BOUNDS, noSnap, setters);
+    handleVertexEditPointerUp(last(setters), makeCutout(), new Map(), setters);
+    expect(last(setters).selectedPoints).toEqual([0, 2]);
+  });
+
+  it('moves every selected point by as much as the one dragged', () => {
+    const setters = makeSetters();
+    const mode = makeMode({ selectedPointIndex: 1, selectedPoints: [1, 2] });
+    handleVertexEditPointerDown(mode, at(10, 0), makeCutout(), 1, setters);
+    expect(last(setters).dragTarget).toMatchObject({ type: 'points', indices: [1, 2] });
+
+    handleVertexEditPointerMove(last(setters), at(14, 0), makeCutout(), BOUNDS, noSnap, setters);
+    const preview = setters.setPreview.mock.calls.at(-1)?.[0] as Map<string, Partial<Cutout>>;
+    handleVertexEditPointerUp(last(setters), makeCutout(), preview, setters);
+    const update = setters.onUpdate.mock.calls[0][1] as Partial<Cutout>;
+    expect(update.path?.map((p) => [p.x, p.y])).toEqual([
+      [0, 0],
+      [14, 0],
+      [14, 10],
+      [0, 10],
+    ]);
+    expect(update.width).toBe(14);
+    expect(last(setters).selectedPoints).toEqual([1, 2]);
+  });
+
+  it('pulls an edge with falloff when a press on it moves, and stores it fitted', () => {
+    const wide = [point(0, 0), point(100, 0), point(100, 40), point(0, 40)];
+    const cutout = { ...makeCutout(wide), width: 100, depth: 40 };
+    const setters = makeSetters();
+    handleVertexEditPointerDown(makeMode({ falloffMm: 20 }), at(50, 0), cutout, 1, setters);
+    expect(last(setters).dragTarget).toMatchObject({ type: 'segment' });
+
+    handleVertexEditPointerMove(last(setters), at(50, -4), cutout, BOUNDS, noSnap, setters);
+    expect(last(setters).dragTarget).toMatchObject({ type: 'falloff', dx: 0, dy: -4 });
+    handleVertexEditPointerUp(last(setters), cutout, new Map(), setters);
+
+    const update = setters.onUpdate.mock.calls[0][1] as Partial<Cutout>;
+    const outline = flattenPath(update.path ?? []);
+    expect(Math.min(...outline.map((p) => p.y))).toBeCloseTo(-4, 0);
+    expect(update.path?.length).toBeLessThan(12);
+    // The pull ends past both corners' reach, so they stay put.
+    expect(update.path?.some((p) => p.x === 0 && p.y === 0)).toBe(true);
+    expect(update.path?.some((p) => p.x === 100 && p.y === 40)).toBe(true);
+    expect(last(setters)).toMatchObject({ selectedPointIndex: null, dragTarget: null });
+  });
+
+  it('stores nothing for a pull brought back to where it began', () => {
+    const wide = [point(0, 0), point(100, 0), point(100, 40), point(0, 40)];
+    const cutout = { ...makeCutout(wide), width: 100, depth: 40 };
+    const setters = makeSetters();
+    handleVertexEditPointerDown(makeMode({ falloffMm: 20 }), at(50, 0), cutout, 1, setters);
+    handleVertexEditPointerMove(last(setters), at(50, -4), cutout, BOUNDS, noSnap, setters);
+    handleVertexEditPointerMove(last(setters), at(50, 0), cutout, BOUNDS, noSnap, setters);
+    handleVertexEditPointerUp(last(setters), cutout, new Map(), setters);
+    expect(setters.onUpdate).not.toHaveBeenCalled();
+  });
+
+  it('adds a point, not a pull, when a press on an edge does not move', () => {
+    const setters = makeSetters();
+    click(makeMode(), at(5, 0), makeCutout(), 1, setters);
+    expect((setters.onUpdate.mock.calls[0][1] as Partial<Cutout>).path).toHaveLength(5);
+  });
+
+  it('scales the selected points by a corner of their box', () => {
+    const setters = makeSetters();
+    const mode = makeMode({ selectedPointIndex: 2, selectedPoints: [1, 2] });
+    handleTransformDown(
+      mode,
+      makeCutout(),
+      'ne',
+      { minX: 10, minY: 0, maxX: 10, maxY: 10 },
+      at(10, 10),
+      setters.setMode
+    );
+    expect(last(setters).dragTarget).toMatchObject({ type: 'transform', indices: [1, 2] });
+    handleVertexEditPointerMove(last(setters), at(10, 20), makeCutout(), BOUNDS, noSnap, setters);
+    const preview = setters.setPreview.mock.calls.at(-1)?.[0] as Map<string, Partial<Cutout>>;
+    handleVertexEditPointerUp(last(setters), makeCutout(), preview, setters);
+    const update = setters.onUpdate.mock.calls[0][1] as Partial<Cutout>;
+    expect(update.path?.[2]).toMatchObject({ x: 10, y: 20 });
+  });
+
+  it('does not open the transform box for one point', () => {
+    const setters = makeSetters();
+    handleTransformDown(
+      makeMode({ selectedPointIndex: 1 }),
+      makeCutout(),
+      'ne',
+      { minX: 10, minY: 0, maxX: 10, maxY: 0 },
+      at(10, 0),
+      setters.setMode
+    );
+    expect(setters.setMode).not.toHaveBeenCalled();
   });
 });

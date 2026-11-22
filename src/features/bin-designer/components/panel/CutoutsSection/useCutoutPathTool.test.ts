@@ -67,6 +67,25 @@ describe('useCutoutPathTool', () => {
     });
   });
 
+  it('drops a several-point selection for the anchor of a handle it drags', () => {
+    // Delete would otherwise read the old indices on the handle's ring.
+    const { tool: path, setMode } = tool({
+      type: 'vertex-editing',
+      cutoutId: 'p1',
+      ring: 0,
+      selectedPointIndex: 2,
+      selectedPoints: [0, 2],
+      dragTarget: null,
+    });
+    path.handleVertexHandleDown(1, 'out', 0, 0, 1);
+    const next = setMode.mock.calls[0][0] as {
+      selectedPoints?: number[];
+      selectedPointIndex: number;
+    };
+    expect(next.selectedPoints).toBeUndefined();
+    expect(next.selectedPointIndex).toBe(1);
+  });
+
   it('takes the nearest point when a press lands on overlapping handles', () => {
     const pt = (x: number, y: number) => ({
       x,

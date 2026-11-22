@@ -135,7 +135,7 @@ Lay the tools with a gap between each one. The phone traces every tool and sizes
 - Tap a tool to draw its outline again, or to add a tool that the phone missed.
 - Turn on <Ui k="scan.review.keepHoles" /> to keep plastic in the holes of a tool, such as the ring of a spanner. See [Trace a photo](./photo-trace#keep-holes-as-islands).
 
-The tools come into the bin designer as one group, so you can move them as a block.
+The tools come into the bin designer as one group, so you can move them as a block. Each tool turns square to its own box, and the tools are laid out so that none overlaps another. To fix an edge that came out a little off, see [Edit points up close](./photo-trace#edit-points-up-close).
 
 ## Measure a tall tool at its own height
 

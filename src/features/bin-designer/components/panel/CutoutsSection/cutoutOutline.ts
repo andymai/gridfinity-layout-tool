@@ -12,7 +12,7 @@
  * a *circumscribing* polygon, and a mesh imprint with no stored silhouette
  * falls back to its footprint rectangle.
  *
- * Rings are returned in the same frame `getCutoutBounds` measures, so the box
+ * Rings are returned in the same frame `getRotatedBounds` measures, so the box
  * check stays a sound fast-accept for the outline check.
  */
 

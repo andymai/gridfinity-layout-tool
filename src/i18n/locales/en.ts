@@ -1595,8 +1595,10 @@ const en: Record<string, string> = {
   'toast.svgImport.shapeLimitExceeded': 'SVG contains too many shapes (max 500)',
   'toast.svgImport.unsupportedFile': 'File is not a valid SVG',
   'toast.svgImport.fileTooLarge': 'SVG file is too large (max 5 MB)',
-  'toast.scanImport.success_one': 'Added {count} cutout from your scan',
-  'toast.scanImport.success_other': 'Added {count} cutouts from your scan',
+  'toast.scanImport.success_one':
+    'Added {count} cutout from your scan. To fix an edge, choose Edit points.',
+  'toast.scanImport.success_other':
+    'Added {count} cutouts from your scan. To fix an edge, pick one and choose Edit points.',
   'toast.scanImport.offFloor_one':
     'Added {count} cutout, but it does not fit in this bin. Move it on a computer.',
   'toast.scanImport.offFloor_other':
@@ -3904,6 +3906,18 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.traceView.sensitivityAuto': 'Auto',
   'binDesigner.cutouts.traceView.sensitivityHint':
     'Raise it to pick up faint tools, lower it to drop shadows and specks.',
+  'binDesigner.cutouts.points.edit': 'Edit points',
+  'binDesigner.cutouts.points.editHint': 'Or double-click the path, or press Enter.',
+  'binDesigner.cutouts.points.noneSelected': 'No points selected',
+  'binDesigner.cutouts.points.selected_one': '{count} point selected',
+  'binDesigner.cutouts.points.selected_other': '{count} points selected',
+  'binDesigner.cutouts.points.smooth': 'Smooth',
+  'binDesigner.cutouts.points.corner': 'Corner',
+  'binDesigner.cutouts.points.done': 'Done',
+  'binDesigner.cutouts.points.hint':
+    'Drag an edge to pull it. Press [ or ] to set how far the pull reaches.',
+  'binDesigner.cutouts.points.toolsDetail':
+    'Shift-click points, or drag a box around them, to select several. Drag one of them to move them all, or use the arrow keys. Drag a corner of the box around them to scale them, or the dot above the box to turn them. Delete removes them.',
   'binDesigner.cutouts.outline.section': 'Outline',
   'binDesigner.cutouts.outline.simplify': 'Simplify',
   'binDesigner.cutouts.outline.curves': 'Smooth into curves',
