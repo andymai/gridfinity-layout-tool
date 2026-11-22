@@ -1,0 +1,19 @@
+scripts/docs-ask-eval/run.ts
+  s_f8efc8defc13ab::t_b5afd3b2e170f6 42-44,113,134-145,157,175,264
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "304a76236795dd9d2665d4e6c052b162c7b3c800",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
