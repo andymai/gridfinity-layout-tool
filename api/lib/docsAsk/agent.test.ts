@@ -163,6 +163,31 @@ describe('runAgent', () => {
     });
   });
 
+  it('sends back no call from before a fallback, and runs only the calls after it', async () => {
+    const declined = { ...readCall, id: 'toolu_0' };
+    const fallbackRound: Round = {
+      events: [],
+      content: [
+        { type: 'thinking', thinking: 'first model', signature: 'sig' },
+        declined,
+        { type: 'fallback', from: { model: MODEL }, to: { model: 'claude-opus-4-8' } },
+        readCall,
+      ],
+      stopReason: 'tool_use',
+    };
+    const { client, calls } = scripted([fallbackRound, answerRound]);
+    await runAgent(options(client, []));
+    const sentBack = calls[1]?.messages.at(-2);
+    expect(sentBack?.role).toBe('assistant');
+    expect((sentBack?.content as { type: string }[]).map((block) => block.type)).toEqual([
+      'fallback',
+      'tool_use',
+    ]);
+    expect(calls[1]?.messages.at(-1)).toMatchObject({
+      content: [{ type: 'tool_result', tool_use_id: 'toolu_1' }],
+    });
+  });
+
   it('asks with the cache, the fallback and the thinking binding', async () => {
     const { client, calls } = scripted([answerRound]);
     await runAgent(options(client, []));

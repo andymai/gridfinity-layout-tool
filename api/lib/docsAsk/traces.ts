@@ -27,6 +27,7 @@ export interface AskTrace {
   readonly corpusVersion: string;
   readonly answer: string;
   readonly steps: readonly string[];
+  readonly links: readonly string[];
   readonly docGap: boolean;
   readonly latencySeconds: number;
   readonly error: string | null;
@@ -45,7 +46,8 @@ function send(event: string, distinctId: string, properties: Properties): void {
       body: JSON.stringify({
         api_key: token,
         event,
-        properties: { distinct_id: distinctId, ...properties },
+        // A tab's chat id is the distinct id, so a profile per chat would only fill PostHog.
+        properties: { distinct_id: distinctId, $process_person_profile: false, ...properties },
       }),
       signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
     }).then(
@@ -89,6 +91,7 @@ export function sendAskTrace(trace: AskTrace): void {
     ...(trace.error === null ? {} : { $ai_error: trace.error }),
     docs_ask_corpus_version: trace.corpusVersion,
     docs_ask_steps: trace.steps,
+    docs_ask_pages: trace.links,
     docs_ask_doc_gap: trace.docGap,
     docs_ask_cost_usd: trace.generations.reduce((sum, g) => sum + g.costUsd, 0),
   });

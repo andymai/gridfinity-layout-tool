@@ -18,8 +18,11 @@ const PRICES: Readonly<Record<string, Prices>> = {
 const UNLISTED: Prices = { input: 5, output: 25, cacheRead: 0.5, cacheWrite: 6.25 };
 
 export const DEFAULT_DAILY_CAP_USD = 5;
-/** Set aside before each round; a cold first round costs about $0.10. */
-export const ROUND_RESERVE_USD = 0.15;
+/**
+ * Set aside before each round. It covers a round's full MAX_TOKENS of output,
+ * so rounds that start together cannot run far past the cap.
+ */
+export const ROUND_RESERVE_USD = 0.35;
 const SPEND_TTL_SECONDS = 2 * 24 * 60 * 60;
 
 export interface Usage {

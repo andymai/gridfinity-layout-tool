@@ -30,7 +30,7 @@ export interface ToolRun {
   readonly isError: boolean;
   /** What the panel's step timeline shows for the call. */
   readonly label: string;
-  /** The page that a read opened, for the trace. */
+  /** The page that a read opened. */
   readonly link?: string;
 }
 
@@ -68,7 +68,12 @@ export function toolDefinitions(corpus: AskCorpus): Anthropic.Beta.BetaToolUnion
         'Search the text of every docs section. Returns the best sections, each with its page link, URL with anchor, and a snippet. Use it to find a detail that the page map does not place.',
       input_schema: {
         type: 'object',
-        properties: { query: { type: 'string', description: 'A few keywords.' } },
+        properties: {
+          query: {
+            type: 'string',
+            description: 'A few English keywords: the docs are in English.',
+          },
+        },
         required: ['query'],
         additionalProperties: false,
       },

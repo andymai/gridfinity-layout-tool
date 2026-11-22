@@ -27,7 +27,7 @@ export type AgentEvent =
   | { type: 'text'; text: string }
   /** One assistant message as the API returned it, for the panel to send back next turn. */
   | { type: 'message'; content: ContentBlock[] }
-  | { type: 'notice'; code: 'refusal' | 'truncated' | 'round_limit' | 'resting' };
+  | { type: 'notice'; code: 'refusal' | 'truncated' | 'resting' };
 
 export interface AgentOptions {
   readonly client: Anthropic;
@@ -222,10 +222,9 @@ async function roundWithRetries(
     try {
       return await streamRound(options, messages, lastRound, shown);
     } catch (error) {
-      // A tool input that will not parse, or a dropped connection, is worth
-      // another try, but only while the reader has seen nothing of the round:
-      // a second answer would run on from the first. An API error or the
-      // reader's own abort is not worth one.
+      // A failed stream is worth another try only while the reader has seen
+      // nothing of the round, or the retry would repeat what they saw. An API
+      // error or the reader's own abort is not worth one.
       if (
         error instanceof Anthropic.APIError ||
         options.signal.aborted ||
@@ -235,6 +234,24 @@ async function roundWithRetries(
         throw error;
     }
   }
+}
+
+// After a mid-output fallback, the API takes back no thinking or tool call
+// from before the last fallback block, so neither goes back, and a call that
+// does not go back gets no result.
+function echoContent(content: readonly ContentBlock[]): ContentBlock[] {
+  const boundary = content.map((block) => block.type).lastIndexOf('fallback');
+  if (boundary < 0) return [...content];
+  return content.filter(
+    (block, i) =>
+      i >= boundary ||
+      !(
+        block.type === 'thinking' ||
+        block.type === 'redacted_thinking' ||
+        block.type === 'tool_use' ||
+        block.type === 'server_tool_use'
+      )
+  );
 }
 
 export async function runAgent(options: AgentOptions): Promise<AgentResult> {
@@ -256,7 +273,8 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
       await options.budget.release();
     }
     const { message, costUsd: cost } = result;
-    const calls = message.content.filter(
+    const content = echoContent(message.content);
+    const calls = content.filter(
       (block): block is Anthropic.Beta.BetaToolUseBlock => block.type === 'tool_use'
     );
     generations.push({
@@ -288,7 +306,7 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
     }
     if (message.stop_reason !== 'tool_use' || calls.length === 0) break;
 
-    messages.push({ role: 'assistant', content: message.content });
+    messages.push({ role: 'assistant', content });
     messages.push({
       role: 'user',
       content: calls.map((call) => {
@@ -310,7 +328,6 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
         };
       }),
     });
-    if (lastRound) options.send({ type: 'notice', code: 'round_limit' });
   }
   return { answer, steps, links, generations, stopReason };
 }

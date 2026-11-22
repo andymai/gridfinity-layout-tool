@@ -65,7 +65,8 @@ function logSpendError(caught: unknown): void {
   logger.error('Docs ask spend write failed', { error: String(caught) });
 }
 
-// A failed spend write must not fail the round: the retry would ask the model again.
+// Once a round has run, a failed spend write must not fail it, or a retry would
+// ask the model again. A failed reserve fails the question before any call.
 function roundBudget(): RoundBudget {
   const redis = getRedis();
   let held: string | null = null;
@@ -73,12 +74,7 @@ function roundBudget(): RoundBudget {
     async reserve() {
       if (!redis) return process.env.VERCEL_ENV !== 'production';
       const day = spendDay();
-      const ok = await reserveSpend(redis, ROUND_RESERVE_USD, dailyCapUsd(), day).catch(
-        (caught: unknown) => {
-          logSpendError(caught);
-          return false;
-        }
-      );
+      const ok = await reserveSpend(redis, ROUND_RESERVE_USD, dailyCapUsd(), day);
       if (ok) held = day;
       return ok;
     },
@@ -94,7 +90,6 @@ function roundBudget(): RoundBudget {
   };
 }
 
-/** Null without TOKEN_SALT: then no turn is signed, and each question stands alone. */
 function turnKey(): string | null {
   const salt = process.env.TOKEN_SALT;
   return salt ? createHmac('sha256', salt).update('docs-ask turn signature').digest('hex') : null;
@@ -192,12 +187,15 @@ async function handleAsk(
       signal: abort.signal,
     });
     const turn = { question, page, locale };
+    // An empty answer, from a refusal or the cap, must not become history.
+    const answered = result.answer.trim() !== '';
     writeEvent(res, 'done', {
       traceId,
       stopReason: result.stopReason,
       turn: {
         ...turn,
-        signature: key === null ? null : turnSignature(key, { ...turn, messages: sent }),
+        signature:
+          key === null || !answered ? null : turnSignature(key, { ...turn, messages: sent }),
       },
     });
   } catch (caught) {
@@ -224,6 +222,7 @@ async function handleAsk(
     corpusVersion: source.corpus.version,
     answer: result?.answer ?? '',
     steps: progress.steps,
+    links: progress.links,
     docGap: (result?.answer ?? '').includes(DISCUSSIONS_URL),
     latencySeconds: (performance.now() - started) / 1000,
     error: abort.signal.aborted ? 'aborted by the reader' : error,

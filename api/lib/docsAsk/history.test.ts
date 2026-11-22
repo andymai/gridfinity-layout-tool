@@ -63,7 +63,7 @@ describe('rebuildMessages', () => {
       {
         role: 'system',
         content:
-          'Reader context: The reader is on the docs page "Work in layers" (https://gridfinitylayouttool.com/docs/layouts/layers). Their language is German (de).',
+          'Reader context: The reader is on the docs page "Work in layers" (https://gridfinitylayouttool.com/docs/layouts/layers). Their app is in German (de).',
       },
       {
         role: 'assistant',
@@ -110,6 +110,11 @@ describe('rebuildMessages', () => {
     expect(rebuildMessages(corpus, [turn([[thinking, call]])], run, localeOf, signed)).toEqual([]);
   });
 
+  it('drops a refused turn that ended on thinking or on nothing', () => {
+    expect(rebuildMessages(corpus, [turn([[thinking]])], run, localeOf, signed)).toEqual([]);
+    expect(rebuildMessages(corpus, [turn([[]])], run, localeOf, signed)).toEqual([]);
+  });
+
   it('drops a tool call to a tool that does not exist', () => {
     const bad = { ...call, name: 'delete_everything' };
     const messages = rebuildMessages(corpus, [turn([[bad], [answer]])], run, localeOf, signed);
@@ -128,7 +133,7 @@ describe('userTurn', () => {
   it('says so when the reader is not on a docs page', () => {
     expect(userTurn(corpus, 'Hi?', '', 'en')[1]).toEqual({
       role: 'system',
-      content: 'Reader context: The reader is not on a docs page. Their language is English (en).',
+      content: 'Reader context: The reader is not on a docs page. Their app is in English (en).',
     });
   });
 });

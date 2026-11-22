@@ -561,6 +561,27 @@ export const GOLDEN: readonly GoldenCase[] = [
     expect: 'In Brazilian Portuguese: split the baseplate for the print bed.',
   },
 
+  {
+    id: 'X07',
+    group: 'language',
+    page: '/designer/lids',
+    locale: 'en',
+    turns: ['Wie füge ich einem Behälter einen Deckel hinzu?'],
+    sources: ['/designer/lids'],
+    expect:
+      'In German, because the question is German, with the English control labels alone, because the app is in English.',
+  },
+  {
+    id: 'X08',
+    group: 'language',
+    page: '/designer/lids',
+    locale: 'de',
+    turns: ['How do I add a lid to a bin?'],
+    sources: ['/designer/lids'],
+    expect:
+      'In English, because the question is English, with each control as its German label and the English label in parentheses, because the app is in German.',
+  },
+
   // Follow-up pairs
   {
     id: 'F01',
