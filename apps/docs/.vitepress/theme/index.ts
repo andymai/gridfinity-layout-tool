@@ -1,4 +1,4 @@
-import { defineAsyncComponent, h } from 'vue';
+import { defineAsyncComponent, defineComponent, h } from 'vue';
 import DefaultTheme from 'vitepress/theme';
 import type { Theme } from 'vitepress';
 import AppTools from './components/AppTools.vue';
@@ -20,12 +20,12 @@ const AskAiPanel = defineAsyncComponent(() => import('./components/AskAiPanel.vu
 
 // The markdown rule replaces every <Ui> tag before Vue sees a page. A tag that
 // slips past it would render as an empty node, so the build fails instead.
-const UnrenderedUi = {
+const UnrenderedUi = defineComponent({
   props: { k: { type: String, default: '' } },
-  setup(props: { k: string }): never {
+  setup(props) {
     throw new Error(`<Ui k="${props.k}" /> reached Vue without its label`);
   },
-};
+});
 
 // After a deploy, an open tab still asks for the old chunk hashes, and the lazy
 // search box 404s. One reload picks up the new ones. The stored time stops a
