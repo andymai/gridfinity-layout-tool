@@ -5,7 +5,7 @@
  */
 import Anthropic from '@anthropic-ai/sdk';
 import { describe, expect, it, vi } from 'vitest';
-import { MODEL, runAgent } from './agent.js';
+import { EFFORT, MODEL, runAgent } from './agent.js';
 import type { AgentEvent, AgentOptions, AgentProgress, RoundBudget } from './agent.js';
 import type { AskCorpus } from './corpus.js';
 import { createToolRunner, toolDefinitions } from './tools.js';
@@ -185,6 +185,16 @@ describe('runAgent', () => {
       'server-side-fallback-2026-07-01',
     ]);
     expect(calls[0]?.tool_choice).toBeUndefined();
+    expect(calls[0]?.output_config).toEqual({ effort: EFFORT });
+  });
+
+  it('asks on the model and effort that a caller sets', async () => {
+    const { client, calls } = scripted([answerRound]);
+    await runAgent({ ...options(client, []), model: 'claude-sonnet-5-5', effort: 'low' });
+    expect(calls[0]).toMatchObject({
+      model: 'claude-sonnet-5-5',
+      output_config: { effort: 'low' },
+    });
   });
 
   it('stops on a refusal and runs no tool from that round', async () => {

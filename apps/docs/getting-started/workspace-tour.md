@@ -40,7 +40,7 @@ From left to right, the layout editor header has these controls:
 | Undo and redo                       | Undo or redo your last change.                                                                        |
 | <Ui k="share.button.shareLayout" /> | Makes a share link for the layout.                                                                    |
 | <Ui k="header.changeLanguage" />    | Sets the language of the Layout Tool.                                                                 |
-| <Ui k="header.sendFeedback" />      | Opens the issue tracker to report a problem.                                                          |
+| <Ui k="header.sendFeedback" />      | Opens the issue tracker to report a bug or another problem.                                           |
 | <Ui k="header.docs" />              | Opens these docs in a new tab. On most screens it shows as a book icon.                               |
 | <Ui k="header.help" />              | Opens help and the list of keyboard shortcuts.                                                        |
 | <Ui k="sidebar.settings" />         | Opens the settings window (the gear icon).                                                            |
