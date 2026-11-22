@@ -55,7 +55,7 @@ describe('suggestFor', () => {
       data: {
         blobSize: 1000,
         modifiedAt,
-        expectedDelta: expectedEnvelopeDelta('designs', modifiedAt, 'stored'),
+        expectedDelta: 56,
       },
     };
     expect(suggestFor(finding).join('\n')).toContain(' 944 ');

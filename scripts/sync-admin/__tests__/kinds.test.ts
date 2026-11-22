@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ALL_KINDS, KIND_SPECS, isKind } from '../lib/kinds';
-import { designShape, expectedEnvelopeDelta } from '../lib/delta';
+import { expectedEnvelopeDelta } from '../lib/delta';
 import { analyze } from '../lib/findings';
 import { itemKey, parseIndexKey } from '../lib/inventory';
 import type { BlobRow, IndexRow, Inventory, Kind } from '../lib/types';
@@ -186,7 +186,7 @@ describe('KIND_SPECS', () => {
   });
 });
 
-describe('assembly and imported-mesh designs', () => {
+describe('design sizes', () => {
   const assembly = {
     name: 'Kit',
     kind: 'assembly',
@@ -213,19 +213,49 @@ describe('assembly and imported-mesh designs', () => {
       parts: [],
     },
   };
+  const variant = {
+    name: 'Bin, deeper',
+    params: binParams,
+    tags: [],
+    variantOf: 'design-1',
+    parentDesignId: 'design_1700000000000_abc123',
+    parentVersionId: 'version-1',
+    parentVersionName: 'Before the cutouts',
+  };
 
-  it('are measured whole, and a consistent pair gives no findings', async () => {
-    const spec = KIND_SPECS.designs;
-    const built = spec.buildPut(assembly, T, 'design-2', { design: assembly });
+  function storedDesign(design: unknown) {
+    const built = KIND_SPECS.designs.buildPut(design, T, 'design-2', { design });
     if (!built.ok) throw new Error(built.error);
     const text = JSON.stringify(built.envelope);
-    const bytes = Buffer.byteLength(text, 'utf8');
-    expect(bytes - built.sizeBytes).toBe(expectedEnvelopeDelta('designs', T, 'stored'));
-    expect(designShape((built.envelope as unknown as { design: unknown }).design)).toBe('stored');
+    return { built, text, bytes: Buffer.byteLength(text, 'utf8') };
+  }
 
+  it.each([
+    ['an assembly', assembly],
+    ['a variant with branch fields', variant],
+  ])('takes %s from its handler, so a consistent pair gives no findings', async (_, design) => {
+    const { built, text, bytes } = storedDesign(design);
+    // Neither fits the plain bin formula, which is why analyze asks the handler.
+    expect(bytes - built.sizeBytes).not.toBe(expectedEnvelopeDelta('designs', T));
     fetchMock.mockResolvedValue({ ok: true, status: 200, text: async () => text });
-    const inv = inventoryOf('designs', bytes, built.sizeBytes);
-    expect(await analyze(inv)).toEqual([]);
+    expect(await analyze(inventoryOf('designs', bytes, built.sizeBytes))).toEqual([]);
+  });
+
+  it('flags a design whose index is off, with the figure a repair writes back', async () => {
+    const { built, text, bytes } = storedDesign(variant);
+    fetchMock.mockResolvedValue({ ok: true, status: 200, text: async () => text });
+    const findings = await analyze(inventoryOf('designs', bytes, built.sizeBytes - 30));
+    expect(findings).toHaveLength(1);
+    expect(findings[0]).toMatchObject({
+      kind: 'index_size_undercount',
+      data: { drift: 30, expectedDelta: bytes - built.sizeBytes },
+    });
+  });
+
+  it('leaves design sizes alone without the payload', async () => {
+    const { built, bytes } = storedDesign(variant);
+    const inv = inventoryOf('designs', bytes, built.sizeBytes - 30);
+    expect(await analyze(inv, { fetchPayloads: false })).toEqual([]);
   });
 });
 

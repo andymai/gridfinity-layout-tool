@@ -165,22 +165,6 @@ describe('analyze', () => {
     expect(findings.filter(isSizeFinding)).toEqual([]);
   });
 
-  it('leaves design sizes to the payload pass, which knows how the design was measured', async () => {
-    const blob = designBlob('u1', 'd3', []);
-    const entry = designEntry('u1', 'd3', []);
-    const off = { ...entry, entry: { ...entry.entry, sizeBytes: entry.entry.sizeBytes - 30 } };
-    const unfetched = await analyze(makeInventory([blob], [off]), { fetchPayloads: false });
-    expect(unfetched.filter(isSizeFinding)).toEqual([]);
-
-    mockPayload({
-      design: { name: 'Bin', params: designParams, tags: [] },
-      modifiedAt: T,
-      schemaVersion: 1,
-    });
-    const fetched = await analyze(makeInventory([blob], [off]));
-    expect(fetched.filter(isSizeFinding).map((f) => f.kind)).toEqual(['index_size_undercount']);
-  });
-
   it('flags orphan blob (blob without index entry)', async () => {
     const blob = layoutBlob('u1', 'orphan');
     mockPayload({ layout: layoutPayload, modifiedAt: T, schemaVersion: 1 });
