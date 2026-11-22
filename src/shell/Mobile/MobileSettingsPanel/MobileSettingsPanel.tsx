@@ -251,8 +251,13 @@ export function MobileSettingsPanel() {
             />
           </div>
 
-          <SettingsRow label={t('printBedInput.printerLabel')} variant="mobile">
+          <SettingsRow
+            label={t('printBedInput.printerLabel')}
+            htmlFor="mobilePrinterPreset"
+            variant="mobile"
+          >
             <PrinterPresetSelect
+              id="mobilePrinterPreset"
               width={printBedSize}
               depth={printBedDepth}
               onChange={setPrintBedSize}

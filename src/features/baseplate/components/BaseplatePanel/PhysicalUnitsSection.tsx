@@ -177,7 +177,7 @@ export function PhysicalUnitsSection() {
               id="bp-printerPreset"
               width={printBedSize}
               depth={printBedDepth ?? printBedSize}
-              onChange={(w, d) => useLayoutStore.getState().setPrintBedSize(w, d)}
+              onChange={mutations.setPrintBedSize}
               surface="baseplate"
             />
           </SettingsRow>
@@ -192,7 +192,7 @@ export function PhysicalUnitsSection() {
                 id="bp-printBedSize"
                 width={printBedSize}
                 depth={printBedDepth ?? printBedSize}
-                onChange={(w, d) => useLayoutStore.getState().setPrintBedSize(w, d)}
+                onChange={mutations.setPrintBedSize}
                 variant="compact"
               />
             </SettingsRow>
