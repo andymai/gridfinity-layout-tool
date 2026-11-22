@@ -1,0 +1,65 @@
+docs/schemas/constraints.md
+  s_f8efc8defc13ab::t_c5ba29ae79c28a 67-68,70-71,98-99,101
+  s_f8efc8defc13ab::t_ae54e261eef7ba 139-140,150-155,161-162,193,224,226-229
+src/shared/schema/binContentKeys.ts
+  s_f8efc8defc13ab::t_7da4016610be43 29
+  s_f8efc8defc13ab::t_1a5e28a0dc061e 58-62
+scripts/schema/designExport.test.ts
+  s_f8efc8defc13ab::t_0e06d0ddb9123d 1-4,8,12-140,142-144,148-151
+  s_f8efc8defc13ab::t_88e7d6b6f66777 5-7,9-11
+  s_f8efc8defc13ab::t_49f8dbf7f51262 141,145-147
+src/shared/types/bin.ts
+  s_f8efc8defc13ab::t_9da034aa61905d 99
+public/schema/bin-design.schema.json
+  s_f8efc8defc13ab::t_07d4cf7d035706 637-646,661-684,696,752-753,956-960,963-1013,1282-1291,1359-1369,1406-1416,1429,1445,1544,1551,1554,1561,1564,1571,1724,1804,1814,1962,1964,2002-2003,2005-2006,2013,2015-2016,2021-2028,2087-2138,2306,2314-2317,2333-2347,2364-2373,2538,2654-2656,2658,3108
+  s_f8efc8defc13ab::t_c5a9b278befd53 697
+docs/schemas/examples/bin-design-full.json
+  s_f8efc8defc13ab::t_d0d170a081b5f1 46
+  s_f8efc8defc13ab::t_91f22807624aa0 177
+src/shared/schema/binDesignKeys.ts
+  s_f8efc8defc13ab::t_c9088aa4ca7fb6 375-379
+  s_f8efc8defc13ab::t_832240e0718b5b 9
+.claude/skills/json-schemas/SKILL.md
+  s_f8efc8defc13ab::t_2039d6547dbf0b 117
+  s_f8efc8defc13ab::t_9d9461dac8ee29 116,118
+  s_f8efc8defc13ab::t_3875236a6c335b 88
+  s_f8efc8defc13ab::t_490065235c1dfc 108-109
+scripts/doc-budget.json
+  s_f8efc8defc13ab::t_d4e282f7c71442 36
+scripts/schema/bounds.test.ts
+  s_f8efc8defc13ab::t_899f7355db91a5 320
+  s_f8efc8defc13ab::t_2ed94000b8246d 46-49,98-99,112-117,138,177-178,185-186,202,229-234
+  s_f8efc8defc13ab::t_a523abd790897c 45
+src/shared/schema/keys.ts
+  s_f8efc8defc13ab::t_b1f15814dd15cc 47,92,170,192,239,271
+docs/schemas/bin-design.md
+  s_f8efc8defc13ab::t_db4af2f59fcbad 455-462
+  s_f8efc8defc13ab::t_c5ba29ae79c28a 261-265,267-269,412-413
+  s_f8efc8defc13ab::t_b76b27a84460c6 222,266
+  s_f8efc8defc13ab::t_57323ecb902e5c 508,519,549-550
+  s_f8efc8defc13ab::t_d086251a7f6b76 829-836
+scripts/schema/genSchemaDocs.ts
+  s_f8efc8defc13ab::t_bbc1abd2aa12a2 288,296
+  s_f8efc8defc13ab::t_102e79c1780f45 253,256,258-268
+  s_f8efc8defc13ab::t_338b8d1aae4bf7 57-58
+  s_f8efc8defc13ab::t_50341d9e24b444 115-117
+  s_f8efc8defc13ab::t_d87b1afeab598b 59
+  s_f8efc8defc13ab::t_50ea06a0c7c247 80-87
+  s_f8efc8defc13ab::t_73657832375363 50-56,60-67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6970931841ecdd6dd9e2b9d45651791c006b8f9d",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
