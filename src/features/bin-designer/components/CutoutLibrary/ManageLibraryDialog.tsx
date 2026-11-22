@@ -40,6 +40,7 @@ import {
 import { useCutoutLibrary } from '@/features/bin-designer/library/cutoutLibraryStore';
 import {
   downloadLibraryItem,
+  importedMeshesUsable,
   parseLibraryItemJSON,
 } from '@/features/bin-designer/library/libraryFile';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
@@ -66,7 +67,7 @@ export function ManageLibraryDialog({ onClose }: ManageLibraryDialogProps) {
 
   const importFile = async (file: File) => {
     const parsed = parseLibraryItemJSON(await file.text(), t);
-    if (!parsed) {
+    if (!parsed || !(await importedMeshesUsable(parsed.content))) {
       addToast(t('binDesigner.cutouts.library.importFailed'), 'error');
       return;
     }

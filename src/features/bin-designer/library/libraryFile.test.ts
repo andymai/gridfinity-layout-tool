@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { Cutout } from '@/features/bin-designer/types';
 import { getStaticTranslation } from '@/i18n';
 import type { TFunction } from '@/i18n';
-import { exportLibraryItemJSON, parseLibraryItemJSON } from './libraryFile';
+import { exportLibraryItemJSON, importedMeshesUsable, parseLibraryItemJSON } from './libraryFile';
 
 const t: TFunction = getStaticTranslation;
 
@@ -75,5 +75,29 @@ describe('library item file', () => {
     expect(
       parseLibraryItemJSON(JSON.stringify({ type, params: { cutouts: [mesh] } }), t)
     ).toBeNull();
+  });
+
+  it('takes a file only when its meshes are inline and decode', async () => {
+    const ref = {
+      name: 'tool',
+      hash: 'a'.repeat(64),
+      triangleCount: 4,
+      sizeMm: { x: 1, y: 1, z: 1 },
+      bytes: 10,
+    };
+    expect(await importedMeshesUsable({ params: { cutouts: [cutout] } })).toBe(true);
+    expect(
+      await importedMeshesUsable({ params: { cutouts: [cutout], meshAssets: { m1: ref } } })
+    ).toBe(false);
+    const broken = {
+      name: 'tool',
+      data: 'not-a-mesh',
+      triangleCount: 4,
+      sizeMm: { x: 1, y: 1, z: 1 },
+      outlines: [],
+    };
+    expect(
+      await importedMeshesUsable({ params: { cutouts: [cutout], meshAssets: { m1: broken } } })
+    ).toBe(false);
   });
 });

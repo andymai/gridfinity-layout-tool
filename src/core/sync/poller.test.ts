@@ -16,8 +16,12 @@ import type {
 
 const fetchMock = vi.fn();
 const enqueueMock = vi.hoisted(() => vi.fn(async () => {}));
+const outboxEntries = vi.hoisted(() => ({ list: [] as Array<{ kind: string; id: string }> }));
 
-vi.mock('./outbox', () => ({ enqueue: enqueueMock }));
+vi.mock('./outbox', () => ({
+  enqueue: enqueueMock,
+  getAll: vi.fn(async () => outboxEntries.list),
+}));
 
 vi.mock('./apiFetch', () => ({
   apiFetch: (url: string, init?: RequestInit) => fetchMock(url, init),
@@ -227,6 +231,22 @@ describe('gated kinds: the cutout library', () => {
     fetchMock.mockResolvedValueOnce(listed());
     await pullNow(adapters);
     expect(enqueueMock).not.toHaveBeenCalled();
+  });
+
+  it('does not pull back an item whose local change waits in the outbox', async () => {
+    outboxEntries.list = [{ kind: 'cutoutItems', id: 'clib_deleted' }];
+    fetchMock.mockResolvedValueOnce(
+      manifestResponse({
+        layouts: {},
+        designs: {},
+        cutoutFolders: {},
+        cutoutItems: { clib_deleted: { modifiedAt: 500, sizeBytes: 10 } },
+        indexUpdatedAt: 3,
+      })
+    );
+    await pullNow(adapters);
+    expect(items.applyRemote).not.toHaveBeenCalled();
+    outboxEntries.list = [];
   });
 });
 

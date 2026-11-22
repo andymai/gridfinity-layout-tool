@@ -4,7 +4,7 @@ import { apiFetch } from './apiFetch';
 import { useSessionStore } from './session/useSession';
 import { useSyncStatusStore } from './status';
 import { isKindServed, noteServedKinds, servedGatedKinds } from './servedKinds';
-import { enqueue as outboxEnqueue } from './outbox';
+import { enqueue as outboxEnqueue, getAll as outboxGetAll } from './outbox';
 import type { SyncAdapter, SyncAdapters, SyncKind } from './adapters/types';
 
 interface IndexEntry {
@@ -177,7 +177,12 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   for (const kind of ['cutoutFolders', 'cutoutItems'] as const) {
     if (!isKindServed(kind)) continue;
     const remote = manifest[kind] ?? {};
-    libraryChanges += await diffKind(adapters[kind], kind, remote, capturedGeneration);
+    // A change held while the switch was off is newer than what the server
+    // has: a held delete must not be undone by pulling the item back.
+    const held = new Set(
+      (await outboxGetAll()).filter((entry) => entry.kind === kind).map((entry) => entry.id)
+    );
+    libraryChanges += await diffKind(adapters[kind], kind, remote, capturedGeneration, held);
     if (newlyServed.includes(kind)) {
       await queueUnsynced(adapters[kind], kind, remote, capturedGeneration);
     }
@@ -213,7 +218,8 @@ async function diffKind(
   adapter: SyncAdapter,
   kind: SyncKind,
   remote: Record<string, IndexEntry>,
-  generation: number
+  generation: number,
+  skip: ReadonlySet<string> = new Set()
 ): Promise<number> {
   const localItems = await adapter.list();
   const localByMtime = new Map<string, number>();
@@ -222,6 +228,7 @@ async function diffKind(
   let applied = 0;
   for (const [id, entry] of Object.entries(remote)) {
     if (generation !== pullState.generation) break;
+    if (skip.has(id)) continue;
     const localMtime = localByMtime.get(id);
 
     if (entry.deletedAt !== undefined) {

@@ -7,10 +7,16 @@
  */
 
 import type { BinParams } from '@/features/bin-designer/types';
-import { MAX_MESH_TRIANGLES_PER_DESIGN, meshTrianglesTotal } from '@/shared/generation/meshAsset';
+import {
+  MAX_MESH_TRIANGLES_PER_DESIGN,
+  decodeMeshData,
+  hasOversizedMeshAsset,
+  isMeshAssetRef,
+  meshTrianglesTotal,
+} from '@/shared/generation/meshAsset';
 import type { TFunction } from '@/i18n';
 import type { Result, StorageMeshMissingError, StorageNotSavedError } from '@/core/result';
-import { err, isErr, OK, storageNotSaved } from '@/core/result';
+import { err, isErr, isOk, OK, storageNotSaved } from '@/core/result';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { migrateParams } from '@/features/bin-designer/constants/paramMigration';
 import { validateImportedBinParams } from '@/features/bin-designer/utils/designJson';
@@ -121,4 +127,20 @@ export function parseLibraryItemJSON(json: string, t: TFunction): ParsedLibraryF
       },
     },
   };
+}
+
+/**
+ * Whether every mesh in an imported item is inline and decodes. A file must
+ * carry its meshes: a ref names a file this device may never have, and a mesh
+ * that does not decode would save an item that can never be placed.
+ */
+export async function importedMeshesUsable(content: CutoutLibraryContent): Promise<boolean> {
+  const { meshAssets } = content.params;
+  if (!meshAssets) return true;
+  if (hasOversizedMeshAsset(content.params)) return false;
+  for (const asset of Object.values(meshAssets)) {
+    if (isMeshAssetRef(asset)) return false;
+    if (!isOk(await decodeMeshData(asset.data, asset.triangleCount))) return false;
+  }
+  return true;
 }

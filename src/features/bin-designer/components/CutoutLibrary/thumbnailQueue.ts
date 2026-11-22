@@ -16,7 +16,7 @@ import { getThumbnail, putThumbnail } from '@/features/bin-designer/library/Cuto
 import { regenerateThumbnail } from '@/features/bin-designer/utils/thumbnailRegenerator';
 import { holderMeshHashes } from '@/shared/generation/meshRefs';
 import { hasMeshFile, subscribeMeshFileArrivals } from '@/shared/generation/meshStore';
-import { useDesignerStore } from '@/features/bin-designer/store/designer';
+import { editorBuilding, untilEditorIdle } from '@/features/bin-designer/utils/editorIdle';
 import { thumbnailHost } from './thumbnailHost';
 
 type Listener = (dataUrl: string) => void;
@@ -33,19 +33,6 @@ const waiting = new Map<string, Job>();
 let active: { readonly key: string; readonly job: Job } | null = null;
 let running = false;
 let stopArrivals: (() => void) | null = null;
-
-const editorGenerating = () => useDesignerStore.getState().generation.status === 'generating';
-
-function untilEditorIdle(): Promise<void> {
-  if (!editorGenerating()) return Promise.resolve();
-  return new Promise((resolve) => {
-    const stop = useDesignerStore.subscribe((state) => {
-      if (state.generation.status === 'generating') return;
-      stop();
-      resolve();
-    });
-  });
-}
 
 const keyOf = (item: CutoutLibraryItem) => `${item.id}@${item.updatedAt}`;
 
@@ -90,7 +77,7 @@ async function drain(): Promise<void> {
         const dataUrl = host ? await regenerateThumbnail(host) : null;
         if (!dataUrl) {
           // An editor build that started meanwhile cancelled this render.
-          if (editorGenerating() && job.listeners.size > 0) pending.set(key, job);
+          if (editorBuilding() && job.listeners.size > 0) pending.set(key, job);
           continue;
         }
         if (job.listeners.size === 0) continue;

@@ -14,6 +14,7 @@ import { bridgeManager } from '@/shared/generation/bridge';
 import type { BinParams } from '@/features/bin-designer/types';
 import { LID_FIT_CLEARANCE, resolveLidCavityExtraMm } from '@/features/bin-designer/types';
 import { ISOMETRIC_DIRECTION, calculateIdealDistance } from './cameraFraming';
+import { untilEditorIdle } from './editorIdle';
 import { THREE_COLORS } from '@/shared/hooks/useThemeEffect';
 import {
   binLipTopWorldZ,
@@ -103,6 +104,10 @@ async function renderThumbnail(
 
     if (signal?.aborted) return null;
 
+    // Checked here, at the head of the queue: a caller's own check went stale
+    // while it waited for the renders before it.
+    await untilEditorIdle();
+    if (signal?.aborted) return null;
     const result = await bridge.generateImmediate(params);
     if (signal?.aborted) return null;
 
