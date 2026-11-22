@@ -132,9 +132,9 @@ export const GOLDEN: readonly GoldenCase[] = [
     group: 'lookup',
     page: '/layouts/placing-bins',
     turns: ['Can I type a bin height in millimeters instead of height units?'],
-    sources: ['/getting-started/first-drawer', '/concepts/units'],
+    sources: ['/layouts/placing-bins', '/designer/size-and-shape'],
     expect:
-      'Yes: the Height (mm) field takes the height in millimeters, and shows it in height units below.',
+      "Yes, in the layout editor: the inspector's Height (mm) field takes millimeters. The bin designer's Height stepper takes height units.",
   },
   {
     id: 'L12',
@@ -549,8 +549,9 @@ export const GOLDEN: readonly GoldenCase[] = [
     page: '/concepts/units',
     locale: 'ja',
     turns: ['ビンの高さをミリメートルで入力できますか？'],
-    sources: ['/concepts/units'],
-    expect: 'In Japanese: yes, heights take millimeters.',
+    sources: ['/layouts/placing-bins', '/designer/size-and-shape'],
+    expect:
+      "In Japanese: yes, in the layout editor the inspector's Height (mm) field takes millimeters; the bin designer's Height stepper takes height units.",
   },
   {
     id: 'X06',
