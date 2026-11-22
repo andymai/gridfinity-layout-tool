@@ -152,6 +152,18 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
     }
     const last = results.at(-1) as TurnResult;
     const checks = checkAnswer(last.answer, corpus, labelsFor(locale), source.english);
+    // Citations count on the last answer, but every turn must link and label correctly.
+    const earlier = results
+      .slice(0, -1)
+      .map((t) => checkAnswer(t.answer, corpus, labelsFor(locale), source.english));
+    const allChecks: AnswerChecks = {
+      ...checks,
+      brokenLinks: [...earlier.flatMap((c) => c.brokenLinks), ...checks.brokenLinks],
+      unknownLabels: [
+        ...new Set([...earlier.flatMap((c) => c.unknownLabels), ...checks.unknownLabels]),
+      ],
+      unknownCaptures: [...earlier.flatMap((c) => c.unknownCaptures), ...checks.unknownCaptures],
+    };
     const citesSource =
       golden.sources.length === 0
         ? null
@@ -161,7 +173,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
         id: golden.id,
         group: golden.group,
         turns: results,
-        checks,
+        checks: allChecks,
         citesSource,
         verdict: null,
         judgeUsd: 0,
@@ -195,7 +207,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
       id: golden.id,
       group: golden.group,
       turns: results,
-      checks,
+      checks: allChecks,
       citesSource,
       verdict: graded.verdict,
       judgeUsd: graded.costUsd,

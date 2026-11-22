@@ -12,10 +12,8 @@ export interface GoldenCase {
   /** The docs page the reader is on. */
   readonly page: string;
   readonly locale?: string;
-  /** One question, or two for a follow-up pair. */
   readonly turns: readonly string[];
   readonly sources: readonly string[];
-  /** What a correct answer says, for the judge. */
   readonly expect: string;
 }
 

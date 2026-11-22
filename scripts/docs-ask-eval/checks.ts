@@ -8,9 +8,7 @@ const CAPTURE = /\[\[capture:([A-Za-z0-9._-]+)\]\]/g;
 const ANCHOR = /\{#([^}]+)\}/g;
 
 export interface AnswerChecks {
-  /** Docs links whose page or anchor does not exist. */
   readonly brokenLinks: readonly string[];
-  /** Docs pages that the answer links, without anchors. */
   readonly citedPages: readonly string[];
   /** Chip labels found in neither the reader's label table nor the English one. */
   readonly unknownLabels: readonly string[];
@@ -18,13 +16,17 @@ export interface AnswerChecks {
   readonly linksForum: boolean;
 }
 
-/** A docs URL as the corpus key of its page, or null for any other URL. */
 export function docsPage(href: string): { page: string; anchor: string | null } | null {
-  const local = href.startsWith(DOCS_ORIGIN) ? href.slice(DOCS_ORIGIN.length) : href;
-  const match = /^\/docs(\/[^#?]*)?(?:\?[^#]*)?(?:#(.*))?$/.exec(local);
-  if (!match) return null;
+  let url: URL;
+  try {
+    url = new URL(href, DOCS_ORIGIN);
+  } catch {
+    return null;
+  }
+  const match = /^\/docs(\/.*)?$/.exec(url.pathname);
+  if (url.origin !== DOCS_ORIGIN || !match) return null;
   const path = (match[1] ?? '').replace(/\.(md|html)$/, '').replace(/\/$/, '');
-  return { page: path === '' ? '/index' : path, anchor: match[2] || null };
+  return { page: path === '' ? '/index' : path, anchor: url.hash.slice(1) || null };
 }
 
 export function anchorsOf(markdown: string): Set<string> {

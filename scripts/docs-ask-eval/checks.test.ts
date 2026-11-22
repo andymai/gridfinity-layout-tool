@@ -37,6 +37,7 @@ describe('docsPage', () => {
       anchor: null,
     });
     expect(docsPage('https://github.com/andymai/gridfinity-layout-tool')).toBeNull();
+    expect(docsPage('https://gridfinitylayouttool.com.example.com/docs/designer/lids')).toBeNull();
   });
 });
 
