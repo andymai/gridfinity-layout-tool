@@ -29,10 +29,14 @@ const NOUNS: Readonly<Record<StepKind, [string, string]>> = {
 
 const summary = computed(() => {
   const counts = new Map<StepKind, number>();
+  let failed = 0;
   for (const step of props.exchange.steps) {
     if (step.state === 'done') counts.set(step.kind, (counts.get(step.kind) ?? 0) + 1);
+    else failed++;
   }
-  return [...counts].map(([kind, n]) => `${n} ${NOUNS[kind][n === 1 ? 0 : 1]}`).join(' · ');
+  const parts = [...counts].map(([kind, n]) => `${n} ${NOUNS[kind][n === 1 ? 0 : 1]}`);
+  if (failed > 0) parts.push(`${failed} failed`);
+  return parts.join(' · ');
 });
 
 async function copy(): Promise<void> {
@@ -58,7 +62,7 @@ async function copy(): Promise<void> {
         </li>
       </ol>
       <button
-        v-if="summary && !live"
+        v-if="exchange.steps.length > 0 && !live"
         class="steps-summary"
         type="button"
         :aria-expanded="showSteps"
@@ -245,7 +249,7 @@ async function copy(): Promise<void> {
   background: var(--vp-c-default-soft);
 }
 .answer-body :deep(.code-block) {
-  position: relative;
+  display: grid;
   margin: 8px 0;
 }
 .answer-body :deep(pre) {
@@ -263,9 +267,8 @@ async function copy(): Promise<void> {
   font-size: inherit;
 }
 .answer-body :deep(.copy-code) {
-  position: absolute;
-  top: 6px;
-  right: 6px;
+  justify-self: end;
+  margin-bottom: 4px;
   padding: 2px 8px;
   border: 1px solid var(--vp-c-divider);
   border-radius: 6px;

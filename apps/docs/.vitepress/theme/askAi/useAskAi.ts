@@ -277,11 +277,9 @@ export async function ask(question: string, page: string): Promise<void> {
         current.notice = NOTICES[payload.code] ?? null;
         if (payload.code === 'resting') askAi.resting = true;
       } else if (event === 'error') {
-        settleSteps(current);
         current.status = 'error';
         current.notice = errorNotice(500, payload.code);
       } else if (event === 'done') {
-        settleSteps(current);
         current.status = 'done';
         // A reload shows only the last message, so the live view does too.
         if (messages.length > 0) current.text = messageText(messages.at(-1));
@@ -306,10 +304,10 @@ export async function ask(question: string, page: string): Promise<void> {
       current.notice = errorNotice(500, null);
     }
   } catch {
-    settleSteps(current);
     current.status = abort.signal.aborted ? 'stopped' : 'error';
     if (current.status === 'error') current.notice = errorNotice(0, null);
   } finally {
+    settleSteps(current);
     controller = null;
   }
 }

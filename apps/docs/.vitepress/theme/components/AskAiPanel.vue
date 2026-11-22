@@ -31,13 +31,15 @@ const working = computed(() =>
   askAi.exchanges.some((e) => e.status === 'waiting' || e.status === 'streaming')
 );
 // A live region over the chat would read each streamed chunk out again; this
-// line says only when an answer starts and ends.
-const announcement = computed(() => {
-  const last = askAi.exchanges.at(-1);
-  if (!last) return '';
-  if (last.status === 'waiting' || last.status === 'streaming') return 'Ask AI is answering.';
-  return last.notice ?? (last.status === 'done' ? 'Ask AI answered.' : '');
-});
+// line says only when an answer starts and ends. Each answer's notice has its
+// own status line.
+const ANNOUNCEMENTS: Readonly<Record<string, string>> = {
+  waiting: 'Ask AI is answering.',
+  streaming: 'Ask AI is answering.',
+  done: 'Ask AI answered.',
+  stopped: 'Ask AI stopped.',
+};
+const announcement = computed(() => ANNOUNCEMENTS[askAi.exchanges.at(-1)?.status ?? ''] ?? '');
 // Below the dock width the panel covers the page, so it acts as a modal view.
 const covering = computed(() => !askAi.docked && askAi.open);
 
