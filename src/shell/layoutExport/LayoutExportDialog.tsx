@@ -4,11 +4,15 @@
  * while the per-file names inside come from each linked design.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useTranslation } from '@/i18n';
-import { ExportDialog } from '@/shared/components/ExportDialog';
+import {
+  ExportDialog,
+  ExportSupportPrompt,
+  recordExportAndShouldPromptSupport,
+} from '@/shared/components/ExportDialog';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
 import { getLinkedBins } from '@/features/design-linking';
 import { useLayoutExport } from './useLayoutExport';
@@ -50,16 +54,37 @@ export function LayoutExportDialog({ open, onClose }: LayoutExportDialogProps) {
       ? sanitizeName(config.customName)
       : sanitizeName(layoutName);
 
+  const [justExported, setJustExported] = useState(false);
+
+  const closeDialog = useCallback(() => {
+    setJustExported(false);
+    onClose();
+  }, [onClose]);
+
   const handleDownload = useCallback(async () => {
     const ok = await exportLayout(format, zipBaseName, config);
-    if (ok) onClose();
-  }, [exportLayout, format, zipBaseName, config, onClose]);
+    if (!ok) return;
+    // The same gate as the bin and baseplate exports: a returning maker, at
+    // most once per cooldown. The hook has already toasted the result.
+    if (recordExportAndShouldPromptSupport()) {
+      setJustExported(true);
+      return;
+    }
+    closeDialog();
+  }, [exportLayout, format, zipBaseName, config, closeDialog]);
 
   // Don't let the dialog close mid-export — the work would finish and download
   // a file the user appeared to cancel.
   const handleClose = useCallback(() => {
-    if (!isExporting) onClose();
-  }, [isExporting, onClose]);
+    if (!isExporting) closeDialog();
+  }, [isExporting, closeDialog]);
+
+  // Re-opening the dialog always returns to the form, never a stale success view.
+  const wasOpen = useRef(open);
+  useEffect(() => {
+    if (open && !wasOpen.current) setJustExported(false);
+    wasOpen.current = open;
+  }, [open]);
 
   return (
     <ExportDialog
@@ -88,6 +113,14 @@ export function LayoutExportDialog({ open, onClose }: LayoutExportDialogProps) {
           : totalCount === 0
             ? t('layoutExport.noBins')
             : t('layoutExport.noLinkedBins')
+      }
+      exported={justExported}
+      successContent={
+        <ExportSupportPrompt
+          fileName={`${zipBaseName}.zip`}
+          onDone={closeDialog}
+          source="layout_export"
+        />
       }
     />
   );
