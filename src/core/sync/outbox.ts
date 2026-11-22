@@ -95,25 +95,41 @@ export function backoffDelayMs(attempts: number): number {
  * Resets `attempts` to 0 and `nextAttemptAt` to now so the drainer
  * picks it up immediately (next user edit = retry signal too).
  */
-export async function enqueue(input: {
+export interface EnqueueInput {
   kind: SyncKind;
   id: string;
   modifiedAt: number;
   op: 'put' | 'delete';
-}): Promise<void> {
+}
+
+export async function enqueue(input: EnqueueInput): Promise<void> {
+  await enqueueMany([input]);
+}
+
+/**
+ * Enqueue several pushes in one transaction. The puts land in order, so a
+ * later input for the same item replaces an earlier one, as `enqueue` would.
+ */
+export async function enqueueMany(inputs: readonly EnqueueInput[]): Promise<void> {
+  if (inputs.length === 0) return;
   const db = await outboxDb.get();
   const now = Date.now();
-  const entry: OutboxEntry = {
-    key: entryKey(input.kind, input.id),
-    kind: input.kind,
-    id: input.id,
-    modifiedAt: input.modifiedAt,
-    op: input.op,
-    attempts: 0,
-    nextAttemptAt: now,
-    enqueuedAt: now,
-  };
-  await db.put(STORE_NAME, entry);
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  await Promise.all([
+    ...inputs.map((input) =>
+      tx.store.put({
+        key: entryKey(input.kind, input.id),
+        kind: input.kind,
+        id: input.id,
+        modifiedAt: input.modifiedAt,
+        op: input.op,
+        attempts: 0,
+        nextAttemptAt: now,
+        enqueuedAt: now,
+      } satisfies OutboxEntry)
+    ),
+    tx.done,
+  ]);
 }
 
 /**
