@@ -276,7 +276,8 @@ describe('PUT', () => {
   });
 
   // Validators echo request keys and map ids into their messages, so the log
-  // carries only the validator's code and the top-level field.
+  // carries only the validator's code and the top-level field. Compartment
+  // messages hold no request text, so their rule is logged, digits collapsed.
   it.each([
     ['an unknown key with a space', { featureColors: { 'private text': true } }, 'featureColors'],
     [
@@ -286,6 +287,23 @@ describe('PUT', () => {
     ],
     ['a key with a line break', { featureColors: { 'line\nbreak': true } }, 'featureColors'],
     ['a map id', { meshAssets: { 'private.customer@example.test': null } }, 'meshAssets'],
+    [
+      'a compartment rule',
+      { compartments: { cols: 2, rows: 1, thickness: 1.2, cells: [0, 1.5] } },
+      'compartments.cells[#] must be a non-negative integer',
+    ],
+    [
+      'a compartment rule with numbers',
+      { compartments: { cols: 2, rows: 1, thickness: 1.2, cells: [0, 1], drawnUnitCells: [1, 1] } },
+      'compartments.drawnUnitCells has duplicate ID #',
+    ],
+    [
+      'a compartment rule that lists its allowed values',
+      { compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0], labelIcons: ['nope'] } },
+      expect.stringMatching(
+        /^(?=.{160}$)compartments\.labelIcons\[#\] must be null or one of: bolt, /
+      ),
+    ],
   ])('logs a rejection for %s with no request text', async (_label, extra, field) => {
     const warn = vi.spyOn(logger, 'warn').mockImplementation(() => undefined);
     const { default: handler } = await import('./[id]');

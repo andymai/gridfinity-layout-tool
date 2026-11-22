@@ -39,10 +39,19 @@ type RedisClient = NonNullable<ReturnType<typeof getRedis>>;
  * itself stays out of the log: validators echo request keys and map ids into
  * it, so a hand-made request could put any text there. The first segment is
  * always a field name the server wrote.
+ *
+ * `compartments` is the exception: `validateCompartments` writes only fixed
+ * names and integers it has already checked into a message, and it has dozens
+ * of rules, so the whole message is kept with its digits collapsed.
  */
 function rejectedField(error: string): string {
   const first = /^[^\s.[:]*/.exec(error)?.[0] ?? '';
-  return /^[A-Za-z]{1,40}$/.test(first) ? first : '<other>';
+  if (!/^[A-Za-z]{1,40}$/.test(first)) return '<other>';
+  if (first !== 'compartments') return first;
+  const rule = error.replace(/\d+/g, '#');
+  // Check every character first: a list of allowed values can run long, and
+  // the rule that names it comes before the list.
+  return /^[\w .,:'|()<>×#[\]-]+$/.test(rule) ? rule.slice(0, 160) : first;
 }
 
 export { MESH_MISSING_STATUS };
