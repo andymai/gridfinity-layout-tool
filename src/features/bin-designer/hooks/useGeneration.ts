@@ -545,6 +545,10 @@ export function useGeneration(): void {
       initializedRef.current = false;
       bridgeManager.release();
       if (acquiredPreview) bridgeManager.releasePreview();
+      // A build cut off here ends as a cancel, which leaves the status alone;
+      // anything that waits for the editor to be idle would wait for good.
+      const store = useDesignerStore.getState();
+      if (store.generation.status === 'generating') store.setGenerationStatus('idle');
     };
   }, [setWasmStatus, setDraftResult, runGeneration, runItemGeneration, dispatchDraft]);
 

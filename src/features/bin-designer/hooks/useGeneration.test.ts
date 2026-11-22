@@ -222,6 +222,18 @@ describe('useGeneration', () => {
     expect(mockRelease).toHaveBeenCalledTimes(1);
   });
 
+  it('does not leave the status at generating when it unmounts mid-build', async () => {
+    const { unmount } = renderHook(() => useGeneration());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    act(() => useDesignerStore.getState().setGenerationStatus('generating'));
+
+    unmount();
+
+    expect(useDesignerStore.getState().generation.status).toBe('idle');
+  });
+
   it('handles generation error', async () => {
     (mockBridge.generate as ReturnType<typeof vi.fn>).mockRejectedValue(
       new Error('Generation failed')

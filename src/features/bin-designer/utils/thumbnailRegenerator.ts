@@ -106,8 +106,7 @@ async function renderThumbnail(
 
     // Checked here, at the head of the queue: a caller's own check went stale
     // while it waited for the renders before it.
-    await untilEditorIdle(signal);
-    if (signal?.aborted) return null;
+    if (!(await untilEditorIdle(signal))) return null;
     const result = await bridge.generateImmediate(params);
     if (signal?.aborted) return null;
 

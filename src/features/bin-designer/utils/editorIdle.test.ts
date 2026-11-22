@@ -12,7 +12,7 @@ describe('untilEditorIdle', () => {
 
   it('resolves at once while the editor is idle', async () => {
     expect(editorBuilding()).toBe(false);
-    await expect(untilEditorIdle()).resolves.toBeUndefined();
+    await expect(untilEditorIdle()).resolves.toBe(true);
   });
 
   it('waits for a build to end', async () => {
@@ -28,12 +28,12 @@ describe('untilEditorIdle', () => {
     expect(done).toBe(true);
   });
 
-  it('stops waiting after its bound, and when its caller aborts', async () => {
+  it('reports false when its bound passes or its caller aborts first', async () => {
     setStatus('generating');
-    await expect(untilEditorIdle(undefined, 5)).resolves.toBeUndefined();
+    await expect(untilEditorIdle(undefined, 5)).resolves.toBe(false);
     const controller = new AbortController();
     const waiting = untilEditorIdle(controller.signal);
     controller.abort();
-    await expect(waiting).resolves.toBeUndefined();
+    await expect(waiting).resolves.toBe(false);
   });
 });
