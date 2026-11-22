@@ -30,16 +30,34 @@ const starters = computed<string[]>(() => {
 const working = computed(() =>
   askAi.exchanges.some((e) => e.status === 'waiting' || e.status === 'streaming')
 );
-// A live region over the chat would read each streamed chunk out again; this
-// line says only when an answer starts and ends. Each answer's notice has its
-// own status line.
+// A live region over the chat would read each streamed chunk out again, and a
+// status element that mounts with its text is often not read at all. This one
+// line, always mounted, says when an answer starts and ends, and why it failed.
 const ANNOUNCEMENTS: Readonly<Record<string, string>> = {
   waiting: 'Ask AI is answering.',
   streaming: 'Ask AI is answering.',
   done: 'Ask AI answered.',
   stopped: 'Ask AI stopped.',
 };
-const announcement = computed(() => ANNOUNCEMENTS[askAi.exchanges.at(-1)?.status ?? ''] ?? '');
+const announcement = computed(() => {
+  const last = askAi.exchanges.at(-1);
+  if (!last) return '';
+  if (last.status === 'waiting' || last.status === 'streaming') return ANNOUNCEMENTS.streaming;
+  return last.notice ?? ANNOUNCEMENTS[last.status] ?? '';
+});
+
+// The composer gives way to the full-chat prompt and back. Focus that was in
+// the panel follows; a restore at page load takes none from the page.
+watch(
+  () => askAi.full,
+  async (full) => {
+    const inPanel = panel.value?.contains(document.activeElement) ?? false;
+    await nextTick();
+    if (!inPanel) return;
+    if (full) panel.value?.querySelector<HTMLElement>('.panel-footer button')?.focus();
+    else input.value?.focus();
+  }
+);
 // Below the dock width the panel covers the page, so it acts as a modal view.
 const covering = computed(() => !askAi.docked && askAi.open);
 

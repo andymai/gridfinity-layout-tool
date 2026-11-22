@@ -93,7 +93,7 @@ async function copy(): Promise<void> {
       </div>
 
       <p v-if="exchange.status === 'stopped'" class="notice">Stopped.</p>
-      <p v-if="exchange.notice" class="notice" role="status">{{ exchange.notice }}</p>
+      <p v-if="exchange.notice" class="notice">{{ exchange.notice }}</p>
 
       <div v-if="!live && exchange.status !== 'waiting'" class="actions">
         <button v-if="exchange.text" type="button" @click="copy">

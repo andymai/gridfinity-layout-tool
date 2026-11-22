@@ -185,7 +185,9 @@ function onShortcut(event: KeyboardEvent): void {
   if (event.key.toLowerCase() !== 'i') return;
   event.preventDefault();
   if (askAi.docked) {
-    document.querySelector<HTMLTextAreaElement>('#ask-ai-panel textarea')?.focus();
+    document
+      .querySelector<HTMLElement>('#ask-ai-panel textarea, #ask-ai-panel .panel-footer button')
+      ?.focus();
   } else if (askAi.open) {
     void closeAskAi();
   } else {
