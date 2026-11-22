@@ -27,4 +27,13 @@ describe('untilEditorIdle', () => {
     await waiting;
     expect(done).toBe(true);
   });
+
+  it('stops waiting after its bound, and when its caller aborts', async () => {
+    setStatus('generating');
+    await expect(untilEditorIdle(undefined, 5)).resolves.toBeUndefined();
+    const controller = new AbortController();
+    const waiting = untilEditorIdle(controller.signal);
+    controller.abort();
+    await expect(waiting).resolves.toBeUndefined();
+  });
 });

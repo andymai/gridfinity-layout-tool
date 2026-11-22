@@ -9,14 +9,25 @@ export function editorBuilding(): boolean {
   return useDesignerStore.getState().generation.status === 'generating';
 }
 
-/** Resolve once the designer is not building its preview. */
-export function untilEditorIdle(): Promise<void> {
-  if (!editorBuilding()) return Promise.resolve();
+/**
+ * Resolve once the designer is not building its preview, when `signal`
+ * aborts, or after `maxWaitMs`. The bound matters: a designer that unmounts
+ * mid-build can leave its status at `generating`, and a render waiting on it
+ * holds every thumbnail queued behind it.
+ */
+export function untilEditorIdle(signal?: AbortSignal, maxWaitMs = 15_000): Promise<void> {
+  if (!editorBuilding() || signal?.aborted) return Promise.resolve();
   return new Promise((resolve) => {
-    const stop = useDesignerStore.subscribe((state) => {
-      if (state.generation.status === 'generating') return;
+    const finish = () => {
       stop();
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', finish);
       resolve();
+    };
+    const stop = useDesignerStore.subscribe((state) => {
+      if (state.generation.status !== 'generating') finish();
     });
+    const timer = setTimeout(finish, maxWaitMs);
+    signal?.addEventListener('abort', finish);
   });
 }

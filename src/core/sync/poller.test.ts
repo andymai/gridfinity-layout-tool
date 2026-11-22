@@ -246,6 +246,12 @@ describe('gated kinds: the cutout library', () => {
     );
     await pullNow(adapters);
     expect(items.applyRemote).not.toHaveBeenCalled();
+
+    // The next pull asks for a full manifest, to read the item again.
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 304 }));
+    await pullNow(adapters);
+    const headers = (fetchMock.mock.calls.at(-1)?.[1] as RequestInit | undefined)?.headers;
+    expect(headers).not.toHaveProperty('If-Modified-Since', '3');
     outboxEntries.list = [];
   });
 });

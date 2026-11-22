@@ -174,6 +174,7 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   if (capturedGeneration !== pullState.generation) return { status: 'offline' };
   const newlyServed = noteServedKinds(manifest);
   let libraryChanges = 0;
+  let skippedHeld = false;
   for (const kind of ['cutoutFolders', 'cutoutItems'] as const) {
     if (!isKindServed(kind)) continue;
     const remote = manifest[kind] ?? {};
@@ -182,6 +183,7 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
     const held = new Set(
       (await outboxGetAll()).filter((entry) => entry.kind === kind).map((entry) => entry.id)
     );
+    if (Object.keys(remote).some((id) => held.has(id))) skippedHeld = true;
     libraryChanges += await diffKind(adapters[kind], kind, remote, capturedGeneration, held);
     if (newlyServed.includes(kind)) {
       await queueUnsynced(adapters[kind], kind, remote, capturedGeneration);
@@ -200,7 +202,10 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   // that's been torn down.
   if (capturedGeneration !== pullState.generation) return { status: 'offline' };
 
-  pullState.lastIndexUpdatedAt = manifest.indexUpdatedAt;
+  // A skipped entry is read again on the next pull: if its held push gets a
+  // 410, only a fresh manifest carries the delete, and a saved timestamp would
+  // answer every later pull with a 304.
+  if (!skippedHeld) pullState.lastIndexUpdatedAt = manifest.indexUpdatedAt;
   useSyncStatusStore.getState().succeed();
   return { status: 'applied', applied, indexUpdatedAt: manifest.indexUpdatedAt };
 }
