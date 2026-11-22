@@ -20,6 +20,11 @@ type ManifestResponse = Partial<Record<SyncKind, Record<string, IndexEntry>>> & 
   indexUpdatedAt: number;
 };
 
+/** Set by a download that failed for a reason the next pull can expect to pass. */
+interface RetryFlag {
+  pending: boolean;
+}
+
 interface ItemFetchResponse {
   envelope: {
     layout?: unknown;
@@ -141,11 +146,13 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   // Baseplates first: a layout references a baseplate design by id, and the
   // init hook orphans that pointer (NOT_FOUND) if the design isn't local yet.
   // On a fresh device the referenced design must land before its layout.
+  const retry: RetryFlag = { pending: false };
   const baseplateChanges = await diffKind(
     adapters.baseplates,
     'baseplates',
     manifest.baseplates ?? {},
-    capturedGeneration
+    capturedGeneration,
+    retry
   );
   // Folders before layouts for the same reason: a layout names its folder,
   // and it should land somewhere that exists.
@@ -153,19 +160,22 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
     adapters.folders,
     'folders',
     manifest.folders ?? {},
-    capturedGeneration
+    capturedGeneration,
+    retry
   );
   const layoutChanges = await diffKind(
     adapters.layouts,
     'layouts',
     manifest.layouts ?? {},
-    capturedGeneration
+    capturedGeneration,
+    retry
   );
   const designChanges = await diffKind(
     adapters.designs,
     'designs',
     manifest.designs ?? {},
-    capturedGeneration
+    capturedGeneration,
+    retry
   );
   // Versions last: a pulled version is only reachable through its design's
   // history list, so nothing breaks if it lands after the design it belongs to.
@@ -173,7 +183,8 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
     adapters.designVersions,
     'designVersions',
     manifest.designVersions ?? {},
-    capturedGeneration
+    capturedGeneration,
+    retry
   );
   // A gated kind syncs only while the manifest lists it. Library folders come
   // before items, as layout folders come before layouts.
@@ -191,7 +202,7 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
       (await outboxGetAll()).filter((entry) => entry.kind === kind).map((entry) => entry.id)
     );
     if (Object.keys(remote).some((id) => held.has(id))) skippedHeld = true;
-    libraryChanges += await diffKind(adapters[kind], kind, remote, capturedGeneration, held);
+    libraryChanges += await diffKind(adapters[kind], kind, remote, capturedGeneration, retry, held);
     if (newlyServed.includes(kind)) {
       await queueUnsynced(adapters[kind], kind, remote, capturedGeneration);
     }
@@ -217,8 +228,10 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
 
   // A skipped entry is read again on the next pull: if its held push gets a
   // 410, only a fresh manifest carries the delete, and a saved timestamp would
-  // answer every later pull with a 304.
-  if (!skippedHeld) pullState.lastIndexUpdatedAt = manifest.indexUpdatedAt;
+  // answer every later pull with a 304. A download that failed for a reason
+  // that passes keeps the old timestamp for the same reason: the next pull
+  // reads the manifest again and fetches it.
+  if (!skippedHeld && !retry.pending) pullState.lastIndexUpdatedAt = manifest.indexUpdatedAt;
   useSyncStatusStore.getState().succeed();
   return { status: 'applied', applied, indexUpdatedAt: manifest.indexUpdatedAt };
 }
@@ -237,6 +250,7 @@ async function diffKind(
   kind: SyncKind,
   remote: Record<string, IndexEntry>,
   generation: number,
+  retry: RetryFlag,
   skip: ReadonlySet<string> = new Set()
 ): Promise<number> {
   const localItems = await adapter.list();
@@ -259,7 +273,8 @@ async function diffKind(
 
     if (localMtime === undefined || localMtime < entry.modifiedAt) {
       const fetched = await fetchEnvelope(kind, id);
-      if (!fetched || generation !== pullState.generation) continue;
+      if (fetched === 'retry') retry.pending = true;
+      if (!fetched || fetched === 'retry' || generation !== pullState.generation) continue;
       const payload = fetched.envelope[PAYLOAD_KEY[kind]];
       if (payload === undefined) continue;
       await trackWrite(
@@ -313,18 +328,26 @@ function trackWrite(write: Promise<void>): Promise<void> {
   return write;
 }
 
-async function fetchEnvelope(kind: SyncKind, id: string): Promise<ItemFetchResponse | null> {
+/**
+ * `'retry'` for a failure the next pull can expect to pass (network, 5xx, 429,
+ * a cut-off body), `null` for one it cannot: a 404 is a blob the index lists
+ * but storage lacks, and fetching it on every poll would only spend requests.
+ */
+async function fetchEnvelope(
+  kind: SyncKind,
+  id: string
+): Promise<ItemFetchResponse | 'retry' | null> {
   let res: Response;
   try {
     res = await apiFetch(`/api/sync/${kind}/${id}`);
   } catch {
-    return null;
+    return 'retry';
   }
-  if (!res.ok) return null;
+  if (!res.ok) return res.status === 429 || res.status >= 500 ? 'retry' : null;
   try {
     return (await res.json()) as ItemFetchResponse;
   } catch {
-    return null;
+    return 'retry';
   }
 }
 

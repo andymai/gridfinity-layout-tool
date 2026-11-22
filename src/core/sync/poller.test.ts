@@ -610,4 +610,52 @@ describe('envelope fetch failure', () => {
     const result = await pullNow(adapters);
     expect(result.applied).toBe(1);
   });
+  const oneLayout = () =>
+    manifestResponse({
+      layouts: { 'lay-1': { modifiedAt: 1000, sizeBytes: 100 } },
+      designs: {},
+      indexUpdatedAt: 1000,
+    });
+  const manifestHeaders = (call: number) =>
+    (fetchMock.mock.calls[call][1] as RequestInit).headers as Record<string, string>;
+
+  it.each([
+    ['a 503', () => Promise.resolve(new Response(null, { status: 503 }))],
+    ['a 429', () => Promise.resolve(new Response(null, { status: 429 }))],
+    ['a network error', () => Promise.reject(new Error('network'))],
+  ])(
+    'keeps the watermark after %s, so the next pull fetches the item again',
+    async (_label, fail) => {
+      fetchMock
+        .mockResolvedValueOnce(oneLayout())
+        .mockImplementationOnce(fail)
+        .mockResolvedValueOnce(oneLayout())
+        .mockResolvedValueOnce(
+          envelopeResponse(
+            { layout: { v: 1 }, modifiedAt: 1000, schemaVersion: 1 },
+            { modifiedAt: 1000, sizeBytes: 100 }
+          )
+        );
+
+      expect((await pullNow(adapters)).applied).toBe(0);
+      const second = await pullNow(adapters);
+
+      expect(manifestHeaders(2)['If-Modified-Since']).toBeUndefined();
+      expect(second.applied).toBe(1);
+      expect(layouts.applyRemote).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it('moves past a 404, so a blob the index lists but storage lacks is not fetched every poll', async () => {
+    fetchMock
+      .mockResolvedValueOnce(oneLayout())
+      .mockResolvedValueOnce(new Response(null, { status: 404 }))
+      .mockResolvedValueOnce(new Response(null, { status: 304 }));
+
+    await pullNow(adapters);
+    await pullNow(adapters);
+
+    expect(manifestHeaders(2)['If-Modified-Since']).toBe('1000');
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
 });
