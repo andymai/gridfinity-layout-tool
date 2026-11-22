@@ -1,0 +1,37 @@
+scripts/docs-ask-eval/checks.ts
+  s_f8efc8defc13ab::t_5c1edbc32ddadd 1-71
+tsconfig.scripts.json
+  s_f8efc8defc13ab::t_e64b1cec071718 25-28
+scripts/docs-ask-eval/judge.ts
+  s_f8efc8defc13ab::t_31b6e4601c02bb 13-14,34-35,43,46,53-54
+  s_f8efc8defc13ab::t_2ed47d59d77cf9 1-12,15-33,36-42,44-45,47-52,55-75
+package.json
+  s_f8efc8defc13ab::t_e64b1cec071718 88
+scripts/docs-ask-eval/checks.test.ts
+  s_f8efc8defc13ab::t_b7066b7f1c62d9 1-82
+  s_f8efc8defc13ab::t_595d806d287555 83-85
+scripts/docs-ask-eval/run.ts
+  s_f8efc8defc13ab::t_3ee03ed4004740 1-45,47-83,86-100,102-105,107-133,141-144,146-155,159,170,177,188-210,214-224,229-242,247-251,253-267,272-279
+  s_f8efc8defc13ab::t_31b6e4601c02bb 46,84-85,101,106,134-140,145,156-158,160-169,171-176,178-187,211-213,225-228,243-246,252,268-271
+scripts/docs-ask-eval/golden.ts
+  s_f8efc8defc13ab::t_5fdc8cf669b0d5 1-142,144-160,164-207,210-233,243-249,253,256-262,265-269,273-284,287-293,296-304,307-339,342-346,350,353-474,479-573,578-595,600-611
+  s_f8efc8defc13ab::t_31b6e4601c02bb 143,161-163,208-209,234-242,250-252,254-255,263-264,270-272,285-286,294-295,305-306,340-341,347-349,351-352,475-478,574-577,596-599
+api/lib/docsAsk/agent.test.ts
+  s_f8efc8defc13ab::t_f38f1e42638558 8,188-197
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "51145c447d3fd9c2eb6706b2e3e2dd5a5ded4e9e",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
