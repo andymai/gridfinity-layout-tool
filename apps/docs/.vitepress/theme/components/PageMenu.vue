@@ -49,7 +49,9 @@ async function show(): Promise<void> {
   items()[0]?.focus();
 }
 
-function close(refocus = false): void {
+// Picking an item hides the list while it holds focus, so focus goes back
+// to the toggle. Tab out and a click elsewhere move focus themselves.
+function close(refocus = menu.value?.contains(document.activeElement) ?? false): void {
   if (!open.value) return;
   open.value = false;
   if (refocus) toggle.value?.focus();
@@ -66,12 +68,12 @@ function onMenuKey(event: KeyboardEvent): void {
     const step = event.key === 'ArrowDown' ? 1 : -1;
     list[(at + step + list.length) % list.length]?.focus();
   } else if (event.key === 'Tab' && (event.shiftKey ? at === 0 : at === list.length - 1)) {
-    close();
+    close(false);
   }
 }
 
 function onOutside(event: PointerEvent): void {
-  if (!root.value?.contains(event.target as Node)) close();
+  if (!root.value?.contains(event.target as Node)) close(false);
 }
 
 watch(open, (value) => {
@@ -80,7 +82,7 @@ watch(open, (value) => {
 });
 watch(
   () => route.path,
-  () => close()
+  () => close(false)
 );
 onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', onOutside);
