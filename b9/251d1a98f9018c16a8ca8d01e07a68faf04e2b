@@ -1,0 +1,23 @@
+apps/docs/.vitepress/theme/askAi/useAskAi.ts
+  s_f8efc8defc13ab::t_0d64534646f2c9 310
+apps/docs/.vitepress/theme/components/AskAiAnswer.vue
+  s_f8efc8defc13ab::t_0d64534646f2c9 32,35,37-39,65,252,270-271
+apps/docs/.vitepress/theme/components/AskAiPanel.vue
+  s_f8efc8defc13ab::t_0d64534646f2c9 34-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b9251d1a98f9018c16a8ca8d01e07a68faf04e2b",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
