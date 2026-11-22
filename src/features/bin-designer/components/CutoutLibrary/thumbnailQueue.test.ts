@@ -95,6 +95,19 @@ describe('requestThumbnail', () => {
     expect(mocks.renders.map((r) => r.id)).toEqual(['a']);
   });
 
+  it('skips the render when every row that asked left during an editor build', async () => {
+    const { requestThumbnail } = await import('./thumbnailQueue');
+    mocks.status = 'generating';
+    const cancel = requestThumbnail(item('a'), vi.fn());
+    await settle();
+    await settle();
+    cancel();
+    mocks.status = 'idle';
+    for (const listener of mocks.statusListeners) listener({ generation: { status: 'idle' } });
+    await settle();
+    expect(mocks.renders).toHaveLength(0);
+  });
+
   it('gives a second request for the item being drawn the same picture', async () => {
     const { requestThumbnail } = await import('./thumbnailQueue');
     const first = vi.fn();

@@ -21,10 +21,19 @@ interface LibraryGhost3DProps {
   readonly binDepth: number;
   /** The snap step in mm, or null when snapping is off. */
   readonly grid: number | null;
+  /** Space is held for a pan: presses go to the board's pan, not to a drop. */
+  readonly panHeld: boolean;
   readonly onDrop: (at: { x: number; y: number }) => void;
 }
 
-export function LibraryGhost3D({ ghost, binWidth, binDepth, grid, onDrop }: LibraryGhost3DProps) {
+export function LibraryGhost3D({
+  ghost,
+  binWidth,
+  binDepth,
+  grid,
+  panHeld,
+  onDrop,
+}: LibraryGhost3DProps) {
   const [at, setAt] = useState(() => ({ x: binWidth / 2, y: binDepth / 2 }));
 
   const { lines, fill } = useMemo(() => {
@@ -71,7 +80,7 @@ export function LibraryGhost3D({ ghost, binWidth, binDepth, grid, onDrop }: Libr
         // Moves pass through, so the board's cursor readout keeps counting.
         onPointerMove={(e) => follow(e.point.x, e.point.y)}
         onPointerDown={(e) => {
-          if (e.button !== 0) return;
+          if (e.button !== 0 || panHeld) return;
           e.stopPropagation();
           onDrop(placementCentre(e.point, ghost, { width: binWidth, depth: binDepth }, grid));
         }}

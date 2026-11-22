@@ -56,6 +56,7 @@ function Harness({
     binDepth: 80,
     grid: null,
     selectIds,
+    panHeld: false,
   });
   useEffect(() => {
     latest = lib;

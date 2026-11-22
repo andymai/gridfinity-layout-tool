@@ -44,6 +44,8 @@ interface UseCutoutLibraryWorkspaceArgs {
   /** The snap step in mm, or null when snapping is off. */
   readonly grid: number | null;
   readonly selectIds: (ids: readonly string[], additive: boolean) => void;
+  /** Space is held for a pan: a press then pans the board, not drops the item. */
+  readonly panHeld: boolean;
 }
 
 interface Placing {
@@ -83,6 +85,7 @@ export function useCutoutLibraryWorkspace({
   binDepth,
   grid,
   selectIds,
+  panHeld,
 }: UseCutoutLibraryWorkspaceArgs): CutoutLibraryWorkspace {
   const t = useTranslation();
   const addToast = useToastStore((s) => s.addToast);
@@ -249,10 +252,11 @@ export function useCutoutLibraryWorkspace({
           binWidth={binWidth}
           binDepth={binDepth}
           grid={grid}
+          panHeld={panHeld}
           onDrop={drop}
         />
       ) : null,
-    [placingGhost, binWidth, binDepth, grid, drop]
+    [placingGhost, binWidth, binDepth, grid, panHeld, drop]
   );
 
   const hint = placing ? (

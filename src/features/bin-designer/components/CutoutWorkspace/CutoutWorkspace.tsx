@@ -541,19 +541,6 @@ export function CutoutWorkspace() {
     maskCellSize,
   });
 
-  const library = useCutoutLibraryWorkspace({
-    cutouts,
-    selection,
-    groupNames: params.cutoutGroupNames,
-    meshAssets: params.meshAssets,
-    maxCutDepth,
-    isLid,
-    binWidth,
-    binDepth,
-    grid: snapEnabled ? gridSize : null,
-    selectIds,
-  });
-
   const splitDrawingId =
     (mode.type === 'ruler-ready' || mode.type === 'measuring') && mode.splitId !== undefined
       ? mode.splitId
@@ -644,6 +631,20 @@ export function CutoutWorkspace() {
     zoom,
     setCameraCenter,
     fitToView,
+  });
+
+  const library = useCutoutLibraryWorkspace({
+    cutouts,
+    selection,
+    groupNames: params.cutoutGroupNames,
+    meshAssets: params.meshAssets,
+    maxCutDepth,
+    isLid,
+    binWidth,
+    binDepth,
+    grid: snapEnabled ? gridSize : null,
+    selectIds,
+    panHeld: spaceHeld,
   });
 
   const handleContextMenu = useCallback(

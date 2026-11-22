@@ -84,6 +84,8 @@ async function drain(): Promise<void> {
           continue;
         }
         await untilEditorIdle();
+        // Every row that asked may have gone while the editor was busy.
+        if (job.listeners.size === 0) continue;
         const host = thumbnailHost(job.item.content);
         const dataUrl = host ? await regenerateThumbnail(host) : null;
         if (!dataUrl) {
