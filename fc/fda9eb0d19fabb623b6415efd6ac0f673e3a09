@@ -1,0 +1,28 @@
+apps/docs/.vitepress/theme/custom.css
+  s_f8efc8defc13ab::t_f9eaeeccbc0f78 213-216,218-221
+apps/docs/.vitepress/theme/pageMenu.ts
+  s_f8efc8defc13ab::t_5a6f7a3256ed17 1-24
+apps/docs/.vitepress/theme/pageMenu.test.ts
+  s_f8efc8defc13ab::t_e00342f58c113b 1-24
+apps/docs/.vitepress/theme/components/PageMenu.vue
+  s_f8efc8defc13ab::t_e9a475aeb3ba11 1-80,85-101,105-219
+  s_f8efc8defc13ab::t_f9eaeeccbc0f78 81-84,102-104
+apps/docs/.vitepress/theme/index.ts
+  s_f8efc8defc13ab::t_f9eaeeccbc0f78 10,63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fcfda9eb0d19fabb623b6415efd6ac0f673e3a09",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
