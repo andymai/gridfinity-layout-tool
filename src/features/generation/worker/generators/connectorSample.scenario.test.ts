@@ -11,7 +11,7 @@
  *   3. the piece count matches the selected style (5 pairs, +1 loose for key/clip).
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { measureVolume } from 'brepjs';
+import { getBounds, measureVolume, mesh, type Shape3D } from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
@@ -43,6 +43,22 @@ const defaults = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBas
   fractionalEdgeY: 'end',
   ...overrides,
 });
+
+/** Smallest XY gap between a coupon's raised label and the edge of its body (mm). */
+function labelInsetMm(piece: Shape3D): number {
+  const m = mesh(piece, { tolerance: 0.05, angularTolerance: 10 });
+  const body = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity };
+  const label = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity };
+  for (let i = 0; i < m.vertices.length; i += 3) {
+    const [x, y, z] = [m.vertices[i], m.vertices[i + 1], m.vertices[i + 2]];
+    const box = z > 0.01 ? label : body;
+    box.x0 = Math.min(box.x0, x);
+    box.x1 = Math.max(box.x1, x);
+    box.y0 = Math.min(box.y0, y);
+    box.y1 = Math.max(box.y1, y);
+  }
+  return Math.min(label.x0 - body.x0, body.x1 - label.x1, label.y0 - body.y0, body.y1 - label.y1);
+}
 
 function analyze(stl: ArrayBuffer) {
   const parsed = parseSTLBinary(stl);
@@ -128,6 +144,24 @@ describe('connectorSample — fit-sample tray', () => {
           for (const p of pieces) p.delete();
         }
       }
+    },
+    TEST_TIMEOUT_MS
+  );
+
+  it.each([0.2, 0.4, 0.6, 0.8, 1.0])(
+    'embosses the offset on every coupon (%s mm nozzle)',
+    (nozzleSizeMm) => {
+      const pieces = buildConnectorSampleTray(defaults({ nozzleSizeMm }));
+      // A coupon's top face is at z=0 before the tray's lift; its emboss rises
+      // LABEL_DEPTH above that, so a textless coupon tops out at 0.
+      const labeled = pieces.filter((p) => getBounds(p).zMax > LABEL_DEPTH / 2).length;
+      // The coupon is sized to the digits' ink, so the label must also stay
+      // inside it, clear of the edge, rather than hang over it.
+      const inset = pieces.map((p) => labelInsetMm(p));
+      for (const p of pieces) p.delete();
+      expect(pieces.length).toBeGreaterThan(0);
+      expect(labeled).toBe(pieces.length);
+      for (const d of inset) expect(d).toBeGreaterThan(1);
     },
     TEST_TIMEOUT_MS
   );

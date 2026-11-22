@@ -77,7 +77,8 @@ import {
   buildDovetailKey,
   buildSnapClipForPrint,
 } from './baseplateConnectors';
-import { buildTextSolid } from './textBuilder';
+import { buildTextSolid, planTextForHost } from './textBuilder';
+import type { TextHostOptions } from './textBuilder';
 import { DEFAULT_TEXT_STYLE_DEFAULTS } from '@/shared/types/bin';
 import { buildBaseplateSTL } from './baseplateSTL';
 import { sanitizeParams } from './baseplateSlab';
@@ -221,29 +222,39 @@ function buildCoupon(
     // Emboss the offset on the top face (raised letters). Pinned to `fontMm`
     // (fixed size, floor and ceiling all equal) so every coupon reads at the
     // same nozzle-printable size and none is silently rendered smaller.
-    // Degrades to an unlabeled coupon if the font isn't loaded or the pinned
-    // size does not fit: a single label must never tank the whole tray.
-    const text = buildTextSolid(scope, {
+    // The type plan reserves the font's descender below the baseline, which
+    // these signed digits never ink, and the coupon is sized to their ink. So
+    // the plan gets that much more depth, and the ink is centred on the coupon.
+    // Degrades to an unlabeled coupon if the font isn't loaded: a single label
+    // must never tank the whole tray.
+    const options: TextHostOptions = {
       text: label,
       style: {
         ...DEFAULT_TEXT_STYLE_DEFAULTS,
         font: 'jetbrains-mono',
         mode: 'emboss',
         depth: LABEL_DEPTH,
-        margin: LABEL_MARGIN,
+        margin: 0,
         sizeMode: 'fixed',
         fixedSize: fontMm,
         minFontSize: fontMm,
         maxFontSize: fontMm,
       },
-      availW: couponX,
-      availD: couponY,
-      centerX: cx,
-      centerY: cy,
-      topZ: 0,
-      depth: LABEL_DEPTH,
-      hostThickness: totalHeight,
-    });
+      availW: couponX - 2 * LABEL_MARGIN,
+      availD: couponY + fontMm,
+    };
+    const plan = planTextForHost(options);
+    const text =
+      plan &&
+      buildTextSolid(scope, {
+        ...options,
+        plan,
+        centerX: cx,
+        centerY: cy - (plan.minY + plan.maxY) / 2,
+        topZ: 0,
+        depth: LABEL_DEPTH,
+        hostThickness: totalHeight,
+      });
     if (text) {
       try {
         solid = scope.register(unwrap(fuse(solid as ValidSolid, text.solid as ValidSolid)));
