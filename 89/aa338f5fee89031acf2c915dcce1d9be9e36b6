@@ -1,0 +1,23 @@
+api/lib/docsAsk/prompt.ts
+  s_f8efc8defc13ab::t_02bbe10c0a5d75 37-38,45
+scripts/docs-ask-eval/golden.ts
+  s_f8efc8defc13ab::t_02bbe10c0a5d75 135-137,246-255,446-449
+scripts/docs-ask-eval/judge.ts
+  s_f8efc8defc13ab::t_02bbe10c0a5d75 36-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "89aa338f5fee89031acf2c915dcce1d9be9e36b6",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
