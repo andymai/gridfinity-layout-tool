@@ -623,6 +623,16 @@ describe('envelope fetch failure', () => {
     ['a 503', () => Promise.resolve(new Response(null, { status: 503 }))],
     ['a 429', () => Promise.resolve(new Response(null, { status: 429 }))],
     ['a network error', () => Promise.reject(new Error('network'))],
+    [
+      'a cut-off body',
+      () =>
+        Promise.resolve(
+          new Response('{"envelope":{"layout"', {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          })
+        ),
+    ],
   ])(
     'keeps the watermark after %s, so the next pull fetches the item again',
     async (_label, fail) => {
