@@ -52,6 +52,9 @@ const marked = new Marked({
     image({ text }: Tokens.Image): string {
       return escapeHtml(text);
     },
+    code({ text }: Tokens.Code): string {
+      return `<div class="code-block"><button type="button" class="copy-code" data-copy-code>Copy</button><pre><code>${escapeHtml(text)}</code></pre></div>`;
+    },
   },
 });
 

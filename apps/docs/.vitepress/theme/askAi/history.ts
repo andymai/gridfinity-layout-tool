@@ -5,6 +5,8 @@ export interface StoredTurn {
   readonly locale: string;
   readonly signature: string;
   readonly messages: readonly unknown[];
+  /** Kept in this tab only, so the thumbs work after a reload; never sent back. */
+  readonly traceId?: string;
 }
 
 export interface Conversation {
@@ -24,7 +26,8 @@ function isTurn(value: unknown): value is StoredTurn {
     typeof turn.page === 'string' &&
     typeof turn.locale === 'string' &&
     typeof turn.signature === 'string' &&
-    Array.isArray(turn.messages)
+    Array.isArray(turn.messages) &&
+    (turn.traceId === undefined || typeof turn.traceId === 'string')
   );
 }
 
@@ -43,10 +46,10 @@ export function loadConversation(
       if (typeof sessionId === 'string' && Array.isArray(turns))
         return { sessionId, turns: turns.filter(isTurn) };
     }
+    return newConversation(newId);
   } catch {
-    // A broken entry starts a new chat.
+    return newConversation(newId);
   }
-  return newConversation(newId);
 }
 
 export function saveConversation(
@@ -84,4 +87,16 @@ export function messageText(content: unknown): string {
 
 export function answerText(turn: StoredTurn): string {
   return messageText(turn.messages.at(-1));
+}
+
+export function hasToolCall(content: unknown): boolean {
+  return (
+    Array.isArray(content) &&
+    content.some(
+      (block: unknown) =>
+        typeof block === 'object' &&
+        block !== null &&
+        (block as { type?: unknown }).type === 'tool_use'
+    )
+  );
 }

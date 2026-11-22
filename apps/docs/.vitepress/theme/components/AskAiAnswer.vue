@@ -29,8 +29,14 @@ const NOUNS: Readonly<Record<StepKind, [string, string]>> = {
 
 const summary = computed(() => {
   const counts = new Map<StepKind, number>();
-  for (const step of props.exchange.steps) counts.set(step.kind, (counts.get(step.kind) ?? 0) + 1);
-  return [...counts].map(([kind, n]) => `${n} ${NOUNS[kind][n === 1 ? 0 : 1]}`).join(' · ');
+  let failed = 0;
+  for (const step of props.exchange.steps) {
+    if (step.state === 'done') counts.set(step.kind, (counts.get(step.kind) ?? 0) + 1);
+    else failed++;
+  }
+  const parts = [...counts].map(([kind, n]) => `${n} ${NOUNS[kind][n === 1 ? 0 : 1]}`);
+  if (failed > 0) parts.push(`${failed} failed`);
+  return parts.join(' · ');
 });
 
 async function copy(): Promise<void> {
@@ -87,7 +93,7 @@ async function copy(): Promise<void> {
       </div>
 
       <p v-if="exchange.status === 'stopped'" class="notice">Stopped.</p>
-      <p v-if="exchange.notice" class="notice" role="status">{{ exchange.notice }}</p>
+      <p v-if="exchange.notice" class="notice">{{ exchange.notice }}</p>
 
       <div v-if="!live && exchange.status !== 'waiting'" class="actions">
         <button v-if="exchange.text" type="button" @click="copy">
@@ -241,6 +247,46 @@ async function copy(): Promise<void> {
   padding: 1px 4px;
   border-radius: 4px;
   background: var(--vp-c-default-soft);
+}
+.answer-body :deep(.code-block) {
+  display: grid;
+  margin: 8px 0;
+}
+.answer-body :deep(pre) {
+  margin: 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  border-radius: 8px;
+  background: var(--vp-c-bg-soft);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.answer-body :deep(pre code) {
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+.answer-body :deep(.copy-code) {
+  justify-self: end;
+  margin-bottom: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-2);
+  font-size: 12px;
+}
+.answer-body :deep(.copy-code:hover) {
+  color: var(--vp-c-text-1);
+}
+.answer-body :deep(kbd) {
+  padding: 0 5px;
+  border: 1px solid var(--vp-c-divider);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--vp-c-bg-soft);
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.85em;
 }
 .answer-body :deep(figure) {
   margin: 12px 0;

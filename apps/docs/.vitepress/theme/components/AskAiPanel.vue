@@ -30,6 +30,34 @@ const starters = computed<string[]>(() => {
 const working = computed(() =>
   askAi.exchanges.some((e) => e.status === 'waiting' || e.status === 'streaming')
 );
+// A live region over the chat would read each streamed chunk out again, and a
+// status element that mounts with its text is often not read at all. This one
+// line, always mounted, says when an answer starts and ends, and why it failed.
+const ANNOUNCEMENTS: Readonly<Record<string, string>> = {
+  waiting: 'Ask AI is answering.',
+  streaming: 'Ask AI is answering.',
+  done: 'Ask AI answered.',
+  stopped: 'Ask AI stopped.',
+};
+const announcement = computed(() => {
+  const last = askAi.exchanges.at(-1);
+  if (!last) return '';
+  if (last.status === 'waiting' || last.status === 'streaming') return ANNOUNCEMENTS.streaming;
+  return last.notice ?? ANNOUNCEMENTS[last.status] ?? '';
+});
+
+// The composer gives way to the full-chat prompt and back. Focus that was in
+// the panel follows; a restore at page load takes none from the page.
+watch(
+  () => askAi.full,
+  async (full) => {
+    const inPanel = panel.value?.contains(document.activeElement) ?? false;
+    await nextTick();
+    if (!inPanel) return;
+    if (full) panel.value?.querySelector<HTMLElement>('.panel-footer button')?.focus();
+    else input.value?.focus();
+  }
+);
 // Below the dock width the panel covers the page, so it acts as a modal view.
 const covering = computed(() => !askAi.docked && askAi.open);
 
@@ -89,11 +117,25 @@ watch(
   { immediate: true }
 );
 
-// A docs link opens in the site. A covering panel steps aside to show it.
-function onClick(event: MouseEvent): void {
-  const link = (event.target as HTMLElement | null)?.closest<HTMLAnchorElement>(
-    'a[data-docs-link]'
+function copyCode(button: HTMLButtonElement): void {
+  const code = button.parentElement?.querySelector('code')?.textContent ?? '';
+  void navigator.clipboard.writeText(code).then(
+    () => {
+      button.textContent = 'Copied';
+      setTimeout(() => (button.textContent = 'Copy'), 1500);
+    },
+    () => undefined
   );
+}
+
+function onClick(event: MouseEvent): void {
+  const target = event.target as HTMLElement | null;
+  const copy = target?.closest<HTMLButtonElement>('button[data-copy-code]');
+  if (copy) {
+    copyCode(copy);
+    return;
+  }
+  const link = target?.closest<HTMLAnchorElement>('a[data-docs-link]');
   if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
   event.preventDefault();
   void router.go(link.getAttribute('href') ?? '/docs');
@@ -105,7 +147,6 @@ function openSearch(): void {
   window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, metaKey: true }));
 }
 
-// Follow the answer while it streams, unless the reader scrolled up to read.
 watch(
   () => askAi.exchanges.map((e) => e.text.length + e.steps.length + e.thinking.length).join(),
   async () => {
@@ -190,7 +231,8 @@ onBeforeUnmount(() => {
         </button>
       </header>
 
-      <div ref="scroller" class="panel-scroll" aria-live="polite" @click="onClick">
+      <p class="sr-only" role="status">{{ announcement }}</p>
+      <div ref="scroller" class="panel-scroll" @click="onClick">
         <div v-if="askAi.exchanges.length === 0" class="empty">
           <p class="intro">
             Ask what the Layout Tool can do, or how to do something. Answers come from these docs,
@@ -218,6 +260,10 @@ onBeforeUnmount(() => {
         <div v-if="askAi.resting" class="resting">
           Ask AI is off until tomorrow.
           <button type="button" @click="openSearch">Search the docs</button>
+        </div>
+        <div v-else-if="askAi.full && !working" class="resting">
+          This chat is full.
+          <button type="button" @click="newChat">Start a new chat</button>
         </div>
         <form v-else class="composer" @submit.prevent="submit()">
           <textarea
@@ -414,6 +460,14 @@ onBeforeUnmount(() => {
 .resting button {
   color: var(--vp-c-brand-1);
   font-weight: 600;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .fine {
   margin: 6px 0 0;
