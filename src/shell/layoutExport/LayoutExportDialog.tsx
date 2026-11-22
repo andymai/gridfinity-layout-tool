@@ -4,11 +4,15 @@
  * while the per-file names inside come from each linked design.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useTranslation } from '@/i18n';
-import { ExportDialog } from '@/shared/components/ExportDialog';
+import {
+  ExportDialog,
+  ExportSupportPrompt,
+  recordExportAndShouldPromptSupport,
+} from '@/shared/components/ExportDialog';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
 import { getLinkedBins } from '@/features/design-linking';
 import { useLayoutExport } from './useLayoutExport';
@@ -50,16 +54,38 @@ export function LayoutExportDialog({ open, onClose }: LayoutExportDialogProps) {
       ? sanitizeName(config.customName)
       : sanitizeName(layoutName);
 
+  // The name the ZIP downloaded under: the name field stays editable while the
+  // export runs, so the current config can name a file that was never saved.
+  const [exportedFileName, setExportedFileName] = useState<string | null>(null);
+
+  const closeDialog = useCallback(() => {
+    setExportedFileName(null);
+    onClose();
+  }, [onClose]);
+
   const handleDownload = useCallback(async () => {
+    const fileName = `${zipBaseName}.zip`;
     const ok = await exportLayout(format, zipBaseName, config);
-    if (ok) onClose();
-  }, [exportLayout, format, zipBaseName, config, onClose]);
+    if (!ok) return;
+    // The hook has already toasted the result.
+    if (recordExportAndShouldPromptSupport()) {
+      setExportedFileName(fileName);
+      return;
+    }
+    closeDialog();
+  }, [exportLayout, format, zipBaseName, config, closeDialog]);
 
   // Don't let the dialog close mid-export — the work would finish and download
   // a file the user appeared to cancel.
   const handleClose = useCallback(() => {
-    if (!isExporting) onClose();
-  }, [isExporting, onClose]);
+    if (!isExporting) closeDialog();
+  }, [isExporting, closeDialog]);
+
+  const wasOpen = useRef(open);
+  useEffect(() => {
+    if (open && !wasOpen.current) setExportedFileName(null);
+    wasOpen.current = open;
+  }, [open]);
 
   return (
     <ExportDialog
@@ -88,6 +114,14 @@ export function LayoutExportDialog({ open, onClose }: LayoutExportDialogProps) {
           : totalCount === 0
             ? t('layoutExport.noBins')
             : t('layoutExport.noLinkedBins')
+      }
+      exported={exportedFileName !== null}
+      successContent={
+        <ExportSupportPrompt
+          fileName={exportedFileName ?? ''}
+          onDone={closeDialog}
+          source="layout_export"
+        />
       }
     />
   );
