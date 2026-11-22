@@ -139,7 +139,12 @@ export type DocumentFormat = 'layout' | 'bin-design' | 'cutout-library';
 export function detectFormat(doc: unknown): DocumentFormat | null {
   if (!isRecord(doc)) return null;
   if (doc.type === 'gridfinity-bin-design') return 'bin-design';
-  if (doc.type === 'gridfinity-cutout-library-item') return 'cutout-library';
+  if (
+    doc.type === 'gridfinity-cutout-library-item' ||
+    doc.type === 'gridfinity-cutout-library-folder'
+  ) {
+    return 'cutout-library';
+  }
   if (isRecord(doc.params)) return 'bin-design';
 
   const layoutSignals = ['drawer', 'layers', 'bins', 'categories'].filter((key) => key in doc);

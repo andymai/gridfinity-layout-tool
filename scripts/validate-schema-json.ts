@@ -18,7 +18,7 @@ import { join, relative } from 'node:path';
 import { validateImport } from '../src/shared/utils/validation.ts';
 import { hasOversizedMeshAsset } from '../src/shared/generation/meshAsset.ts';
 import { validateImportedBinParams } from '../src/features/bin-designer/utils/designJson.ts';
-import { parseLibraryItemJSON } from '../src/features/bin-designer/library/libraryFile.ts';
+import { parseLibraryFileJSON } from '../src/features/bin-designer/library/libraryFile.ts';
 import type { DocumentFormat } from './schema/loadSchemas.ts';
 import { createValidators, detectFormat, formatErrors } from './schema/loadSchemas.ts';
 
@@ -75,7 +75,7 @@ function validateFile(file: string): Report {
       schemaErrors: [],
       importerErrors: [],
       fatal:
-        'could not tell which format this is. A bin design needs "type": "gridfinity-bin-design", a cutout library item "type": "gridfinity-cutout-library-item"; a layout needs drawer, layers and bins.',
+        'could not tell which format this is. A bin design needs "type": "gridfinity-bin-design", a cutout library file "type": "gridfinity-cutout-library-item" or "gridfinity-cutout-library-folder"; a layout needs drawer, layers and bins.',
     };
   }
 
@@ -109,8 +109,8 @@ function validateFile(file: string): Report {
       });
     }
   } else if (format === 'cutout-library') {
-    if (!parseLibraryItemJSON(JSON.stringify(doc), t)) {
-      importerErrors.push('the importer refuses this file as a cutout library item');
+    if (!parseLibraryFileJSON(JSON.stringify(doc), t)) {
+      importerErrors.push('the importer refuses this cutout library file');
     }
   } else {
     const result = validateImportedBinParams((doc as { params?: unknown }).params, t);

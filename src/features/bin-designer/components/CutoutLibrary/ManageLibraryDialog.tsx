@@ -1,6 +1,6 @@
 /**
- * Rename, move, delete, export and import library items, and keep the folders
- * they sit in. Every change goes straight to the library store, which syncs it.
+ * Rename, move, delete, export and import library items and folders. Every
+ * change goes straight to the library store, which syncs it.
  */
 
 import { useRef, useState } from 'react';
@@ -39,10 +39,17 @@ import {
 } from '@/features/bin-designer/library/CutoutLibraryService';
 import { useCutoutLibrary } from '@/features/bin-designer/library/cutoutLibraryStore';
 import {
+  downloadLibraryFolder,
   downloadLibraryItem,
   importedMeshesUsable,
-  parseLibraryItemJSON,
+  parseLibraryFileJSON,
+  type LibraryFolderTree,
 } from '@/features/bin-designer/library/libraryFile';
+import {
+  importFolderTree,
+  treeLimit,
+  type LibraryLimit,
+} from '@/features/bin-designer/library/libraryTreeImport';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { folderOptions, folderRows } from './libraryFolders';
 
@@ -56,6 +63,12 @@ type PendingDelete =
 
 const NO_FOLDER = '';
 
+const LIMIT_MESSAGES: Record<LibraryLimit, { readonly key: string; readonly max: number }> = {
+  items: { key: 'binDesigner.cutouts.library.full', max: MAX_LIBRARY_ITEMS },
+  folders: { key: 'binDesigner.cutouts.library.foldersFull', max: MAX_LIBRARY_FOLDERS },
+  depth: { key: 'binDesigner.cutouts.library.importTooDeep', max: MAX_LIBRARY_FOLDER_DEPTH },
+};
+
 export function ManageLibraryDialog({ onClose }: ManageLibraryDialogProps) {
   const t = useTranslation();
   const addToast = useToastStore((s) => s.addToast);
@@ -65,8 +78,49 @@ export function ManageLibraryDialog({ onClose }: ManageLibraryDialogProps) {
   const folderById = new Map(folders.map((f) => [f.id, f]));
   const noFolder = t('binDesigner.cutouts.library.noFolder');
 
+  const importFolder = async (tree: LibraryFolderTree) => {
+    for (const item of tree.items) {
+      if (!(await importedMeshesUsable(item.content))) {
+        addToast(t('binDesigner.cutouts.library.importFailed'), 'error');
+        return;
+      }
+    }
+    const limit = treeLimit(tree, { items: items.length, folders: folders.length });
+    if (limit) {
+      addToast(t(LIMIT_MESSAGES[limit].key, { max: LIMIT_MESSAGES[limit].max }), 'error');
+      return;
+    }
+    const imported = await importFolderTree(tree, {
+      folder: t('binDesigner.cutouts.library.newFolder'),
+      item: t('binDesigner.cutouts.library.defaultName'),
+    });
+    if (isErr(imported)) {
+      // Another tab filled the library after the check above.
+      const full = imported.error.code === 'STORAGE_QUOTA_EXCEEDED';
+      addToast(
+        full
+          ? t('binDesigner.cutouts.library.full', { max: MAX_LIBRARY_ITEMS })
+          : t('binDesigner.cutouts.library.saveFailed'),
+        'error'
+      );
+      return;
+    }
+    trackEvent('cutout_library_folder_imported', {
+      items: imported.value.items,
+      folders: imported.value.folders,
+    });
+    addToast(
+      t('binDesigner.cutouts.library.importedFolder', { name: imported.value.folder.name }),
+      'success'
+    );
+  };
+
   const importFile = async (file: File) => {
-    const parsed = parseLibraryItemJSON(await file.text(), t);
+    const parsed = parseLibraryFileJSON(await file.text(), t);
+    if (parsed?.kind === 'folder') {
+      await importFolder(parsed.tree);
+      return;
+    }
     if (!parsed || !(await importedMeshesUsable(parsed.content))) {
       addToast(t('binDesigner.cutouts.library.importFailed'), 'error');
       return;
@@ -98,6 +152,20 @@ export function ManageLibraryDialog({ onClose }: ManageLibraryDialogProps) {
       return;
     }
     trackEvent('cutout_library_item_exported', { shapes: item.content.params.cutouts.length });
+  };
+
+  const exportFolder = async (folder: CutoutLibraryFolder) => {
+    const saved = await downloadLibraryFolder(folder, folders, items);
+    if (isErr(saved)) {
+      if (saved.error.code === 'STORAGE_MESH_MISSING') {
+        addToast(t('binDesigner.cutouts.library.exportFolderFailed'), 'error');
+      }
+      return;
+    }
+    trackEvent('cutout_library_folder_exported', {
+      items: saved.value.items.length,
+      folders: saved.value.folders.length,
+    });
   };
 
   /** Toast a failed write, with `limit`'s message when it hit that limit. */
@@ -146,7 +214,7 @@ export function ManageLibraryDialog({ onClose }: ManageLibraryDialogProps) {
                 {t('binDesigner.cutouts.library.newFolder')}
               </Button>
               <Button size="sm" variant="secondary" onClick={() => fileInputRef.current?.click()}>
-                {t('binDesigner.cutouts.library.importItem')}
+                {t('binDesigner.cutouts.library.importFile')}
               </Button>
               <input
                 ref={fileInputRef}
@@ -201,6 +269,16 @@ export function ManageLibraryDialog({ onClose }: ManageLibraryDialogProps) {
                         )
                       }
                     />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      aria-label={t('binDesigner.cutouts.library.exportFolder', {
+                        name: folder.name,
+                      })}
+                      onClick={() => void exportFolder(folder)}
+                    >
+                      {t('common.export')}
+                    </Button>
                     <IconButton
                       size="sm"
                       variant="ghost"

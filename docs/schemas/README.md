@@ -3,11 +3,11 @@
 Three documents in this app are meant to be read and written by hand, or by an
 agent. This directory describes them.
 
-| Document                 | Produced by                         | Reference                                                             |
-| ------------------------ | ----------------------------------- | --------------------------------------------------------------------- |
-| Layout JSON              | Export Layout                       | [layout.md](layout.md)                                                |
-| Bin design JSON          | Export design from the bin designer | [bin-design.md](bin-design.md)                                        |
-| Cutout library item JSON | Export in Manage library            | the schema below; each cutout is a bin design [Cutout](bin-design.md) |
+| Document            | Produced by                         | Reference                                                                                                                  |
+| ------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Layout JSON         | Export Layout                       | [layout.md](layout.md)                                                                                                     |
+| Bin design JSON     | Export design from the bin designer | [bin-design.md](bin-design.md)                                                                                             |
+| Cutout library JSON | Export in Manage library            | the schema below: one item, or a folder with its subfolders and items; each cutout is a bin design [Cutout](bin-design.md) |
 
 Machine-readable schemas, served so `$schema` resolves:
 

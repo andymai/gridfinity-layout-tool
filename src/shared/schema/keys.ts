@@ -115,15 +115,23 @@ export const BIN_DESIGN_DOCUMENT_KEYS = [
   '$schema',
 ] as const;
 
-/** The cutout library item FILE: a name and the library's part of `BinParams`. */
+/**
+ * The cutout library FILE: one item (a name and `params`), or a folder (a name,
+ * its `folders` and its `items`). Both forms share one root.
+ */
 export const CUTOUT_LIBRARY_DOCUMENT_KEYS = [
   'type',
   'version',
   'name',
   'params',
+  'folders',
+  'items',
   '_meta',
   '$schema',
 ] as const;
+
+/** A library item's shapes: `LibraryParams`, a `Pick` of `BinParams` that names these keys. */
+export const LIBRARY_PARAMS_KEYS = ['cutouts', 'cutoutGroupNames', 'meshAssets'] as const;
 
 /** Root-level property manifests, keyed by schema file name. */
 export const SCHEMA_ROOT_KEYS = {
@@ -257,6 +265,7 @@ export const SCHEMA_KEYS = {
   LidMagnetConfig: LID_MAGNET_KEYS,
   LidSlideConfig: LID_SLIDE_KEYS,
   LidTrayConfig: LID_TRAY_KEYS,
+  LibraryParams: LIBRARY_PARAMS_KEYS,
   LinkedDesign: LINKED_DESIGN_KEYS,
   MarginTaper: MARGIN_TAPER_KEYS,
   MeasuredDrawerMm: MEASURED_DRAWER_KEYS,

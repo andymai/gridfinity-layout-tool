@@ -3808,9 +3808,15 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.library.exportItem': 'Export {name}',
   'binDesigner.cutouts.library.exportFailed':
     'A mesh in this item is not on this device yet. Try again when sync is done.',
-  'binDesigner.cutouts.library.importItem': 'Import item',
+  'binDesigner.cutouts.library.exportFolder': 'Export folder {name}',
+  'binDesigner.cutouts.library.exportFolderFailed':
+    'A mesh in this folder is not on this device yet. Try again when sync is done.',
+  'binDesigner.cutouts.library.importFile': 'Import from file',
   'binDesigner.cutouts.library.imported': 'Added {name} to the library',
-  'binDesigner.cutouts.library.importFailed': 'This file is not a cutout library item.',
+  'binDesigner.cutouts.library.importedFolder': 'Added the folder {name} to the library',
+  'binDesigner.cutouts.library.importTooDeep':
+    'The folders in this file nest more than {max} levels deep.',
+  'binDesigner.cutouts.library.importFailed': 'This file is not a cutout library item or folder.',
   'binDesigner.cutouts.library.rename': 'Rename {name}',
   'binDesigner.cutouts.library.moveTo': 'Move {name} to a folder',
   'binDesigner.cutouts.library.emptyFolder': 'This folder is empty',
