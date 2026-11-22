@@ -33,6 +33,8 @@ const INSTRUCTIONS = `You grade answers from Ask AI, the docs assistant of the G
 
 The sources are the pages the question was written against, plus every page that the answer opened or linked. Set "sourcesAnswer" to true when the sources answer the question. If the group is "gap" but the sources do answer it, the golden set is wrong: grade the answer on correctness instead of the group rule.
 
+Two things are not errors. The assistant's instructions let it link the Q&A forum, so a forum link needs no source. In another language, a label may stay in English when the app keeps it in English.
+
 List each missing fact in "missing" and each wrong or unsupported claim in "wrong". Keep "note" to one sentence. [[ui:Label]] marks a control name; [[capture:id]] marks a picture.`;
 
 export async function judge(

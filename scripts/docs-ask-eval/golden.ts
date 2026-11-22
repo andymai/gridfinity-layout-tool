@@ -132,8 +132,9 @@ export const GOLDEN: readonly GoldenCase[] = [
     group: 'lookup',
     page: '/layouts/placing-bins',
     turns: ['Can I type a bin height in millimeters instead of height units?'],
-    sources: ['/concepts/units'],
-    expect: 'Yes: heights take millimeters as well as units, as the units page says.',
+    sources: ['/getting-started/first-drawer', '/concepts/units'],
+    expect:
+      'Yes: the Height (mm) field takes the height in millimeters, and shows it in height units below.',
   },
   {
     id: 'L12',
@@ -240,6 +241,16 @@ export const GOLDEN: readonly GoldenCase[] = [
     turns: ['How do I report a bug in the Layout Tool?'],
     sources: ['/getting-started/workspace-tour'],
     expect: 'Use the Feedback button in the header, which opens the issue tracker.',
+  },
+
+  {
+    id: 'L24',
+    group: 'lookup',
+    page: '/sharing/accounts-and-sync',
+    turns: ['How many layouts can I keep in my cloud account? Is there a storage limit?'],
+    sources: ['/sharing/accounts-and-sync'],
+    expect:
+      'Each account syncs up to 100 layouts and 10 MB, and up to 100 saved bin designs and 10 MB.',
   },
 
   // Synthesis across pages
@@ -432,10 +443,10 @@ export const GOLDEN: readonly GoldenCase[] = [
   {
     id: 'G01',
     group: 'gap',
-    page: '/sharing/accounts-and-sync',
-    turns: ['How many layouts can I keep in my cloud account? Is there a storage limit?'],
-    sources: ['/sharing/accounts-and-sync'],
-    expect: 'The docs state no storage limit.',
+    page: '/index',
+    turns: ['Who makes the Layout Tool?'],
+    sources: [],
+    expect: 'The docs do not name who makes the Layout Tool.',
   },
   {
     id: 'G02',
