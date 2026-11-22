@@ -22,6 +22,8 @@
     "scripts/sync-admin/**/*.ts",
     "scripts/community-admin/**/*.ts",
     "scripts/backfill-ml-ttls.ts",
-    "scripts/check-toolchain-advisories.ts"
-  ]
+    "scripts/check-toolchain-advisories.ts",
+    "scripts/docs-ask-eval/**/*.ts"
+  ],
+  "exclude": ["scripts/**/*.test.ts"]
 }
