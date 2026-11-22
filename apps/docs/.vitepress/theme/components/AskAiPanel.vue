@@ -123,7 +123,8 @@ watch(
   async (open) => {
     if (!open) return;
     await nextTick();
-    input.value?.focus();
+    // A resting panel has no question field, and focus must still enter the dialog.
+    (input.value ?? panel.value?.querySelector<HTMLElement>(FOCUSABLE))?.focus();
   },
   { immediate: true }
 );
