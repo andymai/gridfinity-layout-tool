@@ -43,7 +43,7 @@ We also respect your browser's privacy settings. If your browser sends a [Global
 
 The docs have Ask AI, a chat that answers questions about the app. When you ask a question, your question, the docs page you are on, your language and the earlier messages of the chat go to [Anthropic](https://www.anthropic.com), which runs the Claude model that writes the answer. We send no name, email address or layout data with a question. The chat itself stays in your browser tab.
 
-If analytics is enabled, the question, the answer, your thumbs up or down, and a random chat ID also go to PostHog, so we can check the quality of the answers. With analytics disabled, Ask AI sends nothing to PostHog.
+If analytics is enabled, the question, the answer, your thumbs up or down, and a random chat ID also go to PostHog, so we can check the quality of the answers. With analytics disabled, Ask AI sends no questions, answers or feedback to PostHog. When an answer fails, the server still writes an error log (see Server Error Logs below), which holds the error message but not your question or the answer.
 
 ### Page View Counts
 

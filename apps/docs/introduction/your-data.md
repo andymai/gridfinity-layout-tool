@@ -122,7 +122,9 @@ These docs have Ask AI, a chat that answers questions about the Layout Tool from
 
 The chat stays in this browser tab, and it ends when you close the tab.
 
-If <Ui k="settings.helpImprove" /> is on, the server also sends the question, the answer and a random chat ID to PostHog, to check the quality of the answers. The thumbs under an answer go there too. With the switch off, Ask AI sends nothing to PostHog. A Global Privacy Control or Do Not Track signal starts the switch off.
+If <Ui k="settings.helpImprove" /> is on, the server also sends the question, the answer and a random chat ID to PostHog, to check the quality of the answers. The thumbs under an answer go there too. With the switch off, Ask AI sends no questions, answers or thumbs to PostHog. A Global Privacy Control or Do Not Track signal starts the switch off.
+
+When an answer fails, the server still writes an error log, as [Server error logs](#server-error-logs) explains. The log holds the error message, not your question or the answer.
 
 ## Next steps
 
