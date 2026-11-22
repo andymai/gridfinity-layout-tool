@@ -1,7 +1,8 @@
-import { h } from 'vue';
+import { defineAsyncComponent, h } from 'vue';
 import DefaultTheme from 'vitepress/theme';
 import type { Theme } from 'vitepress';
 import AppTools from './components/AppTools.vue';
+import AskAiButton from './components/AskAiButton.vue';
 import BrandLockup from './components/BrandLockup.vue';
 import ChapterLabel from './components/ChapterLabel.vue';
 import DrawerCalculator from './components/DrawerCalculator.vue';
@@ -9,7 +10,12 @@ import OpenAppButton from './components/OpenAppButton.vue';
 import PlanDrawerButton from './components/PlanDrawerButton.vue';
 import RecipeCards from './components/RecipeCards.vue';
 import Screenshot from './components/Screenshot.vue';
+import { askAi, useAskAiHost } from './askAi/useAskAi';
 import './custom.css';
+import './askAi/dock.css';
+
+// The panel and its Markdown parser load when the panel first shows, not with every page.
+const AskAiPanel = defineAsyncComponent(() => import('./components/AskAiPanel.vue'));
 
 // The markdown rule replaces every <Ui> tag before Vue sees a page. A tag that
 // slips past it would render as an empty node, so the build fails instead.
@@ -52,10 +58,15 @@ const theme: Theme = {
   Layout: () =>
     h(DefaultTheme.Layout, null, {
       'nav-bar-title-after': () => h(BrandLockup),
-      'nav-bar-content-after': () => h(OpenAppButton),
+      'nav-bar-content-after': () => [h(AskAiButton), h(OpenAppButton)],
       'doc-before': () => h(ChapterLabel),
       'doc-after': () => h(AppTools),
+      'layout-bottom': () =>
+        askAi.available && (askAi.docked || askAi.opened) ? h(AskAiPanel) : null,
     }),
+  setup() {
+    useAskAiHost();
+  },
   enhanceApp({ app }) {
     app.component('DrawerCalculator', DrawerCalculator);
     app.component('PlanDrawerButton', PlanDrawerButton);

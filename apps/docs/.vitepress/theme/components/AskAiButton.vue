@@ -1,0 +1,56 @@
+<script setup lang="ts">
+import { askAi, closeAskAi, setOpen } from '../askAi/useAskAi';
+
+function toggle(): void {
+  if (askAi.open) void closeAskAi();
+  else setOpen(true);
+}
+</script>
+
+<template>
+  <button
+    v-if="askAi.available && !askAi.docked"
+    id="ask-ai-button"
+    class="ask-ai-button"
+    type="button"
+    aria-controls="ask-ai-panel"
+    :aria-expanded="askAi.open"
+    title="Ask AI (Ctrl+I)"
+    @click="toggle"
+  >
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M8 1.5l1.6 4.2 4.4 1.3-4.4 1.3L8 12.5 6.4 8.3 2 7l4.4-1.3z" />
+    </svg>
+    Ask AI
+  </button>
+</template>
+
+<style scoped>
+.ask-ai-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+  padding: 0 12px;
+  height: 32px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 16px;
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-1);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+.ask-ai-button:hover,
+.ask-ai-button[aria-expanded='true'] {
+  border-color: var(--vp-c-brand-1);
+}
+.ask-ai-button svg {
+  width: 14px;
+  height: 14px;
+  fill: var(--vp-c-brand-1);
+}
+</style>
