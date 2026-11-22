@@ -1,0 +1,21 @@
+apps/docs/introduction/your-data.md
+  s_f8efc8defc13ab::t_5b881d48eb89d6 125-127
+content/privacy.md
+  s_f8efc8defc13ab::t_1ee0f7e8f04435 46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b577dc28cea28d959d87cd5f03ba5c963571d6fc",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
