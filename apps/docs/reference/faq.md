@@ -45,6 +45,10 @@ Both are features that can still change. Labs features are still in development,
 
 Yes. A Docker image serves the app from your own computer or server. Sharing, sign-in and the community gallery need the hosted service, so they don't work in your copy. See [Self-hosting with Docker](./self-hosting).
 
+### Can I ask the docs a question in my own words?
+
+Yes. Ask AI answers from these docs and links the sections that it used. In a wide window, it sits in a column at the right of every page. In a narrow window, click **Ask AI** in the top bar. Answers can be wrong, so check the linked sections. [Your data and privacy](../introduction/your-data#ask-ai) explains what a question sends. A self-hosted copy has no Ask AI.
+
 ## Your data
 
 ### Where does the Layout Tool save my work?

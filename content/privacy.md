@@ -39,6 +39,12 @@ When analytics is disabled, the app sends no data to PostHog.
 
 We also respect your browser's privacy settings. If your browser sends a [Global Privacy Control](https://globalprivacycontrol.org/) (GPC) or Do Not Track signal, analytics is disabled by default. You can still enable it manually in Settings if you choose.
 
+### Ask AI (Docs Assistant)
+
+The docs have Ask AI, a chat that answers questions about the app. When you ask a question, your question, the docs page you are on, your language and the earlier messages of the chat go to [Anthropic](https://www.anthropic.com), which runs the Claude model that writes the answer. We send no name, email address or layout data with a question. The chat itself stays in your browser tab.
+
+If analytics is enabled, the question, the answer, your thumbs up or down, and a random chat ID also go to PostHog, so we can check the quality of the answers. With analytics disabled, Ask AI sends no questions, answers or feedback to PostHog. When an answer fails, the server still writes an error log (see Server Error Logs below), which holds the error message but not your question or the answer.
+
 ### Page View Counts
 
 The app and the [docs](/docs) count page views with [Vercel Web Analytics](https://vercel.com/docs/analytics/privacy-policy), a service of the company that hosts this site. Each page view records:
@@ -146,6 +152,7 @@ Signed-in users can report a published design, whether or not they have publishe
 | Service    | Purpose                                               | Privacy Policy                                                                                                                                                         |
 | ---------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | PostHog    | Analytics & server error logs                         | [posthog.com/privacy](https://posthog.com/privacy)                                                                                                                     |
+| Anthropic  | Answers to Ask AI questions in the docs               | [anthropic.com/legal/privacy](https://www.anthropic.com/legal/privacy)                                                                                                 |
 | Vercel     | Hosting, storage & page view counts                   | [vercel.com/legal/privacy-policy](https://vercel.com/legal/privacy-policy)                                                                                             |
 | Liveblocks | Real-time collaboration                               | [liveblocks.io/privacy](https://liveblocks.io/privacy)                                                                                                                 |
 | Google     | Sign-in for sync and publishing (only if you sign in) | [policies.google.com/privacy](https://policies.google.com/privacy)                                                                                                     |
@@ -171,6 +178,7 @@ You can:
 - **Analytics:** Retained by PostHog per their data retention policy
 - **Page view counts:** Retained by Vercel per their data retention policy
 - **Server error logs:** 14 days, then PostHog deletes them
+- **Ask AI questions:** We keep no copy. Anthropic, and PostHog if analytics is enabled, retain them per their policies
 - **Account session cookies:** 30 days from sign-in
 - **Account profile (name, email, provider account ID):** 1 year, refreshed on every sign-in. Profiles for accounts that don't sign in for a year are automatically deleted
 - **Synced layouts and designs:** Retained until you delete them, or until you delete your account

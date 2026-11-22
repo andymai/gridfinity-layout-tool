@@ -17,6 +17,8 @@ sources:
   - src/core/api/share.ts
   - api/auth/providers/github.ts
   - api/lib/posthogLogSink.ts
+  - api/docs-ask.ts
+  - apps/docs/.vitepress/theme/askAi/
 ---
 
 # Your data and privacy
@@ -113,6 +115,16 @@ The counts use no cookie and no ID in your browser. Vercel groups one visitor's 
 The Layout Tool's server sends its warning and error logs to PostHog. A log holds the error message and details such as a status code or a design ID. It doesn't hold your account ID, your name or your email address. PostHog keeps these logs for 14 days.
 
 The <Ui k="settings.helpImprove" /> switch doesn't stop these logs, because the server can't see the switch. The self-hosted Docker image has no server, so it sends no logs.
+
+## Ask AI
+
+These docs have Ask AI, a chat that answers questions about the Layout Tool from these pages. When you ask a question, the Layout Tool's server sends it to Anthropic, the company that runs the Claude model that writes the answer. The server sends your question, the docs page you are on, your language and the chat so far. It doesn't send your name, your email address or your layouts.
+
+The chat stays in this browser tab, and it ends when you close the tab.
+
+If <Ui k="settings.helpImprove" /> is on, the server also sends the question, the answer and a random chat ID to PostHog, to check the quality of the answers. The thumbs under an answer go there too. With the switch off, Ask AI sends no questions, answers or thumbs to PostHog. A Global Privacy Control or Do Not Track signal starts the switch off.
+
+When an answer fails, the server still writes an error log, as [Server error logs](#server-error-logs) explains. The log holds the error message, not your question or the answer.
 
 ## Next steps
 
