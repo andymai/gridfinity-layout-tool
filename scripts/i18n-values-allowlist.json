@@ -1,6 +1,7 @@
 {
   "maxShortValueLength": 3,
   "keys": [
+    "printBedInput.printerLabel",
     "binDesigner.cutouts.library.size",
     "binDesigner.cutouts.library.folder",
     "settings.spacemouse",

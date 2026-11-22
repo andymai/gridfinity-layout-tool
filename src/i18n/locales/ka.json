@@ -5204,6 +5204,8 @@
   "printBedInput.unlinkAriaLabel": "სიგანისა და სიღრმის განცალკევება",
   "printBedInput.widthAriaLabel": "საბეჭდი მაგიდის სიგანე",
   "printBedInput.depthAriaLabel": "საბეჭდი მაგიდის სიღრმე",
+  "printBedInput.printerLabel": "პრინტერი",
+  "printBedInput.printerPlaceholder": "აირჩიეთ თქვენი პრინტერი",
   "whatsNew.title": "სიახლეები",
   "commandPalette.openWhatsNew": "სიახლეები",
   "whatsNew.helpDescription": "მომხმარებლისთვის ხილული ბოლო ცვლილებების მოკლე შეჯამება, რომელიც აპის განახლების შემდეგ ჩანს.",

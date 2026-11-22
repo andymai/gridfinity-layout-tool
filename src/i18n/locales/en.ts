@@ -6381,6 +6381,8 @@ const en: Record<string, string> = {
   'printBedInput.unlinkAriaLabel': 'Unlink width and depth',
   'printBedInput.widthAriaLabel': 'Print bed width',
   'printBedInput.depthAriaLabel': 'Print bed depth',
+  'printBedInput.printerLabel': 'Printer',
+  'printBedInput.printerPlaceholder': 'Choose your printer',
 
   // What's New
   'whatsNew.title': "What's new",

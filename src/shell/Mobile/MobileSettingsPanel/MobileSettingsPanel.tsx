@@ -12,6 +12,7 @@ import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { DrawerDimensionsSummary } from '@/shared/components/DrawerDimensionsSummary';
 import { GridUnitInput } from '@/shared/components/GridUnitInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
+import { PrinterPresetSelect } from '@/shared/components/PrinterPresetSelect';
 import { SubHeader } from '@/shared/components/PanelText';
 import { DrawerShapeSection } from '@/features/drawer-shape';
 import { SettingsRow } from '@/shared/components/SettingsRow';
@@ -249,6 +250,21 @@ export function MobileSettingsPanel() {
               variant="mobile"
             />
           </div>
+
+          <SettingsRow
+            label={t('printBedInput.printerLabel')}
+            htmlFor="mobilePrinterPreset"
+            variant="mobile"
+          >
+            <PrinterPresetSelect
+              id="mobilePrinterPreset"
+              width={printBedSize}
+              depth={printBedDepth}
+              onChange={setPrintBedSize}
+              variant="mobile"
+              surface="mobile"
+            />
+          </SettingsRow>
 
           <SettingsRow label={t('settings.printBedSizeLabel')} unit="mm" variant="mobile">
             <PrintBedInput

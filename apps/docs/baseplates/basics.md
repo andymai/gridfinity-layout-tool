@@ -84,13 +84,14 @@ A bin at the edge of the grid can also grow its walls into the margin, so that i
 Change the grid unit only when you know that you need it. The grid unit belongs to the layout, so the change also applies to every bin that you design for this layout.
 :::
 
-The same section holds three more settings:
+The same section holds four more settings:
 
-| Setting                             | What it changes                         |
-| ----------------------------------- | --------------------------------------- |
-| <Ui k="baseplate.printBedSize" />   | How the plate splits into pieces        |
-| <Ui k="settings.nozzleSize" />      | The size of connector keys and clips    |
-| <Ui k="baseplate.maxPrintHeight" /> | The maximum height of a stack of plates |
+| Setting                               | What it changes                              |
+| ------------------------------------- | -------------------------------------------- |
+| <Ui k="printBedInput.printerLabel" /> | Fills in the print bed size for your printer |
+| <Ui k="baseplate.printBedSize" />     | How the plate splits into pieces             |
+| <Ui k="settings.nozzleSize" />        | The size of connector keys and clips         |
+| <Ui k="baseplate.maxPrintHeight" />   | The maximum height of a stack of plates      |
 
 ## Each layout keeps its own baseplate
 

@@ -4415,6 +4415,8 @@
   "print.title": "Imprimir Diseño",
   "print.uncategorized": "Sin categoría",
   "printBedInput.depthAriaLabel": "Profundidad de la cama de impresión",
+  "printBedInput.printerLabel": "Impresora",
+  "printBedInput.printerPlaceholder": "Elige tu impresora",
   "printBedInput.linkAriaLabel": "Vincular ancho y profundidad",
   "printBedInput.unlinkAriaLabel": "Desvincular ancho y profundidad",
   "printBedInput.widthAriaLabel": "Ancho de la cama de impresión",

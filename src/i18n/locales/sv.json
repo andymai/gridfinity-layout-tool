@@ -4415,6 +4415,8 @@
   "print.title": "Skriv ut layout",
   "print.uncategorized": "Okategoriserad",
   "printBedInput.depthAriaLabel": "Utskriftsbäddens djup",
+  "printBedInput.printerLabel": "Skrivare",
+  "printBedInput.printerPlaceholder": "Välj din skrivare",
   "printBedInput.linkAriaLabel": "Länka bredd och djup",
   "printBedInput.unlinkAriaLabel": "Avlänka bredd och djup",
   "printBedInput.widthAriaLabel": "Utskriftsbäddens bredd",

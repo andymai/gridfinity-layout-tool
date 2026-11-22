@@ -4415,6 +4415,8 @@
   "print.title": "Stampa layout",
   "print.uncategorized": "Senza categoria",
   "printBedInput.depthAriaLabel": "Profondità piano di stampa",
+  "printBedInput.printerLabel": "Stampante",
+  "printBedInput.printerPlaceholder": "Scegli la tua stampante",
   "printBedInput.linkAriaLabel": "Collega larghezza e profondità",
   "printBedInput.unlinkAriaLabel": "Scollega larghezza e profondità",
   "printBedInput.widthAriaLabel": "Larghezza piano di stampa",

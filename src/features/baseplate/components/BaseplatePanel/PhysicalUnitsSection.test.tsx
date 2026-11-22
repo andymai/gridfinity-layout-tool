@@ -1,13 +1,18 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { PhysicalUnitsSection } from './PhysicalUnitsSection';
 import { useSettingsStore } from '@/core/store/settings';
 import { useLayoutStore } from '@/core/store/layout';
 import { mm } from '@/core/types';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { resetAllStores } from '@/test/testUtils';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 
-vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
+// Undo names the reverted command in a toast through getStaticTranslation.
+vi.mock('@/i18n', async () => ({
+  ...(await import('@/test/mocks/i18nEcho')),
+  getStaticTranslation: (key: string) => key,
+}));
 
 describe('PhysicalUnitsSection', () => {
   beforeEach(() => {
@@ -68,6 +73,21 @@ describe('PhysicalUnitsSection', () => {
     });
     render(<PhysicalUnitsSection />);
     expect(screen.getByLabelText('gridUnitInput.yAriaLabel')).toHaveValue(30);
+  });
+
+  it('sets the bed from a printer pick, and undo takes it back', () => {
+    render(<PhysicalUnitsSection />);
+    fireEvent.change(screen.getByLabelText('printBedInput.printerLabel'), {
+      target: { value: 'prusa-mk4s' },
+    });
+    expect(useLayoutStore.getState().layout.printBedSize).toBe(250);
+    expect(useLayoutStore.getState().layout.printBedDepth).toBe(210);
+
+    act(() => {
+      useHistoryStore.getState().undo();
+    });
+    expect(useLayoutStore.getState().layout.printBedSize).toBe(256);
+    expect(useLayoutStore.getState().layout.printBedDepth).not.toBe(210);
   });
 
   it('turns the layout low-profile base on and back off', () => {

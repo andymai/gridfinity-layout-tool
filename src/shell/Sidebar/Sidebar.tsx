@@ -14,6 +14,7 @@ import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { DrawerDimensionsSummary } from '@/shared/components/DrawerDimensionsSummary';
 import { GridUnitInput } from '@/shared/components/GridUnitInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
+import { PrinterPresetSelect } from '@/shared/components/PrinterPresetSelect';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
@@ -460,6 +461,15 @@ export function Sidebar() {
                       />
                     </SettingsRow>
                   </div>
+                  <SettingsRow label={t('printBedInput.printerLabel')} htmlFor="printerPreset">
+                    <PrinterPresetSelect
+                      id="printerPreset"
+                      width={printBedSize}
+                      depth={printBedDepth}
+                      onChange={setPrintBedSize}
+                      surface="sidebar"
+                    />
+                  </SettingsRow>
                   <div data-help-target="print-bed-size">
                     <SettingsRow
                       label={t('sidebar.printBed')}

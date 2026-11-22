@@ -25,7 +25,7 @@ Every printer has a largest part that it can print. Tell the Gridfinity Layout T
 
 ## One bed size for each layout
 
-The **print bed size** is a width and a depth in millimeters. The default is a 256 mm square bed, and you can set any size from 42 mm to 3000 mm. The width and depth fields have a chain icon. Click the chain to unlink them for a bed that is not square.
+The **print bed size** is a width and a depth in millimeters. The default is a 256 mm square bed, and you can set any size from 42 mm to 3000 mm. The width and depth fields have a chain icon. Click the chain to unlink them for a bed that is not square. In the layout editor, the baseplate generator and <Ui k="settings.tabs.defaults" />, <Ui k="printBedInput.printerLabel" /> lists common printers. Pick yours, and the width and depth fill in.
 
 The bed size belongs to the layout. All three tools show the same value, and the layout ZIP export uses it too. Change it in one tool, and the other tools use the changed value.
 

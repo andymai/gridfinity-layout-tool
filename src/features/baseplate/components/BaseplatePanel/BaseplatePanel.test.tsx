@@ -539,7 +539,8 @@ describe('BaseplatePanel', () => {
       mockTiling = splitTiling;
       mockSelectedPieceLabel = 'A1';
       render(<BaseplatePanel />);
-      const a1Button = screen.getByText('A1');
+      // The printer picker lists a Bambu Lab A1 too.
+      const a1Button = screen.getByText('A1', { ignore: 'script, style, option' });
       fireEvent.click(a1Button);
       expect(mockSetSelectedPieceLabel).toHaveBeenCalledWith(null);
     });
