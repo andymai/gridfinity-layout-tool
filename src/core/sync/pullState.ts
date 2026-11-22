@@ -1,4 +1,5 @@
 import type { PullResult } from './poller';
+import { resetServedKinds } from './servedKinds';
 
 /**
  * Pull bookkeeping kept apart from the poller so the session store can reset
@@ -32,4 +33,5 @@ export function resetPullState(): void {
   pullState.lastIndexUpdatedAt = 0;
   pullState.inFlight = null;
   pullState.generation++;
+  resetServedKinds();
 }

@@ -102,7 +102,7 @@ function makeReq(opts: { ifModifiedSince?: string } = {}): VercelRequest {
 }
 
 async function seedEntry(
-  kind: 'layouts' | 'designs',
+  kind: 'layouts' | 'designs' | 'cutoutItems',
   id: string,
   modifiedAt: number
 ): Promise<void> {
@@ -133,6 +133,25 @@ describe('GET /api/sync/manifest', () => {
       folders: {},
       indexUpdatedAt: 0,
     });
+  });
+
+  it('lists the cutout library only while its sync is switched on', async () => {
+    await seedEntry('cutoutItems', 'clib_1', 3000);
+    const { default: handler } = await import('./manifest');
+
+    const off = makeRes();
+    await handler(makeReq(), off as unknown as VercelResponse);
+    expect(off._body).not.toHaveProperty('cutoutItems');
+    expect(off._body).not.toHaveProperty('cutoutFolders');
+
+    vi.stubEnv('CUTOUT_LIBRARY_SYNC_ENABLED', 'true');
+    const on = makeRes();
+    await handler(makeReq(), on as unknown as VercelResponse);
+    expect(on._body).toMatchObject({
+      cutoutItems: { clib_1: { modifiedAt: 3000 } },
+      cutoutFolders: {},
+    });
+    vi.unstubAllEnvs();
   });
 
   it('returns the index hashes plus indexUpdatedAt', async () => {

@@ -19,10 +19,11 @@ import { requireSyncContext } from './lib/requireSyncContext.js';
  *
  * Stream a ZIP of the user's live data:
  *
- *   manifest.json        : { layouts, designs, baseplates, designVersions: { [id]: IndexEntry }, community: [id], indexUpdatedAt, exportedAt }
+ *   manifest.json        : { layouts, designs, baseplates, designVersions, folders, cutoutItems, cutoutFolders: { [id]: IndexEntry }, community: [id], indexUpdatedAt, exportedAt }
  *   layouts/{id}.json    : full envelope for each non-tombstoned layout
  *   designs/{id}.json    : full envelope for each non-tombstoned design
  *   baseplates/{id}.json : full envelope for each non-tombstoned baseplate
+ *   cutoutItems/{id}.json, cutoutFolders/{id}.json : the cutout library
  *   community/{id}.json  : full record for each design the user published to
  *                          the community showcase (server-side user data that
  *                          may exist nowhere locally)
@@ -44,6 +45,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       baseplatesIndex,
       designVersionsIndex,
       foldersIndex,
+      cutoutItemsIndex,
+      cutoutFoldersIndex,
       indexUpdatedAt,
       publishedIds,
       meshes,
@@ -53,6 +56,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       getIndex(redis, session.userId, 'baseplates'),
       getIndex(redis, session.userId, 'designVersions'),
       getIndex(redis, session.userId, 'folders'),
+      getIndex(redis, session.userId, 'cutoutItems'),
+      getIndex(redis, session.userId, 'cutoutFolders'),
       getIndexUpdatedAt(redis, session.userId),
       redis.smembers(communityPublishedKey(session.userId)),
       listHeldMeshes(redis, session.userId),
@@ -64,6 +69,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     const liveBaseplates = filterLive(baseplatesIndex);
     const liveDesignVersions = filterLive(designVersionsIndex);
     const liveFolders = filterLive(foldersIndex);
+    const liveCutoutItems = filterLive(cutoutItemsIndex);
+    const liveCutoutFolders = filterLive(cutoutFoldersIndex);
 
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader(
@@ -83,6 +90,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
               baseplates: liveBaseplates,
               designVersions: liveDesignVersions,
               folders: liveFolders,
+              cutoutItems: liveCutoutItems,
+              cutoutFolders: liveCutoutFolders,
               community: communityIds,
               meshes: Object.fromEntries(
                 [...meshes].map(([hash, { sizeBytes }]) => [hash, { sizeBytes }])
@@ -102,6 +111,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         streamEnvelopes(addFile, session.userId, 'baseplates', Object.keys(liveBaseplates)),
         streamEnvelopes(addFile, session.userId, 'designVersions', Object.keys(liveDesignVersions)),
         streamEnvelopes(addFile, session.userId, 'folders', Object.keys(liveFolders)),
+        streamEnvelopes(addFile, session.userId, 'cutoutItems', Object.keys(liveCutoutItems)),
+        streamEnvelopes(addFile, session.userId, 'cutoutFolders', Object.keys(liveCutoutFolders)),
         streamCommunityRecords(addFile, communityIds),
         streamMeshFiles(addFile, meshes),
       ]);

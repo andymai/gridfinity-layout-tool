@@ -21,6 +21,10 @@ const QUOTA: Record<SyncItemKind, { maxCount: number; maxBytes: number }> = {
   // A folder is a name and a parent pointer; the count matches the client's
   // FOLDERS_MAX so the two limits never disagree about which folder is one too many.
   folders: { maxCount: 200, maxBytes: 256 * 1024 },
+  // Mirrors MAX_LIBRARY_ITEMS and MAX_LIBRARY_FOLDERS in the client's libraryTypes.ts.
+  // Meshes are refs to the mesh store, so an item is small; 25 MB is the bytes ceiling.
+  cutoutItems: { maxCount: 1000, maxBytes: 25 * 1024 * 1024 },
+  cutoutFolders: { maxCount: 200, maxBytes: 256 * 1024 },
 };
 
 export type QuotaErrorReason = 'count' | 'bytes';

@@ -115,10 +115,21 @@ export const BIN_DESIGN_DOCUMENT_KEYS = [
   '$schema',
 ] as const;
 
+/** The cutout library item FILE: a name and the library's part of `BinParams`. */
+export const CUTOUT_LIBRARY_DOCUMENT_KEYS = [
+  'type',
+  'version',
+  'name',
+  'params',
+  '_meta',
+  '$schema',
+] as const;
+
 /** Root-level property manifests, keyed by schema file name. */
 export const SCHEMA_ROOT_KEYS = {
   'layout.schema.json': LAYOUT_DOCUMENT_KEYS,
   'bin-design.schema.json': BIN_DESIGN_DOCUMENT_KEYS,
+  'cutout-library.schema.json': CUTOUT_LIBRARY_DOCUMENT_KEYS,
 } as const satisfies Record<string, readonly string[]>;
 
 /**

@@ -1,0 +1,69 @@
+---
+title: Save cutouts to a library
+description: 'Save shapes to your cutout library, place them in other bins and lids, keep them in folders, and share them as files.'
+questions:
+  - 'How do I use a cutout again in another bin?'
+  - 'Can I put a saved cutout on a lid?'
+  - 'How do I share a saved cutout with a friend?'
+sources:
+  - src/features/bin-designer/components/CutoutLibrary/LibraryPanel.tsx
+  - src/features/bin-designer/components/CutoutLibrary/SaveToLibraryDialog.tsx
+  - src/features/bin-designer/components/CutoutLibrary/ManageLibraryDialog.tsx
+  - src/features/bin-designer/components/CutoutLibrary/useCutoutLibraryWorkspace.tsx
+  - src/features/bin-designer/components/CutoutLibrary/libraryContent.ts
+  - src/features/bin-designer/components/CutoutLibrary/libraryPlacement.ts
+  - src/features/bin-designer/library/CutoutLibraryService.ts
+  - src/features/bin-designer/library/libraryFile.ts
+---
+
+# Save cutouts to a library
+
+When the same tool goes in many bins, trace it one time and save it. The cutout library keeps shapes apart from any bin, so you can put them in a new bin or lid with two clicks. New to cutouts? Start with [Cutout basics](./basics).
+
+## Save shapes
+
+1. Select the shapes in the cutout editor. A group that you select whole keeps its name.
+2. Right-click the selection and click <Ui k="binDesigner.cutouts.library.save" />. You can also open the <Ui k="binDesigner.cutouts.library.tab" /> tab and click the same button there.
+3. Type a name, pick a folder, and click <Ui k="common.save" />.
+
+The item keeps the size, depth, fit, label and STL imprint of each shape. Saving does not change your bin.
+
+## Place a saved item
+
+1. Open the <Ui k="binDesigner.cutouts.library.tab" /> tab in the cutout editor.
+2. Click an item. Its outline follows the pointer over the board.
+3. Click the board to drop it. Press <kbd>Esc</kbd> to stop.
+
+The item lands as new shapes, and they are selected. If you edit them, the item does not change. If you edit the item later, bins that hold it do not change. While snap is on, the corner of the item snaps to the grid.
+
+The app fits the item to its new bin:
+
+- A pocket with a fixed depth that is deeper than the new bin can cut gets the deepest depth that the bin allows.
+- A pocket set to the floor, or through the bin, follows its new bin.
+- If the item is larger than the board, the off-board warning offers to move it or to make the bin larger.
+
+An item can go on a lid when the lid has room for all its shapes. An item with an STL imprint cannot go on a lid, because imprints go in bins only.
+
+## Update an item
+
+Shapes that you placed from an item, or saved to it, keep a link to it. Select them and save again. Click <Ui k="binDesigner.cutouts.library.saveAsNew" /> to keep the old item and make a new one, or keep the update choice to replace the old item.
+
+The <Ui k="binDesigner.cutouts.library.usedInBin" /> list at the top of the tab shows the items that the current bin holds.
+
+## Find and sort items
+
+- Type in the search box to find items by name.
+- Click <Ui k="binDesigner.cutouts.library.manage" /> to rename, move or delete items, and to make folders.
+- When you delete a folder, the items and folders in it move up one level.
+
+The library holds 1000 items.
+
+## Share an item as a file
+
+1. Click <Ui k="binDesigner.cutouts.library.manage" />.
+2. Click <Ui k="common.export" /> next to an item. The app saves a `.cutouts.json` file that holds the item and its meshes.
+3. To add a file to your library, click <Ui k="binDesigner.cutouts.library.importItem" /> and pick the file.
+
+## Sync
+
+When you sign in, your library syncs to your other devices, as your designs do. Each device makes its own pictures of the items.

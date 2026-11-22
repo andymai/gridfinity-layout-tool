@@ -72,6 +72,8 @@ function makeAdapters(layoutPayload: Record<string, unknown> | null = { v: 1 }):
     baseplates: baseplates as BaseplateAdapter,
     designVersions: designVersions as unknown as DesignVersionAdapter,
     folders: designVersions as unknown as FolderAdapter,
+    cutoutItems: designVersions as unknown as SyncAdapters['cutoutItems'],
+    cutoutFolders: designVersions as unknown as SyncAdapters['cutoutFolders'],
   };
 }
 

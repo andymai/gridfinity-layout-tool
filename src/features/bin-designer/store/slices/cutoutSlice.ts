@@ -9,6 +9,7 @@
 import type { Draft } from 'immer';
 import type {
   DesignerState,
+  LibraryInsertOutcome,
   Cutout,
   CutoutArrayConfig,
   CutoutColorScope,
@@ -406,6 +407,58 @@ export function createCutoutSlice(rawSet: Set) {
             ? cutout
             : { ...cutout, zIndex: nextTopZIndexIn(state.params.cutouts) };
         state.params.cutouts = [...state.params.cutouts, placed];
+      });
+    },
+
+    addLibraryCutouts: (
+      cutouts: readonly Cutout[],
+      meshAssets: Readonly<Record<string, MeshAssetEntry>>,
+      groupNames: Readonly<Record<string, string>>
+    ): LibraryInsertOutcome => {
+      let outcome: LibraryInsertOutcome = 'noRoom';
+      set((state) => {
+        if (cutouts.length === 0 || remainingCapacity(state) < cutouts.length) return;
+        // A mesh imprint lives in the bin's array only; see addMeshCutout.
+        if (state.ui.cutoutTarget === 'lid' && cutouts.some((c) => c.shape === 'mesh')) {
+          outcome = 'meshOnLid';
+          return;
+        }
+        const assets = { ...(state.params.meshAssets ?? {}), ...meshAssets };
+        const hasMeshes = Object.keys(meshAssets).length > 0;
+        if (hasMeshes && meshTrianglesTotal(assets) > MAX_MESH_TRIANGLES_PER_DESIGN) {
+          outcome = 'overBudget';
+          return;
+        }
+        pushHistoryEntry(state);
+        if (hasMeshes) state.params.meshAssets = assets;
+        if (Object.keys(groupNames).length > 0) {
+          state.params.cutoutGroupNames = {
+            ...(state.params.cutoutGroupNames ?? {}),
+            ...groupNames,
+          };
+        }
+        const owner = cutoutOwner(state);
+        // Stacked above everything on the board, in the order they were saved.
+        const base = nextTopZIndexIn(owner.cutouts);
+        const lowest = Math.min(...cutouts.map((c) => c.zIndex ?? 0));
+        owner.cutouts = [
+          ...owner.cutouts,
+          ...cutouts.map((c) => ({ ...c, zIndex: base + (c.zIndex ?? 0) - lowest })),
+        ];
+        outcome = 'added';
+      });
+      return outcome;
+    },
+
+    setCutoutsLibraryItem: (ids: readonly string[], itemId: string) => {
+      set((state) => {
+        const owner = cutoutOwner(state);
+        const chosen = new Set(ids);
+        if (!owner.cutouts.some((c) => chosen.has(c.id) && c.libraryItemId !== itemId)) return;
+        pushHistoryEntry(state, { affectsGeometry: false });
+        owner.cutouts = owner.cutouts.map((c) =>
+          chosen.has(c.id) ? { ...c, libraryItemId: itemId } : c
+        );
       });
     },
 

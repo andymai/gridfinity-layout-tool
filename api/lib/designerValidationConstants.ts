@@ -51,6 +51,8 @@ export const CONSTRAINTS = {
   // metadata that round-trip through sync, so they are length-bounded like
   // every other user-supplied string.
   MAX_GROUP_NAME_LENGTH: 60,
+  // Mirrors MAX_LIBRARY_ITEM_ID_LENGTH in src/features/bin-designer/types/cutout.ts.
+  MAX_LIBRARY_ITEM_ID_LENGTH: 64,
   // No client rule caps how many groups a design has (the bin's cutout array is
   // itself unbounded here), so this is a static ceiling whose only job is to
   // stop an unbounded map riding into storage.

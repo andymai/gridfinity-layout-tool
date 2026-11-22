@@ -13,6 +13,7 @@ import type { MeshHolder } from '@/shared/generation/meshRefs';
 import { sweepMeshFiles } from '@/shared/generation/meshStore';
 import { compressString, decompressString } from '@/shared/utils/compression';
 import { DESIGNS_STORE, DESIGN_VERSIONS_STORE, getDb } from './designerDb';
+import { listItems } from '@/features/bin-designer/library/CutoutLibraryService';
 
 function versionBody(version: DesignVersion): MeshHolder | null {
   const json = decompressString(version.content);
@@ -94,10 +95,15 @@ export async function moveInlineMeshesToFiles(): Promise<number> {
   return rewritten;
 }
 
-/** Every mesh file a saved design or version names. */
+/** Every mesh file a saved design, version or cutout library item names. */
 export async function referencedMeshHashes(): Promise<Set<string>> {
   const db = await getDb();
   const hashes = new Set<string>();
+  // Read first: the library's database is apart from this one, and a library
+  // item may be the only thing still naming a mesh.
+  for (const item of await listItems()) {
+    for (const hash of holderMeshHashes(item.content)) hashes.add(hash);
+  }
   for (const design of (await db.getAll(DESIGNS_STORE)) as SavedDesign[]) {
     for (const hash of holderMeshHashes(design)) hashes.add(hash);
   }

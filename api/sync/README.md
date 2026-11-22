@@ -6,23 +6,25 @@ Server endpoints for the multi-device sync feature. Stores per-user layouts and 
 
 ## Endpoints
 
-| Endpoint                        | Method | Rate Limit | Purpose                                            |
-| ------------------------------- | ------ | ---------- | -------------------------------------------------- |
-| `/api/sync/layouts/[id]`        | GET    | 240/min    | Fetch envelope (200 / 404 / 410)                   |
-| `/api/sync/layouts/[id]`        | PUT    | 60/min     | LWW write; 409 stale-write, 410 stale-resurrect    |
-| `/api/sync/layouts/[id]`        | DELETE | 60/min     | Tombstone + blob delete                            |
-| `/api/sync/designs/[id]`        | GET    | 240/min    | Fetch envelope (200 / 404 / 410)                   |
-| `/api/sync/designs/[id]`        | PUT    | 60/min     | LWW write; reuses designer-payload validator       |
-| `/api/sync/designs/[id]`        | DELETE | 60/min     | Tombstone + blob delete                            |
-| `/api/sync/designVersions/[id]` | GET    | 240/min    | Fetch envelope (200 / 404 / 410)                   |
-| `/api/sync/designVersions/[id]` | PUT    | 60/min     | LWW write; reuses the designer-payload validator   |
-| `/api/sync/designVersions/[id]` | DELETE | 60/min     | Tombstone + blob delete                            |
-| `/api/sync/folders/[id]`        | GET    | 240/min    | Fetch envelope (200 / 404 / 410)                   |
-| `/api/sync/folders/[id]`        | PUT    | 60/min     | LWW write; `{ name, parentId, color?, createdAt }` |
-| `/api/sync/folders/[id]`        | DELETE | 60/min     | Tombstone + blob delete                            |
-| `/api/sync/manifest`            | GET    | 240/min    | Full per-user index + `If-Modified-Since` 304      |
-| `/api/sync/export`              | GET    | 240/min    | ZIP of all live items + manifest.json              |
-| `/api/sync/account`             | DELETE | 60/min     | Cascade-delete sessions + KV + blobs               |
+| Endpoint                        | Method           | Rate Limit | Purpose                                                        |
+| ------------------------------- | ---------------- | ---------- | -------------------------------------------------------------- |
+| `/api/sync/layouts/[id]`        | GET              | 240/min    | Fetch envelope (200 / 404 / 410)                               |
+| `/api/sync/layouts/[id]`        | PUT              | 60/min     | LWW write; 409 stale-write, 410 stale-resurrect                |
+| `/api/sync/layouts/[id]`        | DELETE           | 60/min     | Tombstone + blob delete                                        |
+| `/api/sync/designs/[id]`        | GET              | 240/min    | Fetch envelope (200 / 404 / 410)                               |
+| `/api/sync/designs/[id]`        | PUT              | 60/min     | LWW write; reuses designer-payload validator                   |
+| `/api/sync/designs/[id]`        | DELETE           | 60/min     | Tombstone + blob delete                                        |
+| `/api/sync/designVersions/[id]` | GET              | 240/min    | Fetch envelope (200 / 404 / 410)                               |
+| `/api/sync/designVersions/[id]` | PUT              | 60/min     | LWW write; reuses the designer-payload validator               |
+| `/api/sync/designVersions/[id]` | DELETE           | 60/min     | Tombstone + blob delete                                        |
+| `/api/sync/folders/[id]`        | GET              | 240/min    | Fetch envelope (200 / 404 / 410)                               |
+| `/api/sync/folders/[id]`        | PUT              | 60/min     | LWW write; `{ name, parentId, color?, createdAt }`             |
+| `/api/sync/folders/[id]`        | DELETE           | 60/min     | Tombstone + blob delete                                        |
+| `/api/sync/cutoutItems/[id]`    | GET, PUT, DELETE | as above   | Cutout library items; off unless `CUTOUT_LIBRARY_SYNC_ENABLED` |
+| `/api/sync/cutoutFolders/[id]`  | GET, PUT, DELETE | as above   | Cutout library folders; off with the items                     |
+| `/api/sync/manifest`            | GET              | 240/min    | Full per-user index + `If-Modified-Since` 304                  |
+| `/api/sync/export`              | GET              | 240/min    | ZIP of all live items + manifest.json                          |
+| `/api/sync/account`             | DELETE           | 60/min     | Cascade-delete sessions + KV + blobs                           |
 
 Rate limits are keyed by `userId`, not IP — each authenticated user gets their own budget.
 
@@ -100,6 +102,12 @@ Quota counts differently here, since 100 items would be a few designs' history:
 `MAX_VERSIONS_PER_DESIGN`. A `413` surfaces as the usual quota toast; the
 version is saved locally either way.
 
+### Cutout library
+
+`cutoutItems` and `cutoutFolders` (validated in `api/lib/cutoutLibraryValidation.ts`)
+answer `503`, and drop out of the manifest, unless `CUTOUT_LIBRARY_SYNC_ENABLED`
+is `true`. The auth-and-sync skill covers how the client reads that.
+
 ## LWW + tombstone semantics (PUT)
 
 Every write supplies a `modifiedAt` (ms epoch) representing the client's view of when the change happened. The server compares against the existing entry:
@@ -114,13 +122,15 @@ Every write supplies a `modifiedAt` (ms epoch) representing the client's view of
 
 `api/lib/quota.ts` enforces:
 
-| Resource      | Cap            |
-| ------------- | -------------- |
-| Layouts count | 100 per user   |
-| Layouts bytes | 10 MB per user |
-| Designs count | 100 per user   |
-| Designs bytes | 10 MB per user |
-| Folders count | 200 per user   |
+| Resource               | Cap                   |
+| ---------------------- | --------------------- |
+| Layouts count          | 100 per user          |
+| Layouts bytes          | 10 MB per user        |
+| Designs count          | 100 per user          |
+| Designs bytes          | 10 MB per user        |
+| Folders count          | 200 per user          |
+| Cutout library items   | 1000 / 25 MB per user |
+| Cutout library folders | 200 per user          |
 
 Tombstones don't count. Quotas are independent per kind. Concurrent writes can briefly exceed by one item — caps are soft ceilings at this scale, not hard invariants.
 
@@ -133,7 +143,7 @@ The existing share endpoints (`/api/share`) run `filterLayoutContent` because sh
 `DELETE /api/sync/account` runs in this order:
 
 1. `SMEMBERS users:{uid}:sessions` → `DEL session:{token}` for each
-2. `HKEYS users:{uid}:index:{layouts|designs|baseplates|designVersions|folders}` → `del()` each blob
+2. `HKEYS users:{uid}:index:{layouts|designs|baseplates|designVersions|folders|cutoutItems|cutoutFolders}` → `del()` each blob
 3. Release the Ko-fi supporter link and pull the public badge (`unlinkSupporterAccount`)
 4. Leave every held mesh file's holder set (`releaseAllAccountMeshes`); the files are shared by content hash, so they stay. A mesh upload records its hold only while its session exists, so this must follow step 1
 5. `DEL users:{uid}:*` (indexes, profile, sessions set, indexUpdatedAt, tombstoneSweptAt, meshes, meshUsage)

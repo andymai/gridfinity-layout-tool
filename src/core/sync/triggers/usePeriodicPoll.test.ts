@@ -25,6 +25,8 @@ const adapters: SyncAdapters = {
   baseplates: noopAdapter,
   designVersions: noopAdapter,
   folders: noopAdapter,
+  cutoutItems: noopAdapter,
+  cutoutFolders: noopAdapter,
 };
 
 function setVisibility(state: 'hidden' | 'visible'): void {

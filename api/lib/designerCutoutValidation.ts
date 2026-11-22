@@ -133,6 +133,16 @@ export function validateCutouts(value: unknown): string | null {
     ) {
       return `cutouts[${i}].colorScope must be one of: ${VALID_CUTOUT_COLOR_SCOPES.join(', ')}`;
     }
+    if (
+      c.libraryItemId !== undefined &&
+      !(
+        typeof c.libraryItemId === 'string' &&
+        c.libraryItemId.length > 0 &&
+        c.libraryItemId.length <= CONSTRAINTS.MAX_LIBRARY_ITEM_ID_LENGTH
+      )
+    ) {
+      return `cutouts[${i}].libraryItemId must be a string of at most ${CONSTRAINTS.MAX_LIBRARY_ITEM_ID_LENGTH} chars`;
+    }
     if (c.textStyle !== undefined) {
       const styleErr = validateTextStyleOverride(c.textStyle, `cutouts[${i}].textStyle`);
       if (styleErr) return styleErr;

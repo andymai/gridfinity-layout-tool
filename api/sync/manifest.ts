@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { serverError } from '../lib/shared.js';
 import { logger } from '../lib/logger.js';
 import { getIndex, getIndexUpdatedAt } from '../lib/userIndex.js';
+import { cutoutLibrarySyncEnabled } from '../lib/cutoutLibraryValidation.js';
 import { requireSyncContext } from './lib/requireSyncContext.js';
 
 /**
@@ -10,7 +11,7 @@ import { requireSyncContext } from './lib/requireSyncContext.js';
  * Returns the user's full per-kind index plus an `indexUpdatedAt`
  * timestamp the client uses for `If-Modified-Since` polling.
  *
- *   200  → { layouts, designs, baseplates, designVersions, folders: { [id]: IndexEntry }, indexUpdatedAt }
+ *   200  → { layouts, designs, baseplates, designVersions, folders, cutoutItems?, cutoutFolders?: { [id]: IndexEntry }, indexUpdatedAt }
  *   304  → empty body when the client's `If-Modified-Since` >= the
  *          server's `users:{uid}:indexUpdatedAt` (no scan needed).
  *
@@ -33,15 +34,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       return;
     }
 
-    const [layouts, designs, baseplates, designVersions, folders] = await Promise.all([
-      getIndex(redis, session.userId, 'layouts'),
-      getIndex(redis, session.userId, 'designs'),
-      getIndex(redis, session.userId, 'baseplates'),
-      getIndex(redis, session.userId, 'designVersions'),
-      getIndex(redis, session.userId, 'folders'),
-    ]);
+    const library = cutoutLibrarySyncEnabled();
+    const [layouts, designs, baseplates, designVersions, folders, cutoutItems, cutoutFolders] =
+      await Promise.all([
+        getIndex(redis, session.userId, 'layouts'),
+        getIndex(redis, session.userId, 'designs'),
+        getIndex(redis, session.userId, 'baseplates'),
+        getIndex(redis, session.userId, 'designVersions'),
+        getIndex(redis, session.userId, 'folders'),
+        library ? getIndex(redis, session.userId, 'cutoutItems') : null,
+        library ? getIndex(redis, session.userId, 'cutoutFolders') : null,
+      ]);
 
-    res.status(200).json({ layouts, designs, baseplates, designVersions, folders, indexUpdatedAt });
+    res.status(200).json({
+      layouts,
+      designs,
+      baseplates,
+      designVersions,
+      folders,
+      // Absent while the kill switch is off: the client pushes only the kinds listed here.
+      ...(cutoutItems && cutoutFolders ? { cutoutItems, cutoutFolders } : {}),
+      indexUpdatedAt,
+    });
   } catch (error) {
     logger.error('sync/manifest failed', {
       userId: session.userId,

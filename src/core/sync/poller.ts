@@ -3,6 +3,8 @@ import { PAYLOAD_KEY } from './payloadKey';
 import { apiFetch } from './apiFetch';
 import { useSessionStore } from './session/useSession';
 import { useSyncStatusStore } from './status';
+import { isKindServed, noteServedKinds } from './servedKinds';
+import { enqueue as outboxEnqueue } from './outbox';
 import type { SyncAdapter, SyncAdapters, SyncKind } from './adapters/types';
 
 interface IndexEntry {
@@ -24,6 +26,8 @@ interface ItemFetchResponse {
     baseplate?: unknown;
     designVersion?: unknown;
     folder?: unknown;
+    cutoutItem?: unknown;
+    cutoutFolder?: unknown;
     modifiedAt: number;
     schemaVersion: number;
   };
@@ -161,7 +165,23 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
     manifest.designVersions ?? {},
     capturedGeneration
   );
-  const applied = layoutChanges + designChanges + baseplateChanges + versionChanges + folderChanges;
+  // A gated kind syncs only while the manifest lists it. Library folders come
+  // before items, as layout folders come before layouts.
+  const newlyServed = noteServedKinds(manifest);
+  let libraryChanges = 0;
+  for (const kind of ['cutoutFolders', 'cutoutItems'] as const) {
+    if (!isKindServed(kind)) continue;
+    const remote = manifest[kind] ?? {};
+    libraryChanges += await diffKind(adapters[kind], kind, remote, capturedGeneration);
+    if (newlyServed.includes(kind)) await queueUnsynced(adapters[kind], kind, remote);
+  }
+  const applied =
+    layoutChanges +
+    designChanges +
+    baseplateChanges +
+    versionChanges +
+    folderChanges +
+    libraryChanges;
 
   // Reset happened mid-flight — drop our results to avoid re-installing the
   // prior user's high-water mark or applying writes that belong to a session
@@ -222,6 +242,29 @@ async function diffKind(
     }
   }
   return applied;
+}
+
+/**
+ * Queue each local item the server lacks or holds older. Runs when a gated
+ * kind first appears in a session's manifest: what was saved while its sync
+ * was off reached no outbox, or was held there unsent.
+ */
+async function queueUnsynced(
+  adapter: SyncAdapter,
+  kind: SyncKind,
+  remote: Record<string, IndexEntry>
+): Promise<void> {
+  for (const item of await adapter.list()) {
+    const entry = remote[item.id] as IndexEntry | undefined;
+    const behind =
+      entry === undefined ||
+      (entry.deletedAt === undefined
+        ? entry.modifiedAt < item.modifiedAt
+        : entry.deletedAt < item.modifiedAt);
+    if (behind) {
+      await outboxEnqueue({ kind, id: item.id, modifiedAt: item.modifiedAt, op: 'put' });
+    }
+  }
 }
 
 function trackWrite(write: Promise<void>): Promise<void> {

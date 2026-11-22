@@ -53,7 +53,8 @@ import { requireSyncContext } from './lib/requireSyncContext.js';
  *   1. Sessions   : DEL session:{token} for every token in the user's set
  *                   (so other tabs/devices flip to anonymous on next sync)
  *   2. Blobs      : del() each layouts/{id}.json, designs/{id}.json, baseplates/{id}.json,
- *                   designVersions/{id}.json, folders/{id}.json
+ *                   designVersions/{id}.json, folders/{id}.json,
+ *                   cutoutItems/{id}.json, cutoutFolders/{id}.json
  *   3. Community  : delete each published design (record/thumbnail/mesh blobs,
  *                   card hash, per-design sets, membership in the parent's
  *                   children set, every liker's reverse liked set, sort-index
@@ -102,6 +103,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     const baseplateIds = await redis.hkeys(userIndexKey(userId, 'baseplates'));
     const designVersionIds = await redis.hkeys(userIndexKey(userId, 'designVersions'));
     const folderIds = await redis.hkeys(userIndexKey(userId, 'folders'));
+    const cutoutItemIds = await redis.hkeys(userIndexKey(userId, 'cutoutItems'));
+    const cutoutFolderIds = await redis.hkeys(userIndexKey(userId, 'cutoutFolders'));
 
     await Promise.all([
       ...layoutIds.map((id) => deleteBlobSafe(`users/${userId}/layouts/${id}.json`, userId)),
@@ -111,6 +114,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         deleteBlobSafe(`users/${userId}/designVersions/${id}.json`, userId)
       ),
       ...folderIds.map((id) => deleteBlobSafe(`users/${userId}/folders/${id}.json`, userId)),
+      ...cutoutItemIds.map((id) =>
+        deleteBlobSafe(`users/${userId}/cutoutItems/${id}.json`, userId)
+      ),
+      ...cutoutFolderIds.map((id) =>
+        deleteBlobSafe(`users/${userId}/cutoutFolders/${id}.json`, userId)
+      ),
     ]);
 
     // 3. Community cascade. The record blob is read first because it is the
@@ -256,6 +265,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       userIndexKey(userId, 'baseplates'),
       userIndexKey(userId, 'designVersions'),
       userIndexKey(userId, 'folders'),
+      userIndexKey(userId, 'cutoutItems'),
+      userIndexKey(userId, 'cutoutFolders'),
       userIndexUpdatedAtKey(userId),
       userProfileKey(userId),
       userSessionsKey(userId),

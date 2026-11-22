@@ -28,13 +28,15 @@ export const MISSING_DEPENDENCY_STATUS = 424;
  */
 export const PAYLOAD_KEY: Record<
   SyncKind,
-  'layout' | 'design' | 'baseplate' | 'designVersion' | 'folder'
+  'layout' | 'design' | 'baseplate' | 'designVersion' | 'folder' | 'cutoutItem' | 'cutoutFolder'
 > = {
   layouts: 'layout',
   designs: 'design',
   baseplates: 'baseplate',
   designVersions: 'designVersion',
   folders: 'folder',
+  cutoutItems: 'cutoutItem',
+  cutoutFolders: 'cutoutFolder',
 };
 
 export function syncPutBody(

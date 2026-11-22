@@ -6,6 +6,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useSyncStatusStore } from './status';
+import { noteServedKinds, resetServedKinds } from './servedKinds';
 import {
   __resetForTests as resetOutbox,
   getAll as outboxGetAll,
@@ -72,6 +73,7 @@ function makeMockAdapter(): MockAdapter {
 let layoutsAdapter: MockAdapter;
 let designsAdapter: MockAdapter;
 let baseplatesAdapter: MockAdapter;
+let cutoutItemsAdapter: MockAdapter;
 let adapters: SyncAdapters;
 
 beforeEach(async () => {
@@ -90,6 +92,7 @@ beforeEach(async () => {
   layoutsAdapter = makeMockAdapter();
   designsAdapter = makeMockAdapter();
   baseplatesAdapter = makeMockAdapter();
+  cutoutItemsAdapter = makeMockAdapter();
   // MockAdapter's payload is deliberately untyped (`unknown`) — the engine
   // never inspects payload shape, only `id`/`modifiedAt`. SyncAdapter<Layout
   // |DesignSyncPayload|BaseplatePayload> is assignable to SyncAdapter<unknown>
@@ -101,6 +104,8 @@ beforeEach(async () => {
     baseplates: baseplatesAdapter as BaseplateAdapter,
     designVersions: baseplatesAdapter as unknown as DesignVersionAdapter,
     folders: baseplatesAdapter as unknown as FolderAdapter,
+    cutoutItems: cutoutItemsAdapter as unknown as SyncAdapters['cutoutItems'],
+    cutoutFolders: makeMockAdapter() as unknown as SyncAdapters['cutoutFolders'],
   };
   // Default: every fetch resolves with 200 + empty body.
   fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
@@ -205,6 +210,31 @@ describe('push: PUT happy path', () => {
     expect(puts).toHaveLength(1);
     expect(JSON.parse(puts[0][1].body as string).modifiedAt).toBe(2000);
     expect(await outboxGetAll()).toEqual([]);
+  });
+});
+
+describe('push: a gated kind', () => {
+  it('holds the entry, unsent, while the manifest leaves its kind out', async () => {
+    engine.start(adapters);
+    cutoutItemsAdapter.triggerChange({ kind: 'put', id: 'clib_1', modifiedAt: 1000 });
+    await flush();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    const [entry] = await outboxGetAll();
+    expect(entry).toMatchObject({ kind: 'cutoutItems', id: 'clib_1', attempts: 0 });
+  });
+
+  it('sends it once a manifest lists the kind', async () => {
+    noteServedKinds({ cutoutItems: {}, cutoutFolders: {} });
+    engine.start(adapters);
+    cutoutItemsAdapter.triggerChange({ kind: 'put', id: 'clib_1', modifiedAt: 1000 });
+    await flush();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/sync/cutoutItems/clib_1',
+      expect.objectContaining({ method: 'PUT' })
+    );
+    resetServedKinds();
   });
 });
 

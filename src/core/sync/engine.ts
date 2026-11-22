@@ -10,6 +10,9 @@ import {
 } from './outbox';
 import { parseRetryAfter, rateLimitedBackoffMs } from './retryAfter';
 import { useSyncStatusStore } from './status';
+import { isKindServed } from './servedKinds';
+
+const UNSERVED_HOLD_MS = 60_000;
 import type {
   AdapterChange,
   PushPlan,
@@ -209,6 +212,14 @@ async function sendOne(
   s: EngineState
 ): Promise<void> {
   const url = `/api/sync/${kind}/${entry.id}`;
+
+  // Held unsent, with no attempt spent, while the server's switch for this
+  // kind is off. The first manifest that lists it again queues what it lacks.
+  if (!isKindServed(kind)) {
+    await outboxRescheduleWithoutAttempt(entry.kind, entry.id, UNSERVED_HOLD_MS);
+    scheduleDrain(s, UNSERVED_HOLD_MS);
+    return;
+  }
 
   if (entry.op === 'delete') {
     const res = await apiFetch(url, { method: 'DELETE' });

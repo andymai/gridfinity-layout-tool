@@ -1,0 +1,53 @@
+{
+  "$schema": "https://gridfinitylayouttool.com/schema/cutout-library.schema.json",
+  "type": "gridfinity-cutout-library-item",
+  "version": "1.0",
+  "name": "Screwdriver and bits",
+  "params": {
+    "cutouts": [
+      {
+        "id": "driver",
+        "shape": "slot",
+        "x": 0,
+        "y": 30,
+        "width": 120,
+        "depth": 22,
+        "cutDepth": 18,
+        "rotation": 0,
+        "cornerRadius": 0,
+        "label": "Driver"
+      },
+      {
+        "id": "bits",
+        "shape": "rectangle",
+        "x": 0,
+        "y": 0,
+        "width": 60,
+        "depth": 20,
+        "cutDepth": 10,
+        "rotation": 0,
+        "cornerRadius": 2,
+        "label": "",
+        "groupId": "bits-tray",
+        "groupOp": "union"
+      },
+      {
+        "id": "bits-finger",
+        "shape": "circle",
+        "x": 50,
+        "y": 0,
+        "width": 20,
+        "depth": 20,
+        "cutDepth": 10,
+        "rotation": 0,
+        "cornerRadius": 0,
+        "label": "",
+        "groupId": "bits-tray",
+        "groupOp": "union"
+      }
+    ],
+    "cutoutGroupNames": {
+      "bits-tray": "Bit tray"
+    }
+  }
+}

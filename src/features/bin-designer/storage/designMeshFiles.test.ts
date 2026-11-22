@@ -33,6 +33,8 @@ import {
 import { compressString, decompressString } from '@/shared/utils/compression';
 import type { ImportedMeshStructure, ItemEnvelope } from '@/shared/types/item';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
+import { closeLibraryDb } from '../library/cutoutLibraryDb';
+import { createItem } from '../library/CutoutLibraryService';
 import type { BinParams, Cutout, DesignVersion, SavedDesign } from '../types';
 import { subscribe as subscribeDesignerEvents } from '../sync/designerEvents';
 import {
@@ -115,6 +117,8 @@ beforeEach(async () => {
   __clearMeshOutlinesForTests();
   await deleteDb('gridfinity-designer-v1');
   await deleteDb('gridfinity-mesh-files');
+  closeLibraryDb();
+  await deleteDb('gridfinity-cutout-library-v1');
 });
 
 afterEach(() => {
@@ -211,6 +215,22 @@ describe('saving designs', () => {
     for (const holder of [duplicate, variant, branch, body]) {
       expect(holderMeshHashes(holder)).toEqual([hash]);
     }
+    expect([...(await referencedMeshHashes())]).toEqual([hash]);
+  });
+});
+
+describe('referencedMeshHashes', () => {
+  it('counts a mesh that only a cutout library item names', async () => {
+    const asset = await makeAsset('pliers');
+    const item = unwrap(
+      await createItem({
+        name: 'Pliers',
+        folderId: null,
+        content: { params: { cutouts: [cutout], meshAssets: { m1: asset } } },
+      })
+    );
+    const [hash] = holderMeshHashes(item.content);
+    expect(hash).toMatch(/^[0-9a-f]{64}$/);
     expect([...(await referencedMeshHashes())]).toEqual([hash]);
   });
 });

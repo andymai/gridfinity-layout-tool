@@ -759,7 +759,16 @@ export interface Cutout {
    * {@link DEFAULT_KNIFE_SPEC} at read time.
    */
   readonly knife?: KnifeSpec;
+  /**
+   * The cutout library item this cutout was placed from. Copies keep it, so a
+   * bin knows which items it uses; it never ties the cutout to later edits of
+   * the item.
+   */
+  readonly libraryItemId?: string;
 }
+
+/** Longest {@link Cutout.libraryItemId}. Mirrored in `api/lib/designerValidationConstants.ts`. */
+export const MAX_LIBRARY_ITEM_ID_LENGTH = 64;
 
 /**
  * Fallback knife measurements for a `knifeSlot` whose spec was stripped (an

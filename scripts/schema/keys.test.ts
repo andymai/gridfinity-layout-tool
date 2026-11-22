@@ -19,6 +19,7 @@ import {
 } from '@/shared/schema/keys';
 import {
   BIN_DESIGN_SCHEMA_FILE,
+  CUTOUT_LIBRARY_SCHEMA_FILE,
   LAYOUT_SCHEMA_FILE,
   defsOf,
   isRecord,
@@ -82,11 +83,14 @@ describe('schema $defs are covered by a key manifest', () => {
 });
 
 describe('schema roots match their document manifests', () => {
-  it.each([LAYOUT_SCHEMA_FILE, BIN_DESIGN_SCHEMA_FILE])('%s', (file) => {
-    const manifest = (SCHEMA_ROOT_KEYS as Record<string, readonly string[]>)[file];
-    expect(manifest, `no SCHEMA_ROOT_KEYS entry for ${file}`).toBeDefined();
-    expect([...propertyNames(schemas[file])].sort()).toEqual([...manifest].sort());
-  });
+  it.each([LAYOUT_SCHEMA_FILE, BIN_DESIGN_SCHEMA_FILE, CUTOUT_LIBRARY_SCHEMA_FILE])(
+    '%s',
+    (file) => {
+      const manifest = (SCHEMA_ROOT_KEYS as Record<string, readonly string[]>)[file];
+      expect(manifest, `no SCHEMA_ROOT_KEYS entry for ${file}`).toBeDefined();
+      expect([...propertyNames(schemas[file])].sort()).toEqual([...manifest].sort());
+    }
+  );
 });
 
 describe('every $ref resolves', () => {

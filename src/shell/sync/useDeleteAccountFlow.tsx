@@ -3,6 +3,10 @@ import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
 import { folderAdapter } from '@/core/sync/adapters/folderAdapter';
 import { designAdapter } from '@/features/bin-designer';
 import { designVersionAdapter } from '@/features/bin-designer/sync/designVersionAdapter';
+import {
+  cutoutFolderAdapter,
+  cutoutItemAdapter,
+} from '@/features/bin-designer/sync/cutoutLibraryAdapters';
 import { baseplateAdapter } from '@/features/baseplate/sync/baseplateAdapter';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import {
@@ -18,6 +22,8 @@ const ADAPTERS = {
   baseplates: baseplateAdapter,
   designVersions: designVersionAdapter,
   folders: folderAdapter,
+  cutoutItems: cutoutItemAdapter,
+  cutoutFolders: cutoutFolderAdapter,
 };
 
 interface DeleteAccountFlow {

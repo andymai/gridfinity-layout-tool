@@ -1,6 +1,7 @@
 import { PAYLOAD_KEY } from './payloadKey';
 import { apiFetch } from './apiFetch';
 import { enqueue as outboxEnqueue, clearAll as outboxClearAll } from './outbox';
+import { isKindServed, noteServedKinds } from './servedKinds';
 import { useSyncStatusStore } from './status';
 import type { SyncAdapter, SyncAdapters, SyncKind, SyncableItem } from './adapters/types';
 
@@ -50,6 +51,8 @@ interface ItemFetchResponse {
     baseplate?: unknown;
     designVersion?: unknown;
     folder?: unknown;
+    cutoutItem?: unknown;
+    cutoutFolder?: unknown;
     modifiedAt: number;
     schemaVersion: number;
   };
@@ -216,7 +219,11 @@ async function executeInner(ctx: ClaimContext, guard: ClaimGuard): Promise<Claim
 
   let pulled = 0;
   let pushed = 0;
+  noteServedKinds(manifest);
   for (const kind of kinds) {
+    // A gated kind the manifest leaves out is switched off on the server: the
+    // poller claims it once the manifest lists it.
+    if (!isKindServed(kind)) continue;
     // `?? {}` covers a manifest predating this kind's key (schema skew).
     const counts = await mergeKind(
       ctx.adapters[kind],

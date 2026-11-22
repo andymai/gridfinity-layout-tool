@@ -54,6 +54,8 @@ interface BuildContextActionsArgs {
   flattenArray: (id: string) => void;
   mergeIntoRepeat: (detection: RepeatDetection) => void;
   editPoints: (id: string) => void;
+  /** Save the selection to the cutout library. */
+  saveToLibrary?: () => void;
   t: TFunction;
 }
 
@@ -82,6 +84,7 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
     flattenArray,
     mergeIntoRepeat,
     editPoints,
+    saveToLibrary,
     t,
   } = args;
 
@@ -104,6 +107,9 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
       label: t('binDesigner.cutouts.exportSvg'),
       onClick: exportSelectedAsSvg,
     });
+    if (saveToLibrary) {
+      actions.push({ label: t('binDesigner.cutouts.library.save'), onClick: saveToLibrary });
+    }
     actions.push({
       label: t('common.delete'),
       onClick: deleteSelected,
