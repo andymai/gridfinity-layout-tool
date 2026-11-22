@@ -16,6 +16,7 @@ import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { GridUnitInput } from '@/shared/components/GridUnitInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
+import { PrinterPresetSelect } from '@/shared/components/PrinterPresetSelect';
 import { useGridUnitChange } from '@/shared/hooks';
 import { GRID_PITCH_MM_MIN, GRID_PITCH_MM_MAX } from '@/shared/utils/drawerOutline';
 import { SegmentedControl } from '@/design-system';
@@ -171,6 +172,15 @@ export function PhysicalUnitsSection() {
               lowProfileBlocked ? t('baseplate.lowProfileBaseSnapClipBlocked') : undefined
             }
           />
+          <SettingsRow label={t('printBedInput.printerLabel')} htmlFor="bp-printerPreset">
+            <PrinterPresetSelect
+              id="bp-printerPreset"
+              width={printBedSize}
+              depth={printBedDepth ?? printBedSize}
+              onChange={(w, d) => useLayoutStore.getState().setPrintBedSize(w, d)}
+              surface="baseplate"
+            />
+          </SettingsRow>
           <HelpTargetMarker id="bp-print-bed-size">
             <SettingsRow
               label={t('baseplate.printBedSize')}

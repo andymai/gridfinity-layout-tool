@@ -4415,6 +4415,8 @@
   "print.title": "Imprimer le layout",
   "print.uncategorized": "Non catégorisé",
   "printBedInput.depthAriaLabel": "Profondeur du plateau",
+  "printBedInput.printerLabel": "Imprimante",
+  "printBedInput.printerPlaceholder": "Choisis ton imprimante",
   "printBedInput.linkAriaLabel": "Lier largeur et profondeur",
   "printBedInput.unlinkAriaLabel": "Délier largeur et profondeur",
   "printBedInput.widthAriaLabel": "Largeur du plateau",

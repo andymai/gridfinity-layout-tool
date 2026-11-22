@@ -4516,6 +4516,8 @@
   "print.title": "Rozvržení tisku",
   "print.uncategorized": "Bez kategorie",
   "printBedInput.depthAriaLabel": "Hloubka podložky tiskárny",
+  "printBedInput.printerLabel": "Tiskárna",
+  "printBedInput.printerPlaceholder": "Vyber tiskárnu",
   "printBedInput.linkAriaLabel": "Propojit šířku a hloubku",
   "printBedInput.unlinkAriaLabel": "Rozpojit šířku a hloubku",
   "printBedInput.widthAriaLabel": "Šířka podložky tiskárny",

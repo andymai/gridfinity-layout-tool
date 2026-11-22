@@ -4315,6 +4315,8 @@
   "print.title": "레이아웃 인쇄",
   "print.uncategorized": "분류 없음",
   "printBedInput.depthAriaLabel": "프린트 베드 깊이",
+  "printBedInput.printerLabel": "프린터",
+  "printBedInput.printerPlaceholder": "프린터를 선택하세요",
   "printBedInput.linkAriaLabel": "너비와 깊이 연결",
   "printBedInput.unlinkAriaLabel": "너비와 깊이 연결 해제",
   "printBedInput.widthAriaLabel": "프린트 베드 너비",

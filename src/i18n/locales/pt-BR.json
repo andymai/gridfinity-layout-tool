@@ -4415,6 +4415,8 @@
   "print.title": "Imprimir Layout",
   "print.uncategorized": "Sem categoria",
   "printBedInput.depthAriaLabel": "Profundidade da mesa de impressão",
+  "printBedInput.printerLabel": "Impressora",
+  "printBedInput.printerPlaceholder": "Escolha sua impressora",
   "printBedInput.linkAriaLabel": "Vincular largura e profundidade",
   "printBedInput.unlinkAriaLabel": "Desvincular largura e profundidade",
   "printBedInput.widthAriaLabel": "Largura da mesa de impressão",

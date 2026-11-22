@@ -4,6 +4,7 @@ import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { CONSTRAINTS } from '@/core/constants';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
+import { PrinterPresetSelect } from '@/shared/components/PrinterPresetSelect';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
@@ -48,6 +49,19 @@ export function DefaultsTab() {
     updateSetting('defaultGridUnitMm', gridUnitMm);
     setShowCopyConfirm(false);
     addToast(t('settings.copiedFromLayout'), 'success');
+  };
+
+  const setDefaultPrintBed = (w: number, d?: number) => {
+    updateSetting(
+      'defaultPrintBedSize',
+      clamp(w, CONSTRAINTS.PRINT_BED_MM_MIN, CONSTRAINTS.PRINT_BED_MM_MAX)
+    );
+    updateSetting(
+      'defaultPrintBedDepth',
+      d !== undefined
+        ? clamp(d, CONSTRAINTS.PRINT_BED_MM_MIN, CONSTRAINTS.PRINT_BED_MM_MAX)
+        : undefined
+    );
   };
 
   return (
@@ -166,6 +180,15 @@ export function DefaultsTab() {
               aria-label={t('settings.defaultLayerHeight')}
             />
           </SettingsRow>
+          <SettingsRow label={t('printBedInput.printerLabel')} htmlFor="defaultPrinterPreset">
+            <PrinterPresetSelect
+              id="defaultPrinterPreset"
+              width={settings.defaultPrintBedSize}
+              depth={settings.defaultPrintBedDepth ?? settings.defaultPrintBedSize}
+              onChange={setDefaultPrintBed}
+              surface="defaults"
+            />
+          </SettingsRow>
           <SettingsRow
             label={t('settings.defaultPrintBedSize')}
             htmlFor="defaultPrintBed"
@@ -175,18 +198,7 @@ export function DefaultsTab() {
               id="defaultPrintBed"
               width={settings.defaultPrintBedSize}
               depth={settings.defaultPrintBedDepth ?? settings.defaultPrintBedSize}
-              onChange={(w, d) => {
-                updateSetting(
-                  'defaultPrintBedSize',
-                  clamp(w, CONSTRAINTS.PRINT_BED_MM_MIN, CONSTRAINTS.PRINT_BED_MM_MAX)
-                );
-                updateSetting(
-                  'defaultPrintBedDepth',
-                  d !== undefined
-                    ? clamp(d, CONSTRAINTS.PRINT_BED_MM_MIN, CONSTRAINTS.PRINT_BED_MM_MAX)
-                    : undefined
-                );
-              }}
+              onChange={setDefaultPrintBed}
               variant="compact"
             />
           </SettingsRow>

@@ -4415,6 +4415,8 @@
   "print.title": "Layout drucken",
   "print.uncategorized": "Ohne Kategorie",
   "printBedInput.depthAriaLabel": "Druckbett-Tiefe",
+  "printBedInput.printerLabel": "Drucker",
+  "printBedInput.printerPlaceholder": "Wählen Sie Ihren Drucker",
   "printBedInput.linkAriaLabel": "Breite und Tiefe verknüpfen",
   "printBedInput.unlinkAriaLabel": "Breite und Tiefe trennen",
   "printBedInput.widthAriaLabel": "Druckbett-Breite",

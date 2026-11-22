@@ -4615,6 +4615,8 @@
   "print.title": "Роздрукувати розкладку",
   "print.uncategorized": "Без категорії",
   "printBedInput.depthAriaLabel": "Глибина друкарського стола",
+  "printBedInput.printerLabel": "Принтер",
+  "printBedInput.printerPlaceholder": "Виберіть принтер",
   "printBedInput.linkAriaLabel": "Зв’язати ширину та глибину",
   "printBedInput.unlinkAriaLabel": "Розв’язати ширину та глибину",
   "printBedInput.widthAriaLabel": "Ширина друкарського стола",

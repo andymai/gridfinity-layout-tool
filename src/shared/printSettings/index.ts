@@ -17,3 +17,5 @@ export {
   integralFeetVolume,
   detachableFeetVolume,
 } from './standardBinVolume';
+export type { PrinterBedPreset } from './printerBedPresets';
+export { PRINTER_BED_PRESETS, findPrinterBedPreset } from './printerBedPresets';

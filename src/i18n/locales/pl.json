@@ -4615,6 +4615,8 @@
   "print.title": "Drukuj układ",
   "print.uncategorized": "Bez kategorii",
   "printBedInput.depthAriaLabel": "Głębokość stołu roboczego",
+  "printBedInput.printerLabel": "Drukarka",
+  "printBedInput.printerPlaceholder": "Wybierz drukarkę",
   "printBedInput.linkAriaLabel": "Powiąż szerokość i głębokość",
   "printBedInput.unlinkAriaLabel": "Rozłącz szerokość i głębokość",
   "printBedInput.widthAriaLabel": "Szerokość stołu roboczego",

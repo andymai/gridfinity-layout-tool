@@ -4315,6 +4315,8 @@
   "print.title": "レイアウトを印刷",
   "print.uncategorized": "未分類",
   "printBedInput.depthAriaLabel": "プリントベッドの奥行き",
+  "printBedInput.printerLabel": "プリンター",
+  "printBedInput.printerPlaceholder": "プリンターを選択",
   "printBedInput.linkAriaLabel": "幅と奥行きを連動",
   "printBedInput.unlinkAriaLabel": "幅と奥行きの連動を解除",
   "printBedInput.widthAriaLabel": "プリントベッドの幅",

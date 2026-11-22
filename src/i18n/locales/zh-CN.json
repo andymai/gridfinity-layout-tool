@@ -4315,6 +4315,8 @@
   "print.title": "打印布局",
   "print.uncategorized": "未分类",
   "printBedInput.depthAriaLabel": "打印床深度",
+  "printBedInput.printerLabel": "打印机",
+  "printBedInput.printerPlaceholder": "选择你的打印机",
   "printBedInput.linkAriaLabel": "联动宽度和深度",
   "printBedInput.unlinkAriaLabel": "取消联动宽度和深度",
   "printBedInput.widthAriaLabel": "打印床宽度",
