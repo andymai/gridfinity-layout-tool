@@ -1,0 +1,26 @@
+vite.config.ts
+  s_f8efc8defc13ab::t_23df9929f8be00 193-194
+  s_f8efc8defc13ab::t_abf141c7780192 195-197
+docker/nginx.conf
+  s_f8efc8defc13ab::t_cf8e2f1533b956 34-37
+vercel.json
+  s_f8efc8defc13ab::t_17adc9aecb5ebf 510-545
+scripts/check-docker-parity.test.ts
+  s_f8efc8defc13ab::t_df0ad84264c169 143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9c712f5f1c927a54ea0029c4b9e9a7865e2f49ca",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
