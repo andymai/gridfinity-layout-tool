@@ -33,7 +33,7 @@ Flags:
   --strict                        Exit non-zero if any error/warning finding present
   --kind=<kind>                   Restrict to one item kind: ${ALL_KINDS.join(', ')}
   --user=<uid>                    Restrict to one user (audit/tombstones/suggest)
-  --no-payload-fetch              Skip per-blob HTTP fetch (faster; envelope checks skipped)
+  --no-payload-fetch              Skip per-blob HTTP fetch (faster; envelope and design size checks skipped)
   --no-reverify                   Report raw findings without re-reading flagged items
   --suggest                       For \`audit\`: inline fix commands beneath each finding
   --older-than=Nd                 For \`tombstones\` / \`suggest stale-tombstones\`: age threshold (default 90d)

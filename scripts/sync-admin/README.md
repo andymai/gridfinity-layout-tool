@@ -117,17 +117,17 @@ bash drift-fixes.sh
 
 ## Shared flags
 
-| Flag                 | Applies to                 | Effect                                                        |
-| -------------------- | -------------------------- | ------------------------------------------------------------- |
-| `--json`             | all                        | Machine-readable output (use with `pnpm --silent`)            |
-| `--strict`           | audit, user                | Exit 1 on any error or warning finding; info does not fail    |
-| `--strict`           | tombstones                 | Exit 1 if any tombstone is stale (that command's whole point) |
-| `--kind=<kind>`      | most                       | Restrict to one item kind (`--help` lists them)               |
-| `--user=<uid>`       | audit, suggest, tombstones | Restrict to one user                                          |
-| `--no-payload-fetch` | audit, user, suggest       | Skip per-blob HTTP fetch (skips envelope checks)              |
-| `--no-reverify`      | audit, user, suggest       | Report raw findings without re-reading flagged items          |
-| `--suggest`          | audit                      | Inline fix commands beneath each finding                      |
-| `--older-than=Nd`    | tombstones, suggest        | Stale-tombstone age threshold (default 90d)                   |
+| Flag                 | Applies to                 | Effect                                                           |
+| -------------------- | -------------------------- | ---------------------------------------------------------------- |
+| `--json`             | all                        | Machine-readable output (use with `pnpm --silent`)               |
+| `--strict`           | audit, user                | Exit 1 on any error or warning finding; info does not fail       |
+| `--strict`           | tombstones                 | Exit 1 if any tombstone is stale (that command's whole point)    |
+| `--kind=<kind>`      | most                       | Restrict to one item kind (`--help` lists them)                  |
+| `--user=<uid>`       | audit, suggest, tombstones | Restrict to one user                                             |
+| `--no-payload-fetch` | audit, user, suggest       | Skip per-blob HTTP fetch (skips envelope and design size checks) |
+| `--no-reverify`      | audit, user, suggest       | Report raw findings without re-reading flagged items             |
+| `--suggest`          | audit                      | Inline fix commands beneath each finding                         |
+| `--older-than=Nd`    | tombstones, suggest        | Stale-tombstone age threshold (default 90d)                      |
 
 ## Finding kinds
 
