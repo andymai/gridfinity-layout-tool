@@ -29,7 +29,9 @@ const NOUNS: Readonly<Record<StepKind, [string, string]>> = {
 
 const summary = computed(() => {
   const counts = new Map<StepKind, number>();
-  for (const step of props.exchange.steps) counts.set(step.kind, (counts.get(step.kind) ?? 0) + 1);
+  for (const step of props.exchange.steps) {
+    if (step.state === 'done') counts.set(step.kind, (counts.get(step.kind) ?? 0) + 1);
+  }
   return [...counts].map(([kind, n]) => `${n} ${NOUNS[kind][n === 1 ? 0 : 1]}`).join(' · ');
 });
 
@@ -56,7 +58,7 @@ async function copy(): Promise<void> {
         </li>
       </ol>
       <button
-        v-if="exchange.steps.length > 0 && !live"
+        v-if="summary && !live"
         class="steps-summary"
         type="button"
         :aria-expanded="showSteps"
