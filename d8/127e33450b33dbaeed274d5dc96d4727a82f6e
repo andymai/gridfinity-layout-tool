@@ -1,0 +1,27 @@
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.test.tsx
+  s_f3decd9961964a::t_138b4e11bd4570 542-543
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_f3decd9961964a::t_138b4e11bd4570 254-258,260
+src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.test.tsx
+  s_f3decd9961964a::t_0c5fe06b440230 2,9,78-90
+  s_f3decd9961964a::t_c7eb83f14a8ddb 11-15
+  s_f3decd9961964a::t_a3b048fa711484 91-92
+src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.tsx
+  s_f3decd9961964a::t_138b4e11bd4570 180,195
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d8127e33450b33dbaeed274d5dc96d4727a82f6e",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
