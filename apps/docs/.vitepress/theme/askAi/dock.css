@@ -11,6 +11,13 @@
 }
 
 @media (min-width: 80rem) {
+  /* Where scrollbars take space, the page bar sits at the window edge, past
+     the chat's. Theme colors and the chat's thin bar tell the two apart.
+     scrollbar-color inherits, so every bar on the page takes it. */
+  html.ask-ai-docked {
+    scrollbar-color: var(--vp-c-text-3) transparent;
+  }
+
   html.ask-ai-docked .Layout {
     margin-inline-end: var(--ask-ai-dock);
   }

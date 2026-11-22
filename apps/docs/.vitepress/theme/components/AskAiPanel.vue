@@ -321,6 +321,8 @@ onBeforeUnmount(() => {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--vp-c-text-3) transparent;
   padding: 16px var(--column-pad);
   font-size: 14px;
 }
