@@ -278,6 +278,7 @@ function splitSolidIntoPieces(
         wallHeight: wallTopZ,
         lipHeight: LIP_HEIGHT,
         lipTaperWidth: LIP_TAPER_WIDTH,
+        supportDepth: splitDims.lipSupportDepth,
         ...(splitDims.lipNotches && { inwardReach: LIP_NOTCH_REACH_MM }),
       };
       const rawLipCuts = buildLipSlotCuts(

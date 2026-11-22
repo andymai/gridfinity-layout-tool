@@ -28,6 +28,7 @@ import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { initTestKernel } from '@/test/initTestKernel';
 import { boundingBox, meshVolume } from './__kernel-tests__/meshAssertions';
 import { getEffectiveSlotDimensions } from './slotBuilder';
+import { lipSupportDepthMm } from '@/shared/generation/generatorConstants';
 
 let generateBin: (params: BinParams) => MeshData;
 let getLastSolid: () => Shape3D | null;
@@ -127,5 +128,43 @@ describe('slotted bin with a stacking lip', () => {
 
     expect(lipless.mm3).toBeCloseTo(0, 3);
     expect(lipped.mm3).toBeCloseTo(lipless.mm3, 3);
+  }, 300000);
+});
+
+describe('slotted bin with a stacking lip on a thin wall', () => {
+  // On a wall thinner than the support's reach, the lip's angled support runs
+  // deeper below the wall top and protrudes past the inner face. A cutter that
+  // stops above its foot leaves a strip of it across the slot's mouth, where
+  // the divider enters the pocket.
+  it('keeps the slot mouth clear of the lip support', async () => {
+    const { box } = await import('brepjs');
+    const params: BinParams = { ...slottedBin(true), wallThickness: 0.8 };
+    const mesh = generateBin(params);
+    const bin = getLastSolid();
+    if (!bin) throw new Error('expected a cached bin solid');
+
+    const outerW = params.width * params.gridUnitMm - GRIDFINITY_SPEC.TOLERANCE;
+    const innerHalfW = outerW / 2 - params.wallThickness;
+    const thickness = params.dividerPieces.thickness;
+    const bb = boundingBox(mesh.vertices);
+    const wallTopZ = bb.maxZ - GRIDFINITY_SPEC.LIP_HEIGHT;
+    const supportDepth = lipSupportDepthMm(params.wallThickness);
+    expect(supportDepth).toBeGreaterThan(
+      GRIDFINITY_SPEC.LIP_SMALL_TAPER + GRIDFINITY_SPEC.LIP_BIG_TAPER
+    );
+
+    const inset = 0.05;
+    const xLo = innerHalfW - 0.6;
+    const xHi = innerHalfW - inset;
+    const zLo = wallTopZ - supportDepth - 0.2;
+    const zHi = bb.maxZ + 0.1;
+    const mouth = box(xHi - xLo, thickness, zHi - zLo, {
+      at: [(xLo + xHi) / 2, 0, (zLo + zHi) / 2],
+    });
+    try {
+      expect(await sharedVolume(bin, mouth)).toBeCloseTo(0, 3);
+    } finally {
+      mouth.delete();
+    }
   }, 300000);
 });

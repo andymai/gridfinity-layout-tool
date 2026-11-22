@@ -75,11 +75,22 @@ export interface LipCutInfo {
    * which the body's wall slots were laid out with.
    */
   readonly inwardReach?: number;
+  /**
+   * How far below `wallHeight` the lip's angled support reaches, so the
+   * cutters start there (`lipSupportDepthMm`). Defaults to `lipTaperWidth`.
+   */
+  readonly supportDepth?: number;
 }
 
 /** Depth the lip cutters clear past the inner wall face. */
 function lipCutReach(lipInfo: LipCutInfo, wallThickness: number): number {
   return Math.max(0, (lipInfo.inwardReach ?? lipInfo.lipTaperWidth) - wallThickness);
+}
+
+/** Where the lip cutters start and how tall they run, from below the support up past the lip. */
+function lipCutSpan(lipInfo: LipCutInfo): { startZ: number; height: number } {
+  const depth = lipInfo.supportDepth ?? lipInfo.lipTaperWidth;
+  return { startZ: lipInfo.wallHeight - depth, height: depth + lipInfo.lipHeight + 1 };
 }
 
 function createMirroredLockingCutters(
@@ -317,8 +328,7 @@ export function buildLipSlotCuts(
   return withScope((scope: DisposalScope): Shape3D | null => {
     const { slotConfig } = params;
     const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
-    const lipCutStartZ = lipInfo.wallHeight - lipInfo.lipTaperWidth;
-    const lipCutHeight = lipInfo.lipTaperWidth + lipInfo.lipHeight + 1;
+    const { startZ: lipCutStartZ, height: lipCutHeight } = lipCutSpan(lipInfo);
 
     const cutters: Shape3D[] = [];
 
@@ -411,13 +421,12 @@ function buildSlotCutsInScope(
   const lipOverhang = lipInfo ? Math.max(0, lipInfo.lipTaperWidth - params.wallThickness) : 0;
   const cutReach = lipInfo ? lipCutReach(lipInfo, params.wallThickness) : 0;
 
-  // The lip swept profile also extends BELOW wallHeight (the wall-replacement
-  // extension in buildTopShape). After the wall portion cut, a triangular region
-  // from X=-1.2 to X=-2.6 (profile space) remains below wallHeight, protruding
-  // past the inner wall. The deepest point is lipTaperWidth (2.6mm) below wallHeight.
-  // We start the cutout that far below wallHeight to catch all overhang layers.
-  const lipCutStartZ = lipInfo ? lipInfo.wallHeight - lipInfo.lipTaperWidth : 0;
-  const lipCutHeight = lipInfo ? lipInfo.lipTaperWidth + lipInfo.lipHeight + 1 : 0;
+  // The lip's angled support hangs below wallHeight and protrudes past the inner
+  // wall, down to `supportDepth` on a thin wall. The cutters start at its foot,
+  // or a strip of it stays across the slot and blocks the divider.
+  const { startZ: lipCutStartZ, height: lipCutHeight } = lipInfo
+    ? lipCutSpan(lipInfo)
+    : { startZ: 0, height: 0 };
 
   const slots: Shape3D[] = [];
 
@@ -621,6 +630,7 @@ export const slotCutsFeature: FeatureBuilder = {
           wallHeight: dim.wallHeight,
           lipHeight: LIP_HEIGHT,
           lipTaperWidth: LIP_TAPER_WIDTH,
+          supportDepth: dim.lipSupportDepth,
           ...(dim.lipNotches && { inwardReach: LIP_NOTCH_REACH_MM }),
         }
       : undefined;
@@ -658,6 +668,7 @@ export const slotCutsFeature: FeatureBuilder = {
               quantize(lipInfo.wallHeight),
               quantize(lipInfo.lipHeight),
               quantize(lipInfo.lipTaperWidth),
+              quantize(lipInfo.supportDepth),
               ...(lipInfo.inwardReach !== undefined ? [quantize(lipInfo.inwardReach)] : [])
             )
           : 'none',
@@ -674,6 +685,7 @@ export const slotCutsFeature: FeatureBuilder = {
           wallHeight: dim.wallHeight,
           lipHeight: LIP_HEIGHT,
           lipTaperWidth: LIP_TAPER_WIDTH,
+          supportDepth: dim.lipSupportDepth,
           ...(dim.lipNotches && { inwardReach: LIP_NOTCH_REACH_MM }),
         }
       : undefined;

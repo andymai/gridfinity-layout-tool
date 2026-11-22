@@ -218,7 +218,6 @@ describe('buildTopShape', () => {
 
   it('runs a notched lip’s support down to a thin wall, and keeps the notch', () => {
     const notches = { fractionalEdgeX: 'end', fractionalEdgeY: 'end' } as const;
-    // The support depth a 0.4mm wall takes.
     const depth = lipSupportDepthMm(0.4);
     const frontFace = -(2 * 42 - 0.5) / 2;
     // Under the support's foot on a 1.2mm wall, inside it on a 0.4mm one.
