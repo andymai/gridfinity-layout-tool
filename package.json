@@ -90,7 +90,7 @@
     "gen:schema-docs": "tsx --tsconfig tsconfig.app.json scripts/gen-schema-docs.ts"
   },
   "startupBudget": {
-    "gzipKb": 640,
+    "gzipKb": 636,
     "files": 8
   },
   "size-limit": [
