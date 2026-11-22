@@ -39,6 +39,9 @@ const { values: args } = parseArgs({
 
 process.env.DOCS_ASK_CORPUS_DIR ??= path.join('apps', 'docs', '.vitepress', 'dist');
 const maxUsd = Number(args['max-usd']);
+if (!Number.isFinite(maxUsd) || maxUsd < 0) {
+  throw new Error(`--max-usd must be a number of dollars, such as 15, not ${args['max-usd']}`);
+}
 const model = args.model;
 const effort = args.effort as Effort;
 
@@ -107,7 +110,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
   const stored: StoredTurn[] = [];
   const results: TurnResult[] = [];
   // A failed answer can still have paid for rounds; its cost belongs in the totals.
-  let pending: { question: string; progress: AgentProgress; started: number } | null = null;
+  let pending: { question: string; started: number; usd: () => number } | null = null;
   try {
     for (const question of golden.turns) {
       const tools: string[] = [];
@@ -128,7 +131,18 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
       const notices: string[] = [];
       const progress: AgentProgress = { generations: [], steps: [], links: [] };
       const started = performance.now();
-      pending = { question, progress, started };
+      // Every charge counts, a failed attempt's partial usage too, which
+      // never reaches progress.generations.
+      let turnUsd = 0;
+      const turnBudget: RoundBudget = {
+        reserve: () => budget.reserve(),
+        charge: (usd) => {
+          turnUsd += usd;
+          return budget.charge(usd);
+        },
+        release: () => budget.release(),
+      };
+      pending = { question, started, usd: () => turnUsd };
       const result = await runAgent({
         client,
         corpus,
@@ -140,7 +154,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
           if (event.type === 'message') sent.push(event.content);
           if (event.type === 'notice') notices.push(event.code);
         },
-        budget,
+        budget: turnBudget,
         progress,
         signal: new AbortController().signal,
         model,
@@ -158,7 +172,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
         answer: result.answer,
         checks,
         reads,
-        costUsd: progress.generations.reduce((sum, g) => sum + g.costUsd, 0),
+        costUsd: turnUsd,
         seconds: (performance.now() - started) / 1000,
         tools,
         notices,
@@ -247,7 +261,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
         answer: '',
         checks: [],
         reads: [],
-        costUsd: pending.progress.generations.reduce((sum, g) => sum + g.costUsd, 0),
+        costUsd: pending.usd(),
         seconds: (performance.now() - pending.started) / 1000,
         tools: [],
         notices: [],
