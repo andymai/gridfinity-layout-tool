@@ -71,7 +71,7 @@ ESLint flat config **replaces** per-rule values instead of merging: the React.la
 ## Recipe: fix a failing bundle budget
 
 1. `pnpm run build && pnpm run size` — size-limit reads `dist/assets/*.js`, so a stale or missing `dist/` gives garbage; CI runs `size:check` right after build.
-2. Budgets are in the `size-limit` block of `package.json`: main 190 kB gzip, eager-initial set 260 kB, total JS 2000 kB. Open `bundle-analysis.html` at the repo root for a treemap.
+2. Budgets are in `package.json`: `startupBudget` (startup JS gzip and file count) and the `size-limit` block (total JS, fetched JSON). Open `bundle-analysis.html` at the repo root for a treemap.
 3. Split heavy code out of eager chunks with `lazyWithRetry()`; when restructuring module-level singletons, watch for `local/no-init-time-imported-call` (use the `cached ??=` getter pattern).
 4. Re-run step 1 until green. Raising a limit is a last resort and belongs in its own reviewed change.
 

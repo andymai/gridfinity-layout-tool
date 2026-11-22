@@ -1,4 +1,4 @@
-import { defineConfig, type PluginOption } from 'vite';
+import { defineConfig, type PluginOption, type Rolldown } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -59,6 +59,31 @@ const collectEagerChunks = (): PluginOption => ({
     }
   },
 });
+
+// Every module that the entry imports statically runs on first paint, so
+// splitting those modules apart saves no bytes. It only adds requests, and
+// Vercel bills each request, a CDN cache hit too. Left to automatic chunking,
+// they split into one file for each set of lazy routes that share them.
+// The set is cached on the entry's ModuleInfo, which the chunking context
+// reuses for one chunking pass only.
+const APP_ENTRY = fileURLToPath(new URL('./index.html', import.meta.url));
+const startupModuleSets = new WeakMap<Rolldown.ModuleInfo, Set<string>>();
+
+function startupModules(ctx: Rolldown.ChunkingContext): Set<string> {
+  const entry = ctx.getModuleInfo(APP_ENTRY);
+  if (!entry) return new Set();
+  const cached = startupModuleSets.get(entry);
+  if (cached) return cached;
+  const modules = new Set<string>();
+  const queue = [APP_ENTRY];
+  for (let id = queue.pop(); id !== undefined; id = queue.pop()) {
+    if (modules.has(id)) continue;
+    modules.add(id);
+    queue.push(...(ctx.getModuleInfo(id)?.importedIds ?? []));
+  }
+  startupModuleSets.set(entry, modules);
+  return modules;
+}
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -456,7 +481,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 750,
     rollupOptions: {
       output: {
-        // Name the main entry consistently so we can measure it with size-limit
+        // docker/smoke.sh finds the entry chunk by this name.
         entryFileNames: 'assets/main-[hash].js',
         // Name lazy-loaded feature chunks to avoid confusion with main bundle
         chunkFileNames(chunkInfo) {
@@ -511,6 +536,20 @@ export default defineConfig({
               name: 'three-render',
               priority: 90,
               test: /[\\/]node_modules[\\/](?:three[\\/]|@react-three[\\/]|three-stdlib[\\/]|troika-[^\\/]+[\\/]|bidi-js[\\/]|webgl-sdf-generator[\\/]|maath[\\/]|meshline[\\/]|camera-controls[\\/]|stats\.js[\\/]|stats-gl[\\/]|suspend-react[\\/]|its-fine[\\/]|react-use-measure[\\/]|tunnel-rat[\\/]|@use-gesture[\\/]|potpack[\\/])/,
+            },
+            // The rest of the startup code (see startupModules), as two files:
+            // libraries, whose hash survives most releases, and app code.
+            {
+              name: (id: string, ctx: Rolldown.ChunkingContext) =>
+                id.includes('/node_modules/') && startupModules(ctx).has(id)
+                  ? 'startup-vendor'
+                  : null,
+              priority: 85,
+            },
+            {
+              name: (id: string, ctx: Rolldown.ChunkingContext) =>
+                startupModules(ctx).has(id) ? 'startup' : null,
+              priority: 80,
             },
             // Liveblocks deliberately has NO group. Pinning it to a named chunk made
             // that chunk a static import of the entry, so index.html modulepreloaded
