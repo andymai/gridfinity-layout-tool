@@ -9,9 +9,10 @@ import type { Generation } from './traces.js';
 type MessageParam = Anthropic.Beta.BetaMessageParam;
 type ToolUnion = Anthropic.Beta.BetaToolUnion;
 type ContentBlock = Anthropic.Beta.BetaContentBlock;
+export type Effort = NonNullable<Anthropic.Beta.BetaOutputConfig['effort']>;
 
 export const MODEL = 'claude-opus-5-5';
-export const EFFORT = 'medium';
+export const EFFORT: Effort = 'medium';
 const MAX_TOKENS = 16_000;
 const MAX_ROUNDS = 6;
 const MAX_RETRIES = 2;
@@ -40,6 +41,9 @@ export interface AgentOptions {
   /** Filled as rounds finish, so a failed answer still reports what it spent. */
   readonly progress: AgentProgress;
   readonly signal: AbortSignal;
+  /** The eval compares models and effort levels; production uses MODEL and EFFORT. */
+  readonly model?: string;
+  readonly effort?: Effort;
 }
 
 /**
@@ -86,10 +90,12 @@ export function requestParams(
   corpus: AskCorpus,
   tools: ToolUnion[],
   messages: MessageParam[],
-  lastRound: boolean
+  lastRound: boolean,
+  model: string = MODEL,
+  effort: Effort = EFFORT
 ): Anthropic.Beta.MessageCreateParamsStreaming {
   return {
-    model: MODEL,
+    model,
     max_tokens: MAX_TOKENS,
     stream: true,
     betas: BETAS,
@@ -101,7 +107,7 @@ export function requestParams(
       // thinking then drops instead of failing the request.
       block_binding: { prefix_mismatch_behavior: 'drop_block' },
     },
-    output_config: { effort: EFFORT },
+    output_config: { effort },
     cache_control: { type: 'ephemeral' },
     system: [
       { type: 'text', text: SYSTEM_PROMPT },
@@ -153,7 +159,14 @@ async function streamRound(
     options.send(event);
   };
   const stream = options.client.beta.messages.stream(
-    requestParams(options.corpus, options.tools, messages, lastRound),
+    requestParams(
+      options.corpus,
+      options.tools,
+      messages,
+      lastRound,
+      options.model,
+      options.effort
+    ),
     { signal: options.signal }
   );
   try {
