@@ -1,0 +1,19 @@
+apps/docs/.vitepress/theme/components/PageMenu.vue
+  s_f8efc8defc13ab::t_109c85c0b19fff 52-54,71,76,85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f5dc17e10d55c216dfd6a5cc1098c280ac33873f",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
