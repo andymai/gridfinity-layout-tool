@@ -5,11 +5,10 @@ import { sidebar } from '../apps/docs/.vitepress/navigation';
 import { UI_TAG, resolveUiLabel } from '../apps/docs/.vitepress/uiLabels';
 import { CORPUS_PATH, labelsPath } from '../api/lib/docsAsk/corpus';
 import type { AskCorpus, AskLabels } from '../api/lib/docsAsk/corpus';
-import { plainText } from '../api/lib/docsAsk/search';
+import { HEADING, plainText } from '../api/lib/docsAsk/search';
 import { pageMarkdown, pageUrl, sidebarLinks } from './build-docs-llms';
 import type { DocsContext } from './build-docs-llms';
 
-const HEADING = /^(#{1,3})\s+(.*?)\s+\{#([^}]+)\}$/;
 const MAP_DEPTH = 2;
 // Link lists that close every page, not topics.
 const NAV_HEADINGS = new Set(['Next steps', 'More recipes']);
@@ -83,10 +82,11 @@ export function askLabels(corpus: AskCorpus, localesDir: string): Record<string,
   const byLocale: Record<string, AskLabels> = { en: english };
   // en.json is generated from en.ts and can be stale; the English table above
   // reads en.ts itself.
-  for (const file of fs
+  const files = fs
     .readdirSync(localesDir)
     .filter((f) => f.endsWith('.json') && f !== 'en.json')
-    .sort()) {
+    .sort();
+  for (const file of files) {
     const strings = JSON.parse(fs.readFileSync(path.join(localesDir, file), 'utf8')) as Record<
       string,
       unknown

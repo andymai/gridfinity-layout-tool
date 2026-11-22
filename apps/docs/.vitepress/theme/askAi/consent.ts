@@ -8,6 +8,15 @@ export interface ReaderSettings {
   readonly locale: string;
 }
 
+function storedSettings(storage: Pick<Storage, 'getItem'> | null): Record<string, unknown> {
+  try {
+    const parsed: unknown = JSON.parse(storage?.getItem(SETTINGS_STORAGE_KEY) ?? '{}');
+    return typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
+}
+
 /**
  * The reader's analytics switch and language, read the way the app reads its
  * own settings (settings.normalize.ts): the docs share the app's origin, so
@@ -19,13 +28,7 @@ export function readerSettings(
   optOut: () => boolean = isTrackingOptOut,
   browserLocale: () => string = detectBrowserLocale
 ): ReaderSettings {
-  let stored: Record<string, unknown> = {};
-  try {
-    const parsed: unknown = JSON.parse(storage?.getItem(SETTINGS_STORAGE_KEY) ?? '{}');
-    if (typeof parsed === 'object' && parsed !== null) stored = parsed as Record<string, unknown>;
-  } catch {
-    stored = {};
-  }
+  const stored = storedSettings(storage);
   const analytics =
     typeof stored.analyticsEnabled === 'boolean' ? stored.analyticsEnabled : !optOut();
   const locale =

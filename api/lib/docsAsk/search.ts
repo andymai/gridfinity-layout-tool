@@ -110,7 +110,7 @@ export function createSearch(
   };
 }
 
-const HEADING = /^(#{1,3})\s+(.*?)\s+\{#([^}]+)\}$/;
+export const HEADING = /^(#{1,3})\s+(.*?)\s+\{#([^}]+)\}$/;
 
 export function plainText(markdown: string): string {
   return markdown

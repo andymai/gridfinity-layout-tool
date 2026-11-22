@@ -6,16 +6,21 @@ import { pageLinks } from '../pageMenu';
 const { page, site } = useData();
 const route = useRoute();
 const links = computed(() => pageLinks(page.value.relativePath, site.value.base));
+type CopyState = 'idle' | 'done' | 'failed';
+const COPY_LABELS: Readonly<Record<CopyState, string>> = {
+  idle: 'Copy page',
+  done: 'Copied',
+  failed: 'Copy failed',
+};
+
 const open = ref(false);
-const copied = ref<'idle' | 'done' | 'failed'>('idle');
+const copied = ref<CopyState>('idle');
 const root = ref<HTMLElement | null>(null);
 const toggle = ref<HTMLButtonElement | null>(null);
 const menu = ref<HTMLElement | null>(null);
 let reset: ReturnType<typeof setTimeout> | undefined;
 
-const copyLabel = computed(() =>
-  copied.value === 'done' ? 'Copied' : copied.value === 'failed' ? 'Copy failed' : 'Copy page'
-);
+const copyLabel = computed(() => COPY_LABELS[copied.value]);
 
 async function copyPage(): Promise<void> {
   close();

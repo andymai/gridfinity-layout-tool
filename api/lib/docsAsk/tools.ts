@@ -1,7 +1,7 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
 import { pageAt } from './corpus.js';
-import type { AskCorpus, AskLabels } from './corpus.js';
+import type { AskCorpus, AskLabels, AskPage } from './corpus.js';
 import {
   MAX_DRAWER_MM,
   MEASURED_MM_MAX,
@@ -25,6 +25,12 @@ export const STEP_KINDS: Readonly<Record<ToolName, StepKind>> = {
   drawer_fit: 'check',
 };
 
+export const PLACEHOLDER_LABELS: Readonly<Record<StepKind, string>> = {
+  read: 'Opening a page',
+  search: 'Searching the docs',
+  check: 'Checking a drawer',
+};
+
 export interface ToolRun {
   readonly content: string;
   readonly isError: boolean;
@@ -32,6 +38,17 @@ export interface ToolRun {
   readonly label: string;
   /** The page that a read opened. */
   readonly link?: string;
+}
+
+export type ToolRunner = (name: string, input: unknown, locale: string) => ToolRun;
+
+export function toolResult(id: string, run: ToolRun): Anthropic.Beta.BetaToolResultBlockParam {
+  return {
+    type: 'tool_result',
+    tool_use_id: id,
+    content: run.content,
+    ...(run.isError ? { is_error: true } : {}),
+  };
 }
 
 const MM_PER_INCH = 25.4;
@@ -99,15 +116,9 @@ export function toolDefinitions(corpus: AskCorpus): Anthropic.Beta.BetaToolUnion
   ];
 }
 
-function labelTable(
-  corpus: AskCorpus,
-  link: string,
-  locale: string,
-  labels: AskLabels,
-  english: AskLabels
-): string {
+function labelTable(page: AskPage, locale: string, labels: AskLabels, english: AskLabels): string {
   if (locale === 'en') return '';
-  const rows = (pageAt(corpus, link)?.labels ?? [])
+  const rows = page.labels
     .map((key) => [labels[key], english[key]] as const)
     .filter((row): row is readonly [string, string] => Boolean(row[0] && row[1]));
   if (rows.length === 0) return '';
@@ -195,7 +206,7 @@ export function createToolRunner(
   corpus: AskCorpus,
   labelsFor: (locale: string) => AskLabels,
   english: AskLabels
-): (name: string, input: unknown, locale: string) => ToolRun {
+): ToolRunner {
   const search = searchFor(corpus);
   return (name, input, locale) => {
     if (name === 'read_page') {
@@ -204,7 +215,7 @@ export function createToolRunner(
       if (!parsed.success || !page) {
         return {
           isError: true,
-          label: 'Opening a page',
+          label: PLACEHOLDER_LABELS.read,
           content: 'Unknown page. Pass a link from the page map.',
         };
       }
@@ -212,7 +223,7 @@ export function createToolRunner(
         isError: false,
         label: `Reading ${page.group} › ${page.title}`,
         link: parsed.data.link,
-        content: `${page.markdown}${labelTable(corpus, parsed.data.link, locale, labelsFor(locale), english)}`,
+        content: `${page.markdown}${labelTable(page, locale, labelsFor(locale), english)}`,
       };
     }
     if (name === 'search_docs') {
@@ -220,7 +231,7 @@ export function createToolRunner(
       if (!parsed.success)
         return {
           isError: true,
-          label: 'Searching the docs',
+          label: PLACEHOLDER_LABELS.search,
           content: 'Give a query of 1 to 200 characters.',
         };
       const hits = search(parsed.data.query, SEARCH_LIMIT);
@@ -242,7 +253,7 @@ export function createToolRunner(
       if (!parsed.success)
         return {
           isError: true,
-          label: 'Checking a drawer',
+          label: PLACEHOLDER_LABELS.check,
           content: 'Give widthMm and depthMm as numbers.',
         };
       const d = parsed.data;

@@ -2,7 +2,7 @@ import { createHmac, randomUUID } from 'crypto';
 import Anthropic from '@anthropic-ai/sdk';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { runAgent } from './lib/docsAsk/agent.js';
-import type { AgentEvent, AgentProgress, RoundBudget } from './lib/docsAsk/agent.js';
+import type { AgentEvent, AgentProgress, AgentResult, RoundBudget } from './lib/docsAsk/agent.js';
 import {
   askRequestSchema,
   feedbackRequestSchema,
@@ -169,7 +169,7 @@ async function handleAsk(
 
   const progress: AgentProgress = { generations: [], steps: [], links: [] };
   let error: string | null = null;
-  let result: Awaited<ReturnType<typeof runAgent>> | null = null;
+  let result: AgentResult | null = null;
   try {
     result = await runAgent({
       client: new Anthropic(),
@@ -213,6 +213,7 @@ async function handleAsk(
     res.end();
   }
   if (!body.data.analytics) return undefined;
+  const answer = result?.answer ?? '';
   sendAskTrace({
     traceId,
     sessionId,
@@ -220,10 +221,10 @@ async function handleAsk(
     page,
     locale,
     corpusVersion: source.corpus.version,
-    answer: result?.answer ?? '',
+    answer,
     steps: progress.steps,
     links: progress.links,
-    docGap: (result?.answer ?? '').includes(DISCUSSIONS_URL),
+    docGap: answer.includes(DISCUSSIONS_URL),
     latencySeconds: (performance.now() - started) / 1000,
     error: abort.signal.aborted ? 'aborted by the reader' : error,
     generations: progress.generations,

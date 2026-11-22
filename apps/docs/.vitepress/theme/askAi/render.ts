@@ -23,12 +23,6 @@ export function docsPath(href: string): string | null {
   return /^\/docs(?:[/?#]|$)/.test(local) ? local : null;
 }
 
-function safeHref(href: string): string | null {
-  if (docsPath(href)) return docsPath(href);
-  if (/^https?:\/\//i.test(href)) return href;
-  return null;
-}
-
 // The answer is model output, so no raw HTML goes through but <kbd>, and a
 // link goes through only to the web or to this site.
 const marked = new Marked({
@@ -42,12 +36,10 @@ const marked = new Marked({
       token: Tokens.Link
     ): string {
       const label = this.parser.parseInline(token.tokens);
-      const href = safeHref(token.href);
-      if (!href) return label;
-      const docs = docsPath(href);
-      return docs
-        ? `<a href="${escapeHtml(docs)}" data-docs-link>${label}</a>`
-        : `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+      const docs = docsPath(token.href);
+      if (docs) return `<a href="${escapeHtml(docs)}" data-docs-link>${label}</a>`;
+      if (!/^https?:\/\//i.test(token.href)) return label;
+      return `<a href="${escapeHtml(token.href)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
     },
     image({ text }: Tokens.Image): string {
       return escapeHtml(text);

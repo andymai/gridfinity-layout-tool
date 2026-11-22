@@ -3,14 +3,14 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
 import type { AskCorpus } from './corpus.js';
 import { contextMessage } from './prompt.js';
-import { TOOL_NAMES } from './tools.js';
-import type { ToolRun } from './tools.js';
+import { TOOL_NAMES, toolResult } from './tools.js';
+import type { ToolRunner } from './tools.js';
 
 type MessageParam = Anthropic.Beta.BetaMessageParam;
 type ContentBlockParam = Anthropic.Beta.BetaContentBlockParam;
 
 export const MAX_TURNS = 8;
-export const MAX_QUESTION_CHARS = 1000;
+const MAX_QUESTION_CHARS = 1000;
 const MAX_MESSAGES_PER_TURN = 8;
 const MAX_BLOCK_CHARS = 200_000;
 
@@ -19,6 +19,10 @@ const MAX_BLOCK_CHARS = 200_000;
 const CONTROL = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
 const clean = <T extends z.ZodType>(schema: T) =>
   z.preprocess((value) => (typeof value === 'string' ? value.replace(CONTROL, '') : value), schema);
+
+const sessionIdField = z.string().regex(/^[A-Za-z0-9-]{8,64}$/);
+const pageField = clean(z.string().max(200));
+const localeField = clean(z.string().max(10));
 
 const storedBlock = z.discriminatedUnion('type', [
   z.object({ type: z.literal('text'), text: z.string().max(MAX_BLOCK_CHARS) }),
@@ -39,8 +43,8 @@ type StoredBlock = z.infer<typeof storedBlock>;
 
 const turnSchema = z.object({
   question: clean(z.string().min(1).max(MAX_QUESTION_CHARS)),
-  page: clean(z.string().max(200)),
-  locale: clean(z.string().max(10)),
+  page: pageField,
+  locale: localeField,
   /** Each assistant message of the turn, in order, as the API returned its content. */
   messages: z.array(z.array(z.unknown()).max(64)).max(MAX_MESSAGES_PER_TURN),
   signature: z.string().regex(/^[0-9a-f]{64}$/),
@@ -49,25 +53,22 @@ export type StoredTurn = z.infer<typeof turnSchema>;
 
 export const askRequestSchema = z.object({
   op: z.literal('ask'),
-  sessionId: z.string().regex(/^[A-Za-z0-9-]{8,64}$/),
+  sessionId: sessionIdField,
   question: clean(z.string().trim().min(1).max(MAX_QUESTION_CHARS)),
-  page: clean(z.string().max(200)),
-  locale: clean(z.string().max(10)),
+  page: pageField,
+  locale: localeField,
   turns: z.array(turnSchema).max(MAX_TURNS),
   /** The reader's analytics switch, as the app keeps it. Absent means no trace. */
   analytics: z.boolean().default(false),
 });
-export type AskRequest = z.infer<typeof askRequestSchema>;
 
 export const feedbackRequestSchema = z.object({
   op: z.literal('feedback'),
-  sessionId: z.string().regex(/^[A-Za-z0-9-]{8,64}$/),
+  sessionId: sessionIdField,
   traceId: z.uuid(),
   value: z.union([z.literal(1), z.literal(-1)]),
   analytics: z.boolean().default(false),
 });
-
-type Runner = (name: string, input: unknown, locale: string) => ToolRun;
 
 export interface TurnFields {
   readonly question: string;
@@ -118,23 +119,19 @@ function turnMessages(turn: StoredTurn): StoredBlock[][] {
   const parsed = turn.messages.map((content) =>
     content.map((block) => storedBlock.safeParse(block))
   );
-  const clean = parsed.every((message) => message.every((result) => result.success));
+  const allKnown = parsed.every((message) => message.every((result) => result.success));
   const messages = parsed.map((message) =>
     message.flatMap((result) => (result.success ? [result.data] : []))
   );
-  const last = messages.at(-1);
+  const last = messages.at(-1) ?? [];
   // A refusal can end on thinking alone or on nothing, and an empty assistant
   // message would fail every later request of the chat.
   const answered =
-    last !== undefined &&
     !last.some((block) => block.type === 'tool_use') &&
     last.some((block) => block.type === 'text' && block.text.trim() !== '');
-  if (clean && answered) return messages;
-  const text = (turn.messages.at(-1) ?? [])
-    .flatMap((block) => {
-      const result = storedBlock.safeParse(block);
-      return result.success && result.data.type === 'text' ? [result.data.text] : [];
-    })
+  if (allKnown && answered) return messages;
+  const text = last
+    .flatMap((block) => (block.type === 'text' ? [block.text] : []))
     .join('')
     .trim();
   return text ? [[{ type: 'text', text }]] : [];
@@ -161,7 +158,7 @@ export function userTurn(
 export function rebuildMessages(
   corpus: AskCorpus,
   turns: readonly StoredTurn[],
-  run: Runner,
+  run: ToolRunner,
   localeOf: (locale: string) => string,
   signed: (turn: StoredTurn) => boolean
 ): MessageParam[] {
@@ -178,15 +175,7 @@ export function rebuildMessages(
       if (calls.length === 0) continue;
       messages.push({
         role: 'user',
-        content: calls.map((call) => {
-          const result = run(call.name, call.input, locale);
-          return {
-            type: 'tool_result',
-            tool_use_id: call.id,
-            content: result.content,
-            ...(result.isError ? { is_error: true } : {}),
-          };
-        }),
+        content: calls.map((call) => toolResult(call.id, run(call.name, call.input, locale))),
       });
     }
   }

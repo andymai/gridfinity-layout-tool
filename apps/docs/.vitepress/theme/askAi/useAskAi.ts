@@ -37,6 +37,10 @@ export interface Exchange {
   stored: boolean;
 }
 
+export function isLive(exchange: Exchange): boolean {
+  return exchange.status === 'waiting' || exchange.status === 'streaming';
+}
+
 const ENDPOINT = '/api/docs-ask';
 
 const NOTICES: Readonly<Record<string, string>> = {
@@ -81,6 +85,15 @@ function store(kind: 'session' | 'local'): Storage | null {
 }
 
 const newSessionId = (): string => crypto.randomUUID();
+
+function post(body: Record<string, unknown>, signal?: AbortSignal): Promise<Response> {
+  return fetch(ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal,
+  });
+}
 
 function chat(): Conversation {
   conversation ??= loadConversation(store('session'), newSessionId);
@@ -131,18 +144,21 @@ export async function checkAvailability(search: string): Promise<void> {
   }
 }
 
-async function loadAvailability(search: string): Promise<void> {
-  if ((import.meta.env.VITE_SELF_HOSTED as string | undefined) === '1') return;
-  const fromUrl = new URLSearchParams(search).get('ask') === '1';
-  let remembered = false;
-  // A full or blocked store must not undo the opt-in that the URL just gave.
+function rememberPreview(fromUrl: boolean): boolean {
   try {
     const session = store('session');
     if (fromUrl) session?.setItem(PREVIEW_KEY, '1');
-    remembered = session?.getItem(PREVIEW_KEY) === '1';
+    return session?.getItem(PREVIEW_KEY) === '1';
   } catch {
-    remembered = false;
+    return false;
   }
+}
+
+async function loadAvailability(search: string): Promise<void> {
+  if ((import.meta.env.VITE_SELF_HOSTED as string | undefined) === '1') return;
+  const fromUrl = new URLSearchParams(search).get('ask') === '1';
+  // A full or blocked store must not undo the opt-in that the URL just gave.
+  const remembered = rememberPreview(fromUrl);
   if (!ASK_AI_PUBLIC && !fromUrl && !remembered) return;
   try {
     const response = await fetch(ENDPOINT, { headers: { Accept: 'application/json' } });
@@ -232,10 +248,8 @@ export async function ask(question: string, page: string): Promise<void> {
   const abort = new AbortController();
   controller = abort;
   try {
-    const response = await fetch(ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    const response = await post(
+      {
         op: 'ask',
         sessionId: before.sessionId,
         question: text,
@@ -243,9 +257,9 @@ export async function ask(question: string, page: string): Promise<void> {
         locale,
         turns: before.turns.map(({ traceId: _local, ...turn }) => turn),
         analytics,
-      }),
-      signal: abort.signal,
-    });
+      },
+      abort.signal
+    );
     if (!response.ok || !response.body) {
       const body = (await response.json().catch(() => null)) as { code?: unknown } | null;
       if (body?.code === 'RESTING') askAi.resting = true;
@@ -336,15 +350,11 @@ export function sendFeedback(target: Exchange, value: 1 | -1): void {
   if (!target.traceId || target.feedback === value) return;
   target.feedback = value;
   const { analytics } = readerSettings(store('local'));
-  void fetch(ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      op: 'feedback',
-      sessionId: chat().sessionId,
-      traceId: target.traceId,
-      value,
-      analytics,
-    }),
+  void post({
+    op: 'feedback',
+    sessionId: chat().sessionId,
+    traceId: target.traceId,
+    value,
+    analytics,
   }).catch(() => undefined);
 }

@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { data as captures } from '../askAi/captures.data';
 import { answerSegments, plainAnswer } from '../askAi/render';
+import { isLive } from '../askAi/useAskAi';
 import type { Exchange, StepKind } from '../askAi/useAskAi';
 import { mediaEntry } from '../media';
 
@@ -11,9 +12,7 @@ const emit = defineEmits<{ retry: []; feedback: [value: 1 | -1] }>();
 const showSteps = ref(false);
 const copied = ref(false);
 
-const live = computed(
-  () => props.exchange.status === 'waiting' || props.exchange.status === 'streaming'
-);
+const live = computed(() => isLive(props.exchange));
 const segments = computed(() =>
   answerSegments(props.exchange.text, {
     streaming: live.value,
@@ -95,7 +94,7 @@ async function copy(): Promise<void> {
       <p v-if="exchange.status === 'stopped'" class="notice">Stopped.</p>
       <p v-if="exchange.notice" class="notice">{{ exchange.notice }}</p>
 
-      <div v-if="!live && exchange.status !== 'waiting'" class="actions">
+      <div v-if="!live" class="actions">
         <button v-if="exchange.text" type="button" @click="copy">
           {{ copied ? 'Copied' : 'Copy' }}
         </button>
