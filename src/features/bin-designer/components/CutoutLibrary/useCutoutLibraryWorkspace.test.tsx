@@ -163,12 +163,14 @@ describe('useCutoutLibraryWorkspace', () => {
 
     fireEvent.pointerDown(row, { button: 0, pointerId: 1, pointerType: 'mouse', clientX: 0 });
     act(() => {
-      window.dispatchEvent(new PointerEvent('pointermove', { pointerId: 1, clientX: 40 }));
+      window.dispatchEvent(
+        new PointerEvent('pointermove', { pointerId: 1, clientX: 40, buttons: 1 })
+      );
     });
     expect(row).toHaveAttribute('aria-pressed', 'true');
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
-    const ghost = latest?.sceneOverlay as ReactElement<{ dragged: boolean }> | null;
-    expect(ghost?.props.dragged).toBe(true);
+    const ghost = latest?.sceneOverlay as ReactElement<{ dragPointer: number | null }> | null;
+    expect(ghost?.props.dragPointer).toBe(1);
 
     dropAt({ x: 40, y: 40 });
     act(() => {
@@ -191,7 +193,9 @@ describe('useCutoutLibraryWorkspace', () => {
 
     fireEvent.pointerDown(row, { button: 0, pointerId: 1, pointerType: 'mouse', clientX: 0 });
     act(() => {
-      window.dispatchEvent(new PointerEvent('pointermove', { pointerId: 1, clientX: 40 }));
+      window.dispatchEvent(
+        new PointerEvent('pointermove', { pointerId: 1, clientX: 40, buttons: 1 })
+      );
       window.dispatchEvent(new PointerEvent('pointerup', { pointerId: 1, clientX: 2 }));
     });
     fireEvent.click(row);

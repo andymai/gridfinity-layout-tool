@@ -19,10 +19,11 @@ const ACCENT_COLOR = new THREE.Color(ACCENT_COLOR_HEX);
 interface LibraryGhost3DProps {
   readonly ghost: LibraryGhost;
   /**
-   * Dragged from the tab: hidden until the pointer is over the board, and
-   * dropped on release. Otherwise shown from the start and dropped on a press.
+   * The pointer dragging the item from the tab: the ghost hides until it is
+   * over the board and drops on its release, and other pointers do nothing.
+   * Null for click to place: shown from the start, dropped on a press.
    */
-  readonly dragged: boolean;
+  readonly dragPointer: number | null;
   readonly binWidth: number;
   readonly binDepth: number;
   /** The snap step in mm, or null when snapping is off. */
@@ -36,7 +37,7 @@ interface LibraryGhost3DProps {
 
 export function LibraryGhost3D({
   ghost,
-  dragged,
+  dragPointer,
   binWidth,
   binDepth,
   grid,
@@ -45,6 +46,7 @@ export function LibraryGhost3D({
   onBoardPress,
 }: LibraryGhost3DProps) {
   const [at, setAt] = useState(() => ({ x: binWidth / 2, y: binDepth / 2 }));
+  const dragged = dragPointer !== null;
   const [shown, setShown] = useState(!dragged);
 
   const { lines, fill } = useMemo(() => {
@@ -92,17 +94,24 @@ export function LibraryGhost3D({
       <mesh
         position={[binWidth / 2, binDepth / 2, CATCH_Z]}
         // Moves pass through, so the board's cursor readout keeps counting.
-        onPointerMove={(e) => follow(e.point.x, e.point.y)}
+        onPointerMove={(e) => {
+          if (!dragged || e.pointerId === dragPointer) follow(e.point.x, e.point.y);
+        }}
         // A drag released off the board drops nothing, so it shows nothing there.
         onPointerOut={() => {
           if (dragged) setShown(false);
         }}
         onPointerUp={(e) => {
-          if (!dragged || e.button !== 0) return;
+          if (e.pointerId !== dragPointer || e.button !== 0) return;
           e.stopPropagation();
           onDrop(placementCentre(e.point, ghost, board, grid));
         }}
         onPointerDown={(e) => {
+          // Another pointer's press during a drag neither drops nor reaches a shape.
+          if (dragged) {
+            e.stopPropagation();
+            return;
+          }
           // A pan goes to the board directly: let through, the press would reach
           // the shape under it and move that shape.
           if (e.button === 1 || (e.button === 0 && panHeld)) {

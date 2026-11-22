@@ -18,9 +18,14 @@ function pressEvent(init: Partial<ReactPointerEvent<HTMLElement>> = {}) {
   } as ReactPointerEvent<HTMLElement>;
 }
 
-function fire(type: 'pointermove' | 'pointerup' | 'pointercancel', x = 100, pointerId = 1) {
+function fire(
+  type: 'pointermove' | 'pointerup' | 'pointercancel',
+  x = 100,
+  pointerId = 1,
+  buttons = type === 'pointermove' ? 1 : 0
+) {
   act(() => {
-    window.dispatchEvent(new PointerEvent(type, { pointerId, clientX: x, clientY: 100 }));
+    window.dispatchEvent(new PointerEvent(type, { pointerId, clientX: x, clientY: 100, buttons }));
   });
 }
 
@@ -41,7 +46,7 @@ describe('useLibraryRowDrag', () => {
     fire('pointermove', 100 + DRAG_START_PX);
     fire('pointermove', 140);
     expect(onStart).toHaveBeenCalledTimes(1);
-    expect(onStart).toHaveBeenCalledWith(item);
+    expect(onStart).toHaveBeenCalledWith(item, 1);
 
     fire('pointerup', 140);
     expect(onEnd).toHaveBeenCalledTimes(1);
@@ -95,6 +100,36 @@ describe('useLibraryRowDrag', () => {
     drag().press(item, pressEvent());
     fire('pointermove', 150, 2);
     expect(onStart).not.toHaveBeenCalled();
+  });
+
+  it('ends a drag whose release the window missed, with no click to swallow', () => {
+    const { onEnd, drag } = setup();
+    drag().press(item, pressEvent());
+    fire('pointermove', 130);
+    fire('pointermove', 140, 1, 0);
+    expect(onEnd).toHaveBeenCalledTimes(1);
+    expect(drag().takeClick()).toBe(false);
+  });
+
+  it('ends the drag when the window loses focus', () => {
+    const { onEnd, drag } = setup();
+    drag().press(item, pressEvent());
+    fire('pointermove', 130);
+    act(() => {
+      window.dispatchEvent(new Event('blur'));
+    });
+    expect(onEnd).toHaveBeenCalledTimes(1);
+  });
+
+  it('frees a pen press captured by an element inside the row', () => {
+    const { drag } = setup();
+    const row = document.createElement('button');
+    const label = document.createElement('span');
+    row.append(label);
+    label.hasPointerCapture = () => true;
+    const release = vi.spyOn(label, 'releasePointerCapture');
+    drag().press(item, pressEvent({ pointerType: 'pen', currentTarget: row, target: label }));
+    expect(release).toHaveBeenCalledWith(1);
   });
 
   it('stops listening when the panel goes away mid-press', () => {

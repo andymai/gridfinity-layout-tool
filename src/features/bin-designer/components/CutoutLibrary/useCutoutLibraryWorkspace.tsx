@@ -60,7 +60,8 @@ interface Placing {
 
 interface Placement {
   readonly id: string;
-  readonly dragged: boolean;
+  /** The pointer that drags the item from the tab, or null for click to place. */
+  readonly dragPointer: number | null;
 }
 
 interface SaveDraft {
@@ -109,7 +110,8 @@ export function useCutoutLibraryWorkspace({
     () => (placingItem ? ghostOf(placingItem.content) : null),
     [placingItem]
   );
-  const dragged = placement?.dragged ?? false;
+  const dragPointer = placement?.dragPointer ?? null;
+  const dragged = dragPointer !== null;
   const placing: Placing | null =
     placingItem && placingGhost ? { item: placingItem, ghost: placingGhost, dragged } : null;
   const [draft, setDraft] = useState<SaveDraft | null>(null);
@@ -179,14 +181,16 @@ export function useCutoutLibraryWorkspace({
   };
 
   const rowDrag = useLibraryRowDrag(
-    (item) => setPlacement({ id: item.id, dragged: true }),
-    () => setPlacement((current) => (current?.dragged ? null : current))
+    (item, pointerId) => setPlacement({ id: item.id, dragPointer: pointerId }),
+    () => setPlacement((current) => (current && current.dragPointer !== null ? null : current))
   );
   const { takeClick } = rowDrag;
   const startPlacing = useCallback(
     (item: CutoutLibraryItem) => {
       if (takeClick()) return;
-      setPlacement((current) => (current?.id === item.id ? null : { id: item.id, dragged: false }));
+      setPlacement((current) =>
+        current?.id === item.id ? null : { id: item.id, dragPointer: null }
+      );
     },
     [takeClick]
   );
@@ -266,14 +270,14 @@ export function useCutoutLibraryWorkspace({
     </>
   );
 
-  const placingKey = placement ? `${placement.id}:${placement.dragged}` : null;
+  const placingKey = placement ? `${placement.id}:${placement.dragPointer}` : null;
   const sceneOverlay = useMemo(
     () =>
       placingGhost ? (
         <LibraryGhost3D
           key={placingKey}
           ghost={placingGhost}
-          dragged={dragged}
+          dragPointer={dragPointer}
           binWidth={binWidth}
           binDepth={binDepth}
           grid={grid}
@@ -282,7 +286,7 @@ export function useCutoutLibraryWorkspace({
           onBoardPress={onBoardPress}
         />
       ) : null,
-    [placingGhost, placingKey, dragged, binWidth, binDepth, grid, panHeld, drop, onBoardPress]
+    [placingGhost, placingKey, dragPointer, binWidth, binDepth, grid, panHeld, drop, onBoardPress]
   );
 
   const hint =

@@ -25,7 +25,7 @@ export interface LibraryRowDrag {
 }
 
 export function useLibraryRowDrag(
-  onStart: (item: CutoutLibraryItem) => void,
+  onStart: (item: CutoutLibraryItem, pointerId: number) => void,
   onEnd: () => void
 ): LibraryRowDrag {
   const onStartRef = useLatestRef(onStart);
@@ -40,38 +40,57 @@ export function useLibraryRowDrag(
       if (event.button !== 0 || event.pointerType === 'touch') return;
       stopRef.current?.();
       const { pointerId, clientX: startX, clientY: startY } = event;
-      // A pen press can be captured by the row, which keeps its moves from the board.
-      const row = event.currentTarget;
-      if (row.hasPointerCapture(pointerId)) row.releasePointerCapture(pointerId);
+      // A pen press is captured by the element it lands on, which can be a
+      // label inside the row. Captured moves never reach the board.
+      for (const el of new Set([event.currentTarget, event.target])) {
+        if (el instanceof Element && el.hasPointerCapture(pointerId)) {
+          el.releasePointerCapture(pointerId);
+        }
+      }
       let dragging = false;
 
       function move(e: PointerEvent) {
-        if (e.pointerId !== pointerId || dragging) return;
+        if (e.pointerId !== pointerId) return;
+        // A release outside the window can go unseen: the next move has no button down.
+        if ((e.buttons & 1) === 0) {
+          finish(false);
+          return;
+        }
+        if (dragging) return;
         if (Math.hypot(e.clientX - startX, e.clientY - startY) < DRAG_START_PX) return;
         dragging = true;
-        onStartRef.current(item);
+        onStartRef.current(item, pointerId);
       }
       function end(e: PointerEvent) {
-        if (e.pointerId !== pointerId) return;
+        if (e.pointerId === pointerId) finish(e.type === 'pointerup');
+      }
+      function blur() {
+        finish(false);
+      }
+      function finish(released: boolean) {
         stop();
         if (!dragging) return;
-        // The click, when there is one, comes in this same task.
-        swallowClick.current = true;
-        setTimeout(() => {
-          swallowClick.current = false;
-        }, 0);
+        if (released) {
+          // The click, when there is one, comes in this same task.
+          swallowClick.current = true;
+          setTimeout(() => {
+            swallowClick.current = false;
+          }, 0);
+        }
         onEndRef.current();
       }
       function stop() {
         window.removeEventListener('pointermove', move);
         window.removeEventListener('pointerup', end);
         window.removeEventListener('pointercancel', end);
+        window.removeEventListener('blur', blur);
         stopRef.current = null;
       }
 
       window.addEventListener('pointermove', move);
       window.addEventListener('pointerup', end);
       window.addEventListener('pointercancel', end);
+      window.addEventListener('blur', blur);
       stopRef.current = stop;
     },
     [onStartRef, onEndRef]
