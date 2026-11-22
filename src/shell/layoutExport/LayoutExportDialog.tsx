@@ -54,20 +54,22 @@ export function LayoutExportDialog({ open, onClose }: LayoutExportDialogProps) {
       ? sanitizeName(config.customName)
       : sanitizeName(layoutName);
 
-  const [justExported, setJustExported] = useState(false);
+  // The name the ZIP downloaded under: the name field stays editable while the
+  // export runs, so the current config can name a file that was never saved.
+  const [exportedFileName, setExportedFileName] = useState<string | null>(null);
 
   const closeDialog = useCallback(() => {
-    setJustExported(false);
+    setExportedFileName(null);
     onClose();
   }, [onClose]);
 
   const handleDownload = useCallback(async () => {
+    const fileName = `${zipBaseName}.zip`;
     const ok = await exportLayout(format, zipBaseName, config);
     if (!ok) return;
-    // The same gate as the bin and baseplate exports: a returning maker, at
-    // most once per cooldown. The hook has already toasted the result.
+    // The hook has already toasted the result.
     if (recordExportAndShouldPromptSupport()) {
-      setJustExported(true);
+      setExportedFileName(fileName);
       return;
     }
     closeDialog();
@@ -79,10 +81,9 @@ export function LayoutExportDialog({ open, onClose }: LayoutExportDialogProps) {
     if (!isExporting) closeDialog();
   }, [isExporting, closeDialog]);
 
-  // Re-opening the dialog always returns to the form, never a stale success view.
   const wasOpen = useRef(open);
   useEffect(() => {
-    if (open && !wasOpen.current) setJustExported(false);
+    if (open && !wasOpen.current) setExportedFileName(null);
     wasOpen.current = open;
   }, [open]);
 
@@ -114,10 +115,10 @@ export function LayoutExportDialog({ open, onClose }: LayoutExportDialogProps) {
             ? t('layoutExport.noBins')
             : t('layoutExport.noLinkedBins')
       }
-      exported={justExported}
+      exported={exportedFileName !== null}
       successContent={
         <ExportSupportPrompt
-          fileName={`${zipBaseName}.zip`}
+          fileName={exportedFileName ?? ''}
           onDone={closeDialog}
           source="layout_export"
         />

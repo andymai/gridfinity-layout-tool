@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { ReactElement } from 'react';
 import { render, act } from '@testing-library/react';
 import { useLayoutStore } from '@/core/store/layout';
 import { createTestLayout, createTestBin } from '@/test/testUtils';
@@ -105,6 +106,38 @@ describe('LayoutExportDialog', () => {
       expect(lastProps().exported).toBe(true);
       expect(lastProps().successContent).toBeTruthy();
       expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it('names the file that downloaded, even if the name changes during export', async () => {
+      let finish: (ok: boolean) => void = () => {};
+      exportLayout.mockReturnValue(
+        new Promise<boolean>((resolve) => {
+          finish = resolve;
+        })
+      );
+      shouldPromptSupport.mockReturnValue(true);
+      renderLinked();
+      const startedAs = lastProps().fileName;
+
+      let pending: Promise<void> = Promise.resolve();
+      act(() => {
+        pending = (lastProps().onDownload as () => Promise<void>)();
+      });
+      act(() => {
+        (lastProps().onFileNameConfigChange as (c: unknown) => void)({
+          style: 'custom',
+          customName: 'renamed',
+          format: 'stl',
+        });
+      });
+      await act(async () => {
+        finish(true);
+        await pending;
+      });
+
+      expect(lastProps().fileName).toBe('renamed.zip');
+      const prompt = lastProps().successContent as ReactElement<{ fileName: string }>;
+      expect(prompt.props.fileName).toBe(startedAs);
     });
 
     it('closes as before when the gate declines', async () => {
