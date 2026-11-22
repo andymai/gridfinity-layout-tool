@@ -1,0 +1,32 @@
+src/features/generation/worker/generators/connectorSample.ts
+  s_f8efc8defc13ab::t_1555a7bb6bd575 124-127,132,136-156,163-164,192,271-273,280,323-331
+  s_50176789fd4794::t_3a2399517862af 332
+src/features/generation/worker/generators/connectorSample.scenario.test.ts
+  s_f8efc8defc13ab::t_938ac9a13801dd 67-69
+  s_f8efc8defc13ab::t_94d052d6da8e32 70
+  s_f8efc8defc13ab::t_e6b1b4e37298d0 14-24,57-66,71-74,179-201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2ec810338fd98c6e822e11a1d4d4b603eef871f6",
+  "prompts": {},
+  "sessions": {
+    "s_50176789fd4794": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5f010690-c6bb-4905-bb27-930216b5f3d6",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
