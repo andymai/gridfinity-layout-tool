@@ -189,6 +189,41 @@ describe('library folder file', () => {
     expect(parsed?.kind === 'folder' && parsed.tree.folders.map((f) => f.id)).toEqual(['a', 'b']);
   });
 
+  it('reads a long chain of folders listed children first', () => {
+    const folders = Array.from({ length: 5000 }, (_, i) => ({
+      id: `f${i}`,
+      parentId: i === 0 ? null : `f${i - 1}`,
+    }));
+    const json = JSON.stringify({
+      type: 'gridfinity-cutout-library-folder',
+      version: '1.0',
+      folders: [...folders].reverse(),
+      items: [],
+    });
+    // More folders than any library holds, which the parser says before reading items.
+    expect(parseLibraryFileJSON(json, t)).toEqual({ kind: 'tooLarge', limit: 'folders' });
+  });
+
+  it('names the limit of a file that no library could take', () => {
+    const file = (folders: unknown[], items: unknown[]) =>
+      JSON.stringify({ type: 'gridfinity-cutout-library-folder', version: '1.0', folders, items });
+    const chainOf = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({
+        id: `f${i}`,
+        parentId: i === 0 ? null : `f${i - 1}`,
+      }));
+    const manyItems = Array.from({ length: 1001 }, () => ({ params: { cutouts: [cutout] } }));
+    expect(parseLibraryFileJSON(file([], manyItems), t)).toEqual({
+      kind: 'tooLarge',
+      limit: 'items',
+    });
+    expect(parseLibraryFileJSON(file(chainOf(6), []), t)).toEqual({
+      kind: 'tooLarge',
+      limit: 'depth',
+    });
+    expect(parseLibraryFileJSON(file(chainOf(5), []), t)?.kind).toBe('folder');
+  });
+
   it.each([
     ['a repeated folder id', [{ id: 'a' }, { id: 'a' }], []],
     ['a parent that is not in the file', [{ id: 'a', parentId: 'gone' }], []],

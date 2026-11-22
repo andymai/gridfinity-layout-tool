@@ -67,7 +67,8 @@ function checkImporter(_file: string, parsed: unknown): { ok: boolean; errors: s
     return { ok: result.valid, errors: result.valid ? [] : [...result.errors] };
   }
   if (detectFormat(parsed) === 'cutout-library') {
-    const ok = parseLibraryFileJSON(JSON.stringify(parsed), t) !== null;
+    const file = parseLibraryFileJSON(JSON.stringify(parsed), t);
+    const ok = file !== null && file.kind !== 'tooLarge';
     return { ok, errors: ok ? [] : ['the importer refuses this cutout library file'] };
   }
   const params = (parsed as { params?: unknown }).params;

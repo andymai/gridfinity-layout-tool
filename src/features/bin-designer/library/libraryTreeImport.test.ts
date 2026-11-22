@@ -6,8 +6,8 @@ import { isErr } from '@/core/result';
 import { closeLibraryDb } from './cutoutLibraryDb';
 import { createFolder, listFolders, listItems } from './CutoutLibraryService';
 import { __resetForTests, subscribe, subscribeChanges } from './libraryEvents';
-import type { LibraryFolderTree } from './libraryFile';
-import { importFolderTree, treeLimit } from './libraryTreeImport';
+import { treeLimit, type LibraryFolderTree } from './libraryFile';
+import { importFolderTree } from './libraryTreeImport';
 import { MAX_LIBRARY_FOLDERS, MAX_LIBRARY_FOLDER_DEPTH, MAX_LIBRARY_ITEMS } from './libraryTypes';
 
 const cutout: Cutout = {
@@ -111,7 +111,7 @@ describe('importFolderTree', () => {
   it('writes nothing when the tree would pass a limit', async () => {
     const deep = { ...tree, folders: chain(MAX_LIBRARY_FOLDER_DEPTH) };
     const result = await importFolderTree(deep, fallbacks);
-    expect(isErr(result) && result.error.code).toBe('STORAGE_QUOTA_EXCEEDED');
+    expect(isErr(result) && result.error).toEqual({ code: 'LIBRARY_LIMIT', limit: 'depth' });
     expect(await listFolders()).toEqual([]);
     expect(await listItems()).toEqual([]);
   });
@@ -121,7 +121,7 @@ describe('importFolderTree', () => {
       expectOk(await createFolder(`Folder ${i}`, null));
     }
     const result = await importFolderTree(tree, fallbacks);
-    expect(isErr(result)).toBe(true);
+    expect(isErr(result) && result.error).toEqual({ code: 'LIBRARY_LIMIT', limit: 'folders' });
     expect(await listFolders()).toHaveLength(MAX_LIBRARY_FOLDERS - 2);
   });
 });

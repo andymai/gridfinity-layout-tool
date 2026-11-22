@@ -95,6 +95,7 @@ import {
   TEXT_OFFSET_KEYS,
   TEXT_STYLE_KEYS,
   TEXT_STYLE_OVERRIDE_KEYS,
+  LIBRARY_PARAMS_KEYS,
 } from './binContentKeys';
 
 /**
@@ -129,9 +130,6 @@ export const CUTOUT_LIBRARY_DOCUMENT_KEYS = [
   '_meta',
   '$schema',
 ] as const;
-
-/** A library item's shapes: `LibraryParams`, a `Pick` of `BinParams` that names these keys. */
-export const LIBRARY_PARAMS_KEYS = ['cutouts', 'cutoutGroupNames', 'meshAssets'] as const;
 
 /** Root-level property manifests, keyed by schema file name. */
 export const SCHEMA_ROOT_KEYS = {

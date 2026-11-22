@@ -27,6 +27,9 @@ import { deliverExport } from '@/shared/exportDestination/deliverExport';
 import { primeExportFolder } from '@/shared/exportDestination/exportFolder';
 import { isPlaceableCutout } from './libraryCutoutCheck';
 import {
+  MAX_LIBRARY_FOLDERS,
+  MAX_LIBRARY_FOLDER_DEPTH,
+  MAX_LIBRARY_ITEMS,
   MAX_LIBRARY_NAME_LENGTH,
   type CutoutLibraryContent,
   type CutoutLibraryFolder,
@@ -56,6 +59,34 @@ export interface LibraryFolderTree {
   readonly name: string;
   readonly folders: readonly LibraryFileFolder[];
   readonly items: readonly LibraryFileItem[];
+}
+
+export type LibraryLimit = 'items' | 'folders' | 'depth';
+
+/** Levels of subfolders under the exported folder. `folders` lists parents first. */
+function treeDepth(folders: readonly LibraryFileFolder[]): number {
+  const level = new Map<string | null, number>([[null, 0]]);
+  let deepest = 0;
+  for (const folder of folders) {
+    const at = (level.get(folder.parentId) ?? 0) + 1;
+    level.set(folder.id, at);
+    deepest = Math.max(deepest, at);
+  }
+  return deepest;
+}
+
+/**
+ * The limit a folder tree would pass as a new top-level folder in a library
+ * that holds `have`, or null when it fits.
+ */
+export function treeLimit(
+  tree: { readonly folders: readonly LibraryFileFolder[]; readonly items: readonly unknown[] },
+  have: { readonly items: number; readonly folders: number }
+): LibraryLimit | null {
+  if (have.items + tree.items.length > MAX_LIBRARY_ITEMS) return 'items';
+  if (have.folders + tree.folders.length + 1 > MAX_LIBRARY_FOLDERS) return 'folders';
+  if (treeDepth(tree.folders) + 1 > MAX_LIBRARY_FOLDER_DEPTH) return 'depth';
+  return null;
 }
 
 const meta = () => ({
@@ -181,7 +212,9 @@ export async function downloadLibraryFolder(
 
 export type ParsedLibraryFile =
   | { readonly kind: 'item'; readonly name: string; readonly content: CutoutLibraryContent }
-  | { readonly kind: 'folder'; readonly tree: LibraryFolderTree };
+  | { readonly kind: 'folder'; readonly tree: LibraryFolderTree }
+  /** A folder file too large for even an empty library, refused before its items are read. */
+  | { readonly kind: 'tooLarge'; readonly limit: LibraryLimit };
 
 const isObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -205,18 +238,20 @@ export function parseLibraryFileJSON(json: string, t: TFunction): ParsedLibraryF
     const content = parseLibraryParams(data.params, t);
     return content ? { kind: 'item', name: fileName(data.name), content } : null;
   }
-  if (data.type === LIBRARY_FOLDER_FILE_TYPE) {
-    const tree = parseFolderTree(data, t);
-    return tree ? { kind: 'folder', tree } : null;
-  }
+  if (data.type === LIBRARY_FOLDER_FILE_TYPE) return parseFolderFile(data, t);
   return null;
 }
 
-function parseFolderTree(data: Record<string, unknown>, t: TFunction): LibraryFolderTree | null {
+const EMPTY_LIBRARY = { items: 0, folders: 0 };
+
+function parseFolderFile(data: Record<string, unknown>, t: TFunction): ParsedLibraryFile | null {
   const rawFolders = data.folders ?? [];
   if (!Array.isArray(rawFolders) || !Array.isArray(data.items)) return null;
   const folders = orderFolders(rawFolders);
   if (!folders) return null;
+  // Each item costs a full check, so a file no library could take stops here.
+  const limit = treeLimit({ folders, items: data.items }, EMPTY_LIBRARY);
+  if (limit) return { kind: 'tooLarge', limit };
   const ids = new Set(folders.map((f) => f.id));
   const items: LibraryFileItem[] = [];
   for (const raw of data.items) {
@@ -227,7 +262,7 @@ function parseFolderTree(data: Record<string, unknown>, t: TFunction): LibraryFo
     if (!content) return null;
     items.push({ name: fileName(raw.name), folderId, content });
   }
-  return { name: fileName(data.name), folders, items };
+  return { kind: 'folder', tree: { name: fileName(data.name), folders, items } };
 }
 
 /**
@@ -243,20 +278,23 @@ function orderFolders(raw: readonly unknown[]): LibraryFileFolder[] | null {
     if (parentId !== null && typeof parentId !== 'string') return null;
     byId.set(folder.id, { id: folder.id, name: fileName(folder.name), parentId });
   }
-  const ordered: LibraryFileFolder[] = [];
-  const placed = new Set<string | null>([null]);
-  let pending = [...byId.values()];
-  while (pending.length > 0) {
-    const ready = pending.filter((f) => placed.has(f.parentId));
-    // Nothing left can hang from a placed folder: a loop, or a missing parent.
-    if (ready.length === 0) return null;
-    for (const folder of ready) {
-      ordered.push(folder);
-      placed.add(folder.id);
-    }
-    pending = pending.filter((f) => !placed.has(f.id));
+  const children = new Map<string | null, LibraryFileFolder[]>();
+  for (const folder of byId.values()) {
+    if (folder.parentId !== null && !byId.has(folder.parentId)) return null;
+    const siblings = children.get(folder.parentId);
+    if (siblings) siblings.push(folder);
+    else children.set(folder.parentId, [folder]);
   }
-  return ordered;
+  const ordered: LibraryFileFolder[] = [];
+  const queue: (string | null)[] = [null];
+  for (let i = 0; i < queue.length; i++) {
+    for (const child of children.get(queue[i]) ?? []) {
+      ordered.push(child);
+      queue.push(child.id);
+    }
+  }
+  // A folder that no walk from the top reaches sits in a loop.
+  return ordered.length === byId.size ? ordered : null;
 }
 
 function parseLibraryParams(params: unknown, t: TFunction): CutoutLibraryContent | null {

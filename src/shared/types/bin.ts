@@ -369,6 +369,8 @@ export {
  * against different bins.
  */
 export { slideLidPlanForParams } from '@/features/bin-designer/utils/slideLidPlanForParams';
+
+export type { LibraryParams } from '@/features/bin-designer/library/libraryTypes';
 export { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 
 /**

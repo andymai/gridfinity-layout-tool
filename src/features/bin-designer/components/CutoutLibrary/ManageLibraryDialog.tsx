@@ -43,13 +43,11 @@ import {
   downloadLibraryItem,
   importedMeshesUsable,
   parseLibraryFileJSON,
-  type LibraryFolderTree,
-} from '@/features/bin-designer/library/libraryFile';
-import {
-  importFolderTree,
   treeLimit,
+  type LibraryFolderTree,
   type LibraryLimit,
-} from '@/features/bin-designer/library/libraryTreeImport';
+} from '@/features/bin-designer/library/libraryFile';
+import { importFolderTree } from '@/features/bin-designer/library/libraryTreeImport';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { folderOptions, folderRows } from './libraryFolders';
 
@@ -78,6 +76,9 @@ export function ManageLibraryDialog({ onClose }: ManageLibraryDialogProps) {
   const folderById = new Map(folders.map((f) => [f.id, f]));
   const noFolder = t('binDesigner.cutouts.library.noFolder');
 
+  const refuse = (limit: LibraryLimit) =>
+    addToast(t(LIMIT_MESSAGES[limit].key, { max: LIMIT_MESSAGES[limit].max }), 'error');
+
   const importFolder = async (tree: LibraryFolderTree) => {
     for (const item of tree.items) {
       if (!(await importedMeshesUsable(item.content))) {
@@ -87,7 +88,7 @@ export function ManageLibraryDialog({ onClose }: ManageLibraryDialogProps) {
     }
     const limit = treeLimit(tree, { items: items.length, folders: folders.length });
     if (limit) {
-      addToast(t(LIMIT_MESSAGES[limit].key, { max: LIMIT_MESSAGES[limit].max }), 'error');
+      refuse(limit);
       return;
     }
     const imported = await importFolderTree(tree, {
@@ -95,14 +96,9 @@ export function ManageLibraryDialog({ onClose }: ManageLibraryDialogProps) {
       item: t('binDesigner.cutouts.library.defaultName'),
     });
     if (isErr(imported)) {
-      // Another tab filled the library after the check above.
-      const full = imported.error.code === 'STORAGE_QUOTA_EXCEEDED';
-      addToast(
-        full
-          ? t('binDesigner.cutouts.library.full', { max: MAX_LIBRARY_ITEMS })
-          : t('binDesigner.cutouts.library.saveFailed'),
-        'error'
-      );
+      // A limit here means another tab filled the library after the check above.
+      if (imported.error.code === 'LIBRARY_LIMIT') refuse(imported.error.limit);
+      else addToast(t('binDesigner.cutouts.library.saveFailed'), 'error');
       return;
     }
     trackEvent('cutout_library_folder_imported', {
@@ -119,6 +115,10 @@ export function ManageLibraryDialog({ onClose }: ManageLibraryDialogProps) {
     const parsed = parseLibraryFileJSON(await file.text(), t);
     if (parsed?.kind === 'folder') {
       await importFolder(parsed.tree);
+      return;
+    }
+    if (parsed?.kind === 'tooLarge') {
+      refuse(parsed.limit);
       return;
     }
     if (!parsed || !(await importedMeshesUsable(parsed.content))) {

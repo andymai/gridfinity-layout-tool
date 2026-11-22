@@ -109,8 +109,10 @@ function validateFile(file: string): Report {
       });
     }
   } else if (format === 'cutout-library') {
-    if (!parseLibraryFileJSON(JSON.stringify(doc), t)) {
-      importerErrors.push('the importer refuses this cutout library file');
+    const parsed = parseLibraryFileJSON(JSON.stringify(doc), t);
+    if (!parsed) importerErrors.push('the importer refuses this cutout library file');
+    else if (parsed.kind === 'tooLarge') {
+      importerErrors.push(`this folder passes the library's ${parsed.limit} limit even when empty`);
     }
   } else {
     const result = validateImportedBinParams((doc as { params?: unknown }).params, t);

@@ -5,47 +5,25 @@
  */
 
 import type { Result, StorageError } from '@/core/result';
-import { err, ok, storageQuotaExceeded, storageUnavailable } from '@/core/result';
+import { err, ok, storageUnavailable } from '@/core/result';
 import { generateUUID } from '@/shared/utils/uuid';
 import { storeHolderMeshes } from '@/shared/generation/meshRefs';
 import { FOLDERS_STORE, ITEMS_STORE, getLibraryDb } from './cutoutLibraryDb';
 import { cleanLibraryName } from './CutoutLibraryService';
 import { announceAll, type LibraryEvent } from './libraryEvents';
-import type { LibraryFileFolder, LibraryFolderTree } from './libraryFile';
+import { treeLimit, type LibraryFolderTree, type LibraryLimit } from './libraryFile';
 import {
   LIBRARY_FOLDER_ID_PREFIX,
   LIBRARY_ITEM_ID_PREFIX,
-  MAX_LIBRARY_FOLDERS,
-  MAX_LIBRARY_FOLDER_DEPTH,
-  MAX_LIBRARY_ITEMS,
   type CutoutLibraryContent,
   type CutoutLibraryFolder,
   type CutoutLibraryItem,
 } from './libraryTypes';
 
-export type LibraryLimit = 'items' | 'folders' | 'depth';
-
-/** Levels of subfolders under the exported folder. `folders` lists parents first. */
-function treeDepth(folders: readonly LibraryFileFolder[]): number {
-  const level = new Map<string | null, number>([[null, 0]]);
-  let deepest = 0;
-  for (const folder of folders) {
-    const at = (level.get(folder.parentId) ?? 0) + 1;
-    level.set(folder.id, at);
-    deepest = Math.max(deepest, at);
-  }
-  return deepest;
-}
-
-/** The limit `tree` would pass at the top level of a library holding `have`, or null. */
-export function treeLimit(
-  tree: LibraryFolderTree,
-  have: { readonly items: number; readonly folders: number }
-): LibraryLimit | null {
-  if (have.items + tree.items.length > MAX_LIBRARY_ITEMS) return 'items';
-  if (have.folders + tree.folders.length + 1 > MAX_LIBRARY_FOLDERS) return 'folders';
-  if (treeDepth(tree.folders) + 1 > MAX_LIBRARY_FOLDER_DEPTH) return 'depth';
-  return null;
+/** The transaction found the library full: another tab wrote after the caller's check. */
+export interface LibraryLimitError {
+  readonly code: 'LIBRARY_LIMIT';
+  readonly limit: LibraryLimit;
 }
 
 export interface ImportedTree {
@@ -55,14 +33,14 @@ export interface ImportedTree {
 }
 
 /**
- * Add `tree` under a new top-level folder, with fresh ids. Refused as a
- * quota error, with nothing written, when it would pass a library limit.
+ * Add `tree` under a new top-level folder, with fresh ids. Refused with the
+ * limit it would pass, and nothing written, when the library has no room.
  * `fallbacks` names a folder or an item that the file left unnamed.
  */
 export async function importFolderTree(
   tree: LibraryFolderTree,
   fallbacks: { readonly folder: string; readonly item: string }
-): Promise<Result<ImportedTree, StorageError>> {
+): Promise<Result<ImportedTree, StorageError | LibraryLimitError>> {
   const db = await getLibraryDb();
   if (!db) return err(storageUnavailable('indexedDB'));
   try {
@@ -74,9 +52,10 @@ export async function importFolderTree(
     const itemStore = tx.objectStore(ITEMS_STORE);
     const folderStore = tx.objectStore(FOLDERS_STORE);
     const have = { items: await itemStore.count(), folders: await folderStore.count() };
-    if (treeLimit(tree, have)) {
+    const limit = treeLimit(tree, have);
+    if (limit) {
       await tx.done;
-      return err(storageQuotaExceeded());
+      return err({ code: 'LIBRARY_LIMIT', limit });
     }
 
     const now = new Date().toISOString();

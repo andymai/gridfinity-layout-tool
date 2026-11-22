@@ -19,6 +19,7 @@ import type {
   Insert,
   KnifeRestConfig,
   KnifeSpec,
+  LibraryParams,
   LidConfig,
   LidGripConfig,
   LidHingeConfig,
@@ -308,3 +309,9 @@ export type _MeshOutlinePointKeys = Assert<
 
 export const MESH_ASSET_KEYS = ['name', 'data', 'triangleCount', 'sizeMm', 'outlines'] as const;
 export type _MeshAssetKeys = Assert<KeysMatch<keyof MeshAsset, (typeof MESH_ASSET_KEYS)[number]>>;
+
+/** A cutout library item's shapes, the `LibraryParams` def of the library file schema. */
+export const LIBRARY_PARAMS_KEYS = ['cutouts', 'cutoutGroupNames', 'meshAssets'] as const;
+export type _LibraryParamsKeys = Assert<
+  KeysMatch<keyof LibraryParams, (typeof LIBRARY_PARAMS_KEYS)[number]>
+>;
