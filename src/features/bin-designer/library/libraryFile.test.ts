@@ -62,5 +62,18 @@ describe('library item file', () => {
     expect(parseLibraryItemJSON(JSON.stringify(nulls), t)).toBeNull();
     const odd = { type, params: { cutouts: [{ shape: 'path', path: 5 }] } };
     expect(() => parseLibraryItemJSON(JSON.stringify(odd), t)).not.toThrow();
+    expect(parseLibraryItemJSON(JSON.stringify(odd), t)).toBeNull();
+  });
+
+  it('refuses a cutout without a size, and a mesh cutout without its mesh', () => {
+    const type = 'gridfinity-cutout-library-item';
+    const { width: _w, ...sizeless } = cutout;
+    expect(
+      parseLibraryItemJSON(JSON.stringify({ type, params: { cutouts: [sizeless] } }), t)
+    ).toBeNull();
+    const mesh = { ...cutout, shape: 'mesh', meshId: 'm1', groupId: null };
+    expect(
+      parseLibraryItemJSON(JSON.stringify({ type, params: { cutouts: [mesh] } }), t)
+    ).toBeNull();
   });
 });

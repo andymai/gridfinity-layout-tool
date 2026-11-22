@@ -170,13 +170,17 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   );
   // A gated kind syncs only while the manifest lists it. Library folders come
   // before items, as layout folders come before layouts.
+  // A pull ended by a reset must not restore the ended session's served kinds.
+  if (capturedGeneration !== pullState.generation) return { status: 'offline' };
   const newlyServed = noteServedKinds(manifest);
   let libraryChanges = 0;
   for (const kind of ['cutoutFolders', 'cutoutItems'] as const) {
     if (!isKindServed(kind)) continue;
     const remote = manifest[kind] ?? {};
     libraryChanges += await diffKind(adapters[kind], kind, remote, capturedGeneration);
-    if (newlyServed.includes(kind)) await queueUnsynced(adapters[kind], kind, remote);
+    if (newlyServed.includes(kind)) {
+      await queueUnsynced(adapters[kind], kind, remote, capturedGeneration);
+    }
   }
   const applied =
     layoutChanges +
@@ -255,9 +259,13 @@ async function diffKind(
 async function queueUnsynced(
   adapter: SyncAdapter,
   kind: SyncKind,
-  remote: Record<string, IndexEntry>
+  remote: Record<string, IndexEntry>,
+  generation: number
 ): Promise<void> {
   for (const item of await adapter.list()) {
+    // A sign-out clears the outbox; an entry queued after it would push
+    // under the next account.
+    if (generation !== pullState.generation) return;
     const entry = remote[item.id] as IndexEntry | undefined;
     const behind =
       entry === undefined ||
@@ -265,7 +273,9 @@ async function queueUnsynced(
         ? entry.modifiedAt < item.modifiedAt
         : entry.deletedAt < item.modifiedAt);
     if (behind) {
-      await outboxEnqueue({ kind, id: item.id, modifiedAt: item.modifiedAt, op: 'put' });
+      await trackWrite(
+        outboxEnqueue({ kind, id: item.id, modifiedAt: item.modifiedAt, op: 'put' })
+      );
     }
   }
 }

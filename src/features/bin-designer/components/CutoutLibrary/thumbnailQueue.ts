@@ -6,6 +6,9 @@
  * An item pulled from another device can show before its mesh files arrive.
  * Its render waits for them: a picture made without the imprint would be kept
  * for that version of the item and never redrawn.
+ *
+ * Renders share the generation bridge with the editor, and a new request there
+ * cancels the one before it, so each render waits for the editor to be idle.
  */
 
 import type { CutoutLibraryItem } from '@/features/bin-designer/library/libraryTypes';
@@ -13,6 +16,7 @@ import { getThumbnail, putThumbnail } from '@/features/bin-designer/library/Cuto
 import { regenerateThumbnail } from '@/features/bin-designer/utils/thumbnailRegenerator';
 import { holderMeshHashes } from '@/shared/generation/meshRefs';
 import { hasMeshFile, subscribeMeshFileArrivals } from '@/shared/generation/meshStore';
+import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { thumbnailHost } from './thumbnailHost';
 
 type Listener = (dataUrl: string) => void;
@@ -25,8 +29,23 @@ interface Job {
 const pending = new Map<string, Job>();
 /** Jobs whose mesh files are not on this device yet. */
 const waiting = new Map<string, Job>();
+/** The job being processed, so a request for the same item joins it. */
+let active: { readonly key: string; readonly job: Job } | null = null;
 let running = false;
 let stopArrivals: (() => void) | null = null;
+
+const editorGenerating = () => useDesignerStore.getState().generation.status === 'generating';
+
+function untilEditorIdle(): Promise<void> {
+  if (!editorGenerating()) return Promise.resolve();
+  return new Promise((resolve) => {
+    const stop = useDesignerStore.subscribe((state) => {
+      if (state.generation.status === 'generating') return;
+      stop();
+      resolve();
+    });
+  });
+}
 
 const keyOf = (item: CutoutLibraryItem) => `${item.id}@${item.updatedAt}`;
 
@@ -38,7 +57,12 @@ async function meshesHere(item: CutoutLibraryItem): Promise<boolean> {
 }
 
 function wait(key: string, job: Job): void {
-  waiting.set(key, job);
+  const existing = waiting.get(key);
+  if (existing) {
+    for (const listener of job.listeners) existing.listeners.add(listener);
+  } else {
+    waiting.set(key, job);
+  }
   stopArrivals ??= subscribeMeshFileArrivals(() => {
     for (const [k, j] of waiting) pending.set(k, j);
     waiting.clear();
@@ -53,15 +77,26 @@ async function drain(): Promise<void> {
     for (let next = [...pending.entries()].at(-1); next; next = [...pending.entries()].at(-1)) {
       const [key, job] = next;
       pending.delete(key);
-      if (!(await meshesHere(job.item))) {
-        wait(key, job);
-        continue;
+      active = { key, job };
+      try {
+        if (!(await meshesHere(job.item))) {
+          wait(key, job);
+          continue;
+        }
+        await untilEditorIdle();
+        const host = thumbnailHost(job.item.content);
+        const dataUrl = host ? await regenerateThumbnail(host) : null;
+        if (!dataUrl) {
+          // An editor build that started meanwhile cancelled this render.
+          if (editorGenerating() && job.listeners.size > 0) pending.set(key, job);
+          continue;
+        }
+        if (job.listeners.size === 0) continue;
+        await putThumbnail(job.item, dataUrl);
+        for (const listener of job.listeners) listener(dataUrl);
+      } finally {
+        active = null;
       }
-      const host = thumbnailHost(job.item.content);
-      const dataUrl = host ? await regenerateThumbnail(host) : null;
-      if (!dataUrl || job.listeners.size === 0) continue;
-      await putThumbnail(job.item, dataUrl);
-      for (const listener of job.listeners) listener(dataUrl);
     }
   } finally {
     running = false;
@@ -85,9 +120,12 @@ export function requestThumbnail(item: CutoutLibraryItem, onReady: Listener): ()
       onReady(stored);
       return;
     }
-    const job = pending.get(key) ?? waiting.get(key) ?? { item, listeners: new Set<Listener>() };
+    const current = active?.key === key ? active.job : undefined;
+    const job = pending.get(key) ??
+      waiting.get(key) ??
+      current ?? { item, listeners: new Set<Listener>() };
     job.listeners.add(listener);
-    if (waiting.has(key)) return;
+    if (waiting.has(key) || job === current) return;
     // Re-inserted so the item asked for last is drawn first.
     pending.delete(key);
     pending.set(key, job);
@@ -95,6 +133,7 @@ export function requestThumbnail(item: CutoutLibraryItem, onReady: Listener): ()
   });
   return () => {
     cancelled = true;
+    if (active?.key === key) active.job.listeners.delete(listener);
     for (const queue of [pending, waiting]) {
       const job = queue.get(key);
       if (!job) continue;

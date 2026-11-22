@@ -6,6 +6,18 @@ const mocks = vi.hoisted(() => ({
   renders: [] as Array<{ resolve: (url: string) => void; id: string }>,
   files: new Set<string>(),
   arrive: null as null | ((hash: string) => void),
+  status: 'idle',
+  statusListeners: new Set<(state: { generation: { status: string } }) => void>(),
+}));
+
+vi.mock('@/features/bin-designer/store/designer', () => ({
+  useDesignerStore: {
+    getState: () => ({ generation: { status: mocks.status } }),
+    subscribe: (listener: (state: { generation: { status: string } }) => void) => {
+      mocks.statusListeners.add(listener);
+      return () => mocks.statusListeners.delete(listener);
+    },
+  },
 }));
 
 vi.mock('@/shared/generation/meshStore', () => ({
@@ -65,6 +77,38 @@ describe('requestThumbnail', () => {
     mocks.renders.length = 0;
     mocks.files.clear();
     mocks.arrive = null;
+    mocks.status = 'idle';
+    mocks.statusListeners.clear();
+  });
+
+  it('waits for the editor to finish a build before it renders', async () => {
+    const { requestThumbnail } = await import('./thumbnailQueue');
+    mocks.status = 'generating';
+    requestThumbnail(item('a'), vi.fn());
+    await settle();
+    await settle();
+    expect(mocks.renders).toHaveLength(0);
+
+    mocks.status = 'idle';
+    for (const listener of mocks.statusListeners) listener({ generation: { status: 'idle' } });
+    await settle();
+    expect(mocks.renders.map((r) => r.id)).toEqual(['a']);
+  });
+
+  it('gives a second request for the item being drawn the same picture', async () => {
+    const { requestThumbnail } = await import('./thumbnailQueue');
+    const first = vi.fn();
+    const second = vi.fn();
+    requestThumbnail(item('a'), first);
+    await settle();
+    requestThumbnail(item('a'), second);
+    await settle();
+    mocks.renders[0].resolve('data:a');
+    await settle();
+    await settle();
+    expect(mocks.renders).toHaveLength(1);
+    expect(first).toHaveBeenCalledWith('data:a');
+    expect(second).toHaveBeenCalledWith('data:a');
   });
 
   it('answers from the store without a render when this version has a picture', async () => {
