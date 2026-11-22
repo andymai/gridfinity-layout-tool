@@ -177,6 +177,36 @@ describe('labelFitSample — fit-calibration card', () => {
     TEST_TIMEOUT_MS
   );
 
+  it.each([0.8, 1.0])(
+    'leaves the socket mouth free of raised text (%s mm nozzle)',
+    async (nozzle) => {
+      const pieces = buildLabelFitSampleCard(nozzle);
+      const coupons = pieces.slice(0, LABEL_FIT_SAMPLE_OFFSETS.length).map((p) => getBounds(p));
+      for (const p of pieces) p.delete();
+
+      const { data } = await exportLabelFitSample('stl', nozzle);
+      const parsed = parseSTLBinary(data);
+      if (!isOk(parsed)) throw new Error('STL parse failed');
+      const v = parsed.value.vertices;
+
+      LABEL_FIT_SAMPLE_OFFSETS.forEach((offset, i) => {
+        const box = coupons[i];
+        const socketFrontY =
+          box.yMax -
+          LABEL_SOCKET_WALL_MM -
+          LABEL_PLATE_HEIGHT_MM -
+          effectiveLabelSocketClearance(nozzle, offset);
+        for (let k = 0; k < v.length; k += 3) {
+          const [x, y, z] = [v[k], v[k + 1], v[k + 2]];
+          if (x < box.xMin || x > box.xMax || y < box.yMin || y > box.yMax) continue;
+          if (z <= LABEL_SOCKET_SHELF_THICKNESS_MM + 0.1) continue;
+          expect(y, `offset ${offset}: raised text over the socket`).toBeLessThan(socketFrontY);
+        }
+      });
+    },
+    TEST_TIMEOUT_MS
+  );
+
   it(
     'exports STEP with the expected file name',
     async () => {

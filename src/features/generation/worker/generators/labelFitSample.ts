@@ -141,13 +141,19 @@ function buildCoupon(cy: number, offset: number, nozzleSizeMm: number | undefine
       availD: COUPON_D,
     };
     const plan = planTextForHost(label);
+    const bandCenterY = cy - COUPON_D / 2 + 1 + bandD / 2;
+    // Raised text over the socket mouth would stop the plate from seating, so a
+    // nozzle whose label reaches the socket gets a coupon with no label.
+    const clearsSocket =
+      plan !== null && bandCenterY + (plan.maxY - plan.minY) / 2 < socketCenterY - pocketD / 2;
     const text =
       plan &&
+      clearsSocket &&
       buildTextSolid(scope, {
         ...label,
         plan,
         centerX: 0,
-        centerY: cy - COUPON_D / 2 + 1 + bandD / 2 - (plan.minY + plan.maxY) / 2,
+        centerY: bandCenterY - (plan.minY + plan.maxY) / 2,
         topZ: t,
         depth: LABEL_DEPTH,
         hostThickness: t,
