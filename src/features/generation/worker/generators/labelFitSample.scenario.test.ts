@@ -8,12 +8,22 @@
  *   1. every piece is a valid, positive-volume solid,
  *   2. coupon volume strictly decreases as the offset grows (a looser fit is
  *      a bigger pocket — the ladder is actually cut, not five copies), and
- *   3. the exported STL is watertight and bed-resting.
+ *   3. the exported STL is watertight and bed-resting, and
+ *   4. every exported coupon carries its raised offset label in front of its
+ *      socket.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { measureVolume } from 'brepjs';
+import { getBounds, measureVolume } from 'brepjs';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
+import {
+  LABEL_PLATE_HEIGHT_MM,
+  LABEL_SOCKET_SHELF_THICKNESS_MM,
+  LABEL_SOCKET_WALL_MM,
+  effectiveLabelSocketClearance,
+} from '@/shared/constants/labelPlates';
+import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings/printSettings';
+import { loadTestFonts } from '@/test/loadTestFonts';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import {
   buildLabelFitSampleCard,
@@ -23,7 +33,10 @@ import {
 
 beforeAll(async () => {
   await initBrepjs();
-}, 30000);
+  // Without the coupon face registered the labels drop silently and the card
+  // stays watertight, so the label assertion would pass on textless output.
+  await loadTestFonts(['jetbrains-mono']);
+}, 60000);
 
 function analyze(stl: ArrayBuffer) {
   const parsed = parseSTLBinary(stl);
@@ -125,6 +138,41 @@ describe('labelFitSample — fit-calibration card', () => {
       expect(stats.nonManifoldEdges, 'non-manifold edges').toBe(0);
       expect(stats.boundaryEdges, 'boundary edges').toBe(0);
       expect(stats.minZ, 'rests on bed').toBeCloseTo(0, 1);
+    },
+    TEST_TIMEOUT_MS
+  );
+
+  it.each([0.2, DEFAULT_PRINT_SETTINGS.nozzleSizeMm, 0.6])(
+    'embosses every coupon with its offset, in front of its socket (%s mm nozzle)',
+    async (nozzle) => {
+      const pieces = buildLabelFitSampleCard(nozzle);
+      const coupons = pieces.slice(0, LABEL_FIT_SAMPLE_OFFSETS.length).map((p) => getBounds(p));
+      for (const p of pieces) p.delete();
+
+      const { data } = await exportLabelFitSample('stl', nozzle);
+      const parsed = parseSTLBinary(data);
+      if (!isOk(parsed)) throw new Error('STL parse failed');
+      const v = parsed.value.vertices;
+
+      LABEL_FIT_SAMPLE_OFFSETS.forEach((offset, i) => {
+        const box = coupons[i];
+        let raised = 0;
+        let raisedMaxY = -Infinity;
+        for (let k = 0; k < v.length; k += 3) {
+          const [x, y, z] = [v[k], v[k + 1], v[k + 2]];
+          if (x < box.xMin || x > box.xMax || y < box.yMin || y > box.yMax) continue;
+          if (z <= LABEL_SOCKET_SHELF_THICKNESS_MM + 0.1) continue;
+          raised++;
+          raisedMaxY = Math.max(raisedMaxY, y);
+        }
+        expect(raised, `offset ${offset}: raised label`).toBeGreaterThan(0);
+        const socketFrontY =
+          box.yMax -
+          LABEL_SOCKET_WALL_MM -
+          LABEL_PLATE_HEIGHT_MM -
+          effectiveLabelSocketClearance(nozzle, offset);
+        expect(raisedMaxY, `offset ${offset}: label clears the socket`).toBeLessThan(socketFrontY);
+      });
     },
     TEST_TIMEOUT_MS
   );
