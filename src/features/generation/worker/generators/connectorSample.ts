@@ -121,15 +121,37 @@ const LABEL_FIT_SLACK = 0.4;
 /** Floor for coupon depth — keeps the body generous for the seam feature (mm). */
 const COUPON_Y_MIN = 9;
 
-/** Coupon footprint sized to hold the widest offset label at `fontMm`. Grows
- *  with the nozzle (via `fontMm`) so bigger-nozzle labels still fit. */
-function couponDims(fontMm: number): { readonly x: number; readonly y: number } {
+/** Coupon footprint sized to hold the widest offset label at `fontMm`, clear of
+ *  the `seamReach` the female feature opens into the top face. Grows with the
+ *  nozzle (via `fontMm` and the clearances) so bigger-nozzle labels still fit. */
+function couponDims(fontMm: number, seamReach: number): { readonly x: number; readonly y: number } {
   const labelW = LABEL_MAX_GLYPHS * JBM_ADVANCE_PER_GLYPH * fontMm;
   const labelInkH = JBM_DIGIT_INK_PER_FONT * fontMm;
   return {
     x: labelW + 2 * LABEL_MARGIN + LABEL_FIT_SLACK,
-    y: Math.max(COUPON_Y_MIN, labelInkH + 2 * LABEL_MARGIN + LABEL_FIT_SLACK),
+    y: Math.max(COUPON_Y_MIN, labelInkH + 2 * LABEL_MARGIN + LABEL_FIT_SLACK + seamReach),
   };
+}
+
+/**
+ * How far a female feature of `styleKey` opens into a coupon's top face from
+ * the seam, at the loosest offset (mm). Raised text over that opening would
+ * block the mating part, so the label keeps clear of it.
+ */
+function seamOpeningReach(
+  styleKey: (typeof SAMPLE_STYLES)[number]['key'],
+  totalHeight: number,
+  nozzleSizeMm: number | undefined
+): number {
+  return Math.max(
+    ...SAMPLE_OFFSETS.map((offset) => {
+      if (styleKey === 'snapClip') {
+        return snapClipLevels(totalHeight, offset, nozzleSizeMm).throatDepthX;
+      }
+      const base = styleKey === 'dovetailKey' ? DOVETAIL_KEY_CLEARANCE : TONGUE_CLEARANCE;
+      return TONGUE_PROTRUSION + effectiveClearance(base, offset, nozzleSizeMm);
+    })
+  );
 }
 
 /** Per-tray geometry shared by every coupon: footprint, label font, height. */
@@ -138,6 +160,8 @@ interface CouponLayout {
   readonly couponY: number;
   readonly fontMm: number;
   readonly totalHeight: number;
+  /** See {@link seamOpeningReach}. */
+  readonly seamReach: number;
 }
 
 /** Map (wall, boundary) → XY point for a seam running along X (protrude on Y). */
@@ -165,7 +189,7 @@ function buildCoupon(
   d: -1 | 1,
   feature: CouponFeature
 ): Shape3D {
-  const { couponX, couponY, fontMm, totalHeight } = layout;
+  const { couponX, couponY, fontMm, totalHeight, seamReach } = layout;
   return withScope((scope: DisposalScope): Shape3D => {
     let solid: Shape3D = scope.register(
       sketch(roundedRect(cx, cy, couponX, couponY, COUPON_FILLET), 'XY', 0).extrude(-totalHeight)
@@ -244,13 +268,16 @@ function buildCoupon(
       availD: couponY + fontMm,
     };
     const plan = planTextForHost(options);
+    // A groove or pocket opens into this coupon's top from the seam, so the
+    // label centres in the part of the face clear of it.
+    const away = feature.kind === 'tongue' ? 0 : (d * seamReach) / 2;
     const text =
       plan &&
       buildTextSolid(scope, {
         ...options,
         plan,
         centerX: cx,
-        centerY: cy - (plan.minY + plan.maxY) / 2,
+        centerY: cy - away - (plan.minY + plan.maxY) / 2,
         topZ: 0,
         depth: LABEL_DEPTH,
         hostThickness: totalHeight,
@@ -286,19 +313,22 @@ export function buildConnectorSampleTray(rawParams: ResolvedBaseplateParams): Sh
 
   // Size the offset label so its stems clear the nozzle bead, then size the
   // coupon (and hence the tray pitch) to hold it — both grow with the nozzle.
-  const fontMm = minPrintableLabelFontMm(params.nozzleSizeMm);
-  const { x: couponX, y: couponY } = couponDims(fontMm);
-  const layout: CouponLayout = { couponX, couponY, fontMm, totalHeight };
-  const cellYSpan = 2 * couponY + SEAM_GAP;
-  const colPitch = couponX + COL_GAP;
-  const rowPitch = cellYSpan + ROW_GAP;
-
   // Only build the row for the connector style the user actually picked — a
   // calibration card for the other two styles is wasted geometry/print time.
   // `connectorStyle` is undefined for the default integral dovetail.
   const selectedKey = params.connectorStyle ?? 'dovetail';
   const matched = SAMPLE_STYLES.filter((s) => s.key === selectedKey);
   const styles = matched.length > 0 ? matched : [SAMPLE_STYLES[0]];
+
+  const fontMm = minPrintableLabelFontMm(params.nozzleSizeMm);
+  const seamReach = Math.max(
+    ...styles.map((s) => seamOpeningReach(s.key, totalHeight, params.nozzleSizeMm))
+  );
+  const { x: couponX, y: couponY } = couponDims(fontMm, seamReach);
+  const layout: CouponLayout = { couponX, couponY, fontMm, totalHeight, seamReach };
+  const cellYSpan = 2 * couponY + SEAM_GAP;
+  const colPitch = couponX + COL_GAP;
+  const rowPitch = cellYSpan + ROW_GAP;
 
   const nRows = styles.length;
   const nCols = SAMPLE_OFFSETS.length;

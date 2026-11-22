@@ -11,7 +11,17 @@
  *   3. the piece count matches the selected style (5 pairs, +1 loose for key/clip).
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { getBounds, measureVolume, mesh, type Shape3D } from 'brepjs';
+import {
+  box,
+  getBounds,
+  intersect,
+  measureVolume,
+  mesh,
+  translate,
+  unwrap,
+  type Shape3D,
+  type ValidSolid,
+} from 'brepjs';
 import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
@@ -43,6 +53,24 @@ const defaults = (overrides: Partial<ResolvedBaseplateParams> = {}): ResolvedBas
   fractionalEdgeY: 'end',
   ...overrides,
 });
+
+/**
+ * Volume of raised label that has no coupon material under it (mm³): the label
+ * layer, lowered 0.3mm, must still lie inside the coupon. Text over a groove or
+ * a pocket opening at the seam would block the mating part.
+ */
+function unsupportedLabelMm3(piece: Shape3D): number {
+  const b = getBounds(piece);
+  const slab = box(b.xMax - b.xMin + 2, b.yMax - b.yMin + 2, LABEL_DEPTH, {
+    at: [(b.xMin + b.xMax) / 2, (b.yMin + b.yMax) / 2, 0.02 + LABEL_DEPTH / 2],
+  });
+  const layer = unwrap(intersect(piece as ValidSolid, slab));
+  const lowered = translate(layer, [0, 0, -0.3]);
+  const kept = intersect(piece as ValidSolid, lowered);
+  const missing = vol(layer) - (kept.ok ? vol(kept.value) : 0);
+  for (const s of [slab, layer, lowered, ...(kept.ok ? [kept.value] : [])]) s.delete();
+  return missing;
+}
 
 /** Smallest XY gap between a coupon's raised label and the edge of its body (mm). */
 function labelInsetMm(piece: Shape3D): number {
@@ -144,6 +172,29 @@ describe('connectorSample — fit-sample tray', () => {
           for (const p of pieces) p.delete();
         }
       }
+    },
+    TEST_TIMEOUT_MS
+  );
+
+  it.each(
+    // The default nozzle, and the largest, where the openings reach furthest in.
+    [undefined, 'puzzle', 'dovetailKey', 'snapClip'].flatMap((style) =>
+      [0.4, 1.0].map((nozzle) => [style, nozzle] as const)
+    )
+  )(
+    'keeps every label off the seam openings (%s, %s mm nozzle)',
+    (style, nozzleSizeMm) => {
+      const pieces = buildConnectorSampleTray(
+        defaults({
+          nozzleSizeMm,
+          connectorStyle: style as ResolvedBaseplateParams['connectorStyle'],
+        })
+      );
+      const coupons = pieces.filter((p) => getBounds(p).zMax > LABEL_DEPTH / 2);
+      const missing = coupons.map((p) => unsupportedLabelMm3(p));
+      for (const p of pieces) p.delete();
+      expect(coupons.length).toBeGreaterThan(0);
+      for (const v of missing) expect(v).toBeLessThan(0.01);
     },
     TEST_TIMEOUT_MS
   );
