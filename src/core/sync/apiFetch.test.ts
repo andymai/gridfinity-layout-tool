@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { apiFetch, FORCED_SIGN_OUT_EVENT } from './apiFetch';
 import { onAccountChanged } from './accountGeneration';
+import { __resetForTests as resetFirewallChallenge, firewallChallenged } from './firewallChallenge';
 
 describe('apiFetch', () => {
   let fetchMock: ReturnType<typeof vi.fn>;
@@ -9,6 +10,7 @@ describe('apiFetch', () => {
   beforeEach(() => {
     fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
+    resetFirewallChallenge();
   });
 
   afterEach(() => {
@@ -24,6 +26,17 @@ describe('apiFetch', () => {
     );
     const headers = fetchMock.mock.calls[0][1].headers as Headers;
     expect(headers.get('X-Requested-With')).toBe('gflt');
+  });
+
+  it('records a firewall challenge, and not the server rate limit', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 429 }));
+    await apiFetch('/api/sync/manifest');
+    expect(firewallChallenged()).toBe(false);
+    fetchMock.mockResolvedValueOnce(
+      new Response('<html>', { status: 429, headers: { 'x-vercel-mitigated': 'challenge' } })
+    );
+    await apiFetch('/api/sync/manifest');
+    expect(firewallChallenged()).toBe(true);
   });
 
   it('omits X-Requested-With when csrf: false is passed', async () => {

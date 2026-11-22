@@ -4833,6 +4833,7 @@
   "supporters.thisMonth": "이번 달 {count}명 참여",
   "sync.conflictPulled": "다른 기기에서 레이아웃이 업데이트되었습니다.",
   "sync.deletedElsewhere": "이 레이아웃은 다른 기기에서 삭제되었습니다. 다시 저장하여 복원하세요.",
+  "sync.firewallChallenge": "동기화 일시 중지: 네트워크에 간단한 보안 확인이 필요합니다. 계속하려면 페이지를 다시 로드하세요.",
   "sync.pushFailed": "변경 사항을 동기화할 수 없습니다. 나중에 다시 시도하세요.",
   "sync.quotaExceeded": "동기화 일시 중지 — 클라우드 저장 공간이 가득 찼습니다.",
   "sync.workingOffline": "오프라인으로 작업 중 — 다시 연결되면 변경 사항이 동기화됩니다.",

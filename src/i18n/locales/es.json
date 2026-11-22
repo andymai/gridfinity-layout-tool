@@ -4940,6 +4940,7 @@
   "supporters.thisMonth": "{count} se unieron este mes",
   "sync.conflictPulled": "Diseño actualizado desde otro dispositivo.",
   "sync.deletedElsewhere": "Este diseño se eliminó en otro dispositivo. Guarda de nuevo para restaurarlo.",
+  "sync.firewallChallenge": "Sincronización pausada: tu red necesita una comprobación de seguridad rápida. Recarga la página para continuar.",
   "sync.pushFailed": "No se pudieron sincronizar tus cambios. Inténtalo más tarde.",
   "sync.quotaExceeded": "Sincronización pausada — tu almacenamiento en la nube está lleno.",
   "sync.workingOffline": "Sin conexión — los cambios se sincronizarán cuando vuelvas a estar en línea.",

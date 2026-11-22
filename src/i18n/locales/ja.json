@@ -4833,6 +4833,7 @@
   "supporters.thisMonth": "今月 {count} 人が参加",
   "sync.conflictPulled": "他のデバイスからレイアウトが更新されました。",
   "sync.deletedElsewhere": "このレイアウトは他のデバイスで削除されました。もう一度保存して復元してください。",
+  "sync.firewallChallenge": "同期を一時停止しました：ネットワークの簡単なセキュリティ確認が必要です。ページを再読み込みして続行してください。",
   "sync.pushFailed": "変更を同期できませんでした。後でもう一度お試しください。",
   "sync.quotaExceeded": "同期を一時停止しました — クラウドストレージが満杯です。",
   "sync.workingOffline": "オフラインで作業中 — 再接続時に変更が同期されます。",

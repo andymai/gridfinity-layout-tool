@@ -5154,6 +5154,7 @@
   "supporters.thisMonth": "{count} dołączyło w tym miesiącu",
   "sync.conflictPulled": "Układ zaktualizowany z innego urządzenia.",
   "sync.deletedElsewhere": "Ten układ został usunięty na innym urządzeniu. Zapisz ponownie, aby go przywrócić.",
+  "sync.firewallChallenge": "Synchronizacja wstrzymana: Twoja sieć wymaga szybkiej kontroli bezpieczeństwa. Odśwież stronę, aby kontynuować.",
   "sync.pushFailed": "Nie udało się zsynchronizować zmian. Spróbuj później.",
   "sync.quotaExceeded": "Synchronizacja wstrzymana — Twój magazyn w chmurze jest pełny.",
   "sync.workingOffline": "Praca offline — zmiany zsynchronizują się po ponownym połączeniu.",

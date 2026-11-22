@@ -1,4 +1,5 @@
 import { apiFetch } from './apiFetch';
+import { firewallChallenged, isFirewallChallenge } from './firewallChallenge';
 import {
   enqueue as outboxEnqueue,
   getDue as outboxGetDue,
@@ -167,7 +168,9 @@ async function rehydrate(s: EngineState): Promise<void> {
 }
 
 async function drain(s: EngineState): Promise<void> {
-  if (s.stopping) return;
+  // Every push would meet the same challenge. The entries stay queued and
+  // drain after the page reloads.
+  if (s.stopping || firewallChallenged()) return;
   const due = await outboxGetDue();
   // Held entries of a switched-off kind are not work in progress: they wait
   // without a request, and the status must still settle to idle.
@@ -220,6 +223,12 @@ async function sendOne(
   s: EngineState
 ): Promise<void> {
   const url = `/api/sync/${kind}/${entry.id}`;
+  // A drain starts its entries together, so one may meet the challenge while
+  // another is still planning. Unsent entries stay queued.
+  if (firewallChallenged()) {
+    reportChallenged();
+    return;
+  }
 
   // Held unsent, with no attempt spent, while the server's switch for this
   // kind is off. The first manifest that lists it again queues what it lacks.
@@ -252,6 +261,11 @@ async function sendOne(
     throw error;
   });
   if (stopped(s) || plan === null) return;
+  // Planning uploads meshes, and one of those uploads can meet the challenge.
+  if (firewallChallenged()) {
+    reportChallenged();
+    return;
+  }
   if (plan.status === 'skip') {
     await outboxMarkSuccess(entry, entry.modifiedAt);
     return;
@@ -382,6 +396,10 @@ async function handleFailure(
   // escalating delay across consecutive 429s, so track that in a separate
   // per-(kind, id) counter on the engine state. `Retry-After` overrides
   // the counter entirely (server knows best).
+  if (isFirewallChallenge(res)) {
+    reportChallenged();
+    return;
+  }
   if (res.status === 429) {
     await waitOutThrottle(entry, s, parseRetryAfter(res.headers.get('Retry-After')));
     return;
@@ -409,6 +427,10 @@ async function handleFailure(
     return;
   }
   await backOff(kind, entry, s, `HTTP ${res.status}`);
+}
+
+function reportChallenged(): void {
+  useSyncStatusStore.getState().reportOffline('Firewall challenge');
 }
 
 async function waitOutThrottle(

@@ -1,6 +1,7 @@
 import { pullState, resetPullState } from './pullState';
 import { PAYLOAD_KEY } from './payloadKey';
 import { apiFetch } from './apiFetch';
+import { firewallChallenged, isFirewallChallenge } from './firewallChallenge';
 import { useSessionStore } from './session/useSession';
 import { useSyncStatusStore } from './status';
 import { isKindServed, noteServedKinds, servedGatedKinds } from './servedKinds';
@@ -87,6 +88,8 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   if (useSessionStore.getState().status !== 'authenticated') {
     return { status: 'unauthorized' };
   }
+  // Every poll would meet the same challenge until the page reloads.
+  if (firewallChallenged()) return { status: 'offline' };
 
   useSyncStatusStore.getState().beginSync();
 
@@ -116,6 +119,10 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   }
   if (manifestRes.status === 401) {
     return { status: 'unauthorized' };
+  }
+  if (isFirewallChallenge(manifestRes)) {
+    useSyncStatusStore.getState().reportOffline('Firewall challenge');
+    return { status: 'offline' };
   }
   if (manifestRes.status === 429) {
     // Server throttling, not a real error. Treat as transient offline so
@@ -201,6 +208,12 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   // prior user's high-water mark or applying writes that belong to a session
   // that's been torn down.
   if (capturedGeneration !== pullState.generation) return { status: 'offline' };
+  // Downloads stopped at the challenge, so the pull is incomplete: no
+  // success, and no new watermark.
+  if (firewallChallenged()) {
+    useSyncStatusStore.getState().reportOffline('Firewall challenge');
+    return { status: 'offline' };
+  }
 
   // A skipped entry is read again on the next pull: if its held push gets a
   // 410, only a fresh manifest carries the delete, and a saved timestamp would
@@ -232,7 +245,7 @@ async function diffKind(
 
   let applied = 0;
   for (const [id, entry] of Object.entries(remote)) {
-    if (generation !== pullState.generation) break;
+    if (generation !== pullState.generation || firewallChallenged()) break;
     if (skip.has(id)) continue;
     const localMtime = localByMtime.get(id);
 

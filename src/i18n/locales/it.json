@@ -4940,6 +4940,7 @@
   "supporters.thisMonth": "{count} iscritti questo mese",
   "sync.conflictPulled": "Layout aggiornato da un altro dispositivo.",
   "sync.deletedElsewhere": "Questo layout è stato eliminato su un altro dispositivo. Salva di nuovo per ripristinarlo.",
+  "sync.firewallChallenge": "Sincronizzazione in pausa: la tua rete richiede un rapido controllo di sicurezza. Ricarica la pagina per continuare.",
   "sync.pushFailed": "Impossibile sincronizzare le tue modifiche. Riprova più tardi.",
   "sync.quotaExceeded": "Sincronizzazione in pausa; il tuo spazio cloud è pieno.",
   "sync.workingOffline": "Lavoro offline; le modifiche si sincronizzeranno alla riconnessione.",

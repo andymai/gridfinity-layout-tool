@@ -4940,6 +4940,7 @@
   "supporters.thisMonth": "{count} nouveaux ce mois-ci",
   "sync.conflictPulled": "Plan mis à jour depuis un autre appareil.",
   "sync.deletedElsewhere": "Ce plan a été supprimé sur un autre appareil. Enregistrez-le à nouveau pour le restaurer.",
+  "sync.firewallChallenge": "Synchronisation suspendue : votre réseau nécessite une vérification de sécurité rapide. Rechargez la page pour continuer.",
   "sync.pushFailed": "Impossible de synchroniser vos modifications. Réessayez plus tard.",
   "sync.quotaExceeded": "Synchronisation suspendue — votre espace cloud est plein.",
   "sync.workingOffline": "Hors ligne — les modifications seront synchronisées une fois reconnecté.",

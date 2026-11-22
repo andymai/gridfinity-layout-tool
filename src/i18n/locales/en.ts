@@ -303,6 +303,8 @@ const en: Record<string, string> = {
   'sync.quotaExceeded': 'Sync paused — your cloud storage is full.',
   'sync.pushFailed': "Couldn't sync your changes. Try again later.",
   'sync.workingOffline': 'Working offline — changes will sync when reconnected.',
+  'sync.firewallChallenge':
+    'Sync paused: your network needs a quick security check. Reload the page to continue.',
 
   // Sign-out + account-mismatch dialogs
   'syncDialog.signOut.title': 'Sign out',

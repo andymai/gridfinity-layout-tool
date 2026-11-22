@@ -1,10 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store';
+import { recoverStaleBundle } from '@/shared/pwa/staleRecovery';
+import { FIREWALL_CHALLENGE_EVENT, firewallChallenged } from './firewallChallenge';
 import { onEngineEvent, type EngineEvent } from './engine';
+import { useSessionStore } from './session/useSession';
 import { useSyncStatusStore } from './status';
 
 const OFFLINE_DEBOUNCE_MS = 4_000;
+const CHALLENGE_TOAST_KEY = 'sync-firewall-challenge';
 
 /**
  * Surface engine and offline events as toasts. The "no header status
@@ -16,6 +20,7 @@ export function useSyncToasts(): void {
   const t = useTranslation();
   const addToast = useToastStore((s) => s.addToast);
   const offlineToastFiredAt = useRef<number>(0);
+  const challengeToastShown = useRef(false);
 
   useEffect(() => {
     return onEngineEvent((event: EngineEvent) => {
@@ -33,10 +38,57 @@ export function useSyncToasts(): void {
     return useSyncStatusStore.subscribe((state, prev) => {
       // Only fire on the transition INTO offline, not while it stays.
       if (state.state !== 'offline' || prev.state === 'offline') return;
+      // The challenge toast below says what to do instead.
+      if (firewallChallenged()) return;
       const now = Date.now();
       if (now - offlineToastFiredAt.current < OFFLINE_DEBOUNCE_MS) return;
       offlineToastFiredAt.current = now;
       addToast(t('sync.workingOffline'), 'info');
     });
+  }, [addToast, t]);
+
+  useEffect(() => {
+    // The challenge can come before this hook mounts or before sign-in
+    // settles, so the latch is read again at each of those points.
+    const addChallengeToast = () =>
+      addToast({
+        message: t('sync.firewallChallenge'),
+        type: 'info',
+        duration: 0,
+        key: CHALLENGE_TOAST_KEY,
+        action: {
+          label: t('pwaUpdate.reload'),
+          // A plain reload gets index.html from the service worker and never
+          // reaches the firewall. Only a network navigation can pass the
+          // challenge, so the worker goes first.
+          onClick: () => void recoverStaleBundle('firewall_challenge', { force: true }),
+        },
+      });
+    const show = () => {
+      if (challengeToastShown.current || !firewallChallenged()) return;
+      if (useSessionStore.getState().status !== 'authenticated') return;
+      challengeToastShown.current = true;
+      addChallengeToast();
+    };
+    show();
+    window.addEventListener(FIREWALL_CHALLENGE_EVENT, show);
+    const unsubscribe = useSessionStore.subscribe((state, prev) => {
+      if (state.status === 'authenticated' && prev.status !== 'authenticated') show();
+    });
+    // The queue keeps the newest few toasts. A dismissal removes this one
+    // alone, while an eviction removes it as another arrives: only an evicted
+    // prompt comes back.
+    const unsubscribeToasts = useToastStore.subscribe((state, prev) => {
+      if (!challengeToastShown.current) return;
+      const has = (toasts: typeof state.toasts) =>
+        toasts.some((x) => x.key === CHALLENGE_TOAST_KEY);
+      if (!has(prev.toasts) || has(state.toasts)) return;
+      if (state.toasts.some((x) => !prev.toasts.some((p) => p.id === x.id))) addChallengeToast();
+    });
+    return () => {
+      window.removeEventListener(FIREWALL_CHALLENGE_EVENT, show);
+      unsubscribe();
+      unsubscribeToasts();
+    };
   }, [addToast, t]);
 }
