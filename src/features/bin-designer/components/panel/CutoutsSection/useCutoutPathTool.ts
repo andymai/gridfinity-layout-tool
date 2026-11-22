@@ -23,6 +23,7 @@ import {
   nearestPoint,
   vertexEditingMode,
 } from './handlers';
+import { withSelection } from './handlers/pathEditHandler';
 import type { Rect } from './handlers/pointEdits';
 import type { TransformHandle } from './handlers/pointTransform';
 import type { PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
@@ -241,9 +242,7 @@ export function useCutoutPathTool({
       // The handle's anchor becomes the selection, so Delete never takes a
       // point on whichever ring was selected before.
       setMode({
-        ...mode,
-        ring,
-        selectedPointIndex: index,
+        ...withSelection(mode, ring, [index]),
         dragTarget: { type: 'handle', ring, index, handleType },
         dragFrom: cutout ? dragSource(cutout) : null,
       });

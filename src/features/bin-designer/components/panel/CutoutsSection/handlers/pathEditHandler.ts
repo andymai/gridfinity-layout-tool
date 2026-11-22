@@ -184,7 +184,7 @@ export function handleVertexEditPointerDown(
       const hy = pt.y + pt.handleIn.dy;
       if (isNearPoint(at.x, at.y, hx, hy, threshold)) {
         setters.setMode({
-          ...mode,
+          ...withSelection(mode, mode.ring, [selectedIndex]),
           dragTarget: { type: 'handle', ring: mode.ring, index: selectedIndex, handleType: 'in' },
           dragFrom: dragSource(cutout),
         });
@@ -197,7 +197,7 @@ export function handleVertexEditPointerDown(
       const hy = pt.y + pt.handleOut.dy;
       if (isNearPoint(at.x, at.y, hx, hy, threshold)) {
         setters.setMode({
-          ...mode,
+          ...withSelection(mode, mode.ring, [selectedIndex]),
           dragTarget: { type: 'handle', ring: mode.ring, index: selectedIndex, handleType: 'out' },
           dragFrom: dragSource(cutout),
         });

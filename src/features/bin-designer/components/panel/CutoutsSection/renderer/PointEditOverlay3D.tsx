@@ -18,6 +18,7 @@ const Z = 0.06;
 const ORDER = RENDER_ORDER.HANDLES + 12;
 
 const CORNER_PX = 4;
+const GRIP_GAP_PX = 10;
 /** How far the rotate handle sits above the box, in screen pixels. */
 const ROTATE_OFFSET_PX = 22;
 const ROTATE_RADIUS_PX = 5;
@@ -61,26 +62,40 @@ interface TransformBox3DProps {
   ) => void;
 }
 
-/** A box around the selected points: corners scale, the dot above it turns. */
+/**
+ * A box around the selected points: corners scale, the dot above it turns. It
+ * is drawn a few pixels out from the points, because a grip on a corner point
+ * would take the press that selects or moves that point.
+ */
 export function TransformBox3D({ box, zoom, onHandleDown }: TransformBox3DProps) {
-  const top = box.maxY + ROTATE_OFFSET_PX / zoom;
-  const midX = (box.minX + box.maxX) / 2;
+  const gap = GRIP_GAP_PX / zoom;
+  const shown = useMemo(
+    () => ({
+      minX: box.minX - gap,
+      minY: box.minY - gap,
+      maxX: box.maxX + gap,
+      maxY: box.maxY + gap,
+    }),
+    [box, gap]
+  );
+  const top = shown.maxY + ROTATE_OFFSET_PX / zoom;
+  const midX = (shown.minX + shown.maxX) / 2;
   const outline = useMemo(
     () => [
-      { x: box.minX, y: box.minY },
-      { x: box.maxX, y: box.minY },
-      { x: box.maxX, y: box.maxY },
-      { x: box.minX, y: box.maxY },
-      { x: box.minX, y: box.minY },
+      { x: shown.minX, y: shown.minY },
+      { x: shown.maxX, y: shown.minY },
+      { x: shown.maxX, y: shown.maxY },
+      { x: shown.minX, y: shown.maxY },
+      { x: shown.minX, y: shown.minY },
     ],
-    [box]
+    [shown]
   );
   const stem = useMemo(
     () => [
-      { x: midX, y: box.maxY },
+      { x: midX, y: shown.maxY },
       { x: midX, y: top },
     ],
-    [midX, box.maxY, top]
+    [midX, shown.maxY, top]
   );
   const frame = useLine(outline, 0.9);
   const stemLine = useLine(stem, 0.9);
@@ -95,7 +110,7 @@ export function TransformBox3D({ box, zoom, onHandleDown }: TransformBox3DProps)
       <primitive object={frame} />
       <primitive object={stemLine} />
       {CORNERS.map((handle) => {
-        const at = cornerOf(box, handle);
+        const at = cornerOf(shown, handle);
         return (
           <Grip key={handle} x={at.x} y={at.y} onPointerDown={down(handle)}>
             <planeGeometry args={[size, size]} />

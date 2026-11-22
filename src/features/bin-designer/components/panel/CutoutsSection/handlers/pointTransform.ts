@@ -44,8 +44,8 @@ interface Affine {
   readonly oy: number;
 }
 
-function scaleFor(span: number, from: number, to: number): number {
-  return Math.abs(span) > MIN_SPAN_MM ? to / from : 1;
+function scaleFor(span: number, to: number): number {
+  return Math.abs(span) > MIN_SPAN_MM ? to / span : 1;
 }
 
 /** `uniform` keeps a corner's proportions, or snaps a turn to whole steps. */
@@ -68,10 +68,12 @@ function affineFor(
     const sin = Math.sin(turn);
     return { a: cos, b: -sin, c: sin, d: cos, ox, oy };
   }
+  // The corner follows the pointer's movement, not the pointer: a grip is
+  // pressed a little off its corner, and the first move must not jump.
   const o = cornerOf(box, OPPOSITE[handle]);
   const corner = cornerOf(box, handle);
-  let sx = scaleFor(corner.x - o.x, corner.x - o.x, to.x - o.x);
-  let sy = scaleFor(corner.y - o.y, corner.y - o.y, to.y - o.y);
+  let sx = scaleFor(corner.x - o.x, corner.x + to.x - start.x - o.x);
+  let sy = scaleFor(corner.y - o.y, corner.y + to.y - start.y - o.y);
   if (uniform) {
     const s = Math.abs(sx - 1) >= Math.abs(sy - 1) ? sx : sy;
     sx = s;

@@ -100,6 +100,16 @@ describe('handleVertexEditKeyDown', () => {
     expect(s.onUpdate).not.toHaveBeenCalled();
   });
 
+  it('keeps the reach of a pull under way', () => {
+    const s = setters();
+    const pulling = mode({
+      falloffMm: 10,
+      dragTarget: { type: 'segment', ring: 0, segmentIndex: 0, t: 0.5, startX: 5, startY: 0 },
+    });
+    handleVertexEditKeyDown(press(']'), pulling, path(), s);
+    expect(s.setMode).not.toHaveBeenCalled();
+  });
+
   it('sets the pull radius with [ and ], and keeps it for next time', () => {
     const s = setters();
     handleVertexEditKeyDown(press(']'), mode({ falloffMm: 10 }), path(), s);

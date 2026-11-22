@@ -144,6 +144,8 @@ export function handleVertexEditKeyDown(
       return;
     case '[':
     case ']': {
+      // A pull keeps the reach it began with, so the ring keeps showing it.
+      if (mode.dragTarget) return;
       event.preventDefault();
       const falloffMm = nextFalloff(mode.falloffMm ?? DEFAULT_FALLOFF_MM, event.key === ']');
       saveFalloffMm(falloffMm);

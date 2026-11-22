@@ -52,6 +52,19 @@ describe('transformPoints', () => {
     ]);
   });
 
+  it('does not jump when a grip is pressed off its corner', () => {
+    const box = { minX: 0, minY: 0, maxX: 10, maxY: 10 };
+    const out = transformPoints(
+      path(),
+      RING,
+      [0, 1, 2, 3],
+      { handle: 'ne', box, startX: 10.5, startY: 10.5 },
+      { x: 10.5, y: 10.5 },
+      false
+    );
+    expect(out.map(xy)).toEqual(RING.map(xy));
+  });
+
   it('keeps the proportions with Shift', () => {
     const box = { minX: 0, minY: 0, maxX: 10, maxY: 10 };
     const out = transformPoints(
