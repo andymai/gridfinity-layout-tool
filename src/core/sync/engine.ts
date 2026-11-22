@@ -1,7 +1,7 @@
 import { apiFetch } from './apiFetch';
 import { firewallChallenged, isFirewallChallenge } from './firewallChallenge';
 import {
-  enqueue as outboxEnqueue,
+  enqueueMany as outboxEnqueueMany,
   getDue as outboxGetDue,
   getAll as outboxGetAll,
   markFailure as outboxMarkFailure,
@@ -12,6 +12,7 @@ import {
 import { parseRetryAfter, rateLimitedBackoffMs } from './retryAfter';
 import { useSyncStatusStore } from './status';
 import { isKindServed } from './servedKinds';
+import { sharedRead } from './sharedRead';
 
 const UNSERVED_HOLD_MS = 60_000;
 import type {
@@ -51,6 +52,11 @@ interface EngineState {
    * on any non-429 outcome for the same item.
    */
   rateLimitedRetries: Map<string, number>;
+  /**
+   * Changes reported in the current task, written to the outbox together. A
+   * bulk write (a library folder import) reports hundreds in one task.
+   */
+  localBatch: Array<{ kind: SyncKind; change: AdapterChange }>;
 }
 
 let state: EngineState | null = null;
@@ -72,18 +78,13 @@ export function start(adapters: SyncAdapters): void {
     drainDueAt: 0,
     stopping: false,
     rateLimitedRetries: new Map(),
+    localBatch: [],
   };
   state = s;
 
   for (const kind of Object.keys(adapters) as SyncKind[]) {
     const adapter = adapters[kind];
-    s.unsubscribers.push(
-      adapter.subscribe((change) => {
-        onLocalChange(s, kind, change).catch((error: unknown) =>
-          reportUncaught('onLocalChange', error)
-        );
-      })
-    );
+    s.unsubscribers.push(adapter.subscribe((change) => queueLocalChange(s, kind, change)));
   }
 
   rehydrate(s).catch((error: unknown) => reportUncaught('rehydrate', error));
@@ -132,14 +133,28 @@ export async function getPendingEntries(): Promise<OutboxEntry[]> {
   return outboxGetAll();
 }
 
-async function onLocalChange(s: EngineState, kind: SyncKind, change: AdapterChange): Promise<void> {
+function queueLocalChange(s: EngineState, kind: SyncKind, change: AdapterChange): void {
   if (s.stopping) return;
-  await outboxEnqueue({
-    kind,
-    id: change.id,
-    modifiedAt: change.modifiedAt,
-    op: change.kind,
+  s.localBatch.push({ kind, change });
+  if (s.localBatch.length > 1) return;
+  queueMicrotask(() => {
+    const batch = s.localBatch.splice(0);
+    onLocalChanges(s, batch).catch((error: unknown) => reportUncaught('onLocalChange', error));
   });
+}
+
+async function onLocalChanges(
+  s: EngineState,
+  batch: ReadonlyArray<{ kind: SyncKind; change: AdapterChange }>
+): Promise<void> {
+  await outboxEnqueueMany(
+    batch.map(({ kind, change }) => ({
+      kind,
+      id: change.id,
+      modifiedAt: change.modifiedAt,
+      op: change.kind,
+    }))
+  );
   await syncStatusFromOutbox();
   scheduleDrain(s, 0);
 }
@@ -512,12 +527,15 @@ function emitEngineEvent(s: EngineState, event: EngineEvent): void {
   }
 }
 
-async function syncStatusFromOutbox(): Promise<void> {
+async function readPendingCount(): Promise<void> {
   const all = await outboxGetAll();
   useSyncStatusStore
     .getState()
     .setPendingCount(all.filter((entry) => isKindServed(entry.kind)).length);
 }
+
+/** A burst of writes, local or pushed, shares its pending-count reads. */
+const syncStatusFromOutbox = sharedRead(readPendingCount);
 
 // Test-only: peek at internal state.
 export function __getEngineStateForTests(): EngineState | null {

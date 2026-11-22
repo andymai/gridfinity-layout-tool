@@ -135,6 +135,40 @@ async function flush(): Promise<void> {
   await new Promise((r) => setTimeout(r, 10));
 }
 
+describe('a burst of local changes', () => {
+  it('writes the burst together, and reads the outbox a few times for it, not once per write', async () => {
+    // Pushes never finish, so only the enqueue path reads the count.
+    fetchMock.mockImplementation(() => new Promise<Response>(() => {}));
+    engine.start(adapters);
+    await new Promise((r) => setTimeout(r, 10));
+    // Every outbox read: the count's, and the drain's look for due entries.
+    const reads = vi.spyOn(IDBObjectStore.prototype, 'getAll');
+
+    for (let i = 0; i < 200; i++) {
+      layoutsAdapter.triggerChange({ kind: 'put', id: `lay-${i}`, modifiedAt: 1000 + i });
+    }
+
+    await vi.waitFor(() => expect(useSyncStatusStore.getState().pendingCount).toBe(200));
+    await new Promise((r) => setTimeout(r, 10));
+    const readsForBurst = reads.mock.calls.length;
+    reads.mockRestore();
+    expect(await outboxGetAll()).toHaveLength(200);
+    expect(readsForBurst).toBeLessThanOrEqual(3);
+  });
+
+  it('settles to idle with nothing pending once every push of a burst succeeds', async () => {
+    engine.start(adapters);
+    for (let i = 0; i < 40; i++) {
+      layoutsAdapter.triggerChange({ kind: 'put', id: `lay-${i}`, modifiedAt: 1000 + i });
+    }
+    await flush();
+    await vi.waitFor(() => expect(useSyncStatusStore.getState().state).toBe('idle'));
+    expect(useSyncStatusStore.getState().pendingCount).toBe(0);
+    expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'PUT')).toHaveLength(40);
+    expect(await outboxGetAll()).toEqual([]);
+  });
+});
+
 describe('engine.start / stop', () => {
   it('subscribes to every adapter on start', () => {
     engine.start(adapters);

@@ -6,6 +6,7 @@ import {
   clearAll,
   discard,
   enqueue,
+  enqueueMany,
   getAll,
   getDue,
   markFailure,
@@ -83,6 +84,21 @@ describe('enqueue / getAll', () => {
     await enqueue({ kind: 'designs', id: 'x', modifiedAt: 1000, op: 'put' });
     const entries = await getAll();
     expect(entries).toHaveLength(2);
+  });
+
+  it('writes several entries at once, and a later one for the same item wins', async () => {
+    await enqueue({ kind: 'layouts', id: 'a', modifiedAt: 500, op: 'put' });
+    await enqueueMany([
+      { kind: 'layouts', id: 'a', modifiedAt: 1000, op: 'put' },
+      { kind: 'cutoutItems', id: 'b', modifiedAt: 2000, op: 'put' },
+      { kind: 'layouts', id: 'a', modifiedAt: 3000, op: 'delete' },
+    ]);
+    await enqueueMany([]);
+    const entries = (await getAll()).sort((x, y) => x.id.localeCompare(y.id));
+    expect(entries.map((e) => [e.kind, e.id, e.modifiedAt, e.op, e.attempts])).toEqual([
+      ['layouts', 'a', 3000, 'delete', 0],
+      ['cutoutItems', 'b', 2000, 'put', 0],
+    ]);
   });
 });
 
