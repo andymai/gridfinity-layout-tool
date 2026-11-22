@@ -1,7 +1,7 @@
 // No imports: config.ts reads these in Node to write the head script.
 
-/** Until launch, Ask AI shows only after a visit with ?ask=1 in the URL. */
-export const ASK_AI_PUBLIC = false;
+/** False hides Ask AI unless the URL carries ?ask=1, for testing a change before readers see it. */
+export const ASK_AI_PUBLIC = true;
 export const PREVIEW_KEY = 'gridfinity-docs:ask-ai-preview';
 export const DOCK_QUERY = '(min-width: 80rem)';
 export const DOCKED_CLASS = 'ask-ai-docked';
