@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ALL_KINDS, KIND_SPECS, isKind } from '../lib/kinds';
-import { expectedEnvelopeDelta } from '../lib/delta';
-import { analyze } from '../lib/findings';
-import { itemKey, parseIndexKey } from '../lib/inventory';
-import type { BlobRow, IndexRow, Inventory, Kind } from '../lib/types';
+import { ALL_KINDS, KIND_SPECS, isKind } from './kinds';
+import { expectedEnvelopeDelta } from './delta';
+import { analyze } from './findings';
+import { itemKey, parseIndexKey } from './inventory';
+import type { BlobRow, IndexRow, Inventory, Kind } from './types';
 
 const fetchMock = vi.fn();
 vi.stubGlobal('fetch', fetchMock);

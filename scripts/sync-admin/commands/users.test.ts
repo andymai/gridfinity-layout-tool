@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeStats } from '../commands/users';
+import { computeStats } from './users';
 import type { BlobRow, IndexRow, Inventory, Kind } from '../lib/types';
 
 const blob = (uid: string, kind: Kind, size: number, day: number): BlobRow => ({
