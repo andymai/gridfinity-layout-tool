@@ -140,6 +140,7 @@ function sampleFinalUri(source: string): string {
   if (source === '/docs/assets/:path*') return '/docs/assets/app.abc123.js';
   if (source === '/content.:hash.css') return '/content.abc123.css';
   if (source === '/workbox-:hash.js') return '/workbox-abc123.js';
+  if (source === '/icons/:path*') return '/icons/favicon.svg';
   const locale = /^\/([A-Za-z-]+)\/:path\(\(\?!api\/\)\.\*\)$/.exec(source);
   if (locale) return `/${locale[1]}/guide/index.html`;
   if (/^\/[a-z-]+$/.test(source)) return `${source}/index.html`;

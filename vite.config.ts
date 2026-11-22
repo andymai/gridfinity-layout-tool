@@ -190,6 +190,11 @@ export default defineConfig({
           'screenshots/**',
           'icons/icon-192.png',
           'icons/icon-512.png',
+          // Browsers and crawlers ask for these root paths on their own, outside
+          // the service worker. Precaching them adds requests to every install.
+          'favicon.ico',
+          'apple-touch-icon.png',
+          'apple-touch-icon-precomposed.png',
           'storage-bridge.html',
           // wwwMigration is a one-shot dynamic import (www → canonical migration).
           // Precaching it causes SW install failures when the hash changes between
