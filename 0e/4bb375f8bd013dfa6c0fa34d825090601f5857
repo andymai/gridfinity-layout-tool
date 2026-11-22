@@ -1,0 +1,23 @@
+src/features/generation/worker/generators/connectorSample.ts
+  s_f8efc8defc13ab::t_7a273ec4806f41 80-81,225-230,237,243-257
+src/features/generation/worker/generators/connectorSample.scenario.test.ts
+  s_f8efc8defc13ab::t_219bf05fa5a667 14,47-62,158-160,164
+  s_f8efc8defc13ab::t_7103d89267632f 151-157,161-163
+  s_f8efc8defc13ab::t_9b53cc7c70b28e 165-168
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0e4bb375f8bd013dfa6c0fa34d825090601f5857",
+  "prompts": {},
+  "sessions": {
+    "s_f8efc8defc13ab": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5e3ef02e-c0fb-48b1-af5e-208b88e257e3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
