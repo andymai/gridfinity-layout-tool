@@ -141,8 +141,19 @@ describe('a burst of local changes', () => {
     const readsForBurst = reads.mock.calls.length;
     reads.mockRestore();
     expect(await outboxGetAll()).toHaveLength(200);
-    // One read per write would be 200 or more.
     expect(readsForBurst).toBeLessThanOrEqual(3);
+  });
+
+  it('settles to idle with nothing pending once every push of a burst succeeds', async () => {
+    engine.start(adapters);
+    for (let i = 0; i < 40; i++) {
+      layoutsAdapter.triggerChange({ kind: 'put', id: `lay-${i}`, modifiedAt: 1000 + i });
+    }
+    await flush();
+    await vi.waitFor(() => expect(useSyncStatusStore.getState().state).toBe('idle'));
+    expect(useSyncStatusStore.getState().pendingCount).toBe(0);
+    expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'PUT')).toHaveLength(40);
+    expect(await outboxGetAll()).toEqual([]);
   });
 });
 

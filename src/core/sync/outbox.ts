@@ -106,10 +106,6 @@ export async function enqueue(input: EnqueueInput): Promise<void> {
   await enqueueMany([input]);
 }
 
-/**
- * Enqueue several pushes in one transaction. The puts land in order, so a
- * later input for the same item replaces an earlier one, as `enqueue` would.
- */
 export async function enqueueMany(inputs: readonly EnqueueInput[]): Promise<void> {
   if (inputs.length === 0) return;
   const db = await outboxDb.get();

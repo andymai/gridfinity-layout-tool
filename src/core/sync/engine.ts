@@ -11,6 +11,7 @@ import {
 import { parseRetryAfter, rateLimitedBackoffMs } from './retryAfter';
 import { useSyncStatusStore } from './status';
 import { isKindServed } from './servedKinds';
+import { sharedRead } from './sharedRead';
 
 const UNSERVED_HOLD_MS = 60_000;
 import type {
@@ -504,9 +505,6 @@ function emitEngineEvent(s: EngineState, event: EngineEvent): void {
   }
 }
 
-let countRead: Promise<void> | null = null;
-let countReadAfter: Promise<void> | null = null;
-
 async function readPendingCount(): Promise<void> {
   const all = await outboxGetAll();
   useSyncStatusStore
@@ -514,27 +512,8 @@ async function readPendingCount(): Promise<void> {
     .setPendingCount(all.filter((entry) => isKindServed(entry.kind)).length);
 }
 
-/**
- * Refresh the pending count from the outbox. Calls made while a read runs
- * share one read after it, so a burst of writes costs two reads, not one
- * each. Every caller still gets a read that starts after its own write, and
- * reads never overlap, so an older count cannot land last.
- */
-function syncStatusFromOutbox(): Promise<void> {
-  if (countRead === null) {
-    countRead = readPendingCount().finally(() => {
-      countRead = null;
-    });
-    return countRead;
-  }
-  countReadAfter ??= countRead
-    .catch(() => undefined)
-    .then(() => {
-      countReadAfter = null;
-      return syncStatusFromOutbox();
-    });
-  return countReadAfter;
-}
+/** A burst of writes, local or pushed, shares its pending-count reads. */
+const syncStatusFromOutbox = sharedRead(readPendingCount);
 
 // Test-only: peek at internal state.
 export function __getEngineStateForTests(): EngineState | null {
