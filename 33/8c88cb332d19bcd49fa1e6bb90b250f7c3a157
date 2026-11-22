@@ -1,0 +1,76 @@
+src/i18n/locales/sv.json
+  s_f3decd9961964a::t_2b363fbd9db22c 4418-4419
+src/i18n/locales/de.json
+  s_f3decd9961964a::t_2b363fbd9db22c 4418-4419
+src/shared/components/PrinterPresetSelect/PrinterPresetSelect.test.tsx
+  s_f3decd9961964a::t_4f3bd21b7c223b 1-36,38-123
+  s_f3decd9961964a::t_ba84c2475fbb43 37
+src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.tsx
+  s_f3decd9961964a::t_13132137c090e6 175-183
+  s_f3decd9961964a::t_a98456b5f7ebf4 19
+src/shell/Sidebar/Sidebar.tsx
+  s_f3decd9961964a::t_249bba18d6eb8d 464-472
+  s_f3decd9961964a::t_8a45865dd62bcb 17
+src/i18n/locales/pl.json
+  s_f3decd9961964a::t_2b363fbd9db22c 4618-4619
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_f3decd9961964a::t_bf94085015f380 15,254-262
+  s_f3decd9961964a::t_1c83cc518777ff 263
+src/shell/Modals/SettingsModal/tabs/DefaultsTab/DefaultsTab.tsx
+  s_f3decd9961964a::t_bf94085015f380 7,54-66,183-191,201
+src/i18n/locales/ka.json
+  s_f3decd9961964a::t_c1d882f2356db6 5207-5208
+src/shared/components/PrinterPresetSelect/index.ts
+  s_f3decd9961964a::t_5f1b92715d7391 1-2
+src/i18n/locales/uk.json
+  s_f3decd9961964a::t_2b363fbd9db22c 4618-4619
+src/i18n/locales/cs.json
+  s_f3decd9961964a::t_2b363fbd9db22c 4519-4520
+src/i18n/locales/en.ts
+  s_f3decd9961964a::t_67fb9bdf99cfc8 6384-6385
+src/shared/printSettings/index.ts
+  s_f3decd9961964a::t_7a368ff188d641 20-21
+src/i18n/locales/pt-BR.json
+  s_f3decd9961964a::t_2b363fbd9db22c 4418-4419
+scripts/i18n-values-allowlist.json
+  s_f3decd9961964a::t_b9dc7142a9d420 4
+src/i18n/locales/nb.json
+  s_f3decd9961964a::t_2b363fbd9db22c 4418-4419
+src/shared/printSettings/printerBedPresets.test.ts
+  s_f3decd9961964a::t_a3e3b70f159f94 1-40
+src/shared/printSettings/printerBedPresets.ts
+  s_f3decd9961964a::t_b5504982b34f4c 1-58
+src/i18n/locales/ja.json
+  s_f3decd9961964a::t_2b363fbd9db22c 4318-4319
+src/i18n/locales/nl.json
+  s_f3decd9961964a::t_2b363fbd9db22c 4418-4419
+src/i18n/locales/es.json
+  s_f3decd9961964a::t_2b363fbd9db22c 4418-4419
+src/i18n/locales/ko.json
+  s_f3decd9961964a::t_2b363fbd9db22c 4318-4319
+src/shared/components/PrinterPresetSelect/PrinterPresetSelect.tsx
+  s_f3decd9961964a::t_8ad4e2802a4137 1-44,47-67
+  s_f3decd9961964a::t_4b5276f36b84a0 45-46
+src/i18n/locales/zh-CN.json
+  s_f3decd9961964a::t_2b363fbd9db22c 4318-4319
+src/i18n/locales/it.json
+  s_f3decd9961964a::t_2b363fbd9db22c 4418-4419
+src/i18n/locales/fr.json
+  s_f3decd9961964a::t_2b363fbd9db22c 4418-4419
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "338c88cb332d19bcd49fa1e6bb90b250f7c3a157",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
