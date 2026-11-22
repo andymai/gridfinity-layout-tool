@@ -87,7 +87,6 @@ function lipCutReach(lipInfo: LipCutInfo, wallThickness: number): number {
   return Math.max(0, (lipInfo.inwardReach ?? lipInfo.lipTaperWidth) - wallThickness);
 }
 
-/** Where the lip cutters start and how tall they run, from below the support up past the lip. */
 function lipCutSpan(lipInfo: LipCutInfo): { startZ: number; height: number } {
   const depth = lipInfo.supportDepth ?? lipInfo.lipTaperWidth;
   return { startZ: lipInfo.wallHeight - depth, height: depth + lipInfo.lipHeight + 1 };
