@@ -36,7 +36,6 @@ const fetchMock = vi.fn();
 vi.mock('./apiFetch', async () => {
   const { noteFirewallChallenge } = await import('./firewallChallenge');
   return {
-    // Records a firewall challenge, as the real apiFetch does.
     apiFetch: async (url: string, init?: RequestInit) => {
       const res: unknown = await fetchMock(url, init);
       if (res instanceof Response) noteFirewallChallenge(res);
