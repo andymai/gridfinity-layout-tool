@@ -26,6 +26,7 @@ import type {
   LidMagnetConfig,
   LidSlideConfig,
   LidTrayConfig,
+  LipColorConfig,
   PathPoint,
   SurfaceTextConfig,
   TextOffset,
@@ -52,6 +53,11 @@ export const FEATURE_COLOR_KEYS = [
 ] as const;
 export type _FeatureColorKeys = Assert<
   KeysMatch<keyof FeatureColorConfig, (typeof FEATURE_COLOR_KEYS)[number]>
+>;
+
+export const LIP_COLOR_KEYS = ['corners', 'bands', 'cells'] as const;
+export type _LipColorKeys = Assert<
+  KeysMatch<keyof LipColorConfig, (typeof LIP_COLOR_KEYS)[number]>
 >;
 
 export const ACCENT_BAND_KEYS = ['enabled', 'color', 'heightMm'] as const;

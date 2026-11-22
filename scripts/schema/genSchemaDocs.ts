@@ -47,6 +47,24 @@ function anchor(name: string): string {
   return name.toLowerCase();
 }
 
+/**
+ * Past this many values an enum backed by a constant is named, not listed. A
+ * table pads every row to its widest cell, so one long enum would widen the
+ * whole table. The values are in the constraints appendix.
+ */
+const MAX_LISTED_ENUM = 20;
+
+const MAX_INLINE_VALUE = 140;
+
+/** Must match the heading `renderConstraints` writes and the slug `docs.test.ts` derives from it. */
+function constantsAnchor(path: string): string {
+  if (!path.includes('.')) return 'module-constants';
+  return path
+    .slice(0, path.indexOf('.'))
+    .toLowerCase()
+    .replace(/[^a-z0-9 -]/g, '');
+}
+
 function renderType(subschema: unknown): string {
   if (!isRecord(subschema)) return '`any`';
   const ref = subschema.$ref;
@@ -59,6 +77,14 @@ function renderType(subschema: unknown): string {
     return `[\`${name}\`](${doc}#${anchor(name)})`;
   }
   if (subschema.const !== undefined) return `\`${JSON.stringify(subschema.const)}\``;
+  const enumSource = isRecord(subschema['x-constant']) ? subschema['x-constant'].enum : undefined;
+  if (
+    Array.isArray(subschema.enum) &&
+    subschema.enum.length > MAX_LISTED_ENUM &&
+    typeof enumSource === 'string'
+  ) {
+    return `one of [\`${enumSource}\`](constraints.md#${constantsAnchor(enumSource)})`;
+  }
   if (Array.isArray(subschema.enum)) {
     return subschema.enum.map((v) => `\`${JSON.stringify(v)}\``).join(' \\| ');
   }
@@ -86,6 +112,9 @@ function renderConstraint(s: Record<string, unknown>): string {
   num('minItems', 'items >=');
   num('maxItems', 'items <=');
   if (typeof s.pattern === 'string') parts.push(`\`${s.pattern}\``);
+  if (parts.length === 0 && Array.isArray(s.oneOf)) {
+    return s.oneOf.filter(isRecord).map(renderConstraint).filter(Boolean).join('; ');
+  }
   return parts.join(', ');
 }
 
@@ -221,15 +250,22 @@ export function renderConstraints(): string {
     }
   }
 
-  const groups = new Map<string, string[]>();
+  const groups = new Map<string, { rows: string[]; lists: string[] }>();
   for (const [path, use] of [...uses.entries()].sort(([a], [b]) => a.localeCompare(b))) {
     const namespace = path.includes('.') ? path.slice(0, path.indexOf('.')) : 'Module constants';
-    const rows = groups.get(namespace) ?? [];
+    const group = groups.get(namespace) ?? { rows: [], lists: [] };
     const name = path.includes('.') ? path.slice(path.indexOf('.') + 1) : path;
-    rows.push(
-      `| \`${name}\` | \`${JSON.stringify(use.value)}\` | ${[...new Set(use.sites)].sort().join(', ')} |`
-    );
-    groups.set(namespace, rows);
+    const json = JSON.stringify(use.value);
+    let value = `\`${json}\``;
+    // Same reason as MAX_LISTED_ENUM: one wide cell would pad the whole table.
+    if (Array.isArray(use.value) && json.length > MAX_INLINE_VALUE) {
+      value = `${use.value.length} values, listed below`;
+      group.lists.push(
+        `\`${name}\`: ${use.value.map((v) => `\`${JSON.stringify(v)}\``).join(', ')}.`
+      );
+    }
+    group.rows.push(`| \`${name}\` | ${value} | ${[...new Set(use.sites)].sort().join(', ')} |`);
+    groups.set(namespace, group);
   }
 
   const header = `# Constraints appendix
@@ -249,7 +285,7 @@ bounded at 0 and 100, fractions at 0 and 1, and counts at 1.
     .sort(([a], [b]) =>
       a === 'Module constants' ? 1 : b === 'Module constants' ? -1 : a.localeCompare(b)
     )
-    .map(([namespace, rows]) => {
+    .map(([namespace, { rows, lists }]) => {
       const title = namespace === 'Module constants' ? 'Module constants' : `\`${namespace}\``;
       return [
         `## ${title}`,
@@ -257,6 +293,7 @@ bounded at 0 and 100, fractions at 0 and 1, and counts at 1.
         '| Constant | Value | Bounds |',
         '| --- | --- | --- |',
         ...rows,
+        ...lists.flatMap((list) => ['', list]),
       ].join('\n');
     });
 

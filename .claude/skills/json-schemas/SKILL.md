@@ -85,7 +85,7 @@ These produce files that are valid and wrong.
 
 ## Changing a schema
 
-Four guards will stop you if you do half the job. That is the point; read the
+Five guards will stop you if you do half the job. That is the point; read the
 failure rather than working around it.
 
 1. **Compile-time key parity.** Add a field to a documented interface and
@@ -105,17 +105,17 @@ failure rather than working around it.
 4. **Docs parity** (`docs.test.ts`). Run `pnpm run gen:schema-docs` and commit
    the result. A new `$def` also needs a `<!-- schema:Name -->` section in
    `docs/schemas/`.
+5. **Export parity** (`designExport.test.ts`) validates `exportDesignJSON`
+   output. A new union branch (`'auto'`, `null`) needs a fixture value.
 
 Then update `docs/schemas/examples/` if the change affects them, and re-run
 `pnpm run validate:json docs/schemas/examples`.
 
 ### What the guards do NOT check
 
-Key parity checks property **names**, not their types. A field typed `string`
-in the schema when the code says `boolean`, or an enum with wrong values, passes
-every name-based check. The `x-constant` enum annotations close this for enums
-backed by a const array; everything else is on you to verify against the type.
-Five such bugs shipped in the first draft and were caught in review.
+Only export parity checks value **types**, and only for values a fixture
+carries. Nothing catches a schema looser than the type, or a bound tighter than
+the UI. Point `x-constant` at the constant the UI uses.
 
 ## Adding a locale-facing link
 

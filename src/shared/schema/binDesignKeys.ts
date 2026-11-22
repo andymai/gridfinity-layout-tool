@@ -6,6 +6,7 @@
  */
 
 import type { CellMask } from '@/shared/utils/cellMask';
+import type { CompartmentGrid } from '@/shared/utils/compartmentGeometry';
 import type {
   AxisSlotConfig,
   BaseConfig,
@@ -370,6 +371,11 @@ export type _SplitConnectorKeys = Assert<
 
 export const CELL_MASK_KEYS = ['cols', 'rows', 'cells'] as const;
 export type _CellMaskKeys = Assert<KeysMatch<keyof CellMask, (typeof CELL_MASK_KEYS)[number]>>;
+
+export const COMPARTMENT_GRID_KEYS = ['cols', 'rows', 'cells'] as const;
+export type _CompartmentGridKeys = Assert<
+  KeysMatch<keyof CompartmentGrid, (typeof COMPARTMENT_GRID_KEYS)[number]>
+>;
 
 export const SIDE_FLAGS_KEYS = ['front', 'back', 'left', 'right'] as const;
 export type _SideFlagsKeys = Assert<

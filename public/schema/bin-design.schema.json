@@ -634,9 +634,16 @@
           "description": "Bento stash of saved compartment shapes."
         },
         "dividerHeight": {
-          "type": "number",
-          "minimum": 0,
-          "description": "Divider wall height in mm. Shorter than the cavity leaves an open top between compartments."
+          "oneOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "const": "auto"
+            }
+          ],
+          "description": "Divider wall height in mm. Shorter than the cavity leaves an open top between compartments. \"auto\" or omitted means full height."
         },
         "mergeBackground": {
           "type": "boolean",
@@ -651,6 +658,30 @@
         }
       }
     },
+    "CompartmentGrid": {
+      "type": "object",
+      "description": "The drawn grid behind a 'custom' slot layout. Each wall between two cells with different ids becomes a divider piece. Only meaningful when layout is 'custom'.",
+      "required": ["cols", "rows", "cells"],
+      "properties": {
+        "cols": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Grid columns."
+        },
+        "rows": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Grid rows."
+        },
+        "cells": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "description": "Row-major compartment id per grid cell. Length MUST equal cols * rows."
+        }
+      }
+    },
     "Cutout": {
       "type": "object",
       "description": "A top-down cavity cut, mainly for the 'solid' style. x and y are in MILLIMETRES from the bin interior's left/front edge, not grid units.",
@@ -662,8 +693,8 @@
           "description": "Unique cutout id within the design."
         },
         "shape": {
-          "enum": ["rectangle", "circle", "path", "polygon", "slot", "mesh", "knifeSlot"],
-          "description": "Cutout shape. 'path' needs a valid path array; 'mesh' needs meshId; 'polygon' needs sides."
+          "enum": ["rectangle", "circle", "path", "polygon", "slot", "mesh", "knifeSlot", "text"],
+          "description": "Cutout shape. 'path' needs a valid path array; 'mesh' needs meshId; 'polygon' needs sides. 'text' is a caption on its own: it engraves or embosses its label and cuts no pocket."
         },
         "x": {
           "type": "number",
@@ -718,8 +749,8 @@
           "description": "Text engraved next to the cutout."
         },
         "groupId": {
-          "type": "string",
-          "description": "Boolean group this cutout belongs to."
+          "type": ["string", "null"],
+          "description": "Boolean group this cutout belongs to. null means not grouped."
         },
         "groupOp": {
           "enum": ["union", "subtract", "intersect", "exclude"],
@@ -922,13 +953,64 @@
           "description": "'engrave' cuts the label text into the surface; 'socket' builds a pocket for a separately printed swappable label plate."
         },
         "labelPlateWidthU": {
-          "type": "number",
-          "exclusiveMinimum": 0,
-          "description": "Label plate width in grid units for socket mode."
+          "enum": [1, 2, 3],
+          "x-constant": {
+            "enum": "LABEL_PLATE_WIDTHS_U"
+          },
+          "description": "Pins the label plate to this standard width in grid units, for socket mode. Ignored when that width does not fit."
         },
         "labelIcon": {
-          "type": "string",
-          "description": "Icon id engraved with the label."
+          "enum": [
+            "bolt",
+            "screw",
+            "woodScrew",
+            "nut",
+            "washer",
+            "nail",
+            "hexSocketCap",
+            "setScrew",
+            "selfTapping",
+            "threadedRod",
+            "splitPin",
+            "lockWasher",
+            "wingNut",
+            "squareNut",
+            "threadedInsert",
+            "eyeBolt",
+            "thumbScrew",
+            "standoff",
+            "drillBit",
+            "hexKey",
+            "tap",
+            "countersink",
+            "utilityBlade",
+            "spring",
+            "oRing",
+            "bearing",
+            "magnet",
+            "zipTie",
+            "sawBlade",
+            "file",
+            "endMill",
+            "clip",
+            "screwdriverBit",
+            "teaspoon",
+            "tablespoon",
+            "fork",
+            "knife",
+            "spatula",
+            "whisk",
+            "tongs",
+            "ladle",
+            "chopsticks",
+            "bottleOpener",
+            "peeler",
+            "rollingPin"
+          ],
+          "x-constant": {
+            "enum": "LABEL_PLATE_ICONS"
+          },
+          "description": "Icon printed beside the caption on this cutout's label plate. Ignored outside socket mode."
         },
         "meshId": {
           "type": "string",
@@ -1197,9 +1279,16 @@
       "required": ["height", "thickness", "clearance"],
       "properties": {
         "height": {
-          "type": "number",
-          "exclusiveMinimum": 0,
-          "description": "Divider height in mm."
+          "oneOf": [
+            {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            {
+              "const": "auto"
+            }
+          ],
+          "description": "Divider height in mm, or \"auto\" to match the bin's interior height."
         },
         "thickness": {
           "type": "number",
@@ -1267,9 +1356,17 @@
           "description": "Body colour."
         },
         "lip": {
-          "type": "string",
-          "pattern": "^#[0-9a-fA-F]{6}$",
-          "description": "Stacking lip colour."
+          "oneOf": [
+            {
+              "$ref": "#/$defs/LipColorConfig"
+            },
+            {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "description": "One colour for the whole lip. The importer expands it to a 1 x 1 grid."
+            }
+          ],
+          "description": "Stacking lip colours, as a corner by height-band grid."
         },
         "labelTab": {
           "type": "string",
@@ -1306,9 +1403,17 @@
           "description": "Lid colour."
         },
         "lidLip": {
-          "type": "string",
-          "pattern": "^#[0-9a-fA-F]{6}$",
-          "description": "Lid lip colour."
+          "oneOf": [
+            {
+              "$ref": "#/$defs/LipColorConfig"
+            },
+            {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "description": "One colour for the whole lid lip. The importer expands it to a 1 x 1 grid."
+            }
+          ],
+          "description": "Lid lip colours, as the same grid as lip. Omitted means the lid lip takes the lid colour."
         },
         "topAccent": {
           "$ref": "#/$defs/AccentBandConfig"
@@ -1321,7 +1426,7 @@
     "FloorPatternConfig": {
       "type": "object",
       "description": "Drainage or ventilation perforation of the bin floor. The cut passes through the floor slab AND the base socket under it, so holes drain instead of ending in a blind pocket.",
-      "required": ["enabled", "pattern", "scale"],
+      "required": ["enabled", "pattern"],
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -1337,7 +1442,7 @@
         "scale": {
           "type": "number",
           "exclusiveMinimum": 0,
-          "description": "Pattern cell scale."
+          "description": "Pattern cell scale. Omitted means 0.5."
         }
       }
     },
@@ -1436,34 +1541,34 @@
           "description": "Enable a handle on this wall."
         },
         "width": {
-          "type": "number",
+          "type": ["number", "null"],
           "minimum": 10,
           "maximum": 100,
           "x-constant": {
             "minimum": "DESIGNER_CONSTRAINTS.MIN_HANDLE_WIDTH",
             "maximum": "DESIGNER_CONSTRAINTS.MAX_HANDLE_WIDTH"
           },
-          "description": "Width override as a percentage of wall span."
+          "description": "Width override as a percentage of wall span. null uses the handle width."
         },
         "height": {
-          "type": "number",
+          "type": ["number", "null"],
           "minimum": 8,
           "maximum": 30,
           "x-constant": {
             "minimum": "DESIGNER_CONSTRAINTS.MIN_HANDLE_HEIGHT",
             "maximum": "DESIGNER_CONSTRAINTS.MAX_HANDLE_HEIGHT"
           },
-          "description": "Height override in mm."
+          "description": "Height override in mm. null uses the handle height."
         },
         "cornerRadius": {
-          "type": "number",
+          "type": ["number", "null"],
           "minimum": 0,
           "maximum": 10,
           "x-constant": {
             "minimum": "DESIGNER_CONSTRAINTS.MIN_HANDLE_CORNER_RADIUS",
             "maximum": "DESIGNER_CONSTRAINTS.MAX_HANDLE_CORNER_RADIUS"
           },
-          "description": "Corner radius override in mm."
+          "description": "Corner radius override in mm. null uses the handle corner radius."
         }
       }
     },
@@ -1616,7 +1721,7 @@
     "LabelTabConfig": {
       "type": "object",
       "description": "Label shelf across the bin's compartments. Mixed units again: depth, height, inset and lipHeight are millimetres, width is a percentage.",
-      "required": ["enabled", "support", "depth", "width", "alignment", "edges", "inset"],
+      "required": ["enabled", "support", "depth", "width", "alignment"],
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -1696,7 +1801,7 @@
         },
         "edges": {
           "enum": ["back", "front", "both"],
-          "description": "Which wall the tabs anchor to."
+          "description": "Which wall the tabs anchor to. Omitted means \"back\"."
         },
         "inset": {
           "type": "number",
@@ -1706,7 +1811,7 @@
             "minimum": "DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_INSET",
             "maximum": "DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_INSET"
           },
-          "description": "Inward offset in mm from the anchor wall. The UI clamps further per compartment depth so two tabs in 'both' mode cannot collide."
+          "description": "Inward offset in mm from the anchor wall. Omitted means 0. The UI clamps further per compartment depth so two tabs in 'both' mode cannot collide."
         },
         "textStyle": {
           "$ref": "#/$defs/TextStyleOverride"
@@ -1854,9 +1959,9 @@
           "description": "Percentage of each side the grip spans."
         },
         "heightMm": {
-          "type": "number",
+          "type": ["number", "null"],
           "minimum": 0,
-          "description": "Grip height in mm."
+          "description": "Grip height in mm. null means auto: the grip mode picks its own height."
         },
         "binDip": {
           "type": "boolean",
@@ -1894,27 +1999,33 @@
       "properties": {
         "diameter": {
           "type": "number",
-          "minimum": 4,
-          "maximum": 10,
+          "minimum": 3,
+          "maximum": 15,
           "x-constant": {
-            "minimum": "DESIGNER_CONSTRAINTS.MIN_MAGNET_DIAMETER",
-            "maximum": "DESIGNER_CONSTRAINTS.MAX_MAGNET_DIAMETER"
+            "minimum": "LID_MAGNET_DIAMETER_MIN_MM",
+            "maximum": "LID_MAGNET_DIAMETER_MAX_MM"
           },
           "description": "Magnet diameter in mm."
         },
         "depth": {
           "type": "number",
           "minimum": 1,
-          "maximum": 4,
+          "maximum": 6,
           "x-constant": {
-            "minimum": "DESIGNER_CONSTRAINTS.MIN_MAGNET_HEIGHT",
-            "maximum": "DESIGNER_CONSTRAINTS.MAX_MAGNET_HEIGHT"
+            "minimum": "LID_MAGNET_DEPTH_MIN_MM",
+            "maximum": "LID_MAGNET_DEPTH_MAX_MM"
           },
           "description": "Magnet pocket depth in mm."
         },
         "edgeMagnets": {
-          "type": "boolean",
-          "description": "Place magnets at the edges rather than the corners."
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3,
+          "x-constant": {
+            "minimum": "LID_MAGNET_EDGE_COUNT_MIN",
+            "maximum": "LID_MAGNET_EDGE_COUNT_MAX"
+          },
+          "description": "Extra magnets along each long edge, between the corner magnets. 0 keeps the four corner magnets only. A short edge gets fewer."
         }
       }
     },
@@ -1970,6 +2081,58 @@
           "type": "number",
           "exclusiveMinimum": 0,
           "description": "Tray wall thickness in mm."
+        }
+      }
+    },
+    "LipColorConfig": {
+      "type": "object",
+      "description": "Lip colours as a grid of 4 corners by 4 height bands. corners and bands set how many of each are in use. cells always keeps all 16 colours, so a lower count hides cells without losing them.",
+      "required": ["corners", "bands", "cells"],
+      "properties": {
+        "corners": {
+          "enum": [1, 2, 4],
+          "x-constant": {
+            "enum": "LIP_AXIS_COUNTS"
+          },
+          "description": "Corners in use: 1 (the frontLeft cells colour the whole lip), 2 (front and back halves, from the left cells) or 4."
+        },
+        "bands": {
+          "enum": [1, 2, 4],
+          "x-constant": {
+            "enum": "LIP_AXIS_COUNTS"
+          },
+          "description": "Height bands in use, counted up from band 0 at the bottom. 1 uses band 0 only."
+        },
+        "cells": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "lip:frontLeft:0",
+              "lip:frontLeft:1",
+              "lip:frontLeft:2",
+              "lip:frontLeft:3",
+              "lip:frontRight:0",
+              "lip:frontRight:1",
+              "lip:frontRight:2",
+              "lip:frontRight:3",
+              "lip:backRight:0",
+              "lip:backRight:1",
+              "lip:backRight:2",
+              "lip:backRight:3",
+              "lip:backLeft:0",
+              "lip:backLeft:1",
+              "lip:backLeft:2",
+              "lip:backLeft:3"
+            ],
+            "x-constant": {
+              "enum": "LIP_CELL_ZONES"
+            }
+          },
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "description": "Colour per cell, keyed \"lip:<corner>:<band>\". The lid lip uses the same keys. A missing cell takes the body colour (the lid colour for lidLip)."
         }
       }
     },
@@ -2140,7 +2303,7 @@
     "ScoopConfig": {
       "type": "object",
       "description": "A curved or straight ramp at one or more walls so contents can be scooped out.",
-      "required": ["enabled", "side", "radius"],
+      "required": ["enabled", "radius"],
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -2148,7 +2311,10 @@
         },
         "side": {
           "enum": ["front", "back", "left", "right"],
-          "description": "Which wall the scoop rises from. Read alone unless \"sides\" is present."
+          "x-constant": {
+            "enum": "SCOOP_SIDES"
+          },
+          "description": "Which wall the scoop rises from. Omitted means \"front\". Read alone unless \"sides\" is present."
         },
         "sides": {
           "type": "array",
@@ -2164,14 +2330,21 @@
           "description": "Walls the scoop rises from, when there is more than one. Omitted for a single-sided scoop, which stores \"side\" alone."
         },
         "radius": {
-          "type": "number",
-          "minimum": 5,
-          "maximum": 25,
-          "x-constant": {
-            "minimum": "DESIGNER_CONSTRAINTS.MIN_SCOOP_RADIUS",
-            "maximum": "DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS"
-          },
-          "description": "Scoop radius in mm."
+          "oneOf": [
+            {
+              "type": "number",
+              "minimum": 5,
+              "maximum": 350,
+              "x-constant": {
+                "minimum": "DESIGNER_CONSTRAINTS.MIN_SCOOP_RADIUS",
+                "maximum": "DESIGNER_CONSTRAINTS.MAX_SCOOP_HEIGHT"
+              }
+            },
+            {
+              "const": "auto"
+            }
+          ],
+          "description": "Scoop height up the wall in mm, or \"auto\" to size it from the compartment, up to autoMaxHeight. The build clamps a number to the interior height."
         },
         "run": {
           "type": "number",
@@ -2188,8 +2361,16 @@
           "description": "Scoop cross-section."
         },
         "autoMaxHeight": {
-          "type": "boolean",
-          "description": "Let the scoop rise to the tallest printable height instead of a fixed one."
+          "type": "number",
+          "minimum": 5,
+          "maximum": 350,
+          "default": 25,
+          "x-constant": {
+            "minimum": "DESIGNER_CONSTRAINTS.MIN_SCOOP_RADIUS",
+            "maximum": "DESIGNER_CONSTRAINTS.MAX_SCOOP_HEIGHT",
+            "default": "DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS"
+          },
+          "description": "Highest the scoop may rise in mm when radius is \"auto\". Raise it for a taller scoop. The build clamps it to the interior height."
         }
       }
     },
@@ -2354,11 +2535,7 @@
           }
         },
         "customGrid": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "description": "Custom slot positions. Only meaningful when layout is 'custom'."
+          "$ref": "#/$defs/CompartmentGrid"
         }
       }
     },
@@ -2474,11 +2651,11 @@
           "description": "Per-wall text keyed by side: front, back, left, right."
         },
         "wallAlign": {
-          "type": "object",
-          "additionalProperties": {
-            "enum": ["top", "center", "bottom"]
+          "enum": ["top", "center", "bottom"],
+          "x-constant": {
+            "enum": "WALL_TEXT_ALIGNS"
           },
-          "description": "Per-wall vertical alignment keyed by side."
+          "description": "Older vertical alignment for all wall text. The importer moves it into style.anchor, so new files set style.anchor instead."
         },
         "style": {
           "$ref": "#/$defs/TextStyleOverride"
@@ -2928,7 +3105,7 @@
     "WallPatternConfig": {
       "type": "object",
       "description": "Decorative perforation of the bin walls. The pattern cut is the single most expensive generation step; large bins with a pattern can approach the generation timeout.",
-      "required": ["enabled", "pattern", "scale", "sides"],
+      "required": ["enabled", "pattern"],
       "properties": {
         "enabled": {
           "type": "boolean",
