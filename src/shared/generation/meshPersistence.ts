@@ -155,6 +155,8 @@ const BIN_MESH_REVISION = 'bin28';
  * (and its warm entries) untouched.
  *
  * occt-wasm `r1`: brepjs 18.124.8.
+ * occt-wasm `r5`: occt-wasm 5.18.1 — a ruled loft's straight edges are lines,
+ * which moves the triangle count of some chamfered cutouts and lattices.
  * brepkit `r1`: brepkit-wasm 3.2.28 — the interface-family winding and
  * cap-synthesis fixes move insert/cutout output that reaches a coplanar
  * interface, and the deep-cutout chain is now exact.
@@ -169,7 +171,7 @@ const BIN_MESH_REVISION = 'bin28';
  * the map is total so a future caller cannot fall through to `undefined`.
  */
 const KERNEL_MESH_REVISION: Record<KernelName, string> = {
-  'occt-wasm': 'r4',
+  'occt-wasm': 'r5',
   brepkit: 'r5',
   manifold: 'r1',
 };
