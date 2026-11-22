@@ -79,6 +79,7 @@ import {
   MAX_CUTOUT_LEAN_DEG,
   MAX_SPLIT_POINT_MM,
   MAX_GROUP_NAME_LENGTH,
+  MAX_LIBRARY_ITEM_ID_LENGTH,
   MAX_PARENT_GROUPS,
   MAX_POLYGON_SIDES,
   MIN_POLYGON_SIDES,
@@ -132,6 +133,7 @@ import {
   WALL_PATTERN_TYPES,
 } from '@/features/bin-designer/types/walls';
 import { MAX_COMPARTMENT_FLOOR_RAISE_MM } from '@/features/bin-designer/types/compartments';
+import { MAX_LIBRARY_NAME_LENGTH } from '@/features/bin-designer/library/libraryTypes';
 import { isRecord, loadSchemas, walkSubschemas } from './loadSchemas';
 
 /**
@@ -208,6 +210,8 @@ const SOURCES: Record<string, unknown> = {
   MAX_ARRAY_COUNT,
   MAX_ARRAY_INSTANCES,
   MAX_GROUP_NAME_LENGTH,
+  MAX_LIBRARY_ITEM_ID_LENGTH,
+  MAX_LIBRARY_NAME_LENGTH,
   MAX_PARENT_GROUPS,
   MAX_CUTOUT_CHAMFER,
   MAX_CUTOUT_CLEARANCE,

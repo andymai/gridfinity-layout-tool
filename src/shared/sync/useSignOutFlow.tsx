@@ -8,6 +8,10 @@ import { folderAdapter } from '@/core/sync/adapters/folderAdapter';
 // up eagerly preloaded. Same reasoning as the Liveblocks note in shared/hooks/index.ts.
 import { designAdapter } from '@/features/bin-designer/sync/designAdapter';
 import { designVersionAdapter } from '@/features/bin-designer/sync/designVersionAdapter';
+import {
+  cutoutFolderAdapter,
+  cutoutItemAdapter,
+} from '@/features/bin-designer/sync/cutoutLibraryAdapters';
 import { baseplateAdapter } from '@/features/baseplate/sync/baseplateAdapter';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { runSignOut, type KeepLocalPromptResult } from '@/core/sync/signOut';
@@ -19,6 +23,8 @@ const ADAPTERS = {
   baseplates: baseplateAdapter,
   designVersions: designVersionAdapter,
   folders: folderAdapter,
+  cutoutItems: cutoutItemAdapter,
+  cutoutFolders: cutoutFolderAdapter,
 };
 
 interface SignOutFlow {

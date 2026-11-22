@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { serverError } from '../lib/shared.js';
 import { logger } from '../lib/logger.js';
 import { getIndex, getIndexUpdatedAt } from '../lib/userIndex.js';
+import { cutoutLibrarySyncEnabled } from '../lib/cutoutLibraryValidation.js';
 import { requireSyncContext } from './lib/requireSyncContext.js';
 
 /**
@@ -10,7 +11,7 @@ import { requireSyncContext } from './lib/requireSyncContext.js';
  * Returns the user's full per-kind index plus an `indexUpdatedAt`
  * timestamp the client uses for `If-Modified-Since` polling.
  *
- *   200  → { layouts, designs, baseplates, designVersions, folders: { [id]: IndexEntry }, indexUpdatedAt }
+ *   200  → { layouts, designs, baseplates, designVersions, folders, cutoutItems?, cutoutFolders?: { [id]: IndexEntry }, indexUpdatedAt }
  *   304  → empty body when the client's `If-Modified-Since` >= the
  *          server's `users:{uid}:indexUpdatedAt` (no scan needed).
  *
@@ -27,21 +28,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   try {
     const indexUpdatedAt = await getIndexUpdatedAt(redis, session.userId);
 
+    const library = cutoutLibrarySyncEnabled();
     const ifModifiedSince = parseIfModifiedSinceHeader(req);
-    if (ifModifiedSince !== null && indexUpdatedAt > 0 && ifModifiedSince >= indexUpdatedAt) {
+    if (
+      ifModifiedSince !== null &&
+      indexUpdatedAt > 0 &&
+      ifModifiedSince >= indexUpdatedAt &&
+      sameGatedKinds(req, library ? CUTOUT_LIBRARY_KINDS : [])
+    ) {
       res.status(304).end();
       return;
     }
 
-    const [layouts, designs, baseplates, designVersions, folders] = await Promise.all([
-      getIndex(redis, session.userId, 'layouts'),
-      getIndex(redis, session.userId, 'designs'),
-      getIndex(redis, session.userId, 'baseplates'),
-      getIndex(redis, session.userId, 'designVersions'),
-      getIndex(redis, session.userId, 'folders'),
-    ]);
+    const [layouts, designs, baseplates, designVersions, folders, cutoutItems, cutoutFolders] =
+      await Promise.all([
+        getIndex(redis, session.userId, 'layouts'),
+        getIndex(redis, session.userId, 'designs'),
+        getIndex(redis, session.userId, 'baseplates'),
+        getIndex(redis, session.userId, 'designVersions'),
+        getIndex(redis, session.userId, 'folders'),
+        library ? getIndex(redis, session.userId, 'cutoutItems') : null,
+        library ? getIndex(redis, session.userId, 'cutoutFolders') : null,
+      ]);
 
-    res.status(200).json({ layouts, designs, baseplates, designVersions, folders, indexUpdatedAt });
+    res.status(200).json({
+      layouts,
+      designs,
+      baseplates,
+      designVersions,
+      folders,
+      // Absent while the kill switch is off: the client pushes only the kinds listed here.
+      ...(cutoutItems && cutoutFolders ? { cutoutItems, cutoutFolders } : {}),
+      indexUpdatedAt,
+    });
   } catch (error) {
     logger.error('sync/manifest failed', {
       userId: session.userId,
@@ -49,6 +68,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     });
     serverError(res);
   }
+}
+
+const CUTOUT_LIBRARY_KINDS = ['cutoutItems', 'cutoutFolders'] as const;
+
+/**
+ * Whether the client reads the same gated kinds as served (`X-Sync-Served`,
+ * mirroring `servedGatedKinds` in src/core/sync/servedKinds.ts). Flipping a
+ * kill switch changes no index, so without this a client would get 304s and
+ * never see a kind appear or go. A client that sends no header predates gated
+ * kinds and keeps the plain timestamp check.
+ */
+function sameGatedKinds(req: VercelRequest, served: readonly string[]): boolean {
+  const raw: unknown = req.headers['x-sync-served'];
+  if (typeof raw !== 'string') return true;
+  const seen = new Set(raw.split(',').filter(Boolean));
+  return seen.size === served.length && served.every((kind) => seen.has(kind));
 }
 
 /**

@@ -201,11 +201,32 @@ export interface LayoutFolderPayload {
   createdAt: number;
 }
 
+/**
+ * A cutout library item. `content` is `{ params: { cutouts, cutoutGroupNames?,
+ * meshAssets? } }`, typed `unknown` because its types live in the bin designer.
+ * `modifiedAt` is the item's `updatedAt`.
+ */
+export interface CutoutLibraryItemPayload {
+  name: string;
+  folderId: string | null;
+  createdAt: string;
+  content: unknown;
+}
+
+/** A folder in the cutout library, apart from the layout library's folders. */
+export interface CutoutLibraryFolderPayload {
+  name: string;
+  parentId: string | null;
+  createdAt: string;
+}
+
 export type LayoutAdapter = SyncAdapter<Layout>;
 export type DesignAdapter = SyncAdapter<DesignSyncPayload>;
 export type BaseplateAdapter = SyncAdapter<BaseplatePayload>;
 export type DesignVersionAdapter = SyncAdapter<DesignVersionPayload>;
 export type FolderAdapter = SyncAdapter<LayoutFolderPayload>;
+export type CutoutItemAdapter = SyncAdapter<CutoutLibraryItemPayload>;
+export type CutoutFolderAdapter = SyncAdapter<CutoutLibraryFolderPayload>;
 
 /**
  * All adapters bundled together — what the engine takes at start time.
@@ -223,6 +244,9 @@ export interface SyncAdapters {
   baseplates: BaseplateAdapter;
   designVersions: DesignVersionAdapter;
   folders: FolderAdapter;
+  /** Served behind a kill switch; see `servedKinds.ts`. */
+  cutoutItems: CutoutItemAdapter;
+  cutoutFolders: CutoutFolderAdapter;
 }
 
 export type SyncKind = keyof SyncAdapters;

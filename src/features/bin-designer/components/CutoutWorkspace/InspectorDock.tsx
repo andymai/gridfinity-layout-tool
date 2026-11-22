@@ -67,6 +67,8 @@ interface InspectorDockProps {
   readonly onDelete?: () => void;
   /** Shape-list tab. Omitted in contexts without one. */
   readonly shapeList?: ReactNode;
+  /** Library tab, shown beside the shape list. */
+  readonly library?: ReactNode;
 }
 
 const ICON_BTN =
@@ -82,12 +84,13 @@ function Icon({ paths }: { readonly paths: readonly string[] }) {
   );
 }
 
-type DockTab = 'properties' | 'shapes';
+type DockTab = 'properties' | 'shapes' | 'library';
 
 /** Tab ids (not user-facing copy — labels come from these i18n keys). */
 const DOCK_TABS: readonly { readonly id: DockTab; readonly labelKey: string }[] = [
   { id: 'properties', labelKey: 'binDesigner.shapeList.tabProperties' },
   { id: 'shapes', labelKey: 'binDesigner.shapeList.tabShapes' },
+  { id: 'library', labelKey: 'binDesigner.cutouts.library.tab' },
 ];
 
 export function InspectorDock({
@@ -95,6 +98,7 @@ export function InspectorDock({
   onDuplicate,
   onDelete,
   shapeList,
+  library,
   onCollapsedChange,
   ...content
 }: InspectorDockProps) {
@@ -159,7 +163,9 @@ export function InspectorDock({
         <Tabs.Root>
           <div className="flex-shrink-0 border-b border-stroke-subtle px-2 pb-1">
             <Tabs.List
-              tabs={DOCK_TABS.map(({ id, labelKey }) => ({ id, label: t(labelKey) }))}
+              tabs={DOCK_TABS.filter(({ id }) => id !== 'library' || library !== undefined).map(
+                ({ id, labelKey }) => ({ id, label: t(labelKey) })
+              )}
               activeTab={tab}
               onChange={setTab}
               aria-label={t('binDesigner.cutoutEditor.inspectorTitle')}
@@ -175,6 +181,11 @@ export function InspectorDock({
             <Tabs.Panel tabId="shapes" activeTab={tab} keepMounted>
               {shapeList}
             </Tabs.Panel>
+            {library !== undefined && (
+              <Tabs.Panel tabId="library" activeTab={tab}>
+                {library}
+              </Tabs.Panel>
+            )}
           </SidePanel.Body>
         </Tabs.Root>
       ) : (

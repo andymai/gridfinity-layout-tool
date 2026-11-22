@@ -1,17 +1,19 @@
 # JSON schema reference
 
-Two documents in this app are meant to be read and written by hand, or by an
-agent. This directory describes both.
+Three documents in this app are meant to be read and written by hand, or by an
+agent. This directory describes them.
 
-| Document        | Produced by                         | Reference                      |
-| --------------- | ----------------------------------- | ------------------------------ |
-| Layout JSON     | Export Layout                       | [layout.md](layout.md)         |
-| Bin design JSON | Export design from the bin designer | [bin-design.md](bin-design.md) |
+| Document                 | Produced by                         | Reference                                                             |
+| ------------------------ | ----------------------------------- | --------------------------------------------------------------------- |
+| Layout JSON              | Export Layout                       | [layout.md](layout.md)                                                |
+| Bin design JSON          | Export design from the bin designer | [bin-design.md](bin-design.md)                                        |
+| Cutout library item JSON | Export in Manage library            | the schema below; each cutout is a bin design [Cutout](bin-design.md) |
 
 Machine-readable schemas, served so `$schema` resolves:
 
 - `https://gridfinitylayouttool.com/schema/layout.schema.json`
 - `https://gridfinitylayouttool.com/schema/bin-design.schema.json`
+- `https://gridfinitylayouttool.com/schema/cutout-library.schema.json`
 
 Every numeric bound and enum, with the constant it comes from, is in
 [constraints.md](constraints.md).

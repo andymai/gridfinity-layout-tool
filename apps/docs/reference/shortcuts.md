@@ -171,6 +171,7 @@ The <Ui k="binDesigner.cutoutEditor.title" /> has its own keys. Some letters do 
 | <kbd>Enter</kbd> with one path selected              | Same                                  | Edit its points                                  |
 | <kbd>Delete</kbd> while you edit points              | Same                                  | Delete the selected points                       |
 | <kbd>Escape</kbd> while you edit points              | Same                                  | Stop the point edit                              |
+| <kbd>Escape</kbd> while you place a library item     | Same                                  | Stop placing the item                            |
 | <kbd>Shift</kbd>+click a point while you edit points | Same                                  | Add it to the selection, or take it out          |
 | Drag on an empty part while you edit points          | Same                                  | Select the points in the box                     |
 | Arrow keys while you edit points                     | Same                                  | Move the selected points 0.5 mm                  |

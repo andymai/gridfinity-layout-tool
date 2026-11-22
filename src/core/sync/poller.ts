@@ -3,6 +3,8 @@ import { PAYLOAD_KEY } from './payloadKey';
 import { apiFetch } from './apiFetch';
 import { useSessionStore } from './session/useSession';
 import { useSyncStatusStore } from './status';
+import { isKindServed, noteServedKinds, servedGatedKinds } from './servedKinds';
+import { enqueue as outboxEnqueue, getAll as outboxGetAll } from './outbox';
 import type { SyncAdapter, SyncAdapters, SyncKind } from './adapters/types';
 
 interface IndexEntry {
@@ -24,6 +26,8 @@ interface ItemFetchResponse {
     baseplate?: unknown;
     designVersion?: unknown;
     folder?: unknown;
+    cutoutItem?: unknown;
+    cutoutFolder?: unknown;
     modifiedAt: number;
     schemaVersion: number;
   };
@@ -91,7 +95,10 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
     manifestRes = await apiFetch('/api/sync/manifest', {
       headers:
         pullState.lastIndexUpdatedAt > 0
-          ? { 'If-Modified-Since': String(pullState.lastIndexUpdatedAt) }
+          ? {
+              'If-Modified-Since': String(pullState.lastIndexUpdatedAt),
+              'X-Sync-Served': servedGatedKinds().join(','),
+            }
           : {},
     });
   } catch {
@@ -161,14 +168,44 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
     manifest.designVersions ?? {},
     capturedGeneration
   );
-  const applied = layoutChanges + designChanges + baseplateChanges + versionChanges + folderChanges;
+  // A gated kind syncs only while the manifest lists it. Library folders come
+  // before items, as layout folders come before layouts.
+  // A pull ended by a reset must not restore the ended session's served kinds.
+  if (capturedGeneration !== pullState.generation) return { status: 'offline' };
+  const newlyServed = noteServedKinds(manifest);
+  let libraryChanges = 0;
+  let skippedHeld = false;
+  for (const kind of ['cutoutFolders', 'cutoutItems'] as const) {
+    if (!isKindServed(kind)) continue;
+    const remote = manifest[kind] ?? {};
+    // A change held while the switch was off is newer than what the server
+    // has: a held delete must not be undone by pulling the item back.
+    const held = new Set(
+      (await outboxGetAll()).filter((entry) => entry.kind === kind).map((entry) => entry.id)
+    );
+    if (Object.keys(remote).some((id) => held.has(id))) skippedHeld = true;
+    libraryChanges += await diffKind(adapters[kind], kind, remote, capturedGeneration, held);
+    if (newlyServed.includes(kind)) {
+      await queueUnsynced(adapters[kind], kind, remote, capturedGeneration);
+    }
+  }
+  const applied =
+    layoutChanges +
+    designChanges +
+    baseplateChanges +
+    versionChanges +
+    folderChanges +
+    libraryChanges;
 
   // Reset happened mid-flight — drop our results to avoid re-installing the
   // prior user's high-water mark or applying writes that belong to a session
   // that's been torn down.
   if (capturedGeneration !== pullState.generation) return { status: 'offline' };
 
-  pullState.lastIndexUpdatedAt = manifest.indexUpdatedAt;
+  // A skipped entry is read again on the next pull: if its held push gets a
+  // 410, only a fresh manifest carries the delete, and a saved timestamp would
+  // answer every later pull with a 304.
+  if (!skippedHeld) pullState.lastIndexUpdatedAt = manifest.indexUpdatedAt;
   useSyncStatusStore.getState().succeed();
   return { status: 'applied', applied, indexUpdatedAt: manifest.indexUpdatedAt };
 }
@@ -186,7 +223,8 @@ async function diffKind(
   adapter: SyncAdapter,
   kind: SyncKind,
   remote: Record<string, IndexEntry>,
-  generation: number
+  generation: number,
+  skip: ReadonlySet<string> = new Set()
 ): Promise<number> {
   const localItems = await adapter.list();
   const localByMtime = new Map<string, number>();
@@ -195,6 +233,7 @@ async function diffKind(
   let applied = 0;
   for (const [id, entry] of Object.entries(remote)) {
     if (generation !== pullState.generation) break;
+    if (skip.has(id)) continue;
     const localMtime = localByMtime.get(id);
 
     if (entry.deletedAt !== undefined) {
@@ -222,6 +261,35 @@ async function diffKind(
     }
   }
   return applied;
+}
+
+/**
+ * Queue each local item the server lacks or holds older. Runs when a gated
+ * kind first appears in a session's manifest: what was saved while its sync
+ * was off reached no outbox, or was held there unsent.
+ */
+async function queueUnsynced(
+  adapter: SyncAdapter,
+  kind: SyncKind,
+  remote: Record<string, IndexEntry>,
+  generation: number
+): Promise<void> {
+  for (const item of await adapter.list()) {
+    // A sign-out clears the outbox; an entry queued after it would push
+    // under the next account.
+    if (generation !== pullState.generation) return;
+    const entry = remote[item.id] as IndexEntry | undefined;
+    const behind =
+      entry === undefined ||
+      (entry.deletedAt === undefined
+        ? entry.modifiedAt < item.modifiedAt
+        : entry.deletedAt < item.modifiedAt);
+    if (behind) {
+      await trackWrite(
+        outboxEnqueue({ kind, id: item.id, modifiedAt: item.modifiedAt, op: 'put' })
+      );
+    }
+  }
 }
 
 function trackWrite(write: Promise<void>): Promise<void> {

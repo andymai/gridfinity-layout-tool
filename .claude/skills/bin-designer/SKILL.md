@@ -230,6 +230,20 @@ a drag becomes a `falloff` pull. `falloffCommit` fits only the part that
 moved, so points placed by hand elsewhere stay as they were. Double-click goes
 through `openCutout`, which drills into a group before it opens points.
 
+## Cutout library
+
+Items live in their own IndexedDB database (`library/cutoutLibraryDb.ts`), apart
+from the designer's, whose upgrade waits on every open tab. An item's content is
+the library's slice of `BinParams`, moved so its box starts at the origin, so
+the mesh helpers and server validators read it as a design.
+
+Placing (`placeLibraryContent`) gives every cutout, boolean group, container and
+mesh a fresh id: an item placed twice, or into the bin it came from, must never
+share an id with what is there. `Cutout.libraryItemId` marks where a shape came
+from and drives "Used in this bin" and Update vs Save as new. Writing it
+(`setCutoutsLibraryItem`) changes no geometry. `referencedMeshHashes` counts
+library items, or their mesh files are swept.
+
 ## Compartment geometry and the size lock
 
 ### A `dividerOverride` moves the compartment wall

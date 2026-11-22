@@ -15,6 +15,13 @@ import type {
 } from './adapters/types';
 
 const fetchMock = vi.fn();
+const enqueueMock = vi.hoisted(() => vi.fn(async () => {}));
+const outboxEntries = vi.hoisted(() => ({ list: [] as Array<{ kind: string; id: string }> }));
+
+vi.mock('./outbox', () => ({
+  enqueue: enqueueMock,
+  getAll: vi.fn(async () => outboxEntries.list),
+}));
 
 vi.mock('./apiFetch', () => ({
   apiFetch: (url: string, init?: RequestInit) => fetchMock(url, init),
@@ -68,6 +75,8 @@ beforeEach(() => {
     baseplates: baseplates as BaseplateAdapter,
     designVersions: baseplates as unknown as DesignVersionAdapter,
     folders: baseplates as unknown as FolderAdapter,
+    cutoutItems: baseplates as unknown as SyncAdapters['cutoutItems'],
+    cutoutFolders: baseplates as unknown as SyncAdapters['cutoutFolders'],
   };
 });
 
@@ -168,6 +177,82 @@ describe('diff: only-remote (live)', () => {
       modifiedAt: 5000,
       schemaVersion: 1,
     });
+  });
+});
+
+describe('gated kinds: the cutout library', () => {
+  let items: MockAdapter;
+
+  beforeEach(() => {
+    items = makeMockAdapter();
+    adapters = { ...adapters, cutoutItems: items as unknown as SyncAdapters['cutoutItems'] };
+    items.items.set('clib_local', { id: 'clib_local', payload: {}, modifiedAt: 100 });
+  });
+
+  it('leaves the library alone while the manifest leaves it out', async () => {
+    fetchMock.mockResolvedValueOnce(
+      manifestResponse({ layouts: {}, designs: {}, indexUpdatedAt: 1 })
+    );
+    await pullNow(adapters);
+    expect(items.list).not.toHaveBeenCalled();
+    expect(enqueueMock).not.toHaveBeenCalled();
+  });
+
+  it('pulls the library once listed, and queues what the server lacks only the first time', async () => {
+    const listed = () =>
+      manifestResponse({
+        layouts: {},
+        designs: {},
+        cutoutFolders: {},
+        cutoutItems: { clib_remote: { modifiedAt: 500, sizeBytes: 10 } },
+        indexUpdatedAt: 2,
+      });
+    fetchMock
+      .mockResolvedValueOnce(listed())
+      .mockResolvedValueOnce(
+        envelopeResponse(
+          { cutoutItem: { name: 'Wrench' }, modifiedAt: 500, schemaVersion: 1 },
+          { modifiedAt: 500, sizeBytes: 10 }
+        )
+      );
+
+    await pullNow(adapters);
+    expect(items.applyRemote).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'clib_remote', payload: { name: 'Wrench' } })
+    );
+    expect(enqueueMock).toHaveBeenCalledWith({
+      kind: 'cutoutItems',
+      id: 'clib_local',
+      modifiedAt: 100,
+      op: 'put',
+    });
+
+    enqueueMock.mockClear();
+    fetchMock.mockResolvedValueOnce(listed());
+    await pullNow(adapters);
+    expect(enqueueMock).not.toHaveBeenCalled();
+  });
+
+  it('does not pull back an item whose local change waits in the outbox', async () => {
+    outboxEntries.list = [{ kind: 'cutoutItems', id: 'clib_deleted' }];
+    fetchMock.mockResolvedValueOnce(
+      manifestResponse({
+        layouts: {},
+        designs: {},
+        cutoutFolders: {},
+        cutoutItems: { clib_deleted: { modifiedAt: 500, sizeBytes: 10 } },
+        indexUpdatedAt: 3,
+      })
+    );
+    await pullNow(adapters);
+    expect(items.applyRemote).not.toHaveBeenCalled();
+
+    // The next pull asks for a full manifest, to read the item again.
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 304 }));
+    await pullNow(adapters);
+    const headers = (fetchMock.mock.calls.at(-1)?.[1] as RequestInit | undefined)?.headers;
+    expect(headers).not.toHaveProperty('If-Modified-Since', '3');
+    outboxEntries.list = [];
   });
 });
 

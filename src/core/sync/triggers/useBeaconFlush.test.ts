@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { noteServedKinds, resetServedKinds } from '../servedKinds';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useBeaconFlush } from './useBeaconFlush';
@@ -72,6 +73,8 @@ function makeAdapters(layoutPayload: Record<string, unknown> | null = { v: 1 }):
     baseplates: baseplates as BaseplateAdapter,
     designVersions: designVersions as unknown as DesignVersionAdapter,
     folders: designVersions as unknown as FolderAdapter,
+    cutoutItems: designVersions as unknown as SyncAdapters['cutoutItems'],
+    cutoutFolders: designVersions as unknown as SyncAdapters['cutoutFolders'],
   };
 }
 
@@ -151,6 +154,26 @@ describe('useBeaconFlush', () => {
     firePageHide();
     // No await between firePageHide and this assertion — sendBeacon must have already fired.
     expect(sendBeaconMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips a gated kind the manifest leaves out, and one switched off before the unload', async () => {
+    getPendingEntriesMock.mockResolvedValue([
+      { kind: 'cutoutItems', id: 'clib_1', op: 'put', modifiedAt: 5000 },
+    ]);
+    renderHook(() => useBeaconFlush(makeAdapters()));
+    fireVisibilityHidden();
+    await settlePrep();
+    firePageHide();
+    expect(sendBeaconMock).not.toHaveBeenCalled();
+
+    noteServedKinds({ cutoutItems: {}, cutoutFolders: {} });
+    fireVisibilityHidden();
+    await settlePrep();
+    noteServedKinds({});
+    firePageHide();
+    expect(sendBeaconMock).not.toHaveBeenCalled();
+    resetServedKinds();
+    getPendingEntriesMock.mockReset();
   });
 
   it('skips DELETE entries (sendBeacon is POST-shaped)', async () => {

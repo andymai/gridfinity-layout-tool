@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gridfinitylayouttool.com/schema/cutout-library.schema.json",
+  "title": "Gridfinity cutout library item",
+  "description": "One cutout library item exported from the bin designer: shapes saved apart from any bin, with their groups and meshes, to place in another bin. Each cutout has the same shape as in a bin design. Unknown properties are allowed so newer files still validate. See https://gridfinitylayouttool.com/schema",
+  "type": "object",
+  "required": ["type", "version", "params"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional pointer to this schema. Ignored by the importer; present only so editors offer completion."
+    },
+    "type": {
+      "const": "gridfinity-cutout-library-item",
+      "description": "Document discriminator. The importer rejects any other value."
+    },
+    "version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Document format version. Always \"1.0\"."
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 80,
+      "x-constant": {
+        "maxLength": "MAX_LIBRARY_NAME_LENGTH"
+      },
+      "description": "Item name. An empty or missing name imports under a default one."
+    },
+    "params": {
+      "type": "object",
+      "description": "The saved shapes, as the matching part of a bin design's params. Coordinates are mm with the origin at the bottom-left of the item's box; placing the item moves it to the drop point.",
+      "required": ["cutouts"],
+      "properties": {
+        "cutouts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "https://gridfinitylayouttool.com/schema/bin-design.schema.json#/$defs/Cutout"
+          },
+          "description": "The saved shapes. Ids only need to be unique within the file; placing the item gives each shape, group and mesh a new id."
+        },
+        "cutoutGroupNames": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 60,
+            "x-constant": {
+              "maxLength": "MAX_GROUP_NAME_LENGTH"
+            }
+          },
+          "description": "Display names for the groups the shapes form, keyed by group id."
+        },
+        "meshAssets": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "https://gridfinitylayouttool.com/schema/bin-design.schema.json#/$defs/MeshAsset"
+          },
+          "description": "Imported STL imprint meshes, written inline, keyed by the id that a shape 'mesh' cutout's meshId references."
+        }
+      }
+    },
+    "_meta": {
+      "$ref": "https://gridfinitylayouttool.com/schema/bin-design.schema.json#/$defs/ExportMeta"
+    }
+  }
+}

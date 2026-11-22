@@ -16,10 +16,13 @@ export const SCHEMA_DIR = join(process.cwd(), 'public/schema');
 
 export const LAYOUT_SCHEMA_FILE = 'layout.schema.json';
 export const BIN_DESIGN_SCHEMA_FILE = 'bin-design.schema.json';
+export const CUTOUT_LIBRARY_SCHEMA_FILE = 'cutout-library.schema.json';
 
 export const LAYOUT_SCHEMA_ID = 'https://gridfinitylayouttool.com/schema/layout.schema.json';
 export const BIN_DESIGN_SCHEMA_ID =
   'https://gridfinitylayouttool.com/schema/bin-design.schema.json';
+export const CUTOUT_LIBRARY_SCHEMA_ID =
+  'https://gridfinitylayouttool.com/schema/cutout-library.schema.json';
 
 /** A loaded schema document. `unknown`-typed values, walked structurally. */
 export type SchemaDocument = Record<string, unknown>;
@@ -37,6 +40,7 @@ export function loadSchemas(): Record<string, SchemaDocument> {
   return {
     [LAYOUT_SCHEMA_FILE]: readSchema(LAYOUT_SCHEMA_FILE),
     [BIN_DESIGN_SCHEMA_FILE]: readSchema(BIN_DESIGN_SCHEMA_FILE),
+    [CUTOUT_LIBRARY_SCHEMA_FILE]: readSchema(CUTOUT_LIBRARY_SCHEMA_FILE),
   };
 }
 
@@ -44,6 +48,7 @@ export interface SchemaValidators {
   readonly layout: ValidateFunction;
   readonly binDesign: ValidateFunction;
   readonly binParams: ValidateFunction;
+  readonly cutoutLibrary: ValidateFunction;
 }
 
 /**
@@ -59,14 +64,16 @@ export function createValidators(): SchemaValidators {
 
   ajv.addSchema(readSchema(BIN_DESIGN_SCHEMA_FILE));
   ajv.addSchema(readSchema(LAYOUT_SCHEMA_FILE));
+  ajv.addSchema(readSchema(CUTOUT_LIBRARY_SCHEMA_FILE));
 
   const layout = ajv.getSchema(LAYOUT_SCHEMA_ID);
   const binDesign = ajv.getSchema(BIN_DESIGN_SCHEMA_ID);
   const binParams = ajv.getSchema(`${BIN_DESIGN_SCHEMA_ID}#/$defs/BinParams`);
-  if (!layout || !binDesign || !binParams) {
+  const cutoutLibrary = ajv.getSchema(CUTOUT_LIBRARY_SCHEMA_ID);
+  if (!layout || !binDesign || !binParams || !cutoutLibrary) {
     throw new Error('Schema compilation failed: a root or $defs/BinParams entry did not resolve');
   }
-  return { layout, binDesign, binParams };
+  return { layout, binDesign, binParams, cutoutLibrary };
 }
 
 /** One ajv error rendered as `path: message`, with the offending value. */
@@ -118,7 +125,7 @@ export function walkSubschemas(
   return out;
 }
 
-export type DocumentFormat = 'layout' | 'bin-design';
+export type DocumentFormat = 'layout' | 'bin-design' | 'cutout-library';
 
 /**
  * Classifies a document by its own content, not its filename.
@@ -132,6 +139,7 @@ export type DocumentFormat = 'layout' | 'bin-design';
 export function detectFormat(doc: unknown): DocumentFormat | null {
   if (!isRecord(doc)) return null;
   if (doc.type === 'gridfinity-bin-design') return 'bin-design';
+  if (doc.type === 'gridfinity-cutout-library-item') return 'cutout-library';
   if (isRecord(doc.params)) return 'bin-design';
 
   const layoutSignals = ['drawer', 'layers', 'bins', 'categories'].filter((key) => key in doc);

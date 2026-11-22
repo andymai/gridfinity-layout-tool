@@ -10,6 +10,9 @@ import {
 } from './outbox';
 import { parseRetryAfter, rateLimitedBackoffMs } from './retryAfter';
 import { useSyncStatusStore } from './status';
+import { isKindServed } from './servedKinds';
+
+const UNSERVED_HOLD_MS = 60_000;
 import type {
   AdapterChange,
   PushPlan,
@@ -166,9 +169,17 @@ async function rehydrate(s: EngineState): Promise<void> {
 async function drain(s: EngineState): Promise<void> {
   if (s.stopping) return;
   const due = await outboxGetDue();
-  if (due.length > 0) {
+  // Held entries of a switched-off kind are not work in progress: they wait
+  // without a request, and the status must still settle to idle.
+  const served = due.filter((entry) => isKindServed(entry.kind));
+  for (const entry of due) {
+    if (!isKindServed(entry.kind)) {
+      await outboxRescheduleWithoutAttempt(entry.kind, entry.id, UNSERVED_HOLD_MS);
+    }
+  }
+  if (served.length > 0) {
     useSyncStatusStore.getState().beginSync();
-    await Promise.all(due.map((entry) => pushOne(s, entry)));
+    await Promise.all(served.map((entry) => pushOne(s, entry)));
   }
   await syncStatusFromOutbox();
   await wakeForNextDue(s);
@@ -209,6 +220,14 @@ async function sendOne(
   s: EngineState
 ): Promise<void> {
   const url = `/api/sync/${kind}/${entry.id}`;
+
+  // Held unsent, with no attempt spent, while the server's switch for this
+  // kind is off. The first manifest that lists it again queues what it lacks.
+  if (!isKindServed(kind)) {
+    await outboxRescheduleWithoutAttempt(entry.kind, entry.id, UNSERVED_HOLD_MS);
+    scheduleDrain(s, UNSERVED_HOLD_MS);
+    return;
+  }
 
   if (entry.op === 'delete') {
     const res = await apiFetch(url, { method: 'DELETE' });
@@ -473,7 +492,9 @@ function emitEngineEvent(s: EngineState, event: EngineEvent): void {
 
 async function syncStatusFromOutbox(): Promise<void> {
   const all = await outboxGetAll();
-  useSyncStatusStore.getState().setPendingCount(all.length);
+  useSyncStatusStore
+    .getState()
+    .setPendingCount(all.filter((entry) => isKindServed(entry.kind)).length);
 }
 
 // Test-only: peek at internal state.

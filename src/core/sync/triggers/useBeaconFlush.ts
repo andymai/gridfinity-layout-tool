@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import { getPendingEntries } from '../engine';
 import { syncPutBody } from '../payloadKey';
-import type { SyncAdapters } from '../adapters/types';
+import type { SyncAdapters, SyncKind } from '../adapters/types';
+import { isKindServed } from '../servedKinds';
 
 const BEACON_MAX_BYTES = 60 * 1024;
 
 interface PreparedBeacon {
+  kind: SyncKind;
   url: string;
   blob: Blob;
 }
@@ -40,7 +42,9 @@ export function useBeaconFlush(adapters: SyncAdapters): void {
     // No awaits — must stay synchronous inside the unload window.
     const onPageHide = (): void => {
       if (typeof navigator === 'undefined' || typeof navigator.sendBeacon !== 'function') return;
-      for (const { url, blob } of prepared) {
+      for (const { kind, url, blob } of prepared) {
+        // The switch can turn off between preparing a beacon and the unload.
+        if (!isKindServed(kind)) continue;
         try {
           navigator.sendBeacon(url, blob);
         } catch {
@@ -68,7 +72,7 @@ async function collectBeacons(adapters: SyncAdapters): Promise<PreparedBeacon[]>
   }
   const prepared: PreparedBeacon[] = [];
   for (const entry of entries) {
-    if (entry.op === 'delete') continue;
+    if (entry.op === 'delete' || !isKindServed(entry.kind)) continue;
     const adapter = adapters[entry.kind];
     let payload: { id: string; payload: unknown; modifiedAt: number } | null;
     try {
@@ -80,7 +84,7 @@ async function collectBeacons(adapters: SyncAdapters): Promise<PreparedBeacon[]>
     const body = syncPutBody(entry.kind, payload.payload, payload.modifiedAt);
     const blob = new Blob([JSON.stringify(body)], { type: 'application/json' });
     if (blob.size > BEACON_MAX_BYTES) continue;
-    prepared.push({ url: `/api/sync/${entry.kind}/${entry.id}`, blob });
+    prepared.push({ kind: entry.kind, url: `/api/sync/${entry.kind}/${entry.id}`, blob });
   }
   return prepared;
 }

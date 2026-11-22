@@ -16,6 +16,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { validateImport } from '@/shared/utils/validation';
 import { validateImportedBinParams } from '@/features/bin-designer/utils/designJson';
+import { parseLibraryItemJSON } from '@/features/bin-designer/library/libraryFile';
 import { createValidators, detectFormat, formatErrors } from './loadSchemas';
 
 const EXAMPLES_DIR = join(process.cwd(), 'docs/schemas/examples');
@@ -27,7 +28,11 @@ const EXAMPLES_DIR = join(process.cwd(), 'docs/schemas/examples');
  */
 const t = ((key: string) => key) as unknown as Parameters<typeof validateImportedBinParams>[1];
 
-const { layout: validateLayoutSchema, binDesign: validateBinDesignSchema } = createValidators();
+const {
+  layout: validateLayoutSchema,
+  binDesign: validateBinDesignSchema,
+  cutoutLibrary: validateCutoutLibrarySchema,
+} = createValidators();
 
 function read(...segments: string[]): { raw: string; parsed: unknown } {
   const raw = readFileSync(join(EXAMPLES_DIR, ...segments), 'utf8');
@@ -44,7 +49,13 @@ function listJson(...segments: string[]): string[] {
 const isLayout = (parsed: unknown): boolean => detectFormat(parsed) === 'layout';
 
 function checkSchema(_file: string, parsed: unknown): { ok: boolean; errors: string[] } {
-  const validate = isLayout(parsed) ? validateLayoutSchema : validateBinDesignSchema;
+  const format = detectFormat(parsed);
+  const validate =
+    format === 'layout'
+      ? validateLayoutSchema
+      : format === 'cutout-library'
+        ? validateCutoutLibrarySchema
+        : validateBinDesignSchema;
   const ok = validate(parsed) as boolean;
   return { ok, errors: formatErrors(validate.errors) };
 }
@@ -55,6 +66,10 @@ function checkImporter(_file: string, parsed: unknown): { ok: boolean; errors: s
     const result = validateImport(parsed);
     return { ok: result.valid, errors: result.valid ? [] : [...result.errors] };
   }
+  if (detectFormat(parsed) === 'cutout-library') {
+    const ok = parseLibraryItemJSON(JSON.stringify(parsed), t) !== null;
+    return { ok, errors: ok ? [] : ['the importer refuses this cutout library item'] };
+  }
   const params = (parsed as { params?: unknown }).params;
   const result = validateImportedBinParams(params, t);
   return { ok: result.valid, errors: [...result.errors] };
@@ -63,10 +78,11 @@ function checkImporter(_file: string, parsed: unknown): { ok: boolean; errors: s
 describe('valid examples', () => {
   const files = listJson();
 
-  it('there are examples for both formats', () => {
+  it('there are examples for every format', () => {
     const formats = files.map((f) => detectFormat(read(f).parsed));
     expect(formats).toContain('layout');
     expect(formats).toContain('bin-design');
+    expect(formats).toContain('cutout-library');
   });
 
   it.each(files)('%s passes the schema', (file) => {

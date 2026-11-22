@@ -89,6 +89,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
     items: [
       { text: 'Cutout basics', link: '/cutouts/basics' },
       { text: 'Arrange cutouts', link: '/cutouts/arranging' },
+      { text: 'Save cutouts to a library', link: '/cutouts/library' },
       { text: 'Import SVG and STL shapes', link: '/cutouts/import-svg-stl' },
       { text: 'Trace a photo', link: '/cutouts/photo-trace' },
       { text: 'Scan with your phone', link: '/cutouts/phone-scan' },

@@ -29,6 +29,8 @@ import {
   PAYLOAD_KEY as API_FOLDERS_PAYLOAD_KEY,
   SCHEMA_VERSION as API_FOLDERS_SCHEMA_VERSION,
 } from '../../../api/sync/folders/[id].js';
+import { PAYLOAD_KEY as API_CUTOUT_ITEMS_PAYLOAD_KEY } from '../../../api/sync/cutoutItems/[id].js';
+import { PAYLOAD_KEY as API_CUTOUT_FOLDERS_PAYLOAD_KEY } from '../../../api/sync/cutoutFolders/[id].js';
 import { FOLDER_KINDS } from '@/core/types';
 import { MESH_MISSING_STATUS } from '../../../api/lib/shared.js';
 
@@ -38,6 +40,8 @@ const ALL_SYNC_KINDS: readonly SyncKind[] = [
   'baseplates',
   'designVersions',
   'folders',
+  'cutoutItems',
+  'cutoutFolders',
 ];
 
 const API_PAYLOAD_KEY: Record<SyncKind, string> = {
@@ -46,10 +50,12 @@ const API_PAYLOAD_KEY: Record<SyncKind, string> = {
   baseplates: API_BASEPLATES_PAYLOAD_KEY,
   designVersions: API_DESIGN_VERSIONS_PAYLOAD_KEY,
   folders: API_FOLDERS_PAYLOAD_KEY,
+  cutoutItems: API_CUTOUT_ITEMS_PAYLOAD_KEY,
+  cutoutFolders: API_CUTOUT_FOLDERS_PAYLOAD_KEY,
 };
 
 describe('PAYLOAD_KEY', () => {
-  it('has exactly the five known sync kinds as keys, no more, no less', () => {
+  it('has exactly the known sync kinds as keys, no more, no less', () => {
     const keys = Object.keys(PAYLOAD_KEY);
     expect(keys).toHaveLength(ALL_SYNC_KINDS.length);
     for (const kind of ALL_SYNC_KINDS) {

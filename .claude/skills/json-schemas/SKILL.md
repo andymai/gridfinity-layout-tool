@@ -17,14 +17,14 @@ description: 'Hand-authoring or editing the two user-facing JSON documents: layo
 
 ## Where everything lives
 
-| What                                  | Where                                                        |
-| ------------------------------------- | ------------------------------------------------------------ |
-| Prose reference                       | `docs/schemas/README.md`, `layout.md`, `bin-design.md`       |
-| Bounds and enums with their constants | `docs/schemas/constraints.md`                                |
-| Schemas                               | `public/schema/layout.schema.json`, `bin-design.schema.json` |
-| Worked examples                       | `docs/schemas/examples/`                                     |
-| Key manifests                         | `src/shared/schema/`                                         |
-| Guards and generator                  | `scripts/schema/`                                            |
+| What                                  | Where                                                                                                                   |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Prose reference                       | `docs/schemas/README.md`, `layout.md`, `bin-design.md`                                                                  |
+| Bounds and enums with their constants | `docs/schemas/constraints.md`                                                                                           |
+| Schemas                               | `public/schema/layout.schema.json`, `bin-design.schema.json`, `cutout-library.schema.json` (refs the design's `Cutout`) |
+| Worked examples                       | `docs/schemas/examples/`                                                                                                |
+| Key manifests                         | `src/shared/schema/`                                                                                                    |
+| Guards and generator                  | `scripts/schema/`                                                                                                       |
 
 Read `docs/schemas/README.md` before authoring. It leads with the traps.
 

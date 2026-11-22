@@ -92,6 +92,8 @@ beforeEach(() => {
     baseplates: baseplates as BaseplateAdapter,
     designVersions: baseplates as unknown as DesignVersionAdapter,
     folders: baseplates as unknown as FolderAdapter,
+    cutoutItems: baseplates as unknown as SyncAdapters['cutoutItems'],
+    cutoutFolders: baseplates as unknown as SyncAdapters['cutoutFolders'],
   };
   flushNowMock.mockResolvedValue(undefined);
   getPendingEntriesMock.mockResolvedValue([]);

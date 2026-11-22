@@ -1,6 +1,8 @@
 {
   "maxShortValueLength": 3,
   "keys": [
+    "binDesigner.cutouts.library.size",
+    "binDesigner.cutouts.library.folder",
     "settings.spacemouse",
     "account.identity.heading",
     "assembledHeight.segmentLabel",

@@ -14,6 +14,7 @@ import { bridgeManager } from '@/shared/generation/bridge';
 import type { BinParams } from '@/features/bin-designer/types';
 import { LID_FIT_CLEARANCE, resolveLidCavityExtraMm } from '@/features/bin-designer/types';
 import { ISOMETRIC_DIRECTION, calculateIdealDistance } from './cameraFraming';
+import { untilEditorIdle } from './editorIdle';
 import { THREE_COLORS } from '@/shared/hooks/useThemeEffect';
 import {
   binLipTopWorldZ,
@@ -47,9 +48,23 @@ interface RegenerateOptions {
  * @param options - Optional abort signal and preview color override
  * @returns WebP data URL string, or null on failure
  */
-export async function regenerateThumbnail(
+export function regenerateThumbnail(
   params: BinParams,
   options: RegenerateOptions = {}
+): Promise<string | null> {
+  // One render at a time across every caller: a new bridge request cancels the
+  // one before it, so the saved-design pass and the cutout library would
+  // otherwise cancel each other's pictures.
+  const run = renderTail.then(() => renderThumbnail(params, options));
+  renderTail = run.catch(() => undefined);
+  return run;
+}
+
+let renderTail: Promise<unknown> = Promise.resolve();
+
+async function renderThumbnail(
+  params: BinParams,
+  options: RegenerateOptions
 ): Promise<string | null> {
   const { signal, color = DEFAULT_COLOR } = options;
   // three is loaded on demand: this offscreen renderer only runs during background
@@ -89,6 +104,9 @@ export async function regenerateThumbnail(
 
     if (signal?.aborted) return null;
 
+    // Checked here, at the head of the queue: a caller's own check went stale
+    // while it waited for the renders before it.
+    if (!(await untilEditorIdle(signal))) return null;
     const result = await bridge.generateImmediate(params);
     if (signal?.aborted) return null;
 

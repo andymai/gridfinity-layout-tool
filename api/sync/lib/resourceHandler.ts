@@ -47,7 +47,14 @@ function rejectedField(error: string): string {
 
 export { MESH_MISSING_STATUS };
 
-export type SyncResourceKind = 'layouts' | 'designs' | 'baseplates' | 'designVersions' | 'folders';
+export type SyncResourceKind =
+  | 'layouts'
+  | 'designs'
+  | 'baseplates'
+  | 'designVersions'
+  | 'folders'
+  | 'cutoutItems'
+  | 'cutoutFolders';
 
 export interface SyncEnvelope {
   modifiedAt: number;
@@ -91,6 +98,8 @@ export interface SyncResourceConfig<TEnvelope extends SyncEnvelope> {
   ) => BuildPutResult<TEnvelope>;
   /** Stored-side value handed to the equal-ms tiebreaker. */
   storedComparable: (stored: TEnvelope) => unknown;
+  /** A kill switch: while it returns false every method answers 503. */
+  enabled?: () => boolean;
 }
 
 export function createSyncResourceHandler<TEnvelope extends SyncEnvelope>(
@@ -273,6 +282,10 @@ export function createSyncResourceHandler<TEnvelope extends SyncEnvelope>(
 
   return async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
     if (!requireMethod(req, res, ['GET', 'PUT', 'DELETE'])) return;
+    if (config.enabled && !config.enabled()) {
+      serviceUnavailable(res);
+      return;
+    }
 
     const session = await requireSession(req, res);
     if (!session) return;

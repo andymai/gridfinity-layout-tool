@@ -7,7 +7,7 @@
  * World coordinates: mm, Y-up. No SVG Y-inversion needed.
  */
 
-import { useCallback, useEffect, useMemo, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode, type RefObject } from 'react';
 import { useCutoutSelection } from '@/features/bin-designer/store';
 import { Canvas } from '@react-three/fiber';
 import type { RootState } from '@react-three/fiber';
@@ -148,6 +148,8 @@ export interface CutoutCanvas3DProps {
   readonly rulerMeasurement?: RulerMeasurement | null;
   /** Ref to keep ruler handler informed of current zoom */
   readonly rulerZoomRef?: RefObject<number>;
+  /** Drawn inside the scene, above the board: the library ghost while an item is placed. */
+  readonly sceneOverlay?: ReactNode;
   /** Active insertion-fit cue to draw on the single-selected cutout. */
   readonly fitCue?: FitCue;
 }
@@ -193,6 +195,7 @@ export function CutoutCanvas3D({
   externalCameraCenter,
   rulerMeasurement,
   rulerZoomRef,
+  sceneOverlay,
 }: CutoutCanvas3DProps) {
   const groupContext = useCutoutSelection((state) => state.groupContext);
   const binColor = useBinPreviewColor();
@@ -390,6 +393,7 @@ export function CutoutCanvas3D({
         rulerMeasurement={rulerMeasurement}
         rulerZoomRef={rulerZoomRef}
       />
+      {sceneOverlay}
     </Canvas>
   );
 }

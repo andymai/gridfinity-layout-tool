@@ -5,6 +5,10 @@ vi.mock('@/core/sync/adapters/layoutAdapter', () => ({ layoutAdapter: {} }));
 vi.mock('@/core/sync/adapters/folderAdapter', () => ({ folderAdapter: {} }));
 vi.mock('@/features/bin-designer', () => ({ designAdapter: {} }));
 vi.mock('@/features/bin-designer/sync/designVersionAdapter', () => ({ designVersionAdapter: {} }));
+vi.mock('@/features/bin-designer/sync/cutoutLibraryAdapters', () => ({
+  cutoutItemAdapter: {},
+  cutoutFolderAdapter: {},
+}));
 vi.mock('@/features/baseplate/sync/baseplateAdapter', () => ({ baseplateAdapter: {} }));
 vi.mock('@/core/sync/claim', () => ({ runClaim: vi.fn(), cancelClaims: vi.fn() }));
 vi.mock('@/core/sync/engine', () => ({ start: vi.fn(), stop: vi.fn() }));

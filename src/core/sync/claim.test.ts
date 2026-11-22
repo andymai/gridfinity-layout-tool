@@ -8,6 +8,7 @@ import {
   type ClaimResult,
 } from './claim';
 import { useSyncStatusStore } from './status';
+import { resetServedKinds } from './servedKinds';
 import type {
   SyncAdapter,
   SyncAdapters,
@@ -78,6 +79,8 @@ beforeEach(() => {
     baseplates: baseplates as BaseplateAdapter,
     designVersions: baseplates as unknown as DesignVersionAdapter,
     folders: baseplates as unknown as FolderAdapter,
+    cutoutItems: baseplates as unknown as SyncAdapters['cutoutItems'],
+    cutoutFolders: baseplates as unknown as SyncAdapters['cutoutFolders'],
   };
   fetchMock.mockReset();
 });
@@ -323,6 +326,35 @@ describe('runClaim — cancellation', () => {
     expect(await first).toEqual({ status: 'cancelled' });
     expect((await second).status).toBe('merged');
     expect(layouts.applyRemote).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('runClaim — gated kinds', () => {
+  it('claims the cutout library only when the manifest lists it', async () => {
+    const library = makeAdapter();
+    library.items.set('clib_1', { id: 'clib_1', payload: {}, modifiedAt: 1000 });
+    adapters = { ...adapters, cutoutItems: library as unknown as SyncAdapters['cutoutItems'] };
+
+    fetchMock.mockResolvedValueOnce(
+      manifestResponse({ layouts: {}, designs: {}, indexUpdatedAt: 0 })
+    );
+    await runClaim(ctx());
+    expect(enqueueMock).not.toHaveBeenCalled();
+
+    fetchMock.mockResolvedValueOnce(
+      manifestResponse({
+        layouts: {},
+        designs: {},
+        cutoutItems: {},
+        cutoutFolders: {},
+        indexUpdatedAt: 0,
+      })
+    );
+    await runClaim(ctx());
+    expect(enqueueMock).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'cutoutItems', id: 'clib_1', op: 'put' })
+    );
+    resetServedKinds();
   });
 });
 

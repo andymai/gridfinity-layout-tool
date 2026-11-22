@@ -51,6 +51,7 @@ import type { RulerMeasurement } from '../panel/CutoutsSection/handlers/rulerHan
 import { drawnSplit } from '@/shared/utils/cutoutSplit';
 import { usePocketChecks } from '../panel/CutoutsSection/usePocketChecks';
 import { InspectorDock } from './InspectorDock';
+import { useCutoutLibraryWorkspace } from '../CutoutLibrary/useCutoutLibraryWorkspace';
 import { ShapeList } from './ShapeList';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { showsEmptyBoardHint } from '../panel/CutoutsSection/cutoutSectionVisibility';
@@ -632,6 +633,21 @@ export function CutoutWorkspace() {
     fitToView,
   });
 
+  const library = useCutoutLibraryWorkspace({
+    cutouts,
+    selection,
+    groupNames: params.cutoutGroupNames,
+    meshAssets: params.meshAssets,
+    maxCutDepth,
+    isLid,
+    binWidth,
+    binDepth,
+    grid: snapEnabled ? gridSize : null,
+    selectIds,
+    panHeld: spaceHeld,
+    onBoardPress: handleBackgroundPointerDown,
+  });
+
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
@@ -717,6 +733,7 @@ export function CutoutWorkspace() {
         flattenArray: handleFlattenArray,
         mergeIntoRepeat: handleMergeIntoRepeat,
         editPoints: enterVertexEditing,
+        saveToLibrary: library.openSave,
         t,
       }),
     [
@@ -743,6 +760,7 @@ export function CutoutWorkspace() {
       reorderCutouts,
       handleFlattenArray,
       enterVertexEditing,
+      library.openSave,
       t,
     ]
   );
@@ -853,12 +871,14 @@ export function CutoutWorkspace() {
                   </span>
                 </div>
               )}
-              {showsEmptyBoardHint(cutouts.length, mode) && !photoDrop.dragging && (
-                <CutoutEmptyState
-                  variant="workspace"
-                  onScanTool={!isLid ? () => openScanDialog('empty_board') : undefined}
-                />
-              )}
+              {showsEmptyBoardHint(cutouts.length, mode) &&
+                !photoDrop.dragging &&
+                !library.placing && (
+                  <CutoutEmptyState
+                    variant="workspace"
+                    onScanTool={!isLid ? () => openScanDialog('empty_board') : undefined}
+                  />
+                )}
               <ToolThicknessPrompt placement="chip" onFocusTools={(ids) => selectIds(ids, false)} />
               <CutoutCanvas3D
                 cutouts={cutouts}
@@ -901,7 +921,9 @@ export function CutoutWorkspace() {
                 externalCameraCenter={cameraCenter}
                 rulerMeasurement={rulerMeasurement}
                 rulerZoomRef={rulerZoomRef}
+                sceneOverlay={library.sceneOverlay}
               />
+              {library.hint}
             </div>
           </div>
         </div>
@@ -921,6 +943,7 @@ export function CutoutWorkspace() {
               onRenameGroup={setCutoutGroupName}
             />
           }
+          library={library.panel}
           cutouts={cutouts}
           selection={selection}
           preview={preview}
@@ -965,6 +988,8 @@ export function CutoutWorkspace() {
       {showQuickstart && (
         <CutoutQuickstartOverlay onDismiss={handleDismissQuickstart} showScan={!isLid} />
       )}
+
+      {library.dialogs}
 
       {contextMenu && (
         <CutoutContextMenu

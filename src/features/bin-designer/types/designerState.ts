@@ -320,6 +320,17 @@ export interface DesignerState {
   /** Add a finger cut bound to `pocketId`; false when nothing was added. */
   addFingerAccess: (pocketId: string, finger: Cutout) => boolean;
   addMeshCutout: (cutout: Cutout, asset: MeshAssetEntry) => void;
+  /**
+   * Add cutouts placed from the cutout library, with the mesh assets and group
+   * names they name, in one undo step. Anything but `added` means nothing changed.
+   */
+  addLibraryCutouts: (
+    cutouts: readonly Cutout[],
+    meshAssets: Readonly<Record<string, MeshAssetEntry>>,
+    groupNames: Readonly<Record<string, string>>
+  ) => LibraryInsertOutcome;
+  /** Mark cutouts as placed from, or saved to, a library item. Changes no geometry. */
+  setCutoutsLibraryItem: (ids: readonly string[], itemId: string) => void;
   removeCutout: (id: string) => void;
   updateCutout: (id: string, updates: Partial<Cutout>) => void;
   /** Split a pocket into two depths along a line, or remove its split with null. */
@@ -536,3 +547,6 @@ export interface DesignerState {
   ) => void;
   toggleHalfGridMode: () => void;
 }
+
+/** What a library insert did. Anything but `added` means nothing changed. */
+export type LibraryInsertOutcome = 'added' | 'noRoom' | 'meshOnLid' | 'overBudget';

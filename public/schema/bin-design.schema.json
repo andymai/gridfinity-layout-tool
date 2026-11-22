@@ -936,6 +936,15 @@
         },
         "knife": {
           "$ref": "#/$defs/KnifeSpec"
+        },
+        "libraryItemId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-constant": {
+            "maxLength": "MAX_LIBRARY_ITEM_ID_LENGTH"
+          },
+          "description": "The cutout library item this cutout was placed from. Editor metadata: it does not change the cut."
         }
       }
     },
