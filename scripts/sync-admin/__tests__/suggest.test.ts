@@ -151,6 +151,8 @@ describe('categoryOf', () => {
 
   it('clears the OIDC token a pulled env file holds, which blocks vercel blob', () => {
     const preamble = SCRIPT_PREAMBLE.join('\n');
+    expect(preamble).toContain('. ./.env.production.local');
+    expect(preamble).toContain('unset VERCEL_OIDC_TOKEN BLOB_STORE_ID');
     expect(preamble.indexOf('unset VERCEL_OIDC_TOKEN BLOB_STORE_ID')).toBeGreaterThan(
       preamble.indexOf('. ./.env.production.local')
     );
