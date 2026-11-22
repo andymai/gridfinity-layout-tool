@@ -166,7 +166,10 @@ describe('runAgent', () => {
   it('sends back no call from before a fallback, and runs only the calls after it', async () => {
     const declined = { ...readCall, id: 'toolu_0' };
     const fallbackRound: Round = {
-      events: [],
+      events: [
+        { type: 'content_block_start', index: 1, content_block: declined },
+        { type: 'content_block_start', index: 3, content_block: readCall },
+      ],
       content: [
         { type: 'thinking', thinking: 'first model', signature: 'sig' },
         declined,
@@ -176,7 +179,12 @@ describe('runAgent', () => {
       stopReason: 'tool_use',
     };
     const { client, calls } = scripted([fallbackRound, answerRound]);
-    await runAgent(options(client, []));
+    const events: AgentEvent[] = [];
+    await runAgent(options(client, events));
+    const finalStep = (id: string) =>
+      events.filter((e) => e.type === 'step' && e.id === id).at(-1) as { state: string };
+    expect(finalStep('toolu_0').state).toBe('error');
+    expect(finalStep('toolu_1').state).toBe('done');
     const sentBack = calls[1]?.messages.at(-2);
     expect(sentBack?.role).toBe('assistant');
     expect((sentBack?.content as { type: string }[]).map((block) => block.type)).toEqual([

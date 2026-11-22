@@ -19,10 +19,11 @@ const UNLISTED: Prices = { input: 5, output: 25, cacheRead: 0.5, cacheWrite: 6.2
 
 export const DEFAULT_DAILY_CAP_USD = 5;
 /**
- * Set aside before each round. It covers a round's full MAX_TOKENS of output,
- * so rounds that start together cannot run far past the cap.
+ * Set aside before each round. It covers a round's full MAX_TOKENS of output
+ * even at the unlisted price of a fallback model, so rounds that start
+ * together cannot run far past the cap.
  */
-export const ROUND_RESERVE_USD = 0.35;
+export const ROUND_RESERVE_USD = 0.5;
 const SPEND_TTL_SECONDS = 2 * 24 * 60 * 60;
 
 export interface Usage {

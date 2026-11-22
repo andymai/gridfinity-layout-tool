@@ -23,7 +23,7 @@ export const GROUP_RULES: Readonly<Record<Group, string>> = {
   no: 'The first sentence says plainly that the app cannot do it. Then the answer gives the nearest thing the app can do.',
   gap: 'The answer says that the docs do not cover the question, names the nearest pages, and links the Q&A forum. It must not invent an answer.',
   language:
-    "The whole answer is in the reader's language. Control labels are in that language with the English label in parentheses. The facts are correct.",
+    "The answer is in the language of the question. Each control reads as the reader's app shows it: in a non-English app, its label in the app's language and then the English label in parentheses; in an English app, the English label alone. The facts are correct.",
   followup:
     'The second answer uses the first turn: it reads as a reply in the same conversation, without asking the reader to repeat the context.',
 };

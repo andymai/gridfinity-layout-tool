@@ -277,6 +277,19 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
     const calls = content.filter(
       (block): block is Anthropic.Beta.BetaToolUseBlock => block.type === 'tool_use'
     );
+    // A call dropped at a fallback never runs, but its step already showed.
+    const kept = new Set(calls.map((call) => call.id));
+    for (const block of message.content) {
+      if (block.type !== 'tool_use' || kept.has(block.id)) continue;
+      const kind = kindOf(block.name);
+      options.send({
+        type: 'step',
+        id: block.id,
+        kind,
+        state: 'error',
+        label: PLACEHOLDER_LABELS[kind],
+      });
+    }
     generations.push({
       spanId: message.id,
       model: message.model,

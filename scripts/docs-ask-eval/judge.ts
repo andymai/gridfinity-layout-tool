@@ -62,7 +62,7 @@ export async function judge(
     keptEnglish.length > 0
       ? ` In this language the app keeps these labels in English: ${keptEnglish.join(', ')}.`
       : '';
-  const reader = golden.locale ? ` The reader's language is ${golden.locale}.${kept}` : '';
+  const reader = golden.locale ? ` The reader's app is in ${golden.locale}.${kept}` : '';
   const response = await client.messages.parse({
     model,
     max_tokens: 4000,
