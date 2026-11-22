@@ -103,6 +103,9 @@ const AUTO_AND_NULL_PARAMS: BinParams = migrateParams({
     customGrid: { cols: 2, rows: 2, cells: [0, 0, 1, 2] },
   },
   dividerPieces: { ...DEFAULT_DIVIDER_PIECE_CONFIG, height: 'auto' },
+  // The scale sliders run 0-100%, and 0 is the finest pattern.
+  wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true, scale: 0 },
+  floorPattern: { ...DEFAULT_BIN_PARAMS.floorPattern, enabled: true, scale: 0 },
   cutouts: CUTOUTS,
   featureColors: {
     ...DEFAULT_FEATURE_COLOR_CONFIG,
@@ -128,6 +131,8 @@ describe('designs exported by the app validate against the schema', () => {
     expect(p.handles.front.width).toBeNull();
     expect(p.slotConfig.customGrid?.cols).toBe(2);
     expect(p.dividerPieces.height).toBe('auto');
+    expect(p.wallPattern.scale).toBe(0);
+    expect(p.floorPattern.scale).toBe(0);
     expect(p.cutouts.map((c) => [c.shape, c.groupId, c.labelPlateWidthU, c.labelIcon])).toEqual([
       ['rectangle', null, 2, 'screw'],
       ['text', null, undefined, undefined],

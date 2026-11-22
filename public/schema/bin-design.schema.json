@@ -1441,8 +1441,9 @@
         },
         "scale": {
           "type": "number",
-          "exclusiveMinimum": 0,
-          "description": "Pattern cell scale. Omitted means 0.5."
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Pattern cell scale, from 0 (finest) to 1 (boldest). Omitted means 0.5."
         }
       }
     },
@@ -3133,7 +3134,8 @@
         },
         "scale": {
           "type": "number",
-          "exclusiveMinimum": 0,
+          "minimum": 0,
+          "maximum": 1,
           "default": 0.5,
           "x-constant": {
             "default": "DEFAULT_PATTERN_SCALE"
