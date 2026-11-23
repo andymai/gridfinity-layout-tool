@@ -1,0 +1,35 @@
+src/shared/utils/formControlTarget.test.ts
+  s_f3decd9961964a::t_fea7a8e0f40568 12,17-18,26-28
+  s_f3decd9961964a::t_e4f7e4d563887e 1-11,13-16,19-25,29-32,37-38
+  s_f3decd9961964a::t_06abb8c593a083 33-36
+src/features/baseplate/hooks/useBaseplateUndo.ts
+  s_f3decd9961964a::t_e4f7e4d563887e 14,41
+src/shared/utils/formControlTarget.ts
+  s_f3decd9961964a::t_fea7a8e0f40568 25,33
+  s_f3decd9961964a::t_e4f7e4d563887e 1-24,26-32,34
+src/shell/keyboard/useKeyboard.ts
+  s_f3decd9961964a::t_e4f7e4d563887e 62,88-90,178-179,214
+src/features/bin-designer/hooks/useDesignerKeyboard.test.ts
+  s_f3decd9961964a::t_418a5c1e98a50c 166-197
+src/features/bin-designer/hooks/useDesignerKeyboard.ts
+  s_f3decd9961964a::t_da7aba101be86e 8,70-71
+  s_f3decd9961964a::t_e4f7e4d563887e 53
+src/shell/keyboard/useKeyboard.test.ts
+  s_f3decd9961964a::t_418a5c1e98a50c 396-462
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "992f9b62d5bba29d565c45709bef6145e29ffb31",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
