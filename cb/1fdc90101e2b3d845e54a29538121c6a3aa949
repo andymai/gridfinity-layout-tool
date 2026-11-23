@@ -1,0 +1,38 @@
+src/features/layout-library/components/LayoutManagerModal/LayoutManagerModal.test.tsx
+  s_f3decd9961964a::t_ef642372640fca 377-401,415,417,440-441
+src/features/layout-library/components/LayoutManagerModal/LayoutManagerModal.tsx
+  s_f3decd9961964a::t_ef642372640fca 160-162,182-184,186,189,343-352
+e2e/layout-library.spec.ts
+  s_f3decd9961964a::t_82180348d4f7cc 14,167,220,255,289
+  s_f3decd9961964a::t_5e0ba9df794ee8 13,38,62,73,99,111,115-117,123,130,144,161,171,177-179,197-199,203,227,283,304
+  s_f3decd9961964a::t_a393ca9600c122 259,290
+  s_f3decd9961964a::t_edd65828d29169 243-245,308-310
+  s_f3decd9961964a::t_42a5a8e47f68aa 266-268,297-299
+  s_f3decd9961964a::t_a1f249a924817e 15
+e2e/test-utils.ts
+  s_f3decd9961964a::t_a5baf53137e966 35-74,77,79-85,87-89,107-110,112-134
+  s_f3decd9961964a::t_512215dc387334 2
+  s_f3decd9961964a::t_a393ca9600c122 75-76,86,90-91
+  s_f3decd9961964a::t_b180acd0a6744f 78
+e2e/fixtures.ts
+  s_f3decd9961964a::t_5e0ba9df794ee8 43-50
+  s_f3decd9961964a::t_82180348d4f7cc 51-58
+  s_f3decd9961964a::t_a1f249a924817e 11
+  s_f3decd9961964a::t_4b484721fac47d 42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cb1fdc90101e2b3d845e54a29538121c6a3aa949",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
