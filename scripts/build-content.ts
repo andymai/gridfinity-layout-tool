@@ -155,6 +155,7 @@ const FOOTER_LINKS: Record<
     guide: string;
     toolDrawer: string;
     kitchen: string;
+    drawers: string;
     calculator: string;
     cutout: string;
     software: string;
@@ -171,6 +172,7 @@ const FOOTER_LINKS: Record<
     guide: 'Planning Guide',
     toolDrawer: 'Tool Drawers',
     kitchen: 'Kitchen Drawers',
+    drawers: 'Drawer Sizes',
     calculator: 'Calculator',
     cutout: 'Cutout Generator',
     software: 'Software Comparison',
@@ -186,6 +188,7 @@ const FOOTER_LINKS: Record<
     guide: 'Planungsleitfaden',
     toolDrawer: 'Werkzeugschubladen',
     kitchen: 'Küchenschubladen',
+    drawers: 'Schubladengrößen',
     calculator: 'Rechner',
     cutout: 'Ausschnitt-Generator',
     software: 'Software-Vergleich',
@@ -201,6 +204,7 @@ const FOOTER_LINKS: Record<
     guide: 'Guide de planification',
     toolDrawer: 'Tiroirs à outils',
     kitchen: 'Tiroirs de cuisine',
+    drawers: 'Tailles de tiroirs',
     calculator: 'Calculateur',
     cutout: 'Générateur de découpes',
     software: 'Comparatif logiciels',
@@ -216,6 +220,7 @@ const FOOTER_LINKS: Record<
     guide: 'Guía de planificación',
     toolDrawer: 'Cajones de herramientas',
     kitchen: 'Cajones de cocina',
+    drawers: 'Tamaños de cajones',
     calculator: 'Calculadora',
     cutout: 'Generador de recortes',
     software: 'Comparativa de software',
@@ -231,6 +236,7 @@ const FOOTER_LINKS: Record<
     guide: 'Guia de planejamento',
     toolDrawer: 'Gavetas de ferramentas',
     kitchen: 'Gavetas de cozinha',
+    drawers: 'Tamanhos de gavetas',
     calculator: 'Calculadora',
     cutout: 'Gerador de recortes',
     software: 'Comparativo de softwares',
@@ -246,6 +252,7 @@ const FOOTER_LINKS: Record<
     guide: 'Planningsgids',
     toolDrawer: 'Gereedschapslades',
     kitchen: 'Keukenlades',
+    drawers: 'Ladematen',
     calculator: 'Calculator',
     cutout: 'Uitsparingsgenerator',
     software: 'Softwarevergelijking',
@@ -261,6 +268,7 @@ const FOOTER_LINKS: Record<
     guide: 'Planeringsguide',
     toolDrawer: 'Verktygslådor',
     kitchen: 'Kökslådor',
+    drawers: 'Lådstorlekar',
     calculator: 'Kalkylator',
     cutout: 'Urtagsgenerator',
     software: 'Programjämförelse',
@@ -276,6 +284,7 @@ const FOOTER_LINKS: Record<
     guide: 'Planleggingsveiledning',
     toolDrawer: 'Verktøyskuffer',
     kitchen: 'Kjøkkenskuffer',
+    drawers: 'Skuffestørrelser',
     calculator: 'Kalkulator',
     cutout: 'Utskjæringsgenerator',
     software: 'Programvaresammenligning',
@@ -291,6 +300,7 @@ const FOOTER_LINKS: Record<
     guide: 'Посібник з планування',
     toolDrawer: 'Шухляди для інструментів',
     kitchen: 'Кухонні шухляди',
+    drawers: 'Розміри шухляд',
     calculator: 'Калькулятор',
     cutout: 'Генератор вирізів',
     software: 'Порівняння програм',
@@ -306,6 +316,7 @@ const FOOTER_LINKS: Record<
     guide: 'Przewodnik po planowaniu',
     toolDrawer: 'Szuflady narzędziowe',
     kitchen: 'Szuflady kuchenne',
+    drawers: 'Rozmiary szuflad',
     calculator: 'Kalkulator',
     cutout: 'Generator wycięć',
     software: 'Porównanie oprogramowania',
@@ -321,6 +332,7 @@ const FOOTER_LINKS: Record<
     guide: '规划指南',
     toolDrawer: '工具抽屉',
     kitchen: '厨房抽屉',
+    drawers: '抽屉尺寸',
     calculator: '计算器',
     cutout: '切口生成器',
     software: '软件对比',
@@ -336,6 +348,7 @@ const FOOTER_LINKS: Record<
     guide: 'Průvodce plánováním',
     toolDrawer: 'Nářaďové zásuvky',
     kitchen: 'Kuchyňské zásuvky',
+    drawers: 'Velikosti zásuvek',
     calculator: 'Kalkulačka',
     cutout: 'Generátor výřezů',
     software: 'Porovnání softwaru',
@@ -351,6 +364,7 @@ const FOOTER_LINKS: Record<
     guide: '플래닝 가이드',
     toolDrawer: '공구 서랍',
     kitchen: '주방 서랍',
+    drawers: '서랍 크기',
     calculator: '계산기',
     cutout: '컷아웃 생성기',
     software: '소프트웨어 비교',
@@ -763,6 +777,7 @@ ${breadcrumbsHtml}${content}${faqsHtml}
         <a href="${localizedPath('guide', locale)}">${escapeHtml(FOOTER_LINKS[locale].guide)}</a>
         <a href="/gridfinity-tool-drawer">${escapeHtml(FOOTER_LINKS[locale].toolDrawer)}</a>
         <a href="/gridfinity-kitchen-drawer">${escapeHtml(FOOTER_LINKS[locale].kitchen)}</a>
+        <a href="/gridfinity-drawers">${escapeHtml(FOOTER_LINKS[locale].drawers)}</a>
         <a href="/gridfinity-calculator">${escapeHtml(FOOTER_LINKS[locale].calculator)}</a>
         <a href="/gridfinity-cutout-generator">${escapeHtml(FOOTER_LINKS[locale].cutout)}</a>
         <a href="/gridfinity-software">${escapeHtml(FOOTER_LINKS[locale].software)}</a>
