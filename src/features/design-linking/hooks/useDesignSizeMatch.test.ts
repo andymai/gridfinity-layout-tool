@@ -5,6 +5,7 @@ import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useToastStore } from '@/core/store';
 import { useLayoutStore } from '@/core/store/layout';
 import type { Bin } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 import { binId, designId, gridUnits, heightUnits } from '@/core/types';
 import * as MutationsContext from '@/shared/contexts/MutationsContext';
 import type { CustomBinRef } from '@/features/bin-designer';
@@ -86,10 +87,17 @@ describe('useDesignSizeMatch', () => {
     expect(useHistoryStore.getState().past).toHaveLength(before + 1);
   });
 
-  it('cannot resize where the design size has no room', () => {
-    const bin = linked({ x: gridUnits(4) });
+  it('cannot resize where the design size has no room either way round', () => {
+    const bin = linked({ x: gridUnits(4), y: gridUnits(2) });
     place([bin]);
     expect(renderHook(() => useDesignSizeMatch(bin, design)).result.current?.canResize).toBe(false);
+  });
+
+  it('turns the design when only the turned size has room', () => {
+    const bin = linked({ x: gridUnits(4) });
+    place([bin]);
+    const { result } = renderHook(() => useDesignSizeMatch(bin, design));
+    expect(result.current).toMatchObject({ designSize: '2×3×3u', canResize: true });
   });
 
   it('says so when the resize is refused', () => {
@@ -97,8 +105,14 @@ describe('useDesignSizeMatch', () => {
     place([
       bin,
       createTestBin({
-        id: binId('other'),
+        id: binId('right'),
         x: gridUnits(2),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+      }),
+      createTestBin({
+        id: binId('behind'),
+        y: gridUnits(2),
         width: gridUnits(1),
         depth: gridUnits(1),
       }),
@@ -110,5 +124,35 @@ describe('useDesignSizeMatch', () => {
 
     expect(stored()).toMatchObject({ width: 2 });
     expect(useToastStore.getState().toasts).toHaveLength(1);
+  });
+
+  it('keeps a turned bin turned when only the height differs', () => {
+    const bin = linked({ x: gridUnits(4), width: gridUnits(2), depth: gridUnits(3) });
+    place([bin]);
+    const tall = { ...design, height: 4 };
+    const { result } = renderHook(() => useDesignSizeMatch(bin, tall));
+    expect(result.current).toMatchObject({ designSize: '2×3×4u', canResize: true });
+
+    act(() => result.current?.resize());
+
+    expect(stored()).toMatchObject({ x: 4, width: 2, depth: 3, height: 4 });
+  });
+
+  it('offers the resize to a stashed bin, whatever else the stash holds', () => {
+    const bin = linked({ layerId: STAGING_ID, x: gridUnits(5) });
+    place([bin, createTestBin({ id: binId('other'), layerId: STAGING_ID, x: gridUnits(5) })]);
+    const { result } = renderHook(() => useDesignSizeMatch(bin, design));
+    expect(result.current?.canResize).toBe(true);
+
+    act(() => result.current?.resize());
+
+    expect(stored()).toMatchObject({ width: 3, depth: 2, height: 3 });
+  });
+
+  it('shows heights to the precision they are stored at', () => {
+    const bin = linked({ width: gridUnits(3), height: heightUnits(3.01) });
+    place([bin]);
+    const { result } = renderHook(() => useDesignSizeMatch(bin, { ...design, height: 3.04 }));
+    expect(result.current).toMatchObject({ binSize: '3×2×3.01u', designSize: '3×2×3.04u' });
   });
 });

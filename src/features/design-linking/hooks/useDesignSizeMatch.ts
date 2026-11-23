@@ -6,14 +6,10 @@ import { useLayoutStore } from '@/core/store/layout';
 import type { Bin } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { useMutations } from '@/shared/contexts';
-import { isBinLocked } from '@/shared/utils/binLocation';
+import { getBinLocationContext, isBinLocked } from '@/shared/utils/binLocation';
 import type { CustomBinRef } from '@/features/bin-designer';
-import {
-  checkSyncEligibility,
-  createBinSyncUpdate,
-  differsFromDesign,
-  formatDimensions,
-} from '../domain';
+import type { SyncableDimensions } from '../types';
+import { checkSyncEligibility, createBinSyncUpdate, differsFromDesign } from '../domain';
 
 export interface DesignSizeMatch {
   readonly binSize: string;
@@ -21,6 +17,23 @@ export interface DesignSizeMatch {
   /** The design's size fits where the bin stands. */
   readonly canResize: boolean;
   readonly resize: () => void;
+}
+
+/** Heights keep four decimals, so a one-decimal size can hide the difference. */
+function formatSize({ width, depth, height }: SyncableDimensions): string {
+  return `${[width, depth, height].map((v) => String(Number(v.toFixed(4)))).join('×')}u`;
+}
+
+/**
+ * The design's size in the bin's own orientation first: a turned bin matches
+ * its design turned, so resizing it upright would move cells it never needed.
+ */
+function resizeTargets(bin: Bin, design: SyncableDimensions): SyncableDimensions[] {
+  if (design.width === design.depth) return [design];
+  const turned = { width: design.depth, depth: design.width, height: design.height };
+  const binWide = bin.width > bin.depth;
+  const designWide = design.width > design.depth;
+  return bin.width !== bin.depth && binWide !== designWide ? [turned, design] : [design, turned];
 }
 
 /**
@@ -38,7 +51,15 @@ export function useDesignSizeMatch(bin: Bin, design: CustomBinRef | null): Desig
     if (design === null) return null;
     const size = { width: design.width, depth: design.depth, height: design.height };
     if (!differsFromDesign(bin, size)) return null;
-    return { size, canResize: checkSyncEligibility(bin, size, layout, layout.bins).canSync };
+    const targets = resizeTargets(bin, size);
+    // A stashed bin takes any size: the stash has no cells to share.
+    if (!getBinLocationContext(bin).requiresPlacementValidation) {
+      return { size: targets[0], canResize: true };
+    }
+    const fitting = targets.find(
+      (target) => checkSyncEligibility(bin, target, layout, layout.bins).canSync
+    );
+    return { size: fitting ?? targets[0], canResize: fitting !== undefined };
   }, [bin, design, layout]);
 
   const resize = useCallback(() => {
@@ -61,8 +82,8 @@ export function useDesignSizeMatch(bin: Bin, design: CustomBinRef | null): Desig
 
   if (mismatch === null) return null;
   return {
-    binSize: `${formatDimensions({ width: bin.width, depth: bin.depth, height: bin.height })}u`,
-    designSize: `${formatDimensions(mismatch.size)}u`,
+    binSize: formatSize({ width: bin.width, depth: bin.depth, height: bin.height }),
+    designSize: formatSize(mismatch.size),
     canResize: mismatch.canResize,
     resize,
   };
