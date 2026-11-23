@@ -95,7 +95,8 @@ export function LanguageSelector() {
         onClick={() => setIsOpen(!isOpen)}
         className="h-8 gap-1 px-2 text-sm text-content-secondary hover:text-content"
         title={t('header.changeLanguage')}
-        aria-label={t('header.changeLanguage')}
+        // The visible code must be part of the accessible name (WCAG 2.5.3).
+        aria-label={`${t('header.changeLanguage')}: ${displayCode}`}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
