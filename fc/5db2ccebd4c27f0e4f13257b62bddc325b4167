@@ -1,0 +1,21 @@
+eslint.config.js
+  s_f3decd9961964a::t_ade6787290f971 624-625
+src/features/supporters/components/SupportersScene/supportersSceneGeometry.ts
+  s_f3decd9961964a::t_c515b881156a6d 1,25,27,29,31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fc5db2ccebd4c27f0e4f13257b62bddc325b4167",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
