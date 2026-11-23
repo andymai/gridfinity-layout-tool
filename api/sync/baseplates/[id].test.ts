@@ -267,7 +267,7 @@ describe('PUT', () => {
         body: {
           baseplate: {
             name: 'x',
-            params: { ...VALID_BASEPLATE, cornerRadii: { tl: 2, tr: 2, bl: 2, br: 999 } },
+            params: { ...VALID_BASEPLATE, cornerRadii: { tl: 2, tr: 2, bl: 2, br: 1601 } },
           },
           modifiedAt: 1000,
         },
