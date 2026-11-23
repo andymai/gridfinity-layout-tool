@@ -124,6 +124,24 @@ function inSaveOrder(
   return saved;
 }
 
+/**
+ * Read a design and write a change to it in its save order, so the change lands
+ * on a save queued before it rather than on the design as it was before that
+ * save. Reading outside the queue writes the older fields back. A `change` that
+ * returns null leaves the design as it is.
+ */
+function updateInSaveOrder(
+  id: DesignId,
+  change: (current: SavedDesign) => SaveDesignInput | null
+): Promise<Result<SavedDesign, StorageError>> {
+  return inSaveOrder(id, async () => {
+    const loadResult = await loadDesign(id);
+    if (isErr(loadResult)) return loadResult;
+    const next = change(loadResult.value);
+    return next === null ? loadResult : writeDesign(next);
+  });
+}
+
 async function writeDesign(design: SaveDesignInput): Promise<Result<SavedDesign, StorageError>> {
   try {
     const db = await getDb();
@@ -386,39 +404,23 @@ export async function branchFromVersion(
  * Record a successful community publish on the local design so update mode
  * and cross-device sync see it.
  */
-export async function setDesignPublishedId(
+export function setDesignPublishedId(
   id: DesignId,
   publishedId: string
 ): Promise<Result<SavedDesign, StorageError>> {
-  const loadResult = await loadDesign(id);
-  if (isErr(loadResult)) {
-    return loadResult;
-  }
-  return saveDesign({
-    ...loadResult.value,
-    publishedId,
-  });
+  return updateInSaveOrder(id, (current) => ({ ...current, publishedId }));
 }
 
 /**
  * Drop a stale community publish id (the published record no longer exists
  * or is no longer owned). Persists `null` so the cleared state syncs.
  */
-export async function clearDesignPublishedId(
-  id: DesignId
-): Promise<Result<SavedDesign, StorageError>> {
-  const loadResult = await loadDesign(id);
-  if (isErr(loadResult)) {
-    return loadResult;
-  }
-  const current = loadResult.value;
-  if (current.publishedId === undefined || current.publishedId === null) {
-    return loadResult;
-  }
-  return saveDesign({
-    ...current,
-    publishedId: null,
-  });
+export function clearDesignPublishedId(id: DesignId): Promise<Result<SavedDesign, StorageError>> {
+  return updateInSaveOrder(id, (current) =>
+    current.publishedId === undefined || current.publishedId === null
+      ? null
+      : { ...current, publishedId: null }
+  );
 }
 
 /**
@@ -453,19 +455,11 @@ export async function deleteDesign(id: DesignId): Promise<Result<void, StorageEr
  * @param name - The new design name
  * @returns A `Result` with the updated `SavedDesign` on success, or a `StorageError` on failure
  */
-export async function updateDesignName(
+export function updateDesignName(
   id: DesignId,
   name: string
 ): Promise<Result<SavedDesign, StorageError>> {
-  const loadResult = await loadDesign(id);
-  if (isErr(loadResult)) {
-    return loadResult;
-  }
-
-  return saveDesign({
-    ...loadResult.value,
-    name,
-  });
+  return updateInSaveOrder(id, (current) => ({ ...current, name }));
 }
 
 /**
@@ -476,20 +470,12 @@ export async function updateDesignName(
  * @param tags - The new tag list (raw; normalized on save)
  * @returns A `Result` with the updated `SavedDesign` on success, or a `StorageError` on failure
  */
-export async function updateDesignTags(
+export function updateDesignTags(
   id: DesignId,
   tags: readonly string[]
 ): Promise<Result<SavedDesign, StorageError>> {
-  const loadResult = await loadDesign(id);
-  if (isErr(loadResult)) {
-    return loadResult;
-  }
-
-  // saveDesign normalizes tags; pass them through raw like updateDesignName.
-  return saveDesign({
-    ...loadResult.value,
-    tags,
-  });
+  // The write normalizes tags; pass them through raw like updateDesignName.
+  return updateInSaveOrder(id, (current) => ({ ...current, tags }));
 }
 
 /**
@@ -508,19 +494,14 @@ export async function updateDesignParams(
   thumbnail?: string | null,
   exportFileNameConfig?: ExportFileNameConfig
 ): Promise<Result<SavedDesign, StorageError>> {
-  const loadResult = await loadDesign(id);
-  if (isErr(loadResult)) {
-    return loadResult;
-  }
-
-  const saved = await saveDesign({
-    ...loadResult.value,
+  const saved = await updateInSaveOrder(id, (current) => ({
+    ...current,
     params,
     ...(thumbnail !== undefined
       ? { thumbnail, thumbnailState: 'fresh' as const }
       : { thumbnailState: 'outdated' as const }),
     ...(exportFileNameConfig !== undefined ? { exportFileNameConfig } : {}),
-  });
+  }));
   if (isErr(saved)) return saved;
 
   // Push the change into every variant of this design. Best-effort and never
@@ -607,26 +588,30 @@ export async function createVariant(
 }
 
 /** Replace a variant's overrides and rebuild its params from its parent. */
-export async function updateVariantOverrides(
+export function updateVariantOverrides(
   variantId: DesignId,
   overrides: DesignOverrides
 ): Promise<Result<SavedDesign, StorageError>> {
-  const variantResult = await loadDesign(variantId);
-  if (isErr(variantResult)) return variantResult;
-  const variant = variantResult.value;
-  if (!variant.variantOf) {
-    return err(storageCorrupted(variantId, ['design is not a variant']));
-  }
+  return inSaveOrder(variantId, async () => {
+    const variantResult = await loadDesign(variantId);
+    if (isErr(variantResult)) return variantResult;
+    const variant = variantResult.value;
+    if (!variant.variantOf) {
+      return err(storageCorrupted(variantId, ['design is not a variant']));
+    }
 
-  const parentResult = await loadDesign(variant.variantOf);
-  if (isErr(parentResult)) return parentResult;
-  const parentParams = parentResult.value.params;
-  if (!parentParams) {
-    return err(storageCorrupted(variant.variantOf, ['variant parent has no params']));
-  }
+    // The parent's own queued save holds the params the variant derives from.
+    await pendingSaves.get(variant.variantOf);
+    const parentResult = await loadDesign(variant.variantOf);
+    if (isErr(parentResult)) return parentResult;
+    const parentParams = parentResult.value.params;
+    if (!parentParams) {
+      return err(storageCorrupted(variant.variantOf, ['variant parent has no params']));
+    }
 
-  const { params } = applyOverrides(parentParams, overrides);
-  return saveDesign({ ...variant, params, overrides });
+    const { params } = applyOverrides(parentParams, overrides);
+    return writeDesign({ ...variant, params, overrides });
+  });
 }
 
 /**
@@ -677,12 +662,11 @@ export function updateDesignThumbnail(
   id: DesignId,
   thumbnail: string
 ): Promise<Result<SavedDesign, StorageError>> {
-  return inSaveOrder(id, async () => {
-    const loadResult = await loadDesign(id);
-    return isErr(loadResult)
-      ? loadResult
-      : writeDesign({ ...loadResult.value, thumbnail, thumbnailState: 'fresh' });
-  });
+  return updateInSaveOrder(id, (current) => ({
+    ...current,
+    thumbnail,
+    thumbnailState: 'fresh',
+  }));
 }
 /**
  * Get the active design ID from localStorage.

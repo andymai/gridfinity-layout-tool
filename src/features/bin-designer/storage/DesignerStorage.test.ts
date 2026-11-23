@@ -36,6 +36,7 @@ import type { BinParams, SavedDesign } from '../types';
 import { getDb } from '@/features/bin-designer/storage/designerDb';
 import { expectOk, expectErr } from '@/test/testUtils';
 import { designId } from '@/core/types';
+import type { DesignId } from '@/core/types';
 import type { StorageError, StorageCorruptedError } from '@/core/result';
 
 function expectStorageCorrupted(error: StorageError): StorageCorruptedError {
@@ -166,6 +167,41 @@ describe('DesignerStorage', () => {
 
       expect(expectOk(await loadDesign(id)).name).toBe('Newer');
     });
+
+    it.each([
+      ['a rename', (id: DesignId) => updateDesignName(id, 'Renamed')],
+      ['a tag change', (id: DesignId) => updateDesignTags(id, ['pens'])],
+      ['a published id', (id: DesignId) => setDesignPublishedId(id, 'pub-1')],
+    ])(
+      'applies %s to the save queued before it, not to the design as it was',
+      async (_label, update) => {
+        const id = designId('update-order');
+        const base = {
+          id,
+          name: 'Pens',
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+        };
+        expectOk(await saveDesign(base));
+        let release = (): void => undefined;
+        const storing = new Promise<void>((resolve) => {
+          release = resolve;
+        });
+        vi.mocked(storeHolderMeshes).mockImplementationOnce(async (holder) => {
+          await storing;
+          return holder;
+        });
+
+        const edit = updateDesignParams(id, { ...DEFAULT_BIN_PARAMS, width: 3 });
+        const other = update(id);
+        await new Promise((r) => setTimeout(r, 50));
+        release();
+        await Promise.all([edit, other]);
+
+        expect(expectOk(await loadDesign(id)).params?.width).toBe(3);
+      }
+    );
 
     it('applies a thumbnail to the save queued before it, not to the design as it was', async () => {
       const id = designId('thumbnail-order');
