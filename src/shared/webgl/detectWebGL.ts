@@ -117,7 +117,7 @@ const THREE_SOURCE = /three/;
  * `shaderSource`. three.js throws it from the render loop on the WebGL2
  * context, and troika's SDF generator from its own WebGL1 context.
  */
-const SHADER_SOURCE_LOST = /shaderSource must be an instance of WebGLShader/;
+const SHADER_SOURCE_LOST = 'shaderSource must be an instance of WebGLShader';
 
 /** Reported by `WebGLContextLossGuard` when a lost context is not restored. */
 export const CONTEXT_LOST_ERROR = 'WebGL context lost and not restored';
@@ -139,7 +139,7 @@ export function webglFailureReason(
   source = ''
 ): 'context-failed' | 'context-lost' | 'no-precision' | null {
   if (message.includes(CONTEXT_CREATION_ERROR)) return 'context-failed';
-  if (message.includes(CONTEXT_LOST_ERROR) || SHADER_SOURCE_LOST.test(message)) {
+  if (message.includes(CONTEXT_LOST_ERROR) || message.includes(SHADER_SOURCE_LOST)) {
     return 'context-lost';
   }
   if (PRECISION_NULL_ERROR.test(message)) return 'no-precision';

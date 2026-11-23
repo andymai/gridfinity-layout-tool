@@ -13,10 +13,12 @@ import { detectWebGL, webglFailureReason } from '@/shared/webgl/detectWebGL';
  */
 
 /**
- * Stable fingerprint that collapses every unusable-GL-context variant into one
- * issue: the same failure is thrown from every canvas mount site (designer,
- * baseplate) with a different stack, and in two wordings (`webglFailureReason`),
- * so message grouping would split it per site and per engine.
+ * Stable fingerprint that collapses every unusable-GL-context variant, lost
+ * contexts included, into one issue: the same failure is thrown from every
+ * canvas mount site (designer, baseplate) with a different stack, and in
+ * several wordings (`webglFailureReason`), so message grouping would split it
+ * per site and per engine. The name predates context loss; renaming it would
+ * split the issue history.
  */
 const WEBGL_CONTEXT_FINGERPRINT = 'webgl-context-creation-failed';
 

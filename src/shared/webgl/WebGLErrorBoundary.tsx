@@ -18,8 +18,7 @@ interface State {
  * use a GL context even though the cached `detectWebGL()` probe passed:
  * `Error creating WebGL context.` from context-slot exhaustion across the
  * app's several canvases, or the `getShaderPrecisionFormat` null read from a
- * context the GPU process lost between probe and render. It also takes the
- * failure that `WebGLContextLossGuard` reports through `WebGLFailureContext`.
+ * context the GPU process lost between probe and render.
  *
  * It flips detection to unavailable and renders the `WebGLFallback` WITHOUT a
  * retry affordance: re-mounting the canvas would just re-throw, which is the
@@ -37,11 +36,15 @@ export class WebGLErrorBoundary extends Component<Props, State> {
   }
 
   private readonly fail = (error: Error): void => {
-    this.componentDidCatch(error);
+    this.report(error);
     this.setState({ error });
   };
 
   componentDidCatch(error: Error) {
+    this.report(error);
+  }
+
+  private report(error: Error): void {
     const reason = webglFailureReason(error.message, error.stack);
     if (reason !== null) {
       // Boundary-caught render throws don't reach window.onerror, so this
