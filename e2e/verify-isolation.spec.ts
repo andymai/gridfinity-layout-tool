@@ -1,5 +1,35 @@
 import { test, expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { waitForAppReady, clearAllStorage, resetViewport, getActiveDialog } from './fixtures';
+
+/** Layouts and the library live in IndexedDB. */
+function readAppDb(page: Page, store: string, key: string): Promise<unknown> {
+  return page.evaluate(
+    ([storeName, recordKey]) =>
+      new Promise<unknown>((resolve) => {
+        const open = indexedDB.open('gridfinity-db');
+        open.onerror = () => resolve(null);
+        open.onsuccess = () => {
+          const db = open.result;
+          if (!db.objectStoreNames.contains(storeName)) {
+            db.close();
+            resolve(null);
+            return;
+          }
+          const get = db.transaction(storeName, 'readonly').objectStore(storeName).get(recordKey);
+          get.onsuccess = () => {
+            db.close();
+            resolve(get.result ?? null);
+          };
+          get.onerror = () => {
+            db.close();
+            resolve(null);
+          };
+        };
+      }),
+    [store, key] as const
+  );
+}
 
 test.describe('Test Isolation Verification', () => {
   test.beforeEach(async ({ page }) => {
@@ -25,13 +55,14 @@ test.describe('Test Isolation Verification', () => {
     await page.goto('/');
     await waitForAppReady(page);
     const storageState = await page.evaluate(() => ({
-      localStorageLength: localStorage.length,
-      sessionStorageLength: sessionStorage.length,
+      localKeys: Object.keys(localStorage),
+      sessionKeys: Object.keys(sessionStorage),
     }));
 
-    // Should have minimal state (library + active layout + maybe settings)
-    expect(storageState.localStorageLength).toBeLessThanOrEqual(10);
-    expect(storageState.sessionStorageLength).toBe(0);
+    // Only what the app itself writes at startup, nothing a previous test left.
+    const notApp = (key: string) => !key.startsWith('gridfinity-');
+    expect(storageState.localKeys.filter(notApp)).toEqual([]);
+    expect(storageState.sessionKeys.filter(notApp)).toEqual([]);
   });
 
   test('viewport is at baseline', async ({ page }) => {
@@ -91,33 +122,35 @@ test.describe('Test Isolation Verification', () => {
   test('library state is initialized correctly', async ({ page }) => {
     await page.goto('/');
     await waitForAppReady(page);
-    const libraryData = await page.evaluate(() => {
-      const library = localStorage.getItem('gridfinity-library-v1');
-      return library ? JSON.parse(library) : null;
-    });
+    const libraryData = (await readAppDb(page, 'library', 'index')) as {
+      activeLayoutId?: unknown;
+      entries?: unknown;
+    } | null;
 
     expect(libraryData).not.toBeNull();
     expect(libraryData).toHaveProperty('activeLayoutId');
-    expect(libraryData).toHaveProperty('entries');
-    expect(Array.isArray(libraryData.entries)).toBe(true);
+    expect(Array.isArray(libraryData?.entries)).toBe(true);
   });
 
   test('active layout is loaded correctly', async ({ page }) => {
     await page.goto('/');
     await waitForAppReady(page);
-    const layoutData = await page.evaluate(() => {
-      const library = localStorage.getItem('gridfinity-library-v1');
-      if (!library) return null;
+    const library = (await readAppDb(page, 'library', 'index')) as {
+      activeLayoutId?: string;
+      entries?: Array<{
+        id: string;
+        preview?: { drawerWidth?: number; layerCount?: number; binCount?: number };
+      }>;
+    } | null;
+    const activeId = library?.activeLayoutId;
+    expect(typeof activeId).toBe('string');
+    const entry = library?.entries?.find((e) => e.id === activeId);
+    expect(entry).toBeDefined();
 
-      const parsed = JSON.parse(library);
-      const layoutKey = `gridfinity-layout-${parsed.activeLayoutId}`;
-      const layout = localStorage.getItem(layoutKey);
-      return layout ? JSON.parse(layout) : null;
-    });
-
-    expect(layoutData).not.toBeNull();
-    expect(layoutData).toHaveProperty('drawer');
-    expect(layoutData).toHaveProperty('bins');
-    expect(layoutData).toHaveProperty('layers');
+    // The document is stored compressed; its library entry carries a summary.
+    expect(await readAppDb(page, 'layouts', `gridfinity-layout-${activeId}`)).not.toBeNull();
+    expect(entry?.preview?.drawerWidth).toBeGreaterThan(0);
+    expect(entry?.preview?.layerCount).toBeGreaterThanOrEqual(1);
+    expect(typeof entry?.preview?.binCount).toBe('number');
   });
 });

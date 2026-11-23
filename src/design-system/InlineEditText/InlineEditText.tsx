@@ -187,7 +187,8 @@ export function InlineEditText({
           : undefined
       }
       title={displayValue ?? value}
-      aria-label={ariaLabel}
+      // The visible text must be part of the accessible name (WCAG 2.5.3).
+      aria-label={`${ariaLabel}: ${displayValue ?? value}`}
       className={cn(
         'px-3 py-1.5 text-sm rounded-md truncate',
         interactiveTransition,

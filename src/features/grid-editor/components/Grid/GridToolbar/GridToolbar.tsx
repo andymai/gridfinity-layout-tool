@@ -316,7 +316,13 @@ export const GridToolbar = memo(function GridToolbar({
             toggleIsometricPreview();
           }}
           className="px-2.5 py-1.5 gap-1.5"
-          aria-label={t(showIsometricPreview ? 'toolbar.hide3dPreview' : 'toolbar.show3dPreview')}
+          // With its text label shown, the label is the name (WCAG 2.5.3).
+          aria-label={
+            isNarrowToolbar
+              ? t(showIsometricPreview ? 'toolbar.hide3dPreview' : 'toolbar.show3dPreview')
+              : undefined
+          }
+          aria-pressed={showIsometricPreview}
           title={t(showIsometricPreview ? 'toolbar.hide3dPreview' : 'toolbar.show3dPreview')}
         >
           <svg
