@@ -1,0 +1,27 @@
+src/shared/utils/snap.ts
+  s_f3decd9961964a::t_fd3c84185fd3e8 11,189-221,246-247,258-260
+src/shared/hooks/interactions/useDragInteraction.ts
+  s_f3decd9961964a::t_fd3c84185fd3e8 237-240,243-244,275-276
+  s_f3decd9961964a::t_3b8c2c73a46470 4,6
+src/shared/hooks/interactions/useDragInteraction.test.ts
+  s_f3decd9961964a::t_18795b10a4082c 97-137
+src/shared/utils/snap.test.ts
+  s_f3decd9961964a::t_18795b10a4082c 2-9,623-652
+  s_f3decd9961964a::t_767346d69e6e5b 653
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9031bdc77bc8df75c6fb642412a8a9d481893240",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
