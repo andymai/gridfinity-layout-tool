@@ -9,7 +9,7 @@ import { onRevealBin } from '@/shared/events/revealBin';
 export function useRevealGridBin(): void {
   useEffect(
     () =>
-      onRevealBin((binId) => {
+      onRevealBin('grid', (binId) => {
         requestAnimationFrame(() => {
           const element = document.querySelector(`[data-bin-id="${CSS.escape(binId)}"]`);
           if (!(element instanceof HTMLElement)) return;

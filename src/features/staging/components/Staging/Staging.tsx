@@ -300,7 +300,7 @@ export function Staging() {
   // lets the expanded list render before scrolling to it.
   useEffect(
     () =>
-      onRevealBin((id) => {
+      onRevealBin('stash', (id) => {
         const bins = useLayoutStore.getState().layout.bins;
         if (!getStagingBins(bins).some((bin) => bin.id === id)) return;
         setIsExpanded(true);

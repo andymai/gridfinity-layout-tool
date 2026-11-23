@@ -82,7 +82,7 @@ describe('useFocusBin', () => {
   it('reveals the bin after selecting it, every time it is chosen', async () => {
     open(layoutId('here'), drawer());
     const revealed: string[] = [];
-    const stop = onRevealBin((id) => {
+    const stop = onRevealBin('grid', (id) => {
       revealed.push(`${id}:${useSelectionStore.getState().selectedBinIds.join()}`);
     });
     const { result } = renderHook(() => useFocusBin());
