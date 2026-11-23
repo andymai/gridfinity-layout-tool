@@ -1,18 +1,20 @@
 import { STAGING_ID } from '@/core/constants';
 import { loadLayoutAsync } from '@/core/storage';
-import type { Bin, Layout, LayoutId, LayoutLibrary } from '@/core/types';
+import type { Bin, Layout, LayoutEntry, LayoutId, LayoutLibrary } from '@/core/types';
 import { searchField } from './matchBins';
 import type { BinSearchRecord, SearchField } from './matchBins';
 
 interface IndexedLayout {
-  readonly modifiedAt: number;
+  readonly entry: LayoutEntry;
   readonly records: readonly BinSearchRecord[];
 }
 
 /**
- * Per session, keyed by the library entry's `modifiedAt`: every path that
- * changes a stored layout (autosave, a sync pull, an import) bumps it, so a
- * changed stamp is the only cue a layout needs re-reading.
+ * Per session, keyed by the library entry object. Every write of a stored
+ * layout (autosave, a sync pull, an import) replaces its entry, and a library
+ * update keeps the entries it does not touch. A pull can keep the old
+ * `modifiedAt` (its envelope carries the local stamp), so the stamp alone
+ * would leave the records stale.
  */
 const indexed = new Map<LayoutId, IndexedLayout>();
 
@@ -66,13 +68,10 @@ async function reconcile(
 
   for (const entry of library.entries) {
     if (entry.id === activeLayoutId) continue;
-    if (indexed.get(entry.id)?.modifiedAt === entry.modifiedAt) continue;
+    if (indexed.get(entry.id)?.entry === entry) continue;
     const layout = await loadLayoutAsync(entry.id);
     if (layout) {
-      indexed.set(entry.id, {
-        modifiedAt: entry.modifiedAt,
-        records: recordsForLayout(entry.id, layout),
-      });
+      indexed.set(entry.id, { entry, records: recordsForLayout(entry.id, layout) });
     } else {
       indexed.delete(entry.id);
     }

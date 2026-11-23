@@ -23,15 +23,29 @@ function layoutWith(label: string): Layout {
   return layout;
 }
 
-function library(entries: Array<[string, number]>): LayoutLibrary {
+/** One object per id and stamp, as the library keeps an entry nothing wrote. */
+let entryObjects = new Map<string, LayoutEntry>();
+
+function entry(id: string, modifiedAt: number): LayoutEntry {
+  const key = `${id}@${modifiedAt}`;
+  const existing = entryObjects.get(key);
+  if (existing) return existing;
+  const created = {
+    id: layoutId(id),
+    name: id,
+    modifiedAt,
+    createdAt: 1,
+  } as unknown as LayoutEntry;
+  entryObjects.set(key, created);
+  return created;
+}
+
+function library(entries: Array<[string, number] | LayoutEntry>): LayoutLibrary {
   return {
     version: '1.0',
     activeLayoutId: layoutId('active'),
     settings: {},
-    entries: entries.map(
-      ([id, modifiedAt]) =>
-        ({ id: layoutId(id), name: id, modifiedAt, createdAt: 1 }) as unknown as LayoutEntry
-    ),
+    entries: entries.map((e) => (Array.isArray(e) ? entry(e[0], e[1]) : e)),
   };
 }
 
@@ -42,6 +56,7 @@ describe('findIndex', () => {
   beforeEach(() => {
     __resetForTests();
     loadLayoutAsyncMock.mockReset();
+    entryObjects = new Map();
   });
 
   it('indexes bins that have something to find, with their layer name', () => {
@@ -83,6 +98,16 @@ describe('findIndex', () => {
     );
     expect(loadLayoutAsyncMock).toHaveBeenCalledTimes(3);
     expect(loadLayoutAsyncMock).toHaveBeenLastCalledWith('a');
+  });
+
+  it('reads a layout again when a write replaced its entry but kept the stamp', async () => {
+    loadLayoutAsyncMock.mockResolvedValueOnce(layoutWith('before'));
+    expect(labels(await reconcileFindIndex(library([['a', 1]]), null))).toEqual(['before']);
+
+    // A sync pull whose envelope carries the local stamp writes a new entry.
+    loadLayoutAsyncMock.mockResolvedValueOnce(layoutWith('pulled'));
+    const rewritten = { ...entry('a', 1) };
+    expect(labels(await reconcileFindIndex(library([rewritten]), null))).toEqual(['pulled']);
   });
 
   it('applies overlapping reconciles in order, so a slow older read never wins', async () => {
