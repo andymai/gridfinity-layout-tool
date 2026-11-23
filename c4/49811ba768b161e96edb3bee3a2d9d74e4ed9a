@@ -1,0 +1,26 @@
+src/features/bin-designer/components/BentoWorkspace/BentoCompartmentSizeControls.tsx
+  s_0c191ecd28c8c3::t_f2fca13db7781e 7,42,69-73,76,78
+src/features/bin-designer/components/BentoWorkspace/BentoCompartmentSizeControls.test.tsx
+  s_0c191ecd28c8c3::t_30c2ba3e302731 84-86,91,100
+  s_0c191ecd28c8c3::t_f2fca13db7781e 52-83,87-90,92-99,101-102
+src/features/bin-designer/utils/compartmentResize.test.ts
+  s_0c191ecd28c8c3::t_f2fca13db7781e 157-165
+src/features/bin-designer/utils/compartmentResize.ts
+  s_0c191ecd28c8c3::t_f2fca13db7781e 44-46,195
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c449811ba768b161e96edb3bee3a2d9d74e4ed9a",
+  "prompts": {},
+  "sessions": {
+    "s_0c191ecd28c8c3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f7a72b82-3d5a-4aec-a3fc-27209c777a7d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
