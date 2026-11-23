@@ -4,6 +4,7 @@ import {
   __resetForTests,
   isChunkLoadError,
   recoverStaleBundle,
+  RELOAD_GRACE_MS,
   STALE_RECOVERY_FLAG,
 } from './staleRecovery';
 
@@ -163,6 +164,19 @@ describe('recoverStaleBundle', () => {
 
     vi.advanceTimersByTime(2 * 60 * 1000);
     expect(await recoverStaleBundle('third')).toBe(true);
+  });
+
+  it('ends the in-flight state when a cancelled reload leaves the page alive', async () => {
+    vi.useFakeTimers();
+    expect(await recoverStaleBundle('first')).toBe(true);
+    expect(await recoverStaleBundle('waits')).toBe(true);
+
+    vi.advanceTimersByTime(RELOAD_GRACE_MS);
+    expect(await recoverStaleBundle('guarded')).toBe(false);
+
+    vi.advanceTimersByTime(10 * 60 * 1000);
+    expect(await recoverStaleBundle('later')).toBe(true);
+    expect(reload).toHaveBeenCalledTimes(2);
   });
 });
 

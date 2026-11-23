@@ -51,6 +51,10 @@ export class PanelErrorBoundary extends Component<Props, State> {
   }
 
   handleRetry = () => {
+    if (isChunkLoadError(this.state.error)) {
+      void recoverStaleBundle('panel_retry_chunk_load', { force: true });
+      return;
+    }
     this.setState({ hasError: false, error: null });
   };
 

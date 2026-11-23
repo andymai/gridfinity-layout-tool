@@ -111,6 +111,19 @@ describe('PanelErrorBoundary', () => {
     expect(recoverStaleBundle).toHaveBeenCalledWith('panel_chunk_load');
   });
 
+  it('forces a recovery from Retry for a chunk miss, which a re-render cannot clear', () => {
+    function ChunkMissChild(): never {
+      throw new Error('Failed to fetch dynamically imported module: /assets/Inspector-abc.js');
+    }
+    render(
+      <PanelErrorBoundary panelName="Inspector">
+        <ChunkMissChild />
+      </PanelErrorBoundary>
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(recoverStaleBundle).toHaveBeenCalledWith('panel_retry_chunk_load', { force: true });
+  });
+
   it('does not start a recovery for a panel fault', () => {
     render(
       <PanelErrorBoundary panelName="Inspector">

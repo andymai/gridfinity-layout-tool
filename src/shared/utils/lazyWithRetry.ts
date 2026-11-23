@@ -1,8 +1,6 @@
 // eslint-disable-next-line no-restricted-imports -- this util is the one legitimate caller of React.lazy.
 import { lazy, type ComponentType } from 'react';
-import { recoverStaleBundle } from '@/shared/pwa/staleRecovery';
-
-const RELOAD_GRACE_MS = 30_000;
+import { RELOAD_GRACE_MS, recoverStaleBundle } from '@/shared/pwa/staleRecovery';
 
 // Stays suspended while the recovery reload takes over. The reload can be held
 // back (a `beforeunload` prompt the user cancels), so the miss still reaches

@@ -39,6 +39,12 @@ export const STALE_RECOVERY_FLAG = 'pwa-stale-recovery-done';
 
 const GUARD_WINDOW_MS = 10 * 60 * 1000;
 
+/**
+ * How long a caller waits for the recovery reload. A `beforeunload` prompt the
+ * user cancels keeps the page alive, so the in-flight state ends here too.
+ */
+export const RELOAD_GRACE_MS = 30_000;
+
 interface GuardRecord {
   readonly sha: string;
   readonly at: number;
@@ -162,6 +168,9 @@ export async function recoverStaleBundle(
   await unregisterServiceWorkers();
 
   window.location.reload();
+  setTimeout(() => {
+    recoveryInFlight = false;
+  }, RELOAD_GRACE_MS);
   return true;
 }
 
