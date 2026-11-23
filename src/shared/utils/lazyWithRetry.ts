@@ -1,6 +1,18 @@
 // eslint-disable-next-line no-restricted-imports -- this util is the one legitimate caller of React.lazy.
 import { lazy, type ComponentType } from 'react';
-import { recoverStaleBundle } from '@/shared/pwa/staleRecovery';
+import { RELOAD_GRACE_MS, recoverStaleBundle } from '@/shared/pwa/staleRecovery';
+
+// Stays suspended while the recovery reload takes over. The reload can be held
+// back (a `beforeunload` prompt the user cancels), so the miss still reaches
+// the boundary's Reload action once the page has clearly not gone away.
+function awaitReload(error: unknown): Promise<never> {
+  return new Promise((_, reject) => {
+    setTimeout(
+      () => reject(error instanceof Error ? error : new Error(String(error))),
+      RELOAD_GRACE_MS
+    );
+  });
+}
 
 /**
  * Wraps a dynamic import with retry logic to handle chunk loading failures.
@@ -10,7 +22,8 @@ import { recoverStaleBundle } from '@/shared/pwa/staleRecovery';
  *
  * On failure, it will:
  * 1. Retry the import up to `retries` times
- * 2. If all retries fail, recover onto the current build (once per session)
+ * 2. If all retries fail, recover onto the current build, or wait for a
+ *    recovery another chunk miss already started
  *
  * Recovery has to go through {@link recoverStaleBundle} rather than a plain
  * `location.reload()`. The precache holds index.html and the boot graph, which
@@ -49,15 +62,14 @@ export function lazyWithRetry<T extends ComponentType<any>>(
         }
 
         // A stale bundle is one condition for the whole tab, not one per chunk,
-        // so the once-per-session guard belongs to the shared recovery rather
-        // than to a key derived from this importFn.
+        // so the guard belongs to the shared recovery rather than to a key
+        // derived from this importFn.
         if (recoverOnFinalFailure && (await recoverStaleBundle('chunk_load_failure'))) {
-          // Return a never-resolving promise while the page reloads
-          return new Promise(() => {});
+          return awaitReload(error);
         }
 
-        // Recovery was declined (already used this session, offline, or opted
-        // out), so surface the failure to the nearest boundary.
+        // Recovery was declined (the guard holds, offline, or opted out), so
+        // surface the failure to the nearest boundary.
         throw error;
       }
     }

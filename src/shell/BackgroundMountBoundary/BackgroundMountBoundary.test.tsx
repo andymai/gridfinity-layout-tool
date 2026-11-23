@@ -1,10 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { captureException } from '@/shared/analytics/posthog';
+import { recoverStaleBundle } from '@/shared/pwa/staleRecovery';
 import { BackgroundMountBoundary } from './BackgroundMountBoundary';
+import type * as StaleRecovery from '@/shared/pwa/staleRecovery';
 
 vi.mock('@/shared/analytics/posthog', () => ({
   captureException: vi.fn(),
+}));
+
+vi.mock('@/shared/pwa/staleRecovery', async (importOriginal) => ({
+  ...(await importOriginal<typeof StaleRecovery>()),
+  recoverStaleBundle: vi.fn().mockResolvedValue(true),
 }));
 
 function ThrowingChild({ shouldThrow }: { shouldThrow: boolean }) {
@@ -58,5 +65,26 @@ describe('BackgroundMountBoundary', () => {
       expect.any(Error),
       expect.objectContaining({ boundary: 'background-mount', mountName: 'SharedLayoutImporter' })
     );
+  });
+
+  it('starts a stale-bundle recovery for a chunk miss, which renders nothing to recover from', () => {
+    render(
+      <BackgroundMountBoundary mountName="SharedLayoutImporter">
+        <ThrowingChild shouldThrow={true} />
+      </BackgroundMountBoundary>
+    );
+    expect(recoverStaleBundle).toHaveBeenCalledWith('background_mount_chunk_load');
+  });
+
+  it('does not start a recovery for an error that is not a chunk miss', () => {
+    function FaultyChild(): never {
+      throw new Error('boom');
+    }
+    render(
+      <BackgroundMountBoundary mountName="SyncSessionMount">
+        <FaultyChild />
+      </BackgroundMountBoundary>
+    );
+    expect(recoverStaleBundle).not.toHaveBeenCalled();
   });
 });

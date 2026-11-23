@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { captureException } from '@/shared/analytics/posthog';
+import { isChunkLoadError, recoverStaleBundle } from '@/shared/pwa/staleRecovery';
 
 interface Props {
   children: ReactNode;
@@ -24,7 +25,9 @@ interface State {
  * Renders nothing on failure, matching what these mounts render when they
  * work, so the app degrades by losing that one side effect rather than
  * crashing. Still reports, under its own `boundary` tag so it stays
- * distinguishable from a real root crash.
+ * distinguishable from a real root crash. A chunk miss also starts a stale-bundle
+ * recovery: rendering nothing hides it, so the user would never reach the
+ * root boundary's Reload action.
  *
  * Only for mounts whose output is `null`. Anything the user is meant to see
  * belongs in {@link PanelErrorBoundary}, which offers a retry.
@@ -45,6 +48,7 @@ export class BackgroundMountBoundary extends Component<Props, State> {
       mountName: this.props.mountName,
       componentStack: errorInfo.componentStack,
     });
+    if (isChunkLoadError(error)) void recoverStaleBundle('background_mount_chunk_load');
   }
 
   render() {

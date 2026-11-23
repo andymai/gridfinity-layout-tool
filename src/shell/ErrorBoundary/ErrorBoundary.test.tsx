@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ErrorBoundary } from './ErrorBoundary';
+import type * as StaleRecovery from '@/shared/pwa/staleRecovery';
 
 const { undoMock, historyState, recoverStaleBundleMock } = vi.hoisted(() => ({
   undoMock: vi.fn(),
@@ -8,7 +9,8 @@ const { undoMock, historyState, recoverStaleBundleMock } = vi.hoisted(() => ({
   recoverStaleBundleMock: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock('@/shared/pwa/staleRecovery', () => ({
+vi.mock('@/shared/pwa/staleRecovery', async (importOriginal) => ({
+  ...(await importOriginal<typeof StaleRecovery>()),
   recoverStaleBundle: recoverStaleBundleMock,
 }));
 
