@@ -14,29 +14,28 @@ import { useEffect } from 'react';
 import { eventBus } from '@/core/cqrs';
 import { isOk } from '@/core/result';
 import { useLayoutStore } from '@/core/store/layout';
-import type { BaseplateDesignId, StoredBaseplateParams } from '@/core/types';
-import { loadDesign, updateDesignParams } from '../storage/BaseplateStorage';
+import type { BaseplateDesignId, LayoutId, StoredBaseplateParams } from '@/core/types';
+import { updateDesignParamsIfChanged } from '../storage/BaseplateStorage';
 import { upsertRegistryEntry } from '../store/baseplateRegistry';
-import { paramsEqual } from '../utils/paramsEqual';
 
 /** The page autosave's delay. A run of undos writes once. */
 const WRITE_DELAY_MS = 1000;
 
 interface PendingWrite {
+  readonly layoutId: LayoutId | null;
   readonly designId: BaseplateDesignId;
   readonly params: StoredBaseplateParams;
   /** Order of the edit, so an older write never lands over a newer one. */
   readonly seq: number;
 }
 
-/** Resolves false when storage failed, so the edit can try again. */
+/**
+ * Resolves false when storage failed, so the edit can try again. Storage orders
+ * this write with the page autosave's, and skips it when the design already
+ * holds the params, so an undo of a bin edit leaves the design's sync stamp.
+ */
 async function writeIfChanged({ designId, params }: PendingWrite): Promise<boolean> {
-  const stored = await loadDesign(designId);
-  if (!isOk(stored)) return false;
-  // A restore that leaves the plate as saved writes nothing, so an undo of a
-  // bin edit does not touch the design or its sync stamp.
-  if (paramsEqual(stored.value.params, params)) return true;
-  const updated = await updateDesignParams(designId, params);
+  const updated = await updateDesignParamsIfChanged(designId, params);
   if (!isOk(updated)) return false;
   upsertRegistryEntry({
     id: updated.value.id,
@@ -44,6 +43,17 @@ async function writeIfChanged({ designId, params }: PendingWrite): Promise<boole
     updatedAt: updated.value.updatedAt,
   });
   return true;
+}
+
+/**
+ * The edit's layout now points at another design, and no design switch moved
+ * it: the init split a shared design into this layout's own copy, carrying the
+ * edit with it. Writing to the old design would put this layout's plate on the
+ * other layouts that use it.
+ */
+function movedOff(write: PendingWrite): boolean {
+  const { activeLayoutId, layout } = useLayoutStore.getState();
+  return activeLayoutId === write.layoutId && layout.activeBaseplateId !== write.designId;
 }
 
 export function usePlannerBaseplateWriteBack(): void {
@@ -67,28 +77,37 @@ export function usePlannerBaseplateWriteBack(): void {
       });
     };
 
-    /** Write the pending edit, and try again the ones storage refused. */
-    const flush = (): void => {
+    /**
+     * Write the pending edit, and try again the ones storage refused. A design
+     * switch flushes with `switched`, so its edit still reaches the design it
+     * was made on.
+     */
+    const flush = (switched = false): void => {
       if (timer !== null) clearTimeout(timer);
       timer = null;
-      const retries = [...failed.values()];
+      const writes = [...failed.values()];
       failed.clear();
-      for (const write of retries) run(write);
-      const write = pending;
+      if (pending !== null) writes.push(pending);
       pending = null;
-      if (write !== null) run(write);
+      for (const write of writes) if (switched || !movedOff(write)) run(write);
     };
 
     const schedule = (): void => {
-      const { activeBaseplateId, baseplateParams } = useLayoutStore.getState().layout;
+      const { activeLayoutId, layout } = useLayoutStore.getState();
+      const { activeBaseplateId, baseplateParams } = layout;
       if (!activeBaseplateId || !baseplateParams) return;
       if (pending !== null && pending.designId !== activeBaseplateId) flush();
       seq += 1;
       newest.set(activeBaseplateId, seq);
       failed.delete(activeBaseplateId);
-      pending = { designId: activeBaseplateId, params: baseplateParams, seq };
+      pending = {
+        layoutId: activeLayoutId,
+        designId: activeBaseplateId,
+        params: baseplateParams,
+        seq,
+      };
       if (timer !== null) clearTimeout(timer);
-      timer = setTimeout(flush, WRITE_DELAY_MS);
+      timer = setTimeout(() => flush(), WRITE_DELAY_MS);
     };
 
     const onVisibilityChange = (): void => {
@@ -98,6 +117,7 @@ export function usePlannerBaseplateWriteBack(): void {
     const unsubscribers = [
       eventBus.subscribe('layout.baseplateParamsSet', schedule),
       eventBus.subscribe('layout.restored', schedule),
+      eventBus.subscribe('layout.activeBaseplateSet', () => flush(true)),
     ];
     document.addEventListener('visibilitychange', onVisibilityChange);
     return () => {

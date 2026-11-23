@@ -11,7 +11,7 @@ import { resetAllStores, createTestLayout } from '@/test/testUtils';
 import {
   saveDesign,
   loadDesign,
-  updateDesignParams,
+  updateDesignParamsIfChanged,
   closeBaseplateDb,
 } from '@/features/baseplate/storage/BaseplateStorage';
 import type * as BaseplateStorageModule from '@/features/baseplate/storage/BaseplateStorage';
@@ -19,7 +19,10 @@ import { usePlannerBaseplateWriteBack } from './usePlannerBaseplateWriteBack';
 
 vi.mock('@/features/baseplate/storage/BaseplateStorage', async (importOriginal) => {
   const actual = await importOriginal<typeof BaseplateStorageModule>();
-  return { ...actual, updateDesignParams: vi.fn(actual.updateDesignParams) };
+  return {
+    ...actual,
+    updateDesignParamsIfChanged: vi.fn(actual.updateDesignParamsIfChanged),
+  };
 });
 
 const params: StoredBaseplateParams = {
@@ -46,6 +49,12 @@ async function storedParams(id: BaseplateDesignId): Promise<StoredBaseplateParam
   const loaded = await loadDesign(id);
   if (!isOk(loaded)) throw new Error('loadDesign failed');
   return loaded.value.params;
+}
+
+async function storedStamp(id: BaseplateDesignId): Promise<string> {
+  const loaded = await loadDesign(id);
+  if (!isOk(loaded)) throw new Error('loadDesign failed');
+  return loaded.value.updatedAt;
 }
 
 async function linkedLayout(): Promise<BaseplateDesignId> {
@@ -84,7 +93,7 @@ describe('usePlannerBaseplateWriteBack', () => {
     _resetUndoCaptureState();
     localStorage.clear();
     await clearDb();
-    vi.mocked(updateDesignParams).mockClear();
+    vi.mocked(updateDesignParamsIfChanged).mockClear();
   });
 
   afterEach(() => {
@@ -122,12 +131,13 @@ describe('usePlannerBaseplateWriteBack', () => {
     });
     await settle();
 
-    expect(updateDesignParams).not.toHaveBeenCalled();
+    expect(updateDesignParamsIfChanged).not.toHaveBeenCalled();
     expect(await storedParams(id)).toEqual(params);
   });
 
   it('writes nothing for an undo that leaves the plate as saved', async () => {
-    await linkedLayout();
+    const id = await linkedLayout();
+    const before = await storedStamp(id);
     renderHook(() => usePlannerBaseplateWriteBack());
     act(() => {
       commandBus.dispatch(createCommand('layout.setName', { name: 'Kitchen' }));
@@ -136,7 +146,7 @@ describe('usePlannerBaseplateWriteBack', () => {
     act(() => useHistoryStore.getState().undo());
     await settle();
 
-    expect(updateDesignParams).not.toHaveBeenCalled();
+    expect(await storedStamp(id)).toBe(before);
   });
 
   it('writes nothing after an undo when the plate has an unchanged custom split', async () => {
@@ -146,6 +156,7 @@ describe('usePlannerBaseplateWriteBack', () => {
     } as StoredBaseplateParams;
     const saved = await saveDesign({ name: 'Split plate', params: split, thumbnail: null });
     if (!isOk(saved)) throw new Error('saveDesign failed');
+    const before = saved.value.updatedAt;
     useLayoutStore
       .getState()
       .importLayout(
@@ -160,15 +171,19 @@ describe('usePlannerBaseplateWriteBack', () => {
     act(() => useHistoryStore.getState().undo());
     await settle();
 
-    expect(updateDesignParams).not.toHaveBeenCalled();
+    expect(await storedStamp(saved.value.id)).toBe(before);
   });
 
   it('keeps a failed write and tries it again when the tab is hidden', async () => {
     const id = await linkedLayout();
     renderHook(() => usePlannerBaseplateWriteBack());
-    vi.mocked(updateDesignParams).mockResolvedValueOnce(err(storageUnavailable('indexedDB')));
+    vi.mocked(updateDesignParamsIfChanged).mockResolvedValueOnce(
+      err(storageUnavailable('indexedDB'))
+    );
     setPlate(edited);
-    await waitFor(() => expect(updateDesignParams).toHaveBeenCalledOnce(), { timeout: 3000 });
+    await waitFor(() => expect(updateDesignParamsIfChanged).toHaveBeenCalledOnce(), {
+      timeout: 3000,
+    });
     expect(await storedParams(id)).toEqual(params);
 
     hideTab();
@@ -181,7 +196,7 @@ describe('usePlannerBaseplateWriteBack', () => {
     renderHook(() => usePlannerBaseplateWriteBack());
     const newer: StoredBaseplateParams = { ...params, paddingBack: mm(35) };
     let failOlder: (() => void) | null = null;
-    vi.mocked(updateDesignParams).mockImplementationOnce(
+    vi.mocked(updateDesignParamsIfChanged).mockImplementationOnce(
       () =>
         new Promise((resolve) => {
           failOlder = () => resolve(err(storageUnavailable('indexedDB')));
@@ -199,6 +214,39 @@ describe('usePlannerBaseplateWriteBack', () => {
     hideTab();
     await settle();
     expect(await storedParams(id)).toEqual(newer);
+  });
+
+  it('drops a pending write when the load moves the layout to its own copy', async () => {
+    const id = await linkedLayout();
+    const copy = await saveDesign({ name: 'Baseplate 1 (copy)', params: edited, thumbnail: null });
+    if (!isOk(copy)) throw new Error('saveDesign failed');
+    renderHook(() => usePlannerBaseplateWriteBack());
+    setPlate(edited);
+
+    // The init's split points the layout at its copy without a command.
+    act(() => {
+      useLayoutStore.getState().setActiveBaseplateLocal(copy.value.id, edited);
+    });
+    await settle();
+
+    expect(await storedParams(id)).toEqual(params);
+  });
+
+  it('saves an edit to the design it was made on when a design switch follows', async () => {
+    const id = await linkedLayout();
+    const other = await saveDesign({ name: 'Other', params, thumbnail: null });
+    if (!isOk(other)) throw new Error('saveDesign failed');
+    renderHook(() => usePlannerBaseplateWriteBack());
+    setPlate(edited);
+
+    act(() => {
+      commandBus.dispatch(
+        createCommand('layout.setActiveBaseplate', { designId: other.value.id, params })
+      );
+    });
+
+    await waitFor(async () => expect(await storedParams(id)).toEqual(edited), { timeout: 500 });
+    expect(await storedParams(other.value.id)).toEqual(params);
   });
 
   it('writes a pending edit at once when the planner closes', async () => {
