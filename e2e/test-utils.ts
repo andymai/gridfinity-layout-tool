@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { expect } from '@playwright/test';
 
 /**
  * Complete storage cleanup for test isolation.
@@ -31,6 +32,63 @@ export async function clearAllStorage(page: Page): Promise<void> {
   });
 }
 
+interface StoredActiveLayout {
+  readonly stored: boolean;
+  readonly name?: string;
+  readonly binCount?: number;
+}
+
+/** The open layout as IndexedDB holds it: its library entry and whether its record exists. */
+function readStoredActiveLayout(page: Page): Promise<StoredActiveLayout> {
+  return page.evaluate(async () => {
+    const none = { stored: false };
+    // Opening a database that does not exist yet would create it empty, ahead
+    // of the app's own upgrade, so look first.
+    const dbs = await indexedDB.databases();
+    if (!dbs.some((db) => db.name === 'gridfinity-db')) return none;
+    return new Promise<StoredActiveLayout>((resolve) => {
+      const open = indexedDB.open('gridfinity-db');
+      open.onerror = () => resolve(none);
+      open.onsuccess = () => {
+        const db = open.result;
+        const done = (result: StoredActiveLayout) => {
+          db.close();
+          resolve(result);
+        };
+        if (!db.objectStoreNames.contains('library') || !db.objectStoreNames.contains('layouts')) {
+          done(none);
+          return;
+        }
+        const tx = db.transaction(['library', 'layouts'], 'readonly');
+        const index = tx.objectStore('library').get('index');
+        index.onerror = () => done(none);
+        index.onsuccess = () => {
+          const library = index.result as
+            | {
+                activeLayoutId?: string;
+                entries?: Array<{ id: string; name: string; preview?: { binCount?: number } }>;
+              }
+            | undefined;
+          const activeId = library?.activeLayoutId;
+          if (!activeId) {
+            done(none);
+            return;
+          }
+          const entry = library.entries?.find((e) => e.id === activeId);
+          const record = tx.objectStore('layouts').get(`gridfinity-layout-${activeId}`);
+          record.onerror = () => done(none);
+          record.onsuccess = () =>
+            done({
+              stored: record.result !== undefined,
+              name: entry?.name,
+              binCount: entry?.preview?.binCount,
+            });
+        };
+      };
+    });
+  });
+}
+
 /**
  * Wait for auto-save to complete after state changes.
  *
@@ -46,27 +104,34 @@ export async function clearAllStorage(page: Page): Promise<void> {
  * @param timeout - Maximum time to wait (default 5000ms)
  */
 export async function waitForAutoSave(page: Page, timeout = 5000): Promise<void> {
-  await page.waitForFunction(
-    () => {
-      // Check if library index exists in localStorage
-      const libraryKey = 'gridfinity-library-v1';
-      const library = localStorage.getItem(libraryKey);
-      if (!library) return false;
+  await expect
+    .poll(async () => (await readStoredActiveLayout(page)).stored, { timeout, intervals: [200] })
+    .toBe(true);
+}
 
-      try {
-        // Check if active layout exists
-        const parsed = JSON.parse(library);
-        const activeId = parsed.activeLayoutId;
-        if (!activeId) return false;
-
-        const layoutKey = `gridfinity-layout-${activeId}`;
-        return localStorage.getItem(layoutKey) !== null;
-      } catch {
-        return false;
-      }
-    },
-    { timeout }
-  );
+/**
+ * Wait until the saved library entry of the open layout matches what the test
+ * just did. Unlike `waitForAutoSave`, this sees the latest edit land, so it is
+ * the one to use before a reload.
+ */
+export async function waitForSavedLayout(
+  page: Page,
+  expected: { name?: string; binCount?: number },
+  timeout = 5000
+): Promise<void> {
+  await expect
+    .poll(
+      async () => {
+        const saved = await readStoredActiveLayout(page);
+        return (
+          saved.stored &&
+          (expected.name === undefined || saved.name === expected.name) &&
+          (expected.binCount === undefined || saved.binCount === expected.binCount)
+        );
+      },
+      { timeout, intervals: [200] }
+    )
+    .toBe(true);
 }
 
 /**
