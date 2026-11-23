@@ -39,16 +39,11 @@ export async function openDesignList(page: Page) {
   ).click();
 }
 
-/**
- * Open the layout manager the way a user does: the header's layout switcher,
- * then Manage layouts.
- */
 export async function openLayoutManager(page: Page) {
   await page.getByRole('button', { name: /Switch layout/ }).click();
   await page.getByRole('menuitem', { name: 'Manage layouts' }).click();
 }
 
-/** Rename the open layout through the header's inline name editor. */
 export async function renameActiveLayout(page: Page, name: string) {
   await page.getByRole('button', { name: /^Click to edit layout name/ }).click();
   const input = page.locator('header input[type="text"]');
