@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { CONSTRAINTS } from '@/core/constants';
 import { DESIGNER_CONSTRAINTS, GRIDFINITY, minHeightUnits } from './gridfinity';
 import { MAX_IMPORTED_MESH_HEIGHT_UNITS } from '@/shared/items/importedMesh/descriptor';
 
@@ -106,8 +107,12 @@ describe('mm ceilings derived from MAX_HEIGHT', () => {
     expect(DESIGNER_CONSTRAINTS.MAX_SCOOP_HEIGHT).toBe(tallestInteriorMm);
   });
 
-  it('lets a taper band span the tallest bin', () => {
-    expect(DESIGNER_CONSTRAINTS.MAX_TAPER_BAND).toBe(tallestInteriorMm);
+  it('lets a taper band span the tallest wall: the largest height unit plus extra wall height', () => {
+    // The band slider runs to the bin's wall height, not to its nominal height.
+    const tallestWallMm =
+      DESIGNER_CONSTRAINTS.MAX_HEIGHT * CONSTRAINTS.HEIGHT_UNIT_MM_MAX +
+      DESIGNER_CONSTRAINTS.MAX_EXTRA_WALL_HEIGHT;
+    expect(DESIGNER_CONSTRAINTS.MAX_TAPER_BAND).toBe(tallestWallMm);
   });
 });
 

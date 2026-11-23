@@ -23,6 +23,11 @@ const overhang = {
 };
 
 describe('sanitizeBinFitFields', () => {
+  it('keeps the overhang and its taper when the band rises past 350 mm on a tall wall', () => {
+    const tall = { ...overhang, taper: { ...wallTaper, bandHeight: 400 } };
+    expect(sanitizeBinFitFields({ overhang: tall })).toEqual({ overhang: tall });
+  });
+
   it('keeps well-formed values exactly', () => {
     expect(
       sanitizeBinFitFields({
@@ -44,7 +49,7 @@ describe('sanitizeBinFitFields', () => {
     ['a string clearance', { clearanceHeight: '2' }],
     ['a truthy non-boolean margin flag', { extendToMargin: 'yes' }],
     ['an unknown taper profile', { marginTaper: { ...taper, profile: 'bevel' } }],
-    ['a taper band past the ceiling', { marginTaper: { ...taper, bandHeight: 351 } }],
+    ['a taper band past the ceiling', { marginTaper: { ...taper, bandHeight: 1101 } }],
     ['a taper without a band', { marginTaper: { profile: 'chamfer' } }],
     ['an overhang side past one grid unit', { overhang: { ...overhang, back: 43 } }],
     ['a negative overhang side', { overhang: { ...overhang, left: -1 } }],

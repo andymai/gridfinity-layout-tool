@@ -213,12 +213,12 @@ reaches into a drawer's curved sides while its base still sits flat. Requires
 
 <!-- generated:start -->
 
-| Field        | Type                      | Required | Default | Constraint   | Notes                                                                                                     |
-| ------------ | ------------------------- | -------- | ------- | ------------ | --------------------------------------------------------------------------------------------------------- |
-| `profile`    | `"chamfer"` \| `"fillet"` | yes      |         |              | Cross-section shape of the taper.                                                                         |
-| `bandHeight` | `number`                  | yes      |         | >= 0, <= 350 | How far up the wall the taper rises, in mm.                                                               |
-| `enabled`    | `boolean`                 |          |         |              | Absent means enabled is inferred from any non-zero side.                                                  |
-| `flare`      | `number`                  |          |         | >= 0, <= 42  | Extra width in mm at the rim beyond the padding. The only authored width; applied on every abutting edge. |
+| Field        | Type                      | Required | Default | Constraint    | Notes                                                                                                     |
+| ------------ | ------------------------- | -------- | ------- | ------------- | --------------------------------------------------------------------------------------------------------- |
+| `profile`    | `"chamfer"` \| `"fillet"` | yes      |         |               | Cross-section shape of the taper.                                                                         |
+| `bandHeight` | `number`                  | yes      |         | >= 0, <= 1100 | How far up the wall the taper rises, in mm.                                                               |
+| `enabled`    | `boolean`                 |          |         |               | Absent means enabled is inferred from any non-zero side.                                                  |
+| `flare`      | `number`                  |          |         | >= 0, <= 42   | Extra width in mm at the rim beyond the padding. The only authored width; applied on every abutting edge. |
 
 <!-- generated:end -->
 

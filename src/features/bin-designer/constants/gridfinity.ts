@@ -161,7 +161,9 @@ export const DESIGNER_CONSTRAINTS = {
   MAX_TAPER: 42, // mm (one full grid unit)
   TAPER_STEP: 0.5, // mm
   MIN_TAPER_BAND: 0, // mm — band height (how far up the wall the taper rises)
-  MAX_TAPER_BAND: 350, // mm — capped at MAX_SCOOP_HEIGHT; clamped to wall height at build
+  // mm — the tallest wall: MAX_HEIGHT units of the largest height unit (20 mm)
+  // plus MAX_EXTRA_WALL_HEIGHT. Clamped to the real wall height at build.
+  MAX_TAPER_BAND: 1100,
   TAPER_BAND_STEP: 0.5, // mm
   // Extra exterior wall height — raises the perimeter walls + stacking lip
   // above the nominal bin height (collar). Bounds mirror the lid's

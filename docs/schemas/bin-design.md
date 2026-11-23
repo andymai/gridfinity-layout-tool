@@ -717,15 +717,15 @@ Stored rim-anchored: the wall is full width at the rim and angles inward over
 
 <!-- generated:start -->
 
-| Field        | Type                      | Required | Default | Constraint   | Notes                                                                                  |
-| ------------ | ------------------------- | -------- | ------- | ------------ | -------------------------------------------------------------------------------------- |
-| `enabled`    | `boolean`                 |          |         |              | Absent means enabled is inferred from any non-zero side.                               |
-| `profile`    | `"chamfer"` \| `"fillet"` | yes      |         |              | Cross-section shape.                                                                   |
-| `bandHeight` | `number`                  | yes      |         | >= 0, <= 350 | How far up the wall the taper rises in mm, clamped to wall height at build.            |
-| `left`       | `number`                  | yes      |         | >= 0, <= 42  | Magnitude on -X in mm. Chamfer: base inset. Fillet: radius. 0 keeps the side vertical. |
-| `right`      | `number`                  | yes      |         | >= 0, <= 42  | Magnitude on +X in mm.                                                                 |
-| `front`      | `number`                  | yes      |         | >= 0, <= 42  | Magnitude on -Y in mm.                                                                 |
-| `back`       | `number`                  | yes      |         | >= 0, <= 42  | Magnitude on +Y in mm.                                                                 |
+| Field        | Type                      | Required | Default | Constraint    | Notes                                                                                  |
+| ------------ | ------------------------- | -------- | ------- | ------------- | -------------------------------------------------------------------------------------- |
+| `enabled`    | `boolean`                 |          |         |               | Absent means enabled is inferred from any non-zero side.                               |
+| `profile`    | `"chamfer"` \| `"fillet"` | yes      |         |               | Cross-section shape.                                                                   |
+| `bandHeight` | `number`                  | yes      |         | >= 0, <= 1100 | How far up the wall the taper rises in mm, clamped to wall height at build.            |
+| `left`       | `number`                  | yes      |         | >= 0, <= 42   | Magnitude on -X in mm. Chamfer: base inset. Fillet: radius. 0 keeps the side vertical. |
+| `right`      | `number`                  | yes      |         | >= 0, <= 42   | Magnitude on +X in mm.                                                                 |
+| `front`      | `number`                  | yes      |         | >= 0, <= 42   | Magnitude on -Y in mm.                                                                 |
+| `back`       | `number`                  | yes      |         | >= 0, <= 42   | Magnitude on +Y in mm.                                                                 |
 
 <!-- generated:end -->
 
