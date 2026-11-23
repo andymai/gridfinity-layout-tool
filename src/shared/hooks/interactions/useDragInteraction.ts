@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
 import { useInteractionStore, useViewStore, useLayoutStore, useToastStore } from '@/core/store';
 import { useHalfGridModeStore } from '@/core/store';
-import { canPlaceBin, getPlacementErrorMessage } from '@/shared/utils/validation';
+import { getPlacementErrorMessage } from '@/shared/utils/validation';
 import { canSwapBins, findBinAtPosition } from '@/shared/utils/position';
-import { snapGroupDelta } from '@/shared/utils/snap';
+import { canPlaceShifted, snapGroupDelta } from '@/shared/utils/snap';
 import { constrainGroupDelta } from './selection';
 import { capturePointer } from './interaction';
 import { findBinById, findBinsByIds } from '@/shared/utils/entity';
@@ -234,23 +234,14 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
         // If no swap target, check normal placement validity
         if (!swapTarget) {
           for (const bin of draggedBins) {
-            const newX = (bin.x + deltaX) as GridUnits;
-            const newY = (bin.y + deltaY) as GridUnits;
-
-            const result = canPlaceBin(
-              {
-                x: newX,
-                y: newY,
-                width: bin.width,
-                depth: bin.depth,
-                height: bin.height,
-                clearanceHeight: bin.clearanceHeight,
-                linkedDesignId: bin.linkedDesignId,
-              },
+            const result = canPlaceShifted(
+              bin,
+              deltaX,
+              deltaY,
               activeLayerId,
               layout,
-              bin.id,
-              otherBinIds // Pass all dragged bins to exclude from collision check
+              otherBinIds,
+              interaction.duplicate === true
             );
 
             if (!result.valid) {
@@ -281,7 +272,8 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
               otherBinIds,
               moveDirX,
               moveDirY,
-              step
+              step,
+              interaction.duplicate === true
             );
 
             if (snapResult) {
