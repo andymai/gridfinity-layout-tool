@@ -265,6 +265,95 @@ describe('selectionPruning subscriber', () => {
     });
   });
 
+  describe('bins displaced to staging', () => {
+    const displaced = [binId('bin1'), binId('bin2')];
+
+    function selectThreeBins(): void {
+      useSelectionStore.setState({
+        selectedBinIds: [binId('bin1'), binId('bin2'), binId('bin3')],
+        focusedBinId: binId('bin1'),
+        quickLabelBinId: binId('bin2'),
+      });
+    }
+
+    function expectOnlyBin3Left(): void {
+      const state = useSelectionStore.getState();
+      expect(state.selectedBinIds).toEqual([binId('bin3')]);
+      expect(state.focusedBinId).toBeNull();
+      expect(state.quickLabelBinId).toBeNull();
+    }
+
+    const params = {
+      magnetHoles: false,
+      magnetDiameter: 6,
+      magnetDepth: 2,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 0,
+      paddingBack: 0,
+    } as Extract<DomainEvent, { type: 'layout.baseplateParamsSet' }>['payload']['params'];
+
+    const events: Array<[string, DomainEvent]> = [
+      [
+        'drawer.updated',
+        makeEvent('drawer.updated', {
+          changes: {},
+          previous: {},
+          binsDisplacedToStaging: 2,
+          displacedBinIds: displaced,
+        }),
+      ],
+      [
+        'drawer.outlineSet',
+        makeEvent('drawer.outlineSet', {
+          outline: undefined,
+          previousOutline: undefined,
+          binsDisplacedToStaging: 2,
+          displacedBinIds: displaced,
+        }),
+      ],
+      [
+        'layout.baseplateParamsSet',
+        makeEvent('layout.baseplateParamsSet', { params, displacedBinIds: displaced }),
+      ],
+      [
+        'layout.activeBaseplateSet',
+        makeEvent('layout.activeBaseplateSet', {
+          designId: null,
+          params,
+          previousActiveBaseplateId: null,
+          displacedBinIds: displaced,
+        }),
+      ],
+      [
+        'layer.deleted',
+        makeEvent('layer.deleted', {
+          layer: makeLayer('layer9'),
+          deletedBinCount: 0,
+          displacedBinIds: displaced,
+        }),
+      ],
+    ];
+
+    it.each(events)('drops the displaced bins from the selection on %s', (_type, event) => {
+      selectThreeBins();
+
+      bus.publish(event);
+
+      expectOnlyBin3Left();
+    });
+
+    it('keeps the selection when a resize displaces nothing', () => {
+      selectThreeBins();
+
+      bus.publish(
+        makeEvent('drawer.updated', { changes: {}, previous: {}, binsDisplacedToStaging: 0 })
+      );
+
+      expect(useSelectionStore.getState().selectedBinIds).toHaveLength(3);
+    });
+  });
+
   describe('category.deleted', () => {
     it('resets activeCategoryId when active category is deleted', () => {
       useSelectionStore.setState({

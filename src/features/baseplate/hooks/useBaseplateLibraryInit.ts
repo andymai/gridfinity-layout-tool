@@ -43,22 +43,7 @@ import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { nextBaseplateName } from '@/features/baseplate/utils/baseplateName';
 import { designOwner, ownedCopyName } from '@/features/baseplate/utils/designOwnership';
 import { findDesignUsers, ownedCopyTarget } from '@/features/baseplate/utils/designUsers';
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-/** Order-independent structural equality for JSON-shaped param objects. */
-function deepEqual(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (isPlainObject(a) && isPlainObject(b)) {
-    const keysA = Object.keys(a);
-    const keysB = Object.keys(b);
-    if (keysA.length !== keysB.length) return false;
-    return keysA.every((key) => Object.hasOwn(b, key) && deepEqual(a[key], b[key]));
-  }
-  return false;
-}
+import { paramsEqual } from '@/features/baseplate/utils/paramsEqual';
 
 export interface UseBaseplateLibraryInitOptions {
   /** Create a default design when the layout has no baseplate at all. /baseplate only. */
@@ -139,7 +124,7 @@ export function useBaseplateLibraryInit(options?: UseBaseplateLibraryInitOptions
           // repeat until the stored design matches what the layout holds.
           for (let attempt = 0; attempt < 5; attempt++) {
             const edited = current().params;
-            if (edited === undefined || deepEqual(edited, design.params)) break;
+            if (edited === undefined || paramsEqual(edited, design.params)) break;
             const updated = await updateDesignParams(design.id, edited);
             if (isStale()) return false;
             if (!isOk(updated)) break;
@@ -152,7 +137,7 @@ export function useBaseplateLibraryInit(options?: UseBaseplateLibraryInitOptions
           const caughtUp =
             latest.params === undefined
               ? params === undefined
-              : deepEqual(latest.params, design.params);
+              : paramsEqual(latest.params, design.params);
           if (latest.activeId !== null || !caughtUp) {
             const removed = await deleteDesign(design.id);
             // Unregistered, a seed the delete missed would sit in IndexedDB where
@@ -215,7 +200,10 @@ export function useBaseplateLibraryInit(options?: UseBaseplateLibraryInitOptions
                   setActiveDesignId(copy.value.id);
                   setActiveBaseplateLocal(copy.value.id, latest.params ?? copy.value.params);
                   materializedThisSession.add(materializeKey(targetLayoutId, copy.value.id));
-                  if (latest.params !== undefined && !deepEqual(latest.params, copy.value.params)) {
+                  if (
+                    latest.params !== undefined &&
+                    !paramsEqual(latest.params, copy.value.params)
+                  ) {
                     await updateDesignParams(copy.value.id, latest.params);
                   }
                   return true;
@@ -228,7 +216,7 @@ export function useBaseplateLibraryInit(options?: UseBaseplateLibraryInitOptions
             }
             // Reference, not value: an edit undone to its original value is
             // still the user's latest word on the plate.
-            if (current().params === params && !deepEqual(loaded.value.params, params)) {
+            if (current().params === params && !paramsEqual(loaded.value.params, params)) {
               setActiveBaseplateLocal(activeId, loaded.value.params);
             }
             materializedThisSession.add(key);
