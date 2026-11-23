@@ -2,7 +2,6 @@ import type { BinId } from '@/core/types';
 
 type RevealListener = (binId: BinId) => void;
 
-/** A surface that can show a bin. A waiting reveal reaches each one once. */
 export type RevealSurface = 'grid' | 'stash';
 
 const listeners = new Set<{ readonly surface: RevealSurface; readonly listener: RevealListener }>();
