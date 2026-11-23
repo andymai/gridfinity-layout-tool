@@ -5616,5 +5616,8 @@
   "binDesigner.cutouts.library.emptyFolder": "Questa cartella è vuota",
   "binDesigner.cutouts.library.size": "{width} × {depth} mm",
   "binDesigner.cutouts.library.foldersFull": "La libreria contiene al massimo {max} cartelle. Eliminane alcune per crearne altre.",
-  "binDesigner.cutouts.library.tooDeep": "Le cartelle si annidano al massimo per {max} livelli. Scegli una cartella più in alto."
+  "binDesigner.cutouts.library.tooDeep": "Le cartelle si annidano al massimo per {max} livelli. Scegli una cartella più in alto.",
+  "designLinking.inspector.sizeMismatch": "Questo bin è {bin}, ma il suo design è {design}. Viene stampato con le dimensioni del design.",
+  "designLinking.inspector.matchDesignSize": "Ridimensiona a {design}",
+  "designLinking.inspector.sizeMismatchNoRoom": "Qui non c'è spazio per queste dimensioni."
 }

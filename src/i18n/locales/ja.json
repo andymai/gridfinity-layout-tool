@@ -5476,5 +5476,8 @@
   "binDesigner.cutouts.library.emptyFolder": "このフォルダは空です",
   "binDesigner.cutouts.library.size": "{width} × {depth} mm",
   "binDesigner.cutouts.library.foldersFull": "ライブラリに作成できるフォルダは最大{max}個です。いくつか削除してから作成してください。",
-  "binDesigner.cutouts.library.tooDeep": "フォルダの階層は最大{max}段までです。もっと上のフォルダを選んでください。"
+  "binDesigner.cutouts.library.tooDeep": "フォルダの階層は最大{max}段までです。もっと上のフォルダを選んでください。",
+  "designLinking.inspector.sizeMismatch": "このビンは{bin}ですが、デザインは{design}です。デザインのサイズで印刷されます。",
+  "designLinking.inspector.matchDesignSize": "{design}に変更",
+  "designLinking.inspector.sizeMismatchNoRoom": "ここにはそのサイズの空きがありません。"
 }

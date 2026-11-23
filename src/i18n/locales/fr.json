@@ -5616,5 +5616,8 @@
   "binDesigner.cutouts.library.emptyFolder": "Ce dossier est vide",
   "binDesigner.cutouts.library.size": "{width} × {depth} mm",
   "binDesigner.cutouts.library.foldersFull": "La bibliothèque contient au plus {max} dossiers. Supprimez-en pour en créer d’autres.",
-  "binDesigner.cutouts.library.tooDeep": "Les dossiers s’imbriquent sur {max} niveaux au plus. Choisissez un dossier plus haut."
+  "binDesigner.cutouts.library.tooDeep": "Les dossiers s’imbriquent sur {max} niveaux au plus. Choisissez un dossier plus haut.",
+  "designLinking.inspector.sizeMismatch": "Ce bac mesure {bin}, mais son design mesure {design}. Il s'imprime à la taille du design.",
+  "designLinking.inspector.matchDesignSize": "Passer à {design}",
+  "designLinking.inspector.sizeMismatchNoRoom": "Il n'y a pas la place ici pour cette taille."
 }

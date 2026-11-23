@@ -9,3 +9,5 @@ export { useQuickExport } from './useQuickExport';
 export { useDesignSavedListener } from './useDesignSavedListener';
 export { useBinResizedListener } from './useBinResizedListener';
 export { useKnifeRestPairing } from './useKnifeRestPairing';
+export { useDesignSizeMatch } from './useDesignSizeMatch';
+export type { DesignSizeMatch } from './useDesignSizeMatch';

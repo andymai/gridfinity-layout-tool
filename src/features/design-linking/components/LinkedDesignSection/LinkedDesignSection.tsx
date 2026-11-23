@@ -8,7 +8,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { useLinkedDesign, useBinLinking, useQuickExport } from '../../hooks';
+import { useLinkedDesign, useBinLinking, useQuickExport, useDesignSizeMatch } from '../../hooks';
 import { useLinkingStore } from '../../store';
 import { ConfirmDialog } from '@/shared/components';
 import { useDesignThumbnail } from '@/features/bin-designer';
@@ -37,6 +37,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
     matchDesignEdgesToDrawer,
   } = useBinLinking();
   const { isExporting, exportToSTL } = useQuickExport();
+  const sizeMatch = useDesignSizeMatch(bin, linkedDesign);
   const showLinkDesignDialog = useLinkingStore((s) => s.showLinkDesignDialog);
   const drawer = useLayoutStore((s) => s.layout.drawer);
   const bins = useLayoutStore(useShallow((s) => s.layout.bins));
@@ -311,6 +312,38 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
           >
             {t('designLinking.inspector.matchDrawer')}
           </Button>
+        </div>
+      )}
+
+      {sizeMatch && (
+        <div className="p-3 rounded-lg bg-warning/10 border border-warning/30 space-y-2">
+          <div className="flex items-start gap-2">
+            <AlertTriangleIcon
+              size="sm"
+              className="text-warning flex-shrink-0 mt-0.5"
+              aria-hidden="true"
+            />
+            <span className="text-xs text-warning">
+              {t('designLinking.inspector.sizeMismatch', {
+                bin: sizeMatch.binSize,
+                design: sizeMatch.designSize,
+              })}
+            </span>
+          </div>
+          {sizeMatch.canResize ? (
+            <Button
+              variant="secondary"
+              fullWidth
+              onClick={sizeMatch.resize}
+              className={buttonHeight}
+            >
+              {t('designLinking.inspector.matchDesignSize', { design: sizeMatch.designSize })}
+            </Button>
+          ) : (
+            <p className="text-xs text-content-tertiary">
+              {t('designLinking.inspector.sizeMismatchNoRoom')}
+            </p>
+          )}
         </div>
       )}
 

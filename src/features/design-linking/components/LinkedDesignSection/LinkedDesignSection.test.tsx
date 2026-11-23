@@ -4,7 +4,7 @@ import { LinkedDesignSection } from './LinkedDesignSection';
 import { resetAllStores, createTestBin } from '@/test/testUtils';
 import type { Bin } from '@/core/types';
 import { binId, designId } from '@/core/types';
-import { useLinkedDesign, useBinLinking, useQuickExport } from '../../hooks';
+import { useLinkedDesign, useBinLinking, useQuickExport, useDesignSizeMatch } from '../../hooks';
 import { useDesignThumbnail } from '@/features/bin-designer/hooks/useDesignThumbnail';
 
 vi.mock('../../hooks');
@@ -253,5 +253,68 @@ describe('LinkedDesignSection', () => {
     await waitFor(() => expect(items[0]).toHaveFocus());
     fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
     expect(items[1]).toHaveFocus();
+  });
+
+  describe('size that differs from the design', () => {
+    beforeEach(() => {
+      vi.mocked(useLinkedDesign).mockReturnValue({
+        linkedDesign: {
+          id: designId('design-1'),
+          name: 'My Design',
+          width: 3,
+          depth: 2,
+          height: 3,
+          updatedAt: '2026-01-01T00:00:00.000Z',
+        },
+        isStale: false,
+        hasLink: true,
+      });
+    });
+
+    it('says the bin prints at its design size and resizes it on request', () => {
+      const resize = vi.fn();
+      vi.mocked(useDesignSizeMatch).mockReturnValue({
+        binSize: '2×2×3u',
+        designSize: '3×2×3u',
+        canResize: true,
+        resize,
+      });
+
+      render(<LinkedDesignSection bin={testBin} variant="desktop" />);
+
+      expect(
+        screen.getByText('designLinking.inspector.sizeMismatch:{"bin":"2×2×3u","design":"3×2×3u"}')
+      ).toBeInTheDocument();
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: 'designLinking.inspector.matchDesignSize:{"design":"3×2×3u"}',
+        })
+      );
+      expect(resize).toHaveBeenCalledOnce();
+    });
+
+    it('says there is no room instead of offering a resize that cannot fit', () => {
+      vi.mocked(useDesignSizeMatch).mockReturnValue({
+        binSize: '2×2×3u',
+        designSize: '3×2×3u',
+        canResize: false,
+        resize: vi.fn(),
+      });
+
+      render(<LinkedDesignSection bin={testBin} variant="desktop" />);
+
+      expect(screen.getByText('designLinking.inspector.sizeMismatchNoRoom')).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /designLinking.inspector.matchDesignSize/ })
+      ).not.toBeInTheDocument();
+    });
+
+    it('shows nothing when the bin matches its design', () => {
+      vi.mocked(useDesignSizeMatch).mockReturnValue(null);
+
+      render(<LinkedDesignSection bin={testBin} variant="desktop" />);
+
+      expect(screen.queryByText(/designLinking.inspector.sizeMismatch/)).not.toBeInTheDocument();
+    });
   });
 });
