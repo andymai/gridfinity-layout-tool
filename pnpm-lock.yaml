@@ -79,14 +79,14 @@ importers:
         specifier: workspace:*
         version: link:packages/branded-types
       '@liveblocks/client':
-        specifier: ^3.25.0
-        version: 3.25.0(@types/json-schema@7.0.15)
+        specifier: ^3.25.1
+        version: 3.25.1(@types/json-schema@7.0.15)
       '@liveblocks/node':
-        specifier: ^3.25.0
-        version: 3.25.0(@types/json-schema@7.0.15)
+        specifier: ^3.25.1
+        version: 3.25.1(@types/json-schema@7.0.15)
       '@liveblocks/react':
-        specifier: ^3.25.0
-        version: 3.25.0(@types/json-schema@7.0.15)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react@19.3.1)
+        specifier: ^3.25.1
+        version: 3.25.1(@types/json-schema@7.0.15)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react@19.3.1)
       '@mediapipe/tasks-vision':
         specifier: 1.2.3
         version: 1.2.3
@@ -1541,19 +1541,19 @@ packages:
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
-  '@liveblocks/client@3.25.0':
-    resolution: {integrity: sha512-iKQM+ZCnxTeHcGHNq6fUj4Lei2xsQuJkP/VewqlXkGPJAB4KNGROhsHNE0nkF8wGUtH4/dP8XH0qlqAhL2JxQQ==}
+  '@liveblocks/client@3.25.1':
+    resolution: {integrity: sha512-cKErEH9CxmrrAUt0Qjr478PMQcDGb2eHEx+k1AeR383gAT65ej22VU2cNYOKxV/+n9H3XEgVhxEr8nRxutoNMw==}
 
-  '@liveblocks/core@3.25.0':
-    resolution: {integrity: sha512-zGfKGiQvq6+EQwcVcXZT+3zDtheW/jeO3UlWWvClKLrbtril0BYC+5fWGtSWP9Q+JBknEfX3ObwXrx1qTJsvFQ==}
+  '@liveblocks/core@3.25.1':
+    resolution: {integrity: sha512-FUGTAGAgUx2sWlOubNxJdxDFBC9BoIqVT2tEj7v1YbSbIINe0h89NRITjUeLOo5NdpMxV1fWas9Di2Cs1z1nqw==}
     peerDependencies:
       '@types/json-schema': ^7
 
-  '@liveblocks/node@3.25.0':
-    resolution: {integrity: sha512-4PldI4pLruknYLRSB2zuC4wWTjcKYs03wtqz7iIP05/bBGjHrzRQUCkOiREMnKYjfXDsG5HEopKhROhApEDqSQ==}
+  '@liveblocks/node@3.25.1':
+    resolution: {integrity: sha512-zWwa6fMjXDZtPoxLAkNKJGgbh5JWhlEfizh53Mf5O2ynLc+whoVU/IRaTAD3lIxdM+e++QfV+JfpbVjrDg+nCA==}
 
-  '@liveblocks/react@3.25.0':
-    resolution: {integrity: sha512-xiLDc2I4qvhe+dh9EjUnEP0nGXo8NJ/AIJMf6HKOKmt4B2J+vwFga56kTEAfhlrdWvwGSRH5a3MR6mR0uE6c1A==}
+  '@liveblocks/react@3.25.1':
+    resolution: {integrity: sha512-WcCOU3LvC7ZKJTk06nBbeNGZAAuHNW6iarMr74AXOS6Kk1gQKlXc/BNVaWdGXOrzEUn3iDtaOjYoL3xtV1QB9g==}
     peerDependencies:
       '@types/react': ^18 || ^19
       '@types/react-dom': ^18 || ^19
@@ -7598,19 +7598,19 @@ snapshots:
 
   '@keyv/serialize@1.1.1': {}
 
-  '@liveblocks/client@3.25.0(@types/json-schema@7.0.15)':
+  '@liveblocks/client@3.25.1(@types/json-schema@7.0.15)':
     dependencies:
-      '@liveblocks/core': 3.25.0(@types/json-schema@7.0.15)
+      '@liveblocks/core': 3.25.1(@types/json-schema@7.0.15)
     transitivePeerDependencies:
       - '@types/json-schema'
 
-  '@liveblocks/core@3.25.0(@types/json-schema@7.0.15)':
+  '@liveblocks/core@3.25.1(@types/json-schema@7.0.15)':
     dependencies:
       '@types/json-schema': 7.0.15
 
-  '@liveblocks/node@3.25.0(@types/json-schema@7.0.15)':
+  '@liveblocks/node@3.25.1(@types/json-schema@7.0.15)':
     dependencies:
-      '@liveblocks/core': 3.25.0(@types/json-schema@7.0.15)
+      '@liveblocks/core': 3.25.1(@types/json-schema@7.0.15)
       '@stablelib/base64': 1.0.1
       fast-sha256: 1.3.0
       marked: 15.0.12
@@ -7619,10 +7619,10 @@ snapshots:
       - '@types/json-schema'
       - encoding
 
-  '@liveblocks/react@3.25.0(@types/json-schema@7.0.15)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react@19.3.1)':
+  '@liveblocks/react@3.25.1(@types/json-schema@7.0.15)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react@19.3.1)':
     dependencies:
-      '@liveblocks/client': 3.25.0(@types/json-schema@7.0.15)
-      '@liveblocks/core': 3.25.0(@types/json-schema@7.0.15)
+      '@liveblocks/client': 3.25.1(@types/json-schema@7.0.15)
+      '@liveblocks/core': 3.25.1(@types/json-schema@7.0.15)
       react: 19.3.1
     optionalDependencies:
       '@types/react': 19.3.0
