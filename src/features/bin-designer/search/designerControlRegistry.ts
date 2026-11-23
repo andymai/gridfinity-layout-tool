@@ -368,7 +368,7 @@ export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
     id: 'opt-interior-bento',
     labelKey: 'binDesigner.interior.bento.title',
     section: 'bd-interior',
-    keywords: ['bento', 'freeform', 'custom sizes', 'mixed compartments'],
+    keywords: ['bento', 'freeform', 'custom sizes', 'mixed compartments', 'exact compartment size'],
   },
   {
     id: 'opt-interior-slotted',

@@ -15,6 +15,10 @@ import { SubHeader, FieldLabel } from '@/shared/components/PanelText';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import type { CompartmentConfig } from '@/features/bin-designer/types';
 import { getCompartmentReadingOrder } from '@/features/bin-designer/utils/compartments';
+import {
+  compartmentCavityExact,
+  formatCompactMm,
+} from '@/features/bin-designer/utils/compartmentDimensions';
 import { getCompartmentRect, type CellRect } from '@/features/bin-designer/utils/bentoDraw';
 import {
   ANGLE_UI_MAX_DEG,
@@ -26,6 +30,7 @@ import { useDividerTiltSubsection } from '@/features/bin-designer/components/Com
 import { BentoBinWideSection } from './BentoBinWideSection';
 import { BentoCompartmentColorControls } from './BentoCompartmentColorControls';
 import { BentoCompartmentFloorControls } from './BentoCompartmentFloorControls';
+import { BentoCompartmentSizeControls } from './BentoCompartmentSizeControls';
 
 const BENTO_DOCK_MIN_WIDTH = 220;
 const BENTO_DOCK_MAX_WIDTH = 420;
@@ -87,9 +92,6 @@ export function BentoDock({
 
   const tilt = useDividerTiltSubsection();
 
-  const cellWmm = interiorW / config.cols;
-  const cellHmm = interiorD / config.rows;
-
   // Ordinals count drawn compartments only — background pockets are not part
   // of this surface's vocabulary (mirrors BentoCanvas.displayNumberOf).
   const rows = useMemo(() => {
@@ -101,11 +103,14 @@ export function BentoDock({
       .filter((id) => drawnIds.has(id))
       .map((id, index) => {
         const rect = getCompartmentRect(config, id);
+        const cavity = compartmentCavityExact(config, id, interiorW, interiorD);
         return {
           id,
           number: index + 1,
           label: config.compartmentTexts?.[id] ?? '',
           rect,
+          widthMm: cavity?.width ?? 0,
+          depthMm: cavity?.depth ?? 0,
           // A merged L, S or U has no width × depth to report; its bounding box
           // would name a rectangle it does not fill.
           cellCount: cellCounts.get(id) ?? 0,
@@ -113,7 +118,7 @@ export function BentoDock({
         };
       })
       .filter((row): row is typeof row & { rect: CellRect } => row.rect !== null);
-  }, [config, drawnIds]);
+  }, [config, drawnIds, interiorW, interiorD]);
 
   const selectedRow = selectedId !== null ? rows.find((r) => r.id === selectedId) : undefined;
 
@@ -216,8 +221,8 @@ export function BentoDock({
                     </span>
                     <span className="flex-shrink-0 tabular-nums text-micro text-content-tertiary">
                       {t('binDesigner.bento.sizeMm', {
-                        w: Math.round(row.rect.w * cellWmm),
-                        d: Math.round(row.rect.h * cellHmm),
+                        w: formatCompactMm(row.widthMm),
+                        d: formatCompactMm(row.depthMm),
                       })}
                     </span>
                   </Button>
@@ -259,16 +264,25 @@ export function BentoDock({
               )}
             </div>
 
+            {!selectedRow.isRegion && (
+              <BentoCompartmentSizeControls
+                config={config}
+                compartmentId={selectedRow.id}
+                interiorW={interiorW}
+                interiorD={interiorD}
+                walls={selectedWalls}
+              />
+            )}
+
             <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-              <dt className="text-content-tertiary">{t('binDesigner.bento.sizeReadout')}</dt>
-              <dd className="tabular-nums text-content-secondary">
-                {selectedRow.isRegion
-                  ? t('binDesigner.bento.sizeMerged')
-                  : t('binDesigner.bento.sizeMm', {
-                      w: Math.round(selectedRow.rect.w * cellWmm),
-                      d: Math.round(selectedRow.rect.h * cellHmm),
-                    })}
-              </dd>
+              {selectedRow.isRegion && (
+                <>
+                  <dt className="text-content-tertiary">{t('binDesigner.bento.sizeReadout')}</dt>
+                  <dd className="tabular-nums text-content-secondary">
+                    {t('binDesigner.bento.sizeMerged')}
+                  </dd>
+                </>
+              )}
               <dt className="text-content-tertiary">{t('binDesigner.bento.cellsReadout')}</dt>
               <dd className="tabular-nums text-content-secondary">
                 {selectedRow.isRegion
