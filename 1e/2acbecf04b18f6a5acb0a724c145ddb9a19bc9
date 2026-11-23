@@ -1,0 +1,20 @@
+src/features/grid-editor/components/Grid/IsometricPreview/Scene/Scene.tsx
+  s_f3decd9961964a::t_e7c57be9bf24ff 5,49-105,137-139,242,268,276,344-347,352-354,359-375
+  s_f3decd9961964a::t_26fc4f5e869a1e 376
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1e2acbecf04b18f6a5acb0a724c145ddb9a19bc9",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
