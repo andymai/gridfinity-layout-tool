@@ -4437,7 +4437,7 @@ const en: Record<string, string> = {
   'binDesigner.bento.widthField': 'Width (mm)',
   'binDesigner.bento.depthField': 'Depth (mm)',
   'binDesigner.bento.sizeLockedHint':
-    'A size moves the walls shared with other drawn compartments.',
+    'Width needs a drawn neighbour of the same depth. Depth needs one of the same width.',
   'binDesigner.bento.sizeMerged': 'Merged shape',
   'binDesigner.bento.cellsReadout': 'Cells',
   'binDesigner.bento.stashAction': 'Move to stash',

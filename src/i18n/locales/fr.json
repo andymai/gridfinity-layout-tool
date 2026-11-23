@@ -520,7 +520,7 @@
   "binDesigner.bento.sizeReadout": "Taille",
   "binDesigner.bento.widthField": "Largeur (mm)",
   "binDesigner.bento.depthField": "Profondeur (mm)",
-  "binDesigner.bento.sizeLockedHint": "Une taille déplace les parois partagées avec d’autres compartiments dessinés.",
+  "binDesigner.bento.sizeLockedHint": "La largeur demande un compartiment voisin dessiné de même profondeur. La profondeur, un voisin de même largeur.",
   "binDesigner.bento.smallScreenNote": "L'espace de dessin demande un écran plus large.",
   "binDesigner.bento.smallScreenNoteDetail": "Définissez ici une grille régulière, puis fusionnez des cellules en compartiments plus grands.",
   "binDesigner.bento.stashAction": "Déplacer vers le stash",

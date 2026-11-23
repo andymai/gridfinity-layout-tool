@@ -520,7 +520,7 @@
   "binDesigner.bento.sizeReadout": "Größe",
   "binDesigner.bento.widthField": "Breite (mm)",
   "binDesigner.bento.depthField": "Tiefe (mm)",
-  "binDesigner.bento.sizeLockedHint": "Eine Größe verschiebt die Wände, die an andere gezeichnete Fächer grenzen.",
+  "binDesigner.bento.sizeLockedHint": "Für die Breite braucht es ein gezeichnetes Nachbarfach gleicher Tiefe, für die Tiefe eines gleicher Breite.",
   "binDesigner.bento.smallScreenNote": "Der Zeichenbereich braucht einen breiteren Bildschirm.",
   "binDesigner.bento.smallScreenNoteDetail": "Lege hier stattdessen ein gleichmäßiges Raster an und führe Zellen zu größeren Fächern zusammen.",
   "binDesigner.bento.stashAction": "In die Ablage verschieben",

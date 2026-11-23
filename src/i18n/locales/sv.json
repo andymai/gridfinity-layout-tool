@@ -520,7 +520,7 @@
   "binDesigner.bento.sizeReadout": "Storlek",
   "binDesigner.bento.widthField": "Bredd (mm)",
   "binDesigner.bento.depthField": "Djup (mm)",
-  "binDesigner.bento.sizeLockedHint": "En storlek flyttar väggarna som delas med andra ritade fack.",
+  "binDesigner.bento.sizeLockedHint": "Bredd kräver ett ritat grannfack med samma djup. Djup kräver ett grannfack med samma bredd.",
   "binDesigner.bento.smallScreenNote": "Ritytan behöver en bredare skärm.",
   "binDesigner.bento.smallScreenNoteDetail": "Ställ in ett jämnt rutnät här i stället och slå ihop celler till större fack.",
   "binDesigner.bento.stashAction": "Flytta till förråd",

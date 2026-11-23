@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
 import type { BinParams, CompartmentConfig } from '@/features/bin-designer/types';
 import { getEligibleDividers } from './compartments';
 import { compartmentCavityExact } from './compartmentDimensions';
@@ -85,14 +86,34 @@ describe('planCompartmentResize', () => {
     expect(p.minMm).toBeGreaterThan(0);
   });
 
-  it('moves every wall on a shared side together, so the edge stays straight', () => {
-    // A tall compartment on the left with two stacked neighbours on the right.
-    const config = grid(2, 2, [0, 1, 0, 2]);
-    const resized = resize(config, 0, 'width', 30);
-    const offsets = (resized.dividerOverrides ?? []).map((o) => [o.offsetStart, o.offsetEnd]);
-    expect(offsets).toHaveLength(2);
-    expect(offsets[0]).toEqual(offsets[1]);
-    expect(widthOf(resized, 0)).toBeCloseTo(30, 2);
+  it('refuses a side that meets another wall at a T-junction', () => {
+    // A tall compartment on the left with two stacked neighbours on the right:
+    // the wall between those two keeps its grid endpoint, so a moved side
+    // would open a gap between them.
+    expect(plan(grid(2, 2, [0, 1, 0, 2]), 0, 'width')).toBeNull();
+    // A neighbour taller than the compartment: the compartment's own top wall
+    // keeps its grid endpoint.
+    expect(plan(grid(2, 2, [0, 1, 2, 1]), 0, 'width')).toBeNull();
+    expect(plan(grid(2, 2, [0, 1, 2, 1]), 1, 'width')).toBeNull();
+  });
+
+  it('keeps every pocket at the minimum size after earlier edits moved its walls', () => {
+    const first = resize(row, 0, 'width', 40);
+    const p = plan(first, 1, 'width');
+    if (!p) throw new Error('expected a resize plan');
+    expect(p.minMm).toBeGreaterThanOrEqual(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE);
+    expect(p.maxMm).toBeLessThanOrEqual(
+      widthOf(first, 1) + widthOf(first, 2) - DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE + 1e-6
+    );
+
+    const squeezed = { ...first, dividerOverrides: resizedDividerOverrides(first, p, 0) };
+    expect(widthOf(squeezed, 1)).toBeGreaterThanOrEqual(
+      DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE - 1e-6
+    );
+    const widened = { ...first, dividerOverrides: resizedDividerOverrides(first, p, 1000) };
+    expect(widthOf(widened, 2)).toBeGreaterThanOrEqual(
+      DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE - 1e-6
+    );
   });
 
   it('keeps an existing angle on the moved wall', () => {

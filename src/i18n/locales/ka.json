@@ -3656,7 +3656,7 @@
   "binDesigner.bento.sizeReadout": "ზომა",
   "binDesigner.bento.widthField": "სიგანე (mm)",
   "binDesigner.bento.depthField": "სიღრმე (mm)",
-  "binDesigner.bento.sizeLockedHint": "ზომა ამოძრავებს კედლებს, რომლებიც სხვა დახატულ განყოფილებებთან არის საერთო.",
+  "binDesigner.bento.sizeLockedHint": "სიგანეს სჭირდება იგივე სიღრმის დახატული მეზობელი განყოფილება. სიღრმეს — იგივე სიგანის მეზობელი.",
   "binDesigner.bento.sizeMerged": "გაერთიანებული ფორმა",
   "binDesigner.bento.cellsReadout": "უჯრები",
   "binDesigner.bento.stashAction": "დროებით საცავში გადატანა",

@@ -512,7 +512,7 @@
   "binDesigner.bento.sizeReadout": "サイズ",
   "binDesigner.bento.widthField": "幅 (mm)",
   "binDesigner.bento.depthField": "奥行き (mm)",
-  "binDesigner.bento.sizeLockedHint": "サイズは、描いた他の区画と共有する壁を動かします。",
+  "binDesigner.bento.sizeLockedHint": "幅には同じ奥行きの描いた隣の区画が、奥行きには同じ幅の隣の区画が必要です。",
   "binDesigner.bento.smallScreenNote": "描画ワークスペースにはより広い画面が必要です。",
   "binDesigner.bento.smallScreenNoteDetail": "ここでは均等なグリッドを設定し、セルを結合して大きな仕切りにできます。",
   "binDesigner.bento.stashAction": "ステージングへ移動",

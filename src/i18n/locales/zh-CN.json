@@ -512,7 +512,7 @@
   "binDesigner.bento.sizeReadout": "尺寸",
   "binDesigner.bento.widthField": "宽度 (mm)",
   "binDesigner.bento.depthField": "深度 (mm)",
-  "binDesigner.bento.sizeLockedHint": "尺寸会移动与其他已绘制隔间共用的隔墙。",
+  "binDesigner.bento.sizeLockedHint": "设置宽度需要一个深度相同的已绘制相邻隔间，设置深度需要一个宽度相同的相邻隔间。",
   "binDesigner.bento.smallScreenNote": "绘图工作区需要更宽的屏幕。",
   "binDesigner.bento.smallScreenNoteDetail": "可以在这里设置均匀网格，再把单元格合并成更大的隔层。",
   "binDesigner.bento.stashAction": "移入暂存区",

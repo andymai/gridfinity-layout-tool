@@ -3,12 +3,16 @@
  *
  * A compartment's width or depth in mm is not stored. It follows from the grid
  * and from the `dividerOverrides` that move its walls off their grid lines, so
- * setting a size means moving one side's walls by the difference. Every wall
- * on that side moves by the same amount, so the edge stays straight however
- * many neighbours share it.
+ * setting a size means moving one side's wall by the difference.
+ *
+ * Only a side with ONE neighbour that spans the same rows (for width) or
+ * columns (for depth) can move. The generator keeps every perpendicular wall
+ * on its grid endpoints, so a moved wall that meets one at a T-junction leaves
+ * a gap between pockets or a stub inside one.
  */
 
 import type { CompartmentConfig, DividerOverride } from '../types';
+import { DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 import { getCompartmentBounds } from './compartmentGrid';
 import { compartmentCavityExact } from './compartmentDimensions';
 import { getLeanLimits, type DividerGeometry } from './dividerAngle';
@@ -33,13 +37,25 @@ export interface CompartmentResizePlan {
 
 const round3 = (n: number): number => Math.round(n * 1000) / 1000;
 
-function sideWalls(
+interface MovableSide {
+  readonly wall: MovableWall;
+  readonly neighborId: number;
+}
+
+function isRectangle(config: CompartmentConfig, id: number): boolean {
+  const b = getCompartmentBounds(config, id);
+  if (!b) return false;
+  const area = (b.maxCol - b.minCol + 1) * (b.maxRow - b.minRow + 1);
+  return config.cells.filter((cell) => cell === id).length === area;
+}
+
+function movableSide(
   config: CompartmentConfig,
   compartmentId: number,
   axis: ResizeAxis,
   far: boolean,
   walls: readonly ResizeWall[]
-): MovableWall[] | null {
+): MovableSide | null {
   const bounds = getCompartmentBounds(config, compartmentId);
   if (!bounds) return null;
   const { cols, rows, cells } = config;
@@ -53,22 +69,25 @@ function sideWalls(
       : bounds.minRow - 1;
   if (neighborIndex < 0 || neighborIndex >= (isX ? cols : rows)) return null;
 
-  const wallAxis = isX ? 'vertical' : 'horizontal';
   const spanStart = isX ? bounds.minRow : bounds.minCol;
-  const spanEnd = isX ? bounds.maxRow : bounds.maxCol;
-  const found = new Map<number, MovableWall>();
-  for (let i = spanStart; i <= spanEnd; i++) {
-    const neighborId = isX ? cells[i * cols + neighborIndex] : cells[neighborIndex * cols + i];
-    if (found.has(neighborId)) continue;
-    const a = Math.min(compartmentId, neighborId);
-    const b = Math.max(compartmentId, neighborId);
-    const wall = walls.find(
-      (w) => w.axis === wallAxis && w.compartmentA === a && w.compartmentB === b
-    );
-    if (!wall?.geometry) return null;
-    found.set(neighborId, { ...wall, geometry: wall.geometry });
-  }
-  return [...found.values()];
+  const neighborId = isX
+    ? cells[spanStart * cols + neighborIndex]
+    : cells[neighborIndex * cols + spanStart];
+  const nb = getCompartmentBounds(config, neighborId);
+  if (!nb || !isRectangle(config, neighborId)) return null;
+  const sameSpan = isX
+    ? nb.minRow === bounds.minRow && nb.maxRow === bounds.maxRow
+    : nb.minCol === bounds.minCol && nb.maxCol === bounds.maxCol;
+  if (!sameSpan) return null;
+
+  const a = Math.min(compartmentId, neighborId);
+  const b = Math.max(compartmentId, neighborId);
+  const wall = walls.find(
+    (w) =>
+      w.axis === (isX ? 'vertical' : 'horizontal') && w.compartmentA === a && w.compartmentB === b
+  );
+  if (!wall?.geometry) return null;
+  return { wall: { ...wall, geometry: wall.geometry }, neighborId };
 }
 
 /**
@@ -76,8 +95,10 @@ function sideWalls(
  *
  * Only `walls` may move, so the caller decides which neighbours count (Bento
  * passes walls between two drawn compartments). The far side is preferred, so
- * sizing compartments left to right leaves each finished one alone. Returns
- * null when neither side is made only of movable walls.
+ * sizing compartments left to right leaves each finished one alone. The range
+ * also keeps both pockets at least `MIN_COMPARTMENT_SIZE` wide as they are
+ * now, since the divider envelope only knows their grid footprints. Returns
+ * null when neither side can move.
  */
 export function planCompartmentResize(
   config: CompartmentConfig,
@@ -91,24 +112,23 @@ export function planCompartmentResize(
   if (!cavity) return null;
   const currentMm = axis === 'width' ? cavity.width : cavity.depth;
 
+  const minSize = DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE;
+
   for (const far of [true, false]) {
-    const moved = sideWalls(config, compartmentId, axis, far, walls);
-    if (!moved) continue;
-    let low = Number.NEGATIVE_INFINITY;
-    let high = Number.POSITIVE_INFINITY;
-    for (const wall of moved) {
-      low = Math.max(low, wall.geometry.offsetMin - Math.min(wall.offsetStart, wall.offsetEnd));
-      high = Math.min(high, wall.geometry.offsetMax - Math.max(wall.offsetStart, wall.offsetEnd));
-    }
-    if (low > high) continue;
-    const direction = far ? 1 : -1;
-    return {
-      currentMm,
-      minMm: far ? currentMm + low : currentMm - high,
-      maxMm: far ? currentMm + high : currentMm - low,
-      walls: moved,
-      direction,
-    };
+    const side = movableSide(config, compartmentId, axis, far, walls);
+    if (!side) continue;
+    const { wall } = side;
+    const neighbor = compartmentCavityExact(config, side.neighborId, innerW, innerD);
+    if (!neighbor) continue;
+    const neighborMm = axis === 'width' ? neighbor.width : neighbor.depth;
+    const low = wall.geometry.offsetMin - Math.min(wall.offsetStart, wall.offsetEnd);
+    const high = wall.geometry.offsetMax - Math.max(wall.offsetStart, wall.offsetEnd);
+    const envelopeMin = far ? currentMm + low : currentMm - high;
+    const envelopeMax = far ? currentMm + high : currentMm - low;
+    const minMm = Math.max(envelopeMin, Math.min(currentMm, minSize));
+    const maxMm = Math.min(envelopeMax, currentMm + Math.max(0, neighborMm - minSize));
+    if (minMm > maxMm) continue;
+    return { currentMm, minMm, maxMm, walls: [wall], direction: far ? 1 : -1 };
   }
   return null;
 }

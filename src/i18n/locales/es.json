@@ -520,7 +520,7 @@
   "binDesigner.bento.sizeReadout": "Tamaño",
   "binDesigner.bento.widthField": "Ancho (mm)",
   "binDesigner.bento.depthField": "Fondo (mm)",
-  "binDesigner.bento.sizeLockedHint": "Un tamaño mueve las paredes compartidas con otros compartimentos dibujados.",
+  "binDesigner.bento.sizeLockedHint": "El ancho necesita un compartimento vecino dibujado con la misma profundidad. La profundidad, uno con el mismo ancho.",
   "binDesigner.bento.smallScreenNote": "El espacio de dibujo necesita una pantalla más ancha.",
   "binDesigner.bento.smallScreenNoteDetail": "Aquí puedes definir una cuadrícula uniforme y luego combinar celdas en compartimentos más grandes.",
   "binDesigner.bento.stashAction": "Mover al stash",
