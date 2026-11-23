@@ -25,7 +25,7 @@ import { COPLANAR_OVERLAP } from './generatorConstants';
 import { sketch } from './meshUtils';
 import type { CornerSlab } from './kumikoPerimeter';
 import { cornerCells } from './kumikoCornerCells';
-import type { CellPoint, CornerCellPiece } from './kumikoCornerCells';
+import type { CellPoint, CornerCell, CornerCellPiece } from './kumikoCornerCells';
 import {
   AXIS_EPSILON,
   RAD_TO_DEG,
@@ -163,13 +163,25 @@ export function buildCornerSlabCutter(
   perf?: PerfCollector
 ): Shape3D {
   const startedAt = performance.now();
-  let local: Shape3D | null;
+  const faceRadius = outerRadius + FACET_SEAM_OUTSET;
+  let cells: CornerCell[] | null;
   try {
-    local = cellPrisms(slab, lattice, bandZ0, bandHeight, outerRadius, wallThickness, perimeter);
+    cells = cornerCells(
+      lattice,
+      slab.u0,
+      slab.u1,
+      bandZ0,
+      bandHeight,
+      outerRadius,
+      faceRadius,
+      perimeter
+    );
   } catch {
-    // polygon-clipping can throw on a degenerate overlap of strokes.
-    local = null;
+    // polygon-clipping can throw on a degenerate overlap of strokes. Only
+    // this 2D step is caught: a kernel error below must reach the worker.
+    cells = null;
   }
+  const local = cells ? cellPrisms(cells, outerRadius, faceRadius, wallThickness) : null;
   if (!local) {
     return buildCornerSlabCutterByCuts(
       slab,
@@ -189,28 +201,13 @@ export function buildCornerSlabCutter(
   return positioned;
 }
 
-/** The corner's cells as prisms in the corner-local frame, or null when there is none. */
+/** The cells as solids in the corner-local frame, or null when there is none. */
 function cellPrisms(
-  slab: CornerSlab,
-  lattice: KumikoLattice,
-  bandZ0: number,
-  bandHeight: number,
+  cells: readonly CornerCell[],
   outerRadius: number,
-  wallThickness: number,
-  perimeter: number
+  faceRadius: number,
+  wallThickness: number
 ): Shape3D | null {
-  const faceRadius = outerRadius + FACET_SEAM_OUTSET;
-  const cells = cornerCells(
-    lattice,
-    slab.u0,
-    slab.u1,
-    bandZ0,
-    bandHeight,
-    outerRadius,
-    faceRadius,
-    perimeter
-  );
-  if (!cells) return null;
   const innerRadius = Math.max(outerRadius - wallThickness, 0.3);
   const depthOut = faceRadius + CELL_REACH;
   const depthIn = innerRadius - CELL_REACH;
@@ -243,21 +240,33 @@ function cellPrisms(
     return solid3d;
   };
   const solids: Shape3D[] = [];
-  for (const cell of cells) {
-    const pieces = cell.map(prism);
-    if (pieces.length === 1) {
-      solids.push(pieces[0]);
-      continue;
+  try {
+    for (const cell of cells) {
+      const pieces: Shape3D[] = [];
+      try {
+        for (const piece of cell) pieces.push(prism(piece));
+        if (pieces.length === 1) {
+          solids.push(pieces[0]);
+          pieces.length = 0;
+          continue;
+        }
+        // The prisms of neighbor facets overlap inside the wall, and they
+        // share the planes of the cell's horizontal edges. Left as separate
+        // tools, those coplanar faces gave near-duplicate points where they
+        // met the wall, and zero-area triangles in the export. One solid for
+        // each cell has neither.
+        solids.push(unwrap(fuseAll(pieces as ValidSolid[], { simplify: true })));
+      } finally {
+        for (const p of pieces) p.delete();
+      }
     }
-    // The prisms of neighbor facets overlap inside the wall, and they share
-    // the planes of the cell's horizontal edges. Left as separate tools, those
-    // coplanar faces gave near-duplicate points where they met the wall, and
-    // zero-area triangles in the export. One solid for each cell has neither.
-    solids.push(unwrap(fuseAll(pieces as ValidSolid[], { simplify: true })));
-    for (const p of pieces) p.delete();
+    if (solids.length === 0) return null;
+    if (solids.length === 1) return solids.pop() ?? null;
+    // compound does not consume its inputs.
+    return compound(solids);
+  } finally {
+    for (const s3 of solids) s3.delete();
   }
-  if (solids.length === 0) return null;
-  return solids.length === 1 ? solids[0] : compound(solids);
 }
 
 /**
