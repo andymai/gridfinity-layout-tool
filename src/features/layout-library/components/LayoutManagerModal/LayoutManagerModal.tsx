@@ -41,6 +41,24 @@ interface LayoutManagerModalProps {
   renderShareModal?: (props: ShareModalRenderProps) => ReactNode;
 }
 
+function tabStops(root: HTMLElement): HTMLElement[] {
+  return Array.from(
+    root.querySelectorAll<HTMLElement>('button, input, select, textarea, a[href], [tabindex]')
+  ).filter((el) => el.tabIndex > -1 && !el.matches(':disabled') && isRendered(el, root));
+}
+
+function isRendered(el: HTMLElement, root: HTMLElement): boolean {
+  for (
+    let node: HTMLElement | null = el;
+    node !== null && node !== root;
+    node = node.parentElement
+  ) {
+    const style = getComputedStyle(node);
+    if (style.display === 'none' || style.visibility === 'hidden') return false;
+  }
+  return true;
+}
+
 /**
  * Layout Manager Modal - main entry point.
  * Provides tabbed interface for managing layouts (list view) and importing layouts.
@@ -139,19 +157,17 @@ function LayoutManagerModalContent({
     announceToScreenReader(t('layouts.announce.dialogOpened', { count }));
   }, [announceToScreenReader, library.entries.length, t]);
 
-  // Handle escape key and focus trap
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+  // Escape and the Tab trap
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
         return;
       }
 
-      // Focus trap - Tab key
       if (e.key === 'Tab' && modalRef.current) {
-        const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        );
+        const focusableElements = tabStops(modalRef.current);
+        if (focusableElements.length === 0) return;
         const firstElement = focusableElements[0];
         const lastElement = focusableElements[focusableElements.length - 1];
 
@@ -163,11 +179,14 @@ function LayoutManagerModalContent({
           firstElement.focus();
         }
       }
-    };
+    },
+    [onClose]
+  );
 
+  useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [handleKeyDown]);
 
   // Focus close button on mount
   useEffect(() => {
@@ -321,7 +340,16 @@ function LayoutManagerModalContent({
         aria-labelledby="layout-manager-title"
         className="bg-surface-elevated rounded-lg max-w-4xl w-full mx-4 max-h-[80vh] grid grid-rows-[auto_1fr] animate-scale-in"
         onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
+        onKeyDown={(e) => {
+          // Keys stay in the dialog, away from the app's document shortcuts, so
+          // the document listener above never hears a key pressed in here. The
+          // move and share dialogs portal out of this DOM, and their keys are
+          // theirs.
+          e.stopPropagation();
+          if (e.target instanceof Node && modalRef.current?.contains(e.target)) {
+            handleKeyDown(e.nativeEvent);
+          }
+        }}
         tabIndex={-1}
       >
         {/* Header */}
