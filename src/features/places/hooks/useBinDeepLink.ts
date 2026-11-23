@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLayoutStore, useLibraryStore } from '@/core/store';
+import { SHARED_PREVIEW_ID } from '@/core/constants';
+import { useLayoutStore, useLibraryStore, useSharedPreviewStore } from '@/core/store';
 import { binId } from '@/core/types';
 import type { BinId } from '@/core/types';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
@@ -34,16 +35,22 @@ export function useBinDeepLink(onLayoutRoute: boolean): void {
   const enabled = useFeatureFlag('places') && onLayoutRoute;
   const [link] = useState(readBinLink);
   const activeLayoutId = useLayoutStore((s) => s.activeLayoutId);
+  const previewShareId = useSharedPreviewStore((s) => s.sharedPreview?.cloudShareId ?? null);
   const focusBin = useFocusBin();
   const handled = useRef(false);
 
   useEffect(() => {
     if (!enabled || link === null || handled.current || activeLayoutId === null) return;
     const entry = useLibraryStore.getState().getEntry(activeLayoutId);
-    // A layout that re-shared under a fresh id answers to that share id too.
-    if (activeLayoutId !== link.layoutId && entry?.cloudShare?.id !== link.layoutId) return;
+    const opened =
+      activeLayoutId === link.layoutId ||
+      // A layout that re-shared under a fresh id answers to that share id too.
+      entry?.cloudShare?.id === link.layoutId ||
+      // Someone else's share opens as a preview under a fixed id.
+      (activeLayoutId === SHARED_PREVIEW_ID && previewShareId === link.layoutId);
+    if (!opened) return;
     handled.current = true;
     void focusBin(activeLayoutId, link.binId);
     dropBinParam();
-  }, [enabled, link, activeLayoutId, focusBin]);
+  }, [enabled, link, activeLayoutId, previewShareId, focusBin]);
 }

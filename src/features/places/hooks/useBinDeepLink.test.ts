@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import { useLayoutStore } from '@/core/store';
+import { SHARED_PREVIEW_ID } from '@/core/constants';
+import { useLayoutStore, useSharedPreviewStore } from '@/core/store';
 import { layoutId } from '@/core/types';
 import type { LayoutId } from '@/core/types';
 import { resetAllStores } from '@/test/testUtils';
@@ -47,6 +48,28 @@ describe('useBinDeepLink', () => {
     expect(focusBin).toHaveBeenCalledWith(LAYOUT, 'b1');
     expect(window.location.search).toBe('');
     expect(window.location.pathname).toBe(`/l/${LAYOUT}/kitchen`);
+  });
+
+  it("focuses the bin in someone else's share, opened as a preview", () => {
+    openUrl(`/l/${LAYOUT}/kitchen?bin=b1`);
+    renderHook(() => useBinDeepLink(true));
+
+    activate(SHARED_PREVIEW_ID);
+    expect(focusBin).not.toHaveBeenCalled();
+    act(() => {
+      useSharedPreviewStore.setState({
+        sharedPreview: {
+          layout: useLayoutStore.getState().layout,
+          originalName: 'Kitchen',
+          authorName: null,
+          cloudShareId: LAYOUT,
+          permission: 'view',
+        },
+      });
+    });
+
+    expect(focusBin).toHaveBeenCalledWith(SHARED_PREVIEW_ID, 'b1');
+    expect(window.location.search).toBe('');
   });
 
   it('keeps the link from the first render after the slug redirect rewrites the URL', () => {
