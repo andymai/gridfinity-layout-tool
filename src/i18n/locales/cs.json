@@ -5758,5 +5758,8 @@
   "binDesigner.cutouts.library.emptyFolder": "Tato složka je prázdná",
   "binDesigner.cutouts.library.size": "{width} × {depth} mm",
   "binDesigner.cutouts.library.foldersFull": "Knihovna pojme {max} složek. Smaž některé, abys mohl vytvořit další.",
-  "binDesigner.cutouts.library.tooDeep": "Složky lze vnořit nejvýše do {max} úrovní. Vyber složku výše."
+  "binDesigner.cutouts.library.tooDeep": "Složky lze vnořit nejvýše do {max} úrovní. Vyber složku výše.",
+  "designLinking.inspector.sizeMismatch": "Tento bin má {bin}, ale jeho návrh má {design}. Vytiskne se ve velikosti návrhu.",
+  "designLinking.inspector.matchDesignSize": "Změnit velikost na {design}",
+  "designLinking.inspector.sizeMismatchNoRoom": "Pro tuto velikost tu není místo."
 }

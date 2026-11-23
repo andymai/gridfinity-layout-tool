@@ -120,7 +120,8 @@ test.describe('Interaction Handler Freshness (Regression)', () => {
     await waitForUndoEnabled(page);
   });
 
-  test('can resize a newly created bin immediately', async ({ page }) => {
+  test('can resize a newly created bin immediately', async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 0) < 900, 'desktop pointer and keyboard flow');
     // Draw a bin
     const bin = await drawBinOnGrid(page, 50, 50, 120, 120);
     await waitForBinCount(page, 1);
@@ -192,7 +193,8 @@ test.describe('Drag Bins Flow', () => {
     await waitForUndoEnabled(page);
   });
 
-  test('can use arrow keys to nudge selected bin', async ({ page }) => {
+  test('can use arrow keys to nudge selected bin', async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 0) < 900, 'desktop pointer and keyboard flow');
     // Select the bin
     await selectBinAt(page, 70, 130);
 
@@ -222,7 +224,8 @@ test.describe('Drag Bins Flow', () => {
     await waitForBinCount(page, 2);
   });
 
-  test('can delete selected bin with Delete key', async ({ page }) => {
+  test('can delete selected bin with Delete key', async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 0) < 900, 'desktop pointer and keyboard flow');
     // Select the bin
     await selectBinAt(page, 70, 130);
 
@@ -251,7 +254,8 @@ test.describe('Drag Bins Flow', () => {
     await waitForBinCount(page, 0);
   });
 
-  test('Escape key clears selection', async ({ page }) => {
+  test('Escape key clears selection', async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 0) < 900, 'desktop pointer and keyboard flow');
     // Select the bin
     await selectBinAt(page, 70, 130);
 
@@ -269,7 +273,8 @@ test.describe('Drag Bins Flow', () => {
     await expect(inspector.getByText(/no bin selected/i)).toBeVisible({ timeout: 3000 });
   });
 
-  test('can duplicate bin with Alt+drag', async ({ page }) => {
+  test('can duplicate bin with Alt+drag', async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 0) < 900, 'desktop pointer and keyboard flow');
     const bounds = await getGridBounds(page);
 
     // Verify we start with 1 bin
@@ -293,7 +298,8 @@ test.describe('Drag Bins Flow', () => {
     await waitForUndoEnabled(page);
   });
 
-  test('Alt+drag keeps original bin at original position', async ({ page }) => {
+  test('Alt+drag keeps original bin at original position', async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 0) < 900, 'desktop pointer and keyboard flow');
     const bounds = await getGridBounds(page);
 
     // Verify we start with 1 bin
@@ -344,7 +350,8 @@ test.describe('Drag Bins Flow', () => {
     await waitForBinCount(page, 4);
   });
 
-  test('Alt+drag can be undone', async ({ page }) => {
+  test('Alt+drag can be undone', async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 0) < 900, 'desktop pointer and keyboard flow');
     const bounds = await getGridBounds(page);
 
     // Verify we start with 1 bin
