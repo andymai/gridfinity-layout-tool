@@ -1,0 +1,23 @@
+src/features/places/hooks/useBinDeepLink.ts
+  s_f3decd9961964a::t_afc1a93a2c427c 1-49
+src/App.tsx
+  s_f3decd9961964a::t_afc1a93a2c427c 96,132
+src/features/places/hooks/useBinDeepLink.test.ts
+  s_f3decd9961964a::t_3b6d4e7f10d812 1-90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6d7f72716407e342b94c402ae8b13019eb2b0d8d",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
