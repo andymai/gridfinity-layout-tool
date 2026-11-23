@@ -5,6 +5,7 @@ import type { HeadConfig, MarkdownRenderer } from 'vitepress';
 import { APP_URL, nav, sidebar } from './navigation.ts';
 import { renderUiTags } from './uiLabels.ts';
 import { DOCK_SCRIPT } from './theme/askAi/flags.ts';
+import { hasFullGitHistory } from './gitHistory.ts';
 
 const SCREENSHOT_TAG = /<Screenshot\s[^>]*\bid="([^"]+)"[^>]*\/>/g;
 const captured = new Set(
@@ -44,6 +45,9 @@ const SITE_TITLE = 'Gridfinity Layout Tool Docs';
 // No trailing slash: the hosts redirect /docs/ to /docs (trailingSlash: false
 // in vercel.json), so the slashed form must not be the canonical URL.
 const siteUrl = `${APP_URL}/docs`;
+
+const gitDates = hasFullGitHistory();
+console.info(`[docs] page dates from git: ${gitDates ? 'on' : 'off (shallow clone or no git)'}`);
 const defaultDescription =
   'How to plan Gridfinity drawers, design custom bins and baseplates, and print them with the free Gridfinity Layout Tool.';
 
@@ -70,11 +74,11 @@ export default defineConfig({
   lang: 'en-US',
   base: BASE,
   cleanUrls: true,
-  // The deployed builds have no usable history. Vercel clones shallow, so a
-  // page not changed within the clone depth gets the date of its oldest
-  // commit. The Docker build has no .git and no git binary, and VitePress
-  // throws (spawnSync git ENOENT).
-  lastUpdated: false,
+  // Page dates (the footer line and the sitemap's lastmod) come from git, so
+  // they are on only with the whole history. Vercel needs VERCEL_DEEP_CLONE=true
+  // for that; without it the build leaves the dates out rather than print the
+  // shallow clone's oldest commit date on every page.
+  lastUpdated: gitDates,
   head: [
     // Head tags are not base-prefixed, unlike the theme logo.
     ['link', { rel: 'icon', href: `${BASE}favicon.svg`, type: 'image/svg+xml' }],
@@ -143,6 +147,7 @@ export default defineConfig({
       pattern: 'https://github.com/andymai/gridfinity-layout-tool/edit/main/apps/docs/:path',
       text: 'Suggest a change to this page',
     },
+    lastUpdated: { formatOptions: { dateStyle: 'medium' } },
     search: { provider: 'local', options: { detailedView: true } },
     outline: { level: [2, 3] },
     footer: {
