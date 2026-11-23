@@ -1,0 +1,82 @@
+src/i18n/locales/nb.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 5619-5622
+e2e/drag-bins.spec.ts
+  s_f3decd9961964a::t_f2e8b65ec46a55 123-124,196-197,227-228,257-258,276-277,301-302,353-354
+package.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 129,132-135,151,157,190,198,204,218-220,222,230
+src/features/design-linking/domain/index.ts
+  s_f3decd9961964a::t_f2e8b65ec46a55 50
+src/i18n/locales/nl.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 5619-5622
+src/i18n/locales/sv.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 5619-5622
+src/i18n/locales/pt-BR.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 5619-5622
+apps/docs/concepts/saved-designs.md
+  s_f3decd9961964a::t_f2e8b65ec46a55 61,101,103-105
+src/i18n/locales/ko.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 5479-5482
+src/features/design-linking/hooks/useDesignSizeMatch.ts
+  s_f3decd9961964a::t_f2e8b65ec46a55 1-90
+src/i18n/locales/en.ts
+  s_f3decd9961964a::t_f2e8b65ec46a55 6081-6084
+e2e/rotate-bins.spec.ts
+  s_f3decd9961964a::t_f2e8b65ec46a55 18-21,29-31,130
+src/i18n/locales/fr.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 5619-5622
+src/i18n/locales/it.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 5619-5622
+src/features/design-linking/domain/linkageQueries.ts
+  s_f3decd9961964a::t_f2e8b65ec46a55 10,99-104
+  s_f3decd9961964a::t_b36af495d493e1 105-106
+src/i18n/locales/zh-CN.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 5479-5482
+src/features/design-linking/hooks/useDesignSizeMatch.test.ts
+  s_f3decd9961964a::t_f2e8b65ec46a55 1-158
+apps/docs/package.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 17
+src/i18n/locales/uk.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 5899-5902
+src/features/design-linking/components/LinkedDesignSection/LinkedDesignSection.tsx
+  s_f3decd9961964a::t_f2e8b65ec46a55 11,40,318-346
+  s_f3decd9961964a::t_0790ebf4f56860 347-349
+src/i18n/locales/pl.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 5899-5902
+src/features/design-linking/README.md
+  s_f3decd9961964a::t_f2e8b65ec46a55 80
+src/i18n/locales/es.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 5619-5622
+src/features/design-linking/components/LinkedDesignSection/LinkedDesignSection.test.tsx
+  s_f3decd9961964a::t_f2e8b65ec46a55 7,257-318
+  s_f3decd9961964a::t_93c2289519090b 319
+src/i18n/locales/ka.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 5619-5622
+src/i18n/locales/de.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 5619-5622
+src/i18n/locales/cs.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 5761-5764
+.github/workflows/osv-scan.yml
+  s_f3decd9961964a::t_f2e8b65ec46a55 30,42
+src/features/design-linking/hooks/index.ts
+  s_f3decd9961964a::t_f2e8b65ec46a55 12-13
+src/i18n/locales/ja.json
+  s_f3decd9961964a::t_f2e8b65ec46a55 5479-5482
+pnpm-lock.yaml
+  s_f3decd9961964a::t_9d1d9602abf991 73-74,82-83,85-86,88-89,91-92,95,98,139-140,157-158,191,204,213,224-225,248-249,252,266-267,308-309,311-312,314-315,320-321,344-345,348,351,354,365-366,373,385,395-396,1544-1545,1547-1548,1552-1553,1555-1556,1575-1576,2007-2008,2010-2011,2013-2014,2677-2678,3076-3077,3109-3110,3112,3439-3440,4349-4350,4627-4628,4734-4735,4799-4800,5150-5155,5568-5570,5847-5848,6032-6033,6401,6432,7605,7607,7611,7615,7617,7626,7628-7629,7652,7904,7907,7929,7931-7932,7938,7940,7942,8082,8087,8104,8107,8115,8128,8420,8425,8448,8460,8817,8861,8867,8914,8922,8926,8929,8931,8934,8947,8955,8962,8978,9217,9798,10221,10499,10510,10585,10588,10653,11027,11029-11037,11502,11747,11749,11813,11952,11957,11963,11965,11972,11984,11988,12000,12008,12017,12020,12050,12055,12057,12060,12071,12394,12399,12402,12405
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2688f07b7bc361ac3d2581fad65ae6cc4cf9ccd7",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
