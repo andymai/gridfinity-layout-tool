@@ -93,6 +93,7 @@ import { useCommunityPublishReturn } from '@/shared/hooks/useCommunityPublishRet
 import { useCommunityLikeReturn } from '@/shell/hooks/useCommunityLikeReturn';
 import { useCommunityDigestCheck } from '@/shell/hooks/useCommunityDigestCheck';
 import { usePlacesFindResults } from '@/shell/hooks/usePlacesFindResults';
+import { useBinDeepLink } from '@/features/places/hooks/useBinDeepLink';
 
 let hasRenderedInitialLayout = false;
 
@@ -128,6 +129,7 @@ export default function App() {
   const closeBinExampleGallery = useBinExampleGalleryStore((s) => s.close);
   const communityPublishOpen = useCommunityPublishStore((s) => s.isOpen);
   const placesFindResults = usePlacesFindResults(!isNonLayoutRoute);
+  useBinDeepLink(!isNonLayoutRoute);
   const [commandPaletteInitialQuery, setCommandPaletteInitialQuery] = useState('');
 
   const routeFlags = {
