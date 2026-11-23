@@ -6,14 +6,8 @@ import { downloadArchive } from '@/core/storage';
 import { isOk } from '@/core/result';
 import { useLibraryStore } from '@/core/store/library';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
-import { recoverStaleBundle } from '@/shared/pwa/staleRecovery';
+import { isChunkLoadError, recoverStaleBundle } from '@/shared/pwa/staleRecovery';
 import { getStaticTranslation } from '@/i18n';
-
-// A lazy chunk that failed to import — the returning-user stale-bundle miss.
-// Keep in sync with `CHUNK_LOAD_ERROR` in `errorFilters.ts` (inlined in both to
-// avoid a new eager import edge against a total-JS budget at its ceiling).
-const CHUNK_LOAD_ERROR =
-  /(?:Failed to fetch|error loading) dynamically imported module|Importing a module script failed/;
 
 interface Props {
   children: ReactNode;
@@ -94,7 +88,7 @@ export class ErrorBoundary extends Component<Props, State> {
       const { backupState, canUndo, error } = this.state;
       // A stale lazy-chunk import, not an app fault: offer a reload onto the
       // current build instead of a retry that would just re-throw the same miss.
-      const isStaleBundle = error !== null && CHUNK_LOAD_ERROR.test(error.message);
+      const isStaleBundle = isChunkLoadError(error);
       return (
         <div
           className="h-screen flex items-center justify-center bg-surface p-8"

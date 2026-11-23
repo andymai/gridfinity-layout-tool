@@ -255,6 +255,29 @@ describe('lazyWithRetry', () => {
       expect(screen.getByTestId('loading')).toBeInTheDocument();
     });
 
+    it('surfaces the miss to the boundary if the page has not reloaded after the grace period', async () => {
+      // e.g. the user cancelled a beforeunload prompt, so the reload never happened.
+      const importFn = vi.fn().mockRejectedValue(new Error('Chunk permanently unavailable'));
+
+      const LazyComponent = lazyWithRetry(importFn, 0, true);
+
+      render(
+        <ErrorBoundary fallback={<div data-testid="error">Error occurred</div>}>
+          <Suspense fallback={<div data-testid="loading">Loading...</div>}>
+            <LazyComponent />
+          </Suspense>
+        </ErrorBoundary>
+      );
+
+      await vi.advanceTimersByTimeAsync(29_000);
+      expect(screen.queryByTestId('error')).not.toBeInTheDocument();
+
+      await vi.advanceTimersByTimeAsync(2_000);
+      await waitFor(() => {
+        expect(screen.getByTestId('error')).toBeInTheDocument();
+      });
+    });
+
     it('throws when recovery declines, so the boundary can report it', async () => {
       // Declined because one already ran this tab session, or the client is offline.
       mockRecover.mockResolvedValue(false);

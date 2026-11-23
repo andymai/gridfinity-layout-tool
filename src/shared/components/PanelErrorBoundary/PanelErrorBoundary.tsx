@@ -2,6 +2,7 @@ import { Component } from 'react';
 import type { ReactNode } from 'react';
 import { Button } from '@/design-system';
 import { captureException } from '@/shared/analytics/posthog';
+import { isChunkLoadError, recoverStaleBundle } from '@/shared/pwa/staleRecovery';
 
 // Error boundary strings as constants (class components cannot use hooks)
 const ERROR_SUFFIX = 'Error';
@@ -44,6 +45,9 @@ export class PanelErrorBoundary extends Component<Props, State> {
       componentStack: errorInfo.componentStack,
     });
     this.props.onError?.(error);
+    // Retry re-renders the same rejected React.lazy import, so only a reload
+    // onto the current build clears a chunk miss.
+    if (isChunkLoadError(error)) void recoverStaleBundle('panel_chunk_load');
   }
 
   handleRetry = () => {

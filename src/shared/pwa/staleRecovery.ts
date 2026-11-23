@@ -8,8 +8,12 @@
  * caller that implicates it), unregister the service worker (so the reload
  * bypasses it and fetches the latest from the network), then hard-reload.
  *
- * Guarded by a per-session flag so a genuinely broken new bundle can't loop:
- * we recover at most once per tab session.
+ * Guarded by a sessionStorage flag so a genuinely broken new bundle can't loop.
+ * The flag is scoped to the build that set it: a reload that lands on a newer
+ * build has nothing to loop on, so the next deploy's miss can recover again. On
+ * the same build it holds for `GUARD_WINDOW_MS`, so a reload that came back to
+ * the same build (e.g. one the old worker still served) is not a dead end for
+ * the rest of the tab.
  *
  * MUST stay wired to observed breakage, never to a version comparison. A
  * boot-time `gitSha !== __GIT_SHA__` test used to trigger this as well, which at
@@ -30,12 +34,35 @@
 import { getPosthogInstance } from '@/shared/analytics/posthog/init';
 import { PRECACHE_PREFIX, WASM_CACHE } from './cacheNames';
 
-/** sessionStorage key — set once a recovery has been attempted this tab session. */
+/** sessionStorage key — set when an automatic recovery starts. */
 export const STALE_RECOVERY_FLAG = 'pwa-stale-recovery-done';
 
-function alreadyRecovered(): boolean {
+const GUARD_WINDOW_MS = 10 * 60 * 1000;
+
+interface GuardRecord {
+  readonly sha: string;
+  readonly at: number;
+}
+
+// Inlined in `errorFilters.ts` too, which cannot import this module.
+const CHUNK_LOAD_ERROR =
+  /(?:Failed to fetch|error loading) dynamically imported module|Importing a module script failed/;
+
+/** A lazy chunk that failed to import — the returning-user stale-bundle miss. */
+export function isChunkLoadError(error: unknown): boolean {
+  return error instanceof Error && CHUNK_LOAD_ERROR.test(error.message);
+}
+
+// Module state, not sessionStorage: it must die with the page, so a reload that
+// lands on the same broken build is refused by the guard instead of suspending.
+let recoveryInFlight = false;
+
+function guardHolds(): boolean {
   try {
-    return sessionStorage.getItem(STALE_RECOVERY_FLAG) !== null;
+    const raw = sessionStorage.getItem(STALE_RECOVERY_FLAG);
+    if (raw === null) return false;
+    const { sha, at } = JSON.parse(raw) as Partial<GuardRecord>;
+    return sha === __GIT_SHA__ && typeof at === 'number' && Date.now() - at < GUARD_WINDOW_MS;
   } catch {
     return false;
   }
@@ -43,7 +70,8 @@ function alreadyRecovered(): boolean {
 
 function markRecovered(): void {
   try {
-    sessionStorage.setItem(STALE_RECOVERY_FLAG, Date.now().toString());
+    const record: GuardRecord = { sha: __GIT_SHA__, at: Date.now() };
+    sessionStorage.setItem(STALE_RECOVERY_FLAG, JSON.stringify(record));
   } catch {
     // best-effort — if storage is unavailable we accept the small loop risk
   }
@@ -95,9 +123,10 @@ interface RecoverOptions {
 
 /**
  * Attempt a stale-bundle recovery. Returns true if a recovery was started
- * (caches cleared + reload triggered), false if it was skipped because one
- * already ran this session or the browser reports no network. A `force` caller
- * is never skipped.
+ * (caches cleared + reload triggered) or one is already running in this page,
+ * so the caller can wait for the reload instead of surfacing its failure.
+ * Returns false if it was skipped because the guard holds or the browser
+ * reports no network. A `force` caller is never skipped.
  *
  * Recovery ends by unregistering the service worker, so running it offline
  * would trade an in-app error for the browser's own network error page and
@@ -111,10 +140,12 @@ export async function recoverStaleBundle(
   { dropWasmCache = false, force = false }: RecoverOptions = {}
 ): Promise<boolean> {
   if (!force) {
-    if (alreadyRecovered()) return false;
+    if (recoveryInFlight) return true;
+    if (guardHolds()) return false;
     if (typeof navigator !== 'undefined' && !navigator.onLine) return false;
     markRecovered();
   }
+  recoveryInFlight = true;
 
   try {
     getPosthogInstance()?.capture('pwa_stale_recovery', {
@@ -132,4 +163,8 @@ export async function recoverStaleBundle(
 
   window.location.reload();
   return true;
+}
+
+export function __resetForTests(): void {
+  recoveryInFlight = false;
 }

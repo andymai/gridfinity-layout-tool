@@ -1,6 +1,11 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { recoverStaleBundle, STALE_RECOVERY_FLAG } from './staleRecovery';
+import {
+  __resetForTests,
+  isChunkLoadError,
+  recoverStaleBundle,
+  STALE_RECOVERY_FLAG,
+} from './staleRecovery';
 
 const capture = vi.fn();
 vi.mock('@/shared/analytics/posthog/init', () => ({
@@ -15,6 +20,7 @@ const realLocation = window.location;
 
 beforeEach(() => {
   sessionStorage.clear();
+  __resetForTests();
   capture.mockClear();
   reload.mockClear();
   cacheDelete.mockClear();
@@ -46,7 +52,14 @@ beforeEach(() => {
 afterEach(() => {
   Object.defineProperty(window, 'location', { configurable: true, value: realLocation });
   vi.unstubAllGlobals();
+  vi.useRealTimers();
 });
+
+/** The reload landed: module state is gone, sessionStorage survives. */
+function simulateReload(): void {
+  __resetForTests();
+  reload.mockClear();
+}
 
 describe('recoverStaleBundle', () => {
   it('clears the precache, unregisters SWs, and reloads', async () => {
@@ -104,14 +117,68 @@ describe('recoverStaleBundle', () => {
     );
   });
 
-  it('recovers at most once per session (guards against reload loops)', async () => {
-    expect(await recoverStaleBundle('first')).toBe(true);
-    expect(reload).toHaveBeenCalledTimes(1);
+  it('reports a recovery already running in this page as started, without a second reload', async () => {
+    // Two lazy chunks miss in the same gap: the second must wait for the reload
+    // the first started, not fall through to an error boundary.
+    const [first, second] = await Promise.all([
+      recoverStaleBundle('chunk_load_failure'),
+      recoverStaleBundle('chunk_load_failure'),
+    ]);
 
-    const second = await recoverStaleBundle('second');
-    expect(second).toBe(false);
+    expect(first).toBe(true);
+    expect(second).toBe(true);
     expect(reload).toHaveBeenCalledTimes(1);
+    expect(unregister).toHaveBeenCalledTimes(2);
+  });
+
+  it('declines after a reload that landed on the same build (guards against reload loops)', async () => {
+    expect(await recoverStaleBundle('first')).toBe(true);
+    simulateReload();
+
+    expect(await recoverStaleBundle('second')).toBe(false);
+    expect(reload).not.toHaveBeenCalled();
     expect(sessionStorage.getItem(STALE_RECOVERY_FLAG)).not.toBeNull();
+  });
+
+  it('recovers again once the reload landed on a newer build', async () => {
+    sessionStorage.setItem(STALE_RECOVERY_FLAG, JSON.stringify({ sha: 'old-sha', at: Date.now() }));
+
+    expect(await recoverStaleBundle('chunk_load_failure')).toBe(true);
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores a guard written in the old timestamp-only format', async () => {
+    sessionStorage.setItem(STALE_RECOVERY_FLAG, Date.now().toString());
+
+    expect(await recoverStaleBundle('chunk_load_failure')).toBe(true);
+  });
+
+  it('lets the same build recover again once the guard window has passed', async () => {
+    vi.useFakeTimers();
+    expect(await recoverStaleBundle('first')).toBe(true);
+    simulateReload();
+
+    vi.advanceTimersByTime(9 * 60 * 1000);
+    expect(await recoverStaleBundle('second')).toBe(false);
+
+    vi.advanceTimersByTime(2 * 60 * 1000);
+    expect(await recoverStaleBundle('third')).toBe(true);
+  });
+});
+
+describe('isChunkLoadError', () => {
+  it.each([
+    'Failed to fetch dynamically imported module: https://x/assets/a.js',
+    'error loading dynamically imported module: https://x/assets/a.js',
+    'Importing a module script failed.',
+  ])('matches %s', (message) => {
+    expect(isChunkLoadError(new Error(message))).toBe(true);
+  });
+
+  it('rejects an unrelated error and a non-error value', () => {
+    expect(isChunkLoadError(new Error('Failed to fetch'))).toBe(false);
+    expect(isChunkLoadError('error loading dynamically imported module')).toBe(false);
+    expect(isChunkLoadError(null)).toBe(false);
   });
 });
 

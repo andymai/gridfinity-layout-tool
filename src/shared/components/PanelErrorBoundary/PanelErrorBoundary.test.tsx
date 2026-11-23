@@ -1,10 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { recoverStaleBundle } from '@/shared/pwa/staleRecovery';
 import { PanelErrorBoundary } from './PanelErrorBoundary';
+import type * as StaleRecovery from '@/shared/pwa/staleRecovery';
 
 vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
   captureException: vi.fn(),
+}));
+
+vi.mock('@/shared/pwa/staleRecovery', async (importOriginal) => ({
+  ...(await importOriginal<typeof StaleRecovery>()),
+  recoverStaleBundle: vi.fn().mockResolvedValue(true),
 }));
 
 function ThrowingChild({ shouldThrow }: { shouldThrow: boolean }) {
@@ -14,6 +21,7 @@ function ThrowingChild({ shouldThrow }: { shouldThrow: boolean }) {
 
 describe('PanelErrorBoundary', () => {
   beforeEach(() => {
+    vi.mocked(recoverStaleBundle).mockClear();
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
@@ -89,5 +97,26 @@ describe('PanelErrorBoundary', () => {
     );
     const alert = screen.getByRole('alert');
     expect(alert).toHaveAttribute('aria-live', 'assertive');
+  });
+
+  it('starts a stale-bundle recovery for a chunk miss, which Retry cannot clear', () => {
+    function ChunkMissChild(): never {
+      throw new Error('Failed to fetch dynamically imported module: /assets/Inspector-abc.js');
+    }
+    render(
+      <PanelErrorBoundary panelName="Inspector">
+        <ChunkMissChild />
+      </PanelErrorBoundary>
+    );
+    expect(recoverStaleBundle).toHaveBeenCalledWith('panel_chunk_load');
+  });
+
+  it('does not start a recovery for a panel fault', () => {
+    render(
+      <PanelErrorBoundary panelName="Inspector">
+        <ThrowingChild shouldThrow={true} />
+      </PanelErrorBoundary>
+    );
+    expect(recoverStaleBundle).not.toHaveBeenCalled();
   });
 });
