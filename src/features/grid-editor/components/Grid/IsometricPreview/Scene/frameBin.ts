@@ -53,10 +53,6 @@ export interface BinFrame {
   readonly zoom: number | null;
 }
 
-/**
- * Where the camera looks and how far it zooms to frame a found bin: its centre,
- * and close enough to pick it out, never further out than the view already is.
- */
 export function planBinFrame(input: BinFrameInput): BinFrame {
   const { bin, drawer, depthToGridScale, heightToGridScale, viewport } = input;
   const target = [

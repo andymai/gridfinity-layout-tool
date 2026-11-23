@@ -6,6 +6,7 @@ import { useViewStore } from '@/core/store/view';
 import { useLayoutStore } from '@/core/store/layout';
 import { onRevealBin } from '@/shared/events/revealBin';
 import { getRestingStack } from '@/shared/utils/restingStack';
+import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
 import { calculateFitZoom, planBinFrame } from './frameBin';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { FloorGrid } from '../FloorGrid';
@@ -17,6 +18,7 @@ import { BananaScale } from '../BananaScale';
 import { useSettingsStore } from '@/core/store/settings';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
+import { effectiveGridUnitMmY } from '@/core/types';
 import type { FractionalEdge } from '@/core/types';
 
 interface SceneProps {
@@ -74,6 +76,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
     const prevSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
     const animationFrameRef = useRef<number | null>(null);
     const { camera, size } = useThree();
+    const reducedMotion = usePrefersReducedMotion();
 
     const setIsometricRotation = useViewStore((state) => state.setIsometricRotation);
 
@@ -174,6 +177,11 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
 
     // Start interaction - pause shadows for performance
     const handleStart = () => {
+      // A drag or wheel takes over from a reveal or preset still in flight.
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
       setIsInteracting(true);
     };
 
@@ -205,6 +213,8 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
           const target = new Vector3(centerX, centerY, centerZ);
           const targetPosition = new Vector3(...cameraPresets[preset]);
           const startPosition = camera.position.clone();
+          // A reveal leaves the orbit on a bin; the presets look at the drawer.
+          const startLook = controlsRef.current?.target.clone() ?? target.clone();
 
           // Convert to spherical coordinates for smooth arc interpolation
           const startSpherical = new Spherical().setFromVector3(startPosition.clone().sub(target));
@@ -237,7 +247,9 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
             // Convert back to Cartesian and apply
             const newPosition = new Vector3().setFromSpherical(currentSpherical).add(target);
             camera.position.copy(newPosition);
-            camera.lookAt(target); // Keep camera oriented toward target during animation
+            const look = startLook.clone().lerp(target, eased);
+            controlsRef.current?.target.copy(look);
+            camera.lookAt(look);
 
             if (progress < 1) {
               animationFrameRef.current = requestAnimationFrame(animate);
@@ -276,12 +288,14 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
           const bin = layout.bins.find((b) => b.id === id);
           const rest = bin && getRestingStack(layout.bins, layout.layers).bins.get(bin.id);
           if (!controls || !bin || !rest) return;
+          // From the same snapshot as the bin: after a layout switch the props
+          // can still describe the layout that was open.
           const frame = planBinFrame({
             bin,
             zStart: rest.zStart,
-            drawer: { width: drawerWidth, depth: drawerDepth, height: drawerHeight },
-            depthToGridScale,
-            heightToGridScale,
+            drawer: layout.drawer,
+            depthToGridScale: effectiveGridUnitMmY(layout) / layout.gridUnitMm,
+            heightToGridScale: layout.heightUnitMm / layout.gridUnitMm,
             viewport: size,
             currentZoom: camera instanceof OrthographicCamera ? camera.zoom : null,
             currentTargetZ: controls.target.z,
@@ -295,11 +309,12 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
           const startZoom = camera.zoom;
           const shift = target.clone().sub(startTarget);
           const startTime = Date.now();
+          const duration = reducedMotion ? 0 : FRAME_DURATION_MS;
           if (animationFrameRef.current !== null) {
             cancelAnimationFrame(animationFrameRef.current);
           }
           const animate = () => {
-            const progress = Math.min((Date.now() - startTime) / FRAME_DURATION_MS, 1);
+            const progress = duration === 0 ? 1 : Math.min((Date.now() - startTime) / duration, 1);
             const eased = 1 - Math.pow(1 - progress, 3);
             controls.target.copy(startTarget).addScaledVector(shift, eased);
             camera.position.copy(startPosition).addScaledVector(shift, eased);
@@ -312,7 +327,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
           };
           animate();
         }),
-      [camera, size, drawerWidth, drawerDepth, drawerHeight, depthToGridScale, heightToGridScale]
+      [camera, size, reducedMotion]
     );
 
     // Cleanup animation frame on unmount
