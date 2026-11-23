@@ -401,6 +401,25 @@ describe('Grid', () => {
       expect(screen.getByText('Drag across empty cells to pick the gap')).toBeInTheDocument();
       expect(screen.queryByText('Click and drag to draw a bin')).not.toBeInTheDocument();
     });
+
+    it('swaps the draw tutorial for the gap hint while armed, and brings it back after', () => {
+      useLayoutStore.setState({ layout: createTestLayout({ bins: [] }) });
+      const tutorial = (container: HTMLElement) =>
+        container.querySelector('.animate-draw-hint-cursor');
+
+      const { container, rerender } = render(<Grid shouldShowDrawTutorial={true} />);
+      expect(tutorial(container)).toBeInTheDocument();
+
+      act(() => useInteractionStore.setState({ gapSelectArmed: true }));
+      rerender(<Grid shouldShowDrawTutorial={true} />);
+      expect(tutorial(container)).not.toBeInTheDocument();
+      expect(screen.getByText('Drag across empty cells to pick the gap')).toBeInTheDocument();
+
+      act(() => useInteractionStore.setState({ gapSelectArmed: false }));
+      rerender(<Grid shouldShowDrawTutorial={true} />);
+      expect(tutorial(container)).toBeInTheDocument();
+      expect(screen.queryByText('Drag across empty cells to pick the gap')).not.toBeInTheDocument();
+    });
   });
 
   describe('collaborative features', () => {
