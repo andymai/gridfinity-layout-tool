@@ -5,7 +5,6 @@ export { useResponsive, prefersTouch } from './useResponsive';
 export type { ResponsiveState, LayoutMode } from './useResponsive';
 export { useCrossTabSync } from './useCrossTabSync';
 export { usePWAUpdate } from './usePWAUpdate';
-export { usePrefetchChunks } from './usePrefetchChunks';
 export { useFocusTrap } from './useFocusTrap';
 export { useMenuKeyboardNav } from './useMenuKeyboardNav';
 export { usePrefersReducedMotion } from './usePrefersReducedMotion';

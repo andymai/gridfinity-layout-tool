@@ -1,11 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import {
-  usePrefetchChunks,
-  warmBaseplate,
-  warmDesigner,
-  warmGeometryKernel,
-} from './usePrefetchChunks';
+import { usePrefetchChunks, CHUNK_WARMERS, warmGeometryKernel } from './usePrefetchChunks';
 
 // Mock WASM preload — we only care that it's called, not its internals
 vi.mock('@/shared/generation/wasmPreload', () => ({
@@ -14,7 +9,7 @@ vi.mock('@/shared/generation/wasmPreload', () => ({
 }));
 
 // Mock useResponsive to control device type
-vi.mock('./useResponsive', () => ({
+vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: vi.fn(() => ({
     isMobile: false,
     isTablet: false,
@@ -26,6 +21,8 @@ vi.mock('./useResponsive', () => ({
     isLandscape: true,
   })),
 }));
+
+vi.mock('@/shared/utils/chunkWarmers', () => ({ registerChunkWarmers: vi.fn() }));
 
 // Mock the idle utility to control scheduling behavior
 vi.mock('@/shared/utils/idle', () => ({
@@ -39,10 +36,11 @@ vi.mock('@/shared/utils/idle', () => ({
 }));
 
 // Grab mocked modules for per-test control
-import { useResponsive } from './useResponsive';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 import { preloadBrepkitWasm, preloadOcctWasm } from '@/shared/generation/wasmPreload';
 import { useLabsStore } from '@/core/store/labs';
 import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils/idle';
+import { registerChunkWarmers } from '@/shared/utils/chunkWarmers';
 const mockUseResponsive = vi.mocked(useResponsive);
 const mockScheduleIdle = vi.mocked(scheduleIdleCallback);
 const mockCancelIdle = vi.mocked(cancelIdleCallback);
@@ -109,10 +107,13 @@ describe('usePrefetchChunks', () => {
       isLandscape: false,
     });
 
+    vi.mocked(registerChunkWarmers).mockClear();
     renderHook(() => usePrefetchChunks());
     vi.advanceTimersByTime(5000);
 
     expect(mockScheduleIdle).not.toHaveBeenCalled();
+    // A phone has no idle tier, so it warms on intent; that needs the warmers.
+    expect(registerChunkWarmers).toHaveBeenCalledWith(CHUNK_WARMERS);
   });
 
   it('skips prefetch on tablet', () => {
@@ -231,10 +232,10 @@ describe('destination warmers', () => {
   // made the click slower than doing nothing. The kernel belongs to the idle
   // tier, which runs when no navigation is in flight.
   it.each([
-    ['designer', warmDesigner],
-    ['baseplate', warmBaseplate],
+    ['designer', CHUNK_WARMERS.designer],
+    ['baseplate', CHUNK_WARMERS.baseplate],
   ])('the %s warmer fetches its chunk without touching the kernel', (_name, warm) => {
-    warm();
+    void warm().catch(() => undefined);
     expect(preloadOcctWasm).not.toHaveBeenCalled();
     expect(preloadBrepkitWasm).not.toHaveBeenCalled();
   });

@@ -18,7 +18,6 @@ import {
   useResponsive,
   useCrossTabSync,
   usePWAUpdate,
-  usePrefetchChunks,
   useAnalytics,
   useStorageMigration,
   useSnapshotAutoSave,
@@ -91,6 +90,7 @@ import { useBackgroundThumbnailRegen, useMeshFileMaintenance } from '@/features/
 import { useSpaceMouseDevice } from '@/shared/spacemouse/useSpaceMouseDevice';
 import { useCommunityPublishReturn } from '@/shared/hooks/useCommunityPublishReturn';
 import { useCommunityLikeReturn } from '@/shell/hooks/useCommunityLikeReturn';
+import { usePrefetchChunks } from '@/shell/hooks/usePrefetchChunks';
 import { useCommunityDigestCheck } from '@/shell/hooks/useCommunityDigestCheck';
 import { usePlacesFindResults } from '@/shell/hooks/usePlacesFindResults';
 import { useBinDeepLink } from '@/features/places/hooks/useBinDeepLink';

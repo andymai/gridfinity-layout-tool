@@ -29,7 +29,7 @@ import { openParentDesign } from '@/features/bin-designer/utils/openParentDesign
 import type { DesignOverrides } from '@/features/bin-designer/types';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { useIntentPrefetch } from '@/shared/hooks/useIntentPrefetch';
-import { warmDesignGallery } from '@/shared/hooks/usePrefetchChunks';
+import { warmChunk } from '@/shared/utils/chunkWarmers';
 import { BinPanelShell } from '../BinPanelShell';
 import { BinScrollPanel } from './BinScrollPanel';
 import { loadViewMode, saveViewMode, type BinPanelViewMode } from './binViewModeStorage';
@@ -188,7 +188,7 @@ function BinParameterPanel({ frame }: { readonly frame: 'docked' | 'plain' }) {
     handleOverridesChange({ ...variant.overrides, cutouts });
   }, [variant.parentParams, variant.overrides, handleOverridesChange]);
 
-  const galleryIntent = useIntentPrefetch('modal:designGallery', warmDesignGallery);
+  const galleryIntent = useIntentPrefetch('modal:designGallery', () => warmChunk('designGallery'));
 
   const communityAndVariant = (
     <>

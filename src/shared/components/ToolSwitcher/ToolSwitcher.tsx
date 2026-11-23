@@ -15,7 +15,7 @@ import { useCommunityRouting } from '@/shared/hooks/useCommunityRouting';
 import { useLabelsRouting } from '@/shared/hooks/useLabelsRouting';
 import { useIntentPrefetch } from '@/shared/hooks/useIntentPrefetch';
 import type { IntentPrefetchHandlers } from '@/shared/hooks/useIntentPrefetch';
-import { warmBaseplate, warmDesigner } from '@/shared/hooks/usePrefetchChunks';
+import { warmChunk } from '@/shared/utils/chunkWarmers';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
@@ -115,8 +115,8 @@ export function ToolSwitcher({
   // lazy chunks whose fetch otherwise starts on the click, leaving the panel
   // blank for as long as it takes; a hover is the earliest honest signal that
   // one of them is about to be needed.
-  const designerIntent = useIntentPrefetch('tool:designer', warmDesigner);
-  const baseplateIntent = useIntentPrefetch('tool:baseplate', warmBaseplate);
+  const designerIntent = useIntentPrefetch('tool:designer', () => warmChunk('designer'));
+  const baseplateIntent = useIntentPrefetch('tool:baseplate', () => warmChunk('baseplate'));
   const intentFor = (tool: Tool): Partial<IntentPrefetchHandlers> =>
     tool === 'designer' ? designerIntent : tool === 'baseplate' ? baseplateIntent : {};
 
