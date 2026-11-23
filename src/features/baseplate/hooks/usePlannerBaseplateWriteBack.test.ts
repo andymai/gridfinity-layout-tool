@@ -4,7 +4,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { commandBus, createCommand, _resetUndoCaptureState } from '@/core/cqrs';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useLayoutStore } from '@/core/store/layout';
-import { isOk } from '@/core/result';
+import { err, isOk, storageUnavailable } from '@/core/result';
 import { layoutId, mm } from '@/core/types';
 import type { BaseplateDesignId, StoredBaseplateParams } from '@/core/types';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
@@ -131,6 +131,45 @@ describe('usePlannerBaseplateWriteBack', () => {
     await settle();
 
     expect(updateDesignParams).not.toHaveBeenCalled();
+  });
+
+  it('writes nothing after an undo when the plate has an unchanged custom split', async () => {
+    const split: StoredBaseplateParams = {
+      ...params,
+      splitOverride: { cols: [2, 2], rows: [3] },
+    } as StoredBaseplateParams;
+    const saved = await saveDesign({ name: 'Split plate', params: split, thumbnail: null });
+    if (!isOk(saved)) throw new Error('saveDesign failed');
+    useLayoutStore
+      .getState()
+      .importLayout(
+        createTestLayout({ baseplateParams: split, activeBaseplateId: saved.value.id }),
+        layoutId('layout-b')
+      );
+    renderHook(() => usePlannerBaseplateWriteBack());
+    act(() => {
+      commandBus.dispatch(createCommand('layout.setName', { name: 'Kitchen' }));
+    });
+
+    act(() => useHistoryStore.getState().undo());
+    await settle();
+
+    expect(updateDesignParams).not.toHaveBeenCalled();
+  });
+
+  it('keeps a failed write and tries it again when the tab is hidden', async () => {
+    const id = await linkedLayout();
+    renderHook(() => usePlannerBaseplateWriteBack());
+    vi.mocked(updateDesignParams).mockResolvedValueOnce(err(storageUnavailable('indexedDB')));
+    setPlate(edited);
+    await waitFor(() => expect(updateDesignParams).toHaveBeenCalledOnce(), { timeout: 3000 });
+    expect(await storedParams(id)).toEqual(params);
+
+    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+
+    await waitFor(async () => expect(await storedParams(id)).toEqual(edited), { timeout: 1000 });
   });
 
   it('writes a pending edit at once when the planner closes', async () => {

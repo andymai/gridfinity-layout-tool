@@ -27,18 +27,21 @@ interface PendingWrite {
   readonly params: StoredBaseplateParams;
 }
 
-async function writeIfChanged({ designId, params }: PendingWrite): Promise<void> {
+/** Resolves false when storage failed, so the edit can try again. */
+async function writeIfChanged({ designId, params }: PendingWrite): Promise<boolean> {
   const stored = await loadDesign(designId);
+  if (!isOk(stored)) return false;
   // A restore that leaves the plate as saved writes nothing, so an undo of a
   // bin edit does not touch the design or its sync stamp.
-  if (!isOk(stored) || paramsEqual(stored.value.params, params)) return;
+  if (paramsEqual(stored.value.params, params)) return true;
   const updated = await updateDesignParams(designId, params);
-  if (!isOk(updated)) return;
+  if (!isOk(updated)) return false;
   upsertRegistryEntry({
     id: updated.value.id,
     name: updated.value.name,
     updatedAt: updated.value.updatedAt,
   });
+  return true;
 }
 
 export function usePlannerBaseplateWriteBack(): void {
@@ -53,7 +56,12 @@ export function usePlannerBaseplateWriteBack(): void {
       timer = null;
       const write = pending;
       pending = null;
-      if (write !== null) queue = queue.then(() => writeIfChanged(write));
+      if (write === null) return;
+      queue = queue.then(async () => {
+        // A failed write waits for the next flush (an edit, a hidden tab,
+        // leaving the planner), unless a newer edit took its place.
+        if (!(await writeIfChanged(write)) && pending === null) pending = write;
+      });
     };
 
     const schedule = (): void => {
