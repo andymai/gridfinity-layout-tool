@@ -158,10 +158,40 @@ export function batch<T>(fn: () => T): T {
   if (isBatching) {
     return fn();
   }
+  return runBatch(captureUndoStart(), fn);
+}
 
+/** The state an edit started from, held until the edit becomes one undo step. */
+export interface UndoStart {
+  readonly layout: Layout;
+  readonly selection: SelectionSnapshot;
+}
+
+export function captureUndoStart(): UndoStart {
+  return {
+    layout: structuredClone(useLayoutStore.getState().layout),
+    selection: captureSelectionSnapshot(),
+  };
+}
+
+/**
+ * `batch()` for an edit that wrote the layout live before its final dispatch,
+ * such as a slider drag that previews each frame through the store. The undo
+ * step restores `start`, taken before the first live write, rather than the
+ * state just before `fn`.
+ */
+export function batchFrom<T>(start: UndoStart, fn: () => T): T {
+  if (isBatching) {
+    return fn();
+  }
+  return runBatch(start, fn);
+}
+
+function runBatch<T>(
+  { layout: snapshot, selection: selectionSnapshot }: UndoStart,
+  fn: () => T
+): T {
   const layout = useLayoutStore.getState().layout;
-  const snapshot = structuredClone(layout);
-  const selectionSnapshot = captureSelectionSnapshot();
 
   resetBatchState();
   isBatching = true;

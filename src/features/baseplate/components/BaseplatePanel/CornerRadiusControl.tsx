@@ -14,8 +14,10 @@ interface CornerRadiusControlProps {
   readonly cornerRadius: number | undefined;
   readonly cornerRadii: CornerRadii | undefined;
   readonly maxRadius: number;
+  /** Called on every slider frame; `onChangeEnd` follows once the change is done. */
   readonly onUniformChange: (r: number) => void;
   readonly onPerCornerChange: (radii: CornerRadii) => void;
+  readonly onChangeEnd: () => void;
 }
 
 /** Corner radius controls with optional per-corner mode. */
@@ -25,6 +27,7 @@ export function CornerRadiusControl({
   maxRadius,
   onUniformChange,
   onPerCornerChange,
+  onChangeEnd,
 }: CornerRadiusControlProps) {
   const t = useTranslation();
   const perCorner = cornerRadii !== undefined;
@@ -36,6 +39,7 @@ export function CornerRadiusControl({
         label={t('baseplate.cornerRadius')}
         value={uniformR}
         onChange={onUniformChange}
+        onCommit={onChangeEnd}
         min={0}
         max={maxRadius}
         step={0.5}
@@ -56,6 +60,7 @@ export function CornerRadiusControl({
           } else {
             onPerCornerChange({ tl: uniformR, tr: uniformR, bl: uniformR, br: uniformR });
           }
+          onChangeEnd();
         }}
       />
       {perCorner && (
@@ -64,6 +69,7 @@ export function CornerRadiusControl({
             label={t('baseplate.cornerRadiusTL')}
             value={cornerRadii.tl}
             onChange={(v) => onPerCornerChange({ ...cornerRadii, tl: v })}
+            onCommit={onChangeEnd}
             min={0}
             max={maxRadius}
             step={0.5}
@@ -73,6 +79,7 @@ export function CornerRadiusControl({
             label={t('baseplate.cornerRadiusTR')}
             value={cornerRadii.tr}
             onChange={(v) => onPerCornerChange({ ...cornerRadii, tr: v })}
+            onCommit={onChangeEnd}
             min={0}
             max={maxRadius}
             step={0.5}
@@ -82,6 +89,7 @@ export function CornerRadiusControl({
             label={t('baseplate.cornerRadiusBL')}
             value={cornerRadii.bl}
             onChange={(v) => onPerCornerChange({ ...cornerRadii, bl: v })}
+            onCommit={onChangeEnd}
             min={0}
             max={maxRadius}
             step={0.5}
@@ -91,6 +99,7 @@ export function CornerRadiusControl({
             label={t('baseplate.cornerRadiusBR')}
             value={cornerRadii.br}
             onChange={(v) => onPerCornerChange({ ...cornerRadii, br: v })}
+            onCommit={onChangeEnd}
             min={0}
             max={maxRadius}
             step={0.5}

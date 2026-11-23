@@ -110,6 +110,33 @@ describe('Slider', () => {
     expect(onChange).toHaveBeenCalledWith(5.5);
   });
 
+  it('commits a native change, such as Page Up or a screen reader step, as a whole step', () => {
+    const onChange = vi.fn();
+    const onCommit = vi.fn();
+    render(<Slider {...defaultProps} onChange={onChange} onCommit={onCommit} />);
+
+    fireEvent.change(screen.getByRole('slider'), { target: { value: '60' } });
+
+    expect(onChange).toHaveBeenCalledWith(60);
+    expect(onCommit).toHaveBeenCalledWith(60);
+  });
+
+  it('waits for the release to commit a native change during a pointer drag', () => {
+    const onCommit = vi.fn();
+    const { container } = render(<Slider {...defaultProps} onCommit={onCommit} />);
+    const track = container.querySelector('.touch-none');
+    if (!(track instanceof HTMLElement)) throw new Error('no track');
+    track.setPointerCapture = vi.fn();
+    track.releasePointerCapture = vi.fn();
+
+    fireEvent.pointerDown(track, { pointerId: 1, clientX: 0 });
+    fireEvent.change(screen.getByRole('slider'), { target: { value: '60' } });
+    expect(onCommit).not.toHaveBeenCalled();
+
+    fireEvent.pointerUp(track, { pointerId: 1, clientX: 0 });
+    expect(onCommit).toHaveBeenCalledOnce();
+  });
+
   it('accepts aria-describedby for external descriptions', () => {
     render(<Slider {...defaultProps} aria-describedby="help-text" />);
     expect(screen.getByRole('slider')).toHaveAttribute('aria-describedby', 'help-text');

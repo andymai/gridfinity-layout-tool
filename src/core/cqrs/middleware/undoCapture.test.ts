@@ -4,7 +4,13 @@ import { layoutInvalidOperation } from '@/core/result/constructors';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { resetLayoutStore, resetHistoryStore, createTestLayout } from '@/test/testUtils';
-import { undoCaptureMiddleware, batch, _resetUndoCaptureState } from './undoCapture';
+import {
+  undoCaptureMiddleware,
+  batch,
+  batchFrom,
+  captureUndoStart,
+  _resetUndoCaptureState,
+} from './undoCapture';
 import type { Command } from '../commands';
 import type { DomainEvent } from '../events';
 import type { NextFn } from '../types';
@@ -259,5 +265,66 @@ describe('undoCaptureMiddleware', () => {
     expect(history.past).toHaveLength(1);
     // The snapshot should be the state BEFORE the handler ran
     expect(history.past[0].layout.name).toBe('Before');
+  });
+});
+
+describe('batchFrom', () => {
+  beforeEach(() => {
+    resetLayoutStore();
+    resetHistoryStore();
+    _resetUndoCaptureState();
+  });
+
+  function renameNext(name: string): NextFn<Command, DomainEvent> {
+    return () => {
+      useLayoutStore.setState({ layout: { ...useLayoutStore.getState().layout, name } });
+      return ok({ value: undefined, events: [] });
+    };
+  }
+
+  it('records one step back to the captured start, past the live writes after it', () => {
+    useLayoutStore.setState({ layout: createTestLayout({ name: 'Before drag' }) });
+    const start = captureUndoStart();
+    useLayoutStore.setState({ layout: createTestLayout({ name: 'Frame 1' }) });
+    useLayoutStore.setState({ layout: createTestLayout({ name: 'Frame 2' }) });
+
+    batchFrom(start, () => undoCaptureMiddleware(createTestCommand(), renameNext('Final')));
+
+    const { past } = useHistoryStore.getState();
+    expect(past).toHaveLength(1);
+    expect(past[0]?.layout.name).toBe('Before drag');
+    expect(useLayoutStore.getState().layout.name).toBe('Final');
+  });
+
+  it('keeps the start apart from later writes to the live layout', () => {
+    useLayoutStore.setState({ layout: createTestLayout({ name: 'Before drag' }) });
+    const start = captureUndoStart();
+    useLayoutStore.getState().layout.layers.length = 0;
+
+    expect(start.layout.layers.length).toBeGreaterThan(0);
+  });
+
+  it('records nothing when the final dispatch fails', () => {
+    useLayoutStore.setState({ layout: createTestLayout({ name: 'Before drag' }) });
+    const start = captureUndoStart();
+
+    batchFrom(start, () => undoCaptureMiddleware(createTestCommand(), failureNext()));
+
+    expect(useHistoryStore.getState().past).toHaveLength(0);
+  });
+
+  it('defers to an enclosing batch, which owns the snapshot', () => {
+    useLayoutStore.setState({ layout: createTestLayout({ name: 'Outer start' }) });
+    const outerFirst = renameNext('Middle');
+
+    batch(() => {
+      undoCaptureMiddleware(createTestCommand(), outerFirst);
+      const start = captureUndoStart();
+      batchFrom(start, () => undoCaptureMiddleware(createTestCommand(), renameNext('Final')));
+    });
+
+    const { past } = useHistoryStore.getState();
+    expect(past).toHaveLength(1);
+    expect(past[0]?.layout.name).toBe('Outer start');
   });
 });

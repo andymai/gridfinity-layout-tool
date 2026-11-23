@@ -2,7 +2,8 @@
  * Selection Pruning Event Subscriber
  *
  * Automatically removes stale references from the selection store when
- * bins, layers, or categories are deleted or moved to staging.
+ * bins, layers, or categories are deleted or moved to staging, including bins
+ * that a drawer, shape, layer or baseplate change displaced to staging.
  *
  * This replaces manual `setSelectedBins([])` calls scattered across components
  * after delete/move operations. The subscriber reacts to domain events,
@@ -114,9 +115,33 @@ export function connectSelectionPruning(bus: EventBus): UnsubscribeFn {
     })
   );
 
-  // Layer deleted — reset active layer if it was the deleted one
+  // Bins displaced to staging by a drawer, shape or baseplate change
+  unsubscribers.push(
+    bus.subscribe('drawer.updated', (event) => {
+      removeBinsFromSelection(event.payload.displacedBinIds ?? []);
+    })
+  );
+  unsubscribers.push(
+    bus.subscribe('drawer.outlineSet', (event) => {
+      removeBinsFromSelection(event.payload.displacedBinIds);
+    })
+  );
+  unsubscribers.push(
+    bus.subscribe('layout.baseplateParamsSet', (event) => {
+      removeBinsFromSelection(event.payload.displacedBinIds ?? []);
+    })
+  );
+  unsubscribers.push(
+    bus.subscribe('layout.activeBaseplateSet', (event) => {
+      removeBinsFromSelection(event.payload.displacedBinIds ?? []);
+    })
+  );
+
+  // Layer deleted — its bins go to staging, and the active layer resets if it
+  // was the deleted one
   unsubscribers.push(
     bus.subscribe('layer.deleted', (event) => {
+      removeBinsFromSelection(event.payload.displacedBinIds ?? []);
       const state = useSelectionStore.getState();
       if (state.activeLayerId === event.payload.layer.id) {
         const layout = useLayoutStore.getState().layout;

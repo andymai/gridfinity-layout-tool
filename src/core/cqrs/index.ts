@@ -154,7 +154,14 @@ export type { EventStore, EventStoreQuery } from './store/eventStore';
 
 export { getPendingRetryCount, clearRetryQueue } from './store/retryQueue';
 
-export { undoCaptureMiddleware, batch, _resetUndoCaptureState } from './middleware/undoCapture';
+export {
+  undoCaptureMiddleware,
+  batch,
+  batchFrom,
+  captureUndoStart,
+  _resetUndoCaptureState,
+} from './middleware/undoCapture';
+export type { UndoStart } from './middleware/undoCapture';
 export { loggingMiddleware } from './middleware/logging';
 export { getDefaultPipeline } from './middleware';
 

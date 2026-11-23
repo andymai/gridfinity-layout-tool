@@ -44,7 +44,8 @@ description: 'Zustand stores (src/core/store/) and the CQRS v2 pipeline (src/cor
 
 1. Import `batch` from `@/core/cqrs`. Wrap dispatches: `batch(() => { mutations.deleteBin(a); mutations.deleteBin(b); })`.
 2. The callback MUST be synchronous — async escapes the `isBatching` scope and later dispatches get their own undo entries. Nesting is safe; the outer batch owns the snapshot. The undo label is the first command that changes the layout, counted when all match; the snapshot is pushed even if the callback throws.
-3. Test that `useHistoryStore.getState().past` grows by exactly 1; reset with `_resetUndoCaptureState` from `@/core/cqrs` between tests.
+3. An edit that writes the store live before its final dispatch (a slider drag previewing each frame) takes `captureUndoStart()` before the first live write and runs the final dispatch in `batchFrom(start, fn)`, so the step restores the state before the drag. Worked example: `src/features/baseplate/components/BaseplatePanel/panelState.ts`.
+4. Test that `useHistoryStore.getState().past` grows by exactly 1; reset with `_resetUndoCaptureState` from `@/core/cqrs` between tests.
 
 ## Recipe: change a persisted event's payload shape
 

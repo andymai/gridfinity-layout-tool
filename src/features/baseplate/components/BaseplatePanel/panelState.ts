@@ -1,18 +1,22 @@
 /**
  * Store wiring shared by the BaseplatePanel sections.
  *
- * `updateBaseplateParams`/`updateBaseplateParam` are plain functions (getState
- * writes, no subscriptions) so any section can mutate params without prop
- * threading. `useBaseplatePanelDerived` centralizes the read slice plus the
- * derived shape/stack flags that several sections gate on, so the sections
- * can't drift apart on how "shaped" or "stacked" is decided.
+ * The writers are plain functions (no subscriptions) so any section can change
+ * params without prop threading. Each `update`/`replace` call is one undo
+ * step. A slider drag previews every frame through the store and becomes one
+ * step when it ends. `useBaseplatePanelDerived` centralizes the read slice
+ * plus the derived shape/stack flags that several sections gate on, so the
+ * sections can't drift apart on how "shaped" or "stacked" is decided.
  */
 
 import { useShallow } from 'zustand/react/shallow';
+import { batch, batchFrom, captureUndoStart, commandBus, createCommand } from '@/core/cqrs';
+import type { UndoStart } from '@/core/cqrs';
+import { isErr } from '@/core/result';
 import { useLayoutStore } from '@/core/store/layout';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
-import type { StoredBaseplateParams, DrawerOutline, FractionalEdge } from '@/core/types';
+import type { StoredBaseplateParams, DrawerOutline, FractionalEdge, Layout } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
 import { drawerFrameExtent } from '@/shared/utils/outlineFrame';
@@ -24,11 +28,65 @@ import { dismissBaseplateQuickstartOnEdit } from '../../hooks/useBaseplateFirstR
  * shape drawn to its grid keeps the plain "grid + padding" reading. */
 const EXTENT_EPS_MM = 0.01;
 
-export function updateBaseplateParams(patch: Partial<StoredBaseplateParams>): void {
-  const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
-  useLayoutStore.getState().setBaseplateParams({ ...current, ...patch });
+function currentParams(): StoredBaseplateParams {
+  return useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+}
+
+function noteEdit(): void {
   trackToolActivated('baseplate', 'params_changed');
   dismissBaseplateQuickstartOnEdit();
+}
+
+function commitParams(params: StoredBaseplateParams): void {
+  batch(() => {
+    const result = commandBus.dispatch(createCommand('layout.setBaseplateParams', { params }));
+    // The command checks bounds that the store action never checked, so a
+    // layout saved with a value outside them would refuse every later edit.
+    if (isErr(result)) useLayoutStore.getState().setBaseplateParams(params);
+  });
+}
+
+/**
+ * The slider drag in progress: the state before its first frame, and the
+ * layout its latest frame wrote. A layout that differs from `lastFrame` means
+ * something else wrote in between (an undo, a discrete edit), so the start no
+ * longer leads to the current state.
+ */
+let drag: { start: UndoStart; lastFrame: Layout } | null = null;
+
+/**
+ * Close the open slider drag as one undo step back to the state before it.
+ * Pass this as a slider's `onCommit`. Undo calls it first, so an open drag is
+ * a step of its own before it is reverted.
+ */
+export function finishBaseplateParamsDrag(): void {
+  const open = drag;
+  drag = null;
+  if (open === null || open.lastFrame !== useLayoutStore.getState().layout) return;
+  batchFrom(open.start, () => commitParams(currentParams()));
+}
+
+/** Show a slider frame on the plate. The undo step waits for `finishBaseplateParamsDrag`. */
+export function previewBaseplateParams(patch: Partial<StoredBaseplateParams>): void {
+  const { layout } = useLayoutStore.getState();
+  const open = drag?.lastFrame === layout ? drag : { start: captureUndoStart(), lastFrame: layout };
+  useLayoutStore.getState().setBaseplateParams({ ...currentParams(), ...patch });
+  open.lastFrame = useLayoutStore.getState().layout;
+  drag = open;
+  noteEdit();
+}
+
+export function previewBaseplateParam<K extends keyof StoredBaseplateParams>(
+  key: K,
+  value: StoredBaseplateParams[K]
+): void {
+  previewBaseplateParams({ [key]: value });
+}
+
+export function updateBaseplateParams(patch: Partial<StoredBaseplateParams>): void {
+  finishBaseplateParamsDrag();
+  commitParams({ ...currentParams(), ...patch });
+  noteEdit();
 }
 
 export function updateBaseplateParam<K extends keyof StoredBaseplateParams>(
@@ -36,6 +94,12 @@ export function updateBaseplateParam<K extends keyof StoredBaseplateParams>(
   value: StoredBaseplateParams[K]
 ): void {
   updateBaseplateParams({ [key]: value });
+}
+
+/** Write whole params as one undo step, for edits that derive every field (sync, typed size, reset). */
+export function replaceBaseplateParams(params: StoredBaseplateParams): void {
+  finishBaseplateParamsDrag();
+  commitParams(params);
 }
 
 export interface BaseplatePanelDerived {

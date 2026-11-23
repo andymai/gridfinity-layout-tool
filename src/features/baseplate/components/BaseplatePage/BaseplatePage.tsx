@@ -19,7 +19,7 @@ import { gridUnits, effectiveGridUnitMmY } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 
-import { Button } from '@/design-system';
+import { Button, IconButton, isMacPlatform } from '@/design-system';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { useBaseplateFirstRun } from '../../hooks/useBaseplateFirstRun';
 import { BaseplateQuickstartCard } from './BaseplateQuickstartCard';
@@ -32,6 +32,7 @@ import { useBaseplateGeneration } from '../../hooks/useBaseplateGeneration';
 import { useBaseplateLibraryInit } from '../../hooks/useBaseplateLibraryInit';
 import { useBaseplateAutoSave } from '../../hooks/useBaseplateAutoSave';
 import { useBaseplateExport } from '../../hooks/useBaseplateExport';
+import { useBaseplateUndo } from '../../hooks/useBaseplateUndo';
 import { BaseplateSelector } from '../BaseplateSelector';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { generateBaseplateFileName, toNamingParams } from '../../utils/fileNaming';
@@ -108,6 +109,8 @@ export function BaseplatePage() {
 
   // Persist edits to the active library design (debounced).
   const saveStatus = useBaseplateAutoSave();
+  const { canUndo, canRedo, undo, redo } = useBaseplateUndo();
+  const modKey = isMacPlatform() ? '\u2318' : 'Ctrl';
 
   const showBaseplateLibrary = useViewStore((s) => s.showBaseplateLibrary);
   const setShowBaseplateLibrary = useViewStore((s) => s.setShowBaseplateLibrary);
@@ -278,7 +281,7 @@ export function BaseplatePage() {
       {shouldShowQuickstart && !isMobile && (
         <BaseplateQuickstartCard onDismiss={markQuickstartSeen} />
       )}
-      <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle">
+      <header className="h-12 flex items-center justify-between gap-2 px-4 bg-surface-secondary border-b border-stroke-subtle">
         <div className="flex items-center gap-3 min-w-0">
           <ToolSwitcher compact={isMobile} iconOnly={isMobile || isTablet} />
 
@@ -330,6 +333,46 @@ export function BaseplatePage() {
 
         <div className="flex items-center gap-1 flex-shrink-0">
           {isDesktop && <SaveStatusIndicator status={saveStatus} />}
+          {/* On the narrowest phones the tools and Export fill the header, so
+              Redo hides below 380px and Undo below 360px. */}
+          <div className="flex items-center">
+            <IconButton
+              size="sm"
+              touchTarget={false}
+              onClick={undo}
+              disabled={!canUndo}
+              className="hidden h-8 w-8 min-[360px]:inline-flex"
+              title={t('header.undoAction', { mod: modKey })}
+              aria-label={t('header.undo', { mod: modKey })}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                />
+              </svg>
+            </IconButton>
+            <IconButton
+              size="sm"
+              touchTarget={false}
+              onClick={redo}
+              disabled={!canRedo}
+              className="hidden h-8 w-8 min-[380px]:inline-flex"
+              title={t('header.redoAction', { mod: modKey })}
+              aria-label={t('header.redo', { mod: modKey })}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
+                />
+              </svg>
+            </IconButton>
+          </div>
           <HeaderSupportLinks compact={!isDesktop} />
         </div>
       </header>
