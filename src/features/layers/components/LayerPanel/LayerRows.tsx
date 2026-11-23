@@ -191,19 +191,18 @@ export function LayerRows({
           const showGrip = hasMultipleLayers;
 
           return (
+            // The row catches mouse clicks for its whole area. Keyboard and assistive
+            // tech get the select control beside the row's buttons: a role="button"
+            // around them would hide them from assistive tech.
             <div
               key={layer.id}
-              role="button"
-              tabIndex={0}
-              aria-label={t('layers.selectLayer', { name: layer.name })}
-              aria-pressed={isActive}
+              role="presentation"
               title={tooltipText}
               data-layer-id={layer.id}
               data-testid={isHovered ? 'hover-highlight' : undefined}
               draggable={hasMultipleLayers && !isEditing}
               onClick={() => onLayerClick(layer.id)}
               onDoubleClick={() => onEditingStart(layer.id)}
-              onKeyDown={handleKeyDown(layer.id)}
               onMouseEnter={() => onLayerHover(layer.id)}
               onMouseLeave={handleMouseLeave}
               onDragStart={(e) => handleDragStart(e, displayIndex)}
@@ -219,6 +218,15 @@ export function LayerRows({
                 transition: `opacity ${TRANSITION}`,
               }}
             >
+              <div
+                role="button"
+                tabIndex={0}
+                aria-label={t('layers.selectLayer', { name: layer.name })}
+                aria-pressed={isActive}
+                className="absolute inset-0"
+                onKeyDown={handleKeyDown(layer.id)}
+              />
+
               {isActive && (
                 <div
                   className="absolute left-0 top-0 h-full"
@@ -229,7 +237,9 @@ export function LayerRows({
                 />
               )}
 
-              <div className="flex items-center justify-between h-full pl-3 pr-2">
+              {/* Only the row's text and controls take the pointer, so the select
+                  control behind them gets every click on the row's empty space. */}
+              <div className="relative flex items-center justify-between h-full pl-3 pr-2 pointer-events-none">
                 {isActive ? (
                   <>
                     {isEditing ? (
@@ -247,7 +257,7 @@ export function LayerRows({
                         }}
                         onClick={(e) => e.stopPropagation()}
                         size="sm"
-                        wrapperClassName="min-w-0 flex-1"
+                        wrapperClassName="min-w-0 flex-1 pointer-events-auto"
                         className="px-1 text-xs font-medium"
                         aria-label={t('layers.layerNamePlaceholder')}
                       />
@@ -255,7 +265,7 @@ export function LayerRows({
                       <span
                         role="button"
                         tabIndex={0}
-                        className="truncate text-xs font-medium cursor-text"
+                        className="truncate text-xs font-medium cursor-text pointer-events-auto"
                         style={{ color: 'var(--text-primary)' }}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -275,7 +285,7 @@ export function LayerRows({
                     )}
 
                     <div
-                      className="flex items-center gap-1 ml-1 flex-shrink-0"
+                      className="flex items-center gap-1 ml-1 flex-shrink-0 [&>*]:pointer-events-auto"
                       onDoubleClick={(e) => e.stopPropagation()}
                     >
                       {stat && (
@@ -380,12 +390,12 @@ export function LayerRows({
                 ) : (
                   <>
                     <span
-                      className="truncate text-xs font-medium"
+                      className="truncate text-xs font-medium pointer-events-auto"
                       style={{ color: 'var(--text-secondary)' }}
                     >
                       {layer.name}
                     </span>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-shrink-0 [&>*]:pointer-events-auto">
                       {stat && (
                         <span className="text-micro tabular-nums text-content-disabled">
                           {t('layers.binCount', { count: stat.binCount })}

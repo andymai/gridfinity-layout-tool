@@ -39,13 +39,6 @@ function filterKnownIssues(violations: Awaited<ReturnType<AxeBuilder['analyze']>
   });
 }
 
-/**
- * A layer row is a role="button" holding its rename and height buttons
- * (nested-interactive, label-content-name-mismatch).
- * TODO: drop this exclusion when the layer row stops nesting its buttons.
- */
-const LAYER_ROW = '[data-layer-id]';
-
 test.describe('Accessibility', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
@@ -69,7 +62,6 @@ test.describe('Accessibility', () => {
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
       // Exclude canvas elements (3D preview) from color contrast checks
       .exclude('canvas')
-      .exclude(LAYER_ROW)
       .analyze();
 
     const criticalViolations = filterKnownIssues(results.violations);
@@ -82,7 +74,6 @@ test.describe('Accessibility', () => {
 
     const results = await new AxeBuilder({ page })
       .include('aside')
-      .exclude(LAYER_ROW)
       .withTags(['wcag2a', 'wcag2aa'])
       .analyze();
 
