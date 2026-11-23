@@ -1,0 +1,19 @@
+src/features/generation/worker/generators/kumikoCornerSlab.ts
+  s_f5ebe617f2ec28::t_90e417cc2cec4a 28,166-167,169-178,180-182,184,204,206,208-209,243-261,263-268
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f9645b82d8425fb5dc9e075601f973bdeae7d1e7",
+  "prompts": {},
+  "sessions": {
+    "s_f5ebe617f2ec28": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8396284b-762e-44ab-b73b-9e1a9761418f",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
