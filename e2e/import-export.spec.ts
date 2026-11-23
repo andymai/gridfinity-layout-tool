@@ -122,7 +122,9 @@ test.describe('Import/Export Workflows', () => {
   });
 
   test.describe('Download and re-import', () => {
-    test('downloads a layout file that imports back with its bins', async ({ page }) => {
+    test('downloads a layout file that imports back as a new layout with its bin', async ({
+      page,
+    }) => {
       await drawBinOnGrid(page, 50, 50, 100, 100);
       await waitForBinCount(page, 1);
       await waitForSavedLayout(page, { binCount: 1 });
@@ -142,13 +144,20 @@ test.describe('Import/Export Workflows', () => {
       await dialog
         .locator('input[type="file"]')
         .setInputFiles({ name, mimeType: 'application/json', buffer });
-
       await expect(dialog.getByText('Ready to import')).toBeVisible({ timeout: 3000 });
-      await expect(dialog.getByText('Untitled layout', { exact: true })).toBeVisible();
-      const binsValue = dialog
-        .getByText('bins', { exact: true })
-        .locator('xpath=following-sibling::div[1]');
-      await expect(binsValue).toHaveText('1');
+      await dialog.getByRole('button', { name: 'Import layout' }).click();
+
+      const imported = page.getByRole('button', {
+        name: 'Switch layout (current: Untitled layout (imported))',
+      });
+      await expect(imported).toBeVisible();
+      await waitForBinCount(page, 1);
+      await waitForSavedLayout(page, { name: 'Untitled layout (imported)', binCount: 1 });
+
+      await page.reload();
+      await waitForAppReady(page);
+      await expect(imported).toBeVisible({ timeout: 5000 });
+      await waitForBinCount(page, 1);
     });
   });
 });
