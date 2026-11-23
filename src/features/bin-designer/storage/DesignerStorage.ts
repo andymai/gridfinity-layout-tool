@@ -536,13 +536,14 @@ export async function propagateToVariants(
 
     let updated = 0;
     for (const variant of variants) {
-      const { params: resolved } = applyOverrides(nextParams, variant.overrides);
-      const result = await saveDesign({
-        ...variant,
-        params: resolved,
-        thumbnailState: 'outdated',
+      // Rebuilt from the variant as its queue leaves it: an override edit queued
+      // first would otherwise be overwritten by the overrides read above.
+      const result = await updateInSaveOrder(variant.id, (current) => {
+        if (current.variantOf !== parentId) return null;
+        const { params: resolved } = applyOverrides(nextParams, current.overrides);
+        return { ...current, params: resolved, thumbnailState: 'outdated' };
       });
-      if (isOk(result)) updated++;
+      if (isOk(result) && result.value.variantOf === parentId) updated++;
     }
     return ok(updated);
   } catch (e) {
@@ -588,10 +589,16 @@ export async function createVariant(
 }
 
 /** Replace a variant's overrides and rebuild its params from its parent. */
-export function updateVariantOverrides(
+export async function updateVariantOverrides(
   variantId: DesignId,
   overrides: DesignOverrides
 ): Promise<Result<SavedDesign, StorageError>> {
+  // The parent's queued save holds the params the variant derives from. Wait for
+  // it before taking the variant's own slot: holding that slot while waiting
+  // would deadlock a design linked to itself, or two linked to each other.
+  const linked = await loadDesign(variantId);
+  if (isOk(linked) && linked.value.variantOf) await pendingSaves.get(linked.value.variantOf);
+
   return inSaveOrder(variantId, async () => {
     const variantResult = await loadDesign(variantId);
     if (isErr(variantResult)) return variantResult;
@@ -600,8 +607,6 @@ export function updateVariantOverrides(
       return err(storageCorrupted(variantId, ['design is not a variant']));
     }
 
-    // The parent's own queued save holds the params the variant derives from.
-    await pendingSaves.get(variant.variantOf);
     const parentResult = await loadDesign(variant.variantOf);
     if (isErr(parentResult)) return parentResult;
     const parentParams = parentResult.value.params;
