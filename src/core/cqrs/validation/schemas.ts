@@ -12,6 +12,7 @@ import * as z from 'zod';
 import { CONSTRAINTS } from '@/core/constants';
 import { binItemsSchema } from './binItems';
 import {
+  CORNER_RADIUS_MAX_MM,
   SOLID_FLOOR_MIN_MM,
   SOLID_FLOOR_MAX_MM,
   SCREW_HOLE_MIN_DIAMETER_MM,
@@ -316,7 +317,7 @@ const layoutSetHeightUnitMmSchema = z.object({ mm: positiveMm });
 
 /** Baseplate params schema */
 // Max = gridUnitMm/2 (capped at 200mm) + max padding (100mm). UI derives a tighter bound per-layout.
-const cornerRadiusMm = z.number().min(0).max(200);
+const cornerRadiusMm = z.number().min(0).max(CORNER_RADIUS_MAX_MM);
 /**
  * Chunk sizes for one axis of a custom split plan. Bounds only — that
  * the sizes actually sum to the plate is checked by `normalizeSplitOverride`,

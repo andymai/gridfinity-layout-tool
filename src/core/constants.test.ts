@@ -14,8 +14,10 @@ import {
   getCellSizeY,
   BREAKPOINTS,
   getDefaultDrawerSize,
+  CONSTRAINTS,
 } from '@/core/constants';
 import {
+  CORNER_RADIUS_MAX_MM,
   DEFAULT_BASEPLATE_PARAMS,
   migrateBaseplateParams,
   MOUNT_MAGNET_DEFAULT_DEPTH_MM,
@@ -24,6 +26,8 @@ import {
   SOLID_FLOOR_MAX_MM,
 } from '@/core/baseplateDefaults';
 import { gridUnits, mm } from '@/core/types';
+import { PADDING_MAX } from '@/shared/utils/computeAnchoredPaddings';
+import { GRID_PITCH_MM_MAX } from '@/shared/utils/drawerOutline';
 import type { StoredBaseplateParams } from '@/core/types';
 
 describe('calcMaxGridUnits', () => {
@@ -776,7 +780,7 @@ describe('migrateBaseplateParams', () => {
     expect(result.cornerRadii).toEqual({ tl: 1, tr: 2, bl: 3, br: 4 });
   });
 
-  it('clamps cornerRadius and cornerRadii to [0, 200] mm', () => {
+  it('clamps cornerRadius and cornerRadii to the largest radius a plate can take', () => {
     const stored = {
       magnetHoles: false,
       magnetDiameter: 6.5,
@@ -786,11 +790,16 @@ describe('migrateBaseplateParams', () => {
       paddingFront: 0,
       paddingBack: 0,
       cornerRadius: 9999,
-      cornerRadii: { tl: -5, tr: 500, bl: 10, br: 10 },
+      cornerRadii: { tl: -5, tr: 500, bl: 10, br: 9999 },
     };
     const result = migrateBaseplateParams(stored);
-    expect(result.cornerRadius).toBe(200);
-    expect(result.cornerRadii).toEqual({ tl: 0, tr: 200, bl: 10, br: 10 });
+    expect(result.cornerRadius).toBe(CORNER_RADIUS_MAX_MM);
+    expect(result.cornerRadii).toEqual({ tl: 0, tr: 500, bl: 10, br: CORNER_RADIUS_MAX_MM });
+  });
+
+  it('bounds the corner radius at half the widest plate the tool can make', () => {
+    const widestSideMm = CONSTRAINTS.GRID_MAX * GRID_PITCH_MM_MAX + 2 * PADDING_MAX;
+    expect(CORNER_RADIUS_MAX_MM).toBe(widestSideMm / 2);
   });
 
   it('ignores invalid cornerRadii shape', () => {

@@ -5,8 +5,13 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { CONNECTOR_STYLES, FRACTIONAL_EDGES, PADDING_ANCHORS } from './baseplateValidation.js';
-import { PADDING_ANCHOR_VALUES } from '@/core/baseplateDefaults';
+import {
+  CONNECTOR_STYLES,
+  FRACTIONAL_EDGES,
+  MAX_CORNER_RADIUS_MM,
+  PADDING_ANCHORS,
+} from './baseplateValidation.js';
+import { CORNER_RADIUS_MAX_MM, PADDING_ANCHOR_VALUES } from '@/core/baseplateDefaults';
 import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
 import type { FractionalEdge } from '@/core/types';
 
@@ -17,6 +22,10 @@ describe('baseplate enum mirrors', () => {
 
   it('connector styles match the client', () => {
     expect([...CONNECTOR_STYLES].sort()).toEqual([...BASEPLATE_CONNECTOR_STYLES].sort());
+  });
+
+  it('corner radius bound matches the client', () => {
+    expect(MAX_CORNER_RADIUS_MM).toBe(CORNER_RADIUS_MAX_MM);
   });
 
   it('fractional edges match the client type', () => {

@@ -11,6 +11,7 @@ import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { computeBaseplateTiling } from '@/features/baseplate/utils/splitPlanner';
 import type { MarginPiece } from '@/features/baseplate/types/tiling';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
+import { gridUnits } from '@/core/types';
 import { PLATE_PROFILE_HEIGHT, MAGNET_FLOOR } from './generatorTypes';
 
 let generateMargin: (
@@ -74,6 +75,76 @@ function railOf(params: ResolvedBaseplateParams, side: MarginPiece['side']): Mar
   if (!m) throw new Error(`no ${side} rail`);
   return m;
 }
+
+/**
+ * Radius of the arc at a rail's front-left outer corner: the arc meets the
+ * front edge at x = minX + r, and that end is always a mesh vertex.
+ */
+function frontLeftRadius(verts: ArrayLike<number>): number {
+  let minX = Infinity;
+  let minY = Infinity;
+  for (let i = 0; i < verts.length; i += 3) {
+    minX = Math.min(minX, verts[i]);
+    minY = Math.min(minY, verts[i + 1]);
+  }
+  let nearest = Infinity;
+  for (let i = 0; i < verts.length; i += 3) {
+    if (Math.abs(verts[i + 1] - minY) < 1e-3) nearest = Math.min(nearest, verts[i] - minX);
+  }
+  return nearest;
+}
+
+describe('margin rail corner radius', () => {
+  it('gives a front rail the plate radius when it is under the band', () => {
+    const params = base({
+      paddingLeft: 12,
+      paddingRight: 12,
+      paddingFront: 12,
+      paddingBack: 12,
+      cornerRadius: 10,
+    });
+    const md = generateMargin(params, railOf(params, 'front'), false);
+    expect(frontLeftRadius(md.vertices)).toBeCloseTo(10, 0);
+  });
+
+  it('rounds a short split rail whose corner needs more than half its length', () => {
+    // A leading half column makes the first front rail 21 mm long.
+    const params = base({
+      width: 4.5,
+      fractionalEdgeX: 'start',
+      splitOverride: { cols: [gridUnits(0.5), gridUnits(4)], rows: [gridUnits(3)] },
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 12,
+      paddingBack: 0,
+      cornerRadius: 11,
+    });
+    const rail = computeBaseplateTiling(params, 256).margins.find(
+      (m) => m.side === 'front' && m.col === 0
+    );
+    if (!rail) throw new Error('no first front rail');
+    expect(rail.lengthMm).toBeCloseTo(21, 1);
+    expect(rail.ownedCorners).toEqual(['bl']);
+    const md = generateMargin(params, rail, false);
+    expect(frontLeftRadius(md.vertices)).toBeCloseTo(11, 0);
+  });
+
+  it('gives a narrow side rail that owns the corner the same radius', () => {
+    // No front or back rail, so the left rail reaches the corners and owns them.
+    const params = base({
+      paddingLeft: 12,
+      paddingRight: 12,
+      paddingFront: 0,
+      paddingBack: 0,
+      cornerRadius: 10,
+    });
+    const left = railOf(params, 'left');
+    expect(left.ownedCorners).toContain('bl');
+    const md = generateMargin(params, left, false);
+    expect(md.triangleCount).toBeGreaterThan(0);
+    expect(frontLeftRadius(md.vertices)).toBeCloseTo(10, 0);
+  });
+});
 
 describe('margin rail geometry', () => {
   it.each([
