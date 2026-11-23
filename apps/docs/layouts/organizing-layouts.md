@@ -13,6 +13,7 @@ sources:
   - src/core/cqrs/undo/historyStore.ts
   - src/shared/hooks/useLayoutActivation.ts
   - src/shell/Header/Header.tsx
+  - src/features/baseplate/hooks/useBaseplateUndo.ts
   - src/core/storage/LayoutManager.ts
   - src/core/cqrs/store/retryQueue.ts
   - src/shared/hooks/useAutoSave.ts
@@ -105,7 +106,7 @@ If the browser loses the data of a layout, the Layout Tool looks for it in its b
 
 Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> to undo and <kbd>Ctrl</kbd>+<kbd>Y</kbd> to redo. On a Mac, use <kbd>Cmd</kbd>. The header also has undo and redo buttons.
 
-The undo history keeps the last 100 changes of the open layout. When you open a different layout or restore a snapshot, the history starts again. For an older state, use a snapshot.
+The undo history keeps the last 100 changes of the open layout. Changes to the plate in the baseplate generator are part of it, so undo takes them back in order too. When you open a different layout or restore a snapshot, the history starts again. For an older state, use a snapshot.
 
 ## When it goes wrong
 

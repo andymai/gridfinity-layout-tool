@@ -151,7 +151,7 @@ export function PhysicalUnitsSection() {
                     { value: 'center', label: t('baseplate.magnetAnchorCenter') },
                   ]}
                   value={magnetAnchor}
-                  onChange={(value) => useLayoutStore.getState().setMagnetAnchor(value)}
+                  onChange={mutations.setMagnetAnchor}
                 />
               </SettingsRow>
               <p className="text-label leading-relaxed text-content-tertiary">

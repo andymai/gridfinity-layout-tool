@@ -5,7 +5,9 @@ import { BaseplatePanel } from './BaseplatePanel';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import type { BaseplateTiling } from '../../types/tiling';
 import { cornerCutVertices } from '@/shared/utils/cornerCutOutline';
-import type { CornerCutParams } from '@/core/types';
+import type { CornerCutParams, StoredBaseplateParams } from '@/core/types';
+import type * as PanelState from './panelState';
+import type * as MutationsModule from '@/shared/contexts/MutationsContext';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
@@ -58,6 +60,37 @@ vi.mock('@/core/store', () => ({
     typeof selector === 'function' ? selector(mockLayoutState) : mockLayoutState,
 }));
 
+// The stubbed store cannot run commands, so each panel write lands on the
+// stub's store action with the params it would commit. Undo steps are covered
+// by panelState.test.ts against the real stores.
+vi.mock('./panelState', async (importOriginal) => {
+  const actual = await importOriginal<typeof PanelState>();
+  const write = (patch: Partial<StoredBaseplateParams>): void => {
+    mockSetBaseplateParams({ ...mockLayoutState.layout.baseplateParams, ...patch });
+  };
+  return {
+    ...actual,
+    updateBaseplateParams: write,
+    previewBaseplateParams: write,
+    updateBaseplateParam: (key: keyof StoredBaseplateParams, value: unknown) =>
+      write({ [key]: value }),
+    previewBaseplateParam: (key: keyof StoredBaseplateParams, value: unknown) =>
+      write({ [key]: value }),
+    replaceBaseplateParams: (params: StoredBaseplateParams) => mockSetBaseplateParams(params),
+    finishBaseplateParamsDrag: () => {},
+  };
+});
+
+vi.mock('@/shared/contexts/MutationsContext', async (importOriginal) => ({
+  ...(await importOriginal<typeof MutationsModule>()),
+  useMutations: () => ({
+    setMagnetAnchor: mockSetMagnetAnchor,
+    setPrintBedSize: mockSetPrintBedSize,
+    setLowProfileBase: vi.fn(),
+    updateDrawer: vi.fn(),
+  }),
+}));
+
 // Mock half-bin mode store
 let mockHalfGridMode = false;
 const mockSetHalfGridMode = vi.fn();
@@ -65,11 +98,18 @@ interface MockHalfGridState {
   halfGridMode: boolean;
   setHalfGridMode: (enabled: boolean) => void;
 }
-vi.mock('@/core/store/halfGridMode', () => ({
-  useHalfGridModeStore: (selector: (state: MockHalfGridState) => unknown) =>
-    selector({ halfGridMode: mockHalfGridMode, setHalfGridMode: mockSetHalfGridMode }),
-  INITIAL_HALF_GRID_MODE_STATE: {},
-}));
+vi.mock('@/core/store/halfGridMode', () => {
+  const state = (): MockHalfGridState => ({
+    halfGridMode: mockHalfGridMode,
+    setHalfGridMode: mockSetHalfGridMode,
+  });
+  // `batch()` reads the mode through getState to put it in the undo step.
+  const useHalfGridModeStore = Object.assign(
+    (selector: (s: MockHalfGridState) => unknown) => selector(state()),
+    { getState: state }
+  );
+  return { useHalfGridModeStore, INITIAL_HALF_GRID_MODE_STATE: {} };
+});
 
 // Mock page store
 let mockTiling: unknown = null;

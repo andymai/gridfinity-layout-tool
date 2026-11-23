@@ -155,7 +155,7 @@ The cursor is probably in a text field, where shortcuts don't work. Click an emp
 
 ### How many steps can I undo?
 
-100. The layout editor and the bin designer each keep the last 100 changes. Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> to undo, or <kbd>Cmd</kbd>+<kbd>Z</kbd> on a Mac. See [Keyboard shortcuts](./shortcuts).
+100. The layout editor and the bin designer each keep the last 100 changes. Changes in the baseplate generator go into the history of their layout. Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> to undo, or <kbd>Cmd</kbd>+<kbd>Z</kbd> on a Mac. See [Keyboard shortcuts](./shortcuts).
 
 ### What is the stash?
 

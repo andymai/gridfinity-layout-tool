@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, onTestFinished } from 'vitest';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { BaseplatePage } from './BaseplatePage';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
@@ -98,6 +99,24 @@ describe('BaseplatePage', () => {
   it('renders export button', () => {
     render(<BaseplatePage />);
     expect(screen.getByLabelText('common.export')).toBeInTheDocument();
+  });
+
+  it('undoes and redoes from the header, and disables a button with no step to take', () => {
+    const original = useHistoryStore.getState();
+    onTestFinished(() => useHistoryStore.setState(original, true));
+    const undo = vi.fn();
+    const redo = vi.fn();
+    useHistoryStore.setState({ canUndo: true, canRedo: false, undo, redo });
+    render(<BaseplatePage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'header.undo' }));
+    expect(undo).toHaveBeenCalledOnce();
+    expect(screen.getByRole('button', { name: 'header.redo' })).toBeDisabled();
+
+    act(() => useHistoryStore.setState({ canUndo: false, canRedo: true }));
+    expect(screen.getByRole('button', { name: 'header.undo' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'header.redo' }));
+    expect(redo).toHaveBeenCalledOnce();
   });
 
   it('renders panel and preview in desktop mode', () => {

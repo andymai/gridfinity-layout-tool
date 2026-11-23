@@ -109,7 +109,7 @@ Each card shows which layouts use the design. Pick a design that a different lay
 
 ## Reset to defaults
 
-Want a clean start? Click <Ui k="baseplate.reset" /> at the bottom of the panel, then confirm. The plate goes back to the default settings: no magnet holes, no margins, and the size from the layout. Your bins don't change. The grid unit and the print bed size keep their values too, because they belong to the layout.
+Want a clean start? Click <Ui k="baseplate.reset" /> at the bottom of the panel, then confirm. The plate goes back to the default settings: no magnet holes, no margins, and the size from the layout. Your bins don't change. The grid unit and the print bed size keep their values too, because they belong to the layout. To get your settings back, click <Ui k="common.undo" /> in the header or press <kbd>Ctrl</kbd>+<kbd>Z</kbd> (<kbd>Cmd</kbd>+<kbd>Z</kbd> on a Mac).
 
 ## When it goes wrong
 

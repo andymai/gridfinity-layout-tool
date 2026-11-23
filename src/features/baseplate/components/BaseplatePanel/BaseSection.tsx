@@ -75,6 +75,9 @@ import { mm } from '@/core/types';
 import { magnetChamferBlocker } from '@/shared/generation/magnetHoleStyle';
 import { MAGNET_DIAMETER_STEP_MM, snapMagnetDiameter } from '@/shared/utils/magnetDiameter';
 import {
+  finishBaseplateParamsDrag,
+  previewBaseplateParam as previewParam,
+  previewBaseplateParams as previewParams,
   updateBaseplateParam as updateParam,
   updateBaseplateParams as updateParams,
   useBaseplatePanelDerived,
@@ -133,16 +136,20 @@ export function BaseSection() {
 
   // Only a config created here is given a head width. A saved one without it
   // resolves to ø8, the width it was built with, and must keep resolving there.
+  const screwHolesWith = (patch: Partial<ScrewHoleParams>): ScrewHoleParams => ({
+    ...(screwHoles ?? {
+      enabled: true,
+      diameter: mm(SCREW_HOLE_DEFAULT_DIAMETER_MM),
+      headStyle: 'countersink',
+      headDiameter: mm(defaultScrewHeadDiameter('countersink')),
+    }),
+    ...patch,
+  });
   const updateScrewHoles = (patch: Partial<ScrewHoleParams>): void => {
-    updateParam('screwHoles', {
-      ...(screwHoles ?? {
-        enabled: true,
-        diameter: mm(SCREW_HOLE_DEFAULT_DIAMETER_MM),
-        headStyle: 'countersink',
-        headDiameter: mm(defaultScrewHeadDiameter('countersink')),
-      }),
-      ...patch,
-    });
+    updateParam('screwHoles', screwHolesWith(patch));
+  };
+  const previewScrewHoles = (patch: Partial<ScrewHoleParams>): void => {
+    previewParam('screwHoles', screwHolesWith(patch));
   };
 
   const mountMagnets = baseplateParams.mountMagnets;
@@ -162,14 +169,18 @@ export function BaseSection() {
     count: mountMagnetsPerPiece,
   });
 
+  const mountMagnetsWith = (patch: Partial<MountMagnetParams>): MountMagnetParams => ({
+    enabled: true,
+    diameter: mm(MOUNT_MAGNET_DEFAULT_DIAMETER_MM),
+    depth: mm(MOUNT_MAGNET_DEFAULT_DEPTH_MM),
+    ...mountMagnets,
+    ...patch,
+  });
   const updateMountMagnets = (patch: Partial<MountMagnetParams>): void => {
-    updateParam('mountMagnets', {
-      enabled: true,
-      diameter: mm(MOUNT_MAGNET_DEFAULT_DIAMETER_MM),
-      depth: mm(MOUNT_MAGNET_DEFAULT_DEPTH_MM),
-      ...mountMagnets,
-      ...patch,
-    });
+    updateParam('mountMagnets', mountMagnetsWith(patch));
+  };
+  const previewMountMagnets = (patch: Partial<MountMagnetParams>): void => {
+    previewParam('mountMagnets', mountMagnetsWith(patch));
   };
 
   const summaryParts: string[] = [];
@@ -334,7 +345,8 @@ export function BaseSection() {
                 <SliderInput
                   label={t('baseplate.magnetDiameter')}
                   value={baseplateParams.magnetDiameter}
-                  onChange={(v) => updateParam('magnetDiameter', mm(snapMagnetDiameter(v)))}
+                  onChange={(v) => previewParam('magnetDiameter', mm(snapMagnetDiameter(v)))}
+                  onCommit={finishBaseplateParamsDrag}
                   min={1}
                   max={20}
                   step={MAGNET_DIAMETER_STEP_MM}
@@ -344,7 +356,8 @@ export function BaseSection() {
                 <SliderInput
                   label={t('baseplate.magnetDepth')}
                   value={baseplateParams.magnetDepth}
-                  onChange={(v) => updateParam('magnetDepth', mm(v))}
+                  onChange={(v) => previewParam('magnetDepth', mm(v))}
+                  onCommit={finishBaseplateParamsDrag}
                   min={0.5}
                   max={10}
                   step={0.1}
@@ -399,7 +412,8 @@ export function BaseSection() {
                   <SliderInput
                     label={t('baseplate.solidFloorThickness')}
                     value={baseplateParams.solidFloorThickness ?? SOLID_FLOOR_DEFAULT_MM}
-                    onChange={(v) => updateParam('solidFloorThickness', mm(v))}
+                    onChange={(v) => previewParam('solidFloorThickness', mm(v))}
+                    onCommit={finishBaseplateParamsDrag}
                     min={SOLID_FLOOR_MIN_MM}
                     max={SOLID_FLOOR_MAX_MM}
                     step={0.1}
@@ -424,7 +438,8 @@ export function BaseSection() {
                 <SliderInput
                   label={t('baseplate.screwHoles.diameter.label')}
                   value={screwDiameter}
-                  onChange={(v) => updateScrewHoles({ diameter: mm(v) })}
+                  onChange={(v) => previewScrewHoles({ diameter: mm(v) })}
+                  onCommit={finishBaseplateParamsDrag}
                   min={SCREW_HOLE_MIN_DIAMETER_MM}
                   max={SCREW_HOLE_MAX_DIAMETER_MM}
                   step={0.1}
@@ -466,7 +481,8 @@ export function BaseSection() {
                 <SliderInput
                   label={t('baseplate.screwHoles.headDiameter.label')}
                   value={resolveScrewHeadDiameter(screwHeadStyle, screwHoles?.headDiameter)}
-                  onChange={(v) => updateScrewHoles({ headDiameter: mm(v) })}
+                  onChange={(v) => previewScrewHoles({ headDiameter: mm(v) })}
+                  onCommit={finishBaseplateParamsDrag}
                   min={SCREW_HEAD_MIN_DIAMETER_MM}
                   max={SCREW_HEAD_MAX_DIAMETER_MM}
                   step={0.1}
@@ -481,7 +497,8 @@ export function BaseSection() {
                   <SliderInput
                     label={t('baseplate.screwHoles.counterboreDepth.label')}
                     value={screwHoles?.counterboreDepth ?? SCREW_COUNTERBORE_DEFAULT_DEPTH_MM}
-                    onChange={(v) => updateScrewHoles({ counterboreDepth: mm(v) })}
+                    onChange={(v) => previewScrewHoles({ counterboreDepth: mm(v) })}
+                    onCommit={finishBaseplateParamsDrag}
                     min={1}
                     max={SCREW_COUNTERBORE_MAX_DEPTH_MM}
                     step={0.1}
@@ -496,7 +513,8 @@ export function BaseSection() {
                 <SliderInput
                   label={t('baseplate.screwHoles.perPiece.label')}
                   value={screwsPerPiece}
-                  onChange={(v) => updateScrewHoles({ screwsPerPiece: v })}
+                  onChange={(v) => previewScrewHoles({ screwsPerPiece: v })}
+                  onCommit={finishBaseplateParamsDrag}
                   min={SCREWS_PER_PIECE_MIN}
                   max={SCREWS_PER_PIECE_MAX}
                   step={1}
@@ -509,7 +527,8 @@ export function BaseSection() {
                 <SliderInput
                   label={t('baseplate.screwHoles.edgeInset.label')}
                   value={screwHoles?.edgeInsetCells ?? SCREW_EDGE_INSET_CELLS_DEFAULT}
-                  onChange={(v) => updateScrewHoles({ edgeInsetCells: v })}
+                  onChange={(v) => previewScrewHoles({ edgeInsetCells: v })}
+                  onCommit={finishBaseplateParamsDrag}
                   min={SCREW_EDGE_INSET_CELLS_MIN}
                   max={SCREW_EDGE_INSET_CELLS_MAX}
                   step={1}
@@ -547,7 +566,8 @@ export function BaseSection() {
                 <SliderInput
                   label={t('baseplate.mountMagnets.diameter.label')}
                   value={mountMagnetDiameter}
-                  onChange={(v) => updateMountMagnets({ diameter: mm(snapMagnetDiameter(v)) })}
+                  onChange={(v) => previewMountMagnets({ diameter: mm(snapMagnetDiameter(v)) })}
+                  onCommit={finishBaseplateParamsDrag}
                   min={MOUNT_MAGNET_MIN_DIAMETER_MM}
                   max={MOUNT_MAGNET_MAX_DIAMETER_MM}
                   step={MAGNET_DIAMETER_STEP_MM}
@@ -561,7 +581,8 @@ export function BaseSection() {
                 <SliderInput
                   label={t('baseplate.mountMagnets.depth.label')}
                   value={mountMagnetDepth}
-                  onChange={(v) => updateMountMagnets({ depth: mm(v) })}
+                  onChange={(v) => previewMountMagnets({ depth: mm(v) })}
+                  onCommit={finishBaseplateParamsDrag}
                   min={MOUNT_MAGNET_MIN_DEPTH_MM}
                   max={MOUNT_MAGNET_MAX_DEPTH_MM}
                   step={0.1}
@@ -601,7 +622,8 @@ export function BaseSection() {
                 <SliderInput
                   label={t('baseplate.mountMagnets.perPiece.label')}
                   value={mountMagnetsPerPiece}
-                  onChange={(v) => updateMountMagnets({ perPiece: v })}
+                  onChange={(v) => previewMountMagnets({ perPiece: v })}
+                  onCommit={finishBaseplateParamsDrag}
                   min={MOUNT_MAGNETS_PER_PIECE_MIN}
                   max={MOUNT_MAGNETS_PER_PIECE_MAX}
                   step={1}
@@ -633,17 +655,17 @@ export function BaseSection() {
                 Math.floor(maxCornerRadiusMm(totalWidthMm, totalDepthMm) * 2) / 2
               )}
               onUniformChange={(r) => {
-                updateParam('cornerRadius', mm(r));
-                updateParam('cornerRadii', undefined);
+                previewParams({ cornerRadius: mm(r), cornerRadii: undefined });
               }}
               onPerCornerChange={(radii) => {
-                updateParam('cornerRadii', {
+                previewParam('cornerRadii', {
                   tl: mm(radii.tl),
                   tr: mm(radii.tr),
                   bl: mm(radii.bl),
                   br: mm(radii.br),
                 });
               }}
+              onChangeEnd={finishBaseplateParamsDrag}
             />
           </div>
         )}

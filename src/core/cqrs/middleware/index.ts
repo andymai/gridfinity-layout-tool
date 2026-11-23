@@ -2,7 +2,8 @@
  * Middleware barrel
  */
 
-export { undoCaptureMiddleware, batch } from './undoCapture';
+export { undoCaptureMiddleware, batch, batchFrom, captureUndoStart } from './undoCapture';
+export type { UndoStart } from './undoCapture';
 /** @internal Test-only — reset the undo capture state */
 export { _resetUndoCaptureState } from './undoCapture';
 export { loggingMiddleware } from './logging';

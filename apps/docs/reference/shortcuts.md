@@ -14,6 +14,7 @@ sources:
   - src/features/bin-designer/components/panel/CutoutsSection/handlers/keyboardHandler.ts
   - src/features/bin-designer/components/Workshop/useWorkshopInteraction.ts
   - src/features/baseplate/hooks/useBaseplateKeyboard.ts
+  - src/features/baseplate/hooks/useBaseplateUndo.ts
 ---
 
 # Keyboard shortcuts
@@ -32,13 +33,13 @@ Can't remember a key? Press <kbd>?</kbd> or <kbd>/</kbd> in any tool to open the
 
 ## Shortcuts in more than one tool
 
-| Windows and Linux                                                             | macOS                                                                       | Action                                                 | Where                       |
-| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------ | --------------------------- |
-| <kbd>?</kbd> or <kbd>/</kbd>                                                  | Same                                                                        | Open the shortcut list                                 | Every tool                  |
-| <kbd>Ctrl</kbd>+<kbd>K</kbd>                                                  | <kbd>Cmd</kbd>+<kbd>K</kbd>                                                 | Open the command palette                               | Layout editor               |
-| <kbd>Ctrl</kbd>+<kbd>Z</kbd>                                                  | <kbd>Cmd</kbd>+<kbd>Z</kbd>                                                 | Undo                                                   | Layout editor, bin designer |
-| <kbd>Ctrl</kbd>+<kbd>Y</kbd> or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> | <kbd>Cmd</kbd>+<kbd>Y</kbd> or <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> | Redo                                                   | Layout editor, bin designer |
-| <kbd>Shift</kbd>+<kbd>D</kbd>                                                 | Same                                                                        | Go from the layout editor to the bin designer, or back | Layout editor, bin designer |
+| Windows and Linux                                                             | macOS                                                                       | Action                                                 | Where                                            |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------ |
+| <kbd>?</kbd> or <kbd>/</kbd>                                                  | Same                                                                        | Open the shortcut list                                 | Every tool                                       |
+| <kbd>Ctrl</kbd>+<kbd>K</kbd>                                                  | <kbd>Cmd</kbd>+<kbd>K</kbd>                                                 | Open the command palette                               | Layout editor                                    |
+| <kbd>Ctrl</kbd>+<kbd>Z</kbd>                                                  | <kbd>Cmd</kbd>+<kbd>Z</kbd>                                                 | Undo                                                   | Layout editor, bin designer, baseplate generator |
+| <kbd>Ctrl</kbd>+<kbd>Y</kbd> or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> | <kbd>Cmd</kbd>+<kbd>Y</kbd> or <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> | Redo                                                   | Layout editor, bin designer, baseplate generator |
+| <kbd>Shift</kbd>+<kbd>D</kbd>                                                 | Same                                                                        | Go from the layout editor to the bin designer, or back | Layout editor, bin designer                      |
 
 ## Layout editor
 

@@ -5,6 +5,7 @@
  */
 
 import { useCallback } from 'react';
+import { batch } from '@/core/cqrs';
 import { useLayoutStore } from '@/core/store/layout';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { useToastStore } from '@/core/store/toast';
@@ -14,6 +15,7 @@ import { CONSTRAINTS } from '@/core/constants';
 import { DEFAULT_BASEPLATE_PARAMS, MARGIN_MIN_DETACH_MM } from '@/core/baseplateDefaults';
 import { RulerIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
+import { useMutations } from '@/shared/contexts/MutationsContext';
 import { SubHeader } from '@/shared/components/PanelText';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { PanelSection } from '@/shared/components/PanelSection';
@@ -32,6 +34,7 @@ import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
 import { fitAxisUnits, halfUnitUpgrade } from '@/shared/utils/drawerFit';
 import { padOutline } from '@/shared/utils/padOutline';
 import {
+  replaceBaseplateParams,
   updateBaseplateParam as updateParam,
   updateBaseplateParams as updateParams,
   useBaseplatePanelDerived,
@@ -70,14 +73,15 @@ export function DimensionsSection() {
   const setHalfGridMode = useHalfGridModeStore((s) => s.setHalfGridMode);
   const toggleHalfGridMode = useHalfGridModeStore((s) => s.toggleHalfGridMode);
   const addToast = useToastStore((s) => s.addToast);
+  const { updateDrawer } = useMutations();
 
   const handleSyncToggle = useCallback((checked: boolean) => {
     const layoutState = useLayoutStore.getState().layout;
     const current = layoutState.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
     if (checked) {
-      useLayoutStore.getState().setBaseplateParams({ ...current, syncWithLayout: true });
+      replaceBaseplateParams({ ...current, syncWithLayout: true });
     } else {
-      useLayoutStore.getState().setBaseplateParams({
+      replaceBaseplateParams({
         ...current,
         syncWithLayout: false,
         baseplateWidth: layoutState.drawer.width,
@@ -91,14 +95,12 @@ export function DimensionsSection() {
   const handleFractionalEdgeChange = useCallback(
     (axis: 'x' | 'y', edge: 'start' | 'end') => {
       if (baseplateParams.syncWithLayout !== false) {
-        useLayoutStore
-          .getState()
-          .updateDrawer(axis === 'x' ? { fractionalEdgeX: edge } : { fractionalEdgeY: edge });
+        updateDrawer(axis === 'x' ? { fractionalEdgeX: edge } : { fractionalEdgeY: edge });
       } else {
         updateParam(axis === 'x' ? 'fractionalEdgeX' : 'fractionalEdgeY', edge);
       }
     },
-    [baseplateParams.syncWithLayout]
+    [baseplateParams.syncWithLayout, updateDrawer]
   );
 
   const overTileStatus = resolveOverTileStatus(baseplateParams);
@@ -221,7 +223,7 @@ export function DimensionsSection() {
           Math.min(PADDING_MAX, Math.max(0, Math.floor(((targetMm - gridMm) / 2) * 100) / 100));
         const padW = halfPad(targetWidthMm, drawerWidthMm);
         const padD = halfPad(targetDepthMm, drawerDepthMm);
-        useLayoutStore.getState().setBaseplateParams({
+        replaceBaseplateParams({
           ...cornerShapeParams,
           paddingLeft: mm(padW),
           paddingRight: mm(padW),
@@ -241,10 +243,7 @@ export function DimensionsSection() {
         : halfUnitUpgrade(targetDepthMm, gridUnitMmY, depthFit.units);
       const snappedWidth = (widthUpgrade ?? widthFit).units;
       const snappedDepth = (depthUpgrade ?? depthFit).units;
-      if (widthUpgrade !== null || depthUpgrade !== null) {
-        setHalfGridMode(true);
-        addToast(t('toast.halfBinModeAutoEnabled'), 'info');
-      }
+      const takesHalfUnit = widthUpgrade !== null || depthUpgrade !== null;
 
       // Clamp at 0: `slackMm` goes negative when the fit's minimum (1 unit in
       // whole-unit mode, GRID_MIN in half) forced a grid larger than the
@@ -257,18 +256,23 @@ export function DimensionsSection() {
 
       const layoutState = useLayoutStore.getState().layout;
       const current = layoutState.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
-      useLayoutStore.getState().setBaseplateParams({
-        ...current,
-        syncWithLayout: false,
-        baseplateWidth: gridUnits(snappedWidth),
-        baseplateDepth: gridUnits(snappedDepth),
-        fractionalEdgeX: layoutState.drawer.fractionalEdgeX ?? 'end',
-        fractionalEdgeY: layoutState.drawer.fractionalEdgeY ?? 'end',
-        paddingLeft: mm(halfPadWidth),
-        paddingRight: mm(halfPadWidth),
-        paddingFront: mm(halfPadDepth),
-        paddingBack: mm(halfPadDepth),
+      // One undo step takes back the size and the half-grid mode it turned on.
+      batch(() => {
+        if (takesHalfUnit) setHalfGridMode(true);
+        replaceBaseplateParams({
+          ...current,
+          syncWithLayout: false,
+          baseplateWidth: gridUnits(snappedWidth),
+          baseplateDepth: gridUnits(snappedDepth),
+          fractionalEdgeX: layoutState.drawer.fractionalEdgeX ?? 'end',
+          fractionalEdgeY: layoutState.drawer.fractionalEdgeY ?? 'end',
+          paddingLeft: mm(halfPadWidth),
+          paddingRight: mm(halfPadWidth),
+          paddingFront: mm(halfPadDepth),
+          paddingBack: mm(halfPadDepth),
+        });
       });
+      if (takesHalfUnit) addToast(t('toast.halfBinModeAutoEnabled'), 'info');
     },
     [addToast, gridUnitMm, gridUnitMmY, halfGridMode, setHalfGridMode, t]
   );
@@ -289,32 +293,35 @@ export function DimensionsSection() {
       // this switch earns the feature-usage mark and the persistence-failure
       // toast the store attaches to a user-driven flip.
       if (checked === useHalfGridModeStore.getState().halfGridMode) return;
-      if (!isOk(toggleHalfGridMode())) {
-        addToast(t('halfBinBlocked.message'), 'error');
-        return;
-      }
-      if (checked) return;
-      const layoutState = useLayoutStore.getState().layout;
-      const current = layoutState.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
-      if (current.syncWithLayout !== false) return;
-      const width = current.baseplateWidth ?? layoutState.drawer.width;
-      const depth = current.baseplateDepth ?? layoutState.drawer.depth;
-      const wholeWidth = Math.max(1, Math.floor(width));
-      const wholeDepth = Math.max(1, Math.floor(depth));
-      if (wholeWidth === width && wholeDepth === depth) return;
-      // Clamp at 0: flooring a sub-unit axis raises it to 1 instead, and a grid
-      // that grew has no freed material to hand back.
-      const freedWidth = Math.max(0, (width - wholeWidth) * gridUnitMm) / 2;
-      const freedDepth = Math.max(0, (depth - wholeDepth) * gridUnitMmY) / 2;
-      const grow = (pad: number, by: number): number => Math.min(PADDING_MAX, roundMm(pad + by));
-      useLayoutStore.getState().setBaseplateParams({
-        ...current,
-        baseplateWidth: gridUnits(wholeWidth),
-        baseplateDepth: gridUnits(wholeDepth),
-        paddingLeft: mm(grow(current.paddingLeft, freedWidth)),
-        paddingRight: mm(grow(current.paddingRight, freedWidth)),
-        paddingFront: mm(grow(current.paddingFront, freedDepth)),
-        paddingBack: mm(grow(current.paddingBack, freedDepth)),
+      // One undo step takes back the mode and the padding it handed back.
+      batch(() => {
+        if (!isOk(toggleHalfGridMode())) {
+          addToast(t('halfBinBlocked.message'), 'error');
+          return;
+        }
+        if (checked) return;
+        const layoutState = useLayoutStore.getState().layout;
+        const current = layoutState.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+        if (current.syncWithLayout !== false) return;
+        const width = current.baseplateWidth ?? layoutState.drawer.width;
+        const depth = current.baseplateDepth ?? layoutState.drawer.depth;
+        const wholeWidth = Math.max(1, Math.floor(width));
+        const wholeDepth = Math.max(1, Math.floor(depth));
+        if (wholeWidth === width && wholeDepth === depth) return;
+        // Clamp at 0: flooring a sub-unit axis raises it to 1 instead, and a grid
+        // that grew has no freed material to hand back.
+        const freedWidth = Math.max(0, (width - wholeWidth) * gridUnitMm) / 2;
+        const freedDepth = Math.max(0, (depth - wholeDepth) * gridUnitMmY) / 2;
+        const grow = (pad: number, by: number): number => Math.min(PADDING_MAX, roundMm(pad + by));
+        replaceBaseplateParams({
+          ...current,
+          baseplateWidth: gridUnits(wholeWidth),
+          baseplateDepth: gridUnits(wholeDepth),
+          paddingLeft: mm(grow(current.paddingLeft, freedWidth)),
+          paddingRight: mm(grow(current.paddingRight, freedWidth)),
+          paddingFront: mm(grow(current.paddingFront, freedDepth)),
+          paddingBack: mm(grow(current.paddingBack, freedDepth)),
+        });
       });
     },
     [addToast, gridUnitMm, gridUnitMmY, t, toggleHalfGridMode]

@@ -32,7 +32,11 @@ import { DimensionsSection } from './DimensionsSection';
 import { BaseSection } from './BaseSection';
 import { PhysicalUnitsSection } from './PhysicalUnitsSection';
 import type { SplitOverride, StackPrintParams } from '@/core/types';
-import { updateBaseplateParams, useBaseplatePanelDerived } from './panelState';
+import {
+  replaceBaseplateParams,
+  updateBaseplateParams,
+  useBaseplatePanelDerived,
+} from './panelState';
 
 export function BaseplatePanel() {
   const t = useTranslation();
@@ -56,7 +60,7 @@ export function BaseplatePanel() {
 
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const handleReset = useCallback(() => {
-    useLayoutStore.getState().setBaseplateParams({ ...DEFAULT_BASEPLATE_PARAMS });
+    replaceBaseplateParams({ ...DEFAULT_BASEPLATE_PARAMS });
     useToastStore.getState().addToast(t('toast.baseplateReset'), 'success', 3000);
     setResetConfirmOpen(false);
   }, [t]);
