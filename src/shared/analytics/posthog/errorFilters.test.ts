@@ -232,6 +232,22 @@ describe('filterExceptionForPosthog — WebGL context-creation dedupe', () => {
     expect(v8?.properties?.$exception_fingerprint).toBe('webgl-context-creation-failed');
   });
 
+  it("groups WebKit's lost-context shaderSource throw into the same issue", () => {
+    const result = filterExceptionForPosthog({
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          {
+            type: 'TypeError',
+            value:
+              "Argument 1 ('shader') to WebGL2RenderingContext.shaderSource must be an instance of WebGLShader",
+          },
+        ],
+      },
+    });
+    expect(result?.properties?.$exception_fingerprint).toBe('webgl-context-creation-failed');
+  });
+
   it('leaves an unrelated precision null read with its own grouping', () => {
     const result = filterExceptionForPosthog({
       event: '$exception',

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { captureException } from '@/shared/analytics/posthog';
 import { markWebGLUnavailable, webglFailureReason } from './detectWebGL';
 import { WebGLFallback } from './WebGLFallback';
+import { WebGLFailureContext } from './webglFailureContext';
 
 interface Props {
   children: ReactNode;
@@ -34,7 +35,16 @@ export class WebGLErrorBoundary extends Component<Props, State> {
     return { error };
   }
 
+  private readonly fail = (error: Error): void => {
+    this.report(error);
+    this.setState({ error });
+  };
+
   componentDidCatch(error: Error) {
+    this.report(error);
+  }
+
+  private report(error: Error): void {
     const reason = webglFailureReason(error.message, error.stack);
     if (reason !== null) {
       // Boundary-caught render throws don't reach window.onerror, so this
@@ -57,6 +67,6 @@ export class WebGLErrorBoundary extends Component<Props, State> {
       // "rethrows non-WebGL errors" test; keep that test if you touch this.
       throw error;
     }
-    return this.props.children;
+    return <WebGLFailureContext value={this.fail}>{this.props.children}</WebGLFailureContext>;
   }
 }

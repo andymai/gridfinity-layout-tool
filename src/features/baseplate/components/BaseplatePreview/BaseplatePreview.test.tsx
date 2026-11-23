@@ -44,6 +44,9 @@ vi.mock('@react-three/fiber', () => ({
   useFrame: vi.fn(),
 }));
 
+// Its listeners need a real canvas, which the useThree stub above does not give.
+vi.mock('@/shared/webgl/WebGLContextLossGuard', () => ({ WebGLContextLossGuard: () => null }));
+
 vi.mock('@react-three/drei', () => ({
   OrbitControls: vi.fn(() => null),
   Text: vi.fn(() => null),

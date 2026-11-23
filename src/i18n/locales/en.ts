@@ -6462,6 +6462,10 @@ const en: Record<string, string> = {
   'webgl.fallback.body':
     'WebGL is disabled or unsupported. Try enabling hardware acceleration in your browser settings, updating your graphics drivers, or switching browsers.',
   'webgl.fallback.helpLink': 'Check WebGL support',
+  'webgl.fallback.lostTitle': 'The 3D view stopped',
+  'webgl.fallback.lostBody':
+    'Your browser reset its graphics and the 3D view did not recover. Reload the page to show it again.',
+  'webgl.fallback.reload': 'Reload page',
 
   // Design-system aria-labels
   'common.closeDialog': 'Close dialog',

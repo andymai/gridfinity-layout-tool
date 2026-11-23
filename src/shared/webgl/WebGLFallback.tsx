@@ -1,9 +1,14 @@
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { detectWebGL } from './detectWebGL';
 
 const HELP_URL = 'https://get.webgl.org/';
 
 export function WebGLFallback() {
   const t = useTranslation();
+  // A lost context worked moments ago, so a reload is the fix, not the
+  // enable-WebGL advice.
+  const lost = detectWebGL().reason === 'context-lost';
 
   return (
     <div
@@ -26,18 +31,26 @@ export function WebGLFallback() {
           />
         </svg>
       </div>
-      <h3 className="mb-1 text-sm font-medium text-content">{t('webgl.fallback.title')}</h3>
+      <h3 className="mb-1 text-sm font-medium text-content">
+        {t(lost ? 'webgl.fallback.lostTitle' : 'webgl.fallback.title')}
+      </h3>
       <p className="mb-3 max-w-[280px] text-xs text-content-secondary">
-        {t('webgl.fallback.body')}
+        {t(lost ? 'webgl.fallback.lostBody' : 'webgl.fallback.body')}
       </p>
-      <a
-        href={HELP_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="rounded bg-surface-secondary px-3 py-1.5 text-xs font-medium transition-colors hover:bg-surface-elevated"
-      >
-        {t('webgl.fallback.helpLink')}
-      </a>
+      {lost ? (
+        <Button variant="secondary" size="sm" onClick={() => window.location.reload()}>
+          {t('webgl.fallback.reload')}
+        </Button>
+      ) : (
+        <a
+          href={HELP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded bg-surface-secondary px-3 py-1.5 text-xs font-medium transition-colors hover:bg-surface-elevated"
+        >
+          {t('webgl.fallback.helpLink')}
+        </a>
+      )}
     </div>
   );
 }
