@@ -65,10 +65,11 @@ test.describe('Drawer Settings', () => {
     const sidebar = getSidebar(page);
     const height = sidebar.getByRole('spinbutton', { name: 'Drawer height in millimeters' });
     const before = await valueOf(height);
+    const step = Number(await height.getAttribute('step'));
 
     await sidebar.getByRole('button', { name: 'Increase Drawer height in millimeters' }).click();
 
-    await expect.poll(() => valueOf(height)).toBeGreaterThan(before);
+    await expect.poll(() => valueOf(height)).toBe(before + step);
   });
 
   test('can decrease height', async ({ page }) => {
@@ -76,10 +77,11 @@ test.describe('Drawer Settings', () => {
     const height = sidebar.getByRole('spinbutton', { name: 'Drawer height in millimeters' });
     await sidebar.getByRole('button', { name: 'Increase Drawer height in millimeters' }).click();
     const raised = await valueOf(height);
+    const step = Number(await height.getAttribute('step'));
 
     await sidebar.getByRole('button', { name: 'Decrease Drawer height in millimeters' }).click();
 
-    await expect.poll(() => valueOf(height)).toBeLessThan(raised);
+    await expect.poll(() => valueOf(height)).toBe(raised - step);
   });
 
   test('drawer height stops at a minimum', async ({ page }) => {
