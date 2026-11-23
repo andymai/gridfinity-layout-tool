@@ -25,7 +25,6 @@ import {
 /** A point in a facet's plane: `t` along the facet, `z` up. */
 export type CellPoint = readonly [t: number, z: number];
 
-/** The part of one cell on one facet. */
 export interface CornerCellPiece {
   /** Angle of the facet's normal from the corner's start, radians. */
   readonly phiMid: number;
@@ -33,7 +32,6 @@ export interface CornerCellPiece {
   readonly holes: readonly (readonly CellPoint[])[];
 }
 
-/** One open cell of the lattice: a piece for each facet it reaches. */
 export type CornerCell = readonly CornerCellPiece[];
 
 /**
