@@ -41,10 +41,6 @@ interface LayoutManagerModalProps {
   renderShareModal?: (props: ShareModalRenderProps) => ReactNode;
 }
 
-/**
- * The controls Tab stops on, in order: a roving toggle's other buttons
- * (tabIndex -1) and a control the layout hides are not stops.
- */
 function tabStops(root: HTMLElement): HTMLElement[] {
   return Array.from(
     root.querySelectorAll<HTMLElement>('button, input, select, textarea, a[href], [tabindex]')
