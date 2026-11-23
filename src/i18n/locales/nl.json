@@ -3590,6 +3590,7 @@
   "grid.emptyHint.clickToDraw": "Klik en sleep om een bin te tekenen",
   "grid.emptyHint.stripedBlocked": "Gestreepte gebieden zijn geblokkeerd door bins eronder",
   "grid.emptyHint.tapToDraw": "Tik en sleep om een bin te tekenen",
+  "grid.emptyHint.pickGap": "Sleep over lege cellen om het gat te kiezen",
   "grid.exceedsPrintSize": "Overschrijdt printformaat, wordt gesplitst",
   "grid.exceedsPrintSizeWhole": "Overschrijdt printformaat, wordt in één stuk geprint",
   "grid.expand": "Uitvouwen",

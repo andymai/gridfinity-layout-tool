@@ -3590,6 +3590,7 @@
   "grid.emptyHint.clickToDraw": "Haz clic y arrastra para dibujar un bin",
   "grid.emptyHint.stripedBlocked": "Las áreas rayadas están bloqueadas por bins inferiores",
   "grid.emptyHint.tapToDraw": "Toca y arrastra para dibujar un bin",
+  "grid.emptyHint.pickGap": "Arrastra sobre celdas vacías para elegir el hueco",
   "grid.exceedsPrintSize": "Excede el tamaño de impresión, se dividirá",
   "grid.exceedsPrintSizeWhole": "Excede el tamaño de impresión, se imprime en una pieza",
   "grid.expand": "Expandir",

@@ -3521,6 +3521,7 @@
   "grid.emptyHint.clickToDraw": "クリック&ドラッグでビンを描画",
   "grid.emptyHint.stripedBlocked": "縞模様の領域は下のビンによりブロックされています",
   "grid.emptyHint.tapToDraw": "タップ&ドラッグでビンを描画",
+  "grid.emptyHint.pickGap": "空のセルをドラッグして隙間を選択",
   "grid.exceedsPrintSize": "印刷サイズを超えるため分割されます",
   "grid.exceedsPrintSizeWhole": "印刷サイズを超えますが、一体で印刷されます",
   "grid.expand": "展開",

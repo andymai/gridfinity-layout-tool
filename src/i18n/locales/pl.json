@@ -3728,6 +3728,7 @@
   "grid.emptyHint.clickToDraw": "Kliknij i przeciągnij, aby narysować bin",
   "grid.emptyHint.stripedBlocked": "Obszary w paski są zablokowane przez biny poniżej",
   "grid.emptyHint.tapToDraw": "Dotknij i przeciągnij, aby narysować bin",
+  "grid.emptyHint.pickGap": "Przeciągnij po pustych komórkach, aby wybrać lukę",
   "grid.exceedsPrintSize": "Przekracza rozmiar druku, zostanie podzielony",
   "grid.exceedsPrintSizeWhole": "Przekracza rozmiar druku, drukuje się w jednym kawałku",
   "grid.expand": "Rozwiń",

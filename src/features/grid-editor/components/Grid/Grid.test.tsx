@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { Grid } from './Grid';
 import {
   useLayoutStore,
@@ -387,6 +387,19 @@ describe('Grid', () => {
 
       // Empty hint should not show during interaction
       expect(screen.queryByText(/emptyHint/i)).not.toBeInTheDocument();
+    });
+
+    it('tells an empty grid to pick a gap while Find bins that fit is armed', () => {
+      useLayoutStore.setState({ layout: createTestLayout({ bins: [] }) });
+
+      const { rerender } = render(<Grid />);
+      expect(screen.getByText('Click and drag to draw a bin')).toBeInTheDocument();
+
+      act(() => useInteractionStore.setState({ gapSelectArmed: true }));
+      rerender(<Grid />);
+
+      expect(screen.getByText('Drag across empty cells to pick the gap')).toBeInTheDocument();
+      expect(screen.queryByText('Click and drag to draw a bin')).not.toBeInTheDocument();
     });
   });
 

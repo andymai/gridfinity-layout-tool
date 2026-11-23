@@ -70,11 +70,12 @@ export function Grid({
   const [toolbarWidth, setToolbarWidth] = useState(0);
 
   // Interaction store - paint mode
-  const { interaction, paintSize, setPaintSize } = useInteractionStore(
+  const { interaction, paintSize, setPaintSize, gapSelectArmed } = useInteractionStore(
     useShallow((state) => ({
       interaction: state.interaction,
       paintSize: state.paintSize,
       setPaintSize: state.setPaintSize,
+      gapSelectArmed: state.gapSelectArmed,
     }))
   );
 
@@ -430,7 +431,7 @@ export function Grid({
                           className="flex flex-col items-center p-6 rounded-xl max-w-xs text-center bg-surface"
                           style={{ opacity: 0.95, backdropFilter: 'blur(4px)' }}
                         >
-                          {isFirstLayer && shouldShowDrawTutorial ? (
+                          {isFirstLayer && shouldShowDrawTutorial && !gapSelectArmed ? (
                             <>
                               {/* Animated draw gesture */}
                               <div
@@ -488,9 +489,11 @@ export function Grid({
                                 </svg>
                               </div>
                               <p className="font-medium mb-1 text-sm text-content-secondary">
-                                {isMobile
-                                  ? t('grid.emptyHint.tapToDraw')
-                                  : t('grid.emptyHint.clickToDraw')}
+                                {gapSelectArmed
+                                  ? t('grid.emptyHint.pickGap')
+                                  : isMobile
+                                    ? t('grid.emptyHint.tapToDraw')
+                                    : t('grid.emptyHint.clickToDraw')}
                               </p>
                               {!isFirstLayer && (
                                 <p className="text-xs text-content-disabled">

@@ -3590,6 +3590,7 @@
   "grid.emptyHint.clickToDraw": "Klicka och dra för att rita ett fack",
   "grid.emptyHint.stripedBlocked": "Randiga områden blockeras av fack nedanför",
   "grid.emptyHint.tapToDraw": "Tryck och dra för att rita ett fack",
+  "grid.emptyHint.pickGap": "Dra över tomma celler för att välja luckan",
   "grid.exceedsPrintSize": "Överskrider utskriftsstorlek, kommer att delas",
   "grid.exceedsPrintSizeWhole": "Överskrider utskriftsstorlek, skrivs ut i ett stycke",
   "grid.expand": "Expandera",

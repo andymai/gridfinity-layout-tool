@@ -3521,6 +3521,7 @@
   "grid.emptyHint.clickToDraw": "点击并拖动以绘制收纳盒",
   "grid.emptyHint.stripedBlocked": "条纹区域被下方的收纳盒封锁",
   "grid.emptyHint.tapToDraw": "点按并拖动以绘制收纳盒",
+  "grid.emptyHint.pickGap": "在空白单元格上拖动以选择空缺",
   "grid.exceedsPrintSize": "超出打印尺寸，将被拆分",
   "grid.exceedsPrintSizeWhole": "超出打印尺寸，将整体打印",
   "grid.expand": "展开",
