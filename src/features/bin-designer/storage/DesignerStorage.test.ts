@@ -260,6 +260,59 @@ describe('DesignerStorage', () => {
       expect(stored.params?.width).toBe(3);
     });
 
+    it('turns bad override data into an error and keeps the queue moving', async () => {
+      const parentId = designId('bad-override-parent');
+      const withBit: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        cutouts: [
+          {
+            id: 'bit',
+            shape: 'circle',
+            x: 10,
+            y: 10,
+            width: 6.35,
+            depth: 6.35,
+            cutDepth: 10,
+            rotation: 0,
+            cornerRadius: 0,
+            label: '',
+            groupId: null,
+          },
+        ],
+      };
+      expectOk(
+        await saveDesign({
+          id: parentId,
+          name: 'Parent',
+          params: withBit,
+          thumbnail: null,
+          exportFileNameConfig: null,
+        })
+      );
+      const variantId = designId('bad-override-variant');
+      const cutouts = { bit: null };
+      expectOk(
+        await saveDesign({
+          id: variantId,
+          name: 'Broken',
+          params: withBit,
+          thumbnail: null,
+          exportFileNameConfig: null,
+          variantOf: parentId,
+          overrides: { cutouts } as unknown as SavedDesign['overrides'],
+        })
+      );
+
+      expectErr(
+        await updateVariantOverrides(variantId, {
+          cutouts,
+        } as unknown as SavedDesign['overrides'] & object)
+      );
+      expectOk(await updateDesignName(variantId, 'Still saves'));
+
+      expect(expectOk(await loadDesign(variantId)).name).toBe('Still saves');
+    });
+
     it('does not hang an override edit on a design linked to itself', async () => {
       const id = designId('self-linked');
       expectOk(

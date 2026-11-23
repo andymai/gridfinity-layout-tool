@@ -116,7 +116,16 @@ function inSaveOrder(
   id: DesignId,
   write: () => Promise<Result<SavedDesign, StorageError>>
 ): Promise<Result<SavedDesign, StorageError>> {
-  const saved = (pendingSaves.get(id) ?? Promise.resolve()).then(write, write);
+  // A rejection here would leave the entry queued and surface as unhandled, so
+  // a throw (bad override data in a change) comes back as a storage error.
+  const run = async (): Promise<Result<SavedDesign, StorageError>> => {
+    try {
+      return await write();
+    } catch (e) {
+      return err(storageUnavailable('indexedDB', e));
+    }
+  };
+  const saved = (pendingSaves.get(id) ?? Promise.resolve()).then(run, run);
   pendingSaves.set(id, saved);
   void saved.then(() => {
     if (pendingSaves.get(id) === saved) pendingSaves.delete(id);
