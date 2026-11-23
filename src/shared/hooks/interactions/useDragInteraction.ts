@@ -233,6 +233,9 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
 
         // If no swap target, check normal placement validity
         if (!swapTarget) {
+          // A copy only exists once the drag leaves its cell; in place, the drop
+          // makes nothing, so there is no copy to check or snap.
+          const asCopies = interaction.duplicate === true && (deltaX !== 0 || deltaY !== 0);
           for (const bin of draggedBins) {
             const result = canPlaceShifted(
               bin,
@@ -241,7 +244,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
               activeLayerId,
               layout,
               otherBinIds,
-              interaction.duplicate === true
+              asCopies
             );
 
             if (!result.valid) {
@@ -273,7 +276,7 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
               moveDirX,
               moveDirY,
               step,
-              interaction.duplicate === true
+              asCopies
             );
 
             if (snapResult) {

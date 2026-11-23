@@ -134,4 +134,42 @@ describe('useDragInteraction Alt+drag preview', () => {
     const overlapsOriginal = Math.abs(x) < 2 && Math.abs(y) < 2;
     expect(preview.valid && overlapsOriginal).toBe(false);
   });
+
+  it('makes no copy when the pointer never leaves the starting cell', () => {
+    const original = createTestBin({
+      id: binId('original'),
+      width: gridUnits(2),
+      depth: gridUnits(2),
+    });
+    const layout = createTestLayout({
+      drawer: { width: gridUnits(6), depth: gridUnits(4), height: heightUnits(20) },
+      bins: [original],
+    });
+    const ctx = context(
+      layout,
+      vi.fn(() => ({ ok: true as const, value: undefined }))
+    );
+    useInteractionStore.setState({
+      interaction: {
+        type: 'drag',
+        binIds: [original.id],
+        startCoord: coord(0, 0),
+        currentCoord: coord(0, 0),
+        valid: true,
+        isOverGrid: true,
+        duplicate: true,
+      },
+      dropTarget: null,
+    });
+    const { result } = renderHook(() => useDragInteraction(ctx));
+
+    result.current.handleMove(coord(0, 0), coord(0, 0));
+    const preview = vi.mocked(ctx.setInteraction).mock.lastCall?.[0];
+    if (!preview || preview.type !== 'drag') throw new Error('No drag preview');
+    expect(preview.currentCoord).toEqual(coord(0, 0));
+
+    useInteractionStore.setState({ interaction: preview });
+    result.current.handleUp();
+    expect(ctx.addBin).not.toHaveBeenCalled();
+  });
 });
