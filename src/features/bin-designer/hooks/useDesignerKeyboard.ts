@@ -51,6 +51,8 @@ export function useDesignerKeyboard({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isTextEntryTarget(e.target)) return;
+      // Ctrl+Alt is AltGr on some keyboards, which types a character.
+      if (e.altKey && isFormControlTarget(e.target)) return;
 
       // Handle undo/redo (Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z)
       if (e.ctrlKey || e.metaKey) {

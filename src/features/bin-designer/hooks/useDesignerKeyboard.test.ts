@@ -182,6 +182,24 @@ describe('useDesignerKeyboard', () => {
     expect(onRedo).toHaveBeenCalledTimes(2);
   });
 
+  it('ignores Ctrl+Alt+Z on a focused slider, which AltGr can send', () => {
+    renderKeyboardHook();
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    document.body.appendChild(slider);
+    const event = new KeyboardEvent('keydown', {
+      key: 'z',
+      ctrlKey: true,
+      altKey: true,
+      bubbles: true,
+    });
+    Object.defineProperty(event, 'target', { value: slider });
+    window.dispatchEvent(event);
+
+    expect(onUndo).not.toHaveBeenCalled();
+    slider.remove();
+  });
+
   it('keeps plain keys off a focused slider', () => {
     renderKeyboardHook();
     const slider = document.createElement('input');

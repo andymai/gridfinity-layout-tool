@@ -85,7 +85,6 @@ import {
  * Handler dispatch order. Handlers are tried in sequence; the first
  * one that returns `true` short-circuits the rest.
  */
-/** The only shortcuts a focused switch, checkbox or slider lets through. */
 const formControlHandlers: KeyboardHandler[] = [handleUndo, handleRedo];
 
 const handlers: KeyboardHandler[] = [
@@ -176,7 +175,10 @@ export function useKeyboard({ disabled = false }: UseKeyboardOptions = {}) {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (isTextEntryTarget(e.target)) return;
-      const active = isFormControlTarget(e.target) ? formControlHandlers : handlers;
+      const onControl = isFormControlTarget(e.target);
+      // Ctrl+Alt is AltGr on some keyboards, which types a character.
+      if (onControl && e.altKey) return;
+      const active = onControl ? formControlHandlers : handlers;
 
       const ctx: KeyboardContext = {
         layout,

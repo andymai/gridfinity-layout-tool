@@ -426,6 +426,17 @@ describe('useKeyboard', () => {
       }
     );
 
+    it('ignores Ctrl+Alt+Z on a focused switch, which AltGr can send', () => {
+      withOneUndoStep();
+      renderHook(() => useKeyboard());
+      const toggle = document.createElement('input');
+      toggle.type = 'checkbox';
+
+      pressOn(toggle, 'z', { ctrlKey: true, altKey: true });
+
+      expect(useHistoryStore.getState().past).toHaveLength(1);
+    });
+
     it('leaves Ctrl+Z to the browser in a text field', () => {
       withOneUndoStep();
       renderHook(() => useKeyboard());
