@@ -1,0 +1,26 @@
+src/features/grid-editor/components/Grid/IsometricPreview/Scene/frameBin.ts
+  s_f3decd9961964a::t_33ef90856ef08f 1-89
+src/features/grid-editor/components/Grid/IsometricPreview/Scene/frameBin.test.ts
+  s_f3decd9961964a::t_8499b9e52bf1b8 1-45
+src/features/grid-editor/components/Grid/IsometricPreview/Scene/Scene.tsx
+  s_f3decd9961964a::t_eb6b7cd429cff7 315
+  s_f3decd9961964a::t_33ef90856ef08f 9,279-291
+  s_f3decd9961964a::t_fd741c849d6f33 6-8,44,268-278,292-314
+  s_f3decd9961964a::t_f098717387944f 316-317
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "adeed43345f921a87729b67b4188a489b8185b44",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
