@@ -1,0 +1,21 @@
+src/shared/webgl/WebGLContextLossGuard.test.tsx
+  s_0c191ecd28c8c3::t_638402f8bee503 102-127
+src/shared/webgl/WebGLContextLossGuard.tsx
+  s_0c191ecd28c8c3::t_638402f8bee503 34,36,38-41,44-45,50-51,57,59,62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "46f906339a5b47461e5fa0a3565401b8a841d52b",
+  "prompts": {},
+  "sessions": {
+    "s_0c191ecd28c8c3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f7a72b82-3d5a-4aec-a3fc-27209c777a7d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
