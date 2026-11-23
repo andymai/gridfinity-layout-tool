@@ -22,6 +22,10 @@ import {
 } from '@/features/bin-designer/utils/compartments';
 import { getCompartmentRect, type CellRect } from '@/features/bin-designer/utils/bentoDraw';
 import {
+  compartmentCavityExact,
+  formatCompactMm,
+} from '@/features/bin-designer/utils/compartmentDimensions';
+import {
   cellRegionLoops,
   regionPathD,
   widestRunRect,
@@ -359,8 +363,7 @@ export function BentoCanvas({
         const isSelected = id === selectedId;
         const isHovered = id === hoveredId;
         const isMoving = id === movingId;
-        const widthMm = Math.round(rect.w * (interiorW / cols));
-        const depthMm = Math.round(rect.h * (interiorD / rows));
+        const cavity = compartmentCavityExact(config, id, interiorW, interiorD);
         const justDropped = drop?.id === id;
         const bodyStyle: React.CSSProperties = {
           stroke: previewColor,
@@ -415,9 +418,12 @@ export function BentoCanvas({
                     {label}
                   </span>
                 ) : null}
-                {!region && h > 34 && (
+                {!region && cavity && h > 34 && (
                   <span className="text-micro tabular-nums text-content-tertiary">
-                    {t('binDesigner.bento.compartmentSize', { width: widthMm, depth: depthMm })}
+                    {t('binDesigner.bento.compartmentSize', {
+                      width: formatCompactMm(cavity.width),
+                      depth: formatCompactMm(cavity.depth),
+                    })}
                   </span>
                 )}
               </div>

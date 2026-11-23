@@ -4434,6 +4434,10 @@ const en: Record<string, string> = {
   'binDesigner.bento.labelSpanDisabled':
     'Full-width tabs print one label per row. Edit those in the Label tabs panel.',
   'binDesigner.bento.sizeReadout': 'Size',
+  'binDesigner.bento.widthField': 'Width (mm)',
+  'binDesigner.bento.depthField': 'Depth (mm)',
+  'binDesigner.bento.sizeLockedHint':
+    'A size moves the walls shared with other drawn compartments.',
   'binDesigner.bento.sizeMerged': 'Merged shape',
   'binDesigner.bento.cellsReadout': 'Cells',
   'binDesigner.bento.stashAction': 'Move to stash',
