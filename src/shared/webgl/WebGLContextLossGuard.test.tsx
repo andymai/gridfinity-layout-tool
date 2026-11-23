@@ -99,6 +99,32 @@ describe('WebGLContextLossGuard', () => {
     expect(detectWebGL().available).toBe(true);
   });
 
+  it('pauses the grace period while the tab is hidden and restarts it on return', () => {
+    renderGuard();
+    fire('webglcontextlost');
+    act(() => {
+      vi.advanceTimersByTime(RESTORE_GRACE_MS - 100);
+    });
+    setHidden(true);
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'));
+      vi.advanceTimersByTime(RESTORE_GRACE_MS * 10);
+    });
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    setHidden(false);
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'));
+      vi.advanceTimersByTime(RESTORE_GRACE_MS - 100);
+    });
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+  });
+
   it('ignores the context loss R3F forces after the canvas unmounts', () => {
     const { unmount } = renderGuard();
     unmount();

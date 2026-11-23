@@ -31,35 +31,35 @@ export function WebGLContextLossGuard(): null {
   useEffect(() => {
     if (!fail) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let lost = false;
 
-    const startGrace = (): void => {
-      if (document.hidden) {
-        document.addEventListener('visibilitychange', startGrace, { once: true });
-        return;
-      }
-      timer = setTimeout(() => fail(new Error(CONTEXT_LOST_ERROR)), RESTORE_GRACE_MS);
-    };
-    const stopGrace = (): void => {
+    const syncGrace = (): void => {
       clearTimeout(timer);
-      document.removeEventListener('visibilitychange', startGrace);
+      timer = undefined;
+      if (lost && !document.hidden) {
+        timer = setTimeout(() => fail(new Error(CONTEXT_LOST_ERROR)), RESTORE_GRACE_MS);
+      }
     };
     const onLost = (): void => {
-      stopGrace();
-      startGrace();
+      lost = true;
+      syncGrace();
     };
     // A `frameloop="demand"` canvas draws nothing after the restore until
     // something invalidates it.
     const onRestored = (): void => {
-      stopGrace();
+      lost = false;
+      syncGrace();
       invalidate();
     };
 
     canvas.addEventListener('webglcontextlost', onLost);
     canvas.addEventListener('webglcontextrestored', onRestored);
+    document.addEventListener('visibilitychange', syncGrace);
     return () => {
-      stopGrace();
+      clearTimeout(timer);
       canvas.removeEventListener('webglcontextlost', onLost);
       canvas.removeEventListener('webglcontextrestored', onRestored);
+      document.removeEventListener('visibilitychange', syncGrace);
     };
   }, [canvas, invalidate, fail]);
 
