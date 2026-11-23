@@ -37,6 +37,9 @@ export interface HeaderSupportLinksProps {
    */
   compact?: boolean;
 
+  /** In compact mode, keep the Ko-fi button beside the menu rather than in it. */
+  keepKofi?: boolean;
+
   /**
    * Render the language selector beside the menu. A phone header too narrow
    * for it can drop it, since Settings carries the same choice.
@@ -56,6 +59,7 @@ export interface HeaderSupportLinksProps {
 
 export function HeaderSupportLinks({
   compact = false,
+  keepKofi = false,
   showLanguage = true,
   leadingItems,
 }: HeaderSupportLinksProps = {}) {
@@ -182,7 +186,9 @@ export function HeaderSupportLinks({
       >
         {t('common.redditCommunity')}
       </Menu.Item>
-      {compact && <Menu.Item onClick={handleKofiClick}>{t('header.supportOnKofi')}</Menu.Item>}
+      {compact && !keepKofi && (
+        <Menu.Item onClick={handleKofiClick}>{t('header.supportOnKofi')}</Menu.Item>
+      )}
     </Menu.Root>
   );
 
@@ -204,12 +210,30 @@ export function HeaderSupportLinks({
     </IconButton>
   );
 
+  // Ko-fi support — the official Widget_2 button reproduced natively (the site's
+  // CSP blocks the remote ko-fi script). Accent fill via btn-primary, official
+  // animated cup logo, white label like the widget.
+  const kofiButton = (
+    <Button
+      variant="primary"
+      onClick={handleKofiClick}
+      className="px-3 h-8 text-sm leading-none flex items-center gap-1.5"
+      style={{ color: '#fff', textShadow: '0 1px 1px rgba(34, 34, 34, 0.15)' }}
+      title={t('header.supportOnKofi')}
+      aria-label={t('header.supportOnKofi')}
+    >
+      <img src="/kofi-cup.png" alt="" aria-hidden="true" className="kofi-cup-wiggle h-4 w-auto" />
+      <span className="hidden xl:inline">{t('header.supportOnKofi')}</span>
+    </Button>
+  );
+
   if (compact) {
     return (
       <>
         {showLanguage && <LanguageSelector />}
         {overflowTrigger}
         {overflowMenu}
+        {keepKofi && kofiButton}
       </>
     );
   }
@@ -286,20 +310,7 @@ export function HeaderSupportLinks({
       {overflowTrigger}
       {overflowMenu}
 
-      {/* Ko-fi support — the official Widget_2 button reproduced natively (the site's
-          CSP blocks the remote ko-fi script). Accent fill via btn-primary, official
-          animated cup logo, white label like the widget. */}
-      <Button
-        variant="primary"
-        onClick={handleKofiClick}
-        className="px-3 h-8 text-sm leading-none flex items-center gap-1.5"
-        style={{ color: '#fff', textShadow: '0 1px 1px rgba(34, 34, 34, 0.15)' }}
-        title={t('header.supportOnKofi')}
-        aria-label={t('header.supportOnKofi')}
-      >
-        <img src="/kofi-cup.png" alt="" aria-hidden="true" className="kofi-cup-wiggle h-4 w-auto" />
-        <span className="hidden xl:inline">{t('header.supportOnKofi')}</span>
-      </Button>
+      {kofiButton}
     </>
   );
 }

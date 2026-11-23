@@ -50,9 +50,17 @@ interface HeaderProps {
   saveStatus: SaveStatus;
 }
 
+/**
+ * Below this width the full support links squeeze the layout name to a few
+ * letters, and one more header item (a save label, collaborators) pushes
+ * Export over undo. The links then fold into the More menu, as on a tablet.
+ */
+const COMPACT_LINKS_BELOW_PX = 1100;
+
 export function Header({ saveStatus }: HeaderProps) {
   const t = useTranslation();
-  const { isTablet } = useResponsive();
+  const { isTablet, viewportWidth } = useResponsive();
+  const compactLinks = isTablet || viewportWidth < COMPACT_LINKS_BELOW_PX;
   const showPlacePath = useFeatureFlag('places') && !isTablet;
   const { isCollaborative } = useCollabMode();
 
@@ -310,7 +318,7 @@ export function Header({ saveStatus }: HeaderProps) {
 
         <div className="w-px h-6 bg-stroke-subtle mx-2" />
 
-        <HeaderSupportLinks compact={isTablet} />
+        <HeaderSupportLinks compact={compactLinks} keepKofi={!isTablet} />
       </div>
 
       {/* Lazy-loaded modals - only load chunks when modal is opened */}

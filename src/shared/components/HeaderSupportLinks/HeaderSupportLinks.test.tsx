@@ -215,6 +215,15 @@ describe('HeaderSupportLinks', () => {
       window.removeEventListener('open-settings-modal', handler);
     });
 
+    it('keeps the Ko-fi button in the bar, not in the menu, when asked', () => {
+      render(<HeaderSupportLinks compact keepKofi />);
+      expect(screen.getByLabelText('header.supportOnKofi')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByLabelText('header.moreLinks'));
+      expect(screen.queryByRole('menuitem', { name: 'header.supportOnKofi' })).toBeNull();
+      expect(screen.getByRole('menuitem', { name: 'header.helpAndShortcuts' })).toBeInTheDocument();
+    });
+
     it('drops the language selector when asked, leaving it to Settings', () => {
       render(<HeaderSupportLinks compact showLanguage={false} />);
       expect(screen.queryByTestId('language-selector')).toBeNull();
