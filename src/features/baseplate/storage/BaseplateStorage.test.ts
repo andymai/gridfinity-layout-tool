@@ -8,6 +8,7 @@ import {
   duplicateDesign,
   updateDesignName,
   updateDesignParams,
+  updateDesignParamsIfChanged,
   updateDesignThumbnail,
   createNewDesign,
   getActiveDesignId,
@@ -243,6 +244,63 @@ describe('BaseplateStorage', () => {
         await updateDesignThumbnail(baseplateDesignId('thumb-test'), 'data:image/png;base64,AAAA')
       );
       expect(value.thumbnail).toBe('data:image/png;base64,AAAA');
+    });
+  });
+
+  describe('update order', () => {
+    const id = baseplateDesignId('order-test');
+    const edited = { ...DEFAULT_BASEPLATE_PARAMS, paddingBack: 21 as Mm };
+
+    beforeEach(async () => {
+      expectOk(
+        await saveDesign({ id, name: 'Order', params: DEFAULT_BASEPLATE_PARAMS, thumbnail: null })
+      );
+    });
+
+    it('keeps an edit that a thumbnail capture started at the same time', async () => {
+      await Promise.all([
+        updateDesignParams(id, edited),
+        updateDesignThumbnail(id, 'data:image/png;base64,AAAA'),
+      ]);
+
+      const stored = expectOk(await loadDesign(id));
+      expect(stored.params).toEqual(edited);
+      expect(stored.thumbnail).toBe('data:image/png;base64,AAAA');
+    });
+
+    it('lands a write made later over an earlier one, whichever reads first', async () => {
+      await Promise.all([
+        updateDesignParams(id, edited),
+        updateDesignName(id, 'Renamed'),
+        updateDesignParams(id, { ...edited, paddingBack: 35 as Mm }),
+      ]);
+
+      const stored = expectOk(await loadDesign(id));
+      expect(stored.params.paddingBack).toBe(35);
+      expect(stored.name).toBe('Renamed');
+    });
+
+    it('writes nothing when the design already holds the params', async () => {
+      const before = expectOk(await loadDesign(id)).updatedAt;
+
+      expectOk(await updateDesignParamsIfChanged(id, { ...DEFAULT_BASEPLATE_PARAMS }));
+
+      expect(expectOk(await loadDesign(id)).updatedAt).toBe(before);
+    });
+
+    it('turns a throw inside a queued update into an error and keeps the queue moving', async () => {
+      const poisoned = { ...DEFAULT_BASEPLATE_PARAMS };
+      Object.defineProperty(poisoned, 'paddingBack', {
+        enumerable: true,
+        get() {
+          throw new Error('unreadable params');
+        },
+      });
+
+      expectErr(await updateDesignParamsIfChanged(id, poisoned));
+      expectOk(await updateDesignName(id, 'Still saves'));
+
+      expect(expectOk(await loadDesign(id)).name).toBe('Still saves');
     });
   });
 

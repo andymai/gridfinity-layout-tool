@@ -39,6 +39,7 @@ import {
   setActiveDesignId,
 } from '@/features/baseplate/storage/BaseplateStorage';
 import { loadRegistry, upsertRegistryEntry } from '@/features/baseplate/store/baseplateRegistry';
+import { announceBaseplateSplit } from '@/features/baseplate/store/baseplateSplits';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { nextBaseplateName } from '@/features/baseplate/utils/baseplateName';
 import { designOwner, ownedCopyName } from '@/features/baseplate/utils/designOwnership';
@@ -199,6 +200,7 @@ export function useBaseplateLibraryInit(options?: UseBaseplateLibraryInitOptions
                   });
                   setActiveDesignId(copy.value.id);
                   setActiveBaseplateLocal(copy.value.id, latest.params ?? copy.value.params);
+                  announceBaseplateSplit(targetLayoutId, activeId);
                   materializedThisSession.add(materializeKey(targetLayoutId, copy.value.id));
                   if (
                     latest.params !== undefined &&

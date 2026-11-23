@@ -10,6 +10,7 @@ import { createDbAccessor } from '@/core/storage/backends/openSingleton';
 import type { BaseplateDesignId, StoredBaseplateParams } from '@/core/types';
 import { baseplateDesignId } from '@/core/types';
 import { isoStampAfter } from '@/shared/utils/editStamp';
+import { paramsEqual } from '../utils/paramsEqual';
 import { DEFAULT_BASEPLATE_PARAMS, migrateBaseplateParams } from '@/core/baseplateDefaults';
 import type { Result, StorageError } from '@/core/result';
 import {
@@ -209,22 +210,49 @@ export async function deleteDesign(id: BaseplateDesignId): Promise<Result<void, 
   }
 }
 
+type SaveDesignInput = Parameters<typeof saveDesign>[0];
+
+const pendingUpdates = new Map<BaseplateDesignId, Promise<unknown>>();
+
+/**
+ * Read a design and write a change to it after every update queued before it,
+ * so updates to one design land in the order they were made. Reading before an
+ * earlier update lands writes that update's older fields back: a thumbnail
+ * capture would restore the params an edit had just replaced. A `change` that
+ * returns null leaves the design as it is.
+ */
+function updateInOrder(
+  id: BaseplateDesignId,
+  change: (current: SavedBaseplateDesign) => SaveDesignInput | null
+): Promise<Result<SavedBaseplateDesign, StorageError>> {
+  // A rejection would leave the entry queued and surface as unhandled, so a
+  // throw comes back as a storage error.
+  const run = async (): Promise<Result<SavedBaseplateDesign, StorageError>> => {
+    try {
+      const loadResult = await loadDesign(id);
+      if (isErr(loadResult)) return loadResult;
+      const next = change(loadResult.value);
+      return next === null ? loadResult : await saveDesign(next);
+    } catch (e) {
+      return err(storageUnavailable('indexedDB', e));
+    }
+  };
+  const queued = (pendingUpdates.get(id) ?? Promise.resolve()).then(run, run);
+  pendingUpdates.set(id, queued);
+  void queued.then(() => {
+    if (pendingUpdates.get(id) === queued) pendingUpdates.delete(id);
+  });
+  return queued;
+}
+
 /**
  * Update only the name of an existing baseplate design.
  */
-export async function updateDesignName(
+export function updateDesignName(
   id: BaseplateDesignId,
   name: string
 ): Promise<Result<SavedBaseplateDesign, StorageError>> {
-  const loadResult = await loadDesign(id);
-  if (isErr(loadResult)) {
-    return loadResult;
-  }
-
-  return saveDesign({
-    ...loadResult.value,
-    name,
-  });
+  return updateInOrder(id, (current) => ({ ...current, name }));
 }
 
 /**
@@ -233,39 +261,45 @@ export async function updateDesignName(
  * If `thumbnail` is `undefined` the design's thumbnail is left unchanged;
  * if `null` the thumbnail is cleared.
  */
-export async function updateDesignParams(
+export function updateDesignParams(
   id: BaseplateDesignId,
   params: StoredBaseplateParams,
   thumbnail?: string | null
 ): Promise<Result<SavedBaseplateDesign, StorageError>> {
-  const loadResult = await loadDesign(id);
-  if (isErr(loadResult)) {
-    return loadResult;
-  }
-
-  return saveDesign({
-    ...loadResult.value,
+  return updateInOrder(id, (current) => ({
+    ...current,
     params,
     ...(thumbnail !== undefined ? { thumbnail } : {}),
-  });
+  }));
+}
+
+/**
+ * Write `params` only when the stored design differs, in the same order as
+ * every other update, so a write that started earlier never lands over a newer
+ * one. `stillWanted` is asked when the write's turn comes: a caller can call
+ * the write off while it waits in the queue.
+ */
+export function updateDesignParamsIfChanged(
+  id: BaseplateDesignId,
+  params: StoredBaseplateParams,
+  stillWanted: () => boolean = () => true
+): Promise<Result<SavedBaseplateDesign, StorageError>> {
+  return updateInOrder(id, (current) =>
+    !stillWanted() || paramsEqual(current.params, params) ? null : { ...current, params }
+  );
 }
 
 /**
  * Update only the thumbnail for an existing baseplate design.
  */
-export async function updateDesignThumbnail(
+export function updateDesignThumbnail(
   id: BaseplateDesignId,
   thumbnail: string
 ): Promise<Result<SavedBaseplateDesign, StorageError>> {
-  const loadResult = await loadDesign(id);
-  if (isErr(loadResult)) {
-    return loadResult;
-  }
-
-  return saveDesign({
-    ...loadResult.value,
+  return updateInOrder(id, (current) => ({
+    ...current,
     thumbnail,
-  });
+  }));
 }
 
 /**
