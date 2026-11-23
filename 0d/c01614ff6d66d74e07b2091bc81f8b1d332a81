@@ -1,0 +1,34 @@
+src/shared/components/ToolSwitcher/ToolSwitcher.test.tsx
+  s_f3decd9961964a::t_c18d5b7ec84489 44-46
+src/shared/components/ToolSwitcher/ToolSwitcher.tsx
+  s_f3decd9961964a::t_c18d5b7ec84489 18,118-119
+src/shell/hooks/usePrefetchChunks.ts
+  s_f3decd9961964a::t_c18d5b7ec84489 1-115
+src/shared/utils/chunkWarmers.test.ts
+  s_f3decd9961964a::t_9e93b52df3abb6 1-52
+src/shell/hooks/usePrefetchChunks.test.ts
+  s_f3decd9961964a::t_6380763fba1273 29-30,47,114,119-120
+  s_f3decd9961964a::t_c0eb1b35c2c0e4 1-28,31-46,48-113,115-118,121-242
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+  s_f3decd9961964a::t_c18d5b7ec84489 32,191
+src/shared/utils/chunkWarmers.ts
+  s_f3decd9961964a::t_9e93b52df3abb6 1-28
+src/App.tsx
+  s_f3decd9961964a::t_540348a91fa744 93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0dc01614ff6d66d74e07b2091bc81f8b1d332a81",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
