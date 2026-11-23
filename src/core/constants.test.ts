@@ -27,6 +27,7 @@ import {
 } from '@/core/baseplateDefaults';
 import { gridUnits, mm } from '@/core/types';
 import { PADDING_MAX } from '@/shared/utils/computeAnchoredPaddings';
+import { GRID_PITCH_MM_MAX } from '@/shared/utils/drawerOutline';
 import type { StoredBaseplateParams } from '@/core/types';
 
 describe('calcMaxGridUnits', () => {
@@ -797,7 +798,7 @@ describe('migrateBaseplateParams', () => {
   });
 
   it('bounds the corner radius at half the widest plate the tool can make', () => {
-    const widestSideMm = CONSTRAINTS.GRID_MAX * CONSTRAINTS.GRID_UNIT_MM_MAX + 2 * PADDING_MAX;
+    const widestSideMm = CONSTRAINTS.GRID_MAX * GRID_PITCH_MM_MAX + 2 * PADDING_MAX;
     expect(CORNER_RADIUS_MAX_MM).toBe(widestSideMm / 2);
   });
 

@@ -26,7 +26,7 @@ const MAX_PAYLOAD_BYTES = 100_000;
 const MAX_PADDING_MM = 1000;
 
 /** Max corner radius (mm); mirrors `CORNER_RADIUS_MAX_MM` in `src/core/baseplateDefaults.ts`. */
-export const MAX_CORNER_RADIUS_MM = 1600;
+export const MAX_CORNER_RADIUS_MM = 5100;
 
 /**
  * Max chunks per axis in a custom split plan. A plate caps at 50 grid units and

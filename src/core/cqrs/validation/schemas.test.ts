@@ -636,7 +636,7 @@ describe('layout.setBaseplateParams schema', () => {
         },
       }).success;
     expect(withRadius(250)).toBe(true);
-    expect(withRadius(1601)).toBe(false);
+    expect(withRadius(5101)).toBe(false);
   });
 
   it('rejects negative cornerRadius', () => {

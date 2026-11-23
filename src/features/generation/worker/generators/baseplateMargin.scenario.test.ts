@@ -11,6 +11,7 @@ import type { ResolvedBaseplateParams } from '@/shared/types/bin';
 import { computeBaseplateTiling } from '@/features/baseplate/utils/splitPlanner';
 import type { MarginPiece } from '@/features/baseplate/types/tiling';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
+import { gridUnits } from '@/core/types';
 import { PLATE_PROFILE_HEIGHT, MAGNET_FLOOR } from './generatorTypes';
 
 let generateMargin: (
@@ -104,6 +105,28 @@ describe('margin rail corner radius', () => {
     });
     const md = generateMargin(params, railOf(params, 'front'), false);
     expect(frontLeftRadius(md.vertices)).toBeCloseTo(10, 0);
+  });
+
+  it('rounds a short split rail whose corner needs more than half its length', () => {
+    // A leading half column makes the first front rail 21 mm long.
+    const params = base({
+      width: 4.5,
+      fractionalEdgeX: 'start',
+      splitOverride: { cols: [gridUnits(0.5), gridUnits(4)], rows: [gridUnits(3)] },
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 12,
+      paddingBack: 0,
+      cornerRadius: 11,
+    });
+    const rail = computeBaseplateTiling(params, 256).margins.find(
+      (m) => m.side === 'front' && m.col === 0
+    );
+    if (!rail) throw new Error('no first front rail');
+    expect(rail.lengthMm).toBeCloseTo(21, 1);
+    expect(rail.ownedCorners).toEqual(['bl']);
+    const md = generateMargin(params, rail, false);
+    expect(frontLeftRadius(md.vertices)).toBeCloseTo(11, 0);
   });
 
   it('gives a narrow side rail that owns the corner the same radius', () => {

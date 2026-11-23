@@ -57,24 +57,13 @@ export function buildSlabProfile(
     return drawRoundedRectangle(totalW, totalD, rBL);
   }
 
-  // Draw CCW starting mid-edge so close() creates a real edge through the
-  // last corner. Starting at a corner would make close() degenerate. A
-  // fillet needs both of its segments at least as long as its radius, and the
-  // start splits its edge in two, so a bottom corner wider than half the bottom
-  // edge (a narrow rail's lone corner) starts mid-left instead.
-  if (Math.max(rBL, rBR) >= hw) {
-    let side = draw([-hw, 0]);
-    side = side.lineTo([-hw, -hd]);
-    if (rBL > 0) side = side.customCorner(rBL);
-    side = side.lineTo([hw, -hd]);
-    if (rBR > 0) side = side.customCorner(rBR);
-    side = side.lineTo([hw, hd]);
-    if (rTR > 0) side = side.customCorner(rTR);
-    side = side.lineTo([-hw, hd]);
-    if (rTL > 0) side = side.customCorner(rTL);
-    return side.close();
-  }
-  let pen = draw([0, -hd]);
+  // Draw CCW starting on the bottom edge so close() creates a real edge
+  // through BL; starting at a corner would make close() degenerate. A fillet
+  // needs both of its segments at least as long as its radius, so a bottom
+  // corner wider than half the edge (a narrow rail's lone corner) moves the
+  // start to the middle of the straight span between the two bottom arcs.
+  const startX = Math.max(rBL, rBR) < hw ? 0 : (rBL - rBR) / 2;
+  let pen = draw([startX, -hd]);
   pen = pen.lineTo([hw, -hd]);
   if (rBR > 0) pen = pen.customCorner(rBR);
   pen = pen.lineTo([hw, hd]);

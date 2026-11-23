@@ -267,7 +267,7 @@ describe('PUT', () => {
         body: {
           baseplate: {
             name: 'x',
-            params: { ...VALID_BASEPLATE, cornerRadii: { tl: 2, tr: 2, bl: 2, br: 1601 } },
+            params: { ...VALID_BASEPLATE, cornerRadii: { tl: 2, tr: 2, bl: 2, br: 5101 } },
           },
           modifiedAt: 1000,
         },
@@ -277,7 +277,7 @@ describe('PUT', () => {
     expect(res._status).toBe(400);
   });
 
-  it('accepts valid per-corner radii up to the client max (200mm)', async () => {
+  it('accepts valid per-corner radii up to the client max (5100mm)', async () => {
     const { default: handler } = await import('./[id]');
     const res = makeRes();
     await handler(
@@ -286,7 +286,7 @@ describe('PUT', () => {
         body: {
           baseplate: {
             name: 'x',
-            params: { ...VALID_BASEPLATE, cornerRadii: { tl: 2, tr: 150, bl: 100, br: 200 } },
+            params: { ...VALID_BASEPLATE, cornerRadii: { tl: 2, tr: 150, bl: 250, br: 5100 } },
           },
           modifiedAt: 1000,
         },

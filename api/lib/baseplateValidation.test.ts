@@ -26,7 +26,7 @@ describe('validateBaseplateShare', () => {
     expect(validate({ ...validParams, cornerRadii: { tl: 250, tr: 0, bl: 0, br: 0 } }).valid).toBe(
       true
     );
-    expect(validate({ ...validParams, cornerRadius: 1601 }).valid).toBe(false);
+    expect(validate({ ...validParams, cornerRadius: 5101 }).valid).toBe(false);
   });
 
   it('keeps a two-decimal magnet diameter as sent', () => {

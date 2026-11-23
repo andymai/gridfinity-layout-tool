@@ -50,10 +50,11 @@ export const MARGIN_MIN_DETACH_MM = OVER_TILE_MIN_MARGIN_MM;
  */
 /**
  * Largest corner radius a plate can take: half its widest possible side, which
- * is 50 cells of 60 mm plus 100 mm of padding on each side. The stored value,
- * the command schema and the sync server share this bound.
+ * is 50 cells at the largest grid pitch (200 mm) plus 100 mm of padding on each
+ * side. The stored value, the command schema and the sync server share this
+ * bound.
  */
-export const CORNER_RADIUS_MAX_MM = 1600;
+export const CORNER_RADIUS_MAX_MM = 5100;
 
 export const SOLID_FLOOR_DEFAULT_MM = 0.8;
 export const SOLID_FLOOR_MIN_MM = 0.4;
