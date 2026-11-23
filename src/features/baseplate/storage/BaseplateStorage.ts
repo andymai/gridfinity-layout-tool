@@ -225,11 +225,17 @@ function updateInOrder(
   id: BaseplateDesignId,
   change: (current: SavedBaseplateDesign) => SaveDesignInput | null
 ): Promise<Result<SavedBaseplateDesign, StorageError>> {
+  // A rejection would leave the entry queued and surface as unhandled, so a
+  // throw comes back as a storage error.
   const run = async (): Promise<Result<SavedBaseplateDesign, StorageError>> => {
-    const loadResult = await loadDesign(id);
-    if (isErr(loadResult)) return loadResult;
-    const next = change(loadResult.value);
-    return next === null ? loadResult : saveDesign(next);
+    try {
+      const loadResult = await loadDesign(id);
+      if (isErr(loadResult)) return loadResult;
+      const next = change(loadResult.value);
+      return next === null ? loadResult : await saveDesign(next);
+    } catch (e) {
+      return err(storageUnavailable('indexedDB', e));
+    }
   };
   const queued = (pendingUpdates.get(id) ?? Promise.resolve()).then(run, run);
   pendingUpdates.set(id, queued);

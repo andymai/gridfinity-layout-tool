@@ -287,6 +287,21 @@ describe('BaseplateStorage', () => {
 
       expect(expectOk(await loadDesign(id)).updatedAt).toBe(before);
     });
+
+    it('turns a throw inside a queued update into an error and keeps the queue moving', async () => {
+      const poisoned = { ...DEFAULT_BASEPLATE_PARAMS };
+      Object.defineProperty(poisoned, 'paddingBack', {
+        enumerable: true,
+        get() {
+          throw new Error('unreadable params');
+        },
+      });
+
+      expectErr(await updateDesignParamsIfChanged(id, poisoned));
+      expectOk(await updateDesignName(id, 'Still saves'));
+
+      expect(expectOk(await loadDesign(id)).name).toBe('Still saves');
+    });
   });
 
   describe('createNewDesign', () => {
