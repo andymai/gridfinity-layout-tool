@@ -57,7 +57,7 @@ describe('LayerRows', () => {
   it('calls onLayerClick when segment is clicked', () => {
     const onLayerClick = vi.fn();
     const layers = makeLayers(3, 2);
-    const { container } = render(
+    render(
       <LayerRows
         layers={layers}
         activeLayerId={layerId('layer-1')}
@@ -66,9 +66,7 @@ describe('LayerRows', () => {
       />
     );
 
-    const segment = container.querySelector('[data-layer-id="layer-2"]');
-    expect(segment).toBeInTheDocument();
-    fireEvent.click(segment as Element);
+    fireEvent.click(screen.getByRole('button', { name: 'Select Layer 2' }));
 
     expect(onLayerClick).toHaveBeenCalledWith('layer-2');
   });

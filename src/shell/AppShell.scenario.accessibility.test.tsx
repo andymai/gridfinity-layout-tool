@@ -106,24 +106,7 @@ describe('Accessibility - Critical Issues', () => {
 
   it('Sidebar has no critical accessibility violations', async () => {
     const { container } = render(<Sidebar />);
-    const results = await axe(container, { rules: CRITICAL_RULES });
-
-    // Layer rows intentionally nest interactive controls (rename span, height
-    // steppers) inside a selectable container — accepted UX trade-off.
-    // Filter out only those known violations so the rule stays enforced elsewhere.
-    const filtered = {
-      ...results,
-      violations: results.violations.filter(
-        (v) =>
-          !(v.id === 'nested-interactive' && v.nodes.every((n) => n.html.includes('data-layer-id')))
-      ),
-    };
-
-    if (filtered.violations.length > 0) {
-      console.warn('Sidebar violations:', JSON.stringify(filtered.violations, null, 2));
-    }
-
-    expect(filtered).toHaveNoViolations();
+    await expectNoCriticalViolations(container, 'Sidebar');
   }, 15_000);
 
   it('RightPanel has no critical accessibility violations', async () => {
