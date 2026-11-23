@@ -29,6 +29,8 @@ import {
   setDesignPublishedId,
   updateDesignThumbnail,
   updateDesignName,
+  createVariant,
+  updateVariantOverrides,
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import { THUMBNAIL_VERSION } from '../types';
@@ -36,6 +38,7 @@ import type { BinParams, SavedDesign } from '../types';
 import { getDb } from '@/features/bin-designer/storage/designerDb';
 import { expectOk, expectErr } from '@/test/testUtils';
 import { designId } from '@/core/types';
+import type { DesignId } from '@/core/types';
 import type { StorageError, StorageCorruptedError } from '@/core/result';
 
 function expectStorageCorrupted(error: StorageError): StorageCorruptedError {
@@ -165,6 +168,171 @@ describe('DesignerStorage', () => {
       await Promise.all([older, newer]);
 
       expect(expectOk(await loadDesign(id)).name).toBe('Newer');
+    });
+
+    it.each([
+      [
+        'a rename',
+        (id: DesignId) => updateDesignName(id, 'Renamed'),
+        (design: SavedDesign) => expect(design.name).toBe('Renamed'),
+      ],
+      [
+        'a tag change',
+        (id: DesignId) => updateDesignTags(id, ['pens']),
+        (design: SavedDesign) => expect(design.tags).toEqual(['pens']),
+      ],
+      [
+        'a published id',
+        (id: DesignId) => setDesignPublishedId(id, 'pub-1'),
+        (design: SavedDesign) => expect(design.publishedId).toBe('pub-1'),
+      ],
+    ])(
+      'applies %s to the save queued before it, not to the design as it was',
+      async (_label, update, landed) => {
+        const id = designId('update-order');
+        const base = {
+          id,
+          name: 'Pens',
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+        };
+        expectOk(await saveDesign(base));
+        let release = (): void => undefined;
+        const storing = new Promise<void>((resolve) => {
+          release = resolve;
+        });
+        vi.mocked(storeHolderMeshes).mockImplementationOnce(async (holder) => {
+          await storing;
+          return holder;
+        });
+
+        const edit = updateDesignParams(id, { ...DEFAULT_BIN_PARAMS, width: 3 });
+        const other = update(id);
+        await new Promise((r) => setTimeout(r, 50));
+        release();
+        expectOk(await edit);
+        expectOk(await other);
+
+        const stored = expectOk(await loadDesign(id));
+        expect(stored.params?.width).toBe(3);
+        landed(stored);
+      }
+    );
+
+    it('keeps an override edit made while the parent is saving', async () => {
+      const parentId = designId('variant-parent');
+      expectOk(
+        await saveDesign({
+          id: parentId,
+          name: 'Parent',
+          params: { ...DEFAULT_BIN_PARAMS, height: 6 },
+          thumbnail: null,
+          exportFileNameConfig: null,
+        })
+      );
+      const variant = expectOk(
+        await createVariant(parentId, 'Tall', { dimensions: { height: 9 } })
+      );
+      let release = (): void => undefined;
+      const storing = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      vi.mocked(storeHolderMeshes).mockImplementationOnce(async (holder) => {
+        await storing;
+        return holder;
+      });
+
+      const parentEdit = updateDesignParams(parentId, {
+        ...DEFAULT_BIN_PARAMS,
+        height: 6,
+        width: 3,
+      });
+      const overrideEdit = updateVariantOverrides(variant.id, { dimensions: { height: 12 } });
+      await new Promise((r) => setTimeout(r, 50));
+      release();
+      expectOk(await parentEdit);
+      expectOk(await overrideEdit);
+
+      const stored = expectOk(await loadDesign(variant.id));
+      expect(stored.overrides).toEqual({ dimensions: { height: 12 } });
+      expect(stored.params?.height).toBe(12);
+      expect(stored.params?.width).toBe(3);
+    });
+
+    it('turns bad override data into an error and keeps the queue moving', async () => {
+      const parentId = designId('bad-override-parent');
+      const withBit: BinParams = {
+        ...DEFAULT_BIN_PARAMS,
+        cutouts: [
+          {
+            id: 'bit',
+            shape: 'circle',
+            x: 10,
+            y: 10,
+            width: 6.35,
+            depth: 6.35,
+            cutDepth: 10,
+            rotation: 0,
+            cornerRadius: 0,
+            label: '',
+            groupId: null,
+          },
+        ],
+      };
+      expectOk(
+        await saveDesign({
+          id: parentId,
+          name: 'Parent',
+          params: withBit,
+          thumbnail: null,
+          exportFileNameConfig: null,
+        })
+      );
+      const variantId = designId('bad-override-variant');
+      const cutouts = { bit: null };
+      expectOk(
+        await saveDesign({
+          id: variantId,
+          name: 'Broken',
+          params: withBit,
+          thumbnail: null,
+          exportFileNameConfig: null,
+          variantOf: parentId,
+          overrides: { cutouts } as unknown as SavedDesign['overrides'],
+        })
+      );
+
+      expectErr(
+        await updateVariantOverrides(variantId, {
+          cutouts,
+        } as unknown as SavedDesign['overrides'] & object)
+      );
+      expectOk(await updateDesignName(variantId, 'Still saves'));
+
+      expect(expectOk(await loadDesign(variantId)).name).toBe('Still saves');
+    });
+
+    it('does not hang an override edit on a design linked to itself', async () => {
+      const id = designId('self-linked');
+      expectOk(
+        await saveDesign({
+          id,
+          name: 'Loop',
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+          variantOf: id,
+          overrides: {},
+        })
+      );
+
+      const outcome = await Promise.race([
+        updateVariantOverrides(id, { dimensions: { height: 9 } }).then(() => 'done'),
+        new Promise((r) => setTimeout(() => r('hung'), 1000)),
+      ]);
+
+      expect(outcome).toBe('done');
     });
 
     it('applies a thumbnail to the save queued before it, not to the design as it was', async () => {
