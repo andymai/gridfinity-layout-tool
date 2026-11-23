@@ -8,14 +8,11 @@
  *
  *   - Flat wall spans: 2D cut region (slab − stroked struts) extruded through
  *     the wall, placed with the stamp-pattern transform chain.
- *   - Corner arcs (exact kernels only): annular wedge minus strut solids —
- *     vertical struts as small-angle revolves, near-horizontal struts as thin
- *     partial revolves, rising diagonals swept along a helix (a straight
- *     line in unrolled space IS a helix on the corner cylinder), falling
- *     diagonals as chord-box chains (see the falling-diagonal branch).
+ *   - Corner arcs (exact kernels only): the arc as flat facets, and on each
+ *     facet the lattice's open cells as prisms through the wall (see
+ *     `kumikoCornerSlab`).
  *
- * Mesh kernels (Manifold drafts) can't sweep along a helix, so the corner
- * cutters are skipped there: drafts show the phase-aligned flat panels with
+ * Mesh kernels (Manifold drafts) skip the corner cutters: drafts show the phase-aligned flat panels with
  * solid corners, and the exact OCCT result replaces them. Exports always run
  * the exact path.
  *
