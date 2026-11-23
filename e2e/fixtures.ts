@@ -338,6 +338,14 @@ export function getGridToolbar(page: Page): Locator {
  * Get the 3D preview container.
  * Uses data-3d-preview attribute for robust selection.
  */
+/**
+ * The planner toolbar's 3D view toggle. A wide toolbar shows and names it
+ * "3D View"; a narrow one shows an icon named for what a click does.
+ */
+export function get3DToggle(page: Page): Locator {
+  return page.getByRole('button', { name: /^(3D View|Show 3D preview|Hide 3D preview)$/ }).first();
+}
+
 export function get3DPreview(page: Page): Locator {
   return page.locator('[data-3d-preview]');
 }

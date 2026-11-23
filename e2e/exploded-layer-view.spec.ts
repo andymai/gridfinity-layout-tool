@@ -8,6 +8,7 @@ import {
   resetViewport,
   getSidebar,
   getActiveDialog,
+  get3DToggle,
 } from './fixtures';
 
 test.describe('Exploded Layer View', () => {
@@ -34,7 +35,7 @@ test.describe('Exploded Layer View', () => {
     await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Show 3D preview
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    const toggleButton = get3DToggle(page);
     await toggleButton.click();
     await waitForCanvas(page);
 
@@ -53,7 +54,7 @@ test.describe('Exploded Layer View', () => {
     await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Show 3D preview
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    const toggleButton = get3DToggle(page);
     await toggleButton.click();
     await waitForCanvas(page);
 
@@ -71,7 +72,7 @@ test.describe('Exploded Layer View', () => {
     await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Show 3D preview
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    const toggleButton = get3DToggle(page);
     await toggleButton.click();
     await waitForCanvas(page);
 
@@ -103,7 +104,7 @@ test.describe('Exploded Layer View', () => {
     await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Show 3D preview
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    const toggleButton = get3DToggle(page);
     await toggleButton.click();
     await waitForCanvas(page);
 
@@ -130,7 +131,7 @@ test.describe('Exploded Layer View', () => {
     await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Show 3D preview
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    const toggleButton = get3DToggle(page);
     await toggleButton.click();
     await waitForCanvas(page);
 
@@ -159,7 +160,7 @@ test.describe('Exploded Layer View', () => {
     await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Show 3D preview
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    const toggleButton = get3DToggle(page);
     await toggleButton.click();
     await waitForCanvas(page);
 
@@ -185,7 +186,7 @@ test.describe('Exploded Layer View', () => {
     await drawBinOnGrid(page, 150, 50, 200, 100);
 
     // Show 3D preview
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    const toggleButton = get3DToggle(page);
     await toggleButton.click();
     await waitForCanvas(page);
 

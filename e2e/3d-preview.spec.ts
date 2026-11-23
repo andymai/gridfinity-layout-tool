@@ -9,6 +9,7 @@ import {
   resetViewport,
   get3DExpanded,
   getActiveDialog,
+  get3DToggle,
 } from './fixtures';
 
 test.describe('3D Preview', () => {
@@ -33,12 +34,12 @@ test.describe('3D Preview', () => {
 
   test('3D preview toggle button is visible', async ({ page }) => {
     // Look for the 3D preview toggle button
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    const toggleButton = get3DToggle(page);
     await expect(toggleButton).toBeVisible();
   });
 
   test('toggle button shows and hides preview', async ({ page }) => {
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    const toggleButton = get3DToggle(page);
 
     // Click to show preview
     await toggleButton.click();
@@ -58,7 +59,7 @@ test.describe('3D Preview', () => {
     await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Enable 3D preview via button click (more reliable)
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    const toggleButton = get3DToggle(page);
     await toggleButton.click();
 
     // Wait for canvas to appear (WebGL loading can be slow)
@@ -67,7 +68,7 @@ test.describe('3D Preview', () => {
 
   test('space key expands 3D preview when visible', async ({ page }) => {
     // First show the preview via button click
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    const toggleButton = get3DToggle(page);
     await toggleButton.click();
 
     await waitForCanvas(page);
@@ -76,7 +77,8 @@ test.describe('3D Preview', () => {
     // Get initial canvas size
     const initialSize = await canvas.first().boundingBox();
 
-    // Press Space to expand (should open modal/fullscreen view)
+    // Space presses a focused button, so the click's focus has to go first.
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
     await page.keyboard.press('Space');
 
     // Look for expanded view (uses data-3d-expanded attribute)
@@ -97,13 +99,14 @@ test.describe('3D Preview', () => {
 
   test('escape closes expanded 3D preview', async ({ page }) => {
     // Show preview via button
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    const toggleButton = get3DToggle(page);
     await toggleButton.click();
 
     await waitForCanvas(page);
     const canvas = page.locator('canvas');
 
-    // Expand with Space
+    // Expand with Space, once the click's focus has left the toggle button.
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
     await page.keyboard.press('Space');
 
     // Wait for expanded view to appear (uses data-3d-expanded attribute)
@@ -122,7 +125,7 @@ test.describe('3D Preview', () => {
     await drawBinOnGrid(page, 50, 50, 100, 100);
 
     // Show 3D preview via button (more reliable than keyboard)
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    const toggleButton = get3DToggle(page);
     await toggleButton.click();
 
     // Wait for canvas to appear
@@ -143,7 +146,7 @@ test.describe('3D Preview', () => {
 
   test('3D preview handles empty drawer', async ({ page }) => {
     // Enable 3D preview with no bins (empty drawer) via button
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    const toggleButton = get3DToggle(page);
     await toggleButton.click();
 
     // Canvas should still render (shows empty drawer base)
@@ -151,22 +154,15 @@ test.describe('3D Preview', () => {
   });
 
   test('3D preview toggle button changes state', async ({ page }) => {
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    const toggleButton = get3DToggle(page);
 
-    // Initially should say "Show 3D preview"
-    await expect(toggleButton).toHaveAttribute('aria-label', /show 3d preview/i);
+    await expect(toggleButton).toHaveAttribute('aria-pressed', 'false');
 
-    // Click to show
     await toggleButton.click();
+    await expect(toggleButton).toHaveAttribute('aria-pressed', 'true');
 
-    // Button label should change to "Hide"
-    await expect(toggleButton).toHaveAttribute('aria-label', /hide 3d preview/i);
-
-    // Click to hide
     await toggleButton.click();
-
-    // Button label should change back to "Show"
-    await expect(toggleButton).toHaveAttribute('aria-label', /show 3d preview/i);
+    await expect(toggleButton).toHaveAttribute('aria-pressed', 'false');
   });
 
   test('3D preview renders multiple bins', async ({ page }) => {
@@ -176,7 +172,7 @@ test.describe('3D Preview', () => {
     await drawBinOnGrid(page, 50, 150, 80, 180);
 
     // Enable 3D preview via button
-    const toggleButton = page.getByRole('button', { name: /3D preview/i }).first();
+    const toggleButton = get3DToggle(page);
     await toggleButton.click();
 
     // Canvas should be visible with all bins rendered

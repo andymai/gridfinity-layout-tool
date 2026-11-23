@@ -11,7 +11,7 @@ const defaultProps = {
 describe('InlineEditText', () => {
   it('renders the value in a display button with title', () => {
     render(<InlineEditText {...defaultProps} onCommit={vi.fn()} />);
-    const button = screen.getByRole('button', { name: /^Rename layout: / });
+    const button = screen.getByRole('button', { name: 'Rename layout: My Layout' });
     expect(button).toHaveTextContent('My Layout');
     expect(button).toHaveAttribute('title', 'My Layout');
   });

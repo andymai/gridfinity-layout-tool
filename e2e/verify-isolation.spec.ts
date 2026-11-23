@@ -137,12 +137,20 @@ test.describe('Test Isolation Verification', () => {
     await waitForAppReady(page);
     const library = (await readAppDb(page, 'library', 'index')) as {
       activeLayoutId?: string;
-      entries?: Array<{ id: string }>;
+      entries?: Array<{
+        id: string;
+        preview?: { drawerWidth?: number; layerCount?: number; binCount?: number };
+      }>;
     } | null;
+    const activeId = library?.activeLayoutId;
+    expect(typeof activeId).toBe('string');
+    const entry = library?.entries?.find((e) => e.id === activeId);
+    expect(entry).toBeDefined();
 
-    // A new layout is in the library at once; its document is stored on the
-    // first edit, so the entry is what proves the active layout loaded.
-    expect(typeof library?.activeLayoutId).toBe('string');
-    expect(library?.entries?.some((entry) => entry.id === library.activeLayoutId)).toBe(true);
+    // The document is stored compressed; its library entry carries a summary.
+    expect(await readAppDb(page, 'layouts', `gridfinity-layout-${activeId}`)).not.toBeNull();
+    expect(entry?.preview?.drawerWidth).toBeGreaterThan(0);
+    expect(entry?.preview?.layerCount).toBeGreaterThanOrEqual(1);
+    expect(typeof entry?.preview?.binCount).toBe('number');
   });
 });
