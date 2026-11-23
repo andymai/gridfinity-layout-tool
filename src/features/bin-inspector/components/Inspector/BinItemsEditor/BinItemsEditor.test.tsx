@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { CONSTRAINTS } from '@/core/constants';
 import type { BinItem } from '@/core/types';
 import { BinItemsEditor } from './BinItemsEditor';
@@ -13,6 +13,62 @@ function setup(items: BinItem[] = [], label = '') {
 const addField = () => screen.getByLabelText('Add an item');
 
 describe('BinItemsEditor', () => {
+  it('adds a note from the row menu and saves it with the row', async () => {
+    const { onChange, last } = setup([{ id: 'i1', name: 'Nuts', qty: 3 }]);
+    fireEvent.click(screen.getByRole('button', { name: 'More for Nuts' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Add a note' }));
+
+    const note = screen.getByLabelText('Note for Nuts');
+    await waitFor(() => expect(note).toHaveFocus());
+    fireEvent.change(note, { target: { value: '  M3, stainless ' } });
+    fireEvent.blur(note);
+
+    expect(onChange).toHaveBeenCalledOnce();
+    expect(last()[0]).toEqual({ id: 'i1', name: 'Nuts', qty: 3, note: 'M3, stainless' });
+  });
+
+  it('shows a saved note, and clearing it drops the note and the field', () => {
+    const { last } = setup([{ id: 'i1', name: 'Nuts', note: 'Top shelf' }]);
+    const note = screen.getByLabelText('Note for Nuts');
+    expect(note).toHaveValue('Top shelf');
+
+    fireEvent.change(note, { target: { value: ' ' } });
+    fireEvent.keyDown(note, { key: 'Enter' });
+
+    expect(last()[0]).toEqual({ id: 'i1', name: 'Nuts' });
+  });
+
+  it('closes an opened note field left empty, without a change', () => {
+    const { onChange } = setup([{ id: 'i1', name: 'Nuts' }]);
+    fireEvent.click(screen.getByRole('button', { name: 'More for Nuts' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Add a note' }));
+    fireEvent.blur(screen.getByLabelText('Note for Nuts'));
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText('Note for Nuts')).toBeNull();
+  });
+
+  it('moves an item up or down, and not past either end', () => {
+    const items = [
+      { id: 'i1', name: 'Nuts' },
+      { id: 'i2', name: 'Bolts' },
+      { id: 'i3', name: 'Washers' },
+    ];
+    const { last } = setup(items);
+
+    fireEvent.click(screen.getByRole('button', { name: 'More for Bolts' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Move up' }));
+    expect(last().map((i) => i.id)).toEqual(['i2', 'i1', 'i3']);
+
+    fireEvent.click(screen.getByRole('button', { name: 'More for Nuts' }));
+    expect(screen.getByRole('menuitem', { name: 'Move up' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Move down' }));
+    expect(last().map((i) => i.id)).toEqual(['i2', 'i1', 'i3']);
+
+    fireEvent.click(screen.getByRole('button', { name: 'More for Washers' }));
+    expect(screen.getByRole('menuitem', { name: 'Move down' })).toBeDisabled();
+  });
+
   it('offers the bin label as the first item', () => {
     const { last } = setup([], '  M3 screws ');
     fireEvent.click(screen.getByRole('button', { name: 'Add “M3 screws” as an item' }));
