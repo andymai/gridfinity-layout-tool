@@ -113,6 +113,22 @@ export async function seedBins(page: Page, bins: readonly SeedBin[]): Promise<st
   }, bins);
 }
 
+/**
+ * The open layout as the app last saved it, read through its own storage on
+ * the dev server: the stored record is compressed.
+ */
+export async function readStoredLayout(page: Page): Promise<Record<string, unknown> | null> {
+  return page.evaluate(async () => {
+    const storagePath = '/src/core/storage/index.ts';
+    const storage = (await import(storagePath)) as {
+      loadLibraryAsync: () => Promise<{ activeLayoutId: string } | null>;
+      loadLayoutAsync: (id: string) => Promise<Record<string, unknown> | null>;
+    };
+    const library = await storage.loadLibraryAsync();
+    return library ? storage.loadLayoutAsync(library.activeLayoutId) : null;
+  });
+}
+
 export async function readBins(page: Page, ids: readonly string[]): Promise<PlacedBin[]> {
   return page.evaluate(async (wanted) => {
     const storePath = '/src/core/store/layout/index.ts';

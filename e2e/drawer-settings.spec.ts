@@ -8,17 +8,27 @@ import {
   waitForBinCount,
   clearAllStorage,
   resetViewport,
-  waitForAutoSave,
   getActiveDialog,
+  readStoredLayout,
 } from './fixtures';
+import type { Locator } from '@playwright/test';
+
+const valueOf = async (input: Locator): Promise<number> => Number(await input.inputValue());
 
 test.describe('Drawer Settings', () => {
+  // Phones and tablets have their own header and panels.
+  const isDesktop = ({ viewport }: { viewport: { width: number } | null }): boolean =>
+    (viewport?.width ?? 0) >= 900;
+  test.skip(({ viewport }) => !isDesktop({ viewport }), 'desktop sidebar only');
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await waitForAppReady(page);
   });
 
-  test.afterEach(async ({ page }) => {
+  // Hooks run for a skipped test too, on a page that never left about:blank.
+  test.afterEach(async ({ page, viewport }) => {
+    if (!isDesktop({ viewport })) return;
     await clearAllStorage(page);
     await resetViewport(page);
 
@@ -44,84 +54,47 @@ test.describe('Drawer Settings', () => {
     await expect(physicalUnitsButton).toBeVisible({ timeout: 5000 });
 
     // Verify setting labels are present (use exact match to avoid partial matches)
-    await expect(sidebar.getByText('Width', { exact: true })).toBeVisible({ timeout: 5000 });
-    await expect(sidebar.getByText('Depth', { exact: true })).toBeVisible({ timeout: 5000 });
-    await expect(sidebar.getByText('Height', { exact: true })).toBeVisible({ timeout: 5000 });
+    await expect(sidebar.getByText('Width (u)', { exact: true })).toBeVisible({ timeout: 5000 });
+    await expect(sidebar.getByText('Depth (u)', { exact: true })).toBeVisible({ timeout: 5000 });
+    await expect(sidebar.getByText('Drawer height', { exact: true })).toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test('can increase height', async ({ page }) => {
     const sidebar = getSidebar(page);
+    const height = sidebar.getByRole('spinbutton', { name: 'Drawer height in millimeters' });
+    const before = await valueOf(height);
 
-    // Find drawer height controls by their specific aria-labels from StepperControl
-    const increaseButton = sidebar.getByRole('button', { name: /increase drawer height/i });
+    await sidebar.getByRole('button', { name: 'Increase Drawer height in millimeters' }).click();
 
-    // Get the height value display (shows "Nu" format)
-    // It's the button showing the current value between decrease/increase buttons
-    const heightDisplay = sidebar.locator('[aria-label="Drawer height in units"]');
-    const initialHeightText = await heightDisplay.textContent();
-    const initialHeight = parseInt(initialHeightText?.replace('u', '') ?? '0');
-
-    // Click increase button
-    await increaseButton.click();
-
-    // Wait for height to change
-    await expect(async () => {
-      const newHeightText = await heightDisplay.textContent();
-      const newHeight = parseInt(newHeightText?.replace('u', '') ?? '0');
-      expect(newHeight).toBe(initialHeight + 1);
-    }).toPass({ timeout: 2000 });
+    await expect.poll(() => valueOf(height)).toBeGreaterThan(before);
   });
 
   test('can decrease height', async ({ page }) => {
     const sidebar = getSidebar(page);
+    const height = sidebar.getByRole('spinbutton', { name: 'Drawer height in millimeters' });
+    await sidebar.getByRole('button', { name: 'Increase Drawer height in millimeters' }).click();
+    const raised = await valueOf(height);
 
-    const increaseButton = sidebar.getByRole('button', { name: /increase drawer height/i });
-    const decreaseButton = sidebar.getByRole('button', { name: /decrease drawer height/i });
+    await sidebar.getByRole('button', { name: 'Decrease Drawer height in millimeters' }).click();
 
-    // First increase height to ensure we can decrease
-    await increaseButton.click();
-
-    // Get the height value display
-    const heightDisplay = sidebar.locator('[aria-label="Drawer height in units"]');
-
-    // Wait for increase to apply then get value
-    await expect(async () => {
-      const text = await heightDisplay.textContent();
-      expect(parseInt(text?.replace('u', '') ?? '0')).toBeGreaterThan(0);
-    }).toPass({ timeout: 2000 });
-
-    const beforeDecreaseText = await heightDisplay.textContent();
-    const beforeDecrease = parseInt(beforeDecreaseText?.replace('u', '') ?? '0');
-
-    // Click decrease button
-    await decreaseButton.click();
-
-    // Wait for height to change
-    await expect(async () => {
-      const afterDecreaseText = await heightDisplay.textContent();
-      const afterDecrease = parseInt(afterDecreaseText?.replace('u', '') ?? '0');
-      expect(afterDecrease).toBe(beforeDecrease - 1);
-    }).toPass({ timeout: 2000 });
+    await expect.poll(() => valueOf(height)).toBeLessThan(raised);
   });
 
-  test('max height has minimum constraint', async ({ page }) => {
+  test('drawer height stops at a minimum', async ({ page }) => {
     const sidebar = getSidebar(page);
+    const height = sidebar.getByRole('spinbutton', { name: 'Drawer height in millimeters' });
+    const decrease = sidebar.getByRole('button', { name: 'Decrease Drawer height in millimeters' });
 
-    const decreaseButton = sidebar.getByRole('button', { name: /decrease drawer height/i });
-    const heightDisplay = sidebar.locator('[aria-label="Drawer height in units"]');
-
-    // Decrease 15 times to approach minimum
-    for (let i = 0; i < 15; i++) {
-      if (await decreaseButton.isDisabled()) break;
-      await decreaseButton.click();
+    for (let i = 0; i < 30 && (await decrease.isEnabled()); i++) {
+      await decrease.click();
     }
+    const floor = await valueOf(height);
+    if (await decrease.isEnabled()) await decrease.click();
 
-    // After decreasing, verify height is still a positive value
-    await expect(async () => {
-      const finalHeightText = await heightDisplay.textContent();
-      const finalHeight = parseInt(finalHeightText?.replace('u', '') ?? '0');
-      expect(finalHeight).toBeGreaterThanOrEqual(1);
-    }).toPass({ timeout: 2000 });
+    expect(floor).toBeGreaterThanOrEqual(Number(await height.getAttribute('min')));
+    expect(await valueOf(height)).toBe(floor);
   });
 
   test('can change print bed size', async ({ page }) => {
@@ -212,26 +185,12 @@ test.describe('Drawer Settings', () => {
     await gridUnitInput.blur();
     await expect(gridUnitInput).toHaveValue('45');
 
-    // Wait for auto-save debounce (1000ms) to complete
-    await waitForAutoSave(page, 3000);
-
-    // Extra wait to ensure the debounce has fired and saved
-    await page.waitForTimeout(1500);
-
-    // Verify settings are saved in localStorage before reloading
-    await page.waitForFunction(
-      () => {
-        const library = localStorage.getItem('gridfinity-library-v1');
-        if (!library) return false;
-        const parsed = JSON.parse(library);
-        const activeId = parsed.activeLayoutId;
-        const layoutData = localStorage.getItem(`gridfinity-layout-${activeId}`);
-        if (!layoutData) return false;
-        const layout = JSON.parse(layoutData);
-        return layout.printBedSize === 180 && layout.gridUnitMm === 45;
-      },
-      { timeout: 5000 }
-    );
+    await expect
+      .poll(async () => {
+        const saved = await readStoredLayout(page);
+        return saved ? [saved.printBedSize, saved.gridUnitMm] : null;
+      })
+      .toEqual([180, 45]);
 
     // Reload the page
     await page.reload();

@@ -84,16 +84,12 @@ test.describe('Layers Management Flow', () => {
     // Select a bin and check its height in inspector
     await selectBinAt(page, 50, 50);
 
-    // Height should be visible in inspector - look for the height display with "u" suffix
+    // The height input is in mm, with its height units shown below it.
     const inspector = getInspector(page);
-    await expect(inspector.getByText(/height/i)).toBeVisible({ timeout: 3000 });
-    // Height is shown as "Xu" where X is a number
-    await expect(
-      inspector
-        .locator('span')
-        .filter({ hasText: /^\d+u$/ })
-        .first()
-    ).toBeVisible({ timeout: 3000 });
+    await expect(inspector.getByText('Height (mm)', { exact: true })).toBeVisible({
+      timeout: 3000,
+    });
+    await expect(inspector.getByText(/^= \d+u$/).first()).toBeVisible({ timeout: 3000 });
   });
 
   test('layer indicator shows in toolbar when multiple layers exist', async ({ page }) => {
