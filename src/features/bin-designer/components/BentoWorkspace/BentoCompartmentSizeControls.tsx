@@ -4,10 +4,9 @@
  * pocket can be 23 mm whatever the grid pitch is.
  */
 
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from '@/i18n';
 import { Stepper } from '@/design-system';
-import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import type { CompartmentConfig } from '@/features/bin-designer/types';
 import { compartmentCavityExact } from '@/features/bin-designer/utils/compartmentDimensions';
@@ -19,7 +18,6 @@ import {
   type ResizeWall,
 } from '@/features/bin-designer/utils/compartmentResize';
 import { SHIFT_UI_STEP_MM } from '@/features/bin-designer/utils/dividerAngle';
-import { createTrailingTrack } from '@/features/bin-designer/components/CompartmentEditor/useDividerTiltSubsection';
 
 export interface BentoCompartmentSizeControlsProps {
   readonly config: CompartmentConfig;
@@ -51,22 +49,10 @@ export function BentoCompartmentSizeControls({
     [config, compartmentId, interiorW, interiorD, walls]
   );
 
-  const resizeTrack = useMemo(
-    () => createTrailingTrack((payload) => trackEvent('bento_compartment_resized', payload), 2000),
-    []
-  );
-  useEffect(() => () => resizeTrack.flush(), [resizeTrack]);
-
   if (!cavity) return null;
 
-  const commit = (axis: ResizeAxis, plan: CompartmentResizePlan, targetMm: number): void => {
+  const commit = (plan: CompartmentResizePlan, targetMm: number): void => {
     setDividerOverrides(resizedDividerOverrides(config, plan, targetMm));
-    resizeTrack.queue({
-      axis,
-      side: plan.direction === 1 ? 'far' : 'near',
-      walls_moved: plan.walls.length,
-      size_mm: Math.round(targetMm * 10) / 10,
-    });
   };
 
   return (
@@ -84,10 +70,10 @@ export function BentoCompartmentSizeControls({
               <Stepper
                 value={current}
                 onChange={(next: number) => {
-                  if (plan) commit(axis, plan, next);
+                  if (plan) commit(plan, next);
                 }}
                 onStep={(delta: number) => {
-                  if (plan) commit(axis, plan, plan.currentMm + delta * SHIFT_UI_STEP_MM);
+                  if (plan) commit(plan, plan.currentMm + delta * SHIFT_UI_STEP_MM);
                 }}
                 min={plan ? Math.ceil(plan.minMm * 10) / 10 : current}
                 max={plan ? Math.floor(plan.maxMm * 10) / 10 : current}
