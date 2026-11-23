@@ -8,15 +8,19 @@
  * Only a side with ONE neighbour that spans the same rows (for width) or
  * columns (for depth) can move. The generator keeps every perpendicular wall
  * on its grid endpoints, so a moved wall that meets one at a T-junction leaves
- * a gap between pockets or a stub inside one.
+ * a gap between pockets or a stub inside one. For the same reason, every other
+ * wall at the moved wall's ends must still sit on its grid line.
+ *
+ * A leaning wall's foot is not part of the cavity, so a side whose compartment
+ * or neighbour has one cannot move.
  */
 
 import type { CompartmentConfig, DividerOverride } from '../types';
 import { DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 import { getCompartmentBounds } from './compartmentGrid';
 import { compartmentCavityExact } from './compartmentDimensions';
-import { getLeanLimits, type DividerGeometry } from './dividerAngle';
-import type { EligibleDivider } from './compartments';
+import type { DividerGeometry } from './dividerAngle';
+import { DIVIDER_OFFSET_MAX_MM, type EligibleDivider } from './compartments';
 
 export type ResizeAxis = 'width' | 'depth';
 
@@ -49,6 +53,58 @@ function isRectangle(config: CompartmentConfig, id: number): boolean {
   return config.cells.filter((cell) => cell === id).length === area;
 }
 
+function overrideOf(
+  config: CompartmentConfig,
+  idA: number,
+  idB: number
+): DividerOverride | undefined {
+  const a = Math.min(idA, idB);
+  const b = Math.max(idA, idB);
+  return config.dividerOverrides?.find((o) => o.compartmentA === a && o.compartmentB === b);
+}
+
+function isOffGrid(o: DividerOverride | undefined): boolean {
+  return o !== undefined && (o.offsetStart !== 0 || o.offsetEnd !== 0 || (o.rakeDeg ?? 0) !== 0);
+}
+
+function touchesLeaningWall(config: CompartmentConfig, ids: readonly number[]): boolean {
+  return (config.dividerOverrides ?? []).some(
+    (o) => (o.rakeDeg ?? 0) !== 0 && (ids.includes(o.compartmentA) || ids.includes(o.compartmentB))
+  );
+}
+
+/**
+ * Whether every other wall that meets the moved wall's ends sits on its grid
+ * line. `along` runs with the moved wall, `across` is the resized axis, and
+ * the moved wall lies on across-boundary `boundary`, spanning `spanStart` to
+ * `spanEnd` along it.
+ */
+function junctionsOnGrid(
+  config: CompartmentConfig,
+  axis: ResizeAxis,
+  boundary: number,
+  spanStart: number,
+  spanEnd: number
+): boolean {
+  const { cols, rows, cells } = config;
+  const isX = axis === 'width';
+  const alongLimit = isX ? rows : cols;
+  const at = (along: number, across: number): number =>
+    isX ? cells[along * cols + across] : cells[across * cols + along];
+  const offGrid = (idA: number, idB: number): boolean =>
+    idA !== idB && isOffGrid(overrideOf(config, idA, idB));
+
+  const ends = [spanStart, spanEnd + 1].filter((r) => r > 0 && r < alongLimit);
+  return ends.every((r) => {
+    const outside = r === spanStart ? r - 1 : r;
+    return !(
+      offGrid(at(r - 1, boundary - 1), at(r, boundary - 1)) ||
+      offGrid(at(r - 1, boundary), at(r, boundary)) ||
+      offGrid(at(outside, boundary - 1), at(outside, boundary))
+    );
+  });
+}
+
 function movableSide(
   config: CompartmentConfig,
   compartmentId: number,
@@ -79,6 +135,10 @@ function movableSide(
     ? nb.minRow === bounds.minRow && nb.maxRow === bounds.maxRow
     : nb.minCol === bounds.minCol && nb.maxCol === bounds.maxCol;
   if (!sameSpan) return null;
+  if (touchesLeaningWall(config, [compartmentId, neighborId])) return null;
+  const boundary = far ? neighborIndex : neighborIndex + 1;
+  const spanEnd = isX ? bounds.maxRow : bounds.maxCol;
+  if (!junctionsOnGrid(config, axis, boundary, spanStart, spanEnd)) return null;
 
   const a = Math.min(compartmentId, neighborId);
   const b = Math.max(compartmentId, neighborId);
@@ -121,8 +181,10 @@ export function planCompartmentResize(
     const neighbor = compartmentCavityExact(config, side.neighborId, innerW, innerD);
     if (!neighbor) continue;
     const neighborMm = axis === 'width' ? neighbor.width : neighbor.depth;
-    const low = wall.geometry.offsetMin - Math.min(wall.offsetStart, wall.offsetEnd);
-    const high = wall.geometry.offsetMax - Math.max(wall.offsetStart, wall.offsetEnd);
+    const lowest = Math.min(wall.offsetStart, wall.offsetEnd);
+    const highest = Math.max(wall.offsetStart, wall.offsetEnd);
+    const low = Math.max(wall.geometry.offsetMin, -DIVIDER_OFFSET_MAX_MM) - lowest;
+    const high = Math.min(wall.geometry.offsetMax, DIVIDER_OFFSET_MAX_MM) - highest;
     const envelopeMin = far ? currentMm + low : currentMm - high;
     const envelopeMax = far ? currentMm + high : currentMm - low;
     const minMm = Math.max(envelopeMin, Math.min(currentMm, minSize));
@@ -135,8 +197,7 @@ export function planCompartmentResize(
 
 /**
  * The full `dividerOverrides` array after resizing to `targetMm` (clamped to
- * the plan's range). Angles move with the wall unchanged; a lean is clamped to
- * what the new position still allows.
+ * the plan's range). An angle moves with the wall unchanged.
  */
 export function resizedDividerOverrides(
   config: CompartmentConfig,
@@ -149,14 +210,11 @@ export function resizedDividerOverrides(
   for (const wall of plan.walls) {
     const offsetStart = round3(wall.offsetStart + shift);
     const offsetEnd = round3(wall.offsetEnd + shift);
-    const limits = getLeanLimits(wall.geometry, { offsetStart, offsetEnd });
-    const rakeDeg = Math.min(limits.maxDeg, Math.max(limits.minDeg, wall.rakeDeg));
     const override: DividerOverride = {
       compartmentA: wall.compartmentA,
       compartmentB: wall.compartmentB,
       offsetStart,
       offsetEnd,
-      ...(rakeDeg !== 0 ? { rakeDeg } : {}),
     };
     const index = next.findIndex(
       (o) => o.compartmentA === wall.compartmentA && o.compartmentB === wall.compartmentB

@@ -93,7 +93,7 @@ A few more moves:
 - <kbd>Alt</kbd>+drag a compartment to make a copy.
 - Drop a compartment on the <Ui k="binDesigner.bento.stashTitle" /> shelf to keep it for later. The shelf holds up to 36 compartments.
 - Use <Ui k="binDesigner.bento.wallsTitle" /> in the compartment panel to shift or turn a wall between two compartments.
-- Type an exact <Ui k="binDesigner.bento.widthField" /> or <Ui k="binDesigner.bento.depthField" /> in the compartment panel. The panel moves the wall to one drawn compartment next to it. For Width, that compartment must have the same depth. For Depth, it must have the same width. The panel moves the right or back wall first, so you can size compartments from left to right. The last compartment gets the space that remains.
+- Type an exact <Ui k="binDesigner.bento.widthField" /> or <Ui k="binDesigner.bento.depthField" /> in the compartment panel. The panel moves the wall to one drawn compartment next to it. For Width, that compartment must have the same depth. For Depth, it must have the same width. A leaning wall, or a shifted wall that meets the moved one, locks the size. The panel moves the right or back wall first, so you can size compartments from left to right. The last compartment gets the space that remains.
 - To give one compartment its own color, open <Ui k="common.color" /> in the compartment panel. Pick <Ui k="binDesigner.cutouts.color.floor" /> or <Ui k="binDesigner.cutouts.color.floorAndWalls" />. The color prints in a second filament.
 
 Each empty cell prints as its own small pocket. Turn on <Ui k="binDesigner.bento.mergeBackground" /> to make one pocket from each open area instead.

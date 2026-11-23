@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
 import type { BinParams, CompartmentConfig } from '@/features/bin-designer/types';
-import { getEligibleDividers } from './compartments';
+import { DIVIDER_OFFSET_MAX_MM, getEligibleDividers } from './compartments';
 import { compartmentCavityExact } from './compartmentDimensions';
 import { getDividerGeometry, getInteriorDims } from './dividerAngle';
 import {
@@ -114,6 +114,44 @@ describe('planCompartmentResize', () => {
     expect(widthOf(widened, 2)).toBeGreaterThanOrEqual(
       DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE - 1e-6
     );
+  });
+
+  it('refuses the second edit at a four-way junction once the first moved a wall there', () => {
+    const quad = grid(2, 2, [0, 1, 2, 3]);
+    const widened = resize(quad, 0, 'width', 23);
+    expect(widthOf(widened, 0)).toBeCloseTo(23, 2);
+    expect(plan(widened, 0, 'depth')).toBeNull();
+    expect(plan(widened, 2, 'width')).toBeNull();
+  });
+
+  it('refuses a side whose compartment or neighbour has a leaning wall', () => {
+    const leaning: CompartmentConfig = {
+      ...row,
+      dividerOverrides: [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 0, offsetEnd: 0, rakeDeg: 30 },
+      ],
+    };
+    expect(plan(leaning, 1, 'width')).toBeNull();
+    expect(plan(leaning, 0, 'width')).toBeNull();
+    expect(plan(leaning, 2, 'width')).toBeNull();
+  });
+
+  it('keeps the wall offsets inside the limit that share validation enforces', () => {
+    const wide: BinParams = { ...DEFAULT_BIN_PARAMS, width: 16, depth: 1 };
+    const dims = getInteriorDims(wide);
+    const pair = grid(2, 1, [0, 1]);
+    const walls = getEligibleDividers(pair).map((d) => ({
+      ...d,
+      geometry: getDividerGeometry({ ...wide, compartments: pair, dividerHeightMm: 30 }, pair, d),
+    }));
+    const p = planCompartmentResize(pair, 0, 'width', dims.innerW, dims.innerD, walls);
+    if (!p) throw new Error('expected a resize plan');
+    for (const target of [0, 23, 10_000]) {
+      for (const o of resizedDividerOverrides(pair, p, target)) {
+        expect(Math.abs(o.offsetStart)).toBeLessThanOrEqual(DIVIDER_OFFSET_MAX_MM);
+        expect(Math.abs(o.offsetEnd)).toBeLessThanOrEqual(DIVIDER_OFFSET_MAX_MM);
+      }
+    }
   });
 
   it('keeps an existing angle on the moved wall', () => {
