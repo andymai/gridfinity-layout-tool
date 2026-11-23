@@ -14,7 +14,28 @@ import {
   resetViewport,
   waitForBinSelected,
   getActiveDialog,
+  seedBins,
+  readBins,
 } from './fixtures';
+import type { Locator, Page } from '@playwright/test';
+
+async function centerOf(bin: Locator): Promise<{ x: number; y: number }> {
+  const box = await bin.boundingBox();
+  if (!box) throw new Error('Bin not found');
+  return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+}
+
+/** Shift is held from before the press: the drag reads it when it starts. */
+async function shiftDrag(page: Page, from: Locator, to: Locator): Promise<void> {
+  const start = await centerOf(from);
+  const end = await centerOf(to);
+  await page.keyboard.down('Shift');
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(end.x, end.y, { steps: 10 });
+  await page.mouse.up();
+  await page.keyboard.up('Shift');
+}
 
 /**
  * Regression test for stale closure bug in interaction handlers.
@@ -298,46 +319,28 @@ test.describe('Drag Bins Flow', () => {
     await waitForSelectionCount(page, 1);
   });
 
-  // TODO: This test is flaky due to timing issues with multi-select + Alt+drag
-  // The underlying functionality works but the test has race conditions
-  test.skip('Alt+drag works with multiple selected bins', async ({ page }) => {
+  test('Alt+drag works with multiple selected bins', async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 0) < 900, 'desktop pointer and keyboard flow');
     const bounds = await getGridBounds(page);
-
-    // Create a second bin
-    await drawBinOnGrid(page, 150, 150, 200, 200);
+    const [secondId] = await seedBins(page, [{ x: 6, y: 0, width: 1, depth: 1, label: 'Second' }]);
     await waitForBinCount(page, 2);
 
-    // Get both bins by locator for more reliable selection
-    const bins = page.locator('[data-bin-id]');
-    const firstBin = bins.first();
-    const secondBin = bins.nth(1);
-
-    // Select first bin by clicking it directly
+    const firstBin = page.locator('[data-bin-id]').filter({ hasNotText: 'Second' }).first();
+    const secondBin = page.locator(`[data-bin-id="${secondId}"]`);
     await firstBin.click();
     await waitForSelectionCount(page, 1);
-
-    // Ctrl+click second bin to add to selection
     await secondBin.click({ modifiers: ['Control'] });
-
-    // Verify 2 bins are selected
     await waitForSelectionCount(page, 2);
 
-    // Get first bin's position for Alt+drag
-    const firstBinBox = await firstBin.boundingBox();
-    if (!firstBinBox) throw new Error('First bin not found');
-
-    // Alt+drag to duplicate both bins
-    await page.mouse.move(
-      firstBinBox.x + firstBinBox.width / 2,
-      firstBinBox.y + firstBinBox.height / 2
-    );
+    const start = await firstBin.boundingBox();
+    if (!start) throw new Error('First bin not found');
+    await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
     await page.keyboard.down('Alt');
     await page.mouse.down();
     await page.mouse.move(bounds.x + 70, bounds.y + 50, { steps: 10 });
     await page.mouse.up();
     await page.keyboard.up('Alt');
 
-    // Should now have 4 bins (2 original + 2 duplicates)
     await waitForBinCount(page, 4);
   });
 
@@ -370,16 +373,9 @@ test.describe('Drag Bins Flow', () => {
 });
 
 /**
- * Bin Swap Tests
- *
- * Feature: Shift+drag allows swapping positions of two same-sized bins.
- * Bins are considered swap-compatible if:
- * - Exact same dimensions (2×3 with 2×3)
- * - 90° rotated match (2×3 with 3×2) - dragged bin rotates to fit at target position
- *
- * NOTE: E2E swap tests are challenging due to precise coordinate requirements.
- * The core swap utilities are thoroughly tested in unit tests (src/test/swap.test.ts).
- * These E2E tests verify the Shift+drag interaction doesn't break normal behavior.
+ * Shift+drag swaps two bins of the same size, or of the same size turned a
+ * quarter. The swap tests seed their bins at exact cells (`seedBins`), because
+ * a drawn bin's cells depend on the zoom.
  */
 test.describe('Bin Swap with Shift+drag', () => {
   test.beforeEach(async ({ page }) => {
@@ -401,23 +397,43 @@ test.describe('Bin Swap with Shift+drag', () => {
     }
   });
 
-  // Skip: Swap detection requires precise cursor-over-bin positioning
-  // which is unreliable in E2E due to auto-zoom and coordinate mapping.
-  // The swap functionality is verified in unit tests (src/test/swap.test.ts).
-  test.skip('can swap two same-sized bins with Shift+drag', async ({ page: _page }) => {
-    // This test would verify:
-    // 1. Create two 2x2 bins
-    // 2. Shift+drag one onto the other
-    // 3. Verify swap toast appears
-    // 4. Verify positions are exchanged
-    //
-    // Skipped because swap target detection is coordinate-sensitive
-    // and E2E pixel coordinates don't reliably map to grid positions.
+  test('can swap two same-sized bins with Shift+drag', async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 0) < 900, 'desktop pointer and keyboard flow');
+    const [a, b] = await seedBins(page, [
+      { x: 0, y: 0, width: 2, depth: 2, label: 'A' },
+      { x: 5, y: 3, width: 2, depth: 2, label: 'B' },
+    ]);
+
+    await shiftDrag(
+      page,
+      page.locator(`[data-bin-id="${a}"]`),
+      page.locator(`[data-bin-id="${b}"]`)
+    );
+
+    await expect(page.getByText('Bins swapped positions', { exact: true })).toBeVisible();
+    expect(await readBins(page, [a, b])).toEqual([
+      { x: 5, y: 3, width: 2, depth: 2 },
+      { x: 0, y: 0, width: 2, depth: 2 },
+    ]);
   });
 
-  // Skip: Same coordinate precision issue as above
-  test.skip('swap with rotated-match bins shows rotation toast', async ({ page: _page }) => {
-    // This test would verify 2x3 can swap with 3x2 (rotated match)
+  test('swaps a 2×3 with a 3×2 by turning it, and says so', async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 0) < 900, 'desktop pointer and keyboard flow');
+    const [a, b] = await seedBins(page, [
+      { x: 0, y: 0, width: 2, depth: 3, label: 'A' },
+      { x: 5, y: 3, width: 3, depth: 2, label: 'B' },
+    ]);
+
+    await shiftDrag(
+      page,
+      page.locator(`[data-bin-id="${a}"]`),
+      page.locator(`[data-bin-id="${b}"]`)
+    );
+
+    await expect(page.getByText('Bins swapped positions (rotated to fit)')).toBeVisible();
+    const [movedA, movedB] = await readBins(page, [a, b]);
+    expect(movedA).toEqual({ x: 5, y: 3, width: 3, depth: 2 });
+    expect({ x: movedB.x, y: movedB.y }).toEqual({ x: 0, y: 0 });
   });
 
   test('Shift+drag to empty space moves bin normally', async ({ page }) => {

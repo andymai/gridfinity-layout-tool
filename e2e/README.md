@@ -77,10 +77,9 @@ const bin = await drawBinOnGrid(page, 50, 50, 100, 100);
 
 1. **Viewport pollution** — mobile tests set 375×667; must call `resetViewport()` in `afterEach` or cascading failures occur
 2. **Bin DOM order non-deterministic** — use `getBinByIndex(page, i)` instead of `.first()` / `.last()` for parallel safety
-3. **Swap detection skipped** — Shift+drag requires precise bin centering; unreliable in E2E due to auto-zoom. Verified in unit tests
+3. **Exact cells**: a drawn bin's cells depend on the zoom. `seedBins` places bins at exact cells (dev server only), and `readBins` reads them back
 4. **Paint mode must exit** — call `waitForPaintModeExited()` before next grid interaction
 5. **Auto-save polling** — use `waitForAutoSave()` not `page.waitForTimeout(2000)`; app debounces at 1000ms
-6. **Multi-select Alt+drag flaky** — race condition between selection state and drag start; marked `test.skip()`
-7. **3D canvas slow** — takes ~10s to load; use `waitForCanvas(page, 10000)` timeout
-8. **0 retries policy** — flakes are root-caused, not masked; `retries: 0` in config
-9. **Mouse steps matter** — use `{ steps: 5 }` for drag operations; too few = unreliable movement
+6. **3D canvas slow** — takes ~10s to load; use `waitForCanvas(page, 10000)` timeout
+7. **0 retries policy** — flakes are root-caused, not masked; `retries: 0` in config
+8. **Mouse steps matter** — use `{ steps: 5 }` for drag operations; too few = unreliable movement

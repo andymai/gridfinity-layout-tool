@@ -51,6 +51,81 @@ export async function renameActiveLayout(page: Page, name: string) {
   await input.press('Enter');
 }
 
+export interface SeedBin {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly depth: number;
+  readonly label: string;
+}
+
+export interface PlacedBin {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly depth: number;
+}
+
+interface SeedApp {
+  commandBus: {
+    dispatch: (command: unknown) => { ok: boolean; value?: { value: unknown }; error?: unknown };
+  };
+  createCommand: (type: string, payload: Record<string, unknown>) => unknown;
+  useLayoutStore: {
+    getState: () => {
+      layout: {
+        layers: Array<{ id: string }>;
+        categories: Array<{ id: string }>;
+        bins: Array<PlacedBin & { id: string; label: string }>;
+      };
+    };
+  };
+}
+
+/**
+ * Place bins on the bottom layer at exact cells through the app's own
+ * commands, where drawing them would depend on pixel coordinates. It imports
+ * the app's modules by their `/src/` path, which only the Vite dev server
+ * serves. Returns the new bin ids in the order given.
+ */
+export async function seedBins(page: Page, bins: readonly SeedBin[]): Promise<string[]> {
+  return page.evaluate(async (specs) => {
+    const loaded: unknown[] = await Promise.all(
+      ['/src/core/cqrs/index.ts', '/src/core/store/layout/index.ts'].map((path) => import(path))
+    );
+    const app = Object.assign({}, ...loaded) as SeedApp;
+    const { layout } = app.useLayoutStore.getState();
+    return specs.map((spec) => {
+      const added = app.commandBus.dispatch(
+        app.createCommand('bin.add', {
+          ...spec,
+          layerId: layout.layers[0].id,
+          height: 3,
+          category: layout.categories[0].id,
+          notes: '',
+        })
+      );
+      if (!added.ok || typeof added.value?.value !== 'string') {
+        throw new Error(`Bin ${spec.label} was not placed: ${JSON.stringify(added.error)}`);
+      }
+      return added.value.value;
+    });
+  }, bins);
+}
+
+export async function readBins(page: Page, ids: readonly string[]): Promise<PlacedBin[]> {
+  return page.evaluate(async (wanted) => {
+    const storePath = '/src/core/store/layout/index.ts';
+    const { useLayoutStore } = (await import(storePath)) as Pick<SeedApp, 'useLayoutStore'>;
+    const bins = useLayoutStore.getState().layout.bins;
+    return wanted.map((id) => {
+      const bin = bins.find((b) => b.id === id);
+      if (!bin) throw new Error(`No bin ${id}`);
+      return { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth };
+    });
+  }, ids);
+}
+
 /**
  * Helper to wait for the app to be fully loaded.
  */
