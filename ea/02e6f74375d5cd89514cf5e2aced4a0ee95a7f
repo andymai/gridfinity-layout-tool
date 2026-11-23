@@ -1,0 +1,25 @@
+src/features/bin-designer/utils/compartmentResize.test.ts
+  s_0c191ecd28c8c3::t_110439d35e8b2c 5,119-155
+  s_0c191ecd28c8c3::t_bf346065024125 156
+src/features/bin-designer/utils/compartmentResize.ts
+  s_0c191ecd28c8c3::t_e6b3b879d5f001 11-15,22-23,56-71,73-107,138-141,184-187,200
+  s_0c191ecd28c8c3::t_110439d35e8b2c 72
+apps/docs/designer/compartments.md
+  s_0c191ecd28c8c3::t_104561593a5e6d 96
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ea02e6f74375d5cd89514cf5e2aced4a0ee95a7f",
+  "prompts": {},
+  "sessions": {
+    "s_0c191ecd28c8c3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f7a72b82-3d5a-4aec-a3fc-27209c777a7d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
