@@ -49,6 +49,57 @@ describe('BentoCompartmentSizeControls', () => {
     expect(compartmentCavityExact(next, 0, innerW, innerD)?.width).toBeCloseTo(23, 2);
   });
 
+  it('focuses the field, not the decrease button, from the caption', () => {
+    const { innerW, innerD, walls } = setup();
+    render(
+      <BentoCompartmentSizeControls
+        config={config}
+        compartmentId={0}
+        interiorW={innerW}
+        interiorD={innerD}
+        walls={walls}
+      />
+    );
+    const before = compartmentCavityExact(config, 0, innerW, innerD)?.width;
+
+    fireEvent.click(screen.getByText('binDesigner.bento.widthField'));
+
+    const next = useDesignerStore.getState().params.compartments;
+    expect(compartmentCavityExact(next, 0, innerW, innerD)?.width).toBe(before);
+  });
+
+  it('drops a typed draft when another compartment is selected', () => {
+    const { innerW, innerD, walls } = setup();
+    const { rerender } = render(
+      <BentoCompartmentSizeControls
+        config={config}
+        compartmentId={0}
+        interiorW={innerW}
+        interiorD={innerD}
+        walls={walls}
+      />
+    );
+    const input = screen.getByRole('spinbutton', { name: 'binDesigner.bento.widthField' });
+    fireEvent.change(input, { target: { value: '23' } });
+    // 0 and 2 both meet a bin wall, so their widths, and the field's value, match.
+    const before = compartmentCavityExact(config, 2, innerW, innerD)?.width;
+    expect(before).toBeCloseTo(compartmentCavityExact(config, 0, innerW, innerD)?.width ?? 0, 6);
+
+    rerender(
+      <BentoCompartmentSizeControls
+        config={config}
+        compartmentId={2}
+        interiorW={innerW}
+        interiorD={innerD}
+        walls={walls}
+      />
+    );
+    fireEvent.blur(screen.getByRole('spinbutton', { name: 'binDesigner.bento.widthField' }));
+
+    const next = useDesignerStore.getState().params.compartments;
+    expect(compartmentCavityExact(next, 2, innerW, innerD)?.width).toBeCloseTo(before ?? 0, 3);
+  });
+
   it('locks a size that no drawn neighbour can change, and says why', () => {
     const { innerW, innerD, walls } = setup();
     render(

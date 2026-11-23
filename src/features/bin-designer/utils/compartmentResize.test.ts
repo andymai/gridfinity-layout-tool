@@ -154,6 +154,15 @@ describe('planCompartmentResize', () => {
     }
   });
 
+  it('moves the near wall when the far side has no room left', () => {
+    const narrow = grid(12, 1, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2]);
+    const rightSized = resize(narrow, 2, 'width', 5);
+    const leftGrown = resize(rightSized, 0, 'width', 1000);
+    const p = plan(leftGrown, 1, 'width');
+    expect(p?.direction).toBe(-1);
+    expect(p ? p.maxMm - p.minMm : 0).toBeGreaterThan(1);
+  });
+
   it('keeps an existing angle on the moved wall', () => {
     const tilted: CompartmentConfig = {
       ...row,

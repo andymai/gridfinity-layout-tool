@@ -4,7 +4,7 @@
  * pocket can be 23 mm whatever the grid pitch is.
  */
 
-import { useMemo } from 'react';
+import { useId, useMemo } from 'react';
 import { useTranslation } from '@/i18n';
 import { Stepper } from '@/design-system';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -39,6 +39,7 @@ export function BentoCompartmentSizeControls({
 }: BentoCompartmentSizeControlsProps) {
   const t = useTranslation();
   const setDividerOverrides = useDesignerStore((s) => s.setDividerOverrides);
+  const idBase = useId();
 
   const cavity = compartmentCavityExact(config, compartmentId, interiorW, interiorD);
   const plans = useMemo(
@@ -65,10 +66,16 @@ export function BentoCompartmentSizeControls({
           );
           const current = Math.round((axis === 'width' ? cavity.width : cavity.depth) * 10) / 10;
           return (
-            <label key={axis} className="flex flex-col gap-0.5 text-micro text-content-tertiary">
+            <label
+              key={axis}
+              htmlFor={`${idBase}-${axis}`}
+              className="flex flex-col gap-0.5 text-micro text-content-tertiary"
+            >
               {label}
               <Stepper
+                id={`${idBase}-${axis}`}
                 value={current}
+                syncKey={compartmentId}
                 onChange={(next: number) => {
                   if (plan) commit(plan, next);
                 }}

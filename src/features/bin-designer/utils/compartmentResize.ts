@@ -41,6 +41,9 @@ export interface CompartmentResizePlan {
 
 const round3 = (n: number): number => Math.round(n * 1000) / 1000;
 
+/** The size control's precision: a side that moves less than this is no use. */
+const SIZE_STEP_MM = 0.1;
+
 interface MovableSide {
   readonly wall: MovableWall;
   readonly neighborId: number;
@@ -189,7 +192,7 @@ export function planCompartmentResize(
     const envelopeMax = far ? currentMm + high : currentMm - low;
     const minMm = Math.max(envelopeMin, Math.min(currentMm, minSize));
     const maxMm = Math.min(envelopeMax, currentMm + Math.max(0, neighborMm - minSize));
-    if (minMm > maxMm) continue;
+    if (maxMm - minMm < SIZE_STEP_MM) continue;
     return { currentMm, minMm, maxMm, walls: [wall], direction: far ? 1 : -1 };
   }
   return null;
