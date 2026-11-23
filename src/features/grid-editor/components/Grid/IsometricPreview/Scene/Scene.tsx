@@ -3,6 +3,10 @@ import { OrbitControls, ContactShadows } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import { OrthographicCamera, Spherical, Vector3 } from 'three';
 import { useViewStore } from '@/core/store/view';
+import { useLayoutStore } from '@/core/store/layout';
+import { onRevealBin } from '@/shared/events/revealBin';
+import { getRestingStack } from '@/shared/utils/restingStack';
+import { calculateFitZoom, planBinFrame } from './frameBin';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { FloorGrid } from '../FloorGrid';
 import { FrontLabel } from '../FrontLabel';
@@ -37,34 +41,7 @@ export interface SceneHandle {
   setPreset: (preset: CameraPreset) => void;
 }
 
-/**
- * Calculate zoom level to fit the drawer in the viewport.
- * For orthographic camera, zoom determines how many world units fit in the view.
- */
-function calculateFitZoom(
-  drawerWidth: number,
-  drawerDepth: number,
-  drawerHeight: number,
-  heightToGridScale: number,
-  viewportWidth: number,
-  viewportHeight: number
-): number {
-  const heightInGridUnits = drawerHeight * heightToGridScale;
-
-  // For isometric view, estimate the projected bounding box
-  // The diagonal footprint is roughly width + depth (at 45° view)
-  // Height adds to the vertical extent
-  const projectedWidth = (drawerWidth + drawerDepth) * 0.7; // Isometric projection factor
-  const projectedHeight = (drawerWidth + drawerDepth) * 0.35 + heightInGridUnits; // Depth contributes to height
-
-  // Calculate zoom to fit with 15% margin on each side
-  const marginFactor = 0.7; // 70% of viewport used for content
-  const zoomForWidth = (viewportWidth * marginFactor) / projectedWidth;
-  const zoomForHeight = (viewportHeight * marginFactor) / projectedHeight;
-
-  // Use the smaller zoom to ensure everything fits
-  return Math.min(zoomForWidth, zoomForHeight);
-}
+const FRAME_DURATION_MS = 450;
 
 /**
  * Main scene component with camera, lights, orbit controls, and environment.
@@ -286,6 +263,56 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
         centerZ,
         setIsometricRotation,
       ]
+    );
+
+    // A found bin (Find, a bin link) is framed: the view pans to its centre and
+    // zooms in far enough to pick it out, never further out than it was. The
+    // exploded view lifts each layer, so there it pans across only.
+    useEffect(
+      () =>
+        onRevealBin('preview', (id) => {
+          const controls = controlsRef.current;
+          const { layout } = useLayoutStore.getState();
+          const bin = layout.bins.find((b) => b.id === id);
+          const rest = bin && getRestingStack(layout.bins, layout.layers).bins.get(bin.id);
+          if (!controls || !bin || !rest) return;
+          const frame = planBinFrame({
+            bin,
+            zStart: rest.zStart,
+            drawer: { width: drawerWidth, depth: drawerDepth, height: drawerHeight },
+            depthToGridScale,
+            heightToGridScale,
+            viewport: size,
+            currentZoom: camera instanceof OrthographicCamera ? camera.zoom : null,
+            currentTargetZ: controls.target.z,
+            exploded: useViewStore.getState().isExplodedView,
+          });
+          const target = new Vector3(...frame.target);
+          const zoomTo = frame.zoom;
+
+          const startTarget = controls.target.clone();
+          const startPosition = camera.position.clone();
+          const startZoom = camera.zoom;
+          const shift = target.clone().sub(startTarget);
+          const startTime = Date.now();
+          if (animationFrameRef.current !== null) {
+            cancelAnimationFrame(animationFrameRef.current);
+          }
+          const animate = () => {
+            const progress = Math.min((Date.now() - startTime) / FRAME_DURATION_MS, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            controls.target.copy(startTarget).addScaledVector(shift, eased);
+            camera.position.copy(startPosition).addScaledVector(shift, eased);
+            if (zoomTo !== null) {
+              camera.zoom = startZoom + (zoomTo - startZoom) * eased;
+              camera.updateProjectionMatrix();
+            }
+            controls.update();
+            animationFrameRef.current = progress < 1 ? requestAnimationFrame(animate) : null;
+          };
+          animate();
+        }),
+      [camera, size, drawerWidth, drawerDepth, drawerHeight, depthToGridScale, heightToGridScale]
     );
 
     // Cleanup animation frame on unmount
