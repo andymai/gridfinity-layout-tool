@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { snapPosition, snapGroupDelta, snapResizeRect, snapDrawRect, SNAP_RADIUS } from './snap';
+import {
+  canPlaceShifted,
+  snapPosition,
+  snapGroupDelta,
+  snapResizeRect,
+  snapDrawRect,
+  SNAP_RADIUS,
+} from './snap';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
 import type { BinId } from '@/core/types';
 import { binId, gridUnits, heightUnits } from '@/core/types';
@@ -611,5 +618,36 @@ describe('snapDrawRect', () => {
     // Should shrink width to 1.5 or less to avoid collision
     expect(result.width).toBeLessThanOrEqual(1.5);
     expect(result.width).toBeGreaterThanOrEqual(0.5);
+  });
+});
+
+describe('copies (Alt+drag)', () => {
+  const original = createTestBin({
+    id: binId('original'),
+    x: gridUnits(0),
+    y: gridUnits(0),
+    width: gridUnits(2),
+    depth: gridUnits(2),
+  });
+  const layout = createTestLayout({
+    drawer: { width: gridUnits(10), depth: gridUnits(8), height: heightUnits(12) },
+    bins: [original],
+  });
+  const dragged = new Set<BinId>([original.id]);
+  const layer = layout.layers[0].id;
+
+  it('lets a moved bin overlap the cells it leaves, but not its copy', () => {
+    expect(canPlaceShifted(original, 1, 0, layer, layout, dragged).valid).toBe(true);
+    expect(canPlaceShifted(original, 1, 0, layer, layout, dragged, true).valid).toBe(false);
+    expect(canPlaceShifted(original, 2, 0, layer, layout, dragged, true).valid).toBe(true);
+  });
+
+  it('snaps a copy off its original', () => {
+    const result = assertNonNull(
+      snapGroupDelta([original], 1, 0, layer, layout, dragged, 1, 0, 1, true)
+    );
+
+    expect(Math.abs(result.x) >= 2 || Math.abs(result.y) >= 2).toBe(true);
+    expect(result.isSnapped).toBe(true);
   });
 });

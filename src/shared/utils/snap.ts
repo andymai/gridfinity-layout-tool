@@ -8,6 +8,7 @@ import type {
   Layout,
   Rect,
   ResizeHandle,
+  ValidationResult,
 } from '@/core/types';
 import { canPlaceBin } from './validation';
 import { spiralOffsets } from './position';
@@ -186,6 +187,39 @@ export function snapPosition(
 }
 
 /**
+ * Whether `bin` fits shifted by (dx, dy). A copy (Alt+drag) is a new bin that
+ * leaves its original in place, so its check leaves no bin out, the same as the
+ * `bin.add` that places it.
+ */
+export function canPlaceShifted(
+  bin: Bin,
+  dx: number,
+  dy: number,
+  layerId: LayerId,
+  layout: Layout,
+  excludeBinIds: Set<BinId>,
+  asCopy = false
+): ValidationResult {
+  const rect = {
+    x: (bin.x + dx) as GridUnits,
+    y: (bin.y + dy) as GridUnits,
+    width: bin.width,
+    depth: bin.depth,
+    height: bin.height,
+    clearanceHeight: bin.clearanceHeight,
+  };
+  return asCopy
+    ? canPlaceBin(rect, layerId, layout)
+    : canPlaceBin(
+        { ...rect, linkedDesignId: bin.linkedDesignId },
+        layerId,
+        layout,
+        bin.id,
+        excludeBinIds
+      );
+}
+
+/**
  * Find a valid delta for dragging a group of bins.
  * All bins must be valid at the candidate delta for it to succeed.
  *
@@ -209,7 +243,8 @@ export function snapGroupDelta(
   excludeBinIds: Set<BinId>,
   moveDirX: number,
   moveDirY: number,
-  step: number
+  step: number,
+  asCopies = false
 ): SnapResult | null {
   // Helper to check if all bins are valid at a given delta
   const allValid = (dx: number, dy: number): boolean => {
@@ -220,22 +255,9 @@ export function snapGroupDelta(
       if (newX < 0 || newY < 0) return false;
       if (newX + bin.width > layout.drawer.width) return false;
       if (newY + bin.depth > layout.drawer.depth) return false;
-      const result = canPlaceBin(
-        {
-          x: newX as GridUnits,
-          y: newY as GridUnits,
-          width: bin.width,
-          depth: bin.depth,
-          height: bin.height,
-          clearanceHeight: bin.clearanceHeight,
-          linkedDesignId: bin.linkedDesignId,
-        },
-        layerId,
-        layout,
-        bin.id,
-        excludeBinIds
-      );
-      if (!result.valid) return false;
+      if (!canPlaceShifted(bin, dx, dy, layerId, layout, excludeBinIds, asCopies).valid) {
+        return false;
+      }
     }
     return true;
   };
