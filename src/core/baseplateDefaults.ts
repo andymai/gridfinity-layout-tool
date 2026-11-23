@@ -48,6 +48,13 @@ export const MARGIN_MIN_DETACH_MM = OVER_TILE_MIN_MARGIN_MM;
  * material/weight up to a chunky weighted plate. Shared by the baseplate UI
  * (slider bounds) and the worker geometry (`baseplateFloorDepth`).
  */
+/**
+ * Largest corner radius a plate can take: half its widest possible side, which
+ * is 50 cells of 60 mm plus 100 mm of padding on each side. The stored value,
+ * the command schema and the sync server share this bound.
+ */
+export const CORNER_RADIUS_MAX_MM = 1600;
+
 export const SOLID_FLOOR_DEFAULT_MM = 0.8;
 export const SOLID_FLOOR_MIN_MM = 0.4;
 export const SOLID_FLOOR_MAX_MM = 5;
@@ -258,15 +265,15 @@ export function migrateBaseplateParams(stored: unknown): StoredBaseplateParams {
         }
       : {}),
     ...(typeof obj.cornerRadius === 'number'
-      ? { cornerRadius: mm(clampNumber(obj.cornerRadius, 0, 200, 0)) }
+      ? { cornerRadius: mm(clampNumber(obj.cornerRadius, 0, CORNER_RADIUS_MAX_MM, 0)) }
       : {}),
     ...(hasRadii
       ? {
           cornerRadii: {
-            tl: mm(clampNumber((radii as Record<string, unknown>).tl, 0, 200, 0)),
-            tr: mm(clampNumber((radii as Record<string, unknown>).tr, 0, 200, 0)),
-            bl: mm(clampNumber((radii as Record<string, unknown>).bl, 0, 200, 0)),
-            br: mm(clampNumber((radii as Record<string, unknown>).br, 0, 200, 0)),
+            tl: mm(clampNumber((radii as Record<string, unknown>).tl, 0, CORNER_RADIUS_MAX_MM, 0)),
+            tr: mm(clampNumber((radii as Record<string, unknown>).tr, 0, CORNER_RADIUS_MAX_MM, 0)),
+            bl: mm(clampNumber((radii as Record<string, unknown>).bl, 0, CORNER_RADIUS_MAX_MM, 0)),
+            br: mm(clampNumber((radii as Record<string, unknown>).br, 0, CORNER_RADIUS_MAX_MM, 0)),
           },
         }
       : {}),

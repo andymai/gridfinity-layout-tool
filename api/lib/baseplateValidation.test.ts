@@ -21,6 +21,14 @@ describe('validateBaseplateShare', () => {
     expect(result.valid).toBe(true);
   });
 
+  it('accepts a corner radius past 200 mm, which a large plate can take', () => {
+    expect(validate({ ...validParams, cornerRadius: 250 }).valid).toBe(true);
+    expect(validate({ ...validParams, cornerRadii: { tl: 250, tr: 0, bl: 0, br: 0 } }).valid).toBe(
+      true
+    );
+    expect(validate({ ...validParams, cornerRadius: 1601 }).valid).toBe(false);
+  });
+
   it('keeps a two-decimal magnet diameter as sent', () => {
     const result = validate({ ...validParams, magnetHoles: true, magnetDiameter: 6.45 });
     expect(result.valid).toBe(true);

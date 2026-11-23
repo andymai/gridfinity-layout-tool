@@ -43,6 +43,8 @@ const META_STORE = 'binMeshMeta';
  * instead, so the other kernel's users keep their warm cache; for one that
  * only moves bins, bump {@link BIN_MESH_REVISION}.
  *
+ * `v31`: a detached margin rail rounds its owned corner up to its whole band,
+ * where it stopped at half, so the rail matches the integral plate's corner.
  * `v30`: a baseplate with a solid floor gets the magnet-hole chamfer that it
  * asks for, where the hollow-floor rule dropped it.
  * `v29`: a hinged lid that exports on its top face points its pin bores'
@@ -86,7 +88,7 @@ const META_STORE = 'binMeshMeta';
  * without regenerating, so without this bump a linked design in the layout
  * planner would render its pre-fix bin until the entry was evicted.
  */
-const MESH_CACHE_VERSION = 'v30';
+const MESH_CACHE_VERSION = 'v31';
 
 /**
  * Bumped when only BIN output moves for unchanged params, so the persisted

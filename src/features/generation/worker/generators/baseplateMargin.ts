@@ -28,7 +28,7 @@ import {
   unwrap,
 } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
-import type { ResolvedBaseplateParams, MarginPiece } from '@/shared/types/bin';
+import type { ResolvedBaseplateParams, MarginCorner, MarginPiece } from '@/shared/types/bin';
 import { isMarginSeamStyle, marginSeamInverted } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import {
@@ -94,18 +94,25 @@ function railCornerRadii(
   const totalW = params.width * gridUnitMm + pl + pr;
   const totalD = params.depth * gridUnitMm + pf + pb;
   // Match the body's cap (baseplateGenerator) so the shared corner has one
-  // radius, then clamp to the rail's own short side to avoid degenerate arcs.
+  // radius, then fit it to the rail's own edges.
   const minPadding = Math.min(Math.min(pl, pr), Math.min(pf, pb));
   const bodyMax = Math.min(gridUnitMm / 2 + minPadding, Math.min(totalW, totalD) / 2 - 0.1);
-  const railMax = Math.min(railW, railD) / 2 - 0.1;
-  const maxRadius = Math.max(0, Math.min(bodyMax, railMax));
-  const resolved = resolveCornerRadii(params, maxRadius);
+  const resolved = resolveCornerRadii(params, Math.max(0, bodyMax));
   const owned = new Set(margin.ownedCorners);
+  // An arc may take an edge's whole length when the corner at the other end of
+  // that edge is square, which a rail end always is at its seam. Two rounded
+  // corners on one edge share it. The 0.1 mm keeps a real edge between arcs.
+  const along = (length: number, other: MarginCorner): number =>
+    (owned.has(other) ? length / 2 : length) - 0.1;
+  const fit = (corner: MarginCorner, wOther: MarginCorner, dOther: MarginCorner): number =>
+    owned.has(corner)
+      ? Math.max(0, Math.min(resolved[corner], along(railW, wOther), along(railD, dOther)))
+      : 0;
   return {
-    tl: owned.has('tl') ? resolved.tl : 0,
-    tr: owned.has('tr') ? resolved.tr : 0,
-    bl: owned.has('bl') ? resolved.bl : 0,
-    br: owned.has('br') ? resolved.br : 0,
+    tl: fit('tl', 'tr', 'bl'),
+    tr: fit('tr', 'tl', 'br'),
+    bl: fit('bl', 'br', 'tl'),
+    br: fit('br', 'bl', 'tr'),
   };
 }
 

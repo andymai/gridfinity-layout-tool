@@ -25,8 +25,8 @@ const MAX_PAYLOAD_BYTES = 100_000;
 /** Generous upper bound for drawer-fit padding (mm); the client clamps ≥ 0. */
 const MAX_PADDING_MM = 1000;
 
-/** Max corner radius (mm); matches the client clamp in `constants.ts` / `schemas.ts`. */
-const MAX_CORNER_RADIUS_MM = 200;
+/** Max corner radius (mm); mirrors `CORNER_RADIUS_MAX_MM` in `src/core/baseplateDefaults.ts`. */
+export const MAX_CORNER_RADIUS_MM = 1600;
 
 /**
  * Max chunks per axis in a custom split plan. A plate caps at 50 grid units and

@@ -621,6 +621,24 @@ describe('layout.setBaseplateParams schema', () => {
     expect(result.success).toBe(true);
   });
 
+  it('accepts a corner radius past 200 mm and rejects one past the bound', () => {
+    const withRadius = (cornerRadius: number) =>
+      z.safeParse(schema, {
+        params: {
+          magnetHoles: true,
+          magnetDiameter: 6.5,
+          magnetDepth: 2,
+          paddingLeft: 0,
+          paddingRight: 0,
+          paddingFront: 0,
+          paddingBack: 0,
+          cornerRadius,
+        },
+      }).success;
+    expect(withRadius(250)).toBe(true);
+    expect(withRadius(1601)).toBe(false);
+  });
+
   it('rejects negative cornerRadius', () => {
     const result = z.safeParse(schema, {
       params: {
