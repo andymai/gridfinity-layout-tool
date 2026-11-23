@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
-import { useResponsive } from './useResponsive';
+import { useResponsive } from '@/shared/hooks/useResponsive';
+import { registerChunkWarmers } from '@/shared/utils/chunkWarmers';
+import type { ChunkWarmers } from '@/shared/utils/chunkWarmers';
 import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils/idle';
 import { shouldSkipPrefetch } from '@/shared/utils/prefetchPolicy';
 import { preloadBrepkitWasm, preloadOcctWasm } from '@/shared/generation/wasmPreload';
@@ -28,9 +30,7 @@ export function warmGeometryKernel(): void {
 }
 
 /**
- * Per-destination warmers, kept beside the idle tiers so what a destination
- * costs is stated once. Each is safe to call repeatedly; the callers that
- * matter (`useIntentPrefetch`) dedupe anyway.
+ * The destinations that shared components and features warm on intent.
  *
  * Route chunks only — deliberately NOT the geometry kernel, even though both
  * editors need one. Starting a 22MB binary on a hover puts it in front of the
@@ -39,22 +39,11 @@ export function warmGeometryKernel(): void {
  * has its own budget — the idle tier below, 3s after mount and off the
  * critical path of any navigation the user has started.
  */
-export function warmDesigner(): void {
-  prefetch(() => import('@/features/bin-designer/components/DesignerPage'));
-}
-
-export function warmBaseplate(): void {
-  prefetch(() => import('@/features/baseplate'));
-}
-
-export function warmCommunity(): void {
-  prefetch(() => import('@/features/community'));
-}
-
-/** The designer's own way into the showcase — a modal, not the /community route. */
-export function warmDesignGallery(): void {
-  prefetch(() => import('@/shell/Modals/DesignGalleryModal'));
-}
+export const CHUNK_WARMERS: ChunkWarmers = {
+  designer: () => import('@/features/bin-designer/components/DesignerPage'),
+  baseplate: () => import('@/features/baseplate'),
+  designGallery: () => import('@/shell/Modals/DesignGalleryModal'),
+};
 
 /**
  * Prefetches lazy-loaded feature chunks during browser idle time.
@@ -71,6 +60,9 @@ export function warmDesignGallery(): void {
  */
 export function usePrefetchChunks(): void {
   const { isMobile, isTablet } = useResponsive();
+
+  // Every device: phones and tablets warm on intent, not on idle.
+  useEffect(() => registerChunkWarmers(CHUNK_WARMERS), []);
 
   useEffect(() => {
     // Skip on mobile/tablet — they have limited CPU and memory

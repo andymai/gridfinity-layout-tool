@@ -41,9 +41,9 @@ vi.mock('@/shared/hooks/useCommunityRouting', () => ({
 const mockWarmDesigner = vi.fn();
 const mockWarmBaseplate = vi.fn();
 
-vi.mock('@/shared/hooks/usePrefetchChunks', () => ({
-  warmDesigner: () => mockWarmDesigner(),
-  warmBaseplate: () => mockWarmBaseplate(),
+vi.mock('@/shared/utils/chunkWarmers', () => ({
+  warmChunk: (destination: string) =>
+    destination === 'designer' ? mockWarmDesigner() : mockWarmBaseplate(),
 }));
 
 describe('ToolSwitcher', () => {
