@@ -58,7 +58,7 @@ Sometimes a bin can't take the new size, because it no longer fits the drawer or
 Some designs can't follow a resize from the layout, for example a design with cutouts or custom compartments. The Layout Tool then leaves the design as it is, and a dialog tells you why.
 
 ::: tip
-Want one bin to keep its size while its design changes? Turn on <Ui k="inspector.lockSize" /> for that bin. The Layout Tool then doesn't resize it when its design changes.
+Want one bin to keep its size while its design changes? Turn on <Ui k="inspector.lockSize" /> for that bin. The Layout Tool then doesn't resize it when its design changes. The bin still prints at the size of its design, so the inspector shows the two sizes under <Ui k="designLinking.inspector.linkedDesign" />.
 :::
 
 In the layout editor, the 3D preview shows each linked bin with the model of its design. <Ui k="layoutExport.button" /> exports the model of each linked bin.
@@ -98,9 +98,11 @@ All other values come from the parent. Change the parent, and each variant chang
 
 ### Some linked bins kept their old size
 
-Make room around those bins, then give each one the size of the design in the inspector. A linked bin takes the new size only where it has room, and a message tells you how many bins kept their old size. If <Ui k="designLinking.syncDialog.title" /> opens instead, it tells you how many bins it must unlink, because they can't fit.
+A linked bin takes the new size only where it has room, and a message tells you how many bins kept their old size. If <Ui k="designLinking.syncDialog.title" /> opens instead, it tells you how many bins it must unlink, because they can't fit.
 
-A bin with <Ui k="inspector.lockSize" /> on keeps its size too. That's what the lock is for.
+A bin that kept its old size still prints at the size of its design. Select the bin, and the inspector shows the size of the bin and the size of its design under <Ui k="designLinking.inspector.linkedDesign" />. Select **Resize to** and the size of the design. If the inspector says that there is no room, make room around the bin first.
+
+A bin with <Ui k="inspector.lockSize" /> on keeps its size too. That's what the lock is for. **Resize to** keeps the lock on.
 
 ### The design didn't change when you resized a bin
 
