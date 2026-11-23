@@ -75,12 +75,17 @@ vi.mock('@/shell/layoutExport/LayoutExportDialog', () => ({
 
 let mockIsCollaborative = false;
 let mockIsTablet = false;
+let mockViewportWidth = 1440;
 
 vi.mock('@/shared/hooks', async (importOriginal) => {
   const actual = await importOriginal<typeof SharedHooks>();
   return {
     ...actual,
-    useResponsive: () => ({ isTablet: mockIsTablet, isMobile: false }),
+    useResponsive: () => ({
+      isTablet: mockIsTablet,
+      isMobile: false,
+      viewportWidth: mockViewportWidth,
+    }),
   };
 });
 
@@ -111,6 +116,7 @@ describe('Header', () => {
     vi.clearAllMocks();
     mockIsCollaborative = false;
     mockIsTablet = false;
+    mockViewportWidth = 1440;
   });
 
   describe('rendering', () => {
@@ -395,6 +401,14 @@ describe('Header', () => {
       render(<Header {...defaultProps} />);
       expect(screen.getByText('Print')).toHaveClass('hidden', 'xl:inline');
       expect(screen.getByText('Layout')).toHaveClass('hidden', 'xl:inline');
+    });
+
+    it('folds the support links into the More links menu on a narrow desktop, keeping Ko-fi', () => {
+      mockViewportWidth = 960;
+      render(<Header {...defaultProps} />);
+      expect(screen.queryByLabelText('Show help and keyboard shortcuts')).toBeNull();
+      expect(screen.getByRole('button', { name: 'More links' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Support me on Ko-fi' })).toBeInTheDocument();
     });
 
     it('folds the support links into the More links menu on a tablet', () => {
