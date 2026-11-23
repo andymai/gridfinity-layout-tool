@@ -1,0 +1,40 @@
+src/features/generation/worker/generators/kumikoCornerCells.ts
+  s_f5ebe617f2ec28::t_16562b7ba4517c 1-201
+  s_f5ebe617f2ec28::t_7d69d69a487850 202-259
+src/features/generation/worker/generators/kumikoCornerCells.test.ts
+  s_f5ebe617f2ec28::t_55f5e72ad2e4fe 1,4-8,11-26,29-30,32-40,42-43,50-54,56,64,66-68,73-75,85-87,89,98-99,111-112,114-116,118-123,125-135,137-138
+  s_f5ebe617f2ec28::t_1bcaaa7c224d1d 2-3,9-10,27-28,31,41,44-49,55,57-63,65,69-72,76-84,88,90-97,102-110,117,124,136
+  s_f3decd9961964a::t_720cc7d40b8a27 100-101,113
+src/features/generation/worker/generators/__snapshots__/binGenerator.scenario.dividerPatterns.test.ts.snap
+  s_f5ebe617f2ec28::t_1c2fa23b7128a2 19
+src/features/generation/worker/generators/kumikoCornerSlab.ts
+  s_f5ebe617f2ec28::t_05b9490911a221 1,13-17,20,27-28,141-262,267
+src/features/generation/worker/generators/kumikoWrapBuilder.ts
+  s_f5ebe617f2ec28::t_16d7cc7033c6ef 11-13,15
+src/shared/generation/meshPersistence.ts
+  s_f5ebe617f2ec28::t_381ecdadfeb541 98-99,153
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c105565cf5ddc2b2633fdf4ea96c26373bde4e9b",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f5ebe617f2ec28": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8396284b-762e-44ab-b73b-9e1a9761418f",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
