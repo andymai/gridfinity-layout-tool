@@ -1,0 +1,21 @@
+src/shared/hooks/interactions/useDragInteraction.test.ts
+  s_f3decd9961964a::t_ae133b2723485a 137-174
+src/shared/hooks/interactions/useDragInteraction.ts
+  s_f3decd9961964a::t_c766f372b1f90e 236-238,247,279
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e2773a6814e0372833db991ba43259379d70b34d",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
