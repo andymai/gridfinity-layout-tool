@@ -362,6 +362,42 @@ describe('usePlannerBaseplateWriteBack', () => {
     expect(await storedParams(id)).toEqual(edited);
   });
 
+  it("never retries one layout's failed edit over another layout's newer saved edit", async () => {
+    const id = await linkedLayout();
+    renderHook(() => usePlannerBaseplateWriteBack());
+    // Layout A's write is slow and then fails, after layout B's write lands.
+    let fail = (): void => undefined;
+    const failing = new Promise<void>((resolve) => {
+      fail = resolve;
+    });
+    vi.mocked(updateDesignParamsIfChanged).mockImplementationOnce(async () => {
+      await failing;
+      return err(storageUnavailable('indexedDB'));
+    });
+    setPlate(edited);
+    hideTab();
+    await waitFor(() => expect(updateDesignParamsIfChanged).toHaveBeenCalledOnce());
+
+    act(() => {
+      useLayoutStore
+        .getState()
+        .importLayout(
+          createTestLayout({ baseplateParams: params, activeBaseplateId: id }),
+          layoutId('layout-b')
+        );
+    });
+    const newer: StoredBaseplateParams = { ...params, paddingFront: mm(7) };
+    setPlate(newer);
+    await waitFor(async () => expect(await storedParams(id)).toEqual(newer), { timeout: 3000 });
+    fail();
+    await settle();
+
+    hideTab();
+    await settle();
+
+    expect(await storedParams(id)).toEqual(newer);
+  });
+
   it('saves an undone edit to its design when an undone switch follows at once', async () => {
     const id = await linkedLayout();
     const other = await saveDesign({ name: 'Other', params, thumbnail: null });

@@ -50,10 +50,16 @@ export function usePlannerBaseplateWriteBack(): void {
      * they must not reach the shared design. A later edit to it still writes.
      */
     const splitUpTo = new Map<string, number>();
+    /**
+     * The newest edit that reached each design, from any layout. An older edit
+     * retried after it, from another layout, would put older params back.
+     */
+    const landed = new Map<BaseplateDesignId, number>();
 
     const stillWanted = (write: PendingWrite): boolean =>
       newest.get(writeKey(write)) === write.seq &&
-      (splitUpTo.get(writeKey(write)) ?? 0) < write.seq;
+      (splitUpTo.get(writeKey(write)) ?? 0) < write.seq &&
+      (landed.get(write.designId) ?? 0) < write.seq;
 
     /**
      * Storage orders writes per design and asks `stillWanted` when this one's
@@ -62,10 +68,14 @@ export function usePlannerBaseplateWriteBack(): void {
      * leaves the design's sync stamp.
      */
     const submit = async (write: PendingWrite): Promise<void> => {
-      const updated = await updateDesignParamsIfChanged(write.designId, write.params, () =>
-        stillWanted(write)
-      );
+      const turn = { wanted: false };
+      const updated = await updateDesignParamsIfChanged(write.designId, write.params, () => {
+        turn.wanted = stillWanted(write);
+        return turn.wanted;
+      });
       if (isOk(updated)) {
+        // Only an edit storage wrote, or found already there, counts as landed.
+        if (turn.wanted) landed.set(write.designId, write.seq);
         upsertRegistryEntry({
           id: updated.value.id,
           name: updated.value.name,
