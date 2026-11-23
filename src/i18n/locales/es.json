@@ -5616,5 +5616,8 @@
   "binDesigner.cutouts.library.emptyFolder": "Esta carpeta está vacía",
   "binDesigner.cutouts.library.size": "{width} × {depth} mm",
   "binDesigner.cutouts.library.foldersFull": "La biblioteca admite {max} carpetas. Elimina algunas para crear más.",
-  "binDesigner.cutouts.library.tooDeep": "Las carpetas se anidan como máximo {max} niveles. Elige una carpeta más arriba."
+  "binDesigner.cutouts.library.tooDeep": "Las carpetas se anidan como máximo {max} niveles. Elige una carpeta más arriba.",
+  "designLinking.inspector.sizeMismatch": "Este bin mide {bin}, pero su diseño mide {design}. Se imprime con el tamaño del diseño.",
+  "designLinking.inspector.matchDesignSize": "Cambiar a {design}",
+  "designLinking.inspector.sizeMismatchNoRoom": "Aquí no hay espacio para ese tamaño."
 }
