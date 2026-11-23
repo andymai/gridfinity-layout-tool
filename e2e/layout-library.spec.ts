@@ -16,12 +16,20 @@ import {
 } from './fixtures';
 
 test.describe('Layout Library Management', () => {
+  // The header's layout switcher and name editor are the desktop header;
+  // phones and tablets reach layouts through their own sheet.
+  const isDesktop = ({ viewport }: { viewport: { width: number } | null }): boolean =>
+    (viewport?.width ?? 0) >= 900;
+  test.skip(({ viewport }) => !isDesktop({ viewport }), 'desktop header only');
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await waitForAppReady(page);
   });
 
-  test.afterEach(async ({ page }) => {
+  // Hooks run for a skipped test too, on a page that never left about:blank.
+  test.afterEach(async ({ page, viewport }) => {
+    if (!isDesktop({ viewport })) return;
     await clearAllStorage(page);
     await resetViewport(page);
 
@@ -83,7 +91,9 @@ test.describe('Layout Library Management', () => {
       await waitForDialogClosed(page);
 
       // New layout should be active with default name
-      await expect(page.getByRole('button', { name: /untitled layout/i })).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: 'Switch layout (current: Untitled layout)' })
+      ).toBeVisible();
 
       // Grid should be empty (no bins from previous layout)
       await waitForBinCount(page, 0);
