@@ -1,0 +1,23 @@
+src/features/baseplate/hooks/usePlannerBaseplateWriteBack.ts
+  s_f3decd9961964a::t_2afcae1e423d48 53-57,61-62,72,75,77
+  s_f3decd9961964a::t_2eb9687e6113ff 71,73-74,78
+src/features/baseplate/hooks/usePlannerBaseplateWriteBack.test.ts
+  s_f3decd9961964a::t_7baccc27fbd297 368-376,392-393
+  s_f3decd9961964a::t_b26901830eb285 365-367,377-391,394-400
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "48c3be151ec4f087657b60fe92b618922cf31e83",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
