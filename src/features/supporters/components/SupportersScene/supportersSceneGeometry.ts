@@ -1,4 +1,4 @@
-import type { BufferGeometry, Group, LineSegments, Mesh } from 'three';
+import type { BufferGeometry, Group, LineSegments, Mesh, Object3D } from 'three';
 import { MESH_META } from '../../data/meshes';
 
 export interface BakedGeometry {
@@ -22,12 +22,13 @@ export const easeOutBack = (t: number): number => {
 export function extractGeometry(scene: Group): BakedGeometry {
   const solids: BufferGeometry[] = [];
   const lines: BufferGeometry[] = [];
-  scene.traverse((obj) => {
+  scene.traverse((obj: Object3D & Partial<Pick<Mesh, 'geometry'>>) => {
     // three's own type discriminators: instanceof narrows generics to `any`.
+    if (!obj.geometry) return;
     if ((obj as Partial<LineSegments>).isLineSegments) {
-      lines.push((obj as LineSegments).geometry);
+      lines.push(obj.geometry);
     } else if ((obj as Partial<Mesh>).isMesh) {
-      solids.push((obj as Mesh).geometry);
+      solids.push(obj.geometry);
     }
   });
   const solid = solids.at(0);
