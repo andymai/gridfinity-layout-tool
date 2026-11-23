@@ -15,6 +15,10 @@ import {
 } from './fixtures';
 
 test.describe('Rotate Bins', () => {
+  // Phones rotate from the bin sheet; these drive the desktop inspector and keys.
+  const isDesktop = (viewport: { width: number } | null): boolean => (viewport?.width ?? 0) >= 900;
+  test.skip(({ viewport }) => !isDesktop(viewport), 'desktop pointer and keyboard flow');
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await clearAllStorage(page);
@@ -22,7 +26,9 @@ test.describe('Rotate Bins', () => {
     await waitForAppReady(page);
   });
 
-  test.afterEach(async ({ page }) => {
+  // Hooks run for a skipped test too, on a page that never left about:blank.
+  test.afterEach(async ({ page, viewport }) => {
+    if (!isDesktop(viewport)) return;
     await clearAllStorage(page);
     await resetViewport(page);
 
@@ -107,9 +113,7 @@ test.describe('Rotate Bins', () => {
   // cells depend on the zoom.
   test('smart rotation moves a bin back inside when turning it would cross the edge', async ({
     page,
-    viewport,
   }) => {
-    test.skip((viewport?.width ?? 0) < 900, 'desktop pointer and keyboard flow');
     await page.keyboard.press('Escape');
     await waitForPaintModeExited(page);
     const [id] = await seedBins(page, [{ x: 9, y: 0, width: 1, depth: 3, label: 'Edge' }]);
@@ -123,11 +127,7 @@ test.describe('Rotate Bins', () => {
     expect(await readBins(page, [id])).toEqual([{ x: 7, y: 0, width: 3, depth: 1 }]);
   });
 
-  test('smart rotation finds room when turning in place would hit a bin', async ({
-    page,
-    viewport,
-  }) => {
-    test.skip((viewport?.width ?? 0) < 900, 'desktop pointer and keyboard flow');
+  test('smart rotation finds room when turning in place would hit a bin', async ({ page }) => {
     await page.keyboard.press('Escape');
     await waitForPaintModeExited(page);
     const [id, blocker] = await seedBins(page, [
