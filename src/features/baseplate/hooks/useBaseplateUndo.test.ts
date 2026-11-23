@@ -126,6 +126,17 @@ describe('useBaseplateUndo', () => {
     expect(paddingLeft()).toBe(7);
   });
 
+  it('keeps an open drag as its own step when the page closes', () => {
+    const { unmount } = renderHook(() => useBaseplateUndo());
+    previewBaseplateParam('magnetDepth', mm(3));
+
+    unmount();
+
+    expect(useHistoryStore.getState().past).toHaveLength(2);
+    useHistoryStore.getState().undo();
+    expect(paddingLeft()).toBe(7);
+  });
+
   it('reports whether there is a step to undo or redo', () => {
     const { result } = renderHook(() => useBaseplateUndo());
     expect(result.current.canUndo).toBe(true);

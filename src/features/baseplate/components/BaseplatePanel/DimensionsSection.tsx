@@ -34,6 +34,7 @@ import { cornerCutsMatchVertices } from '@/shared/utils/cornerCutOutline';
 import { fitAxisUnits, halfUnitUpgrade } from '@/shared/utils/drawerFit';
 import { padOutline } from '@/shared/utils/padOutline';
 import {
+  finishBaseplateParamsDrag,
   replaceBaseplateParams,
   updateBaseplateParam as updateParam,
   updateBaseplateParams as updateParams,
@@ -257,6 +258,8 @@ export function DimensionsSection() {
       const layoutState = useLayoutStore.getState().layout;
       const current = layoutState.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
       // One undo step takes back the size and the half-grid mode it turned on.
+      // An open slider drag closes first, so this batch's start excludes it.
+      finishBaseplateParamsDrag();
       batch(() => {
         if (takesHalfUnit) setHalfGridMode(true);
         replaceBaseplateParams({
@@ -294,6 +297,7 @@ export function DimensionsSection() {
       // toast the store attaches to a user-driven flip.
       if (checked === useHalfGridModeStore.getState().halfGridMode) return;
       // One undo step takes back the mode and the padding it handed back.
+      finishBaseplateParamsDrag();
       batch(() => {
         if (!isOk(toggleHalfGridMode())) {
           addToast(t('halfBinBlocked.message'), 'error');

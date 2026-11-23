@@ -285,7 +285,6 @@ describe('batchFrom', () => {
   it('records one step back to the captured start, past the live writes after it', () => {
     useLayoutStore.setState({ layout: createTestLayout({ name: 'Before drag' }) });
     const start = captureUndoStart();
-    // Live preview frames write the store without the bus.
     useLayoutStore.setState({ layout: createTestLayout({ name: 'Frame 1' }) });
     useLayoutStore.setState({ layout: createTestLayout({ name: 'Frame 2' }) });
 

@@ -70,7 +70,12 @@ export function useBaseplateUndo(): BaseplateUndo {
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      // Leaving the page keeps an open drag as a step of its own in the
+      // layout's history, which the planner's undo shares.
+      finishBaseplateParamsDrag();
+    };
   }, [undo, redo]);
 
   return { canUndo, canRedo, undo, redo };

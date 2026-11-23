@@ -228,6 +228,9 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
               const newValue = Number(e.target.value);
               if (newValue !== value) {
                 onChange(newValue);
+                // Outside a pointer drag, a native change (Page Up/Down, a
+                // screen reader step) is a whole step that no release follows.
+                if (!isDragging) onCommit?.(newValue);
               }
             }}
             onKeyDown={handleKeyDown}
