@@ -67,7 +67,9 @@ export interface PlacedBin {
 }
 
 interface SeedApp {
-  commandBus: { dispatch: (command: unknown) => unknown };
+  commandBus: {
+    dispatch: (command: unknown) => { ok: boolean; value?: { value: unknown }; error?: unknown };
+  };
   createCommand: (type: string, payload: Record<string, unknown>) => unknown;
   useLayoutStore: {
     getState: () => {
@@ -93,8 +95,8 @@ export async function seedBins(page: Page, bins: readonly SeedBin[]): Promise<st
     );
     const app = Object.assign({}, ...loaded) as SeedApp;
     const { layout } = app.useLayoutStore.getState();
-    for (const spec of specs) {
-      app.commandBus.dispatch(
+    return specs.map((spec) => {
+      const added = app.commandBus.dispatch(
         app.createCommand('bin.add', {
           ...spec,
           layerId: layout.layers[0].id,
@@ -103,17 +105,14 @@ export async function seedBins(page: Page, bins: readonly SeedBin[]): Promise<st
           notes: '',
         })
       );
-    }
-    const placed = app.useLayoutStore.getState().layout.bins;
-    return specs.map((spec) => {
-      const bin = placed.find((b) => b.label === spec.label);
-      if (!bin) throw new Error(`Bin ${spec.label} was not placed`);
-      return bin.id;
+      if (!added.ok || typeof added.value?.value !== 'string') {
+        throw new Error(`Bin ${spec.label} was not placed: ${JSON.stringify(added.error)}`);
+      }
+      return added.value.value;
     });
   }, bins);
 }
 
-/** Cell positions and sizes of bins, read from the app's layout store. */
 export async function readBins(page: Page, ids: readonly string[]): Promise<PlacedBin[]> {
   return page.evaluate(async (wanted) => {
     const storePath = '/src/core/store/layout/index.ts';

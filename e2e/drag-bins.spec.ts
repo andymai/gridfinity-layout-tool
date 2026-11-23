@@ -341,7 +341,6 @@ test.describe('Drag Bins Flow', () => {
     await page.mouse.up();
     await page.keyboard.up('Alt');
 
-    // Two originals and two copies
     await waitForBinCount(page, 4);
   });
 
