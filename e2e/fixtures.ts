@@ -8,6 +8,7 @@ export { test, expect } from '@playwright/test';
 export {
   clearAllStorage,
   waitForAutoSave,
+  waitForSavedLayout,
   resetViewport,
   getNewestBin,
   getBinByIndex,
@@ -36,6 +37,18 @@ export async function openDesignList(page: Page) {
       ? page.getByTitle('Click to rename design')
       : page.getByRole('button', { name: 'Open design list' }).first()
   ).click();
+}
+
+export async function openLayoutManager(page: Page) {
+  await page.getByRole('button', { name: /Switch layout/ }).click();
+  await page.getByRole('menuitem', { name: 'Manage layouts' }).click();
+}
+
+export async function renameActiveLayout(page: Page, name: string) {
+  await page.getByRole('button', { name: /^Click to edit layout name/ }).click();
+  const input = page.locator('header input[type="text"]');
+  await input.fill(name);
+  await input.press('Enter');
 }
 
 /**

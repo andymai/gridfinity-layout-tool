@@ -10,15 +10,26 @@ import {
   drawBinOnGrid,
   waitForAutoSave,
   waitForBinCount,
+  openLayoutManager,
+  renameActiveLayout,
+  waitForSavedLayout,
 } from './fixtures';
 
 test.describe('Layout Library Management', () => {
+  // The header's layout switcher and name editor are the desktop header;
+  // phones and tablets reach layouts through their own sheet.
+  const isDesktop = ({ viewport }: { viewport: { width: number } | null }): boolean =>
+    (viewport?.width ?? 0) >= 900;
+  test.skip(({ viewport }) => !isDesktop({ viewport }), 'desktop header only');
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await waitForAppReady(page);
   });
 
-  test.afterEach(async ({ page }) => {
+  // Hooks run for a skipped test too, on a page that never left about:blank.
+  test.afterEach(async ({ page, viewport }) => {
+    if (!isDesktop({ viewport })) return;
     await clearAllStorage(page);
     await resetViewport(page);
 
@@ -32,8 +43,7 @@ test.describe('Layout Library Management', () => {
 
   test.describe('Layout Manager Modal', () => {
     test('opens layout manager via button', async ({ page }) => {
-      const layoutsButton = page.getByRole('button', { name: 'Open layout manager' });
-      await layoutsButton.click();
+      await openLayoutManager(page);
 
       await waitForDialog(page);
       const modal = getActiveDialog(page);
@@ -57,7 +67,7 @@ test.describe('Layout Library Management', () => {
     });
 
     test('closes layout manager with escape', async ({ page }) => {
-      await page.getByRole('button', { name: 'Open layout manager' }).click();
+      await openLayoutManager(page);
       await waitForDialog(page);
 
       await page.keyboard.press('Escape');
@@ -68,7 +78,7 @@ test.describe('Layout Library Management', () => {
   test.describe('Create Layout', () => {
     test('creates a new layout from modal', async ({ page }) => {
       // Open layout manager
-      await page.getByRole('button', { name: 'Open layout manager' }).click();
+      await openLayoutManager(page);
       await waitForDialog(page);
 
       const modal = getActiveDialog(page);
@@ -81,7 +91,9 @@ test.describe('Layout Library Management', () => {
       await waitForDialogClosed(page);
 
       // New layout should be active with default name
-      await expect(page.getByRole('button', { name: /untitled layout/i })).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: 'Switch layout (current: Untitled layout)' })
+      ).toBeVisible();
 
       // Grid should be empty (no bins from previous layout)
       await waitForBinCount(page, 0);
@@ -94,7 +106,7 @@ test.describe('Layout Library Management', () => {
       await waitForAutoSave(page, 3000);
 
       // Create new layout
-      await page.getByRole('button', { name: 'Open layout manager' }).click();
+      await openLayoutManager(page);
       await waitForDialog(page);
       await getActiveDialog(page).getByRole('button', { name: 'New Layout' }).click();
       await waitForDialogClosed(page);
@@ -106,26 +118,26 @@ test.describe('Layout Library Management', () => {
       await waitForAutoSave(page, 3000);
 
       // Verify in library that we now have 2 layouts
-      await page.getByRole('button', { name: 'Open layout manager' }).click();
+      await openLayoutManager(page);
       await waitForDialog(page);
 
       const modal = getActiveDialog(page);
-      const layoutItems = modal.getByRole('option');
+      const layoutItems = modal
+        .getByRole('listbox', { name: 'Available layouts' })
+        .getByRole('option');
       await expect(layoutItems).toHaveCount(2, { timeout: 5000 });
     });
   });
 
   test.describe('Switch Layout', () => {
-    // TODO: This test has timing issues with layout loading - skip for now
-    // The switch functionality is tested indirectly in other tests
-    test.skip('switches to different layout and back', async ({ page }) => {
+    test('switches to different layout and back', async ({ page }) => {
       // Draw a bin on the first layout
       await drawBinOnGrid(page, 50, 50, 100, 100);
       await waitForBinCount(page, 1);
       await waitForAutoSave(page, 3000);
 
       // Create second layout (empty)
-      await page.getByRole('button', { name: 'Open layout manager' }).click();
+      await openLayoutManager(page);
       await waitForDialog(page);
       await getActiveDialog(page).getByRole('button', { name: 'New Layout' }).click();
       await waitForDialogClosed(page);
@@ -139,7 +151,7 @@ test.describe('Layout Library Management', () => {
       expect(binCount).toBe(0);
 
       // Switch back to first layout (should have 1 bin)
-      await page.getByRole('button', { name: 'Open layout manager' }).click();
+      await openLayoutManager(page);
       await waitForDialog(page);
 
       // The original layout should show "1 bins" in metadata
@@ -156,26 +168,25 @@ test.describe('Layout Library Management', () => {
   test.describe('Delete Layout', () => {
     test('deletes layout via overflow menu', async ({ page }) => {
       // Create second layout first so we can delete one
-      await page.getByRole('button', { name: 'Open layout manager' }).click();
+      await openLayoutManager(page);
       await waitForDialog(page);
       await getActiveDialog(page).getByRole('button', { name: 'New Layout' }).click();
       await waitForDialogClosed(page);
 
       // Name it for identification
-      await page.getByRole('button', { name: /untitled layout/i }).click();
-      const input = page.locator('header input[type="text"]');
-      await input.fill('Layout To Delete');
-      await input.press('Enter');
+      await renameActiveLayout(page, 'Layout To Delete');
       await waitForAutoSave(page, 3000);
 
       // Open layout manager
-      await page.getByRole('button', { name: 'Open layout manager' }).click();
+      await openLayoutManager(page);
       await waitForDialog(page);
 
       const modal = getActiveDialog(page);
 
       // Verify we have 2 layouts
-      await expect(modal.getByRole('option')).toHaveCount(2);
+      await expect(
+        modal.getByRole('listbox', { name: 'Available layouts' }).getByRole('option')
+      ).toHaveCount(2);
 
       // Find the "More actions" button for this layout
       const moreActionsBtn = modal.getByRole('button', {
@@ -193,11 +204,13 @@ test.describe('Layout Library Management', () => {
       await confirmDeleteMenuItem.click();
 
       // Should now only have 1 layout
-      await expect(modal.getByRole('option')).toHaveCount(1, { timeout: 5000 });
+      await expect(
+        modal.getByRole('listbox', { name: 'Available layouts' }).getByRole('option')
+      ).toHaveCount(1, { timeout: 5000 });
     });
 
     test('cannot delete last remaining layout', async ({ page }) => {
-      await page.getByRole('button', { name: 'Open layout manager' }).click();
+      await openLayoutManager(page);
       await waitForDialog(page);
 
       const modal = getActiveDialog(page);
@@ -214,18 +227,14 @@ test.describe('Layout Library Management', () => {
   test.describe('Duplicate Layout', () => {
     test('duplicates layout creating a copy', async ({ page }) => {
       // Set up source layout
-      const layoutNameButton = page.getByRole('button', { name: 'Untitled layout' });
-      await layoutNameButton.click();
-      const input = page.locator('header input[type="text"]');
-      await input.fill('Original Layout');
-      await input.press('Enter');
+      await renameActiveLayout(page, 'Original Layout');
 
       await drawBinOnGrid(page, 50, 50, 100, 100);
       await waitForBinCount(page, 1);
       await waitForAutoSave(page, 3000);
 
       // Open layout manager and duplicate
-      await page.getByRole('button', { name: 'Open layout manager' }).click();
+      await openLayoutManager(page);
       await waitForDialog(page);
 
       const modal = getActiveDialog(page);
@@ -241,7 +250,9 @@ test.describe('Layout Library Management', () => {
       await duplicateBtn.click();
 
       // Should create "Original Layout (copy)" and now have 2 layouts
-      await expect(modal.getByRole('option')).toHaveCount(2, { timeout: 5000 });
+      await expect(
+        modal.getByRole('listbox', { name: 'Available layouts' }).getByRole('option')
+      ).toHaveCount(2, { timeout: 5000 });
       await expect(modal.getByRole('option', { name: /Original Layout \(copy\)/i })).toBeVisible({
         timeout: 5000,
       });
@@ -251,37 +262,20 @@ test.describe('Layout Library Management', () => {
   test.describe('Data Persistence', () => {
     test('layout persists after reload', async ({ page }) => {
       // Create a named layout with bins
-      const layoutNameButton = page.getByRole('button', { name: 'Untitled layout' });
-      await layoutNameButton.click();
-      const input = page.locator('header input[type="text"]');
-      await input.fill('Persisted Layout');
-      await input.press('Enter');
+      await renameActiveLayout(page, 'Persisted Layout');
 
       await drawBinOnGrid(page, 50, 50, 100, 100);
       await waitForBinCount(page, 1);
-      await waitForAutoSave(page, 3000);
-
-      // Wait extra for save to complete
-      await page.waitForTimeout(2000);
-
-      // Verify data is saved before reload
-      const savedCheck = await page.evaluate(() => {
-        const library = localStorage.getItem('gridfinity-library-v1');
-        if (!library) return false;
-        const parsed = JSON.parse(library);
-        const layoutData = localStorage.getItem(`gridfinity-layout-${parsed.activeLayoutId}`);
-        if (!layoutData) return false;
-        const layout = JSON.parse(layoutData);
-        return layout.name === 'Persisted Layout' && layout.bins.length === 1;
-      });
-      expect(savedCheck).toBe(true);
+      await waitForSavedLayout(page, { name: 'Persisted Layout', binCount: 1 });
 
       // Reload page
       await page.reload();
       await waitForAppReady(page);
 
       // Should still show the layout name
-      await expect(page.getByRole('button', { name: 'Persisted Layout' })).toBeVisible({
+      await expect(
+        page.getByRole('button', { name: 'Switch layout (current: Persisted Layout)' })
+      ).toBeVisible({
         timeout: 5000,
       });
 
@@ -296,36 +290,34 @@ test.describe('Layout Library Management', () => {
       await waitForAutoSave(page, 3000);
 
       // Create second layout
-      await page.getByRole('button', { name: 'Open layout manager' }).click();
+      await openLayoutManager(page);
       await waitForDialog(page);
       await getActiveDialog(page).getByRole('button', { name: 'New Layout' }).click();
       await waitForDialogClosed(page);
 
       // Name the second layout
-      await page.getByRole('button', { name: /untitled layout/i }).click();
-      const input = page.locator('header input[type="text"]');
-      await input.fill('Second Layout');
-      await input.press('Enter');
-      await waitForAutoSave(page, 3000);
-
-      // Wait extra for all saves
-      await page.waitForTimeout(2000);
+      await renameActiveLayout(page, 'Second Layout');
+      await waitForSavedLayout(page, { name: 'Second Layout', binCount: 0 });
 
       // Reload page
       await page.reload();
       await waitForAppReady(page);
 
       // Should show the second layout (last active)
-      await expect(page.getByRole('button', { name: 'Second Layout' })).toBeVisible({
+      await expect(
+        page.getByRole('button', { name: 'Switch layout (current: Second Layout)' })
+      ).toBeVisible({
         timeout: 5000,
       });
 
       // Open layout manager and verify both layouts exist
-      await page.getByRole('button', { name: 'Open layout manager' }).click();
+      await openLayoutManager(page);
       await waitForDialog(page);
 
       const modal = getActiveDialog(page);
-      await expect(modal.getByRole('option')).toHaveCount(2);
+      await expect(
+        modal.getByRole('listbox', { name: 'Available layouts' }).getByRole('option')
+      ).toHaveCount(2);
     });
   });
 });
