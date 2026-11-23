@@ -88,7 +88,12 @@ import {
 import { CameraRig } from '@/shared/components/preview/CameraRig';
 import { SpaceMouseController } from '@/shared/spacemouse/components/SpaceMouseController';
 import { TouchHint, GeneratingIndicator } from './previewCanvasOverlays';
-import { detectWebGL, WebGLFallback, WebGLErrorBoundary } from '@/shared/webgl';
+import {
+  detectWebGL,
+  WebGLFallback,
+  WebGLErrorBoundary,
+  WebGLContextLossGuard,
+} from '@/shared/webgl';
 import { WorkshopCanvas } from '../Workshop/WorkshopCanvas';
 import { ColorToolOverlay } from './ColorToolOverlay';
 import { MeasureOverlay } from './MeasureOverlay';
@@ -478,6 +483,7 @@ function BinPreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                 )}
               />
               <PreviewContextSync />
+              <WebGLContextLossGuard />
               <SpaceMouseController />
 
               <GradientBackground />

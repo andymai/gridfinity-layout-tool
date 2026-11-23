@@ -113,13 +113,23 @@ const PRECISION_NULL_V8 = /\(reading 'precision'\)/;
 const THREE_SOURCE = /three/;
 
 /**
- * Why a renderer threw at mount despite the cached probe passing, or null
- * when the error is not a WebGL failure at all.
+ * WebKit's wording when a lost context hands `createShader()`'s null to
+ * `shaderSource`. three.js throws it from the render loop on the WebGL2
+ * context, and troika's SDF generator from its own WebGL1 context.
+ */
+const SHADER_SOURCE_LOST = /shaderSource must be an instance of WebGLShader/;
+
+/** Thrown by `WebGLContextLossGuard` when a lost context is not restored. */
+export const CONTEXT_LOST_ERROR = 'WebGL context lost and not restored';
+
+/**
+ * Why a renderer threw despite the cached probe passing, or null when the
+ * error is not a WebGL failure at all.
  *
- * Both reasons come from the same window: the probe ran once at startup, and
- * the context can be exhausted or lost by the time a later `<Canvas>` mounts.
- * Read by the WebGL boundary to choose the fallback over the generic panel
- * error, and by the exception filter to group both wordings into one issue.
+ * All reasons come from the same window: the probe ran once at startup, and
+ * the context can be exhausted or lost after it. Read by the WebGL boundary
+ * to choose the fallback over the generic panel error, and by the exception
+ * filter to group every wording into one issue.
  *
  * @param source The error's stack, or its frames' filenames joined. Only the
  *   V8 wording needs it.
@@ -127,8 +137,11 @@ const THREE_SOURCE = /three/;
 export function webglFailureReason(
   message: string,
   source = ''
-): 'context-failed' | 'no-precision' | null {
+): 'context-failed' | 'context-lost' | 'no-precision' | null {
   if (message.includes(CONTEXT_CREATION_ERROR)) return 'context-failed';
+  if (message.includes(CONTEXT_LOST_ERROR) || SHADER_SOURCE_LOST.test(message)) {
+    return 'context-lost';
+  }
   if (PRECISION_NULL_ERROR.test(message)) return 'no-precision';
   if (PRECISION_NULL_V8.test(message) && THREE_SOURCE.test(source)) return 'no-precision';
   return null;

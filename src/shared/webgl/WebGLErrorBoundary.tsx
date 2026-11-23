@@ -16,8 +16,9 @@ interface State {
  * Catches the synchronous throw from three.js when the real `<Canvas>` can't
  * use a GL context even though the cached `detectWebGL()` probe passed:
  * `Error creating WebGL context.` from context-slot exhaustion across the
- * app's several canvases, or the `getShaderPrecisionFormat` null read from a
- * context the GPU process lost between probe and render.
+ * app's several canvases, the `getShaderPrecisionFormat` null read from a
+ * context the GPU process lost between probe and render, or the error
+ * `WebGLContextLossGuard` throws when a live context is lost for good.
  *
  * It flips detection to unavailable and renders the `WebGLFallback` WITHOUT a
  * retry affordance: re-mounting the canvas would just re-throw, which is the

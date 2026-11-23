@@ -46,7 +46,12 @@ import { overlayStatusText } from './overlayStatusText';
 import { useGenerationElapsed } from './useGenerationElapsed';
 import { useBaseplateKeyboard } from '../../hooks/useBaseplateKeyboard';
 import { PanelErrorBoundary } from '@/shared/components/PanelErrorBoundary';
-import { detectWebGL, WebGLFallback, WebGLErrorBoundary } from '@/shared/webgl';
+import {
+  detectWebGL,
+  WebGLFallback,
+  WebGLErrorBoundary,
+  WebGLContextLossGuard,
+} from '@/shared/webgl';
 import { setPreviewCanvas, setPreviewContext, clearPreviewCanvas } from '../../utils/thumbnail';
 
 /**
@@ -328,6 +333,7 @@ export function BaseplatePreview({
                 onPointerMissed={handlePointerMissed}
               >
                 <BaseplatePreviewContextSync />
+                <WebGLContextLossGuard />
                 <SpaceMouseController />
                 <CameraRig
                   projection={projection}

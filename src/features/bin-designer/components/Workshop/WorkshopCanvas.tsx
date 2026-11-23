@@ -16,7 +16,12 @@ import { GizmoHelper, GizmoViewcube } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
-import { detectWebGL, WebGLFallback, WebGLErrorBoundary } from '@/shared/webgl';
+import {
+  detectWebGL,
+  WebGLFallback,
+  WebGLErrorBoundary,
+  WebGLContextLossGuard,
+} from '@/shared/webgl';
 // Side-effect: must run before any <Text> mounts under this Canvas.
 import '@/shared/webgl/configureTroikaText';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
@@ -266,6 +271,7 @@ export function WorkshopCanvas() {
           }}
         >
           <WorkshopContextSync />
+          <WebGLContextLossGuard />
           <SpaceMouseController />
           <WorkshopScene
             structure={structure}

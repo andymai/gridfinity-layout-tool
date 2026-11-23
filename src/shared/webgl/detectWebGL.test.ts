@@ -4,6 +4,7 @@ import {
   markWebGLUnavailable,
   resetWebGLDetectionCacheForTests,
   webglFailureReason,
+  CONTEXT_LOST_ERROR,
 } from './detectWebGL';
 
 afterEach(() => {
@@ -148,6 +149,20 @@ describe('webglFailureReason', () => {
       )
     ).toBe('no-precision');
     expect(webglFailureReason('e.getShaderPrecisionFormat(...) is null')).toBe('no-precision');
+  });
+
+  it("names a lost context in WebKit's shaderSource wording, for WebGL1 and WebGL2", () => {
+    for (const api of ['WebGLRenderingContext', 'WebGL2RenderingContext']) {
+      expect(
+        webglFailureReason(
+          `Argument 1 ('shader') to ${api}.shaderSource must be an instance of WebGLShader`
+        )
+      ).toBe('context-lost');
+    }
+  });
+
+  it('names the context-loss guard error', () => {
+    expect(webglFailureReason(CONTEXT_LOST_ERROR)).toBe('context-lost');
   });
 
   it('keeps an unrelated precision null read out of the WebGL bucket', () => {
