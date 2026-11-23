@@ -1,0 +1,29 @@
+src/features/grid-editor/components/Grid/IsometricPreview/Scene/frameBin.ts
+  s_f3decd9961964a::t_33ef90856ef08f 1-89
+src/shared/events/revealBin.ts
+  s_f3decd9961964a::t_67e25d7e9a7209 5
+src/features/grid-editor/components/Grid/IsometricPreview/Scene/frameBin.test.ts
+  s_f3decd9961964a::t_8499b9e52bf1b8 1-45
+src/features/grid-editor/components/Grid/IsometricPreview/Scene/Scene.tsx
+  s_f3decd9961964a::t_f098717387944f 316-317
+  s_f3decd9961964a::t_67e25d7e9a7209 273
+  s_f3decd9961964a::t_fd741c849d6f33 6-8,44,268-272,274-278,292-314
+  s_f3decd9961964a::t_eb6b7cd429cff7 315
+  s_f3decd9961964a::t_33ef90856ef08f 9,279-291
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ed86ffd2c3ba3a95866123d8b72e2bd850431efb",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
