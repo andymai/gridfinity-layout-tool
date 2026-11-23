@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
 import { CONTEXT_LOST_ERROR } from './detectWebGL';
+import { WebGLFailureContext } from './webglFailureContext';
 
 /**
  * How long a lost context has to come back before the fallback replaces the
@@ -13,8 +14,8 @@ export const RESTORE_GRACE_MS = 3000;
  * Mount inside a `<Canvas>` that sits under a `WebGLErrorBoundary`. A context
  * loss throws nothing in React: three.js silently stops drawing, and any frame
  * already queued throws from the render loop, out of reach of the boundary. So
- * when the context is not restored in time, this throws from render and lets
- * R3F hand the error to the boundary, which shows the fallback.
+ * when the context is not restored in time, this reports the loss to the
+ * boundary, which shows the fallback.
  *
  * The grace period waits for a visible page, because Safari drops the context
  * of a background tab and restores it when the tab comes back.
@@ -25,9 +26,10 @@ export const RESTORE_GRACE_MS = 3000;
 export function WebGLContextLossGuard(): null {
   const canvas = useThree((s) => s.gl.domElement);
   const invalidate = useThree((s) => s.invalidate);
-  const [lost, setLost] = useState(false);
+  const fail = useContext(WebGLFailureContext);
 
   useEffect(() => {
+    if (!fail) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
 
     const startGrace = (): void => {
@@ -35,7 +37,7 @@ export function WebGLContextLossGuard(): null {
         document.addEventListener('visibilitychange', startGrace, { once: true });
         return;
       }
-      timer = setTimeout(() => setLost(true), RESTORE_GRACE_MS);
+      timer = setTimeout(() => fail(new Error(CONTEXT_LOST_ERROR)), RESTORE_GRACE_MS);
     };
     const stopGrace = (): void => {
       clearTimeout(timer);
@@ -59,8 +61,7 @@ export function WebGLContextLossGuard(): null {
       canvas.removeEventListener('webglcontextlost', onLost);
       canvas.removeEventListener('webglcontextrestored', onRestored);
     };
-  }, [canvas, invalidate]);
+  }, [canvas, invalidate, fail]);
 
-  if (lost) throw new Error(CONTEXT_LOST_ERROR);
   return null;
 }

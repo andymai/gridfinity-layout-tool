@@ -119,7 +119,7 @@ const THREE_SOURCE = /three/;
  */
 const SHADER_SOURCE_LOST = /shaderSource must be an instance of WebGLShader/;
 
-/** Thrown by `WebGLContextLossGuard` when a lost context is not restored. */
+/** Reported by `WebGLContextLossGuard` when a lost context is not restored. */
 export const CONTEXT_LOST_ERROR = 'WebGL context lost and not restored';
 
 /**

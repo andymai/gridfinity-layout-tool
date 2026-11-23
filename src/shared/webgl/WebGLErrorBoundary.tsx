@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { captureException } from '@/shared/analytics/posthog';
 import { markWebGLUnavailable, webglFailureReason } from './detectWebGL';
 import { WebGLFallback } from './WebGLFallback';
+import { WebGLFailureContext } from './webglFailureContext';
 
 interface Props {
   children: ReactNode;
@@ -16,9 +17,9 @@ interface State {
  * Catches the synchronous throw from three.js when the real `<Canvas>` can't
  * use a GL context even though the cached `detectWebGL()` probe passed:
  * `Error creating WebGL context.` from context-slot exhaustion across the
- * app's several canvases, the `getShaderPrecisionFormat` null read from a
- * context the GPU process lost between probe and render, or the error
- * `WebGLContextLossGuard` throws when a live context is lost for good.
+ * app's several canvases, or the `getShaderPrecisionFormat` null read from a
+ * context the GPU process lost between probe and render. It also takes the
+ * failure that `WebGLContextLossGuard` reports through `WebGLFailureContext`.
  *
  * It flips detection to unavailable and renders the `WebGLFallback` WITHOUT a
  * retry affordance: re-mounting the canvas would just re-throw, which is the
@@ -34,6 +35,11 @@ export class WebGLErrorBoundary extends Component<Props, State> {
   static getDerivedStateFromError(error: Error): State {
     return { error };
   }
+
+  private readonly fail = (error: Error): void => {
+    this.componentDidCatch(error);
+    this.setState({ error });
+  };
 
   componentDidCatch(error: Error) {
     const reason = webglFailureReason(error.message, error.stack);
@@ -58,6 +64,6 @@ export class WebGLErrorBoundary extends Component<Props, State> {
       // "rethrows non-WebGL errors" test; keep that test if you touch this.
       throw error;
     }
-    return this.props.children;
+    return <WebGLFailureContext value={this.fail}>{this.props.children}</WebGLFailureContext>;
   }
 }
