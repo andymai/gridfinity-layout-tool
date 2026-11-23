@@ -1,0 +1,83 @@
+src/features/baseplate/hooks/useBaseplateUndo.test.ts
+  s_f3decd9961964a::t_c1afbe77575b2c 1-8,10-20,25,27-55,57-69,74-98,104-119,121-124,126-139
+  s_f3decd9961964a::t_c452e8488ebf7a 9,21-24,26,56,99-103,120,125
+  s_f3decd9961964a::t_880c0578c68b9b 70-73
+src/features/baseplate/components/BaseplatePanel/CornerRadiusControl.test.tsx
+  s_f3decd9961964a::t_e922072e2307d5 16,24,26,34,39-57,69
+src/core/cqrs/middleware/index.ts
+  s_f3decd9961964a::t_014538b17770a6 5-6
+apps/docs/reference/shortcuts.md
+  s_f3decd9961964a::t_be3d243ef563ef 17,36-42
+src/core/cqrs/middleware/undoCapture.test.ts
+  s_f3decd9961964a::t_7cf64200b9dacf 7-13,270-330
+  s_f3decd9961964a::t_94b98262c9fd87 331
+apps/docs/layouts/organizing-layouts.md
+  s_f3decd9961964a::t_be3d243ef563ef 16,109
+src/features/baseplate/components/BaseplatePanel/BaseSection.tsx
+  s_f3decd9961964a::t_c937ba4b2150ba 78-80,139-147,149-152,172-178,180-183,348-349,359-360,415-416,441-442,484-485,500-501,516-517,530-531,569-570,584-585,625-626
+  s_f3decd9961964a::t_7fbd3fba16e852 658,661,668
+src/features/baseplate/components/BaseplatePage/BaseplatePage.test.tsx
+  s_f3decd9961964a::t_682941f3d4ef23 1-3,105-106
+  s_f3decd9961964a::t_18b4a8162ee80f 104,107-121
+src/core/cqrs/index.ts
+  s_f3decd9961964a::t_014538b17770a6 157-164
+src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.tsx
+  s_f3decd9961964a::t_6ba06e29b322a6 154
+src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
+  s_f3decd9961964a::t_39b6aa31a11c58 22,35,112-113,338-343,345-361,363-375
+  s_f3decd9961964a::t_c635f927f47aff 284
+  s_f3decd9961964a::t_b9ac34a8d49f6b 336-337
+  s_f3decd9961964a::t_caad957e2641ec 344,362
+src/features/baseplate/components/BaseplatePanel/CornerRadiusControl.tsx
+  s_f3decd9961964a::t_7fbd3fba16e852 17,20,30,42,72,82,92,102
+  s_f3decd9961964a::t_bd803faf8ed7f5 63
+src/features/baseplate/components/BaseplatePanel/panelState.ts
+  s_f3decd9961964a::t_40274fff589b77 31-35,40-91,97-102
+  s_f3decd9961964a::t_9b26a4c1215a1d 4-9,13-15
+  s_f3decd9961964a::t_e80bf779a47d55 19
+src/features/baseplate/hooks/useBaseplateUndo.ts
+  s_f3decd9961964a::t_226190a77fcb3a 1-60,62,64,68-77
+  s_f3decd9961964a::t_880c0578c68b9b 61,63,65-67
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
+  s_f3decd9961964a::t_4f1c3c79c8d500 296-324
+  s_f3decd9961964a::t_1feb89fdaa5ff1 8,18,37,76,82,84,98,103,226,246,259-273,275
+src/core/cqrs/middleware/undoCapture.ts
+  s_f3decd9961964a::t_37fba82b422d8e 161-188,190
+  s_50176789fd4794::t_dc4525e6d0ed02 191-193
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.tsx
+  s_f3decd9961964a::t_6ba06e29b322a6 35-39,63
+src/features/baseplate/components/BaseplatePanel/panelState.test.ts
+  s_f3decd9961964a::t_fff0ed231660da 4-5,8,10-16,24-35,38-39,68-85,89-97,107-170
+  s_f3decd9961964a::t_4f219fa266ce05 7,86-88
+apps/docs/reference/faq.md
+  s_f3decd9961964a::t_be3d243ef563ef 158
+src/features/baseplate/components/BaseplatePanel/BaseplatePanel.test.tsx
+  s_f3decd9961964a::t_1444299921b98c 8,63-66,68-84,86-93,101-112
+  s_f3decd9961964a::t_48916aeb2bbe9a 9-10,67,85
+apps/docs/baseplates/basics.md
+  s_f3decd9961964a::t_be3d243ef563ef 112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "383af94894f943f50728318892c3b8c72259bc7a",
+  "prompts": {},
+  "sessions": {
+    "s_50176789fd4794": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5f010690-c6bb-4905-bb27-930216b5f3d6",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
