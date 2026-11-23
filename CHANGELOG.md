@@ -1,5 +1,41 @@
 # Changelog
 
+## [4.552.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.551.0...gridfinity-layout-tool-v4.552.0) (2026-11-23)
+
+
+### Features
+
+* **baseplate:** undo and redo on the baseplate page ([#5194](https://github.com/andymai/gridfinity-layout-tool/issues/5194)) ([d3c1b41](https://github.com/andymai/gridfinity-layout-tool/commit/d3c1b4122db687936247655bd58bb2908594add3))
+* **layout-export:** show the support view after a layout ZIP export ([#5191](https://github.com/andymai/gridfinity-layout-tool/issues/5191)) ([b21b68b](https://github.com/andymai/gridfinity-layout-tool/commit/b21b68bfc979c4063bb1b116d5ac2c9490a6f5f1))
+* **places:** add a note to an item and reorder items in the contents editor ([#5207](https://github.com/andymai/gridfinity-layout-tool/issues/5207)) ([ff3f5e5](https://github.com/andymai/gridfinity-layout-tool/commit/ff3f5e5f4f619a426ca405ed90be08148ac88382))
+* **places:** open a bin from a /l/{id}/{slug}?bin={binId} link ([#5208](https://github.com/andymai/gridfinity-layout-tool/issues/5208)) ([42fb87f](https://github.com/andymai/gridfinity-layout-tool/commit/42fb87f0c0fc586e56be60610032c03f5eb8d2fb))
+* **print-bed:** pick a printer to fill in the print bed size ([#5190](https://github.com/andymai/gridfinity-layout-tool/issues/5190)) ([5cf66f9](https://github.com/andymai/gridfinity-layout-tool/commit/5cf66f91908731bde89df0be206379e351247be6))
+
+
+### Bug Fixes
+
+* **a11y:** put visible text in three accessible names, and bring two e2e specs up to date ([#5206](https://github.com/andymai/gridfinity-layout-tool/issues/5206)) ([0a7b88b](https://github.com/andymai/gridfinity-layout-tool/commit/0a7b88b5292fffc77402c7d798e7b0e022d5bc75))
+* **baseplate:** keep large corner radii and round detached rails to the plate's radius ([#5195](https://github.com/andymai/gridfinity-layout-tool/issues/5195)) ([cb769da](https://github.com/andymai/gridfinity-layout-tool/commit/cb769da0939ee5d0883b2e349aef6331a0186b50))
+* **baseplate:** order every write to a saved baseplate design ([#5203](https://github.com/andymai/gridfinity-layout-tool/issues/5203)) ([3a09fd2](https://github.com/andymai/gridfinity-layout-tool/commit/3a09fd24cdecc5e97cadaf63c3d8f050aee15418))
+* **designer:** apply each design update to the save queued before it ([#5202](https://github.com/andymai/gridfinity-layout-tool/issues/5202)) ([5e18f5f](https://github.com/andymai/gridfinity-layout-tool/commit/5e18f5f79152961ebc2ca1c4c43ad9482032ce3f))
+* **generation:** emboss the offset on connector fit test coupons at large nozzles ([#5187](https://github.com/andymai/gridfinity-layout-tool/issues/5187)) ([3b15bb8](https://github.com/andymai/gridfinity-layout-tool/commit/3b15bb81790f3e2a3a4d72409554fd17f0c0f361))
+* **generation:** run the lip's support chamfer down to thin walls ([#5186](https://github.com/andymai/gridfinity-layout-tool/issues/5186)) ([f28e6a4](https://github.com/andymai/gridfinity-layout-tool/commit/f28e6a4b20fbc360df8296be0781be19f3ff4215))
+* **grid:** tell an empty grid to pick a gap while Find bins that fit is armed ([#5197](https://github.com/andymai/gridfinity-layout-tool/issues/5197)) ([40837f9](https://github.com/andymai/gridfinity-layout-tool/commit/40837f9f1dd223c3e3d8dfd7a1c4dc2691e49a2e))
+* **header:** fold the planner's support links into the menu below 1100 px ([#5201](https://github.com/andymai/gridfinity-layout-tool/issues/5201)) ([79f61e8](https://github.com/andymai/gridfinity-layout-tool/commit/79f61e8c77b2db38185b2173123a33b3d7be302f))
+* **keyboard:** undo and redo while a switch or slider has focus ([#5196](https://github.com/andymai/gridfinity-layout-tool/issues/5196)) ([32fee65](https://github.com/andymai/gridfinity-layout-tool/commit/32fee65bf46f13199eec3f21a01929bcaadaf50f))
+* **places:** refresh Find after a pull and hold a reveal until the grid mounts ([#5200](https://github.com/andymai/gridfinity-layout-tool/issues/5200)) ([cb04d87](https://github.com/andymai/gridfinity-layout-tool/commit/cb04d87f949706dc5a28fedef8843af6d89a7628))
+* **schema:** accept the values the app writes in bin design files ([#5189](https://github.com/andymai/gridfinity-layout-tool/issues/5189)) ([5db87ab](https://github.com/andymai/gridfinity-layout-tool/commit/5db87ab3e65006f018e39c6bb2979dae682f2b07))
+* **sync:** keep an overhang whose taper band rises past 350 mm ([#5199](https://github.com/andymai/gridfinity-layout-tool/issues/5199)) ([13d6adb](https://github.com/andymai/gridfinity-layout-tool/commit/13d6adbe937a4d737d222c18a7513284dd9c15f3))
+* **sync:** retry a download that failed for a passing reason on the next pull ([#5188](https://github.com/andymai/gridfinity-layout-tool/issues/5188)) ([f6c11c2](https://github.com/andymai/gridfinity-layout-tool/commit/f6c11c294a85e61e4af9d08fb7345089badbc455))
+* **sync:** write a burst of local changes together, and share pending-count reads ([#5183](https://github.com/andymai/gridfinity-layout-tool/issues/5183)) ([2551496](https://github.com/andymai/gridfinity-layout-tool/commit/2551496bde508cf269492a75280daffb2aefed5a))
+
+
+### Performance
+
+* **generation:** cut a kumiko lattice's corner cells as prisms on flat facets ([#5205](https://github.com/andymai/gridfinity-layout-tool/issues/5205)) ([d6ffa1f](https://github.com/andymai/gridfinity-layout-tool/commit/d6ffa1fc3de701cec8afe5106ecf5aebb2bdb672))
+* **generation:** move to occt-wasm 5.18.1 ([#5192](https://github.com/andymai/gridfinity-layout-tool/issues/5192)) ([266ad1c](https://github.com/andymai/gridfinity-layout-tool/commit/266ad1c6c0083169948f53a3380750be4a081cc3))
+* **generation:** move to occt-wasm 5.18.2 ([#5198](https://github.com/andymai/gridfinity-layout-tool/issues/5198)) ([14e38ab](https://github.com/andymai/gridfinity-layout-tool/commit/14e38ab5da9edc4f25b205a2c93dc8aba7c2f47d))
+
 ## [4.551.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.550.0...gridfinity-layout-tool-v4.551.0) (2026-11-22)
 
 
