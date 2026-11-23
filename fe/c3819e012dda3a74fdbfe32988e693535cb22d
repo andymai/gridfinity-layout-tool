@@ -1,0 +1,28 @@
+src/features/staging/components/Staging/Staging.tsx
+  s_f3decd9961964a::t_c7dce2f5086440 303
+src/shared/events/revealBin.test.ts
+  s_f3decd9961964a::t_c7dce2f5086440 18-19,33-34,48-49,60,66,71,75-90
+  s_f3decd9961964a::t_5f515372c6d64a 91
+src/shared/events/revealBin.ts
+  s_f3decd9961964a::t_c7dce2f5086440 5-8,16-24,32-33,36-38,40-47,49
+src/features/grid-editor/hooks/useRevealGridBin.ts
+  s_f3decd9961964a::t_c7dce2f5086440 12
+src/features/places/hooks/useFocusBin.test.ts
+  s_f3decd9961964a::t_73e7566e176a84 85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fec3819e012dda3a74fdbfe32988e693535cb22d",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
