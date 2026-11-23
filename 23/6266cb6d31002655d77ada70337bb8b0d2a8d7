@@ -1,0 +1,59 @@
+src/i18n/locales/es.json
+  s_f3decd9961964a::t_bea9cc5c92501a 3904-3909
+src/features/bin-inspector/components/Inspector/BinItemsEditor/BinItemsEditor.tsx
+  s_f3decd9961964a::t_46afd862d949d9 200-201
+  s_f3decd9961964a::t_83e160c2fe3a90 5-6,21-24,59-62,71-80,83-84,86,89-93,95,98-101,106-112,128-199,202-213,237-242,251-257,262-269,296,302-305
+src/i18n/locales/ka.json
+  s_f3decd9961964a::t_bea9cc5c92501a 529-534
+src/i18n/locales/de.json
+  s_f3decd9961964a::t_bea9cc5c92501a 3904-3909
+src/i18n/locales/pt-BR.json
+  s_f3decd9961964a::t_bea9cc5c92501a 3904-3909
+src/i18n/locales/ja.json
+  s_f3decd9961964a::t_bea9cc5c92501a 3833-3838
+src/i18n/locales/pl.json
+  s_f3decd9961964a::t_bea9cc5c92501a 4046-4051
+src/features/bin-inspector/components/Inspector/BinItemsEditor/BinItemsEditor.test.tsx
+  s_f3decd9961964a::t_936cea43e7b9fb 17-21,23-71
+  s_f3decd9961964a::t_46afd862d949d9 2,16,22
+src/i18n/locales/cs.json
+  s_f3decd9961964a::t_bea9cc5c92501a 3975-3980
+apps/docs/settings/labs.md
+  s_f3decd9961964a::t_6e877407aea96d 40
+src/i18n/locales/sv.json
+  s_f3decd9961964a::t_bea9cc5c92501a 3904-3909
+src/i18n/locales/ko.json
+  s_f3decd9961964a::t_bea9cc5c92501a 3833-3838
+src/i18n/locales/fr.json
+  s_f3decd9961964a::t_bea9cc5c92501a 3904-3909
+src/i18n/locales/uk.json
+  s_f3decd9961964a::t_bea9cc5c92501a 4046-4051
+scripts/i18n-values-allowlist.json
+  s_f3decd9961964a::t_2c6cd3d74a4a54 4
+src/i18n/locales/en.ts
+  s_f3decd9961964a::t_bea9cc5c92501a 578-583
+src/i18n/locales/nb.json
+  s_f3decd9961964a::t_bea9cc5c92501a 3904-3909
+src/i18n/locales/zh-CN.json
+  s_f3decd9961964a::t_bea9cc5c92501a 3833-3838
+src/i18n/locales/it.json
+  s_f3decd9961964a::t_bea9cc5c92501a 3904-3909
+src/i18n/locales/nl.json
+  s_f3decd9961964a::t_bea9cc5c92501a 3904-3909
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "236266cb6d31002655d77ada70337bb8b0d2a8d7",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
