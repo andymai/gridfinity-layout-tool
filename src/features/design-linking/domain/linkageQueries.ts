@@ -7,6 +7,7 @@
 import type { Bin } from '@/core/types';
 import type { BinId, DesignId, DesignLinkedBinsSummary, SyncableDimensions } from '../types';
 import type { CustomBinRef } from '@/features/bin-designer';
+import { sizedByLinkedDesign } from '@/shared/utils/binPairs';
 import { dimensionsFitAllowingRotation } from './linkingRules';
 
 // Single Entity Queries
@@ -93,6 +94,14 @@ export function binMatchesDesign(bin: Bin, designDimensions: SyncableDimensions)
     { width: bin.width, depth: bin.depth, height: bin.height },
     designDimensions
   );
+}
+
+/**
+ * Whether a linked bin stands at a size other than its design's. Its export
+ * prints the design's size, so the grid then reserves the wrong cells.
+ */
+export function differsFromDesign(bin: Bin, designDimensions: SyncableDimensions): boolean {
+  return sizedByLinkedDesign(bin) && !binMatchesDesign(bin, designDimensions);
 }
 
 /**

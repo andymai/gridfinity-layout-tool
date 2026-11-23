@@ -6078,6 +6078,10 @@ const en: Record<string, string> = {
   'designLinking.inspector.deleteDesign': 'Delete bin design',
   'designLinking.inspector.edgeMismatch': "Half-unit foot doesn't match where this bin sits.",
   'designLinking.inspector.matchDrawer': 'Match layout',
+  'designLinking.inspector.sizeMismatch':
+    "This bin is {bin}, but its design is {design}. It prints at the design's size.",
+  'designLinking.inspector.matchDesignSize': 'Resize to {design}',
+  'designLinking.inspector.sizeMismatchNoRoom': 'There is no room here for that size.',
 
   // Confirmation dialogs
   'designLinking.confirm.unlinkTitle': 'Unlink bin design',

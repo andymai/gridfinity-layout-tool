@@ -5616,5 +5616,8 @@
   "binDesigner.cutouts.library.emptyFolder": "ეს საქაღალდე ცარიელია",
   "binDesigner.cutouts.library.size": "{width} × {depth} mm",
   "binDesigner.cutouts.library.foldersFull": "ბიბლიოთეკა {max} საქაღალდეს იტევს. ახლის შესაქმნელად რამდენიმე წაშალეთ.",
-  "binDesigner.cutouts.library.tooDeep": "საქაღალდეები მაქსიმუმ {max} დონის სიღრმეზე ჩაიდგმება. აირჩიეთ უფრო ზედა საქაღალდე."
+  "binDesigner.cutouts.library.tooDeep": "საქაღალდეები მაქსიმუმ {max} დონის სიღრმეზე ჩაიდგმება. აირჩიეთ უფრო ზედა საქაღალდე.",
+  "designLinking.inspector.sizeMismatch": "ეს ყუთი არის {bin}, მაგრამ მისი დიზაინი არის {design}. ის დიზაინის ზომით დაიბეჭდება.",
+  "designLinking.inspector.matchDesignSize": "ზომის შეცვლა: {design}",
+  "designLinking.inspector.sizeMismatchNoRoom": "აქ ამ ზომისთვის ადგილი არ არის."
 }

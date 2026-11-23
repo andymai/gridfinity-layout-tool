@@ -5616,5 +5616,8 @@
   "binDesigner.cutouts.library.emptyFolder": "Mappen er tom",
   "binDesigner.cutouts.library.size": "{width} × {depth} mm",
   "binDesigner.cutouts.library.foldersFull": "Biblioteket rommer {max} mapper. Slett noen for å lage flere.",
-  "binDesigner.cutouts.library.tooDeep": "Mapper kan ligge maks {max} nivåer dypt. Velg en mappe høyere opp."
+  "binDesigner.cutouts.library.tooDeep": "Mapper kan ligge maks {max} nivåer dypt. Velg en mappe høyere opp.",
+  "designLinking.inspector.sizeMismatch": "Denne beholderen er {bin}, men designet er {design}. Den skrives ut i designets størrelse.",
+  "designLinking.inspector.matchDesignSize": "Endre til {design}",
+  "designLinking.inspector.sizeMismatchNoRoom": "Det er ikke plass til den størrelsen her."
 }
