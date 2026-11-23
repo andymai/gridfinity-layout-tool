@@ -1,0 +1,25 @@
+src/features/places/hooks/useFocusBin.test.ts
+  s_f3decd9961964a::t_4569637df5f823 8,43
+src/shared/events/revealBin.ts
+  s_f3decd9961964a::t_a03a8f82384bfd 8-15,22,28-29,34-37
+  s_f3decd9961964a::t_ef7d215fc680e8 7,38
+src/shared/events/revealBin.test.ts
+  s_f3decd9961964a::t_a03a8f82384bfd 1,3,6-14,30-74
+  s_f3decd9961964a::t_26f09e3707baae 29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8ebe0d049cb5d056edb316e8fabfb3b3db88913a",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
