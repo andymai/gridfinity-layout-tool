@@ -20,11 +20,13 @@ export interface ResizeWall extends EligibleDivider {
   readonly geometry: DividerGeometry | null;
 }
 
+type MovableWall = ResizeWall & { readonly geometry: DividerGeometry };
+
 export interface CompartmentResizePlan {
   readonly currentMm: number;
   readonly minMm: number;
   readonly maxMm: number;
-  readonly walls: readonly ResizeWall[];
+  readonly walls: readonly MovableWall[];
   /** +1 when the far side (right / back) moves, −1 when the near side does. */
   readonly direction: 1 | -1;
 }
@@ -37,7 +39,7 @@ function sideWalls(
   axis: ResizeAxis,
   far: boolean,
   walls: readonly ResizeWall[]
-): ResizeWall[] | null {
+): MovableWall[] | null {
   const bounds = getCompartmentBounds(config, compartmentId);
   if (!bounds) return null;
   const { cols, rows, cells } = config;
@@ -54,7 +56,7 @@ function sideWalls(
   const wallAxis = isX ? 'vertical' : 'horizontal';
   const spanStart = isX ? bounds.minRow : bounds.minCol;
   const spanEnd = isX ? bounds.maxRow : bounds.maxCol;
-  const found = new Map<number, ResizeWall>();
+  const found = new Map<number, MovableWall>();
   for (let i = spanStart; i <= spanEnd; i++) {
     const neighborId = isX ? cells[i * cols + neighborIndex] : cells[neighborIndex * cols + i];
     if (found.has(neighborId)) continue;
@@ -64,7 +66,7 @@ function sideWalls(
       (w) => w.axis === wallAxis && w.compartmentA === a && w.compartmentB === b
     );
     if (!wall?.geometry) return null;
-    found.set(neighborId, wall);
+    found.set(neighborId, { ...wall, geometry: wall.geometry });
   }
   return [...found.values()];
 }
@@ -95,7 +97,6 @@ export function planCompartmentResize(
     let low = Number.NEGATIVE_INFINITY;
     let high = Number.POSITIVE_INFINITY;
     for (const wall of moved) {
-      if (!wall.geometry) continue;
       low = Math.max(low, wall.geometry.offsetMin - Math.min(wall.offsetStart, wall.offsetEnd));
       high = Math.min(high, wall.geometry.offsetMax - Math.max(wall.offsetStart, wall.offsetEnd));
     }
@@ -128,9 +129,7 @@ export function resizedDividerOverrides(
   for (const wall of plan.walls) {
     const offsetStart = round3(wall.offsetStart + shift);
     const offsetEnd = round3(wall.offsetEnd + shift);
-    const limits = wall.geometry
-      ? getLeanLimits(wall.geometry, { offsetStart, offsetEnd })
-      : { minDeg: 0, maxDeg: 0 };
+    const limits = getLeanLimits(wall.geometry, { offsetStart, offsetEnd });
     const rakeDeg = Math.min(limits.maxDeg, Math.max(limits.minDeg, wall.rakeDeg));
     const override: DividerOverride = {
       compartmentA: wall.compartmentA,
