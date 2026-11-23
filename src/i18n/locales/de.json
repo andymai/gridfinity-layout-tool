@@ -5616,5 +5616,8 @@
   "binDesigner.cutouts.library.emptyFolder": "Dieser Ordner ist leer",
   "binDesigner.cutouts.library.size": "{width} × {depth} mm",
   "binDesigner.cutouts.library.foldersFull": "Die Bibliothek fasst {max} Ordner. Lösche einige, um neue anzulegen.",
-  "binDesigner.cutouts.library.tooDeep": "Ordner lassen sich höchstens {max} Ebenen tief verschachteln. Wähle einen Ordner weiter oben."
+  "binDesigner.cutouts.library.tooDeep": "Ordner lassen sich höchstens {max} Ebenen tief verschachteln. Wähle einen Ordner weiter oben.",
+  "designLinking.inspector.sizeMismatch": "Dieser Bin ist {bin}, aber sein Design ist {design}. Gedruckt wird in der Größe des Designs.",
+  "designLinking.inspector.matchDesignSize": "Auf {design} ändern",
+  "designLinking.inspector.sizeMismatchNoRoom": "Hier ist kein Platz für diese Größe."
 }

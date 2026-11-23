@@ -5616,5 +5616,8 @@
   "binDesigner.cutouts.library.emptyFolder": "Mappen är tom",
   "binDesigner.cutouts.library.size": "{width} × {depth} mm",
   "binDesigner.cutouts.library.foldersFull": "Biblioteket rymmer {max} mappar. Ta bort några för att skapa fler.",
-  "binDesigner.cutouts.library.tooDeep": "Mappar kan ligga högst {max} nivåer djupt. Välj en mapp högre upp."
+  "binDesigner.cutouts.library.tooDeep": "Mappar kan ligga högst {max} nivåer djupt. Välj en mapp högre upp.",
+  "designLinking.inspector.sizeMismatch": "Det här facket är {bin}, men designen är {design}. Det skrivs ut i designens storlek.",
+  "designLinking.inspector.matchDesignSize": "Ändra till {design}",
+  "designLinking.inspector.sizeMismatchNoRoom": "Det finns inte plats för den storleken här."
 }

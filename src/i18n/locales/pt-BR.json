@@ -5616,5 +5616,8 @@
   "binDesigner.cutouts.library.emptyFolder": "Esta pasta está vazia",
   "binDesigner.cutouts.library.size": "{width} × {depth} mm",
   "binDesigner.cutouts.library.foldersFull": "A biblioteca comporta {max} pastas. Exclua algumas para criar outras.",
-  "binDesigner.cutouts.library.tooDeep": "As pastas se aninham no máximo {max} níveis. Escolha uma pasta mais acima."
+  "binDesigner.cutouts.library.tooDeep": "As pastas se aninham no máximo {max} níveis. Escolha uma pasta mais acima.",
+  "designLinking.inspector.sizeMismatch": "Este bin tem {bin}, mas o design tem {design}. Ele é impresso no tamanho do design.",
+  "designLinking.inspector.matchDesignSize": "Redimensionar para {design}",
+  "designLinking.inspector.sizeMismatchNoRoom": "Não há espaço aqui para esse tamanho."
 }

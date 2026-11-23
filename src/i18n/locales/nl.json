@@ -5616,5 +5616,8 @@
   "binDesigner.cutouts.library.emptyFolder": "Deze map is leeg",
   "binDesigner.cutouts.library.size": "{width} × {depth} mm",
   "binDesigner.cutouts.library.foldersFull": "De bibliotheek bevat maximaal {max} mappen. Verwijder er een paar om nieuwe te maken.",
-  "binDesigner.cutouts.library.tooDeep": "Mappen gaan maximaal {max} niveaus diep. Kies een map hoger in de lijst."
+  "binDesigner.cutouts.library.tooDeep": "Mappen gaan maximaal {max} niveaus diep. Kies een map hoger in de lijst.",
+  "designLinking.inspector.sizeMismatch": "Deze bin is {bin}, maar het ontwerp is {design}. Hij wordt geprint op de maat van het ontwerp.",
+  "designLinking.inspector.matchDesignSize": "Wijzigen naar {design}",
+  "designLinking.inspector.sizeMismatchNoRoom": "Hier is geen ruimte voor die maat."
 }
