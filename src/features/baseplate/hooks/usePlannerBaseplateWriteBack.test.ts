@@ -66,6 +66,12 @@ function setPlate(next: StoredBaseplateParams): void {
   });
 }
 
+function hideTab(): void {
+  Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+  document.dispatchEvent(new Event('visibilitychange'));
+  Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+}
+
 /** Longer than the write delay, for the cases that must not write. */
 function settle(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 1300));
@@ -165,11 +171,34 @@ describe('usePlannerBaseplateWriteBack', () => {
     await waitFor(() => expect(updateDesignParams).toHaveBeenCalledOnce(), { timeout: 3000 });
     expect(await storedParams(id)).toEqual(params);
 
-    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
-    document.dispatchEvent(new Event('visibilitychange'));
-    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+    hideTab();
 
     await waitFor(async () => expect(await storedParams(id)).toEqual(edited), { timeout: 1000 });
+  });
+
+  it('never retries an older failed write over a newer saved edit', async () => {
+    const id = await linkedLayout();
+    renderHook(() => usePlannerBaseplateWriteBack());
+    const newer: StoredBaseplateParams = { ...params, paddingBack: mm(35) };
+    let failOlder: (() => void) | null = null;
+    vi.mocked(updateDesignParams).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          failOlder = () => resolve(err(storageUnavailable('indexedDB')));
+        })
+    );
+
+    setPlate(edited);
+    hideTab();
+    await waitFor(() => expect(failOlder).not.toBeNull());
+    setPlate(newer);
+    hideTab();
+    act(() => failOlder?.());
+    await waitFor(async () => expect(await storedParams(id)).toEqual(newer), { timeout: 1000 });
+
+    hideTab();
+    await settle();
+    expect(await storedParams(id)).toEqual(newer);
   });
 
   it('writes a pending edit at once when the planner closes', async () => {

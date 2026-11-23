@@ -25,6 +25,8 @@ const WRITE_DELAY_MS = 1000;
 interface PendingWrite {
   readonly designId: BaseplateDesignId;
   readonly params: StoredBaseplateParams;
+  /** Order of the edit, so an older write never lands over a newer one. */
+  readonly seq: number;
 }
 
 /** Resolves false when storage failed, so the edit can try again. */
@@ -48,27 +50,43 @@ export function usePlannerBaseplateWriteBack(): void {
   useEffect(() => {
     let pending: PendingWrite | null = null;
     let timer: ReturnType<typeof setTimeout> | null = null;
-    // Writes run in order, so a slow earlier write never lands after a later one.
+    let seq = 0;
+    /** The newest edit for each design. Only that edit may write or retry. */
+    const newest = new Map<BaseplateDesignId, number>();
+    /** Newest edits that storage refused, kept for the next flush. */
+    const failed = new Map<BaseplateDesignId, PendingWrite>();
+    // Writes run one at a time, in the order they were flushed.
     let queue: Promise<void> = Promise.resolve();
 
+    const isNewest = (write: PendingWrite): boolean => newest.get(write.designId) === write.seq;
+
+    const run = (write: PendingWrite): void => {
+      queue = queue.then(async () => {
+        if (!isNewest(write)) return;
+        if (!(await writeIfChanged(write)) && isNewest(write)) failed.set(write.designId, write);
+      });
+    };
+
+    /** Write the pending edit, and try again the ones storage refused. */
     const flush = (): void => {
       if (timer !== null) clearTimeout(timer);
       timer = null;
+      const retries = [...failed.values()];
+      failed.clear();
+      for (const write of retries) run(write);
       const write = pending;
       pending = null;
-      if (write === null) return;
-      queue = queue.then(async () => {
-        // A failed write waits for the next flush (an edit, a hidden tab,
-        // leaving the planner), unless a newer edit took its place.
-        if (!(await writeIfChanged(write)) && pending === null) pending = write;
-      });
+      if (write !== null) run(write);
     };
 
     const schedule = (): void => {
       const { activeBaseplateId, baseplateParams } = useLayoutStore.getState().layout;
       if (!activeBaseplateId || !baseplateParams) return;
       if (pending !== null && pending.designId !== activeBaseplateId) flush();
-      pending = { designId: activeBaseplateId, params: baseplateParams };
+      seq += 1;
+      newest.set(activeBaseplateId, seq);
+      failed.delete(activeBaseplateId);
+      pending = { designId: activeBaseplateId, params: baseplateParams, seq };
       if (timer !== null) clearTimeout(timer);
       timer = setTimeout(flush, WRITE_DELAY_MS);
     };
