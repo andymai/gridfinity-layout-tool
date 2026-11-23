@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { LayoutCard } from '.';
 import { gridUnits, heightUnits, mm } from '@/core/types';
 import type { InspirationLayout } from '../../types';
+import { cssValue } from '@/test/css';
 
 // Mock LayoutThumbnail to avoid complex SVG rendering in tests
 vi.mock('@/shared/components/LayoutThumbnail', () => ({
@@ -110,21 +111,21 @@ describe('LayoutCard', () => {
       render(<LayoutCard {...defaultProps} index={2} />);
 
       const card = screen.getByRole('button');
-      expect(card).toHaveStyle({ animationDelay: '100ms' });
+      expect(card.style.animationDelay).toBe(cssValue('animation-delay', '100ms'));
     });
 
     it('caps animation delay at 300ms', () => {
       render(<LayoutCard {...defaultProps} index={10} />);
 
       const card = screen.getByRole('button');
-      expect(card).toHaveStyle({ animationDelay: '300ms' });
+      expect(card.style.animationDelay).toBe(cssValue('animation-delay', '300ms'));
     });
 
     it('applies 0ms delay for first card', () => {
       render(<LayoutCard {...defaultProps} index={0} />);
 
       const card = screen.getByRole('button');
-      expect(card).toHaveStyle({ animationDelay: '0ms' });
+      expect(card.style.animationDelay).toBe(cssValue('animation-delay', '0ms'));
     });
   });
 

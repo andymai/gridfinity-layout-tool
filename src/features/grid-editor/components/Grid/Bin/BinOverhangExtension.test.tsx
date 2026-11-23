@@ -136,8 +136,8 @@ describe('BinOverhangExtension', () => {
         })
       );
       const ext = container.firstChild as HTMLElement;
-      expect(parseFloat(ext.style.left)).toBeCloseTo(-(7 / 42) * 34, 6);
-      expect(parseFloat(ext.style.right)).toBeCloseTo(-(7 / 42) * 34, 6);
+      expect(parseFloat(ext.style.left)).toBeCloseTo(-(7 / 42) * 34, 4);
+      expect(parseFloat(ext.style.right)).toBeCloseTo(-(7 / 42) * 34, 4);
       expect(ext.style.bottom).toBe('0px');
     });
 
@@ -201,8 +201,8 @@ describe('BinOverhangExtension — non-square grid', () => {
     );
     const ext = container.firstChild as HTMLElement;
     // Width: 21mm of a 42mm pitch over a 34px unit = half a unit.
-    expect(parseFloat(ext.style.left)).toBeCloseTo(-(21 / 42) * 34, 6);
+    expect(parseFloat(ext.style.left)).toBeCloseTo(-(21 / 42) * 34, 4);
     // Depth: 21mm of a 21mm pitch over an 18px row = a whole unit, not half.
-    expect(parseFloat(ext.style.top)).toBeCloseTo(-(21 / 21) * 18, 6);
+    expect(parseFloat(ext.style.top)).toBeCloseTo(-(21 / 21) * 18, 4);
   });
 });

@@ -5,6 +5,7 @@ import { CreditsClock } from '../../utils/creditsClock';
 import { buildCreditsPlan } from '../../utils/creditsPlan';
 import type { RollSchedule } from '../../utils/rollSchedule';
 import type { SupporterBin } from '../../utils/supportersData';
+import { cssValue } from '@/test/css';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
@@ -144,7 +145,7 @@ describe('CreditsRoll', () => {
     act(() => clock.seek(clock.duration));
     const list = container.querySelector<HTMLElement>('.will-change-transform');
     expect(list?.style.transform).toBe(
-      `translate3d(0, ${-(seen.schedule?.timeline.endOffset ?? 0)}px, 0)`
+      cssValue('transform', `translate3d(0, ${-(seen.schedule?.timeline.endOffset ?? 0)}px, 0)`)
     );
   });
 

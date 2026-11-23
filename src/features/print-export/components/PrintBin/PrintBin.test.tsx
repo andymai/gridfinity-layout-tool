@@ -69,12 +69,12 @@ describe('PrintBin', () => {
         />
       );
 
-      const binElement = container.querySelector('.print-bin');
+      const binElement = container.querySelector<HTMLElement>('.print-bin');
       expect(binElement).toBeTruthy();
       // y=3, depth=2 means top at y=5, CSS row = 8 - 5 + 1 = 4 (from bottom)
       // Actually: integerDepth - floor(y) = 8 - 3 = 5 for bottom row
       // topRow for y=5-0.001 → floor(4.999) = 4, row = 8 - 4 = 4
-      expect(binElement?.getAttribute('style')).toContain('grid-column: 3 / span 2');
+      expect(binElement?.style.gridColumn).toBe('3 / span 2');
     });
 
     it('positions bin correctly with fractionalEdgeX=start', () => {
@@ -101,10 +101,10 @@ describe('PrintBin', () => {
         />
       );
 
-      const binElement = container.querySelector('.print-bin');
+      const binElement = container.querySelector<HTMLElement>('.print-bin');
       expect(binElement).toBeTruthy();
       // x=1 is >= 0.5 (fractional part), so CSS col = floor(1 - 0.5) + 2 = 2
-      expect(binElement?.getAttribute('style')).toContain('grid-column: 2');
+      expect(binElement?.style.gridColumnStart).toBe('2');
     });
 
     it('positions bin correctly with fractionalEdgeX=end', () => {
@@ -131,10 +131,10 @@ describe('PrintBin', () => {
         />
       );
 
-      const binElement = container.querySelector('.print-bin');
+      const binElement = container.querySelector<HTMLElement>('.print-bin');
       expect(binElement).toBeTruthy();
       // x=9, floor(9)+1 = 10
-      expect(binElement?.getAttribute('style')).toContain('grid-column: 10');
+      expect(binElement?.style.gridColumnStart).toBe('10');
     });
 
     it('positions bin correctly with fractionalEdgeY=start', () => {
@@ -218,10 +218,10 @@ describe('PrintBin', () => {
         />
       );
 
-      const binElement = container.querySelector('.print-bin');
+      const binElement = container.querySelector<HTMLElement>('.print-bin');
       expect(binElement).toBeTruthy();
       // y=0 < 0.5, should be in the fractional row at bottom (CSS row = gridRows = 9)
-      expect(binElement?.getAttribute('style')).toContain('grid-row: 9');
+      expect(binElement?.style.gridRowStart).toBe('9');
     });
 
     it('positions bin in fractional column at left with fractionalEdgeX=start', () => {
@@ -248,10 +248,10 @@ describe('PrintBin', () => {
         />
       );
 
-      const binElement = container.querySelector('.print-bin');
+      const binElement = container.querySelector<HTMLElement>('.print-bin');
       expect(binElement).toBeTruthy();
       // x=0 < 0.5, should be in the fractional column at left (CSS col = 1)
-      expect(binElement?.getAttribute('style')).toContain('grid-column: 1');
+      expect(binElement?.style.gridColumnStart).toBe('1');
     });
   });
 

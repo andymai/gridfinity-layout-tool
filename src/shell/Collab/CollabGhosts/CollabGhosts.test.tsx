@@ -22,6 +22,7 @@ vi.mock('@/shared/hooks', () => ({
 }));
 
 import { useOthers } from '@/liveblocks.config';
+import { cssValue } from '@/test/css';
 
 describe('CollabGhosts', () => {
   beforeEach(() => {
@@ -232,7 +233,7 @@ describe('CollabGhosts — untrusted presence colour', () => {
 
   it('leaves a legitimate colour intact', () => {
     const { container } = renderWithColor('#3B82F6');
-    expect(container.innerHTML.toLowerCase()).toContain('#3b82f6');
+    expect(container.innerHTML.toLowerCase()).toContain(cssValue('color', '#3B82F6').toLowerCase());
   });
 
   it('survives a non-string colour', () => {
