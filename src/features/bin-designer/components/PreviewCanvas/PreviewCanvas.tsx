@@ -63,7 +63,7 @@ import {
   type CameraPreset,
 } from '../preview';
 import { GradientBackground } from '../preview/GradientBackground';
-import { FootprintGrid } from '../preview/FootprintGrid';
+import { FootprintGrid } from '@/shared/components/preview/FootprintGrid';
 import { useDesignerKeyboard } from '../../hooks/useDesignerKeyboard';
 import { useDoubleTapReset } from '../../hooks/useDoubleTapReset';
 import { useSplitPreview } from '../../hooks/useSplitPreview';

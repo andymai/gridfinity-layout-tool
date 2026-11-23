@@ -5,7 +5,7 @@ import type { Group, Vector3 } from 'three';
 import { GradientBackground } from '@/shared/components/preview/GradientBackground';
 import { CameraRig, type Projection } from '@/shared/components/preview/CameraRig';
 import { SceneLighting } from '@/features/bin-designer/components/PreviewCanvas/previewCanvasCamera';
-import { FootprintGrid } from '@/features/bin-designer/components/preview/FootprintGrid/FootprintGrid';
+import { FootprintGrid } from '@/shared/components/preview/FootprintGrid';
 import type { AssemblyStructure } from '@/shared/types/assembly';
 import type { ItemEnvelope } from '@/shared/types/item';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
