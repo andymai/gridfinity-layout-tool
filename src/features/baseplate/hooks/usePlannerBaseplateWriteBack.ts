@@ -17,6 +17,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import type { BaseplateDesignId, LayoutId, StoredBaseplateParams } from '@/core/types';
 import { updateDesignParamsIfChanged } from '../storage/BaseplateStorage';
 import { upsertRegistryEntry } from '../store/baseplateRegistry';
+import { onBaseplateSplit } from '../store/baseplateSplits';
 
 /** The page autosave's delay. A run of undos writes once. */
 const WRITE_DELAY_MS = 1000;
@@ -45,17 +46,6 @@ async function writeIfChanged({ designId, params }: PendingWrite): Promise<boole
   return true;
 }
 
-/**
- * The edit's layout now points at another design, and no design switch moved
- * it: the init split a shared design into this layout's own copy, carrying the
- * edit with it. Writing to the old design would put this layout's plate on the
- * other layouts that use it.
- */
-function movedOff(write: PendingWrite): boolean {
-  const { activeLayoutId, layout } = useLayoutStore.getState();
-  return activeLayoutId === write.layoutId && layout.activeBaseplateId !== write.designId;
-}
-
 export function usePlannerBaseplateWriteBack(): void {
   useEffect(() => {
     let pending: PendingWrite | null = null;
@@ -65,6 +55,16 @@ export function usePlannerBaseplateWriteBack(): void {
     const newest = new Map<BaseplateDesignId, number>();
     /** Newest edits that storage refused, kept for the next flush. */
     const failed = new Map<BaseplateDesignId, PendingWrite>();
+    /**
+     * For a layout that the init split off a shared design, the newest edit it
+     * made to that design. Those edits belong to the layout's own copy now, so
+     * they must not reach the shared design. A later edit to it still writes.
+     */
+    const splitUpTo = new Map<string, number>();
+    const splitKey = (layout: LayoutId | null, design: BaseplateDesignId): string =>
+      `${layout ?? ''}|${design}`;
+    const splitAway = (write: PendingWrite): boolean =>
+      (splitUpTo.get(splitKey(write.layoutId, write.designId)) ?? 0) >= write.seq;
     // Writes run one at a time, in the order they were flushed.
     let queue: Promise<void> = Promise.resolve();
 
@@ -72,24 +72,26 @@ export function usePlannerBaseplateWriteBack(): void {
 
     const run = (write: PendingWrite): void => {
       queue = queue.then(async () => {
-        if (!isNewest(write)) return;
-        if (!(await writeIfChanged(write)) && isNewest(write)) failed.set(write.designId, write);
+        if (!isNewest(write) || splitAway(write)) return;
+        if (!(await writeIfChanged(write)) && isNewest(write) && !splitAway(write)) {
+          failed.set(write.designId, write);
+        }
       });
     };
 
     /**
-     * Write the pending edit, and try again the ones storage refused. A design
-     * switch flushes with `switched`, so its edit still reaches the design it
-     * was made on.
+     * Write the pending edit to the design it was made on, and try again the
+     * ones storage refused. A design switch, or an undo that changes the
+     * design, flushes first, so each edit reaches its own design.
      */
-    const flush = (switched = false): void => {
+    const flush = (): void => {
       if (timer !== null) clearTimeout(timer);
       timer = null;
       const writes = [...failed.values()];
       failed.clear();
       if (pending !== null) writes.push(pending);
       pending = null;
-      for (const write of writes) if (switched || !movedOff(write)) run(write);
+      for (const write of writes) if (!splitAway(write)) run(write);
     };
 
     const schedule = (): void => {
@@ -117,7 +119,10 @@ export function usePlannerBaseplateWriteBack(): void {
     const unsubscribers = [
       eventBus.subscribe('layout.baseplateParamsSet', schedule),
       eventBus.subscribe('layout.restored', schedule),
-      eventBus.subscribe('layout.activeBaseplateSet', () => flush(true)),
+      eventBus.subscribe('layout.activeBaseplateSet', () => flush()),
+      onBaseplateSplit((layout, design) => {
+        splitUpTo.set(splitKey(layout, design), seq);
+      }),
     ];
     document.addEventListener('visibilitychange', onVisibilityChange);
     return () => {
