@@ -1,4 +1,4 @@
-/** The kumiko cutter for a rounded corner slab: struts become revolved wedges and chord boxes. */
+/** The kumiko cutter for a rounded corner slab: the lattice's open cells, as prisms on flat facets. */
 
 import {
   drawRoundedRectangle,
@@ -10,15 +10,22 @@ import {
   polygon,
   solid,
   sketchHelix,
+  addHoles,
+  outerWire,
+  extrude,
+  compound,
+  fuseAll,
 } from 'brepjs';
 import { orientedFace, planarFace } from 'brepjs';
-import type { OrientedFace, PlanarFace, Shape3D } from 'brepjs';
+import type { OrientedFace, PlanarFace, Shape3D, ValidSolid } from 'brepjs';
 
 import type { PerfCollector } from './pipeline/perfCollector';
 import type { KumikoLattice, KumikoSegment } from './patterns';
 import { COPLANAR_OVERLAP } from './generatorConstants';
 import { sketch } from './meshUtils';
 import type { CornerSlab } from './kumikoPerimeter';
+import { cornerCells } from './kumikoCornerCells';
+import type { CellPoint, CornerCellPiece } from './kumikoCornerCells';
 import {
   AXIS_EPSILON,
   RAD_TO_DEG,
@@ -131,11 +138,133 @@ function chordBoxStrut(
   return box;
 }
 
+/** Distance past each wall face that a cell prism reaches (mm). */
+const CELL_REACH = 1;
+/** Neighbor facets meet this far outside the wall, so no fin of wall stays between them (mm). */
+const FACET_SEAM_OUTSET = 0.02;
+
+/**
+ * Build one corner slab's cutter. Positioned in world space.
+ *
+ * The lattice is solved in 2D on flat facets of the corner (see
+ * `kumikoCornerCells`), and each open cell becomes one prism through the wall.
+ * No strut meets another strut in a 3D boolean, so two struts that almost
+ * touch cannot leave a sliver face on the corner cylinder, and every face is
+ * a plane. If the 2D step fails, the cutter comes from the 3D strut cuts.
+ */
+export function buildCornerSlabCutter(
+  slab: CornerSlab,
+  lattice: KumikoLattice,
+  bandZ0: number,
+  bandHeight: number,
+  outerRadius: number,
+  wallThickness: number,
+  perimeter: number,
+  perf?: PerfCollector
+): Shape3D {
+  const startedAt = performance.now();
+  let local: Shape3D | null;
+  try {
+    local = cellPrisms(slab, lattice, bandZ0, bandHeight, outerRadius, wallThickness, perimeter);
+  } catch {
+    // polygon-clipping can throw on a degenerate overlap of strokes.
+    local = null;
+  }
+  if (!local) {
+    return buildCornerSlabCutterByCuts(
+      slab,
+      lattice,
+      bandZ0,
+      bandHeight,
+      outerRadius,
+      wallThickness,
+      perimeter,
+      perf
+    );
+  }
+  perf?.recordWallPatternSubstep('kumiko_corner_cells', performance.now() - startedAt);
+  const angled = toCornerAngle(local, slab.thetaStart);
+  const positioned = translate(angled, [slab.cx, slab.cy, 0]);
+  angled.delete();
+  return positioned;
+}
+
+/** The corner's cells as prisms in the corner-local frame, or null when there is none. */
+function cellPrisms(
+  slab: CornerSlab,
+  lattice: KumikoLattice,
+  bandZ0: number,
+  bandHeight: number,
+  outerRadius: number,
+  wallThickness: number,
+  perimeter: number
+): Shape3D | null {
+  const faceRadius = outerRadius + FACET_SEAM_OUTSET;
+  const cells = cornerCells(
+    lattice,
+    slab.u0,
+    slab.u1,
+    bandZ0,
+    bandHeight,
+    outerRadius,
+    faceRadius,
+    perimeter
+  );
+  if (!cells) return null;
+  const innerRadius = Math.max(outerRadius - wallThickness, 0.3);
+  const depthOut = faceRadius + CELL_REACH;
+  const depthIn = innerRadius - CELL_REACH;
+  const prism = (piece: CornerCellPiece): Shape3D => {
+    const nx = Math.cos(piece.phiMid);
+    const ny = Math.sin(piece.phiMid);
+    // Facet plane at depthIn along the normal; `t` runs along the tangent.
+    const place = ([t, z]: CellPoint): Vec3Tuple => [
+      depthIn * nx - t * ny,
+      depthIn * ny + t * nx,
+      z,
+    ];
+    let face = unwrap(polygon(piece.outer.map(place)));
+    if (piece.holes.length > 0) {
+      const holeFaces = piece.holes.map((h) => unwrap(polygon(h.map(place))));
+      const holed = addHoles(
+        face,
+        holeFaces.map((f) => outerWire(f))
+      );
+      face.delete();
+      for (const f of holeFaces) f.delete();
+      // addHoles keeps the plane; its signature drops the planar brand for
+      // wires that are not branded planar.
+      face = unwrap(planarFace(holed)) as RevolveProfile;
+    }
+    const solid3d = unwrap(
+      extrude(face, [(depthOut - depthIn) * nx, (depthOut - depthIn) * ny, 0])
+    );
+    face.delete();
+    return solid3d;
+  };
+  const solids: Shape3D[] = [];
+  for (const cell of cells) {
+    const pieces = cell.map(prism);
+    if (pieces.length === 1) {
+      solids.push(pieces[0]);
+      continue;
+    }
+    // The prisms of neighbor facets overlap inside the wall, and they share
+    // the planes of the cell's horizontal edges. Left as separate tools, those
+    // coplanar faces gave near-duplicate points where they met the wall, and
+    // zero-area triangles in the export. One solid for each cell has neither.
+    solids.push(unwrap(fuseAll(pieces as ValidSolid[], { simplify: true })));
+    for (const p of pieces) p.delete();
+  }
+  if (solids.length === 0) return null;
+  return solids.length === 1 ? solids[0] : compound(solids);
+}
+
 /**
  * Build one corner slab's cutter in the corner-local frame (axis at origin,
  * φ measured from +X): annular wedge minus strut solids. Exact kernels only.
  */
-export function buildCornerSlabCutter(
+function buildCornerSlabCutterByCuts(
   slab: CornerSlab,
   lattice: KumikoLattice,
   bandZ0: number,

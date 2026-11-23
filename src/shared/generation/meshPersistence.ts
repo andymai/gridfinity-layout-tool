@@ -95,6 +95,8 @@ const MESH_CACHE_VERSION = 'v31';
  * assembly-item previews (their own `item` segment) stay warm. The mirror of
  * {@link itemMeshCacheKey}'s segment.
  *
+ * `bin29`: a kumiko lattice on a rounded corner is cut as open cells on flat
+ * facets, so its strut sides are planes.
  * `bin28`: on a wall thinner than 1.2mm, the stacking lip's angled support runs
  * on at 45° to the wall's inner face, where it stopped over a flat ledge.
  * `bin27`: a leaned pocket with an entry edge carries its rim far enough past
@@ -148,7 +150,7 @@ const MESH_CACHE_VERSION = 'v31';
  * `bin1`: a lipless bin's sliding-lid entry window no longer ramps through the
  * rim, so its entry corners keep their full wall height.
  */
-const BIN_MESH_REVISION = 'bin28';
+const BIN_MESH_REVISION = 'bin29';
 
 /**
  * Per-kernel revision, bumped when only THAT kernel's output moves for
