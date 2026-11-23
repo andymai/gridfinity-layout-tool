@@ -1,0 +1,38 @@
+src/features/baseplate/utils/paramsEqual.test.ts
+  s_f3decd9961964a::t_d1103bb025b106 1-14
+src/features/baseplate/hooks/useBaseplateLibraryInit.ts
+  s_f3decd9961964a::t_121bab397ff746 46,127,140,203
+  s_f3decd9961964a::t_d4eeb3babe3009 204-206,219
+src/features/baseplate/hooks/usePlannerBaseplateWriteBack.test.ts
+  s_f3decd9961964a::t_ccb76b05b99afc 1-145
+src/core/cqrs/subscribers/selectionPruning.test.ts
+  s_f3decd9961964a::t_5e72ca7a777c9e 268-308,312,314-323,325,327-356
+  s_f3decd9961964a::t_d88412331ef0d0 309-311,313,324,326
+src/features/baseplate/utils/paramsEqual.ts
+  s_f3decd9961964a::t_d1103bb025b106 1-15
+src/features/baseplate/README.md
+  s_f3decd9961964a::t_0c6b5b10c73519 32
+src/features/baseplate/hooks/usePlannerBaseplateWriteBack.ts
+  s_f3decd9961964a::t_a95512cb3b68ea 1-21,23-83
+  s_f3decd9961964a::t_22b1530fd06d5c 22
+src/features/baseplate/components/BaseplateLibraryInitMount/BaseplateLibraryInitMount.tsx
+  s_f3decd9961964a::t_22b1530fd06d5c 3-6,10,14
+src/core/cqrs/subscribers/selectionPruning.ts
+  s_f3decd9961964a::t_5e72ca7a777c9e 5-6,118-141,144
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "755334cf73427bf63d4b1fbf8eca4eaabf3330f0",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
