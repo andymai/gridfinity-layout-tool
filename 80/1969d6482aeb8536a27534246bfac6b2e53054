@@ -1,0 +1,45 @@
+src/core/baseplateDefaults.ts
+  s_f3decd9961964a::t_8f9107b9a7510a 51-57,268,273-276
+src/core/cqrs/validation/schemas.ts
+  s_f3decd9961964a::t_8f9107b9a7510a 320
+  s_f3decd9961964a::t_53e9c66013c94a 15
+api/lib/baseplateValidation.crossBoundary.test.ts
+  s_f3decd9961964a::t_8f9107b9a7510a 8-14,27-28
+  s_f3decd9961964a::t_e022a5adfb95cf 29-30
+api/lib/baseplateValidation.ts
+  s_f3decd9961964a::t_8f9107b9a7510a 28-29
+api/lib/baseplateValidation.test.ts
+  s_f3decd9961964a::t_6c4974d5393f24 24-31
+src/features/generation/worker/generators/baseplateMargin.ts
+  s_f3decd9961964a::t_186383bbc2f343 97,100,102-110,112-115
+  s_f3decd9961964a::t_b39a2bc127dd0b 31
+src/features/generation/worker/generators/baseplateMargin.scenario.test.ts
+  s_f3decd9961964a::t_71ce87cd6e2fe0 79-80,91,93
+  s_f3decd9961964a::t_2b59d602f49bad 78,81-90,92,94-125
+src/core/constants.test.ts
+  s_f3decd9961964a::t_2d40b9993039d5 20,29
+  s_f3decd9961964a::t_f4557b7d590305 782,792,795-801
+  s_f3decd9961964a::t_701cd14db9e4e4 17
+src/shared/generation/meshPersistence.ts
+  s_f3decd9961964a::t_38f2a4be3d0cc8 46-47,91
+src/core/cqrs/validation/schemas.test.ts
+  s_f3decd9961964a::t_6c4974d5393f24 624-641
+src/features/generation/worker/generators/baseplateSlab.ts
+  s_f3decd9961964a::t_b39a2bc127dd0b 60-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "801969d6482aeb8536a27534246bfac6b2e53054",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
