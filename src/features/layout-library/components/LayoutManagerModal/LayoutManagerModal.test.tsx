@@ -351,6 +351,45 @@ describe('LayoutManagerModal Accessibility', () => {
       expect(mockOnClose).toHaveBeenCalled();
     });
 
+    it('closes on Escape pressed inside the dialog', async () => {
+      render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
+      const close = screen.getByRole('button', { name: 'Close layouts dialog' });
+      await waitFor(() => expect(close).toHaveFocus());
+
+      fireEvent.keyDown(close, { key: 'Escape' });
+
+      expect(mockOnClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps keys pressed inside the dialog away from document listeners', async () => {
+      const documentListener = vi.fn();
+      document.addEventListener('keydown', documentListener);
+      try {
+        render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
+        const close = screen.getByRole('button', { name: 'Close layouts dialog' });
+
+        fireEvent.keyDown(close, { key: 'Delete' });
+
+        expect(documentListener).not.toHaveBeenCalled();
+      } finally {
+        document.removeEventListener('keydown', documentListener);
+      }
+    });
+
+    it('wraps Tab from the last control back to the first', async () => {
+      render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
+      const dialog = screen.getByRole('dialog');
+      const focusable = dialog.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      const last = focusable[focusable.length - 1];
+      last.focus();
+
+      fireEvent.keyDown(last, { key: 'Tab' });
+
+      expect(focusable[0]).toHaveFocus();
+    });
+
     it('arrow keys navigate layout list', async () => {
       render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
 
