@@ -1,0 +1,21 @@
+src/features/bin-designer/search/designerControlRegistry.ts
+  s_0c191ecd28c8c3::t_71bb029bc55f29 371
+src/features/bin-designer/components/BentoWorkspace/BentoCompartmentSizeControls.tsx
+  s_0c191ecd28c8c3::t_9c291c49fccf97 7,54,73,76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3d47b59caa60e82f7b66462bac057a473b5ffd05",
+  "prompts": {},
+  "sessions": {
+    "s_0c191ecd28c8c3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f7a72b82-3d5a-4aec-a3fc-27209c777a7d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
