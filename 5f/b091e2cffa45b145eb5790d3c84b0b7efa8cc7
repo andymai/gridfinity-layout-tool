@@ -1,0 +1,34 @@
+src/test/css.test.ts
+  s_f3decd9961964a::t_1da9922ef5851e 1-17
+src/features/supporters/components/CreditsRoll/CreditsRoll.test.tsx
+  s_f3decd9961964a::t_1da9922ef5851e 8,148
+src/features/inspiration-gallery/components/LayoutCard/LayoutCard.test.tsx
+  s_f3decd9961964a::t_1da9922ef5851e 6,114,121,128
+src/features/grid-editor/components/Grid/Bin/BinOverhangExtension.test.tsx
+  s_f3decd9961964a::t_1da9922ef5851e 139-140,204,206
+src/test/css.ts
+  s_f3decd9961964a::t_1da9922ef5851e 1-10
+src/shell/Collab/CollabGhosts/CollabGhosts.test.tsx
+  s_f3decd9961964a::t_1da9922ef5851e 25,236
+src/features/print-export/components/PrintBin/PrintBin.test.tsx
+  s_f3decd9961964a::t_1da9922ef5851e 77,107,137,224,254
+  s_f3decd9961964a::t_6404a823541ae1 72,104,134,221,251
+src/features/baseplate/components/BaseplatePanel/SplitViewStrip.test.tsx
+  s_f3decd9961964a::t_1da9922ef5851e 5,278
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5fb091e2cffa45b145eb5790d3c84b0b7efa8cc7",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
