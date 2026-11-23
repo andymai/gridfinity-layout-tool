@@ -1,0 +1,24 @@
+src/features/layers/components/LayerPanel/LayerRows.test.tsx
+  s_f3decd9961964a::t_ff30d6a3862f7f 69
+  s_f3decd9961964a::t_5323ab5b280682 60
+src/shell/AppShell.scenario.accessibility.test.tsx
+  s_f3decd9961964a::t_ff30d6a3862f7f 109
+src/features/layers/components/LayerPanel/LayerRows.tsx
+  s_f3decd9961964a::t_85d78afe32438c 216-228,231,239,257,265,285
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a81e807f7380207dba74ab7c29f7be1674594323",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
