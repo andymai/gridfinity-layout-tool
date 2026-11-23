@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import type { Bin, BinId } from '@/core/types';
 import { binId, layerId, categoryId, gridUnits, heightUnits } from '@/core/types';
-import { expandPairIds, pairPartner, dropOrphanedPairs } from './binPairs';
+import { designId } from '@/core/types';
+import { expandPairIds, pairPartner, dropOrphanedPairs, sizedByLinkedDesign } from './binPairs';
 
 function bin(id: string, extra: Partial<Bin> = {}): Bin {
   return {
@@ -63,5 +64,15 @@ describe('dropOrphanedPairs', () => {
     const crowd = [...PAIRED, bin('extra', { pairId: 'p1', pairRole: 'rest' })];
     const out = dropOrphanedPairs(crowd);
     expect(out.every((b) => b.pairId === undefined)).toBe(true);
+  });
+});
+
+describe('sizedByLinkedDesign', () => {
+  it('is true for a linked bin and a block, false for a rest or an unlinked bin', () => {
+    const linked = designId('design-1');
+    expect(sizedByLinkedDesign({ linkedDesignId: linked })).toBe(true);
+    expect(sizedByLinkedDesign({ linkedDesignId: linked, pairRole: 'block' })).toBe(true);
+    expect(sizedByLinkedDesign({ linkedDesignId: linked, pairRole: 'rest' })).toBe(false);
+    expect(sizedByLinkedDesign({})).toBe(false);
   });
 });

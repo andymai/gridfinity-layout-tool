@@ -475,6 +475,28 @@ describe('useBinInspector', () => {
       expect(emitSyncEvent).not.toHaveBeenCalled();
     });
 
+    it("does not emit bin-resized for a knife block's handle rest", () => {
+      const bin = {
+        ...createBin('bin1', 'layer1'),
+        linkedDesignId: toDesignId('design-1'),
+        pairId: 'pair',
+        pairRole: 'rest' as const,
+      };
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [bin];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
+      vi.mocked(emitSyncEvent).mockClear();
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.updateField('width', 4);
+      });
+
+      expect(emitSyncEvent).not.toHaveBeenCalled();
+    });
+
     it('emits bin-resized event when changing width of a linked bin', () => {
       const bin = { ...createBin('bin1', 'layer1'), linkedDesignId: toDesignId('design-1') };
       const layout = useLayoutStore.getState().layout;
@@ -570,6 +592,39 @@ describe('useBinInspector', () => {
       const bins = useLayoutStore.getState().layout.bins;
       expect(bins[0].height).toBe(5);
       expect(bins[1].height).toBe(6);
+    });
+
+    it("announces a block's new height when a handle rest of its design comes first", () => {
+      const layout = useLayoutStore.getState().layout;
+      layout.drawer.height = heightUnits(12);
+      layout.bins = [
+        {
+          ...createBin('rest', 'layer1', 0, 0),
+          height: heightUnits(3),
+          linkedDesignId: toDesignId('design-1'),
+          pairId: 'pair',
+          pairRole: 'rest' as const,
+        },
+        {
+          ...createBin('block', 'layer1', 3, 0),
+          height: heightUnits(3),
+          linkedDesignId: toDesignId('design-1'),
+        },
+      ];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('rest'), binId('block')] });
+      vi.mocked(emitSyncEvent).mockClear();
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.updateMultiHeight(1);
+      });
+
+      expect(emitSyncEvent).toHaveBeenCalledTimes(1);
+      expect(emitSyncEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'bin-resized', binId: 'block' })
+      );
     });
 
     it('steps an over-full bin down one unit instead of jumping to the stack limit', () => {

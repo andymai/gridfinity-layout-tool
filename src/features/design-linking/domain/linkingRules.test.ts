@@ -11,7 +11,7 @@ import {
   planSiblingCascade,
 } from './linkingRules';
 import type { Bin, Layout } from '@/core/types';
-import { binId, layerId, categoryId, gridUnits, heightUnits, mm } from '@/core/types';
+import { binId, designId, layerId, categoryId, gridUnits, heightUnits, mm } from '@/core/types';
 import type { SyncableDimensions } from '../types';
 
 // Test helpers
@@ -417,14 +417,16 @@ describe('syncDeclineKey', () => {
 
   describe('planSiblingCascade', () => {
     const size = { width: 3, depth: 2, height: 3 };
+    const sibling = (overrides: Partial<Bin>): Bin =>
+      makeBin({ linkedDesignId: designId('design-1'), ...overrides });
 
     it('leaves out siblings that already fit, turned or not, and sets locked ones apart', () => {
       const plan = planSiblingCascade(
         [
-          makeBin({ id: binId('fits'), width: gridUnits(3) }),
-          makeBin({ id: binId('turned'), width: gridUnits(2), depth: gridUnits(3) }),
-          makeBin({ id: binId('grows'), x: gridUnits(5) }),
-          makeBin({ id: binId('locked'), y: gridUnits(5), locked: true }),
+          sibling({ id: binId('fits'), width: gridUnits(3) }),
+          sibling({ id: binId('turned'), width: gridUnits(2), depth: gridUnits(3) }),
+          sibling({ id: binId('grows'), x: gridUnits(5) }),
+          sibling({ id: binId('locked'), y: gridUnits(5), locked: true }),
         ],
         size,
         makeLayout()
@@ -436,12 +438,31 @@ describe('syncDeclineKey', () => {
 
     it('is not all eligible when one sibling cannot take the size', () => {
       const plan = planSiblingCascade(
-        [makeBin({ id: binId('grows') }), makeBin({ id: binId('edge'), x: gridUnits(8) })],
+        [sibling({ id: binId('grows') }), sibling({ id: binId('edge'), x: gridUnits(8) })],
         size,
         makeLayout()
       );
       expect(plan.allEligible).toBe(false);
       expect(plan.eligibility.find((e) => !e.canSync)?.binId).toBe('edge');
+    });
+
+    it("leaves out a knife block's handle rest, whose size is not the design's", () => {
+      const plan = planSiblingCascade(
+        [
+          sibling({ id: binId('block'), pairId: 'pair', pairRole: 'block' }),
+          sibling({
+            id: binId('rest'),
+            x: gridUnits(5),
+            width: gridUnits(1),
+            depth: gridUnits(1),
+            pairId: 'pair',
+            pairRole: 'rest',
+          }),
+        ],
+        size,
+        makeLayout()
+      );
+      expect(plan.syncable.map((b) => b.id)).toEqual(['block']);
     });
   });
 });
