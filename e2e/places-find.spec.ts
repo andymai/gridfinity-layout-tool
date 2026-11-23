@@ -29,13 +29,16 @@ interface SeedModules {
 }
 
 /**
- * Find across a household: three layouts in two folders, one search, and the
- * app lands on a bin on the second layer of a layout that is not open.
- *
  * The seed imports the app's own modules by their `/src/` path, which only the
  * Vite dev server serves, so this spec runs against `pnpm run dev`.
  */
 test.describe('Places: Find across layouts', () => {
+  // The command palette and the layer sidebar are desktop surfaces: phones
+  // have no palette, and the tablet layout starts with the sidebar collapsed.
+  const isDesktop = ({ viewport }: { viewport: { width: number } | null }): boolean =>
+    (viewport?.width ?? 0) >= 900;
+  test.skip(({ viewport }) => !isDesktop({ viewport }), 'desktop layout only');
+
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem(
@@ -53,7 +56,6 @@ test.describe('Places: Find across layouts', () => {
     await page.evaluate(async () => {
       const paths = [
         '/src/core/constants.ts',
-        '/src/core/storage/libraryFolders.ts',
         '/src/core/storage/index.ts',
         '/src/core/store/library.ts',
       ];
@@ -115,7 +117,9 @@ test.describe('Places: Find across layouts', () => {
     await waitForAppReady(page);
   });
 
-  test.afterEach(async ({ page }) => {
+  // Hooks run for a skipped test too, on a page that never left about:blank.
+  test.afterEach(async ({ page, viewport }) => {
+    if (!isDesktop({ viewport })) return;
     await clearAllStorage(page);
     await resetViewport(page);
   });
