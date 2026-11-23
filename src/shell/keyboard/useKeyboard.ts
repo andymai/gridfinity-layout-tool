@@ -59,6 +59,7 @@ import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useGridNavigation } from '@/features/grid-editor';
 import { useTranslation } from '@/i18n';
 import type { KeyboardContext, KeyboardHandler } from './types';
+import { isFormControlTarget, isTextEntryTarget } from '@/shared/utils/formControlTarget';
 
 import {
   handleDelete,
@@ -84,6 +85,9 @@ import {
  * Handler dispatch order. Handlers are tried in sequence; the first
  * one that returns `true` short-circuits the rest.
  */
+/** The only shortcuts a focused switch, checkbox or slider lets through. */
+const formControlHandlers: KeyboardHandler[] = [handleUndo, handleRedo];
+
 const handlers: KeyboardHandler[] = [
   handleDelete,
   handleEscape,
@@ -171,15 +175,8 @@ export function useKeyboard({ disabled = false }: UseKeyboardOptions = {}) {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-      if (
-        e.target instanceof HTMLElement &&
-        (e.target.isContentEditable || e.target.tagName === 'SELECT')
-      ) {
-        return;
-      }
+      if (isTextEntryTarget(e.target)) return;
+      const active = isFormControlTarget(e.target) ? formControlHandlers : handlers;
 
       const ctx: KeyboardContext = {
         layout,
@@ -214,7 +211,7 @@ export function useKeyboard({ disabled = false }: UseKeyboardOptions = {}) {
         t,
       };
 
-      for (const handler of handlers) {
+      for (const handler of active) {
         if (handler(e, ctx)) return;
       }
     },

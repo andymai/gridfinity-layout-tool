@@ -393,6 +393,73 @@ describe('useKeyboard', () => {
   });
 
   describe('undo/redo shortcuts', () => {
+    function pressOn(target: HTMLElement, key: string, options: Partial<KeyboardEventInit> = {}) {
+      document.body.appendChild(target);
+      const event = createKeyboardEvent(key, options);
+      Object.defineProperty(event, 'target', { value: target });
+      act(() => {
+        window.dispatchEvent(event);
+      });
+      target.remove();
+    }
+
+    function withOneUndoStep(): void {
+      const pastLayout = createDefaultLayout();
+      useHistoryStore.setState({
+        past: [{ layout: pastLayout, commandType: 'bin.add' }],
+        future: [],
+        canUndo: true,
+      });
+    }
+
+    it.each(['checkbox', 'range'])(
+      'undoes with Ctrl+Z while a %s input keeps focus after a click',
+      (type) => {
+        withOneUndoStep();
+        renderHook(() => useKeyboard());
+        const input = document.createElement('input');
+        input.type = type;
+
+        pressOn(input, 'z', { ctrlKey: true });
+
+        expect(useHistoryStore.getState().past).toHaveLength(0);
+      }
+    );
+
+    it('leaves Ctrl+Z to the browser in a text field', () => {
+      withOneUndoStep();
+      renderHook(() => useKeyboard());
+
+      pressOn(document.createElement('input'), 'z', { ctrlKey: true });
+
+      expect(useHistoryStore.getState().past).toHaveLength(1);
+    });
+
+    it('keeps plain keys off a focused switch, so they cannot edit the layout', () => {
+      const { addBin, layout } = useLayoutStore.getState();
+      const id = getBinId(
+        addBin({
+          layerId: layout.layers[0].id,
+          x: gridUnits(0),
+          y: gridUnits(0),
+          width: gridUnits(1),
+          depth: gridUnits(1),
+          height: heightUnits(3),
+          category: layout.categories[0].id,
+          label: '',
+          notes: '',
+        })
+      );
+      useSelectionStore.getState().setSelectedBins([id]);
+      renderHook(() => useKeyboard());
+      const toggle = document.createElement('input');
+      toggle.type = 'checkbox';
+
+      pressOn(toggle, 'Delete');
+
+      expect(useLayoutStore.getState().layout.bins).toHaveLength(1);
+    });
+
     it('triggers undo on Ctrl+Z', () => {
       // Setup history with a past state
       const pastLayout = createDefaultLayout();

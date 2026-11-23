@@ -5,6 +5,7 @@
 
 import { useEffect } from 'react';
 import { SHORTCUTS } from '@/core/constants';
+import { isFormControlTarget, isTextEntryTarget } from '@/shared/utils/formControlTarget';
 import type { CameraPreset } from '../components/preview';
 
 interface UseDesignerKeyboardOptions {
@@ -49,11 +50,7 @@ export function useDesignerKeyboard({
 }: UseDesignerKeyboardOptions): void {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore when typing in inputs
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
-        return;
-      }
+      if (isTextEntryTarget(e.target)) return;
 
       // Handle undo/redo (Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z)
       if (e.ctrlKey || e.metaKey) {
@@ -70,7 +67,8 @@ export function useDesignerKeyboard({
         return;
       }
 
-      if (e.altKey) return;
+      // A focused switch or slider keeps its plain keys (arrows, Space).
+      if (e.altKey || isFormControlTarget(e.target)) return;
 
       // Tool switch (Shift+D) — toggle to Grid Editor
       if (e.key === SHORTCUTS.TOOL_SWITCH && e.shiftKey && onToolSwitch) {
