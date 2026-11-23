@@ -11,27 +11,8 @@ import { useCallback, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { SHORTCUTS } from '@/core/constants';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
+import { isTextEntryTarget } from '@/shared/utils/formControlTarget';
 import { finishBaseplateParamsDrag } from '../components/BaseplatePanel/panelState';
-
-// Most of the panel is switches, sliders and segments, which keep focus after a
-// click. Only fields that take typed text keep the browser's own text undo.
-const NON_TEXT_INPUT_TYPES = new Set([
-  'button',
-  'checkbox',
-  'color',
-  'file',
-  'image',
-  'radio',
-  'range',
-  'reset',
-  'submit',
-]);
-
-function isTextEntry(target: EventTarget | null): boolean {
-  if (target instanceof HTMLInputElement) return !NON_TEXT_INPUT_TYPES.has(target.type);
-  if (target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) return true;
-  return target instanceof HTMLElement && target.isContentEditable;
-}
 
 export interface BaseplateUndo {
   readonly canUndo: boolean;
@@ -57,7 +38,7 @@ export function useBaseplateUndo(): BaseplateUndo {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!(e.ctrlKey || e.metaKey) || e.altKey || isTextEntry(e.target)) return;
+      if (!(e.ctrlKey || e.metaKey) || e.altKey || isTextEntryTarget(e.target)) return;
       // Lowercased: with Shift held, a browser may report the key as "z" or "Z".
       const key = e.key.toLowerCase();
       if (key === SHORTCUTS.UNDO) {

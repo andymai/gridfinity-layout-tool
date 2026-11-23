@@ -163,6 +163,56 @@ describe('useDesignerKeyboard', () => {
     document.body.removeChild(input);
   });
 
+  it('undoes and redoes while a switch or slider keeps focus', () => {
+    renderKeyboardHook();
+    for (const type of ['checkbox', 'range']) {
+      const input = document.createElement('input');
+      input.type = type;
+      document.body.appendChild(input);
+      const undo = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true });
+      Object.defineProperty(undo, 'target', { value: input });
+      window.dispatchEvent(undo);
+      const redo = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, bubbles: true });
+      Object.defineProperty(redo, 'target', { value: input });
+      window.dispatchEvent(redo);
+      input.remove();
+    }
+
+    expect(onUndo).toHaveBeenCalledTimes(2);
+    expect(onRedo).toHaveBeenCalledTimes(2);
+  });
+
+  it('ignores Ctrl+Alt+Z on a focused slider, which AltGr can send', () => {
+    renderKeyboardHook();
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    document.body.appendChild(slider);
+    const event = new KeyboardEvent('keydown', {
+      key: 'z',
+      ctrlKey: true,
+      altKey: true,
+      bubbles: true,
+    });
+    Object.defineProperty(event, 'target', { value: slider });
+    window.dispatchEvent(event);
+
+    expect(onUndo).not.toHaveBeenCalled();
+    slider.remove();
+  });
+
+  it('keeps plain keys off a focused slider', () => {
+    renderKeyboardHook();
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    document.body.appendChild(slider);
+    const event = new KeyboardEvent('keydown', { key: '1', bubbles: true });
+    Object.defineProperty(event, 'target', { value: slider });
+    window.dispatchEvent(event);
+
+    expect(onCameraPreset).not.toHaveBeenCalled();
+    slider.remove();
+  });
+
   it('ignores keys when target is a textarea', () => {
     renderKeyboardHook();
 
