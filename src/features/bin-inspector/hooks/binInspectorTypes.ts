@@ -9,6 +9,7 @@
 import type { BedCapacity } from '@/core/constants';
 import type { Bin, BinItem, Category, Layer, Layout } from '@/core/types';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
+import { sizedByLinkedDesign } from '@/shared/utils/binPairs';
 
 export type BinField =
   'width' | 'depth' | 'height' | 'clearanceHeight' | 'category' | 'label' | 'notes';
@@ -80,7 +81,7 @@ export function emitLinkedBinResize(
   bin: Bin,
   newDimensions: { width: number; depth: number; height: number }
 ): void {
-  if (!bin.linkedDesignId) return;
+  if (!sizedByLinkedDesign(bin)) return;
   if (
     newDimensions.width === bin.width &&
     newDimensions.depth === bin.depth &&

@@ -475,6 +475,28 @@ describe('useBinInspector', () => {
       expect(emitSyncEvent).not.toHaveBeenCalled();
     });
 
+    it("does not emit bin-resized for a knife block's handle rest", () => {
+      const bin = {
+        ...createBin('bin1', 'layer1'),
+        linkedDesignId: toDesignId('design-1'),
+        pairId: 'pair',
+        pairRole: 'rest' as const,
+      };
+      const layout = useLayoutStore.getState().layout;
+      layout.bins = [bin];
+      useLayoutStore.setState({ layout });
+      useSelectionStore.setState({ selectedBinIds: [binId('bin1')] });
+      vi.mocked(emitSyncEvent).mockClear();
+
+      const { result } = renderHook(() => useBinInspector());
+
+      act(() => {
+        result.current.updateField('width', 4);
+      });
+
+      expect(emitSyncEvent).not.toHaveBeenCalled();
+    });
+
     it('emits bin-resized event when changing width of a linked bin', () => {
       const bin = { ...createBin('bin1', 'layer1'), linkedDesignId: toDesignId('design-1') };
       const layout = useLayoutStore.getState().layout;

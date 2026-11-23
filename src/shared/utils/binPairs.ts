@@ -6,7 +6,18 @@
  * pieces stays ordinary free grid space.
  */
 
-import type { Bin, BinId } from '@/core/types';
+import type { Bin, BinId, DesignId } from '@/core/types';
+
+/**
+ * Whether a bin's size follows its linked design. A handle rest links to its
+ * block's design for the mesh, but its footprint is the design's rest part, so
+ * a size sync either way would make it a second block or shrink the block.
+ */
+export function sizedByLinkedDesign<T extends Pick<Bin, 'linkedDesignId' | 'pairRole'>>(
+  bin: T
+): bin is T & { linkedDesignId: DesignId } {
+  return bin.linkedDesignId !== undefined && bin.pairRole !== 'rest';
+}
 
 /** The other half of a paired bin, or undefined for unpaired/orphaned bins. */
 export function pairPartner(bin: Bin, bins: readonly Bin[]): Bin | undefined {

@@ -7,6 +7,7 @@
 
 import type { SyncableDimensions, DimensionComparison, SyncEligibility } from '../types';
 import type { Bin, Layout } from '@/core/types';
+import { sizedByLinkedDesign } from '@/shared/utils/binPairs';
 import { extractBinDimensions, formatDimension, partitionSyncableByLock } from './syncOperations';
 
 /** Tolerance for floating-point dimension comparison (half-bin mode uses 0.5 increments) */
@@ -155,7 +156,10 @@ export function planSiblingCascade(
   layout: Layout
 ): SiblingCascade {
   const { syncable, locked } = partitionSyncableByLock(
-    siblings.filter((bin) => !dimensionsFitAllowingRotation(extractBinDimensions(bin), size))
+    siblings.filter(
+      (bin) =>
+        sizedByLinkedDesign(bin) && !dimensionsFitAllowingRotation(extractBinDimensions(bin), size)
+    )
   );
   const eligibility = checkBatchSyncEligibility(syncable, size, layout);
   return { syncable, locked, eligibility, allEligible: eligibility.every((e) => e.canSync) };

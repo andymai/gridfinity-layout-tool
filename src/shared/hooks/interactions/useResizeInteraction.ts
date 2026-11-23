@@ -5,6 +5,7 @@ import { snapResizeRect } from '@/shared/utils/snap';
 import { calculateResizeRect, capturePointer } from './interaction';
 import { findBinById } from '@/shared/utils/entity';
 import { isBinLocked } from '@/shared/utils/binLocation';
+import { sizedByLinkedDesign } from '@/shared/utils/binPairs';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { emitSyncEvent } from '@/shared/events/syncEventBus';
 import { useTranslation } from '@/i18n';
@@ -299,7 +300,7 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
         const bin = findBinById(layout, binId);
         const startRect = interaction.startRects.get(binId);
         const currentRect = interaction.currentRects.get(binId);
-        if (!bin?.linkedDesignId || !startRect || !currentRect) continue;
+        if (!bin || !sizedByLinkedDesign(bin) || !startRect || !currentRect) continue;
         if (emittedDesigns.has(bin.linkedDesignId)) continue;
 
         if (startRect.width !== currentRect.width || startRect.depth !== currentRect.depth) {
