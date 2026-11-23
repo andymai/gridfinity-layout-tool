@@ -24,6 +24,7 @@ import { maxPlaceableHeight } from '@/shared/utils/validationPlacement';
 import { clamp } from '@/shared/utils/math';
 import { isBinLocked } from '@/shared/utils/binLocation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { sizedByLinkedDesign } from '@/shared/utils/binPairs';
 import type { TFunction } from '@/i18n/context';
 import { emitLinkedBinResize } from './binInspectorTypes';
 
@@ -139,7 +140,7 @@ export function useBinInspectorMultiActions(deps: MultiActionDeps): MultiActions
       const emittedDesigns = new Set<string>();
       for (const { bin: b, newHeight } of updates) {
         if (!succeededBinIds.has(b.id)) continue;
-        if (!b.linkedDesignId || newHeight === b.height) continue;
+        if (!sizedByLinkedDesign(b) || newHeight === b.height) continue;
         if (emittedDesigns.has(b.linkedDesignId)) continue;
         emittedDesigns.add(b.linkedDesignId);
         emitLinkedBinResize(b, { width: b.width, depth: b.depth, height: newHeight });
