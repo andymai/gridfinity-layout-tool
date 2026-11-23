@@ -2,7 +2,13 @@ import { useEffect, useRef, useImperativeHandle, forwardRef, useMemo, useState }
 import { OrbitControls, ContactShadows } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import { OrthographicCamera, Spherical, Vector3 } from 'three';
+import type { Camera } from 'three';
 import { useViewStore } from '@/core/store/view';
+import { useLayoutStore } from '@/core/store/layout';
+import { onRevealBin } from '@/shared/events/revealBin';
+import { getRestingStack } from '@/shared/utils/restingStack';
+import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
+import { calculateFitZoom, planBinFrame } from './frameBin';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { FloorGrid } from '../FloorGrid';
 import { FrontLabel } from '../FrontLabel';
@@ -13,6 +19,7 @@ import { BananaScale } from '../BananaScale';
 import { useSettingsStore } from '@/core/store/settings';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
+import { effectiveGridUnitMmY } from '@/core/types';
 import type { FractionalEdge } from '@/core/types';
 
 interface SceneProps {
@@ -37,33 +44,63 @@ export interface SceneHandle {
   setPreset: (preset: CameraPreset) => void;
 }
 
+const FRAME_DURATION_MS = 450;
+
+interface FrameTargets {
+  readonly camera: Camera;
+  readonly controls: OrbitControlsType;
+  readonly size: { width: number; height: number };
+  readonly animationFrameRef: { current: number | null };
+}
+
 /**
- * Calculate zoom level to fit the drawer in the viewport.
- * For orthographic camera, zoom determines how many world units fit in the view.
+ * Pans the orbit to a bin and zooms in on it, animated or at once. Reads the
+ * bin, the drawer and the pitches from one layout snapshot: after a layout
+ * switch the scene's props can still describe the layout that was open.
+ * False when the bin is not on the grid of the open layout.
  */
-function calculateFitZoom(
-  drawerWidth: number,
-  drawerDepth: number,
-  drawerHeight: number,
-  heightToGridScale: number,
-  viewportWidth: number,
-  viewportHeight: number
-): number {
-  const heightInGridUnits = drawerHeight * heightToGridScale;
-
-  // For isometric view, estimate the projected bounding box
-  // The diagonal footprint is roughly width + depth (at 45° view)
-  // Height adds to the vertical extent
-  const projectedWidth = (drawerWidth + drawerDepth) * 0.7; // Isometric projection factor
-  const projectedHeight = (drawerWidth + drawerDepth) * 0.35 + heightInGridUnits; // Depth contributes to height
-
-  // Calculate zoom to fit with 15% margin on each side
-  const marginFactor = 0.7; // 70% of viewport used for content
-  const zoomForWidth = (viewportWidth * marginFactor) / projectedWidth;
-  const zoomForHeight = (viewportHeight * marginFactor) / projectedHeight;
-
-  // Use the smaller zoom to ensure everything fits
-  return Math.min(zoomForWidth, zoomForHeight);
+function applyBinFrame(
+  id: string,
+  { camera, controls, size, animationFrameRef }: FrameTargets,
+  animated: boolean
+): boolean {
+  const { layout } = useLayoutStore.getState();
+  const bin = layout.bins.find((b) => b.id === id);
+  const rest = bin && getRestingStack(layout.bins, layout.layers).bins.get(bin.id);
+  if (!bin || !rest) return false;
+  const frame = planBinFrame({
+    bin,
+    zStart: rest.zStart,
+    drawer: layout.drawer,
+    depthToGridScale: effectiveGridUnitMmY(layout) / layout.gridUnitMm,
+    heightToGridScale: layout.heightUnitMm / layout.gridUnitMm,
+    viewport: size,
+    currentZoom: camera instanceof OrthographicCamera ? camera.zoom : null,
+    currentTargetZ: controls.target.z,
+    exploded: useViewStore.getState().isExplodedView,
+  });
+  const zoomTo = frame.zoom;
+  const startTarget = controls.target.clone();
+  const startPosition = camera.position.clone();
+  const startZoom = camera instanceof OrthographicCamera ? camera.zoom : 1;
+  const shift = new Vector3(...frame.target).sub(startTarget);
+  const startTime = Date.now();
+  const duration = animated ? FRAME_DURATION_MS : 0;
+  if (animationFrameRef.current !== null) cancelAnimationFrame(animationFrameRef.current);
+  const step = () => {
+    const progress = duration === 0 ? 1 : Math.min((Date.now() - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    controls.target.copy(startTarget).addScaledVector(shift, eased);
+    camera.position.copy(startPosition).addScaledVector(shift, eased);
+    if (zoomTo !== null && camera instanceof OrthographicCamera) {
+      camera.zoom = startZoom + (zoomTo - startZoom) * eased;
+      camera.updateProjectionMatrix();
+    }
+    controls.update();
+    animationFrameRef.current = progress < 1 ? requestAnimationFrame(step) : null;
+  };
+  step();
+  return true;
 }
 
 /**
@@ -97,6 +134,10 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
     const prevSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
     const animationFrameRef = useRef<number | null>(null);
     const { camera, size } = useThree();
+    const getThree = useThree((state) => state.get);
+    /** The bin a reveal put the orbit on, until the user takes the view over. */
+    const revealedRef = useRef<string | null>(null);
+    const reducedMotion = usePrefersReducedMotion();
 
     const setIsometricRotation = useViewStore((state) => state.setIsometricRotation);
 
@@ -197,6 +238,12 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
 
     // Start interaction - pause shadows for performance
     const handleStart = () => {
+      // A drag or wheel takes over from a reveal or preset still in flight.
+      revealedRef.current = null;
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
       setIsInteracting(true);
     };
 
@@ -218,6 +265,7 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
       ref,
       () => ({
         resetView: () => {
+          revealedRef.current = null;
           // Reset camera position to default front-right view
           camera.position.set(...defaultCameraPosition);
           controlsRef.current?.target.set(centerX, centerY, centerZ);
@@ -225,9 +273,12 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
           setIsometricRotation(0);
         },
         setPreset: (preset: CameraPreset) => {
+          revealedRef.current = null;
           const target = new Vector3(centerX, centerY, centerZ);
           const targetPosition = new Vector3(...cameraPresets[preset]);
           const startPosition = camera.position.clone();
+          // A reveal leaves the orbit on a bin; the presets look at the drawer.
+          const startLook = controlsRef.current?.target.clone() ?? target.clone();
 
           // Convert to spherical coordinates for smooth arc interpolation
           const startSpherical = new Spherical().setFromVector3(startPosition.clone().sub(target));
@@ -260,7 +311,9 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
             // Convert back to Cartesian and apply
             const newPosition = new Vector3().setFromSpherical(currentSpherical).add(target);
             camera.position.copy(newPosition);
-            camera.lookAt(target); // Keep camera oriented toward target during animation
+            const look = startLook.clone().lerp(target, eased);
+            controlsRef.current?.target.copy(look);
+            camera.lookAt(look);
 
             if (progress < 1) {
               animationFrameRef.current = requestAnimationFrame(animate);
@@ -288,6 +341,39 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
       ]
     );
 
+    // The orbit target is owned here, not by an OrbitControls prop: a reveal
+    // puts it on a bin, and when the drawer changes (a resize, or the layout
+    // switch that Find makes) the revealed bin keeps it. Without a revealed bin
+    // it follows the drawer centre. A drag, a preset or a reset ends the reveal.
+    useEffect(
+      () =>
+        onRevealBin('preview', (id) => {
+          const controls = controlsRef.current;
+          if (!controls) return;
+          revealedRef.current = id;
+          applyBinFrame(id, { camera, controls, size, animationFrameRef }, !reducedMotion);
+        }),
+      [camera, size, reducedMotion]
+    );
+
+    useEffect(() => {
+      const controls = controlsRef.current;
+      if (!controls) return;
+      const { camera: current, size: viewport } = getThree();
+      const revealed = revealedRef.current;
+      const kept =
+        revealed !== null &&
+        applyBinFrame(
+          revealed,
+          { camera: current, controls, size: viewport, animationFrameRef },
+          false
+        );
+      if (kept) return;
+      revealedRef.current = null;
+      controls.target.set(centerX, centerY, centerZ);
+      controls.update();
+    }, [centerX, centerY, centerZ, getThree]);
+
     // Cleanup animation frame on unmount
     useEffect(() => {
       return () => {
@@ -305,7 +391,6 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
           makeDefault
           enablePan={true}
           enableZoom={true}
-          target={[centerX, centerY, centerZ]}
           onStart={handleStart}
           onChange={handleChange}
           onEnd={handleEnd}

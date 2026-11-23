@@ -2,7 +2,7 @@ import type { BinId } from '@/core/types';
 
 type RevealListener = (binId: BinId) => void;
 
-export type RevealSurface = 'grid' | 'stash';
+export type RevealSurface = 'grid' | 'stash' | 'preview';
 
 const listeners = new Set<{ readonly surface: RevealSurface; readonly listener: RevealListener }>();
 
