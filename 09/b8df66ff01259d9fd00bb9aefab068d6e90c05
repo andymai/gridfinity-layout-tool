@@ -1,0 +1,21 @@
+src/features/layout-library/components/LayoutManagerModal/LayoutManagerModal.test.tsx
+  s_f3decd9961964a::t_ef642372640fca 354-392
+src/features/layout-library/components/LayoutManagerModal/LayoutManagerModal.tsx
+  s_f3decd9961964a::t_ef642372640fca 142-144,165-167,169,172,326-335
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "09b8df66ff01259d9fd00bb9aefab068d6e90c05",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
