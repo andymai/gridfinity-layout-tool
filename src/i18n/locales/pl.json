@@ -5896,5 +5896,8 @@
   "binDesigner.cutouts.library.emptyFolder": "Ten folder jest pusty",
   "binDesigner.cutouts.library.size": "{width} × {depth} mm",
   "binDesigner.cutouts.library.foldersFull": "Biblioteka mieści {max} folderów. Usuń kilka, aby utworzyć nowe.",
-  "binDesigner.cutouts.library.tooDeep": "Foldery można zagnieździć najwyżej na {max} poziomów. Wybierz folder wyżej."
+  "binDesigner.cutouts.library.tooDeep": "Foldery można zagnieździć najwyżej na {max} poziomów. Wybierz folder wyżej.",
+  "designLinking.inspector.sizeMismatch": "Ten bin ma {bin}, a jego projekt ma {design}. Drukuje się w rozmiarze projektu.",
+  "designLinking.inspector.matchDesignSize": "Zmień rozmiar na {design}",
+  "designLinking.inspector.sizeMismatchNoRoom": "Tu nie ma miejsca na ten rozmiar."
 }
