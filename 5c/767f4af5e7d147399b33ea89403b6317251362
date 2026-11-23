@@ -1,0 +1,27 @@
+src/design-system/Slider/Slider.test.tsx
+  s_f3decd9961964a::t_72f6aebace805a 113-139
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
+  s_f3decd9961964a::t_77e47778f28a0d 37,261-262,300
+src/design-system/Slider/Slider.tsx
+  s_f3decd9961964a::t_72f6aebace805a 231-233
+src/features/baseplate/hooks/useBaseplateUndo.ts
+  s_f3decd9961964a::t_77e47778f28a0d 73-78
+src/features/baseplate/hooks/useBaseplateUndo.test.ts
+  s_f3decd9961964a::t_77e47778f28a0d 129-139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5c767f4af5e7d147399b33ea89403b6317251362",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
