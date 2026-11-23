@@ -1,17 +1,40 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type * as Storage from '@/core/storage';
+import type * as SharedHooks from '@/shared/hooks';
 import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import { LayoutManagerModal } from '@/features/layout-library/components/LayoutManagerModal';
 import { useLibraryStore } from '@/core/store/library';
 import { useLayoutStore } from '@/core/store/layout';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useViewStore } from '@/core/store/view';
+import { useSettingsStore } from '@/core/store/settings';
 import { createDefaultLayout } from '@/core/constants';
 import * as storage from '@/core/storage';
 import type { LayoutLibrary, LayoutEntry } from '@/core/types';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
 
 // Mock the storage module
+let phone = false;
+vi.mock('@/shared/hooks', async (importOriginal) => {
+  const actual = await importOriginal<typeof SharedHooks>();
+  return {
+    ...actual,
+    useResponsive: () =>
+      phone
+        ? {
+            isMobile: true,
+            isTablet: false,
+            isDesktop: false,
+            isTouchDevice: true,
+            layoutMode: 'mobile' as const,
+            viewportWidth: 375,
+            viewportHeight: 667,
+            isLandscape: false,
+          }
+        : actual.useResponsive(),
+  };
+});
+
 vi.mock('@/core/storage', async (importOriginal) => {
   // The folder helpers are pure and run for real; everything that touches
   // storage stays mocked below.
@@ -376,18 +399,44 @@ describe('LayoutManagerModal Accessibility', () => {
       }
     });
 
-    it('wraps Tab from the last control back to the first', async () => {
-      render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
-      const dialog = screen.getByRole('dialog');
-      const focusable = dialog.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      );
-      const last = focusable[focusable.length - 1];
-      last.focus();
+    it('wraps Tab from the selected List button, the last stop, back into the dialog', async () => {
+      // In list view the Grid button follows List in the DOM but is not a stop.
+      const settings = useSettingsStore.getState();
+      const before = settings.settings.layoutManagerViewMode;
+      settings.updateSetting('layoutManagerViewMode', 'list');
+      try {
+        render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
+        const dialog = screen.getByRole('dialog');
+        const pressed = within(dialog)
+          .getAllByRole('radio')
+          .find((r) => r.getAttribute('aria-checked') === 'true');
+        if (!pressed) throw new Error('no selected view button');
+        pressed.focus();
 
-      fireEvent.keyDown(last, { key: 'Tab' });
+        fireEvent.keyDown(pressed, { key: 'Tab' });
 
-      expect(focusable[0]).toHaveFocus();
+        expect(pressed).not.toHaveFocus();
+        expect(dialog.contains(document.activeElement)).toBe(true);
+      } finally {
+        useSettingsStore.getState().updateSetting('layoutManagerViewMode', before);
+      }
+    });
+
+    it('wraps Tab from Sort by, the last stop on a phone, back into the dialog', async () => {
+      phone = true;
+      try {
+        render(<LayoutManagerModal isOpen={true} onClose={mockOnClose} />);
+        const dialog = screen.getByRole('dialog');
+        const sort = within(dialog).getByRole('combobox', { name: 'Sort by' });
+        sort.focus();
+
+        fireEvent.keyDown(sort, { key: 'Tab' });
+
+        expect(sort).not.toHaveFocus();
+        expect(dialog.contains(document.activeElement)).toBe(true);
+      } finally {
+        phone = false;
+      }
     });
 
     it('arrow keys navigate layout list', async () => {

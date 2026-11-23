@@ -42,6 +42,28 @@ interface LayoutManagerModalProps {
 }
 
 /**
+ * The controls Tab stops on, in order: a roving toggle's other buttons
+ * (tabIndex -1) and a control the layout hides are not stops.
+ */
+function tabStops(root: HTMLElement): HTMLElement[] {
+  return Array.from(
+    root.querySelectorAll<HTMLElement>('button, input, select, textarea, a[href], [tabindex]')
+  ).filter((el) => el.tabIndex > -1 && !el.matches(':disabled') && isRendered(el, root));
+}
+
+function isRendered(el: HTMLElement, root: HTMLElement): boolean {
+  for (
+    let node: HTMLElement | null = el;
+    node !== null && node !== root;
+    node = node.parentElement
+  ) {
+    const style = getComputedStyle(node);
+    if (style.display === 'none' || style.visibility === 'hidden') return false;
+  }
+  return true;
+}
+
+/**
  * Layout Manager Modal - main entry point.
  * Provides tabbed interface for managing layouts (list view) and importing layouts.
  */
@@ -148,9 +170,8 @@ function LayoutManagerModalContent({
       }
 
       if (e.key === 'Tab' && modalRef.current) {
-        const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        );
+        const focusableElements = tabStops(modalRef.current);
+        if (focusableElements.length === 0) return;
         const firstElement = focusableElements[0];
         const lastElement = focusableElements[focusableElements.length - 1];
 
