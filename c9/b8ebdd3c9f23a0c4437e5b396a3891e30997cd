@@ -1,0 +1,25 @@
+src/features/baseplate/storage/BaseplateStorage.ts
+  s_f3decd9961964a::t_108af29d4f5be0 279-280,284-285,288
+src/features/baseplate/hooks/usePlannerBaseplateWriteBack.test.ts
+  s_f3decd9961964a::t_c86e4a961f6ec2 86,89,93-108,303-363
+  s_f3decd9961964a::t_06eb02ce4d1a33 364
+src/features/baseplate/hooks/usePlannerBaseplateWriteBack.ts
+  s_f3decd9961964a::t_108af29d4f5be0 38-44,46,54-56,58-76,80,91,98-103,105,111-112
+  s_f3decd9961964a::t_82a9258c4ddfb8 113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c9b8ebdd3c9f23a0c4437e5b396a3891e30997cd",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
