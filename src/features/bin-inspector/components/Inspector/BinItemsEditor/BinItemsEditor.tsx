@@ -40,6 +40,8 @@ function useDraft(saved: string): [string, (next: string) => void] {
   return [draft, setDraft];
 }
 
+const CLOSED_MENU_POSITION = { x: 0, y: 0 };
+
 function onEnter(commit: () => void) {
   return (e: KeyboardEvent<HTMLInputElement>) => {
     // The Enter that confirms an IME candidate is not a commit. Safari reports
@@ -190,27 +192,32 @@ function ItemRow({
           fullWidth
         />
       )}
-      {menu && (
-        <Menu.Root open onClose={() => setMenu(null)} position={menu} align="end">
-          {!showNote && (
-            <Menu.Item
-              onClick={() => {
-                setNoteOpen(true);
-                // After the menu hands focus back to its button.
-                requestAnimationFrame(() => noteRef.current?.focus());
-              }}
-            >
-              {t('inspector.contents.addNote')}
-            </Menu.Item>
-          )}
-          <Menu.Item disabled={isFirst} onClick={() => onMove(-1)}>
-            {t('inspector.contents.moveUp')}
+      {/* Mounted while closed: the menu hands focus back to its button only
+          when `open` turns false. */}
+      <Menu.Root
+        open={menu !== null}
+        onClose={() => setMenu(null)}
+        position={menu ?? CLOSED_MENU_POSITION}
+        align="end"
+      >
+        {!showNote && (
+          <Menu.Item
+            onClick={() => {
+              setNoteOpen(true);
+              // After the menu hands focus back to its button.
+              requestAnimationFrame(() => noteRef.current?.focus());
+            }}
+          >
+            {t('inspector.contents.addNote')}
           </Menu.Item>
-          <Menu.Item disabled={isLast} onClick={() => onMove(1)}>
-            {t('inspector.contents.moveDown')}
-          </Menu.Item>
-        </Menu.Root>
-      )}
+        )}
+        <Menu.Item disabled={isFirst} onClick={() => onMove(-1)}>
+          {t('inspector.contents.moveUp')}
+        </Menu.Item>
+        <Menu.Item disabled={isLast} onClick={() => onMove(1)}>
+          {t('inspector.contents.moveDown')}
+        </Menu.Item>
+      </Menu.Root>
     </li>
   );
 }

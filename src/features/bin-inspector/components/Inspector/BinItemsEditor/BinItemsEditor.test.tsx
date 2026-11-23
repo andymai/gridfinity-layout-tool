@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { CONSTRAINTS } from '@/core/constants';
@@ -9,6 +10,15 @@ function setup(items: BinItem[] = [], label = '') {
   render(<BinItemsEditor items={items} label={label} onChange={onChange} variant="desktop" />);
   return { onChange, last: () => onChange.mock.calls.at(-1)?.[0] ?? [] };
 }
+
+/** Feeds each change back, as the inspector does, so a second move sees the first. */
+function Stateful({ initial }: { initial: BinItem[] }) {
+  const [items, setItems] = useState(initial);
+  return <BinItemsEditor items={items} label="" onChange={setItems} variant="desktop" />;
+}
+
+const rowNames = () =>
+  screen.getAllByRole('button', { name: /^More for / }).map((b) => b.getAttribute('aria-label'));
 
 const addField = () => screen.getByLabelText('Add an item');
 
@@ -49,24 +59,55 @@ describe('BinItemsEditor', () => {
   });
 
   it('moves an item up or down, and not past either end', () => {
-    const items = [
-      { id: 'i1', name: 'Nuts' },
-      { id: 'i2', name: 'Bolts' },
-      { id: 'i3', name: 'Washers' },
-    ];
-    const { last } = setup(items);
+    render(
+      <Stateful
+        initial={[
+          { id: 'i1', name: 'Nuts' },
+          { id: 'i2', name: 'Bolts' },
+          { id: 'i3', name: 'Washers' },
+        ]}
+      />
+    );
 
     fireEvent.click(screen.getByRole('button', { name: 'More for Bolts' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Move up' }));
-    expect(last().map((i) => i.id)).toEqual(['i2', 'i1', 'i3']);
+    expect(rowNames()).toEqual(['More for Bolts', 'More for Nuts', 'More for Washers']);
 
     fireEvent.click(screen.getByRole('button', { name: 'More for Nuts' }));
-    expect(screen.getByRole('menuitem', { name: 'Move up' })).toBeDisabled();
     fireEvent.click(screen.getByRole('menuitem', { name: 'Move down' }));
-    expect(last().map((i) => i.id)).toEqual(['i2', 'i1', 'i3']);
+    expect(rowNames()).toEqual(['More for Bolts', 'More for Washers', 'More for Nuts']);
 
-    fireEvent.click(screen.getByRole('button', { name: 'More for Washers' }));
+    fireEvent.click(screen.getByRole('button', { name: 'More for Bolts' }));
+    expect(screen.getByRole('menuitem', { name: 'Move up' })).toBeDisabled();
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'More for Nuts' }));
     expect(screen.getByRole('menuitem', { name: 'Move down' })).toBeDisabled();
+  });
+
+  it('gives focus back to the row menu button when the menu closes', async () => {
+    render(
+      <Stateful
+        initial={[
+          { id: 'i1', name: 'Nuts' },
+          { id: 'i2', name: 'Bolts' },
+        ]}
+      />
+    );
+    const bolts = screen.getByRole('button', { name: 'More for Bolts' });
+    // A real click focuses the button; fireEvent.click does not.
+    const open = () => {
+      bolts.focus();
+      fireEvent.click(bolts);
+    };
+
+    open();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Move up' }));
+    await waitFor(() => expect(bolts).toHaveFocus());
+
+    open();
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+    await waitFor(() => expect(bolts).toHaveFocus());
   });
 
   it('offers the bin label as the first item', () => {
