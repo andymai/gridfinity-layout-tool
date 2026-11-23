@@ -30,57 +30,54 @@ interface PendingWrite {
   readonly seq: number;
 }
 
-/**
- * Resolves false when storage failed, so the edit can try again. Storage orders
- * this write with the page autosave's, and skips it when the design already
- * holds the params, so an undo of a bin edit leaves the design's sync stamp.
- */
-async function writeIfChanged({ designId, params }: PendingWrite): Promise<boolean> {
-  const updated = await updateDesignParamsIfChanged(designId, params);
-  if (!isOk(updated)) return false;
-  upsertRegistryEntry({
-    id: updated.value.id,
-    name: updated.value.name,
-    updatedAt: updated.value.updatedAt,
-  });
-  return true;
-}
-
 export function usePlannerBaseplateWriteBack(): void {
   useEffect(() => {
     let pending: PendingWrite | null = null;
     let timer: ReturnType<typeof setTimeout> | null = null;
     let seq = 0;
-    /** The newest edit for each design. Only that edit may write or retry. */
-    const newest = new Map<BaseplateDesignId, number>();
+    // Keyed by layout and design: two layouts can edit one shared design, and
+    // a split takes over only the edits of the layout it split.
+    const keyOf = (layout: LayoutId | null, design: BaseplateDesignId): string =>
+      `${layout ?? ''}|${design}`;
+    const writeKey = (write: PendingWrite): string => keyOf(write.layoutId, write.designId);
+    /** The newest edit for each layout and design. Only that edit may write or retry. */
+    const newest = new Map<string, number>();
     /** Newest edits that storage refused, kept for the next flush. */
-    const failed = new Map<BaseplateDesignId, PendingWrite>();
+    const failed = new Map<string, PendingWrite>();
     /**
      * For a layout that the init split off a shared design, the newest edit it
      * made to that design. Those edits belong to the layout's own copy now, so
      * they must not reach the shared design. A later edit to it still writes.
      */
     const splitUpTo = new Map<string, number>();
-    const splitKey = (layout: LayoutId | null, design: BaseplateDesignId): string =>
-      `${layout ?? ''}|${design}`;
-    const splitAway = (write: PendingWrite): boolean =>
-      (splitUpTo.get(splitKey(write.layoutId, write.designId)) ?? 0) >= write.seq;
-    // Writes run one at a time, in the order they were flushed.
-    let queue: Promise<void> = Promise.resolve();
 
-    const isNewest = (write: PendingWrite): boolean => newest.get(write.designId) === write.seq;
+    const stillWanted = (write: PendingWrite): boolean =>
+      newest.get(writeKey(write)) === write.seq &&
+      (splitUpTo.get(writeKey(write)) ?? 0) < write.seq;
 
-    const run = (write: PendingWrite): void => {
-      queue = queue.then(async () => {
-        if (!isNewest(write) || splitAway(write)) return;
-        if (!(await writeIfChanged(write)) && isNewest(write) && !splitAway(write)) {
-          failed.set(write.designId, write);
-        }
-      });
+    /**
+     * Storage orders writes per design and asks `stillWanted` when this one's
+     * turn comes, so a split or a newer edit made while it waits calls it off.
+     * It skips a write the design already holds, so an undo of a bin edit
+     * leaves the design's sync stamp.
+     */
+    const submit = async (write: PendingWrite): Promise<void> => {
+      const updated = await updateDesignParamsIfChanged(write.designId, write.params, () =>
+        stillWanted(write)
+      );
+      if (isOk(updated)) {
+        upsertRegistryEntry({
+          id: updated.value.id,
+          name: updated.value.name,
+          updatedAt: updated.value.updatedAt,
+        });
+      } else if (stillWanted(write)) {
+        failed.set(writeKey(write), write);
+      }
     };
 
     /**
-     * Write the pending edit to the design it was made on, and try again the
+     * Write the pending edit to the design the user edited, and try again the
      * ones storage refused. A design switch, or an undo that changes the
      * design, flushes first, so each edit reaches its own design.
      */
@@ -91,23 +88,29 @@ export function usePlannerBaseplateWriteBack(): void {
       failed.clear();
       if (pending !== null) writes.push(pending);
       pending = null;
-      for (const write of writes) if (!splitAway(write)) run(write);
+      for (const write of writes) if (stillWanted(write)) void submit(write);
     };
 
     const schedule = (): void => {
       const { activeLayoutId, layout } = useLayoutStore.getState();
       const { activeBaseplateId, baseplateParams } = layout;
       if (!activeBaseplateId || !baseplateParams) return;
-      if (pending !== null && pending.designId !== activeBaseplateId) flush();
+      if (
+        pending !== null &&
+        (pending.designId !== activeBaseplateId || pending.layoutId !== activeLayoutId)
+      ) {
+        flush();
+      }
       seq += 1;
-      newest.set(activeBaseplateId, seq);
-      failed.delete(activeBaseplateId);
-      pending = {
+      const write: PendingWrite = {
         layoutId: activeLayoutId,
         designId: activeBaseplateId,
         params: baseplateParams,
         seq,
       };
+      newest.set(writeKey(write), seq);
+      failed.delete(writeKey(write));
+      pending = write;
       if (timer !== null) clearTimeout(timer);
       timer = setTimeout(() => flush(), WRITE_DELAY_MS);
     };
@@ -121,7 +124,7 @@ export function usePlannerBaseplateWriteBack(): void {
       eventBus.subscribe('layout.restored', schedule),
       eventBus.subscribe('layout.activeBaseplateSet', () => flush()),
       onBaseplateSplit((layout, design) => {
-        splitUpTo.set(splitKey(layout, design), seq);
+        splitUpTo.set(keyOf(layout, design), seq);
       }),
     ];
     document.addEventListener('visibilitychange', onVisibilityChange);

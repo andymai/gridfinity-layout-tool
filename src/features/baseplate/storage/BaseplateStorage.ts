@@ -276,14 +276,16 @@ export function updateDesignParams(
 /**
  * Write `params` only when the stored design differs, in the same order as
  * every other update, so a write that started earlier never lands over a newer
- * one.
+ * one. `stillWanted` is asked when the write's turn comes: a caller can call
+ * the write off while it waits in the queue.
  */
 export function updateDesignParamsIfChanged(
   id: BaseplateDesignId,
-  params: StoredBaseplateParams
+  params: StoredBaseplateParams,
+  stillWanted: () => boolean = () => true
 ): Promise<Result<SavedBaseplateDesign, StorageError>> {
   return updateInOrder(id, (current) =>
-    paramsEqual(current.params, params) ? null : { ...current, params }
+    !stillWanted() || paramsEqual(current.params, params) ? null : { ...current, params }
   );
 }
 

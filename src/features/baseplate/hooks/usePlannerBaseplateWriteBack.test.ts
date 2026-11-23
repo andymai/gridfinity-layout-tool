@@ -83,11 +83,27 @@ function hideTab(): void {
 }
 
 /** What the library init does when it gives the layout its own copy. */
-function split(shared: BaseplateDesignId, copy: BaseplateDesignId): void {
+function split(shared: BaseplateDesignId, copy: BaseplateDesignId, layout = 'layout-a'): void {
   act(() => {
     useLayoutStore.getState().setActiveBaseplateLocal(copy, edited);
-    announceBaseplateSplit(layoutId('layout-a'), shared);
+    announceBaseplateSplit(layoutId(layout), shared);
   });
+}
+
+/** Holds the next planner write before it reaches storage's queue. */
+async function holdNextWrite(): Promise<() => void> {
+  const actual = await vi.importActual<typeof BaseplateStorageModule>(
+    '@/features/baseplate/storage/BaseplateStorage'
+  );
+  let release = (): void => undefined;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  vi.mocked(updateDesignParamsIfChanged).mockImplementationOnce(async (...args) => {
+    await gate;
+    return actual.updateDesignParamsIfChanged(...args);
+  });
+  return release;
 }
 
 /** Longer than the write delay, for the cases that must not write. */
@@ -282,6 +298,68 @@ describe('usePlannerBaseplateWriteBack', () => {
     const newer: StoredBaseplateParams = { ...params, paddingFront: mm(7) };
     setPlate(newer);
     await waitFor(async () => expect(await storedParams(id)).toEqual(newer), { timeout: 3000 });
+  });
+
+  it('calls off a write still waiting for storage when the split lands', async () => {
+    const id = await linkedLayout();
+    const copy = await saveDesign({ name: 'Baseplate 1 (copy)', params: edited, thumbnail: null });
+    if (!isOk(copy)) throw new Error('saveDesign failed');
+    renderHook(() => usePlannerBaseplateWriteBack());
+    const release = await holdNextWrite();
+    setPlate(edited);
+    hideTab();
+
+    split(id, copy.value.id);
+    release();
+    await settle();
+
+    expect(await storedParams(id)).toEqual(params);
+  });
+
+  it('does not hold an edit to one design behind a slow write to another', async () => {
+    await linkedLayout();
+    const other = await saveDesign({ name: 'Other', params, thumbnail: null });
+    if (!isOk(other)) throw new Error('saveDesign failed');
+    renderHook(() => usePlannerBaseplateWriteBack());
+    const release = await holdNextWrite();
+    setPlate(edited);
+    act(() => {
+      commandBus.dispatch(
+        createCommand('layout.setActiveBaseplate', { designId: other.value.id, params })
+      );
+    });
+    const newer: StoredBaseplateParams = { ...params, paddingFront: mm(7) };
+    setPlate(newer);
+    hideTab();
+
+    await waitFor(async () => expect(await storedParams(other.value.id)).toEqual(newer), {
+      timeout: 1000,
+    });
+    release();
+    await settle();
+  });
+
+  it("keeps the owner layout's edit when another layout edits the shared design before its split", async () => {
+    const id = await linkedLayout();
+    const copy = await saveDesign({ name: 'Baseplate 1 (copy)', params: edited, thumbnail: null });
+    if (!isOk(copy)) throw new Error('saveDesign failed');
+    renderHook(() => usePlannerBaseplateWriteBack());
+    setPlate(edited);
+
+    act(() => {
+      useLayoutStore
+        .getState()
+        .importLayout(
+          createTestLayout({ baseplateParams: params, activeBaseplateId: id }),
+          layoutId('layout-b')
+        );
+    });
+    setPlate({ ...params, paddingFront: mm(9) });
+    split(id, copy.value.id, 'layout-b');
+
+    await waitFor(async () => expect(await storedParams(id)).toEqual(edited), { timeout: 3000 });
+    await settle();
+    expect(await storedParams(id)).toEqual(edited);
   });
 
   it('saves an undone edit to its design when an undone switch follows at once', async () => {
