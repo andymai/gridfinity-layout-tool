@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { SplitViewStrip } from './SplitViewStrip';
 import type { BaseplateTiling } from '../../types/tiling';
+import { cssValue } from '@/test/css';
 
 vi.mock('@/i18n', async () => await import('@/test/mocks/i18nEcho'));
 
@@ -274,7 +275,7 @@ describe('SplitViewStrip', () => {
     it('draws the seams and their ruler ticks at the same fraction of the plate', () => {
       render(<SplitViewStrip {...defaultProps} tiling={paddedTiling} />);
       // 20mm padding + 3 units of 42mm, over a 406mm plate.
-      const expected = `${(146 / 406) * 100}%`;
+      const expected = cssValue('left', `${(146 / 406) * 100}%`);
       const seamLine = mapGrid().parentElement?.querySelector<HTMLElement>('span.bg-accent');
       expect(seamLine?.style.left).toBe(expected);
       const tick = lanes('Vertical').find((b) => b.getAttribute('aria-pressed') === 'true');
