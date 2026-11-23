@@ -3590,6 +3590,7 @@
   "grid.emptyHint.clickToDraw": "Klikk og dra for å tegne en bin",
   "grid.emptyHint.stripedBlocked": "Stripede områder er blokkert av bins under",
   "grid.emptyHint.tapToDraw": "Trykk og dra for å tegne en bin",
+  "grid.emptyHint.pickGap": "Dra over tomme celler for å velge hullet",
   "grid.exceedsPrintSize": "Overskrider utskriftsstørrelse, vil bli delt",
   "grid.exceedsPrintSizeWhole": "Overskrider utskriftsstørrelse, skrives ut i ett stykke",
   "grid.expand": "Utvid",

@@ -1861,6 +1861,7 @@ const en: Record<string, string> = {
   'grid.emptyHint.clickToDraw': 'Click and drag to draw a bin',
   'grid.emptyHint.stripedBlocked': 'Striped areas are blocked by bins below',
   'grid.emptyHint.tapToDraw': 'Tap and drag to draw a bin',
+  'grid.emptyHint.pickGap': 'Drag across empty cells to pick the gap',
   'grid.expand': 'Expand',
   'grid.explodedView.label': 'Explode',
   'grid.explodedView.toggle': 'Exploded view: Separate layers vertically (E)',

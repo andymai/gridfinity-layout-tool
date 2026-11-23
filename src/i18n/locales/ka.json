@@ -1619,6 +1619,7 @@
   "grid.emptyHint.clickToDraw": "ყუთის დასახატად დააწკაპუნეთ და გადაათრიეთ",
   "grid.emptyHint.stripedBlocked": "ზოლებიანი არეები ქვედა ყუთებითაა დაბლოკილი",
   "grid.emptyHint.tapToDraw": "ყუთის დასახატად შეეხეთ და გადაათრიეთ",
+  "grid.emptyHint.pickGap": "ცარიელი უჯრედების გასწვრივ გადაათრიეთ და მონიშნეთ ადგილი",
   "grid.expand": "გაშლა",
   "grid.explodedView.label": "განცალკევება",
   "grid.explodedView.toggle": "განცალკევებული ხედი: ფენების ვერტიკალურად განცალკევება (E)",

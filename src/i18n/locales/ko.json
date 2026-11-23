@@ -3521,6 +3521,7 @@
   "grid.emptyHint.clickToDraw": "클릭하고 드래그하여 수납통을 그리세요",
   "grid.emptyHint.stripedBlocked": "줄무늬 영역은 아래 수납통에 의해 차단됩니다",
   "grid.emptyHint.tapToDraw": "탭하고 드래그하여 수납통을 그리세요",
+  "grid.emptyHint.pickGap": "빈 셀을 드래그하여 빈 공간을 선택하세요",
   "grid.exceedsPrintSize": "인쇄 크기 초과, 분할됩니다",
   "grid.exceedsPrintSizeWhole": "인쇄 크기 초과, 한 조각으로 인쇄됩니다",
   "grid.expand": "펼치기",

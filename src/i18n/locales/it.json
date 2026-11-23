@@ -3590,6 +3590,7 @@
   "grid.emptyHint.clickToDraw": "Clicca e trascina per disegnare un bin",
   "grid.emptyHint.stripedBlocked": "Le aree a strisce sono bloccate dai bin sottostanti",
   "grid.emptyHint.tapToDraw": "Tocca e trascina per disegnare un bin",
+  "grid.emptyHint.pickGap": "Trascina sulle celle vuote per scegliere lo spazio",
   "grid.exceedsPrintSize": "Supera la dimensione di stampa, verrà diviso",
   "grid.exceedsPrintSizeWhole": "Supera la dimensione di stampa, si stampa in un pezzo",
   "grid.expand": "Espandi",

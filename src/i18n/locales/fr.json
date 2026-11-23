@@ -3590,6 +3590,7 @@
   "grid.emptyHint.clickToDraw": "Cliquer et glisser pour dessiner un bin",
   "grid.emptyHint.stripedBlocked": "Les zones hachurées sont bloquées par des bins en dessous",
   "grid.emptyHint.tapToDraw": "Toucher et glisser pour dessiner un bin",
+  "grid.emptyHint.pickGap": "Faites glisser sur des cellules vides pour choisir l'espace",
   "grid.exceedsPrintSize": "Dépasse la taille d'impression, sera divisé",
   "grid.exceedsPrintSizeWhole": "Dépasse la taille d'impression, imprimé d'un seul tenant",
   "grid.expand": "Développer",

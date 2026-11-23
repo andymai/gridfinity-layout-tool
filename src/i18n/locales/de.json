@@ -3590,6 +3590,7 @@
   "grid.emptyHint.clickToDraw": "Klicken und ziehen, um ein Bin zu zeichnen",
   "grid.emptyHint.stripedBlocked": "Gestreifte Bereiche sind von Bins darunter blockiert",
   "grid.emptyHint.tapToDraw": "Tippen und ziehen, um ein Bin zu zeichnen",
+  "grid.emptyHint.pickGap": "Ziehe über leere Zellen, um die Lücke auszuwählen",
   "grid.exceedsPrintSize": "Überschreitet Druckgröße, wird geteilt",
   "grid.exceedsPrintSizeWhole": "Überschreitet Druckgröße, wird am Stück gedruckt",
   "grid.expand": "Ausklappen",

@@ -3728,6 +3728,7 @@
   "grid.emptyHint.clickToDraw": "Натисніть і перетягніть, щоб намалювати бін",
   "grid.emptyHint.stripedBlocked": "Смугасті області заблоковано бінами знизу",
   "grid.emptyHint.tapToDraw": "Торкніться й перетягніть, щоб намалювати бін",
+  "grid.emptyHint.pickGap": "Перетягніть по порожніх клітинках, щоб вибрати проміжок",
   "grid.exceedsPrintSize": "Перевищує розмір друку, буде розділено",
   "grid.exceedsPrintSizeWhole": "Перевищує розмір друку, друкується цілим",
   "grid.expand": "Розгорнути",

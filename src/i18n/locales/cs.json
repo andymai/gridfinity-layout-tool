@@ -3659,6 +3659,7 @@
   "grid.emptyHint.clickToDraw": "Klikni a táhni pro nakreslení binu",
   "grid.emptyHint.stripedBlocked": "Šrafované oblasti jsou blokovány biny níže",
   "grid.emptyHint.tapToDraw": "Klepni a táhni pro nakreslení binu",
+  "grid.emptyHint.pickGap": "Tažením přes prázdné buňky vyberte mezeru",
   "grid.exceedsPrintSize": "Přesahuje velikost tisku, bude rozděleno",
   "grid.exceedsPrintSizeWhole": "Přesahuje velikost tisku, tiskne se vcelku",
   "grid.expand": "Rozbalit",
