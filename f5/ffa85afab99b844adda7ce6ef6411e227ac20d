@@ -1,0 +1,82 @@
+src/i18n/locales/pt-BR.json
+  s_f3decd9961964a::t_6493e292d6788f 5619-5622
+src/i18n/locales/fr.json
+  s_f3decd9961964a::t_6493e292d6788f 5619-5622
+src/i18n/locales/ja.json
+  s_f3decd9961964a::t_6493e292d6788f 5479-5482
+src/features/design-linking/domain/index.ts
+  s_f3decd9961964a::t_6493e292d6788f 50
+src/i18n/locales/nl.json
+  s_f3decd9961964a::t_6493e292d6788f 5619-5622
+src/features/design-linking/components/LinkedDesignSection/LinkedDesignSection.test.tsx
+  s_f3decd9961964a::t_6493e292d6788f 7,257-318
+  s_f3decd9961964a::t_423cabe31272f0 319
+src/features/design-linking/hooks/useDesignSizeMatch.test.ts
+  s_f3decd9961964a::t_6493e292d6788f 1-158
+package.json
+  s_f3decd9961964a::t_6493e292d6788f 129,132-135,151,157,190,198,204,218-220,222,230
+src/features/design-linking/README.md
+  s_f3decd9961964a::t_6493e292d6788f 80
+src/features/design-linking/components/LinkedDesignSection/LinkedDesignSection.tsx
+  s_f3decd9961964a::t_6493e292d6788f 11,40,318-346
+  s_f3decd9961964a::t_28f98383208332 347-349
+src/i18n/locales/ka.json
+  s_f3decd9961964a::t_6493e292d6788f 5619-5622
+src/i18n/locales/de.json
+  s_f3decd9961964a::t_6493e292d6788f 5619-5622
+src/i18n/locales/uk.json
+  s_f3decd9961964a::t_6493e292d6788f 5899-5902
+src/i18n/locales/sv.json
+  s_f3decd9961964a::t_6493e292d6788f 5619-5622
+src/i18n/locales/it.json
+  s_f3decd9961964a::t_6493e292d6788f 5619-5622
+src/i18n/locales/zh-CN.json
+  s_f3decd9961964a::t_6493e292d6788f 5479-5482
+src/features/design-linking/hooks/useDesignSizeMatch.ts
+  s_f3decd9961964a::t_6493e292d6788f 1-90
+src/features/design-linking/hooks/index.ts
+  s_f3decd9961964a::t_6493e292d6788f 12-13
+.github/workflows/osv-scan.yml
+  s_f3decd9961964a::t_6493e292d6788f 30,42
+src/i18n/locales/nb.json
+  s_f3decd9961964a::t_6493e292d6788f 5619-5622
+e2e/drag-bins.spec.ts
+  s_f3decd9961964a::t_6493e292d6788f 123-124,196-197,227-228,257-258,276-277,301-302,353-354
+src/i18n/locales/ko.json
+  s_f3decd9961964a::t_6493e292d6788f 5479-5482
+src/i18n/locales/cs.json
+  s_f3decd9961964a::t_6493e292d6788f 5761-5764
+src/i18n/locales/pl.json
+  s_f3decd9961964a::t_6493e292d6788f 5899-5902
+src/features/design-linking/domain/linkageQueries.ts
+  s_f3decd9961964a::t_6493e292d6788f 10,99-104
+  s_f3decd9961964a::t_3c5c7f32a62f41 105-106
+src/i18n/locales/en.ts
+  s_f3decd9961964a::t_6493e292d6788f 6081-6084
+src/i18n/locales/es.json
+  s_f3decd9961964a::t_6493e292d6788f 5619-5622
+apps/docs/concepts/saved-designs.md
+  s_f3decd9961964a::t_6493e292d6788f 61,101,103-105
+e2e/rotate-bins.spec.ts
+  s_f3decd9961964a::t_6493e292d6788f 18-21,29-31,130
+apps/docs/package.json
+  s_f3decd9961964a::t_6493e292d6788f 17
+pnpm-lock.yaml
+  s_f3decd9961964a::t_73138652d4bf8a 73-74,82-83,85-86,88-89,91-92,95,98,139-140,157-158,191,204,213,224-225,248-249,252,266-267,308-309,311-312,314-315,320-321,344-345,348,351,354,365-366,373,385,395-396,1496-1497,1499-1500,1504-1505,1507-1508,1527-1528,1959-1960,1962-1963,1965-1966,2629-2630,3024-3025,3057-3058,3060,3387-3388,4296-4297,4583-4584,4690-4691,4755-4756,5106-5111,5524-5526,5803-5804,5988-5989,6357,6373,7518,7520,7524,7528,7530,7539,7541-7542,7565,7817,7820,7842,7844-7845,7851,7853,7855,7995,8000,8017,8020,8028,8041,8333,8338,8361,8373,8726,8770,8776,8823,8831,8835,8838,8840,8843,8856,8864,8871,8887,9126,9706,10129,10414,10425,10500,10503,10568,10944,10946-10954,11419,11664,11666,11729,11868,11873,11879,11881,11888,11900,11904,11916,11924,11933,11936,11966,11971,11973,11976,11987,12310,12315,12318,12321
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f5ffa85afab99b844adda7ce6ef6411e227ac20d",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
