@@ -10,6 +10,8 @@ import {
   clearAllStorage,
   resetViewport,
   getActiveDialog,
+  seedBins,
+  readBins,
 } from './fixtures';
 
 test.describe('Rotate Bins', () => {
@@ -101,27 +103,52 @@ test.describe('Rotate Bins', () => {
     await expect(inspector.getByText(/2×3 Bin/i)).toBeVisible();
   });
 
-  // NOTE: Smart rotation E2E tests are challenging due to precise positioning requirements.
-  // The smart rotation logic is thoroughly tested in unit tests (src/test/rotation.test.ts
-  // and src/test/binLocation.test.ts). These E2E tests verify basic rotation still works.
-
-  // Skip: Requires precise bin placement at exact grid edge
-  // which is unreliable with auto-zoom. See unit tests for validation.
-  test.skip('smart rotation repositions bin when rotation would exceed bounds', async ({
-    page: _page,
+  // These seed their bins at exact cells (`seedBins`), because a drawn bin's
+  // cells depend on the zoom.
+  test('smart rotation moves a bin back inside when turning it would cross the edge', async ({
+    page,
+    viewport,
   }) => {
-    // This test would verify:
-    // 1. Place a 1x3 bin near right edge
-    // 2. Rotate - should reposition left to fit as 3x1
-    // 3. Verify toast shows repositioning message
-    //
-    // Skipped because precise edge placement is unreliable in E2E.
-    // Smart rotation validation is covered in src/test/rotation.test.ts
+    test.skip((viewport?.width ?? 0) < 900, 'desktop pointer and keyboard flow');
+    await page.keyboard.press('Escape');
+    await waitForPaintModeExited(page);
+    const [id] = await seedBins(page, [{ x: 9, y: 0, width: 1, depth: 3, label: 'Edge' }]);
+    const bin = page.locator(`[data-bin-id="${id}"]`);
+    await bin.click();
+    await waitForBinSelected(bin);
+
+    await page.keyboard.press('r');
+
+    await expect(page.getByText('Bin rotated and moved 2 cells to fit')).toBeVisible();
+    expect(await readBins(page, [id])).toEqual([{ x: 7, y: 0, width: 3, depth: 1 }]);
   });
 
-  // Skip: Same coordinate precision issue
-  test.skip('smart rotation finds position when collision would occur', async ({ page: _page }) => {
-    // This test would verify rotation finds alternate position when blocked
+  test('smart rotation finds room when turning in place would hit a bin', async ({
+    page,
+    viewport,
+  }) => {
+    test.skip((viewport?.width ?? 0) < 900, 'desktop pointer and keyboard flow');
+    await page.keyboard.press('Escape');
+    await waitForPaintModeExited(page);
+    const [id, blocker] = await seedBins(page, [
+      { x: 4, y: 0, width: 1, depth: 3, label: 'Turner' },
+      { x: 5, y: 0, width: 1, depth: 1, label: 'Blocker' },
+    ]);
+    const bin = page.locator(`[data-bin-id="${id}"]`);
+    await bin.click();
+    await waitForBinSelected(bin);
+
+    await page.keyboard.press('r');
+
+    await expect(page.getByText(/^Bin rotated and moved \d+ cells? to fit$/)).toBeVisible();
+    const [turned, other] = await readBins(page, [id, blocker]);
+    expect({ width: turned.width, depth: turned.depth }).toEqual({ width: 3, depth: 1 });
+    const overlaps =
+      turned.x < other.x + other.width &&
+      other.x < turned.x + turned.width &&
+      turned.y < other.y + other.depth &&
+      other.y < turned.y + turned.depth;
+    expect(overlaps).toBe(false);
   });
 
   test('rotation undo works correctly', async ({ page }) => {
