@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'baseplate-undo',
+    date: '2026-11-22',
+    kind: 'improved',
+    featured: false,
+    title: { en: 'Undo and redo on the baseplate page' },
+    body: {
+      en: 'Changed a baseplate setting by mistake? Press Ctrl+Z (Cmd+Z on a Mac) or click Undo in the header. One undo takes back a whole slider drag, and it also takes back Reset to defaults. To redo, press Ctrl+Y or Ctrl+Shift+Z.',
+    },
+    action: { kind: 'openTool', tool: 'baseplate' },
+  },
+  {
     id: 'printer-bed-presets',
     date: '2026-11-22',
     kind: 'improved',
