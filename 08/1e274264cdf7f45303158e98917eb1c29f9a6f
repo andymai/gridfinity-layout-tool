@@ -1,0 +1,21 @@
+apps/docs/concepts/saved-designs.md
+  s_f3decd9961964a::t_ff21535712238a 61,105
+  s_f3decd9961964a::t_157e4b788311e6 101,103
+  s_f3decd9961964a::t_d6f3a4845f6a8b 104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "081e274264cdf7f45303158e98917eb1c29f9a6f",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
