@@ -9,7 +9,7 @@ import { isBoolean, isNumber, isObject, inRange } from './validationUtils.js';
 /** Mirror `DESIGNER_CONSTRAINTS` and `WallTaperProfile` on the client; pinned by the cross-boundary test. */
 export const BIN_OVERHANG_MM_MAX = 42;
 export const TAPER_FLARE_MM_MAX = 42;
-export const TAPER_BAND_MM_MAX = 350;
+export const TAPER_BAND_MM_MAX = 1100;
 export const TAPER_PROFILES = ['chamfer', 'fillet'] as const;
 
 type TaperProfile = (typeof TAPER_PROFILES)[number];

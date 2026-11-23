@@ -3224,7 +3224,7 @@
         "bandHeight": {
           "type": "number",
           "minimum": 0,
-          "maximum": 350,
+          "maximum": 1100,
           "x-constant": {
             "minimum": "DESIGNER_CONSTRAINTS.MIN_TAPER_BAND",
             "maximum": "DESIGNER_CONSTRAINTS.MAX_TAPER_BAND"
