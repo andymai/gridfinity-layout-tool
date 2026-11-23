@@ -37,7 +37,7 @@ The feature starts at once in all open tabs. A card with more risk shows a warni
 
 Forgot which drawer holds the hex keys? With this feature, you write down what each bin holds, and then find any item in all your layouts.
 
-**Say what a bin holds.** Select a bin in the layout editor, and the inspector gets a <Ui k="inspector.contents.title" /> section. Type an item in <Ui k="inspector.contents.addPlaceholder" />, or paste a list to add many items at once. Each item can have a quantity. A bin holds up to 100 items.
+**Say what a bin holds.** Select a bin in the layout editor, and the inspector gets a <Ui k="inspector.contents.title" /> section. Type an item in <Ui k="inspector.contents.addPlaceholder" />, or paste a list to add many items at once. Each item can have a quantity. To add a note to an item or change its place in the list, open the item's menu and click <Ui k="inspector.contents.addNote" />, <Ui k="inspector.contents.moveUp" /> or <Ui k="inspector.contents.moveDown" />. A bin holds up to 100 items.
 
 <Screenshot id="settings-labs-bin-contents" alt="The Contents section in the inspector of a selected bin. It lists six hex keys with their quantities, and a box to add an item or paste a list." spec="Layout editor, desktop, with the Find what your bins hold feature on. Select a bin with six items in its contents. Crop to the Contents section of the inspector." />
 

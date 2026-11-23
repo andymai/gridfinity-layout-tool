@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { ClipboardEvent, KeyboardEvent } from 'react';
 import { CONSTRAINTS, generateId } from '@/core/constants';
 import type { BinItem } from '@/core/types';
-import { Button, IconButton, Input, PlusIcon, XIcon } from '@/design-system';
+import { Button, IconButton, Input, Menu, PlusIcon, XIcon } from '@/design-system';
+import { MoreHorizontalIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 
 interface BinItemsEditorProps {
@@ -15,6 +16,10 @@ interface BinItemsEditorProps {
 
 function cleanName(name: string): string {
   return name.trim().slice(0, CONSTRAINTS.ITEM_NAME_MAX_LENGTH);
+}
+
+function cleanNote(note: string): string {
+  return note.trim().slice(0, CONSTRAINTS.ITEM_NOTE_MAX_LENGTH);
 }
 
 /** A number input also accepts exponents, so "1e3" must read as 1000, not 1. */
@@ -35,6 +40,8 @@ function useDraft(saved: string): [string, (next: string) => void] {
   return [draft, setDraft];
 }
 
+const CLOSED_MENU_POSITION = { x: 0, y: 0 };
+
 function onEnter(commit: () => void) {
   return (e: KeyboardEvent<HTMLInputElement>) => {
     // The Enter that confirms an IME candidate is not a commit. Safari reports
@@ -51,7 +58,10 @@ interface ItemRowProps {
   item: BinItem;
   inputHeight: string;
   isMobile: boolean;
-  onCommit: (name: string, qty: number | undefined) => void;
+  isFirst: boolean;
+  isLast: boolean;
+  onCommit: (name: string, qty: number | undefined, note: string | undefined) => void;
+  onMove: (delta: -1 | 1) => void;
   onRemove: () => void;
 }
 
@@ -60,22 +70,48 @@ interface ItemRowProps {
  * step. A blank name is refused by the bin update schema, and clearing a name
  * is how a row goes away.
  */
-function ItemRow({ item, inputHeight, isMobile, onCommit, onRemove }: ItemRowProps) {
+function ItemRow({
+  item,
+  inputHeight,
+  isMobile,
+  isFirst,
+  isLast,
+  onCommit,
+  onMove,
+  onRemove,
+}: ItemRowProps) {
   const t = useTranslation();
   const rowRef = useRef<HTMLLIElement>(null);
+  const menuRef = useRef<HTMLButtonElement>(null);
+  const noteRef = useRef<HTMLInputElement>(null);
   const savedQty = item.qty === undefined ? '' : String(item.qty);
+  const savedNote = item.note ?? '';
   const [name, setName] = useDraft(item.name);
   const [qty, setQty] = useDraft(savedQty);
-  const dirty = name !== item.name || qty !== savedQty;
+  const [note, setNote] = useDraft(savedNote);
+  const [menu, setMenu] = useState<{ x: number; y: number } | null>(null);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const dirty = name !== item.name || qty !== savedQty || note !== savedNote;
+  const showNote = savedNote !== '' || noteOpen;
 
+  // The three fields save together, so an edit to the row is one undo step.
   const commit = () => {
     const nextQty = parseQuantity(qty);
-    if (cleanName(name) !== item.name || nextQty !== item.qty) {
-      onCommit(name, nextQty);
+    const nextNote = cleanNote(note);
+    if (cleanName(name) !== item.name || nextQty !== item.qty || nextNote !== savedNote) {
+      onCommit(name, nextQty, nextNote === '' ? undefined : nextNote);
+      if (nextNote === '') setNoteOpen(false);
       return;
     }
     setName(item.name);
     setQty(savedQty);
+    setNote(savedNote);
+    if (savedNote === '') setNoteOpen(false);
+  };
+
+  const openMenu = () => {
+    const rect = menuRef.current?.getBoundingClientRect();
+    setMenu(menu ? null : { x: rect?.right ?? 0, y: (rect?.bottom ?? 0) + 4 });
   };
 
   // Selecting another bin acts on pointerdown and cancels its default, so an
@@ -91,41 +127,97 @@ function ItemRow({ item, inputHeight, isMobile, onCommit, onRemove }: ItemRowPro
   });
 
   return (
-    <li ref={rowRef} className="flex items-center gap-1.5">
-      <Input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        onBlur={commit}
-        onKeyDown={onEnter(commit)}
-        maxLength={CONSTRAINTS.ITEM_NAME_MAX_LENGTH}
-        aria-label={item.name}
-        className={inputHeight}
-        wrapperClassName="flex-1 min-w-0"
-      />
-      <Input
-        type="number"
-        min={0}
-        max={CONSTRAINTS.ITEM_QTY_MAX}
-        value={qty}
-        onChange={(e) => setQty(e.target.value)}
-        onBlur={commit}
-        onKeyDown={onEnter(commit)}
-        placeholder={t('inspector.contents.qtyPlaceholder')}
-        aria-label={t('inspector.contents.quantity', { name: item.name })}
-        className={inputHeight}
-        wrapperClassName="w-16 shrink-0"
-      />
-      <IconButton
-        variant="dangerGhost"
-        size="sm"
-        touchTarget={isMobile}
-        type="button"
-        onClick={onRemove}
-        className="text-content-tertiary"
-        aria-label={t('inspector.contents.remove', { name: item.name })}
+    <li ref={rowRef} className="space-y-1">
+      <div className="flex items-center gap-1.5">
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onBlur={commit}
+          onKeyDown={onEnter(commit)}
+          maxLength={CONSTRAINTS.ITEM_NAME_MAX_LENGTH}
+          aria-label={item.name}
+          className={inputHeight}
+          wrapperClassName="flex-1 min-w-0"
+        />
+        <Input
+          type="number"
+          min={0}
+          max={CONSTRAINTS.ITEM_QTY_MAX}
+          value={qty}
+          onChange={(e) => setQty(e.target.value)}
+          onBlur={commit}
+          onKeyDown={onEnter(commit)}
+          placeholder={t('inspector.contents.qtyPlaceholder')}
+          aria-label={t('inspector.contents.quantity', { name: item.name })}
+          className={inputHeight}
+          wrapperClassName="w-16 shrink-0"
+        />
+        <IconButton
+          ref={menuRef}
+          variant="ghost"
+          size="sm"
+          touchTarget={isMobile}
+          type="button"
+          onClick={openMenu}
+          className="text-content-tertiary"
+          aria-label={t('inspector.contents.itemMenu', { name: item.name })}
+          aria-haspopup="menu"
+          aria-expanded={menu !== null}
+        >
+          <MoreHorizontalIcon className="w-3.5 h-3.5" />
+        </IconButton>
+        <IconButton
+          variant="dangerGhost"
+          size="sm"
+          touchTarget={isMobile}
+          type="button"
+          onClick={onRemove}
+          className="text-content-tertiary"
+          aria-label={t('inspector.contents.remove', { name: item.name })}
+        >
+          <XIcon className="w-3.5 h-3.5" />
+        </IconButton>
+      </div>
+      {showNote && (
+        <Input
+          ref={noteRef}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          onBlur={commit}
+          onKeyDown={onEnter(commit)}
+          maxLength={CONSTRAINTS.ITEM_NOTE_MAX_LENGTH}
+          placeholder={t('inspector.contents.notePlaceholder')}
+          aria-label={t('inspector.contents.note', { name: item.name })}
+          className={`${inputHeight} text-xs`}
+          fullWidth
+        />
+      )}
+      {/* Mounted while closed: the menu hands focus back to its button only
+          when `open` turns false. */}
+      <Menu.Root
+        open={menu !== null}
+        onClose={() => setMenu(null)}
+        position={menu ?? CLOSED_MENU_POSITION}
+        align="end"
       >
-        <XIcon className="w-3.5 h-3.5" />
-      </IconButton>
+        {!showNote && (
+          <Menu.Item
+            onClick={() => {
+              setNoteOpen(true);
+              // After the menu hands focus back to its button.
+              requestAnimationFrame(() => noteRef.current?.focus());
+            }}
+          >
+            {t('inspector.contents.addNote')}
+          </Menu.Item>
+        )}
+        <Menu.Item disabled={isFirst} onClick={() => onMove(-1)}>
+          {t('inspector.contents.moveUp')}
+        </Menu.Item>
+        <Menu.Item disabled={isLast} onClick={() => onMove(1)}>
+          {t('inspector.contents.moveDown')}
+        </Menu.Item>
+      </Menu.Root>
     </li>
   );
 }
@@ -149,7 +241,12 @@ export function BinItemsEditor({ items = [], label, onChange, variant }: BinItem
     if (fresh.length > 0) onChange([...items, ...fresh]);
   };
 
-  const commitRow = (id: string, name: string, qty: number | undefined) => {
+  const commitRow = (
+    id: string,
+    name: string,
+    qty: number | undefined,
+    note: string | undefined
+  ) => {
     const clean = cleanName(name);
     if (clean === '') {
       onChange(items.filter((item) => item.id !== id));
@@ -158,10 +255,23 @@ export function BinItemsEditor({ items = [], label, onChange, variant }: BinItem
     onChange(
       items.map((item) => {
         if (item.id !== id) return item;
-        const { qty: _previous, ...rest } = item;
-        return qty === undefined ? { ...rest, name: clean } : { ...rest, name: clean, qty };
+        const { qty: _qty, note: _note, ...rest } = item;
+        return {
+          ...rest,
+          name: clean,
+          ...(qty === undefined ? {} : { qty }),
+          ...(note === undefined ? {} : { note }),
+        };
       })
     );
+  };
+
+  const move = (index: number, delta: -1 | 1) => {
+    const target = index + delta;
+    if (target < 0 || target >= items.length) return;
+    const next = [...items];
+    [next[index], next[target]] = [next[target], next[index]];
+    onChange(next);
   };
 
   const onDraftKeyDown = onEnter(() => {
@@ -190,13 +300,16 @@ export function BinItemsEditor({ items = [], label, onChange, variant }: BinItem
       </div>
       {items.length > 0 && (
         <ul className="mb-2 space-y-1.5">
-          {items.map((item) => (
+          {items.map((item, index) => (
             <ItemRow
               key={item.id}
               item={item}
               inputHeight={inputHeight}
               isMobile={isMobile}
-              onCommit={(name, qty) => commitRow(item.id, name, qty)}
+              isFirst={index === 0}
+              isLast={index === items.length - 1}
+              onCommit={(name, qty, note) => commitRow(item.id, name, qty, note)}
+              onMove={(delta) => move(index, delta)}
               onRemove={() => onChange(items.filter((other) => other.id !== item.id))}
             />
           ))}
