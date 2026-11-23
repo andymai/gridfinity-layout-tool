@@ -1,0 +1,23 @@
+public/terms/index.html
+  s_f3decd9961964a::t_be3c3eb6141a60 183
+public/privacy/index.html
+  s_f3decd9961964a::t_be3c3eb6141a60 293
+scripts/build-content.ts
+  s_f3decd9961964a::t_be3c3eb6141a60 158,175,191,207,223,239,255,271,287,303,319,335,351,367,780
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1f738b4ba6aea255ed6f30af1a4c7eceb6526304",
+  "prompts": {},
+  "sessions": {
+    "s_f3decd9961964a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe766d69-82ba-467a-a938-9445e67191a0",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
