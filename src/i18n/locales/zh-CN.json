@@ -5476,5 +5476,8 @@
   "binDesigner.cutouts.library.emptyFolder": "此文件夹为空",
   "binDesigner.cutouts.library.size": "{width} × {depth} mm",
   "binDesigner.cutouts.library.foldersFull": "库最多可容纳 {max} 个文件夹。请删除一些后再新建。",
-  "binDesigner.cutouts.library.tooDeep": "文件夹最多嵌套 {max} 层。请选择更上层的文件夹。"
+  "binDesigner.cutouts.library.tooDeep": "文件夹最多嵌套 {max} 层。请选择更上层的文件夹。",
+  "designLinking.inspector.sizeMismatch": "此收纳盒为 {bin}，但其设计为 {design}。打印时使用设计的尺寸。",
+  "designLinking.inspector.matchDesignSize": "调整为 {design}",
+  "designLinking.inspector.sizeMismatchNoRoom": "这里没有放下该尺寸的空间。"
 }

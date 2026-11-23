@@ -47,6 +47,7 @@ export {
   getLinkedDesignIds,
   getLinkedBins,
   binMatchesDesign,
+  differsFromDesign,
   getBinsWithDimensionMismatch,
   buildLinkedBinsSummary,
   resolveLinkedDesign,

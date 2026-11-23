@@ -5896,5 +5896,8 @@
   "binDesigner.cutouts.library.emptyFolder": "Ця папка порожня",
   "binDesigner.cutouts.library.size": "{width} × {depth} mm",
   "binDesigner.cutouts.library.foldersFull": "Бібліотека вміщує {max} папок. Видаліть кілька, щоб створити нові.",
-  "binDesigner.cutouts.library.tooDeep": "Папки можна вкладати щонайбільше на {max} рівнів. Виберіть папку вище."
+  "binDesigner.cutouts.library.tooDeep": "Папки можна вкладати щонайбільше на {max} рівнів. Виберіть папку вище.",
+  "designLinking.inspector.sizeMismatch": "Цей бін має розмір {bin}, а його дизайн має розмір {design}. Він друкується в розмірі дизайну.",
+  "designLinking.inspector.matchDesignSize": "Змінити розмір на {design}",
+  "designLinking.inspector.sizeMismatchNoRoom": "Тут немає місця для цього розміру."
 }
