@@ -858,3 +858,8 @@ html:not(.dark) .docs-only-dark {
   margin-top: 12px;
   font-size: 12px;
 }
+
+/* VitePress's compiled template drops the space between the label and the date. */
+.VPLastUpdated time {
+  margin-inline-start: 0.25em;
+}
