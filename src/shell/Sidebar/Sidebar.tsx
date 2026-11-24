@@ -27,6 +27,8 @@ import { AboutGridfinity } from '@/shared/components/AboutGridfinity';
 import { AppVersionRailButton } from '@/shared/components/AppVersionButton';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation, useLocale } from '@/i18n';
+import { useMeasureUnit } from '@/shared/hooks/useMeasureUnit';
+import { fromMm, toMm } from '@/shared/utils/lengthUnit';
 import { LEARN_LINKS, learnHref } from './learnLinks';
 import { useOnboarding } from '@/features/onboarding';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
@@ -42,6 +44,7 @@ const InspirationGallery = lazyWithRetry(() =>
 
 export function Sidebar() {
   const t = useTranslation();
+  const { unit: measureUnit, symbol: measureSymbol } = useMeasureUnit();
   const { locale } = useLocale();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showInspirationGallery, setShowInspirationGallery] = useState(false);
@@ -333,16 +336,19 @@ export function Sidebar() {
                         {t('sidebar.drawerHeight')}
                       </label>
                       <Stepper
-                        value={drawerHeightDisplayMm}
-                        onChange={handleDrawerHeightInput}
+                        value={fromMm(drawerHeightDisplayMm, measureUnit)}
+                        onChange={(value) => handleDrawerHeightInput(toMm(value, measureUnit))}
                         onStep={handleDrawerHeightChange}
-                        min={heightUnitMm}
-                        max={CONSTRAINTS.GRID_MAX * heightUnitMm}
-                        step={heightUnitMm}
-                        inputDecimals={2}
+                        min={fromMm(heightUnitMm, measureUnit)}
+                        max={fromMm(CONSTRAINTS.GRID_MAX * heightUnitMm, measureUnit)}
+                        step={fromMm(heightUnitMm, measureUnit)}
+                        inputDecimals={measureUnit === 'in' ? 3 : 2}
                         size="sm"
                         fullWidth
-                        aria-label={t('sidebar.drawerHeightAria')}
+                        aria-label={t('common.labelWithUnit', {
+                          label: t('sidebar.drawerHeight'),
+                          unit: measureSymbol,
+                        })}
                       />
                     </div>
                   </div>

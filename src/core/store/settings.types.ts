@@ -2,6 +2,7 @@ import type { Locale } from '@/i18n/types';
 import type { Category } from '@/core/types';
 import type { PrintSettings } from '@/shared/printSettings';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
+import type { LengthUnit } from '@/shared/utils/lengthUnit';
 
 // STL Search Sites Configuration
 
@@ -233,6 +234,9 @@ export interface UserSettings {
    */
   locale: Locale | 'auto';
 
+  /** Unit for the drawer and baseplate sizes that the user types; grid sizes stay in units. */
+  measureUnit: LengthUnit;
+
   /**
    * Default categories for new layouts.
    * null means use built-in DEFAULT_CATEGORIES from constants.ts
@@ -382,6 +386,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
 
   // Language - auto-detect from browser by default
   locale: 'auto' as const,
+  measureUnit: 'mm',
 
   // Default categories - null means use app defaults
   defaultCategories: null,

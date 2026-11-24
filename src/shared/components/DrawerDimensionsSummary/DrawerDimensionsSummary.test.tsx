@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { gridUnits } from '@/core/types';
+import { useSettingsStore } from '@/core/store';
 import { DrawerDimensionsSummary } from './DrawerDimensionsSummary';
 
 describe('DrawerDimensionsSummary', () => {
@@ -216,7 +217,7 @@ describe('DrawerDimensionsSummary', () => {
           ceiling={ceiling({ fits: true, slackMm: 8.7 })}
         />
       );
-      expect(screen.getByText('Tallest stack fits, 8.7mm to spare')).toBeInTheDocument();
+      expect(screen.getByText('Tallest stack fits, 8.7 mm to spare')).toBeInTheDocument();
     });
 
     // The reported failure: the app says the drawer is full, the print is proud
@@ -229,8 +230,43 @@ describe('DrawerDimensionsSummary', () => {
         />
       );
       expect(
-        screen.getByText('Tallest stack stands 4.3mm above your measured drawer')
+        screen.getByText('Tallest stack stands 4.3 mm above your measured drawer')
       ).toBeInTheDocument();
+    });
+  });
+
+  describe('in centimeters', () => {
+    afterEach(() => {
+      useSettingsStore.getState().updateSetting('measureUnit', 'mm');
+    });
+
+    it('shows the grid, the measurement and the free space in centimeters', () => {
+      useSettingsStore.getState().updateSetting('measureUnit', 'cm');
+      render(<DrawerDimensionsSummary {...defaultProps} measuredMm={{ width: 430, depth: 350 }} />);
+      expect(screen.getByText('Grid 42 × 33.6 cm · 1 × 1.4 cm free')).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Edit measured drawer dimensions' })
+      ).toHaveTextContent(/43\s*×\s*35\s*×\s*8\.4\s*cm/);
+    });
+
+    it('keeps a small overflow in inches from rounding to zero', () => {
+      useSettingsStore.getState().updateSetting('measureUnit', 'in');
+      render(
+        <DrawerDimensionsSummary {...defaultProps} measuredMm={{ width: 419.9128, depth: 336 }} />
+      );
+      expect(
+        screen.getByText(/Grid exceeds your measured drawer by 0\.003 × 0 in/)
+      ).toBeInTheDocument();
+    });
+
+    it('commits a size typed in centimeters as millimeters', () => {
+      useSettingsStore.getState().updateSetting('measureUnit', 'cm');
+      render(<DrawerDimensionsSummary {...defaultProps} measuredMm={{ width: 430, depth: 350 }} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Edit measured drawer dimensions' }));
+      const width = screen.getByLabelText('Measured width (cm)');
+      fireEvent.change(width, { target: { value: '45' } });
+      fireEvent.keyDown(width, { key: 'Enter' });
+      expect(defaultProps.onCommit).toHaveBeenCalledWith(450, 350, undefined);
     });
   });
 });

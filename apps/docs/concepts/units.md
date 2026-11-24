@@ -18,6 +18,8 @@ sources:
   - src/features/bin-designer/hooks/useSyncPhysicalUnits.ts
   - src/features/bin-designer/types/base.ts
   - src/features/bin-designer/components/DesignerPage/FractionalEdgeMismatchBanner.tsx
+  - src/shared/utils/lengthUnit.ts
+  - src/shared/components/EditableDimensions/
 ---
 
 # Units and sizes
@@ -63,6 +65,15 @@ The units belong to the layout, and all three tools share them. The bin designer
 To pick the grid unit for each new layout, open <Ui k="sidebar.settings" />, then <Ui k="settings.tabs.defaults" />. Change <Ui k="settings.defaultGridUnit" /> there.
 
 <Screenshot id="concepts-units-physical-units" alt="The Physical units group in the layout editor with the grid unit, height unit and print bed fields." spec="Layout editor, desktop, left panel scrolled so the Physical units group is open. Standard values: grid unit 42, height unit 7, print bed 256. Crop to the group and its reset button." />
+
+## Type sizes in centimeters or inches
+
+Grid sizes are always in grid units and height units. The sizes that you measure and type are in millimeters, unless you choose another unit:
+
+1. Open <Ui k="sidebar.settings" />, then the <Ui k="settings.tabs.general" /> tab.
+2. Under <Ui k="settings.measureUnit" />, pick <Ui k="settings.measureUnit.cm" /> or <Ui k="settings.measureUnit.in" />.
+
+The unit applies to the drawer height and the measured drawer size in the layout editor, and to the plate size in the baseplate generator. The lines under the drawer size use it too. Other millimeter fields, such as the padding, stay in millimeters.
 
 ## Grids that are not 42 mm
 
