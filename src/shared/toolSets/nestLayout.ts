@@ -106,6 +106,27 @@ function halfHeight(ring: OutlineRing): number {
 }
 
 /**
+ * The highest y below `start` where `fits` holds, to within the refine step.
+ * `limit` must fit. Rows only move apart going down, so the first fit found is
+ * the closest one.
+ */
+function highestFit(fits: (cy: number) => boolean, start: number, limit: number): number {
+  let tight = start;
+  let ok = tight - COARSE_STEP_MM;
+  while (ok > limit && !fits(ok)) {
+    tight = ok;
+    ok -= COARSE_STEP_MM;
+  }
+  ok = Math.max(ok, limit);
+  for (let step = 0; step < REFINE_STEPS; step++) {
+    const mid = (tight + ok) / 2;
+    if (fits(mid)) ok = mid;
+    else tight = mid;
+  }
+  return ok;
+}
+
+/**
  * Stacks items head to tail: every other item turns half a turn and shifts
  * `oddShift` along x, and each row moves up to the rows before it until it is
  * `gapMm` from them. Row 0 sits at y = 0 and later rows go toward -y. A shift
@@ -122,39 +143,21 @@ export function nestHeadToTail(
   items.forEach((item, i) => {
     const flipped = i % 2 === 1;
     const cx = flipped ? oddShift : 0;
-    if (i === 0) {
-      const first = { cx, cy: 0, flipped };
-      placements.push(first);
-      placed.push(placeRing(item.ring, item.length, first));
-      return;
+    const ringAt = (cy: number): OutlineRing =>
+      placeRing(item.ring, item.length, { cx, cy, flipped });
+    let cy = 0;
+    if (i > 0) {
+      const prevCy = placements[i - 1].cy;
+      const neighbours = placed.slice(Math.max(0, i - NEIGHBOUR_ROWS));
+      const fits = (y: number): boolean => {
+        const ring = ringAt(y);
+        return neighbours.every((other) => !closerThan(other, ring, gapMm));
+      };
+      const loose = prevCy - (halfHeight(items[i - 1].ring) + halfHeight(item.ring) + gapMm);
+      cy = highestFit(fits, prevCy, loose);
     }
-
-    const prev = placements[i - 1];
-    const neighbours = placed.slice(Math.max(0, i - NEIGHBOUR_ROWS));
-    const fits = (cy: number): boolean => {
-      const ring = placeRing(item.ring, item.length, { cx, cy, flipped });
-      return neighbours.every((other) => !closerThan(other, ring, gapMm));
-    };
-
-    // Rows only move apart from here, so the first fit found going down is
-    // the closest one, to within the refine step.
-    const loose = prev.cy - (halfHeight(items[i - 1].ring) + halfHeight(item.ring) + gapMm);
-    let tight = prev.cy;
-    let ok = tight - COARSE_STEP_MM;
-    while (ok > loose && !fits(ok)) {
-      tight = ok;
-      ok -= COARSE_STEP_MM;
-    }
-    ok = Math.max(ok, loose);
-    for (let step = 0; step < REFINE_STEPS; step++) {
-      const mid = (tight + ok) / 2;
-      if (fits(mid)) ok = mid;
-      else tight = mid;
-    }
-
-    const placement = { cx, cy: ok, flipped };
-    placements.push(placement);
-    placed.push(placeRing(item.ring, item.length, placement));
+    placements.push({ cx, cy, flipped });
+    placed.push(ringAt(cy));
   });
 
   return placements;

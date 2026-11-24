@@ -65,13 +65,22 @@ describe('toLibraryContent', () => {
 
   it('drops placement-only fields and carries only the meshes it names', () => {
     const content = toLibraryContent(
-      [cutout('m', { shape: 'mesh', meshId: 'm1', locked: true, libraryItemId: 'clib_old' })],
+      [
+        cutout('m', {
+          shape: 'mesh',
+          meshId: 'm1',
+          locked: true,
+          libraryItemId: 'clib_old',
+          toolSetPart: 'pocket:13',
+        }),
+      ],
       [],
       { meshAssets: { m1: ref, unused: ref } }
     );
     const [m] = content?.params.cutouts ?? [];
     expect(m.locked).toBeUndefined();
     expect(m.libraryItemId).toBeUndefined();
+    expect(m.toolSetPart).toBeUndefined();
     expect(Object.keys(content?.params.meshAssets ?? {})).toEqual(['m1']);
   });
 

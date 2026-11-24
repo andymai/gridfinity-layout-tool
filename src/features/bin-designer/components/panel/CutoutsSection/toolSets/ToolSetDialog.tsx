@@ -12,11 +12,12 @@ import {
 } from '@/features/bin-designer/types';
 import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge/ExperimentalBadge';
 import { FeatureToggle } from '@/shared/components/FeatureToggle/FeatureToggle';
-import { setLimitOnBed, TOOL_FAMILIES } from '@/shared/toolSets/catalog';
-import { generateToolSet } from '@/shared/toolSets/generateToolSet';
+import { setLimitOnBed, sizeEntries, TOOL_FAMILIES } from '@/shared/toolSets/catalog';
+import { generateToolSet, type ToolSetNames } from '@/shared/toolSets/generateToolSet';
 import { ToolSetPreview } from './ToolSetPreview';
 import { useToolSets, type ToolSetFailure } from './useToolSets';
-import { partsOf, planToolSetPlacement, planToolSetRebuild } from './planToolSetPlacement';
+import { partsOf } from '@/features/bin-designer/utils/toolSetMembership';
+import { planToolSetPlacement, planToolSetRebuild } from './planToolSetPlacement';
 import { binBedFit, binNeedsSplit } from '@/shared/utils/binSplitFit';
 
 export interface ToolSetDialogProps {
@@ -39,7 +40,18 @@ function defaultSpec(): ToolSetSpec {
   };
 }
 
-const PREVIEW_NAMES = { pocket: (s: string) => s, channel: '' };
+const PREVIEW_NAMES: ToolSetNames = { pocket: (size) => size, channel: '' };
+
+function blockerOf(
+  failure: ToolSetFailure | null,
+  locked: boolean,
+  noRoom: boolean
+): ToolSetFailure | null {
+  if (failure !== null) return failure;
+  if (locked) return 'locked';
+  if (noRoom) return 'noRoom';
+  return null;
+}
 
 export function ToolSetDialog({ setId, onClose }: ToolSetDialogProps) {
   const t = useTranslation();
@@ -77,8 +89,7 @@ export function ToolSetDialog({ setId, onClose }: ToolSetDialogProps) {
   const locked =
     editSetId !== null &&
     partsOf(params.cutouts, editSetId, params.cutoutToolSets).some((c) => c.locked === true);
-  const blocker: ToolSetFailure | null =
-    failure ?? (locked ? 'locked' : preview && !plan ? 'noRoom' : null);
+  const blocker = blockerOf(failure, locked, preview !== null && plan === null);
 
   // Read off the bin the add or update would make, through the same bed-fit
   // test the export uses, so a bin that fits turned or on the diagonal is not
@@ -104,8 +115,9 @@ export function ToolSetDialog({ setId, onClose }: ToolSetDialogProps) {
     update({
       sizes: spec.sizes.includes(key) ? spec.sizes.filter((k) => k !== key) : [...spec.sizes, key],
     });
-  const setUnits = (units: ToolUnits) =>
-    units !== spec.units && update({ units, sizes: [...(FAMILY.presets[units].at(0) ?? [])] });
+  const setUnits = (units: ToolUnits) => {
+    if (units !== spec.units) update({ units, sizes: [...(FAMILY.presets[units].at(0) ?? [])] });
+  };
 
   const submit = () => {
     const result = editSetId !== null ? rebuildSet(editSetId, spec) : insertSet(spec);
@@ -117,7 +129,7 @@ export function ToolSetDialog({ setId, onClose }: ToolSetDialogProps) {
   };
 
   const rangeLabel = (keys: readonly string[]) => {
-    const sorted = entries.filter((e) => keys.includes(e.key));
+    const sorted = sizeEntries(FAMILY, spec.units, keys);
     return t('binDesigner.toolSets.presetRange', {
       from: sorted.at(0)?.key ?? '',
       to: sorted.at(-1)?.key ?? '',

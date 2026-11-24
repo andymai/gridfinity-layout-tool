@@ -1,3 +1,4 @@
+import { DEFAULT_TOOL_SET_LABEL_MM } from '@/features/bin-designer/types';
 import type { GeneratedToolSet } from '@/shared/toolSets/generateToolSet';
 
 export interface ToolSetPreviewProps {
@@ -51,7 +52,7 @@ export function ToolSetPreview({ set }: ToolSetPreviewProps) {
               key={c.id}
               x={x(c.x + c.width / 2)}
               y={y(c.y + c.depth / 2)}
-              fontSize={c.textStyle?.fixedSize ?? 5}
+              fontSize={c.textStyle?.fixedSize ?? DEFAULT_TOOL_SET_LABEL_MM}
               textAnchor="middle"
               dominantBaseline="central"
               className="fill-content"

@@ -2,8 +2,7 @@ import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import type { Cutout } from '@/features/bin-designer/types';
-import { partsOf } from '../panel/CutoutsSection/toolSets/planToolSetPlacement';
-import { toolSetOf } from './toolSetOf';
+import { partsOf, toolSetOf } from '@/features/bin-designer/utils/toolSetMembership';
 
 export interface ToolSetEditButtonProps {
   /** The selected cutouts; the button shows when all of them sit in one tool set. */

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { migrateCutoutToolSets } from './paramMigrationToolSets';
+import type { Cutout, ToolSetSpec } from '@/features/bin-designer/types';
+import { migrateCutoutToolSets, withLegacyToolSetParts } from './paramMigrationToolSets';
 
 const spec = {
   family: 'combinationWrench',
@@ -47,5 +48,64 @@ describe('migrateCutoutToolSets', () => {
       new Set(['a', long, 'b\u0007'])
     );
     expect(out).toEqual({ a: { ...spec, sizes: ['1/2'] } });
+  });
+});
+
+describe('withLegacyToolSetParts', () => {
+  const metric: ToolSetSpec = {
+    family: 'combinationWrench',
+    units: 'metric',
+    sizes: ['13', '8', '10'],
+    style: 'flat',
+    clearanceMm: 0.4,
+    labelSizeMm: 5,
+    fingerChannel: true,
+  };
+  const at = (id: string, shape: Cutout['shape'], extra: Partial<Cutout> = {}): Cutout => ({
+    id,
+    shape,
+    x: 0,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: null,
+    parentGroups: ['g1'],
+    ...extra,
+  });
+
+  it('marks the pockets, channel and labels of a set saved without parts', () => {
+    const cutouts = [
+      at('p8', 'path'),
+      at('p10', 'path'),
+      at('p13', 'path'),
+      at('ch', 'slot', { finger: { bottom: 'curved' } }),
+      at('l8', 'text', { label: '8' }),
+      at('mine', 'circle'),
+    ];
+    const out = withLegacyToolSetParts(cutouts, { g1: metric });
+    expect(out.map((c) => c.toolSetPart)).toEqual([
+      'pocket:8',
+      'pocket:10',
+      'pocket:13',
+      'channel',
+      'label:8',
+      undefined,
+    ]);
+    expect(withLegacyToolSetParts(out, { g1: metric })).toBe(out);
+  });
+
+  it('gives placeholder parts when the pockets no longer match the recipe', () => {
+    const out = withLegacyToolSetParts([at('a', 'path'), at('b', 'path')], { g1: metric });
+    expect(out.map((c) => c.toolSetPart)).toEqual(['pocket:#0', 'pocket:#1']);
+  });
+
+  it('leaves cutouts outside a set, and designs without sets, as they are', () => {
+    const loose = [at('a', 'path', { parentGroups: ['other'] })];
+    expect(withLegacyToolSetParts(loose, { g1: metric })).toBe(loose);
+    expect(withLegacyToolSetParts(loose, undefined)).toBe(loose);
   });
 });

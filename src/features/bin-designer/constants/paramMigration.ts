@@ -90,7 +90,7 @@ import {
   migrateLidCutouts,
   migrateKnifeRest,
 } from './paramMigrationCutouts';
-import { migrateCutoutToolSets } from './paramMigrationToolSets';
+import { migrateCutoutToolSets, withLegacyToolSetParts } from './paramMigrationToolSets';
 import type { LegacyCutoutFields } from './paramMigrationCutouts';
 import { migrateSurfaceText, migrateWallLabelSlots } from './paramMigrationText';
 import {
@@ -463,6 +463,10 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   const migratedLidCutouts = migrateLidCutouts(
     (params.lid as { cutouts?: unknown } | undefined)?.cutouts
   );
+  const migratedToolSets = migrateCutoutToolSets(
+    params.cutoutToolSets,
+    referencedGroupIds(migratedCutouts, migratedLidCutouts ?? [])
+  );
   const referencedMeshIds = new Set(
     migratedCutouts.filter((c) => c.shape === 'mesh').map((c) => c.meshId)
   );
@@ -487,7 +491,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     slotConfig,
     dividerPieces,
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
-    cutouts: migratedCutouts,
+    cutouts: withLegacyToolSetParts(migratedCutouts, migratedToolSets),
     ...(migratedMeshAssets && Object.keys(migratedMeshAssets).length > 0
       ? { meshAssets: migratedMeshAssets }
       : { meshAssets: undefined }),
@@ -495,10 +499,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
       params.cutoutGroupNames,
       referencedGroupIds(migratedCutouts, migratedLidCutouts ?? [])
     ),
-    cutoutToolSets: migrateCutoutToolSets(
-      params.cutoutToolSets,
-      referencedGroupIds(migratedCutouts, migratedLidCutouts ?? [])
-    ),
+    cutoutToolSets: migratedToolSets,
     cutoutConfig,
     wallPattern: wallPatternConfig,
     floorPattern: floorPatternConfig,

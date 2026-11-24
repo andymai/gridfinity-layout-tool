@@ -1,4 +1,4 @@
-import type { Draft } from 'immer';
+import { original, type Draft } from 'immer';
 import type {
   DesignerState,
   LibraryInsertOutcome,
@@ -24,6 +24,7 @@ import {
   withCutoutArray,
 } from '../helpers';
 import { generateLayoutId } from '@/shared/utils/uuid';
+import { releaseClonedParts, releaseMovedParts } from '../../utils/toolSetMembership';
 import { mapPathRings, translatePathPoints } from '../../utils/pathTransforms';
 import {
   canNestDeeper,
@@ -70,11 +71,15 @@ export function createCutoutSlice(rawSet: Set) {
    *
    * Enforced here rather than at the ~40 assignment sites for the same reason
    * `lipHasSupport` is derived once: an action added later cannot reintroduce the
-   * empty array by forgetting about it.
+   * empty array by forgetting about it. A tool set part that changed sets loses
+   * its part here too, for the same reason.
    */
   const set: Set = (fn) =>
     rawSet((state) => {
+      const base = original(state.params);
       fn(state);
+      const released = releaseMovedParts(base, state.params);
+      if (released) state.params.cutouts = released;
       const lid = state.params.lid;
       if (lid.cutouts !== undefined && lid.cutouts.length === 0) {
         delete lid.cutouts;
@@ -492,8 +497,16 @@ export function createCutoutSlice(rawSet: Set) {
         // room for two should give two, not nothing. Groups survive because
         // `groupMap` was built over the same ordered list. An uncapped target
         // reports `Infinity`, which `slice` reads as "all of them".
-        owner.cutouts = [...owner.cutouts, ...duplicated.slice(0, room)];
-        copyWholeToolSets(state, toDuplicate, groupMap);
+        const added = duplicated.slice(0, room);
+        owner.cutouts = [...owner.cutouts, ...added];
+        const copiedSets = copyWholeToolSets(state, toDuplicate, groupMap);
+        const released = releaseClonedParts(
+          owner.cutouts,
+          new Set(added.map((c) => c.id)),
+          copiedSets,
+          state.params.cutoutToolSets
+        );
+        if (released) owner.cutouts = released;
       });
     },
 

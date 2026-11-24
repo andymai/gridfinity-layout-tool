@@ -10,11 +10,11 @@ import { generateLayoutId, generateUUID } from '@/shared/utils/uuid';
 import { setLimitOnBed, TOOL_FAMILIES } from '@/shared/toolSets/catalog';
 import { generateToolSet, shiftCutout, type ToolSetNames } from '@/shared/toolSets/generateToolSet';
 import {
-  partsOf,
   planToolSetPlacement,
   planToolSetRebuild,
   type ToolSetPlacement,
 } from './planToolSetPlacement';
+import { partsOf } from '@/features/bin-designer/utils/toolSetMembership';
 import { toolSetName } from './toolSetName';
 
 /**
@@ -28,20 +28,16 @@ export type ToolSetFailure = 'empty' | 'noRoom' | 'locked';
 export interface ToolSetActions {
   readonly insertSet: (spec: ToolSetSpec) => Result<'added', ToolSetFailure>;
   /**
-   * Rebuilds a set from a new spec as one undo step: in place when it still
-   * fits there, else beside the other pockets.
+   * Rebuilds a set from a new spec as one undo step, under the same id: in
+   * place when it still fits there, else beside the other pockets.
    */
-  readonly rebuildSet: (
-    setId: string,
-    spec: ToolSetSpec
-  ) => Result<'added' | 'updated', ToolSetFailure>;
+  readonly rebuildSet: (setId: string, spec: ToolSetSpec) => Result<'updated', ToolSetFailure>;
 }
 
-/** The containers a rebuilt set sat inside, kept so it stays where the user put it. */
-function outerChain(parts: readonly Cutout[], setId: string): string[] {
-  const chain = parts[0]?.parentGroups ?? [];
-  const at = chain.indexOf(setId);
-  return at > 0 ? chain.slice(0, at) : [];
+/** The containers a rebuilt set sits inside, kept so it stays where the user put it. */
+function outerChain(cutouts: readonly Cutout[], setId: string): string[] {
+  const chain = cutouts.find((c) => c.parentGroups?.includes(setId) === true)?.parentGroups ?? [];
+  return chain.slice(0, Math.max(0, chain.indexOf(setId)));
 }
 
 export function useToolSets(): ToolSetActions {
@@ -130,10 +126,9 @@ export function useToolSets(): ToolSetActions {
   );
 
   const rebuildSet = useCallback(
-    (setId: string, spec: ToolSetSpec): Result<'added' | 'updated', ToolSetFailure> => {
+    (setId: string, spec: ToolSetSpec): Result<'updated', ToolSetFailure> => {
       const { params, ui } = useDesignerStore.getState();
       const parts = partsOf(params.cutouts, setId, params.cutoutToolSets);
-      if (parts.length === 0) return insertSet(spec);
       if (parts.some((c) => c.locked === true)) return err('locked');
       const oldIds = new Map(
         parts.flatMap((c) => (c.toolSetPart ? [[c.toolSetPart, c.id] as const] : []))
@@ -148,7 +143,7 @@ export function useToolSets(): ToolSetActions {
       const placement = planToolSetRebuild(params, setId, set, ui.halfGridMode);
       if (!placement) return err('noRoom');
 
-      const chain = [...outerChain(parts, setId), setId];
+      const chain = [...outerChain(parts.length > 0 ? parts : params.cutouts, setId), setId];
       // A stored name equal to the derived one was written by the app, not
       // typed; dropping it lets the name follow the new sizes.
       const oldSpec = params.cutoutToolSets?.[setId];
@@ -178,7 +173,6 @@ export function useToolSets(): ToolSetActions {
       commitTransaction,
       names,
       writeSpec,
-      insertSet,
       maxWidthMm,
       t,
     ]

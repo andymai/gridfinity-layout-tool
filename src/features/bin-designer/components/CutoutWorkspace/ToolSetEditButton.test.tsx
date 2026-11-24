@@ -3,7 +3,6 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import type { Cutout } from '@/features/bin-designer/types';
 import { ToolSetEditButton } from './ToolSetEditButton';
-import { toolSetOf } from './toolSetOf';
 
 const spec = {
   family: 'combinationWrench',
@@ -69,19 +68,5 @@ describe('ToolSetEditButton', () => {
       <ToolSetEditButton selected={[pocket('a', ['g1']), pocket('b')]} />
     );
     expect(container).toBeEmptyDOMElement();
-  });
-});
-
-describe('toolSetOf', () => {
-  it('names the set every selected cutout sits in', () => {
-    const sets = { g1: { ...spec, sizes: ['13'] } };
-    expect(toolSetOf([pocket('a', ['x', 'g1'])], sets)).toBe('g1');
-    expect(toolSetOf([pocket('a', ['x'])], sets)).toBeNull();
-    expect(toolSetOf([], sets)).toBeNull();
-  });
-
-  it('picks the innermost set when one set sits inside another', () => {
-    const sets = { outer: { ...spec, sizes: ['13'] }, inner: { ...spec, sizes: ['10'] } };
-    expect(toolSetOf([pocket('a', ['outer', 'inner'])], sets)).toBe('inner');
   });
 });

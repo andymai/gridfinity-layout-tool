@@ -1,7 +1,9 @@
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import type { BinParams, Cutout, ToolSetSpec } from '@/features/bin-designer/types';
+import type { BinParams, Cutout } from '@/features/bin-designer/types';
 import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
+import type { OutlineBounds } from '@/shared/utils/cutoutOutline';
+import { partsOf } from '@/features/bin-designer/utils/toolSetMembership';
 import type { GeneratedToolSet } from '@/shared/toolSets/generateToolSet';
 import { shiftCutout } from '@/shared/toolSets/generateToolSet';
 import { getRotatedBounds } from '../geometryCore';
@@ -24,13 +26,6 @@ export interface ToolSetPlacement {
   readonly height: number | null;
 }
 
-export interface Box {
-  readonly minX: number;
-  readonly minY: number;
-  readonly maxX: number;
-  readonly maxY: number;
-}
-
 /** A plain box standing in for the room a set needs, for sizing the bin. */
 function envelope(width: number, depth: number): Cutout {
   return {
@@ -49,7 +44,7 @@ function envelope(width: number, depth: number): Cutout {
 }
 
 /** Every copy a cutout cuts, as boxes grown by its clearance. */
-export function cutBoxes(cutouts: readonly Cutout[]): Box[] {
+export function cutBoxes(cutouts: readonly Cutout[]): OutlineBounds[] {
   return cutouts.flatMap((c) =>
     expandCutoutArray(c).map((copy) => {
       const b = getRotatedBounds(copy);
@@ -59,7 +54,7 @@ export function cutBoxes(cutouts: readonly Cutout[]): Box[] {
   );
 }
 
-export function boxesOverlap(a: Box, b: Box, gap: number): boolean {
+export function boxesOverlap(a: OutlineBounds, b: OutlineBounds, gap: number): boolean {
   return (
     a.minX < b.maxX + gap && b.minX < a.maxX + gap && a.minY < b.maxY + gap && b.minY < a.maxY + gap
   );
@@ -74,7 +69,7 @@ function fillDepth(params: BinParams): number {
  * with the fill's top recess kept as it is; null when the fill already does,
  * and undefined when no height up to the maximum does.
  */
-export function heightFor(params: BinParams, cutMm: number): number | null | undefined {
+function heightFor(params: BinParams, cutMm: number): number | null | undefined {
   const needed = cutMm + MIN_FLOOR_UNDER_MM;
   if (fillDepth(params) >= needed) return null;
   for (let h = Math.ceil(params.height); h <= DESIGNER_CONSTRAINTS.MAX_HEIGHT; h++) {
@@ -84,12 +79,7 @@ export function heightFor(params: BinParams, cutMm: number): number | null | und
 }
 
 /** Whether every cut of the set, moved to (dx, dy), lands on the bin's real floor. */
-export function landsOnFloor(
-  params: BinParams,
-  set: GeneratedToolSet,
-  dx: number,
-  dy: number
-): boolean {
+function landsOnFloor(params: BinParams, set: GeneratedToolSet, dx: number, dy: number): boolean {
   const placed = set.cutouts.map((c) => shiftCutout(c, dx, dy));
   return getOffBoardCutoutIds(placed, binBoard(params)).size === 0;
 }
@@ -134,27 +124,6 @@ export function planToolSetPlacement(
     if (landsOnFloor(grown, set, spot.dx, spot.dy)) return { ...spot, size, height };
   }
   return null;
-}
-
-export function innermostSet(
-  c: Cutout,
-  sets: Readonly<Record<string, ToolSetSpec>> | undefined
-): string | null {
-  if (!sets) return null;
-  return [...(c.parentGroups ?? [])].reverse().find((id) => id in sets) ?? null;
-}
-
-/**
- * The cutouts a set generated: those with a part whose innermost set is
- * `setId`. A shape the user dragged into the set, or a set nested inside it,
- * is not one of them.
- */
-export function partsOf(
-  cutouts: readonly Cutout[],
-  setId: string,
-  sets: Readonly<Record<string, ToolSetSpec>> | undefined
-): Cutout[] {
-  return cutouts.filter((c) => c.toolSetPart !== undefined && innermostSet(c, sets) === setId);
 }
 
 /** The corner a rebuilt set keeps: where the old one's cut began. */

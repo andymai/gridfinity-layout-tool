@@ -96,7 +96,10 @@ describe('ToolSetDialog', () => {
     });
     render(<ToolSetDialog setId="g1" onClose={vi.fn()} />);
     act(() => useDesignerStore.getState().setParams({ cutoutToolSets: undefined }));
-    expect(screen.getByRole('button', { name: 'Update set' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Update set' }));
+    const { params } = useDesignerStore.getState();
+    expect(Object.keys(params.cutoutToolSets ?? {})).toEqual(['g1']);
+    expect(params.cutouts.some((c) => c.id === 'p13' && c.width === 20)).toBe(false);
   });
 
   it('says the bin prints in pieces when the planned bin is larger than the bed', () => {

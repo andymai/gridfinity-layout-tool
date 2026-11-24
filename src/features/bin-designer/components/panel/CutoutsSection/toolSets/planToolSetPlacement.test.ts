@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
-import type { BinParams, Cutout, ToolSetSpec } from '@/features/bin-designer/types';
+import type { BinParams, Cutout } from '@/features/bin-designer/types';
 import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import type { GeneratedToolSet } from '@/shared/toolSets/generateToolSet';
-import { innermostSet, partsOf, planToolSetPlacement } from './planToolSetPlacement';
+import { planToolSetPlacement } from './planToolSetPlacement';
 
 const box = (id: string, x: number, y: number, w: number, d: number): Cutout => ({
   id,
@@ -105,36 +105,5 @@ describe('planToolSetPlacement', () => {
       cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] },
     };
     expect(planToolSetPlacement(lShape, set(70, 70), false)).toBeNull();
-  });
-});
-
-describe('partsOf', () => {
-  const spec: ToolSetSpec = {
-    family: 'combinationWrench',
-    units: 'metric',
-    sizes: ['13'],
-    style: 'flat',
-    clearanceMm: 0.4,
-    labelSizeMm: 5,
-    fingerChannel: true,
-  };
-  const sets = { outer: spec, inner: spec };
-  const part = (id: string, chain: string[], toolSetPart?: 'channel'): Cutout => ({
-    ...box(id, 0, 0, 10, 10),
-    parentGroups: chain,
-    ...(toolSetPart ? { toolSetPart } : {}),
-  });
-
-  it('takes the generated parts of a set, not shapes the user added', () => {
-    const cutouts = [part('a', ['outer'], 'channel'), part('mine', ['outer'])];
-    expect(partsOf(cutouts, 'outer', sets).map((c) => c.id)).toEqual(['a']);
-  });
-
-  it('leaves a set nested inside it to that set', () => {
-    const cutouts = [part('a', ['outer'], 'channel'), part('b', ['outer', 'inner'], 'channel')];
-    expect(partsOf(cutouts, 'outer', sets).map((c) => c.id)).toEqual(['a']);
-    expect(partsOf(cutouts, 'inner', sets).map((c) => c.id)).toEqual(['b']);
-    expect(innermostSet(cutouts[1], sets)).toBe('inner');
-    expect(innermostSet(part('c', ['x']), sets)).toBeNull();
   });
 });

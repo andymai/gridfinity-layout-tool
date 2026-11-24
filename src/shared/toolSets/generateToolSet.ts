@@ -3,7 +3,7 @@ import { maxEntryChamfer } from '@/shared/types/bin';
 import { labelPart, pocketPart, type ToolSetPart, type ToolSetSpec } from '@/shared/types/toolSet';
 import { textElementFootprint } from '@/shared/utils/cutoutLabel';
 import { ringBounds, type OutlineRing } from '@/shared/utils/cutoutOutline';
-import { onSideB, toSplitFrame } from '@/shared/utils/cutoutSplit';
+import { onSideB, toSplitFrame, type SplitPt } from '@/shared/utils/cutoutSplit';
 import { FINGER_WIDTH_MM } from '@/shared/utils/fingerAccess';
 import { sizeEntries, type ToolFamily, type WrenchSizeEntry, type WrenchTable } from './catalog';
 import {
@@ -98,17 +98,17 @@ function pocketFor(row: Row, spec: ToolSetSpec, opts: GenerateOptions): Cutout {
     handleOut: null,
     symmetric: false,
   }));
-  const b = ringBounds(path.map((p): [number, number] => [p.x, p.y]));
+  const bounds = ringBounds(path.map((p): [number, number] => [p.x, p.y]));
   const { entry } = row;
   const shallow = entry.openThicknessMm;
   const part = pocketPart(entry.key);
   const pocket: Cutout = {
     id: opts.idFor(part),
     shape: 'path',
-    x: b.minX,
-    y: b.minY,
-    width: b.maxX - b.minX,
-    depth: b.maxY - b.minY,
+    x: bounds.minX,
+    y: bounds.minY,
+    width: bounds.maxX - bounds.minX,
+    depth: bounds.maxY - bounds.minY,
     cutDepth: shallow,
     rotation: 0,
     cornerRadius: 0,
@@ -125,14 +125,15 @@ function pocketFor(row: Row, spec: ToolSetSpec, opts: GenerateOptions): Cutout {
 
   // The box end is the thicker part, so its well goes deeper and the wrench
   // lies level with its top flush.
+  const splitPoint = (x: number, y = 0): SplitPt => {
+    const [sx, sy] = alongToSet(row, x, y);
+    return toSplitFrame(pocket, sx, sy);
+  };
   const reach = entry.boxWidthMm * 2;
-  const [ax, ay] = alongToSet(row, entry.boxWidthMm, -reach);
-  const [bx, by] = alongToSet(row, entry.boxWidthMm, reach);
-  const a = toSplitFrame(pocket, ax, ay);
-  const bPt = toSplitFrame(pocket, bx, by);
-  const [boxX, boxY] = alongToSet(row, entry.boxWidthMm / 2);
-  const boxCentre = toSplitFrame(pocket, boxX, boxY);
-  const line = onSideB({ a, b: bPt }, boxCentre) ? { a, b: bPt } : { a: bPt, b: a };
+  const a = splitPoint(entry.boxWidthMm, -reach);
+  const b = splitPoint(entry.boxWidthMm, reach);
+  const boxCentre = splitPoint(entry.boxWidthMm / 2);
+  const line = onSideB({ a, b }, boxCentre) ? { a, b } : { a: b, b: a };
   return {
     ...pocket,
     split: {
@@ -222,15 +223,14 @@ const outlineCache = new WeakMap<WrenchSizeEntry, OutlineRing | null>();
 function outlineOf(entry: WrenchSizeEntry, jawAngleDeg: number): OutlineRing | null {
   const cached = outlineCache.get(entry);
   if (cached !== undefined) return cached;
-  const ring =
-    combinationWrenchOutline({
-      lengthMm: entry.lengthMm,
-      openWidthMm: entry.openWidthMm,
-      boxWidthMm: entry.boxWidthMm,
-      shankWidthMm: entry.shankWidthMm,
-      jawAngleDeg,
-      minLengthMm: entry.minLengthMm,
-    }) ?? null;
+  const ring = combinationWrenchOutline({
+    lengthMm: entry.lengthMm,
+    openWidthMm: entry.openWidthMm,
+    boxWidthMm: entry.boxWidthMm,
+    shankWidthMm: entry.shankWidthMm,
+    jawAngleDeg,
+    minLengthMm: entry.minLengthMm,
+  });
   outlineCache.set(entry, ring);
   return ring;
 }

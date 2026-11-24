@@ -7,6 +7,7 @@ import type { Draft } from 'immer';
 import type { DesignerState, Cutout, CutoutTarget, CutoutToggleProperties } from '../../types';
 import { MAX_LID_CUTOUTS } from '../../types';
 import { dissolveSingletonGroups } from '../helpers';
+import { releaseClonedParts } from '../../utils/toolSetMembership';
 import { FINGER_SHAPES } from '@/shared/utils/fingerAccess';
 import { splitBlockedReason } from '@/shared/utils/cutoutSplit';
 import { mapPathRings, scalePathPoints, translatePathPoints } from '../../utils/pathTransforms';
@@ -329,29 +330,28 @@ export function planUnitLandings(
 
 /**
  * Give a copied tool set its recipe under the copy's new container id, so the
- * copy keeps "Edit set". Only a set copied whole qualifies: a copy of some of
- * its pockets is not that set any more.
+ * copy keeps "Edit set". Only a bin set copied whole qualifies: a copy of some
+ * of its pockets is not that set any more. Returns the new set ids.
  */
 export function copyWholeToolSets(
   state: Draft<DesignerState>,
   copied: readonly Cutout[],
   groupMap: ReadonlyMap<string, string>
-): void {
+): ReadonlySet<string> {
+  const copiedSets = new Set<string>();
   const sets = state.params.cutoutToolSets;
-  if (!sets) return;
+  if (!sets) return copiedSets;
   const copiedIds = new Set(copied.map((c) => c.id));
-  const all = [...state.params.cutouts, ...(state.params.lid.cutouts ?? [])];
   const next = { ...sets };
-  let changed = false;
   for (const [from, to] of groupMap) {
     if (!(from in sets)) continue;
-    const spec = sets[from];
-    const members = all.filter((c) => c.parentGroups?.includes(from) === true);
+    const members = state.params.cutouts.filter((c) => c.parentGroups?.includes(from) === true);
     if (members.length === 0 || !members.every((c) => copiedIds.has(c.id))) continue;
-    next[to] = spec;
-    changed = true;
+    next[to] = sets[from];
+    copiedSets.add(to);
   }
-  if (changed) state.params.cutoutToolSets = next;
+  if (copiedSets.size > 0) state.params.cutoutToolSets = next;
+  return copiedSets;
 }
 
 /** {@link copyWholeToolSets} for clones known only as `[originalId, cloneId]` pairs. */
@@ -374,7 +374,14 @@ export function copyToolSetsForClonePairs(
       if (copy !== undefined) groupMap.set(id, copy);
     });
   }
-  copyWholeToolSets(state, originals, groupMap);
+  const copiedSets = copyWholeToolSets(state, originals, groupMap);
+  const released = releaseClonedParts(
+    state.params.cutouts,
+    new Set(pairs.map(([, to]) => to)),
+    copiedSets,
+    state.params.cutoutToolSets
+  );
+  if (released) state.params.cutouts = released;
 }
 
 /** Swap cutouts in the edited array in one draft; the added ones stack on top. */
