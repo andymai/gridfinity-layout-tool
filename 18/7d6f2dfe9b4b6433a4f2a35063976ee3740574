@@ -1,0 +1,119 @@
+src/i18n/locales/en.ts
+  s_88cfcc42bf5bfd::t_c29c2fed98a7b0 1166,4962
+apps/docs/concepts/units.md
+  s_88cfcc42bf5bfd::t_e6107826332675 76
+src/i18n/locales/cs.json
+  s_88cfcc42bf5bfd::t_c29c2fed98a7b0 175,3515
+src/i18n/locales/it.json
+  s_88cfcc42bf5bfd::t_c29c2fed98a7b0 171,3450
+src/features/baseplate/components/BaseplatePanel/MeasuredDrawerOverflow.test.tsx
+  s_88cfcc42bf5bfd::t_60045b8bdad1bb 9,70-79
+apps/docs/baseplates/odd-shaped-drawers.md
+  s_88cfcc42bf5bfd::t_e6107826332675 92
+src/i18n/locales/es.json
+  s_88cfcc42bf5bfd::t_c29c2fed98a7b0 171,3450
+src/i18n/locales/ka.json
+  s_88cfcc42bf5bfd::t_c29c2fed98a7b0 1049,4083
+src/features/layers/components/LayerPanel/LayerPanel.tsx
+  s_88cfcc42bf5bfd::t_e57ef58fde8fa3 10,19,129-130
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_88cfcc42bf5bfd::t_c6147320475a95 82,338-341
+src/features/baseplate/components/BaseplatePanel/MeasuredDrawerOverflow.tsx
+  s_88cfcc42bf5bfd::t_e57ef58fde8fa3 5,25,43-47
+src/shell/Sidebar/Sidebar.tsx
+  s_88cfcc42bf5bfd::t_c7879d279931be 31,47,343,346
+  s_88cfcc42bf5bfd::t_e946e237d37ba8 48,333-334
+apps/docs/reference/faq.md
+  s_88cfcc42bf5bfd::t_e6107826332675 118
+src/i18n/locales/ja.json
+  s_88cfcc42bf5bfd::t_c29c2fed98a7b0 167,3385
+src/features/baseplate/components/BaseplatePreview/DimensionLabels.tsx
+  s_88cfcc42bf5bfd::t_529dbc0d33e18f 7,48,128,140
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.test.tsx
+  s_88cfcc42bf5bfd::t_56fd0ee95fc857 208
+  s_88cfcc42bf5bfd::t_7ed6472b1f77ef 1,27
+  s_88cfcc42bf5bfd::t_c7c48bc25dd132 245
+  s_88cfcc42bf5bfd::t_b629181355afc4 224-234
+src/shared/components/EditableDimensions/EditableDimensions.test.tsx
+  s_88cfcc42bf5bfd::t_56fd0ee95fc857 194-205,207-208
+src/i18n/locales/nb.json
+  s_88cfcc42bf5bfd::t_c29c2fed98a7b0 171,3450
+apps/docs/recipes/kitchen-utensil-drawer.md
+  s_88cfcc42bf5bfd::t_e6107826332675 87
+src/i18n/locales/fr.json
+  s_88cfcc42bf5bfd::t_c29c2fed98a7b0 171,3450
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.tsx
+  s_88cfcc42bf5bfd::t_9bc21ea2a961db 41,66,115-117,173-174,188
+apps/docs/getting-started/first-drawer.md
+  s_88cfcc42bf5bfd::t_e6107826332675 27,55
+src/i18n/locales/pt-BR.json
+  s_88cfcc42bf5bfd::t_c29c2fed98a7b0 171,3450
+src/features/baseplate/components/BaseplatePreview/DimensionLabels.test.tsx
+  s_88cfcc42bf5bfd::t_44b75a54edcbaa 62,69,81
+  s_88cfcc42bf5bfd::t_f315500a493a06 4,53-58
+src/i18n/locales/pl.json
+  s_88cfcc42bf5bfd::t_c29c2fed98a7b0 179,3580
+apps/docs/getting-started/first-baseplate.md
+  s_88cfcc42bf5bfd::t_e6107826332675 39,44
+src/features/grid-editor/components/Grid/IsometricPreview/DrawerDimensions/DrawerDimensions.test.tsx
+  s_88cfcc42bf5bfd::t_f315500a493a06 4,84-100
+  s_88cfcc42bf5bfd::t_44b75a54edcbaa 116,132,148-149,165,180,195,225
+  s_88cfcc42bf5bfd::t_039688a2130b31 101-102
+src/shared/hooks/useMeasureUnit.ts
+  s_88cfcc42bf5bfd::t_9bc21ea2a961db 19-20,27,29-31
+  s_88cfcc42bf5bfd::t_d4839ae8e9191b 1,4,13-18,21-24,28
+src/shared/components/EditableDimensions/EditableDimensions.tsx
+  s_88cfcc42bf5bfd::t_5cd2aff0fbec38 130-131,142-146,150,152-153
+src/i18n/locales/sv.json
+  s_88cfcc42bf5bfd::t_c29c2fed98a7b0 171,3450
+src/shared/hooks/useMeasureUnit.test.ts
+  s_88cfcc42bf5bfd::t_9bc21ea2a961db 24
+  s_88cfcc42bf5bfd::t_d4839ae8e9191b 1,6-7,13,15-17,21-23
+src/i18n/locales/ko.json
+  s_88cfcc42bf5bfd::t_c29c2fed98a7b0 167,3385
+apps/docs/baseplates/basics.md
+  s_88cfcc42bf5bfd::t_e6107826332675 50,68,120
+src/i18n/locales/de.json
+  s_88cfcc42bf5bfd::t_c29c2fed98a7b0 171,3450
+src/features/layers/components/LayerPanel/LayerPanel.test.tsx
+  s_88cfcc42bf5bfd::t_e411690c7766c6 9-15,57,155-165
+  s_88cfcc42bf5bfd::t_7ed6472b1f77ef 166-168
+  s_88cfcc42bf5bfd::t_16027d79d6546c 169-171
+apps/docs/getting-started/workspace-tour.md
+  s_88cfcc42bf5bfd::t_e6107826332675 58
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_88cfcc42bf5bfd::t_7ed6472b1f77ef 149
+  s_88cfcc42bf5bfd::t_e946e237d37ba8 43
+  s_88cfcc42bf5bfd::t_c7879d279931be 24,42,157,160
+src/i18n/locales/zh-CN.json
+  s_88cfcc42bf5bfd::t_c29c2fed98a7b0 167,3385
+src/i18n/locales/nl.json
+  s_88cfcc42bf5bfd::t_c29c2fed98a7b0 171,3450
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
+  s_88cfcc42bf5bfd::t_56fd0ee95fc857 402
+apps/docs/layouts/drawer-setup.md
+  s_88cfcc42bf5bfd::t_e6107826332675 62,175,177,181
+src/shared/utils/lengthUnit.ts
+  s_88cfcc42bf5bfd::t_d4839ae8e9191b 7-8,26
+src/i18n/locales/uk.json
+  s_88cfcc42bf5bfd::t_c29c2fed98a7b0 179,3580
+src/features/grid-editor/components/Grid/IsometricPreview/DrawerDimensions/DrawerDimensions.tsx
+  s_88cfcc42bf5bfd::t_7f88a1d89d791c 45,73
+  s_88cfcc42bf5bfd::t_529dbc0d33e18f 5,42,60,78,99,112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "187d6f2dfe9b4b6433a4f2a35063976ee3740574",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
