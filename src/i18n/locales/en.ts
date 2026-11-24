@@ -5216,7 +5216,7 @@ const en: Record<string, string> = {
     "Use the same printer, filament, and nozzle you'll print the baseplate with.",
   'baseplate.connectorSample.tip3':
     'Each coupon is embossed with its fit offset; the whole tray is one connector style.',
-  'baseplate.connectorSample.tip4': 'Found the right fit? Set Connector fit to that offset.',
+  'baseplate.connectorSample.tip4': 'Found the right fit? Set {fitLabel} to that offset.',
   'baseplate.connectorSample.exportComplete': 'Fit sample exported',
   'baseplate.connectorSample.exportFailed': 'Connector fit sample export failed',
   'baseplate.cornerRadius': 'Corner radius',

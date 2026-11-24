@@ -4275,7 +4275,7 @@
   "baseplate.connectorSample.tip1": "დაბეჭდეთ ბრტყლად, საყრდენების გარეშე.",
   "baseplate.connectorSample.tip2": "გამოიყენეთ იგივე პრინტერი, ფილამენტი და საქშენი, რომლითაც საბაზისო ფირფიტას დაბეჭდავთ.",
   "baseplate.connectorSample.tip3": "თითოეულ ნიმუშზე ამობურცულია მისი მორგების აცდენა; მთელი დაფა ერთი შემაერთებლის სტილია.",
-  "baseplate.connectorSample.tip4": "სწორი მორგება იპოვეთ? „შემაერთებლის მორგება“ ამ აცდენაზე დააყენეთ.",
+  "baseplate.connectorSample.tip4": "სწორი მორგება იპოვეთ? {fitLabel} ამ აცდენაზე დააყენეთ.",
   "baseplate.connectorSample.exportComplete": "მორგების ნიმუში ექსპორტირდა",
   "baseplate.connectorSample.exportFailed": "შემაერთებლის მორგების ნიმუშის ექსპორტი ვერ მოხერხდა",
   "baseplate.cornerRadius": "კუთხის რადიუსი",
