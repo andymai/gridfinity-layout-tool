@@ -1,0 +1,23 @@
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.tsx
+  s_88cfcc42bf5bfd::t_cf8c19ef3183f2 13-14
+src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
+  s_88cfcc42bf5bfd::t_cf8c19ef3183f2 108
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.test.tsx
+  s_88cfcc42bf5bfd::t_cf8c19ef3183f2 252-261
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b41edee0665c733b1ad4f7a334ee107e2dc825b2",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
