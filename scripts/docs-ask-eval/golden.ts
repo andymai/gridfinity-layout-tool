@@ -641,7 +641,6 @@ export const GOLDEN: readonly GoldenCase[] = [
     expect: 'The second answer covers live sessions.',
   },
 
-  // From questions asked in Ask AI, paraphrased: terse lookups and a "no"
   {
     id: 'L25',
     group: 'lookup',
