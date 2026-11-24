@@ -63,31 +63,31 @@ test.describe('Drawer Settings', () => {
 
   test('can increase height', async ({ page }) => {
     const sidebar = getSidebar(page);
-    const height = sidebar.getByRole('spinbutton', { name: 'Drawer height in millimeters' });
+    const height = sidebar.getByRole('spinbutton', { name: 'Drawer height (mm)' });
     const before = await valueOf(height);
     const step = Number(await height.getAttribute('step'));
 
-    await sidebar.getByRole('button', { name: 'Increase Drawer height in millimeters' }).click();
+    await sidebar.getByRole('button', { name: 'Increase Drawer height (mm)' }).click();
 
     await expect.poll(() => valueOf(height)).toBe(before + step);
   });
 
   test('can decrease height', async ({ page }) => {
     const sidebar = getSidebar(page);
-    const height = sidebar.getByRole('spinbutton', { name: 'Drawer height in millimeters' });
-    await sidebar.getByRole('button', { name: 'Increase Drawer height in millimeters' }).click();
+    const height = sidebar.getByRole('spinbutton', { name: 'Drawer height (mm)' });
+    await sidebar.getByRole('button', { name: 'Increase Drawer height (mm)' }).click();
     const raised = await valueOf(height);
     const step = Number(await height.getAttribute('step'));
 
-    await sidebar.getByRole('button', { name: 'Decrease Drawer height in millimeters' }).click();
+    await sidebar.getByRole('button', { name: 'Decrease Drawer height (mm)' }).click();
 
     await expect.poll(() => valueOf(height)).toBe(raised - step);
   });
 
   test('drawer height stops at a minimum', async ({ page }) => {
     const sidebar = getSidebar(page);
-    const height = sidebar.getByRole('spinbutton', { name: 'Drawer height in millimeters' });
-    const decrease = sidebar.getByRole('button', { name: 'Decrease Drawer height in millimeters' });
+    const height = sidebar.getByRole('spinbutton', { name: 'Drawer height (mm)' });
+    const decrease = sidebar.getByRole('button', { name: 'Decrease Drawer height (mm)' });
 
     for (let i = 0; i < 30 && (await decrease.isEnabled()); i++) {
       await decrease.click();
