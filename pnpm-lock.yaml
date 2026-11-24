@@ -145,8 +145,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0
       manifold-3d:
-        specifier: 3.5.3
-        version: 3.5.3(@gltf-transform/core@4.4.1)(@gltf-transform/extensions@4.4.1)(@gltf-transform/functions@4.4.1(@types/node@26.6.6))(esbuild-wasm@0.27.7)
+        specifier: 3.5.5
+        version: 3.5.5(@gltf-transform/core@4.4.1)(@gltf-transform/extensions@4.4.1)(@gltf-transform/functions@4.4.1(@types/node@26.6.6))(esbuild-wasm@0.27.7)
       occt-wasm:
         specifier: 5.18.3
         version: 5.18.3
@@ -4760,8 +4760,8 @@ packages:
   magicast@0.5.5:
     resolution: {integrity: sha512-UicdXN8zQ3JHlxVq+28afMXPr1z7WNY6+7EJnzTdQWkTAlMLF5fNCCKxJHBQwGaNGR11581EiQmQzx73+MvszA==}
 
-  manifold-3d@3.5.3:
-    resolution: {integrity: sha512-u00Dc4IKm6W6VyVCAs6eFWNOW9V1w9/QM+xdwS/0TQKXLDtMIauxH5RXUwhOGDnvXa9uciKKYMUD2At76ffsaA==}
+  manifold-3d@3.5.5:
+    resolution: {integrity: sha512-IinnMlac/DNvde+nJTqxmqeyAA9fmFVZ9Vupqgl5juXLbh0lw5KNaPIh8BEwWIORu240D5YvH0FGw9f10uW7Yg==}
     hasBin: true
     peerDependencies:
       '@gltf-transform/core': ^4.2.0
@@ -10605,7 +10605,7 @@ snapshots:
       '@babel/types': 7.29.8
       source-map-js: 1.2.2
 
-  manifold-3d@3.5.3(@gltf-transform/core@4.4.1)(@gltf-transform/extensions@4.4.1)(@gltf-transform/functions@4.4.1(@types/node@26.6.6))(esbuild-wasm@0.27.7):
+  manifold-3d@3.5.5(@gltf-transform/core@4.4.1)(@gltf-transform/extensions@4.4.1)(@gltf-transform/functions@4.4.1(@types/node@26.6.6))(esbuild-wasm@0.27.7):
     dependencies:
       '@gltf-transform/core': 4.4.1
       '@gltf-transform/extensions': 4.4.1
