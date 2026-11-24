@@ -1,0 +1,80 @@
+src/features/bin-designer/components/CutoutWorkspace/ToolSetEditButton.test.tsx
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 4,8-33,38,41-42,47-55,59-66
+  s_0c191ecd28c8c3::t_6ef3e3dfc6ed41 6
+  s_0c191ecd28c8c3::t_fd1f1e4e166995 7,67
+src/features/bin-designer/components/CutoutWorkspace/ToolSetEditButton.tsx
+  s_0c191ecd28c8c3::t_6ef3e3dfc6ed41 4-5
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 8-9,13-14,16,18,26
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/planToolSetPlacement.test.ts
+  s_0c191ecd28c8c3::t_fdbe4f77e1bd2d 28-33,36,46,54,59,64-82,85,89-102
+src/i18n/locales/ko.json
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 1140
+src/i18n/locales/ka.json
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 3219
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/planToolSetPlacement.ts
+  s_0c191ecd28c8c3::t_bc50d7da1021ee 4-6,9-10,27-33,51-59,62-65,72-76,83-86,93-94,98-101,107,109,114-119,122-130,132-134,136
+  s_0c191ecd28c8c3::t_758658c1917874 77,87-92
+src/features/bin-designer/store/slices/cutoutSliceHelpers.ts
+  s_0c191ecd28c8c3::t_6ef3e3dfc6ed41 346
+  s_0c191ecd28c8c3::t_758658c1917874 328-345,347-354
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/ToolSetDialog.tsx
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 66-69,77,79-83,208-211
+  s_0c191ecd28c8c3::t_10e5223230dd59 212
+src/i18n/locales/cs.json
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 1188
+src/i18n/locales/es.json
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 1164
+src/i18n/locales/fr.json
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 1164
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/useToolSets.ts
+  s_0c191ecd28c8c3::t_758658c1917874 11-19,21-22,57-73,111-126,139,142,152,180-182,184-199,203-209,219
+src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 399
+src/i18n/locales/de.json
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 1164
+src/i18n/locales/pl.json
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 1212
+src/i18n/locales/uk.json
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 1212
+src/i18n/locales/nl.json
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 1164
+src/i18n/locales/sv.json
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 1164
+src/i18n/locales/zh-CN.json
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 1140
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/ToolSetDialog.test.tsx
+  s_0c191ecd28c8c3::t_a862da2d302fc0 57-70
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_0c191ecd28c8c3::t_758658c1917874 52,544
+src/features/bin-designer/components/CutoutWorkspace/toolSetOf.ts
+  s_0c191ecd28c8c3::t_978d9114a1a2f6 12
+  s_0c191ecd28c8c3::t_6ef3e3dfc6ed41 1-11,13-15
+src/i18n/locales/it.json
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 1164
+src/i18n/locales/en.ts
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 3892-3893
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/useToolSets.test.ts
+  s_0c191ecd28c8c3::t_4ce00d9bf9f6b4 8-9,121-194
+src/i18n/locales/ja.json
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 1140
+src/i18n/locales/nb.json
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 1164
+src/i18n/locales/pt-BR.json
+  s_0c191ecd28c8c3::t_c50908fdf2f3c3 1164
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "28d678b8ea31174e41e748144deb633302ef35ea",
+  "prompts": {},
+  "sessions": {
+    "s_0c191ecd28c8c3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f7a72b82-3d5a-4aec-a3fc-27209c777a7d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
