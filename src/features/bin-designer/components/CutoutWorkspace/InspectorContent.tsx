@@ -44,6 +44,7 @@ import { BinFeaturesSection } from './BinFeaturesSection';
 import { FitTestButton } from './FitTestButton';
 import { ShadowBoardButton } from './ShadowBoardButton';
 import { AlignControls } from './AlignControls';
+import { ToolSetEditButton } from './ToolSetEditButton';
 import { RepeatSuggestion } from './RepeatSuggestion';
 import type { SplitTool } from './CutoutSplitControls';
 import type { PointTool } from './CutoutPointControls';
@@ -420,6 +421,7 @@ export function InspectorContent({
           </SubHeader>
           {/* Above the align controls: if the selection is already a pattern,
               the offer to make it parametric beats aligning it by hand. */}
+          {wholeUnit && <ToolSetEditButton groupId={wholeUnit.groupId} disabled={disabled} />}
           {repeatSuggestion && (
             <RepeatSuggestion suggestion={repeatSuggestion} disabled={disabled} />
           )}

@@ -90,6 +90,7 @@ import {
   migrateLidCutouts,
   migrateKnifeRest,
 } from './paramMigrationCutouts';
+import { migrateCutoutToolSets } from './paramMigrationToolSets';
 import type { LegacyCutoutFields } from './paramMigrationCutouts';
 import { migrateSurfaceText, migrateWallLabelSlots } from './paramMigrationText';
 import {
@@ -492,6 +493,10 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
       : { meshAssets: undefined }),
     cutoutGroupNames: migrateCutoutGroupNames(
       params.cutoutGroupNames,
+      referencedGroupIds(migratedCutouts, migratedLidCutouts ?? [])
+    ),
+    cutoutToolSets: migrateCutoutToolSets(
+      params.cutoutToolSets,
       referencedGroupIds(migratedCutouts, migratedLidCutouts ?? [])
     ),
     cutoutConfig,

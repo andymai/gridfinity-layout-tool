@@ -27,7 +27,7 @@ import {
   unitTags,
   withGroupChain,
 } from '../../utils/cutoutHierarchy';
-import { cutoutOwner, gcCutoutGroupNames, planUnitLandings } from './cutoutSliceHelpers';
+import { cutoutOwner, gcCutoutGroupMetadata, planUnitLandings } from './cutoutSliceHelpers';
 import type { Set } from './cutoutSliceHelpers';
 
 export function createCutoutGroupActions(set: Set) {
@@ -130,7 +130,7 @@ export function createCutoutGroupActions(set: Set) {
               )
             : c
         );
-        gcCutoutGroupNames(state);
+        gcCutoutGroupMetadata(state);
       });
     },
 
@@ -147,7 +147,7 @@ export function createCutoutGroupActions(set: Set) {
         // dissolve that singleton so the Pathfinder UI doesn't pretend a lone
         // cutout still belongs to an active group.
         owner.cutouts = dissolveSingletonGroups(ungrouped);
-        gcCutoutGroupNames(state);
+        gcCutoutGroupMetadata(state);
       });
     },
 
@@ -229,7 +229,7 @@ export function createCutoutGroupActions(set: Set) {
             return withGroupChain(bare, landing.chain, false);
           })
         );
-        gcCutoutGroupNames(state);
+        gcCutoutGroupMetadata(state);
       });
     },
 
@@ -252,7 +252,7 @@ export function createCutoutGroupActions(set: Set) {
           return rest;
         });
         owner.cutouts = dissolveSingletonGroups(peeled);
-        gcCutoutGroupNames(state);
+        gcCutoutGroupMetadata(state);
       });
     },
 

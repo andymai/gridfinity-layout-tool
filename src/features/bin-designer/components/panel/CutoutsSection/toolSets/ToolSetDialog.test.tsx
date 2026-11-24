@@ -1,0 +1,57 @@
+import { describe, expect, it, beforeEach, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { useDesignerStore } from '@/features/bin-designer/store/designer';
+import { ToolSetDialog } from './ToolSetDialog';
+
+describe('ToolSetDialog', () => {
+  beforeEach(() => {
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  it('adds the picked sizes as a set and closes', () => {
+    const onClose = vi.fn();
+    render(<ToolSetDialog setId={null} onClose={onClose} />);
+    expect(screen.getByTestId('tool-set-preview')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '8', pressed: true }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add set' }));
+
+    const sets = Object.values(useDesignerStore.getState().params.cutoutToolSets ?? {});
+    expect(sets).toHaveLength(1);
+    expect(sets[0]?.sizes).not.toContain('8');
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('switches to the SAE table and its first preset', () => {
+    render(<ToolSetDialog setId={null} onClose={vi.fn()} />);
+    fireEvent.click(screen.getByRole('radio', { name: 'SAE' }));
+    expect(screen.getByRole('button', { name: '1/2', pressed: true })).toBeInTheDocument();
+  });
+
+  it('cannot add a set with no sizes', () => {
+    render(<ToolSetDialog setId={null} onClose={vi.fn()} />);
+    for (const on of screen.getAllByRole('button', { pressed: true })) fireEvent.click(on);
+    expect(screen.getByRole('button', { name: 'Add set' })).toBeDisabled();
+    expect(screen.getByText('Pick at least one size.')).toBeInTheDocument();
+  });
+
+  it('edits an existing set with a warning that its pockets are rebuilt', () => {
+    useDesignerStore.getState().setParams({
+      cutoutToolSets: {
+        g1: {
+          family: 'combinationWrench',
+          units: 'metric',
+          sizes: ['13'],
+          style: 'flat',
+          clearanceMm: 0.4,
+          labelSizeMm: 5,
+          fingerChannel: true,
+        },
+      },
+    });
+    render(<ToolSetDialog setId="g1" onClose={vi.fn()} />);
+    expect(screen.getByRole('button', { name: '13', pressed: true })).toBeInTheDocument();
+    expect(screen.getByText(/rebuilds the set/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Update set' })).toBeEnabled();
+  });
+});

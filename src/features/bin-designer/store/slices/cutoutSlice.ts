@@ -48,7 +48,7 @@ import {
   mergeCutoutUpdate,
   expandIdsToGroups,
   gcMeshAssets,
-  gcCutoutGroupNames,
+  gcCutoutGroupMetadata,
   remainingCapacity,
   togglePropertyAffectsGeometry,
   zOrderAffectsGeometry,
@@ -468,7 +468,7 @@ export function createCutoutSlice(rawSet: Set) {
         const owner = cutoutOwner(state);
         owner.cutouts = dissolveSingletonGroups(owner.cutouts.filter((c) => c.id !== id));
         gcMeshAssets(state);
-        gcCutoutGroupNames(state);
+        gcCutoutGroupMetadata(state);
       });
     },
 
@@ -501,7 +501,7 @@ export function createCutoutSlice(rawSet: Set) {
         pushHistoryEntry(state);
         cutoutOwner(state).cutouts = [];
         gcMeshAssets(state);
-        gcCutoutGroupNames(state);
+        gcCutoutGroupMetadata(state);
       });
     },
 
@@ -614,7 +614,7 @@ export function createCutoutSlice(rawSet: Set) {
         );
         // Pulling members out can strand a one-member group behind.
         owner.cutouts = dissolveSingletonGroups(reparented);
-        gcCutoutGroupNames(state);
+        gcCutoutGroupMetadata(state);
       });
     },
 
@@ -655,7 +655,7 @@ export function createCutoutSlice(rawSet: Set) {
         const idSet = new Set(ids);
         owner.cutouts = dissolveSingletonGroups(owner.cutouts.filter((c) => !idSet.has(c.id)));
         gcMeshAssets(state);
-        gcCutoutGroupNames(state);
+        gcCutoutGroupMetadata(state);
       });
     },
 
@@ -695,7 +695,7 @@ export function createCutoutSlice(rawSet: Set) {
             .map((c) => (c.id === masterId ? { ...c, array: config } : c))
         );
         gcMeshAssets(state);
-        gcCutoutGroupNames(state);
+        gcCutoutGroupMetadata(state);
         merged = true;
       });
       // Reported back so callers do not toast "merged" or count a merge that

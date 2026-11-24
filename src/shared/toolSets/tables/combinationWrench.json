@@ -1,0 +1,326 @@
+{
+  "jawAngleDeg": 15,
+  "method": "Length and head widths: the largest surveyed brand, so every surveyed wrench fits. Open-end thickness: the median. Box end lying flat: median ring thickness plus 0.25 x the median ring width for the 15 degree crank (checked against Gedore and Tekton crank heights). Shank width: 0.6 x the median ring width (no brand publishes it).",
+  "sources": {
+    "metric": [
+      "Stahlwille 13 (stahlwille.com/en_gb/p/40081313)",
+      "Hazet 600N (hazet.de product pages)",
+      "Wera 6003 Joker (wera.de)",
+      "Gedore 1 B (shop.gedore.com)",
+      "Tekton combination wrench spec table (images.tekton.com)"
+    ],
+    "sae": [
+      "Stahlwille 13a (stahlwille.com/en_gb/p/40483232)",
+      "Hazet 600NA (hazet.de product pages)",
+      "Wera 6003 Joker Imperial (wera.de)",
+      "GearWrench 12-point long pattern (gearwrench.com)",
+      "Tekton combination wrench spec table (images.tekton.com)",
+      "Snap-on OEX (shop.snapon.com)",
+      "Williams 11100 (Williams catalog p. 194)"
+    ]
+  },
+  "metric": [
+    {
+      "key": "6",
+      "jawMm": 6.0,
+      "lengthMm": 129.5,
+      "openWidthMm": 16,
+      "boxWidthMm": 10,
+      "openThicknessMm": 4,
+      "boxHeightMm": 8.5,
+      "shankWidthMm": 5.9
+    },
+    {
+      "key": "7",
+      "jawMm": 7.0,
+      "lengthMm": 134.6,
+      "openWidthMm": 17.7,
+      "boxWidthMm": 11.5,
+      "openThicknessMm": 4,
+      "boxHeightMm": 8.8,
+      "shankWidthMm": 6.6
+    },
+    {
+      "key": "8",
+      "jawMm": 8.0,
+      "lengthMm": 142.2,
+      "openWidthMm": 19.2,
+      "boxWidthMm": 12.5,
+      "openThicknessMm": 4.5,
+      "boxHeightMm": 10.1,
+      "shankWidthMm": 7.5
+    },
+    {
+      "key": "9",
+      "jawMm": 9.0,
+      "lengthMm": 154.9,
+      "openWidthMm": 21.2,
+      "boxWidthMm": 14.0,
+      "openThicknessMm": 4.5,
+      "boxHeightMm": 10.7,
+      "shankWidthMm": 8.2
+    },
+    {
+      "key": "10",
+      "jawMm": 10.0,
+      "lengthMm": 162.6,
+      "openWidthMm": 23.5,
+      "boxWidthMm": 15.5,
+      "openThicknessMm": 5,
+      "boxHeightMm": 11.2,
+      "shankWidthMm": 9.0
+    },
+    {
+      "key": "11",
+      "jawMm": 11.0,
+      "lengthMm": 168.5,
+      "openWidthMm": 26,
+      "boxWidthMm": 17,
+      "openThicknessMm": 5,
+      "boxHeightMm": 12.3,
+      "shankWidthMm": 10.0
+    },
+    {
+      "key": "12",
+      "jawMm": 12.0,
+      "lengthMm": 180.5,
+      "openWidthMm": 28,
+      "boxWidthMm": 18.2,
+      "openThicknessMm": 5.5,
+      "boxHeightMm": 13.2,
+      "shankWidthMm": 10.7
+    },
+    {
+      "key": "13",
+      "jawMm": 13.0,
+      "lengthMm": 193,
+      "openWidthMm": 30,
+      "boxWidthMm": 19.5,
+      "openThicknessMm": 6,
+      "boxHeightMm": 14.0,
+      "shankWidthMm": 11.4
+    },
+    {
+      "key": "14",
+      "jawMm": 14.0,
+      "lengthMm": 204.5,
+      "openWidthMm": 32,
+      "boxWidthMm": 21.0,
+      "openThicknessMm": 6.3,
+      "boxHeightMm": 14.3,
+      "shankWidthMm": 12.2
+    },
+    {
+      "key": "15",
+      "jawMm": 15.0,
+      "lengthMm": 218,
+      "openWidthMm": 35,
+      "boxWidthMm": 22.2,
+      "openThicknessMm": 6.7,
+      "boxHeightMm": 15.2,
+      "shankWidthMm": 13.2
+    },
+    {
+      "key": "16",
+      "jawMm": 16.0,
+      "lengthMm": 230.5,
+      "openWidthMm": 37,
+      "boxWidthMm": 23.5,
+      "openThicknessMm": 7,
+      "boxHeightMm": 16.5,
+      "shankWidthMm": 13.9
+    },
+    {
+      "key": "17",
+      "jawMm": 17.0,
+      "lengthMm": 242.5,
+      "openWidthMm": 38,
+      "boxWidthMm": 25.0,
+      "openThicknessMm": 7.5,
+      "boxHeightMm": 17.3,
+      "shankWidthMm": 14.7
+    },
+    {
+      "key": "18",
+      "jawMm": 18.0,
+      "lengthMm": 255,
+      "openWidthMm": 40,
+      "boxWidthMm": 26.5,
+      "openThicknessMm": 7.7,
+      "boxHeightMm": 18.8,
+      "shankWidthMm": 15.6
+    },
+    {
+      "key": "19",
+      "jawMm": 19.0,
+      "lengthMm": 268.5,
+      "openWidthMm": 42,
+      "boxWidthMm": 27.8,
+      "openThicknessMm": 8,
+      "boxHeightMm": 19.4,
+      "shankWidthMm": 16.5
+    },
+    {
+      "key": "21",
+      "jawMm": 21.0,
+      "lengthMm": 292,
+      "openWidthMm": 47,
+      "boxWidthMm": 30.5,
+      "openThicknessMm": 8.5,
+      "boxHeightMm": 20.9,
+      "shankWidthMm": 18.1
+    },
+    {
+      "key": "22",
+      "jawMm": 22.0,
+      "lengthMm": 304.5,
+      "openWidthMm": 49,
+      "boxWidthMm": 32.0,
+      "openThicknessMm": 8.5,
+      "boxHeightMm": 21.4,
+      "shankWidthMm": 19.0
+    },
+    {
+      "key": "24",
+      "jawMm": 24.0,
+      "lengthMm": 328,
+      "openWidthMm": 53,
+      "boxWidthMm": 36,
+      "openThicknessMm": 9.5,
+      "boxHeightMm": 23.1,
+      "shankWidthMm": 21.0
+    }
+  ],
+  "sae": [
+    {
+      "key": "1/4",
+      "jawMm": 6.35,
+      "lengthMm": 130.2,
+      "openWidthMm": 16,
+      "boxWidthMm": 11.4,
+      "openThicknessMm": 4.0,
+      "boxHeightMm": 8.4,
+      "shankWidthMm": 6.1
+    },
+    {
+      "key": "5/16",
+      "jawMm": 7.94,
+      "lengthMm": 147.3,
+      "openWidthMm": 19,
+      "boxWidthMm": 13.6,
+      "openThicknessMm": 4.5,
+      "boxHeightMm": 10.2,
+      "shankWidthMm": 7.6
+    },
+    {
+      "key": "3/8",
+      "jawMm": 9.53,
+      "lengthMm": 166.1,
+      "openWidthMm": 23.1,
+      "boxWidthMm": 16.1,
+      "openThicknessMm": 5,
+      "boxHeightMm": 11.2,
+      "shankWidthMm": 9.0
+    },
+    {
+      "key": "7/16",
+      "jawMm": 11.11,
+      "lengthMm": 185.2,
+      "openWidthMm": 26,
+      "boxWidthMm": 17.5,
+      "openThicknessMm": 5.6,
+      "boxHeightMm": 12.2,
+      "shankWidthMm": 10.1
+    },
+    {
+      "key": "1/2",
+      "jawMm": 12.7,
+      "lengthMm": 206.4,
+      "openWidthMm": 30,
+      "boxWidthMm": 19.8,
+      "openThicknessMm": 6.3,
+      "boxHeightMm": 13.4,
+      "shankWidthMm": 11.4
+    },
+    {
+      "key": "9/16",
+      "jawMm": 14.29,
+      "lengthMm": 222.3,
+      "openWidthMm": 32,
+      "boxWidthMm": 22.2,
+      "openThicknessMm": 6.5,
+      "boxHeightMm": 14.7,
+      "shankWidthMm": 12.6
+    },
+    {
+      "key": "5/8",
+      "jawMm": 15.88,
+      "lengthMm": 241.8,
+      "openWidthMm": 37,
+      "boxWidthMm": 24.6,
+      "openThicknessMm": 7.1,
+      "boxHeightMm": 16.3,
+      "shankWidthMm": 14.1
+    },
+    {
+      "key": "11/16",
+      "jawMm": 17.46,
+      "lengthMm": 260.4,
+      "openWidthMm": 40,
+      "boxWidthMm": 27.0,
+      "openThicknessMm": 7.9,
+      "boxHeightMm": 18.0,
+      "shankWidthMm": 15.5
+    },
+    {
+      "key": "3/4",
+      "jawMm": 19.05,
+      "lengthMm": 279.4,
+      "openWidthMm": 42,
+      "boxWidthMm": 28.6,
+      "openThicknessMm": 8.6,
+      "boxHeightMm": 18.9,
+      "shankWidthMm": 16.6
+    },
+    {
+      "key": "13/16",
+      "jawMm": 20.64,
+      "lengthMm": 304.8,
+      "openWidthMm": 47,
+      "boxWidthMm": 33.3,
+      "openThicknessMm": 9.7,
+      "boxHeightMm": 21.1,
+      "shankWidthMm": 18.1
+    },
+    {
+      "key": "7/8",
+      "jawMm": 22.23,
+      "lengthMm": 318.0,
+      "openWidthMm": 49,
+      "boxWidthMm": 34.1,
+      "openThicknessMm": 9.5,
+      "boxHeightMm": 22.0,
+      "shankWidthMm": 19.3
+    },
+    {
+      "key": "15/16",
+      "jawMm": 23.81,
+      "lengthMm": 336.6,
+      "openWidthMm": 53,
+      "boxWidthMm": 35.7,
+      "openThicknessMm": 10.3,
+      "boxHeightMm": 23.4,
+      "shankWidthMm": 20.9
+    },
+    {
+      "key": "1",
+      "jawMm": 25.4,
+      "lengthMm": 356.5,
+      "openWidthMm": 55,
+      "boxWidthMm": 38.1,
+      "openThicknessMm": 11.1,
+      "boxHeightMm": 24.8,
+      "shankWidthMm": 22.4
+    }
+  ]
+}

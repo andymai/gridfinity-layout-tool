@@ -173,21 +173,31 @@ export function gcMeshAssets(state: Draft<DesignerState>): void {
 }
 
 /**
- * Drop names for groups the design no longer has. Runs after every path that
- * can empty or dissolve a group, so a deleted assembly doesn't leave its name
- * behind to be re-adopted by a later group that happens to reuse the id.
+ * Drop the names and tool set specs of groups the design no longer has. Runs
+ * after every path that can empty or dissolve a group, so a deleted assembly
+ * doesn't leave its metadata behind to be re-adopted by a later group that
+ * happens to reuse the id.
  *
  * Reads BOTH cutout arrays, unlike {@link gcMeshAssets}: one name map serves
  * the bin and its lid, so counting references through `cutoutOwner` alone would
  * drop every name the other array still uses.
  */
-export function gcCutoutGroupNames(state: Draft<DesignerState>): void {
-  const names = state.params.cutoutGroupNames;
-  if (!names) return;
+export function gcCutoutGroupMetadata(state: Draft<DesignerState>): void {
+  const { cutoutGroupNames: names, cutoutToolSets: sets } = state.params;
+  if (!names && !sets) return;
   const referenced = referencedGroupIds(state.params.cutouts, state.params.lid.cutouts ?? []);
-  const kept = Object.entries(names).filter(([id]) => referenced.has(id));
-  if (kept.length === Object.keys(names).length) return;
-  state.params.cutoutGroupNames = kept.length > 0 ? Object.fromEntries(kept) : undefined;
+  if (names) {
+    const kept = Object.entries(names).filter(([id]) => referenced.has(id));
+    if (kept.length !== Object.keys(names).length) {
+      state.params.cutoutGroupNames = kept.length > 0 ? Object.fromEntries(kept) : undefined;
+    }
+  }
+  if (sets) {
+    const kept = Object.entries(sets).filter(([id]) => referenced.has(id));
+    if (kept.length !== Object.keys(sets).length) {
+      state.params.cutoutToolSets = kept.length > 0 ? Object.fromEntries(kept) : undefined;
+    }
+  }
 }
 
 /**

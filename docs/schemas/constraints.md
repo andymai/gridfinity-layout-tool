@@ -107,6 +107,17 @@ bounded at 0 and 100, fractions at 0 and 1, and counts at 1.
 | `MIN_TAPER_BAND`               | `0`    | `MarginTaper.bandHeight` (minimum), `WallTaperConfig.bandHeight` (minimum)                                                                                              |
 | `MIN_WALL_THICKNESS`           | `0.4`  | `BinParams.wallThickness` (minimum)                                                                                                                                     |
 
+## `TOOL_SET_LIMITS`
+
+| Constant           | Value | Bounds                              |
+| ------------------ | ----- | ----------------------------------- |
+| `clearanceMm.max`  | `2`   | `ToolSetSpec.clearanceMm` (maximum) |
+| `clearanceMm.min`  | `0`   | `ToolSetSpec.clearanceMm` (minimum) |
+| `labelSizeMm.max`  | `12`  | `ToolSetSpec.labelSizeMm` (maximum) |
+| `labelSizeMm.min`  | `0`   | `ToolSetSpec.labelSizeMm` (minimum) |
+| `maxSizeKeyLength` | `12`  | `ToolSetSpec.sizes` (maxLength)     |
+| `maxSizes`         | `30`  | `ToolSetSpec.sizes` (maxItems)      |
+
 ## Module constants
 
 | Constant                             | Value                                                                                                                         | Bounds                                                                                                      |
@@ -220,6 +231,9 @@ bounded at 0 and 100, fractions at 0 and 1, and counts at 1.
 | `TEXT_FONT_FAMILIES`                 | `["atkinson","atkinson-bold","jetbrains-mono","jetbrains-mono-bold","barlow-condensed","poppins","allerta-stencil"]`          | `TextStyleDefaults.font` (enum), `TextStyleOverride.font` (enum)                                            |
 | `TEXT_MAX_LENGTH`                    | `50`                                                                                                                          | `CutoutArrayConfig.labels` (maxLength)                                                                      |
 | `TEXT_QUARTER_TURNS`                 | `[0,90,180,270]`                                                                                                              | `SurfaceTextConfig.floorTextRotation` (enum), `SurfaceTextConfig.lidTextRotation` (enum)                    |
+| `TOOL_FAMILY_IDS`                    | `["combinationWrench"]`                                                                                                       | `ToolSetSpec.family` (enum)                                                                                 |
+| `TOOL_SET_STYLES`                    | `["flat"]`                                                                                                                    | `ToolSetSpec.style` (enum)                                                                                  |
+| `TOOL_UNITS`                         | `["metric","sae"]`                                                                                                            | `ToolSetSpec.units` (enum)                                                                                  |
 | `WALL_PATTERN_TYPES`                 | `["honeycomb","round","diamond","triangle","slots","mitsukude","goma","asanoha","sakura","rindo","mikado","tsumiishi-kikko"]` | `WallPatternConfig.pattern` (enum)                                                                          |
 | `WALL_TEXT_ALIGNS`                   | `["top","center","bottom"]`                                                                                                   | `SurfaceTextConfig.wallAlign` (enum)                                                                        |
 | `WALL_TEXT_FACES`                    | `["outside","inside"]`                                                                                                        | `SurfaceTextConfig.wallFaces.additionalProperties` (enum)                                                   |

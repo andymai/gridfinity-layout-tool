@@ -120,6 +120,11 @@ export interface DesignerUIState {
   /** Where the open "Scan a tool" dialog was opened from; null while it is closed. */
   readonly scanDialogSource: ScanSource | null;
   /**
+   * The open tool set dialog: `setId` null adds a new set, a group id edits that
+   * set. Null while the dialog is closed.
+   */
+  readonly toolSetDialog: { readonly setId: string | null } | null;
+  /**
    * Set for a bin started by "Scan a tool": each scan added while the dialog
    * stays open grows the bin to fit, in the same undo step as the add.
    */
