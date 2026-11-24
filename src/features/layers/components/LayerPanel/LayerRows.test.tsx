@@ -22,6 +22,7 @@ const defaultProps = {
   onEditingStart: vi.fn(),
   onEditingEnd: vi.fn(),
   layerStats: {} as Record<string, { coverage: number; binCount: number }>,
+  heightUnitMm: 7,
 };
 
 describe('LayerRows', () => {
@@ -157,9 +158,24 @@ describe('LayerRows', () => {
     );
     expect(screen.getByText('7 bins')).toBeInTheDocument();
     expect(screen.getByText('2 bins')).toBeInTheDocument();
-    expect(screen.getByText('4u')).toHaveAttribute(
+    expect(screen.getByText('4u (28mm)')).toHaveAttribute(
       'title',
       'Height for new bins placed on this layer'
+    );
+  });
+
+  it('gives each layer height in millimetres at the layout height unit', () => {
+    render(
+      <LayerRows
+        layers={makeLayers(3)}
+        activeLayerId={layerId('layer-1')}
+        onLayerClick={vi.fn()}
+        {...defaultProps}
+        heightUnitMm={7.5}
+      />
+    );
+    expect(screen.getByTitle('Height for new bins placed on this layer')).toHaveTextContent(
+      '3u (22.5mm)'
     );
   });
 

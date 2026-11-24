@@ -24,7 +24,9 @@ export function ConnectorSampleButton() {
       label={t('baseplate.connectorSample.button')}
       leftIcon={<LayoutGridIcon className="h-4 w-4" />}
       dialogTitle={t('baseplate.connectorSample.dialogTitle')}
-      dialogDescription={t('baseplate.connectorSample.dialogDescription')}
+      dialogDescription={t('baseplate.connectorSample.dialogDescription', {
+        fitLabel: t('baseplate.connectorFit.label'),
+      })}
       exportCompleteMessage={t('baseplate.connectorSample.exportComplete')}
       tips={{
         title: t('baseplate.connectorSample.tipsTitle'),

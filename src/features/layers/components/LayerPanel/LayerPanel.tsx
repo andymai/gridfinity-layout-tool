@@ -115,6 +115,7 @@ export function LayerPanel() {
               }}
               onEditingEnd={() => setEditingLayerId(null)}
               layerStats={layerStats}
+              heightUnitMm={layout.heightUnitMm}
             />
           </div>
 

@@ -7,6 +7,7 @@ import { CONSTRAINTS } from '@/core/constants';
 import { getGridBins, getLayerBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useTranslation } from '@/i18n';
+import { formatMm } from '@/shared/utils/format';
 import { Button, IconButton, Input, PlusIcon, MinusIcon } from '@/design-system';
 import { useLayerListController } from '@/features/layers/hooks/useLayerListController';
 import { TallestStackMeter } from '@/features/layers/components/TallestStackMeter';
@@ -194,7 +195,10 @@ export function LayersTab() {
                   className="text-center text-xs font-medium text-content-secondary tabular-nums whitespace-nowrap min-w-[2ch]"
                   title={t('layers.heightTooltip')}
                 >
-                  {layer.height}u
+                  {t('print.heightValue', {
+                    height: layer.height,
+                    mm: formatMm(layer.height * layout.heightUnitMm),
+                  })}
                 </span>
                 <IconButton
                   size="lg"

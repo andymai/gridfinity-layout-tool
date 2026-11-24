@@ -4,6 +4,7 @@ import type { Layer, LayerId } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
 import { IconButton, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { formatMm } from '@/shared/utils/format';
 
 const ACCENT_STRIPE_WIDTH = 2.5;
 const TRANSITION = '0.2s ease-out';
@@ -30,6 +31,7 @@ interface LayerRowsProps {
   onEditingStart: (layerId: LayerId) => void;
   onEditingEnd: () => void;
   layerStats: Partial<Record<string, LayerStat>>;
+  heightUnitMm: number;
 }
 
 function GripIcon({ className }: { className?: string }) {
@@ -71,8 +73,11 @@ export function LayerRows({
   onEditingStart,
   onEditingEnd,
   layerStats,
+  heightUnitMm,
 }: LayerRowsProps) {
   const t = useTranslation();
+  const heightLabel = (height: number): string =>
+    t('print.heightValue', { height, mm: formatMm(height * heightUnitMm) });
   const [dragSourceIndex, setDragSourceIndex] = useState<number | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -327,7 +332,7 @@ export function LayerRows({
                         }}
                         title={t('layers.heightTooltip')}
                       >
-                        {previewHeight}u
+                        {heightLabel(previewHeight)}
                       </span>
                       <IconButton
                         variant="ghost"
@@ -409,7 +414,7 @@ export function LayerRows({
                         }}
                         title={t('layers.heightTooltip')}
                       >
-                        {layer.height}u
+                        {heightLabel(layer.height)}
                       </span>
                       {showGrip && <GripIcon />}
                     </div>
