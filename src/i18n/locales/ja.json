@@ -1139,6 +1139,8 @@
   "binDesigner.toolSets.overBed": "このセットではビンがプリントベッドより大きくなるため、分割して印刷されます。",
   "binDesigner.toolSets.overBedWhole": "このセットではビンがプリントベッドより大きくなります。",
   "binDesigner.toolSets.noRoom": "このビンにはセットが入りません。サイズを減らすか、ビンに空きを作ってください。",
+  "binDesigner.toolSets.locked": "セットを編集するには、ポケットのロックを解除してください。",
+  "binDesigner.toolSets.noChannel": "持ち手が一列に並ばないため、セットに指かけ溝はありません。",
   "binDesigner.cutouts.scanImport.unavailable": "今はスマホでのスキャンを利用できません。代わりにトレース済みの輪郭をアップロードしてください。",
   "binDesigner.cutouts.scanImport.upload": "輪郭をアップロード（SVG）",
   "binDesigner.cutouts.scanImport.waiting": "写真を待っています…",

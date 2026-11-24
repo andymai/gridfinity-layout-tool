@@ -1163,6 +1163,8 @@
   "binDesigner.toolSets.overBed": "Con este juego, el contenedor es más grande que tu cama de impresión, así que se imprime en piezas.",
   "binDesigner.toolSets.overBedWhole": "Con este juego, el contenedor es más grande que tu cama de impresión.",
   "binDesigner.toolSets.noRoom": "El juego no cabe en este contenedor. Quita algunas medidas o haz sitio en el contenedor.",
+  "binDesigner.toolSets.locked": "Desbloquea los huecos de este juego para editarlo.",
+  "binDesigner.toolSets.noChannel": "Los mangos no quedan alineados, así que el juego no tiene canal para los dedos.",
   "binDesigner.cutouts.scanImport.unavailable": "El escaneo con el teléfono no está disponible ahora. Sube un contorno trazado en su lugar.",
   "binDesigner.cutouts.scanImport.upload": "Subir contorno (SVG)",
   "binDesigner.cutouts.scanImport.waiting": "Esperando tu foto…",

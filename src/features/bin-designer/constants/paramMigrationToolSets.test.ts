@@ -39,4 +39,13 @@ describe('migrateCutoutToolSets', () => {
     expect(out?.a?.sizes).toEqual(['1/2']);
     expect(out?.b).toBeUndefined();
   });
+
+  it('drops size keys and set ids the server would refuse', () => {
+    const long = 'x'.repeat(65);
+    const out = migrateCutoutToolSets(
+      { a: { ...spec, sizes: ['1/2', '9/16\n'] }, [long]: spec, 'b\u0007': spec },
+      new Set(['a', long, 'b\u0007'])
+    );
+    expect(out).toEqual({ a: { ...spec, sizes: ['1/2'] } });
+  });
 });

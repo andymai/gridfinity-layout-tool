@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateCutoutToolSets } from './toolSetValidation.js';
+import { toolSetPartError, validateCutoutToolSets } from './toolSetValidation.js';
 
 const spec = {
   family: 'combinationWrench',
@@ -36,5 +36,22 @@ describe('validateCutoutToolSets', () => {
   it('refuses a bad key and a non-object map', () => {
     expect(validateCutoutToolSets({ ['x'.repeat(65)]: spec })).not.toBeNull();
     expect(validateCutoutToolSets([])).not.toBeNull();
+  });
+});
+
+describe('toolSetPartError', () => {
+  it('accepts an absent part and a generated one', () => {
+    expect(toolSetPartError(undefined)).toBeNull();
+    expect(toolSetPartError('pocket:9/16')).toBeNull();
+    expect(toolSetPartError('channel')).toBeNull();
+  });
+
+  it.each([
+    ['an empty part', ''],
+    ['an over-long part', 'pocket:' + 'x'.repeat(30)],
+    ['a control character', 'pocket:1\u0000'],
+    ['a non-string', 7],
+  ])('refuses %s', (_label, bad) => {
+    expect(toolSetPartError(bad)).not.toBeNull();
   });
 });

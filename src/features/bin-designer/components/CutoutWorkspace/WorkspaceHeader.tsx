@@ -11,6 +11,7 @@ import { groupDepth } from '@/features/bin-designer/utils/cutoutHierarchy';
 import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
 import { useCutoutSelection, useDesignerStore } from '@/features/bin-designer/store';
 import { GroupBreadcrumb } from './GroupBreadcrumb';
+import { groupDisplayNames } from '../panel/CutoutsSection/toolSets/toolSetName';
 import { Button, Checkbox, IconButton, Input } from '@/design-system';
 import { ScanToolIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
@@ -316,7 +317,12 @@ export function WorkspaceHeader({
   const hasGroup = selected.some((c) => groupDepth(c) > 0);
   const groupContext = useCutoutSelection((state) => state.groupContext);
   const setGroupContext = useCutoutSelection((state) => state.setGroupContext);
-  const groupNames = useDesignerStore((state) => state.params.cutoutGroupNames);
+  const typedNames = useDesignerStore((state) => state.params.cutoutGroupNames);
+  const toolSets = useDesignerStore((state) => state.params.cutoutToolSets);
+  const groupNames = useMemo(
+    () => groupDisplayNames(typedNames, toolSets, t),
+    [typedNames, toolSets, t]
+  );
   const canGroup = canGroupSelection(selectedIds, cutouts, groupContext);
   const singleCutout = selection.size === 1 ? (selected[0] ?? null) : null;
 

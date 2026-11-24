@@ -1211,6 +1211,8 @@
   "binDesigner.toolSets.overBed": "Z tym zestawem pojemnik jest większy niż stół drukarki, więc wydrukuje się w częściach.",
   "binDesigner.toolSets.overBedWhole": "Z tym zestawem pojemnik jest większy niż stół drukarki.",
   "binDesigner.toolSets.noRoom": "Zestaw nie mieści się w tym pojemniku. Usuń niektóre rozmiary albo zrób miejsce w pojemniku.",
+  "binDesigner.toolSets.locked": "Odblokuj gniazda tego zestawu, aby go edytować.",
+  "binDesigner.toolSets.noChannel": "Uchwyty nie leżą w jednej linii, więc zestaw nie ma rowka na palce.",
   "binDesigner.cutouts.scanImport.unavailable": "Skanowanie telefonem jest teraz niedostępne. Zamiast tego prześlij odrysowany obrys.",
   "binDesigner.cutouts.scanImport.upload": "Prześlij obrys (SVG)",
   "binDesigner.cutouts.scanImport.waiting": "Oczekiwanie na Twoje zdjęcie…",

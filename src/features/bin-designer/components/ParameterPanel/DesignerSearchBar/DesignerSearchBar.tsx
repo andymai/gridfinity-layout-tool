@@ -1,3 +1,4 @@
+import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Input, IconButton, SearchIcon, XIcon } from '@/design-system';
@@ -52,11 +53,20 @@ export function DesignerSearchBar({ viewMode, bedFitShown }: DesignerSearchBarPr
   );
   const slideTrayEnabled = useFeatureFlag('sliding_tray');
   const scanAvailable = useDesignerStore(selectCanStartScan);
+  const { isDesktop } = useResponsive();
   // Memoized so the search hook's `useMemo` isn't defeated by a fresh object
   // every render.
   const ctx = useMemo(
-    () => ({ style, hasText, bedFitShown, viewMode, slideTrayEnabled, scanAvailable }),
-    [style, hasText, bedFitShown, viewMode, slideTrayEnabled, scanAvailable]
+    () => ({
+      style,
+      hasText,
+      bedFitShown,
+      viewMode,
+      slideTrayEnabled,
+      scanAvailable,
+      toolSetAvailable: scanAvailable && isDesktop,
+    }),
+    [style, hasText, bedFitShown, viewMode, slideTrayEnabled, scanAvailable, isDesktop]
   );
 
   const [query, setQuery] = useState('');

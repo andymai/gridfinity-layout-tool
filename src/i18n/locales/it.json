@@ -1163,6 +1163,8 @@
   "binDesigner.toolSets.overBed": "Con questo set, il contenitore è più grande del piano di stampa, quindi si stampa in più parti.",
   "binDesigner.toolSets.overBedWhole": "Con questo set, il contenitore è più grande del piano di stampa.",
   "binDesigner.toolSets.noRoom": "Il set non entra in questo contenitore. Togli alcune misure o fai spazio nel contenitore.",
+  "binDesigner.toolSets.locked": "Sblocca gli alloggiamenti di questo set per modificarlo.",
+  "binDesigner.toolSets.noChannel": "I manici non sono allineati, quindi il set non ha la scanalatura per le dita.",
   "binDesigner.cutouts.scanImport.unavailable": "La scansione da telefono non è disponibile al momento. Carica invece un contorno tracciato.",
   "binDesigner.cutouts.scanImport.upload": "Carica contorno (SVG)",
   "binDesigner.cutouts.scanImport.waiting": "In attesa della tua foto…",

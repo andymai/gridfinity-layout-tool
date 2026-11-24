@@ -7,7 +7,7 @@
  */
 
 import { Button } from '@/design-system';
-import { ScanToolIcon } from '@/design-system/Icon';
+import { ScanToolIcon, WrenchIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { Hint } from '../shared';
 import { useResponsive } from '@/shared/hooks/useResponsive';
@@ -23,10 +23,11 @@ import { FeatureTip } from '../../FeatureTip';
 import { BentoMiniPreview } from './BentoMiniPreview';
 import { BentoIcon } from './icons';
 import type { InteriorCard } from '../../../types';
-import { startScan } from '../../../utils/startScan';
+import { startScan, startToolSet } from '../../../utils/startScan';
 import { ToolThicknessPrompt } from '../CutoutsSection/ToolThicknessPrompt';
 import { PhoneToolList } from '../../PhoneToolList';
-import { SCAN_TOOL_TARGET } from '../../../search/designerControlRegistry';
+import { SCAN_TOOL_TARGET, TOOL_SET_TARGET } from '../../../search/controlAvailability';
+import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge/ExperimentalBadge';
 
 function BentoModeContent() {
   const setBentoWorkspaceOpen = useDesignerStore((s) => s.setBentoWorkspaceOpen);
@@ -145,6 +146,20 @@ function SolidModeContent() {
       >
         {t('binDesigner.cutouts.scanImport.title')}
       </Button>
+      {isDesktop && (
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          fullWidth
+          leftIcon={<WrenchIcon size="xs" />}
+          onClick={startToolSet}
+          data-help-target={TOOL_SET_TARGET}
+        >
+          {t('binDesigner.toolSets.addTitle')}
+          <ExperimentalBadge />
+        </Button>
+      )}
       {/* The editor asks how thick a scanned tool is; off desktop it isn't
           there, so the panel asks instead. */}
       {!isDesktop && <ToolThicknessPrompt placement="panel" />}

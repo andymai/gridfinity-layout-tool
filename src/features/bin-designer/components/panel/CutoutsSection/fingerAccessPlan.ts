@@ -9,10 +9,10 @@ import { maxEntryChamfer } from '@/features/bin-designer/types';
 import { clearedProfile } from '@/shared/utils/cutoutFit';
 import { cutoutOutlineRing, meshOutlineRings } from '@/shared/utils/cutoutOutline';
 import { pathCutoutCut } from '@/shared/utils/pathCutoutOutline';
+import { FINGER_WIDTH_MM } from '@/shared/utils/fingerAccess';
 import { isCutoutOffBoard, type CutoutBoard } from './offBoardCutouts';
 
-/** Along the pocket's side: an adult fingertip with room to spare. */
-export const FINGER_WIDTH_MM = 20;
+export { FINGER_WIDTH_MM };
 /**
  * Across the side: half of it past the pocket's edge, the rest back over the
  * pocket, short of its far side by {@link FAR_SIDE_GAP_MM}.

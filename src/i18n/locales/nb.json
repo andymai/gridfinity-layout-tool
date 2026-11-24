@@ -1163,6 +1163,8 @@
   "binDesigner.toolSets.overBed": "Med dette settet er boksen større enn byggeplaten, så den skrives ut i deler.",
   "binDesigner.toolSets.overBedWhole": "Med dette settet er boksen større enn byggeplaten.",
   "binDesigner.toolSets.noRoom": "Settet får ikke plass i denne boksen. Fjern noen størrelser, eller lag plass i boksen.",
+  "binDesigner.toolSets.locked": "Lås opp lommene i settet for å redigere det.",
+  "binDesigner.toolSets.noChannel": "Håndtakene ligger ikke på linje, så settet har ikke fingerspor.",
   "binDesigner.cutouts.scanImport.unavailable": "Skanning med telefon er ikke tilgjengelig akkurat nå. Last opp et sporet omriss i stedet.",
   "binDesigner.cutouts.scanImport.upload": "Last opp omriss (SVG)",
   "binDesigner.cutouts.scanImport.waiting": "Venter på bildet ditt …",

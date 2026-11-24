@@ -37,6 +37,8 @@ Tool sets are new. The pockets use the published sizes of several brands, not yo
 
 You don't need to set the bin size. The set makes the bin grow to fit it.
 
+On a computer, there is a shortcut: in the <Ui k="binDesigner.group.interior" /> group, click <Ui k="binDesigner.toolSets.addTitle" />. The bin becomes solid, and the window in Step 2 opens.
+
 ## Step 2: Pick your sizes
 
 1. In the toolbar on the left of the board, click <Ui k="binDesigner.toolSets.addTitle" /> (the wrench).
@@ -60,6 +62,8 @@ If a wrench is too tight, open the set again and raise <Ui k="binDesigner.toolSe
 ## Change the set later
 
 Click any pocket of the set to select the whole set, then click <Ui k="binDesigner.toolSets.edit" />. Change the sizes or the options, and click <Ui k="binDesigner.toolSets.update" />. The bin designer builds the set again in the same place.
+
+A shape that you add to the set's group yourself stays through an update. If you locked a pocket of the set, unlock it before you update the set.
 
 ::: tip
 An update replaces the changes you made by hand to the set's pockets. To keep a hand-made change, update the set first, then make the change.

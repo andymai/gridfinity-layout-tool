@@ -4,29 +4,33 @@ import { useTranslation } from '@/i18n';
 import { err, ok, type Result } from '@/core/result';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useLayoutPrintBed } from '@/features/bin-designer/hooks/useLayoutPrintBed';
-import type { BinParams, Cutout, ToolSetSpec } from '@/features/bin-designer/types';
+import type { Cutout, ToolSetSpec } from '@/features/bin-designer/types';
+import type { ToolSetPart } from '@/shared/types/toolSet';
 import { generateLayoutId, generateUUID } from '@/shared/utils/uuid';
 import { setLimitOnBed, TOOL_FAMILIES } from '@/shared/toolSets/catalog';
 import { generateToolSet, shiftCutout, type ToolSetNames } from '@/shared/toolSets/generateToolSet';
 import {
-  membersOf,
+  partsOf,
   planToolSetPlacement,
   planToolSetRebuild,
   type ToolSetPlacement,
 } from './planToolSetPlacement';
+import { toolSetName } from './toolSetName';
 
 /**
- * Why a set could not be placed; nothing changed in either case.
+ * Why a set could not be placed; nothing changed in any case.
  * - `empty`: no size in the spec is in the family's table.
  * - `noRoom`: no bin size the bin can take holds the set.
+ * - `locked`: a pocket of the set is locked, and a rebuild would replace it.
  */
-export type ToolSetFailure = 'empty' | 'noRoom';
-
-export { membersOf };
+export type ToolSetFailure = 'empty' | 'noRoom' | 'locked';
 
 export interface ToolSetActions {
   readonly insertSet: (spec: ToolSetSpec) => Result<'added', ToolSetFailure>;
-  /** Rebuilds an existing set in place from a new spec, as one undo step. */
+  /**
+   * Rebuilds a set from a new spec as one undo step: in place when it still
+   * fits there, else beside the other pockets.
+   */
   readonly rebuildSet: (
     setId: string,
     spec: ToolSetSpec
@@ -34,8 +38,8 @@ export interface ToolSetActions {
 }
 
 /** The containers a rebuilt set sat inside, kept so it stays where the user put it. */
-function outerChain(members: readonly Cutout[], setId: string): string[] {
-  const chain = members[0]?.parentGroups ?? [];
+function outerChain(parts: readonly Cutout[], setId: string): string[] {
+  const chain = parts[0]?.parentGroups ?? [];
   const at = chain.indexOf(setId);
   return at > 0 ? chain.slice(0, at) : [];
 }
@@ -46,16 +50,18 @@ export function useToolSets(): ToolSetActions {
   const maxWidthMm = setLimitOnBed(printBedSize);
   const {
     addCutout,
-    removeCutoutsBatch,
+    replaceCutouts,
     setParams,
+    setCutoutGroupName,
     updateCutoutConfig,
     startTransaction,
     commitTransaction,
   } = useDesignerStore(
     useShallow((s) => ({
       addCutout: s.addCutout,
-      removeCutoutsBatch: s.removeCutoutsBatch,
+      replaceCutouts: s.replaceCutouts,
       setParams: s.setParams,
+      setCutoutGroupName: s.setCutoutGroupName,
       updateCutoutConfig: s.updateCutoutConfig,
       startTransaction: s.startTransaction,
       commitTransaction: s.commitTransaction,
@@ -73,27 +79,10 @@ export function useToolSets(): ToolSetActions {
     [t]
   );
 
-  const groupName = useCallback(
-    (spec: ToolSetSpec): string => {
-      const sizes = TOOL_FAMILIES[spec.family].table[spec.units]
-        .filter((e) => spec.sizes.includes(e.key))
-        .sort((a, b) => a.jawMm - b.jawMm);
-      const from = sizes.at(0)?.key ?? '';
-      const to = sizes.at(-1)?.key ?? '';
-      return spec.units === 'metric'
-        ? t('binDesigner.toolSets.groupNameMetric', { from, to })
-        : t('binDesigner.toolSets.groupNameSae', { from, to });
-    },
-    [t]
-  );
-
   const writeSpec = useCallback(
-    (setId: string, spec: ToolSetSpec, name: string) => {
-      const after: BinParams = useDesignerStore.getState().params;
-      setParams({
-        cutoutToolSets: { ...(after.cutoutToolSets ?? {}), [setId]: spec },
-        cutoutGroupNames: { ...(after.cutoutGroupNames ?? {}), [setId]: name },
-      });
+    (setId: string, spec: ToolSetSpec) => {
+      const sets = useDesignerStore.getState().params.cutoutToolSets;
+      setParams({ cutoutToolSets: { ...(sets ?? {}), [setId]: spec } });
     },
     [setParams]
   );
@@ -120,7 +109,7 @@ export function useToolSets(): ToolSetActions {
       const setId = generateLayoutId();
       const set = generateToolSet(spec, TOOL_FAMILIES[spec.family], {
         setId,
-        idFactory: generateUUID,
+        idFor: generateUUID,
         names: names(spec),
         maxWidthMm,
       });
@@ -131,75 +120,67 @@ export function useToolSets(): ToolSetActions {
       try {
         resizeFor(plan);
         for (const cutout of set.cutouts) addCutout(shiftCutout(cutout, plan.dx, plan.dy));
-        writeSpec(setId, spec, groupName(spec));
+        writeSpec(setId, spec);
       } finally {
         commitTransaction();
       }
       return ok('added');
     },
-    [
-      addCutout,
-      resizeFor,
-      startTransaction,
-      commitTransaction,
-      names,
-      groupName,
-      writeSpec,
-      maxWidthMm,
-    ]
+    [addCutout, resizeFor, startTransaction, commitTransaction, names, writeSpec, maxWidthMm]
   );
 
   const rebuildSet = useCallback(
     (setId: string, spec: ToolSetSpec): Result<'added' | 'updated', ToolSetFailure> => {
       const { params, ui } = useDesignerStore.getState();
-      const members = membersOf(params.cutouts, setId);
-      if (members.length === 0) return insertSet(spec);
+      const parts = partsOf(params.cutouts, setId, params.cutoutToolSets);
+      if (parts.length === 0) return insertSet(spec);
+      if (parts.some((c) => c.locked === true)) return err('locked');
+      const oldIds = new Map(
+        parts.flatMap((c) => (c.toolSetPart ? [[c.toolSetPart, c.id] as const] : []))
+      );
       const set = generateToolSet(spec, TOOL_FAMILIES[spec.family], {
         setId,
-        idFactory: generateUUID,
+        idFor: (part: ToolSetPart) => oldIds.get(part) ?? generateUUID(),
         names: names(spec),
         maxWidthMm,
       });
       if (!set) return err('empty');
-      const chain = outerChain(members, setId);
-      // A name the user typed survives the rebuild; the generated one follows the sizes.
-      const oldName = params.cutoutGroupNames?.[setId];
-      const oldSpec = params.cutoutToolSets?.[setId];
-      const renamed = oldName !== undefined && (!oldSpec || oldName !== groupName(oldSpec));
-      const name = renamed ? oldName : groupName(spec);
-
       const placement = planToolSetRebuild(params, setId, set, ui.halfGridMode);
       if (!placement) return err('noRoom');
 
+      const chain = [...outerChain(parts, setId), setId];
+      // A stored name equal to the derived one was written by the app, not
+      // typed; dropping it lets the name follow the new sizes.
+      const oldSpec = params.cutoutToolSets?.[setId];
+      const staleName = oldSpec && params.cutoutGroupNames?.[setId] === toolSetName(oldSpec, t);
       startTransaction();
       try {
         resizeFor(placement);
-        // Added before the old members go, so the metadata sweep on removal
-        // still sees the enclosing containers and keeps their names.
-        for (const cutout of set.cutouts) {
-          addCutout({
-            ...shiftCutout(cutout, placement.dx, placement.dy),
-            parentGroups: [...chain, setId],
-          });
-        }
-        removeCutoutsBatch(members.map((c) => c.id));
-        writeSpec(setId, spec, name);
+        replaceCutouts(
+          parts.map((c) => c.id),
+          set.cutouts.map((c) => ({
+            ...shiftCutout(c, placement.dx, placement.dy),
+            parentGroups: chain,
+          }))
+        );
+        writeSpec(setId, spec);
+        if (staleName) setCutoutGroupName(setId, '');
       } finally {
         commitTransaction();
       }
       return ok('updated');
     },
     [
-      addCutout,
-      removeCutoutsBatch,
+      replaceCutouts,
+      setCutoutGroupName,
       resizeFor,
       startTransaction,
       commitTransaction,
       names,
-      groupName,
       writeSpec,
       insertSet,
       maxWidthMm,
+      t,
     ]
   );
 

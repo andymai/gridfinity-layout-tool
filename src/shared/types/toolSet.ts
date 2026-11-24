@@ -27,7 +27,25 @@ export const TOOL_SET_LIMITS = {
   maxSizeKeyLength: 12,
   clearanceMm: { min: 0, max: 2 },
   labelSizeMm: { min: 0, max: 12 },
+  /** Longest `Cutout.toolSetPart`: a role, a colon and a size key. */
+  maxPartLength: 32,
 } as const;
+
+/**
+ * Which part of its set a generated cutout is: `pocket:<size>`, `label:<size>`
+ * or `channel`. A rebuild replaces only cutouts with a part, so a shape the
+ * user dragged into the set survives it, and reuses each part's id, so
+ * per-cutout state keyed by id (variant overrides, the selection) carries over.
+ */
+export type ToolSetPart = `pocket:${string}` | `label:${string}` | 'channel';
+
+export function pocketPart(sizeKey: string): ToolSetPart {
+  return `pocket:${sizeKey}`;
+}
+
+export function labelPart(sizeKey: string): ToolSetPart {
+  return `label:${sizeKey}`;
+}
 
 export const DEFAULT_TOOL_SET_CLEARANCE_MM = 0.4;
 export const DEFAULT_TOOL_SET_LABEL_MM = 5;

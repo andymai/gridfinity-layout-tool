@@ -231,6 +231,7 @@ export const CUTOUT_KEYS = [
   'meshId',
   'knife',
   'libraryItemId',
+  'toolSetPart',
 ] as const;
 export type _CutoutKeys = Assert<KeysMatch<keyof Cutout, (typeof CUTOUT_KEYS)[number]>>;
 

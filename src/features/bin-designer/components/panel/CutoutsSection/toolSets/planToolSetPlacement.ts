@@ -1,5 +1,5 @@
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import type { BinParams, Cutout } from '@/features/bin-designer/types';
+import type { BinParams, Cutout, ToolSetSpec } from '@/features/bin-designer/types';
 import { binDimensions, cutoutInterior } from '@/features/bin-designer/utils/binDimensions';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import type { GeneratedToolSet } from '@/shared/toolSets/generateToolSet';
@@ -97,7 +97,7 @@ export function landsOnFloor(
 /**
  * Where a new set goes and how the bin grows for it, or null when no size the
  * bin can take holds it. An empty bin is sized to the set and the set is
- * centred. With pockets already there, the set goes to their right, or below
+ * centred. With pockets already there, the set goes to their right, or behind
  * them when the bin cannot grow that wide.
  */
 export function planToolSetPlacement(
@@ -136,8 +136,25 @@ export function planToolSetPlacement(
   return null;
 }
 
-export function membersOf(cutouts: readonly Cutout[], setId: string): Cutout[] {
-  return cutouts.filter((c) => c.parentGroups?.includes(setId) === true);
+export function innermostSet(
+  c: Cutout,
+  sets: Readonly<Record<string, ToolSetSpec>> | undefined
+): string | null {
+  if (!sets) return null;
+  return [...(c.parentGroups ?? [])].reverse().find((id) => id in sets) ?? null;
+}
+
+/**
+ * The cutouts a set generated: those with a part whose innermost set is
+ * `setId`. A shape the user dragged into the set, or a set nested inside it,
+ * is not one of them.
+ */
+export function partsOf(
+  cutouts: readonly Cutout[],
+  setId: string,
+  sets: Readonly<Record<string, ToolSetSpec>> | undefined
+): Cutout[] {
+  return cutouts.filter((c) => c.toolSetPart !== undefined && innermostSet(c, sets) === setId);
 }
 
 /** The corner a rebuilt set keeps: where the old one's cut began. */
@@ -163,7 +180,7 @@ export function planToolSetRebuild(
   set: GeneratedToolSet,
   halfGridMode: boolean
 ): ToolSetPlacement | null {
-  const members = membersOf(params.cutouts, setId);
+  const members = partsOf(params.cutouts, setId, params.cutoutToolSets);
   const kept = params.cutouts.filter((c) => !members.includes(c));
   const keptParams = { ...params, cutouts: kept };
   if (members.length === 0) return planToolSetPlacement(keptParams, set, halfGridMode);

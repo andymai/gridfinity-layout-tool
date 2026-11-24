@@ -6,6 +6,7 @@
 import type { Draft } from 'immer';
 import type { DesignerState, Cutout, CutoutTarget, CutoutToggleProperties } from '../../types';
 import { MAX_LID_CUTOUTS } from '../../types';
+import { dissolveSingletonGroups } from '../helpers';
 import { FINGER_SHAPES } from '@/shared/utils/fingerAccess';
 import { splitBlockedReason } from '@/shared/utils/cutoutSplit';
 import { mapPathRings, scalePathPoints, translatePathPoints } from '../../utils/pathTransforms';
@@ -359,8 +360,8 @@ export function copyToolSetsForClonePairs(
   pairs: readonly (readonly [string, string])[]
 ): void {
   if (!state.params.cutoutToolSets) return;
-  const all = [...state.params.cutouts, ...(state.params.lid.cutouts ?? [])];
-  const byId = new Map(all.map((c) => [c.id, c]));
+  // Sets are bin-only: a lid paste keeps its pockets, without Edit set.
+  const byId = new Map(state.params.cutouts.map((c) => [c.id, c]));
   const groupMap = new Map<string, string>();
   const originals: Cutout[] = [];
   for (const [from, to] of pairs) {
@@ -374,4 +375,64 @@ export function copyToolSetsForClonePairs(
     });
   }
   copyWholeToolSets(state, originals, groupMap);
+}
+
+/** Swap cutouts in the edited array in one draft; the added ones stack on top. */
+export function replaceInOwner(
+  state: Draft<DesignerState>,
+  removeIds: readonly string[],
+  add: readonly Cutout[]
+): void {
+  const owner = cutoutOwner(state);
+  const gone = new Set(removeIds);
+  const kept = owner.cutouts.filter((c) => !gone.has(c.id));
+  const top = nextTopZIndexIn(kept);
+  owner.cutouts = dissolveSingletonGroups([
+    ...kept,
+    ...add.map((c, i) => ({ ...c, zIndex: top + i })),
+  ]);
+  gcMeshAssets(state);
+  gcCutoutGroupMetadata(state);
+}
+
+/**
+ * Current stack, bottom to top.
+ *
+ * Ties break on array order so an all-default design (every `zIndex` absent,
+ * i.e. 0) still has a stable, predictable starting stack rather than an
+ * arbitrary one.
+ */
+export function stackBottomToTop(cutouts: readonly Cutout[]): Cutout[] {
+  const indexById = new Map(cutouts.map((c, i) => [c.id, i]));
+  return [...cutouts].sort(
+    (a, b) =>
+      (a.zIndex ?? 0) - (b.zIndex ?? 0) || (indexById.get(a.id) ?? 0) - (indexById.get(b.id) ?? 0)
+  );
+}
+
+/**
+ * Move the selection one slot through an ordered stack, as a block.
+ *
+ * Walks from the far end so a contiguous run of selected shapes shifts
+ * together instead of collapsing onto itself, and a selection already at the
+ * end simply stays put.
+ */
+export function shiftOneSlot(
+  order: Cutout[],
+  isSelected: (c: Cutout) => boolean,
+  up: boolean
+): void {
+  if (up) {
+    for (let i = order.length - 2; i >= 0; i--) {
+      if (isSelected(order[i]) && !isSelected(order[i + 1])) {
+        [order[i], order[i + 1]] = [order[i + 1], order[i]];
+      }
+    }
+  } else {
+    for (let i = 1; i < order.length; i++) {
+      if (isSelected(order[i]) && !isSelected(order[i - 1])) {
+        [order[i], order[i - 1]] = [order[i - 1], order[i]];
+      }
+    }
+  }
 }

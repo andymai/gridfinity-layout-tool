@@ -27,11 +27,15 @@ const mocks = vi.hoisted(() => ({
   setBentoWorkspaceOpen: vi.fn(),
   setCutoutEditorOpen: vi.fn(),
   startScan: vi.fn(),
+  startToolSet: vi.fn(),
   params: {} as BinParams,
   isDesktop: true,
 }));
 
-vi.mock('../../../utils/startScan', () => ({ startScan: mocks.startScan }));
+vi.mock('../../../utils/startScan', () => ({
+  startScan: mocks.startScan,
+  startToolSet: mocks.startToolSet,
+}));
 vi.mock('../CutoutsSection/ToolThicknessPrompt', () => ({
   ToolThicknessPrompt: () => <div data-testid="thickness-prompt" />,
 }));
@@ -140,6 +144,18 @@ describe('InteriorModes', () => {
       expect(mocks.startScan).toHaveBeenCalledWith('card', { phone: true });
       expect(screen.getByTestId('thickness-prompt')).toBeInTheDocument();
       expect(screen.getByTestId('tool-list')).toBeInTheDocument();
+    });
+
+    it('offers Add a tool set on desktop only', () => {
+      render(<InteriorModeContent card="solid" />);
+      fireEvent.click(screen.getByText('binDesigner.toolSets.addTitle'));
+      expect(mocks.startToolSet).toHaveBeenCalledTimes(1);
+    });
+
+    it('leaves Add a tool set out off desktop, where the editor is not shown', () => {
+      mocks.isDesktop = false;
+      render(<InteriorModeContent card="solid" />);
+      expect(screen.queryByText('binDesigner.toolSets.addTitle')).toBeNull();
     });
 
     it('offers a clip of the editor at work beside its launcher', () => {

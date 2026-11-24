@@ -1,5 +1,6 @@
 import type { ToolSetSpec } from '@/features/bin-designer/types';
 import {
+  MAX_CUTOUT_GROUP_NAMES,
   TOOL_FAMILY_IDS,
   TOOL_SET_LIMITS,
   TOOL_SET_STYLES,
@@ -7,7 +8,11 @@ import {
 } from '@/features/bin-designer/types';
 
 /** Matches the group-name map's ceiling, since both are keyed by group id. */
-export const MAX_CUTOUT_TOOL_SETS = 1000;
+export const MAX_CUTOUT_TOOL_SETS = MAX_CUTOUT_GROUP_NAMES;
+/** Mirrors the server's group-id bound. */
+const MAX_SET_ID_LENGTH = 64;
+// eslint-disable-next-line no-control-regex -- the server refuses control characters in keys
+const CONTROL_CHARS = /[\u0000-\u001F\u007F]/;
 
 function clamp(n: unknown, min: number, max: number): number | null {
   return typeof n === 'number' && Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : null;
@@ -25,7 +30,10 @@ function migrateSpec(raw: unknown): ToolSetSpec | null {
   const sizes = r.sizes
     .filter(
       (s): s is string =>
-        typeof s === 'string' && s !== '' && s.length <= TOOL_SET_LIMITS.maxSizeKeyLength
+        typeof s === 'string' &&
+        s !== '' &&
+        s.length <= TOOL_SET_LIMITS.maxSizeKeyLength &&
+        !CONTROL_CHARS.test(s)
     )
     .slice(0, TOOL_SET_LIMITS.maxSizes);
   const clearanceMm = clamp(
@@ -62,7 +70,9 @@ export function migrateCutoutToolSets(
 ): Record<string, ToolSetSpec> | undefined {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return undefined;
   const kept = Object.entries(raw)
-    .filter(([id]) => referenced.has(id))
+    .filter(
+      ([id]) => referenced.has(id) && id.length <= MAX_SET_ID_LENGTH && !CONTROL_CHARS.test(id)
+    )
     .flatMap(([id, spec]) => {
       const migrated = migrateSpec(spec);
       return migrated ? [[id, migrated] as const] : [];

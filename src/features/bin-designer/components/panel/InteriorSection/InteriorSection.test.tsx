@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { cleanup, render, screen, fireEvent } from '@testing-library/react';
 import { InteriorSection } from './InteriorSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS } from '../../../constants';
@@ -28,9 +28,11 @@ vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({ isDesktop: view.isDesktop }),
 }));
 const mockStartScan = vi.hoisted(() => vi.fn());
+const mockStartToolSet = vi.hoisted(() => vi.fn());
 vi.mock('../../../utils/startScan', async (importOriginal) => ({
   ...(await importOriginal<typeof StartScanModule>()),
   startScan: mockStartScan,
+  startToolSet: mockStartToolSet,
 }));
 
 describe('InteriorSection', () => {
@@ -54,6 +56,19 @@ describe('InteriorSection', () => {
     view.card = 'solid';
     render(<InteriorSection />);
     expect(screen.queryByText(en['binDesigner.interior.scanLink'])).toBeNull();
+  });
+
+  it('offers a tool set under the tiles on desktop, beside the scan link', () => {
+    render(<InteriorSection />);
+    const link = screen.getByRole('button', { name: en['binDesigner.toolSets.addTitle'] });
+    expect(link).toHaveAttribute('data-help-target', 'bd-tool-set');
+    fireEvent.click(link);
+    expect(mockStartToolSet).toHaveBeenCalledTimes(1);
+
+    cleanup();
+    view.isDesktop = false;
+    render(<InteriorSection />);
+    expect(screen.queryByText(en['binDesigner.toolSets.addTitle'])).toBeNull();
   });
 
   it('offers the phone scan off desktop', () => {

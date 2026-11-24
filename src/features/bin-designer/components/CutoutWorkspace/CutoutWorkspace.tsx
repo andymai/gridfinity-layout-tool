@@ -46,6 +46,7 @@ import { useSvgExport } from '../panel/CutoutsSection/svgExport';
 import { useStlImport, StlImportDialog } from '../panel/CutoutsSection/stlImport';
 import { ScanToolDialog } from '../panel/CutoutsSection/scanImport';
 import { ToolSetDialog } from '../panel/CutoutsSection/toolSets/ToolSetDialog';
+import { groupDisplayNames } from '../panel/CutoutsSection/toolSets/toolSetName';
 import { ToolThicknessPrompt } from '../panel/CutoutsSection/ToolThicknessPrompt';
 import { useAddFingerAccess } from '../panel/CutoutsSection/useAddFingerAccess';
 import type { RulerMeasurement } from '../panel/CutoutsSection/handlers/rulerHandler';
@@ -637,10 +638,15 @@ export function CutoutWorkspace() {
     fitToView,
   });
 
+  const groupNames = useMemo(
+    () => groupDisplayNames(params.cutoutGroupNames, params.cutoutToolSets, t),
+    [params.cutoutGroupNames, params.cutoutToolSets, t]
+  );
+
   const library = useCutoutLibraryWorkspace({
     cutouts,
     selection,
-    groupNames: params.cutoutGroupNames,
+    groupNames,
     meshAssets: params.meshAssets,
     maxCutDepth,
     isLid,
@@ -942,7 +948,7 @@ export function CutoutWorkspace() {
           shapeList={
             <ShapeList
               cutouts={cutouts}
-              groupNames={params.cutoutGroupNames}
+              groupNames={groupNames}
               selection={selection}
               onSelect={handleSelectRow}
               onSetProperty={setCutoutProperty}

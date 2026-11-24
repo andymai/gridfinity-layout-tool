@@ -2,14 +2,14 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { err, ok } from '@/core/result';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
-import type { ToolSetSpec } from '@/features/bin-designer/types';
+import type { Cutout, ToolSetSpec } from '@/features/bin-designer/types';
 import { getRotatedBounds } from '../geometryCore';
 import { binBoard } from '../packIntoBin';
 import { checkPockets } from '../pocketChecks';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { cloneCutoutsWithGroups } from '../cutoutHelpers';
-import { boxesOverlap, cutBoxes } from './planToolSetPlacement';
-import { membersOf, useToolSets } from './useToolSets';
+import { boxesOverlap, cutBoxes, partsOf } from './planToolSetPlacement';
+import { useToolSets } from './useToolSets';
 
 const spec: ToolSetSpec = {
   family: 'combinationWrench',
@@ -20,6 +20,11 @@ const spec: ToolSetSpec = {
   labelSizeMm: 5,
   fingerChannel: true,
 };
+
+function partsIn(setId: string): Cutout[] {
+  const { params } = useDesignerStore.getState();
+  return partsOf(params.cutouts, setId, params.cutoutToolSets);
+}
 
 function onlySetId(): string {
   const ids = Object.keys(useDesignerStore.getState().params.cutoutToolSets ?? {});
@@ -32,18 +37,18 @@ describe('useToolSets', () => {
     useDesignerStore.setState(useDesignerStore.getInitialState());
   });
 
-  it('adds a set as one container with its spec and name, in one undo step', () => {
+  it('adds a set as one container with its spec, in one undo step', () => {
     const { result } = renderHook(() => useToolSets());
     act(() => {
       expect(result.current.insertSet(spec)).toEqual(ok('added'));
     });
     const { params } = useDesignerStore.getState();
     const setId = onlySetId();
-    const members = membersOf(params.cutouts, setId);
+    const members = partsIn(setId);
     expect(members.length).toBe(params.cutouts.length);
     expect(members.filter((c) => c.shape === 'path')).toHaveLength(3);
     expect(params.cutoutToolSets?.[setId]).toEqual(spec);
-    expect(params.cutoutGroupNames?.[setId]).toBe('Wrenches 8 to 13 mm');
+    expect(params.cutoutGroupNames?.[setId]).toBeUndefined();
 
     act(() => useDesignerStore.getState().undo());
     const after = useDesignerStore.getState().params;
@@ -80,20 +85,20 @@ describe('useToolSets', () => {
       result.current.insertSet(spec);
     });
     const setId = onlySetId();
-    const oldLeft = Math.min(
-      ...membersOf(useDesignerStore.getState().params.cutouts, setId).map(
-        (c) => getRotatedBounds(c).minX - (c.clearance ?? 0)
-      )
-    );
+    const before = partsIn(setId);
+    const oldLeft = Math.min(...before.map((c) => getRotatedBounds(c).minX - (c.clearance ?? 0)));
+    const idOf = (parts: Cutout[], part: string) => parts.find((c) => c.toolSetPart === part)?.id;
     const next = { ...spec, sizes: ['8', '10', '13', '17'] };
     act(() => {
       expect(result.current.rebuildSet(setId, next)).toEqual(ok('updated'));
     });
     const { params } = useDesignerStore.getState();
-    const members = membersOf(params.cutouts, setId);
+    const members = partsIn(setId);
     expect(members.filter((c) => c.shape === 'path')).toHaveLength(4);
     expect(params.cutoutToolSets?.[setId]).toEqual(next);
-    expect(params.cutoutGroupNames?.[setId]).toBe('Wrenches 8 to 17 mm');
+    expect(idOf(members, 'pocket:8')).toBe(idOf(before, 'pocket:8'));
+    expect(idOf(members, 'channel')).toBe(idOf(before, 'channel'));
+    expect(idOf(members, 'pocket:17')).toBeDefined();
     const newLeft = Math.min(...members.map((c) => getRotatedBounds(c).minX - (c.clearance ?? 0)));
     expect(newLeft).toBeCloseTo(oldLeft, 1);
   });
@@ -175,8 +180,9 @@ describe('useToolSets', () => {
       ).toEqual(ok('updated'));
     });
     const { cutouts } = useDesignerStore.getState().params;
-    const a = cutBoxes(membersOf(cutouts, first));
-    const b = cutBoxes(membersOf(cutouts, second));
+    const sets = useDesignerStore.getState().params.cutoutToolSets;
+    const a = cutBoxes(partsOf(cutouts, first, sets));
+    const b = cutBoxes(partsOf(cutouts, second, sets));
     expect(a.some((x) => b.some((y) => boxesOverlap(x, y, 0)))).toBe(false);
   });
 
@@ -186,7 +192,7 @@ describe('useToolSets', () => {
       result.current.insertSet(spec);
     });
     const setId = onlySetId();
-    const ids = membersOf(useDesignerStore.getState().params.cutouts, setId).map((c) => c.id);
+    const ids = partsIn(setId).map((c) => c.id);
     act(() => useDesignerStore.getState().duplicateCutouts(ids.slice(0, 1)));
     expect(Object.keys(useDesignerStore.getState().params.cutoutToolSets ?? {})).toHaveLength(1);
     act(() => useDesignerStore.getState().duplicateCutouts(ids));
@@ -202,13 +208,29 @@ describe('useToolSets', () => {
     });
     const setId = onlySetId();
     const store = useDesignerStore.getState();
-    const members = membersOf(store.params.cutouts, setId);
+    const members = partsIn(setId);
     const clones = cloneCutoutsWithGroups(members, (c) => ({ x: c.x + 5, y: c.y + 5 }));
     act(() => {
       for (const { originalId: _, ...clone } of clones) store.addCutout(clone);
       store.copyToolSetsForClones(clones.map((c) => [c.originalId, c.id] as const));
     });
     expect(Object.keys(useDesignerStore.getState().params.cutoutToolSets ?? {})).toHaveLength(2);
+  });
+
+  it('gives a copy pasted into the lid no recipe, since sets are bin-only', () => {
+    const { result } = renderHook(() => useToolSets());
+    act(() => {
+      result.current.insertSet(spec);
+    });
+    const members = partsIn(onlySetId());
+    const clones = cloneCutoutsWithGroups(members, (c) => ({ x: c.x, y: c.y }));
+    act(() => {
+      const store = useDesignerStore.getState();
+      store.setCutoutEditorOpen(true, 'lid');
+      for (const { originalId: _, ...clone } of clones) store.addCutout(clone);
+      store.copyToolSetsForClones(clones.map((c) => [c.originalId, c.id] as const));
+    });
+    expect(Object.keys(useDesignerStore.getState().params.cutoutToolSets ?? {})).toHaveLength(1);
   });
 
   it('keeps the name of a container that holds only the set, across a rebuild', () => {
@@ -233,5 +255,64 @@ describe('useToolSets', () => {
     const { params } = useDesignerStore.getState();
     expect(params.cutoutGroupNames?.outer).toBe('Drawer A');
     expect(params.cutouts.every((c) => c.parentGroups?.[0] === 'outer')).toBe(true);
+  });
+
+  it('drops a name stored by the first release, so it follows the new sizes', () => {
+    const { result } = renderHook(() => useToolSets());
+    act(() => {
+      result.current.insertSet(spec);
+    });
+    const setId = onlySetId();
+    act(() => useDesignerStore.getState().setCutoutGroupName(setId, 'Wrenches 8 to 13 mm'));
+    act(() => {
+      result.current.rebuildSet(setId, { ...spec, sizes: ['10'] });
+    });
+    expect(useDesignerStore.getState().params.cutoutGroupNames?.[setId]).toBeUndefined();
+  });
+
+  it('keeps a shape the user dragged into the set across a rebuild', () => {
+    const { result } = renderHook(() => useToolSets());
+    act(() => {
+      result.current.insertSet(spec);
+    });
+    const setId = onlySetId();
+    const extra: Cutout = {
+      id: 'mine',
+      shape: 'circle',
+      x: 1,
+      y: 1,
+      width: 10,
+      depth: 10,
+      cutDepth: 3,
+      rotation: 0,
+      cornerRadius: 0,
+      label: '',
+      groupId: null,
+      parentGroups: [setId],
+    };
+    act(() => {
+      useDesignerStore.getState().addCutout(extra);
+    });
+    act(() => {
+      result.current.rebuildSet(setId, { ...spec, sizes: ['8', '10'] });
+    });
+    const kept = useDesignerStore.getState().params.cutouts.find((c) => c.id === 'mine');
+    expect(kept?.parentGroups).toEqual([setId]);
+  });
+
+  it('refuses to rebuild a set with a locked pocket, and changes nothing', () => {
+    const { result } = renderHook(() => useToolSets());
+    act(() => {
+      result.current.insertSet(spec);
+    });
+    const setId = onlySetId();
+    const pocket = partsIn(setId).find((c) => c.shape === 'path');
+    if (!pocket) throw new Error('expected a pocket');
+    act(() => useDesignerStore.getState().setCutoutProperty([pocket.id], { locked: true }));
+    const before = useDesignerStore.getState().params;
+    act(() => {
+      expect(result.current.rebuildSet(setId, { ...spec, sizes: ['10'] })).toEqual(err('locked'));
+    });
+    expect(useDesignerStore.getState().params).toBe(before);
   });
 });

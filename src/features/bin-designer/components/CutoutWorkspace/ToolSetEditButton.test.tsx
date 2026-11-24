@@ -49,6 +49,21 @@ describe('ToolSetEditButton', () => {
     expect(screen.getByRole('button', { name: 'Edit set' })).toBeInTheDocument();
   });
 
+  it('is disabled, with the reason, while a pocket of the set is locked', () => {
+    useDesignerStore.getState().setParams({
+      cutouts: [{ ...pocket('a', ['g1']), toolSetPart: 'pocket:13', locked: true }],
+    });
+    render(<ToolSetEditButton selected={[pocket('a', ['g1'])]} />);
+    expect(screen.getByRole('button', { name: 'Edit set' })).toBeDisabled();
+    expect(screen.getByText(/Unlock the pockets/)).toBeInTheDocument();
+  });
+
+  it('renders nothing on the lid, where a set has nothing to rebuild', () => {
+    useDesignerStore.getState().setCutoutEditorOpen(true, 'lid');
+    const { container } = render(<ToolSetEditButton selected={[pocket('a', ['g1'])]} />);
+    expect(container).toBeEmptyDOMElement();
+  });
+
   it('renders nothing for shapes outside a set, or a mix', () => {
     const { container } = render(
       <ToolSetEditButton selected={[pocket('a', ['g1']), pocket('b')]} />

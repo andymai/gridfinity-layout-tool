@@ -5,12 +5,8 @@ import {
   DESIGNER_CATEGORIES,
   type PageCategory,
 } from '@/features/bin-designer/components/BinPanelShell/categoryDefs';
-import {
-  DESIGNER_CONTROL_SEARCH,
-  DESIGNER_OPTION_RECORDS,
-  isDesignerControlAvailable,
-  type ControlAvailabilityContext,
-} from './designerControlRegistry';
+import { DESIGNER_CONTROL_SEARCH, DESIGNER_OPTION_RECORDS } from './designerControlRegistry';
+import { isDesignerControlAvailable, type ControlAvailabilityContext } from './controlAvailability';
 import { matchRecords, type HighlightRange, type SearchableRecord } from './matcher';
 
 export interface DesignerSearchResult {

@@ -8,13 +8,14 @@ import { isNumber, isObject, isString } from './validationUtils.js';
 // eslint-disable-next-line no-control-regex -- reject control chars in user-supplied keys and sizes
 const CONTROL_CHARS_REGEX = /[\u0000-\u001F\u007F]/;
 
-/** MIRROR: `TOOL_FAMILY_IDS`, `TOOL_UNITS`, `TOOL_SET_STYLES` and `TOOL_SET_LIMITS` in `src/features/bin-designer/types/toolSet.ts`. */
+/** MIRROR: `TOOL_FAMILY_IDS`, `TOOL_UNITS`, `TOOL_SET_STYLES` and `TOOL_SET_LIMITS` in `src/shared/types/toolSet.ts`. */
 export const TOOL_SET_CONSTRAINTS = {
   FAMILIES: ['combinationWrench'],
   UNITS: ['metric', 'sae'],
   STYLES: ['flat'],
   MAX_SIZES: 30,
   MAX_SIZE_KEY_LENGTH: 12,
+  MAX_PART_LENGTH: 32,
   MIN_CLEARANCE_MM: 0,
   MAX_CLEARANCE_MM: 2,
   MIN_LABEL_MM: 0,
@@ -95,4 +96,15 @@ export function validateCutoutToolSets(value: unknown): string | null {
     if (err) return err;
   }
   return null;
+}
+
+/** A cutout's `toolSetPart`: editor metadata, bounded like every user-reachable string. */
+export function toolSetPartError(value: unknown): string | null {
+  if (value === undefined) return null;
+  return isString(value) &&
+    value !== '' &&
+    value.length <= TOOL_SET_CONSTRAINTS.MAX_PART_LENGTH &&
+    !CONTROL_CHARS_REGEX.test(value)
+    ? null
+    : `toolSetPart must be a clean string (max ${TOOL_SET_CONSTRAINTS.MAX_PART_LENGTH} chars)`;
 }

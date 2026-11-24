@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useDesignerSettingsSearch } from './useDesignerSettingsSearch';
-import type { ControlAvailabilityContext } from './designerControlRegistry';
+import type { ControlAvailabilityContext } from './controlAvailability';
 
 /**
  * Coverage eval: representative queries mapped to labels that MUST appear. This
@@ -17,6 +17,7 @@ const ALL_AVAILABLE: ControlAvailabilityContext = {
   viewMode: 'rail',
   slideTrayEnabled: true,
   scanAvailable: true,
+  toolSetAvailable: true,
 };
 
 const GOLDEN: { query: string; expect: string[] }[] = [

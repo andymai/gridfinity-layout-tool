@@ -3892,6 +3892,8 @@ const en: Record<string, string> = {
   'binDesigner.toolSets.overBedWhole': 'With this set, the bin is larger than your print bed.',
   'binDesigner.toolSets.noRoom':
     'The set does not fit this bin. Remove some sizes, or make room in the bin.',
+  'binDesigner.toolSets.locked': 'Unlock the pockets of this set to edit it.',
+  'binDesigner.toolSets.noChannel': 'The handles do not line up, so the set has no finger channel.',
   'binDesigner.cutouts.scanImport.buttonLabel': 'Scan',
   'binDesigner.cutouts.scanImport.routePhone': 'With your phone',
   'binDesigner.cutouts.scanImport.routePhoneHelp':

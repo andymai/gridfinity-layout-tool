@@ -6,6 +6,7 @@ import {
   VALID_LABEL_PLATE_ICONS,
   VALID_LABEL_PLATE_WIDTHS,
 } from './designerValidationConstants.js';
+import { toolSetPartError } from './toolSetValidation.js';
 import { HEX_COLOR_REGEX } from './designerColorValidation.js';
 import { validateTextStyleOverride, LABEL_TEXT_MAX_LENGTH } from './designerTextValidation.js';
 import { MAX_MESH_UPLOAD_BYTES, isMeshHash } from './meshFile.js';
@@ -143,6 +144,8 @@ export function validateCutouts(value: unknown): string | null {
     ) {
       return `cutouts[${i}].libraryItemId must be a string of at most ${CONSTRAINTS.MAX_LIBRARY_ITEM_ID_LENGTH} chars`;
     }
+    const partErr = toolSetPartError(c.toolSetPart);
+    if (partErr) return `cutouts[${i}].${partErr}`;
     if (c.textStyle !== undefined) {
       const styleErr = validateTextStyleOverride(c.textStyle, `cutouts[${i}].textStyle`);
       if (styleErr) return styleErr;

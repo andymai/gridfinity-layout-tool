@@ -1,4 +1,4 @@
-import type { OutlineRing } from '@/shared/utils/cutoutOutline';
+import { ringBounds, type OutlineBounds, type OutlineRing } from '@/shared/utils/cutoutOutline';
 
 export interface NestItem {
   /** The item's outline in its own frame, running from x = 0 to x = `length`. */
@@ -14,8 +14,7 @@ export interface NestPlacement {
   readonly flipped: boolean;
 }
 
-/** Coarse step of the search for the closest feasible row, in mm. */
-const COARSE_STEP = 2;
+const COARSE_STEP_MM = 2;
 const REFINE_STEPS = 10;
 /** Rows further back than this cannot reach a new row past its neighbours. */
 const NEIGHBOUR_ROWS = 3;
@@ -63,42 +62,16 @@ function contains(ring: OutlineRing, [px, py]: [number, number]): boolean {
   return inside;
 }
 
-/** Shortest distance between two rings, or 0 when they touch or overlap. */
-export function ringDistance(a: OutlineRing, b: OutlineRing): number {
-  if (contains(a, b[0]) || contains(b, a[0])) return 0;
-  let best = Infinity;
-  for (let i = 0; i < a.length; i++) {
-    const a1 = a[i];
-    const a2 = a[(i + 1) % a.length];
-    for (let j = 0; j < b.length; j++) {
-      const b1 = b[j];
-      const b2 = b[(j + 1) % b.length];
-      if (segmentsCross(a1, a2, b1, b2)) return 0;
-      best = Math.min(best, segmentDistance(a1, a2, b1), segmentDistance(b1, b2, a1));
-    }
-  }
-  return best;
+function segmentBounds([ax, ay]: [number, number], [bx, by]: [number, number]): OutlineBounds {
+  return {
+    minX: Math.min(ax, bx),
+    minY: Math.min(ay, by),
+    maxX: Math.max(ax, bx),
+    maxY: Math.max(ay, by),
+  };
 }
 
-interface Box {
-  minX: number;
-  minY: number;
-  maxX: number;
-  maxY: number;
-}
-
-function boxOf(ring: OutlineRing): Box {
-  const box = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
-  for (const [x, y] of ring) {
-    box.minX = Math.min(box.minX, x);
-    box.minY = Math.min(box.minY, y);
-    box.maxX = Math.max(box.maxX, x);
-    box.maxY = Math.max(box.maxY, y);
-  }
-  return box;
-}
-
-function boxesApart(a: Box, b: Box, gap: number): boolean {
+function boundsApart(a: OutlineBounds, b: OutlineBounds, gap: number): boolean {
   return (
     a.minX - b.maxX >= gap ||
     b.minX - a.maxX >= gap ||
@@ -107,25 +80,20 @@ function boxesApart(a: Box, b: Box, gap: number): boolean {
   );
 }
 
-/** Whether two rings come closer than `gap`: the early-exit form of {@link ringDistance}. */
+/** Whether two rings come closer than `gap`, overlapping included. */
 export function closerThan(a: OutlineRing, b: OutlineRing, gap: number): boolean {
-  const boxA = boxOf(a);
-  const boxB = boxOf(b);
-  if (boxesApart(boxA, boxB, gap)) return false;
+  const boundsB = ringBounds(b);
+  if (boundsApart(ringBounds(a), boundsB, gap)) return false;
   if (contains(a, b[0]) || contains(b, a[0])) return true;
   for (let i = 0; i < a.length; i++) {
     const a1 = a[i];
     const a2 = a[(i + 1) % a.length];
-    const segA = {
-      minX: Math.min(a1[0], a2[0]),
-      minY: Math.min(a1[1], a2[1]),
-      maxX: Math.max(a1[0], a2[0]),
-      maxY: Math.max(a1[1], a2[1]),
-    };
-    if (boxesApart(segA, boxB, gap)) continue;
+    const segA = segmentBounds(a1, a2);
+    if (boundsApart(segA, boundsB, gap)) continue;
     for (let j = 0; j < b.length; j++) {
       const b1 = b[j];
       const b2 = b[(j + 1) % b.length];
+      if (boundsApart(segA, segmentBounds(b1, b2), gap)) continue;
       if (segmentsCross(a1, a2, b1, b2)) return true;
       if (segmentDistance(a1, a2, b1) < gap || segmentDistance(b1, b2, a1) < gap) return true;
     }
@@ -168,12 +136,14 @@ export function nestHeadToTail(
       return neighbours.every((other) => !closerThan(other, ring, gapMm));
     };
 
+    // Rows only move apart from here, so the first fit found going down is
+    // the closest one, to within the refine step.
     const loose = prev.cy - (halfHeight(items[i - 1].ring) + halfHeight(item.ring) + gapMm);
     let tight = prev.cy;
-    let ok = tight - COARSE_STEP;
+    let ok = tight - COARSE_STEP_MM;
     while (ok > loose && !fits(ok)) {
       tight = ok;
-      ok -= COARSE_STEP;
+      ok -= COARSE_STEP_MM;
     }
     ok = Math.max(ok, loose);
     for (let step = 0; step < REFINE_STEPS; step++) {
@@ -197,28 +167,33 @@ export interface NestResult {
 }
 
 function measure(items: readonly NestItem[], placements: NestPlacement[]): NestResult {
-  const box = boxOf(items.flatMap((item, i) => placeRing(item.ring, item.length, placements[i])));
+  const box = ringBounds(
+    items.flatMap((item, i) => placeRing(item.ring, item.length, placements[i]))
+  );
   return { placements, width: box.maxX - box.minX, depth: box.maxY - box.minY };
 }
 
 /**
  * The head-to-tail stack with the smallest footprint, trying shifts of the odd
- * rows from none to a little more than the widest head, both ways. A stack no
- * wider than `maxWidth` wins over a smaller one that is wider, so a set keeps
- * to the print bed when it can.
+ * rows from none to a little more than the widest head, both ways. Staying
+ * within `maxWidth` (the print bed) matters most, then `accept`, then size.
  */
 export function nestHeadToTailCompact(
   items: readonly NestItem[],
   gapMm: number,
-  maxWidth = Infinity
+  maxWidth = Infinity,
+  accept: (result: NestResult) => boolean = () => true
 ): NestResult {
   const widest = Math.max(0, ...items.map((item) => halfHeight(item.ring) * 2));
   const shifts = [0, 0.5, 1, 1.5].flatMap((k) => (k === 0 ? [0] : [k * widest, -k * widest]));
   const results = shifts
     .map((shift) => measure(items, nestHeadToTail(items, gapMm, shift)))
     .sort((a, b) => a.width * a.depth - b.width * b.depth);
+  const fitsBed = (r: NestResult): boolean => r.width <= maxWidth;
   return (
-    results.find((r) => r.width <= maxWidth) ??
+    results.find((r) => fitsBed(r) && accept(r)) ??
+    results.find(fitsBed) ??
+    results.find(accept) ??
     results.at(0) ?? { placements: [], width: 0, depth: 0 }
   );
 }
