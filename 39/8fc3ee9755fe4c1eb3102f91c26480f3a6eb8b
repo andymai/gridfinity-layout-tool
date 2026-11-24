@@ -1,0 +1,93 @@
+src/i18n/locales/pl.json
+  s_0c191ecd28c8c3::t_e7754ab664da6c 1211-1212
+apps/docs/recipes/wrench-set.md
+  s_0c191ecd28c8c3::t_8d68aa38113381 24
+  s_0c191ecd28c8c3::t_8607a5d51fe771 53
+src/features/bin-designer/components/CutoutWorkspace/ToolSetEditButton.test.tsx
+  s_0c191ecd28c8c3::t_e72f55b27c1a33 67-71
+src/features/bin-designer/types/designerState.ts
+  s_0c191ecd28c8c3::t_e72f55b27c1a33 406-409
+  s_0c191ecd28c8c3::t_aca1dbf9c90dc3 405
+src/i18n/locales/fr.json
+  s_0c191ecd28c8c3::t_e7754ab664da6c 1163-1164
+src/i18n/locales/en.ts
+  s_0c191ecd28c8c3::t_e7754ab664da6c 3891-3892
+src/i18n/locales/nb.json
+  s_0c191ecd28c8c3::t_e7754ab664da6c 1163-1164
+src/i18n/locales/ka.json
+  s_0c191ecd28c8c3::t_e7754ab664da6c 3218-3219
+src/i18n/locales/pt-BR.json
+  s_0c191ecd28c8c3::t_e7754ab664da6c 1163-1164
+src/i18n/locales/uk.json
+  s_0c191ecd28c8c3::t_e7754ab664da6c 1211-1212
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_0c191ecd28c8c3::t_55406ba9f1cb72 53,654
+  s_0c191ecd28c8c3::t_e72f55b27c1a33 653,655-656
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/ToolSetDialog.test.tsx
+  s_0c191ecd28c8c3::t_d14bb5b5b080f5 71-90
+src/i18n/locales/cs.json
+  s_0c191ecd28c8c3::t_e7754ab664da6c 1187-1188
+src/features/bin-designer/components/CutoutWorkspace/toolSetOf.ts
+  s_0c191ecd28c8c3::t_e72f55b27c1a33 3,9-10
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/useToolSets.test.ts
+  s_0c191ecd28c8c3::t_d14bb5b5b080f5 10,197-236
+src/features/bin-designer/store/slices/cutoutSliceHelpers.ts
+  s_0c191ecd28c8c3::t_55406ba9f1cb72 355-377
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/planToolSetPlacement.ts
+  s_0c191ecd28c8c3::t_4429fd54f247d2 138-182
+src/i18n/locales/sv.json
+  s_0c191ecd28c8c3::t_e7754ab664da6c 1163-1164
+src/i18n/locales/es.json
+  s_0c191ecd28c8c3::t_e7754ab664da6c 1163-1164
+src/i18n/locales/nl.json
+  s_0c191ecd28c8c3::t_e7754ab664da6c 1163-1164
+src/i18n/locales/zh-CN.json
+  s_0c191ecd28c8c3::t_e7754ab664da6c 1139-1140
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/ToolSetDialog.tsx
+  s_0c191ecd28c8c3::t_9f11a549fb1026 80-83
+  s_0c191ecd28c8c3::t_e7754ab664da6c 19-20,64-79,84-85,226-233
+src/shared/toolSets/catalog.ts
+  s_0c191ecd28c8c3::t_3a42f81cb016a7 10-11
+src/i18n/locales/ko.json
+  s_0c191ecd28c8c3::t_e7754ab664da6c 1139-1140
+src/shared/toolSets/generateToolSet.test.ts
+  s_0c191ecd28c8c3::t_fc55e35cc3c644 7-8,130-150
+  s_0c191ecd28c8c3::t_cf681d5544246f 151
+src/shared/toolSets/tables/combinationWrench.json
+  s_0c191ecd28c8c3::t_6f4c4ea000864e 3,27,38,49,60,71,82,93,104,115,126,137,148,159,170,181,192,203,216,227,238,249,260,271,282,293,304,315,326,337,348
+src/shared/toolSets/wrenchOutline.ts
+  s_0c191ecd28c8c3::t_3a42f81cb016a7 14-20,65-86,107,113,122-134
+  s_0c191ecd28c8c3::t_34ea85437933aa 139-157
+src/shared/toolSets/wrenchOutline.test.ts
+  s_0c191ecd28c8c3::t_3a42f81cb016a7 62-86
+src/i18n/locales/ja.json
+  s_0c191ecd28c8c3::t_e7754ab664da6c 1139-1140
+src/i18n/locales/de.json
+  s_0c191ecd28c8c3::t_e7754ab664da6c 1163-1164
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/useToolSets.ts
+  s_0c191ecd28c8c3::t_4429fd54f247d2 12,14,25-26,171
+  s_0c191ecd28c8c3::t_92fce9ab8278ed 177-178,185
+src/i18n/locales/it.json
+  s_0c191ecd28c8c3::t_e7754ab664da6c 1163-1164
+src/features/bin-designer/components/panel/CutoutsSection/useCutoutClipboard.ts
+  s_0c191ecd28c8c3::t_92fce9ab8278ed 89,156,245
+  s_0c191ecd28c8c3::t_e72f55b27c1a33 19,146,153,217
+src/shared/toolSets/generateToolSet.ts
+  s_0c191ecd28c8c3::t_3a42f81cb016a7 166-167,246
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "398fc3ee9755fe4c1eb3102f91c26480f3a6eb8b",
+  "prompts": {},
+  "sessions": {
+    "s_0c191ecd28c8c3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f7a72b82-3d5a-4aec-a3fc-27209c777a7d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
