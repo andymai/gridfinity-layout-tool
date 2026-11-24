@@ -1,0 +1,29 @@
+src/shell/Sidebar/Sidebar.test.tsx
+  s_88cfcc42bf5bfd::t_5610c797a5f629 170-171,214,223
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
+  s_88cfcc42bf5bfd::t_83cb1ce7f6a28d 23-24,42
+  s_88cfcc42bf5bfd::t_5610c797a5f629 152-153,155-158,161-164
+src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.test.tsx
+  s_88cfcc42bf5bfd::t_fb4bb5e0728442 11
+apps/docs/concepts/units.md
+  s_88cfcc42bf5bfd::t_8a662726cabdfb 76
+src/shell/Sidebar/Sidebar.tsx
+  s_88cfcc42bf5bfd::t_83cb1ce7f6a28d 30-31,47
+  s_88cfcc42bf5bfd::t_5610c797a5f629 339-340,342-345,348-351
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3565246a08ce4817b3df279eb5a2b21737e22a66",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
