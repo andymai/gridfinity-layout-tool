@@ -3575,7 +3575,7 @@
   "dock.syncStatusOffline": "Не в мережі",
   "dock.syncStatusSyncing": "Синхронізація…",
   "dock.workingLocally": "Робота локально",
-  "drawerCeiling.binOverflow": "Виступає на {over} мм над виміряною шухлядою",
+  "drawerCeiling.binOverflow": "Виступає на {over} {unit} над виміряною шухлядою",
   "drawerCeiling.fits": "Найвищий стос вміщується, {slack} {unit} запасу",
   "drawerCeiling.layerOverflow": "Стос виступає на {over} мм над виміряною шухлядою",
   "drawerCeiling.measurePrompt": "Додайте вимір висоти, щоб перевірити, чи закриється кришка",

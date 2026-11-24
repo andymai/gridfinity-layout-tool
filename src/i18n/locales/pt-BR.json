@@ -3445,7 +3445,7 @@
   "dock.syncStatusOffline": "Offline",
   "dock.syncStatusSyncing": "Sincronizando…",
   "dock.workingLocally": "Trabalhando localmente",
-  "drawerCeiling.binOverflow": "Ultrapassa a gaveta medida em {over} mm",
+  "drawerCeiling.binOverflow": "Ultrapassa a gaveta medida em {over} {unit}",
   "drawerCeiling.fits": "A pilha mais alta cabe, {slack} {unit} de folga",
   "drawerCeiling.layerOverflow": "A pilha ultrapassa a gaveta medida em {over} mm",
   "drawerCeiling.measurePrompt": "Adicione uma medida de altura para verificar se a tampa fecha",

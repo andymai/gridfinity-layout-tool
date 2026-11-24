@@ -3445,7 +3445,7 @@
   "dock.syncStatusOffline": "Offline",
   "dock.syncStatusSyncing": "Synkar…",
   "dock.workingLocally": "Arbetar lokalt",
-  "drawerCeiling.binOverflow": "Sticker upp {over} mm över din uppmätta låda",
+  "drawerCeiling.binOverflow": "Sticker upp {over} {unit} över din uppmätta låda",
   "drawerCeiling.fits": "Högsta stapeln får plats, {slack} {unit} över",
   "drawerCeiling.layerOverflow": "Stapeln sticker upp {over} mm över din uppmätta låda",
   "drawerCeiling.measurePrompt": "Lägg till en höjdmätning för att kontrollera att locket stänger",

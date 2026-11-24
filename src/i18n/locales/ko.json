@@ -3380,7 +3380,7 @@
   "dock.syncStatusOffline": "오프라인",
   "dock.syncStatusSyncing": "동기화 중…",
   "dock.workingLocally": "로컬에서 작업 중",
-  "drawerCeiling.binOverflow": "측정한 서랍보다 {over}mm 높습니다",
+  "drawerCeiling.binOverflow": "측정한 서랍보다 {over} {unit} 높습니다",
   "drawerCeiling.fits": "가장 높은 스택이 들어갑니다. 여유 {slack} {unit}",
   "drawerCeiling.layerOverflow": "스택이 측정한 서랍보다 {over}mm 높습니다",
   "drawerCeiling.measurePrompt": "높이를 측정해 뚜껑이 닫히는지 확인하세요",

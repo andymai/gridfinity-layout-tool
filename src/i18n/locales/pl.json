@@ -3575,7 +3575,7 @@
   "dock.syncStatusOffline": "Offline",
   "dock.syncStatusSyncing": "Synchronizowanie…",
   "dock.workingLocally": "Praca lokalna",
-  "drawerCeiling.binOverflow": "Wystaje {over} mm ponad zmierzoną szufladę",
+  "drawerCeiling.binOverflow": "Wystaje {over} {unit} ponad zmierzoną szufladę",
   "drawerCeiling.fits": "Najwyższy stos się mieści, {slack} {unit} zapasu",
   "drawerCeiling.layerOverflow": "Stos wystaje {over} mm ponad zmierzoną szufladę",
   "drawerCeiling.measurePrompt": "Dodaj pomiar wysokości, aby sprawdzić, czy pokrywa się zamyka",

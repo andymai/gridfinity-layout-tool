@@ -1046,7 +1046,7 @@
   "drawerCeiling.overflow": "ყველაზე მაღალი დასტა თქვენს გაზომილ უჯრას {over} {unit}-ით სცდება",
   "drawerCeiling.fits": "ყველაზე მაღალი დასტა ეტევა, დარჩენილია {slack} {unit}",
   "drawerCeiling.measurePrompt": "დაამატეთ სიმაღლის გაზომვა, რათა შეამოწმოთ, იხურება თუ არა თავსახური",
-  "drawerCeiling.binOverflow": "თქვენს გაზომილ უჯრას {over}mm-ით სცდება",
+  "drawerCeiling.binOverflow": "თქვენს გაზომილ უჯრას {over} {unit}-ით სცდება",
   "drawerCeiling.layerOverflow": "დასტა თქვენს გაზომილ უჯრას {over}mm-ით სცდება",
   "drawerCeiling.planeLabel": "უჯრის გაზომილი სიმაღლე",
   "assembledHeight.title": "აწყობილი სიმაღლე",

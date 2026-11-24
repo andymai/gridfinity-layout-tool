@@ -3445,7 +3445,7 @@
   "dock.syncStatusOffline": "Offline",
   "dock.syncStatusSyncing": "Synchroniseren…",
   "dock.workingLocally": "Lokaal werken",
-  "drawerCeiling.binOverflow": "Steekt {over} mm boven je gemeten lade uit",
+  "drawerCeiling.binOverflow": "Steekt {over} {unit} boven je gemeten lade uit",
   "drawerCeiling.fits": "Hoogste stapel past, {slack} {unit} over",
   "drawerCeiling.layerOverflow": "Stapel steekt {over} mm boven je gemeten lade uit",
   "drawerCeiling.measurePrompt": "Voeg een hoogtemeting toe om te controleren of het deksel sluit",

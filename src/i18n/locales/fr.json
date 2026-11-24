@@ -3445,7 +3445,7 @@
   "dock.syncStatusOffline": "Hors ligne",
   "dock.syncStatusSyncing": "Synchronisation…",
   "dock.workingLocally": "Travail en local",
-  "drawerCeiling.binOverflow": "Dépasse le tiroir mesuré de {over} mm",
+  "drawerCeiling.binOverflow": "Dépasse le tiroir mesuré de {over} {unit}",
   "drawerCeiling.fits": "La pile la plus haute tient, {slack} {unit} restants",
   "drawerCeiling.layerOverflow": "La pile dépasse le tiroir mesuré de {over} mm",
   "drawerCeiling.measurePrompt": "Ajoutez une mesure de hauteur pour vérifier que le couvercle ferme",

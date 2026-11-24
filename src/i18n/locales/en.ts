@@ -1163,7 +1163,7 @@ const en: Record<string, string> = {
   'drawerCeiling.overflow': 'Tallest stack stands {over} {unit} above your measured drawer',
   'drawerCeiling.fits': 'Tallest stack fits, {slack} {unit} to spare',
   'drawerCeiling.measurePrompt': 'Add a height measurement to check the lid closes',
-  'drawerCeiling.binOverflow': 'Stands {over}mm above your measured drawer',
+  'drawerCeiling.binOverflow': 'Stands {over} {unit} above your measured drawer',
   'drawerCeiling.layerOverflow': 'Stack stands {over}mm above your measured drawer',
   'drawerCeiling.planeLabel': 'Measured drawer height',
 

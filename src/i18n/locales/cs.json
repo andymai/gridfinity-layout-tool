@@ -3510,7 +3510,7 @@
   "dock.syncStatusOffline": "Offline",
   "dock.syncStatusSyncing": "Synchronizuji…",
   "dock.workingLocally": "Pracuješ lokálně",
-  "drawerCeiling.binOverflow": "Přesahuje změřenou zásuvku o {over} mm",
+  "drawerCeiling.binOverflow": "Přesahuje změřenou zásuvku o {over} {unit}",
   "drawerCeiling.fits": "Nejvyšší stoh se vejde, {slack} {unit} zbývá",
   "drawerCeiling.layerOverflow": "Stoh přesahuje změřenou zásuvku o {over} mm",
   "drawerCeiling.measurePrompt": "Přidejte měření výšky a ověřte, že víko dovře",

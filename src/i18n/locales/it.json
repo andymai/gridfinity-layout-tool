@@ -3445,7 +3445,7 @@
   "dock.syncStatusOffline": "Offline",
   "dock.syncStatusSyncing": "Sincronizzazione…",
   "dock.workingLocally": "Lavoro in locale",
-  "drawerCeiling.binOverflow": "Supera il cassetto misurato di {over} mm",
+  "drawerCeiling.binOverflow": "Supera il cassetto misurato di {over} {unit}",
   "drawerCeiling.fits": "La pila più alta entra, {slack} {unit} liberi",
   "drawerCeiling.layerOverflow": "La pila supera il cassetto misurato di {over} mm",
   "drawerCeiling.measurePrompt": "Aggiungi una misura dell'altezza per verificare che il coperchio chiuda",

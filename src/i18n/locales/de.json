@@ -3445,7 +3445,7 @@
   "dock.syncStatusOffline": "Offline",
   "dock.syncStatusSyncing": "Synchronisiere…",
   "dock.workingLocally": "Lokal arbeiten",
-  "drawerCeiling.binOverflow": "Steht {over} mm über deiner gemessenen Schublade",
+  "drawerCeiling.binOverflow": "Steht {over} {unit} über deiner gemessenen Schublade",
   "drawerCeiling.fits": "Höchster Stapel passt, {slack} {unit} frei",
   "drawerCeiling.layerOverflow": "Stapel steht {over} mm über deiner gemessenen Schublade",
   "drawerCeiling.measurePrompt": "Höhe messen, um zu prüfen, ob der Deckel schließt",

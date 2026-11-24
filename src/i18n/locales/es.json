@@ -3445,7 +3445,7 @@
   "dock.syncStatusOffline": "Sin conexión",
   "dock.syncStatusSyncing": "Sincronizando…",
   "dock.workingLocally": "Trabajo local",
-  "drawerCeiling.binOverflow": "Sobresale {over} mm del cajón medido",
+  "drawerCeiling.binOverflow": "Sobresale {over} {unit} del cajón medido",
   "drawerCeiling.fits": "La pila más alta cabe, {slack} {unit} libres",
   "drawerCeiling.layerOverflow": "La pila sobresale {over} mm del cajón medido",
   "drawerCeiling.measurePrompt": "Añade una medida de altura para comprobar que la tapa cierra",

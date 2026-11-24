@@ -3380,7 +3380,7 @@
   "dock.syncStatusOffline": "オフライン",
   "dock.syncStatusSyncing": "同期中…",
   "dock.workingLocally": "ローカルで作業中",
-  "drawerCeiling.binOverflow": "実測の引き出しより {over}mm 高くなっています",
+  "drawerCeiling.binOverflow": "実測の引き出しより {over} {unit} 高くなっています",
   "drawerCeiling.fits": "最も高いスタックが収まります。余裕 {slack} {unit}",
   "drawerCeiling.layerOverflow": "スタックが実測の引き出しより {over}mm 高くなっています",
   "drawerCeiling.measurePrompt": "高さを実測すると、ふたが閉まるか確認できます",
