@@ -4685,7 +4685,6 @@
   "sidebar.collapsePanel": "패널 접기",
   "sidebar.drawerDepthAria": "서랍 깊이(그리드 단위)",
   "sidebar.drawerHeight": "서랍 높이",
-  "sidebar.drawerHeightAria": "서랍 높이(밀리미터)",
   "sidebar.drawerWidthAria": "서랍 너비(그리드 단위)",
   "sidebar.widthStepTitle": "너비(그리드 단위, 증분: {step})",
   "sidebar.depthStepTitle": "깊이(그리드 단위, 증분: {step})",

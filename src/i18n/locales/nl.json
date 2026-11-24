@@ -4787,7 +4787,6 @@
   "sidebar.collapsePanel": "Paneel invouwen",
   "sidebar.drawerDepthAria": "Ladediepte in rastereenheden",
   "sidebar.drawerHeight": "Ladehoogte",
-  "sidebar.drawerHeightAria": "Ladehoogte in millimeters",
   "sidebar.drawerWidthAria": "Ladebreedte in rastereenheden",
   "sidebar.widthStepTitle": "Breedte in rastereenheden (stap: {step})",
   "sidebar.depthStepTitle": "Diepte in rastereenheden (stap: {step})",

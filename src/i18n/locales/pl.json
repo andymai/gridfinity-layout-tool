@@ -4991,7 +4991,6 @@
   "sidebar.collapsePanel": "Zwiń panel",
   "sidebar.drawerDepthAria": "Głębokość szuflady w jednostkach siatki",
   "sidebar.drawerHeight": "Wysokość szuflady",
-  "sidebar.drawerHeightAria": "Wysokość szuflady w milimetrach",
   "sidebar.drawerWidthAria": "Szerokość szuflady w jednostkach siatki",
   "sidebar.widthStepTitle": "Szerokość w jednostkach siatki (krok: {step})",
   "sidebar.depthStepTitle": "Głębokość w jednostkach siatki (krok: {step})",

@@ -5326,7 +5326,6 @@
   "sidebar.widthStepTitle": "სიგანე ბადის ერთეულებში (ბიჯი: {step})",
   "sidebar.depthStepTitle": "სიღრმე ბადის ერთეულებში (ბიჯი: {step})",
   "sidebar.drawerDepthAria": "უჯრის სიღრმე ბადის ერთეულებში",
-  "sidebar.drawerHeightAria": "უჯრის სიმაღლე მილიმეტრებში",
   "settings.printBedSizeLabel": "საბეჭდი მაგიდის ზომა",
   "binDesigner.designJson.error.invalidJson": "არასწორი JSON: {message}",
   "binDesigner.designJson.error.rootNotObject": "არასწორი დიზაინის ფაილი: ძირი ობიექტი უნდა იყოს",

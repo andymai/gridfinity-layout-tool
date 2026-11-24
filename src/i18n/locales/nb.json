@@ -4787,7 +4787,6 @@
   "sidebar.collapsePanel": "Skjul panel",
   "sidebar.drawerDepthAria": "Skuffedybde i rutenettenheter",
   "sidebar.drawerHeight": "Skuffhøyde",
-  "sidebar.drawerHeightAria": "Skuffehøyde i millimeter",
   "sidebar.drawerWidthAria": "Skuffebredde i rutenettenheter",
   "sidebar.widthStepTitle": "Bredde i rutenettenheter (steg: {step})",
   "sidebar.depthStepTitle": "Dybde i rutenettenheter (steg: {step})",

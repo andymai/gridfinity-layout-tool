@@ -4787,7 +4787,6 @@
   "sidebar.collapsePanel": "Contraer panel",
   "sidebar.drawerDepthAria": "Profundidad del cajón en unidades de cuadrícula",
   "sidebar.drawerHeight": "Altura del cajón",
-  "sidebar.drawerHeightAria": "Altura del cajón en milímetros",
   "sidebar.drawerWidthAria": "Ancho del cajón en unidades de cuadrícula",
   "sidebar.widthStepTitle": "Ancho en unidades de cuadrícula (paso: {step})",
   "sidebar.depthStepTitle": "Profundidad en unidades de cuadrícula (paso: {step})",

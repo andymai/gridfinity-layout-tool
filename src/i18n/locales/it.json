@@ -4787,7 +4787,6 @@
   "sidebar.collapsePanel": "Comprimi pannello",
   "sidebar.drawerDepthAria": "Profondità del cassetto in unità di griglia",
   "sidebar.drawerHeight": "Altezza cassetto",
-  "sidebar.drawerHeightAria": "Altezza del cassetto in millimetri",
   "sidebar.drawerWidthAria": "Larghezza del cassetto in unità di griglia",
   "sidebar.widthStepTitle": "Larghezza in unità di griglia (passo: {step})",
   "sidebar.depthStepTitle": "Profondità in unità di griglia (passo: {step})",

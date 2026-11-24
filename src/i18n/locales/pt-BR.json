@@ -4787,7 +4787,6 @@
   "sidebar.collapsePanel": "Recolher painel",
   "sidebar.drawerDepthAria": "Profundidade da gaveta em unidades de grade",
   "sidebar.drawerHeight": "Altura da gaveta",
-  "sidebar.drawerHeightAria": "Altura da gaveta em milímetros",
   "sidebar.drawerWidthAria": "Largura da gaveta em unidades de grade",
   "sidebar.widthStepTitle": "Largura em unidades de grade (passo: {step})",
   "sidebar.depthStepTitle": "Profundidade em unidades de grade (passo: {step})",

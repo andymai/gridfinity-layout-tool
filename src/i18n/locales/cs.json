@@ -4890,7 +4890,6 @@
   "sidebar.collapsePanel": "Sbalit panel",
   "sidebar.drawerDepthAria": "Hloubka zásuvky v jednotkách mřížky",
   "sidebar.drawerHeight": "Výška zásuvky",
-  "sidebar.drawerHeightAria": "Výška zásuvky v milimetrech",
   "sidebar.drawerWidthAria": "Šířka zásuvky v jednotkách mřížky",
   "sidebar.widthStepTitle": "Šířka v jednotkách mřížky (krok: {step})",
   "sidebar.depthStepTitle": "Hloubka v jednotkách mřížky (krok: {step})",

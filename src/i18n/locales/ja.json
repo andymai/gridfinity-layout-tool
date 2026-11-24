@@ -4685,7 +4685,6 @@
   "sidebar.collapsePanel": "パネルを折りたたむ",
   "sidebar.drawerDepthAria": "ドロワーの奥行き(グリッドユニット)",
   "sidebar.drawerHeight": "ドロワーの高さ",
-  "sidebar.drawerHeightAria": "引き出しの高さ（ミリメートル）",
   "sidebar.drawerWidthAria": "ドロワーの幅(グリッドユニット)",
   "sidebar.widthStepTitle": "幅(グリッドユニット、{step}刻み)",
   "sidebar.depthStepTitle": "奥行き(グリッドユニット、{step}刻み)",

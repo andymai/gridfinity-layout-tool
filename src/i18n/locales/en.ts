@@ -6556,7 +6556,6 @@ const en: Record<string, string> = {
   'sidebar.widthStepTitle': 'Width in grid units (step: {step})',
   'sidebar.depthStepTitle': 'Depth in grid units (step: {step})',
   'sidebar.drawerDepthAria': 'Drawer depth in grid units',
-  'sidebar.drawerHeightAria': 'Drawer height in millimeters',
   'settings.printBedSizeLabel': 'Print bed size',
 
   // Design JSON import validation

@@ -8,6 +8,7 @@ vi.mock('@/core/store/settings', () => {
   const state = {
     settings: {
       analyticsEnabled: true,
+      measureUnit: 'mm',
       stlSearchSites: [],
       defaultDrawerWidth: 6,
       defaultDrawerDepth: 4,

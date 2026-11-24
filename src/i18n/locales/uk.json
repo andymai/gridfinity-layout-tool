@@ -4991,7 +4991,6 @@
   "sidebar.collapsePanel": "Згорнути панель",
   "sidebar.drawerDepthAria": "Глибина шухляди в одиницях сітки",
   "sidebar.drawerHeight": "Висота шухляди",
-  "sidebar.drawerHeightAria": "Висота шухляди в міліметрах",
   "sidebar.drawerWidthAria": "Ширина шухляди в одиницях сітки",
   "sidebar.widthStepTitle": "Ширина в одиницях сітки (крок: {step})",
   "sidebar.depthStepTitle": "Глибина в одиницях сітки (крок: {step})",

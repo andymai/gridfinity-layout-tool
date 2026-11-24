@@ -4787,7 +4787,6 @@
   "sidebar.collapsePanel": "Réduire le panneau",
   "sidebar.drawerDepthAria": "Profondeur du tiroir en unités de grille",
   "sidebar.drawerHeight": "Hauteur du tiroir",
-  "sidebar.drawerHeightAria": "Hauteur du tiroir en millimètres",
   "sidebar.drawerWidthAria": "Largeur du tiroir en unités de grille",
   "sidebar.widthStepTitle": "Largeur en unités de grille (pas : {step})",
   "sidebar.depthStepTitle": "Profondeur en unités de grille (pas : {step})",

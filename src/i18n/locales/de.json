@@ -4787,7 +4787,6 @@
   "sidebar.collapsePanel": "Panel einklappen",
   "sidebar.drawerDepthAria": "Schubladentiefe in Rastereinheiten",
   "sidebar.drawerHeight": "Schubladenhöhe",
-  "sidebar.drawerHeightAria": "Schubladenhöhe in Millimetern",
   "sidebar.drawerWidthAria": "Schubladenbreite in Rastereinheiten",
   "sidebar.widthStepTitle": "Breite in Rastereinheiten (Schrittweite: {step})",
   "sidebar.depthStepTitle": "Tiefe in Rastereinheiten (Schrittweite: {step})",

@@ -4685,7 +4685,6 @@
   "sidebar.collapsePanel": "折叠面板",
   "sidebar.drawerDepthAria": "抽屉深度（网格单位）",
   "sidebar.drawerHeight": "抽屉高度",
-  "sidebar.drawerHeightAria": "抽屉高度（毫米）",
   "sidebar.drawerWidthAria": "抽屉宽度（网格单位）",
   "sidebar.widthStepTitle": "宽度（网格单位，步进：{step}）",
   "sidebar.depthStepTitle": "深度（网格单位，步进：{step}）",

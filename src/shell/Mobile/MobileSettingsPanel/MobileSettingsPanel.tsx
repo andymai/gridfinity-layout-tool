@@ -20,6 +20,8 @@ import { HeightUnitSolver } from '@/shared/components/HeightUnitSolver';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
+import { useMeasureUnit } from '@/shared/hooks/useMeasureUnit';
+import { fromMm, toMm } from '@/shared/utils/lengthUnit';
 import { Button, Stepper } from '@/design-system';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { UserDock } from '@/shared/components/UserDock';
@@ -37,6 +39,7 @@ const SettingsModal = lazyWithRetry(() =>
  */
 export function MobileSettingsPanel() {
   const t = useTranslation();
+  const { unit: measureUnit, symbol: measureSymbol } = useMeasureUnit();
   const closePanel = useCallback(() => {
     useMobileStore.getState().closeMobilePanel();
   }, []);
@@ -146,16 +149,19 @@ export function MobileSettingsPanel() {
             {t('sidebar.drawerHeight')}
           </label>
           <Stepper
-            value={drawerHeightDisplayMm}
-            onChange={handleDrawerHeightInput}
+            value={fromMm(drawerHeightDisplayMm, measureUnit)}
+            onChange={(value) => handleDrawerHeightInput(toMm(value, measureUnit))}
             onStep={handleDrawerHeightChange}
-            min={heightUnitMm}
-            max={CONSTRAINTS.GRID_MAX * heightUnitMm}
-            step={heightUnitMm}
-            inputDecimals={2}
+            min={fromMm(heightUnitMm, measureUnit)}
+            max={fromMm(CONSTRAINTS.GRID_MAX * heightUnitMm, measureUnit)}
+            step={fromMm(heightUnitMm, measureUnit)}
+            inputDecimals={measureUnit === 'in' ? 3 : 2}
             size="lg"
             fullWidth
-            aria-label={t('sidebar.drawerHeightAria')}
+            aria-label={t('common.labelWithUnit', {
+              label: t('sidebar.drawerHeight'),
+              unit: measureSymbol,
+            })}
           />
         </div>
 
