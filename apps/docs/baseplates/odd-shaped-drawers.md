@@ -89,7 +89,7 @@ Give a shaped plate a moment after each change. The quick preview doesn't draw s
 
 Turn on <Ui k="baseplate.syncWithLayout" /> in <Ui k="baseplate.sectionDimensions" />.
 
-The plate takes the drawer shape from the layout only while it is in sync. A plate size that you type in millimeters also turns sync off.
+The plate takes the drawer shape from the layout only while it is in sync. A plate size that you type also turns sync off.
 
 ### The margin does nothing
 

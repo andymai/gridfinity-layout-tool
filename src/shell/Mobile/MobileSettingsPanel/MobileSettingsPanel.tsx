@@ -21,7 +21,7 @@ import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
 import { useMeasureUnit } from '@/shared/hooks/useMeasureUnit';
-import { fromMm, toMm } from '@/shared/utils/lengthUnit';
+import { LENGTH_DECIMALS, fromMm, toMm } from '@/shared/utils/lengthUnit';
 import { Button, Stepper } from '@/design-system';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { UserDock } from '@/shared/components/UserDock';
@@ -39,7 +39,8 @@ const SettingsModal = lazyWithRetry(() =>
  */
 export function MobileSettingsPanel() {
   const t = useTranslation();
-  const { unit: measureUnit, symbol: measureSymbol } = useMeasureUnit();
+  const { unit: measureUnit, withUnit } = useMeasureUnit();
+  const drawerHeightLabel = withUnit(t('sidebar.drawerHeight'));
   const closePanel = useCallback(() => {
     useMobileStore.getState().closeMobilePanel();
   }, []);
@@ -145,9 +146,7 @@ export function MobileSettingsPanel() {
 
         {/* Height */}
         <div>
-          <label className="block text-sm mb-1 text-content-tertiary">
-            {t('sidebar.drawerHeight')}
-          </label>
+          <label className="block text-sm mb-1 text-content-tertiary">{drawerHeightLabel}</label>
           <Stepper
             value={fromMm(drawerHeightDisplayMm, measureUnit)}
             onChange={(value) => handleDrawerHeightInput(toMm(value, measureUnit))}
@@ -155,13 +154,10 @@ export function MobileSettingsPanel() {
             min={fromMm(heightUnitMm, measureUnit)}
             max={fromMm(CONSTRAINTS.GRID_MAX * heightUnitMm, measureUnit)}
             step={fromMm(heightUnitMm, measureUnit)}
-            inputDecimals={measureUnit === 'in' ? 3 : 2}
+            inputDecimals={LENGTH_DECIMALS[measureUnit]}
             size="lg"
             fullWidth
-            aria-label={t('common.labelWithUnit', {
-              label: t('sidebar.drawerHeight'),
-              unit: measureSymbol,
-            })}
+            aria-label={drawerHeightLabel}
           />
         </div>
 

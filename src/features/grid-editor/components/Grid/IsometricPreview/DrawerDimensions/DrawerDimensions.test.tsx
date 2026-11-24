@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
+import { useSettingsStore } from '@/core/store/settings';
 import type { ReactNode } from 'react';
 import { DrawerDimensions } from './DrawerDimensions';
 
@@ -80,6 +81,25 @@ describe('DrawerDimensions', () => {
     expect(textElements.length).toBe(3);
   });
 
+  it('labels the sizes in the measure unit', () => {
+    useSettingsStore.getState().updateSetting('measureUnit', 'cm');
+    const { getAllByTestId } = render(
+      <DrawerDimensions
+        width={10}
+        depth={8}
+        height={21}
+        gridUnitMm={42}
+        gridUnitMmY={42}
+        heightUnitMm={7}
+      />
+    );
+    expect(getAllByTestId('r3f-text').map((el) => el.textContent)).toEqual([
+      '42 cm',
+      '33.6 cm',
+      '14.7 cm',
+    ]);
+  });
+
   it('calculates correct width in mm', () => {
     const { getAllByTestId } = render(
       <DrawerDimensions
@@ -93,7 +113,7 @@ describe('DrawerDimensions', () => {
     );
     const textElements = getAllByTestId('r3f-text');
     // Width should be 10 * 42 = 420mm
-    expect(textElements[0].textContent).toBe('420mm');
+    expect(textElements[0].textContent).toBe('420 mm');
   });
 
   it('calculates correct depth in mm', () => {
@@ -109,7 +129,7 @@ describe('DrawerDimensions', () => {
     );
     const textElements = getAllByTestId('r3f-text');
     // Depth should be 8 * 42 = 336mm
-    expect(textElements[1].textContent).toBe('336mm');
+    expect(textElements[1].textContent).toBe('336 mm');
   });
 
   it('uses the Y pitch for the depth label on a non-square grid (#2704)', () => {
@@ -125,8 +145,8 @@ describe('DrawerDimensions', () => {
     );
     const textElements = getAllByTestId('r3f-text');
     // Depth uses the Y pitch: 8 * 22 = 176mm (not 8 * 42). Width stays 420mm.
-    expect(textElements[0].textContent).toBe('420mm');
-    expect(textElements[1].textContent).toBe('176mm');
+    expect(textElements[0].textContent).toBe('420 mm');
+    expect(textElements[1].textContent).toBe('176 mm');
   });
 
   it('calculates correct height in mm', () => {
@@ -142,7 +162,7 @@ describe('DrawerDimensions', () => {
     );
     const textElements = getAllByTestId('r3f-text');
     // Height should be 21 * 7 = 147mm
-    expect(textElements[2].textContent).toBe('147mm');
+    expect(textElements[2].textContent).toBe('147 mm');
   });
 
   it('labels a measured drawer with its measured height, not the floored units', () => {
@@ -157,7 +177,7 @@ describe('DrawerDimensions', () => {
         measuredHeightMm={40}
       />
     );
-    expect(getAllByTestId('r3f-text')[2].textContent).toBe('40mm');
+    expect(getAllByTestId('r3f-text')[2].textContent).toBe('40 mm');
   });
 
   it('labels the grid height once it moves off the measured one', () => {
@@ -172,7 +192,7 @@ describe('DrawerDimensions', () => {
         measuredHeightMm={40}
       />
     );
-    expect(getAllByTestId('r3f-text')[2].textContent).toBe('23.1mm');
+    expect(getAllByTestId('r3f-text')[2].textContent).toBe('23.1 mm');
   });
 
   it('renders with fractional dimensions', () => {
@@ -202,6 +222,6 @@ describe('DrawerDimensions', () => {
     );
     const textElements = getAllByTestId('r3f-text');
     // Width should be 10 * 50 = 500mm
-    expect(textElements[0].textContent).toBe('500mm');
+    expect(textElements[0].textContent).toBe('500 mm');
   });
 });

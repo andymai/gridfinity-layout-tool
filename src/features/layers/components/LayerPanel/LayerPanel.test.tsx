@@ -6,6 +6,13 @@ import { useSelectionStore } from '@/core/store/selection';
 import { createTestBin, resetAllStores } from '@/test/testUtils';
 import { binId, gridUnits, heightUnits, layerId as toLayerId } from '@/core/types';
 import type { Layer } from '@/core/types';
+import type { DrawerCeilingFit } from '@/shared/utils/drawerCeiling';
+import { useSettingsStore } from '@/core/store/settings';
+
+const ceilingState = vi.hoisted(() => ({ fit: null as DrawerCeilingFit | null }));
+vi.mock('@/shared/hooks/useDrawerCeiling', () => ({
+  useDrawerCeiling: () => ceilingState.fit,
+}));
 
 // Capture props passed to the rows for testing callback wiring
 let capturedProps: Record<string, unknown> = {};
@@ -47,6 +54,7 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
 describe('LayerPanel', () => {
   beforeEach(() => {
     resetAllStores();
+    ceilingState.fit = null;
     capturedProps = {};
     vi.clearAllMocks();
     // Set activeLayerId to match the default layer
@@ -141,6 +149,23 @@ describe('LayerPanel', () => {
       const { container } = render(<LayerPanel />);
 
       expect(container.firstChild).toBeNull();
+    });
+  });
+
+  describe('drawer ceiling', () => {
+    it('names the overflow in the measure unit', () => {
+      useSettingsStore.getState().updateSetting('measureUnit', 'in');
+      ceilingState.fit = {
+        ceilingMm: 50,
+        tallestMm: 56.35,
+        slackMm: -6.35,
+        fits: false,
+        overflowing: [],
+      };
+      render(<LayerPanel />);
+      expect(
+        screen.getByText('Stack stands 0.25 in above your measured drawer')
+      ).toBeInTheDocument();
     });
   });
 

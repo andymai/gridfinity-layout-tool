@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import type { DrawerOutline } from '@/core/types';
+import { useSettingsStore, DEFAULT_SETTINGS } from '@/core/store/settings';
 
 vi.mock('@react-three/drei', () => ({
   Text: vi.fn(() => null),
@@ -49,17 +50,23 @@ function labels(props: Partial<Parameters<typeof DimensionLabels>[0]> = {}): str
 describe('DimensionLabels', () => {
   beforeEach(() => {
     vi.mocked(Text).mockClear();
+    useSettingsStore.setState({ settings: { ...DEFAULT_SETTINGS } });
+  });
+
+  it('labels the plate in the measure unit', () => {
+    useSettingsStore.getState().updateSetting('measureUnit', 'cm');
+    expect(labels({ paddingLeft: 5, paddingRight: 7 })).toEqual(['89.4 cm', '29.4 cm']);
   });
 
   it('measures the padded grid extent on a plain rectangle', () => {
-    expect(labels({ paddingLeft: 5, paddingRight: 7 })).toEqual(['894mm', '294mm']);
+    expect(labels({ paddingLeft: 5, paddingRight: 7 })).toEqual(['894 mm', '294 mm']);
   });
 
   //. The generator widens its slab by the frame overhang and intersects it
   // with the shape, so the shape's own span is the plate. Measuring the lattice
   // annotated a 931 × 327mm plate as 882 × 294mm.
   it('measures a perimeter that reaches past the grid', () => {
-    expect(labels({ outline: OVERSIZE })).toEqual(['931mm', '327mm']);
+    expect(labels({ outline: OVERSIZE })).toEqual(['931 mm', '327 mm']);
   });
 
   it('measures a perimeter that falls short of the grid', () => {
@@ -71,7 +78,7 @@ describe('DimensionLabels', () => {
         { x: 21, y: 7 * U - 21 },
       ],
     };
-    expect(labels({ outline: inset })).toEqual(['840mm', '252mm']);
+    expect(labels({ outline: inset })).toEqual(['840 mm', '252 mm']);
   });
 
   it('centres the width annotation on the material, not the lattice', () => {

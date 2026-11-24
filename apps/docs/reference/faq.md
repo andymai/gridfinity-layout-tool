@@ -115,7 +115,7 @@ Measure the inside width and depth of the drawer in millimeters. Divide each val
 
 ### My drawer is in inches. What do I do?
 
-Multiply each size by 25.4 to get millimeters. For example, a drawer of 15.5 × 21 inches is 393.7 × 533.4 mm, and it takes a grid of 9 × 12. The Layout Tool takes sizes in millimeters only. The box in [Units and sizes](../concepts/units#grid-units-and-height-units) takes inches too: pick **in** above the fields.
+Set <Ui k="settings.measureUnit" /> to <Ui k="settings.measureUnit.in" /> on the <Ui k="settings.tabs.general" /> tab of <Ui k="sidebar.settings" />. Then type the sizes from your tape measure as they are. The grid stays in grid units: a drawer of 15.5 × 21 inches takes a grid of 9 × 12. See [Type sizes in centimeters or inches](../concepts/units#type-sizes-in-centimeters-or-inches). The box in [Units and sizes](../concepts/units#grid-units-and-height-units) takes inches too: pick **in** above the fields.
 
 ### What do I do with the gap at the edge of the drawer?
 

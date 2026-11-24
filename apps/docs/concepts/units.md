@@ -73,7 +73,7 @@ Grid sizes are always in grid units and height units. The sizes that you measure
 1. Open <Ui k="sidebar.settings" />, then the <Ui k="settings.tabs.general" /> tab.
 2. Under <Ui k="settings.measureUnit" />, pick <Ui k="settings.measureUnit.cm" /> or <Ui k="settings.measureUnit.in" />.
 
-The unit applies to the drawer height and the measured drawer size in the layout editor, and to the plate size in the baseplate generator. The lines under the drawer size use it too. Other millimeter fields, such as the padding, stay in millimeters.
+The unit applies to the drawer height and the measured drawer size in the layout editor, and to the plate size in the baseplate generator. The size lines, the warnings and the size labels in the 3D views use it too. Other millimeter fields, such as the padding, stay in millimeters.
 
 ## Grids that are not 42 mm
 

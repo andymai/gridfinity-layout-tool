@@ -7,6 +7,7 @@ import { useTranslation } from '@/i18n';
 import { CONSTRAINTS } from '@/core/constants';
 import type { LayerId } from '@/core/types';
 import { useDrawerCeiling } from '@/shared/hooks/useDrawerCeiling';
+import { useMeasureUnit } from '@/shared/hooks/useMeasureUnit';
 import { LayerRows } from './LayerRows';
 import { TallestStackMeter } from '../TallestStackMeter';
 import { useLayerListController } from '../../hooks/useLayerListController';
@@ -15,6 +16,7 @@ import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 
 export function LayerPanel() {
   const t = useTranslation();
+  const { symbol: measureSymbol, format: formatMeasure } = useMeasureUnit();
   const [editingLayerId, setEditingLayerId] = useState<LayerId | null>(null);
   const [hoveredLayerId, setHoveredLayerId] = useState<LayerId | null>(null);
 
@@ -124,7 +126,8 @@ export function LayerPanel() {
             {ceiling !== null && !ceiling.fits && (
               <p className="mt-1 text-micro text-warning tabular-nums">
                 {t('drawerCeiling.layerOverflow', {
-                  over: String(Math.round(-ceiling.slackMm * 10) / 10),
+                  over: formatMeasure(-ceiling.slackMm),
+                  unit: measureSymbol,
                 })}
               </p>
             )}

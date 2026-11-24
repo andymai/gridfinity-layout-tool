@@ -36,12 +36,12 @@ You don't have to type the size again. The baseplate generator works on your act
 
 While sync is on, you can't change the <Ui k="baseplate.gridWidth" /> and <Ui k="baseplate.gridDepth" /> steppers. Change the drawer in the layout editor, and the plate changes with it.
 
-Look at the size line under the steppers. It shows the plate size in millimeters. The plate must be smaller than the inside of your drawer.
+Look at the size line under the steppers. It shows the plate size. The plate must be smaller than the inside of your drawer.
 
 <Screenshot id="getting-started-first-baseplate-dimensions" alt="The dimensions group of the baseplate generator, with sync with layout on and the plate size in millimeters." spec="Baseplate generator, desktop 1440 px, active layout with a 9 x 7 grid, defaults otherwise. Crop to the dimensions group at the top of the panel." />
 
 ::: tip
-Want the plate to fill the drawer to the edges? Click the size line, then type the inside size of your drawer in millimeters. The baseplate generator picks the largest grid that fits and fills the gap at the sides with <Ui k="baseplate.padding" />. This turns off <Ui k="baseplate.syncWithLayout" />.
+Want the plate to fill the drawer to the edges? Click the size line, then type the inside size of your drawer. The baseplate generator picks the largest grid that fits and fills the gap at the sides with <Ui k="baseplate.padding" />. This turns off <Ui k="baseplate.syncWithLayout" />.
 :::
 
 ## Step 3: Add magnet holes

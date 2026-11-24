@@ -191,10 +191,21 @@ describe('EditableDimensions', () => {
 
       expect(onCommit).not.toHaveBeenCalled();
     });
+
+    it('keeps the current height when its field is emptied and the width changes', () => {
+      const onCommit = vi.fn();
+      render(<EditableDimensions {...heightProps} onCommit={onCommit} />);
+      fireEvent.click(screen.getByRole('button'));
+
+      fireEvent.change(screen.getByLabelText('Width mm'), { target: { value: '500' } });
+      fireEvent.change(screen.getByLabelText('Height mm'), { target: { value: '' } });
+      fireEvent.keyDown(screen.getByLabelText('Height mm'), { key: 'Enter' });
+
+      expect(onCommit).toHaveBeenCalledWith(500, 357, 84);
+    });
   });
-  //. The caller snaps a committed value to a grid, so committing values the
-  // user never typed silently resized the thing being measured — on a baseplate
-  // synced to a shaped drawer it dropped both the sync and the shape.
+  // The caller snaps a committed value to a grid, so a commit with no edit
+  // would resize what the user measured.
   it('does not commit when opened and dismissed without an edit', () => {
     const onCommit = vi.fn();
     render(<EditableDimensions {...defaultProps} onCommit={onCommit} />);

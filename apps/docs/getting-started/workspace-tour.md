@@ -55,7 +55,7 @@ The left sidebar has the title <Ui k="sidebar.tools" />. From top to bottom, it 
 
 - **Layers and categories.** The active layer, the list of <Ui k="common.layers" />, and the list of <Ui k="common.categories" />.
 - **<Ui k="sidebar.inspirationGallery" />.** Ideas for your drawer.
-- **<Ui k="sidebar.gridSize" />.** The drawer size in grid units, the measured size in millimeters, and <Ui k="sidebar.halfBinMode" />.
+- **<Ui k="sidebar.gridSize" />.** The drawer size in grid units, the measured size, and <Ui k="sidebar.halfBinMode" />.
 - **<Ui k="common.physicalUnits" />.** The grid unit, the height unit and the print bed size.
 - **<Ui k="baseplate.title" />.** The baseplate for this layout.
 - **<Ui k="sidebar.learn" />.** Links to the guides on the website.

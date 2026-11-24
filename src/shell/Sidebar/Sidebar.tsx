@@ -28,7 +28,7 @@ import { AppVersionRailButton } from '@/shared/components/AppVersionButton';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation, useLocale } from '@/i18n';
 import { useMeasureUnit } from '@/shared/hooks/useMeasureUnit';
-import { fromMm, toMm } from '@/shared/utils/lengthUnit';
+import { LENGTH_DECIMALS, fromMm, toMm } from '@/shared/utils/lengthUnit';
 import { LEARN_LINKS, learnHref } from './learnLinks';
 import { useOnboarding } from '@/features/onboarding';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
@@ -44,7 +44,8 @@ const InspirationGallery = lazyWithRetry(() =>
 
 export function Sidebar() {
   const t = useTranslation();
-  const { unit: measureUnit, symbol: measureSymbol } = useMeasureUnit();
+  const { unit: measureUnit, withUnit } = useMeasureUnit();
+  const drawerHeightLabel = withUnit(t('sidebar.drawerHeight'));
   const { locale } = useLocale();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showInspirationGallery, setShowInspirationGallery] = useState(false);
@@ -329,11 +330,8 @@ export function Sidebar() {
                       />
                     </div>
                     <div>
-                      <label
-                        className="block text-content-tertiary mb-1"
-                        title={t('sidebar.maxHeight')}
-                      >
-                        {t('sidebar.drawerHeight')}
+                      <label className="block text-content-tertiary mb-1">
+                        {drawerHeightLabel}
                       </label>
                       <Stepper
                         value={fromMm(drawerHeightDisplayMm, measureUnit)}
@@ -342,13 +340,10 @@ export function Sidebar() {
                         min={fromMm(heightUnitMm, measureUnit)}
                         max={fromMm(CONSTRAINTS.GRID_MAX * heightUnitMm, measureUnit)}
                         step={fromMm(heightUnitMm, measureUnit)}
-                        inputDecimals={measureUnit === 'in' ? 3 : 2}
+                        inputDecimals={LENGTH_DECIMALS[measureUnit]}
                         size="sm"
                         fullWidth
-                        aria-label={t('common.labelWithUnit', {
-                          label: t('sidebar.drawerHeight'),
-                          unit: measureSymbol,
-                        })}
+                        aria-label={drawerHeightLabel}
                       />
                     </div>
                   </div>
