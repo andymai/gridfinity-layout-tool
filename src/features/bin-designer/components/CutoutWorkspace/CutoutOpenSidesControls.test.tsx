@@ -194,4 +194,33 @@ describe('CutoutOpenSidesControls', () => {
     render(<CutoutOpenSidesControls cutout={rect()} onUpdate={vi.fn()} />);
     expect(screen.getByText('binDesigner.cutouts.openSidesBlocked.taper')).toBeInTheDocument();
   });
+
+  it('lets a cradle open only the walls at its ends, with no width to set', () => {
+    const cradle = rect({
+      cradle: true,
+      openSides: [{ side: 'front' }, { side: 'right' }],
+    });
+    seed([cradle]);
+    render(<CutoutOpenSidesControls cutout={cradle} onUpdate={vi.fn()} />);
+    expect(screen.getByLabelText('binDesigner.cutouts.openSide.frontAria')).toBeEnabled();
+    expect(screen.getByLabelText('binDesigner.cutouts.openSide.backAria')).toBeEnabled();
+    // Stored but inert: pressed, so turning the cradle off restores the breach.
+    const right = screen.getByLabelText('binDesigner.cutouts.openSide.rightAria');
+    expect(right).toBeDisabled();
+    expect(right).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('binDesigner.cutouts.openSidesCradleHint')).toBeInTheDocument();
+    expect(screen.getByTestId('open-side-row-front')).toBeInTheDocument();
+    expect(screen.queryByTestId('open-side-row-right')).toBeNull();
+    expect(screen.queryByTestId(/compact-input-binDesigner\.cutouts\.openSideWidth/)).toBeNull();
+  });
+
+  it('names the angle as the reason for a cradle turned off square', () => {
+    const cradle = rect({ cradle: true, rotation: 30, openSides: [{ side: 'front' }] });
+    seed([cradle]);
+    render(<CutoutOpenSidesControls cutout={cradle} onUpdate={vi.fn()} />);
+    expect(screen.getByLabelText('binDesigner.cutouts.openSide.frontAria')).toBeDisabled();
+    expect(
+      screen.getByText('binDesigner.cutouts.openSidesBlocked.cradleAngle')
+    ).toBeInTheDocument();
+  });
 });

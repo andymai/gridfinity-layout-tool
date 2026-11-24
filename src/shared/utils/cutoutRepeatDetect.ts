@@ -16,7 +16,7 @@
  */
 
 import type { Cutout, CutoutArrayConfig, CutoutArrayMode } from '@/features/bin-designer/types';
-import { MAX_ARRAY_INSTANCES } from '@/features/bin-designer/types';
+import { isCradle, MAX_ARRAY_INSTANCES } from '@/features/bin-designer/types';
 import { arrayFieldBounds, arrayInstanceCount, canArray, defaultArrayConfig } from './cutoutArray';
 import { isCutoutSocketMode } from './cutoutLabelSocketPlan';
 import { fingerBottom } from './fingerAccess';
@@ -87,6 +87,7 @@ function geometryFingerprint(c: Cutout): string {
     round3(c.chamferWidth ?? 0),
     c.entryProfile ?? 'chamfer',
     fingerBottom(c) ?? '-',
+    isCradle(c) ? 'cradle' : '-',
     c.split
       ? [
           round3(c.split.a.x),

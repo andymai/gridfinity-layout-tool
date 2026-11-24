@@ -5,13 +5,19 @@
  */
 
 import type { Cutout, CutoutArrayConfig } from '@/features/bin-designer/types';
-import { LEAN_SHAPES, MAX_CUTOUT_LEAN_DEG, snapKnifeRotation } from '@/features/bin-designer/types';
+import {
+  isCradle,
+  LEAN_SHAPES,
+  MAX_CUTOUT_LEAN_DEG,
+  snapKnifeRotation,
+} from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { clampRotationToBounds } from '../panel/CutoutsSection/geometry';
 import { resizeAroundCenter } from '../panel/CutoutsSection/cutoutHelpers';
 import { cutoutDepthShortfall } from '../panel/CutoutsSection/cutoutDepthShortfall';
 import { CutoutScoopControls } from './CutoutScoopControls';
+import { CutoutCradleControls } from './CutoutCradleControls';
 import { FingerAccessControls } from './FingerAccessControls';
 import { CutoutSplitControls, type SplitTool } from './CutoutSplitControls';
 import { CutoutPointControls, type PointTool } from './CutoutPointControls';
@@ -112,6 +118,8 @@ export function SingleCutoutInspector({
   const depthShortfall = throughOnly
     ? null
     : cutoutDepthShortfall(live, binWidth, binDepth, maxCutDepth);
+  // A cradle's arc is its floor: no corner radius, lean or scoop applies.
+  const cradle = isCradle(cutout);
   return (
     <>
       <div className="-mx-4 border-b border-stroke-subtle px-4 py-3">
@@ -251,7 +259,7 @@ export function SingleCutoutInspector({
         <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
           <Collapsible title={t('binDesigner.cutouts.section.shape')} size="sm">
             <div className="space-y-1.5">
-              {cutout.shape === 'rectangle' && (
+              {cutout.shape === 'rectangle' && !cradle && (
                 <SliderInput
                   label={t('binDesigner.cutouts.cornerRadius')}
                   value={cutout.cornerRadius}
@@ -270,7 +278,16 @@ export function SingleCutoutInspector({
                 onUpdate={(patch) => onUpdate(cutout.id, patch)}
                 disabled={disabled}
               />
-              {LEAN_SHAPES.includes(cutout.shape) && !throughOnly && (
+              {/* A lid's plate cuts clean through, so it has no floor to curve. */}
+              {!throughOnly && (
+                <CutoutCradleControls
+                  cutout={live}
+                  maxCutDepth={maxCutDepth}
+                  onUpdate={(patch) => onUpdate(cutout.id, patch)}
+                  disabled={disabled}
+                />
+              )}
+              {LEAN_SHAPES.includes(cutout.shape) && !throughOnly && !cradle && (
                 <SliderInput
                   label={t('binDesigner.cutouts.lean')}
                   value={cutout.leanDeg ?? 0}
@@ -292,6 +309,7 @@ export function SingleCutoutInspector({
               {cutout.shape !== 'mesh' &&
                 !throughOnly &&
                 !throughCut &&
+                !cradle &&
                 fingerBottom(cutout) !== 'curved' && (
                   <CutoutScoopControls
                     key={cutout.id}

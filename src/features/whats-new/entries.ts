@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'cutout-cradle',
+    date: '2026-11-23',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Cradles for cans and bottles' },
+    body: {
+      en: 'A rectangle cutout can now be a cradle: its floor curves across its width, so a can or a bottle lies in it on its side. Select a rectangle in the cutout editor and turn on Cradle. To run the cradle through the bin, open the walls at its two ends. The same curve then goes through each wall and the stacking lip, with no step where the floor meets the wall.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'wrench-tool-sets',
     date: '2026-11-23',
     kind: 'new',

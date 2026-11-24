@@ -181,6 +181,11 @@ export function validateCutouts(value: unknown): string | null {
     ) {
       return `cutouts[${i}].finger.bottom must be one of: ${VALID_CUTOUT_FINGER_BOTTOMS.join(', ')}`;
     }
+    // The generator branches on the flag, so a string "true" must not ride into
+    // storage reading as set on the server and unset in the editor.
+    if (c.cradle !== undefined && typeof c.cradle !== 'boolean') {
+      return `cutouts[${i}].cradle must be a boolean`;
+    }
     if (c.split !== undefined) {
       const problem = splitProblem(c.split);
       if (problem) return `cutouts[${i}].split${problem.startsWith('.') ? problem : ` ${problem}`}`;

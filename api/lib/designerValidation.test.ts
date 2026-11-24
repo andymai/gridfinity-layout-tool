@@ -1899,6 +1899,29 @@ describe('validateDesignerShare', () => {
     });
   });
 
+  describe('cutout cradle validation', () => {
+    const withCutouts = (cutouts: unknown) => {
+      const payload = validPayload();
+      (payload.params as Record<string, unknown>).cutouts = cutouts;
+      return validateDesignerShare(payload, JSON.stringify(payload).length);
+    };
+
+    it('keeps a cradle in the payload', () => {
+      const result = withCutouts([{ id: 'a', shape: 'rectangle', cradle: true }]);
+      expect(result.valid).toBe(true);
+      if (!result.valid) return;
+      const cutouts = (result.payload.params as { cutouts: Record<string, unknown>[] }).cutouts;
+      expect(cutouts[0].cradle).toBe(true);
+    });
+
+    it.each([
+      ['a string', 'true'],
+      ['a number', 1],
+    ])('rejects %s', (_name, cradle) => {
+      expect(withCutouts([{ id: 'a', shape: 'rectangle', cradle }]).valid).toBe(false);
+    });
+  });
+
   describe('cutout split validation', () => {
     const withCutouts = (cutouts: unknown) => {
       const payload = validPayload();

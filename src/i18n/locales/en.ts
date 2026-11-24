@@ -3544,6 +3544,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.throughHint': 'Opens out of the bottom of the bin.',
   'binDesigner.cutouts.throughBlocked.group': 'Ungroup it to cut through.',
   'binDesigner.cutouts.throughBlocked.tilt': 'Set lean to 0 to cut through.',
+  'binDesigner.cutouts.throughBlocked.cradle': 'Turn off Cradle to cut through.',
   'binDesigner.cutouts.throughBlocked.taper': 'Cutting through is off beside a tapered wall.',
   'binDesigner.cutouts.throughBlocked.feet': 'Cutting through is off with detachable feet.',
   'binDesigner.cutouts.throughBlocked.nesting': 'Cutting through is off for a Nesting body.',
@@ -3599,6 +3600,10 @@ const en: Record<string, string> = {
     'The fill keeps its height, so pocket depths survive a change to the bin height.',
   'binDesigner.cutouts.cornerRadius': 'Corner radius',
   'binDesigner.cutouts.lean': 'Lean',
+  'binDesigner.cutouts.cradle': 'Cradle',
+  'binDesigner.cutouts.cradleDetail':
+    'Curves the floor across the width so a can or a bottle lies in it on its side.',
+  'binDesigner.cutouts.cradleRadius': 'Arc radius {radius}mm',
   'binDesigner.cutouts.leanDetail':
     'Tilts the pocket about its opening so items slide in at a slope. Rotation turns the tilt direction.',
   'binDesigner.cutouts.scoopRadius': 'Scoop radius',
@@ -3630,6 +3635,12 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.openSidesBlocked.host':
     'Only a solid bin can open a pocket through its wall.',
   'binDesigner.cutouts.openSidesBlocked.lean': 'A leaned pocket cannot open through a wall.',
+  'binDesigner.cutouts.openSidesBlocked.cradleAngle':
+    'Turn the cradle square to the walls to open it.',
+  'binDesigner.cutouts.openSidesBlocked.cradleGroup':
+    'A group with a cradle in it cannot open a wall.',
+  'binDesigner.cutouts.openSidesCradleHint':
+    'A cradle opens only the walls at its two ends, and its arc runs through them.',
   'binDesigner.cutouts.openSidesBlocked.taper': 'Not available on a tapered bin.',
   'binDesigner.cutouts.openSideWidth': 'Channel width',
   'binDesigner.cutouts.openSideForm': 'Opening',

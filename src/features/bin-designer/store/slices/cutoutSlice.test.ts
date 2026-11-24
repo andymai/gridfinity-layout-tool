@@ -470,6 +470,33 @@ describe('cutoutSlice - consolidated actions', () => {
     });
   });
 
+  describe('updateCutout - cradle', () => {
+    it('squares the corners when a rectangle becomes a cradle, and keeps them square', () => {
+      const { addCutout, updateCutout } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'c', cornerRadius: 3 }));
+
+      updateCutout('c', { cradle: true });
+      expect(useDesignerStore.getState().params.cutouts[0]).toMatchObject({
+        cradle: true,
+        cornerRadius: 0,
+      });
+
+      updateCutout('c', { cornerRadius: 5 });
+      expect(useDesignerStore.getState().params.cutouts[0].cornerRadius).toBe(0);
+    });
+
+    it('drops the flag when turned off or when the shape changes', () => {
+      const { addCutout, updateCutout } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'c', cradle: true }));
+      updateCutout('c', { cradle: undefined });
+      expect('cradle' in useDesignerStore.getState().params.cutouts[0]).toBe(false);
+
+      updateCutout('c', { cradle: true });
+      updateCutout('c', { shape: 'circle' });
+      expect('cradle' in useDesignerStore.getState().params.cutouts[0]).toBe(false);
+    });
+  });
+
   describe('updateCutout - path translation', () => {
     it('moving a path cutout auto-translates path points by delta', () => {
       const { addCutout, updateCutout } = useDesignerStore.getState();

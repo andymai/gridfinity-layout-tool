@@ -1,5 +1,5 @@
 import type { Cutout, CutoutOpenSide, CutoutOpenSideSpec } from '@/features/bin-designer/types';
-import { CUTOUT_OPEN_SIDES, MIN_OPEN_SIDE_WIDTH_MM } from '@/features/bin-designer/types';
+import { CUTOUT_OPEN_SIDES, isCradle, MIN_OPEN_SIDE_WIDTH_MM } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useLoadedMeshAssets } from '@/shared/hooks/useMeshOutlines';
 import { useTranslation } from '@/i18n';
@@ -13,6 +13,7 @@ import {
 import { normalizeOpenSides, openSideBlocker } from '@/shared/utils/cutoutOpenSides';
 import type { OpenSideBlocker } from '@/shared/utils/cutoutOpenSides';
 import { cutoutOutlineRing, meshOutlineRings, ringBounds } from '@/shared/utils/cutoutOutline';
+import { cradleOpensSide } from '@/shared/utils/cutoutCradle';
 
 interface CutoutOpenSidesControlsProps {
   readonly cutout: Cutout;
@@ -36,6 +37,8 @@ const SIDE_ARIA_KEY: Record<CutoutOpenSide, string> = {
 
 /** `shape` never reaches the row: it is only rendered for shapes that cut a pocket. */
 const BLOCKER_HINT_KEY: Partial<Record<OpenSideBlocker, string>> = {
+  cradleAngle: 'binDesigner.cutouts.openSidesBlocked.cradleAngle',
+  cradleGroup: 'binDesigner.cutouts.openSidesBlocked.cradleGroup',
   host: 'binDesigner.cutouts.openSidesBlocked.host',
   grouped: 'binDesigner.cutouts.openSidesBlocked.grouped',
   lean: 'binDesigner.cutouts.openSidesBlocked.lean',
@@ -55,7 +58,8 @@ const CHIP_CLASS =
  * while a blocker holds them inert, so ungrouping or clearing the lean
  * restores the breach the user already asked for. Each opened side unfolds
  * one row: the channel width (the pocket's own by default) and whether the
- * wall above the pocket stays.
+ * wall above the pocket stays. A cradle opens only the walls at its ends, at
+ * its full width, so the other chips stay inert and its rows show no width.
  */
 export function CutoutOpenSidesControls({
   cutout,
@@ -66,7 +70,13 @@ export function CutoutOpenSidesControls({
   const params = useDesignerStore((s) => s.params);
   const meshAssets = useLoadedMeshAssets(params.meshAssets);
   const blocker = openSideBlocker(cutout, params);
-  const hintKey = blocker ? BLOCKER_HINT_KEY[blocker] : undefined;
+  const cradle = isCradle(cutout);
+  const hintKey = blocker
+    ? BLOCKER_HINT_KEY[blocker]
+    : cradle
+      ? 'binDesigner.cutouts.openSidesCradleHint'
+      : undefined;
+  const opens = (side: CutoutOpenSide): boolean => !cradle || cradleOpensSide(cutout, side);
   const specs = normalizeOpenSides(cutout.openSides) ?? [];
   // A mesh whose silhouette is missing or still loading has the footprint the
   // editor drew, so its rows keep a real width rather than a zero.
@@ -133,7 +143,7 @@ export function CutoutOpenSidesControls({
               type="button"
               variant="ghost"
               onClick={() => toggle(side)}
-              disabled={disabled || blocker !== null}
+              disabled={disabled || blocker !== null || !opens(side)}
               aria-label={t(SIDE_ARIA_KEY[side])}
               aria-pressed={on}
               className={`${CHIP_CLASS} ${on ? SEGMENT_ACTIVE : SEGMENT_INACTIVE}`}
@@ -147,56 +157,60 @@ export function CutoutOpenSidesControls({
         {hintKey ? t(hintKey) : t('binDesigner.cutouts.openSidesHint')}
       </p>
       {blocker === null &&
-        specs.map((spec) => {
-          const full = fullWidth(spec.side);
-          return (
-            <div
-              key={spec.side}
-              className="space-y-1 pl-2"
-              data-testid={`open-side-row-${spec.side}`}
-            >
-              <div className="flex items-center gap-1.5">
-                <span className="w-10 text-micro text-content-tertiary">
-                  {t(SIDE_LABEL_KEY[spec.side])}
-                </span>
-                <div
-                  role="group"
-                  aria-label={t('binDesigner.cutouts.openSideForm')}
-                  className={`${SEGMENT_GROUP_CLASS} flex-1`}
-                >
-                  {FORMS.map(({ tunnel, key }) => {
-                    const active = (spec.tunnel === true) === tunnel;
-                    return (
-                      <Button
-                        key={key}
-                        type="button"
-                        variant="ghost"
-                        disabled={disabled}
-                        onClick={() => patch(spec.side, { tunnel: tunnel || undefined })}
-                        aria-pressed={active}
-                        className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(active)}`}
-                      >
-                        {t(key)}
-                      </Button>
-                    );
-                  })}
+        specs
+          .filter((spec) => opens(spec.side))
+          .map((spec) => {
+            const full = fullWidth(spec.side);
+            return (
+              <div
+                key={spec.side}
+                className="space-y-1 pl-2"
+                data-testid={`open-side-row-${spec.side}`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="w-10 text-micro text-content-tertiary">
+                    {t(SIDE_LABEL_KEY[spec.side])}
+                  </span>
+                  <div
+                    role="group"
+                    aria-label={t('binDesigner.cutouts.openSideForm')}
+                    className={`${SEGMENT_GROUP_CLASS} flex-1`}
+                  >
+                    {FORMS.map(({ tunnel, key }) => {
+                      const active = (spec.tunnel === true) === tunnel;
+                      return (
+                        <Button
+                          key={key}
+                          type="button"
+                          variant="ghost"
+                          disabled={disabled}
+                          onClick={() => patch(spec.side, { tunnel: tunnel || undefined })}
+                          aria-pressed={active}
+                          className={`flex-1 py-0.5 text-micro leading-none ${getSegmentClass(active)}`}
+                        >
+                          {t(key)}
+                        </Button>
+                      );
+                    })}
+                  </div>
                 </div>
+                {!cradle && (
+                  <NumberField
+                    label={`${t('binDesigner.cutouts.openSideWidth')} · ${t(SIDE_LABEL_KEY[spec.side])}`}
+                    value={spec.widthMm ?? Number(full.toFixed(1))}
+                    onChange={(widthMm) =>
+                      patch(spec.side, { widthMm: widthMm >= full ? undefined : widthMm })
+                    }
+                    min={MIN_OPEN_SIDE_WIDTH_MM}
+                    max={Math.max(MIN_OPEN_SIDE_WIDTH_MM, Number(full.toFixed(1)))}
+                    step={0.5}
+                    unit="mm"
+                    disabled={disabled}
+                  />
+                )}
               </div>
-              <NumberField
-                label={`${t('binDesigner.cutouts.openSideWidth')} · ${t(SIDE_LABEL_KEY[spec.side])}`}
-                value={spec.widthMm ?? Number(full.toFixed(1))}
-                onChange={(widthMm) =>
-                  patch(spec.side, { widthMm: widthMm >= full ? undefined : widthMm })
-                }
-                min={MIN_OPEN_SIDE_WIDTH_MM}
-                max={Math.max(MIN_OPEN_SIDE_WIDTH_MM, Number(full.toFixed(1)))}
-                step={0.5}
-                unit="mm"
-                disabled={disabled}
-              />
-            </div>
-          );
-        })}
+            );
+          })}
     </div>
   );
 }

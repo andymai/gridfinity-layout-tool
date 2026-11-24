@@ -93,10 +93,11 @@ function buildTools(cutouts: LidCutoutInputs): Shape3D[] {
   // nominal at the top face and pinched at the underside. A scoop rounds a pocket
   // into its floor, and a hole has no floor. The finger role goes with them, as
   // a curved finger cut sizes a fillet of its own, and so does a split, whose
-  // second depth would stop part of the hole short. Lean is zeroed for the same
+  // second depth would stop part of the hole short, and so does a cradle, whose
+  // arc would close the hole at the underside. Lean is zeroed for the same
   // class of reason: the underside structures and the hole preview assume a
   // vertical bore through the plate.
-  const through = ({ finger: _finger, split: _split, ...c }: Cutout): Cutout => ({
+  const through = ({ finger: _finger, split: _split, cradle: _cradle, ...c }: Cutout): Cutout => ({
     ...c,
     cutDepth: surfaceZ,
     scoopRadiusW: 0,

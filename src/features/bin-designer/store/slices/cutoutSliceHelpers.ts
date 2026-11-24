@@ -10,6 +10,7 @@ import { dissolveSingletonGroups } from '../helpers';
 import { releaseClonedParts } from '../../utils/toolSetMembership';
 import { FINGER_SHAPES } from '@/shared/utils/fingerAccess';
 import { splitBlockedReason } from '@/shared/utils/cutoutSplit';
+import { normalizeCradle } from '@/shared/utils/cutoutCradle';
 import { mapPathRings, scalePathPoints, translatePathPoints } from '../../utils/pathTransforms';
 import {
   groupChain,
@@ -91,8 +92,10 @@ export function mergeCutoutUpdate(c: Cutout, updates: Partial<Cutout>): Cutout {
   const transformedRings = applyPathTransform(c, updates);
   const merged = withScaledSplit(
     c,
-    withoutStrayFinger(
-      transformedRings ? { ...c, ...updates, ...transformedRings } : { ...c, ...updates }
+    normalizeCradle(
+      withoutStrayFinger(
+        transformedRings ? { ...c, ...updates, ...transformedRings } : { ...c, ...updates }
+      )
     )
   );
   const typedDepth = updates.cutDepth !== undefined && !('depthMode' in updates);
