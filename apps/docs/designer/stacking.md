@@ -89,6 +89,14 @@ A nesting box does not fit a Gridfinity baseplate. Its lower floor rules out a f
 To put a box on top of a bin as a tray with a lid underside, use the <Ui k="binDesigner.lidBottom" /> body type instead. [Lids](./lids) explains it.
 :::
 
+## Put a bin inside a bin
+
+The Layout Tool has no bin that holds other Gridfinity bins inside it. These options come closest:
+
+- **Small bins on a big bin.** Small bins sit on the stacking lip of a bigger bin. Turn on <Ui k="binDesigner.base.lipNotches" /> to lock each one to a grid cell. See [Keep smaller bins in place on bigger ones](#keep-smaller-bins-in-place-on-bigger-ones).
+- **A tray inside a bin.** A sliding tray rides on rails inside the bin. It is a Labs feature. See [Add a sliding tray (Labs)](./special-bins#add-a-sliding-tray-labs).
+- **Spaces inside one bin.** Dividers split one bin into compartments. See [Compartments and dividers](./compartments).
+
 ## Read the assembled height
 
 Will it fit under the drawer above? <Ui k="assembledHeight.title" /> answers that. It gives the height of the bin as it stands in the drawer: on its baseplate, with its lid.
