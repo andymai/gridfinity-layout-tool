@@ -463,10 +463,9 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   const migratedLidCutouts = migrateLidCutouts(
     (params.lid as { cutouts?: unknown } | undefined)?.cutouts
   );
-  const migratedToolSets = migrateCutoutToolSets(
-    params.cutoutToolSets,
-    referencedGroupIds(migratedCutouts, migratedLidCutouts ?? [])
-  );
+  const referencedGroups = referencedGroupIds(migratedCutouts, migratedLidCutouts ?? []);
+  const migratedGroupNames = migrateCutoutGroupNames(params.cutoutGroupNames, referencedGroups);
+  const migratedToolSets = migrateCutoutToolSets(params.cutoutToolSets, referencedGroups);
   const referencedMeshIds = new Set(
     migratedCutouts.filter((c) => c.shape === 'mesh').map((c) => c.meshId)
   );
@@ -491,14 +490,11 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     slotConfig,
     dividerPieces,
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
-    cutouts: withLegacyToolSetParts(migratedCutouts, migratedToolSets),
+    cutouts: withLegacyToolSetParts(migratedCutouts, migratedToolSets, migratedGroupNames),
     ...(migratedMeshAssets && Object.keys(migratedMeshAssets).length > 0
       ? { meshAssets: migratedMeshAssets }
       : { meshAssets: undefined }),
-    cutoutGroupNames: migrateCutoutGroupNames(
-      params.cutoutGroupNames,
-      referencedGroupIds(migratedCutouts, migratedLidCutouts ?? [])
-    ),
+    cutoutGroupNames: migratedGroupNames,
     cutoutToolSets: migratedToolSets,
     cutoutConfig,
     wallPattern: wallPatternConfig,

@@ -299,6 +299,26 @@ describe('useToolSets', () => {
     expect(useDesignerStore.getState().params.cutouts.some((c) => c.id === 'mine')).toBe(true);
   });
 
+  it('keeps a text the user left in a set with no parts, across a reload', () => {
+    const { result } = renderHook(() => useToolSets());
+    act(() => {
+      result.current.insertSet(spec);
+    });
+    const setId = onlySetId();
+    act(() => {
+      const store = useDesignerStore.getState();
+      store.addCutout({ ...circle('note'), shape: 'text', label: 'Spares', parentGroups: [setId] });
+      store.removeCutoutsBatch(partsIn(setId).map((c) => c.id));
+    });
+    act(() =>
+      useDesignerStore.setState({ params: migrateParams(useDesignerStore.getState().params) })
+    );
+    act(() => {
+      result.current.rebuildSet(setId, spec);
+    });
+    expect(useDesignerStore.getState().params.cutouts.some((c) => c.id === 'note')).toBe(true);
+  });
+
   it('rebuilds a set saved before parts existed, once the design is loaded', () => {
     const { result } = renderHook(() => useToolSets());
     act(() => {

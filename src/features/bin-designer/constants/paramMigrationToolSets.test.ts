@@ -52,6 +52,7 @@ describe('migrateCutoutToolSets', () => {
 });
 
 describe('withLegacyToolSetParts', () => {
+  const NAMED = { g1: 'Wrenches 8 to 13 mm' };
   const metric: ToolSetSpec = {
     family: 'combinationWrench',
     units: 'metric',
@@ -86,7 +87,7 @@ describe('withLegacyToolSetParts', () => {
       at('l8', 'text', { label: '8' }),
       at('mine', 'circle'),
     ];
-    const out = withLegacyToolSetParts(cutouts, { g1: metric });
+    const out = withLegacyToolSetParts(cutouts, { g1: metric }, NAMED);
     expect(out.map((c) => c.toolSetPart)).toEqual([
       'pocket:8',
       'pocket:10',
@@ -95,22 +96,28 @@ describe('withLegacyToolSetParts', () => {
       'label:8',
       undefined,
     ]);
-    expect(withLegacyToolSetParts(out, { g1: metric })).toBe(out);
+    expect(withLegacyToolSetParts(out, { g1: metric }, NAMED)).toBe(out);
+  });
+
+  it('leaves a later set whose parts the user deleted, which has no stored name', () => {
+    const mine = [at('drawn', 'path'), at('note', 'text', { label: 'Spares' })];
+    expect(withLegacyToolSetParts(mine, { g1: metric }, undefined)).toBe(mine);
+    expect(withLegacyToolSetParts(mine, { g1: metric }, { other: 'Pens' })).toBe(mine);
   });
 
   it('gives placeholder parts when the pockets no longer match the recipe', () => {
-    const out = withLegacyToolSetParts([at('a', 'path'), at('b', 'path')], { g1: metric });
+    const out = withLegacyToolSetParts([at('a', 'path'), at('b', 'path')], { g1: metric }, NAMED);
     expect(out.map((c) => c.toolSetPart)).toEqual(['pocket:#0', 'pocket:#1']);
   });
 
   it('loads a design whose groups use inherited property names', () => {
     const crafted = [at('a', 'path', { parentGroups: ['constructor'] })];
-    expect(withLegacyToolSetParts(crafted, { g1: metric })).toBe(crafted);
+    expect(withLegacyToolSetParts(crafted, { g1: metric }, NAMED)).toBe(crafted);
   });
 
   it('leaves cutouts outside a set, and designs without sets, as they are', () => {
     const loose = [at('a', 'path', { parentGroups: ['other'] })];
-    expect(withLegacyToolSetParts(loose, { g1: metric })).toBe(loose);
-    expect(withLegacyToolSetParts(loose, undefined)).toBe(loose);
+    expect(withLegacyToolSetParts(loose, { g1: metric }, NAMED)).toBe(loose);
+    expect(withLegacyToolSetParts(loose, undefined, NAMED)).toBe(loose);
   });
 });

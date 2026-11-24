@@ -89,11 +89,17 @@ export function migrateCutoutToolSets(
  * replaces them rather than adding a second set. Pockets take their sizes in
  * the order the generator wrote them, smallest jaw first; when the count no
  * longer matches the recipe they get placeholder parts, which still mark them
- * for replacement. A set with any part already is left alone.
+ * for replacement.
+ *
+ * Such a set has no parts and a stored name: that release always stored one,
+ * and later sets store one only when the user types it. A later set with no
+ * parts left (the user deleted them, kept their own shapes) has no stored name,
+ * and marking its shapes would let Edit set delete them.
  */
 export function withLegacyToolSetParts(
   cutouts: Cutout[],
-  sets: Readonly<Record<string, ToolSetSpec>> | undefined
+  sets: Readonly<Record<string, ToolSetSpec>> | undefined,
+  names: Readonly<Record<string, string>> | undefined
 ): Cutout[] {
   if (!sets) return cutouts;
   const members = new Map<string, Cutout[]>();
@@ -103,6 +109,7 @@ export function withLegacyToolSetParts(
   }
   const parts = new Map<string, ToolSetPart>();
   for (const [setId, list] of members) {
+    if (!names || !Object.hasOwn(names, setId)) continue;
     if (list.some((c) => c.toolSetPart !== undefined)) continue;
     const spec = sets[setId];
     const pockets = list.filter((c) => c.shape === 'path');
