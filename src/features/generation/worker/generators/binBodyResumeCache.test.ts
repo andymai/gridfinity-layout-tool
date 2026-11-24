@@ -18,6 +18,7 @@ import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import { DEFAULT_FLOOR_PATTERN_CONFIG } from '@/shared/types/bin';
 import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
+import { meshVolume } from './__kernel-tests__/meshAssertions';
 import { clearAllCaches, getAllShapeCacheStats, resetAllShapeCacheStats } from './shapeCache';
 import type { MeshData } from '@/features/generation/bridge/types';
 import type { CacheStats } from './lruCache';
@@ -88,7 +89,9 @@ describe('bin-body resume cache with wall patterns', () => {
     const stats = binBodyStats();
     expect(stats.hits, 'a wider cutout is different geometry and must not resume').toBe(0);
     expect(stats.misses).toBe(1);
-    expect(nudged.triangleCount).not.toBe(first.triangleCount);
+    // A narrower cutout leaves more wall. Its triangle count can match: a
+    // cutout's planar faces mesh to the same count at any width.
+    expect(meshVolume(nudged)).toBeGreaterThan(meshVolume(first) + 1);
   }, 120_000);
 
   it('rebuilds rather than resuming when the pattern type changes', () => {

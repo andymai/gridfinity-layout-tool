@@ -28,6 +28,7 @@ import {
   magnetBoreRadiusAt,
   magnetBoreSegments,
 } from '@/shared/generation/magnetHoleStyle';
+import { COPLANAR_OVERLAP } from './generatorConstants';
 
 const CHAMFER_OVERSHOOT_MM = 0.05;
 const PLAIN_RING_SEGMENTS = 32;
@@ -95,13 +96,17 @@ export function buildMagnetHoleCutter(opts: MagnetHoleCutterOptions): Shape3D {
 
   // Frustum from the overshot end to `chamfer` below the mouth plane. Its
   // radius grows by exactly its length (45 degrees), so it meets the bore at
-  // the bore radius and crosses the mouth plane one chamfer wider.
+  // the bore radius and crosses the mouth plane one chamfer wider. A ribbed
+  // bore reaches that radius at every rib valley, where a frustum of the same
+  // throat would only touch it: the fuse then splits those faces and they
+  // mesh open. A throat COPLANAR_OVERLAP wider turns each touch into a cross.
+  const throat = style.crushRibs ? radius + COPLANAR_OVERLAP : radius;
   const reach = inset + MAGNET_CHAMFER_MM + CHAMFER_OVERSHOOT_MM;
-  const endRadius = radius + reach;
+  const endRadius = throat + reach;
   const chamfer =
     end === 'bottom'
-      ? cone(endRadius, radius, reach, { at: [0, 0, -CHAMFER_OVERSHOOT_MM] })
-      : cone(radius, endRadius, reach, { at: [0, 0, height - inset - MAGNET_CHAMFER_MM] });
+      ? cone(endRadius, throat, reach, { at: [0, 0, -CHAMFER_OVERSHOOT_MM] })
+      : cone(throat, endRadius, reach, { at: [0, 0, height - inset - MAGNET_CHAMFER_MM] });
   try {
     return unwrap(fuse(bore, chamfer));
   } finally {

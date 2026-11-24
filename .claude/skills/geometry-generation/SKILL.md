@@ -237,12 +237,12 @@ because no list of inputs stays complete.
 
 Four traps, each invisible to the obvious check:
 
-1. `sketchText` NEGATES `startX` and does not negate `startY`, so every pen position is
-   handed over inverted through `sketchRunAtPen`. A single untracked line always
-   sketches at zero, so the fast path never shows it; the mirroring appears only once a
-   caption is tracked, wrapped or tapered, and it moves the whole run to the wrong side
-   of its host. Pinned by a kernel test against `sketchText` directly, so a brepjs bump
-   that fixes the negation fails loudly instead of silently restoring the bug.
+1. Every pen position goes through `sketchRunAtPen`, which hands it to `sketchText`
+   as `startX`/`startY` unchanged. A single untracked line always sketches at zero, so
+   the fast path never shows a wrong convention; it appears only once a caption is
+   tracked, wrapped or tapered, and it moves the whole run to the wrong side of its
+   host. A kernel test pins the direction of `startX`, so a brepjs bump that changes
+   it fails loudly.
 2. The fit and the placement must reserve the SAME vertical extent. The bottom anchor
    sits the last BASELINE on the font's descender, never the string's own ink, or a
    caption without descenders sits lower than its neighbour with one. `measureBlock`

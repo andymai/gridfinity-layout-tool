@@ -24,7 +24,7 @@ import {
   unwrap,
   withScope,
 } from 'brepjs';
-import type { DisposalScope, Edge, Shape3D, ValidSolid } from 'brepjs';
+import type { DisposalScope, Shape3D, ValidSolid } from 'brepjs';
 import { isNestingBase } from '@/shared/types/bin';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { interiorFilletRadiusMm } from '@/shared/utils/interiorFillet';
@@ -265,7 +265,7 @@ function filletAir(
   air: Shape3D,
   plan: CompartmentFilletPlan
 ): Shape3D | null {
-  const edges = (getEdges(air) as Edge[]).filter((edge) => {
+  const edges = getEdges(air).filter((edge) => {
     const b = getBounds(edge);
     return b.zMax - b.zMin < EDGE_TOL_MM && Math.abs(b.zMin - plan.zFloor) < EDGE_TOL_MM;
   });

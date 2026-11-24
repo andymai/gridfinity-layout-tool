@@ -180,12 +180,11 @@ describe('buildTextSolid (sizing)', () => {
 });
 
 describe('sketchText pen convention', () => {
-  it('negates startX, which is why every pen position is handed over inverted', () => {
-    // Pinned against the kernel rather than trusted: this is the trap that
-    // mirrored every tracked caption to the wrong side of its host, and it is
-    // invisible on the fast path because a single untracked line always sketches
-    // at zero. If a brepjs bump ever fixes the negation, this fails loudly
-    // instead of the mirroring silently returning.
+  it('moves a run by +startX, which is how every pen position is handed over', () => {
+    // Pinned against the kernel rather than trusted: a mirrored startX sends
+    // every tracked caption to the wrong side of its host, and it is invisible
+    // on the fast path because a single untracked line always sketches at zero.
+    // If a brepjs bump ever changes the convention, this fails loudly.
     const inkOf = (startX: number): { min: number; max: number } => {
       const solid = sketchText(
         'H',
@@ -203,8 +202,8 @@ describe('sketchText pen convention', () => {
     };
     const atZero = inkOf(0);
     const atTen = inkOf(10);
-    expect(atTen.min).toBeCloseTo(atZero.min - 10, 2);
-    expect(atTen.max).toBeCloseTo(atZero.max - 10, 2);
+    expect(atTen.min).toBeCloseTo(atZero.min + 10, 2);
+    expect(atTen.max).toBeCloseTo(atZero.max + 10, 2);
   });
 
   it('places a tracked run where the plan says, not mirrored about the origin', () => {

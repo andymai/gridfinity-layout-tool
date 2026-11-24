@@ -12,6 +12,7 @@ import { registerKernel, BrepkitAdapter, loadFont, initFromManifold, getKernel }
 
 import { DRAFT_MIN_CIRCULAR_ANGLE_DEG } from '@/shared/constants/tessellation';
 import { getManifoldModule } from './manifoldRuntime';
+import { copyOnMove } from './copyOnMove';
 import { TEXT_FONT_URLS } from '@/shared/fonts/fontAssets';
 import type { BinParams, TextFontFamily } from '@/shared/types/bin';
 import { collectTextFontFamilies } from '@/shared/utils/textFonts';
@@ -295,7 +296,7 @@ export async function loadOcctWasm(): Promise<WasmLoadResult> {
   occtModule = kernel.getRawModule();
   // fromKernel retains the wrapper for the worker's lifetime, so no manual GC
   // pin is needed (worker.terminate() frees the whole WASM heap).
-  registerKernel('occt-wasm', OcctWasmAdapter.fromKernel(kernel));
+  registerKernel('occt-wasm', copyOnMove(OcctWasmAdapter.fromKernel(kernel)));
 
   // Engraved-text APIs are kernel-agnostic at brepjs's surface but use
   // OCCT primitives under the hood; occt-wasm satisfies them, so font

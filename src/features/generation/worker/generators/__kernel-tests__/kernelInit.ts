@@ -11,6 +11,7 @@
  */
 
 import { DRAFT_MIN_CIRCULAR_ANGLE_DEG } from '@/shared/constants/tessellation';
+import { copyOnMove } from '../../copyOnMove';
 
 /** Initialize brepkit-wasm kernel and register it with brepjs. */
 export async function initBrepkitKernel(): Promise<void> {
@@ -46,7 +47,7 @@ export async function initOcctWasmKernel(): Promise<void> {
   const kernel = await OcctKernel.init({ wasm: wasmBinary });
   // fromKernel retains the wrapper for the adapter's lifetime, so no manual GC
   // pin is needed.
-  registerKernel('occt-wasm', OcctWasmAdapter.fromKernel(kernel));
+  registerKernel('occt-wasm', copyOnMove(OcctWasmAdapter.fromKernel(kernel)));
 }
 
 /**

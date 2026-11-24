@@ -173,8 +173,8 @@ const BIN_MESH_REVISION = 'bin29';
  * the map is total so a future caller cannot fall through to `undefined`.
  */
 const KERNEL_MESH_REVISION: Record<KernelName, string> = {
-  'occt-wasm': 'r5',
-  brepkit: 'r5',
+  'occt-wasm': 'r6',
+  brepkit: 'r6',
   manifold: 'r1',
 };
 
