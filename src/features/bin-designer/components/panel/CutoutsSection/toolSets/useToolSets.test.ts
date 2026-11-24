@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
+import { err, ok } from '@/core/result';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import type { ToolSetSpec } from '@/features/bin-designer/types';
 import { getRotatedBounds } from '../geometryCore';
@@ -33,7 +34,7 @@ describe('useToolSets', () => {
   it('adds a set as one container with its spec and name, in one undo step', () => {
     const { result } = renderHook(() => useToolSets());
     act(() => {
-      expect(result.current.insertSet(spec)).toBe('added');
+      expect(result.current.insertSet(spec)).toEqual(ok('added'));
     });
     const { params } = useDesignerStore.getState();
     const setId = onlySetId();
@@ -85,7 +86,7 @@ describe('useToolSets', () => {
     );
     const next = { ...spec, sizes: ['8', '10', '13', '17'] };
     act(() => {
-      expect(result.current.rebuildSet(setId, next)).toBe('updated');
+      expect(result.current.rebuildSet(setId, next)).toEqual(ok('updated'));
     });
     const { params } = useDesignerStore.getState();
     const members = membersOf(params.cutouts, setId);
@@ -127,7 +128,7 @@ describe('useToolSets', () => {
     });
     const { result } = renderHook(() => useToolSets());
     act(() => {
-      expect(result.current.insertSet({ ...spec, sizes: ['19'] })).toBe('added');
+      expect(result.current.insertSet({ ...spec, sizes: ['19'] })).toEqual(ok('added'));
     });
     const { params } = useDesignerStore.getState();
     const fill = binDimensions(params).wallHeight - params.cutoutConfig.topOffset;
@@ -149,7 +150,7 @@ describe('useToolSets', () => {
     const before = useDesignerStore.getState().params;
     const { result } = renderHook(() => useToolSets());
     act(() => {
-      expect(result.current.insertSet(spec)).toBe('noRoom');
+      expect(result.current.insertSet(spec)).toEqual(err('noRoom'));
     });
     expect(useDesignerStore.getState().params).toBe(before);
   });
@@ -168,9 +169,9 @@ describe('useToolSets', () => {
     );
     if (!second) throw new Error('expected a second set');
     act(() => {
-      expect(result.current.rebuildSet(first, { ...spec, sizes: ['17', '19', '21', '22'] })).toBe(
-        'updated'
-      );
+      expect(
+        result.current.rebuildSet(first, { ...spec, sizes: ['17', '19', '21', '22'] })
+      ).toEqual(ok('updated'));
     });
     const { cutouts } = useDesignerStore.getState().params;
     const a = cutBoxes(membersOf(cutouts, first));

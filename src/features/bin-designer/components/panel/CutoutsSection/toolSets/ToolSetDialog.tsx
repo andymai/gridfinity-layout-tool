@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Button, Dialog, NumberField, SegmentedControl } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { isErr } from '@/core/result';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useLayoutPrintBed } from '@/features/bin-designer/hooks/useLayoutPrintBed';
 import type { ToolSetSpec, ToolUnits } from '@/features/bin-designer/types';
@@ -76,9 +77,9 @@ export function ToolSetDialog({ setId, onClose }: ToolSetDialogProps) {
 
   const [noRoom, setNoRoom] = useState(false);
   const submit = () => {
-    const outcome = editing ? rebuildSet(setId, spec) : insertSet(spec);
-    if (outcome === 'noRoom') {
-      setNoRoom(true);
+    const result = editing ? rebuildSet(setId, spec) : insertSet(spec);
+    if (isErr(result)) {
+      setNoRoom(result.error === 'noRoom');
       return;
     }
     onClose();

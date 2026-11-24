@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '@/i18n';
+import { err, ok, type Result } from '@/core/result';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useLayoutPrintBed } from '@/features/bin-designer/hooks/useLayoutPrintBed';
 import type { BinParams, Cutout, ToolSetSpec } from '@/features/bin-designer/types';
@@ -18,13 +19,20 @@ import {
 } from './planToolSetPlacement';
 import { computeGrowToFit } from '../growBinToFit';
 
-/** `noRoom`: no bin size the bin can take holds the set, so nothing changed. */
-export type ToolSetOutcome = 'added' | 'updated' | 'empty' | 'noRoom';
+/**
+ * Why a set could not be placed; nothing changed in either case.
+ * - `empty`: no size in the spec is in the family's table.
+ * - `noRoom`: no bin size the bin can take holds the set.
+ */
+export type ToolSetFailure = 'empty' | 'noRoom';
 
 export interface ToolSetActions {
-  readonly insertSet: (spec: ToolSetSpec) => ToolSetOutcome;
+  readonly insertSet: (spec: ToolSetSpec) => Result<'added', ToolSetFailure>;
   /** Rebuilds an existing set in place from a new spec, as one undo step. */
-  readonly rebuildSet: (setId: string, spec: ToolSetSpec) => ToolSetOutcome;
+  readonly rebuildSet: (
+    setId: string,
+    spec: ToolSetSpec
+  ) => Result<'added' | 'updated', ToolSetFailure>;
 }
 
 export function membersOf(cutouts: readonly Cutout[], setId: string): Cutout[] {
@@ -125,7 +133,7 @@ export function useToolSets(): ToolSetActions {
   );
 
   const insertSet = useCallback(
-    (spec: ToolSetSpec): ToolSetOutcome => {
+    (spec: ToolSetSpec): Result<'added', ToolSetFailure> => {
       const { params, ui } = useDesignerStore.getState();
       const setId = generateLayoutId();
       const set = generateToolSet(spec, TOOL_FAMILIES[spec.family], {
@@ -134,9 +142,9 @@ export function useToolSets(): ToolSetActions {
         names: names(spec),
         maxWidthMm,
       });
-      if (!set) return 'empty';
+      if (!set) return err('empty');
       const plan = planToolSetPlacement(params, set, ui.halfGridMode);
-      if (!plan) return 'noRoom';
+      if (!plan) return err('noRoom');
       startTransaction();
       try {
         resizeFor(plan);
@@ -145,7 +153,7 @@ export function useToolSets(): ToolSetActions {
       } finally {
         commitTransaction();
       }
-      return 'added';
+      return ok('added');
     },
     [
       addCutout,
@@ -160,7 +168,7 @@ export function useToolSets(): ToolSetActions {
   );
 
   const rebuildSet = useCallback(
-    (setId: string, spec: ToolSetSpec): ToolSetOutcome => {
+    (setId: string, spec: ToolSetSpec): Result<'added' | 'updated', ToolSetFailure> => {
       const { params, ui } = useDesignerStore.getState();
       const members = membersOf(params.cutouts, setId);
       if (members.length === 0) return insertSet(spec);
@@ -170,7 +178,7 @@ export function useToolSets(): ToolSetActions {
         names: names(spec),
         maxWidthMm,
       });
-      if (!set) return 'empty';
+      if (!set) return err('empty');
       const chain = outerChain(members, setId);
       // A name the user typed survives the rebuild; the generated one follows the sizes.
       const oldName = params.cutoutGroupNames?.[setId];
@@ -195,7 +203,7 @@ export function useToolSets(): ToolSetActions {
           ? { dx: x, dy: y, size, height }
           : null;
       const placement = inPlace ?? planToolSetPlacement(keptParams, set, ui.halfGridMode);
-      if (!placement) return 'noRoom';
+      if (!placement) return err('noRoom');
 
       startTransaction();
       try {
@@ -211,7 +219,7 @@ export function useToolSets(): ToolSetActions {
       } finally {
         commitTransaction();
       }
-      return 'updated';
+      return ok('updated');
     },
     [
       addCutout,
