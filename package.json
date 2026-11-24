@@ -152,7 +152,7 @@
     "ioredis": "^6.0.0",
     "lz-string": "^1.5.0",
     "manifold-3d": "3.5.3",
-    "occt-wasm": "5.18.2",
+    "occt-wasm": "5.18.3",
     "polygon-clipping": "^0.15.7",
     "posthog-js": "^1.450.0",
     "qrcode": "^1.5.4",

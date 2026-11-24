@@ -110,7 +110,7 @@ importers:
         version: 3.7.0
       brepjs:
         specifier: 20.5.0
-        version: 20.5.0(patch_hash=744a5764a08f1352678493c51d8e29247c5a2ea8ec7301c01e7c5494e5ba43c2)(brepkit-wasm@4.2.10)(occt-wasm@5.18.2)
+        version: 20.5.0(patch_hash=744a5764a08f1352678493c51d8e29247c5a2ea8ec7301c01e7c5494e5ba43c2)(brepkit-wasm@4.2.10)(occt-wasm@5.18.3)
       brepkit-wasm:
         specifier: 4.2.10
         version: 4.2.10
@@ -148,8 +148,8 @@ importers:
         specifier: 3.5.3
         version: 3.5.3(@gltf-transform/core@4.4.1)(@gltf-transform/extensions@4.4.1)(@gltf-transform/functions@4.4.1(@types/node@26.6.6))(esbuild-wasm@0.27.7)
       occt-wasm:
-        specifier: 5.18.2
-        version: 5.18.2
+        specifier: 5.18.3
+        version: 5.18.3
       polygon-clipping:
         specifier: ^0.15.7
         version: 0.15.7
@@ -4977,8 +4977,8 @@ packages:
     resolution: {integrity: sha512-5vvB5+W7ePv+p3uqxi+RcW1XAzLW0/hxt3/4X4Lc4qHudzOhmBiBwOY6DRob4WnanAEGvNcLjF+KNOufrUoEQw==}
     engines: {node: '>=12.20.0'}
 
-  occt-wasm@5.18.2:
-    resolution: {integrity: sha512-IuXqTxBaZx1C0hPixKJQc7C9YeQX7Hj3GGpT5loXw1SD9oBGizmprIyWCoI7DKrD3AjI0TjMrlriUT7UXW8oVg==}
+  occt-wasm@5.18.3:
+    resolution: {integrity: sha512-/EcXxFtpWZ3OtfBZ3Ox7Ys7BgWSjagnUlS2Omoo2qhWYqO3DYnBRWTBrua0+FNpDM6hhzsc3YvoBjeRKwTjXtA==}
 
   onetime@5.1.2:
     resolution: {integrity: sha512-kbpaSSGJTWdAY5KPVeMOKXSrPtr8C8C7wodJbcsd51jRnmD+GZu8Y0VoU6Dm5Z4vWr0Ig/1NKuWRKf7j5aaYSg==}
@@ -9244,13 +9244,13 @@ snapshots:
     dependencies:
       balanced-match: 4.0.4
 
-  brepjs@20.5.0(patch_hash=744a5764a08f1352678493c51d8e29247c5a2ea8ec7301c01e7c5494e5ba43c2)(brepkit-wasm@4.2.10)(occt-wasm@5.18.2):
+  brepjs@20.5.0(patch_hash=744a5764a08f1352678493c51d8e29247c5a2ea8ec7301c01e7c5494e5ba43c2)(brepkit-wasm@4.2.10)(occt-wasm@5.18.3):
     dependencies:
       flatbush: 4.6.2
       opentype.js: 1.3.4
     optionalDependencies:
       brepkit-wasm: 4.2.10
-      occt-wasm: 5.18.2
+      occt-wasm: 5.18.3
 
   brepkit-wasm@4.2.10: {}
 
@@ -10794,7 +10794,7 @@ snapshots:
 
   obug@3.0.0: {}
 
-  occt-wasm@5.18.2:
+  occt-wasm@5.18.3:
     dependencies:
       comlink: 4.4.2
 
