@@ -430,6 +430,13 @@
           },
           "description": "Display names for cutout groups, keyed by group id. Omit unnamed groups; they fall back to a derived label."
         },
+        "cutoutToolSets": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/ToolSetSpec"
+          },
+          "description": "What each tool set was generated from, keyed by the id of its arrange-only container (the id in its pockets' parentGroups). Lets Edit set rebuild the set. Omit when the bin has no set."
+        },
         "wallPattern": {
           "$ref": "#/$defs/WallPatternConfig"
         },
@@ -1188,6 +1195,65 @@
         "back": {
           "type": "boolean",
           "description": "Scoop the +Y edge."
+        }
+      }
+    },
+    "ToolSetSpec": {
+      "type": "object",
+      "description": "A tool set's recipe: the tool family, its sizes and how its pockets are cut.",
+      "required": ["family", "units", "sizes", "style", "clearanceMm", "labelSizeMm"],
+      "properties": {
+        "family": {
+          "enum": ["combinationWrench"],
+          "x-constant": { "enum": "TOOL_FAMILY_IDS" },
+          "description": "The tool family, which picks the outline and the size table."
+        },
+        "units": {
+          "enum": ["metric", "sae"],
+          "x-constant": { "enum": "TOOL_UNITS" },
+          "description": "Which of the family's size tables the sizes come from."
+        },
+        "sizes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 30,
+          "x-constant": { "maxItems": "TOOL_SET_LIMITS.maxSizes" },
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 12,
+            "x-constant": { "maxLength": "TOOL_SET_LIMITS.maxSizeKeyLength" }
+          },
+          "description": "Size keys from the table, such as \"13\" or \"1/2\". Unknown keys are skipped."
+        },
+        "style": {
+          "enum": ["flat"],
+          "x-constant": { "enum": "TOOL_SET_STYLES" },
+          "description": "How the tools sit. 'flat': shaped pockets, nested head to tail."
+        },
+        "clearanceMm": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2,
+          "x-constant": {
+            "minimum": "TOOL_SET_LIMITS.clearanceMm.min",
+            "maximum": "TOOL_SET_LIMITS.clearanceMm.max"
+          },
+          "description": "Fit clearance on each pocket, in mm per side."
+        },
+        "labelSizeMm": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 12,
+          "x-constant": {
+            "minimum": "TOOL_SET_LIMITS.labelSizeMm.min",
+            "maximum": "TOOL_SET_LIMITS.labelSizeMm.max"
+          },
+          "description": "Height of the engraved sizes in mm. 0 leaves them off."
+        },
+        "fingerChannel": {
+          "type": "boolean",
+          "description": "One finger channel across every handle. Absent means false."
         }
       }
     },

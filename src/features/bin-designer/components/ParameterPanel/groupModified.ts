@@ -38,6 +38,7 @@ const GROUP_OF: Partial<Record<keyof BinParams, PanelGroup>> = {
   cutouts: 'interior',
   cutoutConfig: 'interior',
   cutoutGroupNames: 'interior',
+  cutoutToolSets: 'interior',
   meshAssets: 'interior',
   knifeRest: 'interior',
   slide: 'interior',

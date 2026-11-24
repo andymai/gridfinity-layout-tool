@@ -9,6 +9,7 @@ import type { HandleConfig } from './handles';
 import type { PullTabConfig } from './pullTab';
 import type { WallLabelSlotsConfig, WallConfig, WallPatternConfig, OverhangConfig } from './walls';
 import type { SlideConfig } from './slide';
+import type { ToolSetSpec } from './toolSet';
 import type { FloorPatternConfig } from './floor';
 import type { SplitConnectorConfig } from './splitConnector';
 import type { FeatureColorConfig } from './featureColors';
@@ -103,6 +104,13 @@ export interface BinParams {
    * geometry epoch, or renaming a row would rebuild the mesh.
    */
   readonly cutoutGroupNames?: Record<string, string>;
+  /**
+   * The spec each tool set container was generated from, keyed by its group
+   * id, so "Edit set" can rebuild it. Absent when the bin has no set. GC'd with
+   * {@link cutoutGroupNames} when the container's last member goes. Editor
+   * metadata: the generator reads the cutouts, never this.
+   */
+  readonly cutoutToolSets?: Record<string, ToolSetSpec>;
   readonly wallPattern: WallPatternConfig;
   /**
    * Drainage / ventilation perforation of the bin floor. The cut passes

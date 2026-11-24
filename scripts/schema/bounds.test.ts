@@ -41,6 +41,12 @@ import {
   SLANT_SIDES,
 } from '@/core/types';
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
+import {
+  TOOL_FAMILY_IDS,
+  TOOL_SET_LIMITS,
+  TOOL_SET_STYLES,
+  TOOL_UNITS,
+} from '@/features/bin-designer/types/toolSet';
 import { BASEPLATE_CONNECTOR_STYLES } from '@/shared/types/bin';
 import {
   LABEL_PLATE_ICONS,
@@ -158,6 +164,10 @@ import { isRecord, loadSchemas, walkSubschemas } from './loadSchemas';
  */
 const SOURCES: Record<string, unknown> = {
   CONSTRAINTS,
+  TOOL_FAMILY_IDS,
+  TOOL_SET_LIMITS,
+  TOOL_SET_STYLES,
+  TOOL_UNITS,
   DESIGNER_CONSTRAINTS,
   BASEPLATE_CONNECTOR_STYLES,
   BIN_STYLES,
@@ -317,7 +327,7 @@ const annotations = collectAnnotations();
  * a drop means someone deleted provenance rather than a bound legitimately
  * becoming hand-picked, which is the erosion this guards against.
  */
-const MIN_ANNOTATED_BOUNDS = 279;
+const MIN_ANNOTATED_BOUNDS = 288;
 
 describe('x-constant annotations', () => {
   it('finds annotations to check', () => {

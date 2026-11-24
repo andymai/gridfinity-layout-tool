@@ -40,6 +40,7 @@ import {
   validateMeshAssets,
   isMeshRef,
 } from './designerCutoutValidation.js';
+import { validateCutoutToolSets } from './toolSetValidation.js';
 import { validateLid } from './designerLidValidation.js';
 import { validateBase, validateWalls } from './designerBaseValidation.js';
 import { validatePullTab } from './designerPullTabValidation.js';
@@ -181,6 +182,7 @@ export const ALLOWED_PARAM_KEYS: ReadonlySet<string> = new Set<string>([
   'surfaceText',
   'meshAssets',
   'cutoutGroupNames',
+  'cutoutToolSets',
   'knifeRest',
   'wallLabelSlots',
   'pullTab',
@@ -548,6 +550,9 @@ export function validateDesignerShare(
 
   const groupNamesErr = validateCutoutGroupNames(params.cutoutGroupNames);
   if (groupNamesErr) return validationError('INVALID_PARAMS', groupNamesErr);
+
+  const toolSetsErr = validateCutoutToolSets(params.cutoutToolSets);
+  if (toolSetsErr) return validationError('INVALID_PARAMS', toolSetsErr);
 
   if (params.meshAssets !== undefined || Array.isArray(params.cutouts)) {
     const meshErr = validateMeshAssets(params.meshAssets, params.cutouts, options.meshRefs);

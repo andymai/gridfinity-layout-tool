@@ -99,6 +99,7 @@ or rides along in a shared design.
 | `cutoutConfig`          | [`CutoutConfig`](#cutoutconfig)                 |          |          |                         |                                                                                                                                                                                                                                                                                                 |
 | `meshAssets`            | object of [`MeshAsset`](#meshasset)             |          |          |                         | Imported STL imprint meshes keyed by the id that a shape 'mesh' Cutout's meshId references. Omit for designs without mesh imprints.                                                                                                                                                             |
 | `cutoutGroupNames`      | object of `string`                              |          |          |                         | Display names for cutout groups, keyed by group id. Omit unnamed groups; they fall back to a derived label.                                                                                                                                                                                     |
+| `cutoutToolSets`        | object of [`ToolSetSpec`](#toolsetspec)         |          |          |                         | What each tool set was generated from, keyed by the id of its arrange-only container (the id in its pockets' parentGroups). Lets Edit set rebuild the set. Omit when the bin has no set.                                                                                                        |
 | `wallPattern`           | [`WallPatternConfig`](#wallpatternconfig)       |          |          |                         |                                                                                                                                                                                                                                                                                                 |
 | `floorPattern`          | [`FloorPatternConfig`](#floorpatternconfig)     |          |          |                         |                                                                                                                                                                                                                                                                                                 |
 | `splitConnectors`       | [`SplitConnectorConfig`](#splitconnectorconfig) |          |          |                         |                                                                                                                                                                                                                                                                                                 |
@@ -597,6 +598,17 @@ left of the line looking from `a` to `b`; these hold side B.
 <a id="cutoutsplitpoint"></a>
 
 2 fields, in `src/features/bin-designer/types/cutout.ts`.
+
+### ToolSetSpec
+
+What a tool set was built from, keyed in `cutoutToolSets` by its container id.
+Its pockets are ordinary cutouts, so only "Edit set" reads this.
+
+<!-- schema:ToolSetSpec indexed -->
+
+<a id="toolsetspec"></a>
+
+7 fields, in `src/shared/types/toolSet.ts`.
 
 ### CutoutScoopEdges
 

@@ -347,6 +347,8 @@ export {
   DETACHABLE_PIN_TARGET_ENGAGEMENT_MM,
   DETACHABLE_PIN_LEAD_IN_MM,
   DETACHABLE_PIN_END_CLEARANCE_MM,
+  defaultEntryChamfer,
+  maxEntryChamfer,
 } from '@/features/bin-designer/types';
 
 /**

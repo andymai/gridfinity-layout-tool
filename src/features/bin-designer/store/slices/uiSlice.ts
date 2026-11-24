@@ -102,6 +102,7 @@ export function createUISlice(set: Set) {
         if (!open) {
           state.ui.scanDialogSource = null;
           state.ui.growBinForScan = false;
+          state.ui.toolSetDialog = null;
         }
       });
     },
@@ -120,6 +121,21 @@ export function createUISlice(set: Set) {
       set((state) => {
         state.ui.scanDialogSource = null;
         state.ui.growBinForScan = false;
+      });
+    },
+
+    openToolSetDialog: (setId: string | null) => {
+      set((state) => {
+        state.ui.cutoutEditorOpen = true;
+        state.ui.bentoWorkspaceOpen = false;
+        state.ui.cutoutTarget = 'bin';
+        state.ui.toolSetDialog = { setId };
+      });
+    },
+
+    closeToolSetDialog: () => {
+      set((state) => {
+        state.ui.toolSetDialog = null;
       });
     },
 
@@ -149,6 +165,7 @@ export function createUISlice(set: Set) {
           state.ui.cutoutEditorOpen = false;
           state.ui.scanDialogSource = null;
           state.ui.growBinForScan = false;
+          state.ui.toolSetDialog = null;
           // Closing the editor from here has to reset the target too, or
           // `cutoutTarget` stays on the lid with no editor open and the next
           // cutout action writes the wrong array.

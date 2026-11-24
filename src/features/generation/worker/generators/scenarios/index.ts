@@ -72,6 +72,7 @@ import { cutoutRepeatOverlap } from './cutoutRepeatOverlap';
 import { cutoutLean } from './cutoutLean';
 import { cutoutDepthModes } from './cutoutDepthModes';
 import { cutoutIslands } from './cutoutIslands';
+import { toolSets } from './toolSets';
 import { cutoutEntryEdges } from './cutoutEntryEdges';
 import { cutoutFingerAccess } from './cutoutFingerAccess';
 import { cutoutSplitPockets } from './cutoutSplitPockets';
@@ -158,5 +159,6 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...cutoutFingerAccess,
   ...cutoutSplitPockets,
   ...cutoutIslands,
+  ...toolSets,
   ...labelTabFillet,
 ];
