@@ -1,0 +1,91 @@
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/ToolSetDialog.test.tsx
+  s_0c191ecd28c8c3::t_d53dbbcee1f283 99-102
+src/features/bin-designer/components/CutoutWorkspace/ToolSetEditButton.tsx
+  s_0c191ecd28c8c3::t_9e0efe3e84a32e 5
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/planToolSetPlacement.ts
+  s_0c191ecd28c8c3::t_a6d0fd0d73bb8b 82
+  s_0c191ecd28c8c3::t_33d9c84e3b1fa6 2,6
+  s_0c191ecd28c8c3::t_5f737605ec1ab5 57
+  s_0c191ecd28c8c3::t_c576a6a60b8ae4 5
+  s_0c191ecd28c8c3::t_6bacc3217b3db5 72
+  s_0c191ecd28c8c3::t_53230825e042bc 47
+src/features/bin-designer/utils/toolSetMembership.ts
+  s_0c191ecd28c8c3::t_33d9c84e3b1fa6 1-42,45-54,63-85
+  s_0c191ecd28c8c3::t_da2ad3506e414c 43-44,55-62
+src/features/bin-designer/utils/toolSetMembership.test.ts
+  s_0c191ecd28c8c3::t_b07a22355bc3a5 1-84,89,103-128
+  s_0c191ecd28c8c3::t_da2ad3506e414c 85-88,90-102
+src/features/bin-designer/components/CutoutLibrary/libraryContent.test.ts
+  s_0c191ecd28c8c3::t_d53dbbcee1f283 68-76,83
+src/features/bin-designer/constants/paramMigrationToolSets.test.ts
+  s_0c191ecd28c8c3::t_d53dbbcee1f283 2-3,53-111
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/planToolSetPlacement.test.ts
+  s_0c191ecd28c8c3::t_d2a03d217b2a53 3
+  s_0c191ecd28c8c3::t_9e0efe3e84a32e 6
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/ToolSetPreview.tsx
+  s_0c191ecd28c8c3::t_cc68fb3da3895c 55
+  s_0c191ecd28c8c3::t_d6a846cf1cac51 1
+src/features/bin-designer/components/panel/CutoutsSection/CutoutEditor.tsx
+  s_0c191ecd28c8c3::t_ae0d653ccb0cfb 8-9,24,92-96,138
+api/lib/toolSetValidation.ts
+  s_0c191ecd28c8c3::t_ed879f72508e50 62-63,66,70
+  s_0c191ecd28c8c3::t_e5c644824721e7 42-47
+  s_0c191ecd28c8c3::t_b61659f374ccaa 87
+  s_0c191ecd28c8c3::t_20a005ab9abb93 98-101
+  s_0c191ecd28c8c3::t_448d1f77199d94 6
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/useToolSets.test.ts
+  s_0c191ecd28c8c3::t_9e0efe3e84a32e 11
+  s_0c191ecd28c8c3::t_5c0ca87ac3ea65 12-13,26-41,216-218,223-224,240-321,383
+src/features/bin-designer/constants/paramMigration.ts
+  s_0c191ecd28c8c3::t_f2ef4142ea11b9 93,466-469,494,502
+src/features/bin-designer/store/slices/cutoutSliceHelpers.ts
+  s_0c191ecd28c8c3::t_3a03284b105d6a 340
+  s_0c191ecd28c8c3::t_8a1ba9f0a69221 10,333-334,341,343,348,350-351,353-354,377-384
+src/shared/toolSets/nestLayout.ts
+  s_0c191ecd28c8c3::t_925837bcb4e65e 152-155,157
+  s_0c191ecd28c8c3::t_8541c1f4ddad7a 109-128,146-151,156,159-160
+  s_0c191ecd28c8c3::t_8b7c7395936551 108
+src/features/bin-designer/components/CutoutLibrary/libraryContent.ts
+  s_0c191ecd28c8c3::t_8a1ba9f0a69221 51-54,59
+src/shared/toolSets/generateToolSet.ts
+  s_0c191ecd28c8c3::t_71b9e4c3dc6135 101,108-111
+  s_0c191ecd28c8c3::t_54ea37dd3df6f5 128-131,133-136
+  s_0c191ecd28c8c3::t_aa060e74f44fbc 226-233
+  s_0c191ecd28c8c3::t_6f7ca359acbe4a 6
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/ToolSetDialog.tsx
+  s_0c191ecd28c8c3::t_9e0efe3e84a32e 19-20
+  s_0c191ecd28c8c3::t_49dda88f343376 132
+  s_0c191ecd28c8c3::t_f80c181b8431f1 92
+  s_0c191ecd28c8c3::t_920555596fb99c 43-54
+  s_0c191ecd28c8c3::t_214b9261760b75 118-120
+  s_0c191ecd28c8c3::t_6da2e077b8913f 15-16
+src/features/bin-designer/constants/paramMigrationToolSets.ts
+  s_0c191ecd28c8c3::t_74e61c8f12b7e7 74
+  s_0c191ecd28c8c3::t_11251008924490 30-33
+  s_0c191ecd28c8c3::t_f2ef4142ea11b9 1,10-12,86-129
+  s_0c191ecd28c8c3::t_90bac2ce034274 9
+  s_0c191ecd28c8c3::t_f90d86490670e4 43,48,54-55,57,60
+  s_0c191ecd28c8c3::t_c79e9bffa33fc0 130
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/useToolSets.ts
+  s_0c191ecd28c8c3::t_7d2e6386c3f79c 31-32,34,37-40,129,146
+  s_0c191ecd28c8c3::t_9e0efe3e84a32e 17
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_0c191ecd28c8c3::t_a41ba63dda11be 1,27,74-75,79,82,500-509
+  s_0c191ecd28c8c3::t_d2a03d217b2a53 81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2a7d06093797369d3aa24119db18e0bf87acbe47",
+  "prompts": {},
+  "sessions": {
+    "s_0c191ecd28c8c3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f7a72b82-3d5a-4aec-a3fc-27209c777a7d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
