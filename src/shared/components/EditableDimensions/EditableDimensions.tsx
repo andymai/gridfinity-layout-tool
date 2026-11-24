@@ -130,8 +130,10 @@ export function EditableDimensions({
     // A field left as seeded keeps its exact mm. The seed is rounded to the
     // field's precision, so converting it back would move a value the user
     // never touched.
-    const read = (typed: string, current: number): number =>
-      typed.trim() === show(current) ? current : toMm(parseFloat(typed), unit);
+    const read = (typed: string, current: number): number => {
+      const mm = toMm(parseFloat(typed), unit);
+      return show(mm) === show(current) ? current : mm;
+    };
     const w = read(localWidth, widthMm);
     const d = read(localDepth, depthMm);
     if (Number.isNaN(w) || Number.isNaN(d)) {

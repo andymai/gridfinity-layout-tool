@@ -264,6 +264,17 @@ describe('EditableDimensions', () => {
       expect(onCommit).toHaveBeenCalledWith(441, 381);
     });
 
+    it('keeps an unchanged width exact when it is retyped with a trailing zero', () => {
+      const onCommit = vi.fn();
+      render(<EditableDimensions {...defaultProps} unit="in" onCommit={onCommit} />);
+      fireEvent.click(screen.getByRole('button'));
+      fireEvent.change(screen.getByLabelText('Width mm'), { target: { value: '17.3620' } });
+      const depthInput = screen.getByLabelText('Depth mm');
+      fireEvent.change(depthInput, { target: { value: '15' } });
+      fireEvent.keyDown(depthInput, { key: 'Enter' });
+      expect(onCommit).toHaveBeenCalledWith(441, 381);
+    });
+
     it('does not commit when the shown inch value is typed again', () => {
       const onCommit = vi.fn();
       render(<EditableDimensions {...defaultProps} unit="in" onCommit={onCommit} />);
