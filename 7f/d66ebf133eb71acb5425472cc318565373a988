@@ -1,0 +1,119 @@
+scripts/i18n-values-allowlist.json
+  s_88cfcc42bf5bfd::t_c4f2c0b06c72f8 359-360
+src/shared/components/EditableDimensions/EditableDimensions.tsx
+  s_88cfcc42bf5bfd::t_5ab77eb922d5fa 130-131,133-136,141
+  s_88cfcc42bf5bfd::t_b2358da67838fc 132
+  s_88cfcc42bf5bfd::t_af940fb2416952 5-6,40-43,70-71,73,94-95,97,104-106,109,146,149,171-172,229-230,244-245,261-262,270,284-285
+  s_88cfcc42bf5bfd::t_538c2d820db7d0 47,49-50
+src/shared/utils/lengthUnit.test.ts
+  s_88cfcc42bf5bfd::t_1cdf02dd1efff3 1-33
+src/i18n/locales/fr.json
+  s_88cfcc42bf5bfd::t_febb12eee1ff9b 3455,3460,3467,5674-5675
+  s_88cfcc42bf5bfd::t_ac2cab990a0b46 143-144,3449,3452,3457-3458,3461-3462,5665-5673
+src/i18n/locales/nb.json
+  s_88cfcc42bf5bfd::t_febb12eee1ff9b 3455,3460,3467,5674-5675
+  s_88cfcc42bf5bfd::t_ac2cab990a0b46 143-144,3449,3452,3457-3458,3461-3462,5665-5673
+src/shell/Modals/SettingsModal/tabs/GeneralTab/GeneralTab.tsx
+  s_88cfcc42bf5bfd::t_3c10e6f36d276c 18-25,75,78,124-129,135-141
+  s_88cfcc42bf5bfd::t_0ab81b883f4241 130-134
+  s_88cfcc42bf5bfd::t_06765dfa79644a 142-146
+src/i18n/locales/it.json
+  s_88cfcc42bf5bfd::t_ac2cab990a0b46 143-144,3449,3452,3457-3458,3461-3462,5665-5673
+  s_88cfcc42bf5bfd::t_febb12eee1ff9b 3455,3460,3467,5674-5675
+apps/docs/concepts/units.md
+  s_88cfcc42bf5bfd::t_166ae99d106ce6 21-22,69-76
+  s_88cfcc42bf5bfd::t_d46771ce553e63 77
+src/i18n/locales/cs.json
+  s_88cfcc42bf5bfd::t_ac2cab990a0b46 146-147,3514,3517,3522-3523,3526-3527,5807-5815
+  s_88cfcc42bf5bfd::t_febb12eee1ff9b 3520,3525,3532,5816-5817
+src/i18n/locales/de.json
+  s_88cfcc42bf5bfd::t_ac2cab990a0b46 143-144,3449,3452,3457-3458,3461-3462,5665-5673
+  s_88cfcc42bf5bfd::t_febb12eee1ff9b 3455,3460,3467,5674-5675
+src/core/store/settings.normalize.ts
+  s_88cfcc42bf5bfd::t_05499168300eda 17
+  s_88cfcc42bf5bfd::t_0d0971ec84661a 170-172
+src/i18n/locales/en.ts
+  s_88cfcc42bf5bfd::t_ac2cab990a0b46 1024-1029,1090-1091,1163-1164,4965-4966,6329-6332,6339
+  s_88cfcc42bf5bfd::t_febb12eee1ff9b 152,6335-6336
+  s_88cfcc42bf5bfd::t_c4d89e94c2d390 6333,6337,6340,6342,6344
+src/i18n/locales/uk.json
+  s_88cfcc42bf5bfd::t_ac2cab990a0b46 149-150,3579,3582,3587-3588,3591-3592,5945-5953
+  s_88cfcc42bf5bfd::t_febb12eee1ff9b 3585,3590,3597,5954-5955
+src/i18n/locales/es.json
+  s_88cfcc42bf5bfd::t_ac2cab990a0b46 143-144,3449,3452,3457-3458,3461-3462,5665-5673
+  s_88cfcc42bf5bfd::t_febb12eee1ff9b 3455,3460,3467,5674-5675
+src/i18n/locales/ja.json
+  s_88cfcc42bf5bfd::t_febb12eee1ff9b 3390,3395,3402,5534-5535
+  s_88cfcc42bf5bfd::t_ac2cab990a0b46 140-141,3384,3387,3392-3393,3396-3397,5525-5533
+src/i18n/locales/ka.json
+  s_88cfcc42bf5bfd::t_febb12eee1ff9b 5145-5147,5674-5675
+  s_88cfcc42bf5bfd::t_ac2cab990a0b46 1046-1047,4086-4087,5149-5150,5152,5154,5665-5673
+src/i18n/locales/pl.json
+  s_88cfcc42bf5bfd::t_febb12eee1ff9b 3585,3590,3597,5954-5955
+  s_88cfcc42bf5bfd::t_ac2cab990a0b46 149-150,3579,3582,3587-3588,3591-3592,5945-5953
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.tsx
+  s_88cfcc42bf5bfd::t_c4f2c0b06c72f8 120-131
+  s_88cfcc42bf5bfd::t_fc0d33119649af 8-10,13,132-133
+  s_88cfcc42bf5bfd::t_3a1a8ca8798632 70-71,154-158,176,184,202,206,226
+src/shell/Modals/SettingsModal/tabs/GeneralTab/GeneralTab.test.tsx
+  s_88cfcc42bf5bfd::t_3c704249f5c5ee 28,34-45
+apps/docs/settings/settings.md
+  s_88cfcc42bf5bfd::t_166ae99d106ce6 37-43
+src/shared/utils/lengthUnit.ts
+  s_88cfcc42bf5bfd::t_922db581cea6fa 1-29
+src/shared/components/EditableDimensions/EditableDimensions.test.tsx
+  s_88cfcc42bf5bfd::t_d9e027012ba806 236-276
+src/core/store/settings.types.ts
+  s_88cfcc42bf5bfd::t_0d0971ec84661a 5,237-239,389
+src/core/store/settings.loadSettings.test.ts
+  s_88cfcc42bf5bfd::t_eadb43994e8dd4 72-85
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
+  s_88cfcc42bf5bfd::t_e6fdd88c8283db 53
+  s_88cfcc42bf5bfd::t_bfc513ca4c9bef 25,415-418
+src/i18n/locales/sv.json
+  s_88cfcc42bf5bfd::t_ac2cab990a0b46 143-144,3449,3452,3457-3458,3461-3462,5665-5673
+  s_88cfcc42bf5bfd::t_febb12eee1ff9b 3455,3460,3467,5674-5675
+src/features/baseplate/components/BaseplatePanel/DimensionsSection.test.tsx
+  s_88cfcc42bf5bfd::t_2128aa111adffe 369,378
+  s_88cfcc42bf5bfd::t_197dc983835aae 445
+src/shared/components/DrawerDimensionsSummary/DrawerDimensionsSummary.test.tsx
+  s_88cfcc42bf5bfd::t_2128aa111adffe 220,233
+  s_88cfcc42bf5bfd::t_3504987c6b00b6 249
+  s_88cfcc42bf5bfd::t_7deac9b2cafed0 1,4,237-248,250-260
+  s_88cfcc42bf5bfd::t_c4dcd74b4c59ec 261
+src/shell/Modals/SettingsModal/settingsRegistry.ts
+  s_88cfcc42bf5bfd::t_0ab81b883f4241 34-38
+  s_88cfcc42bf5bfd::t_68cf5cef7f3679 33
+src/shared/hooks/useMeasureUnit.ts
+  s_88cfcc42bf5bfd::t_b6c9851f9fce7c 1-16
+src/i18n/locales/ko.json
+  s_88cfcc42bf5bfd::t_febb12eee1ff9b 3390,3395,3402,5534-5535
+  s_88cfcc42bf5bfd::t_ac2cab990a0b46 140-141,3384,3387,3392-3393,3396-3397,5525-5533
+src/i18n/locales/pt-BR.json
+  s_88cfcc42bf5bfd::t_febb12eee1ff9b 3455,3460,3467,5674-5675
+  s_88cfcc42bf5bfd::t_ac2cab990a0b46 143-144,3449,3452,3457-3458,3461-3462,5665-5673
+src/i18n/locales/zh-CN.json
+  s_88cfcc42bf5bfd::t_ac2cab990a0b46 140-141,3384,3387,3392-3393,3396-3397,5525-5533
+  s_88cfcc42bf5bfd::t_c4f2c0b06c72f8 3390,3395,3402,5534-5535
+src/i18n/locales/nl.json
+  s_88cfcc42bf5bfd::t_ac2cab990a0b46 143-144,3449,3452,3457-3458,3461-3462,5665-5673
+  s_88cfcc42bf5bfd::t_febb12eee1ff9b 3455,3460,3467,5674-5675
+src/shared/hooks/useMeasureUnit.test.ts
+  s_88cfcc42bf5bfd::t_3c704249f5c5ee 1-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7fd66ebf133eb71acb5425472cc318565373a988",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
