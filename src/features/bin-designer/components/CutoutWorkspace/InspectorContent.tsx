@@ -44,6 +44,7 @@ import { BinFeaturesSection } from './BinFeaturesSection';
 import { FitTestButton } from './FitTestButton';
 import { ShadowBoardButton } from './ShadowBoardButton';
 import { AlignControls } from './AlignControls';
+import { ToolSetEditButton } from './ToolSetEditButton';
 import { RepeatSuggestion } from './RepeatSuggestion';
 import type { SplitTool } from './CutoutSplitControls';
 import type { PointTool } from './CutoutPointControls';
@@ -395,6 +396,7 @@ export function InspectorContent({
   return (
     <div className="space-y-1.5">
       {binWarnings}
+      <ToolSetEditButton selected={selectedCutouts} disabled={disabled} />
       {singleCutout && (
         <SingleCutoutInspector
           cutout={singleCutout}

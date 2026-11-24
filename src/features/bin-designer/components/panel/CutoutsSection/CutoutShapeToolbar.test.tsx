@@ -312,6 +312,33 @@ describe('CutoutShapeToolbar', () => {
     expect(onScanTool).toHaveBeenCalledOnce();
   });
 
+  it('shows the tool set button only with onToolSet, and calls it', () => {
+    const onToolSet = vi.fn();
+    const { rerender } = render(
+      <CutoutShapeToolbar
+        mode={idleMode}
+        onSelectShape={vi.fn()}
+        snapEnabled={true}
+        onSnapToggle={vi.fn()}
+        {...gridSizeProps}
+      />
+    );
+    expect(screen.queryByTitle('binDesigner.toolSets.addTitle')).not.toBeInTheDocument();
+
+    rerender(
+      <CutoutShapeToolbar
+        mode={idleMode}
+        onSelectShape={vi.fn()}
+        snapEnabled={true}
+        onSnapToggle={vi.fn()}
+        {...gridSizeProps}
+        onToolSet={onToolSet}
+      />
+    );
+    fireEvent.click(screen.getByTitle('binDesigner.toolSets.addTitle'));
+    expect(onToolSet).toHaveBeenCalledOnce();
+  });
+
   it('does not claim K for scan in the vertical tooltip, since K arms the knife slot', () => {
     render(
       <CutoutShapeToolbar

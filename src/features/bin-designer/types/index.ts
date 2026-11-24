@@ -351,3 +351,13 @@ export * from './savedDesign';
 export * from './designVersion';
 export * from './designVariant';
 export * from './designerState';
+
+export type { ToolFamilyId, ToolSetSpec, ToolSetStyle, ToolUnits } from './toolSet';
+export {
+  DEFAULT_TOOL_SET_CLEARANCE_MM,
+  DEFAULT_TOOL_SET_LABEL_MM,
+  TOOL_FAMILY_IDS,
+  TOOL_SET_LIMITS,
+  TOOL_SET_STYLES,
+  TOOL_UNITS,
+} from './toolSet';

@@ -93,6 +93,7 @@ export const BIN_PARAMS_KEYS = [
   'cutoutConfig',
   'meshAssets',
   'cutoutGroupNames',
+  'cutoutToolSets',
   'wallPattern',
   'floorPattern',
   'splitConnectors',

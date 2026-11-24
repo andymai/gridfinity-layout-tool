@@ -173,21 +173,31 @@ export function gcMeshAssets(state: Draft<DesignerState>): void {
 }
 
 /**
- * Drop names for groups the design no longer has. Runs after every path that
- * can empty or dissolve a group, so a deleted assembly doesn't leave its name
- * behind to be re-adopted by a later group that happens to reuse the id.
+ * Drop the names and tool set specs of groups the design no longer has. Runs
+ * after every path that can empty or dissolve a group, so a deleted assembly
+ * doesn't leave its metadata behind to be re-adopted by a later group that
+ * happens to reuse the id.
  *
  * Reads BOTH cutout arrays, unlike {@link gcMeshAssets}: one name map serves
  * the bin and its lid, so counting references through `cutoutOwner` alone would
  * drop every name the other array still uses.
  */
-export function gcCutoutGroupNames(state: Draft<DesignerState>): void {
-  const names = state.params.cutoutGroupNames;
-  if (!names) return;
+export function gcCutoutGroupMetadata(state: Draft<DesignerState>): void {
+  const { cutoutGroupNames: names, cutoutToolSets: sets } = state.params;
+  if (!names && !sets) return;
   const referenced = referencedGroupIds(state.params.cutouts, state.params.lid.cutouts ?? []);
-  const kept = Object.entries(names).filter(([id]) => referenced.has(id));
-  if (kept.length === Object.keys(names).length) return;
-  state.params.cutoutGroupNames = kept.length > 0 ? Object.fromEntries(kept) : undefined;
+  if (names) {
+    const kept = Object.entries(names).filter(([id]) => referenced.has(id));
+    if (kept.length !== Object.keys(names).length) {
+      state.params.cutoutGroupNames = kept.length > 0 ? Object.fromEntries(kept) : undefined;
+    }
+  }
+  if (sets) {
+    const kept = Object.entries(sets).filter(([id]) => referenced.has(id));
+    if (kept.length !== Object.keys(sets).length) {
+      state.params.cutoutToolSets = kept.length > 0 ? Object.fromEntries(kept) : undefined;
+    }
+  }
 }
 
 /**
@@ -314,4 +324,54 @@ export function planUnitLandings(
     }
   }
   return landings;
+}
+
+/**
+ * Give a copied tool set its recipe under the copy's new container id, so the
+ * copy keeps "Edit set". Only a set copied whole qualifies: a copy of some of
+ * its pockets is not that set any more.
+ */
+export function copyWholeToolSets(
+  state: Draft<DesignerState>,
+  copied: readonly Cutout[],
+  groupMap: ReadonlyMap<string, string>
+): void {
+  const sets = state.params.cutoutToolSets;
+  if (!sets) return;
+  const copiedIds = new Set(copied.map((c) => c.id));
+  const all = [...state.params.cutouts, ...(state.params.lid.cutouts ?? [])];
+  const next = { ...sets };
+  let changed = false;
+  for (const [from, to] of groupMap) {
+    if (!(from in sets)) continue;
+    const spec = sets[from];
+    const members = all.filter((c) => c.parentGroups?.includes(from) === true);
+    if (members.length === 0 || !members.every((c) => copiedIds.has(c.id))) continue;
+    next[to] = spec;
+    changed = true;
+  }
+  if (changed) state.params.cutoutToolSets = next;
+}
+
+/** {@link copyWholeToolSets} for clones known only as `[originalId, cloneId]` pairs. */
+export function copyToolSetsForClonePairs(
+  state: Draft<DesignerState>,
+  pairs: readonly (readonly [string, string])[]
+): void {
+  if (!state.params.cutoutToolSets) return;
+  const all = [...state.params.cutouts, ...(state.params.lid.cutouts ?? [])];
+  const byId = new Map(all.map((c) => [c.id, c]));
+  const groupMap = new Map<string, string>();
+  const originals: Cutout[] = [];
+  for (const [from, to] of pairs) {
+    const original = byId.get(from);
+    const clone = byId.get(to);
+    if (!original || !clone) continue;
+    originals.push(original);
+    (original.parentGroups ?? []).forEach((id, i) => {
+      const copy = clone.parentGroups?.[i];
+      if (copy !== undefined) groupMap.set(id, copy);
+    });
+  }
+  copyWholeToolSets(state, originals, groupMap);
 }

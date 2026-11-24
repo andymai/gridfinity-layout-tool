@@ -8,6 +8,7 @@
  */
 
 import type { MeshAsset, MeshOutlinePoint } from '@/shared/generation/meshAsset';
+import type { ToolSetSpec } from '@/shared/types/toolSet';
 import type {
   AccentBandConfig,
   Cutout,
@@ -296,6 +297,19 @@ export type _CutoutFingerKeys = Assert<
 export const CUTOUT_SPLIT_KEYS = ['a', 'b', 'cutDepth', 'depthMode', 'floorMm'] as const;
 export type _CutoutSplitKeys = Assert<
   KeysMatch<keyof NonNullable<Cutout['split']>, (typeof CUTOUT_SPLIT_KEYS)[number]>
+>;
+
+export const TOOL_SET_SPEC_KEYS = [
+  'family',
+  'units',
+  'sizes',
+  'style',
+  'clearanceMm',
+  'labelSizeMm',
+  'fingerChannel',
+] as const;
+export type _ToolSetSpecKeys = Assert<
+  KeysMatch<keyof ToolSetSpec, (typeof TOOL_SET_SPEC_KEYS)[number]>
 >;
 
 export const CUTOUT_SPLIT_POINT_KEYS = ['x', 'y'] as const;

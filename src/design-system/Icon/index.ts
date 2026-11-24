@@ -95,5 +95,7 @@ export { ImageIcon } from './icons/Image';
 export type { ImageIconProps } from './icons/Image';
 export { ScanToolIcon } from './icons/ScanTool';
 export type { ScanToolIconProps } from './icons/ScanTool';
+export { WrenchIcon } from './icons/Wrench';
+export type { WrenchIconProps } from './icons/Wrench';
 export { SmartphoneIcon } from './icons/Smartphone';
 export type { SmartphoneIconProps } from './icons/Smartphone';

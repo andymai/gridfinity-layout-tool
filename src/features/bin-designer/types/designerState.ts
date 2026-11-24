@@ -403,6 +403,11 @@ export interface DesignerState {
   updateCutoutsBatch: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
   removeCutoutsBatch: (ids: readonly string[]) => void;
   /**
+   * Copy the recipe of every tool set copied whole by a paste or duplicate, as
+   * `[originalId, cloneId]` pairs. Editor metadata: no undo entry of its own.
+   */
+  copyToolSetsForClones: (pairs: readonly (readonly [string, string])[]) => void;
+  /**
    * Collapse hand-placed duplicates into one parametric repeat: the master
    * takes `config` and the absorbed cutouts are removed, as ONE history entry
    * so a single undo puts every cutout back. Doing this through
@@ -471,6 +476,9 @@ export interface DesignerState {
   /** Open the cut editor on the bin with the "Scan a tool" dialog up. */
   openScanDialog: (source: ScanSource, growBin?: boolean) => void;
   closeScanDialog: () => void;
+  /** Opens the tool set dialog: null adds a set, a group id edits that set. */
+  openToolSetDialog: (setId: string | null) => void;
+  closeToolSetDialog: () => void;
   /** Open the phone scan flow, which packs what it scans into the bin. */
   openPhoneScan: (source: ScanSource) => void;
   closePhoneScan: () => void;

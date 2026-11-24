@@ -387,7 +387,7 @@ export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
     id: 'opt-interior-solid',
     labelKey: 'binDesigner.interior.solid.title',
     section: 'bd-interior',
-    keywords: ['solid', 'cutout', 'pockets', 'custom shapes'],
+    keywords: ['solid', 'cutout', 'pockets', 'custom shapes', 'wrench', 'spanner'],
   },
   {
     id: 'opt-interior-grid',

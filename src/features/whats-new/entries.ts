@@ -14,6 +14,17 @@ import type { WhatsNewEntry } from './types';
  */
 export const WHATS_NEW_ENTRIES: WhatsNewEntry[] = [
   {
+    id: 'wrench-tool-sets',
+    date: '2026-11-23',
+    kind: 'new',
+    featured: true,
+    title: { en: 'Pockets for a whole wrench set in one step' },
+    body: {
+      en: 'In the cutout editor, click Tool set and pick the wrench sizes you have, metric or SAE. Each wrench gets a pocket in its shape, nested head to tail, with its size engraved beside it. One finger channel runs across the handles, and the bin grows to fit. To change the sizes later, select the set and click Edit set. The pockets use typical wrench sizes, so print a fit test before the full bin. This tool is experimental.',
+    },
+    action: { kind: 'openTool', tool: 'designer' },
+  },
+  {
     id: 'baseplate-undo',
     date: '2026-11-22',
     kind: 'improved',

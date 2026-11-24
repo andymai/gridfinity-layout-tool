@@ -45,6 +45,7 @@ import { useSvgImport } from '../panel/CutoutsSection/svgImport';
 import { useSvgExport } from '../panel/CutoutsSection/svgExport';
 import { useStlImport, StlImportDialog } from '../panel/CutoutsSection/stlImport';
 import { ScanToolDialog } from '../panel/CutoutsSection/scanImport';
+import { ToolSetDialog } from '../panel/CutoutsSection/toolSets/ToolSetDialog';
 import { ToolThicknessPrompt } from '../panel/CutoutsSection/ToolThicknessPrompt';
 import { useAddFingerAccess } from '../panel/CutoutsSection/useAddFingerAccess';
 import type { RulerMeasurement } from '../panel/CutoutsSection/handlers/rulerHandler';
@@ -236,6 +237,9 @@ export function CutoutWorkspace() {
   const { triggerImport: triggerSvgImport } = useSvgImport();
   const stlImport = useStlImport();
   const scanDialogSource = useDesignerStore((s) => s.ui.scanDialogSource);
+  const toolSetDialog = useDesignerStore((s) => s.ui.toolSetDialog);
+  const openToolSetDialog = useDesignerStore((s) => s.openToolSetDialog);
+  const closeToolSetDialog = useDesignerStore((s) => s.closeToolSetDialog);
   const openScanDialog = useDesignerStore((s) => s.openScanDialog);
   const closeScanDialog = useDesignerStore((s) => s.closeScanDialog);
   const [droppedPhoto, setDroppedPhoto] = useState<File | null>(null);
@@ -813,6 +817,7 @@ export function CutoutWorkspace() {
               // canvas is not showing.
               onImportStl={isLid ? undefined : stlImport.triggerImport}
               onScanTool={!isLid ? () => openScanDialog('toolbar') : undefined}
+              onToolSet={!isLid ? () => openToolSetDialog(null) : undefined}
             />
           </div>
         </div>
@@ -824,6 +829,10 @@ export function CutoutWorkspace() {
           photo={droppedPhoto}
           onPhotoDone={() => setDroppedPhoto(null)}
         />
+
+        {toolSetDialog && !isLid && (
+          <ToolSetDialog setId={toolSetDialog.setId} onClose={closeToolSetDialog} />
+        )}
 
         <StlImportDialog
           pending={stlImport.pending}

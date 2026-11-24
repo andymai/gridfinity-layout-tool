@@ -9,7 +9,7 @@ import type { ReactNode } from 'react';
 import type { CutoutShape } from '@/features/bin-designer/types';
 import type { InteractionMode } from './useCutoutInteraction';
 import { Button } from '@/design-system';
-import { ScanToolIcon } from '@/design-system/Icon';
+import { ScanToolIcon, WrenchIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 
 /** Styled tooltip wrapper for vertical toolbar buttons */
@@ -46,6 +46,8 @@ interface CutoutShapeToolbarProps {
   /** Callback to trigger STL mesh import. When omitted, the button is hidden. */
   readonly onImportStl?: () => void;
   readonly onScanTool?: () => void;
+  /** Opens the tool set dialog. When omitted, the button is hidden. */
+  readonly onToolSet?: () => void;
 }
 
 export function CutoutShapeToolbar({
@@ -59,6 +61,7 @@ export function CutoutShapeToolbar({
   onImportSvg,
   onImportStl,
   onScanTool,
+  onToolSet,
 }: CutoutShapeToolbarProps) {
   const t = useTranslation();
   // Derive which tool is "active" across all transient interaction states
@@ -421,6 +424,24 @@ export function CutoutShapeToolbar({
           >
             <ScanToolIcon className={iconSize} />
             {!vertical && t('binDesigner.cutouts.scanImport.buttonLabel')}
+          </Button>
+        )}
+
+      {onToolSet &&
+        wrap(
+          t('binDesigner.toolSets.addTitle'),
+          null,
+          <Button
+            type="button"
+            variant="ghost"
+            touchTarget={false}
+            className={`${btnBase} ${btnAccent}`}
+            onClick={onToolSet}
+            aria-label={t('binDesigner.toolSets.addTitle')}
+            title={!vertical ? t('binDesigner.toolSets.addTitle') : undefined}
+          >
+            <WrenchIcon className={iconSize} />
+            {!vertical && t('binDesigner.toolSets.button')}
           </Button>
         )}
 
