@@ -56,7 +56,7 @@ import {
 } from '@/shared/utils/cutoutOpenSides';
 import type { OpenSideChannel } from '@/shared/utils/cutoutOpenSides';
 import { buildCradlePrism, buildCradleRun } from './cutoutCradleTool';
-import { LIP_HEIGHT, CUT_RIM_CLEARANCE } from './generatorConstants';
+import { LIP_HEIGHT, CUT_RIM_CLEARANCE, COPLANAR_MARGIN } from './generatorConstants';
 import { isCutoutEngraveMode } from '@/shared/utils/cutoutLabelSocketPlan';
 import {
   DEFAULT_GROUP_OP,
@@ -1843,10 +1843,10 @@ function buildOpenSideChannels(
     if (effectiveDepth <= 0) continue;
     const height = ch.tunnel ? effectiveDepth : breachHeight(params, frame, effectiveDepth);
     if (ch.cradle) {
-      const run = cradleChannel(ch, frame, params.wallThickness, effectiveDepth, height);
-      if (!run) continue;
-      setShapeOrigin(run, cavityTag(owner));
-      channels.push(run);
+      for (const tool of cradleChannels(ch, frame, params.wallThickness, effectiveDepth, height)) {
+        setShapeOrigin(tool, cavityTag(owner));
+        channels.push(tool);
+      }
       continue;
     }
     const outline = openSideChannelOutline(ch, {
@@ -1866,38 +1866,61 @@ function buildOpenSideChannels(
 }
 
 /**
- * A cradle's channel: its arc carried from where the pocket's clipped tool
- * ends out past the wall. Starting at the pocket's end rather than its centre
- * keeps the two tools from sharing the arc, since coincident curved faces are
- * what leave a boolean non-manifold.
+ * A cradle's channel tools: its arc carried from where the pocket's clipped
+ * tool ends out past the wall. Starting at the pocket's end rather than its
+ * centre keeps the two tools from sharing the arc, since coincident curved
+ * faces are what leave a boolean non-manifold.
+ *
+ * Only the rectangular interior clips the pocket, so on a custom shape it can
+ * run on under the wall it opens. There it already cuts the arc below the
+ * fill, and a flat-sided block takes the wall above.
  */
-function cradleChannel(
+function cradleChannels(
   ch: OpenSideChannel,
   frame: BreachFrame,
   wallThickness: number,
   depth: number,
   height: number
-): Shape3D | null {
+): Shape3D[] {
   const alongX = ch.side === 'left' || ch.side === 'right';
   const inner = alongX ? frame.innerW : frame.innerD;
-  const { far } = openSideChannelRun(ch, {
+  const { dir, face, far } = openSideChannelRun(ch, {
     innerW: frame.innerW,
     innerD: frame.innerD,
     wallThickness,
   });
-  const start = Math.min(Math.max(ch.edge, 0), inner);
+  const end = Math.min(Math.max(ch.edge, 0), inner);
+  const wallInner = face - dir * wallThickness;
   const along = alongX ? frame.originX : frame.originY;
-  const across = alongX ? frame.originY : frame.originX;
-  return buildCradleRun({
-    alongX,
-    from: along + Math.min(start, far),
-    to: along + Math.max(start, far),
-    across: across + (ch.lo + ch.hi) / 2,
-    width: ch.hi - ch.lo,
-    depth,
-    topZ: height,
-    baseZ: frame.solidSurfaceZ - depth,
-  });
+  const across = (alongX ? frame.originY : frame.originX) + (ch.lo + ch.hi) / 2;
+  const width = ch.hi - ch.lo;
+  const tools: Shape3D[] = [];
+  if (dir * (far - end) > 0) {
+    const run = buildCradleRun({
+      alongX,
+      from: along + Math.min(end, far),
+      to: along + Math.max(end, far),
+      across,
+      width,
+      depth,
+      topZ: height,
+      baseZ: frame.solidSurfaceZ - depth,
+    });
+    if (run) tools.push(run);
+  }
+  const above = height - depth;
+  if (dir * (end - wallInner) > 0 && above > 0) {
+    const from = wallInner - dir * COPLANAR_MARGIN;
+    const to = dir * (end - far) > 0 ? far : end;
+    const length = Math.abs(to - from);
+    const mid = along + (from + to) / 2;
+    tools.push(
+      box(alongX ? length : width, alongX ? width : length, above, {
+        at: [alongX ? mid : across, alongX ? across : mid, frame.solidSurfaceZ + above / 2],
+      })
+    );
+  }
+  return tools;
 }
 
 /**

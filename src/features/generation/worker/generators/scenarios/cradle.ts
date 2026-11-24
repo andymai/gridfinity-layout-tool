@@ -1,6 +1,7 @@
 import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, Cutout } from '@/shared/types/bin';
+import type { CellMask } from '@/shared/utils/cellMask';
 import { defineScenario, makeCutout } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 import { boundingBox, columnCrossings } from '../__kernel-tests__/meshAssertions';
@@ -89,6 +90,13 @@ function expectWallWhole(mesh: MeshData, at: (p: number) => [number, number], ps
 
 const ACROSS = [0, 10, -10, 20, -20, 27, -27];
 
+/** A 3x2 bin in half cells with the middle of its back half left out. */
+const U_MASK: CellMask = {
+  cols: 6,
+  rows: 4,
+  cells: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1],
+};
+
 export const cradle: ScenarioCase[] = [
   defineScenario('cradle', '2x1x4 cradle floor follows its arc between whole walls', {
     params: block(),
@@ -164,6 +172,40 @@ export const cradle: ScenarioCase[] = [
       expectArc(result, (u) => [u, 0], 12, 43.5, ACROSS);
       // Beside the cradle the fill runs flat to the arc's edge, with no flare.
       expect(columnTopZ(result, 31, 0)).toBeCloseTo(fillTop(result), 1);
+    },
+  }),
+  defineScenario('cradle', 'U block: a cradle that runs on under the arm wall it opens cuts it', {
+    params: {
+      style: 'solid',
+      width: 3,
+      depth: 2,
+      height: 3,
+      base: SOLID_BASE,
+      cellMask: U_MASK,
+      cutouts: [
+        // 60 long along X from interior x = 5 to 65, so it runs past the left
+        // arm's inner wall (interior x = 39.1 to 40.3) into the gap.
+        makeCutout({
+          shape: 'rectangle',
+          x: 25,
+          y: 31,
+          width: 20,
+          depth: 60,
+          cutDepth: 8,
+          rotation: 90,
+          cradle: true,
+          openSides: [{ side: 'right' }],
+        }),
+      ],
+    },
+    customAssert: (result) => {
+      // Centred frame: the arm wall's outer face is at x = -21.25, the cradle's
+      // middle at y = 20.45, and the arm's fill beside it at (-41.55, 35.45).
+      const wallX = -21.25 - 0.6;
+      // (10² + 8²) / 16
+      const radius = 10.25;
+      expectArc(result, (v) => [wallX, 20.45 + v], 8, radius, [0, 4, -4, 8, -8], [-41.55, 35.45]);
+      expectWallWhole(result, (y) => [wallX, y], [3, 37]);
     },
   }),
 ];

@@ -296,12 +296,15 @@ function openings(params: OpenSideHost): Opening[] {
       const specs = effectiveOpenSides(master, params);
       if (specs.length === 0) continue;
       for (const inst of master.array ? expandCutoutArray(master) : [master]) {
+        // A radial repeat can turn each copy, and a cradle's walls follow its own axis.
+        const instSpecs = isCradle(inst) ? effectiveOpenSides(inst, params) : specs;
+        if (instSpecs.length === 0) continue;
         const bounds = instanceBounds(inst, params);
         if (!bounds) continue;
         out.push({
           ownerId: master.id,
           bounds,
-          specs,
+          specs: instSpecs,
           chamferMm: chamferOf(inst),
           // A split pocket opens the wall only as deep as its shallower side,
           // so the channel never notches the wall under a floor.

@@ -51,7 +51,6 @@ export function cradleAxis(rotationDeg: number): 'x' | 'y' | null {
   return null;
 }
 
-/** True when the cradle's length runs into `side`, so its arc can leave there. */
 export function cradleOpensSide(
   cutout: Pick<Cutout, 'shape' | 'cradle' | 'rotation'>,
   side: CutoutOpenSide

@@ -165,6 +165,33 @@ describe('a cradle’s open sides', () => {
     expect(openSideChannels(solid([c]))).toHaveLength(0);
   });
 
+  it('opens each turned copy of a radial repeat only where its own ends meet the walls', () => {
+    const c = cradle({
+      x: 30,
+      y: 10,
+      width: 20,
+      depth: 20,
+      cutDepth: 6,
+      openSides: [{ side: 'front' }, { side: 'back' }],
+      array: {
+        mode: 'radial',
+        cols: 1,
+        rows: 1,
+        pitchX: 0,
+        pitchY: 0,
+        count: 8,
+        radius: 10,
+        startAngle: 0,
+        rotateToCenter: true,
+      },
+    });
+    const channels = openSideChannels(solid([c]));
+    // Only the copies at 0° and 180° run front to back. The 90° and 270° copies
+    // run into the side walls, which are not picked, and the rest are off square.
+    expect(channels).toHaveLength(4);
+    for (const ch of channels) expect(ch.hi - ch.lo).toBeCloseTo(20, 5);
+  });
+
   it('keeps every member of a group with a cradle in it enclosed', () => {
     const c = cradle({ groupId: 'g', openSides: [{ side: 'front' }] });
     const other = cradle({

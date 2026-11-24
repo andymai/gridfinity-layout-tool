@@ -11,3 +11,5 @@ exports[`cradle > 2x1x4 cradle open front and back carries its arc through both 
 exports[`cradle > 2x1x4 cradle turned 90° opens only the walls at its ends 1`] = `1700`;
 
 exports[`cradle > 2x1x4 tunnel cradle keeps the wall above its arc 1`] = `1626`;
+
+exports[`cradle > U block: a cradle that runs on under the arm wall it opens cuts it 1`] = `3538`;

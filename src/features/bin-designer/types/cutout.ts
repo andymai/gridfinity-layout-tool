@@ -237,7 +237,6 @@ export const LEAN_SHAPES: readonly CutoutShape[] = [
   'path',
 ];
 
-/** True when the cutout cuts as a {@link Cutout.cradle}: only a rectangle can. */
 export function isCradle(cutout: { readonly shape: string; readonly cradle?: boolean }): boolean {
   return cutout.shape === 'rectangle' && cutout.cradle === true;
 }
