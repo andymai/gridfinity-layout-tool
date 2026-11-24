@@ -1,0 +1,21 @@
+src/shared/components/EditableDimensions/EditableDimensions.test.tsx
+  s_88cfcc42bf5bfd::t_6e0aff80b72ba9 267-277
+src/shared/components/EditableDimensions/EditableDimensions.tsx
+  s_88cfcc42bf5bfd::t_6e0aff80b72ba9 133-136
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "384d656d29d629efca597589a0d5eb9ae3096a58",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
