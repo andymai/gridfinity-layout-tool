@@ -356,7 +356,8 @@
     "labels.printer.dymo-d1",
     "labels.printer.niimbot-d",
     "labels.printer.phomemo-d30",
-    "labels.row.copies"
+    "labels.row.copies",
+    "common.labelWithUnit"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

@@ -69,3 +69,17 @@ describe('loadSettings - export destination', () => {
     expect(settings.exportFolderName).toBeNull();
   });
 });
+
+describe('loadSettings - measure unit', () => {
+  it('keeps a stored centimeter unit', () => {
+    vi.mocked(loadFromLocalStorage).mockReturnValue({ ok: true, value: { measureUnit: 'cm' } });
+    expect(loadSettings().measureUnit).toBe('cm');
+  });
+
+  it('falls back to millimeters for a missing or unknown unit', () => {
+    vi.mocked(loadFromLocalStorage).mockReturnValue({ ok: true, value: {} });
+    expect(loadSettings().measureUnit).toBe('mm');
+    vi.mocked(loadFromLocalStorage).mockReturnValue({ ok: true, value: { measureUnit: 'ft' } });
+    expect(loadSettings().measureUnit).toBe('mm');
+  });
+});

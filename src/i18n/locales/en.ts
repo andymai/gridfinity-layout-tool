@@ -149,6 +149,7 @@ const en: Record<string, string> = {
   'common.increaseAria': 'Increase {what}',
   'common.close': 'Close',
   'common.physicalUnits': 'Physical units',
+  'common.labelWithUnit': '{label} ({unit})',
   'common.openSectionDocs': 'Open the docs for {section}',
   'common.loading': 'Loading...',
 
@@ -1020,6 +1021,12 @@ const en: Record<string, string> = {
   'settings.toggleUsageData': 'Toggle usage data collection',
   'settings.language': 'Language',
   'settings.languageHint': 'Choose your preferred language',
+  'settings.measureUnit': 'Measure in',
+  'settings.measureUnitHint':
+    'The unit for drawer and baseplate sizes that you type. Grid sizes stay in grid units.',
+  'settings.measureUnit.mm': 'Millimeters',
+  'settings.measureUnit.cm': 'Centimeters',
+  'settings.measureUnit.in': 'Inches',
   'settings.autoDetect': 'Auto (browser default)',
   'settings.labs': 'Labs',
   'settings.labsHint': 'Preview features still in development. Some may change or be removed.',
@@ -1080,6 +1087,8 @@ const en: Record<string, string> = {
   'settings.search.noResults': 'No settings match “{query}”',
   'settings.search.inTab': 'in {tab}',
   'settings.search.keywords.language': 'locale, translation, internationalization',
+  'settings.search.keywords.measureUnit':
+    'unit, units, mm, cm, inch, inches, millimeters, centimeters, metric, imperial',
   'settings.search.keywords.theme': 'dark, light, system, color scheme',
   'settings.search.keywords.motion':
     'animation, transitions, accessibility, video, autoplay, clips',
@@ -1151,8 +1160,8 @@ const en: Record<string, string> = {
   'stackSolver.overlayPitch': 'stacks +{pitch}mm',
 
   // Drawer ceiling: does the printed layout clear the lid?
-  'drawerCeiling.overflow': 'Tallest stack stands {over}mm above your measured drawer',
-  'drawerCeiling.fits': 'Tallest stack fits, {slack}mm to spare',
+  'drawerCeiling.overflow': 'Tallest stack stands {over} {unit} above your measured drawer',
+  'drawerCeiling.fits': 'Tallest stack fits, {slack} {unit} to spare',
   'drawerCeiling.measurePrompt': 'Add a height measurement to check the lid closes',
   'drawerCeiling.binOverflow': 'Stands {over}mm above your measured drawer',
   'drawerCeiling.layerOverflow': 'Stack stands {over}mm above your measured drawer',
@@ -4953,8 +4962,8 @@ const en: Record<string, string> = {
   'baseplate.drawerOverflow':
     'Plate is {width} × {depth} mm over your {drawerWidth} × {drawerDepth} mm drawer',
   'baseplate.fitPaddingToDrawer': 'Fit padding to drawer',
-  'baseplate.editDimensionsWidth': 'Baseplate width in mm',
-  'baseplate.editDimensionsDepth': 'Baseplate depth in mm',
+  'baseplate.editDimensionsWidth': 'Baseplate width in {unit}',
+  'baseplate.editDimensionsDepth': 'Baseplate depth in {unit}',
   'baseplate.reset': 'Reset to defaults',
   'baseplate.resetConfirmTitle': 'Reset baseplate settings?',
   'baseplate.resetConfirmMessage':
@@ -6317,18 +6326,22 @@ const en: Record<string, string> = {
   'undo.categoryDeleted': 'Deleted category',
   'undo.drawerUpdated': 'Updated drawer',
   'undo.drawerOutlineSet': 'Changed drawer shape',
-  // Measured drawer dimensions (mm-first entry)
+  // Length unit symbols, shown after typed drawer and baseplate sizes
+  'units.symbol.mm': 'mm',
+  'units.symbol.cm': 'cm',
+  'units.symbol.in': 'in',
+  // Measured drawer dimensions
   'drawerDims.editAria': 'Edit measured drawer dimensions',
-  'drawerDims.widthLabel': 'Measured width (mm)',
-  'drawerDims.depthLabel': 'Measured depth (mm)',
-  'drawerDims.heightLabel': 'Measured height (mm)',
+  'drawerDims.widthLabel': 'Measured width',
+  'drawerDims.depthLabel': 'Measured depth',
+  'drawerDims.heightLabel': 'Measured height',
   'drawerDims.clear': 'Clear measurement',
-  'drawerDims.fit': 'Grid {width} × {depth} mm · {freeWidth} × {freeDepth} mm free',
-  'drawerDims.gridSize': 'Grid {width} × {depth} mm',
+  'drawerDims.fit': 'Grid {width} × {depth} {unit} · {freeWidth} × {freeDepth} {unit} free',
+  'drawerDims.gridSize': 'Grid {width} × {depth} {unit}',
   'drawerDims.addMeasured': "Add your drawer's measured size",
-  'drawerDims.overflow': 'Grid exceeds your measured drawer by {width} × {depth} mm',
+  'drawerDims.overflow': 'Grid exceeds your measured drawer by {width} × {depth} {unit}',
   'drawerDims.suggestionTitle': '{width} × {depth} units fits your drawer',
-  'drawerDims.suggestionDetail': 'Leaves {freeWidth} × {freeDepth} mm free.',
+  'drawerDims.suggestionDetail': 'Leaves {freeWidth} × {freeDepth} {unit} free.',
   'drawerDims.suggestionHalfNote': 'Turns on half-grid mode.',
   'drawerDims.suggestionUse': 'Fit grid',
   'drawerDims.suggestionDismiss': 'Dismiss suggestion',

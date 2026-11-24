@@ -25,12 +25,24 @@ vi.mock('zustand/shallow', () => ({
 vi.mock('@/core/store', () => ({
   useSettingsStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({
-      settings: { locale: 'auto' },
+      settings: { locale: 'auto', measureUnit: 'mm' },
       updateSetting: mockUpdateSetting,
     }),
 }));
 
 describe('GeneralTab', () => {
+  it('offers millimeters, centimeters and inches, with the stored unit checked', () => {
+    render(<GeneralTab />);
+    const option = (key: string): HTMLElement | null =>
+      screen.getByText(key).closest('[role="radio"]');
+    expect(option('settings.measureUnit.mm')).toHaveAttribute('aria-checked', 'true');
+    expect(option('settings.measureUnit.cm')).toHaveAttribute('aria-checked', 'false');
+    const inches = option('settings.measureUnit.in');
+    if (!inches) throw new Error('no inches option');
+    fireEvent.click(inches);
+    expect(mockUpdateSetting).toHaveBeenCalledWith('measureUnit', 'in');
+  });
+
   it('renders language section', () => {
     render(<GeneralTab />);
     expect(screen.getByText('settings.language')).toBeInTheDocument();

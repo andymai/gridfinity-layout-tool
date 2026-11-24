@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Input } from '@/design-system';
 import { PencilIcon } from '@/design-system/Icon';
 import { clamp as clampRange } from '@/shared/utils/math';
-import { formatMm } from '@/shared/utils/format';
+import { formatLength, fromMm, toMm } from '@/shared/utils/lengthUnit';
+import type { LengthUnit } from '@/shared/utils/lengthUnit';
 
 interface EditableDimensionsProps {
   /** Total width in mm (grid + padding) when hasPadding, or grid-only mm otherwise. */
@@ -36,13 +37,17 @@ interface EditableDimensionsProps {
   readonly initialEditing?: boolean;
   /** Called when edit mode opens or closes (commit or cancel). */
   readonly onEditingChange?: (editing: boolean) => void;
+  /** Unit the values show and are typed in; props and onCommit stay in mm. */
+  readonly unit?: LengthUnit;
+  /** Symbol shown after the values, in the reader's language. */
+  readonly unitSymbol?: string;
 }
 
 /**
- * Click-to-edit inline display for baseplate mm dimensions.
+ * Click-to-edit inline display for measured dimensions.
  *
- * At rest: shows "{width} × {depth} mm" as styled text.
- * On click: swaps to two number inputs for direct mm entry.
+ * At rest: shows "{width} × {depth} {unit}" as styled text.
+ * On click: swaps to number inputs in that unit.
  * Commits on Enter or blur; cancels on Escape.
  */
 export function EditableDimensions({
@@ -62,7 +67,10 @@ export function EditableDimensions({
   heightLabel,
   initialEditing = false,
   onEditingChange,
+  unit = 'mm',
+  unitSymbol = unit,
 }: EditableDimensionsProps) {
+  const show = useCallback((mm: number) => formatLength(mm, unit), [unit]);
   const restClass =
     variant === 'secondary'
       ? 'text-xs font-normal tabular-nums text-content-secondary'
@@ -83,22 +91,22 @@ export function EditableDimensions({
       : 'text-center text-sm font-semibold tabular-nums';
   const hasHeight = heightMm !== undefined;
   const [editing, setEditing] = useState(initialEditing);
-  const [localWidth, setLocalWidth] = useState(() => (initialEditing ? formatMm(widthMm) : ''));
-  const [localDepth, setLocalDepth] = useState(() => (initialEditing ? formatMm(depthMm) : ''));
+  const [localWidth, setLocalWidth] = useState(() => (initialEditing ? show(widthMm) : ''));
+  const [localDepth, setLocalDepth] = useState(() => (initialEditing ? show(depthMm) : ''));
   const [localHeight, setLocalHeight] = useState(() =>
-    initialEditing && heightMm !== undefined ? formatMm(heightMm) : ''
+    initialEditing && heightMm !== undefined ? show(heightMm) : ''
   );
   const widthRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // When entering edit mode, seed inputs with current rounded values
   const enterEditMode = useCallback(() => {
-    setLocalWidth(formatMm(widthMm));
-    setLocalDepth(formatMm(depthMm));
-    setLocalHeight(heightMm !== undefined ? formatMm(heightMm) : '');
+    setLocalWidth(show(widthMm));
+    setLocalDepth(show(depthMm));
+    setLocalHeight(heightMm !== undefined ? show(heightMm) : '');
     setEditing(true);
     onEditingChange?.(true);
-  }, [widthMm, depthMm, heightMm, onEditingChange]);
+  }, [widthMm, depthMm, heightMm, onEditingChange, show]);
 
   const stopEditing = useCallback(() => {
     setEditing(false);
@@ -119,21 +127,26 @@ export function EditableDimensions({
   );
 
   const commit = useCallback(() => {
-    const w = parseFloat(localWidth);
-    const d = parseFloat(localDepth);
+    // A field left as seeded keeps its exact mm. The seed is rounded to the
+    // field's precision, so converting it back would move a value the user
+    // never touched.
+    const read = (typed: string, current: number): number =>
+      typed.trim() === show(current) ? current : toMm(parseFloat(typed), unit);
+    const w = read(localWidth, widthMm);
+    const d = read(localDepth, depthMm);
     if (Number.isNaN(w) || Number.isNaN(d)) {
       stopEditing();
       return;
     }
-    const h = hasHeight ? parseFloat(localHeight) : undefined;
+    const h = heightMm !== undefined ? read(localHeight, heightMm) : undefined;
     // Opening the field and clicking away is not an edit. Committing it anyway
     // ran the caller's snap-to-grid on values the user never typed, which on a
     // baseplate synced to a shaped drawer dropped the sync and the shape.
     // Compared as displayed rather than as typed, so a re-entry of the same
-    // measurement ("441.00" over "441") reads as the no-op it is; `formatMm` is
+    // measurement ("441.00" over "441") reads as the no-op it is; `show` is
     // the precision the field shows, so anything it rounds away was never on
     // screen to change.
-    const same = (typed: number, current: number): boolean => formatMm(typed) === formatMm(current);
+    const same = (typed: number, current: number): boolean => show(typed) === show(current);
     if (
       same(w, widthMm) &&
       same(d, depthMm) &&
@@ -155,6 +168,8 @@ export function EditableDimensions({
     localDepth,
     localHeight,
     hasHeight,
+    unit,
+    show,
     widthMm,
     depthMm,
     heightMm,
@@ -211,8 +226,8 @@ export function EditableDimensions({
           value={localWidth}
           onChange={(e) => setLocalWidth(e.target.value)}
           onKeyDown={handleKeyDown}
-          min={minMm}
-          max={maxMm}
+          min={fromMm(minMm, unit)}
+          max={fromMm(maxMm, unit)}
           size="sm"
           wrapperClassName={inputWrapperClass}
           className={inputTextClass}
@@ -226,8 +241,8 @@ export function EditableDimensions({
           value={localDepth}
           onChange={(e) => setLocalDepth(e.target.value)}
           onKeyDown={handleKeyDown}
-          min={minMm}
-          max={maxMm}
+          min={fromMm(minMm, unit)}
+          max={fromMm(maxMm, unit)}
           size="sm"
           wrapperClassName={inputWrapperClass}
           className={inputTextClass}
@@ -243,8 +258,8 @@ export function EditableDimensions({
               value={localHeight}
               onChange={(e) => setLocalHeight(e.target.value)}
               onKeyDown={handleKeyDown}
-              min={minHeightMm ?? minMm}
-              max={maxHeightMm ?? maxMm}
+              min={fromMm(minHeightMm ?? minMm, unit)}
+              max={fromMm(maxHeightMm ?? maxMm, unit)}
               size="sm"
               wrapperClassName={inputWrapperClass}
               className={inputTextClass}
@@ -252,7 +267,7 @@ export function EditableDimensions({
             />
           </>
         )}
-        <span className={suffixClass}>mm</span>
+        <span className={suffixClass}>{unitSymbol}</span>
       </div>
     );
   }
@@ -266,8 +281,8 @@ export function EditableDimensions({
       aria-label={ariaLabel}
     >
       <span>
-        {formatMm(widthMm)} &times; {formatMm(depthMm)}
-        {heightMm !== undefined ? <> &times; {formatMm(heightMm)}</> : null} mm
+        {show(widthMm)} &times; {show(depthMm)}
+        {heightMm !== undefined ? <> &times; {show(heightMm)}</> : null} {unitSymbol}
       </span>
       <PencilIcon
         size="xs"

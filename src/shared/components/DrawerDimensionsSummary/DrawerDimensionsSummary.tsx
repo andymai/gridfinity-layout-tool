@@ -5,12 +5,12 @@ import { useTranslation } from '@/i18n';
 import type { MeasuredDrawerMm } from '@/core/types';
 import type { DrawerFitSuggestion } from '@/shared/hooks/useDrawerSettings';
 import type { DrawerCeilingFit } from '@/shared/utils/drawerCeiling';
+import { useMeasureUnit } from '@/shared/hooks/useMeasureUnit';
+import { formatLength } from '@/shared/utils/lengthUnit';
+import type { LengthUnit } from '@/shared/utils/lengthUnit';
 import { EditableDimensions } from '../EditableDimensions';
 
-/** Format mm for display: nearest 0.1, no trailing zeros. */
-function fmt(v: number): string {
-  return String(Math.round(v * 10) / 10);
-}
+const SUMMARY_DECIMALS: Readonly<Record<LengthUnit, number>> = { mm: 1, cm: 2, in: 2 };
 
 const OVERFLOW_EPSILON_MM = 0.05;
 
@@ -67,6 +67,8 @@ export function DrawerDimensionsSummary({
   variant = 'desktop',
 }: DrawerDimensionsSummaryProps) {
   const t = useTranslation();
+  const { unit, symbol } = useMeasureUnit();
+  const fmt = (mm: number): string => formatLength(mm, unit, SUMMARY_DECIMALS[unit]);
 
   const hasMeasurement = measuredMm !== undefined;
   const displayWidth = measuredMm?.width ?? gridWidthMm;
@@ -115,9 +117,20 @@ export function DrawerDimensionsSummary({
             onCommit={handleCommit}
             variant="secondary"
             aria-label={t('drawerDims.editAria')}
-            widthLabel={t('drawerDims.widthLabel')}
-            depthLabel={t('drawerDims.depthLabel')}
-            heightLabel={t('drawerDims.heightLabel')}
+            widthLabel={t('common.labelWithUnit', {
+              label: t('drawerDims.widthLabel'),
+              unit: symbol,
+            })}
+            depthLabel={t('common.labelWithUnit', {
+              label: t('drawerDims.depthLabel'),
+              unit: symbol,
+            })}
+            heightLabel={t('common.labelWithUnit', {
+              label: t('drawerDims.heightLabel'),
+              unit: symbol,
+            })}
+            unit={unit}
+            unitSymbol={symbol}
             initialEditing={adding && !hasMeasurement}
             onEditingChange={handleEditingChange}
           />
@@ -138,7 +151,11 @@ export function DrawerDimensionsSummary({
         <div className="flex flex-col items-center gap-0.5">
           <p className="flex items-center justify-center gap-1 text-xs tabular-nums text-content-secondary">
             <RulerIcon size="xs" className="flex-shrink-0 text-content-tertiary" />
-            {t('drawerDims.gridSize', { width: fmt(gridWidthMm), depth: fmt(gridDepthMm) })}
+            {t('drawerDims.gridSize', {
+              unit: symbol,
+              width: fmt(gridWidthMm),
+              depth: fmt(gridDepthMm),
+            })}
           </p>
           <Button
             variant="ghost"
@@ -156,6 +173,7 @@ export function DrawerDimensionsSummary({
         (hasOverflow ? (
           <p className="text-center text-micro text-warning">
             {t('drawerDims.overflow', {
+              unit: symbol,
               width: fmt(Math.max(0, overflowWidth)),
               depth: fmt(Math.max(0, overflowDepth)),
             })}
@@ -163,6 +181,7 @@ export function DrawerDimensionsSummary({
         ) : (
           <p className="text-center text-micro text-content-tertiary tabular-nums">
             {t('drawerDims.fit', {
+              unit: symbol,
               width: fmt(gridWidthMm),
               depth: fmt(gridDepthMm),
               freeWidth: fmt(measuredMm.width - gridWidthMm),
@@ -180,11 +199,11 @@ export function DrawerDimensionsSummary({
       ) : /* an empty layout has no stack to judge, so no fit claim */
       ceiling.tallestMm === 0 ? null : ceiling.fits ? (
         <p className="text-center text-micro text-content-tertiary tabular-nums">
-          {t('drawerCeiling.fits', { slack: fmt(ceiling.slackMm) })}
+          {t('drawerCeiling.fits', { unit: symbol, slack: fmt(ceiling.slackMm) })}
         </p>
       ) : (
         <p className="text-center text-micro text-warning tabular-nums">
-          {t('drawerCeiling.overflow', { over: fmt(-ceiling.slackMm) })}
+          {t('drawerCeiling.overflow', { unit: symbol, over: fmt(-ceiling.slackMm) })}
         </p>
       )}
 
@@ -204,6 +223,7 @@ export function DrawerDimensionsSummary({
               </div>
               <div>
                 {t('drawerDims.suggestionDetail', {
+                  unit: symbol,
                   freeWidth: fmt(suggestion.slackWidthMm),
                   freeDepth: fmt(suggestion.slackDepthMm),
                 })}

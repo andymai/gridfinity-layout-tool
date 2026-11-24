@@ -31,6 +31,12 @@ export const SETTINGS_REGISTRY: SettingsRegistryEntry[] = [
     keywordsKey: 'settings.search.keywords.language',
   },
   {
+    id: 'measure-unit',
+    tabId: 'general',
+    labelKey: 'settings.measureUnit',
+    keywordsKey: 'settings.search.keywords.measureUnit',
+  },
+  {
     id: 'update-summaries',
     tabId: 'general',
     labelKey: 'settings.general.showUpdateSummaries',

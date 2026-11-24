@@ -366,7 +366,7 @@ describe('DimensionsSection', () => {
     it('reports the shape the plate is cut to, not the bare cells', () => {
       measuredDrawer();
       render(<DimensionsSection />);
-      expect(readout()).toHaveTextContent(/931\s*×\s*327\s*mm/);
+      expect(readout()).toHaveTextContent(/931\s*×\s*327\s*units\.symbol\.mm/);
       expect(screen.getByText('baseplate.inclShape')).toBeInTheDocument();
     });
 
@@ -375,7 +375,7 @@ describe('DimensionsSection', () => {
       const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
       useLayoutStore.getState().setBaseplateParams({ ...current, paddingLeft: mm(10) });
       render(<DimensionsSection />);
-      expect(readout()).toHaveTextContent(/941\s*×\s*327\s*mm/);
+      expect(readout()).toHaveTextContent(/941\s*×\s*327\s*units\.symbol\.mm/);
       expect(screen.getByText('baseplate.inclPaddingShape')).toBeInTheDocument();
     });
 
@@ -442,7 +442,7 @@ describe('DimensionsSection', () => {
         expect(overhang.right).toBeCloseTo(49, 9);
         // The plate is still cut to the shape, so its footprint is unchanged.
         expect(screen.getByLabelText('baseplate.editDimensions')).toHaveTextContent(
-          /931\s*×\s*327\s*mm/
+          /931\s*×\s*327\s*units\.symbol\.mm/
         );
       });
 

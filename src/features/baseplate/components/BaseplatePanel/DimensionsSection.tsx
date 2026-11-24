@@ -22,6 +22,7 @@ import { PanelSection } from '@/shared/components/PanelSection';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { SegmentedControl } from '@/design-system';
 import { EditableDimensions } from '@/shared/components/EditableDimensions';
+import { useMeasureUnit } from '@/shared/hooks/useMeasureUnit';
 import { GridAlignmentControls } from '@/shared/components/GridAlignmentControls';
 import { MeasuredDrawerOverflow } from './MeasuredDrawerOverflow';
 import { PaddingSchematic } from './PaddingSchematic';
@@ -49,6 +50,7 @@ type LeftoverMode = 'grid' | 'solid';
 
 export function DimensionsSection() {
   const t = useTranslation();
+  const { unit, symbol } = useMeasureUnit();
   const {
     baseplateParams,
     drawerOutline,
@@ -410,8 +412,10 @@ export function DimensionsSection() {
               maxMm={maxMm}
               onCommit={handleDimensionCommit}
               aria-label={t('baseplate.editDimensions')}
-              widthLabel={t('baseplate.editDimensionsWidth')}
-              depthLabel={t('baseplate.editDimensionsDepth')}
+              widthLabel={t('baseplate.editDimensionsWidth', { unit: symbol })}
+              depthLabel={t('baseplate.editDimensionsDepth', { unit: symbol })}
+              unit={unit}
+              unitSymbol={symbol}
               variant="secondary"
             />
           </div>

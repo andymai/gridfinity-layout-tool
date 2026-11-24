@@ -14,6 +14,7 @@ import {
 import type { Category } from '@/core/types';
 import type { PrintSettings } from '@/shared/printSettings';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
+import { isLengthUnit } from '@/shared/utils/lengthUnit';
 import { isOk } from '@/core/result';
 import { loadFromLocalStorage, saveToLocalStorage } from '@/core/storage/backends/localStorage';
 import { isTrackingOptOut } from '@/shared/analytics/posthog/privacy';
@@ -166,6 +167,9 @@ export function loadSettings(): UserSettings {
       layoutManagerViewMode,
       designListViewMode,
       printSettings,
+      measureUnit: isLengthUnit(parsed.measureUnit)
+        ? parsed.measureUnit
+        : DEFAULT_SETTINGS.measureUnit,
       ...normalizeExportDestination(parsed),
     };
     // If user never explicitly set analyticsEnabled, apply browser privacy signal

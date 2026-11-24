@@ -15,6 +15,14 @@ import { SpaceMouseSettings } from '@/shared/spacemouse/components/SpaceMouseSet
 import { useSpaceMouseStore } from '@/shared/spacemouse/settingsStore';
 import { SettingSection } from '../../components/SettingSection/SettingSection';
 import { SelectableCard } from '../../components/SelectableCard/SelectableCard';
+import { LENGTH_UNITS } from '@/shared/utils/lengthUnit';
+import type { LengthUnit } from '@/shared/utils/lengthUnit';
+
+const MEASURE_UNIT_LABELS = {
+  mm: 'settings.measureUnit.mm',
+  cm: 'settings.measureUnit.cm',
+  in: 'settings.measureUnit.in',
+} as const satisfies Record<LengthUnit, string>;
 
 function InstallAppSection() {
   const t = useTranslation();
@@ -64,9 +72,10 @@ export function GeneralTab() {
   const t = useTranslation();
   const { locale, setLocale } = useLocale();
 
-  const { settingsLocale, showUpdateSummaries, updateSetting } = useSettingsStore(
+  const { settingsLocale, measureUnit, showUpdateSummaries, updateSetting } = useSettingsStore(
     useShallow((state) => ({
       settingsLocale: state.settings.locale,
+      measureUnit: state.settings.measureUnit,
       showUpdateSummaries: state.settings.showUpdateSummaries,
       updateSetting: state.updateSetting,
     }))
@@ -107,6 +116,29 @@ export function GeneralTab() {
               }}
               label={loc.nativeName}
               description={loc.code !== 'en' ? loc.englishName : undefined}
+            />
+          ))}
+        </div>
+      </SettingSection>
+
+      <SettingSection
+        id="measure-unit"
+        title={t('settings.measureUnit')}
+        hint={t('settings.measureUnitHint')}
+        resetKeys={['measureUnit']}
+      >
+        <div
+          className="grid grid-cols-3 gap-2"
+          role="radiogroup"
+          aria-label={t('settings.measureUnit')}
+        >
+          {LENGTH_UNITS.map((unit) => (
+            <SelectableCard
+              key={unit}
+              compact
+              selected={measureUnit === unit}
+              onSelect={() => updateSetting('measureUnit', unit)}
+              label={t(MEASURE_UNIT_LABELS[unit])}
             />
           ))}
         </div>
