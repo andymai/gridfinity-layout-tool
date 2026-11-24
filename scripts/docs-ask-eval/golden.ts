@@ -640,4 +640,41 @@ export const GOLDEN: readonly GoldenCase[] = [
     sources: ['/sharing/share-links', '/sharing/live-collaboration'],
     expect: 'The second answer covers live sessions.',
   },
+
+  {
+    id: 'L25',
+    group: 'lookup',
+    page: '/printing/slicers',
+    turns: ['print settings?'],
+    sources: ['/settings/settings', '/printing/slicers'],
+    expect:
+      "The app's print values are on the Print & material tab of Settings: filament cost, layer height, infill and nozzle size. Exported files carry no slicer profile, so the slicer keeps its own printer, filament and process profiles.",
+  },
+  {
+    id: 'L26',
+    group: 'lookup',
+    page: '/baseplates/basics',
+    turns: ['connectors for split parts'],
+    sources: ['/baseplates/splitting'],
+    expect:
+      'Pick a style under Connectors in the Base section, which shows only when the plate splits: None, Dovetail, Puzzle, Puzzle key or Snap clip. Puzzle key and Snap clip are separate small parts that the export includes.',
+  },
+  {
+    id: 'L27',
+    group: 'lookup',
+    page: '/designer/save-and-reuse',
+    turns: ['reset to default'],
+    sources: ['/designer/save-and-reuse', '/settings/settings'],
+    expect:
+      'To go back to the factory settings for new bins: in Saved designs, open More options and click Reset to factory defaults, or in Settings open Categories & bins and click Reset next to New bin defaults. Existing designs do not change.',
+  },
+  {
+    id: 'N09',
+    group: 'no',
+    page: '/designer/stacking',
+    turns: ['i want a bin in a bin'],
+    sources: ['/designer/stacking', '/designer/special-bins', '/designer/compartments'],
+    expect:
+      'The app has no bin that holds other Gridfinity bins inside it. The nearest options: small bins locked onto the lip of a bigger bin with Lip notches, a sliding tray inside a bin (Labs), or compartments inside one bin.',
+  },
 ];
