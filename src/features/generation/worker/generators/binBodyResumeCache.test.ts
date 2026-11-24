@@ -87,7 +87,7 @@ describe('bin-body resume cache with wall patterns', () => {
     const nudged = generateBin({ ...HONEYCOMB, walls: fourCutouts(60) });
 
     const stats = binBodyStats();
-    expect(stats.hits, 'a wider cutout is different geometry and must not resume').toBe(0);
+    expect(stats.hits, 'a narrower cutout is different geometry and must not resume').toBe(0);
     expect(stats.misses).toBe(1);
     // A narrower cutout leaves more wall. Its triangle count can match: a
     // cutout's planar faces mesh to the same count at any width.

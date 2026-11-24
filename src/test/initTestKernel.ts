@@ -4,13 +4,14 @@
  *
  * occt-wasm is the production default geometry kernel. Registering it as the
  * only kernel makes it the brepjs default, so generator code runs on it
- * without any `withKernel` wrapping — mirroring the production worker.
+ * without any `withKernel` wrapping, as in the production worker.
  */
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { registerKernel, OcctWasmAdapter } from 'brepjs';
 import { OcctKernel } from 'occt-wasm';
+import { copyOnMove } from '@/features/generation/worker/copyOnMove';
 
 /** Initialize occt-wasm and register it as the active brepjs kernel. */
 export async function initTestKernel(): Promise<void> {
@@ -20,5 +21,5 @@ export async function initTestKernel(): Promise<void> {
   // fromKernel retains the wrapper for the adapter's lifetime; the bare
   // (module, kernel) constructor only borrows the raw kernel, so a GC pass can
   // free it out from under the adapter ("Cannot pass deleted object…").
-  registerKernel('occt-wasm', OcctWasmAdapter.fromKernel(kernel));
+  registerKernel('occt-wasm', copyOnMove(OcctWasmAdapter.fromKernel(kernel)));
 }
