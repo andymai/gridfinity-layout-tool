@@ -51,11 +51,19 @@ import { DEFAULT_KNIFE_SPEC } from '@/shared/types/bin';
 import {
   effectiveOpenSides,
   openSideChannelOutline,
+  openSideChannelRun,
   openSideChannels,
 } from '@/shared/utils/cutoutOpenSides';
-import { LIP_HEIGHT, CUT_RIM_CLEARANCE } from './generatorConstants';
+import type { OpenSideChannel } from '@/shared/utils/cutoutOpenSides';
+import { buildCradlePrism, buildCradleRun } from './cutoutCradleTool';
+import { LIP_HEIGHT, CUT_RIM_CLEARANCE, COPLANAR_MARGIN } from './generatorConstants';
 import { isCutoutEngraveMode } from '@/shared/utils/cutoutLabelSocketPlan';
-import { DEFAULT_GROUP_OP, DEFAULT_POLYGON_SIDES, resolveCutoutLeanDeg } from '@/shared/types/bin';
+import {
+  DEFAULT_GROUP_OP,
+  DEFAULT_POLYGON_SIDES,
+  isCradle,
+  resolveCutoutLeanDeg,
+} from '@/shared/types/bin';
 import {
   regularPolygonPoints,
   slotCornerRadius,
@@ -359,6 +367,7 @@ function buildUnrotatedCutoutShape(
     readonly entryProfile?: CutoutEntryProfile;
     readonly leanDeg?: number;
     readonly path?: readonly PathPoint[];
+    readonly cradle?: boolean;
   },
   sunk?: SunkMouth
 ): Shape3D | null {
@@ -467,6 +476,8 @@ function buildUnrotatedCutoutShape(
     }
     case 'rectangle':
     default: {
+      // Its square corners are kept by the store, so the arc runs end to end.
+      if (isCradle(cutout)) return buildCradlePrism(cutout.width, cutout.depth, fullDepth);
       if (cutout.cornerRadius > 0) {
         const maxCR = Math.min(cutout.width, cutout.depth) / 2 - 0.01;
         return sketch(
@@ -499,6 +510,7 @@ function buildCutoutShape(
     readonly chamferWidth?: number;
     readonly leanDeg?: number;
     readonly path?: readonly PathPoint[];
+    readonly cradle?: boolean;
   },
   sunk?: SunkMouth
 ): Shape3D | null {
@@ -1667,12 +1679,14 @@ export function buildCutoutCuts(
       // Non-union groups (subtract/intersect/exclude) can hollow a member's
       // footprint out of the final cavity, so a member-footprint floor guess may
       // point at solid material. Only union cavities keep member floors intact.
-      // A leaned pocket's floor is tilted and laterally shifted, so the flat
-      // recess-floor Z guess is wrong for it too — its labels stay on the top.
+      // A leaned pocket's floor is tilted and laterally shifted, and a
+      // cradle's is an arc, so the flat recess-floor Z guess is wrong for both:
+      // their labels stay on the top.
       const floor: LabelFloor = isThroughCut(cutout, params)
         ? 'open'
         : (cutout.groupId === null || groupOps.get(cutout.groupId) === 'union') &&
-            resolveCutoutLeanDeg(cutout) === 0
+            resolveCutoutLeanDeg(cutout) === 0 &&
+            !isCradle(cutout)
           ? 'recess'
           : 'top';
       const textShape = buildCutoutLabel(
@@ -1828,6 +1842,13 @@ function buildOpenSideChannels(
     const effectiveDepth = Math.min(ch.cutDepth, frame.solidSurfaceZ);
     if (effectiveDepth <= 0) continue;
     const height = ch.tunnel ? effectiveDepth : breachHeight(params, frame, effectiveDepth);
+    if (ch.cradle) {
+      for (const tool of cradleChannels(ch, frame, params.wallThickness, effectiveDepth, height)) {
+        setShapeOrigin(tool, cavityTag(owner));
+        channels.push(tool);
+      }
+      continue;
+    }
     const outline = openSideChannelOutline(ch, {
       innerW: frame.innerW,
       innerD: frame.innerD,
@@ -1842,6 +1863,64 @@ function buildOpenSideChannels(
     channels.push(positioned);
   }
   return channels;
+}
+
+/**
+ * A cradle's channel tools: its arc carried from where the pocket's clipped
+ * tool ends out past the wall. Starting at the pocket's end rather than its
+ * centre keeps the two tools from sharing the arc, since coincident curved
+ * faces are what leave a boolean non-manifold.
+ *
+ * Only the rectangular interior clips the pocket, so on a custom shape it can
+ * run on under the wall it opens. There it already cuts the arc below the
+ * fill, and a flat-sided block takes the wall above.
+ */
+function cradleChannels(
+  ch: OpenSideChannel,
+  frame: BreachFrame,
+  wallThickness: number,
+  depth: number,
+  height: number
+): Shape3D[] {
+  const alongX = ch.side === 'left' || ch.side === 'right';
+  const inner = alongX ? frame.innerW : frame.innerD;
+  const { dir, face, far } = openSideChannelRun(ch, {
+    innerW: frame.innerW,
+    innerD: frame.innerD,
+    wallThickness,
+  });
+  const end = Math.min(Math.max(ch.edge, 0), inner);
+  const wallInner = face - dir * wallThickness;
+  const along = alongX ? frame.originX : frame.originY;
+  const across = (alongX ? frame.originY : frame.originX) + (ch.lo + ch.hi) / 2;
+  const width = ch.hi - ch.lo;
+  const tools: Shape3D[] = [];
+  if (dir * (far - end) > 0) {
+    const run = buildCradleRun({
+      alongX,
+      from: along + Math.min(end, far),
+      to: along + Math.max(end, far),
+      across,
+      width,
+      depth,
+      topZ: height,
+      baseZ: frame.solidSurfaceZ - depth,
+    });
+    if (run) tools.push(run);
+  }
+  const above = height - depth;
+  if (dir * (end - wallInner) > 0 && above > 0) {
+    const from = wallInner - dir * COPLANAR_MARGIN;
+    const to = dir * (end - far) > 0 ? far : end;
+    const length = Math.abs(to - from);
+    const mid = along + (from + to) / 2;
+    tools.push(
+      box(alongX ? length : width, alongX ? width : length, above, {
+        at: [alongX ? mid : across, alongX ? across : mid, frame.solidSurfaceZ + above / 2],
+      })
+    );
+  }
+  return tools;
 }
 
 /**

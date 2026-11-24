@@ -893,7 +893,11 @@
         },
         "split": {
           "$ref": "#/$defs/CutoutSplit",
-          "description": "Divides the pocket along a straight line so each side is cut to its own depth from the same top, making a step. Side A keeps cutDepth, depthMode and floorMm; side B takes the split's. Ignored on a leaning pocket, a through cut, a group member, or a mesh, text, knifeSlot or finger cut, and where the line no longer crosses the outline twice."
+          "description": "Divides the pocket along a straight line so each side is cut to its own depth from the same top, making a step. Side A keeps cutDepth, depthMode and floorMm; side B takes the split's. Ignored on a leaning pocket, a through cut, a group member, or a mesh, text, knifeSlot, finger or cradle cut, and where the line no longer crosses the outline twice."
+        },
+        "cradle": {
+          "type": "boolean",
+          "description": "Makes a 'rectangle' a cradle: the floor is a circular arc across the width, the same along the whole length, so a can or bottle lies in it on its side. cutDepth is the arc's depth at the middle; deeper than half the width, the arc is a half circle with straight sides above it. The corners are square (cornerRadius is set to 0), and the scoop radii, chamfer, lean, split and the 'through' depth mode do not apply. openSides opens only the walls at the cradle's two ends, at its full width, and the channel carries the arc through the wall. Ignored on any other shape."
         },
         "leanDeg": {
           "type": "number",

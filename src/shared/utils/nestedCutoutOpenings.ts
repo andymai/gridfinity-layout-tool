@@ -18,6 +18,7 @@
  *   member's.
  * - A leaned pocket as the floor: it is tilted, so nothing opens onto it at one
  *   height. A leaned pocket still opens onto a level floor around it.
+ * - A cradle as the floor, for the same reason: its floor is an arc.
  * - A split pocket's deeper side as a floor: the pocket counts at its
  *   shallower side's depth only, so a pocket on the deeper floor keeps no
  *   chamfer there rather than cutting one into the shallower side's plastic.
@@ -29,7 +30,12 @@
  */
 
 import type { Cutout } from '@/shared/types/bin';
-import { CHAMFER_SHAPES, DEFAULT_GROUP_OP, resolveCutoutLeanDeg } from '@/shared/types/bin';
+import {
+  CHAMFER_SHAPES,
+  DEFAULT_GROUP_OP,
+  isCradle,
+  resolveCutoutLeanDeg,
+} from '@/shared/types/bin';
 import { cutoutOutlineRing, rotateAbout } from './cutoutOutline';
 import { expandCutoutArray, expandCutoutGroup } from './cutoutArray';
 import { pointInPolyline } from './drawerOutlineGeometry';
@@ -141,7 +147,7 @@ export function planNestedOpenings(
   const flares: NestedOpening[] = [];
   if (solidSurfaceZ <= 0 || !cutouts.some(takesChamfer)) return { sunk, flares };
   const units = collectUnits(cutouts, solidSurfaceZ);
-  const floors = units.filter((u) => resolveCutoutLeanDeg(u.cutout) === 0);
+  const floors = units.filter((u) => resolveCutoutLeanDeg(u.cutout) === 0 && !isCradle(u.cutout));
 
   // A group is built once and copied, so a member sinks only if every copy
   // sinks it alike; otherwise each copy's sunk chamfer becomes a flare.

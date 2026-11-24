@@ -12,6 +12,7 @@ import { sameChain } from '../utils/cutoutHierarchy';
 import { groupRepeatConfig } from '@/shared/utils/cutoutArray';
 import { normalizeOpenSides, sameOpenSides } from '@/shared/utils/cutoutOpenSides';
 import { FINGER_SHAPES } from '@/shared/utils/fingerAccess';
+import { normalizeCradle } from '@/shared/utils/cutoutCradle';
 import {
   KNIFE_REST_DEFAULT_GAP_MM,
   KNIFE_REST_GROOVE_DEPTH_MM,
@@ -130,7 +131,11 @@ export function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
   return migrateScoopRadius(
     withHoles(
       withSplit(
-        withFinger(withOpenSides(withEntryProfile(withDepthMode(withSchemaDefaults(withParents)))))
+        normalizeCradle(
+          withFinger(
+            withOpenSides(withEntryProfile(withDepthMode(withSchemaDefaults(withParents))))
+          )
+        )
       )
     ),
     scoopRadius

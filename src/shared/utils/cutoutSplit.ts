@@ -5,7 +5,7 @@
  */
 
 import type { Cutout } from '@/shared/types/bin';
-import { resolveCutoutLeanDeg } from '@/shared/types/bin';
+import { isCradle, resolveCutoutLeanDeg } from '@/shared/types/bin';
 import { cutoutOutlineRing, rotateAbout } from './cutoutOutline';
 import { pathCutoutOutline } from './pathCutoutOutline';
 import { expandCutoutArray } from './cutoutArray';
@@ -31,9 +31,9 @@ const MIN_SIDE_AREA_MM2 = 0.25;
  * through cut has no floor to step.
  */
 export function splitBlockedReason(
-  c: Pick<Cutout, 'shape' | 'groupId' | 'leanDeg' | 'depthMode' | 'finger'>
+  c: Pick<Cutout, 'shape' | 'groupId' | 'leanDeg' | 'depthMode' | 'finger' | 'cradle'>
 ): SplitBlock | null {
-  if (!SPLIT_SHAPES.includes(c.shape) || c.finger !== undefined) return 'shape';
+  if (!SPLIT_SHAPES.includes(c.shape) || c.finger !== undefined || isCradle(c)) return 'shape';
   if (c.groupId !== null) return 'group';
   if (resolveCutoutLeanDeg(c) !== 0) return 'tilt';
   if (c.depthMode === 'through') return 'through';

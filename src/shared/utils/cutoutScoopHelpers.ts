@@ -1,5 +1,5 @@
 import type { Cutout, CutoutScoopEdges } from '@/shared/types/bin';
-import { DEFAULT_SCOOP_EDGES } from '@/shared/types/bin';
+import { DEFAULT_SCOOP_EDGES, isCradle } from '@/shared/types/bin';
 import { entryChamferWidth } from './cutoutFit';
 import { fingerBottom } from './fingerAccess';
 
@@ -17,6 +17,7 @@ export interface ResolvedScoop {
 
 /** Resolve a cutout's scoop config into clamped radii + edge flags. */
 export function resolveScoop(cutout: Cutout, effectiveDepth: number): ResolvedScoop {
+  if (isCradle(cutout)) return { w: 0, d: 0, edges: DEFAULT_SCOOP_EDGES };
   const maxScoop = Math.min(effectiveDepth, Math.min(cutout.width, cutout.depth) / 2) - 0.01;
   const cap = Math.max(0, maxScoop);
   // A curved finger cut is a trough or a bowl: the deepest fillet it can hold.

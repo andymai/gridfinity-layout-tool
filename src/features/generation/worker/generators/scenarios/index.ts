@@ -67,6 +67,7 @@ import { dividerPatterns } from './dividerPatterns';
 import { floorPatterns } from './floorPatterns';
 import { knifeBlock } from './knifeBlock';
 import { openSides } from './openSides';
+import { cradle } from './cradle';
 import { cutoutRepeatOverlap } from './cutoutRepeatOverlap';
 import { cutoutLean } from './cutoutLean';
 import { cutoutDepthModes } from './cutoutDepthModes';
@@ -139,6 +140,7 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...slideTray,
   ...knifeBlock,
   ...openSides,
+  ...cradle,
   ...cutoutRepeatOverlap,
   ...cutoutLean,
   ...variantOverrides,

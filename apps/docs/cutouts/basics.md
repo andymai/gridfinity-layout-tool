@@ -1,6 +1,6 @@
 ---
 title: Cutout basics
-description: 'Open the cutout editor, draw a cutout, and set its size, depth, edges, lean, wall opening and label.'
+description: 'Open the cutout editor, draw a cutout, and set its size, depth, edges, lean, wall opening, cradle and label.'
 questions:
   - 'How do I cut a pocket into a bin?'
   - 'How do I set the depth of a cutout?'
@@ -108,6 +108,19 @@ A wall opening isn't available on a leaned cutout, in a repeated group, or on a 
 
 <Screenshot id="cutouts-basics-wall-opening" alt="In the Shape section, clicking Right beside Open through wall. The Open top and Channel width fields appear, and the 3D preview shows the channel through the right wall." spec="Cut editor at half the window, 2x1 bin, one 64 x 24 mm rectangle near the right wall, selected. In close-up, click Right beside Open through wall. End on the 3D preview, zoomed in on the opening." />
 
+## Make a cradle for a can or a bottle
+
+A can or a bottle lies on its side in a cradle. Select a rectangle, then turn on <Ui k="binDesigner.cutouts.cradle" /> in <Ui k="binDesigner.cutouts.section.shape" />. The floor becomes an arc across the width of the rectangle, the same along all its length:
+
+- The width of the rectangle is the width of the arc at the top.
+- The depth of the cutout is the depth of the arc at its middle. If the depth is more than half the width, the arc is a half circle with straight sides above it.
+
+The line under the switch gives the radius of the arc. Make it a little more than the radius of the item. For example, a width of 56 mm and a depth of 16 mm give a radius of 32.5 mm, which holds a can 65 mm across.
+
+To run the cradle through the bin, open the walls at its two ends with <Ui k="binDesigner.cutouts.openSides" />. The arc then goes through each wall and the stacking lip, with no step where the floor meets the wall. A cradle opens only the walls at its ends, and only when it is square to the walls and not in a group.
+
+A cradle has square corners, and it takes no scoop, chamfer, lean or split.
+
 ## Cut one cutout to two depths
 
 Some tools sit deeper at one end, such as a screwdriver with a thick handle. Give that end a deeper floor:
@@ -142,7 +155,7 @@ A cutout cuts down into a solid floor. The inside lightweight mode hollows each 
 
 ### You can't pick Through
 
-Hover over the gray <Ui k="binDesigner.cutouts.depthMode.through" /> button to read why. Is the cutout in a group? Ungroup it with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>. Does it lean? Set its <Ui k="binDesigner.cutouts.lean" /> to 0.
+Hover over the gray <Ui k="binDesigner.cutouts.depthMode.through" /> button to read why. Is the cutout in a group? Ungroup it with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>. Does it lean? Set its <Ui k="binDesigner.cutouts.lean" /> to 0. Is it a cradle? Turn off <Ui k="binDesigner.cutouts.cradle" />.
 
 A through cut opens out of the bottom of the bin, and some bins close that opening again. So the option is also off beside a tapered wall, with detachable feet, and on a <Ui k="binDesigner.base.bodyType.nesting" /> body.
 

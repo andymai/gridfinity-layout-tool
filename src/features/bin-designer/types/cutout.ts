@@ -237,6 +237,10 @@ export const LEAN_SHAPES: readonly CutoutShape[] = [
   'path',
 ];
 
+export function isCradle(cutout: { readonly shape: string; readonly cradle?: boolean }): boolean {
+  return cutout.shape === 'rectangle' && cutout.cradle === true;
+}
+
 /**
  * The lean a cutout actually generates with: 0 for shapes that cannot tilt and
  * for absent/non-finite values, clamped to ±{@link MAX_CUTOUT_LEAN_DEG}
@@ -246,10 +250,12 @@ export const LEAN_SHAPES: readonly CutoutShape[] = [
 export function resolveCutoutLeanDeg(cutout: {
   readonly shape: string;
   readonly leanDeg?: number;
+  readonly cradle?: boolean;
 }): number {
   const lean = cutout.leanDeg;
   if (lean === undefined || !Number.isFinite(lean)) return 0;
   if (!(LEAN_SHAPES as readonly string[]).includes(cutout.shape)) return 0;
+  if (isCradle(cutout)) return 0;
   return Math.max(-MAX_CUTOUT_LEAN_DEG, Math.min(MAX_CUTOUT_LEAN_DEG, lean));
 }
 
@@ -658,6 +664,16 @@ export interface Cutout {
   readonly finger?: CutoutFinger;
   /** Present on a pocket cut to two depths either side of a line. */
   readonly split?: CutoutSplit;
+  /**
+   * Makes a rectangle a cradle: the floor is a circular arc across the width,
+   * the same along the whole length, so a can or a bottle lies in it on its
+   * side. `cutDepth` is the arc's depth at the middle; past half the width the
+   * arc is a half circle with straight sides above it. Read through
+   * {@link isCradle}, which every scoop, entry edge, lean, split and through
+   * gate consults, so those fields stay stored and inert. A cradle opens only
+   * the walls at its two ends. Absent on every other cutout.
+   */
+  readonly cradle?: boolean;
   /**
    * Tilt of the pocket's axis off vertical, in degrees (±{@link
    * MAX_CUTOUT_LEAN_DEG}), so an item slides in at a slope. The pocket is the

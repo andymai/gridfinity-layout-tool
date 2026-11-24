@@ -1825,6 +1825,21 @@ describe('migrateParams', () => {
         for (const dropped of [rect, unknown, broken]) expect('finger' in dropped).toBe(false);
       });
 
+      it('keeps a cradle only on a rectangle, with square corners', () => {
+        const [cradle, round, off, plain] = migrateParams({
+          cutouts: [
+            pocket({ cradle: true, cornerRadius: 4 }),
+            pocket({ id: 'q', shape: 'circle', cradle: true }),
+            pocket({ id: 'r', cradle: false }),
+            pocket({ id: 's', cornerRadius: 4 }),
+          ],
+        }).cutouts;
+        expect(cradle.cradle).toBe(true);
+        expect(cradle.cornerRadius).toBe(0);
+        for (const dropped of [round, off]) expect('cradle' in dropped).toBe(false);
+        expect(plain.cornerRadius).toBe(4);
+      });
+
       it('keeps islands only on a path, rebuilt from real points', () => {
         const at = (x: number, y: number) => ({
           x,
