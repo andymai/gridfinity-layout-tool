@@ -87,3 +87,19 @@ export function releaseClonedParts(
   if (!cutouts.some(stray)) return null;
   return cutouts.map((c) => (stray(c) ? withoutPart(c) : c));
 }
+
+/**
+ * The recipes whose set still has a part, or null when every one does. A set
+ * is its parts: one whose last part is gone (deleted, moved out, copied apart)
+ * is a plain container. Kept as an invariant so a recipe with members but no
+ * parts can only come from a design saved before parts existed.
+ */
+export function setsWithParts(
+  cutouts: readonly Cutout[],
+  sets: ToolSets
+): Record<string, ToolSetSpec> | undefined | null {
+  if (!sets) return null;
+  const kept = Object.entries(sets).filter(([id]) => partsOf(cutouts, id, sets).length > 0);
+  if (kept.length === Object.keys(sets).length) return null;
+  return kept.length > 0 ? Object.fromEntries(kept) : undefined;
+}

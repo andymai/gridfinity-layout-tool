@@ -338,7 +338,7 @@ describe('useToolSets', () => {
     const after = useDesignerStore.getState().params;
     expect(Object.keys(after.cutoutToolSets ?? {})).toEqual([setId]);
     expect(after.cutouts.filter((c) => c.shape === 'path')).toHaveLength(2);
-    expect(after.cutoutGroupNames?.[setId]).toBeUndefined();
+    expect(after.cutoutGroupNames?.[setId]).toBe('Wrenches 8 to 13 mm');
   });
 
   it('gives a copy pasted into the lid no recipe, since sets are bin-only', () => {
@@ -381,7 +381,7 @@ describe('useToolSets', () => {
     expect(params.cutouts.every((c) => c.parentGroups?.[0] === 'outer')).toBe(true);
   });
 
-  it('drops a name stored by the first release, so it follows the new sizes', () => {
+  it('keeps a typed name, even one that matches the sizes, when the set is rebuilt', () => {
     const { result } = renderHook(() => useToolSets());
     act(() => {
       result.current.insertSet(spec);
@@ -389,9 +389,46 @@ describe('useToolSets', () => {
     const setId = onlySetId();
     act(() => useDesignerStore.getState().setCutoutGroupName(setId, 'Wrenches 8 to 13 mm'));
     act(() => {
-      result.current.rebuildSet(setId, { ...spec, sizes: ['10'] });
+      result.current.rebuildSet(setId, { ...spec, sizes: ['8', '10', '13', '17'] });
     });
-    expect(useDesignerStore.getState().params.cutoutGroupNames?.[setId]).toBeUndefined();
+    expect(useDesignerStore.getState().params.cutoutGroupNames?.[setId]).toBe(
+      'Wrenches 8 to 13 mm'
+    );
+  });
+
+  it('drops the recipe once the last part of a set goes, keeping the user shapes', () => {
+    const { result } = renderHook(() => useToolSets());
+    act(() => {
+      result.current.insertSet(spec);
+    });
+    const setId = onlySetId();
+    act(() => {
+      const store = useDesignerStore.getState();
+      store.addCutout({ ...circle('mine'), parentGroups: [setId] });
+      store.removeCutoutsBatch(partsIn(setId).map((c) => c.id));
+    });
+    const { params } = useDesignerStore.getState();
+    expect(params.cutoutToolSets).toBeUndefined();
+    expect(params.cutouts.find((c) => c.id === 'mine')?.parentGroups).toEqual([setId]);
+  });
+
+  it('keeps the user text in a named set whose parts went, across a reload', () => {
+    const { result } = renderHook(() => useToolSets());
+    act(() => {
+      result.current.insertSet(spec);
+    });
+    const setId = onlySetId();
+    act(() => {
+      const store = useDesignerStore.getState();
+      store.setCutoutGroupName(setId, 'Garage');
+      store.addCutout({ ...circle('note'), shape: 'text', label: 'Spares', parentGroups: [setId] });
+      store.removeCutoutsBatch(partsIn(setId).map((c) => c.id));
+    });
+    act(() =>
+      useDesignerStore.setState({ params: migrateParams(useDesignerStore.getState().params) })
+    );
+    const note = useDesignerStore.getState().params.cutouts.find((c) => c.id === 'note');
+    expect(note?.toolSetPart).toBeUndefined();
   });
 
   it('keeps a shape the user dragged into the set across a rebuild', () => {

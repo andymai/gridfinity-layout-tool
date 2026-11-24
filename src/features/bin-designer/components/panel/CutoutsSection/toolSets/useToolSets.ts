@@ -15,7 +15,6 @@ import {
   type ToolSetPlacement,
 } from './planToolSetPlacement';
 import { partsOf } from '@/features/bin-designer/utils/toolSetMembership';
-import { toolSetName } from './toolSetName';
 
 /**
  * Why a set could not be placed; nothing changed in any case.
@@ -48,7 +47,6 @@ export function useToolSets(): ToolSetActions {
     addCutout,
     replaceCutouts,
     setParams,
-    setCutoutGroupName,
     updateCutoutConfig,
     startTransaction,
     commitTransaction,
@@ -57,7 +55,6 @@ export function useToolSets(): ToolSetActions {
       addCutout: s.addCutout,
       replaceCutouts: s.replaceCutouts,
       setParams: s.setParams,
-      setCutoutGroupName: s.setCutoutGroupName,
       updateCutoutConfig: s.updateCutoutConfig,
       startTransaction: s.startTransaction,
       commitTransaction: s.commitTransaction,
@@ -144,10 +141,6 @@ export function useToolSets(): ToolSetActions {
       if (!placement) return err('noRoom');
 
       const chain = [...outerChain(parts.length > 0 ? parts : params.cutouts, setId), setId];
-      // A stored name equal to the derived one was written by the app, not
-      // typed; dropping it lets the name follow the new sizes.
-      const oldSpec = params.cutoutToolSets?.[setId];
-      const staleName = oldSpec && params.cutoutGroupNames?.[setId] === toolSetName(oldSpec, t);
       startTransaction();
       try {
         resizeFor(placement);
@@ -159,23 +152,12 @@ export function useToolSets(): ToolSetActions {
           }))
         );
         writeSpec(setId, spec);
-        if (staleName) setCutoutGroupName(setId, '');
       } finally {
         commitTransaction();
       }
       return ok('updated');
     },
-    [
-      replaceCutouts,
-      setCutoutGroupName,
-      resizeFor,
-      startTransaction,
-      commitTransaction,
-      names,
-      writeSpec,
-      maxWidthMm,
-      t,
-    ]
+    [replaceCutouts, resizeFor, startTransaction, commitTransaction, names, writeSpec, maxWidthMm]
   );
 
   return useMemo(() => ({ insertSet, rebuildSet }), [insertSet, rebuildSet]);

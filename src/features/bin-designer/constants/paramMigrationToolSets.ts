@@ -9,7 +9,7 @@ import {
 import { isRecord } from '@/shared/utils/isRecord';
 import { sizeEntries, TOOL_FAMILIES } from '@/shared/toolSets/catalog';
 import { labelPart, pocketPart, type ToolSetPart } from '@/shared/types/toolSet';
-import { toolSetOf } from '../utils/toolSetMembership';
+import { toolSetOf, withoutPart } from '../utils/toolSetMembership';
 
 /** Matches the group-name map's ceiling, since both are keyed by group id. */
 export const MAX_CUTOUT_TOOL_SETS = MAX_CUTOUT_GROUP_NAMES;
@@ -84,22 +84,48 @@ export function migrateCutoutToolSets(
   return kept.length > 0 ? Object.fromEntries(kept) : undefined;
 }
 
+function cleanPart(part: unknown): boolean {
+  return (
+    typeof part === 'string' &&
+    part !== '' &&
+    part.length <= TOOL_SET_LIMITS.maxPartLength &&
+    !CONTROL_CHARS.test(part)
+  );
+}
+
 /**
- * Marks the cutouts of a set saved before cutouts carried a part, so Edit set
- * replaces them rather than adding a second set. Pockets take their sizes in
- * the order the generator wrote them, smallest jaw first; when the count no
- * longer matches the recipe they get placeholder parts, which still mark them
- * for replacement.
- *
- * Such a set has no parts and a stored name: that release always stored one,
- * and later sets store one only when the user types it. A later set with no
- * parts left (the user deleted them, kept their own shapes) has no stored name,
- * and marking its shapes would let Edit set delete them.
+ * The parts of a loaded design, made consistent with its recipes:
+ * - a part the server would refuse is dropped;
+ * - a set whose recipe this load dropped (unreadable) loses its parts, so an
+ *   enclosing set cannot claim them;
+ * - a set saved before cutouts carried a part gets them, so Edit set replaces
+ *   its pockets rather than adding a second set. Since the editor drops the
+ *   recipe of a set whose last part goes, a recipe whose members have no part
+ *   can only be such a set. Pockets take their sizes in the order the
+ *   generator wrote them, smallest jaw first; when the count no longer matches
+ *   the recipe they get placeholder parts, which still mark them for
+ *   replacement.
  */
-export function withLegacyToolSetParts(
+export function migrateToolSetParts(
   cutouts: Cutout[],
   sets: Readonly<Record<string, ToolSetSpec>> | undefined,
-  names: Readonly<Record<string, string>> | undefined
+  rawSets: unknown
+): Cutout[] {
+  const dropped = new Set(
+    isRecord(rawSets) ? Object.keys(rawSets).filter((id) => !sets || !Object.hasOwn(sets, id)) : []
+  );
+  const kept = (c: Cutout): boolean =>
+    cleanPart(c.toolSetPart) && !(c.parentGroups ?? []).some((id) => dropped.has(id));
+  const stray = (c: Cutout): boolean => c.toolSetPart !== undefined && !kept(c);
+  const cleaned = cutouts.some(stray)
+    ? cutouts.map((c) => (stray(c) ? withoutPart(c) : c))
+    : cutouts;
+  return withLegacyParts(cleaned, sets);
+}
+
+function withLegacyParts(
+  cutouts: Cutout[],
+  sets: Readonly<Record<string, ToolSetSpec>> | undefined
 ): Cutout[] {
   if (!sets) return cutouts;
   const members = new Map<string, Cutout[]>();
@@ -109,7 +135,6 @@ export function withLegacyToolSetParts(
   }
   const parts = new Map<string, ToolSetPart>();
   for (const [setId, list] of members) {
-    if (!names || !Object.hasOwn(names, setId)) continue;
     if (list.some((c) => c.toolSetPart !== undefined)) continue;
     const spec = sets[setId];
     const pockets = list.filter((c) => c.shape === 'path');
@@ -120,11 +145,7 @@ export function withLegacyToolSetParts(
     const channel = list.find((c) => c.shape === 'slot' && c.finger !== undefined);
     if (channel) parts.set(channel.id, 'channel');
     for (const c of list) {
-      if (
-        c.shape === 'text' &&
-        c.label !== '' &&
-        labelPart(c.label).length <= TOOL_SET_LIMITS.maxPartLength
-      ) {
+      if (c.shape === 'text' && c.label !== '' && cleanPart(labelPart(c.label))) {
         parts.set(c.id, labelPart(c.label));
       }
     }

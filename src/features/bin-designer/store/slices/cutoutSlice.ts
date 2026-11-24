@@ -24,7 +24,11 @@ import {
   withCutoutArray,
 } from '../helpers';
 import { generateLayoutId } from '@/shared/utils/uuid';
-import { releaseClonedParts, releaseMovedParts } from '../../utils/toolSetMembership';
+import {
+  releaseClonedParts,
+  releaseMovedParts,
+  setsWithParts,
+} from '../../utils/toolSetMembership';
 import { mapPathRings, translatePathPoints } from '../../utils/pathTransforms';
 import {
   canNestDeeper,
@@ -71,8 +75,9 @@ export function createCutoutSlice(rawSet: Set) {
    *
    * Enforced here rather than at the ~40 assignment sites for the same reason
    * `lipHasSupport` is derived once: an action added later cannot reintroduce the
-   * empty array by forgetting about it. A tool set part that changed sets loses
-   * its part here too, for the same reason.
+   * empty array by forgetting about it. For the same reason, a tool set part
+   * that changed sets loses its part here, and a set left with no parts loses
+   * its recipe.
    */
   const set: Set = (fn) =>
     rawSet((state) => {
@@ -80,6 +85,8 @@ export function createCutoutSlice(rawSet: Set) {
       fn(state);
       const released = releaseMovedParts(base, state.params);
       if (released) state.params.cutouts = released;
+      const sets = setsWithParts(state.params.cutouts, state.params.cutoutToolSets);
+      if (sets !== null) state.params.cutoutToolSets = sets;
       const lid = state.params.lid;
       if (lid.cutouts !== undefined && lid.cutouts.length === 0) {
         delete lid.cutouts;

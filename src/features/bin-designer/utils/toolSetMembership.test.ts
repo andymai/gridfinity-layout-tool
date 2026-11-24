@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Cutout, ToolSetSpec } from '../types';
-import { partsOf, releaseClonedParts, releaseMovedParts, toolSetOf } from './toolSetMembership';
+import {
+  partsOf,
+  releaseClonedParts,
+  releaseMovedParts,
+  setsWithParts,
+  toolSetOf,
+} from './toolSetMembership';
 
 const spec: ToolSetSpec = {
   family: 'combinationWrench',
@@ -131,5 +137,16 @@ describe('releaseClonedParts', () => {
       sets
     );
     expect(out?.map((c) => c.toolSetPart)).toEqual(['pocket:13', undefined, undefined, 'pocket:8']);
+  });
+});
+
+describe('setsWithParts', () => {
+  it('drops the recipe of a set with no part left, and reports no change otherwise', () => {
+    const sets = { a: spec, b: spec };
+    const cutouts = [shape('p', ['a'], 'pocket:13'), shape('mine', ['b'])];
+    expect(setsWithParts(cutouts, sets)).toEqual({ a: spec });
+    expect(setsWithParts([shape('mine', ['b'])], { b: spec })).toBeUndefined();
+    expect(setsWithParts(cutouts, { a: spec })).toBeNull();
+    expect(setsWithParts(cutouts, undefined)).toBeNull();
   });
 });

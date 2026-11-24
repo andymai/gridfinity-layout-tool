@@ -1043,6 +1043,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 32,
+          "pattern": "^[^\\u0000-\\u001F\\u007F]+$",
           "x-constant": {
             "maxLength": "TOOL_SET_LIMITS.maxPartLength"
           },

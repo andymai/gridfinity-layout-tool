@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Cutout, ToolSetSpec } from '@/features/bin-designer/types';
-import { migrateCutoutToolSets, withLegacyToolSetParts } from './paramMigrationToolSets';
+import { migrateCutoutToolSets, migrateToolSetParts } from './paramMigrationToolSets';
 
 const spec = {
   family: 'combinationWrench',
@@ -51,8 +51,7 @@ describe('migrateCutoutToolSets', () => {
   });
 });
 
-describe('withLegacyToolSetParts', () => {
-  const NAMED = { g1: 'Wrenches 8 to 13 mm' };
+describe('migrateToolSetParts', () => {
   const metric: ToolSetSpec = {
     family: 'combinationWrench',
     units: 'metric',
@@ -62,6 +61,7 @@ describe('withLegacyToolSetParts', () => {
     labelSizeMm: 5,
     fingerChannel: true,
   };
+  const sets = { g1: metric };
   const at = (id: string, shape: Cutout['shape'], extra: Partial<Cutout> = {}): Cutout => ({
     id,
     shape,
@@ -87,7 +87,7 @@ describe('withLegacyToolSetParts', () => {
       at('l8', 'text', { label: '8' }),
       at('mine', 'circle'),
     ];
-    const out = withLegacyToolSetParts(cutouts, { g1: metric }, NAMED);
+    const out = migrateToolSetParts(cutouts, sets, sets);
     expect(out.map((c) => c.toolSetPart)).toEqual([
       'pocket:8',
       'pocket:10',
@@ -96,28 +96,41 @@ describe('withLegacyToolSetParts', () => {
       'label:8',
       undefined,
     ]);
-    expect(withLegacyToolSetParts(out, { g1: metric }, NAMED)).toBe(out);
-  });
-
-  it('leaves a later set whose parts the user deleted, which has no stored name', () => {
-    const mine = [at('drawn', 'path'), at('note', 'text', { label: 'Spares' })];
-    expect(withLegacyToolSetParts(mine, { g1: metric }, undefined)).toBe(mine);
-    expect(withLegacyToolSetParts(mine, { g1: metric }, { other: 'Pens' })).toBe(mine);
+    expect(migrateToolSetParts(out, sets, sets)).toBe(out);
   });
 
   it('gives placeholder parts when the pockets no longer match the recipe', () => {
-    const out = withLegacyToolSetParts([at('a', 'path'), at('b', 'path')], { g1: metric }, NAMED);
+    const out = migrateToolSetParts([at('a', 'path'), at('b', 'path')], sets, sets);
     expect(out.map((c) => c.toolSetPart)).toEqual(['pocket:#0', 'pocket:#1']);
+  });
+
+  it('drops a part the server would refuse', () => {
+    const cutouts = [
+      at('a', 'path', { toolSetPart: 'pocket:13' }),
+      at('b', 'path', { toolSetPart: 'pocket:13\n' as Cutout['toolSetPart'] }),
+      at('c', 'path', { toolSetPart: `pocket:${'9'.repeat(30)}` }),
+    ];
+    const out = migrateToolSetParts(cutouts, sets, sets);
+    expect(out.map((c) => c.toolSetPart)).toEqual(['pocket:13', undefined, undefined]);
+  });
+
+  it('releases the parts of a set whose recipe this load dropped', () => {
+    const cutouts = [
+      at('outer', 'path', { toolSetPart: 'pocket:8' }),
+      at('inner', 'path', { parentGroups: ['g1', 'g2'], toolSetPart: 'pocket:8' }),
+    ];
+    const out = migrateToolSetParts(cutouts, sets, { g1: metric, g2: { family: 'hammer' } });
+    expect(out.map((c) => c.toolSetPart)).toEqual(['pocket:8', undefined]);
   });
 
   it('loads a design whose groups use inherited property names', () => {
     const crafted = [at('a', 'path', { parentGroups: ['constructor'] })];
-    expect(withLegacyToolSetParts(crafted, { g1: metric }, NAMED)).toBe(crafted);
+    expect(migrateToolSetParts(crafted, sets, sets)).toBe(crafted);
   });
 
   it('leaves cutouts outside a set, and designs without sets, as they are', () => {
     const loose = [at('a', 'path', { parentGroups: ['other'] })];
-    expect(withLegacyToolSetParts(loose, { g1: metric }, NAMED)).toBe(loose);
-    expect(withLegacyToolSetParts(loose, undefined, NAMED)).toBe(loose);
+    expect(migrateToolSetParts(loose, sets, sets)).toBe(loose);
+    expect(migrateToolSetParts(loose, undefined, undefined)).toBe(loose);
   });
 });
