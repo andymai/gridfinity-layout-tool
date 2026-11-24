@@ -68,4 +68,24 @@ describe('ToolSetDialog', () => {
     expect(onClose).not.toHaveBeenCalled();
     expect(useDesignerStore.getState().params.cutoutToolSets).toBeUndefined();
   });
+
+  it('says the bin prints in pieces when the planned bin is larger than the bed', () => {
+    render(<ToolSetDialog setId={null} onClose={vi.fn()} />);
+    expect(screen.getByText(/so it prints in pieces/)).toBeInTheDocument();
+  });
+
+  it('only says the bin is larger when splitting is off', () => {
+    useDesignerStore.getState().setParams({ splitToFitBed: false });
+    render(<ToolSetDialog setId={null} onClose={vi.fn()} />);
+    expect(
+      screen.getByText('With this set, the bin is larger than your print bed.')
+    ).toBeInTheDocument();
+  });
+
+  it('has no bed note for a set whose bin fits the bed', () => {
+    render(<ToolSetDialog setId={null} onClose={vi.fn()} />);
+    for (const on of screen.getAllByRole('button', { pressed: true })) fireEvent.click(on);
+    fireEvent.click(screen.getByRole('button', { name: '10', pressed: false }));
+    expect(screen.queryByText(/larger than your print bed/)).not.toBeInTheDocument();
+  });
 });

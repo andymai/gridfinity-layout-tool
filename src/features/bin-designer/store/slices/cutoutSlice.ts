@@ -50,6 +50,7 @@ import {
   gcMeshAssets,
   gcCutoutGroupMetadata,
   copyWholeToolSets,
+  copyToolSetsForClonePairs,
   remainingCapacity,
   togglePropertyAffectsGeometry,
   zOrderAffectsGeometry,
@@ -647,6 +648,10 @@ export function createCutoutSlice(rawSet: Set) {
           return u ? withTextFootprint(mergeCutoutUpdate(c, u)) : c;
         });
       });
+    },
+
+    copyToolSetsForClones: (pairs: readonly (readonly [string, string])[]) => {
+      if (pairs.length > 0) set((state) => copyToolSetsForClonePairs(state, pairs));
     },
 
     removeCutoutsBatch: (ids: readonly string[]) => {

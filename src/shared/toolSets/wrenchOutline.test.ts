@@ -59,3 +59,28 @@ describe('combinationWrenchOutline', () => {
     expect(combinationWrenchOutline({ ...wrench13, boxWidthMm: Number.NaN })).toBeNull();
   });
 });
+
+describe('combinationWrenchOutline with a length range', () => {
+  it('holds the open head of the shortest and the longest wrench', () => {
+    const swept = combinationWrenchOutline({ ...wrench13, lengthMm: 193, minLengthMm: 160 });
+    if (!swept) throw new Error('expected an outline');
+    const closed = [...swept.ring, swept.ring[0]];
+    for (const length of [160, 175, 193]) {
+      const one = combinationWrenchOutline({ ...wrench13, lengthMm: length });
+      if (!one) throw new Error('expected an outline');
+      const outside = polygonClipping.difference([[...one.ring, one.ring[0]]], [closed]);
+      const area = outside.flat().reduce((sum, ring) => sum + Math.abs(areaOf(ring)), 0);
+      expect(area).toBeLessThan(1);
+    }
+  });
+});
+
+function areaOf(ring: [number, number][]): number {
+  let sum = 0;
+  for (let i = 0; i < ring.length; i++) {
+    const [x1, y1] = ring[i];
+    const [x2, y2] = ring[(i + 1) % ring.length];
+    sum += x1 * y2 - x2 * y1;
+  }
+  return sum / 2;
+}

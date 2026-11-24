@@ -16,6 +16,8 @@ import { setLimitOnBed, TOOL_FAMILIES } from '@/shared/toolSets/catalog';
 import { generateToolSet } from '@/shared/toolSets/generateToolSet';
 import { ToolSetPreview } from './ToolSetPreview';
 import { useToolSets } from './useToolSets';
+import { planToolSetPlacement, planToolSetRebuild } from './planToolSetPlacement';
+import { binBedFit, binNeedsSplit } from '@/shared/utils/binSplitFit';
 
 export interface ToolSetDialogProps {
   /** The set to edit, or null to add a new one. */
@@ -59,10 +61,28 @@ export function ToolSetDialog({ setId, onClose }: ToolSetDialogProps) {
       maxWidthMm: setLimitOnBed(printBedSize),
     });
   }, [spec, printBedSize]);
-  const overBed =
-    preview !== null &&
-    (preview.width > setLimitOnBed(printBedSize) ||
-      preview.depth > setLimitOnBed(printBedDepth ?? printBedSize));
+  const params = useDesignerStore((s) => s.params);
+  const halfGridMode = useDesignerStore((s) => s.ui.halfGridMode);
+  // Read off the bin the add or update would make, through the same plan and
+  // the same bed-fit test the export uses, so a bin that fits turned or on the
+  // diagonal is not reported.
+  const bedNote = useMemo((): 'pieces' | 'whole' | null => {
+    if (!preview) return null;
+    const plan = editing
+      ? planToolSetRebuild(params, setId, preview, halfGridMode)
+      : planToolSetPlacement(params, preview, halfGridMode);
+    if (!plan) return null;
+    const planned = {
+      ...params,
+      ...(plan.size ?? {}),
+      ...(plan.height !== null ? { height: plan.height } : {}),
+    };
+    // Asked with splitting on: with it off the fit keeps the bin whole and
+    // reports no split, which would hide that the bin overruns the bed.
+    const splittable = { ...planned, splitToFitBed: undefined };
+    if (!binNeedsSplit(splittable, binBedFit(splittable, printBedSize, printBedDepth))) return null;
+    return params.splitToFitBed === false ? 'whole' : 'pieces';
+  }, [preview, editing, params, setId, halfGridMode, printBedSize, printBedDepth]);
 
   const update = (patch: Partial<ToolSetSpec>) => {
     setNoRoom(false);
@@ -203,8 +223,14 @@ export function ToolSetDialog({ setId, onClose }: ToolSetDialogProps) {
               {t('binDesigner.toolSets.fitNote')}
             </p>
           )}
-          {overBed && (
-            <p className="text-xs text-content-secondary">{t('binDesigner.toolSets.overBed')}</p>
+          {bedNote && (
+            <p className="text-xs text-content-secondary">
+              {t(
+                bedNote === 'pieces'
+                  ? 'binDesigner.toolSets.overBed'
+                  : 'binDesigner.toolSets.overBedWhole'
+              )}
+            </p>
           )}
           {noRoom && (
             <p role="alert" className="text-xs text-error">

@@ -16,6 +16,7 @@ import { MAX_LID_CUTOUTS } from '@/features/bin-designer/types';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
+import { useDesignerStore } from '@/features/bin-designer/store';
 import { cutoutFitsInMask } from './maskFit';
 import {
   addClonedCutouts,
@@ -85,6 +86,7 @@ export function useCutoutClipboard({
   meshAssets,
 }: UseCutoutClipboardOptions): CutoutClipboard {
   const addToast = useToastStore((s) => s.addToast);
+  const copyToolSetsForClones = useDesignerStore((s) => s.copyToolSetsForClones);
   const t = useTranslation();
 
   const reportClipped = useCallback(
@@ -141,15 +143,17 @@ export function useCutoutClipboard({
         : clipboard;
     if (placeable.length === 0) return true;
 
-    addClonedCutouts(
+    const pasted = addClonedCutouts(
       placeable,
       onAdd,
       setSelection,
       (original) => clampedOffset(original, offset, binWidth, binDepth),
       reportClipped
     );
+    copyToolSetsForClones(pasted.map((c) => [c.originalId, c.id] as const));
     return true;
   }, [
+    copyToolSetsForClones,
     clipboard,
     onAdd,
     setSelection,
@@ -210,6 +214,7 @@ export function useCutoutClipboard({
       (original) => clampedDelta(original, dx, dy, binWidth, binDepth),
       reportClipped
     );
+    copyToolSetsForClones(clones.map((c) => [c.originalId, c.id] as const));
 
     const anchorClone = clones.at(0);
     const anchorSource = anchorClone
@@ -237,6 +242,7 @@ export function useCutoutClipboard({
       addToast({ message: t('binDesigner.cutouts.repeat.hint'), type: 'info', duration: 8000 });
     }
   }, [
+    copyToolSetsForClones,
     cutouts,
     selection,
     onAdd,

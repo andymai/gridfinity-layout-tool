@@ -352,3 +352,26 @@ export function copyWholeToolSets(
   }
   if (changed) state.params.cutoutToolSets = next;
 }
+
+/** {@link copyWholeToolSets} for clones known only as `[originalId, cloneId]` pairs. */
+export function copyToolSetsForClonePairs(
+  state: Draft<DesignerState>,
+  pairs: readonly (readonly [string, string])[]
+): void {
+  if (!state.params.cutoutToolSets) return;
+  const all = [...state.params.cutouts, ...(state.params.lid.cutouts ?? [])];
+  const byId = new Map(all.map((c) => [c.id, c]));
+  const groupMap = new Map<string, string>();
+  const originals: Cutout[] = [];
+  for (const [from, to] of pairs) {
+    const original = byId.get(from);
+    const clone = byId.get(to);
+    if (!original || !clone) continue;
+    originals.push(original);
+    (original.parentGroups ?? []).forEach((id, i) => {
+      const copy = clone.parentGroups?.[i];
+      if (copy !== undefined) groupMap.set(id, copy);
+    });
+  }
+  copyWholeToolSets(state, originals, groupMap);
+}

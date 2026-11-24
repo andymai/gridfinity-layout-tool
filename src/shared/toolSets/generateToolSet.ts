@@ -163,7 +163,8 @@ function channelFor(rows: readonly Row[], opts: GenerateOptions): Cutout | null 
   for (const row of rows) {
     const { entry } = row;
     const [x1] = alongToSet(row, entry.boxWidthMm * HEAD_CLEAR_RATIO);
-    const [x2] = alongToSet(row, entry.lengthMm - entry.openWidthMm * HEAD_CLEAR_RATIO);
+    const shortest = entry.minLengthMm ?? entry.lengthMm;
+    const [x2] = alongToSet(row, shortest - entry.openWidthMm * HEAD_CLEAR_RATIO);
     lo = Math.max(lo, Math.min(x1, x2));
     hi = Math.min(hi, Math.max(x1, x2));
   }
@@ -242,6 +243,7 @@ export function generateToolSet(
       boxWidthMm: entry.boxWidthMm,
       shankWidthMm: entry.shankWidthMm,
       jawAngleDeg: family.table.jawAngleDeg,
+      minLengthMm: entry.minLengthMm,
     });
     return outline ? [{ entry, ring: outline.ring }] : [];
   });

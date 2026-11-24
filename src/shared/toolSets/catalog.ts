@@ -7,6 +7,8 @@ export interface WrenchSizeEntry {
   /** Jaw opening, which orders the sizes. */
   readonly jawMm: number;
   readonly lengthMm: number;
+  /** The shortest surveyed length; the pocket holds every length between. */
+  readonly minLengthMm?: number;
   readonly openWidthMm: number;
   readonly boxWidthMm: number;
   readonly openThicknessMm: number;

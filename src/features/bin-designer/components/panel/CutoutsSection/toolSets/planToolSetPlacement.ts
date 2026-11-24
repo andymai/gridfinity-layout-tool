@@ -135,3 +135,48 @@ export function planToolSetPlacement(
   }
   return null;
 }
+
+export function membersOf(cutouts: readonly Cutout[], setId: string): Cutout[] {
+  return cutouts.filter((c) => c.parentGroups?.includes(setId) === true);
+}
+
+/** The corner a rebuilt set keeps: where the old one's cut began. */
+function anchorOf(members: readonly Cutout[]): { x: number; y: number } {
+  let x = Infinity;
+  let y = Infinity;
+  for (const c of members) {
+    const b = getRotatedBounds(c);
+    x = Math.min(x, b.minX - (c.clearance ?? 0));
+    y = Math.min(y, b.minY - (c.clearance ?? 0));
+  }
+  return { x: Math.max(0, x), y: Math.max(0, y) };
+}
+
+/**
+ * Where a rebuilt set goes: where the old one began, unless the new sizes would
+ * run into other pockets or off the floor; then beside the other pockets, as a
+ * new set would go. Null when neither holds it.
+ */
+export function planToolSetRebuild(
+  params: BinParams,
+  setId: string,
+  set: GeneratedToolSet,
+  halfGridMode: boolean
+): ToolSetPlacement | null {
+  const members = membersOf(params.cutouts, setId);
+  const kept = params.cutouts.filter((c) => !members.includes(c));
+  const keptParams = { ...params, cutouts: kept };
+  if (members.length === 0) return planToolSetPlacement(keptParams, set, halfGridMode);
+  const { x, y } = anchorOf(members);
+  const atAnchor = set.cutouts.map((c) => shiftCutout(c, x, y));
+  const setBoxes = cutBoxes(atAnchor);
+  const keptBoxes = cutBoxes(kept.filter((c) => c.hidden !== true));
+  const clashes = setBoxes.some((a) => keptBoxes.some((b) => boxesOverlap(a, b, 0)));
+  const size = computeGrowToFit(keptParams, [...kept, ...atAnchor], halfGridMode);
+  const grown = size ? { ...keptParams, ...size } : keptParams;
+  const height = heightFor(keptParams, set.deepestCutMm);
+  if (!clashes && height !== undefined && landsOnFloor(grown, set, x, y)) {
+    return { dx: x, dy: y, size, height };
+  }
+  return planToolSetPlacement(keptParams, set, halfGridMode);
+}

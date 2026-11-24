@@ -6,18 +6,14 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useLayoutPrintBed } from '@/features/bin-designer/hooks/useLayoutPrintBed';
 import type { BinParams, Cutout, ToolSetSpec } from '@/features/bin-designer/types';
 import { generateLayoutId, generateUUID } from '@/shared/utils/uuid';
-import { getRotatedBounds } from '../geometryCore';
 import { setLimitOnBed, TOOL_FAMILIES } from '@/shared/toolSets/catalog';
 import { generateToolSet, shiftCutout, type ToolSetNames } from '@/shared/toolSets/generateToolSet';
 import {
-  boxesOverlap,
-  cutBoxes,
-  heightFor,
-  landsOnFloor,
+  membersOf,
   planToolSetPlacement,
+  planToolSetRebuild,
   type ToolSetPlacement,
 } from './planToolSetPlacement';
-import { computeGrowToFit } from '../growBinToFit';
 
 /**
  * Why a set could not be placed; nothing changed in either case.
@@ -26,6 +22,8 @@ import { computeGrowToFit } from '../growBinToFit';
  */
 export type ToolSetFailure = 'empty' | 'noRoom';
 
+export { membersOf };
+
 export interface ToolSetActions {
   readonly insertSet: (spec: ToolSetSpec) => Result<'added', ToolSetFailure>;
   /** Rebuilds an existing set in place from a new spec, as one undo step. */
@@ -33,22 +31,6 @@ export interface ToolSetActions {
     setId: string,
     spec: ToolSetSpec
   ) => Result<'added' | 'updated', ToolSetFailure>;
-}
-
-export function membersOf(cutouts: readonly Cutout[], setId: string): Cutout[] {
-  return cutouts.filter((c) => c.parentGroups?.includes(setId) === true);
-}
-
-/** The corner a rebuilt set keeps: where the old one's cut began. */
-function anchorOf(members: readonly Cutout[]): { x: number; y: number } {
-  let x = Infinity;
-  let y = Infinity;
-  for (const c of members) {
-    const b = getRotatedBounds(c);
-    x = Math.min(x, b.minX - (c.clearance ?? 0));
-    y = Math.min(y, b.minY - (c.clearance ?? 0));
-  }
-  return { x: Math.max(0, x), y: Math.max(0, y) };
 }
 
 /** The containers a rebuilt set sat inside, kept so it stays where the user put it. */
@@ -186,35 +168,21 @@ export function useToolSets(): ToolSetActions {
       const renamed = oldName !== undefined && (!oldSpec || oldName !== groupName(oldSpec));
       const name = renamed ? oldName : groupName(spec);
 
-      // The set rebuilds where it was, unless the new sizes would run into
-      // other pockets or off the floor; then it moves beside them.
-      const kept = params.cutouts.filter((c) => !members.includes(c));
-      const keptParams = { ...params, cutouts: kept };
-      const { x, y } = anchorOf(members);
-      const atAnchor = set.cutouts.map((c) => shiftCutout(c, x, y));
-      const setBoxes = cutBoxes(atAnchor);
-      const keptBoxes = cutBoxes(kept.filter((c) => c.hidden !== true));
-      const clashes = setBoxes.some((a) => keptBoxes.some((b) => boxesOverlap(a, b, 0)));
-      const size = computeGrowToFit(keptParams, [...kept, ...atAnchor], ui.halfGridMode);
-      const grown = size ? { ...keptParams, ...size } : keptParams;
-      const height = heightFor(keptParams, set.deepestCutMm);
-      const inPlace =
-        !clashes && height !== undefined && landsOnFloor(grown, set, x, y)
-          ? { dx: x, dy: y, size, height }
-          : null;
-      const placement = inPlace ?? planToolSetPlacement(keptParams, set, ui.halfGridMode);
+      const placement = planToolSetRebuild(params, setId, set, ui.halfGridMode);
       if (!placement) return err('noRoom');
 
       startTransaction();
       try {
-        removeCutoutsBatch(members.map((c) => c.id));
         resizeFor(placement);
+        // Added before the old members go, so the metadata sweep on removal
+        // still sees the enclosing containers and keeps their names.
         for (const cutout of set.cutouts) {
           addCutout({
             ...shiftCutout(cutout, placement.dx, placement.dy),
             parentGroups: [...chain, setId],
           });
         }
+        removeCutoutsBatch(members.map((c) => c.id));
         writeSpec(setId, spec, name);
       } finally {
         commitTransaction();

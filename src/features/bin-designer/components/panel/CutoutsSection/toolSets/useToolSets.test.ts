@@ -7,6 +7,7 @@ import { getRotatedBounds } from '../geometryCore';
 import { binBoard } from '../packIntoBin';
 import { checkPockets } from '../pocketChecks';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
+import { cloneCutoutsWithGroups } from '../cutoutHelpers';
 import { boxesOverlap, cutBoxes } from './planToolSetPlacement';
 import { membersOf, useToolSets } from './useToolSets';
 
@@ -192,5 +193,45 @@ describe('useToolSets', () => {
     const sets = useDesignerStore.getState().params.cutoutToolSets ?? {};
     expect(Object.keys(sets)).toHaveLength(2);
     expect(Object.values(sets).every((s) => s.sizes.join() === spec.sizes.join())).toBe(true);
+  });
+
+  it('gives a pasted copy of a whole set its own recipe', () => {
+    const { result } = renderHook(() => useToolSets());
+    act(() => {
+      result.current.insertSet(spec);
+    });
+    const setId = onlySetId();
+    const store = useDesignerStore.getState();
+    const members = membersOf(store.params.cutouts, setId);
+    const clones = cloneCutoutsWithGroups(members, (c) => ({ x: c.x + 5, y: c.y + 5 }));
+    act(() => {
+      for (const { originalId: _, ...clone } of clones) store.addCutout(clone);
+      store.copyToolSetsForClones(clones.map((c) => [c.originalId, c.id] as const));
+    });
+    expect(Object.keys(useDesignerStore.getState().params.cutoutToolSets ?? {})).toHaveLength(2);
+  });
+
+  it('keeps the name of a container that holds only the set, across a rebuild', () => {
+    const { result } = renderHook(() => useToolSets());
+    act(() => {
+      result.current.insertSet(spec);
+    });
+    const setId = onlySetId();
+    act(() => {
+      const { params } = useDesignerStore.getState();
+      useDesignerStore.setState({
+        params: {
+          ...params,
+          cutouts: params.cutouts.map((c) => ({ ...c, parentGroups: ['outer', setId] })),
+          cutoutGroupNames: { ...params.cutoutGroupNames, outer: 'Drawer A' },
+        },
+      });
+    });
+    act(() => {
+      result.current.rebuildSet(setId, { ...spec, sizes: ['8', '10'] });
+    });
+    const { params } = useDesignerStore.getState();
+    expect(params.cutoutGroupNames?.outer).toBe('Drawer A');
+    expect(params.cutouts.every((c) => c.parentGroups?.[0] === 'outer')).toBe(true);
   });
 });

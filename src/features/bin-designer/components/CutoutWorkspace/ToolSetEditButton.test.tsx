@@ -64,4 +64,9 @@ describe('toolSetOf', () => {
     expect(toolSetOf([pocket('a', ['x'])], sets)).toBeNull();
     expect(toolSetOf([], sets)).toBeNull();
   });
+
+  it('picks the innermost set when one set sits inside another', () => {
+    const sets = { outer: { ...spec, sizes: ['13'] }, inner: { ...spec, sizes: ['10'] } };
+    expect(toolSetOf([pocket('a', ['outer', 'inner'])], sets)).toBe('inner');
+  });
 });

@@ -3888,7 +3888,8 @@ const en: Record<string, string> = {
   'binDesigner.toolSets.groupNameMetric': 'Wrenches {from} to {to} mm',
   'binDesigner.toolSets.groupNameSae': 'Wrenches {from} to {to} in',
   'binDesigner.toolSets.overBed':
-    'The set is larger than your print bed, so the bin prints in pieces.',
+    'With this set, the bin is larger than your print bed, so it prints in pieces.',
+  'binDesigner.toolSets.overBedWhole': 'With this set, the bin is larger than your print bed.',
   'binDesigner.toolSets.noRoom':
     'The set does not fit this bin. Remove some sizes, or make room in the bin.',
   'binDesigner.cutouts.scanImport.buttonLabel': 'Scan',

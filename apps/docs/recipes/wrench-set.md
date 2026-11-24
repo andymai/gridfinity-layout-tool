@@ -21,7 +21,7 @@ sources:
 A shadow board for wrenches shows at a glance which size is out of the drawer. In this recipe, you pick the sizes of your combination wrenches, and the bin designer cuts a pocket for each one. The pockets nest head to tail, the size of each wrench sits engraved beside its box end, and one finger channel runs across the handles.
 
 ::: warning Experimental
-Tool sets are new. The pockets use typical wrench sizes, not your brand's sizes, so print a fit test before the full bin.
+Tool sets are new. The pockets use the published sizes of several brands, not your own wrenches, so print a fit test before the full bin.
 :::
 
 ## What you need
@@ -50,7 +50,7 @@ Each pocket has two depths. The box end is thicker than the handle, so its well 
 
 ## Step 3: Check the fit
 
-Wrench brands differ. At 13 mm, one brand's wrench is more than 30 mm longer than another's. Each pocket holds the longest wrench in the published sizes of several brands. A shorter wrench can have room at its ends.
+Wrench brands differ. At 13 mm, one brand's wrench is more than 30 mm longer than another's. So that every brand fits, the open end's well is longer than one head. It runs from the shortest published length to the longest. The pockets hold the widest published heads too.
 
 1. Click the set to select it, and click <Ui k="binDesigner.cutouts.fitTest.button" />.
 2. Print the test, and put your wrench in it.

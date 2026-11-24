@@ -4,6 +4,8 @@ import type { ToolSetSpec } from '@/shared/types/toolSet';
 import { effectiveSplit } from '@/shared/utils/cutoutSplit';
 import { textElementFootprint } from '@/shared/utils/cutoutLabel';
 import type { ToolFamily, WrenchSizeEntry } from './catalog';
+import { MAX_PATH_POINTS, MIN_PATH_POINTS } from '@/shared/types/bin';
+import { TOOL_FAMILIES } from './catalog';
 import { generateToolSet, TOOL_SET_ENTRY_MM, TOOL_SET_WALL_MM } from './generateToolSet';
 import { closerThan } from './nestLayout';
 
@@ -124,4 +126,26 @@ describe('generateToolSet', () => {
   it('returns null when no size is in the table', () => {
     expect(generateToolSet({ ...spec, sizes: ['99'] }, family, opts)).toBeNull();
   });
+});
+
+describe('generateToolSet on the real tables', () => {
+  it.each(['metric', 'sae'] as const)(
+    'keeps every %s pocket within the path point limit',
+    (units) => {
+      const family = TOOL_FAMILIES.combinationWrench;
+      let n = 0;
+      const set = generateToolSet(
+        { ...spec, units, sizes: family.table[units].map((e) => e.key) },
+        family,
+        { setId: 's', idFactory: () => `r${n++}`, names: opts.names }
+      );
+      if (!set) throw new Error('expected a set');
+      const pockets = set.cutouts.filter((c) => c.shape === 'path');
+      expect(pockets).toHaveLength(family.table[units].length);
+      for (const pocket of pockets) {
+        expect(pocket.path?.length ?? 0).toBeLessThanOrEqual(MAX_PATH_POINTS);
+        expect(pocket.path?.length ?? 0).toBeGreaterThanOrEqual(MIN_PATH_POINTS);
+      }
+    }
+  );
 });
