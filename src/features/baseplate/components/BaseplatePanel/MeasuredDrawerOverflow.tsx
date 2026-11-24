@@ -2,7 +2,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import type { StoredBaseplateParams } from '@/core/types';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import { formatMm } from '@/shared/utils/format';
+import { useMeasureUnit } from '@/shared/hooks/useMeasureUnit';
 import { fitPaddingToDrawer, plateDrawerOverflow } from '@/shared/utils/fitPaddingToDrawer';
 import { updateBaseplateParams } from './panelState';
 
@@ -22,6 +22,7 @@ export function MeasuredDrawerOverflow({
   outerDepthMm,
 }: MeasuredDrawerOverflowProps) {
   const t = useTranslation();
+  const { symbol, format } = useMeasureUnit();
   const measured = useLayoutStore((s) => s.layout.drawer.measuredMm);
   if (measured === undefined) return null;
 
@@ -39,10 +40,11 @@ export function MeasuredDrawerOverflow({
     <div role="status" className="space-y-1.5">
       <p className="text-center text-micro text-warning tabular-nums">
         {t('baseplate.drawerOverflow', {
-          width: formatMm(overflow.widthMm),
-          depth: formatMm(overflow.depthMm),
-          drawerWidth: formatMm(measured.width),
-          drawerDepth: formatMm(measured.depth),
+          width: format(overflow.widthMm),
+          depth: format(overflow.depthMm),
+          drawerWidth: format(measured.width),
+          drawerDepth: format(measured.depth),
+          unit: symbol,
         })}
       </p>
       {paddingChanges && (

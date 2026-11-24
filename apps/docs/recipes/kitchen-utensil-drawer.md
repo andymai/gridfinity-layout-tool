@@ -84,7 +84,7 @@ In the design of the long bin, the <Ui k="binDesigner.group.shape" /> group show
 The half-grid used most of the spare width. Now 6 mm stays free across, and 18 mm front to back. The baseplate can fill that space with solid padding.
 
 1. Open the baseplate generator with <Ui k="toolSwitcher.baseplateGenerator" />.
-2. Click the millimeter size under the steppers in <Ui k="baseplate.sectionDimensions" />, and type 405 and 480.
+2. Click the plate size under the steppers in <Ui k="baseplate.sectionDimensions" />, and type 405 and 480.
 
 The plate keeps the 9.5 × 11 grid. It adds <Ui k="baseplate.padding" /> of 3 mm at each side and 9 mm at the front and the back. The plate is now 405 × 480 mm, and <Ui k="baseplate.syncWithLayout" /> turns off.
 

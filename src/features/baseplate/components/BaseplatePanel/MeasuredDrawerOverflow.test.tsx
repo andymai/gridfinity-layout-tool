@@ -6,6 +6,7 @@ import { DEFAULT_BASEPLATE_PARAMS } from '@/core/baseplateDefaults';
 import { mm } from '@/core/types';
 import type { StoredBaseplateParams } from '@/core/types';
 import { resetAllStores } from '@/test/testUtils';
+import { useSettingsStore } from '@/core/store/settings';
 
 vi.mock('@/i18n', () => ({
   useTranslation:
@@ -66,7 +67,16 @@ describe('MeasuredDrawerOverflow', () => {
     seed({ width: 541, depth: 496 });
     renderNotice();
     expect(screen.getByText(/drawerOverflow/).textContent).toBe(
-      'baseplate.drawerOverflow {"width":"5","depth":"8","drawerWidth":"541","drawerDepth":"496"}'
+      'baseplate.drawerOverflow {"width":"5","depth":"8","drawerWidth":"541","drawerDepth":"496","unit":"units.symbol.mm"}'
+    );
+  });
+
+  it('names them in the measure unit', () => {
+    useSettingsStore.getState().updateSetting('measureUnit', 'cm');
+    seed({ width: 541, depth: 496 });
+    renderNotice();
+    expect(screen.getByText(/drawerOverflow/).textContent).toBe(
+      'baseplate.drawerOverflow {"width":"0.5","depth":"0.8","drawerWidth":"54.1","drawerDepth":"49.6","unit":"units.symbol.cm"}'
     );
   });
 

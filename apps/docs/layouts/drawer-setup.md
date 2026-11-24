@@ -59,7 +59,7 @@ A real drawer is almost never an exact number of grid units. Measure the inside 
 3. Type the <Ui k="drawerDims.heightLabel" /> too, if you know it. The height check at the end of this page needs it.
 4. Press <kbd>Enter</kbd>.
 
-The line under the steppers then shows the grid size in millimeters and the free space around it. If the grid is larger than the drawer, the line turns into a warning that shows the overlap.
+The line under the steppers then shows the grid size and the free space around it. If the grid is larger than the drawer, the line turns into a warning that shows the overlap.
 
 Your measurement doesn't resize the grid on its own. Instead, when a different grid fits better, a card suggests the largest grid that fits and shows the room that it leaves. Click <Ui k="drawerDims.suggestionUse" /> to apply it. If the better fit needs a half unit, the card tells you that it also turns on half-grid mode.
 
@@ -172,13 +172,13 @@ The import replaces the outline in the editor. To get the previous outline back,
 
 ## Check the drawer height
 
-A drawer that won't close is no fun. <Ui k="sidebar.drawerHeight" /> is the height, in millimeters, that every stack of bins must stay under. Each step is one **height unit**, 7 mm by default. The Layout Tool doesn't let you place a bin that makes a stack taller than this height.
+A drawer that won't close is no fun. <Ui k="sidebar.drawerHeight" /> is the height that every stack of bins must stay under. Each step is one **height unit**, 7 mm by default. The Layout Tool doesn't let you place a bin that makes a stack taller than this height.
 
-A printed bin stands a little taller than its height units. Its stacking lip rises above the body, and a baseplate can add material under it. For a check against the real drawer, enter a measured height. The Layout Tool then measures the tallest stack in millimeters, with the lip, the baseplate and any clearance above the bins. It also sets <Ui k="sidebar.drawerHeight" /> from your measurement.
+A printed bin stands a little taller than its height units. Its stacking lip rises above the body, and a baseplate can add material under it. For a check against the real drawer, enter a measured height. The Layout Tool then measures the real height of the tallest stack, with the lip, the baseplate and any clearance above the bins. It also sets <Ui k="sidebar.drawerHeight" /> from your measurement.
 
 The result shows under the measured size:
 
-- If the tallest stack fits, the line shows how many millimeters are free.
+- If the tallest stack fits, the line shows how much height is free.
 - If it doesn't fit, a warning shows how far the stack stands above the drawer. The <Ui k="common.layers" /> panel and the inspector of each tall bin show the same warning.
 - With no measured height, the line asks for one: <Ui k="drawerCeiling.measurePrompt" />.
 

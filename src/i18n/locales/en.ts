@@ -358,7 +358,6 @@ const en: Record<string, string> = {
   'sidebar.expandPanel': 'Expand panel',
   'sidebar.collapsePanel': 'Collapse panel',
   'sidebar.settings': 'Settings',
-  'sidebar.maxHeight': 'Maximum height in millimeters',
   'sidebar.halfBinTooltip':
     'Lets bins use 0.5-unit sizes and positions (H). It leaves the socket pattern unchanged; for a denser base, turn on Half sockets in the bin designer.',
   'sidebar.halfBinLeft': 'Place half-unit column on the left',
@@ -1164,7 +1163,7 @@ const en: Record<string, string> = {
   'drawerCeiling.fits': 'Tallest stack fits, {slack} {unit} to spare',
   'drawerCeiling.measurePrompt': 'Add a height measurement to check the lid closes',
   'drawerCeiling.binOverflow': 'Stands {over} {unit} above your measured drawer',
-  'drawerCeiling.layerOverflow': 'Stack stands {over}mm above your measured drawer',
+  'drawerCeiling.layerOverflow': 'Stack stands {over} {unit} above your measured drawer',
   'drawerCeiling.planeLabel': 'Measured drawer height',
 
   // Assembled height breakdown
@@ -4960,7 +4959,7 @@ const en: Record<string, string> = {
   'baseplate.inclShape': 'incl. drawer shape',
   'baseplate.inclPaddingShape': 'incl. padding + drawer shape',
   'baseplate.drawerOverflow':
-    'Plate is {width} × {depth} mm over your {drawerWidth} × {drawerDepth} mm drawer',
+    'Plate is {width} × {depth} {unit} over your {drawerWidth} × {drawerDepth} {unit} drawer',
   'baseplate.fitPaddingToDrawer': 'Fit padding to drawer',
   'baseplate.editDimensionsWidth': 'Baseplate width in {unit}',
   'baseplate.editDimensionsDepth': 'Baseplate depth in {unit}',

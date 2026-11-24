@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import type { DrawerOutline } from '@/core/types';
 import { outlineBounds } from '@/shared/utils/drawerOutlineGeometry';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
-import { formatMm } from '@/shared/utils/format';
+import { useMeasureUnit } from '@/shared/hooks/useMeasureUnit';
 
 const DIM_FONT_SIZE = 4;
 const DIM_OPACITY = 0.5;
@@ -45,6 +45,7 @@ export function DimensionLabels({
   outline?: DrawerOutline;
 }) {
   const colors = useThreeColors();
+  const { symbol, format } = useMeasureUnit();
 
   const gridW = width * gridUnitMm;
   const gridD = depth * gridUnitMmY;
@@ -124,7 +125,7 @@ export function DimensionLabels({
         anchorX="center"
         anchorY="top"
       >
-        {`${formatMm(totalW)}mm`}
+        {`${format(totalW)} ${symbol}`}
       </Text>
 
       {/* Depth label */}
@@ -136,7 +137,7 @@ export function DimensionLabels({
         anchorX="right"
         anchorY="middle"
       >
-        {`${formatMm(totalD)}mm`}
+        {`${format(totalD)} ${symbol}`}
       </Text>
     </group>
   );

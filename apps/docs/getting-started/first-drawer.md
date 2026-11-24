@@ -24,7 +24,7 @@ This page teaches the clicks in the layout editor. For advice on which bin sizes
 
 ## Before you start
 
-Grab a tape measure and measure the inside of your drawer in millimeters: the width, the depth, and the height under the closed drawer. Use the smallest value on each side.
+Grab a tape measure and measure the inside of your drawer: the width, the depth, and the height under the closed drawer. Use the smallest value on each side. The Layout Tool takes millimeters. To type centimeters or inches, set <Ui k="settings.measureUnit" /> in <Ui k="sidebar.settings" />.
 
 Type your sizes here to see the grid that fits your drawer, and how tall your bins can be. Is your tape measure in inches? Pick **in**, and the sizes change to millimeters for you.
 
@@ -52,7 +52,7 @@ Your measurement doesn't resize the grid on its own. Instead, a card suggests th
 
 3. Click <Ui k="drawerDims.suggestionUse" /> on the card. The grid snaps to the new size.
 
-The line under the steppers shows the grid size in millimeters and the free space. If the fit needs half units, the Layout Tool also turns on <Ui k="sidebar.halfBinMode" /> for you.
+The line under the steppers shows the grid size and the free space. If the fit needs half units, the Layout Tool also turns on <Ui k="sidebar.halfBinMode" /> for you.
 
 ::: tip
 No card? Then the grid already fits your drawer. You can also set the size with the <Ui k="common.widthUnits" /> and <Ui k="common.depthUnits" /> steppers, or drag the edges of the grid.

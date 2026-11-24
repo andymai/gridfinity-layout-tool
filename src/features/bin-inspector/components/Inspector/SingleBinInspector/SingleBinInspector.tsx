@@ -27,7 +27,6 @@ import { STLSearchDropdown } from '@/shared/components/STLSearchDropdown';
 import { useDrawerCeiling } from '@/shared/hooks/useDrawerCeiling';
 import { useTranslation } from '@/i18n';
 import { useMeasureUnit } from '@/shared/hooks/useMeasureUnit';
-import { formatLength } from '@/shared/utils/lengthUnit';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 
 const BinSizeSuggestion = lazyWithRetry(() =>
@@ -80,7 +79,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
   const restingStack = useRestingStack(layout.bins, layout.layers);
   const placesEnabled = useFeatureFlag('places');
   const t = useTranslation();
-  const { unit: measureUnit, symbol: measureSymbol } = useMeasureUnit();
+  const { symbol: measureSymbol, format: formatMeasure } = useMeasureUnit();
 
   if (!bin) return null;
 
@@ -100,12 +99,6 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
   const formatDim = (val: number) => (val % 1 === 0 ? val.toString() : val.toFixed(1));
   // Format a raw mm value: up to 2 decimals, trailing zeros stripped (28, 30.59).
   const formatMmValue = (val: number) => String(Number(val.toFixed(2)));
-  const ceilingOverflow =
-    ceilingOverflowMm === null
-      ? ''
-      : measureUnit === 'mm'
-        ? formatMmValue(ceilingOverflowMm)
-        : formatLength(ceilingOverflowMm, measureUnit);
   const heightMmAt = (units: number, offsetMm = 0) =>
     formatMmValue(units * layout.heightUnitMm + offsetMm);
   const minSize = halfGridMode ? 0.5 : 1;
@@ -342,7 +335,10 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             )}
             {ceilingOverflowMm !== null && (
               <div className="text-warning">
-                {t('drawerCeiling.binOverflow', { over: ceilingOverflow, unit: measureSymbol })}
+                {t('drawerCeiling.binOverflow', {
+                  over: formatMeasure(ceilingOverflowMm),
+                  unit: measureSymbol,
+                })}
               </div>
             )}
           </div>

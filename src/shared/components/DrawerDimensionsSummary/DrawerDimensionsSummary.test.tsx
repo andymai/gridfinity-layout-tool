@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { gridUnits } from '@/core/types';
 import { useSettingsStore } from '@/core/store';
@@ -24,6 +24,7 @@ describe('DrawerDimensionsSummary', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    useSettingsStore.getState().updateSetting('measureUnit', 'mm');
   });
 
   it('labels a size with no measurement behind it as the grid, and offers to add one', () => {
@@ -204,7 +205,7 @@ describe('DrawerDimensionsSummary', () => {
           ceiling={{ ceilingMm: 55, tallestMm: 0, slackMm: 55, fits: true, overflowing: [] }}
         />
       );
-      expect(screen.queryByText('Tallest stack fits, 55mm to spare')).not.toBeInTheDocument();
+      expect(screen.queryByText(/Tallest stack fits/)).not.toBeInTheDocument();
       expect(
         screen.queryByText('Add a height measurement to check the lid closes')
       ).not.toBeInTheDocument();
@@ -220,6 +221,17 @@ describe('DrawerDimensionsSummary', () => {
       expect(screen.getByText('Tallest stack fits, 8.7 mm to spare')).toBeInTheDocument();
     });
 
+    it('reports no negative headroom inside the fit tolerance', () => {
+      useSettingsStore.getState().updateSetting('measureUnit', 'in');
+      render(
+        <DrawerDimensionsSummary
+          {...defaultProps}
+          ceiling={ceiling({ fits: true, slackMm: -0.03 })}
+        />
+      );
+      expect(screen.getByText('Tallest stack fits, 0 in to spare')).toBeInTheDocument();
+    });
+
     // The reported failure: the app says the drawer is full, the print is proud
     // of it by the stacking lip, and the lid does not close.
     it('warns with the overshoot when the layout stands proud', () => {
@@ -230,16 +242,12 @@ describe('DrawerDimensionsSummary', () => {
         />
       );
       expect(
-        screen.getByText('Tallest stack stands 4.3 mm above your measured drawer')
+        screen.getByText('Tallest stack stands 4.25 mm above your measured drawer')
       ).toBeInTheDocument();
     });
   });
 
-  describe('in centimeters', () => {
-    afterEach(() => {
-      useSettingsStore.getState().updateSetting('measureUnit', 'mm');
-    });
-
+  describe('in centimeters and inches', () => {
     it('shows the grid, the measurement and the free space in centimeters', () => {
       useSettingsStore.getState().updateSetting('measureUnit', 'cm');
       render(<DrawerDimensionsSummary {...defaultProps} measuredMm={{ width: 430, depth: 350 }} />);

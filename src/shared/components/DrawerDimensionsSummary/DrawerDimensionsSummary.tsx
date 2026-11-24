@@ -6,12 +6,7 @@ import type { MeasuredDrawerMm } from '@/core/types';
 import type { DrawerFitSuggestion } from '@/shared/hooks/useDrawerSettings';
 import type { DrawerCeilingFit } from '@/shared/utils/drawerCeiling';
 import { useMeasureUnit } from '@/shared/hooks/useMeasureUnit';
-import { formatLength } from '@/shared/utils/lengthUnit';
-import type { LengthUnit } from '@/shared/utils/lengthUnit';
 import { EditableDimensions } from '../EditableDimensions';
-
-// Fine enough that any overflow past OVERFLOW_EPSILON_MM still reads as nonzero.
-const SUMMARY_DECIMALS: Readonly<Record<LengthUnit, number>> = { mm: 1, cm: 2, in: 3 };
 
 const OVERFLOW_EPSILON_MM = 0.05;
 
@@ -43,7 +38,7 @@ interface DrawerDimensionsSummaryProps {
 }
 
 /**
- * The drawer-size mm line in the settings panels: a click-to-edit measured
+ * The drawer-size line in the settings panels: a click-to-edit measured
  * size (same pattern as the baseplate panel), the derived grid fit + slack
  * beneath it, and a dismissible tighter-half-unit-fit suggestion. Without a
  * measurement it names the grid's own size and offers to add one, so a
@@ -68,8 +63,7 @@ export function DrawerDimensionsSummary({
   variant = 'desktop',
 }: DrawerDimensionsSummaryProps) {
   const t = useTranslation();
-  const { unit, symbol } = useMeasureUnit();
-  const fmt = (mm: number): string => formatLength(mm, unit, SUMMARY_DECIMALS[unit]);
+  const { unit, symbol, format: fmt, withUnit } = useMeasureUnit();
 
   const hasMeasurement = measuredMm !== undefined;
   const displayWidth = measuredMm?.width ?? gridWidthMm;
@@ -118,18 +112,9 @@ export function DrawerDimensionsSummary({
             onCommit={handleCommit}
             variant="secondary"
             aria-label={t('drawerDims.editAria')}
-            widthLabel={t('common.labelWithUnit', {
-              label: t('drawerDims.widthLabel'),
-              unit: symbol,
-            })}
-            depthLabel={t('common.labelWithUnit', {
-              label: t('drawerDims.depthLabel'),
-              unit: symbol,
-            })}
-            heightLabel={t('common.labelWithUnit', {
-              label: t('drawerDims.heightLabel'),
-              unit: symbol,
-            })}
+            widthLabel={withUnit(t('drawerDims.widthLabel'))}
+            depthLabel={withUnit(t('drawerDims.depthLabel'))}
+            heightLabel={withUnit(t('drawerDims.heightLabel'))}
             unit={unit}
             unitSymbol={symbol}
             initialEditing={adding && !hasMeasurement}
@@ -185,8 +170,8 @@ export function DrawerDimensionsSummary({
               unit: symbol,
               width: fmt(gridWidthMm),
               depth: fmt(gridDepthMm),
-              freeWidth: fmt(measuredMm.width - gridWidthMm),
-              freeDepth: fmt(measuredMm.depth - gridDepthMm),
+              freeWidth: fmt(Math.max(0, measuredMm.width - gridWidthMm)),
+              freeDepth: fmt(Math.max(0, measuredMm.depth - gridDepthMm)),
             })}
           </p>
         ))}
@@ -200,7 +185,7 @@ export function DrawerDimensionsSummary({
       ) : /* an empty layout has no stack to judge, so no fit claim */
       ceiling.tallestMm === 0 ? null : ceiling.fits ? (
         <p className="text-center text-micro text-content-tertiary tabular-nums">
-          {t('drawerCeiling.fits', { unit: symbol, slack: fmt(ceiling.slackMm) })}
+          {t('drawerCeiling.fits', { unit: symbol, slack: fmt(Math.max(0, ceiling.slackMm)) })}
         </p>
       ) : (
         <p className="text-center text-micro text-warning tabular-nums">

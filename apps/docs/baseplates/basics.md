@@ -47,7 +47,7 @@ Is the plate bigger than your print bed? Then a map of the pieces appears below 
 
 Need a plate of a different size? Turn off <Ui k="baseplate.syncWithLayout" />. The steppers unlock and start from the drawer size.
 
-Know your drawer in millimeters? Click the millimeter size under the steppers and type the width and depth. The Layout Tool then does three things:
+Know the size of your drawer? Click the plate size under the steppers and type the width and depth. The Layout Tool then does three things:
 
 1. It picks the largest grid that fits.
 2. It divides the leftover space equally into left and right padding, and into front and back padding.
@@ -65,7 +65,7 @@ The nine buttons in the middle move the grid inside the total margin. <Ui k="bas
 
 <Screenshot id="baseplates-basics-margins" alt="A plate with 8 mm of margin left and right and 6 mm back and front. A click on the front-left anchor button sets the left and front margins to 0, the right margin to 16 mm and the back margin to 12 mm. The grid then sits in the front-left corner of the plate." spec="Baseplate generator, layout with a 5 by 4 drawer, padding 8 mm left and right and 6 mm back and front. The plate in top view, then a close-up of the padding steppers where the front-left anchor button is clicked, then the plate again." />
 
-Did you enter the drawer size in millimeters in the layout editor? Then the panel compares the plate with that size. If the plate is too big, a warning shows the overlap and a <Ui k="baseplate.fitPaddingToDrawer" /> button. Click it to shrink the margins until the plate fits.
+Did you enter the measured drawer size in the layout editor? Then the panel compares the plate with that size. If the plate is too big, a warning shows the overlap and a <Ui k="baseplate.fitPaddingToDrawer" /> button. Click it to shrink the margins until the plate fits.
 
 <Screenshot id="baseplates-basics-fit-drawer" alt="Under the plate size, a warning says that the plate is 8 by 4 mm over the 218 by 176 mm drawer. A click on Fit padding to drawer removes the warning, and each padding stepper then shows 4 mm." spec="Baseplate generator, layout with a 5 by 4 drawer and a measured size of 218 by 176 mm, padding 8 mm left and right and 6 mm back and front. Close-up of the plate size, the warning and the button: click Fit padding to drawer. Cut to a close-up of the padding steppers." />
 
@@ -117,7 +117,7 @@ Want a clean start? Click <Ui k="baseplate.reset" /> at the bottom of the panel,
 
 Click <Ui k="baseplate.fitPaddingToDrawer" /> under the warning. It makes the margins smaller, but it can't make the grid smaller. Does the warning stay after the click, or is there no button? Then the grid alone is too big for the drawer. Make the grid smaller in the layout editor, or turn off <Ui k="baseplate.syncWithLayout" /> and lower the steppers.
 
-The panel compares the plate and its margins with the drawer size that you measured in the layout editor. The warning gives the overlap in millimeters.
+The panel compares the plate and its margins with the drawer size that you measured in the layout editor.
 
 ### An edge stays solid when you fill the margin with grid cells
 

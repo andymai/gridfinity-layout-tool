@@ -399,8 +399,7 @@ export function DimensionsSection() {
           </div>
         )}
 
-        {/* mm summary under steppers — matches the layout-mode drawer dimensions pattern.
-            The figure is the plate's real footprint, so a trailing note names whatever
+        {/* The figure is the plate's real footprint, so a trailing note names whatever
             put it past the bare cells: padding, the drawer shape, or both. */}
         <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 pt-1 text-content-tertiary">
           <div className="flex items-center gap-1">

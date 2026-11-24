@@ -127,9 +127,8 @@ export function EditableDimensions({
   );
 
   const commit = useCallback(() => {
-    // A field left as seeded keeps its exact mm. The seed is rounded to the
-    // field's precision, so converting it back would move a value the user
-    // never touched.
+    // A field unchanged at the shown precision keeps its exact mm: the seed is
+    // rounded, so converting it back would move a value the user did not edit.
     const read = (typed: string, current: number): number => {
       const mm = toMm(parseFloat(typed), unit);
       return show(mm) === show(current) ? current : mm;
@@ -140,36 +139,24 @@ export function EditableDimensions({
       stopEditing();
       return;
     }
-    const h = heightMm !== undefined ? read(localHeight, heightMm) : undefined;
-    // Opening the field and clicking away is not an edit. Committing it anyway
-    // ran the caller's snap-to-grid on values the user never typed, which on a
-    // baseplate synced to a shaped drawer dropped the sync and the shape.
-    // Compared as displayed rather than as typed, so a re-entry of the same
-    // measurement ("441.00" over "441") reads as the no-op it is; `show` is
-    // the precision the field shows, so anything it rounds away was never on
-    // screen to change.
-    const same = (typed: number, current: number): boolean => show(typed) === show(current);
-    if (
-      same(w, widthMm) &&
-      same(d, depthMm) &&
-      (heightMm === undefined || h === undefined || Number.isNaN(h) || same(h, heightMm))
-    ) {
+    const typedHeight = heightMm === undefined ? undefined : read(localHeight, heightMm);
+    const h = typedHeight === undefined || Number.isNaN(typedHeight) ? heightMm : typedHeight;
+    // Committing runs the caller's snap-to-grid, which can drop a baseplate's
+    // shape sync, so closing the field with no edit must not commit.
+    if (w === widthMm && d === depthMm && h === heightMm) {
       stopEditing();
       return;
     }
-    if (hasHeight) {
-      if (h !== undefined && !Number.isNaN(h)) {
-        onCommit(clamp(w), clamp(d), clampHeight(h));
-      }
-    } else {
+    if (h === undefined) {
       onCommit(clamp(w), clamp(d));
+    } else {
+      onCommit(clamp(w), clamp(d), clampHeight(h));
     }
     stopEditing();
   }, [
     localWidth,
     localDepth,
     localHeight,
-    hasHeight,
     unit,
     show,
     widthMm,
