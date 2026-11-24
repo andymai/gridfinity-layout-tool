@@ -1,0 +1,24 @@
+src/features/generation/worker/generators/labelTabBuilder.test.ts
+  s_88cfcc42bf5bfd::t_eb98612aa0545a 581-583
+src/features/generation/worker/generators/interiorFilletBuilder.ts
+  s_88cfcc42bf5bfd::t_46227b7e05a16d 27
+  s_88cfcc42bf5bfd::t_98412f7aab214e 268
+src/features/generation/worker/generators/interiorFilletScoop.ts
+  s_88cfcc42bf5bfd::t_98412f7aab214e 181,227
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "46fbcec06277019b25a0bdb0bd4f5522674c15eb",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
