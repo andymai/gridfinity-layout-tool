@@ -16,6 +16,7 @@ import {
 
 export function ConnectorSampleButton() {
   const t = useTranslation();
+  const fitLabel = t('baseplate.connectorFit.label');
   const sample = useConnectorSampleExport();
   return (
     <SampleExportButton
@@ -24,7 +25,7 @@ export function ConnectorSampleButton() {
       label={t('baseplate.connectorSample.button')}
       leftIcon={<LayoutGridIcon className="h-4 w-4" />}
       dialogTitle={t('baseplate.connectorSample.dialogTitle')}
-      dialogDescription={t('baseplate.connectorSample.dialogDescription')}
+      dialogDescription={t('baseplate.connectorSample.dialogDescription', { fitLabel })}
       exportCompleteMessage={t('baseplate.connectorSample.exportComplete')}
       tips={{
         title: t('baseplate.connectorSample.tipsTitle'),
@@ -32,7 +33,7 @@ export function ConnectorSampleButton() {
           t('baseplate.connectorSample.tip1'),
           t('baseplate.connectorSample.tip2'),
           t('baseplate.connectorSample.tip3'),
-          t('baseplate.connectorSample.tip4'),
+          t('baseplate.connectorSample.tip4', { fitLabel }),
         ],
       }}
     />

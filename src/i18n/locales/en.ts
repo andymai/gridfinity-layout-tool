@@ -5046,7 +5046,7 @@ const en: Record<string, string> = {
   'baseplate.screwHoles.label': 'Screw down',
   'baseplate.screwHoles.summary': 'ø{diameter}mm, {count} per piece',
   'baseplate.screwHolesDetail':
-    'Vertical holes to fasten the plate to a drawer bottom, bench or wall. They sit in the solid drawer-fit padding where it is wide enough, or where four pockets meet when the head fits there. Otherwise they go in the pocket floor, which makes the plate slightly taller.',
+    'Optional: a plate holds its bins without screws. Vertical holes to fasten the plate to a drawer bottom, bench or wall. They sit in the solid drawer-fit padding where it is wide enough, or where four pockets meet when the head fits there. Otherwise they go in the pocket floor, which makes the plate slightly taller.',
   'baseplate.screwHoles.diameter.label': 'Hole diameter',
   'baseplate.screwHoles.diameterDetail':
     'Clearance for the screw shaft, not a pilot hole: 3.4mm passes an M3. A hole that bites into the threads holds the plate off the surface instead of pulling it down.',
@@ -5200,7 +5200,7 @@ const en: Record<string, string> = {
   'baseplate.connectorDesc.snapClip': 'Snap-in seam clip',
   'baseplate.connectorFit.label': 'Tolerance',
   'baseplate.connectorFit.info':
-    'Adjusts the connector gap (mm) to tune fit for your printer and filament. Higher = looser, lower = tighter.',
+    'Adjusts the connector gap (mm) to tune fit for your printer and filament. Higher = looser, lower = tighter. After a fit test, enter the value printed on the piece that fit best.',
   'baseplate.dovetails.invert': 'Invert connectors',
   'baseplate.connectorSlotsAllEdges': 'Slots on all edges',
   'baseplate.connectorSlotsAllEdgesDetail':
@@ -5209,14 +5209,14 @@ const en: Record<string, string> = {
   'baseplate.connectorSample.button': 'Print fit test',
   'baseplate.connectorSample.dialogTitle': 'Connector fit sample',
   'baseplate.connectorSample.dialogDescription':
-    'A small calibration print of the selected connector style across a range of fit offsets. Print it, find the fit that clicks, then set Connector fit to that value before printing the full baseplate.',
+    'A small calibration print of the selected connector style across a range of fit offsets. Print it, find the piece that clicks, then set {fitLabel} to the value printed on it before you print the full baseplate.',
   'baseplate.connectorSample.tipsTitle': 'Print tips',
   'baseplate.connectorSample.tip1': 'Print flat with no supports.',
   'baseplate.connectorSample.tip2':
     "Use the same printer, filament, and nozzle you'll print the baseplate with.",
   'baseplate.connectorSample.tip3':
     'Each coupon is embossed with its fit offset; the whole tray is one connector style.',
-  'baseplate.connectorSample.tip4': 'Found the right fit? Set Connector fit to that offset.',
+  'baseplate.connectorSample.tip4': 'Found the right fit? Set {fitLabel} to that offset.',
   'baseplate.connectorSample.exportComplete': 'Fit sample exported',
   'baseplate.connectorSample.exportFailed': 'Connector fit sample export failed',
   'baseplate.cornerRadius': 'Corner radius',
