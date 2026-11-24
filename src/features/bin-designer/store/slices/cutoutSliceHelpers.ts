@@ -344,7 +344,7 @@ export function copyWholeToolSets(
   const copiedIds = new Set(copied.map((c) => c.id));
   const next = { ...sets };
   for (const [from, to] of groupMap) {
-    if (!(from in sets)) continue;
+    if (!Object.hasOwn(sets, from)) continue;
     const members = state.params.cutouts.filter((c) => c.parentGroups?.includes(from) === true);
     if (members.length === 0 || !members.every((c) => copiedIds.has(c.id))) continue;
     next[to] = sets[from];

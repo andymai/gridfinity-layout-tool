@@ -103,6 +103,11 @@ describe('withLegacyToolSetParts', () => {
     expect(out.map((c) => c.toolSetPart)).toEqual(['pocket:#0', 'pocket:#1']);
   });
 
+  it('loads a design whose groups use inherited property names', () => {
+    const crafted = [at('a', 'path', { parentGroups: ['constructor'] })];
+    expect(withLegacyToolSetParts(crafted, { g1: metric })).toBe(crafted);
+  });
+
   it('leaves cutouts outside a set, and designs without sets, as they are', () => {
     const loose = [at('a', 'path', { parentGroups: ['other'] })];
     expect(withLegacyToolSetParts(loose, { g1: metric })).toBe(loose);

@@ -2,6 +2,11 @@ import type { BinParams, Cutout, ToolSetSpec } from '../types';
 
 type ToolSets = Readonly<Record<string, ToolSetSpec>> | undefined;
 
+/** `hasOwn`, not `in`: a group id like "constructor" must not name a set. */
+function isSetIn(sets: ToolSets, id: string): boolean {
+  return sets !== undefined && Object.hasOwn(sets, id);
+}
+
 function innermost(c: Cutout, isSet: (id: string) => boolean): string | null {
   const chain = c.parentGroups ?? [];
   for (let i = chain.length - 1; i >= 0; i--) if (isSet(chain[i])) return chain[i];
@@ -15,7 +20,7 @@ export function toolSetOf(cutouts: readonly Cutout[], sets: ToolSets): string | 
   const innermostFirst = [...(cutouts[0].parentGroups ?? [])].reverse();
   return (
     innermostFirst.find(
-      (id) => id in sets && cutouts.every((c) => c.parentGroups?.includes(id) === true)
+      (id) => isSetIn(sets, id) && cutouts.every((c) => c.parentGroups?.includes(id) === true)
     ) ?? null
   );
 }
@@ -27,7 +32,7 @@ export function toolSetOf(cutouts: readonly Cutout[], sets: ToolSets): string | 
  * replaces its parts.
  */
 export function partsOf(cutouts: readonly Cutout[], setId: string, sets: ToolSets): Cutout[] {
-  const isSet = (id: string): boolean => id === setId || (sets !== undefined && id in sets);
+  const isSet = (id: string): boolean => id === setId || isSetIn(sets, id);
   return cutouts.filter((c) => c.toolSetPart !== undefined && innermost(c, isSet) === setId);
 }
 
@@ -52,13 +57,12 @@ export function releaseMovedParts(
     if (c.toolSetPart !== undefined) owners.set(c.id, toolSetOf([c], base.cutoutToolSets));
   }
   if (owners.size === 0) return null;
-  const baseSets = base.cutoutToolSets ?? {};
   const moved = (c: Cutout): boolean => {
     const before = owners.get(c.id);
     if (c.toolSetPart === undefined || before === undefined) return false;
     const now = toolSetOf([c], after.cutoutToolSets);
     if (now === before) return false;
-    return before !== null || now === null || now in baseSets;
+    return before !== null || now === null || isSetIn(base.cutoutToolSets, now);
   };
   if (!after.cutouts.some(moved)) return null;
   return after.cutouts.map((c) => (moved(c) ? withoutPart(c) : c));

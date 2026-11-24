@@ -148,6 +148,9 @@ export function ToolSetDialog({ setId, onClose }: ToolSetDialogProps) {
             <p className="text-sm text-content-secondary">{t('binDesigner.toolSets.intro')}</p>
             <ExperimentalBadge />
           </div>
+          {editing && (
+            <p className="text-xs text-warning">{t('binDesigner.toolSets.rebuildWarning')}</p>
+          )}
 
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm font-medium text-content">
@@ -258,25 +261,26 @@ export function ToolSetDialog({ setId, onClose }: ToolSetDialogProps) {
           {preview?.channelDropped && (
             <p className="text-xs text-content-secondary">{t('binDesigner.toolSets.noChannel')}</p>
           )}
-          {blocker && blocker !== 'empty' && (
+        </div>
+      </Dialog.Body>
+      <Dialog.Footer
+        leading={
+          blocker && blocker !== 'empty' ? (
             <p role="alert" className="text-xs text-error">
               {t(
                 blocker === 'locked' ? 'binDesigner.toolSets.locked' : 'binDesigner.toolSets.noRoom'
               )}
             </p>
-          )}
-          {editing && (
-            <p className="text-xs text-warning">{t('binDesigner.toolSets.rebuildWarning')}</p>
-          )}
-        </div>
-      </Dialog.Body>
-      <Dialog.Footer>
-        <Button type="button" variant="ghost" onClick={onClose}>
+          ) : undefined
+        }
+      >
+        <Button type="button" variant="ghost" className="shrink-0" onClick={onClose}>
           {t('common.cancel')}
         </Button>
         <Button
           type="button"
           variant="primary"
+          className="shrink-0"
           onClick={submit}
           disabled={!preview || blocker !== null}
         >

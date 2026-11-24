@@ -39,6 +39,13 @@ describe('toolSetOf', () => {
     expect(toolSetOf([], sets)).toBeNull();
   });
 
+  it('never takes an inherited property name for a set', () => {
+    for (const id of ['constructor', 'toString', '__proto__']) {
+      expect(toolSetOf([shape('a', [id])], { g1: spec })).toBeNull();
+      expect(partsOf([shape('a', [id], 'channel')], 'g1', { g1: spec })).toEqual([]);
+    }
+  });
+
   it('picks the innermost set when one set sits inside another', () => {
     const sets = { outer: spec, inner: spec };
     expect(toolSetOf([shape('a', ['outer', 'inner'])], sets)).toBe('inner');
