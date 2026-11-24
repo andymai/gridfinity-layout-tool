@@ -249,6 +249,16 @@ describe('DrawerDimensionsSummary', () => {
       ).toHaveTextContent(/43\s*×\s*35\s*×\s*8\.4\s*cm/);
     });
 
+    it('keeps a small overflow in inches from rounding to zero', () => {
+      useSettingsStore.getState().updateSetting('measureUnit', 'in');
+      render(
+        <DrawerDimensionsSummary {...defaultProps} measuredMm={{ width: 419.9128, depth: 336 }} />
+      );
+      expect(
+        screen.getByText(/Grid exceeds your measured drawer by 0\.003 × 0 in/)
+      ).toBeInTheDocument();
+    });
+
     it('commits a size typed in centimeters as millimeters', () => {
       useSettingsStore.getState().updateSetting('measureUnit', 'cm');
       render(<DrawerDimensionsSummary {...defaultProps} measuredMm={{ width: 430, depth: 350 }} />);

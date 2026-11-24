@@ -105,7 +105,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
       ? ''
       : measureUnit === 'mm'
         ? formatMmValue(ceilingOverflowMm)
-        : formatLength(ceilingOverflowMm, measureUnit, 2);
+        : formatLength(ceilingOverflowMm, measureUnit);
   const heightMmAt = (units: number, offsetMm = 0) =>
     formatMmValue(units * layout.heightUnitMm + offsetMm);
   const minSize = halfGridMode ? 0.5 : 1;

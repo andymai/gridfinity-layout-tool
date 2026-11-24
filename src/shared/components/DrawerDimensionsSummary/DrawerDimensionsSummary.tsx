@@ -10,7 +10,8 @@ import { formatLength } from '@/shared/utils/lengthUnit';
 import type { LengthUnit } from '@/shared/utils/lengthUnit';
 import { EditableDimensions } from '../EditableDimensions';
 
-const SUMMARY_DECIMALS: Readonly<Record<LengthUnit, number>> = { mm: 1, cm: 2, in: 2 };
+// Fine enough that any overflow past OVERFLOW_EPSILON_MM still reads as nonzero.
+const SUMMARY_DECIMALS: Readonly<Record<LengthUnit, number>> = { mm: 1, cm: 2, in: 3 };
 
 const OVERFLOW_EPSILON_MM = 0.05;
 
