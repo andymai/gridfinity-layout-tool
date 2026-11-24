@@ -90,7 +90,11 @@ import {
   migrateLidCutouts,
   migrateKnifeRest,
 } from './paramMigrationCutouts';
-import { migrateCutoutToolSets, migrateToolSetParts } from './paramMigrationToolSets';
+import {
+  migrateCutoutToolSets,
+  migrateToolSetParts,
+  withoutLidParts,
+} from './paramMigrationToolSets';
 import type { LegacyCutoutFields } from './paramMigrationCutouts';
 import { migrateSurfaceText, migrateWallLabelSlots } from './paramMigrationText';
 import {
@@ -568,7 +572,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         hinge: migrateHinge(rawHinge),
         // Spread `undefined` deliberately: the key is present-but-undefined here,
         // which `stableStringify` and `JSON.stringify` both drop.
-        cutouts: migratedLidCutouts,
+        cutouts: withoutLidParts(migratedLidCutouts),
       };
     })(),
     ...(params.splitConnectors !== undefined

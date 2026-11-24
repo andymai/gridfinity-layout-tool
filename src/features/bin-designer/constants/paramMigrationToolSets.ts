@@ -93,12 +93,20 @@ function cleanPart(part: unknown): boolean {
   );
 }
 
+/** The innermost id in a cutout's chain that `isSet` accepts, or null. */
+function innermostOf(c: Cutout, isSet: (id: string) => boolean): string | null {
+  const chain = c.parentGroups ?? [];
+  for (let i = chain.length - 1; i >= 0; i--) if (isSet(chain[i])) return chain[i];
+  return null;
+}
+
 /**
- * The parts of a loaded design, made consistent with its recipes:
- * - a part the server would refuse is dropped;
- * - a set whose recipe this load dropped (unreadable) loses its parts, so an
- *   enclosing set cannot claim them;
- * - a set saved before cutouts carried a part gets them, so Edit set replaces
+ * The parts of a loaded design, made consistent with its recipes. Ownership is
+ * read from the saved recipes, so a set whose recipe this load drops
+ * (unreadable) neither takes nor gives parts to a set around or inside it.
+ * - A part the server would refuse is dropped.
+ * - A part whose saved set lost its recipe is dropped.
+ * - A set saved before cutouts carried a part gets them, so Edit set replaces
  *   its pockets rather than adding a second set. Since the editor drops the
  *   recipe of a set whose last part goes, a recipe whose members have no part
  *   can only be such a set. Pockets take their sizes in the order the
@@ -111,27 +119,37 @@ export function migrateToolSetParts(
   sets: Readonly<Record<string, ToolSetSpec>> | undefined,
   rawSets: unknown
 ): Cutout[] {
-  const dropped = new Set(
-    isRecord(rawSets) ? Object.keys(rawSets).filter((id) => !sets || !Object.hasOwn(sets, id)) : []
-  );
-  const kept = (c: Cutout): boolean =>
-    cleanPart(c.toolSetPart) && !(c.parentGroups ?? []).some((id) => dropped.has(id));
-  const stray = (c: Cutout): boolean => c.toolSetPart !== undefined && !kept(c);
+  const saved = isRecord(rawSets) ? rawSets : {};
+  const savedOwner = (c: Cutout): string | null => innermostOf(c, (id) => Object.hasOwn(saved, id));
+  const live = (id: string | null): boolean =>
+    id !== null && sets !== undefined && Object.hasOwn(sets, id);
+  const stray = (c: Cutout): boolean => {
+    if (c.toolSetPart === undefined) return false;
+    const owner = savedOwner(c);
+    return !cleanPart(c.toolSetPart) || (owner !== null && !live(owner));
+  };
   const cleaned = cutouts.some(stray)
     ? cutouts.map((c) => (stray(c) ? withoutPart(c) : c))
     : cutouts;
-  return withLegacyParts(cleaned, sets);
+  return withLegacyParts(cleaned, sets, (c) => live(savedOwner(c)));
+}
+
+/** Drops every part from lid cutouts: sets are bin-only, so a lid part means nothing. */
+export function withoutLidParts(cutouts: Cutout[] | undefined): Cutout[] | undefined {
+  if (!cutouts?.some((c) => c.toolSetPart !== undefined)) return cutouts;
+  return cutouts.map((c) => (c.toolSetPart === undefined ? c : withoutPart(c)));
 }
 
 function withLegacyParts(
   cutouts: Cutout[],
-  sets: Readonly<Record<string, ToolSetSpec>> | undefined
+  sets: Readonly<Record<string, ToolSetSpec>> | undefined,
+  ownedAsSaved: (c: Cutout) => boolean
 ): Cutout[] {
   if (!sets) return cutouts;
   const members = new Map<string, Cutout[]>();
   for (const c of cutouts) {
     const owner = toolSetOf([c], sets);
-    if (owner !== null) members.set(owner, [...(members.get(owner) ?? []), c]);
+    if (owner !== null && ownedAsSaved(c)) members.set(owner, [...(members.get(owner) ?? []), c]);
   }
   const parts = new Map<string, ToolSetPart>();
   for (const [setId, list] of members) {

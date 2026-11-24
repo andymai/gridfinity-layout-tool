@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { Cutout, ToolSetSpec } from '@/features/bin-designer/types';
-import { migrateCutoutToolSets, migrateToolSetParts } from './paramMigrationToolSets';
+import {
+  migrateCutoutToolSets,
+  migrateToolSetParts,
+  withoutLidParts,
+} from './paramMigrationToolSets';
 
 const spec = {
   family: 'combinationWrench',
@@ -123,6 +127,21 @@ describe('migrateToolSetParts', () => {
     expect(out.map((c) => c.toolSetPart)).toEqual(['pocket:8', undefined]);
   });
 
+  it('keeps a valid inner set whole when the recipe around it is dropped', () => {
+    const cutouts = [
+      at('p8', 'path', { parentGroups: ['g0', 'g1'], toolSetPart: 'pocket:8' }),
+      at('note', 'text', { parentGroups: ['g0', 'g1'], label: 'Spares' }),
+    ];
+    const out = migrateToolSetParts(cutouts, sets, { g0: { family: 'hammer' }, g1: metric });
+    expect(out).toBe(cutouts);
+  });
+
+  it('keeps the pockets of a dropped inner set out of a first-release outer set', () => {
+    const cutouts = [at('outer', 'path'), at('inner', 'path', { parentGroups: ['g1', 'g2'] })];
+    const out = migrateToolSetParts(cutouts, sets, { g1: metric, g2: { family: 'hammer' } });
+    expect(out.map((c) => c.toolSetPart)).toEqual(['pocket:#0', undefined]);
+  });
+
   it('loads a design whose groups use inherited property names', () => {
     const crafted = [at('a', 'path', { parentGroups: ['constructor'] })];
     expect(migrateToolSetParts(crafted, sets, sets)).toBe(crafted);
@@ -132,5 +151,28 @@ describe('migrateToolSetParts', () => {
     const loose = [at('a', 'path', { parentGroups: ['other'] })];
     expect(migrateToolSetParts(loose, sets, sets)).toBe(loose);
     expect(migrateToolSetParts(loose, undefined, undefined)).toBe(loose);
+  });
+});
+
+describe('withoutLidParts', () => {
+  it('drops every part from lid cutouts, since sets are bin-only', () => {
+    const lid: Cutout[] = [
+      {
+        id: 'a',
+        shape: 'path',
+        x: 0,
+        y: 0,
+        width: 10,
+        depth: 10,
+        cutDepth: 5,
+        rotation: 0,
+        cornerRadius: 0,
+        label: '',
+        groupId: null,
+        toolSetPart: 'pocket:13\n',
+      },
+    ];
+    expect(withoutLidParts(lid)?.[0].toolSetPart).toBeUndefined();
+    expect(withoutLidParts(undefined)).toBeUndefined();
   });
 });
