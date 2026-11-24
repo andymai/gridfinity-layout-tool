@@ -1142,6 +1142,8 @@
   "binDesigner.toolSets.overBed": "使用该套装后，收纳盒比打印平台大，因此会分块打印。",
   "binDesigner.toolSets.overBedWhole": "使用该套装后，收纳盒比打印平台大。",
   "binDesigner.toolSets.noRoom": "该套装放不进这个收纳盒。请去掉一些尺寸，或在盒中腾出空间。",
+  "binDesigner.toolSets.locked": "请先解锁该套装的凹槽，再编辑套装。",
+  "binDesigner.toolSets.noChannel": "手柄没有排成一线，因此该套装没有指槽。",
   "binDesigner.cutouts.scanImport.unavailable": "手机扫描目前不可用。请改为上传描摹好的轮廓。",
   "binDesigner.cutouts.scanImport.upload": "上传轮廓（SVG）",
   "binDesigner.cutouts.scanImport.waiting": "正在等待你的照片…",

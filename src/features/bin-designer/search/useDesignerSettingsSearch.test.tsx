@@ -1,10 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useDesignerSettingsSearch } from './useDesignerSettingsSearch';
-import {
-  DESIGNER_CONTROL_SEARCH,
-  type ControlAvailabilityContext,
-} from './designerControlRegistry';
+import { DESIGNER_CONTROL_SEARCH } from './designerControlRegistry';
+import type { ControlAvailabilityContext } from './controlAvailability';
 
 const allAvailable: ControlAvailabilityContext = {
   style: 'standard',
@@ -13,6 +11,7 @@ const allAvailable: ControlAvailabilityContext = {
   viewMode: 'rail',
   slideTrayEnabled: true,
   scanAvailable: true,
+  toolSetAvailable: true,
 };
 
 const restricted: ControlAvailabilityContext = {
@@ -22,6 +21,7 @@ const restricted: ControlAvailabilityContext = {
   viewMode: 'scroll',
   slideTrayEnabled: false,
   scanAvailable: false,
+  toolSetAvailable: false,
 };
 
 const ids = (results: { controlId: string }[]) => results.map((r) => r.controlId);

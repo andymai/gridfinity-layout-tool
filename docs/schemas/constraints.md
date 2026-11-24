@@ -115,6 +115,7 @@ bounded at 0 and 100, fractions at 0 and 1, and counts at 1.
 | `clearanceMm.min`  | `0`   | `ToolSetSpec.clearanceMm` (minimum) |
 | `labelSizeMm.max`  | `12`  | `ToolSetSpec.labelSizeMm` (maximum) |
 | `labelSizeMm.min`  | `0`   | `ToolSetSpec.labelSizeMm` (minimum) |
+| `maxPartLength`    | `32`  | `Cutout.toolSetPart` (maxLength)    |
 | `maxSizeKeyLength` | `12`  | `ToolSetSpec.sizes` (maxLength)     |
 | `maxSizes`         | `30`  | `ToolSetSpec.sizes` (maxItems)      |
 

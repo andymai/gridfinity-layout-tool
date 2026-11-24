@@ -90,7 +90,11 @@ import {
   migrateLidCutouts,
   migrateKnifeRest,
 } from './paramMigrationCutouts';
-import { migrateCutoutToolSets } from './paramMigrationToolSets';
+import {
+  migrateCutoutToolSets,
+  migrateToolSetParts,
+  withoutLidParts,
+} from './paramMigrationToolSets';
 import type { LegacyCutoutFields } from './paramMigrationCutouts';
 import { migrateSurfaceText, migrateWallLabelSlots } from './paramMigrationText';
 import {
@@ -463,6 +467,9 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   const migratedLidCutouts = migrateLidCutouts(
     (params.lid as { cutouts?: unknown } | undefined)?.cutouts
   );
+  const referencedGroups = referencedGroupIds(migratedCutouts, migratedLidCutouts ?? []);
+  const migratedGroupNames = migrateCutoutGroupNames(params.cutoutGroupNames, referencedGroups);
+  const migratedToolSets = migrateCutoutToolSets(params.cutoutToolSets, referencedGroups);
   const referencedMeshIds = new Set(
     migratedCutouts.filter((c) => c.shape === 'mesh').map((c) => c.meshId)
   );
@@ -487,18 +494,12 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     slotConfig,
     dividerPieces,
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
-    cutouts: migratedCutouts,
+    cutouts: migrateToolSetParts(migratedCutouts, migratedToolSets, params.cutoutToolSets),
     ...(migratedMeshAssets && Object.keys(migratedMeshAssets).length > 0
       ? { meshAssets: migratedMeshAssets }
       : { meshAssets: undefined }),
-    cutoutGroupNames: migrateCutoutGroupNames(
-      params.cutoutGroupNames,
-      referencedGroupIds(migratedCutouts, migratedLidCutouts ?? [])
-    ),
-    cutoutToolSets: migrateCutoutToolSets(
-      params.cutoutToolSets,
-      referencedGroupIds(migratedCutouts, migratedLidCutouts ?? [])
-    ),
+    cutoutGroupNames: migratedGroupNames,
+    cutoutToolSets: migratedToolSets,
     cutoutConfig,
     wallPattern: wallPatternConfig,
     floorPattern: floorPatternConfig,
@@ -571,7 +572,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         hinge: migrateHinge(rawHinge),
         // Spread `undefined` deliberately: the key is present-but-undefined here,
         // which `stableStringify` and `JSON.stringify` both drop.
-        cutouts: migratedLidCutouts,
+        cutouts: withoutLidParts(migratedLidCutouts),
       };
     })(),
     ...(params.splitConnectors !== undefined

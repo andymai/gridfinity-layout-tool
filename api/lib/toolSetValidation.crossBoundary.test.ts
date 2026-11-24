@@ -11,7 +11,7 @@ import {
   TOOL_SET_LIMITS,
   TOOL_SET_STYLES,
   TOOL_UNITS,
-} from '@/features/bin-designer/types/toolSet';
+} from '@/shared/types/toolSet';
 import { MAX_CUTOUT_TOOL_SETS } from '@/features/bin-designer/constants/paramMigrationToolSets';
 
 describe('tool set bounds mirror the client', () => {
@@ -21,6 +21,7 @@ describe('tool set bounds mirror the client', () => {
     expect(TOOL_SET_CONSTRAINTS.STYLES).toEqual(TOOL_SET_STYLES);
     expect(TOOL_SET_CONSTRAINTS.MAX_SIZES).toBe(TOOL_SET_LIMITS.maxSizes);
     expect(TOOL_SET_CONSTRAINTS.MAX_SIZE_KEY_LENGTH).toBe(TOOL_SET_LIMITS.maxSizeKeyLength);
+    expect(TOOL_SET_CONSTRAINTS.MAX_PART_LENGTH).toBe(TOOL_SET_LIMITS.maxPartLength);
     expect(TOOL_SET_CONSTRAINTS.MIN_CLEARANCE_MM).toBe(TOOL_SET_LIMITS.clearanceMm.min);
     expect(TOOL_SET_CONSTRAINTS.MAX_CLEARANCE_MM).toBe(TOOL_SET_LIMITS.clearanceMm.max);
     expect(TOOL_SET_CONSTRAINTS.MIN_LABEL_MM).toBe(TOOL_SET_LIMITS.labelSizeMm.min);

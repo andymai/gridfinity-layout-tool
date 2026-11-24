@@ -41,3 +41,16 @@ export function startScan(source: ScanSource, { growBin = false, phone = false }
   if (phone) openPhoneScan(source);
   else openScanDialog(source, growBin);
 }
+
+/**
+ * Open the tool set dialog on the bin, switching the interior to Custom
+ * Cutouts first as {@link startScan} does. Desktop only: the dialog lives in
+ * the cut editor, which doesn't render below desktop.
+ */
+export function startToolSet(): void {
+  const { params, setParams, setInteriorCard, openToolSetDialog } = useDesignerStore.getState();
+  const next = asCustomCutouts(params);
+  if (next !== params) setParams(next);
+  setInteriorCard('solid');
+  openToolSetDialog(null);
+}

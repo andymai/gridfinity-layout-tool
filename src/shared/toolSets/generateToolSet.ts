@@ -1,11 +1,18 @@
 import type { Cutout, PathPoint } from '@/shared/types/bin';
-import type { ToolSetSpec } from '@/shared/types/toolSet';
 import { maxEntryChamfer } from '@/shared/types/bin';
+import { labelPart, pocketPart, type ToolSetPart, type ToolSetSpec } from '@/shared/types/toolSet';
 import { textElementFootprint } from '@/shared/utils/cutoutLabel';
-import { onSideB, toSplitFrame } from '@/shared/utils/cutoutSplit';
-import type { OutlineRing } from '@/shared/utils/cutoutOutline';
-import { sizeEntries, type ToolFamily, type WrenchSizeEntry } from './catalog';
-import { closerThan, nestHeadToTailCompact, placeRing, type NestPlacement } from './nestLayout';
+import { ringBounds, type OutlineRing } from '@/shared/utils/cutoutOutline';
+import { onSideB, toSplitFrame, type SplitPt } from '@/shared/utils/cutoutSplit';
+import { FINGER_WIDTH_MM } from '@/shared/utils/fingerAccess';
+import { sizeEntries, type ToolFamily, type WrenchSizeEntry, type WrenchTable } from './catalog';
+import {
+  closerThan,
+  nestHeadToTailCompact,
+  placeRing,
+  type NestPlacement,
+  type NestResult,
+} from './nestLayout';
 import { combinationWrenchOutline } from './wrenchOutline';
 
 /**
@@ -13,8 +20,6 @@ import { combinationWrenchOutline } from './wrenchOutline';
  * style, as for a text element the editor places.
  */
 const TEXT_CUT_DEPTH_MM = 5;
-/** As wide as the editor's own finger cut. */
-const CHANNEL_WIDTH_MM = 20;
 /** Plastic left between two pockets at the top surface, where they are widest. */
 export const TOOL_SET_WALL_MM = 2;
 /**
@@ -25,9 +30,7 @@ export const TOOL_SET_WALL_MM = 2;
 export const TOOL_SET_ENTRY_MM = 0.6;
 /** Path points round to 0.01 mm, which must not eat into the wall. */
 const ROUNDING_MARGIN_MM = 0.05;
-/** Room kept around an engraved size. */
 const LABEL_GAP_MM = 1.5;
-/** A channel narrower than this has no room for a finger. */
 const MIN_CHANNEL_MM = 12;
 /** The channel stops this far above each pocket floor, as a finger cut does. */
 const CHANNEL_FLOOR_LIFT_MM = 1;
@@ -49,51 +52,33 @@ export interface GeneratedToolSet {
   readonly depth: number;
   /** The deepest pocket, so the caller can check the fill is deep enough. */
   readonly deepestCutMm: number;
+  /** A channel was asked for, but no layout leaves the handles a common stretch. */
+  readonly channelDropped: boolean;
 }
 
 interface GenerateOptions {
   readonly setId: string;
-  readonly idFactory: () => string;
+  /** The id for a part: a rebuild passes the old part's id back. */
+  readonly idFor: (part: ToolSetPart) => string;
   readonly names: ToolSetNames;
   /** The widest a set may be to stay on the print bed, when the bed is known. */
   readonly maxWidthMm?: number;
 }
 
-interface Row {
+interface Placed {
   readonly entry: WrenchSizeEntry;
-  readonly ring: OutlineRing;
   readonly placement: NestPlacement;
+}
+
+interface Row extends Placed {
   readonly placed: OutlineRing;
 }
 
 const round2 = (n: number): number => Math.round(n * 100) / 100;
 
-function boundsOf(rings: readonly OutlineRing[]): {
-  minX: number;
-  minY: number;
-  maxX: number;
-  maxY: number;
-} {
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-  for (const ring of rings) {
-    for (const [x, y] of ring) {
-      minX = Math.min(minX, x);
-      minY = Math.min(minY, y);
-      maxX = Math.max(maxX, x);
-      maxY = Math.max(maxY, y);
-    }
-  }
-  return { minX, minY, maxX, maxY };
-}
-
 /** Where a point at `x` along a wrench (box tip = 0) lands in the set frame. */
-function alongToSet(row: Row, x: number, y = 0): [number, number] {
-  const u = x - row.entry.lengthMm / 2;
-  const { cx, cy, flipped } = row.placement;
-  return flipped ? [cx - u, cy - y] : [cx + u, cy + y];
+function alongToSet(row: Placed, x: number, y = 0): [number, number] {
+  return placeRing([[x, y]], row.entry.lengthMm, row.placement)[0];
 }
 
 function rectRing(cx: number, cy: number, w: number, h: number): OutlineRing {
@@ -113,16 +98,17 @@ function pocketFor(row: Row, spec: ToolSetSpec, opts: GenerateOptions): Cutout {
     handleOut: null,
     symmetric: false,
   }));
-  const b = boundsOf([path.map((p): [number, number] => [p.x, p.y])]);
+  const bounds = ringBounds(path.map((p): [number, number] => [p.x, p.y]));
   const { entry } = row;
   const shallow = entry.openThicknessMm;
+  const part = pocketPart(entry.key);
   const pocket: Cutout = {
-    id: opts.idFactory(),
+    id: opts.idFor(part),
     shape: 'path',
-    x: b.minX,
-    y: b.minY,
-    width: b.maxX - b.minX,
-    depth: b.maxY - b.minY,
+    x: bounds.minX,
+    y: bounds.minY,
+    width: bounds.maxX - bounds.minX,
+    depth: bounds.maxY - bounds.minY,
     cutDepth: shallow,
     rotation: 0,
     cornerRadius: 0,
@@ -133,19 +119,21 @@ function pocketFor(row: Row, spec: ToolSetSpec, opts: GenerateOptions): Cutout {
     name: opts.names.pocket(entry.key),
     clearance: spec.clearanceMm,
     chamferWidth: Math.min(TOOL_SET_ENTRY_MM, maxEntryChamfer(shallow)),
+    toolSetPart: part,
   };
   if (entry.boxHeightMm <= shallow) return pocket;
 
   // The box end is the thicker part, so its well goes deeper and the wrench
   // lies level with its top flush.
+  const splitPoint = (x: number, y = 0): SplitPt => {
+    const [sx, sy] = alongToSet(row, x, y);
+    return toSplitFrame(pocket, sx, sy);
+  };
   const reach = entry.boxWidthMm * 2;
-  const [ax, ay] = alongToSet(row, entry.boxWidthMm, -reach);
-  const [bx, by] = alongToSet(row, entry.boxWidthMm, reach);
-  const a = toSplitFrame(pocket, ax, ay);
-  const bPt = toSplitFrame(pocket, bx, by);
-  const [boxX, boxY] = alongToSet(row, entry.boxWidthMm / 2);
-  const boxCentre = toSplitFrame(pocket, boxX, boxY);
-  const line = onSideB({ a, b: bPt }, boxCentre) ? { a, b: bPt } : { a: bPt, b: a };
+  const a = splitPoint(entry.boxWidthMm, -reach);
+  const b = splitPoint(entry.boxWidthMm, reach);
+  const boxCentre = splitPoint(entry.boxWidthMm / 2);
+  const line = onSideB({ a, b }, boxCentre) ? { a, b } : { a: b, b: a };
   return {
     ...pocket,
     split: {
@@ -156,8 +144,8 @@ function pocketFor(row: Row, spec: ToolSetSpec, opts: GenerateOptions): Cutout {
   };
 }
 
-/** The channel across every handle, or null when the heads leave no common stretch. */
-function channelFor(rows: readonly Row[], opts: GenerateOptions): Cutout | null {
+/** The stretch along x that every handle shares, clear of the heads, or null. */
+function commonHandleSpan(rows: readonly Placed[]): { lo: number; hi: number } | null {
   let lo = -Infinity;
   let hi = Infinity;
   for (const row of rows) {
@@ -168,21 +156,25 @@ function channelFor(rows: readonly Row[], opts: GenerateOptions): Cutout | null 
     lo = Math.max(lo, Math.min(x1, x2));
     hi = Math.min(hi, Math.max(x1, x2));
   }
-  const width = Math.min(CHANNEL_WIDTH_MM, hi - lo);
-  if (width < MIN_CHANNEL_MM) return null;
+  return hi - lo >= MIN_CHANNEL_MM ? { lo, hi } : null;
+}
 
-  const span = boundsOf(rows.map((r) => r.placed));
+function channelFor(rows: readonly Row[], opts: GenerateOptions): Cutout | null {
+  const span = commonHandleSpan(rows);
+  if (!span) return null;
+  const width = Math.min(FINGER_WIDTH_MM, span.hi - span.lo);
+  const extent = ringBounds(rows.flatMap((r) => r.placed));
   const depth = Math.max(
     MIN_CHANNEL_DEPTH_MM,
     Math.min(...rows.map((r) => r.entry.openThicknessMm)) - CHANNEL_FLOOR_LIFT_MM
   );
   return {
-    id: opts.idFactory(),
+    id: opts.idFor('channel'),
     shape: 'slot',
-    x: round2((lo + hi) / 2 - width / 2),
-    y: round2(span.minY),
+    x: round2((span.lo + span.hi) / 2 - width / 2),
+    y: round2(extent.minY),
     width: round2(width),
-    depth: round2(span.maxY - span.minY),
+    depth: round2(extent.maxY - extent.minY),
     cutDepth: depth,
     rotation: 0,
     cornerRadius: 0,
@@ -193,6 +185,7 @@ function channelFor(rows: readonly Row[], opts: GenerateOptions): Cutout | null 
     finger: { bottom: 'curved' },
     entryProfile: 'round',
     chamferWidth: Math.min(CHANNEL_ENTRY_MM, maxEntryChamfer(depth)),
+    toolSetPart: 'channel',
   };
 }
 
@@ -225,6 +218,66 @@ function labelSpot(
   );
 }
 
+const outlineCache = new WeakMap<WrenchSizeEntry, OutlineRing | null>();
+
+function outlineOf(entry: WrenchSizeEntry, jawAngleDeg: number): OutlineRing | null {
+  const cached = outlineCache.get(entry);
+  if (cached !== undefined) return cached;
+  const ring = combinationWrenchOutline({
+    lengthMm: entry.lengthMm,
+    openWidthMm: entry.openWidthMm,
+    boxWidthMm: entry.boxWidthMm,
+    shankWidthMm: entry.shankWidthMm,
+    jawAngleDeg,
+    minLengthMm: entry.minLengthMm,
+  });
+  outlineCache.set(entry, ring);
+  return ring;
+}
+
+/**
+ * The layout search is most of a set's cost, and the dialog asks again on every
+ * change, most of which (engraving, the channel) cannot move a pocket. Keyed
+ * per table, so a test table never reads a real one's layout.
+ */
+const nestCache = new WeakMap<WrenchTable, Map<string, NestResult>>();
+const NEST_CACHE_SIZE = 16;
+
+function nestOf(
+  table: WrenchTable,
+  outlines: readonly { readonly entry: WrenchSizeEntry; readonly ring: OutlineRing }[],
+  gap: number,
+  maxWidthMm: number,
+  wantsChannel: boolean
+): NestResult {
+  const keys = outlines.map((o) => o.entry.key).join(',');
+  const key = `${keys}|${gap}|${maxWidthMm}|${wantsChannel}`;
+  let byKey = nestCache.get(table);
+  if (!byKey) {
+    byKey = new Map();
+    nestCache.set(table, byKey);
+  }
+  const hit = byKey.get(key);
+  if (hit) return hit;
+  const nest = nestHeadToTailCompact(
+    outlines.map((o) => ({ ring: o.ring, length: o.entry.lengthMm })),
+    gap,
+    maxWidthMm,
+    wantsChannel
+      ? (r) =>
+          commonHandleSpan(
+            outlines.map((o, i) => ({ entry: o.entry, placement: r.placements[i] }))
+          ) !== null
+      : undefined
+  );
+  if (byKey.size >= NEST_CACHE_SIZE) {
+    const oldest = byKey.keys().next().value;
+    if (oldest !== undefined) byKey.delete(oldest);
+  }
+  byKey.set(key, nest);
+  return nest;
+}
+
 /**
  * The cutouts for one tool set: a shaped pocket per tool nested head to tail,
  * an engraved size beside each, and a finger channel across the handles. Null
@@ -235,30 +288,32 @@ export function generateToolSet(
   family: ToolFamily,
   opts: GenerateOptions
 ): GeneratedToolSet | null {
-  const entries = sizeEntries(family, spec.units, spec.sizes);
-  const outlines = entries.flatMap((entry) => {
-    const outline = combinationWrenchOutline({
-      lengthMm: entry.lengthMm,
-      openWidthMm: entry.openWidthMm,
-      boxWidthMm: entry.boxWidthMm,
-      shankWidthMm: entry.shankWidthMm,
-      jawAngleDeg: family.table.jawAngleDeg,
-      minLengthMm: entry.minLengthMm,
-    });
-    return outline ? [{ entry, ring: outline.ring }] : [];
+  const outlines = sizeEntries(family, spec.units, spec.sizes).flatMap((entry) => {
+    const ring = outlineOf(entry, family.table.jawAngleDeg);
+    return ring ? [{ entry, ring }] : [];
   });
   if (outlines.length === 0) return null;
 
   const flare = spec.clearanceMm + TOOL_SET_ENTRY_MM;
   const gap = TOOL_SET_WALL_MM + 2 * flare + ROUNDING_MARGIN_MM;
-  const nest = nestHeadToTailCompact(
-    outlines.map((o) => ({ ring: o.ring, length: o.entry.lengthMm })),
+  const labelGap = LABEL_GAP_MM + flare;
+  // Sizes past the box tips widen the set after the layout is chosen, on
+  // either side, so the bed limit the layout sees leaves room for them.
+  const widestLabel = Math.max(
+    0,
+    ...outlines.map((o) => textElementFootprint(o.entry.key, spec.labelSizeMm).width)
+  );
+  const labelRoom = spec.labelSizeMm > 0 ? 2 * (widestLabel + labelGap) : 0;
+  const nest = nestOf(
+    family.table,
+    outlines,
     gap,
-    opts.maxWidthMm
+    (opts.maxWidthMm ?? Infinity) - labelRoom,
+    spec.fingerChannel
   );
   const rows: Row[] = outlines.map((o, i) => {
     const placement = nest.placements[i];
-    return { ...o, placement, placed: placeRing(o.ring, o.entry.lengthMm, placement) };
+    return { entry: o.entry, placement, placed: placeRing(o.ring, o.entry.lengthMm, placement) };
   });
 
   const pockets = rows.map((row) => pocketFor(row, spec, opts));
@@ -280,14 +335,15 @@ export function generateToolSet(
     rows.forEach((row, i) => {
       const caption = row.entry.key;
       const size = textElementFootprint(caption, spec.labelSizeMm);
-      const spot = labelSpot(row, size, blockers, LABEL_GAP_MM + flare);
+      const spot = labelSpot(row, size, blockers, labelGap);
       if (!spot) {
         pockets[i] = { ...pockets[i], label: caption, engraveLabel: true, textAnchor: 'center' };
         return;
       }
       const [cx, cy] = spot;
+      const part = labelPart(caption);
       labels.push({
-        id: opts.idFactory(),
+        id: opts.idFor(part),
         shape: 'text',
         x: round2(cx - size.width / 2),
         y: round2(cy - size.depth / 2),
@@ -302,34 +358,41 @@ export function generateToolSet(
         engraveLabel: true,
         textAnchor: 'center',
         textStyle: { sizeMode: 'fixed', fixedSize: spec.labelSizeMm },
+        toolSetPart: part,
       });
       blockers.push(rectRing(cx, cy, size.width, size.depth));
     });
   }
 
   const all = [...pockets, ...(channel ? [channel] : []), ...labels];
-  const b = boundsOf(
-    all.map((c) => [
-      [c.x - (c.clearance ?? 0), c.y - (c.clearance ?? 0)],
-      [c.x + c.width + (c.clearance ?? 0), c.y + c.depth + (c.clearance ?? 0)],
-    ])
+  const b = ringBounds(
+    all.flatMap((c): OutlineRing => {
+      const pad = c.clearance ?? 0;
+      return [
+        [c.x - pad, c.y - pad],
+        [c.x + c.width + pad, c.y + c.depth + pad],
+      ];
+    })
   );
-  const shifted = all.map((c) => shiftCutout(c, -b.minX, -b.minY));
   return {
-    cutouts: shifted,
+    cutouts: all.map((c) => shiftCutout(c, -b.minX, -b.minY)),
     width: b.maxX - b.minX,
     depth: b.maxY - b.minY,
-    deepestCutMm: Math.max(...entries.map((e) => Math.max(e.boxHeightMm, e.openThicknessMm))),
+    deepestCutMm: Math.max(
+      ...rows.map(({ entry }) => Math.max(entry.boxHeightMm, entry.openThicknessMm))
+    ),
+    channelDropped: spec.fingerChannel && channel === null,
   };
 }
 
+/** Moves a cutout and its path, rounded to 0.01 mm as the generator writes it. */
 export function shiftCutout(c: Cutout, dx: number, dy: number): Cutout {
+  const move = (p: PathPoint): PathPoint => ({ ...p, x: round2(p.x + dx), y: round2(p.y + dy) });
   return {
     ...c,
     x: round2(c.x + dx),
     y: round2(c.y + dy),
-    ...(c.path
-      ? { path: c.path.map((p) => ({ ...p, x: round2(p.x + dx), y: round2(p.y + dy) })) }
-      : {}),
+    ...(c.path ? { path: c.path.map(move) } : {}),
+    ...(c.holes ? { holes: c.holes.map((ring) => ring.map(move)) } : {}),
   };
 }

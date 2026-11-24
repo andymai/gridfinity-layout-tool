@@ -5,6 +5,8 @@
  * alignment toolbar, context menu) around the reusable CutoutCanvas3D WebGL canvas.
  */
 
+import { useMemo } from 'react';
+import { useTranslation } from '@/i18n';
 import { useCutoutSelection } from '@/features/bin-designer/store';
 import { GroupBreadcrumb } from '../../CutoutWorkspace/GroupBreadcrumb';
 import { CutoutCanvas3D } from './renderer';
@@ -19,6 +21,7 @@ import { CutoutEmptyState } from './CutoutEmptyState';
 import { showsEmptyBoardHint } from './cutoutSectionVisibility';
 import { CutoutFillControls } from '@/features/bin-designer/components/controls';
 import { useCutoutEditor } from './useCutoutEditor';
+import { groupDisplayNames } from './toolSets/toolSetName';
 import { CANVAS_WIDTH } from './useCutoutEditor';
 
 export function CutoutEditor() {
@@ -86,6 +89,11 @@ export function CutoutEditor() {
     selectedIds,
     contextMenuActions,
   } = useCutoutEditor();
+  const t = useTranslation();
+  const groupNames = useMemo(
+    () => groupDisplayNames(params.cutoutGroupNames, params.cutoutToolSets, t),
+    [params.cutoutGroupNames, params.cutoutToolSets, t]
+  );
 
   return (
     <div className="space-y-3 select-none">
@@ -127,7 +135,7 @@ export function CutoutEditor() {
           nothing at the top, which is the usual case. */}
       <GroupBreadcrumb
         cutouts={cutouts}
-        groupNames={params.cutoutGroupNames}
+        groupNames={groupNames}
         context={groupContext}
         onNavigate={useCutoutSelection.getState().setGroupContext}
       />

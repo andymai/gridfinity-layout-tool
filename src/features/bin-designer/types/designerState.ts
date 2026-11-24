@@ -403,6 +403,11 @@ export interface DesignerState {
   updateCutoutsBatch: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
   removeCutoutsBatch: (ids: readonly string[]) => void;
   /**
+   * Remove `removeIds` and add `add` in one step, so a rebuilt shape can reuse
+   * its old id and no metadata sweep runs in between.
+   */
+  replaceCutouts: (removeIds: readonly string[], add: readonly Cutout[]) => void;
+  /**
    * Copy the recipe of every tool set copied whole by a paste or duplicate, as
    * `[originalId, cloneId]` pairs. Editor metadata: no undo entry of its own.
    */

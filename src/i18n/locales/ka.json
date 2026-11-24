@@ -3225,6 +3225,8 @@
   "binDesigner.toolSets.overBed": "ამ ნაკრებით ყუთი ბეჭდვის მაგიდაზე დიდია, ამიტომ ნაწილებად დაიბეჭდება.",
   "binDesigner.toolSets.overBedWhole": "ამ ნაკრებით ყუთი ბეჭდვის მაგიდაზე დიდია.",
   "binDesigner.toolSets.noRoom": "ნაკრები ამ ყუთში არ ეტევა. მოაშორეთ ზოგიერთი ზომა ან გაათავისუფლეთ ადგილი ყუთში.",
+  "binDesigner.toolSets.locked": "ნაკრების რედაქტირებისთვის განბლოკეთ მისი ბუდეები.",
+  "binDesigner.toolSets.noChannel": "სახელურები ერთ ხაზზე არ დგას, ამიტომ ნაკრებს ღარი თითებისთვის არ აქვს.",
   "binDesigner.cutouts.scanImport.buttonLabel": "სკანირება",
   "binDesigner.cutouts.scanImport.routePhone": "ტელეფონით",
   "binDesigner.cutouts.scanImport.routePhoneHelp": "დაასკანირეთ QR კოდი და ტელეფონით გადაუღეთ ხელსაწყოს.",

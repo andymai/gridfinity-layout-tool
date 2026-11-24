@@ -3,6 +3,7 @@
  * bezier path points, scoop edges, and the positioned {@link Cutout} instance.
  */
 
+import type { ToolSetPart } from '@/shared/types/toolSet';
 import type { CutoutTextSide, CutoutTextAnchor, CutoutTextOffset, TextStyleOverride } from './text';
 import type { LabelPlateIconId, LabelPlateWidthU } from '@/shared/constants/labelPlates';
 
@@ -781,6 +782,8 @@ export interface Cutout {
    * the item.
    */
   readonly libraryItemId?: string;
+  /** The tool set part this cutout was generated as; see {@link ToolSetPart}. */
+  readonly toolSetPart?: ToolSetPart;
 }
 
 /** Longest {@link Cutout.libraryItemId}. Mirrored in `api/lib/designerValidationConstants.ts`. */

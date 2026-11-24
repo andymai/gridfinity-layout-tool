@@ -1166,6 +1166,8 @@
   "binDesigner.toolSets.overBed": "Met deze set is de bak groter dan je printbed, dus hij wordt in delen geprint.",
   "binDesigner.toolSets.overBedWhole": "Met deze set is de bak groter dan je printbed.",
   "binDesigner.toolSets.noRoom": "De set past niet in deze bak. Haal enkele maten weg of maak ruimte in de bak.",
+  "binDesigner.toolSets.locked": "Ontgrendel de vakken van deze set om hem te bewerken.",
+  "binDesigner.toolSets.noChannel": "De handvatten liggen niet op één lijn, dus de set heeft geen vingergleuf.",
   "binDesigner.cutouts.scanImport.unavailable": "Scannen met je telefoon is nu niet beschikbaar. Upload in plaats daarvan een getraceerde omtrek.",
   "binDesigner.cutouts.scanImport.upload": "Omtrek uploaden (SVG)",
   "binDesigner.cutouts.scanImport.waiting": "Wachten op je foto…",

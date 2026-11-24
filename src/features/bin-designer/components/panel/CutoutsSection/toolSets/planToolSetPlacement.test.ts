@@ -20,7 +20,13 @@ const box = (id: string, x: number, y: number, w: number, d: number): Cutout => 
 });
 
 function set(width: number, depth: number, deepestCutMm = 8): GeneratedToolSet {
-  return { cutouts: [box('p', 0, 0, width, depth)], width, depth, deepestCutMm };
+  return {
+    cutouts: [box('p', 0, 0, width, depth)],
+    width,
+    depth,
+    deepestCutMm,
+    channelDropped: false,
+  };
 }
 
 const params: BinParams = { ...DEFAULT_BIN_PARAMS, width: 1, depth: 1, height: 3, cutouts: [] };

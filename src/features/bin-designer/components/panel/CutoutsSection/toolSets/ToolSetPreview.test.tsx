@@ -18,7 +18,7 @@ describe('ToolSetPreview', () => {
         fingerChannel: true,
       },
       TOOL_FAMILIES.combinationWrench,
-      { setId: 's', idFactory: () => `c${n++}`, names: { pocket: (s) => s, channel: '' } }
+      { setId: 's', idFor: () => `c${n++}`, names: { pocket: (s) => s, channel: '' } }
     );
     if (!set) throw new Error('expected a set');
     render(<ToolSetPreview set={set} />);

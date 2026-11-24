@@ -1214,6 +1214,8 @@
   "binDesigner.toolSets.overBed": "З цим набором контейнер більший за стіл принтера, тож друкується частинами.",
   "binDesigner.toolSets.overBedWhole": "З цим набором контейнер більший за стіл принтера.",
   "binDesigner.toolSets.noRoom": "Набір не вміщається в цей контейнер. Приберіть кілька розмірів або звільніть місце в контейнері.",
+  "binDesigner.toolSets.locked": "Розблокуйте гнізда цього набору, щоб редагувати його.",
+  "binDesigner.toolSets.noChannel": "Ручки не лежать на одній лінії, тому набір не має паза для пальців.",
   "binDesigner.cutouts.scanImport.unavailable": "Сканування телефоном зараз недоступне. Натомість завантажте обведений контур.",
   "binDesigner.cutouts.scanImport.upload": "Завантажити контур (SVG)",
   "binDesigner.cutouts.scanImport.waiting": "Очікування вашого фото…",

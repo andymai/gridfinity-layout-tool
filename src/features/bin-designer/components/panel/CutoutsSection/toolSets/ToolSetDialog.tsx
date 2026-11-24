@@ -12,10 +12,11 @@ import {
 } from '@/features/bin-designer/types';
 import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge/ExperimentalBadge';
 import { FeatureToggle } from '@/shared/components/FeatureToggle/FeatureToggle';
-import { setLimitOnBed, TOOL_FAMILIES } from '@/shared/toolSets/catalog';
-import { generateToolSet } from '@/shared/toolSets/generateToolSet';
+import { setLimitOnBed, sizeEntries, TOOL_FAMILIES } from '@/shared/toolSets/catalog';
+import { generateToolSet, type ToolSetNames } from '@/shared/toolSets/generateToolSet';
 import { ToolSetPreview } from './ToolSetPreview';
-import { useToolSets } from './useToolSets';
+import { useToolSets, type ToolSetFailure } from './useToolSets';
+import { partsOf } from '@/features/bin-designer/utils/toolSetMembership';
 import { planToolSetPlacement, planToolSetRebuild } from './planToolSetPlacement';
 import { binBedFit, binNeedsSplit } from '@/shared/utils/binSplitFit';
 
@@ -39,7 +40,18 @@ function defaultSpec(): ToolSetSpec {
   };
 }
 
-const PREVIEW_NAMES = { pocket: (s: string) => s, channel: '' };
+const PREVIEW_NAMES: ToolSetNames = { pocket: (size) => size, channel: '' };
+
+function blockerOf(
+  failure: ToolSetFailure | null,
+  locked: boolean,
+  noRoom: boolean
+): ToolSetFailure | null {
+  if (failure !== null) return failure;
+  if (locked) return 'locked';
+  if (noRoom) return 'noRoom';
+  return null;
+}
 
 export function ToolSetDialog({ setId, onClose }: ToolSetDialogProps) {
   const t = useTranslation();
@@ -47,66 +59,77 @@ export function ToolSetDialog({ setId, onClose }: ToolSetDialogProps) {
     setId === null ? undefined : s.params.cutoutToolSets?.[setId]
   );
   const [spec, setSpec] = useState<ToolSetSpec>(() => existing ?? defaultSpec());
+  // Settled when the dialog opens: if the set's recipe goes away meanwhile (a
+  // sync from another device), Update still rebuilds that set rather than
+  // adding a second one.
+  const [editSetId] = useState(() => (existing !== undefined ? setId : null));
+  const editing = editSetId !== null;
   const { insertSet, rebuildSet } = useToolSets();
   const { printBedSize, printBedDepth } = useLayoutPrintBed();
-  const editing = setId !== null && existing !== undefined;
+  const params = useDesignerStore((s) => s.params);
+  const halfGridMode = useDesignerStore((s) => s.ui.halfGridMode);
+  const [failure, setFailure] = useState<ToolSetFailure | null>(null);
 
   const entries = FAMILY.table[spec.units];
   const preview = useMemo(() => {
     let n = 0;
     return generateToolSet(spec, FAMILY, {
       setId: 'preview',
-      idFactory: () => `preview-${n++}`,
+      idFor: () => `preview-${n++}`,
       names: PREVIEW_NAMES,
       maxWidthMm: setLimitOnBed(printBedSize),
     });
   }, [spec, printBedSize]);
-  const params = useDesignerStore((s) => s.params);
-  const halfGridMode = useDesignerStore((s) => s.ui.halfGridMode);
-  // Read off the bin the add or update would make, through the same plan and
-  // the same bed-fit test the export uses, so a bin that fits turned or on the
-  // diagonal is not reported.
-  const bedNote = useMemo((): 'pieces' | 'whole' | null => {
+  const plan = useMemo(() => {
     if (!preview) return null;
-    const plan = editing
-      ? planToolSetRebuild(params, setId, preview, halfGridMode)
+    return editSetId !== null
+      ? planToolSetRebuild(params, editSetId, preview, halfGridMode)
       : planToolSetPlacement(params, preview, halfGridMode);
+  }, [preview, editSetId, params, halfGridMode]);
+  const locked =
+    editSetId !== null &&
+    partsOf(params.cutouts, editSetId, params.cutoutToolSets).some((c) => c.locked === true);
+  const blocker = blockerOf(failure, locked, preview !== null && plan === null);
+
+  // Read off the bin the add or update would make, through the same bed-fit
+  // test the export uses, so a bin that fits turned or on the diagonal is not
+  // reported. Asked with splitting on: with it off the fit keeps the bin whole
+  // and reports no split, which would hide that the bin overruns the bed.
+  const bedNote = useMemo((): 'pieces' | 'whole' | null => {
     if (!plan) return null;
     const planned = {
       ...params,
       ...(plan.size ?? {}),
       ...(plan.height !== null ? { height: plan.height } : {}),
+      splitToFitBed: undefined,
     };
-    // Asked with splitting on: with it off the fit keeps the bin whole and
-    // reports no split, which would hide that the bin overruns the bed.
-    const splittable = { ...planned, splitToFitBed: undefined };
-    if (!binNeedsSplit(splittable, binBedFit(splittable, printBedSize, printBedDepth))) return null;
+    if (!binNeedsSplit(planned, binBedFit(planned, printBedSize, printBedDepth))) return null;
     return params.splitToFitBed === false ? 'whole' : 'pieces';
-  }, [preview, editing, params, setId, halfGridMode, printBedSize, printBedDepth]);
+  }, [plan, params, printBedSize, printBedDepth]);
 
   const update = (patch: Partial<ToolSetSpec>) => {
-    setNoRoom(false);
+    setFailure(null);
     setSpec((s) => ({ ...s, ...patch }));
   };
   const toggleSize = (key: string) =>
     update({
       sizes: spec.sizes.includes(key) ? spec.sizes.filter((k) => k !== key) : [...spec.sizes, key],
     });
-  const setUnits = (units: ToolUnits) =>
-    units !== spec.units && update({ units, sizes: [...(FAMILY.presets[units].at(0) ?? [])] });
+  const setUnits = (units: ToolUnits) => {
+    if (units !== spec.units) update({ units, sizes: [...(FAMILY.presets[units].at(0) ?? [])] });
+  };
 
-  const [noRoom, setNoRoom] = useState(false);
   const submit = () => {
-    const result = editing ? rebuildSet(setId, spec) : insertSet(spec);
+    const result = editSetId !== null ? rebuildSet(editSetId, spec) : insertSet(spec);
     if (isErr(result)) {
-      setNoRoom(result.error === 'noRoom');
+      setFailure(result.error);
       return;
     }
     onClose();
   };
 
   const rangeLabel = (keys: readonly string[]) => {
-    const sorted = entries.filter((e) => keys.includes(e.key));
+    const sorted = sizeEntries(FAMILY, spec.units, keys);
     return t('binDesigner.toolSets.presetRange', {
       from: sorted.at(0)?.key ?? '',
       to: sorted.at(-1)?.key ?? '',
@@ -125,6 +148,9 @@ export function ToolSetDialog({ setId, onClose }: ToolSetDialogProps) {
             <p className="text-sm text-content-secondary">{t('binDesigner.toolSets.intro')}</p>
             <ExperimentalBadge />
           </div>
+          {editing && (
+            <p className="text-xs text-warning">{t('binDesigner.toolSets.rebuildWarning')}</p>
+          )}
 
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm font-medium text-content">
@@ -232,21 +258,32 @@ export function ToolSetDialog({ setId, onClose }: ToolSetDialogProps) {
               )}
             </p>
           )}
-          {noRoom && (
-            <p role="alert" className="text-xs text-error">
-              {t('binDesigner.toolSets.noRoom')}
-            </p>
-          )}
-          {editing && (
-            <p className="text-xs text-warning">{t('binDesigner.toolSets.rebuildWarning')}</p>
+          {preview?.channelDropped && (
+            <p className="text-xs text-content-secondary">{t('binDesigner.toolSets.noChannel')}</p>
           )}
         </div>
       </Dialog.Body>
-      <Dialog.Footer>
-        <Button type="button" variant="ghost" onClick={onClose}>
+      <Dialog.Footer
+        leading={
+          blocker && blocker !== 'empty' ? (
+            <p role="alert" className="text-xs text-error">
+              {t(
+                blocker === 'locked' ? 'binDesigner.toolSets.locked' : 'binDesigner.toolSets.noRoom'
+              )}
+            </p>
+          ) : undefined
+        }
+      >
+        <Button type="button" variant="ghost" className="shrink-0" onClick={onClose}>
           {t('common.cancel')}
         </Button>
-        <Button type="button" variant="primary" onClick={submit} disabled={!preview}>
+        <Button
+          type="button"
+          variant="primary"
+          className="shrink-0"
+          onClick={submit}
+          disabled={!preview || blocker !== null}
+        >
           {t(editing ? 'binDesigner.toolSets.update' : 'binDesigner.toolSets.add')}
         </Button>
       </Dialog.Footer>

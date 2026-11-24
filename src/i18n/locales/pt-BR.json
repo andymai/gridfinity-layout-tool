@@ -1166,6 +1166,8 @@
   "binDesigner.toolSets.overBed": "Com este jogo, a caixa fica maior que a mesa de impressão, então é impressa em partes.",
   "binDesigner.toolSets.overBedWhole": "Com este jogo, a caixa fica maior que a mesa de impressão.",
   "binDesigner.toolSets.noRoom": "O jogo não cabe nesta caixa. Remova alguns tamanhos ou abra espaço na caixa.",
+  "binDesigner.toolSets.locked": "Desbloqueie os encaixes deste jogo para editá-lo.",
+  "binDesigner.toolSets.noChannel": "Os cabos não ficam alinhados, então o jogo não tem canal para os dedos.",
   "binDesigner.cutouts.scanImport.unavailable": "O escaneamento pelo celular não está disponível agora. Envie um contorno traçado em vez disso.",
   "binDesigner.cutouts.scanImport.upload": "Enviar contorno (SVG)",
   "binDesigner.cutouts.scanImport.waiting": "Aguardando sua foto…",

@@ -48,11 +48,15 @@ function wholeGroups(chosen: readonly Cutout[], all: readonly Cutout[]): Set<str
   return whole;
 }
 
-/** A cutout as saved: placement-only fields dropped, groups it does not hold whole let go. */
+/**
+ * A cutout as saved: placement-only fields dropped, groups it does not hold
+ * whole let go. A library item carries no tool set recipe, so no part either.
+ */
 function saved(cutout: Cutout, whole: ReadonlySet<string>): Cutout {
   const {
     locked: _locked,
     libraryItemId: _libraryItemId,
+    toolSetPart: _toolSetPart,
     groupId,
     groupOp,
     parentGroups,

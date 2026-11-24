@@ -1190,6 +1190,8 @@
   "binDesigner.toolSets.overBed": "S touto sadou je box větší než tisková podložka, proto se vytiskne po částech.",
   "binDesigner.toolSets.overBedWhole": "S touto sadou je box větší než tisková podložka.",
   "binDesigner.toolSets.noRoom": "Sada se do tohoto boxu nevejde. Odeber některé velikosti nebo v boxu udělej místo.",
+  "binDesigner.toolSets.locked": "Chceš-li sadu upravit, odemkni její kapsy.",
+  "binDesigner.toolSets.noChannel": "Rukojeti nejsou v jedné řadě, takže sada nemá drážku pro prsty.",
   "binDesigner.cutouts.scanImport.unavailable": "Skenování telefonem právě teď není dostupné. Nahraj místo toho obtažený obrys.",
   "binDesigner.cutouts.scanImport.upload": "Nahrát obrys (SVG)",
   "binDesigner.cutouts.scanImport.waiting": "Čekám na tvou fotku…",

@@ -1166,6 +1166,8 @@
   "binDesigner.toolSets.overBed": "Mit diesem Satz ist der Behälter größer als Ihr Druckbett, daher wird er in Teilen gedruckt.",
   "binDesigner.toolSets.overBedWhole": "Mit diesem Satz ist der Behälter größer als Ihr Druckbett.",
   "binDesigner.toolSets.noRoom": "Der Satz passt nicht in diesen Behälter. Entfernen Sie einige Größen, oder schaffen Sie Platz im Behälter.",
+  "binDesigner.toolSets.locked": "Entsperren Sie die Taschen dieses Satzes, um ihn zu bearbeiten.",
+  "binDesigner.toolSets.noChannel": "Die Griffe liegen nicht in einer Linie, daher hat der Satz keine Griffmulde.",
   "binDesigner.cutouts.scanImport.unavailable": "Handy-Scannen ist gerade nicht verfügbar. Lade stattdessen eine erfasste Kontur hoch.",
   "binDesigner.cutouts.scanImport.upload": "Kontur hochladen (SVG)",
   "binDesigner.cutouts.scanImport.waiting": "Warte auf dein Foto …",

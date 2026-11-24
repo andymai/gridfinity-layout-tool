@@ -1,12 +1,4 @@
-/**
- * Cutout slice: cutout CRUD, batch operations, property toggling, z-ordering.
- *
- * Consolidates lock/unlock/hide/show into a single `setCutoutProperty` action,
- * and bringForward/sendBackward/bringToFront/sendToBack into `reorderCutouts`.
- * Legacy action names are kept as thin convenience wrappers.
- */
-
-import type { Draft } from 'immer';
+import { original, type Draft } from 'immer';
 import type {
   DesignerState,
   LibraryInsertOutcome,
@@ -32,6 +24,11 @@ import {
   withCutoutArray,
 } from '../helpers';
 import { generateLayoutId } from '@/shared/utils/uuid';
+import {
+  releaseClonedParts,
+  releaseMovedParts,
+  setsWithParts,
+} from '../../utils/toolSetMembership';
 import { mapPathRings, translatePathPoints } from '../../utils/pathTransforms';
 import {
   canNestDeeper,
@@ -51,6 +48,9 @@ import {
   gcCutoutGroupMetadata,
   copyWholeToolSets,
   copyToolSetsForClonePairs,
+  replaceInOwner,
+  shiftOneSlot,
+  stackBottomToTop,
   remainingCapacity,
   togglePropertyAffectsGeometry,
   zOrderAffectsGeometry,
@@ -75,18 +75,23 @@ export function createCutoutSlice(rawSet: Set) {
    *
    * Enforced here rather than at the ~40 assignment sites for the same reason
    * `lipHasSupport` is derived once: an action added later cannot reintroduce the
-   * empty array by forgetting about it.
+   * empty array by forgetting about it. For the same reason, a tool set part
+   * that changed sets loses its part here, and a set left with no parts loses
+   * its recipe.
    */
   const set: Set = (fn) =>
     rawSet((state) => {
+      const base = original(state.params);
       fn(state);
+      const released = releaseMovedParts(base, state.params);
+      if (released) state.params.cutouts = released;
+      const sets = setsWithParts(state.params.cutouts, state.params.cutoutToolSets);
+      if (sets !== null) state.params.cutoutToolSets = sets;
       const lid = state.params.lid;
       if (lid.cutouts !== undefined && lid.cutouts.length === 0) {
         delete lid.cutouts;
       }
     });
-
-  // Core actions
 
   /**
    * `locked` is editor-only, but `hidden` is NOT: the worker skips
@@ -120,51 +125,9 @@ export function createCutoutSlice(rawSet: Set) {
   };
 
   /**
-   * Current stack, bottom to top.
-   *
-   * Ties break on array order so an all-default design (every `zIndex` absent,
-   * i.e. 0) still has a stable, predictable starting stack rather than an
-   * arbitrary one.
-   */
-  const stackBottomToTop = (cutouts: readonly Cutout[]): Cutout[] => {
-    const indexById = new Map(cutouts.map((c, i) => [c.id, i]));
-    return [...cutouts].sort(
-      (a, b) =>
-        (a.zIndex ?? 0) - (b.zIndex ?? 0) || (indexById.get(a.id) ?? 0) - (indexById.get(b.id) ?? 0)
-    );
-  };
-
-  /**
-   * Move the selection one slot through an ordered stack, as a block.
-   *
-   * Walks from the far end so a contiguous run of selected shapes shifts
-   * together instead of collapsing onto itself, and a selection already at the
-   * end simply stays put.
-   */
-  const shiftOneSlot = (order: Cutout[], isSelected: (c: Cutout) => boolean, up: boolean): void => {
-    if (up) {
-      for (let i = order.length - 2; i >= 0; i--) {
-        if (isSelected(order[i]) && !isSelected(order[i + 1])) {
-          [order[i], order[i + 1]] = [order[i + 1], order[i]];
-        }
-      }
-    } else {
-      for (let i = 1; i < order.length; i++) {
-        if (isSelected(order[i]) && !isSelected(order[i - 1])) {
-          [order[i], order[i - 1]] = [order[i - 1], order[i]];
-        }
-      }
-    }
-  };
-
-  /**
    * Re-stack the selection and renumber onto contiguous `zIndex` values 0..n-1.
-   *
-   * Reordering positions rather than doing arithmetic on `zIndex` is what makes
-   * "send to back" mean anything: the old code wrote absolute values against a
-   * field that defaults to 0 for every cutout, so `back` set 0 on something
-   * already at 0 and `backward` clamped to `max(-1, 0)`. Both silently did
-   * nothing until some other shape had been sent forward first.
+   * Positions move, not values: every `zIndex` defaults to 0, so arithmetic on
+   * it cannot send a shape behind another at 0.
    */
   const reorderCutouts = (ids: readonly string[], direction: ReorderDirection): void => {
     if (ids.length === 0) return;
@@ -541,8 +504,16 @@ export function createCutoutSlice(rawSet: Set) {
         // room for two should give two, not nothing. Groups survive because
         // `groupMap` was built over the same ordered list. An uncapped target
         // reports `Infinity`, which `slice` reads as "all of them".
-        owner.cutouts = [...owner.cutouts, ...duplicated.slice(0, room)];
-        copyWholeToolSets(state, toDuplicate, groupMap);
+        const added = duplicated.slice(0, room);
+        owner.cutouts = [...owner.cutouts, ...added];
+        const copiedSets = copyWholeToolSets(state, toDuplicate, groupMap);
+        const released = releaseClonedParts(
+          owner.cutouts,
+          new Set(added.map((c) => c.id)),
+          copiedSets,
+          state.params.cutoutToolSets
+        );
+        if (released) owner.cutouts = released;
       });
     },
 
@@ -652,6 +623,13 @@ export function createCutoutSlice(rawSet: Set) {
 
     copyToolSetsForClones: (pairs: readonly (readonly [string, string])[]) => {
       if (pairs.length > 0) set((state) => copyToolSetsForClonePairs(state, pairs));
+    },
+
+    replaceCutouts: (removeIds: readonly string[], add: readonly Cutout[]) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        replaceInOwner(state, removeIds, add);
+      });
     },
 
     removeCutoutsBatch: (ids: readonly string[]) => {

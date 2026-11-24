@@ -1166,6 +1166,8 @@
   "binDesigner.toolSets.overBed": "Avec ce jeu, le bac dépasse votre plateau d’impression : il s’imprime en plusieurs pièces.",
   "binDesigner.toolSets.overBedWhole": "Avec ce jeu, le bac dépasse votre plateau d’impression.",
   "binDesigner.toolSets.noRoom": "Le jeu ne tient pas dans ce bac. Retirez des tailles ou libérez de la place dans le bac.",
+  "binDesigner.toolSets.locked": "Déverrouillez les empreintes de ce jeu pour le modifier.",
+  "binDesigner.toolSets.noChannel": "Les manches ne sont pas alignés, donc le jeu n’a pas de passage pour les doigts.",
   "binDesigner.cutouts.scanImport.unavailable": "Le scan par téléphone n’est pas disponible pour le moment. Importez plutôt un contour tracé.",
   "binDesigner.cutouts.scanImport.upload": "Importer un contour (SVG)",
   "binDesigner.cutouts.scanImport.waiting": "En attente de votre photo…",

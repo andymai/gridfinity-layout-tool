@@ -14,7 +14,7 @@
  * in the settings manifest, the single source of truth.
  */
 
-import type { BinParams } from '@/features/bin-designer/types';
+import { SCAN_TOOL_TARGET, TOOL_SET_TARGET } from './controlAvailability';
 
 export interface DesignerControlSearchEntry {
   /** The `data-help-target` marker; the argument `jumpToDesignerControl` takes. */
@@ -164,11 +164,7 @@ export const DESIGNER_CONTROL_SEARCH: readonly DesignerControlSearchEntry[] = [
   },
 ];
 
-/** Marks every visible "Scan a tool" entry in the panel. */
-export const SCAN_TOOL_TARGET = 'bd-scan-tool';
-
 export interface DesignerOptionRecord {
-  /** Unique id (also the React key for the result row). */
   readonly id: string;
   /** An existing, already-translated i18n key for the visible label. */
   readonly labelKey: string;
@@ -384,10 +380,17 @@ export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
     keywords: ['scan', 'trace', 'photo', 'picture', 'camera', 'phone', 'outline', 'tool shape'],
   },
   {
+    id: 'opt-tool-set',
+    labelKey: 'binDesigner.toolSets.addTitle',
+    section: 'bd-interior',
+    target: TOOL_SET_TARGET,
+    keywords: ['wrench set', 'spanner', 'tool set', 'tool holder', 'shadow board'],
+  },
+  {
     id: 'opt-interior-solid',
     labelKey: 'binDesigner.interior.solid.title',
     section: 'bd-interior',
-    keywords: ['solid', 'cutout', 'pockets', 'custom shapes', 'wrench', 'spanner'],
+    keywords: ['solid', 'cutout', 'pockets', 'custom shapes'],
   },
   {
     id: 'opt-interior-grid',
@@ -517,47 +520,3 @@ export const DESIGNER_OPTION_RECORDS: readonly DesignerOptionRecord[] = [
     keywords: ['wall connectors', 'key', 'joint', 'glue joint', 'lock'],
   },
 ];
-
-/**
- * The panel state a control's availability depends on. A control whose section
- * is not currently mounted is left out of results so a jump never dead-ends on
- * the dispatcher's silent 2s timeout.
- */
-export interface ControlAvailabilityContext {
-  readonly style: BinParams['style'];
-  readonly hasText: boolean;
-  /** The scroll panel mounts its bed-fit section (`useSplitOptionsSection`). */
-  readonly bedFitShown: boolean;
-  readonly viewMode: 'scroll' | 'rail';
-  /** The `sliding_tray` labs flag — the slide-tray section only mounts when on. */
-  readonly slideTrayEnabled: boolean;
-  /** A bin that can take cutouts: when a "Scan a tool" entry renders. */
-  readonly scanAvailable: boolean;
-}
-
-/**
- * The conditionally-mounted controls; everything else has an always-mounted
- * marker. Label tabs need a standard style; typography needs text on the bin;
- * the slide tray is behind a labs flag; print-fit is view-dependent (the rail's
- * PrintPage always renders it, passive when the bin fits, the scroll panel only
- * when the bin overruns the bed or its split switch is off).
- */
-export function isDesignerControlAvailable(
-  controlId: string,
-  ctx: ControlAvailabilityContext
-): boolean {
-  switch (controlId) {
-    case 'bd-label-tabs':
-      return ctx.style === 'standard';
-    case 'bd-type':
-      return ctx.hasText;
-    case 'bd-slide-tray':
-      return ctx.slideTrayEnabled;
-    case 'bd-print-fit':
-      return ctx.viewMode === 'rail' || ctx.bedFitShown;
-    case SCAN_TOOL_TARGET:
-      return ctx.scanAvailable;
-    default:
-      return true;
-  }
-}

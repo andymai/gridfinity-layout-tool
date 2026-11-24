@@ -5,7 +5,7 @@ import { effectiveSplit } from '@/shared/utils/cutoutSplit';
 import { textElementFootprint } from '@/shared/utils/cutoutLabel';
 import type { ToolFamily, WrenchSizeEntry } from './catalog';
 import { MAX_PATH_POINTS, MIN_PATH_POINTS } from '@/shared/types/bin';
-import { TOOL_FAMILIES } from './catalog';
+import { setLimitOnBed, TOOL_FAMILIES } from './catalog';
 import { generateToolSet, TOOL_SET_ENTRY_MM, TOOL_SET_WALL_MM } from './generateToolSet';
 import { closerThan } from './nestLayout';
 
@@ -45,7 +45,7 @@ const spec: ToolSetSpec = {
 let next = 0;
 const opts = {
   setId: 'set-1',
-  idFactory: () => `c${next++}`,
+  idFor: () => `c${next++}`,
   names: { pocket: (s: string) => `${s} mm`, channel: 'Finger channel' },
 };
 
@@ -126,6 +126,29 @@ describe('generateToolSet', () => {
   it('returns null when no size is in the table', () => {
     expect(generateToolSet({ ...spec, sizes: ['99'] }, family, opts)).toBeNull();
   });
+
+  it('marks each cutout with its part and asks for its id by part', () => {
+    const byPart = generateToolSet(spec, family, { ...opts, idFor: (part) => `id:${part}` });
+    if (!byPart) throw new Error('expected a set');
+    const parts = byPart.cutouts.map((c) => c.toolSetPart);
+    expect(new Set(parts).size).toBe(parts.length);
+    expect(parts).toEqual(expect.arrayContaining(['pocket:8', 'pocket:19', 'channel']));
+    for (const c of byPart.cutouts) expect(c.id).toBe(`id:${String(c.toolSetPart)}`);
+  });
+
+  it('reports a channel it could not fit across the handles', () => {
+    const stubby: ToolFamily = {
+      ...family,
+      table: { ...family.table, metric: [{ ...size('19', 19), lengthMm: 72 }] },
+    };
+    const set = generateToolSet({ ...spec, sizes: ['19'] }, stubby, opts);
+    expect(set?.channelDropped).toBe(true);
+    expect(set?.cutouts.some((c) => c.shape === 'slot')).toBe(false);
+    expect(
+      generateToolSet({ ...spec, sizes: ['19'], fingerChannel: false }, stubby, opts)
+        ?.channelDropped
+    ).toBe(false);
+  });
 });
 
 describe('generateToolSet on the real tables', () => {
@@ -137,7 +160,7 @@ describe('generateToolSet on the real tables', () => {
       const set = generateToolSet(
         { ...spec, units, sizes: family.table[units].map((e) => e.key) },
         family,
-        { setId: 's', idFactory: () => `r${n++}`, names: opts.names }
+        { setId: 's', idFor: () => `r${n++}`, names: opts.names }
       );
       if (!set) throw new Error('expected a set');
       const pockets = set.cutouts.filter((c) => c.shape === 'path');
@@ -148,4 +171,59 @@ describe('generateToolSet on the real tables', () => {
       }
     }
   );
+});
+
+describe('generateToolSet on the real presets', () => {
+  const real = TOOL_FAMILIES.combinationWrench;
+  const presets = (['metric', 'sae'] as const).flatMap((units) =>
+    real.presets[units].map((sizes) => ({ units, sizes }))
+  );
+
+  it.each(presets)('fits a channel across the $units set $sizes', ({ units, sizes }) => {
+    let n = 0;
+    const set = generateToolSet({ ...spec, units, sizes: [...sizes] }, real, {
+      ...opts,
+      idFor: () => `p${n++}`,
+    });
+    expect(set?.channelDropped).toBe(false);
+    expect(set?.cutouts.filter((c) => c.shape === 'slot')).toHaveLength(1);
+  });
+
+  it('picks a layout that stays on the bed with its engraved sizes', () => {
+    const sizes = [...(real.presets.metric.at(0) ?? [])];
+    const maxWidthMm = setLimitOnBed(300);
+    let n = 0;
+    const free = generateToolSet({ ...spec, sizes }, real, { ...opts, idFor: () => `f${n++}` });
+    const capped = generateToolSet({ ...spec, sizes }, real, {
+      ...opts,
+      idFor: () => `b${n++}`,
+      maxWidthMm,
+    });
+    expect(free?.width).toBeGreaterThan(maxWidthMm);
+    expect(capped?.width).toBeLessThanOrEqual(maxWidthMm);
+    expect(capped?.cutouts.some((c) => c.shape === 'text')).toBe(true);
+  });
+});
+
+describe('generateToolSet layout cache', () => {
+  it('never hands one table the layout of another with the same size keys', () => {
+    const bigger: ToolFamily = {
+      ...family,
+      table: {
+        ...family.table,
+        metric: family.table.metric.map((e) => ({ ...e, lengthMm: e.lengthMm + 40 })),
+      },
+    };
+    const a = generateToolSet(spec, family, opts);
+    const b = generateToolSet(spec, bigger, opts);
+    expect(b?.width).toBeGreaterThan((a?.width ?? 0) + 30);
+  });
+
+  it('gives the same pockets when only the engraving changes', () => {
+    const a = generateToolSet(spec, family, opts);
+    const b = generateToolSet({ ...spec, labelSizeMm: 0 }, family, opts);
+    const paths = (set: typeof a) =>
+      set?.cutouts.filter((c) => c.shape === 'path').map((c) => c.path) ?? [];
+    expect(paths(b)).toEqual(paths(a));
+  });
 });

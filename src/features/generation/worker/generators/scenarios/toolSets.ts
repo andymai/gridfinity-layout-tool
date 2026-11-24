@@ -33,7 +33,7 @@ function toolSetBin(): Partial<BinParams> {
   let n = 0;
   const set = generateToolSet(spec, TOOL_FAMILIES.combinationWrench, {
     setId: 'set',
-    idFactory: () => `c${n++}`,
+    idFor: () => `c${n++}`,
     names: { pocket: (s) => `${s} mm`, channel: 'Channel' },
   });
   if (!set) throw new Error('expected a tool set');

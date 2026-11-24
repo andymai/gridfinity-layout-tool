@@ -3,7 +3,6 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import type { Cutout } from '@/features/bin-designer/types';
 import { ToolSetEditButton } from './ToolSetEditButton';
-import { toolSetOf } from './toolSetOf';
 
 const spec = {
   family: 'combinationWrench',
@@ -49,24 +48,25 @@ describe('ToolSetEditButton', () => {
     expect(screen.getByRole('button', { name: 'Edit set' })).toBeInTheDocument();
   });
 
+  it('is disabled, with the reason, while a pocket of the set is locked', () => {
+    useDesignerStore.getState().setParams({
+      cutouts: [{ ...pocket('a', ['g1']), toolSetPart: 'pocket:13', locked: true }],
+    });
+    render(<ToolSetEditButton selected={[pocket('a', ['g1'])]} />);
+    expect(screen.getByRole('button', { name: 'Edit set' })).toBeDisabled();
+    expect(screen.getByText(/Unlock the pockets/)).toBeInTheDocument();
+  });
+
+  it('renders nothing on the lid, where a set has nothing to rebuild', () => {
+    useDesignerStore.getState().setCutoutEditorOpen(true, 'lid');
+    const { container } = render(<ToolSetEditButton selected={[pocket('a', ['g1'])]} />);
+    expect(container).toBeEmptyDOMElement();
+  });
+
   it('renders nothing for shapes outside a set, or a mix', () => {
     const { container } = render(
       <ToolSetEditButton selected={[pocket('a', ['g1']), pocket('b')]} />
     );
     expect(container).toBeEmptyDOMElement();
-  });
-});
-
-describe('toolSetOf', () => {
-  it('names the set every selected cutout sits in', () => {
-    const sets = { g1: { ...spec, sizes: ['13'] } };
-    expect(toolSetOf([pocket('a', ['x', 'g1'])], sets)).toBe('g1');
-    expect(toolSetOf([pocket('a', ['x'])], sets)).toBeNull();
-    expect(toolSetOf([], sets)).toBeNull();
-  });
-
-  it('picks the innermost set when one set sits inside another', () => {
-    const sets = { outer: { ...spec, sizes: ['13'] }, inner: { ...spec, sizes: ['10'] } };
-    expect(toolSetOf([pocket('a', ['outer', 'inner'])], sets)).toBe('inner');
   });
 });

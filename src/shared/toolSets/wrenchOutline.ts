@@ -1,4 +1,5 @@
 import polygonClipping, { type Ring } from 'polygon-clipping';
+import { convexHull } from '@/shared/scanTrace/minAreaRect';
 import type { OutlineRing } from '@/shared/utils/cutoutOutline';
 
 export interface WrenchDims {
@@ -18,16 +19,6 @@ export interface WrenchDims {
    * Absent means one length.
    */
   readonly minLengthMm?: number;
-}
-
-export interface WrenchOutline {
-  /**
-   * Counter-clockwise ring in the wrench's own frame: the box-end tip at
-   * x = 0, the handle along +x, the centreline on y = 0.
-   */
-  readonly ring: OutlineRing;
-  /** Where the box-end ring ends along x; the box end is the thicker part. */
-  readonly boxEndX: number;
 }
 
 const ARC_SEGMENTS = 48;
@@ -62,28 +53,6 @@ function openHeadRing(cx: number, cy: number, r: number, mouth: number, angleRad
   return cut.length === 1 ? cut[0][0] : circleRing(cx, cy, r);
 }
 
-/** The convex hull of a point set, counter-clockwise (Andrew's monotone chain). */
-function convexHull(points: readonly [number, number][]): Ring {
-  const sorted = [...points].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
-  const cross = (o: [number, number], a: [number, number], b: [number, number]): number =>
-    (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
-  const lower: [number, number][] = [];
-  for (const p of sorted) {
-    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) {
-      lower.pop();
-    }
-    lower.push(p);
-  }
-  const upper: [number, number][] = [];
-  for (const p of [...sorted].reverse()) {
-    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) {
-      upper.pop();
-    }
-    upper.push(p);
-  }
-  return [...lower.slice(0, -1), ...upper.slice(0, -1)];
-}
-
 function signedArea(ring: OutlineRing): number {
   let sum = 0;
   for (let i = 0; i < ring.length; i++) {
@@ -99,10 +68,12 @@ function signedArea(ring: OutlineRing): number {
  * gap between the open jaws is filled: a tongue of plastic there would be thin
  * on small sizes and would make the wrench hard to drop in.
  *
- * Returns null when the dimensions cannot describe a wrench (a head wider than
- * the wrench is long, a handle wider than either head).
+ * The ring runs counter-clockwise in the wrench's own frame: the box-end tip at
+ * x = 0, the handle along +x, the centreline on y = 0. Null when the
+ * dimensions cannot describe a wrench (heads that do not fit the length, a
+ * handle wider than a head) or the parts do not join into one ring.
  */
-export function combinationWrenchOutline(dims: WrenchDims): WrenchOutline | null {
+export function combinationWrenchOutline(dims: WrenchDims): OutlineRing | null {
   const { lengthMm: length, openWidthMm, boxWidthMm, shankWidthMm, jawAngleDeg } = dims;
   const shortest = Math.min(length, dims.minLengthMm ?? length);
   if (![length, openWidthMm, boxWidthMm, shankWidthMm, jawAngleDeg].every(Number.isFinite)) {
@@ -117,20 +88,16 @@ export function combinationWrenchOutline(dims: WrenchDims): WrenchOutline | null
   const tilt = (jawAngleDeg * Math.PI) / 180;
   const box = circleRing(boxR, 0, boxR);
   const shaped = openHeadRing(0, 0, headR, headR * MOUTH_RATIO, tilt);
-  // Puts the head's farthest point on x = length.
   const headX = length - Math.max(...shaped.map(([x]) => x));
   const sweep = length - shortest;
   const head: Ring =
     sweep > 0
       ? convexHull(
-          shaped.flatMap(
-            ([x, y]) =>
-              [
-                [x + headX, y],
-                [x + headX - sweep, y],
-              ] as const
-          )
-        )
+          shaped.flatMap(([x, y]) => [
+            { x: x + headX, y },
+            { x: x + headX - sweep, y },
+          ])
+        ).map(({ x, y }): [number, number] => [x, y])
       : shaped.map(([x, y]) => [x + headX, y]);
 
   const neckBox = Math.min(shankWidthMm * 1.15, boxWidthMm * 0.8) / 2;
@@ -161,5 +128,5 @@ export function combinationWrenchOutline(dims: WrenchDims): WrenchOutline | null
   const outer = merged[0][0];
   const ring: OutlineRing = outer.slice(0, -1).map(([x, y]): [number, number] => [x, y]);
   if (signedArea(ring) < 0) ring.reverse();
-  return { ring, boxEndX: boxWidthMm };
+  return ring;
 }

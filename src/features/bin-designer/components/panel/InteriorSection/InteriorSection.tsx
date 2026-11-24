@@ -13,7 +13,7 @@ import { useTranslation } from '@/i18n';
 import { useCutEditorOpens } from './useCutEditorOpens';
 import { getFeatureStatus } from '@/shared/constraints';
 import { Button } from '@/design-system';
-import { ScanToolIcon } from '@/design-system/Icon';
+import { ScanToolIcon, WrenchIcon } from '@/design-system/Icon';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { InteriorModeContent } from './InteriorModes';
 import { INTERIOR_MODE_META } from './interiorModeMeta';
@@ -22,8 +22,8 @@ import { ModeTiles } from '../shared';
 import { FeatureTip } from '../../FeatureTip';
 import { INTERIOR_CARDS } from '../../../types';
 import type { InteriorCard } from '../../../types';
-import { selectCanStartScan, startScan } from '../../../utils/startScan';
-import { SCAN_TOOL_TARGET } from '../../../search/designerControlRegistry';
+import { selectCanStartScan, startScan, startToolSet } from '../../../utils/startScan';
+import { SCAN_TOOL_TARGET, TOOL_SET_TARGET } from '../../../search/controlAvailability';
 
 /**
  * Grid Dividers, Bento (compartment grids) and Slotted (divider slots) assume a
@@ -99,17 +99,32 @@ export function InteriorSection() {
       // it, so the link stays live.
       ungated={
         offerScanLink ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start text-accent"
-            leftIcon={<ScanToolIcon size="xs" />}
-            onClick={() => startScan('interior_link', { phone: !isDesktop })}
-            data-help-target={SCAN_TOOL_TARGET}
-          >
-            {t('binDesigner.interior.scanLink')}
-          </Button>
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-accent"
+              leftIcon={<ScanToolIcon size="xs" />}
+              onClick={() => startScan('interior_link', { phone: !isDesktop })}
+              data-help-target={SCAN_TOOL_TARGET}
+            >
+              {t('binDesigner.interior.scanLink')}
+            </Button>
+            {isDesktop && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start text-accent"
+                leftIcon={<WrenchIcon size="xs" />}
+                onClick={startToolSet}
+                data-help-target={TOOL_SET_TARGET}
+              >
+                {t('binDesigner.toolSets.addTitle')}
+              </Button>
+            )}
+          </>
         ) : undefined
       }
     >

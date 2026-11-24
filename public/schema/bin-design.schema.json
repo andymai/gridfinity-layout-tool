@@ -1038,6 +1038,16 @@
             "maxLength": "MAX_LIBRARY_ITEM_ID_LENGTH"
           },
           "description": "The cutout library item this cutout was placed from. Editor metadata: it does not change the cut."
+        },
+        "toolSetPart": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32,
+          "pattern": "^[^\\u0000-\\u001F\\u007F]+$",
+          "x-constant": {
+            "maxLength": "TOOL_SET_LIMITS.maxPartLength"
+          },
+          "description": "The tool set part this cutout was generated as: pocket:<size>, label:<size> or channel. Edit set replaces only cutouts with a part. Editor metadata: it does not change the cut."
         }
       }
     },

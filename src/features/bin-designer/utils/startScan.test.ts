@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
-import { canStartScan, selectCanStartScan, startScan } from './startScan';
+import { canStartScan, selectCanStartScan, startScan, startToolSet } from './startScan';
 
 describe('startScan', () => {
   beforeEach(() => {
@@ -98,5 +98,22 @@ describe('selectCanStartScan', () => {
     expect(selectCanStartScan({ params: DEFAULT_BIN_PARAMS })).toBe(true);
     expect(selectCanStartScan({ params: blocked })).toBe(false);
     expect(selectCanStartScan({ params: DEFAULT_BIN_PARAMS })).toBe(true);
+  });
+});
+
+describe('startToolSet', () => {
+  beforeEach(() => {
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  it('switches a divided bin to Custom Cutouts and opens the tool set dialog on the bin', () => {
+    useDesignerStore.getState().setCutoutEditorOpen(true, 'lid');
+    startToolSet();
+    const s = useDesignerStore.getState();
+    expect(s.params.style).toBe('solid');
+    expect(s.ui.interiorCard).toBe('solid');
+    expect(s.ui.cutoutEditorOpen).toBe(true);
+    expect(s.ui.cutoutTarget).toBe('bin');
+    expect(s.ui.toolSetDialog).toEqual({ setId: null });
   });
 });

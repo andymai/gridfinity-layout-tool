@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { combinationWrenchOutline } from './wrenchOutline';
 import {
+  closerThan,
   nestHeadToTail,
   nestHeadToTailCompact,
   placeRing,
-  ringDistance,
   type NestItem,
 } from './nestLayout';
 
@@ -17,7 +17,7 @@ function wrench(length: number, open: number, box: number, shank: number): NestI
     jawAngleDeg: 15,
   });
   if (!outline) throw new Error('expected an outline');
-  return { ring: outline.ring, length };
+  return { ring: outline, length };
 }
 
 const set = [
@@ -39,7 +39,7 @@ describe('nestHeadToTail', () => {
     const rings = set.map((item, i) => placeRing(item.ring, item.length, placements[i]));
     for (let i = 0; i < rings.length; i++) {
       for (let j = i + 1; j < rings.length; j++) {
-        expect(ringDistance(rings[i], rings[j])).toBeGreaterThanOrEqual(2 - 0.01);
+        expect(closerThan(rings[i], rings[j], 2)).toBe(false);
       }
     }
   });
@@ -52,16 +52,26 @@ describe('nestHeadToTail', () => {
   });
 });
 
-describe('ringDistance', () => {
-  it('is zero for overlapping rings and the gap for separate ones', () => {
-    const square = (x: number): [number, number][] => [
-      [x, 0],
-      [x + 10, 0],
-      [x + 10, 10],
-      [x, 10],
-    ];
-    expect(ringDistance(square(0), square(5))).toBe(0);
-    expect(ringDistance(square(0), square(13))).toBeCloseTo(3, 6);
+describe('closerThan', () => {
+  const square = (x: number, size = 10): [number, number][] => [
+    [x, 0],
+    [x + size, 0],
+    [x + size, size],
+    [x, size],
+  ];
+
+  it('reports overlapping rings at any gap', () => {
+    expect(closerThan(square(0), square(5), 0.01)).toBe(true);
+  });
+
+  it('reports a ring inside another, where no edges meet', () => {
+    expect(closerThan(square(0, 30), square(10), 0.01)).toBe(true);
+    expect(closerThan(square(10), square(0, 30), 0.01)).toBe(true);
+  });
+
+  it('compares the gap between separate rings', () => {
+    expect(closerThan(square(0), square(13), 3.1)).toBe(true);
+    expect(closerThan(square(0), square(13), 2.9)).toBe(false);
   });
 });
 
@@ -71,5 +81,18 @@ describe('nestHeadToTailCompact', () => {
     const narrow = nestHeadToTailCompact(set, 2, 156);
     expect(narrow.width).toBeLessThanOrEqual(156);
     expect(narrow.width * narrow.depth).toBeGreaterThanOrEqual(free.width * free.depth - 1e-6);
+  });
+
+  it('prefers a stack the caller accepts, and falls back to the bed limit', () => {
+    const free = nestHeadToTailCompact(set, 2);
+    const unshifted = nestHeadToTailCompact(set, 2, Infinity, (r) =>
+      r.placements.every((p) => p.cx === 0)
+    );
+    expect(unshifted.placements.every((p) => p.cx === 0)).toBe(true);
+    expect(unshifted.width * unshifted.depth).toBeGreaterThanOrEqual(
+      free.width * free.depth - 1e-6
+    );
+    const none = nestHeadToTailCompact(set, 2, 156, () => false);
+    expect(none.width).toBeLessThanOrEqual(156);
   });
 });
