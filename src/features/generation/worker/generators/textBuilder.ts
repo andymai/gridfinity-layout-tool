@@ -378,12 +378,11 @@ const MIN_TAPER_END_FACTOR = 0.6;
 /**
  * Sketch a run with its pen at (`penX`, `penY`).
  *
- * `sketchText` NEGATES `startX` (a run sketched at `startX: 10` lands at -10)
- * while leaving `startY` alone, so every pen position has to be handed over
- * inverted. Wrapped in one place, and pinned by a test, because the fast path
- * always passes zero and would never show the mirroring: it only surfaces once
- * a caption is tracked, wrapped or tapered, and then it moves the whole run to
- * the wrong side of its host.
+ * Every pen position goes through here, and the pen-convention tests pin
+ * `sketchText`'s handling of `startX`, because the fast path always passes
+ * zero: a convention change in brepjs only surfaces once a caption is
+ * tracked, wrapped or tapered, and then it moves the whole run to the wrong
+ * side of its host.
  */
 function sketchRunAtPen(
   text: string,
@@ -394,7 +393,7 @@ function sketchRunAtPen(
 ): Sketches {
   return sketchText(
     text,
-    { fontSize, fontFamily, startX: -penX, startY: penY },
+    { fontSize, fontFamily, startX: penX, startY: penY },
     { plane: 'XY' as PlaneName, origin: [0, 0, 0] }
   );
 }

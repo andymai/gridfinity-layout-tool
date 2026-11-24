@@ -102,7 +102,12 @@ describe('wasmInstantiator', () => {
       expect(fetch).toHaveBeenCalledWith('/mocked/occt-wasm.wasm');
       expect(mockOcctInit).toHaveBeenCalledWith({ wasm: expect.any(ArrayBuffer) });
       expect(OcctWasmAdapter.fromKernel).toHaveBeenCalledTimes(1);
-      expect(registerKernel).toHaveBeenCalledWith('occt-wasm', expect.anything());
+      expect(registerKernel).toHaveBeenCalledWith(
+        'occt-wasm',
+        expect.objectContaining({
+          capabilities: expect.objectContaining({ placementSharesGeometry: false }),
+        })
+      );
       expect(result.isThreaded).toBe(false);
       expect(result.hardwareConcurrency).toBeGreaterThan(0);
     });

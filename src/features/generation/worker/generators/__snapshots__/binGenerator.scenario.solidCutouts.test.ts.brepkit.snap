@@ -2,7 +2,7 @@
 
 exports[`solid cutouts > 2×2 solid with 3×2 grid array of circles 1`] = `1820`;
 
-exports[`solid cutouts > 2×2 solid with chamfered + scooped rectangle cutout 1`] = `2296`;
+exports[`solid cutouts > 2×2 solid with chamfered + scooped rectangle cutout 1`] = `1556`;
 
 exports[`solid cutouts > 2×2 solid with chamfered circle cutout 1`] = `1676`;
 
@@ -12,11 +12,13 @@ exports[`solid cutouts > 2×2 solid with chamfered hexagon cutout 1`] = `1360`;
 
 exports[`solid cutouts > 2×2 solid with chamfered path cutout 1`] = `1316`;
 
-exports[`solid cutouts > 2×2 solid with chamfered rectangle cutout 1`] = `1364`;
+exports[`solid cutouts > 2×2 solid with chamfered rectangle cutout 1`] = `1420`;
 
-exports[`solid cutouts > 2×2 solid with chamfered slot cutout 1`] = `1608`;
+exports[`solid cutouts > 2×2 solid with chamfered slot cutout 1`] = `1584`;
 
 exports[`solid cutouts > 2×2 solid with circle cutout 1`] = `1948`;
+
+exports[`solid cutouts > 2×2 solid with corner radius equal to scoop radius 1`] = `1758`;
 
 exports[`solid cutouts > 2×2 solid with curved path cutout (bezier handles) 1`] = `1444`;
 
@@ -40,18 +42,18 @@ exports[`solid cutouts > 2×2 solid with rectangle with scoop cutout 1`] = `1488
 
 exports[`solid cutouts > 2×2 solid with rectangle, edge gate disables a single wall 1`] = `1404`;
 
-exports[`solid cutouts > 2×2 solid with rectangle, split scoop (W only) cuts only left/right walls 1`] = `1320`;
+exports[`solid cutouts > 2×2 solid with rectangle, split scoop (W only) cuts only left/right walls 1`] = `1364`;
 
 exports[`solid cutouts > 2×2 solid with rotated 45° cutout 1`] = `1324`;
 
-exports[`solid cutouts > 2×2 solid with rounded-rectangle cutout 1`] = `1452`;
+exports[`solid cutouts > 2×2 solid with rounded-rectangle cutout 1`] = `1428`;
 
-exports[`solid cutouts > 2×2 solid with scooped path cutout 1`] = `2590`;
+exports[`solid cutouts > 2×2 solid with scooped path cutout 1`] = `1452`;
 
 exports[`solid cutouts > 2×2 solid with slot (stadium) cutout 1`] = `1536`;
 
 exports[`solid cutouts > 2×2 solid with staggered hex array 1`] = `1412`;
 
-exports[`solid cutouts > 2×2 solid with topOffset 1`] = `1548`;
+exports[`solid cutouts > 2×2 solid with topOffset 1`] = `1532`;
 
 exports[`solid cutouts > 2×2 solid with triangular path cutout 1`] = `1304`;

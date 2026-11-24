@@ -34,6 +34,7 @@ import type * as BinGeneratorModule from '../binGenerator';
 import type * as StlModule from '../utils/stlMeshFallback';
 import type * as CacheModule from '../shapeCache';
 import type * as OcctWasmModule from 'occt-wasm';
+import { copyOnMove } from '../../copyOnMove';
 
 // The Emscripten default STACK_SIZE (64 KB). The stack grows DOWN from the
 // module's __stack_pointer initial value, which is read from the binary at
@@ -214,7 +215,7 @@ describe('goma tall bin export probe', () => {
     const kernel = await OcctKernel.init({ wasm: wasmBinary });
     const raw = kernel.getRawModule();
     heapU32 = () => raw.HEAPU32;
-    registerKernel('occt-wasm', OcctWasmAdapter.fromKernel(kernel));
+    registerKernel('occt-wasm', copyOnMove(OcctWasmAdapter.fromKernel(kernel)));
     const binMod = await import('../binGenerator');
     const stlMod = await import('../utils/stlMeshFallback');
     const cacheMod = await import('../shapeCache');

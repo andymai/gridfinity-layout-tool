@@ -2,7 +2,7 @@
 
 exports[`scoop + lip interaction > scoop with lip (single compartment, front-row offset active) 1`] = `2642`;
 
-exports[`scoop + lip interaction > scoop with lip + 2 rows (front-row offset vs interior-row) 1`] = `3000`;
+exports[`scoop + lip interaction > scoop with lip + 2 rows (front-row offset vs interior-row) 1`] = `2774`;
 
 exports[`scoop > 2×2 scoop auto radius 1`] = `2642`;
 
@@ -26,11 +26,11 @@ exports[`scoop multi-compartment > 2×2 grid front scoop (standard base + lip) 1
 
 exports[`scoop multi-compartment > 2×2 grid left scoop (interior column span-ends) 1`] = `3026`;
 
-exports[`scoop multi-compartment > irregular grid (tall column + 2 stacked) front scoop 1`] = `3130`;
+exports[`scoop multi-compartment > irregular grid (tall column + 2 stacked) front scoop 1`] = `2894`;
 
 exports[`scoop side > 6×1 bin scooped on the long wall 1`] = `2942`;
 
-exports[`scoop side > left scoop across 2 columns (outer vs interior) 1`] = `3004`;
+exports[`scoop side > left scoop across 2 columns (outer vs interior) 1`] = `2778`;
 
 exports[`scoop side > scoop on the back wall 1`] = `2642`;
 

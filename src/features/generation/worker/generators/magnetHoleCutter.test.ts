@@ -4,6 +4,7 @@ import { faceGeomType, getFaces, mesh } from 'brepjs';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { initBrepjs, getKernelName } from './__kernel-tests__/wasmInit';
 import { expectRibbedSection, sliceAround } from './__kernel-tests__/boreSection';
+import { meshTopologyStats } from './__kernel-tests__/meshAssertions';
 import { buildMagnetHoleCutter } from './magnetHoleCutter';
 
 const R = 3.25;
@@ -41,6 +42,31 @@ describe('buildMagnetHoleCutter', () => {
       try {
         const types = getFaces(cutter).map((f) => faceGeomType(f));
         expect([...types].sort()).toEqual(['EXTRUSION_SURFACE', 'PLANE', 'PLANE']);
+      } finally {
+        cutter.delete();
+      }
+    }
+  );
+
+  it.each(['bottom', 'top'] as const)(
+    'a ribbed bore with a %s chamfer meshes closed at preview density',
+    (end) => {
+      const cutter = buildMagnetHoleCutter({
+        radius: R,
+        height: HEIGHT,
+        style: { crushRibs: true, chamfer: true },
+        mouth: { end, inset: 0 },
+      });
+      try {
+        const m = mesh(cutter, { tolerance: 0.05, angularTolerance: 0.3 });
+        const stats = meshTopologyStats({
+          vertices: m.vertices,
+          normals: m.normals,
+          indices: m.triangles,
+          edgeVertices: new Float32Array(0),
+          triangleCount: m.triangles.length / 3,
+        });
+        expect(stats.boundaryEdges).toBe(0);
       } finally {
         cutter.delete();
       }
