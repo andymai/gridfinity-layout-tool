@@ -677,4 +677,13 @@ export const GOLDEN: readonly GoldenCase[] = [
     expect:
       'The app has no bin that holds other Gridfinity bins inside it. The nearest options: small bins locked onto the lip of a bigger bin with Lip notches, a sliding tray inside a bin (Labs), or compartments inside one bin.',
   },
+  {
+    id: 'L28',
+    group: 'lookup',
+    page: '/layouts/drawer-setup',
+    turns: ['Can I put everything in centimeter instead of the unit thing?'],
+    sources: ['/concepts/units', '/settings/settings'],
+    expect:
+      'Grid sizes stay in grid units and height units. In Settings, on the General tab, set Measure in to Centimeters: the drawer height, the measured drawer size and the baseplate plate size then show and take centimeters.',
+  },
 ];
