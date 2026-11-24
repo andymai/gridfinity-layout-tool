@@ -330,8 +330,8 @@ export function Sidebar() {
                       />
                     </div>
                     <div>
-                      <label className="block text-content-tertiary mb-1">
-                        {drawerHeightLabel}
+                      <label className="block text-content-tertiary mb-1" title={drawerHeightLabel}>
+                        {t('sidebar.drawerHeight')}
                       </label>
                       <Stepper
                         value={fromMm(drawerHeightDisplayMm, measureUnit)}

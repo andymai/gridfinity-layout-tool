@@ -247,7 +247,7 @@ describe('DrawerDimensionsSummary', () => {
     });
   });
 
-  describe('in centimeters', () => {
+  describe('in centimeters and inches', () => {
     it('shows the grid, the measurement and the free space in centimeters', () => {
       useSettingsStore.getState().updateSetting('measureUnit', 'cm');
       render(<DrawerDimensionsSummary {...defaultProps} measuredMm={{ width: 430, depth: 350 }} />);
