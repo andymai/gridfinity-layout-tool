@@ -1,0 +1,39 @@
+src/features/bin-designer/utils/toolSetMembership.ts
+  s_0c191ecd28c8c3::t_5a54ad12dc97eb 90-105
+src/features/bin-designer/store/slices/cutoutSlice.ts
+  s_0c191ecd28c8c3::t_5a54ad12dc97eb 27-31,78-80,88-89
+src/features/bin-designer/constants/paramMigrationToolSets.test.ts
+  s_0c191ecd28c8c3::t_a086a994e5483c 3,54,64,90,99,103,107-125,128,133-134
+docs/schemas/bin-design.md
+  s_0c191ecd28c8c3::t_cc8c40ccaf4287 506-556
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/useToolSets.ts
+  s_0c191ecd28c8c3::t_cc8c40ccaf4287 160
+src/features/bin-designer/utils/toolSetMembership.test.ts
+  s_0c191ecd28c8c3::t_a086a994e5483c 3-9,142-150
+  s_0c191ecd28c8c3::t_94f0b901332475 151-152
+src/features/bin-designer/constants/paramMigration.ts
+  s_0c191ecd28c8c3::t_d04aada0cf2c5c 93,493
+src/features/bin-designer/components/panel/CutoutsSection/toolSets/useToolSets.test.ts
+  s_0c191ecd28c8c3::t_a086a994e5483c 341,384,392-418,420-431
+src/features/bin-designer/constants/paramMigrationToolSets.ts
+  s_0c191ecd28c8c3::t_be6c0837c8e4b9 119-123
+  s_0c191ecd28c8c3::t_d04aada0cf2c5c 12,87-95,97-107,109,112-118,124-128,148
+public/schema/bin-design.schema.json
+  s_0c191ecd28c8c3::t_cc8c40ccaf4287 1046
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2fe4c2bfa20a8c66d32aa3db4fafbf145a08de24",
+  "prompts": {},
+  "sessions": {
+    "s_0c191ecd28c8c3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f7a72b82-3d5a-4aec-a3fc-27209c777a7d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
