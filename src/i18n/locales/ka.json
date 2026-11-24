@@ -3216,6 +3216,7 @@
   "binDesigner.toolSets.groupNameMetric": "გასაღებები {from}-დან {to}-მდე მმ",
   "binDesigner.toolSets.groupNameSae": "გასაღებები {from}-დან {to}-მდე in",
   "binDesigner.toolSets.overBed": "ნაკრები ბეჭდვის მაგიდაზე დიდია, ამიტომ ყუთი ნაწილებად დაიბეჭდება.",
+  "binDesigner.toolSets.noRoom": "ნაკრები ამ ყუთში არ ეტევა. მოაშორეთ ზოგიერთი ზომა ან გაათავისუფლეთ ადგილი ყუთში.",
   "binDesigner.cutouts.scanImport.buttonLabel": "სკანირება",
   "binDesigner.cutouts.scanImport.routePhone": "ტელეფონით",
   "binDesigner.cutouts.scanImport.routePhoneHelp": "დაასკანირეთ QR კოდი და ტელეფონით გადაუღეთ ხელსაწყოს.",

@@ -396,6 +396,7 @@ export function InspectorContent({
   return (
     <div className="space-y-1.5">
       {binWarnings}
+      <ToolSetEditButton selected={selectedCutouts} disabled={disabled} />
       {singleCutout && (
         <SingleCutoutInspector
           cutout={singleCutout}
@@ -421,7 +422,6 @@ export function InspectorContent({
           </SubHeader>
           {/* Above the align controls: if the selection is already a pattern,
               the offer to make it parametric beats aligning it by hand. */}
-          {wholeUnit && <ToolSetEditButton groupId={wholeUnit.groupId} disabled={disabled} />}
           {repeatSuggestion && (
             <RepeatSuggestion suggestion={repeatSuggestion} disabled={disabled} />
           )}

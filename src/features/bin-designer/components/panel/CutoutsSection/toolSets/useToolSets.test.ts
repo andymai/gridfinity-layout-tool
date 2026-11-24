@@ -5,6 +5,8 @@ import type { ToolSetSpec } from '@/features/bin-designer/types';
 import { getRotatedBounds } from '../geometryCore';
 import { binBoard } from '../packIntoBin';
 import { checkPockets } from '../pocketChecks';
+import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
+import { boxesOverlap, cutBoxes } from './planToolSetPlacement';
 import { membersOf, useToolSets } from './useToolSets';
 
 const spec: ToolSetSpec = {
@@ -115,5 +117,79 @@ describe('useToolSets', () => {
     const ids = useDesignerStore.getState().params.cutouts.map((c) => c.id);
     act(() => useDesignerStore.getState().removeCutoutsBatch(ids));
     expect(useDesignerStore.getState().params.cutoutToolSets).toBeUndefined();
+  });
+
+  it('deepens a floor-anchored fill for the set, keeping its top recess', () => {
+    const store = useDesignerStore.getState();
+    act(() => {
+      store.setParams({ height: 3 });
+      store.updateCutoutConfig({ fillReference: 'floor', topOffset: 2 });
+    });
+    const { result } = renderHook(() => useToolSets());
+    act(() => {
+      expect(result.current.insertSet({ ...spec, sizes: ['19'] })).toBe('added');
+    });
+    const { params } = useDesignerStore.getState();
+    const fill = binDimensions(params).wallHeight - params.cutoutConfig.topOffset;
+    const deepest = Math.max(
+      ...params.cutouts.map((c) => Math.max(c.cutDepth, c.split?.cutDepth ?? 0))
+    );
+    expect(params.cutoutConfig.topOffset).toBe(2);
+    expect(fill).toBeGreaterThanOrEqual(deepest + 1);
+  });
+
+  it('refuses a set that cannot fit, and changes nothing', () => {
+    act(() =>
+      useDesignerStore.getState().setParams({
+        width: 2,
+        depth: 2,
+        cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] },
+      })
+    );
+    const before = useDesignerStore.getState().params;
+    const { result } = renderHook(() => useToolSets());
+    act(() => {
+      expect(result.current.insertSet(spec)).toBe('noRoom');
+    });
+    expect(useDesignerStore.getState().params).toBe(before);
+  });
+
+  it('moves a rebuilt set that would grow into its neighbour', () => {
+    const { result } = renderHook(() => useToolSets());
+    act(() => {
+      result.current.insertSet({ ...spec, sizes: ['8', '10'] });
+    });
+    const first = onlySetId();
+    act(() => {
+      result.current.insertSet({ ...spec, sizes: ['8', '10'] });
+    });
+    const second = Object.keys(useDesignerStore.getState().params.cutoutToolSets ?? {}).find(
+      (id) => id !== first
+    );
+    if (!second) throw new Error('expected a second set');
+    act(() => {
+      expect(result.current.rebuildSet(first, { ...spec, sizes: ['17', '19', '21', '22'] })).toBe(
+        'updated'
+      );
+    });
+    const { cutouts } = useDesignerStore.getState().params;
+    const a = cutBoxes(membersOf(cutouts, first));
+    const b = cutBoxes(membersOf(cutouts, second));
+    expect(a.some((x) => b.some((y) => boxesOverlap(x, y, 0)))).toBe(false);
+  });
+
+  it('copies the recipe when a whole set is duplicated, not part of one', () => {
+    const { result } = renderHook(() => useToolSets());
+    act(() => {
+      result.current.insertSet(spec);
+    });
+    const setId = onlySetId();
+    const ids = membersOf(useDesignerStore.getState().params.cutouts, setId).map((c) => c.id);
+    act(() => useDesignerStore.getState().duplicateCutouts(ids.slice(0, 1)));
+    expect(Object.keys(useDesignerStore.getState().params.cutoutToolSets ?? {})).toHaveLength(1);
+    act(() => useDesignerStore.getState().duplicateCutouts(ids));
+    const sets = useDesignerStore.getState().params.cutoutToolSets ?? {};
+    expect(Object.keys(sets)).toHaveLength(2);
+    expect(Object.values(sets).every((s) => s.sizes.join() === spec.sizes.join())).toBe(true);
   });
 });

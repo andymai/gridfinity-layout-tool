@@ -49,6 +49,7 @@ import {
   expandIdsToGroups,
   gcMeshAssets,
   gcCutoutGroupMetadata,
+  copyWholeToolSets,
   remainingCapacity,
   togglePropertyAffectsGeometry,
   zOrderAffectsGeometry,
@@ -540,6 +541,7 @@ export function createCutoutSlice(rawSet: Set) {
         // `groupMap` was built over the same ordered list. An uncapped target
         // reports `Infinity`, which `slice` reads as "all of them".
         owner.cutouts = [...owner.cutouts, ...duplicated.slice(0, room)];
+        copyWholeToolSets(state, toDuplicate, groupMap);
       });
     },
 

@@ -1161,6 +1161,7 @@
   "binDesigner.toolSets.groupNameMetric": "Chiavi da {from} a {to} mm",
   "binDesigner.toolSets.groupNameSae": "Chiavi da {from} a {to} in",
   "binDesigner.toolSets.overBed": "Il set è più grande del piano di stampa, quindi il contenitore si stampa in più parti.",
+  "binDesigner.toolSets.noRoom": "Il set non entra in questo contenitore. Togli alcune misure o fai spazio nel contenitore.",
   "binDesigner.cutouts.scanImport.unavailable": "La scansione da telefono non è disponibile al momento. Carica invece un contorno tracciato.",
   "binDesigner.cutouts.scanImport.upload": "Carica contorno (SVG)",
   "binDesigner.cutouts.scanImport.waiting": "In attesa della tua foto…",

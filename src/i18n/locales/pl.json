@@ -1209,6 +1209,7 @@
   "binDesigner.toolSets.groupNameMetric": "Klucze {from} do {to} mm",
   "binDesigner.toolSets.groupNameSae": "Klucze {from} do {to} in",
   "binDesigner.toolSets.overBed": "Zestaw jest większy niż stół drukarki, więc pojemnik wydrukuje się w częściach.",
+  "binDesigner.toolSets.noRoom": "Zestaw nie mieści się w tym pojemniku. Usuń niektóre rozmiary albo zrób miejsce w pojemniku.",
   "binDesigner.cutouts.scanImport.unavailable": "Skanowanie telefonem jest teraz niedostępne. Zamiast tego prześlij odrysowany obrys.",
   "binDesigner.cutouts.scanImport.upload": "Prześlij obrys (SVG)",
   "binDesigner.cutouts.scanImport.waiting": "Oczekiwanie na Twoje zdjęcie…",

@@ -325,3 +325,30 @@ export function planUnitLandings(
   }
   return landings;
 }
+
+/**
+ * Give a copied tool set its recipe under the copy's new container id, so the
+ * copy keeps "Edit set". Only a set copied whole qualifies: a copy of some of
+ * its pockets is not that set any more.
+ */
+export function copyWholeToolSets(
+  state: Draft<DesignerState>,
+  copied: readonly Cutout[],
+  groupMap: ReadonlyMap<string, string>
+): void {
+  const sets = state.params.cutoutToolSets;
+  if (!sets) return;
+  const copiedIds = new Set(copied.map((c) => c.id));
+  const all = [...state.params.cutouts, ...(state.params.lid.cutouts ?? [])];
+  const next = { ...sets };
+  let changed = false;
+  for (const [from, to] of groupMap) {
+    if (!(from in sets)) continue;
+    const spec = sets[from];
+    const members = all.filter((c) => c.parentGroups?.includes(from) === true);
+    if (members.length === 0 || !members.every((c) => copiedIds.has(c.id))) continue;
+    next[to] = spec;
+    changed = true;
+  }
+  if (changed) state.params.cutoutToolSets = next;
+}

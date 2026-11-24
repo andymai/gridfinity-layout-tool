@@ -1161,6 +1161,7 @@
   "binDesigner.toolSets.groupNameMetric": "Nøkler {from} til {to} mm",
   "binDesigner.toolSets.groupNameSae": "Nøkler {from} til {to} in",
   "binDesigner.toolSets.overBed": "Settet er større enn byggeplaten, så boksen skrives ut i deler.",
+  "binDesigner.toolSets.noRoom": "Settet får ikke plass i denne boksen. Fjern noen størrelser, eller lag plass i boksen.",
   "binDesigner.cutouts.scanImport.unavailable": "Skanning med telefon er ikke tilgjengelig akkurat nå. Last opp et sporet omriss i stedet.",
   "binDesigner.cutouts.scanImport.upload": "Last opp omriss (SVG)",
   "binDesigner.cutouts.scanImport.waiting": "Venter på bildet ditt …",

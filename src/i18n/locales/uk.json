@@ -1209,6 +1209,7 @@
   "binDesigner.toolSets.groupNameMetric": "Ключі від {from} до {to} мм",
   "binDesigner.toolSets.groupNameSae": "Ключі від {from} до {to} in",
   "binDesigner.toolSets.overBed": "Набір більший за стіл принтера, тож контейнер друкується частинами.",
+  "binDesigner.toolSets.noRoom": "Набір не вміщається в цей контейнер. Приберіть кілька розмірів або звільніть місце в контейнері.",
   "binDesigner.cutouts.scanImport.unavailable": "Сканування телефоном зараз недоступне. Натомість завантажте обведений контур.",
   "binDesigner.cutouts.scanImport.upload": "Завантажити контур (SVG)",
   "binDesigner.cutouts.scanImport.waiting": "Очікування вашого фото…",

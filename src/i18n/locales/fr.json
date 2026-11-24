@@ -1161,6 +1161,7 @@
   "binDesigner.toolSets.groupNameMetric": "Clés de {from} à {to} mm",
   "binDesigner.toolSets.groupNameSae": "Clés de {from} à {to} in",
   "binDesigner.toolSets.overBed": "Le jeu dépasse votre plateau d’impression : le bac s’imprime en plusieurs pièces.",
+  "binDesigner.toolSets.noRoom": "Le jeu ne tient pas dans ce bac. Retirez des tailles ou libérez de la place dans le bac.",
   "binDesigner.cutouts.scanImport.unavailable": "Le scan par téléphone n’est pas disponible pour le moment. Importez plutôt un contour tracé.",
   "binDesigner.cutouts.scanImport.upload": "Importer un contour (SVG)",
   "binDesigner.cutouts.scanImport.waiting": "En attente de votre photo…",

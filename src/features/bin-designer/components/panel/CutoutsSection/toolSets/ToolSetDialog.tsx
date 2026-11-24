@@ -63,7 +63,10 @@ export function ToolSetDialog({ setId, onClose }: ToolSetDialogProps) {
     (preview.width > setLimitOnBed(printBedSize) ||
       preview.depth > setLimitOnBed(printBedDepth ?? printBedSize));
 
-  const update = (patch: Partial<ToolSetSpec>) => setSpec((s) => ({ ...s, ...patch }));
+  const update = (patch: Partial<ToolSetSpec>) => {
+    setNoRoom(false);
+    setSpec((s) => ({ ...s, ...patch }));
+  };
   const toggleSize = (key: string) =>
     update({
       sizes: spec.sizes.includes(key) ? spec.sizes.filter((k) => k !== key) : [...spec.sizes, key],
@@ -71,9 +74,13 @@ export function ToolSetDialog({ setId, onClose }: ToolSetDialogProps) {
   const setUnits = (units: ToolUnits) =>
     units !== spec.units && update({ units, sizes: [...(FAMILY.presets[units].at(0) ?? [])] });
 
+  const [noRoom, setNoRoom] = useState(false);
   const submit = () => {
-    if (editing) rebuildSet(setId, spec);
-    else insertSet(spec);
+    const outcome = editing ? rebuildSet(setId, spec) : insertSet(spec);
+    if (outcome === 'noRoom') {
+      setNoRoom(true);
+      return;
+    }
     onClose();
   };
 
@@ -197,6 +204,11 @@ export function ToolSetDialog({ setId, onClose }: ToolSetDialogProps) {
           )}
           {overBed && (
             <p className="text-xs text-content-secondary">{t('binDesigner.toolSets.overBed')}</p>
+          )}
+          {noRoom && (
+            <p role="alert" className="text-xs text-error">
+              {t('binDesigner.toolSets.noRoom')}
+            </p>
           )}
           {editing && (
             <p className="text-xs text-warning">{t('binDesigner.toolSets.rebuildWarning')}</p>

@@ -54,4 +54,18 @@ describe('ToolSetDialog', () => {
     expect(screen.getByText(/rebuilds the set/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Update set' })).toBeEnabled();
   });
+
+  it('says when the set does not fit and stays open', () => {
+    useDesignerStore.getState().setParams({
+      width: 2,
+      depth: 2,
+      cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 0] },
+    });
+    const onClose = vi.fn();
+    render(<ToolSetDialog setId={null} onClose={onClose} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Add set' }));
+    expect(screen.getByRole('alert', { name: '' })).toHaveTextContent(/does not fit this bin/);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(useDesignerStore.getState().params.cutoutToolSets).toBeUndefined();
+  });
 });

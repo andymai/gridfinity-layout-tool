@@ -1137,6 +1137,7 @@
   "binDesigner.toolSets.groupNameMetric": "렌치 {from}~{to} mm",
   "binDesigner.toolSets.groupNameSae": "렌치 {from}~{to} in",
   "binDesigner.toolSets.overBed": "세트가 프린트 베드보다 커서 빈이 여러 조각으로 출력됩니다.",
+  "binDesigner.toolSets.noRoom": "세트가 이 빈에 들어가지 않습니다. 크기를 일부 빼거나 빈에 자리를 만드세요.",
   "binDesigner.cutouts.scanImport.unavailable": "지금은 휴대폰 스캔을 사용할 수 없습니다. 대신 딴 윤곽선을 업로드하세요.",
   "binDesigner.cutouts.scanImport.upload": "윤곽선 업로드(SVG)",
   "binDesigner.cutouts.scanImport.waiting": "사진을 기다리는 중…",

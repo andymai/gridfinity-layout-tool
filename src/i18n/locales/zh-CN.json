@@ -1137,6 +1137,7 @@
   "binDesigner.toolSets.groupNameMetric": "扳手 {from} 至 {to} mm",
   "binDesigner.toolSets.groupNameSae": "扳手 {from} 至 {to} in",
   "binDesigner.toolSets.overBed": "该套装比打印平台大，因此收纳盒会分块打印。",
+  "binDesigner.toolSets.noRoom": "该套装放不进这个收纳盒。请去掉一些尺寸，或在盒中腾出空间。",
   "binDesigner.cutouts.scanImport.unavailable": "手机扫描目前不可用。请改为上传描摹好的轮廓。",
   "binDesigner.cutouts.scanImport.upload": "上传轮廓（SVG）",
   "binDesigner.cutouts.scanImport.waiting": "正在等待你的照片…",

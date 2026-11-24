@@ -1185,6 +1185,7 @@
   "binDesigner.toolSets.groupNameMetric": "Klíče {from} až {to} mm",
   "binDesigner.toolSets.groupNameSae": "Klíče {from} až {to} in",
   "binDesigner.toolSets.overBed": "Sada je větší než tisková podložka, proto se box vytiskne po částech.",
+  "binDesigner.toolSets.noRoom": "Sada se do tohoto boxu nevejde. Odeber některé velikosti nebo v boxu udělej místo.",
   "binDesigner.cutouts.scanImport.unavailable": "Skenování telefonem právě teď není dostupné. Nahraj místo toho obtažený obrys.",
   "binDesigner.cutouts.scanImport.upload": "Nahrát obrys (SVG)",
   "binDesigner.cutouts.scanImport.waiting": "Čekám na tvou fotku…",

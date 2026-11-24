@@ -1137,6 +1137,7 @@
   "binDesigner.toolSets.groupNameMetric": "レンチ {from}〜{to} mm",
   "binDesigner.toolSets.groupNameSae": "レンチ {from}〜{to} in",
   "binDesigner.toolSets.overBed": "セットがプリントベッドより大きいため、ビンは分割して印刷されます。",
+  "binDesigner.toolSets.noRoom": "このビンにはセットが入りません。サイズを減らすか、ビンに空きを作ってください。",
   "binDesigner.cutouts.scanImport.unavailable": "今はスマホでのスキャンを利用できません。代わりにトレース済みの輪郭をアップロードしてください。",
   "binDesigner.cutouts.scanImport.upload": "輪郭をアップロード（SVG）",
   "binDesigner.cutouts.scanImport.waiting": "写真を待っています…",
