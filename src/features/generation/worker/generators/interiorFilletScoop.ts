@@ -178,7 +178,7 @@ function boxAir(
   const solid = box(maxX - minX, maxY - minY, zCut - plan.zFloor, {
     at: [(minX + maxX) / 2, (minY + maxY) / 2, (plan.zFloor + zCut) / 2],
   });
-  const arcs = (getEdges(solid) as Edge[]).filter((edge) => {
+  const arcs = getEdges(solid).filter((edge) => {
     const b = getBounds(edge);
     if (b.zMax - b.zMin < EDGE_TOL_MM) return false;
     return plan.floor.some(
@@ -224,7 +224,7 @@ const MIN_JUNCTION_DEG = 20;
  */
 function junctionEdges(air: Shape3D, zFloor: number, zTop: number): Edge[] {
   const picked: Edge[] = [];
-  for (const edge of getEdges(air) as Edge[]) {
+  for (const edge of getEdges(air)) {
     if (getBounds(edge).zMin > zTop - EDGE_TOL_MM) continue;
     const faces = facesOfEdge(air, edge);
     if (faces.length !== 2) continue;

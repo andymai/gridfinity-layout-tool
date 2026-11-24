@@ -578,9 +578,9 @@ describe('resolveUniformTabTextSize', () => {
     // shrink together and this would fail.
     const alone = tabVolume(['', '', '', '']) - tabVolume(['KABEL', '', '', '']);
     const otherRow = tabVolume(['', '', '', 'gjpqy']) - tabVolume(['KABEL', '', '', 'gjpqy']);
-    // measureVolume integrates the curved descender glyphs to about 1e-5 of the
-    // ~3200mm³ tabs, so two equal engravings can differ by ~0.05mm³ here. A
-    // shared size moves this delta by over 10% (~2.5mm³), as the test above pins.
+    // measureVolume integrates curved glyph faces only approximately, so two
+    // equal engravings can differ in the second decimal place. A shared size
+    // moves this delta far more, as the test above pins.
     expect(otherRow).toBeCloseTo(alone, 1);
   });
 });
