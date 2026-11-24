@@ -214,6 +214,7 @@ export const CUTOUT_KEYS = [
   'entryProfile',
   'finger',
   'split',
+  'cradle',
   'leanDeg',
   'array',
   'engraveLabel',

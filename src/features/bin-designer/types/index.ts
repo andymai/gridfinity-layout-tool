@@ -281,6 +281,7 @@ export {
   MAX_CUTOUT_LEAN_DEG,
   LEAN_SHAPES,
   resolveCutoutLeanDeg,
+  isCradle,
   CUTOUT_ARRAY_MODES,
   MAX_ARRAY_INSTANCES,
   MAX_ARRAY_COUNT,

@@ -5,7 +5,7 @@
  */
 
 import type { CutoutEntryProfile } from '@/shared/types/bin';
-import { CHAMFER_SHAPES, CLEARANCE_SHAPES } from '@/shared/types/bin';
+import { CHAMFER_SHAPES, CLEARANCE_SHAPES, isCradle } from '@/shared/types/bin';
 
 /** An entry chamfer narrower than this (mm) is cut as a straight wall. */
 export const MIN_LOFTED_CHAMFER = 0.05;
@@ -62,8 +62,11 @@ export function entryChamferWidth(cutout: {
   readonly shape: string;
   readonly cutDepth: number;
   readonly chamferWidth?: number;
+  readonly cradle?: boolean;
 }): number {
-  return (CHAMFER_SHAPES as readonly string[]).includes(cutout.shape) && cutout.chamferWidth
+  return (CHAMFER_SHAPES as readonly string[]).includes(cutout.shape) &&
+    !isCradle(cutout) &&
+    cutout.chamferWidth
     ? Math.max(0, Math.min(cutout.chamferWidth, cutout.cutDepth - MIN_STRAIGHT_WALL_MM))
     : 0;
 }

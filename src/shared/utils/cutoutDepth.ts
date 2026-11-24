@@ -14,6 +14,7 @@ import type { BinParams, Cutout, CutoutDepthMode, CutoutShape } from '@/shared/t
 import {
   binDimensions,
   hasDetachableFeet,
+  isCradle,
   MAX_CUTOUT_FLOOR_MM,
   resolveCutoutLeanDeg,
 } from '@/shared/types/bin';
@@ -58,7 +59,7 @@ export interface CutoutFloorRange {
   readonly initial: number;
 }
 
-export type CutoutThroughBlock = 'group' | 'tilt' | 'taper' | 'feet' | 'nesting';
+export type CutoutThroughBlock = 'group' | 'tilt' | 'cradle' | 'taper' | 'feet' | 'nesting';
 
 function round2(mm: number): number {
   return Math.round(mm * 100) / 100;
@@ -206,6 +207,7 @@ export function withResolvedCutoutDepths<P extends BinParams>(params: P): P {
  * - `group`: a Pathfinder group's other members would leave islands
  *   floating in the opening.
  * - `tilt`: the opening under a leaning pocket would need its own lean.
+ * - `cradle`: a cradle's arc is its floor, so there is nothing to open.
  * - `taper`: the flared wall narrows the interior below the floor line.
  * - `feet`: detachable feet print separately and would close the opening.
  * - `nesting`: a Nesting body's lid-mating underside (its skirt, and the
@@ -213,11 +215,12 @@ export function withResolvedCutoutDepths<P extends BinParams>(params: P): P {
  *   close the opening again.
  */
 export function throughBlockedReason(
-  cutout: Pick<Cutout, 'groupId' | 'leanDeg' | 'shape'>,
+  cutout: Pick<Cutout, 'groupId' | 'leanDeg' | 'shape' | 'cradle'>,
   params: BinParams
 ): CutoutThroughBlock | null {
   if (cutout.groupId !== null) return 'group';
   if (resolveCutoutLeanDeg(cutout) !== 0) return 'tilt';
+  if (isCradle(cutout)) return 'cradle';
   const overhang = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
   if (overhang.taper) return 'taper';
   if (hasDetachableFeet(params.base) && resolveDetachableFeet(params).placements.length > 0) {
@@ -228,7 +231,7 @@ export function throughBlockedReason(
 }
 
 export function isThroughCut(
-  cutout: Pick<Cutout, 'groupId' | 'leanDeg' | 'shape' | 'depthMode'>,
+  cutout: Pick<Cutout, 'groupId' | 'leanDeg' | 'shape' | 'depthMode' | 'cradle'>,
   params: BinParams
 ): boolean {
   return cutoutDepthMode(cutout) === 'through' && throughBlockedReason(cutout, params) === null;

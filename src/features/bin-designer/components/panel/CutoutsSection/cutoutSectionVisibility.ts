@@ -5,7 +5,7 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import { CLEARANCE_SHAPES, CHAMFER_SHAPES } from '@/features/bin-designer/types';
+import { CLEARANCE_SHAPES, CHAMFER_SHAPES, isCradle } from '@/features/bin-designer/types';
 import type { InteractionMode } from './cutoutInteractionTypes';
 
 /**
@@ -100,8 +100,12 @@ export function knifeDepthClamp(input: KnifeDepthInputs): KnifeDepthClamp | null
   };
 }
 
-/** True when a shape exposes any insertion-fit control (clearance / chamfer). */
-export function hasFitControls(cutout: Pick<Cutout, 'shape' | 'cutDepth'>): boolean {
+/**
+ * True when a shape exposes any insertion-fit control (clearance / chamfer).
+ * A cradle takes neither: its arc meets the top along both long edges.
+ */
+export function hasFitControls(cutout: Pick<Cutout, 'shape' | 'cutDepth' | 'cradle'>): boolean {
+  if (isCradle(cutout)) return false;
   const isClearance = CLEARANCE_SHAPES.includes(cutout.shape);
   const isChamfer = CHAMFER_SHAPES.includes(cutout.shape) && cutout.cutDepth - 0.2 > 0;
   return isClearance || isChamfer;

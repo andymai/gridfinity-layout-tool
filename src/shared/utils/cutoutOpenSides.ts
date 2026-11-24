@@ -24,9 +24,11 @@ import {
   CHAMFER_SHAPES,
   CUTOUT_OPEN_SIDES,
   DEFAULT_GROUP_OP,
+  isCradle,
   MIN_OPEN_SIDE_WIDTH_MM,
   resolveCutoutLeanDeg,
 } from '@/shared/types/bin';
+import { cradleAxis, cradleOpensSide } from '@/shared/utils/cutoutCradle';
 import {
   arrayInstanceCount,
   expandCutoutArray,
@@ -45,7 +47,8 @@ import { resolveOverhang } from '@/shared/utils/overhang';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
 /** Why a cutout's open sides stay enclosed. */
-export type OpenSideBlocker = 'shape' | 'grouped' | 'lean' | 'host' | 'taper';
+export type OpenSideBlocker =
+  'shape' | 'cradleAngle' | 'cradleGroup' | 'grouped' | 'lean' | 'host' | 'taper';
 
 export type OpenSideHost = Pick<
   BinParams,
@@ -69,6 +72,12 @@ export type OpenSideHost = Pick<
  */
 export function openSideBlocker(cutout: Cutout, host: OpenSideHost): OpenSideBlocker | null {
   if (cutout.shape === 'text') return 'shape';
+  // The channel carries the cradle's arc. Off square, the arc meets the wall
+  // at a slant, and a group's fused cavity has no one arc to carry.
+  if (isCradle(cutout) && cradleAxis(cutout.rotation) === null) return 'cradleAngle';
+  if (cutout.groupId !== null && groupMembers(host, cutout.groupId).some(isCradle)) {
+    return 'cradleGroup';
+  }
   // A repeated group copies one fused solid; its channels would have to be
   // planned per copy of the group, which nothing else in the pipeline does. A
   // repeat of one copy is the plain group the builder emits, so it passes.
@@ -135,14 +144,22 @@ export function sameOpenSides(a: readonly CutoutOpenSideSpec[], b: readonly unkn
   });
 }
 
-/** The sides the builder will actually open: the stored set, or none when gated. */
+/**
+ * The sides the builder will actually open: the stored set, or none when gated.
+ * A cradle keeps only the walls its length runs into, each at the cradle's full
+ * width, because a narrower channel would cut its arc short.
+ */
 export function effectiveOpenSides(
   cutout: Cutout,
   host: OpenSideHost
 ): readonly CutoutOpenSideSpec[] {
   if (cutout.hidden === true) return [];
   if (openSideBlocker(cutout, host) !== null) return [];
-  return normalizeOpenSides(cutout.openSides) ?? [];
+  const specs = normalizeOpenSides(cutout.openSides) ?? [];
+  if (!isCradle(cutout)) return specs;
+  return specs
+    .filter((s) => cradleOpensSide(cutout, s.side))
+    .map((s) => (s.tunnel === true ? { side: s.side, tunnel: true } : { side: s.side }));
 }
 
 /** One channel through one wall, in the interior's mm frame (origin bottom-left). */
@@ -158,6 +175,8 @@ export interface OpenSideChannel {
   /** The shape's own extent toward the wall, where the overlay's strip begins. */
   readonly edge: number;
   readonly tunnel: boolean;
+  /** The floor is a cradle's arc across `lo..hi`, not flat. */
+  readonly cradle?: true;
   /** Entry chamfer the pocket carries, to flare the channel's mouth (mm). */
   readonly chamferMm: number;
   /** Nominal pocket depth; the worker clamps it to the fill height. */
@@ -179,10 +198,13 @@ interface Opening {
   readonly specs: readonly CutoutOpenSideSpec[];
   readonly chamferMm: number;
   readonly cutDepth: number;
+  readonly cradle: boolean;
 }
 
 function chamferOf(cutout: Cutout): number {
-  return CHAMFER_SHAPES.includes(cutout.shape) ? Math.max(0, cutout.chamferWidth ?? 0) : 0;
+  return CHAMFER_SHAPES.includes(cutout.shape) && !isCradle(cutout)
+    ? Math.max(0, cutout.chamferWidth ?? 0)
+    : 0;
 }
 
 function hull(bs: readonly OutlineBounds[]): OutlineBounds {
@@ -284,6 +306,7 @@ function openings(params: OpenSideHost): Opening[] {
           // A split pocket opens the wall only as deep as its shallower side,
           // so the channel never notches the wall under a floor.
           cutDepth: shallowerDepth(inst),
+          cradle: isCradle(inst),
         });
       }
       continue;
@@ -318,6 +341,7 @@ function openings(params: OpenSideHost): Opening[] {
       specs: CUTOUT_OPEN_SIDES.flatMap((s) => bySide.get(s) ?? []),
       chamferMm: Math.max(...members.map(chamferOf)),
       cutDepth: op === 'intersect' ? Math.min(...depths) : Math.max(...depths),
+      cradle: false,
     });
   }
   return out;
@@ -406,6 +430,7 @@ export function openSideChannels(
         start,
         edge,
         tunnel: spec.tunnel === true,
+        ...(o.cradle ? { cradle: true as const } : {}),
         chamferMm: o.chamferMm,
         cutDepth: o.cutDepth,
         ...(faceMm === undefined ? {} : { faceMm, edgeCrossMm }),
@@ -435,6 +460,26 @@ export interface ChannelFrame {
 export const OPEN_SIDE_REACH_PAST_FACE_MM = 6;
 
 /**
+ * Where a channel leaves along its exit axis, in the interior frame: the
+ * wall's outer face, and the far end past it where the channel stops.
+ */
+export function openSideChannelRun(
+  ch: OpenSideChannel,
+  frame: ChannelFrame
+): { readonly dir: 1 | -1; readonly face: number; readonly far: number } {
+  const alongX = ch.side === 'left' || ch.side === 'right';
+  const dir = ch.side === 'right' || ch.side === 'back' ? 1 : -1;
+  const inner = alongX ? frame.innerW : frame.innerD;
+  const face =
+    ch.faceMm === undefined
+      ? dir > 0
+        ? inner + frame.wallThickness
+        : -frame.wallThickness
+      : ch.faceMm;
+  return { dir, face, far: face + dir * OPEN_SIDE_REACH_PAST_FACE_MM };
+}
+
+/**
  * The channel's plan outline in the interior frame: from the shape's centre
  * out past the wall, `lo..hi` wide, with the pocket's entry chamfer as a
  * flare where the channel meets the wall's outer face so the part does not
@@ -449,15 +494,7 @@ export function openSideChannelOutline(
   frame: ChannelFrame
 ): [number, number][] {
   const alongX = ch.side === 'left' || ch.side === 'right';
-  const dir = ch.side === 'right' || ch.side === 'back' ? 1 : -1;
-  const inner = alongX ? frame.innerW : frame.innerD;
-  const face =
-    ch.faceMm === undefined
-      ? dir > 0
-        ? inner + frame.wallThickness
-        : -frame.wallThickness
-      : ch.faceMm;
-  const far = face + dir * OPEN_SIDE_REACH_PAST_FACE_MM;
+  const { dir, face, far } = openSideChannelRun(ch, frame);
   const chamfer = Math.min(ch.chamferMm, frame.wallThickness, (ch.hi - ch.lo) / 2);
   const { start, lo, hi } = ch;
   const pts: [number, number][] =
