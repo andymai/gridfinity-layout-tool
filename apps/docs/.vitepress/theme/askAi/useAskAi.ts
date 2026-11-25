@@ -10,20 +10,32 @@ import {
   messageText,
   newConversation,
   saveConversation,
+  sharedData,
   withTurn,
   withoutLastTurn,
 } from './history';
-import type { Conversation } from './history';
+import type { Conversation, StoredTurn } from './history';
 import type { PlanView } from '@/agent/contract';
+import type { ReaderCall } from './reads';
 import { readEvents } from './stream';
 
-export type StepKind = 'read' | 'search' | 'check' | 'plan';
+export type StepKind = 'read' | 'search' | 'check' | 'plan' | 'yours';
 
 export interface Step {
   readonly id: string;
   readonly kind: StepKind;
-  readonly state: 'running' | 'done' | 'error';
+  readonly state: 'running' | 'waiting' | 'done' | 'error';
   readonly label: string;
+}
+
+/** Reads of the reader's own data that wait for them to allow or decline. */
+export interface ReaderRequest {
+  /** The server's signed envelope, sent back as it came. */
+  readonly pending: unknown;
+  /** The turn's messages so far, kept for the turn once it ends. */
+  readonly messages: readonly unknown[];
+  calls: ReaderCall[];
+  state: 'loading' | 'asking' | 'sending';
 }
 
 export interface Exchange {
@@ -34,7 +46,11 @@ export interface Exchange {
   steps: Step[];
   /** The plans that the answer draws, by handle. */
   plans: Record<string, PlanView>;
-  status: 'waiting' | 'streaming' | 'done' | 'stopped' | 'error';
+  /** asking: the turn waits for the reader to allow a read of their data. */
+  status: 'waiting' | 'streaming' | 'asking' | 'done' | 'stopped' | 'error';
+  request: ReaderRequest | null;
+  /** The turn holds the reader's own data, so its answer may link only to this site. */
+  personal: boolean;
   notice: string | null;
   traceId: string | null;
   feedback: 1 | -1 | null;
@@ -134,6 +150,8 @@ function exchange(question: string): Exchange {
     steps: [],
     plans: {},
     status: 'waiting',
+    request: null,
+    personal: false,
     notice: null,
     traceId: null,
     feedback: null,
@@ -182,6 +200,7 @@ async function loadAvailability(search: string): Promise<void> {
       ...exchange(turn.question),
       text: answerText(turn),
       plans: { ...turn.plans },
+      personal: sharedData(turn),
       traceId: turn.traceId ?? null,
       status: 'done' as const,
       stored: true,
@@ -242,15 +261,134 @@ export function useAskAiHost(): void {
 
 export const busy = (): boolean => controller !== null;
 
+const sendable = (turns: readonly StoredTurn[]): unknown[] =>
+  turns.map(({ traceId: _local, plans: _drawn, ...turn }) => turn);
+
+function isCall(value: unknown): value is { id: string; name: string; input: unknown } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { id?: unknown }).id === 'string' &&
+    typeof (value as { name?: unknown }).name === 'string'
+  );
+}
+
+async function prepareReads(current: Exchange, calls: unknown[]): Promise<void> {
+  const asked = calls.filter(isCall);
+  let prepared: ReaderCall[];
+  try {
+    const { prepareRead } = await import('./reads');
+    prepared = await Promise.all(asked.map(prepareRead));
+  } catch {
+    prepared = asked.map((call) => ({
+      id: call.id,
+      title: 'Your data',
+      preview: null,
+      data: null,
+      unavailable: true,
+    }));
+  }
+  const request = current.request;
+  if (request === null || request.state !== 'loading') return;
+  request.calls = prepared;
+  request.state = 'asking';
+}
+
+/** Reads one response stream into the exchange: a whole turn, or the rest of one after a resume. */
+async function consume(
+  current: Exchange,
+  body: ReadableStream<Uint8Array>,
+  messages: unknown[]
+): Promise<void> {
+  current.status = 'streaming';
+  let roundEnded = false;
+  for await (const { event, data } of readEvents(body)) {
+    const payload = data as Record<string, unknown>;
+    if (event === 'start') {
+      current.traceId = typeof payload.traceId === 'string' ? payload.traceId : null;
+    } else if (event === 'step') {
+      const step = payload as unknown as Step;
+      const at = current.steps.findIndex((s) => s.id === step.id);
+      if (at < 0) current.steps.push(step);
+      else current.steps.splice(at, 1, step);
+    } else if (event === 'plan' && isPlanView(payload.plan)) {
+      current.plans[payload.plan.handle] = payload.plan;
+    } else if (event === 'thinking' && typeof payload.text === 'string') {
+      if (roundEnded && current.thinking) current.thinking += '\n\n';
+      roundEnded = false;
+      current.thinking += payload.text;
+    } else if (event === 'text' && typeof payload.text === 'string') {
+      current.text += payload.text;
+    } else if (event === 'message') {
+      messages.push(payload.content);
+      roundEnded = true;
+      // Text before a tool call is not the answer; the next round writes it.
+      if (hasToolCall(payload.content)) current.text = '';
+    } else if (event === 'notice' && typeof payload.code === 'string') {
+      current.notice = NOTICES[payload.code] ?? null;
+      if (payload.code === 'resting') askAi.resting = true;
+    } else if (event === 'error') {
+      current.status = 'error';
+      current.notice = errorNotice(500, payload.code);
+    } else if (event === 'pending') {
+      current.status = 'asking';
+      current.request = {
+        pending: payload.pending,
+        messages: [...messages],
+        calls: [],
+        state: 'loading',
+      };
+      void prepareReads(current, Array.isArray(payload.calls) ? payload.calls : []);
+    } else if (event === 'done') {
+      current.status = 'done';
+      // A reload shows only the last message, so the live view does too.
+      if (messages.length > 0) current.text = messageText(messages.at(-1));
+      const turn = payload.turn as Record<string, unknown> | undefined;
+      if (turn && typeof turn.signature === 'string') {
+        keep(
+          withTurn(chat(), {
+            question: String(turn.question),
+            page: String(turn.page),
+            locale: String(turn.locale),
+            signature: turn.signature,
+            messages,
+            ...(Array.isArray(turn.results) ? { results: turn.results as unknown[] } : {}),
+            ...(current.traceId ? { traceId: current.traceId } : {}),
+            ...(Object.keys(current.plans).length > 0 ? { plans: { ...current.plans } } : {}),
+          })
+        );
+        current.stored = true;
+      }
+    }
+  }
+  if (current.status === 'streaming') {
+    current.status = 'error';
+    current.notice = errorNotice(500, null);
+  }
+}
+
+// A new question leaves an unanswered request behind: the server never
+// hears back, and its envelope expires.
+function abandonRequests(): void {
+  for (const earlier of askAi.exchanges) {
+    if (earlier.status !== 'asking') continue;
+    earlier.status = 'stopped';
+    earlier.request = null;
+    earlier.steps = earlier.steps.map((step) =>
+      step.state === 'waiting' ? { ...step, state: 'error' } : step
+    );
+  }
+}
+
 export async function ask(question: string, page: string): Promise<void> {
   const text = question.trim();
   if (!text || controller) return;
+  abandonRequests();
   askAi.exchanges.push(exchange(text));
   // The pushed object is now reactive; write to that one.
   const current = askAi.exchanges[askAi.exchanges.length - 1] as Exchange;
   const { analytics, locale } = readerSettings(store('local'));
   const before = chat();
-  const messages: unknown[] = [];
   const abort = new AbortController();
   controller = abort;
   try {
@@ -261,7 +399,7 @@ export async function ask(question: string, page: string): Promise<void> {
         question: text,
         page,
         locale,
-        turns: before.turns.map(({ traceId: _local, plans: _drawn, ...turn }) => turn),
+        turns: sendable(before.turns),
         analytics,
       },
       abort.signal
@@ -273,66 +411,71 @@ export async function ask(question: string, page: string): Promise<void> {
       current.notice = errorNotice(response.status, body?.code);
       return;
     }
-    current.status = 'streaming';
-    let roundEnded = false;
-    for await (const { event, data } of readEvents(response.body)) {
-      const payload = data as Record<string, unknown>;
-      if (event === 'start') {
-        current.traceId = typeof payload.traceId === 'string' ? payload.traceId : null;
-      } else if (event === 'step') {
-        const step = payload as unknown as Step;
-        const at = current.steps.findIndex((s) => s.id === step.id);
-        if (at < 0) current.steps.push(step);
-        else current.steps.splice(at, 1, step);
-      } else if (event === 'plan' && isPlanView(payload.plan)) {
-        current.plans[payload.plan.handle] = payload.plan;
-      } else if (event === 'thinking' && typeof payload.text === 'string') {
-        if (roundEnded && current.thinking) current.thinking += '\n\n';
-        roundEnded = false;
-        current.thinking += payload.text;
-      } else if (event === 'text' && typeof payload.text === 'string') {
-        current.text += payload.text;
-      } else if (event === 'message') {
-        messages.push(payload.content);
-        roundEnded = true;
-        // Text before a tool call is not the answer; the next round writes it.
-        if (hasToolCall(payload.content)) current.text = '';
-      } else if (event === 'notice' && typeof payload.code === 'string') {
-        current.notice = NOTICES[payload.code] ?? null;
-        if (payload.code === 'resting') askAi.resting = true;
-      } else if (event === 'error') {
-        current.status = 'error';
-        current.notice = errorNotice(500, payload.code);
-      } else if (event === 'done') {
-        current.status = 'done';
-        // A reload shows only the last message, so the live view does too.
-        if (messages.length > 0) current.text = messageText(messages.at(-1));
-        const turn = payload.turn as Record<string, unknown> | undefined;
-        if (turn && typeof turn.signature === 'string') {
-          keep(
-            withTurn(chat(), {
-              question: String(turn.question),
-              page: String(turn.page),
-              locale: String(turn.locale),
-              signature: turn.signature,
-              messages,
-              ...(current.traceId ? { traceId: current.traceId } : {}),
-              ...(Object.keys(current.plans).length > 0 ? { plans: { ...current.plans } } : {}),
-            })
-          );
-          current.stored = true;
-        }
-      }
-    }
-    if (current.status === 'streaming') {
-      current.status = 'error';
-      current.notice = errorNotice(500, null);
-    }
+    await consume(current, response.body, []);
   } catch {
     current.status = abort.signal.aborted ? 'stopped' : 'error';
     if (current.status === 'error') current.notice = errorNotice(0, null);
   } finally {
     settleSteps(current);
+    controller = null;
+  }
+}
+
+/**
+ * Answers a request to read the reader's data. Allow sends what the panel
+ * showed; Don't allow sends only that they declined. A read that this
+ * browser could not run goes as unavailable either way.
+ */
+export async function answerRequest(target: Exchange, allow: boolean): Promise<void> {
+  const request = target.request;
+  if (request === null || request.state !== 'asking' || controller) return;
+  request.state = 'sending';
+  const results = request.calls.map((call) => {
+    if (call.unavailable) return { callId: call.id, status: 'unavailable' };
+    return allow
+      ? { callId: call.id, status: 'shared', data: call.data }
+      : { callId: call.id, status: 'declined' };
+  });
+  const asked = new Set(request.calls.map((call) => call.id));
+  target.steps = target.steps.map((step) =>
+    asked.has(step.id) ? { ...step, state: 'done', label: allow ? step.label : 'Not shared' } : step
+  );
+  if (results.some((result) => result.status === 'shared')) target.personal = true;
+  target.status = 'waiting';
+  const { analytics } = readerSettings(store('local'));
+  const before = chat();
+  const abort = new AbortController();
+  controller = abort;
+  try {
+    const response = await post(
+      {
+        op: 'resume',
+        sessionId: before.sessionId,
+        pending: request.pending,
+        results,
+        turns: sendable(before.turns),
+        analytics,
+      },
+      abort.signal
+    );
+    target.request = null;
+    if (!response.ok || !response.body) {
+      const body = (await response.json().catch(() => null)) as { code?: unknown } | null;
+      if (body?.code === 'RESTING') askAi.resting = true;
+      target.status = 'error';
+      target.notice =
+        response.status === 410
+          ? 'This request waited too long. Ask your question again.'
+          : errorNotice(response.status, body?.code);
+      return;
+    }
+    await consume(target, response.body, [...request.messages]);
+  } catch {
+    target.request = null;
+    target.status = abort.signal.aborted ? 'stopped' : 'error';
+    if (target.status === 'error') target.notice = errorNotice(0, null);
+  } finally {
+    settleSteps(target);
     controller = null;
   }
 }

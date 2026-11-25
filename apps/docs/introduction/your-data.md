@@ -119,7 +119,11 @@ The <Ui k="settings.helpImprove" /> switch doesn't stop these logs, because the 
 
 ## Ask AI
 
-These docs have Ask AI, a chat that answers questions about the Layout Tool from these pages. When you ask a question, the Layout Tool's server sends it to Anthropic, the company that runs the Claude model that writes the answer. The server sends your question, the docs page you are on, your language and the chat so far. It doesn't send your name, your email address or your layouts. A plan that Ask AI draws travels in its link, after the `#`. The browser never sends that part to a server.
+These docs have Ask AI, a chat that answers questions about the Layout Tool from these pages. When you ask a question, the Layout Tool's server sends it to Anthropic, the company that runs the Claude model that writes the answer. The server sends your question, the docs page you are on, your language and the chat so far. It doesn't send your name or your email address.
+
+Ask AI can read one of your saved layouts or your printer settings, but only when you allow it. It shows what it would send, and you choose **Allow** or **Don't allow**. Each read asks again. A read takes the layout's names, sizes, bins and items, not its notes. After a read, the answer links only to this site.
+
+A plan that Ask AI draws travels in its link, after the `#`. The browser never sends that part to a server.
 
 The chat stays in this browser tab, and it ends when you close the tab.
 

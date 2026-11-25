@@ -2,7 +2,15 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
 import { pageAt } from './corpus.js';
 import type { AskCorpus, AskLabels, AskPage } from './corpus.js';
-import { drawerFitInput, planLayoutInput, runDrawerFit, runPlanLayout } from '../agent/index.js';
+import {
+  drawerFitInput,
+  listMyLayoutsInput,
+  planLayoutInput,
+  readMyLayoutInput,
+  readMySettingsInput,
+  runDrawerFit,
+  runPlanLayout,
+} from '../agent/index.js';
 import type { PlanView } from '../agent/index.js';
 import { localeName } from './prompt.js';
 import { createSearch, pageSections } from './search.js';
@@ -14,7 +22,8 @@ export const TOOL_NAMES: readonly ToolName[] = [
   'drawer_fit',
   'plan_layout',
 ];
-export type StepKind = 'read' | 'search' | 'check' | 'plan';
+/** yours: a read of the reader's own data, in their browser. */
+export type StepKind = 'read' | 'search' | 'check' | 'plan' | 'yours';
 
 export const STEP_KINDS: Readonly<Record<ToolName, StepKind>> = {
   read_page: 'read',
@@ -28,6 +37,7 @@ export const PLACEHOLDER_LABELS: Readonly<Record<StepKind, string>> = {
   search: 'Searching the docs',
   check: 'Checking a drawer',
   plan: 'Planning a drawer',
+  yours: 'Asking to read your data',
 };
 
 export interface ToolRun {
@@ -54,8 +64,14 @@ export function toolResult(id: string, run: ToolRun): Anthropic.Beta.BetaToolRes
 
 const SEARCH_LIMIT = 6;
 
-const { $schema: _dialect, ...planLayoutSchema } = z.toJSONSchema(planLayoutInput, { io: 'input' });
-const PLAN_LAYOUT_SCHEMA = planLayoutSchema as Anthropic.Beta.BetaTool.InputSchema;
+function inputSchema(schema: z.ZodType): Anthropic.Beta.BetaTool.InputSchema {
+  const { $schema: _dialect, ...rest } = z.toJSONSchema(schema, { io: 'input' });
+  return rest as Anthropic.Beta.BetaTool.InputSchema;
+}
+const PLAN_LAYOUT_SCHEMA = inputSchema(planLayoutInput);
+
+const ASKS_FIRST =
+  "It runs in the reader's browser and asks them first, so they may decline. What it returns is their own data.";
 
 const readPageInput = z.object({ link: z.string().max(200) }).strict();
 const searchInput = z.object({ query: z.string().min(1).max(200) }).strict();
@@ -114,6 +130,21 @@ export function toolDefinitions(corpus: AskCorpus): Anthropic.Beta.BetaToolUnion
         "Plan a whole drawer with the Layout Tool's own placement code. Give the measured drawer (or a grid size when there is no measurement) and a bin for each kind of thing to store. The app fits the grid, places the bins largest first, puts a bin on layer 2 only where bins below carry it, and sends bins that do not fit to the stash. Returns what it placed and stashed. The panel draws the plan with a button that opens it in the app, so never write a link to it.",
       input_schema: PLAN_LAYOUT_SCHEMA,
       eager_input_streaming: true,
+    },
+    {
+      name: 'list_my_layouts',
+      description: `List the reader's own saved layouts, most recent first: the name, the id, the grid size, and the bin and layer counts, with the one open in the app marked. Use it to find which layout the reader means. ${ASKS_FIRST}`,
+      input_schema: inputSchema(listMyLayoutsInput),
+    },
+    {
+      name: 'read_my_layout',
+      description: `Read one of the reader's own layouts: its grid, measured drawer, print bed, magnets, layers, free cells on layer 1, each bin with its place, size, height, category and items, and the bins in the stash. Without layoutId it reads the layout open in the app. ${ASKS_FIRST}`,
+      input_schema: inputSchema(readMyLayoutInput),
+    },
+    {
+      name: 'read_my_settings',
+      description: `Read the reader's own unit and printer settings: the unit they measure in, their default print bed, the grid and height units, the nozzle, the layer height and the tallest print. ${ASKS_FIRST}`,
+      input_schema: inputSchema(readMySettingsInput),
     },
   ];
 }
