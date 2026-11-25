@@ -147,7 +147,7 @@ export async function readLayout(
   }
   if (raw === null || raw === undefined) return isOk(stored) ? ok(null) : stored;
   const result = salvageImport(raw);
-  if (!result.valid) return ok(null);
+  if (!result.valid) return isOk(stored) ? ok(null) : stored;
   const layout = result.layout;
   return ok(
     layout.baseplateParams

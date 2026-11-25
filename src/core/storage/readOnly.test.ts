@@ -85,6 +85,8 @@ describe('read-only layout reads', () => {
     try {
       expect(expectErr(await readLibraryIndex()).code).toBe('STORAGE_UNAVAILABLE');
       expect(expectErr(await readLayout(id)).code).toBe('STORAGE_UNAVAILABLE');
+      localStorage.setItem(`${LAYOUT_KEY_PREFIX}${id}`, JSON.stringify({}));
+      expect(expectErr(await readLayout(id)).code).toBe('STORAGE_UNAVAILABLE');
       localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(library));
       expect(expectOk(await readLibraryIndex())?.activeLayoutId).toBe(id);
     } finally {
