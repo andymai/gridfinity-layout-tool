@@ -14,6 +14,7 @@ import type { LayoutPreview } from '@/core/types';
 
 // Mock storage module
 vi.mock('@/core/storage', () => ({
+  getPlanLinkFromURL: vi.fn(() => null),
   loadLayoutAsync: vi.fn(),
 }));
 
@@ -71,6 +72,7 @@ describe('useLayoutRouting', () => {
     // Set up default mocks
     vi.mocked(url.parseLayoutFromURL).mockReturnValue(null);
     vi.mocked(url.getCanonicalRedirect).mockReturnValue(null);
+    vi.mocked(storage.getPlanLinkFromURL).mockReturnValue(null);
     vi.mocked(storage.loadLayoutAsync).mockResolvedValue(mockLayout);
     vi.mocked(validation.validateLayoutIntegrity).mockReturnValue({ valid: true });
 
@@ -214,6 +216,15 @@ describe('useLayoutRouting', () => {
       renderHook(() => useLayoutRouting());
 
       // Should NOT redirect to active layout - let SharedLayoutImporter handle the cloud share
+      expect(url.setLayoutURL).not.toHaveBeenCalled();
+    });
+
+    it('leaves a plan link in the URL until the importer has opened it', () => {
+      vi.mocked(url.parseLayoutFromURL).mockReturnValue(null);
+      vi.mocked(storage.getPlanLinkFromURL).mockReturnValue('v1.abc');
+
+      renderHook(() => useLayoutRouting());
+
       expect(url.setLayoutURL).not.toHaveBeenCalled();
     });
 

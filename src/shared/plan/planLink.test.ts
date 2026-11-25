@@ -2,6 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { deflateSync } from 'fflate';
 import { isOk } from '@/core/result';
 import { PLAN_LINK_MAX_CHARS, decodePlanLink, encodePlanLink, planLinkUrl } from './planLink';
+import type { PlanInput } from './planInput';
+
+function encoded(plan: PlanInput): string {
+  const result = encodePlanLink(plan);
+  if (!isOk(result)) throw new Error(`plan too large: ${result.error.chars}`);
+  return result.value;
+}
 import { planInput } from './planInput';
 
 const input = planInput.parse({
@@ -12,22 +19,21 @@ const input = planInput.parse({
 
 describe('plan links', () => {
   it('round-trips a plan', async () => {
-    const decoded = await decodePlanLink(encodePlanLink(input));
+    const decoded = await decodePlanLink(encoded(input));
     expect(isOk(decoded) && decoded.value).toEqual(input);
-    expect(planLinkUrl('https://example.test', input)).toMatch(
-      /^https:\/\/example\.test\/#plan=v1\./
-    );
+    const url = planLinkUrl('https://example.test', input);
+    expect(isOk(url) && url.value).toMatch(/^https:\/\/example\.test\/#plan=v1\./);
   });
 
   it('names a link from a newer app version apart from a damaged one', async () => {
-    const newer = await decodePlanLink(`v2.${encodePlanLink(input).slice(3)}`);
+    const newer = await decodePlanLink(`v2.${encoded(input).slice(3)}`);
     expect(!isOk(newer) && newer.error).toEqual({ kind: 'newer-version', version: 2 });
     const damaged = await decodePlanLink('v1.not!base64');
     expect(!isOk(damaged) && damaged.error).toEqual({ kind: 'malformed' });
   });
 
   it('checks a decoded plan like any input', async () => {
-    const tampered = encodePlanLink({ ...input, bins: [] });
+    const tampered = encoded({ ...input, bins: [] });
     const decoded = await decodePlanLink(tampered);
     expect(!isOk(decoded) && decoded.error.kind).toBe('invalid');
   });
@@ -49,6 +55,24 @@ describe('plan links', () => {
     expect(!isOk(decoded) && decoded.error).toEqual({ kind: 'malformed' });
   });
 
+  it('refuses to write a link that the decoder would reject', () => {
+    const rich = planInput.parse({
+      grid: { width: 20, depth: 20 },
+      bins: Array.from({ length: 60 }, (_, i) => ({
+        label: `Bin ${i + 1}`,
+        width: 1,
+        depth: 1,
+        height: 3,
+        items: Array.from(
+          { length: 20 },
+          (_, k) => `Part ${i}-${k} ${(i * 7919 + k * 104729).toString(36)}`
+        ),
+      })),
+    });
+    const result = encodePlanLink(rich);
+    expect(!isOk(result) && result.error.kind).toBe('too-large');
+  });
+
   it('keeps a 60-bin plan with labels inside the link budget', () => {
     const big = planInput.parse({
       grid: { width: 20, depth: 20 },
@@ -61,6 +85,6 @@ describe('plan links', () => {
         category: ['Screws', 'Nuts', 'Washers', 'Tools'][i % 4],
       })),
     });
-    expect(encodePlanLink(big).length).toBeLessThan(PLAN_LINK_MAX_CHARS);
+    expect(encoded(big).length).toBeLessThan(PLAN_LINK_MAX_CHARS);
   });
 });

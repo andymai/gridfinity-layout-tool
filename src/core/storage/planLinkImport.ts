@@ -17,6 +17,12 @@ export async function importPlanLink(
   if (!isOk(decoded)) {
     const { error } = decoded;
     if (error.kind === 'newer-version') return { layout: null, errors: [PLAN_LINK_NEEDS_UPDATE] };
+    if (error.kind === 'unsupported') {
+      return {
+        layout: null,
+        errors: ['This browser cannot open plan links. Update the browser and try again.'],
+      };
+    }
     return {
       layout: null,
       errors: error.kind === 'invalid' ? [...error.issues] : ['The plan link is damaged.'],

@@ -85,7 +85,10 @@ export const planInput = z
       }
     }
     const layers = new Set(plan.bins.map((bin) => bin.layer ?? 1));
-    for (let layer = 1; layer <= Math.max(...layers); layer++) {
+    // Bounded by the limit: a field error does not stop this check, and a crafted
+    // layer number must not set the loop length.
+    const top = Math.min(Math.max(...layers), PLAN_LIMITS.LAYERS_MAX);
+    for (let layer = 1; layer <= top; layer++) {
       if (!layers.has(layer)) {
         ctx.addIssue({
           code: 'custom',

@@ -108,6 +108,16 @@ describe('buildPlanLayout', () => {
     expect(result.layout.baseplateParams?.paddingLeft).toBe(0.5);
   });
 
+  it('refuses a measured height outside what the app stores', () => {
+    const built = buildPlanLayout(
+      planInput.parse({
+        drawer: { width: 40, depth: 30, height: 600, unit: 'cm' },
+        bins: [{ label: 'M3', width: 1, depth: 1, height: 3 }],
+      })
+    );
+    expect(isOk(built)).toBe(false);
+  });
+
   it('builds a layout that the app imports as a shared layout', () => {
     const imported = importLayoutJSON(JSON.stringify(plan(screwDrawer).layout));
     expect(imported.errors).toEqual([]);

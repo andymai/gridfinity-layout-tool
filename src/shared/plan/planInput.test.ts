@@ -53,6 +53,16 @@ describe('planInput', () => {
     ]);
   });
 
+  it('checks a crafted layer number without counting up to it', () => {
+    const started = performance.now();
+    const found = issues({
+      grid: { width: 8, depth: 6 },
+      bins: [{ ...bin, layer: 1_000_000_000 }],
+    });
+    expect(performance.now() - started).toBeLessThan(500);
+    expect(found.length).toBeLessThan(15);
+  });
+
   it('fills layers from 1 up', () => {
     expect(issues({ grid: { width: 8, depth: 6 }, bins: [{ ...bin, layer: 2 }] })).toEqual([
       'Layers must be filled from 1 up; no bin is on layer 1.',

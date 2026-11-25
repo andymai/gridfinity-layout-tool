@@ -4,7 +4,7 @@ import {
   DEFAULT_CATEGORIES,
   STAGING_ID,
 } from '@/core/constants';
-import { isOk, ok } from '@/core/result';
+import { err, isOk, ok, validationImportFailed } from '@/core/result';
 import type { Result, ValidationError } from '@/core/result';
 import { binId, categoryId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
 import type { Bin, Category, Layer, LayerId, Layout } from '@/core/types';
@@ -44,7 +44,6 @@ export interface PlanResult {
   readonly layout: Layout;
   readonly placed: readonly PlannedBin[];
   readonly stashed: readonly StashedBin[];
-  /** True when the grid or a bin uses half units. */
   readonly half: boolean;
 }
 
@@ -58,7 +57,6 @@ function planCategories(input: PlanInput): Category[] {
   }));
 }
 
-/** Each layer is as tall as its shortest bin, so every bin is at least its layer's height. */
 function planLayers(bins: readonly PlanBin[]): Layer[] {
   const count = Math.max(...bins.map((bin) => bin.layer ?? 1));
   return Array.from({ length: count }, (_, index) => {
@@ -93,12 +91,23 @@ function baseLayout(input: PlanInput, categories: Category[], layers: Layer[], h
   };
   if (input.drawer === undefined) return ok({ ...base, layers });
   const { width, depth, height, unit } = input.drawer;
+  const heightMm = height === undefined ? undefined : toMm(height, unit);
+  if (
+    heightMm !== undefined &&
+    !(heightMm >= CONSTRAINTS.MEASURED_MM_MIN && heightMm <= CONSTRAINTS.MEASURED_MM_MAX)
+  ) {
+    return err(
+      validationImportFailed([
+        `A drawer height must be from ${CONSTRAINTS.MEASURED_MM_MIN} to ${CONSTRAINTS.MEASURED_MM_MAX} mm.`,
+      ])
+    );
+  }
   const built = buildDrawerLinkLayout(
     base,
     {
       widthMm: toMm(width, unit),
       depthMm: toMm(depth, unit),
-      ...(height === undefined ? {} : { heightMm: toMm(height, unit) }),
+      ...(heightMm === undefined ? {} : { heightMm }),
     },
     name,
     { allowHalf: half }

@@ -93,12 +93,13 @@ export function buildDrawerLinkLayout(
 ): Result<Layout, ValidationError> {
   const pitchX = base.gridUnitMm;
   const pitchY = effectiveGridUnitMmY(base);
+  const minUnits = allowHalf ? CONSTRAINTS.GRID_MIN : 1;
   const fitsGrid = (sizeMm: number, pitch: number): boolean =>
-    sizeMm >= pitch && sizeMm <= CONSTRAINTS.GRID_MAX * pitch;
+    sizeMm >= minUnits * pitch && sizeMm <= CONSTRAINTS.GRID_MAX * pitch;
   if (!fitsGrid(spec.widthMm, pitchX) || !fitsGrid(spec.depthMm, pitchY)) {
     return err(
       validationImportFailed([
-        `Drawer ${spec.widthMm} × ${spec.depthMm} mm is outside 1 to ${CONSTRAINTS.GRID_MAX} grid units`,
+        `Drawer ${spec.widthMm} × ${spec.depthMm} mm is outside ${minUnits} to ${CONSTRAINTS.GRID_MAX} grid units`,
       ])
     );
   }
