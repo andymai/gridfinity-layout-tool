@@ -1,0 +1,38 @@
+scripts/doc-budget.json
+  s_88cfcc42bf5bfd::t_4875b150c45f5d 43
+scripts/check-doc-drift.ts
+  s_88cfcc42bf5bfd::t_2445ca24993c39 56-57
+api/lib/mcp/server.ts
+  s_88cfcc42bf5bfd::t_700116c7dcf1b1 34
+skills/gridfinity-layout-tool/references/tools.md
+  s_88cfcc42bf5bfd::t_1a25b016b10166 1-83
+scripts/check-doc-drift.test.ts
+  s_88cfcc42bf5bfd::t_d5a5fa3107193b 23
+scripts/build-agent-skill.ts
+  s_88cfcc42bf5bfd::t_fe5008a5edf5f9 1-8,10-13,15-148,150-156
+  s_88cfcc42bf5bfd::t_1a25b016b10166 9,14,149
+scripts/build-agent-skill.test.ts
+  s_88cfcc42bf5bfd::t_94e2def74ff9d9 29
+  s_88cfcc42bf5bfd::t_5742e34596d282 1-28,30-54
+package.json
+  s_88cfcc42bf5bfd::t_1a25b016b10166 35
+skills/gridfinity-layout-tool/SKILL.md
+  s_88cfcc42bf5bfd::t_01576bb58a4038 1-35,37-43
+  s_88cfcc42bf5bfd::t_4875b150c45f5d 36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "39ffc50bb32192d7e259fb4772d7fb882674bef7",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
