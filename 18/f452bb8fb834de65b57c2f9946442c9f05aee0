@@ -1,0 +1,23 @@
+src/agent/tools/planLayout.ts
+  s_88cfcc42bf5bfd::t_cb5dccdec3ddad 1,64-72
+src/agent/tools/planLayout.test.ts
+  s_88cfcc42bf5bfd::t_cb5dccdec3ddad 24-33
+scripts/docs-ask-eval/golden.ts
+  s_88cfcc42bf5bfd::t_cb5dccdec3ddad 722
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "18f452bb8fb834de65b57c2f9946442c9f05aee0",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
