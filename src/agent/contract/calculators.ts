@@ -41,10 +41,16 @@ export const printEstimateInput = z
         z
           .object({
             label: z.string().trim().min(1).max(CONSTRAINTS.LABEL_MAX_LENGTH).optional(),
-            width: gridSize(16),
-            depth: gridSize(16),
+            width: gridSize(16).describe('Width in grid units of 42 mm, whole or half.'),
+            depth: gridSize(16).describe('Depth in grid units of 42 mm, whole or half.'),
             height: z.number().int().min(2).max(50).describe('In height units of 7 mm.'),
-            count: z.number().int().min(1).max(60).optional(),
+            count: z
+              .number()
+              .int()
+              .min(1)
+              .max(60)
+              .optional()
+              .describe('How many of this bin. Default 1.'),
           })
           .strict()
       )
