@@ -114,7 +114,8 @@ export function SharedLayoutImporter() {
       cloudShareId?: string,
       permission?: 'view' | 'edit',
       linkUpdatedAt?: string,
-      designIds?: Readonly<Record<string, string>>
+      designIds?: Readonly<Record<string, string>>,
+      source?: 'plan'
     ) => {
       activateLayout(layout, SHARED_PREVIEW_ID, `Viewing shared layout: ${layout.name}`);
       setSharedLayoutPreview(
@@ -124,7 +125,8 @@ export function SharedLayoutImporter() {
         cloudShareId,
         permission,
         linkUpdatedAt,
-        designIds
+        designIds,
+        source
       );
     },
     [activateLayout, setSharedLayoutPreview]
@@ -144,7 +146,10 @@ export function SharedLayoutImporter() {
     if (hasProcessedUrlShare.current) return;
     hasProcessedUrlShare.current = true;
 
-    const open = ({ layout, errors }: { layout: Layout | null; errors: string[] }): void => {
+    const open = (
+      { layout, errors }: { layout: Layout | null; errors: string[] },
+      source?: 'plan'
+    ): void => {
       if (errors.length > 0 || !layout) {
         // A plan link from a newer deploy: reload into the current bundle, which
         // reads the hash again. The recovery guard stops a reload loop.
@@ -166,7 +171,7 @@ export function SharedLayoutImporter() {
         addToast(t('toast.sharedLayoutFailed', { error: errorMessage }), 'error');
         return;
       }
-      loadLayoutPreview(layout);
+      loadLayoutPreview(layout, undefined, undefined, undefined, undefined, undefined, source);
       clearSharedLayoutFromURL();
     };
 
@@ -176,7 +181,7 @@ export function SharedLayoutImporter() {
     }
     if (planLink === null) return;
     void import('@/core/storage/planLinkImport')
-      .then(async ({ importPlanLink }) => open(await importPlanLink(planLink)))
+      .then(async ({ importPlanLink }) => open(await importPlanLink(planLink), 'plan'))
       .catch(() =>
         open({ layout: null, errors: ['The plan link could not load. Reload and try again.'] })
       );

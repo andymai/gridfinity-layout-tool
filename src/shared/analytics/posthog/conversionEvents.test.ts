@@ -10,7 +10,7 @@ vi.mock('./trackEvent', () => ({
   getDeviceType: () => 'desktop',
 }));
 
-import { trackToolActivated, trackToolConverted } from './conversionEvents';
+import { trackPlanLinkSaved, trackToolActivated, trackToolConverted } from './conversionEvents';
 import { ANALYTICS_STORAGE_KEY, pruneAnalyticsData } from './identity';
 
 beforeEach(() => {
@@ -95,5 +95,18 @@ describe('trackToolConverted', () => {
       split: true,
       piece_count: 6,
     });
+  });
+});
+
+describe('trackPlanLinkSaved', () => {
+  beforeEach(() => trackEventMock.mockReset());
+
+  it('sends one plan_link_saved event with the bin count, every time', () => {
+    trackPlanLinkSaved(12);
+    trackPlanLinkSaved(3);
+    expect(trackEventMock.mock.calls).toEqual([
+      ['plan_link_saved', { bin_count: 12 }],
+      ['plan_link_saved', { bin_count: 3 }],
+    ]);
   });
 });
