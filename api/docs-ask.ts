@@ -217,6 +217,7 @@ async function streamTurn(res: VercelResponse, turn: TurnRequest): Promise<undef
       signal: abort.signal,
       clientTools: CLIENT_TOOLS,
       firstRound: turn.earlier.rounds,
+      clientResults: turn.earlier.results.length,
     });
     const fields = { question: turn.question, page: turn.page, locale: turn.locale };
     const results = turn.earlier.results;

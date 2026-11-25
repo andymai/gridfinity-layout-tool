@@ -168,6 +168,26 @@ describe('runAgent', () => {
     ]);
   });
 
+  it('answers browser calls past the read limit itself and asks the reader nothing', async () => {
+    const asks: Round = {
+      events: [{ type: 'content_block_start', index: 0, content_block: browserCall }],
+      content: [browserCall],
+      stopReason: 'tool_use',
+    };
+    const { client, calls } = scripted([asks, answerRound]);
+    const events: AgentEvent[] = [];
+    const result = await runAgent({
+      ...options(client, events),
+      clientTools: new Map([['read_my_layout', layoutTool]]),
+      clientResults: 16,
+    });
+    expect(result.pending).toBeNull();
+    expect(calls[1]?.messages.at(-1)).toMatchObject({
+      content: [{ tool_use_id: 'toolu_b', is_error: true }],
+    });
+    expect(events).toContainEqual(expect.objectContaining({ id: 'toolu_b', state: 'error' }));
+  });
+
   it('counts the rounds of a turn across a resume', async () => {
     const { client, calls } = scripted([answerRound]);
     const result = await runAgent({ ...options(client, []), firstRound: 5 });

@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { CLIENT_TOOLS } from './clientTools.js';
+import { CLIENT_TOOLS, OVER_LIMIT_CONTENT, overClientLimit } from './clientTools.js';
 import type { ClientTools } from './clientTools.js';
 import type { AskCorpus } from './corpus.js';
 import { SYSTEM_PROMPT } from './prompt.js';
@@ -61,6 +61,8 @@ export interface AgentOptions {
   readonly clientTools?: ClientTools;
   /** Rounds that the turn used before a resume; the cap counts across resumes. */
   readonly firstRound?: number;
+  /** Browser results that the turn already holds, for its read limit. */
+  readonly clientResults?: number;
 }
 
 /**
@@ -354,7 +356,20 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
       return toolResult(call.id, run);
     });
     const browser = calls.filter((call) => clientTools.has(call.name));
-    if (browser.length > 0) {
+    const overLimit =
+      browser.length > 0 && overClientLimit(options.clientResults ?? 0, browser.length);
+    if (overLimit) {
+      for (const call of browser) {
+        const label = clientTools.get(call.name)?.label(call.input) ?? call.name;
+        steps.push(label);
+        options.send({ type: 'step', id: call.id, kind: kindOf(call.name), state: 'error', label });
+        results[calls.indexOf(call)] = toolResult(call.id, {
+          isError: true,
+          label,
+          content: OVER_LIMIT_CONTENT,
+        });
+      }
+    } else if (browser.length > 0) {
       for (const call of browser) {
         const tool = clientTools.get(call.name);
         if (tool === undefined) continue;

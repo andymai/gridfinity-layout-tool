@@ -1,7 +1,7 @@
 import { createHmac } from 'crypto';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
-import { DECLINED_CONTENT } from './clientTools.js';
+import { DECLINED_CONTENT, OVER_LIMIT_CONTENT } from './clientTools.js';
 import type { ClientResult, ClientTool } from './clientTools.js';
 import type { AskCorpus } from './corpus.js';
 import {
@@ -327,5 +327,53 @@ describe('browser tool results', () => {
       ],
     });
     expect(pendingMessages(corpus, pending, [], run, clientTools)).toBeNull();
+  });
+
+  it('resumes a pending turn across a fallback, without the calls from before it', () => {
+    const fallback = { type: 'fallback', from: { model: 'a' }, to: { model: 'b' }, trigger: null };
+    const pending: PendingTurn = {
+      question: 'How do layers work?',
+      page: '/layouts/layers',
+      locale: 'en',
+      messages: [[thinking, call, fallback, browserCall]],
+      results: [],
+      rounds: 1,
+      issuedAt: 0,
+      nonce: '6f1c1a9e-8f53-4a43-9b4e-3c2a8a6d1f00',
+      signature: 'a'.repeat(64),
+    };
+    expect(awaitedCalls(pending, clientTools)).toHaveLength(1);
+    const messages = pendingMessages(corpus, pending, [shared], run, clientTools);
+    expect(messages?.at(-2)).toEqual({ role: 'assistant', content: [fallback, browserCall] });
+    expect(messages?.at(-1)).toEqual({
+      role: 'user',
+      content: [{ type: 'tool_result', tool_use_id: 'toolu_b', content: 'Desk holds 4 bins.' }],
+    });
+  });
+
+  it('answers a round past the read limit with the over-limit error, as the live loop does', () => {
+    const many = Array.from({ length: 16 }, (_, i) => ({ ...browserCall, id: `toolu_${i}` }));
+    const results: ClientResult[] = many.map((c) => ({ ...shared, callId: c.id }));
+    const late = { ...browserCall, id: 'toolu_late' };
+    const fields = {
+      question: 'How do layers work?',
+      page: '/layouts/layers',
+      locale: 'en',
+      messages: [many, [late], [answer]],
+      results,
+    };
+    const stored = { ...fields, signature: turnSignature(KEY, fields) };
+    const messages = rebuildMessages(corpus, [stored], run, localeOf, signed, clientTools);
+    expect(messages.at(-2)).toEqual({
+      role: 'user',
+      content: [
+        {
+          type: 'tool_result',
+          tool_use_id: 'toolu_late',
+          content: OVER_LIMIT_CONTENT,
+          is_error: true,
+        },
+      ],
+    });
   });
 });

@@ -1,7 +1,14 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import type Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
-import { CLIENT_TOOLS, MAX_CLIENT_RESULTS, clientResultSchema, clientRun } from './clientTools.js';
+import {
+  CLIENT_TOOLS,
+  MAX_CLIENT_RESULTS,
+  OVER_LIMIT_CONTENT,
+  clientResultSchema,
+  clientRun,
+  overClientLimit,
+} from './clientTools.js';
 import type { ClientResult, ClientTools } from './clientTools.js';
 import type { AskCorpus } from './corpus.js';
 import { contextMessage } from './prompt.js';
@@ -35,6 +42,12 @@ const storedBlock = z.discriminatedUnion('type', [
     signature: z.string().max(MAX_BLOCK_CHARS),
   }),
   z.object({ type: z.literal('redacted_thinking'), data: z.string().max(MAX_BLOCK_CHARS) }),
+  z.object({
+    type: z.literal('fallback'),
+    from: z.object({ model: z.string().max(200) }),
+    to: z.object({ model: z.string().max(200) }),
+    trigger: z.unknown().optional(),
+  }),
   z.object({
     type: z.literal('tool_use'),
     id: z.string().max(200),
@@ -132,6 +145,13 @@ function toParam(block: StoredBlock): ContentBlockParam {
       return { type: 'thinking', thinking: block.thinking, signature: block.signature };
     case 'redacted_thinking':
       return { type: 'redacted_thinking', data: block.data };
+    case 'fallback':
+      return {
+        type: 'fallback',
+        from: { model: block.from.model },
+        to: { model: block.to.model },
+        ...(block.trigger === undefined ? {} : { trigger: block.trigger }),
+      };
     case 'tool_use':
       return { type: 'tool_use', id: block.id, name: block.name, input: block.input };
   }
@@ -140,10 +160,29 @@ function toParam(block: StoredBlock): ContentBlockParam {
 const knownTool = (name: string, clientTools: ClientTools): boolean =>
   (TOOL_NAMES as readonly string[]).includes(name) || clientTools.has(name);
 
-/** The messages as stored blocks, or null when one holds a block or tool this code does not know. */
+// The live loop sends back no thinking or tool call from before a message's
+// last fallback block (echoContent in agent.ts), so a rebuild drops them too.
+function afterFallback(blocks: StoredBlock[]): StoredBlock[] {
+  const boundary = blocks.map((block) => block.type).lastIndexOf('fallback');
+  if (boundary < 0) return blocks;
+  return blocks.filter(
+    (block, i) =>
+      i >= boundary ||
+      !(
+        block.type === 'thinking' ||
+        block.type === 'redacted_thinking' ||
+        block.type === 'tool_use'
+      )
+  );
+}
+
+// A finished turn with a fallback goes back as its answer text alone, as it
+// always has. A pending turn is the same turn going on, so it keeps the
+// fallback block, as the live loop does within one request.
 function storedMessages(
   messages: readonly unknown[],
-  clientTools: ClientTools
+  clientTools: ClientTools,
+  keepFallback: boolean
 ): StoredBlock[][] | null {
   const parsed: StoredBlock[][] = [];
   for (const content of messages) {
@@ -153,14 +192,14 @@ function storedMessages(
       const result = storedBlock.safeParse(block);
       if (!result.success) return null;
       if (result.data.type === 'tool_use' && !knownTool(result.data.name, clientTools)) return null;
+      if (result.data.type === 'fallback' && !keepFallback) return null;
       blocks.push(result.data);
     }
-    parsed.push(blocks);
+    parsed.push(afterFallback(blocks));
   }
   return parsed;
 }
 
-/** The text of a turn's last message alone, or nothing when it has none. */
 function answerOnly(turn: StoredTurn): StoredBlock[][] {
   const last = turn.messages.at(-1);
   const text = (Array.isArray(last) ? last : [])
@@ -186,15 +225,24 @@ function answerMessages(
   results: readonly ClientResult[]
 ): MessageParam[] | null {
   const out: MessageParam[] = [];
+  let answered = 0;
   for (const content of messages) {
     out.push({ role: 'assistant', content: content.map(toParam) });
     const calls = content.filter((block) => block.type === 'tool_use');
     if (calls.length === 0) continue;
+    const browser = calls.filter((call) => clientTools.has(call.name)).length;
+    const overLimit = browser > 0 && overClientLimit(answered, browser);
+    if (!overLimit) answered += browser;
     const blocks: ToolResultParam[] = [];
     for (const call of calls) {
       const tool = clientTools.get(call.name);
       if (tool === undefined) {
         blocks.push(toolResult(call.id, run(call.name, call.input, locale)));
+        continue;
+      }
+      if (overLimit) {
+        const label = tool.label(call.input);
+        blocks.push(toolResult(call.id, { isError: true, label, content: OVER_LIMIT_CONTENT }));
         continue;
       }
       const result = results.find((r) => r.callId === call.id);
@@ -220,7 +268,7 @@ function turnMessages(
   locale: string,
   clientTools: ClientTools
 ): MessageParam[] {
-  const messages = storedMessages(turn.messages, clientTools);
+  const messages = storedMessages(turn.messages, clientTools, false);
   const last = messages?.at(-1) ?? [];
   // A refusal can end on thinking alone or on nothing, and an empty assistant
   // message would fail every later request of the chat.
@@ -280,7 +328,7 @@ export function awaitedCalls(
   pending: PendingTurn,
   clientTools: ClientTools = CLIENT_TOOLS
 ): { readonly id: string; readonly name: string; readonly input: unknown }[] | null {
-  const messages = storedMessages(pending.messages, clientTools);
+  const messages = storedMessages(pending.messages, clientTools, true);
   if (messages === null) return null;
   return (messages.at(-1) ?? []).flatMap((block) =>
     block.type === 'tool_use' && clientTools.has(block.name)
@@ -301,7 +349,7 @@ export function pendingMessages(
   run: ToolRunner,
   clientTools: ClientTools = CLIENT_TOOLS
 ): MessageParam[] | null {
-  const messages = storedMessages(pending.messages, clientTools);
+  const messages = storedMessages(pending.messages, clientTools, true);
   if (messages === null) return null;
   const answer = answerMessages(messages, run, pending.locale, clientTools, [
     ...pending.results,
