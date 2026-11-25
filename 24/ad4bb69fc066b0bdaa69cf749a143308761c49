@@ -1,0 +1,25 @@
+src/core/cqrs/v2/domain/layout/applyChangeSet.ts
+  s_88cfcc42bf5bfd::t_e1ea47cf850136 10,28-33,35-37,63-66
+src/core/cqrs/v2/domain/layout/applyChangeSet.test.ts
+  s_88cfcc42bf5bfd::t_916ec637780bcf 63,136-142,146-166
+  s_88cfcc42bf5bfd::t_b0c8409445bf14 167-168
+src/core/cqrs/changeSet/simulate.ts
+  s_88cfcc42bf5bfd::t_e1ea47cf850136 18,35-36,130,132-134,136-139,141-144
+  s_88cfcc42bf5bfd::t_2ebe9dbfc43786 135,140
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "24ad4bb69fc066b0bdaa69cf749a143308761c49",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
