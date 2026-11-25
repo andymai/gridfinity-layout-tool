@@ -32,6 +32,7 @@
     "gen:supporters-meshes": "tsx --tsconfig tsconfig.app.json scripts/gen-supporters-meshes.ts",
     "build:en-locale": "tsx scripts/build-en-locale.ts",
     "build:agent-server": "tsx scripts/build-agent-server.ts",
+    "build:agent-skill": "pnpm run build:agent-server && tsx scripts/build-agent-skill.ts",
     "lint": "NODE_OPTIONS=--max-old-space-size=8192 eslint . --cache --cache-strategy content --cache-location node_modules/.cache/eslint/",
     "lint:fix": "NODE_OPTIONS=--max-old-space-size=8192 eslint . --fix --cache --cache-strategy content --cache-location node_modules/.cache/eslint/",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"e2e/**/*.ts\" \"*.{json,md}\"",

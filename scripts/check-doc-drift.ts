@@ -53,6 +53,8 @@ export function docFiles(): string[] {
   return [
     ...tracked(/^(src|api|scripts|docs)\/.*\.md$/),
     ...tracked(/^\.claude\/skills\/.*\.md$/),
+    // Published Agent Skills; their references/ files are generated.
+    ...tracked(/^skills\/[^/]+\/SKILL\.md$/),
     'CLAUDE.md',
   ].filter((f) => existsSync(join(ROOT, f)));
 }

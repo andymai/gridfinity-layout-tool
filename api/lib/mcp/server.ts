@@ -31,7 +31,7 @@ const COMPUTE = {
 } as const;
 
 export const SERVER_INSTRUCTIONS =
-  "Tools that plan Gridfinity drawer organizers with the Gridfinity Layout Tool's own code (https://gridfinitylayouttool.com). They keep nothing: a plan comes back with a link that opens it in the app. Measure a drawer with drawer_fit, size bins from what they hold (bin_size_for gives common sizes), then plan_layout. The docs are at https://gridfinitylayouttool.com/docs, and https://gridfinitylayouttool.com/docs/llms.txt lists their pages.";
+  "Tools that plan Gridfinity drawer organizers with the Gridfinity Layout Tool's own code (https://gridfinitylayouttool.com). They keep nothing: a plan comes back with a link that opens it in the app. Measure a drawer with drawer_fit, size bins from what they hold (bin_size_for gives common sizes), then plan_layout. The Agent Skill at https://raw.githubusercontent.com/andymai/gridfinity-layout-tool/main/skills/gridfinity-layout-tool/SKILL.md gives the whole workflow. The docs are at https://gridfinitylayouttool.com/docs, and https://gridfinitylayouttool.com/docs/llms.txt lists their pages.";
 
 function asResult(output: ToolOutput): CallToolResult {
   return {
