@@ -77,6 +77,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Stateless: no server-sent stream to open and no session to end.
   if (req.method !== 'POST') return refuse(res, 405, 'Use POST.', { Allow: 'POST, OPTIONS' });
   if (bodyBytes(req) > MAX_BODY_BYTES) return refuse(res, 413, 'The request is too large.');
+  // The limits, the cap and the event ceiling count requests, so one request
+  // carries one message. Protocol 2025-06-18 dropped JSON-RPC batches.
+  if (Array.isArray(req.body) && req.body.length > 1) {
+    return refuse(res, 400, 'Send one JSON-RPC message in each request.');
+  }
   try {
     const limit = await checkRateLimit(getClientIP(req), 'mcp.call');
     if (!limit.allowed) {

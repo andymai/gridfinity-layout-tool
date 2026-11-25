@@ -172,6 +172,26 @@ describe('the MCP server', () => {
     expect(mocks.events).toEqual([]);
   });
 
+  it('refuses a batch, so one request is at most one tool call', async () => {
+    const toolCall = (id: number) => ({
+      jsonrpc: '2.0',
+      id,
+      method: 'tools/call',
+      params: { name: 'drawer_fit', arguments: { widthMm: 300, depthMm: 200 } },
+    });
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json, text/event-stream',
+      },
+      body: JSON.stringify([toolCall(1), toolCall(2)]),
+    });
+    expect(response.status).toBe(400);
+    expect(mocks.count).toBe(0);
+    expect(mocks.events).toEqual([]);
+  });
+
   it('refuses in production when the daily count fails', async () => {
     vi.stubEnv('VERCEL_ENV', 'production');
     mocks.redisFails = true;

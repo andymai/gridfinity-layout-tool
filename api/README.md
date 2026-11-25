@@ -92,7 +92,7 @@ Off unless `DOCS_ASSISTANT_ENABLED=true` and `ANTHROPIC_API_KEY` is set. Each an
 
 ## MCP server (`mcp.ts`, `lib/mcp/`)
 
-A public MCP server for outside agents, on stateless Streamable HTTP with the official SDK. It lists the compute tools from `lib/agent`: `drawer_fit`, `plan_layout`, `split_plan`, `bin_size_for` and `print_estimate`. They keep nothing, and `plan_layout` also returns its `#plan=` link as a `resource_link`. Each request gets its own server and transport. `vercel.json` gives `/api/mcp` open CORS headers, and a firewall rule lets it past Bot Protection.
+A public MCP server for outside agents, on stateless Streamable HTTP with the official SDK. It lists the compute tools from `lib/agent`: `drawer_fit`, `plan_layout`, `split_plan`, `bin_size_for` and `print_estimate`. They keep nothing, and `plan_layout` also returns its `#plan=` link as a `resource_link`. Each request gets its own server and transport, and carries one JSON-RPC message, so the limits below count tool calls. `vercel.json` gives `/api/mcp` open CORS headers, and a firewall rule lets it past Bot Protection.
 
 Off unless `MCP_SERVER_ENABLED=true`. Hosted clients share IP addresses, so the `mcp.call` limit per IP is loose. `mcp:calls:{day}` counts every request against `MCP_DAILY_CALL_CAP`, and production refuses when Redis is missing or fails. Until `EVENT_CEILING` requests in a day, each tool call sends one `mcp_tool_called` event to PostHog with the tool, the outcome, the time and the client's User-Agent product token.
 
