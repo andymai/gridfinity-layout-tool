@@ -1,0 +1,101 @@
+src/core/cqrs/commands/drawerCommands.ts
+  s_88cfcc42bf5bfd::t_b318a023a83be9 6,64-68,85-86
+src/i18n/locales/es.json
+  s_88cfcc42bf5bfd::t_b318a023a83be9 5238
+src/core/cqrs/events/index.ts
+  s_88cfcc42bf5bfd::t_b318a023a83be9 45
+src/core/cqrs/middleware/middlewareConfig.ts
+  s_88cfcc42bf5bfd::t_b318a023a83be9 61
+src/core/cqrs/v2/registry.ts
+  s_88cfcc42bf5bfd::t_b318a023a83be9 45,105,151
+src/core/cqrs/validation/schemas.test.ts
+  s_88cfcc42bf5bfd::t_b318a023a83be9 42
+  s_88cfcc42bf5bfd::t_9e29e5f1a02e13 51,53
+src/i18n/locales/fr.json
+  s_88cfcc42bf5bfd::t_b318a023a83be9 5238
+src/i18n/locales/de.json
+  s_88cfcc42bf5bfd::t_b318a023a83be9 5238
+src/core/cqrs/events/drawerEvents.ts
+  s_88cfcc42bf5bfd::t_b318a023a83be9 6,94-99,122-123
+src/i18n/locales/pt-BR.json
+  s_88cfcc42bf5bfd::t_b318a023a83be9 5238
+src/core/cqrs/index.ts
+  s_88cfcc42bf5bfd::t_112e3a5df2db0c 176-184
+src/i18n/locales/en.ts
+  s_88cfcc42bf5bfd::t_b318a023a83be9 6434
+src/i18n/locales/nl.json
+  s_88cfcc42bf5bfd::t_b318a023a83be9 5238
+src/core/cqrs/integration/mutationsAdapter.ts
+  s_88cfcc42bf5bfd::t_112e3a5df2db0c 29,182-186
+  s_88cfcc42bf5bfd::t_37b7855d86717e 187-188
+src/core/cqrs/versioning/migrations.test.ts
+  s_88cfcc42bf5bfd::t_9e29e5f1a02e13 199
+src/i18n/locales/sv.json
+  s_88cfcc42bf5bfd::t_b318a023a83be9 5238
+src/i18n/locales/ja.json
+  s_88cfcc42bf5bfd::t_b318a023a83be9 5101
+src/i18n/locales/nb.json
+  s_88cfcc42bf5bfd::t_b318a023a83be9 5238
+src/core/cqrs/commands/index.ts
+  s_88cfcc42bf5bfd::t_b318a023a83be9 54
+src/core/cqrs/projection/replay.ts
+  s_88cfcc42bf5bfd::t_b318a023a83be9 13,15,244-248
+src/core/cqrs/versioning/eventVersions.ts
+  s_88cfcc42bf5bfd::t_b318a023a83be9 51
+src/i18n/locales/uk.json
+  s_88cfcc42bf5bfd::t_b318a023a83be9 5512
+src/core/cqrs/changeSet/simulate.ts
+  s_88cfcc42bf5bfd::t_81aecd02a866c0 255
+  s_88cfcc42bf5bfd::t_9658ec86e63aaa 1-169,171-254,256-279
+  s_88cfcc42bf5bfd::t_83b3740a31f5e6 170
+src/i18n/locales/zh-CN.json
+  s_88cfcc42bf5bfd::t_b318a023a83be9 5101
+src/core/cqrs/v2/domain/layout/applyChangeSet.test.ts
+  s_88cfcc42bf5bfd::t_d450522e72213b 1-9,11-71,73-125
+  s_88cfcc42bf5bfd::t_288795b70ff554 10,72
+src/core/cqrs/changeSet/revision.ts
+  s_88cfcc42bf5bfd::t_c8a92143601ccd 1-36
+.claude/skills/state-and-cqrs/SKILL.md
+  s_88cfcc42bf5bfd::t_0db60cfe3a9923 25-26
+src/core/cqrs/changeSet/index.ts
+  s_88cfcc42bf5bfd::t_45b6754046c656 1-5
+src/i18n/locales/ka.json
+  s_88cfcc42bf5bfd::t_b318a023a83be9 5235
+src/i18n/locales/pl.json
+  s_88cfcc42bf5bfd::t_b318a023a83be9 5512
+src/i18n/locales/ko.json
+  s_88cfcc42bf5bfd::t_b318a023a83be9 5101
+src/core/cqrs/v2/domain/layout/applyChangeSet.ts
+  s_88cfcc42bf5bfd::t_ee13556b12cdbd 1-52
+src/core/cqrs/validation/schemas.ts
+  s_88cfcc42bf5bfd::t_b318a023a83be9 58,467
+src/core/cqrs/changeSet/simulate.test.ts
+  s_88cfcc42bf5bfd::t_8359e4e2133e38 1-148,150-156
+  s_88cfcc42bf5bfd::t_9bc08a280d4f25 149
+src/core/cqrs/changeSet/schema.ts
+  s_88cfcc42bf5bfd::t_790a01fd622575 1-77
+src/core/cqrs/commandDescriptions.ts
+  s_88cfcc42bf5bfd::t_b318a023a83be9 41
+src/i18n/locales/cs.json
+  s_88cfcc42bf5bfd::t_b318a023a83be9 5377
+src/i18n/locales/it.json
+  s_88cfcc42bf5bfd::t_b318a023a83be9 5238
+src/shared/contexts/MutationsContext.tsx
+  s_88cfcc42bf5bfd::t_112e3a5df2db0c 22,97-100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bc6df7d2c05bf13870d684b81d93dff7f06de560",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
