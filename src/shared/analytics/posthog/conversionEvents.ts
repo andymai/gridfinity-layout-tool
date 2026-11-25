@@ -67,3 +67,15 @@ export function trackToolConverted(surface: ToolSurface, props: ToolConvertedPro
     // Analytics should never break the app
   }
 }
+
+/**
+ * A plan link from an AI agent became a saved layout: the conversion that the
+ * agent tools aim at. Fires on Save to My Layouts in a plan's preview.
+ */
+export function trackPlanLinkSaved(binCount: number): void {
+  try {
+    trackEvent('plan_link_saved', { bin_count: binCount });
+  } catch {
+    // Analytics should never break the app
+  }
+}

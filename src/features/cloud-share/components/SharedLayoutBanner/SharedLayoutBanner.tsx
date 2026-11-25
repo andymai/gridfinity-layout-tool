@@ -16,6 +16,7 @@ import { ConfirmDialog } from '@/shared/components';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { trackPlanLinkSaved } from '@/shared/analytics/posthog';
 
 /**
  * Banner shown when viewing a shared layout in view-only mode.
@@ -75,6 +76,7 @@ export function SharedLayoutBanner() {
   if (isCollaborative) return null;
 
   const handleSave = async () => {
+    const fromPlan = sharedPreview?.source === 'plan';
     const savedLayout = {
       ...layout, // Use current layout state (user may have made edits)
       name: t('layouts.importedName', { name: sharedLayoutOriginalName || layout.name }),
@@ -99,6 +101,7 @@ export function SharedLayoutBanner() {
       return;
     }
 
+    if (fromPlan) trackPlanLinkSaved(savedLayout.bins.length);
     // Show feedback
     addToast(t('toast.savedToLayouts', { name: savedLayout.name }), 'success');
     announceToScreenReader(t('cloudShare.announce.layoutSaved', { name: savedLayout.name }));

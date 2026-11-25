@@ -27,6 +27,8 @@ export interface SharedPreviewData {
   linkUpdatedAt?: string;
   /** Each design of the share: the owner's id mapped to this browser's id */
   designIds?: Readonly<Record<string, string>>;
+  /** The layout came from a `#plan=` link that an AI agent wrote */
+  source?: 'plan';
 }
 
 interface SharedPreviewState {
@@ -46,7 +48,8 @@ interface SharedPreviewActions {
     cloudShareId?: string,
     permission?: 'view' | 'edit',
     linkUpdatedAt?: string,
-    designIds?: Readonly<Record<string, string>>
+    designIds?: Readonly<Record<string, string>>,
+    source?: 'plan'
   ) => void;
 
   /**
@@ -72,7 +75,8 @@ export const useSharedPreviewStore = create<SharedPreviewStore>((set) => ({
     cloudShareId,
     permission,
     linkUpdatedAt,
-    designIds
+    designIds,
+    source
   ) => {
     if (layout) {
       set({
@@ -84,6 +88,7 @@ export const useSharedPreviewStore = create<SharedPreviewStore>((set) => ({
           permission: permission ?? null,
           ...(linkUpdatedAt ? { linkUpdatedAt } : {}),
           ...(designIds && Object.keys(designIds).length > 0 ? { designIds } : {}),
+          ...(source ? { source } : {}),
         },
       });
     } else {
