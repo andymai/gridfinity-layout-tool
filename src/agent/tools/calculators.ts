@@ -115,7 +115,11 @@ export function runPrintEstimate(input: PrintEstimateInput): ToolOutput {
     cost += each.costUSD * n;
     count += n;
     const name = bin.label === undefined ? 'bin' : JSON.stringify(bin.label);
-    return `- ${n > 1 ? `${n} x ` : ''}${name} (${size(bin.width, bin.depth)} units, ${bin.height}u): ${round(each.gramsFilament)} g and ${duration(each.printTimeMinutes)}${n > 1 ? ' each' : ''}.`;
+    const line = `- ${n > 1 ? `${n} x ` : ''}${name} (${size(bin.width, bin.depth)} units, ${bin.height}u): ${round(each.gramsFilament)} g and ${duration(each.printTimeMinutes)}`;
+    // Totals from the exact figures, so no one multiplies the rounded ones.
+    return n > 1
+      ? `${line} each; ${round(each.gramsFilament * n)} g and ${duration(each.printTimeMinutes * n)} in all.`
+      : `${line}.`;
   });
   return {
     isError: false,

@@ -60,6 +60,7 @@ describe('print_estimate', () => {
     expect(run.content).toContain(
       `- 4 x "M3" (1 x 1 units, 3u): ${Math.round(each.gramsFilament)} g`
     );
+    expect(run.content).toContain(`each; ${Math.round(each.gramsFilament * 4)} g and`);
     expect(run.content).toContain(`Total for 4 bins: ${Math.round(each.gramsFilament * 4)} g`);
     expect(run.content).toContain('The baseplate is not included.');
   });
