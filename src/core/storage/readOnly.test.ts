@@ -59,6 +59,13 @@ describe('read-only layout reads', () => {
     expect(await readLayout('missing')).toBeNull();
   });
 
+  it('falls back to localStorage when the IndexedDB index is broken', async () => {
+    await saveLibraryIndex({ entries: [{ id: 7 }] } as unknown as LayoutLibrary);
+    closeDatabase();
+    localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(library));
+    expect((await readLibraryIndex())?.entries.map((e) => e.name)).toEqual(['Desk drawer']);
+  });
+
   it('falls back to localStorage, as the app does', async () => {
     closeDatabase();
     await new Promise((resolve) => {

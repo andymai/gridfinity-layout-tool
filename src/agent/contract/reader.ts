@@ -133,7 +133,7 @@ export function formatMyLayouts(data: MyLayoutsData): string {
     `${data.total} saved layouts${more}:`,
     ...data.layouts.map(
       (layout) =>
-        `- ${quote(layout.name)} (id ${layout.id})${layout.active ? ', open in the app' : ''}: ${size(layout.grid.width, layout.grid.depth)} units, height ${layout.grid.height}u, ${layout.bins} bins on ${layout.layers} ${layout.layers === 1 ? 'layer' : 'layers'}${layout.modified ? `, changed ${layout.modified}` : ''}.`
+        `- ${quote(layout.name)} (id ${quote(layout.id)})${layout.active ? ', open in the app' : ''}: ${size(layout.grid.width, layout.grid.depth)} units, height ${layout.grid.height}u, ${layout.bins} bins on ${layout.layers} ${layout.layers === 1 ? 'layer' : 'layers'}${layout.modified ? `, changed ${layout.modified}` : ''}.`
     ),
   ].join('\n');
 }
@@ -157,10 +157,13 @@ export function formatMyLayout(data: MyLayoutData): string {
   if (data.bins.length > 0) {
     lines.push('Bins (x and y from the front-left corner, in units):');
     for (const bin of data.bins) {
+      const more = bin.moreItems > 0 ? ` and ${bin.moreItems} more` : '';
       const items =
         bin.items.length > 0
-          ? ` Holds ${bin.items.map(quote).join(', ')}${bin.moreItems > 0 ? ` and ${bin.moreItems} more` : ''}.`
-          : '';
+          ? ` Holds ${bin.items.map(quote).join(', ')}${more}.`
+          : bin.moreItems > 0
+            ? ` Holds ${bin.moreItems} items, not listed here.`
+            : '';
       lines.push(
         `- ${quote(bin.label)}: ${size(bin.width, bin.depth)} at ${bin.x},${bin.y}, ${bin.height}u, layer ${bin.layer}, category ${quote(bin.category)}.${items}`
       );

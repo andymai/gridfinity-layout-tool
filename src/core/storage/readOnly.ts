@@ -100,9 +100,10 @@ function isLibrary(value: unknown): value is LayoutLibrary {
 
 /** The library index as the app last saved it: IndexedDB first, then localStorage, as the app reads it. */
 export async function readLibraryIndex(): Promise<LayoutLibrary | null> {
-  const stored =
-    (await readStored(LIBRARY_STORE, LIBRARY_INDEX_KEY)) ?? readLocal(LIBRARY_STORAGE_KEY);
-  return isLibrary(stored) ? stored : null;
+  const stored = await readStored(LIBRARY_STORE, LIBRARY_INDEX_KEY);
+  if (isLibrary(stored)) return stored;
+  const local = readLocal(LIBRARY_STORAGE_KEY);
+  return isLibrary(local) ? local : null;
 }
 
 /** One layout through the app's own load steps, or null when it is missing or broken. */

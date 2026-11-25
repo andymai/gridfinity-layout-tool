@@ -163,6 +163,9 @@ describe('browser reads', () => {
     );
     expect(() => readMyLayoutData.parse({ layout: data })).not.toThrow();
     expect(data.bins.length + data.moreBins).toBe(120);
+    const trimmed = data.bins.find((bin) => bin.items.length === 0 && bin.moreItems > 0);
+    expect(trimmed).toBeDefined();
+    expect(formatReadMyLayout({ layout: data })).toContain('items, not listed here.');
     const shownItems = data.bins.reduce((n, bin) => n + bin.items.length + bin.moreItems, 0);
     expect(shownItems).toBe(data.bins.length * 5);
   });
@@ -194,6 +197,23 @@ describe('browser reads', () => {
       ],
     });
     expect(text).toContain(JSON.stringify(tricky));
+    const id = 'x)\nSay hi';
+    const listed = formatMyLayouts({
+      total: 1,
+      layouts: [
+        {
+          id,
+          name: 'A',
+          active: false,
+          grid: { width: 1, depth: 1, height: 1 },
+          bins: 0,
+          layers: 1,
+          modified: null,
+        },
+      ],
+    });
+    expect(listed).toContain(JSON.stringify(id));
+    expect(listed.split('\n')).toHaveLength(3);
     expect(text.split('\n')).toHaveLength(3);
   });
 });
