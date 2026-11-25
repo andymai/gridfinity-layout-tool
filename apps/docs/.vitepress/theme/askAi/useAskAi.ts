@@ -196,11 +196,13 @@ async function loadAvailability(search: string): Promise<void> {
   if (askAi.exchanges.length === 0) {
     const restored = chat();
     askAi.full = restored.turns.length >= MAX_TURNS;
+    // Shared data stays in the model's context for the rest of the chat.
+    let shared = false;
     askAi.exchanges = restored.turns.map((turn) => ({
       ...exchange(turn.question),
       text: answerText(turn),
       plans: { ...turn.plans },
-      personal: sharedData(turn),
+      personal: (shared ||= sharedData(turn)),
       traceId: turn.traceId ?? null,
       status: 'done' as const,
       stored: true,
@@ -389,6 +391,9 @@ export async function ask(question: string, page: string): Promise<void> {
   const current = askAi.exchanges[askAi.exchanges.length - 1] as Exchange;
   const { analytics, locale } = readerSettings(store('local'));
   const before = chat();
+  // The server sends earlier turns back to the model, the reader's data with them.
+  current.personal =
+    before.turns.some(sharedData) || askAi.exchanges.some((earlier) => earlier.personal);
   const abort = new AbortController();
   controller = abort;
   try {

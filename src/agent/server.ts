@@ -18,6 +18,7 @@ export {
   readMySettingsInput,
 } from './contract/reader';
 export type {
+  MyLayoutData,
   MyLayoutsData,
   MySettingsData,
   ReadMyLayoutData,

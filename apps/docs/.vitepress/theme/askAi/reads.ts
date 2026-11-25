@@ -12,7 +12,8 @@ import type {
 } from '@/agent/contract';
 import { runReaderTool } from '@/agent/reader/readers';
 import type { ReaderSource } from '@/agent/reader/readers';
-import { readLayout, readLibraryIndex, readPrinterSettings } from '@/core/storage/readOnly';
+import { isOk } from '@/core/result';
+import { readLayout, readLibraryIndex, readPrinterSettings } from '@/core/storage';
 
 /** One read that the reader can allow, with exactly what Allow would send. */
 export interface ReaderCall {
@@ -64,8 +65,8 @@ export async function prepareRead(call: {
   if (!isReaderTool(call.name)) return unavailable;
   try {
     const run = await runReaderTool(source, call.name, call.input);
-    if (!run.ok) return unavailable;
-    return { id: call.id, ...shown(call.name, run.data), data: run.data, unavailable: false };
+    if (!isOk(run)) return unavailable;
+    return { id: call.id, ...shown(call.name, run.value), data: run.value, unavailable: false };
   } catch {
     return unavailable;
   }

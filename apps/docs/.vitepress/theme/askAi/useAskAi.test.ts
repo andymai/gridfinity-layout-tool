@@ -80,6 +80,18 @@ describe('reads of the reader data', () => {
     ]);
   });
 
+  it('keeps links to this site only for the rest of a chat that shared data', async () => {
+    fetchMock.mockResolvedValueOnce(pending());
+    await ask('Q?', '/');
+    await settled();
+    fetchMock.mockResolvedValueOnce(answer([{ callId: 'toolu_r', status: 'shared', data: {} }]));
+    const current = askAi.exchanges[0];
+    if (current) await answerRequest(current, true);
+    fetchMock.mockResolvedValueOnce(answer(undefined));
+    await ask('And then?', '/');
+    expect(askAi.exchanges[1]?.personal).toBe(true);
+  });
+
   it('sends only a decline when the reader does not allow it', async () => {
     fetchMock.mockResolvedValueOnce(pending());
     await ask('Q?', '/');

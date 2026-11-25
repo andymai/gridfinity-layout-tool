@@ -21,7 +21,7 @@ export type Verdict = z.infer<typeof verdictSchema>;
 export interface JudgedTurn {
   readonly question: string;
   readonly answer: string;
-  /** drawer_fit and plan_layout results; page reads repeat the sources. */
+  /** drawer_fit, plan_layout and reader-data results; page reads repeat the sources. */
   readonly checks: readonly string[];
 }
 

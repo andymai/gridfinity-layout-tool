@@ -19,6 +19,7 @@ export {
 } from './_generated/server.js';
 export type {
   DrawerFitInput,
+  MyLayoutData,
   MyLayoutsData,
   MySettingsData,
   PlanLayoutInput,
