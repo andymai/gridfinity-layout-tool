@@ -1,0 +1,40 @@
+CLAUDE.md
+  s_88cfcc42bf5bfd::t_9538b4f508f28d 105
+knip.json
+  s_88cfcc42bf5bfd::t_af2c39942a8ca7 3
+scripts/vite-plugin-posthog-sourcemaps.test.ts
+  s_88cfcc42bf5bfd::t_4219d598c65a3c 2,4,8-9,12-25
+  s_88cfcc42bf5bfd::t_9538b4f508f28d 1,3,5-7,10-11,26-62
+package.json
+  s_88cfcc42bf5bfd::t_d5646972141f4b 188-189
+scripts/vercel-build.sh
+  s_88cfcc42bf5bfd::t_37d90db1181023 12-13,16-21,27
+  s_88cfcc42bf5bfd::t_4219d598c65a3c 29
+  s_88cfcc42bf5bfd::t_8850b8c54f39a8 33
+  s_88cfcc42bf5bfd::t_611ee2690f0d42 23-24,26
+scripts/vite-plugin-posthog-sourcemaps.ts
+  s_88cfcc42bf5bfd::t_844606ee4d60c4 1-22,30-31,34-64,66-67,69,83-87,89-95
+  s_88cfcc42bf5bfd::t_4219d598c65a3c 23-29,32-33,65,70-82,88
+  s_88cfcc42bf5bfd::t_49278f2cfbb488 68
+vite.config.ts
+  s_88cfcc42bf5bfd::t_fc46f0dbee28cd 12,139
+  s_88cfcc42bf5bfd::t_37d90db1181023 128
+pnpm-lock.yaml
+  s_88cfcc42bf5bfd::t_248da544a1454b 210-215,2008-2012,2016-2023,8265-8268,8273-8283
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2c0f6744ab31d030bfc4f7237dd907d072c4c5b5",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
