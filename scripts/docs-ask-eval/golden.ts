@@ -808,7 +808,6 @@ export const GOLDEN: readonly GoldenCase[] = [
     expect:
       'Lists the saved layouts and names Garage screws, with 41 bins, as the one with the most.',
   },
-  // Calculators: the app's own split planner, print estimate and learned bin sizes.
   {
     id: 'C01',
     group: 'calc',
