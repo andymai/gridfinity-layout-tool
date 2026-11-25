@@ -1,0 +1,24 @@
+src/shared/plan/buildPlanLayout.test.ts
+  s_88cfcc42bf5bfd::t_1dd9a3a1ab580d 127-140
+src/shared/utils/findFirstFit.ts
+  s_88cfcc42bf5bfd::t_1dd9a3a1ab580d 16-17,33,52
+src/shared/plan/buildPlanLayout.ts
+  s_88cfcc42bf5bfd::t_1dd9a3a1ab580d 127-163,194-196,228,230,234,238-239,246-247,263
+  s_88cfcc42bf5bfd::t_c9292c50b846b4 126
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "63e58c65724f16cfb50d511d44dd996738da9ed5",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
