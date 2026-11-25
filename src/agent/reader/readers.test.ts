@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { STAGING_ID } from '@/core/constants';
 import type { Layout, LayoutLibrary } from '@/core/types';
 import { binId, categoryId, gridUnits, heightUnits, layerId, layoutId } from '@/core/types';
-import { isErr, isOk } from '@/core/result';
+import { err, isErr, isOk, ok, storageUnavailable } from '@/core/result';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
 import {
   formatMyLayouts,
@@ -52,22 +52,24 @@ const desk = createTestLayout({
 
 function source(library: LayoutLibrary | null, layouts: Record<string, Layout>): ReaderSource {
   return {
-    library: () => Promise.resolve(library),
-    layout: (id) => Promise.resolve(layouts[id] ?? null),
+    library: () => Promise.resolve(ok(library)),
+    layout: (id) => Promise.resolve(ok(layouts[id] ?? null)),
     settings: () =>
-      Promise.resolve({
-        measureUnit: 'in',
-        printBedMm: { width: 256, depth: 256 },
-        gridUnitMm: 42,
-        heightUnitMm: 7,
-        print: {
-          nozzleSizeMm: 0.4,
-          layerHeightMm: 0.2,
-          infillPercent: 15,
-          filamentCostPerKg: 20,
-          maxPrintHeightMm: 250,
-        },
-      }),
+      Promise.resolve(
+        ok({
+          measureUnit: 'in',
+          printBedMm: { width: 256, depth: 256 },
+          gridUnitMm: 42,
+          heightUnitMm: 7,
+          print: {
+            nozzleSizeMm: 0.4,
+            layerHeightMm: 0.2,
+            infillPercent: 15,
+            filamentCostPerKg: 20,
+            maxPrintHeightMm: 250,
+          },
+        })
+      ),
   };
 }
 
@@ -131,6 +133,15 @@ describe('browser reads', () => {
     );
     expect(isOk(await runReaderTool(source(null, {}), 'list_my_layouts', {}))).toBe(true);
     expect(isErr(await runReaderTool(source(null, {}), 'read_my_layout', { other: 1 }))).toBe(true);
+  });
+
+  it('passes a storage error on, so the panel can say the read is unavailable', async () => {
+    const blocked: ReaderSource = {
+      ...source(null, {}),
+      library: () => Promise.resolve(err(storageUnavailable('localStorage'))),
+    };
+    expect(isErr(await runReaderTool(blocked, 'list_my_layouts', {}))).toBe(true);
+    expect(isErr(await runReaderTool(blocked, 'read_my_layout', {}))).toBe(true);
   });
 
   it('reads the printer settings', async () => {

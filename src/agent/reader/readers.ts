@@ -1,6 +1,7 @@
 import { STAGING_ID } from '@/core/constants';
 import { err, ok, validationImportFailed } from '@/core/result';
-import type { Result, ValidationImportError } from '@/core/result';
+import { isOk } from '@/core/result';
+import type { Result, StorageError, ValidationImportError } from '@/core/result';
 import type { PrinterSettings } from '@/core/storage';
 import type { Layout, LayoutLibrary } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
@@ -25,9 +26,9 @@ import type {
  * app's saved data on the docs pages.
  */
 export interface ReaderSource {
-  library(): Promise<LayoutLibrary | null>;
-  layout(id: string): Promise<Layout | null>;
-  settings(): Promise<PrinterSettings>;
+  library(): Promise<Result<LayoutLibrary | null, StorageError>>;
+  layout(id: string): Promise<Result<Layout | null, StorageError>>;
+  settings(): Promise<Result<PrinterSettings, StorageError>>;
 }
 
 const clip = (text: string, max: number): string => text.slice(0, max);
@@ -195,22 +196,30 @@ export async function runReaderTool(
   source: ReaderSource,
   name: ReaderToolName,
   input: unknown
-): Promise<Result<ReaderData, ValidationImportError>> {
+): Promise<Result<ReaderData, ValidationImportError | StorageError>> {
   if (name === 'list_my_layouts') {
     if (!listMyLayoutsInput.safeParse(input).success)
       return err(validationImportFailed(['No input.']));
-    return ok(summarizeLibrary(await source.library()));
+    const library = await source.library();
+    return isOk(library) ? ok(summarizeLibrary(library.value)) : library;
   }
   if (name === 'read_my_layout') {
     const parsed = readMyLayoutInput.safeParse(input);
     if (!parsed.success) return err(validationImportFailed(['Give a layoutId or nothing.']));
-    const library = await source.library();
+    const read = await source.library();
+    if (!isOk(read)) return read;
+    const library = read.value;
     const id = parsed.data.layoutId ?? (library === null ? undefined : activeId(library));
     const entry = library?.entries.find((candidate) => candidate.id === id);
-    const layout = id === undefined || entry === undefined ? null : await source.layout(id);
-    return ok({ layout: layout === null ? null : summarizeLayout(layout, entry?.modifiedAt) });
+    if (id === undefined || entry === undefined) return ok({ layout: null });
+    const layout = await source.layout(id);
+    if (!isOk(layout)) return layout;
+    return ok({
+      layout: layout.value === null ? null : summarizeLayout(layout.value, entry.modifiedAt),
+    });
   }
   if (!readMySettingsInput.safeParse(input).success)
     return err(validationImportFailed(['No input.']));
-  return ok(summarizeSettings(await source.settings()));
+  const settings = await source.settings();
+  return isOk(settings) ? ok(summarizeSettings(settings.value)) : settings;
 }

@@ -6,6 +6,8 @@ export interface StoredTurn {
   readonly locale: string;
   readonly signature: string;
   readonly messages: readonly unknown[];
+  /** What the reader's browser sent for the turn's reads, as the server signed it. */
+  readonly results?: readonly unknown[];
   /** Kept in this tab only, so the thumbs work after a reload; never sent back. */
   readonly traceId?: string;
   /** The plans the answer draws, by handle. Kept in this tab only; never sent back. */
@@ -77,6 +79,7 @@ function isTurn(value: unknown): value is StoredTurn {
     typeof value.locale === 'string' &&
     typeof value.signature === 'string' &&
     Array.isArray(value.messages) &&
+    (value.results === undefined || Array.isArray(value.results)) &&
     (value.traceId === undefined || typeof value.traceId === 'string') &&
     (value.plans === undefined || isRecord(value.plans))
   );
@@ -141,4 +144,9 @@ export function answerText(turn: StoredTurn): string {
 
 export function hasToolCall(content: unknown): boolean {
   return contentBlocks(content).some((block) => block.type === 'tool_use');
+}
+
+/** The turn holds the reader's own data, so its answer may link only to this site. */
+export function sharedData(turn: Pick<StoredTurn, 'results'>): boolean {
+  return (turn.results ?? []).some((result) => isRecord(result) && result.status === 'shared');
 }

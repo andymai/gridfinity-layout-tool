@@ -38,6 +38,7 @@ const plans = computed(() =>
 const ANNOUNCEMENTS: Readonly<Record<string, string>> = {
   done: 'Ask AI answered.',
   stopped: 'Ask AI stopped.',
+  asking: 'Ask AI wants to read your saved data. Allow it or not in the answer.',
 };
 const announcement = computed(() => {
   const last = askAi.exchanges.at(-1);
@@ -158,7 +159,10 @@ function openSearch(): void {
 }
 
 watch(
-  () => askAi.exchanges.map((e) => e.text.length + e.steps.length + e.thinking.length).join(),
+  () =>
+    askAi.exchanges
+      .map((e) => `${e.text.length + e.steps.length + e.thinking.length}:${e.request?.state ?? ''}`)
+      .join(),
   async () => {
     const el = scroller.value;
     if (!el) return;

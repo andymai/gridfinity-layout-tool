@@ -13,9 +13,22 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 import Anthropic from '@anthropic-ai/sdk';
 import { EFFORT, MODEL, runAgent } from '../../api/lib/docsAsk/agent.js';
-import type { AgentProgress, Effort, RoundBudget } from '../../api/lib/docsAsk/agent.js';
-import { rebuildMessages, userTurn } from '../../api/lib/docsAsk/history.js';
-import type { StoredTurn } from '../../api/lib/docsAsk/history.js';
+import type {
+  AgentProgress,
+  AgentResult,
+  BrowserCall,
+  Effort,
+  RoundBudget,
+} from '../../api/lib/docsAsk/agent.js';
+import {
+  listMyLayoutsInput,
+  readMyLayoutInput,
+  readMySettingsInput,
+} from '../../api/lib/agent/index.js';
+import { CLIENT_TOOLS, clientRun } from '../../api/lib/docsAsk/clientTools.js';
+import type { ClientResult } from '../../api/lib/docsAsk/clientTools.js';
+import { pendingMessages, rebuildMessages, userTurn } from '../../api/lib/docsAsk/history.js';
+import type { PendingTurn, StoredTurn } from '../../api/lib/docsAsk/history.js';
 import { docsSource } from '../../api/lib/docsAsk/source.js';
 import { ROUND_RESERVE_USD } from '../../api/lib/docsAsk/spend.js';
 import { createToolRunner, toolDefinitions } from '../../api/lib/docsAsk/tools.js';
@@ -23,7 +36,7 @@ import type { ToolRunner } from '../../api/lib/docsAsk/tools.js';
 import { checkAnswer, chipLabels } from './checks';
 import type { AnswerChecks } from './checks';
 import { GOLDEN } from './golden';
-import type { GoldenCase } from './golden';
+import type { GoldenCase, ReaderFixture } from './golden';
 import { JUDGE_MODEL, judge } from './judge';
 import { suggestionCases } from './suggestions';
 import type { JudgedTurn, Verdict } from './judge';
@@ -107,6 +120,44 @@ const missing = cases.flatMap((c) => [c.page, ...c.sources]).filter((link) => !c
 if (missing.length > 0)
   throw new Error(`Golden set names pages the corpus lacks: ${missing.join(', ')}`);
 
+/**
+ * What the reader's browser sends for one read: the case's fixture when the
+ * reader allows it, or a decline. A case without a fixture declines every
+ * read, since its question does not ask about the reader's data.
+ */
+function readerResult(fixture: ReaderFixture | undefined, call: BrowserCall): ClientResult {
+  const id = call.id;
+  // The panel runs a read only when its input fits the tool, as the browser does.
+  const schema = {
+    list_my_layouts: listMyLayoutsInput,
+    read_my_layout: readMyLayoutInput,
+    read_my_settings: readMySettingsInput,
+  }[call.name];
+  if (schema === undefined || !schema.safeParse(call.input).success) {
+    return { callId: id, status: 'unavailable' };
+  }
+  if (fixture === undefined || fixture.answer === 'decline')
+    return { callId: id, status: 'declined' };
+  if (call.name === 'list_my_layouts' && fixture.layouts) {
+    return { callId: id, status: 'shared', data: fixture.layouts };
+  }
+  if (call.name === 'read_my_settings' && fixture.settings) {
+    return { callId: id, status: 'shared', data: fixture.settings };
+  }
+  if (call.name === 'read_my_layout') {
+    // The fixture layout is the one open in the app; an explicit id must name it.
+    const asked = (call.input as { layoutId?: unknown } | null)?.layoutId;
+    const open = fixture.layouts?.layouts.find((layout) => layout.active)?.id ?? 'desk';
+    const match = asked === undefined || asked === open;
+    return {
+      callId: id,
+      status: 'shared',
+      data: { layout: match ? (fixture.layout ?? null) : null },
+    };
+  }
+  return { callId: id, status: 'unavailable' };
+}
+
 async function runCase(golden: GoldenCase): Promise<CaseResult> {
   const locale = source.locale(golden.locale ?? 'en');
   const tables = new Map([
@@ -137,10 +188,17 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
         if (result.link) reads.push(result.link);
         return result;
       };
-      const messages = [
-        ...rebuildMessages(corpus, stored, runner, source.locale, () => true),
-        ...userTurn(corpus, question, golden.page, locale),
-      ];
+      const prior = rebuildMessages(
+        corpus,
+        stored,
+        runner,
+        source.locale,
+        () => true,
+        CLIENT_TOOLS
+      );
+      let messages = [...prior, ...userTurn(corpus, question, golden.page, locale)];
+      let shared: ClientResult[] = [];
+      let firstRound = 0;
       const sent: unknown[] = [];
       const notices: string[] = [];
       const progress: AgentProgress = { generations: [], steps: [], links: [] };
@@ -157,29 +215,64 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
         release: () => budget.release(),
       };
       pending = { question, started, usd: () => turnUsd };
-      const result = await runAgent({
-        client,
-        corpus,
-        tools: toolDefinitions(corpus),
-        messages,
-        locale,
-        run,
-        send: (event) => {
-          if (event.type === 'message') sent.push(event.content);
-          if (event.type === 'notice') notices.push(event.code);
-        },
-        budget: turnBudget,
-        progress,
-        signal: new AbortController().signal,
-        model,
-        effort,
-      });
+      let result: AgentResult;
+      // A read ends the request; the reader's answer goes back as the panel's
+      // resume does, through the server's own rebuild of the pending turn.
+      for (;;) {
+        result = await runAgent({
+          client,
+          corpus,
+          tools: toolDefinitions(corpus),
+          messages,
+          locale,
+          run,
+          send: (event) => {
+            if (event.type === 'message') sent.push(event.content);
+            if (event.type === 'notice') notices.push(event.code);
+          },
+          budget: turnBudget,
+          progress,
+          signal: new AbortController().signal,
+          model,
+          effort,
+          clientTools: CLIENT_TOOLS,
+          firstRound,
+          clientResults: shared.length,
+        });
+        if (result.pending === null) break;
+        const fresh = result.pending.calls.map((call) => readerResult(golden.reader, call));
+        for (const call of result.pending.calls) {
+          tools.push(`${call.name} ${JSON.stringify(call.input)}`);
+          const tool = CLIENT_TOOLS.get(call.name);
+          const answer = fresh.find((r) => r.callId === call.id);
+          const ran = tool && answer ? clientRun(tool, call.input, answer) : null;
+          if (ran) checks.push(ran.content);
+        }
+        const waiting: PendingTurn = {
+          question,
+          page: golden.page,
+          locale,
+          messages: sent.map((content) => content as unknown[]),
+          results: shared,
+          rounds: result.pending.rounds,
+          issuedAt: 0,
+          nonce: '00000000-0000-4000-8000-000000000000',
+          signature: '0'.repeat(64),
+        };
+        const current = pendingMessages(corpus, waiting, fresh, runner, CLIENT_TOOLS);
+        if (current === null)
+          throw new Error(`A reader fixture does not fit its tool in ${golden.id}`);
+        shared = [...shared, ...fresh];
+        messages = [...prior, ...current];
+        firstRound = result.pending.rounds;
+      }
       stored.push({
         question,
         page: golden.page,
         locale,
         signature: '',
         messages: sent,
+        ...(shared.length > 0 ? { results: shared } : {}),
       } as StoredTurn);
       results.push({
         question,
@@ -333,6 +426,14 @@ const summary = {
     })
   ),
   brokenLinks: broken,
+  // Reads that a question outside the yours group did not ask for.
+  unaskedReads: results
+    .filter(
+      (r) =>
+        r.group !== 'yours' &&
+        r.turns.some((t) => t.tools.some((call) => CLIENT_TOOLS.has(call.split(' ')[0] ?? '')))
+    )
+    .map((r) => r.id),
   inventedLabels: invented,
   unknownCaptures: missingCaptures,
   gapTrapsPassed: `${gapsPassed.length}/${gaps.length}`,

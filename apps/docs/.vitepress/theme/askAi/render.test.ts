@@ -96,3 +96,21 @@ describe('plans in an answer', () => {
     expect(plainAnswer('Your drawer:\n[[plan:0a1b2c3d]]\nDone.')).toBe('Your drawer:\nDone.');
   });
 });
+
+describe("links after a read of the reader's data", () => {
+  it('keeps links to this site and shows every other link as text', () => {
+    const text =
+      '[Plan](https://gridfinitylayouttool.com/#plan=v1.abc) [Docs](https://gridfinitylayouttool.com/docs/a) [Leak](https://evil.example/?d=Desk) https://evil.example/raw';
+    const segment = answerSegments(text, {
+      streaming: false,
+      isCapture: () => false,
+      isPlan: () => false,
+      siteLinksOnly: true,
+    })[0];
+    const out = segment?.kind === 'html' ? segment.html : '';
+    expect(out).toContain('href="https://gridfinitylayouttool.com/#plan=v1.abc"');
+    expect(out).toContain('href="/docs/a"');
+    expect(out).not.toContain('href="https://evil.example');
+    expect(out).toContain('Leak');
+  });
+});

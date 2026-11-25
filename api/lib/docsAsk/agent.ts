@@ -112,9 +112,10 @@ function kindOf(name: string): StepKind {
 
 function placeholderStep(
   call: { readonly id: string; readonly name: string },
-  state: StepEvent['state']
+  state: StepEvent['state'],
+  clientTools: ClientTools = CLIENT_TOOLS
 ): StepEvent {
-  const kind = kindOf(call.name);
+  const kind = clientTools.get(call.name)?.kind ?? kindOf(call.name);
   return { type: 'step', id: call.id, kind, state, label: PLACEHOLDER_LABELS[kind] };
 }
 
@@ -208,7 +209,7 @@ async function streamRound(
         outputTokens = event.usage.output_tokens;
         partial = withDelta(partial, event.usage);
       } else if (event.type === 'content_block_start' && event.content_block.type === 'tool_use') {
-        send(placeholderStep(event.content_block, 'running'));
+        send(placeholderStep(event.content_block, 'running', options.clientTools));
       } else if (event.type === 'content_block_delta') {
         if (event.delta.type === 'thinking_delta') {
           send({ type: 'thinking', text: event.delta.thinking });
@@ -306,7 +307,7 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
     const kept = new Set(calls.map((call) => call.id));
     for (const block of message.content) {
       if (block.type === 'tool_use' && !kept.has(block.id)) {
-        options.send(placeholderStep(block, 'error'));
+        options.send(placeholderStep(block, 'error', options.clientTools));
       }
     }
     answer = textOf(message.content);

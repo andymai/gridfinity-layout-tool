@@ -2,11 +2,12 @@
 import { computed, ref } from 'vue';
 import { data as captures } from '../askAi/captures.data';
 import { answerSegments, plainAnswer } from '../askAi/render';
-import { isLive } from '../askAi/useAskAi';
+import { answerRequest, isLive } from '../askAi/useAskAi';
 import type { Exchange, StepKind } from '../askAi/useAskAi';
 import type { PlanView } from '@/agent/contract';
 import { mediaEntry } from '../media';
 import PlanMap from './PlanMap.vue';
+import ReaderRequestCard from './ReaderRequestCard.vue';
 
 // Plans from every turn: a follow-up may show an earlier plan again by its handle.
 const props = defineProps<{
@@ -25,6 +26,7 @@ const segments = computed(() =>
     streaming: live.value,
     isCapture: (id) => Boolean(mediaEntry(id) && Object.hasOwn(captures, id)),
     isPlan: (handle) => Object.hasOwn(props.plans, handle),
+    siteLinksOnly: props.exchange.personal,
   })
 );
 
@@ -33,6 +35,7 @@ const NOUNS: Readonly<Record<StepKind, [string, string]>> = {
   search: ['search', 'searches'],
   check: ['check', 'checks'],
   plan: ['plan', 'plans'],
+  yours: ['read of your data', 'reads of your data'],
 };
 
 const summary = computed(() => {
@@ -40,7 +43,7 @@ const summary = computed(() => {
   let failed = 0;
   for (const step of props.exchange.steps) {
     if (step.state === 'done') counts.set(step.kind, (counts.get(step.kind) ?? 0) + 1);
-    else failed++;
+    else if (step.state === 'error') failed++;
   }
   const parts = [...counts].map(([kind, n]) => `${n} ${NOUNS[kind][n === 1 ? 0 : 1]}`);
   if (failed > 0) parts.push(`${failed} failed`);
@@ -70,7 +73,7 @@ async function copy(): Promise<void> {
         </li>
       </ol>
       <button
-        v-if="exchange.steps.length > 0 && !live"
+        v-if="summary && !live"
         class="steps-summary"
         type="button"
         :aria-expanded="showSteps"
@@ -79,6 +82,12 @@ async function copy(): Promise<void> {
         <span class="chevron" aria-hidden="true">{{ showSteps ? '▾' : '▸' }}</span>
         {{ summary }}
       </button>
+
+      <ReaderRequestCard
+        v-if="exchange.request"
+        :request="exchange.request"
+        @answer="(allow) => answerRequest(exchange, allow)"
+      />
 
       <p v-if="live && !exchange.text" class="thinking-line">
         {{ exchange.steps.some((s) => s.state === 'running') ? 'Reading the docs…' : 'Thinking…' }}
@@ -110,7 +119,7 @@ async function copy(): Promise<void> {
       <p v-if="exchange.status === 'stopped'" class="notice">Stopped.</p>
       <p v-if="exchange.notice" class="notice">{{ exchange.notice }}</p>
 
-      <div v-if="!live" class="actions">
+      <div v-if="!live && exchange.status !== 'asking'" class="actions">
         <button v-if="exchange.text" type="button" @click="copy">
           {{ copied ? 'Copied' : 'Copy' }}
         </button>
@@ -193,6 +202,9 @@ async function copy(): Promise<void> {
 }
 .step.error .step-icon {
   background: var(--vp-c-red-1);
+}
+.step.waiting .step-icon {
+  background: var(--vp-c-yellow-1);
 }
 .steps-summary {
   display: inline-flex;
