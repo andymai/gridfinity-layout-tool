@@ -31,10 +31,14 @@ export interface ReaderSource {
 }
 
 const clip = (text: string, max: number): string => text.slice(0, max);
-const day = (ms: number | undefined): string | null =>
-  ms !== undefined && Number.isFinite(ms) && ms > 0
-    ? new Date(ms).toISOString().slice(0, 10)
-    : null;
+// A damaged timestamp can be finite and still no date, or a date past year 9999.
+function day(ms: number | undefined): string | null {
+  if (ms === undefined || !Number.isFinite(ms) || ms <= 0) return null;
+  const date = new Date(ms);
+  if (Number.isNaN(date.getTime())) return null;
+  const iso = date.toISOString();
+  return /^\d{4}-\d{2}-\d{2}/.test(iso) ? iso.slice(0, 10) : null;
+}
 
 // The app opens the first entry when the stored active id matches none.
 function activeId(library: LayoutLibrary): string | undefined {

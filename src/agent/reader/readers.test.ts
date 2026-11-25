@@ -90,6 +90,18 @@ describe('browser reads', () => {
     });
   });
 
+  it('gives no date for a damaged timestamp', async () => {
+    const damaged: LayoutLibrary = {
+      ...library,
+      entries: [entry('a', 'Far', 1e100), entry('b', 'Late', 253_402_300_800_000)],
+    };
+    const run = await runReaderTool(source(damaged, {}), 'list_my_layouts', {});
+    expect(isOk(run) && myLayoutsData.parse(run.value).layouts.map((l) => l.modified)).toEqual([
+      null,
+      null,
+    ]);
+  });
+
   it('reads the open layout: layers, free cells, bins in order, stash and items', async () => {
     const run = await runReaderTool(source(library, { old: desk }), 'read_my_layout', {});
     const data = isOk(run) ? readMyLayoutData.parse(run.value) : null;
