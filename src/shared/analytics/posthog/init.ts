@@ -157,6 +157,7 @@ export function initAnalytics(): void {
       eventQueue = [];
     })
     .catch(() => {
+      initPromise = null;
       markReady(null);
     });
 }
@@ -185,8 +186,9 @@ export function optInAnalytics(): void {
     // A launch from the installed app while analytics was off went unrecorded.
     void import('./events').then(({ noteCurrentDisplayMode }) => noteCurrentDisplayMode());
   } else {
-    // If posthog wasn't initialized, try to initialize now
-    initPromise = null;
+    // Not started yet: a start still waiting goes on and checks the switch
+    // again before it initializes, and one that failed or stopped cleared
+    // initPromise, so this starts it again.
     initAnalytics();
   }
 }

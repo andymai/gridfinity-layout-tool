@@ -34,6 +34,11 @@ function withoutFragments(properties: Properties | undefined): Properties | unde
   if (properties === undefined) return undefined;
   const out: Properties = {};
   for (const [key, value] of Object.entries(properties)) {
+    if ((key === '$set' || key === '$set_once') && typeof value === 'object' && value !== null) {
+      // Person updates can ride inside the event properties too.
+      out[key] = withoutFragments(value as Properties);
+      continue;
+    }
     out[key] =
       typeof value === 'string' && /url/i.test(key) && value.includes('#')
         ? value.slice(0, value.indexOf('#'))

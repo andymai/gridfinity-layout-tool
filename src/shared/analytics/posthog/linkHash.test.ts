@@ -35,6 +35,11 @@ describe('link content in analytics', () => {
       note: 'a#b',
     });
     expect(event.$set_once).toEqual({ $initial_current_url: 'https://gridfinitylayouttool.com/' });
+    const nested = stripUrlFragments({
+      event: '$identify',
+      properties: { $set_once: { $initial_current_url: 'https://x.com/#plan=v1.abc' } },
+    });
+    expect(nested.properties?.$set_once).toEqual({ $initial_current_url: 'https://x.com/' });
   });
 
   it('waits until the link content leaves the address bar', async () => {

@@ -57,6 +57,24 @@ describe('PostHog start on a link with layout content', () => {
     }
   });
 
+  it('starts once when the reader turns analytics off and on while it waits', async () => {
+    vi.useFakeTimers();
+    window.history.replaceState(null, '', '/#plan=v1.abc');
+    const { initAnalytics, optInAnalytics, optOutAnalytics } = await import('./init');
+    const { useSettingsStore } = await import('@/core/store/settings');
+    initAnalytics();
+    const { settings } = useSettingsStore.getState();
+    useSettingsStore.setState({ settings: { ...settings, analyticsEnabled: false } });
+    optOutAnalytics();
+    useSettingsStore.setState({ settings: { ...settings, analyticsEnabled: true } });
+    optInAnalytics();
+    window.history.replaceState(null, '', '/');
+    await vi.advanceTimersByTimeAsync(2000);
+    await vi.waitFor(() => expect(mocks.init).toHaveBeenCalledTimes(1));
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(mocks.init).toHaveBeenCalledTimes(1);
+  });
+
   it('strips the hash from what it sends', async () => {
     const { initAnalytics } = await import('./init');
     initAnalytics();
