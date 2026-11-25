@@ -1,0 +1,35 @@
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.tsx
+  s_88cfcc42bf5bfd::t_f4b37f7cf2dff2 117-118,128-129,149-152,174,184
+src/features/cloud-share/components/SharedLayoutBanner/SharedLayoutBanner.tsx
+  s_88cfcc42bf5bfd::t_f4b37f7cf2dff2 19,104
+  s_88cfcc42bf5bfd::t_1ff1a549c23a38 79
+src/core/store/sharedPreview.ts
+  s_88cfcc42bf5bfd::t_f4b37f7cf2dff2 30-31,51-52,78-79,91
+src/features/cloud-share/components/SharedLayoutBanner/SharedLayoutBanner.planSaved.test.tsx
+  s_88cfcc42bf5bfd::t_1ff1a549c23a38 1-60
+src/shared/analytics/posthog/conversionEvents.ts
+  s_88cfcc42bf5bfd::t_f4b37f7cf2dff2 70-81
+src/shared/analytics/posthog/conversionEvents.test.ts
+  s_88cfcc42bf5bfd::t_c09d6d0755ef7c 13,100-110
+  s_88cfcc42bf5bfd::t_3f4d59d404b330 111-112
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.planSource.test.tsx
+  s_88cfcc42bf5bfd::t_91540401aba53e 1-39
+src/shared/analytics/posthog/index.ts
+  s_88cfcc42bf5bfd::t_f4b37f7cf2dff2 36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fd13306c4222ed989fde23af39e81cfa15555afb",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
