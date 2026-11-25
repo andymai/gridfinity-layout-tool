@@ -61,6 +61,9 @@ async function countToday(): Promise<number> {
   }
 }
 
+// Vercel buffers and parses the body before this runs, under its own 4.5 MB
+// cap. The SDK's work scales with the parsed message, so that is what counts:
+// padding that parses away costs nothing past this point.
 function bodyBytes(req: VercelRequest): number {
   const declared = Number(req.headers['content-length'] ?? 0);
   return Math.max(declared, Buffer.byteLength(JSON.stringify(req.body ?? null)));
