@@ -67,7 +67,14 @@ function rows(node: SchemaNode, prefix: string): string[] {
   const required = new Set(node.required ?? []);
   return Object.entries(node.properties ?? {}).flatMap(([key, child]) => {
     const name = `${prefix}${key}`;
-    const notes = [child.description, ...limits(child)].filter(Boolean).join(' ');
+    // A list of plain values has no rows of its own, so its item limits go here.
+    const itemLimits =
+      child.type === 'array' && child.items && !child.items.properties
+        ? limits(child.items).map(
+            (note) => `Each item: ${note.charAt(0).toLowerCase()}${note.slice(1)}`
+          )
+        : [];
+    const notes = [child.description, ...limits(child), ...itemLimits].filter(Boolean).join(' ');
     const row = `| \`${name}\` | ${typeName(child)} | ${required.has(key) ? 'yes' : 'no'} | ${notes.replaceAll('|', '\\|')} |`;
     const nested = child.type === 'array' && child.items ? child.items : child;
     const nestedPrefix = child.type === 'array' ? `${name}[].` : `${name}.`;

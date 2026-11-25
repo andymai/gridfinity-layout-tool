@@ -1,6 +1,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { describe, expect, it } from 'vitest';
+import { READER_TOOL_NAMES } from '../agent/index.js';
 import { createMcpServer, MCP_TOOL_NAMES } from './server.js';
 
 async function listTools() {
@@ -52,7 +53,13 @@ describe('createMcpServer', () => {
     expect(bare).toEqual([]);
   });
 
-  it('never tells an outside agent about the docs panel', async () => {
-    for (const tool of await listTools()) expect(tool.description).not.toMatch(/panel/i);
+  // Descriptions are shared with Ask AI, whose browser tools and panel an
+  // outside agent does not have.
+  it('names no Ask AI tool or panel in what an outside agent reads', async () => {
+    for (const tool of await listTools()) {
+      const text = JSON.stringify([tool.description, tool.inputSchema]);
+      expect(text, tool.name).not.toMatch(/panel/i);
+      for (const name of READER_TOOL_NAMES) expect(text, tool.name).not.toContain(name);
+    }
   });
 });

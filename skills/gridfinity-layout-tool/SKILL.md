@@ -17,12 +17,13 @@ The tools come from the Layout Tool's MCP server at `https://gridfinitylayouttoo
 
 ## Plan a drawer
 
-1. Get the inside width, depth and height of the drawer, with the unit. If the person has no measurement, get the grid size that they want.
+1. Get the inside width, depth and height of the drawer, with the unit.
 2. Call `drawer_fit` with the measurement. It gives the grid, the spare room and the tallest bins for stacks of 1, 2 and 3.
+   - If the person has no measurement, skip `drawer_fit`. Get the grid size that they want, and the drawer height in height units when they know it.
 3. Make a list of the things to store. For each kind of thing, choose one bin: the footprint of the thing plus room for fingers, in whole or half grid units.
 4. For common items such as "M3 screws", call `bin_size_for` with the labels first. Its size is a habit of other makers, not a fact about the item.
-5. Keep each bin at or below the tallest height from `drawer_fit`. For bins on a second layer, use the heights for a stack of 2.
-6. Call `plan_layout` with the drawer measurement and the bins. Give a `count` for repeated bins, and `categories` to color groups of bins.
+5. Keep each bin at or below the tallest height for a stack of 1. When bins stack in two layers, use the height for a stack of 2. It applies to every bin in the stack, the lower one too.
+6. Call `plan_layout` with the bins, and with the drawer measurement or, without one, the `grid`. Give a `count` for repeated bins, and `categories` to color groups of bins.
 7. Read the result. It names the bins that it placed, and the bins that went to the stash because they did not fit.
 8. If bins went to the stash, tell the person and offer a change: smaller bins, fewer bins or a second layer. Then call `plan_layout` again.
 9. Give the person the link from the result, unchanged. It opens the plan in the layout editor. To keep the plan, they click **Save to My Layouts** in the banner at the top.
@@ -31,6 +32,7 @@ The tools come from the Layout Tool's MCP server at `https://gridfinitylayouttoo
 ## Baseplate and filament
 
 - To print the baseplate, call `split_plan` with the grid and the print bed size. It says whether the plate prints in one piece, or how it splits.
+- `split_plan` splits the default plate, with no padding. A plan for a measured drawer pads the plate to fill the drawer, and padding makes the edge pieces larger. Tell the person to check the split in the app's baseplate generator.
 - To estimate filament, print time and cost, call `print_estimate` with the size and count of each bin. Give the person's printer settings when you know them.
 - Say that the print figures are estimates for standard bins, without the baseplate.
 - A bin that is larger than the print bed prints in pieces that the person glues together, because the app splits it. When you know the bed, prefer bin sizes that fit it, and name each bin that can need a split. More detail: https://gridfinitylayouttool.com/docs/concepts/print-bed-fit.md

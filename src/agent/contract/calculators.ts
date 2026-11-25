@@ -66,9 +66,7 @@ export const printEstimateInput = z
       .partial()
       .strict()
       .optional()
-      .describe(
-        "The reader's printer, from read_my_settings when known. The app's defaults fill gaps."
-      ),
+      .describe("The printer's settings, when known. The app's defaults fill gaps."),
   })
   .strict();
 export type PrintEstimateInput = z.infer<typeof printEstimateInput>;
