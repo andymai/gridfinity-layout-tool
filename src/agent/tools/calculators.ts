@@ -1,3 +1,4 @@
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { splitDefaultBaseplate } from '@/features/baseplate/domain';
 import { estimateStandardBin } from '@/features/bin-designer/domain';
 import { suggestBinSize } from '@/features/bin-recommender/domain';
@@ -76,7 +77,8 @@ export function runBinSizeFor(input: BinSizeForInput): ToolOutput {
     }
     const share = Math.round(hit.p * 100);
     const basis = hit.source === 'label' ? 'bins with this label' : 'bins with similar labels';
-    return `- ${name}: ${size(hit.size.width, hit.size.depth)} units, ${hit.size.height}u (${share}% of ${basis}).`;
+    const tall = round(hit.size.height * 7 + GRIDFINITY_SPEC.LIP_HEIGHT, 1);
+    return `- ${name}: ${size(hit.size.width, hit.size.depth)} units, ${hit.size.height}u, ${tall} mm tall with the stacking lip (${share}% of ${basis}).`;
   });
   return {
     isError: false,
@@ -115,7 +117,8 @@ export function runPrintEstimate(input: PrintEstimateInput): ToolOutput {
     cost += each.costUSD * n;
     count += n;
     const name = bin.label === undefined ? 'bin' : JSON.stringify(bin.label);
-    const line = `- ${n > 1 ? `${n} x ` : ''}${name} (${size(bin.width, bin.depth)} units, ${bin.height}u): ${round(each.gramsFilament)} g and ${duration(each.printTimeMinutes)}`;
+    // One decimal, so a group's total agrees with its count times the figure for one bin.
+    const line = `- ${n > 1 ? `${n} x ` : ''}${name} (${size(bin.width, bin.depth)} units, ${bin.height}u): ${round(each.gramsFilament, 1)} g and ${duration(each.printTimeMinutes)}`;
     // Totals from the exact figures, so no one multiplies the rounded ones.
     return n > 1
       ? `${line} each; ${round(each.gramsFilament * n)} g and ${duration(each.printTimeMinutes * n)} in all.`

@@ -40,7 +40,12 @@ describe('bin_size_for', () => {
   it('gives the learned size of a common label, and says so when a label has none', () => {
     const run = runBinSizeFor(binSizeForInput.parse({ labels: ['Screwdrivers', 'zzqx blorp'] }));
     expect(run.content).toMatch(
-      /- "Screwdrivers": \d+(\.5)? x \d+(\.5)? units, \d+u \(\d+% of bins with (this|similar) labels?\)\./
+      /- "Screwdrivers": \d+(\.5)? x \d+(\.5)? units, \d+u, [\d.]+ mm tall with the stacking lip \(\d+% of bins with (this|similar) labels?\)\./
+    );
+    // The printed height counts the 4.4 mm stacking lip on top of the body.
+    const height = Number(/units, (\d+)u,/.exec(run.content)?.[1]);
+    expect(run.content).toContain(
+      `${height}u, ${Math.round((height * 7 + 4.4) * 10) / 10} mm tall`
     );
     expect(run.content).toContain('- "zzqx blorp": no common size.');
     // Similar labels give "Hex keys" a top size that only a few bins share.
@@ -58,7 +63,7 @@ describe('print_estimate', () => {
       printEstimateInput.parse({ bins: [{ label: 'M3', width: 1, depth: 1, height: 3, count: 4 }] })
     );
     expect(run.content).toContain(
-      `- 4 x "M3" (1 x 1 units, 3u): ${Math.round(each.gramsFilament)} g`
+      `- 4 x "M3" (1 x 1 units, 3u): ${Math.round(each.gramsFilament * 10) / 10} g`
     );
     expect(run.content).toContain(`each; ${Math.round(each.gramsFilament * 4)} g and`);
     expect(run.content).toContain(`Total for 4 bins: ${Math.round(each.gramsFilament * 4)} g`);
