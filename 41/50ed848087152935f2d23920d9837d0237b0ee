@@ -1,0 +1,27 @@
+apps/docs/reference/faq.md
+  s_88cfcc42bf5bfd::t_f609d4476e092b 52
+scripts/docs-ask-eval/run.ts
+  s_88cfcc42bf5bfd::t_f609d4476e092b 161-169,196
+api/lib/docsAsk/tools.test.ts
+  s_88cfcc42bf5bfd::t_f609d4476e092b 154-171
+scripts/docs-ask-eval/golden.ts
+  s_88cfcc42bf5bfd::t_f609d4476e092b 11,35,811-847
+api/README.md
+  s_88cfcc42bf5bfd::t_ad77b2b34998a5 88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4150ed848087152935f2d23920d9837d0237b0ee",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
