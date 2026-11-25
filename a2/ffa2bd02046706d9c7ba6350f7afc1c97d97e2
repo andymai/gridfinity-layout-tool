@@ -1,0 +1,16 @@
+src/agent/tools/calculators.test.ts
+  h_b755e1950659f4 46-49
+src/agent/tools/calculators.ts
+  h_b755e1950659f4 14-15,74-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a2ffa2bd02046706d9c7ba6350f7afc1c97d97e2",
+  "prompts": {},
+  "humans": {
+    "h_b755e1950659f4": {
+      "author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
