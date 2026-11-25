@@ -1,6 +1,8 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import type Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
+import { CLIENT_TOOLS, MAX_CLIENT_RESULTS, clientResultSchema, clientRun } from './clientTools.js';
+import type { ClientResult, ClientTools } from './clientTools.js';
 import type { AskCorpus } from './corpus.js';
 import { contextMessage } from './prompt.js';
 import { TOOL_NAMES, toolResult } from './tools.js';
@@ -8,6 +10,7 @@ import type { ToolRunner } from './tools.js';
 
 type MessageParam = Anthropic.Beta.BetaMessageParam;
 type ContentBlockParam = Anthropic.Beta.BetaContentBlockParam;
+type ToolResultParam = Anthropic.Beta.BetaToolResultBlockParam;
 
 export const MAX_TURNS = 8;
 const MAX_QUESTION_CHARS = 1000;
@@ -35,7 +38,7 @@ const storedBlock = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('tool_use'),
     id: z.string().max(200),
-    name: z.enum(TOOL_NAMES as [string, ...string[]]),
+    name: z.string().max(64),
     input: z.record(z.string(), z.unknown()),
   }),
 ]);
@@ -47,9 +50,24 @@ const turnSchema = z.object({
   locale: localeField,
   /** Each assistant message of the turn, in order, as the API returned its content. */
   messages: z.array(z.array(z.unknown()).max(64)).max(MAX_MESSAGES_PER_TURN),
+  /** What the reader's browser returned for the turn's browser tool calls. */
+  results: z.array(clientResultSchema).max(MAX_CLIENT_RESULTS).optional(),
   signature: z.string().regex(/^[0-9a-f]{64}$/),
 });
 export type StoredTurn = z.infer<typeof turnSchema>;
+
+const pendingSchema = z.object({
+  question: clean(z.string().min(1).max(MAX_QUESTION_CHARS)),
+  page: pageField,
+  locale: localeField,
+  messages: z.array(z.array(z.unknown()).max(64)).min(1).max(MAX_MESSAGES_PER_TURN),
+  results: z.array(clientResultSchema).max(MAX_CLIENT_RESULTS),
+  rounds: z.number().int().min(1).max(64),
+  issuedAt: z.number().int().nonnegative(),
+  nonce: z.uuid(),
+  signature: z.string().regex(/^[0-9a-f]{64}$/),
+});
+export type PendingTurn = z.infer<typeof pendingSchema>;
 
 export const askRequestSchema = z.object({
   op: z.literal('ask'),
@@ -59,6 +77,15 @@ export const askRequestSchema = z.object({
   locale: localeField,
   turns: z.array(turnSchema).max(MAX_TURNS),
   /** The reader's analytics switch, as the app keeps it. Absent means no trace. */
+  analytics: z.boolean().default(false),
+});
+
+export const resumeRequestSchema = z.object({
+  op: z.literal('resume'),
+  sessionId: sessionIdField,
+  pending: pendingSchema,
+  results: z.array(clientResultSchema).min(1).max(MAX_CLIENT_RESULTS),
+  turns: z.array(turnSchema).max(MAX_TURNS),
   analytics: z.boolean().default(false),
 });
 
@@ -75,6 +102,7 @@ export interface TurnFields {
   readonly page: string;
   readonly locale: string;
   readonly messages: readonly unknown[];
+  readonly results?: readonly ClientResult[];
 }
 
 /**
@@ -84,9 +112,10 @@ export interface TurnFields {
  * client's copy hashes the same.
  */
 export function turnSignature(key: string, turn: TurnFields): string {
-  return createHmac('sha256', key)
-    .update(JSON.stringify([turn.question, turn.page, turn.locale, turn.messages]))
-    .digest('hex');
+  const fields: unknown[] = [turn.question, turn.page, turn.locale, turn.messages];
+  // A turn without browser results hashes as it did before they existed.
+  if (turn.results !== undefined && turn.results.length > 0) fields.push(turn.results);
+  return createHmac('sha256', key).update(JSON.stringify(fields)).digest('hex');
 }
 
 export function turnSigned(key: string, turn: StoredTurn): boolean {
@@ -108,33 +137,102 @@ function toParam(block: StoredBlock): ContentBlockParam {
   }
 }
 
+const knownTool = (name: string, clientTools: ClientTools): boolean =>
+  (TOOL_NAMES as readonly string[]).includes(name) || clientTools.has(name);
+
+/** The messages as stored blocks, or null when one holds a block or tool this code does not know. */
+function storedMessages(
+  messages: readonly unknown[],
+  clientTools: ClientTools
+): StoredBlock[][] | null {
+  const parsed: StoredBlock[][] = [];
+  for (const content of messages) {
+    if (!Array.isArray(content)) return null;
+    const blocks: StoredBlock[] = [];
+    for (const block of content) {
+      const result = storedBlock.safeParse(block);
+      if (!result.success) return null;
+      if (result.data.type === 'tool_use' && !knownTool(result.data.name, clientTools)) return null;
+      blocks.push(result.data);
+    }
+    parsed.push(blocks);
+  }
+  return parsed;
+}
+
+/** The text of a turn's last message alone, or nothing when it has none. */
+function answerOnly(turn: StoredTurn): StoredBlock[][] {
+  const last = turn.messages.at(-1);
+  const text = (Array.isArray(last) ? last : [])
+    .flatMap((block) => {
+      const result = storedBlock.safeParse(block);
+      return result.success && result.data.type === 'text' ? [result.data.text] : [];
+    })
+    .join('')
+    .trim();
+  return text ? [[{ type: 'text', text }]] : [];
+}
+
 /**
- * A turn as its assistant messages, or as the text of its answer alone when it
- * holds a block that the API must not get back as is: a fallback boundary, a
- * block type this code does not know, or a tool call that never got an answer.
- * Dropping its thinking can cost later blocks their check, which drop_block
- * absorbs.
+ * Each assistant message with the results of its tool calls: a server tool
+ * runs again, and a browser tool takes its stored result. Null when a browser
+ * call has no result that fits its tool.
  */
-function turnMessages(turn: StoredTurn): StoredBlock[][] {
-  const parsed = turn.messages.map((content) =>
-    content.map((block) => storedBlock.safeParse(block))
-  );
-  const allKnown = parsed.every((message) => message.every((result) => result.success));
-  const messages = parsed.map((message) =>
-    message.flatMap((result) => (result.success ? [result.data] : []))
-  );
-  const last = messages.at(-1) ?? [];
+function answerMessages(
+  messages: readonly StoredBlock[][],
+  run: ToolRunner,
+  locale: string,
+  clientTools: ClientTools,
+  results: readonly ClientResult[]
+): MessageParam[] | null {
+  const out: MessageParam[] = [];
+  for (const content of messages) {
+    out.push({ role: 'assistant', content: content.map(toParam) });
+    const calls = content.filter((block) => block.type === 'tool_use');
+    if (calls.length === 0) continue;
+    const blocks: ToolResultParam[] = [];
+    for (const call of calls) {
+      const tool = clientTools.get(call.name);
+      if (tool === undefined) {
+        blocks.push(toolResult(call.id, run(call.name, call.input, locale)));
+        continue;
+      }
+      const result = results.find((r) => r.callId === call.id);
+      const ran = result === undefined ? null : clientRun(tool, call.input, result);
+      if (ran === null) return null;
+      blocks.push(toolResult(call.id, ran));
+    }
+    out.push({ role: 'user', content: blocks });
+  }
+  return out;
+}
+
+/**
+ * A finished turn as its messages, or as the text of its answer alone when it
+ * holds a block that the API must not get back as is: a fallback boundary, a
+ * block type or tool this code does not know, a tool call that never got an
+ * answer, or a browser result that no longer fits its tool. Dropping its
+ * thinking can cost later blocks their check, which drop_block absorbs.
+ */
+function turnMessages(
+  turn: StoredTurn,
+  run: ToolRunner,
+  locale: string,
+  clientTools: ClientTools
+): MessageParam[] {
+  const messages = storedMessages(turn.messages, clientTools);
+  const last = messages?.at(-1) ?? [];
   // A refusal can end on thinking alone or on nothing, and an empty assistant
   // message would fail every later request of the chat.
   const answered =
     !last.some((block) => block.type === 'tool_use') &&
     last.some((block) => block.type === 'text' && block.text.trim() !== '');
-  if (allKnown && answered) return messages;
-  const text = last
-    .flatMap((block) => (block.type === 'text' ? [block.text] : []))
-    .join('')
-    .trim();
-  return text ? [[{ type: 'text', text }]] : [];
+  const full =
+    messages !== null && answered
+      ? answerMessages(messages, run, locale, clientTools, turn.results ?? [])
+      : null;
+  if (full !== null) return full;
+  return answerOnly(turn).map((content) => ({ role: 'assistant', content: content.map(toParam) }));
 }
 
 export function userTurn(
@@ -160,24 +258,55 @@ export function rebuildMessages(
   turns: readonly StoredTurn[],
   run: ToolRunner,
   localeOf: (locale: string) => string,
-  signed: (turn: StoredTurn) => boolean
+  signed: (turn: StoredTurn) => boolean,
+  clientTools: ClientTools = CLIENT_TOOLS
 ): MessageParam[] {
   const messages: MessageParam[] = [];
   for (const turn of turns) {
     if (!signed(turn)) continue;
-    const answer = turnMessages(turn);
-    if (answer.length === 0) continue;
     const locale = localeOf(turn.locale);
-    messages.push(...userTurn(corpus, turn.question, turn.page, locale));
-    for (const content of answer) {
-      messages.push({ role: 'assistant', content: content.map(toParam) });
-      const calls = content.filter((block) => block.type === 'tool_use');
-      if (calls.length === 0) continue;
-      messages.push({
-        role: 'user',
-        content: calls.map((call) => toolResult(call.id, run(call.name, call.input, locale))),
-      });
-    }
+    const answer = turnMessages(turn, run, locale, clientTools);
+    if (answer.length === 0) continue;
+    messages.push(...userTurn(corpus, turn.question, turn.page, locale), ...answer);
   }
   return messages;
+}
+
+/**
+ * The browser calls that a pending turn waits for: those in its last message.
+ * Null when the turn cannot go on, because a block or tool is unknown.
+ */
+export function awaitedCalls(
+  pending: PendingTurn,
+  clientTools: ClientTools = CLIENT_TOOLS
+): { readonly id: string; readonly name: string; readonly input: unknown }[] | null {
+  const messages = storedMessages(pending.messages, clientTools);
+  if (messages === null) return null;
+  return (messages.at(-1) ?? []).flatMap((block) =>
+    block.type === 'tool_use' && clientTools.has(block.name)
+      ? [{ id: block.id, name: block.name, input: block.input }]
+      : []
+  );
+}
+
+/**
+ * The pending turn as messages, its last tool calls answered with the new
+ * browser results: the question, the context, and each round so far. Null
+ * when a result is missing or does not fit its tool.
+ */
+export function pendingMessages(
+  corpus: AskCorpus,
+  pending: PendingTurn,
+  results: readonly ClientResult[],
+  run: ToolRunner,
+  clientTools: ClientTools = CLIENT_TOOLS
+): MessageParam[] | null {
+  const messages = storedMessages(pending.messages, clientTools);
+  if (messages === null) return null;
+  const answer = answerMessages(messages, run, pending.locale, clientTools, [
+    ...pending.results,
+    ...results,
+  ]);
+  if (answer === null) return null;
+  return [...userTurn(corpus, pending.question, pending.page, pending.locale), ...answer];
 }

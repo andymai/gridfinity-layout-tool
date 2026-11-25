@@ -1,4 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { CLIENT_TOOLS } from './clientTools.js';
+import type { ClientTools } from './clientTools.js';
 import type { AskCorpus } from './corpus.js';
 import { SYSTEM_PROMPT } from './prompt.js';
 import { costUsd } from './spend.js';
@@ -15,7 +17,7 @@ export type Effort = NonNullable<Anthropic.Beta.BetaOutputConfig['effort']>;
 export const MODEL = 'claude-opus-5-5';
 export const EFFORT: Effort = 'medium';
 const MAX_TOKENS = 16_000;
-const MAX_ROUNDS = 6;
+export const MAX_ROUNDS = 6;
 const MAX_RETRIES = 2;
 const BETAS: Anthropic.Beta.AnthropicBeta[] = [
   'thinking-binding-controls-2026-08-01',
@@ -23,7 +25,14 @@ const BETAS: Anthropic.Beta.AnthropicBeta[] = [
 ];
 
 export type AgentEvent =
-  | { type: 'step'; id: string; kind: StepKind; state: 'running' | 'done' | 'error'; label: string }
+  | {
+      type: 'step';
+      id: string;
+      kind: StepKind;
+      /** waiting: a browser call that the reader has yet to allow. */
+      state: 'running' | 'waiting' | 'done' | 'error';
+      label: string;
+    }
   | { type: 'thinking'; text: string }
   | { type: 'text'; text: string }
   /** One assistant message as the API returned it, for the panel to send back next turn. */
@@ -48,6 +57,10 @@ export interface AgentOptions {
   /** The eval compares models and effort levels; production uses MODEL and EFFORT. */
   readonly model?: string;
   readonly effort?: Effort;
+  /** Tools that the reader's browser runs. A call to one ends the request until the reader answers. */
+  readonly clientTools?: ClientTools;
+  /** Rounds that the turn used before a resume; the cap counts across resumes. */
+  readonly firstRound?: number;
 }
 
 /**
@@ -68,12 +81,20 @@ export interface AgentProgress {
   readonly links: string[];
 }
 
+export interface BrowserCall {
+  readonly id: string;
+  readonly name: string;
+  readonly input: unknown;
+}
+
 export interface AgentResult {
   readonly answer: string;
   readonly steps: readonly string[];
   readonly links: readonly string[];
   readonly generations: readonly Generation[];
   readonly stopReason: string | null;
+  /** The browser calls that the turn waits for, and the rounds it used, or null when it ended. */
+  readonly pending: { readonly calls: readonly BrowserCall[]; readonly rounds: number } | null;
 }
 
 interface RoundResult {
@@ -258,10 +279,11 @@ function echoContent(content: readonly ContentBlock[]): ContentBlock[] {
 export async function runAgent(options: AgentOptions): Promise<AgentResult> {
   const messages = [...options.messages];
   const { generations, steps, links } = options.progress;
+  const clientTools = options.clientTools ?? CLIENT_TOOLS;
   let answer = '';
   let stopReason: string | null = null;
 
-  for (let round = 0; round < MAX_ROUNDS; round++) {
+  for (let round = options.firstRound ?? 0; round < MAX_ROUNDS; round++) {
     if (!(await options.budget.reserve())) {
       options.send({ type: 'notice', code: 'resting' });
       break;
@@ -314,24 +336,43 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
     }
     if (message.stop_reason !== 'tool_use' || calls.length === 0) break;
 
+    // Server calls run first. A resume runs them again from the signed
+    // messages, so their results need not wait with the browser calls.
+    const results = calls.map((call) => {
+      if (clientTools.has(call.name)) return null;
+      const run = options.run(call.name, call.input, options.locale);
+      steps.push(run.label);
+      if (run.link) links.push(run.link);
+      options.send({
+        type: 'step',
+        id: call.id,
+        kind: kindOf(call.name),
+        state: run.isError ? 'error' : 'done',
+        label: run.label,
+      });
+      if (run.plan) options.send({ type: 'plan', plan: run.plan });
+      return toolResult(call.id, run);
+    });
+    const browser = calls.filter((call) => clientTools.has(call.name));
+    if (browser.length > 0) {
+      for (const call of browser) {
+        const tool = clientTools.get(call.name);
+        if (tool === undefined) continue;
+        const label = tool.label(call.input);
+        steps.push(label);
+        options.send({ type: 'step', id: call.id, kind: tool.kind, state: 'waiting', label });
+      }
+      const pending = {
+        calls: browser.map((call) => ({ id: call.id, name: call.name, input: call.input })),
+        rounds: round + 1,
+      };
+      return { answer, steps, links, generations, stopReason, pending };
+    }
     messages.push({ role: 'assistant', content });
     messages.push({
       role: 'user',
-      content: calls.map((call) => {
-        const run = options.run(call.name, call.input, options.locale);
-        steps.push(run.label);
-        if (run.link) links.push(run.link);
-        options.send({
-          type: 'step',
-          id: call.id,
-          kind: kindOf(call.name),
-          state: run.isError ? 'error' : 'done',
-          label: run.label,
-        });
-        if (run.plan) options.send({ type: 'plan', plan: run.plan });
-        return toolResult(call.id, run);
-      }),
+      content: results.filter((result) => result !== null),
     });
   }
-  return { answer, steps, links, generations, stopReason };
+  return { answer, steps, links, generations, stopReason, pending: null };
 }

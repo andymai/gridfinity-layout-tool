@@ -10,18 +10,41 @@ import type { AgentOptions, AgentResult } from './lib/docsAsk/agent.js';
 import { turnSigned } from './lib/docsAsk/history.js';
 import type { StoredTurn } from './lib/docsAsk/history.js';
 import type * as Spend from './lib/docsAsk/spend.js';
+import type * as ClientToolsModule from './lib/docsAsk/clientTools.js';
+import { pendingSignature } from './lib/docsAsk/pending.js';
 
-const mocks = vi.hoisted(() => ({
-  runAgent: vi.fn(),
-  reserveSpend: vi.fn(),
-  sendAskTrace: vi.fn(),
-}));
+const mocks = vi.hoisted(() => {
+  const held = new Set<string>();
+  return {
+    runAgent: vi.fn(),
+    reserveSpend: vi.fn(),
+    sendAskTrace: vi.fn(),
+    held,
+    set: (key: string) => {
+      if (held.has(key)) return Promise.resolve(null);
+      held.add(key);
+      return Promise.resolve('OK');
+    },
+  };
+});
 
 vi.mock('./lib/rateLimit.js', () => ({
   checkRateLimit: () => Promise.resolve({ allowed: true }),
-  getRedis: () => ({}),
+  getRedis: () => ({ set: mocks.set }),
   getClientIP: () => '203.0.113.1',
 }));
+
+vi.mock('./lib/docsAsk/clientTools.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof ClientToolsModule>();
+  const { z } = await import('zod');
+  const layoutTool: ClientToolsModule.ClientTool = {
+    kind: 'read',
+    label: () => 'Reading your layout',
+    output: z.object({ name: z.string() }).strict(),
+    format: (data) => `The layout is ${(data as { name: string }).name}.`,
+  };
+  return { ...actual, CLIENT_TOOLS: new Map([['read_my_layout', layoutTool]]) };
+});
 
 vi.mock('./lib/docsAsk/traces.js', () => ({
   sendAskFeedback: vi.fn(),
@@ -53,10 +76,14 @@ function streamResponse() {
   const res = {
     headersSent: false,
     writableEnded: false,
-    status() {
+    statusCode: 200,
+    body: null as unknown,
+    status(code: number) {
+      res.statusCode = code;
       return res;
     },
-    json() {
+    json(body: unknown) {
+      res.body = body;
       return res;
     },
     setHeader() {
@@ -79,7 +106,22 @@ function streamResponse() {
       return res;
     },
   };
-  return { res: res as unknown as VercelResponse, events };
+  return { res: res as unknown as VercelResponse, events, sent: res };
+}
+
+async function post(body: Record<string, unknown>) {
+  const { res, events, sent } = streamResponse();
+  const mod = await import('./docs-ask.js');
+  await mod.default(
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body,
+      on: vi.fn(),
+    } as unknown as VercelRequest,
+    res
+  );
+  return { events, status: sent.statusCode, body: sent.body };
 }
 
 async function ask(analytics = false) {
@@ -112,7 +154,11 @@ const result = (answer: string): AgentResult => ({
   links: ['/layouts/layers'],
   generations: [],
   stopReason: 'end_turn',
+  pending: null,
 });
+
+const key = (purpose: string): string => createHmac('sha256', 'salt').update(purpose).digest('hex');
+const browserCall = { type: 'tool_use', id: 'toolu_b', name: 'read_my_layout', input: {} };
 
 describe('docs-ask streaming', () => {
   beforeEach(() => {
@@ -142,6 +188,101 @@ describe('docs-ask streaming', () => {
     mocks.runAgent.mockResolvedValueOnce(result(''));
     const empty = (await ask()).find((e) => e.event === 'done');
     expect(empty?.data.turn).toMatchObject({ signature: null });
+  });
+
+  it('ends a turn that calls a browser tool with a signed pending envelope and no done', async () => {
+    mocks.runAgent.mockImplementationOnce((options: AgentOptions) => {
+      options.send({ type: 'message', content: [browserCall] } as never);
+      return Promise.resolve({
+        ...result(''),
+        pending: { calls: [{ id: 'toolu_b', name: 'read_my_layout', input: {} }], rounds: 1 },
+      });
+    });
+    const { events } = await post({
+      op: 'ask',
+      sessionId: 'abc12345-tab',
+      question: 'What is in my drawer?',
+      page: '/layouts/layers',
+      locale: 'en',
+      turns: [],
+    });
+    expect(events.map((e) => e.event)).toEqual(['start', 'message', 'pending']);
+    const { pending, calls } = events[2]?.data as {
+      pending: Record<string, unknown> & { signature: string };
+      calls: unknown[];
+    };
+    expect(calls).toEqual([{ id: 'toolu_b', name: 'read_my_layout', input: {} }]);
+    expect(pending).toMatchObject({ messages: [[browserCall]], results: [], rounds: 1 });
+    const { signature, ...fields } = pending;
+    expect(signature).toBe(pendingSignature(key('docs-ask pending signature'), fields as never));
+  });
+
+  describe('resume', () => {
+    const shared = { callId: 'toolu_b', status: 'shared', data: { name: 'Desk' } };
+    function envelope(overrides: Record<string, unknown> = {}) {
+      const fields = {
+        question: 'What is in my drawer?',
+        page: '/layouts/layers',
+        locale: 'en',
+        messages: [[browserCall]],
+        results: [],
+        rounds: 1,
+        issuedAt: Date.now(),
+        nonce: crypto.randomUUID(),
+        ...overrides,
+      };
+      return { ...fields, signature: pendingSignature(key('docs-ask pending signature'), fields) };
+    }
+    const resume = (pending: unknown, results: unknown[] = [shared]) =>
+      post({ op: 'resume', sessionId: 'abc12345-tab', pending, results, turns: [] });
+
+    it('answers the browser call with its result, goes on, and signs the whole turn', async () => {
+      const final = [{ type: 'text', text: 'Your Desk layout.' }];
+      mocks.runAgent.mockImplementationOnce((options: AgentOptions) => {
+        expect(options.firstRound).toBe(1);
+        expect(options.messages.at(-1)).toEqual({
+          role: 'user',
+          content: [
+            { type: 'tool_result', tool_use_id: 'toolu_b', content: 'The layout is Desk.' },
+          ],
+        });
+        options.send({ type: 'message', content: final } as never);
+        return Promise.resolve(result('Your Desk layout.'));
+      });
+      const { events } = await resume(envelope());
+      const turn = events.find((e) => e.event === 'done')?.data.turn as StoredTurn;
+      expect(turn.results).toEqual([shared]);
+      expect(
+        turnSigned(key('docs-ask turn signature'), { ...turn, messages: [[browserCall], final] })
+      ).toBe(true);
+    });
+
+    it('runs one envelope once', async () => {
+      mocks.runAgent.mockResolvedValue(result('Once.'));
+      const pending = envelope();
+      expect((await resume(pending)).status).toBe(200);
+      const again = await resume(pending);
+      expect(again.status).toBe(409);
+      expect(mocks.runAgent).toHaveBeenCalledTimes(1);
+    });
+
+    it('refuses an edited, expired or unmatched envelope before it claims the nonce', async () => {
+      const pending = envelope();
+      expect((await resume({ ...pending, rounds: 0 })).status).toBe(400);
+      expect((await resume({ ...pending, question: 'Other?' })).status).toBe(400);
+      expect((await resume(envelope({ issuedAt: Date.now() - 16 * 60 * 1000 }))).status).toBe(410);
+      expect((await resume(pending, [{ ...shared, callId: 'toolu_x' }])).status).toBe(400);
+      expect((await resume(pending, [shared, shared])).status).toBe(400);
+      expect(
+        (await resume(pending, [shared, { callId: 'toolu_x', status: 'declined' }])).status
+      ).toBe(400);
+      expect(
+        (await resume(pending, [{ callId: 'toolu_b', status: 'shared', data: { name: 7 } }])).status
+      ).toBe(400);
+      expect(mocks.runAgent).not.toHaveBeenCalled();
+      mocks.runAgent.mockResolvedValueOnce(result('Now.'));
+      expect((await resume(pending)).status).toBe(200);
+    });
   });
 
   it('answers a failed spend reservation with an error, not the resting notice', async () => {
