@@ -1,0 +1,23 @@
+src/core/cqrs/subscribers/selectionPruning.test.ts
+  s_88cfcc42bf5bfd::t_644ead9870989f 70-85,93-101,103-108
+  s_88cfcc42bf5bfd::t_83821803b68673 8,91
+  s_88cfcc42bf5bfd::t_087dd18d6e7bba 86-90,92
+src/core/cqrs/subscribers/selectionPruning.ts
+  s_88cfcc42bf5bfd::t_644ead9870989f 23,174-175,178-185,187-190
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "065b2c46a5c2b07e26665ecb7db58db97f998af0",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
