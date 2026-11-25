@@ -5,7 +5,6 @@ import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { fitAxisUnits, halfUnitUpgrade } from '@/shared/utils/drawerFit';
 import type { AxisFit } from '@/shared/utils/drawerFit';
 import { solveUnitsUnderCeiling, stackedTotalMm } from '@/shared/utils/heightUnits';
-import { APP_URL } from '../navigation';
 
 export const MM_PER_INCH = 25.4;
 
@@ -14,7 +13,8 @@ export const MM_PER_INCH = 25.4;
 // baseplate's floor counts against the height, as in the app's readout.
 const GRID_MM = GRIDFINITY_SPEC.GRID_SIZE;
 const HEIGHT_UNIT_MM = GRIDFINITY_SPEC.HEIGHT_UNIT;
-const PLATE_RISE_MM = baseplateFloorDepth(DEFAULT_BASEPLATE_PARAMS);
+let plateRiseMm: number | undefined;
+const plateRise = (): number => (plateRiseMm ??= baseplateFloorDepth(DEFAULT_BASEPLATE_PARAMS));
 const STACK_COUNTS = [1, 2, 3] as const;
 
 export const MIN_DRAWER_MM = GRID_MM;
@@ -104,7 +104,7 @@ export function planDrawer(size: DrawerSize): DrawerPlan | null {
   const stacks: StackFit[] = [];
   if (measurable(size.heightMm)) {
     for (const count of STACK_COUNTS) {
-      const units = solveUnitsUnderCeiling(size.heightMm - PLATE_RISE_MM, HEIGHT_UNIT_MM, count);
+      const units = solveUnitsUnderCeiling(size.heightMm - plateRise(), HEIGHT_UNIT_MM, count);
       if (units === null) continue;
       stacks.push({ count, units, totalMm: stackedTotalMm(units, HEIGHT_UNIT_MM, count) });
     }
@@ -118,6 +118,7 @@ export function planDrawer(size: DrawerSize): DrawerPlan | null {
  * not a bare `/`, so it always opens the planner it names.
  */
 export function drawerLink(
+  origin: string,
   size: DrawerSize,
   options: { readonly name?: string; readonly tool?: 'planner' | 'baseplate' } = {}
 ): string {
@@ -126,5 +127,5 @@ export function drawerLink(
   const params = new URLSearchParams({ drawer: value });
   if (options.name) params.set('name', options.name);
   const path = options.tool === 'baseplate' ? '/baseplate' : '/';
-  return `${APP_URL}${path}?${params.toString()}`;
+  return `${origin}${path}?${params.toString()}`;
 }

@@ -9,8 +9,9 @@ import {
   formatMm,
   planDrawer,
   toMm,
-} from '../drawerPlan';
-import type { StackFit } from '../drawerPlan';
+} from '@/shared/plan/drawerPlan';
+import { APP_URL } from '../../navigation';
+import type { StackFit } from '@/shared/plan/drawerPlan';
 
 type Unit = 'mm' | 'in';
 const UNITS: readonly Unit[] = ['mm', 'in'];
@@ -166,7 +167,12 @@ const measuredFitPage = withBase('/layouts/drawer-setup#fit-the-grid-to-a-measur
     </div>
 
     <div v-if="size !== null && plan !== null" class="docs-calc-actions">
-      <a class="docs-plan-drawer-button" :href="drawerLink(size)" target="_blank" rel="noopener">
+      <a
+        class="docs-plan-drawer-button"
+        :href="drawerLink(APP_URL, size)"
+        target="_blank"
+        rel="noopener"
+      >
         Plan this drawer
         <svg viewBox="0 0 16 16" aria-hidden="true">
           <path d="M6 3.5H3.5v9h9V10M9 3.5h3.5V7M12.5 3.5 7 9" />
@@ -175,7 +181,7 @@ const measuredFitPage = withBase('/layouts/drawer-setup#fit-the-grid-to-a-measur
       </a>
       <a
         class="docs-calc-secondary"
-        :href="drawerLink(size, { tool: 'baseplate' })"
+        :href="drawerLink(APP_URL, size, { tool: 'baseplate' })"
         target="_blank"
         rel="noopener"
       >

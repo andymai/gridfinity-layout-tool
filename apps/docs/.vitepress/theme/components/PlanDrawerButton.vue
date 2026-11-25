@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { drawerLink, formatMm, planDrawer } from '../drawerPlan';
+import { drawerLink, formatMm, planDrawer } from '@/shared/plan/drawerPlan';
+import { APP_URL } from '../../navigation';
 
 const props = defineProps<{
   width: string;
@@ -35,7 +36,7 @@ const drawerMm = computed(() =>
   <div class="docs-plan-drawer">
     <a
       class="docs-plan-drawer-button"
-      :href="drawerLink(size, { name })"
+      :href="drawerLink(APP_URL, size, { name })"
       target="_blank"
       rel="noopener"
     >

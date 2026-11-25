@@ -18,7 +18,12 @@ const corpus: AskCorpus = {
 };
 const english: AskLabels = { 'baseplate.split': 'Split plate' };
 const german: AskLabels = { 'baseplate.split': 'Platte teilen' };
-const run = createToolRunner(corpus, (locale) => (locale === 'de' ? german : english), english);
+const run = createToolRunner(
+  corpus,
+  (locale) => (locale === 'de' ? german : english),
+  english,
+  'https://gridfinitylayouttool.com'
+);
 
 describe('toolDefinitions', () => {
   it('lets read_page take only the links in the corpus', () => {

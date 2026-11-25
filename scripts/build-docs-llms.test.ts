@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { sidebar } from '../apps/docs/.vitepress/navigation';
-import { drawerLink } from '../apps/docs/.vitepress/theme/drawerPlan';
+import { drawerLink } from '../src/shared/plan/drawerPlan';
+import { APP_URL } from '../apps/docs/.vitepress/navigation';
 import { resolveUiLabel } from '../apps/docs/.vitepress/uiLabels';
 import {
   DOCS_URL,
@@ -109,7 +110,11 @@ describe('pageMarkdown', () => {
   });
 
   it('links Plan this drawer to the same URL as the button on the page', () => {
-    const url = drawerLink({ widthMm: 345, depthMm: 260, heightMm: 40 }, { name: 'Screw drawer' });
+    const url = drawerLink(
+      APP_URL,
+      { widthMm: 345, depthMm: 260, heightMm: 40 },
+      { name: 'Screw drawer' }
+    );
     expect(
       convert('# A\n\n<PlanDrawerButton width="345" depth="260" height="40" name="Screw drawer" />')
     ).toContain(`[Plan this drawer in the app](${url})`);

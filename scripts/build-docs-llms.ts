@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { APP_URL, sidebar } from '../apps/docs/.vitepress/navigation';
-import { drawerLink } from '../apps/docs/.vitepress/theme/drawerPlan';
+import { drawerLink } from '../src/shared/plan/drawerPlan';
 import { UI_TAG, resolveUiLabel } from '../apps/docs/.vitepress/uiLabels';
 import {
   DOC_LINK,
@@ -165,7 +165,7 @@ function planDrawerText(tag: string, where: string): string {
     depthMm: depth,
     ...(height === undefined ? {} : { heightMm: Number(height) }),
   };
-  return `[Plan this drawer in the app](${drawerLink(size, name ? { name } : {})})`;
+  return `[Plan this drawer in the app](${drawerLink(APP_URL, size, name ? { name } : {})})`;
 }
 
 function blockComponent(name: string, self: string, ctx: DocsContext): string[] {

@@ -3,7 +3,7 @@
  * loop, tools and message building as /api/docs-ask. It spends API credits:
  * --max-usd stops the run at a cap, answers and judge together.
  *
- *   pnpm run docs:build && pnpm run docs:llms
+ *   pnpm run build:agent-server && pnpm run docs:build && pnpm run docs:llms
  *   vercel env run -e development -- pnpm run docs:ask-eval -- --model claude-opus-5-5 --effort medium
  *
  * --suggestions runs every docs page's starter questions instead of the golden set.
@@ -27,6 +27,9 @@ import type { GoldenCase } from './golden';
 import { JUDGE_MODEL, judge } from './judge';
 import { suggestionCases } from './suggestions';
 import type { JudgedTurn, Verdict } from './judge';
+
+// Answers link to production, as the live endpoint's do.
+const PRODUCTION_ORIGIN = 'https://gridfinitylayouttool.com';
 
 const { values: args } = parseArgs({
   options: {
@@ -111,7 +114,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
     [locale, await source.labels(locale)],
   ]);
   const labelsFor = (code: string) => tables.get(code) ?? source.english;
-  const runner = createToolRunner(corpus, labelsFor, source.english);
+  const runner = createToolRunner(corpus, labelsFor, source.english, PRODUCTION_ORIGIN);
   const stored: StoredTurn[] = [];
   const results: TurnResult[] = [];
   const caseResult = (outcome: Omit<CaseResult, 'id' | 'group' | 'turns'>): CaseResult => ({
