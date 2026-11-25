@@ -26,8 +26,13 @@ const isExternal = (id: string): boolean =>
   id.startsWith('node:') || [...EXTERNAL].some((name) => id === name || id.startsWith(`${name}/`));
 
 // The server bundle must stay free of the browser app.
-const FORBIDDEN_PACKAGES = /^(react|react-dom|zustand|three|posthog-js|@react-three\/.*)(\/|$)/;
-const FORBIDDEN_MODULES = [/\/src\/core\/store\//, /\/node_modules\/(react|zustand|three)\//];
+const FORBIDDEN_PACKAGES =
+  /^(react|react-dom|zustand|three|posthog-js|idb|brepjs|occt-wasm|manifold-3d|@react-three\/.*)(\/|$)/;
+const FORBIDDEN_MODULES = [
+  /\/src\/core\/store\//,
+  /\/src\/i18n\//,
+  /\/node_modules\/(react|zustand|three|idb|brepjs|occt-wasm)\//,
+];
 
 export function forbiddenIn(
   chunk: Pick<OutputChunk, 'imports' | 'dynamicImports' | 'moduleIds'>

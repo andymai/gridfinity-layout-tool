@@ -329,6 +329,10 @@ export default defineConfig([
       // Whole-folder patterns (not `src/core/*`): with subfolder globs, files
       // sitting directly at a layer root (e.g. src/core/types.ts) belong to no
       // element and their imports silently escape every policy.
+      // A feature's domain.ts is its React-free entry for the agent tools,
+      // which run in a Vercel function. It stays part of its feature, so the
+      // cross-feature rules cover it; the rules below select it by category.
+      'boundaries/files': [{ category: 'domain', pattern: 'src/features/*/domain.ts' }],
       'boundaries/elements': [
         // The agent tool layer, bundled for api/ by scripts/build-agent-server.ts.
         // Each part is its own element, listed before the catch-all for
@@ -492,6 +496,25 @@ export default defineConfig([
                 { to: { element: { type: 'agent-client' } } },
                 { to: { element: { type: 'agent' } } },
               ],
+            },
+            {
+              from: { element: { type: 'agent-tools' } },
+              allow: [{ to: { element: { type: 'feature' }, file: { categories: 'domain' } } }],
+            },
+            // A domain.ts can hold server-only weight, such as the bin
+            // recommender's model, so the app shell never reaches one, and one
+            // never reaches the UI.
+            {
+              from: { element: { type: 'feature' }, file: { categories: 'domain' } },
+              disallow: [
+                { to: { element: { type: 'shell' } } },
+                { to: { element: { type: 'design-system' } } },
+                { to: { element: { type: 'i18n' } } },
+              ],
+            },
+            {
+              from: { element: { type: 'shell' } },
+              disallow: [{ to: { element: { type: 'feature' }, file: { categories: 'domain' } } }],
             },
             {
               from: { element: { type: 'agent-client' } },
