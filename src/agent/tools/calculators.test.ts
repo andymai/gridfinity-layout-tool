@@ -21,11 +21,13 @@ describe('split_plan', () => {
     );
   });
 
-  it('says when a plate does not fit the bed even split', () => {
+  it('says when the planner finds no split that fits the bed', () => {
     const run = runSplitPlan(
       splitPlanInput.parse({ grid: { width: 1.5, depth: 1 }, bed: { width: 42, unit: 'mm' } })
     );
-    expect(run.content).toContain('It does not fit this bed, even split: piece');
+    expect(run.content).toContain(
+      'The baseplate generator found no split that fits this bed: piece'
+    );
     expect(run.content).not.toContain('It prints in one piece.');
   });
 

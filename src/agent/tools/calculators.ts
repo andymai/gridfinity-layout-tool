@@ -47,8 +47,8 @@ export function runSplitPlan(input: SplitPlanInput): ToolOutput {
   const lines = [
     `A ${size(input.grid.width, input.grid.depth)} unit baseplate (${plateMm} mm) on a ${size(bed.width, bed.depth)} mm bed, with the default plate: no padding, magnets or connectors.`,
   ];
-  // A plate that no split can fit comes back as pieces still wider than the
-  // bed, with the excess in bedOverages.
+  // When the planner finds no split that fits, it falls back to pieces that
+  // still overhang the bed, with the excess in bedOverages.
   if (tiling.bedOverages.length > 0) {
     const over = tiling.bedOverages
       .map((piece) => {
@@ -59,7 +59,7 @@ export function runSplitPlan(input: SplitPlanInput): ToolOutput {
         return `piece ${piece.label} is ${by.join(' and ')}`;
       })
       .join('; ');
-    lines.push(`It does not fit this bed, even split: ${over}.`);
+    lines.push(`The baseplate generator found no split that fits this bed: ${over}.`);
     return { isError: false, content: lines.join('\n') };
   }
   if (!tiling.isSplit) {
@@ -142,7 +142,7 @@ export function runPrintEstimate(input: PrintEstimateInput): ToolOutput {
   return {
     isError: false,
     content: [
-      "Estimates for standard bins: the designer defaults, with a stacking lip and no dividers, magnets or patterns. Features change them. The baseplate is not included. Times count each bin as its own print, with its warm-up, as the app's print list does, so bins printed together take less.",
+      'Estimates for standard bins: the designer defaults, with a stacking lip and no dividers, magnets or patterns. Features change them. The baseplate is not included. Times count each bin as its own print, with its warm-up, so bins printed together take less.',
       ...lines,
       `Total for ${plural(count, 'bin', 'bins')}: ${round(grams)} g, ${round(meters, 1)} m of filament, ${duration(minutes)} of printing, about $${round(cost, 2).toFixed(2)} of filament.`,
     ].join('\n'),
