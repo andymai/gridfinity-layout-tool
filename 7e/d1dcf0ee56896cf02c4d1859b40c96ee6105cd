@@ -1,0 +1,83 @@
+api/lib/docsAsk/tools.test.ts
+  s_88cfcc42bf5bfd::t_ecfff7ae8ef896 113-150
+apps/docs/index.md
+  s_88cfcc42bf5bfd::t_3d89777da75ecf 5
+apps/docs/.vitepress/theme/askAi/useAskAi.ts
+  s_88cfcc42bf5bfd::t_eff7e991d33b61 16,19,34-35,121-132,146,195,275,298-299,331
+apps/docs/reference/faq.md
+  s_88cfcc42bf5bfd::t_1fa1f476e4f181 52
+  s_88cfcc42bf5bfd::t_570f393b007c7d 53
+src/agent/server.ts
+  s_88cfcc42bf5bfd::t_b0b4f88128989d 3,5-7
+api/lib/docsAsk/tools.ts
+  s_88cfcc42bf5bfd::t_b27c8ec22b57da 5-6,10-17,23,30,40-41,57-59,111-117,206-222,224-225
+  s_88cfcc42bf5bfd::t_ed38824c9d0999 223
+  s_88cfcc42bf5bfd::t_d4a6eb640f5906 226
+src/agent/contract/index.ts
+  s_88cfcc42bf5bfd::t_824e2633e5d809 1,4-5
+src/agent/contract/tool.ts
+  s_88cfcc42bf5bfd::t_b0b4f88128989d 1-2,16
+  s_88cfcc42bf5bfd::t_824e2633e5d809 14-15,17
+api/lib/docsAsk/agent.ts
+  s_88cfcc42bf5bfd::t_c7c635ca49655e 31-33,331
+  s_88cfcc42bf5bfd::t_6152fd16612a8e 8
+apps/docs/.vitepress/theme/askAi/history.ts
+  s_88cfcc42bf5bfd::t_eff7e991d33b61 1,11-12,36-37
+api/lib/docsAsk/prompt.ts
+  s_88cfcc42bf5bfd::t_ed38824c9d0999 37,51
+src/agent/contract/planLayout.ts
+  s_88cfcc42bf5bfd::t_824e2633e5d809 1-21
+src/agent/tools/planLayout.ts
+  s_88cfcc42bf5bfd::t_b0b4f88128989d 1-84,86-89
+  s_88cfcc42bf5bfd::t_afcb04c594d5cf 85
+scripts/docs-ask-eval/golden.ts
+  s_88cfcc42bf5bfd::t_b5dffed9bcb052 7,21,690-732
+apps/docs/.vitepress/theme/components/AskAiAnswer.vue
+  s_88cfcc42bf5bfd::t_5596fe03871a1c 8,21,29
+  s_88cfcc42bf5bfd::t_afded77bcc73b4 89-95,99
+apps/docs/introduction/your-data.md
+  s_88cfcc42bf5bfd::t_1fa1f476e4f181 122
+src/agent/tools/planLayout.test.ts
+  s_88cfcc42bf5bfd::t_ecfff7ae8ef896 1-47
+src/shared/plan/planInput.ts
+  s_88cfcc42bf5bfd::t_e1e8c668f28dc2 79-80
+  s_88cfcc42bf5bfd::t_be2d0505a32ab0 30,34-53,74-75,81-86
+  s_88cfcc42bf5bfd::t_b27c8ec22b57da 59-65
+apps/docs/.vitepress/theme/components/PlanMap.vue
+  s_88cfcc42bf5bfd::t_56b50815036e39 1-13,23-37,39-65,84,93-174
+  s_88cfcc42bf5bfd::t_a859a87cde260b 14-22,38
+  s_88cfcc42bf5bfd::t_94c1bc76db39ac 66-83,85-92
+apps/docs/.vitepress/theme/askAi/render.test.ts
+  s_88cfcc42bf5bfd::t_a847d6f67491da 7-9
+  s_88cfcc42bf5bfd::t_94c1bc76db39ac 56-58,84-85
+  s_88cfcc42bf5bfd::t_afded77bcc73b4 6,81-83,86-97
+  s_88cfcc42bf5bfd::t_8f9174a6912987 98
+apps/docs/recipes/screw-drawer.md
+  s_88cfcc42bf5bfd::t_3d89777da75ecf 5
+apps/docs/.vitepress/theme/askAi/render.ts
+  s_88cfcc42bf5bfd::t_f14db79b6f9b58 4-7,12,88-92,104-110,128
+scripts/docs-ask-eval/judge.ts
+  s_88cfcc42bf5bfd::t_b5dffed9bcb052 24,57-59
+apps/docs/getting-started/first-drawer.md
+  s_88cfcc42bf5bfd::t_3d89777da75ecf 33-36
+scripts/docs-ask-eval/run.ts
+  s_88cfcc42bf5bfd::t_b5dffed9bcb052 136
+api/lib/agent/index.ts
+  s_88cfcc42bf5bfd::t_b0b4f88128989d 4-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7ed1dcf0ee56896cf02c4d1859b40c96ee6105cd",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
