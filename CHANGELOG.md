@@ -1,5 +1,35 @@
 # Changelog
 
+## [4.553.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.552.0...gridfinity-layout-tool-v4.553.0) (2026-11-25)
+
+
+### Features
+
+* **bin-designer:** curve a rectangle pocket's floor into a cradle for cans and bottles ([#5239](https://github.com/andymai/gridfinity-layout-tool/issues/5239)) ([744d40c](https://github.com/andymai/gridfinity-layout-tool/commit/744d40c58ee03ac79657fe7a935b45ed1d401db1))
+* **bin-designer:** generate a combination wrench set from a tool catalog ([#5240](https://github.com/andymai/gridfinity-layout-tool/issues/5240)) ([c05986d](https://github.com/andymai/gridfinity-layout-tool/commit/c05986dd2e926b409ee4cbe7d421bf3944599cd3))
+* **bin-designer:** rebuild tool sets by part, and add them from the Interior panel ([#5241](https://github.com/andymai/gridfinity-layout-tool/issues/5241)) ([db4179a](https://github.com/andymai/gridfinity-layout-tool/commit/db4179a223d07aff4472639d793d6b911842ad49))
+* **bin-designer:** set an exact Bento compartment width and depth in mm ([#5236](https://github.com/andymai/gridfinity-layout-tool/issues/5236)) ([bf3a60e](https://github.com/andymai/gridfinity-layout-tool/commit/bf3a60ed3be188d9b17c7cfcf00dcac2ab420317))
+* **design-linking:** show when a linked bin's size differs from its design ([#5222](https://github.com/andymai/gridfinity-layout-tool/issues/5222)) ([26a2c26](https://github.com/andymai/gridfinity-layout-tool/commit/26a2c26665694e30561f39879baccc58d3e601a1))
+* **docs:** date each docs page from git when the build has full history ([#5237](https://github.com/andymai/gridfinity-layout-tool/issues/5237)) ([f610f84](https://github.com/andymai/gridfinity-layout-tool/commit/f610f84b5cb2a2776d9beab25feab34236cc9b42))
+* **places:** frame a found bin in the 3D preview ([#5209](https://github.com/andymai/gridfinity-layout-tool/issues/5209)) ([0422315](https://github.com/andymai/gridfinity-layout-tool/commit/042231564ae15d0980690d52e3c2001d13e638ff))
+* **seo:** link the drawer sizes hub from every content page footer ([#5235](https://github.com/andymai/gridfinity-layout-tool/issues/5235)) ([6098c23](https://github.com/andymai/gridfinity-layout-tool/commit/6098c2358009cb2594d2a84b02c2ffa950a13199))
+* **settings:** type drawer and baseplate sizes in millimeters, centimeters or inches ([#5248](https://github.com/andymai/gridfinity-layout-tool/issues/5248)) ([0799157](https://github.com/andymai/gridfinity-layout-tool/commit/079915757cd348f64add69b91a856d2b5b1bcd77))
+
+
+### Bug Fixes
+
+* **a11y:** keep the layer row's buttons out of its select control ([#5212](https://github.com/andymai/gridfinity-layout-tool/issues/5212)) ([e98f8eb](https://github.com/andymai/gridfinity-layout-tool/commit/e98f8eb56e35c0ff9ddac75338fe2de92295b0cf))
+* **design-linking:** keep a knife block's handle rest out of the design size sync ([#5221](https://github.com/andymai/gridfinity-layout-tool/issues/5221)) ([5e1526d](https://github.com/andymai/gridfinity-layout-tool/commit/5e1526d272b22e8799afca69a54a3ef3d214d981))
+* **generation:** move to brepjs 20.28.3 and brepkit-wasm 4.11.19 ([#5245](https://github.com/andymai/gridfinity-layout-tool/issues/5245)) ([2a05c9f](https://github.com/andymai/gridfinity-layout-tool/commit/2a05c9fe86856ebf94067681fa64cf8199a1c1c4))
+* **generation:** move to manifold-3d 3.5.5 ([#5244](https://github.com/andymai/gridfinity-layout-tool/issues/5244)) ([e502b20](https://github.com/andymai/gridfinity-layout-tool/commit/e502b20a6ea01ff7aae5dbc3b0674721334aa25b))
+* **generation:** move to occt-wasm 5.18.3 ([#5243](https://github.com/andymai/gridfinity-layout-tool/issues/5243)) ([83d25ea](https://github.com/andymai/gridfinity-layout-tool/commit/83d25ea2ba540cc69cc64783e9f56aaed779013d))
+* **grid:** keep an Alt+drag copy off its own original ([#5217](https://github.com/andymai/gridfinity-layout-tool/issues/5217)) ([136540b](https://github.com/andymai/gridfinity-layout-tool/commit/136540b4b3bc37e05fc672bf1b0a4bdc35493ed4))
+* **layouts:** close the Layouts dialog on Escape and keep Tab inside it ([#5215](https://github.com/andymai/gridfinity-layout-tool/issues/5215)) ([50864df](https://github.com/andymai/gridfinity-layout-tool/commit/50864dfaffdc349e6f3ac31e618083c7fd8dfa53))
+* **pwa:** keep stale-chunk recovery from falling through to the error screen ([#5204](https://github.com/andymai/gridfinity-layout-tool/issues/5204)) ([e583d54](https://github.com/andymai/gridfinity-layout-tool/commit/e583d54e0d118ea3af70b6cae5d53dba3bce8c96))
+* **settings:** show every measured size and overflow in the chosen unit ([#5249](https://github.com/andymai/gridfinity-layout-tool/issues/5249)) ([0f4dc56](https://github.com/andymai/gridfinity-layout-tool/commit/0f4dc56bac43e192f151e8eed019deb3cc09de17))
+* show layer heights in mm, and explain screws and the fit test where makers set them ([#5246](https://github.com/andymai/gridfinity-layout-tool/issues/5246)) ([ddfb065](https://github.com/andymai/gridfinity-layout-tool/commit/ddfb06577dff165806d5c893cb91d761bd9a8c25))
+* **webgl:** show the 3D fallback when Safari loses the GL context ([#5233](https://github.com/andymai/gridfinity-layout-tool/issues/5233)) ([4d78361](https://github.com/andymai/gridfinity-layout-tool/commit/4d783610c78870de5f348aa4a69a595155edf3d8))
+
 ## [4.552.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.551.0...gridfinity-layout-tool-v4.552.0) (2026-11-23)
 
 
