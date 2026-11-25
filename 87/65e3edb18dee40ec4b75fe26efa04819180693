@@ -1,0 +1,89 @@
+src/shared/utils/drawerLink.test.ts
+  s_88cfcc42bf5bfd::t_020e7319ecfa91 88-89,91-95,97-101
+  s_88cfcc42bf5bfd::t_a283062353ebfb 90,96
+src/shared/utils/drawerLink.ts
+  s_88cfcc42bf5bfd::t_b4a14d52bd5c1e 91-92,106-109
+  s_88cfcc42bf5bfd::t_fee06285c1d1e3 7
+  s_88cfcc42bf5bfd::t_8190d30abce4e7 110-113
+src/shared/utils/findFirstFit.ts
+  s_88cfcc42bf5bfd::t_21f4a271a1062f 1-59
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.planLink.test.tsx
+  s_88cfcc42bf5bfd::t_3c8258e8708019 28
+  s_88cfcc42bf5bfd::t_c0dd6bd5bff32e 9-11
+  s_88cfcc42bf5bfd::t_920dfe0bad755a 14,16-17,26-27,29
+  s_88cfcc42bf5bfd::t_a12a61d75e150e 1-8,12-13,15,18-25,30-52
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.planLinkFallback.test.tsx
+  s_88cfcc42bf5bfd::t_c0dd6bd5bff32e 9-11
+  s_88cfcc42bf5bfd::t_a12a61d75e150e 1-8,12-13,16-23,28-51
+  s_88cfcc42bf5bfd::t_3c8258e8708019 26
+  s_88cfcc42bf5bfd::t_920dfe0bad755a 14-15,24-25,27
+src/shared/plan/planLink.test.ts
+  s_88cfcc42bf5bfd::t_d48ede9c9cca8f 29
+  s_88cfcc42bf5bfd::t_75940b438be586 1-12,15-20,23,25-27,31-48
+  s_88cfcc42bf5bfd::t_3c8258e8708019 13-14,21-22,24,28,30
+src/shared/plan/buildPlanLayout.test.ts
+  s_88cfcc42bf5bfd::t_75940b438be586 1-129
+scripts/schema/planLayout.test.ts
+  s_88cfcc42bf5bfd::t_75940b438be586 1-32
+src/core/storage/planLinkImport.test.ts
+  s_88cfcc42bf5bfd::t_3c8258e8708019 14-16,23-24,30-31
+  s_88cfcc42bf5bfd::t_920dfe0bad755a 1-13,17-22,25-29,32-33
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.test.tsx
+  s_88cfcc42bf5bfd::t_920dfe0bad755a 12
+src/features/cloud-share/components/SharedLayoutImporter/SharedLayoutImporter.tsx
+  s_88cfcc42bf5bfd::t_befa01a7214a27 152-159
+  s_88cfcc42bf5bfd::t_3c8258e8708019 178-182
+  s_88cfcc42bf5bfd::t_8190d30abce4e7 11,167-168
+  s_88cfcc42bf5bfd::t_bc6a803a6386e1 12,24,136-137,141-142,147-151,160-166,169,171-174,177
+src/features/bin-designer/hooks/usePlaceBinInLayout.ts
+  s_88cfcc42bf5bfd::t_21f4a271a1062f 21,140
+src/core/storage/ShareService.scenario.url.test.ts
+  s_88cfcc42bf5bfd::t_a12a61d75e150e 338-342
+src/core/storage/shareUrl.test.ts
+  s_88cfcc42bf5bfd::t_920dfe0bad755a 3,5,10-15
+  s_88cfcc42bf5bfd::t_9dd88658c9cd35 1-2,4,6-9,16-17
+src/core/storage/planLinkImport.ts
+  s_88cfcc42bf5bfd::t_0c0dc8f8dfcede 1-12,17-28
+  s_88cfcc42bf5bfd::t_3c8258e8708019 13-16
+src/shared/plan/buildPlanLayout.ts
+  s_88cfcc42bf5bfd::t_6c4fbe88f61c7a 8-51,54-173,175-197,204-224
+  s_88cfcc42bf5bfd::t_07e145b28c01fa 1-7,52-53,174,198-203
+src/core/storage/index.ts
+  s_88cfcc42bf5bfd::t_d48ede9c9cca8f 103
+  s_88cfcc42bf5bfd::t_0c0dc8f8dfcede 98
+  s_88cfcc42bf5bfd::t_8190d30abce4e7 97
+src/shared/plan/planInput.ts
+  s_88cfcc42bf5bfd::t_52cd45dc83c086 1-96
+  s_88cfcc42bf5bfd::t_f09b9d81b450fa 97-99
+src/shared/plan/planInput.test.ts
+  s_88cfcc42bf5bfd::t_9e4516af9b8e5e 1-21,31-37,41-44,50-61
+  s_88cfcc42bf5bfd::t_75940b438be586 22-30,38-40,45-49
+src/core/storage/shareUrl.ts
+  s_88cfcc42bf5bfd::t_caf465560cab3c 9
+  s_88cfcc42bf5bfd::t_0c0dc8f8dfcede 6,101-103,105-107,109-112,179
+  s_88cfcc42bf5bfd::t_8f7bf24ebbeb75 1-2,5,7-8,10-100,104,108,113-178,180-194
+  s_88cfcc42bf5bfd::t_d2595d5f8eb19b 3-4
+src/shared/utils/findFirstFit.test.ts
+  s_88cfcc42bf5bfd::t_9e4516af9b8e5e 1-32,39-59
+  s_88cfcc42bf5bfd::t_75940b438be586 33-38
+src/shared/plan/planLink.ts
+  s_88cfcc42bf5bfd::t_07e145b28c01fa 2-24,26-38,48-53,55-63
+  s_88cfcc42bf5bfd::t_15fd4ee1f86858 25,41
+  s_88cfcc42bf5bfd::t_3c8258e8708019 1,39-40,42-47,54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8765e3edb18dee40ec4b75fe26efa04819180693",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
