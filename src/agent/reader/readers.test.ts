@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { STAGING_ID } from '@/core/constants';
 import type { Layout, LayoutLibrary } from '@/core/types';
-import { binId, gridUnits, heightUnits, layerId, layoutId } from '@/core/types';
+import { binId, categoryId, gridUnits, heightUnits, layerId, layoutId } from '@/core/types';
+import { isErr, isOk } from '@/core/result';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
 import {
   formatMyLayouts,
@@ -80,7 +81,7 @@ const library: LayoutLibrary = {
 describe('browser reads', () => {
   it('lists the most recent layouts first, and marks the one the app opens', async () => {
     const run = await runReaderTool(source(library, {}), 'list_my_layouts', {});
-    expect(run.ok && myLayoutsData.parse(run.data)).toMatchObject({
+    expect(isOk(run) && myLayoutsData.parse(run.value)).toMatchObject({
       total: 2,
       layouts: [
         { id: 'desk', active: false, modified: '2026-11-20' },
@@ -91,7 +92,7 @@ describe('browser reads', () => {
 
   it('reads the open layout: layers, free cells, bins in order, stash and items', async () => {
     const run = await runReaderTool(source(library, { old: desk }), 'read_my_layout', {});
-    const data = run.ok ? readMyLayoutData.parse(run.data) : null;
+    const data = isOk(run) ? readMyLayoutData.parse(run.value) : null;
     expect(data?.layout).toMatchObject({
       name: 'Desk drawer',
       grid: { width: 4, depth: 3, height: 12 },
@@ -113,16 +114,16 @@ describe('browser reads', () => {
     const run = await runReaderTool(source(library, { old: desk }), 'read_my_layout', {
       layoutId: 'nope',
     });
-    expect(run.ok && formatReadMyLayout(readMyLayoutData.parse(run.data))).toContain(
+    expect(isOk(run) && formatReadMyLayout(readMyLayoutData.parse(run.value))).toContain(
       'no layout with that id'
     );
-    expect((await runReaderTool(source(null, {}), 'list_my_layouts', {})).ok).toBe(true);
-    expect((await runReaderTool(source(null, {}), 'read_my_layout', { other: 1 })).ok).toBe(false);
+    expect(isOk(await runReaderTool(source(null, {}), 'list_my_layouts', {}))).toBe(true);
+    expect(isErr(await runReaderTool(source(null, {}), 'read_my_layout', { other: 1 }))).toBe(true);
   });
 
   it('reads the printer settings', async () => {
     const run = await runReaderTool(source(null, {}), 'read_my_settings', {});
-    expect(run.ok && mySettingsData.parse(run.data)).toMatchObject({
+    expect(isOk(run) && mySettingsData.parse(run.value)).toMatchObject({
       measureUnit: 'in',
       nozzleMm: 0.4,
     });
@@ -141,6 +142,39 @@ describe('browser reads', () => {
     const data = summarizeLayout(createTestLayout({ name: long, bins }), Date.now());
     expect(() => readMyLayoutData.parse({ layout: data })).not.toThrow();
     expect(Buffer.byteLength(JSON.stringify({ layout: data }))).toBeLessThan(32 * 1024);
+  });
+
+  it('keeps CJK text under the byte budget, and counts what it left out', () => {
+    const cjk = (n: number): string => '収納'.repeat(n / 2);
+    const bins = Array.from({ length: 120 }, (_, i) =>
+      createTestBin({
+        id: binId(`c${i}`),
+        label: cjk(24),
+        items: Array.from({ length: 5 }, (_, k) => ({ id: `i${k}`, name: cjk(48) })),
+      })
+    );
+    const layout = createTestLayout({
+      categories: [{ id: categoryId('cat1'), name: cjk(24), color: '#3b82f6' }],
+      bins,
+    });
+    const data = summarizeLayout(layout, Date.now());
+    expect(new TextEncoder().encode(JSON.stringify({ layout: data })).length).toBeLessThanOrEqual(
+      30_000
+    );
+    expect(() => readMyLayoutData.parse({ layout: data })).not.toThrow();
+    expect(data.bins.length + data.moreBins).toBe(120);
+    const shownItems = data.bins.reduce((n, bin) => n + bin.items.length + bin.moreItems, 0);
+    expect(shownItems).toBe(data.bins.length * 5);
+  });
+
+  it('reads a large, mostly empty drawer', () => {
+    const layout = createTestLayout({
+      drawer: { width: gridUnits(50), depth: gridUnits(50), height: heightUnits(12) },
+      bins: [],
+    });
+    const data = summarizeLayout(layout);
+    expect(data.freeCells).toBe(2500);
+    expect(() => readMyLayoutData.parse({ layout: data })).not.toThrow();
   });
 
   it('quotes the reader text, so a label reads as data', () => {

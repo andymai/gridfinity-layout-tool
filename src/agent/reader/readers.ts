@@ -1,5 +1,7 @@
 import { STAGING_ID } from '@/core/constants';
-import type { PrinterSettings } from '@/core/storage/readOnly';
+import { err, ok, validationImportFailed } from '@/core/result';
+import type { Result, ValidationImportError } from '@/core/result';
+import type { PrinterSettings } from '@/core/storage';
 import type { Layout, LayoutLibrary } from '@/core/types';
 import { effectiveGridUnitMmY } from '@/core/types';
 import { createFootprintCellSet } from '@/shared/utils/fill';
@@ -72,6 +74,36 @@ function freeCellsOnFirstLayer(layout: Layout): number {
   return Math.max(0, cells - taken) / 4;
 }
 
+const encoder = new TextEncoder();
+const layoutBytes = (data: MyLayoutData): number =>
+  encoder.encode(JSON.stringify({ layout: data })).length;
+
+// Character limits cannot bound bytes: a CJK character takes three. Over the
+// budget, items go first, from the last bin back, then whole bins, then the
+// stash, and the counts of what was left out stay true.
+function withinBudget(data: MyLayoutData): MyLayoutData {
+  const bins = [...data.bins];
+  let fitted = data;
+  const over = (): boolean => layoutBytes(fitted) > READER_LIMITS.LAYOUT_BYTES;
+  for (let i = bins.length - 1; i >= 0 && over(); i--) {
+    const bin = bins[i];
+    if (bin.items.length === 0) continue;
+    bins[i] = { ...bin, items: [], moreItems: bin.moreItems + bin.items.length };
+    fitted = { ...fitted, bins: [...bins] };
+  }
+  while (over() && fitted.bins.length > 0) {
+    fitted = { ...fitted, bins: fitted.bins.slice(0, -1), moreBins: fitted.moreBins + 1 };
+  }
+  while (over() && fitted.stashed.length > 0) {
+    fitted = {
+      ...fitted,
+      stashed: fitted.stashed.slice(0, -1),
+      moreStashed: fitted.moreStashed + 1,
+    };
+  }
+  return fitted;
+}
+
 export function summarizeLayout(layout: Layout, modifiedAt?: number): MyLayoutData {
   const layerOf = new Map(layout.layers.map((layer, i) => [layer.id, i + 1]));
   const categoryOf = new Map(layout.categories.map((category) => [category.id, category.name]));
@@ -81,7 +113,7 @@ export function summarizeLayout(layout: Layout, modifiedAt?: number): MyLayoutDa
     .sort((a, b) => a.layer - b.layer || a.bin.y - b.bin.y || a.bin.x - b.bin.x);
   const stashed = layout.bins.filter((bin) => bin.layerId === STAGING_ID);
   const measured = layout.drawer.measuredMm;
-  return {
+  return withinBudget({
     name: clip(layout.name, 64),
     modified: day(modifiedAt),
     grid: { width: layout.drawer.width, depth: layout.drawer.depth, height: layout.drawer.height },
@@ -137,7 +169,7 @@ export function summarizeLayout(layout: Layout, modifiedAt?: number): MyLayoutDa
       height: bin.height,
     })),
     moreStashed: Math.max(0, stashed.length - READER_LIMITS.STASHED),
-  };
+  });
 }
 
 export function summarizeSettings(settings: PrinterSettings): MySettingsData {
@@ -152,32 +184,29 @@ export function summarizeSettings(settings: PrinterSettings): MySettingsData {
   };
 }
 
-export type ReaderRun =
-  | { readonly ok: true; readonly data: MyLayoutsData | ReadMyLayoutData | MySettingsData }
-  | { readonly ok: false; readonly error: string };
+export type ReaderData = MyLayoutsData | ReadMyLayoutData | MySettingsData;
 
 /** Runs one browser read on the reader's data, for the panel to show and then send once allowed. */
 export async function runReaderTool(
   source: ReaderSource,
   name: ReaderToolName,
   input: unknown
-): Promise<ReaderRun> {
+): Promise<Result<ReaderData, ValidationImportError>> {
   if (name === 'list_my_layouts') {
-    if (!listMyLayoutsInput.safeParse(input).success) return { ok: false, error: 'No input.' };
-    return { ok: true, data: summarizeLibrary(await source.library()) };
+    if (!listMyLayoutsInput.safeParse(input).success)
+      return err(validationImportFailed(['No input.']));
+    return ok(summarizeLibrary(await source.library()));
   }
   if (name === 'read_my_layout') {
     const parsed = readMyLayoutInput.safeParse(input);
-    if (!parsed.success) return { ok: false, error: 'Give a layoutId or nothing.' };
+    if (!parsed.success) return err(validationImportFailed(['Give a layoutId or nothing.']));
     const library = await source.library();
     const id = parsed.data.layoutId ?? (library === null ? undefined : activeId(library));
     const entry = library?.entries.find((candidate) => candidate.id === id);
     const layout = id === undefined || entry === undefined ? null : await source.layout(id);
-    return {
-      ok: true,
-      data: { layout: layout === null ? null : summarizeLayout(layout, entry?.modifiedAt) },
-    };
+    return ok({ layout: layout === null ? null : summarizeLayout(layout, entry?.modifiedAt) });
   }
-  if (!readMySettingsInput.safeParse(input).success) return { ok: false, error: 'No input.' };
-  return { ok: true, data: summarizeSettings(await source.settings()) };
+  if (!readMySettingsInput.safeParse(input).success)
+    return err(validationImportFailed(['No input.']));
+  return ok(summarizeSettings(await source.settings()));
 }

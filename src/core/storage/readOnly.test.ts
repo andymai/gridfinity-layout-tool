@@ -85,6 +85,9 @@ describe('read-only layout reads', () => {
     expect(await databaseNames()).not.toContain(LAYOUT_DB_NAME);
     localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify({ entries: [{ id: 7 }] }));
     expect(await readLibraryIndex()).toBeNull();
+    const damaged = { ...library, entries: [{ ...library.entries[0], preview: {} }] };
+    localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(damaged));
+    expect(await readLibraryIndex()).toBeNull();
   });
 
   it('never holds the database open, so the app can still upgrade it', async () => {
@@ -118,12 +121,13 @@ describe('read-only layout reads', () => {
         measureUnit: 'in',
         defaultPrintBedSize: 180,
         defaultPrintBedDepth: -1,
-        printSettings: { nozzleSizeMm: 0.6, layerHeightMm: 'thin' },
+        printSettings: { nozzleSizeMm: 0.6, layerHeightMm: 'thin', filamentCostPerKg: 0 },
       })
     );
     const settings = readPrinterSettings();
     expect(settings).toMatchObject({ measureUnit: 'in', printBedMm: { width: 180, depth: 180 } });
     expect(settings.print.nozzleSizeMm).toBe(0.6);
     expect(settings.print.layerHeightMm).toBeGreaterThan(0);
+    expect(settings.print.filamentCostPerKg).toBe(0);
   });
 });

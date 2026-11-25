@@ -70,6 +70,17 @@ function readLocal(key: string): unknown {
   }
 }
 
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
+
+function isPreview(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) return false;
+  const preview = value as Record<string, unknown>;
+  return ['drawerWidth', 'drawerDepth', 'drawerHeight', 'binCount', 'layerCount'].every((key) =>
+    isFiniteNumber(preview[key])
+  );
+}
+
 function isLibrary(value: unknown): value is LayoutLibrary {
   if (typeof value !== 'object' || value === null) return false;
   const entries = (value as { entries?: unknown }).entries;
@@ -81,9 +92,8 @@ function isLibrary(value: unknown): value is LayoutLibrary {
         entry !== null &&
         typeof (entry as { id?: unknown }).id === 'string' &&
         typeof (entry as { name?: unknown }).name === 'string' &&
-        typeof (entry as { modifiedAt?: unknown }).modifiedAt === 'number' &&
-        typeof (entry as { preview?: unknown }).preview === 'object' &&
-        (entry as { preview?: unknown }).preview !== null
+        isFiniteNumber((entry as { modifiedAt?: unknown }).modifiedAt) &&
+        isPreview((entry as { preview?: unknown }).preview)
     )
   );
 }
@@ -118,7 +128,9 @@ export interface PrinterSettings {
 }
 
 const positive = (value: unknown, fallback: number): number =>
-  typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : fallback;
+  isFiniteNumber(value) && value > 0 ? value : fallback;
+const nonNegative = (value: unknown, fallback: number): number =>
+  isFiniteNumber(value) && value >= 0 ? value : fallback;
 
 /** The printer and unit settings, with the app's defaults where a field is missing. */
 export function readPrinterSettings(): PrinterSettings {
@@ -144,7 +156,7 @@ export function readPrinterSettings(): PrinterSettings {
       layerHeightMm: positive(print.layerHeightMm, DEFAULT_PRINT_SETTINGS.layerHeightMm),
       maxPrintHeightMm: positive(print.maxPrintHeightMm, DEFAULT_PRINT_SETTINGS.maxPrintHeightMm),
       infillPercent: positive(print.infillPercent, DEFAULT_PRINT_SETTINGS.infillPercent),
-      filamentCostPerKg: positive(
+      filamentCostPerKg: nonNegative(
         print.filamentCostPerKg,
         DEFAULT_PRINT_SETTINGS.filamentCostPerKg
       ),

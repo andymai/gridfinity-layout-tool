@@ -14,6 +14,8 @@ export const READER_LIMITS = {
   BINS: 80,
   ITEMS_PER_BIN: 3,
   STASHED: 20,
+  /** UTF-8 bytes of a layout's data, under the server's 32 KB result cap. */
+  LAYOUT_BYTES: 30_000,
 } as const;
 
 export const listMyLayoutsInput = z.object({}).strict();
@@ -29,6 +31,7 @@ export const readMyLayoutInput = z
 export const readMySettingsInput = z.object({}).strict();
 
 const units = z.number().min(0).max(1000);
+const area = z.number().min(0).max(1_000_000);
 const mm = z.number().min(0).max(100_000);
 const count = z.number().int().min(0).max(100_000);
 const day = z
@@ -86,7 +89,7 @@ export const myLayoutData = z
     layers: z
       .array(z.object({ name: z.string().max(24), height: units, bins: count }).strict())
       .max(10),
-    freeCells: units,
+    freeCells: area,
     bins: z.array(layoutBin).max(READER_LIMITS.BINS),
     moreBins: count,
     stashed: z

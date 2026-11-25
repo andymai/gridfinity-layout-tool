@@ -161,3 +161,7 @@ export {
   setFolderKind,
   wouldLoop,
 } from './libraryFolders';
+
+// Reads for pages outside the app, such as the docs. They never write.
+export { readLayout, readLibraryIndex, readPrinterSettings } from './readOnly';
+export type { PrinterSettings } from './readOnly';
