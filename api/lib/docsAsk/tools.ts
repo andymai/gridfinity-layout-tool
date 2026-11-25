@@ -3,24 +3,40 @@ import { z } from 'zod';
 import { pageAt } from './corpus.js';
 import type { AskCorpus, AskLabels, AskPage } from './corpus.js';
 import {
+  binSizeForInput,
   drawerFitInput,
   listMyLayoutsInput,
   planLayoutInput,
+  printEstimateInput,
   readMyLayoutInput,
   readMySettingsInput,
+  runBinSizeFor,
   runDrawerFit,
   runPlanLayout,
+  runPrintEstimate,
+  runSplitPlan,
+  splitPlanInput,
 } from '../agent/index.js';
 import type { PlanView } from '../agent/index.js';
 import { localeName } from './prompt.js';
 import { createSearch, pageSections } from './search.js';
 
-export type ToolName = 'read_page' | 'search_docs' | 'drawer_fit' | 'plan_layout';
+export type ToolName =
+  | 'read_page'
+  | 'search_docs'
+  | 'drawer_fit'
+  | 'plan_layout'
+  | 'split_plan'
+  | 'bin_size_for'
+  | 'print_estimate';
 export const TOOL_NAMES: readonly ToolName[] = [
   'read_page',
   'search_docs',
   'drawer_fit',
   'plan_layout',
+  'split_plan',
+  'bin_size_for',
+  'print_estimate',
 ];
 /** yours: a read of the reader's own data, in their browser. */
 export type StepKind = 'read' | 'search' | 'check' | 'plan' | 'yours';
@@ -30,6 +46,9 @@ export const STEP_KINDS: Readonly<Record<ToolName, StepKind>> = {
   search_docs: 'search',
   drawer_fit: 'check',
   plan_layout: 'plan',
+  split_plan: 'check',
+  bin_size_for: 'check',
+  print_estimate: 'check',
 };
 
 export const PLACEHOLDER_LABELS: Readonly<Record<StepKind, string>> = {
@@ -130,6 +149,24 @@ export function toolDefinitions(corpus: AskCorpus): Anthropic.Beta.BetaToolUnion
         "Plan a whole drawer with the Layout Tool's own placement code. Give the measured drawer (or a grid size when there is no measurement) and a bin for each kind of thing to store. The app fits the grid, places the bins largest first, puts a bin on layer 2 only where bins below carry it, and sends bins that do not fit to the stash. Returns what it placed and stashed. The panel draws the plan with a button that opens it in the app, so never write a link to it.",
       input_schema: PLAN_LAYOUT_SCHEMA,
       eager_input_streaming: true,
+    },
+    {
+      name: 'split_plan',
+      description:
+        "Split a baseplate for a print bed with the baseplate generator's own planner. Give the grid in units and the bed size. Returns whether the default plate prints in one piece, or its pieces, columns, rows and bed loads. Use it for every question about a baseplate on a printer.",
+      input_schema: inputSchema(splitPlanInput),
+    },
+    {
+      name: 'bin_size_for',
+      description:
+        'Look up the bin size that makers most often gave bins with each label in the app, such as "M3 screws". It is a habit, not a fact about the item: use it as a starting point when you size bins for plan_layout, and size from the item when a label has no common size.',
+      input_schema: inputSchema(binSizeForInput),
+    },
+    {
+      name: 'print_estimate',
+      description:
+        "Estimate filament, print time and filament cost for standard bins with the bin designer's own estimate. Give each bin's size in grid units and height units, and a count. Pass the reader's printer settings when read_my_settings returned them. The baseplate is not included.",
+      input_schema: inputSchema(printEstimateInput),
     },
     {
       name: 'list_my_layouts',
@@ -255,6 +292,54 @@ export function createToolRunner(
         plan: run.plan,
       };
     }
+    if (name === 'split_plan' || name === 'bin_size_for' || name === 'print_estimate') {
+      return runCalculator(name, input);
+    }
     return { isError: true, label: 'Using a tool', content: `There is no tool named ${name}.` };
   };
+}
+
+function fieldErrors(issues: readonly z.core.$ZodIssue[]): string {
+  return issues.map((issue) => `${issue.path.join('.') || 'input'}: ${issue.message}`).join('\n');
+}
+
+function runCalculator(
+  name: 'split_plan' | 'bin_size_for' | 'print_estimate',
+  input: unknown
+): ToolRun {
+  if (name === 'split_plan') {
+    const parsed = splitPlanInput.safeParse(input);
+    if (!parsed.success) {
+      return {
+        isError: true,
+        label: 'Splitting a baseplate',
+        content: fieldErrors(parsed.error.issues),
+      };
+    }
+    const { grid } = parsed.data;
+    return {
+      ...runSplitPlan(parsed.data),
+      label: `Splitting a ${grid.width} × ${grid.depth} baseplate`,
+    };
+  }
+  if (name === 'bin_size_for') {
+    const parsed = binSizeForInput.safeParse(input);
+    if (!parsed.success) {
+      return {
+        isError: true,
+        label: 'Looking up bin sizes',
+        content: fieldErrors(parsed.error.issues),
+      };
+    }
+    return { ...runBinSizeFor(parsed.data), label: 'Looking up bin sizes' };
+  }
+  const parsed = printEstimateInput.safeParse(input);
+  if (!parsed.success) {
+    return {
+      isError: true,
+      label: 'Estimating a print',
+      content: fieldErrors(parsed.error.issues),
+    };
+  }
+  return { ...runPrintEstimate(parsed.data), label: 'Estimating a print' };
 }
