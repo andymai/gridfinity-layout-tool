@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
-  "ignoreDependencies": ["axe-core", "postcss", "events"],
+  "ignoreDependencies": ["axe-core", "postcss", "events", "@posthog/cli"],
   "ignoreBinaries": ["ffmpeg"],
   "exclude": ["exports", "types", "duplicates"],
   "workspaces": {

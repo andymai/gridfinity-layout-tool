@@ -9,33 +9,26 @@
 
 set -e
 
+# scripts/vite-plugin-posthog-sourcemaps.ts injects chunk ids into every chunk,
+# workers too, and uploads the main bundle's maps, for the production deploy only.
 pnpm run build
 
-# Previews would publish symbol sets, against the same project as production, for
-# bundles that are then discarded.
-if [ "$VERCEL_ENV" = "production" ] && [ -n "$POSTHOG_CLI_API_KEY" ] && [ -n "$POSTHOG_CLI_PROJECT_ID" ]; then
+# Vite bundles workers without writing them, so the plugin never uploads their
+# maps. Its upload deleted the main bundle's maps, so the ones left here are the
+# workers'. Error tracking is not a release gate.
+if [ "$VERCEL_ENV" = "production" ] && [ -n "$POSTHOG_API_KEY" ] && [ -n "$POSTHOG_PROJECT_ID" ]; then
+  export POSTHOG_CLI_API_KEY="$POSTHOG_API_KEY" POSTHOG_CLI_PROJECT_ID="$POSTHOG_PROJECT_ID"
+  if [ -n "$POSTHOG_HOST" ]; then export POSTHOG_CLI_HOST="$POSTHOG_HOST"; fi
   release_args=(--release-name "${VERCEL_GIT_REPO_SLUG:-gridfinity-layout-tool}")
-  # Set on every Git-connected deploy; the fallback only covers a manual
-  # `vercel deploy`, which must degrade to an unversioned upload.
-  release_version="${VERCEL_GIT_COMMIT_SHA:-$(git rev-parse HEAD 2>/dev/null || true)}"
-  if [ -n "$release_version" ]; then
-    release_args+=(--release-version "$release_version")
+  if [ -n "$VERCEL_GIT_COMMIT_SHA" ]; then
+    release_args+=(--release-version "$VERCEL_GIT_COMMIT_SHA")
   fi
-
-  # Injection rewrites the emitted assets/*.js. That is safe only because the
-  # service worker precaches each of them with revision:null; giving those
-  # entries a content revision would let this mutation stale the manifest.
-  #
-  # Error tracking is not a release gate.
-  pnpm dlx @posthog/cli@0.15.0 sourcemap process \
-    --directory dist \
-    "${release_args[@]}" \
-    --delete-after ||
-    echo "Source map upload failed. Continuing deploy without symbolication." >&2
+  pnpm exec posthog-cli sourcemap upload --directory dist "${release_args[@]}" ||
+    echo "Worker source map upload failed. Continuing deploy without symbolication." >&2
 else
-  echo "Skipping source map upload: not a credentialed production deploy."
+  echo "Skipping worker source map upload: not a production deploy with POSTHOG_API_KEY and POSTHOG_PROJECT_ID."
 fi
 
 # Hidden source maps carry no sourceMappingURL but stay fetchable at their asset
-# path, so no branch above may leave one behind.
+# path, so no deploy may serve one.
 find dist -name '*.map' -delete
