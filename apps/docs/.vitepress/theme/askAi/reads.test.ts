@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { prepareRead } from './reads';
 
 const id = 'a1b2c3d4-0000-4000-8000-000000000001';
@@ -54,6 +54,18 @@ describe('a read in the docs', () => {
     expect(call).toMatchObject({ title: 'Your layout “Desk drawer”', unavailable: false });
     expect(call.preview).toContain('"M3 screws"');
     expect(JSON.stringify(call.data)).not.toContain('private note');
+  });
+
+  it('marks a read as unavailable when the browser blocks storage', async () => {
+    const blocked = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new DOMException('blocked', 'SecurityError');
+    });
+    try {
+      const call = await prepareRead({ id: 'c', name: 'read_my_settings', input: {} });
+      expect(call.unavailable).toBe(true);
+    } finally {
+      blocked.mockRestore();
+    }
   });
 
   it('marks a read that it cannot run as unavailable', async () => {

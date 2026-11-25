@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LayoutLibrary } from '@/core/types';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
 import { createTestLayout } from '@/test/testUtils';
@@ -64,6 +64,18 @@ describe('read-only layout reads', () => {
     closeDatabase();
     localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(library));
     expect((await readLibraryIndex())?.entries.map((e) => e.name)).toEqual(['Desk drawer']);
+  });
+
+  it('fails, and does not answer with no data, when the browser blocks storage', async () => {
+    const blocked = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new DOMException('blocked', 'SecurityError');
+    });
+    try {
+      await expect(readLibraryIndex()).rejects.toThrow('blocked');
+      expect(() => readPrinterSettings()).toThrow('blocked');
+    } finally {
+      blocked.mockRestore();
+    }
   });
 
   it('falls back to localStorage, as the app does', async () => {

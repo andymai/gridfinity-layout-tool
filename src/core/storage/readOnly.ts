@@ -61,10 +61,13 @@ async function readStored(store: string, key: string): Promise<unknown> {
   }
 }
 
+// A browser that blocks storage throws here, and the error goes to the
+// caller: the reader's data is unknown, which is not the same as none.
 function readLocal(key: string): unknown {
+  const raw = localStorage.getItem(key);
+  if (raw === null) return undefined;
   try {
-    const raw = localStorage.getItem(key);
-    return raw === null ? undefined : (JSON.parse(raw) as unknown);
+    return JSON.parse(raw) as unknown;
   } catch {
     return undefined;
   }

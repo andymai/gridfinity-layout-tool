@@ -131,9 +131,10 @@ function readerResult(fixture: ReaderFixture | undefined, call: BrowserCall): Cl
     return { callId: id, status: 'shared', data: fixture.settings };
   }
   if (call.name === 'read_my_layout') {
+    // The fixture layout is the one open in the app; an explicit id must name it.
     const asked = (call.input as { layoutId?: unknown } | null)?.layoutId;
-    const open = fixture.layouts?.layouts.find((layout) => layout.active)?.id;
-    const match = asked === undefined || asked === open || fixture.layouts === undefined;
+    const open = fixture.layouts?.layouts.find((layout) => layout.active)?.id ?? 'desk';
+    const match = asked === undefined || asked === open;
     return {
       callId: id,
       status: 'shared',

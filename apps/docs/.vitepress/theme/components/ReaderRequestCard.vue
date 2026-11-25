@@ -29,7 +29,8 @@ const busy = computed(() => props.request.state !== 'asking');
         </li>
       </ul>
       <p v-if="readable" class="note">
-        If you allow it, this goes to Anthropic, which runs the AI model, for this answer only.
+        If you allow it, this goes to Anthropic, which runs the AI model. Later answers in this chat
+        use it too, until you start a new chat.
         <a href="/docs/introduction/your-data#ask-ai">Your data and privacy</a>
       </p>
       <div class="buttons">
