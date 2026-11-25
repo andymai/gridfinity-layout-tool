@@ -158,6 +158,15 @@ function readerResult(fixture: ReaderFixture | undefined, call: BrowserCall): Cl
   return { callId: id, status: 'unavailable' };
 }
 
+// Tools whose results the judge gets, since their numbers are not in the docs.
+const CHECKED_TOOLS = new Set([
+  'drawer_fit',
+  'plan_layout',
+  'split_plan',
+  'bin_size_for',
+  'print_estimate',
+]);
+
 async function runCase(golden: GoldenCase): Promise<CaseResult> {
   const locale = source.locale(golden.locale ?? 'en');
   const tables = new Map([
@@ -184,7 +193,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
       const run: ToolRunner = (name, input, code) => {
         const result = runner(name, input, code);
         tools.push(`${name} ${JSON.stringify(input)}`);
-        if (name === 'drawer_fit' || name === 'plan_layout') checks.push(result.content);
+        if (CHECKED_TOOLS.has(name)) checks.push(result.content);
         if (result.link) reads.push(result.link);
         return result;
       };

@@ -151,3 +151,21 @@ describe('plan_layout', () => {
 it('refuses an unknown tool', () => {
   expect(run('delete_everything', {}, 'en').isError).toBe(true);
 });
+
+describe('calculators', () => {
+  it('splits a baseplate and labels the step with its size', () => {
+    const result = run(
+      'split_plan',
+      { grid: { width: 6, depth: 5 }, bed: { width: 18, unit: 'cm' } },
+      'en'
+    );
+    expect(result).toMatchObject({ isError: false, label: 'Splitting a 6 × 5 baseplate' });
+    expect(result.content).toContain('It splits into 4 pieces');
+  });
+
+  it('names the field that is wrong', () => {
+    const result = run('print_estimate', { bins: [{ width: 1, depth: 1, height: 1 }] }, 'en');
+    expect(result.isError).toBe(true);
+    expect(result.content).toMatch(/^bins\.0\.height:/);
+  });
+});
