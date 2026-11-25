@@ -1,0 +1,21 @@
+src/agent/tools/calculators.ts
+  s_88cfcc42bf5bfd::t_121ebfcfcb99e5 1,80-81,120-121
+src/agent/tools/calculators.test.ts
+  s_88cfcc42bf5bfd::t_9638df5a4f7149 43-48,66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bc914f0100a0cd07205fe7a4756c594327dc7e30",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
