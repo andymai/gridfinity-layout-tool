@@ -60,9 +60,7 @@ const ADD_TWO: ChangeOp[] = [
 ];
 
 const setActive = (id: string): void => {
-  useLibraryStore.setState({
-    library: { ...useLibraryStore.getState().library, activeLayoutId: id as LayoutId },
-  });
+  useLayoutStore.setState({ activeLayoutId: id as LayoutId });
 };
 
 describe('layout.applyChangeSet through the bus', () => {
@@ -135,7 +133,37 @@ describe('layout.applyChangeSet through the bus', () => {
     expect(isErr(mutations.applyChangeSet({ ...set(ADD_TWO), layoutId: SHARED_PREVIEW_ID }))).toBe(
       true
     );
+    // A shared preview leaves the library on the last saved layout, so a set
+    // for that layout must still be refused while the preview is open.
+    useLibraryStore.setState({
+      library: { ...useLibraryStore.getState().library, activeLayoutId: 'layout-1' as LayoutId },
+    });
+    expect(isErr(mutations.applyChangeSet(set(ADD_TWO)))).toBe(true);
+    expect(useLayoutStore.getState().layout).toEqual(start);
     expect(useHistoryStore.getState().past).toHaveLength(0);
+  });
+
+  it('trims refs and labels as the schema says, so a padded ref still matches', () => {
+    const result = mutations.applyChangeSet(
+      set([
+        { op: 'addCategory', ref: ' tools ', name: '  Tools  ' },
+        {
+          op: 'addBin',
+          layer: { id: 'layer1' },
+          x: 4,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+          label: ' Pliers ',
+          category: { ref: 'tools' },
+        },
+      ])
+    );
+    if (!isOk(result)) throw new Error(JSON.stringify(result.error));
+    const { layout } = useLayoutStore.getState();
+    expect(layout.categories.some((c) => c.name === 'Tools')).toBe(true);
+    expect(layout.bins.some((b) => b.label === 'Pliers')).toBe(true);
   });
 
   it('refuses a set made for an older layout, and changes nothing', () => {

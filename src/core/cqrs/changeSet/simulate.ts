@@ -15,6 +15,7 @@ import { moveBinToStaging } from '../v2/domain/bin/moveBinToStaging';
 import { updateBin } from '../v2/domain/bin/updateBin';
 import { addCategory } from '../v2/domain/category/addCategory';
 import { addLayer } from '../v2/domain/layer/addLayer';
+import { changeSetSchema } from './schema';
 import type { ChangeOp, ChangeSet, EntityRef } from './schema';
 
 type EventOf<D extends { apply: (event: never, draft: never) => void }> = Parameters<D['apply']>[0];
@@ -31,7 +32,8 @@ export type ChangeSetEvent =
 
 export interface ChangeSetFailure {
   readonly opIndex: number;
-  readonly op: ChangeOp['op'];
+  /** Null when the set as a whole is malformed. */
+  readonly op: ChangeOp['op'] | null;
   readonly reason: string;
 }
 
@@ -125,8 +127,21 @@ export function applyChangeSetEvents(
  */
 export function simulateChangeSet(
   layout: Layout,
-  changeSet: ChangeSet
+  input: ChangeSet
 ): Result<SimulatedChangeSet, ChangeSetFailure> {
+  // Parsing applies the schema's trims, so a ref or a label matches its use.
+  const parsed = changeSetSchema.safeParse(input);
+  if (!parsed.success) {
+    const issue = parsed.error.issues.at(0);
+    const index = issue?.path[0] === 'ops' ? issue.path[1] : undefined;
+    const opIndex = typeof index === 'number' ? index : 0;
+    return err({
+      opIndex,
+      op: typeof index === 'number' ? (input.ops.at(index)?.op ?? null) : null,
+      reason: issue?.message ?? 'The change set is malformed.',
+    });
+  }
+  const changeSet = parsed.data;
   let current = layout;
   const events: ChangeSetEvent[] = [];
   const refs = new Map<string, { kind: RefKind; id: string }>();
