@@ -8,6 +8,8 @@ import {
   clearSharedLayoutFromURL,
   getCloudShareIdFromURL,
   clearCloudShareFromURL,
+  PLAN_LINK_NEEDS_UPDATE,
+  getPlanLinkFromURL,
 } from '@/core/storage';
 import { fetchShare } from '@/core/api/share';
 import { isOk, getUserMessage } from '@/core/result';
@@ -19,6 +21,7 @@ import { isOwnedShare } from '@/features/cloud-share/utils';
 
 // Check for shared layout once at module load time (URL-encoded shares)
 const initialShareResult = getSharedLayoutFromURL();
+const initialPlanLink = getPlanLinkFromURL();
 // Check for cloud share ID at module load time
 const initialCloudShareId = getCloudShareIdFromURL();
 
@@ -130,28 +133,53 @@ export function SharedLayoutImporter() {
   // Track whether we've processed the URL share (persists through Strict Mode remounts)
   const hasProcessedUrlShare = useRef(false);
 
-  // Handle URL-encoded shares (legacy format)
+  // Handle layouts carried in the URL: `#share=`, and `#plan=` links from the
+  // agent tools, whose decoder loads only when one opens.
   useEffect(() => {
     // Skip if we have a cloud share to process instead
     if (initialCloudShareId) return;
-    if (!initialShareResult) return;
+    const planLink = initialPlanLink;
+    if (!initialShareResult && planLink === null) return;
     // Only process once per session
     if (hasProcessedUrlShare.current) return;
     hasProcessedUrlShare.current = true;
 
-    const { layout, errors } = initialShareResult;
-
-    if (errors.length > 0 || !layout) {
-      // Clear the URL on error
+    const open = ({ layout, errors }: { layout: Layout | null; errors: string[] }): void => {
+      if (errors.length > 0 || !layout) {
+        // A plan link from a newer deploy: reload into the current bundle, which
+        // reads the hash again. The recovery guard stops a reload loop.
+        if (errors[0] === PLAN_LINK_NEEDS_UPDATE) {
+          void import('@/shared/pwa/staleRecovery')
+            .then(({ recoverStaleBundle }) => recoverStaleBundle('plan_link_version'))
+            .catch(() => false)
+            .then((started) => {
+              if (started) return;
+              clearSharedLayoutFromURL();
+              addToast(t('toast.sharedLayoutFailed', { error: PLAN_LINK_NEEDS_UPDATE }), 'error');
+            });
+          return;
+        }
+        // Clear the URL on error
+        clearSharedLayoutFromURL();
+        // Show error feedback to user
+        const errorMessage = errors.length > 0 ? errors[0] : 'Invalid share link';
+        addToast(t('toast.sharedLayoutFailed', { error: errorMessage }), 'error');
+        return;
+      }
+      loadLayoutPreview(layout);
       clearSharedLayoutFromURL();
-      // Show error feedback to user
-      const errorMessage = errors.length > 0 ? errors[0] : 'Invalid share link';
-      addToast(t('toast.sharedLayoutFailed', { error: errorMessage }), 'error');
+    };
+
+    if (initialShareResult) {
+      open(initialShareResult);
       return;
     }
-
-    loadLayoutPreview(layout);
-    clearSharedLayoutFromURL();
+    if (planLink === null) return;
+    void import('@/core/storage/planLinkImport')
+      .then(async ({ importPlanLink }) => open(await importPlanLink(planLink)))
+      .catch(() =>
+        open({ layout: null, errors: ['The plan link could not load. Reload and try again.'] })
+      );
   }, [loadLayoutPreview, addToast, t]);
 
   // Track whether we've started processing a cloud share (persists through Strict Mode remounts)
