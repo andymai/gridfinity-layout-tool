@@ -1,0 +1,63 @@
+apps/docs/.vitepress/theme/askAi/render.ts
+  s_88cfcc42bf5bfd::t_b649bba2b86228 30-43,45-51,53-76,78-79,82-86,89-91,103-104,107,114-116
+api/lib/docsAsk/agent.ts
+  s_88cfcc42bf5bfd::t_e2600d9a467cd7 115-116,118,212,310
+apps/docs/.vitepress/theme/askAi/render.test.ts
+  s_88cfcc42bf5bfd::t_b649bba2b86228 99-116
+apps/docs/.vitepress/theme/askAi/useAskAi.ts
+  s_88cfcc42bf5bfd::t_15c308a5a2b830 13,17,19,22,27,31-40,49-53,153-154,203,264-382,386,402,414,424-478,480-481
+  s_88cfcc42bf5bfd::t_0f5da82155cc27 479,482
+api/lib/docsAsk/prompt.ts
+  s_88cfcc42bf5bfd::t_e2600d9a467cd7 38-39
+apps/docs/.vitepress/theme/components/AskAiAnswer.vue
+  s_88cfcc42bf5bfd::t_320ca3775bde8d 46,76
+  s_88cfcc42bf5bfd::t_d4eb8aacbe69f0 5,10,29,38,86-91,122,206-207
+  s_88cfcc42bf5bfd::t_1d178924096c4b 208
+api/lib/docsAsk/clientTools.ts
+  s_88cfcc42bf5bfd::t_e2600d9a467cd7 2-10,29-57,80,85-86,91-92
+apps/docs/.vitepress/theme/components/AskAiPanel.vue
+  s_88cfcc42bf5bfd::t_d4eb8aacbe69f0 41
+api/lib/docsAsk/clientTools.test.ts
+  s_88cfcc42bf5bfd::t_3aa8814f2383a9 1-93
+apps/docs/.vitepress/theme/askAi/useAskAi.test.ts
+  s_88cfcc42bf5bfd::t_3813533620475d 1-20,31-58,60-83,85-94,96-104,106-114
+  s_88cfcc42bf5bfd::t_4455b7e9b6689b 21-30,59,84,95,105
+apps/docs/introduction/your-data.md
+  s_88cfcc42bf5bfd::t_517bb2750b4f24 122-126
+api/lib/docsAsk/tools.ts
+  s_88cfcc42bf5bfd::t_e2600d9a467cd7 5-13,25-26,40,67-74,134-148
+src/agent/server.ts
+  s_88cfcc42bf5bfd::t_e2600d9a467cd7 8-25
+apps/docs/.vitepress/theme/askAi/history.ts
+  s_88cfcc42bf5bfd::t_2d71b702b9b4fe 9-10,82,148-151
+  s_88cfcc42bf5bfd::t_a232939e39c520 152
+apps/docs/reference/faq.md
+  s_88cfcc42bf5bfd::t_517bb2750b4f24 52
+scripts/docs-ask-eval/readerFixtures.ts
+  s_88cfcc42bf5bfd::t_ebc94d709e6917 1-101
+api/lib/agent/index.ts
+  s_88cfcc42bf5bfd::t_e2600d9a467cd7 5,7-12,14-16,22-23,27-28
+apps/docs/.vitepress/theme/components/ReaderRequestCard.vue
+  s_88cfcc42bf5bfd::t_6e719876540d4d 1-30,32-155
+  s_88cfcc42bf5bfd::t_320ca3775bde8d 31
+apps/docs/.vitepress/theme/askAi/reads.ts
+  s_88cfcc42bf5bfd::t_2d71b702b9b4fe 1-72
+scripts/docs-ask-eval/golden.ts
+  s_88cfcc42bf5bfd::t_ebc94d709e6917 7-19,30-31,35-36,749-809
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0e8dc126ae1996c1081c587edb70ab4fbf5f2d71",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
