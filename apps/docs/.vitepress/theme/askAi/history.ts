@@ -25,6 +25,45 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+const isNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
+
+function isPlanBin(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    typeof value.label === 'string' &&
+    typeof value.color === 'string' &&
+    [value.x, value.y, value.width, value.depth, value.layer].every(isNumber)
+  );
+}
+
+// The map puts the link in an href, so only a web link passes.
+export function isPlanView(value: unknown): value is PlanView {
+  return (
+    isRecord(value) &&
+    typeof value.handle === 'string' &&
+    typeof value.title === 'string' &&
+    typeof value.link === 'string' &&
+    /^https?:\/\//.test(value.link) &&
+    isRecord(value.grid) &&
+    isNumber(value.grid.width) &&
+    isNumber(value.grid.depth) &&
+    Array.isArray(value.bins) &&
+    value.bins.every(isPlanBin) &&
+    Array.isArray(value.stashed)
+  );
+}
+
+// A plan stored by an older deploy may have another shape. Only the plan is
+// dropped, so a follow-up keeps the turn's context.
+function withValidPlans(turn: StoredTurn): StoredTurn {
+  if (turn.plans === undefined) return turn;
+  return {
+    ...turn,
+    plans: Object.fromEntries(Object.entries(turn.plans).filter(([, plan]) => isPlanView(plan))),
+  };
+}
+
 function isTurn(value: unknown): value is StoredTurn {
   return (
     isRecord(value) &&
@@ -56,7 +95,7 @@ export function loadConversation(
 ): Conversation {
   const stored = readStored(storage);
   if (isRecord(stored) && typeof stored.sessionId === 'string' && Array.isArray(stored.turns))
-    return { sessionId: stored.sessionId, turns: stored.turns.filter(isTurn) };
+    return { sessionId: stored.sessionId, turns: stored.turns.filter(isTurn).map(withValidPlans) };
   return newConversation(newId);
 }
 

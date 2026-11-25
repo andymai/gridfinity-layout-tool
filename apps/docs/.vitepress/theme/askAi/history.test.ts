@@ -3,6 +3,7 @@ import {
   MAX_TURNS,
   answerText,
   hasToolCall,
+  isPlanView,
   loadConversation,
   messageText,
   saveConversation,
@@ -69,6 +70,35 @@ describe('the conversation store', () => {
       turns: [{ ...turn('A?'), traceId: 'trace-1' }, { ...turn('B?'), traceId: 7 } as never],
     });
     expect(loadConversation(storage, () => 'new').turns.map((t) => t.traceId)).toEqual(['trace-1']);
+  });
+
+  it('keeps a plan through a reload, and drops a broken plan but not its turn', () => {
+    const plan = {
+      handle: '0a1b2c3d',
+      title: 'Screws',
+      grid: { width: 2, depth: 1 },
+      bins: [{ label: 'M3', x: 0, y: 0, width: 1, depth: 1, layer: 1, color: '#f87171' }],
+      stashed: [],
+      link: 'https://gridfinitylayouttool.com/#plan=v1.abc',
+    };
+    const storage = memory();
+    saveConversation(storage, {
+      sessionId: 'id-1',
+      turns: [
+        {
+          ...turn('A?'),
+          plans: {
+            [plan.handle]: plan,
+            old: { ...plan, bins: [{ label: 'M3' }] } as never,
+            bad: { ...plan, link: 'javascript:alert(1)' },
+          },
+        },
+      ],
+    });
+    const [loaded] = loadConversation(storage, () => 'new').turns;
+    expect(loaded?.question).toBe('A?');
+    expect(loaded?.plans).toEqual({ [plan.handle]: plan });
+    expect(isPlanView(plan)).toBe(true);
   });
 
   it('tells a message with a tool call from an answer', () => {

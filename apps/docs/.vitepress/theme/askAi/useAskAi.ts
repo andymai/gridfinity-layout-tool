@@ -5,6 +5,7 @@ import {
   MAX_TURNS,
   answerText,
   hasToolCall,
+  isPlanView,
   loadConversation,
   messageText,
   newConversation,
@@ -116,18 +117,6 @@ function rememberOff(off: boolean): void {
   } catch {
     // Without the flag, a page only shifts once more while Ask AI is off.
   }
-}
-
-function isPlanView(value: unknown): value is PlanView {
-  if (typeof value !== 'object' || value === null) return false;
-  const plan = value as Record<string, unknown>;
-  return (
-    typeof plan.handle === 'string' &&
-    typeof plan.link === 'string' &&
-    Array.isArray(plan.bins) &&
-    typeof plan.grid === 'object' &&
-    plan.grid !== null
-  );
 }
 
 function settleSteps(current: Exchange): void {
