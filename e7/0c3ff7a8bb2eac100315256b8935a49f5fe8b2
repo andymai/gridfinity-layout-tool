@@ -1,0 +1,85 @@
+scripts/build-agent-server.test.ts
+  s_88cfcc42bf5bfd::t_9c1259d9f15890 1-23
+.github/workflows/ci.yml
+  s_88cfcc42bf5bfd::t_47b227180d9b41 431-434
+.gitignore
+  s_88cfcc42bf5bfd::t_d0fea57d721d2f 120-122
+scripts/build-agent-server.ts
+  s_88cfcc42bf5bfd::t_96d774d6d76a64 13,21,48-52
+  s_88cfcc42bf5bfd::t_c23e74f92726fe 1-12,14-20,22-47,53-64
+api/lib/docsAsk/origin.ts
+  s_88cfcc42bf5bfd::t_18de041e1abda9 1-11
+eslint.config.js
+  s_88cfcc42bf5bfd::t_d0fea57d721d2f 76-77,333-339,450-533,783-797,799-811
+  s_88cfcc42bf5bfd::t_18de041e1abda9 798
+apps/docs/.vitepress/theme/components/PlanDrawerButton.vue
+  s_88cfcc42bf5bfd::t_1a8116d2ba6257 39
+  s_88cfcc42bf5bfd::t_756c2732cd3c0b 3-4
+src/shared/plan/drawerPlan.test.ts
+  s_88cfcc42bf5bfd::t_1a8116d2ba6257 1-81,87-107
+  s_88cfcc42bf5bfd::t_96ddae7880ccd3 82-86
+apps/docs/.vitepress/theme/components/DrawerCalculator.vue
+  s_88cfcc42bf5bfd::t_756c2732cd3c0b 12-14
+  s_88cfcc42bf5bfd::t_1a8116d2ba6257 184
+  s_88cfcc42bf5bfd::t_96ddae7880ccd3 170-175
+src/agent/server.ts
+  s_88cfcc42bf5bfd::t_19e15d1a9ab5bd 1-4
+api/lib/docsAsk/tools.ts
+  s_88cfcc42bf5bfd::t_ae61a4a365d6ce 5,129-130,174,184
+src/agent/contract/tool.ts
+  s_88cfcc42bf5bfd::t_19e15d1a9ab5bd 1-11
+scripts/build-docs-llms.ts
+  s_88cfcc42bf5bfd::t_2971f91e9174e0 17,168
+api/lib/docsAsk/origin.test.ts
+  s_88cfcc42bf5bfd::t_72d05865a1dfbd 1-14
+src/agent/tools/drawerFit.ts
+  s_88cfcc42bf5bfd::t_19e15d1a9ab5bd 1-74
+api/lib/docsAsk/agent.test.ts
+  s_88cfcc42bf5bfd::t_72d05865a1dfbd 121
+apps/docs/.vitepress/agentImports.test.ts
+  s_88cfcc42bf5bfd::t_72d05865a1dfbd 1-25
+api/docs-ask.ts
+  s_88cfcc42bf5bfd::t_ae61a4a365d6ce 26,146-147
+api/lib/docsAsk/tools.test.ts
+  s_88cfcc42bf5bfd::t_72d05865a1dfbd 21-26
+src/agent/contract/index.ts
+  s_88cfcc42bf5bfd::t_19e15d1a9ab5bd 1-3
+src/shared/plan/drawerPlan.ts
+  s_88cfcc42bf5bfd::t_3019c10fc69b57 1-15,18-106,108-131
+  s_88cfcc42bf5bfd::t_c64e401f0af9a2 16-17,107
+api/lib/agent/index.ts
+  s_88cfcc42bf5bfd::t_18de041e1abda9 1-5
+src/agent/tools/drawerFit.test.ts
+  s_88cfcc42bf5bfd::t_72d05865a1dfbd 1-20
+src/agent/contract/drawerFit.ts
+  s_88cfcc42bf5bfd::t_19e15d1a9ab5bd 1-12
+vitest.config.ts
+  s_88cfcc42bf5bfd::t_72d05865a1dfbd 246-247
+scripts/build-docs-llms.test.ts
+  s_88cfcc42bf5bfd::t_2971f91e9174e0 3-4,113-117
+scripts/docs-ask-eval/run.ts
+  s_88cfcc42bf5bfd::t_ae61a4a365d6ce 6,31-33,117
+api/README.md
+  s_88cfcc42bf5bfd::t_cf1270775e1d44 87
+package.json
+  s_88cfcc42bf5bfd::t_e97b47cbdd7392 225-226
+  s_88cfcc42bf5bfd::t_47b227180d9b41 27-28,34,78
+pnpm-lock.yaml
+  s_88cfcc42bf5bfd::t_41be52fab1f615 248,324-329,3272-3301,3814-3822,4231-4234,5410-5431,6401-6409,7709-7715,7842,7844,8915,8924,8958,8962,9131-9148,9630-9633,10163-10166,10957,10977,11330-11342,12490-12498
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e70c3ff7a8bb2eac100315256b8935a49f5fe8b2",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
