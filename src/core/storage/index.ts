@@ -94,11 +94,13 @@ export {
   generateShareableURL,
   getSharedLayoutFromURL,
   getSharedLayoutResult,
+  PLAN_LINK_NEEDS_UPDATE,
+  getPlanLinkFromURL,
   clearSharedLayoutFromURL,
   getCloudShareIdFromURL,
   isShareURL,
   clearCloudShareFromURL,
-} from './ShareService';
+} from './shareUrl';
 
 export { copyToClipboard, downloadLayoutAsFile } from './utils';
 

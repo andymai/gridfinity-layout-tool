@@ -4,7 +4,7 @@ import { err, ok, validationImportFailed } from '@/core/result';
 import type { Result, ValidationError } from '@/core/result';
 import type { Layout, LayoutLibrary } from '@/core/types';
 import { effectiveGridUnitMmY, gridUnits, heightUnits, mm } from '@/core/types';
-import { fitAxisUnits, measuredHeightUnits } from './drawerFit';
+import { fitAxisUnits, halfUnitUpgrade, measuredHeightUnits } from './drawerFit';
 
 /**
  * A drawer described by its interior millimetres, carried in a URL such as
@@ -88,22 +88,30 @@ const halfOf = (slackMm: number): number => Math.max(0, Math.floor((slackMm / 2)
 export function buildDrawerLinkLayout(
   base: Layout,
   spec: DrawerLinkSpec,
-  fallbackName: string
+  fallbackName: string,
+  { allowHalf = false }: { readonly allowHalf?: boolean } = {}
 ): Result<Layout, ValidationError> {
   const pitchX = base.gridUnitMm;
   const pitchY = effectiveGridUnitMmY(base);
+  const minUnits = allowHalf ? CONSTRAINTS.GRID_MIN : 1;
   const fitsGrid = (sizeMm: number, pitch: number): boolean =>
-    sizeMm >= pitch && sizeMm <= CONSTRAINTS.GRID_MAX * pitch;
+    sizeMm >= minUnits * pitch && sizeMm <= CONSTRAINTS.GRID_MAX * pitch;
   if (!fitsGrid(spec.widthMm, pitchX) || !fitsGrid(spec.depthMm, pitchY)) {
     return err(
       validationImportFailed([
-        `Drawer ${spec.widthMm} × ${spec.depthMm} mm is outside 1 to ${CONSTRAINTS.GRID_MAX} grid units`,
+        `Drawer ${spec.widthMm} × ${spec.depthMm} mm is outside ${minUnits} to ${CONSTRAINTS.GRID_MAX} grid units`,
       ])
     );
   }
 
-  const width = fitAxisUnits(spec.widthMm, pitchX, false);
-  const depth = fitAxisUnits(spec.depthMm, pitchY, false);
+  const wholeWidth = fitAxisUnits(spec.widthMm, pitchX, false);
+  const wholeDepth = fitAxisUnits(spec.depthMm, pitchY, false);
+  // The padding must come from the slack of the grid actually used, so a half
+  // unit taken from the slack is not also left as margin.
+  const width =
+    (allowHalf && halfUnitUpgrade(spec.widthMm, pitchX, wholeWidth.units)) || wholeWidth;
+  const depth =
+    (allowHalf && halfUnitUpgrade(spec.depthMm, pitchY, wholeDepth.units)) || wholeDepth;
   const drawerHeight =
     spec.heightMm !== undefined
       ? measuredHeightUnits(spec.heightMm, base.heightUnitMm)

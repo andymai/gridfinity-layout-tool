@@ -9,6 +9,7 @@ import { getCloudShareIdFromURL, getSharedLayoutFromURL } from '@/core/storage';
 // Mock storage functions
 vi.mock('@/core/storage', () => ({
   getSharedLayoutFromURL: vi.fn(() => null),
+  getPlanLinkFromURL: vi.fn(() => null),
   clearSharedLayoutFromURL: vi.fn(),
   getCloudShareIdFromURL: vi.fn(() => null),
   clearCloudShareFromURL: vi.fn(),

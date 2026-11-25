@@ -31,6 +31,7 @@ vi.mock('@/shared/utils/url', async () => {
 });
 
 vi.mock('@/core/storage', () => ({
+  getPlanLinkFromURL: vi.fn(() => null),
   loadLayoutAsync: vi.fn(),
 }));
 

@@ -85,6 +85,28 @@ describe('buildDrawerLinkLayout', () => {
     expect(layout.drawer.measuredMm).toEqual({ width: 297, depth: 525 });
   });
 
+  it('fits a drawer narrower than one unit when half units are allowed', () => {
+    const layout = expectOk(
+      buildDrawerLinkLayout(base, { widthMm: 30, depthMm: 84 }, 'X', { allowHalf: true })
+    );
+    expect(layout.drawer.width).toBe(0.5);
+    expect(layout.drawer.depth).toBe(2);
+  });
+
+  it('takes a half unit from the slack when allowed, and pads from what is left', () => {
+    // 400 − 9×42 = 22 leaves room for half a unit: 9.5 units, 1 mm left, 0.5 a side.
+    // 300 − 7×42 = 6 has no room for one, so depth keeps 7 units and 3 mm a side.
+    const layout = expectOk(
+      buildDrawerLinkLayout(base, { widthMm: 400, depthMm: 300 }, 'X', { allowHalf: true })
+    );
+    expect(layout.drawer.width).toBe(9.5);
+    expect(layout.drawer.depth).toBe(7);
+    expect(layout.baseplateParams).toMatchObject({ paddingLeft: 0.5, paddingFront: 3 });
+    expect(
+      expectOk(buildDrawerLinkLayout(base, { widthMm: 400, depthMm: 300 }, 'X')).drawer.width
+    ).toBe(9);
+  });
+
   it('splits the leftover evenly into baseplate padding, floored to 0.01 mm', () => {
     const layout = expectOk(buildDrawerLinkLayout(base, { widthMm: 297, depthMm: 525.5 }, 'X'));
     // 297 − 7×42 = 3 → 1.5 a side; 525.5 − 12×42 = 21.5 → 10.75 a side

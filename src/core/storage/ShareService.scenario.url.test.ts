@@ -335,6 +335,11 @@ describe('isShareURL', () => {
     expect(isShareURL()).toBe(true);
   });
 
+  it('recognises a plan link', () => {
+    at('/', '#plan=v1.abc');
+    expect(isShareURL()).toBe(true);
+  });
+
   it('recognises a legacy hash share', () => {
     at('/', '#share=abc');
     expect(isShareURL()).toBe(true);

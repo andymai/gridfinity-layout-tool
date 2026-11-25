@@ -17,9 +17,8 @@ import { useToastStore } from '@/core/store/toast';
 import { commandBus, createCqrsMutations } from '@/core/cqrs';
 import { isOk } from '@/core/result';
 import { gridUnits, heightUnits } from '@/core/types';
-import type { DesignId, GridUnits, HeightUnits, LayerId, Layout } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
-import { canPlaceBin } from '@/shared/utils/validation';
+import { findFirstFit } from '@/shared/utils/findFirstFit';
 import { useTranslation } from '@/i18n';
 import type { TFunction } from '@/i18n';
 import { dispatchSyntheticPopstate } from '@/shared/hooks/useDesignerRouting';
@@ -91,50 +90,6 @@ export function navigateToPlaceInLayout(design: SavedDesign): void {
   dispatchSyntheticPopstate();
 }
 
-interface FitRect {
-  x: GridUnits;
-  y: GridUnits;
-  width: GridUnits;
-  depth: GridUnits;
-}
-
-/**
- * First free whole-unit position on `layerId`, trying the as-authored
- * orientation and then width/depth swapped (canPlaceBin never rotates).
- */
-function findFirstFit(
-  layout: Layout,
-  layerId: LayerId,
-  width: number,
-  depth: number,
-  height: HeightUnits,
-  linkedDesignId: DesignId | undefined
-): FitRect | null {
-  const orientations =
-    width === depth
-      ? [{ width, depth }]
-      : [
-          { width, depth },
-          { width: depth, depth: width },
-        ];
-  for (const orientation of orientations) {
-    for (let y = 0; y <= layout.drawer.depth - orientation.depth; y += 1) {
-      for (let x = 0; x <= layout.drawer.width - orientation.width; x += 1) {
-        const rect = {
-          x: gridUnits(x),
-          y: gridUnits(y),
-          width: gridUnits(orientation.width),
-          depth: gridUnits(orientation.depth),
-        };
-        if (canPlaceBin({ ...rect, height, linkedDesignId }, layerId, layout).valid) {
-          return rect;
-        }
-      }
-    }
-  }
-  return null;
-}
-
 function placeBinFromUrl(t: TFunction): void {
   const urlParams = new URLSearchParams(window.location.search);
   const placeBin = urlParams.get('placeBin');
@@ -182,7 +137,7 @@ function placeBinFromUrl(t: TFunction): void {
     ...(ref === undefined ? {} : { linkedDesignId: ref.id }),
   };
 
-  const fit = findFirstFit(layout, layerId, width, depth, height, ref?.id);
+  const fit = findFirstFit(layout, layerId, width, depth, height, { linkedDesignId: ref?.id });
   if (fit !== null) {
     const result = mutations.addBin({ ...common, layerId, ...fit });
     if (isOk(result)) {

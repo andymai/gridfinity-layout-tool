@@ -1,0 +1,194 @@
+/**
+ * Layouts carried in a link: `#share=` (the whole layout), `#plan=` (a plan
+ * that the agent tools wrote; `planLinkImport` builds it), and `/l/{id}` cloud
+ * shares.
+ */
+import { err, ok, validationImportFailed } from '@/core/result';
+import type { Result, ValidationError } from '@/core/result';
+import type { Layout } from '@/core/types';
+import { isLegacyUUID, isValidLayoutId } from '@/shared/utils/uuid';
+import { importLayoutJSON } from './ShareService';
+
+/**
+ * Compress a string using base64 encoding.
+ */
+function compressString(str: string): string {
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    return btoa(String.fromCharCode(...data));
+  } catch {
+    return btoa(str);
+  }
+}
+
+/**
+ * Decompress a base64-encoded string.
+ */
+function decompressString(compressed: string): string {
+  try {
+    const binary = atob(compressed);
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+    const decoder = new TextDecoder();
+    return decoder.decode(bytes);
+  } catch {
+    return atob(compressed);
+  }
+}
+
+/**
+ * Encode a layout for URL sharing.
+ * Returns a base64-encoded string safe for URL hash.
+ */
+export function encodeLayoutForURL(layout: Layout): string {
+  const json = JSON.stringify(layout);
+  const compressed = compressString(json);
+  // Make base64 URL-safe
+  return compressed.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/**
+ * Decode a layout from URL-encoded string.
+ * Returns the layout or null if invalid.
+ */
+export function decodeLayoutFromURL(encoded: string): { layout: Layout | null; errors: string[] } {
+  try {
+    // Restore base64 from URL-safe version
+    let base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+    // Add back padding
+    while (base64.length % 4) {
+      base64 += '=';
+    }
+
+    const json = decompressString(base64);
+    return importLayoutJSON(json);
+  } catch (e) {
+    return { layout: null, errors: [`Failed to decode URL: ${(e as Error).message}`] };
+  }
+}
+
+/**
+ * Decode a layout from URL-encoded string with Result-based error handling.
+ * Returns Ok with layout on success, or Err with ValidationImportError.
+ */
+export function decodeLayoutResult(encoded: string): Result<Layout, ValidationError> {
+  const { layout, errors } = decodeLayoutFromURL(encoded);
+
+  if (layout === null) {
+    return err(validationImportFailed(errors));
+  }
+
+  return ok(layout);
+}
+
+/**
+ * Generate a shareable URL for a layout.
+ * The layout is encoded in the URL hash.
+ */
+export function generateShareableURL(layout: Layout): string {
+  const encoded = encodeLayoutForURL(layout);
+  const baseURL =
+    typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : '';
+  return `${baseURL}#share=${encoded}`;
+}
+
+/**
+ * Check if the current URL contains a shared layout.
+ */
+/** The error a `#plan=` link from a newer app gives, so the importer can update the app. */
+export const PLAN_LINK_NEEDS_UPDATE = 'This plan link needs a newer version of the app.';
+
+// Kept as a literal so that startup code does not load the plan modules.
+const PLAN_HASH = '#plan=';
+
+/**
+ * The encoded plan in a `#plan=` link. A plan is a list of bins, not a layout:
+ * `planLinkImport` builds it, and the importer loads that module only when a
+ * plan link opens.
+ */
+export function getPlanLinkFromURL(): string | null {
+  if (typeof window === 'undefined') return null;
+  const { hash } = window.location;
+  return hash.startsWith(PLAN_HASH) ? hash.slice(PLAN_HASH.length) : null;
+}
+
+export function getSharedLayoutFromURL(): { layout: Layout | null; errors: string[] } | null {
+  if (typeof window === 'undefined') return null;
+
+  const hash = window.location.hash;
+  if (!hash.startsWith('#share=')) return null;
+
+  const encoded = hash.slice(7); // Remove '#share='
+  return decodeLayoutFromURL(encoded);
+}
+
+/**
+ * Check if the current URL contains a shared layout with Result-based error handling.
+ * Returns null if no shared layout in URL (not an error).
+ * Returns Ok with layout if found and valid, Err with ValidationError if found but invalid.
+ */
+export function getSharedLayoutResult(): Result<Layout, ValidationError> | null {
+  if (typeof window === 'undefined') return null;
+
+  const hash = window.location.hash;
+  if (!hash.startsWith('#share=')) return null;
+
+  const encoded = hash.slice(7); // Remove '#share='
+  return decodeLayoutResult(encoded);
+}
+
+/**
+ * Clear the shared layout from URL (after import).
+ */
+export function clearSharedLayoutFromURL(): void {
+  if (typeof window === 'undefined') return;
+
+  // Remove the hash without triggering a page reload
+  const url = window.location.href.split('#')[0];
+  window.history.replaceState(null, '', url);
+}
+/**
+ * Get layout ID from URL if present.
+ * Matches: /l/{id} or /l/{id}/{slug} where id is one of the formats
+ * generated by this client (12-char alphanumeric via `generateLayoutId()`,
+ * legacy v4 UUID via `generateUUID()`). The server's `isValidShareId` also
+ * accepts a base36 timestamp format that no client generates; those IDs
+ * are intentionally not handled here. Kept in sync with `parseLayoutFromURL`
+ * in `@/shared/utils/url` — divergence silently breaks share-link viewing.
+ */
+export function getCloudShareIdFromURL(): string | null {
+  if (typeof window === 'undefined') return null;
+
+  const pathname = window.location.pathname;
+
+  const match = pathname.match(/^\/l\/([^/]+)(?:\/.*)?$/);
+  if (!match) return null;
+
+  const id = match[1];
+  return isValidLayoutId(id) || isLegacyUUID(id) ? id : null;
+}
+
+/**
+ * Whether the page opened on a share link: a legacy `#share=` hash or a
+ * `/l/{id}` path, with or without the slug the share popover appends.
+ */
+export function isShareURL(): boolean {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.location.hash.includes('share=') ||
+    window.location.hash.startsWith(PLAN_HASH) ||
+    getCloudShareIdFromURL() !== null
+  );
+}
+
+/**
+ * Clear the layout ID from URL.
+ * Called after loading a shared layout to reset the URL to root.
+ */
+export function clearCloudShareFromURL(): void {
+  if (typeof window === 'undefined') return;
+
+  if (getCloudShareIdFromURL()) {
+    window.history.replaceState(null, '', '/');
+  }
+}

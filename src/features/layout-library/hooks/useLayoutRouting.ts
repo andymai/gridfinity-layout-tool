@@ -5,7 +5,7 @@ import { queueLibraryWrite } from '@/core/store/libraryWrites';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useSelectionStore } from '@/core/store/selection';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
-import { loadLayoutAsync } from '@/core/storage';
+import { getPlanLinkFromURL, loadLayoutAsync } from '@/core/storage';
 import { validateLayoutIntegrity } from '@/shared/utils/validation';
 import {
   parseLayoutFromURL,
@@ -90,6 +90,9 @@ export function useLayoutRouting(options: { skip?: boolean } = {}) {
   const shouldSkipRouting = useCallback(
     (checkUrl = false): boolean => {
       if (options.skip || sharedLayoutPreview) return true;
+      // A plan link opens after an async decode. Until the importer clears it,
+      // routing must not replace the URL, or a stale-bundle reload loses it.
+      if (getPlanLinkFromURL() !== null) return true;
       if (checkUrl) {
         const urlInfo = parseLayoutFromURL();
         if (urlInfo && !findEntry(urlInfo.layoutId)) return true;
