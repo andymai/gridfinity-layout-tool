@@ -21,6 +21,14 @@ describe('split_plan', () => {
     );
   });
 
+  it('says when a plate does not fit the bed even split', () => {
+    const run = runSplitPlan(
+      splitPlanInput.parse({ grid: { width: 1.5, depth: 1 }, bed: { width: 42, unit: 'mm' } })
+    );
+    expect(run.content).toContain('It does not fit this bed, even split: piece');
+    expect(run.content).not.toContain('It prints in one piece.');
+  });
+
   it('refuses a bed smaller than one grid unit', () => {
     const run = runSplitPlan(
       splitPlanInput.parse({ grid: { width: 2, depth: 2 }, bed: { width: 1, unit: 'in' } })
@@ -40,7 +48,7 @@ describe('bin_size_for', () => {
   it('gives the learned size of a common label, and says so when a label has none', () => {
     const run = runBinSizeFor(binSizeForInput.parse({ labels: ['Screwdrivers', 'zzqx blorp'] }));
     expect(run.content).toMatch(
-      /- "Screwdrivers": \d+(\.5)? x \d+(\.5)? units, \d+u, [\d.]+ mm tall with the stacking lip \(\d+% of bins with (this|similar) labels?\)\./
+      /- "Screwdrivers": \d+(\.5)? x \d+(\.5)? units, \d+u, [\d.]+ mm tall with the stacking lip \(about \d+% of bins with (this|similar) labels?\)\./
     );
     // The printed height counts the 4.4 mm stacking lip on top of the body.
     const height = Number(/units, (\d+)u,/.exec(run.content)?.[1]);
@@ -68,6 +76,16 @@ describe('print_estimate', () => {
     expect(run.content).toContain(`each; ${Math.round(each.gramsFilament * 4)} g and`);
     expect(run.content).toContain(`Total for 4 bins: ${Math.round(each.gramsFilament * 4)} g`);
     expect(run.content).toContain('The baseplate is not included.');
+  });
+
+  it('prices the batch from its total mass, so cheap filament is not free', () => {
+    const bins = [{ width: 1, depth: 1, height: 2, count: 60 }];
+    const run = runPrintEstimate(
+      printEstimateInput.parse({ bins, printer: { filamentCostPerKg: 0.2 } })
+    );
+    const grams = Number(/Total for 60 bins: (\d+) g/.exec(run.content)?.[1]);
+    expect(run.content).toContain(`about $${((grams / 1000) * 0.2).toFixed(2)} of filament`);
+    expect(run.content).not.toContain('about $0.00');
   });
 
   it("uses the reader's filament cost", () => {

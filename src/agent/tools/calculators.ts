@@ -1,3 +1,4 @@
+import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { splitDefaultBaseplate } from '@/features/baseplate/domain';
 import { estimateStandardBin } from '@/features/bin-designer/domain';
@@ -29,7 +30,6 @@ function duration(minutes: number): string {
   return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`;
 }
 
-/** The default baseplate for a grid, split for a print bed as the baseplate generator splits it. */
 export function runSplitPlan(input: SplitPlanInput): ToolOutput {
   const per = MM_PER[input.bed.unit];
   const bed = {
@@ -47,6 +47,21 @@ export function runSplitPlan(input: SplitPlanInput): ToolOutput {
   const lines = [
     `A ${size(input.grid.width, input.grid.depth)} unit baseplate (${plateMm} mm) on a ${size(bed.width, bed.depth)} mm bed, with the default plate: no padding, magnets or connectors.`,
   ];
+  // A plate that no split can fit comes back as pieces still wider than the
+  // bed, with the excess in bedOverages.
+  if (tiling.bedOverages.length > 0) {
+    const over = tiling.bedOverages
+      .map((piece) => {
+        const by = [
+          piece.overWidthMm > 0 ? `${round(piece.overWidthMm, 1)} mm too wide` : '',
+          piece.overDepthMm > 0 ? `${round(piece.overDepthMm, 1)} mm too deep` : '',
+        ].filter(Boolean);
+        return `piece ${piece.label} is ${by.join(' and ')}`;
+      })
+      .join('; ');
+    lines.push(`It does not fit this bed, even split: ${over}.`);
+    return { isError: false, content: lines.join('\n') };
+  }
   if (!tiling.isSplit) {
     lines.push('It prints in one piece.');
     return { isError: false, content: lines.join('\n') };
@@ -67,7 +82,6 @@ export function runSplitPlan(input: SplitPlanInput): ToolOutput {
   return { isError: false, content: lines.join('\n') };
 }
 
-/** The size that makers most often gave bins with each label, learned from bins drawn in the app. */
 export function runBinSizeFor(input: BinSizeForInput): ToolOutput {
   const lines = input.labels.map((label) => {
     const hit = suggestBinSize(label);
@@ -77,8 +91,9 @@ export function runBinSizeFor(input: BinSizeForInput): ToolOutput {
     }
     const share = Math.round(hit.p * 100);
     const basis = hit.source === 'label' ? 'bins with this label' : 'bins with similar labels';
+    // The model smooths its counts, so the share is an estimate.
     const tall = round(hit.size.height * 7 + GRIDFINITY_SPEC.LIP_HEIGHT, 1);
-    return `- ${name}: ${size(hit.size.width, hit.size.depth)} units, ${hit.size.height}u, ${tall} mm tall with the stacking lip (${share}% of ${basis}).`;
+    return `- ${name}: ${size(hit.size.width, hit.size.depth)} units, ${hit.size.height}u, ${tall} mm tall with the stacking lip (about ${share}% of ${basis}).`;
   });
   return {
     isError: false,
@@ -89,7 +104,6 @@ export function runBinSizeFor(input: BinSizeForInput): ToolOutput {
   };
 }
 
-/** Filament and print time for standard bins, as the bin designer estimates them. */
 export function runPrintEstimate(input: PrintEstimateInput): ToolOutput {
   const settings = {
     ...(input.printer?.nozzleMm === undefined ? {} : { nozzleSizeMm: input.printer.nozzleMm }),
@@ -106,7 +120,6 @@ export function runPrintEstimate(input: PrintEstimateInput): ToolOutput {
   let grams = 0;
   let meters = 0;
   let minutes = 0;
-  let cost = 0;
   let count = 0;
   const lines = input.bins.map((bin) => {
     const n = bin.count ?? 1;
@@ -114,7 +127,6 @@ export function runPrintEstimate(input: PrintEstimateInput): ToolOutput {
     grams += each.gramsFilament * n;
     meters += each.metersFilament * n;
     minutes += each.printTimeMinutes * n;
-    cost += each.costUSD * n;
     count += n;
     const name = bin.label === undefined ? 'bin' : JSON.stringify(bin.label);
     // One decimal, so a group's total agrees with its count times the figure for one bin.
@@ -124,10 +136,13 @@ export function runPrintEstimate(input: PrintEstimateInput): ToolOutput {
       ? `${line} each; ${round(each.gramsFilament * n)} g and ${duration(each.printTimeMinutes * n)} in all.`
       : `${line}.`;
   });
+  // Cost from the total mass: each bin's cost is already rounded to the cent.
+  const costPerKg = input.printer?.filamentCostPerKg ?? DEFAULT_PRINT_SETTINGS.filamentCostPerKg;
+  const cost = (grams / 1000) * costPerKg;
   return {
     isError: false,
     content: [
-      'Estimates for standard bins: the designer defaults, with a stacking lip and no dividers, magnets or patterns. Features change them. The baseplate is not included.',
+      "Estimates for standard bins: the designer defaults, with a stacking lip and no dividers, magnets or patterns. Features change them. The baseplate is not included. Times count each bin as its own print, with its warm-up, as the app's print list does, so bins printed together take less.",
       ...lines,
       `Total for ${plural(count, 'bin', 'bins')}: ${round(grams)} g, ${round(meters, 1)} m of filament, ${duration(minutes)} of printing, about $${round(cost, 2).toFixed(2)} of filament.`,
     ].join('\n'),
