@@ -133,7 +133,7 @@ async function runCase(golden: GoldenCase): Promise<CaseResult> {
       const run: ToolRunner = (name, input, code) => {
         const result = runner(name, input, code);
         tools.push(`${name} ${JSON.stringify(input)}`);
-        if (name === 'drawer_fit') checks.push(result.content);
+        if (name === 'drawer_fit' || name === 'plan_layout') checks.push(result.content);
         if (result.link) reads.push(result.link);
         return result;
       };

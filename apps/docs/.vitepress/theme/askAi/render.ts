@@ -1,11 +1,15 @@
 import { Marked } from 'marked';
 import type { Tokens } from 'marked';
 
-export type Segment = { kind: 'html'; html: string } | { kind: 'capture'; id: string };
+export type Segment =
+  | { kind: 'html'; html: string }
+  | { kind: 'capture'; id: string }
+  | { kind: 'plan'; handle: string };
 
 const SITE = 'https://gridfinitylayouttool.com';
 const MAX_CAPTURES = 2;
 const CAPTURE_LINE = /^\s*\[\[capture:([A-Za-z0-9._-]+)\]\]\s*$/;
+const PLAN_LINE = /^\s*\[\[plan:([0-9a-f]{8})\]\]\s*$/;
 const CHIP = /\[\[ui:([^\]]+)\]\]/g;
 const OPEN_MARKER = /\[\[[^\]]*\]?$/;
 
@@ -81,7 +85,11 @@ function renderMarkdown(text: string): string {
  */
 export function answerSegments(
   text: string,
-  options: { streaming: boolean; isCapture: (id: string) => boolean }
+  options: {
+    streaming: boolean;
+    isCapture: (id: string) => boolean;
+    isPlan: (handle: string) => boolean;
+  }
 ): Segment[] {
   const source = options.streaming ? text.replace(OPEN_MARKER, '') : text;
   const segments: Segment[] = [];
@@ -93,6 +101,13 @@ export function answerSegments(
     lines = [];
   };
   for (const line of source.split('\n')) {
+    const handle = PLAN_LINE.exec(line)?.[1];
+    if (handle !== undefined) {
+      if (!options.isPlan(handle)) continue;
+      flush();
+      segments.push({ kind: 'plan', handle });
+      continue;
+    }
     const id = CAPTURE_LINE.exec(line)?.[1];
     if (id === undefined) {
       lines.push(line);
@@ -110,7 +125,7 @@ export function answerSegments(
 export function plainAnswer(text: string): string {
   return text
     .split('\n')
-    .filter((line) => !CAPTURE_LINE.test(line))
+    .filter((line) => !CAPTURE_LINE.test(line) && !PLAN_LINE.test(line))
     .join('\n')
     .replace(CHIP, '$1')
     .replace(/\n{3,}/g, '\n\n')

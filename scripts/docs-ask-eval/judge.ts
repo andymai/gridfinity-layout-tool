@@ -21,7 +21,7 @@ export type Verdict = z.infer<typeof verdictSchema>;
 export interface JudgedTurn {
   readonly question: string;
   readonly answer: string;
-  /** drawer_fit results only; page reads repeat the sources. */
+  /** drawer_fit and plan_layout results; page reads repeat the sources. */
   readonly checks: readonly string[];
 }
 
@@ -54,7 +54,9 @@ export async function judge(
   const conversation = turns
     .map((turn, i) => {
       const checks =
-        turn.checks.length > 0 ? `\n<drawer_fit>\n${turn.checks.join('\n')}\n</drawer_fit>` : '';
+        turn.checks.length > 0
+          ? `\n<tool_results>\n${turn.checks.join('\n')}\n</tool_results>`
+          : '';
       return `<turn n="${i + 1}">\n<question>${turn.question}</question>${checks}\n<answer>\n${turn.answer}\n</answer>\n</turn>`;
     })
     .join('\n');

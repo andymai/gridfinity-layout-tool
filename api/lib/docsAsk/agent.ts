@@ -5,6 +5,7 @@ import { costUsd } from './spend.js';
 import { PLACEHOLDER_LABELS, STEP_KINDS, toolResult } from './tools.js';
 import type { StepKind, ToolName, ToolRunner } from './tools.js';
 import type { Generation } from './traces.js';
+import type { PlanView } from '../agent/index.js';
 
 type MessageParam = Anthropic.Beta.BetaMessageParam;
 type ToolUnion = Anthropic.Beta.BetaToolUnion;
@@ -27,7 +28,9 @@ export type AgentEvent =
   | { type: 'text'; text: string }
   /** One assistant message as the API returned it, for the panel to send back next turn. */
   | { type: 'message'; content: ContentBlock[] }
-  | { type: 'notice'; code: 'refusal' | 'truncated' | 'resting' };
+  | { type: 'notice'; code: 'refusal' | 'truncated' | 'resting' }
+  /** A plan for the panel to draw where the answer writes its handle. */
+  | { type: 'plan'; plan: PlanView };
 type StepEvent = Extract<AgentEvent, { type: 'step' }>;
 
 export interface AgentOptions {
@@ -325,6 +328,7 @@ export async function runAgent(options: AgentOptions): Promise<AgentResult> {
           state: run.isError ? 'error' : 'done',
           label: run.label,
         });
+        if (run.plan) options.send({ type: 'plan', plan: run.plan });
         return toolResult(call.id, run);
       }),
     });

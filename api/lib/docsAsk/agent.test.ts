@@ -127,6 +127,34 @@ function options(
 }
 
 describe('runAgent', () => {
+  it('sends a plan after its step, with the handle that the model reads', async () => {
+    const planCall = {
+      type: 'tool_use',
+      id: 'toolu_plan',
+      name: 'plan_layout',
+      input: {
+        grid: { width: 3, depth: 2 },
+        bins: [{ label: 'M3', width: 1, depth: 1, height: 3 }],
+      },
+    };
+    const planRound: Round = {
+      events: [{ type: 'content_block_start', index: 0, content_block: planCall }],
+      content: [planCall],
+      stopReason: 'tool_use',
+    };
+    const { client, calls } = scripted([planRound, answerRound]);
+    const events: AgentEvent[] = [];
+    await runAgent(options(client, events));
+
+    const kinds = events.map((e) => (e.type === 'step' ? `step:${e.state}` : e.type));
+    expect(kinds.slice(0, 4)).toEqual(['step:running', 'message', 'step:done', 'plan']);
+    const plan = events.find((e) => e.type === 'plan');
+    const result = calls[1]?.messages.at(-1)?.content;
+    expect(JSON.stringify(result)).toContain(
+      `Plan handle: ${plan?.type === 'plan' ? plan.plan.handle : '?'}.`
+    );
+  });
+
   it('runs a tool, sends the steps, and answers in the next round', async () => {
     const { client, calls } = scripted([toolRound, answerRound]);
     const events: AgentEvent[] = [];

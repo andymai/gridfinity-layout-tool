@@ -4,7 +4,7 @@
  * correct answer rests on; the judge reads them. For the gap group they are
  * the nearest pages, which the docs do not answer from.
  */
-export type Group = 'lookup' | 'synthesis' | 'no' | 'gap' | 'language' | 'followup';
+export type Group = 'lookup' | 'synthesis' | 'no' | 'gap' | 'language' | 'followup' | 'plan';
 
 export interface GoldenCase {
   readonly id: string;
@@ -18,6 +18,7 @@ export interface GoldenCase {
 }
 
 export const GROUP_RULES: Readonly<Record<Group, string>> = {
+  plan: 'Calls plan_layout and shows the plan with [[plan:…]] alone on its own line. Has a bin for each kind of thing that the reader names, with sizes that suit those things, and says that the sizes are a starting point. Names any bins in the stash and why. Writes no link to the plan, and its numbers match the plan_layout result.',
   lookup: 'Correct facts from the source pages, and a link to the right section.',
   synthesis: 'Correct facts from every source page that the question needs.',
   no: 'The first sentence says plainly that the app cannot do it. Then the answer gives the nearest thing the app can do.',
@@ -685,5 +686,48 @@ export const GOLDEN: readonly GoldenCase[] = [
     sources: ['/concepts/units', '/settings/settings'],
     expect:
       'Grid sizes stay in grid units and height units. In Settings, on the General tab, set Measure in to Centimeters: the drawer height, the measured drawer size and the baseplate plate size then show and take centimeters.',
+  },
+  // Plans: Ask AI places the bins with the app's own code and draws the result.
+  {
+    id: 'P01',
+    group: 'plan',
+    page: '/getting-started/first-drawer',
+    turns: [
+      'My drawer is 40 x 30 cm and 8 cm deep. Can you plan bins for M3, M4 and M5 screws, a set of hex keys and a tape measure?',
+    ],
+    sources: ['/layouts/drawer-setup', '/concepts/units', '/layouts/placing-bins'],
+    expect:
+      'Plans the 40 x 30 cm drawer with bins for the three screw sizes, the hex keys and the tape measure, shows the plan, and keeps bin heights under the 8 cm drawer. The grid is 9 x 7, or 9.5 x 7 when a bin takes half units; the answer gives the grid that plan_layout reports.',
+  },
+  {
+    id: 'P02',
+    group: 'plan',
+    page: '/recipes/screw-drawer',
+    turns: [
+      'Plan a 13 x 10 inch drawer with 1 x 1 bins for M2, M3, M4, M5, M6 and M8 screws, two bins of each.',
+    ],
+    sources: ['/recipes/screw-drawer', '/layouts/drawer-setup'],
+    expect:
+      'Plans twelve 1 x 1 bins, two for each screw size, on the 7 x 6 grid of a 13 x 10 inch drawer, and shows the plan.',
+  },
+  {
+    id: 'P03',
+    group: 'plan',
+    page: '/layouts/placing-bins',
+    turns: [
+      'My drawer is only 20 x 20 cm. Plan a 3 x 3 bin for my multimeter and four 2 x 2 bins for probes and clips.',
+    ],
+    sources: ['/layouts/placing-bins', '/concepts/layouts-layers-stash'],
+    expect:
+      'The drawer takes a 4 x 4 grid. The 3 x 3 bin fits, and the 2 x 2 bins do not: the answer says that they went to the stash for lack of room, and suggests a change that lets them fit, such as narrower bins.',
+  },
+  {
+    id: 'P04',
+    group: 'plan',
+    page: '/layouts/drawer-setup',
+    turns: ['My drawer is a 6 x 4 grid. Plan bins for scissors, tape, glue sticks and markers.'],
+    sources: ['/layouts/placing-bins', '/layouts/drawer-setup'],
+    expect:
+      'Plans the 6 x 4 grid without a measurement, with a bin for each of the four things, shows the plan, and says that the sizes are a starting point.',
   },
 ];

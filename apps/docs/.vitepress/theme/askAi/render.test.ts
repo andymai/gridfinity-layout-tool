@@ -3,8 +3,10 @@ import { answerSegments, docsPath, plainAnswer } from './render';
 
 const isCapture = (id: string): boolean => id.startsWith('shot');
 const html = (text: string, streaming = false): string =>
-  answerSegments(text, { streaming, isCapture })
-    .map((s) => (s.kind === 'html' ? s.html : `[capture ${s.id}]`))
+  answerSegments(text, { streaming, isCapture, isPlan: (handle) => handle === '0a1b2c3d' })
+    .map((s) =>
+      s.kind === 'html' ? s.html : s.kind === 'capture' ? `[capture ${s.id}]` : `[plan ${s.handle}]`
+    )
     .join('');
 
 describe('answerSegments', () => {
@@ -51,12 +53,9 @@ describe('answerSegments', () => {
   it('cuts the answer at each known capture, and keeps at most two', () => {
     const text =
       'One.\n\n[[capture:shot-a]]\n\nTwo.\n[[capture:other]]\n[[capture:shot-b]]\n[[capture:shot-c]]';
-    expect(answerSegments(text, { streaming: false, isCapture }).map((s) => s.kind)).toEqual([
-      'html',
-      'capture',
-      'html',
-      'capture',
-    ]);
+    expect(
+      answerSegments(text, { streaming: false, isCapture, isPlan: () => false }).map((s) => s.kind)
+    ).toEqual(['html', 'capture', 'html', 'capture']);
   });
 
   it('hides a marker that is still streaming in', () => {
@@ -78,4 +77,22 @@ it('copies an answer as plain text', () => {
   expect(plainAnswer('Click [[ui:Fit grid]].\n\n[[capture:shot-a]]\n\n\nDone.')).toBe(
     'Click Fit grid.\n\nDone.'
   );
+});
+
+describe('plans in an answer', () => {
+  it('draws a known plan on its own line and drops an unknown one', () => {
+    const text =
+      'Here is your drawer.\n\n[[plan:0a1b2c3d]]\n\n[[plan:ffffffff]]\n\nOpen it to edit.';
+    const segments = answerSegments(text, {
+      streaming: false,
+      isCapture: () => false,
+      isPlan: (handle) => handle === '0a1b2c3d',
+    });
+    expect(segments.map((s) => s.kind)).toEqual(['html', 'plan', 'html']);
+    expect(segments[1]).toEqual({ kind: 'plan', handle: '0a1b2c3d' });
+  });
+
+  it('leaves the plan marker out of copied text', () => {
+    expect(plainAnswer('Your drawer:\n[[plan:0a1b2c3d]]\nDone.')).toBe('Your drawer:\nDone.');
+  });
 });

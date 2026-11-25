@@ -4,9 +4,16 @@ import { data as captures } from '../askAi/captures.data';
 import { answerSegments, plainAnswer } from '../askAi/render';
 import { isLive } from '../askAi/useAskAi';
 import type { Exchange, StepKind } from '../askAi/useAskAi';
+import type { PlanView } from '@/agent/contract';
 import { mediaEntry } from '../media';
+import PlanMap from './PlanMap.vue';
 
-const props = defineProps<{ exchange: Exchange; last: boolean }>();
+// Plans from every turn: a follow-up may show an earlier plan again by its handle.
+const props = defineProps<{
+  exchange: Exchange;
+  last: boolean;
+  plans: Readonly<Record<string, PlanView>>;
+}>();
 const emit = defineEmits<{ retry: []; feedback: [value: 1 | -1] }>();
 
 const showSteps = ref(false);
@@ -17,6 +24,7 @@ const segments = computed(() =>
   answerSegments(props.exchange.text, {
     streaming: live.value,
     isCapture: (id) => Boolean(mediaEntry(id) && Object.hasOwn(captures, id)),
+    isPlan: (handle) => Object.hasOwn(props.plans, handle),
   })
 );
 
@@ -24,6 +32,7 @@ const NOUNS: Readonly<Record<StepKind, [string, string]>> = {
   read: ['page read', 'pages read'],
   search: ['search', 'searches'],
   check: ['check', 'checks'],
+  plan: ['plan', 'plans'],
 };
 
 const summary = computed(() => {
@@ -83,10 +92,17 @@ async function copy(): Promise<void> {
       <div class="answer-body">
         <template
           v-for="(segment, i) in segments"
-          :key="segment.kind === 'capture' ? `${i}-${segment.id}` : i"
+          :key="
+            segment.kind === 'capture'
+              ? `${i}-${segment.id}`
+              : segment.kind === 'plan'
+                ? `${i}-${segment.handle}`
+                : i
+          "
         >
           <!-- render.ts escapes all raw HTML in the answer except <kbd>. -->
           <div v-if="segment.kind === 'html'" class="answer-html" v-html="segment.html" />
+          <PlanMap v-else-if="segment.kind === 'plan'" :plan="plans[segment.handle]" />
           <Screenshot v-else :id="segment.id" :alt="captures[segment.id]?.alt ?? ''" />
         </template>
       </div>

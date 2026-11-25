@@ -30,6 +30,10 @@ Type your sizes here to see the grid that fits your drawer, and how tall your bi
 
 <DrawerCalculator />
 
+::: tip
+Ask AI, at the side of this page, can plan a first layout for you. Tell it the drawer size and what goes in it, then click **Open in the layout editor** under its plan. The bin sizes that it picks are a starting point, and you can change each one in the app.
+:::
+
 **Plan this drawer** opens the layout editor in a new tab, with a new layout at your size. If a card offers a tighter grid in half units, click <Ui k="drawerDims.suggestionUse" /> on it. After that, go to [Step 3](#step-3-draw-your-first-bin). To learn how to set the size in the layout editor, start at Step 1.
 
 ## Step 1: Open the layout editor
