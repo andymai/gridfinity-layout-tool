@@ -1,0 +1,23 @@
+api/mcp.ts
+  s_88cfcc42bf5bfd::t_e342f6ba9b9db6 80-84
+api/mcp.test.ts
+  s_88cfcc42bf5bfd::t_e342f6ba9b9db6 175-194
+api/README.md
+  s_88cfcc42bf5bfd::t_58f51e22fe72f1 95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f6cdf478f8f7bb68f968e22495ce798895ffad21",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
