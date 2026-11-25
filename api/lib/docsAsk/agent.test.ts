@@ -9,6 +9,8 @@ import { EFFORT, MODEL, runAgent } from './agent.js';
 import type { AgentEvent, AgentOptions, AgentProgress, RoundBudget } from './agent.js';
 import type { AskCorpus } from './corpus.js';
 import { createToolRunner, toolDefinitions } from './tools.js';
+import { z } from 'zod';
+import type { ClientTool } from './clientTools.js';
 
 const corpus: AskCorpus = {
   version: 'test',
@@ -127,6 +129,75 @@ function options(
 }
 
 describe('runAgent', () => {
+  const layoutTool: ClientTool = {
+    kind: 'read',
+    label: () => 'Reading your layout',
+    output: z.object({}),
+    format: () => '',
+  };
+  const browserCall = { type: 'tool_use', id: 'toolu_b', name: 'read_my_layout', input: {} };
+
+  it('runs the server calls of a round, then waits for its browser calls', async () => {
+    const mixed: Round = {
+      events: [
+        { type: 'content_block_start', index: 0, content_block: readCall },
+        { type: 'content_block_start', index: 1, content_block: browserCall },
+      ],
+      content: [readCall, browserCall],
+      stopReason: 'tool_use',
+    };
+    const { client, calls } = scripted([mixed]);
+    const events: AgentEvent[] = [];
+    const result = await runAgent({
+      ...options(client, events),
+      clientTools: new Map([['read_my_layout', layoutTool]]),
+    });
+    expect(calls).toHaveLength(1);
+    expect(result.pending).toEqual({
+      calls: [{ id: 'toolu_b', name: 'read_my_layout', input: {} }],
+      rounds: 1,
+    });
+    const steps = events
+      .filter((e) => e.type === 'step')
+      .map((e) => e.type === 'step' && [e.id, e.state]);
+    expect(steps).toEqual([
+      ['toolu_1', 'running'],
+      ['toolu_b', 'running'],
+      ['toolu_1', 'done'],
+      ['toolu_b', 'waiting'],
+    ]);
+  });
+
+  it('answers browser calls past the read limit itself and asks the reader nothing', async () => {
+    const asks: Round = {
+      events: [{ type: 'content_block_start', index: 0, content_block: browserCall }],
+      content: [browserCall],
+      stopReason: 'tool_use',
+    };
+    const { client, calls } = scripted([asks, answerRound]);
+    const events: AgentEvent[] = [];
+    const result = await runAgent({
+      ...options(client, events),
+      clientTools: new Map([['read_my_layout', layoutTool]]),
+      clientResults: 16,
+    });
+    expect(result.pending).toBeNull();
+    expect(calls[1]?.messages.at(-1)).toMatchObject({
+      content: [{ tool_use_id: 'toolu_b', is_error: true }],
+    });
+    expect(events).toContainEqual(expect.objectContaining({ id: 'toolu_b', state: 'error' }));
+  });
+
+  it('counts the rounds of a turn across a resume', async () => {
+    const { client, calls } = scripted([answerRound]);
+    const result = await runAgent({ ...options(client, []), firstRound: 5 });
+    expect(calls[0]?.tool_choice).toEqual({ type: 'none' });
+    expect(result.pending).toBeNull();
+    const none = scripted([]);
+    expect((await runAgent({ ...options(none.client, []), firstRound: 6 })).answer).toBe('');
+    expect(none.calls).toHaveLength(0);
+  });
+
   it('sends a plan after its step, with the handle that the model reads', async () => {
     const planCall = {
       type: 'tool_use',

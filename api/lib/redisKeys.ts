@@ -125,6 +125,11 @@ export function docsAskSpendKey(day: string): string {
   return `docsAsk:spend:${day}`;
 }
 
+/** A pending Ask AI turn's nonce, held so that one resume cannot run twice. */
+export function docsAskResumeKey(nonce: string): string {
+  return `docsAsk:resume:${nonce}`;
+}
+
 /**
  * Maps an OAuth identity to this deployment's user id.
  *
