@@ -159,7 +159,10 @@ function openSearch(): void {
 }
 
 watch(
-  () => askAi.exchanges.map((e) => e.text.length + e.steps.length + e.thinking.length).join(),
+  () =>
+    askAi.exchanges
+      .map((e) => `${e.text.length + e.steps.length + e.thinking.length}:${e.request?.state ?? ''}`)
+      .join(),
   async () => {
     const el = scroller.value;
     if (!el) return;

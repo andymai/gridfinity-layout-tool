@@ -78,6 +78,20 @@ describe('read-only layout reads', () => {
     }
   });
 
+  it('reports an IndexedDB failure, unless localStorage holds the data', async () => {
+    const failing = vi.spyOn(indexedDB, 'open').mockImplementation(() => {
+      throw new DOMException('broken', 'UnknownError');
+    });
+    try {
+      expect(expectErr(await readLibraryIndex()).code).toBe('STORAGE_UNAVAILABLE');
+      expect(expectErr(await readLayout(id)).code).toBe('STORAGE_UNAVAILABLE');
+      localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(library));
+      expect(expectOk(await readLibraryIndex())?.activeLayoutId).toBe(id);
+    } finally {
+      failing.mockRestore();
+    }
+  });
+
   it('falls back to localStorage, as the app does', async () => {
     closeDatabase();
     await new Promise((resolve) => {

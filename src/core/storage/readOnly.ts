@@ -25,39 +25,51 @@ import {
  * never upgrades; an open that would create it is aborted; and the connection
  * closes when the read ends, or at once when the app asks to upgrade.
  */
-function openExisting(): Promise<IDBDatabase | null> {
+// Missing and failed differ: no database means no saved data, but a
+// database that fails to open may still hold the reader's layouts.
+function openExisting(): Promise<Result<IDBDatabase | null, StorageUnavailableError>> {
   return new Promise((resolve) => {
     let request: IDBOpenDBRequest;
     try {
       request = indexedDB.open(LAYOUT_DB_NAME);
-    } catch {
-      resolve(null);
+    } catch (cause) {
+      resolve(err(storageUnavailable('indexedDB', cause)));
       return;
     }
+    let missing = false;
     // Without a version, only a database that does not exist yet asks for an upgrade.
-    request.onupgradeneeded = () => request.transaction?.abort();
+    request.onupgradeneeded = () => {
+      missing = true;
+      request.transaction?.abort();
+    };
     request.onsuccess = () => {
       const db = request.result;
       db.onversionchange = () => db.close();
-      resolve(db);
+      resolve(ok(db));
     };
-    request.onerror = () => resolve(null);
-    request.onblocked = () => resolve(null);
+    request.onerror = () =>
+      resolve(missing ? ok(null) : err(storageUnavailable('indexedDB', request.error)));
+    request.onblocked = () => resolve(err(storageUnavailable('indexedDB')));
   });
 }
 
-async function readStored(store: string, key: string): Promise<unknown> {
-  const db = await openExisting();
-  if (db === null) return undefined;
+async function readStored(
+  store: string,
+  key: string
+): Promise<Result<unknown, StorageUnavailableError>> {
+  const opened = await openExisting();
+  if (!isOk(opened)) return opened;
+  const db = opened.value;
+  if (db === null) return ok(undefined);
   try {
-    if (!db.objectStoreNames.contains(store)) return undefined;
-    return await new Promise<unknown>((resolve) => {
+    if (!db.objectStoreNames.contains(store)) return ok(undefined);
+    return await new Promise<Result<unknown, StorageUnavailableError>>((resolve) => {
       const request = db.transaction(store, 'readonly').objectStore(store).get(key);
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => resolve(undefined);
+      request.onsuccess = () => resolve(ok(request.result));
+      request.onerror = () => resolve(err(storageUnavailable('indexedDB', request.error)));
     });
-  } catch {
-    return undefined;
+  } catch (cause) {
+    return err(storageUnavailable('indexedDB', cause));
   } finally {
     db.close();
   }
@@ -113,10 +125,11 @@ export async function readLibraryIndex(): Promise<
   Result<LayoutLibrary | null, StorageUnavailableError>
 > {
   const stored = await readStored(LIBRARY_STORE, LIBRARY_INDEX_KEY);
-  if (isLibrary(stored)) return ok(stored);
+  if (isOk(stored) && isLibrary(stored.value)) return ok(stored.value);
   const local = readLocal(LIBRARY_STORAGE_KEY);
   if (!isOk(local)) return local;
-  return ok(isLibrary(local.value) ? local.value : null);
+  if (isLibrary(local.value)) return ok(local.value);
+  return isOk(stored) ? ok(null) : stored;
 }
 
 /** One layout through the app's own load steps, or null when it is missing or broken. */
@@ -125,13 +138,14 @@ export async function readLayout(
 ): Promise<Result<Layout | null, StorageUnavailableError>> {
   const key = `${LAYOUT_KEY_PREFIX}${id}`;
   const stored = await readStored(LAYOUTS_STORE, key);
-  let raw: unknown = typeof stored === 'string' ? decompressLayout(stored) : null;
+  let raw: unknown =
+    isOk(stored) && typeof stored.value === 'string' ? decompressLayout(stored.value) : null;
   if (raw === null) {
     const local = readLocal(key);
     if (!isOk(local)) return local;
     raw = local.value;
   }
-  if (raw === null || raw === undefined) return ok(null);
+  if (raw === null || raw === undefined) return isOk(stored) ? ok(null) : stored;
   const result = salvageImport(raw);
   if (!result.valid) return ok(null);
   const layout = result.layout;
