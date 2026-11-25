@@ -20,6 +20,7 @@ import type { BinId } from '@/core/types';
 import { useSelectionStore } from '@/core/store/selection';
 import { useLayoutStore } from '@/core/store/layout';
 import { layerId, categoryId } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 
 /**
  * Remove a single bin ID from selection state.
@@ -170,17 +171,23 @@ export function connectSelectionPruning(bus: EventBus): UnsubscribeFn {
   );
 
   // A change set publishes one event, so its deletes and stash moves never
-  // reach the single-bin subscribers above.
+  // reach the single-bin subscribers above. A later op in the same set can
+  // bring a stashed bin back, so the final layout decides.
   unsubscribers.push(
     bus.subscribe('layout.changeSetApplied', (event) => {
+      const { bins } = useLayoutStore.getState().layout;
+      const touched = event.payload.events.flatMap((inner) =>
+        inner.type === 'bin.deleted'
+          ? [inner.payload.bin.id]
+          : inner.type === 'bin.movedToStaging'
+            ? [inner.payload.id]
+            : []
+      );
       removeBinsFromSelection(
-        event.payload.events.flatMap((inner) =>
-          inner.type === 'bin.deleted'
-            ? [inner.payload.bin.id]
-            : inner.type === 'bin.movedToStaging'
-              ? [inner.payload.id]
-              : []
-        )
+        touched.filter((id) => {
+          const bin = bins.find((b) => b.id === id);
+          return !bin || bin.layerId === STAGING_ID;
+        })
       );
     })
   );

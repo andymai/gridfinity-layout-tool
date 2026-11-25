@@ -38,7 +38,6 @@ export interface ChangeSetFailure {
 export interface SimulatedChangeSet {
   readonly layout: Layout;
   readonly events: readonly ChangeSetEvent[];
-  /** Each `ref` in the set and the id that it got. */
   readonly refs: Readonly<Record<string, string>>;
 }
 
