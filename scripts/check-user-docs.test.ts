@@ -119,6 +119,7 @@ describe('checkAppLink', () => {
     'content/schema.md',
     'content/de/guide.md',
     'public/schema/layout.schema.json',
+    'api/mcp.ts',
   ]);
   const exists = (rel: string): boolean => files.has(rel);
   const link = (route: string): string | null =>
@@ -131,6 +132,7 @@ describe('checkAppLink', () => {
     expect(link('/schema')).toBeNull();
     expect(link('/de/guide')).toBeNull();
     expect(link('/schema/layout.schema.json')).toBeNull();
+    expect(link('/api/mcp')).toBeNull();
   });
 
   it('rejects unknown pages, unknown locales and absolute links into the docs', () => {
@@ -138,6 +140,7 @@ describe('checkAppLink', () => {
     expect(link('/fr/guide')).toContain('no such page');
     expect(link('/xx/guide')).toContain('no such page');
     expect(link('/docs/faq')).toContain('relative link');
+    expect(link('/api/nope')).toContain('no such page');
   });
 });
 

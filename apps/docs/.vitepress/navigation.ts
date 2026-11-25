@@ -148,6 +148,7 @@ export const sidebar: DefaultTheme.SidebarItem[] = [
       { text: 'Gridfinity dimensions', link: '/reference/dimensions' },
       { text: 'Glossary', link: '/reference/glossary' },
       { text: 'FAQ', link: '/reference/faq' },
+      { text: 'Use an AI assistant', link: '/reference/ai-assistants' },
       { text: 'Self-hosting with Docker', link: '/reference/self-hosting' },
     ],
   },

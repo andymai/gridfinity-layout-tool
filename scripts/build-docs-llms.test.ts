@@ -1,3 +1,4 @@
+import { readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { sidebar } from '../apps/docs/.vitepress/navigation';
 import { drawerLink } from '../src/shared/plan/drawerPlan';
@@ -143,9 +144,10 @@ describe('the real docs', () => {
   });
 
   it('links only to docs pages that exist', () => {
-    const served = new Set(
-      [...ctx.pages.keys()].flatMap((link) => [pageUrl(link), markdownUrl(link)])
-    );
+    const served = new Set([
+      ...[...ctx.pages.keys()].flatMap((link) => [pageUrl(link), markdownUrl(link)]),
+      ...readdirSync('apps/docs/public').map((file) => `${DOCS_URL}/${file}`),
+    ]);
     const linked = [...full.matchAll(/https:\/\/gridfinitylayouttool\.com\/docs[^\s)#]*/g)].map(
       ([url]) => url
     );

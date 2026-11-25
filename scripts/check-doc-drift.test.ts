@@ -20,6 +20,7 @@ describe('doc drift gate', () => {
     expect(files).toContain('CLAUDE.md');
     expect(files).toContain('src/features/generation/README.md');
     expect(files.some((f) => f.startsWith('.claude/skills/'))).toBe(true);
+    expect(files).toContain('skills/gridfinity-layout-tool/SKILL.md');
     // content/ is user-facing SEO copy, not agent context, and must stay out.
     expect(files.some((f) => f.startsWith('content/'))).toBe(false);
   });

@@ -74,7 +74,13 @@ export const planInput = z
       .optional()
       .describe('The inside size of the drawer, as measured. Give this or grid.'),
     grid: z
-      .object({ width: gridSize, depth: gridSize, height: heightUnits.optional() })
+      .object({
+        width: gridSize,
+        depth: gridSize,
+        height: heightUnits
+          .optional()
+          .describe('The drawer height in height units of 7 mm, if known.'),
+      })
       .strict()
       .optional()
       .describe('The grid size in units, when there is no measurement. Give this or drawer.'),
