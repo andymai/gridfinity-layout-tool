@@ -70,6 +70,13 @@ export function initAnalytics(): void {
   initPromise = whenLinkContentCleared()
     .then(() => import('posthog-js'))
     .then(async ({ default: posthog }) => {
+      // The reader can turn analytics off while the start waits, and an
+      // opt-out finds no instance to stop then. A later opt-in starts again.
+      if (!useSettingsStore.getState().settings.analyticsEnabled) {
+        initPromise = null;
+        markReady(null);
+        return;
+      }
       posthog.init(key, {
         // Direct host on purpose: proxying through the app domain would bill
         // every capture and SDK asset fetch as a platform edge request.
