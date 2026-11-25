@@ -1,0 +1,46 @@
+eslint.config.js
+  s_88cfcc42bf5bfd::t_3350c6477e8d9c 339-340,458-473,487,499,513,527,537
+src/agent/contract/index.ts
+  s_88cfcc42bf5bfd::t_bdfb5bd1099e81 6-25
+src/core/storage/readOnly.ts
+  s_88cfcc42bf5bfd::t_51f8cc136e672b 2,4-5,7-8,17,110-152
+  s_88cfcc42bf5bfd::t_ad9f94f6b9d7af 93-94
+  s_88cfcc42bf5bfd::t_866daa767753f5 1,3,6,9-16,18-82,87-92,95-101,103-109,153
+  s_88cfcc42bf5bfd::t_acfdd368749c54 83-86
+  s_88cfcc42bf5bfd::t_85930a620830ba 102
+src/core/storage/backends/indexedDB.ts
+  s_88cfcc42bf5bfd::t_ad9f94f6b9d7af 18
+  s_88cfcc42bf5bfd::t_4321b54f3e66f9 20,25
+src/agent/contract/reader.ts
+  s_88cfcc42bf5bfd::t_c7402dc61947f2 61,90,119-120
+  s_88cfcc42bf5bfd::t_bdfb5bd1099e81 102-104,173-179
+  s_88cfcc42bf5bfd::t_7724b79282252b 1-60,62-89,91-101,105-118,121-172,180-189
+src/agent/reader/readers.test.ts
+  s_88cfcc42bf5bfd::t_bc2dc8ad1219eb 1-158,160-165
+  s_88cfcc42bf5bfd::t_65abb2a06736e2 159
+src/core/storage/storageKeys.ts
+  s_88cfcc42bf5bfd::t_4321b54f3e66f9 19-25
+src/core/storage/readOnly.test.ts
+  s_88cfcc42bf5bfd::t_3350c6477e8d9c 4,27-29
+  s_88cfcc42bf5bfd::t_ad9f94f6b9d7af 1-3,5-6,14-26,30-106,128-129
+  s_88cfcc42bf5bfd::t_51f8cc136e672b 7-13,107-127
+src/agent/reader/readers.ts
+  s_88cfcc42bf5bfd::t_acfdd368749c54 48,57-59,61-62
+  s_88cfcc42bf5bfd::t_bdfb5bd1099e81 1-47,49-56,60,63-183
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ee3d774c59f1b9ff6a1da4360c19fe858faf4914",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
