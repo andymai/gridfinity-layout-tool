@@ -124,6 +124,44 @@ function baseLayout(input: PlanInput, categories: Category[], layers: Layer[], h
 }
 
 /**
+ * Whether bins on lower layers cover every half-unit cell under a rectangle,
+ * answered from a summed-area table, so a search can drop unsupported
+ * positions before the full resting-stack check.
+ */
+function coveredBelow(layout: Layout, layer: number): (rect: FitRect) => boolean {
+  const cols = Math.round(layout.drawer.width * 2);
+  const rows = Math.round(layout.drawer.depth * 2);
+  const lower = new Set(layout.layers.slice(0, layer - 1).map((l) => l.id));
+  const sums = new Uint32Array((cols + 1) * (rows + 1));
+  const covered = new Uint8Array(cols * rows);
+  for (const bin of layout.bins) {
+    if (!lower.has(bin.layerId)) continue;
+    for (let y = bin.y * 2; y < (bin.y + bin.depth) * 2; y++) {
+      for (let x = bin.x * 2; x < (bin.x + bin.width) * 2; x++) covered[y * cols + x] = 1;
+    }
+  }
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      sums[(y + 1) * (cols + 1) + x + 1] =
+        covered[y * cols + x] +
+        sums[y * (cols + 1) + x + 1] +
+        sums[(y + 1) * (cols + 1) + x] -
+        sums[y * (cols + 1) + x];
+    }
+  }
+  return (rect) => {
+    const [x0, y0] = [rect.x * 2, rect.y * 2];
+    const [x1, y1] = [x0 + rect.width * 2, y0 + rect.depth * 2];
+    const total =
+      sums[y1 * (cols + 1) + x1] -
+      sums[y0 * (cols + 1) + x1] -
+      sums[y1 * (cols + 1) + x0] +
+      sums[y0 * (cols + 1) + x0];
+    return total === (x1 - x0) * (y1 - y0);
+  };
+}
+
+/**
  * The layout that a plan describes: the grid for the drawer, and the bins
  * placed largest first. A bin above layer 1 must rest on bins below it, which
  * is stricter than the app, where such a bin may rest on the plate. Bins that
@@ -153,6 +191,9 @@ export function buildPlanLayout(input: PlanInput): Result<PlanResult, Validation
     );
 
   let layout = base.value;
+  // A size that found no place keeps failing until another bin is placed, so
+  // identical bins do not repeat the same search.
+  const failed = new Map<string, StashReason>();
   const placed: PlannedBin[] = [];
   const stashed: StashedBin[] = [];
   const stash: Bin[] = [];
@@ -184,23 +225,26 @@ export function buildPlanLayout(input: PlanInput): Result<PlanResult, Validation
       );
     };
     const step = half ? 0.5 : 1;
+    const sizeKey = `${layer}:${bin.width}x${bin.depth}x${bin.height}`;
     const fit =
-      bin.height > layout.drawer.height
+      bin.height > layout.drawer.height || failed.has(sizeKey)
         ? null
         : findFirstFit(layout, layerIdOf, bin.width, bin.depth, heightUnits(bin.height), {
             step,
-            ...(layer > 1 ? { accept: supported } : {}),
+            ...(layer > 1 ? { prefilter: coveredBelow(layout, layer), accept: supported } : {}),
           });
     if (fit === null) {
       const reason: StashReason =
-        bin.height > layout.drawer.height
+        failed.get(sizeKey) ??
+        (bin.height > layout.drawer.height
           ? 'too-tall'
           : layer > 1 &&
               findFirstFit(layout, layerIdOf, bin.width, bin.depth, heightUnits(bin.height), {
                 step,
               }) !== null
             ? 'no-support'
-            : 'no-room';
+            : 'no-room');
+      failed.set(sizeKey, reason);
       stashed.push({ label: bin.label, layer, reason });
       stash.push(
         binAt(
@@ -216,6 +260,7 @@ export function buildPlanLayout(input: PlanInput): Result<PlanResult, Validation
       continue;
     }
     layout = { ...layout, bins: [...layout.bins, binAt(fit, layerIdOf)] };
+    failed.clear();
     placed.push({
       label: bin.label,
       layer,

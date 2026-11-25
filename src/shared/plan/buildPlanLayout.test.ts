@@ -124,6 +124,20 @@ describe('buildPlanLayout', () => {
     expect(imported.layout?.bins).toHaveLength(8);
   });
 
+  it('stays quick when many upper bins cannot be carried', () => {
+    const started = performance.now();
+    const result = plan({
+      grid: { width: 50, depth: 50, height: 12 },
+      bins: [
+        { label: 'Base', width: 25, depth: 50, height: 3 },
+        { label: 'Lid', width: 25.5, depth: 25.5, height: 2, layer: 2, count: 59 },
+      ],
+    });
+    expect(result.stashed).toHaveLength(59);
+    expect(result.stashed[0].reason).toBe('no-support');
+    expect(performance.now() - started).toBeLessThan(5000);
+  });
+
   it('plans 60 bins on a large drawer quickly', () => {
     const started = performance.now();
     const result = plan({

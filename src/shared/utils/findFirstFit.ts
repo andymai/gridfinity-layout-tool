@@ -13,6 +13,8 @@ export interface FirstFitOptions {
   /** Position step in grid units: 1, or 0.5 on a half grid. */
   readonly step?: number;
   readonly linkedDesignId?: DesignId;
+  /** A cheap check that runs before `canPlaceBin`, to skip hopeless positions. */
+  readonly prefilter?: (rect: FitRect) => boolean;
   /** A further check on a position that `canPlaceBin` accepts. */
   readonly accept?: (rect: FitRect) => boolean;
 }
@@ -28,7 +30,7 @@ export function findFirstFit(
   width: number,
   depth: number,
   height: HeightUnits,
-  { step = 1, linkedDesignId, accept }: FirstFitOptions = {}
+  { step = 1, linkedDesignId, prefilter, accept }: FirstFitOptions = {}
 ): FitRect | null {
   const orientations =
     width === depth
@@ -47,6 +49,7 @@ export function findFirstFit(
           depth: gridUnits(orientation.depth),
         };
         if (
+          (prefilter === undefined || prefilter(rect)) &&
           canPlaceBin({ ...rect, height, linkedDesignId }, layerId, layout).valid &&
           (accept === undefined || accept(rect))
         ) {
