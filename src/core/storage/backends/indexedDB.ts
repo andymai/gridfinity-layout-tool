@@ -15,15 +15,14 @@
 import { openDB, type IDBPDatabase } from 'idb';
 import { compressLayout, decompressLayout } from '@/shared/utils';
 import type { Layout, LayoutLibrary, CompressedSnapshot, SharedWithMeEntry } from '@/core/types';
+import { LAYOUTS_STORE, LAYOUT_DB_NAME, LIBRARY_INDEX_KEY, LIBRARY_STORE } from '../storageKeys';
 
-const DB_NAME = 'gridfinity-db';
+const DB_NAME = LAYOUT_DB_NAME;
 const DB_VERSION = 3;
 
 // Store names
-const LAYOUTS_STORE = 'layouts';
 const SNAPSHOTS_STORE = 'snapshots';
-const LIBRARY_STORE = 'library';
-const LIBRARY_KEY = 'index';
+const LIBRARY_KEY = LIBRARY_INDEX_KEY;
 const ML_DATA_STORE = 'ml-data';
 const SHARED_WITH_ME_STORE = 'shared-with-me';
 const SHARED_WITH_ME_KEY = 'entries';

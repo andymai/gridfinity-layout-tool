@@ -16,6 +16,13 @@ export const LIBRARY_CHANNEL_NAME = 'gridfinity-library-sync';
 
 export const SETTINGS_STORAGE_KEY = 'gridfinity-settings-v1';
 
+// The layouts database. Defined here so a read-only reader outside the app
+// can find it without importing the backend, which opens it with an upgrade.
+export const LAYOUT_DB_NAME = 'gridfinity-db';
+export const LAYOUTS_STORE = 'layouts';
+export const LIBRARY_STORE = 'library';
+export const LIBRARY_INDEX_KEY = 'index';
+
 // Baseplate export byte cache (own IndexedDB database). Defined here so the
 // full-data-clear path can delete it without importing the baseplate feature
 // (core must not depend on features).
