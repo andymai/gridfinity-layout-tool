@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { deflateSync } from 'fflate';
 import { isOk } from '@/core/result';
 import { PLAN_LINK_MAX_CHARS, decodePlanLink, encodePlanLink, planLinkUrl } from './planLink';
 import { planInput } from './planInput';
@@ -29,6 +30,23 @@ describe('plan links', () => {
     const tampered = encodePlanLink({ ...input, bins: [] });
     const decoded = await decodePlanLink(tampered);
     expect(!isOk(decoded) && decoded.error.kind).toBe('invalid');
+  });
+
+  it('refuses a link that is too long or inflates past the cap', async () => {
+    const tooLong = await decodePlanLink(`v1.${'A'.repeat(PLAN_LINK_MAX_CHARS)}`);
+    expect(!isOk(tooLong) && tooLong.error).toEqual({ kind: 'malformed' });
+    // A link inside the budget that inflates to 4 MB of valid JSON. Past the cap
+    // it is refused as damaged; read in full it would fail only the schema.
+    const bomb = deflateSync(
+      new TextEncoder().encode(`{"title":"${'a'.repeat(4 * 1024 * 1024)}"}`)
+    );
+    const encoded = btoa(String.fromCharCode(...bomb))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    expect(encoded.length).toBeLessThan(PLAN_LINK_MAX_CHARS);
+    const decoded = await decodePlanLink(`v1.${encoded}`);
+    expect(!isOk(decoded) && decoded.error).toEqual({ kind: 'malformed' });
   });
 
   it('keeps a 60-bin plan with labels inside the link budget', () => {
