@@ -27,23 +27,42 @@ const shortName = z.string().trim().min(1).max(CONSTRAINTS.LABEL_MAX_LENGTH);
 
 const planBin = z
   .object({
-    label: shortName,
+    label: shortName.describe('A short label for the bin.'),
     items: z
       .array(z.string().trim().min(1).max(CONSTRAINTS.ITEM_NAME_MAX_LENGTH))
       .max(PLAN_LIMITS.ITEMS_MAX)
-      .optional(),
-    width: gridSize,
-    depth: gridSize,
-    height: heightUnits,
-    category: shortName.optional(),
-    layer: z.number().int().min(1).max(PLAN_LIMITS.LAYERS_MAX).optional(),
-    count: z.number().int().min(1).max(PLAN_LIMITS.BINS_MAX).optional(),
+      .optional()
+      .describe('What the bin holds.'),
+    width: gridSize.describe('Width in grid units of 42 mm, whole or half.'),
+    depth: gridSize.describe('Depth in grid units of 42 mm, whole or half.'),
+    height: heightUnits.describe('Height in height units of 7 mm.'),
+    category: shortName.optional().describe('One of the category names.'),
+    layer: z
+      .number()
+      .int()
+      .min(1)
+      .max(PLAN_LIMITS.LAYERS_MAX)
+      .optional()
+      .describe('1, the default, for the baseplate; 2 or more to rest on bins below.'),
+    count: z
+      .number()
+      .int()
+      .min(1)
+      .max(PLAN_LIMITS.BINS_MAX)
+      .optional()
+      .describe('How many of this bin. Default 1.'),
   })
   .strict();
 
 export const planInput = z
   .object({
-    title: z.string().trim().min(1).max(CONSTRAINTS.NAME_MAX_LENGTH).optional(),
+    title: z
+      .string()
+      .trim()
+      .min(1)
+      .max(CONSTRAINTS.NAME_MAX_LENGTH)
+      .optional()
+      .describe('The layout name.'),
     drawer: z
       .object({
         width: z.number().positive(),
@@ -52,12 +71,19 @@ export const planInput = z
         unit: z.enum(['mm', 'cm', 'in']),
       })
       .strict()
-      .optional(),
+      .optional()
+      .describe('The inside size of the drawer, as measured. Give this or grid.'),
     grid: z
       .object({ width: gridSize, depth: gridSize, height: heightUnits.optional() })
       .strict()
-      .optional(),
-    categories: z.array(shortName).min(1).max(PLAN_LIMITS.CATEGORIES_MAX).optional(),
+      .optional()
+      .describe('The grid size in units, when there is no measurement. Give this or drawer.'),
+    categories: z
+      .array(shortName)
+      .min(1)
+      .max(PLAN_LIMITS.CATEGORIES_MAX)
+      .optional()
+      .describe('Category names. Bins of one category share a color.'),
     bins: z.array(planBin).min(1).max(PLAN_LIMITS.BINS_MAX),
   })
   .strict()

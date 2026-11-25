@@ -2,7 +2,7 @@
 title: A screw and small-parts drawer
 description: 'Turn a shallow drawer into labeled screw bins, with one design for many sizes and optional magnets.'
 questions:
-  - 'My drawer is 13 × 10 in. How many 1 × 1 screw bins fit?'
+  - 'Can you plan a 13 × 10 in drawer of screw bins for M2 to M8?'
   - 'My screw sizes rarely change. Label tabs or swappable plates?'
   - 'Can the app suggest a bin size if I label it M8 bolts?'
 sources:

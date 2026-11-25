@@ -2,24 +2,32 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
 import { pageAt } from './corpus.js';
 import type { AskCorpus, AskLabels, AskPage } from './corpus.js';
-import { drawerFitInput, runDrawerFit } from '../agent/index.js';
+import { drawerFitInput, planLayoutInput, runDrawerFit, runPlanLayout } from '../agent/index.js';
+import type { PlanView } from '../agent/index.js';
 import { localeName } from './prompt.js';
 import { createSearch, pageSections } from './search.js';
 
-export type ToolName = 'read_page' | 'search_docs' | 'drawer_fit';
-export const TOOL_NAMES: readonly ToolName[] = ['read_page', 'search_docs', 'drawer_fit'];
-export type StepKind = 'read' | 'search' | 'check';
+export type ToolName = 'read_page' | 'search_docs' | 'drawer_fit' | 'plan_layout';
+export const TOOL_NAMES: readonly ToolName[] = [
+  'read_page',
+  'search_docs',
+  'drawer_fit',
+  'plan_layout',
+];
+export type StepKind = 'read' | 'search' | 'check' | 'plan';
 
 export const STEP_KINDS: Readonly<Record<ToolName, StepKind>> = {
   read_page: 'read',
   search_docs: 'search',
   drawer_fit: 'check',
+  plan_layout: 'plan',
 };
 
 export const PLACEHOLDER_LABELS: Readonly<Record<StepKind, string>> = {
   read: 'Opening a page',
   search: 'Searching the docs',
   check: 'Checking a drawer',
+  plan: 'Planning a drawer',
 };
 
 export interface ToolRun {
@@ -29,6 +37,8 @@ export interface ToolRun {
   readonly label: string;
   /** The page that a read opened. */
   readonly link?: string;
+  /** What the panel draws for a plan_layout call. */
+  readonly plan?: PlanView;
 }
 
 export type ToolRunner = (name: string, input: unknown, locale: string) => ToolRun;
@@ -43,6 +53,9 @@ export function toolResult(id: string, run: ToolRun): Anthropic.Beta.BetaToolRes
 }
 
 const SEARCH_LIMIT = 6;
+
+const { $schema: _dialect, ...planLayoutSchema } = z.toJSONSchema(planLayoutInput, { io: 'input' });
+const PLAN_LAYOUT_SCHEMA = planLayoutSchema as Anthropic.Beta.BetaTool.InputSchema;
 
 const readPageInput = z.object({ link: z.string().max(200) }).strict();
 const searchInput = z.object({ query: z.string().min(1).max(200) }).strict();
@@ -93,6 +106,13 @@ export function toolDefinitions(corpus: AskCorpus): Anthropic.Beta.BetaToolUnion
         required: ['widthMm', 'depthMm'],
         additionalProperties: false,
       },
+      eager_input_streaming: true,
+    },
+    {
+      name: 'plan_layout',
+      description:
+        "Plan a whole drawer with the Layout Tool's own placement code. Give the measured drawer (or a grid size when there is no measurement) and a bin for each kind of thing to store. The app fits the grid, places the bins largest first, puts a bin on layer 2 only where bins below carry it, and sends bins that do not fit to the stash. Returns what it placed and stashed. The panel draws the plan with a button that opens it in the app, so never write a link to it.",
+      input_schema: PLAN_LAYOUT_SCHEMA,
       eager_input_streaming: true,
     },
   ];
@@ -182,6 +202,27 @@ export function createToolRunner(
       const unit = d.unit === 'in' ? ' in' : ' mm';
       const size = [d.widthMm, d.depthMm, d.heightMm].filter((v) => v !== undefined).join(' × ');
       return { ...runDrawerFit(d, { origin }), label: `Checking a ${size}${unit} drawer` };
+    }
+    if (name === 'plan_layout') {
+      const parsed = planLayoutInput.safeParse(input);
+      if (!parsed.success) {
+        return {
+          isError: true,
+          label: PLACEHOLDER_LABELS.plan,
+          content: parsed.error.issues
+            .map((issue) => `${issue.path.join('.') || 'plan'}: ${issue.message}`)
+            .join('\n'),
+        };
+      }
+      const run = runPlanLayout(parsed.data, { origin });
+      const label = parsed.data.title ? `Planning “${parsed.data.title}”` : PLACEHOLDER_LABELS.plan;
+      if (run.isError || run.plan === null) return { isError: true, label, content: run.content };
+      return {
+        isError: false,
+        label,
+        content: `${run.content}\nPlan handle: ${run.plan.handle}.`,
+        plan: run.plan,
+      };
     }
     return { isError: true, label: 'Using a tool', content: `There is no tool named ${name}.` };
   };

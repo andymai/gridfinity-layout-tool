@@ -1,3 +1,4 @@
+import type { PlanView } from '@/agent/contract';
 /** A finished turn as the server signed it, sent back so that a follow-up keeps its context. */
 export interface StoredTurn {
   readonly question: string;
@@ -7,6 +8,8 @@ export interface StoredTurn {
   readonly messages: readonly unknown[];
   /** Kept in this tab only, so the thumbs work after a reload; never sent back. */
   readonly traceId?: string;
+  /** The plans the answer draws, by handle. Kept in this tab only; never sent back. */
+  readonly plans?: Readonly<Record<string, PlanView>>;
 }
 
 export interface Conversation {
@@ -30,7 +33,8 @@ function isTurn(value: unknown): value is StoredTurn {
     typeof value.locale === 'string' &&
     typeof value.signature === 'string' &&
     Array.isArray(value.messages) &&
-    (value.traceId === undefined || typeof value.traceId === 'string')
+    (value.traceId === undefined || typeof value.traceId === 'string') &&
+    (value.plans === undefined || isRecord(value.plans))
   );
 }
 

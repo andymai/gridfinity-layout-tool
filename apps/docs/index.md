@@ -2,7 +2,7 @@
 title: What the Layout Tool does
 description: 'Plan Gridfinity drawers, design custom bins and baseplates, and print them with the free Gridfinity Layout Tool.'
 questions:
-  - 'My drawer is 56 × 40 cm and 10 cm deep. What grid and heights fit?'
+  - 'Can you plan my 56 × 40 cm drawer for screws, pliers and tape?'
   - 'My bed is 180 mm but my drawer is 60 cm wide. Can I still print it?'
   - 'Can the app make a bin for my set of metric combination wrenches?'
 sources:

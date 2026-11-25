@@ -110,6 +110,44 @@ describe('drawer_fit', () => {
   });
 });
 
+describe('plan_layout', () => {
+  const plan = {
+    title: 'Screw drawer',
+    drawer: { width: 40, depth: 30, unit: 'cm' },
+    bins: [
+      { label: 'M3', width: 1, depth: 1, height: 3, count: 4 },
+      { label: 'Hex keys', width: 3, depth: 1, height: 3 },
+    ],
+  };
+
+  it('plans the drawer, names the handle, and keeps the link out of the text', () => {
+    const result = run('plan_layout', plan, 'en');
+    expect(result.isError).toBe(false);
+    expect(result.label).toBe('Planning “Screw drawer”');
+    expect(result.content).toContain(
+      'Placed 5 bins: Hex keys (3 x 1 units, 3u); 4 x M3 (1 x 1 units, 3u).'
+    );
+    expect(result.content).toMatch(/\nPlan handle: [0-9a-f]{8}\.$/);
+    expect(result.content).not.toContain('#plan=');
+    expect(result.plan?.link).toMatch(/^https:\/\/gridfinitylayouttool\.com\/#plan=v1\./);
+    expect(result.plan?.bins).toHaveLength(5);
+  });
+
+  it('gives the same bytes on a replay', () => {
+    expect(run('plan_layout', plan, 'en')).toEqual(run('plan_layout', plan, 'en'));
+  });
+
+  it('names the field that breaks a limit', () => {
+    const result = run(
+      'plan_layout',
+      { ...plan, bins: [{ ...plan.bins[0], label: 'x'.repeat(30) }] },
+      'en'
+    );
+    expect(result.isError).toBe(true);
+    expect(result.content).toMatch(/^bins\.0\.label: /);
+  });
+});
+
 it('refuses an unknown tool', () => {
   expect(run('delete_everything', {}, 'en').isError).toBe(true);
 });

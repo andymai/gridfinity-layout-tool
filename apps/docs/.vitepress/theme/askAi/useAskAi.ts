@@ -13,9 +13,10 @@ import {
   withoutLastTurn,
 } from './history';
 import type { Conversation } from './history';
+import type { PlanView } from '@/agent/contract';
 import { readEvents } from './stream';
 
-export type StepKind = 'read' | 'search' | 'check';
+export type StepKind = 'read' | 'search' | 'check' | 'plan';
 
 export interface Step {
   readonly id: string;
@@ -30,6 +31,8 @@ export interface Exchange {
   text: string;
   thinking: string;
   steps: Step[];
+  /** The plans that the answer draws, by handle. */
+  plans: Record<string, PlanView>;
   status: 'waiting' | 'streaming' | 'done' | 'stopped' | 'error';
   notice: string | null;
   traceId: string | null;
@@ -115,6 +118,18 @@ function rememberOff(off: boolean): void {
   }
 }
 
+function isPlanView(value: unknown): value is PlanView {
+  if (typeof value !== 'object' || value === null) return false;
+  const plan = value as Record<string, unknown>;
+  return (
+    typeof plan.handle === 'string' &&
+    typeof plan.link === 'string' &&
+    Array.isArray(plan.bins) &&
+    typeof plan.grid === 'object' &&
+    plan.grid !== null
+  );
+}
+
 function settleSteps(current: Exchange): void {
   current.steps = current.steps.map((step) =>
     step.state === 'running' ? { ...step, state: 'error' } : step
@@ -128,6 +143,7 @@ function exchange(question: string): Exchange {
     text: '',
     thinking: '',
     steps: [],
+    plans: {},
     status: 'waiting',
     notice: null,
     traceId: null,
@@ -176,6 +192,7 @@ async function loadAvailability(search: string): Promise<void> {
     askAi.exchanges = restored.turns.map((turn) => ({
       ...exchange(turn.question),
       text: answerText(turn),
+      plans: { ...turn.plans },
       traceId: turn.traceId ?? null,
       status: 'done' as const,
       stored: true,
@@ -255,7 +272,7 @@ export async function ask(question: string, page: string): Promise<void> {
         question: text,
         page,
         locale,
-        turns: before.turns.map(({ traceId: _local, ...turn }) => turn),
+        turns: before.turns.map(({ traceId: _local, plans: _drawn, ...turn }) => turn),
         analytics,
       },
       abort.signal
@@ -278,6 +295,8 @@ export async function ask(question: string, page: string): Promise<void> {
         const at = current.steps.findIndex((s) => s.id === step.id);
         if (at < 0) current.steps.push(step);
         else current.steps.splice(at, 1, step);
+      } else if (event === 'plan' && isPlanView(payload.plan)) {
+        current.plans[payload.plan.handle] = payload.plan;
       } else if (event === 'thinking' && typeof payload.text === 'string') {
         if (roundEnded && current.thinking) current.thinking += '\n\n';
         roundEnded = false;
@@ -309,6 +328,7 @@ export async function ask(question: string, page: string): Promise<void> {
               signature: turn.signature,
               messages,
               ...(current.traceId ? { traceId: current.traceId } : {}),
+              ...(Object.keys(current.plans).length > 0 ? { plans: { ...current.plans } } : {}),
             })
           );
           current.stored = true;
