@@ -2,9 +2,9 @@
 title: The print list and ZIP export
 description: 'Count the bins of a layout, find ready-made models, and export all files in one ZIP.'
 questions:
-  - 'How do I see how many bins I need to print?'
-  - 'How do I export a whole layout at once?'
-  - 'What is in the layout ZIP?'
+  - 'With 30 bins, is one 3MF project or STL files better for PrusaSlicer?'
+  - 'Why does my ZIP hold 5 bin files when the layout has 18 bins?'
+  - 'My 8 × 2 bin is too long for my bed. Can I find a ready-made model?'
 sources:
   - src/shell/RightPanel/RightPanel.tsx
   - src/features/print-export/

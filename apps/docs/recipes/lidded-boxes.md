@@ -2,9 +2,9 @@
 title: Lidded boxes that stack
 description: 'Parts boxes with magnetic lids that keep parts in their compartments and stack on a shelf.'
 questions:
-  - 'How do I make a parts box with a lid?'
-  - 'How do I add magnets to a lid?'
-  - 'Can lidded boxes stack on a shelf?'
+  - 'Sliding lid or magnetic lid for a box with full-height dividers?'
+  - 'The lid on my 5 × 3 parts box sags in the middle. What do I add?'
+  - 'Can my parts boxes nest in a tower with no lids at all?'
 sources:
   - src/features/bin-designer/types/lid.ts
   - src/features/bin-designer/components/panel/LidSection/

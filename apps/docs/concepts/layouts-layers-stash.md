@@ -2,9 +2,9 @@
 title: Layouts, layers and the stash
 description: 'See how a layout holds one drawer, how layers stack bins, and what the stash keeps.'
 questions:
-  - 'What is a layer in a layout?'
-  - 'What is the stash for?'
-  - 'How many drawers does one layout hold?'
+  - 'My drawer is 60 × 50 cm and 16 cm deep. Can three layers fit?'
+  - 'My second drawer is the same size. Can I copy this layout for it?'
+  - 'My bin on layer 2 shows a warning by its height tag. How do I fix it?'
 sources:
   - src/core/types/layout.ts
   - src/core/constants.ts

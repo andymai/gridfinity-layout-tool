@@ -2,9 +2,9 @@
 title: Preview and export
 description: 'Use the 3D preview toolbar to turn, see through and measure a model, and see why the preview shows a quick draft and an export takes longer.'
 questions:
-  - 'Why does the 3D preview look different from the export?'
-  - 'Why does an export take longer than the preview?'
-  - 'How do I measure a model in the 3D preview?'
+  - 'My bin takes 20 seconds to update. Can I see which step is slow?'
+  - 'Can I check that the plastic between two pockets is thick enough?'
+  - 'Part of my layout ZIP export failed. Do I lose the bins that worked?'
 sources:
   - src/features/bin-designer/components/preview/PreviewControls/PreviewControls.tsx
   - src/features/baseplate/components/BaseplatePreview/BaseplatePreviewControls.tsx

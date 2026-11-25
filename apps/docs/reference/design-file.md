@@ -2,9 +2,9 @@
 title: Bin design file format
 description: 'Export a bin design as a JSON file, import it again, and read or write the file by hand.'
 questions:
-  - 'How do I export a bin design as a file?'
-  - 'How do I import a design file?'
-  - 'Can I write a bin design file by hand?'
+  - 'Can I send a friend my bin with an imported STL shape as one file?'
+  - 'I wrote height 42 for a 42 mm bin, and it imported huge. Why?'
+  - 'To back up 30 saved designs, do I use Export all or design files?'
 sources:
   - docs/schemas/bin-design.md
   - public/schema/bin-design.schema.json

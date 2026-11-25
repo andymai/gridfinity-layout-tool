@@ -2,9 +2,9 @@
 title: Make your first baseplate
 description: 'Size a baseplate from your layout, add magnet holes, split it for your print bed, and export it.'
 questions:
-  - 'How do I make a baseplate for my layout?'
-  - 'How do I add magnet holes to a baseplate?'
-  - 'How do I split a baseplate for my print bed?'
+  - 'My drawer is 455 × 375 mm. How much gap will the plate leave?'
+  - 'I have 3 drawers the same size. Can I print all their plates at once?'
+  - 'The plate is 2 mm wider than my drawer. What do I change?'
 sources:
   - src/features/baseplate/hooks/useBaseplateFirstRun.ts
   - src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx

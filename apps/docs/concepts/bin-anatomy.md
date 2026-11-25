@@ -2,9 +2,9 @@
 title: Anatomy of a bin
 description: 'Learn each part of a Gridfinity bin, from the feet to the lid, and where to set it.'
 questions:
-  - 'What are the parts of a Gridfinity bin?'
-  - 'What does the stacking lip do?'
-  - 'Where do I set the floor and the walls of a bin?'
+  - 'Can I drop to 0.8 mm walls for bolts, or is 1.6 mm safer?'
+  - 'My garden tools come in wet. Can water drain out of my bins?'
+  - 'The top of my stacking lip prints rough and curls. What do I change?'
 sources:
   - src/shared/printSettings/gridfinityGeometry.ts
   - src/features/bin-designer/components/ParameterPanel/BinScrollPanel/BinScrollPanel.tsx

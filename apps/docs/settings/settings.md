@@ -2,9 +2,9 @@
 title: Settings and accessibility
 description: 'Find each tab of the Settings dialog: language, theme, accessibility, layout defaults, print values, data and exports.'
 questions:
-  - 'How do I change the language or the theme?'
-  - 'Where are the accessibility settings?'
-  - 'How do I set defaults for new layouts?'
+  - 'My plate keys print too tight on a 0.6 mm nozzle. What do I set?'
+  - 'Can every export go to my print-queue folder, not to Downloads?'
+  - 'My PLA costs $24 a kilo at 20% infill. Can estimates use that?'
 sources:
   - src/shell/Modals/SettingsModal/
   - src/core/store/settings.types.ts

@@ -2,9 +2,9 @@
 title: Arrange cutouts
 description: 'Repeat, group, align, pack and measure cutouts in the cutout editor, and give each copy of a repeat its own label.'
 questions:
-  - 'How do I repeat a cutout across a bin?'
-  - 'How do I give each copy of a cutout its own label?'
-  - 'Can the app arrange my cutouts for me?'
+  - 'Plates on my repeated bit holes all show one text. How do I fix it?'
+  - 'Can I line up 8 sockets of different sizes evenly in a 5 × 1 bin?'
+  - 'Can I cut a ring pocket for a tape roll, with a post in the middle?'
 sources:
   - src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.tsx
   - src/features/bin-designer/components/CutoutWorkspace/InspectorContent.tsx

@@ -2,9 +2,9 @@
 title: Stacking
 description: 'Set the stacking lip, stack smaller bins on bigger ones, nest boxes, and read the assembled height.'
 questions:
-  - 'How do I turn off the stacking lip?'
-  - 'How do I stack small bins on a bigger bin?'
-  - 'How tall is a stack of bins?'
+  - 'My drawer is 15 × 20 in and 4.5 in deep. Can I fit two layers?'
+  - 'My 3U bins sit low beside 6U bins. Spacer or taller bins?'
+  - 'My pens stick up 20 mm above the rim. Can a bin still stack on top?'
 sources:
   - src/features/bin-designer/components/panel/BaseSection/BaseSection.tsx
   - src/features/bin-designer/components/panel/AssembledHeightBreakdown/

@@ -2,9 +2,9 @@
 title: Work together live
 description: 'Edit one layout with other people at the same time, and see their cursors and selections.'
 questions:
-  - 'Can I edit a layout with other people at once?'
-  - 'How do I start a live session?'
-  - 'What does a live room share?'
+  - 'After our live session, how can my friend keep a copy of the layout?'
+  - 'I edited while my link was view-only. Why did the room undo my edits?'
+  - 'Can my self-hosted copy run live sessions for my makerspace?'
 sources:
   - src/shell/Collab/
   - src/shared/hooks/useCollabSync.ts

@@ -2,9 +2,9 @@
 title: Find bins that fit
 description: 'Find community bins that fit an empty area of your layout, and get a bin size from its label.'
 questions:
-  - 'How do I find a bin that fits an empty space?'
-  - 'Can I use community bins in my layout?'
-  - 'How do I get a bin size from a label?'
+  - 'My layout uses a 40 mm grid. Why does the gap search show so few bins?'
+  - 'Can the gap search find a tray to sit on my 3u bins on layer 2?'
+  - 'Should I fill my 3 × 2 gap with a community bin or Fill layer gaps?'
 sources:
   - src/features/grid-editor/components/Grid/GridToolbar/GridToolbar.tsx
   - src/shell/Mobile/MobileLayersPanel/ToolsTab/ToolsTab.tsx

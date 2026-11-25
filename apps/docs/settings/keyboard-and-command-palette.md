@@ -2,9 +2,9 @@
 title: Keyboard and command palette
 description: 'Run any layout command from the command palette, and move through menus, tabs and dialogs with the keyboard.'
 questions:
-  - 'How do I open the command palette?'
-  - 'Can I use the app with only a keyboard?'
-  - 'How do I search for a command?'
+  - 'I want to sort 20 bins into categories by keyboard. Which keys?'
+  - 'Can I reach the wall pattern setting of the bin designer by keyboard?'
+  - 'My shortcuts stop working after I type a bin label. Why?'
 sources:
   - src/features/command-palette/
   - src/shell/Modals/HelpModal/HelpModal.tsx

@@ -2,9 +2,9 @@
 title: Import SVG and STL shapes
 description: 'Make cutouts from an SVG or STL file, and save cutouts as an SVG at real size.'
 questions:
-  - 'How do I make a cutout from an SVG file?'
-  - 'Can I cut an STL shape into a bin?'
-  - 'How do I export a cutout as an SVG?'
+  - 'I have an SVG and an STL of my multimeter. Which do I import?'
+  - 'STEP is gray in the export after I added an STL imprint. Why?'
+  - 'My drill STL comes from a 3D scan. How do I make sure it fits?'
 sources:
   - src/features/bin-designer/components/panel/CutoutsSection/svgImport/
   - src/features/bin-designer/components/panel/CutoutsSection/stlImport/

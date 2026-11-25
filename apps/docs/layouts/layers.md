@@ -2,9 +2,9 @@
 title: Work in layers
 description: 'Add and order layers, stack bins on bins, use spacers, and view the layers in 3D.'
 questions:
-  - 'How do I stack bins on top of other bins?'
-  - 'How do I add a layer?'
-  - 'What are spacers for?'
+  - 'My drawer is 17 × 13.5 in, 6 in deep. How tall can 2 stacked bins be?'
+  - 'My 1 × 1 bins slide around on top of a 3 × 3 bin. How do I lock them?'
+  - 'Should my top-layer trays get pull tabs or handles?'
 sources:
   - src/features/layers/
   - src/shared/utils/restingStack.ts

@@ -2,9 +2,9 @@
 title: Special bins
 description: 'Make a knife block, a slanted bin, a bin with a sliding tray, or another special bin type.'
 questions:
-  - 'How do I make a knife block?'
-  - 'How do I make a slanted bin?'
-  - 'What special bin types are there?'
+  - 'Can I fill the back of my desk drawer with rows of slanted pen bins?'
+  - 'Sliding tray or a lid tray to keep small parts above my bin?'
+  - "My imported STL bin is too big for my bed. Why won't the ZIP split it?"
 sources:
   - src/features/bin-designer/types/knifeBlock.ts
   - src/features/bin-designer/components/panel/KnifeRestSection/

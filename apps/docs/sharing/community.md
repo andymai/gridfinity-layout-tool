@@ -2,9 +2,9 @@
 title: The community gallery
 description: 'Browse, remix and publish bin designs, post your prints, and report a problem design.'
 questions:
-  - 'How do I publish a bin design?'
-  - 'How do I find designs in the community gallery?'
-  - 'How do I post a photo of my print?'
+  - 'Should I trust the print time on a community bin, or slice it first?'
+  - 'I remixed a community bin and gave it a lid. Can I publish my version?'
+  - 'My published bin vanished from the gallery. What happened?'
 sources:
   - src/features/community/
   - src/shared/utils/communityLowEffort.ts

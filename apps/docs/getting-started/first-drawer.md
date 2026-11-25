@@ -2,9 +2,9 @@
 title: Plan your first drawer
 description: 'Set the drawer size, draw bins on the grid, and read the print list in the layout editor.'
 questions:
-  - 'How do I start to plan a drawer?'
-  - 'How do I measure my drawer for a layout?'
-  - 'How do I get the print files for my drawer?'
+  - 'My drawer is 610 × 457 mm. Can you open a new layout at that size?'
+  - 'Can every new layout start with my own categories, like Plumbing?'
+  - 'I made the grid smaller, and some of my bins vanished. Where are they?'
 sources:
   - src/features/onboarding/hooks/useOnboarding.ts
   - src/shell/Sidebar/Sidebar.tsx

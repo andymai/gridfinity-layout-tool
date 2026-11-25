@@ -2,9 +2,9 @@
 title: Saved designs and linked bins
 description: 'Learn how a saved design connects to bins in a layout, and how versions and variants work.'
 questions:
-  - 'How does a saved design connect to bins in a layout?'
-  - 'What is the difference between a version and a variant?'
-  - 'Can each linked bin have its own label?'
+  - 'Can every new bin start with my magnets, lip and 1.6 mm walls?'
+  - 'Send my bin to a friend as a file, or publish it to the community?'
+  - 'I downloaded a bin STL. Can I link it to bins in my layout?'
 sources:
   - src/features/design-linking/
   - src/features/bin-designer/hooks/usePlaceBinInLayout.ts

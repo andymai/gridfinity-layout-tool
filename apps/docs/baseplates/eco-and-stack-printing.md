@@ -2,9 +2,9 @@
 title: Eco plates and stack printing
 description: 'Print baseplates with less filament, stack many plates in one print job, and control plate height.'
 questions:
-  - 'How do I save filament on baseplates?'
-  - 'How do I print many baseplates in one job?'
-  - 'How do I separate stack-printed plates?'
+  - 'I have an AMS. Can PETG gaps make my PLA plate tower break clean?'
+  - 'Can a stacked tower of plates keep magnet holes, or must I pick one?'
+  - 'My eco plate lost its thin bars when I turned on Vertical stack. Why?'
 sources:
   - src/features/baseplate/components/BaseplatePanel/StackPrintSection.tsx
   - src/features/baseplate/components/BaseplatePanel/BaseSection.tsx

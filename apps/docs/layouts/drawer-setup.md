@@ -2,9 +2,9 @@
 title: Set up the drawer
 description: 'Set the drawer size, fit a measured drawer, shape the drawer and check the height of your stacks.'
 questions:
-  - 'How do I set my drawer size?'
-  - 'How do I plan a drawer that is not a rectangle?'
-  - 'How do I check that my bins fit the drawer height?'
+  - 'My drawer is 52 × 44 cm inside and 8 cm deep. What grid fits?'
+  - 'My drawer is 3 mm narrower at the back. Which width do I type in?'
+  - "I have a DXF of my drawer's curved front. Can the baseplate follow it?"
 sources:
   - src/shell/Sidebar/Sidebar.tsx
   - src/shared/hooks/useDrawerSettings.ts

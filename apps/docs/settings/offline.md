@@ -2,9 +2,9 @@
 title: Install and work offline
 description: 'Install the Layout Tool as an app, use it without a connection, and get the newest version.'
 questions:
-  - 'Can I install the Layout Tool as an app?'
-  - 'Does the app work without internet?'
-  - 'How do I get the newest version?'
+  - 'I keep bins in the stash. Why does the new version never load?'
+  - "My self-hosted copy on a plain http address won't install. Why?"
+  - 'Signed in, I plan offline at the cabin all week. When do edits sync?'
 sources:
   - vite.config.ts
   - src/shared/hooks/usePWAUpdate.ts

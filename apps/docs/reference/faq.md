@@ -2,9 +2,9 @@
 title: FAQ
 description: 'Short answers to common questions about the Layout Tool: cost, your data, drawer sizes, print beds, file formats and shortcuts.'
 questions:
-  - 'How do I back up my layouts?'
-  - 'Can I enter my drawer size in inches?'
-  - 'Do my bins fit baseplates from other models?'
+  - 'My drawer is 22.5 × 17 in and 4 in deep. What grid and bin height?'
+  - 'No Wi-Fi in my garage. What do I open first so the app works there?'
+  - 'I used Clear all data, but my layouts came back. Why?'
 sources:
   - src/i18n/locales/en.ts
   - content/guide.md

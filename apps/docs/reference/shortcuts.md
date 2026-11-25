@@ -2,9 +2,9 @@
 title: Keyboard shortcuts
 description: 'Look up every keyboard shortcut in the layout editor, bin designer and baseplate generator, with the macOS keys.'
 questions:
-  - 'What are the keyboard shortcuts?'
-  - 'What are the shortcuts in the bin designer?'
-  - 'Which keys do I use on a Mac?'
+  - 'I drew 10 drill bit holes in a row. Can one key make them a repeat?'
+  - 'Can I give my whole back row of bins a new category in two clicks?'
+  - 'A dropped bin jumps to a free spot nearby. How do I stop that?'
 sources:
   - src/core/constants.ts
   - src/shell/keyboard/handlers.ts
