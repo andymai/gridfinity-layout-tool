@@ -185,6 +185,8 @@
     "@eslint/js": "^10.0.1",
     "@playwright/experimental-ct-react": "^1.61.0",
     "@playwright/test": "^1.61.0",
+    "@posthog/cli": "~0.19.4",
+    "@posthog/rollup-plugin": "^1.6.4",
     "@size-limit/file": "^14.3.0",
     "@tailwindcss/vite": "^4.3.5",
     "@testing-library/dom": "^10.4.2",

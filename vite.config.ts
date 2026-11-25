@@ -9,6 +9,7 @@ import { versionPlugin } from './scripts/vite-plugin-version';
 import { contentRoutesPlugin } from './scripts/vite-plugin-content-routes';
 import { mediapipeAssetsPlugin } from './scripts/vite-plugin-mediapipe-assets';
 import { minifyJsonAssets } from './scripts/vite-plugin-minify-json-assets';
+import { posthogSourcemaps } from './scripts/vite-plugin-posthog-sourcemaps';
 import {
   CONTENT_LOCALES,
   CONTENT_SLUGS,
@@ -124,7 +125,7 @@ export default defineConfig({
   },
   worker: {
     format: 'es',
-    plugins: () => [wasm()] as PluginOption[],
+    plugins: () => [wasm(), posthogSourcemaps()] as PluginOption[],
   },
   plugins: [
     wasm(),
@@ -135,6 +136,7 @@ export default defineConfig({
     mediapipeAssetsPlugin(),
     minifyJsonAssets(),
     collectEagerChunks(),
+    posthogSourcemaps(),
     VitePWA({
       // 'prompt' so the smoke gate (src/shared/pwa/smokeGate.ts) controls activation.
       // With 'autoUpdate' the new SW would auto-skip-waiting on install, defeating the gate.

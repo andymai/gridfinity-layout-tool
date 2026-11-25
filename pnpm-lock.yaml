@@ -207,6 +207,12 @@ importers:
       '@playwright/test':
         specifier: ^1.61.0
         version: 1.61.1
+      '@posthog/cli':
+        specifier: ~0.19.4
+        version: 0.19.4
+      '@posthog/rollup-plugin':
+        specifier: ^1.6.4
+        version: 1.6.4(rollup@4.64.10)
       '@size-limit/file':
         specifier: ^14.3.0
         version: 14.3.0(size-limit@14.3.0)
@@ -1999,8 +2005,21 @@ packages:
   '@posthog/browser-common@0.12.2':
     resolution: {integrity: sha512-ZfqE1ntvsFPaD5I1IRh/wRL6JPW6Zlo8NDTOc0s5OtK7JeER9jE/byLjSHQ1/cKZk3MD8JG7F1hANUhnos6dOg==}
 
+  '@posthog/cli@0.19.4':
+    resolution: {integrity: sha512-wDS1yNMfKYEVpWJNX0DVdmQA9//zQV6+I7Eq2NcgRL30g2TKzN/wAzob0iAI/ysibcON7D6o/LtBxfh+8JTGDw==}
+    engines: {node: '>=14.14', npm: '>=6'}
+    hasBin: true
+
   '@posthog/core@1.69.2':
     resolution: {integrity: sha512-toMfPKklwLW+a4ZY3/EzM3GNMVXmk2ylGb8NPJXRH4igXMoI8wgNL2jqXOiglWAXqFBLZGYFN1oQx6LVmUTxTg==}
+
+  '@posthog/plugin-utils@2.0.1':
+    resolution: {integrity: sha512-ZiQfUcgY65EjF2vkqL4Aau6sx0aqvSWoXaGSGu9Solnmv6e6VRjQbAU0SCKbxpJxcEsCJof9vmvnrFTQIEOUAQ==}
+
+  '@posthog/rollup-plugin@1.6.4':
+    resolution: {integrity: sha512-T2BnNw9wqodg+Xx75Aq7Nm0wtHanvD4amlc1KJnJ/oTE76bN3okl+Cwm30WvoGSVFnrzumDYF2lrsJejplCmgw==}
+    peerDependencies:
+      rollup: '>= 4.0.0'
 
   '@posthog/types@1.427.1':
     resolution: {integrity: sha512-Kx9hWf6Au64CrBLafscANAeswkRFUMs4zlU9/gwB2Hf/9ggU9YNjbw/MQA5tt7cbzTCkh+4fNIPjQeJz7/j63w==}
@@ -8243,9 +8262,24 @@ snapshots:
     transitivePeerDependencies:
       - preact-render-to-string
 
+  '@posthog/cli@0.19.4':
+    dependencies:
+      detect-libc: 2.1.2
+
   '@posthog/core@1.69.2':
     dependencies:
       '@posthog/types': 1.427.1
+
+  '@posthog/plugin-utils@2.0.1':
+    dependencies:
+      cross-spawn: 7.0.6
+
+  '@posthog/rollup-plugin@1.6.4(rollup@4.64.10)':
+    dependencies:
+      '@posthog/cli': 0.19.4
+      '@posthog/plugin-utils': 2.0.1
+      magic-string: 0.30.21
+      rollup: 4.64.10
 
   '@posthog/types@1.427.1': {}
 
