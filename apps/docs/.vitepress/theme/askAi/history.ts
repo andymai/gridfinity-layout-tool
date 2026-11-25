@@ -37,6 +37,10 @@ function isPlanBin(value: unknown): boolean {
   );
 }
 
+function isStashedBin(value: unknown): boolean {
+  return isRecord(value) && typeof value.label === 'string' && typeof value.reason === 'string';
+}
+
 // The map puts the link in an href, so only a web link passes.
 export function isPlanView(value: unknown): value is PlanView {
   return (
@@ -50,7 +54,8 @@ export function isPlanView(value: unknown): value is PlanView {
     isNumber(value.grid.depth) &&
     Array.isArray(value.bins) &&
     value.bins.every(isPlanBin) &&
-    Array.isArray(value.stashed)
+    Array.isArray(value.stashed) &&
+    value.stashed.every(isStashedBin)
   );
 }
 

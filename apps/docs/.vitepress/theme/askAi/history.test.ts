@@ -91,6 +91,7 @@ describe('the conversation store', () => {
             [plan.handle]: plan,
             old: { ...plan, bins: [{ label: 'M3' }] } as never,
             bad: { ...plan, link: 'javascript:alert(1)' },
+            stash: { ...plan, stashed: [null] } as never,
           },
         },
       ],
