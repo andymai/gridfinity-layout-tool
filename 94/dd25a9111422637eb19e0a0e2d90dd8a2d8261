@@ -1,0 +1,23 @@
+src/core/storage/readOnly.ts
+  s_88cfcc42bf5bfd::t_4be53a59a3f066 28-30,35-36,39,41-44,48,50-52,56-63,65-66,68-69,71-72,128,131-132,141-142,148
+src/core/storage/readOnly.test.ts
+  s_88cfcc42bf5bfd::t_4be53a59a3f066 81-94
+apps/docs/.vitepress/theme/components/AskAiPanel.vue
+  s_88cfcc42bf5bfd::t_4be53a59a3f066 162-165
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "94dd25a9111422637eb19e0a0e2d90dd8a2d8261",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
