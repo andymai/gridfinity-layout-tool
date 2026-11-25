@@ -152,5 +152,9 @@ describe('layoutRevision', () => {
     const edited = { ...layout, bins: [{ ...layout.bins[0], label: 'changed' }, layout.bins[1]] };
     expect(layoutRevision(edited)).not.toBe(layoutRevision(layout));
     expect(layoutRevision(layout)).toMatch(/^[0-9a-f]{16}$/);
+    expect(layoutRevision({ ...layout, name: 'Renamed' })).toBe(layoutRevision(layout));
+    expect(layoutRevision({ ...layout, gridUnitMm: 40 as Layout['gridUnitMm'] })).not.toBe(
+      layoutRevision(layout)
+    );
   });
 });

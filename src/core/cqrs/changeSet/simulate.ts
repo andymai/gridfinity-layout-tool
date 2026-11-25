@@ -84,7 +84,11 @@ export function applyChangeSetEvents(
   draft: Draft<Layout>,
   events: readonly ChangeSetEvent[]
 ): void {
-  for (const event of events) {
+  for (const recorded of events) {
+    // Simulation froze each payload, and within one draft Immer does not
+    // draft an object that an earlier op inserted. A later op on that bin
+    // would then write to the frozen original, so each op gets its own copy.
+    const event = structuredClone(recorded);
     switch (event.type) {
       case 'bin.added':
         addBin.apply(event, draft);

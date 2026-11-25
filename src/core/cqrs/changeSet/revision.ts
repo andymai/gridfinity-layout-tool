@@ -21,16 +21,13 @@ function fnv1a(text: string, seed: number): string {
 }
 
 /**
- * A fingerprint of the parts of a layout that change sets edit. Keys are
- * sorted first, because an Immer edit can reorder an object's keys without
- * changing what it holds.
+ * A fingerprint of everything in a layout but its name: grid pitch, height
+ * units and baseplate settings feed placement too. Keys are sorted first,
+ * because an Immer edit can reorder an object's keys without changing what
+ * it holds.
  */
 export function layoutRevision(layout: Layout): string {
-  const text = canonical({
-    drawer: layout.drawer,
-    layers: layout.layers,
-    categories: layout.categories,
-    bins: layout.bins,
-  });
+  const { name: _name, ...content } = layout;
+  const text = canonical(content);
   return fnv1a(text, 0x811c9dc5) + fnv1a(text, 0x01000193);
 }

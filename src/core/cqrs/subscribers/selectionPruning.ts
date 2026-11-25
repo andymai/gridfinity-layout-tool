@@ -169,6 +169,22 @@ export function connectSelectionPruning(bus: EventBus): UnsubscribeFn {
     })
   );
 
+  // A change set publishes one event, so its deletes and stash moves never
+  // reach the single-bin subscribers above.
+  unsubscribers.push(
+    bus.subscribe('layout.changeSetApplied', (event) => {
+      removeBinsFromSelection(
+        event.payload.events.flatMap((inner) =>
+          inner.type === 'bin.deleted'
+            ? [inner.payload.bin.id]
+            : inner.type === 'bin.movedToStaging'
+              ? [inner.payload.id]
+              : []
+        )
+      );
+    })
+  );
+
   return () => {
     for (const unsub of unsubscribers) {
       unsub();

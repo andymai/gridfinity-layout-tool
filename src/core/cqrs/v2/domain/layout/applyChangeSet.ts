@@ -6,6 +6,8 @@
 
 import { z } from 'zod';
 import { err, isErr, layoutInvalidOperation, ok } from '@/core/result';
+import { SHARED_PREVIEW_ID } from '@/core/constants';
+import { useLibraryStore } from '@/core/store/library';
 import { defineCommand } from '../../defineCommand';
 import {
   applyChangeSetEvents,
@@ -24,6 +26,21 @@ export const applyChangeSet = defineCommand({
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const { changeSet } = payload;
+    // A duplicate has the same content, so only the id tells the layouts apart.
+    const active = useLibraryStore.getState().library.activeLayoutId;
+    if (active === SHARED_PREVIEW_ID) {
+      return err(
+        layoutInvalidOperation('applyChangeSet', 'Save this shared layout to your layouts first.')
+      );
+    }
+    if (changeSet.layoutId !== active) {
+      return err(
+        layoutInvalidOperation(
+          'applyChangeSet',
+          'These changes are for another layout. Open that layout and preview them again.'
+        )
+      );
+    }
     if (layoutRevision(ctx.aggregate) !== changeSet.baseRev) {
       return err(
         layoutInvalidOperation(

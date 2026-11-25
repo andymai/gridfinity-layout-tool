@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { isErr, isOk } from '@/core/result';
 import { useLayoutStore } from '@/core/store/layout';
+import { useLibraryStore } from '@/core/store/library';
+import { SHARED_PREVIEW_ID } from '@/core/constants';
+import type { LayoutId } from '@/core/types';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { binId, gridUnits, heightUnits, layerId } from '@/core/types';
 import type { Layout } from '@/core/types';
@@ -56,6 +59,12 @@ const ADD_TWO: ChangeOp[] = [
   { op: 'updateBin', bin: { id: 'a' }, set: { label: 'Screws' } },
 ];
 
+const setActive = (id: string): void => {
+  useLibraryStore.setState({
+    library: { ...useLibraryStore.getState().library, activeLayoutId: id as LayoutId },
+  });
+};
+
 describe('layout.applyChangeSet through the bus', () => {
   const mutations = createCqrsMutations(commandBus);
   const captured: DomainEvent[] = [];
@@ -65,6 +74,7 @@ describe('layout.applyChangeSet through the bus', () => {
     resetHistoryStore();
     _resetUndoCaptureState();
     useLayoutStore.setState({ layout: start });
+    setActive('layout-1');
     captured.length = 0;
   });
 
@@ -93,6 +103,39 @@ describe('layout.applyChangeSet through the bus', () => {
     // Replay from the one event gives the same layout, ids included.
     expect(captured).toHaveLength(1);
     expect(applyEvent(start, captured[0])).toEqual(after);
+  });
+
+  it('applies a set that adds a bin and then edits and stashes it', () => {
+    const result = mutations.applyChangeSet(
+      set([
+        {
+          op: 'addBin',
+          ref: 'n',
+          layer: { id: 'layer1' },
+          x: 4,
+          y: 0,
+          width: 2,
+          depth: 2,
+          height: 3,
+        },
+        { op: 'updateBin', bin: { ref: 'n' }, set: { label: 'Later' } },
+        { op: 'stashBin', bin: { ref: 'n' } },
+      ])
+    );
+    if (!isOk(result)) throw new Error(JSON.stringify(result.error));
+    const added = useLayoutStore.getState().layout.bins.find((b) => b.id === result.value.refs.n);
+    expect(added).toMatchObject({ label: 'Later', layerId: '__staging__' });
+  });
+
+  it('refuses a set for another layout with the same content, such as a duplicate', () => {
+    setActive('layout-copy');
+    expect(isErr(mutations.applyChangeSet(set(ADD_TWO)))).toBe(true);
+    expect(useLayoutStore.getState().layout).toEqual(start);
+    setActive(SHARED_PREVIEW_ID);
+    expect(isErr(mutations.applyChangeSet({ ...set(ADD_TWO), layoutId: SHARED_PREVIEW_ID }))).toBe(
+      true
+    );
+    expect(useHistoryStore.getState().past).toHaveLength(0);
   });
 
   it('refuses a set made for an older layout, and changes nothing', () => {

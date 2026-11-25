@@ -66,6 +66,35 @@ describe('selectionPruning subscriber', () => {
     bus.clear();
   });
 
+  describe('layout.changeSetApplied', () => {
+    it('drops bins that the set deleted or stashed, and keeps the rest', () => {
+      useSelectionStore.setState({
+        selectedBinIds: [binId('gone'), binId('stashed'), binId('kept')],
+        focusedBinId: binId('gone'),
+        quickLabelBinId: binId('stashed'),
+      });
+
+      bus.publish(
+        makeEvent('layout.changeSetApplied', {
+          summary: 'Tidy up',
+          events: [
+            { type: 'bin.deleted', payload: { bin: makeBin('gone') } },
+            {
+              type: 'bin.movedToStaging',
+              payload: { id: binId('stashed'), previousLayerId: layerId('layer1') },
+            },
+            { type: 'bin.added', payload: { bin: makeBin('fresh') } },
+          ],
+        })
+      );
+
+      const state = useSelectionStore.getState();
+      expect(state.selectedBinIds).toEqual([binId('kept')]);
+      expect(state.focusedBinId).toBeNull();
+      expect(state.quickLabelBinId).toBeNull();
+    });
+  });
+
   describe('bin.deleted', () => {
     it('removes deleted bin from selectedBinIds', () => {
       const bin = makeBin('bin1');
