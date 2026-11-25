@@ -8,6 +8,7 @@ import { useSettingsStore } from '@/core/store/settings';
 import { getDisplayMode } from '@/shared/pwa/displayMode';
 import { getStableUserId, syncAnalyticsDataAcrossWindows } from './identity';
 import { filterExceptionForPosthog } from './errorFilters';
+import { stripUrlFragments, whenLinkContentCleared } from './linkHash';
 
 // INITIALIZATION (LAZY LOADED)
 
@@ -64,9 +65,18 @@ export function initAnalytics(): void {
     markReady = resolve;
   });
 
-  // Lazy load posthog-js
-  initPromise = import('posthog-js')
+  // Lazy load posthog-js, once a share or plan link's content has left the
+  // address bar: the first pageview and session replay record the address.
+  initPromise = whenLinkContentCleared()
+    .then(() => import('posthog-js'))
     .then(async ({ default: posthog }) => {
+      // The reader can turn analytics off while the start waits, and an
+      // opt-out finds no instance to stop then. A later opt-in starts again.
+      if (!useSettingsStore.getState().settings.analyticsEnabled) {
+        initPromise = null;
+        markReady(null);
+        return;
+      }
       posthog.init(key, {
         // Direct host on purpose: proxying through the app domain would bill
         // every capture and SDK asset fetch as a platform edge request.
@@ -94,7 +104,7 @@ export function initAnalytics(): void {
         // second handler to add context. CaptureResult is a structural superset
         // of the shape filterExceptionForPosthog reads.
         before_send: (event) => {
-          const kept = filterExceptionForPosthog(event);
+          const kept = filterExceptionForPosthog(stripUrlFragments(event));
           if (!kept) return null;
           if (kept.event === '$exception' && getExceptionContext) {
             // Explicit context wins: `captureException` callers pass details
@@ -147,6 +157,7 @@ export function initAnalytics(): void {
       eventQueue = [];
     })
     .catch(() => {
+      initPromise = null;
       markReady(null);
     });
 }
@@ -175,8 +186,9 @@ export function optInAnalytics(): void {
     // A launch from the installed app while analytics was off went unrecorded.
     void import('./events').then(({ noteCurrentDisplayMode }) => noteCurrentDisplayMode());
   } else {
-    // If posthog wasn't initialized, try to initialize now
-    initPromise = null;
+    // Not started yet: a start still waiting goes on and checks the switch
+    // again before it initializes, and one that failed or stopped cleared
+    // initPromise, so this starts it again.
     initAnalytics();
   }
 }
