@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PlanView } from '@/agent/contract';
-import { CELL, fitLabel, labelColor, planCaption, planMapView } from './planMap';
+import { CELL, fitLabel, labelColor, planCaption, planDescription, planMapView } from './planMap';
 
 const plan = (width: number, depth: number): PlanView => ({
   handle: '0a1b2c3d',
@@ -42,6 +42,14 @@ describe('the plan map', () => {
     expect(fitLabel('M3 screws', 3)).toBe('M3');
     expect(fitLabel('Measuring', 4)).toBe('Mea…');
     expect(fitLabel('Long', 1)).toBe('');
+  });
+
+  it('describes each bin and the stash for a screen reader', () => {
+    expect(planDescription(plan(2, 2))).toEqual([
+      'Tray: 1 × 1 units, 0 across and 0 back from the front-left corner, on layer 2.',
+      'M3 screws: 1 × 1 units, 0 across and 0 back from the front-left corner.',
+      'Case: in the stash, no room left on its layer.',
+    ]);
   });
 
   it('names the grid, the bins and the stash', () => {

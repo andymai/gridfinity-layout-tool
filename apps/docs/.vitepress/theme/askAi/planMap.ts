@@ -97,3 +97,15 @@ export function planCaption(plan: PlanView): string {
   if (plan.stashed.length > 0) parts.push(`${plan.stashed.length} in the stash`);
   return parts.join(' · ');
 }
+
+// Read by a screen reader in place of the drawing, which it reads as one image.
+export function planDescription(plan: PlanView): string[] {
+  const units = (width: number, depth: number): string => `${width} × ${depth} units`;
+  return [
+    ...plan.bins.map(
+      (bin) =>
+        `${bin.label}: ${units(bin.width, bin.depth)}, ${bin.x} across and ${bin.y} back from the front-left corner${bin.layer > 1 ? `, on layer ${bin.layer}` : ''}.`
+    ),
+    ...plan.stashed.map((bin) => `${bin.label}: in the stash, ${bin.reason}.`),
+  ];
+}

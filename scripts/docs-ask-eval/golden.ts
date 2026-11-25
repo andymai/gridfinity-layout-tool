@@ -697,7 +697,7 @@ export const GOLDEN: readonly GoldenCase[] = [
     ],
     sources: ['/layouts/drawer-setup', '/concepts/units', '/layouts/placing-bins'],
     expect:
-      'Plans the 40 x 30 cm drawer on a 9 x 7 grid with bins for the three screw sizes, the hex keys and the tape measure, shows the plan, and keeps bin heights under the 8 cm drawer.',
+      'Plans the 40 x 30 cm drawer with bins for the three screw sizes, the hex keys and the tape measure, shows the plan, and keeps bin heights under the 8 cm drawer. The grid is 9 x 7, or 9.5 x 7 when a bin takes half units; the answer gives the grid that plan_layout reports.',
   },
   {
     id: 'P02',

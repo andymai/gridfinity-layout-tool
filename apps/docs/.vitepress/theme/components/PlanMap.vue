@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { PlanView } from '@/agent/contract';
-import { FONT, planCaption, planMapView } from '../askAi/planMap';
+import { FONT, planCaption, planDescription, planMapView } from '../askAi/planMap';
 
 const props = defineProps<{ plan: PlanView }>();
 
 const map = computed(() => planMapView(props.plan));
 const caption = computed(() => planCaption(props.plan));
+const description = computed(() => planDescription(props.plan));
 </script>
 
 <template>
   <figure class="plan-map">
     <svg
+      class="map"
       :viewBox="`-1 -1 ${map.width + 2} ${map.height + 2}`"
       role="img"
       :aria-label="`${plan.title}: ${caption}`"
@@ -63,7 +65,16 @@ const caption = computed(() => planCaption(props.plan));
       <span class="title">{{ plan.title }}</span>
       <span class="meta">{{ caption }}</span>
     </figcaption>
-    <a class="open" :href="plan.link" target="_blank" rel="noopener">Open in the layout editor</a>
+    <ul class="visually-hidden">
+      <li v-for="(line, i) in description" :key="i">{{ line }}</li>
+    </ul>
+    <a class="docs-plan-drawer-button open" :href="plan.link" target="_blank" rel="noopener">
+      Open in the layout editor
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M6 3.5H3.5v9h9V10M9 3.5h3.5V7M12.5 3.5 7 9" />
+      </svg>
+      <span class="visually-hidden">(opens the layout editor in a new tab)</span>
+    </a>
   </figure>
 </template>
 
@@ -75,7 +86,7 @@ const caption = computed(() => planCaption(props.plan));
   border-radius: 10px;
   background: var(--vp-c-bg-soft);
 }
-svg {
+.map {
   display: block;
   width: 100%;
   height: auto;
@@ -116,18 +127,11 @@ figcaption {
 .meta {
   color: var(--vp-c-text-2);
 }
-.open {
-  display: inline-block;
+/* Beats the answer's own link rule, which colors every link in it. */
+.plan-map a.open,
+.plan-map a.open:hover {
   margin-top: 10px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  background: var(--vp-c-brand-3);
-  color: var(--vp-c-white);
-  font-size: 14px;
-  font-weight: 500;
+  color: var(--vp-button-brand-text);
   text-decoration: none;
-}
-.open:hover {
-  background: var(--vp-c-brand-2);
 }
 </style>
