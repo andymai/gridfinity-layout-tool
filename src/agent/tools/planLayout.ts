@@ -10,7 +10,7 @@ import type { PlanLayoutOutput, ToolContext } from '../contract/tool';
 const REASONS: Readonly<Record<StashReason, string>> = {
   'too-tall': 'taller than the drawer',
   'no-room': 'no room left on its layer',
-  'no-support': 'no bins under it on the layer below',
+  'no-support': 'no spot where bins on the layer below hold it fully and evenly',
 };
 
 /** FNV-1a over the plan, so a replay of the same call names the same plan. */

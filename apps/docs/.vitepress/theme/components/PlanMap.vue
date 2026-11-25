@@ -1,100 +1,57 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { PlanView } from '@/agent/contract';
+import { FONT, planCaption, planMapView } from '../askAi/planMap';
 
 const props = defineProps<{ plan: PlanView }>();
 
-// Viewbox units per grid unit. A label character is about 0.55 of the font size.
-const CELL = 24;
-const FONT = 8;
-
-const width = computed(() => props.plan.grid.width * CELL);
-const height = computed(() => props.plan.grid.depth * CELL);
-
-// A label that does not fit keeps its first word ("M3" of "M3 screws") before
-// it is cut short.
-function fitLabel(label: string, chars: number): string {
-  if (label.length <= chars) return label;
-  const first = label.split(/\s+/)[0];
-  if (first.length <= chars) return first;
-  return chars >= 2 ? `${label.slice(0, chars - 1).trimEnd()}…` : '';
-}
-
-// The grid's origin is the front-left corner, so the front of the drawer is at
-// the bottom of the map, as in the layout editor.
-const bins = computed(() =>
-  [...props.plan.bins]
-    .sort((a, b) => a.layer - b.layer)
-    .map((bin) => {
-      const w = bin.width * CELL;
-      const h = bin.depth * CELL;
-      const fit = Math.max(0, Math.floor((w - 4) / (FONT * 0.55)));
-      return {
-        ...bin,
-        px: bin.x * CELL,
-        py: (props.plan.grid.depth - bin.y - bin.depth) * CELL,
-        w,
-        h,
-        text: fitLabel(bin.label, fit),
-      };
-    })
-);
-
-const gridLines = computed(() => ({
-  x: Array.from({ length: Math.floor(props.plan.grid.width) - 1 }, (_, i) => (i + 1) * CELL),
-  y: Array.from({ length: Math.floor(props.plan.grid.depth) - 1 }, (_, i) => (i + 1) * CELL),
-}));
-
-const caption = computed(() => {
-  const parts = [
-    `${props.plan.grid.width} × ${props.plan.grid.depth} units`,
-    `${props.plan.bins.length} ${props.plan.bins.length === 1 ? 'bin' : 'bins'}`,
-  ];
-  if (props.plan.stashed.length > 0) parts.push(`${props.plan.stashed.length} in the stash`);
-  return parts.join(' · ');
-});
+const map = computed(() => planMapView(props.plan));
+const caption = computed(() => planCaption(props.plan));
 </script>
 
 <template>
   <figure class="plan-map">
     <svg
-      :viewBox="`-1 -1 ${width + 2} ${height + 2}`"
+      :viewBox="`-1 -1 ${map.width + 2} ${map.height + 2}`"
       role="img"
       :aria-label="`${plan.title}: ${caption}`"
     >
-      <rect class="floor" :width="width" :height="height" />
+      <rect class="floor" :width="map.width" :height="map.height" />
       <line
-        v-for="x in gridLines.x"
+        v-for="x in map.columns"
         :key="`x${x}`"
         class="grid"
         :x1="x"
         :x2="x"
         y1="0"
-        :y2="height"
+        :y2="map.height"
       />
       <line
-        v-for="y in gridLines.y"
+        v-for="y in map.rows"
         :key="`y${y}`"
         class="grid"
         x1="0"
-        :x2="width"
+        :x2="map.width"
         :y1="y"
         :y2="y"
       />
-      <g v-for="(bin, i) in bins" :key="i" :class="['bin', { upper: bin.layer > 1 }]">
+      <g v-for="bin in map.bins" :key="bin.key" :class="['bin', { upper: bin.upper }]">
         <rect
-          :x="bin.px + 1"
-          :y="bin.py + 1"
+          :x="bin.x + 1"
+          :y="bin.y + 1"
           :width="bin.w - 2"
           :height="bin.h - 2"
           rx="3"
           :fill="bin.color"
         />
+        <!-- The halo in the bin's own color keeps a label readable on a see-through upper bin. -->
         <text
           v-if="bin.text"
-          :x="bin.px + bin.w / 2"
-          :y="bin.py + bin.h / 2"
+          :x="bin.x + bin.w / 2"
+          :y="bin.y + bin.h / 2"
           :font-size="FONT"
+          :fill="bin.textColor"
+          :stroke="bin.color"
           text-anchor="middle"
           dominant-baseline="central"
         >
@@ -133,12 +90,14 @@ svg {
   stroke-width: 0.5;
 }
 .bin text {
-  fill: #1b1b1f;
   font-family: var(--vp-font-family-base);
+  paint-order: stroke;
+  stroke-width: 2px;
+  stroke-linejoin: round;
   pointer-events: none;
 }
 .bin.upper rect {
-  fill-opacity: 0.55;
+  fill-opacity: 0.85;
   stroke: #1b1b1f;
   stroke-dasharray: 3 2;
   stroke-width: 0.75;

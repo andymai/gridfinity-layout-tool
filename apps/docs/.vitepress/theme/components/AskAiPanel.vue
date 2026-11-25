@@ -29,6 +29,9 @@ const starters = computed<string[]>(() => {
     : [];
 });
 const working = computed(() => askAi.exchanges.some(isLive));
+const plans = computed(() =>
+  Object.assign({}, ...askAi.exchanges.map((exchange) => exchange.plans))
+);
 // A live region over the chat would read each streamed chunk out again, and a
 // status element that mounts with its text is often not read at all. This one
 // line, always mounted, says when an answer starts and ends, and why it failed.
@@ -245,6 +248,7 @@ onBeforeUnmount(() => {
           :key="exchange.id"
           :exchange="exchange"
           :last="i === askAi.exchanges.length - 1"
+          :plans="plans"
           @retry="retry(pageLink)"
           @feedback="(value) => sendFeedback(exchange, value)"
         />
