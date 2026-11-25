@@ -1,0 +1,34 @@
+scripts/build-agent-skill.ts
+  s_88cfcc42bf5bfd::t_72b6228b6c0229 70-77
+src/shared/plan/planInput.ts
+  s_88cfcc42bf5bfd::t_d7ef6dd524e1ba 77-83
+skills/gridfinity-layout-tool/references/tools.md
+  s_88cfcc42bf5bfd::t_2b3bcf25d81b3b 57-69
+  s_88cfcc42bf5bfd::t_72b6228b6c0229 11-13,30-40,42-51
+  s_88cfcc42bf5bfd::t_35a7884930f137 41
+skills/gridfinity-layout-tool/SKILL.md
+  s_88cfcc42bf5bfd::t_d7ef6dd524e1ba 20,22,26,35
+  s_88cfcc42bf5bfd::t_35a7884930f137 25
+src/agent/contract/calculators.ts
+  s_88cfcc42bf5bfd::t_2b3bcf25d81b3b 69
+scripts/doc-budget.json
+  s_88cfcc42bf5bfd::t_35a7884930f137 43
+api/lib/mcp/server.test.ts
+  s_88cfcc42bf5bfd::t_ff1d605bf97864 4,56-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0b6a2b7bd5e591b4236e83b06f4d8dfda649c42b",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
