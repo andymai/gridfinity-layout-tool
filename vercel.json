@@ -67,7 +67,28 @@
       ]
     },
     {
-      "source": "/api/(.*)",
+      "source": "/api/mcp",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "POST, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Accept, Authorization, Mcp-Protocol-Version, Mcp-Session-Id"
+        },
+        {
+          "key": "Access-Control-Expose-Headers",
+          "value": "Mcp-Session-Id"
+        }
+      ]
+    },
+    {
+      "source": "/api/((?!mcp$).*)",
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",

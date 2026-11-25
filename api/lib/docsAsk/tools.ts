@@ -130,17 +130,7 @@ export function toolDefinitions(corpus: AskCorpus): Anthropic.Beta.BetaToolUnion
       name: 'drawer_fit',
       description:
         "Run the Layout Tool's own drawer calculator. Give the inside width and depth of a drawer, and its height when known. Returns the whole-unit grid, a tighter half-unit grid when one fits, the spare room, the tallest bins for stacks of 1, 2 and 3 with the default baseplate, and a link that opens the layout editor at that size.",
-      input_schema: {
-        type: 'object',
-        properties: {
-          widthMm: { type: 'number', description: 'Inside width, in the unit below.' },
-          depthMm: { type: 'number', description: 'Inside depth, in the unit below.' },
-          heightMm: { type: 'number', description: 'Inside height, if known.' },
-          unit: { type: 'string', enum: ['mm', 'in'], description: 'Default mm.' },
-        },
-        required: ['widthMm', 'depthMm'],
-        additionalProperties: false,
-      },
+      input_schema: inputSchema(drawerFitInput),
       eager_input_streaming: true,
     },
     {

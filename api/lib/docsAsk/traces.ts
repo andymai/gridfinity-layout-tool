@@ -1,7 +1,4 @@
-import { waitUntil } from '@vercel/functions';
-
-const CAPTURE_URL = 'https://us.i.posthog.com/i/v0/e/';
-const SEND_TIMEOUT_MS = 5_000;
+import { captureServerEvent } from '../serverEvents.js';
 
 export interface Generation {
   readonly spanId: string;
@@ -34,28 +31,8 @@ export interface AskTrace {
   readonly generations: readonly Generation[];
 }
 
-type Properties = Record<string, unknown>;
-
-function send(event: string, distinctId: string, properties: Properties): void {
-  const token = process.env.VITE_PUBLIC_POSTHOG_KEY;
-  if (process.env.VERCEL_ENV !== 'production' || !token) return;
-  waitUntil(
-    fetch(CAPTURE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        api_key: token,
-        event,
-        // A tab's chat id is the distinct id, so a profile per chat would only fill PostHog.
-        properties: { distinct_id: distinctId, $process_person_profile: false, ...properties },
-      }),
-      signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
-    }).then(
-      () => undefined,
-      () => undefined
-    )
-  );
-}
+// A tab's chat id is the distinct id, so events carry no person profile.
+const send = captureServerEvent;
 
 export function sendAskTrace(trace: AskTrace): void {
   const shared = { $ai_trace_id: trace.traceId, $ai_session_id: trace.sessionId };

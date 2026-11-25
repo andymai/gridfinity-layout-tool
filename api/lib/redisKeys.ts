@@ -125,6 +125,11 @@ export function docsAskSpendKey(day: string): string {
   return `docsAsk:spend:${day}`;
 }
 
+/** Calls to the public MCP server in one UTC day, for its daily cap. */
+export function mcpCallsKey(day: string): string {
+  return `mcp:calls:${day}`;
+}
+
 /** A pending Ask AI turn's nonce, held so that one resume cannot run twice. */
 export function docsAskResumeKey(nonce: string): string {
   return `docsAsk:resume:${nonce}`;
