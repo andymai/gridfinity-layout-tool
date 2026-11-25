@@ -5235,6 +5235,7 @@
   "undo.magnetAnchorChanged": "Ancrage des aimants modifié",
   "undo.lowProfileBaseChanged": "Base à profil bas modifiée",
   "undo.nameChanged": "Nom modifié",
+  "undo.changeSetApplied": "Modifications suggérées appliquées",
   "undo.printBedSizeChanged": "Taille du print bed modifiée",
   "undo.redid": "↪ Redid: {action}",
   "undo.undid": "↩ Undid: {action}",

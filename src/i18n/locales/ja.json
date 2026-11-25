@@ -5098,6 +5098,7 @@
   "undo.magnetAnchorChanged": "磁石の基準位置を変更",
   "undo.lowProfileBaseChanged": "ロープロファイルベースを変更",
   "undo.nameChanged": "名前を変更",
+  "undo.changeSetApplied": "提案された変更を適用",
   "undo.printBedSizeChanged": "プリントベッドサイズを変更",
   "undo.redid": "↪ やり直し：{action}",
   "undo.undid": "↩ 元に戻し：{action}",

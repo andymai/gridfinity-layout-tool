@@ -58,6 +58,7 @@ const COMMAND_PROFILES: Readonly<Record<CommandType, MiddlewareProfile>> = {
   'layout.setHeightUnitMm': 'domain',
   'layout.setBaseplateParams': 'domain',
   'layout.setActiveBaseplate': 'domain',
+  'layout.applyChangeSet': 'domain',
 
   // Library commands
   'library.createEntry': 'library',

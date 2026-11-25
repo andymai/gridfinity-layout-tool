@@ -5235,6 +5235,7 @@
   "undo.magnetAnchorChanged": "Endret magnetforankring",
   "undo.lowProfileBaseChanged": "Endret lavprofilbase",
   "undo.nameChanged": "Navn endret",
+  "undo.changeSetApplied": "Foreslåtte endringer brukt",
   "undo.printBedSizeChanged": "Print bed-størrelse endret",
   "undo.redid": "↪ Redid: {action}",
   "undo.undid": "↩ Undid: {action}",

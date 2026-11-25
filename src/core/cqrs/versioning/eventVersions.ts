@@ -48,6 +48,7 @@ export const CURRENT_EVENT_VERSIONS: Record<DomainEventType, number> = {
   'layout.heightUnitMmSet': 1,
   'layout.baseplateParamsSet': 1,
   'layout.activeBaseplateSet': 1,
+  'layout.changeSetApplied': 1,
 
   // Library events
   'library.entryCreated': 1,

@@ -3,6 +3,7 @@
  */
 
 import type { BaseCommand } from '../types';
+import type { ChangeSet } from '../changeSet/schema';
 import type {
   BaseplateDesignId,
   Drawer,
@@ -60,6 +61,11 @@ export type SetBaseplateParamsCommand = BaseCommand<
   { readonly params: StoredBaseplateParams }
 >;
 
+export type ApplyChangeSetCommand = BaseCommand<
+  'layout.applyChangeSet',
+  { readonly changeSet: ChangeSet }
+>;
+
 export type SetActiveBaseplateCommand = BaseCommand<
   'layout.setActiveBaseplate',
   { readonly designId: BaseplateDesignId | null; readonly params: StoredBaseplateParams }
@@ -76,4 +82,5 @@ export type DrawerCommand =
   | SetLowProfileBaseCommand
   | SetHeightUnitMmCommand
   | SetBaseplateParamsCommand
-  | SetActiveBaseplateCommand;
+  | SetActiveBaseplateCommand
+  | ApplyChangeSetCommand;

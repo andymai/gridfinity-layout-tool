@@ -6431,6 +6431,7 @@ const en: Record<string, string> = {
   'drawerShape.corners.replaceBody':
     'The current shape was drawn cell by cell. Corner cuts start from the plain rectangle and will replace it.',
   'undo.nameChanged': 'Changed name',
+  'undo.changeSetApplied': 'Applied suggested changes',
   'undo.printBedSizeChanged': 'Changed print bed size',
   'undo.gridUnitChanged': 'Changed grid unit',
   'undo.magnetAnchorChanged': 'Changed magnet anchor',

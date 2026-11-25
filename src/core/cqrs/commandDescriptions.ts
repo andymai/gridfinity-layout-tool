@@ -38,6 +38,7 @@ const DESCRIPTIONS: Readonly<Partial<Record<CommandType, string>>> = {
   'layout.setHeightUnitMm': 'undo.heightUnitChanged',
   'layout.setBaseplateParams': 'undo.baseplateParamsChanged',
   'layout.setActiveBaseplate': 'undo.activeBaseplateChanged',
+  'layout.applyChangeSet': 'undo.changeSetApplied',
 };
 
 /** Plural families for a batch that ran several commands of one type, each on its own bin. */

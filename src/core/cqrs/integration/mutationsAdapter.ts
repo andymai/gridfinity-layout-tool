@@ -26,6 +26,7 @@ import { ok, err, isOk } from '@/core/result';
 import { queueLibraryWrite } from '@/core/store/libraryWrites';
 import { createCommand } from '../commands';
 import type { UpdateDrawerPayload } from '../commands/drawerCommands';
+import type { ChangeSet } from '../changeSet/schema';
 import type { CommandBus } from '../bus/commandBus';
 import type { DomainEvent } from '../events';
 import type { CommandResult } from '../types';
@@ -176,6 +177,13 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
       const result = bus.dispatch(createCommand('bin.clearLayer', { layerId }));
       if (isOk(result)) return result.value.value as number;
       return 0;
+    },
+
+    applyChangeSet(
+      changeSet: ChangeSet
+    ): Result<{ refs: Readonly<Record<string, string>> }, ValidationError | LayoutError> {
+      const result = bus.dispatch(createCommand('layout.applyChangeSet', { changeSet }));
+      return extractResult(result);
     },
 
     setName(name: string): void {

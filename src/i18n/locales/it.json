@@ -5235,6 +5235,7 @@
   "undo.magnetAnchorChanged": "Ancoraggio del magnete modificato",
   "undo.lowProfileBaseChanged": "Base a basso profilo modificata",
   "undo.nameChanged": "Nome modificato",
+  "undo.changeSetApplied": "Modifiche suggerite applicate",
   "undo.printBedSizeChanged": "Dimensione del piano di stampa modificata",
   "undo.redid": "↪ Ripristinato: {action}",
   "undo.undid": "↩ Annullato: {action}",

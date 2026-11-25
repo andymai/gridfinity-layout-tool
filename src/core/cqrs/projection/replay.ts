@@ -10,7 +10,9 @@
 import type { BinId, Layout } from '@/core/types';
 import { gridUnits, heightUnits, mm } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
+import { produce } from 'immer';
 import type { DomainEvent } from '../events';
+import { applyChangeSetEvents } from '../changeSet/simulate';
 
 /**
  * Apply a single domain event to a layout, producing a new layout.
@@ -239,6 +241,11 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
       }
       break;
     }
+
+    case 'layout.changeSetApplied':
+      return produce(next, (draft) => {
+        applyChangeSetEvents(draft, event.payload.events);
+      });
   }
 
   return next;

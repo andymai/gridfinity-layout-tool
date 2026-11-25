@@ -5232,6 +5232,7 @@
   "drawerShape.corners.replaceTitle": "ჩანაცვლდეს დახატული ფორმა?",
   "drawerShape.corners.replaceBody": "მიმდინარე ფორმა უჯრედ-უჯრედ დაიხატა. კუთხის ჭრილები ჩვეულებრივი მართკუთხედიდან იწყება და მას ჩაანაცვლებს.",
   "undo.nameChanged": "სახელი შეიცვალა",
+  "undo.changeSetApplied": "შემოთავაზებული ცვლილებები გამოყენებულია",
   "undo.printBedSizeChanged": "საბეჭდი მაგიდის ზომა შეიცვალა",
   "undo.gridUnitChanged": "ბადის ერთეული შეიცვალა",
   "undo.magnetAnchorChanged": "მაგნიტის მიბმა შეიცვალა",

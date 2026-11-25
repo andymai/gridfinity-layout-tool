@@ -5509,6 +5509,7 @@
   "undo.magnetAnchorChanged": "Змінено прив’язку магнітів",
   "undo.lowProfileBaseChanged": "Змінено низькопрофільну основу",
   "undo.nameChanged": "Змінено назву",
+  "undo.changeSetApplied": "Застосовано запропоновані зміни",
   "undo.printBedSizeChanged": "Змінено розмір друкарського стола",
   "undo.redid": "↪ Повторено: {action}",
   "undo.undid": "↩ Скасовано: {action}",

@@ -5235,6 +5235,7 @@
   "undo.magnetAnchorChanged": "Magneetankering gewijzigd",
   "undo.lowProfileBaseChanged": "Laagprofielbasis gewijzigd",
   "undo.nameChanged": "Naam gewijzigd",
+  "undo.changeSetApplied": "Voorgestelde wijzigingen toegepast",
   "undo.printBedSizeChanged": "Print bed-grootte gewijzigd",
   "undo.redid": "↪ Redid: {action}",
   "undo.undid": "↩ Undid: {action}",
