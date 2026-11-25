@@ -1,0 +1,48 @@
+src/shared/plan/planLink.ts
+  s_88cfcc42bf5bfd::t_cc2ae4f9c406b0 2,14,31-33,36-56,97
+src/features/layout-library/hooks/useLayoutRouting.test.ts
+  s_88cfcc42bf5bfd::t_c6176cd59f3f6d 17,75,222-227
+  s_88cfcc42bf5bfd::t_d4a279496b6d6d 228-230
+src/shared/plan/buildPlanLayout.ts
+  s_88cfcc42bf5bfd::t_cc2ae4f9c406b0 7,94-104,110
+src/core/storage/planLinkImport.test.ts
+  s_88cfcc42bf5bfd::t_c6176cd59f3f6d 1,19-22,39-44
+  s_88cfcc42bf5bfd::t_08b7ffe8aa839b 3,8,14-17,24-25,33
+  s_88cfcc42bf5bfd::t_cc46266ab06099 45
+src/shared/plan/planInput.test.ts
+  s_88cfcc42bf5bfd::t_c6176cd59f3f6d 56-65
+src/shared/plan/buildPlanLayout.test.ts
+  s_88cfcc42bf5bfd::t_c6176cd59f3f6d 111-120
+src/shared/utils/drawerLink.test.ts
+  s_88cfcc42bf5bfd::t_c6176cd59f3f6d 88-95
+src/shared/utils/drawerLink.ts
+  s_88cfcc42bf5bfd::t_cc2ae4f9c406b0 96,98
+  s_88cfcc42bf5bfd::t_c9cbb24abdf5a2 102
+src/shared/plan/planInput.ts
+  s_88cfcc42bf5bfd::t_cc2ae4f9c406b0 88-91
+src/features/layout-library/hooks/useLayoutRouting.scenario.cloudShare.test.ts
+  s_88cfcc42bf5bfd::t_c6176cd59f3f6d 34
+src/features/layout-library/hooks/useLayoutRouting.ts
+  s_88cfcc42bf5bfd::t_c9cbb24abdf5a2 93-95
+  s_88cfcc42bf5bfd::t_08b7ffe8aa839b 8
+src/core/storage/planLinkImport.ts
+  s_88cfcc42bf5bfd::t_c9cbb24abdf5a2 20-25
+src/shared/plan/planLink.test.ts
+  s_88cfcc42bf5bfd::t_08b7ffe8aa839b 5-11,22,24-25,29,36,58-75,88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "832488bd2a3c21355c7ef2384023fc5c6df1c2e0",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
