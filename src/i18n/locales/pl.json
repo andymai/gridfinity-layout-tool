@@ -5509,6 +5509,7 @@
   "undo.magnetAnchorChanged": "Zmieniono zakotwiczenie magnesu",
   "undo.lowProfileBaseChanged": "Zmieniono niskoprofilową podstawę",
   "undo.nameChanged": "Zmieniono nazwę",
+  "undo.changeSetApplied": "Zastosowano sugerowane zmiany",
   "undo.printBedSizeChanged": "Zmieniono rozmiar stołu roboczego",
   "undo.redid": "↪ Ponowiono: {action}",
   "undo.undid": "↩ Cofnięto: {action}",

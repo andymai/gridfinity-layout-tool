@@ -5098,6 +5098,7 @@
   "undo.magnetAnchorChanged": "已更改磁铁锚点",
   "undo.lowProfileBaseChanged": "已更改低矮底座",
   "undo.nameChanged": "已更改名称",
+  "undo.changeSetApplied": "已应用建议的更改",
   "undo.printBedSizeChanged": "已更改打印床尺寸",
   "undo.redid": "↪ 已重做：{action}",
   "undo.undid": "↩ 已撤销：{action}",

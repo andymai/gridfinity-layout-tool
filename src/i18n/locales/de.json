@@ -5235,6 +5235,7 @@
   "undo.magnetAnchorChanged": "Magnetposition geändert",
   "undo.lowProfileBaseChanged": "Flachen Sockel geändert",
   "undo.nameChanged": "Name geändert",
+  "undo.changeSetApplied": "Vorgeschlagene Änderungen übernommen",
   "undo.printBedSizeChanged": "Print Bed-Größe geändert",
   "undo.redid": "↪ Redid: {action}",
   "undo.undid": "↩ Undid: {action}",

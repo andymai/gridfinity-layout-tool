@@ -5374,6 +5374,7 @@
   "undo.magnetAnchorChanged": "Změněna kotva magnetu",
   "undo.lowProfileBaseChanged": "Změněna nízkoprofilová základna",
   "undo.nameChanged": "Změněn název",
+  "undo.changeSetApplied": "Použity navržené změny",
   "undo.printBedSizeChanged": "Změněna velikost podložky tiskárny",
   "undo.redid": "↪ Zopakováno: {action}",
   "undo.undid": "↩ Vráceno zpět: {action}",

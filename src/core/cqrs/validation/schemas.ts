@@ -55,6 +55,7 @@ import {
 import { designerSaveSchema } from './designerSchemas';
 import { drawerOutlineSchema } from './outlineSchema';
 import { slantSchema } from './slant';
+import { changeSetSchema } from '../changeSet/schema';
 /** Branded string IDs are strings at runtime */
 const binIdSchema = z.string().min(1);
 const layerIdSchema = z.string().min(1);
@@ -463,6 +464,7 @@ export const COMMAND_SCHEMAS: Readonly<Partial<Record<CommandType, z.ZodType>>> 
   'layout.setHeightUnitMm': layoutSetHeightUnitMmSchema,
   'layout.setBaseplateParams': layoutSetBaseplateParamsSchema,
   'layout.setActiveBaseplate': layoutSetActiveBaseplateSchema,
+  'layout.applyChangeSet': z.object({ changeSet: changeSetSchema }),
 
   // Library commands
   'library.createEntry': libraryCreateEntrySchema,

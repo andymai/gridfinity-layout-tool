@@ -42,6 +42,7 @@ export type {
   HeightUnitMmSetEvent,
   BaseplateParamsSetEvent,
   ActiveBaseplateSetEvent,
+  ChangeSetAppliedEvent,
 } from './drawerEvents';
 
 export type {

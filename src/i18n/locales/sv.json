@@ -5235,6 +5235,7 @@
   "undo.magnetAnchorChanged": "Ändrade magnetförankring",
   "undo.lowProfileBaseChanged": "Ändrade lågprofilbas",
   "undo.nameChanged": "Bytte namn",
+  "undo.changeSetApplied": "Tillämpade föreslagna ändringar",
   "undo.printBedSizeChanged": "Ändrade utskriftsbäddsstorlek",
   "undo.redid": "↪ Gjorde om: {action}",
   "undo.undid": "↩ Ångrade: {action}",

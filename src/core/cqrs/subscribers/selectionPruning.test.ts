@@ -5,7 +5,7 @@ import type { DomainEvent } from '../events';
 import { eventId, correlationId, commandId } from '../types';
 import { useSelectionStore, INITIAL_SELECTION_STATE } from '@/core/store/selection';
 import { useLayoutStore } from '@/core/store/layout';
-import { layoutId, binId, layerId, categoryId } from '@/core/types';
+import { layoutId, binId, layerId, categoryId, gridUnits, heightUnits } from '@/core/types';
 import type { Bin, Layer, Category } from '@/core/types';
 import { connectSelectionPruning } from './selectionPruning';
 
@@ -64,6 +64,73 @@ describe('selectionPruning subscriber', () => {
   afterEach(() => {
     unsubscribe();
     bus.clear();
+  });
+
+  describe('layout.changeSetApplied', () => {
+    it('keeps a bin that the set stashed and then brought back', () => {
+      useLayoutStore.setState({
+        layout: { ...useLayoutStore.getState().layout, bins: [makeBin('back')] },
+      });
+      useSelectionStore.setState({ selectedBinIds: [binId('back')], focusedBinId: binId('back') });
+
+      bus.publish(
+        makeEvent('layout.changeSetApplied', {
+          summary: 'Move it',
+          events: [
+            {
+              type: 'bin.movedToStaging',
+              payload: { id: binId('back'), previousLayerId: layerId('layer1') },
+            },
+            {
+              type: 'bin.movedFromStaging',
+              payload: {
+                id: binId('back'),
+                layerId: layerId('layer1'),
+                x: gridUnits(2),
+                y: gridUnits(2),
+                height: heightUnits(3),
+              },
+            },
+          ],
+        })
+      );
+
+      expect(useSelectionStore.getState().selectedBinIds).toEqual([binId('back')]);
+      expect(useSelectionStore.getState().focusedBinId).toBe(binId('back'));
+    });
+
+    it('drops bins that the set deleted or stashed, and keeps the rest', () => {
+      useLayoutStore.setState({
+        layout: {
+          ...useLayoutStore.getState().layout,
+          bins: [makeBin('stashed', '__staging__'), makeBin('kept')],
+        },
+      });
+      useSelectionStore.setState({
+        selectedBinIds: [binId('gone'), binId('stashed'), binId('kept')],
+        focusedBinId: binId('gone'),
+        quickLabelBinId: binId('stashed'),
+      });
+
+      bus.publish(
+        makeEvent('layout.changeSetApplied', {
+          summary: 'Tidy up',
+          events: [
+            { type: 'bin.deleted', payload: { bin: makeBin('gone') } },
+            {
+              type: 'bin.movedToStaging',
+              payload: { id: binId('stashed'), previousLayerId: layerId('layer1') },
+            },
+            { type: 'bin.added', payload: { bin: makeBin('fresh') } },
+          ],
+        })
+      );
+
+      const state = useSelectionStore.getState();
+      expect(state.selectedBinIds).toEqual([binId('kept')]);
+      expect(state.focusedBinId).toBeNull();
+      expect(state.quickLabelBinId).toBeNull();
+    });
   });
 
   describe('bin.deleted', () => {

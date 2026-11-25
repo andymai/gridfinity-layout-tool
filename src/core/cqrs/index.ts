@@ -173,6 +173,15 @@ export { createCqrsMutations } from './integration/mutationsAdapter';
 
 export { applyEvent, replayEvents } from './projection/replay';
 
+export { CHANGE_SET_LIMITS, changeSetSchema, layoutRevision, simulateChangeSet } from './changeSet';
+export type {
+  ChangeOp,
+  ChangeSet,
+  ChangeSetFailure,
+  EntityRef,
+  SimulatedChangeSet,
+} from './changeSet';
+
 export {
   connectSelectionPruning,
   connectLibraryPersistence,

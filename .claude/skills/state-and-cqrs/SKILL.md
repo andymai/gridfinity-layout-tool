@@ -22,6 +22,8 @@ description: 'Zustand stores (src/core/store/) and the CQRS v2 pipeline (src/cor
 - The v2 `defineCommand` fields `payload`, `middleware`, `descriptionKey`, `schemaVersion` are NOT consumed by the runtime. Real behavior comes from four separate registries (table below). Editing only the v2 def silently changes nothing.
 - Undo capture is NOT behind a Labs flag: `undoCaptureMiddleware` is always in the pipeline and runs for every `domain`-profile command, gated only by `getMiddlewareFlags(command.type).undo` (`src/core/cqrs/middleware/undoCapture.ts`). Domain handlers live under `v2/domain/` — the v1 `<domain>Handlers.ts` files were deleted (see `git show 2b0c11b`). `designer.save` and `layout.restore` stay v1 by design; the `designer` aggregate is not wired and throws in `v2/runtime.ts`.
 
+- Change sets (`src/core/cqrs/changeSet/`) are all-or-nothing edits from Ask AI: `simulateChangeSet` runs each op's own v2 `handle` and `apply` on an Immer copy after the bus schema check, and `layout.applyChangeSet` emits one event holding those sub-events, so apply and replay never simulate again. A new op needs a case in `simulateChangeSet` and in `applyChangeSetEvents`. `baseRev` is `layoutRevision`, so a set previewed on an older layout is refused.
+
 ## Recipe: add a domain command + event (v2)
 
 1. Create `src/core/cqrs/v2/domain/<aggregate>/<name>.ts` copying `addBin.ts`: brand IDs/units at the boundary (`layerId()`, `gridUnits()` from `@/core/types`), validate against `ctx.aggregate`, return `ok({ value, event: { payload } })`; keep `apply()` a dumb draft write. Aggregate is `'layout'` or `'library'` only.

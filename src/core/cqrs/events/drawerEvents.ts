@@ -3,6 +3,7 @@
  */
 
 import type { BaseDomainEvent } from '../types';
+import type { ChangeSetEvent } from '../changeSet/simulate';
 import type {
   BaseplateDesignId,
   BinId,
@@ -90,6 +91,12 @@ export type BaseplateParamsSetEvent = BaseDomainEvent<
   }
 >;
 
+/** Every op's own event, with the ids it generated, applied as one edit. */
+export type ChangeSetAppliedEvent = BaseDomainEvent<
+  'layout.changeSetApplied',
+  { readonly summary: string; readonly events: readonly ChangeSetEvent[] }
+>;
+
 export type ActiveBaseplateSetEvent = BaseDomainEvent<
   'layout.activeBaseplateSet',
   {
@@ -112,4 +119,5 @@ export type DrawerEvent =
   | LowProfileBaseSetEvent
   | HeightUnitMmSetEvent
   | BaseplateParamsSetEvent
-  | ActiveBaseplateSetEvent;
+  | ActiveBaseplateSetEvent
+  | ChangeSetAppliedEvent;

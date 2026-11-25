@@ -19,7 +19,7 @@
 import { createContext, useContext, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { createCqrsMutations, commandBus } from '@/core/cqrs';
-import type { CommandBus, UpdateDrawerPayload } from '@/core/cqrs';
+import type { ChangeSet, CommandBus, UpdateDrawerPayload } from '@/core/cqrs';
 import type {
   Bin,
   BinUpdates,
@@ -94,6 +94,10 @@ export interface Mutations {
   clearLayer: (layerId: LayerId) => number;
 
   // Layout metadata
+  /** All ops or none, as one undo step. The value maps each op `ref` to its new id. */
+  applyChangeSet: (
+    changeSet: ChangeSet
+  ) => Result<{ refs: Readonly<Record<string, string>> }, ValidationError | LayoutError>;
   setName: (name: string) => void;
   setPrintBedSize: (size: number, depth?: number) => void;
   setGridUnitMm: (mm: number) => void;

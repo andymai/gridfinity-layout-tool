@@ -5235,6 +5235,7 @@
   "undo.magnetAnchorChanged": "Anclaje de imanes cambiado",
   "undo.lowProfileBaseChanged": "Base de perfil bajo cambiada",
   "undo.nameChanged": "Nombre cambiado",
+  "undo.changeSetApplied": "Cambios sugeridos aplicados",
   "undo.printBedSizeChanged": "Tamaño del print bed cambiado",
   "undo.redid": "↪ Redid: {action}",
   "undo.undid": "↩ Undid: {action}",

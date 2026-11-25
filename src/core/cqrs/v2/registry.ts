@@ -42,6 +42,7 @@ import { setLowProfileBase } from './domain/layout/setLowProfileBase';
 import { setHeightUnitMm } from './domain/layout/setHeightUnitMm';
 import { setBaseplateParams } from './domain/layout/setBaseplateParams';
 import { setActiveBaseplate } from './domain/layout/setActiveBaseplate';
+import { applyChangeSet } from './domain/layout/applyChangeSet';
 import { createEntry as libraryCreateEntry } from './domain/library/createEntry';
 import { deleteEntry as libraryDeleteEntry } from './domain/library/deleteEntry';
 import { switchActive as librarySwitchActive } from './domain/library/switchActive';
@@ -101,6 +102,7 @@ export const v2HandlerOverrides: Record<string, V2HandlerFn> = {
   [setHeightUnitMm.type]: wrapV2Handler(setHeightUnitMm) as V2HandlerFn,
   [setBaseplateParams.type]: wrapV2Handler(setBaseplateParams) as V2HandlerFn,
   [setActiveBaseplate.type]: wrapV2Handler(setActiveBaseplate) as V2HandlerFn,
+  [applyChangeSet.type]: wrapV2Handler(applyChangeSet) as V2HandlerFn,
   [libraryCreateEntry.type]: wrapV2Handler(libraryCreateEntry) as V2HandlerFn,
   [libraryDeleteEntry.type]: wrapV2Handler(libraryDeleteEntry) as V2HandlerFn,
   [librarySwitchActive.type]: wrapV2Handler(librarySwitchActive) as V2HandlerFn,
@@ -146,6 +148,7 @@ export const v2Commands = [
   setHeightUnitMm,
   setBaseplateParams,
   setActiveBaseplate,
+  applyChangeSet,
   libraryCreateEntry,
   libraryDeleteEntry,
   librarySwitchActive,

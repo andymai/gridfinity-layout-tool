@@ -5098,6 +5098,7 @@
   "undo.magnetAnchorChanged": "자석 기준점 변경",
   "undo.lowProfileBaseChanged": "로우 프로파일 베이스 변경",
   "undo.nameChanged": "이름 변경",
+  "undo.changeSetApplied": "제안된 변경 사항 적용",
   "undo.printBedSizeChanged": "프린트 베드 크기 변경",
   "undo.redid": "↪ 다시 실행함: {action}",
   "undo.undid": "↩ 실행 취소함: {action}",
