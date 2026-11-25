@@ -19,6 +19,8 @@ sources:
   - api/lib/posthogLogSink.ts
   - api/docs-ask.ts
   - apps/docs/.vitepress/theme/askAi/
+  - api/mcp.ts
+  - api/lib/mcp/telemetry.ts
 ---
 
 # Your data and privacy
@@ -132,6 +134,14 @@ The chat stays in this browser tab, and it ends when you close the tab.
 If <Ui k="settings.helpImprove" /> is on, the server also sends the question, the answer and a random chat ID to PostHog, to check the quality of the answers. The thumbs under an answer go there too. With the switch off, Ask AI sends no questions, answers or thumbs to PostHog. A Global Privacy Control or Do Not Track signal starts the switch off.
 
 When an answer fails, the server still writes an error log, as [Server error logs](#server-error-logs) explains. The log holds the error message, not your question or the answer.
+
+## AI assistants
+
+You can connect Claude or another AI assistant to the Layout Tool's MCP server, as [Use the Layout Tool from an AI assistant](../reference/ai-assistants) explains. Then your chat goes to the company that runs the assistant, under its own terms. The Layout Tool never sees your chat.
+
+When the assistant uses a tool, it sends the tool's input to the Layout Tool's server. The input is what the assistant chose to send for the tool: drawer sizes, bin sizes, labels or a print bed size. The server answers and keeps no input. The tools can't read or change your saved layouts.
+
+For each tool call, the server sends one event to PostHog: the tool name, the result, the time it took and the name of the assistant's software. The event holds no input. The server has no <Ui k="settings.helpImprove" /> switch to read, so these events don't depend on it.
 
 ## Next steps
 

@@ -103,6 +103,8 @@ export function checkAppLink(url: string, exists: (rel: string) => boolean): str
     segments.length === 1 || (segments.length === 2 && LOCALES.has(segments[0]));
   if (isContentRoute && exists(`content${route}.md`)) return null;
   if (exists(`public${route}`)) return null;
+  // An endpoint that a page names, such as the MCP server's address.
+  if (route.startsWith('/api/') && exists(`${route.slice(1)}.ts`)) return null;
   return `${url}: no such page in the app`;
 }
 
