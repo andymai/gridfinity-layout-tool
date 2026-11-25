@@ -3,12 +3,14 @@
  * through PostHog's Rollup plugin, which injects chunk ids before the chunk
  * hashes are computed.
  *
- * It uploads only when POSTHOG_API_KEY and POSTHOG_PROJECT_ID are set, and on
- * Vercel only for the production deploy: a preview would publish symbol sets
- * for bundles that are then discarded. Without those, the plugin does nothing.
+ * It uploads only from Vercel's production deploy with POSTHOG_API_KEY and
+ * POSTHOG_PROJECT_ID set; otherwise the plugin does nothing. A preview or a
+ * local build would publish symbol sets for bundles that production never
+ * serves, and `scripts/vercel-build.sh` uploads the worker maps under the same
+ * rule.
  */
 import posthog from '@posthog/rollup-plugin';
-import { loadEnv, type Plugin, type PluginOption } from 'vite';
+import type { Plugin, PluginOption } from 'vite';
 
 type Handler = (this: unknown, ...args: unknown[]) => unknown;
 type Hook = Handler | { handler: Handler };
@@ -16,15 +18,13 @@ type Hook = Handler | { handler: Handler };
 export interface UploadEnv {
   readonly POSTHOG_API_KEY?: string;
   readonly POSTHOG_PROJECT_ID?: string;
-  readonly VERCEL?: string;
   readonly VERCEL_ENV?: string;
 }
 
 export function skipReason(env: UploadEnv): string | null {
   if (!env.POSTHOG_API_KEY) return 'POSTHOG_API_KEY is not set';
   if (!env.POSTHOG_PROJECT_ID) return 'POSTHOG_PROJECT_ID is not set';
-  if (env.VERCEL && env.VERCEL_ENV !== 'production')
-    return `this is a ${env.VERCEL_ENV ?? 'non-production'} deploy`;
+  if (env.VERCEL_ENV !== 'production') return 'this is not a production deploy';
   return null;
 }
 
@@ -58,14 +58,9 @@ export function nonFatal<P extends object>(plugin: P, warn: (message: string) =>
   return plugin;
 }
 
-export function posthogSourcemaps(root: string = process.cwd()): PluginOption {
-  // The keys matter only to a production build, and `.env.local` holds them locally.
-  const keys = loadEnv('production', root, 'POSTHOG_');
-  const reason = skipReason({
-    ...keys,
-    VERCEL: process.env.VERCEL,
-    VERCEL_ENV: process.env.VERCEL_ENV,
-  });
+export function posthogSourcemaps(): PluginOption {
+  const env = process.env;
+  const reason = skipReason(env);
   // Without an upload the PostHog plugin is not built at all: no chunk ids,
   // no CLI lookup.
   if (reason) {
@@ -81,9 +76,9 @@ export function posthogSourcemaps(root: string = process.cwd()): PluginOption {
     return skipped;
   }
   const plugin = posthog({
-    personalApiKey: keys.POSTHOG_API_KEY ?? '',
-    projectId: keys.POSTHOG_PROJECT_ID ?? '',
-    host: keys.POSTHOG_HOST,
+    personalApiKey: env.POSTHOG_API_KEY ?? '',
+    projectId: env.POSTHOG_PROJECT_ID ?? '',
+    host: env.POSTHOG_HOST,
     sourcemaps: {
       enabled: true,
       releaseName: process.env.VERCEL_GIT_REPO_SLUG ?? 'gridfinity-layout-tool',
