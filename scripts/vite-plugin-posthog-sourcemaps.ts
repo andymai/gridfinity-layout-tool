@@ -8,7 +8,7 @@
  * for bundles that are then discarded. Without those, the plugin does nothing.
  */
 import posthog from '@posthog/rollup-plugin';
-import { loadEnv, type PluginOption } from 'vite';
+import { loadEnv, type Plugin, type PluginOption } from 'vite';
 
 type Handler = (this: unknown, ...args: unknown[]) => unknown;
 type Hook = Handler | { handler: Handler };
@@ -20,7 +20,6 @@ export interface UploadEnv {
   readonly VERCEL_ENV?: string;
 }
 
-/** Why this build uploads no source maps, or null when it uploads them. */
 export function skipReason(env: UploadEnv): string | null {
   if (!env.POSTHOG_API_KEY) return 'POSTHOG_API_KEY is not set';
   if (!env.POSTHOG_PROJECT_ID) return 'POSTHOG_PROJECT_ID is not set';
@@ -70,15 +69,16 @@ export function posthogSourcemaps(root: string = process.cwd()): PluginOption {
   // Without an upload the PostHog plugin is not built at all: no chunk ids,
   // no CLI lookup.
   if (reason) {
-    return {
+    const skipped: Plugin = {
       name: 'posthog-sourcemaps-skipped',
       apply: 'build',
       buildStart() {
         if (skipLogged) return;
         skipLogged = true;
-        console.log(`Skipping source map upload: ${reason}.`);
+        this.info(`Skipping source map upload: ${reason}.`);
       },
     };
+    return skipped;
   }
   const plugin = posthog({
     personalApiKey: keys.POSTHOG_API_KEY ?? '',
