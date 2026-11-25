@@ -1,3 +1,4 @@
+import { CATEGORY_COLOR_PALETTE } from '@/core/constants';
 import { getUserMessage, isOk } from '@/core/result';
 import { buildPlanLayout } from '@/shared/plan/buildPlanLayout';
 import type { StashReason } from '@/shared/plan/buildPlanLayout';
@@ -60,6 +61,15 @@ export function runPlanLayout(input: PlanInput, context: ToolContext): PlanLayou
   lines.push(
     `Placed ${placed.length} bins: ${[...counted].map(([key, n]) => (n > 1 ? `${n} x ${key}` : key)).join('; ')}.`
   );
+  if (input.categories !== undefined) {
+    const colorName = (hex: string): string =>
+      CATEGORY_COLOR_PALETTE.find((entry) => entry.color === hex)
+        ?.nameKey.split('.')
+        .pop() ?? hex;
+    lines.push(
+      `Categories and their colors: ${layout.categories.map((c) => `${c.name} (${colorName(c.color)})`).join(', ')}.`
+    );
+  }
   lines.push(
     `Free on layer 1: ${units(layout.drawer.width * layout.drawer.depth - usedCells)} of ${units(layout.drawer.width * layout.drawer.depth)} grid cells.`
   );

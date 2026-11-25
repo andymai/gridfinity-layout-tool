@@ -719,7 +719,7 @@ export const GOLDEN: readonly GoldenCase[] = [
     ],
     sources: ['/layouts/placing-bins', '/concepts/layouts-layers-stash'],
     expect:
-      'The drawer takes a 4 x 4 grid. The 3 x 3 bin fits, and the 2 x 2 bins do not: the answer says that they went to the stash for lack of room, and suggests smaller bins or a bigger drawer.',
+      'The drawer takes a 4 x 4 grid. The 3 x 3 bin fits, and the 2 x 2 bins do not: the answer says that they went to the stash for lack of room, and suggests a change that lets them fit, such as narrower bins.',
   },
   {
     id: 'P04',

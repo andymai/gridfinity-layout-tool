@@ -21,6 +21,16 @@ describe('runPlanLayout', () => {
     expect(result.plan?.link).toMatch(/^https:\/\/example\.test\/#plan=v1\./);
   });
 
+  it('names the categories with their colors when the plan gives them', () => {
+    const result = runPlanLayout(
+      planInput.parse({ ...plan, categories: ['Meters', 'Probes'] }),
+      context
+    );
+    expect(result.content).toContain(
+      'Categories and their colors: Meters (coral), Probes (orange).'
+    );
+  });
+
   it('names a plan by its content', () => {
     expect(planHandle(plan)).toBe(planHandle(planInput.parse(JSON.parse(JSON.stringify(plan)))));
     expect(planHandle(plan)).not.toBe(planHandle({ ...plan, title: 'Other' }));
