@@ -1,0 +1,21 @@
+src/core/storage/readOnly.ts
+  s_88cfcc42bf5bfd::t_ede708a6d15387 150
+src/core/storage/readOnly.test.ts
+  s_88cfcc42bf5bfd::t_ede708a6d15387 88-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8324c6a7d2c50702d5554c44f749f4e439a41413",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
