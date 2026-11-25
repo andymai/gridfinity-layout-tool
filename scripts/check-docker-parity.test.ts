@@ -77,7 +77,7 @@ const allSources = [
 ];
 
 // The API has no counterpart in the image, so its CORS headers have none either.
-const UNMIRRORED = new Set(['/api/(.*)']);
+const UNMIRRORED = new Set(['/api/mcp', '/api/((?!mcp$).*)']);
 
 /** The nginx regex of a `location ~ "..."` line, or the exact literal as an anchored regex. */
 function locationRegex(line: string): RegExp {

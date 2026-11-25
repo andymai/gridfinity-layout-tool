@@ -51,6 +51,7 @@ graph TB
 | `/api/docs-ask`                 | POST           | 20/hour    | `{ op: 'ask' }` streams an answer as server-sent events          |
 | `/api/docs-ask`                 | POST           | 60/hour    | `{ op: 'feedback' }` sends a thumb on an answer's trace          |
 | `/api/docs-ask`                 | POST           | none       | `{ op: 'resume' }` goes on with a turn after a browser tool      |
+| `/api/mcp`                      | POST           | 600/hour   | Public MCP server: compute tools for outside agents              |
 | `/api/auth/login/[provider]`    | GET            | 30/min     | Begin OAuth flow (Google / GitHub)                               |
 | `/api/auth/callback/[provider]` | GET            | 30/min     | OAuth code exchange + session mint                               |
 | `/api/auth/logout`              | POST           | 100/min    | Clear session cookie + KV row                                    |
@@ -88,6 +89,12 @@ Each imported mesh is one Blob file at `meshes/{hash}`, the SHA-256 of its bytes
 The docs assistant on `/docs`, on `claude-opus-5-5`, with the corpus that `scripts/build-docs-llms.ts` writes to `dist/docs/ask/`: a page map in the system prompt, and the `read_page`, `search_docs`, `drawer_fit`, `plan_layout`, `split_plan`, `bin_size_for` and `print_estimate` tools. The client keeps the history, and each request rebuilds it to the same bytes, so the prompt cache and the thinking blocks stay valid. `drawer_fit` and `plan_layout` run the app's own code through `lib/agent`, a bundle that `scripts/build-agent-server.ts` builds. A browser tool (`CLIENT_TOOLS`: `list_my_layouts`, `read_my_layout`, `read_my_settings`) reads the reader's own data once they allow it. It ends the request with a signed `pending` envelope, and `resume` goes on once the reader's browser answers. Each envelope runs once (`docsAsk:resume:{nonce}`), so production refuses `resume` without Redis.
 
 Off unless `DOCS_ASSISTANT_ENABLED=true` and `ANTHROPIC_API_KEY` is set. Each answer adds its cost to `docsAsk:spend:{day}`. At `DOCS_ASSISTANT_DAILY_CAP_USD` (default 5) the endpoint answers 429 `RESTING` until the next UTC day. In production, and only when the reader's analytics switch is on, it sends `$ai_*` traces with the question and answer text to PostHog. Follow-ups need `TOKEN_SALT` to sign turns. `DOCS_ASK_CORPUS_DIR` points a local run, such as `pnpm run docs:ask-eval`, at another docs build.
+
+## MCP server (`mcp.ts`, `lib/mcp/`)
+
+A public MCP server for outside agents, on stateless Streamable HTTP with the official SDK. It lists the compute tools from `lib/agent`: `drawer_fit`, `plan_layout`, `split_plan`, `bin_size_for` and `print_estimate`. They keep nothing, and `plan_layout` also returns its `#plan=` link as a `resource_link`. Each request gets its own server and transport. `vercel.json` gives `/api/mcp` open CORS headers, and a firewall rule lets it past Bot Protection.
+
+Off unless `MCP_SERVER_ENABLED=true`. Hosted clients share IP addresses, so the `mcp.call` limit per IP is loose. `mcp:calls:{day}` counts every request against `MCP_DAILY_CALL_CAP`, and production refuses when Redis is missing or fails. Until `EVENT_CEILING` requests in a day, each tool call sends one `mcp_tool_called` event to PostHog with the tool, the outcome, the time and the client's User-Agent product token.
 
 ## Ko-fi supporter ingest
 
