@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LayoutLibrary } from '@/core/types';
 import { gridUnits, heightUnits, layoutId } from '@/core/types';
-import { createTestLayout } from '@/test/testUtils';
+import { createTestLayout, expectErr, expectOk } from '@/test/testUtils';
 import { clearAllData, closeDatabase, saveLayout, saveLibraryIndex } from './backends/indexedDB';
 import { readLayout, readLibraryIndex, readPrinterSettings } from './readOnly';
 import {
@@ -54,25 +54,25 @@ describe('read-only layout reads', () => {
     await saveLibraryIndex(library);
     await saveLayout(`${LAYOUT_KEY_PREFIX}${id}`, layout);
     closeDatabase();
-    expect((await readLibraryIndex())?.entries.map((e) => e.name)).toEqual(['Desk drawer']);
-    expect((await readLayout(id))?.name).toBe('Desk drawer');
-    expect(await readLayout('missing')).toBeNull();
+    expect(expectOk(await readLibraryIndex())?.entries.map((e) => e.name)).toEqual(['Desk drawer']);
+    expect(expectOk(await readLayout(id))?.name).toBe('Desk drawer');
+    expect(expectOk(await readLayout('missing'))).toBeNull();
   });
 
   it('falls back to localStorage when the IndexedDB index is broken', async () => {
     await saveLibraryIndex({ entries: [{ id: 7 }] } as unknown as LayoutLibrary);
     closeDatabase();
     localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(library));
-    expect((await readLibraryIndex())?.entries.map((e) => e.name)).toEqual(['Desk drawer']);
+    expect(expectOk(await readLibraryIndex())?.entries.map((e) => e.name)).toEqual(['Desk drawer']);
   });
 
-  it('fails, and does not answer with no data, when the browser blocks storage', async () => {
+  it('answers with an error, not with no data, when the browser blocks storage', async () => {
     const blocked = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new DOMException('blocked', 'SecurityError');
     });
     try {
-      await expect(readLibraryIndex()).rejects.toThrow('blocked');
-      expect(() => readPrinterSettings()).toThrow('blocked');
+      expect(expectErr(await readLibraryIndex()).code).toBe('STORAGE_UNAVAILABLE');
+      expect(expectErr(readPrinterSettings()).code).toBe('STORAGE_UNAVAILABLE');
     } finally {
       blocked.mockRestore();
     }
@@ -89,8 +89,8 @@ describe('read-only layout reads', () => {
       `${LAYOUT_KEY_PREFIX}${id}`,
       JSON.stringify(createTestLayout({ name: 'Old' }))
     );
-    expect((await readLibraryIndex())?.activeLayoutId).toBe(id);
-    expect((await readLayout(id))?.name).toBe('Old');
+    expect(expectOk(await readLibraryIndex())?.activeLayoutId).toBe(id);
+    expect(expectOk(await readLayout(id))?.name).toBe('Old');
   });
 
   it('creates no database when there is none, and ignores a broken library', async () => {
@@ -99,14 +99,14 @@ describe('read-only layout reads', () => {
       const request = indexedDB.deleteDatabase(LAYOUT_DB_NAME);
       request.onsuccess = request.onerror = resolve;
     });
-    expect(await readLibraryIndex()).toBeNull();
-    expect(await readLayout(id)).toBeNull();
+    expect(expectOk(await readLibraryIndex())).toBeNull();
+    expect(expectOk(await readLayout(id))).toBeNull();
     expect(await databaseNames()).not.toContain(LAYOUT_DB_NAME);
     localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify({ entries: [{ id: 7 }] }));
-    expect(await readLibraryIndex()).toBeNull();
+    expect(expectOk(await readLibraryIndex())).toBeNull();
     const damaged = { ...library, entries: [{ ...library.entries[0], preview: {} }] };
     localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(damaged));
-    expect(await readLibraryIndex()).toBeNull();
+    expect(expectOk(await readLibraryIndex())).toBeNull();
   });
 
   it('never holds the database open, so the app can still upgrade it', async () => {
@@ -129,7 +129,7 @@ describe('read-only layout reads', () => {
   });
 
   it('reads the printer settings, with defaults for a missing or broken field', () => {
-    expect(readPrinterSettings()).toMatchObject({
+    expect(expectOk(readPrinterSettings())).toMatchObject({
       measureUnit: 'mm',
       printBedMm: { width: 256, depth: 256 },
       gridUnitMm: 42,
@@ -143,7 +143,7 @@ describe('read-only layout reads', () => {
         printSettings: { nozzleSizeMm: 0.6, layerHeightMm: 'thin', filamentCostPerKg: 0 },
       })
     );
-    const settings = readPrinterSettings();
+    const settings = expectOk(readPrinterSettings());
     expect(settings).toMatchObject({ measureUnit: 'in', printBedMm: { width: 180, depth: 180 } });
     expect(settings.print.nozzleSizeMm).toBe(0.6);
     expect(settings.print.layerHeightMm).toBeGreaterThan(0);

@@ -20,6 +20,11 @@ import type {
   Effort,
   RoundBudget,
 } from '../../api/lib/docsAsk/agent.js';
+import {
+  listMyLayoutsInput,
+  readMyLayoutInput,
+  readMySettingsInput,
+} from '../../api/lib/agent/index.js';
 import { CLIENT_TOOLS, clientRun } from '../../api/lib/docsAsk/clientTools.js';
 import type { ClientResult } from '../../api/lib/docsAsk/clientTools.js';
 import { pendingMessages, rebuildMessages, userTurn } from '../../api/lib/docsAsk/history.js';
@@ -122,6 +127,15 @@ if (missing.length > 0)
  */
 function readerResult(fixture: ReaderFixture | undefined, call: BrowserCall): ClientResult {
   const id = call.id;
+  // The panel runs a read only when its input fits the tool, as the browser does.
+  const schema = {
+    list_my_layouts: listMyLayoutsInput,
+    read_my_layout: readMyLayoutInput,
+    read_my_settings: readMySettingsInput,
+  }[call.name];
+  if (schema === undefined || !schema.safeParse(call.input).success) {
+    return { callId: id, status: 'unavailable' };
+  }
   if (fixture === undefined || fixture.answer === 'decline')
     return { callId: id, status: 'declined' };
   if (call.name === 'list_my_layouts' && fixture.layouts) {

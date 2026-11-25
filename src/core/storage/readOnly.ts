@@ -1,4 +1,6 @@
 import { migrateBaseplateParams } from '@/core/baseplateDefaults';
+import { err, isOk, ok, storageUnavailable } from '@/core/result';
+import type { Result, StorageUnavailableError } from '@/core/result';
 import { DEFAULT_SETTINGS } from '@/core/store/settings.types';
 import type { Layout, LayoutLibrary } from '@/core/types';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
@@ -61,15 +63,20 @@ async function readStored(store: string, key: string): Promise<unknown> {
   }
 }
 
-// A browser that blocks storage throws here, and the error goes to the
-// caller: the reader's data is unknown, which is not the same as none.
-function readLocal(key: string): unknown {
-  const raw = localStorage.getItem(key);
-  if (raw === null) return undefined;
+// A browser that blocks storage throws on access. That is an error, not
+// missing data: the reader's data is unknown, which is not the same as none.
+function readLocal(key: string): Result<unknown, StorageUnavailableError> {
+  let raw: string | null;
   try {
-    return JSON.parse(raw) as unknown;
+    raw = localStorage.getItem(key);
+  } catch (cause) {
+    return err(storageUnavailable('localStorage', cause));
+  }
+  if (raw === null) return ok(undefined);
+  try {
+    return ok(JSON.parse(raw) as unknown);
   } catch {
-    return undefined;
+    return ok(undefined);
   }
 }
 
@@ -102,25 +109,37 @@ function isLibrary(value: unknown): value is LayoutLibrary {
 }
 
 /** The library index as the app last saved it: IndexedDB first, then localStorage, as the app reads it. */
-export async function readLibraryIndex(): Promise<LayoutLibrary | null> {
+export async function readLibraryIndex(): Promise<
+  Result<LayoutLibrary | null, StorageUnavailableError>
+> {
   const stored = await readStored(LIBRARY_STORE, LIBRARY_INDEX_KEY);
-  if (isLibrary(stored)) return stored;
+  if (isLibrary(stored)) return ok(stored);
   const local = readLocal(LIBRARY_STORAGE_KEY);
-  return isLibrary(local) ? local : null;
+  if (!isOk(local)) return local;
+  return ok(isLibrary(local.value) ? local.value : null);
 }
 
 /** One layout through the app's own load steps, or null when it is missing or broken. */
-export async function readLayout(id: string): Promise<Layout | null> {
+export async function readLayout(
+  id: string
+): Promise<Result<Layout | null, StorageUnavailableError>> {
   const key = `${LAYOUT_KEY_PREFIX}${id}`;
   const stored = await readStored(LAYOUTS_STORE, key);
-  const raw = (typeof stored === 'string' ? decompressLayout(stored) : null) ?? readLocal(key);
-  if (raw === null || raw === undefined) return null;
+  let raw: unknown = typeof stored === 'string' ? decompressLayout(stored) : null;
+  if (raw === null) {
+    const local = readLocal(key);
+    if (!isOk(local)) return local;
+    raw = local.value;
+  }
+  if (raw === null || raw === undefined) return ok(null);
   const result = salvageImport(raw);
-  if (!result.valid) return null;
+  if (!result.valid) return ok(null);
   const layout = result.layout;
-  return layout.baseplateParams
-    ? { ...layout, baseplateParams: migrateBaseplateParams(layout.baseplateParams) }
-    : layout;
+  return ok(
+    layout.baseplateParams
+      ? { ...layout, baseplateParams: migrateBaseplateParams(layout.baseplateParams) }
+      : layout
+  );
 }
 
 export interface PrinterSettings {
@@ -137,8 +156,10 @@ const nonNegative = (value: unknown, fallback: number): number =>
   isFiniteNumber(value) && value >= 0 ? value : fallback;
 
 /** The printer and unit settings, with the app's defaults where a field is missing. */
-export function readPrinterSettings(): PrinterSettings {
-  const stored = readLocal(SETTINGS_STORAGE_KEY);
+export function readPrinterSettings(): Result<PrinterSettings, StorageUnavailableError> {
+  const read = readLocal(SETTINGS_STORAGE_KEY);
+  if (!isOk(read)) return read;
+  const stored = read.value;
   const saved = (typeof stored === 'object' && stored !== null ? stored : {}) as Record<
     string,
     unknown
@@ -149,7 +170,7 @@ export function readPrinterSettings(): PrinterSettings {
       : {}
   ) as Record<string, unknown>;
   const bedWidth = positive(saved.defaultPrintBedSize, DEFAULT_SETTINGS.defaultPrintBedSize);
-  return {
+  return ok({
     measureUnit: isLengthUnit(saved.measureUnit) ? saved.measureUnit : DEFAULT_SETTINGS.measureUnit,
     printBedMm: { width: bedWidth, depth: positive(saved.defaultPrintBedDepth, bedWidth) },
     gridUnitMm: positive(saved.defaultGridUnitMm, DEFAULT_SETTINGS.defaultGridUnitMm),
@@ -165,5 +186,5 @@ export function readPrinterSettings(): PrinterSettings {
         DEFAULT_PRINT_SETTINGS.filamentCostPerKg
       ),
     },
-  };
+  });
 }
