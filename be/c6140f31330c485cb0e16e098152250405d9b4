@@ -1,0 +1,23 @@
+src/agent/contract/calculators.ts
+  s_88cfcc42bf5bfd::t_eee4d7f5b554b8 44-45,47-53
+src/agent/contract/drawerFit.ts
+  s_88cfcc42bf5bfd::t_56acbe77d55767 5-8
+api/lib/docsAsk/tools.ts
+  s_88cfcc42bf5bfd::t_56acbe77d55767 133
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bec6140f31330c485cb0e16e098152250405d9b4",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
