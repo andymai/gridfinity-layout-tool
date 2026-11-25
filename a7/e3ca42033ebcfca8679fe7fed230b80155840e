@@ -1,0 +1,25 @@
+src/agent/contract/reader.ts
+  s_88cfcc42bf5bfd::t_354e93b86125e4 136,160,163-166
+src/agent/reader/readers.test.ts
+  s_88cfcc42bf5bfd::t_354e93b86125e4 166-168,200-216
+src/core/storage/readOnly.test.ts
+  s_88cfcc42bf5bfd::t_354e93b86125e4 62-68
+src/core/storage/readOnly.ts
+  s_88cfcc42bf5bfd::t_354e93b86125e4 103-106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a7e3ca42033ebcfca8679fe7fed230b80155840e",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
