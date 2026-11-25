@@ -23,6 +23,7 @@ import {
   spendDay,
 } from './lib/docsAsk/spend.js';
 import { createToolRunner, toolDefinitions } from './lib/docsAsk/tools.js';
+import { appOrigin } from './lib/docsAsk/origin.js';
 import { sendAskFeedback, sendAskTrace } from './lib/docsAsk/traces.js';
 import { logger } from './lib/logger.js';
 import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
@@ -142,7 +143,8 @@ async function handleAsk(
   const run = createToolRunner(
     source.corpus,
     (code) => tables.get(code) ?? source.english,
-    source.english
+    source.english,
+    appOrigin()
   );
   const key = turnKey();
   const messages = [

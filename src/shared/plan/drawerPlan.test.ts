@@ -4,6 +4,8 @@ import { isOk } from '@/core/result';
 import { buildDrawerLinkLayout, parseDrawerLink } from '@/shared/utils/drawerLink';
 import { drawerLink, planDrawer, toMm } from './drawerPlan';
 
+const ORIGIN = 'https://gridfinitylayouttool.com';
+
 function openedLayout(link: string) {
   const parsed = parseDrawerLink(new URL(link).search);
   if (parsed === null || !isOk(parsed)) throw new Error(`the app rejects ${link}`);
@@ -21,7 +23,7 @@ describe('planDrawer', () => {
       { widthMm: 405, depthMm: 480, heightMm: 75 },
     ]) {
       const plan = planDrawer(size);
-      const layout = openedLayout(drawerLink(size));
+      const layout = openedLayout(drawerLink(ORIGIN, size));
       expect(plan?.grid.width).toBe(layout.drawer.width);
       expect(plan?.grid.depth).toBe(layout.drawer.depth);
     }
@@ -77,7 +79,11 @@ describe('planDrawer', () => {
 
 describe('drawerLink', () => {
   it('writes the format that parseDrawerLink reads, with the name', () => {
-    const link = drawerLink({ widthMm: 345, depthMm: 260, heightMm: 40 }, { name: 'Screw drawer' });
+    const link = drawerLink(
+      ORIGIN,
+      { widthMm: 345, depthMm: 260, heightMm: 40 },
+      { name: 'Screw drawer' }
+    );
     expect(link).toBe('https://gridfinitylayouttool.com/?drawer=345x260x40&name=Screw+drawer');
     const layout = openedLayout(link);
     expect(layout.name).toBe('Screw drawer');
@@ -85,15 +91,15 @@ describe('drawerLink', () => {
   });
 
   it('opens the baseplate generator and leaves out a missing height', () => {
-    expect(drawerLink({ widthMm: 295, depthMm: 522 }, { tool: 'baseplate' })).toBe(
+    expect(drawerLink(ORIGIN, { widthMm: 295, depthMm: 522 }, { tool: 'baseplate' })).toBe(
       'https://gridfinitylayouttool.com/baseplate?drawer=295x522'
     );
   });
 
   it('carries inches as millimeters to one decimal', () => {
     const size = { widthMm: toMm(15.5, 'in'), depthMm: toMm(21, 'in') };
-    expect(drawerLink(size)).toBe('https://gridfinitylayouttool.com/?drawer=393.7x533.4');
-    expect(openedLayout(drawerLink(size)).drawer.measuredMm).toEqual({
+    expect(drawerLink(ORIGIN, size)).toBe('https://gridfinitylayouttool.com/?drawer=393.7x533.4');
+    expect(openedLayout(drawerLink(ORIGIN, size)).drawer.measuredMm).toEqual({
       width: 393.7,
       depth: 533.4,
     });

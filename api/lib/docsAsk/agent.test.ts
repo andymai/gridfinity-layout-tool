@@ -118,7 +118,7 @@ function options(
     tools: toolDefinitions(corpus),
     messages: [{ role: 'user', content: 'How do layers work?' }],
     locale: 'en',
-    run: createToolRunner(corpus, () => ({}), {}),
+    run: createToolRunner(corpus, () => ({}), {}, 'https://gridfinitylayouttool.com'),
     send: (event) => events.push(event),
     budget: roundBudget,
     progress,

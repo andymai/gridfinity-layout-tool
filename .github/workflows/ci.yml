@@ -428,6 +428,10 @@ jobs:
           restore-keys: |
             eslint-${{ runner.os }}-${{ hashFiles('eslint.config.js', 'eslint-rules/**', 'pnpm-lock.yaml') }}-
 
+      - name: Generate the agent server bundle
+        # api/lib/agent imports it, and type-aware lint rules read its types.
+        run: pnpm run build:agent-server
+
       - name: Lint
         id: lint
         continue-on-error: true

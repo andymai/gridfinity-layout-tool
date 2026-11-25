@@ -243,6 +243,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
+      // api/lib/agent/index.ts imports the generated agent bundle; tests run the source.
+      './_generated/server.js': path.resolve(__dirname, 'src/agent/server.ts'),
       '@gridfinity/branded-types': path.resolve(__dirname, 'packages/branded-types/src/index.ts'),
       'virtual:pwa-register/react': path.resolve(__dirname, 'src/test/mocks/pwa-register.ts'),
     },
