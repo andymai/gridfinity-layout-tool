@@ -1,0 +1,21 @@
+scripts/vite-plugin-posthog-sourcemaps.test.ts
+  s_88cfcc42bf5bfd::t_92cab8700943c7 7-12,16,27
+scripts/vite-plugin-posthog-sourcemaps.ts
+  s_88cfcc42bf5bfd::t_92cab8700943c7 6-10,13,27,61-63,79-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "99c0bd87a0f25a207b1c7f4c6d1901b3d206a654",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
