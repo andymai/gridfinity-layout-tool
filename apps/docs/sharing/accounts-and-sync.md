@@ -2,9 +2,9 @@
 title: Accounts and sync
 description: 'Sign in with Google or GitHub to keep your layouts and designs on all your devices.'
 questions:
-  - 'Do I need an account?'
-  - 'How do I sync my layouts across devices?'
-  - 'How do I delete my account?'
+  - 'Will my cutout library of 30 traced tools sync to my laptop?'
+  - 'My dark theme and Labs features are missing on my new laptop. Why?'
+  - 'My partner and I edit one layout. Share an account or use a live room?'
 sources:
   - src/core/sync/
   - src/shell/sync/

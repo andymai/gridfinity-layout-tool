@@ -2,9 +2,9 @@
 title: Save cutouts to a library
 description: 'Save shapes to your cutout library, place them in other bins and lids, keep them in folders, and share them as files.'
 questions:
-  - 'How do I use a cutout again in another bin?'
-  - 'Can I put a saved cutout on a lid?'
-  - 'How do I share a saved cutout with a friend?'
+  - "I updated my saved caliper outline. Why didn't my old bins change?"
+  - 'Can I scan tools at home and use them on my shop laptop?'
+  - 'Should my traced wire cutters go in the cutout library or a design?'
 sources:
   - src/features/bin-designer/components/CutoutLibrary/LibraryPanel.tsx
   - src/features/bin-designer/components/CutoutLibrary/SaveToLibraryDialog.tsx

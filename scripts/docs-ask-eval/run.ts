@@ -5,6 +5,8 @@
  *
  *   pnpm run docs:build && pnpm run docs:llms
  *   vercel env run -e development -- pnpm run docs:ask-eval -- --model claude-opus-5-5 --effort medium
+ *
+ * --suggestions runs every docs page's starter questions instead of the golden set.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,6 +25,7 @@ import type { AnswerChecks } from './checks';
 import { GOLDEN } from './golden';
 import type { GoldenCase } from './golden';
 import { JUDGE_MODEL, judge } from './judge';
+import { suggestionCases } from './suggestions';
 import type { JudgedTurn, Verdict } from './judge';
 
 const { values: args } = parseArgs({
@@ -31,6 +34,7 @@ const { values: args } = parseArgs({
     effort: { type: 'string', default: EFFORT },
     only: { type: 'string' },
     group: { type: 'string' },
+    suggestions: { type: 'boolean', default: false },
     'max-usd': { type: 'string', default: '15' },
     concurrency: { type: 'string', default: '4' },
     'judge-model': { type: 'string', default: JUDGE_MODEL },
@@ -92,7 +96,7 @@ const client = new Anthropic();
 const source = await docsSource();
 const { corpus } = source;
 
-const cases = GOLDEN.filter(
+const cases = (args.suggestions ? suggestionCases() : GOLDEN).filter(
   (c) =>
     (!args.only || args.only.split(',').includes(c.id)) && (!args.group || c.group === args.group)
 );

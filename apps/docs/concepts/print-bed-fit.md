@@ -2,9 +2,9 @@
 title: Fitting the print bed
 description: 'See how the Layout Tool checks each part against your print bed, and how it splits a large part.'
 questions:
-  - 'How does the app check if a part fits my print bed?'
-  - 'What happens when a bin is too big for my bed?'
-  - 'Where do I set my print bed size?'
+  - 'My plate splits in 6 for my 220 mm bed. Can I test the joints first?'
+  - 'Can the plate pieces for my 235 mm bed come out the same shape?'
+  - 'The fit test for my long tool bin has a seam through a pocket. Why?'
 sources:
   - src/core/constants.ts
   - src/core/bedFit.ts

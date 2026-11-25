@@ -2,9 +2,9 @@
 title: Self-hosting with Docker
 description: 'Run the Layout Tool on your own server with Docker, see what works without the hosted service, and update it.'
 questions:
-  - 'Can I run the Layout Tool on my own server?'
-  - 'What works in a self-hosted copy?'
-  - 'How do I update my self-hosted copy?'
+  - 'Can I serve my copy behind a reverse proxy at /gridfinity/?'
+  - 'Should my home server run the latest tag or pin an X.Y tag?'
+  - 'I opened my copy by its LAN IP, and my layouts are gone. Why?'
 sources:
   - docs/self-hosting.md
   - Dockerfile

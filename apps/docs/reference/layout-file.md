@@ -2,9 +2,9 @@
 title: Layout file format
 description: 'Edit or write a layout JSON file by hand, avoid the unit and orientation traps, and validate it before import.'
 questions:
-  - 'Can I write a layout file by hand?'
-  - 'How do I validate a layout file?'
-  - 'What is in a layout JSON file?'
+  - 'My drawer is 52 × 38 cm. What drawer width and depth go in the file?'
+  - 'I set y: 0 for my back row, but the bins show at the front. Why?'
+  - 'Can a script turn my spreadsheet of 40 bins into a layout file?'
 sources:
   - docs/schemas/layout.md
   - docs/schemas/README.md

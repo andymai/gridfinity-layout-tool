@@ -2,9 +2,9 @@
 title: Gridfinity dimensions
 description: 'Look up the measurements of the grid, the height unit, the base and lip profiles, magnets, screws and clearances.'
 questions:
-  - 'What are the Gridfinity dimensions?'
-  - 'What size magnets does Gridfinity use?'
-  - 'What clearance do bins have in the plate?'
+  - 'My drawer is 600 × 400 mm and 75 mm deep. How tall can my bins be?'
+  - "My 2 × 3 bin measures 84 × 126 mm. Is that why it's tight?"
+  - 'I have 8 × 3 mm magnets. What holes do my bins and plates need?'
 sources:
   - src/shared/printSettings/gridfinityGeometry.ts
   - src/shared/generation/generatorConstants.ts

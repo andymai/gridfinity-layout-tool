@@ -2,9 +2,9 @@
 title: A wrench set in one bin
 description: 'Pick the wrench sizes you have, and get a solid bin with a pocket for each wrench, its size beside it and a finger channel.'
 questions:
-  - 'How do I make a holder for a set of combination wrenches?'
-  - 'Can the bin designer make wrench pockets from a list of sizes?'
-  - 'How do I change the sizes in a wrench set later?'
+  - 'My wrenches are an old no-name set. Tool set or a phone scan?'
+  - 'Can I scan my adjustable wrench into the same bin as the set?'
+  - 'Can my wrench bin go into my drawer layout as a linked bin?'
 sources:
   - src/shared/toolSets/generateToolSet.ts
   - src/shared/toolSets/nestLayout.ts

@@ -2,9 +2,9 @@
 title: Categories and colors
 description: 'Group bins by what they hold, give each group a color, and see where the categories show up.'
 questions:
-  - 'How do I color bins by what they hold?'
-  - 'How do I add a new category?'
-  - 'Can I use the same categories in every layout?'
+  - 'My screw bins are red on the grid. Can they print in red filament?'
+  - 'Can I print a paper map of my drawer with its category colors?'
+  - 'Select by category misses half my Coral bins. Why?'
 sources:
   - src/features/categories/
   - src/core/constants.ts

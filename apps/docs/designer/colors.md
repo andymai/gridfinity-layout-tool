@@ -2,9 +2,9 @@
 title: Colors
 description: 'Give each part of a bin its own filament color, add accent bands, and save color sets as palettes.'
 questions:
-  - 'How do I give each part of a bin its own color?'
-  - 'What is an accent band?'
-  - 'How do I save a set of colors?'
+  - 'How do I match my orange lip and white tabs to my AMS slots?'
+  - 'My two-color label tabs add many filament changes. How do I cut them?'
+  - 'Accent band or split lip to color-code my bins by drawer?'
 sources:
   - src/features/bin-designer/types/featureColors.ts
   - src/features/bin-designer/components/panel/ColorsSection/

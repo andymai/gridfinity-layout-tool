@@ -2,9 +2,9 @@
 title: Scan with your phone
 description: 'Photograph a tool with your phone and get a cutout at its true size on your computer.'
 questions:
-  - 'How do I scan a tool with my phone?'
-  - 'What size reference do I need for a phone scan?'
-  - 'Can I scan several tools in one photo?'
+  - 'My scan of a 40 mm tall drill comes out too big. What helps?'
+  - 'No internet in my garage. Phone scan or trace a photo?'
+  - 'Can I start a scan from the layout editor and get a bin that fits?'
 sources:
   - src/features/scan-capture/
   - src/shell/scanBoot.tsx

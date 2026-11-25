@@ -2,9 +2,9 @@
 title: Share a layout
 description: 'Make a link so other people can view a layout or edit it with you.'
 questions:
-  - 'How do I share a layout?'
-  - 'Can someone edit my layout with a link?'
-  - 'How do I delete a share link?'
+  - 'Can my friend print every bin of my 3-layer layout from my share link?'
+  - 'I want to post my layout on a forum. Share link or a no-server link?'
+  - "I added bins to my stash, but my share link doesn't show them. Why?"
 sources:
   - src/features/cloud-share/
   - src/shared/hooks/useCollabMode.ts

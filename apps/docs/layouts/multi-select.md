@@ -2,9 +2,9 @@
 title: Work with several bins
 description: 'Select several bins, align them, edit them together, merge them into one bin, and use the bin menus.'
 questions:
-  - 'How do I select several bins at once?'
-  - 'How do I align a group of bins?'
-  - 'How do I merge several bins into one?'
+  - "My merged 8 × 2 tray won't fit my bed. Split it here or in my slicer?"
+  - 'Can I merge my 1 × 1 bins into one feetless insert for a desk drawer?'
+  - 'Expand to fit on my 5 selected bins changes nothing. Why?'
 sources:
   - src/features/grid-editor/components/Grid/SelectionToolbar/SelectionToolbar.tsx
   - src/features/grid-editor/hooks/useGridRowColumnSelection.ts

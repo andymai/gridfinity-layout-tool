@@ -2,9 +2,9 @@
 title: The base
 description: 'Add magnet and screw holes to a bin, choose its feet, and make its floor lighter.'
 questions:
-  - 'How do I add magnet holes to a bin?'
-  - 'What is a low-profile base?'
-  - 'How do I make a bin floor lighter?'
+  - 'My drawers ride in a van. How do I keep bins in place on the plate?'
+  - "Why won't detachable feet turn on for my bin with 0.8 mm walls?"
+  - 'I swap bins with a friend. Should I use a low-profile base?'
 sources:
   - src/features/bin-designer/components/panel/BaseSection/
   - src/features/bin-designer/types/base.ts

@@ -2,9 +2,9 @@
 title: Place and edit bins
 description: 'Draw, move, resize and rotate bins, fill the gaps, slant bins, use half units and the stash, and undo a change.'
 questions:
-  - 'How do I draw a bin on the grid?'
-  - 'How do I fill all the empty space with bins?'
-  - 'How do I rotate or resize a bin?'
+  - 'My pens are 15 cm long and my drawer is 7 cm deep. Can bins lean?'
+  - 'My 1.5 × 2 bin sits half a unit off the grid. Which feet does it need?'
+  - 'I widened one screw bin, and all my other screw bins grew too. Why?'
 sources:
   - src/shared/hooks/interactions/
   - src/features/grid-editor/components/Grid/Bin/useBinPointerInteraction.ts

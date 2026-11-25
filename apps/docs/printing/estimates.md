@@ -2,9 +2,9 @@
 title: Filament and time estimates
 description: 'Find the filament, time and cost estimates, learn what they assume, and know how far to trust them.'
 questions:
-  - 'How much filament will my drawer take?'
-  - 'How long will my bins take to print?'
-  - 'How accurate are the print estimates?'
+  - 'My bins have many dividers. Which filament estimate do I trust?'
+  - 'I print 0.28 mm layers. Why does the time estimate run long?'
+  - 'Is 400 g of PLA left enough for this drawer and its baseplate?'
 sources:
   - src/shared/printSettings/printSettings.ts
   - src/shared/printSettings/standardBinVolume.ts

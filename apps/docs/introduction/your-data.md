@@ -2,9 +2,9 @@
 title: Your data and privacy
 description: 'Learn what stays in your browser, what goes to the server, and how to control it.'
 questions:
-  - 'Where are my layouts stored?'
-  - 'What does a share link make public?'
-  - 'Can I turn off usage analytics?'
+  - 'To keep my data at home, turn off analytics or self-host?'
+  - 'Sync says my cloud storage is full. What can I delete first?'
+  - 'Settings says my storage capacity is limited. Is my work at risk?'
 sources:
   - src/core/storage/
   - src/core/sync/

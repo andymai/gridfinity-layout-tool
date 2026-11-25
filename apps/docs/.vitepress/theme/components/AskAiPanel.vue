@@ -229,8 +229,8 @@ onBeforeUnmount(() => {
       <div ref="scroller" class="panel-scroll" @click="onClick">
         <div v-if="askAi.exchanges.length === 0" class="empty">
           <p class="intro">
-            Ask what the Layout Tool can do, or how to do something. Answers come from these docs,
-            with links to the sections they use.
+            Tell it about your drawer, your tools or your printer. It sizes the grid for a drawer
+            and plans bins across features. Answers come from these docs, with links to each step.
           </p>
           <ul v-if="starters.length > 0" class="starters">
             <li v-for="question in starters" :key="question">

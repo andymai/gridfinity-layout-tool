@@ -2,9 +2,9 @@
 title: A kitchen utensil drawer
 description: 'Fill an odd-sized kitchen drawer with long utensil bins, half-grid cells and a baseplate for a 220 mm bed.'
 questions:
-  - 'How do I fill an odd-sized kitchen drawer?'
-  - 'How do I make long bins for kitchen utensils?'
-  - 'How do I fill the leftover space at the edges?'
+  - 'My kitchen drawer is 46 × 52 cm and 7 cm tall. Do 6u bins fit?'
+  - "Should my knife block's handle rest print as one part or two?"
+  - 'Can my olive oil bottles lie on their sides in a bin?'
 sources:
   - src/shared/utils/drawerFit.ts
   - src/shared/hooks/useDrawerFitSuggestion.ts

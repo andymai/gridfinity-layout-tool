@@ -2,9 +2,9 @@
 title: What the Layout Tool does
 description: 'Plan Gridfinity drawers, design custom bins and baseplates, and print them with the free Gridfinity Layout Tool.'
 questions:
-  - 'What can I make with the Layout Tool?'
-  - 'How do the layout editor, bin designer and baseplate work together?'
-  - 'Is the Layout Tool free, and does it work offline?'
+  - 'My drawer is 56 × 40 cm and 10 cm deep. What grid and heights fit?'
+  - 'My bed is 180 mm but my drawer is 60 cm wide. Can I still print it?'
+  - 'Can the app make a bin for my set of metric combination wrenches?'
 sources:
   - src/shared/components/ToolSwitcher/
   - src/features/design-linking/components/LinkedDesignSection/

@@ -2,9 +2,9 @@
 title: Labs
 description: 'Try early features in Settings > Labs: bin contents search, a sliding tray, a second 3D engine and a speed overlay.'
 questions:
-  - 'What features are in Labs?'
-  - 'How do I turn on a Labs feature?'
-  - 'What is the alternative 3D engine?'
+  - 'Can I search all 30 of my drawers for the one with my hex keys?'
+  - 'My wall pattern export runs out of memory. Try the second 3D engine?'
+  - 'Can one sliding tray ride across two bins that stand side by side?'
 sources:
   - src/core/labs/features.ts
   - src/shell/Modals/SettingsModal/tabs/LabsTab/LabsTab.tsx

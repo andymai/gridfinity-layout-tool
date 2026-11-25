@@ -2,9 +2,9 @@
 title: Labels and text
 description: 'Add label tabs and wall, floor and lid text, then set the font, size and finish of the letters.'
 questions:
-  - 'How do I add a label to a bin?'
-  - 'How do I change the font of a label?'
-  - 'Can I put text on the floor or the lid?'
+  - 'One design for 20 screw bins. Can each bin print its own label?'
+  - 'My label letters run together on a 0.6 mm nozzle. What do I change?'
+  - 'Can I stick DYMO tape on my tabs in place of printed text?'
 sources:
   - src/features/bin-designer/components/panel/LabelTabsSection/
   - src/features/bin-designer/components/panel/TypeSection/

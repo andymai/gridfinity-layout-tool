@@ -2,9 +2,9 @@
 title: Glossary
 description: 'Look up the terms that you meet in the Layout Tool and in these docs, from baseplate to Workshop, in alphabetical order.'
 questions:
-  - 'What do the Gridfinity terms mean?'
-  - 'What is a baseplate?'
-  - 'What is a stacking lip?'
+  - "Striped cells on my top layer won't take a bin. What are they?"
+  - 'Version or variant: which keeps a 2-unit copy of my bin in step?'
+  - 'My bin sits half a unit off the grid. Do I need half sockets?'
 sources:
   - src/i18n/locales/en.ts
   - src/shared/printSettings/gridfinityGeometry.ts

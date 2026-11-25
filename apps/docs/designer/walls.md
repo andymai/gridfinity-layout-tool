@@ -2,9 +2,9 @@
 title: Walls
 description: 'Set the wall thickness, add wall patterns, cut openings and handles, add label slots, and put drainage holes in the floor.'
 questions:
-  - 'How do I change the wall thickness?'
-  - 'How do I add a pattern to the walls?'
-  - 'How do I add drainage holes to a bin?'
+  - 'Can my dividers get a honeycomb but my front wall stay plain for text?'
+  - 'I added extra wall height, but the pattern stops short. Why?'
+  - 'Wall notch or a tunnel under the lip for my charger cable?'
 sources:
   - src/features/bin-designer/components/panel/WallsSection/
   - src/features/bin-designer/components/panel/WallCutoutsSection/

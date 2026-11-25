@@ -2,9 +2,9 @@
 title: Split for your print bed
 description: 'Cut a large baseplate into pieces that fit your printer, draw your own splits, and join the pieces.'
 questions:
-  - 'How do I print a baseplate bigger than my bed?'
-  - 'Can I choose where the baseplate splits?'
-  - 'How do the baseplate pieces lock together?'
+  - "I'll print a second plate later. Can these pieces key onto it?"
+  - 'My plate has 40 mm margins and splits into 6 pieces. Detach them?'
+  - 'One piece of my own split fits the bed turned 90°. Why no export?'
 sources:
   - src/features/baseplate/utils/splitPlanner.ts
   - src/features/baseplate/components/BaseplatePanel/SplitViewStrip.tsx

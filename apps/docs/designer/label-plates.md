@@ -2,9 +2,9 @@
 title: Swappable label plates
 description: 'Add label sockets to a bin, print label plates on their own, and change a label without a new bin.'
 questions:
-  - 'How do I make label plates that I can swap?'
-  - 'How do I tune the label plate fit for my printer?'
-  - 'How do I export the label plates?'
+  - 'Can my screw bin plates show a bolt icon next to M3 and M4?'
+  - 'I tuned the plate fit on one bin. Why are my other bins still loose?'
+  - 'My drawer has 14 bins with plates. Can I get every plate in one go?'
 sources:
   - src/shared/constants/labelPlates.ts
   - src/features/bin-designer/components/panel/LabelTabsSection/

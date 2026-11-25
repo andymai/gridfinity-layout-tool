@@ -2,9 +2,9 @@
 title: Baseplate basics
 description: 'Size a baseplate from your layout, add margins, set the grid pitch, and keep one plate design for each layout.'
 questions:
-  - 'How do I size a baseplate from my layout?'
-  - 'How do I add margins around the baseplate?'
-  - 'Does each layout keep its own baseplate?'
+  - 'My drawer is 560 × 410 mm inside. What plate fills it edge to edge?'
+  - 'A 30 mm gap is left at the back. Should I use grid tiles or padding?'
+  - 'I typed a plate size, and Half-grid mode came on. Why?'
 sources:
   - src/features/baseplate/components/BaseplatePanel/DimensionsSection.tsx
   - src/features/baseplate/components/BaseplatePanel/PhysicalUnitsSection.tsx

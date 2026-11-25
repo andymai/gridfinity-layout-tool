@@ -2,9 +2,9 @@
 title: Cutout basics
 description: 'Open the cutout editor, draw a cutout, and set its size, depth, edges, lean, wall opening, cradle and label.'
 questions:
-  - 'How do I cut a pocket into a bin?'
-  - 'How do I set the depth of a cutout?'
-  - 'Can a cutout lean or open through a wall?'
+  - 'My 1/4 in hex bit rattles in its hole. What do I change?'
+  - 'Can a pocket get deeper by itself when I reuse it in taller bins?'
+  - 'Long screwdrivers in a 4U bin: leaned pockets or a slanted bin?'
 sources:
   - src/features/bin-designer/components/CutoutWorkspace/
   - src/features/bin-designer/components/panel/CutoutsSection/

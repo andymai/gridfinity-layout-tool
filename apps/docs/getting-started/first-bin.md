@@ -2,9 +2,9 @@
 title: Design your first bin
 description: 'Set the size of a bin, add compartments and a label tab, and export a print file.'
 questions:
-  - 'How do I design a custom bin?'
-  - 'How do I add compartments to a bin?'
-  - 'How do I add a label tab and export the bin?'
+  - 'Can I make a bin with a round pocket for each of my 24 AA batteries?'
+  - 'Grid dividers or Bento for one big and four small compartments?'
+  - 'My caption is too long for the label tab. How do I make it fit?'
 sources:
   - src/features/bin-designer/hooks/useDesignerFirstRun.ts
   - src/features/bin-designer/hooks/useDesignerInit.ts
