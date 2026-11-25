@@ -29,9 +29,11 @@ const isExternal = (id: string): boolean =>
 const FORBIDDEN_PACKAGES = /^(react|react-dom|zustand|three|posthog-js|@react-three\/.*)(\/|$)/;
 const FORBIDDEN_MODULES = [/\/src\/core\/store\//, /\/node_modules\/(react|zustand|three)\//];
 
-export function forbiddenIn(chunk: Pick<OutputChunk, 'imports' | 'moduleIds'>): string[] {
+export function forbiddenIn(
+  chunk: Pick<OutputChunk, 'imports' | 'dynamicImports' | 'moduleIds'>
+): string[] {
   return [
-    ...chunk.imports.filter((id) => FORBIDDEN_PACKAGES.test(id)),
+    ...[...chunk.imports, ...chunk.dynamicImports].filter((id) => FORBIDDEN_PACKAGES.test(id)),
     ...chunk.moduleIds.filter((id) => FORBIDDEN_MODULES.some((re) => re.test(id))),
   ];
 }
