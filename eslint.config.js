@@ -336,6 +336,8 @@ export default defineConfig([
         { type: 'agent-contract', pattern: ['src/agent/contract'] },
         { type: 'agent-tools', pattern: ['src/agent/tools'] },
         { type: 'agent-client', pattern: ['src/agent/client'] },
+        // Tool handlers that run in the reader's browser, on data that they hold.
+        { type: 'agent-reader', pattern: ['src/agent/reader'] },
         { type: 'agent', pattern: ['src/agent'] },
         { type: 'core', pattern: ['src/core'] },
         { type: 'shared', pattern: ['src/shared'] },
@@ -460,12 +462,29 @@ export default defineConfig([
                 { to: { element: { type: 'i18n' } } },
                 { to: { element: { type: 'agent-tools' } } },
                 { to: { element: { type: 'agent-client' } } },
+                { to: { element: { type: 'agent-reader' } } },
+                { to: { element: { type: 'agent' } } },
+              ],
+            },
+            // The browser reads see the reader's data, so the server bundle
+            // never takes them: the server gets only their schemas and
+            // formats, from the contract.
+            {
+              from: { element: { type: 'agent-reader' } },
+              disallow: [
+                { to: { element: { type: 'feature' } } },
+                { to: { element: { type: 'shell' } } },
+                { to: { element: { type: 'design-system' } } },
+                { to: { element: { type: 'i18n' } } },
+                { to: { element: { type: 'agent-tools' } } },
+                { to: { element: { type: 'agent-client' } } },
                 { to: { element: { type: 'agent' } } },
               ],
             },
             {
               from: { element: { type: 'agent-tools' } },
               disallow: [
+                { to: { element: { type: 'agent-reader' } } },
                 { to: { element: { type: 'feature' } } },
                 { to: { element: { type: 'shell' } } },
                 { to: { element: { type: 'design-system' } } },
@@ -477,6 +496,7 @@ export default defineConfig([
             {
               from: { element: { type: 'agent-client' } },
               disallow: [
+                { to: { element: { type: 'agent-reader' } } },
                 { to: { element: { type: 'core' } } },
                 { to: { element: { type: 'shared' } } },
                 { to: { element: { type: 'feature' } } },
@@ -490,6 +510,7 @@ export default defineConfig([
             {
               from: { element: { type: 'agent' } },
               disallow: [
+                { to: { element: { type: 'agent-reader' } } },
                 { to: { element: { type: 'feature' } } },
                 { to: { element: { type: 'shell' } } },
                 { to: { element: { type: 'design-system' } } },
@@ -503,6 +524,7 @@ export default defineConfig([
               from: { element: { type: 'core' } },
               disallow: [
                 { to: { element: { type: 'agent-contract' } } },
+                { to: { element: { type: 'agent-reader' } } },
                 { to: { element: { type: 'agent-tools' } } },
                 { to: { element: { type: 'agent-client' } } },
                 { to: { element: { type: 'agent' } } },
@@ -512,6 +534,7 @@ export default defineConfig([
               from: { element: { type: 'shared' } },
               disallow: [
                 { to: { element: { type: 'agent-contract' } } },
+                { to: { element: { type: 'agent-reader' } } },
                 { to: { element: { type: 'agent-tools' } } },
                 { to: { element: { type: 'agent-client' } } },
                 { to: { element: { type: 'agent' } } },
