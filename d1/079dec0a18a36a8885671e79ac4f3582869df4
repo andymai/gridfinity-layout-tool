@@ -1,0 +1,179 @@
+apps/docs/baseplates/eco-and-stack-printing.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/printing/estimates.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/.vitepress/theme/components/AskAiPanel.vue
+  s_88cfcc42bf5bfd::t_6e39921efbabb8 232-233
+apps/docs/reference/faq.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/recipes/hand-tool-pockets.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/printing/label-maker.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/concepts/multi-color.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/concepts/layouts-layers-stash.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/designer/colors.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/reference/shortcuts.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/index.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/layouts/drawer-setup.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/getting-started/workspace-tour.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/settings/labs.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/sharing/share-links.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/introduction/gridfinity-basics.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/layouts/organizing-layouts.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/concepts/preview-and-export.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/cutouts/workshop.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/concepts/print-bed-fit.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/getting-started/first-drawer.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/cutouts/arranging.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/designer/compartments.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/designer/getting-things-out.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/recipes/screw-drawer.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/cutouts/photo-trace.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/concepts/saved-designs.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/cutouts/phone-scan.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/designer/lids.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/printing/slicers.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/cutouts/import-svg-stl.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/settings/keyboard-and-command-palette.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/sharing/live-collaboration.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/recipes/lidded-boxes.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/reference/dimensions.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/baseplates/splitting.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/printing/troubleshooting.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/layouts/find-bins-that-fit.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/designer/base.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/designer/walls.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/cutouts/print-checks.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/layouts/layers.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/recipes/kitchen-utensil-drawer.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/designer/stacking.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/recipes/electronics-craft-organizer.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/reference/layout-file.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/designer/labels-and-text.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/concepts/bin-anatomy.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/introduction/your-data.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/designer/save-and-reuse.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/getting-started/first-bin.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/designer/size-and-shape.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/getting-started/first-baseplate.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/printing/print-list-and-zip.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/recipes/wrench-set.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/layouts/placing-bins.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/reference/self-hosting.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/designer/label-plates.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 6-7
+  s_88cfcc42bf5bfd::t_4d022a49cd16d2 5
+apps/docs/recipes/deep-tool-drawer.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/baseplates/basics.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/settings/spacemouse.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/concepts/units.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/cutouts/basics.md
+  s_88cfcc42bf5bfd::t_4d022a49cd16d2 5
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 6-7
+apps/docs/designer/special-bins.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/baseplates/odd-shaped-drawers.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/layouts/multi-select.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/printing/file-formats.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/printing/fit-and-tolerances.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/reference/design-file.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/reference/glossary.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/settings/offline.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/settings/settings.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/baseplates/magnets-and-screws.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/cutouts/library.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/layouts/categories.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/sharing/accounts-and-sync.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+apps/docs/sharing/community.md
+  s_88cfcc42bf5bfd::t_bd65333f4270dd 5-7
+scripts/docs-ask-eval/run.ts
+  s_88cfcc42bf5bfd::t_b4f3dbfa3b0fb0 8-9,28,37,99
+scripts/docs-ask-eval/suggestions.test.ts
+  s_88cfcc42bf5bfd::t_da8b565e1d6a3c 1-17
+scripts/docs-ask-eval/suggestions.ts
+  s_88cfcc42bf5bfd::t_66f32ae865514e 1-25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d1079dec0a18a36a8885671e79ac4f3582869df4",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
