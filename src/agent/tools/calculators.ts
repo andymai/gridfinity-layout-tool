@@ -11,6 +11,8 @@ import type {
 const GRID_UNIT_MM = 42;
 const MM_PER = { mm: 1, cm: 10, in: 25.4 } as const;
 const BED_MIN_MM = 42;
+// Below this share, the top size is one habit among many, not a common size.
+const MIN_SHARE = 0.25;
 
 const round = (value: number, places = 0): number => {
   const scale = 10 ** places;
@@ -69,7 +71,9 @@ export function runBinSizeFor(input: BinSizeForInput): ToolOutput {
   const lines = input.labels.map((label) => {
     const hit = suggestBinSize(label);
     const name = JSON.stringify(label);
-    if (hit === null) return `- ${name}: no common size. Size it from what it holds.`;
+    if (hit === null || hit.p < MIN_SHARE) {
+      return `- ${name}: no common size. Size it from what it holds.`;
+    }
     const share = Math.round(hit.p * 100);
     const basis = hit.source === 'label' ? 'bins with this label' : 'bins with similar labels';
     return `- ${name}: ${size(hit.size.width, hit.size.depth)} units, ${hit.size.height}u (${share}% of ${basis}).`;

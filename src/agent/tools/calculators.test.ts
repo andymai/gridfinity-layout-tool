@@ -43,6 +43,10 @@ describe('bin_size_for', () => {
       /- "Screwdrivers": \d+(\.5)? x \d+(\.5)? units, \d+u \(\d+% of bins with (this|similar) labels?\)\./
     );
     expect(run.content).toContain('- "zzqx blorp": no common size.');
+    // Similar labels give "Hex keys" a top size that only a few bins share.
+    expect(runBinSizeFor(binSizeForInput.parse({ labels: ['Hex keys'] })).content).toContain(
+      '- "Hex keys": no common size.'
+    );
     expect(run.content).not.toMatch(/\d{3,} bins/);
   });
 });
