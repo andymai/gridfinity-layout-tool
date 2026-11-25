@@ -1,0 +1,31 @@
+apps/docs/.vitepress/theme/askAi/planMap.ts
+  s_88cfcc42bf5bfd::t_6a7ad13c24626f 1-99
+src/agent/tools/planLayout.ts
+  s_88cfcc42bf5bfd::t_b49ef21b3333c0 13
+apps/docs/.vitepress/theme/askAi/planMap.test.ts
+  s_88cfcc42bf5bfd::t_c5402a7375e96f 1-50
+apps/docs/.vitepress/theme/components/PlanMap.vue
+  s_88cfcc42bf5bfd::t_548afbbda6cd4f 100
+  s_88cfcc42bf5bfd::t_b49ef21b3333c0 4,8-9,15,19,21,27,30,34,38,40-41,47,50-51,53-54,94-96
+apps/docs/.vitepress/theme/components/AskAiPanel.vue
+  s_88cfcc42bf5bfd::t_c5402a7375e96f 32-34
+  s_88cfcc42bf5bfd::t_b49ef21b3333c0 251
+apps/docs/.vitepress/theme/components/AskAiAnswer.vue
+  s_88cfcc42bf5bfd::t_b49ef21b3333c0 7,11-16,27,105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1187b2dcc0fab89633e111712223feb2a93a79f6",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
