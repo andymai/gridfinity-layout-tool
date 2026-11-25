@@ -1,0 +1,23 @@
+api/lib/agent/index.ts
+  s_88cfcc42bf5bfd::t_b958ed40c4f380 6,15,19,22-24
+api/lib/docsAsk/tools.ts
+  s_88cfcc42bf5bfd::t_b958ed40c4f380 6,10,13,16-18,24-31,37-39,49-51,153-170,295-297,301-345
+api/lib/docsAsk/prompt.ts
+  s_88cfcc42bf5bfd::t_b958ed40c4f380 37-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "19dc1ff31c277230bd623fffddf1dc08f07b4475",
+  "prompts": {},
+  "sessions": {
+    "s_88cfcc42bf5bfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fea4c376-9e87-46bf-8aaa-5af1189fa690",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
