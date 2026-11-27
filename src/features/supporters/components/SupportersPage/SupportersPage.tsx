@@ -1,4 +1,5 @@
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 // Side-effect: must run before any <Text> mounts under this Canvas.
 import '@/shared/webgl/configureTroikaText';
@@ -56,6 +57,25 @@ const SPEEDRUN_MS = 3000;
 const POKES_FOR_ACHIEVEMENT = 10;
 /** Width of the credits column beside the plate, matching `CreditsRoll`. */
 const columnWidth = (viewport: number) => Math.max(340, Math.min(viewport * 0.44, 600));
+
+interface SceneBoundaryProps {
+  fallback: ReactNode;
+  children: ReactNode;
+}
+
+// R3F rethrows an error from inside the canvas into the page, so a mesh or
+// decoder that fails to fetch would take the credits down with the scene.
+class SceneBoundary extends Component<SceneBoundaryProps, { failed: boolean }> {
+  state = { failed: false };
+
+  static getDerivedStateFromError(): { failed: boolean } {
+    return { failed: true };
+  }
+
+  render(): ReactNode {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
 
 /**
  * /supporters as the end credits of a game: names roll up beside a baseplate
@@ -284,36 +304,38 @@ export function SupportersPage() {
         gl={{ antialias: true, alpha: false }}
         onPointerMissed={focus.release}
       >
-        <Suspense fallback={null}>
-          <SupportersScene
-            bins={bins}
-            plan={plan}
-            layout={layout}
-            clock={clock}
-            schedule={reducedMotion ? null : schedule}
-            phase={phase}
-            stage={stage}
-            theme={theme}
-            accent={accent}
-            reducedMotion={reducedMotion}
-            focusedId={focusedId}
-            focusCamera={roll && paused}
-            onSelect={focus.selectBin}
-            onPoke={onPoke}
-            onPostCredits={onPostCredits}
-            onPostCreditsStart={() => blip('plop')}
-            postCreditsLabel={t('supporters.credits.postCreditsTape')}
-            anonymousLabel={t('supporters.anonymous')}
-            departmentLabels={departmentLabels}
-            flyTo={focus.flyTo}
-            homeRequest={focus.homeRequest}
-            endTagRef={endTagRef}
-            onVacantSelect={() => {
-              trackEvent('kofi_clicked', { source: 'supporters_socket' });
-              window.open(KOFI_URL, '_blank', 'noopener,noreferrer');
-            }}
-          />
-        </Suspense>
+        <SceneBoundary fallback={<color attach="background" args={[palette.background]} />}>
+          <Suspense fallback={null}>
+            <SupportersScene
+              bins={bins}
+              plan={plan}
+              layout={layout}
+              clock={clock}
+              schedule={reducedMotion ? null : schedule}
+              phase={phase}
+              stage={stage}
+              theme={theme}
+              accent={accent}
+              reducedMotion={reducedMotion}
+              focusedId={focusedId}
+              focusCamera={roll && paused}
+              onSelect={focus.selectBin}
+              onPoke={onPoke}
+              onPostCredits={onPostCredits}
+              onPostCreditsStart={() => blip('plop')}
+              postCreditsLabel={t('supporters.credits.postCreditsTape')}
+              anonymousLabel={t('supporters.anonymous')}
+              departmentLabels={departmentLabels}
+              flyTo={focus.flyTo}
+              homeRequest={focus.homeRequest}
+              endTagRef={endTagRef}
+              onVacantSelect={() => {
+                trackEvent('kofi_clicked', { source: 'supporters_socket' });
+                window.open(KOFI_URL, '_blank', 'noopener,noreferrer');
+              }}
+            />
+          </Suspense>
+        </SceneBoundary>
       </Canvas>
 
       {/* Scrims keep the copy legible over the bright baseplate. */}

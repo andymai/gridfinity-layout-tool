@@ -15,7 +15,13 @@ vi.mock('@/shared/analytics/posthog', () => ({ trackEvent: vi.fn() }));
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="canvas">{children}</div>,
 }));
-vi.mock('../SupportersScene', () => ({ SupportersScene: () => null }));
+const sceneLoad = vi.hoisted(() => ({ fails: false }));
+vi.mock('../SupportersScene', () => ({
+  SupportersScene: () => {
+    if (sceneLoad.fails) throw new Error('Could not load /assets/bin.glb');
+    return null;
+  },
+}));
 
 const motion = { reduced: false };
 vi.mock('@/shared/hooks/usePrefersReducedMotion', () => ({
@@ -60,6 +66,7 @@ describe('SupportersPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    sceneLoad.fails = false;
     motion.reduced = false;
     statusState.status = NOT_A_SUPPORTER;
     supportersState.settled = true;
@@ -125,6 +132,14 @@ describe('SupportersPage', () => {
       expect(screen.getByText('supporters.thanksNamed')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'supporters.credits.play' })).toBeInTheDocument();
     });
+  });
+
+  it('still rolls the credits when the 3D scene fails to load', () => {
+    sceneLoad.fails = true;
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(<SupportersPage />);
+    expect(screen.getByRole('region', { name: 'supporters.credits.listLabel' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Ada' })).toBeInTheDocument();
   });
 
   it('drops an earlier selection when Tab moves to another credit', () => {
