@@ -1,5 +1,28 @@
 # Changelog
 
+## [4.554.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.553.0...gridfinity-layout-tool-v4.554.0) (2026-11-27)
+
+
+### Features
+
+* **agent:** add baseplate split, bin size and print estimate tools ([#5262](https://github.com/andymai/gridfinity-layout-tool/issues/5262)) ([fdfc7a1](https://github.com/andymai/gridfinity-layout-tool/commit/fdfc7a176f42a77bcd0f96420239efedd2ca9cfd))
+* **analytics:** count a plan link that becomes a saved layout ([#5261](https://github.com/andymai/gridfinity-layout-tool/issues/5261)) ([b351bd3](https://github.com/andymai/gridfinity-layout-tool/commit/b351bd3f5a1686986089cdaf7d380e87def8673d))
+* **api:** serve the agent tools to outside agents over MCP ([#5264](https://github.com/andymai/gridfinity-layout-tool/issues/5264)) ([f6adf3e](https://github.com/andymai/gridfinity-layout-tool/commit/f6adf3e6c920870ea0a338d3225ab8adc7b62d4c))
+* **ask-ai:** answer baseplate splits, filament and bin sizes with the app's own numbers ([#5263](https://github.com/andymai/gridfinity-layout-tool/issues/5263)) ([ea86847](https://github.com/andymai/gridfinity-layout-tool/commit/ea86847fd681035f2ae221f0f54d8189a5a60075))
+* **ask-ai:** answer from the reader's own layouts and printer, once they allow it ([#5259](https://github.com/andymai/gridfinity-layout-tool/issues/5259)) ([161cf67](https://github.com/andymai/gridfinity-layout-tool/commit/161cf671070857f5b643bfe1f2855076ed4b7444))
+* **ask-ai:** let a turn wait for the reader's browser and resume ([#5257](https://github.com/andymai/gridfinity-layout-tool/issues/5257)) ([bdd00f9](https://github.com/andymai/gridfinity-layout-tool/commit/bdd00f963bd54bac1c64129d922229a8629b357c))
+* **ask-ai:** plan a whole drawer and draw it in the answer ([#5256](https://github.com/andymai/gridfinity-layout-tool/issues/5256)) ([81eab15](https://github.com/andymai/gridfinity-layout-tool/commit/81eab155ef3db5bae954ab9f47befcec16c3045e))
+* **ask-ai:** read the reader's layouts and printer settings in their browser ([#5258](https://github.com/andymai/gridfinity-layout-tool/issues/5258)) ([458e554](https://github.com/andymai/gridfinity-layout-tool/commit/458e5540a401845f9d6109c42bd8a0899cfb6641))
+* **cqrs:** apply a previewed change set as one all-or-nothing edit ([#5266](https://github.com/andymai/gridfinity-layout-tool/issues/5266)) ([673a4cf](https://github.com/andymai/gridfinity-layout-tool/commit/673a4cfe76961993fa3183cb567211fbc1876291))
+* **docs:** give Ask AI starter questions about real drawers, tools and printers ([#5252](https://github.com/andymai/gridfinity-layout-tool/issues/5252)) ([9d30c2a](https://github.com/andymai/gridfinity-layout-tool/commit/9d30c2a8733c86857654b3aa16755c851d8c33fe))
+* **layouts:** open a planned drawer from a #plan= link ([#5255](https://github.com/andymai/gridfinity-layout-tool/issues/5255)) ([721b30d](https://github.com/andymai/gridfinity-layout-tool/commit/721b30d582ec16803c80ae006d759aeabc52a9b4))
+* **skills:** teach outside agents the Layout Tool workflow, and document how to connect one ([#5265](https://github.com/andymai/gridfinity-layout-tool/issues/5265)) ([cf0b64a](https://github.com/andymai/gridfinity-layout-tool/commit/cf0b64af1df2346a6b0d7f3bcb570ccb039a6553))
+
+
+### Bug Fixes
+
+* **analytics:** keep share and plan link content out of PostHog ([#5260](https://github.com/andymai/gridfinity-layout-tool/issues/5260)) ([33f86ba](https://github.com/andymai/gridfinity-layout-tool/commit/33f86ba11901baeedecdb19505f8671c5be598cd))
+
 ## [4.553.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.552.0...gridfinity-layout-tool-v4.553.0) (2026-11-25)
 
 
