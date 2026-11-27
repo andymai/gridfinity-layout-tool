@@ -5778,6 +5778,8 @@
   "your2026.empty.title": "Nog niets uit 2026 op dit apparaat.",
   "your2026.empty.line": "Je jaar verschijnt hier zodra je een lade plant of een bin ontwerpt.",
   "your2026.empty.start": "Plan een lade",
+  "your2026.empty.sample": "Bekijk het voorbeeld",
+  "your2026.sample.drawer": "Werkbank",
   "your2026.error.title": "Jouw 2026 kon niet worden geladen.",
   "your2026.error.retry": "Opnieuw proberen",
   "loading.your2026": "Jouw 2026 laden",

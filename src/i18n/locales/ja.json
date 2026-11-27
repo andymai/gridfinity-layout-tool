@@ -5617,6 +5617,8 @@
   "your2026.empty.title": "このデバイスには、まだ2026年の記録がありません。",
   "your2026.empty.line": "引き出しを計画するか、ビンをデザインすると、ここにあなたの1年が表示されます。",
   "your2026.empty.start": "引き出しを計画する",
+  "your2026.empty.sample": "サンプルを見る",
+  "your2026.sample.drawer": "作業台",
   "your2026.error.title": "あなたの2026年を読み込めませんでした。",
   "your2026.error.retry": "再試行",
   "loading.your2026": "あなたの2026年を読み込み中",

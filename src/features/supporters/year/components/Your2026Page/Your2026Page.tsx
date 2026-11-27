@@ -15,6 +15,7 @@ import { getSupportersPalette } from '../../../scene/palette';
 import { getSupporterCount } from '../../../utils/supportersData';
 import { SoundToggle } from '../../../components/SoundToggle';
 import { readSoundOn, saveSoundOn } from '../../../utils/soundPreference';
+import { useSampleYear } from '../../hooks/useSampleYear';
 import { useShareImage } from '../../hooks/useShareImage';
 import { useYearMeshes } from '../../hooks/useYearMeshes';
 import { useYearSoundtrack } from '../../hooks/useYearSoundtrack';
@@ -30,11 +31,13 @@ import { StoryPlayer } from '../StoryPlayer';
 import { YearCardView, describeCard } from '../YearCardView';
 import { YearStage } from '../YearStage';
 
+type Mode = 'year' | 'sample';
+
 /**
  * The most complicated bin, fixed the first time its card shows, so a mesh that
  * lands later cannot change the answer, and a replay names the same bin.
  */
-let frozenComplicated: ComplicatedPick | null = null;
+const frozenComplicated: Record<Mode, ComplicatedPick | null> = { year: null, sample: null };
 
 const SITE_HOST = 'gridfinitylayouttool.com';
 
@@ -43,37 +46,73 @@ function openSource(from: string | null): 'dock' | 'whats_new' | 'direct' {
   return from === 'dock' || from === 'whats_new' ? from : 'direct';
 }
 
+interface StatusAction {
+  readonly label: string;
+  readonly onClick: () => void;
+}
+
 interface StatusCardProps {
   readonly title: string;
   readonly line?: string;
-  readonly action?: { readonly label: string; readonly onClick: () => void };
+  readonly action?: StatusAction;
+  readonly secondary?: StatusAction;
 }
 
-function StatusCard({ title, line, action }: StatusCardProps) {
+function StatusCard({ title, line, action, secondary }: StatusCardProps) {
   return (
     <div className="flex flex-1 flex-col justify-end px-[1.6em] pb-[1.8em]">
       <h2 className="text-[1.8em] font-bold leading-[1.15] tracking-tight">{title}</h2>
       {line && <p className="mt-[0.6em] text-white/70">{line}</p>}
-      {action && (
-        <Button variant="primary" size="lg" onClick={action.onClick} className="mt-[1.4em] w-full">
-          {action.label}
-        </Button>
+      {(action || secondary) && (
+        <div className="mt-[1.4em] flex flex-col gap-[0.6em]">
+          {action && (
+            <Button variant="primary" size="lg" onClick={action.onClick} className="w-full">
+              {action.label}
+            </Button>
+          )}
+          {secondary && (
+            <Button variant="secondary" size="lg" onClick={secondary.onClick} className="w-full">
+              {secondary.label}
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );
 }
 
+function readDemo(): boolean {
+  return new URLSearchParams(window.location.search).has('demo');
+}
+
+/**
+ * `?demo` plays the sample year at any date. "Watch the sample" stays on this
+ * route, so the flag follows the URL, and each mode mounts fresh.
+ */
 export function Your2026Page() {
+  const [demo, setDemo] = useState(readDemo);
+  useEffect(() => {
+    const onPopState = () => setDemo(readDemo());
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+  return <YearReview key={demo ? 'sample' : 'year'} demo={demo} />;
+}
+
+function YearReview({ demo }: { readonly demo: boolean }) {
   const t = useTranslation();
   const locale = useCurrentLocale();
   const reducedMotion = usePrefersReducedMotion();
-  const { navigateHome, replaceWithHome } = useYour2026Routing();
+  const { navigateHome, replaceWithHome, navigateToYour2026 } = useYour2026Routing();
   const { navigateToSupporters } = useSupportersRouting();
   const [params] = useState(() => new URLSearchParams(window.location.search));
-  const allowed = params.has('preview') || isYearReviewOpen();
+  const allowed = demo || params.has('preview') || isYearReviewOpen();
+  const mode: Mode = demo ? 'sample' : 'year';
   const startOnThanks = params.get('card') === 'thanks';
 
-  const data = useYearReviewData(YEAR_REVIEW_YEAR, allowed);
+  const real = useYearReviewData(YEAR_REVIEW_YEAR, allowed && !demo);
+  const sample = useSampleYear(demo);
+  const data = demo ? sample.data : real;
   const accentName = useSettingsStore((s) => s.settings.accentColor);
   const unit = useSettingsStore((s) => s.settings.measureUnit);
   const entries = useLibraryStore((s) => s.library.entries);
@@ -92,22 +131,35 @@ export function Your2026Page() {
 
   useEffect(() => {
     if (!allowed || startOnThanks) return;
-    trackEvent('your_2026_opened', { source: openSource(params.get('from')), demo: false });
-  }, [allowed, startOnThanks, params]);
+    trackEvent('your_2026_opened', { source: openSource(params.get('from')), demo });
+  }, [allowed, startOnThanks, params, demo]);
 
   const stats = data.status === 'ready' ? data.stats : null;
   const cards = useMemo(() => (stats ? buildYearCards(stats) : []), [stats]);
-  const drawerPreview = useMemo(() => {
+  const libraryPreview = useMemo(() => {
     const id = stats?.biggestDrawer?.layoutId;
     return entries.find((entry) => entry.id === id)?.preview ?? null;
   }, [entries, stats]);
+  const drawerPreview = demo ? sample.drawerPreview : libraryPreview;
   const candidates = useMemo(() => (stats ? meshCandidates(stats) : []), [stats]);
-  const meshes = useYearMeshes(candidates, nozzleSizeMm, stats !== null && hasYearActivity(stats));
-  const [complicated, setComplicated] = useState(() => frozenComplicated);
+  const liveMeshes = useYearMeshes(
+    candidates,
+    nozzleSizeMm,
+    !demo && stats !== null && hasYearActivity(stats)
+  );
+  const meshes = demo ? sample.meshes : liveMeshes;
+  const [complicated, setComplicated] = useState(() => frozenComplicated[mode]);
+  // The sample knows its counts before its meshes load, so its pick never waits.
+  const triangles = demo ? sample.triangles : null;
   const liveComplicated = useMemo(
     () =>
-      stats ? pickComplicated(stats.complexityShortlist, (id) => meshes.get(id)?.triangles) : null,
-    [stats, meshes]
+      stats
+        ? pickComplicated(
+            stats.complexityShortlist,
+            (id) => triangles?.get(id) ?? meshes.get(id)?.triangles
+          )
+        : null,
+    [stats, meshes, triangles]
   );
   const shownComplicated = complicated ?? liveComplicated;
   const [settledCard, setSettledCard] = useState<YearCard | null>(null);
@@ -117,11 +169,11 @@ export function Your2026Page() {
   const onCardChange = useCallback(
     (card: YearCard) => {
       setSettledCard(null);
-      if (card.kind !== 'complicated' || frozenComplicated) return;
-      frozenComplicated = liveComplicatedRef.current;
+      if (card.kind !== 'complicated' || frozenComplicated[mode]) return;
+      frozenComplicated[mode] = liveComplicatedRef.current;
       setComplicated(liveComplicatedRef.current);
     },
-    [liveComplicatedRef]
+    [liveComplicatedRef, mode]
   );
   const supporterCount = getSupporterCount(supporters);
   const shareSpec = useMemo(
@@ -192,6 +244,7 @@ export function Your2026Page() {
   }, []);
 
   const retry = useCallback(() => window.location.reload(), []);
+  const watchSample = useCallback(() => navigateToYour2026('?demo'), [navigateToYour2026]);
 
   if (!allowed) return null;
 
@@ -223,7 +276,8 @@ export function Your2026Page() {
         <StatusCard
           title={t('your2026.empty.title')}
           line={t('your2026.empty.line')}
-          action={{ label: t('your2026.empty.start'), onClick: navigateHome }}
+          action={{ label: t('your2026.empty.sample'), onClick: watchSample }}
+          secondary={{ label: t('your2026.empty.start'), onClick: navigateHome }}
         />
       </YearStage>
     );

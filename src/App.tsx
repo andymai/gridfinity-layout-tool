@@ -239,7 +239,7 @@ export default function App() {
   useSnapshotAutoSave();
   useLocalStorageCleanup();
   useMeshFileMaintenance();
-  usePrefetchChunks();
+  usePrefetchChunks(!isYour2026Route && !isSupportersRoute);
 
   const entranceClass = hasRenderedInitialLayout ? '' : 'animate-fade-in';
   useEffect(() => {

@@ -215,7 +215,11 @@ lazy entry (`year/index.ts`). It reuses this slice's clock, pixel font and palet
 - **2026 work** is defined once in `src/shared/yearReview/yearWork.ts` for the
   stats and the dock row. `modifiedAt` and `updatedAt` are not evidence: a
   layout switch and the thumbnail pass move them.
-- **Window:** `isYearReviewOpen`; `?preview` plays it early.
+- **Window:** `isYearReviewOpen`; `?preview` plays it early; `?demo` plays the
+  sample year at any date.
+- **Sample:** `pnpm run gen:your-2026-sample` bakes example designs into
+  `year/data/sample/`. It reads no storage and never fetches the kernel, and
+  the route turns off the idle kernel prefetch.
 - **Handoff:** the current entry becomes `?card=thanks`, then
   `/supporters?from=your-2026` rolls even for a return visit.
 - **Time:** visible motion reads the story clock, never a timer, so the

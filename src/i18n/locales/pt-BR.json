@@ -5778,6 +5778,8 @@
   "your2026.empty.title": "Nada de 2026 neste dispositivo ainda.",
   "your2026.empty.line": "Seu ano aparece aqui assim que você planejar uma gaveta ou criar um bin.",
   "your2026.empty.start": "Planejar uma gaveta",
+  "your2026.empty.sample": "Ver o exemplo",
+  "your2026.sample.drawer": "Bancada",
   "your2026.error.title": "Seu 2026 não carregou.",
   "your2026.error.retry": "Tentar de novo",
   "loading.your2026": "Carregando seu 2026",

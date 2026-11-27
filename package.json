@@ -30,6 +30,7 @@
     "gen:seo-images": "tsx scripts/gen-seo-images.ts",
     "gen:webp": "tsx scripts/gen-webp-variants.ts",
     "gen:supporters-meshes": "tsx --tsconfig tsconfig.app.json scripts/gen-supporters-meshes.ts",
+    "gen:your-2026-sample": "tsx --tsconfig tsconfig.app.json scripts/gen-your-2026-sample.ts",
     "build:en-locale": "tsx scripts/build-en-locale.ts",
     "build:agent-server": "tsx scripts/build-agent-server.ts",
     "build:agent-skill": "pnpm run build:agent-server && tsx scripts/build-agent-skill.ts",
@@ -117,7 +118,7 @@
         "!dist/assets/zh-CN-*.js"
       ],
       "gzip": true,
-      "limit": "2650 kB"
+      "limit": "2680 kB"
     },
     {
       "name": "Fetched JSON assets (gzip)",

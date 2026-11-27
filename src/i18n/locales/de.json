@@ -5778,6 +5778,8 @@
   "your2026.empty.title": "Auf diesem Gerät gibt es noch nichts aus 2026.",
   "your2026.empty.line": "Dein Jahr erscheint hier, sobald du eine Schublade planst oder einen Bin entwirfst.",
   "your2026.empty.start": "Schublade planen",
+  "your2026.empty.sample": "Beispiel ansehen",
+  "your2026.sample.drawer": "Werkbank",
   "your2026.error.title": "Dein 2026 konnte nicht geladen werden.",
   "your2026.error.retry": "Erneut versuchen",
   "loading.your2026": "Dein 2026 wird geladen",

@@ -5941,6 +5941,8 @@
   "your2026.empty.title": "Na tomto zařízení zatím nic z roku 2026 není.",
   "your2026.empty.line": "Tvůj rok se tu ukáže, jakmile naplánuješ zásuvku nebo navrhneš bin.",
   "your2026.empty.start": "Naplánovat zásuvku",
+  "your2026.empty.sample": "Přehrát ukázku",
+  "your2026.sample.drawer": "Pracovní stůl",
   "your2026.error.title": "Tvůj rok 2026 se nenačetl.",
   "your2026.error.retry": "Zkusit znovu",
   "loading.your2026": "Načítání tvého roku 2026",

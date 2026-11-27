@@ -48,6 +48,7 @@ expect_status /designer 200; expect_ct text/html
 expect_status /baseplate 200
 expect_status /supporters 200; expect_ct text/html
 expect_status /your-2026 200; expect_ct text/html
+[ "$(md5sum < "$BODY_FILE")" != "$SHELL_SUM" ] && pass "  /your-2026 serves its own entry" || fail "  /your-2026 served the shell"
 expect_status /community 200
 expect_status "/community/d/$ID" 200; expect_ct text/html
 [ "$(md5sum < "$BODY_FILE")" = "$SHELL_SUM" ] && pass "  /community/d/:id serves the shell" || fail "  /community/d/:id body differs from the shell"

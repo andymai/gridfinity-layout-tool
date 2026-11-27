@@ -5617,6 +5617,8 @@
   "your2026.empty.title": "이 기기에는 아직 2026년 기록이 없습니다.",
   "your2026.empty.line": "서랍을 계획하거나 수납통을 디자인하면 여기에 한 해가 표시됩니다.",
   "your2026.empty.start": "서랍 계획하기",
+  "your2026.empty.sample": "샘플 보기",
+  "your2026.sample.drawer": "작업대",
   "your2026.error.title": "나의 2026을 불러오지 못했습니다.",
   "your2026.error.retry": "다시 시도",
   "loading.your2026": "나의 2026 불러오는 중",
