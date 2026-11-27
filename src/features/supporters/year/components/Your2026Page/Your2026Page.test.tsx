@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { trackEvent } from '@/shared/analytics/posthog';
+import { readDockRowState, resetDockRowCache } from '@/shared/yearReview/dockRow';
 import type { SampleYearData } from '../../hooks/useSampleYear';
 import type { YearReviewData } from '../../hooks/useYearReviewData';
 import type { YearStats } from '../../types';
@@ -104,6 +105,15 @@ describe('Your2026Page', () => {
     visit('/your-2026?demo');
     expect(screen.getByRole('heading', { name: 'Your year, in 42 mm steps.' })).toBeInTheDocument();
     expect(trackEvent).toHaveBeenCalledWith('your_2026_opened', { source: 'direct', demo: true });
+  });
+
+  it('leaves the dock dot for the own year when only the sample plays', () => {
+    localStorage.clear();
+    resetDockRowCache();
+    visit('/your-2026?demo');
+    expect(readDockRowState().seen).toBe(false);
+    visit('/your-2026');
+    expect(readDockRowState().seen).toBe(true);
   });
 
   it('offers the sample from the empty state', () => {

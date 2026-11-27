@@ -28,6 +28,7 @@ import { meshTriangles } from '../src/features/supporters/year/utils/meshTriangl
 import { withSocketNozzle } from '../src/shared/generation/socketNozzle';
 import { DEFAULT_PRINT_SETTINGS } from '../src/shared/printSettings';
 import { estimateCommunityPrint } from '../src/shared/utils/communityPrintCost';
+import { knifeRestMatedOffset, planKnifeRest } from '../src/shared/utils/knifeRestPlan';
 import { bounds, pad4, simplifyEdgeLines } from './lib/meshBake';
 
 interface GltfPipeline {
@@ -153,6 +154,39 @@ function buildGlb(meshes: readonly BakedMesh[]): Buffer {
   return Buffer.concat([header, jsonHeader, jsonBuf, binHeader, bin]);
 }
 
+function shifted(values: ArrayLike<number>, dx: number, dy: number): Float32Array {
+  const out = Float32Array.from(values);
+  for (let i = 0; i < out.length; i += 3) {
+    out[i] += dx;
+    out[i + 1] += dy;
+  }
+  return out;
+}
+
+/** One mesh of the block and its companion rest, placed as the spinner places them. */
+function withRest(body: MeshData, rest: MeshData, dx: number, dy: number): MeshData {
+  const base = body.vertices.length / 3;
+  const indices = new Uint32Array(body.indices.length + rest.indices.length);
+  indices.set(body.indices);
+  rest.indices.forEach((index, i) => {
+    indices[body.indices.length + i] = index + base;
+  });
+  const join = (a: ArrayLike<number>, b: Float32Array): Float32Array => {
+    const out = new Float32Array(a.length + b.length);
+    out.set(a);
+    out.set(b, a.length);
+    return out;
+  };
+  return {
+    ...body,
+    vertices: join(body.vertices, shifted(rest.vertices, dx, dy)),
+    normals: join(body.normals, Float32Array.from(rest.normals)),
+    indices,
+    edgeVertices: join(body.edgeVertices, shifted(rest.edgeVertices, dx, dy)),
+    triangleCount: body.triangleCount + rest.triangleCount,
+  };
+}
+
 function bake(id: string, mesh: MeshData): BakedMesh {
   return {
     id,
@@ -235,6 +269,8 @@ async function main(): Promise<void> {
   console.error('initializing occt-wasm kernel...');
   await initOcctWasmKernel();
   const { generateBin } = await import('../src/features/generation/worker/generators/binGenerator');
+  const { generateKnifeRest } =
+    await import('../src/features/generation/worker/generators/knifeRestBuilder');
 
   const ids = [LONGEST_PRINT, ...OTHER_DESIGNS];
   const designs = ids.map((id) => {
@@ -243,7 +279,14 @@ async function main(): Promise<void> {
     console.error(`generating ${id}...`);
     // The key the designer caches under: nozzle-adjusted params, preview tolerances.
     const params = withSocketNozzle(example.params, DEFAULT_PRINT_SETTINGS.nozzleSizeMm);
-    const mesh = generateBin(params, undefined, false);
+    let mesh = generateBin(params, undefined, false);
+    // The worker builds a companion knife rest apart from the block; the demo
+    // has one mesh per design, so it carries the rest at its mated offset.
+    const plan = planKnifeRest(params);
+    if (plan) {
+      const offset = knifeRestMatedOffset(params, plan);
+      mesh = withRest(mesh, generateKnifeRest(params, undefined, false), offset.x, offset.y);
+    }
     return {
       id,
       nameKey: example.nameKey,

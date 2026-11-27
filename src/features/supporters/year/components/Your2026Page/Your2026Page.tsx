@@ -31,13 +31,13 @@ import { StoryPlayer } from '../StoryPlayer';
 import { YearCardView, describeCard } from '../YearCardView';
 import { YearStage } from '../YearStage';
 
-type Mode = 'year' | 'sample';
-
 /**
- * The most complicated bin, fixed the first time its card shows, so a mesh that
- * lands later cannot change the answer, and a replay names the same bin.
+ * The most complicated bin of the user's own year, fixed the first time its card
+ * shows, so a mesh that lands later cannot change the answer, and a replay names
+ * the same bin. The sample's baked counts fix its pick already, and a frozen one
+ * would keep a name translated into an earlier language.
  */
-const frozenComplicated: Record<Mode, ComplicatedPick | null> = { year: null, sample: null };
+let frozenComplicated: ComplicatedPick | null = null;
 
 const SITE_HOST = 'gridfinitylayouttool.com';
 
@@ -107,7 +107,6 @@ function YearReview({ demo }: { readonly demo: boolean }) {
   const { navigateToSupporters } = useSupportersRouting();
   const [params] = useState(() => new URLSearchParams(window.location.search));
   const allowed = demo || params.has('preview') || isYearReviewOpen();
-  const mode: Mode = demo ? 'sample' : 'year';
   const startOnThanks = params.get('card') === 'thanks';
 
   const real = useYearReviewData(YEAR_REVIEW_YEAR, allowed && !demo);
@@ -125,9 +124,10 @@ function YearReview({ demo }: { readonly demo: boolean }) {
   }, [allowed, replaceWithHome]);
 
   useEffect(() => {
-    // A preview before the window must not clear the dot the user sees on the day.
-    if (isYearReviewOpen()) markYearReviewSeen();
-  }, []);
+    // A preview before the window, or the sample, must not clear the dot the
+    // user sees for their own year.
+    if (!demo && isYearReviewOpen()) markYearReviewSeen();
+  }, [demo]);
 
   useEffect(() => {
     if (!allowed || startOnThanks) return;
@@ -148,7 +148,7 @@ function YearReview({ demo }: { readonly demo: boolean }) {
     !demo && stats !== null && hasYearActivity(stats)
   );
   const meshes = demo ? sample.meshes : liveMeshes;
-  const [complicated, setComplicated] = useState(() => frozenComplicated[mode]);
+  const [complicated, setComplicated] = useState(() => (demo ? null : frozenComplicated));
   // The sample knows its counts before its meshes load, so its pick never waits.
   const triangles = demo ? sample.triangles : null;
   const liveComplicated = useMemo(
@@ -169,11 +169,11 @@ function YearReview({ demo }: { readonly demo: boolean }) {
   const onCardChange = useCallback(
     (card: YearCard) => {
       setSettledCard(null);
-      if (card.kind !== 'complicated' || frozenComplicated[mode]) return;
-      frozenComplicated[mode] = liveComplicatedRef.current;
+      if (demo || card.kind !== 'complicated' || frozenComplicated) return;
+      frozenComplicated = liveComplicatedRef.current;
       setComplicated(liveComplicatedRef.current);
     },
-    [liveComplicatedRef, mode]
+    [liveComplicatedRef, demo]
   );
   const supporterCount = getSupporterCount(supporters);
   const shareSpec = useMemo(
