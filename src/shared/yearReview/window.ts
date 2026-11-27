@@ -13,3 +13,10 @@ function closesAt(): number {
 export function isYearReviewOpen(now: number = Date.now()): boolean {
   return now >= opensAt() && now < closesAt();
 }
+
+/** When `isYearReviewOpen` next changes, or null once the window has closed. */
+export function nextYearReviewChange(now: number = Date.now()): number | null {
+  if (now < opensAt()) return opensAt();
+  if (now < closesAt()) return closesAt();
+  return null;
+}

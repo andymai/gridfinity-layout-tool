@@ -119,7 +119,7 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   if (capturedGeneration !== pullState.generation) return { status: 'offline' };
 
   if (manifestRes.status === 304) {
-    useSyncStatusStore.getState().succeed();
+    useSyncStatusStore.getState().succeed('pull');
     return { status: 'not-modified' };
   }
   if (manifestRes.status === 401) {
@@ -234,7 +234,8 @@ async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<
   // make the next pull read the manifest again and fetch the item.
   if (retry.pending) pullState.lastIndexUpdatedAt = 0;
   else if (!skippedHeld) pullState.lastIndexUpdatedAt = manifest.indexUpdatedAt;
-  useSyncStatusStore.getState().succeed();
+  // A download still to retry leaves the device short of the account's items.
+  useSyncStatusStore.getState().succeed(retry.pending ? undefined : 'pull');
   return { status: 'applied', applied, indexUpdatedAt: manifest.indexUpdatedAt };
 }
 

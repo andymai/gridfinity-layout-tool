@@ -3440,6 +3440,8 @@
   "dock.savedOnDeviceCount_other": "Opgeslagen op dit apparaat · {count} indelingen",
   "dock.settings": "Instellingen",
   "dock.signInTooltip": "Lokaal werken · Meld je aan om te synchroniseren",
+  "dock.yearReview.ready": "Jouw 2026 staat klaar.",
+  "dock.yearReview.hide": "Jouw 2026 verbergen",
   "dock.syncStatusError": "Synchronisatiefout",
   "dock.syncStatusIdle": "Alle wijzigingen gesynchroniseerd",
   "dock.syncStatusOffline": "Offline",

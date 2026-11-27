@@ -136,6 +136,7 @@ describe('pullNow — single-flight + 304 path', () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 304 }));
     const result = await pullNow(adapters);
     expect(result.status).toBe('not-modified');
+    expect(useSyncStatusStore.getState().lastPulledAt).toBeDefined();
   });
 
   it('returns "unauthorized" on 401', async () => {
@@ -211,6 +212,7 @@ describe('diff: only-remote (live)', () => {
     const result = await pullNow(adapters);
     expect(result.status).toBe('applied');
     expect(result.applied).toBe(1);
+    expect(useSyncStatusStore.getState().lastPulledAt).toBeDefined();
     expect(layouts.applyRemote).toHaveBeenCalledWith({
       id: 'lay-1',
       payload: { v: 1 },
@@ -677,6 +679,24 @@ describe('envelope fetch failure', () => {
     expect(manifestHeaders(1)['If-Modified-Since']).toBe('1000');
     expect(manifestHeaders(3)['If-Modified-Since']).toBeUndefined();
     expect(third.applied).toBe(1);
+  });
+
+  it('records a pull only once no download waits for a retry', async () => {
+    fetchMock
+      .mockResolvedValueOnce(oneLayout())
+      .mockResolvedValueOnce(new Response(null, { status: 503 }))
+      .mockResolvedValueOnce(oneLayout())
+      .mockResolvedValueOnce(
+        envelopeResponse(
+          { layout: { v: 1 }, modifiedAt: 1000, schemaVersion: 1 },
+          { modifiedAt: 1000, sizeBytes: 100 }
+        )
+      );
+
+    await pullNow(adapters);
+    expect(useSyncStatusStore.getState().lastPulledAt).toBeUndefined();
+    await pullNow(adapters);
+    expect(useSyncStatusStore.getState().lastPulledAt).toBeTypeOf('number');
   });
 
   it('moves past a 404, so a blob the index lists but storage lacks is not fetched every poll', async () => {

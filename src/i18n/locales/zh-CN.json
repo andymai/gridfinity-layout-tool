@@ -3375,6 +3375,8 @@
   "dock.savedOnDeviceCount_other": "已保存在此设备 · {count} 个布局",
   "dock.settings": "设置",
   "dock.signInTooltip": "本地工作中 · 登录以同步",
+  "dock.yearReview.ready": "你的 2026 已准备好。",
+  "dock.yearReview.hide": "隐藏你的 2026",
   "dock.syncStatusError": "同步出错",
   "dock.syncStatusIdle": "所有更改已同步",
   "dock.syncStatusOffline": "离线",

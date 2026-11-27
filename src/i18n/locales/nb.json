@@ -3440,6 +3440,8 @@
   "dock.savedOnDeviceCount_other": "Lagret på denne enheten · {count} layouter",
   "dock.settings": "Innstillinger",
   "dock.signInTooltip": "Jobber lokalt · Logg inn for å synkronisere",
+  "dock.yearReview.ready": "Ditt 2026 er klart.",
+  "dock.yearReview.hide": "Skjul ditt 2026",
   "dock.syncStatusError": "Synkroniseringsfeil",
   "dock.syncStatusIdle": "Alle endringer synkronisert",
   "dock.syncStatusOffline": "Frakoblet",

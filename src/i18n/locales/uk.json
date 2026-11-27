@@ -3570,6 +3570,8 @@
   "dock.savedOnDeviceCount_other": "Збережено на цьому пристрої · {count} розкладок",
   "dock.settings": "Налаштування",
   "dock.signInTooltip": "Робота локально · Увійдіть, щоб синхронізувати",
+  "dock.yearReview.ready": "Ваш 2026 готовий.",
+  "dock.yearReview.hide": "Сховати ваш 2026",
   "dock.syncStatusError": "Помилка синхронізації",
   "dock.syncStatusIdle": "Усі зміни синхронізовано",
   "dock.syncStatusOffline": "Не в мережі",

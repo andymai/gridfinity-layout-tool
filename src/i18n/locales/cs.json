@@ -3505,6 +3505,8 @@
   "dock.savedOnDeviceCount_other": "Uloženo v tomto zařízení · {count} rozvržení",
   "dock.settings": "Nastavení",
   "dock.signInTooltip": "Pracuješ lokálně · Přihlas se pro synchronizaci",
+  "dock.yearReview.ready": "Tvůj rok 2026 je připravený.",
+  "dock.yearReview.hide": "Skrýt tvůj rok 2026",
   "dock.syncStatusError": "Chyba synchronizace",
   "dock.syncStatusIdle": "Všechny změny synchronizovány",
   "dock.syncStatusOffline": "Offline",

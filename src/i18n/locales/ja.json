@@ -3375,6 +3375,8 @@
   "dock.savedOnDeviceCount_other": "このデバイスに保存中・{count}件のレイアウト",
   "dock.settings": "設定",
   "dock.signInTooltip": "ローカルで作業中・サインインして同期",
+  "dock.yearReview.ready": "あなたの2026年ができました。",
+  "dock.yearReview.hide": "あなたの2026年を非表示",
   "dock.syncStatusError": "同期エラー",
   "dock.syncStatusIdle": "すべての変更を同期済み",
   "dock.syncStatusOffline": "オフライン",

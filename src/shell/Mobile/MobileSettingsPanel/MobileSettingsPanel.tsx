@@ -424,6 +424,7 @@ export function MobileSettingsPanel() {
           setSettingsInitialTab('account');
           setShowSettingsModal(true);
         }}
+        onOpenYearReview={closePanel}
       />
 
       {/* Settings Modal — rendered locally so it works on mobile (Sidebar not mounted) */}
