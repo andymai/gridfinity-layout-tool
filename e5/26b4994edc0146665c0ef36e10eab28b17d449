@@ -1,0 +1,57 @@
+src/shared/components/ExportDialog/exportSupportGate.test.ts
+  s_cbdce95362cca9::t_fd94749af87a24 3,56-72
+  s_cbdce95362cca9::t_ed5c40c09e802a 73
+src/shared/yearReview/window.ts
+  s_cbdce95362cca9::t_d1a66be83b7cc3 1-15
+src/features/bin-designer/storage/designStoreAdapter.test.ts
+  s_cbdce95362cca9::t_15876a3e205225 14,180-240
+src/shared/components/ExportDialog/exportSupportGate.ts
+  s_cbdce95362cca9::t_ea921b3d01eb90 41-45
+src/test/mocks/designStorePort.ts
+  s_cbdce95362cca9::t_142d2e81947da4 1-3,14-17
+  s_cbdce95362cca9::t_a0be3ecf450ed0 18
+src/features/supporters/year/utils/loadYearSources.test.ts
+  s_cbdce95362cca9::t_e35893cbef0785 2,45-49,81
+  s_cbdce95362cca9::t_407cbc5b8723d4 1,3-44,50-80,82-85
+src/core/storage/BulkArchiveService.test.ts
+  s_cbdce95362cca9::t_142d2e81947da4 27,60
+src/shared/yearReview/window.test.ts
+  s_cbdce95362cca9::t_96b94ac6e49b1a 1-17
+src/features/bin-designer/storage/designStoreAdapter.ts
+  s_cbdce95362cca9::t_982b137bdcecd7 24,30,114-147
+  s_cbdce95362cca9::t_0b48807bf9d844 148
+src/shell/registrations/DesignStoreRegistration.test.tsx
+  s_cbdce95362cca9::t_ee44e58e547466 14
+src/features/bin-designer/utils/untouchedDesign.test.ts
+  s_cbdce95362cca9::t_dcda3cabccd359 1-30
+src/features/bin-designer/utils/untouchedDesign.ts
+  s_cbdce95362cca9::t_480e28f445fa6b 1-52
+src/core/storage/designStorePort.ts
+  s_cbdce95362cca9::t_0be6ae777523d8 61-78,164-170
+src/core/storage/ShareService.test.ts
+  s_cbdce95362cca9::t_142d2e81947da4 37,62
+src/features/supporters/year/utils/loadYearSources.ts
+  s_cbdce95362cca9::t_39fe020dce502b 1-41
+src/core/api/share.test.ts
+  s_cbdce95362cca9::t_142d2e81947da4 25,360,460,589,716
+src/features/supporters/year/hooks/useYearReviewData.ts
+  s_cbdce95362cca9::t_fc7d6508d2c648 1-67
+src/features/supporters/year/hooks/useYearReviewData.test.ts
+  s_cbdce95362cca9::t_571a656bfa5685 1-72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e526b4994edc0146665c0ef36e10eab28b17d449",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
