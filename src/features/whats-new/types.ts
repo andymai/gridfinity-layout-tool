@@ -19,13 +19,21 @@ export type WhatsNewKind = 'new' | 'improved' | 'fixed';
 export type WhatsNewAction =
   | { kind: 'openTool'; tool: 'layout' | 'designer' | 'baseplate' }
   | { kind: 'openModal'; modal: 'baseplateLibrary' | 'print' | 'designGallery' | 'labels' }
-  | { kind: 'scanTool' };
+  | { kind: 'scanTool' }
+  /** Your 2026. Its label shows only while the year review is open. */
+  | { kind: 'yearReview' };
 
 export interface WhatsNewEntry {
   /** Stable, never reused. Doubles as the seen-marker written to localStorage. */
   id: string;
   /** ISO date (YYYY-MM-DD) the change shipped. */
   date: string;
+  /**
+   * Local date (YYYY-MM-DD) before which the entry does not exist for the
+   * user: not in the digest, the archive, the badge or the seen marker. Lets an
+   * entry ship ahead of a dated launch. List it in `latest.ts` as well.
+   */
+  showFrom?: string;
   title: LocalizedText;
   kind?: WhatsNewKind;
   body?: LocalizedText;

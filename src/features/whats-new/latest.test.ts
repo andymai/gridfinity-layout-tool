@@ -1,10 +1,37 @@
 import { describe, expect, it } from 'vitest';
 import { WHATS_NEW_ENTRIES } from './entries';
-import { LATEST_ENTRY_ID } from './latest';
+import { LATEST_ENTRIES, isCaughtUp, latestEntryId } from './latest';
 
-describe('LATEST_ENTRY_ID', () => {
-  it('matches the newest entry', () => {
-    expect(LATEST_ENTRY_ID).toBe(WHATS_NEW_ENTRIES[0].id);
+describe('LATEST_ENTRIES', () => {
+  it('matches the newest entries, down to the newest one with no start date', () => {
+    const end = WHATS_NEW_ENTRIES.findIndex((entry) => entry.showFrom === undefined);
+    const head = WHATS_NEW_ENTRIES.slice(0, end + 1).map(({ id, showFrom }) =>
+      showFrom === undefined ? { id } : { id, showFrom }
+    );
+    expect(LATEST_ENTRIES).toEqual(head);
+  });
+});
+
+describe('latestEntryId', () => {
+  const [newest] = LATEST_ENTRIES;
+  const scheduled = newest?.showFrom;
+
+  it.runIf(scheduled !== undefined)('skips a scheduled entry until its day', () => {
+    if (scheduled === undefined) return;
+    const unscheduled = LATEST_ENTRIES.find((entry) => entry.showFrom === undefined);
+    expect(latestEntryId('2000-01-01')).toBe(unscheduled?.id);
+    expect(latestEntryId(scheduled)).toBe(newest?.id);
+  });
+});
+
+describe('isCaughtUp', () => {
+  it('reads a marker on a scheduled entry, left by a clock set ahead, as caught up', () => {
+    const [newest] = LATEST_ENTRIES;
+    expect(isCaughtUp(newest?.id ?? '', '2000-01-01')).toBe(true);
+  });
+
+  it('reads an older marker as behind', () => {
+    expect(isCaughtUp(WHATS_NEW_ENTRIES.at(-1)?.id ?? '', '2000-01-01')).toBe(false);
   });
 });
 

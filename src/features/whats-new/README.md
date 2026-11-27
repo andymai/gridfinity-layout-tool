@@ -4,8 +4,10 @@ Curated highlights of user-facing changes, shown after an update.
 
 ## Adding an entry
 
-Prepend to `entries.ts` and update `LATEST_ENTRY_ID` in `latest.ts`. The minimum
+Prepend to `entries.ts` and to `LATEST_ENTRIES` in `latest.ts`. The minimum
 is `id`, `date` and an English `title`; everything else is optional.
+
+`showFrom` hides an entry everywhere until that local date.
 
 The bar is judgment: would you mention this to someone using the tool? Most of
 what ships does not, and `CHANGELOG.md` stays the complete record.
@@ -22,7 +24,7 @@ release on 14 translations. Missing locales fall back to English.
 
 `entries.ts` is ~10kB gzipped and rides the modal's lazy chunk, but the badge
 must answer "anything unseen?" on every cold start. `latest.ts` holds the newest
-id as a literal so that stays eager. `latest.test.ts` fails if the two drift.
+ids as literals so that stays eager. `latest.test.ts` fails if the two drift.
 
 ## When the digest opens
 

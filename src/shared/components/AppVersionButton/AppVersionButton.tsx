@@ -3,7 +3,7 @@ import { Button, Tooltip } from '@/design-system';
 import { cn } from '@/design-system/cn';
 import { usePWAUpdateStore } from '@/core/store/pwaUpdate';
 import { useViewStore } from '@/core/store/view';
-import { hasUnseen, useSeenState } from '@/features/whats-new';
+import { useHasUnseen } from '@/features/whats-new';
 import { useTranslation } from '@/i18n';
 
 /**
@@ -17,7 +17,7 @@ type VersionState = 'update' | 'unseen' | 'idle';
 
 function useVersionState(): VersionState {
   const updateReady = usePWAUpdateStore((state) => state.updateReady);
-  const unseen = hasUnseen(useSeenState());
+  const unseen = useHasUnseen();
   if (updateReady) return 'update';
   return unseen ? 'unseen' : 'idle';
 }

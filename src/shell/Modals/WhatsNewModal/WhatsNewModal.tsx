@@ -4,7 +4,7 @@ import { useSettingsStore } from '@/core/store/settings';
 import { useViewStore } from '@/core/store/view';
 import { useTranslation } from '@/i18n';
 import { GITHUB_RELEASES_URL } from '@/shared/constants/links';
-import { markAllSeen } from '@/features/whats-new';
+import { markAllSeen, shownEntries, useLocalDay } from '@/features/whats-new';
 import { getSeenState } from '@/features/whats-new/seenState';
 import { WHATS_NEW_ENTRIES } from '@/features/whats-new/entries';
 import { buildDigest, splitLead } from '@/features/whats-new/digest';
@@ -44,9 +44,12 @@ function WhatsNewContent({ close }: { close: () => void }) {
   const [view, setView] = useState<View>('digest');
   const [filter, setFilter] = useState<KindFilter>('all');
 
+  const day = useLocalDay();
+  const entries = useMemo(() => shownEntries(WHATS_NEW_ENTRIES, day), [day]);
+
   // Captured before markAllSeen() below empties the unseen list: the digest
   // must not blank out underneath the reader.
-  const [digest] = useState(() => buildDigest(WHATS_NEW_ENTRIES, getSeenState().lastSeenId));
+  const [digest] = useState(() => buildDigest(entries, getSeenState().lastSeenId));
 
   useEffect(() => {
     markAllSeen();
@@ -78,14 +81,14 @@ function WhatsNewContent({ close }: { close: () => void }) {
       />
       <Dialog.SubHeader className={view === 'archive' ? 'py-2' : undefined}>
         {view === 'archive' ? (
-          <KindFilterControl value={filter} onChange={setFilter} />
+          <KindFilterControl entries={entries} value={filter} onChange={setFilter} />
         ) : (
           <DigestSubtitle digest={digest} />
         )}
       </Dialog.SubHeader>
       <Dialog.Body>
         {view === 'archive' ? (
-          <ArchiveList filter={filter} activate={activate} />
+          <ArchiveList entries={entries} filter={filter} activate={activate} />
         ) : (
           <DigestList
             headline={lead.headline}
@@ -115,7 +118,7 @@ function WhatsNewContent({ close }: { close: () => void }) {
               className="-ml-1.5 gap-1.5 px-1.5 text-content-secondary"
             >
               {t('whatsNew.seeAll')}
-              <span className="tabular-nums text-content-disabled">{WHATS_NEW_ENTRIES.length}</span>
+              <span className="tabular-nums text-content-disabled">{entries.length}</span>
             </Button>
           )}
           <Button size="sm" variant="primary" onClick={close}>

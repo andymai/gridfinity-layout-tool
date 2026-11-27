@@ -8,7 +8,13 @@ import {
   reloadSeenState,
   seedIfFirstRun,
 } from './seenState';
-import { LATEST_ENTRY_ID } from './latest';
+import { LATEST_ENTRIES, latestEntryId } from './latest';
+
+const scheduled = LATEST_ENTRIES.find((entry) => entry.showFrom !== undefined);
+const dayBefore = (iso: string): Date => {
+  const [year, month, day] = iso.split('-').map(Number);
+  return new Date(year ?? 0, (month ?? 1) - 1, (day ?? 1) - 1, 12);
+};
 
 describe('seenState', () => {
   beforeEach(() => {
@@ -35,7 +41,28 @@ describe('seenState', () => {
   it('seeds a first run without leaving anything unseen', () => {
     expect(seedIfFirstRun()).toBe(true);
     expect(hasUnseen(getSeenState())).toBe(false);
-    expect(getSeenState().lastSeenId).toBe(LATEST_ENTRY_ID);
+    expect(getSeenState().lastSeenId).toBe(latestEntryId());
+  });
+
+  describe.runIf(scheduled?.showFrom !== undefined)('with an entry scheduled ahead', () => {
+    const showFrom = scheduled?.showFrom ?? '';
+
+    it('marks only what is shown, so the scheduled entry is unseen on its day', () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(dayBefore(showFrom));
+      markAllSeen();
+      expect(getSeenState().lastSeenId).not.toBe(scheduled?.id);
+      expect(hasUnseen(getSeenState())).toBe(false);
+
+      expect(hasUnseen(getSeenState(), showFrom)).toBe(true);
+    });
+
+    it('seeds a first run before the day without swallowing the scheduled entry', () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(dayBefore(showFrom));
+      seedIfFirstRun();
+      expect(hasUnseen(getSeenState(), showFrom)).toBe(true);
+    });
   });
 
   it('only seeds once', () => {

@@ -4,7 +4,13 @@ import userEvent from '@testing-library/user-event';
 import { WhatsNewModal } from './WhatsNewModal';
 import { WHATS_NEW_ENTRIES } from '@/features/whats-new/entries';
 import { DIGEST_MAX } from '@/features/whats-new/digest';
-import { hasUnseen, markAllSeen, reloadSeenState } from '@/features/whats-new';
+import {
+  hasUnseen,
+  markAllSeen,
+  reloadSeenState,
+  shownEntries,
+  type WhatsNewEntry,
+} from '@/features/whats-new';
 import { getSeenState } from '@/features/whats-new/seenState';
 import { useSettingsStore } from '@/core/store/settings';
 import { useViewStore } from '@/core/store/view';
@@ -15,6 +21,16 @@ vi.mock('@/i18n', () => ({
   useCurrentLocale: () => 'en' as const,
 }));
 
+/** What a user sees today: an entry scheduled ahead does not exist yet. */
+let shown: WhatsNewEntry[] | undefined;
+const entries = (): WhatsNewEntry[] => (shown ??= shownEntries(WHATS_NEW_ENTRIES));
+const SCHEDULED = WHATS_NEW_ENTRIES.find((entry) => entry.showFrom !== undefined);
+
+function onDay(iso: string, dayOffset = 0): Date {
+  const [year, month, day] = iso.split('-').map(Number);
+  return new Date(year ?? 0, (month ?? 1) - 1, (day ?? 1) + dayOffset, 9);
+}
+
 function open(): void {
   useViewStore.getState().setWhatsNewOpen(true);
 }
@@ -23,7 +39,7 @@ function open(): void {
 function rewind(steps: number): void {
   localStorage.setItem(
     'gridfinity-whats-new-v1',
-    JSON.stringify({ lastSeenId: WHATS_NEW_ENTRIES[steps].id, lastAutoOpenAt: 0 })
+    JSON.stringify({ lastSeenId: entries()[steps].id, lastAutoOpenAt: 0 })
   );
   reloadSeenState();
 }
@@ -34,7 +50,7 @@ function rewind(steps: number): void {
  * newest few would rot the moment enough unflagged entries shipped above it.
  */
 function rewindPastFirstFeatured(): void {
-  const index = WHATS_NEW_ENTRIES.findIndex((entry) => entry.featured === true);
+  const index = entries().findIndex((entry) => entry.featured === true);
   expect(index).toBeGreaterThanOrEqual(0);
   expect(index).toBeLessThan(DIGEST_MAX);
   // Never fewer than two. `index + 1` is a single entry when the featured one is
@@ -78,7 +94,7 @@ describe('WhatsNewModal', () => {
 
     const card = leadCard();
     const heading = within(card).getByRole('heading', { level: 3 });
-    const promoted = WHATS_NEW_ENTRIES.find((entry) => entry.title.en === heading.textContent);
+    const promoted = entries().find((entry) => entry.title.en === heading.textContent);
     expect(promoted?.featured).toBe(true);
     // A promoted entry keeps its full body; the rows below it are clamped.
     expect(within(card).getByText(promoted?.body?.en ?? '')).toBeInTheDocument();
@@ -129,7 +145,7 @@ describe('WhatsNewModal', () => {
     open();
     render(<WhatsNewModal />);
     // markAllSeen() empties the unseen list on open; the frozen digest must survive it.
-    expect(screen.getByText(WHATS_NEW_ENTRIES[0].title.en)).toBeInTheDocument();
+    expect(screen.getByText(entries()[0].title.en)).toBeInTheDocument();
   });
 
   it('caps a long absence and offers the remainder rather than listing it', async () => {
@@ -139,7 +155,7 @@ describe('WhatsNewModal', () => {
     render(<WhatsNewModal />);
 
     // The entry just past the cap is held back, not dropped.
-    const heldBack = WHATS_NEW_ENTRIES[DIGEST_MAX + 1];
+    const heldBack = entries()[DIGEST_MAX + 1];
     expect(screen.queryByText(heldBack.title.en)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /whatsNew.overflow/ }));
@@ -175,7 +191,7 @@ describe('WhatsNewModal', () => {
 
     await user.click(screen.getByRole('button', { name: /whatsNew.seeAll/ }));
 
-    const aNewEntry = WHATS_NEW_ENTRIES.find((entry) => (entry.kind ?? 'new') === 'new');
+    const aNewEntry = entries().find((entry) => (entry.kind ?? 'new') === 'new');
     const title = aNewEntry?.title.en ?? '';
     expect(screen.getByText(title)).toBeInTheDocument();
 
@@ -189,7 +205,7 @@ describe('WhatsNewModal', () => {
     render(<WhatsNewModal />);
     await user.click(screen.getByRole('button', { name: /whatsNew.seeAll/ }));
 
-    const newest = WHATS_NEW_ENTRIES[0];
+    const newest = entries()[0];
     expect(screen.queryByText(newest.body?.en ?? '')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', rowNamed(newest.title.en)));
@@ -202,9 +218,7 @@ describe('WhatsNewModal', () => {
     render(<WhatsNewModal />);
     await user.click(screen.getByRole('button', { name: /whatsNew.seeAll/ }));
 
-    const withAction = WHATS_NEW_ENTRIES.find(
-      (e) => e.action?.kind === 'openTool' && e.labs === undefined
-    );
+    const withAction = entries().find((e) => e.action?.kind === 'openTool' && e.labs === undefined);
     expect(withAction).toBeDefined();
     const title = withAction?.title.en ?? '';
 
@@ -228,6 +242,39 @@ describe('WhatsNewModal', () => {
 
     expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
     expect(screen.getByText('sidebar.version')).toBeInTheDocument();
+  });
+
+  describe.runIf(SCHEDULED?.showFrom !== undefined)('an entry scheduled ahead', () => {
+    const showFrom = SCHEDULED?.showFrom ?? '';
+    const title = SCHEDULED?.title.en ?? '';
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('is not in the digest or the archive before its day', async () => {
+      const user = userEvent.setup();
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(onDay(showFrom, -1));
+      open();
+      render(<WhatsNewModal />);
+      expect(screen.queryByText(title)).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /whatsNew.seeAll/ }));
+      expect(screen.queryByText(title)).not.toBeInTheDocument();
+    });
+
+    it('leads the digest on its day for a user who was caught up the day before', () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(onDay(showFrom, -1));
+      markAllSeen();
+
+      vi.setSystemTime(onDay(showFrom));
+      expect(hasUnseen(getSeenState())).toBe(true);
+      open();
+      render(<WhatsNewModal />);
+      expect(within(leadCard()).getByRole('heading', { level: 3 })).toHaveTextContent(title);
+    });
   });
 
   it('opts out through the settings store rather than local state', async () => {

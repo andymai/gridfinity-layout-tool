@@ -1,10 +1,17 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useSettingsStore } from '@/core/store/settings';
 import { useViewStore } from '@/core/store/view';
 import { useWhatsNewAutoOpen } from './useWhatsNewAutoOpen';
-import { getSeenState, reloadSeenState } from '../seenState';
-import { LATEST_ENTRY_ID } from '../latest';
+import { getSeenState, markAllSeen, reloadSeenState } from '../seenState';
+import { LATEST_ENTRIES, latestEntryId } from '../latest';
+
+const scheduled = LATEST_ENTRIES.find((entry) => entry.showFrom !== undefined);
+
+function onDay(iso: string, dayOffset = 0): Date {
+  const [year, month, day] = iso.split('-').map(Number);
+  return new Date(year ?? 0, (month ?? 1) - 1, (day ?? 1) + dayOffset, 9);
+}
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -30,6 +37,25 @@ describe('useWhatsNewAutoOpen', () => {
     useSettingsStore.getState().updateSetting('showUpdateSummaries', true);
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it.runIf(scheduled?.showFrom !== undefined)(
+    "opens on a scheduled entry's day for a user who read What's New the day before",
+    () => {
+      const showFrom = scheduled?.showFrom ?? '';
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(onDay(showFrom, -1));
+      seenLongAgo();
+      markAllSeen();
+
+      vi.setSystemTime(onDay(showFrom));
+      renderHook(() => useWhatsNewAutoOpen({ allowed: true }));
+      expect(isOpen()).toBe(true);
+    }
+  );
+
   it('opens for a returning user with unseen highlights', () => {
     seenLongAgo();
     renderHook(() => useWhatsNewAutoOpen({ allowed: true }));
@@ -39,11 +65,11 @@ describe('useWhatsNewAutoOpen', () => {
   it('stays quiet on a first-ever visit, and seeds the marker instead', () => {
     renderHook(() => useWhatsNewAutoOpen({ allowed: true }));
     expect(isOpen()).toBe(false);
-    expect(getSeenState().lastSeenId).toBe(LATEST_ENTRY_ID);
+    expect(getSeenState().lastSeenId).toBe(latestEntryId());
   });
 
   it('stays quiet when nothing is unseen', () => {
-    seenLongAgo(LATEST_ENTRY_ID);
+    seenLongAgo(latestEntryId());
     renderHook(() => useWhatsNewAutoOpen({ allowed: true }));
     expect(isOpen()).toBe(false);
   });
@@ -68,7 +94,7 @@ describe('useWhatsNewAutoOpen', () => {
     // Otherwise their marker stays empty and the sidebar badges them forever.
     renderHook(() => useWhatsNewAutoOpen({ allowed: false }));
     expect(isOpen()).toBe(false);
-    expect(getSeenState().lastSeenId).toBe(LATEST_ENTRY_ID);
+    expect(getSeenState().lastSeenId).toBe(latestEntryId());
   });
 
   it('stays quiet when update summaries are turned off', () => {

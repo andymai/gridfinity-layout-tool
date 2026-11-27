@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { useDestinationLabel, useEntryActivation } from './whatsNewShared';
 import type { WhatsNewAction, WhatsNewEntry } from '@/features/whats-new';
@@ -115,5 +115,42 @@ describe('useDestinationLabel', () => {
       useDestinationLabel(entry({ labs: 'places', action: { kind: 'openTool', tool: 'layout' } }))
     );
     expect(result.current).toBe('Open Labs');
+  });
+
+  describe('Your 2026', () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('offers Your 2026 while the year review is open', () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 11, 1, 9));
+      const { result } = renderHook(() =>
+        useDestinationLabel(entry({ action: { kind: 'yearReview' } }))
+      );
+      expect(result.current).toBe('Play Your 2026');
+    });
+
+    it('offers nothing outside the window, where the route sends visitors home', () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2027, 2, 1, 9));
+      const { result } = renderHook(() =>
+        useDestinationLabel(entry({ action: { kind: 'yearReview' } }))
+      );
+      expect(result.current).toBeNull();
+    });
+  });
+});
+
+describe('useEntryActivation, Your 2026', () => {
+  beforeEach(() => {
+    resetAllStores();
+    window.history.pushState(null, '', '/');
+  });
+
+  it("opens Your 2026 and reports What's New as the way in", () => {
+    activateWith(entry({ action: { kind: 'yearReview' } }));
+    expect(window.location.pathname).toBe('/your-2026');
+    expect(window.location.search).toBe('?from=whats_new');
   });
 });
