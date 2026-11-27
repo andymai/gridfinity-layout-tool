@@ -1,0 +1,32 @@
+diff --git a/build/index.cjs b/build/index.cjs
+index 96629f499ed74efa5d6ee3d7b4856160a68814a8..6b2ea9fb0014ebd7234f4cf943d45e5795487a18 100644
+--- a/build/index.cjs
++++ b/build/index.cjs
+@@ -60,6 +60,11 @@ function cacheDonePromiseForTransaction(tx) {
+             unlisten();
+         };
+         const error = () => {
++            // tx.error is still null when a failed request's error event bubbles
++            // here (that request's promise carries the error) or after abort().
++            // Neither copy should also surface as an unhandled rejection.
++            if (!tx.error)
++                done.catch(() => { });
+             reject(tx.error || new DOMException('AbortError', 'AbortError'));
+             unlisten();
+         };
+diff --git a/build/index.js b/build/index.js
+index e3f6c8daeb9ca1945e80215ecb2552dd9c0ffc8c..e240402fcb061ab785d67df3b2c3a4112d622ff1 100644
+--- a/build/index.js
++++ b/build/index.js
+@@ -58,6 +58,11 @@ function cacheDonePromiseForTransaction(tx) {
+             unlisten();
+         };
+         const error = () => {
++            // tx.error is still null when a failed request's error event bubbles
++            // here (that request's promise carries the error) or after abort().
++            // Neither copy should also surface as an unhandled rejection.
++            if (!tx.error)
++                done.catch(() => { });
+             reject(tx.error || new DOMException('AbortError', 'AbortError'));
+             unlisten();
+         };
