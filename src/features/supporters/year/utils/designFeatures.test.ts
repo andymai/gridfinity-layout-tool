@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 import { compartmentCount, featureScore, hasLabelText, isBinParams } from './designFeatures';
 
@@ -38,6 +38,32 @@ describe('hasLabelText', () => {
     expect(hasLabelText(base)).toBe(false);
     expect(hasLabelText({ ...texted, label: { ...texted.label, enabled: false } })).toBe(false);
     expect(hasLabelText({ ...texted, label: { ...texted.label, enabled: true } })).toBe(true);
+  });
+
+  it('reads row text when label tabs span rows', () => {
+    const spanning = {
+      ...DEFAULT_BIN_PARAMS,
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, span: true, rowTexts: ['Screws'] },
+      compartments: { ...DEFAULT_BIN_PARAMS.compartments, compartmentTexts: [] },
+    };
+    expect(hasLabelText(spanning)).toBe(true);
+    expect(
+      hasLabelText({
+        ...spanning,
+        label: { ...spanning.label, rowTexts: [] },
+        compartments: { ...spanning.compartments, compartmentTexts: ['Hidden'] },
+      })
+    ).toBe(false);
+  });
+
+  it('reads lid text only on an enabled lid', () => {
+    const withLidText = { ...DEFAULT_BIN_PARAMS, surfaceText: { lidText: 'Bits' } };
+    expect(
+      hasLabelText({ ...withLidText, lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: false } })
+    ).toBe(false);
+    expect(
+      hasLabelText({ ...withLidText, lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } })
+    ).toBe(true);
   });
 
   it('sees surface text', () => {

@@ -30,14 +30,25 @@ function isFilled(text: string | null | undefined): boolean {
   return typeof text === 'string' && text.trim().length > 0;
 }
 
+/**
+ * Only text the generator engraves. Label tabs carry row text when they span
+ * rows, else compartment text; socket mode decides spanning from a fit only
+ * the worker knows, so it takes the row text whenever a row has some.
+ */
+function labelTexts(params: BinParams): readonly (string | undefined)[] {
+  if (!params.label.enabled) return [];
+  const rows = params.label.rowTexts ?? [];
+  const compartments = params.compartments.compartmentTexts ?? [];
+  if (params.label.span === true) return rows;
+  if ((params.label.mode ?? 'text') === 'socket' && rows.some(isFilled)) return rows;
+  return compartments;
+}
+
 function textCount(params: BinParams): number {
   const surface = params.surfaceText;
   const texts: (string | null | undefined)[] = [
-    // Compartment and row texts are engraved only on label tabs.
-    ...(params.label.enabled
-      ? [...(params.compartments.compartmentTexts ?? []), ...(params.label.rowTexts ?? [])]
-      : []),
-    surface?.lidText,
+    ...labelTexts(params),
+    params.lid.enabled ? surface?.lidText : undefined,
     surface?.floorText,
     ...Object.values(surface?.walls ?? {}),
   ];

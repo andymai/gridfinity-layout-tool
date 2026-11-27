@@ -1,6 +1,5 @@
 import type { YearType, YearTypeId } from '../types';
 
-/** The numbers the type rules read, gathered once by `computeYearStats`. */
 export interface YearTypeMetrics {
   readonly drawers: number;
   readonly binsPlaced: number;

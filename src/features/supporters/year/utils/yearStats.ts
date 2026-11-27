@@ -1,4 +1,5 @@
 import type { Bin, Layout } from '@/core/types';
+import { isFractional } from '@/core/constants';
 import { effectiveGridUnitMmY } from '@/core/types';
 import {
   OVERHEAD_MINUTES,
@@ -9,7 +10,7 @@ import {
 import type { BinParams } from '@/shared/types/bin';
 import { getGridBins } from '@/shared/utils/bins';
 import { estimateCommunityPrint } from '@/shared/utils/communityPrintCost';
-import { hasFractionalBins } from '@/shared/utils/halfGridConstraints';
+import { outlineSignedArea } from '@/shared/utils/drawerOutlineGeometry';
 import type {
   YearDesignRef,
   YearDesignSource,
@@ -38,9 +39,16 @@ interface BinDesign {
   readonly grams: number;
 }
 
+function isLength(value: number | undefined): value is number {
+  return value !== undefined && Number.isFinite(value) && value > 0;
+}
+
+/** Imported, shared and synced layouts skip the editor's checks on the measured size. */
 function drawerMm(layout: Layout): { widthMm: number; depthMm: number } {
   const measured = layout.drawer.measuredMm;
-  if (measured) return { widthMm: measured.width, depthMm: measured.depth };
+  if (measured && isLength(measured.width) && isLength(measured.depth)) {
+    return { widthMm: measured.width, depthMm: measured.depth };
+  }
   return {
     widthMm: layout.drawer.width * layout.gridUnitMm,
     depthMm: layout.drawer.depth * effectiveGridUnitMmY(layout),
@@ -53,14 +61,24 @@ function footprintKey(bin: Pick<Bin, 'width' | 'depth'>): string {
   return `${long}x${short}`;
 }
 
+/** Grid cells the drawer can hold: a shaped outline holds less than its bounding box. */
+function drawerCells(layout: Layout): number {
+  const box = layout.drawer.width * layout.drawer.depth;
+  const outline = layout.drawer.outline;
+  if (!outline) return box;
+  const cellMm2 = layout.gridUnitMm * effectiveGridUnitMmY(layout);
+  const cells = Math.abs(outlineSignedArea(outline)) / cellMm2;
+  return cells > 0 ? Math.min(box, cells) : box;
+}
+
 function bottomLayerFill(layout: Layout, bins: readonly Bin[]): number | null {
   const bottom = layout.layers.at(0);
-  const capacity = layout.drawer.width * layout.drawer.depth;
+  const capacity = drawerCells(layout);
   if (!bottom || capacity <= 0) return null;
   const covered = bins
     .filter((bin) => bin.layerId === bottom.id)
     .reduce((sum, bin) => sum + bin.width * bin.depth, 0);
-  return covered > 0 ? Math.min(1, covered / capacity) : null;
+  return Math.min(1, covered / capacity);
 }
 
 function ref(source: YearDesignSource): YearDesignRef {
@@ -168,7 +186,7 @@ export function computeYearStats(input: YearReviewInput): YearStats {
     }
     maxLayers = Math.max(maxLayers, layout.layers.length);
     binsPlaced += bins.length;
-    halfBins ||= hasFractionalBins(bins);
+    halfBins ||= bins.some((bin) => isFractional(bin.width) || isFractional(bin.depth));
     const fill = bottomLayerFill(layout, bins);
     if (fill !== null) fills.push(fill);
     if (bins.length > 0) jobs += 1;

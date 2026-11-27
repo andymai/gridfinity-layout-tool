@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { STAGING_ID } from '@/core/constants';
 import { binId, designId, gridUnits, heightUnits, layerId, mm } from '@/core/types';
 import {
@@ -238,6 +238,87 @@ describe('computeYearStats', () => {
     });
     expect(result.drawers).toBe(0);
     expect(hasYearActivity(result)).toBe(false);
+  });
+
+  function single(source: YearLayoutSource | YearLayoutSource[]) {
+    return computeYearStats({
+      year: 2026,
+      layouts: Array.isArray(source) ? source : [source],
+      designs: [],
+      exportCount: 0,
+      printSettings: DEFAULT_PRINT_SETTINGS,
+    });
+  }
+
+  function drawer(id: string, layout: Parameters<typeof createTestLayout>[0]): YearLayoutSource {
+    const createdAt = local(2026, 4, 1);
+    return { id, name: id, createdAt, modifiedAt: createdAt, layout: createTestLayout(layout) };
+  }
+
+  it('does not take whole bins at half-grid positions for half-size bins', () => {
+    const shifted = drawer('shifted', {
+      bins: [0.5, 1.5, 2.5].map((x) => createTestBin({ id: binId(`b${x}`), x: gridUnits(x) })),
+    });
+    expect(single(shifted).type.id).toBe('minimalist');
+  });
+
+  it('counts a drawer with an empty bottom layer as empty in the fill average', () => {
+    const full = drawer('full', {
+      bins: [createTestBin({ id: binId('slab'), width: gridUnits(10), depth: gridUnits(8) })],
+    });
+    const upperOnly = drawer('upper', {
+      layers: [
+        { id: layerId('layer1'), name: 'Bottom', height: heightUnits(3) },
+        { id: layerId('layer2'), name: 'Top', height: heightUnits(3) },
+      ],
+      bins: [0, 1, 2].map((x) =>
+        createTestBin({ id: binId(`u${x}`), x: gridUnits(x), layerId: layerId('layer2') })
+      ),
+    });
+    expect(single([full, upperOnly]).type.id).not.toBe('gapFiller');
+  });
+
+  it('measures a shaped drawer by its outline, not its bounding box', () => {
+    const notched = drawer('notched', {
+      drawer: {
+        width: gridUnits(3),
+        depth: gridUnits(2),
+        height: heightUnits(12),
+        outline: {
+          vertices: [
+            { x: 0, y: 0 },
+            { x: 126, y: 0 },
+            { x: 126, y: 42 },
+            { x: 84, y: 42 },
+            { x: 84, y: 84 },
+            { x: 0, y: 84 },
+          ],
+        },
+      },
+      bins: [
+        [0, 0],
+        [1, 0],
+        [2, 0],
+        [0, 1],
+        [1, 1],
+      ].map(([x, y]) =>
+        createTestBin({ id: binId(`n${x}${y}`), x: gridUnits(x), y: gridUnits(y) })
+      ),
+    });
+    expect(single(notched).type.id).toBe('gapFiller');
+  });
+
+  it('falls back to the grid size when the measured size is unusable', () => {
+    const broken = drawer('broken', {
+      drawer: {
+        width: gridUnits(10),
+        depth: gridUnits(8),
+        height: heightUnits(12),
+        measuredMm: { width: Number.NaN, depth: 300 },
+      },
+      bins: [createTestBin()],
+    });
+    expect(single(broken).drawerAreaMm2).toBe(10 * 42 * 8 * 42);
   });
 
   it('reports no activity for a library with only earlier work', () => {
