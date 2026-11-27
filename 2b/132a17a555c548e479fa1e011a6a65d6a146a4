@@ -1,0 +1,42 @@
+src/shared/components/UserDock/YearReviewRow.test.tsx
+  s_cbdce95362cca9::t_44a8bc6f0f1b61 80
+  s_cbdce95362cca9::t_a183257a1469db 66-69,149,151-162,166-206
+  s_cbdce95362cca9::t_0f298f1a011f0b 207
+src/shared/components/UserDock/YearReviewRow.tsx
+  s_cbdce95362cca9::t_337f6a4fa02928 34,48
+src/shared/components/UserDock/useYearReviewRow.ts
+  s_cbdce95362cca9::t_337f6a4fa02928 1,9-13,16-24,26-33,37,41-74,90-91,106-107,110-113,123,128
+src/core/sync/status.ts
+  s_cbdce95362cca9::t_20ec574b8e694c 23-24,34-38,60,66,88
+src/shared/yearReview/dockRow.ts
+  s_cbdce95362cca9::t_8c7ce6791036f2 35-61,64,70,93
+src/core/sync/status.test.ts
+  s_cbdce95362cca9::t_0be210d21c7d82 40-49
+src/shared/yearReview/window.ts
+  s_cbdce95362cca9::t_337f6a4fa02928 16-22
+src/core/sync/poller.test.ts
+  s_cbdce95362cca9::t_03d50c1a04137e 139,215
+src/core/sync/poller.ts
+  s_cbdce95362cca9::t_20ec574b8e694c 122,237
+src/shared/yearReview/window.test.ts
+  s_cbdce95362cca9::t_c49996e74c83ee 2
+  s_cbdce95362cca9::t_7e7027fe8c7d61 17-26
+src/shared/yearReview/dockRow.test.ts
+  s_cbdce95362cca9::t_a183257a1469db 55-81,83-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2b132a17a555c548e479fa1e011a6a65d6a146a4",
+  "prompts": {},
+  "sessions": {
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
