@@ -31,7 +31,7 @@ export function YearReviewRow({ onOpen }: YearReviewRowProps) {
         variant="ghost"
         touchTarget={false}
         onClick={open}
-        className="flex-1 min-w-0 justify-start gap-2 rounded-none px-3 py-1.5 text-xs font-normal text-content-secondary hover:bg-surface-hover hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
+        className="flex-1 min-w-0 justify-start gap-2 rounded-none px-3 py-1.5 text-xs font-normal text-content-secondary hover:bg-surface-hover hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset pointer-coarse:min-h-[44px]"
       >
         <span
           aria-hidden="true"
@@ -45,7 +45,7 @@ export function YearReviewRow({ onOpen }: YearReviewRowProps) {
         size="sm"
         touchTarget={false}
         onClick={hideYearReviewRow}
-        className="mr-1.5 shrink-0 text-content-tertiary hover:text-content"
+        className="mr-1.5 shrink-0 text-content-tertiary hover:text-content pointer-coarse:mr-0 pointer-coarse:min-h-[44px] pointer-coarse:min-w-[44px]"
       >
         <svg
           className="w-3.5 h-3.5"

@@ -32,14 +32,42 @@ function read(): DockRowState {
   }
 }
 
+// Every flag only turns on, so the union of two copies loses neither: another
+// tab's change survives this tab's next write, and a change storage refused
+// survives another tab's write.
+function merge(a: DockRowState, b: DockRowState): DockRowState {
+  return { seen: a.seen || b.seen, hidden: a.hidden || b.hidden, hasWork: a.hasWork || b.hasWork };
+}
+
+function same(a: DockRowState, b: DockRowState): boolean {
+  return a.seen === b.seen && a.hidden === b.hidden && a.hasWork === b.hasWork;
+}
+
+let watching = false;
+
+// One listener for the module's lifetime: the cache outlives every dock, so it
+// must hear another tab's change while no dock is mounted.
+function watchOtherTabs(): void {
+  if (watching || typeof window === 'undefined') return;
+  watching = true;
+  window.addEventListener('storage', (event) => {
+    if (event.key !== KEY && event.key !== null) return;
+    const next = merge(read(), cached ?? EMPTY);
+    if (cached && same(next, cached)) return;
+    cached = next;
+    listeners.forEach((listener) => listener());
+  });
+}
+
 /** Stable between changes, as `useSyncExternalStore` needs. */
 export function readDockRowState(): DockRowState {
+  watchOtherTabs();
   cached ??= read();
   return cached;
 }
 
 function write(change: Partial<DockRowState>): void {
-  const next = { ...readDockRowState(), ...change };
+  const next = merge(merge(read(), readDockRowState()), { ...EMPTY, ...change });
   cached = next;
   try {
     localStorage.setItem(KEY, JSON.stringify(next));
@@ -62,16 +90,10 @@ export function rememberYearWork(): void {
 }
 
 export function subscribeDockRow(listener: () => void): () => void {
+  watchOtherTabs();
   listeners.add(listener);
-  const onStorage = (event: StorageEvent) => {
-    if (event.key !== KEY) return;
-    cached = null;
-    listener();
-  };
-  window.addEventListener('storage', onStorage);
   return () => {
     listeners.delete(listener);
-    window.removeEventListener('storage', onStorage);
   };
 }
 

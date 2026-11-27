@@ -63,6 +63,10 @@ function setLayout(createdAt: number, bins: number): void {
 }
 
 const row = () => screen.queryByRole('button', { name: 'Your 2026 is ready.' });
+const idle = () =>
+  act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 120));
+  });
 
 describe('YearReviewRow', () => {
   beforeEach(() => {
@@ -73,7 +77,7 @@ describe('YearReviewRow', () => {
     resetYearReviewDesignCheck();
     resetAllStores();
     useSessionStore.setState({ status: 'anonymous', user: null });
-    useSyncStatusStore.setState({ state: 'idle', pendingCount: 0, lastSyncedAt: undefined });
+    useSyncStatusStore.getState().reset();
     listDesignSummaries.mockReset();
     listDesignSummaries.mockResolvedValue(ok([]));
     setLayout(IN_2026, 0);
@@ -123,10 +127,6 @@ describe('YearReviewRow', () => {
   });
 
   it('reads the design store once per page load, however often docks mount', async () => {
-    const idle = () =>
-      act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 120));
-      });
     const { unmount } = render(
       <>
         <YearReviewRow />
@@ -146,12 +146,63 @@ describe('YearReviewRow', () => {
     useSyncStatusStore.setState({ state: 'syncing' });
     listDesignSummaries.mockResolvedValue(ok([design()]));
     render(<YearReviewRow />);
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 120));
-    });
+    await idle();
     expect(listDesignSummaries).not.toHaveBeenCalled();
-    act(() => useSyncStatusStore.setState({ state: 'idle', lastSyncedAt: Date.now() }));
+    act(() => useSyncStatusStore.getState().succeed('pull'));
     await waitFor(() => expect(row()).toBeInTheDocument());
+  });
+
+  it('does not take a finished push for the first pull', async () => {
+    useSessionStore.setState({ status: 'authenticated' });
+    useSyncStatusStore.setState({ state: 'syncing' });
+    render(<YearReviewRow />);
+    act(() => useSyncStatusStore.getState().succeed());
+    await idle();
+    listDesignSummaries.mockResolvedValue(ok([design()]));
+    act(() => useSyncStatusStore.getState().succeed('pull'));
+    await waitFor(() => expect(row()).toBeInTheDocument());
+  });
+
+  it('reads again once sync recovers, when the first read ran while sync was down', async () => {
+    useSessionStore.setState({ status: 'authenticated' });
+    useSyncStatusStore.setState({ state: 'offline' });
+    render(<YearReviewRow />);
+    await waitFor(() => expect(listDesignSummaries).toHaveBeenCalledTimes(1));
+    await idle();
+    expect(row()).not.toBeInTheDocument();
+    listDesignSummaries.mockResolvedValue(ok([design()]));
+    act(() => useSyncStatusStore.getState().succeed('pull'));
+    await waitFor(() => expect(row()).toBeInTheDocument());
+  });
+
+  it('appears at midnight on 1 December in a tab left open', () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+    vi.setSystemTime(new Date(2026, 10, 30, 23, 59));
+    setLayout(IN_2026, 2);
+    render(<YearReviewRow />);
+    expect(row()).not.toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(2 * 60_000));
+    expect(row()).toBeInTheDocument();
+  });
+
+  it('checks the date again when a sleeping tab becomes visible', () => {
+    vi.setSystemTime(BEFORE_WINDOW);
+    setLayout(IN_2026, 2);
+    render(<YearReviewRow />);
+    expect(row()).not.toBeInTheDocument();
+    vi.setSystemTime(IN_WINDOW);
+    act(() => document.dispatchEvent(new Event('visibilitychange')));
+    expect(row()).toBeInTheDocument();
+  });
+
+  it('gives both buttons a 44 px target on touch screens', () => {
+    setLayout(IN_2026, 1);
+    render(<YearReviewRow />);
+    expect(row()).toHaveClass('pointer-coarse:min-h-[44px]');
+    expect(screen.getByRole('button', { name: 'Hide Your 2026' })).toHaveClass(
+      'pointer-coarse:min-h-[44px]',
+      'pointer-coarse:min-w-[44px]'
+    );
   });
 
   it('remembers a yes, so the next load needs no check', () => {

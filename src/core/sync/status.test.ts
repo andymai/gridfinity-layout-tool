@@ -37,6 +37,16 @@ describe('useSyncStatusStore', () => {
     expect(s.lastSyncedAt).toBeGreaterThanOrEqual(before);
   });
 
+  it('stamps lastPulledAt only for a pull, and reset clears it', () => {
+    useSyncStatusStore.getState().succeed();
+    expect(useSyncStatusStore.getState().lastPulledAt).toBeUndefined();
+    useSyncStatusStore.getState().succeed('pull');
+    const s = useSyncStatusStore.getState();
+    expect(s.lastPulledAt).toBe(s.lastSyncedAt);
+    useSyncStatusStore.getState().reset();
+    expect(useSyncStatusStore.getState().lastPulledAt).toBeUndefined();
+  });
+
   it('succeed leaves state as syncing when items remain in the outbox', () => {
     useSyncStatusStore.getState().setPendingCount(3);
     useSyncStatusStore.getState().beginSync();

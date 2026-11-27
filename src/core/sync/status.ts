@@ -20,6 +20,8 @@ export interface SyncStatus {
   state: SyncState;
   /** Last successful manifest pull or successful push. */
   lastSyncedAt?: number;
+  /** Last successful manifest pull: the device then holds the account's items. */
+  lastPulledAt?: number;
   /** How many entries the outbox is currently holding. */
   pendingCount: number;
   /** Most recent error message; cleared on next successful sync. */
@@ -29,8 +31,11 @@ export interface SyncStatus {
 interface SyncStatusActions {
   /** Engine signals it started a push or pull; idempotent. */
   beginSync: () => void;
-  /** Engine signals success; updates `lastSyncedAt` and clears `lastError`. */
-  succeed: () => void;
+  /**
+   * Engine signals success; updates `lastSyncedAt` and clears `lastError`.
+   * A pull also updates `lastPulledAt`.
+   */
+  succeed: (source?: 'pull') => void;
   /** Engine reports a network failure (timeout, offline, 5xx). */
   reportOffline: (message?: string) => void;
   /**
@@ -52,12 +57,13 @@ export const useSyncStatusStore = create<SyncStatus & SyncStatusActions>()(
       set((draft) => {
         if (draft.state !== 'syncing') draft.state = 'syncing';
       }),
-    succeed: () =>
+    succeed: (source) =>
       set((draft) => {
         // Single coherent transition: stay 'syncing' while the outbox still
         // has work, otherwise return to 'idle'. Avoids per-item flicker.
         draft.state = draft.pendingCount > 0 ? 'syncing' : 'idle';
         draft.lastSyncedAt = Date.now();
+        if (source === 'pull') draft.lastPulledAt = draft.lastSyncedAt;
         draft.lastError = undefined;
       }),
     reportOffline: (message) =>
@@ -79,6 +85,7 @@ export const useSyncStatusStore = create<SyncStatus & SyncStatusActions>()(
         draft.state = 'idle';
         draft.pendingCount = 0;
         draft.lastSyncedAt = undefined;
+        draft.lastPulledAt = undefined;
         draft.lastError = undefined;
       }),
   }))

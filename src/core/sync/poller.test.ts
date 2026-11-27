@@ -136,6 +136,7 @@ describe('pullNow — single-flight + 304 path', () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 304 }));
     const result = await pullNow(adapters);
     expect(result.status).toBe('not-modified');
+    expect(useSyncStatusStore.getState().lastPulledAt).toBeDefined();
   });
 
   it('returns "unauthorized" on 401', async () => {
@@ -211,6 +212,7 @@ describe('diff: only-remote (live)', () => {
     const result = await pullNow(adapters);
     expect(result.status).toBe('applied');
     expect(result.applied).toBe(1);
+    expect(useSyncStatusStore.getState().lastPulledAt).toBeDefined();
     expect(layouts.applyRemote).toHaveBeenCalledWith({
       id: 'lay-1',
       payload: { v: 1 },
