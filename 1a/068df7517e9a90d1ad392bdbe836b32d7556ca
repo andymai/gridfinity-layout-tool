@@ -1,0 +1,359 @@
+src/shared/yearReview/yearWork.ts
+  s_cbdce95362cca9::t_cd3d74182b8293 1-31,35-44,48
+  s_cbdce95362cca9::t_3ade9bee06acf7 32-34,45-47
+src/shared/yearReview/yearWork.test.ts
+  s_cbdce95362cca9::t_7bbbb76e881fa4 1-54
+src/features/supporters/year/utils/yearStats.ts
+  s_cbdce95362cca9::t_a0f14fbdf64ff7 1,3-7,9-12,14,16-24,33-36,38-39,43-44,74-75,79-90,101,104-107,109-110,112-114,116-118,121,123,125,127-129,134,136-142,147-149,151-166,172,184-208,210-223,226-253,255-258,260-263,265-269,271,276-279,283,286-298,300-301,303-312,315-325
+  s_cbdce95362cca9::t_5d17fc9266fd20 102
+  s_cbdce95362cca9::t_9839e90e3b0601 8,15,111,143-146,150,174-177,179-183,224-225,280-282
+  s_cbdce95362cca9::t_dd04f199c9e36b 25-32,124,126,167-171,173,270,272-275,302
+  s_cbdce95362cca9::t_96f0e0680eb54a 2,13,69-73,76-78,91-100,103,108,209
+  s_cbdce95362cca9::t_5068548714d762 132
+  s_cbdce95362cca9::t_be06ac9df06d4b 115,119-120,122,130-131,133,135,284-285,313-314
+  s_cbdce95362cca9::t_b9069a0894ce36 37,57,254,259
+src/features/supporters/year/utils/designFeatures.ts
+  s_cbdce95362cca9::t_1e70178c3d0c09 1,3-29,31-33,40,44-45,47-48,51-56,58-61,63-71
+  s_cbdce95362cca9::t_96f0e0680eb54a 37-38,43
+src/features/supporters/year/utils/yearType.test.ts
+  s_cbdce95362cca9::t_7478bc4b8a22ea 1,3-4,6-22,24-44,46-56,58,60-63,75-81,104-105
+  s_cbdce95362cca9::t_b3fab0fe8d6a17 2,5,23,45,57,59,64-74,82-103
+src/features/supporters/year/types.ts
+  s_cbdce95362cca9::t_5250770e5b3753 25-26,95-99
+  s_cbdce95362cca9::t_059d28266ab6fc 1-2,4-24,27-51,58-60,62-94,100-102,105-111
+  s_cbdce95362cca9::t_3e424ef9cf153b 103-104
+  s_cbdce95362cca9::t_b9069a0894ce36 3,52-57,61
+src/features/supporters/year/utils/designFeatures.test.ts
+  s_cbdce95362cca9::t_f91841ce3a3191 1,3-8,10-31,41-42,95-109
+  s_cbdce95362cca9::t_8f19a9b0c85d69 32-40
+  s_cbdce95362cca9::t_2fa9930dcee65d 9
+  s_cbdce95362cca9::t_96f0e0680eb54a 2
+  s_cbdce95362cca9::t_040e1620fd7199 43-58,85-94
+src/features/supporters/year/utils/yearType.ts
+  s_cbdce95362cca9::t_a53746b5a425ac 25-26,31,38-41,45,48-54,57-61,67,73,77,80,84,87-103,106-108,111,113-118
+  s_cbdce95362cca9::t_9718e931e76db8 1-2,3-17,19-24,27-30,32-37,42-44,46-47,55-56,62-66,68-72,74-76,78-79,81-83,85-86,104-105,109-110,112,119-127
+  s_cbdce95362cca9::t_0a6712b4c862ed 18
+src/features/supporters/year/utils/yearStats.test.ts
+  s_cbdce95362cca9::t_a5d7a57316cf1e 16-19,23-28,44-49,60-65,71-78,145-150,181-190,206-208,224-236,238-242
+  s_cbdce95362cca9::t_5d518cecb32b30 57,82,86,90-92,95-96,98,100-101,103-109,113,115-116,120,122-123,128-129,136,157,159-169,172,180,192-196,237,355
+  s_cbdce95362cca9::t_871873cbded006 1,3-15,20-22,29-43,50-56,58-59,66-70,79-81,83-85,87-89,93-94,97,99,102,110-112,114,117-119,121,124-127,130-135,137-144,151-156,158,170-171,176-179,191,197-205,209-221,243-244,352-354,356-365
+  s_cbdce95362cca9::t_01aa081856e723 222-223
+  s_cbdce95362cca9::t_040e1620fd7199 245-323
+  s_cbdce95362cca9::t_96f0e0680eb54a 2
+  s_cbdce95362cca9::t_95d0dbaaf7913e 324-325
+  s_cbdce95362cca9::t_5068548714d762 173-175
+src/features/supporters/year/utils/yearDates.ts
+  s_cbdce95362cca9::t_3c1732b7af4efa 2-10
+  s_cbdce95362cca9::t_4dcc39974222ff 1
+src/features/supporters/year/utils/yearDates.test.ts
+  s_cbdce95362cca9::t_828d8796e64198 1-22
+  s_cbdce95362cca9::t_4fc0e9479e55d8 23-24
+src/shared/components/ExportDialog/exportSupportGate.test.ts
+  s_cbdce95362cca9::t_fd94749af87a24 3,56-72
+  s_cbdce95362cca9::t_ed5c40c09e802a 73
+src/shared/yearReview/window.ts
+  s_cbdce95362cca9::t_d1a66be83b7cc3 1-15
+src/features/bin-designer/storage/designStoreAdapter.test.ts
+  s_cbdce95362cca9::t_15876a3e205225 14,180-239,269
+src/shared/components/ExportDialog/exportSupportGate.ts
+  s_cbdce95362cca9::t_ea921b3d01eb90 41-45
+src/test/mocks/designStorePort.ts
+  s_cbdce95362cca9::t_142d2e81947da4 1-3,14-17
+  s_cbdce95362cca9::t_a0be3ecf450ed0 18
+src/features/supporters/year/utils/loadYearSources.test.ts
+  s_cbdce95362cca9::t_e35893cbef0785 2,45-49,81
+  s_cbdce95362cca9::t_407cbc5b8723d4 1,3-44,50-80,82-85
+src/core/storage/BulkArchiveService.test.ts
+  s_cbdce95362cca9::t_142d2e81947da4 27,60
+src/shared/yearReview/window.test.ts
+  s_cbdce95362cca9::t_96b94ac6e49b1a 1-17
+src/features/bin-designer/storage/designStoreAdapter.ts
+  s_cbdce95362cca9::t_982b137bdcecd7 24,30,114-117,125-127,129-136,140-147,149-152
+  s_cbdce95362cca9::t_0b48807bf9d844 153
+src/shell/registrations/DesignStoreRegistration.test.tsx
+  s_cbdce95362cca9::t_ee44e58e547466 14
+src/features/bin-designer/utils/untouchedDesign.test.ts
+  s_cbdce95362cca9::t_dcda3cabccd359 1-30
+src/features/bin-designer/utils/untouchedDesign.ts
+  s_cbdce95362cca9::t_480e28f445fa6b 1-5,11,20-21,21,30-38
+src/core/storage/designStorePort.ts
+  s_cbdce95362cca9::t_0be6ae777523d8 61-78,164-170
+src/core/storage/ShareService.test.ts
+  s_cbdce95362cca9::t_142d2e81947da4 37,62
+src/features/supporters/year/utils/loadYearSources.ts
+  s_cbdce95362cca9::t_39fe020dce502b 1-41
+src/core/api/share.test.ts
+  s_cbdce95362cca9::t_142d2e81947da4 25,360,460,589,716
+src/features/supporters/year/hooks/useYearReviewData.ts
+  s_cbdce95362cca9::t_fc7d6508d2c648 1-8,10-49,52-69
+src/features/supporters/year/hooks/useYearReviewData.test.ts
+  s_cbdce95362cca9::t_571a656bfa5685 1-71,83
+src/features/bin-designer/storage/DesignVersionService.test.ts
+  s_cbdce95362cca9::t_a33b8185245222 13,256-280
+src/features/bin-designer/storage/DesignVersionService.ts
+  s_cbdce95362cca9::t_d94172343e561c 242-263
+src/features/supporters/year/components/YearStage/index.ts
+  s_cbdce95362cca9::t_1480a3fbbf3e2c 1-2
+src/features/supporters/year/utils/yearCards.test.ts
+  s_cbdce95362cca9::t_179bce53092257 1,3-16,24-48,60-81
+  s_cbdce95362cca9::t_77d51b6b36dd21 2,17
+  s_cbdce95362cca9::t_6578f2c267c119 49-53
+  s_cbdce95362cca9::t_cba2657c4e134b 18-20
+  s_cbdce95362cca9::t_360817c68ff4c8 54-56
+  s_4408a8684775ad::t_5f3029509a259e 21-23,57-59
+src/i18n/locales/en.ts
+  s_cbdce95362cca9::t_7819a6148702de 46-48,147-184,188-255
+  s_cbdce95362cca9::t_e4031dba651f13 256,5433
+  s_cbdce95362cca9::t_6ff9d338145498 185-187
+docker/nginx.conf
+  s_cbdce95362cca9::t_6107428c79de19 166,171
+src/features/supporters/year/components/StoryPlayer/StoryPlayer.tsx
+  s_cbdce95362cca9::t_5f001ccf62165b 1-23,30,36-37,40-63,67,69-93,109,120-155,158-191,192-200,205-215,219-226,229-231,235-239,241-249,250-258
+  s_cbdce95362cca9::t_90c69171da8ffa 201-204
+  s_cbdce95362cca9::t_6578f2c267c119 24-25,64,95
+  s_cbdce95362cca9::t_8ca7f7e63ceae8 94,96-97
+  s_cbdce95362cca9::t_8b2e595e833060 98
+  s_104937da236c06::t_b141b6b49e4e90 26-29,65-66,99-102,216-218,227-228
+src/i18n/locales/zh-CN.json
+  s_cbdce95362cca9::t_adf6bfe9046924 5534-5619
+  s_cbdce95362cca9::t_aa284fc7b65fc4 5620-5623
+src/features/supporters/year/components/YearStage/YearStage.tsx
+  s_cbdce95362cca9::t_7bd74f20a85784 1,3-6,8-46,48-62,70-80
+  s_cbdce95362cca9::t_d5fe569e1560d9 2,63-69
+src/features/supporters/year/components/YearCardView/YearCardView.test.tsx
+  s_cbdce95362cca9::t_2c42a06d828512 1,4,6-7,9-21,29-51,54-90,114-135,158
+  s_cbdce95362cca9::t_77d51b6b36dd21 5,22
+  s_cbdce95362cca9::t_5fe8169076fb9c 91-106,112
+  s_cbdce95362cca9::t_391fcb41082e07 23-25
+  s_cbdce95362cca9::t_e1eccccc3e4cd6 107-111
+  s_cbdce95362cca9::t_c917a90f7e80a9 113
+  s_4408a8684775ad::t_7a97b255f80fee 26-28,52-53
+scripts/i18n-values-allowlist.json
+  s_cbdce95362cca9::t_6082c51982bf22 188-189
+src/features/supporters/year/utils/storyTimeline.test.ts
+  s_cbdce95362cca9::t_692b4b888fbab5 1-33
+src/shared/hooks/useRouteMeta.test.ts
+  s_cbdce95362cca9::t_02b589300cff34 8,18
+src/features/supporters/year/components/Your2026Page/Your2026Page.test.tsx
+  s_cbdce95362cca9::t_92f2ef42567c98 1-123
+src/i18n/locales/ko.json
+  s_cbdce95362cca9::t_658cf41fa5dff4 5534-5596,5598-5601,5603-5619
+  s_cbdce95362cca9::t_047d617d2c35cc 5602
+  s_cbdce95362cca9::t_ae302bde68811c 5597
+  s_cbdce95362cca9::t_b50acede29aec9 5620-5623
+src/features/supporters/year/components/YearCardView/cardMotion.ts
+  s_cbdce95362cca9::t_9ca50fd221cbfe 1-10,11-14,15-18,19-22
+src/i18n/locales/pt-BR.json
+  s_cbdce95362cca9::t_adf6bfe9046924 5674-5780
+  s_cbdce95362cca9::t_7880be7ac51596 5781-5784
+src/shared/hooks/useYour2026Routing.test.ts
+  s_cbdce95362cca9::t_06648e8f9ea7e1 1-29,39
+src/shared/hooks/useYour2026Routing.ts
+  s_cbdce95362cca9::t_b6bc7885116243 1-28,37
+scripts/check-docker-parity.test.ts
+  s_cbdce95362cca9::t_6107428c79de19 165
+src/features/supporters/year/components/StoryPlayer/StoryPlayer.test.tsx
+  s_cbdce95362cca9::t_0c58253842bef5 1-77,119
+src/i18n/locales/sv.json
+  s_cbdce95362cca9::t_adf6bfe9046924 5674-5780
+  s_cbdce95362cca9::t_b768f6d68c8dcb 5781-5784
+src/App.lazyComponents.ts
+  s_cbdce95362cca9::t_fb33240244a900 41-43
+src/i18n/locales/it.json
+  s_cbdce95362cca9::t_658cf41fa5dff4 5674-5760,5762-5780
+  s_cbdce95362cca9::t_047d617d2c35cc 5761
+  s_cbdce95362cca9::t_2d687902a05743 5781-5784
+src/i18n/locales/cs.json
+  s_cbdce95362cca9::t_658cf41fa5dff4 5816-5921,5923-5943
+  s_cbdce95362cca9::t_047d617d2c35cc 5922
+  s_cbdce95362cca9::t_f7113028a797b7 5944-5947
+src/features/supporters/components/SupportersPage/SupportersPage.tsx
+  s_cbdce95362cca9::t_3438235dd02c22 89-92,94,316-318
+src/i18n/locales/es.json
+  s_cbdce95362cca9::t_658cf41fa5dff4 5674-5760,5762-5780
+  s_cbdce95362cca9::t_047d617d2c35cc 5761
+  s_cbdce95362cca9::t_a60c9844095018 5781-5784
+src/features/supporters/README.md
+  s_cbdce95362cca9::t_a6c976a0bf8a52 209-211,214
+  s_cbdce95362cca9::t_4c55d8c9d8fb7f 212-213,215-222
+  s_cbdce95362cca9::t_aef132721773c1 223-225
+  s_cbdce95362cca9::t_ea657a63d236e0 226-227
+docker/smoke.sh
+  s_cbdce95362cca9::t_6107428c79de19 50
+src/features/supporters/year/components/YearCardView/typeCopy.ts
+  s_cbdce95362cca9::t_58aec27a9faee1 1-98
+src/i18n/locales/de.json
+  s_cbdce95362cca9::t_658cf41fa5dff4 5674-5760,5762-5780
+  s_cbdce95362cca9::t_047d617d2c35cc 5761
+  s_cbdce95362cca9::t_b82fdcde8a6a2f 5781-5784
+src/shared/hooks/useSupportersRouting.ts
+  s_cbdce95362cca9::t_6107428c79de19 24-25
+src/features/supporters/year/utils/yearFormat.ts
+  s_cbdce95362cca9::t_f8d7268b1d910c 1-15,23,30-96
+src/features/supporters/year/utils/storyTimeline.ts
+  s_cbdce95362cca9::t_c30d1d9b3aeaeb 1-51
+vercel.json
+  s_cbdce95362cca9::t_6107428c79de19 591-593
+  s_cbdce95362cca9::t_f6a1e7e91a995e 590
+src/features/supporters/year/components/YearCardView/index.ts
+  s_cbdce95362cca9::t_e91843ac860e28 1,3
+src/i18n/locales/fr.json
+  s_cbdce95362cca9::t_658cf41fa5dff4 5674-5760,5762-5780
+  s_cbdce95362cca9::t_047d617d2c35cc 5761
+  s_cbdce95362cca9::t_65f2584d2acec1 5781-5784
+src/features/supporters/year/components/YearStage/YearStage.test.tsx
+  s_cbdce95362cca9::t_58b196fddd9289 1-19
+src/App.tsx
+  s_cbdce95362cca9::t_fb33240244a900 42,81,111,125,143,234,310-312
+  s_cbdce95362cca9::t_44ef4e630c0112 168
+src/i18n/locales/nb.json
+  s_cbdce95362cca9::t_adf6bfe9046924 5674-5780
+  s_cbdce95362cca9::t_f766717aab8360 5781-5784
+src/features/supporters/year/components/StoryPlayer/index.ts
+  s_cbdce95362cca9::t_abbe6912bfaa00 1-2
+src/features/supporters/year/components/Your2026Page/index.ts
+  s_cbdce95362cca9::t_3438235dd02c22 1
+src/i18n/locales/pl.json
+  s_cbdce95362cca9::t_adf6bfe9046924 5954-6102
+  s_cbdce95362cca9::t_89ab9d9d7a67cb 6103-6106
+src/features/supporters/year/components/YearCardView/cardVisuals.tsx
+  s_cbdce95362cca9::t_e7c647ffcd547c 16-23,32,61-62,64-68,74,76,78-80,83,101,105-109,124,126-130,136,140-141,144-187,204,206-210,222,248-249,252-253,256,259-260,286-297,302-305,307-312,315,318-322,346,352,355,362,378-379,381-382,388-393,399,422,430-434,448
+  s_cbdce95362cca9::t_cdb568929e284e 1-15,24-27,29-31,33-57,59-60,63,69-73,75,77,81-82,84-95,97-100,102-104,110-120,122-123,125,131-135,137-139,142-143,188-198,200-203,205,211-221,223-231,233-244,246-247,250-251,254-255,257-258,261-278,280-285,298-300,306,313-314,316-317,323-335,337-345,347-351,353-354,356-361,363-375,377,380,383-387,394-398,400-416,418-421,423-425,427-429,435-442,444-447,449-461
+  s_639abd980ed67f::t_b5b5e8e3a53ce3 28,58,96,121,199,232,245,279,301,336,376,417,426,443
+src/i18n/locales/uk.json
+  s_cbdce95362cca9::t_adf6bfe9046924 5954-6102
+  s_cbdce95362cca9::t_7bf4a57d8af834 6103-6106
+src/features/supporters/year/components/Your2026Page/Your2026Page.tsx
+  s_cbdce95362cca9::t_3a8e667fa46ffe 1-13,21-23,25-26,33-61,63-72,74-76,79-86,106-112,124-136,138-143,148-180,194-204,207-213
+  s_cbdce95362cca9::t_aee37b42026618 18,137,144-147
+  s_cbdce95362cca9::t_43f2daf027065a 16,19-20,27-32,73,87-91,95-96,98-105
+  s_4408a8684775ad::t_3bd8c620254b9d 181,205
+  s_cbdce95362cca9::t_5b25a1d265461a 14-15,17,113-123,182-183
+src/features/supporters/year/index.ts
+  s_cbdce95362cca9::t_3438235dd02c22 1
+src/i18n/locales/nl.json
+  s_cbdce95362cca9::t_adf6bfe9046924 5674-5780
+  s_cbdce95362cca9::t_3b1a8e1a78e464 5781-5784
+src/features/supporters/components/SupportersPage/SupportersPage.test.tsx
+  s_cbdce95362cca9::t_99538c814cb3b3 192-203
+src/features/supporters/year/utils/yearCards.ts
+  s_cbdce95362cca9::t_f22ea7f147dd7c 1-13,15-36,38-56,58-66
+  s_cbdce95362cca9::t_6578f2c267c119 14,37,57
+src/features/supporters/year/components/YearCardView/YearCardView.tsx
+  s_cbdce95362cca9::t_a16e8d5fc52e48 2-3,5,9-11,16-20,22-29,31-33,67-77,80-83,91-94,96-98,109-115,117-121,124-141,173,189-190,201,209,211,215-216,218,228,232,241,243,252,257-258,270,273-274
+  s_cbdce95362cca9::t_d5fe569e1560d9 21
+  s_cbdce95362cca9::t_a8208d25722406 99-103,105-106,107-108
+  s_cbdce95362cca9::t_5e7a711e5e6349 1,6-8,15,34,38-66,78-79
+src/i18n/locales/ja.json
+  s_cbdce95362cca9::t_658cf41fa5dff4 5534-5601,5603-5619
+  s_cbdce95362cca9::t_047d617d2c35cc 5602
+  s_cbdce95362cca9::t_0fb179061ffa88 5620-5623
+src/features/supporters/year/utils/yearFormat.test.ts
+  s_cbdce95362cca9::t_e8048cf52474fe 1-21,27-65
+src/i18n/locales/ka.json
+  s_cbdce95362cca9::t_54a4a89642327f 5674-5759,5761-5780
+  s_cbdce95362cca9::t_b71ca37b85fb87 5760
+  s_cbdce95362cca9::t_5b7be2d05f2341 5781-5784
+src/shared/hooks/useRouteMeta.ts
+  s_cbdce95362cca9::t_b2f36d8f44ec46 8,30,42,59,69-75,88
+scripts/doc-budget.json
+  s_cbdce95362cca9::t_3b45aad9ac282b 75
+src/features/supporters/year/components/SpinningBin/SpinningBin.tsx
+  s_cbdce95362cca9::t_434d6304779aca 1-81
+src/features/supporters/year/utils/kernelCache.ts
+  s_cbdce95362cca9::t_9a55727a79d1b6 1-18
+src/features/supporters/year/utils/meshTriangles.ts
+  s_cbdce95362cca9::t_fe549190445c15 1-19
+src/features/supporters/year/utils/meshTriangles.test.ts
+  s_cbdce95362cca9::t_9e4bf8c5f90f59 1-31
+  s_639abd980ed67f::t_d46d21ad6eeecc 32-35
+src/features/supporters/year/utils/kernelCache.test.ts
+  s_cbdce95362cca9::t_fc6edd8a0af2c3 1-40
+src/features/supporters/year/components/SpinningBin/index.ts
+  s_cbdce95362cca9::t_834c73c1bcef74 1-2
+src/features/supporters/year/hooks/useYearMeshes.ts
+  s_cbdce95362cca9::t_905b9ad9a06abf 68-69,77,87,93
+  s_cbdce95362cca9::t_c14d8afd87deb1 1-66,70-76,78-86,88-92,94-100,107-115
+  s_cbdce95362cca9::t_4eddcb8e1236db 67,101-106
+src/features/bin-designer/hooks/useBackgroundThumbnailRegen.test.ts
+  s_cbdce95362cca9::t_55017d64d47003 210-227
+src/features/supporters/year/utils/complicatedPick.ts
+  s_cbdce95362cca9::t_327c9984c5dcaf 1-40
+  s_cbdce95362cca9::t_e381f88db16557 41-43
+src/features/supporters/year/utils/complicatedPick.test.ts
+  s_cbdce95362cca9::t_fc141fb6546c2a 1-48
+src/features/bin-designer/hooks/useBackgroundThumbnailRegen.ts
+  s_cbdce95362cca9::t_44ef4e630c0112 258-264,266,323
+src/features/supporters/year/components/SpinningBin/SpinningBin.test.tsx
+  s_cbdce95362cca9::t_593432621064b7 1-28
+src/features/supporters/year/hooks/useYearMeshes.test.ts
+  s_cbdce95362cca9::t_ab0d0887259660 1-99
+src/features/supporters/year/audio/yearSoundtrack.test.ts
+  s_cbdce95362cca9::t_2e89833455fad9 106-109
+  s_cbdce95362cca9::t_631bd14f632a0a 1-34,37,39-105,110-111
+  s_cbdce95362cca9::t_2af0de891496b5 35-36,38
+src/features/supporters/year/audio/yearTune.test.ts
+  s_b9897fb2c6735b::t_e47e4a03573f76 32-33
+  s_cbdce95362cca9::t_a2d2f292c38544 1-31
+src/features/supporters/year/audio/padSynth.ts
+  s_cbdce95362cca9::t_713741774398f4 186-191
+  s_cbdce95362cca9::t_20140777f9be5c 1-185
+src/features/supporters/year/hooks/useYearSoundtrack.test.ts
+  s_cbdce95362cca9::t_4c88fc75529b02 1-50
+src/features/supporters/year/hooks/useYearSoundtrack.ts
+  s_cbdce95362cca9::t_2af0de891496b5 1-2,13,31
+  s_cbdce95362cca9::t_54cb4082cc4dd6 3-12,14-30,32
+src/features/supporters/year/audio/yearSoundtrack.ts
+  s_cbdce95362cca9::t_1c9fa74841e13a 1-51
+src/features/supporters/year/audio/yearTune.ts
+  s_cbdce95362cca9::t_bfbe6db2626b90 1-34,36,39-42,44-48,51-72
+  s_cbdce95362cca9::t_2af0de891496b5 35,37-38,43,49-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1a068df7517e9a90d1ad392bdbe836b32d7556ca",
+  "prompts": {},
+  "sessions": {
+    "s_104937da236c06": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a56970e93e5fca145",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_4408a8684775ad": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-ab7f9c11ba5413a3a",
+        "model": "unknown"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_639abd980ed67f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5a9cf40f-4e7f-4361-93cd-0a21babd6047",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_b9897fb2c6735b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "22326daa-6007-4551-ab34-fe59704c3bf3",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    },
+    "s_cbdce95362cca9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8247150-eafd-489c-8dd0-38e74f8a0362",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Andy Aragon <hi@andymai.com>"
+    }
+  }
+}
