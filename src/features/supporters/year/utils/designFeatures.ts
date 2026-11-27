@@ -1,4 +1,5 @@
 import type { BinParams } from '@/shared/types/bin';
+import { engravedCaptions } from '@/shared/utils/placedCaption';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -26,49 +27,39 @@ export function compartmentCount(params: BinParams): number {
   return cells.length > 0 ? new Set(cells).size : Math.max(1, rows * cols);
 }
 
-function isFilled(text: string | null | undefined): boolean {
+function isFilled(text: unknown): boolean {
   return typeof text === 'string' && text.trim().length > 0;
 }
 
-/**
- * Only text the generator engraves. Label tabs carry row text when they span
- * rows, else compartment text; socket mode decides spanning from a fit only
- * the worker knows, so it takes the row text whenever a row has some.
- */
-function labelTexts(params: BinParams): readonly (string | undefined)[] {
-  if (!params.label.enabled) return [];
-  const rows = params.label.rowTexts ?? [];
-  const compartments = params.compartments.compartmentTexts ?? [];
-  if (params.label.span === true) return rows;
-  if ((params.label.mode ?? 'text') === 'socket' && rows.some(isFilled)) return rows;
-  return compartments;
+/** Migration keeps a malformed nested value, so a text list may not be a list. */
+function texts(value: unknown): readonly unknown[] {
+  return Array.isArray(value) ? value : [];
 }
 
-function textCount(params: BinParams): number {
+function textCount(params: BinParams, nozzleSizeMm: number | undefined): number {
   const surface = params.surfaceText;
-  const texts: (string | null | undefined)[] = [
-    ...labelTexts(params),
+  return [
+    ...texts(engravedCaptions(params, nozzleSizeMm)),
     params.lid.enabled ? surface?.lidText : undefined,
     surface?.floorText,
     ...Object.values(surface?.walls ?? {}),
-  ];
-  return texts.filter(isFilled).length;
+  ].filter(isFilled).length;
 }
 
-export function hasLabelText(params: BinParams): boolean {
-  return textCount(params) > 0;
+export function hasLabelText(params: BinParams, nozzleSizeMm?: number): boolean {
+  return textCount(params, nozzleSizeMm) > 0;
 }
 
 /**
  * A cheap guess at which designs have the biggest meshes, used to pick the few
  * worth generating. Patterns and engraved text add the most triangles.
  */
-export function featureScore(params: BinParams): number {
+export function featureScore(params: BinParams, nozzleSizeMm?: number): number {
   return (
     compartmentCount(params) +
     params.cutouts.length * 2 +
     params.inserts.length * 2 +
-    textCount(params) * 3 +
+    textCount(params, nozzleSizeMm) * 3 +
     (params.wallPattern.enabled ? 6 : 0) +
     (params.floorPattern?.enabled === true ? 6 : 0) +
     (params.lid.enabled ? 3 : 0) +

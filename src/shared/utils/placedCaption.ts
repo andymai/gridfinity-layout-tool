@@ -36,8 +36,7 @@ export function blankCaptionSlot(
   nozzleSizeMm: number | undefined = params.nozzleSizeMm
 ): CaptionSlot | null {
   const { label, compartments } = params;
-  // Neither a slotted body nor a custom footprint builds label tabs.
-  if (!label.enabled || isSlottedBody(params) || isPartialMask(params.cellMask)) return null;
+  if (!buildsLabelTabs(params)) return null;
 
   const inner = cutoutInterior(params);
   const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, label.plateFitOffset);
@@ -51,6 +50,28 @@ export function blankCaptionSlot(
   const id = compartments.cells[0];
   if ((compartments.compartmentTexts?.[id] ?? '').trim() !== '') return null;
   return { scope: 'compartment', index: id };
+}
+
+function buildsLabelTabs(params: BinParams): boolean {
+  // Neither a slotted body nor a custom footprint builds label tabs.
+  return params.label.enabled && !isSlottedBody(params) && !isPartialMask(params.cellMask);
+}
+
+/**
+ * The captions the label tabs engrave: row text when the tabs run one per row,
+ * else compartment text. `nozzleSizeMm` matters as in {@link blankCaptionSlot}.
+ */
+export function engravedCaptions(
+  params: BinParams,
+  nozzleSizeMm: number | undefined = params.nozzleSizeMm
+): readonly string[] {
+  if (!buildsLabelTabs(params)) return [];
+  const { label, compartments } = params;
+  const inner = cutoutInterior(params);
+  const clearanceMm = effectiveLabelSocketClearance(nozzleSizeMm, label.plateFitOffset);
+  return labelTabsSpanRows(params, inner.innerW, clearanceMm)
+    ? (label.rowTexts ?? [])
+    : (compartments.compartmentTexts ?? []);
 }
 
 // Judged by the worker's own eligibility, as the designer's row list is, so the

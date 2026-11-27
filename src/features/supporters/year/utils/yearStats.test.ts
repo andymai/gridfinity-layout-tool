@@ -321,6 +321,32 @@ describe('computeYearStats', () => {
     expect(single(broken).drawerAreaMm2).toBe(10 * 42 * 8 * 42);
   });
 
+  it('drops a malformed design on its own and keeps the rest of the year', () => {
+    const malformed = design({
+      id: 'malformed',
+      name: 'Broken',
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        label: {
+          ...DEFAULT_BIN_PARAMS.label,
+          enabled: true,
+          span: true,
+          rowTexts: 42 as unknown as string[],
+        },
+      },
+    });
+    const result = computeYearStats({
+      year: 2026,
+      layouts: [workbench],
+      designs: [malformed, caddy],
+      exportCount: 0,
+      printSettings: DEFAULT_PRINT_SETTINGS,
+    });
+    expect(result.designs).toBe(2);
+    expect(result.complexityShortlist.map((entry) => entry.id)).toContain('caddy');
+    expect(result.drawers).toBe(1);
+  });
+
   it('reports no activity for a library with only earlier work', () => {
     const result = computeYearStats({
       year: 2026,

@@ -56,6 +56,32 @@ describe('hasLabelText', () => {
     ).toBe(false);
   });
 
+  it('follows the socket plate fit, not which list has text', () => {
+    const socket = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 2,
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, mode: 'socket' as const, depth: 14 },
+    };
+    const fitting = {
+      ...socket,
+      compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 1, rows: 1, cells: [0] },
+      label: { ...socket.label, rowTexts: ['stale'] },
+    };
+    expect(hasLabelText(fitting)).toBe(false);
+    const spanning = {
+      ...socket,
+      compartments: {
+        ...DEFAULT_BIN_PARAMS.compartments,
+        cols: 4,
+        rows: 1,
+        cells: [0, 1, 2, 3],
+        compartmentTexts: ['hidden'],
+      },
+      label: { ...socket.label, rowTexts: ['Drill bits'] },
+    };
+    expect(hasLabelText(spanning)).toBe(true);
+  });
+
   it('reads lid text only on an enabled lid', () => {
     const withLidText = { ...DEFAULT_BIN_PARAMS, surfaceText: { lidText: 'Bits' } };
     expect(

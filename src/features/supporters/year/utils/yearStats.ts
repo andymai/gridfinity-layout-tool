@@ -34,9 +34,34 @@ import { pickYearType } from './yearType';
 
 interface BinDesign {
   readonly source: YearDesignSource;
-  readonly params: BinParams;
   readonly minutes: number;
   readonly grams: number;
+  readonly score: number;
+  readonly compartments: number;
+  readonly labelled: boolean;
+}
+
+/**
+ * Every number the year needs from one design, or null for a design that is
+ * not a bin. Migration keeps malformed nested values, so a design that throws
+ * drops out on its own instead of ending the whole year.
+ */
+function readBinDesign(source: YearDesignSource, settings: PrintSettings): BinDesign | null {
+  if (!isBinParams(source.params)) return null;
+  const params: BinParams = source.params;
+  try {
+    const estimate = estimateCommunityPrint(params, settings);
+    return {
+      source,
+      minutes: estimate.minutes,
+      grams: estimate.grams,
+      score: featureScore(params, settings.nozzleSizeMm),
+      compartments: compartmentCount(params),
+      labelled: hasLabelText(params, settings.nozzleSizeMm),
+    };
+  } catch {
+    return null;
+  }
 }
 
 function isLength(value: number | undefined): value is number {
@@ -151,11 +176,7 @@ export function computeYearStats(input: YearReviewInput): YearStats {
   const binDesignOf = (source: YearDesignSource): BinDesign | null => {
     const cached = estimated.get(source.id);
     if (cached !== undefined) return cached;
-    let design: BinDesign | null = null;
-    if (isBinParams(source.params)) {
-      const estimate = estimateCommunityPrint(source.params, settings);
-      design = { source, params: source.params, minutes: estimate.minutes, grams: estimate.grams };
-    }
+    const design = readBinDesign(source, settings);
     estimated.set(source.id, design);
     return design;
   };
@@ -236,12 +257,12 @@ export function computeYearStats(input: YearReviewInput): YearStats {
   }
 
   const complexityShortlist: YearShortlistEntry[] = binDesigns
-    .map((design) => ({ ...ref(design.source), score: featureScore(design.params) }))
+    .map((design) => ({ ...ref(design.source), score: design.score }))
     .sort((a, b) => b.score - a.score);
 
   let maxCompartments: { count: number; name: string } | null = null;
   for (const design of binDesigns) {
-    const count = compartmentCount(design.params);
+    const count = design.compartments;
     if (!maxCompartments || count > maxCompartments.count) {
       maxCompartments = { count, name: design.source.name };
     }
@@ -274,7 +295,7 @@ export function computeYearStats(input: YearReviewInput): YearStats {
     maxLayers,
     favouriteSize,
     halfBins,
-    labelledDesigns: binDesigns.filter((design) => hasLabelText(design.params)).length,
+    labelledDesigns: binDesigns.filter((design) => design.labelled).length,
     averageBinHeight: binsPlaced > 0 ? heightSum / binsPlaced : null,
     remixes: designs.filter((design) => design.remixed).length,
     mostVersionedDesign,
