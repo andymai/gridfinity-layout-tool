@@ -59,7 +59,8 @@ patchedDependencies:
   '@rollup/plugin-node-resolve@16.0.3': be62dc9211d95e5034b7dc50fcd1c89993757756796f2f0b4e9386f191d50e53
   '@ts-morph/common@0.11.1': 0bfc6fe55a9af424dbd3f4bdbbd59a555b2eaef9855cca13466f93e69ba97232
   eslint-plugin-jsx-a11y@6.10.2: b8ef271a4b50b7ee48a5e92a3ee36f8e5ca942682264a445d0b76b82b084e993
-  three-stdlib: 36724fca3e5152268afe4887b2c2ec81ad8a494ef2b660d4f1c1c34ef4ddfa47
+  idb@8.0.4: efd818bc2940f4beaa2345a91b6b118526e016a061df6edc62887d5c24538897
+  three-stdlib: 6dca5f7203cf154c3c03390ae348640dcbffae325cb67405cc26b5df716b3bf8
 
 importers:
 
@@ -136,7 +137,7 @@ importers:
         version: 0.2.0
       idb:
         specifier: ^8.0.4
-        version: 8.0.4
+        version: 8.0.4(patch_hash=efd818bc2940f4beaa2345a91b6b118526e016a061df6edc62887d5c24538897)
       immer:
         specifier: ^11.2.10
         version: 11.2.10
@@ -181,7 +182,7 @@ importers:
         version: 0.187.0
       three-stdlib:
         specifier: ^2.36.1
-        version: 2.36.1(patch_hash=36724fca3e5152268afe4887b2c2ec81ad8a494ef2b660d4f1c1c34ef4ddfa47)(three@0.187.0)
+        version: 2.36.1(patch_hash=6dca5f7203cf154c3c03390ae348640dcbffae325cb67405cc26b5df716b3bf8)(three@0.187.0)
       troika-three-text:
         specifier: 0.52.5
         version: 0.52.5(three@0.187.0)
@@ -8441,7 +8442,7 @@ snapshots:
       suspend-react: 0.1.3(react@19.3.1)
       three: 0.187.0
       three-mesh-bvh: 0.8.3(three@0.187.0)
-      three-stdlib: 2.36.1(patch_hash=36724fca3e5152268afe4887b2c2ec81ad8a494ef2b660d4f1c1c34ef4ddfa47)(three@0.187.0)
+      three-stdlib: 2.36.1(patch_hash=6dca5f7203cf154c3c03390ae348640dcbffae325cb67405cc26b5df716b3bf8)(three@0.187.0)
       troika-three-text: 0.52.5(three@0.187.0)
       tunnel-rat: 0.1.2(@types/react@19.3.0)(immer@11.2.10)(react@19.3.1)
       use-sync-external-store: 1.7.0(react@19.3.1)
@@ -10702,7 +10703,7 @@ snapshots:
 
   idb@7.1.1: {}
 
-  idb@8.0.4: {}
+  idb@8.0.4(patch_hash=efd818bc2940f4beaa2345a91b6b118526e016a061df6edc62887d5c24538897): {}
 
   ieee754@1.2.1: {}
 
@@ -12266,7 +12267,7 @@ snapshots:
     dependencies:
       three: 0.187.0
 
-  three-stdlib@2.36.1(patch_hash=36724fca3e5152268afe4887b2c2ec81ad8a494ef2b660d4f1c1c34ef4ddfa47)(three@0.187.0):
+  three-stdlib@2.36.1(patch_hash=6dca5f7203cf154c3c03390ae348640dcbffae325cb67405cc26b5df716b3bf8)(three@0.187.0):
     dependencies:
       '@types/draco3d': 1.4.10
       '@types/offscreencanvas': 2019.7.3

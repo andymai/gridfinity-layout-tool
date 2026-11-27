@@ -54,3 +54,43 @@ index 576ad6fcb972960d559c4d45e214a56fcdfbd95f..ed070481b7a143c314959776dda925d9
        const dx = event.pageX - position.x;
        const dy = event.pageY - position.y;
        const distance = Math.sqrt(dx * dx + dy * dy);
+diff --git a/loaders/DRACOLoader.cjs b/loaders/DRACOLoader.cjs
+index d957dd8319f97b82f026bc4d8a2cbcf36c9bbb5e..69f62a54926345eb709d7ec9cb129df3aa450cdf 100644
+--- a/loaders/DRACOLoader.cjs
++++ b/loaders/DRACOLoader.cjs
+@@ -59,13 +59,13 @@ class DRACOLoader extends THREE.Loader {
+     );
+   }
+   /** @deprecated Kept for backward-compatibility with previous DRACOLoader versions. */
+-  decodeDracoFile(buffer, callback, attributeIDs, attributeTypes) {
++  decodeDracoFile(buffer, callback, attributeIDs, attributeTypes, _vertexColorSpace, onError = () => {}) {
+     const taskConfig = {
+       attributeIDs: attributeIDs || this.defaultAttributeIDs,
+       attributeTypes: attributeTypes || this.defaultAttributeTypes,
+       useUniqueIDs: !!attributeIDs
+     };
+-    this.decodeGeometry(buffer, taskConfig).then(callback);
++    this.decodeGeometry(buffer, taskConfig).then(callback).catch(onError);
+   }
+   decodeGeometry(buffer, taskConfig) {
+     for (const attribute in taskConfig.attributeTypes) {
+diff --git a/loaders/DRACOLoader.js b/loaders/DRACOLoader.js
+index 43ca01558bbf0fffbfcebe85c2eabd962537a94e..ce3eeab6a7d94f331ecb25863099c0dad65e3070 100644
+--- a/loaders/DRACOLoader.js
++++ b/loaders/DRACOLoader.js
+@@ -57,13 +57,13 @@ class DRACOLoader extends Loader {
+     );
+   }
+   /** @deprecated Kept for backward-compatibility with previous DRACOLoader versions. */
+-  decodeDracoFile(buffer, callback, attributeIDs, attributeTypes) {
++  decodeDracoFile(buffer, callback, attributeIDs, attributeTypes, _vertexColorSpace, onError = () => {}) {
+     const taskConfig = {
+       attributeIDs: attributeIDs || this.defaultAttributeIDs,
+       attributeTypes: attributeTypes || this.defaultAttributeTypes,
+       useUniqueIDs: !!attributeIDs
+     };
+-    this.decodeGeometry(buffer, taskConfig).then(callback);
++    this.decodeGeometry(buffer, taskConfig).then(callback).catch(onError);
+   }
+   decodeGeometry(buffer, taskConfig) {
+     for (const attribute in taskConfig.attributeTypes) {
