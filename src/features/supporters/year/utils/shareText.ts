@@ -48,8 +48,9 @@ export function clampLines(
 ): string[] {
   if (lines.length <= max) return [...lines];
   const kept = lines.slice(0, max);
-  let last = kept[max - 1] ?? '';
-  while (last && measure(`${last}…`) > maxWidth) last = last.slice(0, -1);
-  kept[max - 1] = `${last.trimEnd()}…`;
+  // Whole characters, so an emoji is never cut in half.
+  const chars = Array.from(kept[max - 1] ?? '');
+  while (chars.length > 0 && measure(`${chars.join('')}…`) > maxWidth) chars.pop();
+  kept[max - 1] = `${chars.join('').trimEnd()}…`;
   return kept;
 }

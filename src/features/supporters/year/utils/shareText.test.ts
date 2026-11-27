@@ -30,5 +30,7 @@ describe('wrapText', () => {
     expect(clampLines(['one', 'two', 'three'], 2, 100, measure)).toEqual(['one', 'two…']);
     expect(clampLines(['one'], 2, 100, measure)).toEqual(['one']);
     expect(clampLines(['a', 'abcdefghij', 'x'], 2, 100, measure)).toEqual(['a', 'abcdefghi…']);
+    const emoji = clampLines(['a', 'abcdefgh🧰', 'x'], 2, 100, measure);
+    expect(emoji[1]).toBe('abcdefgh…');
   });
 });
