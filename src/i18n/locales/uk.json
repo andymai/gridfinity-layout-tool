@@ -6102,5 +6102,8 @@
   "your2026.empty.start": "Спланувати шухляду",
   "your2026.error.title": "Не вдалося завантажити ваш 2026.",
   "your2026.error.retry": "Спробувати ще раз",
-  "loading.your2026": "Завантаження вашого 2026"
+  "loading.your2026": "Завантаження вашого 2026",
+  "your2026.complicated.title": "Найскладніший: «{name}»",
+  "your2026.complicated.line": "Трикутників: {triangles}. Ваш слайсер досі це пам’ятає.",
+  "your2026.complicated.lineNoCount": "Ваш слайсер досі це пам’ятає."
 }

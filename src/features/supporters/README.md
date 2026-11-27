@@ -220,3 +220,6 @@ lazy entry (`year/index.ts`). It reuses this slice's clock, pixel font and palet
   `/supporters?from=your-2026` rolls even for a return visit.
 - **Time:** visible motion reads the story clock, never a timer, so the
   launch-video capture stays frame-exact.
+- **3D:** `useYearMeshes` reads the mesh cache first, then generates on the
+  shared worker only when the kernel is cached; the route turns off
+  `useBackgroundThumbnailRegen` so nothing else uses the worker.

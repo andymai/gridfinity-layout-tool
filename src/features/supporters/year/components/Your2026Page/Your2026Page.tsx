@@ -12,12 +12,21 @@ import { isYearReviewOpen, YEAR_REVIEW_YEAR } from '@/shared/yearReview/window';
 import { useSupportersData } from '../../../hooks/useSupportersData';
 import { getSupportersPalette } from '../../../scene/palette';
 import { getSupporterCount } from '../../../utils/supportersData';
+import { useYearMeshes } from '../../hooks/useYearMeshes';
 import { useYearReviewData } from '../../hooks/useYearReviewData';
+import { meshCandidates, pickComplicated, type ComplicatedPick } from '../../utils/complicatedPick';
+import type { YearCard } from '../../utils/yearCards';
 import { buildYearCards } from '../../utils/yearCards';
 import { hasYearActivity } from '../../utils/yearStats';
 import { StoryPlayer } from '../StoryPlayer';
 import { YearCardView, describeCard } from '../YearCardView';
 import { YearStage } from '../YearStage';
+
+/**
+ * The most complicated bin, fixed the first time its card shows, so a mesh that
+ * lands later cannot change the answer, and a replay names the same bin.
+ */
+let frozenComplicated: ComplicatedPick | null = null;
 
 /** Doors that pass `?from=`; anything else is a direct visit. */
 function openSource(from: string | null): 'dock' | 'whats_new' | 'direct' {
@@ -59,6 +68,7 @@ export function Your2026Page() {
   const unit = useSettingsStore((s) => s.settings.measureUnit);
   const entries = useLibraryStore((s) => s.library.entries);
   const { data: supporters, settled: supportersSettled } = useSupportersData();
+  const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
   const accent = getSupportersPalette('dark', accentName).accent;
 
   useEffect(() => {
@@ -77,6 +87,23 @@ export function Your2026Page() {
 
   const stats = data.status === 'ready' ? data.stats : null;
   const cards = useMemo(() => (stats ? buildYearCards(stats) : []), [stats]);
+  const candidates = useMemo(() => (stats ? meshCandidates(stats) : []), [stats]);
+  const meshes = useYearMeshes(candidates, nozzleSizeMm, stats !== null && hasYearActivity(stats));
+  const [complicated, setComplicated] = useState(() => frozenComplicated);
+  const liveComplicated = useMemo(
+    () =>
+      stats ? pickComplicated(stats.complexityShortlist, (id) => meshes.get(id)?.triangles) : null,
+    [stats, meshes]
+  );
+  const shownComplicated = complicated ?? liveComplicated;
+  const onCardChange = useCallback(
+    (card: YearCard) => {
+      if (card.kind !== 'complicated' || frozenComplicated) return;
+      frozenComplicated = liveComplicated;
+      setComplicated(liveComplicated);
+    },
+    [liveComplicated]
+  );
   const drawerPreview = useMemo(() => {
     const id = stats?.biggestDrawer?.layoutId;
     return entries.find((entry) => entry.id === id)?.preview ?? null;
@@ -142,6 +169,7 @@ export function Your2026Page() {
       accent={accent}
       onClose={navigateHome}
       onReachEnd={onReachEnd}
+      onCardChange={onCardChange}
       describeCard={(card) =>
         describeCard(card, {
           t,
@@ -149,6 +177,7 @@ export function Your2026Page() {
           locale,
           unit,
           supporterCount: getSupporterCount(supporters),
+          complicated: shownComplicated,
         })
       }
       renderCard={(card, position) => (
@@ -162,6 +191,8 @@ export function Your2026Page() {
           reducedMotion={reducedMotion}
           supporterCount={getSupporterCount(supporters)}
           drawerPreview={drawerPreview}
+          meshes={meshes}
+          complicated={shownComplicated}
           onRollCredits={rollCredits}
           onSupport={support}
         />

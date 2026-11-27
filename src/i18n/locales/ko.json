@@ -5619,5 +5619,8 @@
   "your2026.empty.start": "서랍 계획하기",
   "your2026.error.title": "나의 2026을 불러오지 못했습니다.",
   "your2026.error.retry": "다시 시도",
-  "loading.your2026": "나의 2026 불러오는 중"
+  "loading.your2026": "나의 2026 불러오는 중",
+  "your2026.complicated.title": "가장 복잡한 것: “{name}”",
+  "your2026.complicated.line": "삼각형 {triangles}개. 슬라이서는 아직도 기억합니다.",
+  "your2026.complicated.lineNoCount": "슬라이서는 아직도 기억합니다."
 }

@@ -5780,5 +5780,8 @@
   "your2026.empty.start": "Plan een lade",
   "your2026.error.title": "Jouw 2026 kon niet worden geladen.",
   "your2026.error.retry": "Opnieuw proberen",
-  "loading.your2026": "Jouw 2026 laden"
+  "loading.your2026": "Jouw 2026 laden",
+  "your2026.complicated.title": "Het ingewikkeldst: “{name}”",
+  "your2026.complicated.line": "{triangles} driehoeken. Je slicer weet het nog.",
+  "your2026.complicated.lineNoCount": "Je slicer weet het nog."
 }

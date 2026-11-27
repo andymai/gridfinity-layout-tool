@@ -182,6 +182,9 @@ const en: Record<string, string> = {
   'your2026.filament.hours_other': '{count} hours of printer time.',
   'your2026.longest.title': 'Longest print: {time}',
   'your2026.longest.line': '“{name}”. Worth the wait.',
+  'your2026.complicated.title': 'Most complicated: “{name}”',
+  'your2026.complicated.line': '{triangles} triangles. Your slicer remembers this one.',
+  'your2026.complicated.lineNoCount': 'Your slicer remembers this one.',
   'your2026.exports.title_one': '{count} export',
   'your2026.exports.title_other': '{count} exports',
   'your2026.exports.line':

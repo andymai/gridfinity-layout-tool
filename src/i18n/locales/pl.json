@@ -6102,5 +6102,8 @@
   "your2026.empty.start": "Zaplanuj szufladę",
   "your2026.error.title": "Nie udało się wczytać Twojego roku 2026.",
   "your2026.error.retry": "Spróbuj ponownie",
-  "loading.your2026": "Wczytywanie Twojego roku 2026"
+  "loading.your2026": "Wczytywanie Twojego roku 2026",
+  "your2026.complicated.title": "Najbardziej skomplikowany: „{name}”",
+  "your2026.complicated.line": "Trójkąty: {triangles}. Twój slicer dobrze to pamięta.",
+  "your2026.complicated.lineNoCount": "Twój slicer dobrze to pamięta."
 }

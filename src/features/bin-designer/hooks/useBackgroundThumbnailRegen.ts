@@ -247,7 +247,9 @@ async function runBatch(
 /**
  * Module-scoped one-shot guard. Lives outside React so StrictMode double-
  * mounts and unrelated remounts (different consumer trees) coalesce into a
- * single scan per page load. Exported for tests via `__resetForTests`.
+ * single scan per page load. A pass stopped before its end clears it, so the
+ * rest runs when the hook is enabled again. Exported for tests via
+ * `__resetForTests`.
  */
 let sessionStarted = false;
 
@@ -255,12 +257,19 @@ let sessionStarted = false;
  * One-shot per session: scan IndexedDB for designs needing thumbnails and
  * regenerate them in the background. Mount in the top-level app shell.
  */
-export function useBackgroundThumbnailRegen(): void {
+export function useBackgroundThumbnailRegen(
+  /**
+   * False keeps the pass off, and stops one already running, while another
+   * surface needs the generation worker to itself.
+   */
+  enabled = true
+): void {
   useEffect(() => {
-    if (sessionStarted) return;
+    if (!enabled || sessionStarted) return;
     sessionStarted = true;
 
     const controller = new AbortController();
+    let finished = false;
 
     const start = async (): Promise<void> => {
       try {
@@ -302,6 +311,8 @@ export function useBackgroundThumbnailRegen(): void {
       } catch {
         // Swallow — failures are surfaced via the per-design `failed` counter.
         // A hard abort just means the user left or the hook unmounted.
+      } finally {
+        if (!controller.signal.aborted) finished = true;
       }
     };
 
@@ -312,9 +323,9 @@ export function useBackgroundThumbnailRegen(): void {
     return () => {
       controller.abort();
       cancelScheduled();
-      // Don't reset `sessionStarted` — one-shot per page load.
+      if (!finished) sessionStarted = false;
     };
-  }, []);
+  }, [enabled]);
 }
 
 /** Test-only: reset the one-shot guard between cases. */

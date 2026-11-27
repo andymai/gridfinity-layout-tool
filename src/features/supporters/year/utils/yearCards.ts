@@ -11,6 +11,7 @@ export type YearCardKind =
   | 'month'
   | 'filament'
   | 'longest'
+  | 'complicated'
   | 'exports'
   | 'type'
   | 'summary'
@@ -33,6 +34,7 @@ const DURATION: Readonly<Record<YearCardKind, number>> = {
   month: 6,
   filament: 6.5,
   longest: 6,
+  complicated: 6.5,
   exports: 5,
   type: 7.5,
   summary: 7,
@@ -52,6 +54,7 @@ export function buildYearCards(stats: YearStats): YearCard[] {
     month: stats.busiestMonth !== null,
     filament: stats.filament !== null,
     longest: stats.longestPrint !== null,
+    complicated: stats.complexityShortlist.length > 0,
     exports: stats.exports > 0,
     type: true,
     summary: true,

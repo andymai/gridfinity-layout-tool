@@ -207,6 +207,52 @@ describe('useBackgroundThumbnailRegen', () => {
     restoreIdle();
   });
 
+  it('stays off while disabled, then starts once enabled', async () => {
+    vi.mocked(DesignerStorage.listDesigns).mockResolvedValue(ok([makeDesign({ thumbnail: null })]));
+
+    const { rerender } = renderHook(({ enabled }) => useBackgroundThumbnailRegen(enabled), {
+      initialProps: { enabled: false },
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+    expect(DesignerStorage.listDesigns).not.toHaveBeenCalled();
+
+    rerender({ enabled: true });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+    expect(DesignerStorage.listDesigns).toHaveBeenCalled();
+  });
+
+  it('resumes a pass that a disable stopped midway', async () => {
+    vi.mocked(DesignerStorage.listDesigns).mockResolvedValue(
+      ok([makeDesign({ id: 'd1', thumbnail: null }), makeDesign({ id: 'd2', thumbnail: null })])
+    );
+    const held: { resolve: ((v: string | null) => void) | null } = { resolve: null };
+    vi.mocked(regenerateThumbnail).mockImplementationOnce(
+      () =>
+        new Promise<string | null>((resolve) => {
+          held.resolve = resolve;
+        })
+    );
+
+    const { rerender } = renderHook(({ enabled }) => useBackgroundThumbnailRegen(enabled), {
+      initialProps: { enabled: true },
+    });
+    await waitFor(() => expect(regenerateThumbnail).toHaveBeenCalledTimes(1));
+
+    rerender({ enabled: false });
+    held.resolve?.('data:image/webp;base64,OK');
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 20));
+    });
+    expect(regenerateThumbnail).toHaveBeenCalledTimes(1);
+
+    rerender({ enabled: true });
+    await waitFor(() => expect(regenerateThumbnail).toHaveBeenCalledTimes(3));
+  });
+
   it('does nothing when no designs need regeneration', async () => {
     vi.mocked(DesignerStorage.listDesigns).mockResolvedValue(
       ok([

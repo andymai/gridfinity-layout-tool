@@ -1,6 +1,7 @@
 import type { TFunction } from '@/i18n';
 import type { LengthUnit } from '@/shared/utils/lengthUnit';
 import type { YearStats } from '../../types';
+import type { ComplicatedPick } from '../../utils/complicatedPick';
 import type { YearCard, YearCardKind } from '../../utils/yearCards';
 import {
   formatArea,
@@ -30,6 +31,7 @@ export interface CopyContext {
   readonly unit: LengthUnit;
   readonly stats: YearStats;
   readonly supporterCount: number;
+  readonly complicated: ComplicatedPick | null;
   /** The number to show now: a count-up on screen, the final value in a share image. */
   readonly shown: (value: number) => number;
 }
@@ -116,6 +118,20 @@ export function cardCopy(kind: YearCardKind, ctx: CopyContext): CardCopy | null 
         lines: [t('your2026.longest.line', { name: longest.name })],
       };
     }
+    case 'complicated': {
+      const pick = ctx.complicated;
+      if (!pick) return null;
+      const name = pick.design.name;
+      const triangles = pick.triangles === null ? null : formatCount(locale, pick.triangles);
+      return {
+        title: t('your2026.complicated.title', { name }),
+        lines: [
+          triangles === null
+            ? t('your2026.complicated.lineNoCount')
+            : t('your2026.complicated.line', { triangles }),
+        ],
+      };
+    }
     case 'exports': {
       const count = shown(stats.exports);
       return {
@@ -169,6 +185,7 @@ export interface CopyInput {
   readonly locale: string;
   readonly unit: LengthUnit;
   readonly supporterCount: number;
+  readonly complicated: ComplicatedPick | null;
 }
 
 /** The card's final words in one line, for the screen-reader announcement. */

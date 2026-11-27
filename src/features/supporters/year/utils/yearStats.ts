@@ -34,6 +34,7 @@ import { pickYearType } from './yearType';
 
 interface BinDesign {
   readonly source: YearDesignSource;
+  readonly params: BinParams;
   readonly minutes: number;
   readonly grams: number;
   readonly score: number;
@@ -53,6 +54,7 @@ function readBinDesign(source: YearDesignSource, settings: PrintSettings): BinDe
     const estimate = estimateCommunityPrint(params, settings);
     return {
       source,
+      params,
       minutes: estimate.minutes,
       grams: estimate.grams,
       score: featureScore(params, settings.nozzleSizeMm),
@@ -249,12 +251,12 @@ export function computeYearStats(input: YearReviewInput): YearStats {
   let longestPrint: YearPrintedDesign | null = null;
   for (const design of binDesigns) {
     if (!longestPrint || design.minutes > longestPrint.minutes) {
-      longestPrint = { ...ref(design.source), minutes: design.minutes };
+      longestPrint = { ...ref(design.source), params: design.params, minutes: design.minutes };
     }
   }
 
   const complexityShortlist: YearShortlistEntry[] = binDesigns
-    .map((design) => ({ ...ref(design.source), score: design.score }))
+    .map((design) => ({ ...ref(design.source), params: design.params, score: design.score }))
     .sort((a, b) => b.score - a.score);
 
   let maxCompartments: { count: number; name: string } | null = null;

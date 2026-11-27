@@ -5780,5 +5780,8 @@
   "your2026.empty.start": "Planera en låda",
   "your2026.error.title": "Ditt 2026 kunde inte läsas in.",
   "your2026.error.retry": "Försök igen",
-  "loading.your2026": "Läser in ditt 2026"
+  "loading.your2026": "Läser in ditt 2026",
+  "your2026.complicated.title": "Mest komplicerad: ”{name}”",
+  "your2026.complicated.line": "{triangles} trianglar. Din slicer minns den här.",
+  "your2026.complicated.lineNoCount": "Din slicer minns den här."
 }
