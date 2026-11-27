@@ -9,7 +9,10 @@ import {
 } from './detachableFeetPlan';
 import { MAX_FOOT_SPAN_MM } from '@/features/bin-designer/types';
 import { buildFullMask, type CellMask } from '@/shared/utils/cellMask';
-import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import {
+  GRIDFINITY_SPEC,
+  magnetInsetFromCellEdgeMm,
+} from '@/shared/printSettings/gridfinityGeometry';
 
 /** How much narrower a foot's bottom face is than its top, per side (mm). */
 const SOCKET_TAPER_WIDTH_MM = GRIDFINITY_SPEC.SOCKET_SMALL_TAPER + GRIDFINITY_SPEC.SOCKET_BIG_TAPER;
@@ -384,5 +387,30 @@ describe('magnets wider than the foot allows at the spec corner', () => {
     }
     // The arm reaches the far side of the magnet plus the embed margin.
     expect(large.armMm - plain.armMm).toBeCloseTo(1 + 0.6, 9);
+  });
+
+  it('keeps its corners and arm on a grid too small to pull them in', () => {
+    const small = resolveDetachableFeet({
+      width: 1,
+      depth: 1,
+      gridUnitMm: 25,
+      fractionalEdgeX: 'end',
+      fractionalEdgeY: 'end',
+      base: { style: 'magnet', magnetDiameter: 10, magnetDepth: 2, screwDiameter: 3 },
+    });
+    const positions = small.magnet?.positions ?? [];
+    for (const [ax, ay] of positions) {
+      for (const [bx, by] of positions) {
+        if (ax === bx && ay === by) continue;
+        expect(Math.hypot(ax - bx, ay - by)).toBeGreaterThanOrEqual(10);
+      }
+    }
+    expect(small.armMm).toBe(
+      footArmMm({
+        pinDiameterMm: small.pinDiameterMm,
+        magnetDiameterMm: 10,
+        magnetInsetFromEdgeMm: magnetInsetFromCellEdgeMm(25),
+      })
+    );
   });
 });

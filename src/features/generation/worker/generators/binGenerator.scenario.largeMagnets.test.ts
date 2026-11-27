@@ -59,6 +59,25 @@ function corners(width: number, offset: number): string[] {
   return out.sort();
 }
 
+/** One mesh of several parts, for probes that read a single vertex and index list. */
+function mergeMeshes(
+  parts: ReadonlyArray<{ readonly vertices: Float32Array; readonly indices: Uint32Array }>
+): MeshData {
+  const vertexCount = parts.reduce((sum, part) => sum + part.vertices.length, 0);
+  const indexCount = parts.reduce((sum, part) => sum + part.indices.length, 0);
+  const vertices = new Float32Array(vertexCount);
+  const indices = new Uint32Array(indexCount);
+  let v = 0;
+  let i = 0;
+  for (const part of parts) {
+    vertices.set(part.vertices, v);
+    for (let k = 0; k < part.indices.length; k++) indices[i + k] = part.indices[k] + v / 3;
+    v += part.vertices.length;
+    i += part.indices.length;
+  }
+  return { vertices, indices, triangleCount: indexCount / 3 } as MeshData;
+}
+
 /** The thinnest flank beside any hole, probed outward on both axes. */
 function thinnestWall(mesh: MeshData, holes: string[], width: number): number {
   let thinnest = Infinity;
@@ -121,15 +140,26 @@ describe('magnets wider than the spec corner allows', () => {
     expect(holeCentres(mesh, 4, DEPTH)).toEqual(corners(1, 13));
   }, 120_000);
 
-  it('pulls a 10mm hole in on a detachable foot as well', async () => {
-    const { generateDetachableFeetMesh } = await import('./detachableFeetOrchestrator');
-    const feet = generateDetachableFeetMesh(
+  it('pulls a 10mm hole in on an exported detachable foot as well', async () => {
+    const { buildAssembledFeetSolids } = await import('./detachableFeetOrchestrator');
+    const { mesh } = await import('brepjs');
+    const { toIndexedMeshData } = await import('./meshUtils');
+    const feet = buildAssembledFeetSolids(
       makeParams({ magnetDiameter: LARGEST, feet: 'detachable' })
     );
     expect(feet).not.toBeNull();
     if (!feet) return;
-    const holes = holeCentres(feet, LARGEST / 2, DEPTH);
-    expect(holes).toEqual(corners(1, 12.4));
-    expect(thinnestWall(feet, holes, 1)).toBeGreaterThanOrEqual(FOOT_HOLE_MIN_WALL_MM);
+    try {
+      const merged = mergeMeshes(
+        feet.map((foot) =>
+          toIndexedMeshData(mesh(foot, { tolerance: 0.01, angularTolerance: 0.1 }))
+        )
+      );
+      const holes = holeCentres(merged, LARGEST / 2, DEPTH);
+      expect(holes).toEqual(corners(1, 12.4));
+      expect(thinnestWall(merged, holes, 1)).toBeGreaterThanOrEqual(FOOT_HOLE_MIN_WALL_MM);
+    } finally {
+      for (const foot of feet) foot.delete();
+    }
   }, 120_000);
 });

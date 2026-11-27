@@ -132,13 +132,16 @@ describe('gridfinityGeometry', () => {
       expect(footHoleOffsetMm(13, 42, 5.8)).toBeCloseTo(11.6, 9);
     });
 
-    it('measures a half foot by its own span', () => {
+    it('measures each foot by its own span', () => {
       expect(footHoleOffsetMm(0, 21, 5)).toBe(0);
-      expect(footHoleOffsetMm(4, 21, 5)).toBeCloseTo(1.9, 9);
+      expect(footHoleOffsetMm(7, 30, 5)).toBeCloseTo(6.4, 9);
     });
 
-    it('stops at the centre when even a centred hole cannot keep the wall', () => {
-      expect(footHoleOffsetMm(3, 12, 5)).toBe(0);
+    it('never pulls a hole into its mirror across the foot', () => {
+      // A 25mm cell leaves room for the wall only 3.9mm out, where two 10mm
+      // holes would merge, so the hole keeps the place it had.
+      expect(footHoleOffsetMm(13, 25, 5)).toBe(13);
+      expect(footHoleOffsetMm(-13, 25, 5)).toBe(-13);
     });
   });
 });

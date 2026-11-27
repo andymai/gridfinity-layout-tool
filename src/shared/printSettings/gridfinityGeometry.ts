@@ -197,6 +197,8 @@ export const FOOT_HOLE_MIN_WALL_MM = 0.4;
  * far enough that a mouth of `mouthRadiusMm` keeps {@link FOOT_HOLE_MIN_WALL_MM}.
  * An offset that already keeps it comes back unchanged, so the spec corners
  * of every magnet up to about 8.8mm (7.2mm chamfered) stay where they are.
+ * So does one whose pull would bring it into its mirror across the foot: a
+ * foot too small for the move keeps the holes it had.
  */
 export function footHoleOffsetMm(
   offsetMm: number,
@@ -205,7 +207,7 @@ export function footHoleOffsetMm(
 ): number {
   const limit = footSpanMm / 2 - FOOT_UNDERSIDE_INSET_MM - mouthRadiusMm - FOOT_HOLE_MIN_WALL_MM;
   if (Math.abs(offsetMm) <= limit + 1e-9) return offsetMm;
-  if (limit <= 0) return 0;
+  if (limit < mouthRadiusMm + FOOT_HOLE_MIN_WALL_MM / 2) return offsetMm;
   return offsetMm < 0 ? -limit : limit;
 }
 
