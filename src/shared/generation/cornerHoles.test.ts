@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest';
+import type { MagnetAnchor } from '@/core/types';
 import { outerCornerHoleFilter } from './cornerHoles';
 import { forEachCell } from './cellDecomposition';
-import { cellHostsAttachmentHoles, magnetPositionsForCell } from './magnetPositions';
+import {
+  cellHostsAttachmentHoles,
+  cornerHoleCandidates,
+  magnetPositionsForCell,
+} from './magnetPositions';
 
 const PITCH = 42;
 const RADIUS = 3.1;
@@ -103,5 +108,72 @@ describe('outerCornerHoleFilter', () => {
     const holes = binHoles(2, 1);
     expect(corners([...holes, ...holes])).toHaveLength(8);
     expect(holes.filter(outerCornerHoleFilter([...holes, ...holes]))).toHaveLength(4);
+  });
+});
+
+describe('cornerHoleCandidates', () => {
+  interface Options {
+    readonly pitch?: number;
+    readonly anchor?: MagnetAnchor;
+    readonly edgeX?: 'start' | 'end';
+  }
+
+  function cornerSites(width: number, depth: number, opts: Options = {}): string[] {
+    const pitch = opts.pitch ?? PITCH;
+    const holes: Array<[number, number]> = [];
+    forEachCell(
+      width,
+      depth,
+      (cell) => {
+        if (!cellHostsAttachmentHoles(cell, RADIUS, pitch, pitch)) return;
+        holes.push(...cornerHoleCandidates(cell, RADIUS, pitch, pitch, opts.anchor, width, depth));
+      },
+      { gridUnitMm: pitch, fractionalEdgeX: opts.edgeX }
+    );
+    return corners(holes).map(([x, y]) => `${x},${y}`);
+  }
+
+  it('keeps every corner of a 1.5x1 bin 8mm from its edge', () => {
+    expect(cornerSites(1.5, 1)).toEqual(['-23.5,-13', '-23.5,13', '23.5,-13', '23.5,13']);
+  });
+
+  it('keeps every corner of a 2.5x2.5 bin 8mm from its edge', () => {
+    expect(cornerSites(2.5, 2.5)).toEqual(['-44.5,-44.5', '-44.5,44.5', '44.5,-44.5', '44.5,44.5']);
+  });
+
+  it('mirrors the corners when the half foot leads', () => {
+    expect(cornerSites(1.5, 1, { edgeX: 'start' })).toEqual(cornerSites(1.5, 1));
+  });
+
+  it('centres the hole of a bin only half a unit wide', () => {
+    expect(cornerSites(0.5, 1)).toEqual(['0,-13', '0,13']);
+  });
+
+  it('follows the full foot inset on a wider grid and under either anchor', () => {
+    // 'edge' holds 8mm from the cell edge at any pitch; 'center' holds 13mm
+    // from the cell centre, which is 12mm from the edge of a 50mm cell.
+    expect(cornerSites(1.5, 1, { pitch: 50 })).toEqual([
+      '-29.5,-17',
+      '-29.5,17',
+      '29.5,-17',
+      '29.5,17',
+    ]);
+    expect(cornerSites(1.5, 1, { pitch: 50, anchor: 'center' })).toEqual([
+      '-25.5,-13',
+      '-25.5,13',
+      '25.5,-13',
+      '25.5,13',
+    ]);
+  });
+
+  it('leaves a full cell, and a cell inside the bin, on their own holes', () => {
+    const full = { widthUnits: 1, depthUnits: 1, centerX: -10.5, centerY: 0 };
+    expect(cornerHoleCandidates(full, RADIUS, PITCH, PITCH, undefined, 1.5, 1)).toEqual(
+      magnetPositionsForCell(full, RADIUS, PITCH, PITCH)
+    );
+    const inner = { widthUnits: 0.5, depthUnits: 1, centerX: 0, centerY: 0 };
+    expect(cornerHoleCandidates(inner, RADIUS, PITCH, PITCH, undefined, 1.5, 1)).toEqual(
+      magnetPositionsForCell(inner, RADIUS, PITCH, PITCH)
+    );
   });
 });

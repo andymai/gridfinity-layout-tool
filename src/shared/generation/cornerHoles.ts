@@ -7,7 +7,11 @@
  * A hole partway along an edge is collinear with its neighbours and drops out.
  *
  * The hull is taken over the caller's own hole list, so a builder that
- * decomposes cells its own way still keeps holes it actually drills.
+ * decomposes cells its own way still keeps holes it actually drills. Build
+ * that list with `cornerHoleCandidates`, not the per-foot placement.
+ *
+ * Import-free on purpose: `detachableFeetPlan` loads this module while the
+ * shared Gridfinity constants are still initialising.
  */
 
 type Site = readonly [number, number];

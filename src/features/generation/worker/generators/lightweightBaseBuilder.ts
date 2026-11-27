@@ -56,6 +56,7 @@ import { resolvePitch, type GridUnitInput } from './gridPitch';
 import { cellHostsAttachmentHoles, magnetPositionsForCell } from './baseplateMagnets';
 import { buildMagnetHoleCutter } from './magnetHoleCutter';
 import { outerCornerHoleFilter } from '@/shared/generation/cornerHoles';
+import { cornerHoleCandidates } from '@/shared/generation/magnetPositions';
 import type { MagnetHoleStyle } from '@/shared/generation/magnetHoleStyle';
 import { PLAIN_MAGNET_HOLE, magnetChamferFits } from '@/shared/generation/magnetHoleStyle';
 import type { MagnetAnchor } from '@/core/types';
@@ -388,7 +389,11 @@ export function buildLightweightBase(
           if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
           // Fit-or-center magnet positions so a non-square/small foot's pads and
           // drills stay inside the foot instead of breaching its side.
-          cellPositions.push(magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor));
+          cellPositions.push(
+            cornersOnly
+              ? cornerHoleCandidates(cell, holeRadius, unitX, unitY, anchor, gridW, gridD)
+              : magnetPositionsForCell(cell, holeRadius, unitX, unitY, anchor)
+          );
         },
         fractionalEdge
       );

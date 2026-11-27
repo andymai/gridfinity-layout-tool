@@ -178,6 +178,66 @@ export function magnetPositionsForCell(
   return positions;
 }
 
+const EDGE_EPS = 1e-4;
+
+/**
+ * Centre of the full cell that ends on the same bin edge as this short cell,
+ * or `undefined` when the cell is full, lies inside the bin, or the bin is
+ * shorter than a full cell on this axis.
+ */
+function fullCellAtEdge(
+  center: number,
+  units: number,
+  binUnits: number,
+  pitch: number
+): number | undefined {
+  if (units >= 1 - EDGE_EPS || binUnits < 1 - EDGE_EPS) return undefined;
+  const edge = (binUnits * pitch) / 2;
+  const reach = (units * pitch) / 2;
+  if (Math.abs(center + reach - edge) < EDGE_EPS) return edge - pitch / 2;
+  if (Math.abs(center - reach + edge) < EDGE_EPS) return pitch / 2 - edge;
+  return undefined;
+}
+
+/**
+ * The holes a cell offers when the bin keeps only its outer corners
+ * (`outerCornerHoleFilter`).
+ *
+ * A foot cut short by the bin's edge (the half foot of a 1.5u bin) centres its
+ * holes across that edge, so its corner would sit further in than the corner
+ * of a full foot. Here it takes the holes a full foot ending on the same edge
+ * drills, where they fall inside it, and every corner sits the same distance
+ * from the bin's edge. The every-foot pattern keeps the centred hole, which
+ * is what a baseplate's half pocket and a lid's half cell mate with.
+ */
+export function cornerHoleCandidates(
+  cell: CellInfo,
+  holeRadius: number,
+  pitchX: number,
+  pitchY: number,
+  anchor: MagnetAnchor | undefined,
+  binWidthUnits: number,
+  binDepthUnits: number
+): Array<[number, number]> {
+  const own = magnetPositionsForCell(cell, holeRadius, pitchX, pitchY, anchor);
+  const x = fullCellAtEdge(cell.centerX, cell.widthUnits, binWidthUnits, pitchX);
+  const y = fullCellAtEdge(cell.centerY, cell.depthUnits, binDepthUnits, pitchY);
+  if (x === undefined && y === undefined) return own;
+  const full: CellInfo = {
+    centerX: x ?? cell.centerX,
+    widthUnits: x === undefined ? cell.widthUnits : 1,
+    centerY: y ?? cell.centerY,
+    depthUnits: y === undefined ? cell.depthUnits : 1,
+  };
+  const reach = holeRadius + MAGNET_EDGE_CLEARANCE;
+  const spanX = (cell.widthUnits * pitchX) / 2 - reach + EDGE_EPS;
+  const spanY = (cell.depthUnits * pitchY) / 2 - reach + EDGE_EPS;
+  const inside = magnetPositionsForCell(full, holeRadius, pitchX, pitchY, anchor).filter(
+    ([px, py]) => Math.abs(px - cell.centerX) <= spanX && Math.abs(py - cell.centerY) <= spanY
+  );
+  return inside.length > 0 ? inside : own;
+}
+
 /**
  * Whether this cell's floor relief is the plain rectangle cut into a cell too
  * small for a magnet, whose square corners reach toward the cell corners. A

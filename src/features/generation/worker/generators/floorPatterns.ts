@@ -27,6 +27,7 @@ import { retentionMagnetPositions } from '@/shared/utils/retentionMagnetPlacemen
 import { resolveTrayBottomInputs } from './trayBottomInputs';
 import { isPartialMask, isRegionFilled } from '@/shared/utils/cellMask';
 import { outerCornerHoleFilter } from '@/shared/generation/cornerHoles';
+import { cornerHoleCandidates } from '@/shared/generation/magnetPositions';
 import { DEFAULT_SOCKET_CELL_PLAN } from '@/shared/generation/socketCellPlan';
 import type { PatternPanelSpec } from './dividerPatterns';
 import type { WorldKeepOut } from './dividerPatterns';
@@ -198,6 +199,10 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
     const resolved = resolveDetachableFeet(params);
     return (resolved.screw?.positions ?? resolved.magnet?.positions ?? []).map(keepOut);
   }
+  const cornerSitesOf = (cell: CellInfo): Array<[number, number]> =>
+    cellHostsAttachmentHoles(cell, radius, pitch.x, pitch.y)
+      ? cornerHoleCandidates(cell, radius, pitch.x, pitch.y, anchor, params.width, params.depth)
+      : [];
   const drilled = dim.lightweight
     ? filledSocketCells(
         params.width,
@@ -206,8 +211,8 @@ function attachmentKeepOuts(params: BinParams, dim: BinDimensions): WorldKeepOut
         pitch,
         DEFAULT_SOCKET_CELL_PLAN,
         edge
-      ).flatMap(sitesOf)
-    : cells.filter((cell) => cellInMask(params, cell, pitch.x, pitch.y)).flatMap(sitesOf);
+      ).flatMap(cornerSitesOf)
+    : cells.filter((cell) => cellInMask(params, cell, pitch.x, pitch.y)).flatMap(cornerSitesOf);
   return drilled.filter(outerCornerHoleFilter(drilled)).map(keepOut);
 }
 
