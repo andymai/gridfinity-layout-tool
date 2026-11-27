@@ -1,10 +1,12 @@
-import { Suspense, type ReactNode } from 'react';
+import { Component, Suspense, type ReactNode } from 'react';
 import { Button } from '@/design-system';
 import type { LayoutPreview } from '@/core/types';
 import { useTranslation, type TFunction } from '@/i18n';
 import type { LengthUnit } from '@/shared/utils/lengthUnit';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
+import { detectWebGL, markWebGLUnavailable, webglFailureReason } from '@/shared/webgl/detectWebGL';
 import type { YearMesh } from '../../hooks/useYearMeshes';
+import { canSpin } from '../SpinningBin/assembly';
 import type { ComplicatedPick } from '../../utils/complicatedPick';
 import { PIXEL_FONT } from '../../../components/CreditsRoll/creditsRollItems';
 import type { YearStats } from '../../types';
@@ -32,9 +34,7 @@ import { typeName } from './typeCopy';
 const SITE_HOST = 'gridfinitylayouttool.com';
 
 /** Lazy, so a device with no mesh never downloads the 3D viewer. */
-const SpinningBin = lazyWithRetry(() =>
-  import('../SpinningBin').then(namedExport('SpinningBin'))
-);
+const SpinningBin = lazyWithRetry(() => import('../SpinningBin').then(namedExport('SpinningBin')));
 
 interface BinShowcaseProps {
   readonly mesh: YearMesh | undefined;
@@ -45,10 +45,38 @@ interface BinShowcaseProps {
   readonly accent: string;
 }
 
+interface ShowcaseBoundaryProps {
+  readonly fallback: ReactNode;
+  readonly children: ReactNode;
+}
+
+/**
+ * The turning bin is decoration, so a canvas that cannot get a WebGL context
+ * (or a viewer chunk that fails to load) falls back to the thumbnail instead
+ * of taking the story down. A WebGL failure also marks WebGL unavailable, so
+ * the next card skips the canvas.
+ */
+class ShowcaseBoundary extends Component<ShowcaseBoundaryProps, { failed: boolean }> {
+  state = { failed: false };
+
+  static getDerivedStateFromError(): { failed: boolean } {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: Error): void {
+    const reason = webglFailureReason(error.message, error.stack);
+    if (reason !== null) markWebGLUnavailable(reason);
+  }
+
+  render(): ReactNode {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
+
 /** The saved thumbnail until the mesh is ready, then the real bin turning. */
 function BinShowcase({ mesh, thumbnail, name, elapsed, reduced, accent }: BinShowcaseProps) {
   const thumb = <HeroThumb elapsed={elapsed} reduced={reduced} accent={accent} src={thumbnail} />;
-  if (!mesh) return thumb;
+  if (!mesh || !canSpin(mesh) || !detectWebGL().available) return thumb;
   return (
     <div
       className="h-[18em] w-[18em]"
@@ -57,9 +85,16 @@ function BinShowcase({ mesh, thumbnail, name, elapsed, reduced, accent }: BinSho
         filter: `drop-shadow(0 0 2em ${accent}33)`,
       }}
     >
-      <Suspense fallback={thumb}>
-        <SpinningBin mesh={mesh.mesh} spin={!reduced} label={name} />
-      </Suspense>
+      <ShowcaseBoundary fallback={thumb}>
+        <Suspense fallback={thumb}>
+          <SpinningBin
+            mesh={mesh.mesh}
+            restOffset={mesh.restOffset}
+            turnSeconds={reduced ? 0 : elapsed}
+            label={name}
+          />
+        </Suspense>
+      </ShowcaseBoundary>
     </div>
   );
 }

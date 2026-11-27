@@ -247,7 +247,9 @@ async function runBatch(
 /**
  * Module-scoped one-shot guard. Lives outside React so StrictMode double-
  * mounts and unrelated remounts (different consumer trees) coalesce into a
- * single scan per page load. Exported for tests via `__resetForTests`.
+ * single scan per page load. A pass stopped before its end clears it, so the
+ * rest runs when the hook is enabled again. Exported for tests via
+ * `__resetForTests`.
  */
 let sessionStarted = false;
 
@@ -267,6 +269,7 @@ export function useBackgroundThumbnailRegen(
     sessionStarted = true;
 
     const controller = new AbortController();
+    let finished = false;
 
     const start = async (): Promise<void> => {
       try {
@@ -308,6 +311,8 @@ export function useBackgroundThumbnailRegen(
       } catch {
         // Swallow — failures are surfaced via the per-design `failed` counter.
         // A hard abort just means the user left or the hook unmounted.
+      } finally {
+        if (!controller.signal.aborted) finished = true;
       }
     };
 
@@ -318,7 +323,7 @@ export function useBackgroundThumbnailRegen(
     return () => {
       controller.abort();
       cancelScheduled();
-      // Don't reset `sessionStarted` — one-shot per page load.
+      if (!finished) sessionStarted = false;
     };
   }, [enabled]);
 }

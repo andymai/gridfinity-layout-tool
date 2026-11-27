@@ -1,12 +1,51 @@
-import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { useTranslation } from '@/i18n';
 import { gridUnits, heightUnits } from '@/core/types';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import type { MeshData } from '@/shared/types/generation';
+import type * as DetectWebGL from '@/shared/webgl/detectWebGL';
 import type { YearStats } from '../../types';
 import type { YearCardKind } from '../../utils/yearCards';
 import { describeCard } from './cardCopy';
 import { YearCardView } from './YearCardView';
+
+const spinner = { fail: false };
+vi.mock('../SpinningBin', () => ({
+  SpinningBin: ({ turnSeconds }: { turnSeconds: number }) => {
+    if (spinner.fail) throw new Error('Error creating WebGL context.');
+    return <div data-testid="spinner" data-turn={turnSeconds} />;
+  },
+}));
+
+const webgl = { available: true };
+vi.mock('@/shared/webgl/detectWebGL', async (importOriginal) => ({
+  ...(await importOriginal<typeof DetectWebGL>()),
+  detectWebGL: () =>
+    webgl.available ? { available: true } : { available: false, reason: 'no-context' },
+  markWebGLUnavailable: () => {
+    webgl.available = false;
+  },
+}));
+
+const THUMB = 'data:image/png;base64,thumb';
+
+function bodyMesh(extra: Partial<MeshData> = {}): MeshData {
+  return {
+    vertices: new Float32Array(9),
+    normals: new Float32Array(0),
+    indices: new Uint32Array(0),
+    edgeVertices: new Float32Array(0),
+    triangleCount: 1,
+    ...extra,
+  };
+}
+
+async function settle(): Promise<void> {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+}
 
 const stats: YearStats = {
   year: 2026,
@@ -60,6 +99,55 @@ function show(kind: YearCardKind, overrides: Partial<Parameters<typeof YearCardV
 }
 
 describe('YearCardView', () => {
+  afterEach(() => {
+    spinner.fail = false;
+    webgl.available = true;
+  });
+
+  describe('the turning bin', () => {
+    const withThumb = { ...stats, longestPrint: { ...stats.longestPrint, thumbnail: THUMB } };
+    const showLongest = (mesh: MeshData, overrides: Parameters<typeof show>[1] = {}) =>
+      show('longest', {
+        stats: withThumb as YearStats,
+        meshes: new Map([['d1', { mesh, triangles: 1 }]]),
+        ...overrides,
+      });
+
+    it("turns with the card's clock, so a pause stops it", async () => {
+      showLongest(bodyMesh(), { elapsed: 3, reducedMotion: false });
+      expect(await screen.findByTestId('spinner')).toHaveAttribute('data-turn', '3');
+    });
+
+    it('stands still under reduced motion', async () => {
+      showLongest(bodyMesh(), { elapsed: 3, reducedMotion: true });
+      expect(await screen.findByTestId('spinner')).toHaveAttribute('data-turn', '0');
+    });
+
+    it('keeps the thumbnail when the 3D canvas fails', async () => {
+      spinner.fail = true;
+      const silence = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      showLongest(bodyMesh());
+      await settle();
+      silence.mockRestore();
+      expect(document.querySelector(`img[src="${THUMB}"]`)).not.toBeNull();
+      expect(webgl.available).toBe(false);
+    });
+
+    it('keeps the thumbnail where WebGL is missing', async () => {
+      webgl.available = false;
+      showLongest(bodyMesh());
+      await settle();
+      expect(screen.queryByTestId('spinner')).toBeNull();
+      expect(document.querySelector(`img[src="${THUMB}"]`)).not.toBeNull();
+    });
+
+    it('keeps the thumbnail for a lid the spinner cannot place', async () => {
+      showLongest(bodyMesh({ lidMesh: bodyMesh() }));
+      await settle();
+      expect(screen.queryByTestId('spinner')).toBeNull();
+    });
+  });
+
   it('tells the drawers story with the final count under reduced motion', () => {
     show('drawers');
     expect(screen.getByRole('heading', { name: 'You planned 3 drawers.' })).toBeInTheDocument();

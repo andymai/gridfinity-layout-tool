@@ -1,80 +1,91 @@
-import { useMemo, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Center } from '@react-three/drei';
-import type { Group } from 'three';
+import { useMemo } from 'react';
+import { Canvas } from '@react-three/fiber';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
 import type { MeshData } from '@/shared/types/generation';
+import type { YearMesh } from '../../hooks/useYearMeshes';
+import { assemblyBox, assemblyParts, type PlacedPart } from './assembly';
 
 const PLASTIC = '#d4d8dc';
-/** Radians per second; slow enough to read the part. */
+/** Radians per second of story time; slow enough to read the part. */
 const SPIN_RATE = 0.45;
-/** The bin's longest side, in scene units, at the camera's framing. */
-const FIT_SIZE = 2.6;
+/** The pose at time zero, turned so two walls show. */
+const START_YAW = -0.7;
+/**
+ * The assembly's bounding sphere, in scene units. The camera sits about 6.8
+ * units out with a 30° view, so a sphere up to 1.75 fits; the rest is margin.
+ */
+const FIT_RADIUS = 1.6;
 
 export interface SpinningBinProps {
   readonly mesh: MeshData;
-  readonly spin: boolean;
+  readonly restOffset?: YearMesh['restOffset'];
+  /**
+   * Seconds the bin has turned. The card passes its story-clock time, so a
+   * pause, a hold or a seek moves the bin with the rest of the card.
+   */
+  readonly turnSeconds: number;
   readonly label: string;
 }
 
-function BinModel({ mesh, spin }: Omit<SpinningBinProps, 'label'>) {
+function Part({ part }: { readonly part: PlacedPart }) {
+  const { data, offset } = part;
   const { geometry, edgesGeometry } = useMeshGeometry({
-    vertices: mesh.vertices,
-    normals: mesh.normals,
-    indices: mesh.indices,
-    edgeVertices: mesh.edgeVertices,
+    vertices: data.vertices,
+    normals: data.normals,
+    indices: data.indices,
+    edgeVertices: data.edgeVertices,
   });
-  const turn = useRef<Group>(null);
-  const scale = useMemo(() => {
-    geometry?.computeBoundingBox();
-    const box = geometry?.boundingBox;
-    if (!box) return 1;
-    const longest = Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
-    return longest > 0 ? FIT_SIZE / longest : 1;
-  }, [geometry]);
-
-  // R3F's frame loop runs on requestAnimationFrame, which the video capture controls.
-  useFrame((_, delta) => {
-    if (spin && turn.current) turn.current.rotation.y += delta * SPIN_RATE;
-  });
-
   if (!geometry) return null;
   return (
-    <group ref={turn} rotation={[0, -0.7, 0]}>
+    <group position={[offset[0], offset[1], offset[2]]}>
+      <mesh geometry={geometry}>
+        <meshStandardMaterial color={PLASTIC} roughness={0.55} metalness={0.05} />
+      </mesh>
+      {edgesGeometry && (
+        <lineSegments geometry={edgesGeometry}>
+          <lineBasicMaterial color="#000000" transparent opacity={0.35} />
+        </lineSegments>
+      )}
+    </group>
+  );
+}
+
+function Assembly({ mesh, restOffset, turnSeconds }: Omit<SpinningBinProps, 'label'>) {
+  const parts = useMemo(() => assemblyParts(mesh, restOffset), [mesh, restOffset]);
+  const { center, radius } = useMemo(() => assemblyBox(parts), [parts]);
+  const scale = radius > 0 ? FIT_RADIUS / radius : 1;
+  return (
+    <group rotation={[0, START_YAW + turnSeconds * SPIN_RATE, 0]}>
       {/* The worker meshes Z-up; the scene is Y-up. */}
       <group rotation={[-Math.PI / 2, 0, 0]} scale={scale}>
-        <Center>
-          <mesh geometry={geometry}>
-            <meshStandardMaterial color={PLASTIC} roughness={0.55} metalness={0.05} />
-          </mesh>
-          {edgesGeometry && (
-            <lineSegments geometry={edgesGeometry}>
-              <lineBasicMaterial color="#000000" transparent opacity={0.35} />
-            </lineSegments>
-          )}
-        </Center>
+        <group position={[-center[0], -center[1], -center[2]]}>
+          {parts.map((part, index) => (
+            <Part key={index} part={part} />
+          ))}
+        </group>
       </group>
     </group>
   );
 }
 
 /**
- * One generated bin turning slowly. The drawing buffer is kept so the share
- * image can copy the canvas.
+ * One generated bin and its printed companions, turning slowly. The canvas
+ * draws on demand, when the card's time changes. The drawing buffer is kept
+ * so the share image can copy the canvas.
  */
-export function SpinningBin({ mesh, spin, label }: SpinningBinProps) {
+export function SpinningBin({ mesh, restOffset, turnSeconds, label }: SpinningBinProps) {
   return (
     <div className="h-full w-full" role="img" aria-label={label}>
       <Canvas
         dpr={[1, 2]}
-        frameloop={spin ? 'always' : 'demand'}
+        frameloop="demand"
         camera={{ fov: 30, position: [0, 2.2, 6.4], near: 0.1, far: 50 }}
         gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}
       >
         <ambientLight intensity={0.55} />
         <directionalLight position={[3, 5, 4]} intensity={1.15} />
         <directionalLight position={[-4, 2, -3]} intensity={0.45} color="#b9c4d8" />
-        <BinModel mesh={mesh} spin={spin} />
+        <Assembly mesh={mesh} restOffset={restOffset} turnSeconds={turnSeconds} />
       </Canvas>
     </div>
   );

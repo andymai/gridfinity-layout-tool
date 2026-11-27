@@ -6,10 +6,12 @@ import { SpinningBin } from './SpinningBin';
 
 // jsdom has no WebGL; the canvas is checked in the browser pass, not here.
 vi.mock('@react-three/fiber', () => ({
-  Canvas: ({ children }: { children: ReactNode }) => <div data-testid="canvas">{children}</div>,
-  useFrame: () => {},
+  Canvas: ({ children, frameloop }: { children: ReactNode; frameloop: string }) => (
+    <div data-testid="canvas" data-frameloop={frameloop}>
+      {children}
+    </div>
+  ),
 }));
-vi.mock('@react-three/drei', () => ({ Center: () => null }));
 
 const mesh: MeshData = {
   vertices: new Float32Array(0),
@@ -21,8 +23,12 @@ const mesh: MeshData = {
 
 describe('SpinningBin', () => {
   it('names the bin for screen readers', () => {
-    render(<SpinningBin mesh={mesh} spin label="Tool caddy" />);
+    render(<SpinningBin mesh={mesh} turnSeconds={0} label="Tool caddy" />);
     expect(screen.getByRole('img', { name: 'Tool caddy' })).toBeInTheDocument();
-    expect(screen.getByTestId('canvas')).toBeInTheDocument();
+  });
+
+  it('draws only when the card time changes, so a pause stops the bin', () => {
+    render(<SpinningBin mesh={mesh} turnSeconds={2} label="Tool caddy" />);
+    expect(screen.getByTestId('canvas')).toHaveAttribute('data-frameloop', 'demand');
   });
 });

@@ -86,9 +86,7 @@ export function Your2026Page() {
   const [complicated, setComplicated] = useState(() => frozenComplicated);
   const liveComplicated = useMemo(
     () =>
-      stats
-        ? pickComplicated(stats.complexityShortlist, (id) => meshes.get(id)?.triangles)
-        : null,
+      stats ? pickComplicated(stats.complexityShortlist, (id) => meshes.get(id)?.triangles) : null,
     [stats, meshes]
   );
   const shownComplicated = complicated ?? liveComplicated;
