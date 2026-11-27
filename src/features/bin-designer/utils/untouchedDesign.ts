@@ -3,44 +3,22 @@ import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { BinParams } from '../types';
 
 /**
- * The fields that change the printed part. Settings and the owning layout
- * write the others (nozzle, magnet anchor, low-profile feet) into a design
- * nobody has edited, so comparing every field would call it edited.
+ * Settings and the owning layout write these into a design nobody edited, so
+ * they say nothing about work. Every other field does, including fields added
+ * after this list, which a list of edited fields would miss.
  */
-const PART_FIELDS = [
-  'width',
-  'depth',
-  'height',
-  'wallThickness',
-  'base',
-  'style',
-  'compartments',
-  'scoop',
-  'label',
-  'walls',
-  'slide',
-  'handles',
-  'pullTab',
-  'slotConfig',
-  'dividerPieces',
-  'inserts',
-  'cutouts',
-  'wallPattern',
-  'floorPattern',
-  'surfaceText',
-  'lid',
-  'knifeRest',
-  'cellMask',
-  'overhang',
-  'extraWallHeightMm',
-  'slant',
+const WRITTEN_FOR_THE_USER = [
+  'nozzleSizeMm',
+  'magnetAnchor',
 ] as const satisfies readonly (keyof BinParams)[];
 
+const IGNORED: ReadonlySet<string> = new Set(WRITTEN_FOR_THE_USER);
+
 function partOf(params: BinParams): Record<string, unknown> {
-  const part: Record<string, unknown> = {};
-  for (const field of PART_FIELDS) part[field] = params[field];
-  part.base = { ...params.base, lowProfile: undefined };
-  return part;
+  return {
+    ...Object.fromEntries(Object.entries(params).filter(([field]) => !IGNORED.has(field))),
+    base: { ...params.base, lowProfile: undefined },
+  };
 }
 
 let defaultPart: string | null = null;

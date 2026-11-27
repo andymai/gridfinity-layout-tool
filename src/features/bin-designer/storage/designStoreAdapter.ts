@@ -115,15 +115,17 @@ export const designStoreAdapter: DesignStorePort = {
   async listDesignSummaries(
     options: { readonly thumbnails?: boolean } = {}
   ): Promise<Result<DesignSummary[], StorageError>> {
-    const [{ listDesigns }, { listAllDesignVersions }, { isUntouchedDefault }] = await Promise.all([
-      import('@/features/bin-designer/storage/DesignerStorage'),
-      import('@/features/bin-designer/storage/DesignVersionService'),
-      import('@/features/bin-designer/utils/untouchedDesign'),
-    ]);
+    const [{ listDesigns }, { listDesignVersionDates }, { isUntouchedDefault }] = await Promise.all(
+      [
+        import('@/features/bin-designer/storage/DesignerStorage'),
+        import('@/features/bin-designer/storage/DesignVersionService'),
+        import('@/features/bin-designer/utils/untouchedDesign'),
+      ]
+    );
     const designs = await listDesigns();
     if (!isOk(designs)) return designs;
     // Version dates only sharpen the summary, so a failed read leaves them empty.
-    const versions = await listAllDesignVersions();
+    const versions = await listDesignVersionDates();
     const versionDates = new Map<string, string[]>();
     if (isOk(versions)) {
       for (const version of versions.value) {
@@ -132,6 +134,9 @@ export const designStoreAdapter: DesignStorePort = {
         versionDates.set(version.designId, dates);
       }
     }
+    // Duplicating one's own published design records lineage too; its parent is
+    // then a design this library published, which a remix by someone else is not.
+    const ownPublished = new Set(designs.value.map((design) => design.publishedId ?? null));
     return ok(
       designs.value.map((design) => ({
         id: design.id,
@@ -140,7 +145,7 @@ export const designStoreAdapter: DesignStorePort = {
         updatedAt: design.updatedAt,
         ...(design.params ? { params: design.params } : {}),
         thumbnail: options.thumbnails === false ? null : design.thumbnail,
-        remixed: (design.lineage ?? null) !== null,
+        remixed: design.lineage ? !ownPublished.has(design.lineage.parentId) : false,
         untouched: design.params ? isUntouchedDefault(design.params) : false,
         versionDates: versionDates.get(design.id) ?? [],
       }))

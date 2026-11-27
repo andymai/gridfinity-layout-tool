@@ -237,4 +237,33 @@ describe('designStoreAdapter.listDesignSummaries', () => {
     const [summary] = unwrap(await designStoreAdapter.listDesignSummaries());
     expect(summary?.remixed).toBe(true);
   });
+
+  it("does not take a duplicate of the library's own published design for a remix", async () => {
+    unwrap(
+      await saveDesign({
+        name: 'Original',
+        params: { ...DEFAULT_BIN_PARAMS, height: 6 },
+        thumbnail: null,
+        exportFileNameConfig: null,
+        publishedId: 'mine',
+      })
+    );
+    const copy = unwrap(
+      await saveDesign({
+        name: 'Original (copy)',
+        params: { ...DEFAULT_BIN_PARAMS, height: 6 },
+        thumbnail: null,
+        exportFileNameConfig: null,
+        lineage: {
+          parentId: 'mine',
+          rootId: 'mine',
+          parentName: 'Original',
+          parentAuthorName: 'Me',
+          rootAuthorName: 'Me',
+        },
+      })
+    );
+    const summaries = unwrap(await designStoreAdapter.listDesignSummaries());
+    expect(summaries.find((summary) => summary.id === copy.id)?.remixed).toBe(false);
+  });
 });

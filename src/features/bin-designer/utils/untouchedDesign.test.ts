@@ -28,3 +28,14 @@ describe('isUntouchedDefault', () => {
     ).toBe(false);
   });
 });
+
+describe('isUntouchedDefault, for edits outside the obvious fields', () => {
+  it('sees an interior fillet as an edit', () => {
+    expect(isUntouchedDefault({ ...DEFAULT_BIN_PARAMS, interiorFilletMm: 2 })).toBe(false);
+  });
+
+  it('sees any field it was not told to ignore, so a new feature counts at once', () => {
+    const later = { ...DEFAULT_BIN_PARAMS, wallLabelSlots: { enabled: true } };
+    expect(isUntouchedDefault(later as unknown as typeof DEFAULT_BIN_PARAMS)).toBe(false);
+  });
+});
