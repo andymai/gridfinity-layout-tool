@@ -75,7 +75,6 @@ function BaseplateLibraryModalContent({ onClose }: { onClose: () => void }) {
   const [pendingDelete, setPendingDelete] = useState<SavedBaseplateDesign | null>(null);
 
   const handleNew = useCallback(async () => {
-    // A failure keeps the modal open so the click can be retried.
     if (await createBaseplate()) onClose();
   }, [createBaseplate, onClose]);
 
