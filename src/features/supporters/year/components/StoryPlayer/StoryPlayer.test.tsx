@@ -1,0 +1,78 @@
+import { describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import type { YearCard } from '../../utils/yearCards';
+import { StoryPlayer } from './StoryPlayer';
+
+const cards: YearCard[] = [
+  { kind: 'intro', duration: 4 },
+  { kind: 'drawers', duration: 5 },
+  { kind: 'thanks', duration: 6 },
+];
+
+function renderPlayer(overrides: Partial<Parameters<typeof StoryPlayer>[0]> = {}) {
+  const props = {
+    cards,
+    accent: '#3b82f6',
+    onClose: vi.fn(),
+    onReachEnd: vi.fn(),
+    renderCard: (card: YearCard) => <p>card:{card.kind}</p>,
+    ...overrides,
+  };
+  render(<StoryPlayer {...props} />);
+  return props;
+}
+
+function key(name: string) {
+  act(() => {
+    fireEvent.keyDown(window, { key: name });
+  });
+}
+
+describe('StoryPlayer', () => {
+  it('starts on the first card and steps with the arrow keys', () => {
+    renderPlayer();
+    expect(screen.getByText('card:intro')).toBeInTheDocument();
+    key('ArrowRight');
+    expect(screen.getByText('card:drawers')).toBeInTheDocument();
+    key('ArrowLeft');
+    expect(screen.getByText('card:intro')).toBeInTheDocument();
+  });
+
+  it('labels each card by its place in the story', () => {
+    renderPlayer();
+    expect(screen.getByRole('region', { name: 'Card 1 of 3' })).toBeInTheDocument();
+  });
+
+  it('reports the end once, when the last card shows', () => {
+    const props = renderPlayer();
+    key('ArrowRight');
+    expect(props.onReachEnd).not.toHaveBeenCalled();
+    key('ArrowRight');
+    key('ArrowRight');
+    expect(screen.getByText('card:thanks')).toBeInTheDocument();
+    expect(props.onReachEnd).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens on a given card', () => {
+    renderPlayer({ initialIndex: 2 });
+    expect(screen.getByText('card:thanks')).toBeInTheDocument();
+  });
+
+  it('pauses with Space and closes with Escape', () => {
+    const props = renderPlayer();
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument();
+    key(' ');
+    expect(screen.getByRole('button', { name: 'Play' })).toBeInTheDocument();
+    key('Escape');
+    expect(props.onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves the keys alone for a focused button in the card', () => {
+    renderPlayer({ renderCard: () => <button type="button">Roll</button> });
+    const roll = screen.getByText('Roll');
+    act(() => {
+      fireEvent.keyDown(roll, { key: ' ' });
+    });
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument();
+  });
+});

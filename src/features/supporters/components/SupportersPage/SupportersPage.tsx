@@ -86,8 +86,12 @@ export function SupportersPage() {
   const thisMonth = useMemo(() => joinedThisMonth(supporters), [supporters]);
   const stacked = isMobile;
 
+  // Your 2026 ends by rolling the credits, so it opens on the roll even for a return visit.
+  const [fromYearReview] = useState(
+    () => new URLSearchParams(window.location.search).get('from') === 'your-2026'
+  );
   const [rollPhase, setPhase] = useState<'roll' | 'finale'>(() =>
-    hasSeenCredits() ? 'finale' : 'roll'
+    fromYearReview || !hasSeenCredits() ? 'roll' : 'finale'
   );
   const phase = reducedMotion ? 'finale' : rollPhase;
   const roll = phase === 'roll';
@@ -309,7 +313,9 @@ export function SupportersPage() {
             homeRequest={focus.homeRequest}
             endTagRef={endTagRef}
             onVacantSelect={() => {
-              trackEvent('kofi_clicked', { source: 'supporters_socket' });
+              trackEvent('kofi_clicked', {
+                source: fromYearReview ? 'your_2026_socket' : 'supporters_socket',
+              });
               window.open(KOFI_URL, '_blank', 'noopener,noreferrer');
             }}
           />

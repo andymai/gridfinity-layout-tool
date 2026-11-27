@@ -21,8 +21,8 @@ export function useSupportersRouting() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const navigateToSupporters = useCallback(() => {
-    window.history.pushState(null, '', '/supporters');
+  const navigateToSupporters = useCallback((search = '') => {
+    window.history.pushState(null, '', `/supporters${search}`);
     setIsSupportersRoute(true);
     dispatchSyntheticPopstate();
   }, []);

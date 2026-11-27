@@ -38,6 +38,9 @@ export const BaseplateLibraryInitMount = lazyWithRetry(() =>
 export const SupportersPage = lazyWithRetry(() =>
   import('@/features/supporters').then(namedExport('SupportersPage'))
 );
+export const Your2026Page = lazyWithRetry(() =>
+  import('@/features/supporters/year').then(namedExport('Your2026Page'))
+);
 export const CommunityPage = lazyWithRetry(() =>
   import('@/features/community').then(namedExport('CommunityPage'))
 );

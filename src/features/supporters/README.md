@@ -206,3 +206,17 @@ ingest rules. `data/supporters.json` is only the offline fallback (see below).
   and the account-deletion cascade.
 - Mesh bake script: `scripts/gen-supporters-meshes.ts` (headless OCCT, same
   init path as the generator scenario tests).
+
+## Your 2026 (`year/`)
+
+A year in review at `/your-2026` that ends by rolling these credits, with its own
+lazy entry (`year/index.ts`). It reuses this slice's clock, pixel font and palette.
+
+- **2026 work** is defined once in `src/shared/yearReview/yearWork.ts` for the
+  stats and the dock row. `modifiedAt` and `updatedAt` are not evidence: a
+  layout switch and the thumbnail pass move them.
+- **Window:** `isYearReviewOpen`; `?preview` plays it early.
+- **Handoff:** the current entry becomes `?card=thanks`, then
+  `/supporters?from=your-2026` rolls even for a return visit.
+- **Time:** visible motion reads the story clock, never a timer, so the
+  launch-video capture stays frame-exact.

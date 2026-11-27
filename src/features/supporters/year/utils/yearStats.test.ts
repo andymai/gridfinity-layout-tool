@@ -170,7 +170,9 @@ describe('computeYearStats', () => {
   });
 
   it('finds the month with the most drawers started and designs made', () => {
-    expect(stats().busiestMonth).toEqual({ month: 2, count: 2 });
+    const result = stats();
+    expect(result.busiestMonth).toEqual({ month: 2, count: 2 });
+    expect(result.monthCounts).toEqual([0, 0, 2, 0, 0, 1, 0, 1, 0, 0, 0, 0]);
   });
 
   it('estimates a linked bin from its design, even one from an earlier year', () => {

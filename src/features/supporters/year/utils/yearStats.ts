@@ -110,18 +110,14 @@ function ref(source: YearDesignSource): YearDesignRef {
   return { id: source.id, name: source.name, thumbnail: source.thumbnail };
 }
 
-function busiestMonth(
+function monthActivity(
   layouts: readonly YearLayoutSource[],
   designs: readonly YearDesignSource[],
   bounds: YearBounds
-): YearStats['busiestMonth'] {
-  const months = new Map<number, Set<string>>();
+): { busiest: YearStats['busiestMonth']; counts: number[] } {
+  const months = Array.from({ length: 12 }, () => new Set<string>());
   const touch = (key: string, date: number | string): void => {
-    if (!inYear(date, bounds)) return;
-    const month = monthOf(date);
-    const items = months.get(month) ?? new Set<string>();
-    items.add(key);
-    months.set(month, items);
+    if (inYear(date, bounds)) months[monthOf(date)]?.add(key);
   };
   for (const source of layouts) touch(`layout:${source.id}`, source.createdAt);
   for (const design of designs) {
@@ -129,11 +125,12 @@ function busiestMonth(
       touch(`design:${design.id}`, date);
     }
   }
-  let best: { month: number; count: number } | null = null;
-  for (const [month, items] of [...months].sort(([a], [b]) => a - b)) {
-    if (!best || items.size > best.count) best = { month, count: items.size };
+  const counts = months.map((items) => items.size);
+  let busiest: { month: number; count: number } | null = null;
+  for (const [month, count] of counts.entries()) {
+    if (!busiest || count > busiest.count) busiest = { month, count };
   }
-  return best && best.count >= 2 ? best : null;
+  return { busiest: busiest && busiest.count >= 2 ? busiest : null, counts };
 }
 
 /**
@@ -282,6 +279,8 @@ export function computeYearStats(input: YearReviewInput): YearStats {
       ? { grams: Math.round(grams), printMinutes: printMinutes(binMinutes, jobs) }
       : null;
 
+  const activity = monthActivity(layouts, designs, bounds);
+
   const type = pickYearType({
     drawers: layouts.length,
     binsPlaced,
@@ -309,7 +308,8 @@ export function computeYearStats(input: YearReviewInput): YearStats {
     biggestDrawer,
     favouriteSize,
     designs: designs.length,
-    busiestMonth: busiestMonth(layouts, designs, bounds),
+    busiestMonth: activity.busiest,
+    monthCounts: activity.counts,
     filament,
     longestPrint,
     complexityShortlist,
